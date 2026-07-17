@@ -60,8 +60,6 @@ namespace Ship_Game
             listL.Name = "MiniMapButtons";
             ZoomToShip     = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonC, "Minimap/icons_zoomctrl", ZoomToShip_OnClick));
             PlanetScreen   = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "UI/icon_planetslist", PlanetScreen_OnClick));
-            // Ludoal fork (backlog #3): temporary home for the Troops Array until the top bar redesign
-            TroopScreen    = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "UI/icon_troop", TroopScreen_OnClick));
             FreighterUtil  = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "NewUI/icon_freighter_util", FreighterUtilizationScreen_OnClick));
             GravityWells   = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_ftloverlay", GravityWells_OnClick));
             RangeOverley   = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_rangeoverlay", RangeOverly_OnClick));
@@ -73,6 +71,9 @@ namespace Ship_Game
             ZoomOut            = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonC, "Minimap/icons_zoomout", ZoomOut_OnClick));
             ExoticScreen       = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "UI/icon_exotic_systems", ExoticScreen_OnClick));
             ExoticBonuses      = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "NewUI/icon_exotic_Bonuses_big", ExoticBonusScreen_OnClick));
+            // Ludoal fork (backlog #3): temporary home for the Troops Array until the top bar
+            // redesign — right column (the left one is full, Ludo 17 Jul).
+            TroopScreen        = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "UI/icon_troop", TroopScreen_OnClick));
             ColonyBlueprints   = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "NewUI/blueprints_minimap", ColonyBlueprints_OnClick));
             EmpirePatrols      = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "NewUI/icon_patrol_list", EmpirePatrols_OnClick));
             Scale = ActualMap.Width / (Universe.UState.Size * 2.1f); // Updated to play nice with the new negative map values
