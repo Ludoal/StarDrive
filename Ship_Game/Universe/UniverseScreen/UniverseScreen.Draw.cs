@@ -430,7 +430,10 @@ namespace Ship_Game
 
                 SetViewMatrix(cameraMatrix);
 
-                DrawColoredBordersRT(batch);
+                // Ludoal fork: composite must be gated with the render pass above — BorderRT
+                // keeps its last frame otherwise (colors stuck after F2 toggled off).
+                if (ShowingFTLOverlay)
+                    DrawColoredBordersRT(batch);
             }
             OverlaysGroupTotalPerf.Stop();
 

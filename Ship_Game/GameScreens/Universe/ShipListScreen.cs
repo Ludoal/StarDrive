@@ -122,7 +122,6 @@ namespace Ship_Game
 
             ShowRoles = new DropOptions<int>(new Rectangle(TitleBar.Menu.Right + 175, TitleBar.Menu.Y + 15, 175, 18));
             ShowRoles.AddOption("All Ships", 1);
-            ShowRoles.AddOption("All Military Ships", 14);
             ShowRoles.AddOption("Fighters", 2);
             ShowRoles.AddOption("Corvettes", 3);
             ShowRoles.AddOption("Frigates", 4);
@@ -131,6 +130,7 @@ namespace Ship_Game
             ShowRoles.AddOption("Titans", 7);
             ShowRoles.AddOption("Carriers", 8);
             ShowRoles.AddOption("Bombers", 9);
+            ShowRoles.AddOption("Military Ships", 14);
             ShowRoles.AddOption("Troopships", 10);
             ShowRoles.AddOption("Support Ships", 11);
             ShowRoles.AddOption("All Structures", 12);
