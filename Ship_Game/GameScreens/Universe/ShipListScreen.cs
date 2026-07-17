@@ -122,6 +122,7 @@ namespace Ship_Game
 
             ShowRoles = new DropOptions<int>(new Rectangle(TitleBar.Menu.Right + 175, TitleBar.Menu.Y + 15, 175, 18));
             ShowRoles.AddOption("All Ships", 1);
+            ShowRoles.AddOption("All Military Ships", 14);
             ShowRoles.AddOption("Fighters", 2);
             ShowRoles.AddOption("Corvettes", 3);
             ShowRoles.AddOption("Frigates", 4);
@@ -375,6 +376,10 @@ namespace Ship_Game
                     case 11: return ship.DesignRole == RoleName.support;
                     case 12: return ship.DesignRole <= RoleName.platform || ship.DesignRole == RoleName.station;
                     case 13: return ship.IsConstructor || ship.DesignRole == RoleName.freighter || ship.ShipData.ShipCategory == ShipCategory.Civilian;
+                    // #348: everything from troopShip upward in RoleName is the military family
+                    // (troopShip, support, bomber, carrier, fighter, scout, gunboat, drone,
+                    // corvette..capital) — no way to list only military ships before this.
+                    case 14: return ship.DesignRole >= RoleName.troopShip;
                 }
 
                 return false;
