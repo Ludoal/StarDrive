@@ -336,7 +336,11 @@ namespace Ship_Game
                 {
                     Screen.ProjectToScreenCoords(item.BuildPos, platform.Width, out Vector2d posOnScreen, out double size);
 
-                    float scale = Ship.ScaleIconSize((float)size, 0.2f, 0.4f);
+                    // FIX #347: ScaleIconSize adds the integer IconSize setting, which is meant for
+                    // pixel sizes — here the result is used as a texture scale multiplier, blowing the
+                    // intended 0.2-0.4 range up to 1.2+ even at IconSize=1. Keep the designed range and
+                    // let the setting nudge it gently (+5% per step) instead.
+                    float scale = ((float)size * 2f).Clamped(0.2f, 0.4f) + (GlobalStats.IconSize - 1) * 0.05f;
                     Screen.DrawTextureSized(platform, posOnScreen, 0.0f, platform.Width * scale,
                                             platform.Height * scale, new Color(0, 255, 0, 100).Premultiplied());
 
