@@ -106,6 +106,7 @@ namespace Ship_Game
         public bool FTLOverlay           => KeyPressed(Keys.F2);
         public bool RangeOverlay         => KeyPressed(Keys.F3);
         public bool ShipListScreen       => KeyPressed(Keys.K);
+        public bool TroopListScreen      => KeyPressed(Keys.C); // Ludoal fork: Troops Array (C was debug-spawn only)
         public bool FleetDesignScreen    => KeyPressed(Keys.J);
         public bool AutomationWindow     => KeyPressed(Keys.H);
         public bool BlueprintsSceen      => KeyPressed(Keys.F);

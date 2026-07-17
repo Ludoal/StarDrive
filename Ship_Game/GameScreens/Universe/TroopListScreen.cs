@@ -62,9 +62,18 @@ namespace Ship_Game
             GameAudio.AcceptClick();
             ExitScreen();
             if (item.Ship != null)
-                Universe.SnapViewShip(item.Ship);          // select + center camera
+            {
+                // same gentle zoom as the Ships Array (SnapViewShip dives way too deep)
+                Universe.ViewToShip(item.Ship);
+                Universe.returnToShip = true;
+            }
             else if (item.Planet != null)
-                Universe.SnapViewColony(item.Planet, false); // colony view if ours, planet view otherwise
+            {
+                // Garrison: colony view. Deployed (planet not ours): combatView=true
+                // routes to the Ground Assault View via OpenCombatMenu.
+                bool deployed = item.Planet.Owner != Player;
+                Universe.SnapViewColony(item.Planet, deployed);
+            }
         }
 
         void PopulateList()
@@ -237,8 +246,8 @@ namespace Ship_Game
             StrRect      = NextRect(w * 0.16f);
 
             AddCentered(SysNameRect, SystemName, Colors.Cream);
-            AddCentered(LocationRect, Location, StatusColor);
-            AddCentered(StatusRect, Status, StatusColor);
+            AddCentered(LocationRect, Location, Colors.Cream);
+            AddCentered(StatusRect, Status, StatusColor); // the status carries the color, like other panels
             AddCentered(TroopRect, TroopName, Colors.Cream);
             AddCentered(NumRect, Count.ToString(), Colors.Cream);
             AddCentered(StrRect, ((int)Strength).ToString(), Colors.Cream);
