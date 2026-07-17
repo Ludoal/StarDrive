@@ -10,10 +10,12 @@ using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game
 {
-    // Ludoal fork (backlog #3, v1): Troops Array — finally a way to see where all our
-    // ground troops are. Columns: System | Location (planet or troopship) | Troop type.
-    // v1 is read-only and unsorted (grouped by location by construction order);
-    // sorting/filters/actions can come in a later pass.
+    // Ludoal fork (backlog #3, v2): Troops Array — where are all our ground troops?
+    // Grouped by (location, troop type): System | Location | Status | Troop | Num | Strength.
+    // Status: Garrison (own planet) / Deployed (planet we don't own) /
+    //         Transport (aboard a troopship) / Stationed (aboard any other ship).
+    // Click a row: ship rows snap the camera to the ship; planet rows open the
+    // colony view (own) or the planet view (not ours) via SnapViewColony.
     public sealed class TroopListScreen : GameScreen
     {
         readonly Menu2 TitleBar;
@@ -50,34 +52,64 @@ namespace Ship_Game
             RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
             TroopSL = Add(new ScrollList<TroopListScreenItem>(slRect, 40));
             TroopSL.EnableItemHighlight = true;
+            TroopSL.OnClick = OnRowClicked;
 
             PopulateList();
         }
 
+        void OnRowClicked(TroopListScreenItem item)
+        {
+            GameAudio.AcceptClick();
+            ExitScreen();
+            if (item.Ship != null)
+                Universe.SnapViewShip(item.Ship);          // select + center camera
+            else if (item.Planet != null)
+                Universe.SnapViewColony(item.Planet, false); // colony view if ours, planet view otherwise
+        }
+
         void PopulateList()
         {
-            // troops on the ground — any planet can host our troops (garrison or ongoing invasion)
+            // group rows by (location, troop type) — accumulate count and strength
+            var groups = new Map<(object Location, string TroopName), TroopListScreenItem>();
+
+            void Accumulate(object location, string sysName, string locName, string status,
+                            Color statusColor, Troop t, Planet p, Ship s)
+            {
+                var key = (location, t.Name);
+                if (groups.TryGetValue(key, out TroopListScreenItem item))
+                    item.Accumulate(t);
+                else
+                    groups.Add(key, TroopSL.AddItem(
+                        new TroopListScreenItem(sysName, locName, status, statusColor, t, p, s)));
+            }
+
             foreach (SolarSystem system in Universe.UState.Systems)
             {
                 foreach (Planet p in system.PlanetList)
                 {
+                    bool ours = p.Owner == Player;
                     foreach (Troop t in p.Troops.GetTroopsOf(Player))
-                        TroopSL.AddItem(new TroopListScreenItem(system.Name, $"{p.Name} (planet)", t,
-                                                                p.Owner == Player ? Color.LightGreen : Color.Orange));
+                        Accumulate(p, system.Name, p.Name,
+                                   ours ? "Garrison" : "Deployed",
+                                   ours ? Color.LightGreen : Color.Orange, t, p, null);
                 }
             }
 
-            // troops aboard our ships (troopships, carriers with assault bays, anything that hosts them)
             foreach (Ship s in Player.OwnedShips)
             {
                 if (s.TroopCount == 0)
                     continue;
+                bool transport = s.DesignRole == RoleName.troopShip || s.DesignRole == RoleName.troop;
                 string sysName = s.System?.Name ?? "Deep Space";
                 foreach (Troop t in s.GetOurTroops())
-                    TroopSL.AddItem(new TroopListScreenItem(sysName, $"{s.Name} (ship)", t, Color.LightSkyBlue));
+                    Accumulate(s, sysName, s.Name,
+                               transport ? "Transport" : "Stationed",
+                               transport ? Color.LightSkyBlue : Color.SteelBlue, t, null, s);
             }
 
-            NumTroops = TroopSL.NumEntries;
+            NumTroops = 0;
+            foreach (TroopListScreenItem item in TroopSL.AllEntries)
+                NumTroops += item.Count;
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -96,13 +128,20 @@ namespace Ship_Game
 
                 DrawHeader(batch, font, e1.SysNameRect, "System");
                 DrawHeader(batch, font, e1.LocationRect, "Location");
+                DrawHeader(batch, font, e1.StatusRect, "Status");
                 DrawHeader(batch, font, e1.TroopRect, "Troop");
+                DrawHeader(batch, font, e1.NumRect, "Num");
+                DrawHeader(batch, font, e1.StrRect, "Strength");
+                var fist = ResourceManager.Texture("UI/icon_fighting_small");
+                var fistPos = new Vector2(e1.StrRect.X + e1.StrRect.Width / 2 + font.MeasureString("Strength").X / 2f + 6,
+                                          ERect.Y - font.LineSpacing);
+                batch.Draw(fist, new Rectangle((int)fistPos.X, (int)fistPos.Y, 16, 16), Color.White);
 
                 Color lineColor = new Color(118, 102, 67, 255);
                 float columnTop = ERect.Y + 15;
                 float columnBot = ERect.Y + ERect.H - 20;
-                batch.DrawLine(new Vector2(e1.LocationRect.X, columnTop), new Vector2(e1.LocationRect.X, columnBot), lineColor);
-                batch.DrawLine(new Vector2(e1.TroopRect.X, columnTop), new Vector2(e1.TroopRect.X, columnBot), lineColor);
+                foreach (int colX in new[] { e1.LocationRect.X, e1.StatusRect.X, e1.TroopRect.X, e1.NumRect.X, e1.StrRect.X })
+                    batch.DrawLine(new Vector2(colX, columnTop), new Vector2(colX, columnBot), lineColor);
                 batch.DrawRectangle(TroopSL.ItemsHousing, lineColor);
             }
             else
@@ -138,19 +177,40 @@ namespace Ship_Game
     {
         public Rectangle SysNameRect;
         public Rectangle LocationRect;
+        public Rectangle StatusRect;
         public Rectangle TroopRect;
+        public Rectangle NumRect;
+        public Rectangle StrRect;
 
         readonly string SystemName;
         readonly string Location;
-        readonly Troop Troop;
-        readonly Color LocationColor;
+        readonly string Status;
+        readonly Color StatusColor;
+        readonly string TroopName;
+        public readonly Planet Planet;   // set for garrison/deployed rows
+        public readonly Ship Ship;       // set for transport/stationed rows
+        public int Count { get; private set; }
+        float Strength;
 
-        public TroopListScreenItem(string systemName, string location, Troop troop, Color locationColor)
+        public TroopListScreenItem(string systemName, string location, string status, Color statusColor,
+                                   Troop troop, Planet planet, Ship ship)
         {
             SystemName = systemName;
             Location = location;
-            Troop = troop;
-            LocationColor = locationColor;
+            Status = status;
+            StatusColor = statusColor;
+            TroopName = troop.Name;
+            Planet = planet;
+            Ship = ship;
+            Count = 1;
+            Strength = troop.Strength;
+        }
+
+        public void Accumulate(Troop t)
+        {
+            Count += 1;
+            Strength += t.Strength;
+            RequiresLayout = true;
         }
 
         public override void PerformLayout()
@@ -169,13 +229,19 @@ namespace Ship_Game
                 return new Rectangle(next, y, (int)width, h);
             }
 
-            SysNameRect  = NextRect(w * 0.20f);
-            LocationRect = NextRect(w * 0.40f);
-            TroopRect    = NextRect(w * 0.40f);
+            SysNameRect  = NextRect(w * 0.14f);
+            LocationRect = NextRect(w * 0.28f);
+            StatusRect   = NextRect(w * 0.12f);
+            TroopRect    = NextRect(w * 0.22f);
+            NumRect      = NextRect(w * 0.08f);
+            StrRect      = NextRect(w * 0.16f);
 
             AddCentered(SysNameRect, SystemName, Colors.Cream);
-            AddCentered(LocationRect, Location, LocationColor);
-            AddCentered(TroopRect, $"{Troop.Name}  (str {(int)Troop.Strength})", Colors.Cream);
+            AddCentered(LocationRect, Location, StatusColor);
+            AddCentered(StatusRect, Status, StatusColor);
+            AddCentered(TroopRect, TroopName, Colors.Cream);
+            AddCentered(NumRect, Count.ToString(), Colors.Cream);
+            AddCentered(StrRect, ((int)Strength).ToString(), Colors.Cream);
             base.PerformLayout();
         }
 
