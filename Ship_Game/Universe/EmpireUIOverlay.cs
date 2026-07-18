@@ -435,7 +435,8 @@ namespace Ship_Game
                                 }
                             case "?":
                                 {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheHelpMenu), "P");
+                                    // Ludoal fork: the real help binding is F1 (CodexHelp) — "P" belongs to Patrols
+                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheHelpMenu), "F1");
                                     break;
                                 }
                         }
