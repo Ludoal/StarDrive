@@ -2,6 +2,29 @@
 
 [![Patch Build](https://github.com/TeamStarDrive/StarDrive/actions/workflows/patch-build.yml/badge.svg?branch=main)](https://github.com/TeamStarDrive/StarDrive/actions/workflows/patch-build.yml)
 
+# About this fork (Ludoal)
+
+Quality-of-life patches on top of the official **Jupiter 1.60.00045** release, made by a
+new player still learning the game, with an AI assistant doing the heavy lifting on code
+archaeology. **No gameplay changes**: UI fixes and comfort only, everything listed in the
+release notes. The point of publishing is simple: the BlackBox team is welcome to take
+whatever they find worth keeping (issue #347 was the first, already integrated upstream.
+Thanks!).
+
+- **Install**: grab the latest `BlackBox_Jupiter_Patch_*.exe` from
+  [Releases](https://github.com/Ludoal/StarDrive/releases) and run it over an official
+  Jupiter 1.60.00045 install, game closed. Cumulative, saves unaffected.
+- **Versioning**: public releases are lettered (`45-a`, `45-b`, ...); the embedded build
+  version stays numeric (`1.60.00045.N`), so the in-game updater will still offer the
+  next official patch (46+) normally.
+- **Branch**: [`qol-45`](https://github.com/Ludoal/StarDrive/tree/qol-45), the official
+  45 tag plus these fixes. Not based on upstream `main`/`develop`, so it stays
+  save-compatible with the official 45.
+
+*Everything below is the original BlackBox README.*
+
+---
+
 # Stardrive BlackBox
 This is the 15b version of StarDrive.exe originally decompiled from CIL and almost completely rewritten by the BlackBox team.
 The current release is **BlackBox - Jupiter (1.60)** and the upcoming version is **BlackBox - Saturn**.

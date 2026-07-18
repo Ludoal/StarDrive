@@ -23,6 +23,10 @@ on:
         description: "Include [TestCategory(\"Performance\")] tests (manual runs only; flaky on shared runners)"
         type: boolean
         default: false
+      public_suffix:
+        description: "Public release letter (a, b, c…) — names the release 'Patch 45-<letter>' for community builds; leave empty for internal numbering. AssemblyVersion stays numeric either way."
+        type: string
+        default: ""
 
 # Codename + major.minor are stable per release line; bumped from Mars 1.51 to Jupiter
 # 1.60 with §5.1.A (post-migration release line; first Jupiter installer defaults to
@@ -55,8 +59,18 @@ jobs:
         run: |
           $build  = '{0}' -f ${{ github.run_number }}  # fork: unpadded suffix (1.60.00045.N)
           $version = "${env:MAJOR_MINOR}.$build"
-          $tag    = "$($env:CODENAME.ToLower())-patch-$version"
-          $title  = "$($env:CODENAME) Patch v$version"
+          # Ludoal fork: optional public letter (45-a, 45-b…) for community releases.
+          # Only tag/title change — AssemblyVersion stays numeric (System.Version +
+          # in-game updater comparison both require it).
+          $suffix = '${{ github.event.inputs.public_suffix }}'.Trim()
+          if ($suffix) {
+            $patchNum = [int]($env:MAJOR_MINOR -split '\.')[-1]  # 00045 -> 45
+            $tag   = "$($env:CODENAME.ToLower())-patch-$patchNum-$suffix"
+            $title = "$($env:CODENAME) Patch $patchNum-$suffix ($version)"
+          } else {
+            $tag   = "$($env:CODENAME.ToLower())-patch-$version"
+            $title = "$($env:CODENAME) Patch v$version"
+          }
           Write-Host "version=$version`ntag=$tag`ntitle=$title"
           "version=$version" >> $env:GITHUB_OUTPUT
           "tag=$tag"         >> $env:GITHUB_OUTPUT
