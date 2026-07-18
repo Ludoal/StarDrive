@@ -288,6 +288,7 @@ namespace Ship_Game
             right.AddCheckbox(() => GlobalStats.EnableEngineTrails,           title: GameText.EngineTrails, tooltip: GameText.TT_EngineTrails);
             right.AddCheckbox(() => GlobalStats.DisableScreenPanning,         title: GameText.DisableScreenPanningOption, tooltip: GameText.DisableScreenPanningOptionTip);
             right.AddCheckbox(() => GlobalStats.RouteAroundGravityWells,      title: GameText.Pathfinder, tooltip: GameText.PathfinderTip);
+            right.AddCheckbox(() => GlobalStats.InfluenceMapOverlayOnly,     title: GameText.InfluenceMapOverlayOnly, tooltip: GameText.InfluenceMapOverlayOnlyTip);
 
             var apply = Add(new UIButton(ButtonStyle.Default, new Vector2(RightArea.Right - 206, RightArea.Bottom + 60), GameText.ApplySettings));
             apply.OnClick = button => RunOnNextFrame(ApplyOptions);

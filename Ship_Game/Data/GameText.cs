@@ -5286,6 +5286,10 @@ namespace Ship_Game
         KeyboardFireArcLocking = 6184,
         /// <summary>Toggle Zoom Tracking</summary>
         ToggleZoomTracking = 6185,
+        /// <summary>Influence Colors On F2 Overlay Only</summary>
+        InfluenceMapOverlayOnly = 4538,
+        /// <summary>Tooltip for InfluenceMapOverlayOnly</summary>
+        InfluenceMapOverlayOnlyTip = 4539,
         /// <summary>FCS Bonus</summary>
         FcsBonus = 6186,
         /// <summary>FCS Accuracy</summary>

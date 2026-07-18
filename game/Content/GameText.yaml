@@ -17715,6 +17715,14 @@ ToggleZoomTracking:
  SPA: "Alternar seguimiento por zoom"
  UKR: "Перемикання масштабу відстеження"
  PTB: "Alternar Rastreamento de Zoom"
+InfluenceMapOverlayOnly:
+ Id: 4538
+ ENG: "Influence Colors On F2 Overlay Only"
+ PTB: "Cores de influência apenas na sobreposição F2"
+InfluenceMapOverlayOnlyTip:
+ Id: 4539
+ ENG: "When enabled, colored empire influence borders are shown on the main map only while the FTL overlay (F2) is active. The minimap always shows influence."
+ PTB: "Quando ativado, as bordas coloridas de influência aparecem no mapa principal apenas com a sobreposição FTL (F2) ativa. O minimapa sempre mostra a influência."
 FcsBonus:
  Id: 6186
  ENG: "FCS Bonus"

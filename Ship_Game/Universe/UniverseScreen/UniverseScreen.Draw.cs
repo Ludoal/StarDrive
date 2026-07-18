@@ -370,9 +370,10 @@ namespace Ship_Game
             OverlaysGroupTotalPerf.Start();
             {
                 UpdateFogOfWarInfluences(batch, graphics);
-                // Ludoal fork: colored influence zones only on the FTL overlay (F2) — the main
-                // map stays clean; the minimap draws its own nodes (DrawMinimapInfluenceNodes).
-                if (ShowingFTLOverlay && viewState >= UnivScreenState.SectorView)
+                // Ludoal fork: optionally draw colored influence zones only on the FTL
+                // overlay (F2) — GlobalStats.InfluenceMapOverlayOnly, main Options screen.
+                // Default off = vanilla (always drawn). Minimap draws its own nodes.
+                if ((ShowingFTLOverlay || !GlobalStats.InfluenceMapOverlayOnly) && viewState >= UnivScreenState.SectorView)
                     DrawColoredEmpireBorders(sr, graphics);
 
                 // §3.7 step 1: bloom processes MainTarget -> PostBloomTarget,
