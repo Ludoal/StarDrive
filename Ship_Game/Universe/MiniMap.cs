@@ -121,7 +121,10 @@ namespace Ship_Game
                 batch.SafeEnd();
                 batch.SafeBegin(SpriteBlendMode.NonPremultiplied);
 
-                DrawMinimapInfluenceNodes(batch);
+                // Ludoal fork: minimap influence follows the main map — with the
+                // InfluenceMapOverlayOnly option on, colors show only during F2.
+                if (Universe.ShowingFTLOverlay || !GlobalStats.InfluenceMapOverlayOnly)
+                    DrawMinimapInfluenceNodes(batch);
                 DrawSelected(batch, Player);
                 DrawWarnings(batch);
 

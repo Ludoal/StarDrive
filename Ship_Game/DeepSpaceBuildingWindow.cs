@@ -37,7 +37,7 @@ namespace Ship_Game
             // Ludoal fork: sit left of the Automation window (220px wide, right-anchored
             // at ScreenWidth-15) instead of overlapping it.
             const int automationWidth = 220;
-            RectF = new(Screen.ScreenWidth - 15 - automationWidth - 10 - windowWidth, 100, windowWidth, 300);
+            RectF = new(Screen.ScreenWidth - 15 - automationWidth - 10 - windowWidth, 89, windowWidth, 300);
 
             var sl = Add(new SubmenuScrollList<ConstructionListItem>(RectF, "Build Menu"));
             sl.SetBackground(Colors.TransparentBlackFill);
