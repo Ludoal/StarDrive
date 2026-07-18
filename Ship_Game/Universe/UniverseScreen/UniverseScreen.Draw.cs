@@ -433,7 +433,8 @@ namespace Ship_Game
 
                 // Ludoal fork: composite must be gated with the render pass above — BorderRT
                 // keeps its last frame otherwise (colors stuck after F2 toggled off).
-                if (ShowingFTLOverlay)
+                // Same condition as the render pass: option off = vanilla (always drawn).
+                if (ShowingFTLOverlay || !GlobalStats.InfluenceMapOverlayOnly)
                     DrawColoredBordersRT(batch);
             }
             OverlaysGroupTotalPerf.Stop();

@@ -257,7 +257,9 @@ namespace Ship_Game
             Add(botLeft, GameText.Language, CurrentLanguage);
             botLeft.ReverseZOrder(); // @todo This is a hacky workaround to zorder limitations
             
-            UIList botRight = AddList(new Vector2(RightArea.X, RightArea.Y + 180), RightArea.Size());
+            // Ludoal fork: +200 (was +180) — the checkbox list above grew to 10 entries
+            // (InfluenceMapOverlayOnly) and overlapped the first slider label.
+            UIList botRight = AddList(new Vector2(RightArea.X, RightArea.Y + 200), RightArea.Size());
             botRight.Padding = new Vector2(2f, 8f);
             botRight.LayoutStyle = ListLayoutStyle.Clip;
             MaxDynamicLightSources = botRight.Add(new FloatSlider(SliderStyle.Decimal, 288f, 50f, GameText.MaxDynamicLightSources, 0, 1000, GlobalStats.MaxDynamicLightSources));

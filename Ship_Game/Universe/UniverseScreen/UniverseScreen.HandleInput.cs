@@ -119,14 +119,15 @@ namespace Ship_Game
         void HandleCodexHelp()
         {
             string uid = ToolTip.GetActiveCodexUid();
-            if (uid == null)
-                return;
 
             GameAudio.TacticalPause();
             // OpenAt before AddScreen: ScreenManager queues the screen for the
             // next tick, so we stash PendingUid and LoadContent flushes it.
+            // Ludoal fork: with no codex tooltip active, F1 opens the codex at its
+            // root — same as the Help (?) button — instead of doing nothing.
             var codex = new Codex.CodexScreen(this);
-            codex.OpenAt(uid);
+            if (uid != null)
+                codex.OpenAt(uid);
             ScreenManager.AddScreen(codex);
         }
 
