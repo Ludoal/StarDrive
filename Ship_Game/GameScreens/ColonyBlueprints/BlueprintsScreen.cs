@@ -460,6 +460,15 @@ namespace Ship_Game
                 return true;
             }
 
+            // Ludoal fork: close with the key that opens this screen (F) — it previously
+            // only closed via ESC. Guarded against text entry (blueprint naming).
+            if (input.BlueprintsSceen && !GlobalStats.TakingInput && !BuildableList.IsDragging)
+            {
+                GameAudio.EchoAffirmative();
+                ExitScreen();
+                return true;
+            }
+
             PlanAreaHovered = BuildableList.IsDragging && SubPlanArea.HitTest(Input.CursorPosition);
             HoveredBuilding = GetHoveredBuildingFromBuildableList(input);
             foreach (BlueprintsTile tile in TilesList)

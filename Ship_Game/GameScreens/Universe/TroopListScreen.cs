@@ -173,7 +173,8 @@ namespace Ship_Game
         {
             if (base.HandleInput(input))
                 return true;
-            if (input.Escaped || input.RightMouseClick)
+            if (input.Escaped || input.RightMouseClick
+                || (input.TroopListScreen && !GlobalStats.TakingInput))
             {
                 ExitScreen();
                 return true;

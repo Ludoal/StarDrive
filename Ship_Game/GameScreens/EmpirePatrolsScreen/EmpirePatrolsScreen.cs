@@ -163,7 +163,9 @@ namespace Ship_Game
             HandleButton(input, SbNumWaypoints, p => p.WayPoints.Count);
             HandleButton(input, SbNumFleetsAssigned, p => Player.AllFleets.Count(fleet => fleet.HasPatrolPlan && fleet.Patrol == p));
 
-            if (input.KeyPressed(Keys.L) && !GlobalStats.TakingInput)
+            // Ludoal fork: close with the key that opens this screen (P) — Keys.L was a
+            // copy-paste leftover from PlanetListScreen, so the hotkey felt dead in-game.
+            if (input.EmpirePatrolsScreen && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();
                 ExitScreen();
