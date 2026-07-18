@@ -501,6 +501,16 @@ namespace Ship_Game
                 }
             }
 
+            // Ludoal fork: right-click closes the screen like other full-screen panels —
+            // only when it's not aimed at a building (tile removal keeps priority) and
+            // nothing is being dragged.
+            if (input.RightMouseClick && HoveredBuilding == null && !BuildableList.IsDragging)
+            {
+                GameAudio.EchoAffirmative();
+                ExitScreen();
+                return true;
+            }
+
             return base.HandleInput(input);
         }
 
