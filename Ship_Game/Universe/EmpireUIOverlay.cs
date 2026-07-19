@@ -273,6 +273,62 @@ namespace Ship_Game
         }
 
         // @return true if input was captured
+        // Ludoal fork: one tooltip per top-bar button, shown from BOTH input variants
+        // (map view and any panel with the live bar). Anchored slightly below the
+        // button, aligned with its beveled bottom-left corner.
+        void ShowButtonTooltip(Button b)
+        {
+            if (b.launches == null)
+                return;
+            Vector2 tipPos = new Vector2(b.Rect.X, b.Rect.Bottom + 4);
+            switch (b.launches)
+            {
+                case "Research":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.ResearchScreen) + "\n\n" + Localizer.Token(GameText.CurrentResearch) + ": " + Player.Research.TopicLocText.Text, "R", tipPos);
+                    break;
+                case "Budget":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.EconomicOverview2), "T", tipPos);
+                    break;
+                case "Main Menu":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheMainMenu), "O", tipPos);
+                    break;
+                case "Shipyard":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheShipyard), "Y", tipPos);
+                    break;
+                case "Empire":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheEmpireOverviewScreen), "U", tipPos);
+                    break;
+                case "Diplomacy":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheDiplomacyOverviewScreen), "I", tipPos);
+                    break;
+                case "Espionage":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheEspionageManagementScreen), "E", tipPos);
+                    break;
+                case "ShipList":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheShipRoster), "K", tipPos);
+                    break;
+                case "Fleets":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheFleetManager), "J", tipPos);
+                    break;
+                case "Planets":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensPlanetReconnaissancePanel), "L", tipPos);
+                    break;
+                case "Troops":
+                    ToolTip.CreateTooltip("Opens the Troops Array", "C", tipPos);
+                    break;
+                case "Patrols":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.EmpirePatrolsScreenTip), "P", tipPos);
+                    break;
+                case "Blueprints":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.BlueprintsScreenTip), "F", tipPos);
+                    break;
+                case "?":
+                    // the real help binding is F1 (CodexHelp)
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheHelpMenu), "F1", tipPos);
+                    break;
+            }
+        }
+
         public bool HandleInput(InputState input)
         {
             if (!GlobalStats.TakingInput)
@@ -352,63 +408,7 @@ namespace Ship_Game
                 }
                 else
                 {
-                    if (b.launches != null)
-                    {
-                        switch (b.launches)
-                        {
-                            case "Research":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.ResearchScreen) + "\n\n" + Localizer.Token(GameText.CurrentResearch) + ": " + Player.Research.TopicLocText.Text, "R");
-                                    break;
-                                }
-                            case "Budget":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.EconomicOverview2), "T");
-                                    break;
-                                }
-                            case "Main Menu":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheMainMenu), "O");
-                                    break;
-                                }
-                            case "Shipyard":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheShipyard), "Y");
-                                    break;
-                                }
-                            case "Empire":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheEmpireOverviewScreen), "U");
-                                    break;
-                                }
-                            case "Diplomacy":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheDiplomacyOverviewScreen), "I");
-                                    break;
-                                }
-                            case "Espionage":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheEspionageManagementScreen), "E");
-                                    break;
-                                }
-                            case "ShipList":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheShipRoster), "K");
-                                    break;
-                                }
-                            case "Fleets":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheFleetManager), "J");
-                                    break;
-                                }
-                            case "?":
-                                {
-                                    // Ludoal fork: the real help binding is F1 (CodexHelp) — "P" belongs to Patrols
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheHelpMenu), "F1");
-                                    break;
-                                }
-                        }
-                    }
+                    ShowButtonTooltip(b); // Ludoal fork: shared tooltip helper, anchored bottom-left
                     if (b.State != PressState.Hover && b.State != PressState.Pressed)
                     {
                         GameAudio.MouseOver();
@@ -523,6 +523,7 @@ namespace Ship_Game
                 }
                 else
                 {
+                    ShowButtonTooltip(b); // Ludoal fork: tooltips also on panel-hosted bars
                     if (b.State != PressState.Hover && b.State != PressState.Pressed)
                     {
                         GameAudio.MouseOver();

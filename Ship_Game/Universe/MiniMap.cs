@@ -21,8 +21,6 @@ namespace Ship_Game
     {
         readonly ToggleButton ExoticBonuses;
         readonly ToggleButton FreighterUtil;
-        readonly ToggleButton ColonyBlueprints;
-        readonly ToggleButton EmpirePatrols;
 
         readonly UniverseScreen Universe;
         readonly Rectangle Housing;
@@ -30,9 +28,6 @@ namespace Ship_Game
         //to get rid of these I need to find a solution for hover and the setting of the active setting
         readonly ToggleButton ZoomOut;
         readonly ToggleButton ZoomToShip;
-        readonly ToggleButton PlanetScreen;
-        readonly ToggleButton TroopScreen;
-        readonly ToggleButton ExoticScreen;
         readonly ToggleButton GravityWells;
         readonly ToggleButton AIScreen;
         readonly ToggleButton DeepSpaceBuild;
@@ -58,24 +53,20 @@ namespace Ship_Game
 
             UIList listL = AddList(new Vector2(Housing.X + 10, Housing.Y + 70));
             listL.Name = "MiniMapButtons";
+            // Ludoal fork: the list panels moved to the top bar — the minimap keeps
+            // zooms, map overlays and the overlay windows, paired in rows:
+            // (ZoomToShip|ZoomOut) (FTL|WeaponsRange) (DSB|Automation) (Freighters|ExoticBonuses)
             ZoomToShip     = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonC, "Minimap/icons_zoomctrl", ZoomToShip_OnClick));
-            PlanetScreen   = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "UI/icon_planetslist", PlanetScreen_OnClick));
-            FreighterUtil  = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "NewUI/icon_freighter_util", FreighterUtilizationScreen_OnClick));
             GravityWells   = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_ftloverlay", GravityWells_OnClick));
-            RangeOverley   = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_rangeoverlay", RangeOverly_OnClick));
             DeepSpaceBuild = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_dsbw", DeepSpaceBuild_OnClick));
-            AIScreen       = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonDown, "AI", AIScreen_OnClick));
+            FreighterUtil  = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "NewUI/icon_freighter_util", FreighterUtilizationScreen_OnClick));
 
             UIList listR = AddList(new Vector2(Housing.X + 38, Housing.Y + 70));
             listR.Name = "MiniMapButtonsRight";
             ZoomOut            = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonC, "Minimap/icons_zoomout", ZoomOut_OnClick));
-            ExoticScreen       = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "UI/icon_exotic_systems", ExoticScreen_OnClick));
+            RangeOverley       = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_rangeoverlay", RangeOverly_OnClick));
+            AIScreen           = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonDown, "AI", AIScreen_OnClick));
             ExoticBonuses      = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "NewUI/icon_exotic_Bonuses_big", ExoticBonusScreen_OnClick));
-            // Ludoal fork (backlog #3): temporary home for the Troops Array until the top bar
-            // redesign — right column (the left one is full, Ludo 17 Jul).
-            TroopScreen        = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "UI/icon_troop", TroopScreen_OnClick));
-            ColonyBlueprints   = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "NewUI/blueprints_minimap", ColonyBlueprints_OnClick));
-            EmpirePatrols      = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "NewUI/icon_patrol_list", EmpirePatrols_OnClick));
             Scale = ActualMap.Width / (Universe.UState.Size * 2.1f); // Updated to play nice with the new negative map values
             MiniMapZero = new Vector2((float)ActualMap.X + 100, (float)ActualMap.Y + 100);
         }
@@ -372,42 +363,6 @@ namespace Ship_Game
             Universe.InputOpenDeepSpaceBuildWindow();
         }
 
-        public void PlanetScreen_OnClick(ToggleButton toggleButton)
-        {
-            GameAudio.AcceptClick();
-            PlanetScreen.IsToggled = false;
-            Universe.ScreenManager.AddScreen(new PlanetListScreen(Universe, Universe.EmpireUI));
-        }
-
-        public void TroopScreen_OnClick(ToggleButton toggleButton)
-        {
-            GameAudio.AcceptClick();
-            TroopScreen.IsToggled = false;
-            Universe.ScreenManager.AddScreen(new TroopListScreen(Universe, Universe.EmpireUI));
-        }
-
-        public void ColonyBlueprints_OnClick(ToggleButton toggleButton)
-        {
-            GameAudio.AcceptClick();
-            ColonyBlueprints.IsToggled = false;
-            Universe.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Universe.Player));
-        }
-
-        public void EmpirePatrols_OnClick(ToggleButton toggleButton)
-        {
-            GameAudio.AcceptClick();
-            EmpirePatrols.IsToggled = false;
-            Universe.ScreenManager.AddScreen(new EmpirePatrolsScreen(Universe, Universe.Player));
-        }
-
-        public void ExoticScreen_OnClick(ToggleButton toggleButton)
-        {
-            GameAudio.AcceptClick();
-            ExoticScreen.IsToggled = false;
-            Universe.ScreenManager.AddScreen(new ExoticSystemsListScreen(Universe, Universe.EmpireUI));
-            ExoticScreen.IsToggled = Universe.FreighterUtilizationWindow.IsOpen;
-        }
-
         public void GravityWells_OnClick(ToggleButton toggleButton)
         {
             GameAudio.AcceptClick();
@@ -460,12 +415,6 @@ namespace Ship_Game
             if (DeepSpaceBuild.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.OpensTheDeepSpaceBuilding, "B");
 
-            if (PlanetScreen.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.OpensPlanetReconnaissancePanel, "L");
-
-            if (ExoticScreen.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.OpensExoticPlanetsPanel, "G");
-
             if (GravityWells.Rect.HitTest(input.CursorPosition))
                 // TODO: phase 5 — wire up a dedicated FTL-overlay codex entry, then re-add codexUid here.
                 ToolTip.CreateTooltip(GameText.FtlOverlayVisualisesSubspaceProjection, "F2");
@@ -474,12 +423,6 @@ namespace Ship_Game
                 ToolTip.CreateTooltip(GameText.WeaponsRangeOverlayVisualisesShips, "F3");
             if (AIScreen.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.OpensTheAutomationPanelWhich, "H");
-
-            if (ColonyBlueprints.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.BlueprintsScreenTip, "F");
-
-            if (EmpirePatrols.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.EmpirePatrolsScreenTip, "P");
 
             if (ExoticBonuses.Rect.HitTest(input.CursorPosition))
             {
