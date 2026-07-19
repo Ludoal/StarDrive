@@ -588,6 +588,20 @@ namespace Ship_Game
             BtnSymmetricDesign.Hotkey  = InputBindings.FromString("M");
             BtnSymmetricDesign.Style   = SymmetricDesignBtnStyle;
 
+            // Ludoal fork (battle simulator S1): test the current design in a 1v1 arena.
+            // Prototype: fights a mirror copy of itself; enemy selection comes in S2.
+            var testFight = bottomListRight.Add(ButtonStyle.Medium, "Test Fight", click: b =>
+            {
+                if (HullEditMode)
+                    ScreenManager.AddScreen(new MessageBoxScreen(this, "Test Fight is not available in Hull Edit Mode"));
+                else if (CurrentDesign == null || !ShipSaved || !IsGoodDesign())
+                    ScreenManager.AddScreen(new MessageBoxScreen(this, "Save a valid design first (command module required)"));
+                else
+                    BattleSimUniverse.Launch(ParentUniverse, CurrentDesign.Name, CurrentDesign.Name);
+            });
+            testFight.ClickSfx = "blip_click";
+            testFight.Tooltip = "Battle simulator: fight a copy of this design in an arena (prototype)";
+
 
             UIList bottomListLeft = AddList(new Vector2(50f, ScreenHeight - 50f));
             bottomListLeft.LayoutStyle = ListLayoutStyle.ResizeList;
