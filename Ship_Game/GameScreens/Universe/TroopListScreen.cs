@@ -54,7 +54,7 @@ namespace Ship_Game
             RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
             TroopSL = Add(new ScrollList<TroopListScreenItem>(slRect, 40));
             TroopSL.EnableItemHighlight = true;
-            TroopSL.OnClick = OnRowClicked;
+            TroopSL.OnDoubleClick = OnRowClicked; // Ludoal fork: double-click everywhere, like Ships/Empire
 
             PopulateList();
         }

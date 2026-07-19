@@ -332,7 +332,7 @@ namespace Ship_Game
         public void ResetList()
         {
             PlanetSL.Reset();
-            PlanetSL.OnClick = OnPlanetListItemClicked;
+            PlanetSL.OnDoubleClick = OnPlanetListItemClicked; // Ludoal fork: double-click everywhere
             NumAvailableTroops  = Player.NumFreeTroops();
 
             if (LastSorted == null)

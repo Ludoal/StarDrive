@@ -293,7 +293,7 @@ namespace Ship_Game
         public void ResetList()
         {
             ExoticSL.Reset();
-            ExoticSL.OnClick = OnExoticSystemsListItemClicked;
+            ExoticSL.OnDoubleClick = OnExoticSystemsListItemClicked; // Ludoal fork: double-click everywhere
 
             if (LastSorted == null)
             {
