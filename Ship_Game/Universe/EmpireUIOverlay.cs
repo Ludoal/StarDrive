@@ -300,7 +300,10 @@ namespace Ship_Game
         {
             if (b.launches == null)
                 return;
-            Vector2 tipPos = new Vector2(b.Rect.X, b.Rect.Bottom + 4);
+            // Help and the speed buttons sit above the game-speed readout: their
+            // tooltips drop lower so they don't mask it.
+            bool lowRow = b.launches == "?" || b.launches == "SpeedUp" || b.launches == "SpeedDown";
+            Vector2 tipPos = new Vector2(b.Rect.X, b.Rect.Bottom + (lowRow ? 26 : 4));
             switch (b.launches)
             {
                 case "Research":
