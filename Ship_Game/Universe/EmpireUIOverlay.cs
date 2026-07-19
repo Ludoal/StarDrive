@@ -111,6 +111,7 @@ namespace Ship_Game
 
             float clusterWidth = baseClusterWidth + extraButtons * extraButtonStride;
             Cursor.X = r4.Rect.X + r4.Rect.Width + (rangeForButtons - clusterWidth) / 2f;
+            float clusterStartX = Cursor.X; // Ludoal fork: anchor for the provisional second row
 
             if (extraButtons >= 2)
             {
@@ -177,6 +178,26 @@ namespace Ship_Game
             Diplomacy.Text = Localizer.Token(GameText.Diplomacy);
             Buttons.Add(Diplomacy);
             Cursor.X = Cursor.X + (ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_hover").Width + 7);
+
+            // Ludoal fork: provisional second row for the list panels (Planets, Exotic,
+            // Patrols, Blueprints, Troops) — their only buttons were on the minimap,
+            // hidden behind full-screen panels. Proper layout comes with the 132px reorg.
+            var btn132  = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px");
+            var btn132h = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_hover");
+            var btn132p = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_pressed");
+            float row2X = clusterStartX;
+            foreach (string launch in new[] { "Planets", "Exotic", "Patrols", "Blueprints", "Troops" })
+            {
+                Button rb = new Button();
+                rb.Rect = new Rectangle((int)row2X, 39, btn132.Width, btn132.Height);
+                rb.NormalTexture  = btn132;
+                rb.HoverTexture   = btn132h;
+                rb.PressedTexture = btn132p;
+                rb.Text = launch;
+                rb.launches = launch;
+                Buttons.Add(rb);
+                row2X += btn132.Width + 5;
+            }
 
             Button MainMenu = new Button();
             MainMenu.Rect = new Rectangle(res5.X + 52, 39, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Width, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Height);
@@ -487,6 +508,32 @@ namespace Ship_Game
                             GameAudio.EchoAffirmative();
                             Universe.ScreenManager.AddScreen(new ShipListScreen(Universe, this));
                         }
+                        // Ludoal fork: provisional second-row buttons
+                        else if (b.launches == "Planets")
+                        {
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new PlanetListScreen(Universe, this));
+                        }
+                        else if (b.launches == "Exotic")
+                        {
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new ExoticSystemsListScreen(Universe, this));
+                        }
+                        else if (b.launches == "Patrols")
+                        {
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new EmpirePatrolsScreen(Universe, Universe.Player));
+                        }
+                        else if (b.launches == "Blueprints")
+                        {
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Universe.Player));
+                        }
+                        else if (b.launches == "Troops")
+                        {
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new TroopListScreen(Universe, this));
+                        }
                         else if (b.launches == "Empire")
                         {
                             Universe.ScreenManager.AddScreen(new EmpireManagementScreen(Universe, this));
@@ -537,35 +584,29 @@ namespace Ship_Game
 
                     if (input.LeftMouseClick)
                     {
-                        if (caller is not ShipDesignScreen && caller is not FleetDesignScreen)
-                        {
-                            caller.ExitScreen();
-                        }
-                        else if (b.launches != "Shipyard" && b.launches != "Fleets")
-                        {
-                            if (caller is ShipDesignScreen shipDesigner)
-                            {
-                                shipDesigner.ExitToMenu(b.launches);
-                            }
-                            else if (caller is FleetDesignScreen fleetDesigner)
-                            {
-                                fleetDesigner.ExitScreen();
-                            }
-                            return true;
-                        }
-                        else if (caller is FleetDesignScreen fleetDesigner && b.launches != "Fleets")
-                        {
-                            fleetDesigner.ExitScreen();
-                        }
-                        else if (caller is ShipDesignScreen shipDesigner && b.launches != "Shipyard")
-                        {
-                            shipDesigner.ExitScreen();
-                        }
-
+                        // Ludoal fork: unified caller path. A decorative button (no launch)
+                        // no longer closes the calling screen.
                         if (b.launches == null)
                         {
                             continue;
                         }
+
+                        // Shipyard keeps its dedicated exit (unsaved-design prompt);
+                        // its LaunchScreen() then opens the requested target.
+                        if (caller is ShipDesignScreen shipDesigner)
+                        {
+                            if (b.launches == "Shipyard")
+                            {
+                                continue;
+                            }
+                            shipDesigner.ExitToMenu(b.launches);
+                            return true;
+                        }
+
+                        // Everyone else (FleetDesign included): close the caller, then
+                        // the dispatch below opens the target. Clicking a screen's own
+                        // button just closes it (toggle) via the per-branch self-guards.
+                        caller.ExitScreen();
 
                         if (b.launches == "Research")
                         {
@@ -617,6 +658,52 @@ namespace Ship_Game
                             }
                             GameAudio.EchoAffirmative();
                             Universe.ScreenManager.AddScreen(new ShipListScreen(Universe, this));
+                        }
+                        // Ludoal fork: provisional second-row buttons (self-click = toggle close)
+                        else if (b.launches == "Planets")
+                        {
+                            if (caller is PlanetListScreen)
+                            {
+                                continue;
+                            }
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new PlanetListScreen(Universe, this));
+                        }
+                        else if (b.launches == "Exotic")
+                        {
+                            if (caller is ExoticSystemsListScreen)
+                            {
+                                continue;
+                            }
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new ExoticSystemsListScreen(Universe, this));
+                        }
+                        else if (b.launches == "Patrols")
+                        {
+                            if (caller is EmpirePatrolsScreen)
+                            {
+                                continue;
+                            }
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new EmpirePatrolsScreen(Universe, Universe.Player));
+                        }
+                        else if (b.launches == "Blueprints")
+                        {
+                            if (caller is BlueprintsScreen)
+                            {
+                                continue;
+                            }
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Universe.Player));
+                        }
+                        else if (b.launches == "Troops")
+                        {
+                            if (caller is TroopListScreen)
+                            {
+                                continue;
+                            }
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new TroopListScreen(Universe, this));
                         }
                         else if (b.launches == "Espionage")
                         {

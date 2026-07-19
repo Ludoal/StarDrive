@@ -6,6 +6,7 @@ using Ship_Game.Audio;
 using Ship_Game.Gameplay;
 using Ship_Game.GameScreens;
 using Ship_Game.GameScreens.ShipDesign;
+using Ship_Game.GameScreens.Espionage;
 using Ship_Game.Ships;
 using Vector2 = SDGraphics.Vector2;
 using Vector3 = SDGraphics.Vector3;
@@ -515,6 +516,43 @@ namespace Ship_Game
                         ScreenManager.AddScreen(new GamePlayMenuScreen(ParentUniverse));
                         break;
                     case "Shipyard":
+                        GameAudio.EchoAffirmative();
+                        break;
+                    // Ludoal fork: Fleets/ShipList/Espionage were missing — clicking them
+                    // from the Shipyard closed the designer without opening the target.
+                    case "Fleets":
+                        GameAudio.EchoAffirmative();
+                        ScreenManager.AddScreen(new FleetDesignScreen(ParentUniverse, EmpireUI));
+                        break;
+                    case "ShipList":
+                        GameAudio.EchoAffirmative();
+                        ScreenManager.AddScreen(new ShipListScreen(ParentUniverse, EmpireUI));
+                        break;
+                    case "Planets":
+                        GameAudio.EchoAffirmative();
+                        ScreenManager.AddScreen(new PlanetListScreen(ParentUniverse, EmpireUI));
+                        break;
+                    case "Exotic":
+                        GameAudio.EchoAffirmative();
+                        ScreenManager.AddScreen(new ExoticSystemsListScreen(ParentUniverse, EmpireUI));
+                        break;
+                    case "Patrols":
+                        GameAudio.EchoAffirmative();
+                        ScreenManager.AddScreen(new EmpirePatrolsScreen(ParentUniverse, ParentUniverse.Player));
+                        break;
+                    case "Blueprints":
+                        GameAudio.EchoAffirmative();
+                        ScreenManager.AddScreen(new BlueprintsScreen(ParentUniverse, ParentUniverse.Player));
+                        break;
+                    case "Troops":
+                        GameAudio.EchoAffirmative();
+                        ScreenManager.AddScreen(new TroopListScreen(ParentUniverse, EmpireUI));
+                        break;
+                    case "Espionage":
+                        if (ParentUniverse.Player.LegacyEspionageEnabled)
+                            ScreenManager.AddScreen(new EspionageScreen(ParentUniverse));
+                        else
+                            ScreenManager.AddScreen(new InfiltrationScreen(ParentUniverse));
                         GameAudio.EchoAffirmative();
                         break;
                     case "Empire":
