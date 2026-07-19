@@ -654,6 +654,10 @@ namespace Ship_Game
                         }
                         else if (b.launches == "Espionage")
                         {
+                            if (caller is EspionageScreen or InfiltrationScreen)
+                            {
+                                continue;
+                            }
                             if (Universe.Player.LegacyEspionageEnabled)
                                 Universe.ScreenManager.AddScreen(new EspionageScreen(Universe));
                             else
@@ -672,6 +676,10 @@ namespace Ship_Game
                         }
                         else if (b.launches == "Diplomacy")
                         {
+                            if (caller is MainDiplomacyScreen)
+                            {
+                                continue;
+                            }
                             Universe.ScreenManager.AddScreen(new MainDiplomacyScreen(Universe));
                             GameAudio.EchoAffirmative();
                         }

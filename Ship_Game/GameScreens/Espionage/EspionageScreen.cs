@@ -67,12 +67,16 @@ namespace Ship_Game.GameScreens.Espionage
             batch.SafeBegin();
 
             base.Draw(batch, elapsed);
+            Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
 
             batch.SafeEnd();
         }
 
         public override bool HandleInput(InputState input)
         {
+            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
             if (input.KeyPressed(Keys.E) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();

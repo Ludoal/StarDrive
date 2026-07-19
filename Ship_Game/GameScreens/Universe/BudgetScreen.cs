@@ -21,10 +21,12 @@ namespace Ship_Game.GameScreens
         FloatSlider TreasuryGoal;
         UILabel EmpireNetIncome;
 
+        readonly UniverseScreen Universe; // Ludoal fork: for the live top bar
         public BudgetScreen(UniverseScreen screen) : base(screen, toPause: screen)
         {
             Player            = screen.Player;
             IsPopup           = true;
+            Universe = screen; // Ludoal fork
             TransitionOnTime  = 0.25f;
             TransitionOffTime = 0.25f;
         }
@@ -215,11 +217,15 @@ namespace Ship_Game.GameScreens
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
             base.Draw(batch, elapsed);
+            Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
         }
 
         public override bool HandleInput(InputState input)
         {
+            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
             if (input.KeyPressed(Keys.T) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();
