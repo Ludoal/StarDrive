@@ -110,11 +110,11 @@ namespace Ship_Game
                 ("Diplomacy",  Localizer.Token(GameText.Diplomacy),  0),
                 ("Espionage",  Localizer.Token(GameText.Espionage2), 0),
                 ("Planets",    "Planets",                            1),
-                ("ShipList",   Localizer.Token(GameText.ShipsArray), 1),
+                ("ShipList",   "Ships",                              1),
                 ("Troops",     "Troops",                             1),
                 ("Fleets",     Localizer.Token(GameText.Fleets),     2),
-                ("Patrols",    "Patrols",                            2),
                 ("Shipyard",   Localizer.Token(GameText.Shipyard),   2),
+                ("Patrols",    "Patrols",                            2),
                 ("Blueprints", "Blueprints",                         2),
             };
             const float innerGap = 4f, groupGap = 16f, edgePad = 10f;
