@@ -89,114 +89,61 @@ namespace Ship_Game
             r5.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_res5");
             Buttons.Add(r5);
 
-            // ShipList + Fleets are optional top-bar buttons that only fit on wider screens.
-            // Add as many as the free span between the money panel (res4) and the right
-            // panel (res5) can hold, prioritizing Fleets over ShipList. The always-present
-            // cluster (Shipyard, Empire, Espionage, Diplomacy) spans ~757px with its gaps;
-            // each extra 168px button costs another 173px (button + 5px gap). The whole
-            // cluster is then centered in the available span.
-            float rangeForButtons = r5.Rect.X - (r4.Rect.X + r4.Rect.Width);
-            int btnWidth = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Width;
-            int btnHeight = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Height;
-            // Shipyard..Diplomacy: 4 buttons plus their gaps (40 + 40 + 5, set below).
-            float baseClusterWidth = 4 * btnWidth + 40 + 40 + 5;
-            const float extraButtonPadding = 10f; // breathing room so buttons don't kiss the panels
-            float extraButtonStride = btnWidth + 5f;
+            // Ludoal fork (reorg): single-row 132px layout in three tinted groups —
+            // Empire/Diplomacy/Espionage (heritage bronze), Planets/Ships/Troops (steel
+            // blue, dip-family hue), Fleets/Shipyard/Blueprints/Patrols (muted red,
+            // military-family hue). Exotic omitted: Planets<->Exotic cross-buttons exist
+            // in-panel. Width is adaptive: full 132px when the span allows (1440p+),
+            // shrunk to fit narrower screens (~120px at 1920). Minimap buttons stay.
+            var g1  = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px");
+            var g1h = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_hover");
+            var g1p = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_pressed");
+            var g2  = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_menu");
+            var g2h = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_menu_hover");
+            var g2p = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_menu_pressed");
+            Color tintLists    = new Color(186, 210, 246); // -> (62,70,82) over the grey base
+            Color tintMilitary = new Color(255, 213, 222); // -> (85,71,74) over the grey base
 
-            int extraButtons = 0;
-            if (rangeForButtons >= baseClusterWidth + 2f * extraButtonStride + extraButtonPadding)
-                extraButtons = 2; // room for ShipList + Fleets
-            else if (rangeForButtons >= baseClusterWidth + extraButtonStride + extraButtonPadding)
-                extraButtons = 1; // room for Fleets only
-
-            float clusterWidth = baseClusterWidth + extraButtons * extraButtonStride;
-            Cursor.X = r4.Rect.X + r4.Rect.Width + (rangeForButtons - clusterWidth) / 2f;
-            float clusterStartX = Cursor.X; // Ludoal fork: anchor for the provisional second row
-
-            if (extraButtons >= 2)
+            (string launch, string text, int group)[] row =
             {
-                Button ShipList = new Button();
-                ShipList.Rect = new Rectangle((int)Cursor.X, 2, btnWidth, btnHeight);
-                ShipList.NormalTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military");
-                ShipList.HoverTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military_hover");
-                ShipList.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military_pressed");
-                ShipList.Text = Localizer.Token(GameText.ShipsArray);
-                ShipList.launches = "ShipList";
-                Buttons.Add(ShipList);
-                Cursor.X += extraButtonStride;
-            }
-
-            if (extraButtons >= 1)
+                ("Empire",     Localizer.Token(GameText.Empire),     0),
+                ("Diplomacy",  Localizer.Token(GameText.Diplomacy),  0),
+                ("Espionage",  Localizer.Token(GameText.Espionage2), 0),
+                ("Planets",    "Planets",                            1),
+                ("ShipList",   Localizer.Token(GameText.ShipsArray), 1),
+                ("Troops",     "Troops",                             1),
+                ("Fleets",     Localizer.Token(GameText.Fleets),     2),
+                ("Shipyard",   Localizer.Token(GameText.Shipyard),   2),
+                ("Blueprints", "Blueprints",                         2),
+                ("Patrols",    "Patrols",                            2),
+            };
+            const float innerGap = 4f, groupGap = 16f, edgePad = 10f;
+            float span = r5.Rect.X - (r4.Rect.X + r4.Rect.Width);
+            float gapsTotal = 7 * innerGap + 2 * groupGap;
+            float wf = (span - gapsTotal - 2 * edgePad) / row.Length;
+            int rowBtnW = (int)(wf > 132f ? 132f : wf);
+            int rowBtnH = g1.Height;
+            float rowWidth = row.Length * rowBtnW + gapsTotal;
+            Cursor.X = r4.Rect.X + r4.Rect.Width + (span - rowWidth) / 2f;
+            int prevGroup = 0;
+            foreach ((string launch, string text, int group) in row)
             {
-                Button Fleets = new Button();
-                Fleets.Rect = new Rectangle((int)Cursor.X, 2, btnWidth, btnHeight);
-                Fleets.NormalTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military");
-                Fleets.HoverTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military_hover");
-                Fleets.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military_pressed");
-                Fleets.Text = Localizer.Token(GameText.Fleets);
-                Fleets.launches = "Fleets";
-                Buttons.Add(Fleets);
-                Cursor.X += extraButtonStride;
-            }
-
-            Button Shipyard = new Button();
-            Shipyard.Rect = new Rectangle((int)Cursor.X, 2, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Width, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Height);
-            Shipyard.NormalTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military");
-            Shipyard.HoverTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military_hover");
-            Shipyard.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military_pressed");
-            Shipyard.Text = Localizer.Token(GameText.Shipyard);
-            Shipyard.launches = "Shipyard";
-            Buttons.Add(Shipyard);
-            Cursor.X = Cursor.X + ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_hover").Width + 40;
-
-            Button empire = new Button();
-            empire.Rect = new Rectangle((int)Cursor.X, 2, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Width, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Height);
-            empire.NormalTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px");
-            empire.HoverTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_hover");
-            empire.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_pressed");
-            empire.launches = "Empire";
-            empire.Text = Localizer.Token(GameText.Empire);
-            Buttons.Add(empire);
-            Cursor.X = Cursor.X + ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_hover").Width + 40;
-
-            Button Espionage = new Button();
-            Espionage.Rect = new Rectangle((int)Cursor.X, 2, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Width, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Height);
-            Espionage.NormalTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_dip");
-            Espionage.HoverTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_dip_hover");
-            Espionage.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_dip_pressed");
-            Espionage.Text = Localizer.Token(GameText.Espionage2);
-            Espionage.launches = "Espionage";
-            Buttons.Add(Espionage);
-            Cursor.X = Cursor.X + ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_hover").Width + 5;
-
-            Button Diplomacy = new Button();
-            Diplomacy.Rect = new Rectangle((int)Cursor.X, 2, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Width, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Height);
-            Diplomacy.NormalTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_dip");
-            Diplomacy.HoverTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_dip_hover");
-            Diplomacy.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_dip_pressed");
-            Diplomacy.launches = "Diplomacy";
-            Diplomacy.Text = Localizer.Token(GameText.Diplomacy);
-            Buttons.Add(Diplomacy);
-            Cursor.X = Cursor.X + (ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_hover").Width + 7);
-
-            // Ludoal fork: provisional second row for the list panels (Planets, Exotic,
-            // Patrols, Blueprints, Troops) — their only buttons were on the minimap,
-            // hidden behind full-screen panels. Proper layout comes with the 132px reorg.
-            var btn132  = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px");
-            var btn132h = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_hover");
-            var btn132p = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_pressed");
-            float row2X = clusterStartX;
-            foreach (string launch in new[] { "Planets", "Exotic", "Patrols", "Blueprints", "Troops" })
-            {
+                if (group != prevGroup)
+                {
+                    Cursor.X += groupGap - innerGap;
+                    prevGroup = group;
+                }
                 Button rb = new Button();
-                rb.Rect = new Rectangle((int)row2X, 39, btn132.Width, btn132.Height);
-                rb.NormalTexture  = btn132;
-                rb.HoverTexture   = btn132h;
-                rb.PressedTexture = btn132p;
-                rb.Text = launch;
+                rb.Rect = new Rectangle((int)Cursor.X, 2, rowBtnW, rowBtnH);
+                bool heritage = group == 0;
+                rb.NormalTexture  = heritage ? g1 : g2;
+                rb.HoverTexture   = heritage ? g1h : g2h;
+                rb.PressedTexture = heritage ? g1p : g2p;
+                rb.Tint = group == 1 ? tintLists : group == 2 ? tintMilitary : Color.White;
+                rb.Text = text;
                 rb.launches = launch;
                 Buttons.Add(rb);
-                row2X += btn132.Width + 5;
+                Cursor.X += rowBtnW + innerGap;
             }
 
             Button MainMenu = new Button();
@@ -234,7 +181,7 @@ namespace Ship_Game
                 }
                 if (b.State == PressState.Normal)
                 {
-                    batch.Draw(b.NormalTexture, b.Rect, Color.White);
+                    batch.Draw(b.NormalTexture, b.Rect, b.Tint);
                     if (string.IsNullOrEmpty(b.Text))
                     {
                         continue;
@@ -247,7 +194,7 @@ namespace Ship_Game
                     {
                         continue;
                     }
-                    batch.Draw(b.PressedTexture, b.Rect, Color.White);
+                    batch.Draw(b.PressedTexture, b.Rect, b.Tint);
                     if (string.IsNullOrEmpty(b.Text))
                     {
                         continue;
@@ -257,7 +204,7 @@ namespace Ship_Game
                 }
                 else
                 {
-                    batch.Draw(b.HoverTexture, b.Rect, Color.White);
+                    batch.Draw(b.HoverTexture, b.Rect, b.Tint);
                     if (string.IsNullOrEmpty(b.Text))
                     {
                         continue;
@@ -752,6 +699,7 @@ namespace Ship_Game
             public SubTexture HoverTexture;
             public SubTexture PressedTexture;
             public string Text = "";
+            public Color Tint = Color.White; // Ludoal fork: group tinting
             public string launches;
         }
 
