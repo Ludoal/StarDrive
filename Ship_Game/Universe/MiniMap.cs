@@ -97,6 +97,19 @@ namespace Ship_Game
                 Vector2 miniSystemPos = WorldToMiniPos(system.Position);
                 var star = new Rectangle((int)miniSystemPos.X, (int)miniSystemPos.Y, 2, 2);
                 batch.FillRectangle(star, Color.Gray);
+
+                // Ludoal fork: colonized systems wear a ring in their owner's color
+                // (white when contested by several empires). Fog respected.
+                if (system.OwnerList.Count > 0 && system.IsExploredBy(Player))
+                {
+                    Color ring = Color.White;
+                    if (system.OwnerList.Count == 1)
+                    {
+                        foreach (Empire owner in system.OwnerList)
+                            ring = owner.EmpireColor;
+                    }
+                    batch.DrawCircle(new Vector2(miniSystemPos.X + 1f, miniSystemPos.Y + 1f), 4f, ring);
+                }
             }
 
             try

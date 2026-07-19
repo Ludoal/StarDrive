@@ -164,6 +164,26 @@ namespace Ship_Game
             Help.Text = "Help";
             Help.launches = "?";
             Buttons.Add(Help);
+
+            // Ludoal fork: game speed - / + right of Help (68px menu family squeezed
+            // to 28px; the speed readout draws just below this row). 61px available
+            // between Help and the screen edge: 28+2+28 fits flush.
+            var sTex  = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_68px_menu");
+            var sTexH = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_68px_menu_hover");
+            var sTexP = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_68px_menu_pressed");
+            int speedX = res5.X + 72 + sTex.Width + 3;
+            foreach ((string sign, string launch) in new[] { ("-", "SpeedDown"), ("+", "SpeedUp") })
+            {
+                Button sb = new Button();
+                sb.Rect = new Rectangle(speedX, 64, 28, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Height);
+                sb.NormalTexture  = sTex;
+                sb.HoverTexture   = sTexH;
+                sb.PressedTexture = sTexP;
+                sb.Text = sign;
+                sb.launches = launch;
+                Buttons.Add(sb);
+                speedX += 28 + 2;
+            }
         }
 
         public void Draw(SpriteBatch batch)
@@ -326,6 +346,12 @@ namespace Ship_Game
                     // the real help binding is F1 (CodexHelp)
                     ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheHelpMenu), "F1", tipPos);
                     break;
+                case "SpeedDown":
+                    ToolTip.CreateTooltip("Slower game speed", "-", tipPos);
+                    break;
+                case "SpeedUp":
+                    ToolTip.CreateTooltip("Faster game speed", "+", tipPos);
+                    break;
             }
         }
 
@@ -423,6 +449,13 @@ namespace Ship_Game
                         if (b.launches == null)
                         {
                             continue;
+                        }
+                        if (b.launches == "SpeedUp" || b.launches == "SpeedDown")
+                        {
+                            // Ludoal fork: speed buttons never open/close anything
+                            GameAudio.AcceptClick();
+                            Universe.AdjustGameSpeed(b.launches == "SpeedUp");
+                            return true;
                         }
                         if (b.launches == "Research")
                         {
@@ -537,6 +570,15 @@ namespace Ship_Game
                         if (b.launches == null)
                         {
                             continue;
+                        }
+
+                        // Ludoal fork: speed buttons act in place — no screen is closed
+                        // or opened, whatever panel hosts the bar.
+                        if (b.launches == "SpeedUp" || b.launches == "SpeedDown")
+                        {
+                            GameAudio.AcceptClick();
+                            Universe.AdjustGameSpeed(b.launches == "SpeedUp");
+                            return true;
                         }
 
                         // Shipyard keeps its dedicated exit (unsaved-design prompt);

@@ -365,12 +365,17 @@ namespace Ship_Game
             if (input.SpeedReset)
                 UState.GameSpeed = 1f;
             else if (input.SpeedUp || input.SpeedDown)
-            {
-                bool unlimited = Debug || Debugger.IsAttached;
-                float speedMin = unlimited ? 0.0625f : 0.25f;
-                float speedMax = unlimited ? 128f    : 10f;
-                UState.GameSpeed = GetGameSpeedAdjust(input.SpeedUp).Clamped(speedMin, speedMax);
-            }
+                AdjustGameSpeed(input.SpeedUp);
+        }
+
+        // Ludoal fork: extracted so the top-bar speed buttons share the exact
+        // hotkey behavior (halve/double below 1x, +/-1 above, same clamps)
+        public void AdjustGameSpeed(bool increase)
+        {
+            bool unlimited = Debug || Debugger.IsAttached;
+            float speedMin = unlimited ? 0.0625f : 0.25f;
+            float speedMax = unlimited ? 128f    : 10f;
+            UState.GameSpeed = GetGameSpeedAdjust(increase).Clamped(speedMin, speedMax);
         }
 
         float GetGameSpeedAdjust(bool increase)
