@@ -113,9 +113,9 @@ namespace Ship_Game
                 ("ShipList",   Localizer.Token(GameText.ShipsArray), 1),
                 ("Troops",     "Troops",                             1),
                 ("Fleets",     Localizer.Token(GameText.Fleets),     2),
+                ("Patrols",    "Patrols",                            2),
                 ("Shipyard",   Localizer.Token(GameText.Shipyard),   2),
                 ("Blueprints", "Blueprints",                         2),
-                ("Patrols",    "Patrols",                            2),
             };
             const float innerGap = 4f, groupGap = 16f, edgePad = 10f;
             float span = r5.Rect.X - (r4.Rect.X + r4.Rect.Width);
