@@ -255,6 +255,7 @@ namespace Ship_Game
 
             var pos = new Vector2(ScreenWidth - Fonts.Pirulen16.TextWidth("Paused") - 13f, 44f);
             batch.DrawString(Fonts.Pirulen16, "Paused", pos, White);
+            eui.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
 
@@ -294,6 +295,9 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            if (eui.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
             if (input.KeyPressed(Keys.U) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();

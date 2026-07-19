@@ -51,6 +51,7 @@ namespace Ship_Game
         readonly Font TextFont;
         readonly Font BigFont;
         public readonly Empire Player;
+        readonly UniverseScreen Universe; // Ludoal fork: for the live top bar
 
         float PlannedGrossMoney;
         float PlannedMaintenance;
@@ -76,9 +77,10 @@ namespace Ship_Game
 
         readonly GovernorDetailsComponent GovernorTab;
 
-        public BlueprintsScreen(UniverseScreen parent, Empire player, BlueprintsTemplate template = null, GovernorDetailsComponent govTab = null) 
+        public BlueprintsScreen(UniverseScreen parent, Empire player, BlueprintsTemplate template = null, GovernorDetailsComponent govTab = null)
             : base(parent, toPause: parent)
         {
+            Universe = parent; // Ludoal fork: kept for the live top bar
             Player = player;
             GovernorTab = govTab;
             TextFont = LowRes ? Font8 : Font12;
@@ -299,6 +301,7 @@ namespace Ship_Game
             base.Draw(batch, elapsed);
             DrawHoveredBuildListBuildingInfo(batch);
             DrawPlanStatistics(batch);
+            Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
 
@@ -459,6 +462,10 @@ namespace Ship_Game
                 OnSaveBlueprintsClick();
                 return true;
             }
+
+            // Ludoal fork: live top bar
+            if (!BuildableList.IsDragging && Universe.EmpireUI.HandleInput(input, caller: this))
+                return true;
 
             // Ludoal fork: close with the key that opens this screen (F) — it previously
             // only closed via ESC. Guarded against text entry (blueprint naming).

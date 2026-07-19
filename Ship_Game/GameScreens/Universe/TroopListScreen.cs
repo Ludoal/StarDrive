@@ -25,6 +25,7 @@ namespace Ship_Game
         public UniverseScreen Universe;
         Empire Player => Universe.Player;
         readonly ScrollList<TroopListScreenItem> TroopSL;
+        readonly EmpireUIOverlay EmpireUI;
         RectF ERect;
         int NumTroops;
 
@@ -35,6 +36,7 @@ namespace Ship_Game
                 GameAudio.PlaySfxAsync(audioCue);
 
             Universe = parent;
+            EmpireUI = empireUi;
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
             IsPopup = true;
@@ -159,6 +161,7 @@ namespace Ship_Game
                 batch.DrawString(Fonts.Arial20Bold, "No troops anywhere — recruit some before the neighbours visit.",
                                  msgPos, Color.Gray);
             }
+            EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
 
@@ -171,6 +174,8 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            if (EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
             if (base.HandleInput(input))
                 return true;
             if (input.Escaped || input.RightMouseClick

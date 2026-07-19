@@ -606,8 +606,33 @@ namespace Ship_Game
                             GameAudio.EchoAffirmative();
                             Universe.ScreenManager.AddScreen(new FleetDesignScreen(Universe, this));
                         }
+                        // Ludoal fork: ShipList and Espionage were missing from the caller
+                        // dispatch — harmless while only Shipyard/Fleets kept the bar live,
+                        // a dead button once every full-screen does (top-bar standard).
+                        else if (b.launches == "ShipList")
+                        {
+                            if (caller is ShipListScreen)
+                            {
+                                continue;
+                            }
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new ShipListScreen(Universe, this));
+                        }
+                        else if (b.launches == "Espionage")
+                        {
+                            if (Universe.Player.LegacyEspionageEnabled)
+                                Universe.ScreenManager.AddScreen(new EspionageScreen(Universe));
+                            else
+                                Universe.ScreenManager.AddScreen(new InfiltrationScreen(Universe));
+
+                            GameAudio.EchoAffirmative();
+                        }
                         else if (b.launches == "Empire")
                         {
+                            if (caller is EmpireManagementScreen)
+                            {
+                                continue;
+                            }
                             Universe.ScreenManager.AddScreen(new EmpireManagementScreen(Universe, this));
                             GameAudio.EchoAffirmative();
                         }

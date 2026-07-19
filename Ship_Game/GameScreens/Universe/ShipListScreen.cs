@@ -236,6 +236,7 @@ namespace Ship_Game
                 DrawHorizontalSeparator(ERect.Y + 25);
             }
             ShowRoles.Draw(batch, elapsed);
+            EmpireUi.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
 
@@ -251,6 +252,9 @@ namespace Ship_Game
         {
             if (!IsActive)
                 return false;
+
+            if (EmpireUi.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
 
             if (ShowRoles.HandleInput(input))
                 return true;

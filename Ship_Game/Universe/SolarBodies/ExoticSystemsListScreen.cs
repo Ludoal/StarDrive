@@ -188,6 +188,7 @@ namespace Ship_Game
 
                 batch.DrawRectangle(ExoticSL.ItemsHousing, lineColor); // items housing border
             }
+            EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
 
@@ -251,6 +252,9 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            if (EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
             if (ExoticSL.NumEntries == 0)
                 ResetList();
 
