@@ -507,6 +507,12 @@ namespace Ship_Game
                 return;
             }
 
+            if (IsStatsPlusTabSelected) // Ludoal fork: Stats+ add-on tab
+            {
+                DrawStatsPlusTab(batch, bCursor);
+                return;
+            }
+
             if (IsTradeTabSelected)
             {
                 IncomingFoodBar.Draw(batch);
