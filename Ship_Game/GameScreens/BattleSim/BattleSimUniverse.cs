@@ -76,6 +76,11 @@ namespace Ship_Game
                 {
                     a.AI.OrderAttackSpecificTarget(b);
                     b.AI.OrderAttackSpecificTarget(a);
+                    // 45.24 field result: the AI empire's managers re-tasked its ship
+                    // (FTL flight out of the arena). Priority orders are skipped by
+                    // the force-pool/defense coordinators — pin both ships.
+                    a.AI.SetPriorityOrder(true);
+                    b.AI.SetPriorityOrder(true);
                 }
             }
 
