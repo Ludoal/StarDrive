@@ -384,7 +384,12 @@ namespace Ship_Game
                 MaxCamHeight = CAM_MAX;
 
             if (!loading)
-                CamPos = new Vector3d(Player.GetPlanets()[0].Position, 2750);
+            {
+                // Ludoal fork: a planet-less universe (battle simulator arena) has no
+                // colony to frame — start the camera at the origin instead of crashing.
+                Planet[] planets = Player.GetPlanets();
+                CamPos = new Vector3d(planets.Length > 0 ? planets[0].Position : Vector2.Zero, 2750);
+            }
 
             CamDestination = CamPos;
         }
