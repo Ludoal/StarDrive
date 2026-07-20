@@ -53,6 +53,11 @@ namespace Ship_Game
             // no colonies, no research: silence the "No Research!" banner
             us.AutoResearch = true;
             them.AutoResearch = true;
+            // 45.30 field result: no module grid button / overlay — the BlackBox
+            // espionage mode flips CanBeScannedByPlayer off when relations are
+            // created. This is a simulator: full transparency on both sides.
+            us.SetCanBeScannedByPlayer(true);
+            them.SetCanBeScannedByPlayer(true);
 
             if (hostGame != null)
                 hostGame.UState.Paused = true;
