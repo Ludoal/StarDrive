@@ -221,7 +221,7 @@ namespace Ship_Game
         }
 
         // NOTE: this relies on MaxCamHeight and UniverseSize
-        void ResetLighting(bool forceReset)
+        public void ResetLighting(bool forceReset) // Ludoal fork: public for the battle sim arena
         {
             if (!forceReset && ScreenManager.LightRigIdentity == LightRigIdentity.UniverseScreen)
                 return;

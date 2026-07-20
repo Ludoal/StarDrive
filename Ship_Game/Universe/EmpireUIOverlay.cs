@@ -585,13 +585,10 @@ namespace Ship_Game
                         }
 
                         // Shipyard keeps its dedicated exit (unsaved-design prompt);
-                        // its LaunchScreen() then opens the requested target.
+                        // its LaunchScreen() then opens the requested target — and its
+                        // own button simply closes it (toggle), like every other panel.
                         if (caller is ShipDesignScreen shipDesigner)
                         {
-                            if (b.launches == "Shipyard")
-                            {
-                                continue;
-                            }
                             shipDesigner.ExitToMenu(b.launches);
                             return true;
                         }

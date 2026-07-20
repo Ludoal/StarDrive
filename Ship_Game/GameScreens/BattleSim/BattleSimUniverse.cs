@@ -75,6 +75,10 @@ namespace Ship_Game
             }
 
             CamDestination = new Vector3d(0, 0, 18000);
+            // 45.28 field result: pitch-black ships — ResetLighting early-returns when
+            // the HOST's light rig is already active, leaving the arena lit by suns
+            // positioned in the host galaxy. Force our own rig (global fills + ambient).
+            ResetLighting(forceReset: true);
             UState.Paused = false;
         }
 
@@ -121,7 +125,12 @@ namespace Ship_Game
         {
             base.ExitScreen();
             if (HostGame != null)
-                HostGame.UState.Paused = false;
+            {
+                // rebuild the host's own light rig (we stole it for the arena),
+                // and hand the game back PAUSED — the player just returned.
+                HostGame.ResetLighting(forceReset: true);
+                HostGame.UState.Paused = true;
+            }
         }
     }
 }
