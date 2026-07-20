@@ -307,8 +307,8 @@ namespace Ship_Game
                             zpos, fillLight: fillLight, fallOff:fallOff, shadowQuality:0f);
         }
 
-        PointLight AddLight(string name, Vector2 source, float intensity, float radius, Color color,
-                            float zpos, bool fillLight, float fallOff = 0, float shadowQuality = 1)
+        protected PointLight AddLight(string name, Vector2 source, float intensity, float radius, Color color,
+                            float zpos, bool fillLight, float fallOff = 0, float shadowQuality = 1) // Ludoal fork: protected for the battle sim arena
         {
             var light = new PointLight
             {

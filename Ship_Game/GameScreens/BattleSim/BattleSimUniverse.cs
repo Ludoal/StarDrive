@@ -1,4 +1,5 @@
 using SDGraphics;
+using Color = Microsoft.Xna.Framework.Color;
 using Ship_Game.AI;
 using Ship_Game.Ships;
 using Ship_Game.Universe;
@@ -79,6 +80,12 @@ namespace Ship_Game
             // the HOST's light rig is already active, leaving the arena lit by suns
             // positioned in the host galaxy. Force our own rig (global fills + ambient).
             ResetLighting(forceReset: true);
+            // 45.29 field result: STILL black — the ship shader's PointLight slots only
+            // bind system-scale "sun" lights (1k <= R < 1M, grouped at one XY); the
+            // global fills are excluded by design and no system exists here. Fake a sun
+            // at the arena origin, mimicking ResetSolarSystemLights' Key + LocalFill.
+            AddLight("Arena Sun Key",  new Vector2(0f, 0f), 2.0f, 215_000f, Color.White, -50000f, fillLight: false, shadowQuality: 0f);
+            AddLight("Arena Sun Fill", new Vector2(0f, 0f), 1.1f, 215_000f, Color.White, 0f,      fillLight: false, shadowQuality: 0f);
             UState.Paused = false;
         }
 
