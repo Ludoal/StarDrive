@@ -1,4 +1,5 @@
 using SDGraphics;
+using Ship_Game.AI;
 using Ship_Game.Ships;
 using Ship_Game.Universe;
 using Vector2 = SDGraphics.Vector2;
@@ -20,6 +21,7 @@ namespace Ship_Game
         readonly string PlayerDesign;
         readonly string EnemyDesign;
         Empire Them;
+        Ship ShipA, ShipB;
         bool Spawned;
 
         BattleSimUniverse(UniverseParams p, float radius, UniverseScreen hostGame,
@@ -67,25 +69,41 @@ namespace Ship_Game
             {
                 Spawned = true;
                 // face to face, well inside mutual sensor range (base 20k)
-                Ship a = Ship.CreateShipAtPoint(UState, PlayerDesign, Player, new Vector2(-6000f, 0f));
-                Ship b = Ship.CreateShipAtPoint(UState, EnemyDesign, Them, new Vector2(6000f, 0f));
-
-                // 45.22 field result: with no explicit orders both ships FTL-jumped away
-                // (default AI goals in an empty universe). Lock them on each other.
-                if (a != null && b != null)
-                {
-                    a.AI.OrderAttackSpecificTarget(b);
-                    b.AI.OrderAttackSpecificTarget(a);
-                    // 45.24 field result: the AI empire's managers re-tasked its ship
-                    // (FTL flight out of the arena). Priority orders are skipped by
-                    // the force-pool/defense coordinators — pin both ships.
-                    a.AI.SetPriorityOrder(true);
-                    b.AI.SetPriorityOrder(true);
-                }
+                ShipA = Ship.CreateShipAtPoint(UState, PlayerDesign, Player, new Vector2(-6000f, 0f));
+                ShipB = Ship.CreateShipAtPoint(UState, EnemyDesign, Them, new Vector2(6000f, 0f));
+                PinShips();
             }
 
             CamDestination = new Vector3d(0, 0, 18000);
             UState.Paused = false;
+        }
+
+        // 45.22/45.24/45.26 field results: the enemy ship kept FTL-fleeing — the AI
+        // empire's managers re-task it no matter the initial order, priority or not.
+        // S1 brute force: re-pin the attack order every update tick until it sticks.
+        void PinShips()
+        {
+            if (ShipA == null || ShipB == null || !ShipA.Active || !ShipB.Active)
+                return;
+
+            // player ship: re-pin only when idle — manual orders stay untouched
+            if (ShipA.AI.State == AIState.AwaitingOrders)
+            {
+                ShipA.AI.OrderAttackSpecificTarget(ShipB);
+                ShipA.AI.SetPriorityOrder(true);
+            }
+            // AI ship: any deviation from attacking the player gets overridden
+            if (ShipB.AI.Target != ShipA)
+            {
+                ShipB.AI.OrderAttackSpecificTarget(ShipA);
+                ShipB.AI.SetPriorityOrder(true);
+            }
+        }
+
+        public override void Update(float fixedDeltaTime)
+        {
+            PinShips();
+            base.Update(fixedDeltaTime);
         }
 
         public override bool HandleInput(InputState input)
