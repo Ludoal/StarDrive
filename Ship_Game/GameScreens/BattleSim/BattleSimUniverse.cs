@@ -41,7 +41,7 @@ namespace Ship_Game
 
             // any two distinct major races will do — the arena is about the ships;
             // Hard difficulty only affects ship AI modifiers, there is no economy here
-            IEmpireData[] majors = ResourceManager.MajorRaces;
+            var majors = ResourceManager.MajorRaces;
             Empire us   = sim.UState.CreateEmpire(majors[0], isPlayer: true, GameDifficulty.Hard);
             Empire them = sim.UState.CreateEmpire(majors[1], isPlayer: false, GameDifficulty.Hard);
             sim.Them = them;
