@@ -2054,6 +2054,10 @@ namespace Ship_Game
         {
             if (IsFaction) return false;
             if (IsDefeated) return true;
+            // Ludoal fork: a NoEliminationVictory universe (sandbox, battle simulator
+            // arena) eliminates nobody by colony count — the arena empires own zero
+            // planets by design and were insta-"defeated" here.
+            if (Universe.NoEliminationVictory) return false;
             if (!Universe.P.EliminationMode && OwnedPlanets.Count != 0)
                 return false;
             if (Universe.P.EliminationMode && (Capital == null || Capital.Owner == this) && OwnedPlanets.Count != 0)
