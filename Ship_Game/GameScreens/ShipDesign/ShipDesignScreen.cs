@@ -597,7 +597,14 @@ namespace Ship_Game
                 else if (CurrentDesign == null || !ShipSaved || !IsGoodDesign())
                     ScreenManager.AddScreen(new MessageBoxScreen(this, "Save a valid design first (command module required)"));
                 else
-                    BattleSimUniverse.Launch(ParentUniverse, CurrentDesign.Name, CurrentDesign.Name);
+                {
+                    // 45.23 field result: the shipyard must CLOSE before the arena opens —
+                    // its 3D preview model haunted the arena at the origin (shared scene),
+                    // and its input layer leaked through. Design is saved: exit is silent.
+                    string design = CurrentDesign.Name;
+                    ExitScreen();
+                    BattleSimUniverse.Launch(ParentUniverse, design, design);
+                }
             });
             testFight.ClickSfx = "blip_click";
             testFight.Tooltip = "Battle simulator: fight a copy of this design in an arena (prototype)";

@@ -47,6 +47,9 @@ namespace Ship_Game
             sim.Them = them;
             Empire.SetRelationsAsKnown(us, them);
             us.AI.DeclareWarOn(them, WarType.BorderConflict);
+            // no colonies, no research: silence the "No Research!" banner
+            us.AutoResearch = true;
+            them.AutoResearch = true;
 
             if (hostGame != null)
                 hostGame.UState.Paused = true;
