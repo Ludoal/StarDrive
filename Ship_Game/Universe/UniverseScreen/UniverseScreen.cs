@@ -463,6 +463,11 @@ namespace Ship_Game
 
             foreach (Empire empire in UState.MajorEmpires)
             {
+                // Ludoal fork: an empire without colonies (battle simulator arena)
+                // has no home planet to spawn starting ships around — skip it.
+                if (empire.GetPlanets().Count == 0)
+                    continue;
+
                 Planet homePlanet = empire.GetPlanets()[0];
                 string colonyShip = empire.data.DefaultColonyShip;
                 string startingScout = empire.data.StartingScout;
