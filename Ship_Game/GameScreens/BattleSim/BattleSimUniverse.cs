@@ -63,9 +63,17 @@ namespace Ship_Game
             if (!Spawned)
             {
                 Spawned = true;
-                // face to face, inside mutual sensor range so combat starts on its own
-                Ship.CreateShipAtPoint(UState, PlayerDesign, Player, new Vector2(-6000f, 0f));
-                Ship.CreateShipAtPoint(UState, EnemyDesign, Them, new Vector2(6000f, 0f));
+                // face to face, well inside mutual sensor range (base 20k)
+                Ship a = Ship.CreateShipAtPoint(UState, PlayerDesign, Player, new Vector2(-6000f, 0f));
+                Ship b = Ship.CreateShipAtPoint(UState, EnemyDesign, Them, new Vector2(6000f, 0f));
+
+                // 45.22 field result: with no explicit orders both ships FTL-jumped away
+                // (default AI goals in an empty universe). Lock them on each other.
+                if (a != null && b != null)
+                {
+                    a.AI.OrderAttackSpecificTarget(b);
+                    b.AI.OrderAttackSpecificTarget(a);
+                }
             }
 
             CamDestination = new Vector3d(0, 0, 18000);
