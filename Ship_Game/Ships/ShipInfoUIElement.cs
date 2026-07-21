@@ -102,8 +102,8 @@ namespace Ship_Game.Ships
             };
             // Ludoal fork (wishlist): follow-camera toggle, right of the grid button —
             // same chase as Ctrl+Middle-click, but discoverable
-            FollowButton = new ToggleButton(new Vector2(Housing.X + 46, Universe.ScreenHeight - 45),
-                                            ToggleButtonStyle.Grid, "UI/FollowIcon");
+            FollowButton = new ToggleButton(new Vector2(Housing.X + 54, Universe.ScreenHeight - 45),
+                                            ToggleButtonStyle.Formation, "UI/FollowIcon"); // 24x24 — field report 45.42: too big
 
             float startX = OBar.pBar.X - 15;
             var ordersBarPos = new Vector2(startX, (Ordnance.Y + Ordnance.Height + spacing + 3));

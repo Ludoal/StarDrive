@@ -365,6 +365,19 @@ namespace Ship_Game
             if (input.ScrapShip && (SelectedItem != null && SelectedItem.AssociatedGoal.Owner == Player))
                 OnScrapSelectedItem();
 
+            // Ludoal fork (field report 45.42): the Cancel button on the build cartouche
+            if (SelectedItem != null && SelectedItem.AssociatedGoal.Owner == Player
+                && DsbCancelRect.HitTest(input.CursorPosition))
+            {
+                ToolTip.CreateTooltip("Cancel this construction (Delete)");
+                if (input.LeftMouseClick)
+                {
+                    GameAudio.AffirmativeClick();
+                    OnScrapSelectedItem();
+                    return true;
+                }
+            }
+
             ShipsInCombat.Visible = !LookingAtPlanet;
             PlanetsInCombat.Visible = !LookingAtPlanet;
 

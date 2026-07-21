@@ -126,6 +126,7 @@ namespace Ship_Game
         public SolarsystemOverlay SystemInfoOverlay;
         public ShipListInfoUIElement shipListInfoUI;
         public VariableUIElement vuiElement;
+        Rectangle DsbCancelRect; // Ludoal fork (wishlist): cancel button on the build cartouche
         public MiniMap Minimap { get; private set; }
         bool loading;
         public float transitionElapsedTime;
@@ -530,6 +531,7 @@ namespace Ship_Game
             mmShowBorders = new Rectangle(MinimapDisplayRect.X, MinimapDisplayRect.Y - 25, 32, 32);
 
             SelectedStuffRect = new Rectangle(0, height - 247, 407, 242);
+            DsbCancelRect = new Rectangle(SelectedStuffRect.X + 25, SelectedStuffRect.Y + 150, 182, 25); // Ludoal fork
             ShipInfoUIElement = new ShipInfoUIElement(SelectedStuffRect, ScreenManager, this);
             SystemInfoOverlay = new SolarsystemOverlay(SelectedStuffRect, ScreenManager, this);
             pInfoUI           = new PlanetInfoUIElement(SelectedStuffRect, ScreenManager, this);

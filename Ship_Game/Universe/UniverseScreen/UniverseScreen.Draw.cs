@@ -790,10 +790,19 @@ namespace Ship_Game
                     string bodyText = goal.PlanetBuildingAt != null
                         ? Localizer.Token(GameText.UnderConstructionAt) + goal.PlanetBuildingAt.Name
                         : Fonts.Arial12Bold.ParseText(Localizer.Token(GameText.NoPortsFoundForBuild), 300);
-                    bodyText += "\n(Delete: cancel this construction)"; // Ludoal fork (wishlist): the scrap key existed, undiscoverable
 
                     vuiElement.Draw(titleText, bodyText);
                     DrawItemInfoForUI();
+                    // Ludoal fork (field report 45.42): a real Cancel button with tooltip
+                    // instead of the text hint — same look as the cartouche buttons
+                    if (goal.Owner == Player)
+                    {
+                        bool hover = DsbCancelRect.HitTest(Input.CursorPosition);
+                        batch.Draw(ResourceManager.Texture("NewUI/dan_button_blue_clear"), DsbCancelRect, Color.White);
+                        batch.DrawString(Fonts.Arial12Bold, "Cancel Construction",
+                            new Vector2(DsbCancelRect.X + 13, DsbCancelRect.Y + 13 - Fonts.Arial12Bold.LineSpacing / 2 - 2),
+                            hover ? new Color(174, 202, 255) : new Color(88, 108, 146));
+                    }
                 }
                 else
                 {
