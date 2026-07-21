@@ -32,6 +32,10 @@ namespace Ship_Game
 			NotePos = new(psubRect.X, psubRect.Y + 100);
 			PlanetInfo = new(psubRect, "Planet Info");
 			PlanetIcon = new(psubRect.X + psubRect.W - 148, leftRect.Y + 45, 128, 128);
+			// Ludoal fork (wishlist): exit to the main map AT the planet instead of
+			// flying back to the pre-panel camera position (notification workflow)
+			ButtonMedium(leftRect.X + 20, leftRect.Bottom - 55, "View on map",
+			             b => universe.ClosePlanetPanelStayHere());
 		}
 
 		public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -104,6 +108,7 @@ namespace Ship_Game
 				pNameCursor.Y += NotePos.Y - 40;
 				batch.DrawString(Fonts.Arial12Bold, Fonts.Arial12Bold.ParseText(Localizer.Token(GameText.NoteInOrderToSee), PlanetInfo.Width - 40), pNameCursor, Color.Gold);
 			}
+			base.Draw(batch, elapsed); // Ludoal fork: the manual Draw skipped added UI elements
 		}
 	}
 }

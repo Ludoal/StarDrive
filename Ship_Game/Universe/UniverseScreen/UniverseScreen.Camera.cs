@@ -349,6 +349,22 @@ namespace Ship_Game
             }
         }
 
+        // Ludoal fork (wishlist): leave the planet panel but STAY at the planet on
+        // the main map (the normal dismiss flies the camera back to where it was).
+        // Keeps the previous zoom level, at the planet's position, planet selected.
+        public void ClosePlanetPanelStayHere()
+        {
+            if (workersPanel == null)
+                return;
+            SetSelectedPlanet(workersPanel.P);
+            returnToShip = false;
+            CamDestination = new Vector3d(workersPanel.P.Position.X, workersPanel.P.Position.Y,
+                                          transitionStartPosition.Z);
+            AdjustCamTimer = 1f;
+            transitionElapsedTime = 0f;
+            LookingAtPlanet = false;
+        }
+
         void ToggleViewingShip()
         {
             if (!ViewingShip)
