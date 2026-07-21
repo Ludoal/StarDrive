@@ -369,7 +369,7 @@ namespace Ship_Game
             if (SelectedItem != null && SelectedItem.AssociatedGoal.Owner == Player
                 && DsbCancelRect.HitTest(input.CursorPosition))
             {
-                ToolTip.CreateTooltip("Cancel this construction (Delete)");
+                ToolTip.CreateTooltip("Cancel this construction", "Delete", null); // hotkey rendered in the game's standard style
                 if (input.LeftMouseClick)
                 {
                     GameAudio.AffirmativeClick();
