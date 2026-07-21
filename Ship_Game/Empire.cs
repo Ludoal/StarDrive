@@ -110,6 +110,7 @@ namespace Ship_Game
         public int AllTimeTradeIncome;
         [StarData] public bool AutoBuildSpaceRoads;
         [StarData] public bool AutoExplore;
+        [StarData] public bool AutoPickBestScout; // Ludoal fork (wishlist): Auto Pick Explorer
         [StarData] public bool AutoColonize;
         [StarData] public bool AutoResearch;
         [StarData] public bool AutoBuildResearchStations;

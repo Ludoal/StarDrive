@@ -112,8 +112,8 @@ namespace Ship_Game
                 ("Planets",    "Planets",                            1),
                 ("ShipList",   "Ships",                              1),
                 ("Troops",     "Troops",                             1),
+                ("Shipyard",   Localizer.Token(GameText.Shipyard),   2), // Ludoal fork: swapped with Fleets (wishlist)
                 ("Fleets",     Localizer.Token(GameText.Fleets),     2),
-                ("Shipyard",   Localizer.Token(GameText.Shipyard),   2),
                 ("Patrols",    "Patrols",                            2),
                 ("Blueprints", "Blueprints",                         2),
             };

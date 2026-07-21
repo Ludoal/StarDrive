@@ -80,15 +80,18 @@ namespace Ship_Game
             rest.AddCheckbox(() => UState.Player.AutoPickConstructors,  title: GameText.AutoPickConstructorsName, tooltip: GameText.AutoPickConstructorsTip);
             rest.AddCheckbox(() => UState.Player.AutoPickBestColonizer, title: GameText.AutoPickColonyShip, tooltip: GameText.TheBestColonyShipWill);
             rest.AddCheckbox(() => UState.Player.AutoPickBestFreighter, title: GameText.AutoPickFreighter, tooltip: GameText.IfAutoTradeIsChecked);
+
+            // Ludoal fork (wishlist): the auto-pick family sits together, right
+            // after Auto Pick Freighter — and Explorer joins it (TODO GameText pass)
+            if (ResearchStationsEnabled && Screen.Player.CanBuildResearchStations)
+                rest.AddCheckbox(() => UState.Player.AutoPickBestResearchStation, title: GameText.AutoPickResearchStation, tooltip: GameText.AutoPickResearchStationTip);
+            if (MiningOpsEnabled && Screen.Player.CanBuildMiningStations)
+                rest.AddCheckbox(() => UState.Player.AutoPickBestMiningStation, title: GameText.AutoPickMiningStation, tooltip: GameText.AutoPickMiningStationTip);
+            rest.AddCheckbox(() => UState.Player.AutoPickBestScout, title: "Auto Pick Explorer", tooltip: "Always build the fastest-FTL scout design available - overrides the Auto Explore dropdown pick");
+
             rest.AddCheckbox(() => UState.Player.AutoResearch,          title: GameText.AutoResearch, tooltip: GameText.YourEmpireWillAutomaticallySelect);
             rest.AddCheckbox(() => UState.Player.AutoBuildTerraformers, title: GameText.AutoBuildTerraformers, tooltip: GameText.AutoBuildTerraformersTip);
             rest.AddCheckbox(() => UState.Player.AutoTaxes,             title: GameText.AutoTaxes, tooltip: GameText.YourEmpireWillAutomaticallyManage3);
-
-            if (ResearchStationsEnabled && Screen.Player.CanBuildResearchStations)
-                rest.AddCheckbox(() => UState.Player.AutoPickBestResearchStation, title: GameText.AutoPickResearchStation, tooltip: GameText.AutoPickResearchStationTip);
-
-            if (MiningOpsEnabled && Screen.Player.CanBuildMiningStations)
-                rest.AddCheckbox(() => UState.Player.AutoPickBestMiningStation, title: GameText.AutoPickMiningStation, tooltip: GameText.AutoPickMiningStationTip);
 
             rest.AddCheckbox(() => RushConstruction,                      title: GameText.RushAllConstruction, tooltip: GameText.RushAllConstructionTip);
             rest.AddCheckbox(() => UState.P.AllowPlayerInterTrade,        title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.AllowPlayerInterTradeTip);
@@ -150,6 +153,7 @@ namespace Ship_Game
 
             ConstructorDropDown.Visible = !Screen.Player.AutoPickConstructors;
             FreighterDropDown.Visible  = !Screen.Player.AutoPickBestFreighter;
+            ScoutDropDown.Visible      = !Screen.Player.AutoPickBestScout; // Ludoal fork (wishlist)
             ColonyShipDropDown.Visible = !Screen.Player.AutoPickBestColonizer;
 
             // Re-populate the Research/Mining dropdowns the first time CanBuild* flips to

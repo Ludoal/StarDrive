@@ -783,6 +783,7 @@ namespace Ship_Game
                     string bodyText = goal.PlanetBuildingAt != null
                         ? Localizer.Token(GameText.UnderConstructionAt) + goal.PlanetBuildingAt.Name
                         : Fonts.Arial12Bold.ParseText(Localizer.Token(GameText.NoPortsFoundForBuild), 300);
+                    bodyText += "\n(Delete: cancel this construction)"; // Ludoal fork (wishlist): the scrap key existed, undiscoverable
 
                     vuiElement.Draw(titleText, bodyText);
                     DrawItemInfoForUI();

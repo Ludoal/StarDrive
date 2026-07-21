@@ -89,7 +89,10 @@ namespace Ship_Game
             if (input.FleetDesignScreen) ScreenManager.AddScreen(new FleetDesignScreen(this, EmpireUI, "sd_ui_accept_alt3"));
             if (input.ZoomToShip) InputZoomToShip();
             if (input.ZoomOut)    InputZoomOut();
-            if (input.Escaped)    DefaultZoomPoints();
+            // Ludoal fork (wishlist): Escape no longer jumps the zoom between fixed
+            // levels at the current camera XY — it read as a random center-zoom.
+            // Deliberate zooming keeps its own keys (ZoomToShip / ZoomOut / wheel).
+            // if (input.Escaped)    DefaultZoomPoints();
             if (input.Tab && !input.LeftCtrlShift) ShowShipNames = !ShowShipNames;
 
             HandleCameraZoomScrolling(input);
