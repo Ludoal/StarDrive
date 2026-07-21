@@ -38,6 +38,18 @@ namespace Ship_Game
 
         void SPGap(ref Vector2 c) => c.Y += TextFont.LineSpacing;
 
+        // One yield line: "from colonists + flat [- eaten] = total", sums exactly to NetIncome
+        // (AfterTax is linear, so the parts are each net of tax like the total).
+        void SPYield(ref Vector2 c, SpriteBatch batch, string label, ColonyResource res, float eaten)
+        {
+            float fromColonists = res.ColonistIncome(res.NetYieldPerColonist);
+            float total = res.NetIncome;
+            string detail = SPSigned(fromColonists, 1) + " + " + res.NetFlatBonus.String(1)
+                          + (eaten.NotZero() ? " − " + eaten.String(1) : "")
+                          + " = " + SPSigned(total, 1);
+            SPLine(ref c, batch, label, detail, SPTone(total));
+        }
+
         static string SPSigned(float v, int digits = 2) => (v >= 0 ? "+" : "") + v.String(digits);
         static Color SPTone(float v) => v > 0 ? Color.LightGreen : v < 0 ? Color.Pink : Color.LightGray;
 
@@ -78,21 +90,23 @@ namespace Ship_Game
             var left  = bCursor;
             var right = new Vector2(bCursor.X + 350, bCursor.Y);
 
-            // ── BUDGET (BC / turn) — decomposed like the Economic Review, lines sum to Net ──
-            float taxRaw   = P.PopulationBillion * P.Money.IncomePerColonist * P.Money.TaxRate;
-            float bldgRaw  = P.Money.IncomeFromBuildings * P.Money.TaxRate;
-            float rawSum   = taxRaw + bldgRaw;
-            float scale    = rawSum.NotZero() ? P.Money.GrossRevenue / rawSum : 1f; // exotic credits bonus etc., keeps the sum exact
-            float taxes    = taxRaw * scale;
-            float bldgInc  = bldgRaw * scale;
+            // ── BUDGET (BC / turn) — gross sources as the building screen promises them,
+            // the tax mill as one visible line, everything still sums to Net exactly ──
+            float colInc   = P.PopulationBillion * P.Money.IncomePerColonist;
+            float bldgInc  = P.Money.IncomeFromBuildings;
+            float sources  = colInc + bldgInc;
+            float taxMill  = P.Money.GrossRevenue - sources; // × tax rate (and exotic credits bonus)
             float bldgUp   = P.Money.Maintenance;
             float spaceDef = P.SpaceDefMaintenance;
             float troops   = P.Money.TroopMaint;
             float net      = P.Money.GrossRevenue - bldgUp - spaceDef - troops;
 
             SPHeader(ref left, batch, "BUDGET (BC / turn)");
-            if (taxes.NotZero())    SPLine(ref left, batch, "Colonist taxes", SPSigned(taxes), SPTone(taxes));
+            if (colInc.NotZero())   SPLine(ref left, batch, "Colonist income", SPSigned(colInc), SPTone(colInc));
             if (bldgInc.NotZero())  SPLine(ref left, batch, "Building income", SPSigned(bldgInc), SPTone(bldgInc));
+            if (sources.NotZero())  SPLine(ref left, batch,
+                   "× tax rate (" + (P.Money.TaxRate * 100f).String(0) + " %)",
+                   SPSigned(taxMill), SPTone(taxMill));
             if (bldgUp.NotZero())   SPLine(ref left, batch, "Building upkeep", SPSigned(-bldgUp), SPTone(-bldgUp));
             if (spaceDef.NotZero()) SPLine(ref left, batch, "Space defense upkeep", SPSigned(-spaceDef), SPTone(-spaceDef));
             if (troops.NotZero())   SPLine(ref left, batch, "Troop upkeep", SPSigned(-troops), SPTone(-troops));
@@ -105,20 +119,16 @@ namespace Ship_Game
             SPHeader(ref left, batch, "POPULATION");
             SPLine(ref left, batch, "Net growth (M / turn)", SPSigned(growth, 1),
                    P.IsStarving ? Color.Red : SPTone(growth));
-            SPLine(ref left, batch, "Saturation", (P.PopulationRatio * 100f).String(0) + " %",
+            SPLine(ref left, batch, "Saturation", (P.PopulationRatio * 100f).String(1) + " %",
                    P.PopulationRatio > 1f ? Color.Orange : Color.White);
-            float bioPop = P.PopPerBiosphere(Player);
-            if (bioPop.NotZero())
-                SPLine(ref left, batch, "Per biosphere (M)", bioPop.String(0), Color.White);
 
-            // ── YIELDS (per turn) — the real net flows; marginal rates live on the labor sliders ──
+            // ── YIELDS (per turn) — per-source sums, same principle as the Budget ──
             SPHeader(ref right, batch, "YIELDS (per turn)");
-            SPLine(ref right, batch, Localizer.Token(GameText.Food),
-                   SPSigned(P.Food.NetIncome, 1), SPTone(P.Food.NetIncome));
-            SPLine(ref right, batch, Localizer.Token(GameText.Production),
-                   SPSigned(P.Prod.NetIncome, 1), SPTone(P.Prod.NetIncome));
-            SPLine(ref right, batch, Localizer.Token(GameText.Research),
-                   SPSigned(P.Res.NetIncome, 1), SPTone(P.Res.NetIncome));
+            SPYield(ref right, batch, Localizer.Token(GameText.Food), P.Food,
+                    P.NonCybernetic ? P.Consumption : 0f);
+            SPYield(ref right, batch, Localizer.Token(GameText.Production), P.Prod,
+                    P.IsCybernetic ? P.Consumption : 0f);
+            SPYield(ref right, batch, Localizer.Token(GameText.Research), P.Res, 0f);
             SPGap(ref right);
 
             // ── CONSTRUCTION (per turn) — flow to the queue + how long storage holds ──

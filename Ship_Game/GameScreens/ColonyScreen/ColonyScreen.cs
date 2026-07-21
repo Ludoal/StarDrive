@@ -300,9 +300,9 @@ namespace Ship_Game
         {
             PFacilities.ClearTabs();
             PFacilities.AddTab(GameText.Statistics2);
+            PFacilities.AddTab(StatsPlusTabTitle); // Ludoal fork: Stats+ add-on tab, next to its witness
             PFacilities.AddTab(GameText.Description);
             PFacilities.AddTab(GameText.Trade2);
-            PFacilities.AddTab(StatsPlusTabTitle); // Ludoal fork: Stats+ add-on tab
 
             if (Player.data.Traits.TerraformingLevel > 0 || P.Terraformable)
                 PFacilities.AddTab(GameText.BB_Tech_Terraforming_Name);

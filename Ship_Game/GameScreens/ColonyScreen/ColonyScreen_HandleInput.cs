@@ -70,7 +70,7 @@ namespace Ship_Game
             DetailInfo = GetHoveredDetailItem(input);
 
             // If there is a detail info, display the Description TAB, else display last tab the player selected.
-            PFacilities.SelectedIndex = DetailInfo == null ? PFacilitiesPlayerTabSelected : 1;
+            PFacilities.SelectedIndex = DetailInfo == null ? PFacilitiesPlayerTabSelected : 2; // Ludoal fork: Description is index 2 since the Stats+ tab
 
             if (!FilterBuildableItems.HandlingInput && !PlanetName.HandlingInput &&  HandleCycleColoniesLeftRight(input))
                 return true;
