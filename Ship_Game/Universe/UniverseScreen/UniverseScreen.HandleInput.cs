@@ -49,6 +49,7 @@ namespace Ship_Game
             {
                 captured |= SelectedShip != null && ShipInfoUIElement.HandleInput(input);
                 captured |= SelectedPlanet != null && pInfoUI.HandleInput(input);
+                captured |= SelectedSystem != null && sInfoUI.HandleInput(input); // Ludoal fork (wishlist)
                 captured |= SelectedShipList != null && shipListInfoUI.HandleInput(input);
             }
 
@@ -648,6 +649,21 @@ namespace Ship_Game
             return null;
         }
 
+        // Ludoal fork (wishlist): hit-test the suns at close zoom
+        SolarSystem FindSunUnderCursorClose(Vector2 cursor)
+        {
+            var systems = UState.Systems;
+            for (int i = 0; i < systems.Count; i++)
+            {
+                SolarSystem s = systems[i];
+                ProjectToScreenCoords(s.Position, 30000f, out Vector2d pos, out double radius);
+                float r = (float)Math.Max(radius, 24.0);
+                if (cursor.InRadius(pos.ToVec2f(), r))
+                    return s;
+            }
+            return null;
+        }
+
         ClickableSpaceBuildGoal GetSpaceBuildGoalUnderCursor()
         {
             var goals = ClickableBuildGoals;
@@ -780,6 +796,18 @@ namespace Ship_Game
             {
                 if (SelectPlanetClicks(input))
                     return true;
+            }
+
+            // Ludoal fork (wishlist): the sun itself is clickable up close — star cartouche
+            if (viewState < UnivScreenState.SectorView)
+            {
+                SolarSystem sun = FindSunUnderCursorClose(input.CursorPosition);
+                if (sun != null)
+                {
+                    SetSelectedSystem(sun);
+                    GameAudio.MouseOver();
+                    return true;
+                }
             }
 
             ClickableSpaceBuildGoal goal = GetSpaceBuildGoalUnderCursor();

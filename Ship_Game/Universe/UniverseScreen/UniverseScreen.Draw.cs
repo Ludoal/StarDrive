@@ -739,6 +739,8 @@ namespace Ship_Game
         bool CanShowInfo => !LookingAtPlanet && !IsCinematicModeEnabled;
         bool ShowSystemInfoOverlay => SelectedSystem != null && CanShowInfo && viewState == UnivScreenState.GalaxyView;
         bool ShowPlanetInfo => SelectedPlanet != null && CanShowInfo;
+        // Ludoal fork (wishlist): star cartouche at close zoom (GalaxyView keeps its overlay)
+        bool ShowStarInfo => SelectedSystem != null && CanShowInfo && viewState < UnivScreenState.GalaxyView;
         bool ShowShipInfo => SelectedShip != null && CanShowInfo;
         bool ShowShipList => SelectedShips.Count > 1 && SelectedFleet == null && CanShowInfo;
         bool ShowFleetInfo => SelectedFleet != null && CanShowInfo;
@@ -753,6 +755,10 @@ namespace Ship_Game
             if (ShowPlanetInfo)
             {
                 pInfoUI.Draw(batch, elapsed);
+            }
+            else if (ShowStarInfo)
+            {
+                sInfoUI.Draw(batch, elapsed); // Ludoal fork (wishlist)
             }
             else if (ShowShipInfo)
             {

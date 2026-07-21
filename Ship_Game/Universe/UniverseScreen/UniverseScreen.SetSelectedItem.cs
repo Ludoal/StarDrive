@@ -153,6 +153,7 @@ public partial class UniverseScreen
 
         SelectedSystem = system;
         SystemInfoOverlay.SetSystem(SelectedSystem);
+        sInfoUI.SetSystem(SelectedSystem); // Ludoal fork (wishlist): star cartouche
 
         if (p != null)
         {

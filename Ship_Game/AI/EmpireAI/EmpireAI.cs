@@ -449,6 +449,28 @@ namespace Ship_Game.AI
             AddGoal(new BuildOrbital(p, researchStationName, OwnerEmpire));
         }
 
+        // Ludoal fork (wishlist): star-flavored twins of the planet research-station API
+        public void AddDeployResearchStationGoal(SolarSystem s)
+        {
+            string stationName = OwnerEmpire.data.CurrentResearchStation;
+            if (!OwnerEmpire.isPlayer || OwnerEmpire.AutoPickBestResearchStation)
+            {
+                IShipDesign best = ShipBuilder.PickResearchStation(OwnerEmpire);
+                if (best != null)
+                    stationName = best.Name;
+            }
+
+            ResourceManager.Ships.GetDesign(stationName, out IShipDesign station);
+            AddGoalAndEvaluate(new ProcessResearchStation(OwnerEmpire, s, s.SelectStarResearchStationPos(), station));
+        }
+
+        public void CancelResearchStation(SolarSystem s)
+        {
+            Goal stationGoal = FindGoal(g => g.IsResearchStationGoal(s));
+            if (stationGoal != null)
+                RemoveGoal(stationGoal);
+        }
+
         public void CancelResearchStation(Planet p)
         {
             Goal stationGoal = FindGoal(g => g.IsResearchStationGoal(p));

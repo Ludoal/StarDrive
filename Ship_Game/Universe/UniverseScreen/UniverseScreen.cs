@@ -122,6 +122,7 @@ namespace Ship_Game
         public AnomalyManager anomalyManager;
         public ShipInfoUIElement ShipInfoUIElement;
         public PlanetInfoUIElement pInfoUI;
+        public StarInfoUIElement sInfoUI; // Ludoal fork (wishlist): star cartouche
         public SolarsystemOverlay SystemInfoOverlay;
         public ShipListInfoUIElement shipListInfoUI;
         public VariableUIElement vuiElement;
@@ -532,6 +533,7 @@ namespace Ship_Game
             ShipInfoUIElement = new ShipInfoUIElement(SelectedStuffRect, ScreenManager, this);
             SystemInfoOverlay = new SolarsystemOverlay(SelectedStuffRect, ScreenManager, this);
             pInfoUI           = new PlanetInfoUIElement(SelectedStuffRect, ScreenManager, this);
+            sInfoUI           = new StarInfoUIElement(SelectedStuffRect, ScreenManager, this); // Ludoal fork
             shipListInfoUI    = new ShipListInfoUIElement(SelectedStuffRect, ScreenManager, this);
             vuiElement        = new VariableUIElement(SelectedStuffRect, ScreenManager, this);
             EmpireUI          = new EmpireUIOverlay(Player, device, this);
@@ -715,6 +717,10 @@ namespace Ship_Game
             if (ShowPlanetInfo)
             {
                 pInfoUI.Update(elapsed);
+            }
+            else if (ShowStarInfo)
+            {
+                sInfoUI.Update(elapsed); // Ludoal fork (wishlist)
             }
             else if (ShowShipInfo)
             {
