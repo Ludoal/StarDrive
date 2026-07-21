@@ -819,7 +819,12 @@ namespace Ship_Game
             }
 
             if (!input.IsShiftKeyDown && !input.IsAltKeyDown && !input.IsCtrlKeyDown)
+            {
                 ClearSelectedItems(clearFlags: false);
+                // Ludoal fork (field report 45.42): deselecting on empty space also
+                // decouples the chase camera — it used to keep following a ghost
+                ViewingShip = false;
+            }
             return false;
         }
 
