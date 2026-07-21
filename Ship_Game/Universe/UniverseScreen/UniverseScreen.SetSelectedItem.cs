@@ -58,7 +58,7 @@ public partial class UniverseScreen
         int num = SelectedShipList.Count();
         SelectedShipList.RemoveInActiveObjects();
         if (SelectedShip != null)
-            SetSelectedShip(SelectedShip, SelectedFleet);
+            SetSelectedShip(SelectedShip, SelectedFleet, clearFlags: false); // Ludoal fork: same ship, UI refresh only
         else if (num != SelectedShipList.Count())
             SetSelectedShipList(SelectedShipList, SelectedFleet);
     }
@@ -89,13 +89,17 @@ public partial class UniverseScreen
     /// <summary>
     /// Sets the currently selected ship and clears selected ships list
     /// </summary>
-    public void SetSelectedShip(Ship selectedShip, Fleet fleet = null)
+    // Ludoal fork (wishlist #1): clearFlags=false lets the per-frame UI refresh in
+    // UpdateSelectedShips keep the chase camera alive — the unconditional clear
+    // switched ViewingShip off EVERY FRAME while a ship was selected, which is
+    // exactly the chase use-case (why 'follow' never survived the initial snap).
+    public void SetSelectedShip(Ship selectedShip, Fleet fleet = null, bool clearFlags = true)
     {
         SelectedSomethingTimer = 3f;
 
         // manually update prev selected ship
         UpdatePrevSelectedShip(selectedShip);
-        ClearSelectedItems(updatePrevSelectedShip: false, fleet: fleet);
+        ClearSelectedItems(clearFlags: clearFlags, updatePrevSelectedShip: false, fleet: fleet);
 
         SelectedShip = selectedShip;
 

@@ -359,7 +359,7 @@ namespace Ship_Game
             SetSelectedPlanet(workersPanel.P);
             returnToShip = false;
             CamDestination = new Vector3d(workersPanel.P.Position.X, workersPanel.P.Position.Y,
-                                          transitionStartPosition.Z);
+                                          2500); // same close-up as ship views (field report 45.40)
             AdjustCamTimer = 1f;
             transitionElapsedTime = 0f;
             LookingAtPlanet = false;
