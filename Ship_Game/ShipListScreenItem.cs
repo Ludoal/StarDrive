@@ -407,7 +407,10 @@ namespace Ship_Game
                         }
                         else
                         {
+                            // OrderScrapShip defers the ScrapShip goal to the sim thread,
+                            // so refresh the status only after the goal has actually run
                             Ship.AI.OrderScrapShip();
+                            Screen.Universe.RunOnSimThread(() => Screen.ResetStatus());
                         }
                     }
                     StatusText = GetStatusText(Ship);
