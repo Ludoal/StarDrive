@@ -204,6 +204,11 @@ namespace Ship_Game
                 UState.CamPos.Z = UState.CamPos.Z.SmoothStep(CamDestination.Z, 0.2);
                 if (UState.CamPos.Z < minCamHeight)
                     UState.CamPos.Z = minCamHeight;
+                // Ludoal fork (wishlist #1): keep the free-camera destination in tow —
+                // it went stale during the chase, so every exit path glided the camera
+                // back to the pre-chase position instead of staying at the ship.
+                CamDestination.X = ShipToView.Position.X;
+                CamDestination.Y = ShipToView.Position.Y;
             }
 
             if (AdjustCamTimer > 0.0)
