@@ -65,7 +65,7 @@ namespace Ship_Game
             listR.Name = "MiniMapButtonsRight";
             ZoomOut            = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonC, "Minimap/icons_zoomout", ZoomOut_OnClick));
             RangeOverley       = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_rangeoverlay", RangeOverly_OnClick));
-            AIScreen           = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonDown, "AI", AIScreen_OnClick));
+            AIScreen           = listR.Add(new ToggleButton(ToggleButtonStyle.Button, "AI", AIScreen_OnClick)); // Ludoal fork: ButtonDown was 26px vs 22 — the row misaligned
             ExoticBonuses      = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "NewUI/icon_exotic_Bonuses_big", ExoticBonusScreen_OnClick));
             Scale = ActualMap.Width / (Universe.UState.Size * 2.1f); // Updated to play nice with the new negative map values
             MiniMapZero = new Vector2((float)ActualMap.X + 100, (float)ActualMap.Y + 100);
