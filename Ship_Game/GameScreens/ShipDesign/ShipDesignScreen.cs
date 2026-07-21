@@ -603,7 +603,7 @@ namespace Ship_Game
                     // and its input layer leaked through. Design is saved: exit is silent.
                     string design = CurrentDesign.Name;
                     ExitScreen();
-                    BattleSimUniverse.Launch(ParentUniverse, design, design);
+                    ScreenManager.AddScreen(new BattleSimEnemyPicker(ParentUniverse, design)); // Ludoal fork S2: pick the enemy first
                 }
             });
             testFight.ClickSfx = "blip_click";
