@@ -1235,7 +1235,10 @@ namespace Ship_Game
                 StartDragPos = input.CursorPosition;
             }
 
-            if (input.MiddleMouseHeld())
+            // Ludoal fork (wishlist #1): a Ctrl+middle (or quick chase click) held a
+            // beat past 0.15s used to fall into this pan branch, killing the ship
+            // snap mid-flight — the camera froze in the void. Pan only without Ctrl.
+            if (!input.IsCtrlKeyDown && input.MiddleMouseHeld())
             {
                 float dx = input.CursorPosition.X - StartDragPos.X;
                 float dy = input.CursorPosition.Y - StartDragPos.Y;

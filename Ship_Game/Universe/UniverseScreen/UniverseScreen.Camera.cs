@@ -367,11 +367,13 @@ namespace Ship_Game
 
         void ToggleViewingShip()
         {
+            // Ludoal fork (wishlist #1): ViewToShip sets ViewingShip=true itself —
+            // the old unconditional flip flipped it back OFF right after arming,
+            // leaving only the initial snap (chase died if anything interrupted it)
             if (!ViewingShip)
-            {
                 ViewToShip(SelectedShip);
-            }
-            ViewingShip = !ViewingShip;
+            else
+                ViewingShip = false;
         }
 
         void ToggleCinematicMode()
