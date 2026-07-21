@@ -39,16 +39,31 @@ namespace Ship_Game
 
         void SPGap(ref Vector2 c) => c.Y += TextFont.LineSpacing;
 
-        // One yield line: "from colonists + flat [- eaten] = total", sums exactly to NetIncome
+        // Yield table columns, relative to the block cursor
+        const int SPYieldColPop = 105, SPYieldColFlat = 165, SPYieldColEaten = 220, SPYieldColTotal = 280;
+
+        void SPYieldHeader(ref Vector2 c, SpriteBatch batch)
+        {
+            batch.DrawString(TextFont, "from pop", new Vector2(c.X + SPYieldColPop, c.Y), Color.DarkGray);
+            batch.DrawString(TextFont, "flat", new Vector2(c.X + SPYieldColFlat, c.Y), Color.DarkGray);
+            batch.DrawString(TextFont, "eaten", new Vector2(c.X + SPYieldColEaten, c.Y), Color.DarkGray);
+            batch.DrawString(TextFont, "total", new Vector2(c.X + SPYieldColTotal, c.Y), Color.DarkGray);
+            c.Y += TextFont.LineSpacing + 2;
+        }
+
+        // One yield row: from pop + flat [- eaten] = total, sums exactly to NetIncome
         // (AfterTax is linear, so the parts are each net of tax like the total).
         void SPYield(ref Vector2 c, SpriteBatch batch, string label, ColonyResource res, float eaten)
         {
             float fromColonists = res.ColonistIncome(res.NetYieldPerColonist);
             float total = res.NetIncome;
-            string detail = SPSigned(fromColonists, 1) + " + " + res.NetFlatBonus.String(1)
-                          + (eaten.NotZero() ? " − " + eaten.String(1) : "")
-                          + " = " + SPSigned(total, 1);
-            SPLine(ref c, batch, label, detail, SPTone(total));
+            batch.DrawString(TextFont, label, new Vector2(c.X + 10, c.Y), Color.LightGray);
+            batch.DrawString(TextFont, SPSigned(fromColonists, 1), new Vector2(c.X + SPYieldColPop, c.Y), Color.White);
+            batch.DrawString(TextFont, SPSigned(res.NetFlatBonus, 1), new Vector2(c.X + SPYieldColFlat, c.Y), Color.White);
+            if (eaten.NotZero())
+                batch.DrawString(TextFont, "-" + eaten.String(1), new Vector2(c.X + SPYieldColEaten, c.Y), Color.Pink); // ASCII minus — the game font has no U+2212 (renders '?')
+            batch.DrawString(TextFont, SPSigned(total, 1), new Vector2(c.X + SPYieldColTotal, c.Y), SPTone(total));
+            c.Y += TextFont.LineSpacing + 2;
         }
 
         static string SPSigned(float v, int digits = 2) => (v >= 0 ? "+" : "") + v.String(digits);
@@ -125,6 +140,7 @@ namespace Ship_Game
 
             // ── YIELDS (per turn) — per-source sums, same principle as the Budget ──
             SPHeader(ref right, batch, "YIELDS (per turn)");
+            SPYieldHeader(ref right, batch);
             SPYield(ref right, batch, Localizer.Token(GameText.Food), P.Food,
                     P.NonCybernetic ? P.Consumption : 0f);
             SPYield(ref right, batch, Localizer.Token(GameText.Production), P.Prod,
