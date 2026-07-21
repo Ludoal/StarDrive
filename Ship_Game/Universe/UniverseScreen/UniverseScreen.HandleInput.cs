@@ -316,11 +316,14 @@ namespace Ship_Game
                 return true;
 
             // fbedard: Set camera chase on ship
+            // Ludoal fork (wishlist): plain middle-click follows the SELECTED ship —
+            // it was gated behind Ctrl and read as broken; a quick click toggles,
+            // holding middle still pans the camera.
             if (input.MiddleMouseClick)
             {
                 if (ViewingShip)
                     ToggleViewingShip(); // exit easily
-                else if (input.IsCtrlKeyDown) // only enter if ctrl key is down
+                else if (input.IsCtrlKeyDown || SelectedShip != null)
                     ToggleViewingShip();
             }
 

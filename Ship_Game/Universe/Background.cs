@@ -36,6 +36,18 @@ public sealed class Background : IDisposable
         StarField = new StarField(Universe.UState);
 
         var nebulas = Dir.GetFiles("Content/Textures/BackgroundNebulas");
+        // Ludoal fork: mods can ADD background nebulae from <mod>/Textures/BackgroundNebulas
+        // (the path above is literal Content — mod art was unreachable; additive, no override)
+        if (GlobalStats.HasMod)
+        {
+            var modNebulas = Dir.GetFiles(GlobalStats.ModPath + "Textures/BackgroundNebulas");
+            if (modNebulas.Length > 0)
+            {
+                var all = new Array<FileInfo>(nebulas);
+                all.AddRange(modNebulas);
+                nebulas = all.ToArr();
+            }
+        }
         if (nebulas.Length > 0)
         {
             int nebulaIdx = Universe.UState.BackgroundSeed % nebulas.Length;
