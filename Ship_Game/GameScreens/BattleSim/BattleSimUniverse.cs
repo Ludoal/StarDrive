@@ -124,7 +124,8 @@ namespace Ship_Game
         public void ExitToShipyard()
         {
             ExitScreen();
-            ScreenManager.AddScreen(new ShipDesignScreen(HostGame, HostGame.EmpireUI));
+            ScreenManager.AddScreen(new ShipDesignScreen(HostGame, HostGame.EmpireUI)
+                                    { InitialDesign = PlayerDesign });
         }
 
         BattleSimResultScreen.ShipReport Report(Ship s, string design, float ordStart)

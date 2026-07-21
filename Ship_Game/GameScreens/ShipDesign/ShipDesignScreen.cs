@@ -45,6 +45,7 @@ namespace Ship_Game
         public string DesignOrHullName => CurrentDesign.Name;
 
         public EmpireUIOverlay EmpireUI;
+        public string InitialDesign; // Ludoal fork: design to open with (battle sim return path)
 
         Vector3 CameraPos = new Vector3(0f, 0f, 1300f);
         float DesiredCamHeight = 1300f;
@@ -454,7 +455,12 @@ namespace Ship_Game
             SetupShipyardLighting();
 
             ShipDesign lastWIP = ShipDesignWIP.GetLatestWipToLoad(Player);
-            if (lastWIP != null)
+            // Ludoal fork: coming back from the battle sim reopens the tested design
+            // (it is SAVED, not a WIP — the lastWIP path missed it, field report 45.38)
+            if (!string.IsNullOrEmpty(InitialDesign)
+                && ResourceManager.Ships.GetDesign(InitialDesign, out Ships.IShipDesign bsDesign))
+                ChangeHull(bsDesign);
+            else if (lastWIP != null)
                 ChangeHull(lastWIP);
             else
                 ChangeHull(AvailableHulls[0]);
