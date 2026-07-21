@@ -908,6 +908,7 @@
     <Compile Include="Ship_Game\GameScreens\Universe\TroopListScreen.cs" />
     <Compile Include="Ship_Game\GameScreens\BattleSim\BattleSimUniverse.cs" />
     <Compile Include="Ship_Game\GameScreens\BattleSim\BattleSimEnemyPicker.cs" />
+    <Compile Include="Ship_Game\GameScreens\BattleSim\BattleSimResultScreen.cs" />
     <Compile Include="Ship_Game\GameScreens\ColonyScreen\ColonyScreen_StatsPlus.cs" />
     <Compile Include="Ship_Game\NodeState.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\YouLoseScreen.cs" />

@@ -58,11 +58,11 @@ namespace Ship_Game
             float fromColonists = res.ColonistIncome(res.NetYieldPerColonist);
             float total = res.NetIncome;
             batch.DrawString(TextFont, label, new Vector2(c.X + 10, c.Y), Color.LightGray);
-            batch.DrawString(TextFont, SPSigned(fromColonists, 1), new Vector2(c.X + SPYieldColPop, c.Y), Color.White);
-            batch.DrawString(TextFont, SPSigned(res.NetFlatBonus, 1), new Vector2(c.X + SPYieldColFlat, c.Y), Color.White);
+            batch.DrawString(TextFont, SPSigned(fromColonists, 2), new Vector2(c.X + SPYieldColPop, c.Y), Color.White);
+            batch.DrawString(TextFont, SPSigned(res.NetFlatBonus, 2), new Vector2(c.X + SPYieldColFlat, c.Y), Color.White);
             if (eaten.NotZero())
-                batch.DrawString(TextFont, "-" + eaten.String(1), new Vector2(c.X + SPYieldColEaten, c.Y), Color.Pink); // ASCII minus — the game font has no U+2212 (renders '?')
-            batch.DrawString(TextFont, SPSigned(total, 1), new Vector2(c.X + SPYieldColTotal, c.Y), SPTone(total));
+                batch.DrawString(TextFont, "-" + eaten.String(2), new Vector2(c.X + SPYieldColEaten, c.Y), Color.Pink); // ASCII minus — the game font has no U+2212 (renders '?')
+            batch.DrawString(TextFont, SPSigned(total, 2), new Vector2(c.X + SPYieldColTotal, c.Y), SPTone(total));
             c.Y += TextFont.LineSpacing + 2;
         }
 

@@ -588,26 +588,6 @@ namespace Ship_Game
             BtnSymmetricDesign.Hotkey  = InputBindings.FromString("M");
             BtnSymmetricDesign.Style   = SymmetricDesignBtnStyle;
 
-            // Ludoal fork (battle simulator S1): test the current design in a 1v1 arena.
-            // Prototype: fights a mirror copy of itself; enemy selection comes in S2.
-            var testFight = bottomListRight.Add(ButtonStyle.Medium, "Test Fight", click: b =>
-            {
-                if (HullEditMode)
-                    ScreenManager.AddScreen(new MessageBoxScreen(this, "Test Fight is not available in Hull Edit Mode"));
-                else if (CurrentDesign == null || !ShipSaved || !IsGoodDesign())
-                    ScreenManager.AddScreen(new MessageBoxScreen(this, "Save a valid design first (command module required)"));
-                else
-                {
-                    // 45.23 field result: the shipyard must CLOSE before the arena opens —
-                    // its 3D preview model haunted the arena at the origin (shared scene),
-                    // and its input layer leaked through. Design is saved: exit is silent.
-                    string design = CurrentDesign.Name;
-                    ExitScreen();
-                    ScreenManager.AddScreen(new BattleSimEnemyPicker(ParentUniverse, design)); // Ludoal fork S2: pick the enemy first
-                }
-            });
-            testFight.ClickSfx = "blip_click";
-            testFight.Tooltip = "Battle simulator: fight a copy of this design in an arena (prototype)";
 
 
             UIList bottomListLeft = AddList(new Vector2(50f, ScreenHeight - 50f));
@@ -629,6 +609,27 @@ namespace Ship_Game
             BtnFilterModules.ClickSfx = "blip_click";
             BtnFilterModules.Tooltip  = GameText.WhenToggledRedAnyModule;
             BtnFilterModules.Style    = FilterModulesBtnStyle;
+
+            // Ludoal fork (battle simulator): test the current design in a 1v1 arena.
+            // Left list: in 1920 the right list overlaps the build number (field report 45.37).
+            var testFight = bottomListLeft.Add(ButtonStyle.Medium, "Test Fight", click: b =>
+            {
+                if (HullEditMode)
+                    ScreenManager.AddScreen(new MessageBoxScreen(this, "Test Fight is not available in Hull Edit Mode"));
+                else if (CurrentDesign == null || !ShipSaved || !IsGoodDesign())
+                    ScreenManager.AddScreen(new MessageBoxScreen(this, "Save a valid design first (command module required)"));
+                else
+                {
+                    // 45.23 field result: the shipyard must CLOSE before the arena opens —
+                    // its 3D preview model haunted the arena at the origin (shared scene),
+                    // and its input layer leaked through. Design is saved: exit is silent.
+                    string design = CurrentDesign.Name;
+                    ExitScreen();
+                    ScreenManager.AddScreen(new BattleSimEnemyPicker(ParentUniverse, design)); // Ludoal fork S2: pick the enemy first
+                }
+            });
+            testFight.ClickSfx = "blip_click";
+            testFight.Tooltip = "Battle simulator: fight a copy of this design in an arena (prototype)";
 
             SearchBar = new Rectangle((int)ScreenCenter.X, (int)bottomListRight.Y, 210, 25);
             BottomSep = new Rectangle(BlackBar.X, BlackBar.Y, BlackBar.Width, 1);

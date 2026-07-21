@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Ship_Game.ExtensionMethods;
 using Microsoft.Xna.Framework.Graphics;
@@ -52,18 +53,31 @@ namespace Ship_Game
 
             Ship[] ships = ResourceManager.Ships.Ships
                 .Filter(s => s.BaseStrength > 0 && s.Name != PlayerDesign)
-                .OrderBy(s => !s.ShipData.IsPlayerDesign)
-                .ThenByDescending(s => s.BaseStrength)
+                .OrderByDescending(s => s.BaseStrength)
                 .ThenBy(s => s.Name).ToArr();
 
+            // grouped by role with collapsible headers, like the Load Ship popup
+            var byRole = new Map<string, Array<Ship>>();
             foreach (Ship s in ships)
-                DesignSL.AddItem(new PickerItem(s.Name,
-                    s.DesignRole + "  ·  str " + s.BaseStrength.String(0), isMirror: false));
+            {
+                string role = Localizer.GetRole(s.DesignRole, Host.Player);
+                if (!byRole.TryGetValue(role, out Array<Ship> group))
+                    byRole[role] = group = new Array<Ship>();
+                group.Add(s);
+            }
+            var pairs = byRole.ToArray();
+            Array.Sort(keys: byRole.Keys.ToArr(), pairs);
+            foreach (var pair in pairs)
+            {
+                PickerItem header = DesignSL.AddItem(new PickerItem(pair.Key));
+                foreach (Ship s in pair.Value)
+                    header.AddSubItem(new PickerItem(s.Name, "str " + s.BaseStrength.String(0), isMirror: false));
+            }
         }
 
         void OnPicked(PickerItem item)
         {
-            if (LaunchCountdown >= 0)
+            if (LaunchCountdown >= 0 || item.DesignName == null) // headers don't fight
                 return;
             GameAudio.AcceptClick();
             ChosenEnemy = item.DesignName;
@@ -124,9 +138,11 @@ namespace Ship_Game
 
         public sealed class PickerItem : ScrollListItem<PickerItem>
         {
-            public readonly string DesignName;
+            public readonly string DesignName; // null on role headers
             readonly string Detail;
             readonly bool IsMirror;
+
+            public PickerItem(string headerText) : base(headerText) { }
 
             public PickerItem(string name, string detail, bool isMirror)
             {
@@ -138,6 +154,8 @@ namespace Ship_Game
             public override void Draw(SpriteBatch batch, DrawTimes elapsed)
             {
                 base.Draw(batch, elapsed);
+                if (DesignName == null)
+                    return; // role header: base draws it
                 var color = IsMirror ? Color.Wheat : Color.White;
                 batch.DrawString(Fonts.Arial12Bold, DesignName, new Vector2(X + 8, CenterY - 6), color);
                 batch.DrawString(Fonts.Arial12Bold, Detail, new Vector2(X + 280, CenterY - 6), Color.Gray);
