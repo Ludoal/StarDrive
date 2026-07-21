@@ -716,6 +716,12 @@ namespace Ship_Game
             {
                 SystemInfoOverlay.Update(elapsed);
             }
+            // Ludoal fork (field report 45.44): the clickable build goals froze while
+            // paused (their screen positions are camera-dependent, and the sim loop
+            // owns the refresh) — selecting a DSB under construction was impossible
+            // in pause. Refreshing here too is trivially cheap (player goals only).
+            UpdateClickableItems();
+
             if (ShowPlanetInfo)
             {
                 pInfoUI.Update(elapsed);

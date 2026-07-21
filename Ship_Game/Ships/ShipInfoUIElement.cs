@@ -134,9 +134,14 @@ namespace Ship_Game.Ships
             batch.Draw(ResourceManager.Texture("SelectionBox/unitselmenu_main"), Housing, Color.White);
             if (s.Loyalty.CanBeScannedByPlayer)
                 GridButton.Draw(batch, elapsed);
-            // Ludoal fork: follow toggle reflects the live chase state
-            FollowButton.IsToggled = Universe.ViewingShip && Universe.ShipToView == s;
-            FollowButton.Draw(batch, elapsed);
+            // Ludoal fork: follow toggle reflects the live chase state — hidden for
+            // things that cannot move (stations, platforms, projectors)
+            FollowButton.Visible = !(s.IsPlatformOrStation || s.IsSubspaceProjector);
+            if (FollowButton.Visible)
+            {
+                FollowButton.IsToggled = Universe.ViewingShip && Universe.ShipToView == s;
+                FollowButton.Draw(batch, elapsed);
+            }
 
             Vector2 namePos       = new(Housing.X + 30, Housing.Y + 63);
             Vector2 shipSuperName = new(Housing.X + 30, Housing.Y + 79);
