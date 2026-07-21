@@ -279,6 +279,15 @@ namespace Ship_Game.Commands.Goals
                 || !FinishedShip.AI.FindGoal(ShipAI.Plan.Colonize, out ShipAI.ShipGoal goal)
                 || goal.TargetPlanet != TargetPlanet)
             {
+                // The player manually redirected the colony ship of a manual colonization order,
+                // meaning they changed their mind - cancel the goal instead of sending the next
+                // idle colony ship there. Don't touch the ship - it is following new player orders.
+                if (IsManualColonizationOrder && FinishedShip is { Active: true })
+                {
+                    Task?.EndTask();
+                    return GoalStep.GoalFailed;
+                }
+
                 ChangeToStep(CheckIfColonizationIsSafe);
                 return GoalStep.TryAgain;
             }
