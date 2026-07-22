@@ -2,6 +2,8 @@ using System.Windows.Forms;
 using SDGraphics;
 using Ship_Game.Audio;
 using Ship_Game.Ships;
+using Ship_Game.GameScreens;
+using Ship_Game.GameScreens.Espionage;
 using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game;
@@ -67,6 +69,12 @@ public sealed class Notification
                     break;
                 case "SnapToShip":
                     m.SnapToShip(ReferencedItem1 as Ship);
+                    break;
+                case "EspionageScreen": // Ludoal fork (wishlist): spy notifications open the espionage panel
+                    if (m.Screen.Player.LegacyEspionageEnabled)
+                        m.ScreenManager.AddScreen(new EspionageScreen(m.Screen));
+                    else
+                        m.ScreenManager.AddScreen(new InfiltrationScreen(m.Screen));
                     break;
             }
             return true;

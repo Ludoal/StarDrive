@@ -84,7 +84,7 @@ namespace Ship_Game
                 SymbolPath      = good ? "NewUI/icon_spy_notification" : "NewUI/icon_spy_notification_bad",
                 ReferencedItem1 = planet?.System ?? null,
                 IconPath        = planet?.IconPath ?? null,
-                Action          = planet != null ? "SnapToSystem" : "",
+                Action          = "EspionageScreen", // Ludoal fork (wishlist): open the panel, right-click still dismisses
             }, good ? "sd_ui_spy_win_02" : "sd_ui_spy_fail_02"); 
         }
 
