@@ -271,7 +271,9 @@ namespace Ship_Game
             if (OutgoingColoFreighters > 0 || IncomingColoFreighters > 0 || P.ColonistsImportSlots > 0)
             {
                 position3 = new Vector2(cursor.X + num5, cursor.Y);
-                batch.DrawString(TextFont, P.ColonistsImportSlots > 0 ?"Incoming Pop: " : "Outgoing Pop: ", cursor, P.Owner.EmpireColor);
+                // green = pop coming in, red = pop leaving (was the empire color, unreadable for red empires)
+                batch.DrawString(TextFont, P.ColonistsImportSlots > 0 ?"Incoming Pop: " : "Outgoing Pop: ", cursor,
+                                 P.ColonistsImportSlots > 0 ? Color.LightGreen : Color.LightPink);
                 DrawColoSlots(batch, position3);
                 rect = new Rectangle((int)cursor.X, (int)cursor.Y, (int)TextFont.MeasureString("Incoming Pop: ").X, TextFont.LineSpacing);
                 if (rect.HitTest(Input.CursorPosition) && P.Universe.Screen.IsActive)

@@ -89,7 +89,7 @@ namespace Ship_Game
 
                 Vector2 consumptionPos = new(troopPos.X, troopPos.Y + 25);
                 TroopConsumption = Add(new UILabel(consumptionPos, consumption, LowRes ? Fonts.Arial8Bold : Fonts.Arial12Bold,
-                    Universe.Player.IsCybernetic ? Color.SandyBrown : Color.Green));
+                    Universe.Player.IsCybernetic ? Color.SandyBrown : Color.LightPink)); // a cost, not a gain - red, not green
             }
         }
 
