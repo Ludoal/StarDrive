@@ -425,7 +425,7 @@ namespace Ship_Game
 
             Vector2 textPos = new Vector2(ExoticRect.X + 13, ExoticRect.Y + 13 - Font12.LineSpacing / 2 - 2);
             batch.Draw(ResourceManager.Texture(Player.CanBuildMiningStations && P.Mining.CanAddMiningStationFor(Player) 
-                ? "NewUI/dan_button_clear"
+                ? "NewUI/dan_button_blue_clear" // Ludoal fork: blue like every other action button
                 : "NewUI/dan_button_disabled"), ExoticRect, Color.White);
 
             LocalizedText tip = Player.CanBuildMiningStations ? GameText.DeployMiningStationTip : GameText.CannotBuildMiningStationTip;
@@ -433,7 +433,7 @@ namespace Ship_Game
 
 
             ToolTipItems.Add(new TippedItem(ExoticRect, tip));
-            batch.DrawString(Font12, tipText, textPos, Player.CanBuildMiningStations ? ExoticRect.HitTest(mousePos) ? Color.Gold : Color.LightYellow
+            batch.DrawString(Font12, tipText, textPos, Player.CanBuildMiningStations ? ExoticRect.HitTest(mousePos) ? ButtonTextColor : ButtonHoverColor
                                                                                      : Color.Gray);
         }
 
