@@ -76,7 +76,14 @@ namespace Ship_Game
             var planets = Universe.Player.GetPlanets();
             int sidePanelWidths = (int)(ScreenWidth * 0.3f);
             GovernorRect = new RectF(ColoniesList.Right - sidePanelWidths - 23, ColoniesList.Bottom - 5, sidePanelWidths, ScreenHeight - ColoniesList.Bottom - 22);
-            GovernorDetails = Add(new GovernorDetailsComponent(this, Universe,  planets[0], GovernorRect));
+            // Ludoal fork: guard against an empty colony list — seen live (crash at
+            // StarDate 1163: GetPlanets() returned 0 for the player on the UI thread,
+            // opened from the Infiltration screen). An empire with no colonies is also
+            // a legitimate state (defeated-but-alive). The governor panel just stays off.
+            if (planets.Count > 0)
+                GovernorDetails = Add(new GovernorDetailsComponent(this, Universe,  planets[0], GovernorRect));
+            else
+                Log.Warning("EmpireManagementScreen: player planet list is EMPTY at ctor");
             ResetColoniesList(planets);
             int totalTroops = Universe.Player.TotalTroops();
             string troopText = $"Total Troops: {totalTroops}";
@@ -297,8 +304,8 @@ namespace Ship_Game
         void OnColonyListItemClicked(ColoniesListItem item)
         {
             SelectedPlanet = item.P;
-            GovernorDetails.SetPlanetDetails(SelectedPlanet, GovernorRect, (int)GovernorDetails?.CurrentTabIndex);
-            GovernorDetails.PerformLayout();
+            GovernorDetails?.SetPlanetDetails(SelectedPlanet, GovernorRect, (int)(GovernorDetails?.CurrentTabIndex ?? 0));
+            GovernorDetails?.PerformLayout();
         }
 
         void OnColonyListItemDoubleClicked(ColoniesListItem item)
@@ -365,8 +372,8 @@ namespace Ship_Game
             }
 
             SelectedPlanet = ColoniesList.AllEntries[0].P;
-            GovernorDetails.SetPlanetDetails(SelectedPlanet, GovernorRect, (int)GovernorDetails?.CurrentTabIndex);
-            GovernorDetails.PerformLayout();
+            GovernorDetails?.SetPlanetDetails(SelectedPlanet, GovernorRect, (int)(GovernorDetails?.CurrentTabIndex ?? 0));
+            GovernorDetails?.PerformLayout();
         }
     }
 }
