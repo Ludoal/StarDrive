@@ -1051,7 +1051,15 @@ namespace Ship_Game
         public void SnapToShip(Ship s)
         {
             GameAudio.SubBassWhoosh();
-            Screen.SnapViewShip(s);
+            // A ship outside our sensor vision (e.g. one of ours freshly boarded by the
+            // enemy) cannot be meaningfully selected or chased - the camera would follow
+            // an invisible dot. Snap to its last known position instead.
+            if (s == null)
+                return;
+            if (s.InPlayerSensorRange)
+                Screen.SnapViewShip(s);
+            else
+                Screen.SnapViewTo(new(s.Position.X, s.Position.Y + 400, 2500), 5f, 2f);
         }
 
         public void SnapToExpandedSystem(Planet p, SolarSystem system)
