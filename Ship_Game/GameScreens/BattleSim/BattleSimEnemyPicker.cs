@@ -56,22 +56,23 @@ namespace Ship_Game
                 .OrderByDescending(s => s.BaseStrength)
                 .ThenBy(s => s.Name).ToArr();
 
-            // grouped by role with collapsible headers, like the Load Ship popup
-            var byRole = new Map<string, Array<Ship>>();
+            // grouped by race with collapsible headers; the class rides on each line
+            var byRace = new Map<string, Array<Ship>>();
             foreach (Ship s in ships)
             {
-                string role = Localizer.GetRole(s.DesignRole, Host.Player);
-                if (!byRole.TryGetValue(role, out Array<Ship> group))
-                    byRole[role] = group = new Array<Ship>();
+                string race = s.ShipData.ShipStyle.IsEmpty() ? "Misc" : s.ShipData.ShipStyle;
+                if (!byRace.TryGetValue(race, out Array<Ship> group))
+                    byRace[race] = group = new Array<Ship>();
                 group.Add(s);
             }
-            var pairs = byRole.ToArray();
-            Array.Sort(keys: byRole.Keys.ToArr(), pairs);
+            var pairs = byRace.ToArray();
+            Array.Sort(keys: byRace.Keys.ToArr(), pairs);
             foreach (var pair in pairs)
             {
                 PickerItem header = DesignSL.AddItem(new PickerItem(pair.Key));
-                foreach (Ship s in pair.Value)
-                    header.AddSubItem(new PickerItem(s.Name, "str " + s.BaseStrength.String(0), isMirror: false));
+                foreach (Ship s in pair.Value) // already strength-sorted from the base list
+                    header.AddSubItem(new PickerItem(s.Name,
+                        Localizer.GetRole(s.DesignRole, Host.Player) + " \u00b7 str " + s.BaseStrength.String(0), isMirror: false));
             }
         }
 

@@ -173,6 +173,15 @@ namespace Ship_Game
                 ShipB.AI.OrderAttackSpecificTarget(ShipA);
                 ShipB.AI.SetPriorityOrder(true);
             }
+
+            // Priority holds only for the approach: once in weapons contact it is
+            // released so the combat loop honors the ship's stance (artillery keeps
+            // its range, hold holds...) — ships stop stacking on each other.
+            // If a ship disengages and idles, the re-pin above takes over again.
+            if (ShipA.InCombat && ShipA.AI.HasPriorityOrder)
+                ShipA.AI.SetPriorityOrder(false);
+            if (ShipB.InCombat && ShipB.AI.HasPriorityOrder)
+                ShipB.AI.SetPriorityOrder(false);
         }
 
         public override void Update(float fixedDeltaTime)
