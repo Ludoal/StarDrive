@@ -96,13 +96,6 @@ namespace Ship_Game.AI
         {
             InitializeManagers(OwnerEmpire);
             ScrubNullGoalSlots();
-            if (OwnerEmpire?.isPlayer == true) // temp diagnostics: are colonization goals even IN the save?
-            {
-                int colonization = 0;
-                foreach (Goal g in GoalsList)
-                    if (g.Type == GoalType.MarkForColonization) ++colonization;
-                Log.Info($"[colonize-diag] loaded: {GoalsList.Count} goals total, {colonization} colonization");
-            }
         }
 
         void ScrubNullGoalSlots()
@@ -122,8 +115,18 @@ namespace Ship_Game.AI
                             "from GoalsList after deserialize (likely a Goal type removed/renamed since the save was written).");
         }
 
+        bool LoggedGoalCounts; // temp diagnostics for the vanishing colonization goals
+
         public void Update()
         {
+            if (!LoggedGoalCounts && OwnerEmpire?.isPlayer == true)
+            {
+                LoggedGoalCounts = true;
+                int colonization = 0;
+                foreach (Goal g in GoalsList)
+                    if (g?.Type == GoalType.MarkForColonization) ++colonization;
+                Log.Info($"[colonize-diag] first update: {GoalsList.Count} goals total, {colonization} colonization");
+            }
             if (Disabled) // AI has been disabled for debugging purposes
                 return;
 
