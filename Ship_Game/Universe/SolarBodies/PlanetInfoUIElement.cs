@@ -95,9 +95,9 @@ namespace Ship_Game
             SendTroops = new Rectangle(RightRect.X - 17, Housing.Y + 130, 182, 25);
             MarkedRect = new Rectangle(RightRect.X - 17, Housing.Y + 160, 182, 25);
             CancelInvasionRect = MarkedRect; // Replaces the colonization rect when invading
-            ExoticRect = new Rectangle(leftRect.X + 15, Housing.Y + 140, 182, 25);
-            ExoticResourceIconRect = new Rectangle(leftRect.X + 15, Housing.Y + 170, 20, 20);
-            UninhabIconRect = new Rectangle(r.X + 260, Housing.Y + 115, 80, 80); // Ludoal fork: planet sprite for uninhabitables
+            ExoticRect = new Rectangle(RightRect.X - 17, Housing.Y + 130, 182, 25);
+            ExoticResourceIconRect = new Rectangle(RightRect.X - 17, Housing.Y + 165, 20, 20);
+            UninhabIconRect = new Rectangle(leftRect.X + 75, Housing.Y + 120, 80, 80); // Ludoal fork: sprite left, buttons right — same grammar as colonies
         }
 
         public override void Update(UpdateTimes elapsed)
@@ -400,12 +400,14 @@ namespace Ship_Game
             }
 
             batch.Draw(P.Mining.ExoticResourceIcon, ExoticResourceIconRect);
-            Vector2 resourceStatPos = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y+2);
-            Vector2 resourceStatDeployed = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 19);
-            Vector2 resourceStatInProgress = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 34);
-            string stats = $"{P.Mining.TranslatedResourceName.Text}: Richness " +
-                $"{P.Mining.Richness}, Refine Ratio: {(P.Mining.RefiningRatio * Player.data.RefiningRatioMultiplier).UpperBound(1)}";
+            // Ludoal fork: the block lives in the right column now — two short lines
+            Vector2 resourceStatPos = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 2);
+            Vector2 resourceStatRefine = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 17);
+            Vector2 resourceStatDeployed = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 32);
+            string stats = $"{P.Mining.TranslatedResourceName.Text}: Richness {P.Mining.Richness}";
+            string refine = $"Refine Ratio: {(P.Mining.RefiningRatio * Player.data.RefiningRatioMultiplier).UpperBound(1)}";
             batch.DrawString(Font12, stats, resourceStatPos, Color.White);
+            batch.DrawString(Font12, refine, resourceStatRefine, Color.White);
 
             int numDeployed = P.OrbitalStations.Filter(s => s.IsMiningStation && s.Loyalty == Player).Length;
             int numInProgress = Player.AI.CountGoals(g => g.IsMiningOpsGoal(P) && g.TargetShip == null);
@@ -414,7 +416,8 @@ namespace Ship_Game
             if (numInProgress > 0)
             {
                 string statsInProgress = $"{numInProgress} In Progress";
-                batch.DrawString(Font12, statsInProgress, resourceStatInProgress, Color.Gold);
+                batch.DrawString(Font12, statsInProgress,
+                                 resourceStatDeployed + new Vector2(Font12.MeasureString(statsDeployed).X, 0f), Color.Gold);
             }
             ToolTipItems.Add(new TippedItem(ExoticResourceIconRect, $"{P.Mining.ResourceDescription.Text}\n{new LocalizedText(GameText.MineableRichnessTip).Text}"));
             if (P.Mining.Owner != null && P.Mining.Owner != Player)

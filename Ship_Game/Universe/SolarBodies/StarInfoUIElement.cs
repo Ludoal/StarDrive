@@ -21,6 +21,7 @@ namespace Ship_Game
 		Empire Player => Screen.Player;
 		readonly Rectangle Housing;
 		readonly Rectangle DeployRect;
+		readonly Rectangle SunIconRect; // Ludoal fork: the star itself, left slot — same grammar as planets
 		readonly Graphics.Font Font12 = Fonts.Arial12Bold;
 		readonly Color ButtonTextColor  = new Color(174, 202, 255);
 		readonly Color ButtonHoverColor = new Color(88, 108, 146);
@@ -33,7 +34,8 @@ namespace Ship_Game
 			Housing = r;
 			TransitionOnTime = TimeSpan.FromSeconds(0.25);
 			TransitionOffTime = TimeSpan.FromSeconds(0.25);
-			DeployRect = new Rectangle(r.X + 20, r.Y + 130, 182, 25);
+			DeployRect = new Rectangle(r.X + 183, r.Y + 130, 182, 25); // right column, like planet action buttons
+			SunIconRect = new Rectangle(r.X + 75, r.Y + 115, 80, 80);
 		}
 
 		public void SetSystem(SolarSystem s) => Sys = s;
@@ -54,6 +56,9 @@ namespace Ship_Game
 				batch.DrawString(Font12, "Unexplored star", textPos, Color.Gray);
 				return;
 			}
+
+			if (Sys.Sun.Icon != null) // Ludoal fork: show the star (system info may join it later)
+				batch.Draw(Sys.Sun.Icon, SunIconRect, Color.White);
 
 			if (Sys.IsResearchable)
 			{
