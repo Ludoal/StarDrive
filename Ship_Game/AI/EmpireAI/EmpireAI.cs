@@ -593,6 +593,8 @@ namespace Ship_Game.AI
 
         public void RemoveGoal(Goal goal)
         {
+            if (goal.Type == GoalType.MarkForColonization && OwnerEmpire.isPlayer) // temp diagnostics: who kills player colonization goals
+                Log.WarningWithCallStack($"[colonize-diag] RemoveGoal target={goal.TargetPlanet?.Name} step={goal.Step}");
             if (MarshalScreen is { } screen)
                 screen.RunOnSimThread(() => { goal.OnRemoved(); GoalsList.Remove(goal); });
             else
