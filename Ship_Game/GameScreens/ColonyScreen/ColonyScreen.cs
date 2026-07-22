@@ -124,7 +124,7 @@ namespace Ship_Game
         ProgressBar DysonSwarmProductionBoost;
 
         public ColonyScreen(GameScreen parent, Planet p, EmpireUIOverlay empUI, 
-            int governorTabSelected = 0, int facilitiesTabSelected = 0)
+            int governorTabSelected = 0, int facilitiesTabSelected = -1) // Ludoal fork: -1 = fresh open, defaults to Stats+
             : base(parent, p)
         {
             Eui = empUI;
@@ -202,6 +202,17 @@ namespace Ship_Game
             PopulatePfacilitieTabs();
             PFacilities.OnTabChange = OnPFacilitiesTabChange;
             // FB - sticky tab selection on colony change via arrows
+            // Ludoal fork: on a fresh open (no sticky selection carried), default to Stats+
+            if (facilitiesTabSelected < 0)
+            {
+                facilitiesTabSelected = 0;
+                for (int i = 0; i < PFacilities.Tabs.Count; ++i)
+                    if (PFacilities.Tabs[i].Title == StatsPlusTabTitle)
+                    {
+                        facilitiesTabSelected = i;
+                        break;
+                    }
+            }
             if (facilitiesTabSelected < PFacilities.Tabs.Count)
                 PFacilities.SelectedIndex = facilitiesTabSelected;
 
