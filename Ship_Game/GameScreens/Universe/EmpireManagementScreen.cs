@@ -220,7 +220,7 @@ namespace Ship_Game
                 // Ludoal fork (wishlist): text headers for the fertility / richness / max pop columns
                 SbFert.rect   = DrawStatHeader(batch, entry.FertRect.X, (int)ERect.Y, Localizer.Token(GameText.Fertility)[0] + "");
                 SbRich.rect   = DrawStatHeader(batch, entry.RichRect.X, (int)ERect.Y, Localizer.Token(GameText.Richness)[0] + "");
-                SbMaxPop.rect = DrawStatHeader(batch, entry.MaxPopRect.X, (int)ERect.Y, "Max");
+                SbMaxPop.rect = DrawStatHeader(batch, entry.MaxPopRect.X, (int)ERect.Y, "P");
                 textCursor = new Vector2(entry.SliderRect.X + 30, ERect.Y);
                 batch.DrawString(NormalFont, Localizer.Token(GameText.Labor), textCursor, Cream);
                 textCursor = new Vector2(entry.StorageRect.X + 30, ERect.Y);
