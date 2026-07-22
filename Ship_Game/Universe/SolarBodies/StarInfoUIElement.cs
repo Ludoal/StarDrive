@@ -68,6 +68,12 @@ namespace Ship_Game
 
 		void DrawDeployButton(SpriteBatch batch)
 		{
+			if (Sys.IsResearchStationDeployedBy(Player)) // built: no button, and no Abort on an operational station
+			{
+				var okPos = new Vector2(DeployRect.X + 13, DeployRect.Y + 13 - Font12.LineSpacing / 2 - 2);
+				batch.DrawString(Font12, "Research station operational", okPos, Color.LightGreen);
+				return;
+			}
 			bool canBuild = Player.CanBuildResearchStations;
 			batch.Draw(ResourceManager.Texture(canBuild ? "NewUI/dan_button_blue_clear" : "NewUI/dan_button_disabled"),
 			           DeployRect, Color.White);
@@ -83,7 +89,7 @@ namespace Ship_Game
 
 		public override bool HandleInput(InputState input)
 		{
-			if (!ShowDeployButton)
+			if (!ShowDeployButton || Sys.IsResearchStationDeployedBy(Player))
 				return false;
 
 			if (DeployRect.HitTest(input.CursorPosition))
