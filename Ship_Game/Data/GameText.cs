@@ -5294,6 +5294,10 @@ namespace Ship_Game
         AutoCoreGovernor = 4540,
         /// <summary>Tooltip for AutoCoreGovernor</summary>
         AutoCoreGovernorTip = 4541,
+        /// <summary>Importing planets column tooltip (freighter window)</summary>
+        ImportingPlanetsTip = 4542,
+        /// <summary>Exporting planets column tooltip (freighter window)</summary>
+        ExportingPlanetsTip = 4543,
         /// <summary>FCS Bonus</summary>
         FcsBonus = 6186,
         /// <summary>FCS Accuracy</summary>

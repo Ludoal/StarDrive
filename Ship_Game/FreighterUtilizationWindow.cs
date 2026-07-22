@@ -54,8 +54,10 @@ namespace Ship_Game
             Add(new UILabel(new Vector2(win.X + 15, titleOffset), GameText.TotalFreighterUtilization, Fonts.Arial12Bold, Color.Gold, GameText.TotalUtilizationTip));
             Add(new UILabel(new Vector2(win.X + 210, titleOffset), GameText.CargoDistribution, Fonts.Arial12Bold, Color.White, GameText.CargoDistributionTip));
             Add(new UILabel(new Vector2(win.X + 370, titleOffset), GameText.Freighters, Fonts.Arial12Bold, Color.White, GameText.NumberOfFreightersTip));
-            Add(new UILabel(new Vector2(win.X + 470, titleOffset), GameText.ImportingPlanets, Fonts.Arial12Bold, Color.White));
-            Add(new UILabel(new Vector2(win.X + 570, titleOffset), GameText.ExportingPlanets, Fonts.Arial12Bold, Color.White));
+            // these two columns count PLANETS (open import/export slots), not freighters -
+            // the only headers of this window without a tooltip, and the mixed units confused readers
+            Add(new UILabel(new Vector2(win.X + 470, titleOffset), GameText.ImportingPlanets, Fonts.Arial12Bold, Color.White, GameText.ImportingPlanetsTip));
+            Add(new UILabel(new Vector2(win.X + 570, titleOffset), GameText.ExportingPlanets, Fonts.Arial12Bold, Color.White, GameText.ExportingPlanetsTip));
             Add(new UILabel(new Vector2(win.X + 15, titleOffset + 50), GameText.IdleFrieghters, Fonts.Arial12Bold, Color.Wheat));
             Add(new UILabel(new Vector2(win.X + 15, titleOffset + 70), GameText.FreightersUnderConstruction, Fonts.Arial12Bold, Color.Wheat));
 

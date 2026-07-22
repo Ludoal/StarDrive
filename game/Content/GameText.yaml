@@ -17731,6 +17731,14 @@ AutoCoreGovernorTip:
  Id: 4541
  ENG: "Newly colonized planets start with a Core governor managing them instead of no governor. Colonies you already own are not changed."
  PTB: "Planetas recém-colonizados começam com um governador Central em vez de nenhum governador. Colônias que você já possui não são alteradas."
+ImportingPlanetsTip:
+ Id: 4542
+ ENG: "Number of PLANETS with open import slots for this good - not freighters. Freighters currently hauling the good are in the Freighters column."
+ PTB: "Número de PLANETAS com vagas de importação abertas para este bem - não cargueiros. Os cargueiros transportando o bem estão na coluna Freighters."
+ExportingPlanetsTip:
+ Id: 4543
+ ENG: "Number of PLANETS with open export slots for this good - not freighters."
+ PTB: "Número de PLANETAS com vagas de exportação abertas para este bem - não cargueiros."
 FcsBonus:
  Id: 6186
  ENG: "FCS Bonus"
