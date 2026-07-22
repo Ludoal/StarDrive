@@ -17689,9 +17689,9 @@ ConstructorDesign:
  PTB: "Projeto de Construtor:"
 FtlOverlayVisualisesSubspaceProjection:
  Id: 6182
- ENG: "FTL Overlay: visualizes subspace projection and FTL inhibiting gravity wells and fields."
- RUS: "FTL Overlay: визуализирует проекцию подпространства и FTL, препятствуя гравитационным колодцам и полям."
- SPA: ":Visualizacion FTL: Muestra las proyecciones subespaciales y las areas restringidas por pozos gravitatorios."
+ ENG: "Subspace Projection overlay: visualizes subspace projection coverage and the projector ships. Gravity wells have their own overlay (F5)."
+ RUS: "Проекция подпространства: показывает зону покрытия проекции и корабли-проекторы. У гравитационных колодцев свой оверлей (F5)."
+ SPA: "Proyeccion subespacial: muestra la cobertura de proyeccion y los proyectores. Los pozos gravitatorios tienen su propia capa (F5)."
  UKR: "FTL Overlay: візуалізує підпросторову проекцію та гравітаційні свердловини і родовища, що інгібують FTL."
  PTB: "Sobreposição MRL: visualiza a projeção subespacial e poços e campos gravitacionais que inibem MRL."
 WeaponsRangeOverlayVisualisesShips:
