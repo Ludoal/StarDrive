@@ -5290,6 +5290,10 @@ namespace Ship_Game
         InfluenceMapOverlayOnly = 4538,
         /// <summary>Tooltip for InfluenceMapOverlayOnly</summary>
         InfluenceMapOverlayOnlyTip = 4539,
+        /// <summary>Auto Core Governor</summary>
+        AutoCoreGovernor = 4540,
+        /// <summary>Tooltip for AutoCoreGovernor</summary>
+        AutoCoreGovernorTip = 4541,
         /// <summary>FCS Bonus</summary>
         FcsBonus = 6186,
         /// <summary>FCS Accuracy</summary>

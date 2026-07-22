@@ -17723,6 +17723,14 @@ InfluenceMapOverlayOnlyTip:
  Id: 4539
  ENG: "When enabled, colored empire influence borders are shown on the main map only while the FTL overlay (F2) is active. The minimap always shows influence."
  PTB: "Quando ativado, as bordas coloridas de influência aparecem no mapa principal apenas com a sobreposição FTL (F2) ativa. O minimapa sempre mostra a influência."
+AutoCoreGovernor:
+ Id: 4540
+ ENG: "Auto Core Governor"
+ PTB: "Governador Central Automático"
+AutoCoreGovernorTip:
+ Id: 4541
+ ENG: "Newly colonized planets start with a Core governor managing them instead of no governor. Colonies you already own are not changed."
+ PTB: "Planetas recém-colonizados começam com um governador Central em vez de nenhum governador. Colônias que você já possui não são alteradas."
 FcsBonus:
  Id: 6186
  ENG: "FCS Bonus"

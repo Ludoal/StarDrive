@@ -115,6 +115,7 @@ namespace Ship_Game
             rest.AddCheckbox(() => UState.Player.AutoResearch,          title: GameText.AutoResearch, tooltip: GameText.YourEmpireWillAutomaticallySelect);
             rest.AddCheckbox(() => UState.Player.AutoBuildTerraformers, title: GameText.AutoBuildTerraformers, tooltip: GameText.AutoBuildTerraformersTip);
             rest.AddCheckbox(() => UState.Player.AutoTaxes,             title: GameText.AutoTaxes, tooltip: GameText.YourEmpireWillAutomaticallyManage3);
+            rest.AddCheckbox(() => UState.Player.AutoCoreGovernor,      title: GameText.AutoCoreGovernor, tooltip: GameText.AutoCoreGovernorTip);
 
             rest.AddCheckbox(() => RushConstruction,                      title: GameText.RushAllConstruction, tooltip: GameText.RushAllConstructionTip);
             rest.AddCheckbox(() => UState.P.AllowPlayerInterTrade,        title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.AllowPlayerInterTradeTip);
