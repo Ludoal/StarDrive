@@ -32,6 +32,7 @@ namespace Ship_Game
         string PlanetTypeRichness;
         Vector2 PlanetTypeCursor;
         readonly Selector Sel;
+        readonly Rectangle UninhabIconRect; // Ludoal fork: planet sprite for uninhabitables
         readonly SkinnableButton Inspect;
         readonly SkinnableButton Invade;
         readonly Rectangle Housing;
@@ -96,6 +97,7 @@ namespace Ship_Game
             CancelInvasionRect = MarkedRect; // Replaces the colonization rect when invading
             ExoticRect = new Rectangle(leftRect.X + 15, Housing.Y + 140, 182, 25);
             ExoticResourceIconRect = new Rectangle(leftRect.X + 15, Housing.Y + 170, 20, 20);
+            UninhabIconRect = new Rectangle(r.X + 260, Housing.Y + 115, 80, 80); // Ludoal fork: planet sprite for uninhabitables
         }
 
         public override void Update(UpdateTimes elapsed)
@@ -227,6 +229,14 @@ namespace Ship_Game
                 string text = Localizer.Token(GameText.ThisPlanetIsNotHabitable);
                 Vector2 cursor = new Vector2(Housing.X + 20, Housing.Y + 110);
                 batch.DrawString(Fonts.Arial12Bold, text, cursor, tColor);
+
+                // Ludoal fork: Planet View removed — the cartouche shows the planet itself now
+                batch.Draw(P.PlanetTexture, UninhabIconRect, Color.White);
+                string uninhabClass = P.LocalizedRichness;
+                var uninhabClassPos = new Vector2(UninhabIconRect.X + UninhabIconRect.Width / 2 - Fonts.Arial12Bold.MeasureString(uninhabClass).X / 2f,
+                                                  UninhabIconRect.Y + UninhabIconRect.Height + 5);
+                batch.DrawString(Fonts.Arial12Bold, uninhabClass, uninhabClassPos, tColor);
+
                 if (P.IsResearchable)
                     DrawResearchStation(batch, mousePos);
                 else if (P.IsMineable)
@@ -357,7 +367,12 @@ namespace Ship_Game
         void DrawResearchStation(SpriteBatch batch, Vector2 mousePos)
         {
             if (P.IsResearchStationDeployedBy(Player))
+            {
+                // Ludoal fork: show the deployed state (mirrors the star cartouche) instead of nothing
+                var okPos = new Vector2(ExoticRect.X + 13, ExoticRect.Y + 13 - Font12.LineSpacing / 2 - 2);
+                batch.DrawString(Font12, "Research station operational", okPos, Color.LightGreen);
                 return;
+            }
 
             Vector2 textPos = new Vector2(ExoticRect.X + 13, ExoticRect.Y + 13 - Font12.LineSpacing / 2 - 2);
             batch.Draw(ResourceManager.Texture(Player.CanBuildResearchStations ? "NewUI/dan_button_blue_clear" 

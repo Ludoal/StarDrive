@@ -509,9 +509,7 @@ namespace Ship_Game
             ExoticBonusesWindow.Visible = showGeneralUI && ExoticBonusesWindow.IsOpen && !LookingAtPlanet;
             FreighterUtilizationWindow.Visible = showGeneralUI && FreighterUtilizationWindow.IsOpen && !LookingAtPlanet;
 
-            Minimap.Visible = showGeneralUI && (!LookingAtPlanet ||
-                              LookingAtPlanet && workersPanel is UnexploredPlanetScreen ||
-                              LookingAtPlanet && workersPanel is UnownedPlanetScreen);
+            Minimap.Visible = showGeneralUI && !LookingAtPlanet; // Ludoal fork: Planet View removed
 
             DrawSelectedItems(batch, elapsed);
             DrawSystemAndPlanetBrackets(batch);

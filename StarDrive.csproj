@@ -766,7 +766,6 @@
     <Compile Include="Ship_Game\Gameplay\Restrictions.cs" />
     <Compile Include="Ship_Game\Audio\GameAudio.cs" />
     <Compile Include="Ship_Game\GameScreens\LoadSaveItems\LoadSaveScreen.cs" />
-    <Compile Include="Ship_Game\Universe\SolarBodies\UnexploredPlanetScreen.cs" />
     <Compile Include="Ship_Game\Body.cs" />
     <Compile Include="Ship_Game\Header.cs" />
     <Compile Include="Ship_Game\GameScreens\Universe\BudgetScreen.cs" />
@@ -831,7 +830,6 @@
     <Compile Include="Ship_Game\Universe\SolarBodies\PlanetScreen.cs" />
     <Compile Include="Ship_Game\PieMenu.cs" />
     <Compile Include="Ship_Game\Universe\SolarSystemData.cs" />
-    <Compile Include="Ship_Game\Universe\SolarBodies\UnownedPlanetScreen.cs" />
     <Compile Include="Ship_Game\ExplosionManager.cs" />
     <Compile Include="Ship_Game\Gameplay\TraitEntry.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\EncounterPopup.cs" />

@@ -96,14 +96,15 @@ namespace Ship_Game
                     }
                 }
 
-                if (p.Owner == Player || flag || Debug)
+                // Ludoal fork: Planet View removed — the selection cartouche carries its info.
+                // Double-click: colony view on real colonies (incl. mole vision), combat view
+                // when tactically visible, otherwise just the camera snap.
+                if ((p.Owner == Player || flag || Debug) && p.Owner != null)
                 {
-                    if (Debug && (p.IsResearchable || p.IsMineable))
-                        workersPanel = new UnownedPlanetScreen(this, p);
-                    else if (p.Owner != null)
-                        workersPanel = new ColonyScreen(this, p, EmpireUI);
-                    else
-                        workersPanel = new UnexploredPlanetScreen(this, p);
+                    workersPanel = new ColonyScreen(this, p, EmpireUI);
+                    ClearSelectedItems();
+                    returnToShip = doReturnToShip;
+                    LookingAtPlanet = true;
                 }
                 else if (combatView && p.Habitable
                                     && p.IsExploredBy(Player)
@@ -111,16 +112,9 @@ namespace Ship_Game
                                                                     || p.System.OwnerList.Contains(Player)
                                                                     || p.OurShipsCanScanSurface(Player)))
                 {
-                    OpenCombatMenu(p);
+                    OpenCombatMenu(p); // snaps the view itself
+                    return;
                 }
-                else
-                {
-                    workersPanel = new UnownedPlanetScreen(this, p);
-                }
-
-                ClearSelectedItems();
-                returnToShip = doReturnToShip;
-                LookingAtPlanet = true;
 
                 SnapViewTo(new(p.Position.X, p.Position.Y + 400f, 2500f), 5f, 2f);
             }
