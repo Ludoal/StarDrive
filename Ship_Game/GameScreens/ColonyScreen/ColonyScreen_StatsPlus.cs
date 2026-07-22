@@ -15,7 +15,7 @@ namespace Ship_Game
     // marginal per-colonist rates belong to the Assign Labor tooltips, dead
     // lines are omitted. Budget is decomposed like the Economic Review and its
     // lines sum to the displayed net. All figures are per TURN: Empire.DoMoney()
-    // credits NetIncome once per turn — the engine's "BC/Y" labels are display
+    // credits NetIncome once per turn — the engine's per-year labels (now bc/turn) are display
     // convention, not data.
     // TODO localization pass: block titles/short labels need GameText tokens.
     public partial class ColonyScreen
