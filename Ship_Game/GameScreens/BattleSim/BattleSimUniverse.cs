@@ -56,6 +56,15 @@ namespace Ship_Game
             Empire them = sim.UState.CreateEmpire(majors[1], isPlayer: false, GameDifficulty.Hard);
             sim.Them = them;
             Empire.SetRelationsAsKnown(us, them);
+
+            // Player feedback: fresh sim empires had zero unlocked techs, so anything
+            // tech-dependent lied — dynamic hangars fell back to the base craft.
+            // Full unlock (without empire bonuses: raw designs stay comparable)
+            // keeps the arena faithful. Same loop as debug ctrl-F1, minus the audio.
+            foreach (Empire e in new[] { us, them })
+                foreach (TechEntry t in e.TechEntries)
+                    if (!t.Unlocked)
+                        t.DebugUnlockFromTechScreen(e, e, bonusUnlock: false);
             us.AI.DeclareWarOn(them, WarType.BorderConflict);
             // no colonies, no research: silence the "No Research!" banner
             us.AutoResearch = true;
