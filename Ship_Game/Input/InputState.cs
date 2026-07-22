@@ -88,7 +88,7 @@ namespace Ship_Game
         //Ingame 
         //UniverseScreen
         public bool PauseGame            => KeyPressed(Keys.Space) && !IsShiftKeyDown;
-        public bool QuickSave            => KeyPressed(Keys.F5) && !IsShiftKeyDown;
+        public bool QuickSave            => KeyPressed(Keys.F9) && !IsShiftKeyDown; // Ludoal fork: moved from F5, gravity wells overlay took it
         public bool UseRealLights        => IsShiftKeyDown && KeyPressed(Keys.F5);
         public bool ShowExceptionTracker => KeyPressed(Keys.F6);
         public bool SpeedReset           => KeyPressed(Keys.Space) && IsShiftKeyDown;
@@ -105,6 +105,8 @@ namespace Ship_Game
         public bool EmpirePatrolsScreen  => KeyPressed(Keys.P);
         public bool FTLOverlay           => KeyPressed(Keys.F2);
         public bool RangeOverlay         => KeyPressed(Keys.F3);
+        public bool InfluenceOverlay     => KeyPressed(Keys.F4); // Ludoal fork: colored influence zones
+        public bool GravityWellOverlay   => KeyPressed(Keys.F5) && !IsShiftKeyDown; // Ludoal fork (Shift+F5 stays real lights)
         public bool ShipListScreen       => KeyPressed(Keys.K);
         public bool TroopListScreen      => KeyPressed(Keys.C); // Ludoal fork: Troops Array (C was debug-spawn only)
         public bool FleetDesignScreen    => KeyPressed(Keys.J);

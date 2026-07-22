@@ -17715,14 +17715,14 @@ ToggleZoomTracking:
  SPA: "Alternar seguimiento por zoom"
  UKR: "Перемикання масштабу відстеження"
  PTB: "Alternar Rastreamento de Zoom"
-InfluenceMapOverlayOnly:
+InfluenceOverlayVisualises:
  Id: 4538
- ENG: "Influence Colors On F2 Overlay Only"
- PTB: "Cores de influência apenas na sobreposição F2"
-InfluenceMapOverlayOnlyTip:
+ ENG: "Influence overlay: shows the colored empire influence zones on the map."
+ PTB: "Sobreposição de influência: mostra as zonas coloridas de influência dos impérios no mapa."
+GravityWellOverlayVisualises:
  Id: 4539
- ENG: "When enabled, colored empire influence borders are shown on the main map only while the FTL overlay (F2) is active. The minimap always shows influence."
- PTB: "Quando ativado, as bordas coloridas de influência aparecem no mapa principal apenas com a sobreposição FTL (F2) ativa. O minimapa sempre mostra a influência."
+ ENG: "Gravity wells overlay: shows the FTL-inhibiting gravity wells around planets and inhibitor fields."
+ PTB: "Sobreposição de poços de gravidade: mostra os poços de gravidade que inibem FTL ao redor de planetas e campos inibidores."
 AutoCoreGovernor:
  Id: 4540
  ENG: "Auto Core Governor"

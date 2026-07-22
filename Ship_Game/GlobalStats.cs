@@ -136,7 +136,6 @@ public static class GlobalStats
     // Ludoal fork: if enabled, colored empire influence borders draw on the main map
     // only while the FTL overlay (F2) is showing; minimap keeps its own nodes.
     // Default off = vanilla behavior (borders always visible).
-    public static bool InfluenceMapOverlayOnly;
         
     // USER_EXPERIENCE
     // global option how fast the camera pans across the universe when using WASD keys
@@ -377,7 +376,6 @@ public static class GlobalStats
         GetSetting(config, "IconSize", ref IconSize);
         IconSize = Math.Max(1, IconSize); // BUGFIX: must be at least 1
         GetSetting(config, "ZoomTracking", ref ZoomTracking);
-        GetSetting(config, "InfluenceMapOverlayOnly", ref InfluenceMapOverlayOnly);
         GetSetting(config, "CameraPanSpeed", ref CameraPanSpeed);
         GetSetting(config, "AltArcControl", ref AltArcControl);
         GetSetting(config, "DisableAsteroids", ref DisableAsteroids);
@@ -571,7 +569,6 @@ public static class GlobalStats
         WriteSetting(config, "PauseOnNotification", PauseOnNotification);
         WriteSetting(config, "IconSize", IconSize);
         WriteSetting(config, "ZoomTracking", ZoomTracking);
-        WriteSetting(config, "InfluenceMapOverlayOnly", InfluenceMapOverlayOnly);
         WriteSetting(config, "CameraPanSpeed", CameraPanSpeed);
         WriteSetting(config, "AltArcControl", AltArcControl);
         WriteSetting(config, "DisableAsteroids", DisableAsteroids);

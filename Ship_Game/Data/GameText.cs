@@ -5286,10 +5286,10 @@ namespace Ship_Game
         KeyboardFireArcLocking = 6184,
         /// <summary>Toggle Zoom Tracking</summary>
         ToggleZoomTracking = 6185,
-        /// <summary>Influence Colors On F2 Overlay Only</summary>
-        InfluenceMapOverlayOnly = 4538,
-        /// <summary>Tooltip for InfluenceMapOverlayOnly</summary>
-        InfluenceMapOverlayOnlyTip = 4539,
+        /// <summary>Influence zones overlay tooltip (F4)</summary>
+        InfluenceOverlayVisualises = 4538,
+        /// <summary>Gravity wells overlay tooltip (F5)</summary>
+        GravityWellOverlayVisualises = 4539,
         /// <summary>Auto Core Governor</summary>
         AutoCoreGovernor = 4540,
         /// <summary>Tooltip for AutoCoreGovernor</summary>

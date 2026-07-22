@@ -370,10 +370,9 @@ namespace Ship_Game
             OverlaysGroupTotalPerf.Start();
             {
                 UpdateFogOfWarInfluences(batch, graphics);
-                // Ludoal fork: optionally draw colored influence zones only on the FTL
-                // overlay (F2) — GlobalStats.InfluenceMapOverlayOnly, main Options screen.
-                // Default off = vanilla (always drawn). Minimap draws its own nodes.
-                if ((ShowingFTLOverlay || !GlobalStats.InfluenceMapOverlayOnly) && viewState >= UnivScreenState.SectorView)
+                // Ludoal fork: colored influence zones are their own overlay now (F4),
+                // and the FTL overlay (F2) still needs them. Replaces the old Options toggle.
+                if ((ShowingFTLOverlay || ShowingInfluenceOverlay) && viewState >= UnivScreenState.SectorView)
                     DrawColoredEmpireBorders(sr, graphics);
 
                 // §3.7 step 1: bloom processes MainTarget -> PostBloomTarget,
@@ -432,9 +431,8 @@ namespace Ship_Game
                 SetViewMatrix(cameraMatrix);
 
                 // Ludoal fork: composite must be gated with the render pass above — BorderRT
-                // keeps its last frame otherwise (colors stuck after F2 toggled off).
-                // Same condition as the render pass: option off = vanilla (always drawn).
-                if (ShowingFTLOverlay || !GlobalStats.InfluenceMapOverlayOnly)
+                // keeps its last frame otherwise (colors stuck after the overlay toggled off).
+                if (ShowingFTLOverlay || ShowingInfluenceOverlay)
                     DrawColoredBordersRT(batch);
             }
             OverlaysGroupTotalPerf.Stop();
@@ -690,10 +688,10 @@ namespace Ship_Game
             }
         }
 
-        // this is called quite rarely, only when ShowingFTLOverlay is enabled
+        // this is called quite rarely, only when the FTL (F2) or gravity wells (F5) overlay is enabled
         void DrawFTLInhibitionNodes()
         {
-            if (ShowingFTLOverlay && UState.P.GravityWellRange > 0f && !LookingAtPlanet)
+            if ((ShowingFTLOverlay || ShowingGravityWellOverlay) && UState.P.GravityWellRange > 0f && !LookingAtPlanet)
             {
                 var inhibit = ResourceManager.Texture("UI/node_inhibit");
 

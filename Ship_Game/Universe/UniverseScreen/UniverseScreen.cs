@@ -145,6 +145,8 @@ namespace Ship_Game
         public Rectangle AORect; // used for showing current AO Rect definition
 
         public bool ShowingFTLOverlay;
+        public bool ShowingInfluenceOverlay;   // Ludoal fork: F4 - colored empire influence zones
+        public bool ShowingGravityWellOverlay; // Ludoal fork: F5 - gravity wells / inhibitor fields
         public bool ShowingRangeOverlay;
 
         /// <summary>

@@ -28,6 +28,8 @@ namespace Ship_Game
         //to get rid of these I need to find a solution for hover and the setting of the active setting
         readonly ToggleButton ZoomOut;
         readonly ToggleButton ZoomToShip;
+        readonly ToggleButton InfluenceZones;   // Ludoal fork (F4)
+        readonly ToggleButton GravityWellsOnly; // Ludoal fork (F5)
         readonly ToggleButton GravityWells;
         readonly ToggleButton AIScreen;
         readonly ToggleButton DeepSpaceBuild;
@@ -58,6 +60,7 @@ namespace Ship_Game
             // (ZoomToShip|ZoomOut) (FTL|WeaponsRange) (DSB|Automation) (Freighters|ExoticBonuses)
             ZoomToShip     = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonC, "Minimap/icons_zoomctrl", ZoomToShip_OnClick));
             GravityWells   = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_ftloverlay", GravityWells_OnClick));
+            InfluenceZones = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/flagicon", InfluenceZones_OnClick)); // Ludoal fork (F4)
             DeepSpaceBuild = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_dsbw", DeepSpaceBuild_OnClick));
             FreighterUtil  = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "NewUI/icon_freighter_util", FreighterUtilizationScreen_OnClick));
 
@@ -65,6 +68,7 @@ namespace Ship_Game
             listR.Name = "MiniMapButtonsRight";
             ZoomOut            = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonC, "Minimap/icons_zoomout", ZoomOut_OnClick));
             RangeOverley       = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_rangeoverlay", RangeOverly_OnClick));
+            GravityWellsOnly   = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/node_inhibit", GravityWellsOnly_OnClick)); // Ludoal fork (F5)
             AIScreen           = listR.Add(new ToggleButton(ToggleButtonStyle.Button, "AI", AIScreen_OnClick)); // Ludoal fork: ButtonDown was 26px vs 22 — the row misaligned
             ExoticBonuses      = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "NewUI/icon_exotic_Bonuses_big", ExoticBonusScreen_OnClick));
             Scale = ActualMap.Width / (Universe.UState.Size * 2.1f); // Updated to play nice with the new negative map values
@@ -126,8 +130,8 @@ namespace Ship_Game
                 batch.SafeBegin(SpriteBlendMode.NonPremultiplied);
 
                 // Ludoal fork: minimap influence follows the main map — with the
-                // InfluenceMapOverlayOnly option on, colors show only during F2.
-                if (Universe.ShowingFTLOverlay || !GlobalStats.InfluenceMapOverlayOnly)
+                // influence zones follow the F4 overlay (or F2, which needs them)
+                if (Universe.ShowingFTLOverlay || Universe.ShowingInfluenceOverlay)
                     DrawMinimapInfluenceNodes(batch);
                 DrawSelected(batch, Player);
                 DrawWarnings(batch);
@@ -388,6 +392,18 @@ namespace Ship_Game
             Universe.ShowingRangeOverlay = !Universe.ShowingRangeOverlay;            
         }
 
+        public void InfluenceZones_OnClick(ToggleButton toggleButton) // Ludoal fork (F4)
+        {
+            GameAudio.AcceptClick();
+            Universe.ShowingInfluenceOverlay = !Universe.ShowingInfluenceOverlay;
+        }
+
+        public void GravityWellsOnly_OnClick(ToggleButton toggleButton) // Ludoal fork (F5)
+        {
+            GameAudio.AcceptClick();
+            Universe.ShowingGravityWellOverlay = !Universe.ShowingGravityWellOverlay;
+        }
+
         public void AIScreen_OnClick(ToggleButton toggleButton)
         {
             Universe.aw.ToggleVisibility();
@@ -434,6 +450,12 @@ namespace Ship_Game
 
             if (RangeOverley.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.WeaponsRangeOverlayVisualisesShips, "F3");
+
+            if (InfluenceZones.Rect.HitTest(input.CursorPosition))
+                ToolTip.CreateTooltip(GameText.InfluenceOverlayVisualises, "F4");
+
+            if (GravityWellsOnly.Rect.HitTest(input.CursorPosition))
+                ToolTip.CreateTooltip(GameText.GravityWellOverlayVisualises, "F5");
             if (AIScreen.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.OpensTheAutomationPanelWhich, "H");
 
