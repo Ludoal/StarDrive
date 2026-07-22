@@ -57,7 +57,11 @@ namespace Ship_Game
         public override void LoadContent()
         {
             camera = new Camera2D { Pos = new Vector2(Viewport.Width, Viewport.Height) / 2f };
-            var main = new Rectangle(0, 0, ScreenWidth, ScreenHeight);
+            // Ludoal fork: leave room for the live top bar; the node grids derive
+            // from main.Height so they compress on their own. On <=720p a 7-row
+            // column would clip (86px per 98px node), so the bar stays off there.
+            int topBarRoom = ScreenHeight > 720 ? 75 : 0;
+            var main = new Rectangle(0, topBarRoom, ScreenWidth, ScreenHeight - topBarRoom);
             MainMenu = new Menu2(main);
             MainMenuOffset = new Vector2(main.X + 20, main.Y + 30);
             Close = Add(new CloseButton(main.Right - 40, main.Y + 20));
@@ -150,6 +154,8 @@ namespace Ship_Game
 
             batch.SafeBegin();
             base.Draw(batch, elapsed);
+            if (ScreenHeight > 720)
+                empireUI.Draw(batch); // Ludoal fork: live top bar (paused indicator included)
             batch.SafeEnd();
         }
 
@@ -312,6 +318,9 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            if (ScreenHeight > 720 && empireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
             if (input.MiddleMouseHeld())
                 camera.MoveClamped(input.CursorVelocity, ScreenCenter, new Vector2(3200));
 
