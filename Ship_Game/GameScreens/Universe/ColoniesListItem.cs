@@ -116,6 +116,14 @@ namespace Ship_Game
             base.PerformLayout();
         }
 
+        static void DrawNameStat(SpriteBatch batch, ref Vector2 cursor, string label, string value)
+        {
+            batch.DrawString(Fonts.Arial10, label, cursor, Color.Orange);
+            cursor.X += Fonts.Arial10.MeasureString(label).X + 2f;
+            batch.DrawString(Fonts.Arial10, value, cursor, Colors.Cream);
+            cursor.X += Fonts.Arial10.MeasureString(value).X + 8f;
+        }
+
         public override bool HandleInput(InputState input)
         {
             P.UpdateIncomes();
@@ -243,7 +251,7 @@ namespace Ship_Game
             if (P.HasBlueprints) 
             {
                 var color = BlueprintsScreen.GetBlueprintsIconColor(P.Blueprints.ColonyType);
-                batch.DrawString(Fonts.Arial12, P.Blueprints.Name, new Vector2(planetIconRect.X + planetIconRect.Width+10, planetIconRect.Bottom+5), color);
+                batch.DrawString(Fonts.Arial12, P.Blueprints.Name, new Vector2(planetIconRect.X + planetIconRect.Width+10, planetIconRect.Bottom+10), color); // Ludoal fork: +5 to make room for the stats line
                 batch.Draw(ResourceManager.Texture("NewUI/blueprints"), 
                     new Vector2(planetIconRect.X+2, planetIconRect.Bottom), new Vector2(25, 25), color);
             }
@@ -296,6 +304,13 @@ namespace Ship_Game
                 var c = new Vector2(planetIconRect.X + planetIconRect.Width + 10, SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Arial8Bold.LineSpacing / 2);
                 batch.DrawString(Fonts.Arial8Bold, P.Name, c, TextColor);
             }
+
+            // Ludoal fork (wishlist): fertility / richness / max pop under the planet name
+            var statsCursor = new Vector2(planetIconRect.X + planetIconRect.Width + 10,
+                                          SysNameRect.Y + SysNameRect.Height / 2 + Fonts.Pirulen16.LineSpacing / 2 + 2);
+            DrawNameStat(batch, ref statsCursor, Localizer.Token(GameText.Fertility)[0] + ":", P.FertilityFor(Universe.Player).String());
+            DrawNameStat(batch, ref statsCursor, Localizer.Token(GameText.Richness)[0] + ":", P.MineralRichness.String());
+            DrawNameStat(batch, ref statsCursor, "Max:", P.MaxPopulationBillionFor(Universe.Player).String());
 
             base.Draw(batch, elapsed);
 
