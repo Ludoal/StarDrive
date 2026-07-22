@@ -354,9 +354,11 @@ namespace Ship_Game
             }
         }
 
-        // Fleet positions snap to a fine grid. DrawGrid renders 1000-world-unit
-        // squares; snapping at 50 yields 20 snap points per square.
-        const float GridSnap = 50f;
+        // Fleet positions snap to a grid. DrawGrid renders 1000-world-unit
+        // squares; snapping at 125 yields 8 snap points per square - coarse
+        // enough that placements visibly align with each other (at 50 the
+        // snapping was imperceptible against the 1000-unit grid lines).
+        const float GridSnap = 125f;
 
         static Vector2 SnapToGrid(Vector2 worldPos)
         {
@@ -475,7 +477,7 @@ namespace Ship_Game
             // cumulatively away from `desired`).
             Vector2 snapOrigin = result;
 
-            const int maxRings = 40; // GridSnap*40 = 2000 world units of search
+            const int maxRings = 16; // GridSnap*16 = 2000 world units of search
             float bestDist = float.MaxValue;
             int foundAtRing = -1;
 
