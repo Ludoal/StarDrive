@@ -109,8 +109,8 @@ namespace Ship_Game
             {
                 bool deployed = SolarBody.IsResearchStationDeployedBy(Player); // built: neither Deploy nor Abort
                 ButtonStyle researchStyle = MarkedForResearch || deployed ? ButtonStyle.Military : ButtonStyle.BigDip;
-                LocalizedText researchText = deployed ? "Station Deployed"
-                                           : !MarkedForResearch ? GameText.DeployResearchStation : GameText.AbortDeployent;
+                LocalizedText researchText = deployed ? new LocalizedText("Station Deployed", LocalizationMethod.RawText)
+                                           : !MarkedForResearch ? new LocalizedText(GameText.DeployResearchStation) : new LocalizedText(GameText.AbortDeployent);
                 DeployButton = Button(researchStyle, researchText, OnResearchClicked);
             }
             else if (Planet?.IsMineable == true)
