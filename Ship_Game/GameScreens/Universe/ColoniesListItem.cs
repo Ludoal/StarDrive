@@ -309,6 +309,14 @@ namespace Ship_Game
             var statsCursor = new Vector2(planetIconRect.X + planetIconRect.Width + 10,
                                           SysNameRect.Y + SysNameRect.Height / 2 + Fonts.Pirulen16.LineSpacing / 2 + 2);
             DrawNameStat(batch, ref statsCursor, Localizer.Token(GameText.Fertility)[0] + ":", P.FertilityFor(Universe.Player).String());
+            float envMultiplier = Universe.Player.PlayerEnvModifier(P.Category);
+            if (!envMultiplier.AlmostEqual(1)) // show the racial environment multiplier like the planet info panel does
+            {
+                statsCursor.X -= 5f;
+                Color envColor = envMultiplier < 1f ? Color.Pink : Color.LightGreen;
+                batch.DrawString(Fonts.Arial10, $"(x {envMultiplier.String(2)})", statsCursor, envColor);
+                statsCursor.X += Fonts.Arial10.MeasureString($"(x {envMultiplier.String(2)})").X + 8f;
+            }
             DrawNameStat(batch, ref statsCursor, Localizer.Token(GameText.Richness)[0] + ":", P.MineralRichness.String());
             DrawNameStat(batch, ref statsCursor, "Max:", P.MaxPopulationBillionFor(Universe.Player).String());
 
