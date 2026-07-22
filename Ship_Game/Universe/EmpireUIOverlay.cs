@@ -258,7 +258,7 @@ namespace Ship_Game
                     string paused = Localizer.Token(GameText.Paused);
                     var pausedPos = new Vector2(menu.Rect.X - Fonts.Pirulen16.TextWidth(paused) - 12f,
                                                 menu.Rect.Y + (menu.Rect.Height - Fonts.Pirulen16.LineSpacing) / 2f);
-                    bool autoPause = ScreenManager.CurrentScreen?.OwnsUniversePause == true;
+                    bool autoPause = Universe.ScreenManager.AnyScreenOwnsUniversePause(); // stack-wide: topmost was unreliable
                     batch.DrawString(Fonts.Pirulen16, paused, pausedPos, autoPause ? Color.White : Color.Gold);
                 }
             }
