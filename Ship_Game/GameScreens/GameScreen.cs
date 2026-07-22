@@ -109,6 +109,7 @@ namespace Ship_Game
 
         // If this is set, the universe was paused
         UniverseScreen PausedUniverse;
+        public bool OwnsUniversePause => PausedUniverse != null; // Ludoal fork: paused-indicator support
 
         /// <summary>Game screen that is the same size as the current screen/window</summary>
         /// <param name="parent">Parent to this screen, or null</param>

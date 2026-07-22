@@ -245,6 +245,24 @@ namespace Ship_Game
             string starDateText = LowRes ? Universe.StarDateString : "StarDate: " + Universe.StarDateString;
             batch.DrawString(Fonts.Arial12Bold, starDateText, starDatePos, new Color(255, 240, 189));
 
+            // Ludoal fork: paused indicator left of Main Menu on full-screen panels.
+            // White = the open screen auto-paused the game and will resume it on close;
+            // Gold = the player's own pause (Space), kept after the screen closes.
+            if (Universe.UState.Paused && !Universe.IsActive)
+            {
+                Button menu = null;
+                foreach (Button b in Buttons)
+                    if (b.launches == "Main Menu") { menu = b; break; }
+                if (menu != null)
+                {
+                    string paused = Localizer.Token(GameText.Paused);
+                    var pausedPos = new Vector2(menu.Rect.X - Fonts.Pirulen16.TextWidth(paused) - 12f,
+                                                menu.Rect.Y + (menu.Rect.Height - Fonts.Pirulen16.LineSpacing) / 2f);
+                    bool autoPause = ScreenManager.CurrentScreen?.OwnsUniversePause == true;
+                    batch.DrawString(Fonts.Pirulen16, paused, pausedPos, autoPause ? Color.White : Color.Gold);
+                }
+            }
+
             if (Player.Research.NoTopic)
             {
                 textCursor.X = res2.X + res2.Width - 30 - Fonts.Arial12Bold.MeasureString(Localizer.Token(GameText.Choose)+"...").X;

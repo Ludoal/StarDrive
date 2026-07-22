@@ -269,8 +269,6 @@ namespace Ship_Game
 
             batch.DrawRectangle(ColoniesList.ItemsHousing, lineColor); // items housing border
 
-            var pos = new Vector2(ScreenWidth - Fonts.Pirulen16.TextWidth("Paused") - 13f, 44f);
-            batch.DrawString(Fonts.Pirulen16, "Paused", pos, White);
             eui.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
