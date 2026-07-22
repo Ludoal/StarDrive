@@ -62,9 +62,15 @@ namespace Ship_Game
             // Full unlock (without empire bonuses: raw designs stay comparable)
             // keeps the arena faithful. Same loop as debug ctrl-F1, minus the audio.
             foreach (Empire e in new[] { us, them })
+            {
                 foreach (TechEntry t in e.TechEntries)
                     if (!t.Unlocked)
                         t.DebugUnlockFromTechScreen(e, e, bonusUnlock: false);
+                // same closing sweep as the debug unlock: without it the buildable-ship
+                // list stays stale and dynamic hangars still fall back to the base craft
+                e.UpdateShipsWeCanBuild();
+                e.UpdateForNewTech();
+            }
             us.AI.DeclareWarOn(them, WarType.BorderConflict);
             // no colonies, no research: silence the "No Research!" banner
             us.AutoResearch = true;
