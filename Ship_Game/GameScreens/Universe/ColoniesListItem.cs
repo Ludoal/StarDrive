@@ -24,6 +24,9 @@ namespace Ship_Game
         public Rectangle ProdRect;
         public Rectangle ResRect;
         public Rectangle MoneyRect;
+        public Rectangle FertRect;   // Ludoal fork (wishlist): fertility / richness / max pop columns
+        public Rectangle RichRect;
+        public Rectangle MaxPopRect;
 
         AssignLaborComponent AssignLabor;
 
@@ -66,16 +69,20 @@ namespace Ship_Game
             int sliderWidth = Screen.LowRes ? 250 : 375;
 
             P.UpdateIncomes();
-            SysNameRect    = new Rectangle(x, y, (int)((Rect.Width - (sliderWidth + 150)) * 0.17f) - 30, Rect.Height);
-            PlanetNameRect = new Rectangle(x + SysNameRect.Width, y, (int)((Rect.Width - (sliderWidth + 150)) * 0.17f), Rect.Height);
+            // Ludoal fork (wishlist): stat block widened 150 -> 240 for the three new columns
+            SysNameRect    = new Rectangle(x, y, (int)((Rect.Width - (sliderWidth + 240)) * 0.17f) - 30, Rect.Height);
+            PlanetNameRect = new Rectangle(x + SysNameRect.Width, y, (int)((Rect.Width - (sliderWidth + 240)) * 0.17f), Rect.Height);
             PopRect     = new Rectangle(PlanetNameRect.Right,      y,  30, Rect.Height);
             FoodRect    = new Rectangle(PlanetNameRect.Right + 30, y, 30, Rect.Height);
             ProdRect    = new Rectangle(PlanetNameRect.Right + 60, y, 30, Rect.Height);
             ResRect     = new Rectangle(PlanetNameRect.Right + 90, y, 30, Rect.Height);
             MoneyRect   = new Rectangle(PlanetNameRect.Right + 120, y, 30, Rect.Height);
-            SliderRect  = new Rectangle(PlanetNameRect.Right + 150, y - 30, sliderWidth, Rect.Height + 25);
-            StorageRect = new Rectangle(PlanetNameRect.Right + sliderWidth + 150, y, (int)((Rect.Width - (sliderWidth + 120)) * 0.33f), Rect.Height);
-            QueueRect   = new Rectangle(PlanetNameRect.Right + sliderWidth + StorageRect.Width + 150, y, (int)((Rect.Width - (sliderWidth + 150)) * 0.33f), Rect.Height);
+            FertRect    = new Rectangle(PlanetNameRect.Right + 150, y, 30, Rect.Height);
+            RichRect    = new Rectangle(PlanetNameRect.Right + 180, y, 30, Rect.Height);
+            MaxPopRect  = new Rectangle(PlanetNameRect.Right + 210, y, 30, Rect.Height);
+            SliderRect  = new Rectangle(PlanetNameRect.Right + 240, y - 30, sliderWidth, Rect.Height + 25);
+            StorageRect = new Rectangle(PlanetNameRect.Right + sliderWidth + 240, y, (int)((Rect.Width - (sliderWidth + 210)) * 0.33f), Rect.Height);
+            QueueRect   = new Rectangle(PlanetNameRect.Right + sliderWidth + StorageRect.Width + 240, y, (int)((Rect.Width - (sliderWidth + 240)) * 0.33f), Rect.Height);
 
             if (AssignLabor == null)
             {
@@ -116,12 +123,11 @@ namespace Ship_Game
             base.PerformLayout();
         }
 
-        static void DrawNameStat(SpriteBatch batch, ref Vector2 cursor, string label, string value)
+        void DrawStatValue(SpriteBatch batch, Rectangle rect, string value, Color color)
         {
-            batch.DrawString(Fonts.Arial10, label, cursor, Color.Orange);
-            cursor.X += Fonts.Arial10.MeasureString(label).X + 2f;
-            batch.DrawString(Fonts.Arial10, value, cursor, Colors.Cream);
-            cursor.X += Fonts.Arial10.MeasureString(value).X + 8f;
+            var cursor = new Vector2(rect.X + rect.Width - 5 - Fonts.Arial12.MeasureString(value).X,
+                                     PlanetNameRect.Y + PlanetNameRect.Height / 2 - Fonts.Arial12.LineSpacing / 2).ToFloored();
+            batch.DrawString(Fonts.Arial12, value, cursor, color);
         }
 
         public override bool HandleInput(InputState input)
@@ -251,7 +257,7 @@ namespace Ship_Game
             if (P.HasBlueprints) 
             {
                 var color = BlueprintsScreen.GetBlueprintsIconColor(P.Blueprints.ColonyType);
-                batch.DrawString(Fonts.Arial12, P.Blueprints.Name, new Vector2(planetIconRect.X + planetIconRect.Width+10, planetIconRect.Bottom+10), color); // Ludoal fork: +5 to make room for the stats line
+                batch.DrawString(Fonts.Arial12, P.Blueprints.Name, new Vector2(planetIconRect.X + planetIconRect.Width+10, planetIconRect.Bottom+5), color);
                 batch.Draw(ResourceManager.Texture("NewUI/blueprints"), 
                     new Vector2(planetIconRect.X+2, planetIconRect.Bottom), new Vector2(25, 25), color);
             }
@@ -288,7 +294,14 @@ namespace Ship_Game
             cursor.X = cursor.X - Fonts.Arial12.MeasureString(mstring).X;
             cursor = cursor.ToFloored();
             batch.DrawString(Fonts.Arial12, mstring, cursor, (money >= 0f ? Color.White : Color.LightPink));
-            
+
+            // Ludoal fork (wishlist): fertility (env-adjusted, tinted by racial multiplier), richness, max pop
+            float envMult = Universe.Player.PlayerEnvModifier(P.Category);
+            Color fertColor = envMult.AlmostEqual(1) ? Color.White : envMult < 1f ? Color.LightPink : Color.LightGreen;
+            DrawStatValue(batch, FertRect, P.FertilityFor(Universe.Player).String(), fertColor);
+            DrawStatValue(batch, RichRect, P.MineralRichness.String(), Color.White);
+            DrawStatValue(batch, MaxPopRect, P.MaxPopulationBillionFor(Universe.Player).String(), Color.White);
+
             if (Fonts.Pirulen16.MeasureString(P.Name).X + planetIconRect.Width + 10f <= PlanetNameRect.Width)
             {
                 var a = new Vector2(planetIconRect.X + planetIconRect.Width + 10, SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Pirulen16.LineSpacing / 2);
@@ -304,21 +317,6 @@ namespace Ship_Game
                 var c = new Vector2(planetIconRect.X + planetIconRect.Width + 10, SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Arial8Bold.LineSpacing / 2);
                 batch.DrawString(Fonts.Arial8Bold, P.Name, c, TextColor);
             }
-
-            // Ludoal fork (wishlist): fertility / richness / max pop under the planet name
-            var statsCursor = new Vector2(planetIconRect.X + planetIconRect.Width + 10,
-                                          SysNameRect.Y + SysNameRect.Height / 2 + Fonts.Pirulen16.LineSpacing / 2 + 2);
-            DrawNameStat(batch, ref statsCursor, Localizer.Token(GameText.Fertility)[0] + ":", P.FertilityFor(Universe.Player).String());
-            float envMultiplier = Universe.Player.PlayerEnvModifier(P.Category);
-            if (!envMultiplier.AlmostEqual(1)) // show the racial environment multiplier like the planet info panel does
-            {
-                statsCursor.X -= 5f;
-                Color envColor = envMultiplier < 1f ? Color.Pink : Color.LightGreen;
-                batch.DrawString(Fonts.Arial10, $"(x {envMultiplier.String(2)})", statsCursor, envColor);
-                statsCursor.X += Fonts.Arial10.MeasureString($"(x {envMultiplier.String(2)})").X + 8f;
-            }
-            DrawNameStat(batch, ref statsCursor, Localizer.Token(GameText.Richness)[0] + ":", P.MineralRichness.String());
-            DrawNameStat(batch, ref statsCursor, "Max:", P.MaxPopulationBillionFor(Universe.Player).String());
 
             base.Draw(batch, elapsed);
 

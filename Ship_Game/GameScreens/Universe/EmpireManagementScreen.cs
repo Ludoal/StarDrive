@@ -25,6 +25,9 @@ namespace Ship_Game
         private readonly SortButton SbProd;
         private readonly SortButton SbRes;
         private readonly SortButton SbMoney;
+        private readonly SortButton SbFert;   // Ludoal fork (wishlist)
+        private readonly SortButton SbRich;
+        private readonly SortButton SbMaxPop;
 
         readonly UILabel AvailableTroops;
         readonly UILabel TroopConsumption;
@@ -66,6 +69,9 @@ namespace Ship_Game
             SbProd  = new SortButton(eui.Player.data.ESSort, "prod");
             SbRes   = new SortButton(eui.Player.data.ESSort, "res");
             SbMoney = new SortButton(eui.Player.data.ESSort, "money");
+            SbFert   = new SortButton(eui.Player.data.ESSort, "fert");
+            SbRich   = new SortButton(eui.Player.data.ESSort, "rich");
+            SbMaxPop = new SortButton(eui.Player.data.ESSort, "maxpop");
 
             var planets = Universe.Player.GetPlanets();
             int sidePanelWidths = (int)(ScreenWidth * 0.3f);
@@ -211,6 +217,10 @@ namespace Ship_Game
                 batch.Draw(iconProd, SbProd.rect, White);
                 batch.Draw(iconRes, SbRes.rect, White);
                 batch.Draw(iconMoney, SbMoney.rect, White);
+                // Ludoal fork (wishlist): text headers for the fertility / richness / max pop columns
+                SbFert.rect   = DrawStatHeader(batch, entry.FertRect.X, (int)ERect.Y, Localizer.Token(GameText.Fertility)[0] + "");
+                SbRich.rect   = DrawStatHeader(batch, entry.RichRect.X, (int)ERect.Y, Localizer.Token(GameText.Richness)[0] + "");
+                SbMaxPop.rect = DrawStatHeader(batch, entry.MaxPopRect.X, (int)ERect.Y, "Max");
                 textCursor = new Vector2(entry.SliderRect.X + 30, ERect.Y);
                 batch.DrawString(NormalFont, Localizer.Token(GameText.Labor), textCursor, Cream);
                 textCursor = new Vector2(entry.StorageRect.X + 30, ERect.Y);
@@ -238,6 +248,12 @@ namespace Ship_Game
             topLeftSL = new Vector2(e1.ResRect.X, columnTop);
             botSL     = new Vector2(topLeftSL.X, columnBot);
             batch.DrawLine(topLeftSL, botSL, new Color(lineColor, 100).Premultiplied());
+            foreach (int colX in new[] { e1.FertRect.X, e1.RichRect.X, e1.MaxPopRect.X }) // Ludoal fork (wishlist)
+            {
+                topLeftSL = new Vector2(colX, columnTop);
+                botSL     = new Vector2(topLeftSL.X, columnBot);
+                batch.DrawLine(topLeftSL, botSL, new Color(lineColor, 100).Premultiplied());
+            }
             topLeftSL = new Vector2(e1.MoneyRect.X, columnTop);
             botSL     = new Vector2(topLeftSL.X, columnBot);
             batch.DrawLine(topLeftSL, botSL, new Color(lineColor, 100).Premultiplied());
@@ -310,8 +326,19 @@ namespace Ship_Game
             HandleSortButton(input, SbProd, GameText.TheNetAmountOfProduction, p => p.Prod.NetIncome);
             HandleSortButton(input, SbRes, GameText.TheNetAmountOfResearch, p => p.Res.NetIncome);
             HandleSortButton(input, SbMoney, GameText.TheNetIncomeOfThis, p => p.Money.NetRevenue);
+            HandleSortButton(input, SbFert, GameText.IndicatesHowMuchFoodThis, p => p.FertilityFor(Universe.Player));
+            HandleSortButton(input, SbRich, GameText.APlanetsMineralRichnessDirectly, p => p.MineralRichness);
+            HandleSortButton(input, SbMaxPop, GameText.IndicatesThisColonysCurrentPopulation, p => p.MaxPopulationBillionFor(Universe.Player));
 
             return base.HandleInput(input);
+        }
+
+        Rectangle DrawStatHeader(SpriteBatch batch, int x, int y, string label)
+        {
+            var size = NormalFont.MeasureString(label);
+            var r = new Rectangle(x + 15 - (int)(size.X / 2), y, (int)size.X.LowerBound(20), NormalFont.LineSpacing);
+            batch.DrawString(NormalFont, label, new Vector2(r.X, r.Y), Colors.Cream);
+            return r;
         }
 
         void HandleSortButton(InputState input, SortButton button, LocalizedText tooltip, Func<Planet, float> selector)

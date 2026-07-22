@@ -125,7 +125,7 @@ namespace Ship_Game.AI
                 int colonization = 0;
                 foreach (Goal g in GoalsList)
                     if (g?.Type == GoalType.MarkForColonization) ++colonization;
-                Log.Info($"[colonize-diag] first update: {GoalsList.Count} goals total, {colonization} colonization");
+                Log.Warning($"[colonize-diag] first update: {GoalsList.Count} goals total, {colonization} colonization"); // Warning: Log.Info is compiled out in release
             }
             if (Disabled) // AI has been disabled for debugging purposes
                 return;

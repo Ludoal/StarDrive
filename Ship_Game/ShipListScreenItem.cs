@@ -409,13 +409,8 @@ namespace Ship_Game
                         {
                             // OrderScrapShip defers the ScrapShip goal to the sim thread,
                             // so refresh the status only after the goal has actually run
-                            Log.Info($"[#322-diag] click: scrap {Ship.Name} state={Ship.AI.State}"); // temp diagnostics for #322
                             Ship.AI.OrderScrapShip();
-                            Screen.Universe.RunOnSimThread(() =>
-                            {
-                                Log.Info($"[#322-diag] sim: {Ship.Name} state={Ship.AI.State} orbit={Ship.AI.OrbitTarget?.Name ?? "null"}"); // temp diagnostics for #322
-                                Screen.ResetStatus();
-                            });
+                            Screen.Universe.RunOnSimThread(() => Screen.ResetStatus());
                         }
                     }
                     StatusText = GetStatusText(Ship);
