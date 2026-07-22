@@ -15151,9 +15151,9 @@ ExoticResourcesOutput:
  PTB: "Saída"
 ExoticRefiningVsConsumption:
  Id: 4481
- ENG: "Refining/Consumption"     
- UKR: "Переробка/споживання"
- PTB: "Refino/Consumo"
+ ENG: "Refining/Demand"     
+ UKR: "Переробка/попит"
+ PTB: "Refino/Demanda"
 ExoticRefiningMaxPotential:
  Id: 4482
  ENG: "Max"      
@@ -15211,7 +15211,7 @@ ExoticResourceOutputTip:
  PTB: "Uso das Operações de Mineração atuais do Império. Normalmente, a produção fica menor quando os armazéns estão cheios e sua Estação de Mineração consegue refinar mais recursos do que realmente é necessário."
 ExoticResourceRefineConsumeTip: 
  Id: 4493
- ENG: "Refining rate vs. Consumption rate of the Exotic resource. Excess Refining is transferred to storage and when the storage is full, output decreases until it matches the needed consumption."       
+ ENG: "Refining rate vs. DEMAND of the Exotic resource - what your empire WOULD consume at full bonus (population, hull area, warp thrust...), not an actual drain: nothing is taken beyond refining plus storage. Excess Refining is transferred to storage and when the storage is full, output decreases until it matches the demand."       
  UKR: "Швидкість переробки проти швидкості споживання екзотичного ресурсу. Надлишок переробки переноситься до сховища, і коли сховище заповнюється, виробництво зменшується, поки не зрівняється з необхідним споживанням."
  PTB: "Taxa de refino vs. taxa de consumo do recurso exótico. O refino excedente é transferido para o armazenamento e, quando o armazenamento fica cheio, a produção diminui até corresponder ao consumo necessário."
 ExoticResourceMaxRefineTip: 
