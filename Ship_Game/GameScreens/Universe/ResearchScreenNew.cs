@@ -57,11 +57,22 @@ namespace Ship_Game
         public override void LoadContent()
         {
             camera = new Camera2D { Pos = new Vector2(Viewport.Width, Viewport.Height) / 2f };
-            // Ludoal fork: leave room for the live top bar; the node grids derive
-            // from main.Height so they compress on their own. On <=720p a 7-row
-            // column would clip (86px per 98px node), so the bar stays off there.
-            int topBarRoom = ScreenHeight > 720 ? 75 : 0;
-            var main = new Rectangle(0, topBarRoom, ScreenWidth, ScreenHeight - topBarRoom);
+            // Ludoal fork: standard screen grammar — RESEARCH title cartouche under
+            // the live top bar, frame below, aligned with Empire/Arrays. The node
+            // grids derive from main.Height so they compress on their own; on <=720p
+            // a 7-row column would clip (86px per 98px node), so everything stays
+            // full-screen there (no bar, no title).
+            var main = new Rectangle(0, 0, ScreenWidth, ScreenHeight);
+            if (ScreenHeight > 720)
+            {
+                var titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
+                Add(new Menu2(titleRect));
+                string title = Localizer.Token(GameText.Research);
+                var titlePos = new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString(title).X / 2f,
+                                           titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
+                Label(titlePos, title, Fonts.Laserian14, Colors.Cream);
+                main = new Rectangle(0, titleRect.Bottom + 5, ScreenWidth, ScreenHeight - titleRect.Bottom - 7);
+            }
             MainMenu = new Menu2(main);
             MainMenuOffset = new Vector2(main.X + 20, main.Y + 30);
             Close = Add(new CloseButton(main.Right - 40, main.Y + 20));
@@ -101,7 +112,7 @@ namespace Ship_Game
             // Create queue once all techs are populated
             var queue = new Rectangle(main.X + main.Width - 355, main.Y + 40, 330, main.Height - 100);
             Queue = Add(new ResearchQueueUIComponent(this, queue));
-            Vector2 searchPos = new(main.X + main.Width - 360, main.Height - 55);
+            Vector2 searchPos = new(main.X + main.Width - 360, main.Bottom - 55); // Ludoal fork: main.Height was used as a Y coordinate
             Search = Add(new UIButton(ButtonStyle.BigDip, searchPos, "Search"));
             Search.OnClick = OnSearchButtonClicked;
 

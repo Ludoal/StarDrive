@@ -232,7 +232,7 @@ namespace Ship_Game
 
                 // Ludoal fork: Planet View removed — the cartouche shows the planet itself now
                 batch.Draw(P.PlanetTexture, UninhabIconRect, Color.White);
-                string uninhabClass = P.LocalizedRichness;
+                string uninhabClass = P.IsMineable ? P.LocalizedCategory : P.LocalizedRichness; // mineable: richness lives on the resource line
                 var uninhabClassPos = new Vector2(UninhabIconRect.X + UninhabIconRect.Width / 2 - Fonts.Arial12Bold.MeasureString(uninhabClass).X / 2f,
                                                   UninhabIconRect.Y + UninhabIconRect.Height + 5);
                 batch.DrawString(Fonts.Arial12Bold, uninhabClass, uninhabClassPos, tColor);

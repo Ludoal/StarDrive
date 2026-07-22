@@ -70,7 +70,8 @@ namespace Ship_Game
             foreach (var pair in pairs)
             {
                 PickerItem header = DesignSL.AddItem(new PickerItem(pair.Key));
-                foreach (Ship s in pair.Value) // already strength-sorted from the base list
+                foreach (Ship s in pair.Value.OrderByDescending(x => x.DesignRole)
+                                             .ThenByDescending(x => x.BaseStrength)) // class blocks, heaviest first
                     header.AddSubItem(new PickerItem(s.Name,
                         Localizer.GetRole(s.DesignRole, Host.Player) + " \u00b7 str " + s.BaseStrength.String(0), isMirror: false));
             }

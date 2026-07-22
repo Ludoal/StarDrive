@@ -35,7 +35,7 @@ namespace Ship_Game
 			TransitionOnTime = TimeSpan.FromSeconds(0.25);
 			TransitionOffTime = TimeSpan.FromSeconds(0.25);
 			DeployRect = new Rectangle(r.X + 183, r.Y + 130, 182, 25); // right column, like planet action buttons
-			SunIconRect = new Rectangle(r.X + 75, r.Y + 115, 80, 80);
+			SunIconRect = new Rectangle(r.X + 20, r.Y + 85, 160, 160); // doubled per bench feedback
 		}
 
 		public void SetSystem(SolarSystem s) => Sys = s;
@@ -50,7 +50,7 @@ namespace Ship_Game
 			batch.Draw(ResourceManager.Texture("SelectionBox/unitselmenu_main"), Housing, Color.White);
 			batch.DrawString(Fonts.Arial20Bold, Sys.Name, new Vector2(Housing.X + 41, Housing.Y + 65), Colors.Cream);
 
-			var textPos = new Vector2(Housing.X + 20, Housing.Y + 100);
+			var textPos = new Vector2(Housing.X + 183, Housing.Y + 100); // right column — the star occupies the left
 			if (!Sys.IsExploredBy(Player))
 			{
 				batch.DrawString(Font12, "Unexplored star", textPos, Color.Gray);
@@ -62,12 +62,12 @@ namespace Ship_Game
 
 			if (Sys.IsResearchable)
 			{
-				batch.DrawString(Font12, "This star radiates researchable phenomena", textPos, Colors.Cream);
+				batch.DrawString(Font12, "Researchable phenomena", textPos, Colors.Cream);
 				DrawDeployButton(batch);
 			}
 			else
 			{
-				batch.DrawString(Font12, "Nothing of particular scientific interest", textPos, Color.Gray);
+				batch.DrawString(Font12, "No scientific interest", textPos, Color.Gray);
 			}
 		}
 
