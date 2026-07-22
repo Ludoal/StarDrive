@@ -72,14 +72,14 @@ namespace Ship_Game
             // Ludoal fork (wishlist): stat block widened 150 -> 240 for the three new columns
             SysNameRect    = new Rectangle(x, y, (int)((Rect.Width - (sliderWidth + 240)) * 0.17f) - 30, Rect.Height);
             PlanetNameRect = new Rectangle(x + SysNameRect.Width, y, (int)((Rect.Width - (sliderWidth + 240)) * 0.17f), Rect.Height);
-            PopRect     = new Rectangle(PlanetNameRect.Right,      y,  30, Rect.Height);
-            FoodRect    = new Rectangle(PlanetNameRect.Right + 30, y, 30, Rect.Height);
-            ProdRect    = new Rectangle(PlanetNameRect.Right + 60, y, 30, Rect.Height);
-            ResRect     = new Rectangle(PlanetNameRect.Right + 90, y, 30, Rect.Height);
-            MoneyRect   = new Rectangle(PlanetNameRect.Right + 120, y, 30, Rect.Height);
-            FertRect    = new Rectangle(PlanetNameRect.Right + 150, y, 30, Rect.Height);
-            RichRect    = new Rectangle(PlanetNameRect.Right + 180, y, 30, Rect.Height);
-            MaxPopRect  = new Rectangle(PlanetNameRect.Right + 210, y, 30, Rect.Height);
+            FertRect    = new Rectangle(PlanetNameRect.Right,      y,  30, Rect.Height);
+            RichRect    = new Rectangle(PlanetNameRect.Right + 30, y, 30, Rect.Height);
+            MaxPopRect  = new Rectangle(PlanetNameRect.Right + 60, y, 30, Rect.Height);
+            PopRect     = new Rectangle(PlanetNameRect.Right + 90, y, 30, Rect.Height);
+            FoodRect    = new Rectangle(PlanetNameRect.Right + 120, y, 30, Rect.Height);
+            ProdRect    = new Rectangle(PlanetNameRect.Right + 150, y, 30, Rect.Height);
+            ResRect     = new Rectangle(PlanetNameRect.Right + 180, y, 30, Rect.Height);
+            MoneyRect   = new Rectangle(PlanetNameRect.Right + 210, y, 30, Rect.Height);
             SliderRect  = new Rectangle(PlanetNameRect.Right + 240, y - 30, sliderWidth, Rect.Height + 25);
             StorageRect = new Rectangle(PlanetNameRect.Right + sliderWidth + 240, y, (int)((Rect.Width - (sliderWidth + 210)) * 0.33f), Rect.Height);
             QueueRect   = new Rectangle(PlanetNameRect.Right + sliderWidth + StorageRect.Width + 240, y, (int)((Rect.Width - (sliderWidth + 240)) * 0.33f), Rect.Height);
