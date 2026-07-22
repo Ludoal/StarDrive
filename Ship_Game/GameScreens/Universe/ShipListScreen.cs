@@ -402,6 +402,7 @@ namespace Ship_Game
 
         public void ResetStatus()
         {
+            Log.Info($"[#322-diag] ResetStatus: {ShipSL.AllEntries.Count} entries"); // temp diagnostics for #322
             foreach (ShipListScreenItem sel in ShipSL.AllEntries)
                 sel.StatusText = ShipListScreenItem.GetStatusText(sel.Ship);
         }

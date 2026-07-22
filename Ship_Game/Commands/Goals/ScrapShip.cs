@@ -37,6 +37,7 @@ namespace Ship_Game.Commands.Goals  // Created by Fat Bastard
 
         GoalStep FindPlanetToScrapAndOrderScrap()
         {
+            Log.Info($"[#322-diag] ScrapShip.Step1: ship={OldShip?.Name} canScrap={OldShip?.CanBeScrapped}"); // temp diagnostics for #322
             if (OldShip == null || !OldShip.CanBeScrapped) 
                 return GoalStep.GoalFailed;
 
@@ -51,6 +52,7 @@ namespace Ship_Game.Commands.Goals  // Created by Fat Bastard
             PlanetBuildingAt = buildAt;
             OldShip.AI.IgnoreCombat = true;
             OldShip.AI.OrderMoveAndScrap(buildAt);
+            Log.Info($"[#322-diag] ScrapShip.Step1: ordered to {buildAt.Name}, state={OldShip.AI.State}"); // temp diagnostics for #322
             return GoalStep.GoToNextStep;
         }
 
