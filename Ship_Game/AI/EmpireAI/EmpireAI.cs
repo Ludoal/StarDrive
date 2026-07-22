@@ -96,6 +96,13 @@ namespace Ship_Game.AI
         {
             InitializeManagers(OwnerEmpire);
             ScrubNullGoalSlots();
+            if (OwnerEmpire?.isPlayer == true) // temp diagnostics: are colonization goals even IN the save?
+            {
+                int colonization = 0;
+                foreach (Goal g in GoalsList)
+                    if (g.Type == GoalType.MarkForColonization) ++colonization;
+                Log.Info($"[colonize-diag] loaded: {GoalsList.Count} goals total, {colonization} colonization");
+            }
         }
 
         void ScrubNullGoalSlots()
