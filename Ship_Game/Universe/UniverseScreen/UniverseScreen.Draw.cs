@@ -370,9 +370,9 @@ namespace Ship_Game
             OverlaysGroupTotalPerf.Start();
             {
                 UpdateFogOfWarInfluences(batch, graphics);
-                // Ludoal fork: colored influence zones are their own overlay now (F4),
-                // and the FTL overlay (F2) still needs them. Replaces the old Options toggle.
-                if ((ShowingFTLOverlay || ShowingInfluenceOverlay) && viewState >= UnivScreenState.SectorView)
+                // Ludoal fork: colored influence zones are their own overlay (F2),
+                // fully decoupled from the subspace projection view (F4).
+                if (ShowingInfluenceOverlay && viewState >= UnivScreenState.SectorView)
                     DrawColoredEmpireBorders(sr, graphics);
 
                 // §3.7 step 1: bloom processes MainTarget -> PostBloomTarget,
@@ -432,7 +432,7 @@ namespace Ship_Game
 
                 // Ludoal fork: composite must be gated with the render pass above — BorderRT
                 // keeps its last frame otherwise (colors stuck after the overlay toggled off).
-                if (ShowingFTLOverlay || ShowingInfluenceOverlay)
+                if (ShowingInfluenceOverlay)
                     DrawColoredBordersRT(batch);
             }
             OverlaysGroupTotalPerf.Stop();
@@ -691,12 +691,12 @@ namespace Ship_Game
         // this is called quite rarely, only when the FTL (F2) or gravity wells (F5) overlay is enabled
         void DrawFTLInhibitionNodes()
         {
-            if ((ShowingFTLOverlay || ShowingGravityWellOverlay) && UState.P.GravityWellRange > 0f && !LookingAtPlanet)
+            if ((ShowingFTLOverlay || ShowingGravityWellOverlay) && !LookingAtPlanet)
             {
                 var inhibit = ResourceManager.Texture("UI/node_inhibit");
 
-                // Gravity wells are only legible up to sector view; skip them in galaxy view
-                if (viewState <= UnivScreenState.SectorView)
+                // F5: gravity wells + inhibitor fields. Only legible up to sector view.
+                if (ShowingGravityWellOverlay && UState.P.GravityWellRange > 0f && viewState <= UnivScreenState.SectorView)
                 {
                     Planet[] visiblePlanets = UState.GetVisiblePlanets();
                     foreach (Planet planet in visiblePlanets)
@@ -718,8 +718,7 @@ namespace Ship_Game
                     }
                 }
 
-                // draw blue positive influence nodes from bordernodes
-                // (FTL overlay only - the F5 gravity wells view shows inhibition, not coverage)
+                // F4: subspace projection coverage (blue positive nodes from bordernodes)
                 if (ShowingFTLOverlay && viewState >= UnivScreenState.SectorView)
                 {
                     var transparentBlue = new Color(30, 30, 150, 150).Premultiplied();

@@ -59,8 +59,8 @@ namespace Ship_Game
             // zooms, map overlays and the overlay windows, paired in rows:
             // (ZoomToShip|ZoomOut) (FTL|WeaponsRange) (DSB|Automation) (Freighters|ExoticBonuses)
             ZoomToShip     = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonC, "Minimap/icons_zoomctrl", ZoomToShip_OnClick));
-            GravityWells   = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_ftloverlay", GravityWells_OnClick));
-            InfluenceZones = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/flagicon", InfluenceZones_OnClick)); // Ludoal fork (F4)
+            InfluenceZones = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/flagicon", InfluenceZones_OnClick)); // Ludoal fork (F2)
+            GravityWells   = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_ftloverlay", GravityWells_OnClick)); // subspace projection (F4)
             DeepSpaceBuild = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_dsbw", DeepSpaceBuild_OnClick));
             FreighterUtil  = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "NewUI/icon_freighter_util", FreighterUtilizationScreen_OnClick));
 
@@ -130,8 +130,8 @@ namespace Ship_Game
                 batch.SafeBegin(SpriteBlendMode.NonPremultiplied);
 
                 // Ludoal fork: minimap influence follows the main map — with the
-                // influence zones follow the F4 overlay (or F2, which needs them)
-                if (Universe.ShowingFTLOverlay || Universe.ShowingInfluenceOverlay)
+                // influence zones follow the influence overlay (F2)
+                if (Universe.ShowingInfluenceOverlay)
                     DrawMinimapInfluenceNodes(batch);
                 DrawSelected(batch, Player);
                 DrawWarnings(batch);
@@ -448,13 +448,13 @@ namespace Ship_Game
 
             if (GravityWells.Rect.HitTest(input.CursorPosition))
                 // TODO: phase 5 — wire up a dedicated FTL-overlay codex entry, then re-add codexUid here.
-                ToolTip.CreateTooltip(GameText.FtlOverlayVisualisesSubspaceProjection, "F2");
+                ToolTip.CreateTooltip(GameText.FtlOverlayVisualisesSubspaceProjection, "F4");
 
             if (RangeOverley.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.WeaponsRangeOverlayVisualisesShips, "F3");
 
             if (InfluenceZones.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.InfluenceOverlayVisualises, "F4");
+                ToolTip.CreateTooltip(GameText.InfluenceOverlayVisualises, "F2");
 
             if (GravityWellsOnly.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.GravityWellOverlayVisualises, "F5");

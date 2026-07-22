@@ -335,7 +335,7 @@ namespace Ship_Game.Ships
 
         void DrawInhibitWarning(SpriteBatch batch, int numStatus, Vector2 mousePos, Ship ship)
         {
-            if (Universe.UState.P.DisableInhibitionWarning || Universe.ShowingFTLOverlay)
+            if (Universe.UState.P.DisableInhibitionWarning || Universe.ShowingFTLOverlay || Universe.ShowingGravityWellOverlay)
                 return;
 
             string text = "Inhibited";

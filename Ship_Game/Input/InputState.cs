@@ -103,9 +103,9 @@ namespace Ship_Game
         public bool ExoticBonusesWindow  => KeyPressed(Keys.M);
         public bool FreighterUtilWindow  => KeyPressed(Keys.N);
         public bool EmpirePatrolsScreen  => KeyPressed(Keys.P);
-        public bool FTLOverlay           => KeyPressed(Keys.F2);
+        public bool InfluenceOverlay     => KeyPressed(Keys.F2); // Ludoal fork: colored influence zones
         public bool RangeOverlay         => KeyPressed(Keys.F3);
-        public bool InfluenceOverlay     => KeyPressed(Keys.F4); // Ludoal fork: colored influence zones
+        public bool FTLOverlay           => KeyPressed(Keys.F4); // Ludoal fork: subspace projection (coverage + projectors), ex-F2
         public bool GravityWellOverlay   => KeyPressed(Keys.F5) && !IsShiftKeyDown; // Ludoal fork (Shift+F5 stays real lights)
         public bool ShipListScreen       => KeyPressed(Keys.K);
         public bool TroopListScreen      => KeyPressed(Keys.C); // Ludoal fork: Troops Array (C was debug-spawn only)
