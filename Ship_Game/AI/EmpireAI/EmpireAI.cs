@@ -115,18 +115,8 @@ namespace Ship_Game.AI
                             "from GoalsList after deserialize (likely a Goal type removed/renamed since the save was written).");
         }
 
-        bool LoggedGoalCounts; // temp diagnostics for the vanishing colonization goals
-
         public void Update()
         {
-            if (!LoggedGoalCounts && OwnerEmpire?.isPlayer == true)
-            {
-                LoggedGoalCounts = true;
-                int colonization = 0;
-                foreach (Goal g in GoalsList)
-                    if (g?.Type == GoalType.MarkForColonization) ++colonization;
-                Log.Warning($"[colonize-diag] first update: {GoalsList.Count} goals total, {colonization} colonization"); // Warning: Log.Info is compiled out in release
-            }
             if (Disabled) // AI has been disabled for debugging purposes
                 return;
 
@@ -603,8 +593,6 @@ namespace Ship_Game.AI
 
         public void RemoveGoal(Goal goal)
         {
-            if (goal.Type == GoalType.MarkForColonization && OwnerEmpire.isPlayer) // temp diagnostics: who kills player colonization goals
-                Log.WarningWithCallStack($"[colonize-diag] RemoveGoal target={goal.TargetPlanet?.Name} step={goal.Step}");
             if (MarshalScreen is { } screen)
                 screen.RunOnSimThread(() => { goal.OnRemoved(); GoalsList.Remove(goal); });
             else
