@@ -719,7 +719,8 @@ namespace Ship_Game
                 }
 
                 // draw blue positive influence nodes from bordernodes
-                if (viewState >= UnivScreenState.SectorView)
+                // (FTL overlay only - the F5 gravity wells view shows inhibition, not coverage)
+                if (ShowingFTLOverlay && viewState >= UnivScreenState.SectorView)
                 {
                     var transparentBlue = new Color(30, 30, 150, 150).Premultiplied();
                     var transparentGreen = new Color(0, 200, 0, 20).Premultiplied();

@@ -191,6 +191,8 @@ namespace Ship_Game
             FreighterUtil.IsToggled =  Universe.FreighterUtilizationWindow.IsOpen;
 
             RangeOverley.IsToggled         = Universe.ShowingRangeOverlay;
+            InfluenceZones.IsToggled       = Universe.ShowingInfluenceOverlay;   // Ludoal fork (F4)
+            GravityWellsOnly.IsToggled     = Universe.ShowingGravityWellOverlay; // Ludoal fork (F5)
             
             base.Draw(batch, elapsed);
         }
