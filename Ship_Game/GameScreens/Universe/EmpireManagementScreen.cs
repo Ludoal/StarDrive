@@ -326,9 +326,10 @@ namespace Ship_Game
             HandleSortButton(input, SbProd, GameText.TheNetAmountOfProduction, p => p.Prod.NetIncome);
             HandleSortButton(input, SbRes, GameText.TheNetAmountOfResearch, p => p.Res.NetIncome);
             HandleSortButton(input, SbMoney, GameText.TheNetIncomeOfThis, p => p.Money.NetRevenue);
-            HandleSortButton(input, SbFert, GameText.IndicatesHowMuchFoodThis, p => p.FertilityFor(Universe.Player));
-            HandleSortButton(input, SbRich, GameText.APlanetsMineralRichnessDirectly, p => p.MineralRichness);
-            HandleSortButton(input, SbMaxPop, GameText.IndicatesThisColonysCurrentPopulation, p => p.MaxPopulationBillionFor(Universe.Player));
+            // short title-only tooltips here, the long descriptions stay on their original screens
+            HandleSortButton(input, SbFert, GameText.Fertility, p => p.FertilityFor(Universe.Player));
+            HandleSortButton(input, SbRich, GameText.Richness, p => p.MineralRichness);
+            HandleSortButton(input, SbMaxPop, GameText.MaxPopulation, p => p.MaxPopulationBillionFor(Universe.Player));
 
             return base.HandleInput(input);
         }
