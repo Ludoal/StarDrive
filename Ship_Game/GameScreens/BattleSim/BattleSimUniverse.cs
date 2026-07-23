@@ -279,6 +279,16 @@ namespace Ship_Game
 
         public override void Update(float fixedDeltaTime)
         {
+            // S5.1 field result: the sensor "known by" flags decay in 1s — when a side
+            // loses its last ship it loses all sensors, and the WINNERS vanished the
+            // moment the loser exploded. The arena is full-transparency by design:
+            // refresh the flags directly, every tick, both ways.
+            foreach (Foe f in Foes)
+                if (f.Ship != null && f.Ship.Active)
+                    f.Ship.KnownByEmpires.SetSeen(Player);
+            if (ShipA != null && ShipA.Active && Them != null)
+                ShipA.KnownByEmpires.SetSeen(Them);
+
             PinShips();
 
             // S3: fight clock + end detection → battle report after the explosion
