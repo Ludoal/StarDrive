@@ -807,17 +807,25 @@ namespace Ship_Game
         bool TryBuildBiospheres(float budget, out bool shouldScrapBioSpheres)
         {
             shouldScrapBioSpheres = false;
+            // [bio-diag] issue 335 bench probe — player planets with an incomplete blueprint only
+            bool bioDiag = OwnerIsPlayer && HasBlueprints && !Blueprints.IsAchievableCompleted;
             if (!Owner.IsBuildingUnlocked(Building.BiospheresId)
                 || BiosphereInTheWorks
                 || IsStarving
                 || HabitablePercentage.AlmostEqual(1)) // all tiles are habitable
             {
+                if (bioDiag)
+                    Log.Warning($"[bio-diag] {Name}: gate=ENTRY inWorks={BiosphereInTheWorks} starving={IsStarving} habPct={HabitablePercentage.String(2)}");
                 return false;
             }
 
             Building bio = ResourceManager.GetBuildingTemplate(Building.BiospheresId);
             if (bio == null || bio.ActualMaintenance(this) > budget)
+            {
+                if (bioDiag)
+                    Log.Warning($"[bio-diag] {Name}: gate=BUDGET maint={bio?.ActualMaintenance(this).String(2)} budget={budget.String(2)}");
                 return false; // not within budget or not profitable and more than 5
+            }
 
             if (!BioSphereProfitable(bio))
             {
@@ -831,13 +839,17 @@ namespace Ship_Game
                     // the budget, so governors razed player-funded biospheres at budget 99 (issue 313)
                     bool budgetCoversUpkeep = budget >= NumFreeBiospheres * bio.ActualMaintenance(this);
                     shouldScrapBioSpheres = !budgetCoversUpkeep
-                        && (NumFreeBiospheres > 1 
+                        && (NumFreeBiospheres > 1
                             || numBuildingsWeCanBuild == 0 && (!HasBlueprints || Blueprints.IsAchievableCompleted));
+                    if (bioDiag)
+                        Log.Warning($"[bio-diag] {Name}: gate=FREEBIO free={NumFreeBiospheres} canBuild={numBuildingsWeCanBuild} coversUpkeep={budgetCoversUpkeep} scrap={shouldScrapBioSpheres}");
                     return false;
                 }
                 else if (numBuildingsWeCanBuild == 0 || HabiableBuiltCoverage.Less(1))
                 {
                     // no need to build unprofitable biospheres if we have nothing to build here
+                    if (bioDiag)
+                        Log.Warning($"[bio-diag] {Name}: gate=NOTHINGTOBUILD canBuild={numBuildingsWeCanBuild} builtCoverage={HabiableBuiltCoverage.String(2)}");
                     return false;
                 }
             }
@@ -846,6 +858,8 @@ namespace Ship_Game
             {
                 // dont build even if profitable, if pop is not big enough.
                 // but ensure there is at least 1 free biospheres if there are no free tiles
+                if (bioDiag)
+                    Log.Warning($"[bio-diag] {Name}: gate=POP95 popRatio={PopulationRatio.String(2)} free={NumFreeBiospheres} builtCoverage={HabiableBuiltCoverage.String(2)}");
                 return false;
             }
 
@@ -853,7 +867,10 @@ namespace Ship_Game
             if (IsPlanetExtraDebugTarget())
                 Log.Info(ConsoleColor.Green, $"{Owner.PortraitName} BUILT {bio.Name} on planet {Name}");
 
-            return Construction.Enqueue(bio, GetPreferredTile()); // Preferred is null safe in this call
+            bool enqueued = Construction.Enqueue(bio, GetPreferredTile()); // Preferred is null safe in this call
+            if (bioDiag)
+                Log.Warning($"[bio-diag] {Name}: PASSED all gates, enqueued={enqueued}");
+            return enqueued;
 
             PlanetGridSquare GetPreferredTile()
             {
