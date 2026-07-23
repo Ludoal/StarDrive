@@ -34,7 +34,10 @@ namespace Ship_Game
             RemoveAll();
 
             const int windowWidth = 320;
-            RectF = new(Screen.ScreenWidth - 15 - windowWidth, 100, windowWidth, 300);
+            // Ludoal fork: sit left of the Automation window (220px wide, right-anchored
+            // at ScreenWidth-15) instead of overlapping it.
+            const int automationWidth = 220;
+            RectF = new(Screen.ScreenWidth - 15 - automationWidth - 10 - windowWidth, 89, windowWidth, 300);
 
             var sl = Add(new SubmenuScrollList<ConstructionListItem>(RectF, "Build Menu"));
             sl.SetBackground(Colors.TransparentBlackFill);
@@ -92,7 +95,7 @@ namespace Ship_Game
                 batch.DrawString(Fonts.Arial8Bold, Template.GetRole(), X+iconSize+2, Y+18, Color.Orange);
 
                 float prodX = Right - 120;
-                batch.DrawString(Fonts.Arial8Bold, Template.GetMaintenanceCost(Universe.Player).String(2)+" BC/Y", prodX, Y+4, Color.Salmon); // Maintenance Cost
+                batch.DrawString(Fonts.Arial8Bold, Template.GetMaintenanceCost(Universe.Player).String(2)+" BC/turn", prodX, Y+4, Color.Salmon); // Maintenance Cost
                 batch.Draw(iconProd, new Vector2(prodX+50, Y+4), iconProd.SizeF); // Production Icon
                 batch.DrawString(Fonts.Arial12Bold, Template.GetCost(Universe.Player).String(1), prodX+50+iconProd.Width+2, Y+4); // Build Production Cost
             }
@@ -185,6 +188,8 @@ namespace Ship_Game
                 return false;
 
             if (targetSystem != null && (Screen.CursorWorldPosition2D.InRadius(targetSystem.Position, MinimumBuildDistanceFromSun) 
+                                         && targetPlanet == null // a planet's orbit is a valid site even close to the sun -
+                                                                 // the planet UI allows it, this menu refused it (issue 284)
                                          || !targetSystem.InSafeDistanceFromRadiation(Screen.CursorWorldPosition2D)))
             {
                 return false;
@@ -357,8 +362,11 @@ namespace Ship_Game
                 {
                     Screen.ProjectToScreenCoords(item.BuildPos, platform.Width, out Vector2d posOnScreen, out double size);
 
-                    // not Ship.ScaleIconSize: here scale is a texture multiplier, not a pixel count
-                    float scale = ((float)size * 2).Clamped(0.2f, 0.4f) + (GlobalStats.IconSize - 1) * 0.05f;
+                    // FIX #347: ScaleIconSize adds the integer IconSize setting, which is meant for
+                    // pixel sizes — here the result is used as a texture scale multiplier, blowing the
+                    // intended 0.2-0.4 range up to 1.2+ even at IconSize=1. Keep the designed range and
+                    // let the setting nudge it gently (+5% per step) instead.
+                    float scale = ((float)size * 2f).Clamped(0.2f, 0.4f) + (GlobalStats.IconSize - 1) * 0.05f;
                     Screen.DrawTextureSized(platform, posOnScreen, 0.0f, platform.Width * scale,
                                             platform.Height * scale, new Color(0, 255, 0, 100).Premultiplied());
 

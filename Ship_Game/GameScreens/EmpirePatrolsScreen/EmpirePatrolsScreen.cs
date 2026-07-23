@@ -121,6 +121,7 @@ namespace Ship_Game
 
                 batch.DrawRectangle(PatrolsSL.ItemsHousing, lineColor); // items housing border
             }
+            Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
 
@@ -156,6 +157,9 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
             if (PatrolsSL.NumEntries == 0)
                 ResetList();
 
@@ -163,6 +167,8 @@ namespace Ship_Game
             HandleButton(input, SbNumWaypoints, p => p.WayPoints.Count);
             HandleButton(input, SbNumFleetsAssigned, p => Player.AllFleets.Count(fleet => fleet.HasPatrolPlan && fleet.Patrol == p));
 
+            // Ludoal fork: close with the key that opens this screen (P) — Keys.L was a
+            // copy-paste leftover from PlanetListScreen, so the hotkey felt dead in-game.
             if (input.EmpirePatrolsScreen && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();

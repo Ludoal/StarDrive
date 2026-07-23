@@ -57,7 +57,22 @@ namespace Ship_Game
         public override void LoadContent()
         {
             camera = new Camera2D { Pos = new Vector2(Viewport.Width, Viewport.Height) / 2f };
+            // Ludoal fork: standard screen grammar — RESEARCH title cartouche under
+            // the live top bar, frame below, aligned with Empire/Arrays. The node
+            // grids derive from main.Height so they compress on their own; on <=720p
+            // a 7-row column would clip (86px per 98px node), so everything stays
+            // full-screen there (no bar, no title).
             var main = new Rectangle(0, 0, ScreenWidth, ScreenHeight);
+            if (ScreenHeight > 720)
+            {
+                var titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
+                Add(new Menu2(titleRect));
+                string title = Localizer.Token(GameText.Research);
+                var titlePos = new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString(title).X / 2f,
+                                           titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
+                Label(titlePos, title, Fonts.Laserian14, Colors.Cream);
+                main = new Rectangle(0, titleRect.Bottom + 5, ScreenWidth, ScreenHeight - titleRect.Bottom - 7);
+            }
             MainMenu = new Menu2(main);
             MainMenuOffset = new Vector2(main.X + 20, main.Y + 30);
             Close = Add(new CloseButton(main.Right - 40, main.Y + 20));
@@ -97,7 +112,7 @@ namespace Ship_Game
             // Create queue once all techs are populated
             var queue = new Rectangle(main.X + main.Width - 355, main.Y + 40, 330, main.Height - 100);
             Queue = Add(new ResearchQueueUIComponent(this, queue));
-            Vector2 searchPos = new(main.X + main.Width - 360, main.Bottom - 55);
+            Vector2 searchPos = new(main.X + main.Width - 360, main.Bottom - 55); // Ludoal fork: main.Height was used as a Y coordinate
             Search = Add(new UIButton(ButtonStyle.BigDip, searchPos, "Search"));
             Search.OnClick = OnSearchButtonClicked;
 
@@ -150,6 +165,8 @@ namespace Ship_Game
 
             batch.SafeBegin();
             base.Draw(batch, elapsed);
+            if (ScreenHeight > 720)
+                empireUI.Draw(batch); // Ludoal fork: live top bar (paused indicator included)
             batch.SafeEnd();
         }
 
@@ -312,6 +329,9 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            if (ScreenHeight > 720 && empireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
             if (input.MiddleMouseHeld())
                 camera.MoveClamped(input.CursorVelocity, ScreenCenter, new Vector2(3200));
 
@@ -401,9 +421,6 @@ namespace Ship_Game
             foreach (RootNode node in RootNodes.Values)
                 node.nodeState = (node == root) ? NodeState.Press : NodeState.Normal;
 
-            SubNodes.Clear();
-            ClaimedSpots.Clear();
-
             int rows = 1;
             int cols = CalculateTreeDimensionsFromRoot(root.Entry, ref rows, 0, 0);
             if (rows < 9) GridHeight = (MainMenu.Menu.Height - 40) / rows;
@@ -411,6 +428,28 @@ namespace Ship_Game
 
             if (cols > 0 && cols < 9) GridWidth = (MainMenu.Menu.Width - 350) / cols;
             else                      GridWidth = 165;
+
+            BuildSubNodes(root);
+
+            // Ludoal fork: the row ESTIMATE overcounts branches that merge back into the
+            // main line, so some tabs squeezed toward the top with dead space below.
+            // Measure the rows actually laid out and rebuild once at the exact height.
+            // +1: the deepest node needs its own height below its anchor — the old
+            // estimator's overcount used to absorb that by accident, an exact division
+            // pushed the last row past the frame (bench, 45.70).
+            int actualRows = Math.Max(1, FindDeepestYSubNodes());
+            int wantRows = Math.Min(actualRows + 1, 9);
+            if (wantRows != Math.Min(rows, 9))
+            {
+                GridHeight = (MainMenu.Menu.Height - 40) / wantRows;
+                BuildSubNodes(root);
+            }
+        }
+
+        void BuildSubNodes(RootNode root)
+        {
+            SubNodes.Clear();
+            ClaimedSpots.Clear();
 
             var nodePos = new Vector2(1f, 1f);
             bool first = true;
@@ -421,7 +460,8 @@ namespace Ship_Game
                     continue;
 
                 nodePos.X = root.NodePosition.X + 1f;
-                nodePos.Y = FindDeepestYSubNodes() + (first ? 0 : 1);
+                nodePos.Y = first ? FindDeepestYSubNodes()
+                                  : FindFreeRowFor(child, 0, (int)nodePos.X); // scan from the TAB top — the root's own Y is its slot in the left category list, not a row of this canvas
                 if (first) first = false;
 
                 if (!SubNodes.ContainsKey(child.UID)) // only ever add unique entries
@@ -441,7 +481,8 @@ namespace Ship_Game
             foreach (TechEntry child in node.Entry.Children)
             {
                 nodePos.X = node.NodePosition.X + 1f;
-                nodePos.Y = FindDeepestYSubNodes() + (first ? 0 : 1);
+                nodePos.Y = first ? FindDeepestYSubNodes()
+                                  : FindFreeRowFor(child, (int)node.NodePosition.Y, (int)nodePos.X);
                 if (first) first = false;
 
                 if (child.Discovered && !SubNodes.ContainsKey(child.UID))
@@ -473,6 +514,26 @@ namespace Ship_Game
         }
         
         bool PositionIsClaimed(Vector2 position) => ClaimedSpots.Any(p => p.AlmostEqual(position));
+
+        // Ludoal fork: branches used to always open a fresh row below EVERYTHING, so a
+        // one-node dead-end (Massive Disruptor...) cost a full row while the same level
+        // had free space further right. A branch now takes the first row at or below its
+        // parent where its whole rectangle (own rows x own columns) is free.
+        int FindFreeRowFor(TechEntry branch, int parentY, int col)
+        {
+            int bRows = 1;
+            int bCols = CalculateTreeDimensionsFromRoot(branch, ref bRows, 0, 0);
+            for (int y = parentY; ; ++y)
+            {
+                bool freeRect = true;
+                for (int dy = 0; dy < bRows && freeRect; ++dy)
+                    for (int dx = 0; dx < bCols && freeRect; ++dx)
+                        if (PositionIsClaimed(new Vector2(col + dx, y + dy)))
+                            freeRect = false;
+                if (freeRect)
+                    return y;
+            }
+        }
 
         //Added by McShooterz: find size of tech tree before it is built
         int CalculateTreeDimensionsFromRoot(TechEntry techEntry, ref int rows, int cols, int colmax)
