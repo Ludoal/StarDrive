@@ -3028,7 +3028,7 @@ BB_Tech_Assimilation_Desc:
  PTB: "Atingimos nosso potencial genético máximo e precisamos de novas fontes genéticas para continuar evoluindo."
 BB_Tech_Assimilation_AllowAssimilation_Bonus:
  Id: 519
- ENG: "Gain all of the positive genetic traits of any race conquered via ground invasion The planet has to have at least 2 Billion colonists for the assimilation to succeed."
+ ENG: "Gain all of the positive genetic traits of any race conquered via ground invasion The planet has to have at least 2 billion Colonists for the assimilation to succeed."
  RUS: "Дает возможность получить все положительные генетические особенности любой расы, завоеванной при помощи наземного вторжения."
  SPA: "Consigue todos los rasgos genéticos positivos de cualquier raza conquistada mediante una invasión terrestre. "
  UKR: "Отримати всі позитивні генетичні ознаки будь-якої раси, завойованої шляхом наземного вторгнення Планета повинна мати щонайменше 2 мільярди колоністів, щоб асиміляція пройшла успішно."
@@ -8510,13 +8510,13 @@ WasTerraformedToANew:
  PTB: "Foi terraformado em um novo paraíso. \nSeus Terraformadores agora removerão todas as Biosferas  \ndo planeta e serão sucateados quando o  \nprocesso estiver concluído."
 ProsperInTerranWorldsAnd:
  Id: 1921
- ENG: "The number of Colonists (in Millions) which can be loaded. Usually relevant for a Colony Ship module."
+ ENG: "The number of Colonists (in millions) which can be loaded. Usually relevant for a Colony Ship module."
  RUS: "Количество колонистов (в миллионах), которые могут быть загружены. Обычно актуально для модуля колониального корабля."
  UKR: "Кількість колоністів (у мільйонах), яку можна завантажити. Зазвичай актуально для корабельного модуля колонізації."
  PTB: "O número de Colonos, em Milhões, que pode ser carregado. Geralmente relevante para um módulo de Nave Colonial."
 PopulationInBillionsVsMax:
  Id: 1929
- ENG: "Population (in Billions) vs. Max Population available for your Empire. Percentage indicates how full the colony is. Lower Max Population than the current population means that the current Race occupying this planet is better suited to the environment than your Empire."
+ ENG: "Population (in billions) vs. Max Population available for your Empire. Percentage indicates how full the colony is. Lower Max Population than the current population means that the current Race occupying this planet is better suited to the environment than your Empire."
  RUS: "Население (в миллиардах) против максимального количества населения, доступного для вашей Империи. Процент показывает, насколько заполнена колония. Меньшее максимальное население, чем текущее, означает, что текущая раса, населяющая эту планету, лучше подходит для окружающей среды, чем ваша Империя."
  UKR: "Населення (у мільярдах) проти максимального населення, доступного для вашої імперії. Відсоток показує, наскільки заповнена колонія. Менша максимальна кількість населення, ніж поточна, означає, що поточна раса, яка населяє цю планету, краще пристосована до навколишнього середовища, ніж ваша імперія."
  PTB: "População, em Bilhões, versus População Máxima disponível para seu Império. A porcentagem indica o quanto a colônia está cheia. População Máxima menor que a população atual significa que a Raça que ocupa este planeta atualmente é mais adequada ao ambiente do que o seu Império."
@@ -14106,7 +14106,7 @@ BiospheresInTheCrashSite:
  PTB: "As Bioesferas no local da queda foram destruídas."
 MillionCiviliansWereKilled:
  Id: 4285
- ENG: "Million civilians were killed."
+ ENG: "million civilians were killed."
  RUS: "Погибли миллионы мирных жителей."
  UKR: "Мільйони цивільних були вбиті."
  PTB: "milhões de civis foram mortos."
