@@ -927,7 +927,7 @@ namespace Ship_Game
             AddNotification(new Notification
             {
                 RelevantEmpire = enemy,
-                Message        = $"{enemy.Name} {Localizer.Token(GameText.DeclaredWarOnUsBecause)} {requestingEmpire.Name}",,
+                Message        = $"{enemy.Name} {Localizer.Token(GameText.DeclaredWarOnUsBecause)} {requestingEmpire.Name}",
                 Action = "Diplomacy"
             }, "sd_ui_notification_encounter");
         }
