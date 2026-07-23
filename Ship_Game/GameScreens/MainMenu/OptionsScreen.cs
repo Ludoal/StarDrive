@@ -115,7 +115,7 @@ namespace Ship_Game
         AudioHandle EffectSound = new();
 
         FloatSlider IconSize;
-        FloatSlider AutoSaveFreq;
+        FloatSlider AutoSaveYears; // Ludoal fork: autosave counts in star-years now
 
         FloatSlider SimulationFps;
         FloatSlider MaxDynamicLightSources;
@@ -264,7 +264,7 @@ namespace Ship_Game
             botRight.LayoutStyle = ListLayoutStyle.Clip;
             MaxDynamicLightSources = botRight.Add(new FloatSlider(SliderStyle.Decimal, 288f, 50f, GameText.MaxDynamicLightSources, 0, 1000, GlobalStats.MaxDynamicLightSources));
             IconSize      = botRight.Add(new FloatSlider(SliderStyle.Decimal, 288f, 50f, GameText.IconSizes, 1,  30, GlobalStats.IconSize));
-            AutoSaveFreq  = botRight.Add(new FloatSlider(SliderStyle.Decimal, 288f, 50f, GameText.AutosaveFrequency, 60, 540, GlobalStats.AutoSaveFreq));
+            AutoSaveYears = botRight.Add(new FloatSlider(SliderStyle.Decimal, 288f, 50f, "Autosave every X years", 1, 20, GlobalStats.AutoSaveYears));
             SimulationFps = botRight.Add(new FloatSlider(SliderStyle.Decimal, 288f, 50f, GameText.SimulationFps, 10, 120, GlobalStats.SimulationFramesPerSecond));
             
             MusicVolumeSlider.OnChange = (s) => GlobalStats.MusicVolume = s.AbsoluteValue;
@@ -272,11 +272,11 @@ namespace Ship_Game
             EffectsInfluenceNodeAlpha.OnChange = (s) => GlobalStats.InfluenceNodeAlpha = s.AbsoluteValue;
             MaxDynamicLightSources.OnChange = (s) => GlobalStats.MaxDynamicLightSources = (int)s.AbsoluteValue;
             IconSize.OnChange = (s) => GlobalStats.IconSize = (int)s.AbsoluteValue;
-            AutoSaveFreq.OnChange = (s) => GlobalStats.AutoSaveFreq = (int)s.AbsoluteValue;
+            AutoSaveYears.OnChange = (s) => GlobalStats.AutoSaveYears = (int)s.AbsoluteValue;
             SimulationFps.OnChange = (s) => GlobalStats.SimulationFramesPerSecond = (int)s.AbsoluteValue;
 
             MaxDynamicLightSources.Tip = GameText.TT_MaxDynamicLightSources;
-            AutoSaveFreq.Tip = GameText.TheDelayBetweenAutoSaves;
+            AutoSaveYears.Tip = "How many star-years between autosaves. A year is 10 turns; the clock does not advance while paused.";
             SimulationFps.Tip = GameText.ChangesTheSimulationFrequencyLower;
 
             UIList right = AddList(RightArea.PosVec(), RightArea.Size());
