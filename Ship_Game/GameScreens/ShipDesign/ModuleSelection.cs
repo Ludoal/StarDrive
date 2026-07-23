@@ -4,6 +4,7 @@ using Ship_Game.AI;
 using Ship_Game.Gameplay;
 using Ship_Game.Ships;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using SDGraphics;
 using SDUtils;
@@ -52,9 +53,11 @@ namespace Ship_Game
             
             RectF fighterR = acsub.Move(acsub.W + 20, 0);
 
-            // Ludoal fork: comparison panel (Shift-click in the module list). Shares the
-            // Choose Fighter slot; the fighter list wins it when a hangar is selected.
-            CompareModSubMenu = base.Add(new Submenu(fighterR, "Compared Module"));
+            // Ludoal fork: comparison panel (Shift-click in the module list). Same slot as
+            // Choose Fighter (the fighter list wins it when a hangar is selected), widened
+            // by 75px so the delta column fits beside the values.
+            RectF compareR = new(acsub.X + acsub.W + 20, acsub.Y, acsub.W + 75, acsub.H);
+            CompareModSubMenu = base.Add(new Submenu(compareR, "Compared Module"));
             CompareModSubMenu.SetBackground(Colors.TransparentBlackFill);
             ChooseFighterSub = base.Add(new SubmenuScrollList<FighterListItem>(fighterR, "Choose Fighter"));
             ChooseFighterSub.SetBackground(Colors.TransparentBlackFill);
@@ -77,6 +80,139 @@ namespace Ship_Game
         }
 
         float ActiveModStatSpacing => ActiveModSubMenu.Width * 0.27f;
+
+        // ===== Ludoal fork: comparator v2 =====
+        // Stats start at a fixed offset from the panel top so both panels align.
+        const float StatsStartRel = 195f;
+
+        // A stat row captured by collect-mode instead of being drawn. The existing
+        // Draw* stat methods stay the single source of stat expressions; with
+        // Collector set they append here (and only advance the cursor) instead of
+        // drawing, so the comparison view can render an aligned union of two runs.
+        class CollectedStat
+        {
+            public string Key;      // label text — union identity
+            public string Title;
+            public float Value;
+            public LocalizedText Tip;
+            public bool IsPercent;
+            public int Tint;        // 0 = default good/bad, 1 = custom title color, 2 = bad-percent-lower-than-1
+            public Color CustomColor;
+            public int Column;      // 0 = left, 1 = right (the +152f jump)
+        }
+
+        List<CollectedStat> Collector;
+        const float CollectColSplitX = 76f; // collect runs from X=0; the col2 jump is +152f
+
+        // Stats where a SMALLER value is the better one (delta coloring).
+        // Keys are the on-screen labels (English — the game's own stat labels).
+        static readonly HashSet<string> LowerIsBetter = new HashSet<string>
+        {
+            "Cost", "Mass", "Delay", "Ord / Shot", "Pwr / Shot", "Complexity",
+            "Imprecision", "Spawn Timer", "Ignition"
+        };
+
+        bool CollectStat(in Vector2 cursor, in LocalizedText label, float value, LocalizedText tip,
+                         bool isPercent, int tint, Color custom)
+        {
+            if (Collector == null)
+                return false;
+            Collector.Add(new CollectedStat
+            {
+                Key = label.Text, Title = label.Text, Value = value, Tip = tip,
+                IsPercent = isPercent, Tint = tint, CustomColor = custom,
+                Column = cursor.X > CollectColSplitX ? 1 : 0
+            });
+            return true;
+        }
+
+        List<CollectedStat> CollectStats(ShipModule mod)
+        {
+            var list = new List<CollectedStat>();
+            Collector = list;
+            var cursor = new Vector2(0f, 0f);
+            float strength = mod.CalculateModuleOffenseDefense(Screen.CurrentHull.SurfaceArea, forceRecalculate: mod.IsFighterHangar);
+            DrawStat(ref cursor, "Offense", strength, GameText.TT_ShipOffense);
+            if (mod.BombType == null && !mod.IsWeapon || mod.InstalledWeapon == null)
+                DrawModuleStats(null, mod, cursor, 0f);
+            else
+                DrawWeaponStats(null, cursor, mod, mod.InstalledWeapon, 0f);
+            Collector = null;
+            return list;
+        }
+
+        // Draw both panels' stat areas as ONE union per column: same rows, same
+        // heights — absent stats show a dimmed dash, the Compared panel appends
+        // a colored delta after each shared value.
+        void DrawComparisonStats(SpriteBatch batch)
+        {
+            ShipModule a = Screen.ActiveModule ?? Screen.HighlightedModule;
+            ShipModule b = Screen.CompareModule;
+            if (a == null || b == null)
+                return;
+
+            List<CollectedStat> ra = CollectStats(a);
+            List<CollectedStat> rb = CollectStats(b);
+            var aByKey = new Map<string, CollectedStat>();
+            var bByKey = new Map<string, CollectedStat>();
+            foreach (CollectedStat r in ra) if (!aByKey.ContainsKey(r.Key)) aByKey.Add(r.Key, r);
+            foreach (CollectedStat r in rb) if (!bByKey.ContainsKey(r.Key)) bByKey.Add(r.Key, r);
+
+            for (int col = 0; col < 2; ++col)
+            {
+                var union = new List<CollectedStat>();
+                var seen = new HashSet<string>();
+                foreach (CollectedStat r in ra) if (r.Column == col && seen.Add(r.Key)) union.Add(r);
+                foreach (CollectedStat r in rb) if (r.Column == col && seen.Add(r.Key)) union.Add(r);
+                if (union.Count == 0)
+                    continue;
+                DrawStatColumn(batch, union, aByKey, null,   col, ActiveModSubMenu);
+                DrawStatColumn(batch, union, bByKey, aByKey, col, CompareModSubMenu);
+            }
+        }
+
+        void DrawStatColumn(SpriteBatch batch, List<CollectedStat> union,
+                            Map<string, CollectedStat> own, Map<string, CollectedStat> other,
+                            int col, Submenu panel)
+        {
+            Graphics.Font font = Fonts.Arial12Bold;
+            float spacing = ActiveModStatSpacing; // SAME spacing in both panels = aligned columns
+            var dim = new Color(105, 105, 105);
+            var cursor = new Vector2(panel.X + 10 + col * 152f, panel.Y + StatsStartRel);
+
+            foreach (CollectedStat u in union)
+            {
+                if (own.TryGetValue(u.Key, out CollectedStat r))
+                {
+                    if (r.Tint == 2)
+                        Screen.DrawStatBadPercentLower1(ref cursor, r.Title, r.Value, Color.White, r.Tip, spacing);
+                    else
+                        Screen.DrawStat(ref cursor, r.Title, r.Value,
+                                        r.Tint == 1 ? r.CustomColor : Color.White,
+                                        r.Tip, spacing: spacing, isPercent: r.IsPercent);
+
+                    // delta vs the Active module, colored by "which direction is better"
+                    if (other != null && other.TryGetValue(u.Key, out CollectedStat o) && !r.Value.AlmostEqual(o.Value))
+                    {
+                        float dv = r.Value - o.Value;
+                        bool better = LowerIsBetter.Contains(u.Key) ? dv < 0f : dv > 0f;
+                        string ds = (dv > 0f ? "(+" : "(") + (r.IsPercent ? dv.ToString("P0") : dv.GetNumberString()) + ")";
+                        batch.DrawString(font, ds, new Vector2(cursor.X + spacing + 64f, cursor.Y),
+                                         better ? Color.LightGreen : Color.LightPink);
+                    }
+                }
+                else
+                {
+                    // absent on this side: dimmed label + dash, same row height
+                    cursor.Y += font.LineSpacing;
+                    string title = u.Title + ":";
+                    var statCursor = new Vector2(cursor.X + spacing, cursor.Y);
+                    batch.DrawString(font, title, new Vector2(statCursor.X - 20 - font.TextWidth(title), statCursor.Y), dim);
+                    batch.DrawString(font, "-", statCursor, dim);
+                }
+            }
+        }
+        // ===== end comparator v2 =====
 
         public bool HitTest(InputState input)
         {
@@ -133,6 +269,7 @@ namespace Ship_Game
             if (CompareModSubMenu.Visible) // Ludoal fork
             {
                 DrawModuleData(batch, Screen.CompareModule, CompareModSubMenu);
+                DrawComparisonStats(batch); // both panels' stats, aligned row-for-row
             }
         }
 
@@ -311,7 +448,6 @@ namespace Ship_Game
             // Ludoal fork: the header (title/restrictions/description) gets a FIXED slot
             // so the stat rows of the Active and Compared panels align row-for-row.
             // Overlong descriptions are ellipsized instead of pushing the stats down.
-            const float StatsStartRel = 195f;
             int maxLines = (int)((panel.Y + StatsStartRel - 8f - modTitlePos.Y) / Fonts.Arial12.LineSpacing);
             string[] descLines = txt.Split('\n');
             if (maxLines > 0 && descLines.Length > maxLines)
@@ -321,6 +457,9 @@ namespace Ship_Game
             modTitlePos.Y = panel.Y + StatsStartRel;
             float starty = modTitlePos.Y;
             modTitlePos.X = panel.X + 10; // Ludoal fork: was absolute 10 — same thing for the left panel, correct for the comparison one
+
+            if (CompareModSubMenu.Visible) // Ludoal fork: comparison mode renders both stat areas as one aligned union
+                return;
 
             float strength = mod.CalculateModuleOffenseDefense(Screen.CurrentHull.SurfaceArea, forceRecalculate: mod.IsFighterHangar);
             DrawStat(ref modTitlePos, "Offense", strength, GameText.TT_ShipOffense);
@@ -339,7 +478,11 @@ namespace Ship_Game
         {
             if (stat.AlmostEqual(0))
                 return;
-
+            if (CollectStat(cursor, text, stat, toolTipId, isPercent, 0, Color.White)) // Ludoal fork
+            {
+                cursor.Y += Fonts.Arial12Bold.LineSpacing;
+                return;
+            }
             Screen.DrawStat(ref cursor, text, stat, Color.White, toolTipId, spacing: ActiveModStatSpacing, isPercent: isPercent);
         }
 
@@ -347,6 +490,11 @@ namespace Ship_Game
         {
             if (stat.AlmostEqual(0))
                 return;
+            if (CollectStat(cursor, text, stat, toolTipId, isPercent, 1, color)) // Ludoal fork
+            {
+                cursor.Y += Fonts.Arial12Bold.LineSpacing;
+                return;
+            }
             Screen.DrawStat(ref cursor, text, stat, color, toolTipId, spacing: ActiveModStatSpacing, isPercent: isPercent);
         }
 
@@ -448,6 +596,9 @@ namespace Ship_Game
 
             if (mod.NumberOfColonists.Greater(0))
                 DrawStat(ref modTitlePos, "Colonists", mod.NumberOfColonists, GameText.ProsperInTerranWorldsAnd); // Number of Colonists
+
+            if (Collector != null) // Ludoal fork: the hangar-ship block draws directly; active panel only
+                return;
 
             if (mod.PermittedHangarRoles.Length == 0 && !mod.IsSupplyBay && !mod.IsTroopBay && !mod.IsMiningBay)
                 return;
@@ -633,7 +784,7 @@ namespace Ship_Game
             DrawStat(ref cursor, GameText.Deflection, m.Deflection, GameText.WeaponsWhichDoLessDamage);
             if (m.RepairDifficulty > 0) DrawStat(ref cursor, GameText.Complexity, m.RepairDifficulty, GameText.TheMoreComplexTheModule); // Complexity
 
-            if (wOrMirv.TruePD)
+            if (wOrMirv.TruePD && Collector == null) // Ludoal fork: direct draw, active panel only
             {
                 WriteLine(ref cursor);
                 DrawStringRed(batch, ref cursor, "Cannot Target Ships");
@@ -699,7 +850,14 @@ namespace Ship_Game
         {
             float effect = ModifiedWeaponStat(weapon, stat);
             if (effect.NotEqual(1))
+            {
+                if (CollectStat(cursor, description, effect, GameText.IndicatesAnyBonusOrPenalty, true, 2, Color.White)) // Ludoal fork
+                {
+                    cursor.Y += Fonts.Arial12Bold.LineSpacing;
+                    return;
+                }
                 Screen.DrawStatBadPercentLower1(ref cursor, description, effect, Color.White, GameText.IndicatesAnyBonusOrPenalty, ActiveModStatSpacing);
+            }
         }
 
         float GetHullDamageBonus()
