@@ -30,8 +30,9 @@ namespace Ship_Game
         Menu2 DMenu;
         Rectangle LeftRect;
 
-        Submenu GlobalTabs; // Intelligence | Bonuses — global switch for all columns
+        UIButton ToggleButton; // labeled with the view you would switch TO (player design)
         UIButton DiagramButton;
+        bool ShowBonuses;
 
         Empire Player;
         readonly bool UsingNewEspioange;
@@ -44,7 +45,7 @@ namespace Ship_Game
         Font Font12 = Fonts.Arial12;
         Font Font12Bold = Fonts.Arial12Bold;
 
-        const int TreatyBlockH = 150;
+        const int TreatyBlockH = 136; // player design: block sits lower, row labels gone
 
         public MainDiplomacyScreen(UniverseScreen screen) : base(screen, toPause: screen)
         {
@@ -131,21 +132,24 @@ namespace Ship_Game
         public override void LoadContent()
         {
             float screenWidth = ScreenWidth;
-            float screenHeight = ScreenHeight;
-            Rectangle titleRect = new Rectangle((int)screenWidth / 2 - 200, 44, 400, 80);
+            // Empire-style title bar: wide left cartouche, controls in the empty right third
+            var titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
             TitleBar = new Menu2(titleRect);
             TitlePos = new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString(Localizer.Token(GameText.DiplomaticOverview)).X / 2f, titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
 
-            int topY = screenHeight > 768f ? titleRect.Y + titleRect.Height + 5 : 44;
-            LeftRect = new Rectangle(20, topY, (int)screenWidth - 40, (int)screenHeight - topY - 20);
+            LeftRect = new Rectangle(2, titleRect.Bottom + 5, (int)screenWidth - 10, ScreenHeight - titleRect.Bottom - 7);
             DMenu = new Menu2(LeftRect);
             Add(new CloseButton(LeftRect.Right - 40, LeftRect.Y + 20));
 
-            // the global content switch (intelligence is the daily driver) and the
-            // diagram button, right of the panel header
-            GlobalTabs = new Submenu(new RectF(LeftRect.Right - 560, LeftRect.Y + 14, 280, 44),
-                new LocalizedText[] { Localizer.Token(GameText.IntelligenceReport), "Bonuses" });
-            DiagramButton = Add(new UIButton(ButtonStyle.Default, new Vector2(LeftRect.Right - 260, LeftRect.Y + 26), "Diagram view"));
+            // the global view toggle (labeled with what you would switch TO) and the
+            // diagram button, right of the title cartouche
+            ToggleButton = Add(new UIButton(ButtonStyle.Default, new Vector2(titleRect.Right + 30, titleRect.Y + 26), "Bonuses"));
+            ToggleButton.OnClick = b =>
+            {
+                ShowBonuses = !ShowBonuses;
+                ToggleButton.Text = ShowBonuses ? "Intelligence" : "Bonuses";
+            };
+            DiagramButton = Add(new UIButton(ButtonStyle.Default, new Vector2(titleRect.Right + 250, titleRect.Y + 26), "Diagram view"));
             DiagramButton.OnClick = b => AddRelationShipDiagramScreen();
 
             foreach (Empire e in Universe.UState.Empires)
@@ -155,7 +159,7 @@ namespace Ship_Game
                 Races.Add(new RaceEntry { e = e });
             }
 
-            // one column per major empire, sized to fit them all
+            // one column per major empire, full frame height, sized to fit them all
             int n = Races.Count.LowerBound(1);
             int colW = ((LeftRect.Width - 40) / n).UpperBound(230);
             int totalW = colW * n;
@@ -163,7 +167,7 @@ namespace Ship_Game
             int j = 0;
             foreach (RaceEntry re in Races)
             {
-                re.container = new Rectangle(x0 + j * colW, LeftRect.Y + 66, colW - 8, LeftRect.Height - 86);
+                re.container = new Rectangle(x0 + j * colW, LeftRect.Y + 16, colW - 8, LeftRect.Height - 32);
                 j++;
             }
 
@@ -174,15 +178,9 @@ namespace Ship_Game
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
-            if (ScreenHeight > 766)
-            {
-                TitleBar.Draw(batch, elapsed);
-                batch.DrawString(Fonts.Laserian14, Localizer.Token(GameText.DiplomaticOverview), TitlePos, Colors.Cream);
-            }
+            TitleBar.Draw(batch, elapsed);
+            batch.DrawString(Fonts.Laserian14, Localizer.Token(GameText.DiplomaticOverview), TitlePos, Colors.Cream);
             DMenu.Draw(batch, elapsed);
-            if (GlobalTabs.SelectedIndex == -1)
-                GlobalTabs.SelectedIndex = 0;
-            GlobalTabs.Draw(batch, elapsed);
 
             foreach (RaceEntry race in Races)
                 DrawColumn(batch, race);
@@ -214,7 +212,10 @@ namespace Ship_Game
 
             batch.Draw(ResourceManager.Texture("Portraits/" + e.data.PortraitName), portrait, Color.White);
             string name = e.data.Traits.Name;
-            batch.DrawDropShadowText1(name, new Vector2(col.X + (col.Width - Font12Bold.TextWidth(name)) / 2f, portrait.Bottom + 4), Font12Bold, e.EmpireColor);
+            float nameW = Font12Bold.TextWidth(name) + 22; // race flag rides left of the name
+            float nameX = col.X + (col.Width - nameW) / 2f;
+            batch.Draw(ResourceManager.Flag(e.data.Traits.FlagIndex), new Rectangle((int)nameX, portrait.Bottom + 3, 16, 16), e.EmpireColor);
+            batch.DrawDropShadowText1(name, new Vector2(nameX + 22, portrait.Bottom + 4), Font12Bold, e.EmpireColor);
 
             float y = portrait.Bottom + 24;
 
@@ -226,13 +227,23 @@ namespace Ship_Game
                 return;
             }
 
+            // FIXED section offsets: the bands align across columns whatever the content
+            float infoY = col.Y + 104;
+            float positionY = infoY + 24 + 3 * (Font12.LineSpacing + 3) + 4;
+            float intelY = positionY + 24 + 4 * (Font12.LineSpacing + 3) + 4;
+
+            y = infoY;
             SectionBand(batch, col, ref y, "INFO");
             DrawInfoBlock(batch, e, col, ref y);
 
+            y = positionY;
+            SectionBand(batch, col, ref y, "POSITION");
+            DrawPositionBlock(batch, e, col, ref y);
+
             float maxY = col.Bottom - TreatyBlockH - 6;
-            bool bonuses = GlobalTabs.SelectedIndex == 1;
-            SectionBand(batch, col, ref y, bonuses ? "BONUSES" : "INTELLIGENCE");
-            if (bonuses)
+            y = intelY;
+            SectionBand(batch, col, ref y, ShowBonuses ? "BONUSES" : "INTELLIGENCE");
+            if (ShowBonuses)
                 DrawBonusRows(batch, e, col, ref y, maxY);
             else
                 DrawIntelRows(batch, e, col, ref y, maxY);
@@ -298,8 +309,14 @@ namespace Ship_Game
                 string perso = $"{e.data.DiplomaticPersonality.Name} {e.data.EconomicPersonality.Name}";
                 TableRow(batch, col, ref y, maxY, "Personality", Truncate(perso, col.Width - 80), Color.White);
             }
+        }
 
-            // ranks, one metric per row — same visibility rules as the legacy screen
+        // POSITION: the empire's rank in each domain — same visibility rules as the
+        // legacy screen
+        void DrawPositionBlock(SpriteBatch batch, Empire e, Rectangle col, ref float y)
+        {
+            float maxY = float.MaxValue;
+            Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
             if (e.isPlayer || !UsingNewEspioange || espionage.CanViewRanks)
             {
                 Empire[] pool = UsingNewEspioange
@@ -310,7 +327,10 @@ namespace Ship_Game
                 TableRow(batch, col, ref y, maxY, "Military", "#" + RankOf(e, pool.OrderByDescending(x => x.CurrentMilitaryStrength)), Color.White);
                 TableRow(batch, col, ref y, maxY, "Population", "#" + RankOf(e, pool.OrderByDescending(GetPop)), Color.White);
             }
-            y += 4;
+            else
+            {
+                batch.DrawString(Font12, "No intelligence", new Vector2(col.X + 8, y), Color.Gray);
+            }
         }
 
         int RankOf(Empire e, IEnumerable<Empire> ordered)
@@ -449,9 +469,8 @@ namespace Ship_Game
             if (others.Length == 0)
                 return;
 
-            int labelW = 30;
-            int cellW = ((col.Width - labelW - 10) / others.Length).UpperBound(24);
-            float x0 = col.X + labelW;
+            int cellW = ((col.Width - 20) / others.Length).UpperBound(26);
+            float x0 = col.X + (col.Width - cellW * others.Length) / 2f;
 
             // flag header
             for (int jx = 0; jx < others.Length; ++jx)
@@ -463,11 +482,9 @@ namespace Ship_Game
                     batch.DrawString(Font12, "?", new Vector2(flag.X + 3, flag.Y), Color.Gray);
             }
 
-            string[] rowLabels = { "W/P", "A/N", "O", "T" };
             for (int iy = 0; iy < 4; ++iy)
             {
                 float ry = top + 20 + iy * 22;
-                batch.DrawString(Font12, rowLabels[iy], new Vector2(col.X + 6, ry), Color.Wheat);
                 for (int jx = 0; jx < others.Length; ++jx)
                 {
                     string glyph = "?";
@@ -516,9 +533,6 @@ namespace Ship_Game
         public override bool HandleInput(InputState input)
         {
             if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
-                return true;
-
-            if (GlobalTabs.HandleInput(input))
                 return true;
 
             if (input.KeyPressed(Keys.I) && !GlobalStats.TakingInput)
