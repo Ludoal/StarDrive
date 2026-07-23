@@ -143,5 +143,18 @@ public sealed class ResearchPopup : PopupWindow
         if (fade) ScreenManager.FadeBackBufferToBlack((TransitionAlpha * 2) / 3);
 
         base.Draw(batch, elapsed);
+
+        // Ludoal fork: the live top bar stays crisp above the fade, and clickable —
+        // research just finished, the natural next click is the Research button
+        batch.SafeBegin();
+        Universe.EmpireUI.Draw(batch);
+        batch.SafeEnd();
+    }
+
+    public override bool HandleInput(InputState input)
+    {
+        if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+            return true;
+        return base.HandleInput(input);
     }
 }
