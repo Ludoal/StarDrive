@@ -62,7 +62,7 @@ is simple: the BlackBox team is welcome to take whatever they find worth keeping
   per billion colonists; a game-term capitalization pass is ongoing.
 
 **Battle Arena** *(work in progress)*
-- Practice arena from the main menu: pick enemies per race grouped by hull class,
+- Practice arena from the Shipyard: pick enemies per race grouped by hull class,
   full-tech sim empires (carrier hangars work), combat stances honored at contact.
   Planned: spawn distance control, encounter-filtered enemy list.
 
