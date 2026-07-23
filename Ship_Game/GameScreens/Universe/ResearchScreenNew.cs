@@ -421,9 +421,6 @@ namespace Ship_Game
             foreach (RootNode node in RootNodes.Values)
                 node.nodeState = (node == root) ? NodeState.Press : NodeState.Normal;
 
-            SubNodes.Clear();
-            ClaimedSpots.Clear();
-
             int rows = 1;
             int cols = CalculateTreeDimensionsFromRoot(root.Entry, ref rows, 0, 0);
             if (rows < 9) GridHeight = (MainMenu.Menu.Height - 40) / rows;
@@ -431,6 +428,24 @@ namespace Ship_Game
 
             if (cols > 0 && cols < 9) GridWidth = (MainMenu.Menu.Width - 350) / cols;
             else                      GridWidth = 165;
+
+            BuildSubNodes(root);
+
+            // Ludoal fork: the row ESTIMATE overcounts branches that merge back into the
+            // main line, so some tabs squeezed toward the top with dead space below.
+            // Measure the rows actually laid out and rebuild once at the exact height.
+            int actualRows = Math.Max(1, FindDeepestYSubNodes());
+            if (actualRows != rows)
+            {
+                GridHeight = (MainMenu.Menu.Height - 40) / Math.Min(actualRows, 9);
+                BuildSubNodes(root);
+            }
+        }
+
+        void BuildSubNodes(RootNode root)
+        {
+            SubNodes.Clear();
+            ClaimedSpots.Clear();
 
             var nodePos = new Vector2(1f, 1f);
             bool first = true;
