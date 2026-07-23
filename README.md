@@ -30,7 +30,8 @@ is simple: the BlackBox team is welcome to take whatever they find worth keeping
   **F5** gravity wells, **F6** weapons range.
 - Optional influence colors on the main map and minimap (Options toggle, default = vanilla look).
 - Fog of war stays dark: no permanent ship wakes, no explored-system halos — live
-  sensors carry current vision.
+  sensors carry current vision. An Options toggle (Fog Of War Memory) brings back
+  the classic painted map.
 - Dimmed nebulae on the main map.
 - Minimap: colonized systems boxed with race color, contested systems (several races)
   in grey.
@@ -46,6 +47,9 @@ is simple: the BlackBox team is welcome to take whatever they find worth keeping
 
 **Screens**
 - Research: integrated frame under the top bar, compact branch packing, standard title.
+- Shipyard module comparator: Shift-click a module in the list to pin it beside the
+  Active Module panel - same stats row for row, a dash where one side lacks a stat,
+  and colored (+x)/(-x) deltas, green = better, pink = worse.
 - Colony and Blueprints: panels aligned with the bar, wider right blocks.
 - Colony: Stats+ panel with the full production accounting.
 - Empire screen: Fertility / Richness / Max Population columns added.
@@ -74,6 +78,7 @@ is simple: the BlackBox team is welcome to take whatever they find worth keeping
 - Exploded system view: stats only for the hovered planet, drawn on top.
 - View on map exits at the planet instead of flying back.
 - Fleets: wider magnetic grid steps.
+- Symmetric design starts OFF for new games (the in-game toggle still persists per save).
 
 **Texts & units** *(work in progress)*
 - Money flows labeled `BC/turn` everywhere (they are all per-turn), population rates
@@ -82,7 +87,9 @@ is simple: the BlackBox team is welcome to take whatever they find worth keeping
 **Battle Arena** *(work in progress)*
 - Practice arena from the Shipyard: pick enemies per race grouped by hull class,
   full-tech sim empires (carrier hangars work), combat stances honored at contact.
-  Planned: spawn distance control, encounter-filtered enemy list.
+- Group fights: click the list to build an opponent roster (click a roster line to
+  remove one), Fight group launches them all; battle report aggregates the group.
+  Planned: per-opponent report rows, spawn distance control, encounter-filtered list.
 
 **Bug fixes not yet upstream**
 - The fixes still waiting in open PRs on the official repo (governor blueprint and
