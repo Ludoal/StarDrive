@@ -117,7 +117,7 @@ namespace Ship_Game
                     return;
                 }
 
-                SnapViewTo(new(p.Position.X, p.Position.Y + 400f, 2500f), 5f, 2f);
+                SnapViewTo(new(p.Position.X, p.Position.Y, GetZfromScreenState(UnivScreenState.PlanetView)), 5f, 2f); // Ludoal fork: 2500 was nose-on-the-planet; PlanetView is the named level for this
             }
         }
 
