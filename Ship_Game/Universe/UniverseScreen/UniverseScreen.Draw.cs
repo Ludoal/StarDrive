@@ -287,13 +287,33 @@ namespace Ship_Game
             batch.Draw(front, new Rectangle(0, 0, 512, 512), Color.White);
             batch.SafeEnd();
 
-            // Ludoal fork: nothing stamps the fog map anymore. Ship wakes were
+            // Ludoal fork: nothing stamps the fog map BY DEFAULT. Ship wakes were
             // noise (removed first); the explored-system discs that replaced them
-            // still leaked known-space geography onto an otherwise dark map, so
-            // they go too — an undiscovered system has no name, a discovered one
-            // needs no halo. The map stays uniformly dark; live sensor highlights
-            // carry current vision. The ping-pong blit and render targets stay
-            // alive so the FogMapBytes save path keeps working (revert-safe).
+            // still leaked known-space geography onto an otherwise dark map — an
+            // undiscovered system has no name, a discovered one needs no halo.
+            // The FogOfWarMemory option (default off) brings the discs back for
+            // players who liked the painted map; toggling it off purges the old
+            // stamps when the render targets are recreated (options apply/reload).
+            if (GlobalStats.FogOfWarMemory)
+            {
+                batch.SafeBegin(SpriteBlendMode.Additive);
+                double worldSizeToMaskSize = 512.0 / (UState.Size * 2.0);
+                var uiNode = ResourceManager.Texture("UI/node");
+                // white stamp keeps rgb tracking alpha so the FogMap stays premul-correct
+                var sensorMask = new Color(255, 255, 255, 255);
+                foreach (SolarSystem sys in UState.Systems)
+                {
+                    if (sys.IsExploredBy(Player))
+                    {
+                        double posX = sys.Position.X * worldSizeToMaskSize + 256;
+                        double posY = sys.Position.Y * worldSizeToMaskSize + 256;
+                        double size = (sys.Radius * 2.5) * worldSizeToMaskSize;
+                        var rect = new RectF(posX, posY, size, size);
+                        batch.Draw(uiNode, rect, sensorMask, 0f, uiNode.CenterF, SpriteEffects.None, 1f);
+                    }
+                }
+                batch.SafeEnd();
+            }
             device.SetRenderTarget(null);
             FogMap = back;
         }

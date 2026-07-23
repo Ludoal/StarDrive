@@ -257,9 +257,9 @@ namespace Ship_Game
             Add(botLeft, GameText.Language, CurrentLanguage);
             botLeft.ReverseZOrder(); // @todo This is a hacky workaround to zorder limitations
             
-            // Ludoal fork: +200 (was +180) — the checkbox list above grew to 10 entries
-            // (InfluenceMapOverlayOnly) and overlapped the first slider label.
-            UIList botRight = AddList(new Vector2(RightArea.X, RightArea.Y + 200), RightArea.Size());
+            // Ludoal fork: +220 (was +180) — the checkbox list above grew to 11 entries
+            // (InfluenceMapOverlayOnly, FogOfWarMemory) and overlapped the first slider label.
+            UIList botRight = AddList(new Vector2(RightArea.X, RightArea.Y + 220), RightArea.Size());
             botRight.Padding = new Vector2(2f, 8f);
             botRight.LayoutStyle = ListLayoutStyle.Clip;
             MaxDynamicLightSources = botRight.Add(new FloatSlider(SliderStyle.Decimal, 288f, 50f, GameText.MaxDynamicLightSources, 0, 1000, GlobalStats.MaxDynamicLightSources));
@@ -290,6 +290,9 @@ namespace Ship_Game
             right.AddCheckbox(() => GlobalStats.EnableEngineTrails,           title: GameText.EngineTrails, tooltip: GameText.TT_EngineTrails);
             right.AddCheckbox(() => GlobalStats.DisableScreenPanning,         title: GameText.DisableScreenPanningOption, tooltip: GameText.DisableScreenPanningOptionTip);
             right.AddCheckbox(() => GlobalStats.RouteAroundGravityWells,      title: GameText.Pathfinder, tooltip: GameText.PathfinderTip);
+            // Ludoal fork: bring back the explored-system fog discs for those who miss them
+            right.AddCheckbox(() => GlobalStats.FogOfWarMemory, title: "Fog Of War Memory",
+                              tooltip: "Explored systems leave a permanent bright disc on the fog of war. Off: the map stays dark and only live sensor coverage lights it.");
 
             var apply = Add(new UIButton(ButtonStyle.Default, new Vector2(RightArea.Right - 206, RightArea.Bottom + 60), GameText.ApplySettings));
             apply.OnClick = button => RunOnNextFrame(ApplyOptions);

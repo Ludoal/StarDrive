@@ -167,6 +167,10 @@ public static class GlobalStats
     // Ludoal fork: autosave every N star-years (1 year = 10 turns = ~50s at speed x1); 0 = legacy time-based
     public static int AutoSaveYears = 5;
 
+    // Ludoal fork: explored systems leave a permanent bright disc on the fog of war
+    // (the pre-46-a look). Default off = the map stays dark, live sensors only.
+    public static bool FogOfWarMemory;
+
     // USER_EXPERIENCE
     // this is a global user setting, changed in game settings screen
     public static bool NotifyEnemyInSystemAfterLoad = true;
@@ -361,6 +365,7 @@ public static class GlobalStats
         GetSetting(config, "WindowMode", ref WindowMode);
         GetSetting(config, "AutoSaveFreq", ref AutoSaveFreq);
         GetSetting(config, "AutoSaveYears", ref AutoSaveYears);
+        GetSetting(config, "FogOfWarMemory", ref FogOfWarMemory);
         GetSetting(config, "AntiAliasSamples", ref AntiAlias);
         GetSetting(config, "PostProcessBloom", ref RenderBloom);
         GetSetting(config, "PostProcessShieldDistortion", ref RenderShieldDistortion);
@@ -556,6 +561,7 @@ public static class GlobalStats
         WriteSetting(config, "WindowMode", WindowMode);
         WriteSetting(config, "AutoSaveFreq", AutoSaveFreq);
         WriteSetting(config, "AutoSaveYears", AutoSaveYears);
+        WriteSetting(config, "FogOfWarMemory", FogOfWarMemory);
         WriteSetting(config, "AntiAliasSamples", AntiAlias);
         WriteSetting(config, "PostProcessBloom", RenderBloom);
         WriteSetting(config, "PostProcessShieldDistortion", RenderShieldDistortion);
