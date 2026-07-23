@@ -134,20 +134,12 @@ namespace Ship_Game
             RefreshRoster();
         }
 
-        // S5.1 (field feedback): ONE gesture for everything — click stages a design,
-        // clicking it again unstages it; Shift+click stacks another copy of a design
-        // already in the group. Launching is the button's job, single opponent included.
+        // S5.1 (field feedback): list click ADDS (repeat clicks stack copies),
+        // roster click REMOVES. Launching is the button's job, single opponent included.
         void OnPicked(PickerItem item)
         {
             if (LaunchCountdown >= 0 || item.DesignName == null) // headers don't fight
                 return;
-            if (!Input.IsShiftKeyDown && Roster.Contains(item.DesignName))
-            {
-                GameAudio.AcceptClick();
-                Roster.Remove(item.DesignName);
-                RefreshRoster();
-                return;
-            }
             StageIntoGroup(item);
         }
 
@@ -197,7 +189,7 @@ namespace Ship_Game
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
             base.Draw(batch, elapsed);
-            string title = "Pick your opponents - click stages, click again unstages";
+            string title = "Pick your opponents - the list adds, the roster removes";
             batch.DrawString(Fonts.Arial14Bold, title,
                 new Vector2(Window.Menu.CenterTextX(title, Fonts.Arial14Bold), Window.Menu.Y + 22), Color.Wheat);
 

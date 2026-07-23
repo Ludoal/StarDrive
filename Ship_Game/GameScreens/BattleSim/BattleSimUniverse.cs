@@ -289,7 +289,7 @@ namespace Ship_Game
                 if (Spawned && (ShipA == null || !ShipA.Active || AllFoesDown()))
                 {
                     FightOver = true;
-                    ReportDelay = 2.5f;
+                    ReportDelay = 6f; // S5.1 field feedback: let the last explosion and the scene breathe before the report pause
                 }
             }
             else if (!ReportShown)
