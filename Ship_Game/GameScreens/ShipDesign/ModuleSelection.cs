@@ -267,6 +267,8 @@ namespace Ship_Game
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             base.Draw(batch, elapsed);
+            // Ludoal fork: surface the comparator gesture where the modules are picked
+            batch.DrawString(Fonts.Arial12Bold, "Shift-click to compare", new Vector2(Rect.X + 10, Rect.Y - 18), Color.Wheat);
             if (ActiveModSubMenu.Visible)
             {
                 DrawActiveModuleData(batch);
