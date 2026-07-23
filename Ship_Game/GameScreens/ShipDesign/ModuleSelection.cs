@@ -25,6 +25,7 @@ namespace Ship_Game
         readonly SubmenuScrollList<FighterListItem> ChooseFighterSub;
         readonly ModuleSelectScrollList ModuleSelectList;
         readonly Submenu ActiveModSubMenu;
+        readonly Submenu CompareModSubMenu; // Ludoal fork: Shift-click comparison panel
         readonly TexturedButton Obsolete;
 
         public ModuleSelection(ShipDesignScreen screen, LocalPos pos, Vector2 size)
@@ -50,6 +51,11 @@ namespace Ship_Game
             Obsolete.Tooltip = GameText.MarkThisModuleAsObsolete;
             
             RectF fighterR = acsub.Move(acsub.W + 20, 0);
+
+            // Ludoal fork: comparison panel (Shift-click in the module list). Shares the
+            // Choose Fighter slot; the fighter list wins it when a hangar is selected.
+            CompareModSubMenu = base.Add(new Submenu(fighterR, "Compared Module"));
+            CompareModSubMenu.SetBackground(Colors.TransparentBlackFill);
             ChooseFighterSub = base.Add(new SubmenuScrollList<FighterListItem>(fighterR, "Choose Fighter"));
             ChooseFighterSub.SetBackground(Colors.TransparentBlackFill);
             
@@ -111,6 +117,8 @@ namespace Ship_Game
 
             ActiveModSubMenu.Visible = Screen.ActiveModule != null || Screen.HighlightedModule != null;
             ChooseFighterSub.Visible = ChooseFighterSL.GetFighterHangar() != null;
+            CompareModSubMenu.Visible = Screen.CompareModule != null && ActiveModSubMenu.Visible
+                                        && !ChooseFighterSub.Visible; // Ludoal fork
 
             base.Update(fixedDeltaTime);
         }
@@ -121,6 +129,10 @@ namespace Ship_Game
             if (ActiveModSubMenu.Visible)
             {
                 DrawActiveModuleData(batch);
+            }
+            if (CompareModSubMenu.Visible) // Ludoal fork
+            {
+                DrawModuleData(batch, Screen.CompareModule, CompareModSubMenu);
             }
         }
 
@@ -172,11 +184,21 @@ namespace Ship_Game
             Color nameColor = isObsolete ? Color.Red : Color.White;
             Obsolete.BaseColor = nameColor;
             Obsolete.Draw(batch);
+            DrawModuleData(batch, mod, ActiveModSubMenu);
+        }
+
+        // Ludoal fork: rendering extracted from DrawActiveModuleData and parameterized by
+        // panel so the comparison window can reuse it verbatim.
+        void DrawModuleData(SpriteBatch batch, ShipModule mod, Submenu panel)
+        {
+            if (mod == null)
+                return;
+            Color nameColor = mod.IsObsolete(Player) ? Color.Red : Color.White;
             ShipModule moduleTemplate = ResourceManager.GetModuleTemplate(mod.UID);
             //Added by McShooterz: Changed how modules names are displayed for allowing longer names
-            var modTitlePos = new Vector2(ActiveModSubMenu.X + 10, ActiveModSubMenu.Y + 35);
+            var modTitlePos = new Vector2(panel.X + 10, panel.Y + 35);
 
-            if (Fonts.Arial20Bold.TextWidth(moduleTemplate.NameText.Text) + 40 < ActiveModSubMenu.Width)
+            if (Fonts.Arial20Bold.TextWidth(moduleTemplate.NameText.Text) + 40 < panel.Width)
             {
                 batch.DrawString(Fonts.Arial20Bold, moduleTemplate.NameText.Text,
                     modTitlePos, nameColor);
@@ -284,12 +306,12 @@ namespace Ship_Game
             }
 
             string txt = Fonts.Arial12.ParseText(moduleTemplate.DescriptionText.Text,
-                                                 ActiveModSubMenu.Width - 20);
+                                                 panel.Width - 20);
 
             batch.DrawString(Fonts.Arial12, txt, modTitlePos, Color.White);
             modTitlePos.Y += (Fonts.Arial12Bold.MeasureString(txt).Y + 8f);
             float starty = modTitlePos.Y;
-            modTitlePos.X = 10;
+            modTitlePos.X = panel.X + 10; // Ludoal fork: was absolute 10 — same thing for the left panel, correct for the comparison one
 
             float strength = mod.CalculateModuleOffenseDefense(Screen.CurrentHull.SurfaceArea, forceRecalculate: mod.IsFighterHangar);
             DrawStat(ref modTitlePos, "Offense", strength, GameText.TT_ShipOffense);

@@ -81,6 +81,7 @@ namespace Ship_Game
         string ScreenToLaunch;
 
         public ShipModule ActiveModule;
+        public ShipModule CompareModule; // Ludoal fork: pinned comparison module (Shift-click in the module list)
         CategoryDropDown CategoryList;
         HangarDesignationDropDown HangarOptionsList;
 
@@ -134,6 +135,16 @@ namespace Ship_Game
             ShipModule template = ResourceManager.GetModuleTemplate(ActiveModule.UID);
             ActiveModule.SetModuleRotation(template.XSize, template.YSize, 
                                            orientation, ShipModule.DefaultFacingFor(orientation));
+        }
+
+        // Ludoal fork: Shift-click in the module list pins a module for side-by-side
+        // comparison with the Active Module panel; same module again unpins it.
+        public void SetCompareModule(ShipModule template)
+        {
+            if (CompareModule != null && template != null && CompareModule.UID == template.UID)
+                CompareModule = null;
+            else
+                CompareModule = CreateModuleListItem(template);
         }
 
         public ShipModule CreateModuleListItem(ShipModule template)

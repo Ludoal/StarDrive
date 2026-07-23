@@ -25,7 +25,12 @@ namespace Ship_Game
             var weaponItem = (ModuleSelectListItem)item;
             if (weaponItem.Module != null)
             {
-                Screen.SetActiveModule(weaponItem.Module.UID, ModuleOrientation.Normal, 0, DynamicHangarOptions.DynamicLaunch.ToString());
+                // Ludoal fork: Shift-click pins the module for comparison beside the
+                // Active Module panel (plain click keeps its meaning)
+                if (Screen.Input.IsShiftKeyDown && (Screen.ActiveModule != null || Screen.HighlightedModule != null))
+                    Screen.SetCompareModule(weaponItem.Module);
+                else
+                    Screen.SetActiveModule(weaponItem.Module.UID, ModuleOrientation.Normal, 0, DynamicHangarOptions.DynamicLaunch.ToString());
             }
             base.OnItemClicked(item);
         }
