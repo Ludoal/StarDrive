@@ -83,6 +83,7 @@ namespace Ship_Game
             if (input.CodexHelp)                  HandleCodexHelp();
             if (input.BlueprintsSceen)            ScreenManager.AddScreen(new BlueprintsScreen(this, Player));
             if (input.EmpirePatrolsScreen)        ScreenManager.AddScreen(new EmpirePatrolsScreen(this, Player));
+            if (input.ImportantEventsScreen)      ScreenManager.AddScreen(new ImportantEventsScreen(this)); // Ludoal fork: F7
             if (input.AutomationWindow && !Debug) aw.ToggleVisibility();
             if (input.ExoticBonusesWindow) ExoticBonusesWindow.ToggleVisibility();
             if (input.FreighterUtilWindow) FreighterUtilizationWindow.ToggleVisibility();

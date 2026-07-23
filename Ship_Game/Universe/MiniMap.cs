@@ -479,7 +479,7 @@ namespace Ship_Game
                 ToolTip.CreateTooltip(GameText.OpensTheAutomationPanelWhich, "H");
 
             if (ImportantEvents.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip("Opens the Important Events log");
+                ToolTip.CreateTooltip("Opens the Important Events log", "F7");
 
             if (ExoticBonuses.Rect.HitTest(input.CursorPosition))
             {

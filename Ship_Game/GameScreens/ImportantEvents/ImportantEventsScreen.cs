@@ -75,6 +75,12 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            if (input.ImportantEventsScreen && !GlobalStats.TakingInput) // Ludoal fork: F7 toggles the screen
+            {
+                GameAudio.EchoAffirmative();
+                ExitScreen();
+                return true;
+            }
             if (input.Escaped || input.RightMouseClick)
             {
                 ExitScreen();
