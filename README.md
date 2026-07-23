@@ -48,7 +48,7 @@ is simple: the BlackBox team is welcome to take whatever they find worth keeping
 - Research: integrated frame under the top bar, compact branch packing, standard title.
 - Colony and Blueprints: panels aligned with the bar, wider right blocks.
 - Colony: Stats+ panel with the full production accounting.
-- Empire screen: FRP columns added.
+- Empire screen: Fertility / Richness / Max Population columns added.
 - Planet View removed: double-click opens Colony view, Combat view, or just snaps the
   camera; the selection cartouches carry all the info.
 
