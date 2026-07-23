@@ -461,7 +461,7 @@ namespace Ship_Game
 
                 nodePos.X = root.NodePosition.X + 1f;
                 nodePos.Y = first ? FindDeepestYSubNodes()
-                                  : FindFreeRowFor(child, (int)root.NodePosition.Y, (int)nodePos.X);
+                                  : FindFreeRowFor(child, 0, (int)nodePos.X); // scan from the TAB top — the root's own Y is its slot in the left category list, not a row of this canvas
                 if (first) first = false;
 
                 if (!SubNodes.ContainsKey(child.UID)) // only ever add unique entries
