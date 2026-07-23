@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text;
 using Ship_Game.ExtensionMethods;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
@@ -24,6 +25,11 @@ namespace Ship_Game
         readonly Menu2 Window;
         readonly ScrollList<PickerItem> DesignSL;
         string ChosenEnemy;
+        // S5: Shift-(double)click stages opponents into a group roster
+        readonly Array<string> Roster = new();
+        string[] ChosenGroup;
+        readonly UIButton FightBtn, ClearBtn;
+        const int RosterCap = 10; // readability cap (field preference, 45.65 bench)
         int LaunchCountdown = -1; // >= 0: veil is up, counting rendered frames before Launch
 
         public BattleSimEnemyPicker(UniverseScreen host, string playerDesign) : base(host, toPause: host)
@@ -38,10 +44,16 @@ namespace Ship_Game
             Window = Add(new Menu2(rect));
             Add(new CloseButton(rect.Right - 40, rect.Y + 20));
 
-            RectF slRect = new(rect.X + 20, rect.Y + 60, rect.Width - 40, rect.Height - 80);
+            RectF slRect = new(rect.X + 20, rect.Y + 60, rect.Width - 40, rect.Height - 150);
             DesignSL = Add(new ScrollList<PickerItem>(slRect, 32));
             DesignSL.EnableItemHighlight = true;
             DesignSL.OnDoubleClick = OnPicked;
+
+            // S5: group controls — hidden until the roster has a first opponent
+            FightBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(rect.X + 20, rect.Bottom - 44), "Fight group"));
+            FightBtn.OnClick = b => LaunchGroup();
+            ClearBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(rect.Right - 220, rect.Bottom - 44), "Clear"));
+            ClearBtn.OnClick = b => { GameAudio.AcceptClick(); Roster.Clear(); };
 
             PopulateList();
         }
@@ -81,9 +93,31 @@ namespace Ship_Game
         {
             if (LaunchCountdown >= 0 || item.DesignName == null) // headers don't fight
                 return;
+            // S5: Shift stages the pick into the group roster instead of launching;
+            // once a roster exists, plain picks stage too — Fight group launches.
+            if (Input.IsShiftKeyDown || Roster.NotEmpty)
+            {
+                if (Roster.Count >= RosterCap)
+                {
+                    GameAudio.NegativeClick();
+                    return;
+                }
+                GameAudio.AcceptClick();
+                Roster.Add(item.DesignName);
+                return;
+            }
             GameAudio.AcceptClick();
             ChosenEnemy = item.DesignName;
             LaunchCountdown = 2; // let the veil reach the screen before the heavy load
+        }
+
+        void LaunchGroup()
+        {
+            if (LaunchCountdown >= 0 || Roster.IsEmpty)
+                return;
+            GameAudio.AcceptClick();
+            ChosenGroup = Roster.ToArray();
+            LaunchCountdown = 2;
         }
 
         public override void Update(float fixedDeltaTime)
@@ -96,9 +130,13 @@ namespace Ship_Game
                 // exit first, launch second — same order as the Shipyard button:
                 // our toPause resume fires now, Launch re-pauses the host right after.
                 ExitScreen();
-                BattleSimUniverse.Launch(Host, PlayerDesign, ChosenEnemy);
+                if (ChosenGroup != null)
+                    BattleSimUniverse.Launch(Host, PlayerDesign, ChosenGroup);
+                else
+                    BattleSimUniverse.Launch(Host, PlayerDesign, ChosenEnemy);
                 return;
             }
+            FightBtn.Visible = ClearBtn.Visible = Roster.NotEmpty; // S5
             base.Update(fixedDeltaTime);
         }
 
@@ -120,9 +158,29 @@ namespace Ship_Game
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
             base.Draw(batch, elapsed);
-            string title = "Choose your opponent";
+            string title = "Choose your opponent - Shift-click for a group";
             batch.DrawString(Fonts.Arial14Bold, title,
                 new Vector2(Window.Menu.CenterTextX(title), Window.Menu.Y + 22), Color.Wheat);
+
+            // S5: roster summary between the list and the group buttons
+            if (Roster.NotEmpty)
+            {
+                var counts = new Map<string, int>();
+                foreach (string d in Roster)
+                    counts[d] = counts.TryGetValue(d, out int c) ? c + 1 : 1;
+                var sb = new StringBuilder("Group (").Append(Roster.Count).Append("): ");
+                bool first = true;
+                foreach (var kv in counts)
+                {
+                    if (!first) sb.Append(" · ");
+                    first = false;
+                    sb.Append(kv.Key);
+                    if (kv.Value > 1) sb.Append(" x").Append(kv.Value);
+                }
+                string roster = Fonts.Arial12Bold.ParseText(sb.ToString(), (int)Window.Menu.Width - 40);
+                batch.DrawString(Fonts.Arial12Bold, roster,
+                    new Vector2(Window.Menu.X + 20, Window.Menu.Bottom - 84), Color.Wheat);
+            }
             batch.SafeEnd();
         }
 

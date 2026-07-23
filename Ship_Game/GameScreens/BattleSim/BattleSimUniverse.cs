@@ -21,33 +21,40 @@ namespace Ship_Game
     {
         readonly UniverseScreen HostGame; // the real game we cover; paused while we run
         readonly string PlayerDesign;
-        readonly string EnemyDesign;
+        readonly string[] EnemyDesigns; // S5: 1..N opponents
         Empire Them;
-        Ship ShipA, ShipB;
+        Ship ShipA;
+        // S5: one entry per opponent
+        class Foe { public string Design; public Ship Ship; public float OrdStart; }
+        readonly Array<Foe> Foes = new();
         bool Spawned;
         // S3: fight tracking for the battle report (snapshot-based)
         float FightSeconds;
-        float OrdStartA, OrdStartB;
+        float OrdStartA;
         bool FightOver;
         float ReportDelay;   // let the final explosion play before the report
         bool ReportShown;
 
         BattleSimUniverse(UniverseParams p, float radius, UniverseScreen hostGame,
-                          string playerDesign, string enemyDesign) : base(p, radius)
+                          string playerDesign, string[] enemyDesigns) : base(p, radius)
         {
             HostGame = hostGame;
             PlayerDesign = playerDesign;
-            EnemyDesign = enemyDesign;
+            EnemyDesigns = enemyDesigns;
             UState.NoEliminationVictory = true;
             UState.CanShowDiplomacyScreen = false;
         }
 
         public static void Launch(UniverseScreen hostGame, string playerDesign, string enemyDesign)
+            => Launch(hostGame, playerDesign, new[] { enemyDesign });
+
+        // S5: group fights — same arena, N opponents
+        public static void Launch(UniverseScreen hostGame, string playerDesign, string[] enemyDesigns)
         {
             var p = new UniverseParams();
             p.DebugDisableShipLaunch = true; // no launch sequence: combat-capable immediately
 
-            var sim = new BattleSimUniverse(p, 500_000f, hostGame, playerDesign, enemyDesign);
+            var sim = new BattleSimUniverse(p, 500_000f, hostGame, playerDesign, enemyDesigns);
 
             // any two distinct major races will do — the arena is about the ships;
             // Hard difficulty only affects ship AI modifiers, there is no economy here
@@ -117,20 +124,36 @@ namespace Ship_Game
         {
             // face to face, well inside mutual sensor range (base 20k)
             ShipA = Ship.CreateShipAtPoint(UState, PlayerDesign, Player, new Vector2(-6000f, 0f));
-            ShipB = Ship.CreateShipAtPoint(UState, EnemyDesign, Them, new Vector2(6000f, 0f));
+            // S5: opponents form a column on the player's axis; 1600 spacing keeps
+            // even capitals clear of each other (cap of 10 -> +/-7200 spread)
+            Foes.Clear();
+            for (int i = 0; i < EnemyDesigns.Length; ++i)
+            {
+                float y = (i - (EnemyDesigns.Length - 1) * 0.5f) * 1600f;
+                Ship s = Ship.CreateShipAtPoint(UState, EnemyDesigns[i], Them, new Vector2(6000f, y));
+                Foes.Add(new Foe { Design = EnemyDesigns[i], Ship = s, OrdStart = s?.Ordinance ?? 0f });
+            }
             OrdStartA = ShipA?.Ordinance ?? 0f;
-            OrdStartB = ShipB?.Ordinance ?? 0f;
             FightSeconds = 0f;
             FightOver = false;
             ReportShown = false;
             PinShips();
         }
 
+        bool AllFoesDown()
+        {
+            foreach (Foe f in Foes)
+                if (f.Ship != null && f.Ship.Active)
+                    return false;
+            return true;
+        }
+
         // S3: Rematch from the battle report — same pairing, fresh ships, no reload
         public void Rematch()
         {
             if (ShipA != null && ShipA.Active) ShipA.QueueTotalRemoval();
-            if (ShipB != null && ShipB.Active) ShipB.QueueTotalRemoval();
+            foreach (Foe f in Foes)
+                if (f.Ship != null && f.Ship.Active) f.Ship.QueueTotalRemoval();
             SpawnShips();
             UState.Paused = false;
         }
@@ -164,8 +187,42 @@ namespace Ship_Game
             UState.Paused = true;
             ScreenManager.AddScreen(new BattleSimResultScreen(this,
                 Report(ShipA, PlayerDesign, OrdStartA),
-                Report(ShipB, EnemyDesign, OrdStartB),
+                FoesReport(),
                 FightSeconds, aborted));
+        }
+
+        // S5: one opponent keeps the classic report; a group gets an aggregate line
+        // (per-foe rows are the next step)
+        BattleSimResultScreen.ShipReport FoesReport()
+        {
+            if (Foes.Count == 1)
+                return Report(Foes[0].Ship, Foes[0].Design, Foes[0].OrdStart);
+
+            int alive = 0, shielded = 0;
+            float hull = 0f, shieldSum = 0f, ordStart = 0f, ordLeft = 0f, power = 0f;
+            foreach (Foe f in Foes)
+            {
+                Ship s = f.Ship;
+                ordStart += f.OrdStart;
+                if (s != null && s.Active)
+                {
+                    ++alive;
+                    hull += s.HealthPercent;
+                    if (s.ShieldMax > 0f) { ++shielded; shieldSum += s.ShieldPower / s.ShieldMax; }
+                    ordLeft += s.Ordinance;
+                    power += s.PowerCurrent;
+                }
+            }
+            return new BattleSimResultScreen.ShipReport
+            {
+                Design        = Foes.Count + " ships (" + alive + " left)",
+                Alive         = alive > 0,
+                HullPct       = hull / Foes.Count,
+                ShieldPct     = shielded == 0 ? -1f : shieldSum / shielded,
+                OrdnanceUsed  = (ordStart - ordLeft).LowerBound(0),
+                OrdnanceStart = ordStart,
+                PowerLeft     = power,
+            };
         }
 
         // 45.22/45.24/45.26 field results: the enemy ship kept FTL-fleeing — the AI
@@ -173,30 +230,46 @@ namespace Ship_Game
         // S1 brute force: re-pin the attack order every update tick until it sticks.
         void PinShips()
         {
-            if (ShipA == null || ShipB == null || !ShipA.Active || !ShipB.Active)
+            if (ShipA == null || !ShipA.Active)
+                return;
+
+            // S5: the player's pin target is the nearest living opponent
+            Ship nearest = null;
+            float bestD = float.MaxValue;
+            foreach (Foe f in Foes)
+            {
+                Ship s = f.Ship;
+                if (s == null || !s.Active) continue;
+                float d = s.Position.SqDist(ShipA.Position);
+                if (d < bestD) { bestD = d; nearest = s; }
+            }
+            if (nearest == null)
                 return;
 
             // player ship: re-pin only when idle — manual orders stay untouched
             if (ShipA.AI.State == AIState.AwaitingOrders)
             {
-                ShipA.AI.OrderAttackSpecificTarget(ShipB);
+                ShipA.AI.OrderAttackSpecificTarget(nearest);
                 ShipA.AI.SetPriorityOrder(true);
             }
-            // AI ship: any deviation from attacking the player gets overridden
-            if (ShipB.AI.Target != ShipA)
+            // AI ships: any deviation from attacking the player gets overridden
+            foreach (Foe f in Foes)
             {
-                ShipB.AI.OrderAttackSpecificTarget(ShipA);
-                ShipB.AI.SetPriorityOrder(true);
+                Ship s = f.Ship;
+                if (s == null || !s.Active) continue;
+                if (s.AI.Target != ShipA)
+                {
+                    s.AI.OrderAttackSpecificTarget(ShipA);
+                    s.AI.SetPriorityOrder(true);
+                }
+                // Priority holds only for the approach: once in weapons contact it is
+                // released so the combat loop honors the ship's stance (artillery keeps
+                // its range, hold holds...) — ships stop stacking on each other.
+                if (s.InCombat && s.AI.HasPriorityOrder)
+                    s.AI.SetPriorityOrder(false);
             }
-
-            // Priority holds only for the approach: once in weapons contact it is
-            // released so the combat loop honors the ship's stance (artillery keeps
-            // its range, hold holds...) — ships stop stacking on each other.
-            // If a ship disengages and idles, the re-pin above takes over again.
             if (ShipA.InCombat && ShipA.AI.HasPriorityOrder)
                 ShipA.AI.SetPriorityOrder(false);
-            if (ShipB.InCombat && ShipB.AI.HasPriorityOrder)
-                ShipB.AI.SetPriorityOrder(false);
         }
 
         public override void Update(float fixedDeltaTime)
@@ -208,7 +281,7 @@ namespace Ship_Game
             {
                 if (!UState.Paused)
                     FightSeconds += fixedDeltaTime;
-                if (Spawned && (ShipA == null || !ShipA.Active || ShipB == null || !ShipB.Active))
+                if (Spawned && (ShipA == null || !ShipA.Active || AllFoesDown()))
                 {
                     FightOver = true;
                     ReportDelay = 2.5f;
