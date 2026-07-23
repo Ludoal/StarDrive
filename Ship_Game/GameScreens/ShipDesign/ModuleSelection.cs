@@ -308,8 +308,17 @@ namespace Ship_Game
             string txt = Fonts.Arial12.ParseText(moduleTemplate.DescriptionText.Text,
                                                  panel.Width - 20);
 
+            // Ludoal fork: the header (title/restrictions/description) gets a FIXED slot
+            // so the stat rows of the Active and Compared panels align row-for-row.
+            // Overlong descriptions are ellipsized instead of pushing the stats down.
+            const float StatsStartRel = 195f;
+            int maxLines = (int)((panel.Y + StatsStartRel - 8f - modTitlePos.Y) / Fonts.Arial12.LineSpacing);
+            string[] descLines = txt.Split('\n');
+            if (maxLines > 0 && descLines.Length > maxLines)
+                txt = string.Join("\n", descLines, 0, maxLines) + "...";
+
             batch.DrawString(Fonts.Arial12, txt, modTitlePos, Color.White);
-            modTitlePos.Y += (Fonts.Arial12Bold.MeasureString(txt).Y + 8f);
+            modTitlePos.Y = panel.Y + StatsStartRel;
             float starty = modTitlePos.Y;
             modTitlePos.X = panel.X + 10; // Ludoal fork: was absolute 10 — same thing for the left panel, correct for the comparison one
 
