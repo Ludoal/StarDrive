@@ -105,7 +105,13 @@ namespace Ship_Game
                     ClearSelectedItems();
                     returnToShip = doReturnToShip;
                     LookingAtPlanet = true;
-                    return; // no camera snap: the panel covers the map, and the camera is restored on close anyway
+                    // No camera snap — the panel covers the map. But the removed snap
+                    // also refreshed transitionStartPosition, which the close handler
+                    // restores to; left stale, closing flew the camera to wherever the
+                    // last transition started. Anchor both to the current camera.
+                    transitionStartPosition = CamPos;
+                    CamDestination = CamPos;
+                    return;
                 }
                 else if (combatView && p.Habitable
                                     && p.IsExploredBy(Player)

@@ -88,7 +88,10 @@ namespace Ship_Game
 
             workersPanel = new CombatScreen(this, planet);
 
-            // no camera snap: the ground battle view covers the map (Ludoal fork)
+            // no camera snap: the ground battle view covers the map (Ludoal fork);
+            // anchor the close-restore to the current camera (see SnapViewColony)
+            transitionStartPosition = CamPos;
+            CamDestination = CamPos;
             LookingAtPlanet = true;
         }
 
