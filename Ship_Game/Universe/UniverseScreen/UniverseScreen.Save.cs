@@ -60,9 +60,16 @@ public partial class UniverseScreen
         PendingSaveName = saveName;
     }
 
+    // Ludoal fork: the Battle Arena is a UniverseScreen too — its StarDate runs and
+    // was rotating the REAL game's autosave slots with arena snapshots.
+    public bool DisableAutoSave;
+
     void CheckForPendingSaves()
     {
         GameBase game = GameBase.Base;
+
+        if (DisableAutoSave)
+            return;
 
         if (PendingSaveName.NotEmpty())
         {
