@@ -36,9 +36,9 @@ on:
 env:
   CODENAME: Jupiter
   # Ludoal fork (#347 etc): builds are stamped <official base>.<fork build counter>
-  # e.g. 1.60.00045.2 = official patch 45 + our fixes, fork build #2. Readable provenance,
-  # and the in-game updater will still offer official 46+ normally (45.x < 46).
-  MAJOR_MINOR: "1.60.00045"
+  # e.g. 1.60.00046.2 = official patch 46 + our fixes, fork build #2. Readable provenance,
+  # and the in-game updater will still offer official 47+ normally (46.x < 47).
+  MAJOR_MINOR: "1.60.00046"
 
 jobs:
   build:
