@@ -167,8 +167,8 @@ public static class GlobalStats
     // Ludoal fork: autosave every N star-years (1 year = 10 turns = ~50s at speed x1); 0 = legacy time-based
     public static int AutoSaveYears = 5;
 
-    // Ludoal fork: explored systems leave a permanent bright disc on the fog of war
-    // (the pre-46-a look). Default off = the map stays dark, live sensors only.
+    // Ludoal fork: ships permanently paint their sensor coverage on the fog of war
+    // (the classic pre-46-a look). Default off = the map stays dark, live sensors only.
     public static bool FogOfWarMemory;
 
     // USER_EXPERIENCE

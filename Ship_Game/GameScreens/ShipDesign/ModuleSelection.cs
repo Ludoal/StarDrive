@@ -55,8 +55,8 @@ namespace Ship_Game
 
             // Ludoal fork: comparison panel (Shift-click in the module list). Same slot as
             // Choose Fighter (the fighter list wins it when a hangar is selected), widened
-            // by 125px: its right column shifts right so each column owns a delta lane.
-            RectF compareR = new(acsub.X + acsub.W + 20, acsub.Y, acsub.W + 125, acsub.H);
+            // by 105px: its right column shifts right so each column owns a delta lane.
+            RectF compareR = new(acsub.X + acsub.W + 20, acsub.Y, acsub.W + 105, acsub.H);
             CompareModSubMenu = base.Add(new Submenu(compareR, "Compared Module"));
             CompareModSubMenu.SetBackground(Colors.TransparentBlackFill);
             ChooseFighterSub = base.Add(new SubmenuScrollList<FighterListItem>(fighterR, "Choose Fighter"));
@@ -180,7 +180,7 @@ namespace Ship_Game
             var dim = new Color(105, 105, 105);
             // The Compared panel pushes its right column further out so column 1's
             // delta lane never runs into column 2's labels; rows still align in Y.
-            float colStep = other != null ? 230f : 152f;
+            float colStep = other != null ? 210f : 152f;
             var cursor = new Vector2(panel.X + 10 + col * colStep, panel.Y + StatsStartRel);
 
             foreach (CollectedStat u in union)
@@ -256,6 +256,8 @@ namespace Ship_Game
 
             ActiveModSubMenu.Visible = Screen.ActiveModule != null || Screen.HighlightedModule != null;
             ChooseFighterSub.Visible = ChooseFighterSL.GetFighterHangar() != null;
+            if (!ActiveModSubMenu.Visible)
+                Screen.CompareModule = null; // Ludoal fork: closing the Active panel drops the pin
             CompareModSubMenu.Visible = Screen.CompareModule != null && ActiveModSubMenu.Visible
                                         && !ChooseFighterSub.Visible; // Ludoal fork
 

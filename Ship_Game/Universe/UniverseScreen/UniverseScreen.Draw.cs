@@ -287,29 +287,31 @@ namespace Ship_Game
             batch.Draw(front, new Rectangle(0, 0, 512, 512), Color.White);
             batch.SafeEnd();
 
-            // Ludoal fork: nothing stamps the fog map BY DEFAULT. Ship wakes were
-            // noise (removed first); the explored-system discs that replaced them
-            // still leaked known-space geography onto an otherwise dark map — an
-            // undiscovered system has no name, a discovered one needs no halo.
-            // The FogOfWarMemory option (default off) brings the discs back for
-            // players who liked the painted map; toggling it off purges the old
-            // stamps when the render targets are recreated (options apply/reload).
+            // Ludoal fork: nothing stamps the fog map BY DEFAULT — the map stays
+            // dark and live sensors carry current vision. The FogOfWarMemory option
+            // (default off) restores the CLASSIC painted map: ships stamp their
+            // sensor disc as they travel, exactly the pre-fork behavior (field
+            // feedback: the option must bring back the ship wakes, not the
+            // explored-system discs of an intermediate build). Toggling it off
+            // purges old paint when the render targets are recreated.
             if (GlobalStats.FogOfWarMemory)
             {
                 batch.SafeBegin(SpriteBlendMode.Additive);
                 double worldSizeToMaskSize = 512.0 / (UState.Size * 2.0);
                 var uiNode = ResourceManager.Texture("UI/node");
-                // white stamp keeps rgb tracking alpha so the FogMap stays premul-correct
-                var sensorMask = new Color(255, 255, 255, 255);
-                foreach (SolarSystem sys in UState.Systems)
+                var ships = Player.OwnedShips;
+                // White stamp keeps rgb tracking alpha so the FogMap stays premul-
+                // correct for the AlphaBlend composite in UpdateFogOfWarInfluences.
+                var shipSensorMask = new Color(255, 255, 255, 255);
+                foreach (Ship ship in ships)
                 {
-                    if (sys.IsExploredBy(Player))
+                    if (ship != null && ship.InFrustum)
                     {
-                        double posX = sys.Position.X * worldSizeToMaskSize + 256;
-                        double posY = sys.Position.Y * worldSizeToMaskSize + 256;
-                        double size = (sys.Radius * 2.5) * worldSizeToMaskSize;
+                        double posX = ship.Position.X * worldSizeToMaskSize + 256;
+                        double posY = ship.Position.Y * worldSizeToMaskSize + 256;
+                        double size = (ship.SensorRange * 2.0) * worldSizeToMaskSize;
                         var rect = new RectF(posX, posY, size, size);
-                        batch.Draw(uiNode, rect, sensorMask, 0f, uiNode.CenterF, SpriteEffects.None, 1f);
+                        batch.Draw(uiNode, rect, shipSensorMask, 0f, uiNode.CenterF, SpriteEffects.None, 1f);
                     }
                 }
                 batch.SafeEnd();
