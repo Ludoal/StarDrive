@@ -157,7 +157,8 @@ namespace Ship_Game
             AddNotification(new Notification
             {
                 RelevantEmpire = empire,
-                Message        = $"{our} {treaty} {with} {empire.Name} {wasRevoked}"
+                Message        = $"{our} {treaty} {with} {empire.Name} {wasRevoked}",
+                Action   = "Diplomacy"
             }, "sd_ui_notification_warning");
         }
 
@@ -637,6 +638,7 @@ namespace Ship_Game
             {
                 Pause    = false,
                 Message  = $"{first.data.Traits.Name} {Localizer.Token(GameText.And3)} {second.data.Traits.Name}\n{Localizer.Token(GameText.AreNowAtPeace)}",
+                Action   = "Diplomacy",
                 IconPath = "UI/icon_peace"
             }, "sd_ui_notification_conquer_01");
         }
@@ -647,6 +649,7 @@ namespace Ship_Game
             {
                 Pause    = false,
                 Message  = $"{Localizer.Token(GameText.PeaceTreatyExpiredWithn)} {otherEmpire.data.Traits.Name}",
+                Action   = "Diplomacy",
                 IconPath = "UI/icon_peace_cancel"
             }, "sd_ui_notification_warning");
         }
@@ -914,7 +917,8 @@ namespace Ship_Game
             {
                 Message = $"{attacker.data.Traits.Name} {Localizer.Token(GameText.And3)} {victim.data.Traits.Name}\n{Localizer.Token(GameText.AreNowAtWar)}",
                 IconPath = "ResearchMenu/icons_techroot_infantry_hover",
-                Pause    = attacker.isPlayer || victim.isPlayer
+                Pause    = attacker.isPlayer || victim.isPlayer,
+                Action = "Diplomacy"
             }, "sd_troop_march_01", "sd_notify_alert");
         }
 
@@ -923,7 +927,8 @@ namespace Ship_Game
             AddNotification(new Notification
             {
                 RelevantEmpire = enemy,
-                Message        = $"{enemy.Name} {Localizer.Token(GameText.DeclaredWarOnUsBecause)} {requestingEmpire.Name}",
+                Message        = $"{enemy.Name} {Localizer.Token(GameText.DeclaredWarOnUsBecause)} {requestingEmpire.Name}",,
+                Action = "Diplomacy"
             }, "sd_ui_notification_encounter");
         }
 

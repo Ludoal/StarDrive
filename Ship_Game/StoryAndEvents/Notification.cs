@@ -70,6 +70,9 @@ public sealed class Notification
                 case "SnapToShip":
                     m.SnapToShip(ReferencedItem1 as Ship);
                     break;
+                case "Diplomacy": // Ludoal fork: diplomacy notifications open the diplomacy panel
+                    m.ScreenManager.AddScreen(new MainDiplomacyScreen(m.Screen));
+                    break;
                 case "EspionageScreen": // Ludoal fork (wishlist): spy notifications open the espionage panel
                     if (m.Screen.Player.LegacyEspionageEnabled)
                         m.ScreenManager.AddScreen(new EspionageScreen(m.Screen));
