@@ -63,8 +63,8 @@ namespace Ship_Game
                 // from the default view (they smeared the whole map and duplicate the F4
                 // overlay); spy/mole coverage (Source == null) shows only on the F7
                 // Vision overlay, which lights every sensor source.
-                // (bench round 2: warship halos were the remaining smear — planets only now)
-                if (!ShowingVisionOverlay && !(node.Source is Planet))
+                // (bench round 3: everything — planets included — lives on the F3 overlay)
+                if (!ShowingVisionOverlay)
                     continue;
 
                 ProjectToScreenCoords(node.Position, node.Radius * 2f, out Vector2d nodePos, out double nodeRadius);
