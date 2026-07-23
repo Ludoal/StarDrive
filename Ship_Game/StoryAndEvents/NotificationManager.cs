@@ -82,9 +82,11 @@ namespace Ship_Game
             {
                 Message         = result,
                 SymbolPath      = good ? "NewUI/icon_spy_notification" : "NewUI/icon_spy_notification_bad",
-                ReferencedItem1 = planet?.System ?? null,
+                ReferencedItem1 = planet != null ? (object)planet : null,
                 IconPath        = planet?.IconPath ?? null,
-                Action          = "EspionageScreen", // Ludoal fork (wishlist): open the panel, right-click still dismisses
+                // Ludoal fork: an espionage event about a PLANET opens that planet
+                // (colony view if ours, selection otherwise); otherwise the espionage panel
+                Action          = planet != null ? "SnapToPlanet" : "EspionageScreen",
             }, good ? "sd_ui_spy_win_02" : "sd_ui_spy_fail_02"); 
         }
 
