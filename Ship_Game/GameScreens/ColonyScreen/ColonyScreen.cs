@@ -144,7 +144,7 @@ namespace Ship_Game
 
             TitlePos = new Vector2(titleBar.X + titleBar.Width / 2 - Fonts.Laserian14.MeasureString("Colony Overview").X / 2f, titleBar.Y + titleBar.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
             LeftMenu = new Menu1(2, titleBar.Y + titleBar.Height + 5, titleBar.Width, ScreenHeight - (titleBar.Y + titleBar.Height) - 7);
-            RightMenu = new Menu1(titleBar.Right + 10, titleBar.Y, ScreenWidth / 3 - 15, ScreenHeight - titleBar.Y - 2);
+            RightMenu = new Menu1(titleBar.Right + 10, titleBar.Y + titleBar.Height + 5, ScreenWidth / 3 - 15, ScreenHeight - (titleBar.Y + titleBar.Height) - 7); // Ludoal fork: align top with the central block, like every other panel
             Add(new CloseButton(RightMenu.Right - 52, RightMenu.Y + 22));
 
             RectF planetInfoR = new(LeftMenu.X + 20, LeftMenu.Y + 20, 
