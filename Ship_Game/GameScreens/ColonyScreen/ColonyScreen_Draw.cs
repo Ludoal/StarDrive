@@ -271,7 +271,9 @@ namespace Ship_Game
             if (OutgoingColoFreighters > 0 || IncomingColoFreighters > 0 || P.ColonistsImportSlots > 0)
             {
                 position3 = new Vector2(cursor.X + num5, cursor.Y);
-                batch.DrawString(TextFont, P.ColonistsImportSlots > 0 ?"Incoming Pop: " : "Outgoing Pop: ", cursor, P.Owner.EmpireColor);
+                // green = pop coming in, red = pop leaving (was the empire color, unreadable for red empires)
+                batch.DrawString(TextFont, P.ColonistsImportSlots > 0 ?"Incoming Pop: " : "Outgoing Pop: ", cursor,
+                                 P.ColonistsImportSlots > 0 ? Color.LightGreen : Color.LightPink);
                 DrawColoSlots(batch, position3);
                 rect = new Rectangle((int)cursor.X, (int)cursor.Y, (int)TextFont.MeasureString("Incoming Pop: ").X, TextFont.LineSpacing);
                 if (rect.HitTest(Input.CursorPosition) && P.Universe.Screen.IsActive)
@@ -507,6 +509,12 @@ namespace Ship_Game
                 return;
             }
 
+            if (IsStatsPlusTabSelected) // Ludoal fork: Stats+ add-on tab
+            {
+                DrawStatsPlusTab(batch, bCursor);
+                return;
+            }
+
             if (IsTradeTabSelected)
             {
                 IncomingFoodBar.Draw(batch);
@@ -686,15 +694,15 @@ namespace Ship_Game
             Font font = LowRes ? Font8 : Font14;
 
             batch.DrawString(font, $"{gIncome}: ", cursor, Color.LightGray);
-            batch.DrawString(font, $"{grossIncome.String(2)} BC/Y", new Vector2(cursor.X + 150, cursor.Y), Color.LightGreen);
+            batch.DrawString(font, $"{grossIncome.String(2)} BC/turn", new Vector2(cursor.X + 150, cursor.Y), Color.LightGreen);
             cursor.Y += font.LineSpacing +  1;
 
             batch.DrawString(font, $"{gUpkeep}: ", cursor, Color.LightGray);
-            batch.DrawString(font, $"{grossUpkeep.String(2)} BC/Y", new Vector2(cursor.X + 150, cursor.Y), Color.Pink);
+            batch.DrawString(font, $"{grossUpkeep.String(2)} BC/turn", new Vector2(cursor.X + 150, cursor.Y), Color.Pink);
             cursor.Y += font.LineSpacing + 1;
 
             batch.DrawString(font, $"{(netIncome > 0 ? nIncome : nLosses)}: ", cursor, Color.LightGray);
-            batch.DrawString(font, $"{netIncome.String(2)} BC/Y", new Vector2(cursor.X + 150, cursor.Y), netIncome > 0.0 ? Color.Green : Color.Red);
+            batch.DrawString(font, $"{netIncome.String(2)} BC/turn", new Vector2(cursor.X + 150, cursor.Y), netIncome > 0.0 ? Color.Green : Color.Red);
             cursor.Y += font.LineSpacing*2 + 1;
         }
 
@@ -760,7 +768,7 @@ namespace Ship_Game
 
             string combat = P.SpaceCombatNearPlanet ? " (reduced due to space combat)" : "";
             DrawBuildingInfo(ref cursor, batch, font, P.GeodeticManager.GetPlanetRepairRatePerSecond(), "NewUI/icon_queue_rushconstruction",
-                $"{new LocalizedText(GameText.ShipRepair).Text} Per Second{combat}", digits: 1);
+                $"{new LocalizedText(GameText.ShipRepair).Text}{combat}", digits: 1);
 
             DrawBuildingInfo(ref cursor, batch, font, -P.Money.TroopMaint, "UI/icon_troop_shipUI", Localizer.Token(GameText.CreditsPerTurnForTroop), digits: 2);
             DrawBuildingInfo(ref cursor, batch, font, -TroopConsumption, "UI/icon_troop_shipUI", GetTroopsConsumptionText(), digits: 2);

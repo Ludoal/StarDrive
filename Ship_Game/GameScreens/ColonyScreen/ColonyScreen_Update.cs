@@ -191,8 +191,8 @@ namespace Ship_Game
 
         bool IsDysonSwarmTabSelected => PFacilities.IsTabSelected(Localizer.Token(GameText.DysonSwarm));
         bool IsTerraformTabSelected  => PFacilities.IsTabSelected(Localizer.Token(GameText.BB_Tech_Terraforming_Name));
-        bool IsTradeTabSelected      => PFacilities.SelectedIndex == 2;
-        bool IsStatTabSelected       => PFacilities.SelectedIndex == 0;
+        bool IsTradeTabSelected      => PFacilities.IsTabSelected(Localizer.Token(GameText.Trade2)); // Ludoal fork: title-based, indices shifted by Stats+
+        bool IsStatTabSelected       => PFacilities.IsTabSelected(Localizer.Token(GameText.Statistics2)); // Ludoal fork: title-based, indices shifted by Stats+
 
         Color GetManualImportSlotsOverrideColor()
         {

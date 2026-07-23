@@ -21,10 +21,12 @@ namespace Ship_Game.GameScreens
         FloatSlider TreasuryGoal;
         UILabel EmpireNetIncome;
 
+        readonly UniverseScreen Universe; // Ludoal fork: for the live top bar
         public BudgetScreen(UniverseScreen screen) : base(screen, toPause: screen)
         {
             Player            = screen.Player;
             IsPopup           = true;
+            Universe = screen; // Ludoal fork
             TransitionOnTime  = 0.25f;
             TransitionOffTime = 0.25f;
         }
@@ -79,7 +81,6 @@ namespace Ship_Game.GameScreens
             //Screen Title
             string title   = Localizer.Token(GameText.EconomicOverview);
             Label(Window.Menu.CenterTextX(title), Window.Menu.Y + 20, title);
-
             // background panels for TaxRate, incomes, cost, trade: 6138
             SummaryPanel tax = Add(new SummaryPanel("", taxRect, new Color(17, 21, 28)));
             var taxTitle = Player.AutoTaxes ? GameText.AutoTaxes : GameText.TaxRate;
@@ -105,6 +106,9 @@ namespace Ship_Game.GameScreens
             EmpireNetIncome = Label(Window.Menu.Right - 200,Window.Menu.Bottom - 47,
                                     text:GameText.NetGain, Fonts.Arial20Bold);
             EmpireNetIncome.DropShadow  = true;
+            string unitNote = "(all money values are per turn)";
+            Label(new Vector2(Window.Menu.CenterTextX(unitNote, Fonts.Arial12), Window.Menu.Y + 38),
+                  unitNote, Fonts.Arial12, Color.Gray); // centered under the title, added last so it draws over the panels
             EmpireNetIncome.DynamicText = DynamicText(
                 ()   => Player.NetIncome-Player.MoneySpendOnProductionNow,
                 (f) => $"{( f >= 0f ? Localizer.Token(GameText.NetGain) : Localizer.Token(GameText.NetLoss) )} : {f.MoneyString()}");
@@ -215,11 +219,15 @@ namespace Ship_Game.GameScreens
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
             base.Draw(batch, elapsed);
+            Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
         }
 
         public override bool HandleInput(InputState input)
         {
+            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
             if (input.KeyPressed(Keys.T) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();

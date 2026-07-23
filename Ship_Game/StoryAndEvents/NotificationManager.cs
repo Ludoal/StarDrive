@@ -85,9 +85,11 @@ namespace Ship_Game
             {
                 Message         = result,
                 SymbolPath      = good ? "NewUI/icon_spy_notification" : "NewUI/icon_spy_notification_bad",
-                ReferencedItem1 = planet?.System ?? null,
+                ReferencedItem1 = planet != null ? (object)planet : null,
                 IconPath        = planet?.IconPath ?? null,
-                Action          = planet != null ? "SnapToSystem" : "",
+                // Ludoal fork: an espionage event about a PLANET opens that planet
+                // (colony view if ours, selection otherwise); otherwise the espionage panel
+                Action          = planet != null ? "SnapToPlanet" : "EspionageScreen",
             }, good ? "sd_ui_spy_win_02" : "sd_ui_spy_fail_02"); 
         }
 
@@ -160,7 +162,8 @@ namespace Ship_Game
             AddNotification(new Notification
             {
                 RelevantEmpire = empire,
-                Message        = $"{our} {treaty} {with} {empire.Name} {wasRevoked}"
+                Message        = $"{our} {treaty} {with} {empire.Name} {wasRevoked}",
+                Action   = "Diplomacy"
             }, "sd_ui_notification_warning");
         }
 
@@ -655,6 +658,7 @@ namespace Ship_Game
             {
                 Pause    = false,
                 Message  = $"{first.data.Traits.Name} {Localizer.Token(GameText.And3)} {second.data.Traits.Name}\n{Localizer.Token(GameText.AreNowAtPeace)}",
+                Action   = "Diplomacy",
                 IconPath = "UI/icon_peace"
             }, "sd_ui_notification_conquer_01");
         }
@@ -665,6 +669,7 @@ namespace Ship_Game
             {
                 Pause    = false,
                 Message  = $"{Localizer.Token(GameText.PeaceTreatyExpiredWithn)} {otherEmpire.data.Traits.Name}",
+                Action   = "Diplomacy",
                 IconPath = "UI/icon_peace_cancel"
             }, "sd_ui_notification_warning");
         }
@@ -741,7 +746,7 @@ namespace Ship_Game
             AddNotification(new Notification
             {
                 Message = Localizer.Token(GameText.RemoveExcessResearchStation),
-                Action = "SnapToShip",
+                Action = "SnapToStation",
                 ReferencedItem1 = station,
                 IconPath = station.BaseHull.IconPath ?? "ResearchMenu/icon_event_science_bad"
             }, "sd_ui_notification_encounter");
@@ -797,7 +802,7 @@ namespace Ship_Game
             AddNotification(new Notification
             {
                 Message         = message,
-                Action          = "SnapToShip",
+                Action          = "SnapToStation",
                 ReferencedItem1 = s,
                 IconPath        = s.ShipData.IconPath
             }, "smallservo");
@@ -808,7 +813,7 @@ namespace Ship_Game
             AddNotification(new Notification
             {
                 Message = $"{planet.System.Name}: {s.Name}" + $" {Localizer.Token(GameText.MiningStationBuiltPlanetNotify)} {planet.Name}",
-                Action = "SnapToShip",
+                Action = "SnapToStation",
                 ReferencedItem1 = s,
                 IconPath = s.ShipData.IconPath
             }, "smallservo");
@@ -844,7 +849,7 @@ namespace Ship_Game
 
         public void AddDestroyedPirateBase(Ship s, float reward)
         {
-            string message = $"{Localizer.Token(GameText.DestroyedPirateBase)} {reward.String(0)} credits.";
+            string message = $"{Localizer.Token(GameText.DestroyedPirateBase)} {reward.String(0)} BC.";
             AddNotification(new Notification
             {
                 RelevantEmpire  = s.Loyalty,
@@ -934,7 +939,8 @@ namespace Ship_Game
             {
                 Message = $"{attacker.data.Traits.Name} {Localizer.Token(GameText.And3)} {victim.data.Traits.Name}\n{Localizer.Token(GameText.AreNowAtWar)}",
                 IconPath = "ResearchMenu/icons_techroot_infantry_hover",
-                Pause    = attacker.isPlayer || victim.isPlayer
+                Pause    = attacker.isPlayer || victim.isPlayer,
+                Action = "Diplomacy"
             }, "sd_troop_march_01", "sd_notify_alert");
         }
 
@@ -944,6 +950,7 @@ namespace Ship_Game
             {
                 RelevantEmpire = enemy,
                 Message        = $"{enemy.Name} {Localizer.Token(GameText.DeclaredWarOnUsBecause)} {requestingEmpire.Name}",
+                Action = "Diplomacy"
             }, "sd_ui_notification_encounter");
         }
 
@@ -1071,7 +1078,27 @@ namespace Ship_Game
         public void SnapToShip(Ship s)
         {
             GameAudio.SubBassWhoosh();
-            Screen.SnapViewShip(s);
+            // A ship outside our sensor vision (e.g. one of ours freshly boarded by the
+            // enemy) cannot be meaningfully selected or chased - the camera would follow
+            // an invisible dot. Snap to its last known position instead.
+            if (s == null)
+                return;
+            if (s.InPlayerSensorRange)
+                Screen.SnapViewShip(s);
+            else
+                Screen.SnapViewTo(new(s.Position.X, s.Position.Y + 400, 2500), 5f, 2f);
+        }
+
+        public void SnapToStation(Ship s)
+        {
+            GameAudio.SubBassWhoosh();
+            if (s == null)
+                return;
+            // Ludoal fork: station notifications used the ship snap, which chases
+            // the hull nose-on. A station is fixed context, not a ship to follow —
+            // go to PlanetView over its position instead.
+            Screen.SnapViewTo(new(s.Position.X, s.Position.Y,
+                Screen.GetZfromScreenState(UniverseScreen.UnivScreenState.PlanetView)), 5f, 2f);
         }
 
         public void SnapToExpandedSystem(Planet p, SolarSystem system)
@@ -1083,7 +1110,7 @@ namespace Ship_Game
         public void SnapToSystem(SolarSystem system)
         {
             GameAudio.SubBassWhoosh();
-            Screen.SnapViewSystem(system, null, UniverseScreen.UnivScreenState.SystemView);
+            Screen.SnapViewSystem(system, null, UniverseScreen.UnivScreenState.SystemView, select: false); // Ludoal fork: you are AT the system, no ghost selection
         }
 
         public void Update(float elapsedRealTime)

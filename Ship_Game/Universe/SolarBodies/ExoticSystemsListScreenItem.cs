@@ -107,8 +107,10 @@ namespace Ship_Game
 
             if (Planet?.IsResearchable == true || System.IsResearchable)
             {
-                ButtonStyle researchStyle = MarkedForResearch ? ButtonStyle.Military : ButtonStyle.BigDip;
-                LocalizedText researchText = !MarkedForResearch ? GameText.DeployResearchStation : GameText.AbortDeployent;
+                bool deployed = SolarBody.IsResearchStationDeployedBy(Player); // built: neither Deploy nor Abort
+                ButtonStyle researchStyle = MarkedForResearch || deployed ? ButtonStyle.Military : ButtonStyle.BigDip;
+                LocalizedText researchText = deployed ? new LocalizedText("Station Deployed", LocalizationMethod.RawText)
+                                           : !MarkedForResearch ? new LocalizedText(GameText.DeployResearchStation) : new LocalizedText(GameText.AbortDeployent);
                 DeployButton = Button(researchStyle, researchText, OnResearchClicked);
             }
             else if (Planet?.IsMineable == true)
@@ -371,6 +373,11 @@ namespace Ship_Game
 
         void OnResearchClicked(UIButton b)
         {
+            if (SolarBody.IsResearchStationDeployedBy(Player))
+            {
+                GameAudio.NegativeClick(); // already built - clicking Deploy again would queue a duplicate goal
+                return;
+            }
             GameAudio.EchoAffirmative();
             if (!MarkedForResearch)
             {

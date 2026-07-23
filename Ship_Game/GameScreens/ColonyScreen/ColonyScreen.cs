@@ -124,7 +124,7 @@ namespace Ship_Game
         ProgressBar DysonSwarmProductionBoost;
 
         public ColonyScreen(GameScreen parent, Planet p, EmpireUIOverlay empUI, 
-            int governorTabSelected = 0, int facilitiesTabSelected = 0)
+            int governorTabSelected = 0, int facilitiesTabSelected = -1) // Ludoal fork: -1 = fresh open, defaults to Stats+
             : base(parent, p)
         {
             Eui = empUI;
@@ -144,7 +144,7 @@ namespace Ship_Game
 
             TitlePos = new Vector2(titleBar.X + titleBar.Width / 2 - Fonts.Laserian14.MeasureString("Colony Overview").X / 2f, titleBar.Y + titleBar.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
             LeftMenu = new Menu1(2, titleBar.Y + titleBar.Height + 5, titleBar.Width, ScreenHeight - (titleBar.Y + titleBar.Height) - 7);
-            RightMenu = new Menu1(titleBar.Right + 10, titleBar.Y, ScreenWidth / 3 - 15, ScreenHeight - titleBar.Y - 2);
+            RightMenu = new Menu1(titleBar.Right + 5, titleBar.Y + titleBar.Height + 5, ScreenWidth / 3 - 10, ScreenHeight - (titleBar.Y + titleBar.Height) - 7); // Ludoal fork: align top with the central block, like every other panel
             Add(new CloseButton(RightMenu.Right - 52, RightMenu.Y + 22));
 
             RectF planetInfoR = new(LeftMenu.X + 20, LeftMenu.Y + 20, 
@@ -202,6 +202,17 @@ namespace Ship_Game
             PopulatePfacilitieTabs();
             PFacilities.OnTabChange = OnPFacilitiesTabChange;
             // FB - sticky tab selection on colony change via arrows
+            // Ludoal fork: on a fresh open (no sticky selection carried), default to Stats+
+            if (facilitiesTabSelected < 0)
+            {
+                facilitiesTabSelected = 0;
+                for (int i = 0; i < PFacilities.Tabs.Count; ++i)
+                    if (PFacilities.Tabs[i].Title == StatsPlusTabTitle)
+                    {
+                        facilitiesTabSelected = i;
+                        break;
+                    }
+            }
             if (facilitiesTabSelected < PFacilities.Tabs.Count)
                 PFacilities.SelectedIndex = facilitiesTabSelected;
 
@@ -300,6 +311,7 @@ namespace Ship_Game
         {
             PFacilities.ClearTabs();
             PFacilities.AddTab(GameText.Statistics2);
+            PFacilities.AddTab(StatsPlusTabTitle); // Ludoal fork: Stats+ add-on tab, next to its witness
             PFacilities.AddTab(GameText.Description);
             PFacilities.AddTab(GameText.Trade2);
 

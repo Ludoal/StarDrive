@@ -130,6 +130,7 @@ namespace Ship_Game
             ShowRoles.AddOption("Titans", 7);
             ShowRoles.AddOption("Carriers", 8);
             ShowRoles.AddOption("Bombers", 9);
+            ShowRoles.AddOption("Military Ships", 14);
             ShowRoles.AddOption("Troopships", 10);
             ShowRoles.AddOption("Support Ships", 11);
             ShowRoles.AddOption("All Structures", 12);
@@ -235,6 +236,7 @@ namespace Ship_Game
                 DrawHorizontalSeparator(ERect.Y + 25);
             }
             ShowRoles.Draw(batch, elapsed);
+            EmpireUi.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
 
@@ -250,6 +252,9 @@ namespace Ship_Game
         {
             if (!IsActive)
                 return false;
+
+            if (EmpireUi.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
 
             if (ShowRoles.HandleInput(input))
                 return true;
@@ -375,6 +380,10 @@ namespace Ship_Game
                     case 11: return ship.DesignRole == RoleName.support;
                     case 12: return ship.DesignRole <= RoleName.platform || ship.DesignRole == RoleName.station;
                     case 13: return ship.IsConstructor || ship.DesignRole == RoleName.freighter || ship.ShipData.ShipCategory == ShipCategory.Civilian;
+                    // #348: everything from troopShip upward in RoleName is the military family
+                    // (troopShip, support, bomber, carrier, fighter, scout, gunboat, drone,
+                    // corvette..capital) — no way to list only military ships before this.
+                    case 14: return ship.DesignRole >= RoleName.troopShip;
                 }
 
                 return false;

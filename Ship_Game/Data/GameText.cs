@@ -4096,17 +4096,17 @@ namespace Ship_Game
         Override = 4226,
         /// <summary>Override this budget and set your own.</summary>
         OverrideThisBudgetAndSet = 4227,
-        /// <summary>Civilian Buildings Expenditure/Budget in BY/C. If you see over-budget, you</summary>
+        /// <summary>Civilian Buildings Expenditure/Budget in BC/turn. If you see over-budget, you</summary>
         CivilianBuildingsExpenditurebudgetInByc = 4228,
-        /// <summary>Ground Defense Buildings Expenditure/Budget in BY/C. If you see over-budget,</summary>
+        /// <summary>Ground Defense Buildings Expenditure/Budget in BC/turn. If you see over-budget,</summary>
         GroundDefenseBuildingsExpenditurebudgetIn = 4229,
-        /// <summary>Orbitals Expenditure/Budget in BY/C</summary>
+        /// <summary>Orbitals Expenditure/Budget in BC/turn</summary>
         OrbitalsExpenditurebudgetInByc = 4230,
-        /// <summary>Civilian Buildings Expenditure in BY/C</summary>
+        /// <summary>Civilian Buildings Expenditure in BC/turn</summary>
         CivilianBuildingsExpenditureInByc = 4231,
-        /// <summary>Ground Defense Buildings Expenditure in BY/C</summary>
+        /// <summary>Ground Defense Buildings Expenditure in BC/turn</summary>
         GroundDefenseBuildingsExpenditureIn = 4232,
-        /// <summary>Orbitals Expenditure in BY/C</summary>
+        /// <summary>Orbitals Expenditure in BC/turn</summary>
         OrbitalsExpenditureInByc = 4233,
         /// <summary>Total:</summary>
         Total3 = 4234,
@@ -5286,6 +5286,18 @@ namespace Ship_Game
         KeyboardFireArcLocking = 6184,
         /// <summary>Toggle Zoom Tracking</summary>
         ToggleZoomTracking = 6185,
+        /// <summary>Influence zones overlay tooltip (F4)</summary>
+        InfluenceOverlayVisualises = 4538,
+        /// <summary>Gravity wells overlay tooltip (F5)</summary>
+        GravityWellOverlayVisualises = 4539,
+        /// <summary>Auto Core Governor</summary>
+        AutoCoreGovernor = 4540,
+        /// <summary>Tooltip for AutoCoreGovernor</summary>
+        AutoCoreGovernorTip = 4541,
+        /// <summary>Importing planets column tooltip (freighter window)</summary>
+        ImportingPlanetsTip = 4542,
+        /// <summary>Exporting planets column tooltip (freighter window)</summary>
+        ExportingPlanetsTip = 4543,
         /// <summary>FCS Bonus</summary>
         FcsBonus = 6186,
         /// <summary>FCS Accuracy</summary>

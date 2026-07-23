@@ -109,6 +109,7 @@ namespace Ship_Game
 
         // If this is set, the universe was paused
         UniverseScreen PausedUniverse;
+        public bool OwnsUniversePause => PausedUniverse != null; // Ludoal fork: paused-indicator support
 
         /// <summary>Game screen that is the same size as the current screen/window</summary>
         /// <param name="parent">Parent to this screen, or null</param>
@@ -129,9 +130,12 @@ namespace Ship_Game
             ScreenManager = parent?.ScreenManager ?? GameBase.ScreenManager;
             UpdateViewport();
 
-            // if we have `toPause`, check if it's active and not already paused
-            // this way only a single pausing screen will be allowed to resume the simulation automatically
-            if (toPause != null && toPause.IsActive && !toPause.UState.Paused)
+            // if we have `toPause`, check that it is not already paused
+            // this way only a single pausing screen will be allowed to resume the simulation automatically.
+            // Ludoal fork: the IsActive condition is gone — during top-bar navigation the
+            // closing screen resumes the universe first, but the universe is still flagged
+            // covered when this ctor runs, so the new screen never took ownership.
+            if (toPause != null && !toPause.UState.Paused)
             {
                 toPause.UState.Paused = true;
                 PausedUniverse = toPause;

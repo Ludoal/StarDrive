@@ -25,6 +25,9 @@ namespace Ship_Game
         private readonly SortButton SbProd;
         private readonly SortButton SbRes;
         private readonly SortButton SbMoney;
+        private readonly SortButton SbFert;   // Ludoal fork (wishlist)
+        private readonly SortButton SbRich;
+        private readonly SortButton SbMaxPop;
 
         readonly UILabel AvailableTroops;
         readonly UILabel TroopConsumption;
@@ -66,11 +69,21 @@ namespace Ship_Game
             SbProd  = new SortButton(eui.Player.data.ESSort, "prod");
             SbRes   = new SortButton(eui.Player.data.ESSort, "res");
             SbMoney = new SortButton(eui.Player.data.ESSort, "money");
+            SbFert   = new SortButton(eui.Player.data.ESSort, "fert");
+            SbRich   = new SortButton(eui.Player.data.ESSort, "rich");
+            SbMaxPop = new SortButton(eui.Player.data.ESSort, "maxpop");
 
             var planets = Universe.Player.GetPlanets();
             int sidePanelWidths = (int)(ScreenWidth * 0.3f);
             GovernorRect = new RectF(ColoniesList.Right - sidePanelWidths - 23, ColoniesList.Bottom - 5, sidePanelWidths, ScreenHeight - ColoniesList.Bottom - 22);
-            GovernorDetails = Add(new GovernorDetailsComponent(this, Universe,  planets[0], GovernorRect));
+            // Ludoal fork: guard against an empty colony list — seen live (crash at
+            // StarDate 1163: GetPlanets() returned 0 for the player on the UI thread,
+            // opened from the Infiltration screen). An empire with no colonies is also
+            // a legitimate state (defeated-but-alive). The governor panel just stays off.
+            if (planets.Count > 0)
+                GovernorDetails = Add(new GovernorDetailsComponent(this, Universe,  planets[0], GovernorRect));
+            else
+                Log.Warning("EmpireManagementScreen: player planet list is EMPTY at ctor");
             ResetColoniesList(planets);
             int totalTroops = Universe.Player.TotalTroops();
             string troopText = $"Total Troops: {totalTroops}";
@@ -83,7 +96,7 @@ namespace Ship_Game
 
                 Vector2 consumptionPos = new(troopPos.X, troopPos.Y + 25);
                 TroopConsumption = Add(new UILabel(consumptionPos, consumption, LowRes ? Fonts.Arial8Bold : Fonts.Arial12Bold,
-                    Universe.Player.IsCybernetic ? Color.SandyBrown : Color.Green));
+                    Universe.Player.IsCybernetic ? Color.SandyBrown : Color.LightPink)); // a cost, not a gain - red, not green
             }
         }
 
@@ -211,6 +224,10 @@ namespace Ship_Game
                 batch.Draw(iconProd, SbProd.rect, White);
                 batch.Draw(iconRes, SbRes.rect, White);
                 batch.Draw(iconMoney, SbMoney.rect, White);
+                // Ludoal fork (wishlist): text headers for the fertility / richness / max pop columns
+                SbFert.rect   = DrawStatHeader(batch, entry.FertRect.X, (int)ERect.Y, Localizer.Token(GameText.Fertility)[0] + "");
+                SbRich.rect   = DrawStatHeader(batch, entry.RichRect.X, (int)ERect.Y, Localizer.Token(GameText.Richness)[0] + "");
+                SbMaxPop.rect = DrawStatHeader(batch, entry.MaxPopRect.X, (int)ERect.Y, "P");
                 textCursor = new Vector2(entry.SliderRect.X + 30, ERect.Y);
                 batch.DrawString(NormalFont, Localizer.Token(GameText.Labor), textCursor, Cream);
                 textCursor = new Vector2(entry.StorageRect.X + 30, ERect.Y);
@@ -238,6 +255,12 @@ namespace Ship_Game
             topLeftSL = new Vector2(e1.ResRect.X, columnTop);
             botSL     = new Vector2(topLeftSL.X, columnBot);
             batch.DrawLine(topLeftSL, botSL, new Color(lineColor, 100).Premultiplied());
+            foreach (int colX in new[] { e1.FertRect.X, e1.RichRect.X, e1.MaxPopRect.X }) // Ludoal fork (wishlist)
+            {
+                topLeftSL = new Vector2(colX, columnTop);
+                botSL     = new Vector2(topLeftSL.X, columnBot);
+                batch.DrawLine(topLeftSL, botSL, new Color(lineColor, 100).Premultiplied());
+            }
             topLeftSL = new Vector2(e1.MoneyRect.X, columnTop);
             botSL     = new Vector2(topLeftSL.X, columnBot);
             batch.DrawLine(topLeftSL, botSL, new Color(lineColor, 100).Premultiplied());
@@ -253,8 +276,7 @@ namespace Ship_Game
 
             batch.DrawRectangle(ColoniesList.ItemsHousing, lineColor); // items housing border
 
-            var pos = new Vector2(ScreenWidth - Fonts.Pirulen16.TextWidth("Paused") - 13f, 44f);
-            batch.DrawString(Fonts.Pirulen16, "Paused", pos, White);
+            eui.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
 
@@ -282,8 +304,8 @@ namespace Ship_Game
         void OnColonyListItemClicked(ColoniesListItem item)
         {
             SelectedPlanet = item.P;
-            GovernorDetails.SetPlanetDetails(SelectedPlanet, GovernorRect, (int)GovernorDetails?.CurrentTabIndex);
-            GovernorDetails.PerformLayout();
+            GovernorDetails?.SetPlanetDetails(SelectedPlanet, GovernorRect, (int)(GovernorDetails?.CurrentTabIndex ?? 0));
+            GovernorDetails?.PerformLayout();
         }
 
         void OnColonyListItemDoubleClicked(ColoniesListItem item)
@@ -294,6 +316,9 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            if (eui.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
             if (input.KeyPressed(Keys.U) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();
@@ -306,8 +331,20 @@ namespace Ship_Game
             HandleSortButton(input, SbProd, GameText.TheNetAmountOfProduction, p => p.Prod.NetIncome);
             HandleSortButton(input, SbRes, GameText.TheNetAmountOfResearch, p => p.Res.NetIncome);
             HandleSortButton(input, SbMoney, GameText.TheNetIncomeOfThis, p => p.Money.NetRevenue);
+            // short title-only tooltips here, the long descriptions stay on their original screens
+            HandleSortButton(input, SbFert, GameText.Fertility, p => p.FertilityFor(Universe.Player));
+            HandleSortButton(input, SbRich, GameText.Richness, p => p.MineralRichness);
+            HandleSortButton(input, SbMaxPop, GameText.MaxPopulation, p => p.MaxPopulationBillionFor(Universe.Player));
 
             return base.HandleInput(input);
+        }
+
+        Rectangle DrawStatHeader(SpriteBatch batch, int x, int y, string label)
+        {
+            var size = NormalFont.MeasureString(label);
+            var r = new Rectangle(x + 15 - (int)(size.X / 2), y, (int)size.X.LowerBound(20), NormalFont.LineSpacing);
+            batch.DrawString(NormalFont, label, new Vector2(r.X, r.Y), Colors.Cream);
+            return r;
         }
 
         void HandleSortButton(InputState input, SortButton button, LocalizedText tooltip, Func<Planet, float> selector)
@@ -335,8 +372,8 @@ namespace Ship_Game
             }
 
             SelectedPlanet = ColoniesList.AllEntries[0].P;
-            GovernorDetails.SetPlanetDetails(SelectedPlanet, GovernorRect, (int)GovernorDetails?.CurrentTabIndex);
-            GovernorDetails.PerformLayout();
+            GovernorDetails?.SetPlanetDetails(SelectedPlanet, GovernorRect, (int)(GovernorDetails?.CurrentTabIndex ?? 0));
+            GovernorDetails?.PerformLayout();
         }
     }
 }

@@ -339,7 +339,10 @@ namespace Ship_Game
             if (BuildingsHereCanBeBuiltAnywhere || BuildingsCanBuild.Count == 0)
                 return;
 
-            // Replace works even if the governor is not scrapping buildings, unless they are player built
+            // a replace is a scrap with a gift behind it: the no-scrap setting covers it too (upstream issue 303)
+            if (GovernorShouldNotScrapBuilding)
+                return;
+
             float worstBuildingScore = ChooseWorstBuilding(overBudget, scrapZeroMaintenance: true, true, out Building worstBuilding);
             if (worstBuilding == null)
                 return;
@@ -483,6 +486,7 @@ namespace Ship_Game
             if (b.IsBiospheres
                 || b.IsMilitary
                 || !b.Scrappable
+                || b.IsPlayerAdded && OwnerIsPlayer // player-built is never the governor's to scrap — the guard below sat after the no-blueprint early return and was unreachable (upstream issue 303)
                 || b.IsSpacePort && Owner.GetPlanets().Count == 1 // Dont scrap our last spaceport
                 || b.BuildOnlyOnce
                 || b.PlusTerraformPoints > 0) // using this instead of IsTerraformer since some event building might also terraform without the terraformer building ID
@@ -821,9 +825,14 @@ namespace Ship_Game
                 if (NumFreeBiospheres > 0)
                 {
                     // We do not need more than 1 free biospheres if not profitable.
-                    // We need only 1 free biosphere if we have anything to built at all
-                    shouldScrapBioSpheres = NumFreeBiospheres > 1 
-                        || numBuildingsWeCanBuild == 0 && (!HasBlueprints || Blueprints.IsAchievableCompleted);
+                    // We need only 1 free biosphere if we have anything to built at all.
+                    // But a colony budget that covers the upkeep of the free biospheres is an
+                    // explicit 'I am paying, keep them' - the scrap decision never consulted
+                    // the budget, so governors razed player-funded biospheres at budget 99 (issue 313)
+                    bool budgetCoversUpkeep = budget >= NumFreeBiospheres * bio.ActualMaintenance(this);
+                    shouldScrapBioSpheres = !budgetCoversUpkeep
+                        && (NumFreeBiospheres > 1 
+                            || numBuildingsWeCanBuild == 0 && (!HasBlueprints || Blueprints.IsAchievableCompleted));
                     return false;
                 }
                 else if (numBuildingsWeCanBuild == 0 || HabiableBuiltCoverage.Less(1))
@@ -851,9 +860,12 @@ namespace Ship_Game
                 PlanetGridSquare preferred = null;
                 if (Owner.IsBuildingUnlocked(Building.TerraformerId))
                 {
-                    preferred = TilesList.Find(t => !t.Habitable && !t.Terraformable && !t.BuildingOnTile);
-                    if (preferred == null)
-                        preferred = TilesList.Find(t => !t.Habitable && !t.Terraformable);
+                    // upstream issue 312: the old fallback accepted tiles carrying a building or a
+                    // queued item; Enqueue rejected them every pass while perfectly valid terraformable
+                    // tiles stayed excluded, so the governor never built the biosphere (manual placement
+                    // worked, it validates the actual tile). A null preferred falls through to random
+                    // tile assignment, which accepts terraformables.
+                    preferred = TilesList.Find(t => !t.Habitable && !t.Terraformable && !t.BuildingOnTile && t.NoQueuedBuildings);
                 }
                 else
                 {

@@ -49,6 +49,7 @@ namespace Ship_Game
             {
                 captured |= SelectedShip != null && ShipInfoUIElement.HandleInput(input);
                 captured |= SelectedPlanet != null && pInfoUI.HandleInput(input);
+                captured |= SelectedSystem != null && sInfoUI.HandleInput(input); // Ludoal fork (wishlist)
                 captured |= SelectedShipList != null && shipListInfoUI.HandleInput(input);
             }
 
@@ -76,6 +77,9 @@ namespace Ship_Game
             if (input.DeepSpaceBuildWindow)       InputOpenDeepSpaceBuildWindow();
             if (input.FTLOverlay)                 ToggleUIComponent("sd_ui_accept_alt3", ref ShowingFTLOverlay);
             if (input.RangeOverlay)               ToggleUIComponent("sd_ui_accept_alt3", ref ShowingRangeOverlay);
+            if (input.InfluenceOverlay)           ToggleUIComponent("sd_ui_accept_alt3", ref ShowingInfluenceOverlay);
+            if (input.GravityWellOverlay)         ToggleUIComponent("sd_ui_accept_alt3", ref ShowingGravityWellOverlay);
+            if (input.VisionOverlay)              ToggleUIComponent("sd_ui_accept_alt3", ref ShowingVisionOverlay);
             if (input.CodexHelp)                  HandleCodexHelp();
             if (input.BlueprintsSceen)            ScreenManager.AddScreen(new BlueprintsScreen(this, Player));
             if (input.EmpirePatrolsScreen)        ScreenManager.AddScreen(new EmpirePatrolsScreen(this, Player));
@@ -85,10 +89,14 @@ namespace Ship_Game
             if (input.PlanetListScreen)  ScreenManager.AddScreen(new PlanetListScreen(this, EmpireUI, "sd_ui_accept_alt3"));
             if (input.ExoticListScreen)  ScreenManager.AddScreen(new ExoticSystemsListScreen(this, EmpireUI, "sd_ui_accept_alt3"));
             if (input.ShipListScreen)    ScreenManager.AddScreen(new ShipListScreen(this, EmpireUI, "sd_ui_accept_alt3"));
+            if (input.TroopListScreen)   ScreenManager.AddScreen(new TroopListScreen(this, EmpireUI, "sd_ui_accept_alt3"));
             if (input.FleetDesignScreen) ScreenManager.AddScreen(new FleetDesignScreen(this, EmpireUI, "sd_ui_accept_alt3"));
             if (input.ZoomToShip) InputZoomToShip();
             if (input.ZoomOut)    InputZoomOut();
-            if (input.Escaped)    DefaultZoomPoints();
+            // Ludoal fork (wishlist): Escape no longer jumps the zoom between fixed
+            // levels at the current camera XY — it read as a random center-zoom.
+            // Deliberate zooming keeps its own keys (ZoomToShip / ZoomOut / wheel).
+            // if (input.Escaped)    DefaultZoomPoints();
             if (input.Tab && !input.LeftCtrlShift) ShowShipNames = !ShowShipNames;
 
             HandleCameraZoomScrolling(input);
@@ -118,14 +126,15 @@ namespace Ship_Game
         void HandleCodexHelp()
         {
             string uid = ToolTip.GetActiveCodexUid();
-            if (uid == null)
-                return;
 
             GameAudio.TacticalPause();
             // OpenAt before AddScreen: ScreenManager queues the screen for the
             // next tick, so we stash PendingUid and LoadContent flushes it.
+            // Ludoal fork: with no codex tooltip active, F1 opens the codex at its
+            // root — same as the Help (?) button — instead of doing nothing.
             var codex = new Codex.CodexScreen(this);
-            codex.OpenAt(uid);
+            if (uid != null)
+                codex.OpenAt(uid);
             ScreenManager.AddScreen(codex);
         }
 
@@ -313,7 +322,8 @@ namespace Ship_Game
             if (HandlePrevSelectedShipChange(input))
                 return true;
 
-            // fbedard: Set camera chase on ship
+            // fbedard: Set camera chase on ship (Ctrl+middle; plain middle stays
+            // the map-drag gesture — field report 45.40, plain-click chase fought it)
             if (input.MiddleMouseClick)
             {
                 if (ViewingShip)
@@ -357,6 +367,19 @@ namespace Ship_Game
 
             if (input.ScrapShip && (SelectedItem != null && SelectedItem.AssociatedGoal.Owner == Player))
                 OnScrapSelectedItem();
+
+            // Ludoal fork (field report 45.42): the Cancel button on the build cartouche
+            if (SelectedItem != null && SelectedItem.AssociatedGoal.Owner == Player
+                && DsbCancelRect.HitTest(input.CursorPosition))
+            {
+                ToolTip.CreateTooltip("Cancel this construction", "Delete", null); // hotkey rendered in the game's standard style
+                if (input.LeftMouseClick)
+                {
+                    GameAudio.AffirmativeClick();
+                    OnScrapSelectedItem();
+                    return true;
+                }
+            }
 
             ShipsInCombat.Visible = !LookingAtPlanet;
             PlanetsInCombat.Visible = !LookingAtPlanet;
@@ -642,6 +665,21 @@ namespace Ship_Game
             return null;
         }
 
+        // Ludoal fork (wishlist): hit-test the suns at close zoom
+        SolarSystem FindSunUnderCursorClose(Vector2 cursor)
+        {
+            var systems = UState.Systems;
+            for (int i = 0; i < systems.Count; i++)
+            {
+                SolarSystem s = systems[i];
+                ProjectToScreenCoords(s.Position, 30000f, out Vector2d pos, out double radius);
+                float r = (float)Math.Max(radius, 24.0);
+                if (cursor.InRadius(pos.ToVec2f(), r))
+                    return s;
+            }
+            return null;
+        }
+
         ClickableSpaceBuildGoal GetSpaceBuildGoalUnderCursor()
         {
             var goals = ClickableBuildGoals;
@@ -776,6 +814,18 @@ namespace Ship_Game
                     return true;
             }
 
+            // Ludoal fork (wishlist): the sun itself is clickable up close — star cartouche
+            if (viewState < UnivScreenState.SectorView)
+            {
+                SolarSystem sun = FindSunUnderCursorClose(input.CursorPosition);
+                if (sun != null)
+                {
+                    SetSelectedSystem(sun);
+                    GameAudio.MouseOver();
+                    return true;
+                }
+            }
+
             ClickableSpaceBuildGoal goal = GetSpaceBuildGoalUnderCursor();
             if (goal != null)
             {
@@ -785,7 +835,12 @@ namespace Ship_Game
             }
 
             if (!input.IsShiftKeyDown && !input.IsAltKeyDown && !input.IsCtrlKeyDown)
+            {
                 ClearSelectedItems(clearFlags: false);
+                // Ludoal fork (field report 45.42): deselecting on empty space also
+                // decouples the chase camera — it used to keep following a ghost
+                ViewingShip = false;
+            }
             return false;
         }
 
@@ -840,7 +895,8 @@ namespace Ship_Game
 
             // TODO: These are not documented to the players
             bool addToSelection = input.IsShiftKeyDown;
-            bool selectAll      = input.IsCtrlKeyDown || !hasCombatShips;
+            bool ctrlSelect     = input.IsCtrlKeyDown;
+            bool selectAll      = ctrlSelect || !hasCombatShips;
             bool nonPlayer      = input.IsAltKeyDown || !potentialShips.Any(s => s.Loyalty.isPlayer);
             bool onlyPlayer     = !nonPlayer && potentialShips.Any(s => s.Loyalty.isPlayer);
 
@@ -859,11 +915,14 @@ namespace Ship_Game
                 ships.RemoveAll(NonCombatShip);
             }
 
-            if (onlyPlayer && !hasCombatShips)
+            if (onlyPlayer && !ctrlSelect && !hasCombatShips)
             {
                 // if we selected a bunch of civilian ships, but some of them are troop transports
-                // then discard all ships that aren't troop transports
-                bool hasTroopTransports = potentialShips.Any(s => s.IsSingleTroopShip);
+                // then discard all ships that aren't troop transports.
+                // upstream issue 298: count only the player's own selected ships — an ENEMY
+                // transport in the box used to poison this and strip the whole selection.
+                // And Ctrl means 'everything of mine': the preference filter yields to it.
+                bool hasTroopTransports = ships.Any(s => s.IsSingleTroopShip);
                 if (hasTroopTransports)
                     ships.RemoveAll(s => !s.IsSingleTroopShip);
             }
@@ -1230,7 +1289,10 @@ namespace Ship_Game
                 StartDragPos = input.CursorPosition;
             }
 
-            if (input.MiddleMouseHeld())
+            // Ludoal fork (wishlist #1): a Ctrl+middle (or quick chase click) held a
+            // beat past 0.15s used to fall into this pan branch, killing the ship
+            // snap mid-flight — the camera froze in the void. Pan only without Ctrl.
+            if (!input.IsCtrlKeyDown && input.MiddleMouseHeld())
             {
                 float dx = input.CursorPosition.X - StartDragPos.X;
                 float dy = input.CursorPosition.Y - StartDragPos.Y;

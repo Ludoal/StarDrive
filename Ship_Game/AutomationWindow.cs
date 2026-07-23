@@ -38,6 +38,8 @@ namespace Ship_Game
         class CheckedDropdown : UIElementV2
         {
             UICheckBox Check;
+            UICheckBox AutoPickBox;     // Ludoal fork (design Ludo): auto-pick lives ON its row
+            Func<bool> IsAutoPicked;
             DropOptions<int> Options;
             public DropOptions<int> Create(Expression<Func<bool>> binding, LocalizedText title, LocalizedText tooltip)
             {
@@ -45,21 +47,52 @@ namespace Ship_Game
                 Options = new DropOptions<int>(new Vector2(-200f, -200f), 190, 18);
                 return Options;
             }
+            // Ludoal fork: overload with an Auto Pick checkbox left of the dropdown —
+            // checked, the manual selection hides and an "Auto Pick" label takes its place
+            public DropOptions<int> Create(Expression<Func<bool>> binding, LocalizedText title, LocalizedText tooltip,
+                                           Expression<Func<bool>> autoPick)
+            {
+                Check = new UICheckBox(-200f, -200f, binding, Fonts.Arial12Bold, title, tooltip);
+                AutoPickBox = new UICheckBox(-200f, -200f, autoPick, Fonts.Arial12Bold, "",
+                                             "Auto Pick: always use the best design available");
+                IsAutoPicked = autoPick.Compile();
+                Options = new DropOptions<int>(new Vector2(-200f, -200f), 168, 18);
+                return Options;
+            }
             public override void PerformLayout()
             {
                 Check.Pos = Pos;
                 Check.PerformLayout();
-                Options.Pos = new Vector2(Pos.X, Pos.Y + 16f);
+                float optionsX = Pos.X;
+                if (AutoPickBox != null)
+                {
+                    AutoPickBox.Pos = new Vector2(Pos.X, Pos.Y + 17f);
+                    AutoPickBox.PerformLayout();
+                    optionsX += 22f;
+                }
+                Options.Pos = new Vector2(optionsX, Pos.Y + 16f);
                 Options.PerformLayout();
                 Height = Options.Bottom - Pos.Y;
             }
             public override bool HandleInput(InputState input)
             {
-                return Check.HandleInput(input) || Options.HandleInput(input);
+                return Check.HandleInput(input)
+                    || (AutoPickBox?.HandleInput(input) ?? false)
+                    || Options.HandleInput(input);
             }
             public override void Draw(SpriteBatch batch, DrawTimes elapsed)
             {
                 Check.Draw(batch, elapsed);
+                if (AutoPickBox != null)
+                {
+                    AutoPickBox.Draw(batch, elapsed);
+                    if (IsAutoPicked())
+                    {
+                        batch.DrawString(Fonts.Arial12Bold, "Auto Pick",
+                                         new Vector2(Options.X + 4, Options.Y + 3), Color.LightGreen);
+                        return;
+                    }
+                }
                 Options.Draw(batch, elapsed);
             }
         }
@@ -77,18 +110,12 @@ namespace Ship_Game
 
             UIList rest = AddList(new(win.X + 10f, win.Y + 290));
             rest.Padding = new(2f, 10f);
-            rest.AddCheckbox(() => UState.Player.AutoPickConstructors,  title: GameText.AutoPickConstructorsName, tooltip: GameText.AutoPickConstructorsTip);
-            rest.AddCheckbox(() => UState.Player.AutoPickBestColonizer, title: GameText.AutoPickColonyShip, tooltip: GameText.TheBestColonyShipWill);
-            rest.AddCheckbox(() => UState.Player.AutoPickBestFreighter, title: GameText.AutoPickFreighter, tooltip: GameText.IfAutoTradeIsChecked);
+            // Ludoal fork (design Ludo, 21 Jul): the Auto Pick toggles moved ONTO their
+            // dropdown rows (checkbox left of each selection) — six lines freed here
             rest.AddCheckbox(() => UState.Player.AutoResearch,          title: GameText.AutoResearch, tooltip: GameText.YourEmpireWillAutomaticallySelect);
             rest.AddCheckbox(() => UState.Player.AutoBuildTerraformers, title: GameText.AutoBuildTerraformers, tooltip: GameText.AutoBuildTerraformersTip);
             rest.AddCheckbox(() => UState.Player.AutoTaxes,             title: GameText.AutoTaxes, tooltip: GameText.YourEmpireWillAutomaticallyManage3);
-
-            if (ResearchStationsEnabled && Screen.Player.CanBuildResearchStations)
-                rest.AddCheckbox(() => UState.Player.AutoPickBestResearchStation, title: GameText.AutoPickResearchStation, tooltip: GameText.AutoPickResearchStationTip);
-
-            if (MiningOpsEnabled && Screen.Player.CanBuildMiningStations)
-                rest.AddCheckbox(() => UState.Player.AutoPickBestMiningStation, title: GameText.AutoPickMiningStation, tooltip: GameText.AutoPickMiningStationTip);
+            rest.AddCheckbox(() => UState.Player.AutoCoreGovernor,      title: GameText.AutoCoreGovernor, tooltip: GameText.AutoCoreGovernorTip);
 
             rest.AddCheckbox(() => RushConstruction,                      title: GameText.RushAllConstruction, tooltip: GameText.RushAllConstructionTip);
             rest.AddCheckbox(() => UState.P.AllowPlayerInterTrade,        title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.AllowPlayerInterTradeTip);
@@ -103,24 +130,30 @@ namespace Ship_Game
             ticks.Padding = new Vector2(2f, 10f);
 
             ScoutDropDown = ticks.Add(new CheckedDropdown())
-                .Create(() => Screen.Player.AutoExplore, title:GameText.Autoexplore, tooltip:GameText.YourEmpireWillAutomaticallyManage);
+                .Create(() => Screen.Player.AutoExplore, title:GameText.Autoexplore, tooltip:GameText.YourEmpireWillAutomaticallyManage,
+                        autoPick: () => Screen.Player.AutoPickBestScout);
 
             ColonyShipDropDown = ticks.Add(new CheckedDropdown())
-                .Create(() => Screen.Player.AutoColonize, title:GameText.Autocolonize, tooltip:GameText.YourEmpireWillAutomaticallyCreate);
+                .Create(() => Screen.Player.AutoColonize, title:GameText.Autocolonize, tooltip:GameText.YourEmpireWillAutomaticallyCreate,
+                        autoPick: () => Screen.Player.AutoPickBestColonizer);
 
             ConstructorDropDown = ticks.Add(new CheckedDropdown())
-                .Create(() => Screen.Player.AutoBuildSpaceRoads, Localizer.Token(GameText.Autobuild) + " Projectors", GameText.YourEmpireWillAutomaticallyCreate2);
+                .Create(() => Screen.Player.AutoBuildSpaceRoads, Localizer.Token(GameText.Autobuild) + " Projectors", GameText.YourEmpireWillAutomaticallyCreate2,
+                        autoPick: () => Screen.Player.AutoPickConstructors);
 
             FreighterDropDown = ticks.Add(new CheckedDropdown())
-                .Create(() => Screen.Player.AutoFreighters, title: GameText.AutomaticTrade, tooltip: GameText.YourEmpireWillAutomaticallyManage2);
+                .Create(() => Screen.Player.AutoFreighters, title: GameText.AutomaticTrade, tooltip: GameText.YourEmpireWillAutomaticallyManage2,
+                        autoPick: () => Screen.Player.AutoPickBestFreighter);
 
             if (ResearchStationsEnabled)
                 ResearchStationDropDown = ticks.Add(new CheckedDropdown())
-                    .Create(() => Screen.Player.AutoBuildResearchStations, title: GameText.AutoBuildResearchStation, tooltip: GameText.AutoBuildResearchStationTip);
+                    .Create(() => Screen.Player.AutoBuildResearchStations, title: GameText.AutoBuildResearchStation, tooltip: GameText.AutoBuildResearchStationTip,
+                            autoPick: () => Screen.Player.AutoPickBestResearchStation);
 
             if (MiningOpsEnabled)
                 MiningStationDropDown = ticks.Add(new CheckedDropdown())
-                    .Create(() => Screen.Player.AutoBuildMiningStations, title: GameText.AutoBuildMiningStation, tooltip: GameText.AutoBuildMiningStationTip);
+                    .Create(() => Screen.Player.AutoBuildMiningStations, title: GameText.AutoBuildMiningStation, tooltip: GameText.AutoBuildMiningStationTip,
+                            autoPick: () => Screen.Player.AutoPickBestMiningStation);
 
 
             // draw ordering is still imperfect, this is a hack
@@ -150,6 +183,7 @@ namespace Ship_Game
 
             ConstructorDropDown.Visible = !Screen.Player.AutoPickConstructors;
             FreighterDropDown.Visible  = !Screen.Player.AutoPickBestFreighter;
+            ScoutDropDown.Visible      = !Screen.Player.AutoPickBestScout; // Ludoal fork (wishlist)
             ColonyShipDropDown.Visible = !Screen.Player.AutoPickBestColonizer;
 
             // Re-populate the Research/Mining dropdowns the first time CanBuild* flips to

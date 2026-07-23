@@ -368,7 +368,10 @@ public sealed partial class Empire
 
     public bool ChooseScoutShipToBuild(out IShipDesign scout)
     {
-        if (isPlayer && ResourceManager.Ships.GetDesign(Universe.Player.data.CurrentAutoScout, out scout))
+        // Ludoal fork (wishlist): Auto Pick Explorer bypasses the manual dropdown —
+        // the fallback below already picks the fastest-FTL scout we can build
+        if (isPlayer && !AutoPickBestScout
+                     && ResourceManager.Ships.GetDesign(Universe.Player.data.CurrentAutoScout, out scout))
             return true;
 
         var scoutShipsWeCanBuild = new Array<IShipDesign>();

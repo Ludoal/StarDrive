@@ -131,6 +131,11 @@ public static class GlobalStats
     // global option, if enabled, scrolling will always zoom into selected objects
     // Otherwise you can use Shift+Scroll to zoom to selected objects
     public static bool ZoomTracking;
+
+    // USER_EXPERIENCE
+    // Ludoal fork: if enabled, colored empire influence borders draw on the main map
+    // only while the FTL overlay (F2) is showing; minimap keeps its own nodes.
+    // Default off = vanilla behavior (borders always visible).
         
     // USER_EXPERIENCE
     // global option how fast the camera pans across the universe when using WASD keys
@@ -159,6 +164,8 @@ public static class GlobalStats
     // USER_EXPERIENCE
     // autosave frequency in seconds
     public static int AutoSaveFreq = 300;
+    // Ludoal fork: autosave every N star-years (1 year = 10 turns = ~50s at speed x1); 0 = legacy time-based
+    public static int AutoSaveYears = 5;
 
     // USER_EXPERIENCE
     // this is a global user setting, changed in game settings screen
@@ -353,6 +360,7 @@ public static class GlobalStats
         GetSetting(config, "MaxParallelism", ref MaxParallelism);
         GetSetting(config, "WindowMode", ref WindowMode);
         GetSetting(config, "AutoSaveFreq", ref AutoSaveFreq);
+        GetSetting(config, "AutoSaveYears", ref AutoSaveYears);
         GetSetting(config, "AntiAliasSamples", ref AntiAlias);
         GetSetting(config, "PostProcessBloom", ref RenderBloom);
         GetSetting(config, "PostProcessShieldDistortion", ref RenderShieldDistortion);
@@ -547,6 +555,7 @@ public static class GlobalStats
         WriteSetting(config, "MaxParallelism", MaxParallelism);
         WriteSetting(config, "WindowMode", WindowMode);
         WriteSetting(config, "AutoSaveFreq", AutoSaveFreq);
+        WriteSetting(config, "AutoSaveYears", AutoSaveYears);
         WriteSetting(config, "AntiAliasSamples", AntiAlias);
         WriteSetting(config, "PostProcessBloom", RenderBloom);
         WriteSetting(config, "PostProcessShieldDistortion", RenderShieldDistortion);

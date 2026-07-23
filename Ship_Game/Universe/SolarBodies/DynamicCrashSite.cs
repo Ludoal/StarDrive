@@ -174,7 +174,7 @@ namespace Ship_Game.Universe.SolarBodies
             else
             {
                 activatingEmpire.AddMoney(template.ShipData.BaseCost / 10);
-                message = $"We were able to recover {recoverAmount.String(0)} credits\n" +
+                message = $"We were able to recover {recoverAmount.String(0)} BC\n" +
                           $"from a crashed ship on {p.Name}.\n";
             }
 

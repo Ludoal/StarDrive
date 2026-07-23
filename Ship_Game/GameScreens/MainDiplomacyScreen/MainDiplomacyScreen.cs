@@ -487,6 +487,7 @@ namespace Ship_Game
                     DrawStat(Localizer.Token(GameText.EmpireRefiningEfficiency), SelectedEmpire.data.RefiningRatioMultiplier-1, ref textCursor, false);
             }
             base.Draw(batch, elapsed);
+            Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
         }
 
@@ -656,6 +657,9 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
             if (input.KeyPressed(Keys.I) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();

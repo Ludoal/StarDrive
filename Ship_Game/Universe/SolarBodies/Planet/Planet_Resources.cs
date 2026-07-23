@@ -85,7 +85,10 @@ namespace Ship_Game
             return GoodState.STORE;
         }
 
-        bool ShouldImportColonists(float popRatio) => popRatio < 0.8f || BiosphereInTheWorks && PopPerBiosphere(Owner) > 100 && popRatio < 0.99f;
+        // the biosphere-anticipation import rule is bounded at the EXPORT threshold (0.9):
+        // in the old ]0.9, 0.99[ window import and export were both defensible and every
+        // biosphere queued flipped the traffic direction - the population ping-pong (issue 293)
+        bool ShouldImportColonists(float popRatio) => popRatio < 0.8f || BiosphereInTheWorks && PopPerBiosphere(Owner) > 100 && popRatio < 0.9f;
 
         public bool ShortOnFood()
         {
@@ -161,12 +164,12 @@ namespace Ship_Game
 
             float ratio               = Storage.FoodRatio;
             bool belowImportThreshold = ratio < importThreshold 
-                                        && CType != ColonyType.Agricultural
+                                        && (CType != ColonyType.Agricultural || Food.NetMaxPotential < 0)
                                         && Food.NetFlatBonus < Consumption;
 
             // This will allow a buffer for import / export, so they dont constantly switch between them
             if      (ShortOnFood() || belowImportThreshold)   FS = GoodState.IMPORT; 
-            else if (Food.NetMaxPotential < 0 && ratio > 0.9) FS = GoodState.STORE;  // We are negative on food production but have a lot of food
+            else if (Food.NetMaxPotential < 0)                FS = GoodState.STORE;  // Negative food production: keep the buffer, never export it away
             else if (ratio > exportThreshold)                 FS = GoodState.EXPORT; // Until we get back to the Threshold, then export
             else                                              FS = GoodState.STORE;  // We are between our thresholds
         }

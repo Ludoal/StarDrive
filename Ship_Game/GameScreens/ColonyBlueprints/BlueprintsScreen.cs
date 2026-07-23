@@ -51,6 +51,7 @@ namespace Ship_Game
         readonly Font TextFont;
         readonly Font BigFont;
         public readonly Empire Player;
+        readonly UniverseScreen Universe; // Ludoal fork: for the live top bar
 
         float PlannedGrossMoney;
         float PlannedMaintenance;
@@ -76,9 +77,10 @@ namespace Ship_Game
 
         readonly GovernorDetailsComponent GovernorTab;
 
-        public BlueprintsScreen(UniverseScreen parent, Empire player, BlueprintsTemplate template = null, GovernorDetailsComponent govTab = null) 
+        public BlueprintsScreen(UniverseScreen parent, Empire player, BlueprintsTemplate template = null, GovernorDetailsComponent govTab = null)
             : base(parent, toPause: parent)
         {
+            Universe = parent; // Ludoal fork: kept for the live top bar
             Player = player;
             GovernorTab = govTab;
             TextFont = LowRes ? Font8 : Font12;
@@ -90,7 +92,7 @@ namespace Ship_Game
 
             base.Add(new UILabel(titlePos, GameText.ColonyBlueprintsTitle, Fonts.Laserian14));
             LeftMenu = base.Add(new Menu1(2, titleRect.Y + titleRect.Height + 5, titleRect.Width, ScreenHeight - (titleRect.Y + titleRect.Height) - 7));
-            RightMenu = base.Add(new Menu1(titleRect.Right + 10, titleRect.Y, ScreenWidth / 3 - 15, ScreenHeight - titleRect.Y - 2));
+            RightMenu = base.Add(new Menu1(titleRect.Right + 5, titleRect.Y + titleRect.Height + 5, ScreenWidth / 3 - 10, ScreenHeight - (titleRect.Y + titleRect.Height) - 7)); // Ludoal fork: align top with the main panel (was overlapping the top bar buttons)
             Add(new CloseButton(RightMenu.Right - 52, RightMenu.Y + 22));
 
             RectF blueprintsStatsR = new(LeftMenu.X + 20, LeftMenu.Y + 20,
@@ -299,6 +301,7 @@ namespace Ship_Game
             base.Draw(batch, elapsed);
             DrawHoveredBuildListBuildingInfo(batch);
             DrawPlanStatistics(batch);
+            Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
 
@@ -460,6 +463,19 @@ namespace Ship_Game
                 return true;
             }
 
+            // Ludoal fork: live top bar
+            if (!BuildableList.IsDragging && Universe.EmpireUI.HandleInput(input, caller: this))
+                return true;
+
+            // Ludoal fork: close with the key that opens this screen (F) — it previously
+            // only closed via ESC. Guarded against text entry (blueprint naming).
+            if (input.BlueprintsSceen && !GlobalStats.TakingInput && !BuildableList.IsDragging)
+            {
+                GameAudio.EchoAffirmative();
+                ExitScreen();
+                return true;
+            }
+
             PlanAreaHovered = BuildableList.IsDragging && SubPlanArea.HitTest(Input.CursorPosition);
             HoveredBuilding = GetHoveredBuildingFromBuildableList(input);
             foreach (BlueprintsTile tile in TilesList)
@@ -490,6 +506,16 @@ namespace Ship_Game
                 {
                     tile.UpdatePanelColor(false);
                 }
+            }
+
+            // Ludoal fork: right-click closes the screen like other full-screen panels —
+            // only when it's not aimed at a building (tile removal keeps priority) and
+            // nothing is being dragged.
+            if (input.RightMouseClick && HoveredBuilding == null && !BuildableList.IsDragging)
+            {
+                GameAudio.EchoAffirmative();
+                ExitScreen();
+                return true;
             }
 
             return base.HandleInput(input);

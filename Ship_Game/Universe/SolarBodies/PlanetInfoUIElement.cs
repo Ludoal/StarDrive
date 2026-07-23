@@ -32,6 +32,7 @@ namespace Ship_Game
         string PlanetTypeRichness;
         Vector2 PlanetTypeCursor;
         readonly Selector Sel;
+        readonly Rectangle UninhabIconRect; // Ludoal fork: planet sprite for uninhabitables
         readonly SkinnableButton Inspect;
         readonly SkinnableButton Invade;
         readonly Rectangle Housing;
@@ -94,8 +95,9 @@ namespace Ship_Game
             SendTroops = new Rectangle(RightRect.X - 17, Housing.Y + 130, 182, 25);
             MarkedRect = new Rectangle(RightRect.X - 17, Housing.Y + 160, 182, 25);
             CancelInvasionRect = MarkedRect; // Replaces the colonization rect when invading
-            ExoticRect = new Rectangle(leftRect.X + 15, Housing.Y + 140, 182, 25);
-            ExoticResourceIconRect = new Rectangle(leftRect.X + 15, Housing.Y + 170, 20, 20);
+            ExoticRect = new Rectangle(RightRect.X - 17, Housing.Y + 130, 182, 25);
+            ExoticResourceIconRect = new Rectangle(RightRect.X - 17, Housing.Y + 165, 20, 20);
+            UninhabIconRect = new Rectangle(leftRect.X + 75, Housing.Y + 120, 80, 80); // Ludoal fork: sprite left, buttons right — same grammar as colonies
         }
 
         public override void Update(UpdateTimes elapsed)
@@ -227,6 +229,14 @@ namespace Ship_Game
                 string text = Localizer.Token(GameText.ThisPlanetIsNotHabitable);
                 Vector2 cursor = new Vector2(Housing.X + 20, Housing.Y + 110);
                 batch.DrawString(Fonts.Arial12Bold, text, cursor, tColor);
+
+                // Ludoal fork: Planet View removed — the cartouche shows the planet itself now
+                batch.Draw(P.PlanetTexture, UninhabIconRect, Color.White);
+                string uninhabClass = P.IsMineable ? P.LocalizedCategory : P.LocalizedRichness; // mineable: richness lives on the resource line
+                var uninhabClassPos = new Vector2(UninhabIconRect.X + UninhabIconRect.Width / 2 - Fonts.Arial12Bold.MeasureString(uninhabClass).X / 2f,
+                                                  UninhabIconRect.Y + UninhabIconRect.Height + 5);
+                batch.DrawString(Fonts.Arial12Bold, uninhabClass, uninhabClassPos, tColor);
+
                 if (P.IsResearchable)
                     DrawResearchStation(batch, mousePos);
                 else if (P.IsMineable)
@@ -357,7 +367,12 @@ namespace Ship_Game
         void DrawResearchStation(SpriteBatch batch, Vector2 mousePos)
         {
             if (P.IsResearchStationDeployedBy(Player))
+            {
+                // Ludoal fork: show the deployed state (mirrors the star cartouche) instead of nothing
+                var okPos = new Vector2(ExoticRect.X + 13, ExoticRect.Y + 13 - Font12.LineSpacing / 2 - 2);
+                batch.DrawString(Font12, "Research station operational", okPos, Color.LightGreen);
                 return;
+            }
 
             Vector2 textPos = new Vector2(ExoticRect.X + 13, ExoticRect.Y + 13 - Font12.LineSpacing / 2 - 2);
             batch.Draw(ResourceManager.Texture(Player.CanBuildResearchStations ? "NewUI/dan_button_blue_clear" 
@@ -385,12 +400,14 @@ namespace Ship_Game
             }
 
             batch.Draw(P.Mining.ExoticResourceIcon, ExoticResourceIconRect);
-            Vector2 resourceStatPos = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y+2);
-            Vector2 resourceStatDeployed = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 19);
-            Vector2 resourceStatInProgress = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 34);
-            string stats = $"{P.Mining.TranslatedResourceName.Text}: Richness " +
-                $"{P.Mining.Richness}, Refine Ratio: {(P.Mining.RefiningRatio * Player.data.RefiningRatioMultiplier).UpperBound(1)}";
+            // Ludoal fork: the block lives in the right column now — two short lines
+            Vector2 resourceStatPos = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 2);
+            Vector2 resourceStatRefine = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 17);
+            Vector2 resourceStatDeployed = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 32);
+            string stats = $"{P.Mining.TranslatedResourceName.Text}: Richness {P.Mining.Richness}";
+            string refine = $"Refine Ratio: {(P.Mining.RefiningRatio * Player.data.RefiningRatioMultiplier).UpperBound(1)}";
             batch.DrawString(Font12, stats, resourceStatPos, Color.White);
+            batch.DrawString(Font12, refine, resourceStatRefine, Color.White);
 
             int numDeployed = P.OrbitalStations.Filter(s => s.IsMiningStation && s.Loyalty == Player).Length;
             int numInProgress = Player.AI.CountGoals(g => g.IsMiningOpsGoal(P) && g.TargetShip == null);
@@ -399,7 +416,8 @@ namespace Ship_Game
             if (numInProgress > 0)
             {
                 string statsInProgress = $"{numInProgress} In Progress";
-                batch.DrawString(Font12, statsInProgress, resourceStatInProgress, Color.Gold);
+                batch.DrawString(Font12, statsInProgress,
+                                 resourceStatDeployed + new Vector2(Font12.MeasureString(statsDeployed).X, 0f), Color.Gold);
             }
             ToolTipItems.Add(new TippedItem(ExoticResourceIconRect, $"{P.Mining.ResourceDescription.Text}\n{new LocalizedText(GameText.MineableRichnessTip).Text}"));
             if (P.Mining.Owner != null && P.Mining.Owner != Player)
@@ -407,7 +425,7 @@ namespace Ship_Game
 
             Vector2 textPos = new Vector2(ExoticRect.X + 13, ExoticRect.Y + 13 - Font12.LineSpacing / 2 - 2);
             batch.Draw(ResourceManager.Texture(Player.CanBuildMiningStations && P.Mining.CanAddMiningStationFor(Player) 
-                ? "NewUI/dan_button_clear"
+                ? "NewUI/dan_button_blue_clear" // Ludoal fork: blue like every other action button
                 : "NewUI/dan_button_disabled"), ExoticRect, Color.White);
 
             LocalizedText tip = Player.CanBuildMiningStations ? GameText.DeployMiningStationTip : GameText.CannotBuildMiningStationTip;
@@ -415,7 +433,7 @@ namespace Ship_Game
 
 
             ToolTipItems.Add(new TippedItem(ExoticRect, tip));
-            batch.DrawString(Font12, tipText, textPos, Player.CanBuildMiningStations ? ExoticRect.HitTest(mousePos) ? Color.Gold : Color.LightYellow
+            batch.DrawString(Font12, tipText, textPos, Player.CanBuildMiningStations ? ExoticRect.HitTest(mousePos) ? ButtonTextColor : ButtonHoverColor
                                                                                      : Color.Gray);
         }
 

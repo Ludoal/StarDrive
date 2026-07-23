@@ -768,7 +768,6 @@
     <Compile Include="Ship_Game\Gameplay\Restrictions.cs" />
     <Compile Include="Ship_Game\Audio\GameAudio.cs" />
     <Compile Include="Ship_Game\GameScreens\LoadSaveItems\LoadSaveScreen.cs" />
-    <Compile Include="Ship_Game\Universe\SolarBodies\UnexploredPlanetScreen.cs" />
     <Compile Include="Ship_Game\Body.cs" />
     <Compile Include="Ship_Game\Header.cs" />
     <Compile Include="Ship_Game\GameScreens\Universe\BudgetScreen.cs" />
@@ -833,7 +832,6 @@
     <Compile Include="Ship_Game\Universe\SolarBodies\PlanetScreen.cs" />
     <Compile Include="Ship_Game\PieMenu.cs" />
     <Compile Include="Ship_Game\Universe\SolarSystemData.cs" />
-    <Compile Include="Ship_Game\Universe\SolarBodies\UnownedPlanetScreen.cs" />
     <Compile Include="Ship_Game\ExplosionManager.cs" />
     <Compile Include="Ship_Game\Gameplay\TraitEntry.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\EncounterPopup.cs" />
@@ -907,6 +905,11 @@
     <Compile Include="Ship_Game\GameScreens\MainMenu\MainMenuScreen.cs" />
     <Compile Include="Ship_Game\GameScreens\MainMenu\SupportBlackbox.cs" />
     <Compile Include="Ship_Game\GameScreens\Universe\ShipListScreen.cs" />
+    <Compile Include="Ship_Game\GameScreens\Universe\TroopListScreen.cs" />
+    <Compile Include="Ship_Game\GameScreens\BattleSim\BattleSimUniverse.cs" />
+    <Compile Include="Ship_Game\GameScreens\BattleSim\BattleSimEnemyPicker.cs" />
+    <Compile Include="Ship_Game\GameScreens\BattleSim\BattleSimResultScreen.cs" />
+    <Compile Include="Ship_Game\GameScreens\ColonyScreen\ColonyScreen_StatsPlus.cs" />
     <Compile Include="Ship_Game\NodeState.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\YouLoseScreen.cs" />
     <Compile Include="Ship_Game\Gameplay\DiplomaticTraits.cs" />
@@ -946,6 +949,7 @@
     <Compile Include="Ship_Game\GameScreens\LoadSaveItems\SaveGameScreen.cs" />
     <Compile Include="Ship_Game\ResearchQItem.cs" />
     <Compile Include="Ship_Game\Universe\SolarBodies\PlanetInfoUIElement.cs" />
+    <Compile Include="Ship_Game\Universe\SolarBodies\StarInfoUIElement.cs" />
     <Compile Include="Ship_Game\AutomationWindow.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\Artifact.cs" />
     <Compile Include="Ship_Game\ExplorationEvent.cs" />

@@ -34,11 +34,13 @@ namespace Ship_Game
 
         public string StarDateString => UState.StarDate.StarDateString();
         public float LastAutosaveTime = 0;
+        public float LastAutosaveStarDate = 0; // Ludoal fork: turn-based autosave anchor
 
         public Background bg;
 
         public Array<Bomb> BombList  = new();
         readonly AutoResetEvent DrawCompletedEvt = new(false);
+        bool LoggedGeneralUIDrawError; // Ludoal fork: log the first UI-draw failure only
 
         public const double MinCamHeight = 450.0;
         protected double MaxCamHeight;
@@ -121,9 +123,11 @@ namespace Ship_Game
         public AnomalyManager anomalyManager;
         public ShipInfoUIElement ShipInfoUIElement;
         public PlanetInfoUIElement pInfoUI;
+        public StarInfoUIElement sInfoUI; // Ludoal fork (wishlist): star cartouche
         public SolarsystemOverlay SystemInfoOverlay;
         public ShipListInfoUIElement shipListInfoUI;
         public VariableUIElement vuiElement;
+        Rectangle DsbCancelRect; // Ludoal fork (wishlist): cancel button on the build cartouche
         public MiniMap Minimap { get; private set; }
         bool loading;
         public float transitionElapsedTime;
@@ -142,6 +146,9 @@ namespace Ship_Game
         public Rectangle AORect; // used for showing current AO Rect definition
 
         public bool ShowingFTLOverlay;
+        public bool ShowingInfluenceOverlay;   // Ludoal fork: F4 - colored empire influence zones
+        public bool ShowingGravityWellOverlay; // Ludoal fork: F5 - gravity wells / inhibitor fields
+        public bool ShowingVisionOverlay;      // Ludoal fork: F7 - sensor coverage highlights (spies included)
         public bool ShowingRangeOverlay;
 
         /// <summary>
@@ -220,7 +227,7 @@ namespace Ship_Game
         }
 
         // NOTE: this relies on MaxCamHeight and UniverseSize
-        void ResetLighting(bool forceReset)
+        public void ResetLighting(bool forceReset) // Ludoal fork: public for the battle sim arena
         {
             if (!forceReset && ScreenManager.LightRigIdentity == LightRigIdentity.UniverseScreen)
                 return;
@@ -306,8 +313,8 @@ namespace Ship_Game
                             zpos, fillLight: fillLight, fallOff:fallOff, shadowQuality:0f);
         }
 
-        PointLight AddLight(string name, Vector2 source, float intensity, float radius, Color color,
-                            float zpos, bool fillLight, float fallOff = 0, float shadowQuality = 1)
+        protected PointLight AddLight(string name, Vector2 source, float intensity, float radius, Color color,
+                            float zpos, bool fillLight, float fallOff = 0, float shadowQuality = 1) // Ludoal fork: protected for the battle sim arena
         {
             var light = new PointLight
             {
@@ -384,7 +391,12 @@ namespace Ship_Game
                 MaxCamHeight = CAM_MAX;
 
             if (!loading)
-                CamPos = new Vector3d(Player.GetPlanets()[0].Position, 2750);
+            {
+                // Ludoal fork: a planet-less universe (battle simulator arena) has no
+                // colony to frame — start the camera at the origin instead of crashing.
+                var planets = Player.GetPlanets();
+                CamPos = new Vector3d(planets.Count > 0 ? planets[0].Position : Vector2.Zero, 2750);
+            }
 
             CamDestination = CamPos;
         }
@@ -458,6 +470,11 @@ namespace Ship_Game
 
             foreach (Empire empire in UState.MajorEmpires)
             {
+                // Ludoal fork: an empire without colonies (battle simulator arena)
+                // has no home planet to spawn starting ships around — skip it.
+                if (empire.GetPlanets().Count == 0)
+                    continue;
+
                 Planet homePlanet = empire.GetPlanets()[0];
                 string colonyShip = empire.data.DefaultColonyShip;
                 string startingScout = empire.data.StartingScout;
@@ -518,9 +535,11 @@ namespace Ship_Game
             mmShowBorders = new Rectangle(MinimapDisplayRect.X, MinimapDisplayRect.Y - 25, 32, 32);
 
             SelectedStuffRect = new Rectangle(0, height - 247, 407, 242);
+            DsbCancelRect = new Rectangle(SelectedStuffRect.X + 25, SelectedStuffRect.Y + 150, 182, 25); // Ludoal fork
             ShipInfoUIElement = new ShipInfoUIElement(SelectedStuffRect, ScreenManager, this);
             SystemInfoOverlay = new SolarsystemOverlay(SelectedStuffRect, ScreenManager, this);
             pInfoUI           = new PlanetInfoUIElement(SelectedStuffRect, ScreenManager, this);
+            sInfoUI           = new StarInfoUIElement(SelectedStuffRect, ScreenManager, this); // Ludoal fork
             shipListInfoUI    = new ShipListInfoUIElement(SelectedStuffRect, ScreenManager, this);
             vuiElement        = new VariableUIElement(SelectedStuffRect, ScreenManager, this);
             EmpireUI          = new EmpireUIOverlay(Player, device, this);
@@ -635,7 +654,10 @@ namespace Ship_Game
             device.SetRenderTarget(null);
             FogMap = FogMapTargetA;
 
-            if (UState.FogMapBytes != null)
+            // Ludoal fork: the fog map is fully derivable now (explored systems restamp
+            // every frame), so saved bytes are not loaded — this also purges the ship
+            // wakes baked into older saves. Saves still write the bytes (revert-safe).
+            if (false && UState.FogMapBytes != null)
             {
                 // Load saved alpha mask into the front RT so the next UpdateFogMap
                 // call samples it. FromAlphaOnly returns a stand-alone Texture2D
@@ -701,9 +723,19 @@ namespace Ship_Game
             {
                 SystemInfoOverlay.Update(elapsed);
             }
+            // Ludoal fork (field report 45.44): the clickable build goals froze while
+            // paused (their screen positions are camera-dependent, and the sim loop
+            // owns the refresh) — selecting a DSB under construction was impossible
+            // in pause. Refreshing here too is trivially cheap (player goals only).
+            UpdateClickableItems();
+
             if (ShowPlanetInfo)
             {
                 pInfoUI.Update(elapsed);
+            }
+            else if (ShowStarInfo)
+            {
+                sInfoUI.Update(elapsed); // Ludoal fork (wishlist)
             }
             else if (ShowShipInfo)
             {

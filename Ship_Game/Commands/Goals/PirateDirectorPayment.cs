@@ -128,13 +128,13 @@ namespace Ship_Game.Commands.Goals
                         TargetEmpire.AddMoney(-moneyDemand);
                         TargetEmpire.AI.EndWarFromEvent(Pirates.Owner);
                         Log.Info(ConsoleColor.Green, $"Pirates: {Owner.Name} Payment Director " +
-                                                     $"Got - {moneyDemand} credits from {TargetEmpire.Name}");
+                                                     $"Got - {moneyDemand} BC from {TargetEmpire.Name}");
                     }
                     else
                     {
                         TargetEmpire.AI.DeclareWarFromEvent(Pirates.Owner, WarType.SkirmishWar);
                         Log.Info(ConsoleColor.Green, $"Pirates: {Owner.Name} Payment Director " +
-                                                     $"- {TargetEmpire.Name} refused to pay {moneyDemand} credits!");
+                                                     $"- {TargetEmpire.Name} refused to pay {moneyDemand} BC!");
                     }
                 }
             }

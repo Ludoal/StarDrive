@@ -110,7 +110,9 @@ namespace Ship_Game
         public int AllTimeTradeIncome;
         [StarData] public bool AutoBuildSpaceRoads;
         [StarData] public bool AutoExplore;
+        [StarData] public bool AutoPickBestScout; // Ludoal fork (wishlist): Auto Pick Explorer
         [StarData] public bool AutoColonize;
+        [StarData] public bool AutoCoreGovernor; // Ludoal fork: new colonies start with a Core governor
         [StarData] public bool AutoResearch;
         [StarData] public bool AutoBuildResearchStations;
         [StarData] public bool AutoBuildMiningStations;
@@ -2054,6 +2056,10 @@ namespace Ship_Game
         {
             if (IsFaction) return false;
             if (IsDefeated) return true;
+            // Ludoal fork: a NoEliminationVictory universe (sandbox, battle simulator
+            // arena) eliminates nobody by colony count — the arena empires own zero
+            // planets by design and were insta-"defeated" here.
+            if (Universe.NoEliminationVictory) return false;
             if (!Universe.P.EliminationMode && OwnedPlanets.Count != 0)
                 return false;
             if (Universe.P.EliminationMode && (Capital == null || Capital.Owner == this) && OwnedPlanets.Count != 0)

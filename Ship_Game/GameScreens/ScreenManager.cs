@@ -56,6 +56,16 @@ namespace Ship_Game
         public static ScreenManager Instance { get; private set; }
         public static GameScreen CurrentScreen => Instance.Current;
 
+        // Ludoal fork: a pause is automatic if ANY live screen owns it — the topmost
+        // screen is not reliable (tooltips/popups can sit above the pausing screen).
+        public bool AnyScreenOwnsUniversePause()
+        {
+            foreach (GameScreen gs in GameScreens)
+                if (gs.OwnsUniversePause)
+                    return true;
+            return false;
+        }
+
         public ScreenManager(GameBase game, GraphicsDeviceManager graphics)
         {
             Instance = this;

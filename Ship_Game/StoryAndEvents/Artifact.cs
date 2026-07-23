@@ -80,7 +80,7 @@ namespace Ship_Game
 
                 TrySetArtifactEffect(ref triggerer.data.FlatMoneyBonus,
                     PlusFlatMoney,
-                    triggerer.data.Traits, "Credits per Turn Bonus: ", popup, percent: false);
+                    triggerer.data.Traits, "BC/turn bonus: ", popup, percent: false);
 
                 TrySetArtifactEffect(ref triggerer.data.Traits.ProductionMod,
                     ProductionMod,

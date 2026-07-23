@@ -89,94 +89,62 @@ namespace Ship_Game
             r5.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_res5");
             Buttons.Add(r5);
 
-            // ShipList + Fleets are optional top-bar buttons that only fit on wider screens.
-            // Add as many as the free span between the money panel (res4) and the right
-            // panel (res5) can hold, prioritizing Fleets over ShipList. The always-present
-            // cluster (Shipyard, Empire, Espionage, Diplomacy) spans ~757px with its gaps;
-            // each extra 168px button costs another 173px (button + 5px gap). The whole
-            // cluster is then centered in the available span.
-            float rangeForButtons = r5.Rect.X - (r4.Rect.X + r4.Rect.Width);
-            int btnWidth = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Width;
-            int btnHeight = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Height;
-            // Shipyard..Diplomacy: 4 buttons plus their gaps (40 + 40 + 5, set below).
-            float baseClusterWidth = 4 * btnWidth + 40 + 40 + 5;
-            const float extraButtonPadding = 10f; // breathing room so buttons don't kiss the panels
-            float extraButtonStride = btnWidth + 5f;
+            // Ludoal fork (reorg): single-row 132px layout in three tinted groups —
+            // Empire/Diplomacy/Espionage (heritage bronze), Planets/Ships/Troops (steel
+            // blue, dip-family hue), Fleets/Shipyard/Blueprints/Patrols (muted red,
+            // military-family hue). Exotic omitted: Planets<->Exotic cross-buttons exist
+            // in-panel. Width is adaptive: full 132px when the span allows (1440p+),
+            // shrunk to fit narrower screens (~120px at 1920). Minimap buttons stay.
+            var g1  = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px");
+            var g1h = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_hover");
+            var g1p = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_pressed");
+            var g2  = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_menu");
+            var g2h = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_menu_hover");
+            var g2p = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_menu_pressed");
+            Color tintLists    = new Color(186, 210, 246); // -> (62,70,82) over the grey base
+            Color tintMilitary = new Color(255, 213, 222); // -> (85,71,74) over the grey base
 
-            int extraButtons = 0;
-            if (rangeForButtons >= baseClusterWidth + 2f * extraButtonStride + extraButtonPadding)
-                extraButtons = 2; // room for ShipList + Fleets
-            else if (rangeForButtons >= baseClusterWidth + extraButtonStride + extraButtonPadding)
-                extraButtons = 1; // room for Fleets only
-
-            float clusterWidth = baseClusterWidth + extraButtons * extraButtonStride;
-            Cursor.X = r4.Rect.X + r4.Rect.Width + (rangeForButtons - clusterWidth) / 2f;
-
-            if (extraButtons >= 2)
+            (string launch, string text, int group)[] row =
             {
-                Button ShipList = new Button();
-                ShipList.Rect = new Rectangle((int)Cursor.X, 2, btnWidth, btnHeight);
-                ShipList.NormalTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military");
-                ShipList.HoverTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military_hover");
-                ShipList.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military_pressed");
-                ShipList.Text = Localizer.Token(GameText.ShipsArray);
-                ShipList.launches = "ShipList";
-                Buttons.Add(ShipList);
-                Cursor.X += extraButtonStride;
-            }
-
-            if (extraButtons >= 1)
+                ("Empire",     Localizer.Token(GameText.Empire),     0),
+                ("Diplomacy",  Localizer.Token(GameText.Diplomacy),  0),
+                ("Espionage",  Localizer.Token(GameText.Espionage2), 0),
+                ("Planets",    "Planets",                            1),
+                ("ShipList",   "Ships",                              1),
+                ("Troops",     "Troops",                             1),
+                ("Shipyard",   Localizer.Token(GameText.Shipyard),   2), // Ludoal fork: swapped with Fleets (wishlist)
+                ("Fleets",     Localizer.Token(GameText.Fleets),     2),
+                ("Patrols",    "Patrols",                            2),
+                ("Blueprints", "Blueprints",                         2),
+            };
+            const float innerGap = 4f, groupGap = 16f, edgePad = 10f;
+            float span = r5.Rect.X - (r4.Rect.X + r4.Rect.Width);
+            float gapsTotal = 7 * innerGap + 2 * groupGap;
+            float wf = (span - gapsTotal - 2 * edgePad) / row.Length;
+            int rowBtnW = (int)(wf > 132f ? 132f : wf);
+            int rowBtnH = g1.Height;
+            float rowWidth = row.Length * rowBtnW + gapsTotal;
+            Cursor.X = r4.Rect.X + r4.Rect.Width + (span - rowWidth) / 2f;
+            int prevGroup = 0;
+            foreach ((string launch, string text, int group) in row)
             {
-                Button Fleets = new Button();
-                Fleets.Rect = new Rectangle((int)Cursor.X, 2, btnWidth, btnHeight);
-                Fleets.NormalTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military");
-                Fleets.HoverTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military_hover");
-                Fleets.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military_pressed");
-                Fleets.Text = Localizer.Token(GameText.Fleets);
-                Fleets.launches = "Fleets";
-                Buttons.Add(Fleets);
-                Cursor.X += extraButtonStride;
+                if (group != prevGroup)
+                {
+                    Cursor.X += groupGap - innerGap;
+                    prevGroup = group;
+                }
+                Button rb = new Button();
+                rb.Rect = new Rectangle((int)Cursor.X, 2, rowBtnW, rowBtnH);
+                bool heritage = group == 0;
+                rb.NormalTexture  = heritage ? g1 : g2;
+                rb.HoverTexture   = heritage ? g1h : g2h;
+                rb.PressedTexture = heritage ? g1p : g2p;
+                rb.Tint = group == 1 ? tintLists : group == 2 ? tintMilitary : Color.White;
+                rb.Text = text;
+                rb.launches = launch;
+                Buttons.Add(rb);
+                Cursor.X += rowBtnW + innerGap;
             }
-
-            Button Shipyard = new Button();
-            Shipyard.Rect = new Rectangle((int)Cursor.X, 2, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Width, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Height);
-            Shipyard.NormalTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military");
-            Shipyard.HoverTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military_hover");
-            Shipyard.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_military_pressed");
-            Shipyard.Text = Localizer.Token(GameText.Shipyard);
-            Shipyard.launches = "Shipyard";
-            Buttons.Add(Shipyard);
-            Cursor.X = Cursor.X + ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_hover").Width + 40;
-
-            Button empire = new Button();
-            empire.Rect = new Rectangle((int)Cursor.X, 2, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Width, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Height);
-            empire.NormalTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px");
-            empire.HoverTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_hover");
-            empire.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_pressed");
-            empire.launches = "Empire";
-            empire.Text = Localizer.Token(GameText.Empire);
-            Buttons.Add(empire);
-            Cursor.X = Cursor.X + ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_hover").Width + 40;
-
-            Button Espionage = new Button();
-            Espionage.Rect = new Rectangle((int)Cursor.X, 2, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Width, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Height);
-            Espionage.NormalTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_dip");
-            Espionage.HoverTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_dip_hover");
-            Espionage.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_dip_pressed");
-            Espionage.Text = Localizer.Token(GameText.Espionage2);
-            Espionage.launches = "Espionage";
-            Buttons.Add(Espionage);
-            Cursor.X = Cursor.X + ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_hover").Width + 5;
-
-            Button Diplomacy = new Button();
-            Diplomacy.Rect = new Rectangle((int)Cursor.X, 2, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Width, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px").Height);
-            Diplomacy.NormalTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_dip");
-            Diplomacy.HoverTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_dip_hover");
-            Diplomacy.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_dip_pressed");
-            Diplomacy.launches = "Diplomacy";
-            Diplomacy.Text = Localizer.Token(GameText.Diplomacy);
-            Buttons.Add(Diplomacy);
-            Cursor.X = Cursor.X + (ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px_hover").Width + 7);
 
             Button MainMenu = new Button();
             MainMenu.Rect = new Rectangle(res5.X + 52, 39, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Width, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Height);
@@ -196,6 +164,26 @@ namespace Ship_Game
             Help.Text = "Help";
             Help.launches = "?";
             Buttons.Add(Help);
+
+            // Ludoal fork: game speed - / + right of Help (68px menu family squeezed
+            // to 28px; the speed readout draws just below this row). 61px available
+            // between Help and the screen edge: 28+2+28 fits flush.
+            var sTex  = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_68px_menu");
+            var sTexH = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_68px_menu_hover");
+            var sTexP = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_68px_menu_pressed");
+            int speedX = res5.X + 72 + sTex.Width + 3;
+            foreach ((string sign, string launch) in new[] { ("-", "SpeedDown"), ("+", "SpeedUp") })
+            {
+                Button sb = new Button();
+                sb.Rect = new Rectangle(speedX, 64, 28, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Height);
+                sb.NormalTexture  = sTex;
+                sb.HoverTexture   = sTexH;
+                sb.PressedTexture = sTexP;
+                sb.Text = sign;
+                sb.launches = launch;
+                Buttons.Add(sb);
+                speedX += 28 + 2;
+            }
         }
 
         public void Draw(SpriteBatch batch)
@@ -213,7 +201,7 @@ namespace Ship_Game
                 }
                 if (b.State == PressState.Normal)
                 {
-                    batch.Draw(b.NormalTexture, b.Rect, Color.White);
+                    batch.Draw(b.NormalTexture, b.Rect, b.Tint);
                     if (string.IsNullOrEmpty(b.Text))
                     {
                         continue;
@@ -226,7 +214,7 @@ namespace Ship_Game
                     {
                         continue;
                     }
-                    batch.Draw(b.PressedTexture, b.Rect, Color.White);
+                    batch.Draw(b.PressedTexture, b.Rect, b.Tint);
                     if (string.IsNullOrEmpty(b.Text))
                     {
                         continue;
@@ -236,7 +224,7 @@ namespace Ship_Game
                 }
                 else
                 {
-                    batch.Draw(b.HoverTexture, b.Rect, Color.White);
+                    batch.Draw(b.HoverTexture, b.Rect, b.Tint);
                     if (string.IsNullOrEmpty(b.Text))
                     {
                         continue;
@@ -256,6 +244,24 @@ namespace Ship_Game
             var starDatePos = new Vector2(res5.X + 75, textCursor.Y);
             string starDateText = LowRes ? Universe.StarDateString : "StarDate: " + Universe.StarDateString;
             batch.DrawString(Fonts.Arial12Bold, starDateText, starDatePos, new Color(255, 240, 189));
+
+            // Ludoal fork: paused indicator left of Main Menu on full-screen panels.
+            // White = the open screen auto-paused the game and will resume it on close;
+            // Gold = the player's own pause (Space), kept after the screen closes.
+            if (Universe.UState.Paused) // all configurations — the top-center gold text is retired
+            {
+                Button menu = null;
+                foreach (Button b in Buttons)
+                    if (b.launches == "Main Menu") { menu = b; break; }
+                if (menu != null)
+                {
+                    string paused = Localizer.Token(GameText.Paused);
+                    var pausedPos = new Vector2(menu.Rect.X - Fonts.Pirulen16.TextWidth(paused) - 12f,
+                                                menu.Rect.Y + (menu.Rect.Height - Fonts.Pirulen16.LineSpacing) / 2f);
+                    bool autoPause = Universe.ScreenManager.AnyScreenOwnsUniversePause(); // stack-wide: topmost was unreliable
+                    batch.DrawString(Fonts.Pirulen16, paused, pausedPos, autoPause ? Color.White : Color.Gold);
+                }
+            }
 
             if (Player.Research.NoTopic)
             {
@@ -305,6 +311,71 @@ namespace Ship_Game
         }
 
         // @return true if input was captured
+        // Ludoal fork: one tooltip per top-bar button, shown from BOTH input variants
+        // (map view and any panel with the live bar). Anchored slightly below the
+        // button, aligned with its beveled bottom-left corner.
+        void ShowButtonTooltip(Button b)
+        {
+            if (b.launches == null)
+                return;
+            // Help and the speed buttons sit above the game-speed readout: their
+            // tooltips drop lower so they don't mask it.
+            bool lowRow = b.launches == "?" || b.launches == "SpeedUp" || b.launches == "SpeedDown";
+            Vector2 tipPos = new Vector2(b.Rect.X, b.Rect.Bottom + (lowRow ? 26 : 4));
+            switch (b.launches)
+            {
+                case "Research":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.ResearchScreen) + "\n\n" + Localizer.Token(GameText.CurrentResearch) + ": " + Player.Research.TopicLocText.Text, "R", tipPos);
+                    break;
+                case "Budget":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.EconomicOverview2), "T", tipPos);
+                    break;
+                case "Main Menu":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheMainMenu), "O", tipPos);
+                    break;
+                case "Shipyard":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheShipyard), "Y", tipPos);
+                    break;
+                case "Empire":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheEmpireOverviewScreen), "U", tipPos);
+                    break;
+                case "Diplomacy":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheDiplomacyOverviewScreen), "I", tipPos);
+                    break;
+                case "Espionage":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheEspionageManagementScreen), "E", tipPos);
+                    break;
+                case "ShipList":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheShipRoster), "K", tipPos);
+                    break;
+                case "Fleets":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheFleetManager), "J", tipPos);
+                    break;
+                case "Planets":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensPlanetReconnaissancePanel), "L", tipPos);
+                    break;
+                case "Troops":
+                    ToolTip.CreateTooltip("Opens the Troops Array", "C", tipPos);
+                    break;
+                case "Patrols":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.EmpirePatrolsScreenTip), "P", tipPos);
+                    break;
+                case "Blueprints":
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.BlueprintsScreenTip), "F", tipPos);
+                    break;
+                case "?":
+                    // the real help binding is F1 (CodexHelp)
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheHelpMenu), "F1", tipPos);
+                    break;
+                case "SpeedDown":
+                    ToolTip.CreateTooltip("Slower game speed", "-", tipPos);
+                    break;
+                case "SpeedUp":
+                    ToolTip.CreateTooltip("Faster game speed", "+", tipPos);
+                    break;
+            }
+        }
+
         public bool HandleInput(InputState input)
         {
             if (!GlobalStats.TakingInput)
@@ -384,62 +455,7 @@ namespace Ship_Game
                 }
                 else
                 {
-                    if (b.launches != null)
-                    {
-                        switch (b.launches)
-                        {
-                            case "Research":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.ResearchScreen) + "\n\n" + Localizer.Token(GameText.CurrentResearch) + ": " + Player.Research.TopicLocText.Text, "R");
-                                    break;
-                                }
-                            case "Budget":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.EconomicOverview2), "T");
-                                    break;
-                                }
-                            case "Main Menu":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheMainMenu), "O");
-                                    break;
-                                }
-                            case "Shipyard":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheShipyard), "Y");
-                                    break;
-                                }
-                            case "Empire":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheEmpireOverviewScreen), "U");
-                                    break;
-                                }
-                            case "Diplomacy":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheDiplomacyOverviewScreen), "I");
-                                    break;
-                                }
-                            case "Espionage":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheEspionageManagementScreen), "E");
-                                    break;
-                                }
-                            case "ShipList":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheShipRoster), "K");
-                                    break;
-                                }
-                            case "Fleets":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheFleetManager), "J");
-                                    break;
-                                }
-                            case "?":
-                                {
-                                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheHelpMenu), "P");
-                                    break;
-                                }
-                        }
-                    }
+                    ShowButtonTooltip(b); // Ludoal fork: shared tooltip helper, anchored bottom-left
                     if (b.State != PressState.Hover && b.State != PressState.Pressed)
                     {
                         GameAudio.MouseOver();
@@ -454,6 +470,13 @@ namespace Ship_Game
                         if (b.launches == null)
                         {
                             continue;
+                        }
+                        if (b.launches == "SpeedUp" || b.launches == "SpeedDown")
+                        {
+                            // Ludoal fork: speed buttons never open/close anything
+                            GameAudio.AcceptClick();
+                            Universe.AdjustGameSpeed(b.launches == "SpeedUp");
+                            return true;
                         }
                         if (b.launches == "Research")
                         {
@@ -485,6 +508,32 @@ namespace Ship_Game
                         {
                             GameAudio.EchoAffirmative();
                             Universe.ScreenManager.AddScreen(new ShipListScreen(Universe, this));
+                        }
+                        // Ludoal fork: provisional second-row buttons
+                        else if (b.launches == "Planets")
+                        {
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new PlanetListScreen(Universe, this));
+                        }
+                        else if (b.launches == "Exotic")
+                        {
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new ExoticSystemsListScreen(Universe, this));
+                        }
+                        else if (b.launches == "Patrols")
+                        {
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new EmpirePatrolsScreen(Universe, Universe.Player));
+                        }
+                        else if (b.launches == "Blueprints")
+                        {
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Universe.Player));
+                        }
+                        else if (b.launches == "Troops")
+                        {
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new TroopListScreen(Universe, this));
                         }
                         else if (b.launches == "Empire")
                         {
@@ -528,6 +577,7 @@ namespace Ship_Game
                 }
                 else
                 {
+                    ShowButtonTooltip(b); // Ludoal fork: tooltips also on panel-hosted bars
                     if (b.State != PressState.Hover && b.State != PressState.Pressed)
                     {
                         GameAudio.MouseOver();
@@ -536,35 +586,35 @@ namespace Ship_Game
 
                     if (input.LeftMouseClick)
                     {
-                        if (caller is not ShipDesignScreen && caller is not FleetDesignScreen)
-                        {
-                            caller.ExitScreen();
-                        }
-                        else if (b.launches != "Shipyard" && b.launches != "Fleets")
-                        {
-                            if (caller is ShipDesignScreen shipDesigner)
-                            {
-                                shipDesigner.ExitToMenu(b.launches);
-                            }
-                            else if (caller is FleetDesignScreen fleetDesigner)
-                            {
-                                fleetDesigner.ExitScreen();
-                            }
-                            return true;
-                        }
-                        else if (caller is FleetDesignScreen fleetDesigner && b.launches != "Fleets")
-                        {
-                            fleetDesigner.ExitScreen();
-                        }
-                        else if (caller is ShipDesignScreen shipDesigner && b.launches != "Shipyard")
-                        {
-                            shipDesigner.ExitScreen();
-                        }
-
+                        // Ludoal fork: unified caller path. A decorative button (no launch)
+                        // no longer closes the calling screen.
                         if (b.launches == null)
                         {
                             continue;
                         }
+
+                        // Ludoal fork: speed buttons act in place — no screen is closed
+                        // or opened, whatever panel hosts the bar.
+                        if (b.launches == "SpeedUp" || b.launches == "SpeedDown")
+                        {
+                            GameAudio.AcceptClick();
+                            Universe.AdjustGameSpeed(b.launches == "SpeedUp");
+                            return true;
+                        }
+
+                        // Shipyard keeps its dedicated exit (unsaved-design prompt);
+                        // its LaunchScreen() then opens the requested target — and its
+                        // own button simply closes it (toggle), like every other panel.
+                        if (caller is ShipDesignScreen shipDesigner)
+                        {
+                            shipDesigner.ExitToMenu(b.launches);
+                            return true;
+                        }
+
+                        // Everyone else (FleetDesign included): close the caller, then
+                        // the dispatch below opens the target. Clicking a screen's own
+                        // button just closes it (toggle) via the per-branch self-guards.
+                        caller.ExitScreen();
 
                         if (b.launches == "Research")
                         {
@@ -605,13 +655,92 @@ namespace Ship_Game
                             GameAudio.EchoAffirmative();
                             Universe.ScreenManager.AddScreen(new FleetDesignScreen(Universe, this));
                         }
+                        // Ludoal fork: ShipList and Espionage were missing from the caller
+                        // dispatch — harmless while only Shipyard/Fleets kept the bar live,
+                        // a dead button once every full-screen does (top-bar standard).
+                        else if (b.launches == "ShipList")
+                        {
+                            if (caller is ShipListScreen)
+                            {
+                                continue;
+                            }
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new ShipListScreen(Universe, this));
+                        }
+                        // Ludoal fork: provisional second-row buttons (self-click = toggle close)
+                        else if (b.launches == "Planets")
+                        {
+                            if (caller is PlanetListScreen)
+                            {
+                                continue;
+                            }
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new PlanetListScreen(Universe, this));
+                        }
+                        else if (b.launches == "Exotic")
+                        {
+                            if (caller is ExoticSystemsListScreen)
+                            {
+                                continue;
+                            }
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new ExoticSystemsListScreen(Universe, this));
+                        }
+                        else if (b.launches == "Patrols")
+                        {
+                            if (caller is EmpirePatrolsScreen)
+                            {
+                                continue;
+                            }
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new EmpirePatrolsScreen(Universe, Universe.Player));
+                        }
+                        else if (b.launches == "Blueprints")
+                        {
+                            if (caller is BlueprintsScreen)
+                            {
+                                continue;
+                            }
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Universe.Player));
+                        }
+                        else if (b.launches == "Troops")
+                        {
+                            if (caller is TroopListScreen)
+                            {
+                                continue;
+                            }
+                            GameAudio.EchoAffirmative();
+                            Universe.ScreenManager.AddScreen(new TroopListScreen(Universe, this));
+                        }
+                        else if (b.launches == "Espionage")
+                        {
+                            if (caller is EspionageScreen or InfiltrationScreen)
+                            {
+                                continue;
+                            }
+                            if (Universe.Player.LegacyEspionageEnabled)
+                                Universe.ScreenManager.AddScreen(new EspionageScreen(Universe));
+                            else
+                                Universe.ScreenManager.AddScreen(new InfiltrationScreen(Universe));
+
+                            GameAudio.EchoAffirmative();
+                        }
                         else if (b.launches == "Empire")
                         {
+                            if (caller is EmpireManagementScreen)
+                            {
+                                continue;
+                            }
                             Universe.ScreenManager.AddScreen(new EmpireManagementScreen(Universe, this));
                             GameAudio.EchoAffirmative();
                         }
                         else if (b.launches == "Diplomacy")
                         {
+                            if (caller is MainDiplomacyScreen)
+                            {
+                                continue;
+                            }
                             Universe.ScreenManager.AddScreen(new MainDiplomacyScreen(Universe));
                             GameAudio.EchoAffirmative();
                         }
@@ -639,6 +768,7 @@ namespace Ship_Game
             public SubTexture HoverTexture;
             public SubTexture PressedTexture;
             public string Text = "";
+            public Color Tint = Color.White; // Ludoal fork: group tinting
             public string launches;
         }
 

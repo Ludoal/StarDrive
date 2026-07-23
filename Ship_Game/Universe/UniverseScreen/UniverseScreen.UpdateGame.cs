@@ -365,12 +365,17 @@ namespace Ship_Game
             if (input.SpeedReset)
                 UState.GameSpeed = 1f;
             else if (input.SpeedUp || input.SpeedDown)
-            {
-                bool unlimited = Debug || Debugger.IsAttached;
-                float speedMin = unlimited ? 0.0625f : 0.25f;
-                float speedMax = unlimited ? 128f    : 10f;
-                UState.GameSpeed = GetGameSpeedAdjust(input.SpeedUp).Clamped(speedMin, speedMax);
-            }
+                AdjustGameSpeed(input.SpeedUp);
+        }
+
+        // Ludoal fork: extracted so the top-bar speed buttons share the exact
+        // hotkey behavior (halve/double below 1x, +/-1 above, same clamps)
+        public void AdjustGameSpeed(bool increase)
+        {
+            bool unlimited = Debug || Debugger.IsAttached;
+            float speedMin = unlimited ? 0.0625f : 0.25f;
+            float speedMax = unlimited ? 128f    : 10f;
+            UState.GameSpeed = GetGameSpeedAdjust(increase).Clamped(speedMin, speedMax);
         }
 
         float GetGameSpeedAdjust(bool increase)
@@ -391,6 +396,19 @@ namespace Ship_Game
         {
             while (PendingSimThreadActions.TryDequeue(out Action action))
                 action();
+        }
+
+        /// <summary>
+        /// Wakes up the parked simulation thread so queued RunOnSimThread actions still
+        /// execute while a fullscreen game screen hides the universe (normally Draw()
+        /// signals the sim loop, but a hidden universe never draws). The UState.Paused
+        /// guard means only the paused fast-path runs: pending actions are invoked,
+        /// simulation time never advances.
+        /// </summary>
+        public void PumpPendingSimThreadActions()
+        {
+            if (UState.Paused && !Visible)
+                DrawCompletedEvt.Set();
         }
 
         /// <summary>

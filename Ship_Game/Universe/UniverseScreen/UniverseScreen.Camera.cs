@@ -96,14 +96,22 @@ namespace Ship_Game
                     }
                 }
 
-                if (p.Owner == Player || flag || Debug)
+                // Ludoal fork: Planet View removed — the selection cartouche carries its info.
+                // Double-click: colony view on real colonies (incl. mole vision), combat view
+                // when tactically visible, otherwise just the camera snap.
+                if ((p.Owner == Player || flag || Debug) && p.Owner != null)
                 {
-                    if (Debug && (p.IsResearchable || p.IsMineable))
-                        workersPanel = new UnownedPlanetScreen(this, p);
-                    else if (p.Owner != null)
-                        workersPanel = new ColonyScreen(this, p, EmpireUI);
-                    else
-                        workersPanel = new UnexploredPlanetScreen(this, p);
+                    workersPanel = new ColonyScreen(this, p, EmpireUI);
+                    ClearSelectedItems();
+                    returnToShip = doReturnToShip;
+                    LookingAtPlanet = true;
+                    // No camera snap — the panel covers the map. But the removed snap
+                    // also refreshed transitionStartPosition, which the close handler
+                    // restores to; left stale, closing flew the camera to wherever the
+                    // last transition started. Anchor both to the current camera.
+                    transitionStartPosition = CamPos;
+                    CamDestination = CamPos;
+                    return;
                 }
                 else if (combatView && p.Habitable
                                     && p.IsExploredBy(Player)
@@ -111,18 +119,11 @@ namespace Ship_Game
                                                                     || p.System.OwnerList.Contains(Player)
                                                                     || p.OurShipsCanScanSurface(Player)))
                 {
-                    OpenCombatMenu(p);
-                }
-                else
-                {
-                    workersPanel = new UnownedPlanetScreen(this, p);
+                    OpenCombatMenu(p); // snaps the view itself
+                    return;
                 }
 
-                ClearSelectedItems();
-                returnToShip = doReturnToShip;
-                LookingAtPlanet = true;
-
-                SnapViewTo(new(p.Position.X, p.Position.Y + 400f, 2500f), 5f, 2f);
+                SnapViewTo(new(p.Position.X, p.Position.Y, GetZfromScreenState(UnivScreenState.PlanetView)), 5f, 2f); // Ludoal fork: 2500 was nose-on-the-planet; PlanetView is the named level for this
             }
         }
 
@@ -136,13 +137,14 @@ namespace Ship_Game
             transDuration = duration;
         }
 
-        public void SnapViewSystem(SolarSystem s, Planet p, UnivScreenState camHeight)
+        public void SnapViewSystem(SolarSystem s, Planet p, UnivScreenState camHeight, bool select = true)
         {
             double z = GetZfromScreenState(camHeight);
             SnapViewTo(new(s.Position.X, s.Position.Y + 400f, z), 5f, 2f);
 
             bool doReturnToShip = ViewingShip;
-            SetSelectedSystem(s, p);
+            if (select) // Ludoal fork: notification snaps pass false — a selection the
+                SetSelectedSystem(s, p); // player never made kept the exploded view armed on dezoom
             returnToShip = doReturnToShip;
         }
 
@@ -155,6 +157,14 @@ namespace Ship_Game
 
             SnapViewTo(new(s.Position.X, s.Position.Y + 400, 2500), 5f, 2f);
             LookingAtPlanet = false;
+            // an immobile ship (station/platform) has nothing to chase - engaging the
+            // follow mode on it just trapped the camera (field report: could not zoom
+            // out from a station-built notification). Snap and select only.
+            if (s.IsPlatformOrStation)
+                return;
+            // snappingToShip follows ShipToView - without this the camera snapped to
+            // whatever ship was viewed LAST (station-built notifications zoomed wrong)
+            ShipToView = s;
             snappingToShip = true;
             ViewingShip = true;
         }
@@ -204,6 +214,11 @@ namespace Ship_Game
                 UState.CamPos.Z = UState.CamPos.Z.SmoothStep(CamDestination.Z, 0.2);
                 if (UState.CamPos.Z < minCamHeight)
                     UState.CamPos.Z = minCamHeight;
+                // Ludoal fork (wishlist #1): keep the free-camera destination in tow —
+                // it went stale during the chase, so every exit path glided the camera
+                // back to the pre-chase position instead of staying at the ship.
+                CamDestination.X = ShipToView.Position.X;
+                CamDestination.Y = ShipToView.Position.Y;
             }
 
             if (AdjustCamTimer > 0.0)
@@ -349,13 +364,31 @@ namespace Ship_Game
             }
         }
 
+        // Ludoal fork (wishlist): leave the planet panel but STAY at the planet on
+        // the main map (the normal dismiss flies the camera back to where it was).
+        // Keeps the previous zoom level, at the planet's position, planet selected.
+        public void ClosePlanetPanelStayHere()
+        {
+            if (workersPanel == null)
+                return;
+            SetSelectedPlanet(workersPanel.P);
+            returnToShip = false;
+            CamDestination = new Vector3d(workersPanel.P.Position.X, workersPanel.P.Position.Y,
+                                          GetZfromScreenState(UnivScreenState.PlanetView)); // aligned with the planet-snap standard (was 2500, too strong)
+            AdjustCamTimer = 1f;
+            transitionElapsedTime = 0f;
+            LookingAtPlanet = false;
+        }
+
         void ToggleViewingShip()
         {
+            // Ludoal fork (wishlist #1): ViewToShip sets ViewingShip=true itself —
+            // the old unconditional flip flipped it back OFF right after arming,
+            // leaving only the initial snap (chase died if anything interrupted it)
             if (!ViewingShip)
-            {
                 ViewToShip(SelectedShip);
-            }
-            ViewingShip = !ViewingShip;
+            else
+                ViewingShip = false;
         }
 
         void ToggleCinematicMode()

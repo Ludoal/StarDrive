@@ -28,6 +28,7 @@ namespace Ship_Game.Ships
         public Rectangle Housing;
         public Rectangle ShipInfoRect;
         public ToggleButton GridButton;
+        public ToggleButton FollowButton; // Ludoal fork (wishlist): camera chase toggle
         Rectangle Power;
         Rectangle Shields;
         Rectangle Ordnance;
@@ -99,6 +100,10 @@ namespace Ship_Game.Ships
             {
                 IsToggled = true
             };
+            // Ludoal fork (wishlist): follow-camera toggle, right of the grid button —
+            // same chase as Ctrl+Middle-click, but discoverable
+            FollowButton = new ToggleButton(new Vector2(Housing.X + 54, Universe.ScreenHeight - 45),
+                                            ToggleButtonStyle.Formation, "UI/FollowIcon"); // 24x24 — field report 45.42: too big
 
             float startX = OBar.pBar.X - 15;
             var ordersBarPos = new Vector2(startX, (Ordnance.Y + Ordnance.Height + spacing + 3));
@@ -129,6 +134,14 @@ namespace Ship_Game.Ships
             batch.Draw(ResourceManager.Texture("SelectionBox/unitselmenu_main"), Housing, Color.White);
             if (s.Loyalty.CanBeScannedByPlayer)
                 GridButton.Draw(batch, elapsed);
+            // Ludoal fork: follow toggle reflects the live chase state — hidden for
+            // things that cannot move (stations, platforms, projectors)
+            FollowButton.Visible = !(s.IsPlatformOrStation || s.IsSubspaceProjector);
+            if (FollowButton.Visible)
+            {
+                FollowButton.IsToggled = Universe.ViewingShip && Universe.ShipToView == s;
+                FollowButton.Draw(batch, elapsed);
+            }
 
             Vector2 namePos       = new(Housing.X + 30, Housing.Y + 63);
             Vector2 shipSuperName = new(Housing.X + 30, Housing.Y + 79);
@@ -322,7 +335,7 @@ namespace Ship_Game.Ships
 
         void DrawInhibitWarning(SpriteBatch batch, int numStatus, Vector2 mousePos, Ship ship)
         {
-            if (Universe.UState.P.DisableInhibitionWarning || Universe.ShowingFTLOverlay)
+            if (Universe.UState.P.DisableInhibitionWarning || Universe.ShowingFTLOverlay || Universe.ShowingGravityWellOverlay)
                 return;
 
             string text = "Inhibited";
@@ -513,6 +526,22 @@ namespace Ship_Game.Ships
 
             if (ShipNameArea.HandleInput(input))
                 return true;
+
+            if (FollowButton.Rect.HitTest(input.CursorPosition))
+                ToolTip.CreateTooltip("Camera follows this ship (Ctrl+Middle-click)");
+
+            if (FollowButton.HandleInput(input))
+            {
+                if (input.LeftMouseClick)
+                {
+                    GameAudio.AcceptClick();
+                    if (Universe.ViewingShip && Universe.ShipToView == Ship)
+                        Universe.ViewingShip = false; // decouple, camera stays (CamDestination is in tow)
+                    else
+                        Universe.ViewToShip(Ship);
+                }
+                return true;
+            }
 
             if (GridButton.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(Localizer.Token(GameText.ToggleTheModuleGridOverlay));

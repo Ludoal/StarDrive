@@ -207,9 +207,18 @@ namespace Ship_Game
             }
             else
             {
-                IconRect = new Rectangle((int)CenterX - IconTexture.Width  / 2,
-                                         (int)CenterY - IconTexture.Height / 2,
-                                         IconTexture.Width, IconTexture.Height);
+                // Ludoal fork: an icon bigger than the button frame overflowed it
+                // (32px FollowIcon in a 24px frame) — clamp to the frame with a margin
+                int iconW = IconTexture.Width, iconH = IconTexture.Height;
+                if (iconW > Rect.Width - 4 || iconH > Rect.Height - 4)
+                {
+                    float fit = Math.Min((Rect.Width - 4f) / iconW, (Rect.Height - 4f) / iconH);
+                    iconW = (int)(iconW * fit);
+                    iconH = (int)(iconH * fit);
+                }
+                IconRect = new Rectangle((int)CenterX - iconW / 2,
+                                         (int)CenterY - iconH / 2,
+                                         iconW, iconH);
             }
         }
 

@@ -73,9 +73,9 @@
     <HomeSystemName>Opteris</HomeSystemName>
     <HomeworldName>Zero</HomeworldName>
     <FlagIndex>37</FlagIndex>
-    <R>90</R>
-    <G>87</G>
-    <B>51</B>
+    <R>155</R> <!-- Ludoal fork: was 90,87,51 - same olive-brown, readable on space -->
+    <G>148</G>
+    <B>85</B>
 	<TraitSets> <!-- The first trait set is what the player sees. Other sets are extra sets randomized for the AI -->
 		<TraitSet>
 			<TraitOptions>

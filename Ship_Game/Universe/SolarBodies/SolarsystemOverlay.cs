@@ -125,8 +125,32 @@ namespace Ship_Game
                     batch.DrawCircle(pPos, pPos.Distance(planetPos), color, 2f);
                 }
 
+                // Ludoal fork (wishlist): the exploded view was unreadable when orbits
+                // aligned — labels stacked on labels. The hovered planet now draws LAST
+                // (on top) and the stat block only shows for the hovered planet;
+                // names and side icons stay always visible.
+                int hoveredIdx = -1;
                 for (int i = 0; i < Sys.PlanetList.Count; i++)
                 {
+                    Planet hp = Sys.PlanetList[i];
+                    Vector2d hpPos = pPos.PointFromAngle(hp.OrbitalAngle, 40 + 40 * i);
+                    hpPos -= ((hpPos - pPos).Normalized() * (40 + 40 * i) * transitionOffset);
+                    float hScale = 1f + (float)Math.Log(hp.Scale);
+                    float hSize = 20f * hScale;
+                    RectF hitR = new(hpPos.X - (hSize*0.5f), hpPos.Y - (hSize*0.5f), hSize, hSize);
+                    if (hitR.HitTest(Universe.Input.CursorPosition))
+                        hoveredIdx = i;
+                }
+
+                for (int k = 0; k < Sys.PlanetList.Count; k++)
+                {
+                    int i = k;
+                    if (hoveredIdx >= 0)
+                    {
+                        if (k == Sys.PlanetList.Count - 1) i = hoveredIdx; // hovered goes last
+                        else if (k >= hoveredIdx) i = k + 1;               // tail shifts by one
+                    }
+                    bool isHovered = i == hoveredIdx;
                     Planet p = Sys.PlanetList[i];
                     Vector2d planetPos = pPos.PointFromAngle(p.OrbitalAngle, 40 + 40 * i);
                     planetPos -= ((planetPos - pPos).Normalized() * (40 + 40 * i) * transitionOffset);
@@ -134,7 +158,7 @@ namespace Ship_Game
                     float fIconScale = 1f + (float)Math.Log(p.Scale);
                     float iconSize = (20f * fIconScale);
                     RectF planetR = new(planetPos.X - (iconSize*0.5f), planetPos.Y - (iconSize*0.5f), iconSize, iconSize);
-                    if (planetR.HitTest(Universe.Input.CursorPosition))
+                    if (isHovered)
                     {
                         Hovering = true;
                         CurrentlyHoveredPlanet = p;
@@ -248,7 +272,7 @@ namespace Ship_Game
                             batch.DrawDropShadowText1(p.Name, planetTypeCursor, SysFont, (p.Habitable ? p.Owner.EmpireColor : Color.LightPink));
                         }
 
-                        if (p.Habitable)
+                        if (p.Habitable && isHovered) // Ludoal fork: stats on hover only
                         {
                             int Spacing = DataFont.LineSpacing;
                             planetTypeCursor.Y += (Spacing + 4);
