@@ -71,7 +71,7 @@ namespace Ship_Game
             ZoomOut            = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonC, "Minimap/icons_zoomout", ZoomOut_OnClick));
             VisionOverlayBtn   = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_spy_small", VisionOverlay_OnClick)); // Ludoal fork: Vision (F3), beside Influence
             GravityWellsOnly   = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/node_inhibit", GravityWellsOnly_OnClick)); // Ludoal fork (F5)
-            listR.Add(new UISpacer(new Vector2(22, 22))); // row 4 right: empty, weapons range sits alone
+            listR.Add(new UI.UISpacer(new Vector2(22, 22))); // row 4 right: empty, weapons range sits alone
             AIScreen           = listR.Add(new ToggleButton(ToggleButtonStyle.Button, "AI", AIScreen_OnClick)); // Ludoal fork: ButtonDown was 26px vs 22 — the row misaligned
             ExoticBonuses      = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "NewUI/icon_exotic_Bonuses_big", ExoticBonusScreen_OnClick));
             Scale = ActualMap.Width / (Universe.UState.Size * 2.1f); // Updated to play nice with the new negative map values
