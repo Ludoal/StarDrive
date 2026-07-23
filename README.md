@@ -28,11 +28,11 @@ is simple: the BlackBox team is welcome to take whatever they find worth keeping
 - One overlay = one function, freely combined: **F2** influence zones, **F3** vision
   (sensor coverage, spies and projectors included), **F4** subspace projection,
   **F5** gravity wells, **F6** weapons range.
-- Optional influence colors on the main map (Options toggle, default = vanilla look).
+- Optional influence colors on the main map and minimap (Options toggle, default = vanilla look).
 - Fog of war stays dark: no permanent ship wakes, no explored-system halos — live
   sensors carry current vision.
-- Minimap: contested systems in grey (white = claim), dimmed nebulae, and the patch-46
-  Important Events button sits beside Range (row 4).
+- Minimap: colonized systems boxed with race color, dimmed nebulae, and the patch-46
+  Important Events button beside Range (row 4).
 
 **Top bar & navigation**
 - Live top bar on every full-screen panel (Empire, Espionage, Budget, Diplomacy,
@@ -44,12 +44,10 @@ is simple: the BlackBox team is welcome to take whatever they find worth keeping
 - Troops Array: dedicated screen with status, grouping and strength columns.
 
 **Screens**
-- Research: integrated frame under the top bar, compact branch packing, standard title,
-  search anchored to the frame.
+- Research: integrated frame under the top bar, compact branch packing, standard title.
 - Colony and Blueprints: panels aligned with the bar, wider right blocks.
 - Planet View removed: double-click opens Colony view, Combat view, or just snaps the
-  camera; the selection cartouches carry the info instead (planet class/richness, deploy
-  button, mining block, research-station status, star icon).
+  camera; the selection cartouches carry all the info.
 
 **Notifications & camera**
 - Notification clicks go where they mean: diplomacy opens the Diplomacy panel,
@@ -59,7 +57,7 @@ is simple: the BlackBox team is welcome to take whatever they find worth keeping
 - Autosave measured in game years (slider, 0 = legacy wall-clock).
 
 **Texts & units** *(work in progress)*
-- Money flows labeled `bc/turn` everywhere (they are all per-turn), population rates
+- Money flows labeled `BC/turn` everywhere (they are all per-turn), population rates
   per billion colonists; a game-term capitalization pass is ongoing.
 
 **Battle Arena** *(work in progress)*
