@@ -81,15 +81,15 @@ public partial class UniverseScreen
             // Ludoal fork: no autosave while paused — the game state does not advance,
             // saving the same turn repeatedly just rotates the autosave slots away.
             // The timer keeps running; the save fires at the first unpaused check.
-            // Turn-based autosave (AutoSaveTurns > 0, 10 turns = one star-year): follows
+            // Year-based autosave (AutoSaveYears > 0, default 5 star-years = 50 turns): follows
             // the pace of the GAME, not the wall clock, and a pause freezes it for free
-            // (the StarDate does not move). AutoSaveTurns = 0 falls back to time-based.
+            // (the StarDate does not move). AutoSaveYears = 0 falls back to time-based.
             bool due;
-            if (GlobalStats.AutoSaveTurns > 0)
+            if (GlobalStats.AutoSaveYears > 0)
             {
                 if (LastAutosaveStarDate == 0f)
                     LastAutosaveStarDate = UState.StarDate;
-                due = UState.StarDate - LastAutosaveStarDate >= GlobalStats.AutoSaveTurns * 0.1f - 0.001f;
+                due = UState.StarDate - LastAutosaveStarDate >= GlobalStats.AutoSaveYears - 0.001f;
             }
             else
             {

@@ -164,8 +164,8 @@ public static class GlobalStats
     // USER_EXPERIENCE
     // autosave frequency in seconds
     public static int AutoSaveFreq = 300;
-    // Ludoal fork: autosave every N turns instead (10 turns = 1 star-year); 0 = legacy time-based
-    public static int AutoSaveTurns = 10;
+    // Ludoal fork: autosave every N star-years (1 year = 10 turns = ~50s at speed x1); 0 = legacy time-based
+    public static int AutoSaveYears = 5;
 
     // USER_EXPERIENCE
     // this is a global user setting, changed in game settings screen
@@ -360,7 +360,7 @@ public static class GlobalStats
         GetSetting(config, "MaxParallelism", ref MaxParallelism);
         GetSetting(config, "WindowMode", ref WindowMode);
         GetSetting(config, "AutoSaveFreq", ref AutoSaveFreq);
-        GetSetting(config, "AutoSaveTurns", ref AutoSaveTurns);
+        GetSetting(config, "AutoSaveYears", ref AutoSaveYears);
         GetSetting(config, "AntiAliasSamples", ref AntiAlias);
         GetSetting(config, "PostProcessBloom", ref RenderBloom);
         GetSetting(config, "PostProcessShieldDistortion", ref RenderShieldDistortion);
@@ -555,7 +555,7 @@ public static class GlobalStats
         WriteSetting(config, "MaxParallelism", MaxParallelism);
         WriteSetting(config, "WindowMode", WindowMode);
         WriteSetting(config, "AutoSaveFreq", AutoSaveFreq);
-        WriteSetting(config, "AutoSaveTurns", AutoSaveTurns);
+        WriteSetting(config, "AutoSaveYears", AutoSaveYears);
         WriteSetting(config, "AntiAliasSamples", AntiAlias);
         WriteSetting(config, "PostProcessBloom", RenderBloom);
         WriteSetting(config, "PostProcessShieldDistortion", RenderShieldDistortion);
