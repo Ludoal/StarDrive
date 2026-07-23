@@ -57,7 +57,23 @@ is simple: the BlackBox team is welcome to take whatever they find worth keeping
   espionage snaps to the planet, colony and ground-battle panels open in place —
   the camera only moves when it stays visible, and planet/station snaps stop at
   a sane zoom instead of nose-on.
+- Chase camera fixed (it never actually worked): Ctrl+Middle-click follows the
+  selected ship, Follow button in the ship info panel; panning or deselecting decouples.
 - Autosave measured in game years (slider, 0 = legacy wall-clock).
+
+**Automation**
+- Auto Pick per design dropdown (Explorer, Colony Ship, Constructors, Freighter,
+  Research/Mining Station): one checkbox each, manual pick or auto.
+- Auto Core Governor for newly founded colonies.
+
+**Misc comfort**
+- Ships Array: Military Ships filter (every combat-capable role in one view).
+- Game speed − / + buttons next to Help, matching the hotkeys.
+- List rows activate on double-click in all panels — no more accidental exits.
+- Deep-space builds: selectable while paused, real Cancel Construction button.
+- Exploded system view: stats only for the hovered planet, drawn on top.
+- View on map exits at the planet instead of flying back.
+- Fleets: wider magnetic grid steps.
 
 **Texts & units** *(work in progress)*
 - Money flows labeled `BC/turn` everywhere (they are all per-turn), population rates
