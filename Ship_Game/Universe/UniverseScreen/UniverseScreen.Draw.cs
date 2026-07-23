@@ -599,10 +599,6 @@ namespace Ship_Game
 
         void DrawGeneralStatusText(SpriteBatch batch, DrawTimes elapsed)
         {
-            if (UState.Paused)
-            {
-                DrawTopCenterStatusText(batch, GameText.Paused, Color.Gold, 0);
-            }
 
             if (UState.Events.ActiveEvent != null && UState.Events.ActiveEvent.InhibitWarp)
             {

@@ -248,7 +248,7 @@ namespace Ship_Game
             // Ludoal fork: paused indicator left of Main Menu on full-screen panels.
             // White = the open screen auto-paused the game and will resume it on close;
             // Gold = the player's own pause (Space), kept after the screen closes.
-            if (Universe.UState.Paused && !Universe.IsActive)
+            if (Universe.UState.Paused) // all configurations — the top-center gold text is retired
             {
                 Button menu = null;
                 foreach (Button b in Buttons)
