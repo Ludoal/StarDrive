@@ -103,10 +103,10 @@ namespace Ship_Game
                 batch.FillRectangle(star, Color.Gray);
 
                 // Ludoal fork: colonized systems wear a ring in their owner's color
-                // (white when contested by several empires). Fog respected.
+                // (grey when contested by several empires; white is the Ralyeh color). Fog respected.
                 if (system.OwnerList.Count > 0 && system.IsExploredBy(Player))
                 {
-                    Color ring = Color.White;
+                    Color ring = Color.Gray; // Ludoal fork: contested = grey, white belongs to the Ralyeh
                     if (system.OwnerList.Count == 1)
                     {
                         foreach (Empire owner in system.OwnerList)
