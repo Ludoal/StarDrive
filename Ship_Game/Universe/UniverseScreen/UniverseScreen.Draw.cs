@@ -336,7 +336,12 @@ namespace Ship_Game
                 Rectangle fogRect = ProjectToScreenCoords(new Vector2(-UState.Size), UState.Size*2f);
                 // Phase 3.7 step 3: fillrect alpha 170 matches pre-migration —
                 // ~33% unexplored scene visibility (1 - 170/255).
-                batch.FillRectangle(new Rectangle(0, 0, ScreenWidth, ScreenHeight), new Color(0, 0, 0, 170));
+                // Ludoal fork: that value was calibrated for a PAINTED map, where explored
+                // space got lifted to ~48% by the FogMap tint. With the dark map (memory
+                // off) everything sits under the veil and the starfield washes out — use
+                // a lighter veil there (130 = ~49% visibility), keep 170 when painting.
+                int fogAlpha = GlobalStats.FogOfWarMemory ? 170 : 130;
+                batch.FillRectangle(new Rectangle(0, 0, ScreenWidth, ScreenHeight), new Color(0, 0, 0, fogAlpha));
                 // Phase 3.7 step 3: persistent "I've been here" tint, premul-correct
                 // (rgb == alpha so FogMap composites correctly under premul AlphaBlend).
                 // Color(56,56,56,56) lifts fully-explored memory pixels to ~48%
