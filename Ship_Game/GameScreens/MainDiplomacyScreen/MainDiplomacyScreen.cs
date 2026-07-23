@@ -171,6 +171,20 @@ namespace Ship_Game
                 j++;
             }
 
+            // Contact button under the name, before INFO (player design)
+            foreach (RaceEntry re in Races)
+            {
+                Empire e = re.e;
+                if (e == Player || e.IsDefeated || !Player.IsKnown(e))
+                    continue;
+                var btn = Add(new UIButton(ButtonStyle.Medium, new Vector2(re.container.X + (re.container.Width - 132) / 2, re.container.Y + 98), Localizer.Token(GameText.Contact)));
+                btn.OnClick = b =>
+                {
+                    GameAudio.EchoAffirmative();
+                    DiplomacyScreen.Show(e, "Greeting", parent: this);
+                };
+            }
+
             GameAudio.MuteRacialMusic();
         }
 
@@ -228,7 +242,7 @@ namespace Ship_Game
             }
 
             // FIXED section offsets: the bands align across columns whatever the content
-            float infoY = col.Y + 104;
+            float infoY = col.Y + 134; // room for the Contact button under the name
             float positionY = infoY + 24 + 3 * (Font12.LineSpacing + 3) + 4;
             float intelY = positionY + 24 + 4 * (Font12.LineSpacing + 3) + 4;
 
