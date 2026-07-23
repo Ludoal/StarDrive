@@ -367,7 +367,7 @@ namespace Ship_Game
             SetSelectedPlanet(workersPanel.P);
             returnToShip = false;
             CamDestination = new Vector3d(workersPanel.P.Position.X, workersPanel.P.Position.Y,
-                                          2500); // same close-up as ship views (field report 45.40)
+                                          GetZfromScreenState(UnivScreenState.PlanetView)); // aligned with the planet-snap standard (was 2500, too strong)
             AdjustCamTimer = 1f;
             transitionElapsedTime = 0f;
             LookingAtPlanet = false;
