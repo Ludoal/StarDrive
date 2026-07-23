@@ -79,6 +79,7 @@ namespace Ship_Game
             if (input.RangeOverlay)               ToggleUIComponent("sd_ui_accept_alt3", ref ShowingRangeOverlay);
             if (input.InfluenceOverlay)           ToggleUIComponent("sd_ui_accept_alt3", ref ShowingInfluenceOverlay);
             if (input.GravityWellOverlay)         ToggleUIComponent("sd_ui_accept_alt3", ref ShowingGravityWellOverlay);
+            if (input.VisionOverlay)              ToggleUIComponent("sd_ui_accept_alt3", ref ShowingVisionOverlay);
             if (input.CodexHelp)                  HandleCodexHelp();
             if (input.BlueprintsSceen)            ScreenManager.AddScreen(new BlueprintsScreen(this, Player));
             if (input.EmpirePatrolsScreen)        ScreenManager.AddScreen(new EmpirePatrolsScreen(this, Player));

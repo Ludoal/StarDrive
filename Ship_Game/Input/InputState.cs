@@ -107,6 +107,7 @@ namespace Ship_Game
         public bool RangeOverlay         => KeyPressed(Keys.F3);
         public bool FTLOverlay           => KeyPressed(Keys.F4); // Ludoal fork: subspace projection (coverage + projectors), ex-F2
         public bool GravityWellOverlay   => KeyPressed(Keys.F5) && !IsShiftKeyDown; // Ludoal fork (Shift+F5 stays real lights)
+        public bool VisionOverlay        => KeyPressed(Keys.F7); // Ludoal fork: sensor/vision coverage, spies included
         public bool ShipListScreen       => KeyPressed(Keys.K);
         public bool TroopListScreen      => KeyPressed(Keys.C); // Ludoal fork: Troops Array (C was debug-spawn only)
         public bool FleetDesignScreen    => KeyPressed(Keys.J);

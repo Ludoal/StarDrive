@@ -59,6 +59,18 @@ namespace Ship_Game
             {
                 ref Empire.InfluenceNode node = ref sensorNodes[i];
 
+                // Ludoal fork: fog highlights are curated. Projector halos are retired
+                // from the default view (they smeared the whole map and duplicate the F4
+                // overlay); spy/mole coverage (Source == null) shows only on the F7
+                // Vision overlay, which lights every sensor source.
+                if (!ShowingVisionOverlay)
+                {
+                    if (node.Source is Ships.Ship sensorShip && sensorShip.IsSubspaceProjector)
+                        continue;
+                    if (node.Source == null) // mole/spy vision
+                        continue;
+                }
+
                 ProjectToScreenCoords(node.Position, node.Radius * 2f, out Vector2d nodePos, out double nodeRadius);
                 RectF worldRect = RectF.FromPointRadius(nodePos, nodeRadius);
                 batch.Draw(uiNode, worldRect, sensorTint, 0f, Vector2.Zero, SpriteEffects.None, 1f);
