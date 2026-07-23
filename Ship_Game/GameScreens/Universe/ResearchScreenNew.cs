@@ -434,10 +434,14 @@ namespace Ship_Game
             // Ludoal fork: the row ESTIMATE overcounts branches that merge back into the
             // main line, so some tabs squeezed toward the top with dead space below.
             // Measure the rows actually laid out and rebuild once at the exact height.
+            // +1: the deepest node needs its own height below its anchor — the old
+            // estimator's overcount used to absorb that by accident, an exact division
+            // pushed the last row past the frame (bench, 45.70).
             int actualRows = Math.Max(1, FindDeepestYSubNodes());
-            if (actualRows != rows)
+            int wantRows = Math.Min(actualRows + 1, 9);
+            if (wantRows != Math.Min(rows, 9))
             {
-                GridHeight = (MainMenu.Menu.Height - 40) / Math.Min(actualRows, 9);
+                GridHeight = (MainMenu.Menu.Height - 40) / wantRows;
                 BuildSubNodes(root);
             }
         }
