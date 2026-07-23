@@ -90,7 +90,7 @@ namespace Ship_Game
         public bool PauseGame            => KeyPressed(Keys.Space) && !IsShiftKeyDown;
         public bool QuickSave            => KeyPressed(Keys.F9) && !IsShiftKeyDown; // Ludoal fork: moved from F5, gravity wells overlay took it
         public bool UseRealLights        => IsShiftKeyDown && KeyPressed(Keys.F5);
-        public bool ShowExceptionTracker => KeyPressed(Keys.F6);
+        public bool ShowExceptionTracker => KeyPressed(Keys.F12); // Ludoal fork: F6 went to Weapons Range; debug lives at the far end
         public bool SpeedReset           => KeyPressed(Keys.Space) && IsShiftKeyDown;
         public bool SpeedUp              => KeyPressed(Keys.OemPlus) || KeyPressed(Keys.Add);
         public bool SpeedDown            => KeyPressed(Keys.OemMinus) || KeyPressed(Keys.Subtract);
@@ -104,10 +104,10 @@ namespace Ship_Game
         public bool FreighterUtilWindow  => KeyPressed(Keys.N);
         public bool EmpirePatrolsScreen  => KeyPressed(Keys.P);
         public bool InfluenceOverlay     => KeyPressed(Keys.F2); // Ludoal fork: colored influence zones
-        public bool RangeOverlay         => KeyPressed(Keys.F3);
+        public bool RangeOverlay         => KeyPressed(Keys.F6); // Ludoal fork: F3 went to the Vision overlay
         public bool FTLOverlay           => KeyPressed(Keys.F4); // Ludoal fork: subspace projection (coverage + projectors), ex-F2
         public bool GravityWellOverlay   => KeyPressed(Keys.F5) && !IsShiftKeyDown; // Ludoal fork (Shift+F5 stays real lights)
-        public bool VisionOverlay        => KeyPressed(Keys.F7); // Ludoal fork: sensor/vision coverage, spies included
+        public bool VisionOverlay        => KeyPressed(Keys.F3); // Ludoal fork: sensor/vision coverage, spies included
         public bool ShipListScreen       => KeyPressed(Keys.K);
         public bool TroopListScreen      => KeyPressed(Keys.C); // Ludoal fork: Troops Array (C was debug-spawn only)
         public bool FleetDesignScreen    => KeyPressed(Keys.J);

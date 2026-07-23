@@ -34,6 +34,7 @@ namespace Ship_Game
         readonly ToggleButton AIScreen;
         readonly ToggleButton DeepSpaceBuild;
         readonly ToggleButton RangeOverley;
+        readonly ToggleButton VisionOverlayBtn; // Ludoal fork: F3 vision overlay
 
         readonly SubTexture MiniMapHousing;
         readonly SubTexture Node;
@@ -61,14 +62,16 @@ namespace Ship_Game
             ZoomToShip     = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonC, "Minimap/icons_zoomctrl", ZoomToShip_OnClick));
             InfluenceZones = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/flagicon", InfluenceZones_OnClick)); // Ludoal fork (F2)
             GravityWells   = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_ftloverlay", GravityWells_OnClick)); // subspace projection (F4)
+            RangeOverley   = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_rangeoverlay", RangeOverly_OnClick)); // Ludoal fork: weapons range (F6), alone on row 4
             DeepSpaceBuild = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_dsbw", DeepSpaceBuild_OnClick));
             FreighterUtil  = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "NewUI/icon_freighter_util", FreighterUtilizationScreen_OnClick));
 
             UIList listR = AddList(new Vector2(Housing.X + 38, Housing.Y + 70));
             listR.Name = "MiniMapButtonsRight";
             ZoomOut            = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonC, "Minimap/icons_zoomout", ZoomOut_OnClick));
-            RangeOverley       = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_rangeoverlay", RangeOverly_OnClick));
+            VisionOverlayBtn   = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_spy_small", VisionOverlay_OnClick)); // Ludoal fork: Vision (F3), beside Influence
             GravityWellsOnly   = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/node_inhibit", GravityWellsOnly_OnClick)); // Ludoal fork (F5)
+            listR.Add(new UISpacer(new Vector2(22, 22))); // row 4 right: empty, weapons range sits alone
             AIScreen           = listR.Add(new ToggleButton(ToggleButtonStyle.Button, "AI", AIScreen_OnClick)); // Ludoal fork: ButtonDown was 26px vs 22 — the row misaligned
             ExoticBonuses      = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "NewUI/icon_exotic_Bonuses_big", ExoticBonusScreen_OnClick));
             Scale = ActualMap.Width / (Universe.UState.Size * 2.1f); // Updated to play nice with the new negative map values
@@ -386,6 +389,12 @@ namespace Ship_Game
         {
             GameAudio.AcceptClick();
             Universe.ShowingFTLOverlay = !Universe.ShowingFTLOverlay;
+        }
+
+        public void VisionOverlay_OnClick(ToggleButton toggleButton) // Ludoal fork (F3)
+        {
+            GameAudio.AcceptClick();
+            Universe.ShowingVisionOverlay = !Universe.ShowingVisionOverlay;
         }
 
         public void RangeOverly_OnClick(ToggleButton toggleButton)
