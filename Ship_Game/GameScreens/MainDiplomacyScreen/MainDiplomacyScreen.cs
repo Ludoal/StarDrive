@@ -244,9 +244,19 @@ namespace Ship_Game
             y = intelY;
             SectionBand(batch, col, ref y, ShowBonuses ? "BONUSES" : "INTELLIGENCE");
             if (ShowBonuses)
+            {
+                // BONUSES replaces both INTELLIGENCE and ARTIFACTS (player design)
                 DrawBonusRows(batch, e, col, ref y, maxY);
+            }
             else
-                DrawIntelRows(batch, e, col, ref y, maxY);
+            {
+                // ARTIFACTS rides under INTELLIGENCE at a fixed, aligned offset
+                float artifactsY = intelY + 24 + 12 * (Font12.LineSpacing + 3) + 4;
+                DrawIntelRows(batch, e, col, ref y, artifactsY - 6);
+                y = artifactsY;
+                SectionBand(batch, col, ref y, "ARTIFACTS");
+                DrawArtifactRows(batch, e, col, ref y, maxY);
+            }
 
             float ty = col.Bottom - TreatyBlockH;
             SectionBand(batch, col, ref ty, "TREATIES");
@@ -397,8 +407,32 @@ namespace Ship_Game
             if (e != Player && (UsingNewEspioange && espionage?.CanViewTheirMoles == true || IntelligenceLevel(e) > 1))
                 TableRow(batch, col, ref y, maxY, "Their moles", Player.GetNumOfTheirMoles(e).ToString(), Color.Wheat);
 
-            if (!UsingNewEspioange || e.isPlayer || espionage.CanViewArtifacts)
-                TableRow(batch, col, ref y, maxY, "Artifacts", e.data.OwnedArtifacts.Count.ToString(), Color.White);
+        }
+
+        // nominative artifact list (player design) — same visibility as the legacy list
+        void DrawArtifactRows(SpriteBatch batch, Empire e, Rectangle col, ref float y, float maxY)
+        {
+            Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
+            if (!(!UsingNewEspioange || e.isPlayer || espionage.CanViewArtifacts))
+            {
+                batch.DrawString(Font12, "No intelligence", new Vector2(col.X + 8, y), Color.Gray);
+                return;
+            }
+            if (e.data.OwnedArtifacts.Count == 0)
+            {
+                batch.DrawString(Font12, "None", new Vector2(col.X + 8, y), Color.Gray);
+                return;
+            }
+            foreach (Artifact art in e.data.OwnedArtifacts)
+            {
+                if (y > maxY - Font12.LineSpacing)
+                {
+                    batch.DrawString(Font12, "...", new Vector2(col.X + 8, y), Color.Wheat);
+                    break;
+                }
+                batch.DrawString(Font12, Truncate(art.NameText.Text, col.Width - 20), new Vector2(col.X + 8, y), Color.Wheat);
+                y += Font12.LineSpacing + 3;
+            }
         }
 
         void DrawBonusRows(SpriteBatch batch, Empire e, Rectangle col, ref float y, float maxY)
