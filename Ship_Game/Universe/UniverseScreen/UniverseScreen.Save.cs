@@ -69,8 +69,9 @@ public partial class UniverseScreen
             SaveAsync(PendingSaveName);
             PendingSaveName = null;
 
-            // reset auto-save timer since we just saved the game
+            // reset auto-save timers since we just saved the game
             LastAutosaveTime = game.TotalElapsed;
+            LastAutosaveStarDate = UState.StarDate;
         }
         else
         {
@@ -80,10 +81,26 @@ public partial class UniverseScreen
             // Ludoal fork: no autosave while paused — the game state does not advance,
             // saving the same turn repeatedly just rotates the autosave slots away.
             // The timer keeps running; the save fires at the first unpaused check.
-            float timeSinceLastAutoSave = (game.TotalElapsed - LastAutosaveTime);
-            if (timeSinceLastAutoSave >= GlobalStats.AutoSaveFreq && !UState.Paused)
+            // Turn-based autosave (AutoSaveTurns > 0, 10 turns = one star-year): follows
+            // the pace of the GAME, not the wall clock, and a pause freezes it for free
+            // (the StarDate does not move). AutoSaveTurns = 0 falls back to time-based.
+            bool due;
+            if (GlobalStats.AutoSaveTurns > 0)
+            {
+                if (LastAutosaveStarDate == 0f)
+                    LastAutosaveStarDate = UState.StarDate;
+                due = UState.StarDate - LastAutosaveStarDate >= GlobalStats.AutoSaveTurns * 0.1f - 0.001f;
+            }
+            else
+            {
+                float timeSinceLastAutoSave = (game.TotalElapsed - LastAutosaveTime);
+                due = timeSinceLastAutoSave >= GlobalStats.AutoSaveFreq && !UState.Paused;
+            }
+
+            if (due)
             {
                 LastAutosaveTime = game.TotalElapsed;
+                LastAutosaveStarDate = UState.StarDate;
                 string saveName = "Autosave" + Auto;
                 if (++Auto > 3) Auto = 1;
                 SaveAsync(saveName, resetLogOnComplete: true);

@@ -34,6 +34,7 @@ namespace Ship_Game
 
         public string StarDateString => UState.StarDate.StarDateString();
         public float LastAutosaveTime = 0;
+        public float LastAutosaveStarDate = 0; // Ludoal fork: turn-based autosave anchor
 
         public Background bg;
 
