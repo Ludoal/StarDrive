@@ -1531,12 +1531,12 @@ WhenActiveAllAvailableFighters:
  PTB: "Quando ativo, todos os caças disponíveis serão lançados e escoltarão o porta-aeronaves. Se não estiver ativo, os caças serão lançados apenas em combate e retornarão aos hangares para reabastecimento quando o combate terminar."
 IndicatesHowMuchFoodThis:
  Id: 219
- ENG: "Indicates how much food this planet will produce per assigned colonist per turn (a turn is 0.1 StarDate). Some buildings or environmental effects might increase or decrease the maximum value, in which case the current value will gradually match the max value over time. The number in parentheses indicates the fertility modifier of this colony, based on your empire's suitable environments. Buildings which grant food per assigned colonist are greatly affected by Fertility, as Fertiliy is a multiplier. Non Cybernetic Races consume food."
+ ENG: "Indicates how much food this planet will produce per billion assigned Colonists per turn (a turn is 0.1 StarDate). Some buildings or environmental effects might increase or decrease the maximum value, in which case the current value will gradually match the max value over time. The number in parentheses indicates the fertility modifier of this colony, based on your empire's suitable environments. Buildings which grant food per billion assigned Colonists are greatly affected by Fertility, as Fertiliy is a multiplier. Non Cybernetic Races consume food."
  UKR: "Вказує, скільки їжі ця планета вироблятиме на одного призначеного колоніста за хід (хід становить 0,1 StarDate). Деякі будівлі або вплив навколишнього середовища можуть збільшити або зменшити максимальне значення, і в цьому випадку поточне значення поступово збігатиметься з максимальним значенням з часом. Число в дужках вказує на модифікатор родючості цієї колонії на основі відповідного середовища вашої імперії. На будівлі, які дають їжу кожному призначеному колоністу, сильно впливає родючість, оскільки родючість є множником. Некібернетичні раси споживають їжу."
  PTB: "Indica quanta comida este planeta produzirá por colono designado por turno (um turno equivale a 0,1 Data Estelar). Alguns edifícios ou efeitos ambientais podem aumentar ou diminuir o valor máximo; nesse caso, o valor atual se ajustará gradualmente ao valor máximo ao longo do tempo. O número entre parênteses indica o modificador de fertilidade desta colônia, com base nos ambientes adequados do seu império. Edifícios que concedem comida por colono designado são muito afetados pela Fertilidade, pois Fertilidade é um multiplicador. Raças não cibernéticas consomem comida."
 IndicatesHowMuchResearchThis:
  Id: 221
- ENG: "Indicates how much research this planet will produce per assigned colonist per turn (a turn is .1 StarDate)"
+ ENG: "Indicates how much research this planet will produce per billion assigned Colonists per turn (a turn is .1 StarDate)"
  RUS: "Указывает, сколько исследований на выделенного колониста колония произведет за ход (ход - 0,1 ЗД)"
  SPA: "Indica cuánta investigación producirá este planeta por colono asignado y por turno (un turno es 0,1 en la fecha estelar)"
  UKR: "Вказує, скільки досліджень ця планета вироблятиме на одного призначеного колоніста за хід (хід становить .1 StarDate)"
@@ -2261,7 +2261,7 @@ PlanetaryShieldStrengthAdded:
  PTB: "Força de Escudo Planetário Adicionada"
 CreditsAddedPerColonist:
  Id: 362
- ENG: "BC added per Colonist"
+ ENG: "BC added per billion Colonists"
  RUS: "кредитов за колониста"
  SPA: "Créditos añadidos por colono"
  UKR: "Кредитів за колоніста"
@@ -8253,7 +8253,7 @@ ColonistsPerBiosphereBillions:
  PTB: "Colonos por Biosfera (Bilhões)"
 NetFoodPerColonistAllocated:
  Id: 1876
- ENG: "Net food per colonist allocated to Food Production"
+ ENG: "Net food per billion Colonists allocated to Food Production"
  RUS: "Чистая еда на каждого колониста, выделенного на производство еды"
  UKR: "Чиста їжа на одного колоніста, виділена на виробництво продуктів харчування"
  PTB: "Comida líquida por colono alocado à Produção de Alimentos"
@@ -8265,7 +8265,7 @@ NetFlatFoodGeneratedPer:
  PTB: "Comida líquida fixa gerada por turno"
 NetProductionPerColonistAllocated:
  Id: 1878
- ENG: "Net production per colonist allocated to Industry"
+ ENG: "Net production per billion Colonists allocated to Industry"
  RUS: "Чистая продукция на одного колониста, выделенного на промышленность"
  UKR: "Чисте виробництво на одного колоніста, розподіленого на промисловість"
  PTB: "Produção líquida por colono alocado à Indústria"
@@ -8277,7 +8277,7 @@ NetFlatProductionGeneratedPer:
  PTB: "Produção líquida fixa gerada por turno"
 NetResearchPerColonistAllocated:
  Id: 1880
- ENG: "Net research per colonist allocated to Science"
+ ENG: "Net research per billion Colonists allocated to Science"
  RUS: "Чистые исследования,генерируемые колонистом выделеного на науку"
  UKR: "Чисті дослідження на одного колоніста, виділеного на науку"
  PTB: "Pesquisa líquida por colono alocado à Ciência"
@@ -9218,7 +9218,7 @@ OrbitsPlanet:
  PTB: "(Orbita o Planeta)"
 FoodPerTurnPerAssigned:
  Id: 2042
- ENG: "food per turn per assigned colonist"
+ ENG: "food per turn per billion assigned Colonists"
  RUS: "еды в ход на занятого колониста"
  SPA: "comida por turno y por colono asignado"
  UKR: "їжа за хід на призначеного колоніста"
@@ -11912,14 +11912,14 @@ ManualTradeOrdersThisFreighter3:
  PTB: "Comércio Manual: ordena que este cargueiro transporte produção. Esta nave transportará produção de planetas exportadores para planetas importadores. Se for um grupo de cargueiros, clique com o botão direito para desativar."
 ProductionPerTurnPerAssigned:
  Id: 356
- ENG: "production per turn per assigned colonist"
+ ENG: "production per turn per billion assigned Colonists"
  RUS: "производства в ход на занятого колониста"
  SPA: "de producción por turno y por colono asignado"
  UKR: "виробництво за хід на призначеного колоніста"
  PTB: "produção por turno por colono designado"
 ResearchPerTurnPerAssigned:
  Id: 358
- ENG: "Research per assigned Colonist"
+ ENG: "Research per billion assigned Colonists"
  RUS: "исследования в ход на занятого колониста"
  SPA: "de investigación por turno y por colono asignado"
  UKR: "Дослідження на призначеного колоніста"
@@ -11954,7 +11954,7 @@ ASpacePortConnectsTo:
  PTB: "Um porto espacial se conecta à base estelar orbital acima e permite a construção de naves aqui usando materiais produzidos no planeta. Fornece um bônus de 20% a todas as rendas monetárias obtidas neste planeta."
 ImperialOfficesAllowForThe:
  Id: 431
- ENG: "Imperial Offices allow for the direct taxation of the citizenry, granting incomes at a rate of .25 BC per colonist per turn. This base income is not modified by tax rates or buildings that modify tax incomes. "
+ ENG: "Imperial Offices allow for the direct taxation of the citizenry, granting incomes at a rate of .25 BC per billion Colonists per turn. This base income is not modified by tax rates or buildings that modify tax incomes. "
  RUS: "Имперские офицеры позволяют осуществлять прямое налогообложение населения, дополнительно давая 0,25 кредита с колониста каждый ход. Этот базовый доход не модифицируется налоговыми ставками и зданиями, влияющими ан налоговые сборы. "
  SPA: "Las oficinas imperiales permiten recaudar impuestos directamente de los ciudadanos, obteniendo ingresos a una tasa de 0,25 créditos por colono y por turno. Estos ingresos básicos no se ven modificados por tasas impositivas ni edificios que afecten a los ingresos fiscales. "
  UKR: "Імперські офіси дозволяють пряме оподаткування громадян, надаючи дохід у розмірі 0.25 кредиту на колоніста за хід. Цей базовий дохід не змінюється податковими ставками або будівлями, які змінюють податкові доходи."
@@ -11994,7 +11994,7 @@ CloningCentersIncreaseThePopulation:
  PTB: "Centros de Clonagem aumentam o crescimento populacional de um planeta."
 XenoFarmsAreLargeComplexes:
  Id: 471
- ENG: "Xeno Farms are large complexes dedicated to the successful integration of our farming and husbandry techniques with alien soils and nutrients.  The production of this building scales with the number of farmers assigned on this planet. Provides +1 food per turn per assigned colonist. "
+ ENG: "Xeno Farms are large complexes dedicated to the successful integration of our farming and husbandry techniques with alien soils and nutrients.  The production of this building scales with the number of farmers assigned on this planet. Provides +1 food per turn per billion assigned Colonists. "
  RUS: "Ксенофермы - это крупные комплексы, направленные на адаптацию наших сельскохозяйственных и животноводческих технологий под инопланетные почвы и питательные вещества. Производительность этого строения зависит от количества фермеров на планете. Дает +1 еды в ход за каждого занятого колониста. "
  SPA: "Las xenogranjas son grandes complejos dedicados a la integración de nuestras técnicas agrícolas y ganaderas con suelos y nutrientes alienígenas.  La producción de este edificio se corresponde al número de granjeros asignados en este planeta. Proporciona +0,5 de alimentos por turno y por colono asignado. "
  UKR: "Ксеноферми - це великі комплекси, призначені для успішної інтеграції наших технологій землеробства та тваринництва з чужими ґрунтами та поживними речовинами.  Продуктивність цієї будівлі залежить від кількості фермерів на планеті. Дає +1 їжу за хід за кожного призначеного колоніста."
@@ -12292,7 +12292,7 @@ ThisIsAPointDefense:
  PTB: "Este é um canhão laser de defesa de ponto com montagem giratória, tornando-o ideal para embarcações da classe caça ou para defesa de naves capitais. Armas de Defesa de Ponto engajam automaticamente mísseis recebidos e possuem dano bônus contra armas de míssil."
 APlanetsMineralRichnessDirectly:
  Id: 220
- ENG: "A planet's Mineral Richness directly affects the speed at which a colony creates Production. Mineral Richness slowly decays. The decay rate is affected by production rate and planet's size (larger planets will decay slower than smaller ones. A planet cannot decay below 0.1 Richness. Buildings which provide Production per assigned colonist are greatly affected by Richness, as the Richnes is a multipler for the output."
+ ENG: "A planet's Mineral Richness directly affects the speed at which a colony creates Production. Mineral Richness slowly decays. The decay rate is affected by production rate and planet's size (larger planets will decay slower than smaller ones. A planet cannot decay below 0.1 Richness. Buildings which provide Production per billion assigned Colonists are greatly affected by Richness, as the Richnes is a multipler for the output."
  UKR: "Багатство мінералів планети безпосередньо впливає на швидкість, з якою колонія створює виробництво. Багатство мінералів повільно зменшується. На швидкість спаду впливає швидкість виробництва і розмір планети (більші планети спадатимуть повільніше, ніж менші). Планета не може занепасти нижче 0.1 багатства. Будівлі, які забезпечують виробництво на одного колоніста, сильно залежать від багатства, оскільки багатство є множником для виробництва."
  PTB: "A Riqueza Mineral de um planeta afeta diretamente a velocidade com que uma colônia cria Produção. A Riqueza Mineral decai lentamente. A taxa de decaimento é afetada pela taxa de produção e pelo tamanho do planeta (planetas maiores decaem mais devagar que planetas menores). Um planeta não pode decair abaixo de 0,1 de Riqueza. Edifícios que fornecem Produção por colono designado são muito afetados pela Riqueza, pois Riqueza é um multiplicador da produção."
 RaiderBay:
@@ -14154,7 +14154,7 @@ ThisMeteorCraterContainsPrecious:
  PTB: "Esta Cratera de Meteoro contém metais preciosos que podem ser trocados por créditos. Infelizmente, esse efeito é temporário."
 CreditsPerColonist2:
  Id: 4293
- ENG: "+1 BC per Colonist"
+ ENG: "+1 BC per billion Colonists"
  RUS: "+1 к кредитам за колониста"
  UKR: "+1 кредит за кожного колоніста"
  PTB: "+1 Crédito por Colonista"
@@ -14569,12 +14569,12 @@ MaxFerfilityOnBuild:
  PTB: "Fertilidade Máxima"
 FoodPerColonist:
  Id: 4374
- ENG: "Food per assigned Colonist"  
+ ENG: "Food per billion assigned Colonists"  
  UKR: "Їжа на одного колоніста"
  PTB: "Comida Por Colonista Atribuído"
 ProdPerColonist:
  Id: 4375
- ENG: "Production per assigned Colonist"  
+ ENG: "Production per billion assigned Colonists"  
  UKR: "Виробництво на призначеного колоніста"
  PTB: "Produção Por Colonista Atribuído"
 ProdPerTurn:
@@ -14690,7 +14690,7 @@ BB_GolddepositDesc:
  PTB: "Depósito de ouro facilmente extraível formado quando o planeta tinha muitos vulcões ativos"
 BB_GolddepositDescShort:
  Id: 4389
- ENG: "Provides 2 production per colonist, +3 BC, total worth of 350 production"
+ ENG: "Provides 2 production per billion Colonists, +3 BC, total worth of 350 production"
  UKR: "Надає 2 виробництва на колоніста, +3 кредити, загальною вартістю 350 виробництв"
  PTB: "Fornece 2 de produção por colonista, +3 créditos, valor total de 350 de produção"
 BB_GoldMoutain:
@@ -14705,7 +14705,7 @@ BB_GoldMountainDesc:
  PTB: "Enorme montanha cheia de depósitos de ouro."
 BB_GoldMountainDescShort:
  Id: 4392
- ENG: "Provides 1.5 production per colonist, increases planet richness by 2, total worth of 3000 production"
+ ENG: "Provides 1.5 production per billion Colonists, increases planet richness by 2, total worth of 3000 production"
  UKR: "Забезпечує 1,5 виробництва на колоніста, збільшує багатство планети на 2, загальною вартістю 3000 виробництва"
  PTB: "Fornece 1,5 de produção por colonista, aumenta a riqueza do planeta em 2, valor total de 3000 de produção"
 BB_MoltenGold:
@@ -14720,7 +14720,7 @@ BB_MoltenGoldDesc:
  PTB: "Um poço cheio de ouro fundido criado por intensa atividade vulcânica, que aquece e empurra grandes quantidades de ouro para a superfície. Ele só pode ser encontrado nesse estado em planetas vulcânicos muito quentes."
 BB_MoltenGoldDescShort:
  Id: 4395
- ENG: "Provides 0.5 production per colonist, increases planet richness by 0.35" 
+ ENG: "Provides 0.5 production per billion Colonists, increases planet richness by 0.35" 
  UKR: "Забезпечує 0,5 виробництва на колоніста, збільшує багатство планети на 0,35"
  PTB: "Fornece 0,5 de produção por colonista, aumenta a riqueza do planeta em 0,35"
 BB_RushRefit:
@@ -19380,7 +19380,7 @@ HighlyExoticMineralVeinsRarely:
  PTB: "Veios minerais altamente exóticos, raramente encontrados em mundos terrestres. Fáceis de minerar, mas em quantidade muito limitada. O minério extraído é um excelente condutor, ajudando nas transferências de dados."
 ProdPerAssignedColonistTotal:
  Id: 18108
- ENG: "+5 production per assigned colonist, total worth of 500 production,"
+ ENG: "+5 production per billion assigned Colonists, total worth of 500 production,"
  RUS: "Планеты с этими минералами более богаты. (+5 к продукции)"
  UKR: "+5 виробництва за кожного призначеного колоніста, загальною вартістю 500 виробництва,"
  PTB: "+5 de produção por colono designado, valor total de 500 de produção,"
@@ -19494,7 +19494,7 @@ ThisMysteriousObeliskEmitsAn:
  PTB: "Este misterioso obelisco emite um campo de energia que estimula as vias neurais em organismos sencientes."
 ResearchPerColonist:
  Id: 18190
- ENG: "0.2 research per colonist"
+ ENG: "0.2 research per billion Colonists"
  RUS: "+0.2 к науке за колониста."
  UKR: "0,2 дослідження на колоніста"
  PTB: "0,2 de pesquisa por colono."
@@ -19614,7 +19614,7 @@ LargePatchesOfTerrainHeavily:
  PTB: "Grandes áreas de terreno fortemente cobertas por rochas enormes. Podem ser mineradas para obter alguns materiais."
 ProvidesProductionPerColonistTotal6:
  Id: 18151
- ENG: "Provides 0.4 production per colonist, total worth of 250 production, -1 infrastructure."
+ ENG: "Provides 0.4 production per billion Colonists, total worth of 250 production, -1 infrastructure."
  RUS: "Дает 0,4 продукции за каждого колониста, всего 250 продукции , -1 к инфраструктуре."
  UKR: "Забезпечує 0.4 виробництва на колоніста, загальною вартістю 250 виробництв, -1 інфраструктура."
  PTB: "Fornece 0,4 de produção por colono, valor total de 250 de produção, -1 de infraestrutura."
@@ -19638,7 +19638,7 @@ MassiveMountains:
  PTB: "Montanhas massivas"
 ProdPerAssignedColonistTotal3:
  Id: 18155
- ENG: "+0.2 prod per assigned colonist, total worth of 6000 production, -1 infrastructure, -1.1 billion population"
+ ENG: "+0.2 prod per billion assigned Colonists, total worth of 6000 production, -1 infrastructure, -1.1 billion population"
  RUS: "+0.2 продукции за задаействованного колониста, всего 6000 продукции, -1 к инфраструктуре, -1.1 миллиардов населения."
  UKR: "+0.2 виробництва за кожного колоніста, загальна вартість виробництва 6000, -1 інфраструктура, -1.1 мільярд населення"
  PTB: "+0,2 de produção por colono designado, valor total de 6000 de produção, -1 de infraestrutura, -1,1 bilhão de população."
@@ -19656,7 +19656,7 @@ AnEnormousChainOfMountains:
  PTB: "Uma enorme cadeia de montanhas que torna o transporte de produção por ela incrivelmente difícil. Oferece uma oportunidade para mineração."
 ProdPerAssignedColonistTotal2:
  Id: 18125
- ENG: "+0.2 prod per assigned colonist, total worth of 20000 production, -1 infrastructure, -0.7 billion population"
+ ENG: "+0.2 prod per billion assigned Colonists, total worth of 20000 production, -1 infrastructure, -0.7 billion population"
  RUS: "+0,2 к продукции за задействованного колониста, всего 20000 производства , -1 к инфраструктуре, -0,7 миллиарда населения."
  UKR: "+0.2 виробництва за кожного колоніста, загальна вартість виробництва 20000, -1 інфраструктура, -0.7 мільярда населення"
  PTB: "+0,2 de produção por colono designado, valor total de 20000 de produção, -1 de infraestrutura, -0,7 bilhão de população."
@@ -19728,7 +19728,7 @@ TheRemainsOfAHuge:
  PTB: "Os restos de uma enorme estrutura que foi demolida, fornecendo grandes quantidades de materiais para reutilização."
 ProvidesProductionPerColonistTotal7:
  Id: 18239
- ENG: "Provides 0.8 production per colonist, total worth of 1500 production."
+ ENG: "Provides 0.8 production per billion Colonists, total worth of 1500 production."
  RUS: "Дает +0.8 продукции за колониста, всего 1500 продукции."
  UKR: "Забезпечує 0,8 виробництва на колоніста, загальною вартістю 1500 виробництва."
  PTB: "Fornece 0,8 de produção por colono, valor total de 1500 de produção."
@@ -22090,7 +22090,7 @@ CodexEconomyPlanetaryQualitiesShort:
  PTB: "O que procurar em um planeta"
 CodexEconomyPlanetaryQualitiesText:
  Id: 100064
- ENG: "The StarDrive universe is randomized at the beginning of the game. Some planets, like Gas Giants and highly active Volcanic worlds, are not habitable by terran species. However, a wide range of planets including barren, ice, desert, steppe, tundra, terran, swamp, and ocean planet types exist. \n \n Each habitable planet has a Fertility rating and a Richness rating. Fertility represents how much food a single colonist can produce per turn, before modifications applied by racial bonuses and buildings. So on a planet with a Fertility score of 1.0 and a population of 2.5, the maximum food that could be produced on that planet, before modifiers, is 2.5 food. But of course, this would only be the case if every single colonist on the planet were dedicated to farming instead of production or research. \n \n Mineral Richness likewise indicates the amount of production that can be created at a planet per turn per colonist. This value is also modifiable by racial bonuses and buildings. However, a planet's Mineral Richness score will gradually deplete over time as resources are extracted from the planet. For every 500 production created at a planet, the planet's mineral richness will deplete by .1 to a minimum of .1. \n \n Finally, each habitable planet has a maximum population rating that determines how many colonists can live there."
+ ENG: "The StarDrive universe is randomized at the beginning of the game. Some planets, like Gas Giants and highly active Volcanic worlds, are not habitable by terran species. However, a wide range of planets including barren, ice, desert, steppe, tundra, terran, swamp, and ocean planet types exist. \n \n Each habitable planet has a Fertility rating and a Richness rating. Fertility represents how much food a single colonist can produce per turn, before modifications applied by racial bonuses and buildings. So on a planet with a Fertility score of 1.0 and a population of 2.5, the maximum food that could be produced on that planet, before modifiers, is 2.5 food. But of course, this would only be the case if every single colonist on the planet were dedicated to farming instead of production or research. \n \n Mineral Richness likewise indicates the amount of production that can be created at a planet per turn per billion Colonists. This value is also modifiable by racial bonuses and buildings. However, a planet's Mineral Richness score will gradually deplete over time as resources are extracted from the planet. For every 500 production created at a planet, the planet's mineral richness will deplete by .1 to a minimum of .1. \n \n Finally, each habitable planet has a maximum population rating that determines how many colonists can live there."
  RUS: "В StarDrive галактика генерируется случайным образом каждый раз при создании новой игры. Некоторые планеты, такие как газовые гиганты или миры с высокой вулканической активностью, непригодны для обитания, но существует множество других типов планет, такие как бесплодные, степь, пустыня, тундра, болота, океан, планеты земного типа. \n \n Каждая планета, пригодная для жизни, имеет показатель плодородия и богатства минералами. Показатель плодородия планеты определяет, сколько еды на этой планете сможет за один ход произвести один колонист до применения модификаторов различных строений и расовых бонусов. Так, на планете с показателем плодородия 1,0 и населением 2,5 максимальное кол-во еды, которое может быть произведено на этой планете (до применения модификаторов) составит 2,5 ед. еды (разумеется, при условии, что все колонисты на этой планете заняты в сельском хозяйстве, а не в промышленности или в науке). \n \n Аналогично, богатство минералами определяет количество производства, которое за один ход генерируется на этой планете одним колонистом. Это значение также может быть модифицировано расовыми бонусами и строениями. Однако богатство минералами на планете постоянно уменьшается со временем, потому что ее ресурсы расходуются и не восполняются. За каждые 500 ед. производства, сгенерированного на планете, ее индекс богатства минералами будет уменьшаться на 0,1 вплоть до минимума 0,1. \n \n И, наконец, у каждой обитаемой планеты есть свой показатель максимального населения, указывающий, какое максимально возможное количество населения эта планета способна вместить."
  PTB: "O universo de StarDrive é gerado aleatoriamente no início da partida. Alguns planetas, como Gigantes Gasosos e mundos Vulcânicos altamente ativos, não são habitáveis por espécies terrestres. Porém, uma ampla variedade de planetas, incluindo mundos áridos, gelados, desérticos, de estepe, oceânicos e terranos, pode ser colonizada. \n \n Ao avaliar um planeta, observe seu tamanho, fertilidade, riqueza mineral e tipo ambiental. Planetas grandes podem sustentar populações maiores. Alta fertilidade melhora a produção de comida. Riqueza mineral elevada melhora a produção industrial. O tipo ambiental determina se o planeta é adequado para sua raça e afeta o crescimento e a produtividade. "
 CodexEconomyTheColonyScreen:
