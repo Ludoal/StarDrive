@@ -654,7 +654,10 @@ namespace Ship_Game
             device.SetRenderTarget(null);
             FogMap = FogMapTargetA;
 
-            if (UState.FogMapBytes != null)
+            // Ludoal fork: the fog map is fully derivable now (explored systems restamp
+            // every frame), so saved bytes are not loaded — this also purges the ship
+            // wakes baked into older saves. Saves still write the bytes (revert-safe).
+            if (false && UState.FogMapBytes != null)
             {
                 // Load saved alpha mask into the front RT so the next UpdateFogMap
                 // call samples it. FromAlphaOnly returns a stand-alone Texture2D

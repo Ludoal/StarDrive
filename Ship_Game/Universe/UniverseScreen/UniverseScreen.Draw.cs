@@ -293,19 +293,22 @@ namespace Ship_Game
             double worldSizeToMaskSize = (512.0 / universeWidth);
 
             var uiNode = ResourceManager.Texture("UI/node");
-            var ships = Player.OwnedShips;
-            // White stamp keeps rgb tracking alpha so the FogMap stays premul-
-            // correct for the AlphaBlend composite in UpdateFogOfWarInfluences.
-            var shipSensorMask = new Color(255, 255, 255, 255);
-            foreach (Ship ship in ships)
+            // Ludoal fork: ships no longer paint the fog map. There is nothing in deep
+            // space to remember, so their permanent wakes were pure noise — every
+            // freighter route scratched a bright line into the map. Explored SYSTEMS
+            // stamp their disc instead: the map remembers known space, not travel
+            // history. (White stamp keeps rgb tracking alpha so the FogMap stays
+            // premul-correct for the AlphaBlend composite in UpdateFogOfWarInfluences.)
+            var sensorMask = new Color(255, 255, 255, 255);
+            foreach (SolarSystem sys in UState.Systems)
             {
-                if (ship != null && ship.InFrustum)
+                if (sys.IsExploredBy(Player))
                 {
-                    double posX = ship.Position.X * worldSizeToMaskSize + 256;
-                    double posY = ship.Position.Y * worldSizeToMaskSize + 256;
-                    double size = (ship.SensorRange * 2.0) * worldSizeToMaskSize;
+                    double posX = sys.Position.X * worldSizeToMaskSize + 256;
+                    double posY = sys.Position.Y * worldSizeToMaskSize + 256;
+                    double size = (sys.Radius * 2.5) * worldSizeToMaskSize;
                     var rect = new RectF(posX, posY, size, size);
-                    batch.Draw(uiNode, rect, shipSensorMask, 0f, uiNode.CenterF, SpriteEffects.None, 1f);
+                    batch.Draw(uiNode, rect, sensorMask, 0f, uiNode.CenterF, SpriteEffects.None, 1f);
                 }
             }
             batch.SafeEnd();
