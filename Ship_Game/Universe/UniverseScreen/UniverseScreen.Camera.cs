@@ -105,6 +105,7 @@ namespace Ship_Game
                     ClearSelectedItems();
                     returnToShip = doReturnToShip;
                     LookingAtPlanet = true;
+                    return; // no camera snap: the panel covers the map, and the camera is restored on close anyway
                 }
                 else if (combatView && p.Habitable
                                     && p.IsExploredBy(Player)
