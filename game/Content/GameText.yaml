@@ -469,7 +469,7 @@ Mercantile:
  PTB: "Mercantis"
 MercantileRacesAreNaturalTraders:
  Id: 67
- ENG: "Mercantile races are natural traders, and gain 0.5 Credits for each unit of food or production moved via freighter within the empire, they also have improved supply chains for trade agreements which can help supply the demand of larger empires having trade agreements with them."
+ ENG: "Mercantile races are natural traders, and gain 0.5 BC for each unit of food or production moved via freighter within the empire, they also have improved supply chains for trade agreements which can help supply the demand of larger empires having trade agreements with them."
  UKR: "Меркантильні раси є природними торговцями та отримують 0,5 кредиту за кожну одиницю їжі чи продукції, що переміщується через вантажне судно в межах імперії; вони також мають покращені ланцюжки постачання для торгових угод, які можуть допомогти задовольнити попит великих імперій, які мають з ними торгові угоди."
  PTB: "Raças mercantis são comerciantes naturais e recebem 0,5 Crédito para cada unidade de comida ou produção transportada por cargueiro dentro do império. Elas também possuem cadeias de suprimento melhores para acordos comerciais, o que pode ajudar a suprir a demanda de impérios maiores que tenham acordos comerciais com elas."
 Wasteful:
@@ -1718,7 +1718,7 @@ ThisIndicatesHowMuchA2:
  PTB: "Isto indica o quanto seu poder militar é mais forte que o deles (na opinião deles). Alta ameaça pode convencer raças a fazer concessões em negociações que normalmente não fariam."
 AddThisItemToThe:
  Id: 249
- ENG: "Add this item to the colony's build queue. Holding Shift will add it 5 times. Holding Ctrl will add it 10 times. The credits cost listed is the final credit cost of this item. The cost will be charged partially, as production progresses."
+ ENG: "Add this item to the colony's build queue. Holding Shift will add it 5 times. Holding Ctrl will add it 10 times. The BC cost listed is the final BC cost of this item. The cost will be charged partially, as production progresses."
  RUS: "Добавить объект в очередь строительства колонии"
  SPA: "Añade esto a la cola de construcción de la colonia"
  UKR: "Додасть цей елемент до черги побудови колонії. Утримування Shift додасть його 5 разів. Утримання Ctrl додасть його 10 разів. Вказана вартість кредитів є остаточною вартістю цього елемента. Вартість буде списана поступово, по мірі виробництва."
@@ -1732,7 +1732,7 @@ EditThisShipInThe:
  PTB: "Editar esta nave no estaleiro"
 CancelProductionAndRemoveThis:
  Id: 251
- ENG: "Cancel production and remove this item from the construction queue. 50% of the production spent will be returned to the colony's storage, however, there will be no credit refund."
+ ENG: "Cancel production and remove this item from the construction queue. 50% of the production spent will be returned to the colony's storage, however, there will be no BC refund."
  RUS: "Отменить производство и удалить этот объект из очереди строительства колонии"
  SPA: "Cancela la producción y elimina este elemento de la cola de construcción"
  UKR: "Скасувати виробництво і видалити цей об'єкт з черги на будівництво. 50% витраченого виробництва буде повернуто до сховища колонії, проте кредити не будуть повернуті."
@@ -2261,7 +2261,7 @@ PlanetaryShieldStrengthAdded:
  PTB: "Força de Escudo Planetário Adicionada"
 CreditsAddedPerColonist:
  Id: 362
- ENG: "Credits Added Per Colonist"
+ ENG: "BC added per Colonist"
  RUS: "кредитов за колониста"
  SPA: "Créditos añadidos por colono"
  UKR: "Кредитів за колоніста"
@@ -2282,7 +2282,7 @@ CombatStrength:
  PTB: "Força de Combate"
 CreditsPerTurnInMaintenance:
  Id: 365
- ENG: "credits per turn in maintenance"
+ ENG: "BC per turn in maintenance"
  RUS: "кредитов за ход на содержание"
  SPA: "créditos por turno en mantenimiento"
  UKR: "кредитів/хід на обслуговування"
@@ -8169,7 +8169,7 @@ FixedShipAndBuildingsCost:
  PTB: "Custo Fixo de Naves e Edifícios"
 KeepFixedCreditCostOf:
  Id: 1862
- ENG: "Keep fixed credit cost of ships and military buildings for players regardless of difficulty level. This will make Hard and Brutal easier."
+ ENG: "Keep fixed BC cost of ships and military buildings for players regardless of difficulty level. This will make Hard and Brutal easier."
  RUS: "Сохраняйте фиксированную стоимость кредитов на корабли и военные постройки для игроков независимо от уровня сложности. Это сделает сложность Тяжело и Брутально проще."
  UKR: "Зберегти фіксовану вартість кораблів та військових будівель для гравців незалежно від рівня складності. Це полегшить проходження Hard та Brutal."
  PTB: "Mantém fixo o custo em créditos de naves e edifícios militares para jogadores, independentemente do nível de dificuldade. Isso tornará Difícil e Brutal mais fáceis."
@@ -11891,7 +11891,7 @@ WeRequireThatYouTake:
  PTB: "Exigimos que vocês assumam o controle das seguintes colônias: "
 ClickToRushProductionFrom:
  Id: 248
- ENG: "Click to rush production from this colony's storage.\n \nA single click will apply 10 production from storage to current production.\n \nCTRL-Click to add as much production currently available.\n \nShift-Click will try to rush this item until completed while draining your Treasury.\nThe amount of production rushed will be also deducted from your Empire's Treasury.\n \nConstruction cannot be rushed if there are ground invaders on your colony or your empire has less then 1000 credits plus the charge amount of the rush."
+ ENG: "Click to rush production from this colony's storage.\n \nA single click will apply 10 production from storage to current production.\n \nCTRL-Click to add as much production currently available.\n \nShift-Click will try to rush this item until completed while draining your Treasury.\nThe amount of production rushed will be also deducted from your Empire's Treasury.\n \nConstruction cannot be rushed if there are ground invaders on your colony or your empire has less then 1000 BC plus the charge amount of the rush."
  RUS: "Щелкните здесь, чтобы ускорить производство за счет резервов колонии.\n \nОдиночный щелчок перемещает 10 ед. производства со склада на строительство текущего объекта.\n \nCTRL+ЛКМ перемещает все запасенное производство.\n \nShift+Мышь чтобы попытаться ускорить этот предмет, пока он не будет завершен,или не опустеет казна.\nКоличество произведенной продукции также будет вычтено из казны вашей Империи.\n \nСтроительство нельзя форсировать, если в вашей колонии есть наземные захватчики или у вашей империи меньше 1000 кредитов плюс сумма заряда спешки."
  SPA: "Haz clic para acelerar la producción de las reservas de esta colonia. Acelerar la producción cuesta créditos que equivalen a la cantidad de producción acelerada. Dicho coste puede reducirse o eliminarse con diversos medios tecnológicos. \n \n Si haces clic una vez, destinarás 10 de producción de las reservas a lo que se esté produciendo. Pulsa Ctrl+clic para añadir cuanta producción haya disponible. \n \nLa construcción no se puede acelerar si hay invasores terrestres en su colonia o si su imperio tiene menos de 1000 créditos más el monto del cargo de la carrera."
  UKR: "Натисніть, щоб прискорити виробництво зі сховища цієї колонії.\n \nОдин клік додасть 10 одиниць продукції зі сховища до поточного виробництва.\n \nCTRL-клацніть, щоб додати стільки продукції, скільки доступно в даний момент.\n \nShift-клацніть, щоб спробувати прискорити цей елемент до завершення, виснажуючи при цьому вашу скарбницю.\n \nКількість продукції, яку буде прискорено, також буде вирахувано зі скарбниці вашої імперії.\n \nБудівництво не може бути прискорено, якщо у вашій колонії є наземні загарбники або ваша імперія має менше 1000 кредитів плюс вартість прискореного будівництва."
@@ -11954,7 +11954,7 @@ ASpacePortConnectsTo:
  PTB: "Um porto espacial se conecta à base estelar orbital acima e permite a construção de naves aqui usando materiais produzidos no planeta. Fornece um bônus de 20% a todas as rendas monetárias obtidas neste planeta."
 ImperialOfficesAllowForThe:
  Id: 431
- ENG: "Imperial Offices allow for the direct taxation of the citizenry, granting incomes at a rate of .25 credits per colonist per turn. This base income is not modified by tax rates or buildings that modify tax incomes. "
+ ENG: "Imperial Offices allow for the direct taxation of the citizenry, granting incomes at a rate of .25 BC per colonist per turn. This base income is not modified by tax rates or buildings that modify tax incomes. "
  RUS: "Имперские офицеры позволяют осуществлять прямое налогообложение населения, дополнительно давая 0,25 кредита с колониста каждый ход. Этот базовый доход не модифицируется налоговыми ставками и зданиями, влияющими ан налоговые сборы. "
  SPA: "Las oficinas imperiales permiten recaudar impuestos directamente de los ciudadanos, obteniendo ingresos a una tasa de 0,25 créditos por colono y por turno. Estos ingresos básicos no se ven modificados por tasas impositivas ni edificios que afecten a los ingresos fiscales. "
  UKR: "Імперські офіси дозволяють пряме оподаткування громадян, надаючи дохід у розмірі 0.25 кредиту на колоніста за хід. Цей базовий дохід не змінюється податковими ставками або будівлями, які змінюють податкові доходи."
@@ -12215,7 +12215,7 @@ EcstasyCrystal:
  PTB: "Cristal do Êxtase"
 ThisShardOfCrystalInduces:
  Id: 813
- ENG: "This shard of crystal induces in its viewer an intense feeling of emotional and physical joy. The profits that could be made off of controlling access to this crystal are enourmous. \n\nProvides +10 credits per turn to its controller"
+ ENG: "This shard of crystal induces in its viewer an intense feeling of emotional and physical joy. The profits that could be made off of controlling access to this crystal are enourmous. \n\nProvides +10 BC per turn to its controller"
  RUS: "Этот осколок кристалла вызывает у каждого, кто пытается заглянуть в него, чувство духовного и физического экстаза. Выгоды, которые можно получить от его использования, будут поистине огромны. \n\nПредоставляет владельцу +10 кредитов каждый ход"
  SPA: "Este fragmento de cristal invade de alegría física y emocional a quien lo mira. Las ventajas de controlar el acceso a este cristal podrían ser enormes. \n\nProporciona +10 créditos por turno a quien lo controle"
  UKR: "Цей уламок кришталю викликає у глядача інтенсивне відчуття емоційної та фізичної радості. Прибуток, який можна отримати, контролюючи доступ до цього кристала, величезний. \n\nНадає +10 кредитів за хід своєму контролеру"
@@ -13764,37 +13764,37 @@ OverrideThisBudgetAndSet:
  PTB: "Substitua este orçamento e defina o seu próprio."
 CivilianBuildingsExpenditurebudgetInByc:
  Id: 4228
- ENG: "Civilian Buildings Expenditure/Budget in bc/turn. If you see over-budget, you might have buildings you have manually built and the Governor cannot scrap them."
+ ENG: "Civilian Buildings Expenditure/Budget in BC/turn. If you see over-budget, you might have buildings you have manually built and the Governor cannot scrap them."
  RUS: "Расходы/бюджет на гражданские здания в МГ/K (Миллиард Кредитов/Год). Если вы наблюдаете превышение бюджета, возможно, есть здания, которые вы построили вручную, и губернатор не может их снести."
  UKR: "Витрати/бюджет на цивільні будівлі в bc/turn. Якщо ви бачите перевиконання бюджету, можливо, у вас є будівлі, які ви побудували вручну, і губернатор не може їх здати на металобрухт."
  PTB: "Gasto/Orçamento de Construções Civis em bc/ano. Se aparecer acima do orçamento, talvez haja construções feitas manualmente que o Governador não pode sucatear."
 GroundDefenseBuildingsExpenditurebudgetIn:
  Id: 4229
- ENG: "Ground Defense Buildings Expenditure/Budget in bc/turn. If you see over-budget, you might have buildings you have manually built and the Governor cannot scrap them."
+ ENG: "Ground Defense Buildings Expenditure/Budget in BC/turn. If you see over-budget, you might have buildings you have manually built and the Governor cannot scrap them."
  RUS: "Расходы/бюджет на здания наземной обороны в МК/Г (Миллиард Кредитов/Год). Если вы видите превышение бюджета, возможно, есть здания, которые вы построили вручную, и губернатор не может их снести."
  UKR: "Витрати/бюджет на наземні оборонні споруди в bc/turn. Якщо ви бачите перевиконання бюджету, можливо, у вас є будівлі, які ви побудували вручну, і губернатор не може їх здати на металобрухт."
  PTB: "Gasto/Orçamento de Construções de Defesa Terrestre em bc/turn. Se aparecer acima do orçamento, talvez haja construções feitas manualmente que o Governador não pode sucatear."
 OrbitalsExpenditurebudgetInByc:
  Id: 4230
- ENG: "Orbitals Expenditure/Budget in bc/turn"
+ ENG: "Orbitals Expenditure/Budget in BC/turn"
  RUS: "Расходы/бюджет на орбитальные конструкции в МК/Г"
  UKR: "Витрати/бюджет орбіти в bc/turn"
  PTB: "Gasto/Orçamento de Orbitais em bc/turn"
 CivilianBuildingsExpenditureInByc:
  Id: 4231
- ENG: "Civilian Buildings Expenditure in bc/turn"
+ ENG: "Civilian Buildings Expenditure in BC/turn"
  RUS: "Расходы на гражданские здания в МК/Г"
  UKR: "Видатки на цивільні будівлі в білоруських рублях"
  PTB: "Gasto de Construções Civis em bc/turn"
 GroundDefenseBuildingsExpenditureIn:
  Id: 4232
- ENG: "Ground Defense Buildings Expenditure in bc/turn"
+ ENG: "Ground Defense Buildings Expenditure in BC/turn"
  RUS: "Расходы на здания наземной обороны в МК/Г"
  UKR: "Витрати на наземні оборонні споруди в британських доларах"
  PTB: "Gasto de Construções de Defesa Terrestre em bc/turn"
 OrbitalsExpenditureInByc:
  Id: 4233
- ENG: "Orbitals Expenditure in bc/turn"
+ ENG: "Orbitals Expenditure in BC/turn"
  RUS: "Расходы на орбитали в МК/Г"
  UKR: "Витрати на орбіти в bc/turn"
  PTB: "Gasto de Orbitais em bc/turn"
@@ -14058,7 +14058,7 @@ WasDestroyedByALava:
  PTB: "foi destruído por uma poça de lava."
 CouldNotPlaceThisOrbital:
  Id: 4277
- ENG: "Could not place this orbital since orbital limit was reached.\nOrbital's credit cost refunded"
+ ENG: "Could not place this orbital since orbital limit was reached.\nOrbital's BC cost refunded"
  RUS: "Не удалось разместить эту орбиталь, так как орбитальный предел был достигнут.\nСтоимость орбит.постройки возвращена."
  UKR: "Не вдалося розмістити цю орбіту, оскільки досягнуто ліміт орбіти.\nКредитна вартість орбіти відшкодована"
  PTB: "Não foi possível posicionar este orbital porque o limite orbital foi atingido.\nCusto em créditos do orbital reembolsado"
@@ -14148,13 +14148,13 @@ FlatResearchPerTurn:
  PTB: "+1 Pesquisa Fixa por turno"
 ThisMeteorCraterContainsPrecious:
  Id: 4292
- ENG: "This Meteor Crater contains precious metals which can be traded for credits. Unfortunately, this effect is temporary."
+ ENG: "This Meteor Crater contains precious metals which can be traded for BC. Unfortunately, this effect is temporary."
  RUS: "Метеоритный кратер содержит драгоценные металлы, которые можно обменять на кредиты. К сожалению,это временный эффект."
  UKR: "Цей метеоритний кратер містить дорогоцінні метали, які можна обміняти на кредити. На жаль, цей ефект тимчасовий."
  PTB: "Esta Cratera de Meteoro contém metais preciosos que podem ser trocados por créditos. Infelizmente, esse efeito é temporário."
 CreditsPerColonist2:
  Id: 4293
- ENG: "+1 Credits per Colonist"
+ ENG: "+1 BC per Colonist"
  RUS: "+1 к кредитам за колониста"
  UKR: "+1 кредит за кожного колоніста"
  PTB: "+1 Crédito por Colonista"
@@ -14544,7 +14544,7 @@ DesignIssueSalvoFirePowerEfficiencyRemidiation:
  PTB: "Adicione mais Células de Energia ou Reatores à nave. Requisitos atuais de energia excedente para uma salva completa de todas as Armas de Energia é"
 CreditsPerTurn:
  Id: 4369
- ENG: "Credits Per Turn"  
+ ENG: "BC/turn"  
  UKR: "Кредити за хід"
  PTB: "Créditos Por Turno"
 SaveShipDesignDesc:
@@ -14651,7 +14651,7 @@ SpiralMagellanicGalaxyGameTip:
  PTB: "Uma galáxia visivelmente assimétrica, com um único braço grosso e irregular envolvendo um bojo fora do centro. A maioria dos impérios começa dentro do bojo central denso; o restante se espalha pelo braço."
 EspionageTotalMoneyLeechedTip:
  Id: 4534
- ENG: "Total credits leeched from this empire since infiltration reached Level 5. The per-turn amount is shown under 'Money Leeched' on the Budget screen."
+ ENG: "Total BC leeched from this empire since infiltration reached Level 5. The per-turn amount is shown under 'Money Leeched' on the Budget screen."
  PTB: "Total de créditos drenados deste império desde que a infiltração alcançou o Nível 5. O valor por turno é mostrado em 'Dinheiro Drenado' na tela de Orçamento."
 ResearchDisruptedByInfiltrationTip:
  Id: 4535
@@ -14690,7 +14690,7 @@ BB_GolddepositDesc:
  PTB: "Depósito de ouro facilmente extraível formado quando o planeta tinha muitos vulcões ativos"
 BB_GolddepositDescShort:
  Id: 4389
- ENG: "Provides 2 production per colonist, +3 credits, total worth of 350 production"
+ ENG: "Provides 2 production per colonist, +3 BC, total worth of 350 production"
  UKR: "Надає 2 виробництва на колоніста, +3 кредити, загальною вартістю 350 виробництв"
  PTB: "Fornece 2 de produção por colonista, +3 créditos, valor total de 350 de produção"
 BB_GoldMoutain:
@@ -14928,7 +14928,7 @@ AllowPlayerInterTradeTitle:
  PTB: "Permitir Comércio Entre Impérios"
 AllowPlayerInterTradeTip:
  Id: 4437
- ENG: "Allows your idle freighters to transfer goods to empires you have trade treaties with them if internal demand is satisfied. You can still disable this for specific freighters. Transferring goods to other empires yields large credit bonus of 2 credits per good along with any other yields of a normal trade"      
+ ENG: "Allows your idle freighters to transfer goods to empires you have trade treaties with them if internal demand is satisfied. You can still disable this for specific freighters. Transferring goods to other empires yields large BC bonus of 2 BC per good along with any other yields of a normal trade"      
  UKR: "Дозволяє вашим фрахтувальникам, що простоюють, перевозити товари в імперії, з якими у вас є торгові договори, якщо внутрішній попит задоволений. Ви все ще можете вимкнути цю можливість для певних кораблів. Передача товарів в інші імперії приносить великий кредитний бонус у розмірі 2 кредитів за кожен товар, а також інші прибутки від звичайної торгівлі"
  PTB: "Permite que seus cargueiros ociosos transfiram mercadorias para impérios com os quais você tem tratados comerciais, se a demanda interna estiver satisfeita. Você ainda pode desativar isso para cargueiros específicos. Transferir mercadorias para outros impérios gera um grande bônus de créditos de 2 créditos por mercadoria, além de qualquer outro rendimento de um comércio normal"
 LavaPoolTerraformable:
@@ -15554,7 +15554,7 @@ ExoticResourceLuxariumName:
  PTB: "Gás de Luxarium"
 ExoticResourceLuxariumDesc:
  Id: 4948 
- ENG: "Refined Luxarium can increase the rate of Credits added to your empire per turn by 50%"      
+ ENG: "Refined Luxarium can increase the rate of BC added to your empire per turn by 50%"      
  UKR: "Вишуканий Лукзаріум може збільшити кількість Кредитів, що додаються до вашої імперії за хід, на 50%."
  PTB: "Luxarium refinado pode aumentar em 50% a taxa de Créditos adicionados ao seu império por turno"
 ColonistsCargName:
@@ -15649,7 +15649,7 @@ TraitSalvagersName:
  PTB: "Sucateiros"
 TraitSalvagersDesc:
  Id: 4967
- ENG: "salvagers like to collect scrap matel and upgrades. Your empire will get 1 credit per 20 slots of enemy ships killed."       
+ ENG: "salvagers like to collect scrap matel and upgrades. Your empire will get 1 BC per 20 slots of enemy ships killed."       
  UKR: "Рятівники люблять збирати металобрухт і поліпшення. Ваша імперія отримає 1 кредит за кожні 20 слотів знищених ворожих кораблів."
  PTB: "Sucateiros gostam de coletar sucata metálica e melhorias. Seu império receberá 1 crédito para cada 20 espaços de naves inimigas destruídas."
 TraitCompensationName:
@@ -15659,7 +15659,7 @@ TraitCompensationName:
  PTB: "Plano de Compensação da Tripulação"
 TraitCompensationDesc:
  Id: 4969
- ENG: "Your empire will compensate the families of battle casualties at a rate of 1 credit per 20 slots of ships killed by enemies."         
+ ENG: "Your empire will compensate the families of battle casualties at a rate of 1 BC per 20 slots of ships killed by enemies."         
  UKR: "Ваша імперія виплатить компенсацію сім'ям загиблих у бою з розрахунку 1 кредит за 20 слотів кораблів, вбитих ворогами."
  PTB: "Seu império compensará as famílias de baixas em batalha na taxa de 1 crédito para cada 20 espaços de naves destruídas por inimigos."
 TraitTerranHomeworldName:
@@ -15811,7 +15811,7 @@ ProductionConsumptionPerTurnFor:
  PTB: "Consumo de produção por turno para Tropas"
 CreditsPerTurnForTroop:
  Id: 4998
- ENG: "Credits per turn for Troop maintenance"
+ ENG: "BC per turn for Troop maintenance"
  RUS: "Кредиты за ход на содержание войск"
  UKR: "Кредити за хід на утримання війська"
  PTB: "Créditos por turno para manutenção de Tropas"
@@ -16872,14 +16872,14 @@ AbortedTheStealTechnologyMission:
  PTB: "abortou a missão Roubar Tecnologia porque\nnão há nada para roubar;"
 CreditsAreThereforeRefunded:
  Id: 6064
- ENG: "Credits are therefore refunded."
+ ENG: "BC are therefore refunded."
  RUS: "Таким образом, кредиты возвращены"
  SPA: "Por lo tanto los creditos son renbolsados."
  UKR: "Таким чином, кредити повертаються."
  PTB: "Os créditos, portanto, foram reembolsados."
 CreditsWereMysteriouslyStolenFrom:
  Id: 6065
- ENG: "credits were mysteriously stolen from our treasury.\nWe have no suspects in the theft"
+ ENG: "BC were mysteriously stolen from our treasury.\nWe have no suspects in the theft"
  RUS: "кредиты были таинственным образом украдены из нашей казны.\nУ нас нет подозреваемых в краже"
  SPA: "Creditos fueron misteriosamente robados de nuestro tesoro\nNo tenemos sospechosos en el robo"
  UKR: "кредити були таємниче викрадені з нашої скарбниці.\nУ нас немає підозрюваних у крадіжці"
@@ -16907,14 +16907,14 @@ Stole:
  PTB: "roubou"
 CreditsFrom:
  Id: 6069
- ENG: "credits from"
+ ENG: "BC from"
  RUS: "кредиты от"
  SPA: "creditos de"
  UKR: "кредити від"
  PTB: "créditos de"
 CreditsWereStolenFromOur:
  Id: 6070
- ENG: "credits were stolen from our treasury by an enemy Agent."
+ ENG: "BC were stolen from our treasury by an enemy Agent."
  RUS: "кредиты были украдены из нашей казны вражеским агентом\n"
  SPA: "creditos fueron robados por un agente enemigo."
  UKR: "кредити були викрадені з нашої скарбниці ворожим агентом."
@@ -16928,7 +16928,7 @@ WeFoiledAnEnemyPlot2:
  PTB: "Impedimos um plano inimigo para roubar nosso tesouro"
 WasUnableToStealAny:
  Id: 6072
- ENG: "was unable to steal any credits\nand was wounded while escaping."
+ ENG: "was unable to steal any BC\nand was wounded while escaping."
  RUS: "не смог украсть кредиты\nи был ранен при побеге."
  SPA: "fue incapaz de robar dinero\ny fue herido trantando de escapar."
  UKR: "не зміг викрасти жодного кредиту\nі був поранений під час втечі."
@@ -16942,14 +16942,14 @@ WeKilledAnEnemyAgent2:
  PTB: "Matamos um Agente inimigo durante uma tentativa de roubo"
 WasKilledTryingToSteal2:
  Id: 6074
- ENG: "was killed trying to steal credits from"
+ ENG: "was killed trying to steal BC from"
  RUS: "был убит при попытке украсть кредиты у"
  SPA: "fue asesinado tratando de robar creditos de"
  UKR: "був убитий при спробі вкрасти кредити у"
  PTB: "foi morto tentando roubar créditos de"
 WasUnableToStealAny2:
  Id: 6075
- ENG: "was unable to steal any credits\nbut managed to escape unharmed."
+ ENG: "was unable to steal any BC\nbut managed to escape unharmed."
  RUS: "не смог украсть кредиты\nно сумел сбежать невредимым."
  SPA: "fue incapaz de robar creditos\npero logró escapar ileso."
  UKR: "не зміг вкрасти жодного кредиту, але зумів втекти неушкодженим."
@@ -17383,7 +17383,7 @@ AutoResearch:
  PTB: "Pesquisa Automática"
 ShipRepair:
  Id: 6137
- ENG: "Ship Repair Per Second"
+ ENG: "Ship Repair per second"
  UKR: "Судноремонт за секунду"
  PTB: "Reparo da Nave por Segundo"
 AutoTaxes:
@@ -18342,7 +18342,7 @@ EspioangeBudgetMuliplier:
  PTB: "Multiplicador de Orçamento"
 EspioangeBudgetMuliplierTip:
  Id: 6332
- ENG: "Normally, we get 1 Espionage Point per Billion colonists for free. These points go into our Spy defense and infiltration level increase per empire we know. We can increase the Espionage Points we get per Billion colonists, but it will cost us credits per turn."          
+ ENG: "Normally, we get 1 Espionage Point per Billion colonists for free. These points go into our Spy defense and infiltration level increase per empire we know. We can increase the Espionage Points we get per Billion colonists, but it will cost us BC per turn."          
  PTB: "Normalmente, recebemos 1 Ponto de Espionagem por Bilhão de colonistas gratuitamente. Esses pontos entram na nossa defesa contra Espiões e no aumento do nível de infiltração por império que conhecemos. Podemos aumentar os Pontos de Espionagem que recebemos por Bilhão de colonistas, mas isso custará créditos por turno."
 EspioangeHomeworldMole:
  Id: 6333
@@ -18691,7 +18691,7 @@ IndicatesTheAmountTroopsAre:
  PTB: "Indica quanto as tropas são curadas por segundo."
 TT_UpkeepCost:
  Id: 7025
- ENG: "Indicates the credits per tick this design would cost in upkeep"
+ ENG: "Indicates the BC per tick this design would cost in upkeep"
  RUS: "Указывает количество кредитов за тик, которое будет стоить содержание этого дизайна"
  SPA: "Indicate los creditos por tick este diseño costaria mantener."
  UKR: "Вказує, скільки кредитів за тик коштуватиме підтримка цього дизайну"
@@ -19159,7 +19159,7 @@ TT_RepairRate:
  UKR: "Це швидкість саморемонту цього корабля за тик - він може відновити стільки хітпоінтів модуля за тик, коли перебуває поза боєм. Кращі командні та інженерні модулі покращують цей показник."
  PTB: "Esta é a taxa de autorreparo desta nave por ciclo; ela pode autorreparar esta quantidade de pontos de vida de um módulo por ciclo quando estiver fora de combate. Módulos melhores de comando e engenharia melhoram isso."
 EncCorsairs000_Msg0:
- ENG: "Dearest SING friends,\n\nWe are delighted to see your empire's progress. Isn't this exciting, to colonize new worlds and struggle with unknown environment? However, all these little freighters, moving from planet to planet like loyal bees are so exposed out there in deep space.\n\nSo we have a proposal for you. You will pay us MONEY credits right now. If you do, then we can promise a certain level of 'protection' to SING ships. If you don't, well, then we just can't make any promises.\n\nRegards,\n    Captain Martok, Independent Trader and Gentleman"
+ ENG: "Dearest SING friends,\n\nWe are delighted to see your empire's progress. Isn't this exciting, to colonize new worlds and struggle with unknown environment? However, all these little freighters, moving from planet to planet like loyal bees are so exposed out there in deep space.\n\nSo we have a proposal for you. You will pay us MONEY BC right now. If you do, then we can promise a certain level of 'protection' to SING ships. If you don't, well, then we just can't make any promises.\n\nRegards,\n    Captain Martok, Independent Trader and Gentleman"
  UKR: "Дорогі друзі Співає,\n\nМи раді бачити прогрес вашої імперії. Хіба це не захоплююче, колонізувати нові світи і боротися з невідомим оточенням? Однак, всі ці маленькі вантажні кораблі, що переміщаються з планети на планету, як вірні бджоли, так незахищені там, у глибокому космосі.\n\nТому у нас є пропозиція для вас. Ви заплатите нам ГРОШІ прямо зараз. Якщо ви це зробите, то ми можемо пообіцяти певний рівень 'захисту' кораблям Співає. Якщо ні, то ми просто не можемо нічого обіцяти.\n\nЗ повагою\n     капітан Марток, незалежний торговець і джентльмен."
  PTB: "Queridos amigos SING,\n\nEstamos felizes em ver o progresso do seu império. Não é empolgante colonizar novos mundos e enfrentar ambientes desconhecidos? Porém, todos esses pequenos cargueiros, viajando de planeta em planeta como abelhas leais, ficam tão expostos lá no espaço profundo.\n\nEntão temos uma proposta para vocês. Vocês nos pagarão CRÉDITOS agora. Se fizerem isso, podemos prometer certo nível de 'proteção' às naves SING. Se não fizerem, bem, então simplesmente não podemos prometer nada.\n\nAtenciosamente,\n    Capitão Martok, Comerciante Independente e Cavalheiro"
 EncCorsairs000_Msg0_R1_AgreeToPay:
@@ -19179,7 +19179,7 @@ EncCorsairs000_Msg2:
  UKR: "Це розчарування, чи не так? А я-то думав, що ми швидко потоваришуємо. Буде весело розірвати ваші вантажні кораблі.\n\n(Примітка командира - Якщо ми захочемо заплатити їм, ми можемо вибрати їхній корабель і натиснути Q, щоб зв'язатися з ними)."
  PTB: "Ora, isso é decepcionante, não é? E eu aqui pensando que seríamos grandes amigos. Vai ser divertido rasgar seus cargueiros.\n\n(Nota do Oficial de Comunicações - Se algum dia quisermos pagá-los, podemos selecionar a nave deles e pressionar Q para contatá-los.)"
 EncCorsairs000_Msg3:
- ENG: "What, is this some sort of SING humor? You don't have the credits! Unfortunately for you, this is not my problem. We're gonna collect our money through your freighters!\n\n(Comm Officer's Note - If we ever want to pay them, we can select their ship and press Q to contact them.)"
+ ENG: "What, is this some sort of SING humor? You don't have the BC! Unfortunately for you, this is not my problem. We're gonna collect our money through your freighters!\n\n(Comm Officer's Note - If we ever want to pay them, we can select their ship and press Q to contact them.)"
  UKR: "Це що, якийсь СПІВАЄ гумор? Ти не маєш грошей! На жаль для вас, це не моя проблема. Ми заберемо наші гроші через ваші вантажні кораблі! \n\n(Примітка командира - Якщо ми коли-небудь захочемо заплатити їм, ми можемо вибрати їхній корабель і натиснути Q, щоб зв'язатися з ними)."
  PTB: "O quê, isso é algum tipo de humor SING? Vocês não têm os créditos! Infelizmente para vocês, isso não é problema meu. Vamos cobrar nosso dinheiro através dos seus cargueiros!\n\n(Nota do Oficial de Comunicações - Se algum dia quisermos pagá-los, podemos selecionar a nave deles e pressionar Q para contatá-los.)"
 ExpEvent_BuiltRDA_Name:
@@ -19344,7 +19344,7 @@ ACaveInWhichWe:
  PTB: "Uma caverna onde combinamos com o contrabandista de deixar as mercadorias."
 ProvidesFoodProductionCredits:
  Id: 18116
- ENG: "Provides +2 food, +3 production, - 1,3 credits"
+ ENG: "Provides +2 food, +3 production, - 1,3 BC"
  RUS: "Дает +2 еды, +3  продукции, - 1,3  кредитов."
  UKR: "Забезпечує +2 їжі, +3 виробництва, - 1,3 кредиту"
  PTB: "Fornece +2 de comida, +3 de produção, -1,3 créditos."
@@ -19554,7 +19554,7 @@ APirateOutcastBaseLed:
  PTB: "Uma base de proscritos piratas, liderada por um indivíduo que se chama Goldymires. Ele está nos ajudando com a movimentação de recursos."
 InfrastructureCreditsPerTurn:
  Id: 18200
- ENG: "+2 infrastructure, -1 credits per turn"
+ ENG: "+2 infrastructure, -1 BC per turn"
  RUS: "+2 к инфраструктуре, -1 кредитов за ход."
  UKR: "+2 інфраструктура, -1 кредит за хід"
  PTB: "+2 de infraestrutura, -1 crédito por turno."
@@ -21731,7 +21731,7 @@ BB_CrystalPlantDescr:
  PTB: "Esta construção maravilhosa é capaz de cultivar cristais muito valiosos, que podem ser vendidos com alto lucro."
 BB_CrystalPlantDescrBonus:
  Id: 17650
- ENG: "Generates +8 credits per turn"
+ ENG: "Generates +8 BC per turn"
  UKR: "Генерує +8 кредитів за хід"
  PTB: "Gera +8 créditos por turno"
 BB_Hellstorm:
@@ -22030,7 +22030,7 @@ CodexEconomyEconomicBasicsShort:
  PTB: "Uma visão geral da economia de StarDrive."
 CodexEconomyEconomicBasicsText:
  Id: 100052
- ENG: "The four economic resources in StarDrive are Food, Production, Research, and Money.  These resources are collected and consumed each game \"turn\", which corresponds to five seconds of real time.  The game speed can be modified by pressing the + / - keys for faster or slower play. \n \n  Food is used to feed your colonists and is consumed at a rate of 1 food per 1 population unit (1 Billion colonists) per turn. Production represents raw and refined goods produced by your empire and is used to produce ships, troops, and planetary improvements. Cybernetic races consume production instead of food. Research is used to unlock new technological advances. Finally, Money (Credits) is used to pay maintenance for your ships, troops, planetary improvements, or diplomatic treaties. Money is earned primarily through automatic taxation of your citizens."
+ ENG: "The four economic resources in StarDrive are Food, Production, Research, and Money.  These resources are collected and consumed each game \"turn\", which corresponds to five seconds of real time.  The game speed can be modified by pressing the + / - keys for faster or slower play. \n \n  Food is used to feed your colonists and is consumed at a rate of 1 food per 1 population unit (1 Billion colonists) per turn. Production represents raw and refined goods produced by your empire and is used to produce ships, troops, and planetary improvements. Cybernetic races consume production instead of food. Research is used to unlock new technological advances. Finally, Money (BC) is used to pay maintenance for your ships, troops, planetary improvements, or diplomatic treaties. Money is earned primarily through automatic taxation of your citizens."
  RUS: "В StarDrive имеется 4 типа экономических ресурсов – это еда. производство, наука и деньги. Эти ресурсы собираются и расходуются каждый игровой \"ход\", которому соответствует 5 секунд реального времени. Вы можете изменять скорость игры при помощи клавиш + / - для ускорения или замедления игры. \n \n  Еда используется для того, чтобы прокормить ваших колонистов, и потребляется из расчета 1 единица еды на 1 единицу населения (1 млрд. колонистов) в ход. Производство – это товары, произведенные в вашей империи; оно требуется для строительства кораблей, планетарных объектов и формирования боевых отрядов. Кибернетические расы вместо еды потребляют производство. Наука используется для открытия новых технологий. И, наконец, деньги (кредиты) нужны для оплаты расходов по содержанию ваших кораблей, войск, планетарных объектов и для заключения дипломатических соглашений. Деньги в основном зарабатываются за счет налогообложения граждан вашей империи."
  PTB: "Os quatro recursos econômicos em StarDrive são Comida, Produção, Pesquisa e Dinheiro. Esses recursos são coletados e consumidos a cada \"turno\" do jogo, que corresponde a cinco segundos de tempo real. A velocidade do jogo pode ser modificada pressionando as teclas + / - para jogar mais rápido ou mais devagar. \n \n Comida é usada para alimentar seus colonos e é consumida à taxa de 1 comida por 1 unidade de população (1 bilhão de colonos) por turno. Produção representa bens brutos e refinados produzidos pelo seu império e é usada para produzir naves, tropas e melhorias planetárias. Raças cibernéticas consomem produção em vez de comida. Pesquisa é usada para desbloquear novos avanços tecnológicos. Por fim, Dinheiro (Créditos) é usado para pagar manutenção, fazer comércio e financiar atividades diplomáticas. "
 CodexEconomyFreightersAndTradeRoutes:
@@ -22075,7 +22075,7 @@ CodexEconomyTradeTreatiesShort:
  PTB: "Acordos comerciais diplomáticos "
 CodexEconomyTradeTreatiesText:
  Id: 100061
- ENG: "An excellent source of income for any empire is a trade agreement with a friendly empire. Most races are eager to trade because to reap the benefits of trade all that is required is a trade treaty and peace between your empires. \n \n Trade treaties take a short amount of time to become profitable. In the initial stages of a trade treaty, both parties will actually lose credits each turn. However, once the trade routes are established, both parties will profit by up to 10 credits per turn maximum. Certain technologies and racial traits can increase the amounts gain."
+ ENG: "An excellent source of income for any empire is a trade agreement with a friendly empire. Most races are eager to trade because to reap the benefits of trade all that is required is a trade treaty and peace between your empires. \n \n Trade treaties take a short amount of time to become profitable. In the initial stages of a trade treaty, both parties will actually lose BC each turn. However, once the trade routes are established, both parties will profit by up to 10 BC per turn maximum. Certain technologies and racial traits can increase the amounts gain."
  RUS: "Для любой империи торговый договор с дружественной империей станет прекрасным источником дохода. Большинство рас охотно будут торговать с вами, поскольку для получения доходов от торговли требуется только наличие торгового соглашения и мир между вашими двумя империями. \n \n Торговля начинает приносить дивиденды не сразу; больше того, сразу после заключения соглашения обе стороны будут терять кредиты. Однако после того, как торговые маршруты будут налажены, обе стороны начнут получать от торговли доход вплоть до 10 кредитов в ход. Определенные технологии и расовые черты могут увеличивать доходы, получаемые с торговли."
  PTB: "Uma excelente fonte de renda para qualquer império é um acordo comercial com um império amistoso. A maioria das raças está disposta a comerciar porque, para colher os benefícios do comércio, basta haver um tratado comercial e paz entre seus impérios. \n \n Tratados comerciais geram renda com base no tamanho e na atividade econômica dos impérios envolvidos. Quanto maiores e mais desenvolvidos forem os impérios, maior tende a ser o benefício. Manter relações diplomáticas estáveis e proteger suas rotas comerciais pode se tornar uma parte importante da sua estratégia econômica. "
 CodexEconomyPlanetaryQualities:
@@ -22375,7 +22375,7 @@ CodexDiplomacyEspionageShort:
  PTB: "Visão geral do uso de Agentes"
 CodexDiplomacyEspionageText:
  Id: 100121
- ENG: "Espionage is a valuable tool for gaining intelligence about your opponents, disrupting their activities, and gaining power. To spy on an alien race, you must train Agents. Agents can be trained in the Diplomacy screen at a cost of 250 credits per agent. Note that Agents begin at Level 1, meaning that they are fresh recruits with no special talents. Agents gain levels by successfully completing missions and can achieve a maximum of 10 levels. \n \n Agents with no assigned mission will automatically engage in counter-espionage, reducing the effectiveness of enemy Agent activities within your empire. To assign an Agent to a Mission, select the Agent in the Agent list, select the Empire you wish to send the Agent against, and then choose the appropriate mission from the missions list. Every mission has an associated credit cost and a number of turns until completion. Advanced spying technologies can reduce these costs while increasing your chances of success on the mission. Success or failure will be calculated at the end of the indicated number of turns. \n \n See the Espionage Calculations and Agent Missions entries for a detailed breakdown of costs, effects, and risks associated with each Agent mission. "
+ ENG: "Espionage is a valuable tool for gaining intelligence about your opponents, disrupting their activities, and gaining power. To spy on an alien race, you must train Agents. Agents can be trained in the Diplomacy screen at a cost of 250 BC per agent. Note that Agents begin at Level 1, meaning that they are fresh recruits with no special talents. Agents gain levels by successfully completing missions and can achieve a maximum of 10 levels. \n \n Agents with no assigned mission will automatically engage in counter-espionage, reducing the effectiveness of enemy Agent activities within your empire. To assign an Agent to a Mission, select the Agent in the Agent list, select the Empire you wish to send the Agent against, and then choose the appropriate mission from the missions list. Every mission has an associated BC cost and a number of turns until completion. Advanced spying technologies can reduce these costs while increasing your chances of success on the mission. Success or failure will be calculated at the end of the indicated number of turns. \n \n See the Espionage Calculations and Agent Missions entries for a detailed breakdown of costs, effects, and risks associated with each Agent mission. "
  RUS: "Шпионаж – мощный инструмент, позволяющий осуществлять разведку в стане противника, срывать его планы и укреплять свое влияние. Чтобы шпионить за другой расой, вы должны обучить агентов. Агентов можно обучать на экране дипломатии по цене в 250 кредитов за каждого агента. Все агенты начинают с 1-го уровня, что означает, что они пока еще зеленые новички, не обладающие никакими выдающимися талантами. Агенты получают уровни, успешно выполняя задания, и могут достигнуть максимум 10-го уровня. \n \n Агенты, не выполняющие конкретных заданий, автоматически становятся задействованы в контрразведке, подавляя деятельность вражеских агентов в вашей империи. Чтобы дать агенту задание, выберите агента в списке, далее выберите империю, против которой он будет вести свою деятельность, и, наконец, выберите задание из списка заданий. Каждое задание имеет определенную стоимость и количество ходов, требуемое для его выполнения. Усовершенствованные шпионские технологии могут снижать эти расходы, одновременно повышая шансы агента на успех. Успех или провал миссии агента определяется в конце указанного количества ходов. \n \n В соответствующих разделах приведена подробная информация о расходах, результатах и рисках, связанных со всеми заданиями для агентов. "
  PTB: "Espionagem é uma ferramenta valiosa para obter informações sobre seus oponentes, interromper suas atividades e ganhar poder. Para espionar uma raça alienígena, você deve treinar Agentes. Agentes podem ser treinados na tela de Diplomacia ao custo de 250 créditos por agente. Observe que Agentes começam no Nível 1, ou seja, são recrutas novos sem talentos especiais. Agentes ganham níveis ao concluir missões com sucesso e podem alcançar no máximo 10 níveis. \n \n Agentes sem missão atribuída atuarão automaticamente em contraespionagem, reduzindo a eficácia das atividades de Agentes inimigos dentro do seu império. Para atribuir uma Missão a um Agente, selecione o Agente na lista de Agentes, escolha o Império contra o qual deseja enviá-lo e então escolha a missão apropriada na lista de missões. Toda missão tem um custo em créditos associado e um número de turnos até a conclusão. Tecnologias avançadas de espionagem podem reduzir esses custos e aumentar suas chances de sucesso na missão. Sucesso ou fracasso será calculado ao final do número indicado de turnos. \n \n Consulte as entradas Cálculos de Espionagem e Missões de Agentes para uma explicação detalhada de custos, efeitos e riscos associados a cada missão de Agente. "
 CodexDiplomacyEspionageCalculations:
@@ -22405,7 +22405,7 @@ CodexDiplomacyAgentMissionsShort:
  PTB: "Custos das missões e testes de dificuldade"
 CodexDiplomacyAgentMissionsText:
  Id: 100127
- ENG: "The following data applies to espionage missions that may be undertaken by your Agents. In every case, a success will result in a gain of +1 level for your Agent. Failures will damage your relations with the target Empire but your Agent will live. Critical Failures will result in your Agent's death. \n\n\nAgent Training takes 25 turns and costs 50 credits. The goal of Agent training is to increase the level of your agents without risking them on more difficult missions. Critical success is achieved with a modified role of 95 or greater and results in a gain of +2 levels for the Agent. Success is achived with a roll or 25 or greater. Rolling less than 25 will result in failed training. Rolling less than 10 will result in a training accident that kills your Agent. \n\n\nInfiltration takes 30 turns and costs 75 credits. The goal of infiltration is to place an Agent on a random enemy colony so that you can monitor their activities. If successful, the Agent's status will change to \"Undercover\" and you will have sensor data for the infiltrated colony plus access to their colony screen. Success is achieved with a roll of 50 or better. Rolling less than 50 will result in a failed infiltration and political consequences. Rolling less than 25 will result in your Agent being captured and killed. Once an Agent has successfully infiltrated a colony, he will remain on that colony until he is killed by an enemy with the Assassinate mission, or until you reassign the Agent to a new mission. \n\n      \nSabotage takes 30 turns and 75 credits. Successful sabotage will cripple the production of a random enemy colony for a number of turns dependent on the level of your agent. A roll of 80 or better is a critical success, which will result in the colony being crippled for a number of turns equal to 5 +  5 times the Agent's level. A roll of 50 or better will cripple the colony for 5 + 3 times the Agent's level turns, but you will be detected. Rolling less than 50 is a failure; less than 15 is a critical failure. If multiple Agents sabotage the same colony then the effects are cumulative. \n\n      \nAssassination takes 50 turns and requires 75 credits. Successful Assassination will remove a random enemy Agent from the targeted empire. A roll of 85 or better is a critical success. A roll of 70 or better is a success, but you will be detected. A roll of 40 or better is a failure, but your Assassin will escape unharmed. Rolling less than 40 will result in your Agent being killed. Assassination is therefore a mission for higher-level agents. \n\n\nSteal Technology takes 50 turns and requires 250 credits. If there are no technologies to steal at the end of 50 turns, then you will be refunded 125 credits. A roll of 85 or better is a critical success, whereas a roll of 75 or better is a success that results in detection. A roll of 20 or better results in a failure but your Agent will escape unharmed. Rolling less than 20 will result in the death of your Agent. \n\n\nIncite Rebellion takes 100 turns and 250 credits. If this mission is a success then rebel troops will spawn on a random enemy planet and attack the infrastructure there. Critical Success 85+ / Success 70+ / Fail 40+ / Critical Fail 0-40 \n\n\nRobbery takes 30 turns and 50 credits. If successful, your agent will steal 1-50 credits times the Agent's level from target empire. The Agent cannot steal more money than the target empire has. Critical Success 85+ / Success 70+ / Fail 20+ / Critical Fail 0-20\n\n      "
+ ENG: "The following data applies to espionage missions that may be undertaken by your Agents. In every case, a success will result in a gain of +1 level for your Agent. Failures will damage your relations with the target Empire but your Agent will live. Critical Failures will result in your Agent's death. \n\n\nAgent Training takes 25 turns and costs 50 BC. The goal of Agent training is to increase the level of your agents without risking them on more difficult missions. Critical success is achieved with a modified role of 95 or greater and results in a gain of +2 levels for the Agent. Success is achived with a roll or 25 or greater. Rolling less than 25 will result in failed training. Rolling less than 10 will result in a training accident that kills your Agent. \n\n\nInfiltration takes 30 turns and costs 75 BC. The goal of infiltration is to place an Agent on a random enemy colony so that you can monitor their activities. If successful, the Agent's status will change to \"Undercover\" and you will have sensor data for the infiltrated colony plus access to their colony screen. Success is achieved with a roll of 50 or better. Rolling less than 50 will result in a failed infiltration and political consequences. Rolling less than 25 will result in your Agent being captured and killed. Once an Agent has successfully infiltrated a colony, he will remain on that colony until he is killed by an enemy with the Assassinate mission, or until you reassign the Agent to a new mission. \n\n      \nSabotage takes 30 turns and 75 BC. Successful sabotage will cripple the production of a random enemy colony for a number of turns dependent on the level of your agent. A roll of 80 or better is a critical success, which will result in the colony being crippled for a number of turns equal to 5 +  5 times the Agent's level. A roll of 50 or better will cripple the colony for 5 + 3 times the Agent's level turns, but you will be detected. Rolling less than 50 is a failure; less than 15 is a critical failure. If multiple Agents sabotage the same colony then the effects are cumulative. \n\n      \nAssassination takes 50 turns and requires 75 BC. Successful Assassination will remove a random enemy Agent from the targeted empire. A roll of 85 or better is a critical success. A roll of 70 or better is a success, but you will be detected. A roll of 40 or better is a failure, but your Assassin will escape unharmed. Rolling less than 40 will result in your Agent being killed. Assassination is therefore a mission for higher-level agents. \n\n\nSteal Technology takes 50 turns and requires 250 BC. If there are no technologies to steal at the end of 50 turns, then you will be refunded 125 BC. A roll of 85 or better is a critical success, whereas a roll of 75 or better is a success that results in detection. A roll of 20 or better results in a failure but your Agent will escape unharmed. Rolling less than 20 will result in the death of your Agent. \n\n\nIncite Rebellion takes 100 turns and 250 BC. If this mission is a success then rebel troops will spawn on a random enemy planet and attack the infrastructure there. Critical Success 85+ / Success 70+ / Fail 40+ / Critical Fail 0-40 \n\n\nRobbery takes 30 turns and 50 BC. If successful, your agent will steal 1-50 BC times the Agent's level from target empire. The Agent cannot steal more money than the target empire has. Critical Success 85+ / Success 70+ / Fail 20+ / Critical Fail 0-20\n\n      "
  RUS: "Нижеприведенные данные относятся к заданиям, которые вы можете поручить вашим агентам. В любом из этих случаев при успешном выполнении задания агент получит +1 уровень. При неудаче ваши отношения с другой империей испортятся, но агент останется в игре. При критическом провале агент погибнет. \n\n\nОбучение агента занимает 25 ходов и стоит 50 кредитов. Цель обучения – повысить уровень агента, не рискуя им, отправляя его на опасное задание. При модифицированном броске 95 и выше агент получит сразу +2 уровня вследствие критического успеха. Обычный успех достигается при модифицированном броске 25 или выше. Бросок в интервале от 10 до 25 означает неудачу. Бросок меньше 10 означает несчастный случай при обучении, и агент погибнет. \n\n\nВнедрение идет 30 ходов и стоит 75 кредитов. Смысл этого задания заключается во внедрении агента во вражескую колонию, чтобы вы могли наблюдать за всем, что в ней происходит. При успешном внедрении агент уйдет в подполье, и вам будут предоставлены все данные сканеров для этой колонии, плюс у вас будет доступ к экрану этой колонии. Успех достигается при броске 50 или выше. Бросок от 25 до 49 означает провал внедрения и негативные политические последствия. При броске менее 25 ваш агент будет схвачен и убит. После того как агент успешно внедрился в колонию, он будет оставаться там в подполье, пока не будет убит вражеским агентом, выполняющим задание по ликвидации, или пока вы не отправите его на новое задание. \n\n      \nДиверсия идет 30 ходов и стоит 75 кредитов. При успешно осуществленной диверсии производство в случайно выбранной вражеской колонии будет остановлено на количество ходов, зависящее от уровня вашего агента. Бросок 80 или выше автоматически подразумевает критический успех, и производство в колонии будет остановлено на кол-во ходов, равное 5 + 5*уровень агента. Бросок 50 или выше остановит производство на кол-во ходов, равное 5 + 3*уровень агента, но при этом вас засекут. Бросок меньше 50 означает неудачу; меньше 15 – критический провал. Если диверсию в колонии осуществляли несколько агентов, эффекты от их подрывной деятельности суммируются. \n\n      \nЛиквидация идет 50 ходов и стоит 75 кредитов. При успешной ликвидации в выбранной империи будет уничтожен случайно выбранный вражеский агент. Бросок 85 или выше автоматически подразумевает критический успех. Бросок 70 или выше означает успех, но вас засекут. Бросок 40 или выше является неудачей, но ваш агент уцелеет. При броске меньше 40 ваш агент будет убит. Ликвидацию лучше поручать агентам высоких уровней. \n\n\nКража технологии идет 50 ходов и стоит 250 кредитов. Если по истечении этих 50 ходов у врага не окажется технологии, которую вы могли бы украсть, вы получите компенсацию в 125 кредитов. Бросок 85 или выше автоматически подразумевает критический успех. Бросок 20 или выше является неудачей, но ваш агент уцелеет. При броске меньше 20 ваш агент будет убит. \n\n\nПодстрекательство к мятежу идет 100 ходов и стоит 250 кредитов. Если миссия завершится успешно, на случайно выбранной вражеской планете появятся враждебные отряды повстанцев, которые начнут атаковать планетарную инфраструктуру. Критический успех 85+ / Успех 70+ / Неудача 40+ / Провал 0-40 \n\n\nГрабеж идет 30 ходов и стоит 50 кредитов. При успехе агент украдет у выбранной империи в вашу пользу 1-50 кредитов за каждый свой уровень. Агент не может украсть больше денег, чем есть в казне у выбранной империи. Критический успех 85+ / Успех 70+ / Неудача 20+ / Провал 0-20\n\n\n      "
  PTB: "Os dados a seguir se aplicam às missões de espionagem que podem ser realizadas por seus Agentes. Em todos os casos, um sucesso resultará em ganho de +1 nível para seu Agente. Falhas prejudicarão suas relações com o Império-alvo, mas seu Agente sobreviverá. Falhas críticas resultarão na morte do seu Agente. \n\n\nTreinamento de Agente leva 25 turnos e custa 50 créditos. O objetivo do treinamento de Agente é aumentar o nível dos seus agentes sem arriscá-los em missões mais difíceis. Sucesso crítico é alcançado com uma rolagem modificada de 95 ou mais e resulta em ganho de +2 níveis para o Agente. Sucesso é alcançado com uma rolagem de 25 ou mais. Rolar menos de 25 resultará em falha no treinamento. Rolar menos de 10 resultará em um acidente de treinamento que mata seu Agente. \n\n\nInfiltração leva 30 turnos e custa 75 créditos. O objetivo da infiltração é colocar um Agente em uma colônia inimiga aleatória para que você possa monitorar suas atividades. Se for bem-sucedida, o status do Agente mudará para \"Infiltrado\" e você terá dados de sensores da colônia infiltrada, além de acesso à tela dessa colônia. Sucesso é alcançado com uma rolagem de 50 ou melhor. Rolar menos de 50 resultará em falha na infiltração e consequências políticas. Rolar menos de 25 resultará na captura e morte do seu Agente. Depois que um Agente se infiltrar com sucesso em uma colônia, ele permanecerá nessa colônia até ser morto por um inimigo com a missão Assassinato ou até que você o reatribua a uma nova missão. \n\n      \nSabotagem leva 30 turnos e 75 créditos. Uma sabotagem bem-sucedida prejudicará a produção de uma colônia inimiga aleatória por um número de turnos dependente do nível do seu agente. Uma rolagem de 80 ou melhor é um sucesso crítico, que fará a colônia ficar prejudicada por um número de turnos igual a 5 + 5 vezes o nível do Agente. Uma rolagem de 50 ou melhor prejudicará a colônia por 5 + 3 vezes o nível do Agente, mas você será detectado. Rolar menos de 50 é uma falha; menos de 15 é uma falha crítica. Se vários Agentes sabotarem a mesma colônia, os efeitos serão cumulativos. \n\n      \nAssassinato leva 50 turnos e exige 75 créditos. Um Assassinato bem-sucedido removerá um Agente inimigo aleatório do império-alvo. Uma rolagem de 85 ou melhor é um sucesso crítico. Uma rolagem de 70 ou melhor é um sucesso, mas você será detectado. Uma rolagem de 40 ou melhor é uma falha, mas seu Assassino escapará ileso. Rolar menos de 40 resultará na morte do seu Agente. Portanto, Assassinato é uma missão para agentes de nível mais alto. \n\n\nRoubar Tecnologia leva 50 turnos e exige 250 créditos. Se não houver tecnologias para roubar ao final dos 50 turnos, você receberá reembolso de 125 créditos. Uma rolagem de 85 ou melhor é um sucesso crítico, enquanto uma rolagem de 75 ou melhor é um sucesso que resulta em detecção. Uma rolagem de 20 ou melhor resulta em falha, mas seu Agente escapará ileso. Rolar menos de 20 resultará na morte do seu Agente. \n\n\nIncitar Rebelião leva 100 turnos e 250 créditos. Se esta missão for um sucesso, tropas rebeldes surgirão em um planeta inimigo aleatório e atacarão a infraestrutura local. Sucesso Crítico 85+ / Sucesso 70+ / Falha 40+ / Falha Crítica 0-40 \n\n\nRoubo leva 30 turnos e 50 créditos. Se for bem-sucedido, seu agente roubará de 1 a 50 créditos vezes o nível do Agente do império-alvo. O Agente não pode roubar mais dinheiro do que o império-alvo possui. Sucesso Crítico 85+ / Sucesso 70+ / Falha 20+ / Falha Crítica 0-20\n\n      "
 CodexDiplomacyFederations:

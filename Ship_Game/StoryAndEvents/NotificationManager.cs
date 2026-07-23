@@ -826,7 +826,7 @@ namespace Ship_Game
 
         public void AddDestroyedPirateBase(Ship s, float reward)
         {
-            string message = $"{Localizer.Token(GameText.DestroyedPirateBase)} {reward.String(0)} credits.";
+            string message = $"{Localizer.Token(GameText.DestroyedPirateBase)} {reward.String(0)} BC.";
             AddNotification(new Notification
             {
                 RelevantEmpire  = s.Loyalty,

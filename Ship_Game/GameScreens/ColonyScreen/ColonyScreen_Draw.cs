@@ -694,15 +694,15 @@ namespace Ship_Game
             Font font = LowRes ? Font8 : Font14;
 
             batch.DrawString(font, $"{gIncome}: ", cursor, Color.LightGray);
-            batch.DrawString(font, $"{grossIncome.String(2)} bc/turn", new Vector2(cursor.X + 150, cursor.Y), Color.LightGreen);
+            batch.DrawString(font, $"{grossIncome.String(2)} BC/turn", new Vector2(cursor.X + 150, cursor.Y), Color.LightGreen);
             cursor.Y += font.LineSpacing +  1;
 
             batch.DrawString(font, $"{gUpkeep}: ", cursor, Color.LightGray);
-            batch.DrawString(font, $"{grossUpkeep.String(2)} bc/turn", new Vector2(cursor.X + 150, cursor.Y), Color.Pink);
+            batch.DrawString(font, $"{grossUpkeep.String(2)} BC/turn", new Vector2(cursor.X + 150, cursor.Y), Color.Pink);
             cursor.Y += font.LineSpacing + 1;
 
             batch.DrawString(font, $"{(netIncome > 0 ? nIncome : nLosses)}: ", cursor, Color.LightGray);
-            batch.DrawString(font, $"{netIncome.String(2)} bc/turn", new Vector2(cursor.X + 150, cursor.Y), netIncome > 0.0 ? Color.Green : Color.Red);
+            batch.DrawString(font, $"{netIncome.String(2)} BC/turn", new Vector2(cursor.X + 150, cursor.Y), netIncome > 0.0 ? Color.Green : Color.Red);
             cursor.Y += font.LineSpacing*2 + 1;
         }
 
@@ -768,7 +768,7 @@ namespace Ship_Game
 
             string combat = P.SpaceCombatNearPlanet ? " (reduced due to space combat)" : "";
             DrawBuildingInfo(ref cursor, batch, font, P.GeodeticManager.GetPlanetRepairRatePerSecond(), "NewUI/icon_queue_rushconstruction",
-                $"{new LocalizedText(GameText.ShipRepair).Text} Per Second{combat}", digits: 1);
+                $"{new LocalizedText(GameText.ShipRepair).Text}{combat}", digits: 1);
 
             DrawBuildingInfo(ref cursor, batch, font, -P.Money.TroopMaint, "UI/icon_troop_shipUI", Localizer.Token(GameText.CreditsPerTurnForTroop), digits: 2);
             DrawBuildingInfo(ref cursor, batch, font, -TroopConsumption, "UI/icon_troop_shipUI", GetTroopsConsumptionText(), digits: 2);
