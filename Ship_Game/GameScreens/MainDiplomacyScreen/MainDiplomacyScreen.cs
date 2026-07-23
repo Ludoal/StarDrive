@@ -470,18 +470,18 @@ namespace Ship_Game
                     continue;
                 Rectangle c = race.container;
                 batch.FillRectangle(c, new Color(23, 20, 14));
-                var portrait = new Rectangle(c.X + 2, c.Y + 2, 40, 48);
+                var portrait = new Rectangle(c.X + 2, c.Y + 2, 46, 56);
                 bool known = race.e == Player || Player.IsKnown(race.e);
 
                 if (!known)
                 {
                     batch.Draw(ResourceManager.Texture("Portraits/unknown"), portrait, Color.White);
-                    batch.DrawString(Font12Bold, "Unknown", new Vector2(c.X + 50, c.Y + 6), Color.Gray);
+                    batch.DrawString(Font12Bold, "Unknown", new Vector2(c.X + 56, c.Y + 8), Color.Gray);
                 }
                 else
                 {
                     batch.Draw(ResourceManager.Texture("Portraits/" + race.e.data.PortraitName), portrait, Color.White);
-                    batch.DrawDropShadowText1(race.e.data.Traits.Name, new Vector2(c.X + 50, c.Y + 4), Font12Bold, race.e.EmpireColor);
+                    batch.DrawDropShadowText1(race.e.data.Traits.Name, new Vector2(c.X + 56, c.Y + 8), Font12Bold, race.e.EmpireColor);
 
                     string posture;
                     Color postureColor = Color.Wheat;
@@ -506,7 +506,7 @@ namespace Ship_Game
                         if (rel.AtWar)
                             batch.DrawRectangle(c, Color.Red);
                     }
-                    batch.DrawString(Font12, posture, new Vector2(c.X + 50, c.Y + 26), postureColor);
+                    batch.DrawString(Font12, posture, new Vector2(c.X + 56, c.Y + 32), postureColor);
                 }
 
                 if (race.e == SelectedEmpire)
@@ -793,18 +793,22 @@ namespace Ship_Game
             Rectangle titleRect = new Rectangle((int)screenWidth / 2 - 200, 44, 400, 80);
             TitleBar = new Menu2(titleRect);
             TitlePos = new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString(Localizer.Token(GameText.DiplomaticOverview)).X / 2f, titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
-            LeftRect = new Rectangle((int)screenWidth / 2 - 700, (screenHeight > 768f ? titleRect.Y + titleRect.Height + 5 : 44), 1400, 700);
+            // Ludoal fork: FULL-SURFACE layout (Colony-style, field feedback) — the
+            // frame spans the whole screen: empire rows left, tabs + relations matrix
+            // right. Sized for up to 9 majors (CombinedArms raises MaxOpponents to 8).
+            int topY = screenHeight > 768f ? titleRect.Y + titleRect.Height + 5 : 44;
+            LeftRect = new Rectangle(20, topY, (int)screenWidth - 40, (int)screenHeight - topY - 20);
             DMenu = new Menu2(LeftRect);
             Add(new CloseButton(LeftRect.Right - 40, LeftRect.Y + 20));
 
-            // Ludoal fork: standard layout — empire rows left, Colony-style tabs right,
-            // relations matrix below the tabs. The three legacy blocks share the tab
-            // body rect; the active tab decides which one draws.
-            EmpiresPanel = new Submenu(new RectF(LeftRect.X + 30, LeftRect.Y + 20, 400, 660), Localizer.Token(GameText.DiplomaticOverview));
-            DetailTabs = new Submenu(new RectF(LeftRect.X + 450, LeftRect.Y + 20, 920, 410),
+            int rightX = LeftRect.X + 470;
+            int rightW = LeftRect.Width - 490;
+            int tabsH = (int)((LeftRect.Height - 60) * 0.62f);
+            EmpiresPanel = new Submenu(new RectF(LeftRect.X + 20, LeftRect.Y + 20, 430, LeftRect.Height - 40), Localizer.Token(GameText.DiplomaticOverview));
+            DetailTabs = new Submenu(new RectF(rightX, LeftRect.Y + 20, rightW, tabsH),
                 new LocalizedText[] { "Info", Localizer.Token(GameText.IntelligenceReport), "Operations" });
-            MatrixPanel = new Submenu(new RectF(LeftRect.X + 450, LeftRect.Y + 440, 920, 240), "Relations");
-            SelectedInfoRect = new Rectangle(LeftRect.X + 460, LeftRect.Y + 65, 900, 355);
+            MatrixPanel = new Submenu(new RectF(rightX, LeftRect.Y + 30 + tabsH, rightW, LeftRect.Height - tabsH - 50), "Relations");
+            SelectedInfoRect = new Rectangle(rightX + 10, LeftRect.Y + 65, rightW - 20, tabsH - 55);
             IntelligenceRect = SelectedInfoRect;
             OperationsRect = SelectedInfoRect;
             
@@ -831,13 +835,13 @@ namespace Ship_Game
             int j = 0;
             foreach (RaceEntry re in Races)
             {
-                // Ludoal fork: vertical rows in the Empires panel
-                re.container = new Rectangle(LeftRect.X + 40, LeftRect.Y + 65 + j * 56, 380, 52);
+                // Ludoal fork: vertical rows in the Empires panel (fits 9 majors)
+                re.container = new Rectangle(LeftRect.X + 30, LeftRect.Y + 65 + j * 64, 410, 60);
                 j++;
             }
             GameAudio.MuteRacialMusic();
 
-            DiagramButton = Add(new UIButton(ButtonStyle.Default, new Vector2(LeftRect.X + 450 + 920 - 220, LeftRect.Y + 445), "Diagram view"));
+            DiagramButton = Add(new UIButton(ButtonStyle.Default, new Vector2(rightX + rightW - 220, LeftRect.Y + 36 + tabsH), "Diagram view"));
             DiagramButton.OnClick = b => AddRelationShipDiagramScreen();
         }
 
