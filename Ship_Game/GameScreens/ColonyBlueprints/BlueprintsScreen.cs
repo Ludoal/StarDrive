@@ -92,7 +92,7 @@ namespace Ship_Game
 
             base.Add(new UILabel(titlePos, GameText.ColonyBlueprintsTitle, Fonts.Laserian14));
             LeftMenu = base.Add(new Menu1(2, titleRect.Y + titleRect.Height + 5, titleRect.Width, ScreenHeight - (titleRect.Y + titleRect.Height) - 7));
-            RightMenu = base.Add(new Menu1(titleRect.Right + 10, titleRect.Y + titleRect.Height + 5, ScreenWidth / 3 - 15, ScreenHeight - (titleRect.Y + titleRect.Height) - 7)); // Ludoal fork: align top with the main panel (was overlapping the top bar buttons)
+            RightMenu = base.Add(new Menu1(titleRect.Right + 5, titleRect.Y + titleRect.Height + 5, ScreenWidth / 3 - 10, ScreenHeight - (titleRect.Y + titleRect.Height) - 7)); // Ludoal fork: align top with the main panel (was overlapping the top bar buttons)
             Add(new CloseButton(RightMenu.Right - 52, RightMenu.Y + 22));
 
             RectF blueprintsStatsR = new(LeftMenu.X + 20, LeftMenu.Y + 20,
