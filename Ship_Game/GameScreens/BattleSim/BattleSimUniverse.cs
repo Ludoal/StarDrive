@@ -43,6 +43,11 @@ namespace Ship_Game
             EnemyDesigns = enemyDesigns;
             UState.NoEliminationVictory = true;
             UState.CanShowDiplomacyScreen = false;
+            // S5.1 field result: zooming out past SystemView (250k) hides ship MODELS
+            // (IsVisibleToPlayer gates on IsSystemViewOrCloser) and skips the death
+            // explosion effect - "sprites vanish, explosion lasts a blink". Group
+            // fights invite that zoom; cap the arena camera under the threshold.
+            MaxCamHeight = 245_000;
         }
 
         public static void Launch(UniverseScreen hostGame, string playerDesign, string enemyDesign)
