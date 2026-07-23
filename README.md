@@ -4,22 +4,74 @@
 
 # About this fork (Ludoal)
 
-Quality-of-life patches on top of the official **Jupiter 1.60.00045** release, made by a
+Quality-of-life patches on top of the official **Jupiter 1.60.00046** release, made by a
 new player still learning the game, with an AI assistant doing the heavy lifting on code
-archaeology. **No gameplay changes**: UI fixes and comfort only, everything listed in the
-release notes. The point of publishing is simple: the BlackBox team is welcome to take
-whatever they find worth keeping (issue #347 was the first, already integrated upstream.
-Thanks!).
+archaeology. **No gameplay changes**: UI fixes and comfort only. The point of publishing
+is simple: the BlackBox team is welcome to take whatever they find worth keeping — patch
+46 already integrated a number of them. Thanks!
 
 - **Install**: grab the latest `BlackBox_Jupiter_Patch_*.exe` from
   [Releases](https://github.com/Ludoal/StarDrive/releases) and run it over an official
-  Jupiter 1.60.00045 install, game closed. Cumulative, saves unaffected.
-- **Versioning**: public releases are lettered (`45-a`, `45-b`, ...); the embedded build
-  version stays numeric (`1.60.00045.N`), so the in-game updater will still offer the
-  next official patch (46+) normally.
-- **Branch**: [`qol-45`](https://github.com/Ludoal/StarDrive/tree/qol-45), the official
-  45 tag plus these fixes. Not based on upstream `main`/`develop`, so it stays
-  save-compatible with the official 45.
+  Jupiter 1.60.00046 install, game closed. Cumulative, saves unaffected.
+- **Revert**: the patch only touches files the official patch also ships, so re-applying
+  the official 46 patch is a complete revert. No kit needed.
+- **Versioning**: public releases are lettered (`46-a`, `46-b`, ...); the embedded build
+  version stays numeric (`1.60.00046.N`), so the in-game updater will still offer the
+  next official patch (47+) normally.
+- **Branch**: [`qol-46`](https://github.com/Ludoal/StarDrive/tree/qol-46), the official
+  46 tag plus these changes. Not based on upstream `main`/`develop`, so it stays
+  save-compatible with the official 46.
+
+## What's in it
+
+**Overlays & map**
+- One overlay = one function, freely combined: **F2** influence zones, **F3** vision
+  (sensor coverage, spies and projectors included), **F4** subspace projection,
+  **F5** gravity wells, **F6** weapons range.
+- Optional influence colors on the main map (Options toggle, default = vanilla look).
+- Fog of war stays dark: no permanent ship wakes, no explored-system halos — live
+  sensors carry current vision.
+- Minimap: contested systems in grey (white = claim), dimmed nebulae, and the patch-46
+  Important Events button sits beside Range (row 4).
+
+**Top bar & navigation**
+- Live top bar on every full-screen panel (Empire, Espionage, Budget, Diplomacy,
+  Shipyard, Fleets, the Array screens, Patrols, Blueprints, Research).
+- **PAUSED** indicator on the bar: white = the screen's automatic pause, yellow = your
+  pause (it survives closing the screen).
+- The key that opens a screen closes it (C Troops, F Blueprints, P Patrols, **F7**
+  Important Events log — new hotkey for the patch-46 screen).
+- Troops Array: dedicated screen with status, grouping and strength columns.
+
+**Screens**
+- Research: integrated frame under the top bar, compact branch packing, standard title,
+  search anchored to the frame.
+- Colony and Blueprints: panels aligned with the bar, wider right blocks.
+- Planet View removed: double-click opens Colony view, Combat view, or just snaps the
+  camera; the selection cartouches carry the info instead (planet class/richness, deploy
+  button, mining block, research-station status, star icon).
+
+**Notifications & camera**
+- Notification clicks go where they mean: diplomacy opens the Diplomacy panel,
+  espionage snaps to the planet, colony and ground-battle panels open in place —
+  the camera only moves when it stays visible, and planet/station snaps stop at
+  a sane zoom instead of nose-on.
+- Autosave measured in game years (slider, 0 = legacy wall-clock).
+
+**Texts & units** *(work in progress)*
+- Money flows labeled `bc/turn` everywhere (they are all per-turn), population rates
+  per billion colonists; a game-term capitalization pass is ongoing.
+
+**Battle Arena** *(work in progress)*
+- Practice arena from the main menu: pick enemies per race grouped by hull class,
+  full-tech sim empires (carrier hangars work), combat stances honored at contact.
+  Planned: spawn distance control, encounter-filtered enemy list.
+
+**Bug fixes not yet upstream**
+- The fixes still waiting in open PRs on the official repo (governor blueprint and
+  scrap behaviour, space-road projector count and priority, troop-transport selection,
+  wreck-site conquest gate, per-entry scroll-wheel steps, and more) ride in this patch
+  in the meantime; details in the release notes.
 
 *Everything below is the original BlackBox README.*
 
