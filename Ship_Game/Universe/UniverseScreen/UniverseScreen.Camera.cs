@@ -131,13 +131,14 @@ namespace Ship_Game
             transDuration = duration;
         }
 
-        public void SnapViewSystem(SolarSystem s, Planet p, UnivScreenState camHeight)
+        public void SnapViewSystem(SolarSystem s, Planet p, UnivScreenState camHeight, bool select = true)
         {
             double z = GetZfromScreenState(camHeight);
             SnapViewTo(new(s.Position.X, s.Position.Y + 400f, z), 5f, 2f);
 
             bool doReturnToShip = ViewingShip;
-            SetSelectedSystem(s, p);
+            if (select) // Ludoal fork: notification snaps pass false — a selection the
+                SetSelectedSystem(s, p); // player never made kept the exploded view armed on dezoom
             returnToShip = doReturnToShip;
         }
 

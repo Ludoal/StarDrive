@@ -1078,7 +1078,7 @@ namespace Ship_Game
         public void SnapToSystem(SolarSystem system)
         {
             GameAudio.SubBassWhoosh();
-            Screen.SnapViewSystem(system, null, UniverseScreen.UnivScreenState.SystemView);
+            Screen.SnapViewSystem(system, null, UniverseScreen.UnivScreenState.SystemView, select: false); // Ludoal fork: you are AT the system, no ghost selection
         }
 
         public void Update(float elapsedRealTime)
