@@ -55,8 +55,8 @@ namespace Ship_Game
 
             // Ludoal fork: comparison panel (Shift-click in the module list). Same slot as
             // Choose Fighter (the fighter list wins it when a hangar is selected), widened
-            // by 75px so the delta column fits beside the values.
-            RectF compareR = new(acsub.X + acsub.W + 20, acsub.Y, acsub.W + 75, acsub.H);
+            // by 125px: its right column shifts right so each column owns a delta lane.
+            RectF compareR = new(acsub.X + acsub.W + 20, acsub.Y, acsub.W + 125, acsub.H);
             CompareModSubMenu = base.Add(new Submenu(compareR, "Compared Module"));
             CompareModSubMenu.SetBackground(Colors.TransparentBlackFill);
             ChooseFighterSub = base.Add(new SubmenuScrollList<FighterListItem>(fighterR, "Choose Fighter"));
@@ -176,9 +176,12 @@ namespace Ship_Game
                             int col, Submenu panel)
         {
             Graphics.Font font = Fonts.Arial12Bold;
-            float spacing = ActiveModStatSpacing; // SAME spacing in both panels = aligned columns
+            float spacing = ActiveModStatSpacing;
             var dim = new Color(105, 105, 105);
-            var cursor = new Vector2(panel.X + 10 + col * 152f, panel.Y + StatsStartRel);
+            // The Compared panel pushes its right column further out so column 1's
+            // delta lane never runs into column 2's labels; rows still align in Y.
+            float colStep = other != null ? 230f : 152f;
+            var cursor = new Vector2(panel.X + 10 + col * colStep, panel.Y + StatsStartRel);
 
             foreach (CollectedStat u in union)
             {
@@ -197,7 +200,7 @@ namespace Ship_Game
                         float dv = r.Value - o.Value;
                         bool better = LowerIsBetter.Contains(u.Key) ? dv < 0f : dv > 0f;
                         string ds = (dv > 0f ? "(+" : "(") + (r.IsPercent ? dv.ToString("P0") : dv.GetNumberString()) + ")";
-                        batch.DrawString(font, ds, new Vector2(cursor.X + spacing + 64f, cursor.Y),
+                        batch.DrawString(font, ds, new Vector2(cursor.X + spacing + 46f, cursor.Y),
                                          better ? Color.LightGreen : Color.LightPink);
                     }
                 }
