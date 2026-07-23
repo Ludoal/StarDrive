@@ -33,7 +33,7 @@ is simple: the BlackBox team is welcome to take whatever they find worth keeping
   sensors carry current vision.
 - Dimmed nebulae on the main map.
 - Minimap: colonized systems boxed with race color, contested systems (several races)
-  in grey; the patch-46 Important Events button on the button row.
+  in grey.
 
 **Top bar & navigation**
 - Live top bar on every full-screen panel (Empire, Espionage, Budget, Diplomacy,
