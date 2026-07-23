@@ -29,6 +29,7 @@ namespace Ship_Game
         readonly Array<string> Roster = new();
         string[] ChosenGroup;
         readonly UIButton FightBtn, ClearBtn;
+        readonly ScrollList<RosterItem> RosterSL;
         const int RosterCap = 10; // readability cap (field preference, 45.65 bench)
         int LaunchCountdown = -1; // >= 0: veil is up, counting rendered frames before Launch
 
@@ -40,21 +41,27 @@ namespace Ship_Game
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0f; // the launch path must leave no half-faded frames under the veil
 
-            var rect = new Rectangle(ScreenWidth / 2 - 260, ScreenHeight / 2 - 300, 520, 600);
+            var rect = new Rectangle(ScreenWidth / 2 - 260, ScreenHeight / 2 - 330, 520, 660); // S5: +60 for the roster floor
             Window = Add(new Menu2(rect));
             Add(new CloseButton(rect.Right - 40, rect.Y + 20));
 
-            RectF slRect = new(rect.X + 20, rect.Y + 60, rect.Width - 40, rect.Height - 150);
+            RectF slRect = new(rect.X + 20, rect.Y + 60, rect.Width - 40, rect.Height - 270);
             DesignSL = Add(new ScrollList<PickerItem>(slRect, 32));
             DesignSL.EnableItemHighlight = true;
             DesignSL.OnDoubleClick = OnPicked;
             DesignSL.OnClick = OnSingleClicked; // S5: Shift+click stages into the group
 
+            // S5: the group roster — grouped "design xN" rows, click removes one
+            RectF rosterRect = new(rect.X + 20, rect.Y + rect.Height - 192, rect.Width - 40, 120);
+            RosterSL = Add(new ScrollList<RosterItem>(rosterRect, 24));
+            RosterSL.EnableItemHighlight = true;
+            RosterSL.OnClick = OnRosterClicked;
+
             // S5: group controls — hidden until the roster has a first opponent
-            FightBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(rect.X + 20, rect.Bottom - 44), "Fight group"));
+            FightBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(rect.X + 20, rect.Bottom - 48), "Fight group"));
             FightBtn.OnClick = b => LaunchGroup();
-            ClearBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(rect.Right - 220, rect.Bottom - 44), "Clear"));
-            ClearBtn.OnClick = b => { GameAudio.AcceptClick(); Roster.Clear(); };
+            ClearBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(rect.Right - 220, rect.Bottom - 48), "Clear"));
+            ClearBtn.OnClick = b => { GameAudio.AcceptClick(); Roster.Clear(); RefreshRoster(); };
 
             PopulateList();
         }
@@ -99,6 +106,32 @@ namespace Ship_Game
             }
             GameAudio.AcceptClick();
             Roster.Add(item.DesignName);
+            RefreshRoster();
+        }
+
+        // rebuild the grouped view (insertion order, "xN" per design)
+        void RefreshRoster()
+        {
+            RosterSL.Reset();
+            var counts = new Map<string, int>();
+            var order = new Array<string>();
+            foreach (string d in Roster)
+            {
+                if (counts.TryGetValue(d, out int c)) counts[d] = c + 1;
+                else { counts[d] = 1; order.Add(d); }
+            }
+            foreach (string d in order)
+                RosterSL.AddItem(new RosterItem(d, counts[d]));
+        }
+
+        // click a roster row: remove ONE instance of that design
+        void OnRosterClicked(RosterItem item)
+        {
+            if (LaunchCountdown >= 0 || item == null)
+                return;
+            GameAudio.AcceptClick();
+            Roster.Remove(item.Design);
+            RefreshRoster();
         }
 
         // S5: Shift + SINGLE click stages a design into the group roster
@@ -153,7 +186,9 @@ namespace Ship_Game
                     BattleSimUniverse.Launch(Host, PlayerDesign, ChosenEnemy);
                 return;
             }
-            FightBtn.Visible = ClearBtn.Visible = Roster.NotEmpty; // S5
+            FightBtn.Visible = ClearBtn.Visible = RosterSL.Visible = Roster.NotEmpty; // S5
+            if (Roster.NotEmpty)
+                FightBtn.Text = "Fight group (" + Roster.Count + ")";
             base.Update(fixedDeltaTime);
         }
 
@@ -179,24 +214,11 @@ namespace Ship_Game
             batch.DrawString(Fonts.Arial14Bold, title,
                 new Vector2(Window.Menu.CenterTextX(title), Window.Menu.Y + 22), Color.Wheat);
 
-            // S5: roster summary between the list and the group buttons
             if (Roster.NotEmpty)
             {
-                var counts = new Map<string, int>();
-                foreach (string d in Roster)
-                    counts[d] = counts.TryGetValue(d, out int c) ? c + 1 : 1;
-                var sb = new StringBuilder("Group (").Append(Roster.Count).Append("): ");
-                bool first = true;
-                foreach (var kv in counts)
-                {
-                    if (!first) sb.Append(" · ");
-                    first = false;
-                    sb.Append(kv.Key);
-                    if (kv.Value > 1) sb.Append(" x").Append(kv.Value);
-                }
-                string roster = Fonts.Arial12Bold.ParseText(sb.ToString(), (int)Window.Menu.Width - 40);
-                batch.DrawString(Fonts.Arial12Bold, roster,
-                    new Vector2(Window.Menu.X + 20, Window.Menu.Bottom - 84), Color.Wheat);
+                string grp = "Group roster - click a line to remove one";
+                batch.DrawString(Fonts.Arial12Bold, grp,
+                    new Vector2(Window.Menu.X + 20, Window.Menu.Bottom - 206), Color.Wheat);
             }
             batch.SafeEnd();
         }
@@ -211,6 +233,27 @@ namespace Ship_Game
                 return true;
             }
             return base.HandleInput(input);
+        }
+
+        // S5: one grouped roster line - "design xN"
+        public sealed class RosterItem : ScrollListItem<RosterItem>
+        {
+            public readonly string Design;
+            readonly int Count;
+
+            public RosterItem(string design, int count)
+            {
+                Design = design;
+                Count = count;
+            }
+
+            public override void Draw(SpriteBatch batch, DrawTimes elapsed)
+            {
+                base.Draw(batch, elapsed);
+                batch.DrawString(Fonts.Arial12Bold, Design, new Vector2(X + 8, CenterY - 6), Color.White);
+                if (Count > 1)
+                    batch.DrawString(Fonts.Arial12Bold, "x" + Count, new Vector2(X + 300, CenterY - 6), Color.Wheat);
+            }
         }
 
         public sealed class PickerItem : ScrollListItem<PickerItem>
