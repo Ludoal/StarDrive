@@ -1489,7 +1489,7 @@ TheWeightGivenToTargeting2:
  PTB: "O peso dado para mirar em naves com escudos fortes"
 TheWeightGivenToTargeting3:
  Id: 211
- ENG: "The weight given to targeting ships that have a high Damage Per Second output"
+ ENG: "The weight given to targeting ships that have a high Damage per second output"
  RUS: "Вес выбора целями кораблей, наносящих большой урон"
  SPA: "Valor específico dado por apuntar a naves que provocan mucho daño por segundo"
  UKR: "Вага, яку надають націленню на кораблі з високим уроном за секунду"
@@ -2219,7 +2219,7 @@ TheLandscapeHereIsNot:
  PTB: "A paisagem aqui não é adequada para habitação sem a construção de módulos habitacionais avançados. Construir uma biosfera aqui tornará esta área habitável"
 FoodPerTurn:
  Id: 354
- ENG: "Food Per Turn"
+ ENG: "Food per turn"
  RUS: "еды в ход"
  SPA: "de alimentos por turno"
  UKR: "Їжа за хід"
@@ -2233,7 +2233,7 @@ ProductionPerTurn:
  PTB: "produção por turno"
 ResearchPerTurn:
  Id: 357
- ENG: "Research Per Turn"
+ ENG: "Research per turn"
  RUS: "исследований в ход"
  SPA: "de investigación por turno"
  UKR: "Дослідження за хід"
@@ -2268,7 +2268,7 @@ CreditsAddedPerColonist:
  PTB: "Créditos Adicionados por Colono"
 ProductionPerRichness:
  Id: 363
- ENG: "Production Per Richness"
+ ENG: "Production per Richness"
  RUS: "производство за богатство"
  SPA: "Producción por riqueza"
  UKR: "Виробництво за багатство"
@@ -8163,7 +8163,7 @@ Expansionists:
  PTB: "Expansionistas"
 FixedShipAndBuildingsCost:
  Id: 1861
- ENG: "Fixed Ship And Buildings Cost"
+ ENG: "Fixed ship and building costs"
  RUS: "Фиксированная стоимость кораблей и построек"
  UKR: "Фіксована вартість судна та будівель"
  PTB: "Custo Fixo de Naves e Edifícios"
@@ -8235,19 +8235,19 @@ ProductionInfrastructure:
  PTB: "Infraestrutura de Produção"
 MaximumProductionToQueuePer:
  Id: 1873
- ENG: "Maximum Production To Queue Per Turn"
+ ENG: "Maximum Production to queue per turn"
  RUS: "Максимальное производство в очереди за ход"
  UKR: "Максимальна кількість продукції в черзі за один хід"
  PTB: "Produção Máxima na Fila por Turno"
 ColonistsPerHabitableTileBillions:
  Id: 1874
- ENG: "Colonists per Habitable Tile (Billions)"
+ ENG: "Colonists per Habitable Tile (billions)"
  RUS: "Колонисты на жилую клетку (миллиарды)"
  UKR: "Колоністи на один придатний для життя тайл (мільярди)"
  PTB: "Colonos por Espaço Habitável (Bilhões)"
 ColonistsPerBiosphereBillions:
  Id: 1875
- ENG: "Colonists per Biosphere (Billions)"
+ ENG: "Colonists per Biosphere (billions)"
  RUS: "Колонисты на биосферу (миллиарды)"
  UKR: "Колоністи на біосферу (мільярди)"
  PTB: "Colonos por Biosfera (Bilhões)"
@@ -8361,19 +8361,19 @@ StripsTheShipOfAny:
  PTB: "Remove da nave todos os módulos, exceto blindagem ou qualquer coisa com deflexão, escudos, motores e módulos de Comando. Útil ao usar uma nave-modelo para um novo projeto."
 MillionColonistsCouldBeLiving:
  Id: 1896
- ENG: "Million Colonists could be living on this land if you built Biospheres."
+ ENG: "million Colonists could be living on this land if you built Biospheres."
  RUS: "Миллионов колонистов могут жить на этой территории,если построить биосферы."
  UKR: "Мільйони колоністів могли б жити на цій землі, якби ви побудували біосфери."
  PTB: "Milhões de colonos poderiam viver nesta terra se você construísse Biosferas."
 MillionColonistsCanLiveUnder:
  Id: 1897
- ENG: "Million Colonists can live under the biospheres here."
+ ENG: "million Colonists can live under the biospheres here."
  RUS: "Миллионов колонистов могут жить здесь под биосферой."
  UKR: "Мільйони колоністів можуть жити тут під біосферами."
  PTB: "Milhões de colonos podem viver sob as biosferas aqui."
 MillionColonistsCanLiveOn:
  Id: 1898
- ENG: "Million Colonists can live on this tile."
+ ENG: "million Colonists can live on this tile."
  RUS: "Миллионов колоностов могут жить на этой территории."
  UKR: "На цій плитці можуть жити мільйони колоністів."
  PTB: "Milhões de colonos podem viver neste espaço."
@@ -11919,7 +11919,7 @@ ProductionPerTurnPerAssigned:
  PTB: "produção por turno por colono designado"
 ResearchPerTurnPerAssigned:
  Id: 358
- ENG: "Research Per Assigned Colonist"
+ ENG: "Research per assigned Colonist"
  RUS: "исследования в ход на занятого колониста"
  SPA: "de investigación por turno y por colono asignado"
  UKR: "Дослідження на призначеного колоніста"
@@ -13152,7 +13152,7 @@ MinAcceptableWarpRangeAShip:
  PTB: "Alcance mínimo de dobra aceitável que uma nave deve ter antes de precisar recarregar para a IA construí-la."
 SecondsPerTurn:
  Id: 4125
- ENG: "Seconds Per Turn"
+ ENG: "Seconds per turn"
  RUS: "Секунд за ход"
  UKR: "Секунди за хід"
  PTB: "Segundos Por Turno"
@@ -14254,7 +14254,7 @@ BB_Tech_Terraforming3_Bonus:
  PTB: "Terraformação Nível 3. Neste nível, os Terraformadores removerão todos os Vulcões e terrenos ruins do planeta, tornarão habitáveis os quadrantes terraformáveis e também transformarão seu planeta no melhor tipo de planeta adequado para sua raça, aumentando sua fertilidade para 1."
 Terraforming:
  Id: 4311
- ENG: "Terraforming In Progress"
+ ENG: "Terraforming in progress"
  UKR: "Тераформування триває"
  PTB: "Terraformação em Andamento"
 Blockade2:
@@ -14569,17 +14569,17 @@ MaxFerfilityOnBuild:
  PTB: "Fertilidade Máxima"
 FoodPerColonist:
  Id: 4374
- ENG: "Food Per Assigned Colonist"  
+ ENG: "Food per assigned Colonist"  
  UKR: "Їжа на одного колоніста"
  PTB: "Comida Por Colonista Atribuído"
 ProdPerColonist:
  Id: 4375
- ENG: "Production Per Assigned Colonist"  
+ ENG: "Production per assigned Colonist"  
  UKR: "Виробництво на призначеного колоніста"
  PTB: "Produção Por Colonista Atribuído"
 ProdPerTurn:
  Id: 4376
- ENG: "Production Per Turn"   
+ ENG: "Production per turn"   
  UKR: "Виробництво за один оборот"
  PTB: "Produção Por Turno"
 MaxStorage:
@@ -14589,7 +14589,7 @@ MaxStorage:
  PTB: "Armazenamento Máximo"
 PlusFlatPop:
  Id: 4378
- ENG: "Flat Population (Million)"     
+ ENG: "Flat Population (millions)"     
  UKR: "Рівнинне населення (млн.)"
  PTB: "População Fixa (Milhões)"
 Infrastructure:
@@ -14599,7 +14599,7 @@ Infrastructure:
  PTB: "Infraestrutura"
 PopMax:
  Id: 4380
- ENG: "Max Population (Billion)"       
+ ENG: "Max Population (billions)"       
  UKR: "Максимальна кількість населення (млрд)"
  PTB: "População Máxima (Bilhões)"
 MineralRichness:
@@ -14665,7 +14665,7 @@ PathfinderTip:
  ENG: "When ON, ships plot a course around hostile and unknown planetary gravity wells when moving across the universe, avoiding warp drops. Turning this OFF makes ships travel in straight lines and drop out of warp as wells are encountered."
 FlatIncomePerTurn:
  Id: 4384
- ENG: "Flat Income Per Turn" 
+ ENG: "Flat Income per turn" 
  UKR: "Фіксований дохід за оборот"
  PTB: "Renda Fixa Por Turno"
 AutoBuildTerraformers:
@@ -14992,7 +14992,7 @@ DesignIssueConstructorCostRemidiation:
  PTB: "Talvez você queira reduzir o custo deste construtor. Custo excedente de produção adicionado a qualquer custo de produção orbital quando este construtor é selecionado:"
 RefinningPerTurnStat:
  Id: 4449
- ENG: "Refining Per Turn"      
+ ENG: "Refining per turn"      
  UKR: "Переробка за один оборот"
  PTB: "Refino Por Turno"
 RefiningPerTurnStatTip:
@@ -16473,7 +16473,7 @@ BeamDur:
  PTB: "Duração do Feixe"
 PauseOnNotifications:
  Id: 6007
- ENG: "Pause On Notifications"
+ ENG: "Pause on notifications"
  RUS: "Пауза при уведомлениях"
  SPA: "Pausar en notificaiones"
  UKR: "Пауза при сповіщеннях"
