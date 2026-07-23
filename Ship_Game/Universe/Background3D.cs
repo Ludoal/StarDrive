@@ -124,7 +124,7 @@ public sealed class Background3D : IDisposable
         RenderStates.BasicBlendMode(sr.Device, additive:true, depthWrite:false);
 
         double alpha = Universe.CamPos.Z / (Universe.GetZfromScreenState(UniverseScreen.UnivScreenState.SectorView) * 2);
-        float a = (float)alpha.Clamped(0.1, 0.3);
+        float a = (float)alpha.Clamped(0.1, 0.3) * 0.75f; // Ludoal fork: nebulas dimmed a notch (they drowned the map light)
         Color color = new(1f, 1f, 1f, a);
 
         sr.Begin(Universe.ViewProjection);

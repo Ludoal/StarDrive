@@ -166,7 +166,7 @@ public sealed class Background : IDisposable
             RenderStates.BasicBlendMode(Universe.Device, additive: false, depthWrite: false);
 
             Vector2d nebulaSize = SubTexture.GetAspectFill(nebula.Width, nebula.Height, 20_000_000.0);
-            sr.Draw(nebula, backgroundPos, nebulaSize, Color.White);
+            sr.Draw(nebula, backgroundPos, nebulaSize, new Color(0.85f, 0.85f, 0.85f, 1f)); // Ludoal fork: backdrop dimmed a notch
             sr.End();
         }
 
