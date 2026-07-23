@@ -24,8 +24,7 @@ namespace Ship_Game
         readonly string PlayerDesign;
         readonly Menu2 Window;
         readonly ScrollList<PickerItem> DesignSL;
-        string ChosenEnemy;
-        // S5: Shift-(double)click stages opponents into a group roster
+        // S5: click stages opponents into the group roster (S5.1: the only gesture)
         readonly Array<string> Roster = new();
         string[] ChosenGroup;
         readonly UIButton FightBtn, ClearBtn;
@@ -48,8 +47,7 @@ namespace Ship_Game
             RectF slRect = new(rect.X + 20, rect.Y + 60, rect.Width - 40, rect.Height - 270);
             DesignSL = Add(new ScrollList<PickerItem>(slRect, 32));
             DesignSL.EnableItemHighlight = true;
-            DesignSL.OnDoubleClick = OnPicked;
-            DesignSL.OnClick = OnSingleClicked; // S5: Shift+click stages into the group
+            DesignSL.OnClick = OnPicked; // S5.1: click = stage/unstage; the button launches
 
             // S5: the group roster — grouped "design xN" rows, click removes one
             RectF rosterRect = new(rect.X + 20, rect.Y + rect.Height - 192, rect.Width - 40, 120);
@@ -69,7 +67,7 @@ namespace Ship_Game
         void PopulateList()
         {
             DesignSL.Reset();
-            DesignSL.AddItem(new PickerItem(PlayerDesign, "mirror match", isMirror: true));
+            DesignSL.AddItem(new PickerItem(PlayerDesign, "mirror match", isMirror: true, picker: this));
 
             Ship[] ships = ResourceManager.Ships.Ships
                 .Filter(s => s.BaseStrength > 0 && s.Name != PlayerDesign)
@@ -93,7 +91,7 @@ namespace Ship_Game
                 foreach (Ship s in pair.Value.OrderByDescending(x => x.DesignRole)
                                              .ThenByDescending(x => x.BaseStrength)) // class blocks, heaviest first
                     header.AddSubItem(new PickerItem(s.Name,
-                        Localizer.GetRole(s.DesignRole, Host.Player) + " \u00b7 str " + s.BaseStrength.String(0), isMirror: false));
+                        Localizer.GetRole(s.DesignRole, Host.Player) + " \u00b7 str " + s.BaseStrength.String(0), isMirror: false, picker: this));
             }
         }
 
@@ -108,6 +106,8 @@ namespace Ship_Game
             Roster.Add(item.DesignName);
             RefreshRoster();
         }
+
+        public bool IsStaged(string design) => Roster.Contains(design);
 
         // rebuild the grouped view (insertion order, "xN" per design)
         void RefreshRoster()
@@ -134,31 +134,21 @@ namespace Ship_Game
             RefreshRoster();
         }
 
-        // S5: Shift + SINGLE click stages a design into the group roster
-        void OnSingleClicked(PickerItem item)
-        {
-            if (LaunchCountdown >= 0 || item.DesignName == null || !Input.IsShiftKeyDown)
-                return;
-            StageIntoGroup(item);
-        }
-
+        // S5.1 (field feedback): ONE gesture for everything — click stages a design,
+        // clicking it again unstages it; Shift+click stacks another copy of a design
+        // already in the group. Launching is the button's job, single opponent included.
         void OnPicked(PickerItem item)
         {
             if (LaunchCountdown >= 0 || item.DesignName == null) // headers don't fight
                 return;
-            // Shift double-click: the first click already staged via OnSingleClicked —
-            // do nothing here or the design would be counted twice.
-            if (Input.IsShiftKeyDown)
-                return;
-            // once a roster exists, plain double-clicks stage too — Fight group launches
-            if (Roster.NotEmpty)
+            if (!Input.IsShiftKeyDown && Roster.Contains(item.DesignName))
             {
-                StageIntoGroup(item);
+                GameAudio.AcceptClick();
+                Roster.Remove(item.DesignName);
+                RefreshRoster();
                 return;
             }
-            GameAudio.AcceptClick();
-            ChosenEnemy = item.DesignName;
-            LaunchCountdown = 2; // let the veil reach the screen before the heavy load
+            StageIntoGroup(item);
         }
 
         void LaunchGroup()
@@ -167,7 +157,7 @@ namespace Ship_Game
                 return;
             GameAudio.AcceptClick();
             ChosenGroup = Roster.ToArray();
-            LaunchCountdown = 2;
+            LaunchCountdown = 2; // let the veil reach the screen before the heavy load
         }
 
         public override void Update(float fixedDeltaTime)
@@ -180,15 +170,12 @@ namespace Ship_Game
                 // exit first, launch second — same order as the Shipyard button:
                 // our toPause resume fires now, Launch re-pauses the host right after.
                 ExitScreen();
-                if (ChosenGroup != null)
-                    BattleSimUniverse.Launch(Host, PlayerDesign, ChosenGroup);
-                else
-                    BattleSimUniverse.Launch(Host, PlayerDesign, ChosenEnemy);
+                BattleSimUniverse.Launch(Host, PlayerDesign, ChosenGroup);
                 return;
             }
             FightBtn.Visible = ClearBtn.Visible = RosterSL.Visible = Roster.NotEmpty; // S5
             if (Roster.NotEmpty)
-                FightBtn.Text = "Fight group (" + Roster.Count + ")";
+                FightBtn.Text = Roster.Count == 1 ? "Fight" : "Fight group (" + Roster.Count + ")";
             base.Update(fixedDeltaTime);
         }
 
@@ -210,9 +197,9 @@ namespace Ship_Game
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
             base.Draw(batch, elapsed);
-            string title = "Choose your opponent - Shift-click for a group";
+            string title = "Pick your opponents - click stages, click again unstages";
             batch.DrawString(Fonts.Arial14Bold, title,
-                new Vector2(Window.Menu.CenterTextX(title), Window.Menu.Y + 22), Color.Wheat);
+                new Vector2(Window.Menu.CenterTextX(title, Fonts.Arial14Bold), Window.Menu.Y + 22), Color.Wheat);
 
             if (Roster.NotEmpty)
             {
@@ -261,14 +248,16 @@ namespace Ship_Game
             public readonly string DesignName; // null on role headers
             readonly string Detail;
             readonly bool IsMirror;
+            readonly BattleSimEnemyPicker Picker; // S5.1: staged designs light up
 
             public PickerItem(string headerText) : base(headerText) { }
 
-            public PickerItem(string name, string detail, bool isMirror)
+            public PickerItem(string name, string detail, bool isMirror, BattleSimEnemyPicker picker)
             {
                 DesignName = name;
                 Detail = detail;
                 IsMirror = isMirror;
+                Picker = picker;
             }
 
             public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -276,7 +265,8 @@ namespace Ship_Game
                 base.Draw(batch, elapsed);
                 if (DesignName == null)
                     return; // role header: base draws it
-                var color = IsMirror ? Color.Wheat : Color.White;
+                bool staged = Picker != null && Picker.IsStaged(DesignName);
+                var color = staged ? Color.LightGreen : IsMirror ? Color.Wheat : Color.White;
                 batch.DrawString(Fonts.Arial12Bold, DesignName, new Vector2(X + 8, CenterY - 6), color);
                 batch.DrawString(Fonts.Arial12Bold, Detail, new Vector2(X + 280, CenterY - 6), Color.Gray);
             }
