@@ -287,31 +287,13 @@ namespace Ship_Game
             batch.Draw(front, new Rectangle(0, 0, 512, 512), Color.White);
             batch.SafeEnd();
 
-            // Step 2: stamp current sensor coverage additively on top.
-            batch.SafeBegin(SpriteBlendMode.Additive);
-            double universeWidth = UState.Size * 2.0;
-            double worldSizeToMaskSize = (512.0 / universeWidth);
-
-            var uiNode = ResourceManager.Texture("UI/node");
-            // Ludoal fork: ships no longer paint the fog map. There is nothing in deep
-            // space to remember, so their permanent wakes were pure noise — every
-            // freighter route scratched a bright line into the map. Explored SYSTEMS
-            // stamp their disc instead: the map remembers known space, not travel
-            // history. (White stamp keeps rgb tracking alpha so the FogMap stays
-            // premul-correct for the AlphaBlend composite in UpdateFogOfWarInfluences.)
-            var sensorMask = new Color(255, 255, 255, 255);
-            foreach (SolarSystem sys in UState.Systems)
-            {
-                if (sys.IsExploredBy(Player))
-                {
-                    double posX = sys.Position.X * worldSizeToMaskSize + 256;
-                    double posY = sys.Position.Y * worldSizeToMaskSize + 256;
-                    double size = (sys.Radius * 2.5) * worldSizeToMaskSize;
-                    var rect = new RectF(posX, posY, size, size);
-                    batch.Draw(uiNode, rect, sensorMask, 0f, uiNode.CenterF, SpriteEffects.None, 1f);
-                }
-            }
-            batch.SafeEnd();
+            // Ludoal fork: nothing stamps the fog map anymore. Ship wakes were
+            // noise (removed first); the explored-system discs that replaced them
+            // still leaked known-space geography onto an otherwise dark map, so
+            // they go too — an undiscovered system has no name, a discovered one
+            // needs no halo. The map stays uniformly dark; live sensor highlights
+            // carry current vision. The ping-pong blit and render targets stay
+            // alive so the FogMapBytes save path keeps working (revert-safe).
             device.SetRenderTarget(null);
             FogMap = back;
         }
