@@ -48,6 +48,7 @@ namespace Ship_Game
             DesignSL = Add(new ScrollList<PickerItem>(slRect, 32));
             DesignSL.EnableItemHighlight = true;
             DesignSL.OnDoubleClick = OnPicked;
+            DesignSL.OnClick = OnSingleClicked; // S5: Shift+click stages into the group
 
             // S5: group controls — hidden until the roster has a first opponent
             FightBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(rect.X + 20, rect.Bottom - 44), "Fight group"));
@@ -89,21 +90,37 @@ namespace Ship_Game
             }
         }
 
+        void StageIntoGroup(PickerItem item)
+        {
+            if (Roster.Count >= RosterCap)
+            {
+                GameAudio.NegativeClick();
+                return;
+            }
+            GameAudio.AcceptClick();
+            Roster.Add(item.DesignName);
+        }
+
+        // S5: Shift + SINGLE click stages a design into the group roster
+        void OnSingleClicked(PickerItem item)
+        {
+            if (LaunchCountdown >= 0 || item.DesignName == null || !Input.IsShiftKeyDown)
+                return;
+            StageIntoGroup(item);
+        }
+
         void OnPicked(PickerItem item)
         {
             if (LaunchCountdown >= 0 || item.DesignName == null) // headers don't fight
                 return;
-            // S5: Shift stages the pick into the group roster instead of launching;
-            // once a roster exists, plain picks stage too — Fight group launches.
-            if (Input.IsShiftKeyDown || Roster.NotEmpty)
+            // Shift double-click: the first click already staged via OnSingleClicked —
+            // do nothing here or the design would be counted twice.
+            if (Input.IsShiftKeyDown)
+                return;
+            // once a roster exists, plain double-clicks stage too — Fight group launches
+            if (Roster.NotEmpty)
             {
-                if (Roster.Count >= RosterCap)
-                {
-                    GameAudio.NegativeClick();
-                    return;
-                }
-                GameAudio.AcceptClick();
-                Roster.Add(item.DesignName);
+                StageIntoGroup(item);
                 return;
             }
             GameAudio.AcceptClick();
