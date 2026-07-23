@@ -460,7 +460,8 @@ namespace Ship_Game
                     continue;
 
                 nodePos.X = root.NodePosition.X + 1f;
-                nodePos.Y = FindDeepestYSubNodes() + (first ? 0 : 1);
+                nodePos.Y = first ? FindDeepestYSubNodes()
+                                  : FindFreeRowFor(child, (int)root.NodePosition.Y, (int)nodePos.X);
                 if (first) first = false;
 
                 if (!SubNodes.ContainsKey(child.UID)) // only ever add unique entries
@@ -480,7 +481,8 @@ namespace Ship_Game
             foreach (TechEntry child in node.Entry.Children)
             {
                 nodePos.X = node.NodePosition.X + 1f;
-                nodePos.Y = FindDeepestYSubNodes() + (first ? 0 : 1);
+                nodePos.Y = first ? FindDeepestYSubNodes()
+                                  : FindFreeRowFor(child, (int)node.NodePosition.Y, (int)nodePos.X);
                 if (first) first = false;
 
                 if (child.Discovered && !SubNodes.ContainsKey(child.UID))
@@ -512,6 +514,26 @@ namespace Ship_Game
         }
         
         bool PositionIsClaimed(Vector2 position) => ClaimedSpots.Any(p => p.AlmostEqual(position));
+
+        // Ludoal fork: branches used to always open a fresh row below EVERYTHING, so a
+        // one-node dead-end (Massive Disruptor...) cost a full row while the same level
+        // had free space further right. A branch now takes the first row at or below its
+        // parent where its whole rectangle (own rows x own columns) is free.
+        int FindFreeRowFor(TechEntry branch, int parentY, int col)
+        {
+            int bRows = 1;
+            int bCols = CalculateTreeDimensionsFromRoot(branch, ref bRows, 0, 0);
+            for (int y = parentY; ; ++y)
+            {
+                bool freeRect = true;
+                for (int dy = 0; dy < bRows && freeRect; ++dy)
+                    for (int dx = 0; dx < bCols && freeRect; ++dx)
+                        if (PositionIsClaimed(new Vector2(col + dx, y + dy)))
+                            freeRect = false;
+                if (freeRect)
+                    return y;
+            }
+        }
 
         //Added by McShooterz: find size of tech tree before it is built
         int CalculateTreeDimensionsFromRoot(TechEntry techEntry, ref int rows, int cols, int colmax)
