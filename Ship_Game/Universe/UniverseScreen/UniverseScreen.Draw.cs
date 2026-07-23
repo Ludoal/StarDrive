@@ -63,13 +63,9 @@ namespace Ship_Game
                 // from the default view (they smeared the whole map and duplicate the F4
                 // overlay); spy/mole coverage (Source == null) shows only on the F7
                 // Vision overlay, which lights every sensor source.
-                if (!ShowingVisionOverlay)
-                {
-                    if (node.Source is Ships.Ship sensorShip && sensorShip.IsSubspaceProjector)
-                        continue;
-                    if (node.Source == null) // mole/spy vision
-                        continue;
-                }
+                // (bench round 2: warship halos were the remaining smear — planets only now)
+                if (!ShowingVisionOverlay && !(node.Source is Planet))
+                    continue;
 
                 ProjectToScreenCoords(node.Position, node.Radius * 2f, out Vector2d nodePos, out double nodeRadius);
                 RectF worldRect = RectF.FromPointRadius(nodePos, nodeRadius);
