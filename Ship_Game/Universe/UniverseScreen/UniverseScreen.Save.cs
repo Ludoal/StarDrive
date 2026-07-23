@@ -77,8 +77,11 @@ public partial class UniverseScreen
             if (LastAutosaveTime == 0f)
                 LastAutosaveTime = game.TotalElapsed;
 
+            // Ludoal fork: no autosave while paused — the game state does not advance,
+            // saving the same turn repeatedly just rotates the autosave slots away.
+            // The timer keeps running; the save fires at the first unpaused check.
             float timeSinceLastAutoSave = (game.TotalElapsed - LastAutosaveTime);
-            if (timeSinceLastAutoSave >= GlobalStats.AutoSaveFreq)
+            if (timeSinceLastAutoSave >= GlobalStats.AutoSaveFreq && !UState.Paused)
             {
                 LastAutosaveTime = game.TotalElapsed;
                 string saveName = "Autosave" + Auto;
