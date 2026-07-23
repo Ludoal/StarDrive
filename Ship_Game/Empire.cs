@@ -174,7 +174,7 @@ namespace Ship_Game
         [StarData] public bool AutoBuildTerraformers;
         [StarData] public bool AutoPickBestResearchStation;
         [StarData] public bool AutoPickBestMiningStation;
-        [StarData] public bool SymmetricDesignMode = false; // Ludoal fork: off by default (per-save via StarData; the in-game toggle persists)
+        [StarData] public bool SymmetricDesignMode = true; // Ludoal fork: LEGACY, kept for save compatibility — the shipyard now uses GlobalStats.SymmetricDesign
         [StarData] public Array<string> ObsoletePlayerShipModules;
 
         public int AtWarCount;

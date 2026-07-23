@@ -102,7 +102,7 @@ namespace Ship_Game
 
         public HangarOptions HangarDesignation => HangarOptionsList.ActiveValue;
 
-        public bool IsSymmetricDesignMode => Player.SymmetricDesignMode; // start with enabled by default
+        public bool IsSymmetricDesignMode => GlobalStats.SymmetricDesign; // Ludoal fork: player preference (config), no longer per-save
 
         public bool IsFilterOldModulesMode
         {

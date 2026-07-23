@@ -475,7 +475,7 @@ namespace Ship_Game
 
         void OnSymmetricDesignToggle()
         {
-            Player.SymmetricDesignMode = !Player.SymmetricDesignMode;
+            GlobalStats.SymmetricDesign = !GlobalStats.SymmetricDesign; // Ludoal fork: global preference
             BtnSymmetricDesign.Style   = SymmetricDesignBtnStyle;
         }
 

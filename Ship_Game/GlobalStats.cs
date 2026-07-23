@@ -171,6 +171,11 @@ public static class GlobalStats
     // (the classic pre-46-a look). Default off = the map stays dark, live sensors only.
     public static bool FogOfWarMemory;
 
+    // Ludoal fork: symmetric ship design is a PLAYER preference, not a save property —
+    // it used to live on the Empire ([StarData]) so every existing save re-imposed ON.
+    // Default off.
+    public static bool SymmetricDesign;
+
     // USER_EXPERIENCE
     // this is a global user setting, changed in game settings screen
     public static bool NotifyEnemyInSystemAfterLoad = true;
@@ -366,6 +371,7 @@ public static class GlobalStats
         GetSetting(config, "AutoSaveFreq", ref AutoSaveFreq);
         GetSetting(config, "AutoSaveYears", ref AutoSaveYears);
         GetSetting(config, "FogOfWarMemory", ref FogOfWarMemory);
+        GetSetting(config, "SymmetricDesign", ref SymmetricDesign);
         GetSetting(config, "AntiAliasSamples", ref AntiAlias);
         GetSetting(config, "PostProcessBloom", ref RenderBloom);
         GetSetting(config, "PostProcessShieldDistortion", ref RenderShieldDistortion);
@@ -562,6 +568,7 @@ public static class GlobalStats
         WriteSetting(config, "AutoSaveFreq", AutoSaveFreq);
         WriteSetting(config, "AutoSaveYears", AutoSaveYears);
         WriteSetting(config, "FogOfWarMemory", FogOfWarMemory);
+        WriteSetting(config, "SymmetricDesign", SymmetricDesign);
         WriteSetting(config, "AntiAliasSamples", AntiAlias);
         WriteSetting(config, "PostProcessBloom", RenderBloom);
         WriteSetting(config, "PostProcessShieldDistortion", RenderShieldDistortion);
