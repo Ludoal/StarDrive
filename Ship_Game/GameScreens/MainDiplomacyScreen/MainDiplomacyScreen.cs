@@ -43,6 +43,12 @@ namespace Ship_Game
         UIButton DiagramButton;
         Rectangle LeftRect;
 
+        // Ludoal fork: standard tabbed layout — empire rows left, Info/Intelligence/
+        // Operations as tabs (Colony-style), relations matrix below the tabs.
+        Submenu EmpiresPanel;
+        Submenu DetailTabs;
+        Submenu MatrixPanel;
+
         Font Font12 = Fonts.Arial12;
         Font Font12Bold = Fonts.Arial12Bold;
         Font Font20Bold = Fonts.Arial20Bold;
@@ -147,64 +153,20 @@ namespace Ship_Game
                 batch.DrawString(Fonts.Laserian14, Localizer.Token(GameText.DiplomaticOverview), TitlePos, Colors.Cream);
             }
             DMenu.Draw(batch, elapsed);
-            foreach (RaceEntry race in Races)
-            {
-                if (race.e.IsFaction)
-                {
-                    continue;
-                }
-                Vector2 NameCursor = new Vector2(race.container.X + 62 - Fonts.Arial12Bold.MeasureString(race.e.data.Traits.Name).X / 2f, race.container.Y + 148 + 8);
-                if (race.e.IsDefeated)
-                {
-                    if (race.e.data.AbsorbedBy == null)
-                    {
-                        batch.Draw(ResourceManager.Texture("Portraits/"+race.e.data.PortraitName), race.container, Color.White);
-                        batch.Draw(ResourceManager.Texture("Portraits/portrait_shine"), race.container, Color.White);
-                        batch.DrawDropShadowText1(race.e.data.Traits.Name, NameCursor, Fonts.Arial12Bold, race.e.EmpireColor);
-                        batch.Draw(ResourceManager.ErrorTexture, race.container, Color.White);
-                    }
-                    else
-                    {
-                        batch.Draw(ResourceManager.Texture("Portraits/"+race.e.data.PortraitName), race.container, Color.White);
-                        batch.Draw(ResourceManager.Texture("Portraits/portrait_shine"), race.container, Color.White);
-                        batch.DrawDropShadowText1(race.e.data.Traits.Name, NameCursor, Fonts.Arial12Bold, race.e.EmpireColor);
-                        var r = new Rectangle(race.container.X, race.container.Y, 124, 124);
-                        var e = Universe.UState.GetEmpireByName(race.e.data.AbsorbedBy);
-                        batch.Draw(ResourceManager.Flag(e.data.Traits.FlagIndex), r, e.EmpireColor);
-                    }
-                }
-                else if (Player != race.e && Player.IsKnown(race.e))
-                {
-                    if (Player.IsAtWarWith(race.e) && !race.e.IsDefeated)
-                    {
-                        Rectangle war = new Rectangle(race.container.X - 2, race.container.Y - 2, race.container.Width + 4, race.container.Height + 4);
-                        batch.FillRectangle(war, Color.Red);
-                    }
-                    batch.Draw(ResourceManager.Texture("Portraits/"+race.e.data.PortraitName), race.container, Color.White);
-                    batch.Draw(ResourceManager.Texture("Portraits/portrait_shine"), race.container, Color.White);
-                    batch.DrawDropShadowText1(race.e.data.Traits.Name, NameCursor, Fonts.Arial12Bold, race.e.EmpireColor);
-                }
-                else if (Player != race.e)
-                {
-                    batch.Draw(ResourceManager.Texture("Portraits/unknown"), race.container, Color.White);
-                }
-                else
-                {
-                    batch.Draw(ResourceManager.Texture("Portraits/"+race.e.data.PortraitName), race.container, Color.White);
-                    batch.Draw(ResourceManager.Texture("Portraits/portrait_shine"), race.container, Color.White);
-                    NameCursor = new Vector2(race.container.X + 62 - Fonts.Arial12Bold.MeasureString(race.e.data.Traits.Name).X / 2f, race.container.Y + 148 + 8);
-                    batch.DrawDropShadowText1(race.e.data.Traits.Name, NameCursor, Fonts.Arial12Bold, race.e.EmpireColor);
-                }
-                if (race.e != SelectedEmpire)
-                {
-                    continue;
-                }
-                batch.DrawRectangle(race.container, Color.Orange);
-            }
+
+            // Ludoal fork: standard tabbed layout
+            if (DetailTabs.SelectedIndex == -1)
+                DetailTabs.SelectedIndex = 0;
+            EmpiresPanel.Draw(batch, elapsed);
+            DetailTabs.Draw(batch, elapsed);
+            MatrixPanel.Draw(batch, elapsed);
+            DrawEmpireRows(batch);
+            DrawRelationsMatrix(batch);
+            int tab = DetailTabs.SelectedIndex;
+
             batch.FillRectangle(SelectedInfoRect, new Color(23, 20, 14));
-            batch.FillRectangle(IntelligenceRect, new Color(23, 20, 14));
-            batch.FillRectangle(OperationsRect, new Color(23, 20, 14));
             var textCursor = new Vector2(SelectedInfoRect.X + 20, SelectedInfoRect.Y + 10);
+            if (tab == 0) {
             batch.DrawDropShadowText1(SelectedEmpire.data.Traits.Name, textCursor, Fonts.Arial20Bold, SelectedEmpire.EmpireColor);
             var flagRect = new Rectangle(SelectedInfoRect.X + SelectedInfoRect.Width - 60, SelectedInfoRect.Y + 10, 40, 40);
             batch.Draw(ResourceManager.Flag(SelectedEmpire.data.Traits.FlagIndex), flagRect, SelectedEmpire.EmpireColor);
@@ -261,6 +223,8 @@ namespace Ship_Game
 
             if (!SelectedEmpire.isPlayer && Player.IsKnown(SelectedEmpire))
                 Contact.Draw(ScreenManager);
+            } // end Info tab part 1 (Ludoal fork)
+            if (tab == 0) { // ranks share the Info tab
 
             if (SelectedEmpire.isPlayer || !UsingNewEspioange || UsingNewEspioange && Player.GetRelations(SelectedEmpire).Espionage.CanViewRanks)
             {
@@ -297,8 +261,10 @@ namespace Ship_Game
                 textCursor.Y += Fonts.Arial12Bold.LineSpacing + 4;
                 batch.DrawString(Fonts.Arial12, $"(out of {empireList.Length} empires)", textCursor, Color.Wheat);
             }
+            } // end Info tab (Ludoal fork)
             //Added by McShooterz:  intel report
             Espionage espionage = SelectedEmpire.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(SelectedEmpire);
+            if (tab == 1) { // Ludoal fork: Intelligence tab
             textCursor = new Vector2(IntelligenceRect.X + 20, IntelligenceRect.Y + 10);
             string intReport = Localizer.Token(GameText.IntelligenceReport);
             if (UsingNewEspioange && !SelectedEmpire.isPlayer)
@@ -396,7 +362,9 @@ namespace Ship_Game
                 DrawDiploLine(batch, Font12, traitlist, SelectedEmpire.EmpireColor, ref textCursor);
             }
 
+            } // end Intelligence tab (Ludoal fork)
             //End of intel report
+            if (tab == 2) { // Ludoal fork: Operations tab
             textCursor = new Vector2(OperationsRect.X + 20, OperationsRect.Y + 10);
             batch.DrawDropShadowText((SelectedEmpire.isPlayer ? Localizer.Token(GameText.YourEmpiresBonuses) : Localizer.Token(GameText.TheirBonuses)), textCursor, Fonts.Arial20Bold, SelectedEmpire.EmpireColor);
             textCursor.Y += Fonts.Arial20Bold.LineSpacing + 5;
@@ -486,9 +454,133 @@ namespace Ship_Game
                 if (SelectedEmpire.data.RefiningRatioMultiplier != 1)
                     DrawStat(Localizer.Token(GameText.EmpireRefiningEfficiency), SelectedEmpire.data.RefiningRatioMultiplier-1, ref textCursor, false);
             }
+            } // end Operations tab (Ludoal fork)
+            ArtifactsSL.Visible = tab == 0; // Ludoal fork: artifacts belong to the Info tab
             base.Draw(batch, elapsed);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
+        }
+
+        // Ludoal fork: one row per empire — portrait, name, posture, treaties at a glance
+        void DrawEmpireRows(SpriteBatch batch)
+        {
+            foreach (RaceEntry race in Races)
+            {
+                if (race.e.IsFaction)
+                    continue;
+                Rectangle c = race.container;
+                batch.FillRectangle(c, new Color(23, 20, 14));
+                var portrait = new Rectangle(c.X + 2, c.Y + 2, 40, 48);
+                bool known = race.e == Player || Player.IsKnown(race.e);
+
+                if (!known)
+                {
+                    batch.Draw(ResourceManager.Texture("Portraits/unknown"), portrait, Color.White);
+                    batch.DrawString(Font12Bold, "Unknown", new Vector2(c.X + 50, c.Y + 6), Color.Gray);
+                }
+                else
+                {
+                    batch.Draw(ResourceManager.Texture("Portraits/" + race.e.data.PortraitName), portrait, Color.White);
+                    batch.DrawDropShadowText1(race.e.data.Traits.Name, new Vector2(c.X + 50, c.Y + 4), Font12Bold, race.e.EmpireColor);
+
+                    string posture;
+                    Color postureColor = Color.Wheat;
+                    if (race.e == Player)
+                        posture = Localizer.Token(GameText.You);
+                    else if (race.e.IsDefeated)
+                    {
+                        posture = race.e.data.AbsorbedBy != null ? "Absorbed" : "Defeated";
+                        postureColor = Color.Gray;
+                        batch.Draw(ResourceManager.ErrorTexture, portrait, Color.White);
+                    }
+                    else
+                    {
+                        Relationship rel = Player.GetRelations(race.e);
+                        if (rel.AtWar) { posture = Localizer.Token(GameText.AtWar); postureColor = Color.LightPink; }
+                        else if (rel.Treaty_Alliance) { posture = Localizer.Token(GameText.Alliance); postureColor = Color.LightGreen; }
+                        else if (rel.Treaty_Peace) { posture = Localizer.Token(GameText.PeaceTreaty); postureColor = Color.LightGreen; }
+                        else { posture = "Neutral"; }
+                        if (rel.Treaty_NAPact) posture += " | NAP";
+                        if (rel.Treaty_Trade) posture += " | Trade";
+                        if (rel.Treaty_OpenBorders) posture += " | Borders";
+                        if (rel.AtWar)
+                            batch.DrawRectangle(c, Color.Red);
+                    }
+                    batch.DrawString(Font12, posture, new Vector2(c.X + 50, c.Y + 26), postureColor);
+                }
+
+                if (race.e == SelectedEmpire)
+                    batch.DrawRectangle(c, Color.Orange);
+            }
+        }
+
+        // Ludoal fork: option A — the relations matrix. One glyph per pair, W > A > O > N > P > T.
+        void DrawRelationsMatrix(SpriteBatch batch)
+        {
+            Empire[] majors = Universe.UState.ActiveMajorEmpires;
+            if (majors.Length < 2)
+                return;
+            const int cell = 26;
+            var origin = new Vector2(MatrixPanel.X + 60, MatrixPanel.Y + 58);
+
+            for (int i = 0; i < majors.Length; ++i)
+            {
+                bool known = majors[i].isPlayer || Player.IsKnown(majors[i]);
+                var colHead = new Rectangle((int)(origin.X + i * cell) + 3, (int)origin.Y - 24, 20, 20);
+                var rowHead = new Rectangle((int)origin.X - 24, (int)(origin.Y + i * cell) + 3, 20, 20);
+                if (known)
+                {
+                    batch.Draw(ResourceManager.Flag(majors[i].data.Traits.FlagIndex), colHead, majors[i].EmpireColor);
+                    batch.Draw(ResourceManager.Flag(majors[i].data.Traits.FlagIndex), rowHead, majors[i].EmpireColor);
+                }
+                else
+                {
+                    batch.DrawString(Font12Bold, "?", new Vector2(colHead.X + 6, colHead.Y + 4), Color.Gray);
+                    batch.DrawString(Font12Bold, "?", new Vector2(rowHead.X + 6, rowHead.Y + 4), Color.Gray);
+                }
+            }
+
+            for (int i = 0; i < majors.Length; ++i)
+            for (int j = 0; j < majors.Length; ++j)
+            {
+                var box = new Rectangle((int)(origin.X + j * cell), (int)(origin.Y + i * cell), cell - 2, cell - 2);
+                if (i == j)
+                {
+                    batch.FillRectangle(box, new Color(40, 36, 26));
+                    continue;
+                }
+                Empire a = majors[i], b = majors[j];
+                string glyph = "?";
+                Color color = Color.Gray;
+                if (CanSeeRelation(a, b) && a.GetRelations(b, out Relationship rel) && rel.Known)
+                {
+                    if (rel.AtWar) { glyph = "W"; color = Color.Red; }
+                    else if (rel.Treaty_Alliance) { glyph = "A"; color = Color.Gold; }
+                    else if (rel.Treaty_OpenBorders) { glyph = "O"; color = Color.Cyan; }
+                    else if (rel.Treaty_NAPact) { glyph = "N"; color = Color.SteelBlue; }
+                    else if (rel.Treaty_Peace) { glyph = "P"; color = Color.LightGreen; }
+                    else if (rel.Treaty_Trade) { glyph = "T"; color = Color.LightGreen; }
+                    else { glyph = "-"; color = new Color(90, 90, 90); }
+                }
+                batch.FillRectangle(box, new Color(23, 20, 14));
+                batch.DrawRectangle(box, new Color(60, 54, 40));
+                batch.DrawString(Font12Bold, glyph, new Vector2(box.X + 8, box.Y + 5), color);
+            }
+
+            batch.DrawString(Font12, "W war  A alliance  O borders  N pact  P peace  T trade  ? unknown",
+                new Vector2(MatrixPanel.X + 30, MatrixPanel.Bottom - 24), Color.Wheat);
+        }
+
+        bool CanSeeRelation(Empire a, Empire b)
+        {
+            if (a.isPlayer || b.isPlayer)
+                return true;
+            if (!Player.IsKnown(a) || !Player.IsKnown(b))
+                return false;
+            if (UsingNewEspioange)
+                return Player.GetRelations(a).Espionage.CanViewTheirTreaties
+                    || Player.GetRelations(b).Espionage.CanViewTheirTreaties;
+            return IntelligenceLevel(a) > 0 || IntelligenceLevel(b) > 0;
         }
 
         int GetRank(Empire selectedEmpire, Empire[] empireList)
@@ -667,7 +759,10 @@ namespace Ship_Game
                 return true;
             }
 
-            if (SelectedEmpire != Player && !SelectedEmpire.IsDefeated && Contact.HandleInput(input))
+            if (DetailTabs.HandleInput(input)) // Ludoal fork: tab strip
+                return true;
+
+            if (DetailTabs.SelectedIndex == 0 && SelectedEmpire != Player && !SelectedEmpire.IsDefeated && Contact.HandleInput(input))
             {
                 DiplomacyScreen.Show(SelectedEmpire, "Greeting", parent: this);
             }
@@ -701,9 +796,17 @@ namespace Ship_Game
             LeftRect = new Rectangle((int)screenWidth / 2 - 700, (screenHeight > 768f ? titleRect.Y + titleRect.Height + 5 : 44), 1400, 700);
             DMenu = new Menu2(LeftRect);
             Add(new CloseButton(LeftRect.Right - 40, LeftRect.Y + 20));
-            SelectedInfoRect = new Rectangle(LeftRect.X + 60, LeftRect.Y + 250, 368, 376);
-            IntelligenceRect = new Rectangle(SelectedInfoRect.X + SelectedInfoRect.Width + 30, SelectedInfoRect.Y, 368, 376);
-            OperationsRect = new Rectangle(IntelligenceRect.X + IntelligenceRect.Width + 30, SelectedInfoRect.Y, 368, 376);
+
+            // Ludoal fork: standard layout — empire rows left, Colony-style tabs right,
+            // relations matrix below the tabs. The three legacy blocks share the tab
+            // body rect; the active tab decides which one draws.
+            EmpiresPanel = new Submenu(new RectF(LeftRect.X + 30, LeftRect.Y + 20, 400, 660), Localizer.Token(GameText.DiplomaticOverview));
+            DetailTabs = new Submenu(new RectF(LeftRect.X + 450, LeftRect.Y + 20, 920, 410),
+                new LocalizedText[] { "Info", Localizer.Token(GameText.IntelligenceReport), "Operations" });
+            MatrixPanel = new Submenu(new RectF(LeftRect.X + 450, LeftRect.Y + 440, 920, 240), "Relations");
+            SelectedInfoRect = new Rectangle(LeftRect.X + 460, LeftRect.Y + 65, 900, 355);
+            IntelligenceRect = SelectedInfoRect;
+            OperationsRect = SelectedInfoRect;
             
             RectF artifacts = new(SelectedInfoRect.X , SelectedInfoRect.Y + 250, SelectedInfoRect.Width - 40, 130);
             ArtifactsSL = Add(new ScrollList<ArtifactItemListItem>(artifacts));
@@ -725,16 +828,16 @@ namespace Ship_Game
                 }
                 Races.Add(new RaceEntry { e = e });
             }
-            Vector2 cursor = new Vector2(screenWidth / 2f - 148 * Races.Count / 2, LeftRect.Y + 10);
             int j = 0;
             foreach (RaceEntry re in Races)
             {
-                re.container = new Rectangle((int)cursor.X + 10 + j * 148, LeftRect.Y + 40, 124, 148);
+                // Ludoal fork: vertical rows in the Empires panel
+                re.container = new Rectangle(LeftRect.X + 40, LeftRect.Y + 65 + j * 56, 380, 52);
                 j++;
             }
             GameAudio.MuteRacialMusic();
 
-            DiagramButton = Add(new UIButton(ButtonStyle.Default, new Vector2(LeftRect.X + 70, LeftRect.Bottom - 60), "View Relationships"));
+            DiagramButton = Add(new UIButton(ButtonStyle.Default, new Vector2(LeftRect.X + 450 + 920 - 220, LeftRect.Y + 445), "Diagram view"));
             DiagramButton.OnClick = b => AddRelationShipDiagramScreen();
         }
 
