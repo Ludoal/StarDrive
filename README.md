@@ -31,8 +31,9 @@ is simple: the BlackBox team is welcome to take whatever they find worth keeping
 - Optional influence colors on the main map and minimap (Options toggle, default = vanilla look).
 - Fog of war stays dark: no permanent ship wakes, no explored-system halos — live
   sensors carry current vision.
-- Minimap: colonized systems boxed with race color, dimmed nebulae, and the patch-46
-  Important Events button beside Range (row 4).
+- Dimmed nebulae on the main map.
+- Minimap: colonized systems boxed with race color, contested systems (several races)
+  in grey; the patch-46 Important Events button joins the other buttons.
 
 **Top bar & navigation**
 - Live top bar on every full-screen panel (Empire, Espionage, Budget, Diplomacy,
