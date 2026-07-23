@@ -70,6 +70,9 @@ public sealed class Notification
                 case "SnapToShip":
                     m.SnapToShip(ReferencedItem1 as Ship);
                     break;
+                case "SnapToStation":
+                    m.SnapToStation(ReferencedItem1 as Ship);
+                    break;
                 case "Diplomacy": // Ludoal fork: diplomacy notifications open the diplomacy panel
                     m.ScreenManager.AddScreen(new MainDiplomacyScreen(m.Screen));
                     break;

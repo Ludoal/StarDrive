@@ -728,7 +728,7 @@ namespace Ship_Game
             AddNotification(new Notification
             {
                 Message = Localizer.Token(GameText.RemoveExcessResearchStation),
-                Action = "SnapToShip",
+                Action = "SnapToStation",
                 ReferencedItem1 = station,
                 IconPath = station.BaseHull.IconPath ?? "ResearchMenu/icon_event_science_bad"
             }, "sd_ui_notification_encounter");
@@ -784,7 +784,7 @@ namespace Ship_Game
             AddNotification(new Notification
             {
                 Message         = message,
-                Action          = "SnapToShip",
+                Action          = "SnapToStation",
                 ReferencedItem1 = s,
                 IconPath        = s.ShipData.IconPath
             }, "smallservo");
@@ -795,7 +795,7 @@ namespace Ship_Game
             AddNotification(new Notification
             {
                 Message = $"{planet.System.Name}: {s.Name}" + $" {Localizer.Token(GameText.MiningStationBuiltPlanetNotify)} {planet.Name}",
-                Action = "SnapToShip",
+                Action = "SnapToStation",
                 ReferencedItem1 = s,
                 IconPath = s.ShipData.IconPath
             }, "smallservo");
@@ -1067,6 +1067,18 @@ namespace Ship_Game
                 Screen.SnapViewShip(s);
             else
                 Screen.SnapViewTo(new(s.Position.X, s.Position.Y + 400, 2500), 5f, 2f);
+        }
+
+        public void SnapToStation(Ship s)
+        {
+            GameAudio.SubBassWhoosh();
+            if (s == null)
+                return;
+            // Ludoal fork: station notifications used the ship snap, which chases
+            // the hull nose-on. A station is fixed context, not a ship to follow —
+            // go to PlanetView over its position instead.
+            Screen.SnapViewTo(new(s.Position.X, s.Position.Y,
+                Screen.GetZfromScreenState(UniverseScreen.UnivScreenState.PlanetView)), 5f, 2f);
         }
 
         public void SnapToExpandedSystem(Planet p, SolarSystem system)
