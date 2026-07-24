@@ -316,6 +316,7 @@ namespace Ship_Game
             if (e == Player)
             {
                 TableRow(batch, col, ref y, maxY, "Status", Localizer.Token(GameText.You), Color.White);
+                Hidden(batch, col, ref y, maxY, "Trade"); // player call: same rows everywhere
             }
             else
             {
@@ -336,6 +337,20 @@ namespace Ship_Game
                 string perso = $"{e.data.DiplomaticPersonality.Name} {e.data.EconomicPersonality.Name}";
                 TableRow(batch, col, ref y, maxY, "Personality", Truncate(perso, col.Width - 80), Color.White);
             }
+            else
+            {
+                Hidden(batch, col, ref y, maxY, "Personality");
+            }
+        }
+
+        // aligned placeholder row for data the current infiltration level hides
+        void Hidden(SpriteBatch batch, Rectangle col, ref float y, float maxY, string label)
+        {
+            if (y > maxY - Font12.LineSpacing)
+                return;
+            batch.DrawString(Font12, label, new Vector2(col.X + 8, y), new Color(105, 105, 105));
+            batch.DrawString(Font12Bold, "---", new Vector2(col.Right - 8 - Font12Bold.TextWidth("---"), y), new Color(105, 105, 105));
+            y += Font12.LineSpacing + 3;
         }
 
         // POSITION: the empire's rank in each domain — same visibility rules as the
