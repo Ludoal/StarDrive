@@ -29,7 +29,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
         readonly Color ColorPeace   = Color.White;
         readonly Color ColorAlly    = Color.Green;
         readonly Color ColorNap     = Color.DeepSkyBlue.Alpha(0.85f);
-        readonly Color ColorBorders = Color.MediumPurple.Alpha(0.85f);
+        readonly Color ColorBorders = Color.Violet; // brighter than MediumPurple, opaque
         readonly Color ColorTrade   = Color.Yellow.Alpha(0.85f);
 
         readonly Array<EmpireAndIntelLevel> EmpiresAndIntel;
@@ -73,7 +73,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             _         => GameText.TradeTreaty,
         };
 
-        static float RowThickness(T t) => (t == T.War || t == T.Alliance) ? 3f : 1f;
+        const float LineThickness = 1f; // uniform across all treaty types
 
         public override void LoadContent()
         {
@@ -93,7 +93,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
                                         title: RowText(t), tooltip: RowText(t));
                 cb.TextColor = Color.Gray;
                 cb.CheckedTextColor = RowColor(t);
-                var ln = new UILine(new Vector2(70, LegendFont.LineSpacing + 2), 0.8f, RowThickness(t), RowColor(t));
+                var ln = new UILine(new Vector2(70, LegendFont.LineSpacing + 2), 0.8f, LineThickness, RowColor(t));
                 list.Add(new SplitElement(cb, ln));
                 Filters[i] = cb;
             }
@@ -188,7 +188,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             Vector2 dir = a.DirectionToTarget(b);
             Vector2 perp = dir.LeftVector();
             if (us.Empire.Id > peer.Empire.Id) perp = -perp; // stable side per pair
-            const float Lane = 4f; // px between adjacent treaty lanes
+            const float Lane = 5f; // px between adjacent treaty lanes
 
             void Chord(T t)
             {
@@ -196,7 +196,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
                 // lanes fan out from the center line: War at 0, others stepping outward
                 float lane = ((int)t) * Lane;
                 Vector2 off = perp * lane;
-                batch.DrawLine(a + off, b + off, RowColor(t), RowThickness(t));
+                batch.DrawLine(a + off, b + off, RowColor(t), LineThickness);
             }
 
             if (rel.AtWar)               Chord(T.War);

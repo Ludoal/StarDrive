@@ -635,6 +635,12 @@ namespace Ship_Game
                     batch.DrawString(Font12, "?", new Vector2(flag.X + 3, flag.Y), Color.Gray);
             }
 
+            // separator between the race-flag header and the treaty rows
+            int sepY = (int)top + 17;
+            int sepX = (int)x0;
+            int sepW = (int)(cellW * others.Length);
+            batch.DrawLine(new Vector2(sepX, sepY), new Vector2(sepX + sepW, sepY), new Color(255, 255, 255, 40).Premultiplied());
+
             // merged status row (Ludo 19:10): war BREAKS every treaty at declaration
             // (DeclareWarOn → BreakAllTreatiesWith includingPeace) and alliance
             // auto-signs NA — so one row with priority W > A > N > P loses nothing
@@ -661,7 +667,7 @@ namespace Ship_Game
                                 else if (rel.Treaty_Peace) { icon = ResourceManager.Texture("UI/icon_peace"); tint = Color.White; }
                                 break;
                             case 1:
-                                if (rel.Treaty_OpenBorders) { icon = ResourceManager.Texture("NewUI/icon_intertrade"); tint = Color.MediumPurple; }
+                                if (rel.Treaty_OpenBorders) { icon = ResourceManager.Texture("NewUI/icon_intertrade"); tint = Color.Violet; }
                                 break;
                             case 2:
                                 if (rel.Treaty_Trade) { icon = ResourceManager.Texture("NewUI/icon_money"); tint = Color.Yellow; }
