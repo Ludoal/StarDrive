@@ -187,7 +187,7 @@ namespace Ship_Game.GameScreens
                 };
                 Add(c.Weight);
 
-                c.LimitBtn = Add(new UIButton(ButtonStyle.Low100, new Vector2(col.X + 8, budgetY + 60), GameText.EspionageLimitLevel));
+                c.LimitBtn = Add(new UIButton(ButtonStyle.Low100, new Vector2(col.X + 8, budgetY + 50), GameText.EspionageLimitLevel));
                 c.LimitBtn.Tooltip = GameText.EspionageLimitLevelTip;
                 c.LimitBtn.AcceptRightClicks = true;
                 c.LimitBtn.OnClick = b =>
@@ -320,7 +320,7 @@ namespace Ship_Game.GameScreens
             Ship_Game.Espionage esp = c.Esp;
 
             // BUDGET section extras: limit level value, points/turn, target + progress
-            batch.DrawString(Font12Bold, esp.LimitLevel.ToString(), new Vector2(col.X + 134, budgetY + 65), Player.EmpireColor);
+            batch.DrawString(Font12Bold, esp.LimitLevel.ToString(), new Vector2(col.X + 134, budgetY + 60), Player.EmpireColor);
             float ppt = esp.GetProgressToIncrease(Player.EspionagePointsPerTurn, Player.CalcTotalEspionageWeight());
             string pptTxt = "Points/turn: " + ppt.String(3);
             batch.DrawString(Font12, pptTxt, new Vector2(col.X + 8, budgetY + 96), Color.Wheat);
@@ -348,8 +348,9 @@ namespace Ship_Game.GameScreens
             SubTexture shield = ResourceManager.Texture("UI/icon_shield");
             var defenseIcon = new Rectangle(col.X + 8, (int)defenseY + 24, shield.Width, shield.Height);
             batch.Draw(shield, defenseIcon, Color.White);
-            string defTxt = esp.CanViewDefenseRatio ? $"{((int)(e.EspionageDefenseRatio * 100)).String()}%" : "lvl 3"; // the level that unlocks it, like the Diplomacy placeholders
-            batch.DrawString(Font12Bold, defTxt, new Vector2(defenseIcon.Right + 6, defenseIcon.Y + 4), Color.White);
+            bool canSeeDef = esp.CanViewDefenseRatio;
+            string defTxt = canSeeDef ? $"{((int)(e.EspionageDefenseRatio * 100)).String()}%" : "lvl 3"; // the level that unlocks it, like the Diplomacy placeholders
+            batch.DrawString(Font12Bold, defTxt, new Vector2(defenseIcon.Right + 6, defenseIcon.Y + 4), canSeeDef ? Color.White : new Color(105, 105, 105));
 
             // the five levels: band + passive + (checkboxes drawn by base.Draw)
             float y = col.Y + HeaderH + BudgetH + DefenseH + 24;
