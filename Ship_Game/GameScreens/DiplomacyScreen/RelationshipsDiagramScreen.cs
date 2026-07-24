@@ -19,10 +19,10 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
 
         // Ludoal fork: one filter per treaty type (replaces the old two toggles),
         // ordered War → Peace → Alliance → NA → Open Borders → Trade, all on by default
-        readonly bool[] Show = { true, true, true, true, true, true };
+        readonly bool[] ShowTreaty = { true, true, true, true, true, true };
         UICheckBox[] Filters;
 
-        // treaty rows, in the fixed display/filter order (index = row in Show[])
+        // treaty rows, in the fixed display/filter order (index = row in ShowTreaty[])
         enum T { War = 0, Peace = 1, Alliance = 2, Nap = 3, Borders = 4, Trade = 5 }
 
         readonly Color ColorWar     = Color.Red;
@@ -89,7 +89,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             {
                 var t = (T)i;
                 int idx = i; // capture
-                var cb = new UICheckBox(0, 0, () => Show[idx], v => Show[idx] = v, LegendFont,
+                var cb = new UICheckBox(0, 0, () => ShowTreaty[idx], v => ShowTreaty[idx] = v, LegendFont,
                                         title: RowText(t), tooltip: RowText(t));
                 cb.TextColor = Color.Gray;
                 cb.CheckedTextColor = RowColor(t);
@@ -192,7 +192,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
 
             void Chord(T t)
             {
-                if (!Show[(int)t]) return;
+                if (!ShowTreaty[(int)t]) return;
                 // lanes fan out from the center line: War at 0, others stepping outward
                 float lane = ((int)t) * Lane;
                 Vector2 off = perp * lane;
