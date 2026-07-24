@@ -371,7 +371,7 @@ namespace Ship_Game
             }
             else
             {
-                batch.DrawString(Font12, "No intelligence", new Vector2(col.X + 8, y), Color.Gray);
+                batch.DrawString(Font12Bold, "---", new Vector2(col.X + 8, y), new Color(105, 105, 105));
             }
         }
 
@@ -392,37 +392,49 @@ namespace Ship_Game
             bool alwaysShow = e.isPlayer || !UsingNewEspioange;
             bool anyIntel = e.isPlayer || UsingNewEspioange || IntelligenceLevel(e) > 0;
 
-            if (!anyIntel)
-            {
-                batch.DrawString(Font12, "No intelligence", new Vector2(col.X + 8, y), Color.Gray);
-                return;
-            }
+            // fixed row set - hidden values read "---" so every empire's data sits
+            // on the same line across columns (player call)
+            if (anyIntel)
+                TableRow(batch, col, ref y, maxY, "Homeworld", Truncate(e.data.Traits.HomeworldName, 90), Color.White);
+            else
+                Hidden(batch, col, ref y, maxY, "Homeworld");
 
-            TableRow(batch, col, ref y, maxY, "Homeworld", Truncate(e.data.Traits.HomeworldName, 90), Color.White);
-            if (e.Capital != null)
+            if (anyIntel && e.Capital != null)
                 TableRow(batch, col, ref y, maxY, "Controls HW", e.Capital.Owner == e ? Localizer.Token(GameText.Yes) : Localizer.Token(GameText.No), Color.White);
+            else
+                Hidden(batch, col, ref y, maxY, "Controls HW");
 
-            if (alwaysShow || espionage.CanViewNumPlanets)
+            if (anyIntel && (alwaysShow || espionage.CanViewNumPlanets))
                 TableRow(batch, col, ref y, maxY, "Planets", e.GetPlanets().Count.ToString(), Color.White);
-            if (alwaysShow || espionage.CanViewNumShips)
+            else
+                Hidden(batch, col, ref y, maxY, "Planets");
+
+            if (anyIntel && (alwaysShow || espionage.CanViewNumShips))
                 TableRow(batch, col, ref y, maxY, "Ships", e.OwnedShips.Count.ToString(), Color.White);
-            if (alwaysShow || espionage.CanViewMoneyAndMaint)
+            else
+                Hidden(batch, col, ref y, maxY, "Ships");
+
+            if (anyIntel && (alwaysShow || espionage.CanViewMoneyAndMaint))
             {
                 TableRow(batch, col, ref y, maxY, "Treasury", e.Money.String(1) + " BC", Color.White);
                 TableRow(batch, col, ref y, maxY, "Maintenance", e.BuildingAndShipMaint.String(1), Color.White);
             }
+            else
+            {
+                Hidden(batch, col, ref y, maxY, "Treasury");
+                Hidden(batch, col, ref y, maxY, "Maintenance");
+            }
 
             TableRow(batch, col, ref y, maxY, "Population", GetPop(e).String(1) + " bn", Color.White);
 
-            if (e.Research.HasTopic)
-            {
-                if (e.isPlayer || UsingNewEspioange && espionage.CanViewResearchTopic || IntelligenceLevel(e) > 1)
-                    TableRow(batch, col, ref y, maxY, "Research", Truncate(e.Research.Current.Tech.Name.Text, 110), Color.White);
-                else if (UsingNewEspioange && espionage.CanViewTechType || IntelligenceLevel(e) > 0)
-                    TableRow(batch, col, ref y, maxY, "Research", e.Research.Current.TechnologyType.ToString(), Color.White);
-                else
-                    TableRow(batch, col, ref y, maxY, "Research", "Unknown", Color.Gray);
-            }
+            if (e.Research.HasTopic && (e.isPlayer || UsingNewEspioange && espionage.CanViewResearchTopic || IntelligenceLevel(e) > 1))
+                TableRow(batch, col, ref y, maxY, "Research", Truncate(e.Research.Current.Tech.Name.Text, 110), Color.White);
+            else if (e.Research.HasTopic && (UsingNewEspioange && espionage.CanViewTechType || IntelligenceLevel(e) > 0))
+                TableRow(batch, col, ref y, maxY, "Research", e.Research.Current.TechnologyType.ToString(), Color.White);
+            else if (e.isPlayer && !e.Research.HasTopic)
+                TableRow(batch, col, ref y, maxY, "Research", "None", Color.Gray);
+            else
+                Hidden(batch, col, ref y, maxY, "Research");
 
             if (!UsingNewEspioange)
             {
@@ -435,36 +447,15 @@ namespace Ship_Game
             {
                 TableRow(batch, col, ref y, maxY, "Infiltration", espionage.InfiltrationLevelSummary(), Color.Wheat);
             }
+            else
+            {
+                Hidden(batch, col, ref y, maxY, "Infiltration");
+            }
 
             if (e != Player && (UsingNewEspioange && espionage?.CanViewTheirMoles == true || IntelligenceLevel(e) > 1))
                 TableRow(batch, col, ref y, maxY, "Their moles", Player.GetNumOfTheirMoles(e).ToString(), Color.Wheat);
-
-        }
-
-        // nominative artifact list (player design) — same visibility as the legacy list
-        void DrawArtifactRows(SpriteBatch batch, Empire e, Rectangle col, ref float y, float maxY)
-        {
-            Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
-            if (!(!UsingNewEspioange || e.isPlayer || espionage.CanViewArtifacts))
-            {
-                batch.DrawString(Font12, "No intelligence", new Vector2(col.X + 8, y), Color.Gray);
-                return;
-            }
-            if (e.data.OwnedArtifacts.Count == 0)
-            {
-                batch.DrawString(Font12, "None", new Vector2(col.X + 8, y), Color.Gray);
-                return;
-            }
-            foreach (Artifact art in e.data.OwnedArtifacts)
-            {
-                if (y > maxY - Font12.LineSpacing)
-                {
-                    batch.DrawString(Font12, "...", new Vector2(col.X + 8, y), Color.Wheat);
-                    break;
-                }
-                batch.DrawString(Font12, Truncate(art.NameText.Text, col.Width - 20), new Vector2(col.X + 8, y), Color.Wheat);
-                y += Font12.LineSpacing + 3;
-            }
+            else
+                Hidden(batch, col, ref y, maxY, "Their moles");
         }
 
         void DrawBonusRows(SpriteBatch batch, Empire e, Rectangle col, ref float y, float maxY)
@@ -472,7 +463,7 @@ namespace Ship_Game
             Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
             if (!(e.isPlayer || UsingNewEspioange && espionage.CanViewBonuses || IntelligenceLevel(e) > 0))
             {
-                batch.DrawString(Font12, "No intelligence", new Vector2(col.X + 8, y), Color.Gray);
+                batch.DrawString(Font12Bold, "---", new Vector2(col.X + 8, y), new Color(105, 105, 105));
                 return;
             }
 
