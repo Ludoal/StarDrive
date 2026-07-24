@@ -44,6 +44,8 @@ namespace Ship_Game
 
         Font Font12 = Fonts.Arial12;
         Font Font12Bold = Fonts.Arial12Bold;
+        Font NameFont = Fonts.Arial14Bold; // player call: bigger race names
+        readonly Map<Empire, DanButton> Contacts = new(); // the original screen's button design
 
         const int TreatyBlockH = 136; // player design: block sits lower, row labels gone
 
@@ -171,17 +173,15 @@ namespace Ship_Game
                 j++;
             }
 
-            // Contact button under the name, before INFO (player design)
+            // Contact button under the name, before INFO — the original DanButton design
             foreach (RaceEntry re in Races)
             {
                 Empire e = re.e;
                 if (e == Player || e.IsDefeated || !Player.IsKnown(e))
                     continue;
-                var btn = Add(new UIButton(ButtonStyle.Medium, new Vector2(re.container.X + (re.container.Width - 132) / 2, re.container.Y + 98), Localizer.Token(GameText.Contact)));
-                btn.OnClick = b =>
+                Contacts[e] = new DanButton(new Vector2(re.container.X + (re.container.Width - 182) / 2, re.container.Y + 108), Localizer.Token(GameText.Contact))
                 {
-                    GameAudio.EchoAffirmative();
-                    DiplomacyScreen.Show(e, "Greeting", parent: this);
+                    Toggled = true
                 };
             }
 
@@ -226,10 +226,10 @@ namespace Ship_Game
 
             batch.Draw(ResourceManager.Texture("Portraits/" + e.data.PortraitName), portrait, Color.White);
             string name = e.data.Traits.Name;
-            float nameW = Font12Bold.TextWidth(name) + 22; // race flag rides left of the name
+            float nameW = NameFont.TextWidth(name) + 24; // race flag rides left of the name
             float nameX = col.X + (col.Width - nameW) / 2f;
-            batch.Draw(ResourceManager.Flag(e.data.Traits.FlagIndex), new Rectangle((int)nameX, portrait.Bottom + 3, 16, 16), e.EmpireColor);
-            batch.DrawDropShadowText1(name, new Vector2(nameX + 22, portrait.Bottom + 4), Font12Bold, e.EmpireColor);
+            batch.Draw(ResourceManager.Flag(e.data.Traits.FlagIndex), new Rectangle((int)nameX, portrait.Bottom + 4, 18, 18), e.EmpireColor);
+            batch.DrawDropShadowText1(name, new Vector2(nameX + 24, portrait.Bottom + 4), NameFont, e.EmpireColor);
 
             float y = portrait.Bottom + 24;
 
@@ -241,8 +241,11 @@ namespace Ship_Game
                 return;
             }
 
+            if (Contacts.TryGetValue(e, out DanButton contact))
+                contact.Draw(ScreenManager);
+
             // FIXED section offsets: the bands align across columns whatever the content
-            float infoY = col.Y + 134; // room for the Contact button under the name
+            float infoY = col.Y + 150; // breathing room: bigger name, DanButton below
             float positionY = infoY + 24 + 3 * (Font12.LineSpacing + 3) + 4;
             float intelY = positionY + 24 + 4 * (Font12.LineSpacing + 3) + 4;
 
@@ -590,18 +593,15 @@ namespace Ship_Game
                 return true;
             }
 
-            // click a column header portrait to contact that empire
-            foreach (RaceEntry race in Races)
+            // the Contact buttons (original DanButton design), one per column
+            foreach (var kv in Contacts)
             {
-                var portrait = new Rectangle(race.container.X + (race.container.Width - 56) / 2, race.container.Y + 6, 56, 70);
-                if (HelperFunctions.ClickedRect(portrait, input))
+                if (!kv.Value.HandleInput(input))
+                    continue;
+                if (!kv.Key.IsDefeated)
                 {
-                    if (race.e != Player && !race.e.IsDefeated && Player.IsKnown(race.e))
-                    {
-                        GameAudio.EchoAffirmative();
-                        DiplomacyScreen.Show(race.e, "Greeting", parent: this);
-                        return true;
-                    }
+                    DiplomacyScreen.Show(kv.Key, "Greeting", parent: this);
+                    return true;
                 }
             }
 
