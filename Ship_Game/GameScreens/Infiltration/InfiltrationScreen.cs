@@ -348,7 +348,7 @@ namespace Ship_Game.GameScreens
             SubTexture shield = ResourceManager.Texture("UI/icon_shield");
             var defenseIcon = new Rectangle(col.X + 8, (int)defenseY + 24, shield.Width, shield.Height);
             batch.Draw(shield, defenseIcon, Color.White);
-            string defTxt = esp.CanViewDefenseRatio ? $"{((int)(e.EspionageDefenseRatio * 100)).String()}%" : "?";
+            string defTxt = esp.CanViewDefenseRatio ? $"{((int)(e.EspionageDefenseRatio * 100)).String()}%" : "lvl 3"; // the level that unlocks it, like the Diplomacy placeholders
             batch.DrawString(Font12Bold, defTxt, new Vector2(defenseIcon.Right + 6, defenseIcon.Y + 4), Color.White);
 
             // the five levels: band + passive + (checkboxes drawn by base.Draw)
