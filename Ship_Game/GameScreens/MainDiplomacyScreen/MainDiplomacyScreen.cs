@@ -149,7 +149,7 @@ namespace Ship_Game
                 ShowBonuses = !ShowBonuses;
                 ToggleButton.Text = ShowBonuses ? "Intelligence" : "Bonuses";
             };
-            DiagramButton = Add(new UIButton(ButtonStyle.Default, new Vector2(titleRect.Right + 218, titleRect.Y + 26), "Diagram view"));
+            DiagramButton = Add(new UIButton(ButtonStyle.Default, new Vector2(titleRect.Right + 196, titleRect.Y + 26), "Diagram view"));
             DiagramButton.OnClick = b => AddRelationShipDiagramScreen();
 
             foreach (Empire e in Universe.UState.Empires)
