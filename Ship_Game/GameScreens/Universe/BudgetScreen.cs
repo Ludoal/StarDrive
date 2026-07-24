@@ -94,6 +94,9 @@ namespace Ship_Game.GameScreens
             }
             public static float BldgIncome(Planet p) => p.Money.GrossRevenue - PopIncome(p);
 
+            public static float BudgetLeft(Planet p) => p.Budget == null ? 0f
+                : p.Budget.RemainingCivilian + p.Budget.RemainingSpaceDef + p.Budget.RemainingGroundDef;
+
             public override void PerformLayout()
             {
                 int x = (int)X, y = (int)Y, w = (int)Width;
@@ -121,15 +124,19 @@ namespace Ship_Game.GameScreens
                 MoneyCell(5, () => -Planet.Money.Maintenance);
                 MoneyCell(6, () => -Planet.Money.TroopMaint);
                 Cell(7, l => { l.Color = Color.Wheat; return $"{Planet.Money.TaxRate * 100:0.#}%"; });
+                // governor budget: treasury ALLOCATION (wheat, outside the per-turn
+                // arithmetic) and what the governor has left of it (red = overspent)
+                Cell(8, l => { l.Color = Color.Wheat; return (Planet.Budget?.TotalAlloc ?? 0f).MoneyString(); });
+                MoneyCell(9, () => BudgetLeft(Planet));
 
                 base.PerformLayout();
             }
         }
 
         // table geometry, shared by the header labels, the rows and the total footer:
-        // the name column, then 8 numeric columns of equal width, right-aligned
+        // the name column, then the numeric columns of equal width, right-aligned
         const float NameColW = 0.14f;
-        const int NumCols = 8;
+        const int NumCols = 10;
         const float NumColW = (1f - NameColW) / NumCols;
         static float ColStart(int i) => NameColW + i * NumColW;
 
@@ -162,7 +169,7 @@ namespace Ship_Game.GameScreens
             }
             var colonyHdr = Label(new Vector2(tableX + 4, headerY), "COLONY", Fonts.Arial12Bold);
             colonyHdr.Color = Color.Wheat;
-            string[] headers = { "NET", "POP", "POP INC", "BLDG INC", "GROSS", "BLDG MAINT", "TROOP MAINT", "TAX RATE" };
+            string[] headers = { "NET", "POP", "POP INC", "BLDG INC", "GROSS", "BLDG MAINT", "TROOP MAINT", "TAX RATE", "BUDGET", "BDGT LEFT" };
             for (int i = 0; i < headers.Length; ++i)
                 HeaderCell(i, headers[i]);
 
@@ -206,6 +213,13 @@ namespace Ship_Game.GameScreens
             FooterCell(4, 0, () => Player.GetPlanets().Sum(p => p.Money.GrossRevenue));
             FooterCell(5, 0, () => -Player.GetPlanets().Sum(p => p.Money.Maintenance));
             FooterCell(6, 0, () => -Player.GetPlanets().Sum(p => p.Money.TroopMaint));
+            var allocTot = new UILabel(l => Player.GetPlanets().Sum(p => p.Budget?.TotalAlloc ?? 0f).MoneyString(), Fonts.Arial12Bold);
+            allocTot.Pos = new Vector2(tableX + tableW * ColStart(8), totalY);
+            allocTot.Size = new Vector2(tableW * NumColW - 8, Fonts.Arial12Bold.LineSpacing);
+            allocTot.TextAlign = TextAlign.Right;
+            allocTot.Color = Color.Wheat;
+            Add(allocTot);
+            FooterCell(9, 0, () => Player.GetPlanets().Sum(EconColonyItem.BudgetLeft));
 
             var offLbl = Label(new Vector2(tableX + 4, totalY + 17), "off-planet (trade, fleet, espionage, production)", Fonts.Arial12);
             offLbl.Color = Color.Gray;
@@ -327,7 +341,7 @@ namespace Ship_Game.GameScreens
             SummaryPanel income = Add(new SummaryPanel(GameText.Income, incomeRect, new Color(18, 29, 29)));
 
             income.AddItem(GameText.PlanetaryTaxes, () => Player.GrossPlanetIncome); // "Planetary Taxes"
-            income.AddItem("Trade Cargo", () => Player.TotalTradeMoneyAddedThisTurn);
+            income.AddItem("Trade (cargo + treaties)", () => Player.TotalTradeMoneyAddedThisTurn);
             income.AddItem("Excess Goods", () => Player.ExcessGoodsMoneyAddedThisTurn);
             income.AddItem("Money Leeched", () => Player.TotalMoneyLeechedLastTurn);
             income.AddItem(GameText.Other, () => Player.data.FlatMoneyBonus);
