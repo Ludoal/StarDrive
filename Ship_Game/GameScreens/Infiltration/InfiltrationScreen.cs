@@ -38,7 +38,7 @@ namespace Ship_Game.GameScreens
 
         // fixed vertical anatomy (aligned across columns)
         const int HeaderH = 110;
-        const int BudgetH = 170;
+        const int BudgetH = 200; // sliders overflow their rect (title above, ticks below): breathe
         const int DefenseH = 52;
 
         class EmpireColumn
@@ -187,7 +187,7 @@ namespace Ship_Game.GameScreens
                 };
                 Add(c.Weight);
 
-                c.LimitBtn = Add(new UIButton(ButtonStyle.Low100, new Vector2(col.X + 8, budgetY + 48), GameText.EspionageLimitLevel));
+                c.LimitBtn = Add(new UIButton(ButtonStyle.Low100, new Vector2(col.X + 8, budgetY + 70), GameText.EspionageLimitLevel));
                 c.LimitBtn.Tooltip = GameText.EspionageLimitLevelTip;
                 c.LimitBtn.AcceptRightClicks = true;
                 c.LimitBtn.OnClick = b =>
@@ -320,28 +320,28 @@ namespace Ship_Game.GameScreens
             Ship_Game.Espionage esp = c.Esp;
 
             // BUDGET section extras: limit level value, points/turn, target + progress
-            batch.DrawString(Font12Bold, esp.LimitLevel.ToString(), new Vector2(col.X + 116, budgetY + 52), Player.EmpireColor);
+            batch.DrawString(Font12Bold, esp.LimitLevel.ToString(), new Vector2(col.X + 116, budgetY + 74), Player.EmpireColor);
             float ppt = esp.GetProgressToIncrease(Player.EspionagePointsPerTurn, Player.CalcTotalEspionageWeight());
             string pptTxt = "Points/turn: " + ppt.String(3);
-            batch.DrawString(Font12, pptTxt, new Vector2(col.X + 8, budgetY + 76), Color.Wheat);
+            batch.DrawString(Font12, pptTxt, new Vector2(col.X + 8, budgetY + 96), Color.Wheat);
 
             if (esp.Level < Ship_Game.Espionage.MaxLevel)
             {
                 byte target = (byte)(esp.Level + 1);
-                batch.DrawString(Font12, $"Infiltrating level {target}", new Vector2(col.X + 8, budgetY + 96), Color.Wheat);
+                batch.DrawString(Font12, $"Infiltrating level {target}", new Vector2(col.X + 8, budgetY + 116), Color.Wheat);
                 float max = esp.LevelCost(target);
                 float cur = esp.LevelProgress.UpperBound(max);
-                var barRect = new Rectangle(col.X + 8, (int)budgetY + 114, col.Width - 16, 12);
+                var barRect = new Rectangle(col.X + 8, (int)budgetY + 134, col.Width - 16, 12);
                 batch.FillRectangle(barRect, new Color(10, 10, 10));
                 if (max > 0f && cur > 0f)
                     batch.FillRectangle(new Rectangle(barRect.X + 1, barRect.Y + 1, (int)((barRect.Width - 2) * (cur / max)), 10), new Color(30, 120, 30));
                 batch.DrawRectangle(barRect, new Color(60, 54, 40));
                 string nums = $"{(int)cur}/{(int)max}";
-                batch.DrawString(Font12, nums, new Vector2(col.Right - 8 - Font12.TextWidth(nums), budgetY + 130), Color.Wheat);
+                batch.DrawString(Font12, nums, new Vector2(col.Right - 8 - Font12.TextWidth(nums), budgetY + 150), Color.Wheat);
             }
             else
             {
-                batch.DrawString(Font12, "Fully infiltrated", new Vector2(col.X + 8, budgetY + 96), Color.LightGreen);
+                batch.DrawString(Font12, "Fully infiltrated", new Vector2(col.X + 8, budgetY + 116), Color.LightGreen);
             }
 
             // DEFENSE: their shield ratio (gated like the legacy header icon)
