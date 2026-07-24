@@ -169,7 +169,7 @@ namespace Ship_Game
             int j = 0;
             foreach (RaceEntry re in Races)
             {
-                re.container = new Rectangle(x0 + j * colW, LeftRect.Y + 16, colW - 8, LeftRect.Height - 32);
+                re.container = new Rectangle(x0 + j * colW, LeftRect.Y + 16, colW - 8, LeftRect.Height - 52);
                 j++;
             }
 
@@ -320,7 +320,8 @@ namespace Ship_Game
             if (e == Player)
             {
                 TableRow(batch, col, ref y, maxY, "Status", Localizer.Token(GameText.You), Color.White);
-                HiddenRow(batch, col, ref y, maxY, "Trade"); // player call: same rows everywhere
+                BlankRow(ref y); // player call: keep the line, drop the noise
+                BlankRow(ref y); // (personality slot)
             }
             else
             {
@@ -336,7 +337,9 @@ namespace Ship_Game
                 TableRow(batch, col, ref y, maxY, "Trade", rel.Treaty_Trade ? "Yes" : "No", rel.Treaty_Trade ? Color.LightGreen : Color.Gray);
             }
 
-            if (!e.isPlayer && (UsingNewEspioange ? espionage.CanViewPersonality : IntelligenceLevel(e) > 0))
+            if (e.isPlayer)
+                return; // blanks already reserved above
+            if (UsingNewEspioange ? espionage.CanViewPersonality : IntelligenceLevel(e) > 0)
             {
                 string perso = $"{e.data.DiplomaticPersonality.Name} {e.data.EconomicPersonality.Name}";
                 TableRow(batch, col, ref y, maxY, "Personality", Truncate(perso, col.Width - 80), Color.White);
@@ -345,6 +348,11 @@ namespace Ship_Game
             {
                 HiddenRow(batch, col, ref y, maxY, "Personality", 1);
             }
+        }
+
+        void BlankRow(ref float y)
+        {
+            y += Font12.LineSpacing + 3;
         }
 
         // aligned placeholder row for data the current infiltration level hides
@@ -426,7 +434,7 @@ namespace Ship_Game
             }
             else
             {
-                HiddenRow(batch, col, ref y, maxY, "Infiltration");
+                BlankRow(ref y); // the player's own column: just space
             }
 
             // level 1: planets, population
@@ -468,7 +476,7 @@ namespace Ship_Game
             if (e != Player && (UsingNewEspioange && espionage?.CanViewTheirMoles == true || IntelligenceLevel(e) > 1))
                 TableRow(batch, col, ref y, maxY, "Their moles", Player.GetNumOfTheirMoles(e).ToString(), Color.Wheat);
             else if (e == Player)
-                HiddenRow(batch, col, ref y, maxY, "Their moles");
+                BlankRow(ref y);
             else
                 HiddenRow(batch, col, ref y, maxY, "Their moles", 5);
         }
@@ -480,6 +488,8 @@ namespace Ship_Game
             if (e.isPlayer || (UsingNewEspioange ? espionage.CanViewTraitSet : IntelligenceLevel(e) > 1))
             {
                 string traitSet = $"{e.data.SelectedTraitSet}"; // null-safe: interpolation, like the legacy screen
+                if (traitSet.Length == 0 && e.isPlayer && e.data.Traits.PlayerTraitOptions != null)
+                    traitSet = string.Join(", ", e.data.Traits.PlayerTraitOptions); // saves generated before the 46 fix
                 if (traitSet.Length == 0)
                 {
                     batch.DrawString(Font12, "None", new Vector2(col.X + 8, y), Color.Gray);

@@ -139,7 +139,7 @@ namespace Ship_Game.GameScreens
             for (int i = 0; i < majors.Length; ++i)
             {
                 Empire e = majors[i];
-                var col = new Rectangle(x0 + i * colW, LeftRect.Y + 16, colW - 8, LeftRect.Height - 32);
+                var col = new Rectangle(x0 + i * colW, LeftRect.Y + 16, colW - 8, LeftRect.Height - 52);
                 var c = new EmpireColumn { E = e, Rect = col };
                 Columns.Add(c);
 
@@ -313,14 +313,14 @@ namespace Ship_Game.GameScreens
                 // budget cost line under the slider (legacy formula)
                 float espionageCost = Player.GetEspionageCost();
                 string cost = $"{(espionageCost > 0 ? -espionageCost : espionageCost).String(1)} BC/turn";
-                batch.DrawString(Font12, cost, new Vector2(col.X + 8, budgetY + 62), espionageCost > 0 ? Color.Pink : Color.LightGreen);
+                batch.DrawString(Font12, cost, new Vector2(col.X + 8, budgetY + 70), espionageCost > 0 ? Color.Pink : Color.LightGreen);
                 return;
             }
 
             Ship_Game.Espionage esp = c.Esp;
 
             // BUDGET section extras: limit level value, points/turn, target + progress
-            batch.DrawString(Font12Bold, esp.LimitLevel.ToString(), new Vector2(col.X + 116, budgetY + 74), Player.EmpireColor);
+            batch.DrawString(Font12Bold, esp.LimitLevel.ToString(), new Vector2(col.X + 134, budgetY + 75), Player.EmpireColor);
             float ppt = esp.GetProgressToIncrease(Player.EspionagePointsPerTurn, Player.CalcTotalEspionageWeight());
             string pptTxt = "Points/turn: " + ppt.String(3);
             batch.DrawString(Font12, pptTxt, new Vector2(col.X + 8, budgetY + 96), Color.Wheat);
