@@ -392,8 +392,9 @@ namespace Ship_Game
             bool alwaysShow = e.isPlayer || !UsingNewEspioange;
             bool anyIntel = e.isPlayer || UsingNewEspioange || IntelligenceLevel(e) > 0;
 
-            // fixed row set - hidden values read "---" so every empire's data sits
-            // on the same line across columns (player call)
+            // fixed row set, ordered by the infiltration level that unlocks each
+            // datum (player call); hidden values read "---" so every empire's data
+            // sits on the same line across columns
             if (anyIntel)
                 TableRow(batch, col, ref y, maxY, "Homeworld", Truncate(e.data.Traits.HomeworldName, 90), Color.White);
             else
@@ -403,38 +404,6 @@ namespace Ship_Game
                 TableRow(batch, col, ref y, maxY, "Controls HW", e.Capital.Owner == e ? Localizer.Token(GameText.Yes) : Localizer.Token(GameText.No), Color.White);
             else
                 Hidden(batch, col, ref y, maxY, "Controls HW");
-
-            if (anyIntel && (alwaysShow || espionage.CanViewNumPlanets))
-                TableRow(batch, col, ref y, maxY, "Planets", e.GetPlanets().Count.ToString(), Color.White);
-            else
-                Hidden(batch, col, ref y, maxY, "Planets");
-
-            if (anyIntel && (alwaysShow || espionage.CanViewNumShips))
-                TableRow(batch, col, ref y, maxY, "Ships", e.OwnedShips.Count.ToString(), Color.White);
-            else
-                Hidden(batch, col, ref y, maxY, "Ships");
-
-            if (anyIntel && (alwaysShow || espionage.CanViewMoneyAndMaint))
-            {
-                TableRow(batch, col, ref y, maxY, "Treasury", e.Money.String(1) + " BC", Color.White);
-                TableRow(batch, col, ref y, maxY, "Maintenance", e.BuildingAndShipMaint.String(1), Color.White);
-            }
-            else
-            {
-                Hidden(batch, col, ref y, maxY, "Treasury");
-                Hidden(batch, col, ref y, maxY, "Maintenance");
-            }
-
-            TableRow(batch, col, ref y, maxY, "Population", GetPop(e).String(1) + " bn", Color.White);
-
-            if (e.Research.HasTopic && (e.isPlayer || UsingNewEspioange && espionage.CanViewResearchTopic || IntelligenceLevel(e) > 1))
-                TableRow(batch, col, ref y, maxY, "Research", Truncate(e.Research.Current.Tech.Name.Text, 110), Color.White);
-            else if (e.Research.HasTopic && (UsingNewEspioange && espionage.CanViewTechType || IntelligenceLevel(e) > 0))
-                TableRow(batch, col, ref y, maxY, "Research", e.Research.Current.TechnologyType.ToString(), Color.White);
-            else if (e.isPlayer && !e.Research.HasTopic)
-                TableRow(batch, col, ref y, maxY, "Research", "None", Color.Gray);
-            else
-                Hidden(batch, col, ref y, maxY, "Research");
 
             if (!UsingNewEspioange)
             {
@@ -452,6 +421,42 @@ namespace Ship_Game
                 Hidden(batch, col, ref y, maxY, "Infiltration");
             }
 
+            // level 1: planets, population
+            if (anyIntel && (alwaysShow || espionage.CanViewNumPlanets))
+                TableRow(batch, col, ref y, maxY, "Planets", e.GetPlanets().Count.ToString(), Color.White);
+            else
+                Hidden(batch, col, ref y, maxY, "Planets");
+
+            TableRow(batch, col, ref y, maxY, "Population", GetPop(e).String(1) + " bn", Color.White);
+
+            // level 2: ships, research (tech type; the exact topic is level 3)
+            if (anyIntel && (alwaysShow || espionage.CanViewNumShips))
+                TableRow(batch, col, ref y, maxY, "Ships", e.OwnedShips.Count.ToString(), Color.White);
+            else
+                Hidden(batch, col, ref y, maxY, "Ships");
+
+            if (e.Research.HasTopic && (e.isPlayer || UsingNewEspioange && espionage.CanViewResearchTopic || IntelligenceLevel(e) > 1))
+                TableRow(batch, col, ref y, maxY, "Research", Truncate(e.Research.Current.Tech.Name.Text, 110), Color.White);
+            else if (e.Research.HasTopic && (UsingNewEspioange && espionage.CanViewTechType || IntelligenceLevel(e) > 0))
+                TableRow(batch, col, ref y, maxY, "Research", e.Research.Current.TechnologyType.ToString(), Color.White);
+            else if (e.isPlayer && !e.Research.HasTopic)
+                TableRow(batch, col, ref y, maxY, "Research", "None", Color.Gray);
+            else
+                Hidden(batch, col, ref y, maxY, "Research");
+
+            // level 3: money
+            if (anyIntel && (alwaysShow || espionage.CanViewMoneyAndMaint))
+            {
+                TableRow(batch, col, ref y, maxY, "Treasury", e.Money.String(1) + " BC", Color.White);
+                TableRow(batch, col, ref y, maxY, "Maintenance", e.BuildingAndShipMaint.String(1), Color.White);
+            }
+            else
+            {
+                Hidden(batch, col, ref y, maxY, "Treasury");
+                Hidden(batch, col, ref y, maxY, "Maintenance");
+            }
+
+            // level 5: their moles
             if (e != Player && (UsingNewEspioange && espionage?.CanViewTheirMoles == true || IntelligenceLevel(e) > 1))
                 TableRow(batch, col, ref y, maxY, "Their moles", Player.GetNumOfTheirMoles(e).ToString(), Color.Wheat);
             else
