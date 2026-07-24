@@ -139,7 +139,7 @@ namespace Ship_Game.GameScreens
             for (int i = 0; i < majors.Length; ++i)
             {
                 Empire e = majors[i];
-                var col = new Rectangle(x0 + i * colW, LeftRect.Y + 16, colW - 8, LeftRect.Height - 52);
+                var col = new Rectangle(x0 + i * colW, LeftRect.Y + 26, colW - 8, LeftRect.Height - 52); // centered vertically in the frame
                 var c = new EmpireColumn { E = e, Rect = col };
                 Columns.Add(c);
 

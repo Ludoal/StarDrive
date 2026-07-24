@@ -169,7 +169,7 @@ namespace Ship_Game
             int j = 0;
             foreach (RaceEntry re in Races)
             {
-                re.container = new Rectangle(x0 + j * colW, LeftRect.Y + 16, colW - 8, LeftRect.Height - 52);
+                re.container = new Rectangle(x0 + j * colW, LeftRect.Y + 26, colW - 8, LeftRect.Height - 52); // centered vertically in the frame
                 j++;
             }
 
