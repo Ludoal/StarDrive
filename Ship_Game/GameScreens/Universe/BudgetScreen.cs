@@ -72,10 +72,12 @@ namespace Ship_Game.GameScreens
 
             public void Spacer() => Add(new UILabel(" ", Fonts.Arial12));
 
-            public void SetTotalFooter(Func<float> getValue)
+            // totals are regular rows, not the UIList Footer — the Footer pins to the
+            // rect bottom and breaks the even row pitch (Ludo's bench, 19:40)
+            public void AddTotal(Func<float> getValue)
             {
-                Footer = new SplitElement(new UILabel(Localizer.Token(GameText.Total2)),
-                                          new UILabel(DynamicText(getValue, f => f.MoneyString())) );
+                AddSplit(new UILabel(Localizer.Token(GameText.Total2), Colors.Cream),
+                         new UILabel(DynamicText(getValue, f => f.MoneyString())) );
             }
 
             public FloatSlider AddSlider(LocalizedText title, float value)
@@ -248,6 +250,15 @@ namespace Ship_Game.GameScreens
                 Add(l);
             }
             void FooterMoney(int col, Func<float> getValue) => FooterCell(col, DynamicText(getValue, f => f.MoneyString()));
+            UILabel FooterCellL(int col, Func<UILabel, string> getText)
+            {
+                var l = new UILabel(getText, Fonts.Arial12Bold);
+                l.Pos = new Vector2(TableXpx + TableWpx * ColStart(col), totalY);
+                l.Size = new Vector2(TableWpx * NumColW - 8, Fonts.Arial12Bold.LineSpacing);
+                l.TextAlign = TextAlign.Right;
+                Add(l);
+                return l;
+            }
 
             FooterCell(0, l => { l.Color = Color.White; return $"{Player.GetPlanets().Sum(p => p.PopulationBillion):0.00}"; });
             FooterMoney(1, () => Player.GetPlanets().Sum(EconColonyItem.PopIncome));
@@ -256,7 +267,9 @@ namespace Ship_Game.GameScreens
             FooterMoney(4, () => -Player.GetPlanets().Sum(p => p.Money.Maintenance));
             FooterMoney(5, () => -Player.GetPlanets().Sum(p => p.Money.TroopMaint));
             FooterMoney(6, () => Player.GetPlanets().Sum(EconColonyItem.NetIncome));
-            FooterCell(7, l => { l.Color = Color.Wheat; return Player.GetPlanets().Sum(EconColonyItem.BudgetAlloc).MoneyString(); });
+            var budgetTot = FooterCellL(7, l => { l.Color = Color.Wheat; return Player.GetPlanets().Sum(EconColonyItem.BudgetAlloc).MoneyString(); });
+            budgetTot.Tooltip = "Per-planet allocations are EMA-smoothed slices of the empire pots, plus each colony's" +
+                                " initial tolerance and terraform budget — so this sum drifts a few BC from the pots panel by design.";
             FooterMoney(8, () => Player.GetPlanets().Sum(EconColonyItem.GovExpense));
             FooterMoney(9, () => Player.GetPlanets().Sum(EconColonyItem.BudgetLeft));
 
@@ -268,7 +281,7 @@ namespace Ship_Game.GameScreens
             var taxRect    = new Rectangle(rx, (int)RightMenu.Y + 74, rw, 104);
             var budgetRect = new Rectangle(rx, taxRect.Bottom + 8, rw, 210);
             var incomeRect = new Rectangle(rx, budgetRect.Bottom + 8, rw, 180);
-            var costRect   = new Rectangle(rx, incomeRect.Bottom + 8, rw, 180);
+            var costRect   = new Rectangle(rx, incomeRect.Bottom + 8, rw, 240);
 
             SummaryPanel tax = Add(new SummaryPanel("", taxRect, new Color(17, 21, 28)));
 
@@ -373,23 +386,35 @@ namespace Ship_Game.GameScreens
             budget.Spacer();
             PotItem("Space Roads", () => Player.AI.SSPBudget, Color.White);
             budget.Spacer();
-            budget.SetTotalFooter(Pots);
+            budget.AddTotal(Pots);
         }
 
         private void CostsTab(Rectangle costRect)
         {
             SummaryPanel costs = Add(new SummaryPanel(GameText.Expenditure, costRect, new Color(27, 22, 25)));
 
+            // planet-side lines first, then their subtotal, then the off-planet lines.
+            // Building line = Gross − Net (the true maintenance sum, matches the table);
+            // upstream's TotalBuildingMaintenance subtracts troop cost from it — the
+            // 0.50 gap of the bench. Troop line = TroopCostOnPlanets, the figure the
+            // treasury actually debits (and the table column sum), not just our own.
+            float PlanetsExpense() => -(Player.GrossPlanetIncome - Player.NetPlanetIncomes
+                                        + Player.TroopCostOnPlanets
+                                        + Player.MoneySpendOnProductionThisTurn + Player.MoneySpendOnProductionNow);
             costs.Spacer();
-            costs.AddItem("Building Maintenance", () => -Player.TotalBuildingMaintenance);
-            costs.AddItem("Ship Maintenance", () => -Player.TotalShipMaintenance);
-            costs.AddItem("Troop Maintenance", () => -Player.GetTroopMaintThisTurn());
+            costs.AddItem("Building Maintenance", () => -(Player.GrossPlanetIncome - Player.NetPlanetIncomes));
+            costs.AddItem("Troop Maintenance", () => -Player.TroopCostOnPlanets);
             costs.AddItem(GameText.ProductionFees, () => -(Player.MoneySpendOnProductionThisTurn+Player.MoneySpendOnProductionNow)); // "production costs."
+            costs.Spacer();
+            costs.AddSplit(new UILabel("Planets subtotal", Color.Wheat),
+                           new UILabel(DynamicText(PlanetsExpense, f => f.MoneyString())));
+            costs.Spacer();
+            costs.AddItem("Ship Maintenance", () => -Player.TotalShipMaintenance);
             if (Player.NewEspionageEnabled)
                 costs.AddItem("Espionage", () => -Player.EspionageCostLastTurn);
             costs.Spacer();
 
-            costs.SetTotalFooter(() => -(Player.AllSpending+Player.MoneySpendOnProductionNow)); // "Total"
+            costs.AddTotal(() => -(Player.AllSpending+Player.MoneySpendOnProductionNow));
         }
 
         private void IncomesTab(Rectangle incomeRect)
@@ -403,7 +428,7 @@ namespace Ship_Game.GameScreens
             income.AddItem("Money Leeched", () => Player.TotalMoneyLeechedLastTurn);
             income.AddItem(GameText.Other, () => Player.data.FlatMoneyBonus);
             income.Spacer();
-            income.SetTotalFooter(() => Player.GrossIncome); // "Total"
+            income.AddTotal(() => Player.GrossIncome);
         }
 
         private void TaxSliderOnChange(FloatSlider s)
