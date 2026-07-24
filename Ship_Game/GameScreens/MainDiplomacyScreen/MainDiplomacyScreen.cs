@@ -19,8 +19,8 @@ namespace Ship_Game
     // empire, everything visible at once. Each column: header (portrait, click to
     // contact), fixed INFO block, a global INTELLIGENCE/BONUSES switch (intelligence
     // by default, one click flips every column so rows stay comparable), and a
-    // TREATIES mini-matrix at the bottom (rows W/P, A/N, O, T — the pairs the treaty
-    // exclusivity rules allow to share a line — versus every other empire).
+    // TREATIES mini-matrix at the bottom (icon rows: state W/A/N/P — one line, war
+    // breaks every treaty and alliance implies NA — then borders, then trade).
     public sealed class MainDiplomacyScreen : GameScreen
     {
         UniverseScreen Universe;
@@ -47,7 +47,7 @@ namespace Ship_Game
         Font NameFont = Fonts.Arial14Bold; // player call: bigger race names
         readonly Map<Empire, DanButton> Contacts = new(); // the original screen's button design
 
-        const int TreatyBlockH = 136; // player design: block sits lower, row labels gone
+        const int TreatyBlockH = 114; // player design: 3 icon rows (state / borders / trade), labels gone
 
         public MainDiplomacyScreen(UniverseScreen screen) : base(screen, toPause: screen)
         {
@@ -635,38 +635,41 @@ namespace Ship_Game
                     batch.DrawString(Font12, "?", new Vector2(flag.X + 3, flag.Y), Color.Gray);
             }
 
-            for (int iy = 0; iy < 4; ++iy)
+            // merged status row (Ludo 19:10): war BREAKS every treaty at declaration
+            // (DeclareWarOn → BreakAllTreatiesWith includingPeace) and alliance
+            // auto-signs NA — so one row with priority W > A > N > P loses nothing
+            // but a truce still ticking under a fresher alliance. Icons, not letters.
+            for (int iy = 0; iy < 3; ++iy)
             {
                 float ry = top + 20 + iy * 22;
                 for (int jx = 0; jx < others.Length; ++jx)
                 {
+                    SubTexture icon = null;
+                    Color tint = Color.White;
                     string glyph = "?";
-                    Color c = Color.Gray;
                     if (CanSeeRelation(e, others[jx]) && e.GetRelations(others[jx], out Relationship rel) && rel.Known)
                     {
+                        glyph = "-";
                         switch (iy)
                         {
-                            case 0:
-                                if (rel.AtWar) { glyph = "W"; c = Color.Red; }
-                                else if (rel.Treaty_Peace) { glyph = "P"; c = Color.LightGreen; }
-                                else { glyph = "-"; c = new Color(90, 90, 90); }
+                            case 0: // the state of the relation, strongest bond first
+                                if (rel.AtWar) icon = ResourceManager.Texture("UI/icon_fighting_small");
+                                else if (rel.Treaty_Alliance) { icon = ResourceManager.Texture("UI/flagicon"); tint = Color.Gold; }
+                                else if (rel.Treaty_NAPact) icon = ResourceManager.Texture("UI/icon_shield");
+                                else if (rel.Treaty_Peace) icon = ResourceManager.Texture("UI/icon_peace");
                                 break;
                             case 1:
-                                if (rel.Treaty_Alliance) { glyph = "A"; c = Color.Gold; }
-                                else if (rel.Treaty_NAPact) { glyph = "N"; c = Color.SteelBlue; }
-                                else { glyph = "-"; c = new Color(90, 90, 90); }
+                                if (rel.Treaty_OpenBorders) icon = ResourceManager.Texture("NewUI/icon_intertrade");
                                 break;
                             case 2:
-                                if (rel.Treaty_OpenBorders) { glyph = "O"; c = Color.Cyan; }
-                                else { glyph = "-"; c = new Color(90, 90, 90); }
-                                break;
-                            case 3:
-                                if (rel.Treaty_Trade) { glyph = "T"; c = Color.LightGreen; }
-                                else { glyph = "-"; c = new Color(90, 90, 90); }
+                                if (rel.Treaty_Trade) icon = ResourceManager.Texture("NewUI/icon_money");
                                 break;
                         }
                     }
-                    batch.DrawString(Font12Bold, glyph, new Vector2(x0 + jx * cellW + (cellW - Font12Bold.TextWidth(glyph)) / 2f, ry), c);
+                    if (icon != null)
+                        batch.Draw(icon, new Rectangle((int)(x0 + jx * cellW) + (cellW - 14) / 2, (int)ry, 14, 14), tint);
+                    else
+                        batch.DrawString(Font12Bold, glyph, new Vector2(x0 + jx * cellW + (cellW - Font12Bold.TextWidth(glyph)) / 2f, ry), new Color(90, 90, 90));
                 }
             }
         }
