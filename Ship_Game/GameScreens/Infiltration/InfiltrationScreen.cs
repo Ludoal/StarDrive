@@ -187,7 +187,7 @@ namespace Ship_Game.GameScreens
                 };
                 Add(c.Weight);
 
-                c.LimitBtn = Add(new UIButton(ButtonStyle.Low100, new Vector2(col.X + 8, budgetY + 70), GameText.EspionageLimitLevel));
+                c.LimitBtn = Add(new UIButton(ButtonStyle.Low100, new Vector2(col.X + 8, budgetY + 60), GameText.EspionageLimitLevel));
                 c.LimitBtn.Tooltip = GameText.EspionageLimitLevelTip;
                 c.LimitBtn.AcceptRightClicks = true;
                 c.LimitBtn.OnClick = b =>
@@ -320,7 +320,7 @@ namespace Ship_Game.GameScreens
             Ship_Game.Espionage esp = c.Esp;
 
             // BUDGET section extras: limit level value, points/turn, target + progress
-            batch.DrawString(Font12Bold, esp.LimitLevel.ToString(), new Vector2(col.X + 134, budgetY + 75), Player.EmpireColor);
+            batch.DrawString(Font12Bold, esp.LimitLevel.ToString(), new Vector2(col.X + 134, budgetY + 65), Player.EmpireColor);
             float ppt = esp.GetProgressToIncrease(Player.EspionagePointsPerTurn, Player.CalcTotalEspionageWeight());
             string pptTxt = "Points/turn: " + ppt.String(3);
             batch.DrawString(Font12, pptTxt, new Vector2(col.X + 8, budgetY + 96), Color.Wheat);
