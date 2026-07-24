@@ -15,18 +15,22 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
         private readonly Menu2 Window;
         readonly Array<Peer> Peers = new Array<Peer>();
         readonly Vector2 WeightCenter; // Offset from window center for circle of empires
-        bool ViewTradeTreaties    = true;
-        bool ViewOnlyWarsOrAllies = false;
-        UICheckBox ViewTradeTreatiesCheckBox;
-        UICheckBox ViewWarsOrAlliesCheckBox;
         UILabel Title;
 
+        // Ludoal fork: one filter per treaty type (replaces the old two toggles),
+        // ordered War → Peace → Alliance → NA → Open Borders → Trade, all on by default
+        readonly bool[] Show = { true, true, true, true, true, true };
+        UICheckBox[] Filters;
+
+        // treaty rows, in the fixed display/filter order (index = row in Show[])
+        enum T { War = 0, Peace = 1, Alliance = 2, Nap = 3, Borders = 4, Trade = 5 }
+
         readonly Color ColorWar     = Color.Red;
-        readonly Color ColorPeace   = Color.MediumPurple.Alpha(0.5f);
-        readonly Color ColorNap     = Color.Yellow.Alpha(0.5f);
-        readonly Color ColorTrade   = Color.DeepSkyBlue.Alpha(0.5f);
-        readonly Color ColorBorders = Color.White.Alpha(0.75f);
+        readonly Color ColorPeace   = Color.MediumPurple.Alpha(0.7f);
         readonly Color ColorAlly    = Color.Green;
+        readonly Color ColorNap     = Color.Yellow.Alpha(0.7f);
+        readonly Color ColorBorders = Color.White.Alpha(0.85f);
+        readonly Color ColorTrade   = Color.DeepSkyBlue.Alpha(0.7f);
 
         readonly Array<EmpireAndIntelLevel> EmpiresAndIntel;
         readonly Graphics.Font LegendFont = Fonts.Arial14Bold;
@@ -49,33 +53,50 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             AddPeers();
         }
 
+        Color RowColor(T t) => t switch
+        {
+            T.War     => ColorWar,
+            T.Peace   => ColorPeace,
+            T.Alliance=> ColorAlly,
+            T.Nap     => ColorNap,
+            T.Borders => ColorBorders,
+            _         => ColorTrade,
+        };
+
+        static LocalizedText RowText(T t) => t switch
+        {
+            T.War     => GameText.AtWar,
+            T.Peace   => GameText.PeaceTreaty,
+            T.Alliance=> GameText.Alliance,
+            T.Nap     => GameText.NonaggressionPact3,
+            T.Borders => GameText.OpenBordersTreaty2,
+            _         => GameText.TradeTreaty,
+        };
+
+        static float RowThickness(T t) => (t == T.War || t == T.Alliance) ? 3f : 1f;
+
         public override void LoadContent()
         {
             CloseButton(Window.Menu.Right - 40, Window.Menu.Y + 20);
             Title = Add(new UILabel(GameText.EmpireRelationships, Fonts.Arial20Bold, Color.Wheat));
-            ViewWarsOrAlliesCheckBox  = Add(new UICheckBox(() => ViewOnlyWarsOrAllies, LegendFont,
-                title: GameText.ViewWarsOrAlliancesName, tooltip: GameText.ViewWarsOrAlliancesTip));
-            ViewTradeTreatiesCheckBox = Add(new UICheckBox(() => ViewTradeTreaties, LegendFont, 
-                title: GameText.ViewTradeTreatiesName, tooltip: GameText.ViewTradeTreatiesTip));
 
-            ViewWarsOrAlliesCheckBox.TextColor  = Color.Gray;
-            ViewTradeTreatiesCheckBox.TextColor = Color.Gray;
-            ViewWarsOrAlliesCheckBox.CheckedTextColor  = Color.White;
-            ViewTradeTreatiesCheckBox.CheckedTextColor = Color.White;
-
-            var list = AddList(new Vector2(Window.X + 25, Window.Y + 80), new Vector2(240, 400));
-            void AddLegendItem(in LocalizedText text, Color color, float thickness)
+            // one checkbox + legend line per treaty type, in the fixed order.
+            // explicit getter/setter so the array element is writable (a lambda
+            // over a captured local doesn't build a settable expression Ref)
+            var list = AddList(new Vector2(Window.X + 25, Window.Y + 80), new Vector2(260, 400));
+            Filters = new UICheckBox[6];
+            for (int i = 0; i < 6; ++i)
             {
-                var lb = new UILabel(text, LegendFont, color);
-                var ln = new UILine(new Vector2(100, LegendFont.LineSpacing + 2), 0.8f, thickness, color);
-                list.Add(new SplitElement(lb, ln));
+                var t = (T)i;
+                int idx = i; // capture
+                var cb = new UICheckBox(0, 0, () => Show[idx], v => Show[idx] = v, LegendFont,
+                                        title: RowText(t), tooltip: RowText(t));
+                cb.TextColor = Color.Gray;
+                cb.CheckedTextColor = RowColor(t);
+                var ln = new UILine(new Vector2(70, LegendFont.LineSpacing + 2), 0.8f, RowThickness(t), RowColor(t));
+                list.Add(new SplitElement(cb, ln));
+                Filters[i] = cb;
             }
-            AddLegendItem(GameText.PeaceTreaty, ColorPeace, 1f);
-            AddLegendItem(GameText.NonaggressionPact3, ColorNap, 1f);
-            AddLegendItem(GameText.TradeTreaty, ColorTrade, 1f);
-            AddLegendItem(GameText.OpenBordersTreaty2, ColorBorders, 1f);
-            AddLegendItem(GameText.Alliance, ColorAlly, 3f);
-            AddLegendItem(GameText.AtWar, ColorWar, 3f);
 
             base.LoadContent();
         }
@@ -83,8 +104,6 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
         public override void PerformLayout()
         {
             Title.Pos = new Vector2(Window.X + 25, Window.Y + 30);
-            ViewTradeTreatiesCheckBox.Pos = new Vector2(Window.X + 25, Window.Bottom - 75);
-            ViewWarsOrAlliesCheckBox.Pos  = new Vector2(Window.X + 25, Window.Bottom - 50);
         }
 
         void AddPeers()
@@ -138,13 +157,13 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             Peer[] knownPeers = Peers.Filter(p => p.IntelLevel > 0);
             foreach (Peer us in knownPeers)
                 foreach (Peer peer in Peers)
-                    if (ShowPeer(us.Empire, peer.Empire)) 
+                    if (ShowPeer(us.Empire, peer.Empire))
                         DrawTreatyPeerLines(batch, us, peer);
 
             foreach (Peer empire in Peers)
             {
                 batch.Draw(empire.Portrait, empire.Rect);
-                batch.DrawRectangle(empire.Rect, Player.IsKnown(empire.Empire) || empire.Empire.isPlayer ? empire.Empire.EmpireColor : Color.Gray, 
+                batch.DrawRectangle(empire.Rect, Player.IsKnown(empire.Empire) || empire.Empire.isPlayer ? empire.Empire.EmpireColor : Color.Gray,
                     SelectedEmpire == empire.Empire ? 3 : 1);
             }
         }
@@ -161,32 +180,31 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             if (rel == null)
                 return;
 
-            if (rel.Treaty_Peace)
+            // Ludoal fork: each treaty is a distinct parallel chord, offset perpendicular
+            // to the A→B line by its row index — the six no longer stack on one line.
+            // The relation is symmetric here, so pair the chord to a stable ordering
+            // (lower empire id = "left") so both directions land on the same offset lane.
+            Vector2 a = us.LinkPos, b = peer.LinkPos;
+            Vector2 dir = a.DirectionToTarget(b);
+            Vector2 perp = dir.LeftVector();
+            if (us.Empire.Id > peer.Empire.Id) perp = -perp; // stable side per pair
+            const float Lane = 4f; // px between adjacent treaty lanes
+
+            void Chord(T t)
             {
-                DrawPeerLine(batch, us.LinkPos, peer.LinkPos, ColorPeace); 
-                return;
+                if (!Show[(int)t]) return;
+                // lanes fan out from the center line: War at 0, others stepping outward
+                float lane = ((int)t) * Lane;
+                Vector2 off = perp * lane;
+                batch.DrawLine(a + off, b + off, RowColor(t), RowThickness(t));
             }
 
-            if (ViewTradeTreaties && rel.Treaty_Trade)
-                DrawPeerLine(batch, us.TradePos, peer.TradePos, ColorTrade);
-
-            if (!ViewOnlyWarsOrAllies)
-            {
-                if (rel.Treaty_OpenBorders)
-                    DrawPeerLine(batch, us.LinkPos, peer.LinkPos, ColorBorders);
-                else if (rel.Treaty_NAPact)
-                    DrawPeerLine(batch, us.LinkPos, peer.LinkPos, ColorNap);
-            }
-
-            if (rel.AtWar)
-                DrawPeerLine(batch, us.LinkPos, peer.LinkPos, ColorWar, thickness: 3);
-            else if (rel.Treaty_Alliance)
-                DrawPeerLine(batch, us.LinkPos, peer.LinkPos, ColorAlly, thickness: 3);
-        }
-
-        void DrawPeerLine(SpriteBatch batch, Vector2 pos1, Vector2 pos2, Color color, int thickness = 1)
-        {
-            batch.DrawLine(pos1, pos2, color, thickness);
+            if (rel.AtWar)               Chord(T.War);
+            if (rel.Treaty_Peace)        Chord(T.Peace);
+            if (rel.Treaty_Alliance)     Chord(T.Alliance);
+            if (rel.Treaty_NAPact)       Chord(T.Nap);
+            if (rel.Treaty_OpenBorders)  Chord(T.Borders);
+            if (rel.Treaty_Trade)        Chord(T.Trade);
         }
 
         readonly struct Peer
@@ -194,7 +212,6 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             public readonly Rectangle Rect;
             public readonly int IntelLevel;
             public readonly Vector2 LinkPos;
-            public readonly Vector2 TradePos;
             public readonly Empire Empire;
             public readonly SubTexture Portrait;
 
@@ -205,7 +222,6 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
                 Empire     = empireAndIntel.Empire;
                 IntelLevel = empireAndIntel.IntelLevel;
                 LinkPos    = center.PointFromAngle(180 + angle, 45);
-                TradePos   = center.PointFromAngle(170 + angle, 45);
                 Portrait = Empire.Universe.Player.IsKnown(empireAndIntel.Empire) || empireAndIntel.Empire.isPlayer
                             ? ResourceManager.Texture("Portraits/" + Empire.data.PortraitName)
                             : ResourceManager.Texture("Portraits/unknown");
