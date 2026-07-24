@@ -184,7 +184,7 @@ namespace Ship_Game.GameScreens
             for (int i = 0; i <= NumCols; ++i)
             {
                 int sepX = tableX + (int)(tableW * ColStart(i)) - 4;
-                Panel(new Rectangle(sepX, headerY, 1, sepBottom - headerY), new Color(255, 255, 255, 25));
+                Panel(new Rectangle(sepX, headerY, 1, sepBottom - headerY), new Color(255, 255, 255, 25).Premultiplied());
             }
 
             // TOTAL footer + the off-planet reconciliation down to the empire Net Gain
