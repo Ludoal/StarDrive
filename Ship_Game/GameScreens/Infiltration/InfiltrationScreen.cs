@@ -161,7 +161,7 @@ namespace Ship_Game.GameScreens
                     };
                     Add(c.Budget);
 
-                    var defRect = new Rectangle(col.X + 8, col.Y + HeaderH + BudgetH + 28, col.Width - 60, 40);
+                    var defRect = new Rectangle(col.X + 8, col.Y + HeaderH + BudgetH + 52, col.Width - 60, 40); // below the DEFENSE band
                     c.Weight = new FloatSlider(defRect, GameText.EspioangeDefenseWeight, min: 0,
                                                max: Empire.MaxEspionageDefenseWeight, value: Player.EspionageDefenseWeight);
                     c.Weight.Tip = GameText.EspioangeDefenseWeightTip;
@@ -313,7 +313,7 @@ namespace Ship_Game.GameScreens
                 // budget cost line under the slider (legacy formula)
                 float espionageCost = Player.GetEspionageCost();
                 string cost = $"{(espionageCost > 0 ? -espionageCost : espionageCost).String(1)} BC/turn";
-                batch.DrawString(Font12, cost, new Vector2(col.X + 8, budgetY + 50), espionageCost > 0 ? Color.Pink : Color.LightGreen);
+                batch.DrawString(Font12, cost, new Vector2(col.X + 8, budgetY + 62), espionageCost > 0 ? Color.Pink : Color.LightGreen);
                 return;
             }
 
