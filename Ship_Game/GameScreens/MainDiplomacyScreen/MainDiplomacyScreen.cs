@@ -649,20 +649,22 @@ namespace Ship_Game
                     string glyph = "?";
                     if (CanSeeRelation(e, others[jx]) && e.GetRelations(others[jx], out Relationship rel) && rel.Known)
                     {
+                        // tints match the Relationships Cross Reference palette:
+                        // War red, Peace white, Alliance green, NA blue, Open Borders purple, Trade yellow
                         glyph = "-";
                         switch (iy)
                         {
                             case 0: // the state of the relation, strongest bond first
-                                if (rel.AtWar) icon = ResourceManager.Texture("UI/icon_fighting_small");
-                                else if (rel.Treaty_Alliance) { icon = ResourceManager.Texture("UI/flagicon"); tint = Color.Gold; }
-                                else if (rel.Treaty_NAPact) icon = ResourceManager.Texture("UI/icon_shield");
-                                else if (rel.Treaty_Peace) icon = ResourceManager.Texture("UI/icon_peace");
+                                if (rel.AtWar) { icon = ResourceManager.Texture("UI/icon_fighting_small"); tint = Color.Red; }
+                                else if (rel.Treaty_Alliance) { icon = ResourceManager.Texture("UI/flagicon"); tint = Color.Green; }
+                                else if (rel.Treaty_NAPact) { icon = ResourceManager.Texture("UI/icon_shield"); tint = Color.DeepSkyBlue; }
+                                else if (rel.Treaty_Peace) { icon = ResourceManager.Texture("UI/icon_peace"); tint = Color.White; }
                                 break;
                             case 1:
-                                if (rel.Treaty_OpenBorders) icon = ResourceManager.Texture("NewUI/icon_intertrade");
+                                if (rel.Treaty_OpenBorders) { icon = ResourceManager.Texture("NewUI/icon_intertrade"); tint = Color.MediumPurple; }
                                 break;
                             case 2:
-                                if (rel.Treaty_Trade) icon = ResourceManager.Texture("NewUI/icon_money");
+                                if (rel.Treaty_Trade) { icon = ResourceManager.Texture("NewUI/icon_money"); tint = Color.Yellow; }
                                 break;
                         }
                     }
