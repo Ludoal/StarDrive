@@ -26,11 +26,11 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
         enum T { War = 0, Peace = 1, Alliance = 2, Nap = 3, Borders = 4, Trade = 5 }
 
         readonly Color ColorWar     = Color.Red;
-        readonly Color ColorPeace   = Color.MediumPurple.Alpha(0.7f);
+        readonly Color ColorPeace   = Color.White;
         readonly Color ColorAlly    = Color.Green;
-        readonly Color ColorNap     = Color.Yellow.Alpha(0.7f);
-        readonly Color ColorBorders = Color.White.Alpha(0.85f);
-        readonly Color ColorTrade   = Color.DeepSkyBlue.Alpha(0.7f);
+        readonly Color ColorNap     = Color.DeepSkyBlue.Alpha(0.85f);
+        readonly Color ColorBorders = Color.MediumPurple.Alpha(0.85f);
+        readonly Color ColorTrade   = Color.Yellow.Alpha(0.85f);
 
         readonly Array<EmpireAndIntelLevel> EmpiresAndIntel;
         readonly Graphics.Font LegendFont = Fonts.Arial14Bold;
