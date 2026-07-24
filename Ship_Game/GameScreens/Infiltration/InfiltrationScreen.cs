@@ -349,8 +349,19 @@ namespace Ship_Game.GameScreens
             var defenseIcon = new Rectangle(col.X + 8, (int)defenseY + 24, shield.Width, shield.Height);
             batch.Draw(shield, defenseIcon, Color.White);
             bool canSeeDef = esp.CanViewDefenseRatio;
-            string defTxt = canSeeDef ? $"{((int)(e.EspionageDefenseRatio * 100)).String()}%" : "lvl 3"; // the level that unlocks it, like the Diplomacy placeholders
-            batch.DrawString(Font12Bold, defTxt, new Vector2(defenseIcon.Right + 6, defenseIcon.Y + 4), canSeeDef ? Color.White : new Color(105, 105, 105));
+            if (canSeeDef)
+            {
+                string defTxt = $"{((int)(e.EspionageDefenseRatio * 100)).String()}%";
+                batch.DrawString(Font12Bold, defTxt, new Vector2(defenseIcon.Right + 6, defenseIcon.Y + 4), Color.White);
+            }
+            else // spy icon + "lvl 3" — the level that unlocks it, like the Diplomacy placeholders
+            {
+                SubTexture spyIcon = ResourceManager.Texture("UI/icon_spy");
+                int h = Font12.LineSpacing;
+                var spyR = new Rectangle(defenseIcon.Right + 6, defenseIcon.Y + 4, spyIcon.Width * h / spyIcon.Height, h);
+                batch.Draw(spyIcon, spyR, new Color(105, 105, 105));
+                batch.DrawString(Font12Bold, "lvl 3", new Vector2(spyR.Right + 4, spyR.Y), new Color(105, 105, 105));
+            }
 
             // the five levels: band + passive + (checkboxes drawn by base.Draw)
             float y = col.Y + HeaderH + BudgetH + DefenseH + 24;

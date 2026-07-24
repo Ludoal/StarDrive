@@ -355,14 +355,33 @@ namespace Ship_Game
             y += Font12.LineSpacing + 3;
         }
 
+        // spy icon + "lvl x" — every espionage-locked placeholder wears the badge
+        void SpyLvl(SpriteBatch batch, float x, float y, byte lvl)
+        {
+            SubTexture spy = ResourceManager.Texture("UI/icon_spy");
+            int h = Font12.LineSpacing;
+            var r = new Rectangle((int)x, (int)y, spy.Width * h / spy.Height, h);
+            batch.Draw(spy, r, new Color(105, 105, 105));
+            batch.DrawString(Font12Bold, $"lvl {lvl}", new Vector2(r.Right + 4, y), new Color(105, 105, 105));
+        }
+
+        float SpyLvlWidth(byte lvl)
+        {
+            SubTexture spy = ResourceManager.Texture("UI/icon_spy");
+            int h = Font12.LineSpacing;
+            return spy.Width * h / spy.Height + 4 + Font12Bold.TextWidth($"lvl {lvl}");
+        }
+
         // aligned placeholder row for data the current infiltration level hides
         void HiddenRow(SpriteBatch batch, Rectangle col, ref float y, float maxY, string label, byte lvl = 0)
         {
             if (y > maxY - Font12.LineSpacing)
                 return;
-            string ph = lvl > 0 ? $"lvl {lvl}" : "---";
             batch.DrawString(Font12, label, new Vector2(col.X + 8, y), new Color(105, 105, 105));
-            batch.DrawString(Font12Bold, ph, new Vector2(col.Right - 8 - Font12Bold.TextWidth(ph), y), new Color(105, 105, 105));
+            if (lvl > 0)
+                SpyLvl(batch, col.Right - 8 - SpyLvlWidth(lvl), y, lvl);
+            else
+                batch.DrawString(Font12Bold, "---", new Vector2(col.Right - 8 - Font12Bold.TextWidth("---"), y), new Color(105, 105, 105));
             y += Font12.LineSpacing + 3;
         }
 
@@ -505,7 +524,7 @@ namespace Ship_Game
             }
             else
             {
-                batch.DrawString(Font12Bold, "lvl 4", new Vector2(col.X + 8, y), new Color(105, 105, 105));
+                SpyLvl(batch, col.X + 8, y, 4);
             }
         }
 
@@ -515,7 +534,7 @@ namespace Ship_Game
             Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
             if (!(!UsingNewEspioange || e.isPlayer || espionage.CanViewArtifacts))
             {
-                batch.DrawString(Font12Bold, "lvl 2", new Vector2(col.X + 8, y), new Color(105, 105, 105));
+                SpyLvl(batch, col.X + 8, y, 2);
                 return;
             }
             if (e.data.OwnedArtifacts.Count == 0)
@@ -540,7 +559,7 @@ namespace Ship_Game
             Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
             if (!(e.isPlayer || UsingNewEspioange && espionage.CanViewBonuses || IntelligenceLevel(e) > 0))
             {
-                batch.DrawString(Font12Bold, "lvl 3", new Vector2(col.X + 8, y), new Color(105, 105, 105));
+                SpyLvl(batch, col.X + 8, y, 3);
                 return;
             }
 
