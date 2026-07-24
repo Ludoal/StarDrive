@@ -331,13 +331,13 @@ namespace Ship_Game.GameScreens
                 batch.DrawString(Font12, $"Infiltrating level {target}", new Vector2(col.X + 8, budgetY + 116), Color.Wheat);
                 float max = esp.LevelCost(target);
                 float cur = esp.LevelProgress.UpperBound(max);
-                var barRect = new Rectangle(col.X + 8, (int)budgetY + 134, col.Width - 16, 12);
+                var barRect = new Rectangle(col.X + 8, (int)budgetY + 137, col.Width - 16, 12);
                 batch.FillRectangle(barRect, new Color(10, 10, 10));
                 if (max > 0f && cur > 0f)
                     batch.FillRectangle(new Rectangle(barRect.X + 1, barRect.Y + 1, (int)((barRect.Width - 2) * (cur / max)), 10), new Color(30, 120, 30));
                 batch.DrawRectangle(barRect, new Color(60, 54, 40));
                 string nums = $"{(int)cur}/{(int)max}";
-                batch.DrawString(Font12, nums, new Vector2(col.Right - 8 - Font12.TextWidth(nums), budgetY + 150), Color.Wheat);
+                batch.DrawString(Font12, nums, new Vector2(col.Right - 8 - Font12.TextWidth(nums), budgetY + 153), Color.Wheat);
             }
             else
             {
