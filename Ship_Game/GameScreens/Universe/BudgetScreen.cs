@@ -303,14 +303,21 @@ namespace Ship_Game.GameScreens
             IncomesTab(incomeRect);
             CostsTab(costRect);
 
-            EmpireNetIncome = Label(new Vector2(rx, costRect.Bottom + 12),
-                                    text:GameText.NetGain, Fonts.Arial20Bold);
-            EmpireNetIncome.Size = new Vector2(rw, Fonts.Arial20Bold.LineSpacing);
+            // "Net Gain :" cream, the figure keeps the money color — two right-anchored
+            // labels, the value in a fixed lane so the word sits flush against it
+            float NetGainNow() => Player.NetIncome - Player.MoneySpendOnProductionNow;
+            const int NetValueW = 110;
+            var netWord = Label(new Vector2(rx, costRect.Bottom + 12), "", Fonts.Arial20Bold);
+            netWord.Size = new Vector2(rw - NetValueW - 8, Fonts.Arial20Bold.LineSpacing);
+            netWord.TextAlign = TextAlign.Right;
+            netWord.DropShadow = true;
+            netWord.Color = Colors.Cream;
+            netWord.DynamicText = l => $"{(NetGainNow() >= 0f ? Localizer.Token(GameText.NetGain) : Localizer.Token(GameText.NetLoss))} :";
+            EmpireNetIncome = Label(new Vector2(rx + rw - NetValueW, costRect.Bottom + 12), "", Fonts.Arial20Bold);
+            EmpireNetIncome.Size = new Vector2(NetValueW, Fonts.Arial20Bold.LineSpacing);
             EmpireNetIncome.TextAlign = TextAlign.Right;
             EmpireNetIncome.DropShadow  = true;
-            EmpireNetIncome.DynamicText = DynamicText(
-                ()   => Player.NetIncome-Player.MoneySpendOnProductionNow,
-                (f) => $"{( f >= 0f ? Localizer.Token(GameText.NetGain) : Localizer.Token(GameText.NetLoss) )} : {f.MoneyString()}");
+            EmpireNetIncome.DynamicText = DynamicText(NetGainNow, f => f.MoneyString());
 
             base.LoadContent();
         }
@@ -370,13 +377,10 @@ namespace Ship_Game.GameScreens
             float Pots() => Player.AI.ColonyBudget + Player.AI.SSPBudget + Player.AI.DefenseBudget;
             void PotItem(string name, Func<float> pot, Color keyColor)
             {
-                budget.AddSplit(new UILabel(name, keyColor),
-                                new UILabel(l =>
-                                {
-                                    float v = pot(); float t = Pots();
-                                    l.Color = v > 0f ? Color.ForestGreen : Color.Gray;
-                                    return t > 0f ? $"({v / t * 100:0}%) {v.MoneyString()}" : v.MoneyString();
-                                }));
+                // the share rides the name label, white like it — left of the value
+                var key = new UILabel(l => { float t = Pots(); return t > 0f ? $"{name} ({pot() / t * 100:0}%)" : name; });
+                key.Color = keyColor;
+                budget.AddSplit(key, new UILabel(DynamicText(pot, f => f.MoneyString())));
             }
             PotItem("Colony", () => Player.AI.ColonyBudget, Color.White);
             PotItem("Defense", () => Player.AI.DefenseBudget, Color.White);
