@@ -479,7 +479,13 @@ namespace Ship_Game
             Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
             if (e.isPlayer || (UsingNewEspioange ? espionage.CanViewTraitSet : IntelligenceLevel(e) > 1))
             {
-                string traits = Font12.ParseText(e.data.SelectedTraitSet.ToString(), col.Width - 16);
+                string traitSet = $"{e.data.SelectedTraitSet}"; // null-safe: interpolation, like the legacy screen
+                if (traitSet.Length == 0)
+                {
+                    batch.DrawString(Font12, "None", new Vector2(col.X + 8, y), Color.Gray);
+                    return;
+                }
+                string traits = Font12.ParseText(traitSet, col.Width - 16);
                 string[] lines = traits.Split('\n');
                 for (int i = 0; i < lines.Length && i < 3; ++i)
                 {
