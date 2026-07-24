@@ -154,7 +154,7 @@ namespace Ship_Game.GameScreens
                               titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2), title, Fonts.Laserian14, Colors.Cream);
             string unitNote = "(all money values are per turn)";
             Label(new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Arial12.TextWidth(unitNote) / 2f,
-                              titleRect.Bottom - 22), unitNote, Fonts.Arial12, Color.Gray);
+                              titleRect.Bottom - 32), unitNote, Fonts.Arial12, Color.Gray);
 
             // ---- LEFT 2/3: the colony table ----
             int tableX = (int)LeftMenu.X + 20;
