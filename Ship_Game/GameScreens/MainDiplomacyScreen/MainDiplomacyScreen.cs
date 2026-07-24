@@ -267,9 +267,13 @@ namespace Ship_Game
             }
             else
             {
-                // ARTIFACTS rides under INTELLIGENCE at a fixed, aligned offset
-                float artifactsY = intelY + 24 + 12 * (Font12.LineSpacing + 3) + 4;
-                DrawIntelRows(batch, e, col, ref y, artifactsY - 6);
+                // TRAITS then ARTIFACTS ride under INTELLIGENCE at fixed, aligned offsets
+                float traitsY = intelY + 24 + 10 * (Font12.LineSpacing + 3) + 6;
+                DrawIntelRows(batch, e, col, ref y, traitsY - 6);
+                y = traitsY;
+                SectionBand(batch, col, ref y, "TRAITS");
+                DrawTraitRows(batch, e, col, ref y);
+                float artifactsY = traitsY + 24 + 3 * (Font12.LineSpacing + 2) + 8;
                 y = artifactsY;
                 SectionBand(batch, col, ref y, "ARTIFACTS");
                 DrawArtifactRows(batch, e, col, ref y, maxY);
@@ -467,6 +471,26 @@ namespace Ship_Game
                 Hidden(batch, col, ref y, maxY, "Their moles");
             else
                 Hidden(batch, col, ref y, maxY, "Their moles", 5);
+        }
+
+        // racial traits (lvl 4 intel), between INTELLIGENCE and ARTIFACTS (player call)
+        void DrawTraitRows(SpriteBatch batch, Empire e, Rectangle col, ref float y)
+        {
+            Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
+            if (e.isPlayer || (UsingNewEspioange ? espionage.CanViewTraitSet : IntelligenceLevel(e) > 1))
+            {
+                string traits = Font12.ParseText(e.data.SelectedTraitSet.ToString(), col.Width - 16);
+                string[] lines = traits.Split('\n');
+                for (int i = 0; i < lines.Length && i < 3; ++i)
+                {
+                    batch.DrawString(Font12, i == 2 && lines.Length > 3 ? lines[i] + ".." : lines[i], new Vector2(col.X + 8, y), e.EmpireColor);
+                    y += Font12.LineSpacing + 2;
+                }
+            }
+            else
+            {
+                batch.DrawString(Font12Bold, "lvl 4", new Vector2(col.X + 8, y), new Color(105, 105, 105));
+            }
         }
 
         // nominative artifact list (player design) — same visibility as the legacy list
