@@ -320,7 +320,7 @@ namespace Ship_Game
             if (e == Player)
             {
                 TableRow(batch, col, ref y, maxY, "Status", Localizer.Token(GameText.You), Color.White);
-                Hidden(batch, col, ref y, maxY, "Trade"); // player call: same rows everywhere
+                HiddenRow(batch, col, ref y, maxY, "Trade"); // player call: same rows everywhere
             }
             else
             {
@@ -343,12 +343,12 @@ namespace Ship_Game
             }
             else
             {
-                Hidden(batch, col, ref y, maxY, "Personality", 1);
+                HiddenRow(batch, col, ref y, maxY, "Personality", 1);
             }
         }
 
         // aligned placeholder row for data the current infiltration level hides
-        void Hidden(SpriteBatch batch, Rectangle col, ref float y, float maxY, string label, byte lvl = 0)
+        void HiddenRow(SpriteBatch batch, Rectangle col, ref float y, float maxY, string label, byte lvl = 0)
         {
             if (y > maxY - Font12.LineSpacing)
                 return;
@@ -376,10 +376,10 @@ namespace Ship_Game
             }
             else
             {
-                Hidden(batch, col, ref y, maxY, "Economy", 2);
-                Hidden(batch, col, ref y, maxY, "Science", 2);
-                Hidden(batch, col, ref y, maxY, "Military", 2);
-                Hidden(batch, col, ref y, maxY, "Population", 2);
+                HiddenRow(batch, col, ref y, maxY, "Economy", 2);
+                HiddenRow(batch, col, ref y, maxY, "Science", 2);
+                HiddenRow(batch, col, ref y, maxY, "Military", 2);
+                HiddenRow(batch, col, ref y, maxY, "Population", 2);
             }
         }
 
@@ -406,12 +406,12 @@ namespace Ship_Game
             if (anyIntel)
                 TableRow(batch, col, ref y, maxY, "Homeworld", Truncate(e.data.Traits.HomeworldName, 90), Color.White);
             else
-                Hidden(batch, col, ref y, maxY, "Homeworld", 1);
+                HiddenRow(batch, col, ref y, maxY, "Homeworld", 1);
 
             if (anyIntel && e.Capital != null)
                 TableRow(batch, col, ref y, maxY, "Controls HW", e.Capital.Owner == e ? Localizer.Token(GameText.Yes) : Localizer.Token(GameText.No), Color.White);
             else
-                Hidden(batch, col, ref y, maxY, "Controls HW", 1);
+                HiddenRow(batch, col, ref y, maxY, "Controls HW", 1);
 
             if (!UsingNewEspioange)
             {
@@ -426,14 +426,14 @@ namespace Ship_Game
             }
             else
             {
-                Hidden(batch, col, ref y, maxY, "Infiltration");
+                HiddenRow(batch, col, ref y, maxY, "Infiltration");
             }
 
             // level 1: planets, population
             if (anyIntel && (alwaysShow || espionage.CanViewNumPlanets))
                 TableRow(batch, col, ref y, maxY, "Planets", e.GetPlanets().Count.ToString(), Color.White);
             else
-                Hidden(batch, col, ref y, maxY, "Planets", 1);
+                HiddenRow(batch, col, ref y, maxY, "Planets", 1);
 
             TableRow(batch, col, ref y, maxY, "Population", GetPop(e).String(1) + " bn", Color.White);
 
@@ -441,7 +441,7 @@ namespace Ship_Game
             if (anyIntel && (alwaysShow || espionage.CanViewNumShips))
                 TableRow(batch, col, ref y, maxY, "Ships", e.OwnedShips.Count.ToString(), Color.White);
             else
-                Hidden(batch, col, ref y, maxY, "Ships", 2);
+                HiddenRow(batch, col, ref y, maxY, "Ships", 2);
 
             if (e.Research.HasTopic && (e.isPlayer || UsingNewEspioange && espionage.CanViewResearchTopic || IntelligenceLevel(e) > 1))
                 TableRow(batch, col, ref y, maxY, "Research", Truncate(e.Research.Current.Tech.Name.Text, 110), Color.White);
@@ -450,7 +450,7 @@ namespace Ship_Game
             else if (e.isPlayer && !e.Research.HasTopic)
                 TableRow(batch, col, ref y, maxY, "Research", "None", Color.Gray);
             else
-                Hidden(batch, col, ref y, maxY, "Research", 2);
+                HiddenRow(batch, col, ref y, maxY, "Research", 2);
 
             // level 3: money
             if (anyIntel && (alwaysShow || espionage.CanViewMoneyAndMaint))
@@ -460,17 +460,17 @@ namespace Ship_Game
             }
             else
             {
-                Hidden(batch, col, ref y, maxY, "Treasury", 3);
-                Hidden(batch, col, ref y, maxY, "Maintenance", 3);
+                HiddenRow(batch, col, ref y, maxY, "Treasury", 3);
+                HiddenRow(batch, col, ref y, maxY, "Maintenance", 3);
             }
 
             // level 5: their moles
             if (e != Player && (UsingNewEspioange && espionage?.CanViewTheirMoles == true || IntelligenceLevel(e) > 1))
                 TableRow(batch, col, ref y, maxY, "Their moles", Player.GetNumOfTheirMoles(e).ToString(), Color.Wheat);
             else if (e == Player)
-                Hidden(batch, col, ref y, maxY, "Their moles");
+                HiddenRow(batch, col, ref y, maxY, "Their moles");
             else
-                Hidden(batch, col, ref y, maxY, "Their moles", 5);
+                HiddenRow(batch, col, ref y, maxY, "Their moles", 5);
         }
 
         // racial traits (lvl 4 intel), between INTELLIGENCE and ARTIFACTS (player call)
