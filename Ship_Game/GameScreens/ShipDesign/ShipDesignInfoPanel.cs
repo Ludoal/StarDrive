@@ -61,10 +61,22 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         void CreateElements()
         {
-            StatsList = Add(new UIList(Pos, Size));
-            StatsList.Padding = Vector2.Zero;
-            StatsList.SetLocalPos(0, 0);
-            TitleWidth = Width - ValueWidth;
+            // Ludoal fork: two columns, like the module panel. Grouping by block added eight
+            // headings and their spacers, which made a single column taller than its rect —
+            // the content spilled onto the issues panel below. Splitting halves the height.
+            ColWidth = Width * 0.5f - 4;
+            ValueWidth = 60; // the value column narrows with the column itself
+            TitleWidth = ColWidth - ValueWidth;
+
+            LeftList = Add(new UIList(Pos, new Vector2(ColWidth, Height)));
+            LeftList.Padding = Vector2.Zero;
+            LeftList.SetLocalPos(0, 0);
+
+            RightList = Add(new UIList(Pos, new Vector2(ColWidth, Height)));
+            RightList.Padding = Vector2.Zero;
+            RightList.SetLocalPos(ColWidth + 8, 0);
+
+            StatsList = LeftList;
 
             Color good = Color.LightGreen;
             Color energy = Color.LightSkyBlue;
@@ -110,6 +122,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             Val(() => S.EmpTolerance, GT.EmpProtection, GT.TT_EmpProtection, Tint.Pos, protect);
             ValNZ(() => S.ECMValue, GT.Ecm3, GT.TT_Ecm3, Tint.Pos, protect);
 
+            SecondColumn();
             Header("MOBILITY", engines);
             Val(() => S.MaxFTLSpeed, GT.FtlSpeed, GT.TT_FtlSpeed, Tint.No, engines, vis: Ds.IsWarpCapable, col: ColGreater(20_000));
             Val(() => S.MaxSTLSpeed, GT.SublightSpeed, GT.TT_SublightSpeed, Tint.No, engines, col: ColGreater(50));
@@ -155,6 +168,8 @@ namespace Ship_Game.GameScreens.ShipDesign
         // Ludoal fork: block titles. A block whose every line is hidden would otherwise leave
         // a bare heading behind — a fighter has no STATION and no PAYLOAD — so a heading (and
         // the spacer above it) is visible only while at least one of its own lines is.
+        UIList LeftList, RightList;
+        float ColWidth;
         UILabel CurrentHeader;
         UI.UISpacer CurrentHeaderSpacer;
         Array<Func<bool>> CurrentHeaderLines = new Array<Func<bool>>();
@@ -166,18 +181,28 @@ namespace Ship_Game.GameScreens.ShipDesign
 
             if (HasBlocks) // no spacer above the very first block
             {
-                CurrentHeaderSpacer = new UI.UISpacer(Width, ItemHeight - 3);
+                CurrentHeaderSpacer = new UI.UISpacer(ColWidth, ItemHeight - 3);
                 StatsList.Add(CurrentHeaderSpacer);
             }
             HasBlocks = true;
 
             CurrentHeader = new UILabel(Vector2.Zero, text, StatsFont, color)
             {
-                Width = Width,
+                Width = ColWidth,
                 Height = ItemHeight + 2,
             };
             StatsList.Add(CurrentHeader);
             CurrentHeaderLines = new Array<Func<bool>>();
+        }
+
+        // Ludoal fork: everything built after this call lands in the right-hand column.
+        // Closing the pending heading first is what keeps the left column's last block
+        // able to hide itself.
+        void SecondColumn()
+        {
+            CloseHeader();
+            StatsList = RightList;
+            HasBlocks = false; // no spacer above the column's first heading
         }
 
         void CloseHeader()
@@ -209,7 +234,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             var lbl = new UI.UIKeyValueLabel(title, valueText ?? "11.11k", titleColor, valueColor)
             {
                 Separator = ":     ",
-                Width = Width,
+                Width = ColWidth,
                 Split = TitleWidth,
                 DynamicValue = dynamicValue,
                 Tooltip = tooltip,
@@ -248,7 +273,7 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         void Line()
         {
-            StatsList.Add(new UI.UISpacer(Width, ItemHeight - 3));
+            StatsList.Add(new UI.UISpacer(ColWidth, ItemHeight - 3));
         }
 
         enum Tint
