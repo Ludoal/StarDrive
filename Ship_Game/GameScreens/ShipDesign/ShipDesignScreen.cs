@@ -79,6 +79,7 @@ namespace Ship_Game
         // is proven in game, then it becomes BrowserList.
         ScrollList<ShipYardBrowserItem> HullSelectList;
         public IShipDesign ComparedDesign; // shift-clicked design, pinned for comparison
+        ShipInfoOverlayComponent ShipInfoOverlay; // hover preview, same component the load popup used
 
         public ShipModule HighlightedModule;
         SlotStruct ProjectedSlot;
@@ -667,6 +668,12 @@ namespace Ship_Game
             HullSelectList.OnClick = OnBrowserItemClicked;
             HullSelectList.OnDoubleClick = OnBrowserItemDoubleClicked;
             HullSelectList.EnableItemHighlight = true;
+
+            // hover preview: the same overlay the load popup used, so a design can be
+            // inspected without paying for a load. Hull rows carry no design, and the
+            // overlay hides itself when handed a null one.
+            ShipInfoOverlay = Add(new ShipInfoOverlayComponent(this, ParentUniverse.UState));
+            HullSelectList.OnHovered = item => ShipInfoOverlay.ShowToLeftOf(item?.Pos ?? Vector2.Zero, item?.Design);
             RefreshHullSelectList();
             hullSelectSub.PerformLayout();
 
