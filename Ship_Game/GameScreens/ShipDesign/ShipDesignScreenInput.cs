@@ -609,20 +609,23 @@ namespace Ship_Game
         {
             GameAudio.AcceptClick();
 
-            if (!ShipSaved && !IsGoodDesign() && !ModuleGrid.IsEmptyDesign())
+            // The criterion is simply "modified since the last save". Gating the prompt on
+            // IsGoodDesign() looked right but never fires in practice: that predicate demands
+            // EVERY slot of the hull to be filled, which almost no real design does, so the
+            // silent WIP branch always won and the question was never asked.
+            if (ShipSaved || ModuleGrid.IsEmptyDesign())
             {
-                SaveWIP();
                 load();
                 return;
             }
 
-            if (!ShipSaved && IsGoodDesign())
+            // Ask — and keep the WIP parking as the safety net on the declining branch, so
+            // saying "no" never destroys the work in progress, it just doesn't name it.
+            ExitMessageBox(this, SaveChanges, () =>
             {
-                ExitMessageBox(this, SaveChanges, load, GameText.YouHaveUnsavedChangesSave);
-                return;
-            }
-
-            load();
+                SaveWIP();
+                load();
+            }, GameText.YouHaveUnsavedChangesSave);
         }
 
         void UpdateViewMatrix(in Vector3 cameraPosition)
