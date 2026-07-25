@@ -763,18 +763,15 @@ namespace Ship_Game
             SearchBar = new Rectangle((int)ScreenCenter.X, (int)bottomListRight.Y, 210, 25);
             BottomSep = new Rectangle(BlackBar.X, BlackBar.Y, BlackBar.Width, 1);
 
-            // Ludoal fork: the right column is laid out from the BOTTOM UP. The boxes whose
-            // height is dictated by their content take it — the stats cartouche, then the
-            // issues strip under it — and the browser list absorbs whatever is left (Ludo's
-            // call: the list is the extensible one). The two content heights are first
-            // calibrations, clamped to a fraction of the band so a short screen still leaves
-            // a usable list instead of a sliver.
+            // Ludoal fork (spec v4): the right column is laid out from the LEFT COLUMN, not from
+            // its own fractions. The browser ends where the module list ends, the strip sits
+            // just under it, and the cartouche fills the rest down to the shared foot line — so
+            // the two columns read as one row whatever the window size.
             // the filter row lives in the band ABOVE the browser frame, so the frame starts lower
             float filterTop   = ModuleSelectComponent.LocalPos.Y;
             float colTop      = filterTop + 52f;
             // the same foot line the module frames land on, so the four read as one row
             float colBottom   = ModuleSelection.FramesBottom(ScreenHeight);
-            float colBand     = colBottom - colTop;
             // Ludoal fork (spec v4, bench): the completion line and the issues button moved ABOVE
             // the cartouche tab (Ludo) — they used to sit under it, which pushed the frame's
             // bottom edge off the module frames' line. The strip now separates the browser from
@@ -784,20 +781,20 @@ namespace Ship_Game
             // matching columns (Ludo). So the cartouche takes the module frame's top and height,
             // and the completion + issues strip lives in the gap ABOVE it, sharing the browser's
             // bottom margin rather than eating into the list.
-            float cartoucheH  = ModuleSelectComponent.FrameHeight;
-            float cartoucheY  = colBottom - cartoucheH; // colBottom already carries the margin
-            float listBottom  = ModuleSelectComponent.Bottom; // the module list's own foot
-            // The strip is its CONTENT's height (completion line + issues button, laid out at
-            // local y 0 and 18), not the whole gap: sized to the gap, its content floated and
-            // its bottom ran over the cartouche tab (bench 46.137). Hung from the top of the
-            // gap, right under the list, so it reads as belonging to the browser above it.
+            // The browser ends on the module list's own foot — that is the line the two columns
+            // share (Ludo). Under it comes the completion + issues strip, and the cartouche
+            // takes what is left down to the foot line. The cartouche is therefore SHORTER than
+            // the module frame by the strip, which is the price of the strip sitting above the
+            // tab; it goes back to full height when the bottom button bar is redone and the
+            // strip returns to the foot of the column.
+            // (46.138: giving the cartouche the module frame's full height left no room for the
+            // strip, so the guard clipped the browser and the list jumped up.)
+            float listBottom  = ModuleSelectComponent.Bottom;
             // the completion line sits at local y 0, the issues button at 18 in Pirulen20
             float issuesH     = 18f + Fonts.Pirulen20.LineSpacing;
-            // if the gap under the list cannot hold the strip, the LIST gives way — the strip
-            // must never end up over the cartouche tab again
-            if (listBottom + 6f + issuesH > cartoucheY - 4f)
-                listBottom = cartoucheY - 4f - issuesH - 6f;
             float issuesY     = listBottom + 6f;
+            float cartoucheY  = issuesY + issuesH + 4f;
+            float cartoucheH  = colBottom - cartoucheY; // colBottom already carries the margin
 
             // Ludoal fork (bench): the right column had no margin — its frames were flush with
             // the screen edge while the left ones breathe. Same padding on both sides now.
@@ -897,7 +894,11 @@ namespace Ship_Game
             // the extra width the Compared frame used to have — LEFTWARD. Its right edge stays
             // on the browser's, which is what keeps the column's right margin (bench 46.135: it
             // was the frame overflowing the screen, clipping the deltas, not the tab).
-            const float DeltaLaneW = 120f;
+            // one lane per column, taken from the panel that draws them rather than restated
+            // here: the columns keep the width they had before deltas existed and the FRAME
+            // grows to fit the lanes, instead of the columns shrinking to make room for them
+            // (bench 46.138).
+            const float DeltaLaneW = ShipDesignInfoPanel.DeltaLanesTotal;
             var infoRect = RectF.FromPoints(hullSelectSub.Right - cartoucheW - DeltaLaneW,
                                             hullSelectSub.Right,
                                             cartoucheY, cartoucheY + cartoucheH);

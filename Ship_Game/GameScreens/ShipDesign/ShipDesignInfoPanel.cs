@@ -70,7 +70,9 @@ namespace Ship_Game.GameScreens.ShipDesign
         // room a delta needs after a value: the offset it is drawn at, plus the widest delta
         // string we can expect ("(+157.2k)")
         const float DeltaLaneOffset = 46f;
-        const float DeltaLaneWidth = DeltaLaneOffset + 64f;
+        public const float DeltaLaneWidth = DeltaLaneOffset + 64f;
+        // what a frame has to add to its width to carry a lane per column
+        public const float DeltaLanesTotal = DeltaLaneWidth * 2f;
 
         // How far this panel is inset inside its frame. The screen builds the inner rect, so it
         // tells us here rather than us guessing a constant that would have to stay in step.
@@ -382,11 +384,15 @@ namespace Ship_Game.GameScreens.ShipDesign
             // for two columns left the second one overlapping its neighbour's labels, which is
             // the "second column too far left" the bench kept seeing (46.137). The first column
             // looked right because it starts at the left edge and absorbs none of the error.
-            float lanes = HasDeltaLanes ? DeltaLaneWidth * 2f : 0f;
-            float colStep = (Width - planW - 10f - lanes) * 0.5f;
+            // The FIRST column keeps its place and its title room whether or not deltas are on:
+            // its geometry comes from the frame's half-width, exactly as it did before lanes
+            // existed. Only the SECOND column moves right, past the first one's delta lane
+            // (46.138: taking both lanes out of the total shrank every column and dragged
+            // column 1 leftwards — Ludo wanted column 2 pushed right, not column 1 pulled left).
+            float lane = HasDeltaLanes ? DeltaLaneWidth : 0f;
+            float colStep = (Width - planW - 10f) * 0.5f;
             float col0X = X + planW + Col0Shift;
-            // the second column starts past the first one AND past the first one's delta lane
-            float col1X = col0X + colStep + (HasDeltaLanes ? DeltaLaneWidth : 0f) + Col1Shift - Col0Shift;
+            float col1X = col0X + colStep + lane + Col1Shift - Col0Shift;
             float spacing = colStep * 0.72f; // title room; the value sits at the cursor + spacing
             Graphics.Font headFont = Fonts.Arial12Bold;
 
