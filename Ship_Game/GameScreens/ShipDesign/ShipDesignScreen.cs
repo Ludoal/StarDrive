@@ -716,6 +716,28 @@ namespace Ship_Game
             CloseButton(ScreenWidth - 27, 75);
         }
 
+        // Ludoal fork: the visibility policy ported verbatim from the load popup, so the
+        // merged list shows exactly what the popup showed. ShowAllDesigns is a PERSISTED
+        // player preference — ignoring it would silently pour every faction's designs on
+        // someone who had chosen to see only their own. Locked designs stay hidden, which
+        // is the popup's default state; its toggle comes with the filter bar.
+        bool CanShowDesign(IShipDesign design)
+        {
+            if (!Player.Universe.P.ShowAllDesigns && !design.IsPlayerDesign)
+                return false;
+
+            if (UnlockAllFactionDesigns) // developer universe: everything is visible
+                return !design.Deleted;
+
+            return !design.Deleted
+                && !design.IsShipyard
+                && Player.WeCanBuildThis(design)
+                && (!design.IsSubspaceProjector || EnableDebugFeatures)
+                && (!design.IsDysonSwarmController || EnableDebugFeatures)
+                && (!design.IsUnitTestShip || EnableDebugFeatures)
+                && ResourceManager.ShipRoles.TryGetValue(design.Role, out ShipRole sr) && !sr.Protected;
+        }
+
         void UpdateAvailableHulls()
         {
             AvailableHulls.Clear();
@@ -766,7 +788,7 @@ namespace Ship_Game
             foreach (Ship ship in ResourceManager.Ships.Ships)
             {
                 IShipDesign design = ship.ShipData;
-                if (design.IsShipyard && !ParentUniverse.Debug)
+                if (!CanShowDesign(design))
                     continue;
 
                 if (!designsByHull.TryGetValue(design.Hull, out Array<IShipDesign> onHull))
