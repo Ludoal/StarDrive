@@ -699,12 +699,20 @@ namespace Ship_Game
                 ButtonStyle = GenericButton.Style.Shadow,
             };
 
+            // Ludoal fork: DESIGN ISSUES sits UNDER the info cartouche instead of in a narrow
+            // 200px column to its left, so issue text gets the cartouche's full width. The
+            // split is a fraction of the available band, never a pixel count, so it follows
+            // the resolution — 0.70 is a first calibration, to be trimmed at the bench.
+            float bandTop    = HullSelectList.Bottom + 10;
+            float bandBottom = BlackBar.Y;
+            float splitY     = bandTop + (bandBottom - bandTop) * 0.70f;
+
             var infoRect = RectF.FromPoints((HullSelectList.X + 20), (ScreenWidth - 20),
-                                            HullSelectList.Bottom + 10, BlackBar.Y);
+                                            bandTop, splitY);
             InfoPanel = Add(new ShipDesignInfoPanel(infoRect));
 
-            var issuesRect = RectF.FromPoints(InfoPanel.X - 200, InfoPanel.X,
-                                              HullSelectList.Bottom + 10, BlackBar.Y);
+            var issuesRect = RectF.FromPoints(InfoPanel.X, (ScreenWidth - 20),
+                                              splitY + 6, bandBottom);
             IssuesPanel = Add(new ShipDesignIssuesPanel(this, issuesRect));
 
             if (EnableDebugFeatures)
