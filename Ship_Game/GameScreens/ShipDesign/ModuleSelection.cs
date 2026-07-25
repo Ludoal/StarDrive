@@ -440,9 +440,10 @@ namespace Ship_Game
             if (HoverModSubMenu.Visible) // Ludoal fork (spec v4): the transient hover frame
             {
                 DrawModuleData(batch, Screen.HoveredListModule, HoverModSubMenu);
-                // and, when something is on the workbench to align against, the same union of
-                // rows so its missing stats keep their dimmed place (symmetry, Ludo)
-                if (Screen.ActiveModule != null || Screen.HighlightedModule != null)
+                // Its missing stats keep their dimmed place ONLY while a comparison is running —
+                // same rule as the design side (Ludo, 46.137). With nothing pinned there is
+                // nothing to be symmetrical with, and the dashes would be noise.
+                if (Comparing)
                     DrawHoveredStats(batch);
             }
         }
@@ -644,9 +645,7 @@ namespace Ship_Game
 
             // These frames have their stat rows drawn as a UNION by the caller, so the plain path
             // must stop after the header — otherwise both would draw, one over the other.
-            bool unionDrawsTheRows = (panel == ActiveModSubMenu && Comparing)
-                                  || (panel == HoverModSubMenu && (Screen.ActiveModule != null
-                                                                || Screen.HighlightedModule != null));
+            bool unionDrawsTheRows = Comparing && (panel == ActiveModSubMenu || panel == HoverModSubMenu);
             if (unionDrawsTheRows)
             {
                 DrawingPanel = null;

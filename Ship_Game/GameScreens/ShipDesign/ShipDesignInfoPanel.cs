@@ -378,10 +378,15 @@ namespace Ship_Game.GameScreens.ShipDesign
             // le code Active Module, il fonctionne parfaitement"). Reserving it only while a
             // comparison ran made the layout shift on every pin, and squeezed the deltas onto
             // the right-hand column's labels (bench 46.136).
-            float lane = HasDeltaLanes ? DeltaLaneWidth : 0f;
-            float colStep = (Width - planW - 10f - lane) * 0.5f;
+            // BOTH columns carry a delta lane, so both must be paid for — subtracting one lane
+            // for two columns left the second one overlapping its neighbour's labels, which is
+            // the "second column too far left" the bench kept seeing (46.137). The first column
+            // looked right because it starts at the left edge and absorbs none of the error.
+            float lanes = HasDeltaLanes ? DeltaLaneWidth * 2f : 0f;
+            float colStep = (Width - planW - 10f - lanes) * 0.5f;
             float col0X = X + planW + Col0Shift;
-            float col1X = X + planW + colStep + Col1Shift;
+            // the second column starts past the first one AND past the first one's delta lane
+            float col1X = col0X + colStep + (HasDeltaLanes ? DeltaLaneWidth : 0f) + Col1Shift - Col0Shift;
             float spacing = colStep * 0.72f; // title room; the value sits at the cursor + spacing
             Graphics.Font headFont = Fonts.Arial12Bold;
 

@@ -787,8 +787,17 @@ namespace Ship_Game
             float cartoucheH  = ModuleSelectComponent.FrameHeight;
             float cartoucheY  = colBottom - cartoucheH; // colBottom already carries the margin
             float listBottom  = ModuleSelectComponent.Bottom; // the module list's own foot
-            float issuesH     = Math.Max(24f, cartoucheY - listBottom - 8f);
-            float issuesY     = cartoucheY - issuesH - 4f;
+            // The strip is its CONTENT's height (completion line + issues button, laid out at
+            // local y 0 and 18), not the whole gap: sized to the gap, its content floated and
+            // its bottom ran over the cartouche tab (bench 46.137). Hung from the top of the
+            // gap, right under the list, so it reads as belonging to the browser above it.
+            // the completion line sits at local y 0, the issues button at 18 in Pirulen20
+            float issuesH     = 18f + Fonts.Pirulen20.LineSpacing;
+            // if the gap under the list cannot hold the strip, the LIST gives way — the strip
+            // must never end up over the cartouche tab again
+            if (listBottom + 6f + issuesH > cartoucheY - 4f)
+                listBottom = cartoucheY - 4f - issuesH - 6f;
+            float issuesY     = listBottom + 6f;
 
             // Ludoal fork (bench): the right column had no margin — its frames were flush with
             // the screen edge while the left ones breathe. Same padding on both sides now.
