@@ -80,7 +80,12 @@ namespace Ship_Game.GameScreens.ShipDesign
         // but the principle is the one thing that must not change.
         // The step is the title room plus the value plus, on a comparing frame, its delta lane.
         float ColumnStep => StepFor(HasDeltaLanes);
-        static float StepFor(bool withDeltas) => TitleRoom + ValueRoom + (withDeltas ? DeltaLaneWidth : 0f);
+        static float StepFor(bool withDeltas)
+            => TitleRoom + ValueRoom + (withDeltas ? DeltaLaneWidth : 0f) + MidGap;
+        // air between the two columns: on the 46.138 shot column 1's delta lane nearly touched
+        // "MOBILITY" (Ludo). It belongs to the STEP, so the gap opens between the columns rather
+        // than just pushing column 2 further right.
+        const float MidGap = 24f;
         // Measured off the 46.138 bench shot, where everything fitted at ~545px of frame: the
         // titles run to "Total Module Slots", the values to "107.1k", the deltas to "(-27.35k)".
         // The frame must not grow beyond that — it was already wide enough (Ludo).
@@ -92,7 +97,8 @@ namespace Ship_Game.GameScreens.ShipDesign
         // than sizing the frame from whatever space is going spare and hoping the columns fit.
         public static float FrameWidthFor(bool withDeltas, bool withPlan)
         {
-            float w = StepFor(withDeltas) * 2f + SidePad;
+            // two steps, less the mid-gap trailing the second column — it only separates them
+            float w = StepFor(withDeltas) * 2f - MidGap + SidePad;
             if (withPlan)
                 w += PlanSideFor(w) + 10f;
             return w;
