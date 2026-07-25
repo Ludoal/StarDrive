@@ -772,29 +772,19 @@ namespace Ship_Game
             float colTop      = filterTop + 52f;
             // the same foot line the module frames land on, so the four read as one row
             float colBottom   = ModuleSelection.FramesBottom(ScreenHeight);
-            // Ludoal fork (spec v4, bench): the completion line and the issues button moved ABOVE
-            // the cartouche tab (Ludo) — they used to sit under it, which pushed the frame's
-            // bottom edge off the module frames' line. The strip now separates the browser from
-            // the cartouche, and the cartouche runs to the bottom of the band.
-            // Ludoal fork (bench 46.136): BOTH lists end on the same line, and both cartouche and
-            // module frame start on the next one — that is what makes the screen read as two
-            // matching columns (Ludo). So the cartouche takes the module frame's top and height,
-            // and the completion + issues strip lives in the gap ABOVE it, sharing the browser's
-            // bottom margin rather than eating into the list.
-            // The browser ends on the module list's own foot — that is the line the two columns
-            // share (Ludo). Under it comes the completion + issues strip, and the cartouche
-            // takes what is left down to the foot line. The cartouche is therefore SHORTER than
-            // the module frame by the strip, which is the price of the strip sitting above the
-            // tab; it goes back to full height when the bottom button bar is redone and the
-            // strip returns to the foot of the column.
-            // (46.138: giving the cartouche the module frame's full height left no room for the
-            // strip, so the guard clipped the browser and the list jumped up.)
-            float listBottom  = ModuleSelectComponent.Bottom;
+            // The right column mirrors the left one exactly: the browser ends where the module
+            // list ends, and the cartouche starts on the next line with the module frame's own
+            // height. Nothing else is allowed into that arithmetic (Ludo) — the completion +
+            // issues strip is INDEPENDENT and is placed afterwards, in the empty band left of
+            // the column. It is going to move again when the bottom button bar is redone.
+            float cartoucheH  = ModuleSelectComponent.FrameHeight;
+            float cartoucheY  = colBottom - cartoucheH; // colBottom already carries the margin
+            // the browser runs down to the cartouche with the same gap the module list keeps
+            // above its own frame — that is what puts the two columns' feet on one line
+            float listBottom  = cartoucheY - ModuleSelection.FrameGap;
             // the completion line sits at local y 0, the issues button at 18 in Pirulen20
             float issuesH     = 18f + Fonts.Pirulen20.LineSpacing;
-            float issuesY     = listBottom + 6f;
-            float cartoucheY  = issuesY + issuesH + 4f;
-            float cartoucheH  = colBottom - cartoucheY; // colBottom already carries the margin
+            float issuesY     = cartoucheY - issuesH - 6f;
 
             // Ludoal fork (bench): the right column had no margin — its frames were flush with
             // the screen edge while the left ones breathe. Same padding on both sides now.
@@ -938,7 +928,11 @@ namespace Ship_Game
 
             // Ludoal fork (spec v4, bench): completion + issues moved ABOVE the cartouche tab
             // (Ludo). They sit between the browser and the frames, spanning the same width.
-            var issuesRect = RectF.FromPoints(infoRect.X, infoRect.Right,
+            // Independent of the column's arithmetic (Ludo): it sits in the empty band the wider
+            // cartouche leaves to the LEFT of the browser, just above the cartouche's tab, so it
+            // collides with neither the list nor the frame. It moves again when the bottom
+            // button bar is redone and the completion line goes back to the foot of the column.
+            var issuesRect = RectF.FromPoints(infoRect.X, hullSelectSub.X - 8f,
                                               issuesY, issuesY + issuesH);
             IssuesPanel = Add(new ShipDesignIssuesPanel(this, issuesRect));
 
