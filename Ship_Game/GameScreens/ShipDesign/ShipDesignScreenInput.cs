@@ -572,31 +572,57 @@ namespace Ship_Game
             ReallyExit();
         }
 
-        void OnHullListItemClicked(ShipHullListItem item)
+        // Ludoal fork — merged browser gestures.
+        // Single click only selects, and shift-click pins a design into the comparator:
+        // loading rebuilds the mesh, re-instantiates every module and recomputes the
+        // stats, so that cost belongs to a deliberate gesture (the double click).
+        void OnBrowserItemClicked(ShipYardBrowserItem item)
         {
-            if (item.Hull == null)
-                return;
+            if (item.IsDesign && Input.IsShiftKeyDown)
+            {
+                // shift-clicking the pinned design again un-pins it, same as the module comparator
+                ComparedDesign = ComparedDesign == item.Design ? null : item.Design;
+                GameAudio.AcceptClick();
+            }
+        }
 
+        void OnBrowserItemDoubleClicked(ShipYardBrowserItem item)
+        {
+            if (item.IsDesign)
+            {
+                LoadWithUnsavedGuard(() => ChangeHull(item.Design));
+            }
+            else if (item.Hull != null) // the bare hull: start a design from scratch
+            {
+                LoadWithUnsavedGuard(() =>
+                {
+                    item.Hull.ReloadIfNeeded();
+                    ChangeHull(item.Hull);
+                });
+            }
+        }
+
+        // The guard that already protected hull changes, now shared by designs too:
+        // dirty and not yet a valid design -> park the work in progress as a WIP;
+        // dirty but valid -> ask before replacing it. Never replace silently.
+        void LoadWithUnsavedGuard(Action load)
+        {
             GameAudio.AcceptClick();
+
             if (!ShipSaved && !IsGoodDesign() && !ModuleGrid.IsEmptyDesign())
             {
-                SaveWIPThenChangeHull(item.Hull);
+                SaveWIP();
+                load();
                 return;
             }
 
             if (!ShipSaved && IsGoodDesign())
             {
-                ExitMessageBox(this, SaveChanges, () =>
-                {
-                    item.Hull.ReloadIfNeeded();
-                    ChangeHull(item.Hull);
-                }, GameText.YouHaveUnsavedChangesSave);
-
+                ExitMessageBox(this, SaveChanges, load, GameText.YouHaveUnsavedChangesSave);
                 return;
             }
 
-            item.Hull.ReloadIfNeeded();
-            ChangeHull(item.Hull);
+            load();
         }
 
         void UpdateViewMatrix(in Vector3 cameraPosition)
@@ -770,10 +796,5 @@ namespace Ship_Game
             ShipSaved = true;
         }
 
-        void SaveWIPThenChangeHull(ShipHull changeTo)
-        {
-            SaveWIP();
-            ChangeHull(changeTo);
-        }
     }
 }

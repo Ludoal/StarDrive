@@ -74,7 +74,11 @@ namespace Ship_Game
 
         // this contains module selection list and active module selection info
         public ModuleSelection ModuleSelectComponent { get; private set; }
-        ScrollList<ShipHullListItem> HullSelectList;
+        // Ludoal fork: this list is now the merged browser — hull groups, each opening
+        // with its bare hull, then the designs built on it. Name kept until the merge
+        // is proven in game, then it becomes BrowserList.
+        ScrollList<ShipYardBrowserItem> HullSelectList;
+        public IShipDesign ComparedDesign; // shift-clicked design, pinned for comparison
 
         public ShipModule HighlightedModule;
         SlotStruct ProjectedSlot;
@@ -653,12 +657,15 @@ namespace Ship_Game
 
             Vector2 hullSelSize = new(SelectSize(260, 280, 320), SelectSize(250, 400, 500));
             var hullSelectPos = new LocalPos(ScreenWidth - hullSelSize.X, ModuleSelectComponent.LocalPos.Y);
-            var hullSelectSub = Add(new SubmenuScrollList<ShipHullListItem>(hullSelectPos, hullSelSize, GameText.SelectHull));
+            var hullSelectSub = Add(new SubmenuScrollList<ShipYardBrowserItem>(hullSelectPos, hullSelSize, "Hulls & Designs"));
             // rounded black background
             hullSelectSub.SetBackground(Colors.TransparentBlackFill);
 
             HullSelectList = hullSelectSub.List;
-            HullSelectList.OnClick = OnHullListItemClicked;
+            // single click selects (and shift-click pins for comparison), double click loads:
+            // the load is the expensive gesture (mesh + modules + stats), so it stays deliberate
+            HullSelectList.OnClick = OnBrowserItemClicked;
+            HullSelectList.OnDoubleClick = OnBrowserItemDoubleClicked;
             HullSelectList.EnableItemHighlight = true;
             RefreshHullSelectList();
             hullSelectSub.PerformLayout();
@@ -738,30 +745,46 @@ namespace Ship_Game
             UpdateViewMatrix(CameraPos);
         }
 
+        // Ludoal fork: one list grouped BY HULL, replacing the old role-grouped hull list
+        // and the separate "load design" popup. Each hull group opens with its own bare
+        // hull, so starting from an empty carcass is row #1, then the designs built on it.
+        // The role shown on a design row is IShipDesign.Role (what the fitted modules make
+        // it), which is a different field from the hull's own role — they never disagree.
         void RefreshHullSelectList()
         {
             HullSelectList.Reset();
 
-            var categories = new Array<string>();
-            foreach (ShipHull hull in AvailableHulls)
+            // designs indexed by the hull they are built on, so each group is one lookup
+            var designsByHull = new Map<string, Array<IShipDesign>>();
+            foreach (Ship ship in ResourceManager.Ships.Ships)
             {
-                string cat = Localizer.GetRole(hull.Role, Player);
-                if (!categories.Contains(cat))
-                    categories.Add(cat);
+                IShipDesign design = ship.ShipData;
+                if (design.IsShipyard && !ParentUniverse.Debug)
+                    continue;
+
+                if (!designsByHull.TryGetValue(design.Hull, out Array<IShipDesign> onHull))
+                    designsByHull[design.Hull] = onHull = new Array<IShipDesign>();
+                onHull.Add(design);
             }
 
-            categories.Sort();
-            foreach (string cat in categories)
+            foreach (ShipHull hull in AvailableHulls.Sorted(h => h.VisibleName))
             {
-                var categoryItem = new ShipHullListItem(Player, cat);
-                HullSelectList.AddItem(categoryItem);
+                var group = new ShipYardBrowserItem(Player, hull, hull.VisibleName);
+                HullSelectList.AddItem(group);
 
-                foreach (ShipHull hull in AvailableHulls)
+                // row #1 of every group: the empty hull itself
+                group.AddSubItem(new ShipYardBrowserItem(Player, hull));
+
+                if (!designsByHull.TryGetValue(hull.HullName, out Array<IShipDesign> designs))
+                    continue;
+
+                // same order as the old load popup: our own designs first, then the
+                // strongest, then alphabetical
+                foreach (IShipDesign design in designs.OrderBy(d => !d.IsPlayerDesign)
+                                                      .ThenByDescending(d => d.BaseStrength)
+                                                      .ThenBy(d => d.Name))
                 {
-                    if (cat == Localizer.GetRole(hull.Role, Player))
-                    {
-                        categoryItem.AddSubItem(new ShipHullListItem(Player, hull));
-                    }
+                    group.AddSubItem(new ShipYardBrowserItem(Player, design, isWIP: false));
                 }
             }
         }
