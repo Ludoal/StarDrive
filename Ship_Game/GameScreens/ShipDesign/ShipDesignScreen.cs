@@ -666,7 +666,7 @@ namespace Ship_Game
             float colBottom   = BlackBar.Y;
             float colBand     = colBottom - colTop;
             float issuesH     = Math.Min(92f, colBand * 0.16f);   // completion line + issues button
-            float cartoucheH  = Math.Min(300f, colBand * 0.45f);  // fullest case: a station, two columns
+            float cartoucheH  = Math.Min(340f, colBand * 0.52f);  // fullest case: a station, two columns
             float cartoucheY  = colBottom - issuesH - cartoucheH;
 
             Vector2 hullSelSize = new(SelectSize(260, 280, 320), Math.Max(160f, cartoucheY - 10 - colTop));

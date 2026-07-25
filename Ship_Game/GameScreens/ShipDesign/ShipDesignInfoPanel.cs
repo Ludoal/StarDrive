@@ -221,38 +221,56 @@ namespace Ship_Game.GameScreens.ShipDesign
                 }
             }
 
-            // split the columns on a block edge, as close to half the visible lines as possible
+            // Split on the block edge NEAREST half the visible lines, not the first edge past
+            // it: the greedy version put 16 lines against 9 and overflowed the frame.
             int half = (visibleTotal + 1) / 2;
             int splitBlock = blockVisible.Count;
+            int bestDiff = int.MaxValue;
             int running = 0;
             for (int b = 0; b < blockVisible.Count; ++b)
             {
-                if (running >= half)
+                if (running > 0) // never split at the first edge: the left column would be empty
                 {
-                    splitBlock = b;
-                    break;
+                    int diff = Math.Abs(running - half);
+                    if (diff < bestDiff)
+                    {
+                        bestDiff = diff;
+                        splitBlock = b;
+                    }
                 }
                 running += blockVisible[b];
             }
 
             var cursor = new Vector2(X, Y);
             int block = -1;
+            bool firstHeadingOfColumn = true;
             for (int i = 0; i < Rows.Count; ++i)
             {
                 Row r = Rows[i];
                 if (r.Heading != null)
                 {
                     ++block;
-                    if (blockVisible[block] == 0)
-                        continue; // the whole block is hidden, heading included
 
-                    if (block == splitBlock) // move to the second column
+                    // the column switch happens BEFORE the hidden-block test: if the split
+                    // block happened to be entirely hidden, skipping first meant the switch
+                    // never fired and everything piled into one column
+                    if (block == splitBlock)
+                    {
                         cursor = new Vector2(X + colStep, Y);
-                    else if (block > 0)
-                        cursor.Y += headFont.LineSpacing * 0.5f; // air above a heading
+                        firstHeadingOfColumn = true;
+                    }
 
-                    batch.DrawString(headFont, r.Heading, cursor, r.Color);
+                    if (blockVisible[block] == 0)
+                        continue; // whole block hidden, heading included
+
+                    if (!firstHeadingOfColumn)
+                        cursor.Y += headFont.LineSpacing * 0.5f; // air between blocks
+                    firstHeadingOfColumn = false;
+
+                    // same convention as a stat row: advance first, then draw — drawing first
+                    // put every heading one line above its own block
                     cursor.Y += headFont.LineSpacing;
+                    batch.DrawString(headFont, r.Heading, cursor, r.Color);
                     continue;
                 }
 
