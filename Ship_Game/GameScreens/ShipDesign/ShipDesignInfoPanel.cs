@@ -68,13 +68,16 @@ namespace Ship_Game.GameScreens.ShipDesign
             ValueWidth = 60; // the value column narrows with the column itself
             TitleWidth = ColWidth - ValueWidth;
 
+            // both lists are placed in ABSOLUTE coordinates: the first attempt offset the right
+            // column with SetLocalPos and the two columns drew on top of each other — the
+            // original code only ever called it with a zero offset, so it never proved that a
+            // real offset gets applied without a layout pass this panel does not run.
             LeftList = Add(new UIList(Pos, new Vector2(ColWidth, Height)));
             LeftList.Padding = Vector2.Zero;
-            LeftList.SetLocalPos(0, 0);
 
-            RightList = Add(new UIList(Pos, new Vector2(ColWidth, Height)));
+            RightList = Add(new UIList(new Vector2(Pos.X + ColWidth + 8, Pos.Y),
+                                       new Vector2(ColWidth, Height)));
             RightList.Padding = Vector2.Zero;
-            RightList.SetLocalPos(ColWidth + 8, 0);
 
             StatsList = LeftList;
 
