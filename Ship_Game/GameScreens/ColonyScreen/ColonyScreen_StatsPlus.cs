@@ -33,14 +33,27 @@ namespace Ship_Game
         void SPLine(ref Vector2 c, SpriteBatch batch, string label, string value, Color valueColor)
         {
             batch.DrawString(TextFont, label, new Vector2(c.X + 10, c.Y), Color.LightGray);
-            batch.DrawString(TextFont, value, new Vector2(c.X + 190, c.Y), valueColor);
+            batch.DrawString(TextFont, value, new Vector2(c.X + SPValueCol, c.Y), valueColor);
             c.Y += TextFont.LineSpacing + 2;
         }
 
         void SPGap(ref Vector2 c) => c.Y += TextFont.LineSpacing;
 
-        // Yield table columns, relative to the block cursor
-        const int SPYieldColPop = 105, SPYieldColFlat = 165, SPYieldColEaten = 220, SPYieldColTotal = 280;
+        // Yield table columns, relative to the block cursor. Fractions of the block
+        // width, not bench-measured pixels: the tab is 2/3 of a 2/3-screen menu, so
+        // its width follows the resolution. The ratios are calibrated on the original
+        // 1080p layout (105/165/220/280 out of a 350px block), so 1080p is unchanged
+        // and narrower frames compress instead of spilling out of the panel.
+        float SPYieldColPop, SPYieldColFlat, SPYieldColEaten, SPYieldColTotal, SPValueCol;
+
+        void SPSetColumns(float blockW)
+        {
+            SPValueCol      = blockW * 0.543f; // the label/value split of SPLine
+            SPYieldColPop   = blockW * 0.300f;
+            SPYieldColFlat  = blockW * 0.471f;
+            SPYieldColEaten = blockW * 0.629f;
+            SPYieldColTotal = blockW * 0.800f;
+        }
 
         void SPYieldHeader(ref Vector2 c, SpriteBatch batch)
         {
@@ -103,8 +116,14 @@ namespace Ship_Game
 
         void DrawStatsPlusTab(SpriteBatch batch, Vector2 bCursor)
         {
+            // Two side-by-side blocks inside the tab, each half of the usable width
+            // (20px inner margin per side) — was a flat +350, which overflowed the
+            // panel as soon as the frame was narrower than 1080p.
+            float blockW = (PFacilities.Width - 40) * 0.5f;
+            SPSetColumns(blockW);
+
             var left  = bCursor;
-            var right = new Vector2(bCursor.X + 350, bCursor.Y);
+            var right = new Vector2(bCursor.X + blockW, bCursor.Y);
 
             // ── BUDGET (BC / turn) — gross sources as the building screen promises them,
             // the tax mill as one visible line, everything still sums to Net exactly ──
