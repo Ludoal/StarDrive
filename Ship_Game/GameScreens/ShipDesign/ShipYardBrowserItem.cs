@@ -94,16 +94,15 @@ namespace Ship_Game
                 if (IsWIP)
                     DrawBadge(batch, "WIP", X + h + 12 + Fonts.Arial8Bold.TextWidth(role), Y + 16, Color.DarkOrange);
             }
-            else if (Hull != null)
+            else if (IsBareHull)
             {
+                // The group header already names the hull, in its own large font — drawing
+                // anything of ours on a header row lands on top of it. So a header gets
+                // nothing from us, and the bare-hull row needs no name either: it is the
+                // carcass of the group it sits in. The hull's own type stays out too; the
+                // role only earns its place on design rows, where it varies line to line.
                 batch.Draw(Hull.Icon, new Rectangle((int)X - 2, (int)Y - 2, h + 4, h + 4), Color.White);
-                batch.DrawString(Fonts.Arial12Bold, Hull.VisibleName, X + h + 6, Y + 2);
-
-                string role = Localizer.GetRole(Hull.Role, Player);
-                batch.DrawString(Fonts.Arial8Bold, role, X + h + 8, Y + 16, Color.Orange);
-
-                if (IsBareHull)
-                    DrawBadge(batch, "empty hull", X + h + 12 + Fonts.Arial8Bold.TextWidth(role), Y + 16, Color.Gray);
+                DrawBadge(batch, "empty hull", X + h + 6, Y + 6, Color.Gray);
             }
         }
 
