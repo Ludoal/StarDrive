@@ -27,8 +27,9 @@ namespace Ship_Game
         readonly ModuleSelectScrollList ModuleSelectList;
         readonly Submenu ActiveModSubMenu;
         // Ludoal fork: was the Shift-click comparison panel; spec v4 folded its delta lanes into
-        // the Active frame, so it is kept only to hold its slot — the hover frame takes it next.
-        readonly Submenu CompareModSubMenu;
+        // the Active frame and gave the freed slot to the hover frame, which shows whatever the
+        // cursor is on in the list — transient, so it costs no permanent surface.
+        readonly Submenu HoverModSubMenu;
         readonly TexturedButton Obsolete;
 
         public ModuleSelection(ShipDesignScreen screen, LocalPos pos, Vector2 size)
@@ -43,7 +44,8 @@ namespace Ship_Game
 
             // Ludoal fork: the Active panel carries the delta lanes now (spec v4) — it is the
             // only stat frame left, so it needs the width the Compared one used to have.
-            RectF acsub = new(Rect.X, Rect.Bottom + 15, 305 + 105, Screen.Height - (Rect.Y + Rect.Height) - 100);
+            RectF acsub = new(Rect.X, Rect.Bottom + 15, PlainFrameWidth + DeltaFrameExtra,
+                              Screen.Height - (Rect.Y + Rect.Height) - 100);
             ActiveModSubMenu = base.Add(new Submenu(acsub, "Active Module"));
             // rounded black background
             ActiveModSubMenu.SetBackground(Colors.TransparentBlackFill);
@@ -57,12 +59,13 @@ namespace Ship_Game
             
             RectF fighterR = acsub.Move(acsub.W + 20, 0);
 
-            // Ludoal fork: comparison panel (Shift-click in the module list). Same slot as
-            // Choose Fighter (the fighter list wins it when a hangar is selected), widened
-            // by 105px: its right column shifts right so each column owns a delta lane.
-            RectF compareR = new(acsub.X + acsub.W + 20, acsub.Y, acsub.W + 105, acsub.H);
-            CompareModSubMenu = base.Add(new Submenu(compareR, "Compared Module"));
-            CompareModSubMenu.SetBackground(Colors.TransparentBlackFill);
+            // Ludoal fork (spec v4): the hover frame, in the slot the comparison panel used to
+            // hold. Same slot as Choose Fighter (the fighter list wins it when a hangar is
+            // selected). It is the OLD Active frame, unchanged (Ludo): its 305px and its tight
+            // columns, since it never carries a delta lane.
+            RectF hoverR = new(acsub.X + acsub.W + 20, acsub.Y, PlainFrameWidth, acsub.H);
+            HoverModSubMenu = base.Add(new Submenu(hoverR, "Hovered Module"));
+            HoverModSubMenu.SetBackground(Colors.TransparentBlackFill);
             ChooseFighterSub = base.Add(new SubmenuScrollList<FighterListItem>(fighterR, "Choose Fighter"));
             ChooseFighterSub.SetBackground(Colors.TransparentBlackFill);
             
@@ -83,12 +86,45 @@ namespace Ship_Game
             ModuleSelectList.SetActiveCategory(SelectedIndex);
         }
 
-        float ActiveModStatSpacing => ActiveModSubMenu.Width * 0.27f;
+        // Ludoal fork: title room follows the frame's own width, or the Hover frame would
+        // inherit the Active frame's wider spacing and overflow. DrawStat is called from dozens
+        // of places without a frame argument, so the frame being drawn is held here for the
+        // duration of the draw — the same trick as Collector, just below.
+        Submenu DrawingPanel;
+        float ActiveModStatSpacing => (DrawingPanel ?? ActiveModSubMenu).Width * 0.27f;
 
         // Ludoal fork (spec v4): a comparison is running when a module is pinned and the Active
         // panel is up. There is no second frame any more — this is what used to be
         // CompareModSubMenu.Visible, and every test that asked for that frame really meant this.
         bool Comparing => Screen.CompareModule != null && ActiveModSubMenu.Visible;
+
+        // Ludoal fork (spec v4): the hover frame waits this long before appearing, so running the
+        // cursor down the list does not flash a frame per row.
+        const float HoverDelay = 0.25f;
+        float HoverDwell;
+        string HoverDwellUID; // the module the dwell is counting for; a different one restarts it
+
+        // Ludoal fork (spec v4): column geometry belongs to the FRAME, not to the draw path.
+        // Both paths — the plain one (DrawModuleStats/DrawWeaponStats, upstream's, which stepped
+        // a hardcoded 152) and the comparison union — must agree for a given frame, otherwise
+        // pinning a module slides every number sideways, which is what the bench caught.
+        // The Active frame is wide because it carries delta lanes; the Hover frame IS the old
+        // Active (Ludo), so it keeps upstream's width and tight step, untouched.
+        const float PlainFrameWidth = 305f;  // upstream's Active frame
+        const float DeltaFrameExtra = 105f;  // what the delta lanes need on top
+        const float WideColStep = 210f;      // step when delta lanes are in play
+        const float TightColStep = 152f;     // upstream's step
+        const float Col0Pull = 20f; // first group, left (bench)
+        const float Col1Pull = 30f; // second group, left (bench)
+
+        bool IsWideFrame(Submenu panel) => panel == ActiveModSubMenu;
+        float ColStepOf(Submenu panel) => IsWideFrame(panel) ? WideColStep : TightColStep;
+        // the pulls are bench offsets for the wide frame only; the Hover frame is left as it was
+        float ColPullOf(Submenu panel, int col)
+            => IsWideFrame(panel) ? (col == 0 ? Col0Pull : Col1Pull) : 0f;
+        // what the plain path adds when it jumps to the second column, for that frame
+        float PlainColJumpOf(Submenu panel)
+            => ColStepOf(panel) - ColPullOf(panel, 1) + ColPullOf(panel, 0);
 
         // ===== Ludoal fork: comparator v2 =====
         // Stats start at a fixed offset from the panel top so both panels align.
@@ -107,11 +143,14 @@ namespace Ship_Game
             public bool IsPercent;
             public int Tint;        // 0 = default good/bad, 1 = custom title color, 2 = bad-percent-lower-than-1
             public Color CustomColor;
-            public int Column;      // 0 = left, 1 = right (the +152f jump)
+            public int Column;      // 0 = left, 1 = right (past the PlainColJump)
         }
 
         List<CollectedStat> Collector;
-        const float CollectColSplitX = 76f; // collect runs from X=0; the col2 jump is +152f
+        // Collect runs from X=0 through the Active frame's geometry (collection only ever serves
+        // the comparison, which lives in that frame), so the second column starts one jump to the
+        // right and anything past the halfway mark belongs to it.
+        float CollectColSplitX => PlainColJumpOf(ActiveModSubMenu) * 0.5f;
 
         // Stats where a SMALLER value is the better one (delta coloring).
         // Keys are the on-screen labels (English — the game's own stat labels).
@@ -143,9 +182,9 @@ namespace Ship_Game
             float strength = mod.CalculateModuleOffenseDefense(Screen.CurrentHull.SurfaceArea, forceRecalculate: mod.IsFighterHangar);
             DrawStat(ref cursor, "Offense", strength, GameText.TT_ShipOffense);
             if (mod.BombType == null && !mod.IsWeapon || mod.InstalledWeapon == null)
-                DrawModuleStats(null, mod, cursor, 0f);
+                DrawModuleStats(null, mod, cursor, 0f, ActiveModSubMenu);
             else
-                DrawWeaponStats(null, cursor, mod, mod.InstalledWeapon, 0f);
+                DrawWeaponStats(null, cursor, mod, mod.InstalledWeapon, 0f, ActiveModSubMenu);
             Collector = null;
             return list;
         }
@@ -190,10 +229,10 @@ namespace Ship_Game
             Graphics.Font font = Fonts.Arial12Bold;
             float spacing = ActiveModStatSpacing;
             var dim = new Color(105, 105, 105);
-            // With a delta lane in play, the right column is pushed further out so column 1's
-            // deltas never run into column 2's labels.
-            float colStep = other != null ? 210f : 152f;
-            var cursor = new Vector2(panel.X + 10 + col * colStep, panel.Y + StatsStartRel);
+            // Columns sit at FIXED positions whether or not a comparison is running (Ludo, at
+            // the bench): a pin must not make the numbers jump sideways.
+            var cursor = new Vector2(panel.X + 10 + col * ColStepOf(panel) - ColPullOf(panel, col),
+                                     panel.Y + StatsStartRel);
 
             foreach (CollectedStat u in union)
             {
@@ -281,10 +320,27 @@ namespace Ship_Game
             ChooseFighterSub.Visible = ChooseFighterSL.GetFighterHangar() != null;
             if (!ActiveModSubMenu.Visible)
                 Screen.CompareModule = null; // Ludoal fork: closing the Active panel drops the pin
-            // Ludoal fork (spec v4): the Compared panel is gone — the pinned module never shows
-            // its own values, it only feeds the delta lane of the Active panel. Its old slot is
-            // free for the hover frame.
-            CompareModSubMenu.Visible = false;
+            // Ludoal fork (spec v4): the hover frame appears after a short dwell, so sweeping the
+            // list does not make it blink. Showing the module already on the workbench would say
+            // nothing, so that case stays hidden too.
+            ShipModule hovered = Screen.HoveredListModule;
+            ShipModule onBench = Screen.ActiveModule ?? Screen.HighlightedModule;
+            if (hovered == null || (onBench != null && onBench.UID == hovered.UID))
+            {
+                HoverDwell = 0f;
+                HoverDwellUID = null; // clear both, or coming back to the same row skips the dwell
+                HoverModSubMenu.Visible = false;
+            }
+            else
+            {
+                if (HoverDwellUID != hovered.UID) // moved to another row: start counting again
+                {
+                    HoverDwellUID = hovered.UID;
+                    HoverDwell = 0f;
+                }
+                HoverDwell += fixedDeltaTime;
+                HoverModSubMenu.Visible = HoverDwell >= HoverDelay && !ChooseFighterSub.Visible;
+            }
 
             base.Update(fixedDeltaTime);
         }
@@ -300,17 +356,11 @@ namespace Ship_Game
             }
             if (Comparing) // Ludoal fork (spec v4): one frame, active values, compared deltas
             {
-                DrawComparisonStats(batch);
-
-                // The pinned module has no frame of its own any more, so its name has to be
-                // said here — right-aligned on the tab row, facing the "Active Module" tab.
-                // Without it the delta lane would come from an anonymous source.
-                ShipModule cmp = Screen.CompareModule;
-                string cmpName = "vs " + cmp.NameText.Text;
-                Graphics.Font nameFont = Fonts.Arial12Bold;
-                batch.DrawString(nameFont, cmpName,
-                                 new Vector2(ActiveModSubMenu.Right - nameFont.TextWidth(cmpName) - 10,
-                                             ActiveModSubMenu.Y - 18f), Colors.Cream);
+                DrawComparisonStats(batch); // the "vs <name>" sits by the title, inside the frame
+            }
+            if (HoverModSubMenu.Visible) // Ludoal fork (spec v4): the transient hover frame
+            {
+                DrawModuleData(batch, Screen.HoveredListModule, HoverModSubMenu);
             }
         }
 
@@ -371,23 +421,29 @@ namespace Ship_Game
         {
             if (mod == null)
                 return;
+            DrawingPanel = panel; // Ludoal fork: every DrawStat below sizes itself on this frame
             Color nameColor = mod.IsObsolete(Player) ? Color.Red : Color.White;
             ShipModule moduleTemplate = ResourceManager.GetModuleTemplate(mod.UID);
             //Added by McShooterz: Changed how modules names are displayed for allowing longer names
             var modTitlePos = new Vector2(panel.X + 10, panel.Y + 35);
 
-            if (Fonts.Arial20Bold.TextWidth(moduleTemplate.NameText.Text) + 40 < panel.Width)
+            Graphics.Font titleFont = Fonts.Arial20Bold.TextWidth(moduleTemplate.NameText.Text) + 40 < panel.Width
+                                    ? Fonts.Arial20Bold : Fonts.Arial14Bold;
+            batch.DrawString(titleFont, moduleTemplate.NameText.Text, modTitlePos, nameColor);
+
+            // Ludoal fork (spec v4): the pinned module has no frame of its own, so its name is
+            // said right after the title, inside the frame — the delta lane must never come from
+            // an anonymous source. Baseline-aligned with the title, one size down.
+            if (Comparing && panel == ActiveModSubMenu)
             {
-                batch.DrawString(Fonts.Arial20Bold, moduleTemplate.NameText.Text,
-                    modTitlePos, nameColor);
-                modTitlePos.Y += (Fonts.Arial20Bold.LineSpacing + 6);
+                Graphics.Font vsFont = Fonts.Arial12Bold;
+                string vs = "vs " + Screen.CompareModule.NameText.Text;
+                var vsPos = new Vector2(modTitlePos.X + titleFont.TextWidth(moduleTemplate.NameText.Text) + 10,
+                                        modTitlePos.Y + titleFont.LineSpacing - vsFont.LineSpacing - 2f);
+                batch.DrawString(vsFont, vs, vsPos, Colors.Cream);
             }
-            else
-            {
-                batch.DrawString(Fonts.Arial14Bold, moduleTemplate.NameText.Text,
-                    modTitlePos, nameColor);
-                modTitlePos.Y += (Fonts.Arial14Bold.LineSpacing + 4);
-            }
+
+            modTitlePos.Y += titleFont.LineSpacing + (titleFont == Fonts.Arial20Bold ? 6 : 4);
 
             if (Screen.ParentUniverse.Debug)
             {
@@ -486,9 +542,11 @@ namespace Ship_Game
             string txt = Fonts.Arial12.ParseText(moduleTemplate.DescriptionText.Text,
                                                  panel.Width - 20);
 
-            // Ludoal fork: the header (title/restrictions/description) gets a FIXED slot
-            // so the stat rows of the Active and Compared panels align row-for-row.
-            // Overlong descriptions are ellipsized instead of pushing the stats down.
+            // Ludoal fork: the header (title/restrictions/description) keeps a FIXED slot so the
+            // stat rows start at the same height for every module — short description or long.
+            // The ellipsis stays: it is what guarantees the description never pushes the stats
+            // down. It no longer serves aligning two frames (spec v4 left only one), but the
+            // fixed start is still what makes the numbers hold still between modules.
             int maxLines = (int)((panel.Y + StatsStartRel - 8f - modTitlePos.Y) / Fonts.Arial12.LineSpacing);
             string[] descLines = txt.Split('\n');
             if (maxLines > 0 && descLines.Length > maxLines)
@@ -497,22 +555,29 @@ namespace Ship_Game
             batch.DrawString(Fonts.Arial12, txt, modTitlePos, Color.White);
             modTitlePos.Y = panel.Y + StatsStartRel;
             float starty = modTitlePos.Y;
-            modTitlePos.X = panel.X + 10; // Ludoal fork: was absolute 10 — same thing for the left panel, correct for the comparison one
+            // Ludoal fork: same origin as the comparison union, so the numbers hold their place
+            // whether or not a module is pinned (was an absolute 10, then panel.X + 10)
+            modTitlePos.X = panel.X + 10 - ColPullOf(panel, 0);
 
-            if (Comparing) // Ludoal fork: comparison mode draws the stat rows as one aligned union
+            if (Comparing && panel == ActiveModSubMenu) // comparison draws the rows as one union
+            {
+                DrawingPanel = null;
                 return;
+            }
 
             float strength = mod.CalculateModuleOffenseDefense(Screen.CurrentHull.SurfaceArea, forceRecalculate: mod.IsFighterHangar);
             DrawStat(ref modTitlePos, "Offense", strength, GameText.TT_ShipOffense);
 
             if (mod.BombType == null && !mod.IsWeapon || mod.InstalledWeapon == null)
             {
-                DrawModuleStats(batch, mod, modTitlePos, starty);
+                DrawModuleStats(batch, mod, modTitlePos, starty, panel);
             }
             else
             {
-                DrawWeaponStats(batch, modTitlePos, mod, mod.InstalledWeapon, starty);
+                DrawWeaponStats(batch, modTitlePos, mod, mod.InstalledWeapon, starty, panel);
             }
+
+            DrawingPanel = null;
         }
 
         void DrawStat(ref Vector2 cursor, LocalizedText text, float stat, LocalizedText toolTipId, bool isPercent = false)
@@ -539,7 +604,9 @@ namespace Ship_Game
             Screen.DrawStat(ref cursor, text, stat, color, toolTipId, spacing: ActiveModStatSpacing, isPercent: isPercent);
         }
 
-        void DrawModuleStats(SpriteBatch batch, ShipModule mod, Vector2 modTitlePos, float starty)
+        // Ludoal fork: takes its frame so the column step is the frame's (the Hover frame keeps
+        // upstream's tight one, the Active frame the wide one that fits a delta lane)
+        void DrawModuleStats(SpriteBatch batch, ShipModule mod, Vector2 modTitlePos, float starty, Submenu panel)
         {
             DrawStat(ref modTitlePos, GameText.Cost, mod.ActualCost(Universe), GameText.IndicatesTheProductionCostOf);
             DrawStat(ref modTitlePos, GameText.Mass2, mod.GetActualMass(Player, 1), GameText.TT_Mass);
@@ -551,7 +618,7 @@ namespace Ship_Game
             DrawStat(ref modTitlePos, Localizer.Token(GameText.Repair)+"+", mod.ActualBonusRepairRate, GameText.IndicatesTheBonusToOutofcombat);
 
             float maxDepth = modTitlePos.Y;
-            modTitlePos.X = modTitlePos.X + 152f;
+            modTitlePos.X = modTitlePos.X + PlainColJumpOf(panel); // Ludoal fork: was a hardcoded 152
             modTitlePos.Y = starty;
 
             DrawStat(ref modTitlePos, GameText.Thrust, mod.Thrust, GameText.IndicatesTheAmountOfThrust);
@@ -651,10 +718,10 @@ namespace Ship_Game
             {
                 Color color   = ShipBuilder.GetHangarTextColor(mod.HangarShipUID);
                 modTitlePos.Y = Math.Max(modTitlePos.Y, maxDepth) + Fonts.Arial12Bold.LineSpacing;
-                Vector2 shipSelectionPos = new Vector2(modTitlePos.X - 152f, modTitlePos.Y + 5);
+                Vector2 shipSelectionPos = new Vector2(modTitlePos.X - PlainColJumpOf(panel), modTitlePos.Y + 5);
                 string name = hs.VanityName.IsEmpty() ? hs.Name : hs.VanityName;
                 DrawString(batch, ref shipSelectionPos, string.Concat(hs.DesignRole.ToString().ToUpper(), " : ", name), color, Fonts.Arial12Bold);
-                shipSelectionPos = new Vector2(modTitlePos.X - 152f, modTitlePos.Y-20);
+                shipSelectionPos = new Vector2(modTitlePos.X - PlainColJumpOf(panel), modTitlePos.Y-20);
                 shipSelectionPos.Y += Fonts.Arial12Bold.LineSpacing * 2;
                 DrawStat(ref shipSelectionPos, "Ord. Cost", hs.ShipOrdLaunchCost, "");
                 DrawStat(ref shipSelectionPos, "Weapons", hs.Weapons.Count, "");
@@ -689,7 +756,8 @@ namespace Ship_Game
             }
         }
 
-        void DrawWeaponStats(SpriteBatch batch, Vector2 cursor, ShipModule m, Weapon w, float startY)
+        // Ludoal fork: takes its frame, same reason as DrawModuleStats
+        void DrawWeaponStats(SpriteBatch batch, Vector2 cursor, ShipModule m, Weapon w, float startY, Submenu panel)
         {
             IWeaponTemplate wOrMirv = w.T; // We want some stats to show warhead stats and not weapon stats
             if (wOrMirv.IsMirv)
@@ -757,7 +825,7 @@ namespace Ship_Game
             if (wOrMirv.ProjectileCount > 1 && w.IsMirv)
                 DrawStat(ref cursor, "MIRV", wOrMirv.ProjectileCount, GameText.ThisWeaponHasMirvMeaning);
 
-            cursor.X += 152f;
+            cursor.X += PlainColJumpOf(panel); // Ludoal fork: was a hardcoded 152
             cursor.Y = startY;
 
             if (!isBeam) DrawStat(ref cursor, GameText.Speed, speed, GameText.IndicatesTheDistanceAProjectile);

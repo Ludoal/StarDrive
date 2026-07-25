@@ -94,6 +94,7 @@ namespace Ship_Game
 
         public ShipModule ActiveModule;
         public ShipModule CompareModule; // Ludoal fork: pinned comparison module (Shift-click in the module list)
+        public ShipModule HoveredListModule; // Ludoal fork (spec v4): module under the cursor in the list, feeds the Hover frame
         CategoryDropDown CategoryList;
         HangarDesignationDropDown HangarOptionsList;
 
@@ -153,6 +154,12 @@ namespace Ship_Game
         // comparison with the Active Module panel; same module again unpins it.
         public void SetCompareModule(ShipModule template)
         {
+            // Comparing a module with itself says nothing: every delta is zero. Refuse the pin
+            // rather than show a frame full of blanks (Ludo, at the bench).
+            ShipModule active = ActiveModule ?? HighlightedModule;
+            if (template != null && active != null && active.UID == template.UID)
+                return;
+
             if (CompareModule != null && template != null && CompareModule.UID == template.UID)
                 CompareModule = null;
             else

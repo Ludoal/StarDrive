@@ -20,6 +20,15 @@ namespace Ship_Game
             EnableItemHighlight = true;
         }
 
+        // Ludoal fork (spec v4): the hovered module feeds the Hover frame — the list's own
+        // hover event carries it (and passes null when the cursor leaves), so there is no
+        // mouse tracking to write here. Category rows have no module: they clear the frame.
+        public override void OnItemHovered(ScrollListItemBase item)
+        {
+            Screen.HoveredListModule = (item as ModuleSelectListItem)?.Module;
+            base.OnItemHovered(item);
+        }
+
         public override void OnItemClicked(ScrollListItemBase item)
         {
             var weaponItem = (ModuleSelectListItem)item;
