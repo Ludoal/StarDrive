@@ -155,7 +155,7 @@ namespace Ship_Game.GameScreens.ShipDesign
         // Ludoal fork: block titles. A block whose every line is hidden would otherwise leave
         // a bare heading behind — a fighter has no STATION and no PAYLOAD — so a heading (and
         // the spacer above it) is visible only while at least one of its own lines is.
-        UI.UILabel CurrentHeader;
+        UILabel CurrentHeader;
         UI.UISpacer CurrentHeaderSpacer;
         Array<Func<bool>> CurrentHeaderLines = new Array<Func<bool>>();
         bool HasBlocks;
@@ -171,7 +171,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             }
             HasBlocks = true;
 
-            CurrentHeader = new UI.UILabel(Vector2.Zero, text, StatsFont, color)
+            CurrentHeader = new UILabel(Vector2.Zero, text, StatsFont, color)
             {
                 Width = Width,
                 Height = ItemHeight + 2,
