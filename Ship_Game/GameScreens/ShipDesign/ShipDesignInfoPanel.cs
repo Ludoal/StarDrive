@@ -69,10 +69,9 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         // room a delta needs after a value: the offset it is drawn at, plus the widest delta
         // string we can expect ("(+157.2k)")
+        // the delta is drawn this far past the value, and runs to about "(-27.35k)" wide
         const float DeltaLaneOffset = 46f;
-        public const float DeltaLaneWidth = DeltaLaneOffset + 64f;
-        // what a frame has to add to its width to carry a lane per column
-        public const float DeltaLanesTotal = DeltaLaneWidth * 2f;
+        public const float DeltaLaneWidth = DeltaLaneOffset + 14f;
 
         // The module panel's two numbers, and the reason its columns never move: the step
         // between columns is FIXED, and the title room is a fraction of the FRAME — neither is
@@ -82,8 +81,11 @@ namespace Ship_Game.GameScreens.ShipDesign
         // The step is the title room plus the value plus, on a comparing frame, its delta lane.
         float ColumnStep => StepFor(HasDeltaLanes);
         static float StepFor(bool withDeltas) => TitleRoom + ValueRoom + (withDeltas ? DeltaLaneWidth : 0f);
-        const float TitleRoom = 150f; // fits "Total Module Slots", the longest title
-        const float ValueRoom = 60f;  // fits "107.1k"
+        // Measured off the 46.138 bench shot, where everything fitted at ~545px of frame: the
+        // titles run to "Total Module Slots", the values to "107.1k", the deltas to "(-27.35k)".
+        // The frame must not grow beyond that — it was already wide enough (Ludo).
+        const float TitleRoom = 145f;
+        const float ValueRoom = 52f;
         const float SidePad = 20f;    // the panel's own left margin plus a right breather
 
         // What a frame must measure to hold two of those columns — the screen asks this rather
