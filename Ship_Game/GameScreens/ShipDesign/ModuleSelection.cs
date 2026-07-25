@@ -220,12 +220,35 @@ namespace Ship_Game
         // Draw both panels' stat areas as ONE union per column: same rows, same
         // heights — absent stats show a dimmed dash, the Compared panel appends
         // a colored delta after each shared value.
+        // Ludoal fork (bench 46.136): the HOVERED frame draws the same union, so a stat it lacks
+        // and the active module has shows its dimmed dash there too — symmetry (Ludo). It gets
+        // no delta lane: it is not the one being compared, it is the one being looked at.
+        void DrawHoveredStats(SpriteBatch batch)
+        {
+            ShipModule a = Screen.ActiveModule ?? Screen.HighlightedModule;
+            ShipModule h = Screen.HoveredListModule;
+            if (a == null || h == null)
+                return;
+
+            DrawUnionStats(batch, own: h, against: a, panel: HoverModSubMenu, withDeltas: false);
+        }
+
         void DrawComparisonStats(SpriteBatch batch)
         {
             ShipModule a = Screen.ActiveModule ?? Screen.HighlightedModule;
             ShipModule b = Screen.CompareModule;
             if (a == null || b == null)
                 return;
+
+            DrawUnionStats(batch, own: a, against: b, panel: ActiveModSubMenu, withDeltas: true);
+        }
+
+        // the shared machinery: draw `own`'s values as an aligned union with `against`'s rows,
+        // so both frames show the same set of lines and a missing one keeps its place
+        void DrawUnionStats(SpriteBatch batch, ShipModule own, ShipModule against, Submenu panel, bool withDeltas)
+        {
+            ShipModule a = own;
+            ShipModule b = against;
 
             List<CollectedStat> ra = CollectStats(a);
             List<CollectedStat> rb = CollectStats(b);
@@ -270,11 +293,11 @@ namespace Ship_Game
                 }
                 if (union.Count == 0)
                     continue;
-                // spec v4: ONE frame. The values shown are the ACTIVE module's; the pinned one
-                // never shows its own numbers, it only sets the delta (the player who wants them
-                // in clear hovers the list). Delta sign therefore reads "active vs compared":
-                // a green + means the module on the workbench is the better one.
-                DrawStatColumn(batch, union, aByKey, bByKey, col, ActiveModSubMenu);
+                // spec v4: ONE frame. The values shown are `own`'s; the other module never shows
+                // its own numbers, it only sets the delta (the player who wants them in clear
+                // hovers the list). Delta sign reads "own vs other": on the Active frame, a
+                // green + means the module on the workbench is the better one.
+                DrawStatColumn(batch, union, aByKey, withDeltas ? bByKey : null, col, panel);
             }
         }
 
@@ -283,7 +306,7 @@ namespace Ship_Game
                             int col, Submenu panel)
         {
             Graphics.Font font = Fonts.Arial12Bold;
-            float spacing = ActiveModStatSpacing;
+            float spacing = panel.Width * 0.27f; // this frame's own title room, not the Active one's
             var dim = new Color(105, 105, 105);
             // Columns sit at FIXED positions whether or not a comparison is running (Ludo, at
             // the bench): a pin must not make the numbers jump sideways.
@@ -417,6 +440,10 @@ namespace Ship_Game
             if (HoverModSubMenu.Visible) // Ludoal fork (spec v4): the transient hover frame
             {
                 DrawModuleData(batch, Screen.HoveredListModule, HoverModSubMenu);
+                // and, when something is on the workbench to align against, the same union of
+                // rows so its missing stats keep their dimmed place (symmetry, Ludo)
+                if (Screen.ActiveModule != null || Screen.HighlightedModule != null)
+                    DrawHoveredStats(batch);
             }
         }
 
@@ -615,7 +642,12 @@ namespace Ship_Game
             // whether or not a module is pinned (was an absolute 10, then panel.X + 10)
             modTitlePos.X = panel.X + 10 - ColPullOf(panel, 0);
 
-            if (Comparing && panel == ActiveModSubMenu) // comparison draws the rows as one union
+            // These frames have their stat rows drawn as a UNION by the caller, so the plain path
+            // must stop after the header — otherwise both would draw, one over the other.
+            bool unionDrawsTheRows = (panel == ActiveModSubMenu && Comparing)
+                                  || (panel == HoverModSubMenu && (Screen.ActiveModule != null
+                                                                || Screen.HighlightedModule != null));
+            if (unionDrawsTheRows)
             {
                 DrawingPanel = null;
                 return;

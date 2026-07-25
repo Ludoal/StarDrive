@@ -76,6 +76,12 @@ namespace Ship_Game.GameScreens.ShipDesign
         // tells us here rather than us guessing a constant that would have to stay in step.
         public float InnerInset = 10f;
 
+        // Whether this frame reserves room for delta lanes. A property of the FRAME, not of the
+        // moment: the Active cartouche always keeps the room whether or not a design is pinned,
+        // exactly as the module panel does, so pinning never moves a single number. The Hover
+        // frame never compares, so it gives the space to its columns instead.
+        public bool HasDeltaLanes;
+
         // Ludoal fork (spec v4): the Hover cartouche draws the design's MODULE PLAN at its far
         // left (Ludo) — the picture the flying overlay used to give, and the reason to keep a
         // hover frame at all. Same call the overlay made: RenderOverlay with the modules and the
@@ -367,11 +373,12 @@ namespace Ship_Game.GameScreens.ShipDesign
                                 moduleHealthColor: false, markLockedModules: true);
             }
 
-            // The delta lane is drawn at cursor + spacing + DeltaLaneOffset, so the SECOND
-            // column must leave that much room before the frame's right edge — otherwise its
-            // deltas are clipped off-screen, which is what the bench caught on 46.135. The lane
-            // is only reserved while a comparison is running.
-            float lane = CompareAgainst != null ? DeltaLaneWidth : 0f;
+            // The delta lane is ALWAYS reserved, pinned or not — this is the module panel's
+            // principle, and it is the whole reason its columns never move (Ludo: "revois bien
+            // le code Active Module, il fonctionne parfaitement"). Reserving it only while a
+            // comparison ran made the layout shift on every pin, and squeezed the deltas onto
+            // the right-hand column's labels (bench 46.136).
+            float lane = HasDeltaLanes ? DeltaLaneWidth : 0f;
             float colStep = (Width - planW - 10f - lane) * 0.5f;
             float col0X = X + planW + Col0Shift;
             float col1X = X + planW + colStep + Col1Shift;

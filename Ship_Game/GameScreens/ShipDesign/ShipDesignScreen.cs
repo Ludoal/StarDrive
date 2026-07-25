@@ -779,17 +779,21 @@ namespace Ship_Game
             // the cartouche tab (Ludo) — they used to sit under it, which pushed the frame's
             // bottom edge off the module frames' line. The strip now separates the browser from
             // the cartouche, and the cartouche runs to the bottom of the band.
-            float issuesH     = Math.Min(58f, colBand * 0.10f);   // completion line + issues button
-            // the cartouche matches the MODULE frames' height, so the four frames read as one
-            // row — same arithmetic, same bottom margin (bench 46.135: the design side had none)
-            float cartoucheH  = Math.Min(ModuleSelectComponent.FrameHeight, colBand * 0.62f);
+            // Ludoal fork (bench 46.136): BOTH lists end on the same line, and both cartouche and
+            // module frame start on the next one — that is what makes the screen read as two
+            // matching columns (Ludo). So the cartouche takes the module frame's top and height,
+            // and the completion + issues strip lives in the gap ABOVE it, sharing the browser's
+            // bottom margin rather than eating into the list.
+            float cartoucheH  = ModuleSelectComponent.FrameHeight;
             float cartoucheY  = colBottom - cartoucheH; // colBottom already carries the margin
+            float listBottom  = ModuleSelectComponent.Bottom; // the module list's own foot
+            float issuesH     = Math.Max(24f, cartoucheY - listBottom - 8f);
             float issuesY     = cartoucheY - issuesH - 4f;
 
             // Ludoal fork (bench): the right column had no margin — its frames were flush with
             // the screen edge while the left ones breathe. Same padding on both sides now.
             const float RightPad = 5f;
-            Vector2 hullSelSize = new(SelectSize(260, 280, 320), Math.Max(160f, issuesY - 10 - colTop));
+            Vector2 hullSelSize = new(SelectSize(260, 280, 320), Math.Max(160f, listBottom - colTop));
             var hullSelectPos = new LocalPos(ScreenWidth - hullSelSize.X - RightPad, colTop);
             // Ludoal fork: the load popup's filters come WITH its list — dropping them would be
             // a regression, since one of them ("my designs only") is a persisted preference the
@@ -900,6 +904,7 @@ namespace Ship_Game
             var infoInner = RectF.FromPoints(infoRect.X + 10, infoRect.Right - 10,
                                              infoRect.Y + 26, infoRect.Bottom - 8);
             InfoPanel = Add(new ShipDesignInfoPanel(this, infoInner));
+            InfoPanel.HasDeltaLanes = true; // room kept whether or not a design is pinned
             InfoSub = infoSub;
 
             // Ludoal fork (spec v4): the HOVER cartouche takes the slot the Compared one used to
