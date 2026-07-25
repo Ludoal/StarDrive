@@ -82,6 +82,10 @@ namespace Ship_Game
         // is proven in game, then it becomes BrowserList.
         ScrollList<ShipYardBrowserItem> HullSelectList;
         public IShipDesign ComparedDesign; // shift-clicked design, pinned for comparison
+        UITextEntry BrowserFilter;         // Ludoal fork: the load popup's filters, rehoused
+        string BrowserFilterText;
+        bool ShowLockedDesigns;
+        const string DefaultBrowserFilter = "filter by name or hull...";
         ShipInfoOverlayComponent ShipInfoOverlay; // hover preview, same component the load popup used
 
         public ShipModule HighlightedModule;
@@ -709,7 +713,9 @@ namespace Ship_Game
             // call: the list is the extensible one). The two content heights are first
             // calibrations, clamped to a fraction of the band so a short screen still leaves
             // a usable list instead of a sliver.
-            float colTop      = ModuleSelectComponent.LocalPos.Y;
+            // the filter row lives in the band ABOVE the browser frame, so the frame starts lower
+            float filterTop   = ModuleSelectComponent.LocalPos.Y;
+            float colTop      = filterTop + 52f;
             float colBottom   = BlackBar.Y;
             float colBand     = colBottom - colTop;
             // the cartouche grew downward by two lines, taken from the issues strip (Ludo's
@@ -721,6 +727,31 @@ namespace Ship_Game
 
             Vector2 hullSelSize = new(SelectSize(260, 280, 320), Math.Max(160f, cartoucheY - 10 - colTop));
             var hullSelectPos = new LocalPos(ScreenWidth - hullSelSize.X, colTop);
+            // Ludoal fork: the load popup's filters come WITH its list — dropping them would be
+            // a regression, since one of them ("my designs only") is a persisted preference the
+            // player may already have set. They sit above the frame rather than inside it:
+            // pushing content into a SubmenuScrollList means rearranging its internal layout.
+            float filterX = ScreenWidth - hullSelSize.X;
+            BrowserFilter = Add(new UITextEntry(filterX + 4, filterTop, hullSelSize.X - 8,
+                                                Fonts.Arial12Bold, DefaultBrowserFilter));
+            BrowserFilter.AutoCaptureOnKeys = true;
+            BrowserFilter.AutoCaptureLoseFocusTime = 0.5f;
+            BrowserFilter.OnTextChanged = (text) =>
+            {
+                BrowserFilterText = (text == DefaultBrowserFilter) ? null : text?.ToLower();
+                RefreshHullSelectList();
+            };
+
+            Checkbox(new Vector2(filterX + 6, filterTop + 24),
+                     () => !Player.Universe.P.ShowAllDesigns,
+                     (b) => { Player.Universe.P.ShowAllDesigns = !b; RefreshHullSelectList(); },
+                     "My designs only", "Show only the designs you created");
+
+            Checkbox(new Vector2(filterX + 6, filterTop + 40),
+                     () => ShowLockedDesigns,
+                     (b) => { ShowLockedDesigns = b; RefreshHullSelectList(); },
+                     "Show locked", GameText.ShowEmpireLockedDesignsTip);
+
             var hullSelectSub = Add(new SubmenuScrollList<ShipYardBrowserItem>(hullSelectPos, hullSelSize, "Hulls & Designs"));
             // rounded black background
             hullSelectSub.SetBackground(Colors.TransparentBlackFill);
@@ -817,6 +848,12 @@ namespace Ship_Game
         // is the popup's default state; its toggle comes with the filter bar.
         bool CanShowDesign(IShipDesign design)
         {
+            // the browser's own text filter, matching name or hull like the popup's did
+            if (BrowserFilterText.NotEmpty()
+                && !design.Name.ToLower().Contains(BrowserFilterText)
+                && !design.Hull.ToLower().Contains(BrowserFilterText))
+                return false;
+
             if (!Player.Universe.P.ShowAllDesigns && !design.IsPlayerDesign)
                 return false;
 
@@ -825,7 +862,9 @@ namespace Ship_Game
 
             return !design.Deleted
                 && !design.IsShipyard
-                && Player.WeCanBuildThis(design)
+                // "show locked" is simplified against the popup: it checked an eligible-empires
+                // set built from the major empires; here it is simply "a hull we have unlocked"
+                && (Player.WeCanBuildThis(design) || (ShowLockedDesigns && Player.IsHullUnlocked(design.Hull)))
                 && (!design.IsSubspaceProjector || EnableDebugFeatures)
                 && (!design.IsDysonSwarmController || EnableDebugFeatures)
                 && (!design.IsUnitTestShip || EnableDebugFeatures)
