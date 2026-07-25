@@ -48,15 +48,36 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         readonly Array<Row> Rows = new Array<Row>();
 
-        // Set on the COMPARED panel, pointing at the active one: each row then carries a delta,
-        // exactly as the module comparator does. Rows are matched by their title, not by index,
-        // because the two designs hide different lines.
+        // Ludoal fork (spec v4): the pinned design has no frame of its own — it lives here, as a
+        // shadow row set whose only job is to produce the delta after each of THIS panel's
+        // values. Rows are matched by their title, not by index, because the two designs hide
+        // different lines. Null when nothing is pinned.
         public ShipDesignInfoPanel CompareAgainst;
+        string ComparedName;
 
-        // per-frame column offsets (bench values): the active frame breathes to the right, the
-        // compared one shifts left to make room for its delta lane
+        // column offsets, bench values
         public float Col0Shift = 20f;
         public float Col1Shift = 10f;
+
+        // Ludoal fork (spec v4): take a pinned design as the delta source. It is held as a
+        // detached panel — never added to the screen, never drawn — because its row set is
+        // exactly what TryGetVisibleValue needs to answer with.
+        public void SetComparedDesign(Ship ship, string name)
+        {
+            if (ship == null)
+            {
+                CompareAgainst = null;
+                ComparedName = null;
+                return;
+            }
+
+            // The shadow is never updated after this: a pinned design does not change while it
+            // is pinned, so its stats are captured once and stay valid.
+            var shadow = new ShipDesignInfoPanel(Screen, Rect);
+            shadow.SetActiveDesign(ship);
+            CompareAgainst = shadow;
+            ComparedName = name;
+        }
 
         // Stats where LESS is better. Lek's list also had TurnRate and the power drains; both are
         // wrong and the code proves it: the game already tints a turn rate GREEN above 15, and the
@@ -239,6 +260,18 @@ namespace Ship_Game.GameScreens.ShipDesign
             return !r.NonZeroOnly || (r.Value != null && r.Value() > 0f);
         }
 
+        // Ludoal fork (spec v4): while a design is pinned, a row this design hides but the
+        // pinned one shows is still drawn — dimmed, with a dash and its delta (Ludo's call:
+        // "the other one has hangars and this one hasn't" is worth a row). Outside a
+        // comparison the row simply does not exist.
+        bool ShownAsMissing(in Row r)
+        {
+            return CompareAgainst != null && r.Heading == null && r.Value != null
+                && CompareAgainst.TryGetVisibleValue(r.Title.Text, out _);
+        }
+
+        bool IsDrawn(in Row r) => IsVisible(r) || ShownAsMissing(r);
+
         // ── the draw, two columns, split on a block boundary ──────────────────────────────
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
@@ -252,8 +285,11 @@ namespace Ship_Game.GameScreens.ShipDesign
             if (S.Name.NotEmpty())
             {
                 Graphics.Font nameFont = Fonts.Arial12Bold;
-                batch.DrawString(nameFont, S.Name,
-                                 new Vector2(Right - nameFont.TextWidth(S.Name), Y - 25f), Colors.Cream);
+                // Ludoal fork (spec v4): the pinned design has no frame to name it, so its name
+                // follows this one — the delta lane must never come from an anonymous source.
+                string shown = ComparedName.NotEmpty() ? S.Name + "  vs " + ComparedName : S.Name;
+                batch.DrawString(nameFont, shown,
+                                 new Vector2(Right - nameFont.TextWidth(shown), Y - 25f), Colors.Cream);
             }
 
             // Column origins, tuned at the bench by Ludo — and NOT the same on the two frames:
@@ -277,7 +313,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                     blockVisible.Add(0);
                     current = blockVisible.Count - 1;
                 }
-                else if (current >= 0 && IsVisible(Rows[i]))
+                else if (current >= 0 && IsDrawn(Rows[i]))
                 {
                     blockVisible[current] = blockVisible[current] + 1;
                     ++visibleTotal;
@@ -341,8 +377,30 @@ namespace Ship_Game.GameScreens.ShipDesign
                     continue;
                 }
 
-                if (blockVisible[block] == 0 || !IsVisible(r))
+                if (blockVisible[block] == 0 || !IsDrawn(r))
                     continue;
+
+                // this design hides the row, the pinned one has it: dimmed dash + its delta
+                if (!IsVisible(r))
+                {
+                    var dim = new Color(105, 105, 105);
+                    cursor.Y += headFont.LineSpacing;
+                    string missTitle = r.Title.Text + ":";
+                    var missCursor = new Vector2(cursor.X + spacing, cursor.Y);
+                    batch.DrawString(headFont, missTitle,
+                                     new Vector2(missCursor.X - 20f - headFont.TextWidth(missTitle), missCursor.Y), dim);
+                    batch.DrawString(headFont, "-", missCursor, dim);
+
+                    if (CompareAgainst.TryGetVisibleValue(r.Title.Text, out float miss) && !miss.AlmostEqual(0f))
+                    {
+                        float dmiss = -miss; // this design has none: the delta is the whole of it
+                        bool betterMiss = LowerIsBetter(r.Title.Text) ? dmiss < 0f : dmiss > 0f;
+                        batch.DrawString(headFont, "(" + dmiss.GetNumberString() + ")",
+                                         new Vector2(cursor.X + spacing + 46f, cursor.Y),
+                                         betterMiss ? Color.LightGreen : Color.LightPink);
+                    }
+                    continue;
+                }
 
                 if (r.Text != null)
                 {
@@ -355,8 +413,10 @@ namespace Ship_Game.GameScreens.ShipDesign
                     Screen.DrawStatText(ref cursor, r.Title, v.GetNumberString(), r.Color, r.Tip, spacing,
                                         valueColor: r.Tint?.Invoke(v));
 
-                    // delta against the active design, in its own lane, coloured by which
-                    // direction is better for that particular row
+                    // Delta against the PINNED design, in its own lane, coloured by which
+                    // direction is better for that row. The subtraction reads "this panel minus
+                    // the other one", and this panel is the active design (spec v4), so a green
+                    // + means the design on the workbench is the better one.
                     if (CompareAgainst != null)
                     {
                         string title = r.Title.Text;

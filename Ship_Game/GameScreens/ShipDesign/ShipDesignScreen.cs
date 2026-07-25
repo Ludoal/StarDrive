@@ -71,8 +71,11 @@ namespace Ship_Game
         Rectangle BlackBar;
 
         ShipDesignInfoPanel InfoPanel;
-        ShipDesignInfoPanel ComparedPanel; // Ludoal fork: the pinned design, beside the active one
-        Submenu ComparedSub;
+        Submenu InfoSub;
+        // Ludoal fork (spec v4): the pinned design has no frame of its own — it only feeds the
+        // delta lane of InfoPanel. This frame shows the design under the cursor instead.
+        ShipDesignInfoPanel HoverPanel;
+        Submenu HoverSub;
         ShipDesignIssuesPanel IssuesPanel;
 
         // this contains module selection list and active module selection info
@@ -86,7 +89,9 @@ namespace Ship_Game
         string BrowserFilterText;
         bool ShowLockedDesigns;
         const string DefaultBrowserFilter = "filter by name or hull...";
-        ShipInfoOverlayComponent ShipInfoOverlay; // hover preview, same component the load popup used
+        // Ludoal fork (spec v4): the flying hover overlay is gone from this screen — the Hover
+        // cartouche replaced it. ShipInfoOverlayComponent itself lives on: the load and save
+        // popups still use it.
 
         public ShipModule HighlightedModule;
         SlotStruct ProjectedSlot;
@@ -166,11 +171,16 @@ namespace Ship_Game
                 CompareModule = CreateModuleListItem(template);
         }
 
-        // Ludoal fork: Shift-click in the browser pins a design beside the active one, and the
-        // same design again unpins it — the exact gesture SetCompareModule gives modules. The
-        // try/catch is inherited from the hover overlay, which needed it on real designs.
+        // Ludoal fork (spec v4): Shift-click in the browser pins a design, and the same design
+        // again unpins it. The pinned design gets no frame — it only feeds the delta lane of the
+        // Active cartouche, exactly as a pinned module does. Pinning the design already on the
+        // workbench is refused: every delta would be zero.
+        // The try/catch is inherited from the hover overlay, which needed it on real designs.
         public void SetComparedDesign(IShipDesign design)
         {
+            if (design != null && DesignedShip?.Name == design.Name)
+                return; // comparing the working design with itself says nothing
+
             if (ComparedDesign != null && design != null && ComparedDesign.Name == design.Name)
                 design = null; // re-pinning the same design unpins it
 
@@ -178,9 +188,7 @@ namespace Ship_Game
 
             if (design == null)
             {
-                ComparedPanel?.SetActiveDesign(null);
-                if (ComparedSub != null) ComparedSub.Visible = false;
-                if (ComparedPanel != null) ComparedPanel.Visible = false;
+                InfoPanel?.SetComparedDesign(null, null);
                 return;
             }
 
@@ -189,14 +197,42 @@ namespace Ship_Game
                 var ship = new DesignShip(ParentUniverse.UState, design as ShipDesign);
                 ship.RecalculatePower();
                 ship.ShipStatusChange();
-                ComparedPanel.SetActiveDesign(ship);
-                ComparedSub.Visible = ComparedPanel.Visible = true;
+                InfoPanel.SetComparedDesign(ship, design.Name);
             }
             catch (Exception e)
             {
                 Log.Error(e, $"Compared design failed: {design.Name}");
                 ComparedDesign = null;
-                ComparedSub.Visible = ComparedPanel.Visible = false;
+                InfoPanel?.SetComparedDesign(null, null);
+            }
+        }
+
+        // Ludoal fork (spec v4): the design under the cursor in the browser, shown in the Hover
+        // cartouche. Passing null hides it.
+        public void SetHoveredDesign(IShipDesign design)
+        {
+            if (HoverPanel == null)
+                return;
+
+            if (design == null || DesignedShip?.Name == design.Name)
+            {
+                HoverPanel.SetActiveDesign(null);
+                HoverSub.Visible = HoverPanel.Visible = false;
+                return;
+            }
+
+            try
+            {
+                var ship = new DesignShip(ParentUniverse.UState, design as ShipDesign);
+                ship.RecalculatePower();
+                ship.ShipStatusChange();
+                HoverPanel.SetActiveDesign(ship);
+                HoverSub.Visible = HoverPanel.Visible = true;
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, $"Hovered design failed: {design.Name}");
+                HoverSub.Visible = HoverPanel.Visible = false;
             }
         }
 
@@ -423,6 +459,13 @@ namespace Ship_Game
             InfoPanel.SetActiveDesign(DesignedShip);
             IssuesPanel.SetActiveDesign(DesignedShip);
             ShipSaved = DesignedShip.Modules.Length > 0;
+
+            // Ludoal fork (spec v4): loading a design drops the pin — a comparison against a
+            // ship that is no longer on the workbench is a ghost. SetActiveDesign cleared the
+            // rows, so the shadow has to go with them.
+            ComparedDesign = null;
+            InfoPanel.SetComparedDesign(null, null);
+            SetHoveredDesign(null);
         }
 
         public void UpdateDesignedShip(bool forceUpdate)
@@ -774,8 +817,11 @@ namespace Ship_Game
             // hover preview: the same overlay the load popup used, so a design can be
             // inspected without paying for a load. Hull rows carry no design, and the
             // overlay hides itself when handed a null one.
-            ShipInfoOverlay = Add(new ShipInfoOverlayComponent(this, ParentUniverse.UState));
-            HullSelectList.OnHovered = item => ShipInfoOverlay.ShowToLeftOf(item?.Pos ?? Vector2.Zero, item?.Design);
+            // Ludoal fork (spec v4): hovering a design fills the Hover cartouche instead of the
+            // flying overlay inherited from the load popup — the last piece of the old
+            // architecture still wired into this screen. The overlay object stays for now:
+            // ShipDesignLoadScreen and ShipDesignSaveScreen still use it.
+            HullSelectList.OnHovered = item => SetHoveredDesign(item?.Design);
             RefreshHullSelectList();
             hullSelectSub.PerformLayout();
 
@@ -810,7 +856,10 @@ namespace Ship_Game
             // "Total Module Slots", so the value landed in the middle of its own label.
             // 400 = 2 × (longest title ~105 + value 60) + gutter + frame margins.
             float cartoucheW = Math.Max(hullSelectSub.Width, 400f);
-            var infoRect = RectF.FromPoints(hullSelectSub.Right - cartoucheW, hullSelectSub.Right,
+            // Ludoal fork (spec v4): the Active cartouche carries the delta lanes now, so it is
+            // the one that needs the extra width — the same 120px the Compared frame used to take.
+            const float DeltaLaneW = 120f;
+            var infoRect = RectF.FromPoints(hullSelectSub.Right - cartoucheW - DeltaLaneW, hullSelectSub.Right,
                                             cartoucheY, cartoucheY + cartoucheH);
             // Ludoal fork: the stats live in a titled cartouche now, same frame the module
             // panel uses ("Active Module"), so the two read as the same kind of object.
@@ -821,22 +870,22 @@ namespace Ship_Game
             var infoInner = RectF.FromPoints(infoRect.X + 12, infoRect.Right - 12,
                                              infoRect.Y + 32, infoRect.Bottom - 8);
             InfoPanel = Add(new ShipDesignInfoPanel(this, infoInner));
+            InfoSub = infoSub;
 
-            // Ludoal fork: the COMPARED design sits beside the active one, exactly as the
-            // Compared Module panel sits beside the Active Module — and like it, it is wider by
-            // a delta lane. Hidden until a design is shift-clicked in the browser.
-            var comparedRect = RectF.FromPoints(infoRect.X - (cartoucheW + 120f) - 10f, infoRect.X - 10f,
-                                                infoRect.Y, infoRect.Bottom);
-            ComparedSub = Add(new Submenu(comparedRect, "Compared Design"));
-            ComparedSub.SetBackground(Colors.TransparentBlackFill);
+            // Ludoal fork (spec v4): the HOVER cartouche takes the slot the Compared one used to
+            // hold. Like its module counterpart it is the plain frame — no delta lane — showing
+            // whatever design the cursor rests on in the browser, and it goes away when the
+            // cursor leaves. The pinned design no longer has a frame: it only feeds the delta
+            // lane of the Active cartouche.
+            var hoverRect = RectF.FromPoints(infoRect.X - cartoucheW - 10f, infoRect.X - 10f,
+                                             infoRect.Y, infoRect.Bottom);
+            HoverSub = Add(new Submenu(hoverRect, "Hovered Design"));
+            HoverSub.SetBackground(Colors.TransparentBlackFill);
 
-            var comparedInner = RectF.FromPoints(comparedRect.X + 12, comparedRect.Right - 12,
-                                                 comparedRect.Y + 32, comparedRect.Bottom - 8);
-            ComparedPanel = Add(new ShipDesignInfoPanel(this, comparedInner));
-            ComparedPanel.CompareAgainst = InfoPanel;
-            ComparedPanel.Col0Shift = 0f;  // 20px left of the active frame's left column
-            ComparedPanel.Col1Shift = 0f;  // and 10px left of its right one, for the delta lane
-            ComparedSub.Visible = ComparedPanel.Visible = false;
+            var hoverInner = RectF.FromPoints(hoverRect.X + 12, hoverRect.Right - 12,
+                                              hoverRect.Y + 32, hoverRect.Bottom - 8);
+            HoverPanel = Add(new ShipDesignInfoPanel(this, hoverInner));
+            HoverSub.Visible = HoverPanel.Visible = false;
 
             var issuesRect = RectF.FromPoints(infoRect.X, infoRect.Right,
                                               infoRect.Bottom + 6, colBottom);
