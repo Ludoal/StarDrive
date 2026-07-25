@@ -96,14 +96,12 @@ namespace Ship_Game
             }
             else if (IsBareHull)
             {
-                // The group header already names the hull, in its own large font — drawing
-                // anything of ours on a header row lands on top of it. So a header gets
-                // nothing from us, and the bare-hull row needs no name either: it is the
-                // carcass of the group it sits in. The hull's own type stays out too; the
-                // role only earns its place on design rows, where it varies line to line.
-                // The group heading is the hull CLASS now (Fighter, Corvette, Frigate — the
-                // tech-tree ones), so the bare row is where the hull says its own name. It
-                // opens its hull's designs, which follow it in the same group.
+                // The group heading is the hull CLASS (Fighter, Corvette, Frigate — the
+                // tech-tree ones), so this row is where the hull states its own name, e.g.
+                // "Fang Fighter". No class tag here: the heading above already said it, and
+                // it would be the same on every row of the group. A header row itself gets
+                // nothing drawn by us — the base class renders its title in a larger font
+                // and anything of ours lands on top of it.
                 batch.Draw(Hull.Icon, new Rectangle((int)X - 2, (int)Y - 2, h + 4, h + 4), Color.White);
                 batch.DrawString(Fonts.Arial12Bold, Hull.VisibleName, X + h + 6, Y + 2);
                 DrawBadge(batch, "empty hull", X + h + 8, Y + 16, Color.Gray);
