@@ -59,7 +59,14 @@ namespace Ship_Game.GameScreens.ShipDesign
         static string[] LowerIsBetterCache;
         static bool LowerIsBetter(string title)
         {
-            LowerIsBetterCache ??= new[] { GT.ProductionCost.Text, GT.UpkeepCost.Text, GT.Mass.Text };
+            // GameText is an enum: it converts implicitly to LocalizedText when assigned to a
+            // field, but the resolved string has to be asked for explicitly
+            LowerIsBetterCache ??= new[]
+            {
+                Localizer.Token(GT.ProductionCost),
+                Localizer.Token(GT.UpkeepCost),
+                Localizer.Token(GT.Mass),
+            };
             for (int i = 0; i < LowerIsBetterCache.Length; ++i)
                 if (LowerIsBetterCache[i] == title)
                     return true;
