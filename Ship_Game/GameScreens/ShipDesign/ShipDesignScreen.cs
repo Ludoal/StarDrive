@@ -772,11 +772,11 @@ namespace Ship_Game
             float colTop      = filterTop + 52f;
             // the same foot line the module frames land on, so the four read as one row
             float colBottom   = ModuleSelection.FramesBottom(ScreenHeight);
-            // The right column mirrors the left one exactly: the browser ends where the module
-            // list ends, and the cartouche starts on the next line with the module frame's own
-            // height. Nothing else is allowed into that arithmetic (Ludo) — the completion +
-            // issues strip is INDEPENDENT and is placed afterwards, in the empty band left of
-            // the column. It is going to move again when the bottom button bar is redone.
+            // The right column mirrors the left one exactly: the cartouche keeps the module
+            // frame's height, and the browser runs down to it with the module list's own gap, so
+            // both columns' feet land on one line. Nothing else is allowed into that arithmetic
+            // (Ludo) — the completion + issues strip is INDEPENDENT: it keeps its place above
+            // the cartouche and is simply narrow enough not to reach under the browser.
             float cartoucheH  = ModuleSelectComponent.FrameHeight;
             float cartoucheY  = colBottom - cartoucheH; // colBottom already carries the margin
             // the browser runs down to the cartouche with the same gap the module list keeps
@@ -928,11 +928,12 @@ namespace Ship_Game
 
             // Ludoal fork (spec v4, bench): completion + issues moved ABOVE the cartouche tab
             // (Ludo). They sit between the browser and the frames, spanning the same width.
-            // Independent of the column's arithmetic (Ludo): it sits in the empty band the wider
-            // cartouche leaves to the LEFT of the browser, just above the cartouche's tab, so it
-            // collides with neither the list nor the frame. It moves again when the bottom
-            // button bar is redone and the completion line goes back to the foot of the column.
-            var issuesRect = RectF.FromPoints(infoRect.X, hullSelectSub.X - 8f,
+            // Stays exactly where the bench has it (Ludo): above the cartouche, left-aligned on
+            // it. Only as WIDE as its own two lines, though — spanning the whole cartouche gave
+            // it a click area that reached under the browser list beside it. It is INDEPENDENT
+            // of the column's arithmetic and will move again when the bottom button bar is
+            // redone; nothing else should be shaped around it in the meantime.
+            var issuesRect = RectF.FromPoints(infoRect.X, infoRect.X + ShipDesignIssuesPanel.ContentWidth,
                                               issuesY, issuesY + issuesH);
             IssuesPanel = Add(new ShipDesignIssuesPanel(this, issuesRect));
 
