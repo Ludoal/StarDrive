@@ -245,6 +245,16 @@ namespace Ship_Game.GameScreens.ShipDesign
             if (S == null)
                 return;
 
+            // the design's own name, on the frame's tab row. Right-aligned rather than hugging
+            // the tab: the two frames have tabs of different widths ("Active" vs "Compared"),
+            // so a fixed offset would collide on one of them.
+            if (S.Name.NotEmpty())
+            {
+                Graphics.Font nameFont = Fonts.Arial12Bold;
+                batch.DrawString(nameFont, S.Name,
+                                 new Vector2(Right - nameFont.TextWidth(S.Name), Y - 25f), Colors.Cream);
+            }
+
             // Column origins, tuned at the bench by Ludo — and NOT the same on the two frames:
             // the compared one carries a delta after each value, so its columns sit further left
             // to leave that lane room. Titles are right-aligned and grow leftward, which is why
