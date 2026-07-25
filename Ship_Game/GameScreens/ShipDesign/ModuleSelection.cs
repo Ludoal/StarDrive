@@ -26,7 +26,9 @@ namespace Ship_Game
         readonly SubmenuScrollList<FighterListItem> ChooseFighterSub;
         readonly ModuleSelectScrollList ModuleSelectList;
         readonly Submenu ActiveModSubMenu;
-        readonly Submenu CompareModSubMenu; // Ludoal fork: Shift-click comparison panel
+        // Ludoal fork: was the Shift-click comparison panel; spec v4 folded its delta lanes into
+        // the Active frame, so it is kept only to hold its slot — the hover frame takes it next.
+        readonly Submenu CompareModSubMenu;
         readonly TexturedButton Obsolete;
 
         public ModuleSelection(ShipDesignScreen screen, LocalPos pos, Vector2 size)
@@ -39,7 +41,9 @@ namespace Ship_Game
 
             ModuleSelectList = base.Add(new ModuleSelectScrollList(this, Screen));
 
-            RectF acsub = new(Rect.X, Rect.Bottom + 15, 305, Screen.Height - (Rect.Y + Rect.Height) - 100);
+            // Ludoal fork: the Active panel carries the delta lanes now (spec v4) — it is the
+            // only stat frame left, so it needs the width the Compared one used to have.
+            RectF acsub = new(Rect.X, Rect.Bottom + 15, 305 + 105, Screen.Height - (Rect.Y + Rect.Height) - 100);
             ActiveModSubMenu = base.Add(new Submenu(acsub, "Active Module"));
             // rounded black background
             ActiveModSubMenu.SetBackground(Colors.TransparentBlackFill);
@@ -80,6 +84,11 @@ namespace Ship_Game
         }
 
         float ActiveModStatSpacing => ActiveModSubMenu.Width * 0.27f;
+
+        // Ludoal fork (spec v4): a comparison is running when a module is pinned and the Active
+        // panel is up. There is no second frame any more — this is what used to be
+        // CompareModSubMenu.Visible, and every test that asked for that frame really meant this.
+        bool Comparing => Screen.CompareModule != null && ActiveModSubMenu.Visible;
 
         // ===== Ludoal fork: comparator v2 =====
         // Stats start at a fixed offset from the panel top so both panels align.
@@ -166,8 +175,11 @@ namespace Ship_Game
                 foreach (CollectedStat r in rb) if (r.Column == col && seen.Add(r.Key)) union.Add(r);
                 if (union.Count == 0)
                     continue;
-                DrawStatColumn(batch, union, aByKey, null,   col, ActiveModSubMenu);
-                DrawStatColumn(batch, union, bByKey, aByKey, col, CompareModSubMenu);
+                // spec v4: ONE frame. The values shown are the ACTIVE module's; the pinned one
+                // never shows its own numbers, it only sets the delta (the player who wants them
+                // in clear hovers the list). Delta sign therefore reads "active vs compared":
+                // a green + means the module on the workbench is the better one.
+                DrawStatColumn(batch, union, aByKey, bByKey, col, ActiveModSubMenu);
             }
         }
 
@@ -178,8 +190,8 @@ namespace Ship_Game
             Graphics.Font font = Fonts.Arial12Bold;
             float spacing = ActiveModStatSpacing;
             var dim = new Color(105, 105, 105);
-            // The Compared panel pushes its right column further out so column 1's
-            // delta lane never runs into column 2's labels; rows still align in Y.
+            // With a delta lane in play, the right column is pushed further out so column 1's
+            // deltas never run into column 2's labels.
             float colStep = other != null ? 210f : 152f;
             var cursor = new Vector2(panel.X + 10 + col * colStep, panel.Y + StatsStartRel);
 
@@ -206,12 +218,23 @@ namespace Ship_Game
                 }
                 else
                 {
-                    // absent on this side: dimmed label + dash, same row height
+                    // Absent on the active module: dimmed label + dash (Ludo's call — "the other
+                    // one has a hangar and this one hasn't" is information worth a row). The
+                    // delta still shows, so the row says how much is being given up.
                     cursor.Y += font.LineSpacing;
                     string title = u.Title + ":";
                     var statCursor = new Vector2(cursor.X + spacing, cursor.Y);
                     batch.DrawString(font, title, new Vector2(statCursor.X - 20 - font.TextWidth(title), statCursor.Y), dim);
                     batch.DrawString(font, "-", statCursor, dim);
+
+                    if (other != null && other.TryGetValue(u.Key, out CollectedStat missing) && !missing.Value.AlmostEqual(0f))
+                    {
+                        float dv = -missing.Value; // active has none: the delta is the whole of it
+                        bool better = LowerIsBetter.Contains(u.Key) ? dv < 0f : dv > 0f;
+                        string ds = "(" + (missing.IsPercent ? dv.ToString("P0") : dv.GetNumberString()) + ")";
+                        batch.DrawString(font, ds, new Vector2(cursor.X + spacing + 46f, cursor.Y),
+                                         better ? Color.LightGreen : Color.LightPink);
+                    }
                 }
             }
         }
@@ -258,8 +281,10 @@ namespace Ship_Game
             ChooseFighterSub.Visible = ChooseFighterSL.GetFighterHangar() != null;
             if (!ActiveModSubMenu.Visible)
                 Screen.CompareModule = null; // Ludoal fork: closing the Active panel drops the pin
-            CompareModSubMenu.Visible = Screen.CompareModule != null && ActiveModSubMenu.Visible
-                                        && !ChooseFighterSub.Visible; // Ludoal fork
+            // Ludoal fork (spec v4): the Compared panel is gone — the pinned module never shows
+            // its own values, it only feeds the delta lane of the Active panel. Its old slot is
+            // free for the hover frame.
+            CompareModSubMenu.Visible = false;
 
             base.Update(fixedDeltaTime);
         }
@@ -273,10 +298,19 @@ namespace Ship_Game
             {
                 DrawActiveModuleData(batch);
             }
-            if (CompareModSubMenu.Visible) // Ludoal fork
+            if (Comparing) // Ludoal fork (spec v4): one frame, active values, compared deltas
             {
-                DrawModuleData(batch, Screen.CompareModule, CompareModSubMenu);
-                DrawComparisonStats(batch); // both panels' stats, aligned row-for-row
+                DrawComparisonStats(batch);
+
+                // The pinned module has no frame of its own any more, so its name has to be
+                // said here — right-aligned on the tab row, facing the "Active Module" tab.
+                // Without it the delta lane would come from an anonymous source.
+                ShipModule cmp = Screen.CompareModule;
+                string cmpName = "vs " + cmp.NameText.Text;
+                Graphics.Font nameFont = Fonts.Arial12Bold;
+                batch.DrawString(nameFont, cmpName,
+                                 new Vector2(ActiveModSubMenu.Right - nameFont.TextWidth(cmpName) - 10,
+                                             ActiveModSubMenu.Y - 18f), Colors.Cream);
             }
         }
 
@@ -465,7 +499,7 @@ namespace Ship_Game
             float starty = modTitlePos.Y;
             modTitlePos.X = panel.X + 10; // Ludoal fork: was absolute 10 — same thing for the left panel, correct for the comparison one
 
-            if (CompareModSubMenu.Visible) // Ludoal fork: comparison mode renders both stat areas as one aligned union
+            if (Comparing) // Ludoal fork: comparison mode draws the stat rows as one aligned union
                 return;
 
             float strength = mod.CalculateModuleOffenseDefense(Screen.CurrentHull.SurfaceArea, forceRecalculate: mod.IsFighterHangar);
