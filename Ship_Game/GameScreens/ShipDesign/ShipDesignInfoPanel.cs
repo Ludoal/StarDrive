@@ -138,7 +138,7 @@ namespace Ship_Game.GameScreens.ShipDesign
 
             // the ordnance family was missing from the inventory I sent her, so its placement
             // is mine: it sits with the guns it feeds, which is also where her v1 put ammo time
-            Header("COMBAT & FIRE CONTROL", Color.Orange);
+            Header("COMBAT / FCS", Color.Orange);
             ValNZ(() => S.OrdAddedPerSecond, GT.OrdnanceCreated, GT.TT_OrdnanceCreated, Tint.No, ordnance);
             Val(() => S.OrdinanceMax, GT.OrdnanceCapacity, GT.TT_OrdnanceCap, Tint.No, ordnance, vis: Ds.HasOrdnance);
             Val(() => Ds.AmmoTime, GT.AmmoTime, GT.TT_AmmoTime, Tint.No, ordnance, vis: Ds.HasOrdFinite, col: ColGreater(30));
