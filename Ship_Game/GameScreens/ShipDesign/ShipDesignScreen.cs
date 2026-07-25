@@ -787,7 +787,10 @@ namespace Ship_Game
             // a regression, since one of them ("my designs only") is a persisted preference the
             // player may already have set. They sit above the frame rather than inside it:
             // pushing content into a SubmenuScrollList means rearranging its internal layout.
-            float filterX = ScreenWidth - hullSelSize.X;
+            // derived from the browser's own position, not recomputed from ScreenWidth: the
+            // filter row sits above that frame and must move with it (it kept the old flush
+            // origin when the column gained its right margin)
+            float filterX = hullSelectPos.X;
             BrowserFilter = Add(new UITextEntry(filterX + 4, filterTop, hullSelSize.X - 8,
                                                 Fonts.Arial12Bold, DefaultBrowserFilter));
             BrowserFilter.AutoCaptureOnKeys = true;
