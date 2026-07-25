@@ -48,6 +48,40 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         readonly Array<Row> Rows = new Array<Row>();
 
+        // Set on the COMPARED panel, pointing at the active one: each row then carries a delta,
+        // exactly as the module comparator does. Rows are matched by their title, not by index,
+        // because the two designs hide different lines.
+        public ShipDesignInfoPanel CompareAgainst;
+
+        // Stats where LESS is better. Lek's list also had TurnRate and the power drains; both are
+        // wrong and the code proves it: the game already tints a turn rate GREEN above 15, and the
+        // drains are displayed negated, so closer to zero is already the higher number.
+        static string[] LowerIsBetterCache;
+        static bool LowerIsBetter(string title)
+        {
+            LowerIsBetterCache ??= new[] { GT.ProductionCost.Text, GT.UpkeepCost.Text, GT.Mass.Text };
+            for (int i = 0; i < LowerIsBetterCache.Length; ++i)
+                if (LowerIsBetterCache[i] == title)
+                    return true;
+            return false;
+        }
+
+        // the compared panel asks the active one for the same row, by title
+        public bool TryGetVisibleValue(string title, out float value)
+        {
+            for (int i = 0; i < Rows.Count; ++i)
+            {
+                Row r = Rows[i];
+                if (r.Heading == null && r.Value != null && r.Title.Text == title && IsVisible(r))
+                {
+                    value = r.Value();
+                    return true;
+                }
+            }
+            value = 0f;
+            return false;
+        }
+
         public ShipDesignInfoPanel(ShipDesignScreen screen, in Rectangle rect) : base(rect)
         {
             Screen = screen;
@@ -290,6 +324,21 @@ namespace Ship_Game.GameScreens.ShipDesign
                     float v = r.Value();
                     Screen.DrawStatText(ref cursor, r.Title, v.GetNumberString(), r.Color, r.Tip, spacing,
                                         valueColor: r.Tint?.Invoke(v));
+
+                    // delta against the active design, in its own lane, coloured by which
+                    // direction is better for that particular row
+                    if (CompareAgainst != null)
+                    {
+                        string title = r.Title.Text;
+                        if (CompareAgainst.TryGetVisibleValue(title, out float ov) && !v.AlmostEqual(ov))
+                        {
+                            float dv = v - ov;
+                            bool better = LowerIsBetter(title) ? dv < 0f : dv > 0f;
+                            string ds = (dv > 0f ? "(+" : "(") + dv.GetNumberString() + ")";
+                            batch.DrawString(headFont, ds, new Vector2(cursor.X + spacing + 46f, cursor.Y),
+                                             better ? Color.LightGreen : Color.LightPink);
+                        }
+                    }
                 }
             }
         }

@@ -71,6 +71,8 @@ namespace Ship_Game
         Rectangle BlackBar;
 
         ShipDesignInfoPanel InfoPanel;
+        ShipDesignInfoPanel ComparedPanel; // Ludoal fork: the pinned design, beside the active one
+        Submenu ComparedSub;
         ShipDesignIssuesPanel IssuesPanel;
 
         // this contains module selection list and active module selection info
@@ -151,6 +153,40 @@ namespace Ship_Game
                 CompareModule = null;
             else
                 CompareModule = CreateModuleListItem(template);
+        }
+
+        // Ludoal fork: Shift-click in the browser pins a design beside the active one, and the
+        // same design again unpins it — the exact gesture SetCompareModule gives modules. The
+        // try/catch is inherited from the hover overlay, which needed it on real designs.
+        public void SetComparedDesign(IShipDesign design)
+        {
+            if (ComparedDesign != null && design != null && ComparedDesign.Name == design.Name)
+                design = null; // re-pinning the same design unpins it
+
+            ComparedDesign = design;
+
+            if (design == null)
+            {
+                ComparedPanel?.SetActiveDesign(null);
+                if (ComparedSub != null) ComparedSub.Visible = false;
+                if (ComparedPanel != null) ComparedPanel.Visible = false;
+                return;
+            }
+
+            try
+            {
+                var ship = new DesignShip(ParentUniverse.UState, design as ShipDesign);
+                ship.RecalculatePower();
+                ship.ShipStatusChange();
+                ComparedPanel.SetActiveDesign(ship);
+                ComparedSub.Visible = ComparedPanel.Visible = true;
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, $"Compared design failed: {design.Name}");
+                ComparedDesign = null;
+                ComparedSub.Visible = ComparedPanel.Visible = false;
+            }
         }
 
         public ShipModule CreateModuleListItem(ShipModule template)
@@ -746,6 +782,20 @@ namespace Ship_Game
             var infoInner = RectF.FromPoints(infoRect.X + 12, infoRect.Right - 12,
                                              infoRect.Y + 32, infoRect.Bottom - 8);
             InfoPanel = Add(new ShipDesignInfoPanel(this, infoInner));
+
+            // Ludoal fork: the COMPARED design sits beside the active one, exactly as the
+            // Compared Module panel sits beside the Active Module — and like it, it is wider by
+            // a delta lane. Hidden until a design is shift-clicked in the browser.
+            var comparedRect = RectF.FromPoints(infoRect.X - (cartoucheW + 100f) - 10f, infoRect.X - 10f,
+                                                infoRect.Y, infoRect.Bottom);
+            ComparedSub = Add(new Submenu(comparedRect, "Compared Design"));
+            ComparedSub.SetBackground(Colors.TransparentBlackFill);
+
+            var comparedInner = RectF.FromPoints(comparedRect.X + 12, comparedRect.Right - 12,
+                                                 comparedRect.Y + 32, comparedRect.Bottom - 8);
+            ComparedPanel = Add(new ShipDesignInfoPanel(this, comparedInner));
+            ComparedPanel.CompareAgainst = InfoPanel;
+            ComparedSub.Visible = ComparedPanel.Visible = false;
 
             var issuesRect = RectF.FromPoints(infoRect.X, infoRect.Right,
                                               infoRect.Bottom + 6, colBottom);

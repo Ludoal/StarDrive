@@ -580,8 +580,7 @@ namespace Ship_Game
         {
             if (item.IsDesign && Input.IsShiftKeyDown)
             {
-                // shift-clicking the pinned design again un-pins it, same as the module comparator
-                ComparedDesign = ComparedDesign == item.Design ? null : item.Design;
+                SetComparedDesign(item.Design); // builds the compared panel, or unpins
                 GameAudio.AcceptClick();
             }
         }
