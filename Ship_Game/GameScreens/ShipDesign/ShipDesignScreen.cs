@@ -818,7 +818,7 @@ namespace Ship_Game
             // Ludoal fork: the COMPARED design sits beside the active one, exactly as the
             // Compared Module panel sits beside the Active Module — and like it, it is wider by
             // a delta lane. Hidden until a design is shift-clicked in the browser.
-            var comparedRect = RectF.FromPoints(infoRect.X - (cartoucheW + 100f) - 10f, infoRect.X - 10f,
+            var comparedRect = RectF.FromPoints(infoRect.X - (cartoucheW + 120f) - 10f, infoRect.X - 10f,
                                                 infoRect.Y, infoRect.Bottom);
             ComparedSub = Add(new Submenu(comparedRect, "Compared Design"));
             ComparedSub.SetBackground(Colors.TransparentBlackFill);
@@ -827,6 +827,8 @@ namespace Ship_Game
                                                  comparedRect.Y + 32, comparedRect.Bottom - 8);
             ComparedPanel = Add(new ShipDesignInfoPanel(this, comparedInner));
             ComparedPanel.CompareAgainst = InfoPanel;
+            ComparedPanel.Col0Shift = 0f;  // 20px left of the active frame's left column
+            ComparedPanel.Col1Shift = 0f;  // and 10px left of its right one, for the delta lane
             ComparedSub.Visible = ComparedPanel.Visible = false;
 
             var issuesRect = RectF.FromPoints(infoRect.X, infoRect.Right,
