@@ -240,10 +240,12 @@ namespace Ship_Game.GameScreens.ShipDesign
             if (S == null)
                 return;
 
-            // 10px of breathing room on the left: titles are right-aligned and grow leftward,
-            // so the longest ones ("Excess Wpn Pwr Drain") were poking out of the frame
-            const float leftPad = 10f;
-            float colStep = (Width - leftPad) * 0.5f;
+            // Column origins, tuned at the bench by Ludo: the left column sits on the frame's
+            // inner edge, the right one 10px left of the half. Titles are right-aligned and grow
+            // leftward, which is why the longest ones need that slack.
+            float colStep = (Width - 10f) * 0.5f;
+            float col0X = X;
+            float col1X = X + colStep - 10f;
             float spacing = colStep * 0.72f; // title room; the value sits at the cursor + spacing
             Graphics.Font headFont = Fonts.Arial12Bold;
 
@@ -285,7 +287,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                 running += blockVisible[b];
             }
 
-            var cursor = new Vector2(X + leftPad, Y);
+            var cursor = new Vector2(col0X, Y);
             int block = -1;
             bool firstHeadingOfColumn = true;
             for (int i = 0; i < Rows.Count; ++i)
@@ -300,7 +302,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                     // never fired and everything piled into one column
                     if (block == splitBlock)
                     {
-                        cursor = new Vector2(X + leftPad + colStep, Y);
+                        cursor = new Vector2(col1X, Y);
                         firstHeadingOfColumn = true;
                     }
 
@@ -314,7 +316,11 @@ namespace Ship_Game.GameScreens.ShipDesign
                     // same convention as a stat row: advance first, then draw — drawing first
                     // put every heading one line above its own block
                     cursor.Y += headFont.LineSpacing;
-                    batch.DrawString(headFont, r.Heading, cursor, r.Color);
+                    // right-aligned on the very edge the stat titles end at, so heading and
+                    // titles share one vertical line (Ludo's call at the bench)
+                    float headRight = cursor.X + spacing - 20f;
+                    batch.DrawString(headFont, r.Heading,
+                                     new Vector2(headRight - headFont.TextWidth(r.Heading), cursor.Y), r.Color);
                     continue;
                 }
 

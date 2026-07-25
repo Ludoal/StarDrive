@@ -742,12 +742,13 @@ namespace Ship_Game
                 RefreshHullSelectList();
             };
 
-            Checkbox(new Vector2(filterX + 6, filterTop + 24),
+            // side by side on one row: stacked, the second one slipped under the frame's title tab
+            Checkbox(new Vector2(filterX + 6, filterTop + 26),
                      () => !Player.Universe.P.ShowAllDesigns,
                      (b) => { Player.Universe.P.ShowAllDesigns = !b; RefreshHullSelectList(); },
                      "My designs only", "Show only the designs you created");
 
-            Checkbox(new Vector2(filterX + 6, filterTop + 40),
+            Checkbox(new Vector2(filterX + 132, filterTop + 26),
                      () => ShowLockedDesigns,
                      (b) => { ShowLockedDesigns = b; RefreshHullSelectList(); },
                      "Show locked", GameText.ShowEmpireLockedDesignsTip);
