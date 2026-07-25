@@ -46,6 +46,7 @@ namespace Ship_Game
 
         public EmpireUIOverlay EmpireUI;
         public string InitialDesign; // Ludoal fork: design to open with (battle sim return path)
+        static string LastDesignThisSession; // Ludoal fork: reopen where we left off, this run only
 
         Vector3 CameraPos = new Vector3(0f, 0f, 1300f);
         float DesiredCamHeight = 1300f;
@@ -342,6 +343,13 @@ namespace Ship_Game
             if (shipDesignTemplate == null) // if ShipDesignLoadScreen has no selected design
                 return;
 
+            // Ludoal fork: remember where we were, so reopening the shipyard lands on the
+            // design we left. Static on purpose — the screen is rebuilt on every open, so the
+            // memory has to outlive the instance, and it dies with the process, which is
+            // exactly what "for this session" means (Ludo's call, the persisted version can
+            // come later).
+            LastDesignThisSession = shipDesignTemplate.Name;
+
             RemoveVisibleMesh();
             ShipDesign cloned = shipDesignTemplate.GetClone(shipDesignTemplate.Name);
             ModuleGrid = new DesignModuleGrid(this, cloned);
@@ -477,7 +485,10 @@ namespace Ship_Game
                 && ResourceManager.Ships.GetDesign(InitialDesign, out Ships.IShipDesign bsDesign))
                 ChangeHull(bsDesign);
             else if (lastWIP != null)
-                ChangeHull(lastWIP);
+                ChangeHull(lastWIP); // unsaved work outranks a clean reload: never lose it
+            else if (LastDesignThisSession != null
+                     && ResourceManager.Ships.GetDesign(LastDesignThisSession, out Ships.IShipDesign lastSeen))
+                ChangeHull(lastSeen);
             else
                 ChangeHull(AvailableHulls[0]);
         }
