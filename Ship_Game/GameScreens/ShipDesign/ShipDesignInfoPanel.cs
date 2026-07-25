@@ -144,10 +144,10 @@ namespace Ship_Game.GameScreens.ShipDesign
 
             Head("STATION", Color.MediumPurple);
             Stat(GT.ResearchPerTurn, () => S.ResearchPerTurn, GT.ResearchPerTurnStatTip, nonZero: true);
-            Stat(GT.ResearchStationResearchTimeStat, () => Ds.ResearchTime, GT.ResearchStationResearchTimeStatTip,
+            Stat(GT.ResearchStationResearchTimeStat, () => Ds.ResearchTime(), GT.ResearchStationResearchTimeStatTip,
                  tint: Above(ShipResupply.NumTurnsForGoodResearchSupply), vis: Ds.ProducesResearch);
             Stat(GT.RefinningPerTurnStat, () => S.TotalRefining, GT.RefiningPerTurnStatTip, nonZero: true);
-            Stat(GT.MiningStationRefiningTimeStat, () => Ds.RefiningTime, GT.MiningStationRefiningTimeStatTip,
+            Stat(GT.MiningStationRefiningTimeStat, () => Ds.RefiningTime(), GT.MiningStationRefiningTimeStatTip,
                  tint: Above(ShipResupply.NumTurnsForGoodRefiningSupply - 0.01f), vis: Ds.RefinesResources);
 
             // her closing block: the verdict reads last, like a signature
