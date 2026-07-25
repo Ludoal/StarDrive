@@ -715,7 +715,9 @@ namespace Ship_Game
             // DESIGN ISSUES sits UNDER the cartouche (Ludo's call) instead of in a narrow 200px
             // column to its left, so its text gets the full width. Both boxes use the bottom-up
             // geometry computed above, which is why the list stretches and these do not.
-            var infoRect = RectF.FromPoints((HullSelectList.X + 20), (ScreenWidth - 20),
+            // the cartouche's right edge follows the browser frame above it, so the whole right
+            // column shares one margin instead of each box inventing its own
+            var infoRect = RectF.FromPoints((HullSelectList.X + 20), hullSelectSub.Right,
                                             cartoucheY, cartoucheY + cartoucheH);
             // Ludoal fork: the stats live in a titled cartouche now, same frame the module
             // panel uses ("Active Module"), so the two read as the same kind of object.
@@ -727,7 +729,7 @@ namespace Ship_Game
                                              infoRect.Y + 32, infoRect.Bottom - 8);
             InfoPanel = Add(new ShipDesignInfoPanel(infoInner));
 
-            var issuesRect = RectF.FromPoints(infoRect.X, (ScreenWidth - 20),
+            var issuesRect = RectF.FromPoints(infoRect.X, infoRect.Right,
                                               infoRect.Bottom + 6, colBottom);
             IssuesPanel = Add(new ShipDesignIssuesPanel(this, issuesRect));
 
@@ -820,16 +822,43 @@ namespace Ship_Game
                 onHull.Add(design);
             }
 
-            foreach (ShipHull hull in AvailableHulls.Sorted(h => h.VisibleName))
+            // Groups are the hull CLASSES of the tech tree (Fighter, Corvette, Frigate,
+            // Freighter...), as the old hull list did. Inside a class, each hull opens with its
+            // own bare row — that row carries the hull's name, e.g. "Fang Fighter" — and its
+            // designs follow. Two levels is all the scroll list can do, which is why the class
+            // is the heading and the hull is a row rather than a nested group.
+            var classes = new Array<string>();
+            foreach (ShipHull hull in AvailableHulls)
             {
-                var group = new ShipYardBrowserItem(Player, hull, hull.VisibleName);
+                string cls = Localizer.GetRole(hull.Role, Player);
+                if (!classes.Contains(cls))
+                    classes.Add(cls);
+            }
+            classes.Sort();
+
+            foreach (string cls in classes)
+            {
+                var group = new ShipYardBrowserItem(Player, null, cls);
                 HullSelectList.AddItem(group);
 
-                // row #1 of every group: the empty hull itself
-                group.AddSubItem(new ShipYardBrowserItem(Player, hull));
+                foreach (ShipHull hull in AvailableHulls.Sorted(h => h.VisibleName))
+                {
+                    if (Localizer.GetRole(hull.Role, Player) != cls)
+                        continue;
 
-                if (!designsByHull.TryGetValue(hull.HullName, out Array<IShipDesign> designs))
-                    continue;
+                    AddHullAndItsDesigns(group, hull, designsByHull);
+                }
+            }
+        }
+
+        void AddHullAndItsDesigns(ShipYardBrowserItem group, ShipHull hull,
+                                  Map<string, Array<IShipDesign>> designsByHull)
+        {
+            // the bare hull first: starting from an empty carcass is one row, not a mode
+            group.AddSubItem(new ShipYardBrowserItem(Player, hull));
+
+            if (designsByHull.TryGetValue(hull.HullName, out Array<IShipDesign> designs))
+            {
 
                 // same order as the old load popup: our own designs first, then the
                 // strongest, then alphabetical
