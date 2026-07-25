@@ -19,11 +19,7 @@ namespace Ship_Game
             GoodBad,
             BadLowerThan2,
             BadPercentLowerThan1,
-            CompareValue,
-            // Ludoal fork: same comparison, opposite sense — for stats where LESS is
-            // better (Cost, Upkeep, TurnRate). Added alongside CompareValue rather than
-            // parameterising it, so every existing module stat keeps its exact behaviour.
-            CompareValueInverted
+            CompareValue
         }
 
         struct StatValue
@@ -63,9 +59,6 @@ namespace Ship_Game
                         case ValueTint.BadLowerThan2:        return Value > 2f ? Color.LightGreen : Color.LightPink;
                         case ValueTint.BadPercentLowerThan1: return Value > 1f ? Color.LightGreen : Color.LightPink;
                         case ValueTint.CompareValue:         return CompareValue < Value ? Color.LightGreen : Color.LightPink;
-                        // NOTE: like CompareValue, only meaningful when a comparison is
-                        // actually pinned — the caller sets this tint, never the default
-                        case ValueTint.CompareValueInverted: return CompareValue > Value ? Color.LightGreen : Color.LightPink;
                         case ValueTint.None:
                         default: return Color.White;
                     }
