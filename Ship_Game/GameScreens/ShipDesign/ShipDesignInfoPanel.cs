@@ -63,9 +63,6 @@ namespace Ship_Game.GameScreens.ShipDesign
         // start. Fixed, so every design puts its first row on the same line.
         const float TitleBandHeight = 30f;
 
-        // the ship plan's square side — the same fraction the frame was sized with, bounded by
-        // the frame's height so a short frame never asks for a square taller than itself
-        float PlanSide => Math.Min(PlanSideFor(Width), Height - TitleBandHeight - 10f);
 
         // room a delta needs after a value: the offset it is drawn at, plus the widest delta
         // string we can expect ("(+157.2k)")
@@ -85,7 +82,7 @@ namespace Ship_Game.GameScreens.ShipDesign
         // air between the two columns: on the 46.138 shot column 1's delta lane nearly touched
         // "MOBILITY" (Ludo). It belongs to the STEP, so the gap opens between the columns rather
         // than just pushing column 2 further right.
-        const float MidGap = 24f;
+        const float MidGap = 16f;
         // Measured off the 46.138 bench shot, where everything fitted at ~545px of frame: the
         // titles run to "Total Module Slots", the values to "107.1k", the deltas to "(-27.35k)".
         // The frame must not grow beyond that — it was already wide enough (Ludo).
@@ -100,13 +97,17 @@ namespace Ship_Game.GameScreens.ShipDesign
             // two steps, less the mid-gap trailing the second column — it only separates them
             float w = StepFor(withDeltas) * 2f - MidGap + SidePad;
             if (withPlan)
-                w += PlanSideFor(w) + 10f;
+                w += PlanSide + PlanGap;
             return w;
         }
 
-        // the plan is a square sized off the frame it sits in; kept as a function so the frame
-        // width above and the draw below cannot disagree
-        static float PlanSideFor(float frameWidth) => frameWidth * 0.32f;
+        // The ship plan is a FIXED square, not a fraction of the frame: the frame's width is
+        // computed FROM the plan, so deriving the plan back from the width was circular and
+        // left a hole between the picture and the columns (bench 46.140).
+        // 250 is what 46.139 actually drew (it worked out at 32% of a 790px frame there), kept
+        // as the size itself now rather than as a fraction that has to be reverse-engineered.
+        const float PlanSide = 250f;
+        const float PlanGap = 10f;
 
         // How far this panel is inset inside its frame. The screen builds the inner rect, so it
         // tells us here rather than us guessing a constant that would have to stay in step.
@@ -378,7 +379,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                 // rect, already inset by 10, so drawing at X put the name 20px off the frame —
                 // twice the module's margin, which is what read as "pushed to the right"
                 // (Ludo, three benches running). Back out the inset so the two agree.
-                var namePos = new Vector2(X - InnerInset + 10f + (ShowShipPlan ? PlanSide + 10f : 0f),
+                var namePos = new Vector2(X - InnerInset + 10f + (ShowShipPlan ? PlanSide + PlanGap : 0f),
                                           Y + 2f);
                 batch.DrawString(nameFont, S.Name, namePos, Color.White);
 
@@ -403,8 +404,11 @@ namespace Ship_Game.GameScreens.ShipDesign
             float planW = 0f;
             if (ShowShipPlan)
             {
-                planW = PlanSide + 10f;
-                S.RenderOverlay(batch, new Rectangle((int)X, (int)rowsY, (int)PlanSide, (int)PlanSide),
+                // fixed square, but never taller than the frame can hold (a windowed player can
+                // squash the screen well below the supported floor)
+                float side = Math.Min(PlanSide, Height - TitleBandHeight - 10f);
+                planW = PlanSide + PlanGap; // the columns keep their place even if the square shrinks
+                S.RenderOverlay(batch, new Rectangle((int)X, (int)rowsY, (int)side, (int)side),
                                 showModules: true, drawHullBackground: true,
                                 moduleHealthColor: false, markLockedModules: true);
             }
