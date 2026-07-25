@@ -656,8 +656,21 @@ namespace Ship_Game
             SearchBar = new Rectangle((int)ScreenCenter.X, (int)bottomListRight.Y, 210, 25);
             BottomSep = new Rectangle(BlackBar.X, BlackBar.Y, BlackBar.Width, 1);
 
-            Vector2 hullSelSize = new(SelectSize(260, 280, 320), SelectSize(250, 400, 500));
-            var hullSelectPos = new LocalPos(ScreenWidth - hullSelSize.X, ModuleSelectComponent.LocalPos.Y);
+            // Ludoal fork: the right column is laid out from the BOTTOM UP. The boxes whose
+            // height is dictated by their content take it — the stats cartouche, then the
+            // issues strip under it — and the browser list absorbs whatever is left (Ludo's
+            // call: the list is the extensible one). The two content heights are first
+            // calibrations, clamped to a fraction of the band so a short screen still leaves
+            // a usable list instead of a sliver.
+            float colTop      = ModuleSelectComponent.LocalPos.Y;
+            float colBottom   = BlackBar.Y;
+            float colBand     = colBottom - colTop;
+            float issuesH     = Math.Min(92f, colBand * 0.16f);   // completion line + issues button
+            float cartoucheH  = Math.Min(300f, colBand * 0.45f);  // fullest case: a station, two columns
+            float cartoucheY  = colBottom - issuesH - cartoucheH;
+
+            Vector2 hullSelSize = new(SelectSize(260, 280, 320), Math.Max(160f, cartoucheY - 10 - colTop));
+            var hullSelectPos = new LocalPos(ScreenWidth - hullSelSize.X, colTop);
             var hullSelectSub = Add(new SubmenuScrollList<ShipYardBrowserItem>(hullSelectPos, hullSelSize, "Hulls & Designs"));
             // rounded black background
             hullSelectSub.SetBackground(Colors.TransparentBlackFill);
@@ -699,16 +712,11 @@ namespace Ship_Game
                 ButtonStyle = GenericButton.Style.Shadow,
             };
 
-            // Ludoal fork: DESIGN ISSUES sits UNDER the info cartouche instead of in a narrow
-            // 200px column to its left, so issue text gets the cartouche's full width. The
-            // split is a fraction of the available band, never a pixel count, so it follows
-            // the resolution — 0.70 is a first calibration, to be trimmed at the bench.
-            float bandTop    = HullSelectList.Bottom + 10;
-            float bandBottom = BlackBar.Y;
-            float splitY     = bandTop + (bandBottom - bandTop) * 0.70f;
-
+            // DESIGN ISSUES sits UNDER the cartouche (Ludo's call) instead of in a narrow 200px
+            // column to its left, so its text gets the full width. Both boxes use the bottom-up
+            // geometry computed above, which is why the list stretches and these do not.
             var infoRect = RectF.FromPoints((HullSelectList.X + 20), (ScreenWidth - 20),
-                                            bandTop, splitY);
+                                            cartoucheY, cartoucheY + cartoucheH);
             // Ludoal fork: the stats live in a titled cartouche now, same frame the module
             // panel uses ("Active Module"), so the two read as the same kind of object.
             // The frame is added first so it draws behind the values.
@@ -719,8 +727,8 @@ namespace Ship_Game
                                              infoRect.Y + 32, infoRect.Bottom - 8);
             InfoPanel = Add(new ShipDesignInfoPanel(infoInner));
 
-            var issuesRect = RectF.FromPoints(InfoPanel.X, (ScreenWidth - 20),
-                                              splitY + 6, bandBottom);
+            var issuesRect = RectF.FromPoints(infoRect.X, (ScreenWidth - 20),
+                                              infoRect.Bottom + 6, colBottom);
             IssuesPanel = Add(new ShipDesignIssuesPanel(this, issuesRect));
 
             if (EnableDebugFeatures)
