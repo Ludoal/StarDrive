@@ -82,7 +82,7 @@ Elements:
     Texture: MMenu/new_background.dds # Textures/MMenu/xxxx.dds
     Color: [1.0,1.0,1.0] # default color
     AbsPos: [0, 0]
-    RelSize: [1, 0] # fill width, auto-detect height from aspect ratio
+    RelSize: [1, 1] # fill the whole screen; height from width bared a strip on non-16:9 windows
     # Draw depth controls when the UI element is being drawn:
     # Foreground   -- draw 2D on top of 3D objects -- default value
     # Background   -- draw 2D behind 3D objects
