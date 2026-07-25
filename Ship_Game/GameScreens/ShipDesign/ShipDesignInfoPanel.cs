@@ -67,6 +67,15 @@ namespace Ship_Game.GameScreens.ShipDesign
         // rest. Bounded, or a tall frame would give it a square wider than the columns.
         float PlanSide => Math.Min(Width * 0.32f, Height - TitleBandHeight - 10f);
 
+        // room a delta needs after a value: the offset it is drawn at, plus the widest delta
+        // string we can expect ("(+157.2k)")
+        const float DeltaLaneOffset = 46f;
+        const float DeltaLaneWidth = DeltaLaneOffset + 64f;
+
+        // How far this panel is inset inside its frame. The screen builds the inner rect, so it
+        // tells us here rather than us guessing a constant that would have to stay in step.
+        public float InnerInset = 10f;
+
         // Ludoal fork (spec v4): the Hover cartouche draws the design's MODULE PLAN at its far
         // left (Ludo) — the picture the flying overlay used to give, and the reason to keep a
         // hover frame at all. Same call the overlay made: RenderOverlay with the modules and the
@@ -170,13 +179,13 @@ namespace Ship_Game.GameScreens.ShipDesign
             Color engines = Color.DarkSeaGreen;
             Color ordnance = Color.IndianRed;
 
-            Head("CONSTRUCTION", Color.Wheat);
+            Head("CONSTRUCTION");
             Stat(GT.ProductionCost, () => S.GetCost(), GT.TT_ProductionCost);
             Stat(GT.UpkeepCost, () => S.GetMaintCost(), GT.TT_UpkeepCost);
             Stat(GT.TotalModuleSlots, () => S.SurfaceArea, GT.TT_TotalModuleSlots);
             Stat(GT.Mass, () => S.Mass, GT.TT_Mass);
 
-            Head("ENERGY", energy);
+            Head("ENERGY");
             Stat(GT.PowerCapacity, () => Ds.PowerCapacity, GT.TT_PowerCapacity, energy, tint: Above(() => Ds.PowerConsumed));
             Stat(GT.PowerRecharge, () => Ds.PowerRecharge, GT.TT_PowerRecharge, energy, tint: Positive);
             Stat(GT.RechargeAtWarp, () => Ds.ChargeAtWarp, GT.TT_RechargeAtWarp, energy, tint: Positive, vis: Ds.IsWarpCapable);
@@ -187,7 +196,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             Stat(GT.BurstWpnPwrTime, () => Ds.BurstEnergyDuration, GT.TT_BurstWpnPwrTime, energy, tint: _ => Color.LightPink, vis: Ds.HasBeamDurationNegative);
             Word(GT.BurstWpnPwrTime, "INF", GT.TT_BurstWpnPwrTime, energy, good, vis: Ds.HasBeamDurationPositive);
 
-            Head("DEFENCE", protect);
+            Head("DEFENCE");
             Stat(GT.TotalHitpoints, () => S.Health, GT.TT_HitPoints, protect, tint: Positive);
             Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, protect, tint: Positive, vis: Ds.HasRegularShields);
             Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, Color.Gold, tint: Positive, vis: Ds.HasAmplifiedMains);
@@ -198,7 +207,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             Stat(GT.EmpProtection, () => S.EmpTolerance, GT.TT_EmpProtection, protect, tint: Positive);
             Stat(GT.Ecm3, () => S.ECMValue, GT.TT_Ecm3, protect, tint: Positive, nonZero: true);
 
-            Head("MOBILITY", engines);
+            Head("MOBILITY");
             Stat(GT.FtlSpeed, () => S.MaxFTLSpeed, GT.TT_FtlSpeed, engines, tint: Above(20_000f), vis: Ds.IsWarpCapable);
             // FTL time right under the speed it belongs to (Ludo, at the bench)
             if (!S.IsPlatformOrStation)
@@ -211,7 +220,7 @@ namespace Ship_Game.GameScreens.ShipDesign
 
             // the ordnance family was missing from the inventory sent to Lek, so its placement
             // is mine: it sits with the guns it feeds, which is where her v1 put ammo time
-            Head("COMBAT / FCS", Color.Orange);
+            Head("COMBAT / FCS");
             Stat(GT.OrdnanceCreated, () => S.OrdAddedPerSecond, GT.TT_OrdnanceCreated, ordnance, nonZero: true);
             Stat(GT.OrdnanceCapacity, () => S.OrdinanceMax, GT.TT_OrdnanceCap, ordnance, vis: Ds.HasOrdnance);
             Stat(GT.AmmoTime, () => Ds.AmmoTime, GT.TT_AmmoTime, ordnance, tint: Above(30f), vis: Ds.HasOrdFinite);
@@ -220,11 +229,11 @@ namespace Ship_Game.GameScreens.ShipDesign
             Stat(GT.FcsPower, () => S.TrackingPower, GT.TT_FcsPower, nonZero: true);
             Stat(GT.SensorRange3, () => S.SensorRange, GT.TT_SensorRange3, nonZero: true);
 
-            Head("PAYLOAD", ordnance);
+            Head("PAYLOAD");
             Stat(GT.TroopCapacity, () => S.TroopCapacity, GT.TT_TroopCapacity, ordnance, nonZero: true);
             Stat(GT.CargoSpace, () => S.CargoSpaceMax, GT.TT_CargoSpace, nonZero: true);
 
-            Head("STATION", Color.MediumPurple);
+            Head("STATION");
             Stat(GT.ResearchPerTurn, () => S.ResearchPerTurn, GT.ResearchPerTurnStatTip, nonZero: true);
             Stat(GT.ResearchStationResearchTimeStat, () => Ds.ResearchTime(), GT.ResearchStationResearchTimeStatTip,
                  tint: Above(ShipResupply.NumTurnsForGoodResearchSupply), vis: Ds.ProducesResearch);
@@ -233,12 +242,16 @@ namespace Ship_Game.GameScreens.ShipDesign
                  tint: Above(ShipResupply.NumTurnsForGoodRefiningSupply - 0.01f), vis: Ds.RefinesResources);
 
             // her closing block: the verdict reads last, like a signature
-            Head("ASSESSMENT", Color.White);
+            Head("ASSESSMENT");
             Stat(GT.ShipOffense, () => Ds.Strength, GT.TT_ShipOffense, nonZero: true);
             Stat(GT.RelativeStrength, () => Ds.RelativeStrength, GT.TT_RelativeStrength, nonZero: true);
         }
 
-        void Head(string heading, Color color) => Rows.Add(new Row { Heading = heading, Color = color });
+        // Ludoal fork (bench 46.135): block headings are all cream (Ludo). They are structure,
+        // not content — colouring each one after its family made the panel read as eight
+        // unrelated lists instead of one. The per-block colour still tints the stat TITLES,
+        // which is where it carries meaning.
+        void Head(string heading) => Rows.Add(new Row { Heading = heading, Color = Colors.Cream });
 
         void Stat(in LocalizedText title, Func<float> value, in LocalizedText tip, Color? titleColor = null,
                   Func<float, Color> tint = null, Func<bool> vis = null, bool nonZero = false)
@@ -308,9 +321,6 @@ namespace Ship_Game.GameScreens.ShipDesign
             if (S == null)
                 return;
 
-            // the design's own name, on the frame's tab row. Right-aligned rather than hugging
-            // the tab: the two frames have tabs of different widths ("Active" vs "Compared"),
-            // so a fixed offset would collide on one of them.
             // Ludoal fork (spec v4): the design name sits INSIDE the frame, on the module
             // panel's pattern (Ludo) — it used to hang off the tab row, right-aligned, which
             // read as a stray label rather than the frame's subject. The pinned design has no
@@ -322,7 +332,12 @@ namespace Ship_Game.GameScreens.ShipDesign
                 if (nameFont.TextWidth(S.Name) + 40f > Width)
                     nameFont = Fonts.Arial14Bold;
 
-                var namePos = new Vector2(X + (ShowShipPlan ? PlanSide + 10f : 0f), Y + 2f);
+                // The module frame draws its title at (frame.X + 10). This panel is the INNER
+                // rect, already inset by 10, so drawing at X put the name 20px off the frame —
+                // twice the module's margin, which is what read as "pushed to the right"
+                // (Ludo, three benches running). Back out the inset so the two agree.
+                var namePos = new Vector2(X - InnerInset + 10f + (ShowShipPlan ? PlanSide + 10f : 0f),
+                                          Y + 2f);
                 batch.DrawString(nameFont, S.Name, namePos, Color.White);
 
                 if (ComparedName.NotEmpty())
@@ -352,7 +367,12 @@ namespace Ship_Game.GameScreens.ShipDesign
                                 moduleHealthColor: false, markLockedModules: true);
             }
 
-            float colStep = (Width - planW - 10f) * 0.5f;
+            // The delta lane is drawn at cursor + spacing + DeltaLaneOffset, so the SECOND
+            // column must leave that much room before the frame's right edge — otherwise its
+            // deltas are clipped off-screen, which is what the bench caught on 46.135. The lane
+            // is only reserved while a comparison is running.
+            float lane = CompareAgainst != null ? DeltaLaneWidth : 0f;
+            float colStep = (Width - planW - 10f - lane) * 0.5f;
             float col0X = X + planW + Col0Shift;
             float col1X = X + planW + colStep + Col1Shift;
             float spacing = colStep * 0.72f; // title room; the value sits at the cursor + spacing
@@ -452,7 +472,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                         float dmiss = -miss; // this design has none: the delta is the whole of it
                         bool betterMiss = LowerIsBetter(r.Title.Text) ? dmiss < 0f : dmiss > 0f;
                         batch.DrawString(headFont, "(" + dmiss.GetNumberString() + ")",
-                                         new Vector2(cursor.X + spacing + 46f, cursor.Y),
+                                         new Vector2(cursor.X + spacing + DeltaLaneOffset, cursor.Y),
                                          betterMiss ? Color.LightGreen : Color.LightPink);
                     }
                     continue;
@@ -481,7 +501,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                             float dv = v - ov;
                             bool better = LowerIsBetter(title) ? dv < 0f : dv > 0f;
                             string ds = (dv > 0f ? "(+" : "(") + dv.GetNumberString() + ")";
-                            batch.DrawString(headFont, ds, new Vector2(cursor.X + spacing + 46f, cursor.Y),
+                            batch.DrawString(headFont, ds, new Vector2(cursor.X + spacing + DeltaLaneOffset, cursor.Y),
                                              better ? Color.LightGreen : Color.LightPink);
                         }
                     }

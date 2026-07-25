@@ -655,7 +655,13 @@ namespace Ship_Game
         {
             RemoveAll();
 
-            ModuleSelectComponent = Add(new ModuleSelection(this, new(5, LowRes ? 45 : 100), new(305, (ScreenHeight-100)*0.45f)));
+            // Ludoal fork (bench 46.135): the module list runs DOWN TO the Active frame instead
+            // of stopping at an arbitrary 45% of the screen, which left a gap of dead starfield
+            // between them. ModuleSelection owns that arithmetic — one place decides where the
+            // list ends and the frame begins, so the two can never drift apart.
+            float modListTop = LowRes ? 45 : 100;
+            ModuleSelectComponent = Add(new ModuleSelection(this, new(5, modListTop),
+                                        new(305, ModuleSelection.ListHeightFor(ScreenHeight, modListTop))));
 
             BlackBar = new Rectangle(0, ScreenHeight - 70, 3000, 70);
             ClassifCursor = new Vector2(ScreenWidth * .5f,ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Height + 10);
@@ -766,16 +772,18 @@ namespace Ship_Game
             // the filter row lives in the band ABOVE the browser frame, so the frame starts lower
             float filterTop   = ModuleSelectComponent.LocalPos.Y;
             float colTop      = filterTop + 52f;
-            float colBottom   = BlackBar.Y;
+            // the same foot line the module frames land on, so the four read as one row
+            float colBottom   = ModuleSelection.FramesBottom(ScreenHeight);
             float colBand     = colBottom - colTop;
             // Ludoal fork (spec v4, bench): the completion line and the issues button moved ABOVE
             // the cartouche tab (Ludo) — they used to sit under it, which pushed the frame's
             // bottom edge off the module frames' line. The strip now separates the browser from
             // the cartouche, and the cartouche runs to the bottom of the band.
             float issuesH     = Math.Min(58f, colBand * 0.10f);   // completion line + issues button
-            // the cartouche matches the MODULE frames' height, so the four frames read as one row
+            // the cartouche matches the MODULE frames' height, so the four frames read as one
+            // row — same arithmetic, same bottom margin (bench 46.135: the design side had none)
             float cartoucheH  = Math.Min(ModuleSelectComponent.FrameHeight, colBand * 0.62f);
-            float cartoucheY  = colBottom - cartoucheH;
+            float cartoucheY  = colBottom - cartoucheH; // colBottom already carries the margin
             float issuesY     = cartoucheY - issuesH - 4f;
 
             // Ludoal fork (bench): the right column had no margin — its frames were flush with
@@ -872,10 +880,13 @@ namespace Ship_Game
             // "Total Module Slots", so the value landed in the middle of its own label.
             // 400 = 2 × (longest title ~105 + value 60) + gutter + frame margins.
             float cartoucheW = Math.Max(hullSelectSub.Width, 400f);
-            // Ludoal fork (spec v4): the Active cartouche carries the delta lanes now, so it is
-            // the one that needs the extra width — the same 120px the Compared frame used to take.
+            // Ludoal fork (spec v4): the Active cartouche carries the delta lanes, so it takes
+            // the extra width the Compared frame used to have — LEFTWARD. Its right edge stays
+            // on the browser's, which is what keeps the column's right margin (bench 46.135: it
+            // was the frame overflowing the screen, clipping the deltas, not the tab).
             const float DeltaLaneW = 120f;
-            var infoRect = RectF.FromPoints(hullSelectSub.Right - cartoucheW - DeltaLaneW, hullSelectSub.Right,
+            var infoRect = RectF.FromPoints(hullSelectSub.Right - cartoucheW - DeltaLaneW,
+                                            hullSelectSub.Right,
                                             cartoucheY, cartoucheY + cartoucheH);
             // Ludoal fork: the stats live in a titled cartouche now, same frame the module
             // panel uses ("Active Module"), so the two read as the same kind of object.
@@ -883,7 +894,10 @@ namespace Ship_Game
             var infoSub = Add(new Submenu(infoRect, "Active Design"));
             infoSub.SetBackground(Colors.TransparentBlackFill);
 
-            var infoInner = RectF.FromPoints(infoRect.X + 12, infoRect.Right - 12,
+            // Ludoal fork (bench): the inner panel takes the module frame's own left margin (10),
+            // so the design name starts exactly where "Light Kinetic Cannon" does in its frame —
+            // it was inset by 12 here and read as pushed to the right.
+            var infoInner = RectF.FromPoints(infoRect.X + 10, infoRect.Right - 10,
                                              infoRect.Y + 26, infoRect.Bottom - 8);
             InfoPanel = Add(new ShipDesignInfoPanel(this, infoInner));
             InfoSub = infoSub;

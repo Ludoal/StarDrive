@@ -44,8 +44,11 @@ namespace Ship_Game
 
             // Ludoal fork: the Active panel carries the delta lanes now (spec v4) — it is the
             // only stat frame left, so it needs the width the Compared one used to have.
-            RectF acsub = new(Rect.X, Rect.Bottom + 15, PlainFrameWidth + DeltaFrameExtra,
-                              Screen.Height - (Rect.Y + Rect.Height) - 100);
+            // Bench 46.135: the bottom margin matches the side one, the frame is three lines
+            // shorter, and the list runs down to it with the standard gap.
+            float acsubTop = Rect.Bottom + FrameGap;
+            RectF acsub = new(Rect.X, acsubTop, PlainFrameWidth + DeltaFrameExtra,
+                              FramesBottom(Screen.Height) - acsubTop);
             ActiveModSubMenu = base.Add(new Submenu(acsub, "Active Module"));
             // rounded black background
             ActiveModSubMenu.SetBackground(Colors.TransparentBlackFill);
@@ -63,7 +66,7 @@ namespace Ship_Game
             // hold. Same slot as Choose Fighter (the fighter list wins it when a hangar is
             // selected). It is the OLD Active frame, unchanged (Ludo): its 305px and its tight
             // columns, since it never carries a delta lane.
-            RectF hoverR = new(acsub.X + acsub.W + 20, acsub.Y, PlainFrameWidth, acsub.H);
+            RectF hoverR = new(acsub.X + acsub.W + FrameGap, acsub.Y, PlainFrameWidth, acsub.H);
             HoverModSubMenu = base.Add(new Submenu(hoverR, "Hovered Module"));
             HoverModSubMenu.SetBackground(Colors.TransparentBlackFill);
             ChooseFighterSub = base.Add(new SubmenuScrollList<FighterListItem>(fighterR, "Choose Fighter"));
@@ -116,6 +119,27 @@ namespace Ship_Game
         // Active (Ludo), so it keeps upstream's width and tight step, untouched.
         const float PlainFrameWidth = 305f;  // upstream's Active frame
         const float DeltaFrameExtra = 105f;  // what the delta lanes need on top
+
+        // Ludoal fork (bench 46.135): the screen's shared spacing. Upstream folded all of this
+        // into one hardcoded 100 at the bottom; split so the design side can use the same
+        // numbers and the four frames line up.
+        public const float FrameGap = 10f;   // between the list and the frame, and between frames
+        public const float BottomPad = 5f;   // same as the side margin (was 15 here, 0 on the design side)
+        // the black button bar at the foot of the screen — same 70 the screen builds BlackBar
+        // with, so the module frames end on the design cartouches' line
+        public const float BottomBarH = 70f;
+        public const float ShorterBy = 45f;  // three lines taken off the frame height (Ludo)
+
+        // Where the frames' bottom edge lands. The design cartouches use the SAME line, which is
+        // what makes the four frames read as one row (bench 46.135).
+        public static float FramesBottom(float screenH) => screenH - BottomBarH - BottomPad;
+
+        // The frame's target height — three lines shorter than it was (Ludo). The list takes
+        // whatever is above it, so this single number decides both, and they cannot drift.
+        public static float FrameHeightFor(float screenH) => screenH * 0.42f - ShorterBy;
+
+        public static float ListHeightFor(float screenH, float listTop)
+            => FramesBottom(screenH) - FrameHeightFor(screenH) - FrameGap - listTop;
         const float WideColStep = 210f;      // step when delta lanes are in play
         const float TightColStep = 152f;     // upstream's step
         const float Col0Pull = 20f; // first group, left (bench)
