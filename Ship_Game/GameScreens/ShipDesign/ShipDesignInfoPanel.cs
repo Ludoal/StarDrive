@@ -12,37 +12,50 @@ namespace Ship_Game.GameScreens.ShipDesign
     using GT = GameText;
 
     /// <summary>
-    /// Displays STATS information of the currently active design
+    /// Displays STATS information of the currently active design.
+    ///
+    /// Ludoal fork: drawn in IMMEDIATE MODE, on the same pattern as the module comparator in
+    /// ModuleSelection (which is our own code) — rows are data, the draw walks them with a
+    /// cursor per column, and a row that must not show is simply never drawn. That is why
+    /// there are no gaps and no layout passes here. The previous element-based version (a
+    /// UIList of labels toggled visible) cost two bugs in one evening and, worse, left two
+    /// different architectures for the same kind of panel in the same screen — which is what
+    /// makes a contribution hard for the upstream devs to take.
+    ///
+    /// Content and order come from Lek's spec v3: eight blocks by decision, costs first,
+    /// FTL time with the speeds, block headings hidden along with their block.
     /// </summary>
     public class ShipDesignInfoPanel : UIElementContainer
     {
+        readonly ShipDesignScreen Screen;
         Ship S;
         ShipDesignStats Ds;
-        bool UpdateDesignStats = false;
+        bool UpdateDesignStats;
 
-        UIList StatsList;
-        float ItemHeight = 11;
-        float ValueWidth = 80;
-        float TitleWidth;
-        Graphics.Font StatsFont = Fonts.Arial11Bold;
-
-        Array<(UIElementV2, Func<bool>)> DynamicVisibility = new Array<(UIElementV2, Func<bool>)>();
-
-        public ShipDesignInfoPanel(in Rectangle rect) : base(rect)
+        // A row is either a block heading or one stat line.
+        struct Row
         {
+            public string Heading;            // non-null => this row is a block heading
+            public Color Color;               // heading colour, or the title colour of a stat
+            public LocalizedText Title;
+            public LocalizedText Tip;
+            public Func<float> Value;         // null when Text is used instead
+            public string Text;               // a word value, e.g. "INF"
+            public Func<float, Color> Tint;   // value colour from the value; null => white
+            public Func<bool> Visible;        // null => always visible
+            public bool NonZeroOnly;          // hidden while the value is zero
+        }
+
+        readonly Array<Row> Rows = new Array<Row>();
+
+        public ShipDesignInfoPanel(ShipDesignScreen screen, in Rectangle rect) : base(rect)
+        {
+            Screen = screen;
         }
 
         public void SetActiveDesign(Ship ship, ShipDesignStats ds = null)
         {
-            Elements.Clear();
-            DynamicVisibility.Clear();
-
-            // block-heading state is per rebuild, not per panel: without this reset the second
-            // design loaded would open with a stray spacer above its first heading
-            CurrentHeader = null;
-            CurrentHeaderSpacer = null;
-            CurrentHeaderLines = new Array<Func<bool>>();
-            HasBlocks = false;
+            Rows.Clear();
 
             if (ship == null)
             {
@@ -55,287 +68,209 @@ namespace Ship_Game.GameScreens.ShipDesign
                 S = ship;
                 Ds = ds ?? new ShipDesignStats(ship, ship.Universe.Player);
                 UpdateDesignStats = ds == null;
-                CreateElements();
+                BuildRows();
             }
         }
 
-        void CreateElements()
+        public override void Update(float fixedDeltaTime)
         {
-            // Ludoal fork: two columns, like the module panel. Grouping by block added eight
-            // headings and their spacers, which made a single column taller than its rect —
-            // the content spilled onto the issues panel below. Splitting halves the height.
-            ColWidth = Width * 0.5f - 4;
-            ValueWidth = 60; // the value column narrows with the column itself
-            TitleWidth = ColWidth - ValueWidth;
+            if (UpdateDesignStats && S != null)
+                Ds.Update(S.Universe.Player);
 
-            // both lists are placed in ABSOLUTE coordinates: the first attempt offset the right
-            // column with SetLocalPos and the two columns drew on top of each other — the
-            // original code only ever called it with a zero offset, so it never proved that a
-            // real offset gets applied without a layout pass this panel does not run.
-            LeftList = Add(new UIList(Pos, new Vector2(ColWidth, Height)));
-            LeftList.Padding = Vector2.Zero;
+            base.Update(fixedDeltaTime);
+        }
 
-            RightList = Add(new UIList(new Vector2(Pos.X + ColWidth + 8, Pos.Y),
-                                       new Vector2(ColWidth, Height)));
-            RightList.Padding = Vector2.Zero;
-
-            StatsList = LeftList;
-
+        // ── the content, per Lek's spec v3 ────────────────────────────────────────────────
+        void BuildRows()
+        {
             Color good = Color.LightGreen;
             Color energy = Color.LightSkyBlue;
             Color protect = Color.Goldenrod;
             Color engines = Color.DarkSeaGreen;
             Color ordnance = Color.IndianRed;
 
-            // Ludoal fork — grouped by DECISION, per Lek's spec v3. Every line of the old flat
-            // list is preserved, only moved: she ruled "fold, don't prune", because the panel
-            // already hides its null lines, so the real worst case is a station and nobody
-            // loses a tuning tool. Block titles and order do the readability work.
-            // Two named calls of hers: costs FIRST (at the shipyard the first question is how
-            // much), and FTL Time moved to MOBILITY (it reads as travel endurance, next to the
-            // speeds, not as a power figure).
+            Head("CONSTRUCTION", Color.Wheat);
+            Stat(GT.ProductionCost, () => S.GetCost(), GT.TT_ProductionCost);
+            Stat(GT.UpkeepCost, () => S.GetMaintCost(), GT.TT_UpkeepCost);
+            Stat(GT.TotalModuleSlots, () => S.SurfaceArea, GT.TT_TotalModuleSlots);
+            Stat(GT.Mass, () => S.Mass, GT.TT_Mass);
 
-            Header("CONSTRUCTION", Color.Wheat);
-            Val(() => S.GetCost(), GT.ProductionCost, GT.TT_ProductionCost, Tint.Pos);
-            Val(() => S.GetMaintCost(), GT.UpkeepCost, GT.TT_UpkeepCost, Tint.Pos);
-            Val(() => S.SurfaceArea, GT.TotalModuleSlots, GT.TT_TotalModuleSlots, Tint.Pos);
-            Val(() => S.Mass, GT.Mass, GT.TT_Mass, Tint.Pos);
+            Head("ENERGY", energy);
+            Stat(GT.PowerCapacity, () => Ds.PowerCapacity, GT.TT_PowerCapacity, energy, tint: Above(() => Ds.PowerConsumed));
+            Stat(GT.PowerRecharge, () => Ds.PowerRecharge, GT.TT_PowerRecharge, energy, tint: Positive);
+            Stat(GT.RechargeAtWarp, () => Ds.ChargeAtWarp, GT.TT_RechargeAtWarp, energy, tint: Positive, vis: Ds.IsWarpCapable);
+            Stat(GT.ExcessWpnPwrDrain, () => -Ds.PowerConsumed, GT.TT_ExcessWpnPwrDrain, energy, vis: Ds.HasEnergyWepsPositive);
+            Stat(GT.WpnFirePowerTime, () => Ds.EnergyDuration, GT.TT_WpnFirePowerTime, energy, tint: Above(2f), vis: Ds.HasEnergyWepsPositive);
+            Word(GT.WpnFirePowerTime, "INF", GT.TT_WpnFirePowerTime, energy, good, vis: Ds.HasEnergyWepsNegative);
+            Stat(GT.BurstWpnPwrDrain, () => -Ds.PowerConsumedWithBeams, GT.TT_BurstWpnPwerDrain, energy, vis: Ds.HasBeams);
+            Stat(GT.BurstWpnPwrTime, () => Ds.BurstEnergyDuration, GT.TT_BurstWpnPwrTime, energy, tint: _ => Color.LightPink, vis: Ds.HasBeamDurationNegative);
+            Word(GT.BurstWpnPwrTime, "INF", GT.TT_BurstWpnPwrTime, energy, good, vis: Ds.HasBeamDurationPositive);
 
-            Header("ENERGY", energy);
-            Val(() => Ds.PowerCapacity, GT.PowerCapacity, GT.TT_PowerCapacity, Tint.No, energy, col: ColGreater(() => Ds.PowerConsumed));
-            Val(() => Ds.PowerRecharge, GT.PowerRecharge, GT.TT_PowerRecharge, Tint.Pos, energy);
-            Val(() => Ds.ChargeAtWarp, GT.RechargeAtWarp, GT.TT_RechargeAtWarp, Tint.Pos, energy, vis: Ds.IsWarpCapable);
-
-            Val(() => -Ds.PowerConsumed, GT.ExcessWpnPwrDrain, GT.TT_ExcessWpnPwrDrain, Tint.No, energy, vis: Ds.HasEnergyWepsPositive);
-            Val(() => Ds.EnergyDuration, GT.WpnFirePowerTime, GT.TT_WpnFirePowerTime, Tint.Two, energy, vis: Ds.HasEnergyWepsPositive);
-            Val("INF", GT.WpnFirePowerTime, GT.TT_WpnFirePowerTime, Tint.No, energy, good, vis: Ds.HasEnergyWepsNegative);
-
-            Val(() => -Ds.PowerConsumedWithBeams, GT.BurstWpnPwrDrain, GT.TT_BurstWpnPwerDrain, Tint.No, energy, vis: Ds.HasBeams);
-            Val(() => Ds.BurstEnergyDuration, GT.BurstWpnPwrTime, GT.TT_BurstWpnPwrTime, Tint.Bad, energy, vis: Ds.HasBeamDurationNegative);
-            Val("INF", GT.BurstWpnPwrTime, GT.TT_BurstWpnPwrTime, Tint.No, energy, good, vis: Ds.HasBeamDurationPositive);
-
-            Header("DEFENCE", protect);
-            Val(() => S.Health, GT.TotalHitpoints, GT.TT_HitPoints, Tint.Pos, protect);
-            Val(() => S.ShieldMax, GT.ShieldPower, GT.TT_ShieldPower, Tint.Pos, protect, vis: Ds.HasRegularShields);
-            Val(() => S.ShieldMax, GT.ShieldPower, GT.TT_ShieldPower, Tint.Pos, Color.Gold, vis: Ds.HasAmplifiedMains);
-            ValNZ(() => (int)S.Stats.ShieldAmplifyPerShield, GT.ShieldAmplify, GT.TT_ShieldAmplify, Tint.Pos, protect);
-            ValNZ(() => S.RepairRate, GT.RepairRate, GT.TT_RepairRate, Tint.Pos, protect);
+            Head("DEFENCE", protect);
+            Stat(GT.TotalHitpoints, () => S.Health, GT.TT_HitPoints, protect, tint: Positive);
+            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, protect, tint: Positive, vis: Ds.HasRegularShields);
+            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, Color.Gold, tint: Positive, vis: Ds.HasAmplifiedMains);
+            Stat(GT.ShieldAmplify, () => (int)S.Stats.ShieldAmplifyPerShield, GT.TT_ShieldAmplify, protect, tint: Positive, nonZero: true);
+            Stat(GT.RepairRate, () => S.RepairRate, GT.TT_RepairRate, protect, tint: Positive, nonZero: true);
             // the tooltip promises the TOTAL protection of the design, and the load-list
             // overlay already shows EmpTolerance - show the same effective value here
-            Val(() => S.EmpTolerance, GT.EmpProtection, GT.TT_EmpProtection, Tint.Pos, protect);
-            ValNZ(() => S.ECMValue, GT.Ecm3, GT.TT_Ecm3, Tint.Pos, protect);
+            Stat(GT.EmpProtection, () => S.EmpTolerance, GT.TT_EmpProtection, protect, tint: Positive);
+            Stat(GT.Ecm3, () => S.ECMValue, GT.TT_Ecm3, protect, tint: Positive, nonZero: true);
 
-            SecondColumn();
-            Header("MOBILITY", engines);
-            Val(() => S.MaxFTLSpeed, GT.FtlSpeed, GT.TT_FtlSpeed, Tint.No, engines, vis: Ds.IsWarpCapable, col: ColGreater(20_000));
-            Val(() => S.MaxSTLSpeed, GT.SublightSpeed, GT.TT_SublightSpeed, Tint.No, engines, col: ColGreater(50));
-            Val(() => S.RotationRadsPerSecond.ToDegrees(), GT.TurnRate, GT.TT_TurnRate, Tint.No, engines, col: ColGreater(15));
+            Head("MOBILITY", engines);
+            Stat(GT.FtlSpeed, () => S.MaxFTLSpeed, GT.TT_FtlSpeed, engines, tint: Above(20_000f), vis: Ds.IsWarpCapable);
+            Stat(GT.SublightSpeed, () => S.MaxSTLSpeed, GT.TT_SublightSpeed, engines, tint: Above(50f));
+            Stat(GT.TurnRate, () => S.RotationRadsPerSecond.ToDegrees(), GT.TT_TurnRate, engines, tint: Above(15f));
             if (!S.IsPlatformOrStation)
             {
-                Val(() => Ds.WarpTime, GT.FtlTime, GT.TT_FtlTime, Tint.Pos, engines, vis: Ds.HasFiniteWarp);
-                Val("INF", GT.FtlTime, GT.TT_FtlTime, Tint.No, engines, good, vis: Ds.HasInfiniteWarp);
+                Stat(GT.FtlTime, () => Ds.WarpTime, GT.TT_FtlTime, engines, tint: Positive, vis: Ds.HasFiniteWarp);
+                Word(GT.FtlTime, "INF", GT.TT_FtlTime, engines, good, vis: Ds.HasInfiniteWarp);
             }
 
-            // the ordnance family was missing from the inventory I sent her, so its placement
-            // is mine: it sits with the guns it feeds, which is also where her v1 put ammo time
-            Header("COMBAT / FCS", Color.Orange);
-            ValNZ(() => S.OrdAddedPerSecond, GT.OrdnanceCreated, GT.TT_OrdnanceCreated, Tint.No, ordnance);
-            Val(() => S.OrdinanceMax, GT.OrdnanceCapacity, GT.TT_OrdnanceCap, Tint.No, ordnance, vis: Ds.HasOrdnance);
-            Val(() => Ds.AmmoTime, GT.AmmoTime, GT.TT_AmmoTime, Tint.No, ordnance, vis: Ds.HasOrdFinite, col: ColGreater(30));
-            Val("INF", GT.AmmoTime, GT.TT_AmmoTime, Tint.No, ordnance, good, vis: Ds.HasOrdInfinite);
-            ValNZ(() => S.TargetingAccuracy, GT.FireControl, GT.TT_FireControl);
-            ValNZ(() => S.TrackingPower, GT.FcsPower, GT.TT_FcsPower);
-            ValNZ(() => S.SensorRange, GT.SensorRange3, GT.TT_SensorRange3);
+            // the ordnance family was missing from the inventory sent to Lek, so its placement
+            // is mine: it sits with the guns it feeds, which is where her v1 put ammo time
+            Head("COMBAT / FCS", Color.Orange);
+            Stat(GT.OrdnanceCreated, () => S.OrdAddedPerSecond, GT.TT_OrdnanceCreated, ordnance, nonZero: true);
+            Stat(GT.OrdnanceCapacity, () => S.OrdinanceMax, GT.TT_OrdnanceCap, ordnance, vis: Ds.HasOrdnance);
+            Stat(GT.AmmoTime, () => Ds.AmmoTime, GT.TT_AmmoTime, ordnance, tint: Above(30f), vis: Ds.HasOrdFinite);
+            Word(GT.AmmoTime, "INF", GT.TT_AmmoTime, ordnance, good, vis: Ds.HasOrdInfinite);
+            Stat(GT.FireControl, () => S.TargetingAccuracy, GT.TT_FireControl, nonZero: true);
+            Stat(GT.FcsPower, () => S.TrackingPower, GT.TT_FcsPower, nonZero: true);
+            Stat(GT.SensorRange3, () => S.SensorRange, GT.TT_SensorRange3, nonZero: true);
 
-            Header("PAYLOAD", ordnance);
-            ValNZ(() => S.TroopCapacity, GT.TroopCapacity, GT.TT_TroopCapacity, Tint.No, ordnance);
-            ValNZ(() => S.CargoSpaceMax, GT.CargoSpace, GT.TT_CargoSpace);
+            Head("PAYLOAD", ordnance);
+            Stat(GT.TroopCapacity, () => S.TroopCapacity, GT.TT_TroopCapacity, ordnance, nonZero: true);
+            Stat(GT.CargoSpace, () => S.CargoSpaceMax, GT.TT_CargoSpace, nonZero: true);
 
-            Header("STATION", Color.MediumPurple);
-            ValNZ(() => S.ResearchPerTurn, GT.ResearchPerTurn, GT.ResearchPerTurnStatTip);
-            Val(Ds.ResearchTime, GT.ResearchStationResearchTimeStat, GT.ResearchStationResearchTimeStatTip,
-                Tint.No, Color.White, vis: Ds.ProducesResearch, col: ColGreater(ShipResupply.NumTurnsForGoodResearchSupply));
-
-            ValNZ(() => S.TotalRefining, GT.RefinningPerTurnStat, GT.RefiningPerTurnStatTip);
-            Val(Ds.RefiningTime, GT.MiningStationRefiningTimeStat, GT.MiningStationRefiningTimeStatTip,
-                Tint.No, Color.White, vis: Ds.RefinesResources, col: ColGreater(ShipResupply.NumTurnsForGoodRefiningSupply-0.01f));
+            Head("STATION", Color.MediumPurple);
+            Stat(GT.ResearchPerTurn, () => S.ResearchPerTurn, GT.ResearchPerTurnStatTip, nonZero: true);
+            Stat(GT.ResearchStationResearchTimeStat, () => Ds.ResearchTime, GT.ResearchStationResearchTimeStatTip,
+                 tint: Above(ShipResupply.NumTurnsForGoodResearchSupply), vis: Ds.ProducesResearch);
+            Stat(GT.RefinningPerTurnStat, () => S.TotalRefining, GT.RefiningPerTurnStatTip, nonZero: true);
+            Stat(GT.MiningStationRefiningTimeStat, () => Ds.RefiningTime, GT.MiningStationRefiningTimeStatTip,
+                 tint: Above(ShipResupply.NumTurnsForGoodRefiningSupply - 0.01f), vis: Ds.RefinesResources);
 
             // her closing block: the verdict reads last, like a signature
-            Header("ASSESSMENT", Color.White);
-            ValNZ(() => Ds.Strength, GT.ShipOffense, GT.TT_ShipOffense);
-            ValNZ(() => Ds.RelativeStrength, GT.RelativeStrength, GT.TT_RelativeStrength);
-
-            CloseHeader(); // the last block has no successor to close it
+            Head("ASSESSMENT", Color.White);
+            Stat(GT.ShipOffense, () => Ds.Strength, GT.TT_ShipOffense, nonZero: true);
+            Stat(GT.RelativeStrength, () => Ds.RelativeStrength, GT.TT_RelativeStrength, nonZero: true);
         }
 
-        // Ludoal fork: block titles. A block whose every line is hidden would otherwise leave
-        // a bare heading behind — a fighter has no STATION and no PAYLOAD — so a heading (and
-        // the spacer above it) is visible only while at least one of its own lines is.
-        UIList LeftList, RightList;
-        float ColWidth;
-        UILabel CurrentHeader;
-        UI.UISpacer CurrentHeaderSpacer;
-        Array<Func<bool>> CurrentHeaderLines = new Array<Func<bool>>();
-        bool HasBlocks;
+        void Head(string heading, Color color) => Rows.Add(new Row { Heading = heading, Color = color });
 
-        void Header(in LocalizedText text, Color color)
+        void Stat(in LocalizedText title, Func<float> value, in LocalizedText tip, Color? titleColor = null,
+                  Func<float, Color> tint = null, Func<bool> vis = null, bool nonZero = false)
         {
-            CloseHeader();
-
-            if (HasBlocks) // no spacer above the very first block
+            Rows.Add(new Row
             {
-                CurrentHeaderSpacer = new UI.UISpacer(ColWidth, ItemHeight - 3);
-                StatsList.Add(CurrentHeaderSpacer);
-            }
-            HasBlocks = true;
+                Title = title, Tip = tip, Value = value,
+                Color = titleColor ?? Color.White,
+                Tint = tint, Visible = vis, NonZeroOnly = nonZero,
+            });
+        }
 
-            CurrentHeader = new UILabel(Vector2.Zero, text, StatsFont, color)
+        void Word(in LocalizedText title, string text, in LocalizedText tip, Color titleColor,
+                  Color valueColor, Func<bool> vis = null)
+        {
+            Rows.Add(new Row
             {
-                Width = ColWidth,
-                Height = ItemHeight + 2,
-            };
-            StatsList.Add(CurrentHeader);
-            CurrentHeaderLines = new Array<Func<bool>>();
+                Title = title, Tip = tip, Text = text,
+                Color = titleColor, Tint = _ => valueColor, Visible = vis,
+            });
         }
 
-        // Ludoal fork: everything built after this call lands in the right-hand column.
-        // Closing the pending heading first is what keeps the left column's last block
-        // able to hide itself.
-        void SecondColumn()
+        static Color Positive(float v) => v > 0f ? Color.LightGreen : Color.LightPink;
+        static Func<float, Color> Above(float threshold) => v => v > threshold ? Color.LightGreen : Color.LightPink;
+        static Func<float, Color> Above(Func<float> threshold) => v => v > threshold() ? Color.LightGreen : Color.LightPink;
+
+        bool IsVisible(in Row r)
         {
-            CloseHeader();
-            StatsList = RightList;
-            HasBlocks = false; // no spacer above the column's first heading
+            if (r.Heading != null)
+                return true; // decided by its block, in Draw
+            if (r.Visible != null && !r.Visible())
+                return false;
+            return !r.NonZeroOnly || (r.Value != null && r.Value() > 0f);
         }
 
-        void CloseHeader()
+        // ── the draw, two columns, split on a block boundary ──────────────────────────────
+        public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            if (CurrentHeader == null)
+            base.Draw(batch, elapsed);
+            if (S == null)
                 return;
 
-            Func<bool>[] lines = CurrentHeaderLines.ToArray();
-            bool AnyLineVisible()
+            float colStep = Width * 0.5f;
+            float spacing = colStep * 0.72f; // title room; the value sits at the cursor + spacing
+            Graphics.Font headFont = Fonts.Arial12Bold;
+
+            // a heading is only worth drawing when at least one of its own lines shows
+            int visibleTotal = 0;
+            var blockVisible = new Array<int>(); // visible line count per block, in order
+            int current = -1;
+            for (int i = 0; i < Rows.Count; ++i)
             {
-                for (int i = 0; i < lines.Length; ++i)
-                    if (lines[i]())
-                        return true;
-                return false;
-            }
-
-            DynamicVisibility.Add((CurrentHeader, AnyLineVisible));
-            if (CurrentHeaderSpacer != null)
-                DynamicVisibility.Add((CurrentHeaderSpacer, AnyLineVisible));
-
-            CurrentHeader = null;
-            CurrentHeaderSpacer = null;
-        }
-
-        UI.UIKeyValueLabel Val(Func<float> dynamicValue, LocalizedText title, LocalizedText tooltip, 
-                                 Tint tint = Tint.No, Color? titleColor = null,  Color? valueColor = null,
-                                 Func<float, Color> col = null, Func<bool> vis = null, LocalizedText? valueText = null)
-        {
-            var lbl = new UI.UIKeyValueLabel(title, valueText ?? "11.11k", titleColor, valueColor)
-            {
-                Separator = ":     ",
-                Width = ColWidth,
-                Split = TitleWidth,
-                DynamicValue = dynamicValue,
-                Tooltip = tooltip,
-                Color = col ?? (tint != Tint.No ? Tinted(tint) : null),
-                Height = ItemHeight,
-            };
-
-            lbl.Key.TextAlign = TextAlign.Right;
-            lbl.Key.Width = TitleWidth;
-            lbl.Key.Font = lbl.Value.Font = StatsFont;
-            if (vis != null)
-                DynamicVisibility.Add((lbl, vis));
-
-            // a line always visible counts as visible for its block heading
-            CurrentHeaderLines.Add(vis ?? (() => true));
-            //lbl.DebugDraw = true;
-            StatsList.Add(lbl);
-            return lbl;
-        }
-
-        UI.UIKeyValueLabel Val(LocalizedText valueText, LocalizedText title, LocalizedText tooltip, 
-                               Tint tint = Tint.No, Color? titleColor = null,  Color? valueColor = null,
-                               Func<float, Color> col = null, Func<bool> vis = null)
-        {
-            return Val(null, title, tooltip, tint, titleColor, valueColor, col, vis, valueText);
-        }
-
-        // Displays the dynamicValue if it's Greater than 0
-        UI.UIKeyValueLabel ValNZ(Func<float> dynamicValue, LocalizedText title, LocalizedText tooltip, 
-                                      Tint tint = Tint.No, Color? titleColor = null,  Color? valueColor = null,
-                                      Func<float, Color> col = null, LocalizedText? valueText = null)
-        {
-            Func<bool> vis = () => dynamicValue() > 0;
-            return Val(dynamicValue, title, tooltip, tint, titleColor, valueColor, col, vis, valueText);
-        }
-
-        void Line()
-        {
-            StatsList.Add(new UI.UISpacer(ColWidth, ItemHeight - 3));
-        }
-
-        enum Tint
-        {
-            No, // no tint
-            Bad, // this value is bad
-            Pos, // value must be positive
-            One, // must be greater than 1
-            Two, // must be greater than 2
-        }
-
-        Func<float, Color> Tinted(Tint tint)
-        {
-            return (v) =>
-            {
-                switch (tint)
+                if (Rows[i].Heading != null)
                 {
-                    default: case Tint.No:   return Color.White;
-                    case Tint.Bad: return Color.LightPink;
-                    case Tint.Pos: return v > 0f ? Color.LightGreen : Color.LightPink;
-                    case Tint.One: return v > 1f ? Color.LightGreen : Color.LightPink;
-                    case Tint.Two: return v > 2f ? Color.LightGreen : Color.LightPink;
+                    blockVisible.Add(0);
+                    current = blockVisible.Count - 1;
                 }
-            };
-        }
-
-        // value must be greater than compareValue()
-        Func<float, Color> ColGreater(Func<float> compareValue)
-        {
-            return (v) => v > compareValue() ? Color.LightGreen : Color.LightPink;
-        }
-
-        Func<float, Color> ColGreater(float compareValue)
-        {
-            return (v) => v > compareValue ? Color.LightGreen : Color.LightPink;
-        }
-
-        public override void Update(float fixedDeltaTime)
-        {
-            if (UpdateDesignStats)
-                Ds.Update(S.Universe.Player);
-
-            // Toggle which items are visible
-            foreach ((UIElementV2 item, Func<bool> visibility) in DynamicVisibility)
-            {
-                bool visible = visibility();
-                if (item.Visible != visible)
+                else if (current >= 0 && IsVisible(Rows[i]))
                 {
-                    item.Visible = visible;
-                    // BOTH columns must be re-laid out: StatsList is a moving reference that
-                    // ends up on the right-hand list, so invalidating it alone left the left
-                    // column never re-packing — its hidden rows kept their slots, which is
-                    // what produced the gaps and pushed the last block out of the frame.
-                    if (LeftList != null) LeftList.RequiresLayout = true;
-                    if (RightList != null) RightList.RequiresLayout = true;
+                    blockVisible[current] = blockVisible[current] + 1;
+                    ++visibleTotal;
                 }
             }
-            
-            base.Update(fixedDeltaTime);
+
+            // split the columns on a block edge, as close to half the visible lines as possible
+            int half = (visibleTotal + 1) / 2;
+            int splitBlock = blockVisible.Count;
+            int running = 0;
+            for (int b = 0; b < blockVisible.Count; ++b)
+            {
+                if (running >= half)
+                {
+                    splitBlock = b;
+                    break;
+                }
+                running += blockVisible[b];
+            }
+
+            var cursor = new Vector2(X, Y);
+            int block = -1;
+            for (int i = 0; i < Rows.Count; ++i)
+            {
+                Row r = Rows[i];
+                if (r.Heading != null)
+                {
+                    ++block;
+                    if (blockVisible[block] == 0)
+                        continue; // the whole block is hidden, heading included
+
+                    if (block == splitBlock) // move to the second column
+                        cursor = new Vector2(X + colStep, Y);
+                    else if (block > 0)
+                        cursor.Y += headFont.LineSpacing * 0.5f; // air above a heading
+
+                    batch.DrawString(headFont, r.Heading, cursor, r.Color);
+                    cursor.Y += headFont.LineSpacing;
+                    continue;
+                }
+
+                if (blockVisible[block] == 0 || !IsVisible(r))
+                    continue;
+
+                if (r.Text != null)
+                {
+                    Screen.DrawStatText(ref cursor, r.Title, r.Text, r.Color, r.Tip, spacing,
+                                        valueColor: r.Tint?.Invoke(0f));
+                }
+                else
+                {
+                    float v = r.Value();
+                    Screen.DrawStatText(ref cursor, r.Title, v.GetNumberString(), r.Color, r.Tip, spacing,
+                                        valueColor: r.Tint?.Invoke(v));
+                }
+            }
         }
     }
 }

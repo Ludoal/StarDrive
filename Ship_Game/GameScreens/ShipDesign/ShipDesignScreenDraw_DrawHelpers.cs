@@ -108,6 +108,31 @@ namespace Ship_Game
             }
         }
 
+        // Ludoal fork: same row geometry as DrawStat, for a value that is a word rather than a
+        // number ("INF" on an endurance that never runs out). Lives here so every stat row in
+        // the shipyard — modules and designs alike — shares one geometry.
+        public void DrawStatText(ref Vector2 cursor, LocalizedText words, string value,
+                                 Color titleColor, LocalizedText tooltipId, float spacing = 165,
+                                 Color? valueColor = null)
+        {
+            Graphics.Font font = Fonts.Arial12Bold;
+
+            WriteLine(ref cursor);
+            cursor.Y += 1;
+
+            Vector2 statCursor = new(cursor.X + spacing, cursor.Y);
+            string title = words.Text;
+            DrawString(FontSpace(statCursor, -20, title, font), titleColor, title, font);
+            DrawString(statCursor, valueColor ?? Color.White, value, font);
+
+            if (tooltipId.IsValid)
+            {
+                RectF tipRect = new(cursor.X, cursor.Y, font.TextWidth(title) + font.TextWidth(value), font.LineSpacing);
+                if (tipRect.HitTest(MousePos))
+                    ToolTip.CreateTooltip(tooltipId);
+            }
+        }
+
         public void DrawStat(ref Vector2 cursor, LocalizedText words, float stat, Color color, LocalizedText tooltipId, bool doGoodBadTint = true, bool isPercent = false, float spacing = 165)
         {
             StatValue sv = TintedValue(words, stat, tooltipId, color, spacing, 0);

@@ -731,7 +731,7 @@ namespace Ship_Game
 
             var infoInner = RectF.FromPoints(infoRect.X + 12, infoRect.Right - 12,
                                              infoRect.Y + 32, infoRect.Bottom - 8);
-            InfoPanel = Add(new ShipDesignInfoPanel(infoInner));
+            InfoPanel = Add(new ShipDesignInfoPanel(this, infoInner));
 
             var issuesRect = RectF.FromPoints(infoRect.X, infoRect.Right,
                                               infoRect.Bottom + 6, colBottom);
