@@ -59,6 +59,20 @@ namespace Ship_Game.GameScreens.ShipDesign
         public float Col0Shift = 20f;
         public float Col1Shift = 10f;
 
+        // Ludoal fork (spec v4): the in-frame title takes this much height before the rows
+        // start. Fixed, so every design puts its first row on the same line.
+        const float TitleBandHeight = 30f;
+
+        // the ship plan's square side — a third of the frame, so the two stat columns keep the
+        // rest. Bounded, or a tall frame would give it a square wider than the columns.
+        float PlanSide => Math.Min(Width * 0.32f, Height - TitleBandHeight - 10f);
+
+        // Ludoal fork (spec v4): the Hover cartouche draws the design's MODULE PLAN at its far
+        // left (Ludo) — the picture the flying overlay used to give, and the reason to keep a
+        // hover frame at all. Same call the overlay made: RenderOverlay with the modules and the
+        // hull background. Only the hover frame turns this on.
+        public bool ShowShipPlan;
+
         // Ludoal fork (spec v4): take a pinned design as the delta source. It is held as a
         // detached panel — never added to the screen, never drawn — because its row set is
         // exactly what TryGetVisibleValue needs to answer with.
@@ -264,13 +278,28 @@ namespace Ship_Game.GameScreens.ShipDesign
         // pinned one shows is still drawn — dimmed, with a dash and its delta (Ludo's call:
         // "the other one has hangars and this one hasn't" is worth a row). Outside a
         // comparison the row simply does not exist.
-        bool ShownAsMissing(in Row r)
+        bool ShownAsMissing(int index)
         {
-            return CompareAgainst != null && r.Heading == null && r.Value != null
-                && CompareAgainst.TryGetVisibleValue(r.Title.Text, out _);
+            Row r = Rows[index];
+            if (CompareAgainst == null || r.Heading != null || r.Value == null)
+                return false;
+            if (!CompareAgainst.TryGetVisibleValue(r.Title.Text, out _))
+                return false;
+
+            // Several rows can share a title while being mutually exclusive by their vis()
+            // predicate — Shield Power is declared twice, once plain and once amplified. Only
+            // the FIRST of them may stand in as the missing row, or the panel shows the same
+            // dimmed line as many times as it was declared (bench, 46.134).
+            for (int i = 0; i < index; ++i)
+            {
+                Row o = Rows[i];
+                if (o.Heading == null && o.Value != null && o.Title.Text == r.Title.Text)
+                    return false;
+            }
+            return true;
         }
 
-        bool IsDrawn(in Row r) => IsVisible(r) || ShownAsMissing(r);
+        bool IsDrawn(int index) => IsVisible(Rows[index]) || ShownAsMissing(index);
 
         // ── the draw, two columns, split on a block boundary ──────────────────────────────
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -282,23 +311,50 @@ namespace Ship_Game.GameScreens.ShipDesign
             // the design's own name, on the frame's tab row. Right-aligned rather than hugging
             // the tab: the two frames have tabs of different widths ("Active" vs "Compared"),
             // so a fixed offset would collide on one of them.
+            // Ludoal fork (spec v4): the design name sits INSIDE the frame, on the module
+            // panel's pattern (Ludo) — it used to hang off the tab row, right-aligned, which
+            // read as a stray label rather than the frame's subject. The pinned design has no
+            // frame to name it, so its name follows, one size down: the delta lane must never
+            // come from an anonymous source.
             if (S.Name.NotEmpty())
             {
-                Graphics.Font nameFont = Fonts.Arial12Bold;
-                // Ludoal fork (spec v4): the pinned design has no frame to name it, so its name
-                // follows this one — the delta lane must never come from an anonymous source.
-                string shown = ComparedName.NotEmpty() ? S.Name + "  vs " + ComparedName : S.Name;
-                batch.DrawString(nameFont, shown,
-                                 new Vector2(Right - nameFont.TextWidth(shown), Y - 25f), Colors.Cream);
+                Graphics.Font nameFont = Fonts.Arial20Bold;
+                if (nameFont.TextWidth(S.Name) + 40f > Width)
+                    nameFont = Fonts.Arial14Bold;
+
+                var namePos = new Vector2(X + (ShowShipPlan ? PlanSide + 10f : 0f), Y + 2f);
+                batch.DrawString(nameFont, S.Name, namePos, Color.White);
+
+                if (ComparedName.NotEmpty())
+                {
+                    Graphics.Font vsFont = Fonts.Arial12Bold;
+                    batch.DrawString(vsFont, "vs " + ComparedName,
+                                     new Vector2(namePos.X + nameFont.TextWidth(S.Name) + 10f,
+                                                 namePos.Y + nameFont.LineSpacing - vsFont.LineSpacing - 2f),
+                                     Colors.Cream);
+                }
             }
 
-            // Column origins, tuned at the bench by Ludo — and NOT the same on the two frames:
-            // the compared one carries a delta after each value, so its columns sit further left
-            // to leave that lane room. Titles are right-aligned and grow leftward, which is why
-            // the longest ones ("Excess Wpn Pwr Drain") need the slack.
-            float colStep = (Width - 10f) * 0.5f;
-            float col0X = X + Col0Shift;
-            float col1X = X + colStep + Col1Shift;
+            // Column origins, tuned at the bench by Ludo. Titles are right-aligned and grow
+            // leftward, which is why the longest ones ("Excess Wpn Pwr Drain") need the slack.
+            // The rows now start below the in-frame title, at a FIXED offset so every design —
+            // long name or short, compared or not — puts its first row on the same line.
+            float rowsY = Y + TitleBandHeight;
+
+            // the ship plan owns a square band down the frame's left edge; the stat columns
+            // share whatever is left of the width
+            float planW = 0f;
+            if (ShowShipPlan)
+            {
+                planW = PlanSide + 10f;
+                S.RenderOverlay(batch, new Rectangle((int)X, (int)rowsY, (int)PlanSide, (int)PlanSide),
+                                showModules: true, drawHullBackground: true,
+                                moduleHealthColor: false, markLockedModules: true);
+            }
+
+            float colStep = (Width - planW - 10f) * 0.5f;
+            float col0X = X + planW + Col0Shift;
+            float col1X = X + planW + colStep + Col1Shift;
             float spacing = colStep * 0.72f; // title room; the value sits at the cursor + spacing
             Graphics.Font headFont = Fonts.Arial12Bold;
 
@@ -313,7 +369,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                     blockVisible.Add(0);
                     current = blockVisible.Count - 1;
                 }
-                else if (current >= 0 && IsDrawn(Rows[i]))
+                else if (current >= 0 && IsDrawn(i))
                 {
                     blockVisible[current] = blockVisible[current] + 1;
                     ++visibleTotal;
@@ -340,7 +396,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                 running += blockVisible[b];
             }
 
-            var cursor = new Vector2(col0X, Y);
+            var cursor = new Vector2(col0X, rowsY);
             int block = -1;
             bool firstHeadingOfColumn = true;
             for (int i = 0; i < Rows.Count; ++i)
@@ -355,7 +411,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                     // never fired and everything piled into one column
                     if (block == splitBlock)
                     {
-                        cursor = new Vector2(col1X, Y);
+                        cursor = new Vector2(col1X, rowsY);
                         firstHeadingOfColumn = true;
                     }
 
@@ -377,7 +433,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                     continue;
                 }
 
-                if (blockVisible[block] == 0 || !IsDrawn(r))
+                if (blockVisible[block] == 0 || !IsDrawn(i))
                     continue;
 
                 // this design hides the row, the pinned one has it: dimmed dash + its delta

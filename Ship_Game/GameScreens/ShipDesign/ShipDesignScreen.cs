@@ -768,15 +768,21 @@ namespace Ship_Game
             float colTop      = filterTop + 52f;
             float colBottom   = BlackBar.Y;
             float colBand     = colBottom - colTop;
-            // the cartouche grew downward by two lines, taken from the issues strip (Ludo's
-            // call): the strip only carries the completion line and the issues button, and
-            // the fullest designs were spilling their last block out of the frame
+            // Ludoal fork (spec v4, bench): the completion line and the issues button moved ABOVE
+            // the cartouche tab (Ludo) — they used to sit under it, which pushed the frame's
+            // bottom edge off the module frames' line. The strip now separates the browser from
+            // the cartouche, and the cartouche runs to the bottom of the band.
             float issuesH     = Math.Min(58f, colBand * 0.10f);   // completion line + issues button
-            float cartoucheH  = Math.Min(374f, colBand * 0.56f);  // fullest case: a station, two columns
-            float cartoucheY  = colBottom - issuesH - cartoucheH;
+            // the cartouche matches the MODULE frames' height, so the four frames read as one row
+            float cartoucheH  = Math.Min(ModuleSelectComponent.FrameHeight, colBand * 0.62f);
+            float cartoucheY  = colBottom - cartoucheH;
+            float issuesY     = cartoucheY - issuesH - 4f;
 
-            Vector2 hullSelSize = new(SelectSize(260, 280, 320), Math.Max(160f, cartoucheY - 10 - colTop));
-            var hullSelectPos = new LocalPos(ScreenWidth - hullSelSize.X, colTop);
+            // Ludoal fork (bench): the right column had no margin — its frames were flush with
+            // the screen edge while the left ones breathe. Same padding on both sides now.
+            const float RightPad = 5f;
+            Vector2 hullSelSize = new(SelectSize(260, 280, 320), Math.Max(160f, issuesY - 10 - colTop));
+            var hullSelectPos = new LocalPos(ScreenWidth - hullSelSize.X - RightPad, colTop);
             // Ludoal fork: the load popup's filters come WITH its list — dropping them would be
             // a regression, since one of them ("my designs only") is a persisted preference the
             // player may already have set. They sit above the frame rather than inside it:
@@ -786,6 +792,13 @@ namespace Ship_Game
                                                 Fonts.Arial12Bold, DefaultBrowserFilter));
             BrowserFilter.AutoCaptureOnKeys = true;
             BrowserFilter.AutoCaptureLoseFocusTime = 0.5f;
+            // Ludoal fork (bench): it read as a stray line of text over the starfield. The
+            // control already knows how to underline itself and to light up on hover — that is
+            // enough to say "you can type here", without painting a box of our own.
+            // (not AutoCaptureOnHover: that would steal the screen's keyboard shortcuts as soon
+            // as the cursor drifted over the field)
+            BrowserFilter.DrawUnderline = true;
+            BrowserFilter.Color = Colors.Cream;
             BrowserFilter.OnTextChanged = (text) =>
             {
                 BrowserFilterText = (text == DefaultBrowserFilter) ? null : text?.ToLower();
@@ -868,7 +881,7 @@ namespace Ship_Game
             infoSub.SetBackground(Colors.TransparentBlackFill);
 
             var infoInner = RectF.FromPoints(infoRect.X + 12, infoRect.Right - 12,
-                                             infoRect.Y + 32, infoRect.Bottom - 8);
+                                             infoRect.Y + 26, infoRect.Bottom - 8);
             InfoPanel = Add(new ShipDesignInfoPanel(this, infoInner));
             InfoSub = infoSub;
 
@@ -877,7 +890,10 @@ namespace Ship_Game
             // whatever design the cursor rests on in the browser, and it goes away when the
             // cursor leaves. The pinned design no longer has a frame: it only feeds the delta
             // lane of the Active cartouche.
-            var hoverRect = RectF.FromPoints(infoRect.X - cartoucheW - 10f, infoRect.X - 10f,
+            // it carries the ship plan on its left plus the same two stat columns, so it needs
+            // the plan's share on top of a plain cartouche's width
+            float hoverW = cartoucheW * 1.45f;
+            var hoverRect = RectF.FromPoints(infoRect.X - hoverW - 10f, infoRect.X - 10f,
                                              infoRect.Y, infoRect.Bottom);
             HoverSub = Add(new Submenu(hoverRect, "Hovered Design"));
             HoverSub.SetBackground(Colors.TransparentBlackFill);
@@ -885,10 +901,13 @@ namespace Ship_Game
             var hoverInner = RectF.FromPoints(hoverRect.X + 12, hoverRect.Right - 12,
                                               hoverRect.Y + 32, hoverRect.Bottom - 8);
             HoverPanel = Add(new ShipDesignInfoPanel(this, hoverInner));
+            HoverPanel.ShowShipPlan = true; // the module plan down its left edge (Ludo)
             HoverSub.Visible = HoverPanel.Visible = false;
 
+            // Ludoal fork (spec v4, bench): completion + issues moved ABOVE the cartouche tab
+            // (Ludo). They sit between the browser and the frames, spanning the same width.
             var issuesRect = RectF.FromPoints(infoRect.X, infoRect.Right,
-                                              infoRect.Bottom + 6, colBottom);
+                                              issuesY, issuesY + issuesH);
             IssuesPanel = Add(new ShipDesignIssuesPanel(this, issuesRect));
 
             if (EnableDebugFeatures)

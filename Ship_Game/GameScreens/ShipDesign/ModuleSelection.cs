@@ -75,6 +75,10 @@ namespace Ship_Game
             });
         }
 
+        // Ludoal fork (spec v4): the design cartouches align their height on the module frames,
+        // so the four frames read as one row across the screen.
+        public float FrameHeight => ActiveModSubMenu.Height;
+
         protected override void OnTabChangedEvt(int newIndex)
         {
             ModuleSelectList.SetActiveCategory(newIndex);
@@ -208,10 +212,38 @@ namespace Ship_Game
 
             for (int col = 0; col < 2; ++col)
             {
+                // Merge in the order the stats are DECLARED, not "all of A then the rest of B":
+                // both runs walk the same drawing code, so a stat only the compared module has
+                // belongs where that code emits it, not at the end of the column. Appending B's
+                // leftovers put Imprecision under the last row instead of among its neighbours
+                // (bench, 46.134).
                 var union = new List<CollectedStat>();
                 var seen = new HashSet<string>();
-                foreach (CollectedStat r in ra) if (r.Column == col && seen.Add(r.Key)) union.Add(r);
-                foreach (CollectedStat r in rb) if (r.Column == col && seen.Add(r.Key)) union.Add(r);
+                int ia = 0, ib = 0;
+                var colA = ra.FindAll(r => r.Column == col);
+                var colB = rb.FindAll(r => r.Column == col);
+                while (ia < colA.Count || ib < colB.Count)
+                {
+                    // take from B while its next stat is one A does not have at all: that is a
+                    // row A skipped, and it belongs here, at B's position
+                    while (ib < colB.Count && !aByKey.ContainsKey(colB[ib].Key))
+                    {
+                        if (seen.Add(colB[ib].Key)) union.Add(colB[ib]);
+                        ++ib;
+                    }
+                    if (ia < colA.Count)
+                    {
+                        if (seen.Add(colA[ia].Key)) union.Add(colA[ia]);
+                        // keep B in step with the shared row we just took
+                        if (ib < colB.Count && colB[ib].Key == colA[ia].Key) ++ib;
+                        ++ia;
+                    }
+                    else if (ib < colB.Count)
+                    {
+                        if (seen.Add(colB[ib].Key)) union.Add(colB[ib]);
+                        ++ib;
+                    }
+                }
                 if (union.Count == 0)
                     continue;
                 // spec v4: ONE frame. The values shown are the ACTIVE module's; the pinned one
