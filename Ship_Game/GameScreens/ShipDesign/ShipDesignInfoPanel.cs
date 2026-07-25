@@ -326,7 +326,12 @@ namespace Ship_Game.GameScreens.ShipDesign
                 if (item.Visible != visible)
                 {
                     item.Visible = visible;
-                    StatsList.RequiresLayout = true;
+                    // BOTH columns must be re-laid out: StatsList is a moving reference that
+                    // ends up on the right-hand list, so invalidating it alone left the left
+                    // column never re-packing — its hidden rows kept their slots, which is
+                    // what produced the gaps and pushed the last block out of the frame.
+                    if (LeftList != null) LeftList.RequiresLayout = true;
+                    if (RightList != null) RightList.RequiresLayout = true;
                 }
             }
             

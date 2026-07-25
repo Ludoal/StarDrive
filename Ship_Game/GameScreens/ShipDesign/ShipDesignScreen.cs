@@ -715,9 +715,13 @@ namespace Ship_Game
             // DESIGN ISSUES sits UNDER the cartouche (Ludo's call) instead of in a narrow 200px
             // column to its left, so its text gets the full width. Both boxes use the bottom-up
             // geometry computed above, which is why the list stretches and these do not.
-            // the cartouche's right edge follows the browser frame above it, so the whole right
-            // column shares one margin instead of each box inventing its own
-            var infoRect = RectF.FromPoints((HullSelectList.X + 20), hullSelectSub.Right,
+            // The cartouche's right edge follows the browser frame above it — one margin for the
+            // whole column — and it grows LEFTWARD to a width that actually fits two columns of
+            // labels: at the browser's own width a half-column left ~54px for titles like
+            // "Total Module Slots", so the value landed in the middle of its own label.
+            // 400 = 2 × (longest title ~105 + value 60) + gutter + frame margins.
+            float cartoucheW = Math.Max(hullSelectSub.Width, 400f);
+            var infoRect = RectF.FromPoints(hullSelectSub.Right - cartoucheW, hullSelectSub.Right,
                                             cartoucheY, cartoucheY + cartoucheH);
             // Ludoal fork: the stats live in a titled cartouche now, same frame the module
             // panel uses ("Active Module"), so the two read as the same kind of object.
