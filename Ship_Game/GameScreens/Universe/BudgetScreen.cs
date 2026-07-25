@@ -166,8 +166,15 @@ namespace Ship_Game.GameScreens
         static int TableXpx;
         static int TableWpx;
 
-        static readonly string[] Headers = { "POP", "POP INCOME", "BLDG INCOME", "GROSS",
-                                             "BLDG MAINT", "TROOP MAINT", "NET", "BUDGET", "GOV EXP", "LEFT" };
+        // Header labels follow the grammar of the game's other tables (Ship Array:
+        // "System", "Ship", "Role") — Title Case and short, not long capitals. Each
+        // column carries a shorter fallback used when the full label no longer fits
+        // its column: the labels were what spilled into the neighbouring column
+        // below 1080p, never the values.
+        static readonly string[] Headers = { "Pop", "Pop Inc", "Bldg Inc", "Gross",
+                                             "Bldg Mnt", "Troop Mnt", "Net", "Budget", "Gov Exp", "Left" };
+        static readonly string[] HeadersShort = { "Pop", "P.Inc", "B.Inc", "Gross",
+                                                  "B.Mnt", "T.Mnt", "Net", "Bdgt", "G.Exp", "Left" };
         static readonly Func<Planet, float>[] ColValue =
         {
             p => p.PopulationBillion,
@@ -210,18 +217,27 @@ namespace Ship_Game.GameScreens
                                 (int)(TableWpx * NumColW), sepBottom - headerY),
                   new Color(255, 220, 160, 40).Premultiplied());
 
-            // headers centered over their columns
-            SbColony = new SortButton { Text = "COLONY" };
+            // headers centered over their columns — the name column in Arial20Bold like
+            // the wide columns of Ship Array, the numeric ones in Arial12Bold
+            SbColony = new SortButton { Text = "Colony" };
             int nameW = (int)(TableWpx * NameColW);
-            SbColony.rect = new Rectangle(TableXpx + (nameW - (int)Fonts.Arial12Bold.TextWidth("COLONY")) / 2, headerY,
-                                          (int)Fonts.Arial12Bold.TextWidth("COLONY"), Fonts.Arial12Bold.LineSpacing);
+            int nameTxtW = (int)Fonts.Arial20Bold.TextWidth(SbColony.Text);
+            SbColony.rect = new Rectangle(TableXpx + (nameW - nameTxtW) / 2, headerY,
+                                          nameTxtW, Fonts.Arial20Bold.LineSpacing);
             SortButtons = new SortButton[NumCols];
             for (int i = 0; i < NumCols; ++i)
             {
-                var sb = new SortButton { Text = Headers[i] };
-                int wTxt = (int)Fonts.Arial12Bold.TextWidth(Headers[i]);
                 int colLeft = TableXpx + (int)(TableWpx * ColStart(i));
                 int colWpx = (int)(TableWpx * NumColW);
+                // full label if it fits the column (2px of air each side), else the short form
+                string label = Headers[i];
+                int wTxt = (int)Fonts.Arial12Bold.TextWidth(label);
+                if (wTxt > colWpx - 4)
+                {
+                    label = HeadersShort[i];
+                    wTxt = (int)Fonts.Arial12Bold.TextWidth(label);
+                }
+                var sb = new SortButton { Text = label };
                 sb.rect = new Rectangle(colLeft + (colWpx - wTxt) / 2, headerY, wTxt, Fonts.Arial12Bold.LineSpacing);
                 SortButtons[i] = sb;
             }
@@ -234,7 +250,8 @@ namespace Ship_Game.GameScreens
             for (int i = 0; i <= NumCols; ++i)
             {
                 int sepX = TableXpx + (int)(TableWpx * ColStart(i)) - 4;
-                Panel(new Rectangle(sepX, headerY, 1, sepBottom - headerY), new Color(255, 255, 255, 25).Premultiplied());
+                // same warm line colour the game's other tables use (ShipListScreen)
+                Panel(new Rectangle(sepX, headerY, 1, sepBottom - headerY), new Color(118, 102, 67, 255).Premultiplied());
             }
 
             // TOTAL footer
@@ -473,7 +490,7 @@ namespace Ship_Game.GameScreens
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
             base.Draw(batch, elapsed);
-            SbColony.Draw(ScreenManager, Fonts.Arial12Bold);
+            SbColony.Draw(ScreenManager, Fonts.Arial20Bold);
             for (int i = 0; i < SortButtons.Length; ++i)
                 SortButtons[i].Draw(ScreenManager, Fonts.Arial12Bold);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
