@@ -53,6 +53,11 @@ namespace Ship_Game.GameScreens.ShipDesign
         // because the two designs hide different lines.
         public ShipDesignInfoPanel CompareAgainst;
 
+        // per-frame column offsets (bench values): the active frame breathes to the right, the
+        // compared one shifts left to make room for its delta lane
+        public float Col0Shift = 20f;
+        public float Col1Shift = 10f;
+
         // Stats where LESS is better. Lek's list also had TurnRate and the power drains; both are
         // wrong and the code proves it: the game already tints a turn rate GREEN above 15, and the
         // drains are displayed negated, so closer to zero is already the higher number.
@@ -240,12 +245,13 @@ namespace Ship_Game.GameScreens.ShipDesign
             if (S == null)
                 return;
 
-            // Column origins, tuned at the bench by Ludo: the left column sits on the frame's
-            // inner edge, the right one 10px left of the half. Titles are right-aligned and grow
-            // leftward, which is why the longest ones need that slack.
+            // Column origins, tuned at the bench by Ludo — and NOT the same on the two frames:
+            // the compared one carries a delta after each value, so its columns sit further left
+            // to leave that lane room. Titles are right-aligned and grow leftward, which is why
+            // the longest ones ("Excess Wpn Pwr Drain") need the slack.
             float colStep = (Width - 10f) * 0.5f;
-            float col0X = X;
-            float col1X = X + colStep - 10f;
+            float col0X = X + Col0Shift;
+            float col1X = X + colStep + Col1Shift;
             float spacing = colStep * 0.72f; // title room; the value sits at the cursor + spacing
             Graphics.Font headFont = Fonts.Arial12Bold;
 
