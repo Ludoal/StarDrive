@@ -82,7 +82,7 @@ namespace Ship_Game.GameScreens.ShipDesign
         // air between the two columns: on the 46.138 shot column 1's delta lane nearly touched
         // "MOBILITY" (Ludo). It belongs to the STEP, so the gap opens between the columns rather
         // than just pushing column 2 further right.
-        const float MidGap = 16f;
+        const float MidGap = 10f;
         // Measured off the 46.138 bench shot, where everything fitted at ~545px of frame: the
         // titles run to "Total Module Slots", the values to "107.1k", the deltas to "(-27.35k)".
         // The frame must not grow beyond that — it was already wide enough (Ludo).
