@@ -103,6 +103,12 @@ namespace Ship_Game
                 // role only earns its place on design rows, where it varies line to line.
                 batch.Draw(Hull.Icon, new Rectangle((int)X - 2, (int)Y - 2, h + 4, h + 4), Color.White);
                 DrawBadge(batch, "empty hull", X + h + 6, Y + 6, Color.Gray);
+
+                // the hull's CLASS, the tech-tree one (Fighter, Corvette, Frigate, Freighter):
+                // the group heading carries the hull's name, which is a race name and says
+                // nothing about its class, so the class rides row #1 next to the empty tag
+                string hullClass = Localizer.GetRole(Hull.Role, Player);
+                DrawBadge(batch, hullClass, X + h + 12 + Fonts.Arial8Bold.TextWidth("empty hull"), Y + 6);
             }
         }
 

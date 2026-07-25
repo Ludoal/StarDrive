@@ -709,7 +709,15 @@ namespace Ship_Game
 
             var infoRect = RectF.FromPoints((HullSelectList.X + 20), (ScreenWidth - 20),
                                             bandTop, splitY);
-            InfoPanel = Add(new ShipDesignInfoPanel(infoRect));
+            // Ludoal fork: the stats live in a titled cartouche now, same frame the module
+            // panel uses ("Active Module"), so the two read as the same kind of object.
+            // The frame is added first so it draws behind the values.
+            var infoSub = Add(new Submenu(infoRect, "Active Design"));
+            infoSub.SetBackground(Colors.TransparentBlackFill);
+
+            var infoInner = RectF.FromPoints(infoRect.X + 12, infoRect.Right - 12,
+                                             infoRect.Y + 32, infoRect.Bottom - 8);
+            InfoPanel = Add(new ShipDesignInfoPanel(infoInner));
 
             var issuesRect = RectF.FromPoints(InfoPanel.X, (ScreenWidth - 20),
                                               splitY + 6, bandBottom);
