@@ -199,7 +199,10 @@ namespace Ship_Game.GameScreens.ShipDesign
             if (S == null)
                 return;
 
-            float colStep = Width * 0.5f;
+            // 10px of breathing room on the left: titles are right-aligned and grow leftward,
+            // so the longest ones ("Excess Wpn Pwr Drain") were poking out of the frame
+            const float leftPad = 10f;
+            float colStep = (Width - leftPad) * 0.5f;
             float spacing = colStep * 0.72f; // title room; the value sits at the cursor + spacing
             Graphics.Font headFont = Fonts.Arial12Bold;
 
@@ -241,7 +244,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                 running += blockVisible[b];
             }
 
-            var cursor = new Vector2(X, Y);
+            var cursor = new Vector2(X + leftPad, Y);
             int block = -1;
             bool firstHeadingOfColumn = true;
             for (int i = 0; i < Rows.Count; ++i)
@@ -256,7 +259,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                     // never fired and everything piled into one column
                     if (block == splitBlock)
                     {
-                        cursor = new Vector2(X + colStep, Y);
+                        cursor = new Vector2(X + leftPad + colStep, Y);
                         firstHeadingOfColumn = true;
                     }
 

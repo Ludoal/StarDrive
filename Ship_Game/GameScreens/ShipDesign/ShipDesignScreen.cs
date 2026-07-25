@@ -665,8 +665,11 @@ namespace Ship_Game
             float colTop      = ModuleSelectComponent.LocalPos.Y;
             float colBottom   = BlackBar.Y;
             float colBand     = colBottom - colTop;
-            float issuesH     = Math.Min(92f, colBand * 0.16f);   // completion line + issues button
-            float cartoucheH  = Math.Min(340f, colBand * 0.52f);  // fullest case: a station, two columns
+            // the cartouche grew downward by two lines, taken from the issues strip (Ludo's
+            // call): the strip only carries the completion line and the issues button, and
+            // the fullest designs were spilling their last block out of the frame
+            float issuesH     = Math.Min(58f, colBand * 0.10f);   // completion line + issues button
+            float cartoucheH  = Math.Min(374f, colBand * 0.56f);  // fullest case: a station, two columns
             float cartoucheY  = colBottom - issuesH - cartoucheH;
 
             Vector2 hullSelSize = new(SelectSize(260, 280, 320), Math.Max(160f, cartoucheY - 10 - colTop));
