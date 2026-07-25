@@ -63,9 +63,9 @@ namespace Ship_Game.GameScreens.ShipDesign
         // start. Fixed, so every design puts its first row on the same line.
         const float TitleBandHeight = 30f;
 
-        // the ship plan's square side — a third of the frame, so the two stat columns keep the
-        // rest. Bounded, or a tall frame would give it a square wider than the columns.
-        float PlanSide => Math.Min(Width * 0.32f, Height - TitleBandHeight - 10f);
+        // the ship plan's square side — the same fraction the frame was sized with, bounded by
+        // the frame's height so a short frame never asks for a square taller than itself
+        float PlanSide => Math.Min(PlanSideFor(Width), Height - TitleBandHeight - 10f);
 
         // room a delta needs after a value: the offset it is drawn at, plus the widest delta
         // string we can expect ("(+157.2k)")
@@ -73,6 +73,32 @@ namespace Ship_Game.GameScreens.ShipDesign
         public const float DeltaLaneWidth = DeltaLaneOffset + 64f;
         // what a frame has to add to its width to carry a lane per column
         public const float DeltaLanesTotal = DeltaLaneWidth * 2f;
+
+        // The module panel's two numbers, and the reason its columns never move: the step
+        // between columns is FIXED, and the title room is a fraction of the FRAME — neither is
+        // divided out of the space that happens to be left. A design row's titles are longer
+        // than a module's ("Total Module Slots" against "Complexity"), so the step is larger,
+        // but the principle is the one thing that must not change.
+        // The step is the title room plus the value plus, on a comparing frame, its delta lane.
+        float ColumnStep => StepFor(HasDeltaLanes);
+        static float StepFor(bool withDeltas) => TitleRoom + ValueRoom + (withDeltas ? DeltaLaneWidth : 0f);
+        const float TitleRoom = 150f; // fits "Total Module Slots", the longest title
+        const float ValueRoom = 60f;  // fits "107.1k"
+        const float SidePad = 20f;    // the panel's own left margin plus a right breather
+
+        // What a frame must measure to hold two of those columns — the screen asks this rather
+        // than sizing the frame from whatever space is going spare and hoping the columns fit.
+        public static float FrameWidthFor(bool withDeltas, bool withPlan)
+        {
+            float w = StepFor(withDeltas) * 2f + SidePad;
+            if (withPlan)
+                w += PlanSideFor(w) + 10f;
+            return w;
+        }
+
+        // the plan is a square sized off the frame it sits in; kept as a function so the frame
+        // width above and the draw below cannot disagree
+        static float PlanSideFor(float frameWidth) => frameWidth * 0.32f;
 
         // How far this panel is inset inside its frame. The screen builds the inner rect, so it
         // tells us here rather than us guessing a constant that would have to stay in step.
@@ -389,11 +415,17 @@ namespace Ship_Game.GameScreens.ShipDesign
             // existed. Only the SECOND column moves right, past the first one's delta lane
             // (46.138: taking both lanes out of the total shrank every column and dragged
             // column 1 leftwards — Ludo wanted column 2 pushed right, not column 1 pulled left).
-            float lane = HasDeltaLanes ? DeltaLaneWidth : 0f;
-            float colStep = (Width - planW - 10f) * 0.5f;
+            // The MODULE panel's geometry, copied instead of re-derived (Ludo, and he is right
+            // to keep saying it): fixed steps, not divisions. There, column 0 starts at the
+            // frame's left margin and column 1 a constant step further right; the title room is
+            // a fraction of the FRAME, never of the column; and the delta lane is simply the
+            // space left between the step and the next column, neither reserved nor subtracted.
+            // Every version of this panel that divided the available width moved something else
+            // each time a width changed — five benches' worth of it.
+            float colStep = ColumnStep;
             float col0X = X + planW + Col0Shift;
-            float col1X = col0X + colStep + lane + Col1Shift - Col0Shift;
-            float spacing = colStep * 0.72f; // title room; the value sits at the cursor + spacing
+            float col1X = col0X + colStep + Col1Shift - Col0Shift;
+            float spacing = TitleRoom; // title room; the value sits at the cursor + spacing
             Graphics.Font headFont = Fonts.Arial12Bold;
 
             // a heading is only worth drawing when at least one of its own lines shows

@@ -879,18 +879,13 @@ namespace Ship_Game
             // labels: at the browser's own width a half-column left ~54px for titles like
             // "Total Module Slots", so the value landed in the middle of its own label.
             // 400 = 2 × (longest title ~105 + value 60) + gutter + frame margins.
-            float cartoucheW = Math.Max(hullSelectSub.Width, 400f);
-            // Ludoal fork (spec v4): the Active cartouche carries the delta lanes, so it takes
-            // the extra width the Compared frame used to have — LEFTWARD. Its right edge stays
-            // on the browser's, which is what keeps the column's right margin (bench 46.135: it
-            // was the frame overflowing the screen, clipping the deltas, not the tab).
-            // one lane per column, taken from the panel that draws them rather than restated
-            // here: the columns keep the width they had before deltas existed and the FRAME
-            // grows to fit the lanes, instead of the columns shrinking to make room for them
-            // (bench 46.138).
-            const float DeltaLaneW = ShipDesignInfoPanel.DeltaLanesTotal;
-            var infoRect = RectF.FromPoints(hullSelectSub.Right - cartoucheW - DeltaLaneW,
-                                            hullSelectSub.Right,
+            // Ludoal fork: the frames are sized BY THEIR CONTENT, the module panel's way — two
+            // column steps plus the panel's own margins — instead of a fraction of something
+            // else. Its right edge stays on the browser's, which keeps the column's right
+            // margin, and it grows leftward. (Five benches were spent on widths derived from
+            // available space; each change of width moved a column somewhere.)
+            float cartoucheW = ShipDesignInfoPanel.FrameWidthFor(withDeltas: true, withPlan: false);
+            var infoRect = RectF.FromPoints(hullSelectSub.Right - cartoucheW, hullSelectSub.Right,
                                             cartoucheY, cartoucheY + cartoucheH);
             // Ludoal fork: the stats live in a titled cartouche now, same frame the module
             // panel uses ("Active Module"), so the two read as the same kind of object.
@@ -912,9 +907,8 @@ namespace Ship_Game
             // whatever design the cursor rests on in the browser, and it goes away when the
             // cursor leaves. The pinned design no longer has a frame: it only feeds the delta
             // lane of the Active cartouche.
-            // it carries the ship plan on its left plus the same two stat columns, so it needs
-            // the plan's share on top of a plain cartouche's width
-            float hoverW = cartoucheW * 1.45f;
+            // same two columns, no delta lanes, plus the ship plan down its left edge
+            float hoverW = ShipDesignInfoPanel.FrameWidthFor(withDeltas: false, withPlan: true);
             var hoverRect = RectF.FromPoints(infoRect.X - hoverW - 10f, infoRect.X - 10f,
                                              infoRect.Y, infoRect.Bottom);
             HoverSub = Add(new Submenu(hoverRect, "Hovered Design"));
