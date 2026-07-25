@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Xna.Framework.Graphics;
+using SDGraphics; // Premultiplied() lives here (MathExt)
 using Color = Microsoft.Xna.Framework.Color;
 using Ship_Game.Ships;
 using Rectangle = SDGraphics.Rectangle;
