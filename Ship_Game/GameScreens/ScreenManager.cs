@@ -785,9 +785,9 @@ namespace Ship_Game
 
         void CycleTestResolution(InputState input)
         {
-            if (!GlobalStats.VerboseLogging)
-                return; // dev instrument: off unless VerboseLogging is on in the config
-
+            // No gate: this branch is the UI rework build, it never ships to a player. The
+            // VerboseLogging gate that was here only added a way for the tool to be silently
+            // absent, which is exactly what happened on its first bench (46.142).
             if (!input.IsCtrlKeyDown || !input.KeyPressed(Keys.F8))
                 return;
 
@@ -800,7 +800,12 @@ namespace Ship_Game
             settings.Width = w;
             settings.Height = h;
             settings.Mode = WindowMode.Windowed; // the sizes only mean anything in a window
+
+            // Say it on screen, not just in the log: the first bench of this tool was spent
+            // guessing whether the key had even been seen. The message survives the device
+            // reset, so it doubles as proof the resize actually ran.
             Log.Write(ConsoleColor.Cyan, $"TestResolution: {w}x{h}");
+            GameAudio.AcceptClick();
             StarDriveGame.Instance?.ApplyGraphics(settings);
         }
 
