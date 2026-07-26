@@ -775,8 +775,8 @@ namespace Ship_Game
         //   1680x1050 — the 16:10 middle. Still Narrow.
         //   1920x1080 — the reference, half the Steam install base. First size that is not Narrow.
         //   2200x1200 — a wide window that still fits the display.
-        //   2560x1440 — Tall. Only usable FULLSCREEN on this machine: as a window it hangs off
-        //               the bottom, which is exactly why Tall became >= 1440 rather than >.
+        //   2560x1440 — Tall. Fills the bench display exactly, which is why Tall became
+        //               >= 1440 rather than >.
         //
         // Ctrl+Alt+R steps forward, add Shift to step back. It was Ctrl+F8 — the only function
         // key the game had left free — and it did nothing at the bench in either window mode,
@@ -808,9 +808,9 @@ namespace Ship_Game
             GraphicsSettings settings = GraphicsSettings.FromGlobalStats();
             settings.Width = w;
             settings.Height = h;
-            // Windowed for every size the display can hold; the tallest one only makes sense
-            // borderless, since as a window it would hang off the bottom of a 1440 display.
-            settings.Mode = h >= 1440 ? WindowMode.Borderless : WindowMode.Windowed;
+            // Borderless throughout (Ludo): a title bar and frame eat into the height being
+            // tested, and the tallest step would hang off the display as a window.
+            settings.Mode = WindowMode.Borderless;
 
             // Say it on screen, not just in the log: the first bench of this tool was spent
             // guessing whether the key had even been seen. The message survives the device
