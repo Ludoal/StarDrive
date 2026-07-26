@@ -73,5 +73,28 @@ public static class Dir
 
     // {AppData}/StarDrive
     // This is where all the saved games and cache files are stored
-    public static readonly string StarDriveAppData = AppData + "/StarDrive";
+    //
+    // Ludoal fork: a side-by-side install can move this with the STARDRIVE_APPDATA environment
+    // variable, either as a full path or as a bare suffix ("Dev" -> {AppData}/StarDrive_Dev).
+    // Without it, nothing changes.
+    //
+    // Why: this folder holds far more than saves — the user config (resolution, options), ship
+    // designs, fleet designs, saved setups and the logs. Three installs sharing it means three
+    // installs sharing all of that, and a game saved by a build with changed serialization may
+    // not load in another. The UI chantier build gets its own; the QoL build stays compatible
+    // with stock BlackBox and keeps the default folder, so saves carry across those two freely.
+    public static readonly string StarDriveAppData = ResolveAppDataDir();
+
+    static string ResolveAppDataDir()
+    {
+        string custom = Environment.GetEnvironmentVariable("STARDRIVE_APPDATA");
+        if (custom == null || custom.Trim().Length == 0)
+            return AppData + "/StarDrive";
+
+        custom = custom.Trim();
+        // a full path if it looks like one, otherwise a suffix on the usual folder
+        bool isFullPath = custom.Contains(":") || custom.StartsWith("/") || custom.StartsWith("\\");
+        return isFullPath ? custom.NormalizedFilePath()
+                          : AppData + "/StarDrive_" + custom;
+    }
 }
