@@ -65,6 +65,25 @@ namespace Ship_Game
         UIButton BtnSymmetricDesign; // Symmetric Module Placement Feature by Fat Bastard
         UIButton BtnFilterModules;   // Filter Absolute Modules
         UIButton BtnStripShip;       // Removes all modules but armor, shields and command modules
+        UIButton BtnLegacyBrowser;   // Ludoal fork: merged browser <-> original Load popup, live
+
+        bool LegacyBrowser => Player.Universe.P.LegacyShipBrowser;
+        string LegacyBrowserLabel => LegacyBrowser ? "Browser: Classic" : "Browser: Merged";
+
+        // Ludoal fork: the two layouts are mutually exclusive. Classic hides the merged browser
+        // and its filter row, and brings back the Load button; Merged does the reverse. Nothing
+        // is destroyed either way, so switching costs nothing and can be done mid-design.
+        void ApplyBrowserMode()
+        {
+            bool legacy = LegacyBrowser;
+            foreach (UIElementV2 e in MergedBrowserParts)
+                if (e != null) e.Visible = !legacy;
+            if (BtnLoadLegacy != null)
+                BtnLoadLegacy.Visible = legacy;
+        }
+
+        readonly Array<UIElementV2> MergedBrowserParts = new();
+        UIButton BtnLoadLegacy;
         GenericButton ArcsButton;
         Rectangle SearchBar;
         Rectangle BottomSep;
@@ -697,7 +716,7 @@ namespace Ship_Game
             });
             BtnSaveAs.Tooltip = Localizer.Token(GameText.SaveShipDesignDesc);
             BtnSaveAs.Hotkey = InputBindings.FromString("Ctrl+S");
-            bottomListRight.Add(ButtonStyle.Medium, GameText.Load, click: b =>
+            BtnLoadLegacy = bottomListRight.Add(ButtonStyle.Medium, GameText.Load, click: b =>
             {
                 if (HullEditMode)
                     ScreenManager.AddScreen(new MessageBoxScreen(this, "Load Design is not available in Hull Edit Mode"));
@@ -760,6 +779,20 @@ namespace Ship_Game
             testFight.ClickSfx = "blip_click";
             testFight.Tooltip = "Battle simulator: fight a copy of this design in an arena (prototype)";
 
+            // Ludoal fork: switch between the merged browser and the original Load popup, live.
+            // The upstream reservation about a comparison overlay was that it clutters the
+            // screen; rather than argue the point, this makes both layouts one click apart so
+            // anyone can judge for themselves. Persisted, so a player who prefers the old way
+            // keeps it.
+            BtnLegacyBrowser = bottomListLeft.Add(ButtonStyle.Medium, LegacyBrowserLabel, click: b =>
+            {
+                Player.Universe.P.LegacyShipBrowser = !Player.Universe.P.LegacyShipBrowser;
+                b.Text = LegacyBrowserLabel;
+                ApplyBrowserMode();
+            });
+            BtnLegacyBrowser.ClickSfx = "blip_click";
+            BtnLegacyBrowser.Tooltip = "Switch between the merged hull+design browser and the original Load popup";
+
             SearchBar = new Rectangle((int)ScreenCenter.X, (int)bottomListRight.Y, 210, 25);
             BottomSep = new Rectangle(BlackBar.X, BlackBar.Y, BlackBar.Width, 1);
 
@@ -817,17 +850,22 @@ namespace Ship_Game
             };
 
             // side by side on one row: stacked, the second one slipped under the frame's title tab
-            Checkbox(new Vector2(filterX + 6, filterTop + 26),
+            var cbMine = Checkbox(new Vector2(filterX + 6, filterTop + 26),
                      () => !Player.Universe.P.ShowAllDesigns,
                      (b) => { Player.Universe.P.ShowAllDesigns = !b; RefreshHullSelectList(); },
                      "My designs only", "Show only the designs you created");
 
-            Checkbox(new Vector2(filterX + 132, filterTop + 26),
+            var cbLocked = Checkbox(new Vector2(filterX + 132, filterTop + 26),
                      () => ShowLockedDesigns,
                      (b) => { ShowLockedDesigns = b; RefreshHullSelectList(); },
                      "Show locked", GameText.ShowEmpireLockedDesignsTip);
 
             var hullSelectSub = Add(new SubmenuScrollList<ShipYardBrowserItem>(hullSelectPos, hullSelSize, "Hulls & Designs"));
+            // Ludoal fork: everything the Classic mode hides, gathered in one place
+            MergedBrowserParts.Add(BrowserFilter);
+            MergedBrowserParts.Add(cbMine);
+            MergedBrowserParts.Add(cbLocked);
+            MergedBrowserParts.Add(hullSelectSub);
             // rounded black background
             hullSelectSub.SetBackground(Colors.TransparentBlackFill);
 
@@ -938,6 +976,8 @@ namespace Ship_Game
             }
 
             CloseButton(ScreenWidth - 27, 75);
+
+            ApplyBrowserMode(); // Ludoal fork: honour the persisted choice on open
         }
 
         // Ludoal fork: the visibility policy ported verbatim from the load popup, so the

@@ -78,6 +78,10 @@ public class UniverseParams
     [StarData] public bool PrioitizeProjectors;
     [StarData(DefaultValue=true)] public bool ShowAllDesigns = true;
     [StarData] public bool FilterOldModules;
+    // Ludoal fork: shipyard uses the original Load popup instead of the merged browser.
+    // Off by default — the merged browser is the fork's layout — but one click away in the
+    // shipyard's bottom bar so both can be compared live.
+    [StarData] public bool LegacyShipBrowser;
 
     [StarData] public bool DisableRemnantStory;
     [StarData] public bool EnableRandomizedAIFleetSizes;
