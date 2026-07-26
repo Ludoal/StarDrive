@@ -54,8 +54,11 @@ namespace Ship_Game
         public bool CanEscapeFromScreen { get; protected set; } = true;
         
         // LEGACY LAYOUT: Change layout and Font Size if ScreenWidth is too small
-        public readonly bool LowRes;
-        public readonly bool HiRes;
+        // Ludoal fork: no longer readonly — a live resolution change has to recompute these,
+        // or a rebuilt screen redraws itself with the previous size's flags. Set once in the
+        // ctor as before, and again by RefreshResolutionFlags() after a resize.
+        public bool LowRes { get; private set; }
+        public bool HiRes { get; private set; }
 
         // Ludoal fork: the two flags that replace LowRes/HiRes as screens get reworked. They are
         // deliberately SEPARATE and one-dimensional — the legacy pair ORs a width test with a
@@ -67,8 +70,8 @@ namespace Ship_Game
         //
         // A screen adopts these when it is reworked; LowRes keeps its old meaning for the ones
         // still untouched, and dies with the last of them.
-        public readonly bool Narrow;
-        public readonly bool Tall;
+        public bool Narrow { get; private set; }
+        public bool Tall { get; private set; }
 
         // @return TRUE if content was loaded this frame
         public bool DidLoadContent { get; private set; }
@@ -159,14 +162,7 @@ namespace Ship_Game
             // Every time we open a screen, we should release any input handlers
             GlobalStats.TakingInput = false;
 
-            LowRes = ScreenWidth <= 1366 || ScreenHeight <= 720;
-            HiRes  = ScreenWidth > 1920 || ScreenHeight > 1400;
-            // Ludoal fork: width only — what breaks below 1920 is horizontal (Ludo). Height is
-            // handled by giving one block per screen the job of absorbing it, not by a flag.
-            Narrow = ScreenWidth < 1920;
-            // Ludoal fork: height only. In 16:9 and 16:10 a height above 1440 already implies
-            // 2304+ of width, so this never fires on a small screen — it is purely the zoom cue.
-            Tall = ScreenHeight > 1440;
+            RefreshResolutionFlags();
 
             Func<int> simTurnSource = null;
             if (parent is UniverseScreen us)
@@ -324,6 +320,22 @@ namespace Ship_Game
         {
             UnloadContent();
             InvokeLoadContent();
+        }
+
+        // Ludoal fork: one source for the layout flags, called from the ctor and again after a
+        // live resolution change. They used to be readonly and set inline in the ctor, so a
+        // screen rebuilt at a new size still drew itself with the old size's flags — which made
+        // the resolution test tool useless for testing exactly what it exists to test.
+        public void RefreshResolutionFlags()
+        {
+            LowRes = ScreenWidth <= 1366 || ScreenHeight <= 720;
+            HiRes  = ScreenWidth > 1920 || ScreenHeight > 1400;
+            // width only — what breaks below 1920 is horizontal (Ludo). Height is handled by
+            // giving one block per screen the job of absorbing it, not by a flag.
+            Narrow = ScreenWidth < 1920;
+            // height only. In 16:9 and 16:10 a height above 1440 already implies 2304+ of
+            // width, so this never fires on a small screen — it is purely the zoom cue.
+            Tall = ScreenHeight > 1440;
         }
 
         public override bool HandleInput(InputState input)

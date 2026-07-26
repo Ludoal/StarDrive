@@ -812,6 +812,23 @@ namespace Ship_Game
             Log.Write(ConsoleColor.Cyan, $"TestResolution: {w}x{h}");
             GameAudio.AcceptClick();
             StarDriveGame.Instance?.ApplyGraphics(settings);
+
+            // Rebuild the open screens at the new size. This is a real teardown — UnloadContent
+            // then LoadContent on every open screen — so expect a hitch, and a screen holding
+            // transient state in its UI elements may lose it. Acceptable for a bench tool; if
+            // some screen turns out to mind, give it a lighter ReloadContent override.
+            //
+            // ApplyGraphics only resizes the window:
+            // StarDriveGame.LoadContent returns immediately once IsLoaded is set, so the
+            // deviceWasReset path that would have called ReloadContent is never reached in a
+            // running game — which is why only a restart used to redraw the content.
+            foreach (GameScreen screen in GameScreens.ToArr())
+            {
+                screen.UpdateViewport();
+                screen.RefreshResolutionFlags(); // before the rebuild: LoadContent reads them
+                screen.Rect = new Rectangle(0, 0, GameBase.ScreenWidth, GameBase.ScreenHeight);
+                screen.ReloadContent();
+            }
         }
 
         public void Update(UpdateTimes elapsed)
