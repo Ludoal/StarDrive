@@ -264,11 +264,18 @@ namespace Ship_Game.GameScreens.ShipDesign
 
             // the ordnance family was missing from the inventory sent to Lek, so its placement
             // is mine: it sits with the guns it feeds, which is where her v1 put ammo time
-            Head("COMBAT / FCS");
+            // Ludoal fork: split from one COMBAT / FCS block (Ludo). The two halves answer
+            // different questions — how long can it keep shooting, versus how well does it aim
+            // — and reading them as one list made neither obvious. Sensor Range sits with FCS
+            // rather than earning a third heading: it is detection, not fire control, but a
+            // block of its own would cost a line and the air around it for a single row.
+            Head("ORDNANCE");
             Stat(GT.OrdnanceCreated, () => S.OrdAddedPerSecond, GT.TT_OrdnanceCreated, ordnance, nonZero: true);
             Stat(GT.OrdnanceCapacity, () => S.OrdinanceMax, GT.TT_OrdnanceCap, ordnance, vis: Ds.HasOrdnance);
             Stat(GT.AmmoTime, () => Ds.AmmoTime, GT.TT_AmmoTime, ordnance, tint: Above(30f), vis: Ds.HasOrdFinite);
             Word(GT.AmmoTime, "INF", GT.TT_AmmoTime, ordnance, good, vis: Ds.HasOrdInfinite);
+
+            Head("FCS");
             Stat(GT.FireControl, () => S.TargetingAccuracy, GT.TT_FireControl, nonZero: true);
             Stat(GT.FcsPower, () => S.TrackingPower, GT.TT_FcsPower, nonZero: true);
             Stat(GT.SensorRange3, () => S.SensorRange, GT.TT_SensorRange3, nonZero: true);
