@@ -380,7 +380,9 @@ namespace Ship_Game
         {
             if (!GlobalStats.TakingInput)
             {
-                if (input.KeyPressed(Keys.R))
+                // Ludoal fork: not while Ctrl is held — Ctrl+Alt+R is the resolution test tool,
+                // and a key consumed earlier in the frame is still visible to the screens.
+                if (input.KeyPressed(Keys.R) && !input.IsCtrlKeyDown)
                 {
                     GameAudio.EchoAffirmative();
                     Universe.ScreenManager.AddScreen(new ResearchScreenNew(Universe, Universe, this));

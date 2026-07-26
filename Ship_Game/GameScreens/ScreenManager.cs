@@ -778,8 +778,10 @@ namespace Ship_Game
         // key the game had left free — and it did nothing at the bench in either window mode,
         // with the config gate proven to be passing. The likeliest reason is that the VM eats
         // it before the guest ever sees it, so this moves off the function row entirely.
-        // R alone is bound (exit the research screen) but has no modifiers, and this runs
-        // before the screens get their turn anyway.
+        // R alone opens the research screen. Running before the screens does NOT protect
+        // against that — they read the same keyboard state, so an early read consumes nothing.
+        // Both readers of R now exclude Ctrl, the same guard the codebase already uses for
+        // Ctrl+Y on the shipyard exit.
         static readonly (int W, int H)[] TestResolutions =
         {
             (1440, 900), (1920, 1080), (2560, 1440)
