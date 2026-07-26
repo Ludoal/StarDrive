@@ -103,7 +103,8 @@ namespace Ship_Game
         // Ludoal fork (spec v4): a comparison is running when a module is pinned and the Active
         // panel is up. There is no second frame any more — this is what used to be
         // CompareModSubMenu.Visible, and every test that asked for that frame really meant this.
-        bool Comparing => Screen.CompareModule != null && ActiveModSubMenu.Visible;
+        bool Comparing => GlobalStats.ShipyardComparison
+                       && Screen.CompareModule != null && ActiveModSubMenu.Visible;
 
         // Ludoal fork (spec v4): the hover frame waits this long before appearing, so running the
         // cursor down the list does not flash a frame per row.
@@ -418,7 +419,8 @@ namespace Ship_Game
                     HoverDwell = 0f;
                 }
                 HoverDwell += fixedDeltaTime;
-                HoverModSubMenu.Visible = HoverDwell >= HoverDelay && !ChooseFighterSub.Visible;
+                HoverModSubMenu.Visible = GlobalStats.ShipyardComparison
+                                       && HoverDwell >= HoverDelay && !ChooseFighterSub.Visible;
             }
 
             base.Update(fixedDeltaTime);

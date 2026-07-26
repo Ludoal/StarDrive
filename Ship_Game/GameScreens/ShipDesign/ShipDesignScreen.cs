@@ -178,6 +178,13 @@ namespace Ship_Game
         // The try/catch is inherited from the hover overlay, which needed it on real designs.
         public void SetComparedDesign(IShipDesign design)
         {
+            // Ludoal fork: Options -> Rework Options can turn the comparison off entirely
+            // (upstream's reservation was that it clutters the screen). Refusing the PIN here
+            // covers every way in. A null still has to pass: that is how a comparison gets
+            // cleared - loading a design does it - and blocking it would strand a ghost pin.
+            if (!GlobalStats.ShipyardComparison && design != null)
+                return;
+
             if (design != null && DesignedShip?.Name == design.Name)
                 return; // comparing the working design with itself says nothing
 
@@ -213,6 +220,12 @@ namespace Ship_Game
         {
             if (HoverPanel == null)
                 return;
+
+            // Ludoal fork: the hover cartouche is part of the comparison feature, so it goes
+            // with it. Forcing null rather than returning early: null is what hides the frame,
+            // so this also clears one that was already showing when the option was turned off.
+            if (!GlobalStats.ShipyardComparison)
+                design = null;
 
             if (design == null || DesignedShip?.Name == design.Name)
             {
@@ -884,7 +897,11 @@ namespace Ship_Game
             // else. Its right edge stays on the browser's, which keeps the column's right
             // margin, and it grows leftward. (Five benches were spent on widths derived from
             // available space; each change of width moved a column somewhere.)
-            float cartoucheW = ShipDesignInfoPanel.FrameWidthFor(withDeltas: true, withPlan: false);
+            // Ludoal fork: no comparison means no delta lanes, so the frame does not pay for
+            // them either. One value feeds both the width and the panel's own reservation -
+            // they must agree or the columns sit wrong inside the frame.
+            bool deltaLanes = GlobalStats.ShipyardComparison;
+            float cartoucheW = ShipDesignInfoPanel.FrameWidthFor(withDeltas: deltaLanes, withPlan: false);
             var infoRect = RectF.FromPoints(hullSelectSub.Right - cartoucheW, hullSelectSub.Right,
                                             cartoucheY, cartoucheY + cartoucheH);
             // Ludoal fork: the stats live in a titled cartouche now, same frame the module
@@ -899,7 +916,7 @@ namespace Ship_Game
             var infoInner = RectF.FromPoints(infoRect.X + 10, infoRect.Right - 10,
                                              infoRect.Y + 26, infoRect.Bottom - 8);
             InfoPanel = Add(new ShipDesignInfoPanel(this, infoInner));
-            InfoPanel.HasDeltaLanes = true; // room kept whether or not a design is pinned
+            InfoPanel.HasDeltaLanes = deltaLanes; // room kept whether or not a design is pinned
             InfoSub = infoSub;
 
             // Ludoal fork (spec v4): the HOVER cartouche takes the slot the Compared one used to

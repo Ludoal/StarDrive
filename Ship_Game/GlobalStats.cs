@@ -180,10 +180,18 @@ public static class GlobalStats
     //
     // Applied when the screen opens, not live: two complete layouts never coexist on screen.
     // A player preference rather than a game setting — it holds across every save.
-    public static bool ReworkShipyard;
     public static bool ReworkEconomy;
     public static bool ReworkDiplomacy;
     public static bool ReworkEspionage;
+
+    // The shipyard is not swapped wholesale: ShipDesignScreen is a partial class across seven
+    // files, four of which we never touched, so a Rework twin would mean maintaining copies of
+    // upstream code for no gain. What was actually questioned upstream is the comparison
+    // overlay ("it makes the screen clutter"), so that is what this turns off - the delta lanes
+    // on both panels and the hover frame. The merged browser stays: nobody has objected to it,
+    // and the Load button and its popup are still there for anyone who wants the classic list.
+    // ON by default, unlike the beta screens above: this one has been through the bench.
+    public static bool ShipyardComparison = true;
 
     // Ludoal fork: symmetric ship design is a PLAYER preference, not a save property —
     // it used to live on the Empire ([StarData]) so every existing save re-imposed ON.
@@ -385,7 +393,7 @@ public static class GlobalStats
         GetSetting(config, "AutoSaveFreq", ref AutoSaveFreq);
         GetSetting(config, "AutoSaveYears", ref AutoSaveYears);
         GetSetting(config, "FogOfWarMemory", ref FogOfWarMemory);
-        GetSetting(config, "ReworkShipyard", ref ReworkShipyard);
+        GetSetting(config, "ShipyardComparison", ref ShipyardComparison);
         GetSetting(config, "ReworkEconomy", ref ReworkEconomy);
         GetSetting(config, "ReworkDiplomacy", ref ReworkDiplomacy);
         GetSetting(config, "ReworkEspionage", ref ReworkEspionage);
@@ -586,7 +594,7 @@ public static class GlobalStats
         WriteSetting(config, "AutoSaveFreq", AutoSaveFreq);
         WriteSetting(config, "AutoSaveYears", AutoSaveYears);
         WriteSetting(config, "FogOfWarMemory", FogOfWarMemory);
-        WriteSetting(config, "ReworkShipyard", ReworkShipyard);
+        WriteSetting(config, "ShipyardComparison", ShipyardComparison);
         WriteSetting(config, "ReworkEconomy", ReworkEconomy);
         WriteSetting(config, "ReworkDiplomacy", ReworkDiplomacy);
         WriteSetting(config, "ReworkEspionage", ReworkEspionage);
