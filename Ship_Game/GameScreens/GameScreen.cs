@@ -339,9 +339,13 @@ namespace Ship_Game
             // width only — what breaks below 1920 is horizontal (Ludo). Height is handled by
             // giving one block per screen the job of absorbing it, not by a flag.
             Narrow = ScreenWidth < 1920;
-            // height only. In 16:9 and 16:10 a height above 1440 already implies 2304+ of
-            // width, so this never fires on a small screen — it is purely the zoom cue.
-            Tall = ScreenHeight > 1440;
+            // height only. In 16:9 and 16:10 a height of 1440 already implies 2304+ of width,
+            // so this never fires on a small screen — it is purely the zoom cue.
+            //
+            // Inclusive: strictly-greater made 1440p itself fall outside, which is both the
+            // second-largest slice of the Steam install base and the bench display, so the flag
+            // was unreachable on the machine meant to test it (Ludo, 25 Jul).
+            Tall = ScreenHeight >= 1440;
         }
 
         public override bool HandleInput(InputState input)

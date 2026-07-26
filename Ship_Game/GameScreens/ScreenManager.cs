@@ -769,14 +769,14 @@ namespace Ship_Game
         // screens rebuild themselves on the way (ApplyGraphics resets the device, and the
         // reset path already calls ReloadContent on every open screen).
         //
-        // The sizes that fit on the bench machine — its display is 1440 tall and the game runs
-        // windowed inside a VM, so anything taller than that hangs off the screen and cannot be
-        // judged. That rules out testing Tall (height > 1440) in a window at all: it has to be
-        // checked fullscreen, or on another machine.
-        //   1440x900  — the floor (the old MacBook Pro), what has to fit
-        //   1680x1050 — the 16:10 middle, still Narrow
-        //   1920x1080 — the reference, half the Steam install base, first size that is not Narrow
-        //   2200x1200 — a wide window that still fits the bench display
+        // Sizes chosen to fit the bench display (1440 tall, game windowed in a VM) while still
+        // crossing both flag thresholds:
+        //   1440x900  — the floor (the old MacBook Pro), what has to fit. Narrow.
+        //   1680x1050 — the 16:10 middle. Still Narrow.
+        //   1920x1080 — the reference, half the Steam install base. First size that is not Narrow.
+        //   2200x1200 — a wide window that still fits the display.
+        //   2560x1440 — Tall. Only usable FULLSCREEN on this machine: as a window it hangs off
+        //               the bottom, which is exactly why Tall became >= 1440 rather than >.
         //
         // Ctrl+Alt+R steps forward, add Shift to step back. It was Ctrl+F8 — the only function
         // key the game had left free — and it did nothing at the bench in either window mode,
@@ -788,7 +788,7 @@ namespace Ship_Game
         // Ctrl+Y on the shipyard exit.
         static readonly (int W, int H)[] TestResolutions =
         {
-            (1440, 900), (1680, 1050), (1920, 1080), (2200, 1200)
+            (1440, 900), (1680, 1050), (1920, 1080), (2200, 1200), (2560, 1440)
         };
         int TestResolutionIndex = -1; // -1 = never cycled, start from whatever is set
 
@@ -808,7 +808,9 @@ namespace Ship_Game
             GraphicsSettings settings = GraphicsSettings.FromGlobalStats();
             settings.Width = w;
             settings.Height = h;
-            settings.Mode = WindowMode.Windowed; // the sizes only mean anything in a window
+            // Windowed for every size the display can hold; the tallest one only makes sense
+            // borderless, since as a window it would hang off the bottom of a 1440 display.
+            settings.Mode = h >= 1440 ? WindowMode.Borderless : WindowMode.Windowed;
 
             // Say it on screen, not just in the log: the first bench of this tool was spent
             // guessing whether the key had even been seen. The message survives the device
