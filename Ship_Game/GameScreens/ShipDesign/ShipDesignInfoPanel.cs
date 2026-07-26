@@ -216,7 +216,8 @@ namespace Ship_Game.GameScreens.ShipDesign
         // ── the content, per Lek's spec v3 ────────────────────────────────────────────────
         void BuildRows()
         {
-            Color good = Color.LightGreen;
+            // "INF" is its own signal — the word says it, the colour was redundant
+            Color good = Color.White;
             Color energy = Color.LightSkyBlue;
             Color protect = Color.Goldenrod;
             Color engines = Color.DarkSeaGreen;
@@ -299,10 +300,15 @@ namespace Ship_Game.GameScreens.ShipDesign
         void Stat(in LocalizedText title, Func<float> value, in LocalizedText tip, Color? titleColor = null,
                   Func<float, Color> tint = null, Func<bool> vis = null, bool nonZero = false)
         {
+            // Ludoal fork: labels are WHITE — the per-family colour they used to carry is now
+            // said by the block heading above them, so tinting each label as well was a
+            // duplicate, and it competed with the delta lane for the eye. The titleColor
+            // argument is kept so the family is still declared at the call site (it documents
+            // which block a row belongs to) but it no longer reaches the screen.
             Rows.Add(new Row
             {
                 Title = title, Tip = tip, Value = value,
-                Color = titleColor ?? Color.White,
+                Color = Color.White,
                 Tint = tint, Visible = vis, NonZeroOnly = nonZero,
             });
         }
@@ -313,13 +319,19 @@ namespace Ship_Game.GameScreens.ShipDesign
             Rows.Add(new Row
             {
                 Title = title, Tip = tip, Text = text,
-                Color = titleColor, Tint = _ => valueColor, Visible = vis,
+                Color = Color.White, Tint = _ => valueColor, Visible = vis,
             });
         }
 
-        static Color Positive(float v) => v > 0f ? Color.LightGreen : Color.LightPink;
-        static Func<float, Color> Above(float threshold) => v => v > threshold ? Color.LightGreen : Color.LightPink;
-        static Func<float, Color> Above(Func<float> threshold) => v => v > threshold() ? Color.LightGreen : Color.LightPink;
+        // Ludoal fork: colour is an ATTENTION GETTER, not a status light (Ludo). A value that is
+        // fine reads white; only a value that is below its threshold — or negative where it
+        // should not be — goes pink. The permanent green said nothing and competed with the
+        // delta lane, which uses the same two colours to mean something else entirely.
+        // (Upstream player feedback, Roland-Johansen: the existing colour coding "may be
+        // distracting from the comparison that you wish to show".)
+        static Color Positive(float v) => v > 0f ? Color.White : Color.LightPink;
+        static Func<float, Color> Above(float threshold) => v => v > threshold ? Color.White : Color.LightPink;
+        static Func<float, Color> Above(Func<float> threshold) => v => v > threshold() ? Color.White : Color.LightPink;
 
         bool IsVisible(in Row r)
         {

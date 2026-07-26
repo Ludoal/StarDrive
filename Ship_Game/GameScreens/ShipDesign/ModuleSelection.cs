@@ -697,6 +697,12 @@ namespace Ship_Game
         {
             DrawStat(ref modTitlePos, GameText.Cost, mod.ActualCost(Universe), GameText.IndicatesTheProductionCostOf);
             DrawStat(ref modTitlePos, GameText.Mass2, mod.GetActualMass(Player, 1), GameText.TT_Mass);
+            // Ludoal fork: slot footprint. Upstream player feedback (Roland-Johansen): "the
+            // number of module slots is a relevant value when comparing modules while it
+            // normally isn't shown for single modules". Shown as AREA rather than "2x3" so it
+            // goes through the collector and gets a delta like every other row — a text value
+            // would be invisible to the comparison, which is the one place it matters.
+            DrawStat(ref modTitlePos, "Slots", mod.Area, GameText.TT_TotalModuleSlots);
             DrawStat(ref modTitlePos, GameText.Health, mod.ActualMaxHealth, GameText.AModulesHealthRepresentsHow);
 
             float powerDraw = mod.ActualPowerFlowMax - mod.PowerDraw;
