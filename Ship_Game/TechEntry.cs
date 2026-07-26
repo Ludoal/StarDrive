@@ -959,10 +959,14 @@ namespace Ship_Game
                 case "Reactive Armor":
                 case "Armor Explosion Reduction": data.ExplosiveRadiusReduction += unlockedBonus.Bonus; break;
                 case "Slipstreams":
-                case "Subspace Tunneling": // Slip Streams secret tech flavor name; its text promises an in-borders bonus
+                // Slip Streams secret tech flavour name. Upstream took our fix (issue 328) but
+                // filed it under FTL Speed Bonus, which grants the 30% everywhere; the tech text
+                // is explicit - "Ships traveling within your own empire's borders gain 30% bonus
+                // to their FTL speeds" - so it belongs here. Merging patch 47 brought both cases
+                // in and they collided (CS0152); theirs is the one that went.
+                case "Subspace Tunneling":
                 case "In Borders FTL Bonus": data.Traits.InBordersSpeedBonus += unlockedBonus.Bonus; break;
                 case "StarDrive Enhancement":
-                case "Subspace Tunneling": // the Slip Streams secret tech uses this flavor name - it had no case, so its +30% did nothing (issue 328)
                 case "FTL Speed Bonus": data.FTLModifier += unlockedBonus.Bonus * data.FTLModifier; break;
                 case "FTL Efficiency":
                 case "FTL Efficiency Bonus": data.FTLPowerDrainModifier -= unlockedBonus.Bonus * data.FTLPowerDrainModifier; break;
