@@ -39,6 +39,9 @@ env:
   # e.g. 1.60.00046.2 = official patch 46 + our fixes, fork build #2. Readable provenance,
   # and the in-game updater will still offer official 47+ normally (46.x < 47).
   MAJOR_MINOR: "1.60.00046"
+  # Ludoal fork: the UI rework branch builds on its own version line so the two series never
+  # get confused in ~/Downloads or in the in-game version string.
+  UI_REWORK_BASE: "1.61.00001"
 
 jobs:
   build:
@@ -58,13 +61,21 @@ jobs:
         shell: pwsh
         run: |
           $build  = '{0}' -f ${{ github.run_number }}  # fork: unpadded suffix (1.60.00045.N)
-          $version = "${env:MAJOR_MINOR}.$build"
+          # Ludoal fork: the UI rework lives on its own branch and its own version line, so a
+          # build is identifiable from the version alone — run_number is repo-wide, so both
+          # branches would otherwise share one interleaved series and become impossible to tell
+          # apart. Base 1.61.* means UI rework; 1.60.00046.* stays the playable QoL line.
+          $base = "${env:MAJOR_MINOR}"
+          if ('${{ github.ref_name }}' -eq 'ui-rework') {
+            $base = "${env:UI_REWORK_BASE}"
+          }
+          $version = "$base.$build"
           # Ludoal fork: optional public letter (45-a, 45-b…) for community releases.
           # Only tag/title change — AssemblyVersion stays numeric (System.Version +
           # in-game updater comparison both require it).
           $suffix = '${{ github.event.inputs.public_suffix }}'.Trim()
           if ($suffix) {
-            $patchNum = [int]($env:MAJOR_MINOR -split '\.')[-1]  # 00045 -> 45
+            $patchNum = [int]($base -split '\.')[-1]  # 00045 -> 45 (from the branch's own base)
             $tag   = "$($env:CODENAME.ToLower())-patch-$patchNum-$suffix"
             $title = "$($env:CODENAME) Patch $patchNum-$suffix ($version)"
           } else {
