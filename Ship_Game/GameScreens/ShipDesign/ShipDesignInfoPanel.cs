@@ -56,12 +56,22 @@ namespace Ship_Game.GameScreens.ShipDesign
         string ComparedName;
 
         // column offsets, bench values
-        public float Col0Shift = 20f;
+        // Ludoal fork (bench): 10px off the first column's left margin — it was rented at 20 and
+        // the frame had visible slack there (Ludo).
+        public float Col0Shift = 10f;
         public float Col1Shift = 10f;
 
         // Ludoal fork (spec v4): the in-frame title takes this much height before the rows
         // start. Fixed, so every design puts its first row on the same line.
         const float TitleBandHeight = 30f;
+
+        // Ludoal fork: three levels of value, no colour. Removing the per-family tints left the
+        // panel flat — everything was white, so nothing structured it vertically (Ludo, at the
+        // bench). Depth comes from brightness instead: the block headings stay cream and carry
+        // the eye down the page, the labels drop to grey and become the background, and only
+        // the numbers keep full white. The column of figures then stands out on its own, and
+        // the pink of a bad value is the single colour left on the panel, so it lands hard.
+        static readonly Color LabelGrey = new Color(168, 172, 178);
 
 
         // room a delta needs after a value: the offset it is drawn at, plus the widest delta
@@ -106,8 +116,11 @@ namespace Ship_Game.GameScreens.ShipDesign
         // left a hole between the picture and the columns (bench 46.140).
         // 250 is what 46.139 actually drew (it worked out at 32% of a 790px frame there), kept
         // as the size itself now rather than as a fraction that has to be reverse-engineered.
-        const float PlanSide = 250f;
-        const float PlanGap = 10f;
+        // Ludoal fork (bench): trimmed from 250. What reads as margin around the picture is
+        // mostly the plan's own empty space — a ship rarely fills its square — so the way to
+        // recover it is to shrink the square, not to chase a margin that is not there.
+        const float PlanSide = 220f;
+        const float PlanGap = 6f;
 
         // How far this panel is inset inside its frame. The screen builds the inner rect, so it
         // tells us here rather than us guessing a constant that would have to stay in step.
@@ -240,17 +253,9 @@ namespace Ship_Game.GameScreens.ShipDesign
             Stat(GT.BurstWpnPwrTime, () => Ds.BurstEnergyDuration, GT.TT_BurstWpnPwrTime, energy, tint: _ => Color.LightPink, vis: Ds.HasBeamDurationNegative);
             Word(GT.BurstWpnPwrTime, "INF", GT.TT_BurstWpnPwrTime, energy, good, vis: Ds.HasBeamDurationPositive);
 
-            Head("DEFENCE");
-            Stat(GT.TotalHitpoints, () => S.Health, GT.TT_HitPoints, protect, tint: Positive);
-            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, protect, tint: Positive, vis: Ds.HasRegularShields);
-            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, Color.Gold, tint: Positive, vis: Ds.HasAmplifiedMains);
-            Stat(GT.ShieldAmplify, () => (int)S.Stats.ShieldAmplifyPerShield, GT.TT_ShieldAmplify, protect, tint: Positive, nonZero: true);
-            Stat(GT.RepairRate, () => S.RepairRate, GT.TT_RepairRate, protect, tint: Positive, nonZero: true);
-            // the tooltip promises the TOTAL protection of the design, and the load-list
-            // overlay already shows EmpTolerance - show the same effective value here
-            Stat(GT.EmpProtection, () => S.EmpTolerance, GT.TT_EmpProtection, protect, tint: Positive);
-            Stat(GT.Ecm3, () => S.ECMValue, GT.TT_Ecm3, protect, tint: Positive, nonZero: true);
-
+            // Ludoal fork: MOBILITY before DEFENCE (Ludo). Reading order follows the columns —
+            // the left one now runs CONSTRUCTION, ENERGY, MOBILITY, which is what the ship IS,
+            // while the right one carries what it does in a fight.
             Head("MOBILITY");
             Stat(GT.FtlSpeed, () => S.MaxFTLSpeed, GT.TT_FtlSpeed, engines, tint: Above(20_000f), vis: Ds.IsWarpCapable);
             // FTL time right under the speed it belongs to (Ludo, at the bench)
@@ -261,6 +266,17 @@ namespace Ship_Game.GameScreens.ShipDesign
             }
             Stat(GT.SublightSpeed, () => S.MaxSTLSpeed, GT.TT_SublightSpeed, engines, tint: Above(50f));
             Stat(GT.TurnRate, () => S.RotationRadsPerSecond.ToDegrees(), GT.TT_TurnRate, engines, tint: Above(15f));
+
+            Head("DEFENCE");
+            Stat(GT.TotalHitpoints, () => S.Health, GT.TT_HitPoints, protect, tint: Positive);
+            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, protect, tint: Positive, vis: Ds.HasRegularShields);
+            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, Color.Gold, tint: Positive, vis: Ds.HasAmplifiedMains);
+            Stat(GT.ShieldAmplify, () => (int)S.Stats.ShieldAmplifyPerShield, GT.TT_ShieldAmplify, protect, tint: Positive, nonZero: true);
+            Stat(GT.RepairRate, () => S.RepairRate, GT.TT_RepairRate, protect, tint: Positive, nonZero: true);
+            // the tooltip promises the TOTAL protection of the design, and the load-list
+            // overlay already shows EmpTolerance - show the same effective value here
+            Stat(GT.EmpProtection, () => S.EmpTolerance, GT.TT_EmpProtection, protect, tint: Positive);
+            Stat(GT.Ecm3, () => S.ECMValue, GT.TT_Ecm3, protect, tint: Positive, nonZero: true);
 
             // the ordnance family was missing from the inventory sent to Lek, so its placement
             // is mine: it sits with the guns it feeds, which is where her v1 put ammo time
@@ -315,7 +331,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             Rows.Add(new Row
             {
                 Title = title, Tip = tip, Value = value,
-                Color = Color.White,
+                Color = LabelGrey,
                 Tint = tint, Visible = vis, NonZeroOnly = nonZero,
             });
         }
@@ -326,7 +342,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             Rows.Add(new Row
             {
                 Title = title, Tip = tip, Text = text,
-                Color = Color.White, Tint = _ => valueColor, Visible = vis,
+                Color = LabelGrey, Tint = _ => valueColor, Visible = vis,
             });
         }
 
