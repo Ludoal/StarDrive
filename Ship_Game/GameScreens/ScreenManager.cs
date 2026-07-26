@@ -8,7 +8,9 @@ using SDUtils;
 using Ship_Game.Audio;
 using Ship_Game.GameScreens;
 using Ship_Game.GameScreens.DiplomacyScreen;
+using Ship_Game.GameScreens.MainMenu; // Ludoal fork: GraphicsSettings, for the resolution test tool
 using Ship_Game.Utils;
+using SDGraphics.Input; // Ludoal fork: Keys, for the resolution test tool
 using SynapseGaming.LightingSystem.Core;
 using SynapseGaming.LightingSystem.Lights;
 using SynapseGaming.LightingSystem.Rendering;
@@ -761,10 +763,52 @@ namespace Ship_Game
             GameAudio.StopGenericMusic(fadeout: true);
             CurrentMusic = null;
         }
+        // ── Ludoal fork: resolution test tool ────────────────────────────────────────────
+        // Checking a screen at three sizes used to mean quit, change, relaunch, three times
+        // over. This cycles the window through the sizes that matter with one key, and the
+        // screens rebuild themselves on the way (ApplyGraphics resets the device, and the
+        // reset path already calls ReloadContent on every open screen).
+        //
+        // The list is the UI floor, the reference size, and the far end of the range:
+        //   1440x900  — the floor (the old MacBook Pro), what has to fit
+        //   1920x1080 — the reference, half the Steam install base
+        //   2560x1440 — the wide end, where Tall and the delta lanes get room
+        //
+        // Ctrl+F8 steps forward, Ctrl+Shift+F8 steps back. F8 is the only function key still
+        // free — F1-F7, F9, F11 and F12 are all bound, several of them by us. Dev builds only:
+        // it is a bench instrument, not a player feature.
+        static readonly (int W, int H)[] TestResolutions =
+        {
+            (1440, 900), (1920, 1080), (2560, 1440)
+        };
+        int TestResolutionIndex = -1; // -1 = never cycled, start from whatever is set
+
+        void CycleTestResolution(InputState input)
+        {
+            if (!GlobalStats.VerboseLogging)
+                return; // dev instrument: off unless VerboseLogging is on in the config
+
+            if (!input.IsCtrlKeyDown || !input.KeyPressed(Keys.F8))
+                return;
+
+            int step = input.IsShiftKeyDown ? -1 : 1;
+            int count = TestResolutions.Length;
+            TestResolutionIndex = ((TestResolutionIndex + step) % count + count) % count;
+            (int w, int h) = TestResolutions[TestResolutionIndex];
+
+            GraphicsSettings settings = GraphicsSettings.FromGlobalStats();
+            settings.Width = w;
+            settings.Height = h;
+            settings.Mode = WindowMode.Windowed; // the sizes only mean anything in a window
+            Log.Write(ConsoleColor.Cyan, $"TestResolution: {w}x{h}");
+            StarDriveGame.Instance?.ApplyGraphics(settings);
+        }
+
         public void Update(UpdateTimes elapsed)
         {
             PerformHotLoadTasks(elapsed);
             input.Update(elapsed); // analyze input state for this frame
+            CycleTestResolution(input); // Ludoal fork: dev tool, see below
             AddPendingScreens();
 
             bool otherScreenHasFocus = !StarDriveGame.Instance?.IsActive ?? false;
