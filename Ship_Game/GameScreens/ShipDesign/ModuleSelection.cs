@@ -551,37 +551,33 @@ namespace Ship_Game
             }
 
             // Concat ship class restrictions
-            string shipRest = "";
-            bool specialString = false;
+            //
+            // Ludoal fork, three bugs in one block (field report: modules showing
+            // "All Hulls" FOLLOWED by a list of abbreviations, which contradicts itself):
+            //  1. specialString was only set inside the `destroyers` branch. With destroyers
+            //     off — the default — the other branch wrote "All Hulls" without setting it,
+            //     so the abbreviation block ran anyway and appended to it.
+            //  2. `!specialString && !A || !B || !C` binds as `(!specialString && !A) || !B ...`
+            //     in C#, so the guard only ever protected the first term. Even set, it leaked.
+            //  3. Duplicated tests (BattleshipModule twice, CruiserModule twice) meant
+            //     Battleship was never actually checked on the no-destroyer path.
+            //
+            // Rewritten as one predicate: unrestricted means every hull class in play accepts
+            // it. Destroyer only counts when destroyers are enabled at all.
             bool destroyers = GlobalStats.Defaults.UseDestroyers;
+            bool allHulls = mod.DroneModule && mod.FighterModule && mod.CorvetteModule
+                         && mod.FrigateModule && mod.CruiserModule && mod.BattleshipModule
+                         && mod.CapitalModule && mod.PlatformModule && mod.StationModule
+                         && mod.FreighterModule && (!destroyers || mod.DestroyerModule);
 
-            if (destroyers)
+            string shipRest;
+            if (allHulls)
             {
-                if (mod.DroneModule && mod.FighterModule && mod.CorvetteModule 
-                    && mod.FrigateModule && mod.DestroyerModule && mod.CruiserModule 
-                    && mod.BattleshipModule && mod.BattleshipModule && mod.PlatformModule 
-                    && mod.StationModule && mod.FreighterModule)
-                {
-                    shipRest = "All Hulls";
-                    specialString = true;
-                }
+                shipRest = "All Hulls";
             }
-
-            if (!destroyers)
+            else
             {
-                if (mod.FighterModule && mod.CorvetteModule && mod.FrigateModule 
-                    && mod.CruiserModule && mod.CruiserModule && mod.CapitalModule 
-                    && mod.PlatformModule && mod.StationModule && mod.FreighterModule)
-                {
-                    shipRest = "All Hulls";
-                }
-            }
-
-            if (!specialString && !mod.DroneModule || (!mod.DestroyerModule && destroyers) 
-                     || !mod.FighterModule || !mod.CorvetteModule || !mod.FrigateModule 
-                     || !mod.CruiserModule || !mod.BattleshipModule  || !mod.CapitalModule 
-                     || !mod.PlatformModule || !mod.StationModule || !mod.FreighterModule)
-            {
+                 shipRest = "";
                  if (mod.DroneModule)                         shipRest += "Dr ";
                  if (mod.FighterModule)                       shipRest += "Fi ";
                  if (mod.CorvetteModule)                      shipRest += "Co ";
@@ -592,6 +588,7 @@ namespace Ship_Game
                  if (mod.CapitalModule)                       shipRest += "Ca ";
                  if (mod.FreighterModule)                     shipRest += "Frt ";
                  if (mod.PlatformModule || mod.StationModule) shipRest += "Orb ";
+                 if (shipRest.Length == 0)                    shipRest = "None";
             }
 
             batch.DrawString(Fonts.Arial8Bold, Localizer.Token(GameText.Restrictions)+": "+rest, modTitlePos, Color.Orange);
