@@ -959,6 +959,7 @@ namespace Ship_Game
                 case "Reactive Armor":
                 case "Armor Explosion Reduction": data.ExplosiveRadiusReduction += unlockedBonus.Bonus; break;
                 case "Slipstreams":
+                case "Subspace Tunneling": // Slip Streams secret tech flavor name; its text promises an in-borders bonus
                 case "In Borders FTL Bonus": data.Traits.InBordersSpeedBonus += unlockedBonus.Bonus; break;
                 case "StarDrive Enhancement":
                 case "Subspace Tunneling": // the Slip Streams secret tech uses this flavor name - it had no case, so its +30% did nothing (issue 328)

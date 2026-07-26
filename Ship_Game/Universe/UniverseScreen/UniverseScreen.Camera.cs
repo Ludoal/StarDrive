@@ -157,13 +157,11 @@ namespace Ship_Game
 
             SnapViewTo(new(s.Position.X, s.Position.Y + 400, 2500), 5f, 2f);
             LookingAtPlanet = false;
-            // an immobile ship (station/platform) has nothing to chase - engaging the
-            // follow mode on it just trapped the camera (field report: could not zoom
-            // out from a station-built notification). Snap and select only.
+            // an immobile ship (station/platform) has nothing to chase: engaging follow
+            // mode on it traps the camera (field report: could not zoom out from a
+            // station-built notification). Snap and select only.
             if (s.IsPlatformOrStation)
                 return;
-            // snappingToShip follows ShipToView - without this the camera snapped to
-            // whatever ship was viewed LAST (station-built notifications zoomed wrong)
             ShipToView = s;
             snappingToShip = true;
             ViewingShip = true;
