@@ -57,6 +57,19 @@ namespace Ship_Game
         public readonly bool LowRes;
         public readonly bool HiRes;
 
+        // Ludoal fork: the two flags that replace LowRes/HiRes as screens get reworked. They are
+        // deliberately SEPARATE and one-dimensional — the legacy pair ORs a width test with a
+        // height test, so a single flag meant two different things and neither could be reasoned
+        // about. Our floor is 1440x900 (the old MacBook Pro), so nothing below that is served.
+        //
+        // Narrow: the band that needs FOLDING — a font size down, abbreviations, tighter spacing.
+        // Tall:   room to ZOOM — a font size up, more generous icons. Never adds content.
+        //
+        // A screen adopts these when it is reworked; LowRes keeps its old meaning for the ones
+        // still untouched, and dies with the last of them.
+        public readonly bool Narrow;
+        public readonly bool Tall;
+
         // @return TRUE if content was loaded this frame
         public bool DidLoadContent { get; private set; }
 
@@ -148,6 +161,12 @@ namespace Ship_Game
 
             LowRes = ScreenWidth <= 1366 || ScreenHeight <= 720;
             HiRes  = ScreenWidth > 1920 || ScreenHeight > 1400;
+            // Ludoal fork: width only — what breaks below 1920 is horizontal (Ludo). Height is
+            // handled by giving one block per screen the job of absorbing it, not by a flag.
+            Narrow = ScreenWidth < 1920;
+            // Ludoal fork: height only. In 16:9 and 16:10 a height above 1440 already implies
+            // 2304+ of width, so this never fires on a small screen — it is purely the zoom cue.
+            Tall = ScreenHeight > 1440;
 
             Func<int> simTurnSource = null;
             if (parent is UniverseScreen us)

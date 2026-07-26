@@ -93,11 +93,19 @@ namespace Ship_Game
             P = settings;
         }
         
-        Graphics.Font DescriptionTextFont => LowRes ? Fonts.Arial10 
-                                                    : HiRes ? Fonts.Arial14Bold : Fonts.Arial12;
+        // Ludoal fork: first screen converted to Narrow/Tall. Same three sizes as before, but the
+        // small one now covers the whole sub-1920 band instead of only sub-1366, and the large
+        // one keys off height rather than either dimension.
+        Graphics.Font DescriptionTextFont => Narrow ? Fonts.Arial10
+                                                    : Tall ? Fonts.Arial14Bold : Fonts.Arial12;
 
         public override void LoadContent()
         {
+            // NOTE (Ludoal fork): the LowRes branches left in this screen — this one, and the
+            // Arial8Bold / Right+20 / Y-50 block below — are EMERGENCY folds written for 1280.
+            // They stay on LowRes on purpose: moving them to Narrow would apply them at 1680,
+            // where a title jumping from y=44 to y=10 and a label landing 20px from its box make
+            // no sense. Only the font sizes were converted.
             TitleBar = Add(new Menu2(ScreenWidth / 2 - 203, (LowRes ? 10 : 44), 406, 80));
             var titlePos = new Vector2(TitleBar.CenterX - Fonts.Laserian14.MeasureString(Localizer.Token(GameText.DesignYourRace)).X / 2f,
                                        TitleBar.CenterY - Fonts.Laserian14.LineSpacing / 2);
@@ -677,8 +685,8 @@ namespace Ship_Game
             public SelectedTraitsSummary(RaceDesignScreen screen)
             {
                 Screen = screen;
-                Font = screen.LowRes ? Fonts.Arial10 
-                                     : screen.HiRes ? Fonts.Arial14Bold : Fonts.Arial12Bold;
+                Font = screen.Narrow ? Fonts.Arial10
+                                     : screen.Tall ? Fonts.Arial14Bold : Fonts.Arial12Bold;
             }
 
             public override bool HandleInput(InputState input)
@@ -707,7 +715,7 @@ namespace Ship_Game
                         switchedToNegative = true;
                         line = 0;
                         cursor.Y = r.Y;
-                        cursor.X += Font.TextWidth(title) + (Screen.LowRes ? 50 : Screen.HiRes ? 150 : 100);
+                        cursor.X += Font.TextWidth(title) + (Screen.Narrow ? 50 : Screen.Tall ? 150 : 100);
                     }
 
                     if (t.Selected)
