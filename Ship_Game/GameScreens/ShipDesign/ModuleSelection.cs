@@ -340,7 +340,7 @@ namespace Ship_Game
                     // one has a hangar and this one hasn't" is information worth a row). The
                     // delta still shows, so the row says how much is being given up.
                     cursor.Y += font.LineSpacing;
-                    string title = u.Title + ":";
+                    string title = u.Title; // no trailing colon, same as the drawn rows
                     var statCursor = new Vector2(cursor.X + spacing, cursor.Y);
                     batch.DrawString(font, title, new Vector2(statCursor.X - 20 - font.TextWidth(title), statCursor.Y), dim);
                     batch.DrawString(font, "-", statCursor, dim);

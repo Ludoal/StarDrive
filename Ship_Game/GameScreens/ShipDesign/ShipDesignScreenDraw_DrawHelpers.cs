@@ -73,11 +73,14 @@ namespace Ship_Game
             cursor.Y += Fonts.Arial12Bold.LineSpacing * lines;
         }
 
+        // Ludoal fork: no trailing colon on stat labels (Ludo). The columns are right-aligned
+        // against a fixed value column, so the separator was doing no work — it only added a
+        // ragged edge to an otherwise clean vertical line.
         static StatValue MakeStat(in LocalizedText title, float value, LocalizedText tooltip, Color titleColor, ValueTint tint = ValueTint.None, float spacing = 165, int lineSpacing = 1)
-            => new StatValue(title.Text+":", value, tooltip, titleColor, tint, spacing, lineSpacing);
+            => new StatValue(title.Text, value, tooltip, titleColor, tint, spacing, lineSpacing);
 
         static StatValue TintedValue(in LocalizedText title, float value, LocalizedText tooltip, Color titleColor, float spacing = 165, int lineSpacing = 1)
-            => new StatValue(title.Text+":", value, tooltip, titleColor, ValueTint.GoodBad, spacing, lineSpacing);
+            => new StatValue(title.Text, value, tooltip, titleColor, ValueTint.GoodBad, spacing, lineSpacing);
 
         void DrawStatColor(ref Vector2 cursor, StatValue stat)
         {

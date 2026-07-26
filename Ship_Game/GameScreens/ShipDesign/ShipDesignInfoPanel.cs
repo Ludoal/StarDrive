@@ -535,7 +535,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                 {
                     var dim = new Color(105, 105, 105);
                     cursor.Y += headFont.LineSpacing;
-                    string missTitle = r.Title.Text + ":";
+                    string missTitle = r.Title.Text; // no trailing colon, same as the drawn rows
                     var missCursor = new Vector2(cursor.X + spacing, cursor.Y);
                     batch.DrawString(headFont, missTitle,
                                      new Vector2(missCursor.X - 20f - headFont.TextWidth(missTitle), missCursor.Y), dim);
