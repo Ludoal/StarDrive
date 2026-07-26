@@ -774,9 +774,12 @@ namespace Ship_Game
         //   1920x1080 — the reference, half the Steam install base
         //   2560x1440 — the wide end, where Tall and the delta lanes get room
         //
-        // Ctrl+F8 steps forward, Ctrl+Shift+F8 steps back. F8 is the only function key still
-        // free — F1-F7, F9, F11 and F12 are all bound, several of them by us. Dev builds only:
-        // it is a bench instrument, not a player feature.
+        // Ctrl+Alt+R steps forward, add Shift to step back. It was Ctrl+F8 — the only function
+        // key the game had left free — and it did nothing at the bench in either window mode,
+        // with the config gate proven to be passing. The likeliest reason is that the VM eats
+        // it before the guest ever sees it, so this moves off the function row entirely.
+        // R alone is bound (exit the research screen) but has no modifiers, and this runs
+        // before the screens get their turn anyway.
         static readonly (int W, int H)[] TestResolutions =
         {
             (1440, 900), (1920, 1080), (2560, 1440)
@@ -788,7 +791,7 @@ namespace Ship_Game
             // No gate: this branch is the UI rework build, it never ships to a player. The
             // VerboseLogging gate that was here only added a way for the tool to be silently
             // absent, which is exactly what happened on its first bench (46.142).
-            if (!input.IsCtrlKeyDown || !input.KeyPressed(Keys.F8))
+            if (!input.IsCtrlKeyDown || !input.IsAltKeyDown || !input.KeyPressed(Keys.R))
                 return;
 
             int step = input.IsShiftKeyDown ? -1 : 1;
