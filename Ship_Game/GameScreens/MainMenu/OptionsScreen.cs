@@ -302,7 +302,7 @@ namespace Ship_Game
             // and they are beta, so they get a door of their own rather than four more
             // checkboxes in this list.
             var rework = Add(new UIButton(ButtonStyle.Default,
-                             new Vector2(RightArea.Right - 206, RightArea.Bottom + 22), "Rework Options"));
+                             new Vector2(RightArea.Right - 412, RightArea.Bottom + 60), "Rework Options"));
             rework.OnClick = button => ScreenManager.AddScreen(new ReworkOptionsScreen(this));
             rework.Tooltip = "Opt in to the screens this fork has rebuilt (beta)";
 
