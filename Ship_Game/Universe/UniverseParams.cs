@@ -79,6 +79,9 @@ public class UniverseParams
     [StarData(DefaultValue=true)] public bool ShowAllDesigns = true;
     [StarData] public bool FilterOldModules;
 
+    // (Rework screen toggles live in GlobalStats, not here: which interface a player prefers
+    // is a player preference, not a property of one game.)
+
     [StarData] public bool DisableRemnantStory;
     [StarData] public bool EnableRandomizedAIFleetSizes;
     [StarData] public bool DisableAlternateAITraits;

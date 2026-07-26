@@ -509,7 +509,7 @@ namespace Ship_Game
                         break;
                     case "Budget":
                         GameAudio.EchoAffirmative();
-                        ScreenManager.AddScreen(new BudgetScreen(ParentUniverse));
+                        ScreenManager.AddScreen(GameScreens.ReworkScreens.Economy(ParentUniverse));
                         break;
                     case "Main Menu":
                         GameAudio.EchoAffirmative();

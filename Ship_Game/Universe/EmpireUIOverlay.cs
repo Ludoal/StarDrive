@@ -391,7 +391,7 @@ namespace Ship_Game
                 if (input.KeyPressed(Keys.T))
                 {
                     GameAudio.EchoAffirmative();
-                    Universe.ScreenManager.AddScreen(new BudgetScreen(Universe));
+                    Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Economy(Universe));
                     return true;
                 }
                 if (input.KeyPressed(Keys.Y))
@@ -488,7 +488,7 @@ namespace Ship_Game
                         else if (b.launches == "Budget")
                         {
                             GameAudio.EchoAffirmative();
-                            Universe.ScreenManager.AddScreen(new BudgetScreen(Universe));
+                            Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Economy(Universe));
                         }
 
                         if (b.launches == "Main Menu")
@@ -631,7 +631,7 @@ namespace Ship_Game
                             GameAudio.EchoAffirmative();
                             if (!(caller is BudgetScreen))
                             {
-                                Universe.ScreenManager.AddScreen(new BudgetScreen(Universe));
+                                Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Economy(Universe));
                             }
                         }
                         else if (b.launches == "Main Menu")

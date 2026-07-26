@@ -772,6 +772,7 @@
     <Compile Include="Ship_Game\Body.cs" />
     <Compile Include="Ship_Game\Header.cs" />
     <Compile Include="Ship_Game\GameScreens\Universe\BudgetScreen.cs" />
+    <Compile Include="Ship_Game\GameScreens\Universe\BudgetScreenRework.cs" />
     <Compile Include="Ship_Game\Gameplay\Relationship.cs" />
     <Compile Include="Ship_Game\GameScreens\DiplomacyScreen\ItemToOffer.cs" />
     <Compile Include="Ship_Game\ToolTip.cs" />
@@ -901,6 +902,8 @@
     <Compile Include="Ship_Game\ModEntry.cs" />
     <Compile Include="Ship_Game\Gameplay\RacialTraits.cs" />
     <Compile Include="Ship_Game\AI\StrategyAI\WarGoals\War.cs" />
+    <Compile Include="Ship_Game\GameScreens\ReworkScreens.cs" />
+    <Compile Include="Ship_Game\GameScreens\MainMenu\ReworkOptionsScreen.cs" />
     <Compile Include="Ship_Game\PopupWindow.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\EventPopup.cs" />
     <Compile Include="Ship_Game\GameScreens\MainMenu\MainMenuScreen.cs" />

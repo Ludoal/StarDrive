@@ -171,6 +171,20 @@ public static class GlobalStats
     // (the classic pre-46-a look). Default off = the map stays dark, live sensors only.
     public static bool FogOfWarMemory;
 
+    // Ludoal fork: the screens this fork has rebuilt, opt-in from Options -> Rework Options.
+    //
+    // OFF by default, deliberately: these are BETA. They have not all been through enough
+    // bench time to be imposed on someone loading a save, and an experienced player should
+    // meet the door they already know unless they choose otherwise. They flip to on by
+    // default once they are considered solid.
+    //
+    // Applied when the screen opens, not live: two complete layouts never coexist on screen.
+    // A player preference rather than a game setting — it holds across every save.
+    public static bool ReworkShipyard;
+    public static bool ReworkEconomy;
+    public static bool ReworkDiplomacy;
+    public static bool ReworkEspionage;
+
     // Ludoal fork: symmetric ship design is a PLAYER preference, not a save property —
     // it used to live on the Empire ([StarData]) so every existing save re-imposed ON.
     // Default off.
@@ -371,6 +385,10 @@ public static class GlobalStats
         GetSetting(config, "AutoSaveFreq", ref AutoSaveFreq);
         GetSetting(config, "AutoSaveYears", ref AutoSaveYears);
         GetSetting(config, "FogOfWarMemory", ref FogOfWarMemory);
+        GetSetting(config, "ReworkShipyard", ref ReworkShipyard);
+        GetSetting(config, "ReworkEconomy", ref ReworkEconomy);
+        GetSetting(config, "ReworkDiplomacy", ref ReworkDiplomacy);
+        GetSetting(config, "ReworkEspionage", ref ReworkEspionage);
         GetSetting(config, "SymmetricDesign", ref SymmetricDesign);
         GetSetting(config, "AntiAliasSamples", ref AntiAlias);
         GetSetting(config, "PostProcessBloom", ref RenderBloom);
@@ -568,6 +586,10 @@ public static class GlobalStats
         WriteSetting(config, "AutoSaveFreq", AutoSaveFreq);
         WriteSetting(config, "AutoSaveYears", AutoSaveYears);
         WriteSetting(config, "FogOfWarMemory", FogOfWarMemory);
+        WriteSetting(config, "ReworkShipyard", ReworkShipyard);
+        WriteSetting(config, "ReworkEconomy", ReworkEconomy);
+        WriteSetting(config, "ReworkDiplomacy", ReworkDiplomacy);
+        WriteSetting(config, "ReworkEspionage", ReworkEspionage);
         WriteSetting(config, "SymmetricDesign", SymmetricDesign);
         WriteSetting(config, "AntiAliasSamples", AntiAlias);
         WriteSetting(config, "PostProcessBloom", RenderBloom);
