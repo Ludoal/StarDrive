@@ -552,7 +552,7 @@ namespace Ship_Game
                         if (ParentUniverse.Player.LegacyEspionageEnabled)
                             ScreenManager.AddScreen(new EspionageScreen(ParentUniverse));
                         else
-                            ScreenManager.AddScreen(new InfiltrationScreen(ParentUniverse));
+                            ScreenManager.AddScreen(GameScreens.ReworkScreens.Espionage(ParentUniverse));
                         GameAudio.EchoAffirmative();
                         break;
                     case "Empire":
@@ -560,7 +560,7 @@ namespace Ship_Game
                         GameAudio.EchoAffirmative();
                         break;
                     case "Diplomacy":
-                        ScreenManager.AddScreen(new MainDiplomacyScreen(ParentUniverse));
+                        ScreenManager.AddScreen(GameScreens.ReworkScreens.Diplomacy(ParentUniverse));
                         GameAudio.EchoAffirmative();
                         break;
                     case "?":

@@ -2,107 +2,25 @@ using System;
 using Microsoft.Xna.Framework.Graphics;
 using SDGraphics;
 using SDGraphics.Input;
-using SDUtils;
 using Ship_Game.Audio;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
+using Ship_Game.GameScreens.Espionage;
+using Ship_Game.GameScreens.EspionageNew;
+using System.Drawing;
 using Color = Microsoft.Xna.Framework.Color;
-using Font = Ship_Game.Graphics.Font;
 
 namespace Ship_Game.GameScreens
 {
-    // Ludoal fork v2 (player design): one COLUMN per major empire, everything built
-    // ONCE in LoadContent (the previous draft leaked: EmpireButton re-Added elements
-    // on every layout pass). Portraits Diplomacy-style, non-selectable. Sections:
-    // BUDGET (player: budget multiplier + cost; others: infiltration weight, limit
-    // level, points/turn, target level + progress), DEFENSE (player: defense weight;
-    // others: their shield ratio), then the five levels with ALL options — passives
-    // and actives with live checkboxes, grayed until their level is reached.
     public sealed class InfiltrationScreen : GameScreen
     {
         public readonly UniverseScreen Universe;
-        public Empire SelectedEmpire; // legacy bookkeeping (external callers)
+        public Empire SelectedEmpire;
         readonly Empire Player;
         public static readonly Color PanelBackground = new Color(23, 20, 14);
-
-        Menu2 TitleBar;
-        Vector2 TitlePos;
-        Menu2 DMenu;
-        Rectangle LeftRect;
-
-        Array<EmpireColumn> Columns = new();
-
-        Font Font12 = Fonts.Arial12;
-        Font Font12Bold = Fonts.Arial12Bold;
-        Font NameFont = Fonts.Arial14Bold;
-
-        // fixed vertical anatomy (aligned across columns)
-        const int HeaderH = 110;
-        const int BudgetH = 200; // sliders overflow their rect (title above, ticks below): breathe
-        const int DefenseH = 52;
-
-        class EmpireColumn
-        {
-            public Empire E;
-            public Ship_Game.Espionage Esp; // null for the player
-            public Rectangle Rect;
-            public FloatSlider Weight;      // infiltration weight (others) / defense weight (player)
-            public FloatSlider Budget;      // player only
-            public UIButton LimitBtn;       // others only
-            public Array<OpBox> Ops = new();
-        }
-
-        // one live operation checkbox, bound exactly like the legacy ops panels
-        class OpBox
-        {
-            public bool Flag;
-            public readonly UICheckBox Box;
-            public readonly UILabel Turns;
-            public readonly Ship_Game.Espionage Esp;
-            public readonly InfiltrationOpsType Type;
-            public readonly byte Level;
-            readonly Empire Player;
-            readonly bool UpdatesDefense;
-
-            public OpBox(GameScreen screen, Ship_Game.Espionage esp, Empire player, byte level,
-                         InfiltrationOpsType type, LocalizedText label, LocalizedText tip,
-                         Vector2 pos, float turnsX, bool updatesDefense = false)
-            {
-                Esp = esp;
-                Type = type;
-                Level = level;
-                Player = player;
-                UpdatesDefense = updatesDefense;
-                Box = screen.Add(new UICheckBox(() => Flag, Fonts.Arial12, label, tip));
-                Box.Pos = pos;
-                Box.OnChange = OnChanged;
-                Turns = screen.Add(new UILabel(new Vector2(turnsX, pos.Y), "", Fonts.Arial12));
-            }
-
-            void OnChanged(UICheckBox b)
-            {
-                if (Flag)
-                    Esp.ActivateOpsIfAble(Type);
-                else
-                    Esp.RemoveOperation(Type);
-                if (UpdatesDefense)
-                    Player.UpdateEspionageDefenseRatio();
-            }
-
-            public void Sync()
-            {
-                bool reached = Esp.Level >= Level;
-                Box.Enabled = reached;
-                Flag = reached && Esp.IsOperationActive(Type);
-                Box.TextColor = reached ? Color.White : Color.Gray;
-                Turns.Visible = reached;
-                if (reached)
-                {
-                    Turns.Text = Esp.RemainingTurnsForOps(Type);
-                    Turns.Color = Flag ? Color.LightGreen : Color.White;
-                }
-            }
-        }
+        EspionageLevelPanel Level1, Level2, Level3, Level4, Level5;
+        UILabel InfiltrationTitle;
+        Color SeperatorColor;
 
         public InfiltrationScreen(UniverseScreen parent) : base(parent, toPause: parent)
         {
@@ -116,274 +34,70 @@ namespace Ship_Game.GameScreens
 
         public override void LoadContent()
         {
-            string espTitle = Localizer.Token(GameText.EspionageOverview);
-            var titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            TitleBar = new Menu2(titleRect);
-            TitlePos = new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString(espTitle).X / 2f,
-                                   titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
+            var titleRect = new Rectangle(ScreenWidth / 2 - 200, 44, 400, 80);
+            Add(new Menu2(titleRect));
 
-            // Disable Messages rides right of the title (player design)
-            Add(new UICheckBox(titleRect.Right + 30, titleRect.Y + 32, () => Player.data.SpyMute,
-                               Fonts.Arial12, "Disable Messages", "Disable all Espionage notifications."));
-
-            LeftRect = new Rectangle(2, titleRect.Bottom + 5, ScreenWidth - 10, ScreenHeight - titleRect.Bottom - 7);
-            DMenu = new Menu2(LeftRect);
-            CloseButton(LeftRect.Right - 40, LeftRect.Y + 20);
-
-            Empire[] majors = Universe.UState.ActiveMajorEmpires;
-            int n = majors.Length.LowerBound(1);
-            int colW = ((LeftRect.Width - 40) / n).UpperBound(230);
-            int totalW = colW * n;
-            int x0 = LeftRect.X + (LeftRect.Width - totalW) / 2;
-
-            for (int i = 0; i < majors.Length; ++i)
+            if (ScreenHeight > 766)
             {
-                Empire e = majors[i];
-                var col = new Rectangle(x0 + i * colW, LeftRect.Y + 26, colW - 8, LeftRect.Height - 52); // centered vertically in the frame
-                var c = new EmpireColumn { E = e, Rect = col };
-                Columns.Add(c);
+                Add(new Menu2(titleRect));
 
-                bool known = e == Player || Player.IsKnown(e);
-                if (!known || e.IsDefeated)
-                    continue;
-
-                float budgetY = col.Y + HeaderH + 24;
-                if (e == Player)
-                {
-                    // BUDGET: multiplier (+ cost label drawn live); DEFENSE: weight
-                    var budgetRect = new Rectangle(col.X + 8, (int)budgetY + 4, col.Width - 60, 40);
-                    c.Budget = new FloatSlider(SliderStyle.Decimal1, budgetRect, GameText.EspioangeBudgetMuliplier, 1f, 5f, value: Player.EspionageBudgetMultiplier);
-                    c.Budget.Tip = GameText.EspioangeBudgetMuliplierTip;
-                    c.Budget.OnChange = s =>
-                    {
-                        Player.UpdateEspionageDefenseRatio();
-                        Player.SetEspionageBudgetMultiplier(s.AbsoluteValue.RoundToFractionOf10());
-                    };
-                    Add(c.Budget);
-
-                    var defRect = new Rectangle(col.X + 8, col.Y + HeaderH + BudgetH + 52, col.Width - 60, 40); // below the DEFENSE band
-                    c.Weight = new FloatSlider(defRect, GameText.EspioangeDefenseWeight, min: 0,
-                                               max: Empire.MaxEspionageDefenseWeight, value: Player.EspionageDefenseWeight);
-                    c.Weight.Tip = GameText.EspioangeDefenseWeightTip;
-                    c.Weight.OnChange = s =>
-                    {
-                        Player.SetEspionageDefenseWeight(s.AbsoluteValue.RoundUpTo(1));
-                        Player.UpdateEspionageDefenseRatio();
-                    };
-                    Add(c.Weight);
-                    continue;
-                }
-
-                Ship_Game.Espionage esp = Player.GetEspionage(e);
-                c.Esp = esp;
-
-                var weightRect = new Rectangle(col.X + 8, (int)budgetY + 4, col.Width - 60, 40);
-                c.Weight = new FloatSlider(weightRect, GameText.EspioangeInfiltrationWeight, min: 0, max: 10, value: esp.GrossWeight);
-                c.Weight.Tip = GameText.EspioangeInfiltrationWeightTip;
-                c.Weight.OnChange = s =>
-                {
-                    esp.SetWeight(s.AbsoluteValue.RoundUpTo(1));
-                    Player.UpdateEspionageDefenseRatio();
-                };
-                Add(c.Weight);
-
-                c.LimitBtn = Add(new UIButton(ButtonStyle.Low100, new Vector2(col.X + 8, budgetY + 44), GameText.EspionageLimitLevel));
-                c.LimitBtn.Tooltip = GameText.EspionageLimitLevelTip;
-                c.LimitBtn.AcceptRightClicks = true;
-                c.LimitBtn.OnClick = b =>
-                {
-                    byte limit = (byte)(esp.LimitLevel + (Input.RightMouseReleased ? -1 : 1));
-                    if (limit > Ship_Game.Espionage.MaxLevel) limit = 1;
-                    if (limit < 1) limit = Ship_Game.Espionage.MaxLevel;
-                    esp.SetLimitLevel(limit);
-                };
-
-                // the five levels, ALL options — grayed until reached
-                float y = col.Y + HeaderH + BudgetH + DefenseH + 24;
-                for (byte level = 1; level <= Ship_Game.Espionage.MaxLevel; ++level)
-                {
-                    y += 24; // band
-                    y += Font12.LineSpacing + 4; // passive line
-                    foreach ((InfiltrationOpsType type, LocalizedText label, LocalizedText tip, bool def) in ActiveOpsFor(level))
-                    {
-                        c.Ops.Add(new OpBox(this, esp, Player, level, type, label, tip,
-                                            new Vector2(col.X + 8, y), col.Right - 64, def));
-                        y += Font12.LineSpacing + 5;
-                    }
-                    y += 6;
-                }
+                // "Espionage"
+                string espionage = Localizer.Token(GameText.EspionageOverview);
+                var titlePos = new Vector2(titleRect.Center.X - Fonts.Laserian14.MeasureString(espionage).X / 2f,
+                                           titleRect.Center.Y - Fonts.Laserian14.LineSpacing / 2);
+                Label(titlePos, espionage, Fonts.Laserian14, Colors.Cream);
             }
 
+
+            var ourRect = new Rectangle(ScreenWidth / 2 - 700, (ScreenHeight > 768f ? titleRect.Y + titleRect.Height + 5 : 44), 1400, 700);
+            Add(new Menu2(ourRect));
+
+            CloseButton(ourRect.Right - 40, ourRect.Y + 20);
+
+            InfiltrationTitle = Add(new UILabel("INFILTRATION LEVELS", Fonts.Arial20Bold, Color.Wheat));
+            var levelRect = new Rectangle(ourRect.X + 35, ourRect.Y + 430, 250, 250);
+            Level1 = Add(new EspionageLevelPanel(this, Player, levelRect, 1));
+            levelRect = new Rectangle(levelRect.Right + 20, levelRect.Y, 250, 250);
+            Level2 = Add(new EspionageLevelPanel(this, Player, levelRect, 2));
+            levelRect = new Rectangle(levelRect.Right + 20, levelRect.Y, 250, 250);
+            Level3 = Add(new EspionageLevelPanel(this, Player, levelRect, 3));
+            levelRect = new Rectangle(levelRect.Right + 20, levelRect.Y, 250, 250);
+            Level4 = Add(new EspionageLevelPanel(this, Player, levelRect, 4));
+            levelRect = new Rectangle(levelRect.Right + 20, levelRect.Y, 250, 250);
+            Level5 = Add(new EspionageLevelPanel(this, Player, levelRect, 5));
+            Add(new InfiltrationPanel(this, Universe.Player, ourRect));
+            RefreshSelectedEmpire(Player);
             GameAudio.MuteRacialMusic();
         }
 
-        static (InfiltrationOpsType, LocalizedText, LocalizedText, bool)[] ActiveOpsFor(byte level) => level switch
+        public override void PerformLayout()
         {
-            2 => new[] { (InfiltrationOpsType.PlantMole, (LocalizedText)GameText.PlantAgent, (LocalizedText)GameText.PlantAgentTip, false) },
-            3 => new[] { (InfiltrationOpsType.Uprise, (LocalizedText)GameText.ArrangeUprise, (LocalizedText)GameText.ArrangeUpriseTip, false),
-                         (InfiltrationOpsType.CounterEspionage, (LocalizedText)GameText.CounterEspioangeOps, (LocalizedText)GameText.CounterEspioangeOpsTip, true) },
-            4 => new[] { (InfiltrationOpsType.Sabotage, (LocalizedText)GameText.Sabotage, (LocalizedText)GameText.EspioangeOpsSabotageTip, false),
-                         (InfiltrationOpsType.SlowResearch, (LocalizedText)GameText.EspioangeOpsSlowResearch, (LocalizedText)GameText.EspioangeOpsSlowResearchTip, false) },
-            5 => new[] { (InfiltrationOpsType.Rebellion, (LocalizedText)GameText.EspioangeOpsRebellion, (LocalizedText)GameText.EspioangeOpsRebellionTip, false),
-                         (InfiltrationOpsType.DisruptProjection, (LocalizedText)GameText.EspioangeOpsDisruptProjection, (LocalizedText)GameText.EspioangeOpsDisruptProjectionTip, false) },
-            _ => System.Array.Empty<(InfiltrationOpsType, LocalizedText, LocalizedText, bool)>(),
-        };
-
-        static string PassiveFor(byte level) => level switch
-        {
-            1 => "Scan their ships",
-            2 => "Projectors alert",
-            3 => "Homeworld mole",
-            4 => "Leech technology",
-            _ => "Leech income",
-        };
-
-        public override void Update(float fixedDeltaTime)
-        {
-            foreach (EmpireColumn c in Columns)
-                foreach (OpBox op in c.Ops)
-                    op.Sync();
-            base.Update(fixedDeltaTime);
+            base.PerformLayout();
+            InfiltrationTitle.Pos = new Vector2(HelperFunctions.GetMiddlePosForTitle(InfiltrationTitle.Text.Text, Fonts.Arial20Bold, Width, 0), Level1.Y - 45);
+            RefreshSelectedEmpire(Player);
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
-            TitleBar.Draw(batch, elapsed);
-            batch.DrawString(Fonts.Laserian14, Localizer.Token(GameText.EspionageOverview), TitlePos, Colors.Cream);
-            DMenu.Draw(batch, elapsed);
+            base.Draw(batch, elapsed);
+            if (!SelectedEmpire.isPlayer)
+            {
+                batch.DrawLine(new Vector2(Level1.X, Level1.Y - 20), new Vector2(Level1.X + 80 + Level1.Width * 5, Level1.Y - 20), SeperatorColor, 2);
+                batch.DrawLine(new Vector2(Level1.X, Level1.Y - 50), new Vector2(Level1.X + 80 + Level1.Width * 5, Level1.Y - 50), SeperatorColor, 2);
+            }
 
-            foreach (EmpireColumn c in Columns)
-                DrawColumn(batch, c);
-
-            base.Draw(batch, elapsed); // sliders, checkboxes, buttons, close
-            Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
         }
 
-        void SectionBand(SpriteBatch batch, Rectangle col, float y, string title, Color? textColor = null)
+        public override void Update(float fixedDeltaTime)
         {
-            var band = new Rectangle(col.X + 1, (int)y, col.Width - 2, 18);
-            batch.FillRectangle(band, new Color(54, 46, 24));
-            batch.DrawString(Font12Bold, title, new Vector2(band.X + (band.Width - Font12Bold.TextWidth(title)) / 2f, band.Y + 2), textColor ?? Colors.Cream);
-        }
-
-        void DrawColumn(SpriteBatch batch, EmpireColumn c)
-        {
-            Empire e = c.E;
-            Rectangle col = c.Rect;
-            batch.FillRectangle(col, PanelBackground);
-            batch.DrawRectangle(col, new Color(60, 54, 40));
-
-            bool known = e == Player || Player.IsKnown(e);
-            var portrait = new Rectangle(col.X + (col.Width - 56) / 2, col.Y + 6, 56, 70);
-
-            if (!known)
-            {
-                batch.Draw(ResourceManager.Texture("Portraits/unknown"), portrait, Color.White);
-                batch.DrawString(Font12Bold, "Unknown", new Vector2(col.X + (col.Width - Font12Bold.TextWidth("Unknown")) / 2f, portrait.Bottom + 4), Color.Gray);
-                return;
-            }
-
-            if (e != Player && !e.IsDefeated && Player.IsAtWarWith(e))
-                batch.DrawRectangle(new Rectangle(portrait.X - 2, portrait.Y - 2, portrait.Width + 4, portrait.Height + 4), Color.Red);
-
-            batch.Draw(ResourceManager.Texture("Portraits/" + e.data.PortraitName), portrait, Color.White);
-            string name = e.data.Traits.Name;
-            float nameW = NameFont.TextWidth(name) + 24;
-            float nameX = col.X + (col.Width - nameW) / 2f;
-            batch.Draw(ResourceManager.Flag(e.data.Traits.FlagIndex), new Rectangle((int)nameX, portrait.Bottom + 4, 18, 18), e.EmpireColor);
-            batch.DrawDropShadowText1(name, new Vector2(nameX + 24, portrait.Bottom + 4), NameFont, e.EmpireColor);
-
-            if (e.IsDefeated)
-            {
-                batch.Draw(ResourceManager.ErrorTexture, portrait, Color.White);
-                batch.DrawString(Font12, "Defeated", new Vector2(col.X + 8, col.Y + HeaderH + 4), Color.Gray);
-                return;
-            }
-
-            float budgetY = col.Y + HeaderH;
-            SectionBand(batch, col, budgetY, "BUDGET");
-            float defenseY = col.Y + HeaderH + BudgetH + 24;
-            SectionBand(batch, col, defenseY, "DEFENSE");
-
-            if (e == Player)
-            {
-                // budget cost line under the slider (legacy formula)
-                float espionageCost = Player.GetEspionageCost();
-                string cost = $"{(espionageCost > 0 ? -espionageCost : espionageCost).String(1)} BC/turn";
-                batch.DrawString(Font12, cost, new Vector2(col.X + 8, budgetY + 70), espionageCost > 0 ? Color.Pink : Color.LightGreen);
-                return;
-            }
-
-            Ship_Game.Espionage esp = c.Esp;
-
-            // BUDGET section extras: limit level value, points/turn, target + progress
-            batch.DrawString(Font12Bold, esp.LimitLevel.ToString(), new Vector2(col.X + 124, budgetY + 70), Player.EmpireColor);
-            float ppt = esp.GetProgressToIncrease(Player.EspionagePointsPerTurn, Player.CalcTotalEspionageWeight());
-            string pptTxt = "Points/turn: " + ppt.String(3);
-            batch.DrawString(Font12, pptTxt, new Vector2(col.X + 8, budgetY + 96), Color.Wheat);
-
-            if (esp.Level < Ship_Game.Espionage.MaxLevel)
-            {
-                byte target = (byte)(esp.Level + 1);
-                batch.DrawString(Font12, $"Infiltrating level {target}", new Vector2(col.X + 8, budgetY + 116), Color.Wheat);
-                float max = esp.LevelCost(target);
-                float cur = esp.LevelProgress.UpperBound(max);
-                var barRect = new Rectangle(col.X + 8, (int)budgetY + 137, col.Width - 16, 12);
-                batch.FillRectangle(barRect, new Color(10, 10, 10));
-                if (max > 0f && cur > 0f)
-                    batch.FillRectangle(new Rectangle(barRect.X + 1, barRect.Y + 1, (int)((barRect.Width - 2) * (cur / max)), 10), new Color(30, 120, 30));
-                batch.DrawRectangle(barRect, new Color(60, 54, 40));
-                string nums = $"{(int)cur}/{(int)max}";
-                batch.DrawString(Font12, nums, new Vector2(col.Right - 8 - Font12.TextWidth(nums), budgetY + 153), Color.Wheat);
-            }
-            else
-            {
-                batch.DrawString(Font12, "Fully infiltrated", new Vector2(col.X + 8, budgetY + 116), Color.LightGreen);
-            }
-
-            // DEFENSE: their shield ratio (gated like the legacy header icon)
-            SubTexture shield = ResourceManager.Texture("UI/icon_shield");
-            var defenseIcon = new Rectangle(col.X + 8, (int)defenseY + 24, shield.Width, shield.Height);
-            batch.Draw(shield, defenseIcon, Color.White);
-            bool canSeeDef = esp.CanViewDefenseRatio;
-            if (canSeeDef)
-            {
-                string defTxt = $"{((int)(e.EspionageDefenseRatio * 100)).String()}%";
-                batch.DrawString(Font12Bold, defTxt, new Vector2(defenseIcon.Right + 6, defenseIcon.Y + 4), Color.White);
-            }
-            else // spy icon + "lvl 3" — the level that unlocks it, like the Diplomacy placeholders
-            {
-                SubTexture spyIcon = ResourceManager.Texture("UI/icon_spy");
-                int h = Font12.LineSpacing;
-                var spyR = new Rectangle(defenseIcon.Right + 6, defenseIcon.Y + 4, spyIcon.Width * h / spyIcon.Height, h);
-                batch.Draw(spyIcon, spyR, new Color(105, 105, 105));
-                batch.DrawString(Font12Bold, "lvl 3", new Vector2(spyR.Right + 4, spyR.Y), new Color(105, 105, 105));
-            }
-
-            // the five levels: band + passive + (checkboxes drawn by base.Draw)
-            float y = col.Y + HeaderH + BudgetH + DefenseH + 24;
-            for (byte level = 1; level <= Ship_Game.Espionage.MaxLevel; ++level)
-            {
-                bool reached = esp.Level >= level;
-                bool active = reached && esp.LimitLevel >= level;
-                SectionBand(batch, col, y, $"LEVEL {level}", reached ? (active ? Color.LightGreen : Color.Gray) : new Color(110, 100, 80));
-                y += 24;
-                batch.DrawString(Font12, PassiveFor(level), new Vector2(col.X + 8, y), active ? Color.LightGreen : Color.Gray);
-                y += Font12.LineSpacing + 4;
-                int nOps = ActiveOpsFor(level).Length;
-                y += nOps * (Font12.LineSpacing + 5);
-                y += 6;
-            }
+            base.Update(fixedDeltaTime);
         }
 
         public override bool HandleInput(InputState input)
         {
-            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
-                return true;
-
             if (input.KeyPressed(Keys.E) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();
@@ -391,17 +105,55 @@ namespace Ship_Game.GameScreens
                 return true;
             }
 
+            if (Player.Universe.Debug && !SelectedEmpire.isPlayer && HandleDebugInput(input))
+                return true;
+
             return base.HandleInput(input);
         }
 
-        // legacy bookkeeping — external callers and old panels reference these
+        bool HandleDebugInput(InputState input)
+        {
+            Keys[] keys = [Keys.D0, Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5];
+            for (byte i = 0; i < keys.Length; i++) 
+            {
+                if (input.KeyPressed(keys[i]))
+                {
+                    Player.GetEspionage(SelectedEmpire).SetInfiltrationLevelTo(i);
+                    RefreshSelectedEmpire(SelectedEmpire);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public void RefreshSelectedEmpire(Empire selectedEmpire)
         {
             SelectedEmpire = selectedEmpire;
+            SeperatorColor = SelectedEmpire.isPlayer || !Player.IsKnown(SelectedEmpire) ? Player.EmpireColor : SelectedEmpire.EmpireColor;
+            InfiltrationTitle.Color = SeperatorColor;
+
+            Level1.Visible = !SelectedEmpire.isPlayer;
+            Level2.Visible = !SelectedEmpire.isPlayer;
+            Level3.Visible = !SelectedEmpire.isPlayer;
+            Level4.Visible = !SelectedEmpire.isPlayer;
+            Level5.Visible = !SelectedEmpire.isPlayer;
+            InfiltrationTitle.Visible = !SelectedEmpire.isPlayer;
+
+            if (Level1.Visible) Level1.RefreshEmpire();
+            if (Level2.Visible) Level2.RefreshEmpire();
+            if (Level3.Visible) Level3.RefreshEmpire();
+            if (Level4.Visible) Level4.RefreshEmpire();
+            if (Level5.Visible) Level5.RefreshEmpire();
         }
 
         public void RefreshInfiltrationLevelStatus(Ship_Game.Espionage espionage)
         {
+            if (Level1.Visible) Level1.RefreshStatus(espionage);
+            if (Level2.Visible) Level2.RefreshStatus(espionage);
+            if (Level3.Visible) Level3.RefreshStatus(espionage);
+            if (Level4.Visible) Level4.RefreshStatus(espionage);
+            if (Level5.Visible) Level5.RefreshStatus(espionage);
         }
     }
 }

@@ -243,6 +243,7 @@
     <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationOpsLevel4.cs" />
     <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationOpsLevel5.cs" />
     <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationScreen.cs" />
+    <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationScreenRework.cs" />
     <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationPanel.cs" />
     <Compile Include="Ship_Game\GameScreens\FleetDesign\FleetButton.cs" />
     <Compile Include="Ship_Game\GameScreens\FleetDesign\FleetButtonsList.cs" />
@@ -930,6 +931,7 @@
     <Compile Include="Ship_Game\Shield.cs" />
     <Compile Include="Ship_Game\Gameplay\ModuleSlot.cs" />
     <Compile Include="Ship_Game\GameScreens\MainDiplomacyScreen\MainDiplomacyScreen.cs" />
+    <Compile Include="Ship_Game\GameScreens\MainDiplomacyScreen\MainDiplomacyScreenRework.cs" />
     <Compile Include="Ship_Game\AI\Tasks\MilitaryTask.cs" />
     <Compile Include="Ship_Game\OrderType.cs" />
     <Compile Include="Ship_Game\OrdersButton.cs" />

@@ -28,5 +28,11 @@ namespace Ship_Game.GameScreens
     {
         public static GameScreen Economy(UniverseScreen u)
             => GlobalStats.ReworkEconomy ? new BudgetScreenRework(u) : new BudgetScreen(u);
+
+        public static GameScreen Diplomacy(UniverseScreen u)
+            => GlobalStats.ReworkDiplomacy ? new MainDiplomacyScreenRework(u) : new MainDiplomacyScreen(u);
+
+        public static GameScreen Espionage(UniverseScreen u)
+            => GlobalStats.ReworkEspionage ? new InfiltrationScreenRework(u) : new InfiltrationScreen(u);
     }
 }

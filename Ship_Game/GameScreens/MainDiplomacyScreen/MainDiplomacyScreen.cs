@@ -10,29 +10,29 @@ using Ship_Game.GameScreens.DiplomacyScreen;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Graphics;
+using static Ship_Game.Data.Serialization.Types.RawArraySerializer;
 using Color = Microsoft.Xna.Framework.Color;
 using Font = Ship_Game.Graphics.Font;
 
 namespace Ship_Game
 {
-    // Ludoal fork v3 (player design): full-surface dashboard — one COLUMN per major
-    // empire, everything visible at once. Each column: header (portrait, click to
-    // contact), fixed INFO block, a global INTELLIGENCE/BONUSES switch (intelligence
-    // by default, one click flips every column so rows stay comparable), and a
-    // TREATIES mini-matrix at the bottom (icon rows: state W/A/N/P — one line, war
-    // breaks every treaty and alliance implies NA — then borders, then trade).
     public sealed class MainDiplomacyScreen : GameScreen
     {
         UniverseScreen Universe;
+        public DanButton Contact;
 
         Menu2 TitleBar;
         Vector2 TitlePos;
         Menu2 DMenu;
-        Rectangle LeftRect;
 
-        UIButton ToggleButton; // labeled with the view you would switch TO (player design)
-        UIButton DiagramButton;
-        bool ShowBonuses;
+        public Rectangle SelectedInfoRect;
+        public Rectangle IntelligenceRect;
+        public Rectangle OperationsRect;
+
+        public Empire SelectedEmpire;
+
+        Array<RaceEntry> Races = new();
+        ScrollList<ArtifactItemListItem> ArtifactsSL;
 
         Empire Player;
         readonly bool UsingNewEspioange;
@@ -40,14 +40,13 @@ namespace Ship_Game
         Array<Empire> Traders;
         HashSet<Empire> Moles;
 
-        Array<RaceEntry> Races = new();
+        UIButton DiagramButton;
+        Rectangle LeftRect;
 
         Font Font12 = Fonts.Arial12;
         Font Font12Bold = Fonts.Arial12Bold;
-        Font NameFont = Fonts.Arial14Bold; // player call: bigger race names
-        readonly Map<Empire, DanButton> Contacts = new(); // the original screen's button design
+        Font Font20Bold = Fonts.Arial20Bold;
 
-        const int TreatyBlockH = 114; // player design: 3 icon rows (state / borders / trade), labels gone
 
         public MainDiplomacyScreen(UniverseScreen screen) : base(screen, toPause: screen)
         {
@@ -62,7 +61,7 @@ namespace Ship_Game
 
             // find empires where player or friends have moles
             var empires = new HashSet<Empire>();
-            foreach (Empire empire in screen.UState.Empires)
+            foreach(Empire empire in screen.UState.Empires)
             {
                 if (empire.isPlayer || empire.IsFaction)
                     continue;
@@ -73,7 +72,7 @@ namespace Ship_Game
                 }
                 else
                 {
-                    foreach (Empire friend in Friends)
+                    foreach(Empire friend in Friends)
                     {
                         if (friend.data.MoleList.Any(m => empire.FindPlanet(m.PlanetId) != null))
                         {
@@ -101,7 +100,7 @@ namespace Ship_Game
             if (e.isPlayer)
                 return 3;
 
-            foreach (Empire empire in Friends)
+            foreach(Empire empire in Friends)
             {
                 if (!empire.GetRelations(e, out Relationship rel))
                     continue;
@@ -113,7 +112,7 @@ namespace Ship_Game
                     return 2;
             }
 
-            if (intelligence == 0)
+            if (intelligence ==0)
             {
                 foreach (Empire empire in Traders)
                 {
@@ -127,598 +126,448 @@ namespace Ship_Game
                         return 2;
                 }
             }
-
+            
             return intelligence;
         }
 
-        public override void LoadContent()
+        void DrawDiploLine(SpriteBatch batch, Font font, string text, Color color, ref Vector2 textCursor)
         {
-            float screenWidth = ScreenWidth;
-            // Empire-style title bar: wide left cartouche, controls in the empty right third
-            var titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            TitleBar = new Menu2(titleRect);
-            TitlePos = new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString(Localizer.Token(GameText.DiplomaticOverview)).X / 2f, titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
-
-            LeftRect = new Rectangle(2, titleRect.Bottom + 5, (int)screenWidth - 10, ScreenHeight - titleRect.Bottom - 7);
-            DMenu = new Menu2(LeftRect);
-            Add(new CloseButton(LeftRect.Right - 40, LeftRect.Y + 20));
-
-            // the global view toggle (labeled with what you would switch TO) and the
-            // diagram button, right of the title cartouche
-            ToggleButton = Add(new UIButton(ButtonStyle.Default, new Vector2(titleRect.Right + 30, titleRect.Y + 26), "Bonuses"));
-            ToggleButton.OnClick = b =>
-            {
-                ShowBonuses = !ShowBonuses;
-                ToggleButton.Text = ShowBonuses ? "Intelligence" : "Bonuses";
-            };
-            DiagramButton = Add(new UIButton(ButtonStyle.Default, new Vector2(titleRect.Right + 196, titleRect.Y + 26), "Diagram view"));
-            DiagramButton.OnClick = b => AddRelationShipDiagramScreen();
-
-            foreach (Empire e in Universe.UState.Empires)
-            {
-                if (e != Player && e.IsFaction)
-                    continue;
-                Races.Add(new RaceEntry { e = e });
-            }
-
-            // one column per major empire, full frame height, sized to fit them all
-            int n = Races.Count.LowerBound(1);
-            int colW = ((LeftRect.Width - 40) / n).UpperBound(230);
-            int totalW = colW * n;
-            int x0 = LeftRect.X + (LeftRect.Width - totalW) / 2;
-            int j = 0;
-            foreach (RaceEntry re in Races)
-            {
-                re.container = new Rectangle(x0 + j * colW, LeftRect.Y + 26, colW - 8, LeftRect.Height - 52); // centered vertically in the frame
-                j++;
-            }
-
-            // Contact button under the name, before INFO — the original DanButton design
-            foreach (RaceEntry re in Races)
-            {
-                Empire e = re.e;
-                if (e == Player || e.IsDefeated || !Player.IsKnown(e))
-                    continue;
-                Contacts[e] = new DanButton(new Vector2(re.container.X + (re.container.Width - 182) / 2, re.container.Y + 108), Localizer.Token(GameText.Contact))
-                {
-                    Toggled = true
-                };
-            }
-
-            GameAudio.MuteRacialMusic();
+            batch.DrawString(font, text, textCursor, color);
+            textCursor.Y += (font.LineSpacing + 2);
         }
+
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
-            TitleBar.Draw(batch, elapsed);
-            batch.DrawString(Fonts.Laserian14, Localizer.Token(GameText.DiplomaticOverview), TitlePos, Colors.Cream);
+            if (ScreenHeight > 766)
+            {
+                TitleBar.Draw(batch, elapsed);
+                batch.DrawString(Fonts.Laserian14, Localizer.Token(GameText.DiplomaticOverview), TitlePos, Colors.Cream);
+            }
             DMenu.Draw(batch, elapsed);
-
             foreach (RaceEntry race in Races)
-                DrawColumn(batch, race);
-
-            base.Draw(batch, elapsed);
-            Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
-            batch.SafeEnd();
-        }
-
-        void DrawColumn(SpriteBatch batch, RaceEntry race)
-        {
-            Empire e = race.e;
-            Rectangle col = race.container;
-            batch.FillRectangle(col, new Color(23, 20, 14));
-            batch.DrawRectangle(col, new Color(60, 54, 40));
-
-            bool known = e == Player || Player.IsKnown(e);
-            var portrait = new Rectangle(col.X + (col.Width - 56) / 2, col.Y + 6, 56, 70);
-
-            if (!known)
             {
-                batch.Draw(ResourceManager.Texture("Portraits/unknown"), portrait, Color.White);
-                batch.DrawString(Font12Bold, "Unknown", new Vector2(col.X + (col.Width - Font12Bold.TextWidth("Unknown")) / 2f, portrait.Bottom + 4), Color.Gray);
-                return;
+                if (race.e.IsFaction)
+                {
+                    continue;
+                }
+                Vector2 NameCursor = new Vector2(race.container.X + 62 - Fonts.Arial12Bold.MeasureString(race.e.data.Traits.Name).X / 2f, race.container.Y + 148 + 8);
+                if (race.e.IsDefeated)
+                {
+                    if (race.e.data.AbsorbedBy == null)
+                    {
+                        batch.Draw(ResourceManager.Texture("Portraits/"+race.e.data.PortraitName), race.container, Color.White);
+                        batch.Draw(ResourceManager.Texture("Portraits/portrait_shine"), race.container, Color.White);
+                        batch.DrawDropShadowText1(race.e.data.Traits.Name, NameCursor, Fonts.Arial12Bold, race.e.EmpireColor);
+                        batch.Draw(ResourceManager.ErrorTexture, race.container, Color.White);
+                    }
+                    else
+                    {
+                        batch.Draw(ResourceManager.Texture("Portraits/"+race.e.data.PortraitName), race.container, Color.White);
+                        batch.Draw(ResourceManager.Texture("Portraits/portrait_shine"), race.container, Color.White);
+                        batch.DrawDropShadowText1(race.e.data.Traits.Name, NameCursor, Fonts.Arial12Bold, race.e.EmpireColor);
+                        var r = new Rectangle(race.container.X, race.container.Y, 124, 124);
+                        var e = Universe.UState.GetEmpireByName(race.e.data.AbsorbedBy);
+                        batch.Draw(ResourceManager.Flag(e.data.Traits.FlagIndex), r, e.EmpireColor);
+                    }
+                }
+                else if (Player != race.e && Player.IsKnown(race.e))
+                {
+                    if (Player.IsAtWarWith(race.e) && !race.e.IsDefeated)
+                    {
+                        Rectangle war = new Rectangle(race.container.X - 2, race.container.Y - 2, race.container.Width + 4, race.container.Height + 4);
+                        batch.FillRectangle(war, Color.Red);
+                    }
+                    batch.Draw(ResourceManager.Texture("Portraits/"+race.e.data.PortraitName), race.container, Color.White);
+                    batch.Draw(ResourceManager.Texture("Portraits/portrait_shine"), race.container, Color.White);
+                    batch.DrawDropShadowText1(race.e.data.Traits.Name, NameCursor, Fonts.Arial12Bold, race.e.EmpireColor);
+                }
+                else if (Player != race.e)
+                {
+                    batch.Draw(ResourceManager.Texture("Portraits/unknown"), race.container, Color.White);
+                }
+                else
+                {
+                    batch.Draw(ResourceManager.Texture("Portraits/"+race.e.data.PortraitName), race.container, Color.White);
+                    batch.Draw(ResourceManager.Texture("Portraits/portrait_shine"), race.container, Color.White);
+                    NameCursor = new Vector2(race.container.X + 62 - Fonts.Arial12Bold.MeasureString(race.e.data.Traits.Name).X / 2f, race.container.Y + 148 + 8);
+                    batch.DrawDropShadowText1(race.e.data.Traits.Name, NameCursor, Fonts.Arial12Bold, race.e.EmpireColor);
+                }
+                if (race.e != SelectedEmpire)
+                {
+                    continue;
+                }
+                batch.DrawRectangle(race.container, Color.Orange);
+            }
+            batch.FillRectangle(SelectedInfoRect, new Color(23, 20, 14));
+            batch.FillRectangle(IntelligenceRect, new Color(23, 20, 14));
+            batch.FillRectangle(OperationsRect, new Color(23, 20, 14));
+            var textCursor = new Vector2(SelectedInfoRect.X + 20, SelectedInfoRect.Y + 10);
+            batch.DrawDropShadowText1(SelectedEmpire.data.Traits.Name, textCursor, Fonts.Arial20Bold, SelectedEmpire.EmpireColor);
+            var flagRect = new Rectangle(SelectedInfoRect.X + SelectedInfoRect.Width - 60, SelectedInfoRect.Y + 10, 40, 40);
+            batch.Draw(ResourceManager.Flag(SelectedEmpire.data.Traits.FlagIndex), flagRect, SelectedEmpire.EmpireColor);
+            textCursor.Y += (Fonts.Arial20Bold.LineSpacing + 4);
+
+            if (SelectedEmpire.isPlayer)
+            {
+                batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.You), textCursor, Color.White);
+                textCursor.Y += Fonts.Arial12Bold.LineSpacing + 2;
+                Rectangle artifactsRect = new Rectangle(SelectedInfoRect.X + 20, SelectedInfoRect.Y + 210, SelectedInfoRect.Width - 40, 130);
+                Vector2 artifactsCursor = new Vector2(artifactsRect.X, artifactsRect.Y - 8);
+                batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.OwnedArtifacts), artifactsCursor, Color.White);
+                artifactsCursor.Y += Fonts.Arial12Bold.LineSpacing;
+            }
+            else if (SelectedEmpire.IsDefeated)
+            {
+                if (SelectedEmpire.data.AbsorbedBy != null)
+                {
+                    Empire absorbingEmpire = Universe.UState.GetEmpireByName(SelectedEmpire.data.AbsorbedBy);
+                    DrawDiploLine(batch, Font12Bold, absorbingEmpire.data.Traits.Singular + " Federation", Color.White, ref textCursor);
+                }
+            }
+            else if (!SelectedEmpire.IsDefeated)
+            {
+                Relationship relation = Player.GetRelations(SelectedEmpire);
+                if (UsingNewEspioange && relation.Espionage.CanViewPersonality || IntelligenceLevel(SelectedEmpire) > 0)
+                    DrawDiploLine(batch, Font12Bold, $"{SelectedEmpire.data.DiplomaticPersonality.Name} {SelectedEmpire.data.EconomicPersonality.Name}", Color.White, ref textCursor);
+                else
+                    DrawDiploLine(batch, Font12Bold, $"Unknown Unknown", Color.White, ref textCursor);
+
+                if (relation.AtWar)
+                    DrawDiploLine(batch, Font12Bold, Localizer.Token(GameText.AtWar), Color.LightPink, ref textCursor);
+                else if (relation.Treaty_Peace)
+                    DrawDiploLine(batch, Font12Bold, $"{Localizer.Token(GameText.PeaceTreaty)} ({relation.PeaceTurnsRemaining} {Localizer.Token(GameText.Turns)})", Color.LightGreen, ref textCursor);
+
+                if (relation.Treaty_OpenBorders)
+                    DrawDiploLine(batch, Font12Bold, Localizer.Token(GameText.OpenBorders), Color.LightGreen, ref textCursor);
+
+                if (relation.Treaty_Trade)
+                    DrawDiploLine(batch, Font12Bold, Localizer.Token(GameText.TradeTreaty2), Color.LightGreen, ref textCursor);
+
+                if (relation.Treaty_NAPact)
+                    DrawDiploLine(batch, Font12Bold, Localizer.Token(GameText.NonaggressionPact2), Color.LightGreen, ref textCursor);
+
+                if (relation.Treaty_Alliance)
+                    DrawDiploLine(batch, Font12Bold, Localizer.Token(GameText.Alliance), Color.LightGreen, ref textCursor);
+
+                Rectangle artifactsRect = new Rectangle(SelectedInfoRect.X + 20, SelectedInfoRect.Y + 250, SelectedInfoRect.Width - 40, 130);
+                Vector2 artifactsCursor = new Vector2(artifactsRect.X, artifactsRect.Y - 8);
+                if (!UsingNewEspioange || relation.Espionage.CanViewArtifacts)
+                    DrawDiploLine(batch, Font12Bold, Localizer.Token(GameText.OwnedArtifacts), Color.White, ref artifactsCursor);
+
             }
 
-            if (e != Player && !e.IsDefeated && Player.IsAtWarWith(e))
-                batch.DrawRectangle(new Rectangle(portrait.X - 2, portrait.Y - 2, portrait.Width + 4, portrait.Height + 4), Color.Red);
+            if (!SelectedEmpire.isPlayer && Player.IsKnown(SelectedEmpire))
+                Contact.Draw(ScreenManager);
 
-            batch.Draw(ResourceManager.Texture("Portraits/" + e.data.PortraitName), portrait, Color.White);
-            string name = e.data.Traits.Name;
-            float nameW = NameFont.TextWidth(name) + 24; // race flag rides left of the name
-            float nameX = col.X + (col.Width - nameW) / 2f;
-            batch.Draw(ResourceManager.Flag(e.data.Traits.FlagIndex), new Rectangle((int)nameX, portrait.Bottom + 4, 18, 18), e.EmpireColor);
-            batch.DrawDropShadowText1(name, new Vector2(nameX + 24, portrait.Bottom + 4), NameFont, e.EmpireColor);
-
-            float y = portrait.Bottom + 24;
-
-            if (e.IsDefeated)
+            if (SelectedEmpire.isPlayer || !UsingNewEspioange || UsingNewEspioange && Player.GetRelations(SelectedEmpire).Espionage.CanViewRanks)
             {
-                batch.Draw(ResourceManager.ErrorTexture, portrait, Color.White);
-                string status = e.data.AbsorbedBy != null ? "Absorbed by " + e.data.AbsorbedBy : "Defeated";
-                batch.DrawString(Font12, Font12.ParseText(status, col.Width - 16), new Vector2(col.X + 8, y), Color.Gray);
-                return;
+
+                Empire[] empireList = UsingNewEspioange
+                    ? Universe.UState.ActiveMajorEmpires.Filter(e => e.isPlayer || Player.GetRelations(e).Espionage.CanViewRanks)
+                    : Universe.UState.ActiveMajorEmpires.Filter(e => e.isPlayer || Player.IsKnown(e));
+
+                Vector2 columnBCursor = textCursor;
+                columnBCursor.X += 190f;
+                columnBCursor.Y += Fonts.Arial12Bold.LineSpacing + 2;
+                textCursor.Y += Fonts.Arial12Bold.LineSpacing + 2;
+                batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.EconomicStrength), textCursor, Color.White);
+                empireList.Sort(e => -e.GrossIncome);
+                batch.DrawString(Fonts.Arial12Bold, $"# {GetRank(SelectedEmpire, empireList)}", columnBCursor, Color.White);
+                columnBCursor.Y += Fonts.Arial12Bold.LineSpacing + 2;
+                textCursor.Y += Fonts.Arial12Bold.LineSpacing + 2;
+
+                empireList.Sort(e => -GetScientificStr(e));
+                batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.ScientificStrength), textCursor, Color.White);
+                batch.DrawString(Fonts.Arial12Bold, $"# {GetRank(SelectedEmpire, empireList)}", columnBCursor, Color.White);
+                columnBCursor.Y += Fonts.Arial12Bold.LineSpacing + 2;
+                textCursor.Y += Fonts.Arial12Bold.LineSpacing + 2;
+
+                empireList.Sort(e => -e.CurrentMilitaryStrength);
+                batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.MilitaryStrength), textCursor, Color.White);
+                batch.DrawString(Fonts.Arial12Bold, $"# {GetRank(SelectedEmpire, empireList)}", columnBCursor, Color.White);
+                columnBCursor.Y += Fonts.Arial12Bold.LineSpacing + 2;
+                textCursor.Y += Fonts.Arial12Bold.LineSpacing + 2;
+                empireList.Sort(e => -GetPop(e));
+                batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.Population), textCursor, Color.White);
+                batch.DrawString(Fonts.Arial12Bold, $"# {GetRank(SelectedEmpire, empireList)}", columnBCursor, Color.White);
+
+                textCursor.Y += Fonts.Arial12Bold.LineSpacing + 4;
+                batch.DrawString(Fonts.Arial12, $"(out of {empireList.Length} empires)", textCursor, Color.Wheat);
             }
+            //Added by McShooterz:  intel report
+            Espionage espionage = SelectedEmpire.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(SelectedEmpire);
+            textCursor = new Vector2(IntelligenceRect.X + 20, IntelligenceRect.Y + 10);
+            string intReport = Localizer.Token(GameText.IntelligenceReport);
+            if (UsingNewEspioange && !SelectedEmpire.isPlayer)
+                intReport += espionage.EffectiveLevel == 0 ? " (basic)" : $" (level {espionage.EffectiveLevel})";
 
-            if (Contacts.TryGetValue(e, out DanButton contact))
-                contact.Draw(ScreenManager);
+            batch.DrawDropShadowText(intReport, textCursor, Fonts.Arial20Bold, SelectedEmpire.EmpireColor);
+            textCursor.Y += (Fonts.Arial20Bold.LineSpacing + 5);
 
-            // FIXED section offsets: the bands align across columns whatever the content
-            float infoY = col.Y + 150; // breathing room: bigger name, DanButton below
-            float positionY = infoY + 24 + 3 * (Font12.LineSpacing + 3) + 4;
-            float intelY = positionY + 24 + 4 * (Font12.LineSpacing + 3) + 4;
+            if (UsingNewEspioange || IntelligenceLevel(SelectedEmpire) > 0)
+                DrawDiploLine(batch, Font12, Localizer.Token(GameText.HomeWorld)+SelectedEmpire.data.Traits.HomeworldName, Color.Wheat, ref textCursor);
 
-            y = infoY;
-            SectionBand(batch, col, ref y, "INFO");
-            DrawInfoBlock(batch, e, col, ref y);
-
-            y = positionY;
-            SectionBand(batch, col, ref y, "POSITION");
-            DrawPositionBlock(batch, e, col, ref y);
-
-            float maxY = col.Bottom - TreatyBlockH - 6;
-            y = intelY;
-            SectionBand(batch, col, ref y, ShowBonuses ? "BONUSES" : "INTELLIGENCE");
-            if (ShowBonuses)
+            if (UsingNewEspioange || IntelligenceLevel(SelectedEmpire) > 0)
             {
-                // BONUSES replaces both INTELLIGENCE and ARTIFACTS (player design)
-                DrawBonusRows(batch, e, col, ref y, maxY);
+                if (SelectedEmpire.Capital != null)
+                {
+                    string controlsHomeworld = Localizer.Token(GameText.ControlsHomeWorld) + ((SelectedEmpire.Capital.Owner == SelectedEmpire)
+                        ? Localizer.Token(GameText.Yes)
+                        : Localizer.Token(GameText.No));
+
+                    DrawDiploLine(batch, Font12, controlsHomeworld, Color.Wheat, ref textCursor);
+                }
+
+                bool alwaysShow = SelectedEmpire.isPlayer || !UsingNewEspioange;
+                if (alwaysShow || espionage.CanViewNumPlanets)
+                    DrawDiploLine(batch, Font12, $"{Localizer.Token(GameText.TotalPlanets)} {SelectedEmpire.GetPlanets().Count}", Color.Wheat, ref textCursor);
+
+                if (alwaysShow || espionage.CanViewNumShips)
+                    DrawDiploLine(batch, Font12, $"{Localizer.Token(GameText.TotalStarships)} {SelectedEmpire.OwnedShips.Count}", Color.Wheat, ref textCursor);
+
+                if (alwaysShow || espionage.CanViewMoneyAndMaint)
+                {
+                    DrawDiploLine(batch, Font12, $"{Localizer.Token(GameText.Treasury)} {SelectedEmpire.Money.String(2)}", Color.Wheat, ref textCursor);
+                    DrawDiploLine(batch, Font12, $"{Localizer.Token(GameText.MaintenanceCosts)} {SelectedEmpire.BuildingAndShipMaint.String(2)}", Color.Wheat, ref textCursor);
+                }
+
+                if (SelectedEmpire.Research.HasTopic)
+                {
+                    if (SelectedEmpire.isPlayer || UsingNewEspioange && espionage.CanViewResearchTopic || IntelligenceLevel(SelectedEmpire) > 1)
+                        DrawDiploLine(batch, Font12, $"Researching: {SelectedEmpire.Research.Current.Tech.Name.Text}", Color.Wheat, ref textCursor);
+                    else if (UsingNewEspioange && espionage.CanViewTechType || IntelligenceLevel(SelectedEmpire) > 0)
+                        DrawDiploLine(batch, Font12, $"Researching: {SelectedEmpire.Research.Current.TechnologyType}", Color.Wheat, ref textCursor);
+                    else
+                        DrawDiploLine(batch, Font12, "Researching: Unknown", Color.Wheat, ref textCursor);
+                }
             }
-            else
-            {
-                // TRAITS then ARTIFACTS ride under INTELLIGENCE at fixed, aligned offsets
-                float traitsY = intelY + 24 + 10 * (Font12.LineSpacing + 3) + 6;
-                DrawIntelRows(batch, e, col, ref y, traitsY - 6);
-                y = traitsY;
-                SectionBand(batch, col, ref y, "TRAITS");
-                DrawTraitRows(batch, e, col, ref y);
-                float artifactsY = traitsY + 24 + 3 * (Font12.LineSpacing + 2) + 8;
-                y = artifactsY;
-                SectionBand(batch, col, ref y, "ARTIFACTS");
-                DrawArtifactRows(batch, e, col, ref y, maxY);
-            }
-
-            float ty = col.Bottom - TreatyBlockH;
-            SectionBand(batch, col, ref ty, "TREATIES");
-            DrawTreatyMatrix(batch, e, col, ty);
-        }
-
-        void SectionBand(SpriteBatch batch, Rectangle col, ref float y, string title)
-        {
-            var band = new Rectangle(col.X + 1, (int)y, col.Width - 2, 18);
-            batch.FillRectangle(band, new Color(54, 46, 24));
-            batch.DrawString(Font12Bold, title, new Vector2(band.X + (band.Width - Font12Bold.TextWidth(title)) / 2f, band.Y + 2), Colors.Cream);
-            y += 24;
-        }
-
-        // tabulated row: label left, value right-aligned (player design: readability)
-        void TableRow(SpriteBatch batch, Rectangle col, ref float y, float maxY, string label, string value, Color valueColor)
-        {
-            if (y > maxY - Font12.LineSpacing)
-                return;
-            string lbl = Truncate(label, col.Width - 16 - (int)Font12Bold.TextWidth(value) - 8);
-            batch.DrawString(Font12, lbl, new Vector2(col.X + 8, y), Color.Wheat);
-            batch.DrawString(Font12Bold, value, new Vector2(col.Right - 8 - Font12Bold.TextWidth(value), y), valueColor);
-            y += Font12.LineSpacing + 3;
-        }
-
-        string Truncate(string text, int width)
-        {
-            if (Font12.TextWidth(text) <= width)
-                return text;
-            while (text.Length > 3 && Font12.TextWidth(text + "..") > width)
-                text = text.Substring(0, text.Length - 1);
-            return text + "..";
-        }
-
-        void DrawInfoBlock(SpriteBatch batch, Empire e, Rectangle col, ref float y)
-        {
-            float maxY = float.MaxValue;
-            Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
-
-            if (e == Player)
-            {
-                TableRow(batch, col, ref y, maxY, "Status", Localizer.Token(GameText.You), Color.White);
-                BlankRow(ref y); // player call: keep the line, drop the noise
-                BlankRow(ref y); // (personality slot)
-            }
-            else
-            {
-                Relationship rel = Player.GetRelations(e);
-                string status; Color c;
-                if (rel.AtWar) { status = Localizer.Token(GameText.AtWar); c = Color.LightPink; }
-                else if (rel.Treaty_Alliance) { status = Localizer.Token(GameText.Alliance); c = Color.Gold; }
-                else if (rel.Treaty_Peace) { status = $"Peace ({rel.PeaceTurnsRemaining})"; c = Color.LightGreen; }
-                else if (rel.Treaty_OpenBorders) { status = Localizer.Token(GameText.OpenBorders); c = Color.Cyan; }
-                else if (rel.Treaty_NAPact) { status = "NA Pact"; c = Color.LightGreen; }
-                else { status = "Neutral"; c = Color.White; }
-                TableRow(batch, col, ref y, maxY, "Status", status, c);
-                TableRow(batch, col, ref y, maxY, "Trade", rel.Treaty_Trade ? "Yes" : "No", rel.Treaty_Trade ? Color.LightGreen : Color.Gray);
-            }
-
-            if (e.isPlayer)
-                return; // blanks already reserved above
-            if (UsingNewEspioange ? espionage.CanViewPersonality : IntelligenceLevel(e) > 0)
-            {
-                string perso = $"{e.data.DiplomaticPersonality.Name} {e.data.EconomicPersonality.Name}";
-                TableRow(batch, col, ref y, maxY, "Personality", Truncate(perso, col.Width - 80), Color.White);
-            }
-            else
-            {
-                HiddenRow(batch, col, ref y, maxY, "Personality", 1);
-            }
-        }
-
-        void BlankRow(ref float y)
-        {
-            y += Font12.LineSpacing + 3;
-        }
-
-        // spy icon + "lvl x" — every espionage-locked placeholder wears the badge
-        void SpyLvl(SpriteBatch batch, float x, float y, byte lvl)
-        {
-            SubTexture spy = ResourceManager.Texture("UI/icon_spy");
-            int h = Font12.LineSpacing;
-            var r = new Rectangle((int)x, (int)y, spy.Width * h / spy.Height, h);
-            batch.Draw(spy, r, new Color(105, 105, 105));
-            batch.DrawString(Font12Bold, $"lvl {lvl}", new Vector2(r.Right + 4, y), new Color(105, 105, 105));
-        }
-
-        float SpyLvlWidth(byte lvl)
-        {
-            SubTexture spy = ResourceManager.Texture("UI/icon_spy");
-            int h = Font12.LineSpacing;
-            return spy.Width * h / spy.Height + 4 + Font12Bold.TextWidth($"lvl {lvl}");
-        }
-
-        // aligned placeholder row for data the current infiltration level hides
-        void HiddenRow(SpriteBatch batch, Rectangle col, ref float y, float maxY, string label, byte lvl = 0)
-        {
-            if (y > maxY - Font12.LineSpacing)
-                return;
-            batch.DrawString(Font12, label, new Vector2(col.X + 8, y), new Color(105, 105, 105));
-            if (lvl > 0)
-                SpyLvl(batch, col.Right - 8 - SpyLvlWidth(lvl), y, lvl);
-            else
-                batch.DrawString(Font12Bold, "---", new Vector2(col.Right - 8 - Font12Bold.TextWidth("---"), y), new Color(105, 105, 105));
-            y += Font12.LineSpacing + 3;
-        }
-
-        // POSITION: the empire's rank in each domain — same visibility rules as the
-        // legacy screen
-        void DrawPositionBlock(SpriteBatch batch, Empire e, Rectangle col, ref float y)
-        {
-            float maxY = float.MaxValue;
-            Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
-            if (e.isPlayer || !UsingNewEspioange || espionage.CanViewRanks)
-            {
-                Empire[] pool = UsingNewEspioange
-                    ? Universe.UState.ActiveMajorEmpires.Filter(x => x.isPlayer || Player.GetRelations(x).Espionage.CanViewRanks)
-                    : Universe.UState.ActiveMajorEmpires.Filter(x => x.isPlayer || Player.IsKnown(x));
-                TableRow(batch, col, ref y, maxY, "Economy", "#" + RankOf(e, pool.OrderByDescending(x => x.GrossIncome)), Color.White);
-                TableRow(batch, col, ref y, maxY, "Science", "#" + RankOf(e, pool.OrderByDescending(GetScientificStr)), Color.White);
-                TableRow(batch, col, ref y, maxY, "Military", "#" + RankOf(e, pool.OrderByDescending(x => x.CurrentMilitaryStrength)), Color.White);
-                TableRow(batch, col, ref y, maxY, "Population", "#" + RankOf(e, pool.OrderByDescending(GetPop)), Color.White);
-            }
-            else
-            {
-                HiddenRow(batch, col, ref y, maxY, "Economy", 2);
-                HiddenRow(batch, col, ref y, maxY, "Science", 2);
-                HiddenRow(batch, col, ref y, maxY, "Military", 2);
-                HiddenRow(batch, col, ref y, maxY, "Population", 2);
-            }
-        }
-
-        int RankOf(Empire e, IEnumerable<Empire> ordered)
-        {
-            int i = 1;
-            foreach (Empire x in ordered)
-            {
-                if (x == e) return i;
-                ++i;
-            }
-            return i;
-        }
-
-        void DrawIntelRows(SpriteBatch batch, Empire e, Rectangle col, ref float y, float maxY)
-        {
-            Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
-            bool alwaysShow = e.isPlayer || !UsingNewEspioange;
-            bool anyIntel = e.isPlayer || UsingNewEspioange || IntelligenceLevel(e) > 0;
-
-            // fixed row set, ordered by the infiltration level that unlocks each
-            // datum (player call); hidden values read "---" so every empire's data
-            // sits on the same line across columns
-            if (anyIntel)
-                TableRow(batch, col, ref y, maxY, "Homeworld", Truncate(e.data.Traits.HomeworldName, 90), Color.White);
-            else
-                HiddenRow(batch, col, ref y, maxY, "Homeworld", 1);
-
-            if (anyIntel && e.Capital != null)
-                TableRow(batch, col, ref y, maxY, "Controls HW", e.Capital.Owner == e ? Localizer.Token(GameText.Yes) : Localizer.Token(GameText.No), Color.White);
-            else
-                HiddenRow(batch, col, ref y, maxY, "Controls HW", 1);
 
             if (!UsingNewEspioange)
             {
-                string spies = IntelligenceLevel(e) > 1 ? e.data.AgentList.Count.ToString()
-                             : IntelligenceLevel(e) > 0 ? (e.data.AgentList.Count >= Player.data.AgentList.Count ? "Many" : "Few")
-                             : "Unknown";
-                TableRow(batch, col, ref y, maxY, "Spies", spies, Color.Wheat);
-            }
-            else if (e != Player)
-            {
-                TableRow(batch, col, ref y, maxY, "Infiltration", espionage.InfiltrationLevelSummary(), Color.Wheat);
-            }
-            else
-            {
-                BlankRow(ref y); // the player's own column: just space
-            }
-
-            // level 1: planets, population
-            if (anyIntel && (alwaysShow || espionage.CanViewNumPlanets))
-                TableRow(batch, col, ref y, maxY, "Planets", e.GetPlanets().Count.ToString(), Color.White);
-            else
-                HiddenRow(batch, col, ref y, maxY, "Planets", 1);
-
-            TableRow(batch, col, ref y, maxY, "Population", GetPop(e).String(1) + " bn", Color.White);
-
-            // level 2: ships, research (tech type; the exact topic is level 3)
-            if (anyIntel && (alwaysShow || espionage.CanViewNumShips))
-                TableRow(batch, col, ref y, maxY, "Ships", e.OwnedShips.Count.ToString(), Color.White);
-            else
-                HiddenRow(batch, col, ref y, maxY, "Ships", 2);
-
-            if (e.Research.HasTopic && (e.isPlayer || UsingNewEspioange && espionage.CanViewResearchTopic || IntelligenceLevel(e) > 1))
-                TableRow(batch, col, ref y, maxY, "Research", Truncate(e.Research.Current.Tech.Name.Text, 110), Color.White);
-            else if (e.Research.HasTopic && (UsingNewEspioange && espionage.CanViewTechType || IntelligenceLevel(e) > 0))
-                TableRow(batch, col, ref y, maxY, "Research", e.Research.Current.TechnologyType.ToString(), Color.White);
-            else if (e.isPlayer && !e.Research.HasTopic)
-                TableRow(batch, col, ref y, maxY, "Research", "None", Color.Gray);
-            else
-                HiddenRow(batch, col, ref y, maxY, "Research", 2);
-
-            // level 3: money
-            if (anyIntel && (alwaysShow || espionage.CanViewMoneyAndMaint))
-            {
-                TableRow(batch, col, ref y, maxY, "Treasury", e.Money.String(1) + " BC", Color.White);
-                TableRow(batch, col, ref y, maxY, "Maintenance", e.BuildingAndShipMaint.String(1), Color.White);
-            }
-            else
-            {
-                HiddenRow(batch, col, ref y, maxY, "Treasury", 3);
-                HiddenRow(batch, col, ref y, maxY, "Maintenance", 3);
-            }
-
-            // level 5: their moles
-            if (e != Player && (UsingNewEspioange && espionage?.CanViewTheirMoles == true || IntelligenceLevel(e) > 1))
-                TableRow(batch, col, ref y, maxY, "Their moles", Player.GetNumOfTheirMoles(e).ToString(), Color.Wheat);
-            else if (e == Player)
-                BlankRow(ref y);
-            else
-                HiddenRow(batch, col, ref y, maxY, "Their moles", 5);
-        }
-
-        // racial traits (lvl 4 intel), between INTELLIGENCE and ARTIFACTS (player call)
-        void DrawTraitRows(SpriteBatch batch, Empire e, Rectangle col, ref float y)
-        {
-            Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
-            if (e.isPlayer || (UsingNewEspioange ? espionage.CanViewTraitSet : IntelligenceLevel(e) > 1))
-            {
-                string traitSet = $"{e.data.SelectedTraitSet}"; // null-safe: interpolation, like the legacy screen
-                if (traitSet.Length == 0 && e.isPlayer && e.data.Traits.PlayerTraitOptions != null)
-                    traitSet = string.Join(", ", e.data.Traits.PlayerTraitOptions); // saves generated before the 46 fix
-                if (traitSet.Length == 0)
-                {
-                    batch.DrawString(Font12, "None", new Vector2(col.X + 8, y), Color.Gray);
-                    return;
-                }
-                string traits = Font12.ParseText(traitSet, col.Width - 16);
-                string[] lines = traits.Split('\n');
-                for (int i = 0; i < lines.Length && i < 3; ++i)
-                {
-                    batch.DrawString(Font12, i == 2 && lines.Length > 3 ? lines[i] + ".." : lines[i], new Vector2(col.X + 8, y), e.EmpireColor);
-                    y += Font12.LineSpacing + 2;
-                }
-            }
-            else
-            {
-                SpyLvl(batch, col.X + 8, y, 4);
-            }
-        }
-
-        // nominative artifact list (player design) — same visibility as the legacy list
-        void DrawArtifactRows(SpriteBatch batch, Empire e, Rectangle col, ref float y, float maxY)
-        {
-            Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
-            if (!(!UsingNewEspioange || e.isPlayer || espionage.CanViewArtifacts))
-            {
-                SpyLvl(batch, col.X + 8, y, 2);
-                return;
-            }
-            if (e.data.OwnedArtifacts.Count == 0)
-            {
-                batch.DrawString(Font12, "None", new Vector2(col.X + 8, y), Color.Gray);
-                return;
-            }
-            foreach (Artifact art in e.data.OwnedArtifacts)
-            {
-                if (y > maxY - Font12.LineSpacing)
-                {
-                    batch.DrawString(Font12, "...", new Vector2(col.X + 8, y), Color.Wheat);
-                    break;
-                }
-                batch.DrawString(Font12, Truncate(art.NameText.Text, col.Width - 20), new Vector2(col.X + 8, y), Color.Wheat);
-                y += Font12.LineSpacing + 3;
-            }
-        }
-
-        void DrawBonusRows(SpriteBatch batch, Empire e, Rectangle col, ref float y, float maxY)
-        {
-            Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
-            if (!(e.isPlayer || UsingNewEspioange && espionage.CanViewBonuses || IntelligenceLevel(e) > 0))
-            {
-                SpyLvl(batch, col.X + 8, y, 3);
-                return;
-            }
-
-            float yy = y;
-            void Row(string label, float value, bool opposite = false)
-            {
-                if (value == 0f) return;
-                float v = value;
-                if (v <= 10f && v >= -10f) v *= 100f;
-                Color c = (v > 0f && !opposite) || (v < 0f && opposite) ? Color.LightGreen : Color.LightPink;
-                TableRow(batch, col, ref yy, maxY, label, v.ToString("#.##") + "%", c);
-            }
-
-            var t = e.data.Traits;
-            if (t.PopGrowthMax > 0f) TableRow(batch, col, ref yy, maxY, "Max pop growth", "+" + t.PopGrowthMax.ToString(".##"), Color.LightPink);
-            if (t.PopGrowthMin > 0f) TableRow(batch, col, ref yy, maxY, "Min pop growth", "+" + t.PopGrowthMin.ToString(".##"), Color.LightGreen);
-            Row("Reproduction", t.ReproductionMod);
-            Row("Consumption", t.ConsumptionModifier, opposite: true);
-            Row("Production", t.ProductionMod);
-            Row("Research", t.ResearchMod);
-            Row("Diplomacy", t.DiplomacyMod);
-            Row("Ongoing diplomacy", e.data.OngoingDiplomaticModifier);
-            Row("Ground combat", t.GroundCombatModifier);
-            Row("Ship cost", t.ShipCostMod, opposite: true);
-            Row("Module HP", t.ModHpModifier);
-            Row("Repair rate", t.RepairMod);
-            Row("Reactor power", e.data.PowerFlowMod);
-            Row("Shield power", e.data.ShieldPowerMod);
-            Row("Ship mass", e.data.MassModifier - 1f, opposite: true);
-            Row("Tax income", t.TaxMod);
-            if (t.MaintMod != 0) Row("Maintenance", t.MaintMod, opposite: true);
-            if (t.MaintMod != 0 || t.ShipMaintMultiplier < 1)
-                Row("Ship maintenance", (1 + t.MaintMod) * t.ShipMaintMultiplier - 1, opposite: true);
-            Row("In-borders FTL", t.InBordersSpeedBonus);
-            TableRow(batch, col, ref yy, maxY, "FTL speed", e.data.FTLModifier + "x", Color.White);
-            TableRow(batch, col, ref yy, maxY, "FTL power drain", e.data.FTLPowerDrainModifier + "x", Color.White);
-            Row("Fuel cells", e.data.FuelCellModifier);
-            if (e.data.SubLightModifier != 1) Row("Sublight speed", e.data.SubLightModifier - 1f);
-            if (e.data.SensorModifier != 1) Row("Sensor range", e.data.SensorModifier - 1f);
-            Row("Ship experience", e.data.ExperienceMod);
-            if (e.data.SpyModifier > 0f) TableRow(batch, col, ref yy, maxY, "Spy effectiveness", "+" + e.data.SpyModifier.ToString("#"), Color.LightGreen);
-            else if (e.data.SpyModifier < 0f) TableRow(batch, col, ref yy, maxY, "Spy effectiveness", "-" + e.data.SpyModifier.ToString("#"), Color.LightPink);
-            Row("Artifact bonus", t.Spiritual);
-            Row("Cannon accuracy", t.TargetingModifier);
-            if (t.DodgeMod > 0) Row("Dodge", t.DodgeMod);
-            Row("Ordnance damage", e.data.OrdnanceEffectivenessBonus);
-            if (e.data.MissileHPModifier != 1) Row("Missile HP", e.data.MissileHPModifier - 1f);
-            Row("Missile dodge", e.data.MissileDodgeChance);
-            if (e.data.ExoticStorageMultiplier != 1) Row("Exotic storage", e.data.ExoticStorageMultiplier - 1);
-            if (e.data.MiningSpeedMultiplier != 1) Row("Mining speed", e.data.MiningSpeedMultiplier - 1);
-            if (e.data.RefiningRatioMultiplier != 1) Row("Refining", e.data.RefiningRatioMultiplier - 1);
-            y = yy;
-        }
-
-        // per-column mini-matrix: x = the other empires, y = treaty families that
-        // share a line because they exclude or imply each other (W/P, A/N), plus O, T
-        void DrawTreatyMatrix(SpriteBatch batch, Empire e, Rectangle col, float top)
-        {
-            Empire[] others = Universe.UState.ActiveMajorEmpires.Filter(x => x != e);
-            if (others.Length == 0)
-                return;
-
-            int cellW = ((col.Width - 20) / others.Length).UpperBound(26);
-            float x0 = col.X + (col.Width - cellW * others.Length) / 2f;
-
-            // flag header
-            for (int jx = 0; jx < others.Length; ++jx)
-            {
-                var flag = new Rectangle((int)(x0 + jx * cellW) + (cellW - 14) / 2, (int)top, 14, 14);
-                if (Player.IsKnown(others[jx]) || others[jx].isPlayer)
-                    batch.Draw(ResourceManager.Flag(others[jx].data.Traits.FlagIndex), flag, others[jx].EmpireColor);
+                if (IntelligenceLevel(SelectedEmpire) > 1)
+                    DrawDiploLine(batch, Font12, $"{Localizer.Token(GameText.TotalSpies)} {SelectedEmpire.data.AgentList.Count}", Color.LightGreen, ref textCursor);
+                else if (IntelligenceLevel(SelectedEmpire) > 0)
+                    DrawDiploLine(batch, Font12, $"{Localizer.Token(GameText.TotalSpies)} {(SelectedEmpire.data.AgentList.Count >= Player.data.AgentList.Count ? "Many" : "Few")}", Color.Yellow, ref textCursor);
                 else
-                    batch.DrawString(Font12, "?", new Vector2(flag.X + 3, flag.Y), Color.Gray);
+                    DrawDiploLine(batch, Font12, $"{Localizer.Token(GameText.TotalSpies)} Unknown", Color.Pink, ref textCursor);
+            }
+            else if (SelectedEmpire != Player)
+            {
+                DrawDiploLine(batch, Font12, $"Their Infiltration Level: {espionage.InfiltrationLevelSummary()}", Color.Wheat, ref textCursor);
             }
 
-            // separator between the race-flag header and the treaty rows
-            int sepY = (int)top + 17;
-            int sepX = (int)x0;
-            int sepW = (int)(cellW * others.Length);
-            batch.DrawLine(new Vector2(sepX, sepY), new Vector2(sepX + sepW, sepY), new Color(255, 255, 255, 40).Premultiplied());
+            DrawDiploLine(batch, Font12, $"{Localizer.Token(GameText.Population2)} {GetPop(SelectedEmpire).String(1)} {Localizer.Token(GameText.Billion)}", Color.Wheat, ref textCursor);
 
-            // merged status row (Ludo 19:10): war BREAKS every treaty at declaration
-            // (DeclareWarOn → BreakAllTreatiesWith includingPeace) and alliance
-            // auto-signs NA — so one row with priority W > A > N > P loses nothing
-            // but a truce still ticking under a fresher alliance. Icons, not letters.
-            for (int iy = 0; iy < 3; ++iy)
+            if (UsingNewEspioange && espionage?.CanViewTheirMoles == true || IntelligenceLevel(SelectedEmpire) > 1)
             {
-                float ry = top + 20 + iy * 22;
-                for (int jx = 0; jx < others.Length; ++jx)
-                {
-                    SubTexture icon = null;
-                    Color tint = Color.White;
-                    string glyph = "?";
-                    if (CanSeeRelation(e, others[jx]) && e.GetRelations(others[jx], out Relationship rel) && rel.Known)
-                    {
-                        // tints match the Relationships Cross Reference palette:
-                        // War red, Peace white, Alliance green, NA blue, Open Borders purple, Trade yellow
-                        glyph = "-";
-                        switch (iy)
-                        {
-                            case 0: // the state of the relation, strongest bond first
-                                if (rel.AtWar) { icon = ResourceManager.Texture("UI/icon_fighting_small"); tint = Color.Red; }
-                                else if (rel.Treaty_Alliance) { icon = ResourceManager.Texture("UI/flagicon"); tint = Color.Green; }
-                                else if (rel.Treaty_NAPact) { icon = ResourceManager.Texture("UI/icon_shield"); tint = Color.DeepSkyBlue; }
-                                else if (rel.Treaty_Peace) { icon = ResourceManager.Texture("UI/icon_peace"); tint = Color.White; }
-                                break;
-                            case 1:
-                                if (rel.Treaty_OpenBorders) { icon = ResourceManager.Texture("NewUI/icon_intertrade"); tint = Color.Violet; }
-                                break;
-                            case 2:
-                                if (rel.Treaty_Trade) { icon = ResourceManager.Texture("NewUI/icon_money"); tint = Color.Yellow; }
-                                break;
-                        }
-                    }
-                    if (icon != null)
-                        batch.Draw(icon, new Rectangle((int)(x0 + jx * cellW) + (cellW - 14) / 2, (int)ry, 14, 14), tint);
-                    else
-                        batch.DrawString(Font12Bold, glyph, new Vector2(x0 + jx * cellW + (cellW - Font12Bold.TextWidth(glyph)) / 2f, ry), new Color(90, 90, 90));
-                }
-            }
-        }
-
-        bool CanSeeRelation(Empire a, Empire b)
-        {
-            if (a.isPlayer || b.isPlayer)
-                return true;
-            if (!Player.IsKnown(a) || !Player.IsKnown(b))
-                return false;
-            if (UsingNewEspioange)
-                return Player.GetRelations(a).Espionage.CanViewTheirTreaties
-                    || Player.GetRelations(b).Espionage.CanViewTheirTreaties;
-            return IntelligenceLevel(a) > 0 || IntelligenceLevel(b) > 0;
-        }
-
-        public override bool HandleInput(InputState input)
-        {
-            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
-                return true;
-
-            if (input.KeyPressed(Keys.I) && !GlobalStats.TakingInput)
-            {
-                GameAudio.EchoAffirmative();
-                ExitScreen();
-                return true;
+                string traitlist = Font12.ParseText($"Number Of Moles: {Player.GetNumOfTheirMoles(SelectedEmpire)}", IntelligenceRect.Width - 10);
+                DrawDiploLine(batch, Font12, traitlist, Color.Wheat, ref textCursor);
             }
 
-            // the Contact buttons (original DanButton design), one per column
-            foreach (var kv in Contacts)
+            //Diplomatic Relations
+            foreach (Relationship rel in SelectedEmpire.AllRelations)
             {
-                if (!kv.Value.HandleInput(input))
+                if (!rel.Known || rel.Them.IsFaction || rel.Them.IsDefeated)
                     continue;
-                if (!kv.Key.IsDefeated)
+
+                if (SelectedEmpire.isPlayer 
+                    || UsingNewEspioange && espionage.CanViewTheirTreaties
+                    || IntelligenceLevel(SelectedEmpire) > 0)
                 {
-                    DiplomacyScreen.Show(kv.Key, "Greeting", parent: this);
-                    return true;
+                    Color color = rel.Them.EmpireColor;
+                    string name = rel.Them.data.Traits.Name;
+                    string andTrade = rel.Treaty_Trade ? Localizer.Token(GameText.AndTrade) : ""; // "and Trade"
+
+                    if      (rel.Treaty_Alliance)    DrawDiploLine(batch, Font12, $"{name}: {Localizer.Token(GameText.Alliance)} {andTrade}", color, ref textCursor);
+                    else if (rel.Treaty_OpenBorders) DrawDiploLine(batch, Font12, $"{name}: {Localizer.Token(GameText.OpenBorders)} {andTrade}", color, ref textCursor);
+                    else if (rel.Treaty_NAPact)      DrawDiploLine(batch, Font12, $"{name}: {Localizer.Token(GameText.NonaggressionPact2)} {andTrade}", color, ref textCursor);
+                    else if (rel.Treaty_Peace)       DrawDiploLine(batch, Font12, $"{name}: {Localizer.Token(GameText.PeaceTreaty)} {andTrade}", color, ref textCursor);
+                    else if (rel.AtWar)              DrawDiploLine(batch, Font12, $"{name}: {Localizer.Token(GameText.AtWar)} {andTrade}", color, ref textCursor);
                 }
             }
 
-            return base.HandleInput(input);
+            if (SelectedEmpire.isPlayer || (UsingNewEspioange && espionage?.CanViewTraitSet == true) || IntelligenceLevel(SelectedEmpire) > 1)
+            {
+                textCursor.Y += Font12.LineSpacing + 2;
+                string traitlist = Font12.ParseText($"Racial Traits: {SelectedEmpire.data.SelectedTraitSet}", IntelligenceRect.Width - 50);
+                DrawDiploLine(batch, Font12, traitlist, SelectedEmpire.EmpireColor, ref textCursor);
+            }
+
+            //End of intel report
+            textCursor = new Vector2(OperationsRect.X + 20, OperationsRect.Y + 10);
+            batch.DrawDropShadowText((SelectedEmpire.isPlayer ? Localizer.Token(GameText.YourEmpiresBonuses) : Localizer.Token(GameText.TheirBonuses)), textCursor, Fonts.Arial20Bold, SelectedEmpire.EmpireColor);
+            textCursor.Y += Fonts.Arial20Bold.LineSpacing + 5;
+            //Added by McShooterz: Only display modified bonuses
+            if (SelectedEmpire.isPlayer 
+                || UsingNewEspioange && espionage.CanViewBonuses 
+                || IntelligenceLevel(SelectedEmpire) > 0)
+            {
+                if (SelectedEmpire.data.Traits.PopGrowthMax > 0f)
+                    DrawBadStat(Localizer.Token(GameText.MaximumPopulationGrowth), "+"+SelectedEmpire.data.Traits.PopGrowthMax.ToString(".##"), ref textCursor);
+                if (SelectedEmpire.data.Traits.PopGrowthMin > 0f)
+                    DrawGoodStat(Localizer.Token(GameText.MinimumPopulationGrowth), "+"+SelectedEmpire.data.Traits.PopGrowthMin.ToString(".##"), ref textCursor);
+                if (SelectedEmpire.data.Traits.ReproductionMod != 0)
+                    DrawStat(Localizer.Token(GameText.PopulationGrowthModifier), SelectedEmpire.data.Traits.ReproductionMod, ref textCursor, false);
+                if (SelectedEmpire.data.Traits.ConsumptionModifier != 0)
+                    DrawStat(Localizer.Token(GameText.FoodConsumptionModifier), SelectedEmpire.data.Traits.ConsumptionModifier, ref textCursor, true);
+                if (SelectedEmpire.data.Traits.ProductionMod != 0)
+                    DrawStat(Localizer.Token(GameText.ProductionModifier), SelectedEmpire.data.Traits.ProductionMod, ref textCursor, false);
+                if (SelectedEmpire.data.Traits.ResearchMod != 0)
+                    DrawStat(Localizer.Token(GameText.ResearchModifier), SelectedEmpire.data.Traits.ResearchMod, ref textCursor, false);
+                if (SelectedEmpire.data.Traits.DiplomacyMod != 0)
+                    DrawStat(Localizer.Token(GameText.DiplomacyModifier), SelectedEmpire.data.Traits.DiplomacyMod, ref textCursor, false);
+                if (SelectedEmpire.data.OngoingDiplomaticModifier != 0)
+                    DrawStat(Localizer.Token(GameText.OngoingDiplomacyModifier), SelectedEmpire.data.OngoingDiplomaticModifier, ref textCursor, false);
+                if (SelectedEmpire.data.Traits.GroundCombatModifier != 0)
+                    DrawStat(Localizer.Token(GameText.TroopStrengthModifier), SelectedEmpire.data.Traits.GroundCombatModifier, ref textCursor, false);
+                if (SelectedEmpire.data.Traits.ShipCostMod != 0)
+                    DrawStat(Localizer.Token(GameText.ShipCostModifier), SelectedEmpire.data.Traits.ShipCostMod, ref textCursor, true);
+                if (SelectedEmpire.data.Traits.ModHpModifier != 0)
+                    DrawStat(Localizer.Token(GameText.ShipHitpointsModifier), SelectedEmpire.data.Traits.ModHpModifier, ref textCursor, false);
+                //Added by McShooterz: new races stats to display in diplomacy
+                if (SelectedEmpire.data.Traits.RepairMod != 0)
+                    DrawStat(Localizer.Token(GameText.RepairRateModifier), SelectedEmpire.data.Traits.RepairMod, ref textCursor, false);
+                if (SelectedEmpire.data.PowerFlowMod != 0)
+                    DrawStat(Localizer.Token(GameText.ReactorPowerModifier), SelectedEmpire.data.PowerFlowMod, ref textCursor, false);
+                if (SelectedEmpire.data.ShieldPowerMod != 0)
+                    DrawStat(Localizer.Token(GameText.ShieldStrengthModifier), SelectedEmpire.data.ShieldPowerMod, ref textCursor, false);
+                if (SelectedEmpire.data.MassModifier != 1)
+                    DrawStat(Localizer.Token(GameText.ShipMassModifier), SelectedEmpire.data.MassModifier - 1f, ref textCursor, true);
+                if (SelectedEmpire.data.Traits.TaxMod != 0)
+                    DrawStat(Localizer.Token(GameText.TaxIncomeModifier), SelectedEmpire.data.Traits.TaxMod, ref textCursor, false);
+                if (SelectedEmpire.data.Traits.MaintMod != 0 || SelectedEmpire.data.Traits.ShipMaintMultiplier < 1)
+                {
+                    if (SelectedEmpire.data.Traits.MaintMod != 0 )
+                        DrawStat(Localizer.Token(GameText.MaintenanceModifier), SelectedEmpire.data.Traits.MaintMod, ref textCursor, true);
+
+                    float shipMaintTotal = ((1 + SelectedEmpire.data.Traits.MaintMod) * SelectedEmpire.data.Traits.ShipMaintMultiplier) - 1;
+                    DrawStat(Localizer.Token(GameText.ShipMaintenanceModifier), shipMaintTotal, ref textCursor, true);
+                }
+
+                DrawStat(Localizer.Token(GameText.InbordersFtlBonus), SelectedEmpire.data.Traits.InBordersSpeedBonus, ref textCursor, false);
+                if (Universe.UState.P.FTLModifier != 1f)
+                {
+                    float fTLModifier = Universe.UState.P.FTLModifier * 100f;
+                    DrawBadStat(Localizer.Token(GameText.InsystemFtlSpeed), fTLModifier.ToString("##")+"%", ref textCursor);
+                }
+                DrawStat(Localizer.Token(GameText.FtlSpeedMultiplier), string.Concat(SelectedEmpire.data.FTLModifier, "x"), ref textCursor);
+                DrawStat(Localizer.Token(GameText.FtlPowerDrainModifier), string.Concat(SelectedEmpire.data.FTLPowerDrainModifier, "x"), ref textCursor);
+                if (SelectedEmpire.data.FuelCellModifier != 0)
+                    DrawStat(Localizer.Token(GameText.FuelCellModifier), SelectedEmpire.data.FuelCellModifier, ref textCursor, false);
+                if (SelectedEmpire.data.SubLightModifier != 1)
+                    DrawStat(Localizer.Token(GameText.SublightSpeedBonus), SelectedEmpire.data.SubLightModifier - 1f, ref textCursor, false);
+                if (SelectedEmpire.data.SensorModifier != 1)
+                    DrawStat(Localizer.Token(GameText.SensorRangeModifier), SelectedEmpire.data.SensorModifier - 1f, ref textCursor, false);
+                if (SelectedEmpire.data.ExperienceMod != 0)
+                    DrawStat("Ship Experience Modifier", SelectedEmpire.data.ExperienceMod, ref textCursor, false);
+                if (SelectedEmpire.data.SpyModifier > 0f)
+                    DrawGoodStat(Localizer.Token(GameText.SpyEffectivenessModifier), "+"+SelectedEmpire.data.SpyModifier.ToString("#"), ref textCursor);
+                else if (SelectedEmpire.data.SpyModifier < 0f)
+                    DrawBadStat(Localizer.Token(GameText.SpyEffectivenessModifier), "-"+SelectedEmpire.data.SpyModifier.ToString("#"), ref textCursor);
+                if (SelectedEmpire.data.Traits.Spiritual != 0)
+                    DrawStat(Localizer.Token(GameText.ArtifactBonusModifier), SelectedEmpire.data.Traits.Spiritual, ref textCursor, false);
+                if (SelectedEmpire.data.Traits.TargetingModifier != 0)
+                    DrawStat(Localizer.Token(GameText.CannonAccuracyModifier), SelectedEmpire.data.Traits.TargetingModifier, ref textCursor, false);
+                if (SelectedEmpire.data.Traits.DodgeMod > 0)
+                    DrawStat(Localizer.Token(GameText.DodgeModifier), SelectedEmpire.data.Traits.DodgeMod , ref textCursor, false);
+                if (SelectedEmpire.data.OrdnanceEffectivenessBonus != 0)
+                    DrawStat(Localizer.Token(GameText.OrdnanceDamageradiusModifier), SelectedEmpire.data.OrdnanceEffectivenessBonus, ref textCursor, false);
+                if (SelectedEmpire.data.MissileHPModifier != 1)
+                    DrawStat(Localizer.Token(GameText.MissileHitpointsBonus), SelectedEmpire.data.MissileHPModifier - 1f, ref textCursor, false);
+                if (SelectedEmpire.data.MissileDodgeChance != 0)
+                    DrawStat(Localizer.Token(GameText.MissileDodgeChance), SelectedEmpire.data.MissileDodgeChance, ref textCursor, false); 
+                if (SelectedEmpire.data.ExoticStorageMultiplier != 1)
+                    DrawStat(Localizer.Token(GameText.EmpireExoticStorage), SelectedEmpire.data.ExoticStorageMultiplier-1, ref textCursor, false);
+                if (SelectedEmpire.data.MiningSpeedMultiplier != 1)
+                    DrawStat(Localizer.Token(GameText.EmpireMiningSpeed), SelectedEmpire.data.MiningSpeedMultiplier-1, ref textCursor, false);
+                if (SelectedEmpire.data.RefiningRatioMultiplier != 1)
+                    DrawStat(Localizer.Token(GameText.EmpireRefiningEfficiency), SelectedEmpire.data.RefiningRatioMultiplier-1, ref textCursor, false);
+            }
+            base.Draw(batch, elapsed);
+            batch.SafeEnd();
+        }
+
+        int GetRank(Empire selectedEmpire, Empire[] empireList)
+        {
+            for (int i = 0; i < empireList.Length; i++)
+            {
+                Empire e = empireList[i];
+                if (selectedEmpire == e)
+                {
+                    return i + 1;
+                }
+            }
+
+            return empireList.Length;
+        }
+
+        private void DrawBadStat(string text, string text2, ref Vector2 Position)
+        {
+            Position = Position.ToFloored();
+            ScreenManager.SpriteBatch.DrawString(Fonts.Arial12, text, Position, Color.LightPink);
+            Vector2 nPos = new Vector2(Position.X + 310f, Position.Y);
+            //{
+            nPos.X = nPos.X - Fonts.Arial12Bold.MeasureString(text2).X;
+            //};
+            nPos = nPos.ToFloored();
+            ScreenManager.SpriteBatch.DrawString(Fonts.Arial12Bold, text2, nPos, Color.LightPink);
+            Position.Y = Position.Y + (Fonts.Arial12Bold.LineSpacing + 2);
+        }
+
+        private void DrawGoodStat(string text, string text2, ref Vector2 Position)
+        {
+            Position = Position.ToFloored();
+            ScreenManager.SpriteBatch.DrawString(Fonts.Arial12, text, Position, Color.LightGreen);
+            Vector2 nPos = new Vector2(Position.X + 310f, Position.Y);
+            //{
+            nPos.X = nPos.X - Fonts.Arial12Bold.MeasureString(text2).X;
+            //};
+            nPos = nPos.ToFloored();
+            ScreenManager.SpriteBatch.DrawString(Fonts.Arial12Bold, text2, nPos, Color.LightGreen);
+            Position.Y = Position.Y + (Fonts.Arial12Bold.LineSpacing + 2);
+        }
+
+        private void DrawStat(string text, float value, ref Vector2 Position, bool OppositeBonuses)
+        {
+            Color color;
+            if (value <= 10f)
+            {
+                value = value * 100f;
+            }
+            if ((value > 0f && !OppositeBonuses) || (value < 0f && OppositeBonuses))
+            {
+                color = Color.LightGreen;
+            }
+            else
+            {
+                color = (value == 0f ? Color.White : Color.LightPink);
+            }
+            Position = Position.ToFloored();
+            ScreenManager.SpriteBatch.DrawString(Fonts.Arial12, text, Position, color);
+
+            string valuePercent = value.ToString("#.##")+"%";
+            var nPos = new Vector2(Position.X + 310f, Position.Y);
+            nPos.X -= Fonts.Arial12Bold.MeasureString(valuePercent).X;
+
+            nPos = nPos.ToFloored();
+            ScreenManager.SpriteBatch.DrawString(Fonts.Arial12Bold, valuePercent, nPos, color);
+            Position.Y += Fonts.Arial12Bold.LineSpacing;
+        }
+
+        private void DrawStat(string text, string text2, ref Vector2 Position)
+        {
+            Position = Position.ToFloored();
+            ScreenManager.SpriteBatch.DrawString(Fonts.Arial12, text, Position, Color.White);
+            Vector2 nPos = new Vector2(Position.X + 310f, Position.Y);
+            //{
+                nPos.X = nPos.X - Fonts.Arial12Bold.MeasureString(text2).X;
+            //};
+            nPos = nPos.ToFloored();
+            ScreenManager.SpriteBatch.DrawString(Fonts.Arial12Bold, text2, nPos, Color.White);
+            Position.Y = Position.Y + (Fonts.Arial12Bold.LineSpacing + 2);
         }
 
         private float GetPop(Empire e)
@@ -774,14 +623,125 @@ namespace Ship_Game
             return scientificStr;
         }
 
+        void CreateArtifactsScrollList(Empire empire)
+        {
+            SelectedEmpire = empire;
+            ArtifactsSL.Reset();
+            if (UsingNewEspioange && SelectedEmpire != Player && !Player.GetRelations(SelectedEmpire).Espionage.CanViewArtifacts)
+                return;
+
+            var entry = new ArtifactEntry();
+            for (int i = 0; i < SelectedEmpire.data.OwnedArtifacts.Count; i++)
+            {
+                Artifact art = SelectedEmpire.data.OwnedArtifacts[i];
+                var button = new SkinnableButton(new Rectangle(0, 0, 32, 32), $"Artifact Icons/{art.Name}")
+                {
+                    IsToggle = false,
+                    ReferenceObject = art,
+                    BaseColor = Color.White
+                };
+
+                if (entry.ArtifactButtons.Count < 5)
+                {
+                    entry.ArtifactButtons.Add(button);
+                }
+                if (entry.ArtifactButtons.Count == 5 || i == SelectedEmpire.data.OwnedArtifacts.Count - 1)
+                {
+                    ArtifactsSL.AddItem(new ArtifactItemListItem(entry));
+                    entry = new ArtifactEntry();
+                }
+            }
+            GameAudio.EchoAffirmative();
+        }
+
+        public override bool HandleInput(InputState input)
+        {
+            if (input.KeyPressed(Keys.I) && !GlobalStats.TakingInput)
+            {
+                GameAudio.EchoAffirmative();
+                ExitScreen();
+                return true;
+            }
+
+            if (SelectedEmpire != Player && !SelectedEmpire.IsDefeated && Contact.HandleInput(input))
+            {
+                DiplomacyScreen.Show(SelectedEmpire, "Greeting", parent: this);
+            }
+
+            foreach (RaceEntry race in Races)
+            {
+                if (HelperFunctions.ClickedRect(race.container, input))
+                {
+                    if (Player == race.e || !Player.IsKnown(race.e))
+                    {
+                        if (Player == race.e)
+                            CreateArtifactsScrollList(race.e);
+                    }
+                    else
+                    {
+                        CreateArtifactsScrollList(race.e);
+                    }
+                }
+            }
+
+            return base.HandleInput(input);
+        }
+
+        public override void LoadContent()
+        {
+            float screenWidth = ScreenWidth;
+            float screenHeight = ScreenHeight;
+            Rectangle titleRect = new Rectangle((int)screenWidth / 2 - 200, 44, 400, 80);
+            TitleBar = new Menu2(titleRect);
+            TitlePos = new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString(Localizer.Token(GameText.DiplomaticOverview)).X / 2f, titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
+            LeftRect = new Rectangle((int)screenWidth / 2 - 700, (screenHeight > 768f ? titleRect.Y + titleRect.Height + 5 : 44), 1400, 700);
+            DMenu = new Menu2(LeftRect);
+            Add(new CloseButton(LeftRect.Right - 40, LeftRect.Y + 20));
+            SelectedInfoRect = new Rectangle(LeftRect.X + 60, LeftRect.Y + 250, 368, 376);
+            IntelligenceRect = new Rectangle(SelectedInfoRect.X + SelectedInfoRect.Width + 30, SelectedInfoRect.Y, 368, 376);
+            OperationsRect = new Rectangle(IntelligenceRect.X + IntelligenceRect.Width + 30, SelectedInfoRect.Y, 368, 376);
+            
+            RectF artifacts = new(SelectedInfoRect.X , SelectedInfoRect.Y + 250, SelectedInfoRect.Width - 40, 130);
+            ArtifactsSL = Add(new ScrollList<ArtifactItemListItem>(artifacts));
+            
+            Contact = new DanButton(new Vector2(SelectedInfoRect.X + SelectedInfoRect.Width / 2 - 91, SelectedInfoRect.Y + SelectedInfoRect.Height - 45), Localizer.Token(GameText.Contact))
+            {
+                Toggled = true
+            };
+            foreach (Empire e in Universe.UState.Empires)
+            {
+                if (e != Player)
+                {
+                    if (e.IsFaction)
+                        continue;
+                }
+                else
+                {
+                    CreateArtifactsScrollList(e);
+                }
+                Races.Add(new RaceEntry { e = e });
+            }
+            Vector2 cursor = new Vector2(screenWidth / 2f - 148 * Races.Count / 2, LeftRect.Y + 10);
+            int j = 0;
+            foreach (RaceEntry re in Races)
+            {
+                re.container = new Rectangle((int)cursor.X + 10 + j * 148, LeftRect.Y + 40, 124, 148);
+                j++;
+            }
+            GameAudio.MuteRacialMusic();
+
+            DiagramButton = Add(new UIButton(ButtonStyle.Default, new Vector2(LeftRect.X + 70, LeftRect.Bottom - 60), "View Relationships"));
+            DiagramButton.OnClick = b => AddRelationShipDiagramScreen();
+        }
+
         void AddRelationShipDiagramScreen()
         {
             Array<EmpireAndIntelLevel> empiresAndIntel = new Array<EmpireAndIntelLevel>();
             foreach (Empire empire in Universe.UState.ActiveMajorEmpires)
             {
-                int intel = empire.isPlayer ? 3
-                                            : UsingNewEspioange ? Player.GetRelations(empire).Espionage.Level
-                                                                : IntelligenceLevel(empire);
+                int intel = empire.isPlayer ? 3 
+                                            :  UsingNewEspioange ? Player.GetRelations(empire).Espionage.Level
+                                                                 : IntelligenceLevel(empire);
                 empiresAndIntel.Add(new EmpireAndIntelLevel(empire, intel));
             }
 
@@ -797,8 +757,9 @@ namespace Ship_Game
 
         public EmpireAndIntelLevel(Empire empire, int level)
         {
-            Empire = empire;
+            Empire     = empire;
             IntelLevel = level;
         }
     }
+
 }

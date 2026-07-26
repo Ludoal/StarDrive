@@ -409,7 +409,7 @@ namespace Ship_Game
                 if (input.KeyPressed(Keys.I))
                 {
                     GameAudio.EchoAffirmative();
-                    Universe.ScreenManager.AddScreen(new MainDiplomacyScreen(Universe));
+                    Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Diplomacy(Universe));
                     return true;
                 }
                 if (input.KeyPressed(Keys.O))
@@ -424,7 +424,7 @@ namespace Ship_Game
                     if (Universe.Player.LegacyEspionageEnabled)
                         Universe.ScreenManager.AddScreen(new EspionageScreen(Universe));
                     else
-                        Universe.ScreenManager.AddScreen(new InfiltrationScreen(Universe));
+                        Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Espionage(Universe));
                     return true;
                 }
                 if (input.Codex)
@@ -544,7 +544,7 @@ namespace Ship_Game
                         }
                         else if (b.launches == "Diplomacy")
                         {
-                            Universe.ScreenManager.AddScreen(new MainDiplomacyScreen(Universe));
+                            Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Diplomacy(Universe));
                             GameAudio.EchoAffirmative();
                         }
                         else if (b.launches == "Espionage")
@@ -552,7 +552,7 @@ namespace Ship_Game
                             if (Universe.Player.LegacyEspionageEnabled)
                                 Universe.ScreenManager.AddScreen(new EspionageScreen(Universe));
                             else
-                                Universe.ScreenManager.AddScreen(new InfiltrationScreen(Universe));
+                                Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Espionage(Universe));
 
                             GameAudio.EchoAffirmative();
                         }
@@ -724,7 +724,7 @@ namespace Ship_Game
                             if (Universe.Player.LegacyEspionageEnabled)
                                 Universe.ScreenManager.AddScreen(new EspionageScreen(Universe));
                             else
-                                Universe.ScreenManager.AddScreen(new InfiltrationScreen(Universe));
+                                Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Espionage(Universe));
 
                             GameAudio.EchoAffirmative();
                         }
@@ -743,7 +743,7 @@ namespace Ship_Game
                             {
                                 continue;
                             }
-                            Universe.ScreenManager.AddScreen(new MainDiplomacyScreen(Universe));
+                            Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Diplomacy(Universe));
                             GameAudio.EchoAffirmative();
                         }
                         else if (b.launches == "?")
