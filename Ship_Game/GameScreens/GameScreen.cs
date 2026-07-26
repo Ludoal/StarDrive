@@ -319,13 +319,19 @@ namespace Ship_Game
         public virtual void ReloadContent()
         {
             UnloadContent();
+            UpdateViewport();
+            RefreshResolutionFlags(); // before LoadContent: the layout reads them
             InvokeLoadContent();
         }
 
-        // Ludoal fork: one source for the layout flags, called from the ctor and again after a
-        // live resolution change. They used to be readonly and set inline in the ctor, so a
-        // screen rebuilt at a new size still drew itself with the old size's flags — which made
-        // the resolution test tool useless for testing exactly what it exists to test.
+        // Ludoal fork: one source for the layout flags, called from the ctor and again from
+        // ReloadContent.
+        //
+        // These used to be readonly, set inline in the ctor. ReloadContent rebuilds a screen's
+        // ELEMENTS but not the screen object, so the flags survived every resize — which means
+        // changing resolution from the Options screen has always left LowRes/HiRes stale until
+        // the next restart. That is an upstream bug, not one the test tool introduced; the tool
+        // only made it impossible to ignore, since exercising those flags is its whole purpose.
         public void RefreshResolutionFlags()
         {
             LowRes = ScreenWidth <= 1366 || ScreenHeight <= 720;

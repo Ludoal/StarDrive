@@ -811,24 +811,14 @@ namespace Ship_Game
             // reset, so it doubles as proof the resize actually ran.
             Log.Write(ConsoleColor.Cyan, $"TestResolution: {w}x{h}");
             GameAudio.AcceptClick();
-            StarDriveGame.Instance?.ApplyGraphics(settings);
 
-            // Rebuild the open screens at the new size. This is a real teardown — UnloadContent
-            // then LoadContent on every open screen — so expect a hitch, and a screen holding
-            // transient state in its UI elements may lose it. Acceptable for a bench tool; if
-            // some screen turns out to mind, give it a lighter ReloadContent override.
-            //
-            // ApplyGraphics only resizes the window:
-            // StarDriveGame.LoadContent returns immediately once IsLoaded is set, so the
-            // deviceWasReset path that would have called ReloadContent is never reached in a
-            // running game — which is why only a restart used to redraw the content.
-            foreach (GameScreen screen in GameScreens.ToArr())
-            {
-                screen.UpdateViewport();
-                screen.RefreshResolutionFlags(); // before the rebuild: LoadContent reads them
-                screen.Rect = new Rectangle(0, 0, GameBase.ScreenWidth, GameBase.ScreenHeight);
-                screen.ReloadContent();
-            }
+            // Exactly what the Options screen's Apply does — Ludo pointed out that resizing
+            // from Options already redraws everything, so the path existed and my own rebuild
+            // loop was a second version of it. ApplyGraphics resizes the window; if it had to
+            // recreate the device it reloaded the screens itself, otherwise LoadContent does it.
+            bool deviceChanged = StarDriveGame.Instance?.ApplyGraphics(settings) ?? false;
+            if (!deviceChanged)
+                LoadContent(deviceWasReset: true);
         }
 
         public void Update(UpdateTimes elapsed)
