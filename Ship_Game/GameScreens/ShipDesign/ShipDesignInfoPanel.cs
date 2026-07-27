@@ -120,7 +120,12 @@ namespace Ship_Game.GameScreens.ShipDesign
         // than just pushing column 2 further right.
         const float MidGap = 10f;
         const float ValueRoom = 52f;
-        const float SidePad = 10f;    // the right-hand margin; the left one is the panel's inset
+        // ⚠ the RIGHT margin only. The left one is the inner rect's own inset, which the frame
+        // does not pay for again — 46.163 counted it twice and, since the frame is anchored on
+        // its right edge and grows leftwards, the surplus 10px opened as a gap down the left of
+        // the whole block, image included (Ludo). Content sits Inset in from the frame's left
+        // edge and SidePad in from its right: same 10 both sides, counted once each.
+        const float SidePad = 10f;
 
         // What a frame must measure to hold two of those columns — the screen asks this rather
         // than sizing the frame from whatever space is going spare and hoping the columns fit.
@@ -136,6 +141,16 @@ namespace Ship_Game.GameScreens.ShipDesign
             // i.e. Inset px in from the frame's edge, not at the frame's edge. Leaving it out
             // meant the frame was exactly as wide as its content ended, so the right margin
             // vanished the moment the columns were correctly aligned with the title.
+            // The frame, read left edge to right edge exactly as the draw consumes it:
+            //
+            //   [Inset] [column 0] [Col1Shift] [column 1] [SidePad]
+            //
+            // ⚠ the two margins are NOT interchangeable and both have to be here once. 46.162
+            // left Inset out, so the right margin vanished the moment the columns lined up with
+            // the title; 46.163 put it in twice (once here, once via ContentLeft) and, because
+            // the frame is anchored on its RIGHT edge and grows leftwards, the surplus showed up
+            // as a 10px gap down the left of the whole block. Content starts at ContentLeft —
+            // Inset in from the frame — so Inset is the LEFT margin and SidePad the right.
             float col1Origin = Inset + StepFor(withDeltas) + Col1ShiftConst;  // where the draw puts it
             float w = col1Origin + ColumnContentWidth(withDeltas) + SidePad;
             if (withPlan)
@@ -169,11 +184,15 @@ namespace Ship_Game.GameScreens.ShipDesign
         public const float Inset = 10f;
         public float InnerInset = Inset;
 
-        // Where content starts, measured from the FRAME's left edge — the module panel's
-        // panel.X + 10. This rect is the INNER one, already inset, so the inset is backed out
-        // first. Title and columns both read this: they are the same edge, and every time they
-        // each computed it themselves one of them drifted (46.152, 46.154, 46.162).
-        float ContentLeft => X - InnerInset + 10f;
+        // Where content starts: the inner rect's own left edge, full stop. The rect is already
+        // inset inside the frame, so that IS the margin — nothing to back out and nothing to add.
+        //
+        // ⚠ this used to be X - InnerInset + 10, which lands 10px further left, i.e. hard against
+        // the frame's own inset. The frame and the columns were each right on their own terms and
+        // the whole block still sat 10px too far left inside it (bench 46.163, Ludo). It also put
+        // the text on a different left edge from the ship plan, which draws at X — so the two
+        // could never line up. One edge for the title, the columns and the plan now.
+        float ContentLeft => X;
 
         // Whether this frame reserves room for delta lanes. A property of the FRAME, not of the
         // moment: the Active cartouche always keeps the room whether or not a design is pinned,

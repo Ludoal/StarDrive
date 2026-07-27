@@ -592,6 +592,11 @@ namespace Ship_Game
             InfoPanel.SetAbsSize(frame.W - ShipDesignInfoPanel.Inset * 2f, frame.H - 34);
             InfoPanel.RequiresLayout = true;
 
+            // Design Completion / DESIGN ISSUES hang off the cartouche's left edge too — they
+            // were placed once at construction and stayed put while the frame grew leftwards on
+            // the first pin (bench 46.163, Ludo).
+            IssuesPanel.SetAbsPos(frame.X, IssuesPanel.Y);
+
             // the hover frame sits to the left of the active one and keeps its own width
             // (Width, not Rect.W: Submenu.Rect is a RectF that shadows UIElementV2's integer
             // Rectangle Rect, and which one a call site resolves to is not worth relying on)
