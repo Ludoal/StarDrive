@@ -142,11 +142,10 @@ namespace Ship_Game
                 DrawHeader(batch, font, e1.StatusRect, "Status");
                 DrawHeader(batch, font, e1.TroopRect, "Troop");
                 DrawHeader(batch, font, e1.NumRect, "Num");
+                // Ludoal fork: the word alone. This header carried "Strength" AND a fist icon
+                // saying the same thing, and it was the only column of the six to do so — the
+                // text stays because the other five are text (Ludo).
                 DrawHeader(batch, font, e1.StrRect, "Strength");
-                var fist = ResourceManager.Texture("UI/icon_fighting_small");
-                var fistPos = new Vector2(e1.StrRect.X + e1.StrRect.Width / 2 + font.MeasureString("Strength").X / 2f + 6,
-                                          ERect.Y - font.LineSpacing);
-                batch.Draw(fist, new Rectangle((int)fistPos.X, (int)fistPos.Y, 16, 16), Color.White);
 
                 Color lineColor = new Color(118, 102, 67, 255);
                 float columnTop = ERect.Y + 15;
@@ -236,6 +235,19 @@ namespace Ship_Game
             int h = (int)Height;
             RemoveAll();
 
+            // Ludoal fork: an empty column is kept on the right, the way the Ships list does it
+            // (Ludo). There, the trailing columns are fixed 60px each and the layout simply
+            // stops, so whatever the window is wider than the table becomes breathing room that
+            // grows with the screen. This list divided a full 100% of the width between its six
+            // columns (0.14+0.28+0.12+0.22+0.08+0.16), so the last one ran into the scrollbar
+            // and nothing ever had air to its right.
+            //
+            // Taken off the width BEFORE the fractions are applied rather than left as a
+            // seventh fraction: a reservation belongs to the object, not to a percentage that
+            // would shrink exactly when the window gets small and the space matters most.
+            const int RightGutter = 60;   // the Ships list's own trailing column width
+            int cols = w > RightGutter ? w - RightGutter : w;
+
             int nextX = x;
             Rectangle NextRect(float width)
             {
@@ -244,12 +256,12 @@ namespace Ship_Game
                 return new Rectangle(next, y, (int)width, h);
             }
 
-            SysNameRect  = NextRect(w * 0.14f);
-            LocationRect = NextRect(w * 0.28f);
-            StatusRect   = NextRect(w * 0.12f);
-            TroopRect    = NextRect(w * 0.22f);
-            NumRect      = NextRect(w * 0.08f);
-            StrRect      = NextRect(w * 0.16f);
+            SysNameRect  = NextRect(cols * 0.14f);
+            LocationRect = NextRect(cols * 0.28f);
+            StatusRect   = NextRect(cols * 0.12f);
+            TroopRect    = NextRect(cols * 0.22f);
+            NumRect      = NextRect(cols * 0.08f);
+            StrRect      = NextRect(cols * 0.16f);
 
             AddCentered(SysNameRect, SystemName, Colors.Cream);
             AddCentered(LocationRect, Location, Colors.Cream);

@@ -118,6 +118,12 @@ namespace Ship_Game
                 // it would be the same on every row of the group. A header row itself gets
                 // nothing drawn by us — the base class renders its title in a larger font
                 // and anything of ours lands on top of it.
+                // Ludoal fork (bench 46.157): the bare hull rows had no hint at all — the tooltip
+                // lived in the Design branch, and a hull carries no Design (Ludo). No comparison
+                // line here: pinning compares designs, and an empty hull is not one.
+                if (HitTest(GameBase.ScreenManager.input.CursorPosition))
+                    ToolTip.CreateTooltip("Double-click to start a new design on this hull");
+
                 batch.Draw(Hull.Icon, new Rectangle((int)X - 2, (int)Y - 2, h + 4, h + 4), Color.White);
                 batch.DrawString(Fonts.Arial12Bold, Hull.VisibleName, X + h + 6, Y + 2);
                 DrawBadge(batch, "empty hull", X + h + 8, Y + 16, Color.Gray);

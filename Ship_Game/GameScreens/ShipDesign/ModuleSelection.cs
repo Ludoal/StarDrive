@@ -425,6 +425,12 @@ namespace Ship_Game
             {
                 ActiveModSubMenu.SetAbsSize(wantWidth, ActiveModSubMenu.Height);
                 ActiveModSubMenu.RequiresLayout = true;
+
+                // the obsolete button hangs off the frame's RIGHT edge, so it has to travel with
+                // it — it was placed once at construction and stayed put while the frame grew
+                // (bench 46.157, the one thing left behind).
+                // (TexturedButton is not a UIElement — it is a bare public Rectangle)
+                Obsolete.r.X = (int)(ActiveModSubMenu.X + wantWidth - Obsolete.r.Width - 10);
             }
 
             // Ludoal fork (bench 46.150): with no Active frame showing, the hover frame slides

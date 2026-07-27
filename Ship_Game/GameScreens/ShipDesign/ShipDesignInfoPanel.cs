@@ -81,31 +81,30 @@ namespace Ship_Game.GameScreens.ShipDesign
         const float DeltaLaneOffset = 46f;
         public const float DeltaLaneWidth = DeltaLaneOffset + 14f;
 
-        // The module panel's two numbers, and the reason its columns never move: the step
-        // between columns is FIXED, and the title room is a fraction of the FRAME — neither is
-        // divided out of the space that happens to be left. A design row's titles are longer
-        // than a module's ("Total Module Slots" against "Complexity"), so the step is larger,
-        // but the principle is the one thing that must not change.
-        // The step is the title room plus the value plus, on a comparing frame, its delta lane.
-        float ColumnStep => StepFor(HasDeltaLanes, MeasuredTitleRoom);
-        // the screen asks for a width before any panel exists, so the title room is a parameter
-        // here rather than an instance field; DefaultTitleRoom is what the screen passes.
-        public const float DefaultTitleRoom = 115f;
-        static float StepFor(bool withDeltas, float titleRoom)
-            => titleRoom + ValueRoom + (withDeltas ? DeltaLaneWidth : 0f) + MidGap;
+        // ★ THE MODULE PANEL'S GEOMETRY, ACTUALLY COPIED THIS TIME (Ludo, said four times:
+        // "ça fonctionne parfaitement côté Module... essaie de t'en inspirer"). Two brute
+        // constants, ONE per régime — no derivation, no measurement, nothing divided out of an
+        // available width. The module panel is WideColStep = 210 / TightColStep = 152; a design
+        // row's titles are longer ("Total Module Slots" against "Complexity"), so ours are
+        // larger, but they are constants exactly as its are.
+        //
+        // ⚠ What went wrong in 46.157, and why the derivation had to go: measuring the title
+        // room to kill the dead air in the middle SHRANK the step, so column 2 walked left and
+        // drew its values straight over column 1's labels. A step that is computed from its
+        // contents moves whenever the contents change - which is the whole reason the module
+        // panel does not compute it.
+        const float WideColumnStep  = 268f;  // comparing: title + value + the delta lane
+        const float TightColumnStep = 196f;  // plain: title + value
+        float ColumnStep => HasDeltaLanes ? WideColumnStep : TightColumnStep;
+        static float StepFor(bool withDeltas) => withDeltas ? WideColumnStep : TightColumnStep;
         // air between the two columns: on the 46.138 shot column 1's delta lane nearly touched
         // "MOBILITY" (Ludo). It belongs to the STEP, so the gap opens between the columns rather
         // than just pushing column 2 further right.
         const float MidGap = 10f;
-        // Measured off the 46.138 bench shot, where everything fitted at ~545px of frame: the
-        // titles run to "Total Module Slots", the values to "107.1k", the deltas to "(-27.35k)".
-        // The frame must not grow beyond that — it was already wide enough (Ludo).
-        // Ludoal fork (bench 46.154): MEASURED from the rows actually present, not graven from
-        // a screenshot. 145 was read off the 46.138 shot and stayed - but the longest title in
-        // this font ("Total Module Slots") is nearer 115, so every panel carried ~30px of dead
-        // air in the middle while the outer margins were right (Ludo). Recomputed whenever the
-        // rows are rebuilt; one value for every row, so the columns still cannot disagree.
-        // The floor keeps the two columns from collapsing onto a design with only short titles.
+        // Where the VALUE sits inside its column, measured from the rows actually present. This
+        // one stays measured: it only moves the value within a column whose width is fixed
+        // above, so it cannot make two columns collide — it is what killed the dead air in the
+        // middle without touching the step (bench 46.154, kept).
         float MeasuredTitleRoom = TitleRoomFloor;
         const float TitleRoomFloor = 92f;
         const float TitleValueGap = 12f;   // air between the longest title and the value column
@@ -131,7 +130,7 @@ namespace Ship_Game.GameScreens.ShipDesign
         public static float FrameWidthFor(bool withDeltas, bool withPlan)
         {
             // two steps, less the mid-gap trailing the second column — it only separates them
-            float w = StepFor(withDeltas, DefaultTitleRoom) * 2f - MidGap + SidePad;
+            float w = StepFor(withDeltas) * 2f - MidGap + SidePad;
             if (withPlan)
                 w += PlanSide + PlanGap;
             return w;
