@@ -197,6 +197,9 @@ namespace Ship_Game
             RangeOverley.IsToggled         = Universe.ShowingRangeOverlay;
             InfluenceZones.IsToggled       = Universe.ShowingInfluenceOverlay;   // Ludoal fork (F4)
             GravityWellsOnly.IsToggled     = Universe.ShowingGravityWellOverlay; // Ludoal fork (F5)
+            // Ludoal fork (bench): Vision was missing from this list, so its button only lit up
+            // when clicked — pressing F3 turned the overlay on with the button still dark (Ludo).
+            VisionOverlayBtn.IsToggled     = Universe.ShowingVisionOverlay;      // Ludoal fork (F3)
             
             base.Draw(batch, elapsed);
         }
@@ -467,8 +470,17 @@ namespace Ship_Game
                 // TODO: phase 5 — wire up a dedicated FTL-overlay codex entry, then re-add codexUid here.
                 ToolTip.CreateTooltip(GameText.FtlOverlayVisualisesSubspaceProjection, "F4");
 
+            // Ludoal fork (bench): F6, not F3 — the label was left behind when Range moved off
+            // F3 to make room for the Vision overlay, so the tooltip promised the wrong key.
             if (RangeOverley.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.WeaponsRangeOverlayVisualisesShips, "F3");
+                ToolTip.CreateTooltip(GameText.WeaponsRangeOverlayVisualisesShips, "F6");
+
+            // Ludoal fork (bench): the Vision button had no tooltip at all — it was added to the
+            // row without a matching entry here, so it was the one button on the minimap that
+            // said nothing (Ludo).
+            if (VisionOverlayBtn.Rect.HitTest(input.CursorPosition))
+                ToolTip.CreateTooltip("Vision overlay: everything your sensors actually see — "
+                                    + "ships, planets and the coverage your spies bring in", "F3");
 
             if (InfluenceZones.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.InfluenceOverlayVisualises, "F2");

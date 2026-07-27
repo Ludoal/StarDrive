@@ -150,7 +150,11 @@ namespace Ship_Game
                 Color lineColor = new Color(118, 102, 67, 255);
                 float columnTop = ERect.Y + 15;
                 float columnBot = ERect.Y + ERect.H - 20;
-                foreach (int colX in new[] { e1.LocationRect.X, e1.StatusRect.X, e1.TroopRect.X, e1.NumRect.X, e1.StrRect.X })
+                // Ludoal fork (bench): the loop drew each column's LEFT edge, so the last column
+                // had no line closing it and Strength bled into the empty gutter (Ludo). Its
+                // right edge closes the table.
+                foreach (int colX in new[] { e1.LocationRect.X, e1.StatusRect.X, e1.TroopRect.X,
+                                             e1.NumRect.X, e1.StrRect.X, e1.StrRect.Right })
                     batch.DrawLine(new Vector2(colX, columnTop), new Vector2(colX, columnBot), lineColor);
                 batch.DrawRectangle(TroopSL.ItemsHousing, lineColor);
             }
@@ -235,16 +239,25 @@ namespace Ship_Game
             int h = (int)Height;
             RemoveAll();
 
-            // Ludoal fork: an empty column on the right, as the Ships list has (Ludo).
+            // Ludoal fork: laid out the way the Ships list and the Planet Array do it (Ludo),
+            // which took three benches to copy rather than approximate.
             //
-            // ⚠ 46.158 took 60px off the width before applying the fractions — which changed
-            // nothing visible, because six fractions summing to 1.0 simply REDISTRIBUTE whatever
-            // they are given: a narrower total just makes six slightly narrower columns, never a
-            // gap. The Ships list gets its empty column from a different property — its trailing
-            // columns are FIXED pixel widths, so the leftover is real. Here the honest fix is to
-            // leave the fractions summing to less than one: 0.90 of the row is shared out and
-            // the last tenth is the gutter, which then grows with the window as Ludo asked.
-            const float Gutter = 0.10f;   // the empty column, as a share of the row
+            // THE RULE, read off both of them: a column holding FREE TEXT (a name, a place) takes
+            // a share of the row; a column holding a DATUM (a count, a strength, a status) takes
+            // a FIXED pixel width, because a number needs the same room whatever the window does.
+            // Planet Array is 30px per stat, Ships is 60px per trailing column — neither ever
+            // divides the whole row between everything it shows.
+            //
+            // That is also what produces the empty column for free: the fixed part does not grow,
+            // so the gutter is a floor rather than a share. 46.158 took 60px off before applying
+            // the fractions, which could not leave a gap at all (six fractions summing to 1.0
+            // just redistribute whatever total they are handed); 46.159 made them sum to 0.90,
+            // which left a gutter that SHRANK on a small window, exactly when space is tightest.
+            const int DataCol = 90;     // Status, Num, Strength — a number's room is its own
+            const int MinGutter = 150;  // the empty column, wide enough for buttons later
+
+            int fixedPart = DataCol * 3 + MinGutter;
+            int textPart = w > fixedPart ? w - fixedPart : w / 2;
 
             int nextX = x;
             Rectangle NextRect(float width)

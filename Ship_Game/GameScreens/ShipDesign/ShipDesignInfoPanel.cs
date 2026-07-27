@@ -96,8 +96,18 @@ namespace Ship_Game.GameScreens.ShipDesign
         // drew its values straight over column 1's labels. A step that is computed from its
         // contents moves whenever the contents change - which is the whole reason the module
         // panel does not compute it.
-        const float WideColumnStep  = 268f;  // comparing: title + value + the delta lane
-        const float TightColumnStep = 196f;  // plain: title + value
+        // ⚠ 46.159 posed these as round numbers with ~20px of slack invented on top, which is
+        // exactly the margin the bench then found in the wrong places: no air on the right when
+        // plain, too much in the middle when comparing (Ludo). They are DERIVED from what a
+        // column paints now — still constants, still not divisions of available space, but each
+        // one the sum of its parts rather than a number that looked about right.
+        //
+        //   title room (the longest label plus its gap) + the value + , when comparing,
+        //   the delta lane it is followed by + the gap that separates the two columns
+        const float TitleColumn = TitleRoomFloor + TitleValueGap;  // 92 + 12
+        const float ValueColumn = 52f;                             // widest value, "107.1k"
+        const float WideColumnStep  = TitleColumn + DeltaLaneOffset + DeltaLaneWidth + MidGap;
+        const float TightColumnStep = TitleColumn + ValueColumn + MidGap;
         float ColumnStep => HasDeltaLanes ? WideColumnStep : TightColumnStep;
         static float StepFor(bool withDeltas) => withDeltas ? WideColumnStep : TightColumnStep;
         // air between the two columns: on the 46.138 shot column 1's delta lane nearly touched
