@@ -169,6 +169,14 @@ namespace Ship_Game
                 LoadContent();
         }
 
+        // Ludoal fork: silent close, for when another window takes this one's place on the
+        // screen edge — ToggleVisibility would play a second click for a single gesture. Same
+        // method the Exotic and Freighter windows carry for exactly this reason.
+        public void CloseWindow()
+        {
+            IsOpen = false;
+        }
+
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             if (!Visible)

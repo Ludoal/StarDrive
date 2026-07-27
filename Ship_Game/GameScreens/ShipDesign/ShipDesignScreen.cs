@@ -588,8 +588,8 @@ namespace Ship_Game
             InfoSub.SetAbsSize(frame.W, frame.H);
             InfoSub.RequiresLayout = true;      // SetAbsSize alone does not arm it
 
-            InfoPanel.SetAbsPos(frame.X + 10, frame.Y + 26);
-            InfoPanel.SetAbsSize(frame.W - 20, frame.H - 34);
+            InfoPanel.SetAbsPos(frame.X + ShipDesignInfoPanel.Inset, frame.Y + 26);
+            InfoPanel.SetAbsSize(frame.W - ShipDesignInfoPanel.Inset * 2f, frame.H - 34);
             InfoPanel.RequiresLayout = true;
 
             // the hover frame sits to the left of the active one and keeps its own width
@@ -599,7 +599,7 @@ namespace Ship_Game
             var hover = RectF.FromPoints(frame.X - hw - 10f, frame.X - 10f, frame.Y, frame.Bottom);
             HoverSub.SetAbsPos(hover.X, hover.Y);
             HoverSub.RequiresLayout = true;
-            HoverPanel.SetAbsPos(hover.X + 12, hover.Y + 32);
+            HoverPanel.SetAbsPos(hover.X + ShipDesignInfoPanel.Inset, hover.Y + 32);
             HoverPanel.RequiresLayout = true;
         }
 
@@ -1012,7 +1012,8 @@ namespace Ship_Game
             // Ludoal fork (bench): the inner panel takes the module frame's own left margin (10),
             // so the design name starts exactly where "Light Kinetic Cannon" does in its frame —
             // it was inset by 12 here and read as pushed to the right.
-            var infoInner = RectF.FromPoints(infoRect.X + 10, infoRect.Right - 10,
+            const float Inset = ShipDesignInfoPanel.Inset;   // one number, read by all four sites
+            var infoInner = RectF.FromPoints(infoRect.X + Inset, infoRect.Right - Inset,
                                              infoRect.Y + 26, infoRect.Bottom - 8);
             InfoPanel = Add(new ShipDesignInfoPanel(this, infoInner));
             InfoPanel.HasDeltaLanes = deltaLanes; // widened on the first pin, see ResizeCartouches
@@ -1030,7 +1031,7 @@ namespace Ship_Game
             HoverSub = Add(new Submenu(hoverRect, "Hovered Design"));
             HoverSub.SetBackground(Colors.TransparentBlackFill);
 
-            var hoverInner = RectF.FromPoints(hoverRect.X + 12, hoverRect.Right - 12,
+            var hoverInner = RectF.FromPoints(hoverRect.X + Inset, hoverRect.Right - Inset,
                                               hoverRect.Y + 32, hoverRect.Bottom - 8);
             HoverPanel = Add(new ShipDesignInfoPanel(this, hoverInner));
             HoverPanel.ShowShipPlan = true; // the module plan down its left edge (Ludo)

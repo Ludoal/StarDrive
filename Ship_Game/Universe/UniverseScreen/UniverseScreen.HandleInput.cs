@@ -84,7 +84,13 @@ namespace Ship_Game
             if (input.BlueprintsSceen)            ScreenManager.AddScreen(new BlueprintsScreen(this, Player));
             if (input.EmpirePatrolsScreen)        ScreenManager.AddScreen(new EmpirePatrolsScreen(this, Player));
             if (input.ImportantEventsScreen)      ScreenManager.AddScreen(new ImportantEventsScreen(this)); // Ludoal fork: F7
-            if (input.AutomationWindow && !Debug) aw.ToggleVisibility();
+            // Ludoal fork (bench): mutually exclusive with the Build Menu — they share the
+            // right screen edge now, so opening one closes the other (Ludo).
+            if (input.AutomationWindow && !Debug)
+            {
+                if (!aw.IsOpen) DeepSpaceBuildWindow.Hide();
+                aw.ToggleVisibility();
+            }
             if (input.ExoticBonusesWindow) ExoticBonusesWindow.ToggleVisibility();
             if (input.FreighterUtilWindow) FreighterUtilizationWindow.ToggleVisibility();
             if (input.PlanetListScreen)  ScreenManager.AddScreen(new PlanetListScreen(this, EmpireUI, "sd_ui_accept_alt3"));

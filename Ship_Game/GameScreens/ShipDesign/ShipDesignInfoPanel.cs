@@ -132,7 +132,11 @@ namespace Ship_Game.GameScreens.ShipDesign
         // uses — column 1's origin plus what one column needs — so the two cannot drift apart.
         public static float FrameWidthFor(bool withDeltas, bool withPlan)
         {
-            float col1Origin = StepFor(withDeltas) + Col1ShiftConst;   // where the draw puts it
+            // ⚠ include the left margin the draw starts at: content begins at ContentLeft,
+            // i.e. Inset px in from the frame's edge, not at the frame's edge. Leaving it out
+            // meant the frame was exactly as wide as its content ended, so the right margin
+            // vanished the moment the columns were correctly aligned with the title.
+            float col1Origin = Inset + StepFor(withDeltas) + Col1ShiftConst;  // where the draw puts it
             float w = col1Origin + ColumnContentWidth(withDeltas) + SidePad;
             if (withPlan)
                 w += PlanSide + PlanGap;
@@ -158,7 +162,18 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         // How far this panel is inset inside its frame. The screen builds the inner rect, so it
         // tells us here rather than us guessing a constant that would have to stay in step.
-        public float InnerInset = 10f;
+        // ⚠ THE inset, and the only one. It was 10 here while the screen built the Active panel
+        // at +10 and the Hover panel at +12 — four numbers for one distance, so Hover happened
+        // to land right (its extra 2px cancelled the mismatch) and Active sat too far left
+        // (bench 46.162). Callers now read this constant instead of each carrying their own.
+        public const float Inset = 10f;
+        public float InnerInset = Inset;
+
+        // Where content starts, measured from the FRAME's left edge — the module panel's
+        // panel.X + 10. This rect is the INNER one, already inset, so the inset is backed out
+        // first. Title and columns both read this: they are the same edge, and every time they
+        // each computed it themselves one of them drifted (46.152, 46.154, 46.162).
+        float ContentLeft => X - InnerInset + 10f;
 
         // Whether this frame reserves room for delta lanes. A property of the FRAME, not of the
         // moment: the Active cartouche always keeps the room whether or not a design is pinned,
@@ -460,7 +475,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                 // too close to the tab (Ludo). Derived from the module's number, not re-guessed.
                 const float ModuleTitleFromFrame = 35f;
                 const float InnerTopInset = 26f;
-                var namePos = new Vector2(X - InnerInset + 10f + (ShowShipPlan ? PlanSide + PlanGap : 0f),
+                var namePos = new Vector2(ContentLeft + (ShowShipPlan ? PlanSide + PlanGap : 0f),
                                           Y + (ModuleTitleFromFrame - InnerTopInset));
                 batch.DrawString(nameFont, S.Name, namePos, Color.White);
 
@@ -516,7 +531,12 @@ namespace Ship_Game.GameScreens.ShipDesign
             // Every version of this panel that divided the available width moved something else
             // each time a width changed — five benches' worth of it.
             float colStep = ColumnStep;
-            float col0X = X + planW + Col0Shift;
+            // ⚠ the columns start where the TITLE starts, and the title is measured from the
+            // FRAME (X - InnerInset + 10), not from this inner rect. Starting them at X put them
+            // 10px left of the name on every panel — the Hover frame hid it because its plan
+            // pushes its columns right anyway, which is why only Active looked wrong (Ludo,
+            // bench 46.162). Same expression as namePos, so the two cannot part company.
+            float col0X = ContentLeft + planW + Col0Shift;
             float col1X = col0X + colStep + Col1Shift - Col0Shift;
             float spacing = TitleColumn; // the value sits at the cursor + spacing — the SAME
                                          // number the step is built from, so they cannot drift

@@ -428,6 +428,8 @@ namespace Ship_Game
 
         public void AIScreen_OnClick(ToggleButton toggleButton)
         {
+            if (!Universe.aw.IsOpen)
+                Universe.DeepSpaceBuildWindow.Hide();   // they share the right screen edge
             Universe.aw.ToggleVisibility();
         }
 
