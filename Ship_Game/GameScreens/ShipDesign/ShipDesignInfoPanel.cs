@@ -60,7 +60,10 @@ namespace Ship_Game.GameScreens.ShipDesign
         // so any shift here is added ON TOP of that - the left margin was 20 against 10 in the
         // middle and 0 on the right. Ten all round now (Ludo).
         public float Col0Shift = 0f;
-        public float Col1Shift = 10f;
+        // shared with FrameWidthFor, which is static: the placement and the width read the SAME
+        // number, they do not each carry their own copy of it
+        public const float Col1ShiftConst = 10f;
+        public float Col1Shift = Col1ShiftConst;
 
         // Ludoal fork (spec v4): the in-frame title takes this much height before the rows
         // start. Fixed, so every design puts its first row on the same line.
@@ -127,14 +130,26 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         // What a frame must measure to hold two of those columns — the screen asks this rather
         // than sizing the frame from whatever space is going spare and hoping the columns fit.
+        // ⚠ ONE arithmetic for two blocks that must agree. This used to compute the frame as
+        // 2*step - MidGap + SidePad while the draw placed column 1 at col0 + step + Col1Shift:
+        // the extra 10px of Col1Shift existed in the placement and NOT in the width, so column 2
+        // started further right than the frame had been sized for and its values were clipped by
+        // the border (bench 46.158). The frame is now derived from the SAME expression the draw
+        // uses — column 1's origin plus what one column needs — so the two cannot drift apart.
         public static float FrameWidthFor(bool withDeltas, bool withPlan)
         {
-            // two steps, less the mid-gap trailing the second column — it only separates them
-            float w = StepFor(withDeltas) * 2f - MidGap + SidePad;
+            float col1Origin = StepFor(withDeltas) + Col1ShiftConst;   // where the draw puts it
+            float w = col1Origin + ColumnContentWidth(withDeltas) + SidePad;
             if (withPlan)
                 w += PlanSide + PlanGap;
             return w;
         }
+
+        // what one column actually paints: its title room, its value, and its delta lane when
+        // the frame carries one. The step adds MidGap on top of this — that gap separates the
+        // columns and must NOT be counted again past the last one.
+        static float ColumnContentWidth(bool withDeltas)
+            => StepFor(withDeltas) - MidGap;
 
         // The ship plan is a FIXED square, not a fraction of the frame: the frame's width is
         // computed FROM the plan, so deriving the plan back from the width was circular and

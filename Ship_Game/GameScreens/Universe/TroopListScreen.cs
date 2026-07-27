@@ -235,18 +235,16 @@ namespace Ship_Game
             int h = (int)Height;
             RemoveAll();
 
-            // Ludoal fork: an empty column is kept on the right, the way the Ships list does it
-            // (Ludo). There, the trailing columns are fixed 60px each and the layout simply
-            // stops, so whatever the window is wider than the table becomes breathing room that
-            // grows with the screen. This list divided a full 100% of the width between its six
-            // columns (0.14+0.28+0.12+0.22+0.08+0.16), so the last one ran into the scrollbar
-            // and nothing ever had air to its right.
+            // Ludoal fork: an empty column on the right, as the Ships list has (Ludo).
             //
-            // Taken off the width BEFORE the fractions are applied rather than left as a
-            // seventh fraction: a reservation belongs to the object, not to a percentage that
-            // would shrink exactly when the window gets small and the space matters most.
-            const int RightGutter = 60;   // the Ships list's own trailing column width
-            int cols = w > RightGutter ? w - RightGutter : w;
+            // ⚠ 46.158 took 60px off the width before applying the fractions — which changed
+            // nothing visible, because six fractions summing to 1.0 simply REDISTRIBUTE whatever
+            // they are given: a narrower total just makes six slightly narrower columns, never a
+            // gap. The Ships list gets its empty column from a different property — its trailing
+            // columns are FIXED pixel widths, so the leftover is real. Here the honest fix is to
+            // leave the fractions summing to less than one: 0.90 of the row is shared out and
+            // the last tenth is the gutter, which then grows with the window as Ludo asked.
+            const float Gutter = 0.10f;   // the empty column, as a share of the row
 
             int nextX = x;
             Rectangle NextRect(float width)
@@ -256,12 +254,15 @@ namespace Ship_Game
                 return new Rectangle(next, y, (int)width, h);
             }
 
-            SysNameRect  = NextRect(cols * 0.14f);
-            LocationRect = NextRect(cols * 0.28f);
-            StatusRect   = NextRect(cols * 0.12f);
-            TroopRect    = NextRect(cols * 0.22f);
-            NumRect      = NextRect(cols * 0.08f);
-            StrRect      = NextRect(cols * 0.16f);
+            // the original six shares, scaled by what is left once the gutter is set aside, so
+            // their proportions to each other are untouched
+            const float Share = 1f - Gutter;
+            SysNameRect  = NextRect(w * 0.14f * Share);
+            LocationRect = NextRect(w * 0.28f * Share);
+            StatusRect   = NextRect(w * 0.12f * Share);
+            TroopRect    = NextRect(w * 0.22f * Share);
+            NumRect      = NextRect(w * 0.08f * Share);
+            StrRect      = NextRect(w * 0.16f * Share);
 
             AddCentered(SysNameRect, SystemName, Colors.Cream);
             AddCentered(LocationRect, Location, Colors.Cream);
