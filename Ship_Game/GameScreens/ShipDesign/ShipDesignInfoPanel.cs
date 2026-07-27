@@ -89,7 +89,12 @@ namespace Ship_Game.GameScreens.ShipDesign
         //
         // Unlike the titles above, this text grows RIGHTWARD from its anchor, so the lane is
         // offset + text, not offset + a number nobody can reconstruct.
-        const float DeltaLaneOffset = 46f;
+        // ⚠ Lek's third one, and the subtlest: this was a bare 46 sitting UNDER a value column
+        // 52 wide. The value is drawn LEFT-aligned at cursor.X + spacing and runs its own width,
+        // so a delta starting 46px later began 6px BEFORE the widest value ended — "107.1k
+        // (-27.35k)" overlapped and nobody noticed because most values are short.
+        // It is where the value ENDS, plus air. Derived, so the two can never collide again.
+        static float DeltaLaneOffset => ValueRoom + 8f;
         // MEASURED, not guessed — the whole point of this file's history. "(-27.35k)" is the
         // widest delta the formatter can produce: sign, four significant digits, a decimal point
         // and the k suffix, in brackets.
@@ -157,7 +162,9 @@ namespace Ship_Game.GameScreens.ShipDesign
         // ⚠ there were TWO of these — ValueColumn and ValueRoom, both 52, one of them dead.
         // Same disease as the rest of this panel: a second number for a distance that already
         // had one (Lek, reading the file at midday).
-        const float ValueRoom = 52f;   // widest value, "107.1k"
+        // measured like the other two — and it now feeds DeltaLaneOffset, so a wrong guess here
+        // would put the delta back on top of the value
+        static float ValueRoom => Fonts.Arial12Bold.TextWidth("107.1k");
         // ⚠ the RIGHT margin only. The left one is the inner rect's own inset, which the frame
         // does not pay for again — 46.163 counted it twice and, since the frame is anchored on
         // its right edge and grows leftwards, the surplus 10px opened as a gap down the left of
