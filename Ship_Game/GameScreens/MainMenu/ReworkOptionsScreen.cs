@@ -55,7 +55,7 @@ namespace Ship_Game.GameScreens.MainMenu
             list.AddLabel("Close this window, then press APPLY SETTINGS to save your choices.")
                 .Color = Colors.Cream;
             list.AddLabel("A screen already open keeps its layout until it is reopened.")
-                .Color = Colors.Gray;
+                .Color = Microsoft.Xna.Framework.Color.Gray;
         }
     }
 }

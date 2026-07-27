@@ -1147,7 +1147,12 @@ namespace Ship_Game
                            new ShipYardBrowserItem(Player, design, isWIP: false) { ShowHullInBadge = true });
             }
 
-            var roles = new Array<string>(byRole.Keys);
+            // filled by hand rather than from byRole.Keys: a Dictionary key collection satisfies
+            // both Array's ICollection and IReadOnlyCollection constructors, so the call is
+            // ambiguous
+            var roles = new Array<string>();
+            foreach (string role in byRole.Keys)
+                roles.Add(role);
             roles.Sort();
 
             foreach (string role in roles)
