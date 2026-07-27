@@ -104,7 +104,12 @@ namespace Ship_Game.GameScreens.ShipDesign
         //
         //   title room (the longest label plus its gap) + the value + , when comparing,
         //   the delta lane it is followed by + the gap that separates the two columns
-        const float TitleColumn = TitleRoomFloor + TitleValueGap;  // 92 + 12
+        // ⚠ 46.161's mistake, and the reason the alignment got WORSE: this was built on
+        // TitleRoomFloor (92, the floor) while the draw placed values at MeasuredTitleRoom
+        // (~127 with real labels). The step was ~35px shorter than what it had to hold, so every
+        // value overflowed into the next column. TWO numbers for one distance, again.
+        // One number now: the measurement is gone and the draw reads this constant.
+        const float TitleColumn = 127f;   // "Total Module Slots" in Arial12Bold, plus its gap
         const float ValueColumn = 52f;                             // widest value, "107.1k"
         const float WideColumnStep  = TitleColumn + DeltaLaneOffset + DeltaLaneWidth + MidGap;
         const float TightColumnStep = TitleColumn + ValueColumn + MidGap;
@@ -114,27 +119,6 @@ namespace Ship_Game.GameScreens.ShipDesign
         // "MOBILITY" (Ludo). It belongs to the STEP, so the gap opens between the columns rather
         // than just pushing column 2 further right.
         const float MidGap = 10f;
-        // Where the VALUE sits inside its column, measured from the rows actually present. This
-        // one stays measured: it only moves the value within a column whose width is fixed
-        // above, so it cannot make two columns collide — it is what killed the dead air in the
-        // middle without touching the step (bench 46.154, kept).
-        float MeasuredTitleRoom = TitleRoomFloor;
-        const float TitleRoomFloor = 92f;
-        const float TitleValueGap = 12f;   // air between the longest title and the value column
-
-        void RemeasureTitleRoom()
-        {
-            float widest = 0f;
-            foreach (Row r in Rows)
-            {
-                if (r.Heading != null)
-                    continue;
-                float w = Fonts.Arial12Bold.TextWidth(r.Title.Text);
-                if (w > widest)
-                    widest = w;
-            }
-            MeasuredTitleRoom = Math.Max(TitleRoomFloor, widest + TitleValueGap);
-        }
         const float ValueRoom = 52f;
         const float SidePad = 10f;    // the right-hand margin; the left one is the panel's inset
 
@@ -270,7 +254,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                 // shield is fitted), and a column that shifted whenever a line came or went
                 // would be worse than the dead air it saves. Space belongs to the object, not
                 // to the instant.
-                RemeasureTitleRoom();
+
             }
         }
 
@@ -534,7 +518,8 @@ namespace Ship_Game.GameScreens.ShipDesign
             float colStep = ColumnStep;
             float col0X = X + planW + Col0Shift;
             float col1X = col0X + colStep + Col1Shift - Col0Shift;
-            float spacing = MeasuredTitleRoom; // the value sits at the cursor + spacing
+            float spacing = TitleColumn; // the value sits at the cursor + spacing — the SAME
+                                         // number the step is built from, so they cannot drift
             Graphics.Font headFont = Fonts.Arial12Bold;
 
             // a heading is only worth drawing when at least one of its own lines shows

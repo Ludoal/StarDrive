@@ -256,8 +256,19 @@ namespace Ship_Game
             const int DataCol = 90;     // Status, Num, Strength — a number's room is its own
             const int MinGutter = 150;  // the empty column, wide enough for buttons later
 
+            // ⚠ and a CEILING on the text columns (Ludo, bench 46.161): an uncapped share gave
+            // Location ~620px at 1920 for names like "Terran-Prototype". A name needs the room a
+            // name needs; past that the width is spread, not used. The text columns take their
+            // share UP TO a maximum, and everything beyond falls into the gutter — which is
+            // where growing space belongs anyway.
+            // 850 puts Location near 375px and the whole table near 1100 at 1920, leaving the
+            // gutter roomy without turning the screen into two thirds of nothing.
+            const int MaxText = 850;    // the three text columns together, at their widest
+
             int fixedPart = DataCol * 3 + MinGutter;
             int textPart = w > fixedPart ? w - fixedPart : w / 2;
+            if (textPart > MaxText)
+                textPart = MaxText;
 
             int nextX = x;
             Rectangle NextRect(float width)
