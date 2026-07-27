@@ -90,8 +90,11 @@ namespace Ship_Game.GameScreens.ShipDesign
         // Unlike the titles above, this text grows RIGHTWARD from its anchor, so the lane is
         // offset + text, not offset + a number nobody can reconstruct.
         const float DeltaLaneOffset = 46f;
-        const float WidestDelta = 55f;    // "(-27.35k)" in Arial12Bold
-        public const float DeltaLaneWidth = DeltaLaneOffset + WidestDelta;
+        // MEASURED, not guessed — the whole point of this file's history. "(-27.35k)" is the
+        // widest delta the formatter can produce: sign, four significant digits, a decimal point
+        // and the k suffix, in brackets.
+        static float WidestDelta => Fonts.Arial12Bold.TextWidth("(-27.35k)");
+        public static float DeltaLaneWidth => DeltaLaneOffset + WidestDelta;
 
         // ★ THE MODULE PANEL'S GEOMETRY, ACTUALLY COPIED THIS TIME (Ludo, said four times:
         // "ça fonctionne parfaitement côté Module... essaie de t'en inspirer"). Two brute
@@ -134,15 +137,17 @@ namespace Ship_Game.GameScreens.ShipDesign
         //
         //   135 = 10 (left margin) + 20 (FontSpace's own inset) + 115 (longest label) - 10 (Inset,
         //   already paid by the inner rect the cursor starts at)
-        const float LongestTitle = 115f;  // "Total Module Slots" in Arial12Bold
-        const float TitleColumn = 10f + 20f + LongestTitle - Inset;
+        // Likewise measured. If a longer label is ever added to the rows, the column follows
+        // it instead of quietly clipping — and a font change cannot silently break the layout.
+        static float LongestTitle => Fonts.Arial12Bold.TextWidth("Total Module Slots");
+        static float TitleColumn => 10f + 20f + LongestTitle - Inset;
 
         // ⚠ NOT + DeltaLaneOffset + DeltaLaneWidth: the width ALREADY contains the offset
         // (it is offset + text). Adding both counted the 46px lead-in twice, so the comparing
         // frame was 46px wider than its own content — the "too much space in the middle when
         // comparing" the bench reported, still there under every other fix.
-        const float WideColumnStep  = TitleColumn + DeltaLaneWidth + MidGap;
-        const float TightColumnStep = TitleColumn + ValueRoom + MidGap;
+        static float WideColumnStep  => TitleColumn + DeltaLaneWidth + MidGap;
+        static float TightColumnStep => TitleColumn + ValueRoom + MidGap;
         float ColumnStep => HasDeltaLanes ? WideColumnStep : TightColumnStep;
         static float StepFor(bool withDeltas) => withDeltas ? WideColumnStep : TightColumnStep;
         // air between the two columns: on the 46.138 shot column 1's delta lane nearly touched
