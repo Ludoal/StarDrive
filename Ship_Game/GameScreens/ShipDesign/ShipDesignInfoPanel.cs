@@ -496,10 +496,16 @@ namespace Ship_Game.GameScreens.ShipDesign
             // because a design with no shields or no ordnance shifts the halfway mark - so the
             // reader had to find each block again on every ship (Ludo).
             //
-            // Left column is what the ship IS: construction, energy, mobility, defence.
-            // Right column is what it DOES: ordnance, fire control, payload, station, verdict.
-            // A hidden block costs its side some height and nothing else.
-            const int FixedSplitBlock = 4;
+            // Left column is what the ship IS: construction, energy, mobility.
+            // Right column is what happens to it or from it: defence, ordnance, fire control,
+            // payload, station, verdict. A hidden block costs its side height and nothing else.
+            //
+            // Worst case is 21 lines left against 28 right, but that is a ship carrying
+            // ordnance, a research station AND cargo at once, which does not exist. In practice
+            // the right-hand blocks largely exclude each other while DEFENCE is almost always
+            // full, so the two columns come out close. If a real design ever runs the right
+            // column past the frame, this is the number to revisit.
+            const int FixedSplitBlock = 3;
             int splitBlock = Math.Min(FixedSplitBlock, blockVisible.Count);
 
             var cursor = new Vector2(col0X, rowsY);
