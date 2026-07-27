@@ -58,6 +58,16 @@ namespace Ship_Game
             ArcsButton.Draw(batch, elapsed);
 
             base.Draw(batch, elapsed);
+
+            // Ludoal fork (bench 46.150): the browser's gestures are not discoverable on their
+            // own - nobody double-clicks a list by accident. ScrollList carries no Tooltip
+            // property, so it is drawn on hover, and the comparison line only appears when the
+            // feature is on: a tooltip promising a gesture that does nothing is worse than none.
+            if (HullSelectList != null && HullSelectList.HitTest(Input.CursorPosition))
+                ToolTip.CreateTooltip(GlobalStats.ShipyardComparison
+                    ? "Double-click to load\nShift-click to pin for comparison"
+                    : "Double-click to load");
+
             batch.SafeEnd();
             ScreenManager.EndFrameRendering();
         }

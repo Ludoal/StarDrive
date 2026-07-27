@@ -857,12 +857,6 @@ namespace Ship_Game
             HullSelectList.OnClick = OnBrowserItemClicked;
             HullSelectList.OnDoubleClick = OnBrowserItemDoubleClicked;
             HullSelectList.EnableItemHighlight = true;
-            // Ludoal fork (bench 46.150): the gestures are not discoverable on their own - a
-            // double-click to load is not something anyone tries by accident. The comparison
-            // line only shows when the feature is on.
-            HullSelectList.Tooltip = GlobalStats.ShipyardComparison
-                ? "Double-click to load\nShift-click to pin for comparison"
-                : "Double-click to load";
 
             // hover preview: the same overlay the load popup used, so a design can be
             // inspected without paying for a load. Hull rows carry no design, and the

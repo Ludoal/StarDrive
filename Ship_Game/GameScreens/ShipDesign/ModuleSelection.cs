@@ -41,12 +41,6 @@ namespace Ship_Game
             base.PerformLayout(); // necessary
 
             ModuleSelectList = base.Add(new ModuleSelectScrollList(this, Screen));
-            // Ludoal fork: the gesture is told here rather than printed above the frame. The
-            // comparison line only appears when the feature is on - a tooltip promising a
-            // gesture that does nothing is worse than no tooltip.
-            ModuleSelectList.Tooltip = GlobalStats.ShipyardComparison
-                ? "Click to pick a module\nShift-click to pin it for comparison"
-                : "Click to pick a module";
 
             // Ludoal fork: the Active panel carries the delta lanes now (spec v4) — it is the
             // only stat frame left, so it needs the width the Compared one used to have.
@@ -453,9 +447,15 @@ namespace Ship_Game
         {
             base.Draw(batch, elapsed);
             // Ludoal fork: surface the comparator gesture where the modules are picked
-            // Ludoal fork (bench 46.150): the hint moved off the screen and into the list's
-            // tooltip - a permanent line of text above the frame costs a row of screen for
-            // something you need to read once (Ludo).
+            // Ludoal fork (bench 46.150): the hint is a tooltip now, not a permanent line of
+            // text above the frame - a row of screen for something you read once (Ludo).
+            // ScrollList carries no Tooltip property, so it is drawn on hover like the stat
+            // rows do, and the comparison line only appears when the feature is on: a tooltip
+            // promising a gesture that does nothing is worse than none.
+            if (ModuleSelectList.HitTest(Screen.Input.CursorPosition))
+                ToolTip.CreateTooltip(GlobalStats.ShipyardComparison
+                    ? "Click to pick a module\nShift-click to pin it for comparison"
+                    : "Click to pick a module");
             if (ActiveModSubMenu.Visible)
             {
                 DrawActiveModuleData(batch);
