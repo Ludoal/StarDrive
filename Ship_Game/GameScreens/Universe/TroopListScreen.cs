@@ -267,15 +267,14 @@ namespace Ship_Game
                 return new Rectangle(next, y, (int)width, h);
             }
 
-            // the original six shares, scaled by what is left once the gutter is set aside, so
-            // their proportions to each other are untouched
-            const float Share = 1f - Gutter;
-            SysNameRect  = NextRect(w * 0.14f * Share);
-            LocationRect = NextRect(w * 0.28f * Share);
-            StatusRect   = NextRect(w * 0.12f * Share);
-            TroopRect    = NextRect(w * 0.22f * Share);
-            NumRect      = NextRect(w * 0.08f * Share);
-            StrRect      = NextRect(w * 0.16f * Share);
+            // the three text columns share what is left, keeping the proportions they had
+            // (0.14 : 0.28 : 0.22 of the old row, renormalised over the three of them)
+            SysNameRect  = NextRect(textPart * 0.22f);
+            LocationRect = NextRect(textPart * 0.44f);
+            StatusRect   = NextRect(DataCol);
+            TroopRect    = NextRect(textPart * 0.34f);
+            NumRect      = NextRect(DataCol);
+            StrRect      = NextRect(DataCol);
 
             AddCentered(SysNameRect, SystemName, Colors.Cream);
             AddCentered(LocationRect, Location, Colors.Cream);
