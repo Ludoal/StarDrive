@@ -12,8 +12,8 @@ namespace Ship_Game.GameScreens.MainMenu
     /// never have to coexist on screen, and an experienced player meets the interface they
     /// already know unless they ask for the new one.
     ///
-    /// Applied the next time a screen is opened — an open screen is not rebuilt underneath
-    /// the player.
+    /// Applied the next time a screen is opened. In practice that is immediate: this popup is
+    /// reached from the main menu, which has already closed every game screen behind it.
     /// </summary>
     public sealed class ReworkOptionsScreen : PopupWindow
     {
@@ -33,7 +33,7 @@ namespace Ship_Game.GameScreens.MainMenu
             UIList list = AddList(new Vector2(X + 40, Y + 150), new Vector2(Width - 80, 210));
             list.Padding = new Vector2(2f, 8f);
 
-            list.AddCheckbox(() => GlobalStats.ShipyardComparison, title: "Shipyard comparison",
+            list.AddCheckbox(() => GlobalStats.ShipyardComparison, title: "Shipyard new hover and comparison boxes",
                 tooltip: "Shift-click a module or design to pin it, and every row shows how the "
                        + "one on the workbench compares. Includes the hover cartouche. Off: the "
                        + "panels show plain values, with no delta column and no hover frame.");
@@ -54,8 +54,7 @@ namespace Ship_Game.GameScreens.MainMenu
             // a box, closes the game and finds it untouched next run (Ludo).
             list.AddLabel("Close this window, then press APPLY SETTINGS to save your choices.")
                 .Color = Colors.Cream;
-            list.AddLabel("A screen already open keeps its layout until it is reopened.")
-                .Color = Microsoft.Xna.Framework.Color.Gray;
+
         }
     }
 }

@@ -87,9 +87,12 @@ namespace Ship_Game.GameScreens.ShipDesign
         // than a module's ("Total Module Slots" against "Complexity"), so the step is larger,
         // but the principle is the one thing that must not change.
         // The step is the title room plus the value plus, on a comparing frame, its delta lane.
-        float ColumnStep => StepFor(HasDeltaLanes);
-        static float StepFor(bool withDeltas)
-            => TitleRoom + ValueRoom + (withDeltas ? DeltaLaneWidth : 0f) + MidGap;
+        float ColumnStep => StepFor(HasDeltaLanes, MeasuredTitleRoom);
+        // the screen asks for a width before any panel exists, so the title room is a parameter
+        // here rather than an instance field; DefaultTitleRoom is what the screen passes.
+        public const float DefaultTitleRoom = 115f;
+        static float StepFor(bool withDeltas, float titleRoom)
+            => titleRoom + ValueRoom + (withDeltas ? DeltaLaneWidth : 0f) + MidGap;
         // air between the two columns: on the 46.138 shot column 1's delta lane nearly touched
         // "MOBILITY" (Ludo). It belongs to the STEP, so the gap opens between the columns rather
         // than just pushing column 2 further right.
@@ -97,7 +100,29 @@ namespace Ship_Game.GameScreens.ShipDesign
         // Measured off the 46.138 bench shot, where everything fitted at ~545px of frame: the
         // titles run to "Total Module Slots", the values to "107.1k", the deltas to "(-27.35k)".
         // The frame must not grow beyond that — it was already wide enough (Ludo).
-        const float TitleRoom = 145f;
+        // Ludoal fork (bench 46.154): MEASURED from the rows actually present, not graven from
+        // a screenshot. 145 was read off the 46.138 shot and stayed - but the longest title in
+        // this font ("Total Module Slots") is nearer 115, so every panel carried ~30px of dead
+        // air in the middle while the outer margins were right (Ludo). Recomputed whenever the
+        // rows are rebuilt; one value for every row, so the columns still cannot disagree.
+        // The floor keeps the two columns from collapsing onto a design with only short titles.
+        float MeasuredTitleRoom = TitleRoomFloor;
+        const float TitleRoomFloor = 92f;
+        const float TitleValueGap = 12f;   // air between the longest title and the value column
+
+        void RemeasureTitleRoom()
+        {
+            float widest = 0f;
+            foreach (Row r in Rows)
+            {
+                if (r.Heading != null)
+                    continue;
+                float w = Fonts.Arial12Bold.TextWidth(r.Title.Text);
+                if (w > widest)
+                    widest = w;
+            }
+            MeasuredTitleRoom = Math.Max(TitleRoomFloor, widest + TitleValueGap);
+        }
         const float ValueRoom = 52f;
         const float SidePad = 10f;    // the right-hand margin; the left one is the panel's inset
 
@@ -106,7 +131,7 @@ namespace Ship_Game.GameScreens.ShipDesign
         public static float FrameWidthFor(bool withDeltas, bool withPlan)
         {
             // two steps, less the mid-gap trailing the second column — it only separates them
-            float w = StepFor(withDeltas) * 2f - MidGap + SidePad;
+            float w = StepFor(withDeltas, DefaultTitleRoom) * 2f - MidGap + SidePad;
             if (withPlan)
                 w += PlanSide + PlanGap;
             return w;
@@ -216,6 +241,12 @@ namespace Ship_Game.GameScreens.ShipDesign
                 Ds = ds ?? new ShipDesignStats(ship, ship.Universe.Player);
                 UpdateDesignStats = ds == null;
                 BuildRows();
+                // ⚠ measured over EVERY declared row, including the ones currently hidden: a
+                // row's visibility changes during a session (Shield Power appears the moment a
+                // shield is fitted), and a column that shifted whenever a line came or went
+                // would be worse than the dead air it saves. Space belongs to the object, not
+                // to the instant.
+                RemeasureTitleRoom();
             }
         }
 
@@ -415,8 +446,14 @@ namespace Ship_Game.GameScreens.ShipDesign
                 // rect, already inset by 10, so drawing at X put the name 20px off the frame —
                 // twice the module's margin, which is what read as "pushed to the right"
                 // (Ludo, three benches running). Back out the inset so the two agree.
+                // Ludoal fork (bench 46.154): same reasoning vertically as horizontally above.
+                // The module panel draws its title at frame.Y + 35; this inner rect starts at
+                // frame.Y + 26, so +2 put the name 28px down against the module's 35 and it sat
+                // too close to the tab (Ludo). Derived from the module's number, not re-guessed.
+                const float ModuleTitleFromFrame = 35f;
+                const float InnerTopInset = 26f;
                 var namePos = new Vector2(X - InnerInset + 10f + (ShowShipPlan ? PlanSide + PlanGap : 0f),
-                                          Y + 2f);
+                                          Y + (ModuleTitleFromFrame - InnerTopInset));
                 batch.DrawString(nameFont, S.Name, namePos, Color.White);
 
                 if (ComparedName.NotEmpty())
@@ -473,7 +510,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             float colStep = ColumnStep;
             float col0X = X + planW + Col0Shift;
             float col1X = col0X + colStep + Col1Shift - Col0Shift;
-            float spacing = TitleRoom; // title room; the value sits at the cursor + spacing
+            float spacing = MeasuredTitleRoom; // the value sits at the cursor + spacing
             Graphics.Font headFont = Fonts.Arial12Bold;
 
             // a heading is only worth drawing when at least one of its own lines shows

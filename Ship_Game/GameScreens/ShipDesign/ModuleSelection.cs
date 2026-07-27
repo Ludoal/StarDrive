@@ -414,9 +414,18 @@ namespace Ship_Game
             // Ludoal fork (bench 46.152): the Active frame grows only while a comparison is
             // running, and shrinks back when the pin is dropped (Ludo). Nothing else pays for
             // the delta lanes, and the legacy look falls out of it for free.
+            // ⚠ Width alone is not enough: it writes Size.X, but a Submenu draws from Rect and
+            // from the internal rects built in PerformLayout. SetAbsPos and SetRelSize both arm
+            // RequiresLayout — SetAbsSize does NOT, so an absolute resize never triggers a
+            // relayout on its own. Hence the explicit flag rather than a fix in UIElementV2:
+            // the frame kept its old width on screen while every column inside it had already
+            // moved (bench 46.154).
             float wantWidth = PlainFrameWidth + (Comparing ? DeltaFrameExtra : 0f);
             if (!ActiveModSubMenu.Width.AlmostEqual(wantWidth))
-                ActiveModSubMenu.Width = wantWidth;
+            {
+                ActiveModSubMenu.SetAbsSize(wantWidth, ActiveModSubMenu.Height);
+                ActiveModSubMenu.RequiresLayout = true;
+            }
 
             // Ludoal fork (bench 46.150): with no Active frame showing, the hover frame slides
             // over to the left edge rather than floating in the middle with a hole beside it.

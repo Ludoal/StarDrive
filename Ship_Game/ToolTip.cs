@@ -157,12 +157,31 @@ namespace Ship_Game
                 MinShowTime -= deltaTime;
 
                 // if tip is hovered, we increase its lifetime
-                // when not hovered, we decrease the lifetime
-                LifeTime += (hovered ? deltaTime : -deltaTime);
-                LifeTime = Math.Min(LifeTime, TipTime);
-
+                // Ludoal fork (bench 46.154): leaving the element ends the tip AT ONCE instead
+                // of fading it out over TipTime. Sweeping a list, the fade meant the previous
+                // row's tip was still on screen while the cursor was already two rows down —
+                // which reads as a tooltip that lags, sticks and shows the wrong text (Ludo).
+                // Dropping to the reappear point rather than to zero keeps the grace period, so
+                // moving along a list does not re-arm the 0.35s dwell on every single row.
                 const float TipReappearTimePoint = TipShowTimePoint - TipReappearTimeDelay;
                 const float TipResetTimePoint = TipReappearTimePoint - TipResetTimeDelay;
+
+                if (hovered)
+                {
+                    LifeTime = Math.Min(LifeTime + deltaTime, TipTime);
+                }
+                else if (Visible)
+                {
+                    // hide it here rather than letting the fade-out path below do it: that path
+                    // waits for LifeTime to reach 0 on its own, which is the delay being removed
+                    Visible = false;
+                    LifeTime = TipReappearTimePoint; // same point the fade-out path lands on
+                    return true;
+                }
+                else
+                {
+                    LifeTime -= deltaTime;
+                }
                 if (LifeTime <= TipResetTimePoint)
                     return false; // tip died
 
