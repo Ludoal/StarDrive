@@ -109,7 +109,24 @@ namespace Ship_Game.GameScreens.ShipDesign
         // (~127 with real labels). The step was ~35px shorter than what it had to hold, so every
         // value overflowed into the next column. TWO numbers for one distance, again.
         // One number now: the measurement is gone and the draw reads this constant.
-        const float TitleColumn = 127f;   // "Total Module Slots" in Arial12Bold, plus its gap
+        // ⚠⚠ THE ONE THAT COST SEVEN BUILDS. The titles are drawn RIGHT-ALIGNED: DrawStatText
+        // places them via FontSpace(cursor.X + spacing, -20, ...), i.e. at
+        //
+        //     titleLeft = cursor.X + spacing - 20 - textWidth(title)
+        //
+        // so cursor.X anchors the VALUE, never the title, and the block's visible left edge is
+        // wherever the LONGEST label lands. With spacing = 127 the longest title ("Total Module
+        // Slots", ~115px) started 2px from the frame instead of 10 — the "whole block shifted
+        // 10px left" the bench kept reporting, and the reason moving ContentLeft changed nothing:
+        // the culprit was never the cursor, it was the hidden -20 plus the label's own width.
+        //
+        // The module panel escapes it because its spacing is a fraction of its frame
+        // (panel.Width * 0.27f), which happens to land right for its shorter labels.
+        //
+        //   135 = 10 (left margin) + 20 (FontSpace's own inset) + 115 (longest label) - 10 (Inset,
+        //   already paid by the inner rect the cursor starts at)
+        const float LongestTitle = 115f;  // "Total Module Slots" in Arial12Bold
+        const float TitleColumn = 10f + 20f + LongestTitle - Inset;
         const float ValueColumn = 52f;                             // widest value, "107.1k"
         const float WideColumnStep  = TitleColumn + DeltaLaneOffset + DeltaLaneWidth + MidGap;
         const float TightColumnStep = TitleColumn + ValueColumn + MidGap;
