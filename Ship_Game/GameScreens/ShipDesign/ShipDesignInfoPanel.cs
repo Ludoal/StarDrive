@@ -81,8 +81,17 @@ namespace Ship_Game.GameScreens.ShipDesign
         // room a delta needs after a value: the offset it is drawn at, plus the widest delta
         // string we can expect ("(+157.2k)")
         // the delta is drawn this far past the value, and runs to about "(-27.35k)" wide
+        // ⚠ found by Lek reading this file at midday, and she is right: the lane reserved
+        // DeltaLaneOffset + 14 while the string it has to hold ("(-27.35k)", "(+157.2k)") runs
+        // to ~55px in Arial12Bold — a lane 40px short of its own content. It went unnoticed
+        // because the delta is drawn LEFT-aligned at spacing + DeltaLaneOffset and simply spilled
+        // into whatever was to its right; on the widest values it ate the frame's right margin.
+        //
+        // Unlike the titles above, this text grows RIGHTWARD from its anchor, so the lane is
+        // offset + text, not offset + a number nobody can reconstruct.
         const float DeltaLaneOffset = 46f;
-        public const float DeltaLaneWidth = DeltaLaneOffset + 14f;
+        const float WidestDelta = 55f;    // "(-27.35k)" in Arial12Bold
+        public const float DeltaLaneWidth = DeltaLaneOffset + WidestDelta;
 
         // ★ THE MODULE PANEL'S GEOMETRY, ACTUALLY COPIED THIS TIME (Ludo, said four times:
         // "ça fonctionne parfaitement côté Module... essaie de t'en inspirer"). Two brute
@@ -127,16 +136,23 @@ namespace Ship_Game.GameScreens.ShipDesign
         //   already paid by the inner rect the cursor starts at)
         const float LongestTitle = 115f;  // "Total Module Slots" in Arial12Bold
         const float TitleColumn = 10f + 20f + LongestTitle - Inset;
-        const float ValueColumn = 52f;                             // widest value, "107.1k"
-        const float WideColumnStep  = TitleColumn + DeltaLaneOffset + DeltaLaneWidth + MidGap;
-        const float TightColumnStep = TitleColumn + ValueColumn + MidGap;
+
+        // ⚠ NOT + DeltaLaneOffset + DeltaLaneWidth: the width ALREADY contains the offset
+        // (it is offset + text). Adding both counted the 46px lead-in twice, so the comparing
+        // frame was 46px wider than its own content — the "too much space in the middle when
+        // comparing" the bench reported, still there under every other fix.
+        const float WideColumnStep  = TitleColumn + DeltaLaneWidth + MidGap;
+        const float TightColumnStep = TitleColumn + ValueRoom + MidGap;
         float ColumnStep => HasDeltaLanes ? WideColumnStep : TightColumnStep;
         static float StepFor(bool withDeltas) => withDeltas ? WideColumnStep : TightColumnStep;
         // air between the two columns: on the 46.138 shot column 1's delta lane nearly touched
         // "MOBILITY" (Ludo). It belongs to the STEP, so the gap opens between the columns rather
         // than just pushing column 2 further right.
         const float MidGap = 10f;
-        const float ValueRoom = 52f;
+        // ⚠ there were TWO of these — ValueColumn and ValueRoom, both 52, one of them dead.
+        // Same disease as the rest of this panel: a second number for a distance that already
+        // had one (Lek, reading the file at midday).
+        const float ValueRoom = 52f;   // widest value, "107.1k"
         // ⚠ the RIGHT margin only. The left one is the inner rect's own inset, which the frame
         // does not pay for again — 46.163 counted it twice and, since the frame is anchored on
         // its right edge and grows leftwards, the surplus 10px opened as a gap down the left of
