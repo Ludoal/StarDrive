@@ -30,6 +30,16 @@ namespace Ship_Game
             if (Module != null)
             {
                 DrawModule(batch);
+
+                // Ludoal fork (bench 46.152): the gesture hint belongs to the ROW, not to the
+                // list. Hung off the list's rect it appeared wherever the cursor first entered
+                // and stayed there, and it fired over category headers too - those have no
+                // Module, so they no longer qualify. The comparison line only shows when the
+                // feature is on: a hint promising a gesture that does nothing is worse than none.
+                if (HitTest(GameBase.ScreenManager.input.CursorPosition))
+                    ToolTip.CreateTooltip(GlobalStats.ShipyardComparison
+                        ? "Click to pick this module\nShift-click to pin it for comparison"
+                        : "Click to pick this module");
             }
         }
 
@@ -75,8 +85,8 @@ namespace Ship_Game
 
             if (m.InstalledWeapon?.IsTurret == true && !m.DisableRotation)
             {
-                var rotateRect = new Rectangle((int)bCursor.X + 240, (int)bCursor.Y + 3, 15, 16);
-                var turretRect = new Rectangle((int)bCursor.X + 238, (int)bCursor.Y + 20, 18, 20);
+                var rotateRect = new Rectangle((int)bCursor.X + 228, (int)bCursor.Y + 3, 15, 16);
+                var turretRect = new Rectangle((int)bCursor.X + 226, (int)bCursor.Y + 20, 18, 20);
                 batch.Draw(ResourceManager.Texture("UI/icon_can_rotate"), rotateRect, Color.White);
                 batch.Draw(ResourceManager.Texture("NewUI/icon_turret"), turretRect, Color.White);
                 if (rotateRect.HitTest(GameBase.ScreenManager.input.CursorPosition) || turretRect.HitTest(GameBase.ScreenManager.input.CursorPosition))
@@ -84,14 +94,14 @@ namespace Ship_Game
             }
             else if (!m.DisableRotation)
             {
-                var rotateRect = new Rectangle((int)bCursor.X + 240, (int)bCursor.Y + 3, 20, 22);
+                var rotateRect = new Rectangle((int)bCursor.X + 228, (int)bCursor.Y + 3, 20, 22);
                 batch.Draw(ResourceManager.Texture("UI/icon_can_rotate"), rotateRect, Color.White);
                 if (rotateRect.HitTest(GameBase.ScreenManager.input.CursorPosition))
                     ToolTip.CreateTooltip(GameText.IndicatesThatThisModuleCan);
             }
             else if (m.InstalledWeapon?.IsTurret == true)
             {
-                var turretRect = new Rectangle((int)bCursor.X + 235, (int)bCursor.Y + 3, 25, 23);
+                var turretRect = new Rectangle((int)bCursor.X + 223, (int)bCursor.Y + 3, 25, 23);
                 batch.Draw(ResourceManager.Texture("NewUI/icon_turret"), turretRect, Color.White);
                 if (turretRect.HitTest(GameBase.ScreenManager.input.CursorPosition))
                     ToolTip.CreateTooltip(GameText.IndicatesThisModuleHasA);

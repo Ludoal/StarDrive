@@ -56,9 +56,10 @@ namespace Ship_Game.GameScreens.ShipDesign
         string ComparedName;
 
         // column offsets, bench values
-        // Ludoal fork (bench): 10px off the first column's left margin — it was rented at 20 and
-        // the frame had visible slack there (Ludo).
-        public float Col0Shift = 10f;
+        // Ludoal fork (bench 46.152): zero. The panel is already inset 10px inside its frame,
+        // so any shift here is added ON TOP of that - the left margin was 20 against 10 in the
+        // middle and 0 on the right. Ten all round now (Ludo).
+        public float Col0Shift = 0f;
         public float Col1Shift = 10f;
 
         // Ludoal fork (spec v4): the in-frame title takes this much height before the rows
@@ -98,7 +99,7 @@ namespace Ship_Game.GameScreens.ShipDesign
         // The frame must not grow beyond that — it was already wide enough (Ludo).
         const float TitleRoom = 145f;
         const float ValueRoom = 52f;
-        const float SidePad = 20f;    // the panel's own left margin plus a right breather
+        const float SidePad = 10f;    // the right-hand margin; the left one is the panel's inset
 
         // What a frame must measure to hold two of those columns — the screen asks this rather
         // than sizing the frame from whatever space is going spare and hoping the columns fit.

@@ -35,6 +35,15 @@ public class SubmenuScrollList<T> : Submenu where T : ScrollListItem<T>
         List = base.Add(new ScrollList<T>(this));
     }
 
+    // Ludoal fork: same as above but with tabs. Submenu already has this overload; only the
+    // scroll-list wrapper was missing it, so a tabbed list had to be built from a RectF.
+    public SubmenuScrollList(LocalPos pos, Vector2 size, IEnumerable<LocalizedText> tabs, ListStyle style = ListStyle.Default)
+        : base(pos, size, tabs, Style(style))
+    {
+        base.PerformLayout();
+        List = base.Add(new ScrollList<T>(this));
+    }
+
     public SubmenuScrollList(RectF menu, IEnumerable<LocalizedText> tabs, int itemHeight = 40, ListStyle style = ListStyle.Default)
         : base(menu, tabs, Style(style))
     {

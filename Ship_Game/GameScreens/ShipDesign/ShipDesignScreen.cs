@@ -88,6 +88,12 @@ namespace Ship_Game
         UITextEntry BrowserFilter;         // Ludoal fork: the load popup's filters, rehoused
         string BrowserFilterText;
         bool ShowLockedDesigns;
+        // Ludoal fork (bench 46.152): how the browser groups its rows. By hull is the
+        // build view (a carcass and what we already put on it); by role is the use view
+        // ("my carriers", wherever they are built). Same list, same filters, one key
+        // change - which is why this is a grouping mode and not a second list with its
+        // own scroll, filter and selection to keep in step (Ludo).
+        bool GroupByRole;
         const string DefaultBrowserFilter = "filter by name or hull...";
         // Ludoal fork (spec v4): the flying hover overlay is gone from this screen — the Hover
         // cartouche replaced it. ShipInfoOverlayComponent itself lives on: the load and save
@@ -847,11 +853,22 @@ namespace Ship_Game
                      (b) => { ShowLockedDesigns = b; RefreshHullSelectList(); },
                      "Show locked", GameText.ShowEmpireLockedDesignsTip);
 
-            var hullSelectSub = Add(new SubmenuScrollList<ShipYardBrowserItem>(hullSelectPos, hullSelSize, "Hulls & Designs"));
+            // The grouping mode rides the frame's own title bar: Submenu carries tabs
+            // natively, so it costs no pixel of the list and no third row of filters -
+            // the two we have already fill the 52px above the frame at 1440.
+            var hullSelectSub = Add(new SubmenuScrollList<ShipYardBrowserItem>(hullSelectPos, hullSelSize,
+                                        new LocalizedText[] { "By Hull", "By Role" }));
             // rounded black background
             hullSelectSub.SetBackground(Colors.TransparentBlackFill);
 
             HullSelectList = hullSelectSub.List;
+            // subscribed AFTER the list exists: Submenu selects tab 0 on its first Update, which
+            // fires this — a handler armed any earlier would refresh a list that is still null
+            hullSelectSub.OnTabChange = (tab) =>
+            {
+                GroupByRole = tab == 1;
+                RefreshHullSelectList();
+            };
             // single click selects (and shift-click pins for comparison), double click loads:
             // the load is the expensive gesture (mesh + modules + stats), so it stays deliberate
             HullSelectList.OnClick = OnBrowserItemClicked;
@@ -1057,6 +1074,17 @@ namespace Ship_Game
             // own bare row — that row carries the hull's name, e.g. "Fang Fighter" — and its
             // designs follow. Two levels is all the scroll list can do, which is why the class
             // is the heading and the hull is a row rather than a nested group.
+            if (GroupByRole)
+                BuildGroupsByRole(designsByHull);
+            else
+                BuildGroupsByHullClass(designsByHull);
+        }
+
+        // The build view: a hull class, then each hull with its own bare row followed by the
+        // designs built on it. Two levels is all the scroll list can do, which is why the class
+        // is the heading and the hull is a row rather than a nested group.
+        void BuildGroupsByHullClass(Map<string, Array<IShipDesign>> designsByHull)
+        {
             var classes = new Array<string>();
             foreach (ShipHull hull in AvailableHulls)
             {
@@ -1078,14 +1106,83 @@ namespace Ship_Game
 
                     AddHullAndItsDesigns(group, hull, designsByHull);
                 }
+
+                // Ludoal fork (bench 46.152): a search that leaves every class collapsed and
+                // every hull in place is not a search (Ludo). The filter reaches the hull
+                // rows too now, and what survives is opened so the matches are on screen
+                // rather than behind a fold.
+                if (BrowserFilterText.NotEmpty())
+                    group.Expand(true);
             }
         }
+
+        // The use view: group by what a ship IS FOR rather than what it is built on. A design's
+        // role is the one its fitted modules express (Carrier, Colony, Scout); a bare hull has
+        // no fitted modules, so it falls under its carcass role - which is exactly the answer
+        // to "what could I build here". The two therefore stop being adjacent in this mode, and
+        // that is the price of sorting by use (Ludo).
+        void BuildGroupsByRole(Map<string, Array<IShipDesign>> designsByHull)
+        {
+            var byRole = new Map<string, Array<ShipYardBrowserItem>>();
+
+            void Bucket(string role, ShipYardBrowserItem row)
+            {
+                if (!byRole.TryGetValue(role, out Array<ShipYardBrowserItem> rows))
+                    byRole[role] = rows = new Array<ShipYardBrowserItem>();
+                rows.Add(row);
+            }
+
+            foreach (ShipHull hull in AvailableHulls.Sorted(h => h.VisibleName))
+            {
+                if (HullMatchesFilter(hull))
+                    Bucket(Localizer.GetRole(hull.Role, Player), new ShipYardBrowserItem(Player, hull));
+            }
+
+            // designsByHull is already filtered by CanShowDesign, so the same rows appear in
+            // both modes - only their grouping changes
+            foreach (Array<IShipDesign> designs in designsByHull.Values)
+            {
+                foreach (IShipDesign design in designs)
+                    Bucket(Localizer.GetRole(design.Role, Player),
+                           new ShipYardBrowserItem(Player, design, isWIP: false) { ShowHullInBadge = true });
+            }
+
+            var roles = new Array<string>(byRole.Keys);
+            roles.Sort();
+
+            foreach (string role in roles)
+            {
+                var group = new ShipYardBrowserItem(Player, null, role);
+                HullSelectList.AddItem(group);
+
+                // ours first, then the strongest, then alphabetical - the load popup's order,
+                // with the bare hulls leading since they are where a new design starts
+                foreach (ShipYardBrowserItem row in byRole[role]
+                             .OrderBy(r => !r.IsBareHull)
+                             .ThenBy(r => r.Design == null ? "" : (r.Design.IsPlayerDesign ? "0" : "1"))
+                             .ThenByDescending(r => r.Design?.BaseStrength ?? 0f)
+                             .ThenBy(r => r.Design?.Name ?? r.Hull.VisibleName))
+                {
+                    group.AddSubItem(row);
+                }
+
+                if (BrowserFilterText.NotEmpty())
+                    group.Expand(true);
+            }
+        }
+
+        // the browser's text filter as it applies to a bare hull row
+        bool HullMatchesFilter(ShipHull hull)
+            => BrowserFilterText.IsEmpty()
+            || hull.VisibleName.ToLower().Contains(BrowserFilterText)
+            || hull.HullName.ToLower().Contains(BrowserFilterText);
 
         void AddHullAndItsDesigns(ShipYardBrowserItem group, ShipHull hull,
                                   Map<string, Array<IShipDesign>> designsByHull)
         {
             // the bare hull first: starting from an empty carcass is one row, not a mode
-            group.AddSubItem(new ShipYardBrowserItem(Player, hull));
+            if (HullMatchesFilter(hull))
+                group.AddSubItem(new ShipYardBrowserItem(Player, hull));
 
             if (designsByHull.TryGetValue(hull.HullName, out Array<IShipDesign> designs))
             {

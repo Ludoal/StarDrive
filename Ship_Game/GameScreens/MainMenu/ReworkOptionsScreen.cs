@@ -49,8 +49,13 @@ namespace Ship_Game.GameScreens.MainMenu
             list.AddCheckbox(() => GlobalStats.ReworkEspionage, title: "Espionage",
                 tooltip: "Rebuilt infiltration screen. Off: the original espionage screen.");
 
-            list.AddLabel("A screen already open keeps its layout until it is reopened.")
+            // Ludoal fork (bench 46.152): this popup writes nothing on its own - the config is
+            // written by the parent Options screen's Apply Settings. Say so, or the player ticks
+            // a box, closes the game and finds it untouched next run (Ludo).
+            list.AddLabel("Close this window, then press APPLY SETTINGS to save your choices.")
                 .Color = Colors.Cream;
+            list.AddLabel("A screen already open keeps its layout until it is reopened.")
+                .Color = Colors.Gray;
         }
     }
 }

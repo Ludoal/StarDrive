@@ -48,7 +48,7 @@ namespace Ship_Game
             // shorter, and the list runs down to it with the standard gap.
             float acsubTop = Rect.Bottom + FrameGap;
             RectF acsub = new(Rect.X, acsubTop,
-                              PlainFrameWidth + (GlobalStats.ShipyardComparison ? DeltaFrameExtra : 0f),
+                              PlainFrameWidth, // widened on demand, see Update
                               FramesBottom(Screen.Height) - acsubTop);
             ActiveModSubMenu = base.Add(new Submenu(acsub, "Active Module"));
             // rounded black background
@@ -155,7 +155,11 @@ namespace Ship_Game
         // Ludoal fork: the Active frame is only wide because it carries delta lanes. With the
         // comparison off it has none, so it goes back to upstream's tight geometry - otherwise
         // it reserves room for something that will never be drawn (bench 46.150).
-        bool IsWideFrame(Submenu panel) => panel == ActiveModSubMenu && GlobalStats.ShipyardComparison;
+        // Ludoal fork (bench 46.152): the frame is WIDE only while a comparison is actually
+        // running (Ludo). It was tied to the option, so turning the feature on made every
+        // panel permanently wider for deltas that were usually not there. Now the legacy
+        // look is simply 'no comparison', and the two cases stop being separate code.
+        bool IsWideFrame(Submenu panel) => panel == ActiveModSubMenu && Comparing;
         float ColStepOf(Submenu panel) => IsWideFrame(panel) ? WideColStep : TightColStep;
         // the pulls are bench offsets for the wide frame only; the Hover frame is left as it was
         float ColPullOf(Submenu panel, int col)
@@ -407,6 +411,13 @@ namespace Ship_Game
 
             ActiveModSubMenu.Visible = Screen.ActiveModule != null || Screen.HighlightedModule != null;
 
+            // Ludoal fork (bench 46.152): the Active frame grows only while a comparison is
+            // running, and shrinks back when the pin is dropped (Ludo). Nothing else pays for
+            // the delta lanes, and the legacy look falls out of it for free.
+            float wantWidth = PlainFrameWidth + (Comparing ? DeltaFrameExtra : 0f);
+            if (!ActiveModSubMenu.Width.AlmostEqual(wantWidth))
+                ActiveModSubMenu.Width = wantWidth;
+
             // Ludoal fork (bench 46.150): with no Active frame showing, the hover frame slides
             // over to the left edge rather than floating in the middle with a hole beside it.
             float hoverX = ActiveModSubMenu.Visible
@@ -447,15 +458,7 @@ namespace Ship_Game
         {
             base.Draw(batch, elapsed);
             // Ludoal fork: surface the comparator gesture where the modules are picked
-            // Ludoal fork (bench 46.150): the hint is a tooltip now, not a permanent line of
-            // text above the frame - a row of screen for something you read once (Ludo).
-            // ScrollList carries no Tooltip property, so it is drawn on hover like the stat
-            // rows do, and the comparison line only appears when the feature is on: a tooltip
-            // promising a gesture that does nothing is worse than none.
-            if (ModuleSelectList.HitTest(Screen.Input.CursorPosition))
-                ToolTip.CreateTooltip(GlobalStats.ShipyardComparison
-                    ? "Click to pick a module\nShift-click to pin it for comparison"
-                    : "Click to pick a module");
+
             if (ActiveModSubMenu.Visible)
             {
                 DrawActiveModuleData(batch);
