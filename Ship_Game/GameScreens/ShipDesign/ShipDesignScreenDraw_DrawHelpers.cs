@@ -54,10 +54,10 @@ namespace Ship_Game
                 {
                     switch (Tint)
                     {
-                        case ValueTint.GoodBad:              return Value > 0f ? Color.LightGreen : Color.LightPink;
+                        case ValueTint.GoodBad:              return Value > 0f ? Color.White : Color.LightPink;
                         case ValueTint.Bad:                  return Color.LightPink;
-                        case ValueTint.BadLowerThan2:        return Value > 2f ? Color.LightGreen : Color.LightPink;
-                        case ValueTint.BadPercentLowerThan1: return Value > 1f ? Color.LightGreen : Color.LightPink;
+                        case ValueTint.BadLowerThan2:        return Value > 2f ? Color.White : Color.LightPink;
+                        case ValueTint.BadPercentLowerThan1: return Value > 1f ? Color.White : Color.LightPink;
                         case ValueTint.CompareValue:         return CompareValue < Value ? Color.LightGreen : Color.LightPink;
                         case ValueTint.None:
                         default: return Color.White;

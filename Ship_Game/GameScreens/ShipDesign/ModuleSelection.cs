@@ -41,13 +41,20 @@ namespace Ship_Game
             base.PerformLayout(); // necessary
 
             ModuleSelectList = base.Add(new ModuleSelectScrollList(this, Screen));
+            // Ludoal fork: the gesture is told here rather than printed above the frame. The
+            // comparison line only appears when the feature is on - a tooltip promising a
+            // gesture that does nothing is worse than no tooltip.
+            ModuleSelectList.Tooltip = GlobalStats.ShipyardComparison
+                ? "Click to pick a module\nShift-click to pin it for comparison"
+                : "Click to pick a module";
 
             // Ludoal fork: the Active panel carries the delta lanes now (spec v4) — it is the
             // only stat frame left, so it needs the width the Compared one used to have.
             // Bench 46.135: the bottom margin matches the side one, the frame is three lines
             // shorter, and the list runs down to it with the standard gap.
             float acsubTop = Rect.Bottom + FrameGap;
-            RectF acsub = new(Rect.X, acsubTop, PlainFrameWidth + DeltaFrameExtra,
+            RectF acsub = new(Rect.X, acsubTop,
+                              PlainFrameWidth + (GlobalStats.ShipyardComparison ? DeltaFrameExtra : 0f),
                               FramesBottom(Screen.Height) - acsubTop);
             ActiveModSubMenu = base.Add(new Submenu(acsub, "Active Module"));
             // rounded black background
@@ -118,7 +125,12 @@ namespace Ship_Game
         // pinning a module slides every number sideways, which is what the bench caught.
         // The Active frame is wide because it carries delta lanes; the Hover frame IS the old
         // Active (Ludo), so it keeps upstream's width and tight step, untouched.
-        const float PlainFrameWidth = 305f;  // upstream's Active frame
+        // Ludoal fork (bench 46.150): the frames line up with the LIST above them (Ludo).
+        // Upstream's 305 was a constant that happened to match; Rect.Width always does.
+        float PlainFrameWidth => Rect.Width;
+
+        // same grey as the design cartouche's labels
+        static readonly Color LabelGrey = new Color(168, 172, 178);
         const float DeltaFrameExtra = 105f;  // what the delta lanes need on top
 
         // Ludoal fork (bench 46.135): the screen's shared spacing. Upstream folded all of this
@@ -146,7 +158,10 @@ namespace Ship_Game
         const float Col0Pull = 20f; // first group, left (bench)
         const float Col1Pull = 30f; // second group, left (bench)
 
-        bool IsWideFrame(Submenu panel) => panel == ActiveModSubMenu;
+        // Ludoal fork: the Active frame is only wide because it carries delta lanes. With the
+        // comparison off it has none, so it goes back to upstream's tight geometry - otherwise
+        // it reserves room for something that will never be drawn (bench 46.150).
+        bool IsWideFrame(Submenu panel) => panel == ActiveModSubMenu && GlobalStats.ShipyardComparison;
         float ColStepOf(Submenu panel) => IsWideFrame(panel) ? WideColStep : TightColStep;
         // the pulls are bench offsets for the wide frame only; the Hover frame is left as it was
         float ColPullOf(Submenu panel, int col)
@@ -397,6 +412,14 @@ namespace Ship_Game
                 SelectedIndex = 0; // this will trigger OnTabChangedEvt
 
             ActiveModSubMenu.Visible = Screen.ActiveModule != null || Screen.HighlightedModule != null;
+
+            // Ludoal fork (bench 46.150): with no Active frame showing, the hover frame slides
+            // over to the left edge rather than floating in the middle with a hole beside it.
+            float hoverX = ActiveModSubMenu.Visible
+                         ? ActiveModSubMenu.X + ActiveModSubMenu.Width + FrameGap
+                         : ActiveModSubMenu.X;
+            if (!HoverModSubMenu.X.AlmostEqual(hoverX))
+                HoverModSubMenu.SetAbsPos(hoverX, HoverModSubMenu.Y);
             ChooseFighterSub.Visible = ChooseFighterSL.GetFighterHangar() != null;
             if (!ActiveModSubMenu.Visible)
                 Screen.CompareModule = null; // Ludoal fork: closing the Active panel drops the pin
@@ -430,7 +453,9 @@ namespace Ship_Game
         {
             base.Draw(batch, elapsed);
             // Ludoal fork: surface the comparator gesture where the modules are picked
-            batch.DrawString(Fonts.Arial12Bold, "Shift-click to compare", new Vector2(Rect.X + 10, Rect.Y - 18), Color.Wheat);
+            // Ludoal fork (bench 46.150): the hint moved off the screen and into the list's
+            // tooltip - a permanent line of text above the frame costs a row of screen for
+            // something you need to read once (Ludo).
             if (ActiveModSubMenu.Visible)
             {
                 DrawActiveModuleData(batch);
@@ -675,7 +700,11 @@ namespace Ship_Game
                 cursor.Y += Fonts.Arial12Bold.LineSpacing;
                 return;
             }
-            Screen.DrawStat(ref cursor, text, stat, Color.White, toolTipId, spacing: ActiveModStatSpacing, isPercent: isPercent);
+            // Ludoal fork: labels are grey, values keep the white - same three-level reading
+            // as the design cartouche. DrawStatCustomColor is the other path and is left
+            // alone: the labels that carry a colour on purpose (Exp Dmg red, amplified
+            // shields gold) mean something by it.
+            Screen.DrawStat(ref cursor, text, stat, LabelGrey, toolTipId, spacing: ActiveModStatSpacing, isPercent: isPercent);
         }
 
         void DrawStatCustomColor(ref Vector2 cursor, LocalizedText text, float stat, LocalizedText toolTipId, Color color, bool isPercent = true)
@@ -880,6 +909,9 @@ namespace Ship_Game
 
             DrawStat(ref cursor, GameText.Cost, cost, GameText.IndicatesTheProductionCostOf);
             DrawStat(ref cursor, GameText.Mass2, m.GetActualMass(Player, 1), GameText.TT_Mass);
+            // Ludoal fork: weapons draw through their own path, so Slots has to be added
+            // here too - it was only on the plain module path (bench 46.150)
+            DrawStat(ref cursor, "Slots", m.Area, GameText.TT_TotalModuleSlots);
             DrawStat(ref cursor, GameText.Health, m.ActualMaxHealth, GameText.AModulesHealthRepresentsHow);
             DrawStat(ref cursor, GameText.Power, power, GameText.IndicatesHowMuchPowerThis);
             DrawStat(ref cursor, GameText.Range, range, GameText.IndicatesTheMaximumRangeOf);

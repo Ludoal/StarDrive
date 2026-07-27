@@ -797,7 +797,11 @@ namespace Ship_Game
             float listBottom  = cartoucheY - ModuleSelection.FrameGap;
             // the completion line sits at local y 0, the issues button at 18 in Pirulen20
             float issuesH     = 18f + Fonts.Pirulen20.LineSpacing;
-            float issuesY     = cartoucheY - issuesH - 6f;
+            // Ludoal fork (bench 46.150): the strip moves INSIDE the cartouche, on its last
+            // line - above the frame it bit into the browser list, and the cartouche has
+            // spare room at the bottom (Ludo). Completion and the issues button share the
+            // row, so it costs one line rather than two.
+            float issuesY     = cartoucheY + cartoucheH - issuesH - 6f;
 
             // Ludoal fork (bench): the right column had no margin — its frames were flush with
             // the screen edge while the left ones breathe. Same padding on both sides now.
@@ -823,6 +827,9 @@ namespace Ship_Game
             // as the cursor drifted over the field)
             BrowserFilter.DrawUnderline = true;
             BrowserFilter.Color = Colors.Cream;
+            // Ludoal fork (bench 46.150): the placeholder clears itself on click - it had to be
+            // deleted by hand before you could type (Ludo).
+            BrowserFilter.AutoClearTextOnInputCapture = true;
             BrowserFilter.OnTextChanged = (text) =>
             {
                 BrowserFilterText = (text == DefaultBrowserFilter) ? null : text?.ToLower();
@@ -850,6 +857,12 @@ namespace Ship_Game
             HullSelectList.OnClick = OnBrowserItemClicked;
             HullSelectList.OnDoubleClick = OnBrowserItemDoubleClicked;
             HullSelectList.EnableItemHighlight = true;
+            // Ludoal fork (bench 46.150): the gestures are not discoverable on their own - a
+            // double-click to load is not something anyone tries by accident. The comparison
+            // line only shows when the feature is on.
+            HullSelectList.Tooltip = GlobalStats.ShipyardComparison
+                ? "Double-click to load\nShift-click to pin for comparison"
+                : "Double-click to load";
 
             // hover preview: the same overlay the load popup used, so a design can be
             // inspected without paying for a load. Hull rows carry no design, and the

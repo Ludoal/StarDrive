@@ -476,7 +476,6 @@ namespace Ship_Game.GameScreens.ShipDesign
             Graphics.Font headFont = Fonts.Arial12Bold;
 
             // a heading is only worth drawing when at least one of its own lines shows
-            int visibleTotal = 0;
             var blockVisible = new Array<int>(); // visible line count per block, in order
             int current = -1;
             for (int i = 0; i < Rows.Count; ++i)
@@ -489,29 +488,19 @@ namespace Ship_Game.GameScreens.ShipDesign
                 else if (current >= 0 && IsDrawn(i))
                 {
                     blockVisible[current] = blockVisible[current] + 1;
-                    ++visibleTotal;
                 }
             }
 
-            // Split on the block edge NEAREST half the visible lines, not the first edge past
-            // it: the greedy version put 16 lines against 9 and overflowed the frame.
-            int half = (visibleTotal + 1) / 2;
-            int splitBlock = blockVisible.Count;
-            int bestDiff = int.MaxValue;
-            int running = 0;
-            for (int b = 0; b < blockVisible.Count; ++b)
-            {
-                if (running > 0) // never split at the first edge: the left column would be empty
-                {
-                    int diff = Math.Abs(running - half);
-                    if (diff < bestDiff)
-                    {
-                        bestDiff = diff;
-                        splitBlock = b;
-                    }
-                }
-                running += blockVisible[b];
-            }
+            // Ludoal fork (bench 46.150): the split is FIXED by block, not balanced by line
+            // count. Balancing meant MOBILITY sat left on one design and right on the next,
+            // because a design with no shields or no ordnance shifts the halfway mark - so the
+            // reader had to find each block again on every ship (Ludo).
+            //
+            // Left column is what the ship IS: construction, energy, mobility, defence.
+            // Right column is what it DOES: ordnance, fire control, payload, station, verdict.
+            // A hidden block costs its side some height and nothing else.
+            const int FixedSplitBlock = 4;
+            int splitBlock = Math.Min(FixedSplitBlock, blockVisible.Count);
 
             var cursor = new Vector2(col0X, rowsY);
             int block = -1;
