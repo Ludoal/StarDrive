@@ -579,8 +579,11 @@ namespace Ship_Game
             InfoPanel.HasDeltaLanes = wantDeltas;
 
             float w = ShipDesignInfoPanel.FrameWidthFor(wantDeltas, withPlan: false);
-            float right = InfoSub.Rect.Right;   // anchored edge
-            var frame = RectF.FromPoints(right - w, right, InfoSub.Rect.Y, InfoSub.Rect.Bottom);
+            // read off the element itself rather than through Rect: Submenu.Rect (RectF) shadows
+            // UIElementV2.Rect (integer Rectangle), so going through it risks silently rounding
+            // the anchor edge depending on which member the call site resolves to
+            float right = InfoSub.X + InfoSub.Width;   // anchored edge
+            var frame = RectF.FromPoints(right - w, right, InfoSub.Y, InfoSub.Y + InfoSub.Height);
             InfoSub.SetAbsPos(frame.X, frame.Y);
             InfoSub.SetAbsSize(frame.W, frame.H);
             InfoSub.RequiresLayout = true;      // SetAbsSize alone does not arm it
@@ -590,7 +593,9 @@ namespace Ship_Game
             InfoPanel.RequiresLayout = true;
 
             // the hover frame sits to the left of the active one and keeps its own width
-            float hw = HoverSub.Rect.W;
+            // (Width, not Rect.W: Submenu.Rect is a RectF that shadows UIElementV2's integer
+            // Rectangle Rect, and which one a call site resolves to is not worth relying on)
+            float hw = HoverSub.Width;
             var hover = RectF.FromPoints(frame.X - hw - 10f, frame.X - 10f, frame.Y, frame.Bottom);
             HoverSub.SetAbsPos(hover.X, hover.Y);
             HoverSub.RequiresLayout = true;
