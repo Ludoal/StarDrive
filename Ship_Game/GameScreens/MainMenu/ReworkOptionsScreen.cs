@@ -49,10 +49,12 @@ namespace Ship_Game.GameScreens.MainMenu
             list.AddCheckbox(() => GlobalStats.ReworkEspionage, title: "Espionage",
                 tooltip: "Rebuilt infiltration screen. Off: the original espionage screen.");
 
-            // Ludoal fork (bench 46.152): this popup writes nothing on its own - the config is
-            // written by the parent Options screen's Apply Settings. Say so, or the player ticks
-            // a box, closes the game and finds it untouched next run (Ludo).
-            list.AddLabel("Close this window, then press APPLY SETTINGS to save your choices.")
+            // Ludoal fork (bench 46.177): no instruction here. The checkboxes bind straight to
+            // GlobalStats, so a tick takes effect at once, and OptionsScreen.ExitScreen calls
+            // SaveSettings - leaving the options screen at all is enough to keep it. The earlier
+            // "close this window then press Apply Settings" was wrong twice over and asked for
+            // two steps that do nothing (Ludo found it by not doing them).
+            list.AddLabel("Takes effect the next time the screen is opened.")
                 .Color = Colors.Cream;
 
         }
