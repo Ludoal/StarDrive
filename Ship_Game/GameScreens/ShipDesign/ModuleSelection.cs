@@ -662,14 +662,13 @@ namespace Ship_Game
                 CancelCompareRect = default;
             }
 
-            // The "vs <name>" line above is drawn on the Active frame only, but the room for it
-            // is reserved on BOTH, always: a reservation belongs to the OBJECT, not to the
-            // moment (the law that cost a morning on the Shipyard columns). Reserved only when
-            // used, every pin and unpin would shift the whole panel down and back, and worse,
-            // the two frames' stat rows would stop lining up - which is the one thing a
-            // side-by-side comparison is read for.
-            modTitlePos.Y += titleFont.LineSpacing + Fonts.Arial12Bold.LineSpacing
-                           + (titleFont == Fonts.Arial20Bold ? 6 : 4);
+            // ⚠ Bench 184: the reserved "vs" line went here and is out again. It shrank the
+            // room left for the description, and maxLines below is computed from THIS Y: a long
+            // description drove it to zero, the `maxLines > 0` guard then skipped the truncation
+            // entirely, and the untruncated text ran over the stats. Under test as the cause of
+            // the blank panels (Ludo). The vs line still draws on its own row, it simply is not
+            // paid for out of the header's fixed slot.
+            modTitlePos.Y += titleFont.LineSpacing + (titleFont == Fonts.Arial20Bold ? 6 : 4);
 
             if (Screen.ParentUniverse.Debug)
             {
@@ -784,7 +783,12 @@ namespace Ship_Game
 
             // These frames have their stat rows drawn as a UNION by the caller, so the plain path
             // must stop after the header — otherwise both would draw, one over the other.
-            bool unionDrawsTheRows = Comparing && (panel == ActiveModSubMenu || panel == HoverModSubMenu);
+            // ⚠ and the union only draws when there IS a brush to draw it against: both union
+            // paths need the Active module, and with a pin surviving an empty brush (bench 184)
+            // this path would fall silent while nothing replaced it, leaving a black frame
+            // (Ludo). Whoever silences the plain path must be certain it is drawing instead.
+            bool unionDrawsTheRows = Comparing && Screen.ActiveModule != null
+                                  && (panel == ActiveModSubMenu || panel == HoverModSubMenu);
             if (unionDrawsTheRows)
             {
                 DrawingPanel = null;
