@@ -159,6 +159,12 @@ namespace Ship_Game
         // running (Ludo). It was tied to the option, so turning the feature on made every
         // panel permanently wider for deltas that were usually not there. Now the legacy
         // look is simply 'no comparison', and the two cases stop being separate code.
+        // Ludoal fork (bench): THE hovered module, whichever way the cursor found it — a list
+        // row or a module already fitted on the hull. One property, so the three readers (the
+        // dwell timer, the stats draw and the comparison draw) cannot disagree about what is
+        // being hovered.
+        ShipModule HoveredModule => Screen.HoveredListModule ?? Screen.HighlightedModule;
+
         bool IsWideFrame(Submenu panel) => panel == ActiveModSubMenu && Comparing;
         float ColStepOf(Submenu panel) => IsWideFrame(panel) ? WideColStep : TightColStep;
         // the pulls are bench offsets for the wide frame only; the Hover frame is left as it was
@@ -239,8 +245,8 @@ namespace Ship_Game
         // no delta lane: it is not the one being compared, it is the one being looked at.
         void DrawHoveredStats(SpriteBatch batch)
         {
-            ShipModule a = Screen.ActiveModule ?? Screen.HighlightedModule;
-            ShipModule h = Screen.HoveredListModule;
+            ShipModule a = Screen.ActiveModule;
+            ShipModule h = HoveredModule;
             if (a == null || h == null)
                 return;
 
@@ -249,7 +255,8 @@ namespace Ship_Game
 
         void DrawComparisonStats(SpriteBatch batch)
         {
-            ShipModule a = Screen.ActiveModule ?? Screen.HighlightedModule;
+            // the Active frame carries the brush only, so no fallback on the hovered module
+            ShipModule a = Screen.ActiveModule;
             ShipModule b = Screen.CompareModule;
             if (a == null || b == null)
                 return;
@@ -409,7 +416,10 @@ namespace Ship_Game
             if (SelectedIndex == -1)
                 SelectedIndex = 0; // this will trigger OnTabChangedEvt
 
-            ActiveModSubMenu.Visible = Screen.ActiveModule != null || Screen.HighlightedModule != null;
+            // Ludoal fork (bench): the Active frame is the BRUSH's frame — it shows what the
+            // cursor is carrying, nothing else. A merely hovered module (in the list or sitting
+            // on the hull) belongs to the Hover frame in both régimes (Ludo).
+            ActiveModSubMenu.Visible = Screen.ActiveModule != null;
 
             // Ludoal fork (bench 46.152): the Active frame grows only while a comparison is
             // running, and shrinks back when the pin is dropped (Ludo). Nothing else pays for
@@ -446,8 +456,12 @@ namespace Ship_Game
             // Ludoal fork (spec v4): the hover frame appears after a short dwell, so sweeping the
             // list does not make it blink. Showing the module already on the workbench would say
             // nothing, so that case stays hidden too.
-            ShipModule hovered = Screen.HoveredListModule;
-            ShipModule onBench = Screen.ActiveModule ?? Screen.HighlightedModule;
+            // Ludoal fork (bench): a hovered module is a hovered module, wherever the cursor
+            // found it — the list or the hull under construction. The two used to be separate
+            // states, so hovering a fitted module lit the Active frame while hovering a list row
+            // lit the Hover one: same gesture, two different panels (Ludo).
+            ShipModule hovered = HoveredModule;
+            ShipModule onBench = Screen.ActiveModule;
             if (hovered == null || (onBench != null && onBench.UID == hovered.UID))
             {
                 HoverDwell = 0f;
@@ -462,7 +476,12 @@ namespace Ship_Game
                     HoverDwell = 0f;
                 }
                 HoverDwell += fixedDeltaTime;
-                HoverModSubMenu.Visible = GlobalStats.ShipyardComparison
+                // Ludoal fork (bench): the hover frame lives in BOTH régimes — what the
+                // comparison option gates is the delta lanes, not the ability to look at a
+                // module. The single difference: in legacy, a loaded brush silences the hover,
+                // so only one module panel is ever on screen (Ludo).
+                bool hoverAllowed = GlobalStats.ShipyardComparison || Screen.ActiveModule == null;
+                HoverModSubMenu.Visible = hoverAllowed
                                        && HoverDwell >= HoverDelay && !ChooseFighterSub.Visible;
             }
 
@@ -484,7 +503,7 @@ namespace Ship_Game
             }
             if (HoverModSubMenu.Visible) // Ludoal fork (spec v4): the transient hover frame
             {
-                DrawModuleData(batch, Screen.HoveredListModule, HoverModSubMenu);
+                DrawModuleData(batch, HoveredModule, HoverModSubMenu);
                 // Its missing stats keep their dimmed place ONLY while a comparison is running —
                 // same rule as the design side (Ludo, 46.137). With nothing pinned there is
                 // nothing to be symmetrical with, and the dashes would be noise.
@@ -532,7 +551,7 @@ namespace Ship_Game
 
         void DrawActiveModuleData(SpriteBatch batch)
         {
-            ShipModule mod = Screen.ActiveModule ?? Screen.HighlightedModule;
+            ShipModule mod = Screen.ActiveModule;   // the brush, and only the brush
 
             if (ActiveModSubMenu.SelectedIndex != 0 || mod == null)
                 return;
