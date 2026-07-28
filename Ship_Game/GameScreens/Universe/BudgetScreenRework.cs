@@ -517,6 +517,17 @@ namespace Ship_Game.GameScreens
 
         public override bool HandleInput(InputState input)
         {
+            // Ludoal fork (bench 46.173): the closing key is tested BEFORE the top bar, not
+            // after. The bar reads the same key to OPEN this screen and returns true, so with the
+            // bar first the key never reached the line below and the screen would not close on
+            // its own hotkey (Ludo). The stock screen has no bar, which is why it never showed.
+            if (input.KeyPressed(Keys.T) && !GlobalStats.TakingInput)
+            {
+                GameAudio.EchoAffirmative();
+                ExitScreen();
+                return true;
+            }
+
             if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
                 return true;
 
@@ -534,12 +545,6 @@ namespace Ship_Game.GameScreens
                 }
             }
 
-            if (input.KeyPressed(Keys.T) && !GlobalStats.TakingInput)
-            {
-                GameAudio.EchoAffirmative();
-                ExitScreen();
-                return true;
-            }
             if (input.Escaped || input.RightMouseClick)
             {
                 ExitScreen();

@@ -146,7 +146,43 @@ namespace Ship_Game.GameScreens.ShipDesign
         //   already paid by the inner rect the cursor starts at)
         // Likewise measured. If a longer label is ever added to the rows, the column follows
         // it instead of quietly clipping — and a font change cannot silently break the layout.
-        static float LongestTitle => Fonts.Arial12Bold.TextWidth("Total Module Slots");
+        // ⚠ measured over EVERY label this panel can draw, not a chosen specimen. "Total Module
+        // Slots" was the reference and it is not the longest: "Excess Wpn Pwr Drain" and
+        // "Processing Time (turns)" are wider, and since the titles are RIGHT-aligned a label
+        // longer than the reserve runs off the left edge of the frame (Ludo, bench 46.173).
+        // Cached: the widths cannot change while the game runs, and this is read every frame.
+        static float LongestTitleCache;
+        static float LongestTitle
+        {
+            get
+            {
+                if (LongestTitleCache <= 0f)
+                {
+                    foreach (GT t in RowTitleKeys)
+                    {
+                        float w = Fonts.Arial12Bold.TextWidth(Localizer.Token(t));
+                        if (w > LongestTitleCache)
+                            LongestTitleCache = w;
+                    }
+                }
+                return LongestTitleCache;
+            }
+        }
+
+        // every label BuildRows can put in the title column. A row added without its key here
+        // simply is not measured, and a too-long one would overhang - so keep the two in step.
+        static readonly GT[] RowTitleKeys =
+        {
+            GT.AmmoTime, GT.BurstWpnPwrDrain, GT.BurstWpnPwrTime, GT.CargoSpace, GT.Ecm3,
+            GT.EmpProtection, GT.ExcessWpnPwrDrain, GT.FcsPower, GT.FireControl, GT.FtlSpeed,
+            GT.FtlTime, GT.Mass, GT.MiningStationRefiningTimeStat, GT.OrdnanceCapacity,
+            GT.OrdnanceCreated, GT.PowerCapacity, GT.PowerRecharge, GT.ProductionCost,
+            GT.RechargeAtWarp, GT.RefinningPerTurnStat, GT.RelativeStrength, GT.RepairRate,
+            GT.ResearchPerTurn, GT.ResearchStationResearchTimeStat, GT.SensorRange3,
+            GT.ShieldAmplify, GT.ShieldPower, GT.ShipOffense, GT.SublightSpeed,
+            GT.TotalHitpoints, GT.TotalModuleSlots, GT.TroopCapacity, GT.TurnRate,
+            GT.UpkeepCost, GT.WpnFirePowerTime
+        };
         static float TitleColumn => 10f + 20f + LongestTitle - Inset;
 
         // ⚠ NOT + DeltaLaneOffset + DeltaLaneWidth: the width ALREADY contains the offset

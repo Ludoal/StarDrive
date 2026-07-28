@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
@@ -100,6 +101,8 @@ namespace Ship_Game
         // which groups were open before the last rebuild, so a filter change does not refold
         // the whole browser (bench 46.172). Both group builders read it.
         readonly Array<string> ExpandedGroups = new();
+        // which of the browser's designs are WIPs, so a row knows which affordances to carry
+        readonly Array<string> WipDesigns = new();
         // Ludoal fork (bench 46.152): how the browser groups its rows. By hull is the
         // build view (a carcass and what we already put on it); by role is the use view
         // ("my carriers", wherever they are built). Same list, same filters, one key
@@ -1191,6 +1194,70 @@ namespace Ship_Game
         // hull, so starting from an empty carcass is row #1, then the designs built on it.
         // The role shown on a design row is IShipDesign.Role (what the fitted modules make
         // it), which is a different field from the hull's own role — they never disagree.
+        // Ludoal fork (bench): deleting a design from the browser, with the same two guards the
+        // load popup used. Nothing was ported: DeleteShip and RemoveRelatedWiPs are already
+        // public statics, and DesignInQueue even takes a ShipDesignScreen - the popup's own
+        // versions were just these calls wrapped in its private plumbing (Ludo asked the right
+        // question: no need to port what is already reachable).
+        // Ludoal fork (bench): one place builds a design row, so both grouping modes carry the
+        // same affordances. Deleting is refused on read-only and from-save designs, exactly as
+        // the load popup refused it.
+        ShipYardBrowserItem NewDesignRow(IShipDesign design, bool hullInBadge)
+        {
+            bool isWip = WipDesigns.Contains(design.Name);
+            var row = new ShipYardBrowserItem(Player, design, isWip,
+                onDelete: () => PromptDeleteDesign(design.Name),
+                onDeleteAllWipVersions: isWip ? () => PromptDeleteAllWipVersions(design.Name) : null);
+            row.ShowHullInBadge = hullInBadge;
+            return row;
+        }
+
+        void PromptDeleteDesign(string designName)
+        {
+            if (ParentUniverse.UState.Ships.Any(sh => sh.Name == designName))
+            {
+                GameAudio.NegativeClick();
+                ScreenManager.AddScreen(new MessageBoxScreen(this,
+                    $"{designName} currently exists in the universe. You cannot delete a design with this name.",
+                    MessageBoxButtons.Ok));
+                return;
+            }
+
+            if (HelperFunctions.DesignInQueue(this, designName, out string playerPlanets))
+            {
+                GameAudio.NegativeClick();
+                string why = playerPlanets.NotEmpty()
+                    ? $"{designName} is in a build queue. You cannot delete this design name.\n Related planets: {playerPlanets}."
+                    : $"{designName} currently exists in the universe (maybe another empire). You cannot delete this design name.";
+                ScreenManager.AddScreen(new MessageBoxScreen(this, why, MessageBoxButtons.Ok));
+                return;
+            }
+
+            ScreenManager.AddScreen(new MessageBoxScreen(this, $"Confirm Delete: {designName}")
+            {
+                Accepted = () =>
+                {
+                    ResourceManager.DeleteShip(ParentUniverse.UState, designName);
+                    GameAudio.EchoAffirmative();
+                    RefreshHullSelectList();
+                }
+            });
+        }
+
+        void PromptDeleteAllWipVersions(string designName)
+        {
+            string prefix = ShipDesignWIP.GetWipShipNameAndNum(designName);
+            ScreenManager.AddScreen(new MessageBoxScreen(this, $"Confirm Delete All WIP Versions: {prefix}")
+            {
+                Accepted = () =>
+                {
+                    ShipDesignWIP.RemoveRelatedWiPs(ParentUniverse.UState, designName);
+                    GameAudio.EchoAffirmative();
+                    RefreshHullSelectList();
+                }
+            });
+        }
+
         void RefreshHullSelectList()
         {
             // Ludoal fork (bench 46.172): remember which groups were open. Rebuilding the list
@@ -1215,6 +1282,28 @@ namespace Ship_Game
                 if (!designsByHull.TryGetValue(design.Hull, out Array<IShipDesign> onHull))
                     designsByHull[design.Hull] = onHull = new Array<IShipDesign>();
                 onHull.Add(design);
+            }
+
+            // Ludoal fork (bench): work-in-progress designs belong in the browser too. They were
+            // in the load popup and got lost when the two lists were merged (Ludo). Read the same
+            // way the popup read them, and filed under their own hull like everything else.
+            WipDesigns.Clear();
+            foreach (FileInfo info in Dir.GetFiles(Dir.StarDriveAppData + "/WIP", "design"))
+            {
+                ShipDesign wip = ShipDesign.Parse(info);
+                if (wip == null)
+                    continue;
+                if (!UnlockAllFactionDesigns && !Player.WeCanShowThisWIP(wip))
+                    continue;
+                if (BrowserFilterText.NotEmpty()
+                    && !wip.Name.ToLower().Contains(BrowserFilterText)
+                    && !wip.Hull.ToLower().Contains(BrowserFilterText))
+                    continue;
+
+                WipDesigns.Add(wip.Name);
+                if (!designsByHull.TryGetValue(wip.Hull, out Array<IShipDesign> onHull))
+                    designsByHull[wip.Hull] = onHull = new Array<IShipDesign>();
+                onHull.Add(wip);
             }
 
             // Groups are the hull CLASSES of the tech tree (Fighter, Corvette, Frigate,
@@ -1303,7 +1392,7 @@ namespace Ship_Game
             {
                 foreach (IShipDesign design in designs)
                     Bucket(Localizer.GetRole(design.Role, Player),
-                           new ShipYardBrowserItem(Player, design, isWIP: false) { ShowHullInBadge = true });
+                           NewDesignRow(design, hullInBadge: true));
             }
 
             // filled by hand rather than from byRole.Keys: a Dictionary key collection satisfies
@@ -1357,7 +1446,7 @@ namespace Ship_Game
                                                       .ThenByDescending(d => d.BaseStrength)
                                                       .ThenBy(d => d.Name))
                 {
-                    group.AddSubItem(new ShipYardBrowserItem(Player, design, isWIP: false));
+                    group.AddSubItem(NewDesignRow(design, hullInBadge: false));
                 }
             }
         }

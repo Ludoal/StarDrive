@@ -696,15 +696,20 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
-                return true;
-
+            // Ludoal fork (bench 46.173): the closing key is tested BEFORE the top bar, not
+            // after. The bar reads the same key to OPEN this screen and returns true, so with the
+            // bar first the key never reached the line below and the screen would not close on
+            // its own hotkey (Ludo). The stock screen has no bar, which is why it never showed.
             if (input.KeyPressed(Keys.I) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();
                 ExitScreen();
                 return true;
             }
+
+            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
 
             // the Contact buttons (original DanButton design), one per column
             foreach (var kv in Contacts)

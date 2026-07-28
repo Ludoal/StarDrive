@@ -34,5 +34,17 @@ namespace Ship_Game.GameScreens
 
         public static GameScreen Espionage(UniverseScreen u)
             => GlobalStats.ReworkEspionage ? new InfiltrationScreenRework(u) : new InfiltrationScreen(u);
+
+        // Ludoal fork (bench 46.173): asking "is the caller already this screen?" has to know
+        // about BOTH classes, or the answer is wrong for whichever regime is not the stock one.
+        // The top bar tests this to close a screen when its own key is pressed again, and with
+        // only the stock type named, a reworked Economy, Diplomacy or Espionage never recognised
+        // itself and simply stacked a second copy (Ludo). Same reason the openers live here: one
+        // place knows the pairing, and no call site has to remember there are two of each.
+        public static bool IsEconomy(GameScreen s) => s is BudgetScreen or BudgetScreenRework;
+
+        public static bool IsDiplomacy(GameScreen s) => s is MainDiplomacyScreen or MainDiplomacyScreenRework;
+
+        public static bool IsEspionage(GameScreen s) => s is InfiltrationScreen or InfiltrationScreenRework;
     }
 }

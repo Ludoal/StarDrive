@@ -63,17 +63,22 @@ namespace Ship_Game
             IsWIP = isWIP;
             CanBeBuilt = player.WeCanBuildThis(design);
 
+            // Ludoal fork (bench): DELETING uses the red cross (AddDelete / icon_clear_filter),
+            // never the no-entry sign. AddCancel draws icon_queue_delete, which this fork now
+            // uses to mark a design OBSOLETE in the cartouche - one image cannot mean both "put
+            // this aside" and "destroy it" (Ludo). The two deletions differ by position and
+            // tooltip: the upper one is this WIP, the lower one every version of it.
             if (isWIP)
             {
                 if (onDelete != null)
-                    AddCancel(new(-30, -45), "Delete this WIP Design", onDelete);
+                    AddDelete(new(-30, -45), "Delete this WIP Design", onDelete);
                 if (onDeleteAllWipVersions != null)
-                    AddDelete(new(-30, 15), "Delete all related versions of this WIP Design", onDeleteAllWipVersions);
+                    AddDelete(new(-30, 15), "Delete ALL versions of this WIP Design", onDeleteAllWipVersions);
             }
             else
             {
                 if (onDelete != null && !design.IsReadonlyDesign && !design.IsFromSave)
-                    AddCancel(new(-30, 0), "Delete this Ship Design", onDelete);
+                    AddDelete(new(-30, 0), "Delete this Ship Design", onDelete);
                 if (onResearch != null && !CanBeBuilt)
                     AddResearch(new(-50, 0), "Research This Ship", onResearch);
             }
