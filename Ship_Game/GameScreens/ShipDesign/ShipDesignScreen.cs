@@ -1059,6 +1059,12 @@ namespace Ship_Game
                 debugUnlocks.SetAbsPos(10, 45);
             }
 
+            // Ludoal fork (bench): the legacy floating cartouche floats over the browser AND over
+            // the Active Design frame, so it has to be the frontmost element of the screen. It is
+            // added early because it needs the browser list, and the cartouche is built long
+            // after — hence ordering it here rather than moving its construction (Ludo).
+            BringToFrontZOrder(LegacyHoverOverlay);
+
             CloseButton(ScreenWidth - 27, 75);
         }
 

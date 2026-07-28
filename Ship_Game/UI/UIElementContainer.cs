@@ -321,6 +321,16 @@ namespace Ship_Game
             RefreshZOrder();
         }
 
+        // Ludoal fork: the missing counterpart. An element that has to draw over everything else
+        // cannot always be added last — its own construction may depend on siblings built after
+        // it — so ordering by hand beats reordering the constructor.
+        public void BringToFrontZOrder(UIElementV2 child)
+        {
+            int maxZOrder = Elements.Max(e => e.ZOrder);
+            child.ZOrder = maxZOrder + 1;
+            RefreshZOrder();
+        }
+
         protected override int NextZOrder()
         {
             if (Elements.NotEmpty)
