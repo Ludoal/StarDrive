@@ -58,7 +58,7 @@ namespace Ship_Game
             // The tab measured itself against its own title and font, so ask it where it ends
             // rather than guessing a width that a retitling or a font change would falsify.
             RectF tab = ActiveModSubMenu.Tabs[0].Rect;
-            Checkbox(new Vector2(tab.Right + 20, tab.Y + 6),
+            Checkbox(new Vector2(tab.Right + ShipDesignScreen.PinTabGap, tab.Y + 6),
                      () => PinActiveModule,
                      (b) => { PinActiveModule = b; },
                      "Pin Active", "Keep the Active Module panel on screen while you hover the list.\n"

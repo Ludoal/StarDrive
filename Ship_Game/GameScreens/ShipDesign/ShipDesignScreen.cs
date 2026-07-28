@@ -104,6 +104,9 @@ namespace Ship_Game
         // looking at the list, not a preference.
         bool PinActiveDesign = true;
         UICheckBox PinActiveCheck; // rides the cartouche's left edge, see ResizeCartouches
+        // the gap between a tab and its Pin Active checkbox, one number for both panels so the
+        // two read as the same control rather than as two that happen to look alike (Ludo)
+        internal const float PinTabGap = 20f;
         // which groups were open before the last rebuild, so a filter change does not refold
         // the whole browser (bench 46.172). Both group builders read it.
         readonly Array<string> ExpandedGroups = new();
@@ -649,7 +652,7 @@ namespace Ship_Game
             // so its tab never moves. This one is anchored right and grows leftwards, which is
             // the same trap the two elements above already fell into (bench 46.157 and 46.163).
             if (PinActiveCheck != null)
-                PinActiveCheck.SetAbsPos(frame.X + InfoSub.Tabs[0].Rect.W + 10, PinActiveCheck.Y);
+                PinActiveCheck.SetAbsPos(frame.X + InfoSub.Tabs[0].Rect.W + PinTabGap, PinActiveCheck.Y);
 
             PlaceHoverCartouche(frame);
         }
@@ -1121,7 +1124,7 @@ namespace Ship_Game
             // of the screen, not of the frame, so it survives the frame it hides: unpinned, it is
             // the only way back.
             RectF infoTab = infoSub.Tabs[0].Rect;
-            PinActiveCheck = Checkbox(new Vector2(infoTab.Right + 10, infoTab.Y + 6),
+            PinActiveCheck = Checkbox(new Vector2(infoTab.Right + PinTabGap, infoTab.Y + 6),
                                       () => PinActiveDesign,
                                       (b) => { PinActiveDesign = b; },
                                       "Pin Active",
