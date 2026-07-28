@@ -438,8 +438,34 @@ namespace Ship_Game.GameScreens.ShipDesign
                 Stat(GT.FtlTime, () => Ds.WarpTime, GT.TT_FtlTime, engines, tint: Positive, vis: Ds.HasFiniteWarp);
                 Word(GT.FtlTime, "INF", GT.TT_FtlTime, engines, good, vis: Ds.HasInfiniteWarp);
             }
-            Stat(GT.SublightSpeed, () => S.MaxSTLSpeed, GT.TT_SublightSpeed, engines, tint: Above(50f));
-            Stat(GT.TurnRate, () => S.RotationRadsPerSecond.ToDegrees(), GT.TT_TurnRate, engines, tint: Above(15f));
+            // Ludoal fork (bench 46.181): a platform or a station has no engine, so these two are
+            // a pair of zeroes and the whole block goes with them - a heading with nothing under
+            // it is never drawn, so hiding the rows hides MOBILITY itself (Ludo).
+            Stat(GT.SublightSpeed, () => S.MaxSTLSpeed, GT.TT_SublightSpeed, engines, tint: Above(50f),
+                 vis: () => !S.IsPlatformOrStation);
+            Stat(GT.TurnRate, () => S.RotationRadsPerSecond.ToDegrees(), GT.TT_TurnRate, engines, tint: Above(15f),
+                 vis: () => !S.IsPlatformOrStation);
+
+            // Ludoal fork (bench 46.181): STATION and PAYLOAD move to the LEFT column, in that
+            // order, and the reason is not balance - it is that STATION BELONGS WITH MOBILITY
+            // (Ludo). A station is a ship that does not move - IsResearchStation requires
+            // IsPlatformOrStation, so a real one has no engine at all - and what it refines and
+            // what it carries answer the same question its speed does. Reading them one under
+            // the other says that; splitting them across the frame said nothing.
+            // ⚠ these two blocks show on PRODUCTION, not on the station role: nothing stops a
+            // research lab going on a mobile hull, so they are not proof the ship is a station.
+            // The right column loses its two rarest blocks and stops overflowing as a bonus.
+            Head("STATION");
+            Stat(GT.ResearchPerTurn, () => S.ResearchPerTurn, GT.ResearchPerTurnStatTip, nonZero: true);
+            Stat(GT.ResearchStationResearchTimeStat, () => Ds.ResearchTime(), GT.ResearchStationResearchTimeStatTip,
+                 tint: Above(ShipResupply.NumTurnsForGoodResearchSupply), vis: Ds.ProducesResearch);
+            Stat(GT.RefinningPerTurnStat, () => S.TotalRefining, GT.RefiningPerTurnStatTip, nonZero: true);
+            Stat(GT.MiningStationRefiningTimeStat, () => Ds.RefiningTime(), GT.MiningStationRefiningTimeStatTip,
+                 tint: Above(ShipResupply.NumTurnsForGoodRefiningSupply - 0.01f), vis: Ds.RefinesResources);
+
+            Head("PAYLOAD");
+            Stat(GT.TroopCapacity, () => S.TroopCapacity, GT.TT_TroopCapacity, ordnance, nonZero: true);
+            Stat(GT.CargoSpace, () => S.CargoSpaceMax, GT.TT_CargoSpace, nonZero: true);
 
             Head("DEFENCE");
             Stat(GT.TotalHitpoints, () => S.Health, GT.TT_HitPoints, protect, tint: Positive, icon: "UI/icon_shield", iconColor: Color.CadetBlue);
@@ -469,18 +495,6 @@ namespace Ship_Game.GameScreens.ShipDesign
             Stat(GT.FireControl, () => S.TargetingAccuracy, GT.TT_FireControl, nonZero: true);
             Stat(GT.FcsPower, () => S.TrackingPower, GT.TT_FcsPower, nonZero: true);
             Stat(GT.SensorRange3, () => S.SensorRange, GT.TT_SensorRange3, nonZero: true);
-
-            Head("PAYLOAD");
-            Stat(GT.TroopCapacity, () => S.TroopCapacity, GT.TT_TroopCapacity, ordnance, nonZero: true);
-            Stat(GT.CargoSpace, () => S.CargoSpaceMax, GT.TT_CargoSpace, nonZero: true);
-
-            Head("STATION");
-            Stat(GT.ResearchPerTurn, () => S.ResearchPerTurn, GT.ResearchPerTurnStatTip, nonZero: true);
-            Stat(GT.ResearchStationResearchTimeStat, () => Ds.ResearchTime(), GT.ResearchStationResearchTimeStatTip,
-                 tint: Above(ShipResupply.NumTurnsForGoodResearchSupply), vis: Ds.ProducesResearch);
-            Stat(GT.RefinningPerTurnStat, () => S.TotalRefining, GT.RefiningPerTurnStatTip, nonZero: true);
-            Stat(GT.MiningStationRefiningTimeStat, () => Ds.RefiningTime(), GT.MiningStationRefiningTimeStatTip,
-                 tint: Above(ShipResupply.NumTurnsForGoodRefiningSupply - 0.01f), vis: Ds.RefinesResources);
 
             // her closing block: the verdict reads last, like a signature
             // Ludoal fork (bench): ASSESSMENT becomes COMBAT and takes in the three figures the
@@ -735,7 +749,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             // the right-hand blocks largely exclude each other while DEFENCE is almost always
             // full, so the two columns come out close. If a real design ever runs the right
             // column past the frame, this is the number to revisit.
-            const int FixedSplitBlock = 3;
+            const int FixedSplitBlock = 5;   // CONSTRUCTION ENERGY MOBILITY STATION PAYLOAD
             int splitBlock = Math.Min(FixedSplitBlock, blockVisible.Count);
 
             var cursor = new Vector2(col0X, rowsY);

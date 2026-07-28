@@ -142,7 +142,8 @@ namespace Ship_Game
         // ListHeightFor subtracts this frame height, so the whole column follows from one number
         // and the four frames stay on their shared foot line. Deliberate on both sides: the
         // module frames get the same room, which the coming stats rework will want.
-        public const float ShorterBy = 15f;  // one line still off (was three)
+        public const float ShorterBy = 0f;   // nothing off now: 45 -> 15 -> 0, three lines given
+                                             // back to the frames as the blocks filled up (Ludo)
 
         // Where the frames' bottom edge lands. The design cartouches use the SAME line, which is
         // what makes the four frames read as one row (bench 46.135).

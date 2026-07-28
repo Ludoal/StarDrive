@@ -318,7 +318,7 @@ namespace Ship_Game
         TotalModuleSlots = -3,
         /// <summary>Excess Wpn Pwr Drain</summary>
         ExcessWpnPwrDrain = -4,
-        /// <summary>Wpn Fire Power Time</summary>
+        /// <summary>Wpn Fire Pwr Time</summary>
         WpnFirePowerTime = -5,
         /// <summary>Burst Wpn Pwr Drain</summary>
         BurstWpnPwrDrain = -6,
