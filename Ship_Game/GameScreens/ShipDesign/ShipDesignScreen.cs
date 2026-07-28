@@ -606,6 +606,15 @@ namespace Ship_Game
             InfoSub.Visible = InfoPanel.Visible = !hoverTakesThePlace;
             IssuesPanel.Visible = !hoverTakesThePlace;
 
+            // ⚠ and its POSITION is settled here too, above the early return below: the hover
+            // frame moves when the toggle flips, which has nothing to do with the delta lanes.
+            // Left under that return it only ever ran on a pin or an unpin, so unpinned the
+            // Active frame vanished while the hover frame stayed put on the left, over the
+            // browser (bench 183, Ludo). Its module twin never had this: there the placement
+            // sits at the end of Update, with no early return above it.
+            PlaceHoverCartouche(RectF.FromPoints(InfoSub.X, InfoSub.X + InfoSub.Width,
+                                                 InfoSub.Y, InfoSub.Y + InfoSub.Height));
+
             bool wantDeltas = ComparedDesign != null;
             if (InfoPanel.HasDeltaLanes == wantDeltas)
                 return;
@@ -642,14 +651,23 @@ namespace Ship_Game
             if (PinActiveCheck != null)
                 PinActiveCheck.SetAbsPos(frame.X + InfoSub.Tabs[0].Rect.W + 10, PinActiveCheck.Y);
 
-            // the hover frame sits to the left of the active one and keeps its own width
-            // (Width, not Rect.W: Submenu.Rect is a RectF that shadows UIElementV2's integer
-            // Rectangle Rect, and which one a call site resolves to is not worth relying on)
-            // unpinned, the hover frame takes the ACTIVE one's place instead of sitting beside
-            // it - same right edge, so the two never show at once and nothing else moves
+            PlaceHoverCartouche(frame);
+        }
+
+        // One arithmetic for the hover cartouche's place, called from both ends of
+        // ResizeCartouches: pinned it sits to the left of the Active frame, unpinned it takes
+        // that frame's own place, same right edge. Two call sites that were meant to agree is
+        // exactly the shape that drifts.
+        void PlaceHoverCartouche(in RectF frame)
+        {
+            // Width, not Rect.W: Submenu.Rect is a RectF that shadows UIElementV2's integer
+            // Rectangle Rect, and which one a call site resolves to is not worth relying on
             float hw = HoverSub.Width;
             float hoverRight = PinActiveDesign ? frame.X - 10f : frame.X + frame.W;
             var hover = RectF.FromPoints(hoverRight - hw, hoverRight, frame.Y, frame.Bottom);
+            if (HoverSub.X.AlmostEqual(hover.X))
+                return; // nothing moved: do not arm a relayout on every single frame
+
             HoverSub.SetAbsPos(hover.X, hover.Y);
             HoverSub.RequiresLayout = true;
             HoverPanel.SetAbsPos(hover.X + ShipDesignInfoPanel.Inset, hover.Y + 32);

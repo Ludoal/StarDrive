@@ -58,7 +58,7 @@ namespace Ship_Game
             // The tab measured itself against its own title and font, so ask it where it ends
             // rather than guessing a width that a retitling or a font change would falsify.
             RectF tab = ActiveModSubMenu.Tabs[0].Rect;
-            Checkbox(new Vector2(tab.Right + 10, tab.Y + 6),
+            Checkbox(new Vector2(tab.Right + 20, tab.Y + 6),
                      () => PinActiveModule,
                      (b) => { PinActiveModule = b; },
                      "Pin Active", "Keep the Active Module panel on screen while you hover the list.\n"
@@ -628,14 +628,15 @@ namespace Ship_Game
             batch.DrawString(titleFont, moduleTemplate.NameText.Text, modTitlePos, nameColor);
 
             // Ludoal fork (spec v4): the pinned module has no frame of its own, so its name is
-            // said right after the title, inside the frame — the delta lane must never come from
-            // an anonymous source. Baseline-aligned with the title, one size down.
+            // said inside the frame - the delta lane must never come from an anonymous source.
+            // Bench 183: on its OWN line under the title, not trailing it. Trailing, its right
+            // edge was the sum of TWO module names, so a long pair ran out of the frame and over
+            // the obsolete button (Ludo). Under the title it only ever pays for one of them.
             if (Comparing && panel == ActiveModSubMenu)
             {
                 Graphics.Font vsFont = Fonts.Arial12Bold;
                 string vs = "vs " + Screen.CompareModule.NameText.Text;
-                var vsPos = new Vector2(modTitlePos.X + titleFont.TextWidth(moduleTemplate.NameText.Text) + 10,
-                                        modTitlePos.Y + titleFont.LineSpacing - vsFont.LineSpacing - 2f);
+                var vsPos = new Vector2(modTitlePos.X, modTitlePos.Y + titleFont.LineSpacing);
                 batch.DrawString(vsFont, vs, vsPos, Colors.Cream);
 
                 // Ludoal fork (bench): the way out of the comparison, so dropping a pin does not
@@ -654,7 +655,14 @@ namespace Ship_Game
                 CancelCompareRect = default;
             }
 
-            modTitlePos.Y += titleFont.LineSpacing + (titleFont == Fonts.Arial20Bold ? 6 : 4);
+            // The "vs <name>" line above is drawn on the Active frame only, but the room for it
+            // is reserved on BOTH, always: a reservation belongs to the OBJECT, not to the
+            // moment (the law that cost a morning on the Shipyard columns). Reserved only when
+            // used, every pin and unpin would shift the whole panel down and back, and worse,
+            // the two frames' stat rows would stop lining up - which is the one thing a
+            // side-by-side comparison is read for.
+            modTitlePos.Y += titleFont.LineSpacing + Fonts.Arial12Bold.LineSpacing
+                           + (titleFont == Fonts.Arial20Bold ? 6 : 4);
 
             if (Screen.ParentUniverse.Debug)
             {
