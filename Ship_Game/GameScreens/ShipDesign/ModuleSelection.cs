@@ -396,23 +396,16 @@ namespace Ship_Game
                 }
                 else
                 {
-                    // Absent on the active module: dimmed label + dash (Ludo's call — "the other
-                    // one has a hangar and this one hasn't" is information worth a row). The
-                    // delta still shows, so the row says how much is being given up.
+                    // Absent on the active module: dimmed label + dash (Ludo's call: "the other
+                    // one has a hangar and this one hasn't" is information worth a row).
+                    // Bench 185: and NO delta on these rows (Ludo). The dash already says the
+                    // stat does not exist here, and a delta equal to the whole of the other
+                    // module's value reads as a measured difference rather than an absence.
                     cursor.Y += font.LineSpacing;
                     string title = u.Title; // no trailing colon, same as the drawn rows
                     var statCursor = new Vector2(cursor.X + spacing, cursor.Y);
                     batch.DrawString(font, title, new Vector2(statCursor.X - 20 - font.TextWidth(title), statCursor.Y), dim);
                     batch.DrawString(font, "-", statCursor, dim);
-
-                    if (other != null && other.TryGetValue(u.Key, out CollectedStat missing) && !missing.Value.AlmostEqual(0f))
-                    {
-                        float dv = -missing.Value; // active has none: the delta is the whole of it
-                        bool better = LowerIsBetter.Contains(u.Key) ? dv < 0f : dv > 0f;
-                        string ds = "(" + (missing.IsPercent ? dv.ToString("P0") : dv.GetNumberString()) + ")";
-                        batch.DrawString(font, ds, new Vector2(cursor.X + spacing + 46f, cursor.Y),
-                                         better ? Color.LightGreen : Color.LightPink);
-                    }
                 }
             }
         }
@@ -664,13 +657,16 @@ namespace Ship_Game
                 CancelCompareRect = default;
             }
 
-            // ⚠ Bench 184: the reserved "vs" line went here and is out again. It shrank the
-            // room left for the description, and maxLines below is computed from THIS Y: a long
-            // description drove it to zero, the `maxLines > 0` guard then skipped the truncation
-            // entirely, and the untruncated text ran over the stats. Under test as the cause of
-            // the blank panels (Ludo). The vs line still draws on its own row, it simply is not
-            // paid for out of the header's fixed slot.
-            modTitlePos.Y += titleFont.LineSpacing + (titleFont == Fonts.Arial20Bold ? 6 : 4);
+            // The "vs <name>" line above is drawn on the Active frame only, but the room for it
+            // is reserved on BOTH, always: a reservation belongs to the OBJECT, not to the
+            // moment (the law that cost a morning on the Shipyard columns). Reserved only when
+            // used, every pin and unpin would shift the whole panel down and back, and worse,
+            // the two frames' stat rows would stop lining up, which is the one thing a
+            // side-by-side comparison is read for.
+            // (This was pulled at bench 185 while hunting the blank panels; it was never the
+            // cause, that was the null batch on the collection path.)
+            modTitlePos.Y += titleFont.LineSpacing + Fonts.Arial12Bold.LineSpacing
+                           + (titleFont == Fonts.Arial20Bold ? 6 : 4);
 
             if (Screen.ParentUniverse.Debug)
             {
