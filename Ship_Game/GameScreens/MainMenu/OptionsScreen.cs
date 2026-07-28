@@ -296,6 +296,14 @@ namespace Ship_Game
 
             var apply = Add(new UIButton(ButtonStyle.Default, new Vector2(RightArea.Right - 206, RightArea.Bottom + 60), GameText.ApplySettings));
             apply.OnClick = button => RunOnNextFrame(ApplyOptions);
+            // Ludoal fork: say what this button is actually for. It applies the DISPLAY settings
+            // and nothing else - everything else on this screen takes effect the moment you
+            // change it and is saved when you leave. A button called "Apply Settings" sitting
+            // among settings that apply themselves is a fair way to be misread (Ludo).
+            apply.Tooltip = "For the display settings only: resolution and screen mode.\n"
+                          + "You get 10 seconds to confirm, or they revert.\n\n"
+                          + "Everything else applies as you change it,\n"
+                          + "and is saved when you leave this screen.";
 
             // Ludoal fork: the rebuilt screens live behind their own page — they are a different
             // kind of choice from the settings above (which interface, not which preference),
