@@ -723,11 +723,13 @@ namespace Ship_Game
             {
                 SystemInfoOverlay.Update(elapsed);
             }
-            // Ludoal fork (field report 45.44): the clickable build goals froze while
-            // paused (their screen positions are camera-dependent, and the sim loop
-            // owns the refresh) — selecting a DSB under construction was impossible
-            // in pause. Refreshing here too is trivially cheap (player goals only).
-            UpdateClickableItems();
+            // Ludoal fork (field report 45.44): the clickable build goals froze while paused, so
+            // a DSB under construction could not be selected. We fixed it here, on the UI thread;
+            // upstream took the diagnosis (PR #356) but rewrote the fix onto the SIM thread,
+            // because reading GoalsList from here reopens the torn-read race their fixes_24 had
+            // closed. The patch 47 merge brought their version in and left ours in place, so the
+            // refresh ran on both threads at once - the exact race their rewrite exists to avoid.
+            // Theirs owns it now: see ProcessSimulationTurns in UniverseScreen.UpdateGame.cs.
 
             if (ShowPlanetInfo)
             {

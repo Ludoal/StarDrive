@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
@@ -63,7 +64,6 @@ namespace Ship_Game
         readonly Array<ShipHull> AvailableHulls = new Array<ShipHull>();
         UIButton BtnSaveAs;
         UIButton BtnSymmetricDesign; // Symmetric Module Placement Feature by Fat Bastard
-        UIButton BtnFilterModules;   // Filter Absolute Modules
         UIButton BtnStripShip;       // Removes all modules but armor, shields and command modules
         GenericButton ArcsButton;
         Rectangle SearchBar;
@@ -72,6 +72,10 @@ namespace Ship_Game
 
         ShipDesignInfoPanel InfoPanel;
         Submenu InfoSub;
+        // Ludoal fork (bench): the design-side twin of the module panel's obsolete button, same
+        // icon and same corner. Marking a design obsolete greys it in the browser and a filter
+        // hides them — a design you have moved past but do not want to delete (Ludo).
+        TexturedButton ObsoleteDesign;
         // Ludoal fork (spec v4): the pinned design has no frame of its own — it only feeds the
         // delta lane of InfoPanel. This frame shows the design under the cursor instead.
         ShipDesignInfoPanel HoverPanel;
@@ -93,6 +97,12 @@ namespace Ship_Game
         UITextEntry BrowserFilter;         // Ludoal fork: the load popup's filters, rehoused
         string BrowserFilterText;
         bool ShowLockedDesigns;
+        bool HideObsoleteDesigns; // Ludoal fork: the browser's obsolete filter
+        // which groups were open before the last rebuild, so a filter change does not refold
+        // the whole browser (bench 46.172). Both group builders read it.
+        readonly Array<string> ExpandedGroups = new();
+        // which of the browser's designs are WIPs, so a row knows which affordances to carry
+        readonly Array<string> WipDesigns = new();
         // Ludoal fork (bench 46.152): how the browser groups its rows. By hull is the
         // build view (a carcass and what we already put on it); by role is the use view
         // ("my carriers", wherever they are built). Same list, same filters, one key
@@ -172,11 +182,21 @@ namespace Ship_Game
         {
             // Comparing a module with itself says nothing: every delta is zero. Refuse the pin
             // rather than show a frame full of blanks (Ludo, at the bench).
-            ShipModule active = ActiveModule ?? HighlightedModule;
-            if (template != null && active != null && active.UID == template.UID)
+            // Ludoal fork (bench 46.172): null means CANCEL, and it has to short-circuit here.
+            // Every branch below fell through to CreateModuleListItem(null), which dereferences
+            // its argument - clicking the new x crashed the game (Ludo).
+            if (template == null)
+            {
+                CompareModule = null;
+                return;
+            }
+
+            // Comparing a module with itself says nothing: every delta is zero. Refuse the pin
+            // rather than show a frame full of blanks (Ludo, at the bench).
+            if (ActiveModule != null && ActiveModule.UID == template.UID)
                 return;
 
-            if (CompareModule != null && template != null && CompareModule.UID == template.UID)
+            if (CompareModule != null && CompareModule.UID == template.UID)
                 CompareModule = null;
             else
                 CompareModule = CreateModuleListItem(template);
@@ -590,12 +610,16 @@ namespace Ship_Game
 
             InfoPanel.SetAbsPos(frame.X + ShipDesignInfoPanel.Inset, frame.Y + 26);
             InfoPanel.SetAbsSize(frame.W - ShipDesignInfoPanel.Inset * 2f, frame.H - 34);
-            InfoPanel.RequiresLayout = true;
+            InfoPanel.RequiresLayout = true;   // SetAbsSize does not arm it, same as the frame
 
             // Design Completion / DESIGN ISSUES hang off the cartouche's left edge too — they
             // were placed once at construction and stayed put while the frame grew leftwards on
             // the first pin (bench 46.163, Ludo).
             IssuesPanel.SetAbsPos(frame.X, IssuesPanel.Y);
+
+            // the obsolete button hangs off the frame's RIGHT edge, so it travels with it —
+            // same lesson the module panel's own button taught at bench 46.157
+            ObsoleteDesign.r.X = (int)(frame.X + frame.W - ObsoleteDesign.r.Width - 10);
 
             // the hover frame sits to the left of the active one and keeps its own width
             // (Width, not Rect.W: Submenu.Rect is a RectF that shadows UIElementV2's integer
@@ -728,7 +752,6 @@ namespace Ship_Game
         }
 
         ButtonStyle SymmetricDesignBtnStyle  => IsSymmetricDesignMode ? ButtonStyle.Military : ButtonStyle.BigDip;
-        ButtonStyle FilterModulesBtnStyle    => IsFilterOldModulesMode ? ButtonStyle.Military : ButtonStyle.BigDip;
 
         void CreateGUI()
         {
@@ -798,7 +821,12 @@ namespace Ship_Game
 
 
 
-            UIList bottomListLeft = AddList(new Vector2(50f, ScreenHeight - 50f));
+            // Ludoal fork: the "Omit Old Modules" button that used to sit here moved to a
+            // checkbox above the module list. The gap it left is KEPT rather than closed (Ludo)
+            // — the bottom bar is due for its own pass, and letting the remaining buttons slide
+            // left now would just have to be undone then. One button's width plus the padding.
+            const float FreedButtonSpace = 152f;
+            UIList bottomListLeft = AddList(new Vector2(50f + FreedButtonSpace, ScreenHeight - 50f));
             bottomListLeft.LayoutStyle = ListLayoutStyle.ResizeList;
             bottomListLeft.Direction = new Vector2(+1, 0);
             bottomListLeft.Padding = new Vector2(16f, 2f);
@@ -809,14 +837,6 @@ namespace Ship_Game
             });
             BtnStripShip.ClickSfx = "blip_click";
             BtnStripShip.Tooltip = Localizer.Token(GameText.StripsTheShipOfAny);
-
-            BtnFilterModules = bottomListLeft.Add(ButtonStyle.Medium, Localizer.Token(GameText.OmitOldModules), click: b =>
-            {
-                OnFilterModuleToggle();
-            });
-            BtnFilterModules.ClickSfx = "blip_click";
-            BtnFilterModules.Tooltip  = GameText.WhenToggledRedAnyModule;
-            BtnFilterModules.Style    = FilterModulesBtnStyle;
 
             // Ludoal fork (battle simulator): test the current design in a 1v1 arena.
             // Left list: in 1920 the right list overlaps the build number (field report 45.37).
@@ -903,15 +923,37 @@ namespace Ship_Game
             };
 
             // side by side on one row: stacked, the second one slipped under the frame's title tab
-            Checkbox(new Vector2(filterX + 6, filterTop + 26),
+            // Ludoal fork: three toggles on the row now, so it starts further left and runs
+            // past the frame's left edge — deliberate (Ludo): there is empty starfield there and
+            // nothing to collide with, whereas the right side is the browser's own margin.
+            // Ludoal fork: the module list gets its filter as a checkbox directly above it,
+            // where the designs have theirs. It used to be a button in the bottom bar, a long way
+            // from the list it filters (Ludo) — a first taste of the wider UI pass to come.
+            // 26px ABOVE the list, not below its top edge: filterTop IS the list's own top, so
+            // +26 put the checkbox inside the list, which drew straight over it (bench 46.172).
+            Checkbox(new Vector2(11, filterTop - 26),
+                     () => IsFilterOldModulesMode,
+                     (b) => { IsFilterOldModulesMode = b; ModuleSelectComponent.ResetActiveCategory(); },
+                     "Hide obsolete", GameText.WhenToggledRedAnyModule);
+
+            // Ludoal fork (bench 46.172): the row is right-aligned on the frame's own right
+            // edge with a 5px margin, rather than pushed left by a guessed amount (Ludo).
+            const float togglesWidth = 246f + 108f;   // three checkboxes, last one included
+            float row3 = hullSelSize.X - togglesWidth - 5f;
+            Checkbox(new Vector2(filterX + row3 + 6, filterTop + 26),
                      () => !Player.Universe.P.ShowAllDesigns,
                      (b) => { Player.Universe.P.ShowAllDesigns = !b; RefreshHullSelectList(); },
                      "My designs only", "Show only the designs you created");
 
-            Checkbox(new Vector2(filterX + 132, filterTop + 26),
+            Checkbox(new Vector2(filterX + row3 + 132, filterTop + 26),
                      () => ShowLockedDesigns,
                      (b) => { ShowLockedDesigns = b; RefreshHullSelectList(); },
                      "Show locked", GameText.ShowEmpireLockedDesignsTip);
+
+            Checkbox(new Vector2(filterX + row3 + 246, filterTop + 26),
+                     () => HideObsoleteDesigns,
+                     (b) => { HideObsoleteDesigns = b; RefreshHullSelectList(); },
+                     "Hide obsolete", "Hide the designs you have marked obsolete");
 
             // The grouping mode rides the frame's own title bar: Submenu carries tabs
             // natively, so it costs no pixel of the list and no third row of filters -
@@ -1014,6 +1056,14 @@ namespace Ship_Game
             var infoSub = Add(new Submenu(infoRect, "Active Design"));
             infoSub.SetBackground(Colors.TransparentBlackFill);
 
+            // top-right of the frame, the same offsets the module panel uses
+            int obsW = ResourceManager.Texture("NewUI/icon_queue_delete").Width;
+            int obsH = ResourceManager.Texture("NewUI/icon_queue_delete").Height;
+            var obsPos = new RectF(infoRect.X + infoRect.W - obsW - 10, infoRect.Y + 38, obsW, obsH);
+            ObsoleteDesign = new(obsPos, "NewUI/icon_queue_delete",
+                                 "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2");
+            ObsoleteDesign.Tooltip = "Mark this design as obsolete";
+
             // Ludoal fork (bench): the inner panel takes the module frame's own left margin (10),
             // so the design name starts exactly where "Light Kinetic Cannon" does in its frame —
             // it was inset by 12 here and read as pushed to the right.
@@ -1059,6 +1109,12 @@ namespace Ship_Game
                 debugUnlocks.SetAbsPos(10, 45);
             }
 
+            // Ludoal fork (bench): the legacy floating cartouche floats over the browser AND over
+            // the Active Design frame, so it has to be the frontmost element of the screen. It is
+            // added early because it needs the browser list, and the cartouche is built long
+            // after — hence ordering it here rather than moving its construction (Ludo).
+            BringToFrontZOrder(LegacyHoverOverlay);
+
             CloseButton(ScreenWidth - 27, 75);
         }
 
@@ -1076,6 +1132,11 @@ namespace Ship_Game
                 return false;
 
             if (!Player.Universe.P.ShowAllDesigns && !design.IsPlayerDesign)
+                return false;
+
+            // Ludoal fork: retired designs are hidden on demand — the module list never had this
+            // filter either, and it now does (Ludo).
+            if (HideObsoleteDesigns && Player.IsDesignObsolete(design.Name))
                 return false;
 
             if (UnlockAllFactionDesigns) // developer universe: everything is visible
@@ -1133,8 +1194,121 @@ namespace Ship_Game
         // hull, so starting from an empty carcass is row #1, then the designs built on it.
         // The role shown on a design row is IShipDesign.Role (what the fitted modules make
         // it), which is a different field from the hull's own role — they never disagree.
+        // Ludoal fork (bench): deleting a design from the browser, with the same two guards the
+        // load popup used. Nothing was ported: DeleteShip and RemoveRelatedWiPs are already
+        // public statics, and DesignInQueue even takes a ShipDesignScreen - the popup's own
+        // versions were just these calls wrapped in its private plumbing (Ludo asked the right
+        // question: no need to port what is already reachable).
+        // Ludoal fork (bench): one place builds a design row, so both grouping modes carry the
+        // same affordances. Deleting is refused on read-only and from-save designs, exactly as
+        // the load popup refused it.
+        ShipYardBrowserItem NewDesignRow(IShipDesign design, bool hullInBadge)
+        {
+            bool isWip = WipDesigns.Contains(design.Name);
+
+            // the techs this design still needs, and which of them are already queued - the
+            // button only earns its place when researching would actually add something
+            string[] missing = design.TechsNeeded.Filter(t => !Player.UnlockedTechs.Any(te => te.UID == t));
+            string[] queued = missing.Filter(Player.Research.IsQueued);
+            bool worthResearching = missing.Length > 0 && queued.Length < missing.Length;
+
+            var row = new ShipYardBrowserItem(Player, design, isWip,
+                onDelete: () => PromptDeleteDesign(design.Name),
+                onResearch: worthResearching
+                          ? () => PromptResearchDesign(design.Name, missing, queued)
+                          : null,
+                onDeleteAllWipVersions: isWip ? () => PromptDeleteAllWipVersions(design.Name) : null);
+            row.ShowHullInBadge = hullInBadge;
+            return row;
+        }
+
+        // Ludoal fork (bench): queue the techs a design still needs, straight from its browser
+        // row - the load popup had this and it was lost in the merge (Ludo). Same shape as the
+        // deletions: nothing ported, AddTechToQueue and GetTechEntry are already public.
+        void PromptResearchDesign(string designName, string[] missingTechs, string[] alreadyQueued)
+        {
+            string ToNames(string[] techs)
+            {
+                var names = new Array<string>();
+                foreach (string uid in techs)
+                    if (Player.TryGetTechEntry(uid, out TechEntry te))
+                        names.Add(te.Tech.Name.Text);
+                return string.Join("\n", names);
+            }
+
+            string queued = alreadyQueued.Length > 0 ? $"Already in Queue:\n{ToNames(alreadyQueued)}\n\n" : "";
+            string toAdd = ToNames(missingTechs.Filter(t => !alreadyQueued.Contains(t)));
+
+            ScreenManager.AddScreen(new MessageBoxScreen(this,
+                $"Confirm Research Missing Techs ({missingTechs.Length}) for {designName}:\n\n{queued} Will be added to Queue:\n{toAdd}")
+            {
+                Accepted = () =>
+                {
+                    foreach (TechEntry te in missingTechs.Select(t => Player.GetTechEntry(t)).Sorted(t => t.TechCost))
+                        Player.Research.AddTechToQueue(te.UID);
+                    GameAudio.EchoAffirmative();
+                    RefreshHullSelectList();
+                }
+            });
+        }
+
+        void PromptDeleteDesign(string designName)
+        {
+            if (ParentUniverse.UState.Ships.Any(sh => sh.Name == designName))
+            {
+                GameAudio.NegativeClick();
+                ScreenManager.AddScreen(new MessageBoxScreen(this,
+                    $"{designName} currently exists in the universe. You cannot delete a design with this name.",
+                    MessageBoxButtons.Ok));
+                return;
+            }
+
+            if (HelperFunctions.DesignInQueue(this, designName, out string playerPlanets))
+            {
+                GameAudio.NegativeClick();
+                string why = playerPlanets.NotEmpty()
+                    ? $"{designName} is in a build queue. You cannot delete this design name.\n Related planets: {playerPlanets}."
+                    : $"{designName} currently exists in the universe (maybe another empire). You cannot delete this design name.";
+                ScreenManager.AddScreen(new MessageBoxScreen(this, why, MessageBoxButtons.Ok));
+                return;
+            }
+
+            ScreenManager.AddScreen(new MessageBoxScreen(this, $"Confirm Delete: {designName}")
+            {
+                Accepted = () =>
+                {
+                    ResourceManager.DeleteShip(ParentUniverse.UState, designName);
+                    GameAudio.EchoAffirmative();
+                    RefreshHullSelectList();
+                }
+            });
+        }
+
+        void PromptDeleteAllWipVersions(string designName)
+        {
+            string prefix = ShipDesignWIP.GetWipShipNameAndNum(designName);
+            ScreenManager.AddScreen(new MessageBoxScreen(this, $"Confirm Delete All WIP Versions: {prefix}")
+            {
+                Accepted = () =>
+                {
+                    ShipDesignWIP.RemoveRelatedWiPs(ParentUniverse.UState, designName);
+                    GameAudio.EchoAffirmative();
+                    RefreshHullSelectList();
+                }
+            });
+        }
+
         void RefreshHullSelectList()
         {
+            // Ludoal fork (bench 46.172): remember which groups were open. Rebuilding the list
+            // creates new row objects, so their expanded state is lost and every category snaps
+            // shut - which turned marking one design obsolete into refolding the whole browser
+            // (Ludo). Keyed by heading text, the only thing that survives the rebuild.
+            ExpandedGroups.Clear();
+            foreach (ShipYardBrowserItem row in HullSelectList.AllEntries)
+                if (row.Expanded && row.HeaderText.NotEmpty())
+                    ExpandedGroups.Add(row.HeaderText);
+
             HullSelectList.Reset();
 
             // designs indexed by the hull they are built on, so each group is one lookup
@@ -1148,6 +1322,28 @@ namespace Ship_Game
                 if (!designsByHull.TryGetValue(design.Hull, out Array<IShipDesign> onHull))
                     designsByHull[design.Hull] = onHull = new Array<IShipDesign>();
                 onHull.Add(design);
+            }
+
+            // Ludoal fork (bench): work-in-progress designs belong in the browser too. They were
+            // in the load popup and got lost when the two lists were merged (Ludo). Read the same
+            // way the popup read them, and filed under their own hull like everything else.
+            WipDesigns.Clear();
+            foreach (FileInfo info in Dir.GetFiles(Dir.StarDriveAppData + "/WIP", "design"))
+            {
+                ShipDesign wip = ShipDesign.Parse(info);
+                if (wip == null)
+                    continue;
+                if (!UnlockAllFactionDesigns && !Player.WeCanShowThisWIP(wip))
+                    continue;
+                if (BrowserFilterText.NotEmpty()
+                    && !wip.Name.ToLower().Contains(BrowserFilterText)
+                    && !wip.Hull.ToLower().Contains(BrowserFilterText))
+                    continue;
+
+                WipDesigns.Add(wip.Name);
+                if (!designsByHull.TryGetValue(wip.Hull, out Array<IShipDesign> onHull))
+                    designsByHull[wip.Hull] = onHull = new Array<IShipDesign>();
+                onHull.Add(wip);
             }
 
             // Groups are the hull CLASSES of the tech tree (Fighter, Corvette, Frigate,
@@ -1203,7 +1399,7 @@ namespace Ship_Game
                 // every hull in place is not a search (Ludo). The filter reaches the hull
                 // rows too now, and what survives is opened so the matches are on screen
                 // rather than behind a fold.
-                if (BrowserFilterText.NotEmpty())
+                if (BrowserFilterText.NotEmpty() || ExpandedGroups.Contains(cls))
                     group.Expand(true);
             }
         }
@@ -1236,7 +1432,7 @@ namespace Ship_Game
             {
                 foreach (IShipDesign design in designs)
                     Bucket(Localizer.GetRole(design.Role, Player),
-                           new ShipYardBrowserItem(Player, design, isWIP: false) { ShowHullInBadge = true });
+                           NewDesignRow(design, hullInBadge: true));
             }
 
             // filled by hand rather than from byRole.Keys: a Dictionary key collection satisfies
@@ -1263,7 +1459,7 @@ namespace Ship_Game
                     group.AddSubItem(row);
                 }
 
-                if (BrowserFilterText.NotEmpty())
+                if (BrowserFilterText.NotEmpty() || ExpandedGroups.Contains(role))
                     group.Expand(true);
             }
         }
@@ -1290,7 +1486,7 @@ namespace Ship_Game
                                                       .ThenByDescending(d => d.BaseStrength)
                                                       .ThenBy(d => d.Name))
                 {
-                    group.AddSubItem(new ShipYardBrowserItem(Player, design, isWIP: false));
+                    group.AddSubItem(NewDesignRow(design, hullInBadge: false));
                 }
             }
         }

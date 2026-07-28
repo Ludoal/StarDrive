@@ -88,6 +88,7 @@ namespace Ship_Game.GameScreens
                 batch.DrawLine(new Vector2(Level1.X, Level1.Y - 50), new Vector2(Level1.X + 80 + Level1.Width * 5, Level1.Y - 50), SeperatorColor, 2);
             }
 
+            Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
         }
 
@@ -98,13 +99,20 @@ namespace Ship_Game.GameScreens
 
         public override bool HandleInput(InputState input)
         {
-            if (input.KeyPressed(Keys.E) && !GlobalStats.TakingInput)
+            // Ludoal fork: the closing key is tested BEFORE the top bar. The bar reads that same
+            // key to OPEN this screen and returns true, so with the bar first the key never
+            // reached the test below and the screen would not close on its own hotkey.
+if (input.KeyPressed(Keys.E) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();
                 ExitScreen();
                 return true;
             }
 
+            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
+            
             if (Player.Universe.Debug && !SelectedEmpire.isPlayer && HandleDebugInput(input))
                 return true;
 

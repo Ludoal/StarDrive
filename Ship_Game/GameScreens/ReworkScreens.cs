@@ -14,9 +14,15 @@ namespace Ship_Game.GameScreens
     /// the classic versions stay current for free. It is OUR versions that carry the Rework
     /// suffix — they are the addition, so they are the ones that should be marked as such.
     ///
-    /// Being byte-identical to upstream is the whole point, so restore a stock file with
+    /// Staying close to upstream is the point, so restore a stock file with
     /// `git checkout &lt;base&gt; -- &lt;path&gt;`, never by copying it in: a plain copy gets the line
     /// endings wrong and every one of its lines then shows as changed.
+    ///
+    /// ⚠ One deliberate exception (Ludo): the three stock screens carry the fork's live top bar.
+    /// It is a feature of the fork rather than of the rework, so turning a rebuilt screen off
+    /// should not cost the player the navigation that comes with every other panel. They are
+    /// therefore NOT byte-identical, and a future upstream merge will conflict on those few
+    /// lines - which is the accepted price.
     ///
     /// The Shipyard's floating hover cartouche (ShipInfoOverlayComponent) is deliberately NOT
     /// part of this: the colony and fleet screens use it directly, in both regimes.
@@ -34,5 +40,17 @@ namespace Ship_Game.GameScreens
 
         public static GameScreen Espionage(UniverseScreen u)
             => GlobalStats.ReworkEspionage ? new InfiltrationScreenRework(u) : new InfiltrationScreen(u);
+
+        // Ludoal fork (bench 46.173): asking "is the caller already this screen?" has to know
+        // about BOTH classes, or the answer is wrong for whichever regime is not the stock one.
+        // The top bar tests this to close a screen when its own key is pressed again, and with
+        // only the stock type named, a reworked Economy, Diplomacy or Espionage never recognised
+        // itself and simply stacked a second copy (Ludo). Same reason the openers live here: one
+        // place knows the pairing, and no call site has to remember there are two of each.
+        public static bool IsEconomy(GameScreen s) => s is BudgetScreen or BudgetScreenRework;
+
+        public static bool IsDiplomacy(GameScreen s) => s is MainDiplomacyScreen or MainDiplomacyScreenRework;
+
+        public static bool IsEspionage(GameScreen s) => s is InfiltrationScreen or InfiltrationScreenRework;
     }
 }

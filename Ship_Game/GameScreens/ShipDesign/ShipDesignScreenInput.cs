@@ -20,7 +20,13 @@ namespace Ship_Game
         Vector2 ClassifCursor;
         UICheckBox CarrierOnlyCheckBox;
         bool DisplayedBulkReplacementHint;
-        const float ClickThresholdSeconds = 0.1f;
+        // Ludoal fork (bench): 0.15, not 0.10. The game's own idea of a held mouse button is
+        // LeftMouseHeld's default of 0.15s, and ShipYardArcMove calls it with no argument — so
+        // this screen was cutting the click 50ms EARLIER than the arc drag starts. Anything
+        // between the two was neither a click nor a hold: on a turret, a normal-speed click fell
+        // into the gap and went to the firing arc instead of picking the module up (Ludo). Two
+        // numbers for one boundary, again.
+        const float ClickThresholdSeconds = 0.15f;
 
         void UpdateCarrierShip()
         {
@@ -136,6 +142,25 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            // Ludoal fork: the "x" on the vs line drops the pinned design
+            if (input.LeftMouseClick && ComparedDesign != null
+                && InfoPanel.CancelCompareRect.HitTest(input.CursorPosition))
+            {
+                GameAudio.AcceptClick();
+                SetComparedDesign(null);
+                return true;
+            }
+
+            // Ludoal fork: the obsolete-design toggle, the design-side twin of the module one
+            if (InfoSub.Visible && CurrentDesign != null && ObsoleteDesign.HandleInput(input)
+                && input.LeftMouseClick)
+            {
+                GameAudio.AcceptClick();
+                Player.ToggleDesignObsolete(CurrentDesign.Name);
+                RefreshHullSelectList(); // the browser greys the row straight away
+                return true;
+            }
+
             if (CategoryList.HandleInput(input))
                 return true;
 
@@ -261,6 +286,16 @@ namespace Ship_Game
                 {
                     if (!input.LeftMouseWasHeldDown || input.LeftMouseHoldDuration < ClickThresholdSeconds)
                         HighlightedModule = null;
+                }
+
+                // Ludoal fork (bench): leaving the hull clears the highlight, so the orange
+                // rectangle and its stats panel go with the cursor instead of staying lit on the
+                // last module hovered — there was no way to dismiss it short of clicking (Ludo).
+                // ⚠ not while the button is down: dragging a firing arc walks the cursor well
+                // off its own tile, and clearing here would drop the module mid-drag.
+                else if (!input.LeftMouseDown)
+                {
+                    HighlightedModule = null;
                 }
 
                 return false;
@@ -477,13 +512,6 @@ namespace Ship_Game
         {
             GlobalStats.SymmetricDesign = !GlobalStats.SymmetricDesign; // Ludoal fork: global preference
             BtnSymmetricDesign.Style   = SymmetricDesignBtnStyle;
-        }
-
-        void OnFilterModuleToggle()
-        {
-            IsFilterOldModulesMode = !IsFilterOldModulesMode;
-            BtnFilterModules.Style = FilterModulesBtnStyle;
-            ModuleSelectComponent.ResetActiveCategory();
         }
 
         void OnStripShipToggle()

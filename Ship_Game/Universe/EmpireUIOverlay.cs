@@ -629,7 +629,9 @@ namespace Ship_Game
                         else if (b.launches == "Budget")
                         {
                             GameAudio.EchoAffirmative();
-                            if (!(caller is BudgetScreen))
+                            // Ludoal fork: both regimes, or the reworked screen never
+                            // recognises itself and the bar stacks a second copy
+                            if (!GameScreens.ReworkScreens.IsEconomy(caller))
                             {
                                 Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Economy(Universe));
                             }
@@ -717,7 +719,9 @@ namespace Ship_Game
                         }
                         else if (b.launches == "Espionage")
                         {
-                            if (caller is EspionageScreen or InfiltrationScreen)
+                            // Ludoal fork: both regimes — EspionageScreen is the legacy one,
+                            // and IsEspionage covers the stock and reworked infiltration screens
+                            if (caller is EspionageScreen || GameScreens.ReworkScreens.IsEspionage(caller))
                             {
                                 continue;
                             }
@@ -739,7 +743,7 @@ namespace Ship_Game
                         }
                         else if (b.launches == "Diplomacy")
                         {
-                            if (caller is MainDiplomacyScreen)
+                            if (GameScreens.ReworkScreens.IsDiplomacy(caller))
                             {
                                 continue;
                             }

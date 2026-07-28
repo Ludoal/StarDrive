@@ -19,6 +19,13 @@ namespace Ship_Game
                 Hover1 = ResourceManager.Texture(defaultName+"_hover1");
                 Hover2 = ResourceManager.Texture(defaultName+"_hover2");
             }
+            // Ludoal fork: for icons that ship without _hover1/_hover2 variants. Asking for them
+            // anyway logs a missing-texture warning per icon on every load and silently falls
+            // back to the error texture, so state them once here instead.
+            public Hoverable(string defaultName, bool noHoverVariants)
+            {
+                Normal = Hover1 = Hover2 = ResourceManager.Texture(defaultName);
+            }
             public void Draw(SpriteBatch batch, in Rectangle rect, bool parentHovered, bool controlItemHovered)
             {
                 SubTexture texture = Normal;
@@ -40,6 +47,7 @@ namespace Ship_Game
         public readonly Hoverable QueueRush;
         public readonly Hoverable QueueDelete;
         public readonly Hoverable Delete;
+        public readonly Hoverable DeleteCross; // Ludoal fork: x_red, for rows that delete
         public readonly Hoverable ResearchTech;
 
         public ScrollListStyleTextures(string folder)
@@ -55,6 +63,9 @@ namespace Ship_Game
             QueueRush      = new Hoverable("NewUI/icon_queue_rushconstruction");
             QueueDelete    = new Hoverable("NewUI/icon_queue_delete");
             Delete         = new Hoverable("NewUI/icon_clear_filter");
+            // Ludoal fork: a real cross. Delete above is named for deletion but the texture is a
+            // PENCIL, which reads as "edit" on a row whose action is "destroy this design".
+            DeleteCross    = new Hoverable("NewUI/x_red", noHoverVariants: true);
             ResearchTech   = new Hoverable("NewUI/icon_research_ship");
         }
 

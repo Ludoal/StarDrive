@@ -66,6 +66,10 @@ namespace Ship_Game
 
         public Action<UIButton> OnClick;
         public InputBindings.IBinding Hotkey;
+        // Ludoal fork: shown in the tooltip like Hotkey is, but WITHOUT binding the key to this
+        // button. For a screen whose key is already read elsewhere, arming Hotkey here would
+        // give one keypress two readers; this only tells the player which key does the job.
+        public string TooltipHotkey;
 
         public override string ToString() => $"{TypeName} '{Text}' visible:{Visible} enabled:{Enabled} state:{State}";
         
@@ -223,7 +227,7 @@ namespace Ship_Game
             {
                 if (Tooltip.IsValid)
                 {
-                    ToolTip.CreateTooltip(Tooltip, Hotkey?.Hotkey, Pos + Size);
+                    ToolTip.CreateTooltip(Tooltip, Hotkey?.Hotkey ?? TooltipHotkey, Pos + Size);
                 }
             }
 
