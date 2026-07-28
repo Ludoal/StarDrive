@@ -63,7 +63,6 @@ namespace Ship_Game
         readonly Array<ShipHull> AvailableHulls = new Array<ShipHull>();
         UIButton BtnSaveAs;
         UIButton BtnSymmetricDesign; // Symmetric Module Placement Feature by Fat Bastard
-        UIButton BtnFilterModules;   // Filter Absolute Modules
         UIButton BtnStripShip;       // Removes all modules but armor, shields and command modules
         GenericButton ArcsButton;
         Rectangle SearchBar;
@@ -72,6 +71,10 @@ namespace Ship_Game
 
         ShipDesignInfoPanel InfoPanel;
         Submenu InfoSub;
+        // Ludoal fork (bench): the design-side twin of the module panel's obsolete button, same
+        // icon and same corner. Marking a design obsolete greys it in the browser and a filter
+        // hides them — a design you have moved past but do not want to delete (Ludo).
+        TexturedButton ObsoleteDesign;
         // Ludoal fork (spec v4): the pinned design has no frame of its own — it only feeds the
         // delta lane of InfoPanel. This frame shows the design under the cursor instead.
         ShipDesignInfoPanel HoverPanel;
@@ -93,6 +96,7 @@ namespace Ship_Game
         UITextEntry BrowserFilter;         // Ludoal fork: the load popup's filters, rehoused
         string BrowserFilterText;
         bool ShowLockedDesigns;
+        bool HideObsoleteDesigns; // Ludoal fork: the browser's obsolete filter
         // Ludoal fork (bench 46.152): how the browser groups its rows. By hull is the
         // build view (a carcass and what we already put on it); by role is the use view
         // ("my carriers", wherever they are built). Same list, same filters, one key
@@ -597,6 +601,10 @@ namespace Ship_Game
             // the first pin (bench 46.163, Ludo).
             IssuesPanel.SetAbsPos(frame.X, IssuesPanel.Y);
 
+            // the obsolete button hangs off the frame's RIGHT edge, so it travels with it —
+            // same lesson the module panel's own button taught at bench 46.157
+            ObsoleteDesign.r.X = (int)(frame.X + frame.W - ObsoleteDesign.r.Width - 10);
+
             // the hover frame sits to the left of the active one and keeps its own width
             // (Width, not Rect.W: Submenu.Rect is a RectF that shadows UIElementV2's integer
             // Rectangle Rect, and which one a call site resolves to is not worth relying on)
@@ -728,7 +736,6 @@ namespace Ship_Game
         }
 
         ButtonStyle SymmetricDesignBtnStyle  => IsSymmetricDesignMode ? ButtonStyle.Military : ButtonStyle.BigDip;
-        ButtonStyle FilterModulesBtnStyle    => IsFilterOldModulesMode ? ButtonStyle.Military : ButtonStyle.BigDip;
 
         void CreateGUI()
         {
@@ -798,7 +805,12 @@ namespace Ship_Game
 
 
 
-            UIList bottomListLeft = AddList(new Vector2(50f, ScreenHeight - 50f));
+            // Ludoal fork: the "Omit Old Modules" button that used to sit here moved to a
+            // checkbox above the module list. The gap it left is KEPT rather than closed (Ludo)
+            // — the bottom bar is due for its own pass, and letting the remaining buttons slide
+            // left now would just have to be undone then. One button's width plus the padding.
+            const float FreedButtonSpace = 152f;
+            UIList bottomListLeft = AddList(new Vector2(50f + FreedButtonSpace, ScreenHeight - 50f));
             bottomListLeft.LayoutStyle = ListLayoutStyle.ResizeList;
             bottomListLeft.Direction = new Vector2(+1, 0);
             bottomListLeft.Padding = new Vector2(16f, 2f);
@@ -809,14 +821,6 @@ namespace Ship_Game
             });
             BtnStripShip.ClickSfx = "blip_click";
             BtnStripShip.Tooltip = Localizer.Token(GameText.StripsTheShipOfAny);
-
-            BtnFilterModules = bottomListLeft.Add(ButtonStyle.Medium, Localizer.Token(GameText.OmitOldModules), click: b =>
-            {
-                OnFilterModuleToggle();
-            });
-            BtnFilterModules.ClickSfx = "blip_click";
-            BtnFilterModules.Tooltip  = GameText.WhenToggledRedAnyModule;
-            BtnFilterModules.Style    = FilterModulesBtnStyle;
 
             // Ludoal fork (battle simulator): test the current design in a 1v1 arena.
             // Left list: in 1920 the right list overlaps the build number (field report 45.37).
@@ -903,15 +907,32 @@ namespace Ship_Game
             };
 
             // side by side on one row: stacked, the second one slipped under the frame's title tab
-            Checkbox(new Vector2(filterX + 6, filterTop + 26),
+            // Ludoal fork: three toggles on the row now, so it starts further left and runs
+            // past the frame's left edge — deliberate (Ludo): there is empty starfield there and
+            // nothing to collide with, whereas the right side is the browser's own margin.
+            // Ludoal fork: the module list gets its filter as a checkbox directly above it,
+            // where the designs have theirs. It used to be a button in the bottom bar, a long way
+            // from the list it filters (Ludo) — a first taste of the wider UI pass to come.
+            Checkbox(new Vector2(11, filterTop + 26),
+                     () => IsFilterOldModulesMode,
+                     (b) => { IsFilterOldModulesMode = b; ModuleSelectComponent.ResetActiveCategory(); },
+                     "Hide obsolete", GameText.WhenToggledRedAnyModule);
+
+            const float row3 = -118f;
+            Checkbox(new Vector2(filterX + row3 + 6, filterTop + 26),
                      () => !Player.Universe.P.ShowAllDesigns,
                      (b) => { Player.Universe.P.ShowAllDesigns = !b; RefreshHullSelectList(); },
                      "My designs only", "Show only the designs you created");
 
-            Checkbox(new Vector2(filterX + 132, filterTop + 26),
+            Checkbox(new Vector2(filterX + row3 + 132, filterTop + 26),
                      () => ShowLockedDesigns,
                      (b) => { ShowLockedDesigns = b; RefreshHullSelectList(); },
                      "Show locked", GameText.ShowEmpireLockedDesignsTip);
+
+            Checkbox(new Vector2(filterX + row3 + 246, filterTop + 26),
+                     () => HideObsoleteDesigns,
+                     (b) => { HideObsoleteDesigns = b; RefreshHullSelectList(); },
+                     "Hide obsolete", "Hide the designs you have marked obsolete");
 
             // The grouping mode rides the frame's own title bar: Submenu carries tabs
             // natively, so it costs no pixel of the list and no third row of filters -
@@ -1014,6 +1035,14 @@ namespace Ship_Game
             var infoSub = Add(new Submenu(infoRect, "Active Design"));
             infoSub.SetBackground(Colors.TransparentBlackFill);
 
+            // top-right of the frame, the same offsets the module panel uses
+            int obsW = ResourceManager.Texture("NewUI/icon_queue_delete").Width;
+            int obsH = ResourceManager.Texture("NewUI/icon_queue_delete").Height;
+            var obsPos = new RectF(infoRect.X + infoRect.W - obsW - 10, infoRect.Y + 38, obsW, obsH);
+            ObsoleteDesign = new(obsPos, "NewUI/icon_queue_delete",
+                                 "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2");
+            ObsoleteDesign.Tooltip = "Mark this design as obsolete";
+
             // Ludoal fork (bench): the inner panel takes the module frame's own left margin (10),
             // so the design name starts exactly where "Light Kinetic Cannon" does in its frame —
             // it was inset by 12 here and read as pushed to the right.
@@ -1082,6 +1111,11 @@ namespace Ship_Game
                 return false;
 
             if (!Player.Universe.P.ShowAllDesigns && !design.IsPlayerDesign)
+                return false;
+
+            // Ludoal fork: retired designs are hidden on demand — the module list never had this
+            // filter either, and it now does (Ludo).
+            if (HideObsoleteDesigns && Player.IsDesignObsolete(design.Name))
                 return false;
 
             if (UnlockAllFactionDesigns) // developer universe: everything is visible

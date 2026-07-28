@@ -326,7 +326,12 @@ namespace Ship_Game
         // it — so ordering by hand beats reordering the constructor.
         public void BringToFrontZOrder(UIElementV2 child)
         {
-            int maxZOrder = Elements.Max(e => e.ZOrder);
+            // (a plain loop: Array<T> carries a Min extension but no Max, and this is not worth
+            //  a LINQ import in a file that has none)
+            int maxZOrder = int.MinValue;
+            foreach (UIElementV2 e in Elements)
+                if (e.ZOrder > maxZOrder)
+                    maxZOrder = e.ZOrder;
             child.ZOrder = maxZOrder + 1;
             RefreshZOrder();
         }

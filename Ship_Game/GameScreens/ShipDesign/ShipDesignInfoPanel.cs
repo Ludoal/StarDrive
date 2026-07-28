@@ -54,6 +54,8 @@ namespace Ship_Game.GameScreens.ShipDesign
         // different lines. Null when nothing is pinned.
         public ShipDesignInfoPanel CompareAgainst;
         string ComparedName;
+        // where the "x" that drops the comparison sits; empty when nothing is pinned
+        public RectF CancelCompareRect;
 
         // column offsets, bench values
         // Ludoal fork (bench 46.152): zero. The panel is already inset 10px inside its frame,
@@ -546,10 +548,28 @@ namespace Ship_Game.GameScreens.ShipDesign
                 if (ComparedName.NotEmpty())
                 {
                     Graphics.Font vsFont = Fonts.Arial12Bold;
-                    batch.DrawString(vsFont, "vs " + ComparedName,
-                                     new Vector2(namePos.X + nameFont.TextWidth(S.Name) + 10f,
-                                                 namePos.Y + nameFont.LineSpacing - vsFont.LineSpacing - 2f),
-                                     Colors.Cream);
+                    var vsPos = new Vector2(namePos.X + nameFont.TextWidth(S.Name) + 10f,
+                                            namePos.Y + nameFont.LineSpacing - vsFont.LineSpacing - 2f);
+                    string vs = "vs " + ComparedName;
+                    batch.DrawString(vsFont, vs, vsPos, Colors.Cream);
+
+                    // Ludoal fork (bench): a way out of the comparison that does not require
+                    // finding the pinned design again to shift-click it a second time (Ludo).
+                    // It lives on the "vs" line because that is where the comparison announces
+                    // itself, it costs no layout, and it only exists while there is something to
+                    // cancel.
+                    CancelCompareRect = new RectF(vsPos.X + vsFont.TextWidth(vs) + 6f, vsPos.Y,
+                                                  vsFont.LineSpacing, vsFont.LineSpacing);
+                    bool hot = CancelCompareRect.HitTest(Screen.Input.CursorPosition);
+                    batch.DrawString(vsFont, "x",
+                                     new Vector2(CancelCompareRect.X + 3f, CancelCompareRect.Y),
+                                     hot ? Color.White : Color.Gray);
+                    if (hot)
+                        ToolTip.CreateTooltip("Cancel the comparison");
+                }
+                else
+                {
+                    CancelCompareRect = default;
                 }
             }
 

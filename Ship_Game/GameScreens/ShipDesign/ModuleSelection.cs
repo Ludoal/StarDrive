@@ -165,6 +165,9 @@ namespace Ship_Game
         // being hovered.
         ShipModule HoveredModule => Screen.HoveredListModule ?? Screen.HighlightedModule;
 
+        // where the "x" that drops the comparison sits; empty when nothing is pinned
+        RectF CancelCompareRect;
+
         bool IsWideFrame(Submenu panel) => panel == ActiveModSubMenu && Comparing;
         float ColStepOf(Submenu panel) => IsWideFrame(panel) ? WideColStep : TightColStep;
         // the pulls are bench offsets for the wide frame only; the Hover frame is left as it was
@@ -386,6 +389,15 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            // Ludoal fork: the "x" on the vs line drops the pinned module
+            if (input.LeftMouseClick && Screen.CompareModule != null
+                && CancelCompareRect.HitTest(input.CursorPosition))
+            {
+                GameAudio.AcceptClick();
+                Screen.SetCompareModule(null);
+                return true;
+            }
+
             if (HandleObsoleteInput(input))
                 return true;
 
@@ -589,6 +601,21 @@ namespace Ship_Game
                 var vsPos = new Vector2(modTitlePos.X + titleFont.TextWidth(moduleTemplate.NameText.Text) + 10,
                                         modTitlePos.Y + titleFont.LineSpacing - vsFont.LineSpacing - 2f);
                 batch.DrawString(vsFont, vs, vsPos, Colors.Cream);
+
+                // Ludoal fork (bench): the way out of the comparison, so dropping a pin does not
+                // mean hunting the pinned module down the list to shift-click it again (Ludo).
+                CancelCompareRect = new RectF(vsPos.X + vsFont.TextWidth(vs) + 6f, vsPos.Y,
+                                              vsFont.LineSpacing, vsFont.LineSpacing);
+                bool hot = CancelCompareRect.HitTest(Screen.Input.CursorPosition);
+                batch.DrawString(vsFont, "x",
+                                 new Vector2(CancelCompareRect.X + 3f, CancelCompareRect.Y),
+                                 hot ? Color.White : Color.Gray);
+                if (hot)
+                    ToolTip.CreateTooltip("Cancel the comparison");
+            }
+            else if (panel == ActiveModSubMenu)
+            {
+                CancelCompareRect = default;
             }
 
             modTitlePos.Y += titleFont.LineSpacing + (titleFont == Fonts.Arial20Bold ? 6 : 4);

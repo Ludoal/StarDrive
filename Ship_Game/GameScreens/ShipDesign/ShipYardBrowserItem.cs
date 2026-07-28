@@ -97,7 +97,11 @@ namespace Ship_Game
 
                 batch.Draw(Design.Icon, new Rectangle((int)X - 2, (int)Y - 2, h + 4, h + 4), Color.White);
 
-                Color nameColor = CanBeBuilt ? Color.White : Color.Gray;
+                // Ludoal fork: red for obsolete, the same code the module list uses, and it wins
+                // over the not-buildable grey — a design you have retired is a stronger statement
+                // than one you cannot afford yet (Ludo).
+                Color nameColor = Player.IsDesignObsolete(Design.Name) ? Color.Red
+                                : CanBeBuilt ? Color.White : Color.Gray;
                 batch.DrawString(Fonts.Arial12Bold, Design.Name, X + h + 6, Y + 2, nameColor);
 
                 // role badge: the modules-derived role, in the warm pill the game's

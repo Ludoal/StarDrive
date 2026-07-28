@@ -176,6 +176,20 @@ namespace Ship_Game
         [StarData] public bool AutoPickBestMiningStation;
         [StarData] public bool SymmetricDesignMode = true; // Ludoal fork: LEGACY, kept for save compatibility — the shipyard now uses GlobalStats.SymmetricDesign
         [StarData] public Array<string> ObsoletePlayerShipModules;
+        // Ludoal fork: the same idea for whole designs — a design you have moved past but do not
+        // want to delete. Per-empire and saved with the game, exactly like the module list above,
+        // and keyed by design name since that is what a design is identified by everywhere else.
+        [StarData] public Array<string> ObsoletePlayerDesigns;
+
+        // Ludoal fork: the design-side twin of ShipModule.IsObsolete. Keyed by Name, which is
+        // the design's UID everywhere else in the codebase.
+        public bool IsDesignObsolete(string designName) => ObsoletePlayerDesigns.Contains(designName);
+
+        public void ToggleDesignObsolete(string designName)
+        {
+            if (!ObsoletePlayerDesigns.Remove(designName))
+                ObsoletePlayerDesigns.Add(designName);
+        }
 
         public int AtWarCount;
 
@@ -263,6 +277,7 @@ namespace Ship_Game
 
             DiplomacyContactQueue = new();
             ObsoletePlayerShipModules = new();
+            ObsoletePlayerDesigns = new();
 
             ExoticBonuses = new();
             foreach (Good good in ResourceManager.TransportableGoods.Filter(g => g.IsGasGiantMineable))
@@ -293,6 +308,10 @@ namespace Ship_Game
         void OnDeserialized(UniverseState us)
         {
             dd = ResourceManager.GetDiplomacyDialog(data.DiplomacyDialogPath);
+            // Ludoal fork: a save written before this field existed deserializes it as null, and
+            // the constructor does not run on load. Without this, the first obsolete-design click
+            // in an ongoing game throws.
+            ObsoletePlayerDesigns ??= new();
             CommonInitialize();
         }
 

@@ -142,6 +142,25 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            // Ludoal fork: the "x" on the vs line drops the pinned design
+            if (input.LeftMouseClick && ComparedDesign != null
+                && InfoPanel.CancelCompareRect.HitTest(input.CursorPosition))
+            {
+                GameAudio.AcceptClick();
+                SetComparedDesign(null);
+                return true;
+            }
+
+            // Ludoal fork: the obsolete-design toggle, the design-side twin of the module one
+            if (InfoSub.Visible && CurrentDesign != null && ObsoleteDesign.HandleInput(input)
+                && input.LeftMouseClick)
+            {
+                GameAudio.AcceptClick();
+                Player.ToggleDesignObsolete(CurrentDesign.Name);
+                RefreshHullSelectList(); // the browser greys the row straight away
+                return true;
+            }
+
             if (CategoryList.HandleInput(input))
                 return true;
 
@@ -493,13 +512,6 @@ namespace Ship_Game
         {
             GlobalStats.SymmetricDesign = !GlobalStats.SymmetricDesign; // Ludoal fork: global preference
             BtnSymmetricDesign.Style   = SymmetricDesignBtnStyle;
-        }
-
-        void OnFilterModuleToggle()
-        {
-            IsFilterOldModulesMode = !IsFilterOldModulesMode;
-            BtnFilterModules.Style = FilterModulesBtnStyle;
-            ModuleSelectComponent.ResetActiveCategory();
         }
 
         void OnStripShipToggle()
