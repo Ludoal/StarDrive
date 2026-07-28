@@ -1252,6 +1252,16 @@ namespace Ship_Game
             });
         }
 
+        // Ludoal fork (bench): the shipyard is never without a design, so deleting the one on
+        // the workbench falls back to a bare hull rather than leaving the screen holding a
+        // design that no longer exists (Ludo). Same fallback the screen uses when it opens with
+        // nothing to restore.
+        void LoadDefaultDesign()
+        {
+            if (AvailableHulls.NotEmpty)
+                ChangeHull(AvailableHulls[0], zoomToHull: false);
+        }
+
         void PromptDeleteDesign(string designName)
         {
             if (ParentUniverse.UState.Ships.Any(sh => sh.Name == designName))
@@ -1277,8 +1287,11 @@ namespace Ship_Game
             {
                 Accepted = () =>
                 {
+                    bool wasOnTheBench = CurrentDesign?.Name == designName;
                     ResourceManager.DeleteShip(ParentUniverse.UState, designName);
                     GameAudio.EchoAffirmative();
+                    if (wasOnTheBench)
+                        LoadDefaultDesign(); // the screen always holds a design (Ludo)
                     RefreshHullSelectList();
                 }
             });
@@ -1291,8 +1304,15 @@ namespace Ship_Game
             {
                 Accepted = () =>
                 {
+                    // ⚠ compared by PREFIX on the name, not through GetWipShipNameAndNum: that
+                    // splits on '_' and indexes [1] blindly, so it throws on any design name
+                    // without one - which is most of them, and the bench design usually is one.
+                    string onBench = CurrentDesign?.Name ?? "";
+                    bool wasOnTheBench = onBench.StartsWith(prefix);
                     ShipDesignWIP.RemoveRelatedWiPs(ParentUniverse.UState, designName);
                     GameAudio.EchoAffirmative();
+                    if (wasOnTheBench)
+                        LoadDefaultDesign();
                     RefreshHullSelectList();
                 }
             });

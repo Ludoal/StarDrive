@@ -14,9 +14,9 @@ namespace Ship_Game
         // Creates a ScrollList Item Header which can be expanded
         protected ScrollListItem(string headerText) : base(headerText) { }
 
-        void AddElement(Vector2 relPos, in LocalizedText tooltip, Action onClick, Func<ScrollListStyleTextures.Hoverable> getHoverable)
+        void AddElement(Vector2 relPos, in LocalizedText tooltip, Action onClick, Func<ScrollListStyleTextures.Hoverable> getHoverable, int iconSize = 0)
         {
-            var e = new Element{ Parent = this, RelPos = relPos, Tooltip = tooltip, OnClick = onClick, GetHoverable = getHoverable };
+            var e = new Element{ Parent = this, RelPos = relPos, Tooltip = tooltip, OnClick = onClick, GetHoverable = getHoverable, IconSize = iconSize };
             if (DynamicElements == null) DynamicElements = new();
             DynamicElements.Add(e);
         }
@@ -30,7 +30,8 @@ namespace Ship_Game
         public void AddDelete(Vector2 relPos, in LocalizedText tooltip, Action onClick)       => AddElement(relPos, tooltip, onClick, () => List.GetStyle().Delete);
         public void AddResearch(Vector2 relPos, in LocalizedText tooltip, Action onClick)     => AddElement(relPos, tooltip, onClick, () => List.GetStyle().ResearchTech);
         // Ludoal fork: AddDelete's texture is a pencil despite its name; this one is the cross.
-        public void AddDeleteCross(Vector2 relPos, in LocalizedText tooltip, Action onClick)  => AddElement(relPos, tooltip, onClick, () => List.GetStyle().DeleteCross);
+        // drawn at 17 to match the other row icons: x_red's texture is 24 (Ludoal fork)
+        public void AddDeleteCross(Vector2 relPos, in LocalizedText tooltip, Action onClick)  => AddElement(relPos, tooltip, onClick, () => List.GetStyle().DeleteCross, iconSize: 17);
 
         public bool RemoveFirstSubIf(Predicate<T> predicate)
         {

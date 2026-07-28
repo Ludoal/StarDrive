@@ -73,8 +73,10 @@ namespace Ship_Game
             {
                 if (onDelete != null)
                     AddDeleteCross(new(-30, -45), "Delete this WIP Design", onDelete);
+                // the load popup used this very icon for "all versions" (Ludo) - keeping its
+                // pairing means a player who knows that screen reads these two straight away
                 if (onDeleteAllWipVersions != null)
-                    AddDeleteCross(new(-30, 15), "Delete ALL versions of this WIP Design", onDeleteAllWipVersions);
+                    AddDelete(new(-30, 15), "Delete ALL versions of this WIP Design", onDeleteAllWipVersions);
             }
             else
             {
