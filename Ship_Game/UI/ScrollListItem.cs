@@ -29,6 +29,8 @@ namespace Ship_Game
         public void AddCancel(Vector2 relPos, in LocalizedText tooltip, Action onClick)       => AddElement(relPos, tooltip, onClick, () => List.GetStyle().QueueDelete);
         public void AddDelete(Vector2 relPos, in LocalizedText tooltip, Action onClick)       => AddElement(relPos, tooltip, onClick, () => List.GetStyle().Delete);
         public void AddResearch(Vector2 relPos, in LocalizedText tooltip, Action onClick)     => AddElement(relPos, tooltip, onClick, () => List.GetStyle().ResearchTech);
+        // Ludoal fork: AddDelete's texture is a pencil despite its name; this one is the cross.
+        public void AddDeleteCross(Vector2 relPos, in LocalizedText tooltip, Action onClick)  => AddElement(relPos, tooltip, onClick, () => List.GetStyle().DeleteCross);
 
         public bool RemoveFirstSubIf(Predicate<T> predicate)
         {

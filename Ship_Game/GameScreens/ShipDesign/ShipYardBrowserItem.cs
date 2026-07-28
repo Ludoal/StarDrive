@@ -63,22 +63,23 @@ namespace Ship_Game
             IsWIP = isWIP;
             CanBeBuilt = player.WeCanBuildThis(design);
 
-            // Ludoal fork (bench): DELETING uses the red cross (AddDelete / icon_clear_filter),
-            // never the no-entry sign. AddCancel draws icon_queue_delete, which this fork now
-            // uses to mark a design OBSOLETE in the cartouche - one image cannot mean both "put
-            // this aside" and "destroy it" (Ludo). The two deletions differ by position and
-            // tooltip: the upper one is this WIP, the lower one every version of it.
+            // Ludoal fork (bench): DELETING uses the red cross, never the no-entry sign, which
+            // this fork now uses to mark a design OBSOLETE - one image cannot mean both "put
+            // this aside" and "destroy it" (Ludo). ⚠ nor AddDelete: its texture is called
+            // icon_clear_filter and it draws a PENCIL, which reads as "edit". The two deletions
+            // differ by position and tooltip: the upper one is this WIP, the lower one every
+            // version of it.
             if (isWIP)
             {
                 if (onDelete != null)
-                    AddDelete(new(-30, -45), "Delete this WIP Design", onDelete);
+                    AddDeleteCross(new(-30, -45), "Delete this WIP Design", onDelete);
                 if (onDeleteAllWipVersions != null)
-                    AddDelete(new(-30, 15), "Delete ALL versions of this WIP Design", onDeleteAllWipVersions);
+                    AddDeleteCross(new(-30, 15), "Delete ALL versions of this WIP Design", onDeleteAllWipVersions);
             }
             else
             {
                 if (onDelete != null && !design.IsReadonlyDesign && !design.IsFromSave)
-                    AddDelete(new(-30, 0), "Delete this Ship Design", onDelete);
+                    AddDeleteCross(new(-30, 0), "Delete this Ship Design", onDelete);
                 if (onResearch != null && !CanBeBuilt)
                     AddResearch(new(-50, 0), "Research This Ship", onResearch);
             }
@@ -107,7 +108,22 @@ namespace Ship_Game
                 // than one you cannot afford yet (Ludo).
                 Color nameColor = Player.IsDesignObsolete(Design.Name) ? Color.Red
                                 : CanBeBuilt ? Color.White : Color.Gray;
-                batch.DrawString(Fonts.Arial12Bold, Design.Name, X + h + 6, Y + 2, nameColor);
+                // Ludoal fork (bench): clipped short of the affordances on the right, which sit
+                // at -30 from the row's edge. A long name ran straight under them and hid the
+                // delete cross entirely - and WIP names are long by construction, since each
+                // save appends its own version suffix (Ludo).
+                float nameX = X + h + 6;
+                float nameRoom = Right - 56 - nameX;
+                // trimmed by CHARACTER, not by word: a WIP name is one long token with no spaces
+                // to break on, so a word-wrapping parse would leave it whole
+                string name = Design.Name;
+                if (Fonts.Arial12Bold.TextWidth(name) > nameRoom)
+                {
+                    while (name.Length > 1 && Fonts.Arial12Bold.TextWidth(name + "…") > nameRoom)
+                        name = name.Substring(0, name.Length - 1);
+                    name += "…";
+                }
+                batch.DrawString(Fonts.Arial12Bold, name, nameX, Y + 2, nameColor);
 
                 // role badge: the modules-derived role, in the warm pill the game's
                 // other tables use for separators
