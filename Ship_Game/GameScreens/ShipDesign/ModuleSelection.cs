@@ -54,22 +54,6 @@ namespace Ship_Game
             ActiveModSubMenu = base.Add(new Submenu(acsub, "Active Module"));
             // rounded black background
             ActiveModSubMenu.SetBackground(Colors.TransparentBlackFill);
-            // on the frame's own tab row, right of the tab: the one strip of empty space it has.
-            // Its RIGHT edge lands on the list's right edge (Ludo), so it reads as belonging to
-            // this column rather than floating in the tab row. UICheckBox sizes itself in its
-            // constructor, so its width is readable at once and the placement can be exact.
-            RectF tab = ActiveModSubMenu.Tabs[0].Rect;
-            UICheckBox pin = Checkbox(new Vector2(tab.Right, tab.Y + 6),
-                     () => PinActiveModule,
-                     (b) => { PinActiveModule = b; },
-                     "Pin Active", "Keep the Active Module panel on screen while you hover the list.\n"
-                                 + "Off: the hovered module takes its place, and it comes back when you look away.");
-            // ClientArea rather than Rect, since that is what the list is actually built on
-            // (ModuleSelectScrollList takes `this` as its rectSource). The two share their X
-            // and width in Submenu, so this is the same edge either way, but naming the one
-            // the list reads keeps it true if that ever stops holding.
-            pin.SetAbsPos(ClientArea.Right - pin.Width, pin.Y);
-
             // obsolete button
             int obsoleteW = ResourceManager.Texture("NewUI/icon_queue_delete").Width;
             int obsoleteH = ResourceManager.Texture("NewUI/icon_queue_delete").Height;
@@ -93,6 +77,24 @@ namespace Ship_Game
             {
                 EnableItemHighlight = true
             });
+
+            // ⚠ ADDED LAST, ON PURPOSE. SetBackground calls SendToBackZOrder, which runs
+            // Array.Sort - an UNSTABLE sort - over the children. Every element here has its
+            // order settled by an explicit call except this one, so added earlier it was the
+            // only child a later SetBackground could reorder arbitrarily, and it landed over
+            // the frames it is supposed to sit beside (bench 183-185: the stat rows drawn
+            // under an opaque sibling, and the layout thrash that came with it). This is the
+            // same trap that blanked the design cartouche at bench 46.172.
+            // On the frame's tab row, its RIGHT edge on the list's right edge (Ludo).
+            // UICheckBox sizes itself in its constructor, so its width is exact right away.
+            RectF pinTab = ActiveModSubMenu.Tabs[0].Rect;
+            UICheckBox pin = Checkbox(new Vector2(pinTab.Right, pinTab.Y + 6),
+                                      () => PinActiveModule,
+                                      (b) => { PinActiveModule = b; },
+                                      "Pin Active",
+                                      "Keep the Active Module panel on screen while you hover the list.\n"
+                                    + "Off: the hovered module takes its place, and it comes back when you look away.");
+            pin.SetAbsPos(ClientArea.Right - pin.Width, pin.Y);
         }
 
         // Ludoal fork (spec v4): the design cartouches align their height on the module frames,
@@ -1136,20 +1138,34 @@ namespace Ship_Game
             DrawStat(ref cursor, GameText.Deflection, m.Deflection, GameText.WeaponsWhichDoLessDamage);
             if (m.RepairDifficulty > 0) DrawStat(ref cursor, GameText.Complexity, m.RepairDifficulty, GameText.TheMoreComplexTheModule); // Complexity
 
-            if (wOrMirv.TruePD && Collector == null) // Ludoal fork: direct draw, active panel only
+            // Ludoal fork: this whole block writes free text straight to the batch, so it is a
+            // DIRECT-DRAW path only. During a stat collection (CollectStats) there is no batch
+            // at all, and none of these lines is a stat worth collecting anyway.
+            // ⚠ Bench 185, and it was mine: the collection guard used to live inside the FIRST
+            // condition (`TruePD && Collector == null`). A guard placed in an if/else condition
+            // does not skip the block, it picks a different BRANCH - so a point-defence weapon
+            // being collected fell through to the else-if, and any such weapon that also
+            // excludes a hull class dereferenced the null batch. The exception came out in the
+            // middle of Draw, which is why every panel after it went blank, module and design
+            // alike, and only for one specific module (Ludo, who found it by naming that
+            // module). Guard the whole path, once, before either branch is chosen.
+            if (Collector == null)
             {
-                WriteLine(ref cursor);
-                DrawStringRed(batch, ref cursor, "Cannot Target Ships");
-            }
-            else if (wOrMirv.ExcludesFighters || wOrMirv.ExcludesCorvettes || wOrMirv.ExcludesCapitals || wOrMirv.ExcludesStations)
-            {
-                WriteLine(ref cursor);
-                DrawStringRed(batch, ref cursor, "Cannot Target:", Fonts.Arial8Bold);
+                if (wOrMirv.TruePD)
+                {
+                    WriteLine(ref cursor);
+                    DrawStringRed(batch, ref cursor, "Cannot Target Ships");
+                }
+                else if (wOrMirv.ExcludesFighters || wOrMirv.ExcludesCorvettes || wOrMirv.ExcludesCapitals || wOrMirv.ExcludesStations)
+                {
+                    WriteLine(ref cursor);
+                    DrawStringRed(batch, ref cursor, "Cannot Target:", Fonts.Arial8Bold);
 
-                if (wOrMirv.ExcludesFighters)  WriteLine(batch, ref cursor, "Fighters");
-                if (wOrMirv.ExcludesCorvettes) WriteLine(batch, ref cursor, "Corvettes");
-                if (wOrMirv.ExcludesCapitals)  WriteLine(batch, ref cursor, "Capitals");
-                if (wOrMirv.ExcludesStations)  WriteLine(batch, ref cursor, "Stations");
+                    if (wOrMirv.ExcludesFighters)  WriteLine(batch, ref cursor, "Fighters");
+                    if (wOrMirv.ExcludesCorvettes) WriteLine(batch, ref cursor, "Corvettes");
+                    if (wOrMirv.ExcludesCapitals)  WriteLine(batch, ref cursor, "Capitals");
+                    if (wOrMirv.ExcludesStations)  WriteLine(batch, ref cursor, "Stations");
+                }
             }
         }
 
