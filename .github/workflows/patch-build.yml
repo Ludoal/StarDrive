@@ -42,6 +42,9 @@ env:
   # Ludoal fork: the UI rework branch builds on its own version line so the two series never
   # get confused in ~/Downloads or in the in-game version string.
   UI_REWORK_BASE: "1.61.00001"
+  # Ludoal fork: the playable line rebased on the official patch 47. Same rule as above — the
+  # base carries the provenance, the counter is repo-wide and simply keeps running.
+  QOL_47_BASE: "1.60.00047"
 
 jobs:
   build:
@@ -68,6 +71,9 @@ jobs:
           $base = "${env:MAJOR_MINOR}"
           if ('${{ github.ref_name }}' -eq 'ui-rework') {
             $base = "${env:UI_REWORK_BASE}"
+          }
+          elseif ('${{ github.ref_name }}' -eq 'qol-47') {
+            $base = "${env:QOL_47_BASE}"
           }
           $version = "$base.$build"
           # Ludoal fork: optional public letter (45-a, 45-b…) for community releases.
