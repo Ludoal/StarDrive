@@ -21,10 +21,12 @@ namespace Ship_Game.GameScreens
         FloatSlider TreasuryGoal;
         UILabel EmpireNetIncome;
 
+        readonly UniverseScreen Universe; // Ludoal fork: for the live top bar
         public BudgetScreen(UniverseScreen screen) : base(screen, toPause: screen)
         {
             Player            = screen.Player;
             IsPopup           = true;
+            Universe = screen; // Ludoal fork
             TransitionOnTime  = 0.25f;
             TransitionOffTime = 0.25f;
         }
@@ -215,18 +217,26 @@ namespace Ship_Game.GameScreens
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
             base.Draw(batch, elapsed);
+            Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
         }
 
         public override bool HandleInput(InputState input)
         {
-            if (input.KeyPressed(Keys.T) && !GlobalStats.TakingInput)
+            // Ludoal fork: the closing key is tested BEFORE the top bar. The bar reads that same
+            // key to OPEN this screen and returns true, so with the bar first the key never
+            // reached the test below and the screen would not close on its own hotkey.
+if (input.KeyPressed(Keys.T) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();
                 ExitScreen();
                 return true;
             }
-            if (input.Escaped || input.RightMouseClick)
+
+            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
+                        if (input.Escaped || input.RightMouseClick)
             {
                 ExitScreen();
                 return true;

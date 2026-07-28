@@ -487,6 +487,7 @@ namespace Ship_Game
                     DrawStat(Localizer.Token(GameText.EmpireRefiningEfficiency), SelectedEmpire.data.RefiningRatioMultiplier-1, ref textCursor, false);
             }
             base.Draw(batch, elapsed);
+            Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
         }
 
@@ -656,13 +657,20 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            if (input.KeyPressed(Keys.I) && !GlobalStats.TakingInput)
+            // Ludoal fork: the closing key is tested BEFORE the top bar. The bar reads that same
+            // key to OPEN this screen and returns true, so with the bar first the key never
+            // reached the test below and the screen would not close on its own hotkey.
+if (input.KeyPressed(Keys.I) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();
                 ExitScreen();
                 return true;
             }
 
+            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
+            
             if (SelectedEmpire != Player && !SelectedEmpire.IsDefeated && Contact.HandleInput(input))
             {
                 DiplomacyScreen.Show(SelectedEmpire, "Greeting", parent: this);

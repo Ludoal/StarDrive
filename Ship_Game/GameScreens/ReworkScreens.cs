@@ -14,9 +14,15 @@ namespace Ship_Game.GameScreens
     /// the classic versions stay current for free. It is OUR versions that carry the Rework
     /// suffix — they are the addition, so they are the ones that should be marked as such.
     ///
-    /// Being byte-identical to upstream is the whole point, so restore a stock file with
+    /// Staying close to upstream is the point, so restore a stock file with
     /// `git checkout &lt;base&gt; -- &lt;path&gt;`, never by copying it in: a plain copy gets the line
     /// endings wrong and every one of its lines then shows as changed.
+    ///
+    /// ⚠ One deliberate exception (Ludo): the three stock screens carry the fork's live top bar.
+    /// It is a feature of the fork rather than of the rework, so turning a rebuilt screen off
+    /// should not cost the player the navigation that comes with every other panel. They are
+    /// therefore NOT byte-identical, and a future upstream merge will conflict on those few
+    /// lines - which is the accepted price.
     ///
     /// The Shipyard's floating hover cartouche (ShipInfoOverlayComponent) is deliberately NOT
     /// part of this: the colony and fleet screens use it directly, in both regimes.

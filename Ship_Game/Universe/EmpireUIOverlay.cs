@@ -719,7 +719,9 @@ namespace Ship_Game
                         }
                         else if (b.launches == "Espionage")
                         {
-                            if (caller is EspionageScreen or InfiltrationScreen)
+                            // Ludoal fork: both regimes — EspionageScreen is the legacy one,
+                            // and IsEspionage covers the stock and reworked infiltration screens
+                            if (caller is EspionageScreen || GameScreens.ReworkScreens.IsEspionage(caller))
                             {
                                 continue;
                             }

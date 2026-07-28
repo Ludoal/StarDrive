@@ -122,7 +122,11 @@ namespace Ship_Game
 
             ExoticSystemsButton = Add(new UIButton(ButtonStyle.Military, exoticPos, GameText.ExoticSystemsArray));
             ExoticSystemsButton.OnClick = (b) => OnExoticSystemsScreenClick();
-            ExoticSystemsButton.Tooltip = Localizer.Token(GameText.ExoticSystemsArrayTip) + " (G)"; // Ludoal fork: surface the existing hotkey
+            ExoticSystemsButton.Tooltip = GameText.ExoticSystemsArrayTip;
+            // Ludoal fork: the key goes in the tooltip's own hotkey slot, the way every other
+            // shortcut in the game is announced - it was glued onto the end of the text as
+            // " (G)", which is not how the tooltip states a key anywhere else (Ludo).
+            ExoticSystemsButton.TooltipHotkey = "G";
 
             Vector2 troopPos = new Vector2(TitleBar.Menu.X + TitleBar.Menu.Width + 17, TitleBar.Menu.Y + 65);
             AvailableTroops  = Add(new UILabel(troopPos, $"Available Troops: ", Fonts.Arial20Bold, Color.LightGreen));
