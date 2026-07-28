@@ -763,75 +763,11 @@ namespace Ship_Game
             GameAudio.StopGenericMusic(fadeout: true);
             CurrentMusic = null;
         }
-        // ── Ludoal fork: resolution test tool ────────────────────────────────────────────
-        // Checking a screen at three sizes used to mean quit, change, relaunch, three times
-        // over. This cycles the window through the sizes that matter with one key, and the
-        // screens rebuild themselves on the way (ApplyGraphics resets the device, and the
-        // reset path already calls ReloadContent on every open screen).
-        //
-        // Sizes chosen to fit the bench display (1440 tall, game windowed in a VM) while still
-        // crossing both flag thresholds:
-        //   1440x900  — the floor (the old MacBook Pro), what has to fit. Narrow.
-        //   1680x1050 — the 16:10 middle. Still Narrow.
-        //   1920x1080 — the reference, half the Steam install base. First size that is not Narrow.
-        //   2200x1200 — a wide window that still fits the display.
-        //   2560x1440 — Tall. Fills the bench display exactly, which is why Tall became
-        //               >= 1440 rather than >.
-        //
-        // Ctrl+Alt+R steps forward, add Shift to step back. It was Ctrl+F8 — the only function
-        // key the game had left free — and it did nothing at the bench in either window mode,
-        // with the config gate proven to be passing. The likeliest reason is that the VM eats
-        // it before the guest ever sees it, so this moves off the function row entirely.
-        // R alone opens the research screen. Running before the screens does NOT protect
-        // against that — they read the same keyboard state, so an early read consumes nothing.
-        // Both readers of R now exclude Ctrl, the same guard the codebase already uses for
-        // Ctrl+Y on the shipyard exit.
-        static readonly (int W, int H)[] TestResolutions =
-        {
-            (1440, 900), (1680, 1050), (1920, 1080), (2200, 1200), (2560, 1440)
-        };
-        int TestResolutionIndex = -1; // -1 = never cycled, start from whatever is set
-
-        void CycleTestResolution(InputState input)
-        {
-            // No gate: this branch is the UI rework build, it never ships to a player. The
-            // VerboseLogging gate that was here only added a way for the tool to be silently
-            // absent, which is exactly what happened on its first bench (46.142).
-            if (!input.IsCtrlKeyDown || !input.IsAltKeyDown || !input.KeyPressed(Keys.R))
-                return;
-
-            int step = input.IsShiftKeyDown ? -1 : 1;
-            int count = TestResolutions.Length;
-            TestResolutionIndex = ((TestResolutionIndex + step) % count + count) % count;
-            (int w, int h) = TestResolutions[TestResolutionIndex];
-
-            GraphicsSettings settings = GraphicsSettings.FromGlobalStats();
-            settings.Width = w;
-            settings.Height = h;
-            // Borderless throughout (Ludo): a title bar and frame eat into the height being
-            // tested, and the tallest step would hang off the display as a window.
-            settings.Mode = WindowMode.Borderless;
-
-            // Say it on screen, not just in the log: the first bench of this tool was spent
-            // guessing whether the key had even been seen. The message survives the device
-            // reset, so it doubles as proof the resize actually ran.
-            Log.Write(ConsoleColor.Cyan, $"TestResolution: {w}x{h}");
-            GameAudio.AcceptClick();
-
-            // Exactly what the Options screen's Apply does — Ludo pointed out that resizing
-            // from Options already redraws everything, so the path existed and my own rebuild
-            // loop was a second version of it. ApplyGraphics resizes the window; if it had to
-            // recreate the device it reloaded the screens itself, otherwise LoadContent does it.
-            bool deviceChanged = StarDriveGame.Instance?.ApplyGraphics(settings) ?? false;
-            if (!deviceChanged)
-                LoadContent(deviceWasReset: true);
-        }
 
         public void Update(UpdateTimes elapsed)
         {
             PerformHotLoadTasks(elapsed);
             input.Update(elapsed); // analyze input state for this frame
-            CycleTestResolution(input); // Ludoal fork: dev tool, see below
             AddPendingScreens();
 
             bool otherScreenHasFocus = !StarDriveGame.Instance?.IsActive ?? false;

@@ -182,9 +182,9 @@ namespace Ship_Game
         public bool SelectSameRoleAndHull => IsCtrlKeyDown;
 
         // researchScreen
-        // Ludoal fork: Ctrl+Alt+R is the resolution test tool, and consuming a key earlier in
-        // the frame does not hide it from the screens — they read the same keyboard state. Same
-        // guard the line below already uses for Ctrl+Y.
+        // Ludoal fork: Ctrl+R must not open Research. Reading a key earlier in the frame does
+        // NOT hide it from the screens — they all read the same keyboard state — so a modified R
+        // has to be excluded here. Same guard the line below already uses for Ctrl+Y.
         public bool ResearchExitScreen => KeyPressed(Keys.R) && !IsCtrlKeyDown;
 
         public bool ShipDesignExit => KeyPressed(Keys.Y) && !IsCtrlKeyDown;

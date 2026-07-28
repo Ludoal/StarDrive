@@ -380,7 +380,7 @@ namespace Ship_Game
         {
             if (!GlobalStats.TakingInput)
             {
-                // Ludoal fork: not while Ctrl is held — Ctrl+Alt+R is the resolution test tool,
+                // Ludoal fork: not while Ctrl is held — a modified R is not the Research key,
                 // and a key consumed earlier in the frame is still visible to the screens.
                 if (input.KeyPressed(Keys.R) && !input.IsCtrlKeyDown)
                 {
