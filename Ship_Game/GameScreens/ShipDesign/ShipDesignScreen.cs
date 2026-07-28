@@ -98,6 +98,11 @@ namespace Ship_Game
         string BrowserFilterText;
         bool ShowLockedDesigns;
         bool HideObsoleteDesigns; // Ludoal fork: the browser's obsolete filter
+        // Ludoal fork (bench): ON = the two cartouches coexist, hover to the left of the active
+        // one. OFF = one cartouche at that place: the active design, replaced by the hovered one
+        // for as long as the cursor rests on a row (Ludo). Not persisted - it is a way of
+        // looking at the list, not a preference.
+        bool PinActiveDesign = true;
         // which groups were open before the last rebuild, so a filter change does not refold
         // the whole browser (bench 46.172). Both group builders read it.
         readonly Array<string> ExpandedGroups = new();
@@ -592,6 +597,14 @@ namespace Ship_Game
             else if (HoverSub.Visible)
                 HoverSub.Visible = HoverPanel.Visible = false;
 
+            // Ludoal fork (bench): unpinned, the active cartouche steps aside for the hovered one
+            // rather than sharing the row with it. Decided here, every frame, from the hover
+            // frame's own visibility - the three places that toggle the hover would otherwise
+            // each have to remember this rule (Ludo).
+            bool hoverTakesThePlace = !PinActiveDesign && HoverSub.Visible;
+            InfoSub.Visible = InfoPanel.Visible = !hoverTakesThePlace;
+            IssuesPanel.Visible = !hoverTakesThePlace;
+
             bool wantDeltas = ComparedDesign != null;
             if (InfoPanel.HasDeltaLanes == wantDeltas)
                 return;
@@ -624,8 +637,11 @@ namespace Ship_Game
             // the hover frame sits to the left of the active one and keeps its own width
             // (Width, not Rect.W: Submenu.Rect is a RectF that shadows UIElementV2's integer
             // Rectangle Rect, and which one a call site resolves to is not worth relying on)
+            // unpinned, the hover frame takes the ACTIVE one's place instead of sitting beside
+            // it - same right edge, so the two never show at once and nothing else moves
             float hw = HoverSub.Width;
-            var hover = RectF.FromPoints(frame.X - hw - 10f, frame.X - 10f, frame.Y, frame.Bottom);
+            float hoverRight = PinActiveDesign ? frame.X - 10f : frame.X + frame.W;
+            var hover = RectF.FromPoints(hoverRight - hw, hoverRight, frame.Y, frame.Bottom);
             HoverSub.SetAbsPos(hover.X, hover.Y);
             HoverSub.RequiresLayout = true;
             HoverPanel.SetAbsPos(hover.X + ShipDesignInfoPanel.Inset, hover.Y + 32);
@@ -880,7 +896,14 @@ namespace Ship_Game
             float cartoucheY  = colBottom - cartoucheH; // colBottom already carries the margin
             // the browser runs down to the cartouche with the same gap the module list keeps
             // above its own frame — that is what puts the two columns' feet on one line
-            float listBottom  = cartoucheY - ModuleSelection.FrameGap;
+            // Ludoal fork (bench): the gap under the browser widens to hold the Pin Active
+            // checkbox. It comes out of the LIST, not out of the cartouche - the two columns'
+            // feet stay on one line, which is the whole point of this arithmetic (Ludo).
+            // The band is asked of the font the checkbox actually draws in (Checkbox() hands it
+            // Arial12Bold), plus room to breathe on either side - not a round number that a
+            // font change would quietly turn into a clipped row or a gaping hole.
+            float pinRowH = Fonts.Arial12Bold.LineSpacing + 8f;
+            float listBottom  = cartoucheY - ModuleSelection.FrameGap - pinRowH;
             // the completion line sits at local y 0, the issues button at 18 in Pirulen20
             float issuesH     = 18f + Fonts.Pirulen20.LineSpacing;
             // Ludoal fork (bench 46.150): the strip moves INSIDE the cartouche, on its last
@@ -971,6 +994,13 @@ namespace Ship_Game
                 GroupByRole = tab == 1;
                 RefreshHullSelectList();
             };
+            // in the band between the browser and the cartouche, left-aligned with the list
+            Checkbox(new Vector2(hullSelectPos.X + 6, listBottom + 4f),
+                     () => PinActiveDesign,
+                     (b) => { PinActiveDesign = b; },
+                     "Pin Active", "Keep the Active Design cartouche on screen while you hover the list.\n"
+                                 + "Off: the hovered design takes its place, and it comes back when you look away.");
+
             // single click selects (and shift-click pins for comparison), double click loads:
             // the load is the expensive gesture (mesh + modules + stats), so it stays deliberate
             HullSelectList.OnClick = OnBrowserItemClicked;

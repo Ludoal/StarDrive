@@ -54,6 +54,15 @@ namespace Ship_Game
             ActiveModSubMenu = base.Add(new Submenu(acsub, "Active Module"));
             // rounded black background
             ActiveModSubMenu.SetBackground(Colors.TransparentBlackFill);
+            // on the frame's own tab row, right of the tab: the one strip of empty space it has.
+            // The tab measured itself against its own title and font, so ask it where it ends
+            // rather than guessing a width that a retitling or a font change would falsify.
+            RectF tab = ActiveModSubMenu.Tabs[0].Rect;
+            Checkbox(new Vector2(tab.Right + 10, tab.Y + 6),
+                     () => PinActiveModule,
+                     (b) => { PinActiveModule = b; },
+                     "Pin Active", "Keep the Active Module panel on screen while you hover the list.\n"
+                                 + "Off: the hovered module takes its place, and it comes back when you look away.");
 
             // obsolete button
             int obsoleteW = ResourceManager.Texture("NewUI/icon_queue_delete").Width;
@@ -175,6 +184,11 @@ namespace Ship_Game
 
         // where the "x" that drops the comparison sits; empty when nothing is pinned
         RectF CancelCompareRect;
+
+        // Ludoal fork (bench): the module side's twin of the browser's Pin Active. ON = both
+        // frames on screen. OFF = the hovered module takes the active one's place while the
+        // cursor rests on it (Ludo). Not persisted: a way of looking, not a preference.
+        bool PinActiveModule = true;
 
         bool IsWideFrame(Submenu panel) => panel == ActiveModSubMenu && Comparing;
         float ColStepOf(Submenu panel) => IsWideFrame(panel) ? WideColStep : TightColStep;
@@ -463,16 +477,12 @@ namespace Ship_Game
                 Obsolete.r.X = (int)(ActiveModSubMenu.X + wantWidth - Obsolete.r.Width - 10);
             }
 
-            // Ludoal fork (bench 46.150): with no Active frame showing, the hover frame slides
-            // over to the left edge rather than floating in the middle with a hole beside it.
-            float hoverX = ActiveModSubMenu.Visible
-                         ? ActiveModSubMenu.X + ActiveModSubMenu.Width + FrameGap
-                         : ActiveModSubMenu.X;
-            if (!HoverModSubMenu.X.AlmostEqual(hoverX))
-                HoverModSubMenu.SetAbsPos(hoverX, HoverModSubMenu.Y);
             ChooseFighterSub.Visible = ChooseFighterSL.GetFighterHangar() != null;
-            if (!ActiveModSubMenu.Visible)
-                Screen.CompareModule = null; // Ludoal fork: closing the Active panel drops the pin
+            // Ludoal fork: no brush, no comparison. The pin belongs to the module being carried.
+            // ⚠ This hangs on the BRUSH, not on the frame being hidden: unpinned (see below) the
+            // frame hides on every hover, and reading the symptom would drop the pin each time.
+            if (Screen.ActiveModule == null)
+                Screen.CompareModule = null;
             // Ludoal fork (spec v4): the hover frame appears after a short dwell, so sweeping the
             // list does not make it blink. Showing the module already on the workbench would say
             // nothing, so that case stays hidden too.
@@ -504,6 +514,24 @@ namespace Ship_Game
                 HoverModSubMenu.Visible = hoverAllowed
                                        && HoverDwell >= HoverDelay && !ChooseFighterSub.Visible;
             }
+
+            // Ludoal fork (bench): unpinned, the two panels share ONE place instead of standing
+            // side by side: the hovered module takes the active one's seat while the cursor
+            // rests on it, and the brush comes back when you look away (Ludo). Same rule as the
+            // browser's Pin Active, and it sits here rather than above because it reads the hover
+            // frame's visibility, which is only settled on the lines just above.
+            if (!PinActiveModule && HoverModSubMenu.Visible)
+                ActiveModSubMenu.Visible = false;
+
+            // Ludoal fork (bench 46.150): with no Active frame showing, the hover frame slides
+            // over to the left edge rather than floating in the middle with a hole beside it.
+            // Placed after the two visibility decisions above so it reads their settled values:
+            // one writer for this position, and no frame of lag when either one flips.
+            float hoverX = ActiveModSubMenu.Visible
+                         ? ActiveModSubMenu.X + ActiveModSubMenu.Width + FrameGap
+                         : ActiveModSubMenu.X;
+            if (!HoverModSubMenu.X.AlmostEqual(hoverX))
+                HoverModSubMenu.SetAbsPos(hoverX, HoverModSubMenu.Y);
 
             base.Update(fixedDeltaTime);
         }
