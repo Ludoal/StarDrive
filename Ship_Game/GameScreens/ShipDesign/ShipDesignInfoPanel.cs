@@ -45,6 +45,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             public Func<bool> Visible;        // null => always visible
             public bool NonZeroOnly;          // hidden while the value is zero
             public string Icon;               // Ludoal fork: optional inline icon, left of the title
+            public Color IconColor;           // its own colour, the load popup's
         }
 
         readonly Array<Row> Rows = new Array<Row>();
@@ -420,8 +421,8 @@ namespace Ship_Game.GameScreens.ShipDesign
             // Ludoal fork (bench): the five figures the load popup marks with an icon get the
             // same icon here, inline and scaled to the line - the eye finds them without reading
             // (Ludo). Both variants of a row carry it, or it would blink away on the INF case.
-            Stat(GT.WpnFirePowerTime, () => Ds.EnergyDuration, GT.TT_WpnFirePowerTime, energy, tint: Above(2f), vis: Ds.HasEnergyWepsPositive, icon: "UI/lightningBolt");
-            Word(GT.WpnFirePowerTime, "INF", GT.TT_WpnFirePowerTime, energy, good, vis: Ds.HasEnergyWepsNegative, icon: "UI/lightningBolt");
+            Stat(GT.WpnFirePowerTime, () => Ds.EnergyDuration, GT.TT_WpnFirePowerTime, energy, tint: Above(2f), vis: Ds.HasEnergyWepsPositive, icon: "UI/lightningBolt", iconColor: Color.LightGoldenrodYellow);
+            Word(GT.WpnFirePowerTime, "INF", GT.TT_WpnFirePowerTime, energy, good, vis: Ds.HasEnergyWepsNegative, icon: "UI/lightningBolt", iconColor: Color.LightGoldenrodYellow);
             Stat(GT.BurstWpnPwrDrain, () => -Ds.PowerConsumedWithBeams, GT.TT_BurstWpnPwerDrain, energy, vis: Ds.HasBeams);
             Stat(GT.BurstWpnPwrTime, () => Ds.BurstEnergyDuration, GT.TT_BurstWpnPwrTime, energy, tint: _ => Color.LightPink, vis: Ds.HasBeamDurationNegative);
             Word(GT.BurstWpnPwrTime, "INF", GT.TT_BurstWpnPwrTime, energy, good, vis: Ds.HasBeamDurationPositive);
@@ -441,9 +442,9 @@ namespace Ship_Game.GameScreens.ShipDesign
             Stat(GT.TurnRate, () => S.RotationRadsPerSecond.ToDegrees(), GT.TT_TurnRate, engines, tint: Above(15f));
 
             Head("DEFENCE");
-            Stat(GT.TotalHitpoints, () => S.Health, GT.TT_HitPoints, protect, tint: Positive, icon: "UI/icon_shield");
-            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, protect, tint: Positive, vis: Ds.HasRegularShields, icon: "Modules/Shield_1KW");
-            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, Color.Gold, tint: Positive, vis: Ds.HasAmplifiedMains, icon: "Modules/Shield_1KW");
+            Stat(GT.TotalHitpoints, () => S.Health, GT.TT_HitPoints, protect, tint: Positive, icon: "UI/icon_shield", iconColor: Color.CadetBlue);
+            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, protect, tint: Positive, vis: Ds.HasRegularShields, icon: "Modules/Shield_1KW", iconColor: Color.AliceBlue);
+            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, Color.Gold, tint: Positive, vis: Ds.HasAmplifiedMains, icon: "Modules/Shield_1KW", iconColor: Color.AliceBlue);
             Stat(GT.ShieldAmplify, () => (int)S.Stats.ShieldAmplifyPerShield, GT.TT_ShieldAmplify, protect, tint: Positive, nonZero: true);
             Stat(GT.RepairRate, () => S.RepairRate, GT.TT_RepairRate, protect, tint: Positive, nonZero: true);
             // the tooltip promises the TOTAL protection of the design, and the load-list
@@ -461,8 +462,8 @@ namespace Ship_Game.GameScreens.ShipDesign
             Head("ORDNANCE");
             Stat(GT.OrdnanceCreated, () => S.OrdAddedPerSecond, GT.TT_OrdnanceCreated, ordnance, nonZero: true);
             Stat(GT.OrdnanceCapacity, () => S.OrdinanceMax, GT.TT_OrdnanceCap, ordnance, vis: Ds.HasOrdnance);
-            Stat(GT.AmmoTime, () => Ds.AmmoTime, GT.TT_AmmoTime, ordnance, tint: Above(30f), vis: Ds.HasOrdFinite, icon: "Modules/Ordnance");
-            Word(GT.AmmoTime, "INF", GT.TT_AmmoTime, ordnance, good, vis: Ds.HasOrdInfinite, icon: "Modules/Ordnance");
+            Stat(GT.AmmoTime, () => Ds.AmmoTime, GT.TT_AmmoTime, ordnance, tint: Above(30f), vis: Ds.HasOrdFinite, icon: "Modules/Ordnance", iconColor: Color.Khaki);
+            Word(GT.AmmoTime, "INF", GT.TT_AmmoTime, ordnance, good, vis: Ds.HasOrdInfinite, icon: "Modules/Ordnance", iconColor: Color.Khaki);
 
             Head("FCS");
             Stat(GT.FireControl, () => S.TargetingAccuracy, GT.TT_FireControl, nonZero: true);
@@ -491,7 +492,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             Head("COMBAT");
             Stat("Weapons", () => S.Weapons.Count, GT.TT_ShipOffense, nonZero: true);
             Stat("Max Wpn Range", () => S.WeaponsMaxRange, GT.TT_ShipOffense, nonZero: true);
-            Stat("DPS", () => S.TotalDps, GT.TT_ShipOffense, nonZero: true, icon: "UI/icon_offense");
+            Stat("DPS", () => S.TotalDps, GT.TT_ShipOffense, nonZero: true, icon: "UI/icon_offense", iconColor: Color.OrangeRed);
             Stat(GT.ShipOffense, () => Ds.Strength, GT.TT_ShipOffense, nonZero: true);
             Stat(GT.RelativeStrength, () => Ds.RelativeStrength, GT.TT_RelativeStrength, nonZero: true);
         }
@@ -504,7 +505,7 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         void Stat(in LocalizedText title, Func<float> value, in LocalizedText tip, Color? titleColor = null,
                   Func<float, Color> tint = null, Func<bool> vis = null, bool nonZero = false,
-                  string icon = null)
+                  string icon = null, Color? iconColor = null)
         {
             // Ludoal fork: labels are WHITE — the per-family colour they used to carry is now
             // said by the block heading above them, so tinting each label as well was a
@@ -515,17 +516,19 @@ namespace Ship_Game.GameScreens.ShipDesign
             {
                 Title = title, Tip = tip, Value = value,
                 Color = LabelGrey,
-                Tint = tint, Visible = vis, NonZeroOnly = nonZero, Icon = icon,
+                Tint = tint, Visible = vis, NonZeroOnly = nonZero,
+                Icon = icon, IconColor = iconColor ?? Color.White,
             });
         }
 
         void Word(in LocalizedText title, string text, in LocalizedText tip, Color titleColor,
-                  Color valueColor, Func<bool> vis = null, string icon = null)
+                  Color valueColor, Func<bool> vis = null, string icon = null, Color? iconColor = null)
         {
             Rows.Add(new Row
             {
                 Title = title, Tip = tip, Text = text,
-                Color = LabelGrey, Tint = _ => valueColor, Visible = vis, Icon = icon,
+                Color = LabelGrey, Tint = _ => valueColor, Visible = vis,
+                Icon = icon, IconColor = iconColor ?? Color.White,
             });
         }
 
@@ -661,8 +664,11 @@ namespace Ship_Game.GameScreens.ShipDesign
                 if (S.ShipData != null)
                 {
                     string settings = $"{S.ShipData.ShipCategory}, {S.ShipData.DefaultCombatState}";
+                    // centred under the picture and in white: grey read as disabled, and left
+                    // aligned it floated away from the square it belongs to (Ludo)
+                    float w = Fonts.Arial12Bold.TextWidth(settings);
                     batch.DrawString(Fonts.Arial12Bold, settings,
-                                     new Vector2(X, rowsY + side + 6f), Color.Gray);
+                                     new Vector2(X + (side - w) * 0.5f, rowsY + side + 6f), Color.White);
                 }
             }
 
@@ -797,13 +803,13 @@ namespace Ship_Game.GameScreens.ShipDesign
                 if (r.Text != null)
                 {
                     Screen.DrawStatText(ref cursor, r.Title, r.Text, r.Color, r.Tip, spacing,
-                                        valueColor: r.Tint?.Invoke(0f), icon: r.Icon);
+                                        valueColor: r.Tint?.Invoke(0f), icon: r.Icon, iconColor: r.IconColor);
                 }
                 else
                 {
                     float v = r.Value();
                     Screen.DrawStatText(ref cursor, r.Title, v.GetNumberString(), r.Color, r.Tip, spacing,
-                                        valueColor: r.Tint?.Invoke(v), icon: r.Icon);
+                                        valueColor: r.Tint?.Invoke(v), icon: r.Icon, iconColor: r.IconColor);
 
                     // Delta against the PINNED design, in its own lane, coloured by which
                     // direction is better for that row. The subtraction reads "this panel minus

@@ -110,7 +110,7 @@ namespace Ship_Game
         // the shipyard — modules and designs alike — shares one geometry.
         public void DrawStatText(ref Vector2 cursor, LocalizedText words, string value,
                                  Color titleColor, LocalizedText tooltipId, float spacing = 165,
-                                 Color? valueColor = null, string icon = null)
+                                 Color? valueColor = null, string icon = null, Color? iconColor = null)
         {
             Graphics.Font font = Fonts.Arial12Bold;
 
@@ -131,7 +131,10 @@ namespace Ship_Game
                 int h = font.LineSpacing - 2;
                 int w = tex.Width * h / tex.Height;
                 var r = new Rectangle((int)(titlePos.X - w - 4), (int)titlePos.Y + 1, w, h);
-                ScreenManager.SpriteBatch.Draw(tex, r, titleColor);
+                // Ludoal fork (bench): the icon carries its OWN colour, not the label grey - tinted
+                // like the text it sits next to it was barely visible (Ludo). Same colours the
+                // load popup gives them, which is where a player has already met them.
+                ScreenManager.SpriteBatch.Draw(tex, r, iconColor ?? Color.White);
             }
 
             DrawString(titlePos, titleColor, title, font);

@@ -136,7 +136,13 @@ namespace Ship_Game
         // the black button bar at the foot of the screen — same 70 the screen builds BlackBar
         // with, so the module frames end on the design cartouches' line
         public const float BottomBarH = 70f;
-        public const float ShorterBy = 45f;  // three lines taken off the frame height (Ludo)
+        // Ludoal fork (bench 46.180): 15, not 45. Three lines were taken off the frames when they
+        // had room to spare; the COMBAT block filled that room and Relative Strength now touches
+        // the bottom edge (Ludo). Two lines go back, and they come out of the LIST above -
+        // ListHeightFor subtracts this frame height, so the whole column follows from one number
+        // and the four frames stay on their shared foot line. Deliberate on both sides: the
+        // module frames get the same room, which the coming stats rework will want.
+        public const float ShorterBy = 15f;  // one line still off (was three)
 
         // Where the frames' bottom edge lands. The design cartouches use the SAME line, which is
         // what makes the four frames read as one row (bench 46.135).
