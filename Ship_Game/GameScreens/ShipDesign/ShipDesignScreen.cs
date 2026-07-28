@@ -103,10 +103,7 @@ namespace Ship_Game
         // for as long as the cursor rests on a row (Ludo). Not persisted - it is a way of
         // looking at the list, not a preference.
         bool PinActiveDesign = true;
-        UICheckBox PinActiveCheck; // rides the cartouche's left edge, see ResizeCartouches
-        // the gap between a tab and its Pin Active checkbox, one number for both panels so the
-        // two read as the same control rather than as two that happen to look alike (Ludo)
-        internal const float PinTabGap = 20f;
+        UICheckBox PinActiveCheck;
         // which groups were open before the last rebuild, so a filter change does not refold
         // the whole browser (bench 46.172). Both group builders read it.
         readonly Array<string> ExpandedGroups = new();
@@ -647,12 +644,8 @@ namespace Ship_Game
             // same lesson the module panel's own button taught at bench 46.157
             ObsoleteDesign.r.X = (int)(frame.X + frame.W - ObsoleteDesign.r.Width - 10);
 
-            // and the Pin Active checkbox rides the tab, which hangs off the LEFT edge. Its
-            // module twin needs none of this: that frame is anchored left and grows rightwards,
-            // so its tab never moves. This one is anchored right and grows leftwards, which is
-            // the same trap the two elements above already fell into (bench 46.157 and 46.163).
-            if (PinActiveCheck != null)
-                PinActiveCheck.SetAbsPos(frame.X + InfoSub.Tabs[0].Rect.W + PinTabGap, PinActiveCheck.Y);
+            // (the Pin Active checkbox is anchored to the BROWSER's left edge, not to this
+            // frame, so unlike the two elements above it does not travel when the frame grows)
 
             PlaceHoverCartouche(frame);
         }
@@ -1118,13 +1111,15 @@ namespace Ship_Game
             InfoPanel = Add(new ShipDesignInfoPanel(this, infoInner));
             InfoPanel.HasDeltaLanes = deltaLanes; // widened on the first pin, see ResizeCartouches
             InfoSub = infoSub;
-            // Ludoal fork (bench): on the frame's own tab row, right of the tab, exactly where
-            // its module counterpart sits (Ludo). The tab measured itself against its title and
-            // font, so ask it where it ends rather than guessing a width. The checkbox is a child
-            // of the screen, not of the frame, so it survives the frame it hides: unpinned, it is
-            // the only way back.
+            // Ludoal fork (bench): on the frame's tab row vertically, but bound to the BROWSER,
+            // not to the frame: its left edge on the browser's left edge, the same anchor the
+            // filter bar above it uses (Ludo). Its module twin is right-aligned on ITS list, so
+            // each toggle hugs the outer edge of its own column and the pair frames the
+            // workbench. Bound to the list rather than the cartouche, it also stops travelling
+            // when the cartouche grows leftwards on a pin, and it survives the frame it hides:
+            // unpinned, the checkbox is the only way back.
             RectF infoTab = infoSub.Tabs[0].Rect;
-            PinActiveCheck = Checkbox(new Vector2(infoTab.Right + PinTabGap, infoTab.Y + 6),
+            PinActiveCheck = Checkbox(new Vector2(hullSelectPos.X, infoTab.Y + 6),
                                       () => PinActiveDesign,
                                       (b) => { PinActiveDesign = b; },
                                       "Pin Active",

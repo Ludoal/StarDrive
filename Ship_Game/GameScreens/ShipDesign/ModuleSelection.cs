@@ -55,14 +55,20 @@ namespace Ship_Game
             // rounded black background
             ActiveModSubMenu.SetBackground(Colors.TransparentBlackFill);
             // on the frame's own tab row, right of the tab: the one strip of empty space it has.
-            // The tab measured itself against its own title and font, so ask it where it ends
-            // rather than guessing a width that a retitling or a font change would falsify.
+            // Its RIGHT edge lands on the list's right edge (Ludo), so it reads as belonging to
+            // this column rather than floating in the tab row. UICheckBox sizes itself in its
+            // constructor, so its width is readable at once and the placement can be exact.
             RectF tab = ActiveModSubMenu.Tabs[0].Rect;
-            Checkbox(new Vector2(tab.Right + ShipDesignScreen.PinTabGap, tab.Y + 6),
+            UICheckBox pin = Checkbox(new Vector2(tab.Right, tab.Y + 6),
                      () => PinActiveModule,
                      (b) => { PinActiveModule = b; },
                      "Pin Active", "Keep the Active Module panel on screen while you hover the list.\n"
                                  + "Off: the hovered module takes its place, and it comes back when you look away.");
+            // ClientArea rather than Rect, since that is what the list is actually built on
+            // (ModuleSelectScrollList takes `this` as its rectSource). The two share their X
+            // and width in Submenu, so this is the same edge either way, but naming the one
+            // the list reads keeps it true if that ever stops holding.
+            pin.SetAbsPos(ClientArea.Right - pin.Width, pin.Y);
 
             // obsolete button
             int obsoleteW = ResourceManager.Texture("NewUI/icon_queue_delete").Width;
