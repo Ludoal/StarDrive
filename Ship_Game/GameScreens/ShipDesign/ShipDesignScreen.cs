@@ -103,6 +103,7 @@ namespace Ship_Game
         // for as long as the cursor rests on a row (Ludo). Not persisted - it is a way of
         // looking at the list, not a preference.
         bool PinActiveDesign = true;
+        UICheckBox PinActiveCheck; // rides the cartouche's left edge, see ResizeCartouches
         // which groups were open before the last rebuild, so a filter change does not refold
         // the whole browser (bench 46.172). Both group builders read it.
         readonly Array<string> ExpandedGroups = new();
@@ -634,6 +635,13 @@ namespace Ship_Game
             // same lesson the module panel's own button taught at bench 46.157
             ObsoleteDesign.r.X = (int)(frame.X + frame.W - ObsoleteDesign.r.Width - 10);
 
+            // and the Pin Active checkbox rides the tab, which hangs off the LEFT edge. Its
+            // module twin needs none of this: that frame is anchored left and grows rightwards,
+            // so its tab never moves. This one is anchored right and grows leftwards, which is
+            // the same trap the two elements above already fell into (bench 46.157 and 46.163).
+            if (PinActiveCheck != null)
+                PinActiveCheck.SetAbsPos(frame.X + InfoSub.Tabs[0].Rect.W + 10, PinActiveCheck.Y);
+
             // the hover frame sits to the left of the active one and keeps its own width
             // (Width, not Rect.W: Submenu.Rect is a RectF that shadows UIElementV2's integer
             // Rectangle Rect, and which one a call site resolves to is not worth relying on)
@@ -896,14 +904,7 @@ namespace Ship_Game
             float cartoucheY  = colBottom - cartoucheH; // colBottom already carries the margin
             // the browser runs down to the cartouche with the same gap the module list keeps
             // above its own frame — that is what puts the two columns' feet on one line
-            // Ludoal fork (bench): the gap under the browser widens to hold the Pin Active
-            // checkbox. It comes out of the LIST, not out of the cartouche - the two columns'
-            // feet stay on one line, which is the whole point of this arithmetic (Ludo).
-            // The band is asked of the font the checkbox actually draws in (Checkbox() hands it
-            // Arial12Bold), plus room to breathe on either side - not a round number that a
-            // font change would quietly turn into a clipped row or a gaping hole.
-            float pinRowH = Fonts.Arial12Bold.LineSpacing + 8f;
-            float listBottom  = cartoucheY - ModuleSelection.FrameGap - pinRowH;
+            float listBottom  = cartoucheY - ModuleSelection.FrameGap;
             // the completion line sits at local y 0, the issues button at 18 in Pirulen20
             float issuesH     = 18f + Fonts.Pirulen20.LineSpacing;
             // Ludoal fork (bench 46.150): the strip moves INSIDE the cartouche, on its last
@@ -994,13 +995,6 @@ namespace Ship_Game
                 GroupByRole = tab == 1;
                 RefreshHullSelectList();
             };
-            // in the band between the browser and the cartouche, left-aligned with the list
-            Checkbox(new Vector2(hullSelectPos.X + 6, listBottom + 4f),
-                     () => PinActiveDesign,
-                     (b) => { PinActiveDesign = b; },
-                     "Pin Active", "Keep the Active Design cartouche on screen while you hover the list.\n"
-                                 + "Off: the hovered design takes its place, and it comes back when you look away.");
-
             // single click selects (and shift-click pins for comparison), double click loads:
             // the load is the expensive gesture (mesh + modules + stats), so it stays deliberate
             HullSelectList.OnClick = OnBrowserItemClicked;
@@ -1103,6 +1097,18 @@ namespace Ship_Game
             InfoPanel = Add(new ShipDesignInfoPanel(this, infoInner));
             InfoPanel.HasDeltaLanes = deltaLanes; // widened on the first pin, see ResizeCartouches
             InfoSub = infoSub;
+            // Ludoal fork (bench): on the frame's own tab row, right of the tab, exactly where
+            // its module counterpart sits (Ludo). The tab measured itself against its title and
+            // font, so ask it where it ends rather than guessing a width. The checkbox is a child
+            // of the screen, not of the frame, so it survives the frame it hides: unpinned, it is
+            // the only way back.
+            RectF infoTab = infoSub.Tabs[0].Rect;
+            PinActiveCheck = Checkbox(new Vector2(infoTab.Right + 10, infoTab.Y + 6),
+                                      () => PinActiveDesign,
+                                      (b) => { PinActiveDesign = b; },
+                                      "Pin Active",
+                                      "Keep the Active Design cartouche on screen while you hover the list.\n"
+                                    + "Off: the hovered design takes its place, and it comes back when you look away.");
 
             // Ludoal fork (spec v4): the HOVER cartouche takes the slot the Compared one used to
             // hold. Like its module counterpart it is the plain frame — no delta lane — showing
