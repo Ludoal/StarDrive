@@ -316,6 +316,14 @@ namespace Ship_Game
         {
             SpawnActiveModule(moduleUID, moduleRot, turretAngle, hangarShipUID);
             HighlightedModule = null;
+
+            // Ludoal fork (bench 184): picking up the very module that is pinned drops the pin,
+            // the same way loading a design does on the browser side. Comparing a thing with
+            // itself is all zeroes, and SetComparedModule already refuses that pin outright, so
+            // leaving it here would strand one that can never be shown. Any OTHER module keeps
+            // the pin: swapping the brush to weigh it against the pinned one is the whole point.
+            if (CompareModule != null && CompareModule.UID == moduleUID)
+                CompareModule = null;
         }
 
         class SlotInstall

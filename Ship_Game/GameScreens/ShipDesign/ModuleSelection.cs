@@ -117,11 +117,17 @@ namespace Ship_Game
         Submenu DrawingPanel;
         float ActiveModStatSpacing => (DrawingPanel ?? ActiveModSubMenu).Width * 0.27f;
 
-        // Ludoal fork (spec v4): a comparison is running when a module is pinned and the Active
-        // panel is up. There is no second frame any more — this is what used to be
-        // CompareModSubMenu.Visible, and every test that asked for that frame really meant this.
-        bool Comparing => GlobalStats.ShipyardComparison
-                       && Screen.CompareModule != null && ActiveModSubMenu.Visible;
+        // Ludoal fork (spec v4): a comparison is running when a module is pinned. There is no
+        // second frame any more: this is what used to be CompareModSubMenu.Visible, and every
+        // test that asked for that frame really meant this.
+        // ⚠ Bench 184: this used to also require ActiveModSubMenu.Visible, kept by symmetry with
+        // the frame that no longer exists. With Pin Active unchecked, a shift-click necessarily
+        // happens WHILE hovering, so the Active frame is hidden at that very instant and the
+        // comparison went off just as it was asked for (Ludo). The design side never had the
+        // test: there, wantDeltas reads ComparedDesign alone. A pin is a deliberate state, a
+        // hover is a passing one, and the deliberate one does not answer to the other. The two
+        // sites that actually need the frame on screen are already guarded by their own if.
+        bool Comparing => GlobalStats.ShipyardComparison && Screen.CompareModule != null;
 
         // Ludoal fork (spec v4): the hover frame waits this long before appearing, so running the
         // cursor down the list does not flash a frame per row.
@@ -484,11 +490,6 @@ namespace Ship_Game
             }
 
             ChooseFighterSub.Visible = ChooseFighterSL.GetFighterHangar() != null;
-            // Ludoal fork: no brush, no comparison. The pin belongs to the module being carried.
-            // ⚠ This hangs on the BRUSH, not on the frame being hidden: unpinned (see below) the
-            // frame hides on every hover, and reading the symptom would drop the pin each time.
-            if (Screen.ActiveModule == null)
-                Screen.CompareModule = null;
             // Ludoal fork (spec v4): the hover frame appears after a short dwell, so sweeping the
             // list does not make it blink. Showing the module already on the workbench would say
             // nothing, so that case stays hidden too.
