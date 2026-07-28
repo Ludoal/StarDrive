@@ -1205,11 +1205,51 @@ namespace Ship_Game
         ShipYardBrowserItem NewDesignRow(IShipDesign design, bool hullInBadge)
         {
             bool isWip = WipDesigns.Contains(design.Name);
+
+            // the techs this design still needs, and which of them are already queued - the
+            // button only earns its place when researching would actually add something
+            string[] missing = design.TechsNeeded.Filter(t => !Player.UnlockedTechs.Any(te => te.UID == t));
+            string[] queued = missing.Filter(Player.Research.IsQueued);
+            bool worthResearching = missing.Length > 0 && queued.Length < missing.Length;
+
             var row = new ShipYardBrowserItem(Player, design, isWip,
                 onDelete: () => PromptDeleteDesign(design.Name),
+                onResearch: worthResearching
+                          ? () => PromptResearchDesign(design.Name, missing, queued)
+                          : null,
                 onDeleteAllWipVersions: isWip ? () => PromptDeleteAllWipVersions(design.Name) : null);
             row.ShowHullInBadge = hullInBadge;
             return row;
+        }
+
+        // Ludoal fork (bench): queue the techs a design still needs, straight from its browser
+        // row - the load popup had this and it was lost in the merge (Ludo). Same shape as the
+        // deletions: nothing ported, AddTechToQueue and GetTechEntry are already public.
+        void PromptResearchDesign(string designName, string[] missingTechs, string[] alreadyQueued)
+        {
+            string ToNames(string[] techs)
+            {
+                var names = new Array<string>();
+                foreach (string uid in techs)
+                    if (Player.TryGetTechEntry(uid, out TechEntry te))
+                        names.Add(te.Tech.Name.Text);
+                return string.Join("\n", names);
+            }
+
+            string queued = alreadyQueued.Length > 0 ? $"Already in Queue:\n{ToNames(alreadyQueued)}\n\n" : "";
+            string toAdd = ToNames(missingTechs.Filter(t => !alreadyQueued.Contains(t)));
+
+            ScreenManager.AddScreen(new MessageBoxScreen(this,
+                $"Confirm Research Missing Techs ({missingTechs.Length}) for {designName}:\n\n{queued} Will be added to Queue:\n{toAdd}")
+            {
+                Accepted = () =>
+                {
+                    foreach (TechEntry te in missingTechs.Select(t => Player.GetTechEntry(t)).Sorted(t => t.TechCost))
+                        Player.Research.AddTechToQueue(te.UID);
+                    GameAudio.EchoAffirmative();
+                    RefreshHullSelectList();
+                }
+            });
         }
 
         void PromptDeleteDesign(string designName)
