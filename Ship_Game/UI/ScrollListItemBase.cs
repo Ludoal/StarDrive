@@ -130,6 +130,7 @@ namespace Ship_Game
             public LocalizedText Tooltip;
             public Action OnClick;
             public Func<ScrollListStyleTextures.Hoverable> GetHoverable;
+            public int IconSize; // Ludoal fork: 0 = use the texture's own size
             Rectangle AbsRect;
             bool IsHovered;
                 
@@ -149,7 +150,12 @@ namespace Ship_Game
                 // For negative RelPos, start from opposite edge
                 float x = (RelPos.X >= 0 ? Parent.X : Parent.Right) + RelPos.X;
                 float y = (RelPos.Y >= 0 ? Parent.Y : Parent.Bottom) + RelPos.Y;
-                AbsRect = new Rectangle((int)x, (int)(y + 15f - icon.Height / 2f), icon.Width, icon.Height);
+                // Ludoal fork: optional size override, for an icon whose texture does not match
+                // its neighbours - x_red ships at 24px where the others are 17, so a row mixing
+                // them looked lopsided (Ludo). Zero keeps the texture's own size.
+                int w = IconSize > 0 ? IconSize : icon.Width;
+                int h = IconSize > 0 ? IconSize : icon.Height;
+                AbsRect = new Rectangle((int)x, (int)(y + 15f - h / 2f), w, h);
             }
             public void Draw(SpriteBatch batch)
             {
