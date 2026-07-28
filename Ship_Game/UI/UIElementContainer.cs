@@ -326,14 +326,19 @@ namespace Ship_Game
         // it — so ordering by hand beats reordering the constructor.
         public void BringToFrontZOrder(UIElementV2 child)
         {
-            // (a plain loop: Array<T> carries a Min extension but no Max, and this is not worth
-            //  a LINQ import in a file that has none)
+            // ⚠ move the child to the end of the list, do NOT sort. RefreshZOrder runs
+            // Array.Sort, which is UNSTABLE, and this screen has several Submenus whose
+            // backgrounds were pushed to min-1 by SendToBackZOrder - so a sort can reorder
+            // equal-ZOrder siblings arbitrarily and drop a panel behind an opaque background.
+            // That is exactly what emptied the design cartouche at bench 46.172 (Ludo).
             int maxZOrder = int.MinValue;
             foreach (UIElementV2 e in Elements)
                 if (e.ZOrder > maxZOrder)
                     maxZOrder = e.ZOrder;
             child.ZOrder = maxZOrder + 1;
-            RefreshZOrder();
+
+            if (Elements.Remove(child))
+                Elements.Add(child);
         }
 
         protected override int NextZOrder()

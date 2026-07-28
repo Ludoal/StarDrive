@@ -97,6 +97,9 @@ namespace Ship_Game
         string BrowserFilterText;
         bool ShowLockedDesigns;
         bool HideObsoleteDesigns; // Ludoal fork: the browser's obsolete filter
+        // which groups were open before the last rebuild, so a filter change does not refold
+        // the whole browser (bench 46.172). Both group builders read it.
+        readonly Array<string> ExpandedGroups = new();
         // Ludoal fork (bench 46.152): how the browser groups its rows. By hull is the
         // build view (a carcass and what we already put on it); by role is the use view
         // ("my carriers", wherever they are built). Same list, same filters, one key
@@ -176,11 +179,21 @@ namespace Ship_Game
         {
             // Comparing a module with itself says nothing: every delta is zero. Refuse the pin
             // rather than show a frame full of blanks (Ludo, at the bench).
-            ShipModule active = ActiveModule ?? HighlightedModule;
-            if (template != null && active != null && active.UID == template.UID)
+            // Ludoal fork (bench 46.172): null means CANCEL, and it has to short-circuit here.
+            // Every branch below fell through to CreateModuleListItem(null), which dereferences
+            // its argument - clicking the new x crashed the game (Ludo).
+            if (template == null)
+            {
+                CompareModule = null;
+                return;
+            }
+
+            // Comparing a module with itself says nothing: every delta is zero. Refuse the pin
+            // rather than show a frame full of blanks (Ludo, at the bench).
+            if (ActiveModule != null && ActiveModule.UID == template.UID)
                 return;
 
-            if (CompareModule != null && template != null && CompareModule.UID == template.UID)
+            if (CompareModule != null && CompareModule.UID == template.UID)
                 CompareModule = null;
             else
                 CompareModule = CreateModuleListItem(template);
@@ -594,7 +607,7 @@ namespace Ship_Game
 
             InfoPanel.SetAbsPos(frame.X + ShipDesignInfoPanel.Inset, frame.Y + 26);
             InfoPanel.SetAbsSize(frame.W - ShipDesignInfoPanel.Inset * 2f, frame.H - 34);
-            InfoPanel.RequiresLayout = true;
+            InfoPanel.RequiresLayout = true;   // SetAbsSize does not arm it, same as the frame
 
             // Design Completion / DESIGN ISSUES hang off the cartouche's left edge too — they
             // were placed once at construction and stayed put while the frame grew leftwards on
@@ -913,12 +926,17 @@ namespace Ship_Game
             // Ludoal fork: the module list gets its filter as a checkbox directly above it,
             // where the designs have theirs. It used to be a button in the bottom bar, a long way
             // from the list it filters (Ludo) — a first taste of the wider UI pass to come.
-            Checkbox(new Vector2(11, filterTop + 26),
+            // 26px ABOVE the list, not below its top edge: filterTop IS the list's own top, so
+            // +26 put the checkbox inside the list, which drew straight over it (bench 46.172).
+            Checkbox(new Vector2(11, filterTop - 26),
                      () => IsFilterOldModulesMode,
                      (b) => { IsFilterOldModulesMode = b; ModuleSelectComponent.ResetActiveCategory(); },
                      "Hide obsolete", GameText.WhenToggledRedAnyModule);
 
-            const float row3 = -118f;
+            // Ludoal fork (bench 46.172): the row is right-aligned on the frame's own right
+            // edge with a 5px margin, rather than pushed left by a guessed amount (Ludo).
+            const float togglesWidth = 246f + 108f;   // three checkboxes, last one included
+            float row3 = hullSelSize.X - togglesWidth - 5f;
             Checkbox(new Vector2(filterX + row3 + 6, filterTop + 26),
                      () => !Player.Universe.P.ShowAllDesigns,
                      (b) => { Player.Universe.P.ShowAllDesigns = !b; RefreshHullSelectList(); },
@@ -1175,6 +1193,15 @@ namespace Ship_Game
         // it), which is a different field from the hull's own role — they never disagree.
         void RefreshHullSelectList()
         {
+            // Ludoal fork (bench 46.172): remember which groups were open. Rebuilding the list
+            // creates new row objects, so their expanded state is lost and every category snaps
+            // shut - which turned marking one design obsolete into refolding the whole browser
+            // (Ludo). Keyed by heading text, the only thing that survives the rebuild.
+            ExpandedGroups.Clear();
+            foreach (ShipYardBrowserItem row in HullSelectList.AllEntries)
+                if (row.Expanded && row.HeaderText.NotEmpty())
+                    ExpandedGroups.Add(row.HeaderText);
+
             HullSelectList.Reset();
 
             // designs indexed by the hull they are built on, so each group is one lookup
@@ -1243,7 +1270,7 @@ namespace Ship_Game
                 // every hull in place is not a search (Ludo). The filter reaches the hull
                 // rows too now, and what survives is opened so the matches are on screen
                 // rather than behind a fold.
-                if (BrowserFilterText.NotEmpty())
+                if (BrowserFilterText.NotEmpty() || ExpandedGroups.Contains(cls))
                     group.Expand(true);
             }
         }
@@ -1303,7 +1330,7 @@ namespace Ship_Game
                     group.AddSubItem(row);
                 }
 
-                if (BrowserFilterText.NotEmpty())
+                if (BrowserFilterText.NotEmpty() || ExpandedGroups.Contains(role))
                     group.Expand(true);
             }
         }
