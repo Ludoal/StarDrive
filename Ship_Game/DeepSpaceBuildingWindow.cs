@@ -35,7 +35,7 @@ namespace Ship_Game
 
             const int windowWidth = 320;
             // Ludoal fork (bench): right-anchored on the same edge as the Automation window
-            // (Ludo). It used to sit to its left to avoid overlapping, which cost a screen-edge
+            // (maintainer feedback). It used to sit to its left to avoid overlapping, which cost a screen-edge
             // alignment to solve a problem the exclusion now solves properly: the two windows
             // are mutually exclusive, so they can share the anchor - opening one closes the
             // other, the way the Exotic and Freighter windows already do.

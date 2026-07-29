@@ -48,7 +48,7 @@ namespace Ship_Game.GameScreens.MainMenu
             // GlobalStats, so a tick takes effect at once, and OptionsScreen.ExitScreen calls
             // SaveSettings - leaving the options screen at all is enough to keep it. The earlier
             // "close this window then press Apply Settings" was wrong twice over and asked for
-            // two steps that do nothing (Ludo found it by not doing them).
+            // two steps that do nothing (maintainer feedback).
             list.AddLabel("Takes effect the next time the screen is opened.")
                 .Color = Colors.Cream;
 

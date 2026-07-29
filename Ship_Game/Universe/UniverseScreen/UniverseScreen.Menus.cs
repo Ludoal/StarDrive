@@ -108,7 +108,7 @@ namespace Ship_Game
                 GameAudio.AcceptClick();
                 // Ludoal fork (bench): the two right-anchored windows are mutually exclusive,
                 // the way the Exotic and Freighter ones are — each closes the other on opening,
-                // so they can share the screen edge instead of dodging each other (Ludo).
+                // so they can share the screen edge instead of dodging each other (maintainer feedback).
                 aw.CloseWindow();
                 DeepSpaceBuildWindow.InitializeAndShow();
             }

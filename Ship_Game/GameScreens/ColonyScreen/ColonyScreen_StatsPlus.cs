@@ -11,7 +11,7 @@ namespace Ship_Game
     // Everything about the tab lives in this file; the only hooks in existing
     // code are one AddTab() call and one dispatch line in DrawDetailInfo().
     //
-    // Design v1.2 (Ludo's review, 20 Jul): totals and diagnostics on the panel,
+    // Design v1.2 (maintainer feedback): totals and diagnostics on the panel,
     // marginal per-colonist rates belong to the Assign Labor tooltips, dead
     // lines are omitted. Budget is decomposed like the Economic Review and its
     // lines sum to the displayed net. All figures are per TURN: Empire.DoMoney()

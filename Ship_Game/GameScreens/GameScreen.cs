@@ -336,7 +336,7 @@ namespace Ship_Game
         {
             LowRes = ScreenWidth <= 1366 || ScreenHeight <= 720;
             HiRes  = ScreenWidth > 1920 || ScreenHeight > 1400;
-            // width only — what breaks below 1920 is horizontal (Ludo). Height is handled by
+            // width only — what breaks below 1920 is horizontal (maintainer feedback). Height is handled by
             // giving one block per screen the job of absorbing it, not by a flag.
             Narrow = ScreenWidth < 1920;
             // height only. In 16:9 and 16:10 a height of 1440 already implies 2304+ of width,
@@ -344,7 +344,7 @@ namespace Ship_Game
             //
             // Inclusive: strictly-greater made 1440p itself fall outside, which is both the
             // second-largest slice of the Steam install base and the bench display, so the flag
-            // was unreachable on the machine meant to test it (Ludo, 25 Jul).
+            // was unreachable on the machine meant to test it (maintainer feedback).
             Tall = ScreenHeight >= 1440;
         }
 

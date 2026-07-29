@@ -641,7 +641,7 @@ namespace Ship_Game
             int sepW = (int)(cellW * others.Length);
             batch.DrawLine(new Vector2(sepX, sepY), new Vector2(sepX + sepW, sepY), new Color(255, 255, 255, 40).Premultiplied());
 
-            // merged status row (Ludo 19:10): war BREAKS every treaty at declaration
+            // merged status row (maintainer feedback): war BREAKS every treaty at declaration
             // (DeclareWarOn → BreakAllTreatiesWith includingPeace) and alliance
             // auto-signs NA — so one row with priority W > A > N > P loses nothing
             // but a truce still ticking under a fresher alliance. Icons, not letters.
@@ -699,7 +699,7 @@ namespace Ship_Game
             // Ludoal fork (bench 46.173): the closing key is tested BEFORE the top bar, not
             // after. The bar reads the same key to OPEN this screen and returns true, so with the
             // bar first the key never reached the line below and the screen would not close on
-            // its own hotkey (Ludo). The stock screen has no bar, which is why it never showed.
+            // its own hotkey (maintainer feedback). The stock screen has no bar, which is why it never showed.
             if (input.KeyPressed(Keys.I) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();

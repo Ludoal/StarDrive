@@ -198,7 +198,7 @@ namespace Ship_Game
             InfluenceZones.IsToggled       = Universe.ShowingInfluenceOverlay;   // Ludoal fork (F4)
             GravityWellsOnly.IsToggled     = Universe.ShowingGravityWellOverlay; // Ludoal fork (F5)
             // Ludoal fork (bench): Vision was missing from this list, so its button only lit up
-            // when clicked — pressing F3 turned the overlay on with the button still dark (Ludo).
+            // when clicked — pressing F3 turned the overlay on with the button still dark (maintainer feedback).
             VisionOverlayBtn.IsToggled     = Universe.ShowingVisionOverlay;      // Ludoal fork (F3)
             
             base.Draw(batch, elapsed);
@@ -479,7 +479,7 @@ namespace Ship_Game
 
             // Ludoal fork (bench): the Vision button had no tooltip at all — it was added to the
             // row without a matching entry here, so it was the one button on the minimap that
-            // said nothing (Ludo).
+            // said nothing (maintainer feedback).
             if (VisionOverlayBtn.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip("Vision overlay: everything your sensors actually see — "
                                     + "ships, planets and the coverage your spies bring in", "F3");

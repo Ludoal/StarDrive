@@ -384,7 +384,7 @@ namespace Ship_Game.GameScreens
             // Ludoal fork (bench 46.173): the closing key is tested BEFORE the top bar, not
             // after. The bar reads the same key to OPEN this screen and returns true, so with the
             // bar first the key never reached the line below and the screen would not close on
-            // its own hotkey (Ludo). The stock screen has no bar, which is why it never showed.
+            // its own hotkey (maintainer feedback). The stock screen has no bar, which is why it never showed.
             if (input.KeyPressed(Keys.E) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();

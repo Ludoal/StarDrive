@@ -85,7 +85,7 @@ namespace Ship_Game
             if (input.EmpirePatrolsScreen)        ScreenManager.AddScreen(new EmpirePatrolsScreen(this, Player));
             if (input.ImportantEventsScreen)      ScreenManager.AddScreen(new ImportantEventsScreen(this)); // Ludoal fork: F7
             // Ludoal fork (bench): mutually exclusive with the Build Menu — they share the
-            // right screen edge now, so opening one closes the other (Ludo).
+            // right screen edge now, so opening one closes the other (maintainer feedback).
             if (input.AutomationWindow && !Debug)
             {
                 if (!aw.IsOpen) DeepSpaceBuildWindow.Hide();
@@ -202,7 +202,7 @@ namespace Ship_Game
             if (dismiss || !workersPanel.IsActive)
             {
                 // Ludoal fork (bench 191): opened from a list screen, closing goes back to that
-                // list (Ludo). Taken before it is called: reopening the screen runs its own
+                // list (maintainer feedback). Taken before it is called: reopening the screen runs its own
                 // setup, and a hook still standing would send the NEXT close there too.
                 Action back = ReturnToListScreen;
                 ReturnToListScreen = null;

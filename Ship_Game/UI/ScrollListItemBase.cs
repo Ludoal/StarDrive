@@ -152,7 +152,7 @@ namespace Ship_Game
                 float y = (RelPos.Y >= 0 ? Parent.Y : Parent.Bottom) + RelPos.Y;
                 // Ludoal fork: optional size override, for an icon whose texture does not match
                 // its neighbours - x_red ships at 24px where the others are 17, so a row mixing
-                // them looked lopsided (Ludo). Zero keeps the texture's own size.
+                // them looked lopsided (maintainer feedback). Zero keeps the texture's own size.
                 int w = IconSize > 0 ? IconSize : icon.Width;
                 int h = IconSize > 0 ? IconSize : icon.Height;
                 AbsRect = new Rectangle((int)x, (int)(y + 15f - h / 2f), w, h);

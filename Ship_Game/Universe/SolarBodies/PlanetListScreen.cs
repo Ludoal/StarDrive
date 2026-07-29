@@ -125,7 +125,7 @@ namespace Ship_Game
             ExoticSystemsButton.Tooltip = GameText.ExoticSystemsArrayTip;
             // Ludoal fork: the key goes in the tooltip's own hotkey slot, the way every other
             // shortcut in the game is announced - it was glued onto the end of the text as
-            // " (G)", which is not how the tooltip states a key anywhere else (Ludo).
+            // " (G)", which is not how the tooltip states a key anywhere else (maintainer feedback).
             ExoticSystemsButton.TooltipHotkey = "G";
 
             Vector2 troopPos = new Vector2(TitleBar.Menu.X + TitleBar.Menu.Width + 17, TitleBar.Menu.Y + 65);

@@ -160,7 +160,7 @@ namespace Ship_Game
                 // Ludoal fork (bench 46.154): leaving the element ends the tip AT ONCE instead
                 // of fading it out over TipTime. Sweeping a list, the fade meant the previous
                 // row's tip was still on screen while the cursor was already two rows down —
-                // which reads as a tooltip that lags, sticks and shows the wrong text (Ludo).
+                // which reads as a tooltip that lags, sticks and shows the wrong text (maintainer feedback).
                 // Dropping to the reappear point rather than to zero keeps the grace period, so
                 // moving along a list does not re-arm the 0.35s dwell on every single row.
                 const float TipReappearTimePoint = TipShowTimePoint - TipReappearTimeDelay;

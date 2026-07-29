@@ -808,7 +808,7 @@ namespace Ship_Game
             GraphicsSettings settings = GraphicsSettings.FromGlobalStats();
             settings.Width = w;
             settings.Height = h;
-            // Borderless throughout (Ludo): a title bar and frame eat into the height being
+            // Borderless throughout (maintainer feedback): a title bar and frame eat into the height being
             // tested, and the tallest step would hang off the display as a window.
             settings.Mode = WindowMode.Borderless;
 

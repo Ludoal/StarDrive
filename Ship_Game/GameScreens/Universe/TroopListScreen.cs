@@ -75,7 +75,7 @@ namespace Ship_Game
                 // routes to the Ground Assault View via OpenCombatMenu.
                 bool deployed = item.Planet.Owner != Player;
                 Universe.SnapViewColony(item.Planet, deployed);
-                // Ludoal fork (bench 191): closing that colony comes back HERE (Ludo).
+                // Ludoal fork (bench 191): closing that colony comes back HERE (maintainer feedback).
                 // ⚠ Colony view only: the deployed path opens the Ground Assault view instead,
                 // which never reaches the close handler that consumes this, so a hook set there
                 // would sit and fire on some later, unrelated close.
@@ -151,14 +151,14 @@ namespace Ship_Game
                 DrawHeader(batch, font, e1.NumRect, "Num");
                 // Ludoal fork: the word alone. This header carried "Strength" AND a fist icon
                 // saying the same thing, and it was the only column of the six to do so — the
-                // text stays because the other five are text (Ludo).
+                // text stays because the other five are text (maintainer feedback).
                 DrawHeader(batch, font, e1.StrRect, "Strength");
 
                 Color lineColor = new Color(118, 102, 67, 255);
                 float columnTop = ERect.Y + 15;
                 float columnBot = ERect.Y + ERect.H - 20;
                 // Ludoal fork (bench): the loop drew each column's LEFT edge, so the last column
-                // had no line closing it and Strength bled into the empty gutter (Ludo). Its
+                // had no line closing it and Strength bled into the empty gutter (maintainer feedback). Its
                 // right edge closes the table.
                 foreach (int colX in new[] { e1.LocationRect.X, e1.StatusRect.X, e1.TroopRect.X,
                                              e1.NumRect.X, e1.StrRect.X, e1.StrRect.Right })
@@ -246,7 +246,7 @@ namespace Ship_Game
             int h = (int)Height;
             RemoveAll();
 
-            // Ludoal fork: laid out the way the Ships list and the Planet Array do it (Ludo),
+            // Ludoal fork: laid out the way the Ships list and the Planet Array do it (maintainer feedback),
             // which took three benches to copy rather than approximate.
             //
             // THE RULE, read off both of them: a column holding FREE TEXT (a name, a place) takes
@@ -263,7 +263,7 @@ namespace Ship_Game
             const int DataCol = 90;     // Status, Num, Strength — a number's room is its own
             const int MinGutter = 150;  // the empty column, wide enough for buttons later
 
-            // ⚠ and a CEILING on the text columns (Ludo, bench 46.161): an uncapped share gave
+            // ⚠ and a CEILING on the text columns (maintainer feedback): an uncapped share gave
             // Location ~620px at 1920 for names like "Terran-Prototype". A name needs the room a
             // name needs; past that the width is spread, not used. The text columns take their
             // share UP TO a maximum, and everything beyond falls into the gutter — which is

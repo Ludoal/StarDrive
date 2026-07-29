@@ -299,7 +299,7 @@ namespace Ship_Game
             // Ludoal fork: say what this button is actually for. It applies the DISPLAY settings
             // and nothing else - everything else on this screen takes effect the moment you
             // change it and is saved when you leave. A button called "Apply Settings" sitting
-            // among settings that apply themselves is a fair way to be misread (Ludo).
+            // among settings that apply themselves is a fair way to be misread (maintainer feedback).
             apply.Tooltip = "For the display settings only: resolution and screen mode.\n"
                           + "You get 10 seconds to confirm, or they revert.\n\n"
                           + "Everything else applies as you change it,\n"

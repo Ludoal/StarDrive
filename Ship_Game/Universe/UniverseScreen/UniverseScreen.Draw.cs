@@ -342,7 +342,7 @@ namespace Ship_Game
                 // a lighter veil there (150 = ~41% visibility, tuned on the bench;
                 // 130 was a touch bright), keep 170 when painting.
                 // Ludoal fork (bench 190): the veil is the VISION OVERLAY's statement, so at
-                // rest it only hints. Cutting it out entirely was too bright (Ludo) and lost
+                // rest it only hints. Cutting it out entirely was too bright (maintainer feedback) and lost
                 // the explored/unexplored distinction with it, so F3 off keeps a light veil
                 // rather than none. Bench numbers, meant to be moved.
                 int fogAlpha = GlobalStats.FogOfWarMemory ? 170 : 150;

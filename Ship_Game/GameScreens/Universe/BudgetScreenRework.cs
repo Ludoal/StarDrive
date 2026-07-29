@@ -73,7 +73,7 @@ namespace Ship_Game.GameScreens
             public void Spacer() => Add(new UILabel(" ", Fonts.Arial12));
 
             // totals are regular rows, not the UIList Footer — the Footer pins to the
-            // rect bottom and breaks the even row pitch (Ludo's bench, 19:40)
+            // rect bottom and breaks the even row pitch (maintainer feedback)
             public void AddTotal(Func<float> getValue)
             {
                 AddSplit(new UILabel(Localizer.Token(GameText.Total2), Colors.Cream),
@@ -140,7 +140,7 @@ namespace Ship_Game.GameScreens
                 MoneyCell(1, () => PopIncome(Planet));
                 MoneyCell(2, () => BldgIncome(Planet));
                 var gross = MoneyCell(3, () => Planet.Money.GrossRevenue);
-                // the tax rate column moved here (Ludo 18:54): the rate is already
+                // the tax rate column moved here (maintainer feedback): the rate is already
                 // baked into the income columns, the derivation lives in the tooltip
                 float baseRate = Planet.Owner != null ? Planet.Owner.data.TaxRate * 100f : 0f;
                 gross.Tooltip = $"pop {PopIncome(Planet).MoneyString()} + buildings {BldgIncome(Planet).MoneyString()}" +
@@ -290,7 +290,7 @@ namespace Ship_Game.GameScreens
             FooterMoney(8, () => Player.GetPlanets().Sum(EconColonyItem.GovExpense));
             FooterMoney(9, () => Player.GetPlanets().Sum(EconColonyItem.BudgetLeft));
 
-            // ---- RIGHT 1/3: the synthesis, causal order (Ludo, 23 Jul 18:03) ----
+            // ---- RIGHT 1/3: the synthesis, causal order (maintainer feedback) ----
             // auto-tax mode + sliders → governor budget (derived from the treasury
             // goal) → vertical arithmetic Income − Expenditure = Net Gain
             int rx = (int)RightMenu.X + 20;
@@ -342,7 +342,7 @@ namespace Ship_Game.GameScreens
         void FillList()
         {
             ColonySL.Reset();
-            // Ludoal fork (bench 190): DOUBLE click, not single (Ludo). Opening a colony
+            // Ludoal fork (bench 190): DOUBLE click, not single (maintainer feedback). Opening a colony
             // tears down this screen, so a stray click while reading the table threw you out
             // of it. Same gesture as the Empire screen's colony list.
             // ⚠ re-armed here rather than at construction: Reset drops the handlers.
@@ -361,7 +361,7 @@ namespace Ship_Game.GameScreens
             GameAudio.AcceptClick();
             ExitScreen();
             // Ludoal fork (bench 191): right-click in the colony comes back HERE, not to the
-            // map (Ludo). The universe screen calls this once, when that colony closes.
+            // map (maintainer feedback). The universe screen calls this once, when that colony closes.
             Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new BudgetScreenRework(Universe));
             Universe.workersPanel = new ColonyScreen(Universe, item.Planet, Universe.EmpireUI);
             Universe.LookingAtPlanet = true;
@@ -390,7 +390,7 @@ namespace Ship_Game.GameScreens
         }
 
         // pots = EMA(treasury goal × weights) — a treasury ALLOCATION, deliberately
-        // outside the per-turn arithmetic. Two sub-sections (Ludo 18:49): what the
+        // outside the per-turn arithmetic. Two sub-sections (maintainer feedback): what the
         // planets receive (Colony + Defense), then Space Roads, then the total.
         // Shares sit LEFT of the values; share = of the allocated total.
         private void BudgetTab(Rectangle budgetRect)
@@ -527,7 +527,7 @@ namespace Ship_Game.GameScreens
             // Ludoal fork (bench 46.173): the closing key is tested BEFORE the top bar, not
             // after. The bar reads the same key to OPEN this screen and returns true, so with the
             // bar first the key never reached the line below and the screen would not close on
-            // its own hotkey (Ludo). The stock screen has no bar, which is why it never showed.
+            // its own hotkey (maintainer feedback). The stock screen has no bar, which is why it never showed.
             if (input.KeyPressed(Keys.T) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();
