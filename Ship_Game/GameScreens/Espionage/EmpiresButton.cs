@@ -56,7 +56,7 @@ namespace Ship_Game.GameScreens
             if (Player.LegacyEspionageEnabled)
                 return;
 
-            var weightRect = new Rectangle(Rect.Left, Rect.Bottom + 66, 140, 40); // Ludoal fork: anchored under the button (column layout)
+            var weightRect = new Rectangle(Rect.Left, Rect.Y + 250, 140, 40);
             if (Empire == Player)
             {
                 InfiltrationDefense = new FloatSlider(weightRect, GameText.EspioangeDefenseWeight, min: 0, 
@@ -74,7 +74,7 @@ namespace Ship_Game.GameScreens
 
                 if (Player.Universe.MajorEmpires.Any(e => !e.isPlayer && Player.IsKnown(e)))
                 {
-                    var budgetRect = new Rectangle(Rect.Left, Rect.Bottom + 6, 140, 40); // Ludoal fork: column layout
+                    var budgetRect = new Rectangle(Rect.Left, Rect.Y + 180, 140, 40);
                     EspionageBudgetMultiplier = new FloatSlider(SliderStyle.Decimal1, budgetRect, GameText.EspioangeBudgetMuliplier, 1f, 5f, value: Player.EspionageBudgetMultiplier);
                     EspionageBudgetMultiplier.Tip = GameText.EspioangeBudgetMuliplierTip;
                     EspionageBudgetMultiplier.OnChange = (s) =>
@@ -84,7 +84,7 @@ namespace Ship_Game.GameScreens
                         UpdateCostPerTurn();
                     };
 
-                    CostPerTurn = new UILabel(new Vector2(Rect.Left, Rect.Bottom + 46), "", Fonts.Arial12); // Ludoal fork: column layout
+                    CostPerTurn = new UILabel(new Vector2(Rect.Left, Rect.Y + 220), "", Fonts.Arial12);
                     UpdateCostPerTurn();
                 }
             }
