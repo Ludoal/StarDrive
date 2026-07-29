@@ -546,10 +546,15 @@ namespace Ship_Game
             if (ActiveModSubMenu.Visible)
             {
                 DrawActiveModuleData(batch);
-            }
-            if (Comparing) // Ludoal fork (spec v4): one frame, active values, compared deltas
-            {
-                DrawComparisonStats(batch); // the "vs <name>" sits by the title, inside the frame
+
+                // Ludoal fork (spec v4): one frame, active values, compared deltas.
+                // ⚠ Inside the visibility test, not beside it (bench 186): this paints INTO the
+                // Active frame, so it must not run while that frame is hidden. Comparing used to
+                // carry ActiveModSubMenu.Visible itself and guarded this by accident; with the
+                // pin no longer answering to the frame, unpinning left the active module's stats
+                // printed over the hovered module that had taken its place (Ludo).
+                if (Comparing)
+                    DrawComparisonStats(batch); // the "vs <name>" sits by the title, in the frame
             }
             if (HoverModSubMenu.Visible) // Ludoal fork (spec v4): the transient hover frame
             {
