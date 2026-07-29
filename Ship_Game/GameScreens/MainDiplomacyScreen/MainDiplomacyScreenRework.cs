@@ -6,6 +6,7 @@ using SDGraphics.Input;
 using SDUtils;
 using Ship_Game.Audio;
 using Ship_Game.Gameplay;
+using Ship_Game.GameScreens;
 using Ship_Game.GameScreens.DiplomacyScreen;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
@@ -25,13 +26,15 @@ namespace Ship_Game
     {
         UniverseScreen Universe;
 
-        Menu2 TitleBar;
-        Vector2 TitlePos;
         Menu2 DMenu;
         Rectangle LeftRect;
 
-        UIButton ToggleButton; // labeled with the view you would switch TO (player design)
-        UIButton DiagramButton;
+        // Ludoal fork: the group's four tabs. Intelligence and Bonuses are two arrangements of
+        // the same columns, drawn here; Relationships and Espionage hand over to their own screen
+        // and snap the tab back, so the row never lies about where you are.
+        Submenu GroupTabs;
+        readonly Tab OpenOn;
+        public enum Tab { Intelligence = 0, Bonuses = 1, Relationships = 2, Espionage = 3 }
         bool ShowBonuses;
 
         Empire Player;
@@ -49,9 +52,12 @@ namespace Ship_Game
 
         const int TreatyBlockH = 114; // player design: 3 icon rows (state / borders / trade), labels gone
 
-        public MainDiplomacyScreenRework(UniverseScreen screen) : base(screen, toPause: screen)
+        public MainDiplomacyScreenRework(UniverseScreen screen, Tab openOn = Tab.Intelligence)
+            : base(screen, toPause: screen)
         {
             Universe = screen;
+            OpenOn = openOn;
+            ShowBonuses = openOn == Tab.Bonuses;
             IsPopup = true;
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
@@ -134,25 +140,24 @@ namespace Ship_Game
         public override void LoadContent()
         {
             float screenWidth = ScreenWidth;
-            // Empire-style title bar: wide left cartouche, controls in the empty right third
-            var titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            TitleBar = new Menu2(titleRect);
-            TitlePos = new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString(Localizer.Token(GameText.DiplomaticOverview)).X / 2f, titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
-
-            LeftRect = new Rectangle(2, titleRect.Bottom + 5, (int)screenWidth - 10, ScreenHeight - titleRect.Bottom - 7);
+            // Ludoal fork: the Diplomacy group of the unified top bar - four tabs where this
+            // screen had a title cartouche, a view toggle and a diagram button. The tab row takes
+            // the title's place and rides the same line as the top bar's Help and speed buttons,
+            // to their left: those move into the unified bar later, so leaving a band free above
+            // the frame would be building for a state that is going away (maintainer decision).
+            // Y=64 is where EmpireUIOverlay draws that row, on a 24px texture.
+            const int tabRowY = 64;
+            LeftRect = new Rectangle(2, tabRowY, (int)screenWidth - 10, ScreenHeight - tabRowY - 7);
             DMenu = new Menu2(LeftRect);
-            Add(new CloseButton(LeftRect.Right - 40, LeftRect.Y + 20));
 
-            // the global view toggle (labeled with what you would switch TO) and the
-            // diagram button, right of the title cartouche
-            ToggleButton = Add(new UIButton(ButtonStyle.Default, new Vector2(titleRect.Right + 30, titleRect.Y + 26), "Bonuses"));
-            ToggleButton.OnClick = b =>
+            GroupTabs = Add(new Submenu(LeftRect, new LocalizedText[]
             {
-                ShowBonuses = !ShowBonuses;
-                ToggleButton.Text = ShowBonuses ? "Intelligence" : "Bonuses";
-            };
-            DiagramButton = Add(new UIButton(ButtonStyle.Default, new Vector2(titleRect.Right + 196, titleRect.Y + 26), "Diagram view"));
-            DiagramButton.OnClick = b => AddRelationShipDiagramScreen();
+                "Intelligence", "Bonuses", "Relationships", "Espionage"
+            }));
+            GroupTabs.OnTabChange = OnGroupTabChanged;
+            GroupTabs.PerformLayout(); // necessary: ClientArea is only known once the tabs are laid out
+
+            Add(new CloseButton(LeftRect.Right - 40, LeftRect.Y + 20));
 
             foreach (Empire e in Universe.UState.Empires)
             {
@@ -169,7 +174,10 @@ namespace Ship_Game
             int j = 0;
             foreach (RaceEntry re in Races)
             {
-                re.container = new Rectangle(x0 + j * colW, LeftRect.Y + 26, colW - 8, LeftRect.Height - 52); // centered vertically in the frame
+                // Ludoal fork: below the tab row, whose height the Submenu knows - a fixed offset
+                // from LeftRect.Y would put the columns under the tabs.
+                int colTop = (int)GroupTabs.ClientArea.Y + 6;
+                re.container = new Rectangle(x0 + j * colW, colTop, colW - 8, LeftRect.Bottom - colTop - 26);
                 j++;
             }
 
@@ -185,15 +193,38 @@ namespace Ship_Game
                 };
             }
 
+            // after the columns exist: selecting a tab only switches which blocks are drawn
+            GroupTabs.SelectedIndex = (int)OpenOn;
+
             GameAudio.MuteRacialMusic();
+        }
+
+        void OnGroupTabChanged(int index)
+        {
+            switch ((Tab)index)
+            {
+                case Tab.Intelligence: ShowBonuses = false; break;
+                case Tab.Bonuses:      ShowBonuses = true;  break;
+                // These two live in their own screen. Open it and put the tab back on the view
+                // that stays behind, so the row always names what is actually on screen.
+                case Tab.Relationships:
+                    GroupTabs.SelectedIndex = ShowBonuses ? (int)Tab.Bonuses : (int)Tab.Intelligence;
+                    AddRelationShipDiagramScreen();
+                    break;
+                case Tab.Espionage:
+                    GroupTabs.SelectedIndex = ShowBonuses ? (int)Tab.Bonuses : (int)Tab.Intelligence;
+                    ExitScreen();
+                    // the concrete screen, not ReworkScreens.Espionage - that factory now points
+                    // back at this group, which would loop
+                    ScreenManager.AddScreen(new InfiltrationScreenRework(Universe));
+                    break;
+            }
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
-            TitleBar.Draw(batch, elapsed);
-            batch.DrawString(Fonts.Laserian14, Localizer.Token(GameText.DiplomaticOverview), TitlePos, Colors.Cream);
             DMenu.Draw(batch, elapsed);
 
             foreach (RaceEntry race in Races)
@@ -246,38 +277,43 @@ namespace Ship_Game
 
             // FIXED section offsets: the bands align across columns whatever the content
             float infoY = col.Y + 150; // breathing room: bigger name, DanButton below
+
+            if (ShowBonuses)
+            {
+                // Bonuses tab: TRAITS, one line per trait, then BONUSES. Neither RACE INFO nor
+                // RANK is repeated here - each block belongs to exactly one tab.
+                float bonusMaxY = col.Bottom - 6;
+                y = infoY;
+                SectionBand(batch, col, ref y, "TRAITS");
+                DrawTraitRows(batch, e, col, ref y);
+                float bonusesY = infoY + 24 + 6 * (Font12.LineSpacing + 2) + 8;
+                y = bonusesY;
+                SectionBand(batch, col, ref y, "BONUSES");
+                DrawBonusRows(batch, e, col, ref y, bonusMaxY);
+                return;
+            }
+
+            // Intelligence tab
             float positionY = infoY + 24 + 3 * (Font12.LineSpacing + 3) + 4;
             float intelY = positionY + 24 + 4 * (Font12.LineSpacing + 3) + 4;
 
             y = infoY;
-            SectionBand(batch, col, ref y, "INFO");
+            SectionBand(batch, col, ref y, "RACE INFO");
             DrawInfoBlock(batch, e, col, ref y);
 
             y = positionY;
-            SectionBand(batch, col, ref y, "POSITION");
+            SectionBand(batch, col, ref y, "RANK");
             DrawPositionBlock(batch, e, col, ref y);
 
             float maxY = col.Bottom - TreatyBlockH - 6;
             y = intelY;
-            SectionBand(batch, col, ref y, ShowBonuses ? "BONUSES" : "INTELLIGENCE");
-            if (ShowBonuses)
-            {
-                // BONUSES replaces both INTELLIGENCE and ARTIFACTS (player design)
-                DrawBonusRows(batch, e, col, ref y, maxY);
-            }
-            else
-            {
-                // TRAITS then ARTIFACTS ride under INTELLIGENCE at fixed, aligned offsets
-                float traitsY = intelY + 24 + 10 * (Font12.LineSpacing + 3) + 6;
-                DrawIntelRows(batch, e, col, ref y, traitsY - 6);
-                y = traitsY;
-                SectionBand(batch, col, ref y, "TRAITS");
-                DrawTraitRows(batch, e, col, ref y);
-                float artifactsY = traitsY + 24 + 3 * (Font12.LineSpacing + 2) + 8;
-                y = artifactsY;
-                SectionBand(batch, col, ref y, "ARTIFACTS");
-                DrawArtifactRows(batch, e, col, ref y, maxY);
-            }
+            SectionBand(batch, col, ref y, "EMPIRE DATA");
+            // ARTIFACTS rides under EMPIRE DATA at a fixed, aligned offset
+            float artifactsY = intelY + 24 + 10 * (Font12.LineSpacing + 3) + 6;
+            DrawIntelRows(batch, e, col, ref y, artifactsY - 6);
+            y = artifactsY;
+            SectionBand(batch, col, ref y, "ARTIFACTS");
+            DrawArtifactRows(batch, e, col, ref y, maxY);
 
             float ty = col.Bottom - TreatyBlockH;
             SectionBand(batch, col, ref ty, "TREATIES");

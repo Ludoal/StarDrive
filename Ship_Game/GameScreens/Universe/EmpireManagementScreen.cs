@@ -115,16 +115,19 @@ namespace Ship_Game
             float blockTop = ERect.Y + ERect.H;
             float blockH = ScreenHeight - blockTop - 22;
             float infoX = ERect.X + 22;
-            // The planet map below is drawn on a 7:5 grid and shrinks in steps until it fits its
-            // rect, so the room it needs is its height times that ratio - reserve exactly that,
-            // plus the 20px the two rects overlap by, and the cartouche keeps the rest.
+            // This row holds three blocks and they cascade right to left from ONE bound: the
+            // governor frame is fixed (placed in the constructor), the map's width follows from
+            // its own height, and the cartouche absorbs what is left. A geometry belongs to the
+            // object that carries it, so the bound is the governor frame's edge - never a column
+            // of the list above, which reaches further right (Lek's reading, 29 Jul).
+            float rowRight = GovernorRect.X;
+            // the map is drawn on a 7:5 grid and shrinks in steps until it fits, so its room is
+            // its height times that ratio, plus the 20px the two rects overlap by
             float mapW = blockH * (700f / 500f) + 20f;
-            // The right bound of this row is the governor frame, placed in the constructor - NOT
-            // the queue column above it, which reaches further right and left the map overlapping
-            // the frame. Half again as wide is plenty for the description; the rest of the freed
-            // room stays margin rather than stretching four short label lines across the screen.
+            // half again as wide is plenty for the description; the rest stays margin rather than
+            // stretching four short label lines across the screen
             float stock = ScreenWidth * 0.3f;
-            float infoW = Math.Clamp(GovernorRect.X - infoX - mapW, stock, stock * 1.5f);
+            float infoW = Math.Clamp(rowRight - infoX - mapW, stock, stock * 1.5f);
             var PlanetInfoRect = new Rectangle((int)infoX, (int)blockTop, (int)infoW, (int)blockH);
             // Ludoal fork: the icon is 60% of the block's height.
             int iconSize = (int)(PlanetInfoRect.Height * 0.6f);
@@ -190,10 +193,9 @@ namespace Ship_Game
             batch.DrawString(descFont, text, PNameCursor, White);
 
             ColoniesListItem e1 = top;
-            // Ludoal fork: the map stops at the governor frame, the block to its right on this row
-            // - not at a column of the list above, which reaches further right.
+            // Ludoal fork: same rowRight as the cartouche above - one bound for the whole row.
             var MapRect = new Rectangle(PlanetInfoRect.Right - 20, PlanetInfoRect.Y - 3,
-                                        (int)GovernorRect.X - PlanetInfoRect.Right, PlanetInfoRect.Height);
+                                        (int)rowRight - PlanetInfoRect.Right, PlanetInfoRect.Height);
             int desiredWidth = 700;
             int desiredHeight = 500;
             var buildingsRect = new Rectangle(MapRect.X, MapRect.Y, desiredWidth, desiredHeight);

@@ -36,9 +36,12 @@ namespace Ship_Game.GameScreens
         public static GameScreen Economy(UniverseScreen u)
             => GlobalStats.ReworkEconomy ? new BudgetScreenRework(u) : new BudgetScreen(u);
 
-        // Ludoal fork: both buttons lead into the same four-tab group, each on its own tab.
+        // Ludoal fork: both top-bar buttons lead into the same four-tab group, each landing on its
+        // own tab. Espionage tab: its content is its own screen, which carries the same tab row.
         public static GameScreen Diplomacy(UniverseScreen u)
-            => GlobalStats.ReworkDiplomacyGroup ? new MainDiplomacyScreenRework(u) : new MainDiplomacyScreen(u);
+            => GlobalStats.ReworkDiplomacyGroup
+             ? new MainDiplomacyScreenRework(u, MainDiplomacyScreenRework.Tab.Intelligence)
+             : new MainDiplomacyScreen(u);
 
         public static GameScreen Espionage(UniverseScreen u)
             => GlobalStats.ReworkDiplomacyGroup ? new InfiltrationScreenRework(u) : new InfiltrationScreen(u);
