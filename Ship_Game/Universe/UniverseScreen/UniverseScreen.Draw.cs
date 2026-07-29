@@ -341,7 +341,13 @@ namespace Ship_Game
                 // off) everything sits under the veil and the starfield washes out — use
                 // a lighter veil there (150 = ~41% visibility, tuned on the bench;
                 // 130 was a touch bright), keep 170 when painting.
+                // Ludoal fork (bench 190): the veil is the VISION OVERLAY's statement, so at
+                // rest it only hints. Cutting it out entirely was too bright (Ludo) and lost
+                // the explored/unexplored distinction with it, so F3 off keeps a light veil
+                // rather than none. Bench numbers, meant to be moved.
                 int fogAlpha = GlobalStats.FogOfWarMemory ? 170 : 150;
+                if (!ShowingVisionOverlay)
+                    fogAlpha = 90;
                 batch.FillRectangle(new Rectangle(0, 0, ScreenWidth, ScreenHeight), new Color(0, 0, 0, fogAlpha));
                 // Phase 3.7 step 3: persistent "I've been here" tint, premul-correct
                 // (rgb == alpha so FogMap composites correctly under premul AlphaBlend).

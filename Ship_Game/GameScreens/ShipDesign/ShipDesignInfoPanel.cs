@@ -44,6 +44,8 @@ namespace Ship_Game.GameScreens.ShipDesign
             public Func<float, Color> Tint;   // value colour from the value; null => white
             public Func<bool> Visible;        // null => always visible
             public bool NonZeroOnly;          // hidden while the value is zero
+            public string Icon;               // Ludoal fork: optional inline icon, left of the title
+            public Color IconColor;           // its own colour, the load popup's
         }
 
         readonly Array<Row> Rows = new Array<Row>();
@@ -164,6 +166,15 @@ namespace Ship_Game.GameScreens.ShipDesign
                         if (w > LongestTitleCache)
                             LongestTitleCache = w;
                     }
+                    // ⚠ and the rows written as raw strings, which carry no GameText key and
+                    // would otherwise never be measured - the very hole the comment above warns
+                    // about, and the COMBAT block walked straight into it.
+                    foreach (string t in RawRowTitles)
+                    {
+                        float w = Fonts.Arial12Bold.TextWidth(t);
+                        if (w > LongestTitleCache)
+                            LongestTitleCache = w;
+                    }
                 }
                 return LongestTitleCache;
             }
@@ -171,6 +182,9 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         // every label BuildRows can put in the title column. A row added without its key here
         // simply is not measured, and a too-long one would overhang - so keep the two in step.
+        // titles with no GameText key, spelled out in BuildRows
+        static readonly string[] RawRowTitles = { "Weapons", "Max Wpn Range", "DPS" };
+
         static readonly GT[] RowTitleKeys =
         {
             GT.AmmoTime, GT.BurstWpnPwrDrain, GT.BurstWpnPwrTime, GT.CargoSpace, GT.Ecm3,
@@ -404,8 +418,11 @@ namespace Ship_Game.GameScreens.ShipDesign
             Stat(GT.PowerRecharge, () => Ds.PowerRecharge, GT.TT_PowerRecharge, energy, tint: Positive);
             Stat(GT.RechargeAtWarp, () => Ds.ChargeAtWarp, GT.TT_RechargeAtWarp, energy, tint: Positive, vis: Ds.IsWarpCapable);
             Stat(GT.ExcessWpnPwrDrain, () => -Ds.PowerConsumed, GT.TT_ExcessWpnPwrDrain, energy, vis: Ds.HasEnergyWepsPositive);
-            Stat(GT.WpnFirePowerTime, () => Ds.EnergyDuration, GT.TT_WpnFirePowerTime, energy, tint: Above(2f), vis: Ds.HasEnergyWepsPositive);
-            Word(GT.WpnFirePowerTime, "INF", GT.TT_WpnFirePowerTime, energy, good, vis: Ds.HasEnergyWepsNegative);
+            // Ludoal fork (bench): the five figures the load popup marks with an icon get the
+            // same icon here, inline and scaled to the line - the eye finds them without reading
+            // (Ludo). Both variants of a row carry it, or it would blink away on the INF case.
+            Stat(GT.WpnFirePowerTime, () => Ds.EnergyDuration, GT.TT_WpnFirePowerTime, energy, tint: Above(2f), vis: Ds.HasEnergyWepsPositive, icon: "UI/lightningBolt", iconColor: Color.LightGoldenrodYellow);
+            Word(GT.WpnFirePowerTime, "INF", GT.TT_WpnFirePowerTime, energy, good, vis: Ds.HasEnergyWepsNegative, icon: "UI/lightningBolt", iconColor: Color.LightGoldenrodYellow);
             Stat(GT.BurstWpnPwrDrain, () => -Ds.PowerConsumedWithBeams, GT.TT_BurstWpnPwerDrain, energy, vis: Ds.HasBeams);
             Stat(GT.BurstWpnPwrTime, () => Ds.BurstEnergyDuration, GT.TT_BurstWpnPwrTime, energy, tint: _ => Color.LightPink, vis: Ds.HasBeamDurationNegative);
             Word(GT.BurstWpnPwrTime, "INF", GT.TT_BurstWpnPwrTime, energy, good, vis: Ds.HasBeamDurationPositive);
@@ -421,13 +438,39 @@ namespace Ship_Game.GameScreens.ShipDesign
                 Stat(GT.FtlTime, () => Ds.WarpTime, GT.TT_FtlTime, engines, tint: Positive, vis: Ds.HasFiniteWarp);
                 Word(GT.FtlTime, "INF", GT.TT_FtlTime, engines, good, vis: Ds.HasInfiniteWarp);
             }
-            Stat(GT.SublightSpeed, () => S.MaxSTLSpeed, GT.TT_SublightSpeed, engines, tint: Above(50f));
-            Stat(GT.TurnRate, () => S.RotationRadsPerSecond.ToDegrees(), GT.TT_TurnRate, engines, tint: Above(15f));
+            // Ludoal fork (bench 46.181): a platform or a station has no engine, so these two are
+            // a pair of zeroes and the whole block goes with them - a heading with nothing under
+            // it is never drawn, so hiding the rows hides MOBILITY itself (Ludo).
+            Stat(GT.SublightSpeed, () => S.MaxSTLSpeed, GT.TT_SublightSpeed, engines, tint: Above(50f),
+                 vis: () => !S.IsPlatformOrStation);
+            Stat(GT.TurnRate, () => S.RotationRadsPerSecond.ToDegrees(), GT.TT_TurnRate, engines, tint: Above(15f),
+                 vis: () => !S.IsPlatformOrStation);
+
+            // Ludoal fork (bench 46.181): STATION and PAYLOAD move to the LEFT column, in that
+            // order, and the reason is not balance - it is that STATION BELONGS WITH MOBILITY
+            // (Ludo). A station is a ship that does not move - IsResearchStation requires
+            // IsPlatformOrStation, so a real one has no engine at all - and what it refines and
+            // what it carries answer the same question its speed does. Reading them one under
+            // the other says that; splitting them across the frame said nothing.
+            // ⚠ these two blocks show on PRODUCTION, not on the station role: nothing stops a
+            // research lab going on a mobile hull, so they are not proof the ship is a station.
+            // The right column loses its two rarest blocks and stops overflowing as a bonus.
+            Head("STATION");
+            Stat(GT.ResearchPerTurn, () => S.ResearchPerTurn, GT.ResearchPerTurnStatTip, nonZero: true);
+            Stat(GT.ResearchStationResearchTimeStat, () => Ds.ResearchTime(), GT.ResearchStationResearchTimeStatTip,
+                 tint: Above(ShipResupply.NumTurnsForGoodResearchSupply), vis: Ds.ProducesResearch);
+            Stat(GT.RefinningPerTurnStat, () => S.TotalRefining, GT.RefiningPerTurnStatTip, nonZero: true);
+            Stat(GT.MiningStationRefiningTimeStat, () => Ds.RefiningTime(), GT.MiningStationRefiningTimeStatTip,
+                 tint: Above(ShipResupply.NumTurnsForGoodRefiningSupply - 0.01f), vis: Ds.RefinesResources);
+
+            Head("PAYLOAD");
+            Stat(GT.TroopCapacity, () => S.TroopCapacity, GT.TT_TroopCapacity, ordnance, nonZero: true);
+            Stat(GT.CargoSpace, () => S.CargoSpaceMax, GT.TT_CargoSpace, nonZero: true);
 
             Head("DEFENCE");
-            Stat(GT.TotalHitpoints, () => S.Health, GT.TT_HitPoints, protect, tint: Positive);
-            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, protect, tint: Positive, vis: Ds.HasRegularShields);
-            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, Color.Gold, tint: Positive, vis: Ds.HasAmplifiedMains);
+            Stat(GT.TotalHitpoints, () => S.Health, GT.TT_HitPoints, protect, tint: Positive, icon: "UI/icon_shield", iconColor: Color.CadetBlue);
+            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, protect, tint: Positive, vis: Ds.HasRegularShields, icon: "Modules/Shield_1KW", iconColor: Color.AliceBlue);
+            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, Color.Gold, tint: Positive, vis: Ds.HasAmplifiedMains, icon: "Modules/Shield_1KW", iconColor: Color.AliceBlue);
             Stat(GT.ShieldAmplify, () => (int)S.Stats.ShieldAmplifyPerShield, GT.TT_ShieldAmplify, protect, tint: Positive, nonZero: true);
             Stat(GT.RepairRate, () => S.RepairRate, GT.TT_RepairRate, protect, tint: Positive, nonZero: true);
             // the tooltip promises the TOTAL protection of the design, and the load-list
@@ -445,28 +488,25 @@ namespace Ship_Game.GameScreens.ShipDesign
             Head("ORDNANCE");
             Stat(GT.OrdnanceCreated, () => S.OrdAddedPerSecond, GT.TT_OrdnanceCreated, ordnance, nonZero: true);
             Stat(GT.OrdnanceCapacity, () => S.OrdinanceMax, GT.TT_OrdnanceCap, ordnance, vis: Ds.HasOrdnance);
-            Stat(GT.AmmoTime, () => Ds.AmmoTime, GT.TT_AmmoTime, ordnance, tint: Above(30f), vis: Ds.HasOrdFinite);
-            Word(GT.AmmoTime, "INF", GT.TT_AmmoTime, ordnance, good, vis: Ds.HasOrdInfinite);
+            Stat(GT.AmmoTime, () => Ds.AmmoTime, GT.TT_AmmoTime, ordnance, tint: Above(30f), vis: Ds.HasOrdFinite, icon: "Modules/Ordnance", iconColor: Color.Khaki);
+            Word(GT.AmmoTime, "INF", GT.TT_AmmoTime, ordnance, good, vis: Ds.HasOrdInfinite, icon: "Modules/Ordnance", iconColor: Color.Khaki);
 
             Head("FCS");
             Stat(GT.FireControl, () => S.TargetingAccuracy, GT.TT_FireControl, nonZero: true);
             Stat(GT.FcsPower, () => S.TrackingPower, GT.TT_FcsPower, nonZero: true);
             Stat(GT.SensorRange3, () => S.SensorRange, GT.TT_SensorRange3, nonZero: true);
 
-            Head("PAYLOAD");
-            Stat(GT.TroopCapacity, () => S.TroopCapacity, GT.TT_TroopCapacity, ordnance, nonZero: true);
-            Stat(GT.CargoSpace, () => S.CargoSpaceMax, GT.TT_CargoSpace, nonZero: true);
-
-            Head("STATION");
-            Stat(GT.ResearchPerTurn, () => S.ResearchPerTurn, GT.ResearchPerTurnStatTip, nonZero: true);
-            Stat(GT.ResearchStationResearchTimeStat, () => Ds.ResearchTime(), GT.ResearchStationResearchTimeStatTip,
-                 tint: Above(ShipResupply.NumTurnsForGoodResearchSupply), vis: Ds.ProducesResearch);
-            Stat(GT.RefinningPerTurnStat, () => S.TotalRefining, GT.RefiningPerTurnStatTip, nonZero: true);
-            Stat(GT.MiningStationRefiningTimeStat, () => Ds.RefiningTime(), GT.MiningStationRefiningTimeStatTip,
-                 tint: Above(ShipResupply.NumTurnsForGoodRefiningSupply - 0.01f), vis: Ds.RefinesResources);
-
             // her closing block: the verdict reads last, like a signature
-            Head("ASSESSMENT");
+            // Ludoal fork (bench): ASSESSMENT becomes COMBAT and takes in the three figures the
+            // old load popup showed and this panel did not - a design cartouche that never said
+            // whether the ship shoots (Ludo, which is why the 47-a release was pulled back).
+            // Raw strings: these three have no GameText key, exactly as the load overlay wrote
+            // them. Max range only, not the avg..max pair - on a ship mixing a short-range laser
+            // with a long-range cannon that pair describes neither of them.
+            Head("COMBAT");
+            Stat("Weapons", () => S.Weapons.Count, GT.TT_ShipOffense, nonZero: true);
+            Stat("Max Wpn Range", () => S.WeaponsMaxRange, GT.TT_ShipOffense, nonZero: true);
+            Stat("DPS", () => S.TotalDps, GT.TT_ShipOffense, nonZero: true, icon: "UI/icon_offense", iconColor: Color.OrangeRed);
             Stat(GT.ShipOffense, () => Ds.Strength, GT.TT_ShipOffense, nonZero: true);
             Stat(GT.RelativeStrength, () => Ds.RelativeStrength, GT.TT_RelativeStrength, nonZero: true);
         }
@@ -478,7 +518,8 @@ namespace Ship_Game.GameScreens.ShipDesign
         void Head(string heading) => Rows.Add(new Row { Heading = heading, Color = Colors.Cream });
 
         void Stat(in LocalizedText title, Func<float> value, in LocalizedText tip, Color? titleColor = null,
-                  Func<float, Color> tint = null, Func<bool> vis = null, bool nonZero = false)
+                  Func<float, Color> tint = null, Func<bool> vis = null, bool nonZero = false,
+                  string icon = null, Color? iconColor = null)
         {
             // Ludoal fork: labels are WHITE — the per-family colour they used to carry is now
             // said by the block heading above them, so tinting each label as well was a
@@ -490,16 +531,18 @@ namespace Ship_Game.GameScreens.ShipDesign
                 Title = title, Tip = tip, Value = value,
                 Color = LabelGrey,
                 Tint = tint, Visible = vis, NonZeroOnly = nonZero,
+                Icon = icon, IconColor = iconColor ?? Color.White,
             });
         }
 
         void Word(in LocalizedText title, string text, in LocalizedText tip, Color titleColor,
-                  Color valueColor, Func<bool> vis = null)
+                  Color valueColor, Func<bool> vis = null, string icon = null, Color? iconColor = null)
         {
             Rows.Add(new Row
             {
                 Title = title, Tip = tip, Text = text,
                 Color = LabelGrey, Tint = _ => valueColor, Visible = vis,
+                Icon = icon, IconColor = iconColor ?? Color.White,
             });
         }
 
@@ -627,6 +670,20 @@ namespace Ship_Game.GameScreens.ShipDesign
                 S.RenderOverlay(batch, new Rectangle((int)X, (int)rowsY, (int)side, (int)side),
                                 showModules: true, drawHullBackground: true,
                                 moduleHealthColor: false, markLockedModules: true);
+
+                // Ludoal fork (bench): the design's own two settings, under the picture and
+                // WITHOUT labels, exactly as the load popup states them - "Civilian, Evade" says
+                // itself (Ludo). They belong to the hover frame only: the shipyard already shows
+                // them as controls for the design on the workbench.
+                if (S.ShipData != null)
+                {
+                    string settings = $"{S.ShipData.ShipCategory}, {S.ShipData.DefaultCombatState}";
+                    // centred under the picture and in white: grey read as disabled, and left
+                    // aligned it floated away from the square it belongs to (Ludo)
+                    float w = Fonts.Arial12Bold.TextWidth(settings);
+                    batch.DrawString(Fonts.Arial12Bold, settings,
+                                     new Vector2(X + (side - w) * 0.5f, rowsY + side + 6f), Color.White);
+                }
             }
 
             // The delta lane is ALWAYS reserved, pinned or not — this is the module panel's
@@ -692,7 +749,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             // the right-hand blocks largely exclude each other while DEFENCE is almost always
             // full, so the two columns come out close. If a real design ever runs the right
             // column past the frame, this is the number to revisit.
-            const int FixedSplitBlock = 3;
+            const int FixedSplitBlock = 5;   // CONSTRUCTION ENERGY MOBILITY STATION PAYLOAD
             int splitBlock = Math.Min(FixedSplitBlock, blockVisible.Count);
 
             var cursor = new Vector2(col0X, rowsY);
@@ -760,13 +817,13 @@ namespace Ship_Game.GameScreens.ShipDesign
                 if (r.Text != null)
                 {
                     Screen.DrawStatText(ref cursor, r.Title, r.Text, r.Color, r.Tip, spacing,
-                                        valueColor: r.Tint?.Invoke(0f));
+                                        valueColor: r.Tint?.Invoke(0f), icon: r.Icon, iconColor: r.IconColor);
                 }
                 else
                 {
                     float v = r.Value();
                     Screen.DrawStatText(ref cursor, r.Title, v.GetNumberString(), r.Color, r.Tip, spacing,
-                                        valueColor: r.Tint?.Invoke(v));
+                                        valueColor: r.Tint?.Invoke(v), icon: r.Icon, iconColor: r.IconColor);
 
                     // Delta against the PINNED design, in its own lane, coloured by which
                     // direction is better for that row. The subtraction reads "this panel minus

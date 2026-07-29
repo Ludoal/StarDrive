@@ -75,6 +75,13 @@ namespace Ship_Game
                 // routes to the Ground Assault View via OpenCombatMenu.
                 bool deployed = item.Planet.Owner != Player;
                 Universe.SnapViewColony(item.Planet, deployed);
+                // Ludoal fork (bench 191): closing that colony comes back HERE (Ludo).
+                // ⚠ Colony view only: the deployed path opens the Ground Assault view instead,
+                // which never reaches the close handler that consumes this, so a hook set there
+                // would sit and fire on some later, unrelated close.
+                // ⚠ And AFTER the snap, which clears the hook on its way in.
+                if (!deployed)
+                    Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new TroopListScreen(Universe, EmpireUI));
             }
         }
 

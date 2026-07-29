@@ -80,11 +80,6 @@ namespace Ship_Game
         // delta lane of InfoPanel. This frame shows the design under the cursor instead.
         ShipDesignInfoPanel HoverPanel;
         Submenu HoverSub;
-        // Ludoal fork (bench 46.154): the stock floating cartouche, kept for the legacy régime.
-        // Turning our hover frame off used to leave the browser with NO hover feedback at all,
-        // while every other screen carrying this list (Colony, Fleets, the load popup) still
-        // shows this one - so its absence read as a regression rather than as an option (Ludo).
-        ShipInfoOverlayComponent LegacyHoverOverlay;
         ShipDesignIssuesPanel IssuesPanel;
 
         // this contains module selection list and active module selection info
@@ -98,6 +93,19 @@ namespace Ship_Game
         string BrowserFilterText;
         bool ShowLockedDesigns;
         bool HideObsoleteDesigns; // Ludoal fork: the browser's obsolete filter
+        // Ludoal fork (bench): ON = the two cartouches coexist, hover to the left of the active
+        // one. OFF = one cartouche at that place: the active design, replaced by the hovered one
+        // for as long as the cursor rests on a row (Ludo). Not persisted - it is a way of
+        // looking at the list, not a preference.
+        bool PinActiveDesign = true;
+        UICheckBox PinActiveCheck;
+        // Ludoal fork (bench 188): sweeping from one browser row to the next crosses a gap where
+        // nothing is hovered. With Pin Active unchecked that gap let the Active cartouche flash
+        // back into its seat between every pair of rows (Ludo), so a hover that ENDS is held for
+        // a moment before the frame actually goes. Negative = not counting. Only the hover path
+        // sets it: loading a design must still clear the frame at once, with no ghost.
+        const float HoverLinger = 0.12f;
+        float HoverLeftAt = -1f;
         // which groups were open before the last rebuild, so a filter change does not refold
         // the whole browser (bench 46.172). Both group builders read it.
         readonly Array<string> ExpandedGroups = new();
@@ -110,9 +118,9 @@ namespace Ship_Game
         // own scroll, filter and selection to keep in step (Ludo).
         bool GroupByRole;
         const string DefaultBrowserFilter = "filter by name or hull...";
-        // Ludoal fork (spec v4): the flying hover overlay gives way to the Hover cartouche —
-        // but only in the new régime. With the comparison feature off it comes back (see
-        // LegacyHoverOverlay above), and the load and save popups use it in both.
+        // Ludoal fork (spec v4): the flying hover overlay gave way to the Hover cartouche.
+        // The overlay component itself lives on: the load and save popups still use it, as do
+        // seven other screens. It is only this screen that no longer has a use for it.
 
         public ShipModule HighlightedModule;
         SlotStruct ProjectedSlot;
@@ -209,13 +217,6 @@ namespace Ship_Game
         // The try/catch is inherited from the hover overlay, which needed it on real designs.
         public void SetComparedDesign(IShipDesign design)
         {
-            // Ludoal fork: Options -> Rework Options can turn the comparison off entirely
-            // (upstream's reservation was that it clutters the screen). Refusing the PIN here
-            // covers every way in. A null still has to pass: that is how a comparison gets
-            // cleared - loading a design does it - and blocking it would strand a ghost pin.
-            if (!GlobalStats.ShipyardComparison && design != null)
-                return;
-
             if (design != null && DesignedShip?.Name == design.Name)
                 return; // comparing the working design with itself says nothing
 
@@ -247,23 +248,31 @@ namespace Ship_Game
 
         // Ludoal fork (spec v4): the design under the cursor in the browser, shown in the Hover
         // cartouche. Passing null hides it.
+        // Ludoal fork (bench 188): the actual hide, and the one place that clears the linger.
+        void HideHoveredDesign()
+        {
+            HoverLeftAt = -1f;
+            if (HoverPanel == null)
+                return;
+            HoverPanel.SetActiveDesign(null);
+            HoverSub.Visible = HoverPanel.Visible = false;
+        }
+
         public void SetHoveredDesign(IShipDesign design)
         {
             if (HoverPanel == null)
                 return;
 
-            // Ludoal fork: the hover cartouche is part of the comparison feature, so it goes
-            // with it. Forcing null rather than returning early: null is what hides the frame,
-            // so this also clears one that was already showing when the option was turned off.
-            if (!GlobalStats.ShipyardComparison)
-                design = null;
-
             if (design == null || DesignedShip?.Name == design.Name)
             {
-                HoverPanel.SetActiveDesign(null);
-                HoverSub.Visible = HoverPanel.Visible = false;
+                // start the linger rather than hiding now; ResizeCartouches finishes the job.
+                // If the frame is already down there is nothing to hold, so do not arm it.
+                if (HoverSub.Visible && HoverLeftAt < 0f)
+                    HoverLeftAt = 0f;
                 return;
             }
+
+            HoverLeftAt = -1f; // landed on a row: cancel any linger still counting down
 
             try
             {
@@ -310,6 +319,14 @@ namespace Ship_Game
         {
             SpawnActiveModule(moduleUID, moduleRot, turretAngle, hangarShipUID);
             HighlightedModule = null;
+
+            // Ludoal fork (bench 184): picking up the very module that is pinned drops the pin,
+            // the same way loading a design does on the browser side. Comparing a thing with
+            // itself is all zeroes, and SetComparedModule already refuses that pin outright, so
+            // leaving it here would strand one that can never be shown. Any OTHER module keeps
+            // the pin: swapping the brush to weigh it against the pinned one is the whole point.
+            if (CompareModule != null && CompareModule.UID == moduleUID)
+                CompareModule = null;
         }
 
         class SlotInstall
@@ -509,7 +526,7 @@ namespace Ship_Game
             // rows, so the shadow has to go with them.
             ComparedDesign = null;
             InfoPanel.SetComparedDesign(null, null);
-            SetHoveredDesign(null);
+            HideHoveredDesign(); // a load clears it outright: no linger, no ghost
         }
 
         public void UpdateDesignedShip(bool forceUpdate)
@@ -583,14 +600,32 @@ namespace Ship_Game
         // must agree, so they cannot each compute their own edge. And the frame's right edge is
         // the anchor — it stays on the browser's, the frame grows leftward — which is also what
         // keeps the Hover cartouche's own right edge glued to the Active frame's left.
-        void ResizeCartouches()
+        void ResizeCartouches(float deltaTime)
         {
-            // the two hover régimes are exclusive: whichever one the option turned off must not
-            // be left showing on screen from before the switch
-            if (GlobalStats.ShipyardComparison)
-                LegacyHoverOverlay.Visible = false;
-            else if (HoverSub.Visible)
-                HoverSub.Visible = HoverPanel.Visible = false;
+            // Ludoal fork (bench): unpinned, the active cartouche steps aside for the hovered one
+            // rather than sharing the row with it. Decided here, every frame, from the hover
+            // frame's own visibility - the three places that toggle the hover would otherwise
+            // each have to remember this rule (Ludo).
+            // the deferred hide from SetHoveredDesign, see HoverLinger
+            if (HoverLeftAt >= 0f)
+            {
+                HoverLeftAt += deltaTime;
+                if (HoverLeftAt >= HoverLinger)
+                    HideHoveredDesign();
+            }
+
+            bool hoverTakesThePlace = !PinActiveDesign && HoverSub.Visible;
+            InfoSub.Visible = InfoPanel.Visible = !hoverTakesThePlace;
+            IssuesPanel.Visible = !hoverTakesThePlace;
+
+            // ⚠ and its POSITION is settled here too, above the early return below: the hover
+            // frame moves when the toggle flips, which has nothing to do with the delta lanes.
+            // Left under that return it only ever ran on a pin or an unpin, so unpinned the
+            // Active frame vanished while the hover frame stayed put on the left, over the
+            // browser (bench 183, Ludo). Its module twin never had this: there the placement
+            // sits at the end of Update, with no early return above it.
+            PlaceHoverCartouche(RectF.FromPoints(InfoSub.X, InfoSub.X + InfoSub.Width,
+                                                 InfoSub.Y, InfoSub.Y + InfoSub.Height));
 
             bool wantDeltas = ComparedDesign != null;
             if (InfoPanel.HasDeltaLanes == wantDeltas)
@@ -621,11 +656,26 @@ namespace Ship_Game
             // same lesson the module panel's own button taught at bench 46.157
             ObsoleteDesign.r.X = (int)(frame.X + frame.W - ObsoleteDesign.r.Width - 10);
 
-            // the hover frame sits to the left of the active one and keeps its own width
-            // (Width, not Rect.W: Submenu.Rect is a RectF that shadows UIElementV2's integer
-            // Rectangle Rect, and which one a call site resolves to is not worth relying on)
+            // (the Pin Active checkbox is anchored to the BROWSER's left edge, not to this
+            // frame, so unlike the two elements above it does not travel when the frame grows)
+
+            PlaceHoverCartouche(frame);
+        }
+
+        // One arithmetic for the hover cartouche's place, called from both ends of
+        // ResizeCartouches: pinned it sits to the left of the Active frame, unpinned it takes
+        // that frame's own place, same right edge. Two call sites that were meant to agree is
+        // exactly the shape that drifts.
+        void PlaceHoverCartouche(in RectF frame)
+        {
+            // Width, not Rect.W: Submenu.Rect is a RectF that shadows UIElementV2's integer
+            // Rectangle Rect, and which one a call site resolves to is not worth relying on
             float hw = HoverSub.Width;
-            var hover = RectF.FromPoints(frame.X - hw - 10f, frame.X - 10f, frame.Y, frame.Bottom);
+            float hoverRight = PinActiveDesign ? frame.X - 10f : frame.X + frame.W;
+            var hover = RectF.FromPoints(hoverRight - hw, hoverRight, frame.Y, frame.Bottom);
+            if (HoverSub.X.AlmostEqual(hover.X))
+                return; // nothing moved: do not arm a relayout on every single frame
+
             HoverSub.SetAbsPos(hover.X, hover.Y);
             HoverSub.RequiresLayout = true;
             HoverPanel.SetAbsPos(hover.X + ShipDesignInfoPanel.Inset, hover.Y + 32);
@@ -635,7 +685,7 @@ namespace Ship_Game
         public override void Update(float fixedDeltaTime)
         {
             CameraPos.Z = CameraPos.Z.SmoothStep(DesiredCamHeight, 0.2f);
-            ResizeCartouches();
+            ResizeCartouches(fixedDeltaTime);
             UpdateViewMatrix(CameraPos);
 
             UpdateShipyardLightOrbit(fixedDeltaTime);
@@ -981,25 +1031,7 @@ namespace Ship_Game
             // inspected without paying for a load. Hull rows carry no design, and the
             // overlay hides itself when handed a null one.
             // Ludoal fork (spec v4): hovering a design fills the Hover cartouche instead of the
-            // flying overlay inherited from the load popup — the last piece of the old
-            // architecture still wired into this screen. The overlay object stays for now:
-            // ShipDesignLoadScreen and ShipDesignSaveScreen still use it.
-            // added after the browser so it draws ON TOP of the list it floats over
-            LegacyHoverOverlay = Add(new ShipInfoOverlayComponent(this, ParentUniverse.UState));
-
-            HullSelectList.OnHovered = item =>
-            {
-                if (GlobalStats.ShipyardComparison)
-                {
-                    SetHoveredDesign(item?.Design);
-                }
-                else
-                {
-                    // the stock gesture, exactly as Fleets does it: Zero + null hides it
-                    LegacyHoverOverlay.ShowToLeftOf(item?.Design != null ? item.Pos : Vector2.Zero,
-                                                    item?.Design);
-                }
-            };
+            HullSelectList.OnHovered = item => SetHoveredDesign(item?.Design);
             RefreshHullSelectList();
             hullSelectSub.PerformLayout();
 
@@ -1073,6 +1105,20 @@ namespace Ship_Game
             InfoPanel = Add(new ShipDesignInfoPanel(this, infoInner));
             InfoPanel.HasDeltaLanes = deltaLanes; // widened on the first pin, see ResizeCartouches
             InfoSub = infoSub;
+            // Ludoal fork (bench): on the frame's tab row vertically, but bound to the BROWSER,
+            // not to the frame: its left edge on the browser's left edge, the same anchor the
+            // filter bar above it uses (Ludo). Its module twin is right-aligned on ITS list, so
+            // each toggle hugs the outer edge of its own column and the pair frames the
+            // workbench. Bound to the list rather than the cartouche, it also stops travelling
+            // when the cartouche grows leftwards on a pin, and it survives the frame it hides:
+            // unpinned, the checkbox is the only way back.
+            RectF infoTab = infoSub.Tabs[0].Rect;
+            PinActiveCheck = Checkbox(new Vector2(hullSelectPos.X, infoTab.Y + 4),
+                                      () => PinActiveDesign,
+                                      (b) => { PinActiveDesign = b; },
+                                      "Pin Active",
+                                      "Keep the Active Design cartouche on screen while you hover the list.\n"
+                                    + "Off: the hovered design takes its place, and it comes back when you look away.");
 
             // Ludoal fork (spec v4): the HOVER cartouche takes the slot the Compared one used to
             // hold. Like its module counterpart it is the plain frame — no delta lane — showing
@@ -1108,12 +1154,6 @@ namespace Ship_Game
                 var debugUnlocks = Add(new ResearchDebugUnlocks(ParentUniverse, OnReloadAfterTechChange));
                 debugUnlocks.SetAbsPos(10, 45);
             }
-
-            // Ludoal fork (bench): the legacy floating cartouche floats over the browser AND over
-            // the Active Design frame, so it has to be the frontmost element of the screen. It is
-            // added early because it needs the browser list, and the cartouche is built long
-            // after — hence ordering it here rather than moving its construction (Ludo).
-            BringToFrontZOrder(LegacyHoverOverlay);
 
             CloseButton(ScreenWidth - 27, 75);
         }

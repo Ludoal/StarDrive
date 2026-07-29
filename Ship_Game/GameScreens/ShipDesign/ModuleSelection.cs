@@ -54,7 +54,6 @@ namespace Ship_Game
             ActiveModSubMenu = base.Add(new Submenu(acsub, "Active Module"));
             // rounded black background
             ActiveModSubMenu.SetBackground(Colors.TransparentBlackFill);
-
             // obsolete button
             int obsoleteW = ResourceManager.Texture("NewUI/icon_queue_delete").Width;
             int obsoleteH = ResourceManager.Texture("NewUI/icon_queue_delete").Height;
@@ -78,6 +77,24 @@ namespace Ship_Game
             {
                 EnableItemHighlight = true
             });
+
+            // ⚠ ADDED LAST, ON PURPOSE. SetBackground calls SendToBackZOrder, which runs
+            // Array.Sort - an UNSTABLE sort - over the children. Every element here has its
+            // order settled by an explicit call except this one, so added earlier it was the
+            // only child a later SetBackground could reorder arbitrarily, and it landed over
+            // the frames it is supposed to sit beside (bench 183-185: the stat rows drawn
+            // under an opaque sibling, and the layout thrash that came with it). This is the
+            // same trap that blanked the design cartouche at bench 46.172.
+            // On the frame's tab row, its RIGHT edge on the list's right edge (Ludo).
+            // UICheckBox sizes itself in its constructor, so its width is exact right away.
+            RectF pinTab = ActiveModSubMenu.Tabs[0].Rect;
+            UICheckBox pin = Checkbox(new Vector2(pinTab.Right, pinTab.Y + 4),
+                                      () => PinActiveModule,
+                                      (b) => { PinActiveModule = b; },
+                                      "Pin Active",
+                                      "Keep the Active Module panel on screen while you hover the list.\n"
+                                    + "Off: the hovered module takes its place, and it comes back when you look away.");
+            pin.SetAbsPos(ClientArea.Right - pin.Width, pin.Y);
         }
 
         // Ludoal fork (spec v4): the design cartouches align their height on the module frames,
@@ -102,16 +119,34 @@ namespace Ship_Game
         Submenu DrawingPanel;
         float ActiveModStatSpacing => (DrawingPanel ?? ActiveModSubMenu).Width * 0.27f;
 
-        // Ludoal fork (spec v4): a comparison is running when a module is pinned and the Active
-        // panel is up. There is no second frame any more — this is what used to be
-        // CompareModSubMenu.Visible, and every test that asked for that frame really meant this.
-        bool Comparing => GlobalStats.ShipyardComparison
-                       && Screen.CompareModule != null && ActiveModSubMenu.Visible;
+        // Ludoal fork (spec v4): a comparison is running when a module is pinned. There is no
+        // second frame any more: this is what used to be CompareModSubMenu.Visible, and every
+        // test that asked for that frame really meant this.
+        // ⚠ Bench 184: this used to also require ActiveModSubMenu.Visible, kept by symmetry with
+        // the frame that no longer exists. With Pin Active unchecked, a shift-click necessarily
+        // happens WHILE hovering, so the Active frame is hidden at that very instant and the
+        // comparison went off just as it was asked for (Ludo). The design side never had the
+        // test: there, wantDeltas reads ComparedDesign alone. A pin is a deliberate state, a
+        // hover is a passing one, and the deliberate one does not answer to the other. The two
+        // sites that actually need the frame on screen are already guarded by their own if.
+        bool Comparing => Screen.CompareModule != null;
 
         // Ludoal fork (spec v4): the hover frame waits this long before appearing, so running the
         // cursor down the list does not flash a frame per row.
         const float HoverDelay = 0.25f;
+        // Ludoal fork (bench 188): and the symmetric one on the way OUT. Sweeping from one row
+        // to the next crosses a gap where nothing is hovered, one or two frames long. With
+        // Pin Active unchecked that gap let the Active frame flash back into its seat between
+        // every pair of rows (Ludo). Holding the hover frame for a moment bridges the gap;
+        // leaving the list for good is far longer than this, so the frame still goes away.
+        const float HoverLinger = 0.12f;
         float HoverDwell;
+        float HoverLeftAt = -1f;  // counts up since the cursor left; negative = not counting
+        // what the hover frame is showing. It is NOT always HoveredModule: during the linger
+        // above the cursor is already off the row, and drawing a null there would blank the
+        // frame instead of holding it. One field, read by both draw sites, rather than each
+        // one deciding what "the hovered module" means at that instant.
+        ShipModule HoverShown;
         string HoverDwellUID; // the module the dwell is counting for; a different one restarts it
 
         // Ludoal fork (spec v4): column geometry belongs to the FRAME, not to the draw path.
@@ -136,7 +171,14 @@ namespace Ship_Game
         // the black button bar at the foot of the screen — same 70 the screen builds BlackBar
         // with, so the module frames end on the design cartouches' line
         public const float BottomBarH = 70f;
-        public const float ShorterBy = 45f;  // three lines taken off the frame height (Ludo)
+        // Ludoal fork (bench 46.180): 15, not 45. Three lines were taken off the frames when they
+        // had room to spare; the COMBAT block filled that room and Relative Strength now touches
+        // the bottom edge (Ludo). Two lines go back, and they come out of the LIST above -
+        // ListHeightFor subtracts this frame height, so the whole column follows from one number
+        // and the four frames stay on their shared foot line. Deliberate on both sides: the
+        // module frames get the same room, which the coming stats rework will want.
+        public const float ShorterBy = 0f;   // nothing off now: 45 -> 15 -> 0, three lines given
+                                             // back to the frames as the blocks filled up (Ludo)
 
         // Where the frames' bottom edge lands. The design cartouches use the SAME line, which is
         // what makes the four frames read as one row (bench 46.135).
@@ -157,9 +199,8 @@ namespace Ship_Game
         // comparison off it has none, so it goes back to upstream's tight geometry - otherwise
         // it reserves room for something that will never be drawn (bench 46.150).
         // Ludoal fork (bench 46.152): the frame is WIDE only while a comparison is actually
-        // running (Ludo). It was tied to the option, so turning the feature on made every
-        // panel permanently wider for deltas that were usually not there. Now the legacy
-        // look is simply 'no comparison', and the two cases stop being separate code.
+        // running (Ludo). It used to be tied to the feature toggle, which made every panel
+        // permanently wider for deltas that were usually not there.
         // Ludoal fork (bench): THE hovered module, whichever way the cursor found it — a list
         // row or a module already fitted on the hull. One property, so the three readers (the
         // dwell timer, the stats draw and the comparison draw) cannot disagree about what is
@@ -168,6 +209,11 @@ namespace Ship_Game
 
         // where the "x" that drops the comparison sits; empty when nothing is pinned
         RectF CancelCompareRect;
+
+        // Ludoal fork (bench): the module side's twin of the browser's Pin Active. ON = both
+        // frames on screen. OFF = the hovered module takes the active one's place while the
+        // cursor rests on it (Ludo). Not persisted: a way of looking, not a preference.
+        bool PinActiveModule = true;
 
         bool IsWideFrame(Submenu panel) => panel == ActiveModSubMenu && Comparing;
         float ColStepOf(Submenu panel) => IsWideFrame(panel) ? WideColStep : TightColStep;
@@ -250,7 +296,7 @@ namespace Ship_Game
         void DrawHoveredStats(SpriteBatch batch)
         {
             ShipModule a = Screen.ActiveModule;
-            ShipModule h = HoveredModule;
+            ShipModule h = HoverShown;
             if (a == null || h == null)
                 return;
 
@@ -361,23 +407,16 @@ namespace Ship_Game
                 }
                 else
                 {
-                    // Absent on the active module: dimmed label + dash (Ludo's call — "the other
-                    // one has a hangar and this one hasn't" is information worth a row). The
-                    // delta still shows, so the row says how much is being given up.
+                    // Absent on the active module: dimmed label + dash (Ludo's call: "the other
+                    // one has a hangar and this one hasn't" is information worth a row).
+                    // Bench 185: and NO delta on these rows (Ludo). The dash already says the
+                    // stat does not exist here, and a delta equal to the whole of the other
+                    // module's value reads as a measured difference rather than an absence.
                     cursor.Y += font.LineSpacing;
                     string title = u.Title; // no trailing colon, same as the drawn rows
                     var statCursor = new Vector2(cursor.X + spacing, cursor.Y);
                     batch.DrawString(font, title, new Vector2(statCursor.X - 20 - font.TextWidth(title), statCursor.Y), dim);
                     batch.DrawString(font, "-", statCursor, dim);
-
-                    if (other != null && other.TryGetValue(u.Key, out CollectedStat missing) && !missing.Value.AlmostEqual(0f))
-                    {
-                        float dv = -missing.Value; // active has none: the delta is the whole of it
-                        bool better = LowerIsBetter.Contains(u.Key) ? dv < 0f : dv > 0f;
-                        string ds = "(" + (missing.IsPercent ? dv.ToString("P0") : dv.GetNumberString()) + ")";
-                        batch.DrawString(font, ds, new Vector2(cursor.X + spacing + 46f, cursor.Y),
-                                         better ? Color.LightGreen : Color.LightPink);
-                    }
                 }
             }
         }
@@ -436,7 +475,7 @@ namespace Ship_Game
 
             // Ludoal fork (bench 46.152): the Active frame grows only while a comparison is
             // running, and shrinks back when the pin is dropped (Ludo). Nothing else pays for
-            // the delta lanes, and the legacy look falls out of it for free.
+            // the delta lanes, and the plain look falls out of it for free.
             // ⚠ Width alone is not enough: it writes Size.X, but a Submenu draws from Rect and
             // from the internal rects built in PerformLayout. SetAbsPos and SetRelSize both arm
             // RequiresLayout — SetAbsSize does NOT, so an absolute resize never triggers a
@@ -456,16 +495,7 @@ namespace Ship_Game
                 Obsolete.r.X = (int)(ActiveModSubMenu.X + wantWidth - Obsolete.r.Width - 10);
             }
 
-            // Ludoal fork (bench 46.150): with no Active frame showing, the hover frame slides
-            // over to the left edge rather than floating in the middle with a hole beside it.
-            float hoverX = ActiveModSubMenu.Visible
-                         ? ActiveModSubMenu.X + ActiveModSubMenu.Width + FrameGap
-                         : ActiveModSubMenu.X;
-            if (!HoverModSubMenu.X.AlmostEqual(hoverX))
-                HoverModSubMenu.SetAbsPos(hoverX, HoverModSubMenu.Y);
             ChooseFighterSub.Visible = ChooseFighterSL.GetFighterHangar() != null;
-            if (!ActiveModSubMenu.Visible)
-                Screen.CompareModule = null; // Ludoal fork: closing the Active panel drops the pin
             // Ludoal fork (spec v4): the hover frame appears after a short dwell, so sweeping the
             // list does not make it blink. Showing the module already on the workbench would say
             // nothing, so that case stays hidden too.
@@ -479,7 +509,18 @@ namespace Ship_Game
             {
                 HoverDwell = 0f;
                 HoverDwellUID = null; // clear both, or coming back to the same row skips the dwell
-                HoverModSubMenu.Visible = false;
+                // linger before actually hiding, see HoverLinger
+                if (HoverModSubMenu.Visible)
+                {
+                    if (HoverLeftAt < 0f)
+                        HoverLeftAt = 0f;
+                    HoverLeftAt += fixedDeltaTime;
+                    if (HoverLeftAt >= HoverLinger)
+                    {
+                        HoverModSubMenu.Visible = false;
+                        HoverShown = null;
+                    }
+                }
             }
             else
             {
@@ -489,14 +530,33 @@ namespace Ship_Game
                     HoverDwell = 0f;
                 }
                 HoverDwell += fixedDeltaTime;
-                // Ludoal fork (bench): the hover frame lives in BOTH régimes — what the
-                // comparison option gates is the delta lanes, not the ability to look at a
-                // module. The single difference: in legacy, a loaded brush silences the hover,
-                // so only one module panel is ever on screen (Ludo).
-                bool hoverAllowed = GlobalStats.ShipyardComparison || Screen.ActiveModule == null;
-                HoverModSubMenu.Visible = hoverAllowed
-                                       && HoverDwell >= HoverDelay && !ChooseFighterSub.Visible;
+                HoverLeftAt = -1f; // back on a row: stop counting out
+                // ⚠ never turn it OFF here: sweeping to the next row restarts the dwell, and
+                // hiding while that dwell runs is the very flicker the linger exists to bridge
+                if (HoverDwell >= HoverDelay && !ChooseFighterSub.Visible)
+                {
+                    HoverModSubMenu.Visible = true;
+                    HoverShown = hovered;
+                }
             }
+
+            // Ludoal fork (bench): unpinned, the two panels share ONE place instead of standing
+            // side by side: the hovered module takes the active one's seat while the cursor
+            // rests on it, and the brush comes back when you look away (Ludo). Same rule as the
+            // browser's Pin Active, and it sits here rather than above because it reads the hover
+            // frame's visibility, which is only settled on the lines just above.
+            if (!PinActiveModule && HoverModSubMenu.Visible)
+                ActiveModSubMenu.Visible = false;
+
+            // Ludoal fork (bench 46.150): with no Active frame showing, the hover frame slides
+            // over to the left edge rather than floating in the middle with a hole beside it.
+            // Placed after the two visibility decisions above so it reads their settled values:
+            // one writer for this position, and no frame of lag when either one flips.
+            float hoverX = ActiveModSubMenu.Visible
+                         ? ActiveModSubMenu.X + ActiveModSubMenu.Width + FrameGap
+                         : ActiveModSubMenu.X;
+            if (!HoverModSubMenu.X.AlmostEqual(hoverX))
+                HoverModSubMenu.SetAbsPos(hoverX, HoverModSubMenu.Y);
 
             base.Update(fixedDeltaTime);
         }
@@ -509,14 +569,19 @@ namespace Ship_Game
             if (ActiveModSubMenu.Visible)
             {
                 DrawActiveModuleData(batch);
-            }
-            if (Comparing) // Ludoal fork (spec v4): one frame, active values, compared deltas
-            {
-                DrawComparisonStats(batch); // the "vs <name>" sits by the title, inside the frame
+
+                // Ludoal fork (spec v4): one frame, active values, compared deltas.
+                // ⚠ Inside the visibility test, not beside it (bench 186): this paints INTO the
+                // Active frame, so it must not run while that frame is hidden. Comparing used to
+                // carry ActiveModSubMenu.Visible itself and guarded this by accident; with the
+                // pin no longer answering to the frame, unpinning left the active module's stats
+                // printed over the hovered module that had taken its place (Ludo).
+                if (Comparing)
+                    DrawComparisonStats(batch); // the "vs <name>" sits by the title, in the frame
             }
             if (HoverModSubMenu.Visible) // Ludoal fork (spec v4): the transient hover frame
             {
-                DrawModuleData(batch, HoveredModule, HoverModSubMenu);
+                DrawModuleData(batch, HoverShown, HoverModSubMenu);
                 // Its missing stats keep their dimmed place ONLY while a comparison is running —
                 // same rule as the design side (Ludo, 46.137). With nothing pinned there is
                 // nothing to be symmetrical with, and the dashes would be noise.
@@ -593,14 +658,15 @@ namespace Ship_Game
             batch.DrawString(titleFont, moduleTemplate.NameText.Text, modTitlePos, nameColor);
 
             // Ludoal fork (spec v4): the pinned module has no frame of its own, so its name is
-            // said right after the title, inside the frame — the delta lane must never come from
-            // an anonymous source. Baseline-aligned with the title, one size down.
+            // said inside the frame - the delta lane must never come from an anonymous source.
+            // Bench 183: on its OWN line under the title, not trailing it. Trailing, its right
+            // edge was the sum of TWO module names, so a long pair ran out of the frame and over
+            // the obsolete button (Ludo). Under the title it only ever pays for one of them.
             if (Comparing && panel == ActiveModSubMenu)
             {
                 Graphics.Font vsFont = Fonts.Arial12Bold;
                 string vs = "vs " + Screen.CompareModule.NameText.Text;
-                var vsPos = new Vector2(modTitlePos.X + titleFont.TextWidth(moduleTemplate.NameText.Text) + 10,
-                                        modTitlePos.Y + titleFont.LineSpacing - vsFont.LineSpacing - 2f);
+                var vsPos = new Vector2(modTitlePos.X, modTitlePos.Y + titleFont.LineSpacing);
                 batch.DrawString(vsFont, vs, vsPos, Colors.Cream);
 
                 // Ludoal fork (bench): the way out of the comparison, so dropping a pin does not
@@ -619,7 +685,16 @@ namespace Ship_Game
                 CancelCompareRect = default;
             }
 
-            modTitlePos.Y += titleFont.LineSpacing + (titleFont == Fonts.Arial20Bold ? 6 : 4);
+            // The "vs <name>" line above is drawn on the Active frame only, but the room for it
+            // is reserved on BOTH, always: a reservation belongs to the OBJECT, not to the
+            // moment (the law that cost a morning on the Shipyard columns). Reserved only when
+            // used, every pin and unpin would shift the whole panel down and back, and worse,
+            // the two frames' stat rows would stop lining up, which is the one thing a
+            // side-by-side comparison is read for.
+            // (This was pulled at bench 185 while hunting the blank panels; it was never the
+            // cause, that was the null batch on the collection path.)
+            modTitlePos.Y += titleFont.LineSpacing + Fonts.Arial12Bold.LineSpacing
+                           + (titleFont == Fonts.Arial20Bold ? 6 : 4);
 
             if (Screen.ParentUniverse.Debug)
             {
@@ -734,7 +809,12 @@ namespace Ship_Game
 
             // These frames have their stat rows drawn as a UNION by the caller, so the plain path
             // must stop after the header — otherwise both would draw, one over the other.
-            bool unionDrawsTheRows = Comparing && (panel == ActiveModSubMenu || panel == HoverModSubMenu);
+            // ⚠ and the union only draws when there IS a brush to draw it against: both union
+            // paths need the Active module, and with a pin surviving an empty brush (bench 184)
+            // this path would fall silent while nothing replaced it, leaving a black frame
+            // (Ludo). Whoever silences the plain path must be certain it is drawing instead.
+            bool unionDrawsTheRows = Comparing && Screen.ActiveModule != null
+                                  && (panel == ActiveModSubMenu || panel == HoverModSubMenu);
             if (unionDrawsTheRows)
             {
                 DrawingPanel = null;
@@ -1082,20 +1162,34 @@ namespace Ship_Game
             DrawStat(ref cursor, GameText.Deflection, m.Deflection, GameText.WeaponsWhichDoLessDamage);
             if (m.RepairDifficulty > 0) DrawStat(ref cursor, GameText.Complexity, m.RepairDifficulty, GameText.TheMoreComplexTheModule); // Complexity
 
-            if (wOrMirv.TruePD && Collector == null) // Ludoal fork: direct draw, active panel only
+            // Ludoal fork: this whole block writes free text straight to the batch, so it is a
+            // DIRECT-DRAW path only. During a stat collection (CollectStats) there is no batch
+            // at all, and none of these lines is a stat worth collecting anyway.
+            // ⚠ Bench 185, and it was mine: the collection guard used to live inside the FIRST
+            // condition (`TruePD && Collector == null`). A guard placed in an if/else condition
+            // does not skip the block, it picks a different BRANCH - so a point-defence weapon
+            // being collected fell through to the else-if, and any such weapon that also
+            // excludes a hull class dereferenced the null batch. The exception came out in the
+            // middle of Draw, which is why every panel after it went blank, module and design
+            // alike, and only for one specific module (Ludo, who found it by naming that
+            // module). Guard the whole path, once, before either branch is chosen.
+            if (Collector == null)
             {
-                WriteLine(ref cursor);
-                DrawStringRed(batch, ref cursor, "Cannot Target Ships");
-            }
-            else if (wOrMirv.ExcludesFighters || wOrMirv.ExcludesCorvettes || wOrMirv.ExcludesCapitals || wOrMirv.ExcludesStations)
-            {
-                WriteLine(ref cursor);
-                DrawStringRed(batch, ref cursor, "Cannot Target:", Fonts.Arial8Bold);
+                if (wOrMirv.TruePD)
+                {
+                    WriteLine(ref cursor);
+                    DrawStringRed(batch, ref cursor, "Cannot Target Ships");
+                }
+                else if (wOrMirv.ExcludesFighters || wOrMirv.ExcludesCorvettes || wOrMirv.ExcludesCapitals || wOrMirv.ExcludesStations)
+                {
+                    WriteLine(ref cursor);
+                    DrawStringRed(batch, ref cursor, "Cannot Target:", Fonts.Arial8Bold);
 
-                if (wOrMirv.ExcludesFighters)  WriteLine(batch, ref cursor, "Fighters");
-                if (wOrMirv.ExcludesCorvettes) WriteLine(batch, ref cursor, "Corvettes");
-                if (wOrMirv.ExcludesCapitals)  WriteLine(batch, ref cursor, "Capitals");
-                if (wOrMirv.ExcludesStations)  WriteLine(batch, ref cursor, "Stations");
+                    if (wOrMirv.ExcludesFighters)  WriteLine(batch, ref cursor, "Fighters");
+                    if (wOrMirv.ExcludesCorvettes) WriteLine(batch, ref cursor, "Corvettes");
+                    if (wOrMirv.ExcludesCapitals)  WriteLine(batch, ref cursor, "Capitals");
+                    if (wOrMirv.ExcludesStations)  WriteLine(batch, ref cursor, "Stations");
+                }
             }
         }
 

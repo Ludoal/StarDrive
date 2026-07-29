@@ -34,12 +34,9 @@ namespace Ship_Game
                 // Ludoal fork (bench 46.152): the gesture hint belongs to the ROW, not to the
                 // list. Hung off the list's rect it appeared wherever the cursor first entered
                 // and stayed there, and it fired over category headers too - those have no
-                // Module, so they no longer qualify. The comparison line only shows when the
-                // feature is on: a hint promising a gesture that does nothing is worse than none.
+                // Module, so they no longer qualify.
                 if (HitTest(GameBase.ScreenManager.input.CursorPosition))
-                    ToolTip.CreateTooltip(GlobalStats.ShipyardComparison
-                        ? "Click to pick this module\nShift-click to pin it for comparison"
-                        : "Click to pick this module");
+                    ToolTip.CreateTooltip("Click to pick this module\nShift-click to pin it for comparison");
             }
         }
 

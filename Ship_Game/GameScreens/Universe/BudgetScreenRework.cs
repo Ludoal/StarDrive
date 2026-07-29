@@ -342,7 +342,11 @@ namespace Ship_Game.GameScreens
         void FillList()
         {
             ColonySL.Reset();
-            ColonySL.OnClick = OnColonyClicked; // Reset drops the handler
+            // Ludoal fork (bench 190): DOUBLE click, not single (Ludo). Opening a colony
+            // tears down this screen, so a stray click while reading the table threw you out
+            // of it. Same gesture as the Empire screen's colony list.
+            // ⚠ re-armed here rather than at construction: Reset drops the handlers.
+            ColonySL.OnDoubleClick = OnColonyClicked;
             var planets = Player.GetPlanets();
             var sorted = SortByName
                 ? (SortDesc ? planets.OrderByDescending(p => p.Name) : planets.OrderBy(p => p.Name))
@@ -356,6 +360,9 @@ namespace Ship_Game.GameScreens
             // the economy screen is the door into the diagnosis: a red row → why?
             GameAudio.AcceptClick();
             ExitScreen();
+            // Ludoal fork (bench 191): right-click in the colony comes back HERE, not to the
+            // map (Ludo). The universe screen calls this once, when that colony closes.
+            Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new BudgetScreenRework(Universe));
             Universe.workersPanel = new ColonyScreen(Universe, item.Planet, Universe.EmpireUI);
             Universe.LookingAtPlanet = true;
             // same anchor as the double-click path: the panel covers the map, no snap,

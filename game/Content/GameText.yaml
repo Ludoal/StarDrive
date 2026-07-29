@@ -1077,7 +1077,7 @@ ExcessWpnPwrDrain:
  UKR: "Надлишкові витр. енерг."
  PTB: "Drenagem excessiva de energia da arma"
 WpnFirePowerTime:
- ENG: "Wpn Fire Power Time"
+ ENG: "Wpn Fire Pwr Time"
  UKR: "Час безпер. стрільби"
  PTB: "Tempo de potência de fogo da arma"
 BurstWpnPwrDrain:

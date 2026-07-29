@@ -15,8 +15,8 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00047** release, m
 
 **Overlays & map**
 - One overlay = one function, freely combined: **F2** influence zones, **F3** vision (sensor coverage, spies and projectors included), **F4** subspace projection, **F5** gravity wells, **F6** weapons range.
-- Fog of war stays dark: no permanent ship wakes, no explored-system halos, since live sensors carry current vision. An Options toggle (Fog Of War Memory) brings back the classic painted map.
-- Dimmed nebulae on the main map.
+- **NEW** Fog of war lifts with the vision overlay: at rest the map keeps a light veil, enough to tell explored space from the rest, and **F3** brings the full darkening back when you want to read your sensor coverage. Your own ships stop being painted dark for sitting outside a sensor bubble. No permanent ship wakes, no explored-system halos either, since live sensors carry current vision. An Options toggle (Fog Of War Memory) brings back the classic painted map.
+- Nebulae slightly dimmed on the main map.
 - Minimap: colonized systems boxed with race color, contested systems (several races) in grey.
 - Planet View removed: double-click opens Colony view, Combat view, or just snaps the camera; the selection cartouches carry all the info.
 
@@ -26,22 +26,36 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00047** release, m
 - The key that opens a screen closes it (C Troops, F Blueprints, P Patrols, **F7** Important Events log, a new hotkey for the patch-46 screen).
 
 **Screens**
-- Research: integrated frame under the top bar, compact branch packing, standard title.
-- **NEW** Troops Array: every ground troop you own in one screen: system, location, status (garrison, deployed, in transport, stationed), type, count and strength. Rows group by location and troop type; double-click jumps to the ship or opens the colony.
+
+*Shipyard*
 - **NEW** Designs load straight from the Shipyard: the hull list and the load popup are one browser now. Filter by name or hull, show only your designs or include locked ones, and group the list **By Hull** (a carcass and what you built on it) or **By Role** (every carrier you own, wherever it is built). Double-click loads.
 - **NEW** Designs can be marked obsolete, the way modules already could: a button in the Active Design frame, the name in red in the browser, and a **Hide obsolete** filter. Saved with your game, per empire. The module list gets its own obsolete filter as a checkbox above it, where it belongs, instead of a button at the far end of the bottom bar.
+- **NEW** Hovering a module or a design shows its full stats, and its module plan for a design, without loading it: a second panel beside the active one. A **Pin Active** toggle on each panel's tab row turns that into one panel at a time, for a narrow screen or an uncluttered one: unchecked, what you hover takes the active panel's place while the cursor rests on it, and the active one comes back when you look away.
+- Comparator: Shift-click a module or a design to pin it, and the panel on the workbench shows how it compares, row for row, a dash where one side lacks a stat, and (+x)/(-x) deltas, green = better, pink = worse. An **x** on the "vs" line drops the comparison without hunting the pinned item down again.
 - Hovering a module fitted on the hull now shows it the same way hovering a list row does, and the orange highlight follows the cursor off the hull instead of staying lit on the last module touched.
-- **Optional** Shipyard comparator (Rework Options, ON by default): Shift-click a module or a design to pin it, and the panel on the workbench shows how it compares, row for row, a dash where one side lacks a stat, and (+x)/(-x) deltas, green = better, pink = worse. Hovering a design shows its full stats and module plan without loading it, and an **x** on the "vs" line drops the comparison without hunting the pinned item down again.
-- **Rework Options** (under Options): three screens rebuilt from the ground up, each one a checkbox you flip when you want it. **They ship OFF**, being beta, so the original screen is what you get until you ask otherwise. Flip one back and you have the stock screen again, still receiving official fixes — and still carrying the fork's live top bar, since navigation is not part of what the toggle turns off.
-  - **Economy**: the whole budget on one screen, planet by planet, instead of a window you scroll.
+
+*Troops*
+- **NEW** Troops Array: every ground troop you own in one screen: system, location, status (garrison, deployed, in transport, stationed), type, count and strength. Rows group by location and troop type; double-click jumps to the ship or opens the colony.
+
+*Colony & Blueprints*
+- Panels aligned with the bar, wider right blocks.
+- Colony: Stats+ panel with the full production accounting.
+
+*Empire & Research*
+- Empire screen: Fertility / Richness / Max Population columns added.
+- Research: integrated frame under the top bar, compact branch packing, standard title.
+
+*Diplomacy*
+- Relationships diagram: one filter per treaty type instead of two blanket toggles, and each treaty draws as its own parallel chord rather than all six stacking on the same line between two empires. Shared by both the stock and the reworked Diplomacy screen.
+
+*Rework Options (under Options)*
+- Three screens rebuilt from the ground up, each one a checkbox you flip when you want it. **They ship OFF**, being beta, so the original screen is what you get until you ask otherwise. Flip one back and you have the stock screen again, still receiving official fixes — and still carrying the fork's live top bar, since navigation is not part of what the toggle turns off.
+  - **Economy**: the whole budget on one screen, planet by planet, instead of a window you scroll. Double-click a row to open that colony.
   - **Diplomacy**: every empire in columns, showing what they know, what they want, and what you have signed.
   - **Espionage**: infiltration laid out by level, so you can see what an operation costs before you commit to it.
-- Relationships diagram: one filter per treaty type instead of two blanket toggles, and each treaty draws as its own parallel chord rather than all six stacking on the same line between two empires. Shared by both the stock and the reworked Diplomacy screen.
-- Colony and Blueprints: panels aligned with the bar, wider right blocks.
-- Colony: Stats+ panel with the full production accounting.
-- Empire screen: Fertility / Richness / Max Population columns added.
 
 **Notifications & camera**
+- **NEW** Open a colony from a list (Economy, Empire, Troops) and closing it goes back to that list, not to the map with the screen you were reading gone. Right click or Escape, either one.
 - Notification clicks go where they mean: diplomacy opens the Diplomacy panel, espionage snaps to the planet, colony and ground-battle panels open in place. The camera only moves when it stays visible, and planet/station snaps stop at a sane zoom instead of nose-on.
 - Chase camera fixed (it wasn't actually working): Ctrl+Middle-click follows the selected ship, Follow button in the ship info panel; panning or deselecting decouples.
 - Autosave measured in game years (slider, 0 = legacy wall-clock).
