@@ -150,7 +150,8 @@ namespace Ship_Game
             LeftRect = new Rectangle(2, tabRowY, (int)screenWidth - 10, ScreenHeight - tabRowY - 7);
             DMenu = new Menu2(LeftRect);
 
-            GroupTabs = Add(new Submenu(LeftRect, new LocalizedText[]
+            GroupTabs = Add(new Submenu(new RectF(LeftRect.X, LeftRect.Y, LeftRect.Width, LeftRect.Height),
+                                        new LocalizedText[]
             {
                 "Intelligence", "Bonuses", "Relationships", "Espionage"
             }));
