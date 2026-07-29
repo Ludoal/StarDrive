@@ -97,23 +97,7 @@ namespace Ship_Game
             pin.SetAbsPos(ClientArea.Right - pin.Width, pin.Y);
         }
 
-        // Ludoal fork: the category is restored on the first Update with a hull in place, not in
-        // the constructor - selecting a tab populates the module list, which reads
-        // Screen.CurrentHull, and that is still null while the screen is being built.
         bool CategoryRestored;
-
-        public override void Update(float fixedDeltaTime)
-        {
-            // keep waiting until a hull is actually there, or the restore would be dropped on a
-            // frame where CurrentHull has not landed yet
-            if (!CategoryRestored && Screen.CurrentHull != null)
-            {
-                CategoryRestored = true;
-                if (LastCategory > 0)
-                    SelectedIndex = LastCategory;
-            }
-            base.Update(fixedDeltaTime);
-        }
 
         // Ludoal fork (spec v4): the design cartouches align their height on the module frames,
         // so the four frames read as one row across the screen.
@@ -492,6 +476,17 @@ namespace Ship_Game
 
         public override void Update(float fixedDeltaTime)
         {
+            // Ludoal fork: back to the category the player left on, once a hull is in place -
+            // selecting a tab populates the module list, which reads Screen.CurrentHull, and
+            // that is still null while the screen is being built. Sits above the fallback
+            // below so the restore wins over the default tab 0.
+            if (!CategoryRestored && Screen.CurrentHull != null)
+            {
+                CategoryRestored = true;
+                if (LastCategory > 0)
+                    SelectedIndex = LastCategory;
+            }
+
             if (SelectedIndex == -1)
                 SelectedIndex = 0; // this will trigger OnTabChangedEvt
 
