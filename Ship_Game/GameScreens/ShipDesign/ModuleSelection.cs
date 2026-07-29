@@ -88,7 +88,7 @@ namespace Ship_Game
             // On the frame's tab row, its RIGHT edge on the list's right edge (Ludo).
             // UICheckBox sizes itself in its constructor, so its width is exact right away.
             RectF pinTab = ActiveModSubMenu.Tabs[0].Rect;
-            UICheckBox pin = Checkbox(new Vector2(pinTab.Right, pinTab.Y + 6),
+            UICheckBox pin = Checkbox(new Vector2(pinTab.Right, pinTab.Y + 4),
                                       () => PinActiveModule,
                                       (b) => { PinActiveModule = b; },
                                       "Pin Active",

@@ -1127,7 +1127,7 @@ namespace Ship_Game
             // when the cartouche grows leftwards on a pin, and it survives the frame it hides:
             // unpinned, the checkbox is the only way back.
             RectF infoTab = infoSub.Tabs[0].Rect;
-            PinActiveCheck = Checkbox(new Vector2(hullSelectPos.X, infoTab.Y + 6),
+            PinActiveCheck = Checkbox(new Vector2(hullSelectPos.X, infoTab.Y + 4),
                                       () => PinActiveDesign,
                                       (b) => { PinActiveDesign = b; },
                                       "Pin Active",
