@@ -70,6 +70,12 @@ namespace Ship_Game
         public bool LookingAtPlanet;
         public bool snappingToShip;
         public bool returnToShip;
+        // Ludoal fork (bench 191): when a colony was opened from a LIST screen (Economy,
+        // Empire, Troops), closing it goes back to that list rather than to the map (Ludo).
+        // What is remembered is how to REOPEN it, not which one it was: the three screens have
+        // three different constructors, and an enum here would be one more thing to keep in
+        // step with them. Cleared as soon as it is used, and by any colony opened from the map.
+        public Action ReturnToListScreen;
         public EmpireUIOverlay EmpireUI;
         public BloomComponent bloomComponent;
         public DistortionComponent distortionComponent;

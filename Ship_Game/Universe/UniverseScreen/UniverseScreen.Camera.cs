@@ -102,6 +102,10 @@ namespace Ship_Game
                 if ((p.Owner == Player || flag || Debug) && p.Owner != null)
                 {
                     workersPanel = new ColonyScreen(this, p, EmpireUI);
+                    // Ludoal fork (bench 191): opened FROM THE MAP, so closing goes back to the
+                    // map. Clear any hook a list screen left standing, or a later map double-click
+                    // would still fly back to that list.
+                    ReturnToListScreen = null;
                     ClearSelectedItems();
                     returnToShip = doReturnToShip;
                     LookingAtPlanet = true;

@@ -311,6 +311,10 @@ namespace Ship_Game
         void OnColonyListItemDoubleClicked(ColoniesListItem item)
         {
             Universe.SnapViewColony(item.P, combatView: false);
+            // Ludoal fork (bench 191): closing that colony comes back HERE, not to the map
+            // (Ludo). ⚠ Set AFTER the snap: opening a colony clears this hook, so a line placed
+            // above would be wiped by the very call it is meant to follow.
+            Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new EmpireManagementScreen(Universe, eui));
             ExitScreen();
         }
 

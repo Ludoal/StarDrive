@@ -347,7 +347,7 @@ namespace Ship_Game
                 // rather than none. Bench numbers, meant to be moved.
                 int fogAlpha = GlobalStats.FogOfWarMemory ? 170 : 150;
                 if (!ShowingVisionOverlay)
-                    fogAlpha = 70;
+                    fogAlpha = 90;
                 batch.FillRectangle(new Rectangle(0, 0, ScreenWidth, ScreenHeight), new Color(0, 0, 0, fogAlpha));
                 // Phase 3.7 step 3: persistent "I've been here" tint, premul-correct
                 // (rgb == alpha so FogMap composites correctly under premul AlphaBlend).

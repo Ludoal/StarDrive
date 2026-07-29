@@ -360,6 +360,9 @@ namespace Ship_Game.GameScreens
             // the economy screen is the door into the diagnosis: a red row → why?
             GameAudio.AcceptClick();
             ExitScreen();
+            // Ludoal fork (bench 191): right-click in the colony comes back HERE, not to the
+            // map (Ludo). The universe screen calls this once, when that colony closes.
+            Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new BudgetScreenRework(Universe));
             Universe.workersPanel = new ColonyScreen(Universe, item.Planet, Universe.EmpireUI);
             Universe.LookingAtPlanet = true;
             // same anchor as the double-click path: the panel covers the map, no snap,

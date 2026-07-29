@@ -201,6 +201,12 @@ namespace Ship_Game
             bool dismiss = (input.Escaped || input.RightMouseClick) && colonyScreen?.ClickedTroop == false;
             if (dismiss || !workersPanel.IsActive)
             {
+                // Ludoal fork (bench 191): opened from a list screen, closing goes back to that
+                // list (Ludo). Taken before it is called: reopening the screen runs its own
+                // setup, and a hook still standing would send the NEXT close there too.
+                Action back = ReturnToListScreen;
+                ReturnToListScreen = null;
+
                 AdjustCamTimer = 1f;
                 if (returnToShip)
                 {
@@ -216,6 +222,7 @@ namespace Ship_Game
                 }
                 transitionElapsedTime = 0f;
                 LookingAtPlanet = false;
+                back?.Invoke();
             }
         }
 
