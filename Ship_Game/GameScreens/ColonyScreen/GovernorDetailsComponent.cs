@@ -120,7 +120,10 @@ namespace Ship_Game
             Portrait         = Add(new UIPanel(PortraitSprite));
             BluePrintsIcon   = Add(new UIPanel(ResourceManager.Texture("NewUI/blueprints")));
             WorldType        = Add(new UILabel(Planet.WorldType, FontBig));
-            WorldDescription = Add(new UILabel(Font12));
+            // Ludoal fork: Font, not Font12 - GetParsedDescription wraps with Font, which is
+            // smaller than Font12 below 1920, so a hardcoded Font12 here drew text measured for
+            // a narrower glyph set and it ran past the frame.
+            WorldDescription = Add(new UILabel(Font));
             ColonyBlueprints = Add(new UILabel(GameText.ColonyBlueprintsTitle, FontBig, Color.Wheat));
             BlueprintsName   = Add(new UILabel("", FontBig, Color.Gold));
             BlueprintsCompletionLbl = Add(new UILabel(GameText.Completion, Font, Color.Wheat));
@@ -281,8 +284,8 @@ namespace Ship_Game
             // of the panel height - so at reduced heights it slid left, under the tab row. It
             // keeps a floor (see ColumnX), and the description wraps on that same value.
             WorldType.Pos           = new Vector2(ColumnX, Portrait.Y);
-            ColonyTypeList.Pos      = new Vector2(WorldType.X, Portrait.Y + 21);
-            WorldDescription.Pos    = new Vector2(WorldType.X, Portrait.Y + 40);
+            ColonyTypeList.Pos      = new Vector2(ColumnX, Portrait.Y + 21);
+            WorldDescription.Pos    = new Vector2(ColumnX, Portrait.Y + 40);
             WorldDescription.Text   = GetParsedDescription();
             ColonyBlueprints.Pos    = new Vector2(X + 10, Y + 40 + shift);
             ColonyBlueprints.Text   = ColonyBlueprints.Text.Text + ":";
@@ -323,14 +326,15 @@ namespace Ship_Game
             // Ludoal fork: the bottom row sat at Bottom - 20, but a checkbox is drawn CENTRED on
             // its Y, so half of its height fell past that and the row was clipped by the frame
             // at the heights this panel actually gets. The margin now comes from the row's own
-            // height instead of a guessed constant.
+            // height instead of a guessed constant. The column sits to the RIGHT of the portrait,
+            // on the same left edge as the world title above it.
             float rowHalf = SpecializedTradeHub.Height * 0.5f;
-            SpecializedTradeHub.Pos = new Vector2(Portrait.X, Bottom - rowHalf - 8);
+            SpecializedTradeHub.Pos = new Vector2(ColumnX, Bottom - rowHalf - 8);
             // Ludoal fork: right-aligned on the frame, so the label cannot outgrow its pull.
             GovNoScrap.Pos          = new Vector2(Right - GovNoScrap.Width - 12, SpecializedTradeHub.Pos.Y);
             BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, SpecializedTradeHub.Pos.Y - 35);
-            Quarantine.Pos          = new Vector2(Portrait.X, SpecializedTradeHub.Pos.Y - 35);
-            Prioritized.Pos         = new Vector2(Portrait.X, SpecializedTradeHub.Pos.Y - 17);
+            Quarantine.Pos          = new Vector2(ColumnX, SpecializedTradeHub.Pos.Y - 35);
+            Prioritized.Pos         = new Vector2(ColumnX, SpecializedTradeHub.Pos.Y - 17);
 
             // Defense tab. The rows anchored on Bottom are left alone: they already follow the
             // frame's lower edge and the tab row does not move it.

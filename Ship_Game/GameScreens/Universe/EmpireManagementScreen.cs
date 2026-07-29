@@ -107,7 +107,17 @@ namespace Ship_Game
 
             base.Draw(batch, elapsed);
             
-            var PlanetInfoRect = new Rectangle((int)ERect.X + 22, (int)(ERect.Y + ERect.H), (int)(ScreenWidth * 0.3f), (int)(ScreenHeight - ERect.Y - ERect.H - 22));
+            // Ludoal fork: the cartouche takes the room left of the planet map instead of a flat
+            // 30% of the screen, which left a strip of dead space at its right edge. The map keeps
+            // its own square footprint (its height is the block's, so its width follows), and the
+            // cartouche absorbs the rest - one variable block, everything else fixed.
+            ColoniesListItem top = ColoniesList.ItemAtTop;
+            float blockTop = ERect.Y + ERect.H;
+            float blockH = ScreenHeight - blockTop - 22;
+            float infoX = ERect.X + 22;
+            // the map is as wide as it is tall, plus the 20px overlap the layout below uses
+            float infoW = Math.Max(ScreenWidth * 0.3f, top.QueueRect.X - infoX - blockH + 20);
+            var PlanetInfoRect = new Rectangle((int)infoX, (int)blockTop, (int)infoW, (int)blockH);
             // Ludoal fork: the icon is 60% of the block's height.
             int iconSize = (int)(PlanetInfoRect.Height * 0.6f);
             var PlanetIconRect = new Rectangle(PlanetInfoRect.X + 10, PlanetInfoRect.Y + PlanetInfoRect.Height / 2 - iconSize / 2, iconSize, iconSize);
@@ -171,7 +181,7 @@ namespace Ship_Game
             }
             batch.DrawString(descFont, text, PNameCursor, White);
 
-            ColoniesListItem e1 = ColoniesList.ItemAtTop;
+            ColoniesListItem e1 = top;
             var MapRect = new Rectangle(PlanetInfoRect.Right - 20, PlanetInfoRect.Y - 3, e1.QueueRect.X - PlanetInfoRect.Right, PlanetInfoRect.Height);
             int desiredWidth = 700;
             int desiredHeight = 500;

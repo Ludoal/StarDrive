@@ -29,6 +29,13 @@ namespace Ship_Game
         RectF ERect;
         int NumTroops;
 
+        // Ludoal fork: status filter, the same shape as the Ships Array's role dropdown - to the
+        // right of the title, and it remembers the last pick for the session the way that one
+        // does. The statuses are the four PopulateList assigns.
+        DropOptions<string> ShowStatus;
+        static string LastStatus = "";   // "" = all
+        static readonly string[] Statuses = { "Garrison", "Deployed", "Transport", "Stationed" };
+
         public TroopListScreen(UniverseScreen parent, EmpireUIOverlay empireUi, string audioCue = "")
             : base(parent, toPause: parent)
         {
@@ -55,6 +62,14 @@ namespace Ship_Game
             TroopSL = Add(new ScrollList<TroopListScreenItem>(slRect, 40));
             TroopSL.EnableItemHighlight = true;
             TroopSL.OnDoubleClick = OnRowClicked; // Ludoal fork: double-click everywhere, like Ships/Empire
+
+            ShowStatus = Add(new DropOptions<string>(
+                new Rectangle(titleRect.Right + 20, titleRect.Y + titleRect.Height / 2 - 9, 160, 18)));
+            ShowStatus.AddOption("All Troops", "");
+            foreach (string s in Statuses)
+                ShowStatus.AddOption(s, s);
+            ShowStatus.ActiveValue = LastStatus;   // setter finds the index, defaults to "All"
+            ShowStatus.OnValueChange = _ => PopulateList();
 
             PopulateList();
         }
@@ -87,12 +102,19 @@ namespace Ship_Game
 
         void PopulateList()
         {
+            // Ludoal fork: called again on every filter change, so the rows have to go first
+            TroopSL.Reset();
+            LastStatus = ShowStatus?.ActiveValue ?? "";
+            string wanted = LastStatus;
+
             // group rows by (location, troop type) — accumulate count and strength
             var groups = new Map<(object Location, string TroopName), TroopListScreenItem>();
 
             void Accumulate(object location, string sysName, string locName, string status,
                             Color statusColor, Troop t, Planet p, Ship s)
             {
+                if (wanted.NotEmpty() && status != wanted)
+                    return;
                 var key = (location, t.Name);
                 if (groups.TryGetValue(key, out TroopListScreenItem item))
                     item.Accumulate(t);
