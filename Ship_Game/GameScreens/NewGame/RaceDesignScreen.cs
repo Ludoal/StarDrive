@@ -21,7 +21,16 @@ namespace Ship_Game
         readonly MainMenuScreen MainMenu;
         readonly Array<TraitEntry> AllTraits = new();
         RacialTrait RaceSummary = new();
-        UniverseParams P = new();
+        // Ludoal fork: a fresh setup starts on the player's saved Rule Options, not the stock
+        // ruleset. SetCustomSetup below replaces P wholesale when a scenario supplies its own.
+        UniverseParams P = NewParamsWithSavedRules();
+
+        static UniverseParams NewParamsWithSavedRules()
+        {
+            var p = new UniverseParams();
+            p.ApplySavedRuleOptions();
+            return p;
+        }
 
         Rectangle FlagLeft;
         Rectangle FlagRight;

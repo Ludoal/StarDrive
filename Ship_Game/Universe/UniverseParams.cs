@@ -112,6 +112,38 @@ public class UniverseParams
         EnableRandomizedAIFleetSizes = s.EnableRandomizedAIFleetSizes;
     }
 
+    // Ludoal fork: overlay the Rule Options the player last set up, so a new game starts on
+    // their house ruleset instead of the stock one. Called only when the setup screen builds a
+    // fresh params object - a save carries its own rules and must never be touched by this.
+    // Each value is only applied if it was actually customised, so an untouched install keeps
+    // every stock default.
+    public void ApplySavedRuleOptions()
+    {
+        if (GlobalStats.RuleFTLModifier >= 0f) FTLModifier = GlobalStats.RuleFTLModifier;
+        if (GlobalStats.RuleEnemyFTLModifier >= 0f) EnemyFTLModifier = GlobalStats.RuleEnemyFTLModifier;
+        if (GlobalStats.RuleGravityWellRange >= 0f) GravityWellRange = GlobalStats.RuleGravityWellRange;
+        if (GlobalStats.RuleExtraPlanets >= 0) ExtraPlanets = GlobalStats.RuleExtraPlanets;
+        if (GlobalStats.RuleShipMaintenanceMultiplier >= 0f) ShipMaintenanceMultiplier = GlobalStats.RuleShipMaintenanceMultiplier;
+        if (GlobalStats.RuleStartingPlanetRichnessBonus >= 0f) StartingPlanetRichnessBonus = GlobalStats.RuleStartingPlanetRichnessBonus;
+        if (GlobalStats.RuleTurnTimer >= 0) TurnTimer = GlobalStats.RuleTurnTimer;
+        if (GlobalStats.RuleCustomMineralDecay >= 0f) CustomMineralDecay = GlobalStats.RuleCustomMineralDecay;
+        if (GlobalStats.RuleVolcanicActivity >= 0f) VolcanicActivity = GlobalStats.RuleVolcanicActivity;
+
+        if (GlobalStats.RulesCustomised)
+        {
+            PreventFederations = GlobalStats.RulePreventFederations;
+            FixedPlayerCreditCharge = GlobalStats.RuleFixedPlayerCreditCharge;
+            AIUsesPlayerDesigns = GlobalStats.RuleAIUsesPlayerDesigns;
+            DisablePirates = GlobalStats.RuleDisablePirates;
+            DisableRemnantStory = GlobalStats.RuleDisableRemnantStory;
+            DisableAlternateAITraits = GlobalStats.RuleDisableAlternateAITraits;
+            DisableResearchStations = GlobalStats.RuleDisableResearchStations;
+            DisableMiningOps = GlobalStats.RuleDisableMiningOps;
+            UseUpkeepByHullSize = GlobalStats.RuleUseUpkeepByHullSize;
+            UseLegacyEspionage = GlobalStats.RuleUseLegacyEspionage;
+        }
+    }
+
     [StarDataDeserialized]
     public void OnDeserialized()
     {

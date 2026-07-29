@@ -95,14 +95,27 @@ namespace Ship_Game
                                       "Keep the Active Module panel on screen while you hover the list.\n"
                                     + "Off: the hovered module takes its place, and it comes back when you look away.");
             pin.SetAbsPos(ClientArea.Right - pin.Width, pin.Y);
+
+            // Ludoal fork: back to the category the player left on. Submenu falls back to tab 0
+            // on its first Update while nothing is selected, so this runs here, once the list it
+            // drives exists.
+            if (LastCategory > 0)
+                SelectedIndex = LastCategory;
         }
 
         // Ludoal fork (spec v4): the design cartouches align their height on the module frames,
         // so the four frames read as one row across the screen.
         public float FrameHeight => ActiveModSubMenu.Height;
 
+        // Ludoal fork: the module category the player last picked, kept for the session. Every
+        // tab change goes through OnTabChangedEvt, so capturing it here covers the click and the
+        // restore alike - there is no second path to keep in sync.
+        static int LastCategory;
+
         protected override void OnTabChangedEvt(int newIndex)
         {
+            if (newIndex >= 0)
+                LastCategory = newIndex;
             ModuleSelectList.SetActiveCategory(newIndex);
             base.OnTabChangedEvt(newIndex);
         }
@@ -212,8 +225,9 @@ namespace Ship_Game
 
         // Ludoal fork (bench): the module side's twin of the browser's Pin Active. ON = both
         // frames on screen. OFF = the hovered module takes the active one's place while the
-        // cursor rests on it (Ludo). Not persisted: a way of looking, not a preference.
-        bool PinActiveModule = true;
+        // cursor rests on it. Stays out of the config - a way of looking, not a preference -
+        // but survives the screen for the rest of the session.
+        static bool PinActiveModule = true;
 
         bool IsWideFrame(Submenu panel) => panel == ActiveModSubMenu && Comparing;
         float ColStepOf(Submenu panel) => IsWideFrame(panel) ? WideColStep : TightColStep;

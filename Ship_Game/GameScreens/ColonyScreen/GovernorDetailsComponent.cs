@@ -265,21 +265,33 @@ namespace Ship_Game
             float aspect  = PortraitSprite.Size.X / PortraitSprite.Size.Y;
             float height  = (float)Math.Round(Height * 0.6f);
             Portrait.Size = new Vector2((float)Math.Round(aspect*height), height);
-            Portrait.Pos  = new Vector2(X + 10, Y + 30);
+            // Ludoal fork: every one of the four tabs used to lay its content out from a fixed
+            // Y + 30 / +40 / +70, which assumes ONE row of tabs. Submenu wraps its tabs onto a
+            // second row as soon as they no longer fit the width, and from then on the whole
+            // content of every tab was drawn UNDER the tab row. Everything below now hangs off
+            // this single value - one arithmetic for all four tabs, so they can never disagree.
+            // The 30f keeps the historical spacing when Tabs is not built yet.
+            float contentTop = Tabs != null ? Tabs.ClientArea.Y - Y + 4 : 30f;
+            float shift = contentTop - 30f; // how far the second row pushed everything down
+            Portrait.Pos  = new Vector2(X + 10, Y + contentTop);
             BluePrintsIcon.Size = new Vector2(40, 40);
             BluePrintsIcon.Pos  = Portrait.Pos;
             BluePrintsIcon.Color = BlueprintsName.Color = BlueprintsColor;
 
-            WorldType.Pos           = new Vector2(Portrait.Right + 10, Portrait.Y);
+            // Ludoal fork: the right-hand column follows the portrait, whose width is a fraction
+            // of the panel height - so at reduced heights it slid left, under the tab row. It
+            // now keeps a floor: never further left than a fixed indent from the frame.
+            float colX = Math.Max(Portrait.Right + 10, X + 130);
+            WorldType.Pos           = new Vector2(colX, Portrait.Y);
             ColonyTypeList.Pos      = new Vector2(WorldType.X, Portrait.Y + 21);
             WorldDescription.Pos    = new Vector2(WorldType.X, Portrait.Y + 40);
             WorldDescription.Text   = GetParsedDescription();
-            ColonyBlueprints.Pos    = new Vector2(X + 10, Y + 40);
+            ColonyBlueprints.Pos    = new Vector2(X + 10, Y + 40 + shift);
             ColonyBlueprints.Text   = ColonyBlueprints.Text.Text + ":";
-            BlueprintsName.Pos      = new Vector2(X + 15 + FontBig.MeasureString(ColonyBlueprints.Text).X, Y + 40);
-            BlueprintsGovChange.Pos = new Vector2(X + 10, Y + 100);
-            BlueprintsExclusive.Pos = new Vector2(X + 10, Y + 130);
-            BlueprintsLink.Pos      = new Vector2(X + 10, Y + 160);
+            BlueprintsName.Pos      = new Vector2(X + 15 + FontBig.MeasureString(ColonyBlueprints.Text).X, Y + 40 + shift);
+            BlueprintsGovChange.Pos = new Vector2(X + 10, Y + 100 + shift);
+            BlueprintsExclusive.Pos = new Vector2(X + 10, Y + 130 + shift);
+            BlueprintsLink.Pos      = new Vector2(X + 10, Y + 160 + shift);
             Blueprintsoverview.Pos  = ColonyBlueprints.Pos;
             Blueprintsoverview.Text = GetParsedBlueprintsOverview();
             BlueprintsEnableGov.Pos  = new Vector2(X + 10, Bottom - 60);
@@ -290,29 +302,50 @@ namespace Ship_Game
             ClearBlueprints.Pos    = new Vector2(X + Width - 160, CreateBlueprints.Y);
             LoadBlueprints.Pos     = new Vector2(X + Width - 80, CreateBlueprints.Y); 
 
-            BlueprintsAchiveable.Pos        = new Vector2(X+110 + Width*0.5f, Y + 70);
+            BlueprintsAchiveable.Pos        = new Vector2(X+110 + Width*0.5f, Y + 70 + shift);
             BlueprintsAchiveable.Tooltip    = GameText.AchievableTip;
-            BlueprintsCompletionLbl.Pos     = new Vector2(X + 10, Y + 70);
+            BlueprintsCompletionLbl.Pos     = new Vector2(X + 10, Y + 70 + shift);
             BlueprintsCompletionLbl.Tooltip = GameText.CompletionTip;
 
             BudgetLimitReached.Pos = new Vector2(ColonyTypeList.Right + 10, ColonyTypeList.Pos.Y);
 
-            SpecializedTradeHub.Pos = new Vector2(Portrait.X, Bottom - 20);
+            // Ludoal fork: these rects and their progress bars are built in the constructor,
+            // before Tabs exists, so they never saw the second tab row. Re-seated here from the
+            // same contentTop as everything else.
+            CivBudgetRect     = new Rectangle((int)X + 57, (int)(Y + 40 + shift), (int)(Width*0.33f), 20);
+            GrdBudgetRect     = new Rectangle((int)X + 57, (int)(Y + 70 + shift), (int)(Width*0.33f), 20);
+            SpcBudgetRect     = new Rectangle((int)X + 57, (int)(Y + 100 + shift), (int)(Width*0.33f), 20);
+            CivBudgetIconRect = new Rectangle((int)X + 5, (int)(Y + 38 + shift), 47, 23);
+            GrdBudgetIconRect = new Rectangle((int)X + 5, (int)(Y + 68 + shift), 47, 23);
+            SpcBudgetIconRect = new Rectangle((int)X + 5, (int)(Y + 96 + shift), 47, 23);
+            CivBudgetBar.SetRect(CivBudgetRect);
+            GrdBudgetBar.SetRect(GrdBudgetRect);
+            SpcBudgetBar.SetRect(SpcBudgetRect);
+            BlueprintsCompletion.SetRect(new Rectangle((int)X + 100, (int)(Y + 70 + shift), (int)(Width * 0.5f), 30));
+
+            // Ludoal fork: the bottom row sat at Bottom - 20, but a checkbox is drawn CENTRED on
+            // its Y, so half of its height fell past that and the row was clipped by the frame
+            // at the heights this panel actually gets. The margin now comes from the row's own
+            // height instead of a guessed constant.
+            float rowHalf = SpecializedTradeHub.Height * 0.5f;
+            SpecializedTradeHub.Pos = new Vector2(Portrait.X, Bottom - rowHalf - 8);
             GovNoScrap.Pos          = new Vector2(TopRight.X - 250, SpecializedTradeHub.Pos.Y);
             BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, SpecializedTradeHub.Pos.Y - 35);
             Quarantine.Pos          = new Vector2(Portrait.X, SpecializedTradeHub.Pos.Y - 35);
             Prioritized.Pos         = new Vector2(Portrait.X, SpecializedTradeHub.Pos.Y - 17);
 
-            AutoTroops.Pos        = new Vector2(TopLeft.X + 10, Y + 30);
-            Garrison.Pos          = new Vector2(TopLeft.X + 20, Y + 50);
+            // Defense tab. The rows anchored on Bottom are left alone: they already follow the
+            // frame's lower edge and the tab row does not move it.
+            AutoTroops.Pos        = new Vector2(TopLeft.X + 10, Y + 30 + shift);
+            Garrison.Pos          = new Vector2(TopLeft.X + 20, Y + 50 + shift);
             CallTroops.Pos        = new Vector2(TopLeft.X + 10, Bottom - 30);
             LaunchSingleTroop.Pos = new Vector2(TopLeft.X + 10, Bottom - 60);
             LaunchAllTroops.Pos   = new Vector2(TopLeft.X + 10, Bottom - 90);
-            ColonyRank.Pos        = new Vector2(TopLeft.X + 200, Y + 30);
+            ColonyRank.Pos        = new Vector2(TopLeft.X + 200, Y + 30 + shift);
             NoGovernor.Pos        = ColonyRank.Pos;
-            GovGround.Pos         = new Vector2(TopLeft.X + 200, Y + 50);
-            GovOrbitals.Pos       = new Vector2(TopLeft.X + 200, Y + 70);
-            ManualOrbitals.Pos    = new Vector2(TopLeft.X + 200, Y + 90);
+            GovGround.Pos         = new Vector2(TopLeft.X + 200, Y + 50 + shift);
+            GovOrbitals.Pos       = new Vector2(TopLeft.X + 200, Y + 70 + shift);
+            ManualOrbitals.Pos    = new Vector2(TopLeft.X + 200, Y + 90 + shift);
             BuildPlatform.Pos     = new Vector2(TopLeft.X + 200, Bottom - 90);
             BuildShipyard.Pos     = new Vector2(TopLeft.X + 200, Bottom - 60);
             BuildStation.Pos      = new Vector2(TopLeft.X + 200, Bottom - 30);
@@ -321,8 +354,8 @@ namespace Ship_Game
             ManualShipyards.Pos   = BuildShipyard.Pos + manualOffset;
             ManualStations.Pos    = BuildStation.Pos + manualOffset;
 
-            BudgetSum.Pos         = new Vector2(TopLeft.X + 8, Y + 130);
-            BudgetPercent.Pos     = new Vector2(TopLeft.X + CivBudgetRect.Width + 15, Y + 130);
+            BudgetSum.Pos         = new Vector2(TopLeft.X + 8, Y + 130 + shift);
+            BudgetPercent.Pos     = new Vector2(TopLeft.X + CivBudgetRect.Width + 15, Y + 130 + shift);
             OverrideCiv.Pos       = new Vector2(CivBudgetRect.X + CivBudgetRect.Width + 10, CivBudgetRect.Y + 2);
             OverrideGrd.Pos       = new Vector2(GrdBudgetRect.X + GrdBudgetRect.Width + 10, GrdBudgetRect.Y + 2);
             OverrideSpc.Pos       = new Vector2(SpcBudgetRect.X + SpcBudgetRect.Width + 10, SpcBudgetRect.Y + 2);
@@ -330,9 +363,9 @@ namespace Ship_Game
             ManualGrdBudget.Pos   = new Vector2(OverrideGrd.X + OverrideGrd.Width + 20, OverrideGrd.Y);
             ManualSpcBudget.Pos   = new Vector2(OverrideSpc.X + OverrideSpc.Width + 20, OverrideSpc.Y);
 
-            NoGovernorCivExpense.Pos = new Vector2(TopLeft.X + 60, Y + 40);
-            NoGovernorGrdExpense.Pos = new Vector2(TopLeft.X + 60, Y + 70);
-            NoGovernorSpcExpense.Pos = new Vector2(TopLeft.X + 60, Y + 100);
+            NoGovernorCivExpense.Pos = new Vector2(TopLeft.X + 60, Y + 40 + shift);
+            NoGovernorGrdExpense.Pos = new Vector2(TopLeft.X + 60, Y + 70 + shift);
+            NoGovernorSpcExpense.Pos = new Vector2(TopLeft.X + 60, Y + 100 + shift);
 
             OverrideCivBudget = Planet.ManualCivilianBudget.Greater(0);
             OverrideGrdBudget = Planet.ManualGrdDefBudget.Greater(0);

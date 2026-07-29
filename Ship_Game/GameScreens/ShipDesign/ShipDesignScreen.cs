@@ -91,13 +91,18 @@ namespace Ship_Game
         public IShipDesign ComparedDesign; // shift-clicked design, pinned for comparison
         UITextEntry BrowserFilter;         // Ludoal fork: the load popup's filters, rehoused
         string BrowserFilterText;
-        bool ShowLockedDesigns;
-        bool HideObsoleteDesigns; // Ludoal fork: the browser's obsolete filter
+        // Ludoal fork: the browser's view toggles outlive the screen for as long as the game
+        // runs. They are ways of looking at the list, so they are not written to the config -
+        // but rebuilding the screen used to reset them, and reopening the Shipyard a dozen
+        // times a session meant re-ticking the same boxes every time.
+        static bool ShowLockedDesigns;
+        static bool HideObsoleteDesigns; // Ludoal fork: the browser's obsolete filter
         // Ludoal fork (bench): ON = the two cartouches coexist, hover to the left of the active
         // one. OFF = one cartouche at that place: the active design, replaced by the hovered one
-        // for as long as the cursor rests on a row (Ludo). Not persisted - it is a way of
-        // looking at the list, not a preference.
-        bool PinActiveDesign = true;
+        // for as long as the cursor rests on a row. It stays out of the config - it is a way of
+        // looking at the list, not a preference - but it survives the screen for the rest of
+        // the session, which is the middle ground the first version of this note missed.
+        static bool PinActiveDesign = true;
         UICheckBox PinActiveCheck;
         // Ludoal fork (bench 188): sweeping from one browser row to the next crosses a gap where
         // nothing is hovered. With Pin Active unchecked that gap let the Active cartouche flash
@@ -116,7 +121,7 @@ namespace Ship_Game
         // ("my carriers", wherever they are built). Same list, same filters, one key
         // change - which is why this is a grouping mode and not a second list with its
         // own scroll, filter and selection to keep in step (Ludo).
-        bool GroupByRole;
+        static bool GroupByRole; // Ludoal fork: browser grouping tab, kept for the session
         const string DefaultBrowserFilter = "filter by name or hull...";
         // Ludoal fork (spec v4): the flying hover overlay gave way to the Hover cartouche.
         // The overlay component itself lives on: the load and save popups still use it, as do
@@ -1021,6 +1026,12 @@ namespace Ship_Game
                 GroupByRole = tab == 1;
                 RefreshHullSelectList();
             };
+            // Ludoal fork: restore the grouping the player left on. Submenu picks tab 0 on its
+            // first Update when nothing is selected, so this has to be set before that runs -
+            // and after the handler above is armed, or the tab would move without the list
+            // following it.
+            if (GroupByRole)
+                hullSelectSub.SelectedIndex = 1;
             // single click selects (and shift-click pins for comparison), double click loads:
             // the load is the expensive gesture (mesh + modules + stats), so it stays deliberate
             HullSelectList.OnClick = OnBrowserItemClicked;

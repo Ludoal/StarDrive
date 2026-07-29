@@ -108,7 +108,10 @@ namespace Ship_Game
             base.Draw(batch, elapsed);
             
             var PlanetInfoRect = new Rectangle((int)ERect.X + 22, (int)(ERect.Y + ERect.H), (int)(ScreenWidth * 0.3f), (int)(ScreenHeight - ERect.Y - ERect.H - 22));
-            int iconSize = PlanetInfoRect.X + PlanetInfoRect.Height - (int)((PlanetInfoRect.X + PlanetInfoRect.Height) * 0.4f);
+            // Ludoal fork: the icon is 60% of the block's height. It used to be measured off
+            // X + Height - an abscissa added to a height - which made it grow when the block
+            // moved right and left it 26px oversized at every resolution.
+            int iconSize = (int)(PlanetInfoRect.Height * 0.6f);
             var PlanetIconRect = new Rectangle(PlanetInfoRect.X + 10, PlanetInfoRect.Y + PlanetInfoRect.Height / 2 - iconSize / 2, iconSize, iconSize);
             var nameCursor = new Vector2(PlanetIconRect.X + PlanetIconRect.Width / 2 - Fonts.Pirulen16.MeasureString(SelectedPlanet.Name).X / 2f, PlanetInfoRect.Y + 15);
             batch.Draw(SelectedPlanet.PlanetTexture, PlanetIconRect, White);
@@ -147,14 +150,19 @@ namespace Ship_Game
 
             PNameCursor.Y += (Fonts.Arial12Bold.LineSpacing + 2) * 2;
 
-            string text = Fonts.Arial12Bold.ParseText(SelectedPlanet.Description, PlanetInfoRect.Width - PlanetIconRect.Width + 15);
+            // Ludoal fork: wrap on the room actually left to the right of the icon. The old
+            // width (block - icon + 15) ignored the icon's own 10px inset and the 5px gap, so
+            // the description was laid out 30px wider than its column and spilled past the
+            // block's right edge at every resolution.
+            float descWidth = PlanetInfoRect.Right - PNameCursor.X;
+            string text = Fonts.Arial12Bold.ParseText(SelectedPlanet.Description, descWidth);
             if (Fonts.Arial12Bold.MeasureString(text).Y + PNameCursor.Y <= ScreenHeight - 20)
             {
                 batch.DrawString(Fonts.Arial12Bold, text, PNameCursor, White);
             }
             else
             {
-                batch.DrawString(Fonts.Arial12, Fonts.Arial12.ParseText(SelectedPlanet.Description, PlanetInfoRect.Width - PlanetIconRect.Width + 15), PNameCursor, Color.White);
+                batch.DrawString(Fonts.Arial12, Fonts.Arial12.ParseText(SelectedPlanet.Description, descWidth), PNameCursor, Color.White);
             }
 
             ColoniesListItem e1 = ColoniesList.ItemAtTop;

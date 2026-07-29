@@ -29,6 +29,37 @@ public sealed class RuleOptionsScreen : GameScreen
         TransitionOffTime = 0.25f;
     }
 
+    // Ludoal fork: whatever the player leaves this panel on becomes the default ruleset of the
+    // next new game, so a house ruleset is entered once instead of at every start. Captured on
+    // the way out, which covers the close button and Escape alike - the sliders write straight
+    // into P as they move, so P is already the final answer by the time we get here.
+    public override void ExitScreen()
+    {
+        GlobalStats.RuleFTLModifier = P.FTLModifier;
+        GlobalStats.RuleEnemyFTLModifier = P.EnemyFTLModifier;
+        GlobalStats.RuleGravityWellRange = P.GravityWellRange;
+        GlobalStats.RuleExtraPlanets = P.ExtraPlanets;
+        GlobalStats.RuleShipMaintenanceMultiplier = P.ShipMaintenanceMultiplier;
+        GlobalStats.RuleStartingPlanetRichnessBonus = P.StartingPlanetRichnessBonus;
+        GlobalStats.RuleTurnTimer = P.TurnTimer;
+        GlobalStats.RuleCustomMineralDecay = P.CustomMineralDecay;
+        GlobalStats.RuleVolcanicActivity = P.VolcanicActivity;
+
+        GlobalStats.RulePreventFederations = P.PreventFederations;
+        GlobalStats.RuleFixedPlayerCreditCharge = P.FixedPlayerCreditCharge;
+        GlobalStats.RuleAIUsesPlayerDesigns = P.AIUsesPlayerDesigns;
+        GlobalStats.RuleDisablePirates = P.DisablePirates;
+        GlobalStats.RuleDisableRemnantStory = P.DisableRemnantStory;
+        GlobalStats.RuleDisableAlternateAITraits = P.DisableAlternateAITraits;
+        GlobalStats.RuleDisableResearchStations = P.DisableResearchStations;
+        GlobalStats.RuleDisableMiningOps = P.DisableMiningOps;
+        GlobalStats.RuleUseUpkeepByHullSize = P.UseUpkeepByHullSize;
+        GlobalStats.RuleUseLegacyEspionage = P.UseLegacyEspionage;
+        GlobalStats.RulesCustomised = true;
+        GlobalStats.SaveSettings();
+        base.ExitScreen();
+    }
+
     public override void Draw(SpriteBatch batch, DrawTimes elapsed)
     {
         ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
