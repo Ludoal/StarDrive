@@ -115,8 +115,14 @@ namespace Ship_Game
             float blockTop = ERect.Y + ERect.H;
             float blockH = ScreenHeight - blockTop - 22;
             float infoX = ERect.X + 22;
-            // the map is as wide as it is tall, plus the 20px overlap the layout below uses
-            float infoW = Math.Max(ScreenWidth * 0.3f, top.QueueRect.X - infoX - blockH + 20);
+            // The planet map below is drawn on a 7:5 grid and shrinks in steps until it fits its
+            // rect, so the room it needs is its height times that ratio - reserve exactly that,
+            // plus the 20px the two rects overlap by, and the cartouche keeps the rest.
+            float mapW = blockH * (700f / 500f) + 20f;
+            // Half again as wide is plenty for the description; the rest of the freed room is
+            // left as margin rather than stretching four short label lines across the screen.
+            float stock = ScreenWidth * 0.3f;
+            float infoW = Math.Clamp(top.QueueRect.X - infoX - mapW, stock, stock * 1.5f);
             var PlanetInfoRect = new Rectangle((int)infoX, (int)blockTop, (int)infoW, (int)blockH);
             // Ludoal fork: the icon is 60% of the block's height.
             int iconSize = (int)(PlanetInfoRect.Height * 0.6f);
