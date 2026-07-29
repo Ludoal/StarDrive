@@ -91,17 +91,15 @@ namespace Ship_Game
         public IShipDesign ComparedDesign; // shift-clicked design, pinned for comparison
         UITextEntry BrowserFilter;         // Ludoal fork: the load popup's filters, rehoused
         string BrowserFilterText;
-        // Ludoal fork: the browser's view toggles outlive the screen for as long as the game
-        // runs. They are ways of looking at the list, so they are not written to the config -
-        // but rebuilding the screen used to reset them, and reopening the Shipyard a dozen
-        // times a session meant re-ticking the same boxes every time.
+        // Ludoal fork: the browser's view toggles outlive the screen, which is rebuilt on every
+        // open, and last as long as the game runs. They stay out of the config: they are ways of
+        // looking at the list, not preferences.
         static bool ShowLockedDesigns;
         static bool HideObsoleteDesigns; // Ludoal fork: the browser's obsolete filter
         // Ludoal fork (bench): ON = the two cartouches coexist, hover to the left of the active
         // one. OFF = one cartouche at that place: the active design, replaced by the hovered one
-        // for as long as the cursor rests on a row. It stays out of the config - it is a way of
-        // looking at the list, not a preference - but it survives the screen for the rest of
-        // the session, which is the middle ground the first version of this note missed.
+        // for as long as the cursor rests on a row. It stays out of the config - a way of looking
+        // at the list, not a preference - but it survives the screen for the rest of the session.
         static bool PinActiveDesign = true;
         UICheckBox PinActiveCheck;
         // Ludoal fork (bench 188): sweeping from one browser row to the next crosses a gap where
@@ -817,7 +815,7 @@ namespace Ship_Game
             // list ends and the frame begins, so the two can never drift apart.
             float modListTop = LowRes ? 45 : 100;
             ModuleSelectComponent = Add(new ModuleSelection(this, new(5, modListTop),
-                                        new(305, ModuleSelection.ListHeightFor(ScreenHeight, modListTop))));
+                                        new(ModuleSelection.ListWidth, ModuleSelection.ListHeightFor(ScreenHeight, modListTop))));
 
             BlackBar = new Rectangle(0, ScreenHeight - 70, 3000, 70);
             ClassifCursor = new Vector2(ScreenWidth * .5f,ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Height + 10);
@@ -946,7 +944,8 @@ namespace Ship_Game
             // Ludoal fork (bench): the right column had no margin — its frames were flush with
             // the screen edge while the left ones breathe. Same padding on both sides now.
             const float RightPad = 5f;
-            Vector2 hullSelSize = new(SelectSize(260, 280, 320), Math.Max(160f, listBottom - colTop));
+            // Ludoal fork: same width as the module list on the other side of the screen.
+            Vector2 hullSelSize = new(ModuleSelection.ListWidth, Math.Max(160f, listBottom - colTop));
             var hullSelectPos = new LocalPos(ScreenWidth - hullSelSize.X - RightPad, colTop);
             // Ludoal fork: the load popup's filters come WITH its list — dropping them would be
             // a regression, since one of them ("my designs only") is a persisted preference the
@@ -1116,12 +1115,11 @@ namespace Ship_Game
             InfoPanel.HasDeltaLanes = deltaLanes; // widened on the first pin, see ResizeCartouches
             InfoSub = infoSub;
             // Ludoal fork (bench): on the frame's tab row vertically, but bound to the BROWSER,
-            // not to the frame: its left edge on the browser's left edge, the same anchor the
-            // filter bar above it uses (maintainer feedback). Its module twin is right-aligned on ITS list, so
-            // each toggle hugs the outer edge of its own column and the pair frames the
-            // workbench. Bound to the list rather than the cartouche, it also stops travelling
-            // when the cartouche grows leftwards on a pin, and it survives the frame it hides:
-            // unpinned, the checkbox is the only way back.
+            // not to the frame - right-aligned on the browser's right edge, exactly as its module
+            // twin sits on the right edge of ITS list, so the two toggles read the same way.
+            // Bound to the list rather than the cartouche, it also stops travelling when the
+            // cartouche grows leftwards on a pin, and it survives the frame it hides: unpinned,
+            // the checkbox is the only way back.
             RectF infoTab = infoSub.Tabs[0].Rect;
             PinActiveCheck = Checkbox(new Vector2(hullSelectPos.X, infoTab.Y + 4),
                                       () => PinActiveDesign,
@@ -1129,6 +1127,11 @@ namespace Ship_Game
                                       "Pin Active",
                                       "Keep the Active Design cartouche on screen while you hover the list.\n"
                                     + "Off: the hovered design takes its place, and it comes back when you look away.");
+            // Ludoal fork: right-aligned on the browser's own right edge, the same way the module
+            // twin hugs the right edge of its list. UICheckBox sizes itself in its constructor,
+            // so the width is exact by the time this runs.
+            PinActiveCheck.SetAbsPos(hullSelectPos.X + hullSelSize.X - PinActiveCheck.Width,
+                                     PinActiveCheck.Y);
 
             // Ludoal fork (spec v4): the HOVER cartouche takes the slot the Compared one used to
             // hold. Like its module counterpart it is the plain frame — no delta lane — showing

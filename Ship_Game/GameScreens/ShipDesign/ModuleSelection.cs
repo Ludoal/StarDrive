@@ -95,12 +95,24 @@ namespace Ship_Game
                                       "Keep the Active Module panel on screen while you hover the list.\n"
                                     + "Off: the hovered module takes its place, and it comes back when you look away.");
             pin.SetAbsPos(ClientArea.Right - pin.Width, pin.Y);
+        }
 
-            // Ludoal fork: back to the category the player left on. Submenu falls back to tab 0
-            // on its first Update while nothing is selected, so this runs here, once the list it
-            // drives exists.
-            if (LastCategory > 0)
-                SelectedIndex = LastCategory;
+        // Ludoal fork: the category is restored on the first Update with a hull in place, not in
+        // the constructor - selecting a tab populates the module list, which reads
+        // Screen.CurrentHull, and that is still null while the screen is being built.
+        bool CategoryRestored;
+
+        public override void Update(float fixedDeltaTime)
+        {
+            // keep waiting until a hull is actually there, or the restore would be dropped on a
+            // frame where CurrentHull has not landed yet
+            if (!CategoryRestored && Screen.CurrentHull != null)
+            {
+                CategoryRestored = true;
+                if (LastCategory > 0)
+                    SelectedIndex = LastCategory;
+            }
+            base.Update(fixedDeltaTime);
         }
 
         // Ludoal fork (spec v4): the design cartouches align their height on the module frames,
@@ -179,6 +191,9 @@ namespace Ship_Game
         // Ludoal fork (bench 46.135): the screen's shared spacing. Upstream folded all of this
         // into one hardcoded 100 at the bottom; split so the design side can use the same
         // numbers and the four frames line up.
+        // Ludoal fork: the width of BOTH lists of the workbench - modules on the left, designs on
+        // the right - so the two columns of one screen always match, at any resolution.
+        public const float ListWidth = 305f;
         public const float FrameGap = 10f;   // between the list and the frame, and between frames
         public const float BottomPad = 5f;   // same as the side margin (was 15 here, 0 on the design side)
         // the black button bar at the foot of the screen — same 70 the screen builds BlackBar

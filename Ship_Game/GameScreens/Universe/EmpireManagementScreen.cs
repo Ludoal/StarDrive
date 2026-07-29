@@ -108,9 +108,7 @@ namespace Ship_Game
             base.Draw(batch, elapsed);
             
             var PlanetInfoRect = new Rectangle((int)ERect.X + 22, (int)(ERect.Y + ERect.H), (int)(ScreenWidth * 0.3f), (int)(ScreenHeight - ERect.Y - ERect.H - 22));
-            // Ludoal fork: the icon is 60% of the block's height. It used to be measured off
-            // X + Height - an abscissa added to a height - which made it grow when the block
-            // moved right and left it 26px oversized at every resolution.
+            // Ludoal fork: the icon is 60% of the block's height.
             int iconSize = (int)(PlanetInfoRect.Height * 0.6f);
             var PlanetIconRect = new Rectangle(PlanetInfoRect.X + 10, PlanetInfoRect.Y + PlanetInfoRect.Height / 2 - iconSize / 2, iconSize, iconSize);
             var nameCursor = new Vector2(PlanetIconRect.X + PlanetIconRect.Width / 2 - Fonts.Pirulen16.MeasureString(SelectedPlanet.Name).X / 2f, PlanetInfoRect.Y + 15);
@@ -150,20 +148,28 @@ namespace Ship_Game
 
             PNameCursor.Y += (Fonts.Arial12Bold.LineSpacing + 2) * 2;
 
-            // Ludoal fork: wrap on the room actually left to the right of the icon. The old
-            // width (block - icon + 15) ignored the icon's own 10px inset and the 5px gap, so
-            // the description was laid out 30px wider than its column and spilled past the
-            // block's right edge at every resolution.
+            // Ludoal fork: wrap on the room actually left to the right of the icon - the icon's
+            // 10px inset and the 5px gap are already in PNameCursor.X.
             float descWidth = PlanetInfoRect.Right - PNameCursor.X;
-            string text = Fonts.Arial12Bold.ParseText(SelectedPlanet.Description, descWidth);
-            if (Fonts.Arial12Bold.MeasureString(text).Y + PNameCursor.Y <= ScreenHeight - 20)
+            // Ludoal fork: the block holds about six lines and many planet descriptions are
+            // longer, so the text is fitted to the room rather than drawn past the block: the
+            // smaller font first, then as many whole lines as fit, with the cut marked.
+            float descRoom = Math.Min(PlanetInfoRect.Bottom, ScreenHeight - 20) - PNameCursor.Y;
+            var descFont = Fonts.Arial12Bold;
+            string text = descFont.ParseText(SelectedPlanet.Description, descWidth);
+            if (descFont.MeasureString(text).Y > descRoom)
             {
-                batch.DrawString(Fonts.Arial12Bold, text, PNameCursor, White);
+                descFont = Fonts.Arial12;
+                text = descFont.ParseText(SelectedPlanet.Description, descWidth);
             }
-            else
+            if (descFont.MeasureString(text).Y > descRoom)
             {
-                batch.DrawString(Fonts.Arial12, Fonts.Arial12.ParseText(SelectedPlanet.Description, descWidth), PNameCursor, Color.White);
+                int maxLines = (int)(descRoom / descFont.LineSpacing);
+                string[] lines = text.Split('\n');
+                if (maxLines > 0 && lines.Length > maxLines)
+                    text = string.Join("\n", lines, 0, maxLines - 1) + "\n...";
             }
+            batch.DrawString(descFont, text, PNameCursor, White);
 
             ColoniesListItem e1 = ColoniesList.ItemAtTop;
             var MapRect = new Rectangle(PlanetInfoRect.Right - 20, PlanetInfoRect.Y - 3, e1.QueueRect.X - PlanetInfoRect.Right, PlanetInfoRect.Height);

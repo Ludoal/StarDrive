@@ -265,14 +265,13 @@ namespace Ship_Game
             float aspect  = PortraitSprite.Size.X / PortraitSprite.Size.Y;
             float height  = (float)Math.Round(Height * 0.6f);
             Portrait.Size = new Vector2((float)Math.Round(aspect*height), height);
-            // Ludoal fork: every one of the four tabs used to lay its content out from a fixed
-            // Y + 30 / +40 / +70, which assumes ONE row of tabs. Submenu wraps its tabs onto a
-            // second row as soon as they no longer fit the width, and from then on the whole
-            // content of every tab was drawn UNDER the tab row. Everything below now hangs off
-            // this single value - one arithmetic for all four tabs, so they can never disagree.
-            // The 30f keeps the historical spacing when Tabs is not built yet.
+            // Ludoal fork: all four tabs lay their content out from this one value, so they
+            // cannot disagree. It follows the tab bar's real bottom, which matters because
+            // Submenu wraps its tabs onto a second row once they no longer fit the width - a
+            // fixed offset would put every tab's content under the tabs themselves. The 30f is
+            // the single-row spacing, used while Tabs is not built yet.
             float contentTop = Tabs != null ? Tabs.ClientArea.Y - Y + 4 : 30f;
-            float shift = contentTop - 30f; // how far the second row pushed everything down
+            float shift = contentTop - 30f; // what the extra tab rows add
             Portrait.Pos  = new Vector2(X + 10, Y + contentTop);
             BluePrintsIcon.Size = new Vector2(40, 40);
             BluePrintsIcon.Pos  = Portrait.Pos;
@@ -280,9 +279,8 @@ namespace Ship_Game
 
             // Ludoal fork: the right-hand column follows the portrait, whose width is a fraction
             // of the panel height - so at reduced heights it slid left, under the tab row. It
-            // now keeps a floor: never further left than a fixed indent from the frame.
-            float colX = Math.Max(Portrait.Right + 10, X + 130);
-            WorldType.Pos           = new Vector2(colX, Portrait.Y);
+            // keeps a floor (see ColumnX), and the description wraps on that same value.
+            WorldType.Pos           = new Vector2(ColumnX, Portrait.Y);
             ColonyTypeList.Pos      = new Vector2(WorldType.X, Portrait.Y + 21);
             WorldDescription.Pos    = new Vector2(WorldType.X, Portrait.Y + 40);
             WorldDescription.Text   = GetParsedDescription();
@@ -309,9 +307,8 @@ namespace Ship_Game
 
             BudgetLimitReached.Pos = new Vector2(ColonyTypeList.Right + 10, ColonyTypeList.Pos.Y);
 
-            // Ludoal fork: these rects and their progress bars are built in the constructor,
-            // before Tabs exists, so they never saw the second tab row. Re-seated here from the
-            // same contentTop as everything else.
+            // Ludoal fork: seated here rather than in the constructor, which runs before Tabs
+            // exists and so cannot know how many rows the tab bar takes.
             CivBudgetRect     = new Rectangle((int)X + 57, (int)(Y + 40 + shift), (int)(Width*0.33f), 20);
             GrdBudgetRect     = new Rectangle((int)X + 57, (int)(Y + 70 + shift), (int)(Width*0.33f), 20);
             SpcBudgetRect     = new Rectangle((int)X + 57, (int)(Y + 100 + shift), (int)(Width*0.33f), 20);
@@ -329,7 +326,8 @@ namespace Ship_Game
             // height instead of a guessed constant.
             float rowHalf = SpecializedTradeHub.Height * 0.5f;
             SpecializedTradeHub.Pos = new Vector2(Portrait.X, Bottom - rowHalf - 8);
-            GovNoScrap.Pos          = new Vector2(TopRight.X - 250, SpecializedTradeHub.Pos.Y);
+            // Ludoal fork: right-aligned on the frame, so the label cannot outgrow its pull.
+            GovNoScrap.Pos          = new Vector2(Right - GovNoScrap.Width - 12, SpecializedTradeHub.Pos.Y);
             BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, SpecializedTradeHub.Pos.Y - 35);
             Quarantine.Pos          = new Vector2(Portrait.X, SpecializedTradeHub.Pos.Y - 35);
             Prioritized.Pos         = new Vector2(Portrait.X, SpecializedTradeHub.Pos.Y - 17);
@@ -411,15 +409,26 @@ namespace Ship_Game
             base.PerformLayout(); // update all the sub-elements, like checkbox rects
         }
 
+        // Ludoal fork: the right-hand column's left edge, in one place - both its position and
+        // the width the description wraps on come from here, so they cannot disagree. The floor
+        // keeps the column off the tab row when the portrait shrinks with the panel height.
+        // It must not be read off WorldType.X: OnColonyTypeChanged re-wraps the description
+        // outside of a layout pass, when that X is stale.
+        float ColumnX => Math.Max(Portrait.Right + 10, X + 130);
+
         string GetParsedDescription()
         {
-            float maxWidth = Right - 10 - WorldType.X;
+            float maxWidth = Right - 10 - ColumnX;
             return Font.ParseText(Planet.ColonyTypeInfoText, maxWidth);
         }
 
         string GetParsedBlueprintsOverview()
         {
-            float maxWidth = Right - 30;
+            // Ludoal fork: Right is an absolute coordinate, not a width - wrapping on it gave
+            // the text far more room than the frame has, so it ran to the right edge with no
+            // margin at all. The text starts at X + 10, so the room it really has is the
+            // frame's width less that indent and a matching margin on the right.
+            float maxWidth = Width - 40;
             return Font.ParseText(Localizer.Token(GameText.BluePrintsOverView), maxWidth);
         }
 

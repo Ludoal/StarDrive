@@ -219,6 +219,17 @@ public static class GlobalStats
     public static bool RuleUseUpkeepByHullSize;
     public static bool RuleUseLegacyEspionage;
 
+    // Ludoal fork: forget the saved ruleset, so new games fall back to the stock defaults.
+    public static void ClearSavedRuleOptions()
+    {
+        RuleFTLModifier = RuleEnemyFTLModifier = RuleGravityWellRange = -1f;
+        RuleShipMaintenanceMultiplier = RuleStartingPlanetRichnessBonus = -1f;
+        RuleCustomMineralDecay = RuleVolcanicActivity = -1f;
+        RuleExtraPlanets = RuleTurnTimer = -1;
+        RulesCustomised = false;
+        SaveSettings();
+    }
+
     // USER_EXPERIENCE
     // this is a global user setting, changed in game settings screen
     public static bool NotifyEnemyInSystemAfterLoad = true;

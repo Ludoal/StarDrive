@@ -35,6 +35,34 @@ public sealed class RuleOptionsScreen : GameScreen
     // into P as they move, so P is already the final answer by the time we get here.
     public override void ExitScreen()
     {
+        // Leaving the panel on the stock ruleset means "no house rules" - saving it would make
+        // the Reset button undo itself the moment the panel closes.
+        var stock = new UniverseParams();
+        if (P.FTLModifier == stock.FTLModifier
+            && P.EnemyFTLModifier == stock.EnemyFTLModifier
+            && P.GravityWellRange == stock.GravityWellRange
+            && P.ExtraPlanets == stock.ExtraPlanets
+            && P.ShipMaintenanceMultiplier == stock.ShipMaintenanceMultiplier
+            && P.StartingPlanetRichnessBonus == stock.StartingPlanetRichnessBonus
+            && P.TurnTimer == stock.TurnTimer
+            && P.CustomMineralDecay == stock.CustomMineralDecay
+            && P.VolcanicActivity == stock.VolcanicActivity
+            && P.PreventFederations == stock.PreventFederations
+            && P.FixedPlayerCreditCharge == stock.FixedPlayerCreditCharge
+            && P.AIUsesPlayerDesigns == stock.AIUsesPlayerDesigns
+            && P.DisablePirates == stock.DisablePirates
+            && P.DisableRemnantStory == stock.DisableRemnantStory
+            && P.DisableAlternateAITraits == stock.DisableAlternateAITraits
+            && P.DisableResearchStations == stock.DisableResearchStations
+            && P.DisableMiningOps == stock.DisableMiningOps
+            && P.UseUpkeepByHullSize == stock.UseUpkeepByHullSize
+            && P.UseLegacyEspionage == stock.UseLegacyEspionage)
+        {
+            GlobalStats.ClearSavedRuleOptions();
+            base.ExitScreen();
+            return;
+        }
+
         GlobalStats.RuleFTLModifier = P.FTLModifier;
         GlobalStats.RuleEnemyFTLModifier = P.EnemyFTLModifier;
         GlobalStats.RuleGravityWellRange = P.GravityWellRange;
@@ -150,6 +178,36 @@ public sealed class RuleOptionsScreen : GameScreen
         StartingRichness.Tip = GameText.AddToAllStartingEmpire;
         TurnTimer.Tip = GameText.TimeInSecondsPerTurn;
 
+
+        // Ludoal fork: back to the game's own defaults, and clear the saved ruleset with them -
+        // otherwise the next new game would restore what the player just reset. Rebuilding the
+        // screen is what moves the sliders: they read their value at construction.
+        Button(ButtonStyle.Default, leftRect.X + 40, leftRect.Y + leftRect.Height - 60,
+               "Reset", b =>
+        {
+            var stock = new UniverseParams();
+            P.FTLModifier = stock.FTLModifier;
+            P.EnemyFTLModifier = stock.EnemyFTLModifier;
+            P.GravityWellRange = stock.GravityWellRange;
+            P.ExtraPlanets = stock.ExtraPlanets;
+            P.ShipMaintenanceMultiplier = stock.ShipMaintenanceMultiplier;
+            P.StartingPlanetRichnessBonus = stock.StartingPlanetRichnessBonus;
+            P.TurnTimer = stock.TurnTimer;
+            P.CustomMineralDecay = stock.CustomMineralDecay;
+            P.VolcanicActivity = stock.VolcanicActivity;
+            P.PreventFederations = stock.PreventFederations;
+            P.FixedPlayerCreditCharge = stock.FixedPlayerCreditCharge;
+            P.AIUsesPlayerDesigns = stock.AIUsesPlayerDesigns;
+            P.DisablePirates = stock.DisablePirates;
+            P.DisableRemnantStory = stock.DisableRemnantStory;
+            P.DisableAlternateAITraits = stock.DisableAlternateAITraits;
+            P.DisableResearchStations = stock.DisableResearchStations;
+            P.DisableMiningOps = stock.DisableMiningOps;
+            P.UseUpkeepByHullSize = stock.UseUpkeepByHullSize;
+            P.UseLegacyEspionage = stock.UseLegacyEspionage;
+            GlobalStats.ClearSavedRuleOptions();
+            LoadContent();
+        });
 
         Label(MainMenu.Menu.X + 40, MainMenu.Menu.Y + 40, GameText.AdvancedRuleOptions, Fonts.Arial20Bold);
         string text = Fonts.Arial12.ParseText(GameText.InThisPanelYouMay, MainMenu.Menu.Width - 80);

@@ -12,8 +12,9 @@ namespace Ship_Game.GameScreens.MainMenu
     /// never have to coexist on screen, and an experienced player meets the interface they
     /// already know unless they ask for the new one.
     ///
-    /// Applied the next time a screen is opened. In practice that is immediate: this popup is
-    /// reached from the main menu, which has already closed every game screen behind it.
+    /// Applied the next time one of those screens is opened. In practice that is immediate:
+    /// this popup is reached through the options screen, so any screen it would affect has
+    /// been closed on the way here.
     /// </summary>
     public sealed class ReworkOptionsScreen : PopupWindow
     {
@@ -43,15 +44,6 @@ namespace Ship_Game.GameScreens.MainMenu
 
             list.AddCheckbox(() => GlobalStats.ReworkEspionage, title: "Espionage",
                 tooltip: "Rebuilt infiltration screen. Off: the original espionage screen.");
-
-            // Ludoal fork (bench 46.177): no instruction here. The checkboxes bind straight to
-            // GlobalStats, so a tick takes effect at once, and OptionsScreen.ExitScreen calls
-            // SaveSettings - leaving the options screen at all is enough to keep it. The earlier
-            // "close this window then press Apply Settings" was wrong twice over and asked for
-            // two steps that do nothing (maintainer feedback).
-            list.AddLabel("Takes effect the next time the screen is opened.")
-                .Color = Colors.Cream;
-
         }
     }
 }
