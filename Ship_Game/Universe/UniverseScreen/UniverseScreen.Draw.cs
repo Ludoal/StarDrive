@@ -562,7 +562,12 @@ namespace Ship_Game
             // the failure mode of the 2026-05-02 attempt. Set MatrixTransform
             // ourselves (SpriteBatch only auto-populates it on SpriteEffect-typed
             // effects; see BloomComponent.SetMatrixTransform).
-            if (basicFogOfWarEffect != null)
+            // Ludoal fork (bench 188): the darkening is the VISION OVERLAY's job now, not a
+            // permanent state of the map (Ludo). Off, the scene draws through the plain path
+            // below, exactly as it does when the effect fails to load. What is hidden stays
+            // hidden either way: fog governs how the map is SHADED, while what actually gets
+            // drawn on it is decided by each object's own visibility test.
+            if (basicFogOfWarEffect != null && ShowingVisionOverlay)
             {
                 basicFogOfWarEffect.Parameters["LightsTexture"]?.SetValue(lights);
                 EffectParameter mt = basicFogOfWarEffect.Parameters["MatrixTransform"];
@@ -587,8 +592,9 @@ namespace Ship_Game
             }
             else
             {
-                // Fallback: effect failed to load. Draw the scene RT directly so
-                // the player still sees something, even if fog is flat.
+                // The plain path: the vision overlay is off (the usual case now), or the
+                // effect failed to load. Either way the scene RT goes straight to the screen,
+                // unshaded.
                 batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:true, saveState:true);
             }
 
