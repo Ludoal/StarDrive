@@ -26,7 +26,6 @@ namespace Ship_Game
     {
         UniverseScreen Universe;
 
-        Menu2 DMenu;
         Rectangle LeftRect;
 
         // Ludoal fork: the group's four tabs. Intelligence and Bonuses are two arrangements of
@@ -36,6 +35,7 @@ namespace Ship_Game
         readonly Tab OpenOn;
         public enum Tab { Intelligence = 0, Bonuses = 1, Relationships = 2, Espionage = 3 }
         bool ShowBonuses;
+        int MaxTraitLines = 1; // longest trait list of the row, so BONUSES stays level
 
         Empire Player;
         readonly bool UsingNewEspioange;
@@ -146,9 +146,12 @@ namespace Ship_Game
             // to their left: those move into the unified bar later, so leaving a band free above
             // the frame would be building for a state that is going away (maintainer decision).
             // Y=64 is where EmpireUIOverlay draws that row, on a 24px texture.
-            const int tabRowY = 64;
-            LeftRect = new Rectangle(2, tabRowY, (int)screenWidth - 10, ScreenHeight - tabRowY - 7);
-            DMenu = new Menu2(LeftRect);
+            // 10px clear of every screen edge, and 10 below the top bar's button row (drawn at
+            // Y=64 on a 24px texture) so the tab row is not touching Help.
+            const int tabRowY = 64 + 24 + 10;
+            const int margin = 10;
+            LeftRect = new Rectangle(margin, tabRowY, (int)screenWidth - 2 * margin,
+                                     ScreenHeight - tabRowY - margin);
 
             GroupTabs = Add(new Submenu(new RectF(LeftRect.X, LeftRect.Y, LeftRect.Width, LeftRect.Height),
                                         new LocalizedText[]
@@ -194,10 +197,47 @@ namespace Ship_Game
                 };
             }
 
+            // how many trait lines the widest column needs, so the BONUSES band below them is
+            // level across the row whatever each empire's trait set holds
+            MaxTraitLines = 1;
+            foreach (RaceEntry re in Races)
+            {
+                string set = $"{re.e.data.SelectedTraitSet}";
+                if (set.Length == 0 && re.e.isPlayer && re.e.data.Traits.PlayerTraitOptions != null)
+                    set = string.Join(", ", re.e.data.Traits.PlayerTraitOptions);
+                int n2 = set.Split(',').Count(s => s.Trim().Length > 0);
+                if (n2 > MaxTraitLines)
+                    MaxTraitLines = n2;
+            }
+
             // after the columns exist: selecting a tab only switches which blocks are drawn
             GroupTabs.SelectedIndex = (int)OpenOn;
 
             GameAudio.MuteRacialMusic();
+        }
+
+        // Ludoal fork: the Contact button on the NewUI/dan_button family, the group being where the
+        // new look is tried out. Drawn here rather than in DanButton itself: that class is shared
+        // with the stock diplomacy screen, the combat screen and six others, so changing its
+        // texture would restyle the whole game.
+        //
+        // Colour convention, to hold across the new UI: clear = default, blue = active or
+        // selected, red = alert. Here, red while at war - the one thing worth a colour on a
+        // contact button.
+        // Text, TextPos and Hover are private on DanButton, and it is shared - so the hover state
+        // is tested here against its public rect, and the label is the one it was built with.
+        void DrawContactButton(SpriteBatch batch, DanButton b, Empire e)
+        {
+            bool hover = b.r.HitTest(Input.CursorPosition);
+            bool atWar = e != Player && Player.IsAtWarWith(e);
+            string tex = atWar ? "NewUI/dan_button_red_clear"
+                       : hover ? "NewUI/dan_button_blue_clear"
+                       : "NewUI/dan_button_clear";
+            batch.Draw(ResourceManager.Texture(tex), b.r, Color.White);
+            string label = Localizer.Token(GameText.Contact);
+            var pos = new Vector2(b.r.X + (b.r.Width - Fonts.Arial12Bold.TextWidth(label)) / 2f,
+                                  b.r.Y + (b.r.Height - Fonts.Arial12Bold.LineSpacing) / 2f);
+            batch.DrawString(Fonts.Arial12Bold, label, pos, hover ? Color.White : new Color(220, 208, 185));
         }
 
         void OnGroupTabChanged(int index)
@@ -226,7 +266,6 @@ namespace Ship_Game
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
-            DMenu.Draw(batch, elapsed);
 
             foreach (RaceEntry race in Races)
                 DrawColumn(batch, race);
@@ -274,7 +313,7 @@ namespace Ship_Game
             }
 
             if (Contacts.TryGetValue(e, out DanButton contact))
-                contact.Draw(ScreenManager);
+                DrawContactButton(batch, contact, e);
 
             // FIXED section offsets: the bands align across columns whatever the content
             float infoY = col.Y + 150; // breathing room: bigger name, DanButton below
@@ -287,7 +326,9 @@ namespace Ship_Game
                 y = infoY;
                 SectionBand(batch, col, ref y, "TRAITS");
                 DrawTraitRows(batch, e, col, ref y);
-                float bonusesY = infoY + 24 + 6 * (Font12.LineSpacing + 2) + 8;
+                // BONUSES sits below the LONGEST trait list of any column, so the two bands stay
+                // level across the row - a per-column offset would stagger them.
+                float bonusesY = infoY + 24 + MaxTraitLines * (Font12.LineSpacing + 2) + 8;
                 y = bonusesY;
                 SectionBand(batch, col, ref y, "BONUSES");
                 DrawBonusRows(batch, e, col, ref y, bonusMaxY);
@@ -551,11 +592,16 @@ namespace Ship_Game
                     batch.DrawString(Font12, "None", new Vector2(col.X + 8, y), Color.Gray);
                     return;
                 }
-                string traits = Font12.ParseText(traitSet, col.Width - 16);
-                string[] lines = traits.Split('\n');
-                for (int i = 0; i < lines.Length && i < 3; ++i)
+                // Ludoal fork: one line per trait. The set is comma separated, so it splits on the
+                // separator rather than on the column width - wrapping packed several traits per
+                // line and cut the list at three. The Bonuses tab has the room for all of them.
+                foreach (string trait in traitSet.Split(','))
                 {
-                    batch.DrawString(Font12, i == 2 && lines.Length > 3 ? lines[i] + ".." : lines[i], new Vector2(col.X + 8, y), e.EmpireColor);
+                    string t = trait.Trim();
+                    if (t.Length == 0)
+                        continue;
+                    batch.DrawString(Font12, Font12.ParseText(t, col.Width - 16),
+                                     new Vector2(col.X + 8, y), e.EmpireColor);
                     y += Font12.LineSpacing + 2;
                 }
             }
