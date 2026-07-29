@@ -129,7 +129,7 @@ namespace Ship_Game
         // test: there, wantDeltas reads ComparedDesign alone. A pin is a deliberate state, a
         // hover is a passing one, and the deliberate one does not answer to the other. The two
         // sites that actually need the frame on screen are already guarded by their own if.
-        bool Comparing => GlobalStats.ShipyardComparison && Screen.CompareModule != null;
+        bool Comparing => Screen.CompareModule != null;
 
         // Ludoal fork (spec v4): the hover frame waits this long before appearing, so running the
         // cursor down the list does not flash a frame per row.
@@ -187,9 +187,8 @@ namespace Ship_Game
         // comparison off it has none, so it goes back to upstream's tight geometry - otherwise
         // it reserves room for something that will never be drawn (bench 46.150).
         // Ludoal fork (bench 46.152): the frame is WIDE only while a comparison is actually
-        // running (Ludo). It was tied to the option, so turning the feature on made every
-        // panel permanently wider for deltas that were usually not there. Now the legacy
-        // look is simply 'no comparison', and the two cases stop being separate code.
+        // running (Ludo). It used to be tied to the feature toggle, which made every panel
+        // permanently wider for deltas that were usually not there.
         // Ludoal fork (bench): THE hovered module, whichever way the cursor found it — a list
         // row or a module already fitted on the hull. One property, so the three readers (the
         // dwell timer, the stats draw and the comparison draw) cannot disagree about what is
@@ -464,7 +463,7 @@ namespace Ship_Game
 
             // Ludoal fork (bench 46.152): the Active frame grows only while a comparison is
             // running, and shrinks back when the pin is dropped (Ludo). Nothing else pays for
-            // the delta lanes, and the legacy look falls out of it for free.
+            // the delta lanes, and the plain look falls out of it for free.
             // ⚠ Width alone is not enough: it writes Size.X, but a Submenu draws from Rect and
             // from the internal rects built in PerformLayout. SetAbsPos and SetRelSize both arm
             // RequiresLayout — SetAbsSize does NOT, so an absolute resize never triggers a
@@ -508,13 +507,7 @@ namespace Ship_Game
                     HoverDwell = 0f;
                 }
                 HoverDwell += fixedDeltaTime;
-                // Ludoal fork (bench): the hover frame lives in BOTH régimes — what the
-                // comparison option gates is the delta lanes, not the ability to look at a
-                // module. The single difference: in legacy, a loaded brush silences the hover,
-                // so only one module panel is ever on screen (Ludo).
-                bool hoverAllowed = GlobalStats.ShipyardComparison || Screen.ActiveModule == null;
-                HoverModSubMenu.Visible = hoverAllowed
-                                       && HoverDwell >= HoverDelay && !ChooseFighterSub.Visible;
+                HoverModSubMenu.Visible = HoverDwell >= HoverDelay && !ChooseFighterSub.Visible;
             }
 
             // Ludoal fork (bench): unpinned, the two panels share ONE place instead of standing

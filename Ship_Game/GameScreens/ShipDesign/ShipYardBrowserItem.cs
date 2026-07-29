@@ -97,11 +97,9 @@ namespace Ship_Game
                 // Ludoal fork (bench 46.152): the gesture hint belongs to the ROW. Hung off the
                 // list's rect it appeared wherever the cursor first entered and stayed there,
                 // and it fired over the class headers too - those carry no Design, so they no
-                // longer qualify. The comparison line only shows when the feature is on.
+                // longer qualify.
                 if (HitTest(GameBase.ScreenManager.input.CursorPosition))
-                    ToolTip.CreateTooltip(GlobalStats.ShipyardComparison
-                        ? "Double-click to load\nShift-click to pin for comparison"
-                        : "Double-click to load");
+                    ToolTip.CreateTooltip("Double-click to load\nShift-click to pin for comparison");
 
                 batch.Draw(Design.Icon, new Rectangle((int)X - 2, (int)Y - 2, h + 4, h + 4), Color.White);
 

@@ -33,11 +33,6 @@ namespace Ship_Game.GameScreens.MainMenu
             UIList list = AddList(new Vector2(X + 40, Y + 150), new Vector2(Width - 80, 210));
             list.Padding = new Vector2(2f, 8f);
 
-            list.AddCheckbox(() => GlobalStats.ShipyardComparison, title: "Shipyard new hover and comparison boxes",
-                tooltip: "Shift-click a module or design to pin it, and every row shows how the "
-                       + "one on the workbench compares. Includes the hover cartouche. Off: the "
-                       + "panels show plain values, with no delta column and no hover frame.");
-
             list.AddCheckbox(() => GlobalStats.ReworkEconomy, title: "Economy",
                 tooltip: "Full-screen economic overview with per-planet budget columns. "
                        + "Off: the original budget window.");
