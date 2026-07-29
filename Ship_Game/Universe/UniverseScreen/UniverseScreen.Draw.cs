@@ -341,7 +341,13 @@ namespace Ship_Game
                 // off) everything sits under the veil and the starfield washes out — use
                 // a lighter veil there (150 = ~41% visibility, tuned on the bench;
                 // 130 was a touch bright), keep 170 when painting.
+                // Ludoal fork (bench 190): the veil is the VISION OVERLAY's statement, so at
+                // rest it only hints. Cutting it out entirely was too bright (Ludo) and lost
+                // the explored/unexplored distinction with it, so F3 off keeps a light veil
+                // rather than none. Bench numbers, meant to be moved.
                 int fogAlpha = GlobalStats.FogOfWarMemory ? 170 : 150;
+                if (!ShowingVisionOverlay)
+                    fogAlpha = 70;
                 batch.FillRectangle(new Rectangle(0, 0, ScreenWidth, ScreenHeight), new Color(0, 0, 0, fogAlpha));
                 // Phase 3.7 step 3: persistent "I've been here" tint, premul-correct
                 // (rgb == alpha so FogMap composites correctly under premul AlphaBlend).
@@ -562,12 +568,7 @@ namespace Ship_Game
             // the failure mode of the 2026-05-02 attempt. Set MatrixTransform
             // ourselves (SpriteBatch only auto-populates it on SpriteEffect-typed
             // effects; see BloomComponent.SetMatrixTransform).
-            // Ludoal fork (bench 188): the darkening is the VISION OVERLAY's job now, not a
-            // permanent state of the map (Ludo). Off, the scene draws through the plain path
-            // below, exactly as it does when the effect fails to load. What is hidden stays
-            // hidden either way: fog governs how the map is SHADED, while what actually gets
-            // drawn on it is decided by each object's own visibility test.
-            if (basicFogOfWarEffect != null && ShowingVisionOverlay)
+            if (basicFogOfWarEffect != null)
             {
                 basicFogOfWarEffect.Parameters["LightsTexture"]?.SetValue(lights);
                 EffectParameter mt = basicFogOfWarEffect.Parameters["MatrixTransform"];
@@ -592,9 +593,8 @@ namespace Ship_Game
             }
             else
             {
-                // The plain path: the vision overlay is off (the usual case now), or the
-                // effect failed to load. Either way the scene RT goes straight to the screen,
-                // unshaded.
+                // Fallback: effect failed to load. Draw the scene RT directly so
+                // the player still sees something, even if fog is flat.
                 batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:true, saveState:true);
             }
 

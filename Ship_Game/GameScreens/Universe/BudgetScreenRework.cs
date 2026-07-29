@@ -244,10 +244,6 @@ namespace Ship_Game.GameScreens
 
             var listRect = new RectF(TableXpx, headerY + 20, (int)LeftMenu.Width - 40, (int)LeftMenu.Height - 36 - 48);
             ColonySL = Add(new ScrollList<EconColonyItem>(listRect, 24));
-            // Ludoal fork (bench 188): double-click a row to open that colony, the same gesture
-            // the Empire screen's colony list uses (Ludo). The handler was written and never
-            // wired, so the rows simply did not answer.
-            ColonySL.OnDoubleClick = OnColonyClicked;
             FillList();
 
             // vertical separators between the numeric columns
@@ -346,7 +342,11 @@ namespace Ship_Game.GameScreens
         void FillList()
         {
             ColonySL.Reset();
-            ColonySL.OnClick = OnColonyClicked; // Reset drops the handler
+            // Ludoal fork (bench 190): DOUBLE click, not single (Ludo). Opening a colony
+            // tears down this screen, so a stray click while reading the table threw you out
+            // of it. Same gesture as the Empire screen's colony list.
+            // ⚠ re-armed here rather than at construction: Reset drops the handlers.
+            ColonySL.OnDoubleClick = OnColonyClicked;
             var planets = Player.GetPlanets();
             var sorted = SortByName
                 ? (SortDesc ? planets.OrderByDescending(p => p.Name) : planets.OrderBy(p => p.Name))
