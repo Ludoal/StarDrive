@@ -27,19 +27,21 @@ namespace Ship_Game.GameScreens
     /// The Shipyard's floating hover cartouche (ShipInfoOverlayComponent) is deliberately NOT
     /// part of this: the colony and fleet screens use it directly, in both regimes.
     ///
-    /// Shipyard, Diplomacy and Espionage are still to come — Economy first, to find out what
-    /// the pattern really costs before repeating it three times.
+    /// Diplomacy and Espionage share ONE setting: the rework merges both into a single four-tab
+    /// group (Intelligence, Bonuses, Relationships, Espionage), so there is nothing left to
+    /// enable separately. The Shipyard is still to come.
     /// </summary>
     public static class ReworkScreens
     {
         public static GameScreen Economy(UniverseScreen u)
             => GlobalStats.ReworkEconomy ? new BudgetScreenRework(u) : new BudgetScreen(u);
 
+        // Ludoal fork: both buttons lead into the same four-tab group, each on its own tab.
         public static GameScreen Diplomacy(UniverseScreen u)
-            => GlobalStats.ReworkDiplomacy ? new MainDiplomacyScreenRework(u) : new MainDiplomacyScreen(u);
+            => GlobalStats.ReworkDiplomacyGroup ? new MainDiplomacyScreenRework(u) : new MainDiplomacyScreen(u);
 
         public static GameScreen Espionage(UniverseScreen u)
-            => GlobalStats.ReworkEspionage ? new InfiltrationScreenRework(u) : new InfiltrationScreen(u);
+            => GlobalStats.ReworkDiplomacyGroup ? new InfiltrationScreenRework(u) : new InfiltrationScreen(u);
 
         // Ludoal fork (bench 46.173): asking "is the caller already this screen?" has to know
         // about BOTH classes, or the answer is wrong for whichever regime is not the stock one.

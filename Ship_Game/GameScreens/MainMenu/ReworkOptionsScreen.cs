@@ -38,12 +38,9 @@ namespace Ship_Game.GameScreens.MainMenu
                 tooltip: "Full-screen economic overview with per-planet budget columns. "
                        + "Off: the original budget window.");
 
-            list.AddCheckbox(() => GlobalStats.ReworkDiplomacy, title: "Diplomacy",
-                tooltip: "Rebuilt relations screen: treaty lanes, filter checkboxes and the "
-                       + "merged treaties matrix. Off: the original diplomacy screen.");
-
-            list.AddCheckbox(() => GlobalStats.ReworkEspionage, title: "Espionage",
-                tooltip: "Rebuilt infiltration screen. Off: the original espionage screen.");
+            list.AddCheckbox(() => GlobalStats.ReworkDiplomacyGroup, title: "Diplomacy & Espionage",
+                tooltip: "One screen for both, on four tabs: Intelligence, Bonuses, "
+                       + "Relationships and Espionage. Off: the original two screens.");
         }
     }
 }

@@ -119,10 +119,12 @@ namespace Ship_Game
             // rect, so the room it needs is its height times that ratio - reserve exactly that,
             // plus the 20px the two rects overlap by, and the cartouche keeps the rest.
             float mapW = blockH * (700f / 500f) + 20f;
-            // Half again as wide is plenty for the description; the rest of the freed room is
-            // left as margin rather than stretching four short label lines across the screen.
+            // The right bound of this row is the governor frame, placed in the constructor - NOT
+            // the queue column above it, which reaches further right and left the map overlapping
+            // the frame. Half again as wide is plenty for the description; the rest of the freed
+            // room stays margin rather than stretching four short label lines across the screen.
             float stock = ScreenWidth * 0.3f;
-            float infoW = Math.Clamp(top.QueueRect.X - infoX - mapW, stock, stock * 1.5f);
+            float infoW = Math.Clamp(GovernorRect.X - infoX - mapW, stock, stock * 1.5f);
             var PlanetInfoRect = new Rectangle((int)infoX, (int)blockTop, (int)infoW, (int)blockH);
             // Ludoal fork: the icon is 60% of the block's height.
             int iconSize = (int)(PlanetInfoRect.Height * 0.6f);
@@ -188,7 +190,10 @@ namespace Ship_Game
             batch.DrawString(descFont, text, PNameCursor, White);
 
             ColoniesListItem e1 = top;
-            var MapRect = new Rectangle(PlanetInfoRect.Right - 20, PlanetInfoRect.Y - 3, e1.QueueRect.X - PlanetInfoRect.Right, PlanetInfoRect.Height);
+            // Ludoal fork: the map stops at the governor frame, the block to its right on this row
+            // - not at a column of the list above, which reaches further right.
+            var MapRect = new Rectangle(PlanetInfoRect.Right - 20, PlanetInfoRect.Y - 3,
+                                        (int)GovernorRect.X - PlanetInfoRect.Right, PlanetInfoRect.Height);
             int desiredWidth = 700;
             int desiredHeight = 500;
             var buildingsRect = new Rectangle(MapRect.X, MapRect.Y, desiredWidth, desiredHeight);

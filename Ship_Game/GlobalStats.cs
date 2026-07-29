@@ -181,8 +181,9 @@ public static class GlobalStats
     // Applied when the screen opens, not live: two complete layouts never coexist on screen.
     // A player preference rather than a game setting — it holds across every save.
     public static bool ReworkEconomy;
-    public static bool ReworkDiplomacy;
-    public static bool ReworkEspionage;
+    // Ludoal fork: diplomacy and espionage are one setting - the rework merges both screens into
+    // a single four-tab group, so there is nothing left to enable separately.
+    public static bool ReworkDiplomacyGroup;
 
     // Ludoal fork: symmetric ship design is a PLAYER preference, not a save property —
     // it used to live on the Empire ([StarData]) so every existing save re-imposed ON.
@@ -426,8 +427,16 @@ public static class GlobalStats
         GetSetting(config, "AutoSaveYears", ref AutoSaveYears);
         GetSetting(config, "FogOfWarMemory", ref FogOfWarMemory);
         GetSetting(config, "ReworkEconomy", ref ReworkEconomy);
-        GetSetting(config, "ReworkDiplomacy", ref ReworkDiplomacy);
-        GetSetting(config, "ReworkEspionage", ref ReworkEspionage);
+        GetSetting(config, "ReworkDiplomacyGroup", ref ReworkDiplomacyGroup);
+        // carry over the two settings this replaced, so a player who had either one enabled
+        // keeps the reworked screens instead of silently falling back to the stock ones
+        if (!ReworkDiplomacyGroup)
+        {
+            bool legacyDiplomacy = false, legacyEspionage = false;
+            GetSetting(config, "ReworkDiplomacy", ref legacyDiplomacy);
+            GetSetting(config, "ReworkEspionage", ref legacyEspionage);
+            ReworkDiplomacyGroup = legacyDiplomacy || legacyEspionage;
+        }
         GetSetting(config, "SymmetricDesign", ref SymmetricDesign);
         GetSetting(config, "RuleFTLModifier", ref RuleFTLModifier);
         GetSetting(config, "RuleEnemyFTLModifier", ref RuleEnemyFTLModifier);
@@ -646,8 +655,7 @@ public static class GlobalStats
         WriteSetting(config, "AutoSaveYears", AutoSaveYears);
         WriteSetting(config, "FogOfWarMemory", FogOfWarMemory);
         WriteSetting(config, "ReworkEconomy", ReworkEconomy);
-        WriteSetting(config, "ReworkDiplomacy", ReworkDiplomacy);
-        WriteSetting(config, "ReworkEspionage", ReworkEspionage);
+        WriteSetting(config, "ReworkDiplomacyGroup", ReworkDiplomacyGroup);
         WriteSetting(config, "SymmetricDesign", SymmetricDesign);
         WriteSetting(config, "RuleFTLModifier", RuleFTLModifier);
         WriteSetting(config, "RuleEnemyFTLModifier", RuleEnemyFTLModifier);
