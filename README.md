@@ -15,7 +15,7 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00047** release, m
 
 **Overlays & map**
 - One overlay = one function, freely combined: **F2** influence zones, **F3** vision (sensor coverage, spies and projectors included), **F4** subspace projection, **F5** gravity wells, **F6** weapons range.
-- **NEW** Fog of war lifts with the vision overlay: at rest the map keeps a light veil, enough to tell explored space from the rest, and **F3** brings the full darkening back when you want to read your sensor coverage. Your own ships stop being painted dark for sitting outside a sensor bubble. No permanent ship wakes, no explored-system halos either, since live sensors carry current vision. An Options toggle (Fog Of War Memory) brings back the classic painted map.
+- **NEW** Fog of war is lighter at rest, enough to still tell explored space from the rest, and returns to full darkening under the vision overlay (**F3**) when you want to read your sensor coverage. Your own ships are no longer painted dark for sitting outside a sensor bubble. No permanent ship wakes, no explored-system halos either, since live sensors carry current vision. An Options toggle (Fog Of War Memory) brings back the classic painted map.
 - Nebulae slightly dimmed on the main map.
 - Minimap: colonized systems boxed with race color, contested systems (several races) in grey.
 - Planet View removed: double-click opens Colony view, Combat view, or just snaps the camera; the selection cartouches carry all the info.
