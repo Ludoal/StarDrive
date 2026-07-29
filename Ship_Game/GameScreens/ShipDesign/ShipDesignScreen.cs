@@ -99,6 +99,13 @@ namespace Ship_Game
         // looking at the list, not a preference.
         bool PinActiveDesign = true;
         UICheckBox PinActiveCheck;
+        // Ludoal fork (bench 188): sweeping from one browser row to the next crosses a gap where
+        // nothing is hovered. With Pin Active unchecked that gap let the Active cartouche flash
+        // back into its seat between every pair of rows (Ludo), so a hover that ENDS is held for
+        // a moment before the frame actually goes. Negative = not counting. Only the hover path
+        // sets it: loading a design must still clear the frame at once, with no ghost.
+        const float HoverLinger = 0.12f;
+        float HoverLeftAt = -1f;
         // which groups were open before the last rebuild, so a filter change does not refold
         // the whole browser (bench 46.172). Both group builders read it.
         readonly Array<string> ExpandedGroups = new();
@@ -241,6 +248,16 @@ namespace Ship_Game
 
         // Ludoal fork (spec v4): the design under the cursor in the browser, shown in the Hover
         // cartouche. Passing null hides it.
+        // Ludoal fork (bench 188): the actual hide, and the one place that clears the linger.
+        void HideHoveredDesign()
+        {
+            HoverLeftAt = -1f;
+            if (HoverPanel == null)
+                return;
+            HoverPanel.SetActiveDesign(null);
+            HoverSub.Visible = HoverPanel.Visible = false;
+        }
+
         public void SetHoveredDesign(IShipDesign design)
         {
             if (HoverPanel == null)
@@ -248,10 +265,14 @@ namespace Ship_Game
 
             if (design == null || DesignedShip?.Name == design.Name)
             {
-                HoverPanel.SetActiveDesign(null);
-                HoverSub.Visible = HoverPanel.Visible = false;
+                // start the linger rather than hiding now; ResizeCartouches finishes the job.
+                // If the frame is already down there is nothing to hold, so do not arm it.
+                if (HoverSub.Visible && HoverLeftAt < 0f)
+                    HoverLeftAt = 0f;
                 return;
             }
+
+            HoverLeftAt = -1f; // landed on a row: cancel any linger still counting down
 
             try
             {
@@ -505,7 +526,7 @@ namespace Ship_Game
             // rows, so the shadow has to go with them.
             ComparedDesign = null;
             InfoPanel.SetComparedDesign(null, null);
-            SetHoveredDesign(null);
+            HideHoveredDesign(); // a load clears it outright: no linger, no ghost
         }
 
         public void UpdateDesignedShip(bool forceUpdate)
@@ -579,12 +600,20 @@ namespace Ship_Game
         // must agree, so they cannot each compute their own edge. And the frame's right edge is
         // the anchor — it stays on the browser's, the frame grows leftward — which is also what
         // keeps the Hover cartouche's own right edge glued to the Active frame's left.
-        void ResizeCartouches()
+        void ResizeCartouches(float deltaTime)
         {
             // Ludoal fork (bench): unpinned, the active cartouche steps aside for the hovered one
             // rather than sharing the row with it. Decided here, every frame, from the hover
             // frame's own visibility - the three places that toggle the hover would otherwise
             // each have to remember this rule (Ludo).
+            // the deferred hide from SetHoveredDesign, see HoverLinger
+            if (HoverLeftAt >= 0f)
+            {
+                HoverLeftAt += deltaTime;
+                if (HoverLeftAt >= HoverLinger)
+                    HideHoveredDesign();
+            }
+
             bool hoverTakesThePlace = !PinActiveDesign && HoverSub.Visible;
             InfoSub.Visible = InfoPanel.Visible = !hoverTakesThePlace;
             IssuesPanel.Visible = !hoverTakesThePlace;
@@ -656,7 +685,7 @@ namespace Ship_Game
         public override void Update(float fixedDeltaTime)
         {
             CameraPos.Z = CameraPos.Z.SmoothStep(DesiredCamHeight, 0.2f);
-            ResizeCartouches();
+            ResizeCartouches(fixedDeltaTime);
             UpdateViewMatrix(CameraPos);
 
             UpdateShipyardLightOrbit(fixedDeltaTime);

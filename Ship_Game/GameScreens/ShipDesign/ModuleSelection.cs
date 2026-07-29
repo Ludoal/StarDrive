@@ -134,7 +134,19 @@ namespace Ship_Game
         // Ludoal fork (spec v4): the hover frame waits this long before appearing, so running the
         // cursor down the list does not flash a frame per row.
         const float HoverDelay = 0.25f;
+        // Ludoal fork (bench 188): and the symmetric one on the way OUT. Sweeping from one row
+        // to the next crosses a gap where nothing is hovered, one or two frames long. With
+        // Pin Active unchecked that gap let the Active frame flash back into its seat between
+        // every pair of rows (Ludo). Holding the hover frame for a moment bridges the gap;
+        // leaving the list for good is far longer than this, so the frame still goes away.
+        const float HoverLinger = 0.12f;
         float HoverDwell;
+        float HoverLeftAt = -1f;  // counts up since the cursor left; negative = not counting
+        // what the hover frame is showing. It is NOT always HoveredModule: during the linger
+        // above the cursor is already off the row, and drawing a null there would blank the
+        // frame instead of holding it. One field, read by both draw sites, rather than each
+        // one deciding what "the hovered module" means at that instant.
+        ShipModule HoverShown;
         string HoverDwellUID; // the module the dwell is counting for; a different one restarts it
 
         // Ludoal fork (spec v4): column geometry belongs to the FRAME, not to the draw path.
@@ -284,7 +296,7 @@ namespace Ship_Game
         void DrawHoveredStats(SpriteBatch batch)
         {
             ShipModule a = Screen.ActiveModule;
-            ShipModule h = HoveredModule;
+            ShipModule h = HoverShown;
             if (a == null || h == null)
                 return;
 
@@ -497,7 +509,18 @@ namespace Ship_Game
             {
                 HoverDwell = 0f;
                 HoverDwellUID = null; // clear both, or coming back to the same row skips the dwell
-                HoverModSubMenu.Visible = false;
+                // linger before actually hiding, see HoverLinger
+                if (HoverModSubMenu.Visible)
+                {
+                    if (HoverLeftAt < 0f)
+                        HoverLeftAt = 0f;
+                    HoverLeftAt += fixedDeltaTime;
+                    if (HoverLeftAt >= HoverLinger)
+                    {
+                        HoverModSubMenu.Visible = false;
+                        HoverShown = null;
+                    }
+                }
             }
             else
             {
@@ -507,7 +530,14 @@ namespace Ship_Game
                     HoverDwell = 0f;
                 }
                 HoverDwell += fixedDeltaTime;
-                HoverModSubMenu.Visible = HoverDwell >= HoverDelay && !ChooseFighterSub.Visible;
+                HoverLeftAt = -1f; // back on a row: stop counting out
+                // ⚠ never turn it OFF here: sweeping to the next row restarts the dwell, and
+                // hiding while that dwell runs is the very flicker the linger exists to bridge
+                if (HoverDwell >= HoverDelay && !ChooseFighterSub.Visible)
+                {
+                    HoverModSubMenu.Visible = true;
+                    HoverShown = hovered;
+                }
             }
 
             // Ludoal fork (bench): unpinned, the two panels share ONE place instead of standing
@@ -551,7 +581,7 @@ namespace Ship_Game
             }
             if (HoverModSubMenu.Visible) // Ludoal fork (spec v4): the transient hover frame
             {
-                DrawModuleData(batch, HoveredModule, HoverModSubMenu);
+                DrawModuleData(batch, HoverShown, HoverModSubMenu);
                 // Its missing stats keep their dimmed place ONLY while a comparison is running —
                 // same rule as the design side (Ludo, 46.137). With nothing pinned there is
                 // nothing to be symmetrical with, and the dashes would be noise.
