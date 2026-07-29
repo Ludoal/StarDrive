@@ -4,76 +4,70 @@
 
 # About this fork (Ludoal)
 
-Quality-of-life patches on top of the official **Jupiter 1.60.00046** release, made by a
-new player still learning the game, with an AI assistant doing the heavy lifting on code
-archaeology. **No gameplay changes**: UI fixes and comfort only. The point of publishing
-is simple: the BlackBox team is welcome to take whatever they find worth keeping — patch
-46 already integrated a number of them. Thanks!
+Quality-of-life patches on top of the official **Jupiter 1.60.00047** release, made by a new player still learning the game, with an AI assistant doing the heavy lifting on code archaeology. **No gameplay changes**: UI fixes and comfort only. The point of publishing is simple: the BlackBox team is welcome to take whatever they find worth keeping, and patches 46 and 47 already integrated a number of them. Thanks!
 
-- **Install**: grab the latest `BlackBox_Jupiter_Patch_*.exe` from
-  [Releases](https://github.com/Ludoal/StarDrive/releases) and run it over an official
-  Jupiter 1.60.00046 install, game closed. Cumulative, saves unaffected.
-- **Revert**: the patch only touches files the official patch also ships, so re-applying
-  the official 46 patch is a complete revert. No kit needed.
-- **Versioning**: public releases are lettered (`46-a`, `46-b`, ...); the embedded build
-  version stays numeric (`1.60.00046.N`), so the in-game updater will still offer the
-  next official patch (47+) normally.
-- **Branch**: [`qol-46`](https://github.com/Ludoal/StarDrive/tree/qol-46), the official
-  46 tag plus these changes. Not based on upstream `main`/`develop`, so it stays
-  save-compatible with the official 46.
+- **Install**: grab the latest `BlackBox_Jupiter_Patch_*.exe` from [Releases](https://github.com/Ludoal/StarDrive/releases) and run it over an official Jupiter 1.60.00047 install, game closed. Cumulative, saves unaffected.
+- **Revert**: the patch only touches files the official patch also ships, so re-applying the official 47 patch is a complete revert. No kit needed.
+- **Versioning**: public releases are lettered (`47-a`, `47-b`, ...); the embedded build version stays numeric (`1.60.00047.N`), so the in-game updater will still offer the next official patch (48+) normally.
+- **Branch**: [`qol-47`](https://github.com/Ludoal/StarDrive/tree/qol-47), the official 47 tag plus these changes. Not based on upstream `main`/`develop`, so it stays save-compatible with the official 47.
 
 ## What's in it
 
 **Overlays & map**
-- One overlay = one function, freely combined: **F2** influence zones, **F3** vision
-  (sensor coverage, spies and projectors included), **F4** subspace projection,
-  **F5** gravity wells, **F6** weapons range.
-- Optional influence colors on the main map and minimap (Options toggle, default = vanilla look).
-- Fog of war stays dark: no permanent ship wakes, no explored-system halos — live
-  sensors carry current vision. An Options toggle (Fog Of War Memory) brings back
-  the classic painted map.
-- Dimmed nebulae on the main map.
-- Minimap: colonized systems boxed with race color, contested systems (several races)
-  in grey.
+- One overlay = one function, freely combined: **F2** influence zones, **F3** vision (sensor coverage, spies and projectors included), **F4** subspace projection, **F5** gravity wells, **F6** weapons range.
+- **NEW** Fog of war lifts with the vision overlay: at rest the map keeps a light veil, enough to tell explored space from the rest, and **F3** brings the full darkening back when you want to read your sensor coverage. Your own ships stop being painted dark for sitting outside a sensor bubble. No permanent ship wakes, no explored-system halos either, since live sensors carry current vision. An Options toggle (Fog Of War Memory) brings back the classic painted map.
+- Nebulae slightly dimmed on the main map.
+- Minimap: colonized systems boxed with race color, contested systems (several races) in grey.
+- Planet View removed: double-click opens Colony view, Combat view, or just snaps the camera; the selection cartouches carry all the info.
 
 **Top bar & navigation**
-- Live top bar on every full-screen panel (Empire, Espionage, Budget, Diplomacy,
-  Shipyard, Fleets, the Array screens, Patrols, Blueprints, Research).
-- **PAUSED** indicator on the bar: white = the screen's automatic pause, yellow = your
-  pause (it survives closing the screen).
-- The key that opens a screen closes it (C Troops, F Blueprints, P Patrols, **F7**
-  Important Events log — new hotkey for the patch-46 screen).
-- Troops Array: dedicated screen with status, grouping and strength columns.
+- Live top bar on every full-screen panel (Empire, Espionage, Budget, Diplomacy, Shipyard, Fleets, the Array screens, Patrols, Blueprints, Research).
+- **PAUSED** indicator on the bar: white = the screen's automatic pause, yellow = your pause (it survives closing the screen).
+- The key that opens a screen closes it (C Troops, F Blueprints, P Patrols, **F7** Important Events log, a new hotkey for the patch-46 screen).
 
 **Screens**
-- Research: integrated frame under the top bar, compact branch packing, standard title.
-- Shipyard module comparator: Shift-click a module in the list to pin it beside the
-  Active Module panel - same stats row for row, a dash where one side lacks a stat,
-  and colored (+x)/(-x) deltas, green = better, pink = worse.
-- Colony and Blueprints: panels aligned with the bar, wider right blocks.
+
+*Shipyard*
+- **NEW** Designs load straight from the Shipyard: the hull list and the load popup are one browser now. Filter by name or hull, show only your designs or include locked ones, and group the list **By Hull** (a carcass and what you built on it) or **By Role** (every carrier you own, wherever it is built). Double-click loads.
+- **NEW** Designs can be marked obsolete, the way modules already could: a button in the Active Design frame, the name in red in the browser, and a **Hide obsolete** filter. Saved with your game, per empire. The module list gets its own obsolete filter as a checkbox above it, where it belongs, instead of a button at the far end of the bottom bar.
+- **NEW** Hovering a module or a design shows its full stats, and its module plan for a design, without loading it: a second panel beside the active one. A **Pin Active** toggle on each panel's tab row turns that into one panel at a time, for a narrow screen or an uncluttered one: unchecked, what you hover takes the active panel's place while the cursor rests on it, and the active one comes back when you look away.
+- Comparator: Shift-click a module or a design to pin it, and the panel on the workbench shows how it compares, row for row, a dash where one side lacks a stat, and (+x)/(-x) deltas, green = better, pink = worse. An **x** on the "vs" line drops the comparison without hunting the pinned item down again.
+- Hovering a module fitted on the hull now shows it the same way hovering a list row does, and the orange highlight follows the cursor off the hull instead of staying lit on the last module touched.
+
+*Troops*
+- **NEW** Troops Array: every ground troop you own in one screen: system, location, status (garrison, deployed, in transport, stationed), type, count and strength. Rows group by location and troop type; double-click jumps to the ship or opens the colony.
+
+*Colony & Blueprints*
+- Panels aligned with the bar, wider right blocks.
 - Colony: Stats+ panel with the full production accounting.
+
+*Empire & Research*
 - Empire screen: Fertility / Richness / Max Population columns added.
-- Planet View removed: double-click opens Colony view, Combat view, or just snaps the
-  camera; the selection cartouches carry all the info.
+- Research: integrated frame under the top bar, compact branch packing, standard title.
+
+*Diplomacy*
+- Relationships diagram: one filter per treaty type instead of two blanket toggles, and each treaty draws as its own parallel chord rather than all six stacking on the same line between two empires. Shared by both the stock and the reworked Diplomacy screen.
+
+*Rework Options (under Options)*
+- Three screens rebuilt from the ground up, each one a checkbox you flip when you want it. **They ship OFF**, being beta, so the original screen is what you get until you ask otherwise. Flip one back and you have the stock screen again, still receiving official fixes — and still carrying the fork's live top bar, since navigation is not part of what the toggle turns off.
+  - **Economy**: the whole budget on one screen, planet by planet, instead of a window you scroll. Double-click a row to open that colony.
+  - **Diplomacy**: every empire in columns, showing what they know, what they want, and what you have signed.
+  - **Espionage**: infiltration laid out by level, so you can see what an operation costs before you commit to it.
 
 **Notifications & camera**
-- Notification clicks go where they mean: diplomacy opens the Diplomacy panel,
-  espionage snaps to the planet, colony and ground-battle panels open in place —
-  the camera only moves when it stays visible, and planet/station snaps stop at
-  a sane zoom instead of nose-on.
-- Chase camera fixed (it never actually worked): Ctrl+Middle-click follows the
-  selected ship, Follow button in the ship info panel; panning or deselecting decouples.
+- **NEW** Open a colony from a list (Economy, Empire, Troops) and closing it goes back to that list, not to the map with the screen you were reading gone. Right click or Escape, either one.
+- Notification clicks go where they mean: diplomacy opens the Diplomacy panel, espionage snaps to the planet, colony and ground-battle panels open in place. The camera only moves when it stays visible, and planet/station snaps stop at a sane zoom instead of nose-on.
+- Chase camera fixed (it wasn't actually working): Ctrl+Middle-click follows the selected ship, Follow button in the ship info panel; panning or deselecting decouples.
 - Autosave measured in game years (slider, 0 = legacy wall-clock).
 
 **Automation**
-- Auto Pick per design dropdown (Explorer, Colony Ship, Constructors, Freighter,
-  Research/Mining Station): one checkbox each, manual pick or auto.
+- Auto Pick per design dropdown (Explorer, Colony Ship, Constructors, Freighter, Research/Mining Station): one checkbox each, manual pick or auto.
 - Auto Core Governor for newly founded colonies.
 
 **Misc comfort**
 - Ships Array: Military Ships filter (every combat-capable role in one view).
 - Game speed − / + buttons next to Help, matching the hotkeys.
-- List rows activate on double-click in all panels — no more accidental exits.
+- List rows activate on double-click in all panels, so no more accidental exits.
 - Deep-space builds: selectable while paused, real Cancel Construction button.
 - Exploded system view: stats only for the hovered planet, drawn on top.
 - View on map exits at the planet instead of flying back.
@@ -81,21 +75,15 @@ is simple: the BlackBox team is welcome to take whatever they find worth keeping
 - Symmetric design starts OFF for new games (the in-game toggle still persists per save).
 
 **Texts & units** *(work in progress)*
-- Money flows labeled `BC/turn` everywhere (they are all per-turn), population rates
-  per billion colonists; a game-term capitalization pass is ongoing.
+- Money flows labeled `BC/turn` everywhere (they are all per-turn), population rates per billion colonists; a game-term capitalization pass is ongoing.
 
 **Battle Arena** *(work in progress)*
-- Practice arena from the Shipyard: pick enemies per race grouped by hull class,
-  full-tech sim empires (carrier hangars work), combat stances honored at contact.
-- Group fights: click the list to build an opponent roster (click a roster line to
-  remove one), Fight group launches them all; battle report aggregates the group.
-  Planned: per-opponent report rows, spawn distance control, encounter-filtered list.
+- Practice arena from the Shipyard: pick enemies per race grouped by hull class, full-tech sim empires (carrier hangars work), combat stances honored at contact.
+- Group fights: click the list to build an opponent roster (click a roster line to remove one), Fight group launches them all; battle report aggregates the group. Planned: per-opponent report rows, spawn distance control, encounter-filtered list.
 
 **Bug fixes not yet upstream**
-- The fixes still waiting in open PRs on the official repo (governor blueprint and
-  scrap behaviour, space-road projector count and priority, troop-transport selection,
-  wreck-site conquest gate, per-entry scroll-wheel steps, and more) ride in this patch
-  in the meantime; details in the release notes.
+- Fixes for **reported issues**, still waiting in open PRs on the official repo, ride in this patch in the meantime: carrier settings lost on save/reload, governor biosphere and no-scrap behaviour, space-road projector gaps, box-select swallowing troop transports, crash sites resolving before the conquest, DSB platforms too close to a sun, colonist import/export overlap, starving planets exporting food, fleet requisition and scrap-order refreshes, Dedicated Carrier hangar requirement, diplomatic demands and open-borders trust, and more; details in the release notes.
+- Fixes for bugs **we ran into ourselves**, same story: research-tree branch packing, per-entry scroll-wheel steps, camera chase cleared every frame, a UI draw failure starving the simulation thread, the diplomacy subtitle hardcoded to 1920, money units labelled per turn, the shipyard's module highlight staying lit after the cursor left the hull, a click threshold 50ms shorter than the rest of the input layer's (so an ordinary click on a fitted module did nothing at all), and WIP designs stacking `_v1_WIP` onto their own name at every save.
 
 *Everything below is the original BlackBox README.*
 
