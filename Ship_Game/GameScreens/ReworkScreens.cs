@@ -6,35 +6,26 @@ using Rectangle = SDGraphics.Rectangle;
 namespace Ship_Game.GameScreens
 {
     /// <summary>
-    /// Ludoal fork: the screens this fork rebuilt from scratch can each be swapped back to the
-    /// stock BlackBox version, from Options -> Rework Options.
+    /// Ludoal fork: the one door to the screens this fork rebuilt, and the geometry the reworked
+    /// top bar lays them out on.
     ///
-    /// Why a factory rather than a check at each call site: these screens are opened from
-    /// fifteen places between the top bar, the notifications, the colony screen's Edit button
-    /// and each other. A test spread over fifteen sites is a test that will be forgotten at the
-    /// sixteenth. One place decides; every caller goes through here.
+    /// Why a factory rather than a check at each call site: these screens are opened from fifteen
+    /// places between the top bar, the notifications, the colony screen's Edit button and each
+    /// other. A test spread over fifteen sites is a test that will be forgotten at the sixteenth.
+    /// One place decides; every caller goes through here.
     ///
-    /// The naming rule matters for maintenance: the STOCK classes keep their original names and
-    /// their original files, byte for byte, so upstream fixes land on them with no conflict and
-    /// the classic versions stay current for free. It is OUR versions that carry the Rework
-    /// suffix — they are the addition, so they are the ones that should be marked as such.
+    /// ⚠ THE STOCK SCREENS ARE STILL HERE, AND THEY ARE NOT DEAD CODE. They are no longer reachable
+    /// in game - there is nothing left to choose - but they are kept BYTE-IDENTICAL TO UPSTREAM on
+    /// purpose: when upstream changes something of substance in one of them (a budget formula, an
+    /// espionage rule), the merge lands cleanly on the stock file and its diff tells us exactly what
+    /// to carry into our version. Delete them and that reference goes with them.
     ///
-    /// Staying close to upstream is the point, so restore a stock file with
-    /// `git checkout &lt;base&gt; -- &lt;path&gt;`, never by copying it in: a plain copy gets the line
-    /// endings wrong and every one of its lines then shows as changed.
+    /// So: never edit a stock screen. Restore one with `git checkout &lt;base&gt; -- &lt;path&gt;`, never by
+    /// copying it in - a plain copy gets the line endings wrong and every line then shows as
+    /// changed. And OUR versions carry the Rework suffix: they are the addition.
     ///
-    /// ⚠ One deliberate exception (maintainer feedback): the three stock screens carry the fork's live top bar.
-    /// It is a feature of the fork rather than of the rework, so turning a rebuilt screen off
-    /// should not cost the player the navigation that comes with every other panel. They are
-    /// therefore NOT byte-identical, and a future upstream merge will conflict on those few
-    /// lines - which is the accepted price.
-    ///
-    /// The Shipyard's floating hover cartouche (ShipInfoOverlayComponent) is deliberately NOT
-    /// part of this: the colony and fleet screens use it directly, in both regimes.
-    ///
-    /// Diplomacy and Espionage share ONE setting: the rework merges both into a single four-tab
-    /// group (Intelligence, Bonuses, Relationships, Espionage), so there is nothing left to
-    /// enable separately. The Shipyard is still to come.
+    /// The Shipyard's floating hover cartouche (ShipInfoOverlayComponent) was never doubled: the
+    /// colony and fleet screens use it directly.
     /// </summary>
     public static class ReworkScreens
     {
@@ -95,6 +86,18 @@ namespace Ship_Game.GameScreens
         // The first line of the Planets tab is reserved for its filters and troop count, so its
         // table starts lower than the other tabs'. Ludoal fork.
         public const int GalaxyHeaderH = 30;
+
+        // Ludoal fork: a table fills its frame, 5px clear all round - the 20px inset these screens
+        // used to carry belonged to the brass surround they no longer have. `headerH` is the band
+        // above the table for column titles, plus any reserved first line.
+        public static RectF GalaxyTable(in RectF client, float reservedLine = 0)
+        {
+            float top = client.Y + ColumnPadV + reservedLine;
+            const float columnTitles = 40;
+            return new(client.X + ColumnPadV, top + columnTitles,
+                       client.W - 2 * ColumnPadV,
+                       client.Bottom - ColumnPadV - (top + columnTitles));
+        }
 
         // The tab the cursor is over, or -1. Ludoal fork: Tab.Hover is only set while the Submenu
         // handles input, so the rect is hit-tested directly - a draw pass can run between two
@@ -177,18 +180,14 @@ namespace Ship_Game.GameScreens
         // that - an alpha under 255 renders additive-bright under premultiplied AlphaBlend.
         public static readonly Color GroupFrameFill = new Color(14, 12, 9).Alpha(0.92f);
 
-        public static GameScreen Economy(UniverseScreen u)
-            => GlobalStats.ReworkEconomy ? new BudgetScreenRework(u) : new BudgetScreen(u);
+        public static GameScreen Economy(UniverseScreen u) => new BudgetScreenRework(u);
 
         // Ludoal fork: both top-bar buttons lead into the same four-tab group, each landing on its
         // own tab. Espionage tab: its content is its own screen, which carries the same tab row.
         public static GameScreen Diplomacy(UniverseScreen u)
-            => GlobalStats.ReworkDiplomacyGroup
-             ? new MainDiplomacyScreenRework(u, MainDiplomacyScreenRework.Tab.Intelligence)
-             : new MainDiplomacyScreen(u);
+            => new MainDiplomacyScreenRework(u, MainDiplomacyScreenRework.Tab.Intelligence);
 
-        public static GameScreen Espionage(UniverseScreen u)
-            => GlobalStats.ReworkDiplomacyGroup ? new InfiltrationScreenRework(u) : new InfiltrationScreen(u);
+        public static GameScreen Espionage(UniverseScreen u) => new InfiltrationScreenRework(u);
 
         // Ludoal fork (bench 46.173): asking "is the caller already this screen?" has to know
         // about BOTH classes, or the answer is wrong for whichever regime is not the stock one.
@@ -210,6 +209,6 @@ namespace Ship_Game.GameScreens
         static bool IsDiplomacyGroup(GameScreen s)
             => s is MainDiplomacyScreenRework
                  or InfiltrationScreenRework
-                 or DiplomacyScreen.RelationshipsDiagramRework;
+                 or DiplomacyScreen.RelationshipsDiagramScreen;
     }
 }

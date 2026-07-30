@@ -878,7 +878,7 @@ namespace Ship_Game
             // Ludoal fork: our own copy, which carries the group's tab row. The shared
             // RelationshipsDiagramScreen stays untouched for the stock diplomacy screen.
             ExitScreen();
-            ScreenManager.AddScreen(new RelationshipsDiagramRework(Universe, empiresAndIntel));
+            ScreenManager.AddScreen(new RelationshipsDiagramScreen(Universe, empiresAndIntel));
         }
     }
 

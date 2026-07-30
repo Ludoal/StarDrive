@@ -71,8 +71,11 @@ namespace Ship_Game
 
             // Ludoal fork: the NewUI dan_button family, as elsewhere in the reworked screens. The
             // red variant keeps what the old styles carried by contrast - a hostile target.
+            // red once it cancels rather than orders: the button undoes something now
             LocalizedText colonizeText = !MarkedForColonization ? GameText.Colonize : GameText.CancelColonize;
-            Colonize   = Button(ButtonStyle.DanButtonClear, colonizeText, OnColonizeClicked);
+            ButtonStyle colonizeStyle  = MarkedForColonization ? ButtonStyle.DanButtonClearRed
+                                                               : ButtonStyle.DanButtonClear;
+            Colonize   = Button(colonizeStyle, colonizeText, OnColonizeClicked);
             SendTroops = Button(ButtonStyle.DanButtonClear, "Send Troops", OnSendTroopsClicked);
             SendTroops.Tooltip = GameText.SendAvailableTroopsToThis;
             RecallTroops = Button(ButtonStyle.DanButtonClear, $"Recall Troops ({Planet.NumTroopsCanLaunchFor(Player)})", OnRecallTroopsClicked);
@@ -103,10 +106,10 @@ namespace Ship_Game
             // out on, whatever texture the style carries - the dan_button family is 182 wide and
             // three of those would run past the row. The name is spelled out rather than read off
             // a texture that is no longer the one drawn.
-            const int btnW = 168, btnH = 24;
+            const int btnW = 140, btnH = 24, btnGap = 6;
             Colonize.Rect      = new Rectangle(OrdersRect.X + 10, OrdersRect.Y + OrdersRect.Height / 2 - btnH / 2, btnW, btnH);
-            SendTroops.Rect    = new RectF(OrdersRect.X + Colonize.Width + 10, Colonize.Y, Colonize.Width, Colonize.Height);
-            RecallTroops.Rect  = new RectF(OrdersRect.X + Colonize.Width*2 + 10, Colonize.Y, Colonize.Width, Colonize.Height);
+            SendTroops.Rect    = new RectF(Colonize.Right + btnGap, Colonize.Y, btnW, btnH);
+            RecallTroops.Rect  = new RectF(SendTroops.Right + btnGap, Colonize.Y, btnW, btnH);
 
             Colonize.Visible     = Planet.Owner == null && Planet.Habitable;
             RecallTroops.Visible = Planet.Owner != Player && Planet.NumTroopsCanLaunchFor(Player) > 0;

@@ -57,9 +57,7 @@ namespace Ship_Game
             Add(new CloseButton(closePos.X, closePos.Y));
 
             RectF client = GalaxyTabs.ClientArea;
-            float tableTop = client.Y + ReworkScreens.ColumnPadV;
-            ERect = new(client.X + 20, tableTop + 40, client.W - 40,
-                        client.Bottom - tableTop - 40 - ReworkScreens.ColumnPadV);
+            ERect = ReworkScreens.GalaxyTable(client);
             RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
             PatrolsSL = Add(new ScrollList<EmpirePatrolsScreenListItem>(slRect));
             PatrolsSL.EnableItemHighlight = true;
@@ -116,9 +114,9 @@ namespace Ship_Game
             float w = ERect.W;
             float nameX = ERect.X;
             float waypointsX = nameX + w * 0.15f;
-            float fleetsNumX = waypointsX + w * 0.08f;
-            float fleetsX = fleetsNumX + w * 0.08f;
-            float fleetsRight = fleetsX + w * 0.4f;
+            float fleetsNumX = waypointsX + w * 0.14f;
+            float fleetsX = fleetsNumX + w * 0.14f;
+            float fleetsRight = fleetsX + w * 0.28f;
 
             var textCursor = GetCenteredTextOffset(ColumnRect(nameX, waypointsX), GameText.PatrolPlanName);
             SbPatrolName.Update(textCursor);

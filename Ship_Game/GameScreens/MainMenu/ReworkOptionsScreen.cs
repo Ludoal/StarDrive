@@ -21,26 +21,19 @@ namespace Ship_Game.GameScreens.MainMenu
         public ReworkOptionsScreen(GameScreen parent) : base(parent, 560, 430)
         {
             TitleText = "Rework Options";
-            MiddleText = "Rebuilt screens, off by default while they are still beta. "
-                       + "Leave one off to play the original BlackBox version.";
+            MiddleText = "Nothing to choose here for now: the rebuilt screens are the only ones, "
+                       + "since the top bar is being reworked as a whole.";
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
         }
 
+        // Ludoal fork: the panel is EMPTY on purpose, and kept on purpose. The rebuilt screens are
+        // no longer optional - the stock ones stay in the tree as an upstream reference, not as a
+        // playable alternative - but the whole opt-in mechanism is left standing so a screen can be
+        // made optional again by adding one line here. Nothing is wired to a setting any more.
         public override void LoadContent()
         {
             base.LoadContent();
-
-            UIList list = AddList(new Vector2(X + 40, Y + 150), new Vector2(Width - 80, 210));
-            list.Padding = new Vector2(2f, 8f);
-
-            list.AddCheckbox(() => GlobalStats.ReworkEconomy, title: "Economy",
-                tooltip: "Full-screen economic overview with per-planet budget columns. "
-                       + "Off: the original budget window.");
-
-            list.AddCheckbox(() => GlobalStats.ReworkDiplomacyGroup, title: "Diplomacy & Espionage",
-                tooltip: "One screen for both, on four tabs: Intelligence, Bonuses, "
-                       + "Relationships and Espionage. Off: the original two screens.");
         }
     }
 }

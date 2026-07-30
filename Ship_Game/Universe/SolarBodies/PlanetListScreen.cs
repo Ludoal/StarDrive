@@ -90,9 +90,7 @@ namespace Ship_Game
             // The first line inside the frame carries the filters and the troop count; the table
             // takes what is left below it.
             RectF client = GalaxyTabs.ClientArea;
-            float tableTop = client.Y + ReworkScreens.ColumnPadV + ReworkScreens.GalaxyHeaderH;
-            ERect = new(client.X + 20, tableTop + 40, client.W - 40,
-                        client.Bottom - tableTop - 40 - ReworkScreens.ColumnPadV);
+            ERect = ReworkScreens.GalaxyTable(client, ReworkScreens.GalaxyHeaderH);
             RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
             PlanetSL = Add(new ScrollList<PlanetListScreenItem>(slRect));
             PlanetSL.EnableItemHighlight = true;

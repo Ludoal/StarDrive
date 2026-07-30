@@ -70,9 +70,7 @@ namespace Ship_Game
             Add(new CloseButton(closePos.X, closePos.Y));
 
             RectF client = GalaxyTabs.ClientArea;
-            float tableTop = client.Y + ReworkScreens.ColumnPadV;
-            ERect = new(client.X + 20, tableTop + 40, client.W - 40,
-                        client.Bottom - tableTop - 40 - ReworkScreens.ColumnPadV);
+            ERect = ReworkScreens.GalaxyTable(client);
             RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
             ExoticSL = Add(new ScrollList<ExoticSystemsListScreenItem>(slRect));
             ExoticSL.EnableItemHighlight = true;

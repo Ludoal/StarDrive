@@ -61,10 +61,12 @@ namespace Ship_Game
                 return new Rectangle(next, y, (int)width, h);
             }
 
+            // Ludoal fork: the two middle columns carry long titles over short numbers, so they
+            // take 12 points off the last one, which had 40% and lists only a few fleet names.
             PatrolNameRect = NextRect(w * 0.15f);
-            NumWaypointsRect = NextRect(w * 0.08f);
-            NumFleetsRect = NextRect(w * 0.08f);
-            FleetsRect = NextRect(w * 0.4f);
+            NumWaypointsRect = NextRect(w * 0.14f);
+            NumFleetsRect = NextRect(w * 0.14f);
+            FleetsRect = NextRect(w * 0.28f);
 
 
             ShipIconRect = new Rectangle(PatrolNameRect.X + 5, PatrolNameRect.Y + 5, 50, 50);
