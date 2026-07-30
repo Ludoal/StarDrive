@@ -24,6 +24,10 @@ namespace Ship_Game
         DanButton,     // UI/dan_button  -- wide brown button
         DanButtonBlue, // UI/dan_button_blue -- blue version of dan_button
         DanButtonRed, // UI/dan_button_red -- red version of dan_button
+        // Ludoal fork: the NewUI/dan_button family, dormant in Content until now. Added rather than
+        // repointed - the three styles above are used by the stock screens, and the whole game would
+        // change look. ⚠ Styling below is indexed by this enum: insert in BOTH, at the same rank.
+        DanButtonClear, // NewUI/dan_button_clear -- the new look, hover goes blue
         EventConfirm, // UI/btn_event_confirm -- a big wide confirm button for Event Popups
         Text,       // only use TEXT as the button 
     }
@@ -124,6 +128,9 @@ namespace Ship_Game
                 new StyleTextures("UI/dan_button", ButtonStyle.DanButton),
                 new StyleTextures("UI/dan_button_blue", ButtonStyle.DanButtonBlue),
                 new StyleTextures("UI/dan_button_red", ButtonStyle.DanButtonRed),
+                // Ludoal fork: same rank as DanButtonClear in the enum above
+                new StyleTextures("NewUI/dan_button_clear", "NewUI/dan_button_blue_clear",
+                                  "NewUI/dan_button_blue_clear"),
                 new StyleTextures("UI/btn_event_confirm_big"),
                 new StyleTextures() { DrawBackground = false },
             };

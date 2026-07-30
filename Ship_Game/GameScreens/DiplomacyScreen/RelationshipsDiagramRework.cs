@@ -16,7 +16,6 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
         private readonly Menu2 Window;
         readonly Array<Peer> Peers = new Array<Peer>();
         readonly Vector2 WeightCenter; // Offset from window center for circle of empires
-        UILabel Title;
 
         // Ludoal fork: one filter per treaty type (replaces the old two toggles),
         // ordered War → Peace → Alliance → NA → Open Borders → Trade, all on by default
@@ -41,6 +40,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
 
         readonly UniverseScreen Universe;
         Submenu GroupTabs; // Ludoal fork: the Diplomacy group's tab row, this screen being one tab
+        Rectangle GroupFrameRect;
 
         public RelationshipsDiagramRework(UniverseScreen us, Array<EmpireAndIntelLevel> empiresAndIntel)
             : base(us, toPause: us)
@@ -51,18 +51,14 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             TransitionOnTime  = 0.25f;
             TransitionOffTime = 0.25f;
 
-            // Ludoal fork: the Relationships tab of the Diplomacy group. Same frame as its three
-            // siblings - right under the top bar's button row (Y=64 on a 24px texture), 10px clear
-            // of the screen edges - rather than the 1000x768 popup this was as a stacked screen.
-            const int tabRowY = 64 + 24;
-            const int margin = 10;
-            var frame = new Rectangle(margin, tabRowY, ScreenWidth - 2 * margin,
-                                      ScreenHeight - tabRowY - margin);
+            // Ludoal fork: the Relationships tab of the Diplomacy group. Same frame and tab row as
+            // its three siblings, from ReworkScreens, rather than the 1000x768 popup this used to
+            // be as a stacked screen.
+            Rectangle frame = ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
+            GroupFrameRect = frame;
             GroupTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
-                                        new LocalizedText[]
-            {
-                "Intelligence", "Bonuses", "Relationships", "Espionage"
-            }));
+                                        ReworkScreens.GroupTabTitles));
+            GroupTabs.SetBackground(ReworkScreens.GroupFrameFill);
             GroupTabs.OnTabChange = OnGroupTabChanged;
             GroupTabs.PerformLayout();
             GroupTabs.SelectedIndex = (int)MainDiplomacyScreenRework.Tab.Relationships;
@@ -114,8 +110,10 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
 
         public override void LoadContent()
         {
-            CloseButton(Window.Menu.Right - 40, Window.Menu.Y + 20);
-            Title = Add(new UILabel(GameText.EmpireRelationships, Fonts.Arial20Bold, Color.Wheat));
+            // Ludoal fork: in the frame's own top-right corner. The tab row names the screen now,
+            // so the "Empire Relationships" label that used to head this panel is gone with it.
+            Vector2 closePos = ReworkScreens.GroupClosePos(GroupFrameRect);
+            CloseButton(closePos.X, closePos.Y);
 
             // one checkbox + legend line per treaty type, in the fixed order.
             // explicit getter/setter so the array element is writable (a lambda
@@ -138,11 +136,6 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             base.LoadContent();
         }
 
-        public override void PerformLayout()
-        {
-            Title.Pos = new Vector2(Window.X + 25, Window.Y + 30);
-        }
-
         void AddPeers()
         {
             int angle = 360 / EmpiresAndIntel.Count;
@@ -161,6 +154,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             batch.SafeBegin();
             base.Draw(batch, elapsed); // window
             DrawRelations(batch); // links and then portraits
+            ReworkScreens.DrawGroupTabTip(GroupTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar, like its sibling tabs
             batch.SafeEnd();
         }

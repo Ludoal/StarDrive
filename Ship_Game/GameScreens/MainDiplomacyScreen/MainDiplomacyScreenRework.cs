@@ -146,23 +146,17 @@ namespace Ship_Game
             // to their left: those move into the unified bar later, so leaving a band free above
             // the frame would be building for a state that is going away (maintainer decision).
             // Y=64 is where EmpireUIOverlay draws that row, on a 24px texture.
-            // Right under the top bar's button row (drawn at Y=64 on a 24px texture). Losing the
-            // brass surround freed the band that used to sit above the content, so the frame rides
-            // as high as the row allows.
-            const int tabRowY = 64 + 24;
-            const int margin = 10;
-            LeftRect = new Rectangle(margin, tabRowY, (int)screenWidth - 2 * margin,
-                                     ScreenHeight - tabRowY - margin);
-
+            LeftRect = ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
             GroupTabs = Add(new Submenu(new RectF(LeftRect.X, LeftRect.Y, LeftRect.Width, LeftRect.Height),
-                                        new LocalizedText[]
-            {
-                "Intelligence", "Bonuses", "Relationships", "Espionage"
-            }));
+                                        ReworkScreens.GroupTabTitles));
+            // right after creation, before any other child: SetBackground runs SendToBackZOrder,
+            // an unstable sort over the children
+            GroupTabs.SetBackground(ReworkScreens.GroupFrameFill);
             GroupTabs.OnTabChange = OnGroupTabChanged;
             GroupTabs.PerformLayout(); // necessary: ClientArea is only known once the tabs are laid out
 
-            Add(new CloseButton(LeftRect.Right - 40, LeftRect.Y + 20));
+            Vector2 closePos = ReworkScreens.GroupClosePos(LeftRect);
+            Add(new CloseButton(closePos.X, closePos.Y));
 
             foreach (Empire e in Universe.UState.Empires)
             {
@@ -171,21 +165,19 @@ namespace Ship_Game
                 Races.Add(new RaceEntry { e = e });
             }
 
-            // One column per major empire, sized to fit them all, centred on the tab frame's own
-            // client area. Ludoal fork: the drawn width is colW-8 per column, so the last gap is
-            // not part of the block - counting it left the row 8px off centre.
-            int n = Races.Count.LowerBound(1);
+            // Ludoal fork: the columns fill the frame - client area less a gutter each side, split
+            // eight ways - rather than sitting in a narrower band of it. One width for the whole
+            // group, from ReworkScreens.
             RectF client = GroupTabs.ClientArea;
-            int colW = (((int)client.W - 40) / n).UpperBound(230);
-            int drawnW = colW * n - 8;
-            int x0 = (int)client.X + ((int)client.W - drawnW) / 2;
+            int colW = ReworkScreens.GroupColumnWidth(client);
+            int x0 = ReworkScreens.GroupColumnsLeft(client, Races.Count.LowerBound(1));
             int j = 0;
             foreach (RaceEntry re in Races)
             {
                 // Ludoal fork: inside the tab frame's client area, top and bottom - the Submenu is
                 // the only thing that knows how tall its own tab row is.
                 int colTop = (int)client.Y + 6;
-                re.container = new Rectangle(x0 + j * colW, colTop, colW - 8,
+                re.container = new Rectangle(x0 + j * colW, colTop, colW - ReworkScreens.ColumnGap,
                                              (int)client.Bottom - colTop - 12);
                 j++;
             }
@@ -274,6 +266,7 @@ namespace Ship_Game
                 DrawColumn(batch, race);
 
             base.Draw(batch, elapsed);
+            ReworkScreens.DrawGroupTabTip(GroupTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
         }
@@ -350,19 +343,23 @@ namespace Ship_Game
             SectionBand(batch, col, ref y, "RANK");
             DrawPositionBlock(batch, e, col, ref y);
 
-            float maxY = col.Bottom - TreatyBlockH - 6;
+            // Ludoal fork: TREATIES before ARTIFACTS. The treaty matrix is a fixed three rows, the
+            // artifact list is as long as the empire's holdings - so the fixed block takes its
+            // place first and the variable one runs to the bottom of the column, where growing
+            // costs nothing.
             y = intelY;
             SectionBand(batch, col, ref y, "EMPIRE DATA");
-            // ARTIFACTS rides under EMPIRE DATA at a fixed, aligned offset
-            float artifactsY = intelY + 24 + 10 * (Font12.LineSpacing + 3) + 6;
-            DrawIntelRows(batch, e, col, ref y, artifactsY - 6);
+            float treatyY = intelY + 24 + 10 * (Font12.LineSpacing + 3) + 6;
+            DrawIntelRows(batch, e, col, ref y, treatyY - 6);
+
+            SectionBand(batch, col, ref treatyY, "TREATIES");
+            DrawTreatyMatrix(batch, e, col, treatyY);
+
+            float artifactsY = treatyY + TreatyBlockH - 24;
             y = artifactsY;
             SectionBand(batch, col, ref y, "ARTIFACTS");
-            DrawArtifactRows(batch, e, col, ref y, maxY);
+            DrawArtifactRows(batch, e, col, ref y, col.Bottom - 6);
 
-            float ty = col.Bottom - TreatyBlockH;
-            SectionBand(batch, col, ref ty, "TREATIES");
-            DrawTreatyMatrix(batch, e, col, ty);
         }
 
         void SectionBand(SpriteBatch batch, Rectangle col, ref float y, string title)

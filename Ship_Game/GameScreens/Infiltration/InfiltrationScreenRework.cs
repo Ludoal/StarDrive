@@ -42,6 +42,17 @@ namespace Ship_Game.GameScreens
         // from col.Y so the band and the checkbox under it share ONE origin: LoadContent and
         // DrawColumn each have a local budgetY and they differ by 24.
         const int SettingsBandY = HeaderH + 110;
+
+        // Ludoal fork: the BUDGET block's rows, off its own top. The button row was tight against
+        // the slider above it and there was room to spare at the foot of the block, so everything
+        // below the slider moved down 14. Named because the placement (LoadContent) and the labels
+        // (DrawColumn) read them from here - they used to be loose numbers in both.
+        const int RowSlider   = 4;
+        const int RowButton   = 58;
+        const int RowPoints   = 110;
+        const int RowLevel    = 130;
+        const int RowBar      = 151;
+        const int RowBarNums  = 167;
         const int DefenseH = 52;
 
         class EmpireColumn
@@ -130,38 +141,31 @@ namespace Ship_Game.GameScreens
 
         public override void LoadContent()
         {
-            // Ludoal fork: the Espionage tab of the Diplomacy group - same tab row as the other
-            // three, in place of the title cartouche and its brass surround. Right under the top
-            // bar's button row (Y=64 on a 24px texture).
-            const int tabRowY = 64 + 24;
-            const int margin = 10;
-            LeftRect = new Rectangle(margin, tabRowY, ScreenWidth - 2 * margin,
-                                     ScreenHeight - tabRowY - margin);
-
+            // Ludoal fork: the Espionage tab of the Diplomacy group - same frame and tab row as
+            // its three siblings, from ReworkScreens, in place of the title and its surround.
+            LeftRect = ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
             GroupTabs = Add(new Submenu(new RectF(LeftRect.X, LeftRect.Y, LeftRect.Width, LeftRect.Height),
-                                        new LocalizedText[]
-            {
-                "Intelligence", "Bonuses", "Relationships", "Espionage"
-            }));
+                                        ReworkScreens.GroupTabTitles));
+            GroupTabs.SetBackground(ReworkScreens.GroupFrameFill);
             GroupTabs.OnTabChange = OnGroupTabChanged;
             GroupTabs.PerformLayout(); // ClientArea is only known once the tabs are laid out
             GroupTabs.SelectedIndex = (int)MainDiplomacyScreenRework.Tab.Espionage;
 
-            CloseButton(LeftRect.Right - 40, LeftRect.Y + 20);
+            Vector2 closePos = ReworkScreens.GroupClosePos(LeftRect);
+            CloseButton(closePos.X, closePos.Y);
 
             Empire[] majors = Universe.UState.ActiveMajorEmpires;
-            int n = majors.Length.LowerBound(1);
             RectF client = GroupTabs.ClientArea;
-            int colW = (((int)client.W - 40) / n).UpperBound(230);
-            int drawnW = colW * n - 8;
-            int x0 = (int)client.X + ((int)client.W - drawnW) / 2;
+            int colW = ReworkScreens.GroupColumnWidth(client);
+            int x0 = ReworkScreens.GroupColumnsLeft(client, majors.Length.LowerBound(1));
 
             for (int i = 0; i < majors.Length; ++i)
             {
                 Empire e = majors[i];
                 // Ludoal fork: inside the tab frame's client area, like the other tabs
                 int colTop = (int)client.Y + 6;
-                var col = new Rectangle(x0 + i * colW, colTop, colW - 8, (int)client.Bottom - colTop - 12);
+                var col = new Rectangle(x0 + i * colW, colTop, colW - ReworkScreens.ColumnGap,
+                                        (int)client.Bottom - colTop - 12);
                 var c = new EmpireColumn { E = e, Rect = col };
                 Columns.Add(c);
 
@@ -173,7 +177,7 @@ namespace Ship_Game.GameScreens
                 if (e == Player)
                 {
                     // BUDGET: multiplier (+ cost label drawn live); DEFENSE: weight
-                    var budgetRect = new Rectangle(col.X + 8, (int)budgetY + 4, col.Width - 60, 40);
+                    var budgetRect = new Rectangle(col.X + 8, (int)budgetY + RowSlider, col.Width - 60, 40);
                     c.Budget = new FloatSlider(SliderStyle.Decimal1, budgetRect, GameText.EspioangeBudgetMuliplier, 1f, 5f, value: Player.EspionageBudgetMultiplier);
                     c.Budget.Tip = GameText.EspioangeBudgetMuliplierTip;
                     c.Budget.OnChange = s =>
@@ -206,7 +210,7 @@ namespace Ship_Game.GameScreens
                 Ship_Game.Espionage esp = Player.GetEspionage(e);
                 c.Esp = esp;
 
-                var weightRect = new Rectangle(col.X + 8, (int)budgetY + 4, col.Width - 60, 40);
+                var weightRect = new Rectangle(col.X + 8, (int)budgetY + RowSlider, col.Width - 60, 40);
                 c.Weight = new FloatSlider(weightRect, GameText.EspioangeInfiltrationWeight, min: 0, max: 10, value: esp.GrossWeight);
                 c.Weight.Tip = GameText.EspioangeInfiltrationWeightTip;
                 c.Weight.OnChange = s =>
@@ -216,7 +220,8 @@ namespace Ship_Game.GameScreens
                 };
                 Add(c.Weight);
 
-                c.LimitBtn = Add(new UIButton(ButtonStyle.Low100, new Vector2(col.X + 8, budgetY + 44), GameText.EspionageLimitLevel));
+                // Ludoal fork: the new dan_button look, like the Contact buttons on the other tabs
+                c.LimitBtn = Add(new UIButton(ButtonStyle.DanButtonClear, new Vector2(col.X + 8, budgetY + RowButton), GameText.EspionageLimitLevel));
                 c.LimitBtn.Tooltip = GameText.EspionageLimitLevelTip;
                 c.LimitBtn.AcceptRightClicks = true;
                 c.LimitBtn.OnClick = b =>
@@ -227,23 +232,43 @@ namespace Ship_Game.GameScreens
                     esp.SetLimitLevel(limit);
                 };
 
-                // the five levels, ALL options — grayed until reached
-                float y = col.Y + HeaderH + BudgetH + DefenseH + 24;
-                for (byte level = 1; level <= Ship_Game.Espionage.MaxLevel; ++level)
+                // the five levels, ALL options — grayed until reached. Rows come from the shared
+                // cascade so they land exactly where DrawColumn paints their level.
+                ForEachInfiltrationRow(col, null, (level, rowY, i) =>
                 {
-                    y += 24; // band
-                    y += Font12.LineSpacing + 4; // passive line
-                    foreach ((InfiltrationOpsType type, LocalizedText label, LocalizedText tip, bool def) in ActiveOpsFor(level))
-                    {
-                        c.Ops.Add(new OpBox(this, esp, Player, level, type, label, tip,
-                                            new Vector2(col.X + 8, y), col.Right - 64, def));
-                        y += Font12.LineSpacing + 5;
-                    }
-                    y += 6;
-                }
+                    var (type, label, tip, def) = ActiveOpsFor(level)[i];
+                    c.Ops.Add(new OpBox(this, esp, Player, level, type, label, tip,
+                                        new Vector2(col.X + 16, rowY), col.Right - 72, def));
+                });
             }
 
             GameAudio.MuteRacialMusic();
+        }
+
+        // Ludoal fork: ONE band, "INFILTRATION", and the five levels as bold text lines under it -
+        // five stacked bands read as five sections when it is one subject. The layout of that block
+        // lives here so LoadContent (which places the operation checkboxes) and DrawColumn (which
+        // paints the labels) cannot disagree: they used to run the same cascade twice.
+        //
+        // Yields the Y of each level's title line, then of each of its operation rows.
+        void ForEachInfiltrationRow(Rectangle col, Action<byte, float, bool> onLevelTitle,
+                                    Action<byte, float, int> onOpRow)
+        {
+            float y = col.Y + HeaderH + BudgetH + DefenseH + 24 + 24; // + the INFILTRATION band
+            for (byte level = 1; level <= Ship_Game.Espionage.MaxLevel; ++level)
+            {
+                onLevelTitle?.Invoke(level, y, true);
+                y += Font12Bold.LineSpacing + 2;
+                onLevelTitle?.Invoke(level, y, false); // the passive line, under the title
+                y += Font12.LineSpacing + 4;
+                var ops = ActiveOpsFor(level);
+                for (int i = 0; i < ops.Length; ++i)
+                {
+                    onOpRow?.Invoke(level, y, i);
+                    y += Font12.LineSpacing + 5;
+                }
+                y += 8; // breathing room before the next level
+            }
         }
 
         static (InfiltrationOpsType, LocalizedText, LocalizedText, bool)[] ActiveOpsFor(byte level) => level switch
@@ -284,6 +309,7 @@ namespace Ship_Game.GameScreens
                 DrawColumn(batch, c);
 
             base.Draw(batch, elapsed); // sliders, checkboxes, buttons, close
+            ReworkScreens.DrawGroupTabTip(GroupTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
         }
@@ -350,28 +376,37 @@ namespace Ship_Game.GameScreens
             Ship_Game.Espionage esp = c.Esp;
 
             // BUDGET section extras: limit level value, points/turn, target + progress
-            batch.DrawString(Font12Bold, esp.LimitLevel.ToString(), new Vector2(col.X + 124, budgetY + 70), Player.EmpireColor);
+            // Ludoal fork: right of the Limit Level button, from its own width - the old 124 was
+            // calibrated on the narrower button style this used to use.
+            // ⚠ off the button itself, not off budgetY: this method's budgetY and LoadContent's
+            // are 24px apart, and the button was placed with the other one.
+            if (c.LimitBtn != null)
+            {
+                var limitPos = new Vector2(c.LimitBtn.Right + 8,
+                                           c.LimitBtn.Y + (c.LimitBtn.Height - Font12Bold.LineSpacing) / 2);
+                batch.DrawString(Font12Bold, esp.LimitLevel.ToString(), limitPos, Player.EmpireColor);
+            }
             float ppt = esp.GetProgressToIncrease(Player.EspionagePointsPerTurn, Player.CalcTotalEspionageWeight());
             string pptTxt = "Points/turn: " + ppt.String(3);
-            batch.DrawString(Font12, pptTxt, new Vector2(col.X + 8, budgetY + 96), Color.Wheat);
+            batch.DrawString(Font12, pptTxt, new Vector2(col.X + 8, budgetY + RowPoints), Color.Wheat);
 
             if (esp.Level < Ship_Game.Espionage.MaxLevel)
             {
                 byte target = (byte)(esp.Level + 1);
-                batch.DrawString(Font12, $"Infiltrating level {target}", new Vector2(col.X + 8, budgetY + 116), Color.Wheat);
+                batch.DrawString(Font12, $"Infiltrating level {target}", new Vector2(col.X + 8, budgetY + RowLevel), Color.Wheat);
                 float max = esp.LevelCost(target);
                 float cur = esp.LevelProgress.UpperBound(max);
-                var barRect = new Rectangle(col.X + 8, (int)budgetY + 137, col.Width - 16, 12);
+                var barRect = new Rectangle(col.X + 8, (int)budgetY + RowBar, col.Width - 16, 12);
                 batch.FillRectangle(barRect, new Color(10, 10, 10));
                 if (max > 0f && cur > 0f)
                     batch.FillRectangle(new Rectangle(barRect.X + 1, barRect.Y + 1, (int)((barRect.Width - 2) * (cur / max)), 10), new Color(30, 120, 30));
                 batch.DrawRectangle(barRect, new Color(60, 54, 40));
                 string nums = $"{(int)cur}/{(int)max}";
-                batch.DrawString(Font12, nums, new Vector2(col.Right - 8 - Font12.TextWidth(nums), budgetY + 153), Color.Wheat);
+                batch.DrawString(Font12, nums, new Vector2(col.Right - 8 - Font12.TextWidth(nums), budgetY + RowBarNums), Color.Wheat);
             }
             else
             {
-                batch.DrawString(Font12, "Fully infiltrated", new Vector2(col.X + 8, budgetY + 116), Color.LightGreen);
+                batch.DrawString(Font12, "Fully infiltrated", new Vector2(col.X + 8, budgetY + RowLevel), Color.LightGreen);
             }
 
             // DEFENSE: their shield ratio (gated like the legacy header icon)
@@ -393,20 +428,25 @@ namespace Ship_Game.GameScreens
                 batch.DrawString(Font12Bold, "lvl 3", new Vector2(spyR.Right + 4, spyR.Y), new Color(105, 105, 105));
             }
 
-            // the five levels: band + passive + (checkboxes drawn by base.Draw)
-            float y = col.Y + HeaderH + BudgetH + DefenseH + 24;
-            for (byte level = 1; level <= Ship_Game.Espionage.MaxLevel; ++level)
+            // Ludoal fork: one INFILTRATION band, then each level as a bold text line - cream once
+            // the level is uncovered, grey while it is not. Five bands for one subject read as five
+            // separate sections.
+            SectionBand(batch, col, col.Y + HeaderH + BudgetH + DefenseH + 24, "INFILTRATION");
+            ForEachInfiltrationRow(col, (level, rowY, isTitle) =>
             {
                 bool reached = esp.Level >= level;
-                bool active = reached && esp.LimitLevel >= level;
-                SectionBand(batch, col, y, $"LEVEL {level}", reached ? (active ? Color.LightGreen : Color.Gray) : new Color(110, 100, 80));
-                y += 24;
-                batch.DrawString(Font12, PassiveFor(level), new Vector2(col.X + 8, y), active ? Color.LightGreen : Color.Gray);
-                y += Font12.LineSpacing + 4;
-                int nOps = ActiveOpsFor(level).Length;
-                y += nOps * (Font12.LineSpacing + 5);
-                y += 6;
-            }
+                if (isTitle)
+                {
+                    batch.DrawString(Font12Bold, $"Level {level}", new Vector2(col.X + 8, rowY),
+                                     reached ? Colors.Cream : Color.Gray);
+                }
+                else
+                {
+                    bool active = reached && esp.LimitLevel >= level;
+                    batch.DrawString(Font12, PassiveFor(level), new Vector2(col.X + 16, rowY),
+                                     active ? Color.LightGreen : Color.Gray);
+                }
+            }, null);
         }
 
         public override bool HandleInput(InputState input)
