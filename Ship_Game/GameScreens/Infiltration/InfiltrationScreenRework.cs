@@ -25,9 +25,7 @@ namespace Ship_Game.GameScreens
         readonly Empire Player;
         public static readonly Color PanelBackground = new Color(23, 20, 14);
 
-        Menu2 TitleBar;
-        Vector2 TitlePos;
-        Menu2 DMenu;
+        Submenu GroupTabs; // Ludoal fork: the Diplomacy group's tab row, this screen being one tab
         Rectangle LeftRect;
 
         Array<EmpireColumn> Columns = new();
@@ -119,28 +117,51 @@ namespace Ship_Game.GameScreens
             SelectedEmpire = Player;
         }
 
+        // Ludoal fork: the other three tabs live on the Diplomacy screen, so leaving Espionage
+        // hands over to it on the right tab. Espionage itself is a no-op: we are already here.
+        void OnGroupTabChanged(int index)
+        {
+            var tab = (MainDiplomacyScreenRework.Tab)index;
+            if (tab == MainDiplomacyScreenRework.Tab.Espionage)
+                return;
+            ExitScreen();
+            ScreenManager.AddScreen(new MainDiplomacyScreenRework(Universe, tab));
+        }
+
         public override void LoadContent()
         {
-            string espTitle = Localizer.Token(GameText.EspionageOverview);
-            var titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            TitleBar = new Menu2(titleRect);
-            TitlePos = new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString(espTitle).X / 2f,
-                                   titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
+            // Ludoal fork: the Espionage tab of the Diplomacy group - same tab row as the other
+            // three, in place of the title cartouche and its brass surround. Right under the top
+            // bar's button row (Y=64 on a 24px texture).
+            const int tabRowY = 64 + 24;
+            const int margin = 10;
+            LeftRect = new Rectangle(margin, tabRowY, ScreenWidth - 2 * margin,
+                                     ScreenHeight - tabRowY - margin);
 
-            LeftRect = new Rectangle(2, titleRect.Bottom + 5, ScreenWidth - 10, ScreenHeight - titleRect.Bottom - 7);
-            DMenu = new Menu2(LeftRect);
+            GroupTabs = Add(new Submenu(new RectF(LeftRect.X, LeftRect.Y, LeftRect.Width, LeftRect.Height),
+                                        new LocalizedText[]
+            {
+                "Intelligence", "Bonuses", "Relationships", "Espionage"
+            }));
+            GroupTabs.OnTabChange = OnGroupTabChanged;
+            GroupTabs.PerformLayout(); // ClientArea is only known once the tabs are laid out
+            GroupTabs.SelectedIndex = (int)MainDiplomacyScreenRework.Tab.Espionage;
+
             CloseButton(LeftRect.Right - 40, LeftRect.Y + 20);
 
             Empire[] majors = Universe.UState.ActiveMajorEmpires;
             int n = majors.Length.LowerBound(1);
-            int colW = ((LeftRect.Width - 40) / n).UpperBound(230);
-            int totalW = colW * n;
-            int x0 = LeftRect.X + (LeftRect.Width - totalW) / 2;
+            RectF client = GroupTabs.ClientArea;
+            int colW = (((int)client.W - 40) / n).UpperBound(230);
+            int drawnW = colW * n - 8;
+            int x0 = (int)client.X + ((int)client.W - drawnW) / 2;
 
             for (int i = 0; i < majors.Length; ++i)
             {
                 Empire e = majors[i];
-                var col = new Rectangle(x0 + i * colW, LeftRect.Y + 26, colW - 8, LeftRect.Height - 52); // centered vertically in the frame
+                // Ludoal fork: inside the tab frame's client area, like the other tabs
+                int colTop = (int)client.Y + 6;
+                var col = new Rectangle(x0 + i * colW, colTop, colW - 8, (int)client.Bottom - colTop - 12);
                 var c = new EmpireColumn { E = e, Rect = col };
                 Columns.Add(c);
 
@@ -258,9 +279,6 @@ namespace Ship_Game.GameScreens
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
-            TitleBar.Draw(batch, elapsed);
-            batch.DrawString(Fonts.Laserian14, Localizer.Token(GameText.EspionageOverview), TitlePos, Colors.Cream);
-            DMenu.Draw(batch, elapsed);
 
             foreach (EmpireColumn c in Columns)
                 DrawColumn(batch, c);

@@ -54,8 +54,18 @@ namespace Ship_Game.GameScreens
         // place knows the pairing, and no call site has to remember there are two of each.
         public static bool IsEconomy(GameScreen s) => s is BudgetScreen or BudgetScreenRework;
 
-        public static bool IsDiplomacy(GameScreen s) => s is MainDiplomacyScreen or MainDiplomacyScreenRework;
+        // Ludoal fork: the reworked group is FOUR screens sharing one tab row, so both top-bar
+        // buttons have to recognise all of them - otherwise pressing a key while inside the group
+        // stacks a second copy instead of closing it (the 46.173 bug, one test per class short).
+        public static bool IsDiplomacy(GameScreen s)
+            => s is MainDiplomacyScreen || IsDiplomacyGroup(s);
 
-        public static bool IsEspionage(GameScreen s) => s is InfiltrationScreen or InfiltrationScreenRework;
+        public static bool IsEspionage(GameScreen s)
+            => s is InfiltrationScreen || IsDiplomacyGroup(s);
+
+        static bool IsDiplomacyGroup(GameScreen s)
+            => s is MainDiplomacyScreenRework
+                 or InfiltrationScreenRework
+                 or DiplomacyScreen.RelationshipsDiagramRework;
     }
 }

@@ -146,9 +146,10 @@ namespace Ship_Game
             // to their left: those move into the unified bar later, so leaving a band free above
             // the frame would be building for a state that is going away (maintainer decision).
             // Y=64 is where EmpireUIOverlay draws that row, on a 24px texture.
-            // 10px clear of every screen edge, and 10 below the top bar's button row (drawn at
-            // Y=64 on a 24px texture) so the tab row is not touching Help.
-            const int tabRowY = 64 + 24 + 10;
+            // Right under the top bar's button row (drawn at Y=64 on a 24px texture). Losing the
+            // brass surround freed the band that used to sit above the content, so the frame rides
+            // as high as the row allows.
+            const int tabRowY = 64 + 24;
             const int margin = 10;
             LeftRect = new Rectangle(margin, tabRowY, (int)screenWidth - 2 * margin,
                                      ScreenHeight - tabRowY - margin);
@@ -170,18 +171,22 @@ namespace Ship_Game
                 Races.Add(new RaceEntry { e = e });
             }
 
-            // one column per major empire, full frame height, sized to fit them all
+            // One column per major empire, sized to fit them all, centred on the tab frame's own
+            // client area. Ludoal fork: the drawn width is colW-8 per column, so the last gap is
+            // not part of the block - counting it left the row 8px off centre.
             int n = Races.Count.LowerBound(1);
-            int colW = ((LeftRect.Width - 40) / n).UpperBound(230);
-            int totalW = colW * n;
-            int x0 = LeftRect.X + (LeftRect.Width - totalW) / 2;
+            RectF client = GroupTabs.ClientArea;
+            int colW = (((int)client.W - 40) / n).UpperBound(230);
+            int drawnW = colW * n - 8;
+            int x0 = (int)client.X + ((int)client.W - drawnW) / 2;
             int j = 0;
             foreach (RaceEntry re in Races)
             {
-                // Ludoal fork: below the tab row, whose height the Submenu knows - a fixed offset
-                // from LeftRect.Y would put the columns under the tabs.
-                int colTop = (int)GroupTabs.ClientArea.Y + 6;
-                re.container = new Rectangle(x0 + j * colW, colTop, colW - 8, LeftRect.Bottom - colTop - 26);
+                // Ludoal fork: inside the tab frame's client area, top and bottom - the Submenu is
+                // the only thing that knows how tall its own tab row is.
+                int colTop = (int)client.Y + 6;
+                re.container = new Rectangle(x0 + j * colW, colTop, colW - 8,
+                                             (int)client.Bottom - colTop - 12);
                 j++;
             }
 
@@ -246,14 +251,12 @@ namespace Ship_Game
             {
                 case Tab.Intelligence: ShowBonuses = false; break;
                 case Tab.Bonuses:      ShowBonuses = true;  break;
-                // These two live in their own screen. Open it and put the tab back on the view
-                // that stays behind, so the row always names what is actually on screen.
+                // These two live in their own screen, which carries the same tab row - so this one
+                // steps aside rather than stacking on top.
                 case Tab.Relationships:
-                    GroupTabs.SelectedIndex = ShowBonuses ? (int)Tab.Bonuses : (int)Tab.Intelligence;
-                    AddRelationShipDiagramScreen();
+                    AddRelationShipDiagramScreen(); // exits this screen itself
                     break;
                 case Tab.Espionage:
-                    GroupTabs.SelectedIndex = ShowBonuses ? (int)Tab.Bonuses : (int)Tab.Intelligence;
                     ExitScreen();
                     // the concrete screen, not ReworkScreens.Espionage - that factory now points
                     // back at this group, which would loop
@@ -873,8 +876,10 @@ namespace Ship_Game
                 empiresAndIntel.Add(new EmpireAndIntelLevel(empire, intel));
             }
 
-            var diagram = new RelationshipsDiagramScreen(this, Universe, empiresAndIntel);
-            ScreenManager.AddScreen(diagram);
+            // Ludoal fork: our own copy, which carries the group's tab row. The shared
+            // RelationshipsDiagramScreen stays untouched for the stock diplomacy screen.
+            ExitScreen();
+            ScreenManager.AddScreen(new RelationshipsDiagramRework(Universe, empiresAndIntel));
         }
     }
 
