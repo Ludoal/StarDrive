@@ -355,6 +355,12 @@ namespace Ship_Game
         public void SetCanSendTroops(bool value)
         {
             CanSendTroops = value;
+            // Ludoal fork: the flag alone changed nothing on screen - Visible is only recomputed in
+            // UpdateButtonSendTroops, so a row that had hidden its button kept it hidden until
+            // something else redrew it. Refresh here and every row follows the new count at once.
+            // Guarded: this can be called before the row has laid its buttons out.
+            if (SendTroops != null)
+                UpdateButtonSendTroops();
         }
 
         void DrawPlanetDistance(float distance, Vector2 namePos, Graphics.Font spriteFont)
@@ -396,6 +402,11 @@ namespace Ship_Game
 
             Ship ship = incomingTroopShips.Last();
             ship.AI.OrderRebaseToNearest();
+            // Ludoal fork: the free-troop count has to be recomputed too. Cancelling an inbound
+            // landing frees its troops again, and every row's Send Troops button hides itself on
+            // CanSendTroops - refreshing this row alone left the others hiding on a stale count,
+            // so one right-click made the whole column of buttons vanish.
+            Screen.RefreshSendTroopButtonsVisibility();
             UpdateButtonSendTroops();
         }
 
@@ -430,7 +441,7 @@ namespace Ship_Game
             {
                 Player.AI.AddGoalAndEvaluate(new MarkForColonization(Planet, Planet.Universe.Player, isManual:true));
                 Colonize.Text = "Cancel Colonize";
-                Colonize.Style = ButtonStyle.Default;
+                Colonize.Style = ButtonStyle.DanButtonClearRed; // red once it undoes something
                 MarkedForColonization = true;
                 return;
             }
@@ -438,7 +449,7 @@ namespace Ship_Game
             Planet.Universe.Player.AI.CancelColonization(Planet);
             MarkedForColonization = false;
             Colonize.Text  = "Colonize";
-            Colonize.Style = ButtonStyle.BigDip;
+            Colonize.Style = ButtonStyle.DanButtonClear;
         }
     }
 }
