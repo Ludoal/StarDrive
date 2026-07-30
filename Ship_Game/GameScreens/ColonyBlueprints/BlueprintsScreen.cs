@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Graphics;
 using SDGraphics;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
@@ -52,6 +52,7 @@ namespace Ship_Game
         readonly Font BigFont;
         public readonly Empire Player;
         readonly UniverseScreen Universe; // Ludoal fork: for the live top bar
+        Submenu DesignTabs;   // Ludoal fork: the Design group's tab row, this screen being one tab
 
         float PlannedGrossMoney;
         float PlannedMaintenance;
@@ -85,15 +86,17 @@ namespace Ship_Game
             GovernorTab = govTab;
             TextFont = LowRes ? Font8 : Font12;
             BigFont = LowRes ? Font12 : Font14;
-            var titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            base.Add(new Menu2(titleRect));
-            Vector2 titlePos = new(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString
-                (Localizer.Token(GameText.ColonyBlueprintsTitle)).X / 2f, titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
+            // Ludoal fork: the Blueprints tab of the Design group - the title cartouche and its
+            // brass surround give way to the group's tab row, as on the other groups.
+            DesignTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.DesignTabTitles, 2,
+                                                    OnDesignTabChanged, out Rectangle _);
+            RectF client = DesignTabs.ClientArea;
+            int menuTop = (int)client.Y;
+            int menuH = (int)client.Bottom - menuTop;
+            int leftW = ScreenWidth * 2 / 3;
 
-            base.Add(new UILabel(titlePos, GameText.ColonyBlueprintsTitle, Fonts.Laserian14));
-            LeftMenu = base.Add(new Menu1(2, titleRect.Y + titleRect.Height + 5, titleRect.Width, ScreenHeight - (titleRect.Y + titleRect.Height) - 7));
-            RightMenu = base.Add(new Menu1(titleRect.Right + 5, titleRect.Y + titleRect.Height + 5, ScreenWidth / 3 - 10, ScreenHeight - (titleRect.Y + titleRect.Height) - 7)); // Ludoal fork: align top with the main panel (was overlapping the top bar buttons)
-            Add(new CloseButton(RightMenu.Right - 52, RightMenu.Y + 22));
+            LeftMenu = base.Add(new Menu1(2, menuTop, leftW, menuH));
+            RightMenu = base.Add(new Menu1(leftW + 5, menuTop, ScreenWidth / 3 - 10, menuH));
 
             RectF blueprintsStatsR = new(LeftMenu.X + 20, LeftMenu.Y + 20,
                                         (int)(0.4f * LeftMenu.Width),
@@ -295,6 +298,20 @@ namespace Ship_Game
             }
         }
 
+        // Ludoal fork: the Design group's tabs.
+        void OnDesignTabChanged(int tab)
+        {
+            if (tab == 2)
+                return; // already here
+
+            GameAudio.EchoAffirmative();
+            ExitScreen();
+            if (tab == 0)
+                ScreenManager.AddScreen(new FleetDesignScreen(Universe, Universe.EmpireUI));
+            else
+                ScreenManager.AddScreen(new ShipDesignScreen(Universe, Universe.EmpireUI));
+        }
+
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             batch.SafeBegin();
@@ -302,6 +319,7 @@ namespace Ship_Game
             DrawHoveredBuildListBuildingInfo(batch);
             DrawPlanStatistics(batch);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
+            ReworkScreens.DrawDesignTabTip(DesignTabs, Input.CursorPosition);
             batch.SafeEnd();
         }
 

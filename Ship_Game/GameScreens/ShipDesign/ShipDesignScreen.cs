@@ -70,6 +70,7 @@ namespace Ship_Game
         UIButton BtnSymmetricDesign; // Symmetric Module Placement Feature by Fat Bastard
         UIButton BtnStripShip;       // Removes all modules but armor, shields and command modules
         UIButton BtnToggleOverlay;
+        Submenu DesignTabs;   // Ludoal fork: the Design group's tab row, this screen being one tab
         UIButton BtnArcs;            // weapon fire arcs overlay
         Rectangle SearchBar;
 
@@ -821,7 +822,14 @@ namespace Ship_Game
             // of stopping at an arbitrary 45% of the screen, which left a gap of dead starfield
             // between them. ModuleSelection owns that arithmetic — one place decides where the
             // list ends and the frame begins, so the two can never drift apart.
-            ClassifCursor = new Vector2(ScreenWidth * .5f,ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Height + 10);
+            // Ludoal fork: the Shipyard tab of the Design group. Unlike the table screens, the
+            // frame is a surround rather than a container - the 3D workbench, the module grid and
+            // the two columns keep their own layout inside it.
+            DesignTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.DesignTabTitles, 1,
+                                                    OnDesignTabChanged, out Rectangle _);
+
+            // the centre rows start under the tab row rather than under the top bar
+            ClassifCursor = new Vector2(ScreenWidth * .5f, DesignTabs.ClientArea.Y + 4);
 
             // The two centre rows: the design's IDENTITY (role, name, Save, Test Fight), then
             // everything that CONFIGURES it (stance, repair, hangar, carrier-only). Posed here,
@@ -963,12 +971,15 @@ namespace Ship_Game
             // its own fractions. The browser ends where the module list ends, the strip sits
             // just under it, and the cartouche fills the rest down to the shared foot line — so
             // the two columns read as one row whatever the window size.
-            // the filter row lives in the band ABOVE the browser frame, so the frame starts lower
+            // the top of both lists: the module column owns it, the browser follows
             float filterTop   = ModuleSelectComponent.LocalPos.Y;
             // the search line: one row of text sitting in the band between the options row and
             // the top of the two lists, so both fields land on it without a second arithmetic
             float searchY     = filterTop - 22f;
-            float colTop      = filterTop + 52f;
+            // the browser starts on the SAME line as the module list: its toggles ride the
+            // identity row and its search field shares the search line, so the band above it no
+            // longer costs the two rows it used to reserve
+            float colTop      = filterTop;
             // the same foot line the module frames land on, so the four read as one row
             float colBottom   = ModuleSelection.FramesBottom(ScreenHeight);
             // The right column mirrors the left one exactly: the cartouche keeps the module
@@ -1034,7 +1045,13 @@ namespace Ship_Game
             // from the list it filters (maintainer feedback) — a first taste of the wider UI pass to come.
             // 26px ABOVE the list, not below its top edge: filterTop IS the list's own top, so
             // +26 put the checkbox inside the list, which drew straight over it (bench 46.172).
-            Checkbox(new Vector2(11, IdentityRowY),
+            // The filter toggles sit on the BOTTOM of the identity row: a checkbox draws itself
+            // around its centre and measures max(12, LineSpacing) tall, so its top has to be
+            // pulled up by its own height rather than sharing the row's Y.
+            float toggleH = Math.Max(12, Fonts.Arial12Bold.LineSpacing);
+            float toggleY = IdentityRowY + idH - toggleH;
+
+            Checkbox(new Vector2(11, toggleY),
                      () => IsFilterOldModulesMode,
                      (b) => { IsFilterOldModulesMode = b; ModuleSelectComponent.ResetActiveCategory(); },
                      "Hide obsolete", GameText.WhenToggledRedAnyModule);
@@ -1059,19 +1076,17 @@ namespace Ship_Game
             // edge with a 5px margin, rather than pushed left by a guessed amount (maintainer feedback).
             const float togglesWidth = 246f + 108f;   // three checkboxes, last one included
             float row3 = hullSelSize.X - togglesWidth - 5f;
-            // on the identity row, so the band above the browser costs one line instead of two
-            float togglesY = IdentityRowY;
-            Checkbox(new Vector2(filterX + row3 + 6, togglesY),
+            Checkbox(new Vector2(filterX + row3 + 6, toggleY),
                      () => !Player.Universe.P.ShowAllDesigns,
                      (b) => { Player.Universe.P.ShowAllDesigns = !b; RefreshHullSelectList(); },
                      "My designs only", "Show only the designs you created");
 
-            Checkbox(new Vector2(filterX + row3 + 132, togglesY),
+            Checkbox(new Vector2(filterX + row3 + 132, toggleY),
                      () => ShowLockedDesigns,
                      (b) => { ShowLockedDesigns = b; RefreshHullSelectList(); },
                      "Show locked", GameText.ShowEmpireLockedDesignsTip);
 
-            Checkbox(new Vector2(filterX + row3 + 246, togglesY),
+            Checkbox(new Vector2(filterX + row3 + 246, toggleY),
                      () => HideObsoleteDesigns,
                      (b) => { HideObsoleteDesigns = b; RefreshHullSelectList(); },
                      "Hide obsolete", "Hide the designs you have marked obsolete");
@@ -1116,17 +1131,22 @@ namespace Ship_Game
             // carrier-only box and the stance block form one row whose total width is built from
             // the parts. Everything on it aligns its TOP with the stance block's top, which is
             // why the row's Y is the stance topLeft and not a font baseline.
+            // Each dropdown carries its caption to its LEFT, so the row must reserve that width
+            // too: measured in the font that draws it, never guessed.
             const int ddW = 125, ddHangarW = 150, ddH = 18, optGap = 20, carrierW = 110;
-            const int optRowW = ddW + ddHangarW + carrierW + stanceW + 3 * optGap;
+            int lblRepairW = (int)Fonts.Arial12Bold.TextWidth("Repair Options") + TitleGap;
+            int lblHangarW = (int)Fonts.Arial12Bold.TextWidth("Hangar Designation") + TitleGap;
+            int optRowW = lblRepairW + ddW + optGap + lblHangarW + ddHangarW
+                        + optGap + carrierW + optGap + stanceW;
             int optY = OptionsRowY;
-            int optX = (int)ScreenCenter.X - optRowW / 2;
+            int optX = (int)ScreenCenter.X - optRowW / 2 + lblRepairW;
             var dropdownRect = new Rectangle(optX, optY, ddW, ddH);
 
             CategoryList = new CategoryDropDown(dropdownRect);
             foreach (ShipCategory item in Enum.GetValues(typeof(ShipCategory)).Cast<ShipCategory>())
                 CategoryList.AddOption(item.ToString(), item);
 
-            var hangarRect = new Rectangle(dropdownRect.Right + optGap, optY, ddHangarW, ddH);
+            var hangarRect = new Rectangle(dropdownRect.Right + optGap + lblHangarW, optY, ddHangarW, ddH);
             HangarOptionsList = new HangarDesignationDropDown(hangarRect);
             foreach (HangarOptions item in Enum.GetValues(typeof(HangarOptions)).Cast<HangarOptions>())
                 HangarOptionsList.AddOption(item.ToString(), item);
@@ -1243,7 +1263,21 @@ namespace Ship_Game
                 debugUnlocks.SetAbsPos(10, 45);
             }
 
-            CloseButton(ScreenWidth - 27, 75);
+        }
+
+        // Ludoal fork: the Design group's tabs. The Shipyard closes before the target opens -
+        // its 3D preview shares the scene, and its input layer would leak through.
+        void OnDesignTabChanged(int tab)
+        {
+            if (tab == 1)
+                return; // already here
+
+            GameAudio.EchoAffirmative();
+            ExitScreen();
+            if (tab == 0)
+                ScreenManager.AddScreen(new FleetDesignScreen(ParentUniverse, EmpireUI));
+            else
+                ScreenManager.AddScreen(new BlueprintsScreen(ParentUniverse, ParentUniverse.Player));
         }
 
         // Ludoal fork: the visibility policy ported verbatim from the load popup, so the

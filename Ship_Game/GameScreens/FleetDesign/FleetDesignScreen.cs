@@ -29,10 +29,8 @@ namespace Ship_Game
         public readonly EmpireUIOverlay EmpireUI;
         public readonly Empire Player;
 
-        Menu2 TitleBar;
-        Menu2 ShipDesigns;
         Vector2 TitlePos;
-        Vector2 ShipDesignsTitlePos;
+        Submenu DesignTabs;   // Ludoal fork: the Design group's tab row, this screen being one tab
         Menu1 LeftMenu;
         Menu1 RightMenu;
 
@@ -46,10 +44,10 @@ namespace Ship_Game
         #pragma warning restore CA2213
 
         ScrollList<FleetDesignShipListItem> ShipSL;
-        BlueButton RequisitionForces;
-        BlueButton SaveDesign;
-        BlueButton LoadDesign;
-        BlueButton AutoArrange;
+        UIButton RequisitionForces;
+        UIButton SaveDesign;
+        UIButton LoadDesign;
+        UIButton AutoArrange;
         RectF SelectedStuffRect;
         RectF OperationsRect;
         RectF PrioritiesRect;
@@ -223,21 +221,40 @@ namespace Ship_Game
             RemoveSceneObjects(SelectedFleet);
         }
 
+        // Ludoal fork: the Design group's tabs.
+        void OnDesignTabChanged(int tab)
+        {
+            if (tab == 0)
+                return; // already here
+
+            GameAudio.EchoAffirmative();
+            ExitScreen();
+            if (tab == 1)
+                ScreenManager.AddScreen(new ShipDesignScreen(Universe, EmpireUI));
+            else
+                ScreenManager.AddScreen(new BlueprintsScreen(Universe, Universe.Player));
+        }
+
         public override void LoadContent()
         {
-            Add(new CloseButton(ScreenWidth - 38, 97));
+            // Ludoal fork: the Fleets tab of the Design group. Like the Shipyard, the frame is
+            // a surround rather than a container - the 3D fleet view keeps its own layout.
+            DesignTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.DesignTabTitles, 0,
+                                                    OnDesignTabChanged, out Rectangle _);
             SetPerspectiveProjection(maxDistance: 100_000);
 
             Graphics.Font titleFont = Fonts.Laserian14;
             Graphics.Font arial20 = Fonts.Arial20Bold;
             Graphics.Font arial12 = Fonts.Arial12Bold;
 
-            RectF titleRect = new(2, 44, 250, 80);
-            TitleBar = new(titleRect);
-            TitlePos = new(titleRect.CenterX - titleFont.TextWidth("Fleet Hotkeys") / 2f,
-                           titleRect.CenterY - titleFont.LineSpacing / 2f);
+            // Ludoal fork: the two 80px title bars are gone - a single label above the fleet
+            // list says what they said, and both lists start that much higher. The right one is
+            // already titled by its own Designs/Owned tabs.
+            const float leftW = 250, rightW = 280;
+            TitlePos = new(20, DesignTabs.ClientArea.Y + 4);
+            float listTop = TitlePos.Y + titleFont.LineSpacing + 4;
 
-            RectF leftRect = new(20, titleRect.Bottom + 5, titleRect.W, 500);
+            RectF leftRect = new(20, listTop, leftW, 500);
             LeftMenu = new(leftRect, true);
             
             Add(new FleetButtonsList(leftRect, this, Universe,
@@ -246,10 +263,7 @@ namespace Ship_Game
                 isSelected: (b) => SelectedFleet?.Key == b.FleetKey
             ));
 
-            RectF shipRect = new(ScreenWidth - 282, 140, 280, 80);
-            ShipDesigns = new Menu2(shipRect);
-            ShipDesignsTitlePos = new(shipRect.CenterX - titleFont.TextWidth("Ship Designs") / 2f, shipRect.CenterY - titleFont.LineSpacing / 2);
-            RectF shipDesignsRect = new(ScreenWidth - shipRect.W - 2, shipRect.Bottom + 5, shipRect.W, 500);
+            RectF shipDesignsRect = new(ScreenWidth - rightW - 2, listTop, rightW, 500);
             RightMenu = new(shipDesignsRect);
 
             LocalizedText[] subShipsTabs = { "Designs", "Owned" };
@@ -282,10 +296,16 @@ namespace Ship_Game
             OrdersButtons = new(this, ordersBarPos);
             Add(OrdersButtons);
 
-            RequisitionForces = Add(new BlueButton(new(SelectedStuffRect.X + 240, SelectedStuffRect.Y + arial20.LineSpacing + 20 - 10), "Requisition..."));
-            SaveDesign = Add(new BlueButton(new(SelectedStuffRect.X + 240, SelectedStuffRect.Y + arial20.LineSpacing + 20 + 30), "Save Design..."));
-            LoadDesign = Add(new BlueButton(new(SelectedStuffRect.X + 240, SelectedStuffRect.Y + arial20.LineSpacing + 20 + 70), "Load Design..."));
-            AutoArrange = Add(new BlueButton(new(SelectedStuffRect.X + 240, SelectedStuffRect.Y + arial20.LineSpacing + 20 + 110), "Auto Arrange..."));
+            // Ludoal fork: the reworked screens' button, in place of the old blue plate
+            float btnX = SelectedStuffRect.X + 240;
+            float btnY = SelectedStuffRect.Y + arial20.LineSpacing + 20;
+            RequisitionForces = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, btnY - 10), "Requisition..."));
+            SaveDesign  = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, btnY + 30), "Save Design..."));
+            LoadDesign  = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, btnY + 70), "Load Design..."));
+            AutoArrange = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, btnY + 110), "Auto Arrange..."));
+
+            foreach (UIButton b in new[] { RequisitionForces, SaveDesign, LoadDesign, AutoArrange })
+                b.SetAbsSize(180, 33);
 
             RequisitionForces.OnClick = (b) => ScreenManager.AddScreen(new RequisitionScreen(this));
             SaveDesign.OnClick = (b) => ScreenManager.AddScreen(new SaveFleetDesignScreen(this, SelectedFleet));

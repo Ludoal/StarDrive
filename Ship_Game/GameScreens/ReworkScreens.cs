@@ -103,6 +103,25 @@ namespace Ship_Game.GameScreens
         // read off the top bar's own tooltips and each screen's closing key, not guessed
         public static readonly string[] EmpireTabKeys = { "U", "K", "C", "T", "R" };
 
+        // ── Design group ──────────────────────────────────────────────────────────────────────
+        // Ludoal fork: the fourth group - the three screens where a design is built rather than
+        // read. The Shipyard is a workshop rather than a table, so it carries the tab row over
+        // its own layout instead of filling the frame with a list.
+        public static readonly LocalizedText[] DesignTabTitles =
+        {
+            "Fleets", "Shipyard", "Blueprints"
+        };
+
+        public static readonly string[] DesignTabTips =
+        {
+            "Arrange your fleets and save their formations.",
+            "Design a ship: place modules, set its stance and role.",
+            "Colony blueprints: the build order a governor follows.",
+        };
+
+        // read off the top bar's own tooltips, not guessed
+        public static readonly string[] DesignTabKeys = { "J", "Y", "F" };
+
         // Ludoal fork: the reserved first line some tabs carry for their filters and counts - one
         // row of controls, tight. It held 30 for a 20px row.
         public const int GalaxyHeaderH = 26;
@@ -167,6 +186,9 @@ namespace Ship_Game.GameScreens
 
         public static void DrawEmpireTabTip(Submenu tabs, Vector2 cursor)
             => DrawTabTip(tabs, cursor, EmpireTabTips, EmpireTabKeys);
+
+        public static void DrawDesignTabTip(Submenu tabs, Vector2 cursor)
+            => DrawTabTip(tabs, cursor, DesignTabTips, DesignTabKeys);
 
         // Ludoal fork: build a group's tab row on a screen, in one call - all four steps in the
         // order they have to happen. PerformLayout is what makes ClientArea known, and it has to

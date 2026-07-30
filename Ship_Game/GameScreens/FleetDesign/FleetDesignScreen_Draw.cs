@@ -78,11 +78,8 @@ namespace Ship_Game
             if (Universe.IsExiting)
                 return;
 
-            TitleBar.Draw(batch, elapsed);
-            batch.DrawString(Fonts.Laserian14, "Fleet Hotkeys", TitlePos, Colors.Cream);
-
-            ShipDesigns.Draw(batch, elapsed);
-            batch.DrawString(Fonts.Laserian14, "Ship Designs", ShipDesignsTitlePos, Colors.Cream);
+            batch.DrawString(Fonts.Laserian14, "Fleets (with hotkeys):", TitlePos, Colors.Cream);
+            ReworkScreens.DrawDesignTabTip(DesignTabs, Input.CursorPosition);
 
             EmpireUI.Draw(batch);
 

@@ -68,6 +68,11 @@ namespace Ship_Game
                 ObsoleteDesign.Draw(batch);
             }
 
+            // Ludoal fork: the Design group's tab tooltip. No frame fill on this screen - the
+            // starfield IS the workbench's background, so the surround is drawn as an outline
+            // only and the 3D view keeps showing through.
+            ReworkScreens.DrawDesignTabTip(DesignTabs, Input.CursorPosition);
+
             batch.SafeEnd();
             ScreenManager.EndFrameRendering();
         }
@@ -488,10 +493,17 @@ namespace Ship_Game
         // Ludoal fork: the label sits on its OWN dropdown rather than on a screen fraction - the two
         // used to be written separately and drifted apart the moment either moved. Arial12: these
         // are secondary options, not headings.
+        //
+        // To the LEFT of the field and centred on it, so the whole options row reads as one line
+        // with the carrier-only checkbox. The label measures itself, which is what keeps it clear
+        // of the field whatever the string.
+        public const int TitleGap = 6;   // between a dropdown caption and its field
         static void DrawTitle(SpriteBatch batch, in Rectangle dropdown, string title)
         {
-            var pos = new Vector2(dropdown.X, dropdown.Y - Fonts.Arial12Bold.LineSpacing - 2);
-            batch.DrawString(Fonts.Arial12Bold, title, pos, Color.Orange);
+            Graphics.Font font = Fonts.Arial12Bold;
+            var pos = new Vector2(dropdown.X - font.TextWidth(title) - TitleGap,
+                                  dropdown.CenterY() - font.LineSpacing / 2);
+            batch.DrawString(font, title, pos, Color.Orange);
         }
 
         void DrawUi(SpriteBatch batch, DrawTimes elapsed)
