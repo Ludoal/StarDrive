@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using SDUtils;
@@ -16,7 +16,7 @@ public sealed class SaveRaceScreen : GenericLoadSaveScreen
         : base(screen, SLMode.Save, data.Name, "Save Race", "Saved Races", "Saved Race already exists.  Overwrite?")
     {
         Screen = screen;
-        Path = Dir.StarDriveAppData + "/Saved Races/";
+        Path = Dir.StarDriveUserData + "/Saved Races/";
         RaceSave = new(data);
     }
 

@@ -49,7 +49,7 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
 
     void InitPath()
     {
-        Path = Dir.StarDriveAppData + "/Colony Blueprints/" + BlueprintsTemplate.CurrentModName + "/";
+        Path = Dir.StarDriveUserData + "/Colony Blueprints/" + BlueprintsTemplate.CurrentModName + "/";
         if (!Directory.Exists(Path))
             Directory.CreateDirectory(Path);
     }

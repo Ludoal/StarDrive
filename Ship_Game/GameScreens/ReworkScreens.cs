@@ -103,9 +103,9 @@ namespace Ship_Game.GameScreens
         // read off the top bar's own tooltips and each screen's closing key, not guessed
         public static readonly string[] EmpireTabKeys = { "U", "K", "C", "T", "R" };
 
-        // The first line of the Planets tab is reserved for its filters and troop count, so its
-        // table starts lower than the other tabs'. Ludoal fork.
-        public const int GalaxyHeaderH = 30;
+        // Ludoal fork: the reserved first line some tabs carry for their filters and counts - one
+        // row of controls, tight. It held 30 for a 20px row.
+        public const int GalaxyHeaderH = 26;
 
         // Ludoal fork: a table fills its frame, 5px clear all round - the 20px inset these screens
         // used to carry belonged to the brass surround they no longer have. `headerH` is the band
@@ -132,7 +132,8 @@ namespace Ship_Game.GameScreens
             float backR = corner + padR - want;
             float backB = corner + padB - want;
             float top = client.Y + reservedLine;
-            const float columnTitles = 40;
+            // one line of Arial20Bold plus its breathing room; 40 left an obvious gap
+            const float columnTitles = 28;
             return new(client.X - backL, top + columnTitles, client.W + backL + backR,
                        client.Bottom + backB - (top + columnTitles));
         }

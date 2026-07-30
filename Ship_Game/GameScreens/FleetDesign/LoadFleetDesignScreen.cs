@@ -14,7 +14,7 @@ public sealed class LoadFleetDesignScreen : GenericLoadSaveScreen
     public LoadFleetDesignScreen(FleetDesignScreen caller) : base(caller, SLMode.Load, "", "Load Saved Fleet", "Saved Fleets", 40)
     {
         Screen = caller;
-        Path = Dir.StarDriveAppData + "/Fleet Designs/";
+        Path = Dir.StarDriveUserData + "/Fleet Designs/";
     }
 
     protected override void Load()

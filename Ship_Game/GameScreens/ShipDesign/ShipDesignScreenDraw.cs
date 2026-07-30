@@ -486,11 +486,13 @@ namespace Ship_Game
             }
         }
 
-        static void DrawTitle(SpriteBatch batch, float x, string title)
+        // Ludoal fork: the label sits on its OWN dropdown rather than on a screen fraction - the two
+        // used to be written separately and drifted apart the moment either moved. Arial12: these
+        // are secondary options, not headings.
+        static void DrawTitle(SpriteBatch batch, in Rectangle dropdown, string title)
         {
-            int buttonHeight = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Height + 10;
-            var pos = new Vector2(x, buttonHeight);
-            batch.DrawString(Fonts.Arial14Bold, title, pos, Color.Orange);
+            var pos = new Vector2(dropdown.X, dropdown.Y - Fonts.Arial12Bold.LineSpacing - 2);
+            batch.DrawString(Fonts.Arial12Bold, title, pos, Color.Orange);
         }
 
         void DrawUi(SpriteBatch batch, DrawTimes elapsed)
@@ -499,41 +501,39 @@ namespace Ship_Game
             CategoryList.Draw(batch, elapsed);
 
             // TODO: these should be split into separate parts
-            DrawTitle(batch, ScreenWidth * 0.375f, "Repair Options");
-            DrawTitle(batch, ScreenWidth * 0.65f, "Hangar Designation");
+            DrawTitle(batch, new Rectangle((int)CategoryList.X, (int)CategoryList.Y,
+                                          (int)CategoryList.Width, (int)CategoryList.Height), "Repair Options");
+            DrawTitle(batch, new Rectangle((int)HangarOptionsList.X, (int)HangarOptionsList.Y,
+                                          (int)HangarOptionsList.Width, (int)HangarOptionsList.Height), "Hangar Designation");
             HangarOptionsList.Draw(batch, elapsed);
 
             float transitionOffset = (float) Math.Pow(TransitionPosition, 2);
 
-            Rectangle r = BlackBar;
+            // Ludoal fork: the black bottom bar is gone - the starfield runs edge to edge now, and
+            // the design's identity moved to the top. The two plates are drawn in the reworked
+            // screens' grammar (dark fill, brass rule) rather than the flat grey they carried.
+            var plate = new Color(14, 12, 9).Alpha(0.92f);
+            var rule  = new Color(118, 102, 67, 255).Premultiplied();
+
+            Rectangle r = DesignRoleRect;
             if (IsTransitioning)
                 r.Y += (int)(transitionOffset * 50f);
-            batch.FillRectangle(r, Color.Black);
-
-
-            r = BottomSep;
-            if (IsTransitioning)
-                r.Y += (int) (transitionOffset * 50f);
-            batch.FillRectangle(r, new Color(77, 55, 25));
-
+            batch.FillRectangle(r, plate);
+            batch.DrawRectangle(r, rule);
+            var cursor = new Vector2(r.X + 8, r.Y + r.Height / 2 - Fonts.Arial20Bold.LineSpacing / 2);
+            batch.DrawString(Fonts.Arial20Bold, Localizer.GetRole(Role, Player), cursor, Colors.Cream);
 
             r = SearchBar;
             if (IsTransitioning)
                 r.Y += (int)(transitionOffset * 50f);
-            batch.FillRectangle(r, new Color(54, 54, 54));
+            batch.FillRectangle(r, plate);
+            batch.DrawRectangle(r, rule);
 
             string name = DesignOrHullName;
-            Graphics.Font font = Fonts.Arial20Bold.TextWidth(name) <= (SearchBar.Width - 5)
+            Graphics.Font font = Fonts.Arial20Bold.TextWidth(name) <= (SearchBar.Width - 10)
                                ? Fonts.Arial20Bold : Fonts.Arial12Bold;
-            var cursor1 = new Vector2(SearchBar.X + 3, r.Y + 14 - font.LineSpacing / 2);
+            var cursor1 = new Vector2(r.X + 8, r.Y + r.Height / 2 - font.LineSpacing / 2);
             batch.DrawString(font, name, cursor1, ShipSaved || IsEmptyHull ? Color.White : Color.OrangeRed);
-
-            r = new Rectangle(r.X - r.Width - 12, r.Y, r.Width, r.Height);
-            DesignRoleRect = new Rectangle(r.X , r.Y, r.Width, r.Height);
-            batch.FillRectangle(r, new Color(54, 54, 54));
-
-            var cursor = new Vector2(r.X + 3, r.Y + 14 - Fonts.Arial20Bold.LineSpacing / 2);
-            batch.DrawString(Fonts.Arial20Bold, Localizer.GetRole(Role, Player), cursor, Color.White);
         }
     }
 }

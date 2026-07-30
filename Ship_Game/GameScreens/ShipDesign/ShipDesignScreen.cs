@@ -37,6 +37,10 @@ namespace Ship_Game
         public UniverseScreen ParentUniverse;
         public Empire Player => ParentUniverse.Player;
         public DesignStanceButtons OrdersButton;
+        // Ludoal fork: the two rows under the top bar - identity, then options. Held as fields so
+        // the pieces built later in LoadContent land on the same lines rather than recomputing them.
+        int IdentityRowY;
+        int OptionsRowY;
 
         public DesignShip DesignedShip { get; private set; }
         public ShipDesign CurrentDesign; // only Null during first time init, otherwise never Null, even in Hull Editor
@@ -67,8 +71,6 @@ namespace Ship_Game
         UIButton BtnStripShip;       // Removes all modules but armor, shields and command modules
         GenericButton ArcsButton;
         Rectangle SearchBar;
-        Rectangle BottomSep;
-        Rectangle BlackBar;
 
         ShipDesignInfoPanel InfoPanel;
         Submenu InfoSub;
@@ -817,22 +819,36 @@ namespace Ship_Game
             ModuleSelectComponent = Add(new ModuleSelection(this, new(5, modListTop),
                                         new(ModuleSelection.ListWidth, ModuleSelection.ListHeightFor(ScreenHeight, modListTop))));
 
-            BlackBar = new Rectangle(0, ScreenHeight - 70, 3000, 70);
             ClassifCursor = new Vector2(ScreenWidth * .5f,ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Height + 10);
 
-            float ordersBarX = ClassifCursor.X - 15;
-            var ordersBarPos = new Vector2(ordersBarX, ClassifCursor.Y + 20);
-            OrdersButton = new DesignStanceButtons(this, ordersBarPos);
+            // Ludoal fork: two lines under the top bar - the design's IDENTITY first (role, name,
+            // Save As, Test Fight), then everything that CONFIGURES it on one row: stance, repair,
+            // hangar, carrier-only. The stance used to sit above the name; it belongs with the
+            // other settings, not with what the ship is called.
+            IdentityRowY = (int)ClassifCursor.Y + 6;
+            OptionsRowY  = IdentityRowY + 40;
+            OrdersButton = new DesignStanceButtons(this, new Vector2(ClassifCursor.X - 15, OptionsRowY));
             Add(OrdersButton);
 
             if (HullEditMode || EnableDebugFeatures)
                 HullEditor = Add(new HullEditorControls(this, ModuleSelectComponent.TopRight + new Vector2(50, 0)));
 
-            UIList bottomListRight = AddList(new Vector2(ScreenWidth - 250f, ScreenHeight - 50f));
-            bottomListRight.LayoutStyle = ListLayoutStyle.ResizeList;
-            bottomListRight.Direction = new Vector2(-1, 0);
-            bottomListRight.Padding = new Vector2(16f, 2f);
-            BtnSaveAs = bottomListRight.Add(ButtonStyle.Medium, GameText.SaveAs, click: b =>
+            // Ludoal fork: the black bottom bar is gone. Its contents move to where they belong -
+            // the design's identity and the two acts on it at the TOP, its options on the line
+            // under them, and the view toggles at the FOOT between the two Active frames. Nothing
+            // eats the workbench any more, and Toggle Symmetry no longer overlaps the name field.
+            //
+            // Top line: [ role ] [ name ] [ Save As ] [ Test Fight ], centred.
+            const int idH = 26, idGap = 8;
+            int idY = IdentityRowY;
+            var topRow = AddList(new Vector2(ScreenCenter.X + 120, idY));
+            topRow.LayoutStyle = ListLayoutStyle.ResizeList;
+            topRow.Direction = new Vector2(+1, 0);
+            topRow.Padding = new Vector2(idGap, 2f);
+            DesignRoleRect = new Rectangle((int)ScreenCenter.X - 230, idY, 110, idH);
+            SearchBar      = new Rectangle(DesignRoleRect.Right + idGap, idY, 210, idH);
+
+            BtnSaveAs = topRow.Add(ButtonStyle.DanButtonClearBlue, GameText.SaveAs, click: b =>
             {
                 bool isGoodDesign = IsGoodDesign();
                 if (!HullEditMode && !isGoodDesign)
@@ -851,48 +867,9 @@ namespace Ship_Game
             });
             BtnSaveAs.Tooltip = Localizer.Token(GameText.SaveShipDesignDesc);
             BtnSaveAs.Hotkey = InputBindings.FromString("Ctrl+S");
-            bottomListRight.Add(ButtonStyle.Medium, GameText.Load, click: b =>
-            {
-                if (HullEditMode)
-                    ScreenManager.AddScreen(new MessageBoxScreen(this, "Load Design is not available in Hull Edit Mode"));
-                else
-                    ScreenManager.AddScreen(new ShipDesignLoadScreen(this, UnlockAllFactionDesigns));
-            });
-            bottomListRight.Add(ButtonStyle.Medium, GameText.ToggleOverlay, click: b =>
-            {
-                ToggleOverlay = !ToggleOverlay;
-            }).ClickSfx = "blip_click";
-            BtnSymmetricDesign = bottomListRight.Add(ButtonStyle.Medium, Localizer.Token(GameText.SymmetricDesign), click: b =>
-            {
-                OnSymmetricDesignToggle();
-            });
-            BtnSymmetricDesign.ClickSfx = "blip_click";
-            BtnSymmetricDesign.Tooltip = Localizer.Token(GameText.YouCanSwitchFromNormal);
-            BtnSymmetricDesign.Hotkey  = InputBindings.FromString("M");
-            BtnSymmetricDesign.Style   = SymmetricDesignBtnStyle;
-
-
-
-            // Ludoal fork: the "Omit Old Modules" button that used to sit here moved to a
-            // checkbox above the module list. The gap it left is KEPT rather than closed (maintainer feedback)
-            // — the bottom bar is due for its own pass, and letting the remaining buttons slide
-            // left now would just have to be undone then. One button's width plus the padding.
-            const float FreedButtonSpace = 152f;
-            UIList bottomListLeft = AddList(new Vector2(50f + FreedButtonSpace, ScreenHeight - 50f));
-            bottomListLeft.LayoutStyle = ListLayoutStyle.ResizeList;
-            bottomListLeft.Direction = new Vector2(+1, 0);
-            bottomListLeft.Padding = new Vector2(16f, 2f);
-
-            BtnStripShip = bottomListLeft.Add(ButtonStyle.Medium, Localizer.Token(GameText.NormalDesign), click: b =>
-            {
-                OnStripShipToggle();
-            });
-            BtnStripShip.ClickSfx = "blip_click";
-            BtnStripShip.Tooltip = Localizer.Token(GameText.StripsTheShipOfAny);
-
-            // Ludoal fork (battle simulator): test the current design in a 1v1 arena.
-            // Left list: in 1920 the right list overlaps the build number (field report 45.37).
-            var testFight = bottomListLeft.Add(ButtonStyle.Medium, "Test Fight", click: b =>
+            // Ludoal fork: Load is gone - the browser on the right lists every design and loads on
+            // double-click, so a modal picker on top of it was one door too many.
+            var testFight = topRow.Add(ButtonStyle.DanButtonClear, "Test Fight", click: b =>
             {
                 if (HullEditMode)
                     ScreenManager.AddScreen(new MessageBoxScreen(this, "Test Fight is not available in Hull Edit Mode"));
@@ -911,8 +888,33 @@ namespace Ship_Game
             testFight.ClickSfx = "blip_click";
             testFight.Tooltip = "Battle simulator: fight a copy of this design in an arena (prototype)";
 
-            SearchBar = new Rectangle((int)ScreenCenter.X, (int)bottomListRight.Y, 210, 25);
-            BottomSep = new Rectangle(BlackBar.X, BlackBar.Y, BlackBar.Width, 1);
+            // Foot of the screen, centred between the two Active frames: the view toggles.
+            var footRow = AddList(new Vector2(ScreenCenter.X - 260, ScreenHeight - 42f));
+            footRow.LayoutStyle = ListLayoutStyle.ResizeList;
+            footRow.Direction = new Vector2(+1, 0);
+            footRow.Padding = new Vector2(10f, 2f);
+
+            footRow.Add(ButtonStyle.DanButtonClear, GameText.ToggleOverlay, click: b =>
+            {
+                ToggleOverlay = !ToggleOverlay;
+            }).ClickSfx = "blip_click";
+            BtnSymmetricDesign = footRow.Add(ButtonStyle.DanButtonClear, Localizer.Token(GameText.SymmetricDesign), click: b =>
+            {
+                OnSymmetricDesignToggle();
+            });
+            BtnSymmetricDesign.ClickSfx = "blip_click";
+            BtnSymmetricDesign.Tooltip = Localizer.Token(GameText.YouCanSwitchFromNormal);
+            BtnSymmetricDesign.Hotkey  = InputBindings.FromString("M");
+            BtnSymmetricDesign.Style   = SymmetricDesignBtnStyle;
+
+
+
+            BtnStripShip = footRow.Add(ButtonStyle.DanButtonClear, Localizer.Token(GameText.NormalDesign), click: b =>
+            {
+                OnStripShipToggle();
+            });
+            BtnStripShip.ClickSfx = "blip_click";
+            BtnStripShip.Tooltip = Localizer.Token(GameText.StripsTheShipOfAny);
 
             // Ludoal fork (spec v4): the right column is laid out from the LEFT COLUMN, not from
             // its own fractions. The browser ends where the module list ends, the strip sits
@@ -1044,23 +1046,31 @@ namespace Ship_Game
             RefreshHullSelectList();
             hullSelectSub.PerformLayout();
 
-            var dropdownRect = new Rectangle((int)(ScreenWidth * 0.375f), (int)ClassifCursor.Y + 25, 125, 18);
+            // Ludoal fork: the option row sits under the identity line, its two dropdowns pinned to
+            // the LEFT of the module list rather than floating on screen fractions - they slid with
+            // the window while the list they belong beside did not.
+            int optY = OptionsRowY;
+            int optX = (int)ModuleSelectComponent.LocalPos.X + (int)ModuleSelection.ListWidth + 20;
+            var dropdownRect = new Rectangle(optX, optY, 125, 18);
 
             CategoryList = new CategoryDropDown(dropdownRect);
             foreach (ShipCategory item in Enum.GetValues(typeof(ShipCategory)).Cast<ShipCategory>())
                 CategoryList.AddOption(item.ToString(), item);
 
-            var hangarRect = new Rectangle((int)(ScreenWidth * 0.65f), (int)ClassifCursor.Y + 25, 150, 18);
+            var hangarRect = new Rectangle(dropdownRect.Right + 20, optY, 150, 18);
             HangarOptionsList = new HangarDesignationDropDown(hangarRect);
             foreach (HangarOptions item in Enum.GetValues(typeof(HangarOptions)).Cast<HangarOptions>())
                 HangarOptionsList.AddOption(item.ToString(), item);
 
-            var carrierOnlyPos  = new Vector2(dropdownRect.X - 200, dropdownRect.Y);
+            var carrierOnlyPos  = new Vector2(hangarRect.Right + 20, optY);
             CarrierOnlyCheckBox = Checkbox(carrierOnlyPos,
                 () => CurrentDesign?.IsCarrierOnly == true,
                 (b) => { if (CurrentDesign != null) CurrentDesign.IsCarrierOnly = b; }, "Carrier Only", GameText.WhenMarkedThisShipCan);
 
-            ArcsButton = new GenericButton(new Vector2(HullSelectList.X - 32, 97f), "Arcs", Fonts.Pirulen20, Fonts.Pirulen16)
+            // Ludoal fork: down with the other view toggles - it is an overlay switch like Symmetry
+            // and Overlay, and it sat alone at the top for no reason anyone could name.
+            ArcsButton = new GenericButton(new Vector2(ScreenCenter.X + 250, ScreenHeight - 38f),
+                                           "Arcs", Fonts.Pirulen20, Fonts.Pirulen16)
             {
                 ToggleOnColor = Color.DarkOrange,
                 ButtonStyle = GenericButton.Style.Shadow,
@@ -1400,7 +1410,7 @@ namespace Ship_Game
             // in the load popup and got lost when the two lists were merged (maintainer feedback). Read the same
             // way the popup read them, and filed under their own hull like everything else.
             WipDesigns.Clear();
-            foreach (FileInfo info in Dir.GetFiles(Dir.StarDriveAppData + "/WIP", "design"))
+            foreach (FileInfo info in Dir.GetFiles(Dir.StarDriveUserData + "/WIP", "design"))
             {
                 ShipDesign wip = ShipDesign.Parse(info);
                 if (wip == null)

@@ -18,7 +18,7 @@ public sealed class SaveFleetDesignScreen : GenericLoadSaveScreen
         : base(parent, SLMode.Save, fleet.Name, "Save Fleet As...", "Saved Fleets", "Saved Fleet already exists.  Overwrite?", 40)
     {
         Fleet = fleet; // set save file data and starting name
-        Path = Dir.StarDriveAppData + "/Fleet Designs/";
+        Path = Dir.StarDriveUserData + "/Fleet Designs/";
     }
 
     public override void DoSave()

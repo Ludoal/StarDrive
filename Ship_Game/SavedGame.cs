@@ -34,7 +34,7 @@ namespace Ship_Game
         public readonly UniverseState State;
         public FileInfo SaveFile;
 
-        public static string DefaultSaveGameFolder => Dir.StarDriveAppData + "/Saved Games/";
+        public static string DefaultSaveGameFolder => Dir.StarDriveUserData + "/Saved Games/";
 
         public SavedGame(UniverseScreen screen)
         {

@@ -89,7 +89,7 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         static FileInfo[] GetWipFiles()
         {
-            return Dir.GetFiles(Dir.StarDriveAppData + "/WIP/", "design");
+            return Dir.GetFiles(Dir.StarDriveUserData + "/WIP/", "design");
         }
 
         public static Ships.ShipDesign GetLatestWipToLoad(Empire player)

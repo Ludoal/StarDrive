@@ -1070,7 +1070,7 @@ namespace Ship_Game
 
         static void LoadBlueprintsTemplates()
         {
-            foreach (FileInfo info in Dir.GetFiles(Dir.StarDriveAppData + "/Colony Blueprints/" + BlueprintsTemplate.CurrentModName, "yaml"))
+            foreach (FileInfo info in Dir.GetFiles(Dir.StarDriveUserData + "/Colony Blueprints/" + BlueprintsTemplate.CurrentModName, "yaml"))
             {
                 BlueprintsTemplate newBlueprintsTemplate = YamlParser.DeserializeOne<BlueprintsTemplate>(info);
                 if (newBlueprintsTemplate.ModName == BlueprintsTemplate.CurrentModName)
@@ -1858,7 +1858,7 @@ namespace Ship_Game
         {
             var designs = new Map<string, ShipDesignInfo>();
             // saved designs are loaded first, to ensure they don't overwrite mod ShipDesigns
-            CombineOverwrite(designs, Dir.GetFiles(Dir.StarDriveAppData + "/Saved Designs", "design"), readOnly: false, playerDesign: true);
+            CombineOverwrite(designs, Dir.GetFiles(Dir.StarDriveUserData + "/Saved Designs", "design"), readOnly: false, playerDesign: true);
             if (GlobalStats.HasMod && !GlobalStats.Defaults.Mod.UseVanillaShips) // only get mod files
                 CombineOverwrite(designs, Dir.GetFiles(ModContentDirectory + "ShipDesigns", "design"), readOnly: true, playerDesign: false);
             else // first get Vanilla files, then override with ShipDesigns from the mod
@@ -1869,7 +1869,7 @@ namespace Ship_Game
         static Map<string, ShipDesignInfo> GetLegacyShipDesigns()
         {
             var designs = new Map<string, ShipDesignInfo>();
-            CombineOverwrite(designs, Dir.GetFiles(Dir.StarDriveAppData + "/Saved Designs", "xml"), readOnly: false, playerDesign: true);
+            CombineOverwrite(designs, Dir.GetFiles(Dir.StarDriveUserData + "/Saved Designs", "xml"), readOnly: false, playerDesign: true);
             if (GlobalStats.HasMod && !GlobalStats.Defaults.Mod.UseVanillaShips)
             {
                 CombineOverwrite(designs, Dir.GetFiles(ModContentDirectory + "StarterShips", "xml"), readOnly: true, playerDesign: false);

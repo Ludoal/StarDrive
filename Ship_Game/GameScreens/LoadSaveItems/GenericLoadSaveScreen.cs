@@ -246,7 +246,7 @@ namespace Ship_Game
 
             // include the user's colony blueprints for the current mod/BBplus context
             string modScope = BlueprintsTemplate.CurrentModName;
-            string blueprintsSrc = Dir.StarDriveAppData + "/Colony Blueprints/" + modScope;
+            string blueprintsSrc = Dir.StarDriveUserData + "/Colony Blueprints/" + modScope;
             if (Directory.Exists(blueprintsSrc))
             {
                 string blueprintsDest = $"{tmpDir}/blueprints/{modScope}";
