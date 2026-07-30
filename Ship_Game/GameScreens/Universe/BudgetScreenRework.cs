@@ -201,8 +201,8 @@ namespace Ship_Game.GameScreens
                                                     OnEmpireTabChanged, out Rectangle groupFrame);
             RectF client = EmpireTabs.ClientArea;
             float split = client.X + client.W * 2f / 3f;
-            LeftMenu  = new Menu1(client.X, client.Y, split - client.X, client.H);
-            RightMenu = new Menu1(split, client.Y, client.Right - split, client.H);
+            LeftMenu  = new Menu1((int)client.X, (int)client.Y, (int)(split - client.X), (int)client.H);
+            RightMenu = new Menu1((int)split, (int)client.Y, (int)(client.Right - split), (int)client.H);
 
             // the unit note of the money charte, on the reserved first line
             string unitNote = "(all money values are per turn)";
@@ -493,6 +493,23 @@ namespace Ship_Game.GameScreens
                               f < 0f ? Color.Red : Color.Gray;
                 return stringify(f);
             };
+        }
+
+        // Ludoal fork: the other tabs live in their own screen, so leaving Economy hands over to it.
+        // Its own index is a no-op: we are already here.
+        void OnEmpireTabChanged(int index)
+        {
+            if (index == 3)
+                return;
+            ExitScreen();
+            GameAudio.AcceptClick();
+            switch (index)
+            {
+                case 0: ScreenManager.AddScreen(new EmpireManagementScreen(Universe, Universe.EmpireUI)); break;
+                case 1: ScreenManager.AddScreen(new ShipListScreen(Universe, Universe.EmpireUI)); break;
+                case 2: ScreenManager.AddScreen(new TroopListScreen(Universe, Universe.EmpireUI)); break;
+                default: ScreenManager.AddScreen(new ResearchScreenNew(Universe, Universe, Universe.EmpireUI)); break;
+            }
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
