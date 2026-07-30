@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
+using Ship_Game.GameScreens; // ReworkScreens: the group geometry
 using SDGraphics.Input;
 using SDUtils;
 using Ship_Game.Audio;
@@ -32,6 +33,7 @@ namespace Ship_Game
         readonly UILabel AvailableTroops;
         readonly UILabel TroopConsumption;
         private RectF GovernorRect;
+        Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
 
         private readonly Color Cream           = Colors.Cream;
         private readonly Color White           = Color.White;
@@ -48,16 +50,19 @@ namespace Ship_Game
             IsPopup = true;
             eui = empUI;
 
-            var titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            Add(new Menu2(titleRect));
-            Add(new UILabel(titleRect, GameText.EmpireManagement, Fonts.Laserian14, Cream)
-                { TextAlign = TextAlign.Center });
+            // Ludoal fork: the Colonies tab of the Empire group. ⚠ mainBkg is the root of this whole
+            // screen - ERect takes 70% of its height, and the bottom row (planet cartouche, tile
+            // map, governor frame) cascades from ColoniesList.Bottom. Swapping it for the group's
+            // frame keeps that cascade intact because every one of those derives from the list, not
+            // from a constant. The first line inside the frame carries the troop counts.
+            EmpireTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.EmpireTabTitles, 0,
+                                                    OnEmpireTabChanged, out Rectangle frame);
+            RectF client = EmpireTabs.ClientArea;
+            var mainBkg = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
 
-            var mainBkg = new Rectangle(2, titleRect.Bottom + 5, ScreenWidth - 10, ScreenHeight - titleRect.Bottom - 7);
-            Add(new Menu2(mainBkg));
-            Add(new CloseButton(mainBkg.Right - 40, mainBkg.Y + 20));
-
-            ERect = new(mainBkg.X + 20, titleRect.Bottom + 30, ScreenWidth - 40, (0.7f * mainBkg.Height).RoundUpTo(40));
+            float listTop = client.Y + ReworkScreens.GalaxyHeaderH;
+            ERect = new(mainBkg.X + 20, listTop, mainBkg.Width - 40,
+                        (0.7f * (mainBkg.Bottom - listTop)).RoundUpTo(40));
             RectF colonies = new(ERect.X, ERect.Y + 15, ERect.W, ERect.H - 15);
             ColoniesList = Add(new ScrollList<ColoniesListItem>(colonies, 80));
             ColoniesList.OnClick       = OnColonyListItemClicked;
@@ -75,7 +80,10 @@ namespace Ship_Game
 
             var planets = Universe.Player.GetPlanets();
             int sidePanelWidths = (int)(ScreenWidth * 0.3f);
-            GovernorRect = new RectF(ColoniesList.Right - sidePanelWidths - 23, ColoniesList.Bottom - 5, sidePanelWidths, ScreenHeight - ColoniesList.Bottom - 22);
+            // Ludoal fork: its height stops at the FRAME's foot, not the screen's - inside a framed
+            // tab it would otherwise run 10px past the bottom border.
+            GovernorRect = new RectF(ColoniesList.Right - sidePanelWidths - 23, ColoniesList.Bottom - 5,
+                                     sidePanelWidths, client.Bottom - ColoniesList.Bottom - 5);
             // Ludoal fork: guard against an empty colony list — seen live (crash at
             // StarDate 1163: GetPlanets() returned 0 for the player on the UI thread,
             // opened from the Infiltration screen). An empire with no colonies is also
@@ -87,16 +95,35 @@ namespace Ship_Game
             ResetColoniesList(planets);
             int totalTroops = Universe.Player.TotalTroops();
             string troopText = $"Total Troops: {totalTroops}";
-            Vector2 troopPos = new(titleRect.X + titleRect.Width + 17, titleRect.Y + 35);
+            // Ludoal fork: both counts on the reserved first line, side by side - they were stacked
+            // beside the title, which is gone.
+            Vector2 troopPos = new(client.X + 20, client.Y + 4);
             AvailableTroops = Add(new UILabel(troopPos, troopText, LowRes ? Fonts.Arial12Bold : Fonts.Arial20Bold, Color.White));
             if (totalTroops > 0)
             {
                 string consumption = $"Consuming {(totalTroops * Troop.Consumption * (1 + Universe.Player.data.Traits.ConsumptionModifier)).String(1)} " +
                                      $"{Localizer.Token(Universe.Player.IsCybernetic ? GameText.Production : GameText.Food)}";
 
-                Vector2 consumptionPos = new(troopPos.X, troopPos.Y + 25);
+                Vector2 consumptionPos = new(troopPos.X + 260, troopPos.Y + 4);
                 TroopConsumption = Add(new UILabel(consumptionPos, consumption, LowRes ? Fonts.Arial8Bold : Fonts.Arial12Bold,
                     Universe.Player.IsCybernetic ? Color.SandyBrown : Color.LightPink)); // a cost, not a gain - red, not green
+            }
+        }
+
+        // Ludoal fork: the other tabs live in their own screen, so leaving Colonies hands over to
+        // it. Its own index is a no-op: we are already here.
+        void OnEmpireTabChanged(int index)
+        {
+            if (index == 0)
+                return;
+            ExitScreen();
+            GameAudio.AcceptClick();
+            switch (index)
+            {
+                case 1: ScreenManager.AddScreen(new ShipListScreen(Universe, eui)); break;
+                case 2: ScreenManager.AddScreen(new TroopListScreen(Universe, eui)); break;
+                case 3: ScreenManager.AddScreen(ReworkScreens.Economy(Universe)); break;
+                default: ScreenManager.AddScreen(new ResearchScreenNew(Universe, Universe, eui)); break;
             }
         }
 
@@ -104,6 +131,10 @@ namespace Ship_Game
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
+
+            // Ludoal fork: the frame fill FIRST - before base.Draw and before the bottom row this
+            // method paints by hand, or it would cover one of them.
+            batch.FillRectangle(EmpireTabs.ClientArea, ReworkScreens.GroupFrameFill);
 
             base.Draw(batch, elapsed);
             
@@ -113,7 +144,9 @@ namespace Ship_Game
             // cartouche absorbs the rest - one variable block, everything else fixed.
             ColoniesListItem top = ColoniesList.ItemAtTop;
             float blockTop = ERect.Y + ERect.H;
-            float blockH = ScreenHeight - blockTop - 22;
+            // ⚠ off the FRAME's foot, not the screen's: inside a framed tab this row would run past
+            // the bottom border, and the governor frame beside it already stops there.
+            float blockH = GovernorRect.Bottom - blockTop;
             float infoX = ERect.X + 22;
             // This row holds three blocks and they cascade right to left from ONE bound: the
             // governor frame is fixed (placed in the constructor), the map's width follows from
@@ -313,6 +346,7 @@ namespace Ship_Game
 
             batch.DrawRectangle(ColoniesList.ItemsHousing, lineColor); // items housing border
 
+            ReworkScreens.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             eui.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }

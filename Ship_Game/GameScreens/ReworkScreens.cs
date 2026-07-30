@@ -112,16 +112,27 @@ namespace Ship_Game.GameScreens
         // above the table for column titles, plus any reserved first line.
         public static RectF GalaxyTable(in RectF client, float reservedLine = 0)
         {
-            // ⚠ MEASURED, not guessed: NineSliceSprite builds ClientArea by cutting the CORNER
-            // textures off the frame - submenu_corner_TL is 9x9, so the client area already sits
-            // 9px in on every side and 18 off the height. Wanting 5px of visible margin means
-            // coming BACK 4px, not adding any. Two builds went on adding to a margin that was
-            // already there.
-            const float corner = 9, want = 5, back = corner - want;
-            float top = client.Y - back + reservedLine;
+            // ⚠ THREE things inset this table, and I only knew about one for three builds:
+            //   1. NineSliceSprite cuts the CORNER textures off the frame to get ClientArea, and
+            //      submenu_corner_TL is 9x9 - so it already sits 9px in, 18 off the height;
+            //   2. ScrollList then insets ItemsHousing by PaddingLeft 8 / PaddingTop 15 /
+            //      PaddingBot 15 - which is what is actually DRAWN, not the rect we hand it;
+            //   3. whatever we add here.
+            // Hence the 15px at the foot: that is PaddingBot, nothing of ours. We hand the list a
+            // rect that pulls its own padding back out, so the visible margin is the 5px asked for.
+            // ⚠ and the four paddings are NOT equal: PaddingRight is 24 against PaddingLeft's 8,
+            // because it reserves the scrollbar lane. Pulling back symmetrically would leave 21px
+            // on the right - each edge is compensated by its own padding.
+            const float corner = 9, want = 5;
+            const float padL = 8, padR = 24, padT = 15, padB = 15;
+            float backL = corner + padL - want;
+            float backR = corner + padR - want;
+            float backT = corner + padT - want;
+            float backB = corner + padB - want;
+            float top = client.Y - backT + reservedLine;
             const float columnTitles = 40;
-            return new(client.X - back, top + columnTitles, client.W + 2 * back,
-                       client.Bottom + back - (top + columnTitles));
+            return new(client.X - backL, top + columnTitles, client.W + backL + backR,
+                       client.Bottom + backB - (top + columnTitles));
         }
 
         // The tab the cursor is over, or -1. Ludoal fork: Tab.Hover is only set while the Submenu

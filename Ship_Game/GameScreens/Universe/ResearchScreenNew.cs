@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using Ship_Game.Audio;
 using System;
+using Ship_Game.GameScreens;
 using Ship_Game.GameScreens.Universe.Debug;
 using SDGraphics;
 using SDUtils;
@@ -20,7 +21,7 @@ namespace Ship_Game
         readonly Map<string, RootNode> RootNodes = new(StringComparer.OrdinalIgnoreCase);
         public Map<string, TreeNode> SubNodes = new(StringComparer.OrdinalIgnoreCase);
 
-        CloseButton Close;
+        Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, null below 720p
         UIButton Search;
         // Ludoal fork: the slot the Search / Hide Queue pair sits in. The dan_button texture is
         // 182x25 and both are placed off the queue's right edge, so the width is pinned rather
@@ -67,20 +68,24 @@ namespace Ship_Game
             // grids derive from main.Height so they compress on their own; on <=720p
             // a 7-row column would clip (86px per 98px node), so everything stays
             // full-screen there (no bar, no title).
+            // Ludoal fork: the Research tab of the Empire group. ⚠ The <=720p branch is KEPT: the
+            // node grids derive from main.Height and a 7-row column clips there (86px per 98px
+            // node), so that height goes full-screen with no bar and no tabs - which is why this
+            // screen has never broken at a resolution.
             var main = new Rectangle(0, 0, ScreenWidth, ScreenHeight);
             if (ScreenHeight > 720)
             {
-                var titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-                Add(new Menu2(titleRect));
-                string title = Localizer.Token(GameText.Research);
-                var titlePos = new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString(title).X / 2f,
-                                           titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
-                Label(titlePos, title, Fonts.Laserian14, Colors.Cream);
-                main = new Rectangle(0, titleRect.Bottom + 5, ScreenWidth, ScreenHeight - titleRect.Bottom - 7);
+                EmpireTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.EmpireTabTitles, 4,
+                                                        OnEmpireTabChanged, out Rectangle frame);
+                RectF client = EmpireTabs.ClientArea;
+                main = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
             }
             MainMenu = new Menu2(main);
             MainMenuOffset = new Vector2(main.X + 20, main.Y + 30);
-            Close = Add(new CloseButton(main.Right - 40, main.Y + 20));
+            // the group's close cross is added by AddGroupTabs; below 720p there is none, so this
+            // screen keeps its own
+            if (EmpireTabs == null)
+                Add(new CloseButton(main.Right - 40, main.Y + 20));
 
             RootNodes.Clear();
             SubNodes.Clear();
@@ -147,6 +152,23 @@ namespace Ship_Game
             ScreenManager.AddScreen(new SearchTechScreen(this));
         }
 
+        // Ludoal fork: the other tabs live in their own screen, so leaving Research hands over to
+        // it. Its own index is a no-op: we are already here.
+        void OnEmpireTabChanged(int index)
+        {
+            if (index == 4)
+                return;
+            ExitScreen();
+            GameAudio.AcceptClick();
+            switch (index)
+            {
+                case 0: ScreenManager.AddScreen(new EmpireManagementScreen(Universe, empireUI)); break;
+                case 1: ScreenManager.AddScreen(new ShipListScreen(Universe, empireUI)); break;
+                case 2: ScreenManager.AddScreen(new TroopListScreen(Universe, empireUI)); break;
+                default: ScreenManager.AddScreen(ReworkScreens.Economy(Universe)); break;
+            }
+        }
+
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
@@ -174,6 +196,8 @@ namespace Ship_Game
 
             batch.SafeBegin();
             base.Draw(batch, elapsed);
+            if (EmpireTabs != null)
+                ReworkScreens.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             if (ScreenHeight > 720)
                 empireUI.Draw(batch); // Ludoal fork: live top bar (paused indicator included)
             batch.SafeEnd();
