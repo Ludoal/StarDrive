@@ -123,13 +123,15 @@ namespace Ship_Game.GameScreens
             // ⚠ and the four paddings are NOT equal: PaddingRight is 24 against PaddingLeft's 8,
             // because it reserves the scrollbar lane. Pulling back symmetrically would leave 21px
             // on the right - each edge is compensated by its own padding.
+            // ⚠ HORIZONTALLY only. PaddingTop/PaddingBot inset the LIST, but the column titles are
+            // drawn ABOVE the list rect and never saw that padding - pulling back vertically as
+            // well lifted them 19px into the tab row. The top keeps the client area as it is.
             const float corner = 9, want = 5;
-            const float padL = 8, padR = 24, padT = 15, padB = 15;
+            const float padL = 8, padR = 24, padB = 15;
             float backL = corner + padL - want;
             float backR = corner + padR - want;
-            float backT = corner + padT - want;
             float backB = corner + padB - want;
-            float top = client.Y - backT + reservedLine;
+            float top = client.Y + reservedLine;
             const float columnTitles = 40;
             return new(client.X - backL, top + columnTitles, client.W + backL + backR,
                        client.Bottom + backB - (top + columnTitles));

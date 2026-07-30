@@ -69,12 +69,11 @@ namespace Ship_Game
             int h = (int)Height;
             RemoveAll();
 
-            // Ludoal fork: the NewUI dan_button family, as elsewhere in the reworked screens. The
-            // red variant keeps what the old styles carried by contrast - a hostile target.
-            // red once it cancels rather than orders: the button undoes something now
+            // Ludoal fork: the NewUI dan_button family. Blue to ORDER a colonisation, red to cancel
+            // one, plain for Send and Recall Troops - the convention reads action / undo / neutral.
             LocalizedText colonizeText = !MarkedForColonization ? GameText.Colonize : GameText.CancelColonize;
             ButtonStyle colonizeStyle  = MarkedForColonization ? ButtonStyle.DanButtonClearRed
-                                                               : ButtonStyle.DanButtonClear;
+                                                               : ButtonStyle.DanButtonClearBlue;
             Colonize   = Button(colonizeStyle, colonizeText, OnColonizeClicked);
             SendTroops = Button(ButtonStyle.DanButtonClear, "Send Troops", OnSendTroopsClicked);
             SendTroops.Tooltip = GameText.SendAvailableTroopsToThis;
@@ -102,10 +101,9 @@ namespace Ship_Game
             PlanetNameEntry.Text = Planet.Name;
             PlanetNameEntry.SetPos(ShipIconRect.Right + 10, y);
             
-            // Ludoal fork: the three order buttons keep the 168x24 slot they have always been laid
-            // out on, whatever texture the style carries - the dan_button family is 182 wide and
-            // three of those would run past the row. The name is spelled out rather than read off
-            // a texture that is no longer the one drawn.
+            // Ludoal fork: a pinned slot rather than the texture's own size - the dan_button family
+            // is 182 wide and three of those would run past the row. UIButton stretches to the rect
+            // it is given, so the width is spelled out here.
             const int btnW = 140, btnH = 24, btnGap = 6;
             Colonize.Rect      = new Rectangle(OrdersRect.X + 10, OrdersRect.Y + OrdersRect.Height / 2 - btnH / 2, btnW, btnH);
             SendTroops.Rect    = new RectF(Colonize.Right + btnGap, Colonize.Y, btnW, btnH);
@@ -458,7 +456,7 @@ namespace Ship_Game
             Planet.Universe.Player.AI.CancelColonization(Planet);
             MarkedForColonization = false;
             Colonize.Text  = "Colonize";
-            Colonize.Style = ButtonStyle.DanButtonClear;
+            Colonize.Style = ButtonStyle.DanButtonClearBlue;
         }
     }
 }

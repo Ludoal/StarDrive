@@ -60,9 +60,11 @@ namespace Ship_Game
             RectF client = EmpireTabs.ClientArea;
             var mainBkg = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
 
-            float listTop = client.Y + ReworkScreens.GalaxyHeaderH;
-            ERect = new(mainBkg.X + 20, listTop, mainBkg.Width - 40,
-                        (0.7f * (mainBkg.Bottom - listTop)).RoundUpTo(40));
+            // Ludoal fork: full width like the other tabs' tables - the +20/-40 inset came from the
+            // brass surround this no longer has. GalaxyTable gives the row its horizontal pull-back
+            // and the column titles' band; the height stays 70% of what is left, as before.
+            RectF full = ReworkScreens.GalaxyTable(client, ReworkScreens.GalaxyHeaderH);
+            ERect = new(full.X, full.Y, full.W, (0.7f * full.H).RoundUpTo(40));
             RectF colonies = new(ERect.X, ERect.Y + 15, ERect.W, ERect.H - 15);
             ColoniesList = Add(new ScrollList<ColoniesListItem>(colonies, 80));
             ColoniesList.OnClick       = OnColonyListItemClicked;

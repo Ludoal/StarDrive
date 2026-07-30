@@ -26,7 +26,11 @@ namespace Ship_Game
         // Ludoal fork: the slot the Search / Hide Queue pair sits in. The dan_button texture is
         // 182x25 and both are placed off the queue's right edge, so the width is pinned rather
         // than taken from the texture - UIButton stretches to whatever rect it is given.
-        public const int ResearchButtonW = 168;
+        public const int ResearchButtonW = 150;
+        // where the Search / Hide Queue pair sits, shared with ResearchQueueUIComponent so the two
+        // buttons cannot drift apart. Ludoal fork.
+        public float ResearchButtonY;
+        public float ResearchButtonsRight;
         public const int ResearchButtonH = 24;
         Menu2 MainMenu;
         public EmpireUIOverlay empireUI;
@@ -121,13 +125,17 @@ namespace Ship_Game
 
             // Create queue once all techs are populated
             var queue = new Rectangle(main.X + main.Width - 355, main.Y + 40, 330, main.Height - 100);
+            // Ludoal fork: both buttons hang off the QUEUE rect, one on each of its edges, so they
+            // are level and evenly spaced - Search used to measure from main.Width and Hide Queue
+            // from the container, which is why they never lined up. The blue dan_button is the new
+            // look's "active" colour; the width is pinned since UIButton stretches to its rect.
+            // ⚠ set BEFORE the queue component is built: it reads them in its own constructor.
+            ResearchButtonY = queue.Bottom + 8;
+            ResearchButtonsRight = queue.Right;
             Queue = Add(new ResearchQueueUIComponent(this, queue));
-            Vector2 searchPos = new(main.X + main.Width - 360, main.Bottom - 55); // Ludoal fork: main.Height was used as a Y coordinate
-            // Ludoal fork: the blue dan_button, the new look's "active" colour, at the same 168px
-            // slot the old style occupied - the texture is 182 wide and the pair sits tight against
-            // the queue's right edge.
-            Search = Add(new UIButton(ButtonStyle.DanButtonClearBlue, searchPos, "Search"));
-            Search.Rect = new RectF(searchPos.X, searchPos.Y, ResearchButtonW, ResearchButtonH);
+            Search = Add(new UIButton(ButtonStyle.DanButtonClearBlue,
+                                      new Vector2(queue.X, ResearchButtonY), "Search"));
+            Search.Rect = new RectF(queue.X, ResearchButtonY, ResearchButtonW, ResearchButtonH);
             Search.OnClick = OnSearchButtonClicked;
 
             DebugUnlocks = Add(new ResearchDebugUnlocks(Universe, () =>
@@ -175,7 +183,10 @@ namespace Ship_Game
 
             batch.SafeBegin();
             batch.FillRectangle(new Rectangle(0, 0, ScreenWidth, ScreenHeight), Color.Black);
-            MainMenu.Draw(batch, elapsed);
+            // Ludoal fork: the brass surround only below 720p, where there is no tab frame to be
+            // the delimiter. Above it, the group's frame is the border and this would double it.
+            if (EmpireTabs == null)
+                MainMenu.Draw(batch, elapsed);
             batch.SafeEnd();
 
             batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:false, saveState:false, camera.Transform);
