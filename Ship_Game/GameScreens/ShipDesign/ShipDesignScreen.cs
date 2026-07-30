@@ -69,7 +69,8 @@ namespace Ship_Game
         UIButton BtnSaveAs;
         UIButton BtnSymmetricDesign; // Symmetric Module Placement Feature by Fat Bastard
         UIButton BtnStripShip;       // Removes all modules but armor, shields and command modules
-        GenericButton ArcsButton;
+        UIButton BtnToggleOverlay;
+        UIButton BtnArcs;            // weapon fire arcs overlay
         Rectangle SearchBar;
 
         ShipDesignInfoPanel InfoPanel;
@@ -93,6 +94,8 @@ namespace Ship_Game
         public IShipDesign ComparedDesign; // shift-clicked design, pinned for comparison
         UITextEntry BrowserFilter;         // Ludoal fork: the load popup's filters, rehoused
         string BrowserFilterText;
+        UITextEntry ModuleFilter;          // Ludoal fork: same field, over the module list
+        public string ModuleSearchText { get; private set; }
         // Ludoal fork: the browser's view toggles outlive the screen, which is rebuilt on every
         // open, and last as long as the game runs. They stay out of the config: they are ways of
         // looking at the list, not preferences.
@@ -123,6 +126,7 @@ namespace Ship_Game
         // own scroll, filter and selection to keep in step (maintainer feedback).
         static bool GroupByRole; // Ludoal fork: browser grouping tab, kept for the session
         const string DefaultBrowserFilter = "filter by name or hull...";
+        const string DefaultModuleFilter = "filter modules...";
         // Ludoal fork (spec v4): the flying hover overlay gave way to the Hover cartouche.
         // The overlay component itself lives on: the load and save popups still use it, as do
         // seven other screens. It is only this screen that no longer has a use for it.
@@ -805,7 +809,9 @@ namespace Ship_Game
             UpdateDesignedShip(forceUpdate:true);
         }
 
-        ButtonStyle SymmetricDesignBtnStyle  => IsSymmetricDesignMode ? ButtonStyle.Military : ButtonStyle.BigDip;
+        // the two view toggles that carry a state read red while ON, blue while OFF
+        ButtonStyle SymmetricDesignBtnStyle  => IsSymmetricDesignMode ? ButtonStyle.DanButtonClearRed : ButtonStyle.DanButtonClearBlue;
+        ButtonStyle ArcsBtnStyle             => ShowAllArcs ? ButtonStyle.DanButtonClearRed : ButtonStyle.DanButtonClearBlue;
 
         void CreateGUI()
         {
@@ -815,40 +821,50 @@ namespace Ship_Game
             // of stopping at an arbitrary 45% of the screen, which left a gap of dead starfield
             // between them. ModuleSelection owns that arithmetic — one place decides where the
             // list ends and the frame begins, so the two can never drift apart.
-            float modListTop = LowRes ? 45 : 100;
+            ClassifCursor = new Vector2(ScreenWidth * .5f,ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Height + 10);
+
+            // The two centre rows: the design's IDENTITY (role, name, Save, Test Fight), then
+            // everything that CONFIGURES it (stance, repair, hangar, carrier-only). Posed here,
+            // before anything reads them, because the lists and their filter rows derive from
+            // these two numbers - written once so they cannot drift apart.
+            //
+            // 52 rather than a tighter gap: the two dropdowns carry their caption ABOVE
+            // themselves (Arial12Bold + 2), so the row needs a line of clearance.
+            IdentityRowY = (int)ClassifCursor.Y + 6;
+            OptionsRowY  = IdentityRowY + 52;
+
+            // The lists start under the options row, leaving one line for the search field that
+            // sits above each of them; the toggles that filter them ride the identity row.
+            float modListTop = LowRes ? 45 : OptionsRowY + 26;
             ModuleSelectComponent = Add(new ModuleSelection(this, new(5, modListTop),
                                         new(ModuleSelection.ListWidth, ModuleSelection.ListHeightFor(ScreenHeight, modListTop))));
 
-            ClassifCursor = new Vector2(ScreenWidth * .5f,ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Height + 10);
-
-            // Ludoal fork: two lines under the top bar - the design's IDENTITY first (role, name,
-            // Save As, Test Fight), then everything that CONFIGURES it on one row: stance, repair,
-            // hangar, carrier-only. The stance used to sit above the name; it belongs with the
-            // other settings, not with what the ship is called.
-            IdentityRowY = (int)ClassifCursor.Y + 6;
-            OptionsRowY  = IdentityRowY + 40;
-            OrdersButton = new DesignStanceButtons(this, new Vector2(ClassifCursor.X - 15, OptionsRowY));
-            Add(OrdersButton);
+            // Both centre rows are centred on the same arithmetic: a total width built from the
+            // parts, halved off ScreenCenter. The stance block is 7 icons wide and two rows tall
+            // (StanceButtons lays them 25px apart, then wraps back 3 columns), so it measures
+            // 175x50, and its topLeft is what the rest of the options row aligns its top to.
+            const int stanceCols = 7, stanceIcon = 25;
+            const int stanceW = stanceCols * stanceIcon;   // 175
 
             if (HullEditMode || EnableDebugFeatures)
                 HullEditor = Add(new HullEditorControls(this, ModuleSelectComponent.TopRight + new Vector2(50, 0)));
 
-            // Ludoal fork: the black bottom bar is gone. Its contents move to where they belong -
-            // the design's identity and the two acts on it at the TOP, its options on the line
-            // under them, and the view toggles at the FOOT between the two Active frames. Nothing
-            // eats the workbench any more, and Toggle Symmetry no longer overlaps the name field.
-            //
-            // Top line: [ role ] [ name ] [ Save As ] [ Test Fight ], centred.
+            // Top line: [ role ] [ name ] [ Save ] [ Test Fight ], centred as one block.
             const int idH = 26, idGap = 8;
+            const int roleW = 110, nameW = 210, idBtnW = 120;
+            const int idRowW = roleW + nameW + 2 * idBtnW + 3 * idGap;
             int idY = IdentityRowY;
-            var topRow = AddList(new Vector2(ScreenCenter.X + 120, idY));
+            int idLeft = (int)ScreenCenter.X - idRowW / 2;
+
+            DesignRoleRect = new Rectangle(idLeft, idY, roleW, idH);
+            SearchBar      = new Rectangle(DesignRoleRect.Right + idGap, idY, nameW, idH);
+
+            var topRow = AddList(new Vector2(SearchBar.Right + idGap, idY));
             topRow.LayoutStyle = ListLayoutStyle.ResizeList;
             topRow.Direction = new Vector2(+1, 0);
             topRow.Padding = new Vector2(idGap, 2f);
-            DesignRoleRect = new Rectangle((int)ScreenCenter.X - 230, idY, 110, idH);
-            SearchBar      = new Rectangle(DesignRoleRect.Right + idGap, idY, 210, idH);
 
-            BtnSaveAs = topRow.Add(ButtonStyle.DanButtonClearBlue, GameText.SaveAs, click: b =>
+            BtnSaveAs = topRow.Add(ButtonStyle.DanButtonClearRed, GameText.SaveAs, click: b =>
             {
                 bool isGoodDesign = IsGoodDesign();
                 if (!HullEditMode && !isGoodDesign)
@@ -888,17 +904,25 @@ namespace Ship_Game
             testFight.ClickSfx = "blip_click";
             testFight.Tooltip = "Battle simulator: fight a copy of this design in an arena (prototype)";
 
-            // Foot of the screen, centred between the two Active frames: the view toggles.
-            var footRow = AddList(new Vector2(ScreenCenter.X - 260, ScreenHeight - 42f));
+            BtnSaveAs.SetAbsSize(idBtnW, idH);
+            testFight.SetAbsSize(idBtnW, idH);
+            topRow.PerformLayout();
+
+            // The view toggles, centred and sitting on the same foot line as the four frames.
+            // FramesBottom is the single source for that line - the module frames, the cartouche
+            // and this row all read it, so nothing has to agree with a second arithmetic.
+            const int footBtnW = 130, footBtnH = 26, footGap = 8;
+            const int footCount = 4;
+            float footY = ModuleSelection.FramesBottom(ScreenHeight) - footBtnH;
+            float footW = footCount * footBtnW + (footCount - 1) * footGap;
+            var footRow = AddList(new Vector2(ScreenCenter.X - footW * 0.5f, footY));
             footRow.LayoutStyle = ListLayoutStyle.ResizeList;
             footRow.Direction = new Vector2(+1, 0);
-            footRow.Padding = new Vector2(10f, 2f);
+            footRow.Padding = new Vector2(footGap, 2f);
 
-            footRow.Add(ButtonStyle.DanButtonClear, GameText.ToggleOverlay, click: b =>
-            {
-                ToggleOverlay = !ToggleOverlay;
-            }).ClickSfx = "blip_click";
-            BtnSymmetricDesign = footRow.Add(ButtonStyle.DanButtonClear, Localizer.Token(GameText.SymmetricDesign), click: b =>
+            // Ordered by what they act on: the two that carry a state and shape how a MODULE is
+            // placed or drawn come first, then the two that act on the DESIGN as a whole.
+            BtnSymmetricDesign = footRow.Add(ButtonStyle.DanButtonClearBlue, Localizer.Token(GameText.SymmetricDesign), click: b =>
             {
                 OnSymmetricDesignToggle();
             });
@@ -907,14 +931,33 @@ namespace Ship_Game
             BtnSymmetricDesign.Hotkey  = InputBindings.FromString("M");
             BtnSymmetricDesign.Style   = SymmetricDesignBtnStyle;
 
+            BtnArcs = footRow.Add(ButtonStyle.DanButtonClearBlue, "Arcs", click: b =>
+            {
+                ShowAllArcs = !ShowAllArcs;
+                BtnArcs.Style = ArcsBtnStyle;
+            });
+            BtnArcs.ClickSfx = "blip_click";
+            BtnArcs.Tooltip  = Localizer.Token(GameText.TogglesTheWeaponFireArc);
+            BtnArcs.Hotkey   = InputBindings.FromString("Tab");
+            BtnArcs.Style    = ArcsBtnStyle;
 
-
-            BtnStripShip = footRow.Add(ButtonStyle.DanButtonClear, Localizer.Token(GameText.NormalDesign), click: b =>
+            BtnStripShip = footRow.Add(ButtonStyle.DanButtonClearBlue, Localizer.Token(GameText.NormalDesign), click: b =>
             {
                 OnStripShipToggle();
             });
             BtnStripShip.ClickSfx = "blip_click";
             BtnStripShip.Tooltip = Localizer.Token(GameText.StripsTheShipOfAny);
+
+            BtnToggleOverlay = footRow.Add(ButtonStyle.DanButtonClearBlue, GameText.ToggleOverlay, click: b =>
+            {
+                ToggleOverlay = !ToggleOverlay;
+            });
+            BtnToggleOverlay.ClickSfx = "blip_click";
+
+            // narrower than the default Dan button, so the four fit the gap between the frames
+            foreach (UIButton b in new[] { BtnSymmetricDesign, BtnArcs, BtnStripShip, BtnToggleOverlay })
+                b.SetAbsSize(footBtnW, footBtnH);
+            footRow.PerformLayout();
 
             // Ludoal fork (spec v4): the right column is laid out from the LEFT COLUMN, not from
             // its own fractions. The browser ends where the module list ends, the strip sits
@@ -922,6 +965,9 @@ namespace Ship_Game
             // the two columns read as one row whatever the window size.
             // the filter row lives in the band ABOVE the browser frame, so the frame starts lower
             float filterTop   = ModuleSelectComponent.LocalPos.Y;
+            // the search line: one row of text sitting in the band between the options row and
+            // the top of the two lists, so both fields land on it without a second arithmetic
+            float searchY     = filterTop - 22f;
             float colTop      = filterTop + 52f;
             // the same foot line the module frames land on, so the four read as one row
             float colBottom   = ModuleSelection.FramesBottom(ScreenHeight);
@@ -957,7 +1003,9 @@ namespace Ship_Game
             // filter row sits above that frame and must move with it (it kept the old flush
             // origin when the column gained its right margin)
             float filterX = hullSelectPos.X;
-            BrowserFilter = Add(new UITextEntry(filterX + 4, filterTop, hullSelSize.X - 8,
+            // the search field sits UNDER the toggles, directly above the list it filters; the
+            // toggles ride the identity row instead (see below)
+            BrowserFilter = Add(new UITextEntry(filterX + 4, searchY, hullSelSize.X - 8,
                                                 Fonts.Arial12Bold, DefaultBrowserFilter));
             BrowserFilter.AutoCaptureOnKeys = true;
             BrowserFilter.AutoCaptureLoseFocusTime = 0.5f;
@@ -986,26 +1034,44 @@ namespace Ship_Game
             // from the list it filters (maintainer feedback) — a first taste of the wider UI pass to come.
             // 26px ABOVE the list, not below its top edge: filterTop IS the list's own top, so
             // +26 put the checkbox inside the list, which drew straight over it (bench 46.172).
-            Checkbox(new Vector2(11, filterTop - 26),
+            Checkbox(new Vector2(11, IdentityRowY),
                      () => IsFilterOldModulesMode,
                      (b) => { IsFilterOldModulesMode = b; ModuleSelectComponent.ResetActiveCategory(); },
                      "Hide obsolete", GameText.WhenToggledRedAnyModule);
+
+            // The module list gets the same search field the browser has, on the line just above
+            // it. Typing filters across every category, so a module can be found without knowing
+            // which of the four tabs holds it.
+            ModuleFilter = Add(new UITextEntry(9, searchY, ModuleSelection.ListWidth - 8,
+                                               Fonts.Arial12Bold, DefaultModuleFilter));
+            ModuleFilter.AutoCaptureOnKeys = true;
+            ModuleFilter.AutoCaptureLoseFocusTime = 0.5f;
+            ModuleFilter.DrawUnderline = true;
+            ModuleFilter.Color = Colors.Cream;
+            ModuleFilter.AutoClearTextOnInputCapture = true;
+            ModuleFilter.OnTextChanged = (text) =>
+            {
+                ModuleSearchText = (text == DefaultModuleFilter) ? null : text?.ToLower();
+                ModuleSelectComponent.ResetActiveCategory();
+            };
 
             // Ludoal fork (bench 46.172): the row is right-aligned on the frame's own right
             // edge with a 5px margin, rather than pushed left by a guessed amount (maintainer feedback).
             const float togglesWidth = 246f + 108f;   // three checkboxes, last one included
             float row3 = hullSelSize.X - togglesWidth - 5f;
-            Checkbox(new Vector2(filterX + row3 + 6, filterTop + 26),
+            // on the identity row, so the band above the browser costs one line instead of two
+            float togglesY = IdentityRowY;
+            Checkbox(new Vector2(filterX + row3 + 6, togglesY),
                      () => !Player.Universe.P.ShowAllDesigns,
                      (b) => { Player.Universe.P.ShowAllDesigns = !b; RefreshHullSelectList(); },
                      "My designs only", "Show only the designs you created");
 
-            Checkbox(new Vector2(filterX + row3 + 132, filterTop + 26),
+            Checkbox(new Vector2(filterX + row3 + 132, togglesY),
                      () => ShowLockedDesigns,
                      (b) => { ShowLockedDesigns = b; RefreshHullSelectList(); },
                      "Show locked", GameText.ShowEmpireLockedDesignsTip);
 
-            Checkbox(new Vector2(filterX + row3 + 246, filterTop + 26),
+            Checkbox(new Vector2(filterX + row3 + 246, togglesY),
                      () => HideObsoleteDesigns,
                      (b) => { HideObsoleteDesigns = b; RefreshHullSelectList(); },
                      "Hide obsolete", "Hide the designs you have marked obsolete");
@@ -1046,35 +1112,34 @@ namespace Ship_Game
             RefreshHullSelectList();
             hullSelectSub.PerformLayout();
 
-            // Ludoal fork: the option row sits under the identity line, its two dropdowns pinned to
-            // the LEFT of the module list rather than floating on screen fractions - they slid with
-            // the window while the list they belong beside did not.
+            // The option row, centred like the identity line above it: the two dropdowns, the
+            // carrier-only box and the stance block form one row whose total width is built from
+            // the parts. Everything on it aligns its TOP with the stance block's top, which is
+            // why the row's Y is the stance topLeft and not a font baseline.
+            const int ddW = 125, ddHangarW = 150, ddH = 18, optGap = 20, carrierW = 110;
+            const int optRowW = ddW + ddHangarW + carrierW + stanceW + 3 * optGap;
             int optY = OptionsRowY;
-            int optX = (int)ModuleSelectComponent.LocalPos.X + (int)ModuleSelection.ListWidth + 20;
-            var dropdownRect = new Rectangle(optX, optY, 125, 18);
+            int optX = (int)ScreenCenter.X - optRowW / 2;
+            var dropdownRect = new Rectangle(optX, optY, ddW, ddH);
 
             CategoryList = new CategoryDropDown(dropdownRect);
             foreach (ShipCategory item in Enum.GetValues(typeof(ShipCategory)).Cast<ShipCategory>())
                 CategoryList.AddOption(item.ToString(), item);
 
-            var hangarRect = new Rectangle(dropdownRect.Right + 20, optY, 150, 18);
+            var hangarRect = new Rectangle(dropdownRect.Right + optGap, optY, ddHangarW, ddH);
             HangarOptionsList = new HangarDesignationDropDown(hangarRect);
             foreach (HangarOptions item in Enum.GetValues(typeof(HangarOptions)).Cast<HangarOptions>())
                 HangarOptionsList.AddOption(item.ToString(), item);
 
-            var carrierOnlyPos  = new Vector2(hangarRect.Right + 20, optY);
+            var carrierOnlyPos  = new Vector2(hangarRect.Right + optGap, optY);
             CarrierOnlyCheckBox = Checkbox(carrierOnlyPos,
                 () => CurrentDesign?.IsCarrierOnly == true,
                 (b) => { if (CurrentDesign != null) CurrentDesign.IsCarrierOnly = b; }, "Carrier Only", GameText.WhenMarkedThisShipCan);
 
-            // Ludoal fork: down with the other view toggles - it is an overlay switch like Symmetry
-            // and Overlay, and it sat alone at the top for no reason anyone could name.
-            ArcsButton = new GenericButton(new Vector2(ScreenCenter.X + 250, ScreenHeight - 38f),
-                                           "Arcs", Fonts.Pirulen20, Fonts.Pirulen16)
-            {
-                ToggleOnColor = Color.DarkOrange,
-                ButtonStyle = GenericButton.Style.Shadow,
-            };
+            // last on the row, its top on the same line as the dropdowns
+            OrdersButton = new DesignStanceButtons(this,
+                new Vector2(carrierOnlyPos.X + carrierW + optGap, optY));
+            Add(OrdersButton);
 
             // DESIGN ISSUES sits UNDER the cartouche (maintainer feedback) instead of in a narrow 200px
             // column to its left, so its text gets the full width. Both boxes use the bottom-up

@@ -195,20 +195,12 @@ namespace Ship_Game
 
             HandleInputZoom(input);
 
-            if (ArcsButton.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.TogglesTheWeaponFireArc, "Tab");
-
-            if (ArcsButton.HandleInput(input))
-            {
-                ArcsButton.ToggleOn = !ArcsButton.ToggleOn;
-                ShowAllArcs = ArcsButton.ToggleOn;
-                return true;
-            }
-
+            // Arcs is a UIButton in the foot row now; base.HandleInput above serves its click
+            // and its Tab hotkey. Only the style has to follow the state.
             if (input.Tab && !input.IsAltKeyDown)
             {
                 ShowAllArcs = !ShowAllArcs;
-                ArcsButton.ToggleOn = ShowAllArcs;
+                BtnArcs.Style = ArcsBtnStyle;
                 return true;
             }
 

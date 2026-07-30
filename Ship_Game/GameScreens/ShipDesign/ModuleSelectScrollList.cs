@@ -53,10 +53,23 @@ namespace Ship_Game
 
         bool ShouldBeFiltered(ShipModule m)
         {
-            return CanNeverFitModuleGrid(m) 
+            return CanNeverFitModuleGrid(m)
                 || m.IsObsolete(Player) && Screen.IsFilterOldModulesMode
                 || m.IsMiningBay && Player.Universe.P.DisableMiningOps
-                || m.ResearchPerTurn > 0 && Player.Universe.P.DisableResearchStations;
+                || m.ResearchPerTurn > 0 && Player.Universe.P.DisableResearchStations
+                || !MatchesSearch(m);
+        }
+
+        // Ludoal fork: the search field above the list. Every module reaches the list through
+        // ShouldBeFiltered, so the text filter costs one clause here rather than a pass over
+        // each of the four category builders.
+        bool MatchesSearch(ShipModule m)
+        {
+            string search = Screen.ModuleSearchText;
+            if (search.IsEmpty())
+                return true;
+            return m.NameText.Text.ToLower().Contains(search)
+                || m.UID.ToLower().Contains(search);
         }
 
         readonly Map<int, ModuleSelectListItem> Categories = new Map<int, ModuleSelectListItem>();
@@ -104,6 +117,12 @@ namespace Ship_Game
                 case 2: AddDefenseCategories(); break;
                 case 3: AddSpecialCategories(); break;
             }
+
+            // A search only shows what survives the filter, so every surviving group is opened:
+            // left collapsed, a match in a group other than the first would read as "not found".
+            if (Screen.ModuleSearchText.NotEmpty())
+                foreach (ModuleSelectListItem e in Categories.Values)
+                    e.Expand(true);
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
