@@ -119,7 +119,9 @@ namespace Ship_Game.GameScreens
         // through them - plainly on Relationships, which has no columns of its own to cover it.
         // Dark and mostly opaque: enough that the panel reads as a panel, little enough that the
         // map is still felt behind it.
-        public static readonly Color GroupFrameFill = new Color(14, 12, 9, 235);
+        // ⚠ Alpha() and not a fourth constructor argument: the repo's own SD0001 analyzer rejects
+        // that - an alpha under 255 renders additive-bright under premultiplied AlphaBlend.
+        public static readonly Color GroupFrameFill = new Color(14, 12, 9).Alpha(0.92f);
 
         public static GameScreen Economy(UniverseScreen u)
             => GlobalStats.ReworkEconomy ? new BudgetScreenRework(u) : new BudgetScreen(u);
