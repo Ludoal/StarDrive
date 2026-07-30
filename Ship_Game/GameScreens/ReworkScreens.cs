@@ -41,10 +41,13 @@ namespace Ship_Game.GameScreens
         // Ludoal fork: the group's shared geometry, in one place - three screens build the same
         // frame and tab row, and a value copied three times is a value that will drift.
         //
-        // TabRowY: the top bar draws Help and the speed buttons at Y=64 on a 24px texture, so their
-        // bottom edge is 88. The frame opens 10px under that. They move into the unified bar later,
-        // at which point this can rise.
-        public const int TabRowY = 64 + 24 + 10;
+        // TabRowY is the top of the Submenu RECT, whose first row is the tab strip - the frame
+        // itself opens one tab row lower. The top bar draws Help and the speed buttons at Y=64 on a
+        // 24px texture, so their bottom edge is 88, and the FRAME is wanted 10px under that: the
+        // rect starts a tab row above, at 98 - 25. They move into the unified bar later, at which
+        // point this can rise.
+        const int TabStripH = 25; // Submenu.TabHeight, which is private
+        public const int TabRowY = 64 + 24 + 10 - TabStripH;
         public const int FrameMargin = 10;   // clear of every screen edge
         public const int ColumnGutter = 5;   // inside the frame, left and right of the columns
         public const int ColumnGap = 5;      // between two columns
@@ -132,9 +135,11 @@ namespace Ship_Game.GameScreens
         public static Vector2 GroupClosePos(in RectF client)
             => new(client.Right - CloseSize - ClosePadding + CloseRightTrim, client.Y + ClosePadding);
 
-        // The vertical span of a column inside the frame, 5px clear top and bottom.
+        // The vertical span of a column inside the frame. ⚠ ClientArea.H already stops short of the
+        // frame's bottom border, so only the TOP pad is added - taking one off the bottom as well
+        // left roughly twice the gap there.
         public static int GroupColumnTop(in RectF client) => (int)client.Y + ColumnPadV;
-        public static int GroupColumnHeight(in RectF client) => (int)client.H - 2 * ColumnPadV;
+        public static int GroupColumnHeight(in RectF client) => (int)client.H - ColumnPadV;
 
         // Ludoal fork: the group's frames are built transparent, so the galaxy map showed straight
         // through them - plainly on Relationships, which has no columns of its own to cover it.
