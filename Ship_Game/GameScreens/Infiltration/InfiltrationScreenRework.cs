@@ -62,7 +62,7 @@ namespace Ship_Game.GameScreens
             public Rectangle Rect;
             public FloatSlider Weight;      // infiltration weight (others) / defense weight (player)
             public FloatSlider Budget;      // player only
-            public UIButton LimitBtn;       // others only
+            public FloatSlider Limit;       // others only: infiltration level ceiling
             public Array<OpBox> Ops = new();
         }
 
@@ -146,12 +146,11 @@ namespace Ship_Game.GameScreens
             LeftRect = ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
             GroupTabs = Add(new Submenu(new RectF(LeftRect.X, LeftRect.Y, LeftRect.Width, LeftRect.Height),
                                         ReworkScreens.GroupTabTitles));
-            GroupTabs.SetBackground(ReworkScreens.GroupFrameFill);
             GroupTabs.OnTabChange = OnGroupTabChanged;
             GroupTabs.PerformLayout(); // ClientArea is only known once the tabs are laid out
             GroupTabs.SelectedIndex = (int)MainDiplomacyScreenRework.Tab.Espionage;
 
-            Vector2 closePos = ReworkScreens.GroupClosePos(LeftRect);
+            Vector2 closePos = ReworkScreens.GroupClosePos(GroupTabs.ClientArea);
             CloseButton(closePos.X, closePos.Y);
 
             Empire[] majors = Universe.UState.ActiveMajorEmpires;
@@ -220,17 +219,16 @@ namespace Ship_Game.GameScreens
                 };
                 Add(c.Weight);
 
-                // Ludoal fork: the new dan_button look, like the Contact buttons on the other tabs
-                c.LimitBtn = Add(new UIButton(ButtonStyle.DanButtonClear, new Vector2(col.X + 8, budgetY + RowButton), GameText.EspionageLimitLevel));
-                c.LimitBtn.Tooltip = GameText.EspionageLimitLevelTip;
-                c.LimitBtn.AcceptRightClicks = true;
-                c.LimitBtn.OnClick = b =>
-                {
-                    byte limit = (byte)(esp.LimitLevel + (Input.RightMouseReleased ? -1 : 1));
-                    if (limit > Ship_Game.Espionage.MaxLevel) limit = 1;
-                    if (limit < 1) limit = Ship_Game.Espionage.MaxLevel;
-                    esp.SetLimitLevel(limit);
-                };
+                // Ludoal fork: a slider rather than a click-to-cycle button. Five discrete levels
+                // is what a slider says plainly, the two other settings of this column already are
+                // one, and the button showed no value - it stretches to the width it is given, so
+                // the figure drawn beside it fell underneath.
+                var limitRect = new Rectangle(col.X + 8, (int)budgetY + RowButton, col.Width - 60, 40);
+                c.Limit = new FloatSlider(SliderStyle.Decimal, limitRect, "Level Max",
+                                          1f, Ship_Game.Espionage.MaxLevel, value: esp.LimitLevel);
+                c.Limit.Tip = GameText.EspionageLimitLevelTip;
+                c.Limit.OnChange = s => esp.SetLimitLevel((byte)s.AbsoluteValue.RoundUpTo(1));
+                Add(c.Limit);
 
                 // the five levels, ALL options — grayed until reached. Rows come from the shared
                 // cascade so they land exactly where DrawColumn paints their level.
@@ -305,6 +303,11 @@ namespace Ship_Game.GameScreens
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
 
+            // Ludoal fork: the frame fill goes down FIRST, by hand. As a Submenu background it is
+            // one of the screen's children, so base.Draw painted it AFTER the columns below and
+            // covered them - SendToBackZOrder only orders it among the other children.
+            batch.FillRectangle(GroupTabs.ClientArea, ReworkScreens.GroupFrameFill);
+
             foreach (EmpireColumn c in Columns)
                 DrawColumn(batch, c);
 
@@ -375,17 +378,8 @@ namespace Ship_Game.GameScreens
 
             Ship_Game.Espionage esp = c.Esp;
 
-            // BUDGET section extras: limit level value, points/turn, target + progress
-            // Ludoal fork: right of the Limit Level button, from its own width - the old 124 was
-            // calibrated on the narrower button style this used to use.
-            // ⚠ off the button itself, not off budgetY: this method's budgetY and LoadContent's
-            // are 24px apart, and the button was placed with the other one.
-            if (c.LimitBtn != null)
-            {
-                var limitPos = new Vector2(c.LimitBtn.Right + 8,
-                                           c.LimitBtn.Y + (c.LimitBtn.Height - Font12Bold.LineSpacing) / 2);
-                batch.DrawString(Font12Bold, esp.LimitLevel.ToString(), limitPos, Player.EmpireColor);
-            }
+            // BUDGET section extras: points/turn, target + progress. The level ceiling needs no
+            // label of its own - its slider shows the figure.
             float ppt = esp.GetProgressToIncrease(Player.EspionagePointsPerTurn, Player.CalcTotalEspionageWeight());
             string pptTxt = "Points/turn: " + ppt.String(3);
             batch.DrawString(Font12, pptTxt, new Vector2(col.X + 8, budgetY + RowPoints), Color.Wheat);

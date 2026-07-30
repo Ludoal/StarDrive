@@ -149,13 +149,10 @@ namespace Ship_Game
             LeftRect = ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
             GroupTabs = Add(new Submenu(new RectF(LeftRect.X, LeftRect.Y, LeftRect.Width, LeftRect.Height),
                                         ReworkScreens.GroupTabTitles));
-            // right after creation, before any other child: SetBackground runs SendToBackZOrder,
-            // an unstable sort over the children
-            GroupTabs.SetBackground(ReworkScreens.GroupFrameFill);
             GroupTabs.OnTabChange = OnGroupTabChanged;
             GroupTabs.PerformLayout(); // necessary: ClientArea is only known once the tabs are laid out
 
-            Vector2 closePos = ReworkScreens.GroupClosePos(LeftRect);
+            Vector2 closePos = ReworkScreens.GroupClosePos(GroupTabs.ClientArea);
             Add(new CloseButton(closePos.X, closePos.Y));
 
             foreach (Empire e in Universe.UState.Empires)
@@ -261,6 +258,11 @@ namespace Ship_Game
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
+
+            // Ludoal fork: the frame fill goes down FIRST, by hand. As a Submenu background it is
+            // one of the screen's children, so base.Draw painted it AFTER these columns and covered
+            // them - SendToBackZOrder only orders it among the other children.
+            batch.FillRectangle(GroupTabs.ClientArea, ReworkScreens.GroupFrameFill);
 
             foreach (RaceEntry race in Races)
                 DrawColumn(batch, race);

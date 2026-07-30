@@ -109,11 +109,13 @@ namespace Ship_Game.GameScreens
             return (int)client.X + ((int)client.W - drawn) / 2;
         }
 
-        // Ludoal fork: the close cross in the frame's top-right corner, 5px padding both ways.
+        // Ludoal fork: the close cross in the top-right corner INSIDE the frame, 5px padding both
+        // ways - measured off the client area, not off the frame rect, whose top edge is the tab
+        // row itself (measuring from there put the cross above the frame, level with the tabs).
         // Close_Normal is 20x20.
         const int CloseSize = 20;
-        public static Vector2 GroupClosePos(in Rectangle frame)
-            => new(frame.Right - CloseSize - 5, frame.Y + 5);
+        public static Vector2 GroupClosePos(in RectF client)
+            => new(client.Right - CloseSize - 5, client.Y + 5);
 
         // Ludoal fork: the group's frames are built transparent, so the galaxy map showed straight
         // through them - plainly on Relationships, which has no columns of its own to cover it.

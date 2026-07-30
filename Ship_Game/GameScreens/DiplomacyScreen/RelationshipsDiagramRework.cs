@@ -40,7 +40,6 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
 
         readonly UniverseScreen Universe;
         Submenu GroupTabs; // Ludoal fork: the Diplomacy group's tab row, this screen being one tab
-        Rectangle GroupFrameRect;
 
         public RelationshipsDiagramRework(UniverseScreen us, Array<EmpireAndIntelLevel> empiresAndIntel)
             : base(us, toPause: us)
@@ -55,10 +54,8 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             // its three siblings, from ReworkScreens, rather than the 1000x768 popup this used to
             // be as a stacked screen.
             Rectangle frame = ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
-            GroupFrameRect = frame;
             GroupTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
                                         ReworkScreens.GroupTabTitles));
-            GroupTabs.SetBackground(ReworkScreens.GroupFrameFill);
             GroupTabs.OnTabChange = OnGroupTabChanged;
             GroupTabs.PerformLayout();
             GroupTabs.SelectedIndex = (int)MainDiplomacyScreenRework.Tab.Relationships;
@@ -112,7 +109,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
         {
             // Ludoal fork: in the frame's own top-right corner. The tab row names the screen now,
             // so the "Empire Relationships" label that used to head this panel is gone with it.
-            Vector2 closePos = ReworkScreens.GroupClosePos(GroupFrameRect);
+            Vector2 closePos = ReworkScreens.GroupClosePos(GroupTabs.ClientArea);
             CloseButton(closePos.X, closePos.Y);
 
             // one checkbox + legend line per treaty type, in the fixed order.
@@ -152,6 +149,9 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
+            // Ludoal fork: by hand and first, like its sibling tabs - as a Submenu background it
+            // would be drawn among the children, after everything below.
+            batch.FillRectangle(GroupTabs.ClientArea, ReworkScreens.GroupFrameFill);
             base.Draw(batch, elapsed); // window
             DrawRelations(batch); // links and then portraits
             ReworkScreens.DrawGroupTabTip(GroupTabs, Input.CursorPosition);
