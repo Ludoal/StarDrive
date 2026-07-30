@@ -28,8 +28,12 @@ namespace Ship_Game
         {
             Screen = screen;
 
-            BtnShowQueue = Button(ButtonStyle.BigDip, 
+            // Ludoal fork: the blue dan_button, like its Search neighbour, pinned to the same slot
+            BtnShowQueue = Button(ButtonStyle.DanButtonClearBlue,
                 new Vector2(container.Right - 170, screen.ScreenHeight - 55), "", OnBtnShowQueuePressed);
+            BtnShowQueue.Rect = new RectF(container.Right - 170, screen.ScreenHeight - 55,
+                                          ResearchScreenNew.ResearchButtonW,
+                                          ResearchScreenNew.ResearchButtonH);
 
             RectF current = new(container.X, container.Y, container.Width, 150);
             RectF timeLeftRect = new(current.X + current.W - 119, current.Y + current.H - 24, 111, 20);

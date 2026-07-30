@@ -1,3 +1,4 @@
+using System;
 using SDGraphics;
 using Color = Microsoft.Xna.Framework.Color;
 using Vector2 = SDGraphics.Vector2;
@@ -83,6 +84,25 @@ namespace Ship_Game.GameScreens
         // the keys those screens already close on
         public static readonly string[] GalaxyTabKeys = { "P", "G", "" };
 
+        // ── Empire group ──────────────────────────────────────────────────────────────────────
+        // Ludoal fork: the third group of the unified top bar. Same frame and tab row again.
+        public static readonly LocalizedText[] EmpireTabTitles =
+        {
+            "Colonies", "Ships", "Troops", "Economy", "Research"
+        };
+
+        public static readonly string[] EmpireTabTips =
+        {
+            "Every colony you hold, its labor, storage and construction.",
+            "Every ship you own, sortable, with its orders and upkeep.",
+            "Your troops: where they are, their strength and status.",
+            "Treasury and taxes, with the budget of each colony.",
+            "The technology tree and the research queue.",
+        };
+
+        // read off the top bar's own tooltips and each screen's closing key, not guessed
+        public static readonly string[] EmpireTabKeys = { "U", "K", "C", "T", "R" };
+
         // The first line of the Planets tab is reserved for its filters and troop count, so its
         // table starts lower than the other tabs'. Ludoal fork.
         public const int GalaxyHeaderH = 30;
@@ -92,11 +112,13 @@ namespace Ship_Game.GameScreens
         // above the table for column titles, plus any reserved first line.
         public static RectF GalaxyTable(in RectF client, float reservedLine = 0)
         {
-            float top = client.Y + ColumnPadV + reservedLine;
+            // ⚠ NO padding of our own: the client area already insets on all four sides, and its
+            // height already stops short of the bottom border - adding 5px gave 5 too many left,
+            // right and top, and 10 too many at the foot. The frame IS the margin.
+            float top = client.Y + reservedLine;
             const float columnTitles = 40;
-            return new(client.X + ColumnPadV, top + columnTitles,
-                       client.W - 2 * ColumnPadV,
-                       client.Bottom - ColumnPadV - (top + columnTitles));
+            return new(client.X, top + columnTitles, client.W,
+                       client.Bottom - (top + columnTitles));
         }
 
         // The tab the cursor is over, or -1. Ludoal fork: Tab.Hover is only set while the Submenu
@@ -125,6 +147,25 @@ namespace Ship_Game.GameScreens
 
         public static void DrawGalaxyTabTip(Submenu tabs, Vector2 cursor)
             => DrawTabTip(tabs, cursor, GalaxyTabTips, GalaxyTabKeys);
+
+        public static void DrawEmpireTabTip(Submenu tabs, Vector2 cursor)
+            => DrawTabTip(tabs, cursor, EmpireTabTips, EmpireTabKeys);
+
+        // Ludoal fork: build a group's tab row on a screen, in one call - all four steps in the
+        // order they have to happen. PerformLayout is what makes ClientArea known, and it has to
+        // run before anything is measured against it.
+        public static Submenu AddGroupTabs(GameScreen screen, LocalizedText[] titles, int selected,
+                                           Action<int> onChange, out Rectangle frame)
+        {
+            frame = GroupFrame(screen.ScreenWidth, screen.ScreenHeight);
+            var tabs = screen.Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height), titles));
+            tabs.OnTabChange = onChange;
+            tabs.PerformLayout();
+            tabs.SelectedIndex = selected;
+            Vector2 closePos = GroupClosePos(tabs.ClientArea);
+            screen.Add(new CloseButton(closePos.X, closePos.Y));
+            return tabs;
+        }
 
         public static Rectangle GroupFrame(int screenW, int screenH)
             => new(FrameMargin, TabRowY, screenW - 2 * FrameMargin, screenH - TabRowY - FrameMargin);

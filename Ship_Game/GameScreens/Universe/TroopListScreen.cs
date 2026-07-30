@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
+using Ship_Game.GameScreens; // ReworkScreens: the group geometry
 using SDUtils;
 using Ship_Game.Audio;
 using Ship_Game.Ships;
@@ -18,9 +19,7 @@ namespace Ship_Game
     // colony view (own) or the planet view (not ours) via SnapViewColony.
     public sealed class TroopListScreen : GameScreen
     {
-        readonly Menu2 TitleBar;
-        readonly Vector2 TitlePos;
-        readonly Menu2 EMenu;
+        Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
 
         public UniverseScreen Universe;
         Empire Player => Universe.Player;
@@ -48,23 +47,19 @@ namespace Ship_Game
             TransitionOffTime = 0.25f;
             IsPopup = true;
 
-            Rectangle titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            TitleBar = new Menu2(titleRect);
-            TitlePos = new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString("Troops Array").X / 2f,
-                                   titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
-            Rectangle leftRect = new Rectangle(2, titleRect.Y + titleRect.Height + 5, ScreenWidth - 10,
-                                               ScreenHeight - titleRect.Bottom - 7);
-            EMenu = new Menu2(leftRect);
-            Add(new CloseButton(leftRect.Right - 40, leftRect.Y + 20));
-            ERect = new(leftRect.X + 20, titleRect.Bottom + 50, ScreenWidth - 40,
-                        leftRect.Bottom - (titleRect.Bottom + 46) - 31);
+            // Ludoal fork: the Troops tab of the Empire group - title and brass surround give way to
+            // the group's tab row, and the first line inside the frame carries the status filter.
+            EmpireTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.EmpireTabTitles, 2,
+                                                    OnEmpireTabChanged, out Rectangle frame);
+            RectF client = EmpireTabs.ClientArea;
+            ERect = ReworkScreens.GalaxyTable(client, ReworkScreens.GalaxyHeaderH);
             RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
             TroopSL = Add(new ScrollList<TroopListScreenItem>(slRect, 40));
             TroopSL.EnableItemHighlight = true;
             TroopSL.OnDoubleClick = OnRowClicked; // Ludoal fork: double-click everywhere, like Ships/Empire
 
             ShowStatus = Add(new DropOptions<string>(
-                new Rectangle(titleRect.Right + 20, titleRect.Y + titleRect.Height / 2 - 9, 160, 18)));
+                new Rectangle((int)client.X + 10, (int)client.Y + 6, 160, 18)));
             ShowStatus.AddOption("All Troops", "");
             foreach (string s in Statuses)
                 ShowStatus.AddOption(s, s);
@@ -152,13 +147,35 @@ namespace Ship_Game
                 NumTroops += item.Count;
         }
 
+
+        // Ludoal fork: the other tabs live in their own screen, so leaving this one hands over to
+        // it. Its own index is a no-op: we are already here.
+        void OnEmpireTabChanged(int index)
+        {
+            if (index == 2)
+                return;
+            ExitScreen();
+            GameAudio.AcceptClick();
+            switch (index)
+            {
+                case 0: ScreenManager.AddScreen(new EmpireManagementScreen(Universe, EmpireUI)); break;
+                case 1: ScreenManager.AddScreen(new ShipListScreen(Universe, EmpireUI)); break;
+                case 2: ScreenManager.AddScreen(new TroopListScreen(Universe, EmpireUI)); break;
+                case 3: ScreenManager.AddScreen(ReworkScreens.Economy(Universe)); break;
+                default: ScreenManager.AddScreen(new ResearchScreenNew(Universe, Universe, EmpireUI)); break;
+            }
+        }
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
-            TitleBar.Draw(batch, elapsed);
-            batch.DrawString(Fonts.Laserian14, $"Troops Array ({NumTroops})", TitlePos, Colors.Cream);
-            EMenu.Draw(batch, elapsed);
+            // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
+            // drawn among the children, after everything below it. The troop total moves onto the
+            // reserved line beside the filter, where the title used to carry it.
+            RectF client = EmpireTabs.ClientArea;
+            batch.FillRectangle(client, ReworkScreens.GroupFrameFill);
+            batch.DrawString(Fonts.Arial20Bold, $"Total Troops: {NumTroops}",
+                             new Vector2(client.X + 190, client.Y + 4), Colors.Cream);
             base.Draw(batch, elapsed);
 
             if (TroopSL.NumEntries > 0)
@@ -193,6 +210,7 @@ namespace Ship_Game
                 batch.DrawString(Fonts.Arial20Bold, "No troops anywhere — recruit some before the neighbours visit.",
                                  msgPos, Color.Gray);
             }
+            ReworkScreens.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }

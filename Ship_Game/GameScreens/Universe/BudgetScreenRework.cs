@@ -23,7 +23,9 @@ namespace Ship_Game.GameScreens
     public sealed class BudgetScreenRework : GameScreen
     {
         readonly Empire Player;
-        Menu2 TitleBar;
+        Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
+        // NOT Add()ed: geometry only. The group's frame is the border now, so drawing these would
+        // double it - the two halves are separated by a single rule instead.
         Menu1 LeftMenu;
         Menu1 RightMenu;
 
@@ -191,19 +193,20 @@ namespace Ship_Game.GameScreens
 
         public override void LoadContent()
         {
-            var titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            TitleBar  = Add(new Menu2(titleRect));
-            LeftMenu  = Add(new Menu1(2, titleRect.Bottom + 5, titleRect.Width, ScreenHeight - titleRect.Bottom - 7));
-            RightMenu = Add(new Menu1(titleRect.Right + 5, titleRect.Bottom + 5, ScreenWidth / 3 - 10, ScreenHeight - titleRect.Bottom - 7));
-            CloseButton(RightMenu.Right - 52, RightMenu.Y + 22);
+            // Ludoal fork: the Economy tab of the Empire group. ONE frame for the whole page rather
+            // than two side by side: the colony table and the treasury column are two halves of one
+            // view - you read a colony against its budget - so they share the frame and a single
+            // vertical rule separates them. Two thirds / one third, as before.
+            EmpireTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.EmpireTabTitles, 3,
+                                                    OnEmpireTabChanged, out Rectangle groupFrame);
+            RectF client = EmpireTabs.ClientArea;
+            float split = client.X + client.W * 2f / 3f;
+            LeftMenu  = new Menu1(client.X, client.Y, split - client.X, client.H);
+            RightMenu = new Menu1(split, client.Y, client.Right - split, client.H);
 
-            // title + the unit note of the money charte
-            string title = Localizer.Token(GameText.EconomicOverview);
-            Label(new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString(title).X / 2f,
-                              titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2), title, Fonts.Laserian14, Colors.Cream);
+            // the unit note of the money charte, on the reserved first line
             string unitNote = "(all money values are per turn)";
-            Label(new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Arial12.TextWidth(unitNote) / 2f,
-                              titleRect.Bottom - 32), unitNote, Fonts.Arial12, Color.Gray);
+            Label(new Vector2(client.X + 20, client.Y + 4), unitNote, Fonts.Arial12, Color.Gray);
 
             // ---- LEFT 2/3: the colony table ----
             TableXpx = (int)LeftMenu.X + 20;
@@ -496,10 +499,19 @@ namespace Ship_Game.GameScreens
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
+            // Ludoal fork: the frame fill by hand and first, then ONE rule between the colony table
+            // and the treasury column - the two halves share the group's frame rather than carrying
+            // a border each.
+            RectF client = EmpireTabs.ClientArea;
+            batch.FillRectangle(client, ReworkScreens.GroupFrameFill);
+            batch.DrawLine(new Vector2(RightMenu.X, client.Y + 8),
+                           new Vector2(RightMenu.X, client.Bottom - 8),
+                           new Color(118, 102, 67, 255).Premultiplied());
             base.Draw(batch, elapsed);
             SbColony.Draw(ScreenManager, Fonts.Arial20Bold);
             for (int i = 0; i < SortButtons.Length; ++i)
                 SortButtons[i].Draw(ScreenManager, Fonts.Arial12Bold);
+            ReworkScreens.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
         }

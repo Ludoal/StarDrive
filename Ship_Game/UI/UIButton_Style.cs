@@ -29,6 +29,7 @@ namespace Ship_Game
         // change look. ⚠ Styling below is indexed by this enum: insert in BOTH, at the same rank.
         DanButtonClear, // NewUI/dan_button_clear -- the new look, hover goes blue
         DanButtonClearRed, // NewUI/dan_button_red_clear -- the new look, for a hostile action
+        DanButtonClearBlue, // NewUI/dan_button_blue_clear -- the new look, for an active control
         EventConfirm, // UI/btn_event_confirm -- a big wide confirm button for Event Popups
         Text,       // only use TEXT as the button 
     }
@@ -134,6 +135,8 @@ namespace Ship_Game
                                   "NewUI/dan_button_blue_clear"),
                 new StyleTextures("NewUI/dan_button_red_clear", "NewUI/dan_button_blue_clear",
                                   "NewUI/dan_button_blue_clear"),
+                new StyleTextures("NewUI/dan_button_blue_clear", "NewUI/dan_button_clear",
+                                  "NewUI/dan_button_clear"),
                 new StyleTextures("UI/btn_event_confirm_big"),
                 new StyleTextures() { DrawBackground = false },
             };

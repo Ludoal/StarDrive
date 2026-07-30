@@ -22,6 +22,11 @@ namespace Ship_Game
 
         CloseButton Close;
         UIButton Search;
+        // Ludoal fork: the slot the Search / Hide Queue pair sits in. The dan_button texture is
+        // 182x25 and both are placed off the queue's right edge, so the width is pinned rather
+        // than taken from the texture - UIButton stretches to whatever rect it is given.
+        public const int ResearchButtonW = 168;
+        public const int ResearchButtonH = 24;
         Menu2 MainMenu;
         public EmpireUIOverlay empireUI;
 
@@ -113,7 +118,11 @@ namespace Ship_Game
             var queue = new Rectangle(main.X + main.Width - 355, main.Y + 40, 330, main.Height - 100);
             Queue = Add(new ResearchQueueUIComponent(this, queue));
             Vector2 searchPos = new(main.X + main.Width - 360, main.Bottom - 55); // Ludoal fork: main.Height was used as a Y coordinate
-            Search = Add(new UIButton(ButtonStyle.BigDip, searchPos, "Search"));
+            // Ludoal fork: the blue dan_button, the new look's "active" colour, at the same 168px
+            // slot the old style occupied - the texture is 182 wide and the pair sits tight against
+            // the queue's right edge.
+            Search = Add(new UIButton(ButtonStyle.DanButtonClearBlue, searchPos, "Search"));
+            Search.Rect = new RectF(searchPos.X, searchPos.Y, ResearchButtonW, ResearchButtonH);
             Search.OnClick = OnSearchButtonClicked;
 
             DebugUnlocks = Add(new ResearchDebugUnlocks(Universe, () =>

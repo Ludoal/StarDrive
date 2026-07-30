@@ -17,9 +17,7 @@ namespace Ship_Game
     {
         public readonly UniverseScreen Universe;
         public UniverseState UState => Universe.UState;
-        private readonly Menu2 TitleBar;
-        private readonly Vector2 TitlePos;
-        private readonly Menu2 EMenu;
+        Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
         private Ship SelectedShip;
         private readonly ScrollList<ShipListScreenItem> ShipSL;
         public EmpireUIOverlay EmpireUi;
@@ -83,15 +81,17 @@ namespace Ship_Game
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
             IsPopup = true;
-            var titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            TitleBar = new Menu2(titleRect);
-            TitlePos = new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString(Localizer.Token(GameText.ShipArray)).X / 2f, titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
-            LeftRect = new Rectangle(2, titleRect.Y + titleRect.Height + 5, ScreenWidth - 10, ScreenHeight - (titleRect.Y + titleRect.Height) - 7);
-            EMenu = new Menu2(LeftRect);
-            Add(new CloseButton(LeftRect.Right - 40, LeftRect.Y + 20));
+            // Ludoal fork: the Ships tab of the Empire group - the title cartouche and its brass
+            // surround give way to the group's tab row.
+            EmpireTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.EmpireTabTitles, 1,
+                                                    OnEmpireTabChanged, out Rectangle frame);
+            LeftRect = frame;
 
 
-            ERect = new(20, titleRect.Y + titleRect.Height + 35, ScreenWidth - 40, ScreenHeight - (titleRect.Y + titleRect.Height) - 7);
+            // Ludoal fork: the reserved first line carries the three filters and the role dropdown,
+            // side by side where they used to be stacked beside the title. The table takes the rest.
+            RectF client = EmpireTabs.ClientArea;
+            ERect = ReworkScreens.GalaxyTable(client, ReworkScreens.GalaxyHeaderH);
             ERect.H = ERect.H.RoundDownTo(80);
             RectF slRect = new(ERect.X, ERect.Y + 15, ERect.W, ERect.H - 15);
 
@@ -99,28 +99,29 @@ namespace Ship_Game
             ShipSL.OnDoubleClick = OnShipListScreenItemClicked;
             ShipSL.EnableItemHighlight = true;
 
-            Add(new UICheckBox(TitleBar.Menu.Right + 10, TitleBar.Menu.Y + 15,
+            float lineY = client.Y + 6;
+            Add(new UICheckBox(client.X + 10, lineY,
                 () => PlayerDesignsOnly,
                 (x) => {
                     PlayerDesignsOnly = x;
                     ResetList(ShowRoles.ActiveValue);
                 }, Fonts.Arial12Bold, title: GameText.PlayerDesignsOnly, tooltip: GameText.ShowPlayerDesignsOnly));
 
-            Add(new UICheckBox(TitleBar.Menu.Right + 10, TitleBar.Menu.Y + 35,
+            Add(new UICheckBox(client.X + 170, lineY,
                 () => InFleetsOnly,
                 (x) => {
                     InFleetsOnly = x;
                     ResetList(ShowRoles.ActiveValue);
                 }, Fonts.Arial12Bold, title: GameText.InFleetsOnly, tooltip: GameText.ShowOnlyShipsWhichAre));
 
-            Add(new UICheckBox(TitleBar.Menu.Right + 10, TitleBar.Menu.Y + 55,
+            Add(new UICheckBox(client.X + 300, lineY,
                 () => NotInFleets,
                 (x) => {
                     NotInFleets = x;
                     ResetList(ShowRoles.ActiveValue);
                 }, Fonts.Arial12Bold, title: GameText.NotInFleets, tooltip: GameText.ShowOnlyShipsWhichAre2));
 
-            ShowRoles = new DropOptions<int>(new Rectangle(TitleBar.Menu.Right + 175, TitleBar.Menu.Y + 15, 175, 18));
+            ShowRoles = new DropOptions<int>(new Rectangle((int)client.X + 440, (int)lineY, 175, 18));
             ShowRoles.AddOption("All Ships", 1);
             ShowRoles.AddOption("Fighters", 2);
             ShowRoles.AddOption("Corvettes", 3);
@@ -150,13 +151,31 @@ namespace Ship_Game
             ResetList(ShowRoles.ActiveValue);
         }
 
+
+        // Ludoal fork: the other tabs live in their own screen, so leaving this one hands over to
+        // it. Its own index is a no-op: we are already here.
+        void OnEmpireTabChanged(int index)
+        {
+            if (index == 1)
+                return;
+            ExitScreen();
+            GameAudio.AcceptClick();
+            switch (index)
+            {
+                case 0: ScreenManager.AddScreen(new EmpireManagementScreen(Universe, EmpireUi)); break;
+                case 1: ScreenManager.AddScreen(new ShipListScreen(Universe, EmpireUi)); break;
+                case 2: ScreenManager.AddScreen(new TroopListScreen(Universe, EmpireUi)); break;
+                case 3: ScreenManager.AddScreen(ReworkScreens.Economy(Universe)); break;
+                default: ScreenManager.AddScreen(new ResearchScreenNew(Universe, Universe, EmpireUi)); break;
+            }
+        }
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
-            TitleBar.Draw(batch, elapsed);
-            batch.DrawString(Fonts.Laserian14, Localizer.Token(GameText.ShipArray), TitlePos, Colors.Cream);
-            EMenu.Draw(batch, elapsed);
+            // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
+            // drawn among the children, after everything below it.
+            batch.FillRectangle(EmpireTabs.ClientArea, ReworkScreens.GroupFrameFill);
 
             base.Draw(batch, elapsed);
 
@@ -236,6 +255,7 @@ namespace Ship_Game
                 DrawHorizontalSeparator(ERect.Y + 25);
             }
             ShowRoles.Draw(batch, elapsed);
+            ReworkScreens.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             EmpireUi.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
@@ -393,7 +413,7 @@ namespace Ship_Game
             {
                 if (ShouldAddForCategory(ship, category))
                 {
-                    ShipSL.AddItem(new ShipListScreenItem(ship, (int)ERect.X + 130, LeftRect.Y + 20, EMenu.Menu.Width - 30, 30, this));
+                    ShipSL.AddItem(new ShipListScreenItem(ship, (int)ERect.X + 130, LeftRect.Y + 20, (int)EmpireTabs.ClientArea.W - 30, 30, this));
                 }
             }
 
