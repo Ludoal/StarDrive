@@ -41,13 +41,15 @@ namespace Ship_Game.GameScreens
         // Ludoal fork: the group's shared geometry, in one place - three screens build the same
         // frame and tab row, and a value copied three times is a value that will drift.
         //
-        // TabRowY: the top bar draws Help and the speed buttons at Y=64 on a 24px texture. The row
-        // rides 2px under them, which is as high as it goes while they are still there; they move
-        // into the unified bar later.
-        public const int TabRowY = 64 + 24 - 10;
+        // TabRowY: the top bar draws Help and the speed buttons at Y=64 on a 24px texture, so their
+        // bottom edge is 88. The frame opens 10px under that. They move into the unified bar later,
+        // at which point this can rise.
+        public const int TabRowY = 64 + 24 + 10;
         public const int FrameMargin = 10;   // clear of every screen edge
         public const int ColumnGutter = 5;   // inside the frame, left and right of the columns
         public const int ColumnGap = 5;      // between two columns
+        public const int ColumnPadV = 5;     // above and below the columns, inside the frame
+        public const int ClosePadding = 5;   // the close cross, off the client area's top-right
         public const int GroupColumns = 8;   // the row is always eight wide, known or not
 
         public static readonly LocalizedText[] GroupTabTitles =
@@ -96,16 +98,25 @@ namespace Ship_Game.GameScreens
         // One column width for the whole group: the client area less a gutter each side, split
         // eight ways. Ludoal fork: the columns fill the frame rather than sitting inside a
         // narrower band of it.
+        // Ludoal fork: the pitch of one column slot. Always the eight-empire pitch, so a galaxy
+        // with fewer majors gets the same columns rather than wider ones.
         public static int GroupColumnWidth(in RectF client)
-            => ((int)client.W - 2 * ColumnGutter) / GroupColumns;
+        {
+            // rounded UP, so the eight slots span the full run and the division's remainder does
+            // not pile up as extra margin on the right
+            int run = (int)client.W - 2 * ColumnGutter + ColumnGap;
+            return (run + GroupColumns - 1) / GroupColumns;
+        }
 
-        // Ludoal fork: the column width is always the eight-empire one, so a galaxy with fewer
-        // majors gets the same columns rather than wider ones - and the shorter row is centred
-        // instead of hugging the left edge.
+        // The left edge of a row of `count` columns. At eight it lands exactly on the gutter; below
+        // eight the row is centred. ⚠ The pitch above includes one gap, so the drawn run is
+        // pitch*count - gap: counting the trailing gap made the edges 8-9px while the columns
+        // themselves were 5 apart, which reads as a doubled margin.
         public static int GroupColumnsLeft(in RectF client, int count)
         {
-            int colW = GroupColumnWidth(client);
-            int drawn = colW * count - ColumnGap; // the last column has no gap after it
+            if (count >= GroupColumns)
+                return (int)client.X + ColumnGutter;
+            int drawn = GroupColumnWidth(client) * count - ColumnGap;
             return (int)client.X + ((int)client.W - drawn) / 2;
         }
 
@@ -113,9 +124,17 @@ namespace Ship_Game.GameScreens
         // ways - measured off the client area, not off the frame rect, whose top edge is the tab
         // row itself (measuring from there put the cross above the frame, level with the tabs).
         // Close_Normal is 20x20.
+        // ⚠ Close_Normal is 20x20 but its cross does not fill the bitmap: at an equal 5px offset on
+        // both axes it reads as 5 from the top and 10 from the right, so the horizontal offset is
+        // 5px tighter to make the two visual margins match.
         const int CloseSize = 20;
+        const int CloseRightTrim = 5;
         public static Vector2 GroupClosePos(in RectF client)
-            => new(client.Right - CloseSize - 5, client.Y + 5);
+            => new(client.Right - CloseSize - ClosePadding + CloseRightTrim, client.Y + ClosePadding);
+
+        // The vertical span of a column inside the frame, 5px clear top and bottom.
+        public static int GroupColumnTop(in RectF client) => (int)client.Y + ColumnPadV;
+        public static int GroupColumnHeight(in RectF client) => (int)client.H - 2 * ColumnPadV;
 
         // Ludoal fork: the group's frames are built transparent, so the galaxy map showed straight
         // through them - plainly on Relationships, which has no columns of its own to cover it.

@@ -173,9 +173,9 @@ namespace Ship_Game
             {
                 // Ludoal fork: inside the tab frame's client area, top and bottom - the Submenu is
                 // the only thing that knows how tall its own tab row is.
-                int colTop = (int)client.Y + 6;
-                re.container = new Rectangle(x0 + j * colW, colTop, colW - ReworkScreens.ColumnGap,
-                                             (int)client.Bottom - colTop - 12);
+                re.container = new Rectangle(x0 + j * colW, ReworkScreens.GroupColumnTop(client),
+                                             colW - ReworkScreens.ColumnGap,
+                                             ReworkScreens.GroupColumnHeight(client));
                 j++;
             }
 

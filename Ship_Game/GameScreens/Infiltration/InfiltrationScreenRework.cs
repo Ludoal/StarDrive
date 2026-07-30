@@ -36,7 +36,7 @@ namespace Ship_Game.GameScreens
 
         // fixed vertical anatomy (aligned across columns)
         const int HeaderH = 110;
-        const int BudgetH = 200; // sliders overflow their rect (title above, ticks below): breathe
+        const int BudgetH = 212; // sliders overflow their rect (title above, ticks below): breathe
         // Ludoal fork: where the SETTINGS band opens inside the player's BUDGET block - below its
         // cost line and clear of DEFENSE, which stays at BudgetH + 24 for every column. Measured
         // from col.Y so the band and the checkbox under it share ONE origin: LoadContent and
@@ -49,10 +49,10 @@ namespace Ship_Game.GameScreens
         // (DrawColumn) read them from here - they used to be loose numbers in both.
         const int RowSlider   = 4;
         const int RowButton   = 58;
-        const int RowPoints   = 110;
-        const int RowLevel    = 130;
-        const int RowBar      = 151;
-        const int RowBarNums  = 167;
+        const int RowPoints   = 122;  // clear of the Level Max slider's ticks above it
+        const int RowLevel    = 142;
+        const int RowBar      = 163;
+        const int RowBarNums  = 179;
         const int DefenseH = 52;
 
         class EmpireColumn
@@ -162,9 +162,9 @@ namespace Ship_Game.GameScreens
             {
                 Empire e = majors[i];
                 // Ludoal fork: inside the tab frame's client area, like the other tabs
-                int colTop = (int)client.Y + 6;
-                var col = new Rectangle(x0 + i * colW, colTop, colW - ReworkScreens.ColumnGap,
-                                        (int)client.Bottom - colTop - 12);
+                var col = new Rectangle(x0 + i * colW, ReworkScreens.GroupColumnTop(client),
+                                        colW - ReworkScreens.ColumnGap,
+                                        ReworkScreens.GroupColumnHeight(client));
                 var c = new EmpireColumn { E = e, Rect = col };
                 Columns.Add(c);
 
