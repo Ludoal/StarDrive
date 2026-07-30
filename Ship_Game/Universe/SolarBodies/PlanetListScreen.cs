@@ -37,7 +37,6 @@ namespace Ship_Game
         private UICheckBox cb_hideOwned;
         private UICheckBox cb_hideUninhabitable;
 
-        UIButton ExoticSystemsButton;
         bool HideOwned
         {
             get => UState.P.PlanetScreenHideOwned;
