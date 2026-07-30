@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics.Input;
 using SDGraphics;
+using Ship_Game.GameScreens; // ReworkScreens: the group geometry
 using SDUtils;
 using Ship_Game.Audio;
 using Vector2 = SDGraphics.Vector2;
@@ -15,9 +16,7 @@ namespace Ship_Game
 {
     public sealed class ExoticSystemsListScreen : GameScreen
     {
-        readonly Menu2 TitleBar;
-        readonly Vector2 TitlePos;
-        readonly Menu2 EMenu;
+        Submenu GalaxyTabs; // Ludoal fork: the Galaxy group's tab row, this screen being one tab
 
         public UniverseScreen Universe;
         public UniverseState UState => Universe.UState;
@@ -34,7 +33,6 @@ namespace Ship_Game
         readonly SortButton Sb_Richness;
         readonly SortButton Sb_Owner;
         readonly Array<ExplorableGameObject> ExploredSolarBodies = new();
-        UIButton PlanetArrayListButton;
 
         RectF ERect;
         SortButton LastSorted;
@@ -59,14 +57,22 @@ namespace Ship_Game
                 //LowRes = true;
             }
 
-            Rectangle titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            TitleBar = new Menu2(titleRect);
-            TitlePos = new Vector2((titleRect.X + titleRect.Width / 2) - Fonts.Laserian14.MeasureString(Localizer.Token(GameText.ExoticSystemsArray)).X / 2f, (titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2));
-            Rectangle leftRect = new Rectangle(2, titleRect.Y + titleRect.Height + 5, ScreenWidth - 10, ScreenHeight - titleRect.Bottom - 7);
-            EMenu = new Menu2(leftRect);
-            Add(new CloseButton(leftRect.Right - 40, leftRect.Y + 20));
-            ERect = new(leftRect.X + 20, titleRect.Bottom + 50, ScreenWidth - 40,
-                        leftRect.Bottom - (titleRect.Bottom + 46) - 31);
+            // Ludoal fork: the Exotic Systems tab of the Galaxy group - the title cartouche and its
+            // brass surround give way to the group's tab row. Contents unchanged.
+            Rectangle frame = ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
+            GalaxyTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
+                                         ReworkScreens.GalaxyTabTitles));
+            GalaxyTabs.OnTabChange = OnGalaxyTabChanged;
+            GalaxyTabs.PerformLayout();
+            GalaxyTabs.SelectedIndex = 1;
+
+            Vector2 closePos = ReworkScreens.GroupClosePos(GalaxyTabs.ClientArea);
+            Add(new CloseButton(closePos.X, closePos.Y));
+
+            RectF client = GalaxyTabs.ClientArea;
+            float tableTop = client.Y + ReworkScreens.ColumnPadV;
+            ERect = new(client.X + 20, tableTop + 40, client.W - 40,
+                        client.Bottom - tableTop - 40 - ReworkScreens.ColumnPadV);
             RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
             ExoticSL = Add(new ScrollList<ExoticSystemsListScreenItem>(slRect));
             ExoticSL.EnableItemHighlight = true;
@@ -93,9 +99,20 @@ namespace Ship_Game
             }
 
             CalcPlanetsDistances();
-            Vector2 planetArrayPos = new Vector2(TitleBar.Menu.X + TitleBar.Menu.Width - 200, TitleBar.Menu.Y + 30);
-            PlanetArrayListButton = Add(new UIButton(ButtonStyle.BigDip, planetArrayPos, GameText.PlanetArray));
-            PlanetArrayListButton.OnClick = (b) => OnPlanetArrayListClick();
+        }
+
+        // Ludoal fork: the other two tabs live in their own screen, so leaving Exotic Systems hands
+        // over to it. This tab is a no-op: we are already here.
+        void OnGalaxyTabChanged(int index)
+        {
+            if (index == 1)
+                return;
+            ExitScreen();
+            GameAudio.AcceptClick();
+            if (index == 0)
+                Universe.ScreenManager.AddScreen(new PlanetListScreen(Universe, Universe.EmpireUI));
+            else
+                Universe.ScreenManager.AddScreen(new EmpirePatrolsScreen(Universe, Player));
         }
 
         void CalcPlanetsDistances()
@@ -131,9 +148,9 @@ namespace Ship_Game
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
-            TitleBar.Draw(batch, elapsed);
-            batch.DrawString(Fonts.Laserian14, Localizer.Token(GameText.ExoticSystemsArray), TitlePos, Colors.Cream);
-            EMenu.Draw(batch, elapsed);
+            // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
+            // drawn among the children, after everything below it.
+            batch.FillRectangle(GalaxyTabs.ClientArea, ReworkScreens.GroupFrameFill);
             base.Draw(batch, elapsed);
 
             if (ExoticSL.NumEntries > 0)
@@ -316,11 +333,5 @@ namespace Ship_Game
             SelectedPlanet = ExoticSL.NumEntries > 0 ? ExoticSL.AllEntries[0].Planet : null;
         }
 
-        void OnPlanetArrayListClick()
-        {
-            ExitScreen();
-            GameAudio.AcceptClick();
-            Universe.ScreenManager.AddScreen(new PlanetListScreen(Universe, Universe.EmpireUI));
-        }
     }
 }

@@ -69,12 +69,13 @@ namespace Ship_Game
             int h = (int)Height;
             RemoveAll();
 
-            ButtonStyle colonizeStyle  = MarkedForColonization ? ButtonStyle.Default : ButtonStyle.BigDip;
+            // Ludoal fork: the NewUI dan_button family, as elsewhere in the reworked screens. The
+            // red variant keeps what the old styles carried by contrast - a hostile target.
             LocalizedText colonizeText = !MarkedForColonization ? GameText.Colonize : GameText.CancelColonize;
-            Colonize   = Button(colonizeStyle, colonizeText, OnColonizeClicked);
-            SendTroops = Button(ButtonStyle.BigDip, "Send Troops", OnSendTroopsClicked);
+            Colonize   = Button(ButtonStyle.DanButtonClear, colonizeText, OnColonizeClicked);
+            SendTroops = Button(ButtonStyle.DanButtonClear, "Send Troops", OnSendTroopsClicked);
             SendTroops.Tooltip = GameText.SendAvailableTroopsToThis;
-            RecallTroops = Button(ButtonStyle.Medium, $"Recall Troops ({Planet.NumTroopsCanLaunchFor(Player)})", OnRecallTroopsClicked);
+            RecallTroops = Button(ButtonStyle.DanButtonClear, $"Recall Troops ({Planet.NumTroopsCanLaunchFor(Player)})", OnRecallTroopsClicked);
             RecallTroops.Tooltip = GameText.RecallAllTroopsBasedOn;
             int nextX = x;
             Rectangle NextRect(float width)
@@ -98,8 +99,12 @@ namespace Ship_Game
             PlanetNameEntry.Text = Planet.Name;
             PlanetNameEntry.SetPos(ShipIconRect.Right + 10, y);
             
-            var btn = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px");
-            Colonize.Rect      = new Rectangle(OrdersRect.X + 10, OrdersRect.Y + OrdersRect.Height / 2 - btn.Height / 2, btn.Width, btn.Height);
+            // Ludoal fork: the three order buttons keep the 168x24 slot they have always been laid
+            // out on, whatever texture the style carries - the dan_button family is 182 wide and
+            // three of those would run past the row. The name is spelled out rather than read off
+            // a texture that is no longer the one drawn.
+            const int btnW = 168, btnH = 24;
+            Colonize.Rect      = new Rectangle(OrdersRect.X + 10, OrdersRect.Y + OrdersRect.Height / 2 - btnH / 2, btnW, btnH);
             SendTroops.Rect    = new RectF(OrdersRect.X + Colonize.Width + 10, Colonize.Y, Colonize.Width, Colonize.Height);
             RecallTroops.Rect  = new RectF(OrdersRect.X + Colonize.Width*2 + 10, Colonize.Y, Colonize.Width, Colonize.Height);
 
@@ -300,7 +305,9 @@ namespace Ship_Game
         {
             if (TryGetIncomingTroops(out int troopsInvading, out _))
             {
-                ButtonStyle style  = Planet.Owner == Player || Planet.Owner == null ? ButtonStyle.Default : ButtonStyle.Military;
+                // red on a hostile target, plain otherwise - the convention of the new look
+                ButtonStyle style  = Planet.Owner == Player || Planet.Owner == null
+                                   ? ButtonStyle.DanButtonClear : ButtonStyle.DanButtonClearRed;
                 string text        = "Invading:";
 
                 if (Planet.Owner == Player)    text = "Rebasing:";
@@ -313,7 +320,8 @@ namespace Ship_Game
             {
                 SendTroops.Text    = "Send Troops";
                 SendTroops.Visible = Planet.Habitable && CanSendTroops && !Player.IsNAPactWith(Planet.Owner);
-                SendTroops.Style   = Planet.Owner == Player || Planet.Owner == null ? ButtonStyle.Default : ButtonStyle.BigDip;
+                SendTroops.Style   = Planet.Owner == Player || Planet.Owner == null
+                                   ? ButtonStyle.DanButtonClear : ButtonStyle.DanButtonClearRed;
             }
         }
 

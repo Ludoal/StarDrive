@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics.Input;
 using SDGraphics;
+using Ship_Game.GameScreens; // ReworkScreens: the group geometry
 using SDUtils;
 using Ship_Game.Audio;
 using Vector2 = SDGraphics.Vector2;
@@ -15,9 +16,7 @@ namespace Ship_Game
 {
     public sealed class PlanetListScreen : GameScreen
     {
-        readonly Menu2 TitleBar;
-        readonly Vector2 TitlePos;
-        readonly Menu2 EMenu;
+        Submenu GalaxyTabs; // Ludoal fork: the Galaxy group's tab row, this screen being one tab
 
         public UniverseScreen Universe;
         public UniverseState UState => Universe.UState;
@@ -77,15 +76,25 @@ namespace Ship_Game
             {
                 //LowRes = true;
             }
-            Rectangle titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            TitleBar = new Menu2(titleRect);
-            TitlePos = new Vector2((titleRect.X + titleRect.Width / 2) - Fonts.Laserian14.MeasureString(Localizer.Token(GameText.PlanetArray)).X / 2f, (titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2));
-            Rectangle leftRect = new Rectangle(2, titleRect.Y + titleRect.Height + 5, ScreenWidth - 10, ScreenHeight - titleRect.Bottom - 7);
-            EMenu    = new Menu2(leftRect);
-            Add(new CloseButton(leftRect.Right - 40, leftRect.Y + 20));
-            ERect = new(leftRect.X + 20, titleRect.Bottom + 50, ScreenWidth - 40,
-                        leftRect.Bottom - (titleRect.Bottom + 46) - 31);
-            RectF slRect = new(ERect.X, ERect.Y-10, ERect.W, ERect.H+10);
+            // Ludoal fork: the Planets tab of the Galaxy group - the title cartouche and its brass
+            // surround give way to the group's tab row, from ReworkScreens.
+            Rectangle frame = ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
+            GalaxyTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
+                                         ReworkScreens.GalaxyTabTitles));
+            GalaxyTabs.OnTabChange = OnGalaxyTabChanged;
+            GalaxyTabs.PerformLayout(); // ClientArea is only known once the tabs are laid out
+            GalaxyTabs.SelectedIndex = 0;
+
+            Vector2 closePos = ReworkScreens.GroupClosePos(GalaxyTabs.ClientArea);
+            Add(new CloseButton(closePos.X, closePos.Y));
+
+            // The first line inside the frame carries the filters and the troop count; the table
+            // takes what is left below it.
+            RectF client = GalaxyTabs.ClientArea;
+            float tableTop = client.Y + ReworkScreens.ColumnPadV + ReworkScreens.GalaxyHeaderH;
+            ERect = new(client.X + 20, tableTop + 40, client.W - 40,
+                        client.Bottom - tableTop - 40 - ReworkScreens.ColumnPadV);
+            RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
             PlanetSL = Add(new ScrollList<PlanetListScreenItem>(slRect));
             PlanetSL.EnableItemHighlight = true;
 
@@ -110,26 +119,19 @@ namespace Ship_Game
             }
 
             CalcPlanetsDistances();
-            cb_hideOwned = Add(new UICheckBox(TitleBar.Menu.X + TitleBar.Menu.Width + 15, TitleBar.Menu.Y + 5,
-                () => HideOwned, 
+            // Ludoal fork: the reserved first line - both filters on the left, the troop count on
+            // the right. The Exotic Systems button is gone: it is a tab of this group now.
+            float lineY = client.Y + ReworkScreens.ColumnPadV + 4;
+            cb_hideOwned = Add(new UICheckBox(client.X + 20, lineY,
+                () => HideOwned,
                 x => { HideOwned = x; ResetList(); }, Fonts.Arial12Bold, "Hide Owned", ""));
 
-            cb_hideUninhabitable = Add(new UICheckBox(TitleBar.Menu.X + TitleBar.Menu.Width + 15, TitleBar.Menu.Y + 25,
-                () => HideUninhab, 
+            cb_hideUninhabitable = Add(new UICheckBox(client.X + 150, lineY,
+                () => HideUninhab,
                 x => { HideUninhab = x; ResetList(); }, Fonts.Arial12Bold, "Hide Uninhabitable", ""));
 
-            Vector2 exoticPos = new Vector2(TitleBar.Menu.X + TitleBar.Menu.Width - 200, TitleBar.Menu.Y + 30);
-
-            ExoticSystemsButton = Add(new UIButton(ButtonStyle.Military, exoticPos, GameText.ExoticSystemsArray));
-            ExoticSystemsButton.OnClick = (b) => OnExoticSystemsScreenClick();
-            ExoticSystemsButton.Tooltip = GameText.ExoticSystemsArrayTip;
-            // Ludoal fork: the key goes in the tooltip's own hotkey slot, the way every other
-            // shortcut in the game is announced - it was glued onto the end of the text as
-            // " (G)", which is not how the tooltip states a key anywhere else (maintainer feedback).
-            ExoticSystemsButton.TooltipHotkey = "G";
-
-            Vector2 troopPos = new Vector2(TitleBar.Menu.X + TitleBar.Menu.Width + 17, TitleBar.Menu.Y + 65);
-            AvailableTroops  = Add(new UILabel(troopPos, $"Available Troops: ", Fonts.Arial20Bold, Color.LightGreen));
+            AvailableTroops = Add(new UILabel(new Vector2(client.X + 340, lineY - 4),
+                                              "Available Troops: ", Fonts.Arial20Bold, Color.LightGreen));
         }
 
         void CalcPlanetsDistances()
@@ -164,9 +166,9 @@ namespace Ship_Game
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
-            TitleBar.Draw(batch, elapsed);
-            batch.DrawString(Fonts.Laserian14, Localizer.Token(GameText.PlanetArray), TitlePos, Colors.Cream);
-            EMenu.Draw(batch, elapsed);
+            // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
+            // drawn among the children, after everything below it.
+            batch.FillRectangle(GalaxyTabs.ClientArea, ReworkScreens.GroupFrameFill);
             AvailableTroops.Text = $"Available Troops: {NumAvailableTroops}";
             AvailableTroops.Color = NumAvailableTroops == 0 ? Color.Gray : Color.LightGreen;
             base.Draw(batch, elapsed);
@@ -231,6 +233,7 @@ namespace Ship_Game
 
                 batch.DrawRectangle(PlanetSL.ItemsHousing, lineColor); // items housing border
             }
+            ReworkScreens.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
@@ -382,11 +385,18 @@ namespace Ship_Game
             return false;
         }
 
-        void OnExoticSystemsScreenClick()
+        // Ludoal fork: the other two tabs live in their own screen, so leaving Planets hands over
+        // to it. Planets itself is a no-op: we are already here.
+        void OnGalaxyTabChanged(int index)
         {
+            if (index == 0)
+                return;
             ExitScreen();
             GameAudio.AcceptClick();
-            Universe.ScreenManager.AddScreen(new ExoticSystemsListScreen(Universe, Universe.EmpireUI));
+            if (index == 1)
+                Universe.ScreenManager.AddScreen(new ExoticSystemsListScreen(Universe, Universe.EmpireUI));
+            else
+                Universe.ScreenManager.AddScreen(new EmpirePatrolsScreen(Universe, Player));
         }
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics.Input;
 using SDGraphics;
+using Ship_Game.GameScreens; // ReworkScreens: the group geometry
 using SDUtils;
 using Ship_Game.Audio;
 using Vector2 = SDGraphics.Vector2;
@@ -16,9 +17,7 @@ namespace Ship_Game
 {
     public sealed class EmpirePatrolsScreen : GameScreen
     {
-        readonly Menu2 TitleBar;
-        readonly Vector2 TitlePos;
-        readonly Menu2 EMenu;
+        Submenu GalaxyTabs; // Ludoal fork: the Galaxy group's tab row, this screen being one tab
 
         public UniverseScreen Universe;
         public UniverseState UState => Universe.UState;
@@ -45,14 +44,22 @@ namespace Ship_Game
             TransitionOffTime = 0.25f;
             IsPopup = true;
 
-            Rectangle titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            TitleBar = new Menu2(titleRect);
-            TitlePos = new Vector2((titleRect.X + titleRect.Width / 2) - Fonts.Laserian14.MeasureString(Localizer.Token(GameText.EmpirePatrolsScreenTitle)).X / 2f, (titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2));
-            Rectangle leftRect = new Rectangle(2, titleRect.Y + titleRect.Height + 5, ScreenWidth - 10, ScreenHeight - titleRect.Bottom - 7);
-            EMenu = new Menu2(leftRect);
-            Add(new CloseButton(leftRect.Right - 40, leftRect.Y + 20));
-            ERect = new(leftRect.X + 20, titleRect.Bottom + 50, ScreenWidth - 40,
-                        leftRect.Bottom - (titleRect.Bottom + 46) - 31);
+            // Ludoal fork: the Patrols tab of the Galaxy group - the title cartouche and its brass
+            // surround give way to the group's tab row.
+            Rectangle frame = ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
+            GalaxyTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
+                                         ReworkScreens.GalaxyTabTitles));
+            GalaxyTabs.OnTabChange = OnGalaxyTabChanged;
+            GalaxyTabs.PerformLayout();
+            GalaxyTabs.SelectedIndex = 2;
+
+            Vector2 closePos = ReworkScreens.GroupClosePos(GalaxyTabs.ClientArea);
+            Add(new CloseButton(closePos.X, closePos.Y));
+
+            RectF client = GalaxyTabs.ClientArea;
+            float tableTop = client.Y + ReworkScreens.ColumnPadV;
+            ERect = new(client.X + 20, tableTop + 40, client.W - 40,
+                        client.Bottom - tableTop - 40 - ReworkScreens.ColumnPadV);
             RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
             PatrolsSL = Add(new ScrollList<EmpirePatrolsScreenListItem>(slRect));
             PatrolsSL.EnableItemHighlight = true;
@@ -67,6 +74,25 @@ namespace Ship_Game
             SbFleetsAssigned = new SortButton(Player.data.PLSort, Localizer.Token(GameText.PatrolAssignedFleets));
         }
 
+        // Ludoal fork: a column's rect from its two edges, so a header can be centred without a
+        // list item to read the columns off.
+        static Rectangle ColumnRect(float left, float right)
+            => new((int)left, 0, (int)(right - left), 0);
+
+        // Ludoal fork: the other two tabs live in their own screen, so leaving Patrols hands over to
+        // it. This tab is a no-op: we are already here.
+        void OnGalaxyTabChanged(int index)
+        {
+            if (index == 2)
+                return;
+            ExitScreen();
+            GameAudio.AcceptClick();
+            if (index == 0)
+                Universe.ScreenManager.AddScreen(new PlanetListScreen(Universe, Universe.EmpireUI));
+            else
+                Universe.ScreenManager.AddScreen(new ExoticSystemsListScreen(Universe, Universe.EmpireUI));
+        }
+
         Vector2 GetCenteredTextOffset(Rectangle rect, GameText text)
         {
             return new Vector2(rect.X + rect.Width / 2 - Fonts.Arial20Bold.MeasureString(Localizer.Token(text)).X / 2f,
@@ -77,50 +103,47 @@ namespace Ship_Game
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
-            TitleBar.Draw(batch, elapsed);
-            batch.DrawString(Fonts.Laserian14, Localizer.Token(GameText.EmpirePatrolsScreenTitle), TitlePos, Colors.Cream);
-            EMenu.Draw(batch, elapsed);
+            // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
+            // drawn among the children, after everything below it.
+            batch.FillRectangle(GalaxyTabs.ClientArea, ReworkScreens.GroupFrameFill);
             base.Draw(batch, elapsed);
 
-            if (PatrolsSL.NumEntries > 0)
-            {
-                EmpirePatrolsScreenListItem e1 = PatrolsSL.ItemAtTop;
-                Graphics.Font fontStyle = Fonts.Arial20Bold;
+            // Ludoal fork: the header, separators and border are drawn whether or not there is a
+            // patrol to list - an empire with no patrol plans showed a blank panel, which reads as
+            // a broken screen rather than an empty table. Column edges come from ERect and the same
+            // fractions the list items use, so they no longer need a row to exist to be known.
+            Graphics.Font fontStyle = Fonts.Arial20Bold;
+            float w = ERect.W;
+            float nameX = ERect.X;
+            float waypointsX = nameX + w * 0.15f;
+            float fleetsNumX = waypointsX + w * 0.08f;
+            float fleetsX = fleetsNumX + w * 0.08f;
+            float fleetsRight = fleetsX + w * 0.4f;
 
-                var textCursor = GetCenteredTextOffset(e1.PatrolNameRect, GameText.PatrolPlanName);
-                SbPatrolName.Update(textCursor);
-                SbPatrolName.Draw(ScreenManager);
+            var textCursor = GetCenteredTextOffset(ColumnRect(nameX, waypointsX), GameText.PatrolPlanName);
+            SbPatrolName.Update(textCursor);
+            SbPatrolName.Draw(ScreenManager);
 
-                textCursor = GetCenteredTextOffset(e1.NumWaypointsRect, GameText.NumWayPoints);
-                SbNumWaypoints.Update(textCursor);
-                SbNumWaypoints.Draw(ScreenManager, fontStyle);
+            textCursor = GetCenteredTextOffset(ColumnRect(waypointsX, fleetsNumX), GameText.NumWayPoints);
+            SbNumWaypoints.Update(textCursor);
+            SbNumWaypoints.Draw(ScreenManager, fontStyle);
 
-                textCursor = GetCenteredTextOffset(e1.NumFleetsRect, GameText.PatrolNumAssignedFleets);
-                SbNumFleetsAssigned.Update(textCursor);
-                SbNumFleetsAssigned.Draw(ScreenManager, fontStyle);
+            textCursor = GetCenteredTextOffset(ColumnRect(fleetsNumX, fleetsX), GameText.PatrolNumAssignedFleets);
+            SbNumFleetsAssigned.Update(textCursor);
+            SbNumFleetsAssigned.Draw(ScreenManager, fontStyle);
 
-                textCursor = GetCenteredTextOffset(e1.FleetsRect, GameText.PatrolAssignedFleets);
-                SbFleetsAssigned.Update(textCursor);
-                SbFleetsAssigned.Draw(ScreenManager, fontStyle);
+            textCursor = GetCenteredTextOffset(ColumnRect(fleetsX, fleetsRight), GameText.PatrolAssignedFleets);
+            SbFleetsAssigned.Update(textCursor);
+            SbFleetsAssigned.Draw(ScreenManager, fontStyle);
 
-                Color lineColor = new Color(118, 102, 67, 255);
-                float columnTop = ERect.Y + 15;
-                float columnBot = ERect.Y + ERect.H - 20;
-                Vector2 topLeftSL = new(e1.NumWaypointsRect.X, columnTop);
-                Vector2 botSL = new(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-                topLeftSL = new Vector2((e1.NumFleetsRect.X), columnTop);
-                botSL = new Vector2(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-                topLeftSL = new Vector2(e1.FleetsRect.X, columnTop);
-                botSL = new Vector2(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-                topLeftSL = new Vector2((e1.FleetsRect.X + e1.FleetsRect.Width + 5), columnTop);
-                botSL = new Vector2(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
+            Color lineColor = new Color(118, 102, 67, 255);
+            float columnTop = ERect.Y + 15;
+            float columnBot = ERect.Y + ERect.H - 20;
+            foreach (float lineX in new[] { waypointsX, fleetsNumX, fleetsX, fleetsRight + 5 })
+                batch.DrawLine(new Vector2(lineX, columnTop), new Vector2(lineX, columnBot), lineColor);
 
-                batch.DrawRectangle(PatrolsSL.ItemsHousing, lineColor); // items housing border
-            }
+            batch.DrawRectangle(PatrolsSL.ItemsHousing, lineColor); // items housing border
+            ReworkScreens.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }

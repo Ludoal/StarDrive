@@ -74,6 +74,28 @@ namespace Ship_Game.GameScreens
 
         public static readonly string[] GroupTabKeys = { "I", "I", "I", "E" };
 
+        // ── Galaxy group ──────────────────────────────────────────────────────────────────────
+        // Ludoal fork: the second group of the unified top bar. Same frame, same tab row as the
+        // Diplomacy group - one geometry for the whole bar.
+        public static readonly LocalizedText[] GalaxyTabTitles =
+        {
+            "Planets", "Exotic Systems", "Patrols"
+        };
+
+        public static readonly string[] GalaxyTabTips =
+        {
+            "Every planet you know of, sortable, with the troops you can land.",
+            "Systems holding exotic resources, and what they grant.",
+            "Standing patrol routes and the fleets flying them.",
+        };
+
+        // the keys those screens already close on
+        public static readonly string[] GalaxyTabKeys = { "P", "G", "" };
+
+        // The first line of the Planets tab is reserved for its filters and troop count, so its
+        // table starts lower than the other tabs'. Ludoal fork.
+        public const int GalaxyHeaderH = 30;
+
         // The tab the cursor is over, or -1. Ludoal fork: Tab.Hover is only set while the Submenu
         // handles input, so the rect is hit-tested directly - a draw pass can run between two
         // input passes.
@@ -86,14 +108,20 @@ namespace Ship_Game.GameScreens
         }
 
         // Raise the hovered tab's tip, under its own tab rather than at the cursor.
-        public static void DrawGroupTabTip(Submenu tabs, Vector2 cursor)
+        public static void DrawTabTip(Submenu tabs, Vector2 cursor, string[] tips, string[] keys)
         {
             int i = GroupTabUnderCursor(tabs, cursor);
-            if (i < 0 || i >= GroupTabTips.Length)
+            if (i < 0 || i >= tips.Length)
                 return;
             RectF r = tabs.Tabs[i].Rect;
-            ToolTip.CreateTooltip(GroupTabTips[i], GroupTabKeys[i], new Vector2(r.X, r.Bottom + 4));
+            ToolTip.CreateTooltip(tips[i], i < keys.Length ? keys[i] : "", new Vector2(r.X, r.Bottom + 4));
         }
+
+        public static void DrawGroupTabTip(Submenu tabs, Vector2 cursor)
+            => DrawTabTip(tabs, cursor, GroupTabTips, GroupTabKeys);
+
+        public static void DrawGalaxyTabTip(Submenu tabs, Vector2 cursor)
+            => DrawTabTip(tabs, cursor, GalaxyTabTips, GalaxyTabKeys);
 
         public static Rectangle GroupFrame(int screenW, int screenH)
             => new(FrameMargin, TabRowY, screenW - 2 * FrameMargin, screenH - TabRowY - FrameMargin);
