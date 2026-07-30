@@ -11,6 +11,7 @@ using SDUtils;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Point = SDGraphics.Point;
+using Ship_Game.GameScreens; // ReworkScreens: the group geometry
 
 // ReSharper disable once CheckNamespace
 namespace Ship_Game
