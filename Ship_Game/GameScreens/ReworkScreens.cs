@@ -112,13 +112,16 @@ namespace Ship_Game.GameScreens
         // above the table for column titles, plus any reserved first line.
         public static RectF GalaxyTable(in RectF client, float reservedLine = 0)
         {
-            // ⚠ NO padding of our own: the client area already insets on all four sides, and its
-            // height already stops short of the bottom border - adding 5px gave 5 too many left,
-            // right and top, and 10 too many at the foot. The frame IS the margin.
-            float top = client.Y + reservedLine;
+            // ⚠ MEASURED, not guessed: NineSliceSprite builds ClientArea by cutting the CORNER
+            // textures off the frame - submenu_corner_TL is 9x9, so the client area already sits
+            // 9px in on every side and 18 off the height. Wanting 5px of visible margin means
+            // coming BACK 4px, not adding any. Two builds went on adding to a margin that was
+            // already there.
+            const float corner = 9, want = 5, back = corner - want;
+            float top = client.Y - back + reservedLine;
             const float columnTitles = 40;
-            return new(client.X, top + columnTitles, client.W,
-                       client.Bottom - (top + columnTitles));
+            return new(client.X - back, top + columnTitles, client.W + 2 * back,
+                       client.Bottom + back - (top + columnTitles));
         }
 
         // The tab the cursor is over, or -1. Ludoal fork: Tab.Hover is only set while the Submenu

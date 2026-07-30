@@ -318,10 +318,19 @@ namespace Ship_Game
 
                 SendTroops.Text = $"{text} {troopsInvading}";
                 SendTroops.Style = style;
+                // ⚠ visible even with no free troop left: right-clicking this button is the only
+                // way to cancel the landing, and a hidden button takes no click. Sending your last
+                // troop would otherwise be irreversible.
+                SendTroops.Visible = true;
             }
             else
             {
                 SendTroops.Text    = "Send Troops";
+                // ⚠ Ludoal fork: hiding this button when no troop is free is right - there is
+                // nothing to send. But right-clicking it is how an inbound landing is CANCELLED,
+                // and the branch above (troops on their way) is the one that keeps it visible.
+                // Do not extend the hiding to that branch: a hidden button takes no click, so the
+                // last free troop sent would be impossible to recall.
                 SendTroops.Visible = Planet.Habitable && CanSendTroops && !Player.IsNAPactWith(Planet.Owner);
                 SendTroops.Style   = Planet.Owner == Player || Planet.Owner == null
                                    ? ButtonStyle.DanButtonClear : ButtonStyle.DanButtonClearRed;
