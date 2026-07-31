@@ -24,8 +24,17 @@ namespace Ship_Game
         Rectangle MoneyIcon, ResearchIcon;
         int MoneyTextX, ResearchTextX, StarDateRight;
         Rectangle PauseRect, SpeedFaster, SpeedSlower;
-        const int MoneyRoom = 150;      // "1.2m (+16.2)"
-        const int ResearchRoom = 260;   // "515/670 (+13.2)  Fusion Power"
+        // Ludoal fork: the bar's own height, and the height of a Dan button inside it. The tab
+        // rows below read BarH so they sit a fixed 10px under the bar rather than at a constant
+        // that would drift the day this changes.
+        public const int BarTop = 10;   // clear of the window's own edge
+        public const int BarH = 34;
+        const int DanH = 25;
+
+        // Measured in Arial12Bold on the worst realistic case, not eyeballed: the treasury peaks
+        // around 100px ("999.9k (+999.9)"), the research line around 240 with a long topic name.
+        const int MoneyRoom = 110;
+        const int ResearchRoom = 250;
         const int StarDateRoom = 120;   // "StarDate: 1202.8"
         const int SpeedRoom = 46;       // "0.25x" - reserved, so the cluster never shifts
         int SpeedTextRight;             // the factor is right-aligned here, left of "<<"
@@ -43,14 +52,17 @@ namespace Ship_Game
             Universe = universe;
             LowRes = universe.ScreenWidth <= 1366;
 
-            const int pad = 8, gap = 6, btnH = 22, y = 4;
+            // Ludoal fork: the bar stands 34 tall so it reads as a band of its own, and its
+            // buttons are Dan buttons (25px textures) rather than painted plates.
+            const int pad = 8, gap = 6, btnH = DanH;
+            const int y = BarTop + (BarH - DanH) / 2;
             int w = universe.ScreenWidth;
 
             // ── left: treasury, then research ────────────────────────────────────────────────
             // The readouts are drawn by Draw (their text changes every turn); what lives here is
             // the CLICKABLE icon in front of each, wired to its tab.
             int x = pad;
-            MoneyIcon = new Rectangle(x, y + 1, 20, 20);
+            MoneyIcon = new Rectangle(x, y + (DanH - 20) / 2, 20, 20);
             Buttons.Add(new Button
             {
                 Rect = MoneyIcon, Flat = true, Icon = ResourceManager.Texture("NewUI/icon_money"),
@@ -62,7 +74,7 @@ namespace Ship_Game
             // the treasury readout runs before the research icon; Draw measures it, so the icon
             // is placed on a reserved width rather than on the text of this particular turn
             x += MoneyRoom;
-            ResearchIcon = new Rectangle(x, y + 1, 20, 20);
+            ResearchIcon = new Rectangle(x, y + (DanH - 20) / 2, 20, 20);
             Buttons.Add(new Button
             {
                 Rect = ResearchIcon, Flat = true, Icon = ResourceManager.Texture("NewUI/icon_science"),
@@ -95,23 +107,10 @@ namespace Ship_Game
             SpeedTextRight = rx;
             rx -= SpeedRoom + gap;
 
-            int helpW = 30;
-            Buttons.Add(new Button
-            {
-                Rect = new Rectangle(rx - helpW, y, helpW, btnH), Flat = true, Text = "?",
-                launches = "?", Tip = "Open the codex",
-            });
-            rx -= helpW + gap;
-
-            int menuW = 30;
-            Buttons.Add(new Button
-            {
-                Rect = new Rectangle(rx - menuW, y, menuW, btnH), Flat = true, Text = "MENU",
-                launches = "Main Menu", Tip = "Open the main menu",
-            });
-            rx -= menuW;
-
-            // ── centre: the four groups, centred in what the two sides leave ─────────────────
+            // ── centre: the four groups, then MENU and ? riding with them ───────────────────
+            // The two session buttons sit with the groups rather than off at the edge, separated
+            // by a DOUBLE gap: near enough to read as one cluster, far enough to read as a
+            // different kind of thing.
             (string launch, string text, ReworkScreens.Group group)[] groups =
             {
                 ("Planets",   "GALAXY",    ReworkScreens.Group.Galaxy),
@@ -120,11 +119,14 @@ namespace Ship_Game
                 ("Fleets",    "DESIGN",    ReworkScreens.Group.Design),
             };
             int groupW = LowRes ? 96 : 116;
-            int groupsW = groups.Length * groupW + (groups.Length - 1) * gap;
-            // centred between the two zones, never overlapping either
+            int menuW = 56, helpW = 30;
+            int clusterW = groups.Length * groupW + (groups.Length - 1) * gap
+                         + gap * 2 + menuW + gap + helpW;
+
+            // centred in what the two sides leave, never overlapping either
             int freeLeft = ResearchTextX + ResearchRoom + gap;
             int freeRight = rx - gap;
-            int gx = freeLeft + ((freeRight - freeLeft) - groupsW) / 2;
+            int gx = freeLeft + ((freeRight - freeLeft) - clusterW) / 2;
             if (gx < freeLeft) gx = freeLeft;
 
             foreach ((string launch, string text, ReworkScreens.Group group) in groups)
@@ -136,12 +138,24 @@ namespace Ship_Game
                 });
                 gx += groupW + gap;
             }
+
+            gx += gap;  // the double margin that separates the two kinds
+            Buttons.Add(new Button
+            {
+                Rect = new Rectangle(gx, y, menuW, btnH), Flat = true, Text = "MENU",
+                launches = "Main Menu", Tip = "Open the main menu",
+            });
+            gx += menuW + gap;
+            Buttons.Add(new Button
+            {
+                Rect = new Rectangle(gx, y, helpW, btnH), Flat = true, Text = "?",
+                launches = "?", Tip = "Open the codex",
+            });
         }
 
         // Ludoal fork: the bar draws itself flat, in the reworked screens' grammar - a dark plate
         // with a brass rule, no plating textures. Colour is decided HERE from live state (which
         // group is open, whether the game is paused), never stored on the button.
-        static readonly Color PlateRule  = new Color(118, 102, 67);
         static readonly Color PlateBlue  = new Color(38, 56, 84);
         static readonly Color PlateBrown = new Color(84, 64, 38);
         static readonly Color PlateRed   = new Color(96, 34, 34);
@@ -173,11 +187,15 @@ namespace Ship_Game
                     continue;
                 }
 
-                if (b.State == PressState.Hover)   fill = fill.LerpTo(Color.White, 0.18f);
-                if (b.State == PressState.Pressed) fill = fill.LerpTo(Color.Black, 0.25f);
-
-                batch.FillRectangle(b.Rect, fill.Alpha(0.92f));
-                batch.DrawRectangle(b.Rect, PlateRule.Alpha(0.75f));
+                // the Dan button textures the reworked screens use, stretched to the rect: blue
+                // normally, red for a live pause, and the plain plate for the open group
+                string tex = fill == PlateBrown ? "NewUI/dan_button_clear"
+                           : fill == PlateRed   ? "NewUI/dan_button_red_clear"
+                                                : "NewUI/dan_button_blue_clear";
+                Color tone = b.State == PressState.Hover   ? Color.White
+                           : b.State == PressState.Pressed ? new Color(180, 180, 180)
+                                                           : new Color(225, 225, 225);
+                batch.Draw(ResourceManager.Texture(tex), b.Rect, tone);
 
                 if (!string.IsNullOrEmpty(b.Text))
                 {
