@@ -145,7 +145,7 @@ namespace Ship_Game
             // sides the tab row does not cover. Only the top keeps the client's line, which is
             // where the tabs sit.
             const float Pad = 10;
-            RectF frame = ColonyTabs.Rect;
+            Rectangle frame = ColonyTabs.Rect;   // ⚠ a Rectangle; RectF converts only the other way
             float gridLeft   = frame.X + Pad;
             float gridRight  = frame.Right - Pad;
             float gridTop    = client.Y + Pad;
