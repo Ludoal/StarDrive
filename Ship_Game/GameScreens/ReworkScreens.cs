@@ -40,7 +40,9 @@ namespace Ship_Game.GameScreens
         // changes height, every group's frame follows it.
         const int TabStripH = 25; // Submenu.TabHeight, which is private
         public const int TabRowY = EmpireUIOverlay.BarTop + EmpireUIOverlay.BarH + 10 - TabStripH;
-        public const int FrameMargin = 10;   // clear of every screen edge
+        // the same margin the top bar keeps: the frame's sides line up with the bar above it,
+        // and one of the two moving is a thing you would only notice once it looked wrong
+        public const int FrameMargin = EmpireUIOverlay.BarTop;
         public const int ColumnGutter = 5;   // inside the frame, left and right of the columns
         public const int ColumnGap = 5;      // between two columns
         public const int ColumnPadV = 5;     // above and below the columns, inside the frame

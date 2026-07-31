@@ -54,7 +54,8 @@ namespace Ship_Game
 
             // Ludoal fork: the bar stands 34 tall so it reads as a band of its own, and its
             // buttons are Dan buttons (25px textures) rather than painted plates.
-            const int pad = 8, gap = 6, btnH = DanH;
+            // the same 10 the bar keeps at the top, on both sides
+            const int pad = BarTop, gap = 6, btnH = DanH;
             const int y = BarTop + (BarH - DanH) / 2;
             int w = universe.ScreenWidth;
 
