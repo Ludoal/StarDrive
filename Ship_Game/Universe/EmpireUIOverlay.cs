@@ -14,300 +14,204 @@ namespace Ship_Game
     public sealed class EmpireUIOverlay
     {
         public Empire Player;
-        Rectangle res1;
-        Rectangle res2;
-        Rectangle res3;
-        Rectangle res4;
-        Rectangle res5;
         Array<Button> Buttons = new Array<Button>();
         bool LowRes;
         UniverseScreen Universe;
 
+        // Ludoal fork: the bar's own geometry. The readouts change every turn, so each is drawn
+        // on a RESERVED width rather than measured - otherwise the icon after it would shift as
+        // the treasury gained a digit.
+        Rectangle MoneyIcon, ResearchIcon;
+        int MoneyTextX, ResearchTextX, StarDateRight;
+        Rectangle PauseRect, SpeedFaster, SpeedSlower;
+        const int MoneyRoom = 150;      // "1.2m (+16.2)"
+        const int ResearchRoom = 260;   // "515/670 (+13.2)  Fusion Power"
+        const int StarDateRoom = 120;   // "StarDate: 1202.8"
+
+        // Ludoal fork: the bar is laid out in three zones and drawn flat - the military plating,
+        // the five resource cartouches and the ten-button row are gone. Left: what the empire HAS
+        // (treasury, research). Centre: the four groups of the unified bar. Right: the session
+        // controls (menu, help, speed, stardate).
+        //
+        // Every rect is built here, once, from the screen width; Draw only paints and HandleInput
+        // only tests. Nothing downstream recomputes a position.
         public EmpireUIOverlay(Empire playerEmpire, GraphicsDevice device, UniverseScreen universe)
         {
             Player = playerEmpire;
             Universe = universe;
+            LowRes = universe.ScreenWidth <= 1366;
 
-            var iRes1 = ResourceManager.Texture("EmpireTopBar/empiretopbar_res1");
-            var iRes2 = ResourceManager.Texture("EmpireTopBar/empiretopbar_res2");
-            var iRes3 = ResourceManager.Texture("EmpireTopBar/empiretopbar_res3");
-            var iRes4 = ResourceManager.Texture("EmpireTopBar/empiretopbar_res4");
-            var iRes5 = ResourceManager.Texture("EmpireTopBar/empiretopbar_res5");
+            const int pad = 8, gap = 6, btnH = 22, y = 4;
+            int w = universe.ScreenWidth;
 
-            Vector2 Cursor = Vector2.Zero;
-            res1 = new Rectangle((int)Cursor.X, 2, iRes1.Width, iRes1.Height);
-            Cursor.X = Cursor.X + iRes1.Width;
-
-            res2 = new Rectangle((int)Cursor.X, 2, iRes2.Width, iRes2.Height);
-            Cursor.X = Cursor.X + iRes2.Width;
-
-            res3 = new Rectangle((int)Cursor.X, 2, iRes3.Width, iRes3.Height);
-            Cursor.X = Cursor.X + iRes3.Width;
-
-            res4 = new Rectangle((int)Cursor.X, 2, iRes4.Width, iRes4.Height);
-            Cursor.X = Cursor.X + iRes4.Width;
-
-            Cursor.X = Universe.ScreenWidth - iRes5.Width;
-            res5 = new Rectangle((int)Cursor.X, 2, iRes5.Width, iRes5.Height);
-
-            Button r1 = new Button();
-            r1.Rect = res1;
-            r1.NormalTexture  = ResourceManager.Texture("EmpireTopBar/empiretopbar_res1");
-            r1.HoverTexture   = ResourceManager.Texture("EmpireTopBar/empiretopbar_res1_hover");
-            r1.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_res1_press");
-            r1.launches = "Research";
-            Buttons.Add(r1);
-
-            Button r2 = new Button();
-            r2.Rect = res2;
-            r2.NormalTexture  = ResourceManager.Texture("EmpireTopBar/empiretopbar_res2");
-            r2.HoverTexture   = ResourceManager.Texture("EmpireTopBar/empiretopbar_res2");
-            r2.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_res2");
-            r2.launches = "Research";
-            Buttons.Add(r2);
-
-            Button r3 = new Button();
-            r3.Rect = res3;
-            r3.NormalTexture  = ResourceManager.Texture("EmpireTopBar/empiretopbar_res3");
-            r3.HoverTexture   = ResourceManager.Texture("EmpireTopBar/empiretopbar_res3_hover");
-            r3.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_res3_press");
-            r3.launches = "Budget";
-            Buttons.Add(r3);
-
-            Button r4 = new Button();
-            r4.Rect = res4;
-            r4.NormalTexture  = ResourceManager.Texture("EmpireTopBar/empiretopbar_res4");
-            r4.HoverTexture   = ResourceManager.Texture("EmpireTopBar/empiretopbar_res4");
-            r4.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_res4");
-            r4.launches = "Budget";
-            Buttons.Add(r4);
-
-            Button r5 = new Button();
-            r5.Rect = res5;
-            r5.NormalTexture  = ResourceManager.Texture("EmpireTopBar/empiretopbar_res5");
-            r5.HoverTexture   = ResourceManager.Texture("EmpireTopBar/empiretopbar_res5");
-            r5.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_res5");
-            Buttons.Add(r5);
-
-            // Ludoal fork (reorg): single-row 132px layout in three tinted groups —
-            // Empire/Diplomacy/Espionage (heritage bronze), Planets/Ships/Troops (steel
-            // blue, dip-family hue), Fleets/Shipyard/Blueprints/Patrols (muted red,
-            // military-family hue). Exotic omitted: Planets<->Exotic cross-buttons exist
-            // in-panel. Width is adaptive: full 132px when the span allows (1440p+),
-            // shrunk to fit narrower screens (~120px at 1920). Minimap buttons stay.
-            var g1  = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px");
-            var g1h = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_hover");
-            var g1p = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_pressed");
-            var g2  = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_menu");
-            var g2h = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_menu_hover");
-            var g2p = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_menu_pressed");
-            Color tintLists    = new Color(186, 210, 246); // -> (62,70,82) over the grey base
-            Color tintMilitary = new Color(255, 213, 222); // -> (85,71,74) over the grey base
-
-            (string launch, string text, int group)[] row =
+            // ── left: treasury, then research ────────────────────────────────────────────────
+            // The readouts are drawn by Draw (their text changes every turn); what lives here is
+            // the CLICKABLE icon in front of each, wired to its tab.
+            int x = pad;
+            MoneyIcon = new Rectangle(x, y + 1, 20, 20);
+            Buttons.Add(new Button
             {
-                ("Empire",     Localizer.Token(GameText.Empire),     0),
-                ("Diplomacy",  Localizer.Token(GameText.Diplomacy),  0),
-                ("Espionage",  Localizer.Token(GameText.Espionage2), 0),
-                ("Planets",    "Planets",                            1),
-                ("ShipList",   "Ships",                              1),
-                ("Troops",     "Troops",                             1),
-                ("Shipyard",   Localizer.Token(GameText.Shipyard),   2), // Ludoal fork: swapped with Fleets (wishlist)
-                ("Fleets",     Localizer.Token(GameText.Fleets),     2),
-                ("Patrols",    "Patrols",                            2),
-                ("Blueprints", "Blueprints",                         2),
+                Rect = MoneyIcon, Flat = true, Icon = ResourceManager.Texture("NewUI/icon_money"),
+                launches = "Budget", Tip = "Treasury and taxes",
+            });
+            x += 20 + gap;
+            MoneyTextX = x;
+
+            // the treasury readout runs before the research icon; Draw measures it, so the icon
+            // is placed on a reserved width rather than on the text of this particular turn
+            x += MoneyRoom;
+            ResearchIcon = new Rectangle(x, y + 1, 20, 20);
+            Buttons.Add(new Button
+            {
+                Rect = ResearchIcon, Flat = true, Icon = ResourceManager.Texture("NewUI/icon_science"),
+                launches = "Research", Tip = "Research and the current topic",
+            });
+            ResearchTextX = x + 20 + gap;
+
+            // ── right, laid out from the screen edge inwards ─────────────────────────────────
+            // Stardate first (it is the rightmost), then the speed cluster, then help and menu.
+            int rx = w - pad;
+            StarDateRight = rx;
+            rx -= StarDateRoom + gap * 2;
+
+            int speedW = 26;
+            SpeedFaster = new Rectangle(rx - speedW, y, speedW, btnH);
+            Buttons.Add(new Button { Rect = SpeedFaster, Flat = true, Text = ">>", launches = "SpeedUp", Tip = "Speed up" });
+            rx -= speedW + 2;
+
+            int pauseW = 54;
+            PauseRect = new Rectangle(rx - pauseW, y, pauseW, btnH);
+            Buttons.Add(new Button { Rect = PauseRect, Flat = true, Text = "PAUSE", launches = "Pause", Tip = "Pause / resume" });
+            rx -= pauseW + 2;
+
+            SpeedSlower = new Rectangle(rx - speedW, y, speedW, btnH);
+            Buttons.Add(new Button { Rect = SpeedSlower, Flat = true, Text = "<<", launches = "SpeedDown", Tip = "Slow down" });
+            rx -= speedW + gap * 2;
+
+            int helpW = 30;
+            Buttons.Add(new Button
+            {
+                Rect = new Rectangle(rx - helpW, y, helpW, btnH), Flat = true, Text = "?",
+                launches = "?", Tip = "Open the codex",
+            });
+            rx -= helpW + gap;
+
+            int menuW = 30;
+            Buttons.Add(new Button
+            {
+                Rect = new Rectangle(rx - menuW, y, menuW, btnH), Flat = true, Text = "MENU",
+                launches = "Main Menu", Tip = "Open the main menu",
+            });
+            rx -= menuW;
+
+            // ── centre: the four groups, centred in what the two sides leave ─────────────────
+            (string launch, string text, ReworkScreens.Group group)[] groups =
+            {
+                ("Planets",   "GALAXY",    ReworkScreens.Group.Galaxy),
+                ("Empire",    "EMPIRE",    ReworkScreens.Group.Empire),
+                ("Diplomacy", "DIPLOMACY", ReworkScreens.Group.Diplomacy),
+                ("Fleets",    "DESIGN",    ReworkScreens.Group.Design),
             };
-            const float innerGap = 4f, groupGap = 16f, edgePad = 10f;
-            float span = r5.Rect.X - (r4.Rect.X + r4.Rect.Width);
-            float gapsTotal = 7 * innerGap + 2 * groupGap;
-            float wf = (span - gapsTotal - 2 * edgePad) / row.Length;
-            int rowBtnW = (int)(wf > 132f ? 132f : wf);
-            int rowBtnH = g1.Height;
-            float rowWidth = row.Length * rowBtnW + gapsTotal;
-            Cursor.X = r4.Rect.X + r4.Rect.Width + (span - rowWidth) / 2f;
-            int prevGroup = 0;
-            foreach ((string launch, string text, int group) in row)
+            int groupW = LowRes ? 96 : 116;
+            int groupsW = groups.Length * groupW + (groups.Length - 1) * gap;
+            // centred between the two zones, never overlapping either
+            int freeLeft = ResearchTextX + ResearchRoom + gap;
+            int freeRight = rx - gap;
+            int gx = freeLeft + ((freeRight - freeLeft) - groupsW) / 2;
+            if (gx < freeLeft) gx = freeLeft;
+
+            foreach ((string launch, string text, ReworkScreens.Group group) in groups)
             {
-                if (group != prevGroup)
+                Buttons.Add(new Button
                 {
-                    Cursor.X += groupGap - innerGap;
-                    prevGroup = group;
-                }
-                Button rb = new Button();
-                rb.Rect = new Rectangle((int)Cursor.X, 2, rowBtnW, rowBtnH);
-                bool heritage = group == 0;
-                rb.NormalTexture  = heritage ? g1 : g2;
-                rb.HoverTexture   = heritage ? g1h : g2h;
-                rb.PressedTexture = heritage ? g1p : g2p;
-                rb.Tint = group == 1 ? tintLists : group == 2 ? tintMilitary : Color.White;
-                rb.Text = text;
-                rb.launches = launch;
-                Buttons.Add(rb);
-                Cursor.X += rowBtnW + innerGap;
-            }
-
-            Button MainMenu = new Button();
-            MainMenu.Rect = new Rectangle(res5.X + 52, 39, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Width, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Height);
-            MainMenu.NormalTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_menu");
-            MainMenu.HoverTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_menu_hover");
-            MainMenu.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_menu_pressed");
-            MainMenu.launches = "Main Menu";
-            MainMenu.Text = Localizer.Token(GameText.MainMenu);
-            Buttons.Add(MainMenu);
-            Cursor.X = Cursor.X + (ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px_hover").Width + 5);
-
-            Button Help = new Button();
-            Help.Rect = new Rectangle(res5.X + 72, 64, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_68px").Width, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Height);
-            Help.NormalTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_68px_menu");
-            Help.HoverTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_68px_menu_hover");
-            Help.PressedTexture = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_68px_menu_pressed");
-            Help.Text = "Help";
-            Help.launches = "?";
-            Buttons.Add(Help);
-
-            // Ludoal fork: game speed - / + right of Help (68px menu family squeezed
-            // to 28px; the speed readout draws just below this row). 61px available
-            // between Help and the screen edge: 28+2+28 fits flush.
-            var sTex  = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_68px_menu");
-            var sTexH = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_68px_menu_hover");
-            var sTexP = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_68px_menu_pressed");
-            int speedX = res5.X + 72 + sTex.Width + 3;
-            foreach ((string sign, string launch) in new[] { ("-", "SpeedDown"), ("+", "SpeedUp") })
-            {
-                Button sb = new Button();
-                sb.Rect = new Rectangle(speedX, 64, 28, ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Height);
-                sb.NormalTexture  = sTex;
-                sb.HoverTexture   = sTexH;
-                sb.PressedTexture = sTexP;
-                sb.Text = sign;
-                sb.launches = launch;
-                Buttons.Add(sb);
-                speedX += 28 + 2;
+                    Rect = new Rectangle(gx, y, groupW, btnH), Flat = true,
+                    Text = text, launches = launch, Group = group,
+                });
+                gx += groupW + gap;
             }
         }
+
+        // Ludoal fork: the bar draws itself flat, in the reworked screens' grammar - a dark plate
+        // with a brass rule, no plating textures. Colour is decided HERE from live state (which
+        // group is open, whether the game is paused), never stored on the button.
+        static readonly Color PlateRule  = new Color(118, 102, 67);
+        static readonly Color PlateBlue  = new Color(38, 56, 84);
+        static readonly Color PlateBrown = new Color(84, 64, 38);
+        static readonly Color PlateRed   = new Color(96, 34, 34);
+        static readonly Color TextCream  = new Color(255, 240, 189);
 
         public void Draw(SpriteBatch batch)
         {
             if (Universe.IsExiting || Universe.IsDisposed)
                 return;
 
-            Vector2 textCursor = new Vector2();
+            // Which group is open is read from the screen stack rather than passed in: fifteen
+            // screens draw this bar, and a parameter is a parameter one of them will forget.
+            ReworkScreens.Group open = ReworkScreens.GroupOf(Universe.ScreenManager.Current);
+            Graphics.Font font = Fonts.Arial12Bold;
+
             foreach (Button b in Buttons)
             {
+                Color fill = PlateBlue;
+                if (b.Group != ReworkScreens.Group.None && b.Group == open)
+                    fill = PlateBrown;                       // the group you are inside
+                else if (b.launches == "Pause" && Universe.UState.Paused)
+                    fill = PlateRed;                         // paused, whatever paused it
+
+                if (b.Icon != null)
+                {
+                    // an icon button carries no plate: the icon IS the button
+                    Color tint = b.State == PressState.Normal ? Color.White : Color.Orange;
+                    batch.Draw(b.Icon, b.Rect, tint);
+                    continue;
+                }
+
+                if (b.State == PressState.Hover)   fill = fill.LerpTo(Color.White, 0.18f);
+                if (b.State == PressState.Pressed) fill = fill.LerpTo(Color.Black, 0.25f);
+
+                batch.FillRectangle(b.Rect, fill.Alpha(0.92f));
+                batch.DrawRectangle(b.Rect, PlateRule.Alpha(0.75f));
+
                 if (!string.IsNullOrEmpty(b.Text))
                 {
-                    textCursor.X = b.Rect.X + b.Rect.Width / 2 - Fonts.Arial12Bold.MeasureString(b.Text).X / 2f;
-                    textCursor.Y = b.Rect.Y + b.Rect.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2 - (LowRes ? 1 : 0);
-                }
-                if (b.State == PressState.Normal)
-                {
-                    batch.Draw(b.NormalTexture, b.Rect, b.Tint);
-                    if (string.IsNullOrEmpty(b.Text))
-                    {
-                        continue;
-                    }
-                    batch.DrawString(Fonts.Arial12Bold, b.Text, textCursor, new Color(255, 240, 189));
-                }
-                else if (b.State != PressState.Hover)
-                {
-                    if (b.State != PressState.Pressed)
-                    {
-                        continue;
-                    }
-                    batch.Draw(b.PressedTexture, b.Rect, b.Tint);
-                    if (string.IsNullOrEmpty(b.Text))
-                    {
-                        continue;
-                    }
-                    textCursor.Y = textCursor.Y + 1f;
-                    batch.DrawString(Fonts.Arial12Bold, b.Text, textCursor, new Color(255, 240, 189));
-                }
-                else
-                {
-                    batch.Draw(b.HoverTexture, b.Rect, b.Tint);
-                    if (string.IsNullOrEmpty(b.Text))
-                    {
-                        continue;
-                    }
-                    batch.DrawString(Fonts.Arial12Bold, b.Text, textCursor, new Color(255, 240, 189));
+                    var at = new Vector2(b.Rect.X + b.Rect.Width / 2 - font.TextWidth(b.Text) / 2f,
+                                         b.Rect.Y + b.Rect.Height / 2 - font.LineSpacing / 2f);
+                    batch.DrawString(font, b.Text, at, TextCream);
                 }
             }
 
-            string money = Player.Money.GetNumberString(compact: true);
-            float damoney = Player.EstimateNetIncomeAtTaxRate(Player.data.TaxRate);
-            string sign = damoney > 0f ? "+" : "";
-            string moneyText = $"{money} ({sign}{damoney.String(1)})";
-            textCursor.X = res4.X + res2.Width - 30 - Fonts.Arial12Bold.MeasureString(moneyText).X;
-            textCursor.Y = res2.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2;
-            batch.DrawString(Fonts.Arial12Bold, moneyText, textCursor, new Color(255, 240, 189));
+            float textY = MoneyIcon.Y + MoneyIcon.Height / 2f - font.LineSpacing / 2f;
 
-            var starDatePos = new Vector2(res5.X + 75, textCursor.Y);
-            string starDateText = LowRes ? Universe.StarDateString : "StarDate: " + Universe.StarDateString;
-            batch.DrawString(Fonts.Arial12Bold, starDateText, starDatePos, new Color(255, 240, 189));
+            // treasury, on its reserved width
+            float income = Player.EstimateNetIncomeAtTaxRate(Player.data.TaxRate);
+            string money = $"{Player.Money.GetNumberString(compact: true)} ({(income > 0f ? "+" : "")}{income.String(1)})";
+            batch.DrawString(font, money, new Vector2(MoneyTextX, textY), TextCream);
 
-            // Ludoal fork: paused indicator left of Main Menu on full-screen panels.
-            // White = the open screen auto-paused the game and will resume it on close;
-            // Gold = the player's own pause (Space), kept after the screen closes.
-            if (Universe.UState.Paused) // all configurations — the top-center gold text is retired
-            {
-                Button menu = null;
-                foreach (Button b in Buttons)
-                    if (b.launches == "Main Menu") { menu = b; break; }
-                if (menu != null)
-                {
-                    string paused = Localizer.Token(GameText.Paused);
-                    var pausedPos = new Vector2(menu.Rect.X - Fonts.Pirulen16.TextWidth(paused) - 12f,
-                                                menu.Rect.Y + (menu.Rect.Height - Fonts.Pirulen16.LineSpacing) / 2f);
-                    bool autoPause = Universe.ScreenManager.AnyScreenOwnsUniversePause(); // stack-wide: topmost was unreliable
-                    batch.DrawString(Fonts.Pirulen16, paused, pausedPos, autoPause ? Color.White : Color.Gold);
-                }
-            }
-
+            // research: progress, net gain, and what is being researched
             if (Player.Research.NoTopic)
             {
-                textCursor.X = res2.X + res2.Width - 30 - Fonts.Arial12Bold.MeasureString(Localizer.Token(GameText.Choose)+"...").X;
-                textCursor.Y = res2.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2;
-                batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.Choose)+"...", textCursor, new Color(255, 240, 189));
+                batch.DrawString(font, Localizer.Token(GameText.Choose) + "...",
+                                 new Vector2(ResearchTextX, textY), TextCream);
             }
             else
             {
-                int xOffset = (int)(Player.Research.Current.PercentResearched * res2.Width);
-                Rectangle gradientSourceRect = res2;
-                gradientSourceRect.X = 159 - xOffset;
-                Universe.ScreenManager.SpriteBatch.Draw(ResourceManager.Texture("EmpireTopBar/empiretopbar_res2_gradient"), new Rectangle(res2.X, res2.Y, res2.Width, res2.Height), gradientSourceRect, Color.White);
-                Universe.ScreenManager.SpriteBatch.Draw(ResourceManager.Texture("EmpireTopBar/empiretopbar_res2_over"), res2, Color.White);
-                string research = Player.Research.Current.Progress.GetNumberString(compact: true);
-                string resCost = Player.Research.Current.TechCost.GetNumberString(compact: true);
-                float plusRes = Player.Research.NetResearch;
-                float x = res2.X + res2.Width - 30;
-                Graphics.Font arial12Bold = Fonts.Arial12Bold;
+                string progress = Player.Research.Current.Progress.GetNumberString(compact: true);
+                string cost = Player.Research.Current.TechCost.GetNumberString(compact: true);
+                string res = $"{progress}/{cost} (+{Player.Research.NetResearch.String(1)})";
+                batch.DrawString(font, res, new Vector2(ResearchTextX, textY), TextCream);
+
+                // the topic itself, after the numbers - dimmer, it is context rather than a value
+                float topicX = ResearchTextX + font.TextWidth(res) + 8;
+                string topic = Player.Research.TopicLocText.Text;
                 bool disrupted = Player.Research.DisruptionMultiplier < 1f;
-                Color baseColor = new Color(255, 240, 189);
-                textCursor.Y = res2.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2;
-                if (disrupted)
-                {
-                    string baseText = $"{research}/{resCost} ";
-                    string netText = $"(+{plusRes.String(1)})";
-                    int iconSize = (int)((res2.Height - 6) * 0.6f);
-                    const int iconPad = 4;
-                    Color netColor = new Color(255, 96, 96);
-                    float baseW = arial12Bold.MeasureString(baseText).X;
-                    float netW  = arial12Bold.MeasureString(netText).X;
-                    textCursor.X = x - (baseW + netW + iconPad + iconSize);
-                    batch.DrawString(arial12Bold, baseText, textCursor, baseColor);
-                    float netX = textCursor.X + baseW;
-                    batch.DrawString(arial12Bold, netText, new Vector2(netX, textCursor.Y), netColor);
-                    float iconX = netX + netW + iconPad;
-                    var iconRect = new Rectangle((int)iconX, res2.Y -3 + (res2.Height - iconSize) / 2, iconSize, iconSize);
-                    batch.Draw(ResourceManager.Texture("UI/icon_spy_small"), iconRect, netColor);
-                }
-                else
-                {
-                    string text = $"{research}/{resCost} (+{plusRes.String(1)})";
-                    textCursor.X = x - arial12Bold.MeasureString(text).X;
-                    batch.DrawString(arial12Bold, text, textCursor, baseColor);
-                }
+                batch.DrawString(font, topic, new Vector2(topicX, textY),
+                                 disrupted ? new Color(255, 96, 96) : TextCream.Alpha(0.7f));
             }
+
+            // stardate, right-aligned on the screen edge
+            string stardate = LowRes ? Universe.StarDateString : "StarDate: " + Universe.StarDateString;
+            batch.DrawString(font, stardate,
+                             new Vector2(StarDateRight - font.TextWidth(stardate), textY), TextCream);
         }
 
         // @return true if input was captured
@@ -322,6 +226,21 @@ namespace Ship_Game
             // tooltips drop lower so they don't mask it.
             bool lowRow = b.launches == "?" || b.launches == "SpeedUp" || b.launches == "SpeedDown";
             Vector2 tipPos = new Vector2(b.Rect.X, b.Rect.Bottom + (lowRow ? 26 : 4));
+
+            // Ludoal fork: a button that carries its own tip wins. The group buttons open a GROUP
+            // rather than the single screen their launch key names, so the cases below - written
+            // for the old per-screen row - would describe the wrong thing.
+            if (b.Group != ReworkScreens.Group.None)
+            {
+                ToolTip.CreateTooltip($"Open the {b.Text} group", "", tipPos);
+                return;
+            }
+            if (b.Tip != null)
+            {
+                ToolTip.CreateTooltip(b.Tip, "", tipPos);
+                return;
+            }
+
             switch (b.launches)
             {
                 case "Research":
@@ -473,6 +392,12 @@ namespace Ship_Game
                         {
                             continue;
                         }
+                        if (b.launches == "Pause")
+                        {
+                            GameAudio.AcceptClick();
+                            Universe.UState.Paused = !Universe.UState.Paused;
+                            return true;
+                        }
                         if (b.launches == "SpeedUp" || b.launches == "SpeedDown")
                         {
                             // Ludoal fork: speed buttons never open/close anything
@@ -597,6 +522,13 @@ namespace Ship_Game
 
                         // Ludoal fork: speed buttons act in place — no screen is closed
                         // or opened, whatever panel hosts the bar.
+                        if (b.launches == "Pause")
+                        {
+                            GameAudio.AcceptClick();
+                            Universe.UState.Paused = !Universe.UState.Paused;
+                            return true;
+                        }
+
                         if (b.launches == "SpeedUp" || b.launches == "SpeedDown")
                         {
                             GameAudio.AcceptClick();
@@ -776,6 +708,15 @@ namespace Ship_Game
             public string Text = "";
             public Color Tint = Color.White; // Ludoal fork: group tinting
             public string launches;
+
+            // Ludoal fork: a FLAT button carries no texture - it is drawn as a filled plate with
+            // a rule, in the grammar the reworked screens use. Colour is decided at draw time
+            // from what the button represents (which group is open, whether the game is paused),
+            // never stored, so it cannot go stale.
+            public bool Flat;
+            public SubTexture Icon;      // drawn left of the text, vertically centred
+            public string Tip;           // tooltip line for a flat button
+            public ReworkScreens.Group Group; // set on the four group buttons, None elsewhere
         }
 
         public enum PressState

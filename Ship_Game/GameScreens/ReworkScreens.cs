@@ -3,6 +3,7 @@ using SDGraphics;
 using Color = Microsoft.Xna.Framework.Color;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
+using Ship_Game.GameScreens.Espionage; // EspionageScreen: legacy espionage tab
 
 namespace Ship_Game.GameScreens
 {
@@ -289,6 +290,31 @@ namespace Ship_Game.GameScreens
         // itself and simply stacked a second copy (maintainer feedback). Same reason the openers live here: one
         // place knows the pairing, and no call site has to remember there are two of each.
         public static bool IsEconomy(GameScreen s) => s is BudgetScreen or BudgetScreenRework;
+
+        // ── Which group a screen belongs to ───────────────────────────────────────────────────
+        // Ludoal fork: the top bar tints the button of the group you are inside. One place knows
+        // the membership - a test spread over the bar's draw would drift the moment a tab moves.
+        public enum Group { None, Galaxy, Empire, Diplomacy, Design }
+
+        public static Group GroupOf(GameScreen s) => s switch
+        {
+            null => Group.None,
+
+            PlanetListScreen or ExoticSystemsListScreen or EmpirePatrolsScreen
+                => Group.Galaxy,
+
+            EmpireManagementScreen or ShipListScreen or TroopListScreen
+                or ResearchScreenNew or BudgetScreen or BudgetScreenRework
+                => Group.Empire,
+
+            MainDiplomacyScreen or InfiltrationScreen or EspionageScreen
+                => Group.Diplomacy,
+
+            FleetDesignScreen or ShipDesignScreen or BlueprintsScreen
+                => Group.Design,
+
+            _ => IsDiplomacyGroup(s) ? Group.Diplomacy : Group.None,
+        };
 
         // Ludoal fork: the reworked group is FOUR screens sharing one tab row, so both top-bar
         // buttons have to recognise all of them - otherwise pressing a key while inside the group
