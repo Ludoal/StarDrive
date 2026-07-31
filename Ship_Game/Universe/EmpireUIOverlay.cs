@@ -27,6 +27,8 @@ namespace Ship_Game
         const int MoneyRoom = 150;      // "1.2m (+16.2)"
         const int ResearchRoom = 260;   // "515/670 (+13.2)  Fusion Power"
         const int StarDateRoom = 120;   // "StarDate: 1202.8"
+        const int SpeedRoom = 46;       // "0.25x" - reserved, so the cluster never shifts
+        int SpeedTextRight;             // the factor is right-aligned here, left of "<<"
 
         // Ludoal fork: the bar is laid out in three zones and drawn flat - the military plating,
         // the five resource cartouches and the ten-button row are gone. Left: what the empire HAS
@@ -86,7 +88,12 @@ namespace Ship_Game
 
             SpeedSlower = new Rectangle(rx - speedW, y, speedW, btnH);
             Buttons.Add(new Button { Rect = SpeedSlower, Flat = true, Text = "<<", launches = "SpeedDown", Tip = "Slow down" });
-            rx -= speedW + gap * 2;
+            rx -= speedW + gap;
+
+            // the factor sits LEFT of the cluster and is right-aligned on it: growing from "2x"
+            // to "0.25x" then stays put, where on the right it would push the stardate about
+            SpeedTextRight = rx;
+            rx -= SpeedRoom + gap;
 
             int helpW = 30;
             Buttons.Add(new Button
@@ -206,6 +213,16 @@ namespace Ship_Game
                 bool disrupted = Player.Research.DisruptionMultiplier < 1f;
                 batch.DrawString(font, topic, new Vector2(topicX, textY),
                                  disrupted ? new Color(255, 96, 96) : TextCream.Alpha(0.7f));
+            }
+
+            // the speed factor, right-aligned on its reserved width. Same reading as the floating
+            // one it replaces: hidden at 1x, red at the extremes.
+            if (Universe.UState.GameSpeed.NotEqual(1))
+            {
+                string speed = Universe.UState.GameSpeed.ToString("0.0##") + "x";
+                bool extreme = Universe.UState.GameSpeed is > 3 or < 0.25f;
+                batch.DrawString(font, speed, new Vector2(SpeedTextRight - font.TextWidth(speed), textY),
+                                 extreme ? Color.Red : Color.LightGreen);
             }
 
             // stardate, right-aligned on the screen edge

@@ -641,14 +641,8 @@ namespace Ship_Game
                 DrawTopCenterStatusText(batch, "Debug", Color.GreenYellow, 2);
             }
 
-            if (IsActive && UState.GameSpeed.NotEqual(1)) //don't show "1.0x"
-            {
-                string speed = UState.GameSpeed.ToString("0.0##") + "x";
-                Font font = UState.GameSpeed is > 3 or < 0.25f ? Fonts.Pirulen20 : Fonts.Pirulen16;
-                Color color = font == Fonts.Pirulen20 ? Color.Red : Color.LightGreen;
-                var pos = new Vector2(ScreenWidth - font.TextWidth(speed) - 20f, 90f);
-                batch.DrawString(font, speed, pos, color);
-            }
+            // Ludoal fork: the speed factor is read off the top bar now, beside the controls that
+            // change it, rather than floating over the map.
 
             if (IsActive && !IsCinematicModeEnabled && (Debug || Debugger.IsAttached))
             {
