@@ -1494,9 +1494,7 @@ namespace Ship_Game
             {
                 Accepted = () =>
                 {
-                    // ⚠ compared by PREFIX on the name, not through GetWipShipNameAndNum: that
-                    // splits on '_' and indexes [1] blindly, so it throws on any design name
-                    // without one - which is most of them, and the bench design usually is one.
+                    // compared by PREFIX: every version of a design shares it
                     string onBench = CurrentDesign?.Name ?? "";
                     bool wasOnTheBench = onBench.StartsWith(prefix);
                     ShipDesignWIP.RemoveRelatedWiPs(ParentUniverse.UState, designName);

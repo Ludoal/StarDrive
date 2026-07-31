@@ -81,10 +81,13 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         // Will return ship name and version number
         // Example: "VulcanScout_ship12_v33_WIP" will return "VulcanScout_ship12"
+        // ⚠ A design name need not contain '_' at all - most do not. Indexing [1] blindly threw
+        // on those, and the throw happened BEFORE the confirmation box was raised, so the button
+        // simply did nothing. A name with no underscore is its own prefix.
         public static string GetWipShipNameAndNum(string wipFileName)
         {
             string[] slicedName = wipFileName.Split('_');
-            return $"{slicedName[0]}_{slicedName[1]}";
+            return slicedName.Length >= 2 ? $"{slicedName[0]}_{slicedName[1]}" : wipFileName;
         }
 
         static FileInfo[] GetWipFiles()
