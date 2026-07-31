@@ -16,8 +16,7 @@ namespace Ship_Game
     public partial class ColonyScreen : PlanetScreen
     {
         readonly ToggleButton PlayerDesignsToggle;
-        readonly Menu2 TitleBar;
-        readonly Vector2 TitlePos;
+        Submenu ColonyTabs;   // Ludoal fork: the frame's tab row - a group of one
         readonly Menu1 LeftMenu;
         readonly Menu1 RightMenu;
         readonly Submenu PlanetInfo;
@@ -131,26 +130,50 @@ namespace Ship_Game
             Player.UpdateShipsWeCanBuild();
             TextFont = LowRes ? Font8 : Font12;
 
-            var titleBar = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            TitleBar = new Menu2(titleBar);
+            // Ludoal fork: the 80px title cartouche gives way to the group's tab row - a group
+            // of ONE, since Colony opens from the map and has no siblings, but a full-frame
+            // screen that looked different for that would read as an oversight. The two panels
+            // keep their rects (twenty-one sites position from them) but are no longer drawn:
+            // the frame supplies the one border this screen needs.
+            ColonyTabs = GameScreens.ReworkScreens.AddGroupTabs(
+                this, GameScreens.ReworkScreens.ColonyTabTitles(p.Name), 0, _ => { }, out Rectangle _);
+            RectF client = ColonyTabs.ClientArea;
 
-            LeftColony = Add(new ToggleButton(titleBar.X + 25, titleBar.Y + 24, ToggleButtonStyle.ArrowLeft));
-            LeftColony.Tooltip = GameText.ViewPreviousColony;
-            LeftColony.OnClick = b => OnChangeColony(-1);
+            const int MenuPad = 5;
+            int menuTop = (int)client.Y + MenuPad;
+            int menuH = (int)client.Bottom - MenuPad - menuTop;
+            int menuLeft = (int)client.X + MenuPad;
+            int totalW = (int)client.W - 2 * MenuPad;
+            int leftW = totalW * 2 / 3 - MenuPad;
 
-            RightColony = Add(new ToggleButton(titleBar.Right - 39, titleBar.Y + 24, ToggleButtonStyle.ArrowRight));
-            RightColony.Tooltip = GameText.ViewNextColony;
-            RightColony.OnClick = b => OnChangeColony(+1);
-
-            TitlePos = new Vector2(titleBar.X + titleBar.Width / 2 - Fonts.Laserian14.MeasureString("Colony Overview").X / 2f, titleBar.Y + titleBar.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
-            LeftMenu = new Menu1(2, titleBar.Y + titleBar.Height + 5, titleBar.Width, ScreenHeight - (titleBar.Y + titleBar.Height) - 7);
-            RightMenu = new Menu1(titleBar.Right + 5, titleBar.Y + titleBar.Height + 5, ScreenWidth / 3 - 10, ScreenHeight - (titleBar.Y + titleBar.Height) - 7); // Ludoal fork: align top with the central block, like every other panel
-            Add(new CloseButton(RightMenu.Right - 52, RightMenu.Y + 22));
+            LeftMenu = new Menu1(menuLeft, menuTop, leftW, menuH);
+            RightMenu = new Menu1(menuLeft + leftW + MenuPad, menuTop, totalW - leftW - MenuPad, menuH);
 
             RectF planetInfoR = new(LeftMenu.X + 20, LeftMenu.Y + 20, 
                                     (int)(0.4f * LeftMenu.Width),
                                     (int)(0.23f * (LeftMenu.Height - 80)));
             PlanetInfo = new(planetInfoR, GameText.PlanetInfo);
+
+            // Ludoal fork: the colony arrows sit side by side on Planet Info's title line, flush
+            // with the panel's RIGHT edge - beside the panel whose contents they step through.
+            // Shortened from the style's 35: that height belongs to the selection box they were
+            // drawn for, and it overruns a title row.
+            const int arrowW = 14, arrowH = 20, arrowGap = 2;
+            int arrowY = (int)PlanetInfo.Y + 4;
+            int arrowRight = (int)PlanetInfo.Right - 8;
+
+            LeftColony = Add(new ToggleButton(arrowRight - 2 * arrowW - arrowGap, arrowY,
+                                              ToggleButtonStyle.ArrowLeft));
+            LeftColony.SetAbsSize(arrowW, arrowH);
+            LeftColony.Tooltip = GameText.ViewPreviousColony;
+            LeftColony.OnClick = b => OnChangeColony(-1);
+
+            RightColony = Add(new ToggleButton(arrowRight - arrowW, arrowY,
+                                               ToggleButtonStyle.ArrowRight));
+            RightColony.SetAbsSize(arrowW, arrowH);
+            RightColony.Tooltip = GameText.ViewNextColony;
+            RightColony.OnClick = b => OnChangeColony(+1);
+
             Submenu pDescription = new(LeftMenu.X + 20, LeftMenu.Y + 40 + PlanetInfo.Height, 0.4f * LeftMenu.Width, 0.25f * (LeftMenu.Height - 80));
 
             var labor = new RectF(LeftMenu.X + 20, LeftMenu.Y + 20 + PlanetInfo.Height + pDescription.Height + 40,

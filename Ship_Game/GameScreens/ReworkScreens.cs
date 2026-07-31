@@ -127,6 +127,19 @@ namespace Ship_Game.GameScreens
         // read off the top bar's own tooltips, not guessed
         public static readonly string[] DesignTabKeys = { "J", "Y", "F" };
 
+        // ── Colony ────────────────────────────────────────────────────────────────────────────
+        // Ludoal fork: a group of ONE. Colony opens from the map rather than the bar and has no
+        // siblings, but it takes the same frame and tab row as the four groups - a full-frame
+        // screen that looked different for having no brothers would read as an oversight.
+        // the tab carries the PLANET's name, so the screen names it at construction - changing
+        // colony rebuilds the whole screen, so it can never go stale
+        public static LocalizedText[] ColonyTabTitles(string planetName) => new LocalizedText[] { planetName };
+        public static readonly string[] ColonyTabTips = { "The colony: its labor, storage and construction." };
+        public static readonly string[] ColonyTabKeys = { "" };
+
+        public static void DrawColonyTabTip(Submenu tabs, Vector2 cursor)
+            => DrawTabTip(tabs, cursor, ColonyTabTips, ColonyTabKeys);
+
         // Ludoal fork: the reserved first line some tabs carry for their filters and counts - one
         // row of controls, tight. It held 30 for a 20px row.
         public const int GalaxyHeaderH = 26;

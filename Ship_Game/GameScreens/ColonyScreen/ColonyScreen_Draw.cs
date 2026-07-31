@@ -189,12 +189,11 @@ namespace Ship_Game
                 return;
 
             P.UpdateIncomes();
-            LeftMenu.Draw(batch, elapsed);
-            RightMenu.Draw(batch, elapsed);
-            TitleBar.Draw(batch, elapsed);
+            // Ludoal fork: the two panels' brass surrounds were drawn here by hand and are gone -
+            // the tab frame supplies the one border this screen needs.
             LeftColony.Draw(batch, elapsed);
             RightColony.Draw(batch, elapsed);
-            batch.DrawString(Fonts.Laserian14, Localizer.Token(GameText.ColonyOverview), TitlePos, Colors.Cream);
+            GameScreens.ReworkScreens.DrawColonyTabTip(ColonyTabs, Input.CursorPosition);
 
             PlanetInfo.Draw(batch, elapsed);
             PStorage.Draw(batch, elapsed);
