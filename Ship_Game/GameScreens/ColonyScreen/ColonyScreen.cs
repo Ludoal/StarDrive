@@ -140,51 +140,39 @@ namespace Ship_Game
             // Ludoal fork: every panel is placed from THESE, and nothing re-derives a margin of
             // its own. Pad is the gap to the frame AND between panels - one number, so a change
             // moves the whole layout together rather than half of it.
+            // ⚠ Measured from the FRAME, not from ClientArea: NineSliceSprite cuts the 9px corner
+            // textures off to get the client rect, so a pad added to it lands DOUBLE on the three
+            // sides the tab row does not cover. Only the top keeps the client's line, which is
+            // where the tabs sit.
             const float Pad = 10;
-            float gridLeft   = client.X + Pad;
-            float gridRight  = client.Right - Pad;
+            RectF frame = ColonyTabs.Rect;
+            float gridLeft   = frame.X + Pad;
+            float gridRight  = frame.Right - Pad;
             float gridTop    = client.Y + Pad;
-            float gridBottom = client.Bottom - Pad;
+            float gridBottom = frame.Bottom - Pad;
 
-            // Left column: wide enough that the Governor's third tab (BLUEPRINTS) fits on the
-            // first row - measured in the font that draws the tabs rather than guessed.
+            // ── what is FIXED and what STRETCHES (Ludoal fork, bench 232) ────────────────────
+            // Left column: FIXED width. Planet Info, Governor and Assign Labor keep fixed
+            // heights; STORAGE is the one that stretches, taking what is left to the foot.
+            // Wide enough that the Governor's four tabs sit on ONE row - measured in the font
+            // that draws them, plus the 50 the bench asked for.
             float govTabsW = Fonts.Arial12Bold.TextWidth("GOVERNOR") + Fonts.Arial12Bold.TextWidth("DEFENSE")
                            + Fonts.Arial12Bold.TextWidth("BUDGET") + Fonts.Arial12Bold.TextWidth("BLUEPRINTS")
                            + 4 * 30;   // Submenu pads each tab
-            float colLeftW = Math.Max(govTabsW, (gridRight - gridLeft) * 0.26f);
+            float colLeftW = Math.Max(govTabsW, 420) + 50;
 
-            RectF planetInfoR = new(gridLeft, gridTop, colLeftW,
-                                    (gridBottom - gridTop) * 0.26f);
+            const float planetInfoH = 250;   // the planet portrait and its five lines
+            const float governorH   = 300;   // portrait, dropdown, two checkboxes
+            const float laborH      = 220;   // three sliders and their locks
+
+            RectF planetInfoR = new(gridLeft, gridTop, colLeftW, planetInfoH);
             PlanetInfo = new(planetInfoR, GameText.PlanetInfo);
-
-            // Ludoal fork: the colony arrows sit side by side on Planet Info's title line, flush
-            // with the panel's RIGHT edge - beside the panel whose contents they step through.
-            // Shortened from the style's 35: that height belongs to the selection box they were
-            // drawn for, and it overruns a title row.
-            const int arrowW = 14, arrowH = 20, arrowGap = 2;
-            int arrowY = (int)PlanetInfo.Y + 4;
-            int arrowRight = (int)PlanetInfo.Right - 8;
-
-            LeftColony = Add(new ToggleButton(arrowRight - 2 * arrowW - arrowGap, arrowY,
-                                              ToggleButtonStyle.ArrowLeft));
-            LeftColony.SetAbsSize(arrowW, arrowH);
-            LeftColony.Tooltip = GameText.ViewPreviousColony;
-            LeftColony.OnClick = b => OnChangeColony(-1);
-
-            RightColony = Add(new ToggleButton(arrowRight - arrowW, arrowY,
-                                               ToggleButtonStyle.ArrowRight));
-            RightColony.SetAbsSize(arrowW, arrowH);
-            RightColony.Tooltip = GameText.ViewNextColony;
-            RightColony.OnClick = b => OnChangeColony(+1);
 
             // The left column stacks four panels with ONE gap between each. The first three carry
             // fixed content and keep their height; STORAGE is the variable block - it takes what
             // is left down to the foot, so the column always closes on the grid rather than
             // wherever four quarters happen to land.
-            float govH   = 0.30f * (gridBottom - gridTop);
-            float laborH = 0.22f * (gridBottom - gridTop);
-
-            Submenu pDescription = new(gridLeft, PlanetInfo.Bottom + Pad, colLeftW, govH);
+            Submenu pDescription = new(gridLeft, PlanetInfo.Bottom + Pad, colLeftW, governorH);
 
             var labor = new RectF(gridLeft, pDescription.Bottom + Pad, colLeftW, laborH);
             AssignLabor = Add(new AssignLaborComponent(P, labor, useTitleFrame: true));
@@ -223,11 +211,21 @@ namespace Ship_Game
 
             // Centre column: the colony grid keeps its height, STATISTICS below takes the rest -
             // it is the variable block of this column, and it closes on the grid's foot.
+            // Right column: FIXED width - the buildable rows and the queue rows are written for
+            // a known width. The CENTRE is what stretches, taking whatever the two fixed columns
+            // leave, which is what makes the screen fill any window.
+            const float colRightW = 470;
             float colCentreX = gridLeft + colLeftW + Pad;
-            float colRightW  = (gridRight - gridLeft) * 0.30f;   // right column, dynamic
             float colCentreW = gridRight - colRightW - Pad - colCentreX;
 
-            RectF subColonyR = new(colCentreX, gridTop, colCentreW, (gridBottom - gridTop) * 0.5f);
+            // COLONY holds a 7x5 tile grid, so its height FOLLOWS its width - square tiles are the
+            // point of it. The panel's chrome (10 each side, 30 above, 5 below) is taken off
+            // before the ratio and added back, so it is the GRID that keeps 7:5, not the frame.
+            const float tilesX = 7, tilesY = 5;
+            float gridInnerW = colCentreW - 20;
+            float subColonyH = gridInnerW * (tilesY / tilesX) + 35;
+
+            RectF subColonyR = new(colCentreX, gridTop, colCentreW, subColonyH);
             SubColonyGrid = new(subColonyR, GameText.Colony);
 
             RectF pFacilitiesR = new(colCentreX, SubColonyGrid.Bottom + Pad, colCentreW,
@@ -277,8 +275,10 @@ namespace Ship_Game
 
             // BUILDINGS' top lines up with COLONY's; the queue below takes what is left, so the
             // column closes on the grid's foot exactly as the other two do.
+            // BUILDINGS' foot lands on COLONY's, so the two read as one line across the screen;
+            // its height follows from that rather than from a share of the column.
             RectF buildableR = new(colRightX, buildingsTop, colRightW,
-                                   (gridBottom - buildingsTop) * 0.5f);
+                                   SubColonyGrid.Bottom - buildingsTop);
             BuildableTabs = base.Add(new SubmenuScrollList<BuildableListItem>(buildableR, BuildingsTabText));
             BuildableTabs.OnTabChange = OnBuildableTabChanged;
 
@@ -313,6 +313,25 @@ namespace Ship_Game
 
             PlanetIcon = new Rectangle((int)PlanetInfo.Right - iconOffsetX, 
                 (int)PlanetInfo.Y + ((int)PlanetInfo.Height - iconOffsetY) / 2 - iconSize/2 + (LowRes ? 0 : 25), iconSize, iconSize);
+
+            // Ludoal fork: the colony arrows straddle the planet portrait's centre line - they
+            // step through planets, so they belong under the planet. Shortened from the style's
+            // 35: that height belongs to the selection box they were drawn for.
+            const int arrowW = 14, arrowH = 20, arrowGap = 2;
+            int arrowCentre = PlanetIcon.X + PlanetIcon.Width / 2;
+            int arrowY = PlanetIcon.Bottom + 6;
+
+            LeftColony = Add(new ToggleButton(arrowCentre - arrowW - arrowGap / 2, arrowY,
+                                              ToggleButtonStyle.ArrowLeft));
+            LeftColony.SetAbsSize(arrowW, arrowH);
+            LeftColony.Tooltip = GameText.ViewPreviousColony;
+            LeftColony.OnClick = b => OnChangeColony(-1);
+
+            RightColony = Add(new ToggleButton(arrowCentre + arrowGap / 2, arrowY,
+                                               ToggleButtonStyle.ArrowRight));
+            RightColony.SetAbsSize(arrowW, arrowH);
+            RightColony.Tooltip = GameText.ViewNextColony;
+            RightColony.OnClick = b => OnChangeColony(+1);
 
             Rectangle planetShieldBarRect = new Rectangle(PlanetIcon.X, PlanetInfo.Rect.Y + 4, PlanetIcon.Width, 20);
             PlanetShieldBar = new ProgressBar(planetShieldBarRect)

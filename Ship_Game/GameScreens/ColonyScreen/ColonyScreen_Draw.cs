@@ -194,7 +194,8 @@ namespace Ship_Game
             // transparent, so the galaxy behind it showed straight through - planet names ran
             // across the panels. Painted here rather than via SetBackground: a background is a
             // CHILD, drawn by base.Draw, which lands after everything this method paints.
-            batch.FillRectangle(ColonyTabs.ClientArea, GameScreens.ReworkScreens.GroupFrameFill);
+            RectF fill = GameScreens.ReworkScreens.GroupSceneArea(ColonyTabs.Rect, ColonyTabs.ClientArea);
+            batch.FillRectangle(fill, GameScreens.ReworkScreens.GroupFrameFill);
 
             // the two panels' brass surrounds were drawn here by hand and are gone - the tab
             // frame supplies the one border this screen needs.
