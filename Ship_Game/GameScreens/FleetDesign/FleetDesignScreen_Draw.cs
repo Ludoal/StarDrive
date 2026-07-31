@@ -37,7 +37,7 @@ namespace Ship_Game
             // screen is one tab of the Design group now, so its scene stays inside the frame.
             // Scissor is device state: it goes off again before the UI pass, or the panels drawn
             // afterwards inherit the crop.
-            SDGraphics.Rectangle sceneClip = ReworkScreens.GroupSceneArea(DesignTabs.Rect, DesignTabs.ClientArea);
+            RectF sceneClip = ReworkScreens.GroupSceneArea(DesignTabs.Rect, DesignTabs.ClientArea);
             Ship_Game.Graphics.RenderStates.EnableScissorTest(batch.GraphicsDevice, sceneClip);
             Universe.DrawStarField(ScreenManager.SpriteRenderer);
 
