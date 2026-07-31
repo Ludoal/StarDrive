@@ -246,6 +246,13 @@ namespace Ship_Game.GameScreens
         public static Vector2 GroupClosePos(in RectF client)
             => new(client.Right - CloseSize - ClosePadding + CloseRightTrim, client.Y + ClosePadding);
 
+        // Ludoal fork: what a 3D scene inside the frame is clipped to. ClientArea is already 9px
+        // in on each side - NineSliceSprite cuts the corner textures off to get it - which shows
+        // as a margin of bare screen around a starfield clipped to it. The scene takes the frame's
+        // full width and floor instead, keeping only the client TOP so it stays under the tabs.
+        public static RectF GroupSceneArea(in RectF frame, in RectF client)
+            => new(frame.X, client.Y, frame.W, frame.Bottom - client.Y);
+
         // Ludoal fork: where side content may start - clear of the close cross, which is the
         // topmost thing the frame owns. Screens that put columns against the frame's top edge
         // read this rather than each deriving the cross's height again.

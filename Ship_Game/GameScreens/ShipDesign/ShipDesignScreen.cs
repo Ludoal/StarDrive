@@ -936,9 +936,12 @@ namespace Ship_Game
             const int footGap = 8;
             float footY = ModuleSelection.ToggleRowY(ScreenHeight);
             float colW = ModuleSelection.ListWidth;
-            // UIList spends its Padding THREE times across a pair: before the first, between the
-            // two, after the second. The buttons take what is left of the column.
-            float footBtnW = (colW - 3 * footGap) * 0.5f;
+            // Measured off UIList rather than guessed: it starts at Pos + Padding and then
+            // advances by (item size + Padding), so a pair spends the gap TWICE - once before
+            // the first button, once between the two. Nothing after the second. With the row's
+            // origin pulled back by one gap, two buttons of (colW - gap)/2 span the column
+            // exactly.
+            float footBtnW = (colW - footGap) * 0.5f;
             float footBtnH = ModuleSelection.ToggleRowH;
 
             // ⚠ UIList lays its first item at Pos + Padding, so an origin set to the column's edge
