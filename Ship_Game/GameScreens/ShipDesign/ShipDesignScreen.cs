@@ -851,13 +851,14 @@ namespace Ship_Game
             IdentityRowY = (int)ClassifCursor.Y + 6;
             OptionsRowY  = IdentityRowY + 52;
 
-            // The lists start below the options row, leaving room for the TWO lines each column
-            // carries above it: its filter toggles, then its search field. 18 clears the options
-            // row itself (a dropdown is 18 tall), then a line each.
+            // The columns are SIDE content: they start just under the close cross, not under the
+            // centre rows, which sit between them. Each carries two lines above its list - filter
+            // toggles, then search field.
             const float headerLine = 19f;
-            float modListTop = LowRes ? 45 : OptionsRowY + 18 + 2 * headerLine + 6;
+            float modListTop = LowRes ? 45
+                             : ReworkScreens.GroupContentTop(DesignTabs.ClientArea) + 2 * headerLine;
             ModuleSelectComponent = Add(new ModuleSelection(this, new(ModuleSelection.BandLeft, modListTop),
-                                        new(ModuleSelection.ListWidth, ModuleSelection.ListHeightFor(modListTop))));
+                                        new(ModuleSelection.ListWidth, ModuleSelection.ListHeightFor(ScreenHeight, modListTop))));
 
             // Both centre rows are centred on the same arithmetic: a total width built from the
             // parts, halved off ScreenCenter. The stance block is 7 icons wide and two rows tall
@@ -933,17 +934,22 @@ namespace Ship_Game
             // live in (ToggleRowY / ToggleRowBand), so both lists shorten by the same amount and
             // the four frames keep their shared foot line.
             const int footGap = 8;
-            float footY = ModuleSelection.ToggleRowY();
+            float footY = ModuleSelection.ToggleRowY(ScreenHeight);
             float colW = ModuleSelection.ListWidth;
-            float footBtnW = (colW - footGap) * 0.5f;
+            // UIList spends its Padding THREE times across a pair: before the first, between the
+            // two, after the second. The buttons take what is left of the column.
+            float footBtnW = (colW - 3 * footGap) * 0.5f;
             float footBtnH = ModuleSelection.ToggleRowH;
 
-            var leftFoot = AddList(new Vector2(ModuleSelectComponent.LocalPos.X, footY));
+            // ⚠ UIList lays its first item at Pos + Padding, so an origin set to the column's edge
+            // puts the pair one gap to the right of the list above it. Both rows start back by
+            // that gap, and land flush with their column.
+            var leftFoot = AddList(new Vector2(ModuleSelectComponent.LocalPos.X - footGap, footY));
             leftFoot.LayoutStyle = ListLayoutStyle.ResizeList;
             leftFoot.Direction = new Vector2(+1, 0);
             leftFoot.Padding = new Vector2(footGap, 2f);
 
-            var rightFoot = AddList(new Vector2(ModuleSelection.BandRight - colW, footY));
+            var rightFoot = AddList(new Vector2(ModuleSelection.BandRight - colW - footGap, footY));
             rightFoot.LayoutStyle = ListLayoutStyle.ResizeList;
             rightFoot.Direction = new Vector2(+1, 0);
             rightFoot.Padding = new Vector2(footGap, 2f);
@@ -1010,7 +1016,9 @@ namespace Ship_Game
             float cartoucheY  = colBottom - cartoucheH; // colBottom already carries the margin
             // the browser runs down to the cartouche with the same gap the module list keeps
             // above its own frame — that is what puts the two columns' feet on one line
-            float listBottom  = cartoucheY - ModuleSelection.FrameGap;
+            // stops above the toggle row, not at the cartouche: the right column carries the same
+            // band of buttons the left one does, and a list measured to the cartouche ran under it
+            float listBottom  = cartoucheY - ModuleSelection.FrameGap - ModuleSelection.ToggleRowBand;
             // the completion line sits at local y 0, the issues button at 18 in Pirulen20
             float issuesH     = 18f + Fonts.Pirulen20.LineSpacing;
             // Ludoal fork (bench 46.150): the strip moves INSIDE the cartouche, on its last

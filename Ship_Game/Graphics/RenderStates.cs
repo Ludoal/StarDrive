@@ -59,13 +59,24 @@ namespace Ship_Game.Graphics
         static readonly RasterizerState CullCCWState  = new() { CullMode = CullMode.CullCounterClockwiseFace };
         static readonly RasterizerState CullNoneState = new() { CullMode = CullMode.None };
 
+        // Ludoal fork: scissor twins of the three cull states. A RasterizerState carries BOTH the
+        // cull mode and the scissor flag, so anything that sets a cull mode silently drops an
+        // active scissor - which is what let the starfield paint over a clipped region while the
+        // sprite passes around it stayed clipped.
+        static readonly RasterizerState CullCWScissor   = new() { CullMode = CullMode.CullClockwiseFace,        ScissorTestEnable = true };
+        static readonly RasterizerState CullCCWScissor  = new() { CullMode = CullMode.CullCounterClockwiseFace, ScissorTestEnable = true };
+        static readonly RasterizerState CullNoneScissor = new() { CullMode = CullMode.None,                     ScissorTestEnable = true };
+
+        // While set, every cull-mode change keeps the scissor flag. Cleared by DisableScissorTest.
+        static bool ScissorActive;
+
         public static void SetCullMode(GraphicsDevice device, CullMode mode)
         {
             device.RasterizerState = mode switch
             {
-                CullMode.CullClockwiseFace        => CullCWState,
-                CullMode.CullCounterClockwiseFace => CullCCWState,
-                _                                 => CullNoneState,
+                CullMode.CullClockwiseFace        => ScissorActive ? CullCWScissor   : CullCWState,
+                CullMode.CullCounterClockwiseFace => ScissorActive ? CullCCWScissor  : CullCCWState,
+                _                                 => ScissorActive ? CullNoneScissor : CullNoneState,
             };
         }
 
@@ -98,10 +109,12 @@ namespace Ship_Game.Graphics
         {
             device.ScissorRectangle = rect;
             device.RasterizerState = ScissorEnabled;
+            ScissorActive = true;
         }
 
         public static void DisableScissorTest(GraphicsDevice device)
         {
+            ScissorActive = false;
             device.RasterizerState = RasterizerState.CullCounterClockwise;
         }
 

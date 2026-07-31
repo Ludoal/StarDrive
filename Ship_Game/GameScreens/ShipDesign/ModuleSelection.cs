@@ -205,8 +205,9 @@ namespace Ship_Game
 
         // The frame's target height — three lines shorter than it was (maintainer feedback). The list takes
         // whatever is above it, so this single number decides both, and they cannot drift.
-        // a share of the BAND, not of the window: the frame is what the column lives in
-        public static float FrameHeightFor() => (BandBottom - BandTop) * 0.42f - ShorterBy;
+        // A share of the WINDOW, deliberately: the cartouche has to hold the same stat blocks
+        // whatever frame contains it, and measuring it off the band shrank it by 42px at 1050p.
+        public static float FrameHeightFor(float screenH) => screenH * 0.42f - ShorterBy;
 
         // Ludoal fork: the band between a list and the frame under it, carrying the two view
         // toggles that belong to that column. Reserved on BOTH columns whether or not a given
@@ -216,11 +217,11 @@ namespace Ship_Game
         public const float ToggleRowBand = ToggleRowH + FrameGap;
 
         // Where a column's toggle row sits: under its list, above its frame.
-        public static float ToggleRowY()
-            => FramesBottom() - FrameHeightFor() - FrameGap - ToggleRowH;
+        public static float ToggleRowY(float screenH)
+            => FramesBottom() - FrameHeightFor(screenH) - FrameGap - ToggleRowH;
 
-        public static float ListHeightFor(float listTop)
-            => FramesBottom() - FrameHeightFor() - FrameGap - ToggleRowBand - listTop;
+        public static float ListHeightFor(float screenH, float listTop)
+            => FramesBottom() - FrameHeightFor(screenH) - FrameGap - ToggleRowBand - listTop;
         const float WideColStep = 210f;      // step when delta lanes are in play
         const float TightColStep = 152f;     // upstream's step
         const float Col0Pull = 20f; // first group, left (bench)

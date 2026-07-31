@@ -375,15 +375,16 @@ namespace Ship_Game
                 if (f == null)
                     return;
 
-                Vector2 cursor1 = new Vector2(SelectedStuffRect.X + 20, SelectedStuffRect.Y + 10);
+                // name, then the icon directly under it, then the buttons - the label the icon
+                // used to carry said nothing the icon does not.
+                Vector2 cursor1 = new Vector2(SelectedStuffRect.X + CartPad, SelectedStuffRect.Y + CartPad);
                 FleetNameEntry.Text = f.Name;
                 FleetNameEntry.SetPos(cursor1);
                 FleetNameEntry.Draw(batch, elapsed);
 
-                cursor1.Y += (Fonts.Arial20Bold.LineSpacing + 10);
-                cursor1 += new Vector2(50f, 30f);
-                batch.DrawString(Fonts.Pirulen12, "Fleet Icon", cursor1, Colors.Cream);
-                var iconR = new RectF(cursor1.X + 12, cursor1.Y + Fonts.Pirulen12.LineSpacing + 5, 64, 64);
+                float iconY = cursor1.Y + Fonts.Arial20Bold.LineSpacing + 8;
+                var iconR = new RectF(SelectedStuffRect.X + (SelectedStuffRect.W - CartIcon) * 0.5f,
+                                      iconY, CartIcon, CartIcon);
                 batch.Draw(f.Icon, iconR, f.Owner.EmpireColor);
                 PrioritySelector = new Selector(FleetOverviewRect, new Color(0, 0, 0, 180));
                 PrioritySelector.Draw(batch, elapsed);

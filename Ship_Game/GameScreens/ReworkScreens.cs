@@ -246,6 +246,12 @@ namespace Ship_Game.GameScreens
         public static Vector2 GroupClosePos(in RectF client)
             => new(client.Right - CloseSize - ClosePadding + CloseRightTrim, client.Y + ClosePadding);
 
+        // Ludoal fork: where side content may start - clear of the close cross, which is the
+        // topmost thing the frame owns. Screens that put columns against the frame's top edge
+        // read this rather than each deriving the cross's height again.
+        public static float GroupContentTop(in RectF client)
+            => client.Y + ClosePadding + CloseSize + 10;
+
         // The vertical span of a column inside the frame. ⚠ ClientArea.H already stops short of the
         // frame's bottom border, so only the TOP pad is added - taking one off the bottom as well
         // left roughly twice the gap there.

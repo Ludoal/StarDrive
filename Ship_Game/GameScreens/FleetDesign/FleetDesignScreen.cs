@@ -31,6 +31,11 @@ namespace Ship_Game
 
         Vector2 TitlePos;
         Submenu DesignTabs;   // Ludoal fork: the Design group's tab row, this screen being one tab
+
+        // Ludoal fork: the First Fleet cartouche's geometry, shared by the layout that places its
+        // buttons and the Draw that paints the name and icon above them.
+        const float CartPad = 20f, CartIcon = 64f, CartBtnH = 33f, CartBtnGap = 6f;
+        const float CartBtnW = 180f;
         Menu1 LeftMenu;
         Menu1 RightMenu;
 
@@ -243,16 +248,22 @@ namespace Ship_Game
                                                     OnDesignTabChanged, out Rectangle _);
             SetPerspectiveProjection(maxDistance: 100_000);
 
-            Graphics.Font arial20 = Fonts.Arial20Bold;
             Graphics.Font arial12 = Fonts.Arial12Bold;
 
-            // Ludoal fork: the two 80px title bars are gone - a single label above the fleet
-            // list says what they said, and both lists start that much higher. The right one is
-            // already titled by its own Designs/Owned tabs.
-            // laid out from the tab frame, 5px in on every side
+            // Ludoal fork: the two 80px title bars are gone - a single label above the fleet list
+            // says what they said, and the right one is already titled by its Designs/Owned tabs.
+            // Everything is laid out from the tab frame, 5px in on every side.
             const float ListPad = 5f;
             const float leftW = 250, rightW = 280;
             RectF client = DesignTabs.ClientArea;
+
+            // The bottom blocks are measured FIRST: the ship list above the overview runs down to
+            // it, so its height follows from the frame rather than a fixed 500.
+            const float OverviewH = 420f;
+            float blockBottom = client.Bottom - ListPad;
+            float blockLeft   = client.X + ListPad;
+            float blockRight  = client.Right - ListPad;
+            float overviewTop = blockBottom - OverviewH;
             TitlePos = new(client.X + ListPad, client.Y + 4);
             float listTop = TitlePos.Y + Fonts.Arial12Bold.LineSpacing + 4;
 
@@ -265,7 +276,8 @@ namespace Ship_Game
                 isSelected: (b) => SelectedFleet?.Key == b.FleetKey
             ));
 
-            RectF shipDesignsRect = new(client.Right - ListPad - rightW, listTop, rightW, 500);
+            RectF shipDesignsRect = new(blockRight - rightW, listTop,
+                                        rightW, overviewTop - 10 - listTop);
             RightMenu = new(shipDesignsRect);
 
             LocalizedText[] subShipsTabs = { "Designs", "Owned" };
@@ -292,29 +304,35 @@ namespace Ship_Game
             };
 
             ResetLists();
-            // Ludoal fork: the blocks are laid out from the tab frame's own edges, with the same
-            // 5px margin the group's other screens use. First Fleet and its buttons sit bottom
-            // LEFT, the overview bottom RIGHT under the ship list it belongs with.
-            float blockBottom = client.Bottom - ListPad;
-            float blockLeft   = client.X + ListPad;
-            float blockRight  = client.Right - ListPad;
 
-            SelectedStuffRect = new(blockLeft, blockBottom - 210, 440, 210);
+            // The First Fleet cartouche is sized to what it holds, top to bottom: the fleet name,
+            // its icon, then the four buttons in a column. Width is the button width plus a margin
+            // each side - it used to be a 440x210 slab with the buttons floating inside it.
+            float cartH = CartPad
+                        + Fonts.Arial20Bold.LineSpacing + 8   // name
+                        + CartIcon + 8                        // icon
+                        + 4 * CartBtnH + 3 * CartBtnGap       // the four buttons
+                        + CartPad;
+            SelectedStuffRect = new(blockLeft, blockBottom - cartH,
+                                    CartBtnW + 2 * CartPad, cartH);
 
             var ordersBarPos = new Vector2(SelectedStuffRect.X + 20, SelectedStuffRect.Y + 65);
             OrdersButtons = new(this, ordersBarPos);
             Add(OrdersButtons);
 
-            // Ludoal fork: the reworked screens' button, in place of the old blue plate
-            float btnX = SelectedStuffRect.X + 240;
-            float btnY = SelectedStuffRect.Y + arial20.LineSpacing + 20;
-            RequisitionForces = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, btnY - 10), "Requisition..."));
-            SaveDesign  = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, btnY + 30), "Save Design..."));
-            LoadDesign  = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, btnY + 70), "Load Design..."));
-            AutoArrange = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, btnY + 110), "Auto Arrange..."));
+            // stacked under the icon, one column, the cartouche's own width
+            float btnX = SelectedStuffRect.X + CartPad;
+            float btnY = SelectedStuffRect.Y + CartPad
+                       + Fonts.Arial20Bold.LineSpacing + 8 + CartIcon + 8;
+            float BtnRow(int i) => btnY + i * (CartBtnH + CartBtnGap);
+
+            RequisitionForces = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, BtnRow(0)), "Requisition..."));
+            SaveDesign  = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, BtnRow(1)), "Save Design..."));
+            LoadDesign  = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, BtnRow(2)), "Load Design..."));
+            AutoArrange = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, BtnRow(3)), "Auto Arrange..."));
 
             foreach (UIButton b in new[] { RequisitionForces, SaveDesign, LoadDesign, AutoArrange })
-                b.SetAbsSize(180, 33);
+                b.SetAbsSize(CartBtnW, CartBtnH);
 
             RequisitionForces.OnClick = (b) => ScreenManager.AddScreen(new RequisitionScreen(this));
             SaveDesign.OnClick = (b) => ScreenManager.AddScreen(new SaveFleetDesignScreen(this, SelectedFleet));
@@ -343,11 +361,11 @@ namespace Ship_Game
 
             PrioritiesRect = new(OperationsRect.Right + 2, OperationsRect.Y, OperationsRect.Size);
 
-            // Fleet Design Overview: bottom RIGHT, the width of the ship list above it, so the
-            // two read as one column. Hidden when a node is selected.
+            // Fleet Design Overview: bottom RIGHT, the width of the ship list above it, so the two
+            // read as one column. Twice the height it had - the text it holds needed the room.
             float overviewW = rightW;
-            FleetOverviewRect = new RectF(blockRight - overviewW, SelectedStuffRect.Y,
-                                          overviewW, SelectedStuffRect.H);
+            FleetOverviewRect = new RectF(blockRight - overviewW, blockBottom - OverviewH,
+                                          overviewW, OverviewH);
             float headerH = Fonts.Pirulen12.LineSpacing + 15;
             RectF overviewTextRect = new(FleetOverviewRect.X + 10,
                                           FleetOverviewRect.Y + headerH,
