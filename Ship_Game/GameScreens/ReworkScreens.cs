@@ -38,8 +38,11 @@ namespace Ship_Game.GameScreens
         // itself opens one tab row lower. Derived from the top bar rather than graven: the frame
         // is wanted 10px under the bar, and the rect starts one tab row above that. When the bar
         // changes height, every group's frame follows it.
+        // ⚠ TabRowY IS the top of the tab strip, so the 10px clearance is added and nothing is
+        // taken off for the strip's own height - subtracting it lifted the tabs a full row into
+        // the bar, over the treasury and research readouts.
         const int TabStripH = 25; // Submenu.TabHeight, which is private
-        public const int TabRowY = EmpireUIOverlay.BarTop + EmpireUIOverlay.BarH + 10 - TabStripH;
+        public const int TabRowY = EmpireUIOverlay.BarTop + EmpireUIOverlay.BarH + 10;
         // the same margin the top bar keeps: the frame's sides line up with the bar above it,
         // and one of the two moving is a thing you would only notice once it looked wrong
         public const int FrameMargin = EmpireUIOverlay.BarTop;

@@ -84,10 +84,29 @@ namespace Ship_Game
             ResearchTextX = x + 20 + gap;
 
             // ── right, laid out from the screen edge inwards ─────────────────────────────────
-            // Stardate first (it is the rightmost), then the speed cluster, then help and menu.
+            // The two session buttons take the edge; the stardate sits just left of them, close
+            // to the speed cluster it belongs with rather than pushed out to the corner.
             int rx = w - pad;
+
+            int helpW = 26;
+            Buttons.Add(new Button
+            {
+                Rect = new Rectangle(rx - helpW, y, helpW, btnH), Flat = true, Text = "?",
+                launches = "?", Tip = "Open the codex",
+            });
+            rx -= helpW + gap;
+
+            int menuW = 26;
+            Buttons.Add(new Button
+            {
+                Rect = new Rectangle(rx - menuW, y, menuW, btnH), Flat = true,
+                Icon = ResourceManager.Texture("NewUI/icon_exotic_Bonuses_big"),
+                launches = "Main Menu", Tip = "Open the main menu",
+            });
+            rx -= menuW + gap * 2;
+
             StarDateRight = rx;
-            rx -= StarDateRoom + gap * 2;
+            rx -= StarDateRoom + gap;
 
             int speedW = 26;
             SpeedFaster = new Rectangle(rx - speedW, y, speedW, btnH);
@@ -108,10 +127,7 @@ namespace Ship_Game
             SpeedTextRight = rx;
             rx -= SpeedRoom + gap;
 
-            // ── centre: the four groups, then MENU and ? riding with them ───────────────────
-            // The two session buttons sit with the groups rather than off at the edge, separated
-            // by a DOUBLE gap: near enough to read as one cluster, far enough to read as a
-            // different kind of thing.
+            // ── centre: the four groups ─────────────────────────────────────────────────────
             (string launch, string text, ReworkScreens.Group group)[] groups =
             {
                 ("Planets",   "GALAXY",    ReworkScreens.Group.Galaxy),
@@ -120,9 +136,7 @@ namespace Ship_Game
                 ("Fleets",    "DESIGN",    ReworkScreens.Group.Design),
             };
             int groupW = LowRes ? 96 : 116;
-            int menuW = 56, helpW = 30;
-            int clusterW = groups.Length * groupW + (groups.Length - 1) * gap
-                         + gap * 2 + menuW + gap + helpW;
+            int clusterW = groups.Length * groupW + (groups.Length - 1) * gap;
 
             // centred in what the two sides leave, never overlapping either
             int freeLeft = ResearchTextX + ResearchRoom + gap;
@@ -140,23 +154,12 @@ namespace Ship_Game
                 gx += groupW + gap;
             }
 
-            gx += gap;  // the double margin that separates the two kinds
-            Buttons.Add(new Button
-            {
-                Rect = new Rectangle(gx, y, menuW, btnH), Flat = true, Text = "MENU",
-                launches = "Main Menu", Tip = "Open the main menu",
-            });
-            gx += menuW + gap;
-            Buttons.Add(new Button
-            {
-                Rect = new Rectangle(gx, y, helpW, btnH), Flat = true, Text = "?",
-                launches = "?", Tip = "Open the codex",
-            });
         }
 
         // Ludoal fork: the bar draws itself flat, in the reworked screens' grammar - a dark plate
         // with a brass rule, no plating textures. Colour is decided HERE from live state (which
         // group is open, whether the game is paused), never stored on the button.
+        static readonly Color PlateRule  = new Color(118, 102, 67);
         static readonly Color PlateBlue  = new Color(38, 56, 84);
         static readonly Color PlateBrown = new Color(84, 64, 38);
         static readonly Color PlateRed   = new Color(96, 34, 34);
@@ -182,21 +185,24 @@ namespace Ship_Game
 
                 if (b.Icon != null)
                 {
-                    // an icon button carries no plate: the icon IS the button
+                    // An icon button carries no plate: the icon IS the button. Drawn at its own
+                    // size, centred in the rect - stretched to the hit area it would smear.
                     Color tint = b.State == PressState.Normal ? Color.White : Color.Orange;
-                    batch.Draw(b.Icon, b.Rect, tint);
+                    var at = new Rectangle(b.Rect.X + (b.Rect.Width - b.Icon.Width) / 2,
+                                           b.Rect.Y + (b.Rect.Height - b.Icon.Height) / 2,
+                                           b.Icon.Width, b.Icon.Height);
+                    batch.Draw(b.Icon, at, tint);
                     continue;
                 }
 
-                // the Dan button textures the reworked screens use, stretched to the rect: blue
-                // normally, red for a live pause, and the plain plate for the open group
-                string tex = fill == PlateBrown ? "NewUI/dan_button_clear"
-                           : fill == PlateRed   ? "NewUI/dan_button_red_clear"
-                                                : "NewUI/dan_button_blue_clear";
-                Color tone = b.State == PressState.Hover   ? Color.White
-                           : b.State == PressState.Pressed ? new Color(180, 180, 180)
-                                                           : new Color(225, 225, 225);
-                batch.Draw(ResourceManager.Texture(tex), b.Rect, tone);
+                // Painted, not textured: a Dan button's texture is 182 wide and these rects run
+                // from 30 to 116, so its sculpted edges squash. A filled plate with a rule takes
+                // any width without deforming, and stays in the reworked screens' grammar.
+                if (b.State == PressState.Hover)   fill = fill.LerpTo(Color.White, 0.18f);
+                if (b.State == PressState.Pressed) fill = fill.LerpTo(Color.Black, 0.25f);
+
+                batch.FillRectangle(b.Rect, fill.Alpha(0.92f));
+                batch.DrawRectangle(b.Rect, PlateRule.Alpha(0.75f));
 
                 if (!string.IsNullOrEmpty(b.Text))
                 {
