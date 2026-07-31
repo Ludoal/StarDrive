@@ -777,9 +777,12 @@ namespace Ship_Game
         // Refactored by RedFox
         public static void DeleteShip(UniverseState us, string shipName)
         {
-            string appData = Dir.StarDriveAppData;
-            DeleteShipFromDir(appData + "/Saved Designs", shipName);
-            DeleteShipFromDir(appData + "/WIP", shipName);
+            // ⚠ UserData, not AppData: designs are written to and read from the shared folder,
+            // so deleting from the per-install one found nothing and the design came straight
+            // back on the next refresh.
+            string userData = Dir.StarDriveUserData;
+            DeleteShipFromDir(userData + "/Saved Designs", shipName);
+            DeleteShipFromDir(userData + "/WIP", shipName);
 
             IShipDesign design = Ships.GetDesign(shipName, throwIfError: false);
             Ships.Delete(shipName);
