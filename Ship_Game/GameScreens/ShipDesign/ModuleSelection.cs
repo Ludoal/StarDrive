@@ -47,10 +47,13 @@ namespace Ship_Game
             // only stat frame left, so it needs the width the Compared one used to have.
             // Bench 46.135: the bottom margin matches the side one, the frame is three lines
             // shorter, and the list runs down to it with the standard gap.
-            float acsubTop = Rect.Bottom + FrameGap;
+            // Ludoal fork: anchored on the FOOT line rather than on the list above it - the band
+            // between the two carries the column's view toggles, and a frame measured from the
+            // list would climb into them. The right column's cartouche is built the same way.
+            float acsubTop = Rect.Bottom + FrameGap + ToggleRowBand;
             RectF acsub = new(Rect.X, acsubTop,
                               PlainFrameWidth, // widened on demand, see Update
-                              FramesBottom(Screen.Height) - acsubTop);
+                              FramesBottom() - acsubTop);
             ActiveModSubMenu = base.Add(new Submenu(acsub, "Active Module"));
             // rounded black background
             ActiveModSubMenu.SetBackground(Colors.TransparentBlackFill);
@@ -182,7 +185,11 @@ namespace Ship_Game
         public const float BottomPad = 5f;   // same as the side margin (was 15 here, 0 on the design side)
         // the black button bar at the foot of the screen — same 70 the screen builds BlackBar
         // with, so the module frames end on the design cartouches' line
-        public const float BottomBarH = 70f;
+        // Ludoal fork: the column band, set by the screen once its tab frame exists. The frame
+        // is the container now, so every vertical bound in this file is measured from it rather
+        // than from the window - a screen-relative bound left the frames 50px short of the
+        // frame's own floor and the columns hanging outside its sides.
+        public static float BandTop, BandBottom, BandLeft, BandRight;
         // Ludoal fork (bench 46.180): 15, not 45. Three lines were taken off the frames when they
         // had room to spare; the COMBAT block filled that room and Relative Strength now touches
         // the bottom edge (maintainer feedback). Two lines go back, and they come out of the LIST above -
@@ -194,14 +201,26 @@ namespace Ship_Game
 
         // Where the frames' bottom edge lands. The design cartouches use the SAME line, which is
         // what makes the four frames read as one row (bench 46.135).
-        public static float FramesBottom(float screenH) => screenH - BottomBarH - BottomPad;
+        public static float FramesBottom() => BandBottom - BottomPad;
 
         // The frame's target height — three lines shorter than it was (maintainer feedback). The list takes
         // whatever is above it, so this single number decides both, and they cannot drift.
-        public static float FrameHeightFor(float screenH) => screenH * 0.42f - ShorterBy;
+        // a share of the BAND, not of the window: the frame is what the column lives in
+        public static float FrameHeightFor() => (BandBottom - BandTop) * 0.42f - ShorterBy;
 
-        public static float ListHeightFor(float screenH, float listTop)
-            => FramesBottom(screenH) - FrameHeightFor(screenH) - FrameGap - listTop;
+        // Ludoal fork: the band between a list and the frame under it, carrying the two view
+        // toggles that belong to that column. Reserved on BOTH columns whether or not a given
+        // one draws its buttons, so the two lists keep the same height and the frames stay on
+        // their shared foot line.
+        public const float ToggleRowH = 26f;
+        public const float ToggleRowBand = ToggleRowH + FrameGap;
+
+        // Where a column's toggle row sits: under its list, above its frame.
+        public static float ToggleRowY()
+            => FramesBottom() - FrameHeightFor() - FrameGap - ToggleRowH;
+
+        public static float ListHeightFor(float listTop)
+            => FramesBottom() - FrameHeightFor() - FrameGap - ToggleRowBand - listTop;
         const float WideColStep = 210f;      // step when delta lanes are in play
         const float TightColStep = 152f;     // upstream's step
         const float Col0Pull = 20f; // first group, left (bench)

@@ -32,9 +32,15 @@ namespace Ship_Game
             ScreenManager.BeginFrameRendering(elapsed, ref View, ref Projection);
 
             ScreenManager.ClearScreen(Color.Black);
+
+            // Ludoal fork: the starfield and the fleet grid are clipped to the tab frame - the
+            // screen is one tab of the Design group now, so its scene stays inside the frame.
+            // Scissor is device state: it goes off again before the UI pass, or the panels drawn
+            // afterwards inherit the crop.
+            Ship_Game.Graphics.RenderStates.EnableScissorTest(batch.GraphicsDevice, DesignTabs.ClientArea);
             Universe.DrawStarField(ScreenManager.SpriteRenderer);
 
-            batch.SafeBegin();
+            batch.SafeBegin(SpriteBlendMode.AlphaBlend, Ship_Game.Graphics.RenderStates.ScissorEnabled);
             {
                 DrawGrid(batch);
                 DrawSelectedNodeSensorRange(batch);
@@ -46,6 +52,7 @@ namespace Ship_Game
                     batch.DrawRectangle(SelectionBox, Color.Green);
             }
             batch.SafeEnd();
+            Ship_Game.Graphics.RenderStates.DisableScissorTest(batch.GraphicsDevice);
 
             // render 3D
             if (SelectedFleet != null)
@@ -79,7 +86,7 @@ namespace Ship_Game
             if (Universe.IsExiting)
                 return;
 
-            batch.DrawString(Fonts.Laserian14, "Fleets (with hotkeys):", TitlePos, Colors.Cream);
+            batch.DrawString(Fonts.Arial12Bold, "Fleets (with hotkeys):", TitlePos, Colors.Cream);
             ReworkScreens.DrawDesignTabTip(DesignTabs, Input.CursorPosition);
 
             EmpireUI.Draw(batch);

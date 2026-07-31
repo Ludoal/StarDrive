@@ -243,18 +243,20 @@ namespace Ship_Game
                                                     OnDesignTabChanged, out Rectangle _);
             SetPerspectiveProjection(maxDistance: 100_000);
 
-            Graphics.Font titleFont = Fonts.Laserian14;
             Graphics.Font arial20 = Fonts.Arial20Bold;
             Graphics.Font arial12 = Fonts.Arial12Bold;
 
             // Ludoal fork: the two 80px title bars are gone - a single label above the fleet
             // list says what they said, and both lists start that much higher. The right one is
             // already titled by its own Designs/Owned tabs.
+            // laid out from the tab frame, 5px in on every side
+            const float ListPad = 5f;
             const float leftW = 250, rightW = 280;
-            TitlePos = new(20, DesignTabs.ClientArea.Y + 4);
-            float listTop = TitlePos.Y + titleFont.LineSpacing + 4;
+            RectF client = DesignTabs.ClientArea;
+            TitlePos = new(client.X + ListPad, client.Y + 4);
+            float listTop = TitlePos.Y + Fonts.Arial12Bold.LineSpacing + 4;
 
-            RectF leftRect = new(20, listTop, leftW, 500);
+            RectF leftRect = new(client.X + ListPad, listTop, leftW, 500);
             LeftMenu = new(leftRect, true);
             
             Add(new FleetButtonsList(leftRect, this, Universe,
@@ -263,7 +265,7 @@ namespace Ship_Game
                 isSelected: (b) => SelectedFleet?.Key == b.FleetKey
             ));
 
-            RectF shipDesignsRect = new(ScreenWidth - rightW - 2, listTop, rightW, 500);
+            RectF shipDesignsRect = new(client.Right - ListPad - rightW, listTop, rightW, 500);
             RightMenu = new(shipDesignsRect);
 
             LocalizedText[] subShipsTabs = { "Designs", "Owned" };
@@ -290,7 +292,14 @@ namespace Ship_Game
             };
 
             ResetLists();
-            SelectedStuffRect = new(ScreenWidth / 2 - 220, -13 + ScreenHeight - 210, 440, 210);
+            // Ludoal fork: the blocks are laid out from the tab frame's own edges, with the same
+            // 5px margin the group's other screens use. First Fleet and its buttons sit bottom
+            // LEFT, the overview bottom RIGHT under the ship list it belongs with.
+            float blockBottom = client.Bottom - ListPad;
+            float blockLeft   = client.X + ListPad;
+            float blockRight  = client.Right - ListPad;
+
+            SelectedStuffRect = new(blockLeft, blockBottom - 210, 440, 210);
 
             var ordersBarPos = new Vector2(SelectedStuffRect.X + 20, SelectedStuffRect.Y + 65);
             OrdersButtons = new(this, ordersBarPos);
@@ -314,6 +323,7 @@ namespace Ship_Game
 
             OperationsRect = new(SelectedStuffRect.Right + 2, SelectedStuffRect.Y + 30, 360, SelectedStuffRect.H - 30);
 
+
             float slidersX1 = OperationsRect.X + 15;
             float slidersX2 = OperationsRect.X + 15 + 180;
             float slidersY = OperationsRect.Y + arial12.LineSpacing + 20;
@@ -331,11 +341,13 @@ namespace Ship_Game
             SliderShield = NewSlider(slidersX2, slidersY+50, "Target Shielded Weight", GameText.TheWeightGivenToTargeting2);
             SliderDps    = NewSlider(slidersX2, slidersY+100, "Target DPS Weight", GameText.TheWeightGivenToTargeting3);
 
-            PrioritiesRect = new(SelectedStuffRect.X - OperationsRect.W - 2, OperationsRect.Y, OperationsRect.Size);
+            PrioritiesRect = new(OperationsRect.Right + 2, OperationsRect.Y, OperationsRect.Size);
 
-            // Fleet Design Overview panel: same vertical span as the First Fleet panel,
-            // at PrioritiesRect's X so it sits left of First Fleet. Hidden when a node is selected.
-            FleetOverviewRect = new RectF(PrioritiesRect.X, SelectedStuffRect.Y, PrioritiesRect.W, SelectedStuffRect.H);
+            // Fleet Design Overview: bottom RIGHT, the width of the ship list above it, so the
+            // two read as one column. Hidden when a node is selected.
+            float overviewW = rightW;
+            FleetOverviewRect = new RectF(blockRight - overviewW, SelectedStuffRect.Y,
+                                          overviewW, SelectedStuffRect.H);
             float headerH = Fonts.Pirulen12.LineSpacing + 15;
             RectF overviewTextRect = new(FleetOverviewRect.X + 10,
                                           FleetOverviewRect.Y + headerH,

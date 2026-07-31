@@ -828,8 +828,18 @@ namespace Ship_Game
             DesignTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.DesignTabTitles, 1,
                                                     OnDesignTabChanged, out Rectangle _);
 
+            // The tab frame is the container: every column bound is measured from it, with the
+            // same 5px margin on all four sides. ModuleSelection carries the band so the two
+            // columns and the four frames cannot each pick their own edge.
+            const float BandPad = 5f;
+            RectF tabClient = DesignTabs.ClientArea;
+            ModuleSelection.BandTop    = tabClient.Y;
+            ModuleSelection.BandBottom = tabClient.Bottom;
+            ModuleSelection.BandLeft   = tabClient.X + BandPad;
+            ModuleSelection.BandRight  = tabClient.Right - BandPad;
+
             // the centre rows start under the tab row rather than under the top bar
-            ClassifCursor = new Vector2(ScreenWidth * .5f, DesignTabs.ClientArea.Y + 4);
+            ClassifCursor = new Vector2(tabClient.CenterX, tabClient.Y + 4);
 
             // The two centre rows: the design's IDENTITY (role, name, Save, Test Fight), then
             // everything that CONFIGURES it (stance, repair, hangar, carrier-only). Posed here,
@@ -841,11 +851,13 @@ namespace Ship_Game
             IdentityRowY = (int)ClassifCursor.Y + 6;
             OptionsRowY  = IdentityRowY + 52;
 
-            // The lists start under the options row, leaving one line for the search field that
-            // sits above each of them; the toggles that filter them ride the identity row.
-            float modListTop = LowRes ? 45 : OptionsRowY + 26;
-            ModuleSelectComponent = Add(new ModuleSelection(this, new(5, modListTop),
-                                        new(ModuleSelection.ListWidth, ModuleSelection.ListHeightFor(ScreenHeight, modListTop))));
+            // The lists start below the options row, leaving room for the TWO lines each column
+            // carries above it: its filter toggles, then its search field. 18 clears the options
+            // row itself (a dropdown is 18 tall), then a line each.
+            const float headerLine = 19f;
+            float modListTop = LowRes ? 45 : OptionsRowY + 18 + 2 * headerLine + 6;
+            ModuleSelectComponent = Add(new ModuleSelection(this, new(ModuleSelection.BandLeft, modListTop),
+                                        new(ModuleSelection.ListWidth, ModuleSelection.ListHeightFor(modListTop))));
 
             // Both centre rows are centred on the same arithmetic: a total width built from the
             // parts, halved off ScreenCenter. The stance block is 7 icons wide and two rows tall
@@ -862,7 +874,7 @@ namespace Ship_Game
             const int roleW = 110, nameW = 210, idBtnW = 120;
             const int idRowW = roleW + nameW + 2 * idBtnW + 3 * idGap;
             int idY = IdentityRowY;
-            int idLeft = (int)ScreenCenter.X - idRowW / 2;
+            int idLeft = (int)ClassifCursor.X - idRowW / 2;
 
             DesignRoleRect = new Rectangle(idLeft, idY, roleW, idH);
             SearchBar      = new Rectangle(DesignRoleRect.Right + idGap, idY, nameW, idH);
@@ -916,21 +928,34 @@ namespace Ship_Game
             testFight.SetAbsSize(idBtnW, idH);
             topRow.PerformLayout();
 
-            // The view toggles, centred and sitting on the same foot line as the four frames.
-            // FramesBottom is the single source for that line - the module frames, the cartouche
-            // and this row all read it, so nothing has to agree with a second arithmetic.
-            const int footBtnW = 130, footBtnH = 26, footGap = 8;
-            const int footCount = 4;
-            float footY = ModuleSelection.FramesBottom(ScreenHeight) - footBtnH;
-            float footW = footCount * footBtnW + (footCount - 1) * footGap;
-            var footRow = AddList(new Vector2(ScreenCenter.X - footW * 0.5f, footY));
-            footRow.LayoutStyle = ListLayoutStyle.ResizeList;
-            footRow.Direction = new Vector2(+1, 0);
-            footRow.Padding = new Vector2(footGap, 2f);
+            // Each view toggle sits under the list it acts on: module placement on the left
+            // column, the design's own overlays on the right. ModuleSelection owns the band they
+            // live in (ToggleRowY / ToggleRowBand), so both lists shorten by the same amount and
+            // the four frames keep their shared foot line.
+            const int footGap = 8;
+            float footY = ModuleSelection.ToggleRowY();
+            float colW = ModuleSelection.ListWidth;
+            float footBtnW = (colW - footGap) * 0.5f;
+            float footBtnH = ModuleSelection.ToggleRowH;
 
-            // Ordered by what they act on: the two that carry a state and shape how a MODULE is
-            // placed or drawn come first, then the two that act on the DESIGN as a whole.
-            BtnSymmetricDesign = footRow.Add(ButtonStyle.DanButtonClearBlue, Localizer.Token(GameText.SymmetricDesign), click: b =>
+            var leftFoot = AddList(new Vector2(ModuleSelectComponent.LocalPos.X, footY));
+            leftFoot.LayoutStyle = ListLayoutStyle.ResizeList;
+            leftFoot.Direction = new Vector2(+1, 0);
+            leftFoot.Padding = new Vector2(footGap, 2f);
+
+            var rightFoot = AddList(new Vector2(ModuleSelection.BandRight - colW, footY));
+            rightFoot.LayoutStyle = ListLayoutStyle.ResizeList;
+            rightFoot.Direction = new Vector2(+1, 0);
+            rightFoot.Padding = new Vector2(footGap, 2f);
+
+            BtnStripShip = leftFoot.Add(ButtonStyle.DanButtonClearBlue, Localizer.Token(GameText.NormalDesign), click: b =>
+            {
+                OnStripShipToggle();
+            });
+            BtnStripShip.ClickSfx = "blip_click";
+            BtnStripShip.Tooltip = Localizer.Token(GameText.StripsTheShipOfAny);
+
+            BtnSymmetricDesign = leftFoot.Add(ButtonStyle.DanButtonClearBlue, Localizer.Token(GameText.SymmetricDesign), click: b =>
             {
                 OnSymmetricDesignToggle();
             });
@@ -939,7 +964,7 @@ namespace Ship_Game
             BtnSymmetricDesign.Hotkey  = InputBindings.FromString("M");
             BtnSymmetricDesign.Style   = SymmetricDesignBtnStyle;
 
-            BtnArcs = footRow.Add(ButtonStyle.DanButtonClearBlue, "Arcs", click: b =>
+            BtnArcs = rightFoot.Add(ButtonStyle.DanButtonClearBlue, "Arcs", click: b =>
             {
                 ShowAllArcs = !ShowAllArcs;
                 BtnArcs.Style = ArcsBtnStyle;
@@ -949,23 +974,17 @@ namespace Ship_Game
             BtnArcs.Hotkey   = InputBindings.FromString("Tab");
             BtnArcs.Style    = ArcsBtnStyle;
 
-            BtnStripShip = footRow.Add(ButtonStyle.DanButtonClearBlue, Localizer.Token(GameText.NormalDesign), click: b =>
-            {
-                OnStripShipToggle();
-            });
-            BtnStripShip.ClickSfx = "blip_click";
-            BtnStripShip.Tooltip = Localizer.Token(GameText.StripsTheShipOfAny);
-
-            BtnToggleOverlay = footRow.Add(ButtonStyle.DanButtonClearBlue, GameText.ToggleOverlay, click: b =>
+            BtnToggleOverlay = rightFoot.Add(ButtonStyle.DanButtonClearBlue, GameText.ToggleOverlay, click: b =>
             {
                 ToggleOverlay = !ToggleOverlay;
             });
             BtnToggleOverlay.ClickSfx = "blip_click";
 
-            // narrower than the default Dan button, so the four fit the gap between the frames
-            foreach (UIButton b in new[] { BtnSymmetricDesign, BtnArcs, BtnStripShip, BtnToggleOverlay })
+            // half a column each, so a pair spans exactly the list above it
+            foreach (UIButton b in new[] { BtnStripShip, BtnSymmetricDesign, BtnArcs, BtnToggleOverlay })
                 b.SetAbsSize(footBtnW, footBtnH);
-            footRow.PerformLayout();
+            leftFoot.PerformLayout();
+            rightFoot.PerformLayout();
 
             // Ludoal fork (spec v4): the right column is laid out from the LEFT COLUMN, not from
             // its own fractions. The browser ends where the module list ends, the strip sits
@@ -981,7 +1000,7 @@ namespace Ship_Game
             // longer costs the two rows it used to reserve
             float colTop      = filterTop;
             // the same foot line the module frames land on, so the four read as one row
-            float colBottom   = ModuleSelection.FramesBottom(ScreenHeight);
+            float colBottom   = ModuleSelection.FramesBottom();
             // The right column mirrors the left one exactly: the cartouche keeps the module
             // frame's height, and the browser runs down to it with the module list's own gap, so
             // both columns' feet land on one line. Nothing else is allowed into that arithmetic
@@ -1002,10 +1021,9 @@ namespace Ship_Game
 
             // Ludoal fork (bench): the right column had no margin — its frames were flush with
             // the screen edge while the left ones breathe. Same padding on both sides now.
-            const float RightPad = 5f;
             // Ludoal fork: same width as the module list on the other side of the screen.
             Vector2 hullSelSize = new(ModuleSelection.ListWidth, Math.Max(160f, listBottom - colTop));
-            var hullSelectPos = new LocalPos(ScreenWidth - hullSelSize.X - RightPad, colTop);
+            var hullSelectPos = new LocalPos(ModuleSelection.BandRight - hullSelSize.X, colTop);
             // Ludoal fork: the load popup's filters come WITH its list — dropping them would be
             // a regression, since one of them ("my designs only") is a persisted preference the
             // player may already have set. They sit above the frame rather than inside it:
@@ -1045,13 +1063,13 @@ namespace Ship_Game
             // from the list it filters (maintainer feedback) — a first taste of the wider UI pass to come.
             // 26px ABOVE the list, not below its top edge: filterTop IS the list's own top, so
             // +26 put the checkbox inside the list, which drew straight over it (bench 46.172).
-            // The filter toggles sit on the BOTTOM of the identity row: a checkbox draws itself
-            // around its centre and measures max(12, LineSpacing) tall, so its top has to be
-            // pulled up by its own height rather than sharing the row's Y.
+            // The filter toggles sit directly ABOVE their search field, with their list: a
+            // checkbox draws itself around its centre and measures max(12, LineSpacing) tall, so
+            // its top is pulled up by its own height plus the gap.
             float toggleH = Math.Max(12, Fonts.Arial12Bold.LineSpacing);
-            float toggleY = IdentityRowY + idH - toggleH;
+            float toggleY = searchY - toggleH - 4;
 
-            Checkbox(new Vector2(11, toggleY),
+            Checkbox(new Vector2(ModuleSelection.BandLeft + 6, toggleY),
                      () => IsFilterOldModulesMode,
                      (b) => { IsFilterOldModulesMode = b; ModuleSelectComponent.ResetActiveCategory(); },
                      "Hide obsolete", GameText.WhenToggledRedAnyModule);
@@ -1059,7 +1077,7 @@ namespace Ship_Game
             // The module list gets the same search field the browser has, on the line just above
             // it. Typing filters across every category, so a module can be found without knowing
             // which of the four tabs holds it.
-            ModuleFilter = Add(new UITextEntry(9, searchY, ModuleSelection.ListWidth - 8,
+            ModuleFilter = Add(new UITextEntry(ModuleSelection.BandLeft + 4, searchY, ModuleSelection.ListWidth - 8,
                                                Fonts.Arial12Bold, DefaultModuleFilter));
             ModuleFilter.AutoCaptureOnKeys = true;
             ModuleFilter.AutoCaptureLoseFocusTime = 0.5f;
@@ -1139,7 +1157,7 @@ namespace Ship_Game
             int optRowW = lblRepairW + ddW + optGap + lblHangarW + ddHangarW
                         + optGap + carrierW + optGap + stanceW;
             int optY = OptionsRowY;
-            int optX = (int)ScreenCenter.X - optRowW / 2 + lblRepairW;
+            int optX = (int)ClassifCursor.X - optRowW / 2 + lblRepairW;
             var dropdownRect = new Rectangle(optX, optY, ddW, ddH);
 
             CategoryList = new CategoryDropDown(dropdownRect);

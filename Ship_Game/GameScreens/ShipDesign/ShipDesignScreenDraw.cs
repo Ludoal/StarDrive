@@ -24,11 +24,21 @@ namespace Ship_Game
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             ScreenManager.BeginFrameRendering(elapsed, ref View, ref Projection);
+
+            // Ludoal fork: the starfield, the particles and the 3D workbench are clipped to the
+            // tab frame - the screen is one tab of the Design group now, so its scene belongs
+            // inside the frame rather than running under the top bar and past the edges. Scissor
+            // is device state: it has to be turned off again before the UI pass, or every panel
+            // drawn afterwards inherits the crop.
+            Ship_Game.Graphics.RenderStates.EnableScissorTest(batch.GraphicsDevice, DesignTabs.ClientArea);
+
             ParentUniverse.DrawStarField(ScreenManager.SpriteRenderer);
             ParentUniverse.Particles.Draw(View, Projection, nearView:true);
             ParentUniverse.Particles.Update(elapsed.CurrentGameTime);
 
             ScreenManager.RenderSceneObjects();
+
+            Ship_Game.Graphics.RenderStates.DisableScissorTest(batch.GraphicsDevice);
 
             if (ToggleOverlay)
             {
@@ -519,25 +529,18 @@ namespace Ship_Game
                                           (int)HangarOptionsList.Width, (int)HangarOptionsList.Height), "Hangar Designation");
             HangarOptionsList.Draw(batch, elapsed);
 
-            float transitionOffset = (float) Math.Pow(TransitionPosition, 2);
-
-            // Ludoal fork: the black bottom bar is gone - the starfield runs edge to edge now, and
-            // the design's identity moved to the top. The two plates are drawn in the reworked
-            // screens' grammar (dark fill, brass rule) rather than the flat grey they carried.
+            // Ludoal fork: the design's identity plates, drawn in the reworked screens' grammar
+            // (dark fill, brass rule). They appear at their place rather than sliding in.
             var plate = new Color(14, 12, 9).Alpha(0.92f);
             var rule  = new Color(118, 102, 67, 255).Premultiplied();
 
             Rectangle r = DesignRoleRect;
-            if (IsTransitioning)
-                r.Y += (int)(transitionOffset * 50f);
             batch.FillRectangle(r, plate);
             batch.DrawRectangle(r, rule);
             var cursor = new Vector2(r.X + 8, r.Y + r.Height / 2 - Fonts.Arial20Bold.LineSpacing / 2);
             batch.DrawString(Fonts.Arial20Bold, Localizer.GetRole(Role, Player), cursor, Colors.Cream);
 
             r = SearchBar;
-            if (IsTransitioning)
-                r.Y += (int)(transitionOffset * 50f);
             batch.FillRectangle(r, plate);
             batch.DrawRectangle(r, rule);
 
