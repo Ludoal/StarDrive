@@ -30,8 +30,8 @@ namespace Ship_Game
             // inside the frame rather than running under the top bar and past the edges. Scissor
             // is device state: it has to be turned off again before the UI pass, or every panel
             // drawn afterwards inherits the crop.
-            Ship_Game.Graphics.RenderStates.EnableScissorTest(batch.GraphicsDevice,
-                ReworkScreens.GroupSceneArea(DesignTabs.Rect, DesignTabs.ClientArea));
+            Rectangle sceneClip = ReworkScreens.GroupSceneArea(DesignTabs.Rect, DesignTabs.ClientArea);
+            Ship_Game.Graphics.RenderStates.EnableScissorTest(batch.GraphicsDevice, sceneClip);
 
             ParentUniverse.DrawStarField(ScreenManager.SpriteRenderer);
             ParentUniverse.Particles.Draw(View, Projection, nearView:true);
