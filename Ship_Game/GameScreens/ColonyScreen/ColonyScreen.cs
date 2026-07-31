@@ -17,8 +17,6 @@ namespace Ship_Game
     {
         readonly ToggleButton PlayerDesignsToggle;
         Submenu ColonyTabs;   // Ludoal fork: the frame's tab row - a group of one
-        readonly Menu1 LeftMenu;
-        readonly Menu1 RightMenu;
         readonly Submenu PlanetInfo;
         readonly Submenu PStorage;
         readonly Submenu PFacilities;
@@ -132,26 +130,31 @@ namespace Ship_Game
 
             // Ludoal fork: the 80px title cartouche gives way to the group's tab row - a group
             // of ONE, since Colony opens from the map and has no siblings, but a full-frame
-            // screen that looked different for that would read as an oversight. The two panels
-            // keep their rects (twenty-one sites position from them) but are no longer drawn:
-            // the frame supplies the one border this screen needs.
+            // screen that looked different for that would read as an oversight. The two Menu1
+            // panels went with it: every rect below is placed from the grid instead.
             ColonyTabs = GameScreens.ReworkScreens.AddGroupTabs(
                 this, GameScreens.ReworkScreens.ColonyTabTitles(p.Name), 0, _ => { }, out Rectangle _);
             RectF client = ColonyTabs.ClientArea;
 
-            const int MenuPad = 5;
-            int menuTop = (int)client.Y + MenuPad;
-            int menuH = (int)client.Bottom - MenuPad - menuTop;
-            int menuLeft = (int)client.X + MenuPad;
-            int totalW = (int)client.W - 2 * MenuPad;
-            int leftW = totalW * 2 / 3 - MenuPad;
+            // ── the screen's one grid ────────────────────────────────────────────────────────
+            // Ludoal fork: every panel is placed from THESE, and nothing re-derives a margin of
+            // its own. Pad is the gap to the frame AND between panels - one number, so a change
+            // moves the whole layout together rather than half of it.
+            const float Pad = 10;
+            float gridLeft   = client.X + Pad;
+            float gridRight  = client.Right - Pad;
+            float gridTop    = client.Y + Pad;
+            float gridBottom = client.Bottom - Pad;
 
-            LeftMenu = new Menu1(menuLeft, menuTop, leftW, menuH);
-            RightMenu = new Menu1(menuLeft + leftW + MenuPad, menuTop, totalW - leftW - MenuPad, menuH);
+            // Left column: wide enough that the Governor's third tab (BLUEPRINTS) fits on the
+            // first row - measured in the font that draws the tabs rather than guessed.
+            float govTabsW = Fonts.Arial12Bold.TextWidth("GOVERNOR") + Fonts.Arial12Bold.TextWidth("DEFENSE")
+                           + Fonts.Arial12Bold.TextWidth("BUDGET") + Fonts.Arial12Bold.TextWidth("BLUEPRINTS")
+                           + 4 * 30;   // Submenu pads each tab
+            float colLeftW = Math.Max(govTabsW, (gridRight - gridLeft) * 0.26f);
 
-            RectF planetInfoR = new(LeftMenu.X + 20, LeftMenu.Y + 20, 
-                                    (int)(0.4f * LeftMenu.Width),
-                                    (int)(0.23f * (LeftMenu.Height - 80)));
+            RectF planetInfoR = new(gridLeft, gridTop, colLeftW,
+                                    (gridBottom - gridTop) * 0.26f);
             PlanetInfo = new(planetInfoR, GameText.PlanetInfo);
 
             // Ludoal fork: the colony arrows sit side by side on Planet Info's title line, flush
@@ -174,14 +177,20 @@ namespace Ship_Game
             RightColony.Tooltip = GameText.ViewNextColony;
             RightColony.OnClick = b => OnChangeColony(+1);
 
-            Submenu pDescription = new(LeftMenu.X + 20, LeftMenu.Y + 40 + PlanetInfo.Height, 0.4f * LeftMenu.Width, 0.25f * (LeftMenu.Height - 80));
+            // The left column stacks four panels with ONE gap between each. The first three carry
+            // fixed content and keep their height; STORAGE is the variable block - it takes what
+            // is left down to the foot, so the column always closes on the grid rather than
+            // wherever four quarters happen to land.
+            float govH   = 0.30f * (gridBottom - gridTop);
+            float laborH = 0.22f * (gridBottom - gridTop);
 
-            var labor = new RectF(LeftMenu.X + 20, LeftMenu.Y + 20 + PlanetInfo.Height + pDescription.Height + 40,
-                                  0.4f * LeftMenu.Width, 0.25f * (LeftMenu.Height - 80));
+            Submenu pDescription = new(gridLeft, PlanetInfo.Bottom + Pad, colLeftW, govH);
 
+            var labor = new RectF(gridLeft, pDescription.Bottom + Pad, colLeftW, laborH);
             AssignLabor = Add(new AssignLaborComponent(P, labor, useTitleFrame: true));
 
-            RectF pStorageR = new(LeftMenu.X + 20, LeftMenu.Y + 20 + PlanetInfo.Height + pDescription.Height + labor.H + 60, 0.4f * LeftMenu.Width, 0.25f * (LeftMenu.Height - 80));
+            RectF pStorageR = new(gridLeft, labor.Bottom + Pad, colLeftW,
+                                  gridBottom - (labor.Bottom + Pad));
             PStorage = new(pStorageR, GameText.Storage);
 
             Vector2 blockadePos = new Vector2(PStorage.X + 20, PStorage.Y + 35);
@@ -212,14 +221,17 @@ namespace Ship_Game
             ProdDropDown.AddOption(Localizer.Token(GameText.Export));
             ProdDropDown.ActiveIndex = (int)p.PS;
 
-            RectF subColonyR = new(LeftMenu.X + 20 + PlanetInfo.Width + 20, PlanetInfo.Y, 
-                                   LeftMenu.Width - 60 - PlanetInfo.Width, LeftMenu.Height * 0.5f);
+            // Centre column: the colony grid keeps its height, STATISTICS below takes the rest -
+            // it is the variable block of this column, and it closes on the grid's foot.
+            float colCentreX = gridLeft + colLeftW + Pad;
+            float colRightW  = (gridRight - gridLeft) * 0.30f;   // right column, dynamic
+            float colCentreW = gridRight - colRightW - Pad - colCentreX;
+
+            RectF subColonyR = new(colCentreX, gridTop, colCentreW, (gridBottom - gridTop) * 0.5f);
             SubColonyGrid = new(subColonyR, GameText.Colony);
 
-            RectF pFacilitiesR = new(LeftMenu.X + 20 + PlanetInfo.Width + 20,
-                                     SubColonyGrid.Bottom + 20,
-                                     LeftMenu.Width - 60 - PlanetInfo.Width,
-                                     LeftMenu.Height - 20 - SubColonyGrid.Height - 40);
+            RectF pFacilitiesR = new(colCentreX, SubColonyGrid.Bottom + Pad, colCentreW,
+                                     gridBottom - (SubColonyGrid.Bottom + Pad));
 
             PFacilities = base.Add(new Submenu(pFacilitiesR));
             PopulatePfacilitieTabs();
@@ -239,12 +251,20 @@ namespace Ship_Game
             if (facilitiesTabSelected < PFacilities.Tabs.Count)
                 PFacilities.SelectedIndex = facilitiesTabSelected;
 
-            var filterBgRect = new RectF(RightMenu.X + 70, RightMenu.Y + 15, RightMenu.Width - 400, 20);
+            // Right column. BUILDINGS starts on COLONY's top line; the filter row sits ABOVE it,
+            // outside the frame, right-aligned on it - the clear button ends where the panel ends.
+            float colRightX = gridRight - colRightW;
+            float filterH = 20;
+            float clearW = 17;
+            float buildingsTop = gridTop + filterH + Pad;
+
+            var filterBgRect = new RectF(colRightX + 60, gridTop,
+                                         colRightW - 60 - clearW - 10, filterH);
             var filterRect = new RectF(filterBgRect.X + 5, filterBgRect.Y, filterBgRect.W, filterBgRect.H);
             FilterBuildableItems = Add(new UITextEntry(filterRect, Font12, ""));
             FilterBuildableItems.AutoCaptureOnHover = true;
             FilterBuildableItems.Background = new Submenu(filterBgRect);
-            Vector2 filterLabelPos = new Vector2(RightMenu.X + 25, filterRect.Y+2);
+            Vector2 filterLabelPos = new Vector2(colRightX, filterRect.Y + 2);
             FilterBuildableItemsLabel = Add(new UILabel(filterLabelPos, "Filter:", Font12, Color.Gray));
             
             var customStyle = new UIButton.StyleTextures("NewUI/icon_clear_filter", "NewUI/icon_clear_filter_hover2");
@@ -255,8 +275,10 @@ namespace Ship_Game
                 Pos     = new Vector2(filterRect.Right + 10, filterRect.Y + 3)
             });
 
-            RectF buildableR = new(RightMenu.X + 20, RightMenu.Y + 40, 
-                                   RightMenu.Width - 40, 0.5f*(RightMenu.Height-40));
+            // BUILDINGS' top lines up with COLONY's; the queue below takes what is left, so the
+            // column closes on the grid's foot exactly as the other two do.
+            RectF buildableR = new(colRightX, buildingsTop, colRightW,
+                                   (gridBottom - buildingsTop) * 0.5f);
             BuildableTabs = base.Add(new SubmenuScrollList<BuildableListItem>(buildableR, BuildingsTabText));
             BuildableTabs.OnTabChange = OnBuildableTabChanged;
 
@@ -275,9 +297,8 @@ namespace Ship_Game
             PlayerDesignsToggle.OnClick = OnPlayerDesignsToggleClicked;
             ResetBuildableTabs();
 
-            float queueBottom = RightMenu.Bottom - 20;
-            float queueTop = BuildableTabs.Bottom + 10;
-            RectF queueR = new(RightMenu.X + 20, queueTop, RightMenu.Width - 40, queueBottom - queueTop);
+            float queueTop = BuildableTabs.Bottom + Pad;
+            RectF queueR = new(colRightX, queueTop, colRightW, gridBottom - queueTop);
             var queue = base.Add(new SubmenuScrollList<ConstructionQueueScrollListItem>(queueR, GameText.ConstructionQueue));
 
             ConstructionQueue = queue.List;

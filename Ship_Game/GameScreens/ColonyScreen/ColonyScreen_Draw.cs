@@ -189,8 +189,15 @@ namespace Ship_Game
                 return;
 
             P.UpdateIncomes();
-            // Ludoal fork: the two panels' brass surrounds were drawn here by hand and are gone -
-            // the tab frame supplies the one border this screen needs.
+
+            // Ludoal fork: the frame is filled FIRST, by hand. The group's frame is built
+            // transparent, so the galaxy behind it showed straight through - planet names ran
+            // across the panels. Painted here rather than via SetBackground: a background is a
+            // CHILD, drawn by base.Draw, which lands after everything this method paints.
+            batch.FillRectangle(ColonyTabs.ClientArea, GameScreens.ReworkScreens.GroupFrameFill);
+
+            // the two panels' brass surrounds were drawn here by hand and are gone - the tab
+            // frame supplies the one border this screen needs.
             LeftColony.Draw(batch, elapsed);
             RightColony.Draw(batch, elapsed);
             GameScreens.ReworkScreens.DrawColonyTabTip(ColonyTabs, Input.CursorPosition);
