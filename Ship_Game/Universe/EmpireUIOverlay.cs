@@ -91,8 +91,8 @@ namespace Ship_Game
             int helpW = 26;
             Buttons.Add(new Button
             {
-                Rect = new Rectangle(rx - helpW, y, helpW, btnH), Flat = true, Text = "?",
-                launches = "?", Tip = "Open the codex",
+                Rect = new Rectangle(rx - helpW, y, helpW, btnH), Flat = true, Bare = true,
+                Text = "?", launches = "?", Tip = "Open the codex",
             });
             rx -= helpW + gap;
 
@@ -196,13 +196,24 @@ namespace Ship_Game
                 }
 
                 // Painted, not textured: a Dan button's texture is 182 wide and these rects run
-                // from 30 to 116, so its sculpted edges squash. A filled plate with a rule takes
-                // any width without deforming, and stays in the reworked screens' grammar.
+                // from 26 to 116, so its sculpted edges squash. A filled plate takes any width
+                // without deforming, and stays in the reworked screens' grammar.
                 if (b.State == PressState.Hover)   fill = fill.LerpTo(Color.White, 0.18f);
                 if (b.State == PressState.Pressed) fill = fill.LerpTo(Color.Black, 0.25f);
 
-                batch.FillRectangle(b.Rect, fill.Alpha(0.92f));
-                batch.DrawRectangle(b.Rect, PlateRule.Alpha(0.75f));
+                // A bare button is its text and nothing else - the plate would say "control"
+                // where the glyph already says it.
+                if (!b.Bare)
+                {
+                    // Translucent: the bar sits over the map, and a solid plate reads as a hole
+                    // punched in it. Two exceptions carry more weight - the group you are inside,
+                    // and a live pause, which is meant to be seen from across the room.
+                    float opacity = fill == PlateRed   ? 0.85f
+                                  : fill == PlateBrown ? 0.72f
+                                                       : 0.55f;
+                    batch.FillRectangle(b.Rect, fill.Alpha(opacity));
+                    batch.DrawRectangle(b.Rect, PlateRule.Alpha(0.6f));
+                }
 
                 if (!string.IsNullOrEmpty(b.Text))
                 {
@@ -578,6 +589,18 @@ namespace Ship_Game
                             return true;
                         }
 
+                        // Ludoal fork: a GROUP button whose group is already open just closes it,
+                        // whichever of its tabs you are on. The per-class guards below only know
+                        // the group's FIRST screen, so pressing DESIGN from the Shipyard used to
+                        // close it and reopen Fleets rather than leave the group.
+                        if (b.Group != ReworkScreens.Group.None &&
+                            b.Group == ReworkScreens.GroupOf(caller))
+                        {
+                            GameAudio.EchoAffirmative();
+                            caller.ExitScreen();  // virtual - the Shipyard's override still prompts
+                            return true;
+                        }
+
                         // Shipyard keeps its dedicated exit (unsaved-design prompt);
                         // its LaunchScreen() then opens the requested target — and its
                         // own button simply closes it (toggle), like every other panel.
@@ -756,6 +779,7 @@ namespace Ship_Game
             // from what the button represents (which group is open, whether the game is paused),
             // never stored, so it cannot go stale.
             public bool Flat;
+            public bool Bare;            // text only, no plate behind it
             public SubTexture Icon;      // drawn left of the text, vertically centred
             public string Tip;           // tooltip line for a flat button
             public ReworkScreens.Group Group; // set on the four group buttons, None elsewhere
