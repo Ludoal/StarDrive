@@ -266,6 +266,13 @@ namespace Ship_Game.GameScreens
         public static float GroupContentTop(in RectF client)
             => client.Y + ClosePadding + CloseSize + 10;
 
+        // Ludoal fork: the band above a group's frame - the top bar and the tab row. The
+        // table screens close on any right-click, but the Shipyard and Fleets spend that
+        // gesture on their own work (deleting a module, dropping a design), so they close
+        // only when the click lands UP HERE, where nothing else wants it.
+        public static bool InTopBand(Vector2 cursor)
+            => cursor.Y < TabRowY + TabStripH;
+
         // The vertical span of a column inside the frame. ⚠ ClientArea.H already stops short of the
         // frame's bottom border, so only the TOP pad is added - taking one off the bottom as well
         // left roughly twice the gap there.

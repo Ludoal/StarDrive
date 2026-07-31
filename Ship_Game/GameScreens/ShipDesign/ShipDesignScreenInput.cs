@@ -185,6 +185,17 @@ namespace Ship_Game
                 return true;
             }
 
+            // Ludoal fork: right-click closes the screen when it lands in the top band - the bar
+            // and the tab row. Down on the workbench the gesture belongs to the design (it
+            // deletes the module under the cursor), so only the band up here is free for it.
+            // ExitScreen, not ReallyExit: the unsaved-design prompt still gets its say.
+            if (input.RightMouseClick && ReworkScreens.InTopBand(input.CursorPosition))
+            {
+                GameAudio.EchoAffirmative();
+                ExitScreen();
+                return true;
+            }
+
             if (HandleInputUndoRedo(input))
                 return true;
 

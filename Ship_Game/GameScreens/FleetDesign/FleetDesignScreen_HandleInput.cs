@@ -42,6 +42,16 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            // Ludoal fork: right-click closes the screen from the top band - the bar and the tab
+            // row. Over the fleet grid the gesture is already spoken for (it drops the design
+            // being placed), so it only closes up here where nothing else wants it.
+            if (input.RightMouseClick && GameScreens.ReworkScreens.InTopBand(input.CursorPosition))
+            {
+                GameAudio.EchoAffirmative();
+                ExitScreen();
+                return true;
+            }
+
             if (Input.FleetExitScreen && !GlobalStats.TakingInput)
             {
                 ExitScreen();
