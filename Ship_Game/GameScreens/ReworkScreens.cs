@@ -322,8 +322,10 @@ namespace Ship_Game.GameScreens
         // everything a screen paints by hand. On screens that draw their tables manually it would
         // bury their own content.
         // The 23 is Submenu's TabHeight - 2, read from the source and not measured on a capture.
+        // ⚠ RectF and not Rect: UIElementV2 carries BOTH, Rect being the integer one, and taking
+        // that path would quietly round a geometry the rest of the frame keeps in floats.
         public static RectF GroupFrameFillRect(Submenu tabs)
-            => tabs.NumTabs == 0 ? tabs.Rect : tabs.Rect.CutTop(23);
+            => tabs.NumTabs == 0 ? tabs.RectF : tabs.RectF.CutTop(23);
 
         // Ludoal fork: the line every frame, panel and button draws around itself. One source:
         // the same numbers were written out in five places, which is how two of them end up
