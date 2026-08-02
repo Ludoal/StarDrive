@@ -35,8 +35,14 @@ namespace Ship_Game
         // around 100px ("999.9k (+999.9)"), the research line around 240 with a long topic name.
         const int MoneyRoom = 110;
         const int ResearchRoom = 250;
+        // The figures in front of the research topic, on their own reserved width so the topic
+        // name keeps ONE position instead of sliding as the numbers grow. Bound, not eyeballed:
+        // GetNumberString(compact) tops out at six glyphs ("999.9M"), so the worst realistic
+        // string is "999.9k/999.9M (+999.9)" - about 150px in Arial12Bold.
+        const int ResearchNumbersRoom = 155;
         const int StarDateRoom = 120;   // "StarDate: 1202.8"
         const int SpeedRoom = 46;       // "0.25x" - reserved, so the cluster never shifts
+        const int PauseRoom = 62;       // "PAUSED", the longer of the two words it shows
         int SpeedTextRight;             // the factor is right-aligned here, left of "<<"
 
         // Ludoal fork: the bar is laid out in three zones and drawn flat - the military plating,
@@ -108,18 +114,20 @@ namespace Ship_Game
             StarDateRight = rx;
             rx -= StarDateRoom + gap;
 
+            // The session controls are bare text: they act in place and open nothing, so a plate
+            // would give them the weight of the group buttons beside them. PauseRoom is reserved
+            // for the LONGER of the two words - "PAUSED" must not push "<<" when the game stops.
             int speedW = 26;
             SpeedFaster = new Rectangle(rx - speedW, y, speedW, btnH);
-            Buttons.Add(new Button { Rect = SpeedFaster, Flat = true, Text = ">>", launches = "SpeedUp", Tip = "Speed up" });
+            Buttons.Add(new Button { Rect = SpeedFaster, Flat = true, Bare = true, Text = ">>", launches = "SpeedUp", Tip = "Speed up" });
             rx -= speedW + 2;
 
-            int pauseW = 54;
-            PauseRect = new Rectangle(rx - pauseW, y, pauseW, btnH);
-            Buttons.Add(new Button { Rect = PauseRect, Flat = true, Text = "PAUSE", launches = "Pause", Tip = "Pause / resume" });
-            rx -= pauseW + 2;
+            PauseRect = new Rectangle(rx - PauseRoom, y, PauseRoom, btnH);
+            Buttons.Add(new Button { Rect = PauseRect, Flat = true, Bare = true, Text = "PAUSE", launches = "Pause", Tip = "Pause / resume" });
+            rx -= PauseRoom + 2;
 
             SpeedSlower = new Rectangle(rx - speedW, y, speedW, btnH);
-            Buttons.Add(new Button { Rect = SpeedSlower, Flat = true, Text = "<<", launches = "SpeedDown", Tip = "Slow down" });
+            Buttons.Add(new Button { Rect = SpeedSlower, Flat = true, Bare = true, Text = "<<", launches = "SpeedDown", Tip = "Slow down" });
             rx -= speedW + gap;
 
             // the factor sits LEFT of the cluster and is right-aligned on it: growing from "2x"
@@ -138,11 +146,14 @@ namespace Ship_Game
             int groupW = LowRes ? 96 : 116;
             int clusterW = groups.Length * groupW + (groups.Length - 1) * gap;
 
-            // centred in what the two sides leave, never overlapping either
+            // Centred on the SCREEN, not in the gap the two sides leave: the groups are the bar's
+            // spine and read as off-centre when the left readouts are wider than the right cluster.
+            // The free span still bounds them, so a narrow window pushes rather than overlaps.
             int freeLeft = ResearchTextX + ResearchRoom + gap;
             int freeRight = rx - gap;
-            int gx = freeLeft + ((freeRight - freeLeft) - clusterW) / 2;
+            int gx = (w - clusterW) / 2;
             if (gx < freeLeft) gx = freeLeft;
+            if (gx + clusterW > freeRight) gx = freeRight - clusterW;
 
             foreach ((string launch, string text, ReworkScreens.Group group) in groups)
             {
@@ -162,8 +173,9 @@ namespace Ship_Game
         static readonly Color PlateRule  = new Color(118, 102, 67);
         static readonly Color PlateBlue  = new Color(38, 56, 84);
         static readonly Color PlateBrown = new Color(84, 64, 38);
-        static readonly Color PlateRed   = new Color(96, 34, 34);
         static readonly Color TextCream  = new Color(255, 240, 189);
+        // an ink, bright enough to read over the map - a plate-fill red would sink into it
+        static readonly Color PausedRed  = new Color(255, 92, 92);
 
         public void Draw(SpriteBatch batch)
         {
@@ -180,8 +192,6 @@ namespace Ship_Game
                 Color fill = PlateBlue;
                 if (b.Group != ReworkScreens.Group.None && b.Group == open)
                     fill = PlateBrown;                       // the group you are inside
-                else if (b.launches == "Pause" && Universe.UState.Paused)
-                    fill = PlateRed;                         // paused, whatever paused it
 
                 if (b.Icon != null)
                 {
@@ -206,20 +216,26 @@ namespace Ship_Game
                 if (!b.Bare)
                 {
                     // Translucent: the bar sits over the map, and a solid plate reads as a hole
-                    // punched in it. Two exceptions carry more weight - the group you are inside,
-                    // and a live pause, which is meant to be seen from across the room.
-                    float opacity = fill == PlateRed   ? 0.85f
-                                  : fill == PlateBrown ? 0.72f
-                                                       : 0.55f;
+                    // punched in it. The group you are inside carries more weight than the rest.
+                    float opacity = fill == PlateBrown ? 0.72f : 0.55f;
                     batch.FillRectangle(b.Rect, fill.Alpha(opacity));
                     batch.DrawRectangle(b.Rect, PlateRule.Alpha(0.6f));
                 }
 
                 if (!string.IsNullOrEmpty(b.Text))
                 {
-                    var at = new Vector2(b.Rect.X + b.Rect.Width / 2 - font.TextWidth(b.Text) / 2f,
+                    // The pause control says what the game IS, not what the click would do, and
+                    // says it in red - it now carries the paused state on its own, the plate that
+                    // used to shout it having gone with the rest of the trim.
+                    bool paused = b.launches == "Pause" && Universe.UState.Paused;
+                    string label = paused ? "PAUSED" : b.Text;
+                    Color ink = paused ? PausedRed
+                              : b.State == PressState.Normal ? TextCream
+                              : TextCream.LerpTo(Color.White, 0.5f);
+
+                    var at = new Vector2(b.Rect.X + b.Rect.Width / 2 - font.TextWidth(label) / 2f,
                                          b.Rect.Y + b.Rect.Height / 2 - font.LineSpacing / 2f);
-                    batch.DrawString(font, b.Text, at, TextCream);
+                    batch.DrawString(font, label, at, ink);
                 }
             }
 
@@ -243,8 +259,10 @@ namespace Ship_Game
                 string res = $"{progress}/{cost} (+{Player.Research.NetResearch.String(1)})";
                 batch.DrawString(font, res, new Vector2(ResearchTextX, textY), TextCream);
 
-                // the topic itself, after the numbers - dimmer, it is context rather than a value
-                float topicX = ResearchTextX + font.TextWidth(res) + 8;
+                // the topic itself, after the numbers - dimmer, it is context rather than a value.
+                // On a RESERVED width, never measured off this turn's figures: the numbers change
+                // every turn, and a topic placed behind them slid left and right as they did.
+                float topicX = ResearchTextX + ResearchNumbersRoom;
                 string topic = Player.Research.TopicLocText.Text;
                 bool disrupted = Player.Research.DisruptionMultiplier < 1f;
                 batch.DrawString(font, topic, new Vector2(topicX, textY),
@@ -546,9 +564,40 @@ namespace Ship_Game
             return false;
         }
 
+        // Ludoal fork: which screen each hotkey asks for, by the same name the buttons use.
+        // The universe reads these keys itself; a screen sitting on top of it never saw them,
+        // so every hotkey but the open screen's own was dead once a tab was up.
+        static string HotkeyTarget(InputState input) =>
+              input.PlanetListScreen    ? "Planets"
+            : input.ExoticListScreen    ? "Exotic"
+            : input.EmpirePatrolsScreen ? "Patrols"
+            : input.ShipListScreen      ? "ShipList"
+            : input.TroopListScreen     ? "Troops"
+            : input.FleetDesignScreen   ? "Fleets"
+            : input.BlueprintsSceen     ? "Blueprints"
+            // the bar's own keys: reachable from the universe through the other overload,
+            // dead from inside a screen until they came through here too
+            : input.KeyPressed(Keys.R) && !input.IsCtrlKeyDown ? "Research"  // Ctrl+Alt+R is the resolution tool
+            : input.KeyPressed(Keys.T) ? "Budget"
+            : input.KeyPressed(Keys.Y) ? "Shipyard"
+            : input.KeyPressed(Keys.U) ? "Empire"
+            : input.KeyPressed(Keys.I) ? "Diplomacy"
+            : input.KeyPressed(Keys.E) ? "Espionage"
+            : null;
+
         // TODO: This is utterly retarded, needs a complete rewrite
         public bool HandleInput(InputState input, GameScreen caller)
         {
+            // Ludoal fork: the hotkeys switch tabs from inside a screen, through the very path a
+            // click takes - the group guard, the Shipyard's save prompt and the self-guards all
+            // apply unchanged. Text fields still win: TakingInput means the letter is being typed.
+            if (!GlobalStats.TakingInput)
+            {
+                string target = HotkeyTarget(input);
+                if (target != null)
+                    return SwitchTo(target, ReworkScreens.Group.None, caller);
+            }
+
             foreach (Button b in Buttons)
             {
                 if (!b.Rect.HitTest(input.CursorPosition))
@@ -589,174 +638,182 @@ namespace Ship_Game
                             return true;
                         }
 
-                        // Ludoal fork: a GROUP button whose group is already open just closes it,
-                        // whichever of its tabs you are on. The per-class guards below only know
-                        // the group's FIRST screen, so pressing DESIGN from the Shipyard used to
-                        // close it and reopen Fleets rather than leave the group.
-                        if (b.Group != ReworkScreens.Group.None &&
-                            b.Group == ReworkScreens.GroupOf(caller))
-                        {
-                            GameAudio.EchoAffirmative();
-                            caller.ExitScreen();  // virtual - the Shipyard's override still prompts
-                            return true;
-                        }
-
-                        // Shipyard keeps its dedicated exit (unsaved-design prompt);
-                        // its LaunchScreen() then opens the requested target — and its
-                        // own button simply closes it (toggle), like every other panel.
-                        if (caller is ShipDesignScreen shipDesigner)
-                        {
-                            shipDesigner.ExitToMenu(b.launches);
-                            return true;
-                        }
-
-                        // Everyone else (FleetDesign included): close the caller, then
-                        // the dispatch below opens the target. Clicking a screen's own
-                        // button just closes it (toggle) via the per-branch self-guards.
-                        caller.ExitScreen();
-
-                        if (b.launches == "Research")
-                        {
-                            GameAudio.EchoAffirmative();
-                            if (!(caller is ResearchScreenNew))
-                            {
-                                Universe.ScreenManager.AddScreen(new ResearchScreenNew(Universe, Universe, this));
-                            }
-                        }
-                        else if (b.launches == "Budget")
-                        {
-                            GameAudio.EchoAffirmative();
-                            // Ludoal fork: both regimes, or the reworked screen never
-                            // recognises itself and the bar stacks a second copy
-                            if (!GameScreens.ReworkScreens.IsEconomy(caller))
-                            {
-                                Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Economy(Universe));
-                            }
-                        }
-                        else if (b.launches == "Main Menu")
-                        {
-                            GameAudio.EchoAffirmative();
-                            Universe.ScreenManager.AddScreen(new GamePlayMenuScreen(Universe));
-                        }
-                        else if (b.launches == "Shipyard")
-                        {
-                            if (caller is ShipDesignScreen)
-                            {
-                                continue;
-                            }
-                            GameAudio.EchoAffirmative();
-                            Universe.ScreenManager.AddScreen(new ShipDesignScreen(Universe, this));
-                        }
-                        else if (b.launches == "Fleets")
-                        {
-                            if (caller is FleetDesignScreen)
-                            {
-                                continue;
-                            }
-                            GameAudio.EchoAffirmative();
-                            Universe.ScreenManager.AddScreen(new FleetDesignScreen(Universe, this));
-                        }
-                        // Ludoal fork: ShipList and Espionage were missing from the caller
-                        // dispatch — harmless while only Shipyard/Fleets kept the bar live,
-                        // a dead button once every full-screen does (top-bar standard).
-                        else if (b.launches == "ShipList")
-                        {
-                            if (caller is ShipListScreen)
-                            {
-                                continue;
-                            }
-                            GameAudio.EchoAffirmative();
-                            Universe.ScreenManager.AddScreen(new ShipListScreen(Universe, this));
-                        }
-                        // Ludoal fork: provisional second-row buttons (self-click = toggle close)
-                        else if (b.launches == "Planets")
-                        {
-                            if (caller is PlanetListScreen)
-                            {
-                                continue;
-                            }
-                            GameAudio.EchoAffirmative();
-                            Universe.ScreenManager.AddScreen(new PlanetListScreen(Universe, this));
-                        }
-                        else if (b.launches == "Exotic")
-                        {
-                            if (caller is ExoticSystemsListScreen)
-                            {
-                                continue;
-                            }
-                            GameAudio.EchoAffirmative();
-                            Universe.ScreenManager.AddScreen(new ExoticSystemsListScreen(Universe, this));
-                        }
-                        else if (b.launches == "Patrols")
-                        {
-                            if (caller is EmpirePatrolsScreen)
-                            {
-                                continue;
-                            }
-                            GameAudio.EchoAffirmative();
-                            Universe.ScreenManager.AddScreen(new EmpirePatrolsScreen(Universe, Universe.Player));
-                        }
-                        else if (b.launches == "Blueprints")
-                        {
-                            if (caller is BlueprintsScreen)
-                            {
-                                continue;
-                            }
-                            GameAudio.EchoAffirmative();
-                            Universe.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Universe.Player));
-                        }
-                        else if (b.launches == "Troops")
-                        {
-                            if (caller is TroopListScreen)
-                            {
-                                continue;
-                            }
-                            GameAudio.EchoAffirmative();
-                            Universe.ScreenManager.AddScreen(new TroopListScreen(Universe, this));
-                        }
-                        else if (b.launches == "Espionage")
-                        {
-                            // Ludoal fork: both regimes — EspionageScreen is the legacy one,
-                            // and IsEspionage covers the stock and reworked infiltration screens
-                            if (caller is EspionageScreen || GameScreens.ReworkScreens.IsEspionage(caller))
-                            {
-                                continue;
-                            }
-                            if (Universe.Player.LegacyEspionageEnabled)
-                                Universe.ScreenManager.AddScreen(new EspionageScreen(Universe));
-                            else
-                                Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Espionage(Universe));
-
-                            GameAudio.EchoAffirmative();
-                        }
-                        else if (b.launches == "Empire")
-                        {
-                            if (caller is EmpireManagementScreen)
-                            {
-                                continue;
-                            }
-                            Universe.ScreenManager.AddScreen(new EmpireManagementScreen(Universe, this));
-                            GameAudio.EchoAffirmative();
-                        }
-                        else if (b.launches == "Diplomacy")
-                        {
-                            if (GameScreens.ReworkScreens.IsDiplomacy(caller))
-                            {
-                                continue;
-                            }
-                            Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Diplomacy(Universe));
-                            GameAudio.EchoAffirmative();
-                        }
-                        else if (b.launches == "?")
-                        {
-                            GameAudio.TacticalPause();
-                            Universe.ScreenManager.AddScreen(new Codex.CodexScreen(Universe));
-                        }
-                        return true; // input captured
+                        return SwitchTo(b.launches, b.Group, caller);
                     }
                 }
             }
             return false;
+        }
+
+        // Ludoal fork: one place decides what "go to screen X while screen Y is open" does.
+        // The mouse path and the keyboard path both land here, so a tab reachable by click is
+        // reachable by its hotkey and cannot drift apart from it.
+        bool SwitchTo(string launches, ReworkScreens.Group group, GameScreen caller)
+        {
+            // Ludoal fork: a GROUP button whose group is already open just closes it,
+            // whichever of its tabs you are on. The per-class guards below only know
+            // the group's FIRST screen, so pressing DESIGN from the Shipyard used to
+            // close it and reopen Fleets rather than leave the group.
+            if (group != ReworkScreens.Group.None &&
+                group == ReworkScreens.GroupOf(caller))
+            {
+                GameAudio.EchoAffirmative();
+                caller.ExitScreen();  // virtual - the Shipyard's override still prompts
+                return true;
+            }
+
+            // Shipyard keeps its dedicated exit (unsaved-design prompt);
+            // its LaunchScreen() then opens the requested target — and its
+            // own button simply closes it (toggle), like every other panel.
+            if (caller is ShipDesignScreen shipDesigner)
+            {
+                shipDesigner.ExitToMenu(launches);
+                return true;
+            }
+
+            // Everyone else (FleetDesign included): close the caller, then
+            // the dispatch below opens the target. Clicking a screen's own
+            // button just closes it (toggle) via the per-branch self-guards.
+            caller.ExitScreen();
+
+            if (launches == "Research")
+            {
+                GameAudio.EchoAffirmative();
+                if (!(caller is ResearchScreenNew))
+                {
+                    Universe.ScreenManager.AddScreen(new ResearchScreenNew(Universe, Universe, this));
+                }
+            }
+            else if (launches == "Budget")
+            {
+                GameAudio.EchoAffirmative();
+                // Ludoal fork: both regimes, or the reworked screen never
+                // recognises itself and the bar stacks a second copy
+                if (!GameScreens.ReworkScreens.IsEconomy(caller))
+                {
+                    Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Economy(Universe));
+                }
+            }
+            else if (launches == "Main Menu")
+            {
+                GameAudio.EchoAffirmative();
+                Universe.ScreenManager.AddScreen(new GamePlayMenuScreen(Universe));
+            }
+            else if (launches == "Shipyard")
+            {
+                if (caller is ShipDesignScreen)
+                {
+                    return true;
+                }
+                GameAudio.EchoAffirmative();
+                Universe.ScreenManager.AddScreen(new ShipDesignScreen(Universe, this));
+            }
+            else if (launches == "Fleets")
+            {
+                if (caller is FleetDesignScreen)
+                {
+                    return true;
+                }
+                GameAudio.EchoAffirmative();
+                Universe.ScreenManager.AddScreen(new FleetDesignScreen(Universe, this));
+            }
+            // Ludoal fork: ShipList and Espionage were missing from the caller
+            // dispatch — harmless while only Shipyard/Fleets kept the bar live,
+            // a dead button once every full-screen does (top-bar standard).
+            else if (launches == "ShipList")
+            {
+                if (caller is ShipListScreen)
+                {
+                    return true;
+                }
+                GameAudio.EchoAffirmative();
+                Universe.ScreenManager.AddScreen(new ShipListScreen(Universe, this));
+            }
+            // Ludoal fork: provisional second-row buttons (self-click = toggle close)
+            else if (launches == "Planets")
+            {
+                if (caller is PlanetListScreen)
+                {
+                    return true;
+                }
+                GameAudio.EchoAffirmative();
+                Universe.ScreenManager.AddScreen(new PlanetListScreen(Universe, this));
+            }
+            else if (launches == "Exotic")
+            {
+                if (caller is ExoticSystemsListScreen)
+                {
+                    return true;
+                }
+                GameAudio.EchoAffirmative();
+                Universe.ScreenManager.AddScreen(new ExoticSystemsListScreen(Universe, this));
+            }
+            else if (launches == "Patrols")
+            {
+                if (caller is EmpirePatrolsScreen)
+                {
+                    return true;
+                }
+                GameAudio.EchoAffirmative();
+                Universe.ScreenManager.AddScreen(new EmpirePatrolsScreen(Universe, Universe.Player));
+            }
+            else if (launches == "Blueprints")
+            {
+                if (caller is BlueprintsScreen)
+                {
+                    return true;
+                }
+                GameAudio.EchoAffirmative();
+                Universe.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Universe.Player));
+            }
+            else if (launches == "Troops")
+            {
+                if (caller is TroopListScreen)
+                {
+                    return true;
+                }
+                GameAudio.EchoAffirmative();
+                Universe.ScreenManager.AddScreen(new TroopListScreen(Universe, this));
+            }
+            else if (launches == "Espionage")
+            {
+                // Ludoal fork: both regimes — EspionageScreen is the legacy one,
+                // and IsEspionage covers the stock and reworked infiltration screens
+                if (caller is EspionageScreen || GameScreens.ReworkScreens.IsEspionage(caller))
+                {
+                    return true;
+                }
+                if (Universe.Player.LegacyEspionageEnabled)
+                    Universe.ScreenManager.AddScreen(new EspionageScreen(Universe));
+                else
+                    Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Espionage(Universe));
+
+                GameAudio.EchoAffirmative();
+            }
+            else if (launches == "Empire")
+            {
+                if (caller is EmpireManagementScreen)
+                {
+                    return true;
+                }
+                Universe.ScreenManager.AddScreen(new EmpireManagementScreen(Universe, this));
+                GameAudio.EchoAffirmative();
+            }
+            else if (launches == "Diplomacy")
+            {
+                if (GameScreens.ReworkScreens.IsDiplomacy(caller))
+                {
+                    return true;
+                }
+                Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Diplomacy(Universe));
+                GameAudio.EchoAffirmative();
+            }
+            else if (launches == "?")
+            {
+                GameAudio.TacticalPause();
+                Universe.ScreenManager.AddScreen(new Codex.CodexScreen(Universe));
+            }
+            return true; // handled
         }
 
         public void Update(float elapsedTime)

@@ -59,8 +59,9 @@ namespace Ship_Game.GameScreens
 
         // Ludoal fork: what each tab holds, for the hover tip. Submenu.Tab has no tooltip field and
         // Submenu is shared, so the screens raise these themselves against the tab rects it does
-        // expose. The keys are the ones the screens themselves close on: I for the diplomacy side,
-        // E for espionage.
+        // expose. A key is shown only where the tab HAS one of its own: Bonuses and Relationships
+        // are reached through the group, so advertising the group's key on them read as a promise
+        // the tab does not keep.
         public static readonly string[] GroupTabTips =
         {
             "Race, rank and empire data, artifacts and treaties.",
@@ -69,7 +70,7 @@ namespace Ship_Game.GameScreens
             "Infiltration: budget, defense and operations by level.",
         };
 
-        public static readonly string[] GroupTabKeys = { "I", "I", "I", "E" };
+        public static readonly string[] GroupTabKeys = { "I", "", "", "E" };
 
         // ── Galaxy group ──────────────────────────────────────────────────────────────────────
         // Ludoal fork: the second group of the unified top bar. Same frame, same tab row as the
@@ -86,8 +87,8 @@ namespace Ship_Game.GameScreens
             "Standing patrol routes and the fleets flying them.",
         };
 
-        // the keys those screens already close on
-        public static readonly string[] GalaxyTabKeys = { "P", "G", "" };
+        // the keys those screens already close on, in tab order: Planets, Exotic, Patrols
+        public static readonly string[] GalaxyTabKeys = { "L", "G", "P" };
 
         // ── Empire group ──────────────────────────────────────────────────────────────────────
         // Ludoal fork: the third group of the unified top bar. Same frame and tab row again.
