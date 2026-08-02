@@ -103,7 +103,8 @@ namespace Ship_Game
             EmpireUI = empireUI;
             Player = u.Player;
 
-            TransitionOnTime = 0.75f;
+            // Ludoal fork: no fade in, same as the Shipyard beside it - the two are tabs of one
+            // group now, and a tab that fades in reads as a screen change rather than a switch.
             Player.UpdateShipsWeCanBuild();
             ShipInfoOverlay = Add(new ShipInfoOverlayComponent(this, u.UState));
 

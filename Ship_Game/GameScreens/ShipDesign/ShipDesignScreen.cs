@@ -179,7 +179,10 @@ namespace Ship_Game
             ParentUniverse = universe;
             Name = "ShipDesignScreen";
             EmpireUI = empireUi;
-            TransitionOnTime = 2f;
+            // Ludoal fork: no fade in. The two-second one left this screen translucent while it
+            // built, so whatever sat under it in the stack showed through - opening the Shipyard
+            // with Fleets already open drew Fleets' cartouche for a moment. Nothing here reads
+            // TransitionPosition, so the fade animated nothing; it only delayed the screen.
             HullEditMode = false;
             UnlockAllFactionDesigns = universe is DeveloperUniverse;
             EnableDebugFeatures = universe is DeveloperUniverse || universe.Debug;
@@ -1162,15 +1165,25 @@ namespace Ship_Game
             // why the row's Y is the stance topLeft and not a font baseline.
             // Each dropdown carries its caption to its LEFT, so the row must reserve that width
             // too: measured in the font that draws it, never guessed.
+            // Ludoal fork: the row reads Carrier Only, Repair, Hangar Type, Stance - the checkbox
+            // first because it decides what the two dropdowns even mean, stance last because it is
+            // the widest block. The captions are short enough to fit the row at 1440 wide
+            // (maintainer feedback), and each is measured in the font that draws it.
             const int ddW = 125, ddHangarW = 150, ddH = 18, optGap = 20, carrierW = 110;
-            int lblRepairW = (int)Fonts.Arial12Bold.TextWidth("Repair Options") + TitleGap;
-            int lblHangarW = (int)Fonts.Arial12Bold.TextWidth("Hangar Designation") + TitleGap;
-            int optRowW = lblRepairW + ddW + optGap + lblHangarW + ddHangarW
-                        + optGap + carrierW + optGap + stanceW;
+            int lblRepairW = (int)Fonts.Arial12Bold.TextWidth(RepairCaption) + TitleGap;
+            int lblHangarW = (int)Fonts.Arial12Bold.TextWidth(HangarCaption) + TitleGap;
+            int optRowW = carrierW + optGap + lblRepairW + ddW + optGap + lblHangarW + ddHangarW
+                        + optGap + stanceW;
             int optY = OptionsRowY;
-            int optX = (int)ClassifCursor.X - optRowW / 2 + lblRepairW;
-            var dropdownRect = new Rectangle(optX, optY, ddW, ddH);
+            int optX = (int)ClassifCursor.X - optRowW / 2;
 
+            var carrierOnlyPos  = new Vector2(optX, optY);
+            CarrierOnlyCheckBox = Checkbox(carrierOnlyPos,
+                () => CurrentDesign?.IsCarrierOnly == true,
+                (b) => { if (CurrentDesign != null) CurrentDesign.IsCarrierOnly = b; }, "Carrier Only", GameText.WhenMarkedThisShipCan);
+
+            var dropdownRect = new Rectangle((int)carrierOnlyPos.X + carrierW + optGap + lblRepairW,
+                                             optY, ddW, ddH);
             CategoryList = new CategoryDropDown(dropdownRect);
             foreach (ShipCategory item in Enum.GetValues(typeof(ShipCategory)).Cast<ShipCategory>())
                 CategoryList.AddOption(item.ToString(), item);
@@ -1180,14 +1193,9 @@ namespace Ship_Game
             foreach (HangarOptions item in Enum.GetValues(typeof(HangarOptions)).Cast<HangarOptions>())
                 HangarOptionsList.AddOption(item.ToString(), item);
 
-            var carrierOnlyPos  = new Vector2(hangarRect.Right + optGap, optY);
-            CarrierOnlyCheckBox = Checkbox(carrierOnlyPos,
-                () => CurrentDesign?.IsCarrierOnly == true,
-                (b) => { if (CurrentDesign != null) CurrentDesign.IsCarrierOnly = b; }, "Carrier Only", GameText.WhenMarkedThisShipCan);
-
             // last on the row, its top on the same line as the dropdowns
             OrdersButton = new DesignStanceButtons(this,
-                new Vector2(carrierOnlyPos.X + carrierW + optGap, optY));
+                new Vector2(hangarRect.Right + optGap, optY));
             Add(OrdersButton);
 
             // DESIGN ISSUES sits UNDER the cartouche (maintainer feedback) instead of in a narrow 200px

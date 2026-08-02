@@ -343,14 +343,19 @@ namespace Ship_Game.GameScreens
             _ => IsDiplomacyGroup(s) ? Group.Diplomacy : Group.None,
         };
 
-        // Ludoal fork: the reworked group is FOUR screens sharing one tab row, so both top-bar
-        // buttons have to recognise all of them - otherwise pressing a key while inside the group
-        // stacks a second copy instead of closing it (the 46.173 bug, one test per class short).
+        // Ludoal fork: "is the caller already THIS destination?", asked before opening one. Each
+        // answers for its own screens only: the two share a tab row, but they are two destinations,
+        // and a test that covered the whole group answered yes to both - so from Diplomacy the
+        // Espionage key closed the group without opening Espionage, and the other way round.
+        // Both regimes are still named, which is what the 46.173 bug was about: with only the
+        // stock type listed, a reworked screen never recognised itself and stacked a second copy.
         public static bool IsDiplomacy(GameScreen s)
-            => s is MainDiplomacyScreen || IsDiplomacyGroup(s);
+            => s is MainDiplomacyScreen
+                 or MainDiplomacyScreenRework
+                 or DiplomacyScreen.RelationshipsDiagramScreen;
 
         public static bool IsEspionage(GameScreen s)
-            => s is InfiltrationScreen || IsDiplomacyGroup(s);
+            => s is InfiltrationScreen or InfiltrationScreenRework or EspionageScreen;
 
         static bool IsDiplomacyGroup(GameScreen s)
             => s is MainDiplomacyScreenRework

@@ -510,6 +510,11 @@ namespace Ship_Game
         // with the carrier-only checkbox. The label measures itself, which is what keeps it clear
         // of the field whatever the string.
         public const int TitleGap = 6;   // between a dropdown caption and its field
+
+        // Ludoal fork: one source for each caption - the layout reserves its width from the same
+        // string DrawTitle paints, so a reworded label cannot leave the row measured for the old one.
+        public const string RepairCaption = "Repair";
+        public const string HangarCaption = "Hangar Type";
         static void DrawTitle(SpriteBatch batch, in Rectangle dropdown, string title)
         {
             Graphics.Font font = Fonts.Arial12Bold;
@@ -525,9 +530,9 @@ namespace Ship_Game
 
             // TODO: these should be split into separate parts
             DrawTitle(batch, new Rectangle((int)CategoryList.X, (int)CategoryList.Y,
-                                          (int)CategoryList.Width, (int)CategoryList.Height), "Repair Options");
+                                          (int)CategoryList.Width, (int)CategoryList.Height), RepairCaption);
             DrawTitle(batch, new Rectangle((int)HangarOptionsList.X, (int)HangarOptionsList.Y,
-                                          (int)HangarOptionsList.Width, (int)HangarOptionsList.Height), "Hangar Designation");
+                                          (int)HangarOptionsList.Width, (int)HangarOptionsList.Height), HangarCaption);
             HangarOptionsList.Draw(batch, elapsed);
 
             // Ludoal fork: the design's identity plates, drawn in the reworked screens' grammar
