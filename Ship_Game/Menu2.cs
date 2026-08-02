@@ -11,8 +11,8 @@ namespace Ship_Game
         public Rectangle Menu;
 
         // the one rule colour, declared with the window fills it goes with
+        // only the Hollow path draws a bare rule now; the solid one wears the popup frame
         static Color FrameRule => GameScreens.ReworkScreens.FrameRule;
-        public static int TitleBarH => GameScreens.ReworkScreens.WindowTitleBarH;
 
         public bool Hollow;
         public Color Background;
@@ -38,20 +38,13 @@ namespace Ship_Game
         {
             if (!Hollow)
             {
-                // Ludoal fork: painted like the Codex - neutral body, a title bar a step lighter
-                // across the top, an orange rule around the lot - instead of the sculpted corner
-                // set. Those corners were asymmetric (69x38 at the top, 48x28 at the bottom) with
-                // their own extenders and repeats, so the frame could never match anything else
-                // on screen. Nothing reads a client area off this class, so no content moves.
-                // Ludoal fork: THE same painted plate the buttons use - rounded, top-lit, ruled.
-                // A frame that squared its corners while the buttons inside it rounded theirs was
-                // the whole of what made a window and its contents read as different furniture.
-                UITheme.DrawPlate(batch, Menu, Background, FrameRule);
-                // the title bar over it, inset so it does not square off the arc at the top
-                int r = System.Math.Min(UITheme.Theme.CornerRadius, Menu.Height / 2);
-                batch.FillRectangle(new Rectangle(Menu.X + r, Menu.Y + UITheme.Theme.RuleWidth,
-                                                  Menu.Width - 2 * r, TitleBarH),
-                                    GameScreens.ReworkScreens.WindowTitleBar);
+                // Ludoal fork: the popup window's surface, the one Options and the Codex wear.
+                // ⚠ Painted procedurally for a while: it never matched that reference (its corners
+                // are hand-drawn bitmaps, its rule an artist's gradient) AND the body colour
+                // carries an alpha, so panels built on it went see-through. Opaque again.
+                var frame = new PopupFrame(Menu);
+                frame.DrawFill(batch, Menu);
+                frame.Draw(batch);
             }
             else
             {

@@ -644,7 +644,12 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
+            // Ludoal fork: an OPAQUE veil (maintainer decision). This screen stays IsPopup so the
+            // main menu underneath keeps being drawn - remove that and this one draws on nothing -
+            // but the menu's own buttons and the Jupiter backdrop were reading straight through
+            // the panels. At 2/3 the veil never covered them; at full it does, and the screen
+            // reads as its own rather than as a layer over the menu.
+            ScreenManager.FadeBackBufferToBlack(TransitionAlpha);
             int numSystems = GetSystemsNum();
             NumSystemsLabel.Text = $"Solar Systems: {numSystems}";
             ShowPerformanceWarning(numSystems);

@@ -13,10 +13,14 @@ using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game
 {
-    public abstract class GenericLoadSaveScreen : GameScreen
+    // Ludoal fork: a PopupWindow - and this one class carries NINE screens (load/save game, race,
+    // fleet design, setups, blueprints), so it is the single most useful place in the sweep. They
+    // were a Menu1 frame that went see-through once frames were painted rather than textured
+    // (maintainer observation on Load Saved Race), and they now wear the frame Options wears.
+    public abstract class GenericLoadSaveScreen : PopupWindow
     {
         protected Rectangle Window;
-        protected Menu1 SaveMenu;
+        // (SaveMenu is gone: the window frame is PopupWindow's now, not a Menu1 of our own)
         protected Submenu NameSave;
         protected SubmenuScrollList<SaveLoadListItem> AllSaves;
         protected Vector2 TitlePosition;
@@ -39,14 +43,13 @@ namespace Ship_Game
 
         protected GenericLoadSaveScreen(
             GameScreen parent, SLMode mode, string initText, string title, string tabText, bool showSaveExport = false)
-            : base(parent, toPause: parent as UniverseScreen)
+            : base(parent, 600, 600)
         {
             Mode = mode;
             InitText = initText;
             Title = title;
             TabText = tabText;
             ShowSaveExport = showSaveExport;
-            IsPopup = true;
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
         }
@@ -95,14 +98,14 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
+            // ⚠ base.Draw goes FIRST now: it paints the window frame, which used to be SaveMenu's
+            // job here. Leaving it last would lay the frame's body over the two lists.
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-            batch.SafeBegin();
-            SaveMenu.Draw(batch, elapsed);
-            NameSave.Draw(batch, elapsed);
-            AllSaves.Draw(batch, elapsed);
-
             base.Draw(batch, elapsed);
 
+            batch.SafeBegin();
+            NameSave.Draw(batch, elapsed);
+            AllSaves.Draw(batch, elapsed);
             batch.SafeEnd();
         }
 
@@ -114,11 +117,13 @@ namespace Ship_Game
 
         public override void LoadContent()
         {
-            Window = new Rectangle(ScreenWidth / 2 - 300, ScreenHeight / 2 - 300, 600, 600);
-            SaveMenu = new Menu1(Window);
-            CloseButton(Window.X + Window.Width - 35, Window.Y + 10);
+            // ⚠ base.LoadContent() lays the frame out and calls RemoveAll(): it goes FIRST, and
+            // it supplies the frame and the close cross this method used to build itself.
+            base.LoadContent();
 
-            RectF sub = new(Window.X + 20, Window.Y + 20, Window.Width - 40, 80);
+            Window = Rect;
+            // the name strip starts under the frame's own title bar rather than 20 below the top
+            RectF sub = new(Window.X + 20, PopupFrame.ContentTop(Window), Window.Width - 40, 80);
             NameSave = new Submenu(sub, Title);
             TitlePosition = new Vector2(sub.X + 20, sub.Y + 45);
 
@@ -148,7 +153,8 @@ namespace Ship_Game
                 var exportBtn = ButtonBigDip(sub.X + sub.W - 200, EnterNameArea.Y - 48, "Export Save", b => ExportSave());
                 exportBtn.Tooltip = GameText.ThisWillLetYouEasily;
             }
-            base.LoadContent();
+            // (no base.LoadContent() here: it ran at the top, and calling it again would
+            // RemoveAll() everything this method just built)
         }
 
         protected virtual void OnSaveLoadItemClicked(SaveLoadListItem item)

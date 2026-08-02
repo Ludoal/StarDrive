@@ -58,17 +58,15 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            // Ludoal fork: painted like the Codex, same as Menu2 - neutral body, a title bar a
-            // step lighter, an orange rule - instead of the eight-piece textured surround. Load
-            // and Save were the last screens still showing the old frame. Menu1 differs from
-            // Menu2 only in carrying a Submenu of its own; they had two texture sets for that.
-            UITheme.DrawPlate(batch, Rect, GameScreens.ReworkScreens.WindowBody,
-                              GameScreens.ReworkScreens.FrameRule);
-            int r = System.Math.Min(UITheme.Theme.CornerRadius, Rect.Height / 2);
-            batch.FillRectangle(new Rectangle(Rect.X + r, Rect.Y + UITheme.Theme.RuleWidth,
-                                              Rect.Width - 2 * r,
-                                              GameScreens.ReworkScreens.WindowTitleBarH),
-                                GameScreens.ReworkScreens.WindowTitleBar);
+            // Ludoal fork: the popup window's surface - the same one Options and the Codex wear.
+            // ⚠ It was painted procedurally for a while and that was a mistake twice over: it
+            // never matched the reference look (those corners are hand-drawn bitmaps), and the
+            // body colour carries an alpha, so every panel built on it went see-through - on Race
+            // Design the menu behind it read straight through the traits (maintainer observation).
+            // The filler texture is opaque, which is what a panel holding text needs to be.
+            var frame = new PopupFrame(Rect);
+            frame.DrawFill(batch, Rect);
+            frame.Draw(batch);
             subMenu?.Draw(batch, elapsed);
         }
 
