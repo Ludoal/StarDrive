@@ -54,9 +54,39 @@ namespace Ship_Game
 
             public bool DrawBackground = true;
 
+            // Ludoal fork: a PAINTED style keeps a texture for its SIZE but never draws it, so a
+            // button that never got an explicit rect still measures itself the way it always did
+            // (GetInitialSize reads Normal). Painting rather than stretching one bitmap is what
+            // lets a 52px and a 182px button share a look: the stock button textures come in five
+            // widths and the new-look bitmap only in one, so any swap would deform the rule on
+            // its edges.
+            public SubTexture SizeRef;
+
             public StyleTextures()
             {
             }
+
+            // Ludoal fork: the painted new look - dark translucent plate, thin gold rule, in the
+            // grammar the reworked screens and the top bar already use.
+            public static StyleTextures Painted(string sizeRef) => new StyleTextures
+            {
+                SizeRef        = ResourceManager.Texture(sizeRef),
+                DrawBackground = true,
+                DefaultColor   = new Color(14, 12, 9),
+                HoverColor     = new Color(38, 56, 84),
+                PressColor     = new Color(8, 7, 5),
+            };
+
+            // A button that MEANS something (an active control, a hostile action) keeps its colour
+            // in the plate rather than in a texture of its own.
+            public static StyleTextures PaintedTinted(string sizeRef, Color plate) => new StyleTextures
+            {
+                SizeRef        = ResourceManager.Texture(sizeRef),
+                DrawBackground = true,
+                DefaultColor   = plate,
+                HoverColor     = plate.LerpTo(Color.White, 0.18f),
+                PressColor     = plate.LerpTo(Color.Black, 0.25f),
+            };
 
             public StyleTextures(string normal)
             {
@@ -114,22 +144,29 @@ namespace Ship_Game
             ContentId = ResourceManager.ContentId;
             Styling = new[]
             {
-                new StyleTextures("EmpireTopBar/empiretopbar_btn_168px"),
-                new StyleTextures("EmpireTopBar/empiretopbar_btn_68px"),
-                new StyleTextures("EmpireTopBar/empiretopbar_low_btn_80px"),
-                new StyleTextures("EmpireTopBar/empiretopbar_low_btn_100px"),
-                new StyleTextures("EmpireTopBar/empiretopbar_btn_132px"),
-                new StyleTextures("EmpireTopBar/empiretopbar_btn_132px_menu"),
-                new StyleTextures("EmpireTopBar/empiretopbar_btn_168px_dip"),
-                new StyleTextures("EmpireTopBar/empiretopbar_btn_168px_military"),
+                // Ludoal fork: painted, not textured. These eight came in five different widths
+                // (52 to 168), so no single bitmap could serve them without stretching its rule;
+                // a plate takes any width. Each keeps its old texture as the SIZE reference, so
+                // buttons that never got an explicit rect measure exactly as before.
+                StyleTextures.Painted("EmpireTopBar/empiretopbar_btn_168px"),
+                StyleTextures.Painted("EmpireTopBar/empiretopbar_btn_68px"),
+                StyleTextures.Painted("EmpireTopBar/empiretopbar_low_btn_80px"),
+                StyleTextures.Painted("EmpireTopBar/empiretopbar_low_btn_100px"),
+                StyleTextures.Painted("EmpireTopBar/empiretopbar_btn_132px"),
+                StyleTextures.Painted("EmpireTopBar/empiretopbar_btn_132px_menu"),
+                StyleTextures.Painted("EmpireTopBar/empiretopbar_btn_168px_dip"),
+                StyleTextures.Painted("EmpireTopBar/empiretopbar_btn_168px_military"),
                 new StyleTextures("NewUI/Close_Normal", "NewUI/Close_Hover"),
                 new StyleTextures("ResearchMenu/button_queue_up", "ResearchMenu/button_queue_up_hover"),
                 new StyleTextures("ResearchMenu/button_queue_down", "ResearchMenu/button_queue_down_hover"),
                 new StyleTextures("ResearchMenu/button_queue_cancel", "ResearchMenu/button_queue_cancel_hover"),
                 new StyleTextures("ResearchMenu/button_queue_to_top", "ResearchMenu/button_queue_to_top_hover"),
-                new StyleTextures("UI/dan_button", ButtonStyle.DanButton),
-                new StyleTextures("UI/dan_button_blue", ButtonStyle.DanButtonBlue),
-                new StyleTextures("UI/dan_button_red", ButtonStyle.DanButtonRed),
+                // Ludoal fork: painted too, so every button in the game shares ONE grammar rather
+                // than a bitmap here and a plate there. Blue and red keep their meaning through
+                // the plate colour instead of a separate texture.
+                StyleTextures.Painted("UI/dan_button"),
+                StyleTextures.PaintedTinted("UI/dan_button_blue", new Color(38, 56, 84)),
+                StyleTextures.PaintedTinted("UI/dan_button_red",  new Color(96, 34, 34)),
                 // Ludoal fork: same rank as DanButtonClear in the enum above
                 new StyleTextures("NewUI/dan_button_clear", "NewUI/dan_button_blue_clear",
                                   "NewUI/dan_button_blue_clear"),
@@ -149,11 +186,14 @@ namespace Ship_Game
             SetStyle(defaultStyle);
         }
 
+        SubTexture SizeRef;   // Ludoal fork: measured, never drawn - see StyleTextures.Painted
+
         void SetStyle(StyleTextures style)
         {
             Normal = style.Normal;
             Hover = style.Hover;
             Pressed = style.Pressed;
+            SizeRef = style.SizeRef;
 
             DefaultTextColor = style.DefaultTextColor;
             HoverTextColor = style.HoverTextColor;
@@ -170,6 +210,8 @@ namespace Ship_Game
         {
             if (Normal != null)
                 return Normal.SizeF;
+            if (SizeRef != null)   // Ludoal fork: a painted style measures off its reference
+                return SizeRef.SizeF;
             return new Vector2(2, 2);
         }
         

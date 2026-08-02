@@ -228,8 +228,12 @@ namespace Ship_Game
                     // says it in red - it now carries the paused state on its own, the plate that
                     // used to shout it having gone with the rest of the trim.
                     bool paused = b.launches == "Pause" && Universe.UState.Paused;
+                    // A pause held by an open screen is not the player's to lift, so the control
+                    // reads as inert: dimmed, and it does not light up under the cursor either.
+                    bool locked = paused && PauseIsAutomatic;
                     string label = paused ? "PAUSED" : b.Text;
-                    Color ink = paused ? PausedRed
+                    Color ink = locked ? PausedRed.Alpha(0.45f)
+                              : paused ? PausedRed
                               : b.State == PressState.Normal ? TextCream
                               : TextCream.LerpTo(Color.White, 0.5f);
 
@@ -465,8 +469,7 @@ namespace Ship_Game
                         }
                         if (b.launches == "Pause")
                         {
-                            GameAudio.AcceptClick();
-                            Universe.UState.Paused = !Universe.UState.Paused;
+                            TogglePause();
                             return true;
                         }
                         if (b.launches == "SpeedUp" || b.launches == "SpeedDown")
@@ -626,8 +629,7 @@ namespace Ship_Game
                         // or opened, whatever panel hosts the bar.
                         if (b.launches == "Pause")
                         {
-                            GameAudio.AcceptClick();
-                            Universe.UState.Paused = !Universe.UState.Paused;
+                            TogglePause();
                             return true;
                         }
 
@@ -643,6 +645,23 @@ namespace Ship_Game
                 }
             }
             return false;
+        }
+
+        // Ludoal fork: a pause a SCREEN owns is not the player's to lift. Clicking PAUSED while
+        // an open screen holds the simulation used to flip the label back to PAUSE while the game
+        // stayed stopped - the button lied about a state it did not control. The screen releases
+        // its own pause when it closes, so the control simply refuses here.
+        bool PauseIsAutomatic => Universe.ScreenManager.AnyScreenOwnsUniversePause();
+
+        void TogglePause()
+        {
+            if (PauseIsAutomatic)
+            {
+                GameAudio.NegativeClick();
+                return;
+            }
+            GameAudio.AcceptClick();
+            Universe.UState.Paused = !Universe.UState.Paused;
         }
 
         // Ludoal fork: one place decides what "go to screen X while screen Y is open" does.

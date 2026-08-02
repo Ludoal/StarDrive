@@ -24,6 +24,10 @@ namespace Ship_Game
 
         public PressState State = PressState.Default;
 
+        // Ludoal fork: the rule around a painted button - the same brass line the reworked
+        // screens and the top bar draw, so a plate reads as part of one interface.
+        static readonly Color PlateRule = new Color(118, 102, 67);
+
         public SubTexture Normal;
         public SubTexture Hover;
         public SubTexture Pressed;
@@ -121,7 +125,10 @@ namespace Ship_Game
 
         public static SubTexture StyleTexture(ButtonStyle style = ButtonStyle.Default)
         {
-            return GetDefaultStyle(style).Normal;
+            // Ludoal fork: callers use this for SIZE (LayoutParser auto-sizes buttons from it),
+            // so a painted style hands back its size reference rather than nothing.
+            StyleTextures s = GetDefaultStyle(style);
+            return s.Normal ?? s.SizeRef;
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -143,9 +150,13 @@ namespace Ship_Game
             }
             else if (DrawBackground)
             {
+                // Ludoal fork: dark translucent plate under a thin gold rule, the grammar the
+                // reworked screens use. Translucent because the bar and the panels sit over the
+                // map, where a solid fill reads as a hole punched in it; the rule is what makes
+                // the plate a control rather than a patch of background.
                 Color c = BackgroundColor();
-                batch.FillRectangle(r, c.Alpha(0.75f));
-                batch.DrawRectangle(r, c.AddRgb(-0.1f), 2);
+                batch.FillRectangle(r, c.Alpha(Enabled ? 0.85f : 0.55f));
+                batch.DrawRectangle(r, PlateRule.Alpha(Enabled ? 0.75f : 0.35f));
             }
             // else: we only draw Text, nothing else
 
