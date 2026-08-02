@@ -483,7 +483,9 @@ namespace Ship_Game.GameScreens
                     if (kv.Value.HitTest(input.CursorPosition))
                     {
                         GameAudio.AcceptClick();
-                        DiplomacyScreen.Show(kv.Key, "Greeting", parent: this);
+                        // ⚠ fully qualified: this file sits in Ship_Game.GameScreens, where the
+                        // DiplomacyScreen NAMESPACE shadows the class of the same name
+                        DiplomacyScreen.DiplomacyScreen.Show(kv.Key, "Greeting", parent: this);
                         return true;
                     }
                 }
