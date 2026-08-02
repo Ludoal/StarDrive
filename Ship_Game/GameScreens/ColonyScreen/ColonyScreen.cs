@@ -135,11 +135,17 @@ namespace Ship_Game
             // siblings, so the group of ONE only ever drew a tab that led nowhere; the frame now
             // starts where that tab's top edge was, which hands the screen back the row's height.
             // The planet name is drawn in the title bar (see ColonyScreen_Draw).
-            ColonyFrame = new Rectangle(GameScreens.ReworkScreens.FrameMargin,
+            // ⚠ The rect is the frame's OUTER bound, but PopupFrame draws its borders INSIDE it:
+            // 11px down the right edge, 30 at the foot. So a rect stopping at ScreenWidth-10 put
+            // the visible rule 21px from the edge and 40 from the bottom - the extra margin the
+            // bench kept reporting (maintainer feedback). Push the rect out by what the border
+            // eats, and the LINE lands on FrameMargin like every other frame's does.
+            const int m = GameScreens.ReworkScreens.FrameMargin;
+            ColonyFrame = new Rectangle(m - PopupFrame.BorderLeft,
                                         GameScreens.ReworkScreens.TabRowY,
-                                        ScreenWidth - 2 * GameScreens.ReworkScreens.FrameMargin,
-                                        ScreenHeight - GameScreens.ReworkScreens.TabRowY
-                                                     - GameScreens.ReworkScreens.FrameMargin);
+                                        ScreenWidth - 2 * m + PopupFrame.BorderLeft + PopupFrame.BorderRight,
+                                        ScreenHeight - GameScreens.ReworkScreens.TabRowY - m
+                                                     + PopupFrame.BorderBottom);
             // ⚠ NOT Add()ed: a child is drawn by base.Draw, which lands AFTER everything this
             // screen paints by hand - the frame's body would bury the panels. Painted first
             // thing in Draw instead (see ColonyScreen_Draw).

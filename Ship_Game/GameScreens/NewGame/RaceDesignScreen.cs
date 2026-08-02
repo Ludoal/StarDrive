@@ -39,7 +39,6 @@ namespace Ship_Game
         EnvPreferencesPanel EnvMenu;
         SubmenuScrollList<TraitsListItem> Traits;
         ScrollList<TraitsListItem> TraitsList;
-        Menu1 TraitsBg;
         UIColorPicker Picker;
 
         UIButton ModeBtn;
@@ -70,8 +69,10 @@ namespace Ship_Game
         {
             IsPopup = true; // it has to be a popup, otherwise the MainMenuScreen will not be drawn
             MainMenu = mainMenu;
-            TransitionOnTime = 0.75f;
-            TransitionOffTime = 0.25f;
+            // no transition: with the panel animations gone, a 0.75s fade only delayed the screen
+            // and let whatever sits below show through while it ran
+            TransitionOnTime = 0f;
+            TransitionOffTime = 0f;
             foreach (RacialTraitOption t in ResourceManager.RaceTraits.TraitList)
                 AllTraits.Add(new TraitEntry { Trait = t });
         }
@@ -156,13 +157,11 @@ namespace Ship_Game
             RectF traitsListBg = new(traitsList.X, traitsList.Y, traitsList.W, traitsList.H);
             var traitsBg = new Menu1(traitsListBg);
             TraitsList.SetBackground(traitsBg);
-            // Anchor at abs pos: SetBackground sets a wrong-sign LocalPos that
-            // would re-position the Menu1 on the next PerformLayout (triggered by
-            // SetItems when a trait tab is clicked). Pinning here makes
-            // UpdatePosAndSize no-op so the bg stays put. The slide-in/out is
-            // run as a separate animation below to keep the bg in sync with Traits.
+            // ⚠ Anchor at abs pos, and this is NOT about the animations that just went away:
+            // SetBackground sets a wrong-sign LocalPos that would re-position the Menu1 on the
+            // next PerformLayout - which SetItems triggers every time a trait tab is clicked.
+            // Pinning makes UpdatePosAndSize a no-op so the bg stays put.
             traitsBg.SetAbsPos(traitsListBg.X, traitsListBg.Y);
-            TraitsBg = traitsBg;
 
             RectF chooseRace = new(5, (int)traitsList.Y, (int)traitsList.X - 10, (int)traitsList.H);
             ChooseRaceList = Add(new ScrollList<RaceArchetypeListItem>(chooseRace, 135));
@@ -267,22 +266,8 @@ namespace Ship_Game
             Traits.Button(ButtonStyle.Default, GameText.RuleOptions, click: OnRuleOptionsClicked)
                 .SetLocalPos(Traits.Width / 2 - 84, Traits.Height + containerMarginBottom*3);
 
-            ChooseRaceList.SlideInFromOffset(offset:new(-ChooseRaceList.Width, 0), TransitionOnTime);
-            DescriptionTextList.SlideInFromOffset(offset:new(DescriptionTextList.Width, 0), TransitionOnTime);
-            EnvMenu.SlideInFromOffset(offset:new(-EnvMenu.Width, 0), TransitionOnTime);
-            Traits.SlideInFromOffset(offset: new(0, Traits.Height), TransitionOnTime);
-            // TraitsBg is pinned via SetAbsPos so it can't ride Traits' slide via the
-            // layout cascade — run a parallel animation on the bg directly.
-            TraitsBg.SlideInFromOffset(offset: new(0, Traits.Height), TransitionOnTime);
-
-            OnExit += () =>
-            {
-                ChooseRaceList.SlideOutToOffset(offset:new(-ChooseRaceList.Width, 0), TransitionOffTime);
-                DescriptionTextList.SlideOutToOffset(offset:new(DescriptionTextList.Width, 0), TransitionOffTime);
-                EnvMenu.SlideOutToOffset(offset:new(-EnvMenu.Width, 0), TransitionOffTime);
-                Traits.SlideOutToOffset(offset: new(0, Traits.Height), TransitionOffTime);
-                TraitsBg.SlideOutToOffset(offset: new(0, Traits.Height), TransitionOffTime);
-            };
+            // Ludoal fork: no slide-in/slide-out on this screen (maintainer decision) - the panels
+            // appear where they belong.
 
             base.LoadContent();
         }
