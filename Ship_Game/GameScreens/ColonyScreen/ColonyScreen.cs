@@ -141,7 +141,9 @@ namespace Ship_Game
                                         ScreenHeight - GameScreens.ReworkScreens.TabRowY
                                                      - GameScreens.ReworkScreens.FrameMargin);
             Add(new Menu2(ColonyFrame));
-            Vector2 closePos = GameScreens.ReworkScreens.GroupClosePos(ColonyFrame);
+            // ⚠ RectF converts to Rectangle, never the other way - spelled out here
+            Vector2 closePos = GameScreens.ReworkScreens.GroupClosePos(
+                new RectF(ColonyFrame.X, ColonyFrame.Y, ColonyFrame.Width, ColonyFrame.Height));
             Add(new CloseButton(closePos.X, closePos.Y));
 
             // the title bar the planet name sits in, and where the content starts under it
