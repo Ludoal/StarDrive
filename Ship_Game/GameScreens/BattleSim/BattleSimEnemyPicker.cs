@@ -18,33 +18,46 @@ namespace Ship_Game
     // render loop for a second or two, so whatever frame was presented last stays
     // on screen — we make sure it is our black "Preparing arena..." frame instead
     // of a flash of the paused game map.
-    public sealed class BattleSimEnemyPicker : GameScreen
+    // Ludoal fork: a PopupWindow rather than a GameScreen carrying a Menu2. This screen was ours
+    // to begin with and was built in the wrong shape - it is modal, it has a title and a close
+    // cross, which is the definition of a popup here (maintainer observation). It now wears the
+    // same frame as Options and the Codex instead of a second kind of window.
+    public sealed class BattleSimEnemyPicker : PopupWindow
     {
         readonly UniverseScreen Host;
         readonly string PlayerDesign;
-        readonly Menu2 Window;
-        readonly ScrollList<PickerItem> DesignSL;
+        // ⚠ not readonly: these are built in LoadContent, which PopupWindow may re-run (a
+        // resolution change rebuilds the frame and everything on it)
+        ScrollList<PickerItem> DesignSL;
         // S5: click stages opponents into the group roster (S5.1: the only gesture)
         readonly Array<string> Roster = new();
         string[] ChosenGroup;
-        readonly UIButton FightBtn, ClearBtn;
-        readonly ScrollList<RosterItem> RosterSL;
+        UIButton FightBtn, ClearBtn;
+        ScrollList<RosterItem> RosterSL;
         const int RosterCap = 10; // readability cap (field preference, 45.65 bench)
         int LaunchCountdown = -1; // >= 0: veil is up, counting rendered frames before Launch
 
-        public BattleSimEnemyPicker(UniverseScreen host, string playerDesign) : base(host, toPause: host)
+        // PopupWindow centres the rect itself and supplies the title bar and close cross, so the
+        // size is all this passes; 520x660 is unchanged (S5: +60 for the roster floor).
+        public BattleSimEnemyPicker(UniverseScreen host, string playerDesign) : base(host, 520, 660)
         {
             Host = host;
             PlayerDesign = playerDesign;
-            IsPopup = true;
+            TitleText = "Pick your opponents - the list adds, the roster removes";
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0f; // the launch path must leave no half-faded frames under the veil
+        }
 
-            var rect = new Rectangle(ScreenWidth / 2 - 260, ScreenHeight / 2 - 330, 520, 660); // S5: +60 for the roster floor
-            Window = Add(new Menu2(rect));
-            Add(new CloseButton(rect.Right - 40, rect.Y + 20));
+        // ⚠ the children are built HERE and not in the constructor: PopupWindow.LoadContent calls
+        // RemoveAll() before laying its own frame out, so anything added earlier is discarded.
+        public override void LoadContent()
+        {
+            base.LoadContent();
 
-            RectF slRect = new(rect.X + 20, rect.Y + 60, rect.Width - 40, rect.Height - 270);
+            Rectangle rect = Rect;
+            // content starts UNDER the frame's title bar rather than at a hand-picked offset
+            int top = PopupFrame.ContentTop(rect);
+            RectF slRect = new(rect.X + 20, top + 6, rect.Width - 40, rect.Bottom - 210 - top);
             DesignSL = Add(new ScrollList<PickerItem>(slRect, 32));
             DesignSL.EnableItemHighlight = true;
             DesignSL.OnClick = OnPicked; // S5.1: click = stage/unstage; the button launches
@@ -187,19 +200,18 @@ namespace Ship_Game
             }
 
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-            batch.SafeBegin();
+            // the frame, its title and the close cross are the window's own now - only this
+            // screen's own labels are drawn here
             base.Draw(batch, elapsed);
-            string title = "Pick your opponents - the list adds, the roster removes";
-            batch.DrawString(Fonts.Arial14Bold, title,
-                new Vector2(Window.Menu.CenterTextX(title, Fonts.Arial14Bold), Window.Menu.Y + 22), Color.Wheat);
 
             if (Roster.NotEmpty)
             {
+                batch.SafeBegin();
                 string grp = "Group roster - click a line to remove one";
                 batch.DrawString(Fonts.Arial12Bold, grp,
-                    new Vector2(Window.Menu.X + 20, Window.Menu.Bottom - 206), Color.Wheat);
+                    new Vector2(Rect.X + 20, Rect.Bottom - 206), Color.Wheat);
+                batch.SafeEnd();
             }
-            batch.SafeEnd();
         }
 
         public override bool HandleInput(InputState input)

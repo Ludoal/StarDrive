@@ -324,8 +324,11 @@ namespace Ship_Game.GameScreens
         // The 23 is Submenu's TabHeight - 2, read from the source and not measured on a capture.
         // ⚠ RectF and not Rect: UIElementV2 carries BOTH, Rect being the integer one, and taking
         // that path would quietly round a geometry the rest of the frame keeps in floats.
+        // ⚠ The strip's height is ASKED of the Submenu, never assumed: it is TabRows*TabHeight, so
+        // a screen whose tabs wrap to a second row reports a taller strip. The constant read off
+        // one-row screens spilled the fill up onto the tabs (maintainer observation).
         public static RectF GroupFrameFillRect(Submenu tabs)
-            => tabs.NumTabs == 0 ? tabs.RectF : tabs.RectF.CutTop(23);
+            => tabs.NumTabs == 0 ? tabs.RectF : tabs.RectF.CutTop((int)tabs.TabStripHeight);
 
         // Ludoal fork: the line every frame, panel and button draws around itself. One source:
         // the same numbers were written out in five places, which is how two of them end up

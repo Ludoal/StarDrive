@@ -19,7 +19,10 @@ namespace Ship_Game
         // Ludoal fork: the screen's frame. The title bar the planet name sits in is the one every
         // window uses, declared with the colours it goes with.
         Rectangle ColonyFrame;
-        static float TitleBarH => GameScreens.ReworkScreens.WindowTitleBarH;
+        // Ludoal fork: the popup frame's own title bar, so this screen's grid starts exactly where
+        // Options' content starts rather than at a height of its own.
+        static float TitleBarH => PopupFrame.TitleBarTop + PopupFrame.TitleBarHeight;
+        PopupFrame Frame;
         readonly Submenu PlanetInfo;
         readonly Submenu PStorage;
         readonly Submenu PFacilities;
@@ -143,9 +146,10 @@ namespace Ship_Game
             // ⚠ NOT Add()ed: a child is drawn by base.Draw, which lands AFTER everything this
             // screen paints by hand - the frame's body would bury the panels. Painted first
             // thing in Draw instead (see ColonyScreen_Draw).
-            // ⚠ RectF converts to Rectangle, never the other way - spelled out here
-            Vector2 closePos = GameScreens.ReworkScreens.GroupClosePos(
-                new RectF(ColonyFrame.X, ColonyFrame.Y, ColonyFrame.Width, ColonyFrame.Height));
+            Frame = new PopupFrame(ColonyFrame);
+
+            // the close cross where every popup window puts its own, from the same source
+            Vector2 closePos = PopupFrame.ClosePos(ColonyFrame);
             Add(new CloseButton(closePos.X, closePos.Y));
 
             // the title bar the planet name sits in, and where the content starts under it

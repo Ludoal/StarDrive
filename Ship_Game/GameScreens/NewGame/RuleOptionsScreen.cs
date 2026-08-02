@@ -1,16 +1,16 @@
 using Microsoft.Xna.Framework.Graphics;
-using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using Ship_Game.Universe;
 using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game;
 
-public sealed class RuleOptionsScreen : GameScreen
+// Ludoal fork: a PopupWindow rather than a GameScreen holding a Menu2 - it is modal, it has a
+// title and a close cross, so it wears the same frame as Options and the Codex now.
+public sealed class RuleOptionsScreen : PopupWindow
 {
     readonly UniverseParams P;
 
-    Menu2 MainMenu;
     FloatSlider FTLPenaltySlider;
     FloatSlider EnemyFTLPenaltySlider;
     FloatSlider GravityWellSize;
@@ -21,10 +21,11 @@ public sealed class RuleOptionsScreen : GameScreen
     FloatSlider CustomMineralDecay;
     FloatSlider VolcanicActivity;
 
-    public RuleOptionsScreen(GameScreen parent, UniverseParams settings) : base(parent, toPause: null)
+    // 720x580: the width Options uses, and the height this screen's slider column always had.
+    public RuleOptionsScreen(GameScreen parent, UniverseParams settings) : base(parent, 720, 580)
     {
         P = settings;
-        IsPopup = true;
+        TitleText = Localizer.Token(GameText.AdvancedRuleOptions);
         TransitionOnTime  = 0.25f;
         TransitionOffTime = 0.25f;
     }
@@ -98,17 +99,14 @@ public sealed class RuleOptionsScreen : GameScreen
 
     public override void LoadContent()
     {
+        // ⚠ base.LoadContent() lays the frame out and calls RemoveAll(): everything below is
+        // added AFTER it, or it would be discarded. The frame supplies the title and the cross.
         base.LoadContent();
-        RemoveAll();
-        int width  = ScreenWidth;
-        int height = ScreenHeight;
 
-        var titleRect = new Rectangle(width / 2 - 203, (LowRes ? 10 : 44), 406, 80);
-        var nameRect  = new Rectangle(width / 2 - height / 4, titleRect.Y + titleRect.Height + 5, width / 2, 150);
-        var leftRect  = new Rectangle(width / 2 - width / 4,  height /2 -(nameRect.Y + nameRect.Height + 5), width / 2, 580);
+        // the window's own rect is the anchor now, centred by PopupWindow rather than computed
+        // from a chain of screen fractions that shifted with every resolution
+        Rectangle leftRect = Rect;
         int x = leftRect.X + 60;
-        MainMenu = Add(new Menu2(leftRect, Color.Black));
-        CloseButton(leftRect.X + leftRect.Width - 40, leftRect.Y + 20);
 
         var ftlRect = new Rectangle(x, leftRect.Y + 100, 270, 50);
         FTLPenaltySlider = Add(new FloatSlider(SliderStyle.Percent, ftlRect,
@@ -209,8 +207,9 @@ public sealed class RuleOptionsScreen : GameScreen
             LoadContent();
         });
 
-        Label(MainMenu.Menu.X + 40, MainMenu.Menu.Y + 40, GameText.AdvancedRuleOptions, Fonts.Arial20Bold);
-        string text = Fonts.Arial12.ParseText(GameText.InThisPanelYouMay, MainMenu.Menu.Width - 80);
-        Label(MainMenu.Menu.X + 40, MainMenu.Menu.Y + 40 + Fonts.Arial20Bold.LineSpacing + 2, text, Fonts.Arial12);
+        // the heading is the frame's title now - only the explanatory line stays, tucked under
+        // the title bar rather than under a heading this screen drew for itself
+        string text = Fonts.Arial12.ParseText(GameText.InThisPanelYouMay, leftRect.Width - 80);
+        Label(leftRect.X + 40, PopupFrame.ContentTop(leftRect) + 4, text, Fonts.Arial12);
     }
 }

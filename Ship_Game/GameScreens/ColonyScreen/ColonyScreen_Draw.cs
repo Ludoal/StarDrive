@@ -194,17 +194,20 @@ namespace Ship_Game
             // transparent, so the galaxy behind it showed straight through - planet names ran
             // across the panels. Painted here rather than via SetBackground: a background is a
             // CHILD, drawn by base.Draw, which lands after everything this method paints.
-            batch.FillRectangle(ColonyFrame, GameScreens.ReworkScreens.WindowBody);
-            batch.FillRectangle(new Rectangle(ColonyFrame.X, ColonyFrame.Y, ColonyFrame.Width,
-                                              GameScreens.ReworkScreens.WindowTitleBarH),
-                                GameScreens.ReworkScreens.WindowTitleBar);
-            batch.DrawRectangle(ColonyFrame, GameScreens.ReworkScreens.FrameRule);
+            // Ludoal fork: THE popup window's own surface, not an imitation of it. Painting this
+            // frame procedurally never matched Options on the bench and could not: those corners
+            // are hand-drawn 28x30 bitmaps and that rule under the title is an artist's gradient.
+            // PopupFrame carries the same arithmetic PopupWindow uses, taking a rect - which is
+            // what this screen needs, since it must span the display under the top bar rather
+            // than be centred the way PopupWindow centres its own.
+            Frame.DrawFill(batch, ColonyFrame);
+            Frame.Draw(batch);
 
             // Ludoal fork: the planet's name in the title bar, centred - it used to ride the one
             // tab of a group that had no second tab to switch to.
             string title = P.Name;
             var titleAt = new Vector2(ColonyFrame.X + ColonyFrame.Width / 2 - Font20.TextWidth(title) / 2f,
-                                      ColonyFrame.Y + TitleBarH / 2 - Font20.LineSpacing / 2f);
+                                      Frame.TitleRect.CenterY() - Font20.LineSpacing / 2f);
             batch.DrawString(Font20, title, titleAt, Colors.Cream);
 
             // the two panels' brass surrounds were drawn here by hand and are gone - the frame

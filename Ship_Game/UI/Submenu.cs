@@ -35,6 +35,11 @@ public class Submenu : UIPanel
 
     // Rect area for the top menu, if we have added Tabs
     RectF MenuBar;
+
+    // Ludoal fork: how tall the tab strip actually runs - TabRows*TabHeight, so it answers for a
+    // second row too. Callers that paint a background under the tabs need this and cannot guess
+    // it: a hardcoded one-row height spills onto the tabs the moment a screen wraps to two.
+    public float TabStripHeight => MenuBar.H;
     // Client area where child objects should be inserted
     public override RectF ClientArea { get; set; }
 
