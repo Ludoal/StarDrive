@@ -30,6 +30,7 @@ Theme:
   FaceTop:       0.34   # the plate's face at its top edge, as an alpha over what is behind
   FaceBottom:    0.18   # and at its foot - the difference IS the relief
   RuleStrength:  0.55   # the line around it; 1.0 is the full tint and reads as neon
+  RuleWidth:     2      # how thick that line runs, in pixels
   HoverLift:     0.22   # how far the tint moves toward white under the cursor
   PressDrop:     0.28   # and toward black while held
 

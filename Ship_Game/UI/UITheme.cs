@@ -38,6 +38,7 @@ namespace Ship_Game
         [StarData] public float FaceTop      = 0.34f;
         [StarData] public float FaceBottom   = 0.18f;
         [StarData] public float RuleStrength = 0.55f;
+        [StarData] public int   RuleWidth    = 2;   // how thick the line around a plate runs
         [StarData] public float HoverLift    = 0.22f;
         [StarData] public float PressDrop    = 0.28f;
 
@@ -121,6 +122,62 @@ namespace Ship_Game
         /// derived from its own tint so a button never changes colour under the cursor.
         public static Color Hover(Color tint) => tint.LerpTo(Color.White, Theme.HoverLift);
         public static Color Press(Color tint) => tint.LerpTo(Color.Black, Theme.PressDrop);
+
+        /// Ludoal fork: THE painted surface of this interface - rounded, top-lit, ruled - drawn
+        /// row by row so it is exact at any size. Buttons and window frames both come through
+        /// here; a frame that squared its corners while the buttons inside it rounded theirs was
+        /// the whole of what made the two read as different furniture.
+        ///
+        /// `face` fills it (alpha applied per row for the relief), `rule` draws the edge and the
+        /// arc. A button passes ONE tint for both; a window passes its body and its border, which
+        /// are two different colours.
+        public static void DrawPlate(SpriteBatch batch, in Rectangle r, Color face, Color rule,
+                                     int radiusOverride = -1, int ruleWidthOverride = -1)
+        {
+            if (r.Width <= 0 || r.Height <= 0)
+                return;
+
+            int radius = radiusOverride >= 0 ? radiusOverride : Theme.CornerRadius;
+            radius = Math.Min(radius, Math.Min(r.Width, r.Height) / 2);
+            int rw = ruleWidthOverride >= 0 ? ruleWidthOverride : Theme.RuleWidth;
+            rw = Math.Max(1, Math.Min(rw, Math.Min(r.Width, r.Height) / 2));
+
+            for (int y = r.Y; y < r.Bottom; ++y)
+            {
+                // how far this row is inset by the arc, if it is in a corner band at all
+                int dy = y < r.Y + radius       ? radius - (y - r.Y) - 1
+                       : y >= r.Bottom - radius ? radius - (r.Bottom - 1 - y) - 1
+                       : 0;
+                int inset = 0;
+                if (dy > 0)
+                {
+                    // the horizontal half-chord of the circle at this height
+                    double dx = Math.Sqrt(Math.Max(0, radius * radius - dy * dy));
+                    inset = radius - (int)Math.Round(dx);
+                }
+
+                int x = r.X + inset, w = r.Width - 2 * inset;
+                if (w <= 0)
+                    continue;
+
+                // the FACE: lighter at the top, darker at the foot - the relief, in one place
+                float t = (y - r.Y) / (float)Math.Max(1, r.Height - 1);
+                float a = Theme.FaceTop + (Theme.FaceBottom - Theme.FaceTop) * t;
+                batch.FillRectangle(new Rectangle(x, y, w, 1), face.Alpha(a));
+
+                // the RULE: the first and last rows are a full line, every other row gets its
+                // ends - which is what draws the arc, one row at a time
+                if (y < r.Y + rw || y >= r.Bottom - rw)
+                {
+                    batch.FillRectangle(new Rectangle(x, y, w, 1), rule);
+                }
+                else
+                {
+                    batch.FillRectangle(new Rectangle(x, y, rw, 1), rule);
+                    batch.FillRectangle(new Rectangle(x + w - rw, y, rw, 1), rule);
+                }
+            }
+        }
 
         // ── text ─────────────────────────────────────────────────────────────────────────────
         public static Color TextPrimary => Theme.TextPrimary;

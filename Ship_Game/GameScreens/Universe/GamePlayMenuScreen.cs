@@ -35,7 +35,10 @@ public sealed class GamePlayMenuScreen : GameScreen
         RemoveAll();
 
         Vector2 c = ScreenCenter;
-        var frame = new RectF(c.X - 100, c.Y - 150, 200, 330);
+        // Ludoal fork: 200x330 -> 260x380. The window was barely wider than the 168px buttons it
+        // holds, so the title bar - a fixed 46, the same one every window uses - took 14% of its
+        // height where it takes 7% of Options'. Same furniture, but at a size that wears it.
+        var frame = new RectF(c.X - 130, c.Y - 170, 260, 380);
         Add(new Menu2(frame));
 
         // Ludoal fork: the panel had no title where every other one names itself - centred in the
@@ -46,13 +49,22 @@ public sealed class GamePlayMenuScreen : GameScreen
         menuTitle.Pos = new Vector2(frame.X + frame.W / 2 - menuTitle.Size.X / 2,
                                     frame.Y + titleBarH / 2 - menuTitle.Size.Y / 2);
 
+        // Ludoal fork: the close cross every other window carries. Escape and O still close it -
+        // this is the way OUT that a window titled like Options ought to show.
+        Vector2 closePos = GameScreens.ReworkScreens.GroupClosePos(frame);
+        Add(new CloseButton(closePos.X, closePos.Y));
+
         SavingText = Add(new UILabel(GameText.Saving, Fonts.Pirulen16, Color.White));
         SavingText.Visible = false;
         SavingText.TextAlign = TextAlign.Center;
         SavingText.Pos = new Vector2(c.X - SavingText.Size.X*0.5f, 
             50 + Fonts.Pirulen16.LineSpacing * 2);
 
-        UIList buttons = AddList(new Vector2(c.X - 84, c.Y - 100));
+        // ⚠ derived from the frame, not from screen centre: the two used to be placed
+        // independently, so widening the window left the buttons where they were.
+        const float btnW = 168;
+        UIList buttons = AddList(new Vector2(frame.X + (frame.W - btnW) / 2,
+                                             frame.Y + titleBarH + 12));
         buttons.Padding = new Vector2(2f, 12f);
         buttons.LayoutStyle = ListLayoutStyle.ResizeList;
 

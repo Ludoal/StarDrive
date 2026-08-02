@@ -43,10 +43,15 @@ namespace Ship_Game
                 // set. Those corners were asymmetric (69x38 at the top, 48x28 at the bottom) with
                 // their own extenders and repeats, so the frame could never match anything else
                 // on screen. Nothing reads a client area off this class, so no content moves.
-                batch.FillRectangle(Menu, Background);
-                batch.FillRectangle(new Rectangle(Menu.X, Menu.Y, Menu.Width, TitleBarH),
+                // Ludoal fork: THE same painted plate the buttons use - rounded, top-lit, ruled.
+                // A frame that squared its corners while the buttons inside it rounded theirs was
+                // the whole of what made a window and its contents read as different furniture.
+                UITheme.DrawPlate(batch, Menu, Background, FrameRule);
+                // the title bar over it, inset so it does not square off the arc at the top
+                int r = System.Math.Min(UITheme.Theme.CornerRadius, Menu.Height / 2);
+                batch.FillRectangle(new Rectangle(Menu.X + r, Menu.Y + UITheme.Theme.RuleWidth,
+                                                  Menu.Width - 2 * r, TitleBarH),
                                     GameScreens.ReworkScreens.WindowTitleBar);
-                batch.DrawRectangle(Menu, FrameRule);
             }
             else
             {

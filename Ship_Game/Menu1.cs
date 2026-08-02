@@ -62,11 +62,13 @@ namespace Ship_Game
             // step lighter, an orange rule - instead of the eight-piece textured surround. Load
             // and Save were the last screens still showing the old frame. Menu1 differs from
             // Menu2 only in carrying a Submenu of its own; they had two texture sets for that.
-            batch.FillRectangle(Rect, GameScreens.ReworkScreens.WindowBody);
-            batch.FillRectangle(new Rectangle(Rect.X, Rect.Y, Rect.Width,
+            UITheme.DrawPlate(batch, Rect, GameScreens.ReworkScreens.WindowBody,
+                              GameScreens.ReworkScreens.FrameRule);
+            int r = System.Math.Min(UITheme.Theme.CornerRadius, Rect.Height / 2);
+            batch.FillRectangle(new Rectangle(Rect.X + r, Rect.Y + UITheme.Theme.RuleWidth,
+                                              Rect.Width - 2 * r,
                                               GameScreens.ReworkScreens.WindowTitleBarH),
                                 GameScreens.ReworkScreens.WindowTitleBar);
-            batch.DrawRectangle(Rect, GameScreens.ReworkScreens.FrameRule);
             subMenu?.Draw(batch, elapsed);
         }
 
