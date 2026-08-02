@@ -32,7 +32,7 @@ namespace Ship_Game
             // Search neighbour on the left one - both read the screen's shared slot, so they cannot
             // drift apart the way two separate origins did.
             float btnX = screen.ResearchButtonsRight - ResearchScreenNew.ResearchButtonW;
-            BtnShowQueue = Button(ButtonStyle.DanButtonClearBlue,
+            BtnShowQueue = Button(ButtonStyle.WideActive,
                 new Vector2(btnX, screen.ResearchButtonY), "", OnBtnShowQueuePressed);
             BtnShowQueue.Rect = new RectF(btnX, screen.ResearchButtonY,
                                           ResearchScreenNew.ResearchButtonW,

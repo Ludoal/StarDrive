@@ -814,8 +814,8 @@ namespace Ship_Game
         }
 
         // the two view toggles that carry a state read red while ON, blue while OFF
-        ButtonStyle SymmetricDesignBtnStyle  => IsSymmetricDesignMode ? ButtonStyle.DanButtonClearRed : ButtonStyle.DanButtonClearBlue;
-        ButtonStyle ArcsBtnStyle             => ShowAllArcs ? ButtonStyle.DanButtonClearRed : ButtonStyle.DanButtonClearBlue;
+        ButtonStyle SymmetricDesignBtnStyle  => IsSymmetricDesignMode ? ButtonStyle.WideHostile : ButtonStyle.WideActive;
+        ButtonStyle ArcsBtnStyle             => ShowAllArcs ? ButtonStyle.WideHostile : ButtonStyle.WideActive;
 
         void CreateGUI()
         {
@@ -888,7 +888,7 @@ namespace Ship_Game
             topRow.Direction = new Vector2(+1, 0);
             topRow.Padding = new Vector2(idGap, 2f);
 
-            BtnSaveAs = topRow.Add(ButtonStyle.DanButtonClearRed, GameText.SaveAs, click: b =>
+            BtnSaveAs = topRow.Add(ButtonStyle.WideHostile, GameText.SaveAs, click: b =>
             {
                 bool isGoodDesign = IsGoodDesign();
                 if (!HullEditMode && !isGoodDesign)
@@ -909,7 +909,7 @@ namespace Ship_Game
             BtnSaveAs.Hotkey = InputBindings.FromString("Ctrl+S");
             // Ludoal fork: Load is gone - the browser on the right lists every design and loads on
             // double-click, so a modal picker on top of it was one door too many.
-            var testFight = topRow.Add(ButtonStyle.DanButtonClear, "Test Fight", click: b =>
+            var testFight = topRow.Add(ButtonStyle.Wide, "Test Fight", click: b =>
             {
                 if (HullEditMode)
                     ScreenManager.AddScreen(new MessageBoxScreen(this, "Test Fight is not available in Hull Edit Mode"));
@@ -960,14 +960,14 @@ namespace Ship_Game
             rightFoot.Direction = new Vector2(+1, 0);
             rightFoot.Padding = new Vector2(footGap, 2f);
 
-            BtnStripShip = leftFoot.Add(ButtonStyle.DanButtonClearBlue, Localizer.Token(GameText.NormalDesign), click: b =>
+            BtnStripShip = leftFoot.Add(ButtonStyle.WideActive, Localizer.Token(GameText.NormalDesign), click: b =>
             {
                 OnStripShipToggle();
             });
             BtnStripShip.ClickSfx = "blip_click";
             BtnStripShip.Tooltip = Localizer.Token(GameText.StripsTheShipOfAny);
 
-            BtnSymmetricDesign = leftFoot.Add(ButtonStyle.DanButtonClearBlue, Localizer.Token(GameText.SymmetricDesign), click: b =>
+            BtnSymmetricDesign = leftFoot.Add(ButtonStyle.WideActive, Localizer.Token(GameText.SymmetricDesign), click: b =>
             {
                 OnSymmetricDesignToggle();
             });
@@ -976,7 +976,7 @@ namespace Ship_Game
             BtnSymmetricDesign.Hotkey  = InputBindings.FromString("M");
             BtnSymmetricDesign.Style   = SymmetricDesignBtnStyle;
 
-            BtnArcs = rightFoot.Add(ButtonStyle.DanButtonClearBlue, "Arcs", click: b =>
+            BtnArcs = rightFoot.Add(ButtonStyle.WideActive, "Arcs", click: b =>
             {
                 ShowAllArcs = !ShowAllArcs;
                 BtnArcs.Style = ArcsBtnStyle;
@@ -986,7 +986,7 @@ namespace Ship_Game
             BtnArcs.Hotkey   = InputBindings.FromString("Tab");
             BtnArcs.Style    = ArcsBtnStyle;
 
-            BtnToggleOverlay = rightFoot.Add(ButtonStyle.DanButtonClearBlue, GameText.ToggleOverlay, click: b =>
+            BtnToggleOverlay = rightFoot.Add(ButtonStyle.WideActive, GameText.ToggleOverlay, click: b =>
             {
                 ToggleOverlay = !ToggleOverlay;
             });

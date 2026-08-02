@@ -133,7 +133,7 @@ namespace Ship_Game
             ResearchButtonY = queue.Bottom + 8;
             ResearchButtonsRight = queue.Right;
             Queue = Add(new ResearchQueueUIComponent(this, queue));
-            Search = Add(new UIButton(ButtonStyle.DanButtonClearBlue,
+            Search = Add(new UIButton(ButtonStyle.WideActive,
                                       new Vector2(queue.X, ResearchButtonY), "Search"));
             Search.Rect = new RectF(queue.X, ResearchButtonY, ResearchButtonW, ResearchButtonH);
             Search.OnClick = OnSearchButtonClicked;

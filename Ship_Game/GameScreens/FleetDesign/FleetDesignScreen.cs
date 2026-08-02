@@ -327,10 +327,10 @@ namespace Ship_Game
                        + Fonts.Arial20Bold.LineSpacing + 8 + CartIcon + 8;
             float BtnRow(int i) => btnY + i * (CartBtnH + CartBtnGap);
 
-            RequisitionForces = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, BtnRow(0)), "Requisition..."));
-            SaveDesign  = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, BtnRow(1)), "Save Design..."));
-            LoadDesign  = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, BtnRow(2)), "Load Design..."));
-            AutoArrange = Add(new UIButton(ButtonStyle.DanButtonClearBlue, new Vector2(btnX, BtnRow(3)), "Auto Arrange..."));
+            RequisitionForces = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(0)), "Requisition..."));
+            SaveDesign  = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(1)), "Save Design..."));
+            LoadDesign  = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(2)), "Load Design..."));
+            AutoArrange = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(3)), "Auto Arrange..."));
 
             foreach (UIButton b in new[] { RequisitionForces, SaveDesign, LoadDesign, AutoArrange })
                 b.SetAbsSize(CartBtnW, CartBtnH);

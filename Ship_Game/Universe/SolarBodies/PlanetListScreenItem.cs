@@ -72,12 +72,12 @@ namespace Ship_Game
             // Ludoal fork: the NewUI dan_button family. Blue to ORDER a colonisation, red to cancel
             // one, plain for Send and Recall Troops - the convention reads action / undo / neutral.
             LocalizedText colonizeText = !MarkedForColonization ? GameText.Colonize : GameText.CancelColonize;
-            ButtonStyle colonizeStyle  = MarkedForColonization ? ButtonStyle.DanButtonClearRed
-                                                               : ButtonStyle.DanButtonClearBlue;
+            ButtonStyle colonizeStyle  = MarkedForColonization ? ButtonStyle.WideHostile
+                                                               : ButtonStyle.WideActive;
             Colonize   = Button(colonizeStyle, colonizeText, OnColonizeClicked);
-            SendTroops = Button(ButtonStyle.DanButtonClear, "Send Troops", OnSendTroopsClicked);
+            SendTroops = Button(ButtonStyle.Wide, "Send Troops", OnSendTroopsClicked);
             SendTroops.Tooltip = GameText.SendAvailableTroopsToThis;
-            RecallTroops = Button(ButtonStyle.DanButtonClear, $"Recall Troops ({Planet.NumTroopsCanLaunchFor(Player)})", OnRecallTroopsClicked);
+            RecallTroops = Button(ButtonStyle.Wide, $"Recall Troops ({Planet.NumTroopsCanLaunchFor(Player)})", OnRecallTroopsClicked);
             RecallTroops.Tooltip = GameText.RecallAllTroopsBasedOn;
             int nextX = x;
             Rectangle NextRect(float width)
@@ -308,7 +308,7 @@ namespace Ship_Game
             {
                 // red on a hostile target, plain otherwise - the convention of the new look
                 ButtonStyle style  = Planet.Owner == Player || Planet.Owner == null
-                                   ? ButtonStyle.DanButtonClear : ButtonStyle.DanButtonClearRed;
+                                   ? ButtonStyle.Wide : ButtonStyle.WideHostile;
                 string text        = "Invading:";
 
                 if (Planet.Owner == Player)    text = "Rebasing:";
@@ -331,7 +331,7 @@ namespace Ship_Game
                 // last free troop sent would be impossible to recall.
                 SendTroops.Visible = Planet.Habitable && CanSendTroops && !Player.IsNAPactWith(Planet.Owner);
                 SendTroops.Style   = Planet.Owner == Player || Planet.Owner == null
-                                   ? ButtonStyle.DanButtonClear : ButtonStyle.DanButtonClearRed;
+                                   ? ButtonStyle.Wide : ButtonStyle.WideHostile;
             }
         }
 
@@ -448,7 +448,7 @@ namespace Ship_Game
             {
                 Player.AI.AddGoalAndEvaluate(new MarkForColonization(Planet, Planet.Universe.Player, isManual:true));
                 Colonize.Text = "Cancel Colonize";
-                Colonize.Style = ButtonStyle.DanButtonClearRed; // red once it undoes something
+                Colonize.Style = ButtonStyle.WideHostile; // red once it undoes something
                 MarkedForColonization = true;
                 return;
             }
@@ -456,7 +456,7 @@ namespace Ship_Game
             Planet.Universe.Player.AI.CancelColonization(Planet);
             MarkedForColonization = false;
             Colonize.Text  = "Colonize";
-            Colonize.Style = ButtonStyle.DanButtonClearBlue;
+            Colonize.Style = ButtonStyle.WideActive;
         }
     }
 }

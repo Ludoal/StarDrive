@@ -64,20 +64,20 @@ namespace Ship_Game
             
             int assetsX = AssetsRect.X + 20;
 
-            LandAll   = Button(ButtonStyle.DanButtonBlue, assetsX, AssetsRect.Y + 80, "Land All", OnLandAllClicked);
-            LaunchAll = Button(ButtonStyle.DanButtonBlue, assetsX, AssetsRect.Y + 110, "Launch All", OnLaunchAllClicked);
-            Bombard   = Button(ButtonStyle.DanButtonBlue, assetsX, AssetsRect.Y + 140, BombardDefaultText, OnBombardClicked);
+            LandAll   = Button(ButtonStyle.WideActive, assetsX, AssetsRect.Y + 80, "Land All", OnLandAllClicked);
+            LaunchAll = Button(ButtonStyle.WideActive, assetsX, AssetsRect.Y + 110, "Launch All", OnLaunchAllClicked);
+            Bombard   = Button(ButtonStyle.WideActive, assetsX, AssetsRect.Y + 140, BombardDefaultText, OnBombardClicked);
             LandAll.Tooltip   = GameText.LandAllTroopsListedIn;
             LaunchAll.Tooltip = GameText.LaunchToSpaceAllTroops;
             Bombard.Tooltip   = GameText.OrdersAllBombequippedShipsIn;
             LandAll.TextAlign = LaunchAll.TextAlign = Bombard.TextAlign = ButtonTextAlign.Left;
 
             if (IsPlayerBombing())
-                Bombard.Style = ButtonStyle.DanButtonRed;
+                Bombard.Style = ButtonStyle.WideHostile;
 
             // Ludoal fork (wishlist): same exit as the planet panel — leave the
             // assault view AT the planet on the main map (notification workflow)
-            var viewOnMap = Button(ButtonStyle.DanButtonBlue, assetsX, AssetsRect.Y + 170, "View on map",
+            var viewOnMap = Button(ButtonStyle.WideActive, assetsX, AssetsRect.Y + 170, "View on map",
                                    b => p.Universe.Screen.ClosePlanetPanelStayHere());
             viewOnMap.TextAlign = ButtonTextAlign.Left;
 
@@ -489,14 +489,14 @@ namespace Ship_Game
             var bombingNowList = bomberList.Filter(s => s.AI.State == AI.AIState.Bombard && s.AI.OrderQueue.Any(o => o.TargetPlanet == P));
             if (bombingNowList.Length > 0) // need to cancel bombing
             {
-                Bombard.Style = ButtonStyle.DanButtonBlue;
+                Bombard.Style = ButtonStyle.WideActive;
                 foreach (Ship bomber in bombingNowList)
                     bomber.OrderToOrbit(P, clearOrders:!Input.IsShiftKeyDown, AI.MoveOrder.Aggressive);
             }
             else
             {
                 // Cancel bombardment 
-                Bombard.Style = ButtonStyle.DanButtonRed;
+                Bombard.Style = ButtonStyle.WideHostile;
                 foreach (Ship bomber in bomberList)
                 {
                     bomber.AI.OrderBombardPlanet(P, clearOrders:true);

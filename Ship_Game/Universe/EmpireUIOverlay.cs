@@ -239,7 +239,9 @@ namespace Ship_Game
                     // ⚠ the hover BRIGHTENS the state colour, never replaces it: red means the
                     // game is stopped, and that must not vanish under the cursor.
                     bool hot = b.Bare && b.State != PressState.Normal;
-                    Color ink = locked ? PausedRed.Alpha(0.45f)
+                    // dimmed enough to say "not yours to lift", not so much that the stopped
+                    // state stops reading - it is the one thing on the bar that must be seen
+                    Color ink = locked ? PausedRed.Alpha(0.8f)
                               : paused ? (hot ? PausedRed.LerpTo(Color.White, 0.35f) : PausedRed)
                               : hot    ? Color.Orange
                               : b.State == PressState.Normal ? TextCream

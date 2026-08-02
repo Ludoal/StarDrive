@@ -27,7 +27,7 @@ namespace Ship_Game.GameScreens.Universe.Debug
             InputState input = ScreenManager.Instance.input;
 
             Add(new UIPanel(LocalPos.Zero, Size, Color.Transparent.Alpha(0.2f)));
-            var style = new UIButton.StyleTextures("NewUI/Debug/tech_button.png", ButtonStyle.DanButton);
+            var style = new UIButton.StyleTextures("NewUI/Debug/tech_button.png", ButtonStyle.Wide);
 
             AddCustomBtn(BtnSpacing*0, style,
                 () => "Reset ALL\nTechs",
