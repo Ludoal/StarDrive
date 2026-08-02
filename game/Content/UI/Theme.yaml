@@ -1,0 +1,62 @@
+Theme:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # The game's UI style, in one place. Colours are [R,G,B] or [R,G,B,A], 0-255.
+  # Edit, relaunch the game, see the result - no rebuild.
+  #
+  # Fonts are named by ROLE, not by typeface: change WindowTitle here and every
+  # window title follows, wherever it is drawn. Valid names are the ones the game
+  # loads - Arial8Bold, Arial10, Arial11Bold, Arial12, Arial12Bold, Arial14Bold,
+  # Arial20Bold, Tahoma10, Tahoma11, TahomaBold9, Verdana10, Verdana12,
+  # Verdana12Bold, Consolas18, Laserian14, Pirulen12, Pirulen16, Pirulen20.
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  # ── Windows and frames ───────────────────────────────────────────────────────
+  # Read off the Codex, which is the look the rest follows.
+  FrameRule:      [193, 113, 26]      # the line around every window and panel
+  FrameBody:      [14, 14, 14, 240]   # what fills a window
+  FrameTitleBar:  [54, 54, 54, 240]   # one step lighter, so a title bar reads as one
+  TitleBarHeight: 46
+
+  # ── Buttons ──────────────────────────────────────────────────────────────────
+  # One tint per MEANING. Hover and Pressed are derived from the tint rather than
+  # being colours of their own: a hovered button is a lighter version of itself,
+  # never a different colour. HoverLift/PressDrop are 0.0-1.0.
+  PlateNeutral:  [193, 113, 26]   # nothing in particular
+  PlateActive:   [108, 152, 214]  # an active control, or an order that starts something
+  PlateHostile:  [206, 92, 84]    # a hostile action, or one that cancels an order
+  PlateMuted:    [122, 116, 104]  # out of reach for now
+  PlateOpacity:  0.92
+  CornerRadius:  8      # how round the corners are - drawn, not an asset, so any value works
+  FaceTop:       0.34   # the plate's face at its top edge, as an alpha over what is behind
+  FaceBottom:    0.18   # and at its foot - the difference IS the relief
+  RuleStrength:  0.55   # the line around it; 1.0 is the full tint and reads as neon
+  HoverLift:     0.22   # how far the tint moves toward white under the cursor
+  PressDrop:     0.28   # and toward black while held
+
+  # ── Text ─────────────────────────────────────────────────────────────────────
+  TextPrimary: [255, 240, 189]   # the default ink
+  TextDim:     [190, 180, 150]   # secondary lines, captions
+  TextGood:    [144, 238, 144]   # a number in your favour
+  TextBad:     [255, 96, 96]     # a number against you
+  TextLocked:  [105, 105, 105]   # what you have not earned the right to see
+
+  # ── Tables ───────────────────────────────────────────────────────────────────
+  # The list screens: Planets, Ships, Troops, Patrols, Events, Exotic Systems.
+  TableHeader:      [255, 240, 189]   # the column titles
+  TableHeaderFont:  Arial14Bold
+  TableText:        [255, 240, 189]   # an ordinary cell
+  TableTextFont:    Arial12
+  TableTitle:       [255, 240, 189]   # the row's own name - planet, ship, fleet
+  TableTitleFont:   Arial20Bold       # deliberately larger: it is what you scan for
+  TableSubtitle:    [190, 180, 150]   # the line under it (class, role, status)
+  TableSubtitleFont: Arial12
+  TableRowHover:    [255, 255, 255, 30]   # the band under the cursor
+  TableRowSelected: [193, 113, 26, 45]    # and under the row you picked
+  TableGridLine:    [118, 102, 67, 128]   # the rules between columns and rows
+
+  # ── Fonts by role ────────────────────────────────────────────────────────────
+  WindowTitle:  Arial20Bold   # the name of a window, in its title bar
+  SectionTitle: Arial12Bold   # a band inside one - BUDGET, TREATIES, POPULATION
+  Body:         Arial12       # ordinary prose and labels
+  Value:        Arial12Bold   # a number the eye goes to
+  Small:        Arial10       # footnotes, counts, anything secondary

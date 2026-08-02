@@ -878,6 +878,7 @@
     <Compile Include="Ship_Game\Universe\UniverseScreen\UniverseScreen.cs" />
     <Compile Include="Ship_Game\Menu2.cs" />
     <Compile Include="Ship_Game\UI\UIButton.cs" />
+    <Compile Include="Ship_Game\UI\UITheme.cs" />
     <Compile Include="Ship_Game\GameScreens\FleetDesign\RequisitionScreen.cs" />
     <Compile Include="Ship_Game\Primitives2D.cs" />
     <Compile Include="Ship_Game\Fleets\Fleet.cs" />

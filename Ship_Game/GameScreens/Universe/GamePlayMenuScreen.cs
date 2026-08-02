@@ -38,10 +38,11 @@ public sealed class GamePlayMenuScreen : GameScreen
         var frame = new RectF(c.X - 100, c.Y - 150, 200, 330);
         Add(new Menu2(frame));
 
-        // Ludoal fork: the panel had no title where every other one names itself. Same font and
-        // the same 46px bar the Codex and Colony use, so the three read as one set of windows.
+        // Ludoal fork: the panel had no title where every other one names itself - centred in the
+        // title bar, the way PopupWindow places its own, so Options, the Codex and this one read
+        // as the same furniture.
         const float titleBarH = GameScreens.ReworkScreens.WindowTitleBarH;
-        var menuTitle = Add(new UILabel(Vector2.Zero, "Menu", Fonts.Arial20Bold, Colors.Cream));
+        var menuTitle = Add(new UILabel(Vector2.Zero, "Menu", UI.WindowTitle, UI.TextPrimary));
         menuTitle.Pos = new Vector2(frame.X + frame.W / 2 - menuTitle.Size.X / 2,
                                     frame.Y + titleBarH / 2 - menuTitle.Size.Y / 2);
 

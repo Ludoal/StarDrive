@@ -314,36 +314,36 @@ namespace Ship_Game
                 return;
             }
 
-            // Intelligence tab
-            float positionY = infoY + 24 + 3 * (Font12.LineSpacing + 3) + 4;
-            float intelY = positionY + 24 + 4 * (Font12.LineSpacing + 3) + 4;
-
+            // Intelligence tab.
+            // Ludoal fork: the bands FOLLOW each other - every block advances y and the next one
+            // starts where it stopped. They used to be placed at heights computed from a graven
+            // row count apiece, so adding three rows to one of them did not push the rest down,
+            // it drew over them. Every block here paints a CONSTANT number of rows whatever the
+            // empire (a value you may not see reads "---"), which is what keeps the bands level
+            // across columns without anyone having to count them.
+            // ARTIFACTS is the one variable block, so it comes last and takes whatever is left.
             y = infoY;
             SectionBand(batch, col, ref y, "RACE INFO");
             DrawInfoBlock(batch, e, col, ref y);
 
-            y = positionY;
+            y += 4;
             SectionBand(batch, col, ref y, "RANK");
             DrawPositionBlock(batch, e, col, ref y);
+
+            y += 4;
+            SectionBand(batch, col, ref y, "EMPIRE DATA");
+            DrawIntelRows(batch, e, col, ref y, col.Bottom - 6);
 
             // Ludoal fork: TREATIES before ARTIFACTS. The treaty matrix is a fixed three rows, the
             // artifact list is as long as the empire's holdings - so the fixed block takes its
             // place first and the variable one runs to the bottom of the column, where growing
             // costs nothing.
-            y = intelY;
-            SectionBand(batch, col, ref y, "EMPIRE DATA");
-            // Ludoal fork: 10 -> 13 rows. Trust, Anger and Threat joined the block, and TableRow
-            // stops drawing at maxY - so a band sized for the old count would have dropped them
-            // without a word rather than showing them cut off.
-            const int IntelRows = 13;
-            float treatyY = intelY + 24 + IntelRows * (Font12.LineSpacing + 3) + 6;
-            DrawIntelRows(batch, e, col, ref y, treatyY - 6);
-
+            y += 4;
+            float treatyY = y;
             SectionBand(batch, col, ref treatyY, "TREATIES");
             DrawTreatyMatrix(batch, e, col, treatyY);
 
-            float artifactsY = treatyY + TreatyBlockH - 24;
-            y = artifactsY;
+            y = treatyY + TreatyBlockH - 24;
             SectionBand(batch, col, ref y, "ARTIFACTS");
             DrawArtifactRows(batch, e, col, ref y, col.Bottom - 6);
 
@@ -387,6 +387,12 @@ namespace Ship_Game
                 TableRow(batch, col, ref y, maxY, "Status", Localizer.Token(GameText.You), Color.White);
                 BlankRow(ref y); // player call: keep the line, drop the noise
                 BlankRow(ref y); // (personality slot)
+                // ⚠ and the three below, which an empire has ABOUT you and you cannot have about
+                // yourself. Reserved rather than skipped: this column has to stay level with the
+                // others, which is why every unavailable value in this screen keeps its line.
+                BlankRow(ref y); // (trust slot)
+                BlankRow(ref y); // (anger slot)
+                BlankRow(ref y); // (threat slot)
             }
             else
             {
@@ -419,17 +425,18 @@ namespace Ship_Game
             // every empire at once instead of one at a time. Same colours it uses (green, yellow,
             // red) and the same 0-100 clamp, so the numbers here and the bars there agree.
             // Intelligence like the rest of the block, so it hides behind the same gate.
-            if (UsingNewEspioange ? espionage.CanViewPersonality : IntelligenceLevel(e) > 0)
+            // ⚠ Every path through this draws THREE rows, whatever it can show - the column has to
+            // stay level with its neighbours, and a branch that quietly drew none would shift
+            // every band below it in that one column.
+            bool canSeeMood = UsingNewEspioange ? espionage.CanViewPersonality : IntelligenceLevel(e) > 0;
+            if (canSeeMood && e.GetRelations(Player, out Relationship toUs))
             {
-                if (e.GetRelations(Player, out Relationship toUs))
-                {
-                    TableRow(batch, col, ref y, maxY, Localizer.Token(GameText.Trust),
-                             toUs.Trust.Clamped(0, 100).String(0), Color.Green);
-                    TableRow(batch, col, ref y, maxY, Localizer.Token(GameText.Anger),
-                             toUs.TotalAnger.Clamped(0, 100).String(0), Color.Yellow);
-                    TableRow(batch, col, ref y, maxY, Localizer.Token(GameText.Threat),
-                             toUs.Threat.Clamped(0, 100).String(0), Color.Red);
-                }
+                TableRow(batch, col, ref y, maxY, Localizer.Token(GameText.Trust),
+                         toUs.Trust.Clamped(0, 100).String(0), Color.Green);
+                TableRow(batch, col, ref y, maxY, Localizer.Token(GameText.Anger),
+                         toUs.TotalAnger.Clamped(0, 100).String(0), Color.Yellow);
+                TableRow(batch, col, ref y, maxY, Localizer.Token(GameText.Threat),
+                         toUs.Threat.Clamped(0, 100).String(0), Color.Red);
             }
             else
             {

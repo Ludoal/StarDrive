@@ -36,10 +36,6 @@ namespace Ship_Game
     {
         // Ludoal fork: the one button asset, and how deep its border runs. Both live here so a new
         // PNG (or a thicker frame in a redrawn one) is a single edit for the whole game.
-        // Separate bar and corners, the way Submenu's frame does it - one uniform 2x2 bar that
-        // stretches to any length without a rule to squeeze, and corners drawn at their own size.
-        public const string ButtonBarTex    = "NewUI/button_bar";
-        public const string ButtonCornerTex = "NewUI/button_corner_";
 
         // The palette a button can mean: nothing in particular, an active control, a hostile
         // action, or one that is currently out of reach. The asset is greyscale, so these ARE
@@ -50,10 +46,11 @@ namespace Ship_Game
         // into the face and the button reads as a bare rectangle.
         // ⚠ the frame colour is the Codex's own (193,113,26), so a button's rule matches the
         // window it sits in rather than being a beige near-miss beside it
-        public static readonly Color PlateNeutral = new Color(193, 113, 26);
-        public static readonly Color PlateActive  = new Color(108, 152, 214);
-        public static readonly Color PlateHostile = new Color(206, 92, 84);
-        public static readonly Color PlateMuted   = new Color(122, 116, 104);
+        // Ludoal fork: from Content/UI/Theme.yaml - see UITheme.cs
+        public static Color PlateNeutral => UI.PlateNeutral;
+        public static Color PlateActive  => UI.PlateActive;
+        public static Color PlateHostile => UI.PlateHostile;
+        public static Color PlateMuted   => UI.PlateMuted;
 
         public class StyleTextures
         {
@@ -88,15 +85,15 @@ namespace Ship_Game
             // rect still measures itself off one. This carries the ORIGINAL size, and only that.
             public SubTexture SizeRef;
 
-            public static StyleTextures Sliced(Color plate, float opacity = 1f, string sizeRef = null)
+            public static StyleTextures Sliced(Color plate, float opacity = -1f, string sizeRef = null)
                 => new StyleTextures
                 {
                     SizeRef      = sizeRef != null ? ResourceManager.Texture(sizeRef) : null,
                     Plated       = true,
-                    Opacity      = opacity,
+                    Opacity      = opacity < 0f ? UI.PlateOpacity : opacity,
                     DefaultColor = plate,
-                    HoverColor   = plate.LerpTo(Color.White, 0.22f),
-                    PressColor   = plate.LerpTo(Color.Black, 0.28f),
+                    HoverColor   = UI.Hover(plate),
+                    PressColor   = UI.Press(plate),
                 };
 
             public StyleTextures(string normal)

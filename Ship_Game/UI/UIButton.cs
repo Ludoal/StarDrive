@@ -144,29 +144,54 @@ namespace Ship_Game
         // `tint` multiplies: the assets are greyscale, the colour lives in the code.
         public static void DrawPlate(SpriteBatch batch, in Rectangle r, Color tint)
         {
-            SubTexture bar = ResourceManager.Texture(ButtonBarTex);
-            SubTexture tl  = ResourceManager.Texture(ButtonCornerTex + "TL");
-            SubTexture tr  = ResourceManager.Texture(ButtonCornerTex + "TR");
-            SubTexture bl  = ResourceManager.Texture(ButtonCornerTex + "BL");
-            SubTexture br  = ResourceManager.Texture(ButtonCornerTex + "BR");
-
-            // a button can be shorter than two corners; give way rather than overlap them
-            int c = Math.Min(tl.Width, Math.Min(r.Width, r.Height) / 2);
-            if (c <= 0)
+            // Ludoal fork: drawn ROW BY ROW, no texture anywhere. Every attempt at sampling one
+            // ended the same way - a bitmap scaled to a button's size lands between pixels, and
+            // the linear filter turns a 1px rule into a smear and a gradient into mush. A row of
+            // solid fill is exact at any size, and the radius becomes a number rather than an
+            // asset that has to be redrawn.
+            int radius = Math.Min(UI.Theme.CornerRadius, Math.Min(r.Width, r.Height) / 2);
+            if (r.Width <= 0 || r.Height <= 0)
                 return;
 
-            // the body first, then the edges over it, then the corners on top
-            batch.FillRectangle(new Rectangle(r.X + 1, r.Y + 1, r.Width - 2, r.Height - 2),
-                                tint.Alpha(0.5f));
-            // ⚠ RectF, not Rectangle: only the RectF overload of Draw takes a tint
-            batch.Draw(bar, new RectF(r.X + c,     r.Y,          r.Width - 2 * c, 1), tint);
-            batch.Draw(bar, new RectF(r.X + c,     r.Bottom - 1, r.Width - 2 * c, 1), tint);
-            batch.Draw(bar, new RectF(r.X,         r.Y + c,      1, r.Height - 2 * c), tint);
-            batch.Draw(bar, new RectF(r.Right - 1, r.Y + c,      1, r.Height - 2 * c), tint);
-            batch.Draw(tl, new RectF(r.X,         r.Y,          c, c), tint);
-            batch.Draw(tr, new RectF(r.Right - c, r.Y,          c, c), tint);
-            batch.Draw(bl, new RectF(r.X,         r.Bottom - c, c, c), tint);
-            batch.Draw(br, new RectF(r.Right - c, r.Bottom - c, c, c), tint);
+            for (int y = r.Y; y < r.Bottom; ++y)
+            {
+                // how far this row is inset by the arc, if it is in a corner band at all
+                int dy = y < r.Y + radius        ? radius - (y - r.Y) - 1
+                       : y >= r.Bottom - radius  ? radius - (r.Bottom - 1 - y) - 1
+                       : 0;
+                int inset = 0;
+                if (dy > 0)
+                {
+                    // the horizontal half-chord of the circle at this height
+                    double dx = Math.Sqrt(Math.Max(0, radius * radius - dy * dy));
+                    inset = radius - (int)Math.Round(dx);
+                }
+
+                int x = r.X + inset, w = r.Width - 2 * inset;
+                if (w <= 0)
+                    continue;
+
+                // the FACE: lighter at the top, darker at the foot - the relief, in one place
+                float t = (y - r.Y) / (float)Math.Max(1, r.Height - 1);
+                float face = UI.Theme.FaceTop + (UI.Theme.FaceBottom - UI.Theme.FaceTop) * t;
+                batch.FillRectangle(new Rectangle(x, y, w, 1), tint.Alpha(face));
+
+                // the RULE: the first and last rows are a full line, every other row gets its
+                // two end pixels - which is what draws the arc, one row at a time.
+                // ⚠ Not the tint at full strength: a saturated line right round a small control
+                // reads as neon beside the stock buttons, whose edge is a thin darker brown.
+                Color rule = tint.Alpha(UI.Theme.RuleStrength);
+                bool edgeRow = y == r.Y || y == r.Bottom - 1;
+                if (edgeRow)
+                {
+                    batch.FillRectangle(new Rectangle(x, y, w, 1), rule);
+                }
+                else
+                {
+                    batch.FillRectangle(new Rectangle(x, y, 1, 1), rule);
+                    batch.FillRectangle(new Rectangle(x + w - 1, y, 1, 1), rule);
+                }
+            }
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
