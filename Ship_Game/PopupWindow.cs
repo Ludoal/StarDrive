@@ -19,6 +19,13 @@ namespace Ship_Game
         public Rectangle TitleRight;
         public Rectangle EmpireFlagRect;
         public Rectangle MidContainer;
+
+        /// Ludoal fork: where a subclass's own content may start - under the title bar, and under
+        /// the subtitle band when there is one. ⚠ Not PopupFrame.ContentTop: that one knows the
+        /// frame but not whether this window set MiddleText, which costs another 88px.
+        protected int BodyTop => MidContainer.Height > 0
+                               ? MidContainer.Bottom
+                               : PopupFrame.ContentTop(Rect);
         protected Rectangle MidSepTop;
         protected Rectangle MidSepBot;
         public string TitleText;

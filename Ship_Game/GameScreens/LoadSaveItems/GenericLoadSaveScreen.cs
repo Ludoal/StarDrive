@@ -119,15 +119,21 @@ namespace Ship_Game
         {
             // ⚠ base.LoadContent() lays the frame out and calls RemoveAll(): it goes FIRST, and
             // it supplies the frame and the close cross this method used to build itself.
+            // the window names itself in its own title bar; Title used to reach the player only
+            // as a Submenu tab label, so the bar sat empty (maintainer observation)
+            TitleText = Title;
             base.LoadContent();
 
             Window = Rect;
-            // the name strip starts under the frame's own title bar rather than 20 below the top
-            RectF sub = new(Window.X + 20, PopupFrame.ContentTop(Window), Window.Width - 40, 80);
+            // ⚠ inset 28, not 20: a Submenu's tab sticks out to the LEFT of its own rect, so at
+            // 20 the tabs overhung the frame's border. Bounds come from ContentArea, which knows
+            // what the frame's own edges eat (11 right, 30 at the foot).
+            Rectangle inner = PopupFrame.ContentArea(Window);
+            RectF sub = new(inner.X + 25, inner.Y + 4, inner.Width - 50, 80);
             NameSave = new Submenu(sub, Title);
             TitlePosition = new Vector2(sub.X + 20, sub.Y + 45);
 
-            RectF scrollList = new(sub.X, sub.Y + 90, sub.W, Window.Height - sub.H - 50);
+            RectF scrollList = new(sub.X, sub.Y + 90, sub.W, inner.Bottom - (sub.Y + 90));
 
             AllSaves = Add(new SubmenuScrollList<SaveLoadListItem>(scrollList, TabText, EntryHeight));
             SavesSL = AllSaves.List;

@@ -35,23 +35,27 @@ public sealed class GamePlayMenuScreen : GameScreen
         RemoveAll();
 
         Vector2 c = ScreenCenter;
-        // Ludoal fork: 200x330 -> 260x380. The window was barely wider than the 168px buttons it
-        // holds, so the title bar - a fixed 46, the same one every window uses - took 14% of its
-        // height where it takes 7% of Options'. Same furniture, but at a size that wears it.
-        var frame = new RectF(c.X - 130, c.Y - 170, 260, 380);
+        // Ludoal fork: 200x330 -> 380x360. Width is not cosmetic here: the popup frame's gradient
+        // bands are 433px wide and only shrink to fit, so a window under ~493 gets a squeezed
+        // band - and at 260 it was narrower than the frame's own furniture (maintainer
+        // observation). 380 carries the 168px buttons with room either side.
+        var frame = new RectF(c.X - 190, c.Y - 180, 380, 360);
         Add(new Menu2(frame));
 
         // Ludoal fork: the panel had no title where every other one names itself - centred in the
         // title bar, the way PopupWindow places its own, so Options, the Codex and this one read
         // as the same furniture.
-        float titleBarH = GameScreens.ReworkScreens.WindowTitleBarH;
+        // ⚠ the frame is a PopupFrame now, so the title and the cross take THEIR positions from
+        // it - the old rework-group ones put the cross outside the border entirely.
+        var box = new Rectangle((int)frame.X, (int)frame.Y, (int)frame.W, (int)frame.H);
         var menuTitle = Add(new UILabel(Vector2.Zero, "Menu", UITheme.WindowTitle, UITheme.TextPrimary));
         menuTitle.Pos = new Vector2(frame.X + frame.W / 2 - menuTitle.Size.X / 2,
-                                    frame.Y + titleBarH / 2 - menuTitle.Size.Y / 2);
+                                    frame.Y + PopupFrame.TitleBarTop
+                                    + (PopupFrame.TitleBarHeight - menuTitle.Size.Y) / 2);
 
         // Ludoal fork: the close cross every other window carries. Escape and O still close it -
         // this is the way OUT that a window titled like Options ought to show.
-        Vector2 closePos = GameScreens.ReworkScreens.GroupClosePos(frame);
+        Vector2 closePos = PopupFrame.ClosePos(box);
         Add(new CloseButton(closePos.X, closePos.Y));
 
         SavingText = Add(new UILabel(GameText.Saving, Fonts.Pirulen16, Color.White));
@@ -64,7 +68,7 @@ public sealed class GamePlayMenuScreen : GameScreen
         // independently, so widening the window left the buttons where they were.
         const float btnW = 168;
         UIList buttons = AddList(new Vector2(frame.X + (frame.W - btnW) / 2,
-                                             frame.Y + titleBarH + 12));
+                                             PopupFrame.ContentTop(box) + 12));
         buttons.Padding = new Vector2(2f, 12f);
         buttons.LayoutStyle = ListLayoutStyle.ResizeList;
 

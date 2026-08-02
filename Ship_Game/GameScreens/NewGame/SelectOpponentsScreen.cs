@@ -22,7 +22,7 @@ namespace Ship_Game.GameScreens.NewGame
         // ScreenHeight*0.6 gave at 900 - a constant now, so the window does not resize with the
         // display while the rows inside it stay 135 tall.
         public SelectOpponentsScreen(GameScreen parent, UniverseParams p, IEmpireData selectedData)
-            : base(parent, 450, 620)
+            : base(parent, 500, 620)
         {
             TitleText = "Select Opponents";
             TransitionOnTime = 0.75f;

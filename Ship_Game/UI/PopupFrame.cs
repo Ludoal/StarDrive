@@ -33,6 +33,7 @@ namespace Ship_Game
 
         /// the title band - public because callers place their title text and close cross on it
         public Rectangle TitleRect, TitleLeft, TitleRight;
+        Rectangle TitleSep;
 
         /// the top of the foot band: where a caller's own filler must stop
         public readonly int BottomFillTop => BottomFill.Y;
@@ -44,6 +45,18 @@ namespace Ship_Game
 
         /// Where a caller's content may start, measured from the frame's own top.
         public static int ContentTop(in Rectangle frame) => frame.Y + TitleBarTop + TitleBarHeight;
+
+        /// What the borders eat on each side. The frame is not a 2px rule: the right band is 11
+        /// wide, the foot 30, and content laid out on the raw rect runs under both.
+        public const int BorderLeft = 3, BorderRight = 11, BorderBottom = 30;
+
+        /// The area a caller may actually lay content in - the rect less the title bar and the
+        /// borders. ⚠ Use THIS, not the rect, or the last column and the bottom row hide behind
+        /// the frame's own edges (maintainer observation on Colony).
+        public static Rectangle ContentArea(in Rectangle frame)
+            => new(frame.X + BorderLeft, ContentTop(frame),
+                   frame.Width - BorderLeft - BorderRight,
+                   frame.Bottom - BorderBottom - ContentTop(frame));
 
         /// Where the close cross goes, matching Options exactly rather than re-deriving it.
         public static Vector2 ClosePos(in Rectangle frame) => new(frame.Right - 44, frame.Y + 19);
@@ -65,18 +78,30 @@ namespace Ship_Game
 
             // the gradient rules are fixed-width assets (433 and 424), so they are CENTRED on
             // the span rather than stretched - stretching a gradient banded it visibly.
-            int distance = rect.Width - 60 - 433;
-            TopSep   = new Rectangle(TL.Right + distance / 2, TL.Y + 3, 433, 4);
+            // ⚠ The gradient bands are 433 wide, a size picked for Options at 720. On a NARROWER
+            // window the leftover goes NEGATIVE and the band starts left of the corner and spills
+            // out both sides (maintainer observation at 450 wide). Clamp to what the frame can
+            // hold: the texture is uniform along its width, so squeezing it costs nothing.
+            int sepW = rect.Width - 60 < 433 ? rect.Width - 60 : 433;
+            if (sepW < 1) sepW = 1;
+            int distance = rect.Width - 60 - sepW;
+            TopSep   = new Rectangle(TL.Right + distance / 2, TL.Y + 3, sepW, 4);
             TopHoriz = new Rectangle(TL.Right - 2, TopSep.Y, rect.Width - 54, 4);
 
             BL = new Rectangle(rect.X, rect.Bottom - 30, 28, 30);
             BR = new Rectangle(rect.Right - 28, rect.Bottom - 30, 28, 30);
-            BotSep   = new Rectangle(BL.Right + distance / 2, BL.Y + 18, 433, 12);
+            BotSep   = new Rectangle(BL.Right + distance / 2, BL.Y + 18, sepW, 12);
             BotHoriz = new Rectangle(BL.Right - 2, BotSep.Y, rect.Width - 54, 12);
 
             // the title band, plus the two stubs that carry it out to the frame's edges - which
             // is why it reads as full width where a band inset by a corner radius does not
             TitleRect  = new Rectangle(rect.X + 28, rect.Y + TitleBarTop, rect.Width - 56, TitleBarHeight);
+            // Ludoal fork: the rule UNDER the title. PopupWindow only ever drew popup_separator
+            // around a subtitle band, so a window without MiddleText - Colony, and every screen
+            // converted in this sweep - had nothing closing its title bar (maintainer observation).
+            // ⚠ Stretched, and that is safe: popup_separator fades along its own width (alpha 2 at
+            // the ends, 254 at the centre), so scaling keeps the fade instead of banding it.
+            TitleSep = new Rectangle(rect.X + 28, TitleRect.Bottom - 1, rect.Width - 56, 2);
             TitleLeft  = new Rectangle(TitleRect.X - 25, TitleRect.Y + 23, 25, TitleRect.Height - 23);
             TitleRight = new Rectangle(TitleRect.Right, TitleRect.Y + 23, 17, TitleRect.Height - 23);
 
@@ -113,6 +138,7 @@ namespace Ship_Game
             batch.Draw(ResourceManager.Texture("Popup/popup_filler_title"), TitleRect, Color.White);
             batch.Draw(ResourceManager.Texture("Popup/popup_filler_title"), TitleLeft, Color.White);
             batch.Draw(ResourceManager.Texture("Popup/popup_filler_title"), TitleRight, Color.White);
+            batch.Draw(ResourceManager.Texture("Popup/popup_separator"), TitleSep, Color.White);
 
             batch.Draw(ResourceManager.Texture("Popup/popup_corner_TL_stroke"), TLc, Color.White);
             batch.Draw(ResourceManager.Texture("Popup/popup_corner_TR_stroke"), TRc, Color.White);

@@ -43,7 +43,9 @@ namespace Ship_Game
         {
             Host = host;
             PlayerDesign = playerDesign;
-            TitleText = "Pick your opponents - the list adds, the roster removes";
+            // the title names the screen; how it works is the subtitle's job (maintainer feedback)
+            TitleText = "Pick your opponents";
+            MiddleText = "The list adds, the roster removes";
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0f; // the launch path must leave no half-faded frames under the veil
         }
@@ -55,8 +57,8 @@ namespace Ship_Game
             base.LoadContent();
 
             Rectangle rect = Rect;
-            // content starts UNDER the frame's title bar rather than at a hand-picked offset
-            int top = PopupFrame.ContentTop(rect);
+            // BodyTop, not ContentTop: this window carries a subtitle, which costs another 88px
+            int top = BodyTop;
             RectF slRect = new(rect.X + 20, top + 6, rect.Width - 40, rect.Bottom - 210 - top);
             DesignSL = Add(new ScrollList<PickerItem>(slRect, 32));
             DesignSL.EnableItemHighlight = true;

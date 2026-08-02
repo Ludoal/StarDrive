@@ -19,9 +19,6 @@ namespace Ship_Game
         // Ludoal fork: the screen's frame. The title bar the planet name sits in is the one every
         // window uses, declared with the colours it goes with.
         Rectangle ColonyFrame;
-        // Ludoal fork: the popup frame's own title bar, so this screen's grid starts exactly where
-        // Options' content starts rather than at a height of its own.
-        static float TitleBarH => PopupFrame.TitleBarTop + PopupFrame.TitleBarHeight;
         PopupFrame Frame;
         readonly Submenu PlanetInfo;
         readonly Submenu PStorage;
@@ -152,21 +149,22 @@ namespace Ship_Game
             Vector2 closePos = PopupFrame.ClosePos(ColonyFrame);
             Add(new CloseButton(closePos.X, closePos.Y));
 
-            // the title bar the planet name sits in, and where the content starts under it
-            RectF client = new(ColonyFrame.X, ColonyFrame.Y + TitleBarH,
-                               ColonyFrame.Width, ColonyFrame.Height - TitleBarH);
+            // ⚠ the popup frame's borders are NOT a 2px rule: 11 on the right, 30 at the foot.
+            // Content laid out on the raw rect runs underneath them, which is exactly the width
+            // and height the bench reported missing (maintainer observation). ContentArea is the
+            // rect less the title bar and those borders - the one thing the grid may measure.
+            Rectangle inner = PopupFrame.ContentArea(ColonyFrame);
+            RectF client = new(inner.X, inner.Y, inner.Width, inner.Height);
 
             // ── the screen's one grid ────────────────────────────────────────────────────────
             // Ludoal fork: every panel is placed from THESE, and nothing re-derives a margin of
             // its own. Pad is the gap to the frame AND between panels - one number, so a change
             // moves the whole layout together rather than half of it.
-            // The sides and foot are measured from the frame; the top starts under the title bar.
             const float Pad = 10;
-            Rectangle frame = ColonyFrame;
-            float gridLeft   = frame.X + Pad;
-            float gridRight  = frame.Right - Pad;
-            float gridTop    = client.Y + Pad;
-            float gridBottom = frame.Bottom - Pad;
+            float gridLeft   = inner.X + Pad;
+            float gridRight  = inner.Right - Pad;
+            float gridTop    = inner.Y + Pad;
+            float gridBottom = inner.Bottom - Pad;
 
             // ── what is FIXED and what STRETCHES (Ludoal fork, bench 232) ────────────────────
             // Left column: FIXED width. Planet Info, Governor and Assign Labor keep fixed
