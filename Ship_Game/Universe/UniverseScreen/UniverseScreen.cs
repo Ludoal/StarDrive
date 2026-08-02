@@ -608,11 +608,15 @@ namespace Ship_Game
 
             FTLManager.LoadContent(this);
 
-            // ⚠ derived from the minimap housing, not from the screen foot: the housing moved
-            // 10px off the corner and these two landed inside its icon band (maintainer).
-            // 30 clears the button's own height plus a gap.
+            // ⚠ derived from the minimap FRAME (asked of the MiniMap), not from screen-foot
+            // constants: the two counters span the frame's width, half each (maintainer), and
+            // sit just above the widget, clear of its icon bands.
+            Rectangle mmap = Minimap.MapRect;
+            int mmFrameL = mmap.X - 6, mmFrameR = mmap.Right + 6;   // the painted rule's edges
+            int counterW = (mmFrameR - mmFrameL - 6) / 2;
             int counterY = mmHousing.Y - 30;
-            ShipsInCombat = ButtonMediumMenu(mmHousing.X + 6, counterY, "Ships: 0");
+            ShipsInCombat = ButtonMediumMenu(mmFrameL, counterY, "Ships: 0");
+            ShipsInCombat.Size = new Vector2(counterW, 24);
             ShipsInCombat.DynamicText = () =>
             {
                 ShipsInCombat.Style = Player.EmpireShipCombat > 0 ? ButtonStyle.Medium : ButtonStyle.MediumMenu;
@@ -622,7 +626,8 @@ namespace Ship_Game
             ShipsInCombat.OnClick = ShipsInCombatClick;
             Add(ShipsInCombat);
 
-            PlanetsInCombat = ButtonMediumMenu(mmHousing.X + 146, counterY, "Planets: 0");
+            PlanetsInCombat = ButtonMediumMenu(mmFrameR - counterW, counterY, "Planets: 0");
+            PlanetsInCombat.Size = new Vector2(counterW, 24);
             PlanetsInCombat.DynamicText = () =>
             {
                 PlanetsInCombat.Style = Player.EmpirePlanetCombat > 0 ? ButtonStyle.Medium : ButtonStyle.MediumMenu;

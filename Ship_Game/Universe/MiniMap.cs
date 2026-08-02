@@ -153,11 +153,16 @@ namespace Ship_Game
             // ruled, and thick enough to read as a frame. UITheme.DrawPlate is what draws every
             // button in the game, so the minimap stops being the one square-cornered thing on
             // screen. Grey rather than brass - it frames a map, not a control.
-            // ⚠ the RULE only, no plate body (maintainer: "enlever le fond bleu pour essayer").
-            // DrawPlate ramps its face colour top-to-bottom, and on a grey that reads blue over
-            // the starfield - so the face goes fully transparent and only the grey edge remains.
+            // Ludoal fork: the map's ground is ITS OWN, drawn here - a fill painted from the top
+            // bar landed on top of other screens' content, since every screen draws that bar.
+            // A flat near-opaque fill rather than DrawPlate's face: the face ramp reads blue
+            // over the starfield, and the maintainer wants the map solid, not tinted. The fill
+            // sits 2px inside the rounded rule, so its square corners stay within the arc.
             Rectangle inflateMap = ActualMap;
             inflateMap.Inflate(6, 6);
+            Rectangle mapFill = ActualMap;
+            mapFill.Inflate(4, 4);
+            batch.FillRectangle(mapFill, new Color(8, 10, 14).Alpha(0.94f));
             UITheme.DrawPlate(batch, inflateMap, Color.Transparent,
                               new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
                               ruleWidthOverride: 3);

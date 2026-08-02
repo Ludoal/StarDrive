@@ -137,13 +137,13 @@ namespace Ship_Game
             // where a title jumping from y=44 to y=10 and a label landing 20px from its box make
             // no sense. Only the font sizes were converted.
             // ── the frame and the ONE grid every block measures from ─────────────────────────
-            const int Margin = 10, Pad = 8, FootH = 46;
+            const int Margin = 10, Pad = 8;
             // ⚠ the rect is pushed OUT by what each edge's texture leaves blank, so the visible
             // rule lands on the margin: 7 transparent rows at the top, 2 at the foot, plus the
             // side borders. Measured in the PNGs - guessing these is what cost four passes.
             ScreenFrame = new Rectangle(Margin - PopupFrame.BorderLeft, Margin - PopupFrame.TopInk,
                                         ScreenWidth - 2 * Margin + PopupFrame.BorderLeft + PopupFrame.BorderRight,
-                                        ScreenHeight - 2 * Margin + PopupFrame.TopInk + PopupFrame.BottomInk);
+                                        ScreenHeight - 2 * Margin + PopupFrame.TopInk + PopupFrame.BottomLine);
             Frame = new PopupFrame(ScreenFrame);
 
             Rectangle inner = PopupFrame.ContentArea(ScreenFrame);
@@ -152,11 +152,12 @@ namespace Ship_Game
             int gridTop    = inner.Y + Pad;
             // ⚠ from the FRAME's foot: ContentArea already holds back 30px for the bottom band,
             // so measuring from it left the content well short of the frame (maintainer).
-            // ⚠ the frame's VISIBLE bottom line, then the pad. ScreenFrame.Bottom is already
-            // BottomInk past it (the rect compensates for the texture's blank rows), so taking
-            // BottomInk off again here counted it twice and left the content short.
-            int visibleBottom = ScreenFrame.Bottom - PopupFrame.BottomInk;
-            int gridBottom = visibleBottom - Pad - FootH;
+            // ⚠ the frame's VISIBLE bottom line - the rect runs BottomLine past it, those rows
+            // being the band's drop shadow. The foot buttons close 10px above that line
+            // (maintainer), and the grid closes one pad above the buttons.
+            int visibleBottom = ScreenFrame.Bottom - PopupFrame.BottomLine;
+            int footY = visibleBottom - 10 - 24;   // 24 = the painted buttons' height
+            int gridBottom = footY - Pad;
 
             // ── ROW 1: Empire | Galaxy, 50/50, FIXED height ─────────────────────────────────
             const int Row1H = 192;   // +20 on the bench's word - the fields were tight
@@ -237,7 +238,9 @@ namespace Ship_Game
             ExtraPlanetsLabel.Font  = font;
             ExtraPlanetsLabel.Color = Color.Green;
 
-            PerformanceWarning = Add(new UILabel(galaxyArea.X + 10, galaxyArea.Bottom - font.LineSpacing - 4, ""));
+            // under the two readouts it comments, in the same column - it was anchored on the
+            // panel's foot, away from the numbers that trigger it (maintainer)
+            PerformanceWarning = Add(new UILabel(labelX, labelY + 2 * (font.LineSpacing + 3), ""));
             PerformanceWarning.Font = font;
 
             UIList optionButtons = AddList(galaxyArea.X + 10, galaxyArea.Y + 6);
@@ -303,7 +306,6 @@ namespace Ship_Game
             // ⚠ these nine buttons used to hang off their panels with SetLocalPos, which is how
             // they ended up drawn OUTSIDE their own containers. They belong to the screen, not to
             // a list, so they sit on the foot strip the grid reserved for them.
-            int footY = gridBottom + 6;
             const int BtnW = 132, BtnGap = 6;
             int bx = gridLeft;
             // ⚠ Medium, not Default: BtnW is 132 and that IS the Medium texture's width. A

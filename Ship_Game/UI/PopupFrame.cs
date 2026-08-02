@@ -50,11 +50,13 @@ namespace Ship_Game
         /// wide, the foot 30, and content laid out on the raw rect runs under both.
         public const int BorderLeft = 3, BorderRight = 11, BorderBottom = 30;
 
-        /// ⚠ MEASURED in the textures - by MAX alpha per row, not the average, which is what got
-        /// this wrong twice. The bottom pieces (corner, band, stroke) all end 2 transparent rows
-        /// above their own foot; the TOP corner carries 7 transparent rows before its ink starts.
-        /// A caller that wants its visible rule ON a margin shifts its RECT by these.
-        public const int BottomInk = 2;
+        /// ⚠ Third measurement, the right one this time: what matters is not where the INK ends
+        /// but where the bright RULE row sits. The bottom band is 12 tall and its rule is rows
+        /// 0-1 - everything under it is drop shadow - so the visible line runs a full 12 rows
+        /// above rect.Bottom. Measuring "last inked row" found the shadow's foot and put the
+        /// line 10px high twice over. A caller that wants the LINE on a margin extends its rect
+        /// by BottomLine; the shadow rows fall past it, which is what they are for.
+        public const int BottomLine = 12;
         public const int TopInk = 7;
 
         /// The area a caller may actually lay content in - the rect less the title bar and the
@@ -95,11 +97,10 @@ namespace Ship_Game
             TopSep   = new Rectangle(TL.Right + distance / 2, TL.Y + 3, sepW, 4);
             TopHoriz = new Rectangle(TL.Right - 2, TopSep.Y, rect.Width - 54, 4);
 
-            // ⚠ NO offset here, and that was my mistake: pushing the corners down by BottomInk
-            // left the vertical rails - which stop at rect.Height-60 - three pixels short of them,
-            // and the bench saw exactly that as "une coupure juste avant l'arrondi". The pieces
-            // must stay coherent with each other; a caller that wants its rule ON a margin
-            // shifts its RECT, it does not shift the frame's parts.
+            // ⚠ NO offset on any piece: the vertical rails stop at rect.Height-60 and the corners
+            // must meet them - shifting one piece alone opens a visible break at the arc. A
+            // caller that wants its rule ON a margin shifts its RECT (see BottomLine), never the
+            // frame's parts.
             BL = new Rectangle(rect.X, rect.Bottom - 30, 28, 30);
             BR = new Rectangle(rect.Right - 28, rect.Bottom - 30, 28, 30);
             BotSep   = new Rectangle(BL.Right + distance / 2, BL.Y + 18, sepW, 12);

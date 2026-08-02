@@ -131,33 +131,20 @@ namespace Ship_Game
             Player.UpdateShipsWeCanBuild();
             TextFont = LowRes ? Font8 : Font12;
 
-            // Ludoal fork: a plain frame, not a tab row. Colony opens from the map and has no
-            // siblings, so the group of ONE only ever drew a tab that led nowhere; the frame now
-            // starts where that tab's top edge was, which hands the screen back the row's height.
-            // The planet name is drawn in the title bar (see ColonyScreen_Draw).
-            // ⚠ The rect is the frame's OUTER bound, but PopupFrame draws its borders INSIDE it:
-            // 11px down the right edge, 30 at the foot. So a rect stopping at ScreenWidth-10 put
-            // the visible rule 21px from the edge and 40 from the bottom - the extra margin the
-            // bench kept reporting (maintainer feedback). Push the rect out by what the border
-            // eats, and the LINE lands on FrameMargin like every other frame's does.
-            // ⚠ The two edges do NOT behave alike, and assuming they did put the foot off-screen:
-            // the RIGHT border is drawn inwards from rect.Right, so the rect may extend past the
-            // margin to bring the rule back onto it - but the BOTTOM band (BL/BR/BotSep) is laid
-            // out downwards FROM rect.Bottom, so extending there pushes it off the display
-            // entirely. The rect stops at the margin vertically.
-            // ⚠ +BottomInk on the RECT (not on the frame's pieces - that left a 3px break before
-            // the corner): the bottom textures carry transparent rows, so the visible rule stops
-            // that far above rect.Bottom. Push the rect down by it and the LINE lands on the
-            // margin. ⚠ The top is where a group tab's frame starts (TabRowY) so this screen
-            // does not peek out from behind another one when it sits in the stack.
-            // ⚠ starts one TAB STRIP lower than TabRowY (maintainer): a group screen puts its tab
-            // row at TabRowY and its FRAME under it, so a Colony frame starting at TabRowY stood
-            // 25px proud of every other one - visible behind them when it sits in the stack.
+            // Ludoal fork: a plain popup frame, no tab row - Colony has no siblings, and its
+            // planet name rides the title bar (see ColonyScreen_Draw).
+            // The rect is pushed OUT past the margins by what each edge's texture spends on
+            // non-line pixels, so the visible RULE is what lands at FrameMargin:
+            //   sides:  BorderLeft/BorderRight (the side bands' width)
+            //   bottom: BottomLine - the band's bright rule is at its TOP, the 12 rows under it
+            //           are drop shadow, which falls past the screen edge by design
+            //   top:    one tab strip LOWER than TabRowY, so this frame matches the group
+            //           screens' frames and does not peek out behind them in the stack.
             const int m = GameScreens.ReworkScreens.FrameMargin;
             int frameTop = GameScreens.ReworkScreens.TabRowY + 25;   // Submenu.TabHeight
             ColonyFrame = new Rectangle(m - PopupFrame.BorderLeft, frameTop,
                                         ScreenWidth - 2 * m + PopupFrame.BorderLeft + PopupFrame.BorderRight,
-                                        ScreenHeight - frameTop - m + PopupFrame.BottomInk);
+                                        ScreenHeight - frameTop - m + PopupFrame.BottomLine);
             // ⚠ NOT Add()ed: a child is drawn by base.Draw, which lands AFTER everything this
             // screen paints by hand - the frame's body would bury the panels. Painted first
             // thing in Draw instead (see ColonyScreen_Draw).
@@ -190,7 +177,7 @@ namespace Ship_Game
             // ⚠ measured from the FRAME's foot, not from ContentArea: the latter already reserves
             // 30px for the bottom band, so subtracting Pad on top of it left the last row 40px
             // short of the frame instead of 10 (maintainer).
-            float gridBottom = ColonyFrame.Bottom - PopupFrame.BottomInk - Pad;
+            float gridBottom = ColonyFrame.Bottom - PopupFrame.BottomLine - Pad;
 
             // ── what is FIXED and what STRETCHES (Ludoal fork, bench 232) ────────────────────
             // Left column: FIXED width. Planet Info, Governor and Assign Labor keep fixed
