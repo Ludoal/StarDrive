@@ -47,10 +47,10 @@ namespace Ship_Game
         // ⚠ the frame colour is the Codex's own (193,113,26), so a button's rule matches the
         // window it sits in rather than being a beige near-miss beside it
         // Ludoal fork: from Content/UI/Theme.yaml - see UITheme.cs
-        public static Color PlateNeutral => UI.PlateNeutral;
-        public static Color PlateActive  => UI.PlateActive;
-        public static Color PlateHostile => UI.PlateHostile;
-        public static Color PlateMuted   => UI.PlateMuted;
+        public static Color PlateNeutral => UITheme.PlateNeutral;
+        public static Color PlateActive  => UITheme.PlateActive;
+        public static Color PlateHostile => UITheme.PlateHostile;
+        public static Color PlateMuted   => UITheme.PlateMuted;
 
         public class StyleTextures
         {
@@ -90,10 +90,10 @@ namespace Ship_Game
                 {
                     SizeRef      = sizeRef != null ? ResourceManager.Texture(sizeRef) : null,
                     Plated       = true,
-                    Opacity      = opacity < 0f ? UI.PlateOpacity : opacity,
+                    Opacity      = opacity < 0f ? UITheme.PlateOpacity : opacity,
                     DefaultColor = plate,
-                    HoverColor   = UI.Hover(plate),
-                    PressColor   = UI.Press(plate),
+                    HoverColor   = UITheme.Hover(plate),
+                    PressColor   = UITheme.Press(plate),
                 };
 
             public StyleTextures(string normal)

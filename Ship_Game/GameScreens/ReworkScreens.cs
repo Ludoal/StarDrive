@@ -317,15 +317,15 @@ namespace Ship_Game.GameScreens
         // ⚠ Read off the Codex rather than eyeballed: its border is Popup/popup_vert_L, which is
         // (193,113,26) - a frank orange. The (118,102,67) brass this used to be is the OLD trim's
         // colour, so every frame painted with it read as the thing we were replacing.
-        public static Color FrameRule => UI.FrameRule;
+        public static Color FrameRule => UITheme.FrameRule;
 
         // The Codex's own body and title bar: Popup/popup_filler_lower and popup_filler_title.
         // Neutral grey, not the warm near-black the group frames use - and the title bar is a
         // step lighter than the body, which is what makes it read as a title bar at all.
-        public static Color WindowBody     => UI.FrameBody;
-        public static Color WindowTitleBar => UI.FrameTitleBar;
+        public static Color WindowBody     => UITheme.FrameBody;
+        public static Color WindowTitleBar => UITheme.FrameTitleBar;
         // the Codex's own title height, so every window in the game names itself on one line
-        public static int WindowTitleBarH => UI.TitleBarH;
+        public static int WindowTitleBarH => UITheme.TitleBarH;
 
         public static GameScreen Economy(UniverseScreen u) => new BudgetScreenRework(u);
 

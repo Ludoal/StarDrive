@@ -136,9 +136,9 @@ namespace Ship_Game
                 // Ludoal fork: centred on the WINDOW, not left-aligned - every panel in the game
                 // names itself the same way now. ⚠ Centred on Rect and not on TitleRect: that one
                 // is inset 28 on the left and 56 in width, so centring in it lands off to a side.
-                var pos = new Vector2(Rect.CenterTextX(TitleText, UI.WindowTitle),
-                                      TitleRect.CenterY() - UI.WindowTitle.LineSpacing / 2);
-                TitleLabel = Label(pos.Rounded(), TitleText, UI.WindowTitle);
+                var pos = new Vector2(Rect.CenterTextX(TitleText, UITheme.WindowTitle),
+                                      TitleRect.CenterY() - UITheme.WindowTitle.LineSpacing / 2);
+                TitleLabel = Label(pos.Rounded(), TitleText, UITheme.WindowTitle);
             }
 
             if (MiddleText != null)

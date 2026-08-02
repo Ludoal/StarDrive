@@ -41,8 +41,8 @@ public sealed class GamePlayMenuScreen : GameScreen
         // Ludoal fork: the panel had no title where every other one names itself - centred in the
         // title bar, the way PopupWindow places its own, so Options, the Codex and this one read
         // as the same furniture.
-        const float titleBarH = GameScreens.ReworkScreens.WindowTitleBarH;
-        var menuTitle = Add(new UILabel(Vector2.Zero, "Menu", UI.WindowTitle, UI.TextPrimary));
+        float titleBarH = GameScreens.ReworkScreens.WindowTitleBarH;
+        var menuTitle = Add(new UILabel(Vector2.Zero, "Menu", UITheme.WindowTitle, UITheme.TextPrimary));
         menuTitle.Pos = new Vector2(frame.X + frame.W / 2 - menuTitle.Size.X / 2,
                                     frame.Y + titleBarH / 2 - menuTitle.Size.Y / 2);
 

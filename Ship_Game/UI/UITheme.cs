@@ -68,7 +68,7 @@ namespace Ship_Game
         [StarData] public string Small        = "Arial10";
     }
 
-    public static class UI
+    public static class UITheme
     {
         static UIThemeData Data;
         static int LoadedForContentId = -1;

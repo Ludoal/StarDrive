@@ -19,7 +19,7 @@ namespace Ship_Game
         // Ludoal fork: the screen's frame. The title bar the planet name sits in is the one every
         // window uses, declared with the colours it goes with.
         Rectangle ColonyFrame;
-        const float TitleBarH = GameScreens.ReworkScreens.WindowTitleBarH;
+        static float TitleBarH => GameScreens.ReworkScreens.WindowTitleBarH;
         readonly Submenu PlanetInfo;
         readonly Submenu PStorage;
         readonly Submenu PFacilities;

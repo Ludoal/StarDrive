@@ -12,7 +12,7 @@ namespace Ship_Game
 
         // the one rule colour, declared with the window fills it goes with
         static Color FrameRule => GameScreens.ReworkScreens.FrameRule;
-        public const int TitleBarH = GameScreens.ReworkScreens.WindowTitleBarH;
+        public static int TitleBarH => GameScreens.ReworkScreens.WindowTitleBarH;
 
         public bool Hollow;
         public Color Background;

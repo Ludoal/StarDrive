@@ -149,7 +149,7 @@ namespace Ship_Game
             // the linear filter turns a 1px rule into a smear and a gradient into mush. A row of
             // solid fill is exact at any size, and the radius becomes a number rather than an
             // asset that has to be redrawn.
-            int radius = Math.Min(UI.Theme.CornerRadius, Math.Min(r.Width, r.Height) / 2);
+            int radius = Math.Min(UITheme.Theme.CornerRadius, Math.Min(r.Width, r.Height) / 2);
             if (r.Width <= 0 || r.Height <= 0)
                 return;
 
@@ -173,14 +173,14 @@ namespace Ship_Game
 
                 // the FACE: lighter at the top, darker at the foot - the relief, in one place
                 float t = (y - r.Y) / (float)Math.Max(1, r.Height - 1);
-                float face = UI.Theme.FaceTop + (UI.Theme.FaceBottom - UI.Theme.FaceTop) * t;
+                float face = UITheme.Theme.FaceTop + (UITheme.Theme.FaceBottom - UITheme.Theme.FaceTop) * t;
                 batch.FillRectangle(new Rectangle(x, y, w, 1), tint.Alpha(face));
 
                 // the RULE: the first and last rows are a full line, every other row gets its
                 // two end pixels - which is what draws the arc, one row at a time.
                 // ⚠ Not the tint at full strength: a saturated line right round a small control
                 // reads as neon beside the stock buttons, whose edge is a thin darker brown.
-                Color rule = tint.Alpha(UI.Theme.RuleStrength);
+                Color rule = tint.Alpha(UITheme.Theme.RuleStrength);
                 bool edgeRow = y == r.Y || y == r.Bottom - 1;
                 if (edgeRow)
                 {
