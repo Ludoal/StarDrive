@@ -13,7 +13,12 @@ namespace Ship_Game
     // remnant story progression), opened from the minimap. Styled after ShipDesignIssuesScreen.
     public sealed class ImportantEventsScreen : GameScreen
     {
-        readonly Menu2 Window;
+        readonly UniverseScreen Universe;
+        Submenu GalaxyTabs;   // Ludoal fork: the Galaxy group's tab row, this screen being one tab
+
+        void OnGalaxyTabChanged(int index)
+            => GameScreens.ReworkScreens.SwitchGalaxyTab(index, self: 3, Universe, this);
+
         readonly Color Cream = Colors.Cream;
         readonly ImportantNotification[] Events;
         readonly ScrollList<ImportantEventListItem> EventList;
@@ -21,16 +26,30 @@ namespace Ship_Game
 
         public ImportantEventsScreen(UniverseScreen screen) : base(screen, toPause: null)
         {
+            Universe          = screen;
             Events            = screen.UState.GetImportantEvents();
             IsPopup           = true;
             TransitionOnTime  = 0.25f;
             TransitionOffTime = 0.25f;
 
-            Window = Add(new Menu2(new Rectangle(ScreenWidth / 2 - 600, ScreenHeight / 2 - 300, 1200, 540)));
-            int x  = (int)Window.X + 20;
-            int y  = (int)Window.Y + 70;
-            int w  = (int)Window.Width - 30;
-            int h  = (int)Window.Height - 80;
+            // Ludoal fork: the Events tab of the Galaxy group - the centred 1200x540 window gives
+            // way to the frame and tab row its three siblings share.
+            Rectangle frame = GameScreens.ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
+            GalaxyTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
+                                         GameScreens.ReworkScreens.GalaxyTabTitles));
+            GalaxyTabs.OnTabChange = OnGalaxyTabChanged;
+            GalaxyTabs.PerformLayout();
+            GalaxyTabs.SelectedIndex = 3;
+
+            Vector2 closePos = GameScreens.ReworkScreens.GroupClosePos(GalaxyTabs.ClientArea);
+            Add(new CloseButton(closePos.X, closePos.Y));
+
+            RectF client = GalaxyTabs.ClientArea;
+            RectF table  = GameScreens.ReworkScreens.GalaxyTable(client);
+            int x  = (int)table.X;
+            int y  = (int)table.Y + 20;   // the column headers sit on the line above the list
+            int w  = (int)table.W;
+            int h  = (int)table.H - 20;
 
             EventList = Add(new ScrollList<ImportantEventListItem>(new RectF(x, y, w, h), 80));
             EventList.EnableItemHighlight = true;
@@ -58,10 +77,7 @@ namespace Ship_Game
 
         public override void LoadContent()
         {
-            CloseButton(Window.Menu.Right - 40, Window.Menu.Y + 20);
-            string title    = "Important Events";
-            Vector2 menuPos = new Vector2(Window.Menu.CenterTextX(title, Fonts.Laserian14), Window.Menu.Y + 30);
-            Label(menuPos, title, Fonts.Laserian14, Cream);
+            // the close cross and the screen's name come from the group's tab row now
             PopulateEvents();
             base.LoadContent();
         }
@@ -70,12 +86,20 @@ namespace Ship_Game
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
+            // Ludoal fork: the frame is filled by hand before its children, the way every screen
+            // in this group does - the group's frame is transparent, so the map showed through.
+            batch.FillRectangle(GalaxyTabs.Rect, GameScreens.ReworkScreens.GroupFrameFill);
             base.Draw(batch, elapsed);
+            Universe.EmpireUI.Draw(batch);   // the live top bar, as on its sibling tabs
+            GameScreens.ReworkScreens.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             batch.SafeEnd();
         }
 
         public override bool HandleInput(InputState input)
         {
+            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
             if (input.ImportantEventsScreen && !GlobalStats.TakingInput) // Ludoal fork: F7 toggles the screen
             {
                 GameAudio.EchoAffirmative();

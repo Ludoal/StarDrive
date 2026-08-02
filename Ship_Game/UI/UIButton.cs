@@ -26,7 +26,7 @@ namespace Ship_Game
 
         // Ludoal fork: the rule around a painted button - the same brass line the reworked
         // screens and the top bar draw, so a plate reads as part of one interface.
-        static readonly Color PlateRule = new Color(118, 102, 67);
+        static Color PlateRule => GameScreens.ReworkScreens.FrameRule;
 
         public SubTexture Normal;
         public SubTexture Hover;
@@ -135,55 +135,38 @@ namespace Ship_Game
 
         // Ludoal fork: draw `tex` into `r` as a nine-slice - the four corners keep their pixel
         // size, the edges stretch along one axis and the middle along both. The slices are cut
-        // out of the bitmap here rather than shipped as nine files, so replacing the look is one
-        // PNG. `tint` multiplies: the asset is greyscale, the colour lives in the code.
-        // Ludoal fork: the top bar's group tabs are not UIButtons but must look like them, so the
-        // one plate is drawn from here rather than copied into the bar.
+        // Ludoal fork: SEPARATE bar and corner textures, the way Submenu's NineSliceSprite does
+        // it - because that is the frame whose edges stay clean at any size. Slicing one bitmap
+        // put the edge bands at the mercy of the middle's height: a 32px asset had to squeeze
+        // 20px of source into the 12px a 24px-tall button leaves, and a 1px rule at 0.6 lands
+        // between two pixels. The bar is 2x2 and uniform, so there is nothing in it to squeeze;
+        // the corners are drawn once at their own size and never stretched at all.
+        // `tint` multiplies: the assets are greyscale, the colour lives in the code.
         public static void DrawPlate(SpriteBatch batch, in Rectangle r, Color tint)
-            => DrawNineSlice(batch, ResourceManager.Texture(ButtonTex), r, tint, ButtonSlice);
-
-        static void DrawNineSlice(SpriteBatch batch, SubTexture tex, in Rectangle r, Color tint, int border)
         {
-            int b = SliceBorderOf(tex, r, border);
-            if (b <= 0)
-            {
-                batch.Draw(tex, r, tint);
+            SubTexture bar = ResourceManager.Texture(ButtonBarTex);
+            SubTexture tl  = ResourceManager.Texture(ButtonCornerTex + "TL");
+            SubTexture tr  = ResourceManager.Texture(ButtonCornerTex + "TR");
+            SubTexture bl  = ResourceManager.Texture(ButtonCornerTex + "BL");
+            SubTexture br  = ResourceManager.Texture(ButtonCornerTex + "BR");
+
+            // a button can be shorter than two corners; give way rather than overlap them
+            int c = Math.Min(tl.Width, Math.Min(r.Width, r.Height) / 2);
+            if (c <= 0)
                 return;
-            }
 
-            int sx = tex.X, sy = tex.Y, sw = tex.Width, sh = tex.Height;
-            int mw = sw - 2 * b, mh = sh - 2 * b;          // middle of the SOURCE
-            int dw = r.Width - 2 * b, dh = r.Height - 2 * b; // middle of the DESTINATION
-
-            void Piece(int srcX, int srcY, int srcW, int srcH, int dstX, int dstY, int dstW, int dstH)
-            {
-                if (srcW <= 0 || srcH <= 0 || dstW <= 0 || dstH <= 0)
-                    return;
-                var sub = new SubTexture(tex.Name, srcX, srcY, srcW, srcH, tex.Texture, tex.TexturePath);
-                batch.Draw(sub, new Rectangle(dstX, dstY, dstW, dstH), tint);
-            }
-
-            // corners
-            Piece(sx,            sy,            b,  b,  r.X,             r.Y,              b,  b);
-            Piece(sx + sw - b,   sy,            b,  b,  r.Right - b,     r.Y,              b,  b);
-            Piece(sx,            sy + sh - b,   b,  b,  r.X,             r.Bottom - b,     b,  b);
-            Piece(sx + sw - b,   sy + sh - b,   b,  b,  r.Right - b,     r.Bottom - b,     b,  b);
-            // edges
-            Piece(sx + b,        sy,            mw, b,  r.X + b,         r.Y,              dw, b);
-            Piece(sx + b,        sy + sh - b,   mw, b,  r.X + b,         r.Bottom - b,     dw, b);
-            Piece(sx,            sy + b,        b,  mh, r.X,             r.Y + b,          b,  dh);
-            Piece(sx + sw - b,   sy + b,        b,  mh, r.Right - b,     r.Y + b,          b,  dh);
-            // middle
-            Piece(sx + b,        sy + b,        mw, mh, r.X + b,         r.Y + b,          dw, dh);
-        }
-
-        // A button can be shorter than two borders; shrink the slice rather than overlap it.
-        static int SliceBorderOf(SubTexture tex, in Rectangle r, int border)
-        {
-            int b = border;
-            int limit = Math.Min(r.Width, r.Height) / 2;
-            if (b > limit) b = limit;
-            return Math.Min(b, Math.Min(tex.Width, tex.Height) / 2);
+            // the body first, then the edges over it, then the corners on top
+            batch.FillRectangle(new Rectangle(r.X + 1, r.Y + 1, r.Width - 2, r.Height - 2),
+                                tint.Alpha(0.5f));
+            // ⚠ RectF, not Rectangle: only the RectF overload of Draw takes a tint
+            batch.Draw(bar, new RectF(r.X + c,     r.Y,          r.Width - 2 * c, 1), tint);
+            batch.Draw(bar, new RectF(r.X + c,     r.Bottom - 1, r.Width - 2 * c, 1), tint);
+            batch.Draw(bar, new RectF(r.X,         r.Y + c,      1, r.Height - 2 * c), tint);
+            batch.Draw(bar, new RectF(r.Right - 1, r.Y + c,      1, r.Height - 2 * c), tint);
+            batch.Draw(tl, new RectF(r.X,         r.Y,          c, c), tint);
+            batch.Draw(tr, new RectF(r.Right - c, r.Y,          c, c), tint);
+            batch.Draw(bl, new RectF(r.X,         r.Bottom - c, c, c), tint);
+            batch.Draw(br, new RectF(r.Right - c, r.Bottom - c, c, c), tint);
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -199,14 +182,13 @@ namespace Ship_Game
 
             Rectangle r = Rect;
             SubTexture texture = ButtonTexture();
-            if (texture != null && NineSlice)
+            if (Plated)
             {
-                // Ludoal fork: ONE mechanism for every button - a greyscale bitmap drawn as a
-                // nine-slice, tinted and faded from code. The corners keep their pixels at any
-                // size while only the middle stretches, so a 52px and a 182px button are the same
-                // control; the tint carries the meaning (neutral, active, hostile) that used to
-                // need a texture of its own; and a redrawn asset changes the look with no code.
-                DrawNineSlice(batch, texture, r, BackgroundColor().Alpha(Enabled ? Opacity : Opacity * 0.5f), SliceBorder);
+                // Ludoal fork: ONE mechanism for every button - the painted plate, tinted and
+                // faded from code. A 52px and a 182px button are the same control; the tint
+                // carries the meaning (neutral, active, hostile) that used to need a texture of
+                // its own, and the two tiny assets restyle the whole game when redrawn.
+                DrawPlate(batch, r, BackgroundColor().Alpha(Enabled ? Opacity : Opacity * 0.5f));
             }
             else if (texture != null)
             {

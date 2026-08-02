@@ -40,7 +40,7 @@ public sealed class GamePlayMenuScreen : GameScreen
 
         // Ludoal fork: the panel had no title where every other one names itself. Same font and
         // the same 46px bar the Codex and Colony use, so the three read as one set of windows.
-        const float titleBarH = 46;
+        const float titleBarH = GameScreens.ReworkScreens.WindowTitleBarH;
         var menuTitle = Add(new UILabel(Vector2.Zero, "Menu", Fonts.Arial20Bold, Colors.Cream));
         menuTitle.Pos = new Vector2(frame.X + frame.W / 2 - menuTitle.Size.X / 2,
                                     frame.Y + titleBarH / 2 - menuTitle.Size.Y / 2);

@@ -170,8 +170,11 @@ namespace Ship_Game
         // Ludoal fork: the bar draws itself flat, in the reworked screens' grammar - a dark plate
         // with a brass rule, no plating textures. Colour is decided HERE from live state (which
         // group is open, whether the game is paused), never stored on the button.
-        static readonly Color PlateBlue  = new Color(38, 56, 84);
-        static readonly Color PlateBrown = new Color(84, 64, 38);
+        // ⚠ These are TINTS now, not fills: the plate multiplies them, so they set how bright its
+        // rule comes out. The old near-black pair left the group tabs almost invisible over the
+        // map. Brown is the group you are inside, blue the rest.
+        static readonly Color PlateBlue  = new Color(120, 150, 200);
+        static readonly Color PlateBrown = new Color(193, 113, 26);
         static readonly Color TextCream  = new Color(255, 240, 189);
         // an ink, bright enough to read over the map - a plate-fill red would sink into it
         static readonly Color PausedRed  = new Color(255, 92, 92);
@@ -204,9 +207,6 @@ namespace Ship_Game
                     continue;
                 }
 
-                // Painted, not textured: a Dan button's texture is 182 wide and these rects run
-                // from 26 to 116, so its sculpted edges squash. A filled plate takes any width
-                // without deforming, and stays in the reworked screens' grammar.
                 if (b.State == PressState.Hover)   fill = fill.LerpTo(Color.White, 0.18f);
                 if (b.State == PressState.Pressed) fill = fill.LerpTo(Color.Black, 0.25f);
 
@@ -219,8 +219,10 @@ namespace Ship_Game
                     // beside it. Translucent still: the bar sits over the map, where a solid
                     // plate reads as a hole punched in it, and the group you are inside carries
                     // more weight than the rest.
-                    float opacity = fill == PlateBrown ? 0.85f : 0.62f;
-                    UIButton.DrawPlate(batch, b.Rect, fill.Alpha(opacity));
+                    // Ludoal fork: full strength. The plate already carries its own translucency
+                    // in its body, so fading the tint on top of that left the group tabs barely
+                    // visible over the map (maintainer feedback).
+                    UIButton.DrawPlate(batch, b.Rect, fill);
                 }
 
                 if (!string.IsNullOrEmpty(b.Text))
@@ -589,6 +591,7 @@ namespace Ship_Game
             : input.TroopListScreen     ? "Troops"
             : input.FleetDesignScreen   ? "Fleets"
             : input.BlueprintsSceen     ? "Blueprints"
+            : input.ImportantEventsScreen ? "Events"
             // the bar's own keys: reachable from the universe through the other overload,
             // dead from inside a screen until they came through here too
             : input.KeyPressed(Keys.R) && !input.IsCtrlKeyDown ? "Research"  // Ctrl+Alt+R is the resolution tool
@@ -786,6 +789,15 @@ namespace Ship_Game
                 }
                 GameAudio.EchoAffirmative();
                 Universe.ScreenManager.AddScreen(new EmpirePatrolsScreen(Universe, Universe.Player));
+            }
+            else if (launches == "Events")
+            {
+                if (caller is ImportantEventsScreen)
+                {
+                    return true;
+                }
+                GameAudio.EchoAffirmative();
+                Universe.ScreenManager.AddScreen(new ImportantEventsScreen(Universe));
             }
             else if (launches == "Blueprints")
             {

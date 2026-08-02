@@ -48,7 +48,9 @@ namespace Ship_Game
         Font Font12 = Fonts.Arial12;
         Font Font12Bold = Fonts.Arial12Bold;
         Font NameFont = Fonts.Arial14Bold; // player call: bigger race names
-        readonly Map<Empire, DanButton> Contacts = new(); // the original screen's button design
+        // Ludoal fork: where each empire's portrait landed this frame, so HandleInput can test it.
+        // Filled by the draw because the columns are laid out there; the portrait is the control.
+        readonly Map<Empire, Rectangle> PortraitRects = new();
 
         const int TreatyBlockH = 114; // player design: 3 icon rows (state / borders / trade), labels gone
 
@@ -179,18 +181,6 @@ namespace Ship_Game
                 j++;
             }
 
-            // Contact button under the name, before INFO — the original DanButton design
-            foreach (RaceEntry re in Races)
-            {
-                Empire e = re.e;
-                if (e == Player || e.IsDefeated || !Player.IsKnown(e))
-                    continue;
-                Contacts[e] = new DanButton(new Vector2(re.container.X + (re.container.Width - 182) / 2, re.container.Y + 108), Localizer.Token(GameText.Contact))
-                {
-                    Toggled = true
-                };
-            }
-
             // how many trait lines the widest column needs, so the BONUSES band below them is
             // level across the row whatever each empire's trait set holds
             MaxTraitLines = 1;
@@ -208,30 +198,6 @@ namespace Ship_Game
             GroupTabs.SelectedIndex = (int)OpenOn;
 
             GameAudio.MuteRacialMusic();
-        }
-
-        // Ludoal fork: the Contact button on the NewUI/dan_button family, the group being where the
-        // new look is tried out. Drawn here rather than in DanButton itself: that class is shared
-        // with the stock diplomacy screen, the combat screen and six others, so changing its
-        // texture would restyle the whole game.
-        //
-        // Colour convention, to hold across the new UI: clear = default, blue = active or
-        // selected, red = alert. Here, red while at war - the one thing worth a colour on a
-        // contact button.
-        // Text, TextPos and Hover are private on DanButton, and it is shared - so the hover state
-        // is tested here against its public rect, and the label is the one it was built with.
-        void DrawContactButton(SpriteBatch batch, DanButton b, Empire e)
-        {
-            bool hover = b.r.HitTest(Input.CursorPosition);
-            bool atWar = e != Player && Player.IsAtWarWith(e);
-            string tex = atWar ? "NewUI/dan_button_red_clear"
-                       : hover ? "NewUI/dan_button_blue_clear"
-                       : "NewUI/dan_button_clear";
-            batch.Draw(ResourceManager.Texture(tex), b.r, Color.White);
-            string label = Localizer.Token(GameText.Contact);
-            var pos = new Vector2(b.r.X + (b.r.Width - Fonts.Arial12Bold.TextWidth(label)) / 2f,
-                                  b.r.Y + (b.r.Height - Fonts.Arial12Bold.LineSpacing) / 2f);
-            batch.DrawString(Fonts.Arial12Bold, label, pos, hover ? Color.White : new Color(220, 208, 185));
         }
 
         void OnGroupTabChanged(int index)
@@ -264,6 +230,10 @@ namespace Ship_Game
             // them - SendToBackZOrder only orders it among the other children.
             batch.FillRectangle(GroupTabs.ClientArea, ReworkScreens.GroupFrameFill);
 
+            // ⚠ cleared every pass: an empire that gets defeated, or drops out of what you know,
+            // stops drawing its portrait - and a rect left behind would stay clickable over
+            // whatever took its place.
+            PortraitRects.Clear();
             foreach (RaceEntry race in Races)
                 DrawColumn(batch, race);
 
@@ -294,6 +264,17 @@ namespace Ship_Game
                 batch.DrawRectangle(new Rectangle(portrait.X - 2, portrait.Y - 2, portrait.Width + 4, portrait.Height + 4), Color.Red);
 
             batch.Draw(ResourceManager.Texture("Portraits/" + e.data.PortraitName), portrait, Color.White);
+
+            // Ludoal fork: the portrait IS the way in to negotiation, the way it is in the
+            // Relationships diagram - framed in the empire's colour, thicker under the cursor.
+            // It replaces the Contact button that used to sit below it, which cost a whole row
+            // of every column to say what the portrait already stands for.
+            if (e != Player && !e.IsDefeated)
+            {
+                PortraitRects[e] = portrait;
+                bool hovered = portrait.HitTest(Input.CursorPosition);
+                batch.DrawRectangle(portrait, e.EmpireColor, hovered ? 3 : 1);
+            }
             string name = e.data.Traits.Name;
             float nameW = NameFont.TextWidth(name) + 24; // race flag rides left of the name
             float nameX = col.X + (col.Width - nameW) / 2f;
@@ -310,11 +291,11 @@ namespace Ship_Game
                 return;
             }
 
-            if (Contacts.TryGetValue(e, out DanButton contact))
-                DrawContactButton(batch, contact, e);
-
-            // FIXED section offsets: the bands align across columns whatever the content
-            float infoY = col.Y + 150; // breathing room: bigger name, DanButton below
+            // FIXED section offsets: the bands align across columns whatever the content.
+            // Ludoal fork: 150 -> 108. The portrait ends at +76 and the name sits just under it;
+            // the rest was the room the Contact button needed, and the portrait carries that job
+            // now. Every column gains the row.
+            float infoY = col.Y + 108;
 
             if (ShowBonuses)
             {
@@ -351,7 +332,11 @@ namespace Ship_Game
             // costs nothing.
             y = intelY;
             SectionBand(batch, col, ref y, "EMPIRE DATA");
-            float treatyY = intelY + 24 + 10 * (Font12.LineSpacing + 3) + 6;
+            // Ludoal fork: 10 -> 13 rows. Trust, Anger and Threat joined the block, and TableRow
+            // stops drawing at maxY - so a band sized for the old count would have dropped them
+            // without a word rather than showing them cut off.
+            const int IntelRows = 13;
+            float treatyY = intelY + 24 + IntelRows * (Font12.LineSpacing + 3) + 6;
             DrawIntelRows(batch, e, col, ref y, treatyY - 6);
 
             SectionBand(batch, col, ref treatyY, "TREATIES");
@@ -427,6 +412,30 @@ namespace Ship_Game
             else
             {
                 HiddenRow(batch, col, ref y, maxY, "Personality", 1);
+            }
+
+            // Ludoal fork: what this empire actually FEELS about you, in the room the Contact
+            // button used to take - the three the negotiation screen graphs, at a glance and for
+            // every empire at once instead of one at a time. Same colours it uses (green, yellow,
+            // red) and the same 0-100 clamp, so the numbers here and the bars there agree.
+            // Intelligence like the rest of the block, so it hides behind the same gate.
+            if (UsingNewEspioange ? espionage.CanViewPersonality : IntelligenceLevel(e) > 0)
+            {
+                if (e.GetRelations(Player, out Relationship toUs))
+                {
+                    TableRow(batch, col, ref y, maxY, Localizer.Token(GameText.Trust),
+                             toUs.Trust.Clamped(0, 100).String(0), Color.Green);
+                    TableRow(batch, col, ref y, maxY, Localizer.Token(GameText.Anger),
+                             toUs.TotalAnger.Clamped(0, 100).String(0), Color.Yellow);
+                    TableRow(batch, col, ref y, maxY, Localizer.Token(GameText.Threat),
+                             toUs.Threat.Clamped(0, 100).String(0), Color.Red);
+                }
+            }
+            else
+            {
+                HiddenRow(batch, col, ref y, maxY, Localizer.Token(GameText.Trust), 1);
+                HiddenRow(batch, col, ref y, maxY, Localizer.Token(GameText.Anger), 1);
+                HiddenRow(batch, col, ref y, maxY, Localizer.Token(GameText.Threat), 1);
             }
         }
 
@@ -796,15 +805,19 @@ namespace Ship_Game
                 return true;
 
 
-            // the Contact buttons (original DanButton design), one per column
-            foreach (var kv in Contacts)
+            // Ludoal fork: the portrait opens negotiation, as it does in the Relationships
+            // diagram. The rects come from the last draw, which is where the columns are laid
+            // out - and a portrait only lands in there if it is a live empire you can talk to.
+            if (input.LeftMouseClick)
             {
-                if (!kv.Value.HandleInput(input))
-                    continue;
-                if (!kv.Key.IsDefeated)
+                foreach (var kv in PortraitRects)
                 {
-                    DiplomacyScreen.Show(kv.Key, "Greeting", parent: this);
-                    return true;
+                    if (kv.Value.HitTest(input.CursorPosition))
+                    {
+                        GameAudio.AcceptClick();
+                        DiplomacyScreen.Show(kv.Key, "Greeting", parent: this);
+                        return true;
+                    }
                 }
             }
 

@@ -16,10 +16,10 @@ namespace Ship_Game
     public partial class ColonyScreen : PlanetScreen
     {
         readonly ToggleButton PlayerDesignsToggle;
-        // Ludoal fork: the screen's frame, and the title bar the planet name sits in. 46 is the
-        // Codex's own title height, so the two windows read as the same furniture.
+        // Ludoal fork: the screen's frame. The title bar the planet name sits in is the one every
+        // window uses, declared with the colours it goes with.
         Rectangle ColonyFrame;
-        const float TitleBarH = 46;
+        const float TitleBarH = GameScreens.ReworkScreens.WindowTitleBarH;
         readonly Submenu PlanetInfo;
         readonly Submenu PStorage;
         readonly Submenu PFacilities;

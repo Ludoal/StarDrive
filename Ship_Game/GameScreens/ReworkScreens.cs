@@ -77,7 +77,7 @@ namespace Ship_Game.GameScreens
         // Diplomacy group - one geometry for the whole bar.
         public static readonly LocalizedText[] GalaxyTabTitles =
         {
-            "Planets", "Exotic Systems", "Patrols"
+            "Planets", "Exotic Systems", "Patrols", "Events"
         };
 
         public static readonly string[] GalaxyTabTips =
@@ -85,10 +85,33 @@ namespace Ship_Game.GameScreens
             "Every planet you know of, sortable, with the troops you can land.",
             "Systems holding exotic resources, and what they grant.",
             "Standing patrol routes and the fleets flying them.",
+            "The log of what happened to your empire, newest first.",
         };
 
-        // the keys those screens already close on, in tab order: Planets, Exotic, Patrols
-        public static readonly string[] GalaxyTabKeys = { "L", "G", "P" };
+        // the keys those screens already close on, in tab order
+        public static readonly string[] GalaxyTabKeys = { "L", "G", "P", "F7" };
+
+        // Ludoal fork: ONE place that knows which screen a Galaxy tab opens. Each screen used to
+        // carry its own switch over the other three, so a fourth tab meant editing all of them -
+        // and the copy that got missed would simply open nothing.
+        public static GameScreen GalaxyTab(int index, UniverseScreen u) => index switch
+        {
+            0 => new PlanetListScreen(u, u.EmpireUI),
+            1 => new ExoticSystemsListScreen(u, u.EmpireUI),
+            2 => new EmpirePatrolsScreen(u, u.Player),
+            _ => new ImportantEventsScreen(u),
+        };
+
+        // Ludoal fork: the switch every Galaxy screen runs when another of its tabs is clicked.
+        // `self` is the tab the caller sits on, so it can leave itself alone.
+        public static void SwitchGalaxyTab(int index, int self, UniverseScreen u, GameScreen caller)
+        {
+            if (index == self)
+                return;
+            caller.ExitScreen();
+            Audio.GameAudio.AcceptClick();
+            u.ScreenManager.AddScreen(GalaxyTab(index, u));
+        }
 
         // ── Empire group ──────────────────────────────────────────────────────────────────────
         // Ludoal fork: the third group of the unified top bar. Same frame and tab row again.
@@ -288,10 +311,21 @@ namespace Ship_Game.GameScreens
         // that - an alpha under 255 renders additive-bright under premultiplied AlphaBlend.
         public static readonly Color GroupFrameFill = new Color(14, 12, 9).Alpha(0.92f);
 
-        // Ludoal fork: the brass line every frame, panel and button draws around itself. One
-        // source: the same three numbers were written out in five places, which is how two of
-        // them end up disagreeing after somebody retouches one.
-        public static readonly Color FrameRule = new Color(118, 102, 67);
+        // Ludoal fork: the line every frame, panel and button draws around itself. One source:
+        // the same numbers were written out in five places, which is how two of them end up
+        // disagreeing after somebody retouches one.
+        // ⚠ Read off the Codex rather than eyeballed: its border is Popup/popup_vert_L, which is
+        // (193,113,26) - a frank orange. The (118,102,67) brass this used to be is the OLD trim's
+        // colour, so every frame painted with it read as the thing we were replacing.
+        public static readonly Color FrameRule = new Color(193, 113, 26);
+
+        // The Codex's own body and title bar: Popup/popup_filler_lower and popup_filler_title.
+        // Neutral grey, not the warm near-black the group frames use - and the title bar is a
+        // step lighter than the body, which is what makes it read as a title bar at all.
+        public static readonly Color WindowBody     = new Color(14, 14, 14).Alpha(0.94f);
+        public static readonly Color WindowTitleBar = new Color(54, 54, 54).Alpha(0.94f);
+        // the Codex's own title height, so every window in the game names itself on one line
+        public const int WindowTitleBarH = 46;
 
         public static GameScreen Economy(UniverseScreen u) => new BudgetScreenRework(u);
 
@@ -320,6 +354,7 @@ namespace Ship_Game.GameScreens
             null => Group.None,
 
             PlanetListScreen or ExoticSystemsListScreen or EmpirePatrolsScreen
+                or ImportantEventsScreen
                 => Group.Galaxy,
 
             EmpireManagementScreen or ShipListScreen or TroopListScreen

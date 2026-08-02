@@ -319,7 +319,7 @@ namespace Ship_Game
         void DrawCancelInvasion(SpriteBatch batch, Vector2 mousePos)
         {
             Vector2 textPos = new Vector2(RightRect.X - 12, CancelInvasionRect.Y + 12 - Font12.LineSpacing / 2 - 2);
-            batch.Draw(ResourceManager.Texture("UI/dan_button_blue"), CancelInvasionRect, Color.White);
+            UIButton.DrawPlate(batch, CancelInvasionRect, UIButton.PlateActive);
             batch.DrawString(Font12, "Cancel Invasion", textPos, CancelInvasionRect.HitTest(mousePos) ? ButtonTextColor
                                                                                                       : ButtonHoverColor);
         }
@@ -349,7 +349,7 @@ namespace Ship_Game
                 return;
 
             Vector2 textPos = new Vector2(RightRect.X + 18, MarkedRect.Y + 12 - Font12.LineSpacing / 2 - 2);
-            batch.Draw(ResourceManager.Texture("UI/dan_button_blue"), MarkedRect, Color.White);
+            UIButton.DrawPlate(batch, MarkedRect, UIButton.PlateActive);
 
             LocalizedText tip = GameText.MarkThisPlanetForColonization;
             LocalizedText tipText = GameText.Colonize;

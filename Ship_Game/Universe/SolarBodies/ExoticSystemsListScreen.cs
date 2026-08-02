@@ -102,16 +102,7 @@ namespace Ship_Game
         // Ludoal fork: the other two tabs live in their own screen, so leaving Exotic Systems hands
         // over to it. This tab is a no-op: we are already here.
         void OnGalaxyTabChanged(int index)
-        {
-            if (index == 1)
-                return;
-            ExitScreen();
-            GameAudio.AcceptClick();
-            if (index == 0)
-                Universe.ScreenManager.AddScreen(new PlanetListScreen(Universe, Universe.EmpireUI));
-            else
-                Universe.ScreenManager.AddScreen(new EmpirePatrolsScreen(Universe, Player));
-        }
+            => ReworkScreens.SwitchGalaxyTab(index, self: 1, Universe, this);
 
         void CalcPlanetsDistances()
         {

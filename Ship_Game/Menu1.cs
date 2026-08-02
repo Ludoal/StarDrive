@@ -58,10 +58,14 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            // Ludoal fork: painted like Menu2 and the confirm dialog - a dark body under a thin
-            // brass rule - instead of the eight-piece textured surround. The Load and Save
-            // screens were the last places still showing the old frame.
-            batch.FillRectangle(Rect, GameScreens.ReworkScreens.GroupFrameFill);
+            // Ludoal fork: painted like the Codex, same as Menu2 - neutral body, a title bar a
+            // step lighter, an orange rule - instead of the eight-piece textured surround. Load
+            // and Save were the last screens still showing the old frame. Menu1 differs from
+            // Menu2 only in carrying a Submenu of its own; they had two texture sets for that.
+            batch.FillRectangle(Rect, GameScreens.ReworkScreens.WindowBody);
+            batch.FillRectangle(new Rectangle(Rect.X, Rect.Y, Rect.Width,
+                                              GameScreens.ReworkScreens.WindowTitleBarH),
+                                GameScreens.ReworkScreens.WindowTitleBar);
             batch.DrawRectangle(Rect, GameScreens.ReworkScreens.FrameRule);
             subMenu?.Draw(batch, elapsed);
         }

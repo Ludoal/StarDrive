@@ -35,7 +35,7 @@ namespace Ship_Game
 		{
 		    Color color;
 			Vector2 pos = TextPos;
-			screenManager.SpriteBatch.Draw(ResourceManager.Texture("UI/dan_button"), r, Color.White);
+			UIButton.DrawPlate(screenManager.SpriteBatch, r, UIButton.PlateNeutral);
 			SpriteBatch spriteBatch = screenManager.SpriteBatch;
 			Graphics.Font arial12Bold = Fonts.Arial12Bold;
 			string str = (Toggled ? ToggledText : Text);
@@ -54,7 +54,7 @@ namespace Ship_Game
 		public void Draw(ScreenManager screenManager, Rectangle rect)
 		{
 		    Color color;
-			screenManager.SpriteBatch.Draw(ResourceManager.Texture("UI/dan_button"), rect, Color.White);
+			UIButton.DrawPlate(screenManager.SpriteBatch, rect, UIButton.PlateNeutral);
 			var tPos = new Vector2(rect.X + 25, rect.Y + 12 - Fonts.Arial12Bold.LineSpacing / 2);
 			Vector2 pos = tPos;
 			SpriteBatch spriteBatch = screenManager.SpriteBatch;
@@ -76,7 +76,7 @@ namespace Ship_Game
 		{
 		    Color color;
 			Vector2 pos = TextPos;
-            batch.Draw(ResourceManager.Texture("UI/dan_button_blue"), r, Color.White);
+            UIButton.DrawPlate(batch, r, UIButton.PlateActive);
 			string str = (Toggled ? ToggledText : Text);
 			if (Hover)
 			{

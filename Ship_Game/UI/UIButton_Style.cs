@@ -36,10 +36,10 @@ namespace Ship_Game
     {
         // Ludoal fork: the one button asset, and how deep its border runs. Both live here so a new
         // PNG (or a thicker frame in a redrawn one) is a single edit for the whole game.
-        public const string ButtonTex = "NewUI/button_9s";
-        // ⚠ Must be >= the asset's corner RADIUS, or the slice cuts the arc in half and the
-        // rounding never shows. The corners are drawn at 6, so this is 6.
-        public const int ButtonSlice = 6;
+        // Separate bar and corners, the way Submenu's frame does it - one uniform 2x2 bar that
+        // stretches to any length without a rule to squeeze, and corners drawn at their own size.
+        public const string ButtonBarTex    = "NewUI/button_bar";
+        public const string ButtonCornerTex = "NewUI/button_corner_";
 
         // The palette a button can mean: nothing in particular, an active control, a hostile
         // action, or one that is currently out of reach. The asset is greyscale, so these ARE
@@ -48,7 +48,9 @@ namespace Ship_Game
         // as - not the colour of the button's face, which the ramp takes down to about a quarter.
         // A tint multiplies, so it can never lift a pixel: pick them bright, or the frame sinks
         // into the face and the button reads as a bare rectangle.
-        public static readonly Color PlateNeutral = new Color(168, 146, 102);
+        // ⚠ the frame colour is the Codex's own (193,113,26), so a button's rule matches the
+        // window it sits in rather than being a beige near-miss beside it
+        public static readonly Color PlateNeutral = new Color(193, 113, 26);
         public static readonly Color PlateActive  = new Color(108, 152, 214);
         public static readonly Color PlateHostile = new Color(206, 92, 84);
         public static readonly Color PlateMuted   = new Color(122, 116, 104);
@@ -75,35 +77,27 @@ namespace Ship_Game
             {
             }
 
-            // Ludoal fork: ONE mechanism for every button. A greyscale bitmap is drawn as a
-            // nine-slice - corners keep their pixels, edges stretch on one axis, the middle on
-            // both - and the colour comes from the tint rather than from a texture per meaning.
-            // Three knobs: which bitmap, which tint per state, how opaque. A button can be pulled
-            // to any width and a fair way in height, and a redrawn PNG restyles the whole game.
-            public bool NineSlice;
-            public int SliceBorder = ButtonSlice;
+            // Ludoal fork: ONE mechanism for every button - the painted plate (bar + corners,
+            // see UIButton.DrawPlate), with the colour coming from the tint rather than from a
+            // texture per meaning. Two knobs: which tint per state, how opaque. A button can be
+            // pulled to any width and a fair way in height, and redrawing the two tiny assets
+            // restyles the whole game.
+            public bool Plated;
             public float Opacity = 1f;
-            // ⚠ The slice asset is 32x32; a button that never got an explicit rect measures
-            // itself off its texture, so it would come out 32x32 instead of the size the stock
-            // one gave it. This carries the ORIGINAL size, and is never drawn.
+            // ⚠ Nothing is drawn from a texture any more, but a button that never got an explicit
+            // rect still measures itself off one. This carries the ORIGINAL size, and only that.
             public SubTexture SizeRef;
 
-            public static StyleTextures Sliced(Color plate, float opacity = 1f, string sizeRef = null,
-                                               string tex = ButtonTex, int border = ButtonSlice)
-            {
-                SubTexture t = ResourceManager.Texture(tex);
-                return new StyleTextures
+            public static StyleTextures Sliced(Color plate, float opacity = 1f, string sizeRef = null)
+                => new StyleTextures
                 {
-                    Normal = t, Hover = t, Pressed = t,
-                    SizeRef     = sizeRef != null ? ResourceManager.Texture(sizeRef) : null,
-                    NineSlice   = true,
-                    SliceBorder = border,
-                    Opacity     = opacity,
+                    SizeRef      = sizeRef != null ? ResourceManager.Texture(sizeRef) : null,
+                    Plated       = true,
+                    Opacity      = opacity,
                     DefaultColor = plate,
                     HoverColor   = plate.LerpTo(Color.White, 0.22f),
                     PressColor   = plate.LerpTo(Color.Black, 0.28f),
                 };
-            }
 
             public StyleTextures(string normal)
             {
@@ -175,8 +169,7 @@ namespace Ship_Game
         }
 
         // Ludoal fork: draw the style's bitmap as a nine-slice - see StyleTextures.Sliced
-        bool NineSlice;
-        int SliceBorder;
+        bool Plated;
         SubTexture SizeRef;          // measured, never drawn - see StyleTextures.SizeRef
         public float Opacity = 1f;   // per-button override, on top of its style
 
@@ -185,8 +178,7 @@ namespace Ship_Game
             Normal = style.Normal;
             Hover = style.Hover;
             Pressed = style.Pressed;
-            NineSlice = style.NineSlice;
-            SliceBorder = style.SliceBorder;
+            Plated = style.Plated;
             SizeRef = style.SizeRef;
             Opacity = style.Opacity;
 

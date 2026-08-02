@@ -13,7 +13,7 @@ namespace Ship_Game.GameScreens
 {
     // Ludoal fork v2 (player design): one COLUMN per major empire, everything built
     // ONCE in LoadContent (the previous draft leaked: EmpireButton re-Added elements
-    // on every layout pass). Portraits Diplomacy-style, non-selectable. Sections:
+    // on every layout pass). Portraits Diplomacy-style, and they open negotiation. Sections:
     // BUDGET (player: budget multiplier + cost; others: infiltration weight, limit
     // level, points/turn, target level + progress), DEFENSE (player: defense weight;
     // others: their shield ratio), then the five levels with ALL options — passives
@@ -23,6 +23,9 @@ namespace Ship_Game.GameScreens
         public readonly UniverseScreen Universe;
         public Empire SelectedEmpire; // legacy bookkeeping (external callers)
         readonly Empire Player;
+        // Ludoal fork: where each portrait landed this frame, so the click can find it - the
+        // portrait is the way in to negotiation on every Diplomacy tab.
+        readonly Map<Empire, Rectangle> PortraitRects = new();
         public static readonly Color PanelBackground = new Color(23, 20, 14);
 
         Submenu GroupTabs; // Ludoal fork: the Diplomacy group's tab row, this screen being one tab
@@ -308,6 +311,9 @@ namespace Ship_Game.GameScreens
             // covered them - SendToBackZOrder only orders it among the other children.
             batch.FillRectangle(GroupTabs.ClientArea, ReworkScreens.GroupFrameFill);
 
+            // ⚠ cleared every pass: a column that stops drawing its portrait must not leave a
+            // clickable rect behind over whatever takes its place.
+            PortraitRects.Clear();
             foreach (EmpireColumn c in Columns)
                 DrawColumn(batch, c);
 
@@ -345,6 +351,15 @@ namespace Ship_Game.GameScreens
                 batch.DrawRectangle(new Rectangle(portrait.X - 2, portrait.Y - 2, portrait.Width + 4, portrait.Height + 4), Color.Red);
 
             batch.Draw(ResourceManager.Texture("Portraits/" + e.data.PortraitName), portrait, Color.White);
+
+            // Ludoal fork: the portrait opens negotiation here too - the four Diplomacy tabs
+            // behave the same way, and this one drawing its portraits inert would be the odd one.
+            if (e != Player && !e.IsDefeated)
+            {
+                PortraitRects[e] = portrait;
+                batch.DrawRectangle(portrait, e.EmpireColor,
+                                    portrait.HitTest(Input.CursorPosition) ? 3 : 1);
+            }
             string name = e.data.Traits.Name;
             float nameW = NameFont.TextWidth(name) + 24;
             float nameX = col.X + (col.Width - nameW) / 2f;
@@ -459,6 +474,20 @@ namespace Ship_Game.GameScreens
             if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
                 return true;
 
+            // Ludoal fork: the portrait opens negotiation, as on the other Diplomacy tabs. The
+            // rects come from the last draw, which is where the columns are laid out.
+            if (input.LeftMouseClick)
+            {
+                foreach (var kv in PortraitRects)
+                {
+                    if (kv.Value.HitTest(input.CursorPosition))
+                    {
+                        GameAudio.AcceptClick();
+                        DiplomacyScreen.Show(kv.Key, "Greeting", parent: this);
+                        return true;
+                    }
+                }
+            }
 
             return base.HandleInput(input);
         }

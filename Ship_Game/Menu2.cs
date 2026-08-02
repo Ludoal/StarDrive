@@ -10,8 +10,9 @@ namespace Ship_Game
     {
         public Rectangle Menu;
 
-        // the one brass line, declared with the frame fill it goes with
+        // the one rule colour, declared with the window fills it goes with
         static Color FrameRule => GameScreens.ReworkScreens.FrameRule;
+        public const int TitleBarH = GameScreens.ReworkScreens.WindowTitleBarH;
 
         public bool Hollow;
         public Color Background;
@@ -20,7 +21,7 @@ namespace Ship_Game
         // Ludoal fork: the reworked screens' body colour rather than flat near-black, so a Menu2
         // sitting beside one of them reads as the same surface. Callers that pass their own
         // colour keep it.
-        public Menu2(in Rectangle theMenu) : this(theMenu, new Color(14, 12, 9).Alpha(0.92f))
+        public Menu2(in Rectangle theMenu) : this(theMenu, GameScreens.ReworkScreens.WindowBody)
         {
         }
         public Menu2(int x, int y, int width, int height) : this(new Rectangle(x, y, width, height))
@@ -37,12 +38,14 @@ namespace Ship_Game
         {
             if (!Hollow)
             {
-                // Ludoal fork: painted in the grammar the Codex and the reworked screens use -
-                // a dark body under a thin brass rule - instead of the sculpted corner set.
-                // The corners were asymmetric (69x38 at the top, 48x28 at the bottom) with their
-                // own extenders and repeats, so the frame could never match anything else on
-                // screen. Nothing reads a client area off this class, so no content moves.
+                // Ludoal fork: painted like the Codex - neutral body, a title bar a step lighter
+                // across the top, an orange rule around the lot - instead of the sculpted corner
+                // set. Those corners were asymmetric (69x38 at the top, 48x28 at the bottom) with
+                // their own extenders and repeats, so the frame could never match anything else
+                // on screen. Nothing reads a client area off this class, so no content moves.
                 batch.FillRectangle(Menu, Background);
+                batch.FillRectangle(new Rectangle(Menu.X, Menu.Y, Menu.Width, TitleBarH),
+                                    GameScreens.ReworkScreens.WindowTitleBar);
                 batch.DrawRectangle(Menu, FrameRule);
             }
             else
