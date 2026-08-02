@@ -136,9 +136,11 @@ namespace Ship_Game
             // no sense. Only the font sizes were converted.
             // ── the frame and the ONE grid every block measures from ─────────────────────────
             const int Margin = 10, Pad = 8, FootH = 46;
+            // ⚠ the bottom band is laid out DOWNWARDS from rect.Bottom, unlike the right border
+            // which is drawn inwards - extending the rect there puts the foot off-screen
             ScreenFrame = new Rectangle(Margin - PopupFrame.BorderLeft, Margin,
                                         ScreenWidth - 2 * Margin + PopupFrame.BorderLeft + PopupFrame.BorderRight,
-                                        ScreenHeight - 2 * Margin + PopupFrame.BorderBottom);
+                                        ScreenHeight - 2 * Margin);
             Frame = new PopupFrame(ScreenFrame);
 
             Rectangle inner = PopupFrame.ContentArea(ScreenFrame);
@@ -148,7 +150,7 @@ namespace Ship_Game
             int gridBottom = inner.Bottom - FootH;
 
             // ── ROW 1: Empire | Galaxy, 50/50, FIXED height ─────────────────────────────────
-            const int Row1H = 172;
+            const int Row1H = 192;   // +20 on the bench's word - the fields were tight
             int halfW = (gridRight - gridLeft - Pad) / 2;
             EmpireTab = Add(new Submenu(new RectF(gridLeft, gridTop, halfW, Row1H), "Empire"));
             GalaxyTab = Add(new Submenu(new RectF(gridLeft + halfW + Pad, gridTop, halfW, Row1H), "Galaxy"));
@@ -187,20 +189,15 @@ namespace Ship_Game
                                    gridRight - gridLeft - 2 * (SideW + Pad), row2H);
 
             LocalizedText[] traitNames = { GameText.Physical, GameText.Sociological, GameText.HistoryAndTradition, "Environment" };
-            Traits = Add(new SubmenuScrollList<TraitsListItem>(traitsList.Bevel(-20, -10), traitNames));
+            // ⚠ no Bevel and NO Menu1 background (maintainer: "supprimer le cadre du bloc
+            // central"). The Menu1 painted a second popup frame INSIDE the tab's own, which is
+            // the double border the bench saw - and with it goes the SetAbsPos pin it needed.
+            Traits = Add(new SubmenuScrollList<TraitsListItem>(traitsList, traitNames));
             Traits.OnTabChange = OnTraitsTabChanged;
 
             TraitsList = Traits.List;
             TraitsList.EnableItemHighlight = true;
             TraitsList.OnClick = OnTraitsListItemClicked;
-            RectF traitsListBg = new(traitsList.X, traitsList.Y, traitsList.W, traitsList.H);
-            var traitsBg = new Menu1(traitsListBg);
-            TraitsList.SetBackground(traitsBg);
-            // ⚠ Anchor at abs pos, and this is NOT about the animations that just went away:
-            // SetBackground sets a wrong-sign LocalPos that would re-position the Menu1 on the
-            // next PerformLayout - which SetItems triggers every time a trait tab is clicked.
-            // Pinning makes UpdatePosAndSize a no-op so the bg stays put.
-            traitsBg.SetAbsPos(traitsListBg.X, traitsListBg.Y);
 
             // row 2 LEFT: the race list under a tab of its own
             RaceTab = Add(new Submenu(new RectF(gridLeft, row2Top, SideW, row2H), "Race"));
@@ -272,7 +269,8 @@ namespace Ship_Game
             // row 2 RIGHT: two tabs over one area - the points summary, and the race description.
             // Same rect for both; OnTabChange flips which one is visible.
             // ⚠ the tab list is an IEnumerable - there is no variadic overload
-            LocalizedText[] infoTabs = { Localizer.Token(GameText.PointsToSpend), "Description" };
+            // "Points", not the full token: the two tabs have to share ONE row (maintainer)
+            LocalizedText[] infoTabs = { "Points", "Description" };
             InfoTab = Add(new Submenu(new RectF(gridRight - SideW, row2Top, SideW, row2H), infoTabs));
             InfoTab.OnTabChange = OnInfoTabChanged;
             RectF description = InfoTab.ClientArea;
@@ -301,9 +299,11 @@ namespace Ship_Game
                 return b;
             }
 
-            // Abort is a 168px BigDip, so the row starts clear of it
-            Button(ButtonStyle.BigDip, gridLeft, footY, Localizer.Token(GameText.Abort), click: OnAbortClicked);
-            bx = gridLeft + 168 + BtnGap * 3;
+            // Abort in the HOSTILE tint (maintainer): it is the button that cancels, and the
+            // style exists for exactly that. It was wearing the blue one while Engage - the
+            // button that STARTS the game - wore the red.
+            Button(ButtonStyle.WideHostile, gridLeft, footY, Localizer.Token(GameText.Abort), click: OnAbortClicked);
+            bx = gridLeft + 182 + BtnGap * 3;   // 182 = dan_button, the Wide styles' size ref
             Foot("Load Race", OnLoadRaceClicked);
             Foot("Save Race", OnSaveRaceClicked);
             bx += BtnGap * 3;
@@ -314,8 +314,9 @@ namespace Ship_Game
             Foot("Clear Traits", OnClearClicked);
             SelectOpponentsBtn = Foot("", OnSelectOpponentsClicked, ButtonStyle.BigDip);
 
-            // Military is a 168px texture - measured, not guessed, so Engage ends ON the margin
-            Button(ButtonStyle.Military, gridRight - 168, footY, GameText.Engage, click: OnEngageClicked);
+            // Engage in the ACTIVE tint - it is the order that starts something, the mirror of
+            // Abort's hostile one. 182 is dan_button, the Wide styles' size reference.
+            Button(ButtonStyle.WideActive, gridRight - 182, footY, GameText.Engage, click: OnEngageClicked);
 
             DoRaceDescription();
             SetRacialTraits(SelectedData.Traits);

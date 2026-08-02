@@ -106,7 +106,6 @@ namespace Ship_Game.GameScreens.NewGame
 
         void UpdateVisibility()
         {
-            bool wasVisibile = Visible;
             Visible = PreferredEnv != PlanetCategory.Terran
                 || EnvTerran != 1
                 || EnvOceanic != 1
@@ -118,8 +117,8 @@ namespace Ship_Game.GameScreens.NewGame
                 || EnvBarren != 1
                 || EnvVolcanic != 1;
 
-            if (!wasVisibile && Visible)
-                SlideInFromOffset(offset: new(-Width, 0), Screen.TransitionOffTime);
+            // (no slide when this panel appears - Race Design stays sober, and its transition
+            // times are 0 now anyway, so the call did nothing but mislead)
         }
 
         void UpdatePlanetIcon()

@@ -87,10 +87,8 @@ namespace Ship_Game.GameScreens.MainMenu
             if (list.Find("exit",      out UIButton exit))      exit.OnClick      = Exit_Clicked;
             list.PerformLayout();
 
-            // Animate the buttons in and out
-            var animOffset = new Vector2(512f * (ScreenWidth / 1920f), 0);
-            list.StartGroupTransition<UIButton>(animOffset, -1, time:0.5f);
-            OnExit += () => list.StartGroupTransition<UIButton>(animOffset, +1, time:0.5f);
+            // Ludoal fork: no slide-in/slide-out on the menu buttons (maintainer decision - we
+            // stay sober). They appear where the layout puts them.
 
             Scene = SceneInstance.FromFile(this, menu.SceneFile);
 

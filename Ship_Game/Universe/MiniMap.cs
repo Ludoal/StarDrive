@@ -52,7 +52,11 @@ namespace Ship_Game
             // Ludoal fork: the map fills the housing except for the two button bands - one ABOVE
             // it, one to its LEFT - plus the frame's own margin. Constants, not fractions of the
             // housing: a button is 25x22 whatever the box does, so the bands cannot be a ratio.
-            const int BtnW = 25, BtnH = 22, BandGap = 4, Edge = 6;
+            // Edge is the gap the whole widget keeps from the screen corner - the same 10 the
+            // overlay tabs use, so the minimap sits on the interface's margin rather than in the
+            // very corner. BandGap is how far the icons stand off the frame (maintainer: they
+            // were touching it).
+            const int BtnW = 25, BtnH = 22, BandGap = 8, Edge = 10;
             ActualMap = new Rectangle(housing.X + BtnW + BandGap + Edge,
                                       housing.Y + BtnH + BandGap + Edge,
                                       housing.Width  - (BtnW + BandGap + Edge) - Edge,
@@ -63,13 +67,13 @@ namespace Ship_Game
             // rendering on the map and stays lit; a TAB pops a panel at a screen edge. They used
             // to wear three texture styles between them and sit in two arbitrary columns.
             //
-            // TOP band, horizontal:  [Influence Vision Subspace]  gap  [AI DSB]
-            // LEFT band, vertical:   [Gravity Range TradeRoutes]  gap  [Freighters Exotic]
+            // TOP band:   [Influence Vision Subspace] ......... [AI DSB]
+            // LEFT band:  [Gravity Range TradeRoutes] ......... [Freighters Exotic]
+            // The tabs sit at the FAR end of their band; the empty middle is the separator.
             //
             // The tabs are placed by where their panel COMES OUT: AI and DSB are temporary and
             // open at the right edge, so they sit top-right; Freighters and Exotic are left open
             // for monitoring and come out at the bottom, so they sit bottom-left.
-            const int Gap = 14; // the family separator - wider than the 2px a list would use
 
             UIList topOverlays = AddList(new Vector2(ActualMap.X, Housing.Y + Edge));
             topOverlays.Name = "MiniMapOverlaysTop";
@@ -79,7 +83,10 @@ namespace Ship_Game
             VisionOverlayBtn = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_spy_small", VisionOverlay_OnClick)); // F3
             GravityWells = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_ftloverlay", GravityWells_OnClick)); // subspace projectors (F4)
 
-            UIList topTabs = AddList(new Vector2(ActualMap.X + 3 * BtnW + Gap, Housing.Y + Edge));
+            // ⚠ the tabs go to the OPPOSITE end of their band, not beside the overlays
+            // (maintainer): top band pushes them RIGHT, left band pushes them DOWN. The empty
+            // middle is what separates the two families, rather than a 14px gap.
+            UIList topTabs = AddList(new Vector2(ActualMap.Right - 2 * BtnW, Housing.Y + Edge));
             topTabs.Name = "MiniMapTabsTop";
             topTabs.LayoutStyle = ListLayoutStyle.ResizeList;
             topTabs.Direction = new Vector2(1, 0);
@@ -93,7 +100,7 @@ namespace Ship_Game
             RangeOverley = leftOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_rangeoverlay", RangeOverly_OnClick)); // F6
             // (a Trade Routes overlay belongs here, under Gravity Wells and near Freighters)
 
-            UIList leftTabs = AddList(new Vector2(Housing.X + Edge, ActualMap.Y + 3 * BtnH + Gap));
+            UIList leftTabs = AddList(new Vector2(Housing.X + Edge, ActualMap.Bottom - 2 * BtnH));
             leftTabs.Name = "MiniMapTabsLeft";
             leftTabs.LayoutStyle = ListLayoutStyle.ResizeList;
             FreighterUtil = leftTabs.Add(new ToggleButton(ToggleButtonStyle.Button, "NewUI/icon_freighter_util", FreighterUtilizationScreen_OnClick));
@@ -129,10 +136,15 @@ namespace Ship_Game
             // That texture spent 81px on the left and 33 on top being decorative, which is why
             // the map itself was a 200x210 island inside a 276x256 box. The frame is a rule and
             // a fill now, so the map gets the room back.
+            // ⚠ the SAME painted plate the buttons wear (maintainer's own suggestion): rounded,
+            // ruled, and thick enough to read as a frame. UITheme.DrawPlate is what draws every
+            // button in the game, so the minimap stops being the one square-cornered thing on
+            // screen. Grey rather than brass - it frames a map, not a control.
             Rectangle inflateMap = ActualMap;
-            inflateMap.Inflate(4, 4);
-            batch.FillRectangle(inflateMap, new Color(8, 8, 8).Alpha(0.85f));
-            batch.DrawRectangle(inflateMap, GameScreens.ReworkScreens.FrameRule);
+            inflateMap.Inflate(6, 6);
+            UITheme.DrawPlate(batch, inflateMap, new Color(10, 10, 10).Alpha(0.88f),
+                              new Color(140, 140, 140).Alpha(0.9f), radiusOverride: 8,
+                              ruleWidthOverride: 3);
             
             foreach (SolarSystem system in Universe.UState.Systems)
             {

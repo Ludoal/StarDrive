@@ -252,7 +252,9 @@ namespace Ship_Game
 
             Tabs = Add(new Submenu(rect, new LocalizedText[]
             {
-                GameText.Governor, GameText.Defense2, GameText.Budget, "Blueprints"
+                // "Blueprint" singular: measured, the four tabs then fit ONE row inside a 400px
+                // column (315px of tabs) where the plural needed a wider one (maintainer).
+                GameText.Governor, GameText.Defense2, GameText.Budget, "Blueprint"
             }));
 
             if (selectedIndex < Tabs.NumTabs)
@@ -336,21 +338,24 @@ namespace Ship_Game
             Quarantine.Pos          = new Vector2(ColumnX, SpecializedTradeHub.Pos.Y - 35);
             Prioritized.Pos         = new Vector2(ColumnX, SpecializedTradeHub.Pos.Y - 17);
 
-            // Defense tab. The rows anchored on Bottom are left alone: they already follow the
-            // frame's lower edge and the tab row does not move it.
+            // Defense tab. ⚠ These six buttons used to hang off Bottom, which is why the panel
+            // needed 300px of height for ~120px of content: the gap in the middle was pure
+            // anchoring, not spacing (maintainer: "remonter les 3 boutons sous le slider").
+            // They follow their own column now, so the panel's height can be its content's.
             AutoTroops.Pos        = new Vector2(TopLeft.X + 10, Y + 30 + shift);
             Garrison.Pos          = new Vector2(TopLeft.X + 20, Y + 50 + shift);
-            CallTroops.Pos        = new Vector2(TopLeft.X + 10, Bottom - 30);
-            LaunchSingleTroop.Pos = new Vector2(TopLeft.X + 10, Bottom - 60);
-            LaunchAllTroops.Pos   = new Vector2(TopLeft.X + 10, Bottom - 90);
+            float defRow          = Y + 82 + shift;   // under the garrison slider
+            LaunchAllTroops.Pos   = new Vector2(TopLeft.X + 10, defRow);
+            LaunchSingleTroop.Pos = new Vector2(TopLeft.X + 10, defRow + 26);
+            CallTroops.Pos        = new Vector2(TopLeft.X + 10, defRow + 52);
             ColonyRank.Pos        = new Vector2(TopLeft.X + 200, Y + 30 + shift);
             NoGovernor.Pos        = ColonyRank.Pos;
             GovGround.Pos         = new Vector2(TopLeft.X + 200, Y + 50 + shift);
             GovOrbitals.Pos       = new Vector2(TopLeft.X + 200, Y + 70 + shift);
             ManualOrbitals.Pos    = new Vector2(TopLeft.X + 200, Y + 90 + shift);
-            BuildPlatform.Pos     = new Vector2(TopLeft.X + 200, Bottom - 90);
-            BuildShipyard.Pos     = new Vector2(TopLeft.X + 200, Bottom - 60);
-            BuildStation.Pos      = new Vector2(TopLeft.X + 200, Bottom - 30);
+            BuildPlatform.Pos     = new Vector2(TopLeft.X + 200, defRow);
+            BuildShipyard.Pos     = new Vector2(TopLeft.X + 200, defRow + 26);
+            BuildStation.Pos      = new Vector2(TopLeft.X + 200, defRow + 52);
             Vector2 manualOffset  = new Vector2(125, -15);
             ManualPlatforms.Pos   = BuildPlatform.Pos + manualOffset;
             ManualShipyards.Pos   = BuildShipyard.Pos + manualOffset;

@@ -44,10 +44,8 @@ public class FleetButtonsList : UIList
         }
 
         base.PerformLayout();
-
-        Vector2 animOffset = new(-256, 0);
-        StartGroupTransition<FleetButton>(animOffset, -1, time:0.4f);
-        parent.OnExit += () => StartGroupTransition<FleetButton>(animOffset, +1, time:0.5f);
+        // Ludoal fork: no slide-in/slide-out on the fleet buttons (maintainer decision - we stay
+        // sober). They appear where the layout puts them.
     }
 
     // In some conditions, the fleet buttons should automatically be disabled

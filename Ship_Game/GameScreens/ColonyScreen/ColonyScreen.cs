@@ -140,12 +140,16 @@ namespace Ship_Game
             // the visible rule 21px from the edge and 40 from the bottom - the extra margin the
             // bench kept reporting (maintainer feedback). Push the rect out by what the border
             // eats, and the LINE lands on FrameMargin like every other frame's does.
+            // ⚠ The two edges do NOT behave alike, and assuming they did put the foot off-screen:
+            // the RIGHT border is drawn inwards from rect.Right, so the rect may extend past the
+            // margin to bring the rule back onto it - but the BOTTOM band (BL/BR/BotSep) is laid
+            // out downwards FROM rect.Bottom, so extending there pushes it off the display
+            // entirely. The rect stops at the margin vertically.
             const int m = GameScreens.ReworkScreens.FrameMargin;
             ColonyFrame = new Rectangle(m - PopupFrame.BorderLeft,
                                         GameScreens.ReworkScreens.TabRowY,
                                         ScreenWidth - 2 * m + PopupFrame.BorderLeft + PopupFrame.BorderRight,
-                                        ScreenHeight - GameScreens.ReworkScreens.TabRowY - m
-                                                     + PopupFrame.BorderBottom);
+                                        ScreenHeight - GameScreens.ReworkScreens.TabRowY - m);
             // ⚠ NOT Add()ed: a child is drawn by base.Draw, which lands AFTER everything this
             // screen paints by hand - the frame's body would bury the panels. Painted first
             // thing in Draw instead (see ColonyScreen_Draw).
@@ -183,13 +187,31 @@ namespace Ship_Game
             // Wide enough that the Governor's four tabs sit on ONE row - measured in the font
             // that draws them, plus the 50 the bench asked for.
             float govTabsW = Fonts.Arial12Bold.TextWidth("GOVERNOR") + Fonts.Arial12Bold.TextWidth("DEFENSE")
-                           + Fonts.Arial12Bold.TextWidth("BUDGET") + Fonts.Arial12Bold.TextWidth("BLUEPRINTS")
+                           + Fonts.Arial12Bold.TextWidth("BUDGET") + Fonts.Arial12Bold.TextWidth("BLUEPRINT")
                            + 4 * 30;   // Submenu pads each tab
-            float colLeftW = Math.Max(govTabsW, 420) + 50;
+            // ⚠ narrower (maintainer): with "Blueprint" singular the four tabs measure 315, so
+            // the column no longer has to be 470 wide to hold one row of them.
+            float colLeftW = Math.Max(govTabsW, 380) + 20;
 
-            const float planetInfoH = 250;   // the planet portrait and its five lines
-            const float governorH   = 300;   // portrait, dropdown, two checkboxes
-            const float laborH      = 220;   // three sliders and their locks
+            // ── the three fixed heights, each derived from what it HOLDS ─────────────────────
+            // ⚠ They were 250 + 300 + 220 = 770 against 749px of usable height at 900, so the
+            // column overflowed before STORAGE got a pixel. Each is now the content's own size:
+            // PLANET INFO is the portrait plus its lines; GOVERNOR is measured on DEFENSE, the
+            // tallest of its four tabs, now that its buttons ride under the slider instead of
+            // hanging off the bottom; ASSIGN LABOR is three sliders and nothing more.
+            // ⚠ the PORTRAIT sets this height, not the other way round (maintainer). It is 128
+            // square at full res, 80 on LowRes - the same numbers the icon itself uses below, so
+            // the two cannot drift. Title bar + the portrait + a margin under it.
+            float portraitH   = LowRes ? 80 : 128;
+            // ⚠ the panel holds TWO things side by side: the portrait on the right, and the name
+            // plus four lines on the left. Sizing on the portrait alone left 3px of slack, which
+            // one font change would eat - so it takes the TALLER of the two, measured in the
+            // fonts that draw them.
+            float infoLinesH  = 45 + Fonts.Arial20Bold.LineSpacing * 2
+                              + 4 * (TextFont.LineSpacing + 2);
+            float planetInfoH = Math.Max(26 + portraitH + 14, infoLinesH + 10);
+            const float governorH   = 196;   // tab row + Defense's two columns of controls
+            const float laborH      = 150;   // three sliders, their locks and the title bar
 
             RectF planetInfoR = new(gridLeft, gridTop, colLeftW, planetInfoH);
             PlanetInfo = new(planetInfoR, GameText.PlanetInfo);
@@ -213,7 +235,12 @@ namespace Ship_Game
             
             Vector2 starvationPos = new Vector2(PStorage.X + 200, PStorage.Y + 35);
             StarvationLabel = Add(new UILabel(starvationPos, Localizer.Token(GameText.Starvation), Fonts.Pirulen16, Color.Red));
-            FoodStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + 25 + 0.33f*(PStorage.Height - 25), 0.4f*PStorage.Width, 18);
+            // ⚠ the two bars sit a FIXED distance below the title bar (maintainer: content aligned
+            // to the TOP, not centred). They rode 0.33 and 0.66 of the panel's height, so they
+            // drifted apart and floated in the middle as STORAGE - the column's variable block -
+            // grew. Rows now, not fractions.
+            const float storeRow1 = 46, storeRow2 = 84;
+            FoodStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + storeRow1, 0.4f*PStorage.Width, 18);
             FoodStorage.Max = p.Storage.Max;
             FoodStorage.Progress = p.FoodHere;
             FoodStorage.color = "green";
@@ -224,7 +251,7 @@ namespace Ship_Game
             FoodDropDown.ActiveIndex = (int)p.FS;
             var iconStorageFood = ResourceManager.Texture("NewUI/icon_storage_food");
             FoodStorageIcon = new Rectangle((int)PStorage.X + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - iconStorageFood.Height / 2, iconStorageFood.Width, iconStorageFood.Height);
-            ProdStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + 25 + 0.66f*(PStorage.Height - 25), 0.4f*PStorage.Width, 18);
+            ProdStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + storeRow2, 0.4f*PStorage.Width, 18);
             ProdStorage.Max = p.Storage.Max;
             ProdStorage.Progress = p.ProdHere;
             var iconStorageProd = ResourceManager.Texture("NewUI/icon_storage_production");
@@ -333,27 +360,33 @@ namespace Ship_Game
             if (p.OwnerIsPlayer || p.Universe.Debug)
                 ConstructionQueue.OnDragReorder = OnConstructionItemReorder;
 
-            int iconSize = LowRes ? 80 : 128;
+            // ⚠ ONE source for the portrait's size: portraitH decided this panel's height above,
+            // so the icon reads it back rather than repeating the number. It sits UNDER the title
+            // bar instead of centring itself in the panel - a portrait that centres in a panel
+            // sized for it just floats.
+            int iconSize = (int)portraitH;
             int iconOffsetX = LowRes ? 100 : 148;
-            int iconOffsetY = LowRes ? 0 : 25;
 
-            PlanetIcon = new Rectangle((int)PlanetInfo.Right - iconOffsetX, 
-                (int)PlanetInfo.Y + ((int)PlanetInfo.Height - iconOffsetY) / 2 - iconSize/2 + (LowRes ? 0 : 25), iconSize, iconSize);
+            PlanetIcon = new Rectangle((int)PlanetInfo.Right - iconOffsetX,
+                                       (int)PlanetInfo.Y + 26, iconSize, iconSize);
 
             // Ludoal fork: the colony arrows straddle the planet portrait's centre line - they
             // step through planets, so they belong under the planet. Shortened from the style's
             // 35: that height belongs to the selection box they were drawn for.
-            const int arrowW = 14, arrowH = 20, arrowGap = 2;
-            int arrowCentre = PlanetIcon.X + PlanetIcon.Width / 2;
-            int arrowY = PlanetIcon.Bottom + 6;
+            const int arrowW = 14, arrowH = 20;
+            // ⚠ the colony arrows ride the TITLE BAR now (maintainer), not the foot of the planet
+            // portrait - and they align on the ground map's edges, so the gesture that changes
+            // colony sits over the thing that shows the colony.
+            int arrowY = ColonyFrame.Y + PopupFrame.TitleBarTop
+                       + (PopupFrame.TitleBarHeight - arrowH) / 2;
 
-            LeftColony = Add(new ToggleButton(arrowCentre - arrowW - arrowGap / 2, arrowY,
+            LeftColony = Add(new ToggleButton((int)SubColonyGrid.X, arrowY,
                                               ToggleButtonStyle.ArrowLeft));
             LeftColony.SetAbsSize(arrowW, arrowH);
             LeftColony.Tooltip = GameText.ViewPreviousColony;
             LeftColony.OnClick = b => OnChangeColony(-1);
 
-            RightColony = Add(new ToggleButton(arrowCentre + arrowGap / 2, arrowY,
+            RightColony = Add(new ToggleButton((int)SubColonyGrid.Right - arrowW, arrowY,
                                                ToggleButtonStyle.ArrowRight));
             RightColony.SetAbsSize(arrowW, arrowH);
             RightColony.Tooltip = GameText.ViewNextColony;
@@ -399,7 +432,9 @@ namespace Ship_Game
         void PopulatePfacilitieTabs()
         {
             PFacilities.ClearTabs();
-            PFacilities.AddTab(GameText.Statistics2);
+            // ⚠ a literal, not the Statistics2 token: shortening the token would rename it
+            // everywhere in the game. Only this row needs to fit on one line (maintainer).
+            PFacilities.AddTab("Stats");
             PFacilities.AddTab(StatsPlusTabTitle); // Ludoal fork: Stats+ add-on tab, next to its witness
             PFacilities.AddTab(GameText.Description);
             PFacilities.AddTab(GameText.Trade2);
