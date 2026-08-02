@@ -165,7 +165,7 @@ namespace Ship_Game
             batch.SafeBegin();
             // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
             // drawn among the children, after everything below it.
-            batch.FillRectangle(GalaxyTabs.ClientArea, ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(ReworkScreens.GroupFrameFillRect(GalaxyTabs), ReworkScreens.GroupFrameFill);
             AvailableTroops.Text = $"Available Troops: {NumAvailableTroops}";
             AvailableTroops.Color = NumAvailableTroops == 0 ? Color.Gray : Color.LightGreen;
             base.Draw(batch, elapsed);

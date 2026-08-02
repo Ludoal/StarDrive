@@ -159,7 +159,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             batch.SafeBegin();
             // Ludoal fork: by hand and first, like its sibling tabs - as a Submenu background it
             // would be drawn among the children, after everything below.
-            batch.FillRectangle(GroupTabs.ClientArea, ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(ReworkScreens.GroupFrameFillRect(GroupTabs), ReworkScreens.GroupFrameFill);
             base.Draw(batch, elapsed); // window
             DrawRelations(batch); // links and then portraits
             ReworkScreens.DrawGroupTabTip(GroupTabs, Input.CursorPosition);

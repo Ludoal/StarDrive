@@ -40,7 +40,12 @@ namespace Ship_Game
         // GetNumberString(compact) tops out at six glyphs ("999.9M"), so the worst realistic
         // string is "999.9k/999.9M (+999.9)" - about 150px in Arial12Bold.
         const int ResearchNumbersRoom = 155;
-        const int StarDateRoom = 120;   // "StarDate: 1202.8"
+        // ⚠ MEASURED, not eyeballed: StarDateString is "####.0", so "StarDate: 9999.9" is the
+        // widest this can ever be - 94px in Arial12Bold, and it does not vary with the date.
+        // The old 120 left 27px of unused reserve, and since the text is right-aligned on
+        // StarDateRight that slack all fell on the LEFT, opening a gap before the speed cluster
+        // roughly three times the one after the menu icon (maintainer feedback).
+        const int StarDateRoom = 94;
         const int SpeedRoom = 46;       // "0.25x" - reserved, so the cluster never shifts
         const int PauseRoom = 62;       // "PAUSED", the longer of the two words it shows
         int SpeedTextRight;             // the factor is right-aligned here, left of "<<"
@@ -112,7 +117,9 @@ namespace Ship_Game
             rx -= menuW + gap * 2;
 
             StarDateRight = rx;
-            rx -= StarDateRoom + gap;
+            // the SAME gap on both sides of the stardate: gap*2 was taken off before it (above),
+            // so the speed cluster gets gap*2 too rather than a bare gap (maintainer feedback).
+            rx -= StarDateRoom + gap * 2;
 
             // The session controls are bare text: they act in place and open nothing, so a plate
             // would give them the weight of the group buttons beside them. PauseRoom is reserved

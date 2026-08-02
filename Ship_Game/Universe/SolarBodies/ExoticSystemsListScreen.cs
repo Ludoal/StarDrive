@@ -139,7 +139,7 @@ namespace Ship_Game
             batch.SafeBegin();
             // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
             // drawn among the children, after everything below it.
-            batch.FillRectangle(GalaxyTabs.ClientArea, ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(ReworkScreens.GroupFrameFillRect(GalaxyTabs), ReworkScreens.GroupFrameFill);
             base.Draw(batch, elapsed);
 
             if (ExoticSL.NumEntries > 0)

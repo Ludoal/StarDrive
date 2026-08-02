@@ -136,7 +136,7 @@ namespace Ship_Game
 
             // Ludoal fork: the frame fill FIRST - before base.Draw and before the bottom row this
             // method paints by hand, or it would cover one of them.
-            batch.FillRectangle(EmpireTabs.ClientArea, ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(ReworkScreens.GroupFrameFillRect(EmpireTabs), ReworkScreens.GroupFrameFill);
 
             base.Draw(batch, elapsed);
             

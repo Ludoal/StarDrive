@@ -311,6 +311,20 @@ namespace Ship_Game.GameScreens
         // that - an alpha under 255 renders additive-bright under premultiplied AlphaBlend.
         public static readonly Color GroupFrameFill = new Color(14, 12, 9).Alpha(0.92f);
 
+        // Ludoal fork: the rect that fill belongs on. ⚠ NOT ClientArea, which is the frame's
+        // INNER area: NineSliceSprite cuts it back by the corner textures' own size (9px a side),
+        // so a fill painted there stops 9px short of the border on all four sides - the gap that
+        // showed on every table screen (maintainer feedback).
+        // Submenu's own SetBackground has always used the FULL rect minus the tab strip, which is
+        // exactly why Fleets and the Shipyard - the two screens that call it - looked right. This
+        // is that same arithmetic, borrowed rather than re-derived, for the screens that cannot
+        // use SetBackground: it parents a child, and a child is drawn by base.Draw, i.e. AFTER
+        // everything a screen paints by hand. On screens that draw their tables manually it would
+        // bury their own content.
+        // The 23 is Submenu's TabHeight - 2, read from the source and not measured on a capture.
+        public static RectF GroupFrameFillRect(Submenu tabs)
+            => tabs.NumTabs == 0 ? tabs.Rect : tabs.Rect.CutTop(23);
+
         // Ludoal fork: the line every frame, panel and button draws around itself. One source:
         // the same numbers were written out in five places, which is how two of them end up
         // disagreeing after somebody retouches one.

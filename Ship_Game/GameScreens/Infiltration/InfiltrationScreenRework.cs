@@ -309,7 +309,7 @@ namespace Ship_Game.GameScreens
             // Ludoal fork: the frame fill goes down FIRST, by hand. As a Submenu background it is
             // one of the screen's children, so base.Draw painted it AFTER the columns below and
             // covered them - SendToBackZOrder only orders it among the other children.
-            batch.FillRectangle(GroupTabs.ClientArea, ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(ReworkScreens.GroupFrameFillRect(GroupTabs), ReworkScreens.GroupFrameFill);
 
             // ⚠ cleared every pass: a column that stops drawing its portrait must not leave a
             // clickable rect behind over whatever takes its place.
