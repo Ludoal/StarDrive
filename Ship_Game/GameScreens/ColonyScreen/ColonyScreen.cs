@@ -140,7 +140,9 @@ namespace Ship_Game
                                         ScreenWidth - 2 * GameScreens.ReworkScreens.FrameMargin,
                                         ScreenHeight - GameScreens.ReworkScreens.TabRowY
                                                      - GameScreens.ReworkScreens.FrameMargin);
-            Add(new Menu2(ColonyFrame));
+            // ⚠ NOT Add()ed: a child is drawn by base.Draw, which lands AFTER everything this
+            // screen paints by hand - the frame's body would bury the panels. Painted first
+            // thing in Draw instead (see ColonyScreen_Draw).
             // ⚠ RectF converts to Rectangle, never the other way - spelled out here
             Vector2 closePos = GameScreens.ReworkScreens.GroupClosePos(
                 new RectF(ColonyFrame.X, ColonyFrame.Y, ColonyFrame.Width, ColonyFrame.Height));

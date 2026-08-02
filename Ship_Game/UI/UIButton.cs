@@ -137,9 +137,14 @@ namespace Ship_Game
         // size, the edges stretch along one axis and the middle along both. The slices are cut
         // out of the bitmap here rather than shipped as nine files, so replacing the look is one
         // PNG. `tint` multiplies: the asset is greyscale, the colour lives in the code.
-        void DrawNineSlice(SpriteBatch batch, SubTexture tex, in Rectangle r, Color tint)
+        // Ludoal fork: the top bar's group tabs are not UIButtons but must look like them, so the
+        // one plate is drawn from here rather than copied into the bar.
+        public static void DrawPlate(SpriteBatch batch, in Rectangle r, Color tint)
+            => DrawNineSlice(batch, ResourceManager.Texture(ButtonTex), r, tint, ButtonSlice);
+
+        static void DrawNineSlice(SpriteBatch batch, SubTexture tex, in Rectangle r, Color tint, int border)
         {
-            int b = SliceBorderOf(tex, r);
+            int b = SliceBorderOf(tex, r, border);
             if (b <= 0)
             {
                 batch.Draw(tex, r, tint);
@@ -173,9 +178,9 @@ namespace Ship_Game
         }
 
         // A button can be shorter than two borders; shrink the slice rather than overlap it.
-        int SliceBorderOf(SubTexture tex, in Rectangle r)
+        static int SliceBorderOf(SubTexture tex, in Rectangle r, int border)
         {
-            int b = SliceBorder;
+            int b = border;
             int limit = Math.Min(r.Width, r.Height) / 2;
             if (b > limit) b = limit;
             return Math.Min(b, Math.Min(tex.Width, tex.Height) / 2);
@@ -201,7 +206,7 @@ namespace Ship_Game
                 // size while only the middle stretches, so a 52px and a 182px button are the same
                 // control; the tint carries the meaning (neutral, active, hostile) that used to
                 // need a texture of its own; and a redrawn asset changes the look with no code.
-                DrawNineSlice(batch, texture, r, BackgroundColor().Alpha(Enabled ? Opacity : Opacity * 0.5f));
+                DrawNineSlice(batch, texture, r, BackgroundColor().Alpha(Enabled ? Opacity : Opacity * 0.5f), SliceBorder);
             }
             else if (texture != null)
             {

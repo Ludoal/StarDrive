@@ -108,6 +108,11 @@ namespace Ship_Game
         // at the list, not a preference - but it survives the screen for the rest of the session.
         static bool PinActiveDesign = true;
         UICheckBox PinActiveCheck;
+
+        // Ludoal fork: the compact Active Design cartouche - list-width, the headline stats only.
+        // The toggle is in place and remembers its state; nothing reads it yet.
+        static bool CompactActiveDesign;
+        UICheckBox CompactActiveCheck;
         // Ludoal fork (bench 188): sweeping from one browser row to the next crosses a gap where
         // nothing is hovered. With Pin Active unchecked that gap let the Active cartouche flash
         // back into its seat between every pair of rows (maintainer feedback), so a hover that ENDS is held for
@@ -1169,9 +1174,11 @@ namespace Ship_Game
             // first because it decides what the two dropdowns even mean, stance last because it is
             // the widest block. The captions are short enough to fit the row at 1440 wide
             // (maintainer feedback), and each is measured in the font that draws it.
-            const int ddW = 125, ddHangarW = 150, ddH = 18, optGap = 20, carrierW = 110;
+            const int ddW = 125, ddHangarW = 150, ddH = 18, optGap = 20;
             int lblRepairW = (int)Fonts.Arial12Bold.TextWidth(RepairCaption) + TitleGap;
             int lblHangarW = (int)Fonts.Arial12Bold.TextWidth(HangarCaption) + TitleGap;
+            // the checkbox measures itself the same way UICheckBox does: box (12) + padding (4) + text
+            int carrierW = 12 + 4 + (int)Fonts.Arial12Bold.TextWidth("Carrier Only");
             int optRowW = carrierW + optGap + lblRepairW + ddW + optGap + lblHangarW + ddHangarW
                         + optGap + stanceW;
             int optY = OptionsRowY;
@@ -1182,7 +1189,10 @@ namespace Ship_Game
                 () => CurrentDesign?.IsCarrierOnly == true,
                 (b) => { if (CurrentDesign != null) CurrentDesign.IsCarrierOnly = b; }, "Carrier Only", GameText.WhenMarkedThisShipCan);
 
-            var dropdownRect = new Rectangle((int)carrierOnlyPos.X + carrierW + optGap + lblRepairW,
+            // Ludoal fork: measured off the checkbox rather than a reserved 110 - UICheckBox sizes
+            // itself from its own text, so the slot was wider than the control and the gap before
+            // Repair read larger than every other gap on the row.
+            var dropdownRect = new Rectangle((int)(CarrierOnlyCheckBox.Right + optGap) + lblRepairW,
                                              optY, ddW, ddH);
             CategoryList = new CategoryDropDown(dropdownRect);
             foreach (ShipCategory item in Enum.GetValues(typeof(ShipCategory)).Cast<ShipCategory>())
@@ -1264,6 +1274,18 @@ namespace Ship_Game
             // so the width is exact by the time this runs.
             PinActiveCheck.SetAbsPos(hullSelectPos.X + hullSelSize.X - PinActiveCheck.Width,
                                      PinActiveCheck.Y);
+
+            // Ludoal fork: a second toggle to the left of Pin Active, for a compact cartouche -
+            // the width of the list, carrying only the stats worth a glance. INERT for now: the
+            // flag is read by nothing, so the box only remembers what it was clicked to.
+            CompactActiveCheck = Checkbox(new Vector2(hullSelectPos.X, infoTab.Y + 4),
+                                          () => CompactActiveDesign,
+                                          (b) => { CompactActiveDesign = b; },
+                                          "Compact",
+                                          "Show the Active Design cartouche in its compact form.");
+            // measured off Pin Active rather than a reserved slot, and spaced like the option row
+            CompactActiveCheck.SetAbsPos(PinActiveCheck.X - CompactActiveCheck.Width - 20,
+                                         PinActiveCheck.Y);
 
             // Ludoal fork (spec v4): the HOVER cartouche takes the slot the Compared one used to
             // hold. Like its module counterpart it is the plain frame — no delta lane — showing

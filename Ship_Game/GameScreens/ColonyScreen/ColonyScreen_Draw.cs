@@ -195,6 +195,7 @@ namespace Ship_Game
             // across the panels. Painted here rather than via SetBackground: a background is a
             // CHILD, drawn by base.Draw, which lands after everything this method paints.
             batch.FillRectangle(ColonyFrame, GameScreens.ReworkScreens.GroupFrameFill);
+            batch.DrawRectangle(ColonyFrame, GameScreens.ReworkScreens.FrameRule);
 
             // Ludoal fork: the planet's name in the title bar, centred - it used to ride the one
             // tab of a group that had no second tab to switch to.

@@ -1,10 +1,10 @@
+using System;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using Ship_Game.AI;
 using Ship_Game.Audio;
 using Ship_Game.Gameplay;
 using Ship_Game.Ships;
-using System;
 using System.Collections.Generic;
 using System.Text;
 using SDGraphics;
@@ -203,11 +203,21 @@ namespace Ship_Game
         // what makes the four frames read as one row (bench 46.135).
         public static float FramesBottom() => BandBottom - BottomPad;
 
-        // The frame's target height — three lines shorter than it was (maintainer feedback). The list takes
-        // whatever is above it, so this single number decides both, and they cannot drift.
-        // A share of the WINDOW, deliberately: the cartouche has to hold the same stat blocks
-        // whatever frame contains it, and measuring it off the band shrank it by 42px at 1050p.
-        public static float FrameHeightFor(float screenH) => screenH * 0.42f - ShorterBy;
+        // Ludoal fork: a CONSTANT, not a share of the window. The frame holds the same stat rows
+        // at every size, so a fraction only made it lose what its content still needed - at 900
+        // it came out 76px shorter than at 1080 for identical text, which is the block visibly
+        // shrinking instead of the list absorbing. 454 is what 0.42 gave at 1080, i.e. the height
+        // the rows were already living in comfortably. The list is the one variable block: it
+        // takes whatever is left, so this single number still decides both and they cannot drift.
+        // ⚠ The frame gives way only when the LIST would be left with less than it needs to
+        // scroll - the guard is on the variable block, not on a share of the window.
+        public const float FrameHeightConst = 454f;
+        public const float ListHeightFloor = 180f;
+        public static float FrameHeightFor(float screenH)
+        {
+            float room = FramesBottom() - FrameGap - ToggleRowBand - ListHeightFloor;
+            return Math.Min(FrameHeightConst, room) - ShorterBy;
+        }
 
         // Ludoal fork: the band between a list and the frame under it, carrying the two view
         // toggles that belong to that column. Reserved on BOTH columns whether or not a given

@@ -37,7 +37,9 @@ namespace Ship_Game
         // Ludoal fork: the one button asset, and how deep its border runs. Both live here so a new
         // PNG (or a thicker frame in a redrawn one) is a single edit for the whole game.
         public const string ButtonTex = "NewUI/button_9s";
-        public const int ButtonSlice = 4;
+        // ⚠ Must be >= the asset's corner RADIUS, or the slice cuts the arc in half and the
+        // rounding never shows. The corners are drawn at 6, so this is 6.
+        public const int ButtonSlice = 6;
 
         // The palette a button can mean: nothing in particular, an active control, a hostile
         // action, or one that is currently out of reach. The asset is greyscale, so these ARE

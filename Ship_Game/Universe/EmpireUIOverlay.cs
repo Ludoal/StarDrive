@@ -170,7 +170,6 @@ namespace Ship_Game
         // Ludoal fork: the bar draws itself flat, in the reworked screens' grammar - a dark plate
         // with a brass rule, no plating textures. Colour is decided HERE from live state (which
         // group is open, whether the game is paused), never stored on the button.
-        static readonly Color PlateRule  = new Color(118, 102, 67);
         static readonly Color PlateBlue  = new Color(38, 56, 84);
         static readonly Color PlateBrown = new Color(84, 64, 38);
         static readonly Color TextCream  = new Color(255, 240, 189);
@@ -215,11 +214,13 @@ namespace Ship_Game
                 // where the glyph already says it.
                 if (!b.Bare)
                 {
-                    // Translucent: the bar sits over the map, and a solid plate reads as a hole
-                    // punched in it. The group you are inside carries more weight than the rest.
-                    float opacity = fill == PlateBrown ? 0.72f : 0.55f;
-                    batch.FillRectangle(b.Rect, fill.Alpha(opacity));
-                    batch.DrawRectangle(b.Rect, PlateRule.Alpha(0.6f));
+                    // Ludoal fork: the same nine-sliced plate every button in the game draws, so
+                    // the four group tabs belong to the set rather than being flat rectangles
+                    // beside it. Translucent still: the bar sits over the map, where a solid
+                    // plate reads as a hole punched in it, and the group you are inside carries
+                    // more weight than the rest.
+                    float opacity = fill == PlateBrown ? 0.85f : 0.62f;
+                    UIButton.DrawPlate(batch, b.Rect, fill.Alpha(opacity));
                 }
 
                 if (!string.IsNullOrEmpty(b.Text))

@@ -35,7 +35,15 @@ public sealed class GamePlayMenuScreen : GameScreen
         RemoveAll();
 
         Vector2 c = ScreenCenter;
-        Add(new Menu2(new RectF(c.X - 100, c.Y - 150, 200, 330)));
+        var frame = new RectF(c.X - 100, c.Y - 150, 200, 330);
+        Add(new Menu2(frame));
+
+        // Ludoal fork: the panel had no title where every other one names itself. Same font and
+        // the same 46px bar the Codex and Colony use, so the three read as one set of windows.
+        const float titleBarH = 46;
+        var menuTitle = Add(new UILabel(Vector2.Zero, "Menu", Fonts.Arial20Bold, Colors.Cream));
+        menuTitle.Pos = new Vector2(frame.X + frame.W / 2 - menuTitle.Size.X / 2,
+                                    frame.Y + titleBarH / 2 - menuTitle.Size.Y / 2);
 
         SavingText = Add(new UILabel(GameText.Saving, Fonts.Pirulen16, Color.White));
         SavingText.Visible = false;

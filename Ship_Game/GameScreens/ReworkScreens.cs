@@ -288,6 +288,11 @@ namespace Ship_Game.GameScreens
         // that - an alpha under 255 renders additive-bright under premultiplied AlphaBlend.
         public static readonly Color GroupFrameFill = new Color(14, 12, 9).Alpha(0.92f);
 
+        // Ludoal fork: the brass line every frame, panel and button draws around itself. One
+        // source: the same three numbers were written out in five places, which is how two of
+        // them end up disagreeing after somebody retouches one.
+        public static readonly Color FrameRule = new Color(118, 102, 67);
+
         public static GameScreen Economy(UniverseScreen u) => new BudgetScreenRework(u);
 
         // Ludoal fork: both top-bar buttons lead into the same four-tab group, each landing on its

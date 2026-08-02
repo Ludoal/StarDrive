@@ -10,9 +10,8 @@ namespace Ship_Game
     {
         public Rectangle Menu;
 
-        // Ludoal fork: the rule around a painted frame - the same brass line the buttons and
-        // the reworked screens draw, so every frame on screen belongs to one interface.
-        static readonly Color FrameRule = new Color(118, 102, 67);
+        // the one brass line, declared with the frame fill it goes with
+        static Color FrameRule => GameScreens.ReworkScreens.FrameRule;
 
         public bool Hollow;
         public Color Background;
