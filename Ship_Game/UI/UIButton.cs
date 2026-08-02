@@ -125,7 +125,12 @@ namespace Ship_Game
 
         public static SubTexture StyleTexture(ButtonStyle style = ButtonStyle.Default)
         {
-            return GetDefaultStyle(style).Normal;
+            // ⚠ Callers want this for SIZE, not for pixels: the layout parser auto-fits a button
+            // from its aspect ratio ("AbsSize: [200, 0]" reads the height off it). The slice asset
+            // is square, so handing it back turned every laid-out button into a 200x200 slab -
+            // the size reference is the one that still carries the proportions.
+            StyleTextures s = GetDefaultStyle(style);
+            return s.SizeRef ?? s.Normal;
         }
 
         // Ludoal fork: draw `tex` into `r` as a nine-slice - the four corners keep their pixel

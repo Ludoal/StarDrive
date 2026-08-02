@@ -16,7 +16,10 @@ namespace Ship_Game
     public partial class ColonyScreen : PlanetScreen
     {
         readonly ToggleButton PlayerDesignsToggle;
-        Submenu ColonyTabs;   // Ludoal fork: the frame's tab row - a group of one
+        // Ludoal fork: the screen's frame, and the title bar the planet name sits in. 46 is the
+        // Codex's own title height, so the two windows read as the same furniture.
+        Rectangle ColonyFrame;
+        const float TitleBarH = 46;
         readonly Submenu PlanetInfo;
         readonly Submenu PStorage;
         readonly Submenu PFacilities;
@@ -128,24 +131,30 @@ namespace Ship_Game
             Player.UpdateShipsWeCanBuild();
             TextFont = LowRes ? Font8 : Font12;
 
-            // Ludoal fork: the 80px title cartouche gives way to the group's tab row - a group
-            // of ONE, since Colony opens from the map and has no siblings, but a full-frame
-            // screen that looked different for that would read as an oversight. The two Menu1
-            // panels went with it: every rect below is placed from the grid instead.
-            ColonyTabs = GameScreens.ReworkScreens.AddGroupTabs(
-                this, GameScreens.ReworkScreens.ColonyTabTitles(p.Name), 0, _ => { }, out Rectangle _);
-            RectF client = ColonyTabs.ClientArea;
+            // Ludoal fork: a plain frame, not a tab row. Colony opens from the map and has no
+            // siblings, so the group of ONE only ever drew a tab that led nowhere; the frame now
+            // starts where that tab's top edge was, which hands the screen back the row's height.
+            // The planet name is drawn in the title bar (see ColonyScreen_Draw).
+            ColonyFrame = new Rectangle(GameScreens.ReworkScreens.FrameMargin,
+                                        GameScreens.ReworkScreens.TabRowY,
+                                        ScreenWidth - 2 * GameScreens.ReworkScreens.FrameMargin,
+                                        ScreenHeight - GameScreens.ReworkScreens.TabRowY
+                                                     - GameScreens.ReworkScreens.FrameMargin);
+            Add(new Menu2(ColonyFrame));
+            Vector2 closePos = GameScreens.ReworkScreens.GroupClosePos(ColonyFrame);
+            Add(new CloseButton(closePos.X, closePos.Y));
+
+            // the title bar the planet name sits in, and where the content starts under it
+            RectF client = new(ColonyFrame.X, ColonyFrame.Y + TitleBarH,
+                               ColonyFrame.Width, ColonyFrame.Height - TitleBarH);
 
             // ── the screen's one grid ────────────────────────────────────────────────────────
             // Ludoal fork: every panel is placed from THESE, and nothing re-derives a margin of
             // its own. Pad is the gap to the frame AND between panels - one number, so a change
             // moves the whole layout together rather than half of it.
-            // ⚠ Measured from the FRAME, not from ClientArea: NineSliceSprite cuts the 9px corner
-            // textures off to get the client rect, so a pad added to it lands DOUBLE on the three
-            // sides the tab row does not cover. Only the top keeps the client's line, which is
-            // where the tabs sit.
+            // The sides and foot are measured from the frame; the top starts under the title bar.
             const float Pad = 10;
-            Rectangle frame = ColonyTabs.Rect;   // ⚠ a Rectangle; RectF converts only the other way
+            Rectangle frame = ColonyFrame;
             float gridLeft   = frame.X + Pad;
             float gridRight  = frame.Right - Pad;
             float gridTop    = client.Y + Pad;

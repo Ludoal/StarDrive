@@ -26,6 +26,12 @@ namespace Ship_Game
         public Rectangle OrdersRect;
         public Rectangle DistanceRect;
 
+        // Ludoal fork: the orders column holds two buttons side by side - Colonize and Recall
+        // Troops never show together in practice, so the pair is Colonize-or-Recall then Send
+        // Troops. The column is sized FROM this, so it cannot be outgrown at a narrow window.
+        const int OrdersBtnW = 140, OrdersBtnH = 24, OrdersBtnGap = 6, OrdersInset = 10;
+        public const int OrdersColumnW = OrdersInset + 2 * OrdersBtnW + OrdersBtnGap + OrdersInset;
+
         Empire Player => Planet.Universe.Player;
         private readonly Color Cream = Colors.Cream;
         private readonly Graphics.Font NormalFont = Fonts.Arial20Bold;
@@ -95,19 +101,27 @@ namespace Ship_Game
             RichRect     = NextRect(120);
             PopRect      = NextRect(200);
             OwnerRect    = NextRect(100);
-            OrdersRect   = NextRect(100);
+            // Ludoal fork: the orders column is as wide as what it HOLDS - two buttons and their
+            // gaps, plus the inset - rather than a round 100 that the buttons then ran past. At
+            // 1440 there was no slack left to the right and Send Troops was clipped by the frame.
+            OrdersRect   = NextRect(OrdersColumnW);
 
             ShipIconRect = new Rectangle(PlanetNameRect.X + 5, PlanetNameRect.Y + 5, 50, 50);
             PlanetNameEntry.Text = Planet.Name;
             PlanetNameEntry.SetPos(ShipIconRect.Right + 10, y);
             
-            // Ludoal fork: a pinned slot rather than the texture's own size - the dan_button family
-            // is 182 wide and three of those would run past the row. UIButton stretches to the rect
-            // it is given, so the width is spelled out here.
-            const int btnW = 140, btnH = 24, btnGap = 6;
-            Colonize.Rect      = new Rectangle(OrdersRect.X + 10, OrdersRect.Y + OrdersRect.Height / 2 - btnH / 2, btnW, btnH);
-            SendTroops.Rect    = new RectF(Colonize.Right + btnGap, Colonize.Y, btnW, btnH);
-            RecallTroops.Rect  = new RectF(SendTroops.Right + btnGap, Colonize.Y, btnW, btnH);
+            // Ludoal fork: two slots, not three. UIButton stretches to the rect it is given, so
+            // the widths are spelled out, and OrdersColumnW above is derived FROM them - the
+            // column used to be a round 100 that the buttons ran straight past, which only
+            // showed at a narrow window where nothing was left to spill into.
+            // Colonize and Recall Troops share the first slot: an unowned planet has no troops
+            // of yours to recall, so the two never come up together.
+            const int btnW = OrdersBtnW, btnH = OrdersBtnH, btnGap = OrdersBtnGap;
+            int slot1X = OrdersRect.X + OrdersInset;
+            int rowY   = OrdersRect.Y + OrdersRect.Height / 2 - btnH / 2;
+            Colonize.Rect      = new Rectangle(slot1X, rowY, btnW, btnH);
+            RecallTroops.Rect  = new RectF(slot1X, rowY, btnW, btnH);
+            SendTroops.Rect    = new RectF(slot1X + btnW + btnGap, rowY, btnW, btnH);
 
             Colonize.Visible     = Planet.Owner == null && Planet.Habitable;
             RecallTroops.Visible = Planet.Owner != Player && Planet.NumTroopsCanLaunchFor(Player) > 0;

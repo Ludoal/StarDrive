@@ -194,14 +194,19 @@ namespace Ship_Game
             // transparent, so the galaxy behind it showed straight through - planet names ran
             // across the panels. Painted here rather than via SetBackground: a background is a
             // CHILD, drawn by base.Draw, which lands after everything this method paints.
-            RectF fill = GameScreens.ReworkScreens.GroupSceneArea(ColonyTabs.Rect, ColonyTabs.ClientArea);
-            batch.FillRectangle(fill, GameScreens.ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(ColonyFrame, GameScreens.ReworkScreens.GroupFrameFill);
 
-            // the two panels' brass surrounds were drawn here by hand and are gone - the tab
-            // frame supplies the one border this screen needs.
+            // Ludoal fork: the planet's name in the title bar, centred - it used to ride the one
+            // tab of a group that had no second tab to switch to.
+            string title = P.Name;
+            var titleAt = new Vector2(ColonyFrame.X + ColonyFrame.Width / 2 - Font20.TextWidth(title) / 2f,
+                                      ColonyFrame.Y + TitleBarH / 2 - Font20.LineSpacing / 2f);
+            batch.DrawString(Font20, title, titleAt, Colors.Cream);
+
+            // the two panels' brass surrounds were drawn here by hand and are gone - the frame
+            // supplies the one border this screen needs.
             LeftColony.Draw(batch, elapsed);
             RightColony.Draw(batch, elapsed);
-            GameScreens.ReworkScreens.DrawColonyTabTip(ColonyTabs, Input.CursorPosition);
 
             PlanetInfo.Draw(batch, elapsed);
             PStorage.Draw(batch, elapsed);
