@@ -1,8 +1,12 @@
+using Microsoft.Xna.Framework.Graphics;
 using SDGraphics;
 using Ship_Game.Data.Serialization;   // [StarDataType] / [StarData]
 using Ship_Game.Data.Yaml;
 using Color = Microsoft.Xna.Framework.Color;
 using Font = Ship_Game.Graphics.Font;
+// XNA brings its own Rectangle in on the line above: name the one this file means, the way
+// Menu2 does. DrawPlate takes the SDGraphics one, and its callers pass that.
+using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game
 {

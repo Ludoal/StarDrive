@@ -424,12 +424,14 @@ namespace Ship_Game
             // button used to take - the three the negotiation screen graphs, at a glance and for
             // every empire at once instead of one at a time. Same colours it uses (green, yellow,
             // red) and the same 0-100 clamp, so the numbers here and the bars there agree.
-            // Intelligence like the rest of the block, so it hides behind the same gate.
+            // NO espionage gate: the negotiation screen has always drawn these three bars for
+            // anyone you can talk to, so gating the same three numbers here would make the
+            // overview say LESS than a screen one click away (maintainer feedback).
             // ⚠ Every path through this draws THREE rows, whatever it can show - the column has to
             // stay level with its neighbours, and a branch that quietly drew none would shift
-            // every band below it in that one column.
-            bool canSeeMood = UsingNewEspioange ? espionage.CanViewPersonality : IntelligenceLevel(e) > 0;
-            if (canSeeMood && e.GetRelations(Player, out Relationship toUs))
+            // every band below it in that one column. An empire we have no relationship with at
+            // all still gets its three placeholders.
+            if (e.GetRelations(Player, out Relationship toUs))
             {
                 TableRow(batch, col, ref y, maxY, Localizer.Token(GameText.Trust),
                          toUs.Trust.Clamped(0, 100).String(0), Color.Green);
@@ -440,9 +442,11 @@ namespace Ship_Game
             }
             else
             {
-                HiddenRow(batch, col, ref y, maxY, Localizer.Token(GameText.Trust), 1);
-                HiddenRow(batch, col, ref y, maxY, Localizer.Token(GameText.Anger), 1);
-                HiddenRow(batch, col, ref y, maxY, Localizer.Token(GameText.Threat), 1);
+                // no spy badge here - this is "we have never met them", not "your espionage is
+                // too low". The badge would promise a level that unlocks nothing.
+                HiddenRow(batch, col, ref y, maxY, Localizer.Token(GameText.Trust));
+                HiddenRow(batch, col, ref y, maxY, Localizer.Token(GameText.Anger));
+                HiddenRow(batch, col, ref y, maxY, Localizer.Token(GameText.Threat));
             }
         }
 

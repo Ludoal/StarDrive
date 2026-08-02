@@ -1170,10 +1170,10 @@ namespace Ship_Game
             // why the row's Y is the stance topLeft and not a font baseline.
             // Each dropdown carries its caption to its LEFT, so the row must reserve that width
             // too: measured in the font that draws it, never guessed.
-            // Ludoal fork: the row reads Carrier Only, Repair, Hangar Type, Stance - the checkbox
-            // first because it decides what the two dropdowns even mean, stance last because it is
-            // the widest block. The captions are short enough to fit the row at 1440 wide
-            // (maintainer feedback), and each is measured in the font that draws it.
+            // Ludoal fork: the row reads Carrier Only, Repair, Stance, Hangar Type - the checkbox
+            // first because it decides what the two dropdowns even mean. The captions are short
+            // enough to fit the row at 1440 wide (maintainer feedback), and each is measured in
+            // the font that draws it.
             const int ddW = 125, ddHangarW = 150, ddH = 18, optGap = 20;
             int lblRepairW = (int)Fonts.Arial12Bold.TextWidth(RepairCaption) + TitleGap;
             int lblHangarW = (int)Fonts.Arial12Bold.TextWidth(HangarCaption) + TitleGap;
@@ -1198,15 +1198,18 @@ namespace Ship_Game
             foreach (ShipCategory item in Enum.GetValues(typeof(ShipCategory)).Cast<ShipCategory>())
                 CategoryList.AddOption(item.ToString(), item);
 
-            var hangarRect = new Rectangle(dropdownRect.Right + optGap + lblHangarW, optY, ddHangarW, ddH);
+            // Ludoal fork: Stance before Hangar Type (maintainer feedback). Stance is a block of
+            // icons rather than a labelled dropdown, so it breaks the row's rhythm less in the
+            // middle than at the end, where it left the widest thing hanging off the edge.
+            OrdersButton = new DesignStanceButtons(this,
+                new Vector2(dropdownRect.Right + optGap, optY));
+            Add(OrdersButton);
+
+            var hangarRect = new Rectangle(dropdownRect.Right + optGap + stanceW + optGap + lblHangarW,
+                                           optY, ddHangarW, ddH);
             HangarOptionsList = new HangarDesignationDropDown(hangarRect);
             foreach (HangarOptions item in Enum.GetValues(typeof(HangarOptions)).Cast<HangarOptions>())
                 HangarOptionsList.AddOption(item.ToString(), item);
-
-            // last on the row, its top on the same line as the dropdowns
-            OrdersButton = new DesignStanceButtons(this,
-                new Vector2(hangarRect.Right + optGap, optY));
-            Add(OrdersButton);
 
             // DESIGN ISSUES sits UNDER the cartouche (maintainer feedback) instead of in a narrow 200px
             // column to its left, so its text gets the full width. Both boxes use the bottom-up
