@@ -91,10 +91,10 @@ public sealed class RuleOptionsScreen : PopupWindow
 
     public override void Draw(SpriteBatch batch, DrawTimes elapsed)
     {
+        // base.Draw opens and closes its own batch (PopupWindow draws the frame there), and this
+        // screen adds nothing of its own on top - its sliders and boxes are all children.
         ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-        batch.SafeBegin();
         base.Draw(batch, elapsed);
-        batch.SafeEnd();
     }
 
     public override void LoadContent()
@@ -118,7 +118,10 @@ public sealed class RuleOptionsScreen : PopupWindow
                                                     GameText.InsystemEnemyFtlSpeedModifier, 0.1f, 1f, P.EnemyFTLModifier));
         EnemyFTLPenaltySlider.OnChange = (s) => P.EnemyFTLModifier = s.AbsoluteValue;
             
-        int indent = (int)(width / 4.5f);
+        // the second column, measured from the FRAME rather than from the screen: at 1440 the old
+        // ScreenWidth/4.5 gave 320, which started before the 270-wide sliders at X+60 had ended,
+        // and it moved with the display while the panel no longer does. 280 clears them.
+        const int indent = 280;
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*0, () => P.PreventFederations, title: GameText.PreventAiFederations, tooltip: GameText.PreventsAiEmpiresFromMerging);
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*1, () => P.FixedPlayerCreditCharge, title: GameText.FixedShipAndBuildingsCost, tooltip: GameText.KeepFixedCreditCostOf);
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*2, () => P.AIUsesPlayerDesigns, title: GameText.UsePlayerDesignsTitle, tooltip: GameText.UsePlayerDesignsTip);
