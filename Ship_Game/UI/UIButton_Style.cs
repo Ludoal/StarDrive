@@ -36,6 +36,19 @@ namespace Ship_Game
 
     public partial class UIButton
     {
+        // Ludoal fork: the one button asset, and how deep its border runs. Both live here so a new
+        // PNG (or a thicker frame in a redrawn one) is a single edit for the whole game.
+        public const string ButtonTex = "NewUI/button_9s";
+        public const int ButtonSlice = 4;
+
+        // The palette a button can mean: nothing in particular, an active control, a hostile
+        // action, or one that is currently out of reach. The asset is greyscale, so these ARE
+        // the look - change them here and every button of that meaning follows.
+        public static readonly Color PlateNeutral = new Color(74, 64, 46);
+        public static readonly Color PlateActive  = new Color(48, 72, 108);
+        public static readonly Color PlateHostile = new Color(116, 44, 44);
+        public static readonly Color PlateMuted   = new Color(56, 52, 46);
+
         public class StyleTextures
         {
             public SubTexture Normal;
@@ -54,39 +67,34 @@ namespace Ship_Game
 
             public bool DrawBackground = true;
 
-            // Ludoal fork: a PAINTED style keeps a texture for its SIZE but never draws it, so a
-            // button that never got an explicit rect still measures itself the way it always did
-            // (GetInitialSize reads Normal). Painting rather than stretching one bitmap is what
-            // lets a 52px and a 182px button share a look: the stock button textures come in five
-            // widths and the new-look bitmap only in one, so any swap would deform the rule on
-            // its edges.
-            public SubTexture SizeRef;
-
             public StyleTextures()
             {
             }
 
-            // Ludoal fork: the painted new look - dark translucent plate, thin gold rule, in the
-            // grammar the reworked screens and the top bar already use.
-            public static StyleTextures Painted(string sizeRef) => new StyleTextures
-            {
-                SizeRef        = ResourceManager.Texture(sizeRef),
-                DrawBackground = true,
-                DefaultColor   = new Color(14, 12, 9),
-                HoverColor     = new Color(38, 56, 84),
-                PressColor     = new Color(8, 7, 5),
-            };
+            // Ludoal fork: ONE mechanism for every button. A greyscale bitmap is drawn as a
+            // nine-slice - corners keep their pixels, edges stretch on one axis, the middle on
+            // both - and the colour comes from the tint rather than from a texture per meaning.
+            // Three knobs: which bitmap, which tint per state, how opaque. A button can be pulled
+            // to any width and a fair way in height, and a redrawn PNG restyles the whole game.
+            public bool NineSlice;
+            public int SliceBorder = ButtonSlice;
+            public float Opacity = 1f;
 
-            // A button that MEANS something (an active control, a hostile action) keeps its colour
-            // in the plate rather than in a texture of its own.
-            public static StyleTextures PaintedTinted(string sizeRef, Color plate) => new StyleTextures
+            public static StyleTextures Sliced(Color plate, float opacity = 1f,
+                                               string tex = ButtonTex, int border = ButtonSlice)
             {
-                SizeRef        = ResourceManager.Texture(sizeRef),
-                DrawBackground = true,
-                DefaultColor   = plate,
-                HoverColor     = plate.LerpTo(Color.White, 0.18f),
-                PressColor     = plate.LerpTo(Color.Black, 0.25f),
-            };
+                SubTexture t = ResourceManager.Texture(tex);
+                return new StyleTextures
+                {
+                    Normal = t, Hover = t, Pressed = t,
+                    NineSlice   = true,
+                    SliceBorder = border,
+                    Opacity     = opacity,
+                    DefaultColor = plate,
+                    HoverColor   = plate.LerpTo(Color.White, 0.22f),
+                    PressColor   = plate.LerpTo(Color.Black, 0.28f),
+                };
+            }
 
             public StyleTextures(string normal)
             {
@@ -144,29 +152,28 @@ namespace Ship_Game
             ContentId = ResourceManager.ContentId;
             Styling = new[]
             {
-                // Ludoal fork: painted, not textured. These eight came in five different widths
-                // (52 to 168), so no single bitmap could serve them without stretching its rule;
-                // a plate takes any width. Each keeps its old texture as the SIZE reference, so
-                // buttons that never got an explicit rect measure exactly as before.
-                StyleTextures.Painted("EmpireTopBar/empiretopbar_btn_168px"),
-                StyleTextures.Painted("EmpireTopBar/empiretopbar_btn_68px"),
-                StyleTextures.Painted("EmpireTopBar/empiretopbar_low_btn_80px"),
-                StyleTextures.Painted("EmpireTopBar/empiretopbar_low_btn_100px"),
-                StyleTextures.Painted("EmpireTopBar/empiretopbar_btn_132px"),
-                StyleTextures.Painted("EmpireTopBar/empiretopbar_btn_132px_menu"),
-                StyleTextures.Painted("EmpireTopBar/empiretopbar_btn_168px_dip"),
-                StyleTextures.Painted("EmpireTopBar/empiretopbar_btn_168px_military"),
+                // Ludoal fork: one bitmap, one mechanism, the meaning carried by the tint. These
+                // eight came in five different widths (52 to 168), which no single stretched
+                // bitmap could serve; sliced, every one of them is the same control at its own
+                // size. Opacity is per style because the bar sits over the map, where a solid
+                // plate reads as a hole, while a menu over black wants its full body.
+                StyleTextures.Sliced(PlateNeutral, 0.92f),   // Default
+                StyleTextures.Sliced(PlateNeutral, 0.92f),   // Small
+                StyleTextures.Sliced(PlateNeutral, 0.85f),   // Low80
+                StyleTextures.Sliced(PlateNeutral, 0.85f),   // Low100
+                StyleTextures.Sliced(PlateNeutral, 0.92f),   // Medium
+                StyleTextures.Sliced(PlateMuted,   0.75f),   // MediumMenu - the greyed-out one
+                StyleTextures.Sliced(PlateActive,  0.92f),   // BigDip
+                StyleTextures.Sliced(PlateHostile, 0.92f),   // Military - a hostile action
                 new StyleTextures("NewUI/Close_Normal", "NewUI/Close_Hover"),
                 new StyleTextures("ResearchMenu/button_queue_up", "ResearchMenu/button_queue_up_hover"),
                 new StyleTextures("ResearchMenu/button_queue_down", "ResearchMenu/button_queue_down_hover"),
                 new StyleTextures("ResearchMenu/button_queue_cancel", "ResearchMenu/button_queue_cancel_hover"),
                 new StyleTextures("ResearchMenu/button_queue_to_top", "ResearchMenu/button_queue_to_top_hover"),
-                // Ludoal fork: painted too, so every button in the game shares ONE grammar rather
-                // than a bitmap here and a plate there. Blue and red keep their meaning through
-                // the plate colour instead of a separate texture.
-                StyleTextures.Painted("UI/dan_button"),
-                StyleTextures.PaintedTinted("UI/dan_button_blue", new Color(38, 56, 84)),
-                StyleTextures.PaintedTinted("UI/dan_button_red",  new Color(96, 34, 34)),
+                // the three wide dan_button styles, through the same mechanism
+                StyleTextures.Sliced(PlateNeutral, 0.92f),   // DanButton
+                StyleTextures.Sliced(PlateActive,  0.92f),   // DanButtonBlue
+                StyleTextures.Sliced(PlateHostile, 0.92f),   // DanButtonRed
                 // Ludoal fork: same rank as DanButtonClear in the enum above
                 new StyleTextures("NewUI/dan_button_clear", "NewUI/dan_button_blue_clear",
                                   "NewUI/dan_button_blue_clear"),
@@ -186,14 +193,19 @@ namespace Ship_Game
             SetStyle(defaultStyle);
         }
 
-        SubTexture SizeRef;   // Ludoal fork: measured, never drawn - see StyleTextures.Painted
+        // Ludoal fork: draw the style's bitmap as a nine-slice - see StyleTextures.Sliced
+        bool NineSlice;
+        int SliceBorder;
+        public float Opacity = 1f;   // per-button override, on top of its style
 
         void SetStyle(StyleTextures style)
         {
             Normal = style.Normal;
             Hover = style.Hover;
             Pressed = style.Pressed;
-            SizeRef = style.SizeRef;
+            NineSlice = style.NineSlice;
+            SliceBorder = style.SliceBorder;
+            Opacity = style.Opacity;
 
             DefaultTextColor = style.DefaultTextColor;
             HoverTextColor = style.HoverTextColor;
@@ -210,8 +222,6 @@ namespace Ship_Game
         {
             if (Normal != null)
                 return Normal.SizeF;
-            if (SizeRef != null)   // Ludoal fork: a painted style measures off its reference
-                return SizeRef.SizeF;
             return new Vector2(2, 2);
         }
         

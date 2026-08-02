@@ -232,8 +232,16 @@ namespace Ship_Game
                     // reads as inert: dimmed, and it does not light up under the cursor either.
                     bool locked = paused && PauseIsAutomatic;
                     string label = paused ? "PAUSED" : b.Text;
+                    // A BARE control is its glyph and nothing else, so the glyph itself has to
+                    // answer the cursor - the same orange the icons already use, rather than a
+                    // brightened cream that read as nothing at all. A plated button keeps its
+                    // own answer in the plate and leaves its label alone.
+                    // ⚠ the hover BRIGHTENS the state colour, never replaces it: red means the
+                    // game is stopped, and that must not vanish under the cursor.
+                    bool hot = b.Bare && b.State != PressState.Normal;
                     Color ink = locked ? PausedRed.Alpha(0.45f)
-                              : paused ? PausedRed
+                              : paused ? (hot ? PausedRed.LerpTo(Color.White, 0.35f) : PausedRed)
+                              : hot    ? Color.Orange
                               : b.State == PressState.Normal ? TextCream
                               : TextCream.LerpTo(Color.White, 0.5f);
 
@@ -651,7 +659,7 @@ namespace Ship_Game
         // an open screen holds the simulation used to flip the label back to PAUSE while the game
         // stayed stopped - the button lied about a state it did not control. The screen releases
         // its own pause when it closes, so the control simply refuses here.
-        bool PauseIsAutomatic => Universe.ScreenManager.AnyScreenOwnsUniversePause();
+        bool PauseIsAutomatic => Universe.ScreenManager.AnyScreenHoldsUniversePause();
 
         void TogglePause()
         {

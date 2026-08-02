@@ -125,10 +125,55 @@ namespace Ship_Game
 
         public static SubTexture StyleTexture(ButtonStyle style = ButtonStyle.Default)
         {
-            // Ludoal fork: callers use this for SIZE (LayoutParser auto-sizes buttons from it),
-            // so a painted style hands back its size reference rather than nothing.
-            StyleTextures s = GetDefaultStyle(style);
-            return s.Normal ?? s.SizeRef;
+            return GetDefaultStyle(style).Normal;
+        }
+
+        // Ludoal fork: draw `tex` into `r` as a nine-slice - the four corners keep their pixel
+        // size, the edges stretch along one axis and the middle along both. The slices are cut
+        // out of the bitmap here rather than shipped as nine files, so replacing the look is one
+        // PNG. `tint` multiplies: the asset is greyscale, the colour lives in the code.
+        void DrawNineSlice(SpriteBatch batch, SubTexture tex, in Rectangle r, Color tint)
+        {
+            int b = SliceBorderOf(tex, r);
+            if (b <= 0)
+            {
+                batch.Draw(tex, r, tint);
+                return;
+            }
+
+            int sx = tex.X, sy = tex.Y, sw = tex.Width, sh = tex.Height;
+            int mw = sw - 2 * b, mh = sh - 2 * b;          // middle of the SOURCE
+            int dw = r.Width - 2 * b, dh = r.Height - 2 * b; // middle of the DESTINATION
+
+            void Piece(int srcX, int srcY, int srcW, int srcH, int dstX, int dstY, int dstW, int dstH)
+            {
+                if (srcW <= 0 || srcH <= 0 || dstW <= 0 || dstH <= 0)
+                    return;
+                var sub = new SubTexture(tex.Name, srcX, srcY, srcW, srcH, tex.Texture, tex.TexturePath);
+                batch.Draw(sub, new Rectangle(dstX, dstY, dstW, dstH), tint);
+            }
+
+            // corners
+            Piece(sx,            sy,            b,  b,  r.X,             r.Y,              b,  b);
+            Piece(sx + sw - b,   sy,            b,  b,  r.Right - b,     r.Y,              b,  b);
+            Piece(sx,            sy + sh - b,   b,  b,  r.X,             r.Bottom - b,     b,  b);
+            Piece(sx + sw - b,   sy + sh - b,   b,  b,  r.Right - b,     r.Bottom - b,     b,  b);
+            // edges
+            Piece(sx + b,        sy,            mw, b,  r.X + b,         r.Y,              dw, b);
+            Piece(sx + b,        sy + sh - b,   mw, b,  r.X + b,         r.Bottom - b,     dw, b);
+            Piece(sx,            sy + b,        b,  mh, r.X,             r.Y + b,          b,  dh);
+            Piece(sx + sw - b,   sy + b,        b,  mh, r.Right - b,     r.Y + b,          b,  dh);
+            // middle
+            Piece(sx + b,        sy + b,        mw, mh, r.X + b,         r.Y + b,          dw, dh);
+        }
+
+        // A button can be shorter than two borders; shrink the slice rather than overlap it.
+        int SliceBorderOf(SubTexture tex, in Rectangle r)
+        {
+            int b = SliceBorder;
+            int limit = Math.Min(r.Width, r.Height) / 2;
+            if (b > limit) b = limit;
+            return Math.Min(b, Math.Min(tex.Width, tex.Height) / 2);
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -144,16 +189,21 @@ namespace Ship_Game
 
             Rectangle r = Rect;
             SubTexture texture = ButtonTexture();
-            if (texture != null)
+            if (texture != null && NineSlice)
+            {
+                // Ludoal fork: ONE mechanism for every button - a greyscale bitmap drawn as a
+                // nine-slice, tinted and faded from code. The corners keep their pixels at any
+                // size while only the middle stretches, so a 52px and a 182px button are the same
+                // control; the tint carries the meaning (neutral, active, hostile) that used to
+                // need a texture of its own; and a redrawn asset changes the look with no code.
+                DrawNineSlice(batch, texture, r, BackgroundColor().Alpha(Enabled ? Opacity : Opacity * 0.5f));
+            }
+            else if (texture != null)
             {
                 batch.Draw(texture, r, Color.White);
             }
             else if (DrawBackground)
             {
-                // Ludoal fork: dark translucent plate under a thin gold rule, the grammar the
-                // reworked screens use. Translucent because the bar and the panels sit over the
-                // map, where a solid fill reads as a hole punched in it; the rule is what makes
-                // the plate a control rather than a patch of background.
                 Color c = BackgroundColor();
                 batch.FillRectangle(r, c.Alpha(Enabled ? 0.85f : 0.55f));
                 batch.DrawRectangle(r, PlateRule.Alpha(Enabled ? 0.75f : 0.35f));
