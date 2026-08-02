@@ -1,4 +1,5 @@
 using SDGraphics;
+using Ship_Game.Data.Serialization;   // [StarDataType] / [StarData]
 using Ship_Game.Data.Yaml;
 using Color = Microsoft.Xna.Framework.Color;
 using Font = Ship_Game.Graphics.Font;
