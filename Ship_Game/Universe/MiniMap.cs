@@ -21,14 +21,12 @@ namespace Ship_Game
     {
         readonly ToggleButton ExoticBonuses;
         readonly ToggleButton FreighterUtil;
-        readonly ToggleButton ImportantEvents; // upstream 46 screen; fork placement (row 4, beside Range)
 
         readonly UniverseScreen Universe;
         readonly Rectangle Housing;
         Rectangle ActualMap;
-        //to get rid of these I need to find a solution for hover and the setting of the active setting
-        readonly ToggleButton ZoomOut;
-        readonly ToggleButton ZoomToShip;
+        // Ludoal fork: the two zoom buttons are gone - Page Up / Page Down and the wheel already
+        // do it, and zoom-to-ship belongs with the ship. Important Events has its own Galaxy tab.
         readonly ToggleButton InfluenceZones;   // Ludoal fork (F4)
         readonly ToggleButton GravityWellsOnly; // Ludoal fork (F5)
         readonly ToggleButton GravityWells;
@@ -37,7 +35,6 @@ namespace Ship_Game
         readonly ToggleButton RangeOverley;
         readonly ToggleButton VisionOverlayBtn; // Ludoal fork: F3 vision overlay
 
-        readonly SubTexture MiniMapHousing;
         readonly SubTexture Node;
         readonly SubTexture Node1;
         readonly float Scale;
@@ -50,33 +47,66 @@ namespace Ship_Game
         {
             Universe       = universe;
             Housing        = housing;
-            MiniMapHousing = ResourceManager.Texture("Minimap/radar_over");
             Node           = ResourceManager.Texture("UI/node");
             Node1          = ResourceManager.Texture("UI/node1");
-            ActualMap      = new Rectangle(housing.X + 61 + 20, housing.Y + 33, 200, 210);
+            // Ludoal fork: the map fills the housing except for the two button bands - one ABOVE
+            // it, one to its LEFT - plus the frame's own margin. Constants, not fractions of the
+            // housing: a button is 25x22 whatever the box does, so the bands cannot be a ratio.
+            const int BtnW = 25, BtnH = 22, BandGap = 4, Edge = 6;
+            ActualMap = new Rectangle(housing.X + BtnW + BandGap + Edge,
+                                      housing.Y + BtnH + BandGap + Edge,
+                                      housing.Width  - (BtnW + BandGap + Edge) - Edge,
+                                      housing.Height - (BtnH + BandGap + Edge) - Edge);
 
-            UIList listL = AddList(new Vector2(Housing.X + 10, Housing.Y + 70));
-            listL.Name = "MiniMapButtons";
-            // Ludoal fork: the list panels moved to the top bar — the minimap keeps
-            // zooms, map overlays and the overlay windows, paired in rows:
-            // (ZoomToShip|ZoomOut) (FTL|WeaponsRange) (DSB|Automation) (Freighters|ExoticBonuses)
-            ZoomToShip     = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonC, "Minimap/icons_zoomctrl", ZoomToShip_OnClick));
-            InfluenceZones = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/flagicon", InfluenceZones_OnClick)); // Ludoal fork (F2)
-            GravityWells   = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_ftloverlay", GravityWells_OnClick)); // subspace projection (F4)
-            RangeOverley   = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_rangeoverlay", RangeOverly_OnClick)); // Ludoal fork: weapons range (F6), alone on row 4
-            DeepSpaceBuild = listL.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_dsbw", DeepSpaceBuild_OnClick));
-            FreighterUtil  = listL.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "NewUI/icon_freighter_util", FreighterUtilizationScreen_OnClick));
+            // ── the two bands (Ludoal fork, maintainer layout) ──────────────────────────────
+            // Two families, and the gap between them is what says so: an OVERLAY toggles a
+            // rendering on the map and stays lit; a TAB pops a panel at a screen edge. They used
+            // to wear three texture styles between them and sit in two arbitrary columns.
+            //
+            // TOP band, horizontal:  [Influence Vision Subspace]  gap  [AI DSB]
+            // LEFT band, vertical:   [Gravity Range TradeRoutes]  gap  [Freighters Exotic]
+            //
+            // The tabs are placed by where their panel COMES OUT: AI and DSB are temporary and
+            // open at the right edge, so they sit top-right; Freighters and Exotic are left open
+            // for monitoring and come out at the bottom, so they sit bottom-left.
+            const int Gap = 14; // the family separator - wider than the 2px a list would use
 
-            UIList listR = AddList(new Vector2(Housing.X + 38, Housing.Y + 70));
-            listR.Name = "MiniMapButtonsRight";
-            ZoomOut            = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonC, "Minimap/icons_zoomout", ZoomOut_OnClick));
-            VisionOverlayBtn   = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/icon_spy_small", VisionOverlay_OnClick)); // Ludoal fork: Vision (F3), beside Influence
-            GravityWellsOnly   = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "UI/node_inhibit", GravityWellsOnly_OnClick)); // Ludoal fork (F5)
-            ImportantEvents    = listR.Add(new ToggleButton(ToggleButtonStyle.Button,  "NewUI/icon_important_events", ImportantEvents_OnClick)); // row 4 right, beside Range (upstream 46 screen)
-            AIScreen           = listR.Add(new ToggleButton(ToggleButtonStyle.Button, "AI", AIScreen_OnClick)); // Ludoal fork: ButtonDown was 26px vs 22 — the row misaligned
-            ExoticBonuses      = listR.Add(new ToggleButton(ToggleButtonStyle.ButtonB, "NewUI/icon_exotic_Bonuses_big", ExoticBonusScreen_OnClick));
-            Scale = ActualMap.Width / (Universe.UState.Size * 2.1f); // Updated to play nice with the new negative map values
-            MiniMapZero = new Vector2((float)ActualMap.X + 100, (float)ActualMap.Y + 100);
+            UIList topOverlays = AddList(new Vector2(ActualMap.X, Housing.Y + Edge));
+            topOverlays.Name = "MiniMapOverlaysTop";
+            topOverlays.LayoutStyle = ListLayoutStyle.ResizeList;
+            topOverlays.Direction = new Vector2(1, 0); // horizontal
+            InfluenceZones = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/flagicon", InfluenceZones_OnClick)); // F2
+            VisionOverlayBtn = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_spy_small", VisionOverlay_OnClick)); // F3
+            GravityWells = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_ftloverlay", GravityWells_OnClick)); // subspace projectors (F4)
+
+            UIList topTabs = AddList(new Vector2(ActualMap.X + 3 * BtnW + Gap, Housing.Y + Edge));
+            topTabs.Name = "MiniMapTabsTop";
+            topTabs.LayoutStyle = ListLayoutStyle.ResizeList;
+            topTabs.Direction = new Vector2(1, 0);
+            AIScreen = topTabs.Add(new ToggleButton(ToggleButtonStyle.Button, "AI", AIScreen_OnClick));
+            DeepSpaceBuild = topTabs.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_dsbw", DeepSpaceBuild_OnClick));
+
+            UIList leftOverlays = AddList(new Vector2(Housing.X + Edge, ActualMap.Y));
+            leftOverlays.Name = "MiniMapOverlaysLeft";
+            leftOverlays.LayoutStyle = ListLayoutStyle.ResizeList;
+            GravityWellsOnly = leftOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/node_inhibit", GravityWellsOnly_OnClick)); // F5
+            RangeOverley = leftOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_rangeoverlay", RangeOverly_OnClick)); // F6
+            // (a Trade Routes overlay belongs here, under Gravity Wells and near Freighters)
+
+            UIList leftTabs = AddList(new Vector2(Housing.X + Edge, ActualMap.Y + 3 * BtnH + Gap));
+            leftTabs.Name = "MiniMapTabsLeft";
+            leftTabs.LayoutStyle = ListLayoutStyle.ResizeList;
+            FreighterUtil = leftTabs.Add(new ToggleButton(ToggleButtonStyle.Button, "NewUI/icon_freighter_util", FreighterUtilizationScreen_OnClick));
+            ExoticBonuses = leftTabs.Add(new ToggleButton(ToggleButtonStyle.Button, "NewUI/icon_exotic_Bonuses_big", ExoticBonusScreen_OnClick));
+            // ⚠ the SMALLER side, not the width: the galaxy is square, so scaling on the long
+            // edge would push it past the short one. It happened to work while the map was
+            // taller than it was wide; the reworked frame makes it wider than tall.
+            int shortSide = ActualMap.Width < ActualMap.Height ? ActualMap.Width : ActualMap.Height;
+            Scale = shortSide / (Universe.UState.Size * 2.1f); // negative map values are fine
+            // ⚠ the map's CENTRE, derived - the old +100/+100 was half of a 200x210 map and would
+            // put the origin off-centre now that the frame gives the map its full width.
+            MiniMapZero = new Vector2(ActualMap.X + ActualMap.Width * 0.5f,
+                                      ActualMap.Y + ActualMap.Height * 0.5f);
         }
 
         Vector2 WorldToMiniPos(Vector2 pos)
@@ -95,10 +125,14 @@ namespace Ship_Game
             if (!Visible)
                 return;
 
+            // Ludoal fork: a plain frame instead of the brass radar housing (maintainer decision).
+            // That texture spent 81px on the left and 33 on top being decorative, which is why
+            // the map itself was a 200x210 island inside a 276x256 box. The frame is a rule and
+            // a fill now, so the map gets the room back.
             Rectangle inflateMap = ActualMap;
-            inflateMap.Inflate(10, 10);
-            Universe.DrawRectangle(inflateMap, Color.Black, Color.Black);
-            batch.Draw(MiniMapHousing, Housing, Color.White);
+            inflateMap.Inflate(4, 4);
+            batch.FillRectangle(inflateMap, new Color(8, 8, 8).Alpha(0.85f));
+            batch.DrawRectangle(inflateMap, GameScreens.ReworkScreens.FrameRule);
             
             foreach (SolarSystem system in Universe.UState.Systems)
             {
@@ -372,28 +406,9 @@ namespace Ship_Game
             DrawMinimapNodes(batch, e, e.BorderNodes, excludeProjectors:false);
         }
 
-        void ZoomToShip_OnClick(ToggleButton toggleButton)
-        {
-            Universe.InputZoomToShip();
-            GameAudio.AcceptClick();
-        }
-
-        void ZoomOut_OnClick(ToggleButton toggleButton)
-        {
-            Universe.InputZoomOut();
-            GameAudio.AcceptClick();
-        }
-
         public void DeepSpaceBuild_OnClick(ToggleButton toggleButton)
         {
             Universe.InputOpenDeepSpaceBuildWindow();
-        }
-
-        public void ImportantEvents_OnClick(ToggleButton toggleButton)
-        {
-            GameAudio.AcceptClick();
-            ImportantEvents.IsToggled = false;
-            Universe.ScreenManager.AddScreen(new ImportantEventsScreen(Universe));
         }
 
         public void GravityWells_OnClick(ToggleButton toggleButton)
@@ -459,12 +474,8 @@ namespace Ship_Game
             if (!Housing.HitTest(input.CursorPosition))
                 return false;
 
-            if (ZoomToShip.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.ZoomsToYourCurrentlySelected, "Page Up");
-
-            if (ZoomOut.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.ZoomOutToTheGalaxy, "Page Down");
-
+            // (the two zoom buttons are gone - Page Up and Page Down still do the job, and the
+            // wheel does it better; zoom-to-ship belongs with the ship, not with the map)
             if (DeepSpaceBuild.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.OpensTheDeepSpaceBuilding, "B");
 
@@ -492,9 +503,7 @@ namespace Ship_Game
             if (AIScreen.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.OpensTheAutomationPanelWhich, "H");
 
-            if (ImportantEvents.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip("Opens the Important Events log", "F7");
-
+            // (Important Events has its own tab in the Galaxy group now)
             if (ExoticBonuses.Rect.HitTest(input.CursorPosition))
             {
                 ToolTip.CreateTooltip(Player.Universe.P.DisableMiningOps ? GameText.OpensEmpireExoticBonusesDisabled

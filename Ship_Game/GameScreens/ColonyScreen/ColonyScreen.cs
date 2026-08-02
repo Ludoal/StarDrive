@@ -161,6 +161,11 @@ namespace Ship_Game
             // rect less the title bar and those borders - the one thing the grid may measure.
             Rectangle inner = PopupFrame.ContentArea(ColonyFrame);
             RectF client = new(inner.X, inner.Y, inner.Width, inner.Height);
+            // ⚠ At 900 high the LEFT COLUMN does not fit and that is not the frame's doing: its
+            // three fixed panels are 250 + 300 + 220 = 770, plus gaps, against 749px of usable
+            // height. It overflows before STORAGE gets a single pixel. The column needs real
+            // rework at that height (maintainer: "on refaçonnera le contenu en temps utile") -
+            // shrinking the frame would only hide it.
 
             // ── the screen's one grid ────────────────────────────────────────────────────────
             // Ludoal fork: every panel is placed from THESE, and nothing re-derives a margin of

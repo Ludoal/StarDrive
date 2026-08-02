@@ -34,8 +34,26 @@ namespace Ship_Game
 
         Rectangle FlagLeft;
         Rectangle FlagRight;
-        Menu2 TitleBar;
-        Menu1 NameMenu;
+
+        // Ludoal fork: one full-screen popup frame carrying two rows of tabs (maintainer layout).
+        //   row 1, FIXED:   [Empire] [Galaxy] - side by side, half the width each
+        //   row 2, DYNAMIC: [Race] | [Physical..Environment] | [Points|Description]
+        // Everything stays visible: row 1 sits ABOVE row 2, it never hides it. Row 2 is the one
+        // block that absorbs the resolution; the rest are fixed.
+        Rectangle ScreenFrame;
+        PopupFrame Frame;
+        Submenu EmpireTab;
+        Submenu GalaxyTab;
+        Submenu RaceTab;   // row 2 left: the race list
+        Submenu InfoTab;   // row 2 right: Points to Spend | Description
+        SelectedTraitsSummary PointsSummary;
+
+        // the two tabs of InfoTab share one area - this is which of them is showing
+        void OnInfoTabChanged(int tab)
+        {
+            PointsSummary.Visible = tab == 0;
+            DescriptionTextList.Visible = tab == 1;
+        }
         EnvPreferencesPanel EnvMenu;
         SubmenuScrollList<TraitsListItem> Traits;
         ScrollList<TraitsListItem> TraitsList;
@@ -116,36 +134,57 @@ namespace Ship_Game
             // They stay on LowRes on purpose: moving them to Narrow would apply them at 1680,
             // where a title jumping from y=44 to y=10 and a label landing 20px from its box make
             // no sense. Only the font sizes were converted.
-            TitleBar = Add(new Menu2(ScreenWidth / 2 - 203, (LowRes ? 10 : 44), 406, 80));
-            var titlePos = new Vector2(TitleBar.CenterX - Fonts.Laserian14.MeasureString(Localizer.Token(GameText.DesignYourRace)).X / 2f,
-                                       TitleBar.CenterY - Fonts.Laserian14.LineSpacing / 2);
-            Add(new UILabel(titlePos, GameText.DesignYourRace, Fonts.Laserian14, Colors.Cream));
+            // ── the frame and the ONE grid every block measures from ─────────────────────────
+            const int Margin = 10, Pad = 8, FootH = 46;
+            ScreenFrame = new Rectangle(Margin - PopupFrame.BorderLeft, Margin,
+                                        ScreenWidth - 2 * Margin + PopupFrame.BorderLeft + PopupFrame.BorderRight,
+                                        ScreenHeight - 2 * Margin + PopupFrame.BorderBottom);
+            Frame = new PopupFrame(ScreenFrame);
 
-            NameMenu = Add(new Menu1(ScreenWidth / 2 - (int)(ScreenWidth * 0.5f) / 2,
-                                (int)TitleBar.Bottom + 5, (int)(ScreenWidth * 0.5f), 150, withSub:false));
+            Rectangle inner = PopupFrame.ContentArea(ScreenFrame);
+            int gridLeft   = inner.X + Pad;
+            int gridRight  = inner.Right - Pad;
+            int gridTop    = inner.Y + Pad;
+            int gridBottom = inner.Bottom - FootH;
 
-            var flagPos = new Vector2(NameMenu.Right - 80 - 100, NameMenu.Y + 30);
+            // ── ROW 1: Empire | Galaxy, 50/50, FIXED height ─────────────────────────────────
+            const int Row1H = 172;
+            int halfW = (gridRight - gridLeft - Pad) / 2;
+            EmpireTab = Add(new Submenu(new RectF(gridLeft, gridTop, halfW, Row1H), "Empire"));
+            GalaxyTab = Add(new Submenu(new RectF(gridLeft + halfW + Pad, gridTop, halfW, Row1H), "Galaxy"));
+
+            // row 2 takes what row 1 and the foot leave - the dynamic block
+            int row2Top = gridTop + Row1H + Pad;
+            int row2H   = gridBottom - row2Top;
+
+            // the name form lives inside the Empire tab - the tab IS its frame, so there is no
+            // separate panel drawn behind it
+            RectF nameArea = EmpireTab.ClientArea;
+
+            var flagPos = new Vector2(nameArea.Right - 80 - 100, nameArea.Y + 12);
             FlagRect = new Rectangle((int)flagPos.X, (int)flagPos.Y + 15, 80, 80);
             
             Add(new UILabel(flagPos, GameText.FlagColor, Fonts.Arial14Bold, Color.BurlyWood));
             
             SelectedData = GetDefaultRace(); //SelectedData is used to populate the UI
 
-            UIList raceCustomizatioForm = AddList(new Vector2(NameMenu.X + 40, NameMenu.Y + 30));
+            UIList raceCustomizatioForm = AddList(new Vector2(nameArea.X + 20, nameArea.Y + 10));
             raceCustomizatioForm.Padding = new Vector2(4,4);
 
             const float padRight = 200f;
-            var splitItemWidth = NameMenu.Width - FlagRect.Width - padRight;
+            var splitItemWidth = nameArea.W - FlagRect.Width - padRight;
             NameEntry = AddSplitter(raceCustomizatioForm, "{EmpireName}: ", SelectedData.Name,splitItemWidth);
             SingEntry = AddSplitter(raceCustomizatioForm, "{RaceNameSingular}: ", SelectedData.Singular, splitItemWidth);
             PlurEntry = AddSplitter(raceCustomizatioForm, "{RaceNamePlural}: ", SelectedData.Plural, splitItemWidth);
             SysEntry = AddSplitter(raceCustomizatioForm,  "{HomeSystemName}: ", SelectedData.HomeSystemName, splitItemWidth);
             HomeWorldName = SelectedData.HomeWorldName;
 
-            RectF traitsList = new(ScreenWidth / 2 - (int)(ScreenWidth * 0.5f) / 2, 
-                                  (int)NameMenu.Bottom + 5,
-                                  (int)(ScreenWidth * 0.5f), 
-                                  (int)(ScreenHeight - TitleBar.Bottom - 0.25f*ScreenHeight));
+            // ── ROW 2: Race | Traits | Points+Description, all sharing row2Top and row2H ─────
+            // The two side columns are FIXED width; the traits block in the middle absorbs what
+            // is left. One arithmetic for the three, so they cannot drift apart.
+            const int SideW = 330;
+            RectF traitsList = new(gridLeft + SideW + Pad, row2Top,
+                                   gridRight - gridLeft - 2 * (SideW + Pad), row2H);
 
             LocalizedText[] traitNames = { GameText.Physical, GameText.Sociological, GameText.HistoryAndTradition, "Environment" };
             Traits = Add(new SubmenuScrollList<TraitsListItem>(traitsList.Bevel(-20, -10), traitNames));
@@ -163,17 +202,20 @@ namespace Ship_Game
             // Pinning makes UpdatePosAndSize a no-op so the bg stays put.
             traitsBg.SetAbsPos(traitsListBg.X, traitsListBg.Y);
 
-            RectF chooseRace = new(5, (int)traitsList.Y, (int)traitsList.X - 10, (int)traitsList.H);
+            // row 2 LEFT: the race list under a tab of its own
+            RaceTab = Add(new Submenu(new RectF(gridLeft, row2Top, SideW, row2H), "Race"));
+            RectF chooseRace = RaceTab.ClientArea;
             ChooseRaceList = Add(new ScrollList<RaceArchetypeListItem>(chooseRace, 135));
-            ChooseRaceList.SetBackground(new Menu1(chooseRace));
             ChooseRaceList.OnClick = OnRaceArchetypeItemClicked;
 
             foreach (IEmpireData e in ResourceManager.MajorRaces)
                 ChooseRaceList.AddItem(new RaceArchetypeListItem(this, e));
 
             Graphics.Font font = LowRes ? Fonts.Arial8Bold : Fonts.Arial12Bold;
-            float labelX = LowRes ? NameMenu.Right + 20 : NameMenu.Right + 300;
-            float labelY = LowRes ? NameMenu.Y - 50 : NameMenu.Y + 3;
+            // the galaxy readouts live in the Galaxy tab now, not off the right of a name panel
+            RectF galaxyArea = GalaxyTab.ClientArea;
+            float labelX = galaxyArea.X + 210;
+            float labelY = galaxyArea.Bottom - 2 * font.LineSpacing - 8;
             NumSystemsLabel = Add(new UILabel(labelX, labelY, $"Solar Systems: {GetSystemsNum()}"));
             NumSystemsLabel.Font  = font;
             NumSystemsLabel.Color = Color.SteelBlue;
@@ -182,10 +224,10 @@ namespace Ship_Game
             ExtraPlanetsLabel.Font  = font;
             ExtraPlanetsLabel.Color = Color.Green;
 
-            PerformanceWarning = Add(new UILabel(NameMenu.Right + 20, NameMenu.Y - 20 , ""));
+            PerformanceWarning = Add(new UILabel(galaxyArea.X + 10, galaxyArea.Bottom - font.LineSpacing - 4, ""));
             PerformanceWarning.Font = font;
 
-            UIList optionButtons = AddList(NameMenu.Right + 40 - 22, NameMenu.Y);
+            UIList optionButtons = AddList(galaxyArea.X + 10, galaxyArea.Y + 6);
             optionButtons.CaptureInput = true;
             optionButtons.Padding      = new Vector2(2,3);
             optionButtons.Color        = Color.Black.Alpha(0.5f);
@@ -227,44 +269,61 @@ namespace Ship_Game
             AddOption("{RemnantPresence} : ", OnExtraRemnantClicked, _ => P.ExtraRemnant.ToString(),
                 tip:"This sets the intensity of Ancient Remnants presence. If you feel overwhelmed by their advanced technology, reduce this to Rare.");
 
-            RectF description = new(traitsList.Right + 5, traitsList.Y, chooseRace.W, traitsList.H);
+            // row 2 RIGHT: two tabs over one area - the points summary, and the race description.
+            // Same rect for both; OnTabChange flips which one is visible.
+            // ⚠ the tab list is an IEnumerable - there is no variadic overload
+            LocalizedText[] infoTabs = { Localizer.Token(GameText.PointsToSpend), "Description" };
+            InfoTab = Add(new Submenu(new RectF(gridRight - SideW, row2Top, SideW, row2H), infoTabs));
+            InfoTab.OnTabChange = OnInfoTabChanged;
+            RectF description = InfoTab.ClientArea;
             DescriptionTextList = Add(new UITextBox(description, useBorder:false, DescriptionTextFont));
-            DescriptionTextList.ItemsList.SetBackground(new Menu1(description));
             DescriptionTextList.ItemsList.ItemPadding = new Vector2(10, 0);
+            DescriptionTextList.Visible = false; // tab 0 (Points) is the one that opens
 
-            Add(new SelectedTraitsSummary(this));
+            PointsSummary = Add(new SelectedTraitsSummary(this));
 
             Picker = Add(new UIColorPicker(new Rectangle(ScreenWidth / 2 - 310, ScreenHeight / 2 - 280, 620, 560)));
             Picker.Visible = false;
 
-            const int containerMarginBottom = 10;
-            const int containerPaddingLeft = 10;
-            DescriptionTextList.ButtonMedium("Clear Traits", OnClearClicked)
-                .SetLocalPos(containerPaddingLeft, DescriptionTextList.Height + containerMarginBottom);
-            SelectOpponentsBtn = DescriptionTextList.Button(ButtonStyle.BigDip, "", OnSelectOpponentsClicked);
-            SelectOpponentsBtn.SetLocalPos(containerPaddingLeft + 150, DescriptionTextList.Height + containerMarginBottom);
+            // ── the FOOT: one row, on the grid ──────────────────────────────────────────────
+            // ⚠ these nine buttons used to hang off their panels with SetLocalPos, which is how
+            // they ended up drawn OUTSIDE their own containers. They belong to the screen, not to
+            // a list, so they sit on the foot strip the grid reserved for them.
+            int footY = gridBottom + 6;
+            const int BtnW = 132, BtnGap = 6;
+            int bx = gridLeft;
+            // ⚠ Medium, not Default: BtnW is 132 and that IS the Medium texture's width. A
+            // Default button is 168 wide and the row would overlap itself by 36 per button.
+            UIButton Foot(string text, Action<UIButton> click, ButtonStyle style = ButtonStyle.Medium)
+            {
+                UIButton b = Button(style, bx, footY, text, click: click);
+                bx += BtnW + BtnGap;
+                return b;
+            }
 
-            Button(ButtonStyle.Military, ScreenWidth - 180, ScreenHeight - 40, GameText.Engage, click: OnEngageClicked);
-            Button(ButtonStyle.BigDip, 10, ScreenHeight - 40, GameText.Abort, click: OnAbortClicked);
+            // Abort is a 168px BigDip, so the row starts clear of it
+            Button(ButtonStyle.BigDip, gridLeft, footY, Localizer.Token(GameText.Abort), click: OnAbortClicked);
+            bx = gridLeft + 168 + BtnGap * 3;
+            Foot("Load Race", OnLoadRaceClicked);
+            Foot("Save Race", OnSaveRaceClicked);
+            bx += BtnGap * 3;
+            Foot("Load Setup", OnLoadSetupClicked);
+            Foot("Save Setup", OnSaveSetupClicked);
+            Foot(Localizer.Token(GameText.RuleOptions), OnRuleOptionsClicked);
+            bx += BtnGap * 3;
+            Foot("Clear Traits", OnClearClicked);
+            SelectOpponentsBtn = Foot("", OnSelectOpponentsClicked, ButtonStyle.BigDip);
+
+            // Military is a 168px texture - measured, not guessed, so Engage ends ON the margin
+            Button(ButtonStyle.Military, gridRight - 168, footY, GameText.Engage, click: OnEngageClicked);
 
             DoRaceDescription();
             SetRacialTraits(SelectedData.Traits);
 
-
-            var envRect = new Rectangle(5, (int)TitleBar.Bottom + 5, (int)ChooseRaceList.Width, 150);
+            // the environment preferences ride under the race list, inside its tab
+            var envRect = new Rectangle((int)chooseRace.X, (int)chooseRace.Bottom - 150,
+                                        (int)chooseRace.W, 150);
             EnvMenu = Add(new EnvPreferencesPanel(this, RaceSummary, envRect));
-            ChooseRaceList.ButtonMedium("Load Race", OnLoadRaceClicked)
-                .SetLocalPos(ChooseRaceList.Width / 2 - 152, ChooseRaceList.Height + containerMarginBottom);
-            ChooseRaceList.ButtonMedium("Save Race", OnSaveRaceClicked)
-                .SetLocalPos(ChooseRaceList.Width / 2 - 10, ChooseRaceList.Height + containerMarginBottom);
-
-            var pos = new Vector2(ScreenWidth / 2 - 84, traitsList.Y + traitsList.H + 10);
-            Traits.ButtonBigDip(pos.X - 142, pos.Y, "Load Setup", OnLoadSetupClicked)
-                .SetLocalPos(Traits.Width / 2 + 94, Traits.Height + containerMarginBottom*3);
-            Traits.ButtonBigDip(pos.X + 178, pos.Y, "Save Setup", OnSaveSetupClicked)
-                .SetLocalPos(Traits.Width / 2 - 262, Traits.Height + containerMarginBottom*3);
-            Traits.Button(ButtonStyle.Default, GameText.RuleOptions, click: OnRuleOptionsClicked)
-                .SetLocalPos(Traits.Width / 2 - 84, Traits.Height + containerMarginBottom*3);
 
             // Ludoal fork: no slide-in/slide-out on this screen (maintainer decision) - the panels
             // appear where they belong.
@@ -641,6 +700,15 @@ namespace Ship_Game
             ShowExtraPlanetsNum(P.ExtraPlanets);
 
             batch.SafeBegin();
+            // ⚠ the frame goes FIRST, before base.Draw: it is painted by hand, not added as a
+            // child, so drawing it after would bury every tab and list on the screen.
+            Frame.DrawFill(batch, ScreenFrame);
+            Frame.Draw(batch);
+            string screenTitle = Localizer.Token(GameText.DesignYourRace);
+            batch.DrawString(Fonts.Laserian14, screenTitle,
+                new Vector2(ScreenFrame.X + ScreenFrame.Width / 2 - Fonts.Laserian14.TextWidth(screenTitle) / 2f,
+                            Frame.TitleRect.CenterY() - Fonts.Laserian14.LineSpacing / 2f), Colors.Cream);
+
             base.Draw(batch, elapsed);
             batch.Draw(ResourceManager.Flag(FlagIndex), FlagRect, Picker.CurrentColor);
             FlagLeft  = new Rectangle(FlagRect.X - 20, FlagRect.Y + 40 - 10, 20, 20);
@@ -695,11 +763,14 @@ namespace Ship_Game
 
             public override void Draw(SpriteBatch batch, DrawTimes elapsed)
             {
-                float start = Screen.DescriptionTextList.ItemsList.NumEntries > 0
-                            ? Screen.DescriptionTextList.ItemsList.ItemAtBottom.Bottom
-                            : Screen.DescriptionTextList.Y;
+                if (!Visible)
+                    return;
 
-                var r = new Vector2(Screen.DescriptionTextList.X + 20, start + 20);
+                // Ludoal fork: this used to trail BELOW the description, both being visible at
+                // once. They are two tabs over one area now, so the summary starts at the top of
+                // that area rather than wherever the description happened to end.
+                RectF area = Screen.InfoTab.ClientArea;
+                var r = new Vector2(area.X + 20, area.Y + 12);
                 string title = Localizer.Token(GameText.PointsToSpend);
                 batch.DrawString(Font, $"{title}: {Screen.TotalPointsUsed}", r, Color.White);
                 r.Y += (Font.LineSpacing + 8);
