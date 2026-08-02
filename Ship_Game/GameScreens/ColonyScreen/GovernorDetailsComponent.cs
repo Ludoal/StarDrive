@@ -345,7 +345,7 @@ namespace Ship_Game
             // They follow their own column now, so the panel's height can be its content's.
             AutoTroops.Pos        = new Vector2(TopLeft.X + 10, Y + 30 + shift);
             Garrison.Pos          = new Vector2(TopLeft.X + 20, Y + 50 + shift);
-            float defRow          = Y + 82 + shift;   // under the garrison slider
+            float defRow          = Y + 96 + shift;   // a breath under the garrison slider
             LaunchAllTroops.Pos   = new Vector2(TopLeft.X + 10, defRow);
             LaunchSingleTroop.Pos = new Vector2(TopLeft.X + 10, defRow + 26);
             CallTroops.Pos        = new Vector2(TopLeft.X + 10, defRow + 52);

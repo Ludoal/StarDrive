@@ -65,7 +65,10 @@ namespace Ship_Game
             // ⚠ Edge is INSIDE the housing, and the housing is already 10px off the screen edge
             // now - so this one goes back to 0 or the widget sits 20 from the corner. BandGap is
             // how far the icons stand off the frame itself (maintainer: +5).
-            const int BtnW = 25, BtnH = 22, BandGap = 13, Edge = 0;
+            // ⚠ Edge must cover the frame's INFLATE (6) or the painted rule spills past the
+            // housing, which is itself only 10px off the screen - that is the margin the bench
+            // kept reporting missing. BandGap is how far the icons stand off that rule.
+            const int BtnW = 25, BtnH = 22, BandGap = 13, Edge = 6;
             ActualMap = new Rectangle(housing.X + BtnW + BandGap + Edge,
                                       housing.Y + BtnH + BandGap + Edge,
                                       housing.Width  - (BtnW + BandGap + Edge) - Edge,

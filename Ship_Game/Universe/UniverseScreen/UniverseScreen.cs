@@ -608,7 +608,11 @@ namespace Ship_Game
 
             FTLManager.LoadContent(this);
 
-            ShipsInCombat = ButtonMediumMenu(width - 275, height - 280, "Ships: 0");
+            // ⚠ derived from the minimap housing, not from the screen foot: the housing moved
+            // 10px off the corner and these two landed inside its icon band (maintainer).
+            // 30 clears the button's own height plus a gap.
+            int counterY = mmHousing.Y - 30;
+            ShipsInCombat = ButtonMediumMenu(mmHousing.X + 6, counterY, "Ships: 0");
             ShipsInCombat.DynamicText = () =>
             {
                 ShipsInCombat.Style = Player.EmpireShipCombat > 0 ? ButtonStyle.Medium : ButtonStyle.MediumMenu;
@@ -618,7 +622,7 @@ namespace Ship_Game
             ShipsInCombat.OnClick = ShipsInCombatClick;
             Add(ShipsInCombat);
 
-            PlanetsInCombat = ButtonMediumMenu(width - 135, height - 280, "Planets: 0");
+            PlanetsInCombat = ButtonMediumMenu(mmHousing.X + 146, counterY, "Planets: 0");
             PlanetsInCombat.DynamicText = () =>
             {
                 PlanetsInCombat.Style = Player.EmpirePlanetCombat > 0 ? ButtonStyle.Medium : ButtonStyle.MediumMenu;

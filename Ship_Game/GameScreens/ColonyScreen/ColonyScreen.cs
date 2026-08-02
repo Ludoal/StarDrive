@@ -145,11 +145,19 @@ namespace Ship_Game
             // margin to bring the rule back onto it - but the BOTTOM band (BL/BR/BotSep) is laid
             // out downwards FROM rect.Bottom, so extending there pushes it off the display
             // entirely. The rect stops at the margin vertically.
+            // ⚠ +BottomInk on the RECT (not on the frame's pieces - that left a 3px break before
+            // the corner): the bottom textures carry transparent rows, so the visible rule stops
+            // that far above rect.Bottom. Push the rect down by it and the LINE lands on the
+            // margin. ⚠ The top is where a group tab's frame starts (TabRowY) so this screen
+            // does not peek out from behind another one when it sits in the stack.
+            // ⚠ starts one TAB STRIP lower than TabRowY (maintainer): a group screen puts its tab
+            // row at TabRowY and its FRAME under it, so a Colony frame starting at TabRowY stood
+            // 25px proud of every other one - visible behind them when it sits in the stack.
             const int m = GameScreens.ReworkScreens.FrameMargin;
-            ColonyFrame = new Rectangle(m - PopupFrame.BorderLeft,
-                                        GameScreens.ReworkScreens.TabRowY,
+            int frameTop = GameScreens.ReworkScreens.TabRowY + 25;   // Submenu.TabHeight
+            ColonyFrame = new Rectangle(m - PopupFrame.BorderLeft, frameTop,
                                         ScreenWidth - 2 * m + PopupFrame.BorderLeft + PopupFrame.BorderRight,
-                                        ScreenHeight - GameScreens.ReworkScreens.TabRowY - m);
+                                        ScreenHeight - frameTop - m + PopupFrame.BottomInk);
             // ⚠ NOT Add()ed: a child is drawn by base.Draw, which lands AFTER everything this
             // screen paints by hand - the frame's body would bury the panels. Painted first
             // thing in Draw instead (see ColonyScreen_Draw).
@@ -194,7 +202,10 @@ namespace Ship_Game
                            + 4 * 30;   // Submenu pads each tab
             // ⚠ narrower (maintainer): with "Blueprint" singular the four tabs measure 315, so
             // the column no longer has to be 470 wide to hold one row of them.
-            float colLeftW = Math.Max(govTabsW, 380) + 20;
+            // +20 (maintainer): even "BP" wrapped to a second row at 400 - Submenu's per-tab
+            // padding is wider than the 30 this measure allows for, so the raw text width
+            // under-reads the row by enough to matter.
+            float colLeftW = Math.Max(govTabsW, 380) + 40;
 
             // ── the three fixed heights, each derived from what it HOLDS ─────────────────────
             // ⚠ They were 250 + 300 + 220 = 770 against 749px of usable height at 900, so the
@@ -213,7 +224,7 @@ namespace Ship_Game
             float infoLinesH  = 45 + Fonts.Arial20Bold.LineSpacing * 2
                               + 4 * (TextFont.LineSpacing + 2);
             float planetInfoH = Math.Max(26 + portraitH + 14, infoLinesH + 10);
-            const float governorH   = 196;   // tab row + Defense's two columns of controls
+            const float governorH   = 210;   // tab row + Defense's controls, +14 for their new gap
             const float laborH      = 150;   // three sliders, their locks and the title bar
 
             RectF planetInfoR = new(gridLeft, gridTop, colLeftW, planetInfoH);

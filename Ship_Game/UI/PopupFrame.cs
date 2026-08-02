@@ -50,10 +50,12 @@ namespace Ship_Game
         /// wide, the foot 30, and content laid out on the raw rect runs under both.
         public const int BorderLeft = 3, BorderRight = 11, BorderBottom = 30;
 
-        /// ⚠ MEASURED in the textures, not guessed: popup_corner_BL is 30 tall but its last 3
-        /// rows are transparent, so the visible rule stops that far above rect.Bottom. A caller
-        /// that wants its frame line ON a margin has to push the rect down by this much.
-        public const int BottomInk = 3;
+        /// ⚠ MEASURED in the textures - by MAX alpha per row, not the average, which is what got
+        /// this wrong twice. The bottom pieces (corner, band, stroke) all end 2 transparent rows
+        /// above their own foot; the TOP corner carries 7 transparent rows before its ink starts.
+        /// A caller that wants its visible rule ON a margin shifts its RECT by these.
+        public const int BottomInk = 2;
+        public const int TopInk = 7;
 
         /// The area a caller may actually lay content in - the rect less the title bar and the
         /// borders. ⚠ Use THIS, not the rect, or the last column and the bottom row hide behind
@@ -93,12 +95,13 @@ namespace Ship_Game
             TopSep   = new Rectangle(TL.Right + distance / 2, TL.Y + 3, sepW, 4);
             TopHoriz = new Rectangle(TL.Right - 2, TopSep.Y, rect.Width - 54, 4);
 
-            // ⚠ +BottomInk: these textures carry transparent rows at their foot, so a corner
-            // placed flush with rect.Bottom draws its visible rule 3px short of it - and the fill
-            // below runs to the full rect. The bench read that gap as the frame sitting high
-            // (maintainer: "10 px trop haut au vu du fond, qui lui a la bonne taille").
-            BL = new Rectangle(rect.X, rect.Bottom - 30 + BottomInk, 28, 30);
-            BR = new Rectangle(rect.Right - 28, rect.Bottom - 30 + BottomInk, 28, 30);
+            // ⚠ NO offset here, and that was my mistake: pushing the corners down by BottomInk
+            // left the vertical rails - which stop at rect.Height-60 - three pixels short of them,
+            // and the bench saw exactly that as "une coupure juste avant l'arrondi". The pieces
+            // must stay coherent with each other; a caller that wants its rule ON a margin
+            // shifts its RECT, it does not shift the frame's parts.
+            BL = new Rectangle(rect.X, rect.Bottom - 30, 28, 30);
+            BR = new Rectangle(rect.Right - 28, rect.Bottom - 30, 28, 30);
             BotSep   = new Rectangle(BL.Right + distance / 2, BL.Y + 18, sepW, 12);
             BotHoriz = new Rectangle(BL.Right - 2, BotSep.Y, rect.Width - 54, 12);
 

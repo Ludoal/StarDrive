@@ -191,6 +191,18 @@ namespace Ship_Game
             if (Universe.IsExiting || Universe.IsDisposed)
                 return;
 
+            // Ludoal fork: a VEIL under the bar (maintainer request). Stars, system rings and
+            // ships were reading through the top row and made it hard to scan - the bar carries
+            // numbers, and numbers need a ground. From the screen's top edge to 10px below the
+            // buttons, so the band closes on the same margin everything else uses.
+            int veilBottom = BarTop + BarH + 10;
+            batch.FillRectangle(new Rectangle(0, 0, Universe.ScreenWidth, veilBottom),
+                                new Color(6, 8, 12).Alpha(0.82f));
+
+            // and a SOLID ground under the minimap - that one hides the map behind it entirely
+            Rectangle mm = Universe.mmHousing;
+            batch.FillRectangle(mm, new Color(6, 8, 12));
+
             // Which group is open is read from the screen stack rather than passed in: fifteen
             // screens draw this bar, and a parameter is a parameter one of them will forget.
             ReworkScreens.Group open = ReworkScreens.GroupOf(Universe.ScreenManager.Current);

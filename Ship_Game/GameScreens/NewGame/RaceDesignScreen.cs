@@ -138,11 +138,12 @@ namespace Ship_Game
             // no sense. Only the font sizes were converted.
             // ── the frame and the ONE grid every block measures from ─────────────────────────
             const int Margin = 10, Pad = 8, FootH = 46;
-            // ⚠ the bottom band is laid out DOWNWARDS from rect.Bottom, unlike the right border
-            // which is drawn inwards - extending the rect there puts the foot off-screen
-            ScreenFrame = new Rectangle(Margin - PopupFrame.BorderLeft, Margin,
+            // ⚠ the rect is pushed OUT by what each edge's texture leaves blank, so the visible
+            // rule lands on the margin: 7 transparent rows at the top, 2 at the foot, plus the
+            // side borders. Measured in the PNGs - guessing these is what cost four passes.
+            ScreenFrame = new Rectangle(Margin - PopupFrame.BorderLeft, Margin - PopupFrame.TopInk,
                                         ScreenWidth - 2 * Margin + PopupFrame.BorderLeft + PopupFrame.BorderRight,
-                                        ScreenHeight - 2 * Margin);
+                                        ScreenHeight - 2 * Margin + PopupFrame.TopInk + PopupFrame.BottomInk);
             Frame = new PopupFrame(ScreenFrame);
 
             Rectangle inner = PopupFrame.ContentArea(ScreenFrame);
@@ -151,7 +152,11 @@ namespace Ship_Game
             int gridTop    = inner.Y + Pad;
             // ⚠ from the FRAME's foot: ContentArea already holds back 30px for the bottom band,
             // so measuring from it left the content well short of the frame (maintainer).
-            int gridBottom = ScreenFrame.Bottom - PopupFrame.BottomInk - Pad - FootH;
+            // ⚠ the frame's VISIBLE bottom line, then the pad. ScreenFrame.Bottom is already
+            // BottomInk past it (the rect compensates for the texture's blank rows), so taking
+            // BottomInk off again here counted it twice and left the content short.
+            int visibleBottom = ScreenFrame.Bottom - PopupFrame.BottomInk;
+            int gridBottom = visibleBottom - Pad - FootH;
 
             // ── ROW 1: Empire | Galaxy, 50/50, FIXED height ─────────────────────────────────
             const int Row1H = 192;   // +20 on the bench's word - the fields were tight
@@ -218,8 +223,12 @@ namespace Ship_Game
             // ⚠ the readouts sit on the FIRST option row (Galaxy Size), to its right - they were
             // anchored on the panel's bottom, which floated them away from the row they comment
             // (maintainer). 190 clears the 180-wide split of the option buttons below.
-            float labelX = galaxyArea.X + 200;
-            float labelY = galaxyArea.Y + 6;
+            // ⚠ derived from the option list below, not from the panel: that list starts at X+10
+            // and its splitter is 180 wide, so its VALUES sit at X+190 - a label at X+200 landed
+            // on top of them. Its first row is one padding down from the list's own Y.
+            const int optListX = 10, optSplit = 180, optPad = 3;
+            float labelX = galaxyArea.X + optListX + optSplit + 70;
+            float labelY = galaxyArea.Y + 6 + optPad;
             NumSystemsLabel = Add(new UILabel(labelX, labelY, $"Solar Systems: {GetSystemsNum()}"));
             NumSystemsLabel.Font  = font;
             NumSystemsLabel.Color = Color.SteelBlue;
