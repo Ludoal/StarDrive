@@ -40,8 +40,11 @@ namespace Ship_Game
         // how the plate is painted: the face fades from top to foot, the rule sits around it.
         // ⚠ These are alphas over whatever is behind - the tint at full strength reads as neon
         // on a small control, which is why the rule is well under 1.
-        [StarData] public float FaceTop      = 0.34f;
-        [StarData] public float FaceBottom   = 0.18f;
+        // ⚠ these are what a button's opacity ACTUALLY is - PlateOpacity multiplies this ramp
+        // rather than replacing it, so at 0.34/0.18 a plate sat between 18 and 34% however high
+        // PlateOpacity read. Raised on the bench's word, keeping the gap that makes the relief.
+        [StarData] public float FaceTop      = 0.62f;
+        [StarData] public float FaceBottom   = 0.46f;
         [StarData] public float RuleStrength = 0.55f;
         [StarData] public int   RuleWidth    = 2;   // how thick the line around a plate runs
         [StarData] public float HoverLift    = 0.22f;

@@ -34,10 +34,14 @@ namespace Ship_Game
                 HandleCameraZoomScrolling(input);
                 if (input.LeftMouseDown)
                 {
-                    Vector2 pos = input.CursorPosition - new Vector2(MinimapDisplayRect.X, MinimapDisplayRect.Y);
-                    float num = MinimapDisplayRect.Width / (UState.Size * 2);
-                    CamDestination.X = -UState.Size + (pos.X / num); //Fixed clicking on the mini-map on location with negative coordinates -Gretman
-                    CamDestination.Y = -UState.Size + (pos.Y / num);
+                    // ⚠ the SAME projection the MiniMap draws with, asked of it: this used to
+                    // divide the rect's width by Size*2 while the map plotted stars at
+                    // shortSide/(Size*2.1) from the map's CENTRE. Two formulas for one mapping,
+                    // so a click landed off target - visibly so once the frame was reworked.
+                    Vector2 c = Minimap.MapCentre;
+                    float scale = Minimap.MapScale;
+                    CamDestination.X = (input.CursorPosition.X - c.X) / scale;
+                    CamDestination.Y = (input.CursorPosition.Y - c.Y) / scale;
                     snappingToShip = false;
                     ViewingShip = false;
                 }

@@ -252,9 +252,10 @@ namespace Ship_Game
 
             Tabs = Add(new Submenu(rect, new LocalizedText[]
             {
-                // "Blueprint" singular: measured, the four tabs then fit ONE row inside a 400px
-                // column (315px of tabs) where the plural needed a wider one (maintainer).
-                GameText.Governor, GameText.Defense2, GameText.Budget, "Blueprint"
+                // "BP" for now (maintainer): even the singular did not fit the row at the column's
+                // real width - my 315px measure was of the raw text, and Submenu's own padding is
+                // wider than the 30 I allowed for. A better label is wanted later.
+                GameText.Governor, GameText.Defense2, GameText.Budget, "BP"
             }));
 
             if (selectedIndex < Tabs.NumTabs)

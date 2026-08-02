@@ -25,6 +25,12 @@ namespace Ship_Game
         readonly UniverseScreen Universe;
         readonly Rectangle Housing;
         Rectangle ActualMap;
+        /// Ludoal fork: the drawn map's real rect, and the projection that plots on it. The click
+        /// handler reads all three so the INVERSE of WorldToMiniPos is guaranteed to match it -
+        /// they were separate constants and drifted the moment the frame changed.
+        public Rectangle MapRect => ActualMap;
+        public Vector2 MapCentre => MiniMapZero;
+        public float MapScale => Scale;
         // Ludoal fork: the two zoom buttons are gone - Page Up / Page Down and the wheel already
         // do it, and zoom-to-ship belongs with the ship. Important Events has its own Galaxy tab.
         readonly ToggleButton InfluenceZones;   // Ludoal fork (F4)
@@ -56,7 +62,10 @@ namespace Ship_Game
             // overlay tabs use, so the minimap sits on the interface's margin rather than in the
             // very corner. BandGap is how far the icons stand off the frame (maintainer: they
             // were touching it).
-            const int BtnW = 25, BtnH = 22, BandGap = 8, Edge = 10;
+            // ⚠ Edge is INSIDE the housing, and the housing is already 10px off the screen edge
+            // now - so this one goes back to 0 or the widget sits 20 from the corner. BandGap is
+            // how far the icons stand off the frame itself (maintainer: +5).
+            const int BtnW = 25, BtnH = 22, BandGap = 13, Edge = 0;
             ActualMap = new Rectangle(housing.X + BtnW + BandGap + Edge,
                                       housing.Y + BtnH + BandGap + Edge,
                                       housing.Width  - (BtnW + BandGap + Edge) - Edge,
@@ -67,21 +76,28 @@ namespace Ship_Game
             // rendering on the map and stays lit; a TAB pops a panel at a screen edge. They used
             // to wear three texture styles between them and sit in two arbitrary columns.
             //
-            // TOP band:   [Influence Vision Subspace] ......... [AI DSB]
-            // LEFT band:  [Gravity Range TradeRoutes] ......... [Freighters Exotic]
-            // The tabs sit at the FAR end of their band; the empty middle is the separator.
+            // TOP band:   [Influence Vision Subspace Gravity Range] ..... [DSB AI]
+            // LEFT band:  [ reserved for route filters ] ..... [Freighters Exotic]
             //
-            // The tabs are placed by where their panel COMES OUT: AI and DSB are temporary and
-            // open at the right edge, so they sit top-right; Freighters and Exotic are left open
-            // for monitoring and come out at the bottom, so they sit bottom-left.
+            // Three groups, each on its own axis. The top row is the map OVERLAYS - what the map
+            // draws over itself - and they read as one family. The head of the LEFT band is kept
+            // free for ROUTE FILTERS (Trade Routes, Colonization Routes, ...), a second family
+            // the maintainer plans to grow there. The tabs sit at the far end of their band, and
+            // are placed by where their panel comes out: DSB and AI open at the right edge and
+            // are temporary, Freighters and Exotic open at the bottom and stay open.
 
             UIList topOverlays = AddList(new Vector2(ActualMap.X, Housing.Y + Edge));
             topOverlays.Name = "MiniMapOverlaysTop";
             topOverlays.LayoutStyle = ListLayoutStyle.ResizeList;
             topOverlays.Direction = new Vector2(1, 0); // horizontal
+            // ⚠ ALL FIVE map overlays in one row (maintainer): they are one family - each toggles
+            // a rendering on the map and stays lit - so splitting them across two bands said
+            // something the code did not mean.
             InfluenceZones = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/flagicon", InfluenceZones_OnClick)); // F2
             VisionOverlayBtn = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_spy_small", VisionOverlay_OnClick)); // F3
             GravityWells = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_ftloverlay", GravityWells_OnClick)); // subspace projectors (F4)
+            GravityWellsOnly = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/node_inhibit", GravityWellsOnly_OnClick)); // F5
+            RangeOverley = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_rangeoverlay", RangeOverly_OnClick)); // F6
 
             // ⚠ the tabs go to the OPPOSITE end of their band, not beside the overlays
             // (maintainer): top band pushes them RIGHT, left band pushes them DOWN. The empty
@@ -90,15 +106,9 @@ namespace Ship_Game
             topTabs.Name = "MiniMapTabsTop";
             topTabs.LayoutStyle = ListLayoutStyle.ResizeList;
             topTabs.Direction = new Vector2(1, 0);
-            AIScreen = topTabs.Add(new ToggleButton(ToggleButtonStyle.Button, "AI", AIScreen_OnClick));
+            // DSB then AI, swapped on the maintainer's call
             DeepSpaceBuild = topTabs.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_dsbw", DeepSpaceBuild_OnClick));
-
-            UIList leftOverlays = AddList(new Vector2(Housing.X + Edge, ActualMap.Y));
-            leftOverlays.Name = "MiniMapOverlaysLeft";
-            leftOverlays.LayoutStyle = ListLayoutStyle.ResizeList;
-            GravityWellsOnly = leftOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/node_inhibit", GravityWellsOnly_OnClick)); // F5
-            RangeOverley = leftOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_rangeoverlay", RangeOverly_OnClick)); // F6
-            // (a Trade Routes overlay belongs here, under Gravity Wells and near Freighters)
+            AIScreen = topTabs.Add(new ToggleButton(ToggleButtonStyle.Button, "AI", AIScreen_OnClick));
 
             UIList leftTabs = AddList(new Vector2(Housing.X + Edge, ActualMap.Bottom - 2 * BtnH));
             leftTabs.Name = "MiniMapTabsLeft";
@@ -140,10 +150,13 @@ namespace Ship_Game
             // ruled, and thick enough to read as a frame. UITheme.DrawPlate is what draws every
             // button in the game, so the minimap stops being the one square-cornered thing on
             // screen. Grey rather than brass - it frames a map, not a control.
+            // ⚠ the RULE only, no plate body (maintainer: "enlever le fond bleu pour essayer").
+            // DrawPlate ramps its face colour top-to-bottom, and on a grey that reads blue over
+            // the starfield - so the face goes fully transparent and only the grey edge remains.
             Rectangle inflateMap = ActualMap;
             inflateMap.Inflate(6, 6);
-            UITheme.DrawPlate(batch, inflateMap, new Color(10, 10, 10).Alpha(0.88f),
-                              new Color(140, 140, 140).Alpha(0.9f), radiusOverride: 8,
+            UITheme.DrawPlate(batch, inflateMap, Color.Transparent,
+                              new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
                               ruleWidthOverride: 3);
             
             foreach (SolarSystem system in Universe.UState.Systems)

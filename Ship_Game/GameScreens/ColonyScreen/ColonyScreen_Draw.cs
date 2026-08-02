@@ -205,8 +205,12 @@ namespace Ship_Game
 
             // Ludoal fork: the planet's name in the title bar, centred - it used to ride the one
             // tab of a group that had no second tab to switch to.
+            // ⚠ centred BETWEEN THE ARROWS (maintainer), not on the frame: the arrows sit on the
+            // ground map's edges, so the name belongs on that span's centre - which is not the
+            // window's centre, the left column being wider than the right one.
             string title = P.Name;
-            var titleAt = new Vector2(ColonyFrame.X + ColonyFrame.Width / 2 - Font20.TextWidth(title) / 2f,
+            float navCentre = (LeftColony.Rect.Right + RightColony.Rect.X) / 2f;
+            var titleAt = new Vector2(navCentre - Font20.TextWidth(title) / 2f,
                                       Frame.TitleRect.CenterY() - Font20.LineSpacing / 2f);
             batch.DrawString(Font20, title, titleAt, Colors.Cream);
 

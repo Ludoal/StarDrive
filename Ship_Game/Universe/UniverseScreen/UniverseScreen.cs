@@ -532,12 +532,20 @@ namespace Ship_Game
             }
 
             Frustum = new BoundingFrustum(ViewProjection);
-            mmHousing = new Rectangle(width - (276 + minimapOffSet), height - 256, 276 + minimapOffSet, 256);
+            // Ludoal fork: 10px off both edges, the margin the overlay tabs and every reworked
+            // frame keep - the housing used to sit flush in the corner (maintainer).
+            const int mmMargin = 10;
+            mmHousing = new Rectangle(width - (276 + minimapOffSet) - mmMargin, height - 256 - mmMargin,
+                                      276 + minimapOffSet, 256);
             Minimap = Add(new MiniMap(this, mmHousing));
             ExoticBonusesWindow = Add(new ExoticBonusesWindow(this));
             FreighterUtilizationWindow = Add(new FreighterUtilizationWindow(this));
 
-            MinimapDisplayRect = new Rectangle(mmHousing.X + 61 + minimapOffSet, mmHousing.Y + 43, 200, 200);
+            // ⚠ the CLICK target is the map's own rect, asked of the MiniMap - it was a separate
+            // 200x200 at hand-measured offsets, built for the old brass housing. The moment the
+            // frame was reworked the two drifted, so clicking the minimap moved the camera to
+            // somewhere other than where you clicked.
+            MinimapDisplayRect = Minimap.MapRect;
             mmShowBorders = new Rectangle(MinimapDisplayRect.X, MinimapDisplayRect.Y - 25, 32, 32);
 
             SelectedStuffRect = new Rectangle(0, height - 247, 407, 242);

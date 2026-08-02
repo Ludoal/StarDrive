@@ -27,8 +27,8 @@ Theme:
   PlateMuted:    [122, 116, 104]  # out of reach for now
   PlateOpacity:  0.92
   CornerRadius:  8      # how round the corners are - drawn, not an asset, so any value works
-  FaceTop:       0.34   # the plate's face at its top edge, as an alpha over what is behind
-  FaceBottom:    0.18   # and at its foot - the difference IS the relief
+  FaceTop:       0.62   # the plate's face at its top edge, as an alpha over what is behind
+  FaceBottom:    0.46   # and at its foot - the difference IS the relief
   RuleStrength:  0.55   # the line around it; 1.0 is the full tint and reads as neon
   RuleWidth:     2      # how thick that line runs, in pixels
   HoverLift:     0.22   # how far the tint moves toward white under the cursor

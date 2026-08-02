@@ -179,7 +179,10 @@ namespace Ship_Game
             float gridLeft   = inner.X + Pad;
             float gridRight  = inner.Right - Pad;
             float gridTop    = inner.Y + Pad;
-            float gridBottom = inner.Bottom - Pad;
+            // ⚠ measured from the FRAME's foot, not from ContentArea: the latter already reserves
+            // 30px for the bottom band, so subtracting Pad on top of it left the last row 40px
+            // short of the frame instead of 10 (maintainer).
+            float gridBottom = ColonyFrame.Bottom - PopupFrame.BottomInk - Pad;
 
             // ── what is FIXED and what STRETCHES (Ludoal fork, bench 232) ────────────────────
             // Left column: FIXED width. Planet Info, Governor and Assign Labor keep fixed
@@ -367,13 +370,21 @@ namespace Ship_Game
             int iconSize = (int)portraitH;
             int iconOffsetX = LowRes ? 100 : 148;
 
+            // ⚠ CENTRED in the panel again (maintainer): pinning it under the title bar left it
+            // sitting high once the panel took the taller of the portrait and the text column.
+            // Centred BELOW the title bar, not in the whole rect - or it rides up into it.
+            float iconBandTop = PlanetInfo.Y + 26;
+            float iconBandH   = PlanetInfo.Bottom - iconBandTop;
             PlanetIcon = new Rectangle((int)PlanetInfo.Right - iconOffsetX,
-                                       (int)PlanetInfo.Y + 26, iconSize, iconSize);
+                                       (int)(iconBandTop + (iconBandH - iconSize) / 2),
+                                       iconSize, iconSize);
 
             // Ludoal fork: the colony arrows straddle the planet portrait's centre line - they
             // step through planets, so they belong under the planet. Shortened from the style's
             // 35: that height belongs to the selection box they were drawn for.
-            const int arrowW = 14, arrowH = 20;
+            // the style's own size, restored (maintainer): they were cut to 14x20 for the narrow
+            // slot under the portrait, and that slot is gone.
+            const int arrowW = 24, arrowH = 35;
             // ⚠ the colony arrows ride the TITLE BAR now (maintainer), not the foot of the planet
             // portrait - and they align on the ground map's edges, so the gesture that changes
             // colony sits over the thing that shows the colony.

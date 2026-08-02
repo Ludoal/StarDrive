@@ -124,8 +124,10 @@ namespace Ship_Game
         // Ludoal fork: first screen converted to Narrow/Tall. Same three sizes as before, but the
         // small one now covers the whole sub-1920 band instead of only sub-1366, and the large
         // one keys off height rather than either dimension.
-        Graphics.Font DescriptionTextFont => Narrow ? Fonts.Arial10
-                                                    : Tall ? Fonts.Arial14Bold : Fonts.Arial12;
+        // ⚠ a size up (maintainer): the description is a tab with a full column now, not a strip
+        // sharing its area with the points summary.
+        Graphics.Font DescriptionTextFont => Narrow ? Fonts.Arial12
+                                                    : Tall ? Fonts.Arial20Bold : Fonts.Arial14Bold;
 
         public override void LoadContent()
         {
@@ -147,7 +149,9 @@ namespace Ship_Game
             int gridLeft   = inner.X + Pad;
             int gridRight  = inner.Right - Pad;
             int gridTop    = inner.Y + Pad;
-            int gridBottom = inner.Bottom - FootH;
+            // ⚠ from the FRAME's foot: ContentArea already holds back 30px for the bottom band,
+            // so measuring from it left the content well short of the frame (maintainer).
+            int gridBottom = ScreenFrame.Bottom - PopupFrame.BottomInk - Pad - FootH;
 
             // ── ROW 1: Empire | Galaxy, 50/50, FIXED height ─────────────────────────────────
             const int Row1H = 192;   // +20 on the bench's word - the fields were tight
@@ -211,8 +215,11 @@ namespace Ship_Game
             Graphics.Font font = LowRes ? Fonts.Arial8Bold : Fonts.Arial12Bold;
             // the galaxy readouts live in the Galaxy tab now, not off the right of a name panel
             RectF galaxyArea = GalaxyTab.ClientArea;
-            float labelX = galaxyArea.X + 210;
-            float labelY = galaxyArea.Bottom - 2 * font.LineSpacing - 8;
+            // ⚠ the readouts sit on the FIRST option row (Galaxy Size), to its right - they were
+            // anchored on the panel's bottom, which floated them away from the row they comment
+            // (maintainer). 190 clears the 180-wide split of the option buttons below.
+            float labelX = galaxyArea.X + 200;
+            float labelY = galaxyArea.Y + 6;
             NumSystemsLabel = Add(new UILabel(labelX, labelY, $"Solar Systems: {GetSystemsNum()}"));
             NumSystemsLabel.Font  = font;
             NumSystemsLabel.Color = Color.SteelBlue;
@@ -302,8 +309,11 @@ namespace Ship_Game
             // Abort in the HOSTILE tint (maintainer): it is the button that cancels, and the
             // style exists for exactly that. It was wearing the blue one while Engage - the
             // button that STARTS the game - wore the red.
-            Button(ButtonStyle.WideHostile, gridLeft, footY, Localizer.Token(GameText.Abort), click: OnAbortClicked);
-            bx = gridLeft + 182 + BtnGap * 3;   // 182 = dan_button, the Wide styles' size ref
+            // ⚠ the Wide styles are PAINTED, so their width is whatever we set - they do not have
+            // to be dan_button's 182. Both end buttons take the row's own 132 (maintainer).
+            UIButton abort = Button(ButtonStyle.Wide, gridLeft, footY, Localizer.Token(GameText.Abort), click: OnAbortClicked);
+            abort.SetAbsSize(BtnW, 24);
+            bx = gridLeft + BtnW + BtnGap * 3;
             Foot("Load Race", OnLoadRaceClicked);
             Foot("Save Race", OnSaveRaceClicked);
             bx += BtnGap * 3;
@@ -312,11 +322,14 @@ namespace Ship_Game
             Foot(Localizer.Token(GameText.RuleOptions), OnRuleOptionsClicked);
             bx += BtnGap * 3;
             Foot("Clear Traits", OnClearClicked);
-            SelectOpponentsBtn = Foot("", OnSelectOpponentsClicked, ButtonStyle.BigDip);
+            // ⚠ Medium like the rest of the row: BigDip is 168 wide, so this one ran 36px past
+            // the slot the row reserves and collided with Engage (maintainer).
+            SelectOpponentsBtn = Foot("", OnSelectOpponentsClicked);
 
-            // Engage in the ACTIVE tint - it is the order that starts something, the mirror of
-            // Abort's hostile one. 182 is dan_button, the Wide styles' size reference.
-            Button(ButtonStyle.WideActive, gridRight - 182, footY, GameText.Engage, click: OnEngageClicked);
+            // Engage in the HOSTILE tint - red, on the maintainer's call: it commits, and this
+            // screen has no way back once it does.
+            UIButton engage = Button(ButtonStyle.WideHostile, gridRight - BtnW, footY, GameText.Engage, click: OnEngageClicked);
+            engage.SetAbsSize(BtnW, 24);
 
             DoRaceDescription();
             SetRacialTraits(SelectedData.Traits);
@@ -705,10 +718,11 @@ namespace Ship_Game
             // child, so drawing it after would bury every tab and list on the screen.
             Frame.DrawFill(batch, ScreenFrame);
             Frame.Draw(batch);
+            // the window title font, the one Colony and every popup uses - not Laserian
             string screenTitle = Localizer.Token(GameText.DesignYourRace);
-            batch.DrawString(Fonts.Laserian14, screenTitle,
-                new Vector2(ScreenFrame.X + ScreenFrame.Width / 2 - Fonts.Laserian14.TextWidth(screenTitle) / 2f,
-                            Frame.TitleRect.CenterY() - Fonts.Laserian14.LineSpacing / 2f), Colors.Cream);
+            batch.DrawString(UITheme.WindowTitle, screenTitle,
+                new Vector2(ScreenFrame.X + ScreenFrame.Width / 2 - UITheme.WindowTitle.TextWidth(screenTitle) / 2f,
+                            Frame.TitleRect.CenterY() - UITheme.WindowTitle.LineSpacing / 2f), UITheme.TextPrimary);
 
             base.Draw(batch, elapsed);
             batch.Draw(ResourceManager.Flag(FlagIndex), FlagRect, Picker.CurrentColor);
@@ -753,8 +767,10 @@ namespace Ship_Game
             public SelectedTraitsSummary(RaceDesignScreen screen)
             {
                 Screen = screen;
-                Font = screen.Narrow ? Fonts.Arial10
-                                     : screen.Tall ? Fonts.Arial14Bold : Fonts.Arial12Bold;
+                // ⚠ a size up (maintainer): this is a tab of its own now with a full column to
+                // itself, so it no longer has to squeeze under the description.
+                Font = screen.Narrow ? Fonts.Arial12Bold
+                                     : screen.Tall ? Fonts.Arial20Bold : Fonts.Arial14Bold;
             }
 
             public override bool HandleInput(InputState input)
@@ -777,18 +793,12 @@ namespace Ship_Game
                 r.Y += (Font.LineSpacing + 8);
                 Vector2 cursor = r;
 
+                // ⚠ ONE column (maintainer): the negative traits used to start a second column to
+                // the right, which is what kept the font small. The tab has a whole column to
+                // itself now, so the list simply runs down it.
                 int line = 0;
-                bool switchedToNegative = false;
                 foreach (TraitEntry t in Screen.AllTraits.OrderByDescending(t => t.Trait.Cost))
                 {
-                    if (t.Trait.Cost < 0 && !switchedToNegative)
-                    {
-                        switchedToNegative = true;
-                        line = 0;
-                        cursor.Y = r.Y;
-                        cursor.X += Font.TextWidth(title) + (Screen.Narrow ? 50 : Screen.Tall ? 150 : 100);
-                    }
-
                     if (t.Selected)
                     {
                         batch.DrawString(Font, $"({t.Trait.Cost}) {t.Trait.LocalizedName.Text}", cursor,
