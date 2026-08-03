@@ -46,23 +46,24 @@ namespace Ship_Game
         public void Draw(SpriteBatch batch, Vector2 cursor, Rectangle rect)
         {
             bool hovering = rect.HitTest(cursor);
-            // painted plate chrome - the state reads as the tint: active when the order is on,
-            // neutral when off, hostile when the right-click function is off
+            // ⚠ the ship-command strip KEEPS its sculpted chrome (maintainer decision, 3 Aug) -
+            // it is the one button family excluded from the painted-plate conversion
             if (SimpleToggle)
             {
-                UIButton.DrawPlate(batch, rect, hovering ? UITheme.Hover(UIButton.PlateNeutral)
-                                                         : UIButton.PlateNeutral);
+                batch.Draw(!hovering
+                    ? ResourceManager.Texture("SelectionBox/button_action_disabled")
+                    : ResourceManager.Texture("SelectionBox/button_action_hover"), rect, Color.White);
             }
             else
             {
                 if (hovering)
-                    UIButton.DrawPlate(batch, rect, UITheme.Hover(UIButton.PlateActive));
+                    batch.Draw(ResourceManager.Texture("SelectionBox/button_action_hover"), rect, Color.White);
                 else if (RightClickValueToModify != null && !RightClickValueToModify.Value)
-                    UIButton.DrawPlate(batch, rect, UIButton.PlateHostile);
+                    batch.Draw(ResourceManager.Texture("SelectionBox/button_action_disabled"), rect, Color.LightPink);
                 else if (!ValueToModify.Value)
-                    UIButton.DrawPlate(batch, rect, UIButton.PlateNeutral);
+                    batch.Draw(ResourceManager.Texture("SelectionBox/button_action_disabled"), rect, Color.White);
                 else
-                    UIButton.DrawPlate(batch, rect, UIButton.PlateActive);
+                    batch.Draw(ResourceManager.Texture("SelectionBox/button_action"), rect, Color.White);
             }
 
             switch (OrderType)
@@ -110,9 +111,9 @@ namespace Ship_Game
             if (fleet == null)
                 return;
 
-            // active plate over the neutral chrome when a patrol plan is loaded
-            if (fleet.HasPatrolPlan)
-                UIButton.DrawPlate(batch, rect, UIButton.PlateActive);
+            DrawDynamicButton(batch, rect, ResourceManager.Texture("SelectionBox/button_action"),
+                                           ResourceManager.Texture("SelectionBox/button_action_disabled"),
+                                           fleet.HasPatrolPlan ? 1 : 0);
 
             DrawButton(batch, rect, ResourceManager.Texture("UI/icon_shield"));
         }
