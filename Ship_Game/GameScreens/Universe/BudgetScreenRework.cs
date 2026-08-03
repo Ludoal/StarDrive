@@ -298,7 +298,7 @@ namespace Ship_Game.GameScreens
             // goal) → vertical arithmetic Income − Expenditure = Net Gain
             int rx = (int)RightMenu.X + 20;
             int rw = (int)RightMenu.Width - 40;
-            var taxRect    = new Rectangle(rx, (int)RightMenu.Y + 74, rw, 104);
+            var taxRect    = new Rectangle(rx, (int)RightMenu.Y + 42, rw, 104); // top rhythm = the left table's headerY (16), checkbox first
             var budgetRect = new Rectangle(rx, taxRect.Bottom + 8, rw, 210);
             var incomeRect = new Rectangle(rx, budgetRect.Bottom + 8, rw, 180);
             var costRect   = new Rectangle(rx, incomeRect.Bottom + 8, rw, 240);
@@ -317,7 +317,7 @@ namespace Ship_Game.GameScreens
             TaxSlider.RelativeValue    = Player.data.TaxRate;
 
             // the checkbox is a MODE switch — it sits on top of the slider it drives
-            AutoTaxCheckBox(new Rectangle(rx, (int)RightMenu.Y + 48, rw, 20));
+            AutoTaxCheckBox(new Rectangle(rx, (int)RightMenu.Y + 16, rw, 20));
 
             BudgetTab(budgetRect);
             IncomesTab(incomeRect);
