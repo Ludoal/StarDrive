@@ -33,7 +33,8 @@ namespace Ship_Game
         void SPLine(ref Vector2 c, SpriteBatch batch, string label, string value, Color valueColor)
         {
             batch.DrawString(TextFont, label, new Vector2(c.X + 10, c.Y), Color.LightGray);
-            batch.DrawString(TextFont, value, new Vector2(c.X + SPValueCol, c.Y), valueColor);
+            // decimal-aligned like the yields grid: the pivot leaves room for "+999"
+            SPNum(batch, c.X + SPValueCol + 28, c.Y, value, valueColor);
             c.Y += TextFont.LineSpacing + 2;
         }
 
@@ -49,18 +50,35 @@ namespace Ship_Game
         void SPSetColumns(float blockW)
         {
             SPValueCol      = blockW * 0.543f; // the label/value split of SPLine
-            SPYieldColPop   = blockW * 0.300f;
-            SPYieldColFlat  = blockW * 0.471f;
-            SPYieldColEaten = blockW * 0.629f;
-            SPYieldColTotal = blockW * 0.800f;
+            // ⚠ the yield columns are PIVOTS now (the decimal point sits on them) and they
+            // spread over the RIGHT block, which starts at 44% and runs to the edge - wider
+            // than the left one (maintainer bench, 900p)
+            float rightW    = blockW * 1.12f;
+            SPYieldColPop   = rightW * 0.335f;
+            SPYieldColFlat  = rightW * 0.505f;
+            SPYieldColEaten = rightW * 0.660f;
+            SPYieldColTotal = rightW * 0.830f;
+        }
+
+        // decimal-aligned draw: the INTEGER part ends at the pivot, the fraction hangs right
+        // of it - every number of a column shares one decimal point (maintainer bench)
+        void SPNum(SpriteBatch batch, float pivotX, float y, string s, Color color)
+        {
+            int dot = s.IndexOf('.');
+            string intPart = dot < 0 ? s : s.Substring(0, dot);
+            batch.DrawString(TextFont, s, new Vector2(pivotX - TextFont.TextWidth(intPart), y), color);
         }
 
         void SPYieldHeader(ref Vector2 c, SpriteBatch batch)
         {
-            batch.DrawString(TextFont, "from pop", new Vector2(c.X + SPYieldColPop, c.Y), Color.DarkGray);
-            batch.DrawString(TextFont, "flat", new Vector2(c.X + SPYieldColFlat, c.Y), Color.DarkGray);
-            batch.DrawString(TextFont, "eaten", new Vector2(c.X + SPYieldColEaten, c.Y), Color.DarkGray);
-            batch.DrawString(TextFont, "total", new Vector2(c.X + SPYieldColTotal, c.Y), Color.DarkGray);
+            // headers close on the same right edge the numbers reach (pivot + a ".00" of room)
+            float frac = TextFont.TextWidth(".00");
+            void H(string h, float pivot) =>
+                batch.DrawString(TextFont, h, new Vector2(c.X + pivot + frac - TextFont.TextWidth(h), c.Y), Color.DarkGray);
+            H("from pop", SPYieldColPop);
+            H("flat",     SPYieldColFlat);
+            H("eaten",    SPYieldColEaten);
+            H("total",    SPYieldColTotal);
             c.Y += TextFont.LineSpacing + 2;
         }
 
@@ -71,11 +89,11 @@ namespace Ship_Game
             float fromColonists = res.ColonistIncome(res.NetYieldPerColonist);
             float total = res.NetIncome;
             batch.DrawString(TextFont, label, new Vector2(c.X + 10, c.Y), Color.LightGray);
-            batch.DrawString(TextFont, SPSigned(fromColonists, 2), new Vector2(c.X + SPYieldColPop, c.Y), Color.White);
-            batch.DrawString(TextFont, SPSigned(res.NetFlatBonus, 2), new Vector2(c.X + SPYieldColFlat, c.Y), Color.White);
+            SPNum(batch, c.X + SPYieldColPop, c.Y, SPSigned(fromColonists, 2), Color.White);
+            SPNum(batch, c.X + SPYieldColFlat, c.Y, SPSigned(res.NetFlatBonus, 2), Color.White);
             if (eaten.NotZero())
-                batch.DrawString(TextFont, "-" + eaten.String(2), new Vector2(c.X + SPYieldColEaten, c.Y), Color.Pink); // ASCII minus — the game font has no U+2212 (renders '?')
-            batch.DrawString(TextFont, SPSigned(total, 2), new Vector2(c.X + SPYieldColTotal, c.Y), SPTone(total));
+                SPNum(batch, c.X + SPYieldColEaten, c.Y, "-" + eaten.String(2), Color.Pink); // ASCII minus — the game font has no U+2212 (renders '?')
+            SPNum(batch, c.X + SPYieldColTotal, c.Y, SPSigned(total, 2), SPTone(total));
             c.Y += TextFont.LineSpacing + 2;
         }
 

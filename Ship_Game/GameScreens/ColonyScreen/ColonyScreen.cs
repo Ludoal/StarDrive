@@ -215,7 +215,7 @@ namespace Ship_Game
             float infoLinesH  = 45 + Fonts.Arial20Bold.LineSpacing * 2
                               + 5 * (TextFont.LineSpacing + 2);
             float planetInfoH = Math.Max(26 + portraitH + 14, infoLinesH + 10);
-            const float governorH   = 240;   // tab row + Defense's aired button trio (34/row)
+            const float governorH   = 222;   // one line back down (maintainer bench) - STORAGE breathes
             const float laborH      = 150;   // three sliders, their locks and the title bar
 
             RectF planetInfoR = new(gridLeft, gridTop, colLeftW, planetInfoH);

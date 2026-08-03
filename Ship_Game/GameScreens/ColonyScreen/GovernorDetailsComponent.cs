@@ -59,8 +59,6 @@ namespace Ship_Game
 
         private readonly Graphics.Font Font14 = Fonts.Arial14Bold;
         private readonly Graphics.Font Font12 = Fonts.Arial12Bold;
-        private readonly Graphics.Font Font10 = Fonts.Arial10;
-        private readonly Graphics.Font Font8  = Fonts.Arial8Bold;
         private Graphics.Font Font;
         private Graphics.Font FontBig;
         private bool OverrideCivBudget, OverrideGrdBudget, OverrideSpcBudget;
@@ -109,17 +107,17 @@ namespace Ship_Game
             Planet = p;
             RemoveAll(); // delete all components
 
+            // full size at every width (maintainer, 3 Aug): the column is FIXED on the tab
+            // measure, identical at 900p and 1080p - a width-based font fold piloted nothing
             Font    = Font12;
             FontBig = Font14;
-            if      (Screen.Width < 1600) { Font = Font8; FontBig = Font10; }
-            else if (Screen.Width < 1920) { Font = Font10; FontBig = Font12; }
 
             // NOTE: Using RootContent here to avoid lag from resource unloading and reloading
             PortraitSprite = DrawableSprite.SubTex(ResourceManager.RootContent, $"Portraits/{Planet.Owner.data.PortraitName}");
 
             Portrait         = Add(new UIPanel(PortraitSprite));
             BluePrintsIcon   = Add(new UIPanel(ResourceManager.Texture("NewUI/blueprints")));
-            WorldType        = Add(new UILabel(Planet.WorldType, FontBig));
+            WorldType        = Add(new UILabel(Planet.WorldType, Font14)); // full size at every width (maintainer): the title does not fold
             // Ludoal fork: Font, not Font12 - GetParsedDescription wraps with Font, which is
             // smaller than Font12 below 1920, so a hardcoded Font12 here drew text measured for
             // a narrower glyph set and it ran past the frame.
@@ -338,8 +336,8 @@ namespace Ship_Game
             // UNDER the portrait; the two contextual toggles share their exact lines at ColumnX
             Quarantine.Pos          = new Vector2(X + 10, Portrait.Bottom + 8);
             Prioritized.Pos         = new Vector2(X + 10, Portrait.Bottom + 26);
-            SpecializedTradeHub.Pos = new Vector2(ColumnX, Quarantine.Pos.Y);
-            GovNoScrap.Pos          = new Vector2(ColumnX, Prioritized.Pos.Y);
+            SpecializedTradeHub.Pos = new Vector2(ColumnX + 25, Quarantine.Pos.Y); // +25: clear of the left labels at 1080 fonts (bench)
+            GovNoScrap.Pos          = new Vector2(ColumnX + 25, Prioritized.Pos.Y);
             BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, Quarantine.Pos.Y - 35);
 
             // Defense tab. ⚠ These six buttons used to hang off Bottom, which is why the panel
