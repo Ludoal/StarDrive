@@ -12,7 +12,6 @@ namespace UnitTests.Technologies
         public TestTechnologyUnlock()
         {
             CreateUniverseAndPlayerEmpire();
-            Universe.aw = new AutomationWindow(Universe);
             LoadStarterShips("TEST_Heavy Carrier mk1");
         }
 
