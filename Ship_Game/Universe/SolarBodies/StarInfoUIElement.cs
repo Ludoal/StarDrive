@@ -16,6 +16,10 @@ namespace Ship_Game
 	// station position) — only this UI never existed.
 	public sealed class StarInfoUIElement : UIElement
 	{
+		// Ludoal fork: the sculpted texture spent this top band on antenna machinery; with it
+		// gone the frame starts this far under the housing. Same recipe as its four siblings.
+		const int FrameShave = 26;
+
 		SolarSystem Sys;
 		readonly UniverseScreen Screen;
 		Empire Player => Screen.Player;
@@ -47,7 +51,16 @@ namespace Ship_Game
 			if (Sys == null)
 				return;
 
-			batch.Draw(ResourceManager.Texture("SelectionBox/unitselmenu_main"), Housing, Color.White);
+			// Ludoal fork: the minimap's recipe instead of the sculpted unitselmenu texture -
+			// a near-opaque flat ground and a rounded grey rule, frame shaved like its siblings
+			Rectangle frame = Housing;
+			frame.Y += FrameShave; frame.Height -= FrameShave;
+			Rectangle plate = frame;
+			plate.Inflate(-2, -2);
+			batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
+			UITheme.DrawPlate(batch, frame, Color.Transparent,
+			                  new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
+			                  ruleWidthOverride: 3);
 			batch.DrawString(Fonts.Arial20Bold, Sys.Name, new Vector2(Housing.X + 41, Housing.Y + 65), Colors.Cream);
 
 			var textPos = new Vector2(Housing.X + 183, Housing.Y + 100); // right column — the star occupies the left
