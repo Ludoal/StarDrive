@@ -33,11 +33,12 @@ namespace Ship_Game
 
             Rectangle inner = PopupFrame.ContentArea(Rect);
 
-            RectF techList = new(inner.X + 10, inner.Y + 36, inner.Width - 20, inner.Bottom - (inner.Y + 36));
+            RectF techList = new(inner.X + 10, inner.Y + 46, inner.Width - 20, inner.Bottom - (inner.Y + 46));
             TechList = Add(new SubmenuScrollList<SearchTechItem>(techList, 125, ListStyle.Blue)).List;
             TechList.OnClick = (item) => ResearchToTech(item.Tech);
 
-            Rectangle rect = new RectF(inner.X + 10, inner.Y + 6, inner.Width - 20, 20);
+            // 16px under the title bar - the field used to sit right against it (maintainer bench)
+            Rectangle rect = new RectF(inner.X + 10, inner.Y + 16, inner.Width - 20, 20);
             SearchTech = Add(new UITextEntry(rect.Bevel(-4, -2), Fonts.Arial12Bold,
                                              GameText.StartTypingToFindTechs));
             SearchTech.Background = new Submenu(rect, SubmenuStyle.Blue);

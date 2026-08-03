@@ -74,15 +74,17 @@ namespace Ship_Game
             RectF client = EmpireTabs.ClientArea;
             var main = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
             MainArea = main;
-            MainMenuOffset = new Vector2(main.X + 20, main.Y + 30);
+            // 10px side margins, 2px top/bottom for the tree itself - every pixel of the frame
+            // goes to the nodes at the 900p floor (maintainer bench)
+            MainMenuOffset = new Vector2(main.X + 10, main.Y + 30);
 
             RootNodes.Clear();
             SubNodes.Clear();
 
             int numDiscoveredRoots = Player.TechEntries.Count(t => t.IsRoot && t.Discovered);
 
-            GridHeight = (main.Height - 40) / Math.Max(1, numDiscoveredRoots);
-            MainMenuOffset.Y = main.Y + 12 + GridHeight / 3;
+            GridHeight = (main.Height - 4) / Math.Max(1, numDiscoveredRoots);
+            MainMenuOffset.Y = main.Y + 2 + GridHeight / 3;
 
             Vector2 nodePos = Vector2.Zero;
 
@@ -97,15 +99,17 @@ namespace Ship_Game
                 SetRootNode(tech, ref nodePos);
             }
 
-            GridHeight = (main.Height - 40) / 6;
+            GridHeight = (main.Height - 4) / 6;
 
             if (!RootNodes.TryGetValue(Universe.UState.ResearchRootUIDToDisplay, out RootNode root))
                 root = RootNodes.Values.FirstOrDefault() ?? throw new("ResearchScreen has no RootNodes");
 
             PopulateNodesFromRoot(root);
 
-            // Create queue once all techs are populated
-            var queue = new Rectangle(main.X + main.Width - 355, main.Y + 40, 330, main.Height - 100);
+            // Create queue once all techs are populated. 10px off every frame edge: the panels
+            // start 10 under the tab row and the button pair below ends 10 above the bottom.
+            var queue = new Rectangle(main.X + main.Width - 340, main.Y + 10, 330,
+                                      main.Height - 10 - 8 - ResearchButtonH - 10);
             // Ludoal fork: both buttons hang off the QUEUE rect, one on each of its edges, so they
             // are level and evenly spaced - Search used to measure from main.Width and Hide Queue
             // from the container, which is why they never lined up. The blue dan_button is the new
@@ -166,10 +170,17 @@ namespace Ship_Game
                     rootNode.Draw(batch);
                 }
 
+                // the hovered tech draws last so it rides above its neighbours - at the 900p
+                // floor the nodes pack tight enough to overlap
+                TreeNode hovered = null;
                 foreach (TreeNode treeNode in SubNodes.Values)
                 {
-                    treeNode.Draw(batch);
+                    if (treeNode.State == NodeState.Hover)
+                        hovered = treeNode;
+                    else
+                        treeNode.Draw(batch);
                 }
+                hovered?.Draw(batch);
             }
             batch.SafeEnd();
 
@@ -434,10 +445,10 @@ namespace Ship_Game
 
             int rows = 1;
             int cols = CalculateTreeDimensionsFromRoot(root.Entry, ref rows, 0, 0);
-            if (rows < 9) GridHeight = (MainArea.Height - 40) / rows;
-            else          GridHeight = (MainArea.Height - 40) / 9;
+            if (rows < 9) GridHeight = (MainArea.Height - 4) / rows;
+            else          GridHeight = (MainArea.Height - 4) / 9;
 
-            if (cols > 0 && cols < 9) GridWidth = (MainArea.Width - 350) / cols;
+            if (cols > 0 && cols < 9) GridWidth = (MainArea.Width - 330) / cols;
             else                      GridWidth = 165;
 
             BuildSubNodes(root);
@@ -452,7 +463,7 @@ namespace Ship_Game
             int wantRows = Math.Min(actualRows + 1, 9);
             if (wantRows != Math.Min(rows, 9))
             {
-                GridHeight = (MainArea.Height - 40) / wantRows;
+                GridHeight = (MainArea.Height - 4) / wantRows;
                 BuildSubNodes(root);
             }
         }
