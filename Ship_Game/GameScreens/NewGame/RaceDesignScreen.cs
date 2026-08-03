@@ -299,7 +299,9 @@ namespace Ship_Game
 
             PointsSummary = Add(new SelectedTraitsSummary(this));
 
-            Picker = Add(new UIColorPicker(new Rectangle(ScreenWidth / 2 - 310, ScreenHeight / 2 - 280, 620, 560)));
+            // 600 tall: the colour grid is a fixed 512 plus the title band the frame carries
+            Picker = Add(new UIColorPicker(new Rectangle(ScreenWidth / 2 - 310, ScreenHeight / 2 - 300, 620, 600)));
+            Picker.Title = "Empire Color";
             Picker.Visible = false;
 
             // ── the FOOT: one row, on the grid ──────────────────────────────────────────────

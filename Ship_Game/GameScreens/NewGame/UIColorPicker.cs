@@ -2,13 +2,28 @@ using System;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
+using Ship_Game.ExtensionMethods;   // CenterTextX
 using Rectangle = SDGraphics.Rectangle;
+using Vector2 = SDGraphics.Vector2;
 
 namespace Ship_Game
 {
     public class UIColorPicker : UIElementV2
     {
         public Color CurrentColor = Color.White;
+        public string Title = "Color";
+
+        // the band under the title bar where the colour grid starts, and the close cross -
+        // both derived from the live Rect so they follow the window wherever it sits
+        int GridTop => PopupFrame.ContentTop(Rect) + 8;
+        Rectangle CloseRect
+        {
+            get
+            {
+                Vector2 p = PopupFrame.ClosePos(Rect);
+                return new Rectangle((int)p.X, (int)p.Y, 20, 20);
+            }
+        }
 
         public UIColorPicker(in Rectangle rect) : base(rect)
         {
@@ -35,10 +50,18 @@ namespace Ship_Game
                 return false;
             }
             
+            if (input.LeftMouseClick && CloseRect.HitTest(input.CursorPosition))
+            {
+                Visible = false;
+                return true;
+            }
+
             if (input.LeftMouseDown)
             {
-                int yPosition = (int)Y + 10;
-                int xPositionStart = (int)X + 10;
+                // ⚠ the hit map mirrors the DRAW map exactly - same origins, or the aim
+                // lands beside the swatch under the cursor
+                int yPosition = GridTop;
+                int xPositionStart = (int)X + 20;
                 for (int i = 0; i <= 255; i++)
                 {
                     for (int j = 0; j <= 255; j++)
@@ -53,7 +76,7 @@ namespace Ship_Game
                     yPosition += 2;
                 }
 
-                yPosition = (int)Y + 10;
+                yPosition = GridTop;
                 for (int i = 0; i <= 255; i++)
                 {
                     var thisColor = new Color(CurrentColor.R, CurrentColor.G, Convert.ToByte(i));
@@ -75,14 +98,20 @@ namespace Ship_Game
             if (!Visible)
                 return;
 
-            // the popup window's surface, drawn in place
+            // the popup window's surface, with title and close cross placed the way
+            // PopupWindow places its own
             var frame = new PopupFrame(Rect);
             frame.DrawFill(batch, Rect);
             frame.Draw(batch);
+            var titlePos = new Vector2(Rect.CenterTextX(Title, UITheme.WindowTitle),
+                                       Rect.Y + PopupFrame.TitleBarTop
+                                       + (PopupFrame.TitleBarHeight - UITheme.WindowTitle.LineSpacing) / 2);
+            batch.DrawString(UITheme.WindowTitle, Title, titlePos, UITheme.TextPrimary);
+            batch.Draw(ResourceManager.Texture("NewUI/Close_Normal"), CloseRect, Color.White);
 
             SubTexture spark = ResourceManager.Texture("Particles/spark");
 
-            int yPosition = (int)Y + 20;
+            int yPosition = GridTop;
             int xPositionStart = (int)X + 20;
             for (int i = 0; i <= 255; i++)
             {
@@ -99,7 +128,7 @@ namespace Ship_Game
                 yPosition += 2;
             }
 
-            yPosition = (int)Y + 10;
+            yPosition = GridTop;
             for (int i = 0; i <= 255; i++)
             {
                 var r = new Rectangle((int)X + 10 + 575, yPosition, 20, 2);
