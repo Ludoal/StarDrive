@@ -57,7 +57,9 @@ namespace Ship_Game
             // the right anchor keeps the total flush at the panel edge, so widening the
             // spread pushes the block's START left into the spare middle
             float rightW    = blockW * 1.30f;
-            SPYieldColPop   = rightW * 0.335f;
+            // the pop pivot keeps clear of the widest row label ("Production") at any
+            // width - the fraction alone let the value sit on the label at 900p
+            SPYieldColPop   = Math.Max(rightW * 0.335f, TextFont.TextWidth("Production") + 42);
             SPYieldColFlat  = rightW * 0.505f;
             SPYieldColEaten = rightW * 0.660f;
             SPYieldColTotal = rightW * 0.830f;
@@ -68,17 +70,26 @@ namespace Ship_Game
         void SPNum(SpriteBatch batch, float pivotX, float y, string s, Color color)
         {
             int dot = s.IndexOf('.');
-            string intPart = dot < 0 ? s : s.Substring(0, dot);
+            if (dot < 0)
+            {
+                // no decimal point: the leading numeric token still ends AT the pivot.
+                // Anchoring the whole string put suffixed values ("8  (~25 turns)",
+                // "+0") on top of their own labels (maintainer bench)
+                dot = 0;
+                while (dot < s.Length && (char.IsDigit(s[dot]) || s[dot] == '+' || s[dot] == '-'))
+                    ++dot;
+            }
+            string intPart = s.Substring(0, dot);
             batch.DrawString(TextFont, s, new Vector2(pivotX - TextFont.TextWidth(intPart), y), color);
         }
 
         void SPYieldHeader(ref Vector2 c, SpriteBatch batch)
         {
-            // headers close on the same right edge the numbers reach (pivot + a ".00" of room)
-            float frac = TextFont.TextWidth(".00");
+            // headers CENTRE on their pivot (maintainer bench 284): a decimal column's
+            // visual middle is its decimal point, near enough
             Vector2 pos = c; // a local function cannot capture a ref parameter (CS1628)
             void H(string h, float pivot) =>
-                batch.DrawString(TextFont, h, new Vector2(pos.X + pivot + frac - TextFont.TextWidth(h), pos.Y), Color.DarkGray);
+                batch.DrawString(TextFont, h, new Vector2(pos.X + pivot - TextFont.TextWidth(h) / 2f, pos.Y), Color.DarkGray);
             H("pop", SPYieldColPop);
             H("flat",     SPYieldColFlat);
             H("eaten",    SPYieldColEaten);
@@ -149,7 +160,7 @@ namespace Ship_Game
             // its last pivot plus a fraction of room lands at the margin, and the block start
             // derives from that - as far right as it can sit
             float usable = PFacilities.Width - 40;
-            var right = new Vector2(bCursor.X + usable - (SPYieldColTotal + TextFont.TextWidth(".00") + 6), bCursor.Y);
+            var right = new Vector2(bCursor.X + usable - (SPYieldColTotal + TextFont.TextWidth(".00") + 2), bCursor.Y);
 
             // ── BUDGET (BC / turn) — gross sources as the building screen promises them,
             // the tax mill as one visible line, everything still sums to Net exactly ──

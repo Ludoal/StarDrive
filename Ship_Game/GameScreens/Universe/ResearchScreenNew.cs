@@ -74,17 +74,20 @@ namespace Ship_Game
             RectF client = EmpireTabs.ClientArea;
             var main = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
             MainArea = main;
-            // 10px side margins, 2px top/bottom for the tree itself - every pixel of the frame
-            // goes to the nodes at the 900p floor (maintainer bench)
-            MainMenuOffset = new Vector2(main.X + 10, main.Y + 30);
+            // the tree hugs the frame (maintainer bench): the client sits 9px inside the frame
+            // border, so +1 puts the nodes 10px off the BORDER; +24 tops the 22px title plate
+            // out 2px under the client's ceiling
+            MainMenuOffset = new Vector2(main.X + 1, main.Y + 24);
 
             RootNodes.Clear();
             SubNodes.Clear();
 
             int numDiscoveredRoots = Player.TechEntries.Count(t => t.IsRoot && t.Discovered);
 
-            GridHeight = (main.Height - 4) / Math.Max(1, numDiscoveredRoots);
-            MainMenuOffset.Y = main.Y + 2 + GridHeight / 3;
+            // roots pitch: first anchor at the offset, the last one's 76px body ends 2px
+            // above the floor - the pitch divides what remains between the anchors
+            GridHeight = numDiscoveredRoots > 1 ? (main.Height - 102) / (numDiscoveredRoots - 1)
+                                                : main.Height - 102;
 
             Vector2 nodePos = Vector2.Zero;
 
@@ -99,17 +102,19 @@ namespace Ship_Game
                 SetRootNode(tech, ref nodePos);
             }
 
-            GridHeight = (main.Height - 4) / 6;
+            GridHeight = SubGridHeight(6);
 
             if (!RootNodes.TryGetValue(Universe.UState.ResearchRootUIDToDisplay, out RootNode root))
                 root = RootNodes.Values.FirstOrDefault() ?? throw new("ResearchScreen has no RootNodes");
 
             PopulateNodesFromRoot(root);
 
-            // Create queue once all techs are populated. 10px off every frame edge: the panels
-            // start 10 under the tab row and the button pair below ends 10 above the bottom.
-            var queue = new Rectangle(main.X + main.Width - 340, main.Y + 10, 330,
-                                      main.Height - 10 - 8 - ResearchButtonH - 10);
+            // Create queue once all techs are populated. 34 down: the frame's close cross sits
+            // on the client's first lane and the panel was covering it (maintainer bench). The
+            // button pair closes 10px above the frame BORDER - the client bottom is 9px inside
+            // it - and the queue stretches down to meet the buttons.
+            var queue = new Rectangle(main.X + main.Width - 340, main.Y + 34, 330,
+                                      main.Height - 34 - 8 - ResearchButtonH - 1);
             // Ludoal fork: both buttons hang off the QUEUE rect, one on each of its edges, so they
             // are level and evenly spaced - Search used to measure from main.Width and Hide Queue
             // from the container, which is why they never lined up. The blue dan_button is the new
@@ -432,6 +437,17 @@ namespace Ship_Game
 
         Vector2 GridSize => new(GridWidth, GridHeight);
 
+        // the tree bit past the frame's floor when the pitch was a plain division of the
+        // height: a row's ANCHOR fit, its 98px body didn't. The pitch divides the space
+        // left between the first anchor (offset, title plate included) and the deepest
+        // row's body ending 2px above the floor.
+        int SubGridHeight(int rows)
+        {
+            rows = Math.Max(1, rows);
+            int room = MainArea.Height - 126; // 24 above the first anchor + 98 of last body + 2 + 2
+            return rows == 1 ? room : room / (rows - 1);
+        }
+
         Vector2 GetCurrentCursorOffset(in Vector2 cursorPos, float yOffset = 0)
         {
             var cursor = new Vector2(cursorPos.X, cursorPos.Y + yOffset);
@@ -445,8 +461,7 @@ namespace Ship_Game
 
             int rows = 1;
             int cols = CalculateTreeDimensionsFromRoot(root.Entry, ref rows, 0, 0);
-            if (rows < 9) GridHeight = (MainArea.Height - 4) / rows;
-            else          GridHeight = (MainArea.Height - 4) / 9;
+            GridHeight = SubGridHeight(Math.Min(rows, 9));
 
             if (cols > 0 && cols < 9) GridWidth = (MainArea.Width - 330) / cols;
             else                      GridWidth = 165;
@@ -463,7 +478,7 @@ namespace Ship_Game
             int wantRows = Math.Min(actualRows + 1, 9);
             if (wantRows != Math.Min(rows, 9))
             {
-                GridHeight = (MainArea.Height - 4) / wantRows;
+                GridHeight = SubGridHeight(wantRows);
                 BuildSubNodes(root);
             }
         }

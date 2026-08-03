@@ -296,9 +296,9 @@ namespace Ship_Game.GameScreens
             ColonySL.EnableItemHighlight = true; // the same row selector as the game's other tables
             FillList();
 
-            // vertical separators BETWEEN the numeric columns only - no closing bar at the
-            // table's end, the frame is the delimiter (maintainer bench)
-            for (int i = 0; i < NumCols; ++i)
+            // vertical separators between the numeric columns, plus one closing the last
+            // (Left) column (maintainer bench 284 - reversed from "the frame delimits")
+            for (int i = 0; i <= NumCols; ++i)
             {
                 int sepX = TableXpx + (int)(TableWpx * ColStart(i)) - 4;
                 // same warm line colour the game's other tables use (ShipListScreen)
