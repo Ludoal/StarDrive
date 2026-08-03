@@ -70,7 +70,6 @@ namespace Ship_Game
         public static Map<string, ExplorationEvent> EventsDict = new();
 
         public static ShipNames ShipNames = new();
-        public static AgentMissionData AgentMissionData = new();
         public static Map<RoleName, ShipRole> ShipRoles = new();
         public static Map<string, HullBonus> HullBonuses = new();
 
@@ -405,7 +404,6 @@ namespace Ship_Game
 
             RacialTraits = null;
             DiplomacyTraits = null;
-            AgentMissionData = new();
             EmpireHullBonuses.Clear();
 
             UnloadGraphicsResources(manager);
@@ -2158,7 +2156,6 @@ namespace Ship_Game
         static void LoadBlackboxSpecific()
         {
             TryDeserialize("ShipNames/ShipNames.xml", ref ShipNames);
-            TryDeserialize("AgentMissions/AgentMissionData.xml", ref AgentMissionData);
         }
 
         public static Video LoadVideo(GameContentManager content, string videoPath)

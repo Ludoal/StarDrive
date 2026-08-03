@@ -123,7 +123,7 @@ namespace Ship_Game.AI
             DefenseBudget   = ExponentialMovingAverage(DefenseBudget, DetermineDefenseBudget(moneyStrategy, defense, ThreatLevel));
             SSPBudget       = ExponentialMovingAverage(SSPBudget, DetermineSSPBudget(moneyStrategy, SSP));
             BuildCapacity   = ExponentialMovingAverage(BuildCapacity, DetermineBuildCapacity(moneyStrategy, ThreatLevel, build));
-            SpyBudget       = ExponentialMovingAverage(SpyBudget, OwnerEmpire.LegacyEspionageEnabled ? DetermineSpyBudget(moneyStrategy, spy) : spy);
+            SpyBudget       = ExponentialMovingAverage(SpyBudget, spy);
             ColonyBudget    = ExponentialMovingAverage(ColonyBudget, DetermineColonyBudget(moneyStrategy, colony));
             TerraformBudget = ExponentialMovingAverage(TerraformBudget, DetermineColonyBudget(moneyStrategy, terraform));
 
@@ -155,32 +155,6 @@ namespace Ship_Game.AI
         float DetermineColonyBudget(float treasuryGoal, float percentOfMoney)
         {
             var budget = SetBudgetForArea(percentOfMoney, treasuryGoal);
-            return budget;
-        }
-
-        float DetermineSpyBudget(float treasuryGoal, float percentOfMoney)
-        {
-            if (OwnerEmpire.isPlayer)
-                return 0;
-
-            bool notKnown = !OwnerEmpire.AllRelations.Any(r => r.Known && !r.Them.IsFaction);
-            if (notKnown) return 0;
-
-            float trustworthiness = (OwnerEmpire.data.DiplomaticPersonality?.Trustworthiness ?? 100) * 0.01f;
-            float militaryRatio   = OwnerEmpire.Research.Strategy.MilitaryRatio;
-
-            // it is possible that the number of agents can exceed the agent limit. That needs a whole other pr. So this hack to make things work.
-            float agentRatio      =  OwnerEmpire.data.AgentList.Count.UpperBound(EmpireSpyLimit) / (float)EmpireSpyLimit;
-
-            // here we want to make sure that even if they arent trust worthy that the value they put on war machines will
-            // get more money.
-            float treasuryToSave  = ((0.5f + agentRatio + trustworthiness + militaryRatio) * 0.6f);
-            float numAgents       = OwnerEmpire.data.AgentList.Count;
-            float spyNeeds        = 1 + EmpireSpyLimit - numAgents.UpperBound(EmpireSpyLimit);
-            spyNeeds              = spyNeeds.LowerBound(1);
-            float overSpend       = OverSpendRatio(treasuryGoal, treasuryToSave, spyNeeds);
-            float budget          = treasuryGoal * percentOfMoney * overSpend;
-
             return budget;
         }
 

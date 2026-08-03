@@ -83,10 +83,7 @@ public sealed class Notification
                     m.ScreenManager.AddScreen(GameScreens.ScreenGroups.Diplomacy(m.Screen));
                     break;
                 case "EspionageScreen": // Ludoal fork (wishlist): spy notifications open the espionage panel
-                    if (m.Screen.Player.LegacyEspionageEnabled)
-                        m.ScreenManager.AddScreen(new EspionageScreen(m.Screen));
-                    else
-                        m.ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(m.Screen));
+                    m.ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(m.Screen));
                     break;
             }
             return true;

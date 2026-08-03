@@ -79,7 +79,7 @@ namespace Ship_Game
                     if (GetStoryEvent(out ExplorationEvent expEvent))
                         Universe.Notifications.AddRemnantUpdateNotify(expEvent, Owner);
 
-                    if (StoryStep == 1 && Owner.NewEspionageEnabled) // enable view overlay (scan)
+                    if (StoryStep == 1) // enable view overlay (scan)
                     {
                         empire.GetRelations(Owner).Espionage.IncreaseInfiltrationLevelTo(1);
                         Universe.Notifications.AddRemnantAbleToScanOrWarn(Owner, GameText.CanScanRemnantsEvent);
@@ -144,12 +144,10 @@ namespace Ship_Game
                 case RemnantStory.AncientHelpers:
                     Owner.AI.AddGoal(new RemnantEngagements(Owner));
                     Universe.Notifications.AddRemnantsStoryActivation(Owner);
-                    if (Owner.NewEspionageEnabled)
-                        Universe.Notifications.AddRemnantAbleToScanOrWarn(Owner, GameText.CanWarnRemnantsEvent);
+                    Universe.Notifications.AddRemnantAbleToScanOrWarn(Owner, GameText.CanWarnRemnantsEvent);
                     break;
             }
 
-            if (Owner.NewEspionageEnabled)
             {
                 // All Empires can now detect incoming threats vis SSPs
                 foreach (Empire e in Universe.ActiveMajorEmpires)
@@ -179,7 +177,7 @@ namespace Ship_Game
         void NotifyPlayerOnLevelUp()
         {
             float espionageStr = Universe.Player.Universe.Player.GetEspionageDefenseStrVsPiratesOrRemnants(MaxLevel);
-            int effectiveLevel = Owner.LegacyEspionageEnabled ? Level * 3: Level;
+            int effectiveLevel = Level;
             if (espionageStr >= effectiveLevel)
                 Universe.Notifications.AddRemnantsAreGettingStronger(Owner);
         }

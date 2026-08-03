@@ -67,7 +67,7 @@ namespace Ship_Game.AI
             if (OwnerEmpire.IsFaction && OwnerEmpire.data.IsRemnantFaction)
                 OwnerEmpire.SetAsRemnants(this);
 
-            if (!OwnerEmpire.isPlayer && OwnerEmpire.NewEspionageEnabled)
+            if (!OwnerEmpire.isPlayer)
                 EspionageManager = new(e);
         }
 
@@ -168,9 +168,7 @@ namespace Ship_Game.AI
                 RunDiplomaticPlanner();
                 RunResearchPlanner();
 
-                if (OwnerEmpire.LegacyEspionageEnabled)
-                    RunAgentManager();
-                else if (!OwnerEmpire.isPlayer)
+                if (!OwnerEmpire.isPlayer)
                     EspionageManager.Update();
 
 

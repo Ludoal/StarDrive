@@ -441,8 +441,7 @@ namespace Ship_Game.GameScreens
                            new UILabel(DynamicText(PlanetsExpense, f => f.MoneyString())));
             costs.Spacer();
             costs.AddItem("Ship Maintenance", () => -Player.TotalShipMaintenance);
-            if (Player.NewEspionageEnabled)
-                costs.AddItem("Espionage", () => -Player.EspionageCostLastTurn);
+            costs.AddItem("Espionage", () => -Player.EspionageCostLastTurn);
             costs.Spacer();
 
             costs.AddTotal(() => -(Player.AllSpending+Player.MoneySpendOnProductionNow));

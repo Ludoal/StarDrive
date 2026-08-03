@@ -42,6 +42,8 @@ public class UniverseParams
     [StarData] public float ShipMaintenanceMultiplier;
     [StarData] public bool AIUsesPlayerDesigns;
     [StarData] public bool UseUpkeepByHullSize;
+    // Ludoal fork: SAVE BALLAST - the legacy espionage system is gone; the field remains so
+    // saves written under that rule still deserialize. Never set, never read.
     [StarData] public bool UseLegacyEspionage;
     [StarData] public float StartingPlanetRichnessBonus;
 
@@ -140,7 +142,6 @@ public class UniverseParams
             DisableResearchStations = GlobalStats.RuleDisableResearchStations;
             DisableMiningOps = GlobalStats.RuleDisableMiningOps;
             UseUpkeepByHullSize = GlobalStats.RuleUseUpkeepByHullSize;
-            UseLegacyEspionage = GlobalStats.RuleUseLegacyEspionage;
         }
     }
 

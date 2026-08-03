@@ -580,10 +580,7 @@ namespace Ship_Game
                         ScreenManager.AddScreen(new TroopListScreen(ParentUniverse, EmpireUI));
                         break;
                     case "Espionage":
-                        if (ParentUniverse.Player.LegacyEspionageEnabled)
-                            ScreenManager.AddScreen(new EspionageScreen(ParentUniverse));
-                        else
-                            ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(ParentUniverse));
+                        ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(ParentUniverse));
                         GameAudio.EchoAffirmative();
                         break;
                     case "Empire":

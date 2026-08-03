@@ -29,8 +29,7 @@ namespace Ship_Game
             };
 
             owner.data.MoleList.Add(mole);
-            if (owner.NewEspionageEnabled)
-                owner.GetEspionage(target).IncreasePlantedMoleCount();
+            owner.GetEspionage(target).IncreasePlantedMoleCount();
 
             return mole;
         }
@@ -52,8 +51,7 @@ namespace Ship_Game
             };
 
             owner.data.MoleList.Add(mole);
-            if (owner.NewEspionageEnabled)
-                owner.GetEspionage(target).IncreasePlantedMoleCount();
+            owner.GetEspionage(target).IncreasePlantedMoleCount();
 
             return mole;
         }

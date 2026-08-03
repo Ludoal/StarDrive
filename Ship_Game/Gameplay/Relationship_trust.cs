@@ -183,7 +183,7 @@ namespace Ship_Game.Gameplay
             if (them.IsXenophobic)  gain -= baseGain;
             if (SpiesDetected == 0) gain -= baseGain;
 
-            if (us.NewEspionageEnabled && Espionage.Level > 3 && them.GetEspionage(us).LimitLevel < 3)
+            if (Espionage.Level > 3 && them.GetEspionage(us).LimitLevel < 3)
                 gain -= baseGain;
 
             if (them.IsHonorable || them.IsPacifist)
@@ -232,7 +232,7 @@ namespace Ship_Game.Gameplay
             if (Treaty_Alliance) gain += baseGain*0.5f;
             if (them.IsPacifist) gain -= baseGain;
 
-            if (us.NewEspionageEnabled && Espionage.Level > 2 && them.OffensiveStrength < 100)
+            if (Espionage.Level > 2 && them.OffensiveStrength < 100)
                 gain -= baseGain;
 
             if (them.IsRuthless || them.IsXenophobic)
@@ -251,7 +251,7 @@ namespace Ship_Game.Gameplay
             if (Treaty_Alliance)    gain += baseGain;
             if (them.IsCunning)     gain -= baseGain;
 
-            if (us.NewEspionageEnabled && Espionage.Level > 3 && them.GetEspionage(us).LimitLevel > 3)
+            if (Espionage.Level > 3 && them.GetEspionage(us).LimitLevel > 3)
                 gain -= baseGain;
 
             if (them.IsXenophobic)
@@ -296,7 +296,7 @@ namespace Ship_Game.Gameplay
             if (Treaty_Alliance)  gain += baseGain * 0.5f;
             if (them.IsHonorable) gain -= baseGain;
 
-            if (us.NewEspionageEnabled && Espionage.Level > 2 && them.OffensiveStrength < 100)
+            if (Espionage.Level > 2 && them.OffensiveStrength < 100)
                 gain -= baseGain;
 
             if (them.IsAggressive)

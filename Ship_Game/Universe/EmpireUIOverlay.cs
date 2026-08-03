@@ -442,10 +442,7 @@ namespace Ship_Game
                 if (input.KeyPressed(Keys.E))
                 {
                     GameAudio.EchoAffirmative();
-                    if (Universe.Player.LegacyEspionageEnabled)
-                        Universe.ScreenManager.AddScreen(new EspionageScreen(Universe));
-                    else
-                        Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(Universe));
+                    Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(Universe));
                     return true;
                 }
                 if (input.Codex)
@@ -575,11 +572,7 @@ namespace Ship_Game
                         }
                         else if (b.launches == "Espionage")
                         {
-                            if (Universe.Player.LegacyEspionageEnabled)
-                                Universe.ScreenManager.AddScreen(new EspionageScreen(Universe));
-                            else
-                                Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(Universe));
-
+                            Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(Universe));
                             GameAudio.EchoAffirmative();
                         }
                         else if (b.launches == "?")
@@ -835,15 +828,11 @@ namespace Ship_Game
             {
                 // Ludoal fork: both regimes — EspionageScreen is the legacy one,
                 // and IsEspionage covers the stock and reworked infiltration screens
-                if (caller is EspionageScreen || GameScreens.ScreenGroups.IsEspionage(caller))
+                if (GameScreens.ScreenGroups.IsEspionage(caller))
                 {
                     return true;
                 }
-                if (Universe.Player.LegacyEspionageEnabled)
-                    Universe.ScreenManager.AddScreen(new EspionageScreen(Universe));
-                else
-                    Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(Universe));
-
+                Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(Universe));
                 GameAudio.EchoAffirmative();
             }
             else if (launches == "Empire")

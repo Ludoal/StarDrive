@@ -204,7 +204,6 @@ public static class GlobalStats
     public static bool RuleDisableResearchStations;
     public static bool RuleDisableMiningOps;
     public static bool RuleUseUpkeepByHullSize;
-    public static bool RuleUseLegacyEspionage;
 
     // Ludoal fork: forget the saved ruleset, so new games fall back to the stock defaults.
     public static void ClearSavedRuleOptions()
@@ -432,7 +431,6 @@ public static class GlobalStats
         GetSetting(config, "RuleDisableResearchStations", ref RuleDisableResearchStations);
         GetSetting(config, "RuleDisableMiningOps", ref RuleDisableMiningOps);
         GetSetting(config, "RuleUseUpkeepByHullSize", ref RuleUseUpkeepByHullSize);
-        GetSetting(config, "RuleUseLegacyEspionage", ref RuleUseLegacyEspionage);
         GetSetting(config, "AntiAliasSamples", ref AntiAlias);
         GetSetting(config, "PostProcessBloom", ref RenderBloom);
         GetSetting(config, "PostProcessShieldDistortion", ref RenderShieldDistortion);
@@ -649,7 +647,6 @@ public static class GlobalStats
         WriteSetting(config, "RuleDisableResearchStations", RuleDisableResearchStations);
         WriteSetting(config, "RuleDisableMiningOps", RuleDisableMiningOps);
         WriteSetting(config, "RuleUseUpkeepByHullSize", RuleUseUpkeepByHullSize);
-        WriteSetting(config, "RuleUseLegacyEspionage", RuleUseLegacyEspionage);
         WriteSetting(config, "AntiAliasSamples", AntiAlias);
         WriteSetting(config, "PostProcessBloom", RenderBloom);
         WriteSetting(config, "PostProcessShieldDistortion", RenderShieldDistortion);

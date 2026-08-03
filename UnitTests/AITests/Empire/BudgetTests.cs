@@ -39,20 +39,13 @@ namespace UnitTests.AITests.Empire
             CreatePlanets(1);
             var budgetAreas = Enum.GetValues(typeof(BudgetPriorities.BudgetAreas));
 
-            Enemy.Universe.P.UseLegacyEspionage = true;
-            Enemy.Universe.P.Difficulty = GameDifficulty.Normal;
-            BudgetPriorities budget = new BudgetPriorities(Enemy);
-            TestBudget(Enemy.Universe.P.UseLegacyEspionage, Enemy.Universe.P.Difficulty);
-
-            Enemy.Universe.P.UseLegacyEspionage = false;
             Enemy.Universe.P.Difficulty = GameDifficulty.Hard;
-            budget = new BudgetPriorities(Enemy);
-            TestBudget(Enemy.Universe.P.UseLegacyEspionage, Enemy.Universe.P.Difficulty);
+            BudgetPriorities budget = new BudgetPriorities(Enemy);
+            TestBudget(false, Enemy.Universe.P.Difficulty);
 
-            Enemy.Universe.P.UseLegacyEspionage = false;
             Enemy.Universe.P.Difficulty = GameDifficulty.Normal;
             budget = new BudgetPriorities(Enemy);
-            TestBudget(Enemy.Universe.P.UseLegacyEspionage, Enemy.Universe.P.Difficulty);
+            TestBudget(false, Enemy.Universe.P.Difficulty);
 
 
             void TestBudget(bool legacy, GameDifficulty difficulty)
@@ -72,9 +65,9 @@ namespace UnitTests.AITests.Empire
         public void TestTreasuryIsSetToExpectedValues()
         {
             CreatePlanets(extraPlanets: 5);
-            Enemy.Universe.P.UseLegacyEspionage = true;
             var budget = new BudgetPriorities(Enemy);
-            int budgetAreas = Enum.GetNames(typeof(BudgetPriorities.BudgetAreas)).Length;
+            // the Espionage area folds into Spy, so its own key never lands in the dictionary
+            int budgetAreas = Enum.GetNames(typeof(BudgetPriorities.BudgetAreas)).Length - 1;
             Assert.IsTrue(budget.Count() == budgetAreas);
 
             var eAI = Enemy.AI;

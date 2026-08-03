@@ -3,7 +3,6 @@ using SDGraphics;
 using Color = Microsoft.Xna.Framework.Color;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
-using Ship_Game.GameScreens.Espionage; // EspionageScreen: legacy espionage tab
 
 namespace Ship_Game.GameScreens
 {
@@ -395,7 +394,7 @@ namespace Ship_Game.GameScreens
                 or ResearchScreenNew or BudgetScreenRework
                 => Group.Empire,
 
-            InfiltrationScreen or EspionageScreen
+            InfiltrationScreenRework
                 => Group.Diplomacy,
 
             FleetDesignScreen or ShipDesignScreen or BlueprintsScreen
@@ -415,7 +414,7 @@ namespace Ship_Game.GameScreens
                  or DiplomacyScreen.RelationshipsDiagramScreen;
 
         public static bool IsEspionage(GameScreen s)
-            => s is InfiltrationScreen or InfiltrationScreenRework or EspionageScreen;
+            => s is InfiltrationScreenRework;
 
         static bool IsDiplomacyGroup(GameScreen s)
             => s is MainDiplomacyScreenRework

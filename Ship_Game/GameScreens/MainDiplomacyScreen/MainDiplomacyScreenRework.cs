@@ -66,7 +66,9 @@ namespace Ship_Game
             Player = screen.Player;
             Friends = screen.UState.GetAllies(Player);
             Traders = screen.UState.GetTradePartners(Player);
-            UsingNewEspioange = Player.NewEspionageEnabled;
+            // legacy espionage is gone - constant true, kept as a field to spare its 25 call
+            // sites; folding the dead IntelligenceLevel paths is a later simplification pass
+            UsingNewEspioange = true;
 
             // find empires where player or friends have moles
             var empires = new HashSet<Empire>();

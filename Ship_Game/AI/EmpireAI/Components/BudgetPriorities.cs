@@ -59,15 +59,13 @@ namespace Ship_Game.AI.Components
                     // Also - "Spy" area budget is used for both systems
                     foreach (var area in budget.Budgets)
                     {
-                        if (area.Key == BudgetAreas.Spy && empire.LegacyEspionageEnabled)
-                            budgets[area.Key] = area.Value;
-                        else if (area.Key == BudgetAreas.Espionage && empire.NewEspionageEnabled)
+                        if (area.Key == BudgetAreas.Espionage)
                             budgets[BudgetAreas.Spy] = empire.Universe.P.Difficulty == GameDifficulty.Normal ? 0 : area.Value;
                         else
                             budgets[area.Key] = area.Value;
                     }
 
-                    if (!budgets.TryGetValue(BudgetAreas.Espionage, out _) && empire.NewEspionageEnabled)
+                    if (!budgets.TryGetValue(BudgetAreas.Espionage, out _))
                         budgets[BudgetAreas.Spy] = empire.Universe.P.Difficulty == GameDifficulty.Normal ? 0 : 1;
                 }
             }

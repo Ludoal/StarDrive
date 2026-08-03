@@ -56,8 +56,7 @@ public sealed class RuleOptionsScreen : PopupWindow
             && P.DisableAlternateAITraits == stock.DisableAlternateAITraits
             && P.DisableResearchStations == stock.DisableResearchStations
             && P.DisableMiningOps == stock.DisableMiningOps
-            && P.UseUpkeepByHullSize == stock.UseUpkeepByHullSize
-            && P.UseLegacyEspionage == stock.UseLegacyEspionage)
+            && P.UseUpkeepByHullSize == stock.UseUpkeepByHullSize)
         {
             GlobalStats.ClearSavedRuleOptions();
             base.ExitScreen();
@@ -83,7 +82,6 @@ public sealed class RuleOptionsScreen : PopupWindow
         GlobalStats.RuleDisableResearchStations = P.DisableResearchStations;
         GlobalStats.RuleDisableMiningOps = P.DisableMiningOps;
         GlobalStats.RuleUseUpkeepByHullSize = P.UseUpkeepByHullSize;
-        GlobalStats.RuleUseLegacyEspionage = P.UseLegacyEspionage;
         GlobalStats.RulesCustomised = true;
         GlobalStats.SaveSettings();
         base.ExitScreen();
@@ -131,7 +129,6 @@ public sealed class RuleOptionsScreen : PopupWindow
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*6, () => P.DisableResearchStations, title: GameText.DisableResearchStationsName, tooltip: GameText.DisableResearchStationsTip);
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*7, () => P.DisableMiningOps, title: GameText.DisableMiningOpsName, tooltip: GameText.DisableMiningOpsTip);
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*8, () => P.UseUpkeepByHullSize, title: GameText.RuleOptionsUseHullUpkeepName, tooltip: GameText.RuleOptionsUseHullUpkeepTip);
-        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*9, () => P.UseLegacyEspionage, title: GameText.UseLegacyEspionage, tooltip: GameText.UseLegacyEspionageTip);
 
         var mdRect = new Rectangle(ftlRect.X + indent+2, ftlRect.Y + 250, 270, 50);
         CustomMineralDecay = SliderDecimal1(mdRect, GameText.MineralDecayRate, 0.2f, 3, P.CustomMineralDecay);
@@ -205,7 +202,6 @@ public sealed class RuleOptionsScreen : PopupWindow
             P.DisableResearchStations = stock.DisableResearchStations;
             P.DisableMiningOps = stock.DisableMiningOps;
             P.UseUpkeepByHullSize = stock.UseUpkeepByHullSize;
-            P.UseLegacyEspionage = stock.UseLegacyEspionage;
             GlobalStats.ClearSavedRuleOptions();
             LoadContent();
         });
