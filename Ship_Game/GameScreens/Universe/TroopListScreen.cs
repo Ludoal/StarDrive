@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
@@ -27,6 +28,7 @@ namespace Ship_Game
         readonly EmpireUIOverlay EmpireUI;
         RectF ERect;
         int NumTroops;
+        float StrengthTotal;
 
         // Ludoal fork: status filter, the same shape as the Ships Array's role dropdown - to the
         // right of the title, and it remembers the last pick for the session the way that one
@@ -47,14 +49,21 @@ namespace Ship_Game
             TransitionOffTime = 0.25f;
             IsPopup = true;
 
-            // Ludoal fork: the Troops tab of the Empire group - title and brass surround give way to
-            // the group's tab row, and the first line inside the frame carries the status filter.
+            // Ludoal fork: the Troops tab of the Empire group, content-sized (maintainer bench,
+            // the Economy pattern): fixed columns set the width, the troop-group count sets the
+            // height - this page is allowed UNDER the 900p floor when the roster is short.
+            int rows = CountTroopGroups();
+            float contentW = TroopListScreenItem.TableW + 10;
+            float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
+            // 122 = tab strip + filter lane + column titles + the TOTAL footer's lane
+            float contentH = Math.Min(fullAvail, 122 + Math.Max(3, rows) * 28);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 2,
-                                                    OnEmpireTabChanged, out Rectangle frame);
+                                                    OnEmpireTabChanged, contentW, contentH);
             RectF client = EmpireTabs.ClientArea;
             ERect = ScreenGroups.GalaxyTable(client, ScreenGroups.GalaxyHeaderH);
-            RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
-            TroopSL = Add(new ScrollList<TroopListScreenItem>(slRect, 40));
+            // the last lane of the frame belongs to the TOTAL footer, not the list
+            RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10 - 26);
+            TroopSL = Add(new ScrollList<TroopListScreenItem>(slRect, 24));
             TroopSL.EnableItemHighlight = true;
             TroopSL.OnDoubleClick = OnRowClicked; // Ludoal fork: double-click everywhere, like Ships/Empire
 
@@ -67,6 +76,23 @@ namespace Ship_Game
             ShowStatus.OnValueChange = _ => PopulateList();
 
             PopulateList();
+        }
+
+        // dry count of (location, troop type) groups - the frame height derives from it,
+        // BEFORE any UI exists. Unfiltered on purpose: the frame keeps one size for the
+        // screen's life, a filter just shortens the list inside it.
+        int CountTroopGroups()
+        {
+            var keys = new Map<(object, string), bool>();
+            foreach (SolarSystem system in Universe.UState.Systems)
+                foreach (Planet p in system.PlanetList)
+                    foreach (Troop t in p.Troops.GetTroopsOf(Player))
+                        keys[(p, t.Name)] = true;
+            foreach (Ship s in Player.OwnedShips)
+                if (s.TroopCount > 0)
+                    foreach (Troop t in s.GetOurTroops())
+                        keys[(s, t.Name)] = true;
+            return keys.Count;
         }
 
         void OnRowClicked(TroopListScreenItem item)
@@ -143,8 +169,12 @@ namespace Ship_Game
             }
 
             NumTroops = 0;
+            StrengthTotal = 0f;
             foreach (TroopListScreenItem item in TroopSL.AllEntries)
+            {
                 NumTroops += item.Count;
+                StrengthTotal += item.Strength;
+            }
         }
 
 
@@ -162,32 +192,32 @@ namespace Ship_Game
             // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
             // drawn among the children, after everything below it. The troop total moves onto the
             // reserved line beside the filter, where the title used to carry it.
-            RectF client = EmpireTabs.ClientArea;
             // the canonical fill rect - ClientArea stops short of the frame border and let the
             // map bleed through the rim (maintainer bench, Economy)
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
-            batch.DrawString(Fonts.Arial20Bold, $"Total Troops: {NumTroops}",
-                             new Vector2(client.X + 190, client.Y + 4), Colors.Cream);
             base.Draw(batch, elapsed);
 
             if (TroopSL.NumEntries > 0)
             {
                 TroopListScreenItem e1 = TroopSL.ItemAtTop;
-                Graphics.Font font = Fonts.Arial20Bold;
+                // charte (Lek): a header is never bigger than the body - weight, not size
+                Graphics.Font font = Fonts.Arial12Bold;
 
                 DrawHeader(batch, font, e1.SysNameRect, "System");
                 DrawHeader(batch, font, e1.LocationRect, "Location");
                 DrawHeader(batch, font, e1.StatusRect, "Status");
                 DrawHeader(batch, font, e1.TroopRect, "Troop");
-                DrawHeader(batch, font, e1.NumRect, "Num");
+                // the numeric pair centres on its VALUE lane, whose numbers end 16px short
+                DrawHeader(batch, font, e1.NumRect, "Num", rightInset: 16);
                 // Ludoal fork: the word alone. This header carried "Strength" AND a fist icon
                 // saying the same thing, and it was the only column of the six to do so — the
                 // text stays because the other five are text (maintainer feedback).
-                DrawHeader(batch, font, e1.StrRect, "Strength");
+                DrawHeader(batch, font, e1.StrRect, "Strength", rightInset: 16);
 
                 Color lineColor = new Color(118, 102, 67, 255);
                 float columnTop = ERect.Y + 15;
-                float columnBot = ERect.Y + ERect.H - 20;
+                float footY = TroopSL.ItemsHousing.Bottom + 6;
+                float columnBot = footY - 4;
                 // Ludoal fork (bench): the loop drew each column's LEFT edge, so the last column
                 // had no line closing it and Strength bled into the empty gutter (maintainer feedback). Its
                 // right edge closes the table.
@@ -195,11 +225,19 @@ namespace Ship_Game
                                              e1.NumRect.X, e1.StrRect.X, e1.StrRect.Right })
                     batch.DrawLine(new Vector2(colX, columnTop), new Vector2(colX, columnBot), lineColor);
                 batch.DrawRectangle(TroopSL.ItemsHousing, lineColor);
+
+                // TOTAL footer (maintainer bench): the troop total moves to the table's foot,
+                // each sum under the column it closes - the Economy pattern
+                batch.DrawString(font, "TOTAL", new Vector2(ERect.X + 8, footY), Color.Wheat);
+                string num = NumTroops.ToString();
+                batch.DrawString(font, num, new Vector2(e1.NumRect.Right - 16 - font.TextWidth(num), footY), Colors.Cream);
+                string str = ((int)StrengthTotal).ToString();
+                batch.DrawString(font, str, new Vector2(e1.StrRect.Right - 16 - font.TextWidth(str), footY), Colors.Cream);
             }
             else
             {
                 var msgPos = new Vector2(ERect.X + 30, ERect.Y + 30);
-                batch.DrawString(Fonts.Arial20Bold, "No troops anywhere — recruit some before the neighbours visit.",
+                batch.DrawString(Fonts.Arial12Bold, "No troops anywhere — recruit some before the neighbours visit.",
                                  msgPos, Color.Gray);
             }
             ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
@@ -207,9 +245,9 @@ namespace Ship_Game
             batch.SafeEnd();
         }
 
-        void DrawHeader(SpriteBatch batch, Graphics.Font font, Rectangle rect, string text)
+        void DrawHeader(SpriteBatch batch, Graphics.Font font, Rectangle rect, string text, int rightInset = 0)
         {
-            var pos = new Vector2(rect.X + rect.Width / 2 - font.MeasureString(text).X / 2f,
+            var pos = new Vector2(rect.X + (rect.Width - rightInset) / 2 - font.MeasureString(text).X / 2f,
                                   ERect.Y - font.LineSpacing);
             batch.DrawString(font, text, pos, Colors.Cream);
         }
@@ -247,7 +285,13 @@ namespace Ship_Game
         public readonly Planet Planet;   // set for garrison/deployed rows
         public readonly Ship Ship;       // set for transport/stationed rows
         public int Count { get; private set; }
-        float Strength;
+        public float Strength { get; private set; }
+
+        // fixed pixel columns (the column doctrine): free text gets the room a name
+        // needs, a datum gets a number's room - and the frame is sized FROM the sum,
+        // so there is no gutter to feed anymore
+        public const int SysW = 150, LocW = 290, StatusW = 90, TroopW = 240, NumW = 70, StrW = 90;
+        public const int TableW = SysW + LocW + StatusW + TroopW + NumW + StrW;
 
         public TroopListScreenItem(string systemName, string location, string status, Color statusColor,
                                    Troop troop, Planet planet, Ship ship)
@@ -274,70 +318,56 @@ namespace Ship_Game
         {
             int x = (int)X;
             int y = (int)Y;
-            int w = (int)Width;
             int h = (int)Height;
             RemoveAll();
 
-            // Ludoal fork: laid out the way the Ships list and the Planet Array do it (maintainer feedback),
-            // which took three benches to copy rather than approximate.
-            //
-            // THE RULE, read off both of them: a column holding FREE TEXT (a name, a place) takes
-            // a share of the row; a column holding a DATUM (a count, a strength, a status) takes
-            // a FIXED pixel width, because a number needs the same room whatever the window does.
-            // Planet Array is 30px per stat, Ships is 60px per trailing column — neither ever
-            // divides the whole row between everything it shows.
-            //
-            // That is also what produces the empty column for free: the fixed part does not grow,
-            // so the gutter is a floor rather than a share. 46.158 took 60px off before applying
-            // the fractions, which could not leave a gap at all (six fractions summing to 1.0
-            // just redistribute whatever total they are handed); 46.159 made them sum to 0.90,
-            // which left a gutter that SHRANK on a small window, exactly when space is tightest.
-            const int DataCol = 90;     // Status, Num, Strength — a number's room is its own
-            const int MinGutter = 150;  // the empty column, wide enough for buttons later
-
-            // ⚠ and a CEILING on the text columns (maintainer feedback): an uncapped share gave
-            // Location ~620px at 1920 for names like "Terran-Prototype". A name needs the room a
-            // name needs; past that the width is spread, not used. The text columns take their
-            // share UP TO a maximum, and everything beyond falls into the gutter — which is
-            // where growing space belongs anyway.
-            // 850 puts Location near 375px and the whole table near 1100 at 1920, leaving the
-            // gutter roomy without turning the screen into two thirds of nothing.
-            const int MaxText = 850;    // the three text columns together, at their widest
-
-            int fixedPart = DataCol * 3 + MinGutter;
-            int textPart = w > fixedPart ? w - fixedPart : w / 2;
-            if (textPart > MaxText)
-                textPart = MaxText;
-
             int nextX = x;
-            Rectangle NextRect(float width)
+            Rectangle NextRect(int width)
             {
                 int next = nextX;
-                nextX += (int)width;
-                return new Rectangle(next, y, (int)width, h);
+                nextX += width;
+                return new Rectangle(next, y, width, h);
             }
 
-            // the three text columns share what is left, keeping the proportions they had
-            // (0.14 : 0.28 : 0.22 of the old row, renormalised over the three of them)
-            SysNameRect  = NextRect(textPart * 0.22f);
-            LocationRect = NextRect(textPart * 0.44f);
-            StatusRect   = NextRect(DataCol);
-            TroopRect    = NextRect(textPart * 0.34f);
-            NumRect      = NextRect(DataCol);
-            StrRect      = NextRect(DataCol);
+            SysNameRect  = NextRect(SysW);
+            LocationRect = NextRect(LocW);
+            StatusRect   = NextRect(StatusW);
+            TroopRect    = NextRect(TroopW);
+            NumRect      = NextRect(NumW);
+            StrRect      = NextRect(StrW);
 
-            AddCentered(SysNameRect, SystemName, Colors.Cream);
-            AddCentered(LocationRect, Location, Colors.Cream);
-            AddCentered(StatusRect, Status, StatusColor); // the status carries the color, like other panels
-            AddCentered(TroopRect, TroopName, Colors.Cream);
-            AddCentered(NumRect, Count.ToString(), Colors.Cream);
-            AddCentered(StrRect, ((int)Strength).ToString(), Colors.Cream);
+            // charte (maintainer bench, the Economy pattern): names read from the left,
+            // numbers close right on a shared edge; the status stays a centred tag with
+            // its colour - a state, not a quantity
+            AddLeft(SysNameRect, SystemName, Colors.Cream);
+            AddLeft(LocationRect, Location, Colors.Cream);
+            AddCentered(StatusRect, Status, StatusColor);
+            AddLeft(TroopRect, TroopName, Colors.Cream);
+            AddRight(NumRect, Count.ToString(), Colors.Cream);
+            AddRight(StrRect, ((int)Strength).ToString(), Colors.Cream);
             base.PerformLayout();
+        }
+
+        Graphics.Font FitFont(string text, int room) =>
+            Fonts.Arial12Bold.MeasureString(text).X <= room ? Fonts.Arial12Bold : Fonts.Arial8Bold;
+
+        void AddLeft(Rectangle rect, string text, Color color)
+        {
+            Graphics.Font font = FitFont(text, rect.Width - 12);
+            Label(new Vector2(rect.X + 8, rect.Y + rect.Height / 2 - font.LineSpacing / 2), text, font, color);
+        }
+
+        void AddRight(Rectangle rect, string text, Color color)
+        {
+            // -16: one character of air right of the number, the Economy lane
+            Graphics.Font font = Fonts.Arial12;
+            Label(new Vector2(rect.Right - 16 - font.MeasureString(text).X,
+                              rect.Y + rect.Height / 2 - font.LineSpacing / 2), text, font, color);
         }
 
         void AddCentered(Rectangle rect, string text, Color color)
         {
-            Graphics.Font font = Fonts.Arial12Bold.MeasureString(text).X <= rect.Width ? Fonts.Arial12Bold : Fonts.Arial8Bold;
+            Graphics.Font font = FitFont(text, rect.Width);
             var pos = new Vector2(rect.X + rect.Width / 2 - font.MeasureString(text).X / 2f,
                                   rect.Y + rect.Height / 2 - font.LineSpacing / 2);
             Label(pos, text, font, color);
