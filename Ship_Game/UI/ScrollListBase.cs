@@ -313,7 +313,11 @@ namespace Ship_Game
                         {
                             createdSelector = true;
                             HighlightedIndex = i;
-                            Highlight = new Selector(item.Rect.Bevel(4, 2));
+                            Rectangle r = item.Rect.Bevel(4, 2);
+                            // the bevel may not ride over the scrollbar column
+                            if (ShouldDrawScrollBar)
+                                r.Width = Math.Min(r.Width, (int)ScrollUp.X - 2 - r.X);
+                            Highlight = new Selector(r);
                         }
                     }
                 }

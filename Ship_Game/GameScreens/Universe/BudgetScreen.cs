@@ -277,6 +277,7 @@ namespace Ship_Game.GameScreens
 
             var listRect = new RectF(TableXpx, headerY + 20, (int)LeftMenu.Width - 40, (int)LeftMenu.Height - 36 - 48);
             ColonySL = Add(new ScrollList<EconColonyItem>(listRect, 24));
+            ColonySL.EnableItemHighlight = true; // the same row selector as the game's other tables
             FillList();
 
             // vertical separators BETWEEN the numeric columns only - no closing bar at the
