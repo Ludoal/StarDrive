@@ -532,7 +532,6 @@ namespace Ship_Game
             // This uses the new UIElementV2 system to automatically toggle visibility of items
             // In general, a much saner way than the old cluster-f*ck of IF statements :)
             PlanetsInCombat.Visible = ShipsInCombat.Visible = showGeneralUI && !LookingAtPlanet;
-            aw.Visible = showGeneralUI && aw.IsOpen && !LookingAtPlanet;
             ExoticBonusesWindow.Visible = showGeneralUI && ExoticBonusesWindow.IsOpen && !LookingAtPlanet;
             FreighterUtilizationWindow.Visible = showGeneralUI && FreighterUtilizationWindow.IsOpen && !LookingAtPlanet;
 

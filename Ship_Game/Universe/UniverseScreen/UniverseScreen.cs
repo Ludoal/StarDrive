@@ -144,7 +144,6 @@ namespace Ship_Game
         float MusicCheckTimer;
         public Ship ShipToView;
         public float AdjustCamTimer;
-        public AutomationWindow aw;
         public ExoticBonusesWindow ExoticBonusesWindow;
         public FreighterUtilizationWindow FreighterUtilizationWindow;
         public bool DefiningAO; // are we defining a new AO?
@@ -354,7 +353,6 @@ namespace Ship_Game
             UState.ResearchRootUIDToDisplay = GlobalStats.Defaults.ResearchRootUIDToDisplay;
 
             NotificationManager = new(ScreenManager, this);
-            aw = Add(new AutomationWindow(this));
 
             Shields = new(this);
 
@@ -551,7 +549,7 @@ namespace Ship_Game
             // Ludoal fork: 10px off the left and bottom edges, the margin the whole reworked
             // interface keeps - every info cartouche (ship, system, planet, star, fleet list)
             // derives from this one rect, so they all move together.
-            SelectedStuffRect = new Rectangle(10, height - 252, 407, 242);
+            SelectedStuffRect = new Rectangle(10, height - 257, 407, 247); // visible frame = 247-26 shave = 221, the minimap frame's height
             DsbCancelRect = new Rectangle(SelectedStuffRect.X + 25, SelectedStuffRect.Y + 150, 182, 25); // Ludoal fork
             ShipInfoUIElement = new ShipInfoUIElement(SelectedStuffRect, ScreenManager, this);
             SystemInfoOverlay = new SolarsystemOverlay(SelectedStuffRect, ScreenManager, this);
@@ -823,7 +821,6 @@ namespace Ship_Game
             Mem.Dispose(ref PostDistortTarget);
             Mem.Dispose(ref Particles);
             Mem.Dispose(ref Shields);
-            Mem.Dispose(ref aw);
             Mem.Dispose(ref ExoticBonusesWindow);
             Mem.Dispose(ref FreighterUtilizationWindow);
             Mem.Dispose(ref DebugWin);

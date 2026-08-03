@@ -22,7 +22,7 @@ namespace Ship_Game
             const int windowWidth = 650;
             int windowHeight = (ResourceManager.GetNumExoticGoods() * (Fonts.Arial12Bold.LineSpacing+20));
             Rect = new Rectangle((int)Screen.Minimap.X - 5 - windowWidth, (int)Screen.Minimap.Y + 
-                (int)Screen.Minimap.Height - windowHeight - 10, windowWidth, windowHeight);
+                (int)Screen.Minimap.Height - windowHeight, windowWidth, windowHeight); // Ludoal fork: foot flush with the minimap frame
             CanEscapeFromScreen = false;
         }
 

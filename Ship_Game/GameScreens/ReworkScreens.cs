@@ -117,7 +117,7 @@ namespace Ship_Game.GameScreens
         // Ludoal fork: the third group of the unified top bar. Same frame and tab row again.
         public static readonly LocalizedText[] EmpireTabTitles =
         {
-            "Colonies", "Ships", "Troops", "Economy", "Research"
+            "Colonies", "Ships", "Troops", "Economy", "Research", "Automation"
         };
 
         public static readonly string[] EmpireTabTips =
@@ -127,10 +127,35 @@ namespace Ship_Game.GameScreens
             "Your troops: where they are, their strength and status.",
             "Treasury and taxes, with the budget of each colony.",
             "The technology tree and the research queue.",
+            "What runs itself: taxes, exploration, construction, trade - and which alerts stay quiet.",
         };
 
         // read off the top bar's own tooltips and each screen's closing key, not guessed
-        public static readonly string[] EmpireTabKeys = { "U", "K", "C", "T", "R" };
+        public static readonly string[] EmpireTabKeys = { "U", "K", "C", "T", "R", "H" };
+
+        // Ludoal fork: ONE factory and ONE switch for the Empire group - each of its screens
+        // used to carry its own copy of this switch with a default case, and two of those
+        // defaults disagreed (Budget's fell to Research, Research's to Economy), so a sixth tab
+        // would have opened a different screen depending on where you clicked it. Same cure the
+        // Galaxy group got.
+        public static GameScreen EmpireTab(int index, UniverseScreen u) => index switch
+        {
+            0 => new EmpireManagementScreen(u, u.EmpireUI),
+            1 => new ShipListScreen(u, u.EmpireUI),
+            2 => new TroopListScreen(u, u.EmpireUI),
+            3 => Economy(u),
+            4 => new ResearchScreenNew(u, u, u.EmpireUI),
+            _ => new AutomationScreen(u),
+        };
+
+        public static void SwitchEmpireTab(int index, int self, UniverseScreen u, GameScreen caller)
+        {
+            if (index == self)
+                return;
+            caller.ExitScreen();
+            Audio.GameAudio.AcceptClick();
+            u.ScreenManager.AddScreen(EmpireTab(index, u));
+        }
 
         // ── Design group ──────────────────────────────────────────────────────────────────────
         // Ludoal fork: the fourth group - the three screens where a design is built rather than

@@ -40,11 +40,6 @@ namespace Ship_Game.GameScreens
         // fixed vertical anatomy (aligned across columns)
         const int HeaderH = 110;
         const int BudgetH = 212; // sliders overflow their rect (title above, ticks below): breathe
-        // Ludoal fork: where the SETTINGS band opens inside the player's BUDGET block - below its
-        // cost line and clear of DEFENSE, which stays at BudgetH + 24 for every column. Measured
-        // from col.Y so the band and the checkbox under it share ONE origin: LoadContent and
-        // DrawColumn each have a local budgetY and they differ by 24.
-        const int SettingsBandY = HeaderH + 110;
 
         // Ludoal fork: the BUDGET block's rows, off its own top. The button row was tight against
         // the slider above it and there was room to spare at the foot of the block, so everything
@@ -188,13 +183,6 @@ namespace Ship_Game.GameScreens
                         Player.SetEspionageBudgetMultiplier(s.AbsoluteValue.RoundToFractionOf10());
                     };
                     Add(c.Budget);
-
-                    // Ludoal fork: Disable Messages moves off the title bar into a SETTINGS band,
-                    // in the room the player's BUDGET block leaves empty. Same offset as the band
-                    // drawn in DrawColumn, plus its 24px height.
-                    Add(new UICheckBox(col.X + 8, col.Y + SettingsBandY + 26,
-                                       () => Player.data.SpyMute, Fonts.Arial12,
-                                       "Disable Messages", "Disable all Espionage notifications."));
 
                     var defRect = new Rectangle(col.X + 8, col.Y + HeaderH + BudgetH + 52, col.Width - 60, 40); // below the DEFENSE band
                     c.Weight = new FloatSlider(defRect, GameText.EspioangeDefenseWeight, min: 0,
@@ -384,10 +372,8 @@ namespace Ship_Game.GameScreens
                 float espionageCost = Player.GetEspionageCost();
                 string cost = $"{(espionageCost > 0 ? -espionageCost : espionageCost).String(1)} BC/turn";
                 batch.DrawString(Font12, cost, new Vector2(col.X + 8, budgetY + 70), espionageCost > 0 ? Color.Pink : Color.LightGreen);
-                // Ludoal fork: SETTINGS rides in the room the player's BUDGET block leaves empty -
-                // the other columns fill all of BudgetH, this one stops at the cost line. It sits
-                // ABOVE defenseY on purpose: DEFENSE stays level with the other columns.
-                SectionBand(batch, col, col.Y + SettingsBandY, "SETTINGS");
+                // Ludoal fork: the SETTINGS band that lived here (Disable Messages) moved to the
+                // Automation tab of the Empire group, with the other notification switches.
                 return;
             }
 

@@ -32,7 +32,7 @@ namespace Ship_Game
             const int windowWidth = 650;
             int windowHeight = 4 * (Fonts.Arial12Bold.LineSpacing + 25);
             Rect = new Rectangle((int)Screen.Minimap.X - 5 - windowWidth, (int)Screen.Minimap.Y +
-                (int)Screen.Minimap.Height - windowHeight - 10, windowWidth, windowHeight);
+                (int)Screen.Minimap.Height - windowHeight, windowWidth, windowHeight); // Ludoal fork: foot flush with the minimap frame
             CanEscapeFromScreen = false;
             if (Player.NonCybernetic)
                 GoodsUtilizationMap.Add(Goods.Food, new GoodsUtilization(Goods.Food, this));

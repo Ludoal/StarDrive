@@ -14,6 +14,10 @@ namespace Ship_Game.Ships
 {
     public sealed class ShipInfoUIElement : UIElement
     {
+        // Ludoal fork: the sculpted texture spent this top band on antenna machinery; with it
+        // gone the frame starts this far under the housing. Anything aligned on the visible
+        // frame top derives from this, not from the housing.
+        const int FrameShave = 26;
         public ShipStanceButtons OrdersButtons;
         private readonly Array<TippedItem> ToolTipItems = new Array<TippedItem>();
         public Array<OrdersButton> Orders = new Array<OrdersButton>();
@@ -133,7 +137,7 @@ namespace Ship_Game.Ships
             // (maintainer: "beaucoup de vide au-dessus"). The housing keeps its size - every
             // inner anchor is an offset from it - only the visible frame shrinks.
             Rectangle frame = Housing;
-            frame.Y += 26; frame.Height -= 26;
+            frame.Y += FrameShave; frame.Height -= FrameShave;
             Rectangle plate = frame;
             plate.Inflate(-2, -2);
             batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
@@ -759,7 +763,7 @@ namespace Ship_Game.Ships
                 OrdersButton ob = Orders[i];
                 int col = i % 7, row = i / 7;
                 ob.ClickRect.X = ElementRect.X + col * 52;
-                ob.ClickRect.Y = ElementRect.Y - 52 - 4 - row * 52;
+                ob.ClickRect.Y = ElementRect.Y + FrameShave - 52 - 4 - row * 52; // docked on the VISIBLE frame top
             }
         }
     }

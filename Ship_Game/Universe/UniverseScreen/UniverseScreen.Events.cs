@@ -11,7 +11,8 @@ namespace Ship_Game
         /// EVT: triggered when Player's buildable ships are updated
         public void OnPlayerBuildableShipsUpdated()
         {
-            aw?.UpdateDropDowns();
+            // Ludoal fork: nothing to refresh - the Automation screen rebuilds its
+            // dropdowns every time it opens; the persistent map overlay is gone.
         }
     }
 }

@@ -36,7 +36,6 @@ namespace Ship_Game
         readonly ToggleButton InfluenceZones;   // Ludoal fork (F4)
         readonly ToggleButton GravityWellsOnly; // Ludoal fork (F5)
         readonly ToggleButton GravityWells;
-        readonly ToggleButton AIScreen;
         readonly ToggleButton DeepSpaceBuild;
         readonly ToggleButton RangeOverley;
         readonly ToggleButton VisionOverlayBtn; // Ludoal fork: F3 vision overlay
@@ -79,14 +78,14 @@ namespace Ship_Game
             // rendering on the map and stays lit; a TAB pops a panel at a screen edge. They used
             // to wear three texture styles between them and sit in two arbitrary columns.
             //
-            // TOP band:   [Influence Vision Subspace Gravity Range] ..... [DSB AI]
+            // TOP band:   [Influence Vision Subspace Gravity Range] ..... [DSB]
             // LEFT band:  [ reserved for route filters ] ..... [Freighters Exotic]
             //
             // Three groups, each on its own axis. The top row is the map OVERLAYS - what the map
             // draws over itself - and they read as one family. The head of the LEFT band is kept
             // free for ROUTE FILTERS (Trade Routes, Colonization Routes, ...), a second family
             // the maintainer plans to grow there. The tabs sit at the far end of their band, and
-            // are placed by where their panel comes out: DSB and AI open at the right edge and
+            // are placed by where their panel comes out: DSB opens at the right edge and is
             // are temporary, Freighters and Exotic open at the bottom and stay open.
 
             UIList topOverlays = AddList(new Vector2(ActualMap.X, Housing.Y + Edge));
@@ -105,13 +104,12 @@ namespace Ship_Game
             // ⚠ the tabs go to the OPPOSITE end of their band, not beside the overlays
             // (maintainer): top band pushes them RIGHT, left band pushes them DOWN. The empty
             // middle is what separates the two families, rather than a 14px gap.
-            UIList topTabs = AddList(new Vector2(ActualMap.Right - 2 * BtnW, Housing.Y + Edge));
+            UIList topTabs = AddList(new Vector2(ActualMap.Right - BtnW, Housing.Y + Edge));
             topTabs.Name = "MiniMapTabsTop";
             topTabs.LayoutStyle = ListLayoutStyle.ResizeList;
             topTabs.Direction = new Vector2(1, 0);
-            // DSB then AI, swapped on the maintainer's call
+            // Ludoal fork: the AI tab is gone - Automation is a tab of the Empire group now (H)
             DeepSpaceBuild = topTabs.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_dsbw", DeepSpaceBuild_OnClick));
-            AIScreen = topTabs.Add(new ToggleButton(ToggleButtonStyle.Button, "AI", AIScreen_OnClick));
 
             UIList leftTabs = AddList(new Vector2(Housing.X + Edge, ActualMap.Bottom - 2 * BtnH));
             leftTabs.Name = "MiniMapTabsLeft";
@@ -257,7 +255,6 @@ namespace Ship_Game
 
             GravityWells.IsToggled     = Universe.ShowingFTLOverlay;
             DeepSpaceBuild.IsToggled = Universe.DeepSpaceBuildWindow.Visible;
-            AIScreen.IsToggled       = Universe.aw.IsOpen;
             ExoticBonuses.IsToggled  = Universe.ExoticBonusesWindow.IsOpen;
             FreighterUtil.IsToggled =  Universe.FreighterUtilizationWindow.IsOpen;
 
@@ -474,13 +471,6 @@ namespace Ship_Game
             Universe.ShowingGravityWellOverlay = !Universe.ShowingGravityWellOverlay;
         }
 
-        public void AIScreen_OnClick(ToggleButton toggleButton)
-        {
-            if (!Universe.aw.IsOpen)
-                Universe.DeepSpaceBuildWindow.Hide();   // they share the right screen edge
-            Universe.aw.ToggleVisibility();
-        }
-
         public void ExoticBonusScreen_OnClick(ToggleButton toggleButton)
         {
             if (Player.Universe.P.DisableMiningOps)
@@ -533,8 +523,6 @@ namespace Ship_Game
 
             if (GravityWellsOnly.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.GravityWellOverlayVisualises, "F5");
-            if (AIScreen.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.OpensTheAutomationPanelWhich, "H");
 
             // (Important Events has its own tab in the Galaxy group now)
             if (ExoticBonuses.Rect.HitTest(input.CursorPosition))

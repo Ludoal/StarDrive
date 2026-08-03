@@ -112,7 +112,7 @@ namespace Ship_Game
         [StarData] public bool AutoExplore;
         [StarData] public bool AutoPickBestScout; // Ludoal fork (wishlist): Auto Pick Explorer
         [StarData] public bool AutoColonize;
-        [StarData] public bool AutoCoreGovernor; // Ludoal fork: new colonies start with a Core governor
+        [StarData] public bool AutoCoreGovernor; // Ludoal fork: Auto Governor - new colonies get a fitting governor (name kept for save compat)
         [StarData] public bool AutoResearch;
         [StarData] public bool AutoBuildResearchStations;
         [StarData] public bool AutoBuildMiningStations;

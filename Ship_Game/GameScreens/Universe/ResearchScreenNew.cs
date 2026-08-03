@@ -164,17 +164,8 @@ namespace Ship_Game
         // it. Its own index is a no-op: we are already here.
         void OnEmpireTabChanged(int index)
         {
-            if (index == 4)
-                return;
-            ExitScreen();
-            GameAudio.AcceptClick();
-            switch (index)
-            {
-                case 0: ScreenManager.AddScreen(new EmpireManagementScreen(Universe, empireUI)); break;
-                case 1: ScreenManager.AddScreen(new ShipListScreen(Universe, empireUI)); break;
-                case 2: ScreenManager.AddScreen(new TroopListScreen(Universe, empireUI)); break;
-                default: ScreenManager.AddScreen(ReworkScreens.Economy(Universe)); break;
-            }
+            // one factory for the whole group (ReworkScreens) - this screen only says which tab it is
+            ReworkScreens.SwitchEmpireTab(index, self: 4, Universe, this);
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
