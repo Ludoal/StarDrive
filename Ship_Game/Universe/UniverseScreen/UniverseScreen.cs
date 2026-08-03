@@ -548,7 +548,10 @@ namespace Ship_Game
             MinimapDisplayRect = Minimap.MapRect;
             mmShowBorders = new Rectangle(MinimapDisplayRect.X, MinimapDisplayRect.Y - 25, 32, 32);
 
-            SelectedStuffRect = new Rectangle(0, height - 247, 407, 242);
+            // Ludoal fork: 10px off the left and bottom edges, the margin the whole reworked
+            // interface keeps - every info cartouche (ship, system, planet, star, fleet list)
+            // derives from this one rect, so they all move together.
+            SelectedStuffRect = new Rectangle(10, height - 252, 407, 242);
             DsbCancelRect = new Rectangle(SelectedStuffRect.X + 25, SelectedStuffRect.Y + 150, 182, 25); // Ludoal fork
             ShipInfoUIElement = new ShipInfoUIElement(SelectedStuffRect, ScreenManager, this);
             SystemInfoOverlay = new SolarsystemOverlay(SelectedStuffRect, ScreenManager, this);

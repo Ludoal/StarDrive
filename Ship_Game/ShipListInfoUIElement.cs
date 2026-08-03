@@ -105,16 +105,16 @@ namespace Ship_Game
             }
 
             // the minimap's recipe instead of the sculpted unitselmenu texture
-            Rectangle plate = Housing;
+            // ⚠ the frame starts 26 under the housing's top: the sculpted texture spent that
+            // band on antenna machinery, and with it gone the plate framed empty space
+            // (maintainer: "beaucoup de vide au-dessus"). The housing keeps its size - every
+            // inner anchor is an offset from it - only the visible frame shrinks.
+            Rectangle frame = Housing;
+            frame.Y += 26; frame.Height -= 26;
+            Rectangle plate = frame;
             plate.Inflate(-2, -2);
             batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
-            // the honeycomb body lifted from the old sculpted texture (maintainer: "celui-la est
-            // plutot style") - at its NATIVE height, anchored to the plate's foot like in the
-            // original, so the hexes keep their shape instead of stretching
-            SubTexture hexBg = ResourceManager.Texture("NewUI/hex_cartouche_bg");
-            int hexH = plate.Height < 130 ? plate.Height : 130;
-            batch.Draw(hexBg, new Rectangle(plate.X, plate.Bottom - hexH, plate.Width, hexH), Color.White);
-            UITheme.DrawPlate(batch, Housing, Color.Transparent,
+            UITheme.DrawPlate(batch, frame, Color.Transparent,
                               new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
                               ruleWidthOverride: 3);
             var namePos = new Vector2(Housing.X + 41, Housing.Y + 64);

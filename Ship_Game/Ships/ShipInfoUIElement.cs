@@ -128,16 +128,16 @@ namespace Ship_Game.Ships
             // the minimap's recipe instead of the sculpted unitselmenu texture: a near-opaque
             // flat ground and a rounded grey rule, so the cartouche reads with the rest of the
             // reworked interface
-            Rectangle plate = Housing;
+            // ⚠ the frame starts 26 under the housing's top: the sculpted texture spent that
+            // band on antenna machinery, and with it gone the plate framed empty space
+            // (maintainer: "beaucoup de vide au-dessus"). The housing keeps its size - every
+            // inner anchor is an offset from it - only the visible frame shrinks.
+            Rectangle frame = Housing;
+            frame.Y += 26; frame.Height -= 26;
+            Rectangle plate = frame;
             plate.Inflate(-2, -2);
             batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
-            // the honeycomb body lifted from the old sculpted texture (maintainer: "celui-la est
-            // plutot style") - at its NATIVE height, anchored to the plate's foot like in the
-            // original, so the hexes keep their shape instead of stretching
-            SubTexture hexBg = ResourceManager.Texture("NewUI/hex_cartouche_bg");
-            int hexH = plate.Height < 130 ? plate.Height : 130;
-            batch.Draw(hexBg, new Rectangle(plate.X, plate.Bottom - hexH, plate.Width, hexH), Color.White);
-            UITheme.DrawPlate(batch, Housing, Color.Transparent,
+            UITheme.DrawPlate(batch, frame, Color.Transparent,
                               new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
                               ruleWidthOverride: 3);
             if (s.Loyalty.CanBeScannedByPlayer)
@@ -204,7 +204,8 @@ namespace Ship_Game.Ships
             //Added by McShooterz: kills display
             star       = new Rectangle(star.X, star.Y + 19, 22, 22);
             levelPos   = new Vector2(star.X + star.Width + 2, star.Y + 11 - Fonts.Arial12Bold.LineSpacing / 2);
-            StatusArea = new Vector2(Housing.X + 175, Housing.Y + 15);
+            // just inside the shaved frame's top - it sat at +15, above the new frame line
+            StatusArea = new Vector2(Housing.X + 175, Housing.Y + 28);
             batch.Draw(ResourceManager.Texture("UI/icon_kills_shipUI"), star, Color.White);
             batch.DrawString(Fonts.Arial12Bold, s.Kills.ToString(), levelPos, Color.White);
             int numStatus = 0;

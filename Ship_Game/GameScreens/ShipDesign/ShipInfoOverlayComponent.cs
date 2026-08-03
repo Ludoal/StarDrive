@@ -6,6 +6,7 @@ using Ship_Game.Ships;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Universe;
+using Ship_Game.UI;   // NineSliceSprite - the submenu frame, worn tabless
 #pragma warning disable CA1001
 
 namespace Ship_Game.GameScreens.ShipDesign
@@ -18,6 +19,7 @@ namespace Ship_Game.GameScreens.ShipDesign
         Empire Player => Universe.Player;
 
         IShipDesign SelectedDesign;
+        readonly NineSliceSprite Frame = new();
         DesignShip TempShip;
         ShipDesignStats Ds => TempShip.DesignStats;
         Graphics.Font TitleFont;
@@ -105,7 +107,19 @@ namespace Ship_Game.GameScreens.ShipDesign
 
             int size = (int)(Height - 56);
             var shipOverlay = new Rectangle((int)Right - size - 24, (int)Y + 28, size, size);
-            new Menu2(Rect).Draw(batch, elapsed); // background with menu2 borders
+            // Ludoal fork: the submenu frame without its tab (maintainer: "cadre style slider")
+            // instead of a per-frame Menu2, which now draws the full popup window - far too much
+            // furniture for a hover overlay. Same nine-slice the sliders on the Fleets page wear.
+            batch.FillRectangle(Rect, new Color(8, 10, 14).Alpha(0.94f));
+            Frame.Update(new RectF(Rect),
+                         ResourceManager.Texture("NewUI/submenu_corner_TL"),
+                         ResourceManager.Texture("NewUI/submenu_corner_TR"),
+                         ResourceManager.Texture("NewUI/submenu_corner_BL"),
+                         ResourceManager.Texture("NewUI/submenu_corner_BR"),
+                         ResourceManager.Texture("NewUI/submenu_horiz_vert"),
+                         ResourceManager.Texture("NewUI/submenu_horiz_vert"),
+                         borderWidth: 2);
+            Frame.DrawBorders(batch);
 
             s.RenderOverlay(batch, shipOverlay, showModules:true, drawHullBackground:true, moduleHealthColor:false, markLockedModules: true);
             float mass          = s.Stats.GetMass(Player);

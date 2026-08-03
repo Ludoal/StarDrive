@@ -31,7 +31,8 @@ namespace Ship_Game
         {
             Screen = screen;
             const int windowWidth = 220;
-            Rect = new Rectangle(ScreenWidth - 15 - windowWidth, 89, windowWidth, 710);
+            // 10px off the right edge, aligned with the minimap and the reworked frames
+            Rect = new Rectangle(ScreenWidth - 10 - windowWidth, 89, windowWidth, 710);
             CanEscapeFromScreen = false;
         }
 
