@@ -74,9 +74,9 @@ namespace Ship_Game
             RectF client = EmpireTabs.ClientArea;
             var main = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
             MainArea = main;
-            // the tree hugs the frame (maintainer bench): the client sits 9px inside the frame
-            // border, so +1 puts the nodes 10px off the BORDER; +24 tops the 22px title plate
-            // out 2px under the client's ceiling
+            // the client sits 9px inside the frame border, so +1 puts the nodes 10px off the
+            // BORDER. The Y here only serves the ROOT column - the tech rows' Y is re-derived
+            // from the row count in SubGridHeight (margins mirror the inter-row gap).
             MainMenuOffset = new Vector2(main.X + 1, main.Y + 24);
 
             RootNodes.Clear();
@@ -437,18 +437,25 @@ namespace Ship_Game
 
         Vector2 GridSize => new(GridWidth, GridHeight);
 
-        // the tree bit past the frame's floor when the pitch was a plain division of the
-        // height: a row's ANCHOR fit, its 98px body didn't. The pitch divides the space
-        // left between the first anchor (offset, title plate included) and the deepest
-        // row's body ending 2px above the floor.
+        // the tree's top/bottom margins MIRROR the gap between rows, floored at 2px
+        // (maintainer, 4 Aug): at the 900p floor the rows touch and the margins collapse
+        // to 2px; on a tall frame the same air runs above, between and below the rows.
+        // A node is 120px tall anchor-to-anchor: 22 of title plate + 98 of body.
+        // ⚠ this also OWNS MainMenuOffset.Y - the first anchor rides the margin.
         int SubGridHeight(int rows)
         {
             rows = Math.Max(1, rows);
-            // 105, empirical (bench 286 still saw a dead lane): 24 above the first anchor +
-            // 98 of last body - 17, the last body running into the border band the client
-            // already sits 9px inside of
-            int room = MainArea.Height - 105;
-            return rows == 1 ? room : room / (rows - 1);
+            const int NodeFull = 120;
+            int gh;
+            if (rows == 1 || (MainArea.Height + NodeFull) / (rows + 1) - NodeFull < 2)
+                gh = rows == 1 ? MainArea.Height - 124 : (MainArea.Height - 124) / (rows - 1);
+            else
+                gh = (MainArea.Height + NodeFull) / (rows + 1); // margin == inter-row gap
+            int margin = Math.Max(2, gh - NodeFull);
+            if (rows == 1)
+                margin = 2;
+            MainMenuOffset.Y = MainArea.Y + margin + 22;
+            return gh;
         }
 
         Vector2 GetCurrentCursorOffset(in Vector2 cursorPos, float yOffset = 0)
