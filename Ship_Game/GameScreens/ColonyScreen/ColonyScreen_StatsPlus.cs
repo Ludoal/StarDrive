@@ -49,7 +49,9 @@ namespace Ship_Game
 
         void SPSetColumns(float blockW)
         {
-            SPValueCol      = blockW * 0.543f; // the label/value split of SPLine
+            // the label/value split of SPLine, floored so the value clears the widest
+            // label ("Net growth (M / turn)") at any width (maintainer bench 285)
+            SPValueCol      = Math.Max(blockW * 0.543f, TextFont.TextWidth("Net growth (M / turn)") + 10);
             // ⚠ the yield columns are PIVOTS now (the decimal point sits on them) and they
             // spread over the RIGHT block, which starts at 44% and runs to the edge - wider
             // than the left one (maintainer bench, 900p)
@@ -60,8 +62,10 @@ namespace Ship_Game
             // the pop pivot keeps clear of the widest row label ("Production") at any
             // width - the fraction alone let the value sit on the label at 900p
             SPYieldColPop   = Math.Max(rightW * 0.335f, TextFont.TextWidth("Production") + 42);
-            SPYieldColFlat  = rightW * 0.505f;
-            SPYieldColEaten = rightW * 0.660f;
+            // .55/.70: pop-flat and flat-eaten breathe - .505/.660 glued flat to pop's
+            // fraction at the 900p width (maintainer bench 285)
+            SPYieldColFlat  = rightW * 0.55f;
+            SPYieldColEaten = rightW * 0.70f;
             SPYieldColTotal = rightW * 0.830f;
         }
 

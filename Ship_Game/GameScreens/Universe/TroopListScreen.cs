@@ -215,16 +215,15 @@ namespace Ship_Game
                 DrawHeader(batch, font, e1.StrRect, "Strength", rightInset: 16);
 
                 Color lineColor = new Color(118, 102, 67, 255);
-                float columnTop = ERect.Y + 15;
                 float footY = TroopSL.ItemsHousing.Bottom + 6;
-                float columnBot = footY - 4;
-                // Ludoal fork (bench): the loop drew each column's LEFT edge, so the last column
-                // had no line closing it and Strength bled into the empty gutter (maintainer feedback). Its
-                // right edge closes the table.
+                // the Economy grammar (maintainer bench 285): separators BETWEEN columns only -
+                // the frame closes the extremities - running top to bottom through the footer,
+                // and no horizontal rules at all
+                float columnTop = ERect.Y - font.LineSpacing - 2;
+                float columnBot = ERect.Bottom - 15;
                 foreach (int colX in new[] { e1.LocationRect.X, e1.StatusRect.X, e1.TroopRect.X,
-                                             e1.NumRect.X, e1.StrRect.X, e1.StrRect.Right })
+                                             e1.NumRect.X, e1.StrRect.X })
                     batch.DrawLine(new Vector2(colX, columnTop), new Vector2(colX, columnBot), lineColor);
-                batch.DrawRectangle(TroopSL.ItemsHousing, lineColor);
 
                 // TOTAL footer (maintainer bench): the troop total moves to the table's foot,
                 // each sum under the column it closes - the Economy pattern

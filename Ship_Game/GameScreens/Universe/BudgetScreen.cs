@@ -285,15 +285,18 @@ namespace Ship_Game.GameScreens
                     wTxt = (int)Fonts.Arial12Bold.TextWidth(label);
                 }
                 var sb = new SortButton { Text = label };
-                // centred on the VALUE lane, not the raw column: the lane runs from the
-                // separator (colLeft-4) to where the right-aligned numbers end (colLeft+colWpx-16)
-                sb.rect = new Rectangle(colLeft - 4 + (colWpx - 12 - wTxt) / 2, headerY, wTxt, Fonts.Arial12Bold.LineSpacing);
+                // centred between the SEPARATORS (both sit 4px left of a column start) -
+                // the value-lane bias read as off-centre to the eye (maintainer bench 285)
+                sb.rect = new Rectangle(colLeft - 4 + (colWpx - wTxt) / 2, headerY, wTxt, Fonts.Arial12Bold.LineSpacing);
                 SortButtons[i] = sb;
             }
 
             var listRect = new RectF(TableXpx, headerY + 20, (int)LeftMenu.Width - 40, (int)LeftMenu.Height - 36 - 48);
             ColonySL = Add(new ScrollList<EconColonyItem>(listRect, 24));
             ColonySL.EnableItemHighlight = true; // the same row selector as the game's other tables
+            // the item lane stops at the scrollbar reserve, 20px short of the table's right
+            // edge - the selector runs on to it (maintainer bench 285)
+            ColonySL.HighlightRightExtend = (TableXpx + TableWpx) - ((int)listRect.Right - 24);
             FillList();
 
             // vertical separators between the numeric columns, plus one closing the last

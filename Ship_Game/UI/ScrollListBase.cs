@@ -70,6 +70,9 @@ namespace Ship_Game
 
         // If TRUE, automatically draws Selection highlight around each ScrollList Item
         public bool EnableItemHighlight;
+        // extra px the hover selector reaches past the item's right edge - for tables whose
+        // columns run wider than the item lane (the item stops at the scrollbar reserve)
+        public int HighlightRightExtend;
 
         // If TRUE, items will trigger click events
         // NOTE: This is automatically enabled by setting
@@ -314,6 +317,7 @@ namespace Ship_Game
                             createdSelector = true;
                             HighlightedIndex = i;
                             Rectangle r = item.Rect.Bevel(4, 2);
+                            r.Width += HighlightRightExtend;
                             // the bevel may not ride over the scrollbar column
                             if (ShouldDrawScrollBar)
                                 r.Width = Math.Min(r.Width, (int)ScrollUp.X - 2 - r.X);
