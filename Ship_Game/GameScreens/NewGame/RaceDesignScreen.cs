@@ -43,6 +43,7 @@ namespace Ship_Game
         Rectangle ScreenFrame;
         PopupFrame Frame;
         Submenu EnvTab;    // row 1 head: the standing environment preferences, over the race list
+        UIButton ClearTraitsBtn;   // lives on the Points page, follows its tab
         Submenu EmpireTab;
         Submenu GalaxyTab;
         Submenu RaceTab;   // row 2 left: the race list
@@ -50,10 +51,13 @@ namespace Ship_Game
         SelectedTraitsSummary PointsSummary;
 
         // the two tabs of InfoTab share one area - this is which of them is showing
+        // the Clear Traits button belongs to the Points page: it hides with it
         void OnInfoTabChanged(int tab)
         {
             PointsSummary.Visible = tab == 0;
             DescriptionTextList.Visible = tab == 1;
+            if (ClearTraitsBtn != null)
+                ClearTraitsBtn.Visible = tab == 0;
         }
         EnvPreferencesPanel EnvMenu;
         SubmenuScrollList<TraitsListItem> Traits;
@@ -308,14 +312,11 @@ namespace Ship_Game
             Picker.Title = "Empire Color";
             Picker.Visible = false;
 
-            // ── the FOOT: one row, on the grid ──────────────────────────────────────────────
-            // ⚠ these nine buttons used to hang off their panels with SetLocalPos, which is how
-            // they ended up drawn OUTSIDE their own containers. They belong to the screen, not to
-            // a list, so they sit on the foot strip the grid reserved for them.
+            // ── the FOOT: each button sits under the sector it affects (maintainer) ─────────
+            // ⚠ Medium, not Default: BtnW is 132 and that IS the Medium plate's width. A
+            // Default button is 168 wide and a row would overlap itself by 36 per button.
             const int BtnW = 132, BtnGap = 6;
             int bx = gridLeft;
-            // ⚠ Medium, not Default: BtnW is 132 and that IS the Medium texture's width. A
-            // Default button is 168 wide and the row would overlap itself by 36 per button.
             UIButton Foot(string text, Action<UIButton> click, ButtonStyle style = ButtonStyle.Medium)
             {
                 UIButton b = Button(style, bx, footY, text, click: click);
@@ -323,30 +324,33 @@ namespace Ship_Game
                 return b;
             }
 
-            // Abort in the HOSTILE tint (maintainer): it is the button that cancels, and the
-            // style exists for exactly that. It was wearing the blue one while Engage - the
-            // button that STARTS the game - wore the red.
-            // ⚠ the Wide styles are PAINTED, so their width is whatever we set - they do not have
-            // to be dan_button's 182. Both end buttons take the row's own 132 (maintainer).
-            UIButton abort = Button(ButtonStyle.Wide, gridLeft, footY, Localizer.Token(GameText.Abort), click: OnAbortClicked);
-            abort.SetAbsSize(BtnW, 24);
-            bx = gridLeft + BtnW + BtnGap * 3;
+            // under RACE: its own load/save
             Foot("Load Race", OnLoadRaceClicked);
             Foot("Save Race", OnSaveRaceClicked);
-            bx += BtnGap * 3;
+
+            // centred under the TRAITS block: the whole-setup actions
+            const int MidBtns = 3;
+            int midLeft = gridLeft + SideW + Pad;
+            int midW    = gridRight - SideW - Pad - midLeft;
+            bx = midLeft + (midW - (MidBtns * BtnW + (MidBtns - 1) * BtnGap)) / 2;
             Foot("Load Setup", OnLoadSetupClicked);
             Foot("Save Setup", OnSaveSetupClicked);
-            Foot(Localizer.Token(GameText.RuleOptions), OnRuleOptionsClicked);
-            bx += BtnGap * 3;
-            Foot("Clear Traits", OnClearClicked);
-            // ⚠ Medium like the rest of the row: BigDip is 168 wide, so this one ran 36px past
-            // the slot the row reserves and collided with Engage (maintainer).
             SelectOpponentsBtn = Foot("", OnSelectOpponentsClicked);
 
-            // Engage in the HOSTILE tint - red, on the maintainer's call: it commits, and this
-            // screen has no way back once it does.
-            UIButton engage = Button(ButtonStyle.WideHostile, gridRight - BtnW, footY, GameText.Engage, click: OnEngageClicked);
+            // right end: Exit cancels (hostile), Engage commits (active blue) - maintainer call.
+            // ⚠ the Wide styles are PAINTED, so their width is whatever we set.
+            UIButton exit = Button(ButtonStyle.WideHostile, gridRight - 2 * BtnW - BtnGap, footY, "Exit", click: OnAbortClicked);
+            exit.SetAbsSize(BtnW, 24);
+            UIButton engage = Button(ButtonStyle.WideActive, gridRight - BtnW, footY, GameText.Engage, click: OnEngageClicked);
             engage.SetAbsSize(BtnW, 24);
+
+            // Rule Options lives in the Galaxy tab it configures
+            Button(ButtonStyle.Medium, (int)(galaxyArea.Right - BtnW - 10), (int)(galaxyArea.Bottom - 28),
+                   Localizer.Token(GameText.RuleOptions), click: OnRuleOptionsClicked);
+
+            // Clear Traits lives on the Points page and follows its tab
+            ClearTraitsBtn = Button(ButtonStyle.Medium, (int)(description.X + 10), (int)(description.Bottom - 28),
+                                    "Clear Traits", click: OnClearClicked);
 
             DoRaceDescription();
             SetRacialTraits(SelectedData.Traits);
