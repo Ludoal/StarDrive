@@ -80,15 +80,6 @@ namespace Ship_Game.GameScreens.NewGame
             UpdatePreferences(raceSummary);
         }
 
-        public override void Draw(SpriteBatch batch, DrawTimes elapsed)
-        {
-            // the popup window's surface, drawn first so every child lands on top of it
-            var frame = new PopupFrame(Rect);
-            frame.DrawFill(batch, Rect);
-            frame.Draw(batch);
-            base.Draw(batch, elapsed);
-        }
-
         public void UpdateArchetype(IEmpireData data, RacialTrait raceSummary)
         {
             Data = data;

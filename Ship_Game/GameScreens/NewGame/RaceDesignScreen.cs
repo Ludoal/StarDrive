@@ -42,6 +42,7 @@ namespace Ship_Game
         // block that absorbs the resolution; the rest are fixed.
         Rectangle ScreenFrame;
         PopupFrame Frame;
+        Submenu EnvTab;    // row 1 head: the standing environment preferences, over the race list
         Submenu EmpireTab;
         Submenu GalaxyTab;
         Submenu RaceTab;   // row 2 left: the race list
@@ -159,11 +160,15 @@ namespace Ship_Game
             int footY = visibleBottom - 10 - 24;   // 24 = the painted buttons' height
             int gridBottom = footY - Pad;
 
-            // ── ROW 1: Empire | Galaxy, 50/50, FIXED height ─────────────────────────────────
+            // ── ROW 1: Environment | Empire | Galaxy, FIXED height ──────────────────────────
+            // The standing Environment tab heads the row (maintainer), column-aligned with the
+            // Race tab below it; Empire and Galaxy share the remaining width.
             const int Row1H = 192;   // +20 on the bench's word - the fields were tight
-            int halfW = (gridRight - gridLeft - Pad) / 2;
-            EmpireTab = Add(new Submenu(new RectF(gridLeft, gridTop, halfW, Row1H), "Empire"));
-            GalaxyTab = Add(new Submenu(new RectF(gridLeft + halfW + Pad, gridTop, halfW, Row1H), "Galaxy"));
+            const int SideW = 330;   // the fixed side-column width, shared with row 2
+            EnvTab = Add(new Submenu(new RectF(gridLeft, gridTop, SideW, Row1H), "Environment"));
+            int halfW = (gridRight - gridLeft - SideW - 2 * Pad) / 2;
+            EmpireTab = Add(new Submenu(new RectF(gridLeft + SideW + Pad, gridTop, halfW, Row1H), "Empire"));
+            GalaxyTab = Add(new Submenu(new RectF(gridLeft + SideW + 2 * Pad + halfW, gridTop, halfW, Row1H), "Galaxy"));
 
             // row 2 takes what row 1 and the foot leave - the dynamic block
             int row2Top = gridTop + Row1H + Pad;
@@ -192,9 +197,8 @@ namespace Ship_Game
             HomeWorldName = SelectedData.HomeWorldName;
 
             // ── ROW 2: Race | Traits | Points+Description, all sharing row2Top and row2H ─────
-            // The two side columns are FIXED width; the traits block in the middle absorbs what
-            // is left. One arithmetic for the three, so they cannot drift apart.
-            const int SideW = 330;
+            // The two side columns are FIXED width (SideW, declared with row 1); the traits
+            // block in the middle absorbs what is left. One arithmetic for the three.
             RectF traitsList = new(gridLeft + SideW + Pad, row2Top,
                                    gridRight - gridLeft - 2 * (SideW + Pad), row2H);
 
@@ -347,9 +351,10 @@ namespace Ship_Game
             DoRaceDescription();
             SetRacialTraits(SelectedData.Traits);
 
-            // the environment preferences ride under the race list, inside its tab
-            var envRect = new Rectangle((int)chooseRace.X, (int)chooseRace.Bottom - 150,
-                                        (int)chooseRace.W, 150);
+            // the environment preferences hold their standing tab at the head of row 1;
+            // the tab frame is the delimiter, the panel draws no background of its own
+            RectF envArea = EnvTab.ClientArea;
+            var envRect = new Rectangle((int)envArea.X, (int)envArea.Y, (int)envArea.W, (int)envArea.H);
             EnvMenu = Add(new EnvPreferencesPanel(this, RaceSummary, envRect));
 
             // Ludoal fork: no slide-in/slide-out on this screen (maintainer decision) - the panels
