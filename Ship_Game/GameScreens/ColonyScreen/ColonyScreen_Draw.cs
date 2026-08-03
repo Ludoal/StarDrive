@@ -238,10 +238,7 @@ namespace Ship_Game
                        ? ResourceManager.Texture("NewUI/icon_build_edit_hover2")
                        : ResourceManager.Texture("NewUI/icon_build_edit"), EditNameButton, Color.White);
 
-            if (ScreenHeight > 768)
-                cursor.Y += Font20.LineSpacing * 2;
-            else
-                cursor.Y += Font20.LineSpacing;
+            cursor.Y += Font20.LineSpacing * 2;
             batch.DrawString(TextFont, Localizer.Token(GameText.Class) + ":", cursor, Color.Orange);
             Vector2 position3 = new Vector2(cursor.X + num5, cursor.Y);
             batch.DrawString(TextFont, P.CategoryName, position3, Colors.Cream);

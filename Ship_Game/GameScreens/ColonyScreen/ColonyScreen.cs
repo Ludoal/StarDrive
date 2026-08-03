@@ -208,8 +208,10 @@ namespace Ship_Game
             // plus four lines on the left. Sizing on the portrait alone left 3px of slack, which
             // one font change would eat - so it takes the TALLER of the two, measured in the
             // fonts that draw them.
+            // ⚠ FIVE lines, not four: Incoming/Outgoing Pop is conditional but the room is the
+            // OBJECT's, not the moment's - reserved on everything the panel can declare
             float infoLinesH  = 45 + Fonts.Arial20Bold.LineSpacing * 2
-                              + 4 * (TextFont.LineSpacing + 2);
+                              + 5 * (TextFont.LineSpacing + 2);
             float planetInfoH = Math.Max(26 + portraitH + 14, infoLinesH + 10);
             const float governorH   = 210;   // tab row + Defense's controls, +14 for their new gap
             const float laborH      = 150;   // three sliders, their locks and the title bar
@@ -278,6 +280,12 @@ namespace Ship_Game
             const float tilesX = 7, tilesY = 5;
             float gridInnerW = colCentreW - 20;
             float subColonyH = gridInnerW * (tilesY / tilesX) + 35;
+            // ⚠ bounded by the column, not only by the width: STATISTICS below keeps a working
+            // floor, so on wide screens the grid stops growing with the window (bench 1080: the
+            // width-driven grid ate the stats block to a cut POPULATION header). When the bound
+            // wins, GridPos derives the tile size back and centres, so the tiles stay square.
+            const float statsMinH = 380; // the Stats+ tab's own content, measured loosely - bench number
+            subColonyH = Math.Min(subColonyH, gridBottom - gridTop - Pad - statsMinH);
 
             RectF subColonyR = new(colCentreX, gridTop, colCentreW, subColonyH);
             SubColonyGrid = new(subColonyR, GameText.Colony);
@@ -409,9 +417,16 @@ namespace Ship_Game
 
             PlanetShieldIconRect = new Rectangle(planetShieldBarRect.X - 30, planetShieldBarRect.Y-2, 20, 20);
 
-            GridPos = new Rectangle(SubColonyGrid.Rect.X + 10, SubColonyGrid.Rect.Y + 30, SubColonyGrid.Rect.Width - 20, SubColonyGrid.Rect.Height - 35);
-            int width = GridPos.Width / 7;
-            int height = GridPos.Height / 5;
+            // square tiles whatever shaped the panel: the limiting dimension sets the tile,
+            // and the grid centres in the other one
+            int innerW = SubColonyGrid.Rect.Width - 20;
+            int innerH = SubColonyGrid.Rect.Height - 35;
+            int tileSize = Math.Min(innerW / 7, innerH / 5);
+            GridPos = new Rectangle(SubColonyGrid.Rect.X + 10 + (innerW - tileSize * 7) / 2,
+                                    SubColonyGrid.Rect.Y + 30 + (innerH - tileSize * 5) / 2,
+                                    tileSize * 7, tileSize * 5);
+            int width = tileSize;
+            int height = tileSize;
             foreach (PlanetGridSquare planetGridSquare in p.TilesList)
                 planetGridSquare.ClickRect = new Rectangle(GridPos.X + planetGridSquare.X * width, GridPos.Y + planetGridSquare.Y * height, width, height);
             
