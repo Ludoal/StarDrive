@@ -34,7 +34,6 @@ namespace Ship_Game.GameScreens.NewGame
             Data = Screen.SelectedData;
 
             bool lo = parent.LowRes;
-            Add(new Menu1(rect, withSub: false)).SetLocalPos(0,0);
 
             var font = lo ? Fonts.Arial8Bold : Fonts.Arial12Bold;
             Title = Add(new UILabel("Environment Preferences", font, Color.BurlyWood));
@@ -79,6 +78,15 @@ namespace Ship_Game.GameScreens.NewGame
             AddEnvSplitter(column2, "{Desert}: ", () => EnvDesert);
             AddEnvSplitter(column2, "{Barren}: ", () => EnvBarren);
             UpdatePreferences(raceSummary);
+        }
+
+        public override void Draw(SpriteBatch batch, DrawTimes elapsed)
+        {
+            // the popup window's surface, drawn first so every child lands on top of it
+            var frame = new PopupFrame(Rect);
+            frame.DrawFill(batch, Rect);
+            frame.Draw(batch);
+            base.Draw(batch, elapsed);
         }
 
         public void UpdateArchetype(IEmpireData data, RacialTrait raceSummary)

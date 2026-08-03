@@ -26,8 +26,8 @@ namespace Ship_Game.GameScreens
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
         // NOT Add()ed: geometry only. The group's frame is the border now, so drawing these would
         // double it - the two halves are separated by a single rule instead.
-        Menu1 LeftMenu;
-        Menu1 RightMenu;
+        Rectangle LeftMenu;
+        Rectangle RightMenu;
 
         FloatSlider TaxSlider;
         FloatSlider TreasuryGoal;
@@ -201,8 +201,8 @@ namespace Ship_Game.GameScreens
                                                     OnEmpireTabChanged, out Rectangle groupFrame);
             RectF client = EmpireTabs.ClientArea;
             float split = client.X + client.W * 2f / 3f;
-            LeftMenu  = new Menu1((int)client.X, (int)client.Y, (int)(split - client.X), (int)client.H);
-            RightMenu = new Menu1((int)split, (int)client.Y, (int)(client.Right - split), (int)client.H);
+            LeftMenu  = new Rectangle((int)client.X, (int)client.Y, (int)(split - client.X), (int)client.H);
+            RightMenu = new Rectangle((int)split, (int)client.Y, (int)(client.Right - split), (int)client.H);
 
             // the unit note of the money charte, on the reserved first line
             string unitNote = "(all money values are per turn)";

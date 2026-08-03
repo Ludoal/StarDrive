@@ -36,8 +36,8 @@ namespace Ship_Game
         // buttons and the Draw that paints the name and icon above them.
         const float CartPad = 20f, CartIcon = 64f, CartBtnH = 33f, CartBtnGap = 6f;
         const float CartBtnW = 180f;
-        Menu1 LeftMenu;
-        Menu1 RightMenu;
+        RectF LeftMenu;
+        RectF RightMenu;
 
         // never null, if a fleet doesn't exist, an empty one is created
         public Fleet SelectedFleet;
@@ -269,7 +269,7 @@ namespace Ship_Game
             float listTop = TitlePos.Y + Fonts.Arial12Bold.LineSpacing + 4;
 
             RectF leftRect = new(client.X + ListPad, listTop, leftW, 500);
-            LeftMenu = new(leftRect, true);
+            LeftMenu = leftRect;
             
             Add(new FleetButtonsList(leftRect, this, Universe,
                 onClick: InputSelectFleet,
@@ -279,7 +279,7 @@ namespace Ship_Game
 
             RectF shipDesignsRect = new(blockRight - rightW, listTop,
                                         rightW, overviewTop - 10 - listTop);
-            RightMenu = new(shipDesignsRect);
+            RightMenu = shipDesignsRect;
 
             LocalizedText[] subShipsTabs = { "Designs", "Owned" };
             SubShips = Add(new SubmenuScrollList<FleetDesignShipListItem>(shipDesignsRect, subShipsTabs));

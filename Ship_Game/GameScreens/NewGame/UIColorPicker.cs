@@ -9,11 +9,9 @@ namespace Ship_Game
     public class UIColorPicker : UIElementV2
     {
         public Color CurrentColor = Color.White;
-        readonly Menu1 ColorSelectMenu;
 
         public UIColorPicker(in Rectangle rect) : base(rect)
         {
-            ColorSelectMenu = new Menu1(Rect);
         }
 
         public override bool HandleInput(InputState input)
@@ -77,7 +75,10 @@ namespace Ship_Game
             if (!Visible)
                 return;
 
-            ColorSelectMenu.Draw(batch, elapsed);
+            // the popup window's surface, drawn in place
+            var frame = new PopupFrame(Rect);
+            frame.DrawFill(batch, Rect);
+            frame.Draw(batch);
 
             SubTexture spark = ResourceManager.Texture("Particles/spark");
 

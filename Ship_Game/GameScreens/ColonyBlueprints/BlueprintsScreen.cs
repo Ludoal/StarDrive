@@ -17,8 +17,8 @@ namespace Ship_Game
     {
         public bool PlanAreaHovered { get; private set; }
         readonly Array<BlueprintsTile> TilesList = new(35);
-        readonly Menu1 LeftMenu;
-        readonly Menu1 RightMenu;
+        readonly Rectangle LeftMenu;
+        readonly Rectangle RightMenu;
         readonly Submenu SubBlueprintsOptions;
         readonly Submenu PlanStats;
         readonly UILabel BlueprintsName;
@@ -91,10 +91,9 @@ namespace Ship_Game
             // brass surround give way to the group's tab row, as on the other groups.
             DesignTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.DesignTabTitles, 2,
                                                     OnDesignTabChanged, out Rectangle _);
-            // The two panels are laid out inside the tab frame with the same 5px margin the other
-            // screens of the group use. They keep their brass surround HIDDEN: the frame already
-            // draws one, and two nested brass borders read as a mistake. They stay in the tree
-            // because every block on this screen is positioned from their rects.
+            // The two column rects are laid out inside the tab frame with the same 5px margin the
+            // other screens of the group use. Plain geometry: the frame draws the border, and
+            // every block on this screen is positioned from these two rects.
             const int MenuPad = 5;
             RectF client = DesignTabs.ClientArea;
             int menuTop = (int)client.Y + MenuPad;
@@ -103,11 +102,9 @@ namespace Ship_Game
             int totalW = (int)client.W - 2 * MenuPad;
             int leftW = totalW * 2 / 3 - MenuPad;
 
-            LeftMenu = base.Add(new Menu1(menuLeft, menuTop, leftW, menuH));
-            RightMenu = base.Add(new Menu1(menuLeft + leftW + MenuPad, menuTop,
-                                           totalW - leftW - MenuPad, menuH));
-            LeftMenu.Visible = false;
-            RightMenu.Visible = false;
+            LeftMenu = new Rectangle(menuLeft, menuTop, leftW, menuH);
+            RightMenu = new Rectangle(menuLeft + leftW + MenuPad, menuTop,
+                                      totalW - leftW - MenuPad, menuH);
 
             RectF blueprintsStatsR = new(LeftMenu.X + 20, LeftMenu.Y + 20,
                                         (int)(0.4f * LeftMenu.Width),
