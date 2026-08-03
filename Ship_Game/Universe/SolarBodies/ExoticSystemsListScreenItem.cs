@@ -276,15 +276,36 @@ namespace Ship_Game
 
         void AddPlanetName()
         {
-            if (IsStar)
-                return;
-
             var namePos = new Vector2(PlanetNameEntry.X, PlanetNameEntry.Y + 3);
+            if (IsStar)
+            {
+                // star rows carry the star's name with its class under it, the same two-line
+                // shape the planet rows wear (maintainer design - the cell sat empty)
+                Label(namePos, System.Name, NormalFont, TextColor);
+                namePos.Y += NormalFont.LineSpacing;
+                Label(namePos, StarClassName(System.Sun.Id), SmallFont, TextColor);
+                return;
+            }
+
             Label(namePos, Planet.Name, NormalFont, TextColor);
             // Now add Richness
             namePos.Y += NormalFont.LineSpacing;
             string richness = Planet.LocalizedRichness;
             Label(namePos, richness, SmallFont, TextColor);
+        }
+
+        // "star_red3" -> "Red", "Blue_giant" -> "Blue Giant": the sun ids ARE the game's star
+        // taxonomy, trailing digits being art variants of the same class
+        static string StarClassName(string sunId)
+        {
+            string s = sunId.TrimEnd('0','1','2','3','4','5','6','7','8','9');
+            if (s.StartsWith("star_"))
+                s = s.Substring(5);
+            string[] words = s.Split('_');
+            for (int i = 0; i < words.Length; i++)
+                if (words[i].Length > 0)
+                    words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1);
+            return string.Join(" ", words);
         }
 
         void AddDistanceStats()
