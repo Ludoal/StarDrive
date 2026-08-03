@@ -187,13 +187,12 @@ namespace Ship_Game
             // ── what is FIXED and what STRETCHES (Ludoal fork, bench 232) ────────────────────
             // Left column: FIXED width. Planet Info, Governor and Assign Labor keep fixed
             // heights; STORAGE is the one that stretches, taking what is left to the foot.
-            // The left column's width comes from the Governor tab row with BLUEPRINT written in
-            // full (maintainer, 3 Aug) - the richest cartouche names the bound, no folding.
-            // ⚠ Submenu's REAL per-tab arithmetic (read in UpdateTabRect, not estimated):
-            // TextWidth + 2 + the header_right texture, which is 33px. +8 slack: the wrap
-            // test is strict and one glyph of rounding was enough to fold the last tab.
+            // The left column's width comes from the Governor tab row with its settled "BP"
+            // label (maintainer bench, 3 Aug: BLUEPRINT in full starves the 900p centre - the
+            // short tab carries a tooltip instead). Submenu's REAL per-tab arithmetic, read in
+            // UpdateTabRect: TextWidth + 2 + the header_right texture (33px), +8 wrap slack.
             float govTabsW = Fonts.Arial12Bold.TextWidth("GOVERNOR") + Fonts.Arial12Bold.TextWidth("DEFENSE")
-                           + Fonts.Arial12Bold.TextWidth("BUDGET") + Fonts.Arial12Bold.TextWidth("BLUEPRINT")
+                           + Fonts.Arial12Bold.TextWidth("BUDGET") + Fonts.Arial12Bold.TextWidth("BP")
                            + 4 * (2 + 33) + 8;
             float colLeftW = Math.Max(govTabsW, 380) + 40;
 
@@ -604,7 +603,7 @@ namespace Ship_Game
             int sliderSize  = 30;
             float indent    = 30;
             float indentTradeAmount = indent + barWidth + 5;
-            float indentSlider      = indentTradeAmount + 60;
+            float indentSlider      = indentTradeAmount + 35; // slid left for 900p (maintainer bench)
 
             // no "Colony Trade" title (maintainer, 3 Aug): the tab already names the page, and
             // this is the tallest tab - the row it frees is what makes it fit

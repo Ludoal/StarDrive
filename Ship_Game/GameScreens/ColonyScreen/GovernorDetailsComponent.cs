@@ -252,9 +252,10 @@ namespace Ship_Game
 
             Tabs = Add(new Submenu(rect, new LocalizedText[]
             {
-                // Blueprint in full, no folding (maintainer, 3 Aug) - the column is sized on
-                // Submenu's REAL tab arithmetic now: TextWidth + 2 + header_right (33px) per tab
-                GameText.Governor, GameText.Defense2, GameText.Budget, "Blueprint"
+                // "BP", settled (maintainer bench, 3 Aug): BLUEPRINT in full cannot fit at the
+                // width the 900p centre column allows - the short label carries a hover tooltip
+                // instead (see HandleInput)
+                GameText.Governor, GameText.Defense2, GameText.Budget, "BP"
             }));
 
             if (selectedIndex < Tabs.NumTabs)
@@ -268,7 +269,8 @@ namespace Ship_Game
         public override void PerformLayout()
         {
             float aspect  = PortraitSprite.Size.X / PortraitSprite.Size.Y;
-            float height  = (float)Math.Round(Height * 0.6f);
+            // 0.55, not 0.6 (maintainer bench, 3 Aug): the toggles ride under the portrait now
+            float height  = (float)Math.Round(Height * 0.55f);
             Portrait.Size = new Vector2((float)Math.Round(aspect*height), height);
             // Ludoal fork: all four tabs lay their content out from this one value, so they
             // cannot disagree. It follows the tab bar's real bottom, which matters because
@@ -332,13 +334,13 @@ namespace Ship_Game
             // at the heights this panel actually gets. The margin now comes from the row's own
             // height instead of a guessed constant. The column sits to the RIGHT of the portrait,
             // on the same left edge as the world title above it.
-            float rowHalf = SpecializedTradeHub.Height * 0.5f;
-            SpecializedTradeHub.Pos = new Vector2(ColumnX, Bottom - rowHalf - 8);
-            // Ludoal fork: right-aligned on the frame, so the label cannot outgrow its pull.
-            GovNoScrap.Pos          = new Vector2(Right - GovNoScrap.Width - 12, SpecializedTradeHub.Pos.Y);
-            BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, SpecializedTradeHub.Pos.Y - 35);
-            Quarantine.Pos          = new Vector2(ColumnX, SpecializedTradeHub.Pos.Y - 35);
-            Prioritized.Pos         = new Vector2(ColumnX, SpecializedTradeHub.Pos.Y - 17);
+            // two toggles per line (maintainer bench, 3 Aug): Quarantine and Prioritized sit
+            // UNDER the portrait; the two contextual toggles share their exact lines at ColumnX
+            Quarantine.Pos          = new Vector2(X + 10, Portrait.Bottom + 8);
+            Prioritized.Pos         = new Vector2(X + 10, Portrait.Bottom + 26);
+            SpecializedTradeHub.Pos = new Vector2(ColumnX, Quarantine.Pos.Y);
+            GovNoScrap.Pos          = new Vector2(ColumnX, Prioritized.Pos.Y);
+            BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, Quarantine.Pos.Y - 35);
 
             // Defense tab. ⚠ These six buttons used to hang off Bottom, which is why the panel
             // needed 300px of height for ~120px of content: the gap in the middle was pure
@@ -982,6 +984,10 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            // the folded BP tab says its full name on hover (maintainer, 3 Aug)
+            if (Tabs != null && Tabs.Tabs.Count > 3 && Tabs.Tabs[3].Rect.HitTest(input.CursorPosition))
+                ToolTip.CreateTooltip("Blueprint");
+
             if (GovOrbitals.HitTest(input.CursorPosition))
                 UpdateGovOrbitalStats();
 

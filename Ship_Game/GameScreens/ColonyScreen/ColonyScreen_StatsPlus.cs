@@ -123,7 +123,10 @@ namespace Ship_Game
             SPSetColumns(blockW);
 
             var left  = bCursor;
-            var right = new Vector2(bCursor.X + blockW, bCursor.Y);
+            // the right block starts at 44% rather than half (maintainer bench, 900p): the
+            // yields grid slides left as one piece and regains the margin its rightmost
+            // column was eating into
+            var right = new Vector2(bCursor.X + blockW * 0.88f, bCursor.Y);
 
             // ── BUDGET (BC / turn) — gross sources as the building screen promises them,
             // the tax mill as one visible line, everything still sums to Net exactly ──
