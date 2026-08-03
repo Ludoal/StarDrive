@@ -143,8 +143,13 @@ namespace Ship_Game
             //           screens' frames and does not peek out behind them in the stack.
             const int m = GameScreens.ScreenGroups.FrameMargin;
             int frameTop = GameScreens.ScreenGroups.TabRowY + 25;   // Submenu.TabHeight
-            ColonyFrame = new Rectangle(m - PopupFrame.BorderLeft, frameTop,
-                                        ScreenWidth - 2 * m + PopupFrame.BorderLeft + PopupFrame.BorderRight,
+            // ⚠ Colony is the ONE screen centred in width (maintainer, 3 Aug): past the 1920
+            // doctrine ceiling the frame stops growing and centres horizontally. Y never moves -
+            // the frame hangs at the same frameTop whatever the resolution.
+            int layoutW = Math.Min(ScreenWidth, 1920);
+            int layoutX = (ScreenWidth - layoutW) / 2;
+            ColonyFrame = new Rectangle(layoutX + m - PopupFrame.BorderLeft, frameTop,
+                                        layoutW - 2 * m + PopupFrame.BorderLeft + PopupFrame.BorderRight,
                                         ScreenHeight - frameTop - m + PopupFrame.BottomLine);
             // ⚠ NOT Add()ed: a child is drawn by base.Draw, which lands AFTER everything this
             // screen paints by hand - the frame's body would bury the panels. Painted first
