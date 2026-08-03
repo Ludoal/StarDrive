@@ -235,7 +235,7 @@
     <Compile Include="Ship_Game\GameScreens\ImportantEvents\ImportantEventsScreen.cs" />
     <Compile Include="Ship_Game\GameScreens\ImportantEvents\ImportantEventListItem.cs" />
     <Compile Include="Ship_Game\Espionage\InfiltrationOperation.cs" />
-    <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationScreenRework.cs" />
+    <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationScreen.cs" />
     <Compile Include="Ship_Game\GameScreens\FleetDesign\FleetButton.cs" />
     <Compile Include="Ship_Game\GameScreens\FleetDesign\FleetButtonsList.cs" />
     <Compile Include="Ship_Game\GameScreens\GameCursors.cs" />
@@ -753,7 +753,7 @@
     <Compile Include="Ship_Game\GameScreens\LoadSaveItems\LoadSaveScreen.cs" />
     <Compile Include="Ship_Game\Body.cs" />
     <Compile Include="Ship_Game\Header.cs" />
-    <Compile Include="Ship_Game\GameScreens\Universe\BudgetScreenRework.cs" />
+    <Compile Include="Ship_Game\GameScreens\Universe\BudgetScreen.cs" />
     <Compile Include="Ship_Game\Gameplay\Relationship.cs" />
     <Compile Include="Ship_Game\GameScreens\DiplomacyScreen\ItemToOffer.cs" />
     <Compile Include="Ship_Game\ToolTip.cs" />
@@ -856,7 +856,6 @@
     <Compile Include="Ship_Game\AI\DroneAI.cs" />
     <Compile Include="Ship_Game\Graphics\Particles\Particle.cs" />
     <Compile Include="Ship_Game\Universe\UniverseScreen\UniverseScreen.cs" />
-    <Compile Include="Ship_Game\Menu2.cs" />
     <Compile Include="Ship_Game\UI\UIButton.cs" />
     <Compile Include="Ship_Game\UI\UITheme.cs" />
     <Compile Include="Ship_Game\UI\CheckedDropdown.cs" />
@@ -913,7 +912,7 @@
     <Compile Include="Ship_Game\Gameplay\Projectile.cs" />
     <Compile Include="Ship_Game\Shield.cs" />
     <Compile Include="Ship_Game\Gameplay\ModuleSlot.cs" />
-    <Compile Include="Ship_Game\GameScreens\MainDiplomacyScreen\MainDiplomacyScreenRework.cs" />
+    <Compile Include="Ship_Game\GameScreens\MainDiplomacyScreen\MainDiplomacyScreen.cs" />
     <Compile Include="Ship_Game\AI\Tasks\MilitaryTask.cs" />
     <Compile Include="Ship_Game\OrderType.cs" />
     <Compile Include="Ship_Game\OrdersButton.cs" />

@@ -18,7 +18,7 @@ namespace Ship_Game.GameScreens
     // level, points/turn, target level + progress), DEFENSE (player: defense weight;
     // others: their shield ratio), then the five levels with ALL options — passives
     // and actives with live checkboxes, grayed until their level is reached.
-    public sealed class InfiltrationScreenRework : GameScreen
+    public sealed class InfiltrationScreen : GameScreen
     {
         public readonly UniverseScreen Universe;
         public Empire SelectedEmpire; // legacy bookkeeping (external callers)
@@ -116,7 +116,7 @@ namespace Ship_Game.GameScreens
             }
         }
 
-        public InfiltrationScreenRework(UniverseScreen parent) : base(parent, toPause: parent)
+        public InfiltrationScreen(UniverseScreen parent) : base(parent, toPause: parent)
         {
             Universe = parent;
             IsPopup = true;
@@ -130,11 +130,11 @@ namespace Ship_Game.GameScreens
         // hands over to it on the right tab. Espionage itself is a no-op: we are already here.
         void OnGroupTabChanged(int index)
         {
-            var tab = (MainDiplomacyScreenRework.Tab)index;
-            if (tab == MainDiplomacyScreenRework.Tab.Espionage)
+            var tab = (MainDiplomacyScreen.Tab)index;
+            if (tab == MainDiplomacyScreen.Tab.Espionage)
                 return;
             ExitScreen();
-            ScreenManager.AddScreen(new MainDiplomacyScreenRework(Universe, tab));
+            ScreenManager.AddScreen(new MainDiplomacyScreen(Universe, tab));
         }
 
         public override void LoadContent()
@@ -146,7 +146,7 @@ namespace Ship_Game.GameScreens
                                         ScreenGroups.GroupTabTitles));
             GroupTabs.OnTabChange = OnGroupTabChanged;
             GroupTabs.PerformLayout(); // ClientArea is only known once the tabs are laid out
-            GroupTabs.SelectedIndex = (int)MainDiplomacyScreenRework.Tab.Espionage;
+            GroupTabs.SelectedIndex = (int)MainDiplomacyScreen.Tab.Espionage;
 
             Vector2 closePos = ScreenGroups.GroupClosePos(GroupTabs.ClientArea);
             CloseButton(closePos.X, closePos.Y);

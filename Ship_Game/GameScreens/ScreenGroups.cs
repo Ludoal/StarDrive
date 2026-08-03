@@ -360,14 +360,14 @@ namespace Ship_Game.GameScreens
         // near-black the group frames use.
         public static Color WindowBody => UITheme.FrameBody;
 
-        public static GameScreen Economy(UniverseScreen u) => new BudgetScreenRework(u);
+        public static GameScreen Economy(UniverseScreen u) => new BudgetScreen(u);
 
         // Ludoal fork: both top-bar buttons lead into the same four-tab group, each landing on its
         // own tab. Espionage tab: its content is its own screen, which carries the same tab row.
         public static GameScreen Diplomacy(UniverseScreen u)
-            => new MainDiplomacyScreenRework(u, MainDiplomacyScreenRework.Tab.Intelligence);
+            => new MainDiplomacyScreen(u, MainDiplomacyScreen.Tab.Intelligence);
 
-        public static GameScreen Espionage(UniverseScreen u) => new InfiltrationScreenRework(u);
+        public static GameScreen Espionage(UniverseScreen u) => new InfiltrationScreen(u);
 
         // Ludoal fork (bench 46.173): asking "is the caller already this screen?" has to know
         // about BOTH classes, or the answer is wrong for whichever regime is not the stock one.
@@ -375,7 +375,7 @@ namespace Ship_Game.GameScreens
         // only the stock type named, a reworked Economy, Diplomacy or Espionage never recognised
         // itself and simply stacked a second copy (maintainer feedback). Same reason the openers live here: one
         // place knows the pairing, and no call site has to remember there are two of each.
-        public static bool IsEconomy(GameScreen s) => s is BudgetScreenRework;
+        public static bool IsEconomy(GameScreen s) => s is BudgetScreen;
 
         // ── Which group a screen belongs to ───────────────────────────────────────────────────
         // Ludoal fork: the top bar tints the button of the group you are inside. One place knows
@@ -391,10 +391,10 @@ namespace Ship_Game.GameScreens
                 => Group.Galaxy,
 
             EmpireManagementScreen or ShipListScreen or TroopListScreen
-                or ResearchScreenNew or BudgetScreenRework
+                or ResearchScreenNew or BudgetScreen
                 => Group.Empire,
 
-            InfiltrationScreenRework
+            InfiltrationScreen
                 => Group.Diplomacy,
 
             FleetDesignScreen or ShipDesignScreen or BlueprintsScreen
@@ -410,15 +410,15 @@ namespace Ship_Game.GameScreens
         // Both regimes are still named, which is what the 46.173 bug was about: with only the
         // stock type listed, a reworked screen never recognised itself and stacked a second copy.
         public static bool IsDiplomacy(GameScreen s)
-            => s is MainDiplomacyScreenRework
+            => s is MainDiplomacyScreen
                  or DiplomacyScreen.RelationshipsDiagramScreen;
 
         public static bool IsEspionage(GameScreen s)
-            => s is InfiltrationScreenRework;
+            => s is InfiltrationScreen;
 
         static bool IsDiplomacyGroup(GameScreen s)
-            => s is MainDiplomacyScreenRework
-                 or InfiltrationScreenRework
+            => s is MainDiplomacyScreen
+                 or InfiltrationScreen
                  or DiplomacyScreen.RelationshipsDiagramScreen;
     }
 }

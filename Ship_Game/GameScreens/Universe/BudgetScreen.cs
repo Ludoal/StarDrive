@@ -20,7 +20,7 @@ namespace Ship_Game.GameScreens
     // Left table: one row per colony, sortable columns, NET highlighted after the
     // upkeep columns (the order of the calculation is the order of reading),
     // deficits red, click opens the Colony Overview.
-    public sealed class BudgetScreenRework : GameScreen
+    public sealed class BudgetScreen : GameScreen
     {
         readonly Empire Player;
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
@@ -41,7 +41,7 @@ namespace Ship_Game.GameScreens
         bool SortByName;
 
         readonly UniverseScreen Universe; // Ludoal fork: for the live top bar
-        public BudgetScreenRework(UniverseScreen screen) : base(screen, toPause: screen)
+        public BudgetScreen(UniverseScreen screen) : base(screen, toPause: screen)
         {
             Player            = screen.Player;
             IsPopup           = true;
@@ -365,7 +365,7 @@ namespace Ship_Game.GameScreens
             ExitScreen();
             // Ludoal fork (bench 191): right-click in the colony comes back HERE, not to the
             // map (maintainer feedback). The universe screen calls this once, when that colony closes.
-            Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new BudgetScreenRework(Universe));
+            Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new BudgetScreen(Universe));
             Universe.workersPanel = new ColonyScreen(Universe, item.Planet, Universe.EmpireUI);
             Universe.LookingAtPlanet = true;
             // same anchor as the double-click path: the panel covers the map, no snap,

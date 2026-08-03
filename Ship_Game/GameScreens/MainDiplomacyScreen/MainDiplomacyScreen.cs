@@ -22,7 +22,7 @@ namespace Ship_Game
     // by default, one click flips every column so rows stay comparable), and a
     // TREATIES mini-matrix at the bottom (icon rows: state W/A/N/P — one line, war
     // breaks every treaty and alliance implies NA — then borders, then trade).
-    public sealed class MainDiplomacyScreenRework : GameScreen
+    public sealed class MainDiplomacyScreen : GameScreen
     {
         UniverseScreen Universe;
 
@@ -54,7 +54,7 @@ namespace Ship_Game
 
         const int TreatyBlockH = 114; // player design: 3 icon rows (state / borders / trade), labels gone
 
-        public MainDiplomacyScreenRework(UniverseScreen screen, Tab openOn = Tab.Intelligence)
+        public MainDiplomacyScreen(UniverseScreen screen, Tab openOn = Tab.Intelligence)
             : base(screen, toPause: screen)
         {
             Universe = screen;
@@ -217,7 +217,7 @@ namespace Ship_Game
                     ExitScreen();
                     // the concrete screen, not ScreenGroups.Espionage - that factory now points
                     // back at this group, which would loop
-                    ScreenManager.AddScreen(new InfiltrationScreenRework(Universe));
+                    ScreenManager.AddScreen(new InfiltrationScreen(Universe));
                     break;
             }
         }

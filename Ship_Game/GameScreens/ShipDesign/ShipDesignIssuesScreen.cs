@@ -12,7 +12,7 @@ namespace Ship_Game.GameScreens.ShipDesign
 {
     public sealed class ShipDesignIssuesScreen : GameScreen
     {
-        private readonly Menu2 Window;
+        private readonly Rectangle Window;
         private readonly Color Cream = Colors.Cream;
         private readonly Array<DesignIssueDetails> DesignIssues;
         private readonly ScrollList<ShipDesignIssuesListItem> IssueList;
@@ -25,7 +25,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             TransitionOnTime  = 0.25f;
             TransitionOffTime = 0.25f;
 
-            Window = Add(new Menu2(new Rectangle(ScreenWidth / 2 - 600, ScreenHeight / 2 - 300, 1200, 540)));
+            Window = new Rectangle(ScreenWidth / 2 - 600, ScreenHeight / 2 - 300, 1200, 540);
             int x  = (int)Window.X + 20;
             int y  = (int)Window.Y + 70;
             int w  = (int)Window.Width - 30;
@@ -63,10 +63,10 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         public override void LoadContent()
         {
-            CloseButton(Window.Menu.Right - 40, Window.Menu.Y + 20);
+            CloseButton(Window.Right - 40, Window.Y + 20);
             //Screen Title
             string title    = "Current Ship Issues";
-            Vector2 menuPos = new Vector2(Window.Menu.CenterTextX(title, Fonts.Laserian14), Window.Menu.Y + 30);
+            Vector2 menuPos = new Vector2(Window.CenterTextX(title, Fonts.Laserian14), Window.Y + 30);
             Label(menuPos, title, Fonts.Laserian14, Cream);
             PopulateIssues();
             base.LoadContent();
@@ -76,6 +76,10 @@ namespace Ship_Game.GameScreens.ShipDesign
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
+            // the popup window's surface, drawn in place before the children
+            var frame = new PopupFrame(Window);
+            frame.DrawFill(batch, Window);
+            frame.Draw(batch);
             base.Draw(batch, elapsed);
             batch.SafeEnd();
         }

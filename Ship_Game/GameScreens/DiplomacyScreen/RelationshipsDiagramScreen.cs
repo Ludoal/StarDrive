@@ -7,13 +7,13 @@ using Ship_Game.UI;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Universe;
-using Ship_Game.GameScreens; // InfiltrationScreenRework, sibling tab of this group
+using Ship_Game.GameScreens; // InfiltrationScreen, sibling tab of this group
 
 namespace Ship_Game.GameScreens.DiplomacyScreen
 {
     public sealed class RelationshipsDiagramScreen : GameScreen
     {
-        private readonly Menu2 Window;
+        private readonly Rectangle Window; // geometry only - the tab frame is the delimiter
         readonly Array<Peer> Peers = new Array<Peer>();
         readonly Vector2 WeightCenter; // Offset from window center for circle of empires
 
@@ -66,11 +66,11 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
                                         ScreenGroups.GroupTabTitles));
             GroupTabs.OnTabChange = OnGroupTabChanged;
             GroupTabs.PerformLayout();
-            GroupTabs.SelectedIndex = (int)MainDiplomacyScreenRework.Tab.Relationships;
+            GroupTabs.SelectedIndex = (int)MainDiplomacyScreen.Tab.Relationships;
 
-            // NOT Add()ed: the tab frame is the delimiter now, so this only serves as the geometry
-            // the diagram lays itself out against - adding it would draw the brass surround back.
-            Window                = new Menu2(frame);
+            // geometry only: the tab frame is the delimiter, the diagram lays itself out
+            // against this rect
+            Window                = frame;
             RectF client          = GroupTabs.ClientArea;
             WeightCenter          = new Vector2(client.X + client.W / 2 + 100, client.Y + client.H / 2);
             EmpiresAndIntel       = empiresAndIntel;
@@ -81,14 +81,14 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
         // hands over to it. Relationships itself is a no-op: we are already here.
         void OnGroupTabChanged(int index)
         {
-            var tab = (MainDiplomacyScreenRework.Tab)index;
-            if (tab == MainDiplomacyScreenRework.Tab.Relationships)
+            var tab = (MainDiplomacyScreen.Tab)index;
+            if (tab == MainDiplomacyScreen.Tab.Relationships)
                 return;
             ExitScreen();
-            if (tab == MainDiplomacyScreenRework.Tab.Espionage)
-                ScreenManager.AddScreen(new InfiltrationScreenRework(Universe));
+            if (tab == MainDiplomacyScreen.Tab.Espionage)
+                ScreenManager.AddScreen(new InfiltrationScreen(Universe));
             else
-                ScreenManager.AddScreen(new MainDiplomacyScreenRework(Universe, tab));
+                ScreenManager.AddScreen(new MainDiplomacyScreen(Universe, tab));
         }
 
         Color RowColor(T t) => t switch
@@ -147,7 +147,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             int peerAngle = 0;
             foreach (EmpireAndIntelLevel empireAndIntelLevel in EmpiresAndIntel)
             {
-                Peer peer = new Peer(WeightCenter, Window.Rect, peerAngle, empireAndIntelLevel);
+                Peer peer = new Peer(WeightCenter, Window, peerAngle, empireAndIntelLevel);
                 Peers.Add(peer);
                 peerAngle += angle;
             }
