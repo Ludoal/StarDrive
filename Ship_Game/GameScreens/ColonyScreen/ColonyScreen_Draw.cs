@@ -727,18 +727,20 @@ namespace Ship_Game
 
             // decimal-aligned (maintainer bench): the integer part ends on one pivot for the
             // three money lines, the fraction and unit hang right of it
+            Vector2 cur = cursor; // a local function cannot capture a ref parameter (CS1628)
             void MoneyLine(string label, float v, Color c)
             {
-                batch.DrawString(font, $"{label}: ", cursor, Color.LightGray);
+                batch.DrawString(font, $"{label}: ", cur, Color.LightGray);
                 string s = $"{v.String(2)} BC/turn";
                 string intPart = s.Substring(0, s.IndexOf('.') < 0 ? s.Length : s.IndexOf('.'));
-                batch.DrawString(font, s, new Vector2(cursor.X + 178 - font.TextWidth(intPart), cursor.Y), c);
-                cursor.Y += font.LineSpacing + 1;
+                batch.DrawString(font, s, new Vector2(cur.X + 178 - font.TextWidth(intPart), cur.Y), c);
+                cur.Y += font.LineSpacing + 1;
             }
             MoneyLine(gIncome, grossIncome, Color.LightGreen);
 
             MoneyLine(gUpkeep, grossUpkeep, Color.Pink);
             MoneyLine(netIncome > 0 ? nIncome : nLosses, netIncome, netIncome > 0.0 ? Color.Green : Color.Red);
+            cursor = cur;
             cursor.Y += font.LineSpacing;
         }
 
