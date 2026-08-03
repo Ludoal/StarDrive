@@ -52,10 +52,6 @@ namespace Ship_Game
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
             IsPopup = true;
-            if (ScreenWidth <= 1280)
-            {
-
-            }
 
             // Ludoal fork: the Exotic Systems tab of the Galaxy group - the title cartouche and its
             // brass surround give way to the group's tab row. Contents unchanged.

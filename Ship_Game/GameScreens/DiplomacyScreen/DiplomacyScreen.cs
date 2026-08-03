@@ -304,10 +304,6 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             ThreatRect   = new RectF(Portrait.X + 125, Threat.Y + 2, 100, Threat.Height);
             DialogRect = new RectF(Portrait.X + 175, Portrait.Bottom - 175, Portrait.Width - 350, 150);
 
-            if (ScreenHeight < 820)
-            {
-                DialogRect.Y = Portrait.Y + Portrait.Height - 100;
-            }
             R = DialogRect;
             R.Height += 50;
             if (R.Y + R.Height > ScreenHeight)
