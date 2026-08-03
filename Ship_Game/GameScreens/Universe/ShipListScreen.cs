@@ -22,7 +22,6 @@ namespace Ship_Game
         private Ship SelectedShip;
         private readonly ScrollList<ShipListScreenItem> ShipSL;
         public EmpireUIOverlay EmpireUi;
-        private readonly Rectangle LeftRect;
         private readonly DropOptions<int> ShowRoles;
         private readonly SortButton SortSystem;
         private readonly SortButton SortName;
@@ -82,19 +81,23 @@ namespace Ship_Game
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
             IsPopup = true;
-            // Ludoal fork: the Ships tab of the Empire group - the title cartouche and its brass
-            // surround give way to the group's tab row.
+            // Ludoal fork: the Ships tab of the Empire group, content-sized (spec 4 Aug):
+            // width follows the column doctrine (bounded at the 1080p cap), height follows
+            // the fleet size - counted unfiltered, a filter only shortens the list inside.
+            int shipRows = Universe.Player.OwnedShips.Count;
+            float contentW = Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin;
+            float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
+            float contentH = Math.Min(fullAvail, 120 + Math.Max(5, shipRows) * 34);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 1,
-                                                    OnEmpireTabChanged, out Rectangle frame);
-            LeftRect = frame;
-
+                                                    OnEmpireTabChanged, contentW, contentH);
 
             // Ludoal fork: the reserved first line carries the three filters and the role dropdown,
             // side by side where they used to be stacked beside the title. The table takes the rest.
             RectF client = EmpireTabs.ClientArea;
             ERect = ScreenGroups.GalaxyTable(client, ScreenGroups.GalaxyHeaderH);
-            ERect.H = ERect.H.RoundDownTo(80);
-            RectF slRect = new(ERect.X, ERect.Y + 15, ERect.W, ERect.H - 15);
+            // +15/-30: GalaxyTable extends past the client for the list's own padding - this
+            // pulls the visible table back to the 20px side margins (spec 4 Aug)
+            RectF slRect = new(ERect.X + 15, ERect.Y + 15, ERect.W - 30, ERect.H - 15);
 
             ShipSL = Add(new ScrollList<ShipListScreenItem>(slRect, 30));
             ShipSL.OnDoubleClick = OnShipListScreenItemClicked;
@@ -192,8 +195,8 @@ namespace Ship_Game
                 SortFleet.rect = new Rectangle((int)cursor.X, (int)cursor.Y, font.TextWidth(SortFleet.Text), font.LineSpacing);
                 SortFleet.Draw(ScreenManager, font);
 
-                // Orders reads from the left like its column does (maintainer bench)
-                cursor = new Vector2(e1.OrdersRect.X + 8, ERect.Y - font.LineSpacing + 18);
+                // spec (4 Aug): every header centred, even over a left-aligned column
+                cursor = new Vector2(e1.OrdersRect.CenterX() - font.TextWidth(SortOrder.Text) / 2f, ERect.Y - font.LineSpacing + 18);
                 SortOrder.rect = new Rectangle((int)cursor.X, (int)cursor.Y, font.TextWidth(SortOrder.Text), font.LineSpacing);
                 SortOrder.Draw(ScreenManager, font);
 
@@ -230,7 +233,8 @@ namespace Ship_Game
                      DrawLine(e1.TotalEntrySize.X, y, e1.TotalEntrySize.Right, y);
                 }
 
-                // Draw the borders of the ScrollList
+                // spec (4 Aug): verticals BETWEEN columns only - no extremity lines, and the
+                // only horizontal is the rule under the headers
                 DrawVerticalSeparator(e1.ShipNameRect.X);
                 DrawVerticalSeparator(e1.RoleRect.X);
                 DrawVerticalSeparator(e1.FleetRect.X);
@@ -241,10 +245,6 @@ namespace Ship_Game
                 DrawVerticalSeparator(e1.TroopRect.X + 5);
                 DrawVerticalSeparator(e1.FTLRect.X + 5);
                 DrawVerticalSeparator(e1.STLRect.X + 5);
-                DrawVerticalSeparator(e1.STLRect.Right + 5);
-                DrawVerticalSeparator(e1.TotalEntrySize.X); //  bottom-35??
-                DrawVerticalSeparator(e1.TotalEntrySize.Right);
-                DrawHorizontalSeparator(ERect.Bottom - 10);
                 DrawHorizontalSeparator(ERect.Y + 25);
             }
             ShowRoles.Draw(batch, elapsed);
@@ -406,7 +406,7 @@ namespace Ship_Game
             {
                 if (ShouldAddForCategory(ship, category))
                 {
-                    ShipSL.AddItem(new ShipListScreenItem(ship, (int)ERect.X + 130, LeftRect.Y + 20, (int)EmpireTabs.ClientArea.W - 30, 30, this));
+                    ShipSL.AddItem(new ShipListScreenItem(ship, (int)ERect.X + 130, (int)EmpireTabs.ClientArea.Y + 20, (int)EmpireTabs.ClientArea.W - 60, 30, this));
                 }
             }
 

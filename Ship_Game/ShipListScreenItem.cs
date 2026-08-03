@@ -112,16 +112,9 @@ namespace Ship_Game
 
             var textColor = Colors.Cream;
 
-            if (Fonts.Arial20Bold.MeasureString(SystemName).X <= SysNameRect.Width)
-            {
-                var sysNameCursor = new Vector2(SysNameRect.X + SysNameRect.Width / 2 - Font12.MeasureString(SystemName).X / 2f, 2 + SysNameRect.Y + SysNameRect.Height / 2 - Font12.LineSpacing / 2);
-                batch.DrawString(Font12, SystemName, sysNameCursor, textColor);
-            }
-            else
-            {
-                var sysNameCursor = new Vector2(SysNameRect.X + SysNameRect.Width / 2 - Font12.MeasureString(SystemName).X / 2f, 2 + SysNameRect.Y + SysNameRect.Height / 2 - Font12.LineSpacing / 2);
-                batch.DrawString(Font12, SystemName, sysNameCursor, textColor);
-            }
+            // spec (4 Aug): unique text reads from the left, one character of padding
+            var sysNameCursor = new Vector2(SysNameRect.X + 8, 2 + SysNameRect.Y + SysNameRect.Height / 2 - Font12.LineSpacing / 2);
+            batch.DrawString(Font12, SystemName, sysNameCursor, textColor);
 
             batch.Draw(Ship.ShipData.Icon, ShipIconRect, Color.White);
             ShipNameEntry.Draw(batch, elapsed);
@@ -131,8 +124,9 @@ namespace Ship_Game
             batch.DrawString(Font12, Localizer.GetRole(Ship.ShipData.Role, Ship.Loyalty), rolePos, textColor);
 
             string fleetName     = Ship.Fleet?.Name ?? "";
-            Graphics.Font fleetFont = Font12.MeasureString(fleetName).X > FleetRect.Width - 5 ? Font8 : Font12;
-            var fleetPos = new Vector2(FleetRect.X + FleetRect.Width / 2 - fleetFont.MeasureString(fleetName).X / 2f, FleetRect.Y + FleetRect.Height / 2 - fleetFont.LineSpacing / 2);
+            Graphics.Font fleetFont = Font12.MeasureString(fleetName).X > FleetRect.Width - 16 ? Font8 : Font12;
+            // a fleet name is unique text: from the left (spec 4 Aug)
+            var fleetPos = new Vector2(FleetRect.X + 8, FleetRect.Y + FleetRect.Height / 2 - fleetFont.LineSpacing / 2);
             fleetPos = fleetPos.ToFloored();
             batch.DrawString(fleetFont, fleetName, fleetPos, textColor);
 

@@ -53,16 +53,19 @@ namespace Ship_Game
             // the Economy pattern): fixed columns set the width, the troop-group count sets the
             // height - this page is allowed UNDER the 900p floor when the roster is short.
             int rows = CountTroopGroups();
-            float contentW = TroopListScreenItem.TableW + 10;
+            // +40: 20px of margin each side of the table (spec 4 Aug, the Economy values)
+            float contentW = TroopListScreenItem.TableW + 40;
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
-            // 122 = tab strip + filter lane + column titles + the TOTAL footer's lane
-            float contentH = Math.Min(fullAvail, 122 + Math.Max(3, rows) * 28);
+            // 136 = tab strip + filter lane + column titles + TOTAL footer lane + a line at the bottom
+            float contentH = Math.Min(fullAvail, 136 + Math.Max(3, rows) * 28);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 2,
                                                     OnEmpireTabChanged, contentW, contentH);
             RectF client = EmpireTabs.ClientArea;
             ERect = ScreenGroups.GalaxyTable(client, ScreenGroups.GalaxyHeaderH);
-            // the last lane of the frame belongs to the TOTAL footer, not the list
-            RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10 - 26);
+            // the last lane of the frame belongs to the TOTAL footer, not the list.
+            // +15/-30: GalaxyTable extends past the client for the list's own padding,
+            // this pulls the visible table back to the 20px side margins (spec 4 Aug)
+            RectF slRect = new(ERect.X + 15, ERect.Y - 10, ERect.W - 30, ERect.H + 10 - 26);
             TroopSL = Add(new ScrollList<TroopListScreenItem>(slRect, 24));
             TroopSL.EnableItemHighlight = true;
             TroopSL.OnDoubleClick = OnRowClicked; // Ludoal fork: double-click everywhere, like Ships/Empire
@@ -216,18 +219,17 @@ namespace Ship_Game
 
                 Color lineColor = new Color(118, 102, 67, 255);
                 float footY = TroopSL.ItemsHousing.Bottom + 6;
-                // the Economy grammar (maintainer bench 285): separators BETWEEN columns only -
-                // the frame closes the extremities - running top to bottom through the footer,
-                // and no horizontal rules at all
-                float columnTop = ERect.Y - font.LineSpacing - 2;
+                // spec (4 Aug): one horizontal rule under the headers, then verticals BETWEEN
+                // the columns only - none at the extremities - starting under that rule
+                float ruleY = ERect.Y + 2;
+                batch.DrawLine(new Vector2(e1.SysNameRect.X, ruleY), new Vector2(e1.StrRect.Right, ruleY), lineColor);
                 float columnBot = ERect.Bottom - 15;
                 foreach (int colX in new[] { e1.LocationRect.X, e1.StatusRect.X, e1.TroopRect.X,
                                              e1.NumRect.X, e1.StrRect.X })
-                    batch.DrawLine(new Vector2(colX, columnTop), new Vector2(colX, columnBot), lineColor);
+                    batch.DrawLine(new Vector2(colX, ruleY), new Vector2(colX, columnBot), lineColor);
 
-                // TOTAL footer (maintainer bench): the troop total moves to the table's foot,
-                // each sum under the column it closes - the Economy pattern
-                batch.DrawString(font, "TOTAL", new Vector2(ERect.X + 8, footY), Color.Wheat);
+                // TOTAL footer, aligned with the rows' own text lane (spec 4 Aug)
+                batch.DrawString(font, "TOTAL", new Vector2(TroopSL.ItemsHousing.X + 8, footY), Color.Wheat);
                 string num = NumTroops.ToString();
                 batch.DrawString(font, num, new Vector2(e1.NumRect.Right - 16 - font.TextWidth(num), footY), Colors.Cream);
                 string str = ((int)StrengthTotal).ToString();

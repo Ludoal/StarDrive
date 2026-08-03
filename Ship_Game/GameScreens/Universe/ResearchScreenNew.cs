@@ -444,10 +444,10 @@ namespace Ship_Game
         int SubGridHeight(int rows)
         {
             rows = Math.Max(1, rows);
-            // 117 = 24 above the first anchor + 98 of last body - 5: the last body may run
-            // a few px past the client, whose floor sits 9px inside the frame border
-            // (maintainer bench 285: "en bas il y a de la place")
-            int room = MainArea.Height - 117;
+            // 105, empirical (bench 286 still saw a dead lane): 24 above the first anchor +
+            // 98 of last body - 17, the last body running into the border band the client
+            // already sits 9px inside of
+            int room = MainArea.Height - 105;
             return rows == 1 ? room : room / (rows - 1);
         }
 

@@ -238,7 +238,7 @@ namespace Ship_Game.GameScreens
             float contentW = 1440 - 2 * ScreenGroups.FrameMargin;
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             float h900 = 900 - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
-            float rowsNeed = 60 + Player.GetPlanets().Count * 24 + 90; // header lane + rows + footer/margins
+            float rowsNeed = 76 + Player.GetPlanets().Count * 24 + 90; // header lane (+ its empty line) + rows + footer/margins
             float contentH = fullAvail <= h900 ? fullAvail
                            : Math.Min(fullAvail, Math.Max(h900, rowsNeed));
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 3,
@@ -258,7 +258,7 @@ namespace Ship_Game.GameScreens
             // ---- LEFT 2/3: the colony table ----
             TableXpx = (int)LeftMenu.X + 10; // tighter left margin (maintainer bench)
             TableWpx = (int)LeftMenu.Width - 20 - 24; // reserve the scrollbar lane
-            int headerY = (int)LeftMenu.Y + 24; // air under the unit note (maintainer bench)
+            int headerY = (int)LeftMenu.Y + 40; // one empty line between the unit note and the headers (spec 4 Aug)
             int sepBottom = (int)LeftMenu.Bottom - 14;
 
             // no NET column band (maintainer bench): the bold figures carry the column alone
@@ -272,6 +272,9 @@ namespace Ship_Game.GameScreens
             SbColony.rect = new Rectangle(TableXpx + (nameW - nameTxtW) / 2, headerY,
                                           nameTxtW, Fonts.Arial12Bold.LineSpacing);
             SortButtons = new SortButton[NumCols];
+            // spec (4 Aug): the sorted column's header reads orange from the start, not
+            // only after the first click
+            SbColony.Selected = SortByName;
             for (int i = 0; i < NumCols; ++i)
             {
                 int colLeft = TableXpx + (int)(TableWpx * ColStart(i));
@@ -290,27 +293,35 @@ namespace Ship_Game.GameScreens
                 sb.rect = new Rectangle(colLeft - 4 + (colWpx - wTxt) / 2, headerY, wTxt, Fonts.Arial12Bold.LineSpacing);
                 SortButtons[i] = sb;
             }
+            if (!SortByName)
+                SortButtons[SortCol].Selected = true;
 
-            var listRect = new RectF(TableXpx, headerY + 20, (int)LeftMenu.Width - 40, (int)LeftMenu.Height - 36 - 48);
+            // rows start right under the header rule - the old +20 read as an empty first row
+            var listRect = new RectF(TableXpx, headerY + 6, (int)LeftMenu.Width - 40, (int)LeftMenu.Height - 36 - 48);
             ColonySL = Add(new ScrollList<EconColonyItem>(listRect, 24));
             ColonySL.EnableItemHighlight = true; // the same row selector as the game's other tables
-            // the item lane stops at the scrollbar reserve, 20px short of the table's right
-            // edge - the selector runs on to it (maintainer bench 285)
-            ColonySL.HighlightRightExtend = (TableXpx + TableWpx) - ((int)listRect.Right - 24);
+            // spec (4 Aug): the selector spans the PHANTOM extremity lines - 4px left of the
+            // first column, and where a closing line would sit right of the last
+            ColonySL.HighlightLeftExtend = 8;
+            ColonySL.HighlightRightExtend = (TableXpx + TableWpx - 4) - ((int)listRect.Right - 24 + 4);
             FillList();
 
-            // vertical separators between the numeric columns, plus one closing the last
-            // (Left) column (maintainer bench 284 - reversed from "the frame delimits")
-            for (int i = 0; i <= NumCols; ++i)
+            var ruleColor = new Color(118, 102, 67, 255).Premultiplied();
+            // spec (4 Aug): one horizontal rule under the headers, spanning the table
+            int ruleY = headerY + 18;
+            Panel(new Rectangle(TableXpx, ruleY, TableWpx, 1), ruleColor);
+            // vertical separators BETWEEN the columns only - none at the extremities -
+            // starting under the headers (spec 4 Aug)
+            for (int i = 0; i < NumCols; ++i)
             {
                 int sepX = TableXpx + (int)(TableWpx * ColStart(i)) - 4;
-                // same warm line colour the game's other tables use (ShipListScreen)
-                Panel(new Rectangle(sepX, headerY, 1, sepBottom - headerY), new Color(118, 102, 67, 255).Premultiplied());
+                Panel(new Rectangle(sepX, ruleY, 1, sepBottom - ruleY), ruleColor);
             }
 
             // TOTAL footer
             int totalY = (int)listRect.Bottom + 10;
-            var totalLbl = Label(new Vector2(TableXpx + 4, totalY), Localizer.Token(GameText.Total2).ToUpper(), Fonts.Arial12Bold);
+            // +36: TOTAL aligns with the planet NAMES (icon lane + 28), not the icon lane itself
+            var totalLbl = Label(new Vector2(TableXpx + 36, totalY), Localizer.Token(GameText.Total2).ToUpper(), Fonts.Arial12Bold);
             totalLbl.Color = Color.Wheat;
             void FooterCell(int col, Func<UILabel, string> getText)
             {

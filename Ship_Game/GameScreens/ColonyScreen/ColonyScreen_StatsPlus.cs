@@ -66,7 +66,9 @@ namespace Ship_Game
             // fraction at the 900p width (maintainer bench 285)
             SPYieldColFlat  = rightW * 0.55f;
             SPYieldColEaten = rightW * 0.70f;
-            SPYieldColTotal = rightW * 0.830f;
+            // .86: total steps away from eaten's long fractions ("-11.89" met "+0" two px
+            // on - bench 286); the widened anchor below feeds it the panel's right margin
+            SPYieldColTotal = rightW * 0.86f;
         }
 
         // decimal-aligned draw: the INTEGER part ends at the pivot, the fraction hangs right
@@ -164,7 +166,9 @@ namespace Ship_Game
             // its last pivot plus a fraction of room lands at the margin, and the block start
             // derives from that - as far right as it can sit
             float usable = PFacilities.Width - 40;
-            var right = new Vector2(bCursor.X + usable - (SPYieldColTotal + TextFont.TextWidth(".00") + 2), bCursor.Y);
+            // +10: the yields grid borrows the panel's right inner margin (bench 286,
+            // "du vide exploitable à droite")
+            var right = new Vector2(bCursor.X + usable + 10 - (SPYieldColTotal + TextFont.TextWidth(".00") + 2), bCursor.Y);
 
             // ── BUDGET (BC / turn) — gross sources as the building screen promises them,
             // the tax mill as one visible line, everything still sums to Net exactly ──
