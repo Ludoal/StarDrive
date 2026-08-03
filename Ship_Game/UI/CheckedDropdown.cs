@@ -40,7 +40,7 @@ namespace Ship_Game
 
         // the checkbox label's reserved width, so every picker of a column starts on the same
         // vertical line whatever its toggle says
-        const float LabelRoom = 195f;
+        const float LabelRoom = 215f; // fits "Auto Build Research Stations" clear of the Auto Pick box (bench)
 
         public override void PerformLayout()
         {

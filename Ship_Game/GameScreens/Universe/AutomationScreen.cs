@@ -34,8 +34,8 @@ namespace Ship_Game
         // Heights: one-tab strip (~24) + 12 top pad + 26 per row (a checked-dropdown rides
         // its toggle's row now, so it costs the same 26 as a plain checkbox) + 12 bottom pad.
         // BoxW2: the dropdown boxes are WIDER instead of taller - label room + picker.
-        const float BoxW = 320f, BoxW2 = 430f, BoxGap = 10f;
-        const float EmpireBoxH = 160f, ColonizationBoxH = 130f, ConstructionBoxH = 130f,
+        const float BoxW = 320f, BoxW2 = 450f, BoxGap = 10f;
+        const float EmpireBoxH = 160f, ColonizationBoxH = 130f, ConstructionBoxH = 165f,
                     TradeBoxH = 100f, NotificationsBoxH = 230f;
 
         public AutomationScreen(UniverseScreen u) : base(u, toPause: u)
@@ -97,6 +97,8 @@ namespace Ship_Game
             ConstructorDropDown = construction.Add(new CheckedDropdown())
                 .Create(() => player.AutoBuildSpaceRoads, Localizer.Token(GameText.Autobuild) + " Projectors", GameText.YourEmpireWillAutomaticallyCreate2,
                         autoPick: () => player.AutoPickConstructors);
+            // right under Autobuild Projectors, whose behaviour it modifies (maintainer bench)
+            construction.AddCheckbox(() => Universe.UState.P.PrioitizeProjectors, title: GameText.PrioritizeProjector, tooltip: GameText.PrioritizeProjectorTip);
             if (ResearchStationsEnabled)
                 ResearchStationDropDown = construction.Add(new CheckedDropdown())
                     .Create(() => player.AutoBuildResearchStations, title: GameText.AutoBuildResearchStation, tooltip: GameText.AutoBuildResearchStationTip,
@@ -105,7 +107,6 @@ namespace Ship_Game
                 MiningStationDropDown = construction.Add(new CheckedDropdown())
                     .Create(() => player.AutoBuildMiningStations, title: GameText.AutoBuildMiningStation, tooltip: GameText.AutoBuildMiningStationTip,
                             autoPick: () => player.AutoPickBestMiningStation);
-            construction.AddCheckbox(() => Universe.UState.P.PrioitizeProjectors, title: GameText.PrioritizeProjector, tooltip: GameText.PrioritizeProjectorTip);
 
             UIList colonization = NewBox(new RectF(x1, top, BoxW2, ColonizationBoxH), "Colonization");
             ScoutDropDown = colonization.Add(new CheckedDropdown())
