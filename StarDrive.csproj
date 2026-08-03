@@ -905,7 +905,7 @@
     <Compile Include="Ship_Game\ModEntry.cs" />
     <Compile Include="Ship_Game\Gameplay\RacialTraits.cs" />
     <Compile Include="Ship_Game\AI\StrategyAI\WarGoals\War.cs" />
-    <Compile Include="Ship_Game\GameScreens\ReworkScreens.cs" />
+    <Compile Include="Ship_Game\GameScreens\ScreenGroups.cs" />
     <Compile Include="Ship_Game\PopupWindow.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\EventPopup.cs" />
     <Compile Include="Ship_Game\GameScreens\MainMenu\MainMenuScreen.cs" />

@@ -189,7 +189,7 @@ namespace Ship_Game
             // and the tab row. Down on the workbench the gesture belongs to the design (it
             // deletes the module under the cursor), so only the band up here is free for it.
             // ExitScreen, not ReallyExit: the unsaved-design prompt still gets its say.
-            if (input.RightMouseClick && ReworkScreens.InTopBand(input.CursorPosition))
+            if (input.RightMouseClick && ScreenGroups.InTopBand(input.CursorPosition))
             {
                 GameAudio.EchoAffirmative();
                 ExitScreen();
@@ -540,7 +540,7 @@ namespace Ship_Game
                         break;
                     case "Budget":
                         GameAudio.EchoAffirmative();
-                        ScreenManager.AddScreen(GameScreens.ReworkScreens.Economy(ParentUniverse));
+                        ScreenManager.AddScreen(GameScreens.ScreenGroups.Economy(ParentUniverse));
                         break;
                     case "Main Menu":
                         GameAudio.EchoAffirmative();
@@ -583,7 +583,7 @@ namespace Ship_Game
                         if (ParentUniverse.Player.LegacyEspionageEnabled)
                             ScreenManager.AddScreen(new EspionageScreen(ParentUniverse));
                         else
-                            ScreenManager.AddScreen(GameScreens.ReworkScreens.Espionage(ParentUniverse));
+                            ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(ParentUniverse));
                         GameAudio.EchoAffirmative();
                         break;
                     case "Empire":
@@ -591,7 +591,7 @@ namespace Ship_Game
                         GameAudio.EchoAffirmative();
                         break;
                     case "Diplomacy":
-                        ScreenManager.AddScreen(GameScreens.ReworkScreens.Diplomacy(ParentUniverse));
+                        ScreenManager.AddScreen(GameScreens.ScreenGroups.Diplomacy(ParentUniverse));
                         GameAudio.EchoAffirmative();
                         break;
                     case "?":

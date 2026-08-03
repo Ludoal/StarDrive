@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
-using Ship_Game.GameScreens; // ReworkScreens: the group geometry
+using Ship_Game.GameScreens; // ScreenGroups: the group geometry
 using SDGraphics.Input;
 using SDUtils;
 using Ship_Game.Audio;
@@ -84,7 +84,7 @@ namespace Ship_Game
             IsPopup = true;
             // Ludoal fork: the Ships tab of the Empire group - the title cartouche and its brass
             // surround give way to the group's tab row.
-            EmpireTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.EmpireTabTitles, 1,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 1,
                                                     OnEmpireTabChanged, out Rectangle frame);
             LeftRect = frame;
 
@@ -92,7 +92,7 @@ namespace Ship_Game
             // Ludoal fork: the reserved first line carries the three filters and the role dropdown,
             // side by side where they used to be stacked beside the title. The table takes the rest.
             RectF client = EmpireTabs.ClientArea;
-            ERect = ReworkScreens.GalaxyTable(client, ReworkScreens.GalaxyHeaderH);
+            ERect = ScreenGroups.GalaxyTable(client, ScreenGroups.GalaxyHeaderH);
             ERect.H = ERect.H.RoundDownTo(80);
             RectF slRect = new(ERect.X, ERect.Y + 15, ERect.W, ERect.H - 15);
 
@@ -157,8 +157,8 @@ namespace Ship_Game
         // it. Its own index is a no-op: we are already here.
         void OnEmpireTabChanged(int index)
         {
-            // one factory for the whole group (ReworkScreens) - this screen only says which tab it is
-            ReworkScreens.SwitchEmpireTab(index, self: 1, Universe, this);
+            // one factory for the whole group (ScreenGroups) - this screen only says which tab it is
+            ScreenGroups.SwitchEmpireTab(index, self: 1, Universe, this);
         }
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
@@ -166,7 +166,7 @@ namespace Ship_Game
             batch.SafeBegin();
             // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
             // drawn among the children, after everything below it.
-            batch.FillRectangle(ReworkScreens.GroupFrameFillRect(EmpireTabs), ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
 
             base.Draw(batch, elapsed);
 
@@ -246,7 +246,7 @@ namespace Ship_Game
                 DrawHorizontalSeparator(ERect.Y + 25);
             }
             ShowRoles.Draw(batch, elapsed);
-            ReworkScreens.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
+            ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             EmpireUi.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }

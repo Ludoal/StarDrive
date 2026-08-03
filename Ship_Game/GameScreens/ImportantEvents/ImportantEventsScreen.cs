@@ -17,7 +17,7 @@ namespace Ship_Game
         Submenu GalaxyTabs;   // Ludoal fork: the Galaxy group's tab row, this screen being one tab
 
         void OnGalaxyTabChanged(int index)
-            => GameScreens.ReworkScreens.SwitchGalaxyTab(index, self: 3, Universe, this);
+            => GameScreens.ScreenGroups.SwitchGalaxyTab(index, self: 3, Universe, this);
 
         readonly Color Cream = Colors.Cream;
         readonly ImportantNotification[] Events;
@@ -34,18 +34,18 @@ namespace Ship_Game
 
             // Ludoal fork: the Events tab of the Galaxy group - the centred 1200x540 window gives
             // way to the frame and tab row its three siblings share.
-            Rectangle frame = GameScreens.ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
+            Rectangle frame = GameScreens.ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
             GalaxyTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
-                                         GameScreens.ReworkScreens.GalaxyTabTitles));
+                                         GameScreens.ScreenGroups.GalaxyTabTitles));
             GalaxyTabs.OnTabChange = OnGalaxyTabChanged;
             GalaxyTabs.PerformLayout();
             GalaxyTabs.SelectedIndex = 3;
 
-            Vector2 closePos = GameScreens.ReworkScreens.GroupClosePos(GalaxyTabs.ClientArea);
+            Vector2 closePos = GameScreens.ScreenGroups.GroupClosePos(GalaxyTabs.ClientArea);
             Add(new CloseButton(closePos.X, closePos.Y));
 
             RectF client = GalaxyTabs.ClientArea;
-            RectF table  = GameScreens.ReworkScreens.GalaxyTable(client);
+            RectF table  = GameScreens.ScreenGroups.GalaxyTable(client);
             int x  = (int)table.X;
             int y  = (int)table.Y + 20;   // the column headers sit on the line above the list
             int w  = (int)table.W;
@@ -88,10 +88,10 @@ namespace Ship_Game
             batch.SafeBegin();
             // Ludoal fork: the frame is filled by hand before its children, the way every screen
             // in this group does - the group's frame is transparent, so the map showed through.
-            batch.FillRectangle(GalaxyTabs.Rect, GameScreens.ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(GalaxyTabs.Rect, GameScreens.ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed);
             Universe.EmpireUI.Draw(batch);   // the live top bar, as on its sibling tabs
-            GameScreens.ReworkScreens.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
+            GameScreens.ScreenGroups.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             batch.SafeEnd();
         }
 

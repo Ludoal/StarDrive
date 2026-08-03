@@ -245,7 +245,7 @@ namespace Ship_Game
         {
             // Ludoal fork: the Fleets tab of the Design group. Like the Shipyard, the frame is
             // a surround rather than a container - the 3D fleet view keeps its own layout.
-            DesignTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.DesignTabTitles, 0,
+            DesignTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.DesignTabTitles, 0,
                                                     OnDesignTabChanged, out Rectangle _);
             SetPerspectiveProjection(maxDistance: 100_000);
 

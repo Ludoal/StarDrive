@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics.Input;
 using SDGraphics;
-using Ship_Game.GameScreens; // ReworkScreens: the group geometry
+using Ship_Game.GameScreens; // ScreenGroups: the group geometry
 using SDUtils;
 using Ship_Game.Audio;
 using Vector2 = SDGraphics.Vector2;
@@ -46,18 +46,18 @@ namespace Ship_Game
 
             // Ludoal fork: the Patrols tab of the Galaxy group - the title cartouche and its brass
             // surround give way to the group's tab row.
-            Rectangle frame = ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
+            Rectangle frame = ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
             GalaxyTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
-                                         ReworkScreens.GalaxyTabTitles));
+                                         ScreenGroups.GalaxyTabTitles));
             GalaxyTabs.OnTabChange = OnGalaxyTabChanged;
             GalaxyTabs.PerformLayout();
             GalaxyTabs.SelectedIndex = 2;
 
-            Vector2 closePos = ReworkScreens.GroupClosePos(GalaxyTabs.ClientArea);
+            Vector2 closePos = ScreenGroups.GroupClosePos(GalaxyTabs.ClientArea);
             Add(new CloseButton(closePos.X, closePos.Y));
 
             RectF client = GalaxyTabs.ClientArea;
-            ERect = ReworkScreens.GalaxyTable(client);
+            ERect = ScreenGroups.GalaxyTable(client);
             RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
             PatrolsSL = Add(new ScrollList<EmpirePatrolsScreenListItem>(slRect));
             PatrolsSL.EnableItemHighlight = true;
@@ -80,7 +80,7 @@ namespace Ship_Game
         // Ludoal fork: the other two tabs live in their own screen, so leaving Patrols hands over to
         // it. This tab is a no-op: we are already here.
         void OnGalaxyTabChanged(int index)
-            => ReworkScreens.SwitchGalaxyTab(index, self: 2, Universe, this);
+            => ScreenGroups.SwitchGalaxyTab(index, self: 2, Universe, this);
 
         Vector2 GetCenteredTextOffset(Rectangle rect, GameText text)
         {
@@ -94,7 +94,7 @@ namespace Ship_Game
             batch.SafeBegin();
             // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
             // drawn among the children, after everything below it.
-            batch.FillRectangle(ReworkScreens.GroupFrameFillRect(GalaxyTabs), ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(GalaxyTabs), ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed);
 
             // Ludoal fork: the header, separators and border are drawn whether or not there is a
@@ -132,7 +132,7 @@ namespace Ship_Game
                 batch.DrawLine(new Vector2(lineX, columnTop), new Vector2(lineX, columnBot), lineColor);
 
             batch.DrawRectangle(PatrolsSL.ItemsHousing, lineColor); // items housing border
-            ReworkScreens.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
+            ScreenGroups.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }

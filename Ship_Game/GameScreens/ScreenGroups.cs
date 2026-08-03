@@ -8,28 +8,22 @@ using Ship_Game.GameScreens.Espionage; // EspionageScreen: legacy espionage tab
 namespace Ship_Game.GameScreens
 {
     /// <summary>
-    /// Ludoal fork: the one door to the screens this fork rebuilt, and the geometry the reworked
-    /// top bar lays them out on.
+    /// Ludoal fork: the screen groups of the unified top bar - the one door to every group
+    /// screen, and the geometry they all lay themselves out on.
     ///
     /// Why a factory rather than a check at each call site: these screens are opened from fifteen
     /// places between the top bar, the notifications, the colony screen's Edit button and each
     /// other. A test spread over fifteen sites is a test that will be forgotten at the sixteenth.
     /// One place decides; every caller goes through here.
     ///
-    /// ⚠ THE STOCK SCREENS ARE STILL HERE, AND THEY ARE NOT DEAD CODE. They are no longer reachable
-    /// in game - there is nothing left to choose - but they are kept BYTE-IDENTICAL TO UPSTREAM on
-    /// purpose: when upstream changes something of substance in one of them (a budget formula, an
-    /// espionage rule), the merge lands cleanly on the stock file and its diff tells us exactly what
-    /// to carry into our version. Delete them and that reference goes with them.
-    ///
-    /// So: never edit a stock screen. Restore one with `git checkout &lt;base&gt; -- &lt;path&gt;`, never by
-    /// copying it in - a plain copy gets the line endings wrong and every line then shows as
-    /// changed. And OUR versions carry the Rework suffix: they are the addition.
+    /// This branch is its own game: the stock screens it replaced are gone from the tree.
+    /// Upstream updates are small and are studied change by change, carried over by hand
+    /// where they earn it - there is no merge target to keep byte-identical any more.
     ///
     /// The Shipyard's floating hover cartouche (ShipInfoOverlayComponent) was never doubled: the
     /// colony and fleet screens use it directly.
     /// </summary>
-    public static class ReworkScreens
+    public static class ScreenGroups
     {
         // Ludoal fork: the group's shared geometry, in one place - three screens build the same
         // frame and tab row, and a value copied three times is a value that will drift.
@@ -363,13 +357,9 @@ namespace Ship_Game.GameScreens
         // colour, so every frame painted with it read as the thing we were replacing.
         public static Color FrameRule => UITheme.FrameRule;
 
-        // The Codex's own body and title bar: Popup/popup_filler_lower and popup_filler_title.
-        // Neutral grey, not the warm near-black the group frames use - and the title bar is a
-        // step lighter than the body, which is what makes it read as a title bar at all.
-        public static Color WindowBody     => UITheme.FrameBody;
-        public static Color WindowTitleBar => UITheme.FrameTitleBar;
-        // the Codex's own title height, so every window in the game names itself on one line
-        public static int WindowTitleBarH => UITheme.TitleBarH;
+        // The Codex's own body colour: Popup/popup_filler_lower. Neutral grey, not the warm
+        // near-black the group frames use.
+        public static Color WindowBody => UITheme.FrameBody;
 
         public static GameScreen Economy(UniverseScreen u) => new BudgetScreenRework(u);
 

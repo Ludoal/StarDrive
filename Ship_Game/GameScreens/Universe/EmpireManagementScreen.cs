@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
-using Ship_Game.GameScreens; // ReworkScreens: the group geometry
+using Ship_Game.GameScreens; // ScreenGroups: the group geometry
 using SDGraphics.Input;
 using SDUtils;
 using Ship_Game.Audio;
@@ -55,7 +55,7 @@ namespace Ship_Game
             // map, governor frame) cascades from ColoniesList.Bottom. Swapping it for the group's
             // frame keeps that cascade intact because every one of those derives from the list, not
             // from a constant. The first line inside the frame carries the troop counts.
-            EmpireTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.EmpireTabTitles, 0,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 0,
                                                     OnEmpireTabChanged, out Rectangle frame);
             RectF client = EmpireTabs.ClientArea;
             var mainBkg = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
@@ -63,7 +63,7 @@ namespace Ship_Game
             // Ludoal fork: full width like the other tabs' tables - the +20/-40 inset came from the
             // brass surround this no longer has. GalaxyTable gives the row its horizontal pull-back
             // and the column titles' band; the height stays 70% of what is left, as before.
-            RectF full = ReworkScreens.GalaxyTable(client, ReworkScreens.GalaxyHeaderH);
+            RectF full = ScreenGroups.GalaxyTable(client, ScreenGroups.GalaxyHeaderH);
             ERect = new(full.X, full.Y, full.W, (0.7f * full.H).RoundUpTo(40));
             RectF colonies = new(ERect.X, ERect.Y + 15, ERect.W, ERect.H - 15);
             ColoniesList = Add(new ScrollList<ColoniesListItem>(colonies, 80));
@@ -116,8 +116,8 @@ namespace Ship_Game
         // it. Its own index is a no-op: we are already here.
         void OnEmpireTabChanged(int index)
         {
-            // one factory for the whole group (ReworkScreens) - this screen only says which tab it is
-            ReworkScreens.SwitchEmpireTab(index, self: 0, Universe, this);
+            // one factory for the whole group (ScreenGroups) - this screen only says which tab it is
+            ScreenGroups.SwitchEmpireTab(index, self: 0, Universe, this);
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -127,7 +127,7 @@ namespace Ship_Game
 
             // Ludoal fork: the frame fill FIRST - before base.Draw and before the bottom row this
             // method paints by hand, or it would cover one of them.
-            batch.FillRectangle(ReworkScreens.GroupFrameFillRect(EmpireTabs), ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
 
             base.Draw(batch, elapsed);
             
@@ -339,7 +339,7 @@ namespace Ship_Game
 
             batch.DrawRectangle(ColoniesList.ItemsHousing, lineColor); // items housing border
 
-            ReworkScreens.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
+            ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             eui.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }

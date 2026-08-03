@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
-using Ship_Game.GameScreens; // ReworkScreens: the group geometry
+using Ship_Game.GameScreens; // ScreenGroups: the group geometry
 using SDUtils;
 using Ship_Game.Audio;
 using Ship_Game.Ships;
@@ -49,10 +49,10 @@ namespace Ship_Game
 
             // Ludoal fork: the Troops tab of the Empire group - title and brass surround give way to
             // the group's tab row, and the first line inside the frame carries the status filter.
-            EmpireTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.EmpireTabTitles, 2,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 2,
                                                     OnEmpireTabChanged, out Rectangle frame);
             RectF client = EmpireTabs.ClientArea;
-            ERect = ReworkScreens.GalaxyTable(client, ReworkScreens.GalaxyHeaderH);
+            ERect = ScreenGroups.GalaxyTable(client, ScreenGroups.GalaxyHeaderH);
             RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
             TroopSL = Add(new ScrollList<TroopListScreenItem>(slRect, 40));
             TroopSL.EnableItemHighlight = true;
@@ -152,8 +152,8 @@ namespace Ship_Game
         // it. Its own index is a no-op: we are already here.
         void OnEmpireTabChanged(int index)
         {
-            // one factory for the whole group (ReworkScreens) - this screen only says which tab it is
-            ReworkScreens.SwitchEmpireTab(index, self: 2, Universe, this);
+            // one factory for the whole group (ScreenGroups) - this screen only says which tab it is
+            ScreenGroups.SwitchEmpireTab(index, self: 2, Universe, this);
         }
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
@@ -163,7 +163,7 @@ namespace Ship_Game
             // drawn among the children, after everything below it. The troop total moves onto the
             // reserved line beside the filter, where the title used to carry it.
             RectF client = EmpireTabs.ClientArea;
-            batch.FillRectangle(client, ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(client, ScreenGroups.GroupFrameFill);
             batch.DrawString(Fonts.Arial20Bold, $"Total Troops: {NumTroops}",
                              new Vector2(client.X + 190, client.Y + 4), Colors.Cream);
             base.Draw(batch, elapsed);
@@ -200,7 +200,7 @@ namespace Ship_Game
                 batch.DrawString(Fonts.Arial20Bold, "No troops anywhere — recruit some before the neighbours visit.",
                                  msgPos, Color.Gray);
             }
-            ReworkScreens.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
+            ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }

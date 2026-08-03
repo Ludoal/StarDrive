@@ -140,8 +140,8 @@ namespace Ship_Game
             //           are drop shadow, which falls past the screen edge by design
             //   top:    one tab strip LOWER than TabRowY, so this frame matches the group
             //           screens' frames and does not peek out behind them in the stack.
-            const int m = GameScreens.ReworkScreens.FrameMargin;
-            int frameTop = GameScreens.ReworkScreens.TabRowY + 25;   // Submenu.TabHeight
+            const int m = GameScreens.ScreenGroups.FrameMargin;
+            int frameTop = GameScreens.ScreenGroups.TabRowY + 25;   // Submenu.TabHeight
             ColonyFrame = new Rectangle(m - PopupFrame.BorderLeft, frameTop,
                                         ScreenWidth - 2 * m + PopupFrame.BorderLeft + PopupFrame.BorderRight,
                                         ScreenHeight - frameTop - m + PopupFrame.BottomLine);

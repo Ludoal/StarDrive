@@ -69,7 +69,7 @@ namespace Ship_Game
             camera = new Camera2D { Pos = new Vector2(Viewport.Width, Viewport.Height) / 2f };
             // Ludoal fork: the Research tab of the Empire group. The node grids derive from
             // MainArea.Height, so they compress on their own down to the 900px floor.
-            EmpireTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.EmpireTabTitles, 4,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 4,
                                                     OnEmpireTabChanged, out Rectangle frame);
             RectF client = EmpireTabs.ClientArea;
             var main = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
@@ -149,8 +149,8 @@ namespace Ship_Game
         // it. Its own index is a no-op: we are already here.
         void OnEmpireTabChanged(int index)
         {
-            // one factory for the whole group (ReworkScreens) - this screen only says which tab it is
-            ReworkScreens.SwitchEmpireTab(index, self: 4, Universe, this);
+            // one factory for the whole group (ScreenGroups) - this screen only says which tab it is
+            ScreenGroups.SwitchEmpireTab(index, self: 4, Universe, this);
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -179,7 +179,7 @@ namespace Ship_Game
 
             batch.SafeBegin();
             base.Draw(batch, elapsed);
-            ReworkScreens.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
+            ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             if (ScreenHeight > 720)
                 empireUI.Draw(batch); // Ludoal fork: live top bar (paused indicator included)
             batch.SafeEnd();

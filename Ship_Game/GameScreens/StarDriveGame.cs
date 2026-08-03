@@ -49,7 +49,11 @@ namespace Ship_Game
 
             Exiting += GameExiting;
 
-            string appData = Dir.StarDriveAppData;
+            // ⚠ UserData, not AppData: these are the player's own folders (saves, designs,
+            // setups), shared across side-by-side installs - every reader uses StarDriveUserData,
+            // and creating them under the per-install dir seeded empty ghosts in STARDRIVE_APPDATA
+            // sandboxes
+            string appData = Dir.StarDriveUserData;
             Directory.CreateDirectory(appData + "/Saved Games");
             Directory.CreateDirectory(appData + "/Saved Races");  // for saving custom races
             Directory.CreateDirectory(appData + "/Saved Setups"); // for saving new game setups

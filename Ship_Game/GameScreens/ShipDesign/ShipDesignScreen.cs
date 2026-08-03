@@ -833,7 +833,7 @@ namespace Ship_Game
             // Ludoal fork: the Shipyard tab of the Design group. Unlike the table screens, the
             // frame is a surround rather than a container - the 3D workbench, the module grid and
             // the two columns keep their own layout inside it.
-            DesignTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.DesignTabTitles, 1,
+            DesignTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.DesignTabTitles, 1,
                                                     OnDesignTabChanged, out Rectangle _);
 
             // The tab frame is the container: every column bound is measured from it, with the
@@ -863,7 +863,7 @@ namespace Ship_Game
             // centre rows, which sit between them. Each carries two lines above its list - filter
             // toggles, then search field.
             const float headerLine = 19f;
-            float modListTop = ReworkScreens.GroupContentTop(DesignTabs.ClientArea) + 2 * headerLine;
+            float modListTop = ScreenGroups.GroupContentTop(DesignTabs.ClientArea) + 2 * headerLine;
             ModuleSelectComponent = Add(new ModuleSelection(this, new(ModuleSelection.BandLeft, modListTop),
                                         new(ModuleSelection.ListWidth, ModuleSelection.ListHeightFor(ScreenHeight, modListTop))));
 

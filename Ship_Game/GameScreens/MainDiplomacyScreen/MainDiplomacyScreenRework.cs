@@ -148,13 +148,13 @@ namespace Ship_Game
             // to their left: those move into the unified bar later, so leaving a band free above
             // the frame would be building for a state that is going away (maintainer decision).
             // Y=64 is where EmpireUIOverlay draws that row, on a 24px texture.
-            LeftRect = ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
+            LeftRect = ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
             GroupTabs = Add(new Submenu(new RectF(LeftRect.X, LeftRect.Y, LeftRect.Width, LeftRect.Height),
-                                        ReworkScreens.GroupTabTitles));
+                                        ScreenGroups.GroupTabTitles));
             GroupTabs.OnTabChange = OnGroupTabChanged;
             GroupTabs.PerformLayout(); // necessary: ClientArea is only known once the tabs are laid out
 
-            Vector2 closePos = ReworkScreens.GroupClosePos(GroupTabs.ClientArea);
+            Vector2 closePos = ScreenGroups.GroupClosePos(GroupTabs.ClientArea);
             Add(new CloseButton(closePos.X, closePos.Y));
 
             foreach (Empire e in Universe.UState.Empires)
@@ -166,18 +166,18 @@ namespace Ship_Game
 
             // Ludoal fork: the columns fill the frame - client area less a gutter each side, split
             // eight ways - rather than sitting in a narrower band of it. One width for the whole
-            // group, from ReworkScreens.
+            // group, from ScreenGroups.
             RectF client = GroupTabs.ClientArea;
-            int colW = ReworkScreens.GroupColumnWidth(client);
-            int x0 = ReworkScreens.GroupColumnsLeft(client, Races.Count.LowerBound(1));
+            int colW = ScreenGroups.GroupColumnWidth(client);
+            int x0 = ScreenGroups.GroupColumnsLeft(client, Races.Count.LowerBound(1));
             int j = 0;
             foreach (RaceEntry re in Races)
             {
                 // Ludoal fork: inside the tab frame's client area, top and bottom - the Submenu is
                 // the only thing that knows how tall its own tab row is.
-                re.container = new Rectangle(x0 + j * colW, ReworkScreens.GroupColumnTop(client),
-                                             colW - ReworkScreens.ColumnGap,
-                                             ReworkScreens.GroupColumnHeight(client));
+                re.container = new Rectangle(x0 + j * colW, ScreenGroups.GroupColumnTop(client),
+                                             colW - ScreenGroups.ColumnGap,
+                                             ScreenGroups.GroupColumnHeight(client));
                 j++;
             }
 
@@ -213,7 +213,7 @@ namespace Ship_Game
                     break;
                 case Tab.Espionage:
                     ExitScreen();
-                    // the concrete screen, not ReworkScreens.Espionage - that factory now points
+                    // the concrete screen, not ScreenGroups.Espionage - that factory now points
                     // back at this group, which would loop
                     ScreenManager.AddScreen(new InfiltrationScreenRework(Universe));
                     break;
@@ -228,7 +228,7 @@ namespace Ship_Game
             // Ludoal fork: the frame fill goes down FIRST, by hand. As a Submenu background it is
             // one of the screen's children, so base.Draw painted it AFTER these columns and covered
             // them - SendToBackZOrder only orders it among the other children.
-            batch.FillRectangle(ReworkScreens.GroupFrameFillRect(GroupTabs), ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(GroupTabs), ScreenGroups.GroupFrameFill);
 
             // ⚠ cleared every pass: an empire that gets defeated, or drops out of what you know,
             // stops drawing its portrait - and a rect left behind would stay clickable over
@@ -238,7 +238,7 @@ namespace Ship_Game
                 DrawColumn(batch, race);
 
             base.Draw(batch, elapsed);
-            ReworkScreens.DrawGroupTabTip(GroupTabs, Input.CursorPosition);
+            ScreenGroups.DrawGroupTabTip(GroupTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
         }

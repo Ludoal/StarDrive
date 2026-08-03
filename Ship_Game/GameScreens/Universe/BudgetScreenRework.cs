@@ -197,7 +197,7 @@ namespace Ship_Game.GameScreens
             // than two side by side: the colony table and the treasury column are two halves of one
             // view - you read a colony against its budget - so they share the frame and a single
             // vertical rule separates them. Two thirds / one third, as before.
-            EmpireTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.EmpireTabTitles, 3,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 3,
                                                     OnEmpireTabChanged, out Rectangle groupFrame);
             RectF client = EmpireTabs.ClientArea;
             float split = client.X + client.W * 2f / 3f;
@@ -499,8 +499,8 @@ namespace Ship_Game.GameScreens
         // Its own index is a no-op: we are already here.
         void OnEmpireTabChanged(int index)
         {
-            // one factory for the whole group (ReworkScreens) - this screen only says which tab it is
-            ReworkScreens.SwitchEmpireTab(index, self: 3, Universe, this);
+            // one factory for the whole group (ScreenGroups) - this screen only says which tab it is
+            ScreenGroups.SwitchEmpireTab(index, self: 3, Universe, this);
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -511,7 +511,7 @@ namespace Ship_Game.GameScreens
             // and the treasury column - the two halves share the group's frame rather than carrying
             // a border each.
             RectF client = EmpireTabs.ClientArea;
-            batch.FillRectangle(client, ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(client, ScreenGroups.GroupFrameFill);
             batch.DrawLine(new Vector2(RightMenu.X, client.Y + 8),
                            new Vector2(RightMenu.X, client.Bottom - 8),
                            new Color(118, 102, 67, 255).Premultiplied());
@@ -519,7 +519,7 @@ namespace Ship_Game.GameScreens
             SbColony.Draw(ScreenManager, Fonts.Arial20Bold);
             for (int i = 0; i < SortButtons.Length; ++i)
                 SortButtons[i].Draw(ScreenManager, Fonts.Arial12Bold);
-            ReworkScreens.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
+            ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
         }

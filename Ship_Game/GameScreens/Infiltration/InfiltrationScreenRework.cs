@@ -140,29 +140,29 @@ namespace Ship_Game.GameScreens
         public override void LoadContent()
         {
             // Ludoal fork: the Espionage tab of the Diplomacy group - same frame and tab row as
-            // its three siblings, from ReworkScreens, in place of the title and its surround.
-            LeftRect = ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
+            // its three siblings, from ScreenGroups, in place of the title and its surround.
+            LeftRect = ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
             GroupTabs = Add(new Submenu(new RectF(LeftRect.X, LeftRect.Y, LeftRect.Width, LeftRect.Height),
-                                        ReworkScreens.GroupTabTitles));
+                                        ScreenGroups.GroupTabTitles));
             GroupTabs.OnTabChange = OnGroupTabChanged;
             GroupTabs.PerformLayout(); // ClientArea is only known once the tabs are laid out
             GroupTabs.SelectedIndex = (int)MainDiplomacyScreenRework.Tab.Espionage;
 
-            Vector2 closePos = ReworkScreens.GroupClosePos(GroupTabs.ClientArea);
+            Vector2 closePos = ScreenGroups.GroupClosePos(GroupTabs.ClientArea);
             CloseButton(closePos.X, closePos.Y);
 
             Empire[] majors = Universe.UState.ActiveMajorEmpires;
             RectF client = GroupTabs.ClientArea;
-            int colW = ReworkScreens.GroupColumnWidth(client);
-            int x0 = ReworkScreens.GroupColumnsLeft(client, majors.Length.LowerBound(1));
+            int colW = ScreenGroups.GroupColumnWidth(client);
+            int x0 = ScreenGroups.GroupColumnsLeft(client, majors.Length.LowerBound(1));
 
             for (int i = 0; i < majors.Length; ++i)
             {
                 Empire e = majors[i];
                 // Ludoal fork: inside the tab frame's client area, like the other tabs
-                var col = new Rectangle(x0 + i * colW, ReworkScreens.GroupColumnTop(client),
-                                        colW - ReworkScreens.ColumnGap,
-                                        ReworkScreens.GroupColumnHeight(client));
+                var col = new Rectangle(x0 + i * colW, ScreenGroups.GroupColumnTop(client),
+                                        colW - ScreenGroups.ColumnGap,
+                                        ScreenGroups.GroupColumnHeight(client));
                 var c = new EmpireColumn { E = e, Rect = col };
                 Columns.Add(c);
 
@@ -297,7 +297,7 @@ namespace Ship_Game.GameScreens
             // Ludoal fork: the frame fill goes down FIRST, by hand. As a Submenu background it is
             // one of the screen's children, so base.Draw painted it AFTER the columns below and
             // covered them - SendToBackZOrder only orders it among the other children.
-            batch.FillRectangle(ReworkScreens.GroupFrameFillRect(GroupTabs), ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(GroupTabs), ScreenGroups.GroupFrameFill);
 
             // ⚠ cleared every pass: a column that stops drawing its portrait must not leave a
             // clickable rect behind over whatever takes its place.
@@ -306,7 +306,7 @@ namespace Ship_Game.GameScreens
                 DrawColumn(batch, c);
 
             base.Draw(batch, elapsed); // sliders, checkboxes, buttons, close
-            ReworkScreens.DrawGroupTabTip(GroupTabs, Input.CursorPosition);
+            ScreenGroups.DrawGroupTabTip(GroupTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
         }

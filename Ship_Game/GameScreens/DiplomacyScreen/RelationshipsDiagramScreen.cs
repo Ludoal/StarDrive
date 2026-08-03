@@ -59,11 +59,11 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             TransitionOffTime = 0.25f;
 
             // Ludoal fork: the Relationships tab of the Diplomacy group. Same frame and tab row as
-            // its three siblings, from ReworkScreens, rather than the 1000x768 popup this used to
+            // its three siblings, from ScreenGroups, rather than the 1000x768 popup this used to
             // be as a stacked screen.
-            Rectangle frame = ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
+            Rectangle frame = ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
             GroupTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
-                                        ReworkScreens.GroupTabTitles));
+                                        ScreenGroups.GroupTabTitles));
             GroupTabs.OnTabChange = OnGroupTabChanged;
             GroupTabs.PerformLayout();
             GroupTabs.SelectedIndex = (int)MainDiplomacyScreenRework.Tab.Relationships;
@@ -117,7 +117,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
         {
             // Ludoal fork: in the frame's own top-right corner. The tab row names the screen now,
             // so the "Empire Relationships" label that used to head this panel is gone with it.
-            Vector2 closePos = ReworkScreens.GroupClosePos(GroupTabs.ClientArea);
+            Vector2 closePos = ScreenGroups.GroupClosePos(GroupTabs.ClientArea);
             CloseButton(closePos.X, closePos.Y);
 
             // one checkbox + legend line per treaty type, in the fixed order.
@@ -159,10 +159,10 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             batch.SafeBegin();
             // Ludoal fork: by hand and first, like its sibling tabs - as a Submenu background it
             // would be drawn among the children, after everything below.
-            batch.FillRectangle(ReworkScreens.GroupFrameFillRect(GroupTabs), ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(GroupTabs), ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed); // window
             DrawRelations(batch); // links and then portraits
-            ReworkScreens.DrawGroupTabTip(GroupTabs, Input.CursorPosition);
+            ScreenGroups.DrawGroupTabTip(GroupTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar, like its sibling tabs
             batch.SafeEnd();
         }

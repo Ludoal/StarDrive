@@ -80,13 +80,13 @@ public sealed class Notification
                     m.SnapToStation(ReferencedItem1 as Ship);
                     break;
                 case "Diplomacy": // Ludoal fork: diplomacy notifications open the diplomacy panel
-                    m.ScreenManager.AddScreen(GameScreens.ReworkScreens.Diplomacy(m.Screen));
+                    m.ScreenManager.AddScreen(GameScreens.ScreenGroups.Diplomacy(m.Screen));
                     break;
                 case "EspionageScreen": // Ludoal fork (wishlist): spy notifications open the espionage panel
                     if (m.Screen.Player.LegacyEspionageEnabled)
                         m.ScreenManager.AddScreen(new EspionageScreen(m.Screen));
                     else
-                        m.ScreenManager.AddScreen(GameScreens.ReworkScreens.Espionage(m.Screen));
+                        m.ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(m.Screen));
                     break;
             }
             return true;

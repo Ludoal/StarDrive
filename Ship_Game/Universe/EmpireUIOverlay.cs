@@ -141,12 +141,12 @@ namespace Ship_Game
             rx -= SpeedRoom + gap;
 
             // ── centre: the four groups ─────────────────────────────────────────────────────
-            (string launch, string text, ReworkScreens.Group group)[] groups =
+            (string launch, string text, ScreenGroups.Group group)[] groups =
             {
-                ("Planets",   "GALAXY",    ReworkScreens.Group.Galaxy),
-                ("Empire",    "EMPIRE",    ReworkScreens.Group.Empire),
-                ("Diplomacy", "DIPLOMACY", ReworkScreens.Group.Diplomacy),
-                ("Fleets",    "DESIGN",    ReworkScreens.Group.Design),
+                ("Planets",   "GALAXY",    ScreenGroups.Group.Galaxy),
+                ("Empire",    "EMPIRE",    ScreenGroups.Group.Empire),
+                ("Diplomacy", "DIPLOMACY", ScreenGroups.Group.Diplomacy),
+                ("Fleets",    "DESIGN",    ScreenGroups.Group.Design),
             };
             int groupW = 116;
             int clusterW = groups.Length * groupW + (groups.Length - 1) * gap;
@@ -160,7 +160,7 @@ namespace Ship_Game
             if (gx < freeLeft) gx = freeLeft;
             if (gx + clusterW > freeRight) gx = freeRight - clusterW;
 
-            foreach ((string launch, string text, ReworkScreens.Group group) in groups)
+            foreach ((string launch, string text, ScreenGroups.Group group) in groups)
             {
                 Buttons.Add(new Button
                 {
@@ -200,13 +200,13 @@ namespace Ship_Game
 
             // Which group is open is read from the screen stack rather than passed in: fifteen
             // screens draw this bar, and a parameter is a parameter one of them will forget.
-            ReworkScreens.Group open = ReworkScreens.GroupOf(Universe.ScreenManager.Current);
+            ScreenGroups.Group open = ScreenGroups.GroupOf(Universe.ScreenManager.Current);
             Graphics.Font font = Fonts.Arial12Bold;
 
             foreach (Button b in Buttons)
             {
                 Color fill = PlateBlue;
-                if (b.Group != ReworkScreens.Group.None && b.Group == open)
+                if (b.Group != ScreenGroups.Group.None && b.Group == open)
                     fill = PlateBrown;                       // the group you are inside
 
                 if (b.Icon != null)
@@ -332,7 +332,7 @@ namespace Ship_Game
             // Ludoal fork: a button that carries its own tip wins. The group buttons open a GROUP
             // rather than the single screen their launch key names, so the cases below - written
             // for the old per-screen row - would describe the wrong thing.
-            if (b.Group != ReworkScreens.Group.None)
+            if (b.Group != ScreenGroups.Group.None)
             {
                 ToolTip.CreateTooltip($"Open the {b.Text} group", "", tipPos);
                 return;
@@ -412,7 +412,7 @@ namespace Ship_Game
                 if (input.KeyPressed(Keys.T))
                 {
                     GameAudio.EchoAffirmative();
-                    Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Economy(Universe));
+                    Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Economy(Universe));
                     return true;
                 }
                 if (input.KeyPressed(Keys.Y))
@@ -430,7 +430,7 @@ namespace Ship_Game
                 if (input.KeyPressed(Keys.I))
                 {
                     GameAudio.EchoAffirmative();
-                    Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Diplomacy(Universe));
+                    Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Diplomacy(Universe));
                     return true;
                 }
                 if (input.KeyPressed(Keys.O))
@@ -445,7 +445,7 @@ namespace Ship_Game
                     if (Universe.Player.LegacyEspionageEnabled)
                         Universe.ScreenManager.AddScreen(new EspionageScreen(Universe));
                     else
-                        Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Espionage(Universe));
+                        Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(Universe));
                     return true;
                 }
                 if (input.Codex)
@@ -514,7 +514,7 @@ namespace Ship_Game
                         else if (b.launches == "Budget")
                         {
                             GameAudio.EchoAffirmative();
-                            Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Economy(Universe));
+                            Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Economy(Universe));
                         }
 
                         if (b.launches == "Main Menu")
@@ -570,7 +570,7 @@ namespace Ship_Game
                         }
                         else if (b.launches == "Diplomacy")
                         {
-                            Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Diplomacy(Universe));
+                            Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Diplomacy(Universe));
                             GameAudio.EchoAffirmative();
                         }
                         else if (b.launches == "Espionage")
@@ -578,7 +578,7 @@ namespace Ship_Game
                             if (Universe.Player.LegacyEspionageEnabled)
                                 Universe.ScreenManager.AddScreen(new EspionageScreen(Universe));
                             else
-                                Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Espionage(Universe));
+                                Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(Universe));
 
                             GameAudio.EchoAffirmative();
                         }
@@ -626,7 +626,7 @@ namespace Ship_Game
             {
                 string target = HotkeyTarget(input);
                 if (target != null)
-                    return SwitchTo(target, ReworkScreens.Group.None, caller);
+                    return SwitchTo(target, ScreenGroups.Group.None, caller);
             }
 
             foreach (Button b in Buttons)
@@ -695,14 +695,14 @@ namespace Ship_Game
         // Ludoal fork: one place decides what "go to screen X while screen Y is open" does.
         // The mouse path and the keyboard path both land here, so a tab reachable by click is
         // reachable by its hotkey and cannot drift apart from it.
-        bool SwitchTo(string launches, ReworkScreens.Group group, GameScreen caller)
+        bool SwitchTo(string launches, ScreenGroups.Group group, GameScreen caller)
         {
             // Ludoal fork: a GROUP button whose group is already open just closes it,
             // whichever of its tabs you are on. The per-class guards below only know
             // the group's FIRST screen, so pressing DESIGN from the Shipyard used to
             // close it and reopen Fleets rather than leave the group.
-            if (group != ReworkScreens.Group.None &&
-                group == ReworkScreens.GroupOf(caller))
+            if (group != ScreenGroups.Group.None &&
+                group == ScreenGroups.GroupOf(caller))
             {
                 GameAudio.EchoAffirmative();
                 caller.ExitScreen();  // virtual - the Shipyard's override still prompts
@@ -736,9 +736,9 @@ namespace Ship_Game
                 GameAudio.EchoAffirmative();
                 // Ludoal fork: both regimes, or the reworked screen never
                 // recognises itself and the bar stacks a second copy
-                if (!GameScreens.ReworkScreens.IsEconomy(caller))
+                if (!GameScreens.ScreenGroups.IsEconomy(caller))
                 {
-                    Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Economy(Universe));
+                    Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Economy(Universe));
                 }
             }
             else if (launches == "Main Menu")
@@ -835,14 +835,14 @@ namespace Ship_Game
             {
                 // Ludoal fork: both regimes — EspionageScreen is the legacy one,
                 // and IsEspionage covers the stock and reworked infiltration screens
-                if (caller is EspionageScreen || GameScreens.ReworkScreens.IsEspionage(caller))
+                if (caller is EspionageScreen || GameScreens.ScreenGroups.IsEspionage(caller))
                 {
                     return true;
                 }
                 if (Universe.Player.LegacyEspionageEnabled)
                     Universe.ScreenManager.AddScreen(new EspionageScreen(Universe));
                 else
-                    Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Espionage(Universe));
+                    Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(Universe));
 
                 GameAudio.EchoAffirmative();
             }
@@ -857,11 +857,11 @@ namespace Ship_Game
             }
             else if (launches == "Diplomacy")
             {
-                if (GameScreens.ReworkScreens.IsDiplomacy(caller))
+                if (GameScreens.ScreenGroups.IsDiplomacy(caller))
                 {
                     return true;
                 }
-                Universe.ScreenManager.AddScreen(GameScreens.ReworkScreens.Diplomacy(Universe));
+                Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Diplomacy(Universe));
                 GameAudio.EchoAffirmative();
             }
             else if (launches == "?")
@@ -895,7 +895,7 @@ namespace Ship_Game
             public bool Bare;            // text only, no plate behind it
             public SubTexture Icon;      // drawn left of the text, vertically centred
             public string Tip;           // tooltip line for a flat button
-            public ReworkScreens.Group Group; // set on the four group buttons, None elsewhere
+            public ScreenGroups.Group Group; // set on the four group buttons, None elsewhere
         }
 
         public enum PressState

@@ -49,13 +49,13 @@ namespace Ship_Game
         public override void LoadContent()
         {
             RemoveAll();
-            EmpireTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.EmpireTabTitles, 5,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 5,
                                                     OnEmpireTabChanged, out Rectangle _);
             ResearchStationsEnabled = !Universe.Player.Universe.P.DisableResearchStations;
             MiningOpsEnabled       = !Universe.Player.Universe.P.DisableMiningOps;
 
             RectF client = EmpireTabs.ClientArea;
-            float top = ReworkScreens.GroupContentTop(client);
+            float top = ScreenGroups.GroupContentTop(client);
             float x0 = client.X + 10, x1 = x0 + BoxW + BoxGap, x2 = x1 + BoxW + BoxGap;
             Empire player = Universe.Player;
 
@@ -129,7 +129,7 @@ namespace Ship_Game
         }
 
         void OnEmpireTabChanged(int index)
-            => ReworkScreens.SwitchEmpireTab(index, self: 5, Universe, this);
+            => ScreenGroups.SwitchEmpireTab(index, self: 5, Universe, this);
 
         void InitDropOptions(DropOptions<int> options, ref string automationShip, string defaultShip, Func<IShipDesign, bool> predicate)
         {
@@ -185,7 +185,7 @@ namespace Ship_Game
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
 
-            batch.FillRectangle(ReworkScreens.GroupFrameFillRect(EmpireTabs), ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
 
             // auto-pick hides the manual picker; the gated ones also need their tech
             Empire player = Universe.Player;
@@ -209,7 +209,7 @@ namespace Ship_Game
             }
 
             base.Draw(batch, elapsed);
-            ReworkScreens.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
+            ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar - the popup veil must not grey it
             batch.SafeEnd();
         }

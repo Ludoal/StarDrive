@@ -11,7 +11,7 @@ using SDUtils;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Point = SDGraphics.Point;
-using Ship_Game.GameScreens; // ReworkScreens: the group geometry
+using Ship_Game.GameScreens; // ScreenGroups: the group geometry
 
 // ReSharper disable once CheckNamespace
 namespace Ship_Game
@@ -30,7 +30,7 @@ namespace Ship_Game
             // inside the frame rather than running under the top bar and past the edges. Scissor
             // is device state: it has to be turned off again before the UI pass, or every panel
             // drawn afterwards inherits the crop.
-            RectF sceneClip = ReworkScreens.GroupSceneArea(DesignTabs.Rect, DesignTabs.ClientArea);
+            RectF sceneClip = ScreenGroups.GroupSceneArea(DesignTabs.Rect, DesignTabs.ClientArea);
             Ship_Game.Graphics.RenderStates.EnableScissorTest(batch.GraphicsDevice, sceneClip);
 
             ParentUniverse.DrawStarField(ScreenManager.SpriteRenderer);
@@ -83,7 +83,7 @@ namespace Ship_Game
             // Ludoal fork: the Design group's tab tooltip. No frame fill on this screen - the
             // starfield IS the workbench's background, so the surround is drawn as an outline
             // only and the 3D view keeps showing through.
-            ReworkScreens.DrawDesignTabTip(DesignTabs, Input.CursorPosition);
+            ScreenGroups.DrawDesignTabTip(DesignTabs, Input.CursorPosition);
 
             batch.SafeEnd();
             ScreenManager.EndFrameRendering();

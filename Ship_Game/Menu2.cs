@@ -12,7 +12,7 @@ namespace Ship_Game
 
         // the one rule colour, declared with the window fills it goes with
         // only the Hollow path draws a bare rule now; the solid one wears the popup frame
-        static Color FrameRule => GameScreens.ReworkScreens.FrameRule;
+        static Color FrameRule => GameScreens.ScreenGroups.FrameRule;
 
         public bool Hollow;
         public Color Background;
@@ -21,7 +21,7 @@ namespace Ship_Game
         // Ludoal fork: the reworked screens' body colour rather than flat near-black, so a Menu2
         // sitting beside one of them reads as the same surface. Callers that pass their own
         // colour keep it.
-        public Menu2(in Rectangle theMenu) : this(theMenu, GameScreens.ReworkScreens.WindowBody)
+        public Menu2(in Rectangle theMenu) : this(theMenu, GameScreens.ScreenGroups.WindowBody)
         {
         }
         public Menu2(int x, int y, int width, int height) : this(new Rectangle(x, y, width, height))

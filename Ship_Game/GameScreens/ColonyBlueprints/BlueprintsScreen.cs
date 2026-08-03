@@ -9,7 +9,7 @@ using Font = Ship_Game.Graphics.Font;
 using Ship_Game.Universe.SolarBodies;
 using System.Collections.Generic;
 using System.Linq;
-using Ship_Game.GameScreens; // ReworkScreens: the group geometry
+using Ship_Game.GameScreens; // ScreenGroups: the group geometry
 
 namespace Ship_Game
 {
@@ -89,7 +89,7 @@ namespace Ship_Game
             BigFont = Font14;
             // Ludoal fork: the Blueprints tab of the Design group - the title cartouche and its
             // brass surround give way to the group's tab row, as on the other groups.
-            DesignTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.DesignTabTitles, 2,
+            DesignTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.DesignTabTitles, 2,
                                                     OnDesignTabChanged, out Rectangle _);
             // The two column rects are laid out inside the tab frame with the same 5px margin the
             // other screens of the group use. Plain geometry: the frame draws the border, and
@@ -327,7 +327,7 @@ namespace Ship_Game
             DrawHoveredBuildListBuildingInfo(batch);
             DrawPlanStatistics(batch);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
-            ReworkScreens.DrawDesignTabTip(DesignTabs, Input.CursorPosition);
+            ScreenGroups.DrawDesignTabTip(DesignTabs, Input.CursorPosition);
             batch.SafeEnd();
         }
 

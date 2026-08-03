@@ -26,7 +26,7 @@ namespace Ship_Game
 
         // Ludoal fork: the rule around a painted button - the same brass line the reworked
         // screens and the top bar draw, so a plate reads as part of one interface.
-        static Color PlateRule => GameScreens.ReworkScreens.FrameRule;
+        static Color PlateRule => GameScreens.ScreenGroups.FrameRule;
 
         public SubTexture Normal;
         public SubTexture Hover;

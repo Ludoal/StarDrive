@@ -5,7 +5,7 @@ using Ship_Game.AI;
 using Ship_Game.Fleets;
 using Ship_Game.Ships;
 using SDGraphics;
-using Ship_Game.GameScreens; // ReworkScreens: the group geometry
+using Ship_Game.GameScreens; // ScreenGroups: the group geometry
 
 namespace Ship_Game
 {
@@ -37,7 +37,7 @@ namespace Ship_Game
             // screen is one tab of the Design group now, so its scene stays inside the frame.
             // Scissor is device state: it goes off again before the UI pass, or the panels drawn
             // afterwards inherit the crop.
-            RectF sceneClip = ReworkScreens.GroupSceneArea(DesignTabs.Rect, DesignTabs.ClientArea);
+            RectF sceneClip = ScreenGroups.GroupSceneArea(DesignTabs.Rect, DesignTabs.ClientArea);
             Ship_Game.Graphics.RenderStates.EnableScissorTest(batch.GraphicsDevice, sceneClip);
             Universe.DrawStarField(ScreenManager.SpriteRenderer);
 
@@ -88,7 +88,7 @@ namespace Ship_Game
                 return;
 
             batch.DrawString(Fonts.Arial12Bold, "Fleets (with hotkeys):", TitlePos, Colors.Cream);
-            ReworkScreens.DrawDesignTabTip(DesignTabs, Input.CursorPosition);
+            ScreenGroups.DrawDesignTabTip(DesignTabs, Input.CursorPosition);
 
             EmpireUI.Draw(batch);
 

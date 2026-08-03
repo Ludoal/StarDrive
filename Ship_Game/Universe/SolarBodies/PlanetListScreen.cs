@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics.Input;
 using SDGraphics;
-using Ship_Game.GameScreens; // ReworkScreens: the group geometry
+using Ship_Game.GameScreens; // ScreenGroups: the group geometry
 using SDUtils;
 using Ship_Game.Audio;
 using Vector2 = SDGraphics.Vector2;
@@ -76,21 +76,21 @@ namespace Ship_Game
 
             }
             // Ludoal fork: the Planets tab of the Galaxy group - the title cartouche and its brass
-            // surround give way to the group's tab row, from ReworkScreens.
-            Rectangle frame = ReworkScreens.GroupFrame(ScreenWidth, ScreenHeight);
+            // surround give way to the group's tab row, from ScreenGroups.
+            Rectangle frame = ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
             GalaxyTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
-                                         ReworkScreens.GalaxyTabTitles));
+                                         ScreenGroups.GalaxyTabTitles));
             GalaxyTabs.OnTabChange = OnGalaxyTabChanged;
             GalaxyTabs.PerformLayout(); // ClientArea is only known once the tabs are laid out
             GalaxyTabs.SelectedIndex = 0;
 
-            Vector2 closePos = ReworkScreens.GroupClosePos(GalaxyTabs.ClientArea);
+            Vector2 closePos = ScreenGroups.GroupClosePos(GalaxyTabs.ClientArea);
             Add(new CloseButton(closePos.X, closePos.Y));
 
             // The first line inside the frame carries the filters and the troop count; the table
             // takes what is left below it.
             RectF client = GalaxyTabs.ClientArea;
-            ERect = ReworkScreens.GalaxyTable(client, ReworkScreens.GalaxyHeaderH);
+            ERect = ScreenGroups.GalaxyTable(client, ScreenGroups.GalaxyHeaderH);
             RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
             PlanetSL = Add(new ScrollList<PlanetListScreenItem>(slRect));
             PlanetSL.EnableItemHighlight = true;
@@ -118,7 +118,7 @@ namespace Ship_Game
             CalcPlanetsDistances();
             // Ludoal fork: the reserved first line - both filters on the left, the troop count on
             // the right. The Exotic Systems button is gone: it is a tab of this group now.
-            float lineY = client.Y + ReworkScreens.ColumnPadV + 4;
+            float lineY = client.Y + ScreenGroups.ColumnPadV + 4;
             cb_hideOwned = Add(new UICheckBox(client.X + 20, lineY,
                 () => HideOwned,
                 x => { HideOwned = x; ResetList(); }, Fonts.Arial12Bold, "Hide Owned", ""));
@@ -165,7 +165,7 @@ namespace Ship_Game
             batch.SafeBegin();
             // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
             // drawn among the children, after everything below it.
-            batch.FillRectangle(ReworkScreens.GroupFrameFillRect(GalaxyTabs), ReworkScreens.GroupFrameFill);
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(GalaxyTabs), ScreenGroups.GroupFrameFill);
             AvailableTroops.Text = $"Available Troops: {NumAvailableTroops}";
             AvailableTroops.Color = NumAvailableTroops == 0 ? Color.Gray : Color.LightGreen;
             base.Draw(batch, elapsed);
@@ -230,7 +230,7 @@ namespace Ship_Game
 
                 batch.DrawRectangle(PlanetSL.ItemsHousing, lineColor); // items housing border
             }
-            ReworkScreens.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
+            ScreenGroups.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
@@ -385,6 +385,6 @@ namespace Ship_Game
         // Ludoal fork: the other two tabs live in their own screen, so leaving Planets hands over
         // to it. Planets itself is a no-op: we are already here.
         void OnGalaxyTabChanged(int index)
-            => ReworkScreens.SwitchGalaxyTab(index, self: 0, Universe, this);
+            => ScreenGroups.SwitchGalaxyTab(index, self: 0, Universe, this);
     }
 }
