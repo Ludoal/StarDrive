@@ -68,14 +68,16 @@ namespace Ship_Game
         {
             // Ludoal fork: the eye by the name means "take me THERE" - close the whole stack
             // down to the map (and don't let the closing colony reopen the list it came from),
-            // then snap to the planet (maintainer)
+            // then dismiss THIS panel with the stay-here gesture: Colony is not a stacked
+            // screen, it is the universe's workersPanel, so ExitAllAbove never touches it.
+            // ⚠ not SnapViewColony: on an owned planet that call REOPENS a colony view.
             if (input.LeftMouseClick && ViewOnMapButton.HitTest(input.CursorPosition))
             {
                 GameAudio.AcceptClick();
                 UniverseScreen universe = P.Universe.Screen;
                 universe.ReturnToListScreen = null;
                 ScreenManager.ExitAllAbove(universe);
-                universe.SnapViewColony(P, combatView: false);
+                universe.ClosePlanetPanelStayHere(); // camera lands at the planet, planet selected
                 return true;
             }
 
