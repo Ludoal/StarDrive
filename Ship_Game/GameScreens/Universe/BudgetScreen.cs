@@ -132,7 +132,7 @@ namespace Ship_Game.GameScreens
                 {
                     var l = new UILabel(getText, font ?? Fonts.Arial12);
                     l.Pos = new Vector2(TableXpx + TableWpx * ColStart(col), y + 4);
-                    l.Size = new Vector2(TableWpx * NumColW - 8, Fonts.Arial12.LineSpacing);
+                    l.Size = new Vector2(TableWpx * NumColW - 16, Fonts.Arial12.LineSpacing); // -16: one character of air right of the number (maintainer)
                     l.TextAlign = TextAlign.Right;
                     Add(l);
                     return l;
@@ -183,6 +183,20 @@ namespace Ship_Game.GameScreens
                                              "Bldg Mnt", "Troop Mnt", "Net", "Budget", "Gov Exp", "Left" };
         static readonly string[] HeadersShort = { "Pop", "P.Inc", "B.Inc", "Gross",
                                                   "B.Mnt", "T.Mnt", "Net", "Bdgt", "G.Exp", "Left" };
+        // hover tooltips (maintainer bench): every abbreviated or non-obvious header explains itself
+        static readonly string[] HeaderTips =
+        {
+            "Population, in billions",
+            "Tax income from the colonists",
+            "Tax income from the buildings",
+            "Gross tax revenue (colonists + buildings)",
+            "Building maintenance paid by the colony",
+            "Troop maintenance paid by the colony",
+            "Net income of the colony",
+            "Budget allocated by the governor",
+            "What the governor actually spends",
+            "Budget left after the governor's spending",
+        };
         static readonly Func<Planet, float>[] ColValue =
         {
             p => p.PopulationBillion,
@@ -203,10 +217,21 @@ namespace Ship_Game.GameScreens
             // than two side by side: the colony table and the treasury column are two halves of one
             // view - you read a colony against its budget - so they share the frame and a single
             // vertical rule separates them. Two thirds / one third, as before.
+            // the Automation pattern (maintainer bench): a content-sized frame, anchored bar
+            // and left. Width is the 900p width at EVERY resolution - which is what makes all
+            // the columns fixed; height fills 900p, and past it grows only as the planet list
+            // needs, capped by the screen.
+            float contentW = 1440 - 2 * ScreenGroups.FrameMargin;
+            float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
+            float h900 = 900 - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
+            float rowsNeed = 60 + Player.GetPlanets().Count * 24 + 90; // header lane + rows + footer/margins
+            float contentH = fullAvail <= h900 ? fullAvail
+                           : Math.Min(fullAvail, Math.Max(h900, rowsNeed));
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 3,
-                                                    OnEmpireTabChanged, out Rectangle groupFrame);
+                                                    OnEmpireTabChanged, contentW, contentH);
             RectF client = EmpireTabs.ClientArea;
-            float split = client.X + client.W * 2f / 3f;
+            // +20 to the table, -20 to the synthesis (maintainer bench)
+            float split = client.X + client.W * 2f / 3f + 20;
             LeftMenu  = new Rectangle((int)client.X, (int)client.Y, (int)(split - client.X), (int)client.H);
             RightMenu = new Rectangle((int)split, (int)client.Y, (int)(client.Right - split), (int)client.H);
 
@@ -217,16 +242,12 @@ namespace Ship_Game.GameScreens
                   unitNote, Fonts.Arial12, Color.Gray);
 
             // ---- LEFT 2/3: the colony table ----
-            TableXpx = (int)LeftMenu.X + 20;
-            TableWpx = (int)LeftMenu.Width - 40 - 24; // reserve the scrollbar lane
-            int headerY = (int)LeftMenu.Y + 16;
+            TableXpx = (int)LeftMenu.X + 10; // tighter left margin (maintainer bench)
+            TableWpx = (int)LeftMenu.Width - 20 - 24; // reserve the scrollbar lane
+            int headerY = (int)LeftMenu.Y + 24; // air under the unit note (maintainer bench)
             int sepBottom = (int)LeftMenu.Bottom - 14;
 
-            // NET column highlight, under everything else in the table — a warm band
-            // strong enough to read as "the column" at a glance
-            Panel(new Rectangle(TableXpx + (int)(TableWpx * ColStart(6)) - 4, headerY,
-                                (int)(TableWpx * NumColW), sepBottom - headerY),
-                  new Color(255, 220, 160, 40).Premultiplied());
+            // no NET column band (maintainer bench): the bold figures carry the column alone
 
             // headers centered over their columns, every one of them in the body's own
             // Arial12Bold - charte (Lek): a header distinguishes itself by weight, not size
@@ -258,8 +279,9 @@ namespace Ship_Game.GameScreens
             ColonySL = Add(new ScrollList<EconColonyItem>(listRect, 24));
             FillList();
 
-            // vertical separators between the numeric columns
-            for (int i = 0; i <= NumCols; ++i)
+            // vertical separators BETWEEN the numeric columns only - no closing bar at the
+            // table's end, the frame is the delimiter (maintainer bench)
+            for (int i = 0; i < NumCols; ++i)
             {
                 int sepX = TableXpx + (int)(TableWpx * ColStart(i)) - 4;
                 // same warm line colour the game's other tables use (ShipListScreen)
@@ -274,7 +296,7 @@ namespace Ship_Game.GameScreens
             {
                 var l = new UILabel(getText, Fonts.Arial12Bold);
                 l.Pos = new Vector2(TableXpx + TableWpx * ColStart(col), totalY);
-                l.Size = new Vector2(TableWpx * NumColW - 8, Fonts.Arial12Bold.LineSpacing);
+                l.Size = new Vector2(TableWpx * NumColW - 16, Fonts.Arial12Bold.LineSpacing);
                 l.TextAlign = TextAlign.Right;
                 Add(l);
             }
@@ -284,7 +306,7 @@ namespace Ship_Game.GameScreens
             {
                 var l = new UILabel(getText, Fonts.Arial12Bold);
                 l.Pos = new Vector2(TableXpx + TableWpx * ColStart(col), totalY);
-                l.Size = new Vector2(TableWpx * NumColW - 8, Fonts.Arial12Bold.LineSpacing);
+                l.Size = new Vector2(TableWpx * NumColW - 16, Fonts.Arial12Bold.LineSpacing);
                 l.TextAlign = TextAlign.Right;
                 Add(l);
                 return l;
@@ -306,12 +328,14 @@ namespace Ship_Game.GameScreens
             // ---- RIGHT 1/3: the synthesis, causal order (maintainer feedback) ----
             // auto-tax mode + sliders → governor budget (derived from the treasury
             // goal) → vertical arithmetic Income − Expenditure = Net Gain
-            int rx = (int)RightMenu.X + 20;
-            int rw = (int)RightMenu.Width - 40;
-            var taxRect    = new Rectangle(rx, (int)RightMenu.Y + 42, rw, 104); // top rhythm = the left table's headerY (16), checkbox first
-            var budgetRect = new Rectangle(rx, taxRect.Bottom + 8, rw, 210);
-            var incomeRect = new Rectangle(rx, budgetRect.Bottom + 8, rw, 180);
-            var costRect   = new Rectangle(rx, incomeRect.Bottom + 8, rw, 240);
+            int rx = (int)RightMenu.X + 12; // tighter margins (maintainer bench)
+            int rw = (int)RightMenu.Width - 24;
+            var taxRect    = new Rectangle(rx, (int)RightMenu.Y + 42, rw, 104); // top rhythm = the left table's headerY, checkbox first
+            // panel heights sized to their rows (maintainer bench: the Fill layout was
+            // stretching dead space under every total)
+            var budgetRect = new Rectangle(rx, taxRect.Bottom + 8, rw, 170);
+            var incomeRect = new Rectangle(rx, budgetRect.Bottom + 8, rw, 155);
+            var costRect   = new Rectangle(rx, incomeRect.Bottom + 8, rw, 195);
 
             SummaryPanel tax = Add(new SummaryPanel("", taxRect, new Color(17, 21, 28)));
 
@@ -338,12 +362,13 @@ namespace Ship_Game.GameScreens
             float NetGainNow() => Player.NetIncome - Player.MoneySpendOnProductionNow;
             const int NetValueW = 110;
             var netWord = Label(new Vector2(rx, costRect.Bottom + 12), "", Fonts.Arial12Bold);
-            netWord.Size = new Vector2(rw - NetValueW - 8, Fonts.Arial12Bold.LineSpacing);
+            netWord.Size = new Vector2(rw - NetValueW - 12, Fonts.Arial12Bold.LineSpacing);
             netWord.TextAlign = TextAlign.Right;
             netWord.DropShadow = true;
             netWord.Color = Colors.Cream;
             netWord.DynamicText = l => $"{(NetGainNow() >= 0f ? Localizer.Token(GameText.NetGain) : Localizer.Token(GameText.NetLoss))} :";
-            EmpireNetIncome = Label(new Vector2(rx + rw - NetValueW, costRect.Bottom + 12), "", Fonts.Arial12Bold);
+            // -4: closes on the same right edge as the panel values above it (maintainer bench)
+            EmpireNetIncome = Label(new Vector2(rx + rw - NetValueW - 4, costRect.Bottom + 12), "", Fonts.Arial12Bold);
             EmpireNetIncome.Size = new Vector2(NetValueW, Fonts.Arial12Bold.LineSpacing);
             EmpireNetIncome.TextAlign = TextAlign.Right;
             EmpireNetIncome.DropShadow  = true;
@@ -512,7 +537,8 @@ namespace Ship_Game.GameScreens
             {
                 float f = getValue();
                 if (f > -0.005f && f < 0.005f) f = 0f; // kill the "-0.00" display
-                label.Color = Colors.Cream;
+                // zeros in gray (maintainer taste): what produces or consumes nothing recedes
+                label.Color = f == 0f ? Color.Gray : Colors.Cream;
                 return stringify(f);
             };
         }
@@ -534,9 +560,7 @@ namespace Ship_Game.GameScreens
             // a border each.
             RectF client = EmpireTabs.ClientArea;
             batch.FillRectangle(client, ScreenGroups.GroupFrameFill);
-            batch.DrawLine(new Vector2(RightMenu.X, client.Y + 8),
-                           new Vector2(RightMenu.X, client.Bottom - 8),
-                           new Color(118, 102, 67, 255).Premultiplied());
+            // no rule on the split either (maintainer bench): the gap is the separator
             base.Draw(batch, elapsed);
             SbColony.Draw(ScreenManager, Fonts.Arial12Bold);
             for (int i = 0; i < SortButtons.Length; ++i)
@@ -579,6 +603,11 @@ namespace Ship_Game.GameScreens
 
             if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
                 return true;
+
+            // every abbreviated or non-obvious header explains itself on hover (maintainer)
+            for (int i = 0; i < SortButtons.Length; ++i)
+                if (SortButtons[i].rect.HitTest(input.CursorPosition))
+                    ToolTip.CreateTooltip(HeaderTips[i]);
 
             if (SbColony.HandleInput(input))
             {
