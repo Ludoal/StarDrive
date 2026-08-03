@@ -38,22 +38,26 @@ namespace Ship_Game
             return Options;
         }
 
+        // the checkbox label's reserved width, so every picker of a column starts on the same
+        // vertical line whatever its toggle says
+        const float LabelRoom = 195f;
+
         public override void PerformLayout()
         {
+            // ONE line (maintainer, 3 Aug): the picker rides the toggle's own row, to its
+            // right - the row is as tall as a plain checkbox and the boxes widen instead
             Check.Pos = Pos;
             Check.PerformLayout();
-            float optionsX = Pos.X;
-            // the picker row stands clear of its checkbox - the old cramped 16px served the
-            // overlay window's tight column, which is gone (maintainer: air it out)
+            float optionsX = Pos.X + LabelRoom;
             if (AutoPickBox != null)
             {
-                AutoPickBox.Pos = new Vector2(Pos.X, Pos.Y + 23f);
+                AutoPickBox.Pos = new Vector2(optionsX, Pos.Y);
                 AutoPickBox.PerformLayout();
                 optionsX += 22f;
             }
-            Options.Pos = new Vector2(optionsX, Pos.Y + 22f);
+            Options.Pos = new Vector2(optionsX, Pos.Y - 1f);
             Options.PerformLayout();
-            Height = Options.Bottom - Pos.Y;
+            Height = Math.Max(Check.Height, Options.Bottom - Pos.Y);
         }
 
         public override bool HandleInput(InputState input)

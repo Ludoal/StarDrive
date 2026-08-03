@@ -31,12 +31,12 @@ namespace Ship_Game
         bool ResearchStationsEnabled, MiningOpsEnabled;
 
         // fixed box geometry - the boxes own their sizes, the columns just stack them.
-        // Heights: one-tab strip (~24) + 12 top pad + rows (26 per checkbox, 50 per
-        // checked-dropdown - its picker row stands 22 under the checkbox) + 12 bottom pad,
-        // rounded up a little.
-        const float BoxW = 320f, BoxGap = 10f;
-        const float EmpireBoxH = 160f, ColonizationBoxH = 185f, ConstructionBoxH = 235f,
-                    TradeBoxH = 130f, NotificationsBoxH = 215f;
+        // Heights: one-tab strip (~24) + 12 top pad + 26 per row (a checked-dropdown rides
+        // its toggle's row now, so it costs the same 26 as a plain checkbox) + 12 bottom pad.
+        // BoxW2: the dropdown boxes are WIDER instead of taller - label room + picker.
+        const float BoxW = 320f, BoxW2 = 430f, BoxGap = 10f;
+        const float EmpireBoxH = 160f, ColonizationBoxH = 130f, ConstructionBoxH = 130f,
+                    TradeBoxH = 100f, NotificationsBoxH = 230f;
 
         public AutomationScreen(UniverseScreen u) : base(u, toPause: u)
         {
@@ -49,30 +49,37 @@ namespace Ship_Game
         public override void LoadContent()
         {
             RemoveAll();
+            // the frame hugs its content, anchored on the bar and the left margin
+            // (maintainer, 3 Aug) - the first group screen that does not span the display.
+            // Two columns: [Empire / Notifications] and [Colonization / Construction / Trade].
+            float col1H = EmpireBoxH + BoxGap + NotificationsBoxH;
+            float col2H = ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap + TradeBoxH;
+            float contentW = 9 + 10 + BoxW + BoxGap + BoxW2 + 10 + 9;  // ClientArea insets + gutters
+            float contentH = 60 + Math.Max(col1H, col2H) + 22;         // tab strip + cross clearance + pads - bench number
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 5,
-                                                    OnEmpireTabChanged, out Rectangle _);
+                                                    OnEmpireTabChanged, contentW, contentH);
             ResearchStationsEnabled = !Universe.Player.Universe.P.DisableResearchStations;
             MiningOpsEnabled       = !Universe.Player.Universe.P.DisableMiningOps;
 
             RectF client = EmpireTabs.ClientArea;
             float top = ScreenGroups.GroupContentTop(client);
-            float x0 = client.X + 10, x1 = x0 + BoxW + BoxGap, x2 = x1 + BoxW + BoxGap;
+            float x0 = client.X + 10, x1 = x0 + BoxW + BoxGap;
             Empire player = Universe.Player;
 
-            // three columns: [Empire / Notifications] [Colonization / Trade] [Construction].
             // ⚠ within a column the LOWER box is added FIRST: an open dropdown's list spills
-            // below its own frame, and add order is draw order - the spill must land on top
+            // below its own row, and add order is draw order - the spill must land on top
             // of the neighbour, not under it.
 
             UIList notifications = NewBox(new RectF(x0, top + EmpireBoxH + BoxGap, BoxW, NotificationsBoxH), "Notifications");
+            // the Disables together, a breathing line, then the one Enable (maintainer, 3 Aug)
             notifications.AddCheckbox(() => Universe.UState.P.SuppressOnBuildNotifications, title: GameText.DisableBuildingAlerts, tooltip: GameText.NormallyWhenYouManuallyAdd);
             notifications.AddCheckbox(() => Universe.UState.P.DisableInhibitionWarning, title: GameText.DisableInhibitionAlerts, tooltip: GameText.InhibitionAlertsAreDisplayedWhen);
             notifications.AddCheckbox(() => Universe.UState.P.DisableVolcanoWarning, title: GameText.DisableVolcanoAlerts, tooltip: GameText.DisableVolcanoActivationOrDeactivation);
             notifications.AddCheckbox(() => Universe.UState.P.DisableCrashSiteWarning, title: GameText.DisableCrashSiteAlerts, tooltip: GameText.DisableCrashSiteAlertsTip);
-            notifications.AddCheckbox(() => Universe.UState.P.EnableStarvationWarning, title: GameText.EnableStarvationWarning, tooltip: GameText.EnableStarvationWarningTip);
-            // moved here from the Espionage screen's settings band (maintainer)
             notifications.AddCheckbox(() => player.data.SpyMute, title: "Disable Espionage Messages",
                                       tooltip: "Disable all Espionage notifications.");
+            notifications.Add(new UILabel(" ", Fonts.Arial12Bold));
+            notifications.AddCheckbox(() => Universe.UState.P.EnableStarvationWarning, title: GameText.EnableStarvationWarning, tooltip: GameText.EnableStarvationWarningTip);
 
             UIList empire = NewBox(new RectF(x0, top, BoxW, EmpireBoxH), "Empire");
             empire.AddCheckbox(() => player.AutoTaxes, title: GameText.AutoTaxes, tooltip: GameText.YourEmpireWillAutomaticallyManage3);
@@ -80,26 +87,13 @@ namespace Ship_Game
             empire.AddCheckbox(() => player.AutoBuildTerraformers, title: GameText.AutoBuildTerraformers, tooltip: GameText.AutoBuildTerraformersTip);
             empire.AddCheckbox(() => RushConstruction, title: GameText.RushAllConstruction, tooltip: GameText.RushAllConstructionTip);
 
-            UIList trade = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap, BoxW, TradeBoxH), "Trade");
+            UIList trade = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap, BoxW2, TradeBoxH), "Trade");
             FreighterDropDown = trade.Add(new CheckedDropdown())
                 .Create(() => player.AutoFreighters, title: GameText.AutomaticTrade, tooltip: GameText.YourEmpireWillAutomaticallyManage2,
                         autoPick: () => player.AutoPickBestFreighter);
             trade.AddCheckbox(() => Universe.UState.P.AllowPlayerInterTrade, title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.AllowPlayerInterTradeTip);
 
-            UIList colonization = NewBox(new RectF(x1, top, BoxW, ColonizationBoxH), "Colonization");
-            ScoutDropDown = colonization.Add(new CheckedDropdown())
-                .Create(() => player.AutoExplore, title: GameText.Autoexplore, tooltip: GameText.YourEmpireWillAutomaticallyManage,
-                        autoPick: () => player.AutoPickBestScout);
-            ColonyShipDropDown = colonization.Add(new CheckedDropdown())
-                .Create(() => player.AutoColonize, title: GameText.Autocolonize, tooltip: GameText.YourEmpireWillAutomaticallyCreate,
-                        autoPick: () => player.AutoPickBestColonizer);
-            // ⚠ "Auto Governor", no longer "Core": this flag now decides whether a new
-            // colony gets an ASSESSED governor (the behaviour that used to hide inside
-            // Autocolonize) - see Planet_Colonize.SetupColonyType (maintainer design).
-            colonization.AddCheckbox(() => player.AutoCoreGovernor, title: "Auto Governor",
-                                     tooltip: "New colonies are assigned a governor suited to the planet. Unchecked, they start unmanaged.");
-
-            UIList construction = NewBox(new RectF(x2, top, BoxW, ConstructionBoxH), "Construction");
+            UIList construction = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap, BoxW2, ConstructionBoxH), "Construction");
             ConstructorDropDown = construction.Add(new CheckedDropdown())
                 .Create(() => player.AutoBuildSpaceRoads, Localizer.Token(GameText.Autobuild) + " Projectors", GameText.YourEmpireWillAutomaticallyCreate2,
                         autoPick: () => player.AutoPickConstructors);
@@ -112,6 +106,19 @@ namespace Ship_Game
                     .Create(() => player.AutoBuildMiningStations, title: GameText.AutoBuildMiningStation, tooltip: GameText.AutoBuildMiningStationTip,
                             autoPick: () => player.AutoPickBestMiningStation);
             construction.AddCheckbox(() => Universe.UState.P.PrioitizeProjectors, title: GameText.PrioritizeProjector, tooltip: GameText.PrioritizeProjectorTip);
+
+            UIList colonization = NewBox(new RectF(x1, top, BoxW2, ColonizationBoxH), "Colonization");
+            ScoutDropDown = colonization.Add(new CheckedDropdown())
+                .Create(() => player.AutoExplore, title: GameText.Autoexplore, tooltip: GameText.YourEmpireWillAutomaticallyManage,
+                        autoPick: () => player.AutoPickBestScout);
+            ColonyShipDropDown = colonization.Add(new CheckedDropdown())
+                .Create(() => player.AutoColonize, title: GameText.Autocolonize, tooltip: GameText.YourEmpireWillAutomaticallyCreate,
+                        autoPick: () => player.AutoPickBestColonizer);
+            // ⚠ "Auto Governor", no longer "Core": this flag now decides whether a new
+            // colony gets an ASSESSED governor (the behaviour that used to hide inside
+            // Autocolonize) - see Planet_Colonize.SetupColonyType (maintainer design).
+            colonization.AddCheckbox(() => player.AutoCoreGovernor, title: "Auto Governor",
+                                     tooltip: "New colonies are assigned a governor suited to the planet. Unchecked, they start unmanaged.");
 
             UpdateDropDowns();
             base.LoadContent();

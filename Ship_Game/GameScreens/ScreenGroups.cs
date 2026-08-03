@@ -256,6 +256,21 @@ namespace Ship_Game.GameScreens
         public static Rectangle GroupFrame(int screenW, int screenH)
             => new(FrameMargin, TabRowY, screenW - 2 * FrameMargin, screenH - TabRowY - FrameMargin);
 
+        // Ludoal fork: the content-sized variant - the frame hugs what it holds, anchored on
+        // the bar and the left margin instead of spanning the screen. First taker: the
+        // Automation tab, whose content is two columns of category boxes.
+        public static Submenu AddGroupTabs(GameScreen screen, LocalizedText[] titles, int selected,
+                                           Action<int> onChange, float contentW, float contentH)
+        {
+            var tabs = screen.Add(new Submenu(new RectF(FrameMargin, TabRowY, contentW, contentH), titles));
+            tabs.OnTabChange = onChange;
+            tabs.PerformLayout();
+            tabs.SelectedIndex = selected;
+            Vector2 closePos = GroupClosePos(tabs.ClientArea);
+            screen.Add(new CloseButton(closePos.X, closePos.Y));
+            return tabs;
+        }
+
         // One column width for the whole group: the client area less a gutter each side, split
         // eight ways. Ludoal fork: the columns fill the frame rather than sitting inside a
         // narrower band of it.
