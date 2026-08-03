@@ -43,13 +43,15 @@ namespace Ship_Game
             Check.Pos = Pos;
             Check.PerformLayout();
             float optionsX = Pos.X;
+            // the picker row stands clear of its checkbox - the old cramped 16px served the
+            // overlay window's tight column, which is gone (maintainer: air it out)
             if (AutoPickBox != null)
             {
-                AutoPickBox.Pos = new Vector2(Pos.X, Pos.Y + 17f);
+                AutoPickBox.Pos = new Vector2(Pos.X, Pos.Y + 23f);
                 AutoPickBox.PerformLayout();
                 optionsX += 22f;
             }
-            Options.Pos = new Vector2(optionsX, Pos.Y + 16f);
+            Options.Pos = new Vector2(optionsX, Pos.Y + 22f);
             Options.PerformLayout();
             Height = Options.Bottom - Pos.Y;
         }
