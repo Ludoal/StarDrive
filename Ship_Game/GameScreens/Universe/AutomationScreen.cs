@@ -224,6 +224,9 @@ namespace Ship_Game
                 return true;
             }
 
+            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
             if (base.HandleInput(input))
             {
                 // save the active designs back - only the pickers of the visible category exist
