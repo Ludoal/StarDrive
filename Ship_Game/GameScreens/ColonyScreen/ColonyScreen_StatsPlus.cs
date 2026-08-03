@@ -142,10 +142,11 @@ namespace Ship_Game
             SPSetColumns(blockW);
 
             var left  = bCursor;
-            // the right block starts at 44% rather than half (maintainer bench, 900p): the
-            // yields grid slides left as one piece and regains the margin its rightmost
-            // column was eating into
-            var right = new Vector2(bCursor.X + blockW * 0.88f, bCursor.Y);
+            // the yields grid closes flush on the panel's right edge (maintainer bench 281):
+            // its last pivot plus a fraction of room lands at the margin, and the block start
+            // derives from that - as far right as it can sit
+            float usable = PFacilities.Width - 40;
+            var right = new Vector2(bCursor.X + usable - (SPYieldColTotal + TextFont.TextWidth(".00") + 6), bCursor.Y);
 
             // ── BUDGET (BC / turn) — gross sources as the building screen promises them,
             // the tax mill as one visible line, everything still sums to Net exactly ──

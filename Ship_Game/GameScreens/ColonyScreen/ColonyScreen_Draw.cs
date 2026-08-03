@@ -234,9 +234,10 @@ namespace Ship_Game
             PlanetName.Draw(batch, elapsed);
 
             EditNameButton = new Rectangle((int)(cursor.X + (double)Font20.MeasureString(P.Name).X + 12.0), (int)(cursor.Y + (double)(Font20.LineSpacing / 2) - ResourceManager.Texture("NewUI/icon_build_edit").Height / 2) - 2, ResourceManager.Texture("NewUI/icon_build_edit").Width, ResourceManager.Texture("NewUI/icon_build_edit").Height);
-            batch.Draw(PlanetName.HandlingInput
-                       ? ResourceManager.Texture("NewUI/icon_build_edit_hover2")
-                       : ResourceManager.Texture("NewUI/icon_build_edit"), EditNameButton, Color.White);
+            // the bright variant at rest too (maintainer bench: the pencil was near-invisible),
+            // dimmed a step so the hover still answers
+            batch.Draw(ResourceManager.Texture("NewUI/icon_build_edit_hover2"), EditNameButton,
+                       PlanetName.HandlingInput ? Color.White : Color.White.Alpha(0.75f));
 
             // Ludoal fork: the eye by the name (maintainer design) - the row is the planet's
             // identity, the eye is "go to it" on the map, beside the rename pencil
@@ -677,7 +678,8 @@ namespace Ship_Game
         // TODO: extracted method, needs refactor/clean
         void DrawColonyDescription(Vector2 bCursor)
         {
-            DrawMultiLine(ref bCursor, P.Description);
+            // white (maintainer bench): the default TextColor read too dim on this page
+            DrawMultiLine(ref bCursor, P.Description, Color.White);
             string desc = "";
             if (P.IsCybernetic) desc = Localizer.Token(GameText.TheOccupantsOfThisPlanet);
             else switch (P.FS)
@@ -687,7 +689,7 @@ namespace Ship_Game
                     case Planet.GoodState.STORE: desc = Localizer.Token(GameText.ThisPlanetIsNeitherImporting); break;
                 }
 
-            DrawMultiLine(ref bCursor, desc);
+            DrawMultiLine(ref bCursor, desc, Color.White);
             desc = "";
             if (P.CType == Planet.ColonyType.Colony)
             {
@@ -705,7 +707,7 @@ namespace Ship_Game
                     case Planet.GoodState.IMPORT: desc = Localizer.Token(GameText.TheGovernorIsImportingProduction); break;
                     case Planet.GoodState.STORE: desc = Localizer.Token(GameText.TheGovernorIsStoringProduction); break;
                 }
-            DrawMultiLine(ref bCursor, desc);
+            DrawMultiLine(ref bCursor, desc, Color.White);
             if (P.IsStarving)
                 DrawMultiLine(ref bCursor, Localizer.Token(GameText.ThisPlanetsPopulationIsShrinking), Color.LightPink);
         }
@@ -723,17 +725,21 @@ namespace Ship_Game
 
             Font font = Font14;
 
-            batch.DrawString(font, $"{gIncome}: ", cursor, Color.LightGray);
-            batch.DrawString(font, $"{grossIncome.String(2)} BC/turn", new Vector2(cursor.X + 150, cursor.Y), Color.LightGreen);
-            cursor.Y += font.LineSpacing +  1;
+            // decimal-aligned (maintainer bench): the integer part ends on one pivot for the
+            // three money lines, the fraction and unit hang right of it
+            void MoneyLine(string label, float v, Color c)
+            {
+                batch.DrawString(font, $"{label}: ", cursor, Color.LightGray);
+                string s = $"{v.String(2)} BC/turn";
+                string intPart = s.Substring(0, s.IndexOf('.') < 0 ? s.Length : s.IndexOf('.'));
+                batch.DrawString(font, s, new Vector2(cursor.X + 178 - font.TextWidth(intPart), cursor.Y), c);
+                cursor.Y += font.LineSpacing + 1;
+            }
+            MoneyLine(gIncome, grossIncome, Color.LightGreen);
 
-            batch.DrawString(font, $"{gUpkeep}: ", cursor, Color.LightGray);
-            batch.DrawString(font, $"{grossUpkeep.String(2)} BC/turn", new Vector2(cursor.X + 150, cursor.Y), Color.Pink);
-            cursor.Y += font.LineSpacing + 1;
-
-            batch.DrawString(font, $"{(netIncome > 0 ? nIncome : nLosses)}: ", cursor, Color.LightGray);
-            batch.DrawString(font, $"{netIncome.String(2)} BC/turn", new Vector2(cursor.X + 150, cursor.Y), netIncome > 0.0 ? Color.Green : Color.Red);
-            cursor.Y += font.LineSpacing*2 + 1;
+            MoneyLine(gUpkeep, grossUpkeep, Color.Pink);
+            MoneyLine(netIncome > 0 ? nIncome : nLosses, netIncome, netIncome > 0.0 ? Color.Green : Color.Red);
+            cursor.Y += font.LineSpacing;
         }
 
         void DrawTilePopInfo(ref Vector2 cursor, SpriteBatch batch, PlanetGridSquare tile, int spacing = 5)

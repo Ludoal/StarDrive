@@ -244,7 +244,7 @@ namespace Ship_Game
             // to the TOP, not centred). They rode 0.33 and 0.66 of the panel's height, so they
             // drifted apart and floated in the middle as STORAGE - the column's variable block -
             // grew. Rows now, not fractions.
-            const float storeRow1 = 46, storeRow2 = 84;
+            const float storeRow1 = 46, storeRow2 = 92; // +8 of air between the bars (maintainer bench)
             FoodStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + storeRow1, 0.4f*PStorage.Width, 18);
             FoodStorage.Max = p.Storage.Max;
             FoodStorage.Progress = p.FoodHere;
@@ -280,12 +280,12 @@ namespace Ship_Game
             // COLONY holds a 7x5 tile grid, so its height FOLLOWS its width - square tiles are the
             // point of it. The panel's chrome (10 each side, 30 above, 5 below) is taken off
             // before the ratio and added back, so it is the GRID that keeps 7:5, not the frame.
-            // STATS holds its own content and no more (bounded flexible); COLONY is what takes
-            // everything the rest of the screen leaves (maintainer spec, 3 Aug). The tiles stay
-            // square whatever shape that leaves: GridPos derives the tile from the limiting
-            // dimension and centres the grid in the panel.
-            const float statsH = 300; // the Stats+ content's own height - bench number
-            float subColonyH = gridBottom - gridTop - Pad - statsH;
+            // COLONY keeps its 7:5 from the WIDTH again, the width itself bounded so the grid
+            // cannot go giant at high resolutions (maintainer bench 281) - the stats block
+            // below takes the rest, which at 900p is taller than a fixed reserve gave it.
+            float gridInnerW = Math.Min(colCentreW - 20, 620f); // width cap - bench number
+            float subColonyH = gridInnerW * (5f / 7f) + 35;
+            subColonyH = Math.Min(subColonyH, gridBottom - gridTop - Pad - 260); // stats floor, safety
 
             RectF subColonyR = new(colCentreX, gridTop, colCentreW, subColonyH);
             SubColonyGrid = new(subColonyR, GameText.Colony);

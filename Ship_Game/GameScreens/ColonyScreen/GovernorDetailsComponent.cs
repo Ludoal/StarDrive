@@ -126,18 +126,20 @@ namespace Ship_Game
             BlueprintsName   = Add(new UILabel("", FontBig, Color.Gold));
             BlueprintsCompletionLbl = Add(new UILabel(GameText.Completion, Font, Color.Wheat));
             BlueprintsAchiveable    = Add(new UILabel(GameText.Achievable, Font, Color.Gray));
-            BlueprintsGovChange     = Add(new UILabel(GameText.GovernorChangedTo, Font, Color.Gray));
+            // white body text (maintainer bench) - the semantic colours (green/gold) stay
+            BlueprintsGovChange     = Add(new UILabel(GameText.GovernorChangedTo, Font, Color.White));
             BlueprintsExclusive     = Add(new UILabel("", Font, Color.LightGreen));
-            BlueprintsLink          = Add(new UILabel("", Font, Color.Wheat));
-            Blueprintsoverview    = Add(new UILabel("", Font, Color.Wheat));
+            BlueprintsLink          = Add(new UILabel("", Font, Color.White));
+            Blueprintsoverview    = Add(new UILabel("", Font, Color.White));
             BlueprintsEnableGov     = Add(new UILabel("", Font, Color.Gold));
 
-            GovOrbitals    = Add(new UICheckBox(() => Planet.GovOrbitals, Font, title:GameText.GovernorManagesOrbitals, tooltip:GameText.TheGovernorWillBuildStations));
+            // "Gov." (maintainer bench): the full word ran past the Defense column
+            GovOrbitals    = Add(new UICheckBox(() => Planet.GovOrbitals, Font, title:"Gov. Manages Space Defense", tooltip:GameText.TheGovernorWillBuildStations));
             AutoTroops     = Add(new UICheckBox(() => Planet.AutoBuildTroops, Font, title:GameText.GovernorBuildsMilitia, tooltip:GameText.TheGovernorWillCreateA));
             GovNoScrap     = Add(new UICheckBox(() => Planet.DontScrapBuildings, Font, title:GameText.GovernorWillNotScrapBuildings, tooltip:GameText.NormallyGovernorsOperateWithinA));
             Quarantine     = Add(new UICheckBox(() => Planet.Quarantine, Font, title: GameText.QuarantinePlanet, tooltip: GameText.PreventGoodsTransportationInAnd));
             ManualOrbitals = Add(new UICheckBox(() => Planet.ManualOrbitals, Font, title: GameText.ManualOrbitalLimit, tooltip: GameText.OverrideGovernorDecisionsRegardingOrbital));
-            GovGround      = Add(new UICheckBox(() => Planet.GovGroundDefense, Font, title: GameText.GovernorManagesGroundDefense, tooltip: GameText.TheGovernorWillManageGround));
+            GovGround      = Add(new UICheckBox(() => Planet.GovGroundDefense, Font, title: "Gov. Manages Ground Defense", tooltip: GameText.TheGovernorWillManageGround));
             OverrideCiv    = Add(new UICheckBox(() => OverrideCivBudget, Font, title: GameText.Override, tooltip: GameText.OverrideThisBudgetAndSet));
             OverrideGrd    = Add(new UICheckBox(() => OverrideGrdBudget, Font, title: GameText.Override, tooltip: GameText.OverrideThisBudgetAndSet));
             OverrideSpc    = Add(new UICheckBox(() => OverrideSpcBudget, Font, title: GameText.Override, tooltip: GameText.OverrideThisBudgetAndSet));
@@ -302,7 +304,7 @@ namespace Ship_Game
             BlueprintsEnableGov.Pos  = new Vector2(X + 10, Bottom - 60);
             BlueprintsEnableGov.Text = GameText.BluePrintsEnableGovernorToLoad;
 
-            CreateBlueprints.Pos   = new Vector2(X+ 10,  Y+ Height - 30);
+            CreateBlueprints.Pos   = new Vector2(X+ 10,  Y+ Height - 38); // 8px up (maintainer bench)
             EditBlueprints.Pos     = new Vector2(X + Width - 240, CreateBlueprints.Y);
             ClearBlueprints.Pos    = new Vector2(X + Width - 160, CreateBlueprints.Y);
             LoadBlueprints.Pos     = new Vector2(X + Width - 80, CreateBlueprints.Y); 
@@ -334,8 +336,8 @@ namespace Ship_Game
             // on the same left edge as the world title above it.
             // two toggles per line (maintainer bench, 3 Aug): Quarantine and Prioritized sit
             // UNDER the portrait; the two contextual toggles share their exact lines at ColumnX
-            Quarantine.Pos          = new Vector2(X + 10, Portrait.Bottom + 8);
-            Prioritized.Pos         = new Vector2(X + 10, Portrait.Bottom + 26);
+            Quarantine.Pos          = new Vector2(X + 10, Portrait.Bottom + 14); // a step lower - there is room below (maintainer bench)
+            Prioritized.Pos         = new Vector2(X + 10, Portrait.Bottom + 34);
             SpecializedTradeHub.Pos = new Vector2(ColumnX + 25, Quarantine.Pos.Y); // +25: clear of the left labels at 1080 fonts (bench)
             GovNoScrap.Pos          = new Vector2(ColumnX + 25, Prioritized.Pos.Y);
             BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, Quarantine.Pos.Y - 35);

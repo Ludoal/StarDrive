@@ -35,9 +35,11 @@ namespace Ship_Game
             int selected = BuildableTabs.SelectedIndex;
 
             BuildableTabs.ClearTabs();
+            // TROOPS before SHIPS (maintainer bench): SHIPS carries the designs toggle at its
+            // right, so it closes the row
             BuildableTabs.AddTab(BuildingsTabText);
-            if (P.HasSpacePort)     BuildableTabs.AddTab(ShipsTabText);
             if (P.CanBuildInfantry) BuildableTabs.AddTab(TroopsTabText);
+            if (P.HasSpacePort)     BuildableTabs.AddTab(ShipsTabText);
 
             BuildableTabs.SelectedIndex = selected;
         }
