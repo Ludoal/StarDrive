@@ -89,7 +89,7 @@ namespace Ship_Game
                 QueueItem[] queue = P.ConstructionQueueSnapshot;
                 if (!ConstructionQueue.AllEntries.Select(item => item.Item).EqualElements(queue))
                 {
-                    var newItems = queue.Select(qi => new ConstructionQueueScrollListItem(qi, LowRes));
+                    var newItems = queue.Select(qi => new ConstructionQueueScrollListItem(qi));
                     ConstructionQueue.SetItems(newItems);
                 }
             }

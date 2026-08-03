@@ -100,14 +100,14 @@ namespace Ship_Game
             // Ludoal fork: both counts on the reserved first line, side by side - they were stacked
             // beside the title, which is gone.
             Vector2 troopPos = new(client.X + 20, client.Y + 4);
-            AvailableTroops = Add(new UILabel(troopPos, troopText, LowRes ? Fonts.Arial12Bold : Fonts.Arial20Bold, Color.White));
+            AvailableTroops = Add(new UILabel(troopPos, troopText, Fonts.Arial20Bold, Color.White));
             if (totalTroops > 0)
             {
                 string consumption = $"Consuming {(totalTroops * Troop.Consumption * (1 + Universe.Player.data.Traits.ConsumptionModifier)).String(1)} " +
                                      $"{Localizer.Token(Universe.Player.IsCybernetic ? GameText.Production : GameText.Food)}";
 
                 Vector2 consumptionPos = new(troopPos.X + 260, troopPos.Y + 4);
-                TroopConsumption = Add(new UILabel(consumptionPos, consumption, LowRes ? Fonts.Arial8Bold : Fonts.Arial12Bold,
+                TroopConsumption = Add(new UILabel(consumptionPos, consumption, Fonts.Arial12Bold,
                     Universe.Player.IsCybernetic ? Color.SandyBrown : Color.LightPink)); // a cost, not a gain - red, not green
             }
         }

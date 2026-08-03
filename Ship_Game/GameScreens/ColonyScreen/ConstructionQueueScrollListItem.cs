@@ -14,13 +14,11 @@ namespace Ship_Game
         readonly Planet Planet;
         UniverseScreen Universe => Planet.Universe.Screen;
         public readonly QueueItem Item;
-        readonly bool LowRes;
 
-        public ConstructionQueueScrollListItem(QueueItem item, bool lowRes)
+        public ConstructionQueueScrollListItem(QueueItem item)
         {
             Planet = item.Planet;
             Item   = item;
-            LowRes = lowRes;
             if (Planet.OwnerIsPlayer || Planet.Universe.Debug)
             {
                 AddUp(new Vector2(-120, 0), /*Queue up*/GameText.ClickToMoveUpIn, OnUpClicked);
@@ -162,7 +160,7 @@ namespace Ship_Game
         
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            Item.DrawAt(Planet.Universe, batch, Pos, LowRes);
+            Item.DrawAt(Planet.Universe, batch, Pos);
             base.Draw(batch, elapsed);
         }
     }

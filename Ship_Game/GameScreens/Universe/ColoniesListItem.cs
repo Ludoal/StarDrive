@@ -45,13 +45,11 @@ namespace Ship_Game
 
         bool ApplyProdHover;
         bool CancelProdHover;
-        readonly bool LowRes;
 
         public ColoniesListItem(EmpireManagementScreen screen, Planet planet)
         {
             Screen = screen;
             Universe = screen.Universe;
-            LowRes = Screen.LowRes;
             P = planet;
 
             //UIList columns = Add(new UIList());
@@ -66,7 +64,7 @@ namespace Ship_Game
         {
             int x = (int)X;
             int y = (int)Y;
-            int sliderWidth = Screen.LowRes ? 250 : 375;
+            int sliderWidth = 375;
 
             P.UpdateIncomes();
             // Ludoal fork (wishlist): stat block widened 150 -> 240 for the three new columns;
@@ -332,7 +330,7 @@ namespace Ship_Game
             if (queue.Length > 0)
             {
                 QueueItem qi = queue[0];
-                qi.DrawAt(P.Universe, batch, new Vector2(QueueRect.X + 10, QueueRect.Y + QueueRect.Height / 2 - 30), LowRes);
+                qi.DrawAt(P.Universe, batch, new Vector2(QueueRect.X + 10, QueueRect.Y + QueueRect.Height / 2 - 30));
                 batch.Draw((ApplyProdHover ? ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover1") : ResourceManager.Texture("NewUI/icon_queue_rushconstruction")), ApplyProductionRect, Color.White);
                 batch.Draw((CancelProdHover ? ResourceManager.Texture("NewUI/icon_queue_delete_hover1") : ResourceManager.Texture("NewUI/icon_queue_delete")), CancelProductionRect, Color.White);
                 DrawQueueStats(batch, queue.Length);
@@ -360,7 +358,7 @@ namespace Ship_Game
             stats   = $"{stats}. Total: {TotalProdNeeded}";
             var pos = new Vector2(QueueRect.X + 10, QueueRect.Y + QueueRect.Height / 2 + 15);
 
-            Graphics.Font font = LowRes ? Fonts.Arial8Bold : Fonts.Arial12;
+            Graphics.Font font = Fonts.Arial12;
             batch.DrawString(font, stats, pos, Color.Gray);
         }
 

@@ -33,22 +33,20 @@ namespace Ship_Game.GameScreens.NewGame
             Screen = parent;
             Data = Screen.SelectedData;
 
-            bool lo = parent.LowRes;
-
-            var font = lo ? Fonts.Arial8Bold : Fonts.Arial12Bold;
+            var font = Fonts.Arial12Bold;
             Title = Add(new UILabel("Environment Preferences", font, Color.BurlyWood));
             Title.SetLocalPos(35, 15);
             Title.Tooltip = "Some races have modifiers to their Max Population and Fertility based on the planet type.";
 
             BestType = Add(new UILabel("Best Planet Type", font, Color.BurlyWood));
-            BestType.SetLocalPos(35 + (lo ? 175 : 275), 15);
+            BestType.SetLocalPos(35 + 275, 15);
             BestType.Tooltip = "This is the best suited environment for this race, Terraforming a planet will transform it to this planet type.";
             
 
             UIList column1 = Add(new UIList(ListLayoutStyle.ResizeList));
             UIList column2 = Add(new UIList(ListLayoutStyle.ResizeList));
             column1.SetLocalPos(15, 35);
-            column2.SetLocalPos(15 + (lo ? 60 : 140), 35);
+            column2.SetLocalPos(15 + 140, 35);
             column1.Padding = column2.Padding = new Vector2(4, 4);
 
             UILabel AddEnvSplitter(UIList list, string title, Func<float> getValue)
@@ -63,7 +61,7 @@ namespace Ship_Game.GameScreens.NewGame
                     if (value < 1) return Color.Red;
                     return Color.White;
                 };
-                list.AddSplit(key, val).Split = Screen.LowRes ? 50 : 80;
+                list.AddSplit(key, val).Split = 80;
                 return val;
             }
 
@@ -124,7 +122,7 @@ namespace Ship_Game.GameScreens.NewGame
         {
             PlanetIcon?.RemoveFromParent(true);
 
-            int size = Screen.LowRes ? 80 : 100;
+            int size = 100;
             PlanetIcon = Add(new UIPanel(BestType.LocalPos.Add(0, 20), new Vector2(size),
                                          GetPlanetIcon())
             {

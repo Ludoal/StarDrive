@@ -85,8 +85,8 @@ namespace Ship_Game
             Universe = parent; // Ludoal fork: kept for the live top bar
             Player = player;
             GovernorTab = govTab;
-            TextFont = LowRes ? Font8 : Font12;
-            BigFont = LowRes ? Font12 : Font14;
+            TextFont = Font12;
+            BigFont = Font14;
             // Ludoal fork: the Blueprints tab of the Design group - the title cartouche and its
             // brass surround give way to the group's tab row, as on the other groups.
             DesignTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.DesignTabTitles, 2,

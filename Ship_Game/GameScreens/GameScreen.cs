@@ -53,23 +53,17 @@ namespace Ship_Game
         // If TRUE, ESC key will close this screen
         public bool CanEscapeFromScreen { get; protected set; } = true;
         
-        // LEGACY LAYOUT: Change layout and Font Size if ScreenWidth is too small
-        // Ludoal fork: no longer readonly — a live resolution change has to recompute these,
-        // or a rebuilt screen redraws itself with the previous size's flags. Set once in the
-        // ctor as before, and again by RefreshResolutionFlags() after a resize.
-        public bool LowRes { get; private set; }
+        // Ludoal fork: HiRes recomputed on a live resolution change (a rebuilt screen must not
+        // redraw itself with the previous size's flag). Set in the ctor, and again by
+        // RefreshResolutionFlags() after a resize. The legacy LowRes flag is gone: our floor is
+        // 1440x900, nothing below it is served.
         public bool HiRes { get; private set; }
 
-        // Ludoal fork: the two flags that replace LowRes/HiRes as screens get reworked. They are
-        // deliberately SEPARATE and one-dimensional — the legacy pair ORs a width test with a
-        // height test, so a single flag meant two different things and neither could be reasoned
-        // about. Our floor is 1440x900 (the old MacBook Pro), so nothing below that is served.
+        // Ludoal fork: the resolution flags. Deliberately SEPARATE and one-dimensional, so each
+        // can be reasoned about alone.
         //
         // Narrow: the band that needs FOLDING — a font size down, abbreviations, tighter spacing.
         // Tall:   room to ZOOM — a font size up, more generous icons. Never adds content.
-        //
-        // A screen adopts these when it is reworked; LowRes keeps its old meaning for the ones
-        // still untouched, and dies with the last of them.
         public bool Narrow { get; private set; }
         public bool Tall { get; private set; }
 
@@ -194,14 +188,6 @@ namespace Ship_Game
             RemoveAll();
             Mem.Dispose(ref TransientContent);
             PendingActions.Dispose();
-        }
-
-        // select size based on current res: Low, Normal, Hi
-        protected int SelectSize(int lowRes, int normalRes, int hiRes)
-        {
-            if (LowRes) return lowRes;
-            if (HiRes) return hiRes;
-            return normalRes;
         }
 
         public void UpdateViewport() => Viewport = GameBase.Viewport;
@@ -336,12 +322,11 @@ namespace Ship_Game
         //
         // These used to be readonly, set inline in the ctor. ReloadContent rebuilds a screen's
         // ELEMENTS but not the screen object, so the flags survived every resize — which means
-        // changing resolution from the Options screen has always left LowRes/HiRes stale until
-        // the next restart. That is an upstream bug, not one the test tool introduced; the tool
-        // only made it impossible to ignore, since exercising those flags is its whole purpose.
+        // changing resolution from the Options screen left the flags stale until the next
+        // restart. That is an upstream bug, not one the test tool introduced; the tool only
+        // made it impossible to ignore, since exercising those flags is its whole purpose.
         public void RefreshResolutionFlags()
         {
-            LowRes = ScreenWidth <= 1366 || ScreenHeight <= 720;
             HiRes  = ScreenWidth > 1920 || ScreenHeight > 1400;
             // width only — what breaks below 1920 is horizontal (maintainer feedback). Height is handled by
             // giving one block per screen the job of absorbing it, not by a flag.

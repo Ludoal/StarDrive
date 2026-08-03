@@ -129,7 +129,7 @@ namespace Ship_Game
         {
             Eui = empUI;
             Player.UpdateShipsWeCanBuild();
-            TextFont = LowRes ? Font8 : Font12;
+            TextFont = Font12;
 
             // Ludoal fork: a plain popup frame, no tab row - Colony has no siblings, and its
             // planet name rides the title bar (see ColonyScreen_Draw).
@@ -201,9 +201,9 @@ namespace Ship_Game
             // tallest of its four tabs, now that its buttons ride under the slider instead of
             // hanging off the bottom; ASSIGN LABOR is three sliders and nothing more.
             // ⚠ the PORTRAIT sets this height, not the other way round (maintainer). It is 128
-            // square at full res, 80 on LowRes - the same numbers the icon itself uses below, so
-            // the two cannot drift. Title bar + the portrait + a margin under it.
-            float portraitH   = LowRes ? 80 : 128;
+            // square - the same number the icon itself uses below, so the two cannot drift.
+            // Title bar + the portrait + a margin under it.
+            float portraitH   = 128;
             // ⚠ the panel holds TWO things side by side: the portrait on the right, and the name
             // plus four lines on the left. Sizing on the portrait alone left 3px of slack, which
             // one font change would eat - so it takes the TALLER of the two, measured in the
@@ -366,7 +366,7 @@ namespace Ship_Game
             // bar instead of centring itself in the panel - a portrait that centres in a panel
             // sized for it just floats.
             int iconSize = (int)portraitH;
-            int iconOffsetX = LowRes ? 100 : 148;
+            int iconOffsetX = 148;
 
             // ⚠ CENTRED in the panel again (maintainer): pinning it under the title bar left it
             // sitting high once the panel took the taller of the portrait and the text column.
@@ -516,7 +516,7 @@ namespace Ship_Game
             if (P.Owner == null || !DysonSwarmTabAllowed)
                 return;
 
-            Font font = LowRes ? Font8 : Font14;
+            Font font = Font14;
             int spacing = font.LineSpacing + 10;
             int barWidth = (int)(PFacilities.Width * 0.5f);
             float indent = 30;
@@ -583,7 +583,7 @@ namespace Ship_Game
 
         void CreateTradeDetails(Vector2 pos)
         {
-            Font font       = LowRes ? Font8 : Font14;
+            Font font       = Font14;
             int spacing     = font.LineSpacing + 10;
             int barWidth    = (int)(PFacilities.Width * 0.33f);
             int sliderWidth = (int)(PFacilities.Width * 0.33f);
@@ -592,9 +592,9 @@ namespace Ship_Game
             float indentTradeAmount = indent + barWidth + 5;
             float indentSlider      = indentTradeAmount + 60;
 
-            AddLabel(ref TradeTitle, pos, GameText.ColonyTrade, LowRes ? Font14 : Font20, Color.White);
+            AddLabel(ref TradeTitle, pos, GameText.ColonyTrade, Font20, Color.White);
 
-            Vector2 incomingTitlePos = new Vector2(pos.X, pos.Y + spacing * (LowRes ? 1 : 1.5f));
+            Vector2 incomingTitlePos = new Vector2(pos.X, pos.Y + spacing * 1.5f);
             AddLabel(ref IncomingTradeTitle, incomingTitlePos, GameText.IncomingFreighters, font, Color.Gray);
 
             Vector2 manualImportTitlePos = new Vector2(pos.X + indentSlider - 10, incomingTitlePos.Y);
@@ -605,7 +605,7 @@ namespace Ship_Game
             AddPanel(ref IncomingFoodPanel, incomingFoodPos, "NewUI/icon_food", font.LineSpacing, GameText.IncomingOutGoingTip);
             Rectangle incomingFoodRect = new Rectangle((int)(incomingFoodPos.X + indent), (int)incomingFoodPos.Y, barWidth, 20);
             AddProgressBar(ref IncomingFoodBar, incomingFoodRect, P.FoodImportSlots, "green");
-            Vector2 incomingFoodAmountPos = new Vector2(pos.X + indentTradeAmount, incomingFoodPos.Y + (LowRes ? 0 : 2));
+            Vector2 incomingFoodAmountPos = new Vector2(pos.X + indentTradeAmount, incomingFoodPos.Y + 2);
             AddLabel(ref IncomingFoodAmount, incomingFoodAmountPos, "", Font8, Color.White);
             Rectangle importFoodSlotsRect = new Rectangle((int)(pos.X + indentSlider), (int)(incomingFoodPos.Y-12), sliderWidth, sliderSize);
             AddUiSlider(ref ImportFoodSlotSlider, importFoodSlotsRect, "", 0, 20, P.ManualFoodImportSlots, GameText.ManualTradeSlotTip);
@@ -615,7 +615,7 @@ namespace Ship_Game
             AddPanel(ref IncomingProdPanel, incomingProdPos, "NewUI/icon_production", font.LineSpacing, GameText.IncomingOutGoingTip);
             Rectangle incomingProdRect = new Rectangle((int)(incomingProdPos.X + indent), (int)incomingProdPos.Y, barWidth, 20);
             AddProgressBar(ref IncomingProdBar, incomingProdRect, P.ProdImportSlots, "brown");
-            Vector2 incomingProdAmountPos = new Vector2(pos.X + indentTradeAmount, incomingProdPos.Y + (LowRes ? 0 : 2));
+            Vector2 incomingProdAmountPos = new Vector2(pos.X + indentTradeAmount, incomingProdPos.Y + 2);
             AddLabel(ref IncomingProdAmount, incomingProdAmountPos, "", Font8, Color.White);
             Rectangle importProdSlotsRect = new Rectangle((int)(pos.X + indentSlider), (int)(incomingProdPos.Y-12), sliderWidth, sliderSize);
             AddUiSlider(ref ImportProdSlotSlider, importProdSlotsRect, "", 0, 20, P.ManualProdImportSlots, GameText.ManualTradeSlotTip);
@@ -625,12 +625,12 @@ namespace Ship_Game
             AddPanel(ref IncomingColoPanel, incomingColoPos, "UI/icon_pop", font.LineSpacing, GameText.IncomingOutGoingTip);
             Rectangle incomingColoRect = new Rectangle((int)(incomingColoPos.X + indent), (int)incomingColoPos.Y, barWidth, 20);
             AddProgressBar(ref IncomingColoBar, incomingColoRect, P.ColonistsImportSlots, "blue");
-            Vector2 incomingColoAmountPos = new Vector2(pos.X + indentTradeAmount, incomingColoPos.Y + (LowRes ? 0 : 2));
+            Vector2 incomingColoAmountPos = new Vector2(pos.X + indentTradeAmount, incomingColoPos.Y + 2);
             AddLabel(ref IncomingColoAmount, incomingColoAmountPos, "", Font8, Color.White);
             Rectangle importColoSlotsRect = new Rectangle((int)(pos.X + indentSlider), (int)(incomingColoPos.Y-12), sliderWidth, sliderSize);
             AddUiSlider(ref ImportColoSlotSlider, importColoSlotsRect, "", 0, 20, P.ManualColoImportSlots, GameText.ManualTradeSlotTip);
 
-            Vector2 outgoingTitlePos = new Vector2(pos.X, incomingColoAmountPos.Y + spacing * (LowRes ? 1 : 1.5f));
+            Vector2 outgoingTitlePos = new Vector2(pos.X, incomingColoAmountPos.Y + spacing * 1.5f);
             AddLabel(ref OutgoingTradeTitle, outgoingTitlePos, GameText.OutgoingFreighters, font, Color.Gray);
 
             Vector2 manualExportTitlePos = new Vector2(pos.X + indentSlider - 10, outgoingTitlePos.Y);
@@ -663,11 +663,11 @@ namespace Ship_Game
 
         void CreateTerraformingDetails(Vector2 pos)
         {
-            Font font    = LowRes ? Font8 : Font14;
+            Font font    = Font14;
             int spacing  = font.LineSpacing + 2;
             int barWidth = (int)(PFacilities.Width * 0.33f);
 
-            AddLabel(ref TerraformTitle, pos, "", LowRes ? Font14 : Font20, Color.White);
+            AddLabel(ref TerraformTitle, pos, "", Font20, Color.White);
 
             Vector2 statusTitlePos = new Vector2(pos.X, pos.Y + spacing*2);
             AddLabel(ref TerraformStatusTitle, statusTitlePos, GameText.TerraformingStatus, font, Color.White);

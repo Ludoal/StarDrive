@@ -21,7 +21,7 @@ namespace Ship_Game
         readonly Map<string, RootNode> RootNodes = new(StringComparer.OrdinalIgnoreCase);
         public Map<string, TreeNode> SubNodes = new(StringComparer.OrdinalIgnoreCase);
 
-        Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, null below 720p
+        Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row
         UIButton Search;
         // Ludoal fork: the slot the Search / Hide Queue pair sits in. The dan_button texture is
         // 182x25 and both are placed off the queue's right edge, so the width is pinned rather
@@ -32,7 +32,7 @@ namespace Ship_Game
         public float ResearchButtonY;
         public float ResearchButtonsRight;
         public const int ResearchButtonH = 24;
-        Menu2 MainMenu;
+        Rectangle MainArea; // the frame's client rect - the node grids derive from it
         public EmpireUIOverlay empireUI;
 
         Vector2 MainMenuOffset;
@@ -67,29 +67,14 @@ namespace Ship_Game
         public override void LoadContent()
         {
             camera = new Camera2D { Pos = new Vector2(Viewport.Width, Viewport.Height) / 2f };
-            // Ludoal fork: standard screen grammar — RESEARCH title cartouche under
-            // the live top bar, frame below, aligned with Empire/Arrays. The node
-            // grids derive from main.Height so they compress on their own; on <=720p
-            // a 7-row column would clip (86px per 98px node), so everything stays
-            // full-screen there (no bar, no title).
-            // Ludoal fork: the Research tab of the Empire group. ⚠ The <=720p branch is KEPT: the
-            // node grids derive from main.Height and a 7-row column clips there (86px per 98px
-            // node), so that height goes full-screen with no bar and no tabs - which is why this
-            // screen has never broken at a resolution.
-            var main = new Rectangle(0, 0, ScreenWidth, ScreenHeight);
-            if (ScreenHeight > 720)
-            {
-                EmpireTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.EmpireTabTitles, 4,
-                                                        OnEmpireTabChanged, out Rectangle frame);
-                RectF client = EmpireTabs.ClientArea;
-                main = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
-            }
-            MainMenu = new Menu2(main);
+            // Ludoal fork: the Research tab of the Empire group. The node grids derive from
+            // MainArea.Height, so they compress on their own down to the 900px floor.
+            EmpireTabs = ReworkScreens.AddGroupTabs(this, ReworkScreens.EmpireTabTitles, 4,
+                                                    OnEmpireTabChanged, out Rectangle frame);
+            RectF client = EmpireTabs.ClientArea;
+            var main = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
+            MainArea = main;
             MainMenuOffset = new Vector2(main.X + 20, main.Y + 30);
-            // the group's close cross is added by AddGroupTabs; below 720p there is none, so this
-            // screen keeps its own
-            if (EmpireTabs == null)
-                Add(new CloseButton(main.Right - 40, main.Y + 20));
 
             RootNodes.Clear();
             SubNodes.Clear();
@@ -174,10 +159,6 @@ namespace Ship_Game
 
             batch.SafeBegin();
             batch.FillRectangle(new Rectangle(0, 0, ScreenWidth, ScreenHeight), Color.Black);
-            // Ludoal fork: the brass surround only below 720p, where there is no tab frame to be
-            // the delimiter. Above it, the group's frame is the border and this would double it.
-            if (EmpireTabs == null)
-                MainMenu.Draw(batch, elapsed);
             batch.SafeEnd();
 
             batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:false, saveState:false, camera.Transform);
@@ -198,8 +179,7 @@ namespace Ship_Game
 
             batch.SafeBegin();
             base.Draw(batch, elapsed);
-            if (EmpireTabs != null)
-                ReworkScreens.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
+            ReworkScreens.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             if (ScreenHeight > 720)
                 empireUI.Draw(batch); // Ludoal fork: live top bar (paused indicator included)
             batch.SafeEnd();
@@ -458,10 +438,10 @@ namespace Ship_Game
 
             int rows = 1;
             int cols = CalculateTreeDimensionsFromRoot(root.Entry, ref rows, 0, 0);
-            if (rows < 9) GridHeight = (MainMenu.Menu.Height - 40) / rows;
-            else          GridHeight = (MainMenu.Menu.Height - 40) / 9;
+            if (rows < 9) GridHeight = (MainArea.Height - 40) / rows;
+            else          GridHeight = (MainArea.Height - 40) / 9;
 
-            if (cols > 0 && cols < 9) GridWidth = (MainMenu.Menu.Width - 350) / cols;
+            if (cols > 0 && cols < 9) GridWidth = (MainArea.Width - 350) / cols;
             else                      GridWidth = 165;
 
             BuildSubNodes(root);
@@ -476,7 +456,7 @@ namespace Ship_Game
             int wantRows = Math.Min(actualRows + 1, 9);
             if (wantRows != Math.Min(rows, 9))
             {
-                GridHeight = (MainMenu.Menu.Height - 40) / wantRows;
+                GridHeight = (MainArea.Height - 40) / wantRows;
                 BuildSubNodes(root);
             }
         }

@@ -24,8 +24,8 @@ namespace Ship_Game
         {
             Screen = screen;
             Trait = trait;
-            TitleFont = screen.LowRes ? Fonts.Arial11Bold : Fonts.Arial14Bold;
-            DescrFont = screen.LowRes ? Fonts.Arial10 : Fonts.Arial12;
+            TitleFont = Fonts.Arial14Bold;
+            DescrFont = Fonts.Arial12;
             Description = new LocalizedText(Trait.Trait.Description).Text;
         }
 

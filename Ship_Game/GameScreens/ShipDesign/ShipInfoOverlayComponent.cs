@@ -15,7 +15,6 @@ namespace Ship_Game.GameScreens.ShipDesign
     {
         readonly GameScreen Screen;
         readonly UniverseState Universe;
-        readonly bool LowRes;
         Empire Player => Universe.Player;
 
         IShipDesign SelectedDesign;
@@ -31,12 +30,11 @@ namespace Ship_Game.GameScreens.ShipDesign
             Visible = false;
             Screen = screen;
             Universe = us;
-            LowRes = screen.LowRes;
         }
 
         float GetSize()
         {
-            float minimumSize = LowRes ? 272 : 340;
+            float minimumSize = 340;
             return Math.Max(minimumSize, (Screen.Width * 0.16f).RoundTo10());
         }
 
@@ -90,8 +88,8 @@ namespace Ship_Game.GameScreens.ShipDesign
             if (Pos.Y < 0) Pos.Y = 0;
             if (Bottom > Screen.Height) Pos.Y -= (Bottom - Screen.Height);
 
-            TitleFont = LowRes ? Fonts.Arial12Bold : Fonts.Arial14Bold;
-            Font      = LowRes ? Fonts.Arial8Bold : Fonts.Arial11Bold;
+            TitleFont = Fonts.Arial14Bold;
+            Font      = Fonts.Arial11Bold;
         }
 
         public override bool HandleInput(InputState input)
@@ -133,7 +131,7 @@ namespace Ship_Game.GameScreens.ShipDesign
 
             Vector2 start = p;
             // --- Core values with icons --- //
-            float charWidth = LowRes ? 8 : 10;
+            float charWidth = 10;
 
             // left side
             CoreValue(charWidth*3.5f, "UI/icon_offense", "DPS", Str(s.TotalDps), Color.OrangeRed);

@@ -714,7 +714,7 @@ namespace Ship_Game
             float grossUpkeep = P.Money.Maintenance + P.SpaceDefMaintenance;
             float netIncome   = P.Money.NetRevenue;
 
-            Font font = LowRes ? Font8 : Font14;
+            Font font = Font14;
 
             batch.DrawString(font, $"{gIncome}: ", cursor, Color.LightGray);
             batch.DrawString(font, $"{grossIncome.String(2)} BC/turn", new Vector2(cursor.X + 150, cursor.Y), Color.LightGreen);

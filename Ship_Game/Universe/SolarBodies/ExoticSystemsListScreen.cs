@@ -54,7 +54,7 @@ namespace Ship_Game
             IsPopup = true;
             if (ScreenWidth <= 1280)
             {
-                //LowRes = true;
+
             }
 
             // Ludoal fork: the Exotic Systems tab of the Galaxy group - the title cartouche and its

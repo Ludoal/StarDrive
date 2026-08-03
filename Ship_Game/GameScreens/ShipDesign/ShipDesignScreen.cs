@@ -863,8 +863,7 @@ namespace Ship_Game
             // centre rows, which sit between them. Each carries two lines above its list - filter
             // toggles, then search field.
             const float headerLine = 19f;
-            float modListTop = LowRes ? 45
-                             : ReworkScreens.GroupContentTop(DesignTabs.ClientArea) + 2 * headerLine;
+            float modListTop = ReworkScreens.GroupContentTop(DesignTabs.ClientArea) + 2 * headerLine;
             ModuleSelectComponent = Add(new ModuleSelection(this, new(ModuleSelection.BandLeft, modListTop),
                                         new(ModuleSelection.ListWidth, ModuleSelection.ListHeightFor(ScreenHeight, modListTop))));
 

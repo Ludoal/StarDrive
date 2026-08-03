@@ -136,11 +136,6 @@ namespace Ship_Game
 
         public override void LoadContent()
         {
-            // NOTE (Ludoal fork): the LowRes branches left in this screen — this one, and the
-            // Arial8Bold / Right+20 / Y-50 block below — are EMERGENCY folds written for 1280.
-            // They stay on LowRes on purpose: moving them to Narrow would apply them at 1680,
-            // where a title jumping from y=44 to y=10 and a label landing 20px from its box make
-            // no sense. Only the font sizes were converted.
             // ── the frame and the ONE grid every block measures from ─────────────────────────
             const int Margin = 10, Pad = 8;
             // ⚠ the rect is pushed OUT by what each edge's texture leaves blank, so the visible
@@ -226,7 +221,7 @@ namespace Ship_Game
             foreach (IEmpireData e in ResourceManager.MajorRaces)
                 ChooseRaceList.AddItem(new RaceArchetypeListItem(this, e));
 
-            Graphics.Font font = LowRes ? Fonts.Arial8Bold : Fonts.Arial12Bold;
+            Graphics.Font font = Fonts.Arial12Bold;
             // the galaxy readouts live in the Galaxy tab now, not off the right of a name panel
             RectF galaxyArea = GalaxyTab.ClientArea;
             // ⚠ the readouts sit on the FIRST option row (Galaxy Size), to its right - they were

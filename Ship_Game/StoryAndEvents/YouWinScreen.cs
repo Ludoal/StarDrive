@@ -111,8 +111,7 @@ namespace Ship_Game
             {
                 if (replay == null)
                 {
-                    RectF rect = LowRes ? new(CenterX - 290, CenterY - 354, 580, 580)
-                                        : new(CenterX - 376, CenterY - 376, 752, 752);
+                    RectF rect = new(CenterX - 376, CenterY - 376, 752, 752);
                     replay = new(Universe, rect);
                 }
                 ShowingReplay = true;

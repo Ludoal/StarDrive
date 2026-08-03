@@ -15,7 +15,6 @@ namespace Ship_Game
     {
         public Empire Player;
         Array<Button> Buttons = new Array<Button>();
-        bool LowRes;
         UniverseScreen Universe;
 
         // Ludoal fork: the bar's own geometry. The readouts change every turn, so each is drawn
@@ -61,7 +60,6 @@ namespace Ship_Game
         {
             Player = playerEmpire;
             Universe = universe;
-            LowRes = universe.ScreenWidth <= 1366;
 
             // Ludoal fork: the bar stands 34 tall so it reads as a band of its own, and its
             // buttons are Dan buttons (25px textures) rather than painted plates.
@@ -150,7 +148,7 @@ namespace Ship_Game
                 ("Diplomacy", "DIPLOMACY", ReworkScreens.Group.Diplomacy),
                 ("Fleets",    "DESIGN",    ReworkScreens.Group.Design),
             };
-            int groupW = LowRes ? 96 : 116;
+            int groupW = 116;
             int clusterW = groups.Length * groupW + (groups.Length - 1) * gap;
 
             // Centred on the SCREEN, not in the gap the two sides leave: the groups are the bar's
@@ -313,7 +311,7 @@ namespace Ship_Game
             }
 
             // stardate, right-aligned on the screen edge
-            string stardate = LowRes ? Universe.StarDateString : "StarDate: " + Universe.StarDateString;
+            string stardate = "StarDate: " + Universe.StarDateString;
             batch.DrawString(font, stardate,
                              new Vector2(StarDateRight - font.TextWidth(stardate), textY), TextCream);
         }

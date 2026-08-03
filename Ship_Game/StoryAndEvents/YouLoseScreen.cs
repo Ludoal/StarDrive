@@ -101,14 +101,7 @@ namespace Ship_Game
             {
                 if (replay == null)
                 {
-                    if (!LowRes)
-                    {
-                        replay = new ReplayElement(Universe, new Rectangle(ScreenWidth / 2 - 376, ScreenHeight / 2 - 376, 752, 752));
-                    }
-                    else
-                    {
-                        replay = new ReplayElement(Universe, new Rectangle(ScreenWidth / 2 - 290, ScreenHeight / 2 - 354, 580, 580));
-                    }
+                    replay = new ReplayElement(Universe, new Rectangle(ScreenWidth / 2 - 376, ScreenHeight / 2 - 376, 752, 752));
                 }
                 ShowingReplay = true;
             }

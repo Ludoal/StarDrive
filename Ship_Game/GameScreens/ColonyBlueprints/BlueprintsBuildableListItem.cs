@@ -18,13 +18,11 @@ namespace Ship_Game
         readonly SubTexture CostIcon = ResourceManager.Texture("UI/icon_money_22");
         readonly Font Font8 = Fonts.Arial8Bold;
         readonly Font Font12 = Fonts.Arial12Bold;
-        readonly bool LowRes;
 
         public BlueprintsBuildableListItem(BlueprintsScreen screen, Building b)
         {
             Building = b;
             Screen   = screen;
-            LowRes   = screen.LowRes;
         }
 
         public override bool HandleInput(InputState input)
@@ -38,10 +36,10 @@ namespace Ship_Game
         }
 
         // Give a custom height for this scroll list item
-        public override int ItemHeight => LowRes ? 32 : 42;
+        public override int ItemHeight => 42;
 
-        float IconSize => LowRes ? 36 : 48;
-        float ProdWidth => LowRes ? 90 : 120;
+        float IconSize => 48;
+        float ProdWidth => 120;
         float TextWidth => Width - IconSize - ProdWidth;
         float TextX => X + IconSize;
 
@@ -53,7 +51,7 @@ namespace Ship_Game
 
         void DrawProductionInfo(SpriteBatch batch, float maintenance, float prod, int cost = 0)
         {
-            Font font = LowRes ? Fonts.Arial10 : Font12;
+            Font font = Font12;
             float x = Right - ProdWidth;
             float y = Y + 4;
             var iconSize = new Vector2(font.LineSpacing + 2);

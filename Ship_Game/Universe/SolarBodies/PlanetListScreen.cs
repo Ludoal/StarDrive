@@ -73,7 +73,7 @@ namespace Ship_Game
             IsPopup = true;
             if (ScreenWidth <= 1280)
             {
-                //LowRes = true;
+
             }
             // Ludoal fork: the Planets tab of the Galaxy group - the title cartouche and its brass
             // surround give way to the group's tab row, from ReworkScreens.
