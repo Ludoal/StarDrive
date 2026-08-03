@@ -906,4 +906,18 @@ namespace Ship_Game
         }
     }
 
+    // an empire paired with how well we know it - the diplomacy screen builds these,
+    // the relationships diagram consumes them
+    public readonly struct EmpireAndIntelLevel
+    {
+        public readonly Empire Empire;
+        public readonly int IntelLevel;
+
+        public EmpireAndIntelLevel(Empire empire, int level)
+        {
+            Empire     = empire;
+            IntelLevel = level;
+        }
+    }
+
 }
