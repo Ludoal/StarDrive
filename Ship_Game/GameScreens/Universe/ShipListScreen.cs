@@ -174,7 +174,8 @@ namespace Ship_Game
             if (ShipSL.NumEntries > 0)
             {
                 ShipListScreenItem e1 = ShipSL.ItemAtTop;
-                Graphics.Font font = Fonts.Arial20Bold;
+                // charte (Lek): a header is never bigger than the body - weight, not size
+                Graphics.Font font = Fonts.Arial12Bold;
                 var cursor = new Vector2(e1.SysNameRect.CenterX() - font.TextWidth(SortSystem.Text) / 2f, ERect.Y - font.LineSpacing + 18);
                 SortSystem.rect = new Rectangle((int)cursor.X, (int)cursor.Y, font.TextWidth(SortSystem.Text), font.LineSpacing);
                 SortSystem.Draw(ScreenManager, font);
@@ -191,7 +192,8 @@ namespace Ship_Game
                 SortFleet.rect = new Rectangle((int)cursor.X, (int)cursor.Y, font.TextWidth(SortFleet.Text), font.LineSpacing);
                 SortFleet.Draw(ScreenManager, font);
 
-                cursor = new Vector2(e1.OrdersRect.CenterX() - font.TextWidth(SortOrder.Text) / 2f, ERect.Y - font.LineSpacing + 18);
+                // Orders reads from the left like its column does (maintainer bench)
+                cursor = new Vector2(e1.OrdersRect.X + 8, ERect.Y - font.LineSpacing + 18);
                 SortOrder.rect = new Rectangle((int)cursor.X, (int)cursor.Y, font.TextWidth(SortOrder.Text), font.LineSpacing);
                 SortOrder.Draw(ScreenManager, font);
 

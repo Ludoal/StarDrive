@@ -55,7 +55,7 @@ namespace Ship_Game
             ShipNameRect = new Rectangle(x + SysNameRect.Width, y, (int)(TotalEntrySize.Width * 0.175f), height);
             RoleRect = new Rectangle(x + SysNameRect.Width + ShipNameRect.Width, y, (int)(TotalEntrySize.Width * 0.05f), height);
             FleetRect = new Rectangle(x + SysNameRect.Width + ShipNameRect.Width, y, (int)(TotalEntrySize.Width * 0.075f), height);
-            OrdersRect = new Rectangle(x + SysNameRect.Width + ShipNameRect.Width + RoleRect.Width + FleetRect.Width, y, (int)(TotalEntrySize.Width * 0.175f), height);
+            OrdersRect = new Rectangle(x + SysNameRect.Width + ShipNameRect.Width + RoleRect.Width + FleetRect.Width, y, (int)(TotalEntrySize.Width * 0.24f), height);
             RefitRect = new Rectangle(OrdersRect.X + OrdersRect.Width, y, 125, height);
             StrRect = new Rectangle(RefitRect.X + RefitRect.Width, y, 60, height);
             MaintRect = new Rectangle(StrRect.X + StrRect.Width, y, 60, height);
@@ -133,36 +133,27 @@ namespace Ship_Game
             fleetPos = fleetPos.ToFloored();
             batch.DrawString(fleetFont, fleetName, fleetPos, textColor);
 
-            var statusPos = new Vector2(OrdersRect.X + OrdersRect.Width / 2 - Fonts.Arial12.MeasureString(StatusText).X / 2f, 2 + SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Arial12.MeasureString(StatusText).Y / 2f);
+            // orders read from the left (maintainer bench) - a sentence, not a datum
+            var statusPos = new Vector2(OrdersRect.X + 8, 2 + SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Arial12.MeasureString(StatusText).Y / 2f);
             statusPos = statusPos.ToFloored();
             batch.DrawString(Fonts.Arial12, StatusText, statusPos, textColor);
 
             float maint = Ship.GetMaintCost();
 
-            var mainPos = new Vector2(MaintRect.X + MaintRect.Width / 2, MaintRect.Y + MaintRect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
-            mainPos.X -= Fonts.Arial12.MeasureString(maint.ToString("F2")).X / 2f + 6;
-            mainPos = mainPos.ToFloored();
-            batch.DrawString(Fonts.Arial12, maint.ToString("F2"), mainPos, maint > 0.00 ? Color.Salmon : Color.White);
+            // charte: numbers close right on a shared edge, one character of air (-16);
+            // a cost is nature, not a result - neutral cream, gray when zero
+            void DrawNum(in Rectangle rect, string s, Color c)
+            {
+                var pos = new Vector2(rect.Right - 16 - Fonts.Arial12.MeasureString(s).X,
+                                      rect.Y + rect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
+                batch.DrawString(Fonts.Arial12, s, pos.ToFloored(), c);
+            }
 
-            var strPos = new Vector2(StrRect.X + StrRect.Width / 2, MaintRect.Y + MaintRect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
-            strPos.X -= Fonts.Arial12.MeasureString(Ship.GetStrength().ToString("0")).X / 2f + 6;
-            strPos = strPos.ToFloored();
-            batch.DrawString(Fonts.Arial12, Ship.GetStrength().ToString("0"), strPos, Color.White);
-
-            var troopPos = new Vector2(TroopRect.X + TroopRect.Width / 2f, MaintRect.Y + MaintRect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
-            troopPos.X -= Fonts.Arial12.MeasureString(string.Concat(Ship.TroopCount, "/", Ship.TroopCapacity)).X / 2f + 6;
-            troopPos = troopPos.ToFloored();
-            batch.DrawString(Fonts.Arial12, string.Concat(Ship.TroopCount, "/", Ship.TroopCapacity), troopPos, Color.White);
-            
-            var ftlPos = new Vector2(FTLRect.X + FTLRect.Width / 2f, MaintRect.Y + MaintRect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
-            ftlPos.X -= Fonts.Arial12.MeasureString((Ship.MaxFTLSpeed / 1000f).ToString("0")+"k").X / 2f + 6;
-            ftlPos = ftlPos.ToFloored();
-            batch.DrawString(Fonts.Arial12, (Ship.MaxFTLSpeed / 1000f).ToString("0")+"k", ftlPos, Color.White);
-
-            var stlPos = new Vector2(STLRect.X + STLRect.Width / 2f, MaintRect.Y + MaintRect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
-            stlPos.X -= Fonts.Arial12.MeasureString(Ship.MaxSTLSpeed.ToString("0")).X / 2f + 6;
-            stlPos = stlPos.ToFloored();
-            batch.DrawString(Fonts.Arial12, Ship.MaxSTLSpeed.ToString("0"), stlPos, Color.White);
+            DrawNum(MaintRect, maint.ToString("F2"), maint > 0f ? Colors.Cream : Color.Gray);
+            DrawNum(StrRect, Ship.GetStrength().ToString("0"), Colors.Cream);
+            DrawNum(TroopRect, string.Concat(Ship.TroopCount, "/", Ship.TroopCapacity), Colors.Cream);
+            DrawNum(FTLRect, (Ship.MaxFTLSpeed / 1000f).ToString("0") + "k", Colors.Cream);
+            DrawNum(STLRect, Ship.MaxSTLSpeed.ToString("0"), Colors.Cream);
 
             if (IsCombat)
             {
@@ -442,7 +433,9 @@ namespace Ship_Game
             ShipNameRect = new Rectangle(x + SysNameRect.Width, y, (int)(TotalEntrySize.Width * 0.2f), TotalEntrySize.Height);
             RoleRect = new Rectangle(x + SysNameRect.Width + ShipNameRect.Width, y, (int)(TotalEntrySize.Width * 0.05f), TotalEntrySize.Height);
             FleetRect = new Rectangle(x + SysNameRect.Width + ShipNameRect.Width + RoleRect.Width, y, (int)(TotalEntrySize.Width * 0.075f), TotalEntrySize.Height);
-            OrdersRect = new Rectangle(x + SysNameRect.Width + ShipNameRect.Width + RoleRect.Width + FleetRect.Width, y, (int)(TotalEntrySize.Width * 0.2f), TotalEntrySize.Height);
+            // 0.24: a little more room for the order text, which reads from the left now
+            // (maintainer bench) - the slack it eats was the old gutter's
+            OrdersRect = new Rectangle(x + SysNameRect.Width + ShipNameRect.Width + RoleRect.Width + FleetRect.Width, y, (int)(TotalEntrySize.Width * 0.24f), TotalEntrySize.Height);
             RefitRect = new Rectangle(OrdersRect.X + OrdersRect.Width, y, 125, TotalEntrySize.Height);
             StrRect = new Rectangle(RefitRect.X + RefitRect.Width, y, 60, TotalEntrySize.Height);
             MaintRect = new Rectangle(StrRect.X + StrRect.Width, y, 60, TotalEntrySize.Height);
@@ -452,28 +445,32 @@ namespace Ship_Game
             ShipIconRect = new Rectangle(ShipNameRect.X + 5, ShipNameRect.Y + 2, 28, 28);
             ShipNameEntry.SetPos(ShipIconRect.Right + 10, 2 + SysNameRect.CenterY() - ShipNameEntry.Font.LineSpacing / 2);
 
+            // the icon trio packs tight, centred in its column (maintainer bench): the old
+            // layout kept a slot for the disabled Patrol button, which left a hole between
+            // the icons. Every row keeps all three slots so the trio never shifts.
+            SubTexture exploreTex = ResourceManager.Texture("NewUI/icon_order_explore_hover1");
+            SubTexture refitTex   = ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover2");
+            SubTexture scrapTex   = ResourceManager.Texture("NewUI/icon_queue_delete_hover1");
+            const int IconGap = 4;
+            int iconsW = exploreTex.Width + IconGap + refitTex.Width + IconGap + scrapTex.Width;
+            int ix = RefitRect.X + (RefitRect.Width - iconsW) / 2;
+            Rectangle IconSlot(SubTexture t)
+            {
+                var r = new Rectangle(ix, RefitRect.Y + RefitRect.Height / 2 - t.Height / 2, t.Width, t.Height);
+                ix += t.Width + IconGap;
+                return r;
+            }
+
+            Rectangle explore = IconSlot(exploreTex);
             if (IsCombat)
             {
-                Rectangle explore = new Rectangle(RefitRect.X + RefitRect.Width / 4 + 5 - ResourceManager.Texture("NewUI/icon_order_explore_hover1").Width, RefitRect.Y + RefitRect.Height / 2 - ResourceManager.Texture("NewUI/icon_order_explore_hover1").Height / 2, ResourceManager.Texture("NewUI/icon_order_explore_hover1").Width, ResourceManager.Texture("NewUI/icon_order_explore_hover1").Height);
-                Rectangle patrol = new Rectangle(RefitRect.X + RefitRect.Width / 4 + 10, RefitRect.Y + RefitRect.Height / 2 - ResourceManager.Texture("NewUI/icon_order_patrol_hover2").Height / 2, ResourceManager.Texture("NewUI/icon_order_patrol_hover2").Width, ResourceManager.Texture("NewUI/icon_order_patrol_hover2").Height);
                 ExploreButton.r = explore;
-                //PatrolButton.r = patrol; // FB - Disabled until we make it better
                 ExploreButton.Tooltip = GameText.OrdersThisShipToExplore;
-                //PatrolButton.LocalizerTip = 7080; // FB - Disabled until we make it better
             }
-
-            Rectangle refit = new Rectangle(RefitRect.X + RefitRect.Width / 4 + 15 + ResourceManager.Texture("NewUI/icon_order_patrol_hover1").Width, RefitRect.Y + RefitRect.Height / 2 - ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover2").Height / 2, ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover2").Width, ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover2").Height);
-            Rectangle scrap = new Rectangle(RefitRect.X + RefitRect.Width / 4 + 20 + ResourceManager.Texture("NewUI/icon_order_patrol_hover1").Width + ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover1").Width, RefitRect.Y + RefitRect.Height / 2 - ResourceManager.Texture("NewUI/icon_queue_delete_hover1").Height / 2, ResourceManager.Texture("NewUI/icon_queue_delete_hover1").Width, ResourceManager.Texture("NewUI/icon_queue_delete_hover1").Height);                       
-            RefitButton.r = refit;
-            ScrapButton.r = scrap;
+            RefitButton.r = IconSlot(refitTex);
+            ScrapButton.r = IconSlot(scrapTex);
             RefitButton.Tooltip = GameText.OpensAMenuAllowingYou;
             ScrapButton.Tooltip = GameText.OrdersTheShipToReturn;
-
-            float width = (int)(OrdersRect.Width * 0.8f);
-            while (width % 10f != 0f)
-            {
-                width = width + 1f;
-            }
         }
     }
 }
