@@ -40,7 +40,6 @@ namespace Ship_Game.Ships
         readonly ProgressBar ConstructionBar;
         readonly ProgressBar MiningBar;
         UITextEntry ShipNameArea;
-        private readonly SlidingElement SlidingElement;
         private readonly Rectangle DefenseRect;
         private readonly Rectangle TroopRect;
         private readonly Rectangle FlagRect;  //fbedard
@@ -57,7 +56,6 @@ namespace Ship_Game.Ships
             Sel = new Selector(r, Color.Black);
             TransitionOnTime = TimeSpan.FromSeconds(0.25);
             TransitionOffTime = TimeSpan.FromSeconds(0.25);
-            SlidingElement = new SlidingElement(new Rectangle(r.X - 100, r.Y + r.Height - 140, 530, 130));
             Housing = r;
             LeftRect = new Rectangle(r.X, r.Y + 44, 180, r.Height - 44);
             RightRect = new Rectangle(LeftRect.X + LeftRect.Width, LeftRect.Y, 220, LeftRect.Height);
@@ -111,14 +109,10 @@ namespace Ship_Game.Ships
             OrdersButtons = new ShipStanceButtons(universe, ordersBarPos);
         }
 
-        void DrawOrderButtons(SpriteBatch batch, float transitionOffset)
+        void DrawOrderButtons(SpriteBatch batch)
         {
             foreach (OrdersButton ob in Orders)
-            {
-                Rectangle r = ob.ClickRect;
-                r.X -= (int)(transitionOffset * 300f);
-                ob.Draw(batch, ScreenManager.input.CursorPosition, r);
-            }
+                ob.Draw(batch, ScreenManager.input.CursorPosition, ob.ClickRect);
         }
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
@@ -126,12 +120,26 @@ namespace Ship_Game.Ships
             if (Universe.SelectedShip == null || s?.ShipData == null)
                 return;  //fbedard
 
-            float transitionOffset = 0f.SmoothStep(1f, TransitionPosition);
-            int columns = Orders.Count / 2 + Orders.Count % 2;
-            SlidingElement.Draw(ScreenManager, (int)(columns * 55 * (1f - TransitionPosition)) + (SlidingElement.Open ? 20 - columns : 0));
+            // Ludoal fork: the orders ride a VISIBLE strip above the cartouche now - the 2013
+            // sliding drawer hid a variable set of actions behind a click, and an order you
+            // cannot see is an order you forget (maintainer decision, option B).
+            DrawOrderButtons(batch);
 
-            DrawOrderButtons(batch, transitionOffset);
-            batch.Draw(ResourceManager.Texture("SelectionBox/unitselmenu_main"), Housing, Color.White);
+            // the minimap's recipe instead of the sculpted unitselmenu texture: a near-opaque
+            // flat ground and a rounded grey rule, so the cartouche reads with the rest of the
+            // reworked interface
+            Rectangle plate = Housing;
+            plate.Inflate(-2, -2);
+            batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
+            // the honeycomb body lifted from the old sculpted texture (maintainer: "celui-la est
+            // plutot style") - at its NATIVE height, anchored to the plate's foot like in the
+            // original, so the hexes keep their shape instead of stretching
+            SubTexture hexBg = ResourceManager.Texture("NewUI/hex_cartouche_bg");
+            int hexH = plate.Height < 130 ? plate.Height : 130;
+            batch.Draw(hexBg, new Rectangle(plate.X, plate.Bottom - hexH, plate.Width, hexH), Color.White);
+            UITheme.DrawPlate(batch, Housing, Color.Transparent,
+                              new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
+                              ruleWidthOverride: 3);
             if (s.Loyalty.CanBeScannedByPlayer)
                 GridButton.Draw(batch, elapsed);
             // Ludoal fork: follow toggle reflects the live chase state — hidden for
@@ -518,12 +526,6 @@ namespace Ship_Game.Ships
                 return false;
             }
 
-            if (SlidingElement.HandleInput(input))
-            {
-                State = SlidingElement.Open ? ElementState.TransitionOn : ElementState.TransitionOff;
-                return true;
-            }
-
             if (ShipNameArea.HandleInput(input))
                 return true;
 
@@ -587,14 +589,10 @@ namespace Ship_Game.Ships
             if (ElementRect.HitTest(input.CursorPosition))
                 return true;
 
-            if (State == ElementState.Open)
+            // the strip is always live - no drawer to open first
+            foreach (OrdersButton ordersButton in Orders)
             {
-                foreach (OrdersButton ordersButton in Orders)
-                {
-                    if (ordersButton.HandleInput(input))
-                        return true;
-                }
-                if (SlidingElement.ButtonHousing.HitTest(input.CursorPosition))
+                if (ordersButton.HandleInput(input))
                     return true;
             }
             return false;
@@ -751,19 +749,16 @@ namespace Ship_Game.Ships
                 Orders.Add(sc);
             }
 
-            int ex = 0;
-            int y = 0;
+            // Ludoal fork: the orders strip - one row docked ABOVE the cartouche, growing with
+            // the ship's own set (a freighter shows its trade orders, a carrier its fighter
+            // toggles). Wraps to a second row above the first past seven, which only the
+            // busiest freighters reach.
             for (int i = 0; i < Orders.Count; i++)
             {
                 OrdersButton ob = Orders[i];
-                if (i % 2 == 0 && i > 0)
-                {
-                    ex++;
-                    y = 0;
-                }
-                ob.ClickRect.X = ElementRect.X + ElementRect.Width + 2 + 52 * ex;
-                ob.ClickRect.Y = SlidingElement.Housing.Y + 15 + y * 52;
-                y++;
+                int col = i % 7, row = i / 7;
+                ob.ClickRect.X = ElementRect.X + col * 52;
+                ob.ClickRect.Y = ElementRect.Y - 52 - 4 - row * 52;
             }
         }
     }

@@ -118,7 +118,20 @@ namespace Ship_Game
             ToolTipItems.Clear();
             ToolTipItems.Add(new TippedItem(PopRect, GameText.PopulationInBillionsVsMax));
 
-            batch.Draw(ResourceManager.Texture("SelectionBox/unitselmenu_main"), Housing, Color.White);
+            // Ludoal fork: the minimap's recipe instead of the sculpted unitselmenu texture -
+            // a near-opaque flat ground and a rounded grey rule (maintainer, last reskin)
+            Rectangle plate = Housing;
+            plate.Inflate(-2, -2);
+            batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
+            // the honeycomb body lifted from the old sculpted texture (maintainer: "celui-la est
+            // plutot style") - at its NATIVE height, anchored to the plate's foot like in the
+            // original, so the hexes keep their shape instead of stretching
+            SubTexture hexBg = ResourceManager.Texture("NewUI/hex_cartouche_bg");
+            int hexH = plate.Height < 130 ? plate.Height : 130;
+            batch.Draw(hexBg, new Rectangle(plate.X, plate.Bottom - hexH, plate.Width, hexH), Color.White);
+            UITheme.DrawPlate(batch, Housing, Color.Transparent,
+                              new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
+                              ruleWidthOverride: 3);
             var namePos = new Vector2(Housing.X + 15, Housing.Y + 65);
 
             Graphics.Font font = Fonts.Arial8Bold;

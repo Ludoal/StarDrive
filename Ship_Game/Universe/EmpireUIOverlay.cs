@@ -191,11 +191,14 @@ namespace Ship_Game
             if (Universe.IsExiting || Universe.IsDisposed)
                 return;
 
-            // ⚠ NO veil here. A flat band dims the starfield along with the foreground, and this
-            // bar is drawn BY each screen, so any fill painted in it lands ON TOP of that
-            // screen's own content (the minimap ground was showing through Colony's corner).
-            // Hiding world icons under the bar while keeping the stars means clipping the
-            // world-overlay draw pass, not painting over it - a separate job.
+            // Ludoal fork: the veil under the bar. It dims the stars along with the foreground -
+            // keeping the starfield while hiding world icons would mean scissor-clipping the
+            // world-overlay draw pass, and the maintainer judged the flat band acceptable until
+            // then. Top band only: it covers 0..veilBottom, under everything the screens draw,
+            // so unlike the late minimap ground it cannot land on their content.
+            int veilBottom = BarTop + BarH + 10;
+            batch.FillRectangle(new Rectangle(0, 0, Universe.ScreenWidth, veilBottom),
+                                new Color(6, 8, 12).Alpha(0.82f));
 
             // Which group is open is read from the screen stack rather than passed in: fifteen
             // screens draw this bar, and a parameter is a parameter one of them will forget.

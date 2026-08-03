@@ -33,7 +33,6 @@ namespace Ship_Game
         public Rectangle Shields;
         public ToggleButton GridButton;
         readonly Rectangle Housing;
-        readonly SlidingElement SlidingElement;
         private readonly Rectangle FlagRect;
         readonly Rectangle DefenseRect;
         readonly Rectangle TroopRect;
@@ -53,10 +52,8 @@ namespace Ship_Game
             Selector = new Selector(r, Color.Black);
             TransitionOnTime = TimeSpan.FromSeconds(0.25);
             TransitionOffTime = TimeSpan.FromSeconds(0.25);
-            var sliderRect = new Rectangle(r.X - 100, r.Y + r.Height - 140, 530, 130);
             LeftRect = new Rectangle(r.X, r.Y + 44, 180, r.Height - 44);
             FlagRect = new Rectangle(r.X + 365, r.Y + 71, 18, 18);
-            SlidingElement = new SlidingElement(sliderRect);
             RightRect = new Rectangle(LeftRect.X + LeftRect.Width, LeftRect.Y, 220, LeftRect.Height);
             float spacing = LeftRect.Height - 26 - 96;
             Power = new Rectangle(RightRect.X, LeftRect.Y + 12, 20, 20);
@@ -99,20 +96,27 @@ namespace Ship_Game
             if (Screen.SelectedShips == null || SelectedShipsSL.NumEntries == 0)
                 return;  //fbedard
 
-            float transitionOffset = 0f.SmoothStep(1f, TransitionPosition);
-            int columns = Orders.Count / 2 + Orders.Count % 2;
+            // Ludoal fork: the orders ride a visible strip above the cartouche - same call as
+            // the single-ship cartouche, the drawer went with it (maintainer, option B).
             if (AllShipsMine)
             {
-                SlidingElement.Draw(ScreenManager, (int)(columns * 55 * (1f - TransitionPosition)) + (SlidingElement.Open ? 20 - columns : 0));
                 foreach (OrdersButton ob in Orders)
-                {
-                    Rectangle r = ob.ClickRect;
-                    r.X -= (int)(transitionOffset * 300f);
-                    ob.Draw(batch, ScreenManager.input.CursorPosition, r);
-                }
+                    ob.Draw(batch, ScreenManager.input.CursorPosition, ob.ClickRect);
             }
 
-            batch.Draw(ResourceManager.Texture("SelectionBox/unitselmenu_main"), Housing, Color.White);
+            // the minimap's recipe instead of the sculpted unitselmenu texture
+            Rectangle plate = Housing;
+            plate.Inflate(-2, -2);
+            batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
+            // the honeycomb body lifted from the old sculpted texture (maintainer: "celui-la est
+            // plutot style") - at its NATIVE height, anchored to the plate's foot like in the
+            // original, so the hexes keep their shape instead of stretching
+            SubTexture hexBg = ResourceManager.Texture("NewUI/hex_cartouche_bg");
+            int hexH = plate.Height < 130 ? plate.Height : 130;
+            batch.Draw(hexBg, new Rectangle(plate.X, plate.Bottom - hexH, plate.Width, hexH), Color.White);
+            UITheme.DrawPlate(batch, Housing, Color.Transparent,
+                              new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
+                              ruleWidthOverride: 3);
             var namePos = new Vector2(Housing.X + 41, Housing.Y + 64);
             byte alpha  = Screen.CurrentFlashColor.A;
 
@@ -282,13 +286,7 @@ namespace Ship_Game
             {
                 if (OrdersButtons.HandleInput(input)) return true;
 
-                if (SlidingElement.HandleInput(input))
-                {
-                    State = !SlidingElement.Open ? ElementState.TransitionOff : ElementState.TransitionOn;
-                    return true;
-                }
-                
-                if (State == ElementState.Open)
+                // the strip is always live - no drawer to open first
                 {
                     bool orderHover = false;
                     foreach (OrdersButton ob in Orders)
@@ -332,8 +330,6 @@ namespace Ship_Game
             }
 
             if (ElementRect.HitTest(input.CursorPosition))
-                return true;
-            if (SlidingElement.ButtonHousing.HitTest(input.CursorPosition))
                 return true;
             return false;
         }
@@ -518,19 +514,14 @@ namespace Ship_Game
             };
             Orders.Add(scrap);
 
-            int ex = 0;
-            int y = 0;
+            // one row docked above the cartouche, wrapping past seven - the same strip the
+            // single-ship cartouche wears
             for (int i = 0; i < Orders.Count; i++)
             {
                 OrdersButton ob = Orders[i];
-                if (i % 2 == 0 && i > 0)
-                {
-                    ex++;
-                    y = 0;
-                }
-                ob.ClickRect.X = ElementRect.X + ElementRect.Width + 2 + 52 * ex;
-                ob.ClickRect.Y = SlidingElement.Housing.Y + 15 + y * 52;
-                y++;
+                int col = i % 7, row = i / 7;
+                ob.ClickRect.X = ElementRect.X + col * 52;
+                ob.ClickRect.Y = ElementRect.Y - 52 - 4 - row * 52;
             }
         }
     }
