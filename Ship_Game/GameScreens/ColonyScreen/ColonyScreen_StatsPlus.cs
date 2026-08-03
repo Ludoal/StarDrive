@@ -73,8 +73,9 @@ namespace Ship_Game
         {
             // headers close on the same right edge the numbers reach (pivot + a ".00" of room)
             float frac = TextFont.TextWidth(".00");
+            Vector2 pos = c; // a local function cannot capture a ref parameter (CS1628)
             void H(string h, float pivot) =>
-                batch.DrawString(TextFont, h, new Vector2(c.X + pivot + frac - TextFont.TextWidth(h), c.Y), Color.DarkGray);
+                batch.DrawString(TextFont, h, new Vector2(pos.X + pivot + frac - TextFont.TextWidth(h), pos.Y), Color.DarkGray);
             H("from pop", SPYieldColPop);
             H("flat",     SPYieldColFlat);
             H("eaten",    SPYieldColEaten);
