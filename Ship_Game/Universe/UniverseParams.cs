@@ -68,6 +68,9 @@ public class UniverseParams
     [StarData(DefaultValue=true)] public bool PlanetsScreenHideInhospitable = true;
     [StarData(DefaultValue=true)] public bool DisableInhibitionWarning = true;
     [StarData(DefaultValue=false)] public bool EnableStarvationWarning = false;
+    // Ludoal fork: the Automation tab lists DISABLES (reviewer doctrine, maintainer call) -
+    // same [StarData] flag read in the negative, not serialized itself. Default: disabled.
+    public bool DisableStarvationWarning { get => !EnableStarvationWarning; set => EnableStarvationWarning = !value; }
     [StarData(DefaultValue=true)] public bool AllowPlayerInterTrade  = true;
     [StarData] public bool SuppressOnBuildNotifications;
     [StarData] public bool PlanetScreenHideOwned;

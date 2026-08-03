@@ -76,10 +76,12 @@ namespace Ship_Game
             notifications.AddCheckbox(() => Universe.UState.P.DisableInhibitionWarning, title: GameText.DisableInhibitionAlerts, tooltip: GameText.InhibitionAlertsAreDisplayedWhen);
             notifications.AddCheckbox(() => Universe.UState.P.DisableVolcanoWarning, title: GameText.DisableVolcanoAlerts, tooltip: GameText.DisableVolcanoActivationOrDeactivation);
             notifications.AddCheckbox(() => Universe.UState.P.DisableCrashSiteWarning, title: GameText.DisableCrashSiteAlerts, tooltip: GameText.DisableCrashSiteAlertsTip);
+            // Disable like its siblings (reviewer doctrine): one verb for the whole box,
+            // checked by default - same [StarData] flag, read in the negative
+            notifications.AddCheckbox(() => Universe.UState.P.DisableStarvationWarning, title: "Disable Starvation Warnings",
+                                      tooltip: GameText.EnableStarvationWarningTip);
             notifications.AddCheckbox(() => player.data.SpyMute, title: "Disable Espionage Messages",
                                       tooltip: "Disable all Espionage notifications.");
-            notifications.Add(new UILabel(" ", Fonts.Arial12Bold));
-            notifications.AddCheckbox(() => Universe.UState.P.EnableStarvationWarning, title: GameText.EnableStarvationWarning, tooltip: GameText.EnableStarvationWarningTip);
 
             UIList empire = NewBox(new RectF(x0, top, BoxW, EmpireBoxH), "Empire");
             empire.AddCheckbox(() => player.AutoTaxes, title: GameText.AutoTaxes, tooltip: GameText.YourEmpireWillAutomaticallyManage3);
