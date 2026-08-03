@@ -41,9 +41,9 @@ namespace Ship_Game.GameScreens.EspionageNew
             AvailableOps  = Add(new UILabel(GameText.EspionageOperationsTitle, Fonts.Arial12Bold, Color.Wheat));
             LevelProgress = new ProgressBar(rect, 50, 0);
             LevelProgress.color = "green";
-            TitleFont = screen.LowRes ? Fonts.Arial12Bold : Fonts.Arial20Bold;
-            Font      = screen.LowRes ? Fonts.Arial8Bold : Fonts.Arial12Bold;
-            Font Textfont = screen.LowRes? Fonts.Arial8Bold: Fonts.Arial12;
+            TitleFont = Fonts.Arial20Bold;
+            Font      = Fonts.Arial12Bold;
+            Font Textfont = Fonts.Arial12;
             int levelDescriptionY = rect.Y + 35;
             int passiveY = rect.Bottom - Font.LineSpacing*5;
             switch (level) 
