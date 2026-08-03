@@ -13,7 +13,7 @@ namespace Ship_Game;
 /// <summary>
 /// In-Game Menu for Load/Save/Options and Exit to Windows
 /// </summary>
-public sealed class GamePlayMenuScreen : GameScreen
+public sealed class GamePlayMenuScreen : PopupWindow
 {
     readonly UniverseScreen Universe;
     UILabel SavingText;
@@ -22,53 +22,37 @@ public sealed class GamePlayMenuScreen : GameScreen
     UIButton ExitToMainMenu;
     UIButton ExitToWindows;
 
-    public GamePlayMenuScreen(UniverseScreen screen) : base(screen, toPause: screen)
+    // Ludoal fork: 200x330 -> 380x360. Width is not cosmetic here: the popup frame's gradient
+    // bands are 433px wide and only shrink to fit, so a window under ~493 gets a squeezed
+    // band - and at 260 it was narrower than the frame's own furniture (maintainer
+    // observation). 380 carries the 168px buttons with room either side.
+    public GamePlayMenuScreen(UniverseScreen screen) : base(screen, 380, 360)
     {
         Universe = screen;
-        IsPopup = true;
         TransitionOnTime  = 0.25f;
         TransitionOffTime = 0.25f;
     }
 
     public override void LoadContent()
     {
-        RemoveAll();
+        // the window names itself in its own title bar; frame and close cross are
+        // PopupWindow's - base.LoadContent goes FIRST and lays them out. Escape and O
+        // still close it on top of the cross.
+        TitleText = "Menu";
+        base.LoadContent();
 
         Vector2 c = ScreenCenter;
-        // Ludoal fork: 200x330 -> 380x360. Width is not cosmetic here: the popup frame's gradient
-        // bands are 433px wide and only shrink to fit, so a window under ~493 gets a squeezed
-        // band - and at 260 it was narrower than the frame's own furniture (maintainer
-        // observation). 380 carries the 168px buttons with room either side.
-        var frame = new RectF(c.X - 190, c.Y - 180, 380, 360);
-        Add(new Menu2(frame));
-
-        // Ludoal fork: the panel had no title where every other one names itself - centred in the
-        // title bar, the way PopupWindow places its own, so Options, the Codex and this one read
-        // as the same furniture.
-        // ⚠ the frame is a PopupFrame now, so the title and the cross take THEIR positions from
-        // it - the old rework-group ones put the cross outside the border entirely.
-        var box = new Rectangle((int)frame.X, (int)frame.Y, (int)frame.W, (int)frame.H);
-        var menuTitle = Add(new UILabel(Vector2.Zero, "Menu", UITheme.WindowTitle, UITheme.TextPrimary));
-        menuTitle.Pos = new Vector2(frame.X + frame.W / 2 - menuTitle.Size.X / 2,
-                                    frame.Y + PopupFrame.TitleBarTop
-                                    + (PopupFrame.TitleBarHeight - menuTitle.Size.Y) / 2);
-
-        // Ludoal fork: the close cross every other window carries. Escape and O still close it -
-        // this is the way OUT that a window titled like Options ought to show.
-        Vector2 closePos = PopupFrame.ClosePos(box);
-        Add(new CloseButton(closePos.X, closePos.Y));
-
         SavingText = Add(new UILabel(GameText.Saving, Fonts.Pirulen16, Color.White));
         SavingText.Visible = false;
         SavingText.TextAlign = TextAlign.Center;
-        SavingText.Pos = new Vector2(c.X - SavingText.Size.X*0.5f, 
+        SavingText.Pos = new Vector2(c.X - SavingText.Size.X*0.5f,
             50 + Fonts.Pirulen16.LineSpacing * 2);
 
         // ⚠ derived from the frame, not from screen centre: the two used to be placed
         // independently, so widening the window left the buttons where they were.
         const float btnW = 168;
-        UIList buttons = AddList(new Vector2(frame.X + (frame.W - btnW) / 2,
-                                             PopupFrame.ContentTop(box) + 12));
+        UIList buttons = AddList(new Vector2(Rect.X + (Rect.Width - btnW) / 2,
+                                             PopupFrame.ContentTop(Rect) + 12));
         buttons.Padding = new Vector2(2f, 12f);
         buttons.LayoutStyle = ListLayoutStyle.ResizeList;
 
@@ -111,10 +95,9 @@ public sealed class GamePlayMenuScreen : GameScreen
 
     public override void Draw(SpriteBatch batch, DrawTimes elapsed)
     {
+        // base.Draw paints the window frame and every child inside its own batch
         ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-        batch.SafeBegin();
         base.Draw(batch, elapsed);
-        batch.SafeEnd();
     }
 
     // double layer of security, the Save/Load/Exit actions must be double-checked

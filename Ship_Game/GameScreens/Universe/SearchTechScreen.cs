@@ -10,37 +10,34 @@ using Ship_Game.UI;
 
 namespace Ship_Game
 {
-    public sealed class SearchTechScreen : GameScreen
+    public sealed class SearchTechScreen : PopupWindow
     {
         readonly ResearchScreenNew Screen;
-        Menu2 Window;
         ScrollList<SearchTechItem> TechList;
         UITextEntry SearchTech;
 
-        public SearchTechScreen(ResearchScreenNew screen) : base(screen, toPause: null)
+        public SearchTechScreen(ResearchScreenNew screen) : base(screen, 400, (int)(GameBase.ScreenHeight * 0.8f))
         {
-            IsPopup = true;
             TransitionOnTime  = 0.25f;
             TransitionOffTime = 0.25f;
             Screen = screen;
-
         }
-        
+
         public override void LoadContent()
         {
-            float height = ScreenHeight * 0.8f;
-            Window = Add(new Menu2(new RectF(ScreenWidth / 2 - 125, ScreenHeight / 2 - (height/2), 400, height)));
+            // the window names itself in its own title bar; the frame and the close cross are
+            // PopupWindow's - base.LoadContent goes FIRST and lays them out
+            Rect = new Rectangle(Rect.X, Rect.Y, 400, (int)(ScreenHeight * 0.8f));
+            TitleText = Localizer.Token(GameText.SearchTechnology);
+            base.LoadContent();
 
-            CloseButton(Window.Menu.Right - 40, Window.Menu.Y + 20);
-            LocalizedText title = GameText.SearchTechnology;
-            Vector2 titlePos = new(Window.Menu.CenterTextX(title, Fonts.Arial20Bold), Window.Menu.Y + 35);
-            Label(titlePos, title, Fonts.Arial20Bold, Colors.Cream);
+            Rectangle inner = PopupFrame.ContentArea(Rect);
 
-            RectF techList = new(Window.X + 20, Window.Y + 95, Window.Width - 40, Window.Height - 125);
+            RectF techList = new(inner.X + 10, inner.Y + 36, inner.Width - 20, inner.Bottom - (inner.Y + 36));
             TechList = Add(new SubmenuScrollList<SearchTechItem>(techList, 125, ListStyle.Blue)).List;
             TechList.OnClick = (item) => ResearchToTech(item.Tech);
 
-            Rectangle rect = new RectF(Window.X + 20, Window.Y + 66, Window.Width - 40, 20);
+            Rectangle rect = new RectF(inner.X + 10, inner.Y + 6, inner.Width - 20, 20);
             SearchTech = Add(new UITextEntry(rect.Bevel(-4, -2), Fonts.Arial12Bold,
                                              GameText.StartTypingToFindTechs));
             SearchTech.Background = new Submenu(rect, SubmenuStyle.Blue);
@@ -55,10 +52,9 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
+            // base.Draw paints the window frame and every child inside its own batch
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-            batch.SafeBegin();
             base.Draw(batch, elapsed);
-            batch.SafeEnd();
         }
 
         void PopulateTechs(string keyword)
@@ -82,7 +78,7 @@ namespace Ship_Game
 
         SearchTechItem CreateQueueItem(TreeNode node)
         {
-            var defaultPos = new Vector2(Window.X + 5, Window.Y);
+            var defaultPos = new Vector2(Rect.X + 5, Rect.Y);
             return new(Screen, node, defaultPos) { List = TechList };
         }
 

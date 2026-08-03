@@ -15,7 +15,7 @@ using Ship_Game.Universe;
 
 namespace Ship_Game
 {
-    public sealed class ShipDesignSaveScreen : GameScreen
+    public sealed class ShipDesignSaveScreen : PopupWindow
     {
         readonly ShipDesignScreen Screen;
         UniverseState Universe => Screen.ParentUniverse.UState;
@@ -29,13 +29,11 @@ namespace Ship_Game
         readonly bool Hulls;
 
         public ShipDesignSaveScreen(ShipDesignScreen screen, string shipName, bool hullDesigner = false)
-            : base(screen, toPause: null)
+            : base(screen, 500, 600)
         {
             Screen = screen;
-            Rect = new Rectangle(ScreenWidth / 2 - 250, ScreenHeight / 2 - 300, 500, 600);
             BaseWIPName = shipName.Contains("_WIP") ? shipName : "";
             ShipName = shipName.Replace("/", "-").Replace("_", "-");
-            IsPopup = true;
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
             Hulls = hullDesigner;
@@ -79,11 +77,16 @@ namespace Ship_Game
 
         public override void LoadContent()
         {
-            RectF bkg = new(Rect.X + 20, Rect.Y + 20, Rect.Width - 40, 80);
-            Submenu background = Add(new Submenu(bkg, Hulls ? GameText.SaveHullDesign : GameText.SaveShipDesign));
-            background.SetBackground(new Menu1(Rect));
+            // the window names itself in its own title bar; frame and close cross are
+            // PopupWindow's - base.LoadContent goes FIRST and lays them out
+            TitleText = Localizer.Token(Hulls ? GameText.SaveHullDesign : GameText.SaveShipDesign);
+            base.LoadContent();
 
-            RectF subAllDesignsR = new(background.X, background.Y + 90, background.Width, Rect.Height - background.Height - 50);
+            Rectangle inner = PopupFrame.ContentArea(Rect);
+            RectF bkg = new(inner.X + 25, inner.Y + 4, inner.Width - 50, 80);
+            Submenu background = Add(new Submenu(bkg, Hulls ? GameText.SaveHullDesign : GameText.SaveShipDesign));
+
+            RectF subAllDesignsR = new(background.X, background.Y + 90, background.Width, inner.Bottom - (background.Y + 90));
             SubAllDesigns = Add(new SubmenuScrollList<ShipDesignListItem>(subAllDesignsR, GameText.SimilarDesignNames));
 
             EnterNameArea = Add(new UITextEntry(background.Pos + new Vector2(20, 40), GameText.DesignName));
@@ -106,8 +109,6 @@ namespace Ship_Game
                 else
                     ShipInfoOverlay.Hide();
             };
-
-            base.LoadContent();
         }
 
         void PopulateDesigns(string shipNameMatch)
@@ -137,10 +138,9 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
+            // base.Draw paints the window frame and every child inside its own batch
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-            batch.SafeBegin();
             base.Draw(batch, elapsed);
-            batch.SafeEnd();
         }
 
         void OnSaveClicked(UIButton b)

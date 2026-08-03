@@ -16,10 +16,9 @@ using Ship_Game.Utils;
 
 namespace Ship_Game
 {
-    public sealed class ModManager : GameScreen
+    public sealed class ModManager : PopupWindow
     {
         readonly MainMenuScreen MainMenu;
-        Rectangle Window;
         SubmenuScrollList<ModsListItem> AllSaves;
         Vector2 TitlePosition;
         UITextEntry EnterNameArea;
@@ -30,10 +29,9 @@ namespace Ship_Game
         ScrollList<ModsListItem> ModsList;
         ModEntry SelectedMod;
 
-        public ModManager(MainMenuScreen mainMenu) : base(mainMenu, toPause: null)
+        public ModManager(MainMenuScreen mainMenu) : base(mainMenu, 850, 600)
         {
             MainMenu = mainMenu;
-            IsPopup = true;
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
         }
@@ -53,13 +51,16 @@ namespace Ship_Game
 
         public override void LoadContent()
         {
-            Window = new(ScreenWidth / 2 - 425, ScreenHeight / 2 - 300, 850, 600);
-            Add(new Menu1(Window));
+            // the window names itself in its own title bar; frame and close cross are
+            // PopupWindow's - base.LoadContent goes FIRST and lays them out
+            TitleText = Localizer.Token(GameText.LoadModification);
+            base.LoadContent();
 
-            RectF sub = new(Window.X + 20, Window.Y + 20, Window.Width - 40, 80);
+            Rectangle inner = PopupFrame.ContentArea(Rect);
+            RectF sub = new(inner.X + 25, inner.Y + 4, inner.Width - 50, 80);
             Add(new Submenu(sub, GameText.LoadModification));
 
-            RectF scrollList = new(sub.X, sub.Y + 90, sub.W, Window.Height - sub.H - 50);
+            RectF scrollList = new(sub.X, sub.Y + 90, sub.W, inner.Bottom - (sub.Y + 90));
             LoadMods(scrollList);
 
             TitlePosition = new Vector2(sub.X + 20, sub.Y + 45);
@@ -67,11 +68,9 @@ namespace Ship_Game
             EnterNameArea.SetColors(Color.Orange, Color.White);
 
             ButtonSmall(sub.X + sub.W - 88, EnterNameArea.Y - 2, text:GameText.Load, click: OnLoadClicked);
-            Visit = Button(Window.X + 3, Window.Y + Window.Height + 20, text:GameText.LoadModsWeb, click: OnVisitClicked);
-            UnloadMod = Button(Window.X + Window.Width - 172, Window.Y + Window.Height + 20, "Unload Mod", click:OnUnloadModClicked);
+            Visit = Button(Rect.X + 3, Rect.Bottom + 20, text:GameText.LoadModsWeb, click: OnVisitClicked);
+            UnloadMod = Button(Rect.Right - 172, Rect.Bottom + 20, "Unload Mod", click:OnUnloadModClicked);
             UnloadMod.Enabled = GlobalStats.HasMod;
-
-            base.LoadContent();
         }
 
         void LoadMods(RectF scrollList)
@@ -127,10 +126,9 @@ namespace Ship_Game
         {
             if (IsExiting)
                 return;
+            // base.Draw paints the window frame and every child inside its own batch
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-            batch.SafeBegin();
             base.Draw(batch, elapsed);
-            batch.SafeEnd();
         }
 
         void OnLoadClicked(UIButton b)

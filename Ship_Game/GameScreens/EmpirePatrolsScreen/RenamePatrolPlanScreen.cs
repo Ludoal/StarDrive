@@ -5,59 +5,45 @@ using Ship_Game.Fleets;
 
 namespace Ship_Game
 {
-    public sealed class RenamePatrolPlanScreen : GameScreen
+    public sealed class RenamePatrolPlanScreen : PopupWindow
     {
         readonly EmpirePatrolsScreen Screen;
         readonly FleetPatrol FleetPatrol;
         UITextEntry PatrolNameEntry;
         UIButton RenameButton;
         UIButton CancelButton;
-        Menu1 Menu;
         UILabel NameAlreadyExistsLabel;
 
         public RenamePatrolPlanScreen(EmpirePatrolsScreen screen, FleetPatrol fleetPatrol)
-            : base(screen, toPause: null)
+            : base(screen, 500, 240)
         {
             Screen = screen;
             FleetPatrol = fleetPatrol;
-            IsPopup = true;
             TransitionOnTime = 0.25f;
         }
 
         public override void LoadContent()
         {
-            Menu = Add(new Menu1((int)Screen.Width / 2 - 250, (int)Screen.Height / 2 - 100, 500, 200));
-            RectF subRect = new (Menu.X + 15, Menu.Y + 15, Menu.Width - 30, Menu.Height - 30);
-            Add(new Submenu(subRect, "Change Patrol Plan Name"));
-            PatrolNameEntry = Add(new UITextEntry(Menu.X + 30, Menu.Y + 50, 200, Fonts.Arial20Bold, FleetPatrol.Name));
+            // the window names itself in its own title bar; frame and close cross are
+            // PopupWindow's - base.LoadContent goes FIRST and lays them out
+            TitleText = "Change Patrol Plan Name";
+            base.LoadContent();
+
+            Rectangle inner = PopupFrame.ContentArea(Rect);
+            PatrolNameEntry = Add(new UITextEntry(inner.X + 15, inner.Y + 12, 200, Fonts.Arial20Bold, FleetPatrol.Name));
             PatrolNameEntry.AutoCaptureOnHover = true;
             PatrolNameEntry.AutoCaptureOnKeys = true;
             PatrolNameEntry.MaxCharacters = 40;
             PatrolNameEntry.OnTextChanged = OnPatrolNameTextChanged;
             PatrolNameEntry.Background = new Submenu(new RectF(PatrolNameEntry.X-10, PatrolNameEntry.Y-3, PatrolNameEntry.Width+220, PatrolNameEntry.Height+6));
-            NameAlreadyExistsLabel = Add(new UILabel(Menu.X + 30, Menu.Y + 90, GameText.PatrolNameAlreadyExists));
+            NameAlreadyExistsLabel = Add(new UILabel(inner.X + 15, PatrolNameEntry.Y + 40, GameText.PatrolNameAlreadyExists));
             NameAlreadyExistsLabel.Color = Color.Red;
-            Add(new CloseButton(Menu.Right - 40, Menu.Y + 15));
-            RenameButton = ButtonMedium(Menu.X + 30, Menu.Bottom - 50, GameText.RenamePatrol, OnRenameClicked);
-            CancelButton = ButtonBigDip(Menu.X + 180, Menu.Bottom - 50, GameText.RenamePatrol, OnCancelClicked);
-            base.LoadContent();
-        }
-
-        public override void PerformLayout()
-        {
-            RenameButton.Enabled = false;
             NameAlreadyExistsLabel.Visible = false;
+            RenameButton = ButtonMedium(inner.X + 15, inner.Bottom - 40, GameText.RenamePatrol, OnRenameClicked);
+            CancelButton = ButtonBigDip(inner.X + 165, inner.Bottom - 40, GameText.RenamePatrol, OnCancelClicked);
+            RenameButton.Enabled = false;
             RenameButton.Text = "Rename";
             CancelButton.Text = "Cancel";
-            base.PerformLayout();
-        }
-
-        
-        public override void Draw(SpriteBatch batch, DrawTimes elapsed)
-        {
-            batch.SafeBegin();
-            base.Draw(batch, elapsed);
-            batch.SafeEnd();
         }
 
         void OnPatrolNameTextChanged(string newName)
