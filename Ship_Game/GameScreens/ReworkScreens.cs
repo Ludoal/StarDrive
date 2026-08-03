@@ -386,7 +386,7 @@ namespace Ship_Game.GameScreens
         // only the stock type named, a reworked Economy, Diplomacy or Espionage never recognised
         // itself and simply stacked a second copy (maintainer feedback). Same reason the openers live here: one
         // place knows the pairing, and no call site has to remember there are two of each.
-        public static bool IsEconomy(GameScreen s) => s is BudgetScreen or BudgetScreenRework;
+        public static bool IsEconomy(GameScreen s) => s is BudgetScreenRework;
 
         // ── Which group a screen belongs to ───────────────────────────────────────────────────
         // Ludoal fork: the top bar tints the button of the group you are inside. One place knows
@@ -402,10 +402,10 @@ namespace Ship_Game.GameScreens
                 => Group.Galaxy,
 
             EmpireManagementScreen or ShipListScreen or TroopListScreen
-                or ResearchScreenNew or BudgetScreen or BudgetScreenRework
+                or ResearchScreenNew or BudgetScreenRework
                 => Group.Empire,
 
-            MainDiplomacyScreen or InfiltrationScreen or EspionageScreen
+            InfiltrationScreen or EspionageScreen
                 => Group.Diplomacy,
 
             FleetDesignScreen or ShipDesignScreen or BlueprintsScreen
@@ -421,8 +421,7 @@ namespace Ship_Game.GameScreens
         // Both regimes are still named, which is what the 46.173 bug was about: with only the
         // stock type listed, a reworked screen never recognised itself and stacked a second copy.
         public static bool IsDiplomacy(GameScreen s)
-            => s is MainDiplomacyScreen
-                 or MainDiplomacyScreenRework
+            => s is MainDiplomacyScreenRework
                  or DiplomacyScreen.RelationshipsDiagramScreen;
 
         public static bool IsEspionage(GameScreen s)

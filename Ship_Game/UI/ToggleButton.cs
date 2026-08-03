@@ -106,32 +106,6 @@ namespace Ship_Game
             Press    = ResourceManager.Texture("SelectionBox/button_arrow_right_hover")
         };
 
-        public static readonly ToggleButtonStyle ButtonB = new ToggleButtonStyle
-        {
-            Width  = 25,
-            Height = 22,
-            ContentId = ResourceManager.ContentId,
-            Folder   = "Minimap/",
-            Plated   = true,
-            Active   = ResourceManager.Texture("Minimap/button_B_active"),
-            Inactive = ResourceManager.Texture("Minimap/button_B_normal"),
-            Hover    = ResourceManager.Texture("Minimap/button_B_hover"),
-            Press    = ResourceManager.Texture("Minimap/button_B_normal")
-        };
-
-        public static readonly ToggleButtonStyle ButtonC = new ToggleButtonStyle
-        {
-            Width  = 25,
-            Height = 22,
-            ContentId = ResourceManager.ContentId,
-            Folder   = "Minimap/",
-            Plated   = true,
-            Active   = ResourceManager.Texture("Minimap/button_C_normal"),
-            Inactive = ResourceManager.Texture("Minimap/button_C_normal"),
-            Hover    = ResourceManager.Texture("Minimap/button_C_hover"),
-            Press    = ResourceManager.Texture("Minimap/button_C_normal")
-        };
-
         public static readonly ToggleButtonStyle Button = new ToggleButtonStyle
         {
             Width  = 25,
@@ -145,18 +119,6 @@ namespace Ship_Game
             Press    = ResourceManager.Texture("Minimap/button_normal")
         };
 
-        public static readonly ToggleButtonStyle ButtonDown = new ToggleButtonStyle
-        {
-            Width  = 25,
-            Height = 26,
-            ContentId = ResourceManager.ContentId,
-            Folder   = "Minimap/",
-            Plated   = true,
-            Active   = ResourceManager.Texture("Minimap/button_active"),
-            Inactive = ResourceManager.Texture("Minimap/button_down_inactive"),
-            Hover    = ResourceManager.Texture("Minimap/button_down_hover"),
-            Press    = ResourceManager.Texture("Minimap/button_down_inactive")
-        };
     }
 
     // TODO: Replace with UIButton

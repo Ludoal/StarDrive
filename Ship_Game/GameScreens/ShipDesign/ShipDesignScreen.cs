@@ -488,7 +488,7 @@ namespace Ship_Game
         // @param zoomToHull whether to use the zoom-to-hull animation, not needed in some cases
         public void ChangeHull(ShipHull hullTemplate, bool zoomToHull = true)
         {
-            if (hullTemplate == null) // if ShipDesignLoadScreen has no selected design
+            if (hullTemplate == null) // no design selected in the browser
                 return;
 
             if (HullEditMode)
@@ -502,7 +502,7 @@ namespace Ship_Game
         // @param zoomToHull whether to use the zoom-to-hull animation, not needed in some cases
         public void ChangeHull(IShipDesign shipDesignTemplate, bool zoomToHull = true)
         {
-            if (shipDesignTemplate == null) // if ShipDesignLoadScreen has no selected design
+            if (shipDesignTemplate == null) // no design selected in the browser
                 return;
 
             // Ludoal fork: remember where we were, so reopening the shipyard lands on the

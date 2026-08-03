@@ -8,7 +8,7 @@ using Vector2 = SDGraphics.Vector2;
 namespace Ship_Game
 {
     /// Ludoal fork: a checkbox riding a design dropdown - "Autocolonize" plus which colony ship
-    /// to build, "Autoexplore" plus which scout. Lifted out of AutomationWindow so the
+    /// to build, "Autoexplore" plus which scout. Shared so the
     /// Automation tab of the Empire group can wear the same control; the window dies with the
     /// map overlay it belonged to.
     public class CheckedDropdown : UIElementV2

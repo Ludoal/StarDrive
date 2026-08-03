@@ -305,18 +305,6 @@ namespace Ship_Game
                           + "Everything else applies as you change it,\n"
                           + "and is saved when you leave this screen.";
 
-            // Ludoal fork: the rebuilt screens live behind their own page — they are a different
-            // kind of choice from the settings above (which interface, not which preference),
-            // and they are beta, so they get a door of their own rather than four more
-            // checkboxes in this list.
-            // Ludoal fork: commented out while there is nothing to opt into - the rebuilt screens
-            // are the only ones now. ReworkOptionsScreen and its whole mechanism are still in the
-            // tree: to make a screen optional again, uncomment these four lines and add one
-            // checkbox to that panel.
-            //var rework = Add(new UIButton(ButtonStyle.Default,
-            //                 new Vector2(RightArea.Right - 412, RightArea.Bottom + 60), "Rework Options"));
-            //rework.OnClick = button => ScreenManager.AddScreen(new ReworkOptionsScreen(this));
-            //rework.Tooltip = "Opt in to the screens this fork has rebuilt (beta)";
 
             RefreshZOrder();
             PerformLayout();

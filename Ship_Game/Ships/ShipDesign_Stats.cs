@@ -232,7 +232,7 @@ public partial class ShipDesign
             && (player.Universe.P.ShowAllDesigns || IsPlayerDesign);
     }
 
-    // used by AutomationWindow and TechLine focusing
+    // used by the Automation tab and TechLine focusing
     public bool IsShipGoodToBuild(Empire e)
     {
         if (!IsValidDesign || IsUnitTestShip)
