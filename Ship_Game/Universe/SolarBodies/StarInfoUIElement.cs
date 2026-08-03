@@ -93,8 +93,7 @@ namespace Ship_Game
 				return;
 			}
 			bool canBuild = Player.CanBuildResearchStations;
-			batch.Draw(ResourceManager.Texture(canBuild ? "NewUI/dan_button_blue_clear" : "NewUI/dan_button_disabled"),
-			           DeployRect, Color.White);
+			UIButton.DrawPlate(batch, DeployRect, canBuild ? UIButton.PlateActive : UIButton.PlateNeutral);
 
 			string text = Player.AI.HasGoal(g => g.IsResearchStationGoal(Sys))
 			            ? Localizer.Token(GameText.AbortDeployent)

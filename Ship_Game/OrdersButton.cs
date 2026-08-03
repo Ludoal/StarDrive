@@ -46,22 +46,23 @@ namespace Ship_Game
         public void Draw(SpriteBatch batch, Vector2 cursor, Rectangle rect)
         {
             bool hovering = rect.HitTest(cursor);
+            // painted plate chrome - the state reads as the tint: active when the order is on,
+            // neutral when off, hostile when the right-click function is off
             if (SimpleToggle)
             {
-                batch.Draw(!hovering
-                    ? ResourceManager.Texture("SelectionBox/button_action_disabled")
-                    : ResourceManager.Texture("SelectionBox/button_action_hover"), rect, Color.White);
+                UIButton.DrawPlate(batch, rect, hovering ? UITheme.Hover(UIButton.PlateNeutral)
+                                                         : UIButton.PlateNeutral);
             }
             else
             {
                 if (hovering)
-                    batch.Draw(ResourceManager.Texture("SelectionBox/button_action_hover"), rect, Color.White);
+                    UIButton.DrawPlate(batch, rect, UITheme.Hover(UIButton.PlateActive));
                 else if (RightClickValueToModify != null && !RightClickValueToModify.Value)
-                    batch.Draw(ResourceManager.Texture("SelectionBox/button_action_disabled"), rect, Color.LightPink);
+                    UIButton.DrawPlate(batch, rect, UIButton.PlateHostile);
                 else if (!ValueToModify.Value)
-                    batch.Draw(ResourceManager.Texture("SelectionBox/button_action_disabled"), rect, Color.White);
+                    UIButton.DrawPlate(batch, rect, UIButton.PlateNeutral);
                 else
-                    batch.Draw(ResourceManager.Texture("SelectionBox/button_action"), rect, Color.White);
+                    UIButton.DrawPlate(batch, rect, UIButton.PlateActive);
             }
 
             switch (OrderType)
@@ -109,9 +110,9 @@ namespace Ship_Game
             if (fleet == null)
                 return;
 
-            DrawDynamicButton(batch, rect, ResourceManager.Texture("SelectionBox/button_action"),
-                                           ResourceManager.Texture("SelectionBox/button_action_disabled"),
-                                           fleet.HasPatrolPlan ? 1 : 0);
+            // active plate over the neutral chrome when a patrol plan is loaded
+            if (fleet.HasPatrolPlan)
+                UIButton.DrawPlate(batch, rect, UIButton.PlateActive);
 
             DrawButton(batch, rect, ResourceManager.Texture("UI/icon_shield"));
         }

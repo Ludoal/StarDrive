@@ -810,7 +810,7 @@ namespace Ship_Game
                     if (goal.Owner == Player)
                     {
                         bool hover = DsbCancelRect.HitTest(Input.CursorPosition);
-                        batch.Draw(ResourceManager.Texture("NewUI/dan_button_blue_clear"), DsbCancelRect, Color.White);
+                        UIButton.DrawPlate(batch, DsbCancelRect, UIButton.PlateActive);
                         batch.DrawString(Fonts.Arial12Bold, "Cancel Construction",
                             new Vector2(DsbCancelRect.X + 13, DsbCancelRect.Y + 13 - Fonts.Arial12Bold.LineSpacing / 2 - 2),
                             hover ? new Color(174, 202, 255) : new Color(88, 108, 146));

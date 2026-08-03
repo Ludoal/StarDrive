@@ -312,7 +312,7 @@ namespace Ship_Game
             int incomingTroops     = IncomingTroops;
             Color buttonBaseColor  = ButtonTextColor;
             Color buttonHoverColor = ButtonHoverColor;
-            string texName         = "UI/dan_button_blue";
+            Color plate            = UIButton.PlateActive;
             string text = "Invade";
             if (P.Owner != null)
             {
@@ -320,7 +320,7 @@ namespace Ship_Game
                 {
                     text             = $"Invading: {incomingTroops}";
                     buttonBaseColor  = Color.Red;
-                    texName          = "UI/dan_button_red";
+                    plate            = UIButton.PlateHostile;
                     buttonHoverColor = Color.White;
                     DrawCancelInvasion(batch, mousePos);
                 }
@@ -328,7 +328,7 @@ namespace Ship_Game
             else
                 text = incomingTroops > 0 ? $"Enroute: {incomingTroops}" : "Send Troops";
 
-            batch.Draw(ResourceManager.Texture(texName), SendTroops, Color.White);
+            UIButton.DrawPlate(batch, SendTroops, plate);
             batch.DrawString(Font12, text, textPos, SendTroops.HitTest(mousePos) ? buttonBaseColor
                                                                                  : buttonHoverColor);
         }
@@ -392,8 +392,8 @@ namespace Ship_Game
             }
 
             Vector2 textPos = new Vector2(ExoticRect.X + 13, ExoticRect.Y + 13 - Font12.LineSpacing / 2 - 2);
-            batch.Draw(ResourceManager.Texture(Player.CanBuildResearchStations ? "NewUI/dan_button_blue_clear" 
-                : "NewUI/dan_button_disabled"), ExoticRect, Color.White);
+            UIButton.DrawPlate(batch, ExoticRect, Player.CanBuildResearchStations ? UIButton.PlateActive
+                                                                                 : UIButton.PlateNeutral);
 
             LocalizedText tip = Player.CanBuildResearchStations ? GameText.DeployResearchStationTip : GameText.CannotBuildResearchStationTip;
             LocalizedText tipText = GameText.DeployResearchStation;
@@ -441,9 +441,10 @@ namespace Ship_Game
                 return;
 
             Vector2 textPos = new Vector2(ExoticRect.X + 13, ExoticRect.Y + 13 - Font12.LineSpacing / 2 - 2);
-            batch.Draw(ResourceManager.Texture(Player.CanBuildMiningStations && P.Mining.CanAddMiningStationFor(Player) 
-                ? "NewUI/dan_button_blue_clear" // Ludoal fork: blue like every other action button
-                : "NewUI/dan_button_disabled"), ExoticRect, Color.White);
+            UIButton.DrawPlate(batch, ExoticRect,
+                Player.CanBuildMiningStations && P.Mining.CanAddMiningStationFor(Player)
+                ? UIButton.PlateActive   // active like every other action button
+                : UIButton.PlateNeutral);
 
             LocalizedText tip = Player.CanBuildMiningStations ? GameText.DeployMiningStationTip : GameText.CannotBuildMiningStationTip;
             LocalizedText tipText = P.Mining.Owner != null && P.Mining.Owner != Player ? GameText.CannotDeployMiningStationNotOwnerTip : GameText.DeployMiningStation;
