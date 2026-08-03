@@ -36,6 +36,7 @@ namespace Ship_Game
         readonly TexturedButton RefitButton;
         readonly TexturedButton ScrapButton;
         readonly TexturedButton ExploreButton; //Auto-explore button for ShipListScreen
+        readonly TexturedButton PatrolButton;  // patrol is a FLEET mechanic: shown on fleet ships, opens the fleet's patrol-plan picker
 
         public ShipListScreen Screen;
         public string StatusText;
@@ -87,8 +88,10 @@ namespace Ship_Game
             if (IsCombat)
             {
                 ExploreButton = new TexturedButton(refit, "NewUI/icon_order_explore", "NewUI/icon_order_explore_hover1", "NewUI/icon_order_explore_hover2");
-                //PatrolButton = new TexturedButton(refit, "NewUI/icon_order_patrol", "NewUI/icon_order_patrol_hover1", "NewUI/icon_order_patrol_hover2");
             }
+            // built for every row - fleet membership changes at runtime, visibility is
+            // decided at draw time (maintainer feedback: wire the disabled upstream button)
+            PatrolButton = new TexturedButton(refit, "NewUI/icon_order_patrol", "NewUI/icon_order_patrol_hover1", "NewUI/icon_order_patrol_hover2");
             RefitButton = new TexturedButton(refit, "NewUI/icon_queue_rushconstruction", "NewUI/icon_queue_rushconstruction_hover1", "NewUI/icon_queue_rushconstruction_hover2");			
             ScrapButton = new TexturedButton(refit, "NewUI/icon_queue_delete", "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2");
 
@@ -158,8 +161,9 @@ namespace Ship_Game
             if (IsCombat)
             {
                 ExploreButton.Draw(batch);
-                //PatrolButton.Draw(batch); // FB - Disabled until we make it better
             }
+            if (Ship.Fleet != null)
+                PatrolButton.Draw(batch);
             if (!Ship.IsSubspaceProjector)
                 RefitButton.Draw(batch);
             ScrapButton.Draw(batch);
@@ -365,6 +369,14 @@ namespace Ship_Game
                 }
             }
 
+            // patrol rides the ship's FLEET: the picker loads a patrol plan for it
+            if (Ship.Fleet != null && PatrolButton.HandleInput(input))
+            {
+                GameAudio.EchoAffirmative();
+                Screen.ScreenManager.AddScreen(new ChoosePatrolPlan(Screen.Universe, Ship.Fleet));
+                return true;
+            }
+
             if (!Ship.IsSubspaceProjector && RefitButton.HandleInput(input))
             {
                 GameAudio.EchoAffirmative();
@@ -449,10 +461,11 @@ namespace Ship_Game
             // layout kept a slot for the disabled Patrol button, which left a hole between
             // the icons. Every row keeps all three slots so the trio never shifts.
             SubTexture exploreTex = ResourceManager.Texture("NewUI/icon_order_explore_hover1");
+            SubTexture patrolTex  = ResourceManager.Texture("NewUI/icon_order_patrol_hover1");
             SubTexture refitTex   = ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover2");
             SubTexture scrapTex   = ResourceManager.Texture("NewUI/icon_queue_delete_hover1");
             const int IconGap = 4;
-            int iconsW = exploreTex.Width + IconGap + refitTex.Width + IconGap + scrapTex.Width;
+            int iconsW = exploreTex.Width + IconGap + patrolTex.Width + IconGap + refitTex.Width + IconGap + scrapTex.Width;
             int ix = RefitRect.X + (RefitRect.Width - iconsW) / 2;
             Rectangle IconSlot(SubTexture t)
             {
@@ -467,6 +480,8 @@ namespace Ship_Game
                 ExploreButton.r = explore;
                 ExploreButton.Tooltip = GameText.OrdersThisShipToExplore;
             }
+            PatrolButton.r = IconSlot(patrolTex);
+            PatrolButton.Tooltip = "Choose a patrol plan for this ship's fleet";
             RefitButton.r = IconSlot(refitTex);
             ScrapButton.r = IconSlot(scrapTex);
             RefitButton.Tooltip = GameText.OpensAMenuAllowingYou;
