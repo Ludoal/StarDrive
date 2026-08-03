@@ -489,6 +489,20 @@ namespace Ship_Game
             GameCursors.Draw(GameInstance, batch, input.CursorPosition, software);
         }
 
+        // Ludoal fork: close every screen ABOVE one kept screen in a single gesture - the
+        // map-jump buttons (the colony eye) land on the map itself, not on whatever list
+        // the closing screen was opened from
+        public void ExitAllAbove(GameScreen keep)
+        {
+            var screens = GameScreens.ToArray();
+            for (int i = screens.Length - 1; i >= 0; --i)
+            {
+                GameScreen screen = screens[i];
+                if (screen != keep && !screen.IsExiting)
+                    screen.ExitScreen();
+            }
+        }
+
         public void ExitAll(bool clear3DObjects)
         {
             var screens = GameScreens.ToArray(); /*grab an atomic copy*/

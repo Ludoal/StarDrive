@@ -65,7 +65,6 @@ namespace Ship_Game
         readonly Font Font20 = Fonts.Arial20Bold;
         readonly Font TextFont;
 
-        UILabel TradeTitle;
         UILabel IncomingTradeTitle;
         UILabel OutgoingTradeTitle;
         UILabel ManualImportTitle;
@@ -189,11 +188,13 @@ namespace Ship_Game
             // Left column: FIXED width. Planet Info, Governor and Assign Labor keep fixed
             // heights; STORAGE is the one that stretches, taking what is left to the foot.
             // The left column's width comes from the Governor tab row with BLUEPRINT written in
-            // full (maintainer, 3 Aug) - the richest cartouche names the bound, the tabs never
-            // fold. +30 per tab = Submenu's own padding, +40 = margin.
+            // full (maintainer, 3 Aug) - the richest cartouche names the bound, no folding.
+            // ⚠ Submenu's REAL per-tab arithmetic (read in UpdateTabRect, not estimated):
+            // TextWidth + 2 + the header_right texture, which is 33px. +8 slack: the wrap
+            // test is strict and one glyph of rounding was enough to fold the last tab.
             float govTabsW = Fonts.Arial12Bold.TextWidth("GOVERNOR") + Fonts.Arial12Bold.TextWidth("DEFENSE")
                            + Fonts.Arial12Bold.TextWidth("BUDGET") + Fonts.Arial12Bold.TextWidth("BLUEPRINT")
-                           + 4 * 30;
+                           + 4 * (2 + 33) + 8;
             float colLeftW = Math.Max(govTabsW, 380) + 40;
 
             // ── the three fixed heights, each derived from what it HOLDS ─────────────────────
@@ -215,7 +216,7 @@ namespace Ship_Game
             float infoLinesH  = 45 + Fonts.Arial20Bold.LineSpacing * 2
                               + 5 * (TextFont.LineSpacing + 2);
             float planetInfoH = Math.Max(26 + portraitH + 14, infoLinesH + 10);
-            const float governorH   = 210;   // tab row + Defense's controls, +14 for their new gap
+            const float governorH   = 240;   // tab row + Defense's aired button trio (34/row)
             const float laborH      = 150;   // three sliders, their locks and the title bar
 
             RectF planetInfoR = new(gridLeft, gridTop, colLeftW, planetInfoH);
@@ -605,9 +606,9 @@ namespace Ship_Game
             float indentTradeAmount = indent + barWidth + 5;
             float indentSlider      = indentTradeAmount + 60;
 
-            AddLabel(ref TradeTitle, pos, GameText.ColonyTrade, Font20, Color.White);
-
-            Vector2 incomingTitlePos = new Vector2(pos.X, pos.Y + spacing * 1.5f);
+            // no "Colony Trade" title (maintainer, 3 Aug): the tab already names the page, and
+            // this is the tallest tab - the row it frees is what makes it fit
+            Vector2 incomingTitlePos = new Vector2(pos.X, pos.Y);
             AddLabel(ref IncomingTradeTitle, incomingTitlePos, GameText.IncomingFreighters, font, Color.Gray);
 
             Vector2 manualImportTitlePos = new Vector2(pos.X + indentSlider - 10, incomingTitlePos.Y);

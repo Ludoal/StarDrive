@@ -252,10 +252,9 @@ namespace Ship_Game
 
             Tabs = Add(new Submenu(rect, new LocalizedText[]
             {
-                // "BP" for now (maintainer): even the singular did not fit the row at the column's
-                // real width - my 315px measure was of the raw text, and Submenu's own padding is
-                // wider than the 30 I allowed for. A better label is wanted later.
-                GameText.Governor, GameText.Defense2, GameText.Budget, "BP"
+                // Blueprint in full, no folding (maintainer, 3 Aug) - the column is sized on
+                // Submenu's REAL tab arithmetic now: TextWidth + 2 + header_right (33px) per tab
+                GameText.Governor, GameText.Defense2, GameText.Budget, "Blueprint"
             }));
 
             if (selectedIndex < Tabs.NumTabs)
@@ -286,9 +285,11 @@ namespace Ship_Game
             // Ludoal fork: the right-hand column follows the portrait, whose width is a fraction
             // of the panel height - so at reduced heights it slid left, under the tab row. It
             // keeps a floor (see ColumnX), and the description wraps on that same value.
+            // the type picker rides the TITLE line, to its right (maintainer, 3 Aug) - the
+            // description gains the row it occupied and no longer runs over the toggles
             WorldType.Pos           = new Vector2(ColumnX, Portrait.Y);
-            ColonyTypeList.Pos      = new Vector2(ColumnX, Portrait.Y + 21);
-            WorldDescription.Pos    = new Vector2(ColumnX, Portrait.Y + 40);
+            ColonyTypeList.Pos      = new Vector2(Math.Max(WorldType.Right + 12, ColumnX + 130), Portrait.Y);
+            WorldDescription.Pos    = new Vector2(ColumnX, Portrait.Y + 21);
             WorldDescription.Text   = GetParsedDescription();
             ColonyBlueprints.Pos    = new Vector2(X + 10, Y + 40 + shift);
             ColonyBlueprints.Text   = ColonyBlueprints.Text.Text + ":";
@@ -345,18 +346,19 @@ namespace Ship_Game
             // They follow their own column now, so the panel's height can be its content's.
             AutoTroops.Pos        = new Vector2(TopLeft.X + 10, Y + 30 + shift);
             Garrison.Pos          = new Vector2(TopLeft.X + 20, Y + 50 + shift);
-            float defRow          = Y + 96 + shift;   // a breath under the garrison slider
+            float defRow          = Y + 100 + shift;  // a breath under the garrison slider
+            // 34 per row, not 26 (maintainer, 3 Aug): the buttons breathe vertically
             LaunchAllTroops.Pos   = new Vector2(TopLeft.X + 10, defRow);
-            LaunchSingleTroop.Pos = new Vector2(TopLeft.X + 10, defRow + 26);
-            CallTroops.Pos        = new Vector2(TopLeft.X + 10, defRow + 52);
+            LaunchSingleTroop.Pos = new Vector2(TopLeft.X + 10, defRow + 34);
+            CallTroops.Pos        = new Vector2(TopLeft.X + 10, defRow + 68);
             ColonyRank.Pos        = new Vector2(TopLeft.X + 200, Y + 30 + shift);
             NoGovernor.Pos        = ColonyRank.Pos;
             GovGround.Pos         = new Vector2(TopLeft.X + 200, Y + 50 + shift);
             GovOrbitals.Pos       = new Vector2(TopLeft.X + 200, Y + 70 + shift);
             ManualOrbitals.Pos    = new Vector2(TopLeft.X + 200, Y + 90 + shift);
             BuildPlatform.Pos     = new Vector2(TopLeft.X + 200, defRow);
-            BuildShipyard.Pos     = new Vector2(TopLeft.X + 200, defRow + 26);
-            BuildStation.Pos      = new Vector2(TopLeft.X + 200, defRow + 52);
+            BuildShipyard.Pos     = new Vector2(TopLeft.X + 200, defRow + 34);
+            BuildStation.Pos      = new Vector2(TopLeft.X + 200, defRow + 68);
             Vector2 manualOffset  = new Vector2(125, -15);
             ManualPlatforms.Pos   = BuildPlatform.Pos + manualOffset;
             ManualShipyards.Pos   = BuildShipyard.Pos + manualOffset;

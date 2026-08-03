@@ -66,12 +66,16 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // Ludoal fork: the eye by the name - leave the colony and snap the map to the planet
+            // Ludoal fork: the eye by the name means "take me THERE" - close the whole stack
+            // down to the map (and don't let the closing colony reopen the list it came from),
+            // then snap to the planet (maintainer)
             if (input.LeftMouseClick && ViewOnMapButton.HitTest(input.CursorPosition))
             {
                 GameAudio.AcceptClick();
-                ExitScreen();
-                P.Universe.Screen.SnapViewColony(P, combatView: false);
+                UniverseScreen universe = P.Universe.Screen;
+                universe.ReturnToListScreen = null;
+                ScreenManager.ExitAllAbove(universe);
+                universe.SnapViewColony(P, combatView: false);
                 return true;
             }
 

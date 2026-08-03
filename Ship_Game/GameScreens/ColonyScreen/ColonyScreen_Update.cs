@@ -28,7 +28,6 @@ namespace Ship_Game
 
         void UpdateTradeTab()
         {
-            TradeTitle.Visible           =
             ManualImportTitle.Visible    =
             ManualExportTitle.Visible    =
             IncomingTradeTitle.Visible   =
