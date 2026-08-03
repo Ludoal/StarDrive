@@ -253,8 +253,13 @@ namespace Ship_Game.GameScreens
             return tabs;
         }
 
+        // the 1080p cap (maintainer, 4 Aug): a group frame never grows past the 1920x1080
+        // footprint - anchored to the bar and the left margin, like every frame. Tables
+        // that develop in height do it through the content-sized variant by explicit
+        // instruction, never through this cap.
         public static Rectangle GroupFrame(int screenW, int screenH)
-            => new(FrameMargin, TabRowY, screenW - 2 * FrameMargin, screenH - TabRowY - FrameMargin);
+            => new(FrameMargin, TabRowY, Math.Min(screenW, 1920) - 2 * FrameMargin,
+                   Math.Min(screenH, 1080) - TabRowY - FrameMargin);
 
         // Ludoal fork: the content-sized variant - the frame hugs what it holds, anchored on
         // the bar and the left margin instead of spanning the screen. First taker: the
