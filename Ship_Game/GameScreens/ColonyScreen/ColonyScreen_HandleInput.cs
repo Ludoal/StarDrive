@@ -66,6 +66,15 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            // Ludoal fork: the eye by the name - leave the colony and snap the map to the planet
+            if (input.LeftMouseClick && ViewOnMapButton.HitTest(input.CursorPosition))
+            {
+                GameAudio.AcceptClick();
+                ExitScreen();
+                P.Universe.Screen.SnapViewColony(P, combatView: false);
+                return true;
+            }
+
             // always get the currently hovered item
             DetailInfo = GetHoveredDetailItem(input);
 

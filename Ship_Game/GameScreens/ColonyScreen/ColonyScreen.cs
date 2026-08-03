@@ -58,6 +58,7 @@ namespace Ship_Game
         public bool ClickedTroop;
 
         Rectangle EditNameButton;
+        Rectangle ViewOnMapButton; // the eye by the name - jump to the planet on the map
         readonly Font Font8  = Fonts.Arial8Bold;
         readonly Font Font12 = Fonts.Arial12Bold;
         readonly Font Font14 = Fonts.Arial14Bold;
@@ -182,16 +183,12 @@ namespace Ship_Game
             // ── what is FIXED and what STRETCHES (Ludoal fork, bench 232) ────────────────────
             // Left column: FIXED width. Planet Info, Governor and Assign Labor keep fixed
             // heights; STORAGE is the one that stretches, taking what is left to the foot.
-            // Wide enough that the Governor's four tabs sit on ONE row - measured in the font
-            // that draws them, plus the 50 the bench asked for.
+            // The left column's width comes from the Governor tab row with BLUEPRINT written in
+            // full (maintainer, 3 Aug) - the richest cartouche names the bound, the tabs never
+            // fold. +30 per tab = Submenu's own padding, +40 = margin.
             float govTabsW = Fonts.Arial12Bold.TextWidth("GOVERNOR") + Fonts.Arial12Bold.TextWidth("DEFENSE")
                            + Fonts.Arial12Bold.TextWidth("BUDGET") + Fonts.Arial12Bold.TextWidth("BLUEPRINT")
-                           + 4 * 30;   // Submenu pads each tab
-            // ⚠ narrower (maintainer): with "Blueprint" singular the four tabs measure 315, so
-            // the column no longer has to be 470 wide to hold one row of them.
-            // +20 (maintainer): even "BP" wrapped to a second row at 400 - Submenu's per-tab
-            // padding is wider than the 30 this measure allows for, so the raw text width
-            // under-reads the row by enough to matter.
+                           + 4 * 30;
             float colLeftW = Math.Max(govTabsW, 380) + 40;
 
             // ── the three fixed heights, each derived from what it HOLDS ─────────────────────
@@ -270,22 +267,20 @@ namespace Ship_Game
             // Right column: FIXED width - the buildable rows and the queue rows are written for
             // a known width. The CENTRE is what stretches, taking whatever the two fixed columns
             // leave, which is what makes the screen fill any window.
-            const float colRightW = 470;
+            // flexible bounded: 470 at the 1440 floor, +100 by the 1920 ceiling (bench numbers)
+            float colRightW = (470f + (ScreenWidth - 1440) * (100f / 480f)).Clamped(470f, 570f);
             float colCentreX = gridLeft + colLeftW + Pad;
             float colCentreW = gridRight - colRightW - Pad - colCentreX;
 
             // COLONY holds a 7x5 tile grid, so its height FOLLOWS its width - square tiles are the
             // point of it. The panel's chrome (10 each side, 30 above, 5 below) is taken off
             // before the ratio and added back, so it is the GRID that keeps 7:5, not the frame.
-            const float tilesX = 7, tilesY = 5;
-            float gridInnerW = colCentreW - 20;
-            float subColonyH = gridInnerW * (tilesY / tilesX) + 35;
-            // ⚠ bounded by the column, not only by the width: STATISTICS below keeps a working
-            // floor, so on wide screens the grid stops growing with the window (bench 1080: the
-            // width-driven grid ate the stats block to a cut POPULATION header). When the bound
-            // wins, GridPos derives the tile size back and centres, so the tiles stay square.
-            const float statsMinH = 380; // the Stats+ tab's own content, measured loosely - bench number
-            subColonyH = Math.Min(subColonyH, gridBottom - gridTop - Pad - statsMinH);
+            // STATS holds its own content and no more (bounded flexible); COLONY is what takes
+            // everything the rest of the screen leaves (maintainer spec, 3 Aug). The tiles stay
+            // square whatever shape that leaves: GridPos derives the tile from the limiting
+            // dimension and centres the grid in the panel.
+            const float statsH = 300; // the Stats+ content's own height - bench number
+            float subColonyH = gridBottom - gridTop - Pad - statsH;
 
             RectF subColonyR = new(colCentreX, gridTop, colCentreW, subColonyH);
             SubColonyGrid = new(subColonyR, GameText.Colony);
@@ -335,12 +330,10 @@ namespace Ship_Game
                 Pos     = new Vector2(filterRect.Right + 10, filterRect.Y + 3)
             });
 
-            // BUILDINGS' top lines up with COLONY's; the queue below takes what is left, so the
-            // column closes on the grid's foot exactly as the other two do.
-            // BUILDINGS' foot lands on COLONY's, so the two read as one line across the screen;
-            // its height follows from that rather than from a share of the column.
+            // BUILDINGS and the queue split the column 50/50 (maintainer spec, 3 Aug) - the
+            // column no longer chases COLONY's foot, which now floats with the stats block.
             RectF buildableR = new(colRightX, buildingsTop, colRightW,
-                                   SubColonyGrid.Bottom - buildingsTop);
+                                   (gridBottom - buildingsTop - Pad) / 2);
             BuildableTabs = base.Add(new SubmenuScrollList<BuildableListItem>(buildableR, BuildingsTabText));
             BuildableTabs.OnTabChange = OnBuildableTabChanged;
 
