@@ -88,6 +88,20 @@ namespace Ship_Game.GameScreens
             {
                 return Add(new FloatSlider(SliderStyle.Percent, new Vector2(100,42), title, 0f, 1f, value));
             }
+
+            // the coloured background hugs its rows: UIList only enforces width, so a
+            // fixed height either clips the total or leaves dead colour - lay the rows
+            // out, then take the height from the deepest one plus a breath of padding
+            public void FitHeightToRows(float bottomPad = 6f)
+            {
+                PerformLayout();
+                float bottom = Pos.Y;
+                if (Header != null)
+                    bottom = Header.Bottom;
+                for (int i = 0; i < Count; ++i)
+                    bottom = Math.Max(bottom, this[i].Bottom);
+                Height = (bottom + bottomPad) - Pos.Y;
+            }
         }
 
         // one colony = one row. Numeric cells sit on the shared pixel geometry
@@ -265,13 +279,15 @@ namespace Ship_Game.GameScreens
                 // full label if it fits the column (2px of air each side), else the short form
                 string label = Headers[i];
                 int wTxt = (int)Fonts.Arial12Bold.TextWidth(label);
-                if (wTxt > colWpx - 4)
+                if (wTxt > colWpx - 16)
                 {
                     label = HeadersShort[i];
                     wTxt = (int)Fonts.Arial12Bold.TextWidth(label);
                 }
                 var sb = new SortButton { Text = label };
-                sb.rect = new Rectangle(colLeft + (colWpx - wTxt) / 2, headerY, wTxt, Fonts.Arial12Bold.LineSpacing);
+                // centred on the VALUE lane, not the raw column: the lane runs from the
+                // separator (colLeft-4) to where the right-aligned numbers end (colLeft+colWpx-16)
+                sb.rect = new Rectangle(colLeft - 4 + (colWpx - 12 - wTxt) / 2, headerY, wTxt, Fonts.Arial12Bold.LineSpacing);
                 SortButtons[i] = sb;
             }
 
@@ -332,11 +348,6 @@ namespace Ship_Game.GameScreens
             int rx = (int)RightMenu.X + 12; // tighter margins (maintainer bench)
             int rw = (int)RightMenu.Width - 24;
             var taxRect    = new Rectangle(rx, (int)RightMenu.Y + 42, rw, 104); // top rhythm = the left table's headerY, checkbox first
-            // panel heights sized to their rows (maintainer bench: the Fill layout was
-            // stretching dead space under every total)
-            var budgetRect = new Rectangle(rx, taxRect.Bottom + 8, rw, 170);
-            var incomeRect = new Rectangle(rx, budgetRect.Bottom + 8, rw, 155);
-            var costRect   = new Rectangle(rx, incomeRect.Bottom + 8, rw, 195);
 
             SummaryPanel tax = Add(new SummaryPanel("", taxRect, new Color(17, 21, 28)));
 
@@ -354,22 +365,26 @@ namespace Ship_Game.GameScreens
             // the checkbox is a MODE switch — it sits on top of the slider it drives
             AutoTaxCheckBox(new Rectangle(rx, (int)RightMenu.Y + 16, rw, 20));
 
-            BudgetTab(budgetRect);
-            IncomesTab(incomeRect);
-            CostsTab(costRect);
+            // each panel lays out its rows and takes its height from them, and the next
+            // panel hangs 8px below the fitted bottom - heights are content, not constants
+            SummaryPanel budget = BudgetTab(new Rectangle(rx, taxRect.Bottom + 8, rw, 170));
+            budget.FitHeightToRows();
+            SummaryPanel income = IncomesTab(new Rectangle(rx, (int)budget.Bottom + 8, rw, 155));
+            income.FitHeightToRows();
+            SummaryPanel costs = CostsTab(new Rectangle(rx, (int)income.Bottom + 8, rw, 195));
+            costs.FitHeightToRows();
 
-            // "Net Gain :" cream, the figure keeps the money color — two right-anchored
-            // labels, the value in a fixed lane so the word sits flush against it
+            // the net verdict: the word at the panel labels' own left edge, the figure in
+            // the values' lane - one breath of air above (maintainer bench)
             float NetGainNow() => Player.NetIncome - Player.MoneySpendOnProductionNow;
             const int NetValueW = 110;
-            var netWord = Label(new Vector2(rx, costRect.Bottom + 12), "", Fonts.Arial12Bold);
-            netWord.Size = new Vector2(rw - NetValueW - 12, Fonts.Arial12Bold.LineSpacing);
-            netWord.TextAlign = TextAlign.Right;
+            int netY = (int)costs.Bottom + 20;
+            var netWord = Label(new Vector2(rx + 4, netY), "", Fonts.Arial12Bold);
             netWord.DropShadow = true;
             netWord.Color = Colors.Cream;
-            netWord.DynamicText = l => $"{(NetGainNow() >= 0f ? Localizer.Token(GameText.NetGain) : Localizer.Token(GameText.NetLoss))} :";
+            netWord.DynamicText = l => NetGainNow() >= 0f ? Localizer.Token(GameText.NetGain) : Localizer.Token(GameText.NetLoss);
             // -4: closes on the same right edge as the panel values above it (maintainer bench)
-            EmpireNetIncome = Label(new Vector2(rx + rw - NetValueW - 4, costRect.Bottom + 12), "", Fonts.Arial12Bold);
+            EmpireNetIncome = Label(new Vector2(rx + rw - NetValueW - 4, netY), "", Fonts.Arial12Bold);
             EmpireNetIncome.Size = new Vector2(NetValueW, Fonts.Arial12Bold.LineSpacing);
             EmpireNetIncome.TextAlign = TextAlign.Right;
             EmpireNetIncome.DropShadow  = true;
@@ -432,7 +447,7 @@ namespace Ship_Game.GameScreens
         // outside the per-turn arithmetic. Two sub-sections (maintainer feedback): what the
         // planets receive (Colony + Defense), then Space Roads, then the total.
         // Shares sit LEFT of the values; share = of the allocated total.
-        private void BudgetTab(Rectangle budgetRect)
+        private SummaryPanel BudgetTab(Rectangle budgetRect)
         {
             // the note rides the title line (maintainer bench: one row back to the synthesis)
             SummaryPanel budget = Add(new SummaryPanel("Governor Budget  (allocated on treasury goal)", budgetRect, new Color(30, 26, 19)));
@@ -454,9 +469,10 @@ namespace Ship_Game.GameScreens
             PotItem("Space Roads", () => Player.AI.SSPBudget, Color.White);
             budget.Spacer();
             budget.AddTotal(Pots);
+            return budget;
         }
 
-        private void CostsTab(Rectangle costRect)
+        private SummaryPanel CostsTab(Rectangle costRect)
         {
             SummaryPanel costs = Add(new SummaryPanel(GameText.Expenditure, costRect, new Color(27, 22, 25)));
 
@@ -481,9 +497,10 @@ namespace Ship_Game.GameScreens
             costs.Spacer();
 
             costs.AddTotal(() => -(Player.AllSpending+Player.MoneySpendOnProductionNow));
+            return costs;
         }
 
-        private void IncomesTab(Rectangle incomeRect)
+        private SummaryPanel IncomesTab(Rectangle incomeRect)
         {
             SummaryPanel income = Add(new SummaryPanel(GameText.Income, incomeRect, new Color(18, 29, 29)));
 
@@ -495,6 +512,7 @@ namespace Ship_Game.GameScreens
             income.AddItem(GameText.Other, () => Player.data.FlatMoneyBonus);
             income.Spacer();
             income.AddTotal(() => Player.GrossIncome);
+            return income;
         }
 
         private void TaxSliderOnChange(FloatSlider s)
@@ -559,8 +577,9 @@ namespace Ship_Game.GameScreens
             // Ludoal fork: the frame fill by hand and first, then ONE rule between the colony table
             // and the treasury column - the two halves share the group's frame rather than carrying
             // a border each.
-            RectF client = EmpireTabs.ClientArea;
-            batch.FillRectangle(client, ScreenGroups.GroupFrameFill);
+            // the canonical fill rect - ClientArea stops short of the frame border and let the
+            // map bleed through the rim (maintainer bench)
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
             // no rule on the split either (maintainer bench): the gap is the separator
             base.Draw(batch, elapsed);
             SbColony.Draw(ScreenManager, Fonts.Arial12Bold);

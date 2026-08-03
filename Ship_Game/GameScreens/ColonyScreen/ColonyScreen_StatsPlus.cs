@@ -53,7 +53,10 @@ namespace Ship_Game
             // ⚠ the yield columns are PIVOTS now (the decimal point sits on them) and they
             // spread over the RIGHT block, which starts at 44% and runs to the edge - wider
             // than the left one (maintainer bench, 900p)
-            float rightW    = blockW * 1.12f;
+            // 1.30: the grid takes the free room both sides of it (maintainer bench, 900p) -
+            // the right anchor keeps the total flush at the panel edge, so widening the
+            // spread pushes the block's START left into the spare middle
+            float rightW    = blockW * 1.30f;
             SPYieldColPop   = rightW * 0.335f;
             SPYieldColFlat  = rightW * 0.505f;
             SPYieldColEaten = rightW * 0.660f;
@@ -76,7 +79,7 @@ namespace Ship_Game
             Vector2 pos = c; // a local function cannot capture a ref parameter (CS1628)
             void H(string h, float pivot) =>
                 batch.DrawString(TextFont, h, new Vector2(pos.X + pivot + frac - TextFont.TextWidth(h), pos.Y), Color.DarkGray);
-            H("from pop", SPYieldColPop);
+            H("pop", SPYieldColPop);
             H("flat",     SPYieldColFlat);
             H("eaten",    SPYieldColEaten);
             H("total",    SPYieldColTotal);

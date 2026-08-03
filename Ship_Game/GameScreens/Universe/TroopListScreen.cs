@@ -163,7 +163,9 @@ namespace Ship_Game
             // drawn among the children, after everything below it. The troop total moves onto the
             // reserved line beside the filter, where the title used to carry it.
             RectF client = EmpireTabs.ClientArea;
-            batch.FillRectangle(client, ScreenGroups.GroupFrameFill);
+            // the canonical fill rect - ClientArea stops short of the frame border and let the
+            // map bleed through the rim (maintainer bench, Economy)
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
             batch.DrawString(Fonts.Arial20Bold, $"Total Troops: {NumTroops}",
                              new Vector2(client.X + 190, client.Y + 4), Colors.Cream);
             base.Draw(batch, elapsed);

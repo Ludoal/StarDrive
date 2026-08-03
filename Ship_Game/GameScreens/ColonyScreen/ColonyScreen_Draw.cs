@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
@@ -731,7 +732,9 @@ namespace Ship_Game
             void MoneyLine(string label, float v, Color c)
             {
                 batch.DrawString(font, $"{label}: ", cur, Color.LightGray);
-                string s = $"{v.String(2)} BC/turn";
+                // fixed two decimals: String(2) trims trailing zeros, which let the
+                // "BC/turn" unit drift line to line (maintainer bench)
+                string s = $"{v.ToString("0.00", CultureInfo.InvariantCulture)} BC/turn";
                 string intPart = s.Substring(0, s.IndexOf('.') < 0 ? s.Length : s.IndexOf('.'));
                 batch.DrawString(font, s, new Vector2(cur.X + 178 - font.TextWidth(intPart), cur.Y), c);
                 cur.Y += font.LineSpacing + 1;
