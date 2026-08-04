@@ -165,11 +165,17 @@ namespace Ship_Game
             // fixed one decimal: right-aligned + constant fraction = aligned on the point
             Cell(4, Planet.FertilityFor(Player).ToString("0.0", CultureInfo.InvariantCulture), PlanetStatColor);
             Cell(5, Planet.MineralRichness.ToString("0.0", CultureInfo.InvariantCulture), PlanetStatColor);
-            // Max Pop splits: the figure in its column, the percentage in Ratio's
+            // Max Pop splits: the figure in its column, the percentage in Fill's.
+            // ⚠ the percentage is computed HERE, against the player's own max - the string's
+            // built-in ratio divides by the BASE max, so a racial max-pop bonus read as
+            // "100.4%" (Lek's review, bench 305). Clamped: a brief overshoot is the sim's
+            // business, not the table's.
             string popString = Planet.PopulationStringForPlayer;
             int paren = popString.IndexOf(" (");
             string popMain = paren < 0 ? popString : popString.Substring(0, paren);
-            string ratio = paren < 0 ? "" : popString.Substring(paren + 2).TrimEnd(')');
+            float maxPop = Planet.MaxPopulationBillionFor(Player);
+            string ratio = maxPop > 0f && Planet.PopulationBillion > 0f
+                         ? (Planet.PopulationBillion / maxPop * 100f).UpperBound(100f).String() + "%" : "";
             Cell(6, popMain, PlanetStatColor);
             Cell(7, ratio, PlanetStatColor);
             Cell(8, owner, EmpireColor);

@@ -36,6 +36,7 @@ namespace Ship_Game
 
         private UICheckBox cb_hideOwned;
         private UICheckBox cb_hideUninhabitable;
+        float FilterLineY; // line 1, where the filters live - the troops count rides it too
         private DropOptions<string> ProximityFilter;
         private DropOptions<string> OwnerFilter;
 
@@ -102,9 +103,10 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.Proximity), Align = TableAlign.Center, Sortable = true },
                 // biospheres/crystal, not food/production: the INTRINSIC stats wear their
                 // own icons so they never read as the net-income pair (maintainer bench 294)
-                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_biospheres"),
+                // the Planet Info cartouche's own pair (Lek's review, bench 305)
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"),
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Fertility) },
-                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_exotic_resource"),
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"),
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Richness) },
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop_22"),
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.MaxPopulation) },
@@ -161,6 +163,7 @@ namespace Ship_Game
             Table.ApplyHighlightTo(PlanetSL);
 
             float lineY = client.Y + 8;
+            FilterLineY = lineY;
             cb_hideOwned = Add(new UICheckBox(Table.TableRect.X, lineY,
                 () => HideOwned,
                 x => { HideOwned = x; ResetList(); }, Fonts.Arial12Bold, "Hide Owned", ""));
@@ -226,14 +229,15 @@ namespace Ship_Game
             // the shared charte draws the headers, the rule and the separators
             Table.DrawChrome(batch);
 
-            // "Available Troops: N" rides the header band of the buttons column
-            // (maintainer, 4 Aug): label vanilla, the count white - gray when dry
+            // "Available Troops: N" rides LINE 1 - the filter row - centred over the
+            // Send Troops column (Lek's review, bench 305); label vanilla, count white,
+            // gray when dry
             Graphics.Font font = Fonts.Arial12Bold;
             Rectangle actions = Table.Columns[9].Rect;
             string lbl = "Available Troops: ";
             string val = NumAvailableTroops.ToString();
             float tw = font.TextWidth(lbl) + font.TextWidth(val);
-            var pos = new Vector2(actions.X + actions.Width / 2f - tw / 2f, Table.HeaderY);
+            var pos = new Vector2(actions.X + actions.Width / 2f - tw / 2f, FilterLineY);
             batch.DrawString(font, lbl, pos.Rounded(), UITable.Vanilla);
             batch.DrawString(font, val, new Vector2(pos.X + font.TextWidth(lbl), pos.Y).Rounded(),
                              NumAvailableTroops == 0 ? Color.Gray : Color.White);
