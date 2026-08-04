@@ -29,8 +29,6 @@ namespace Ship_Game
 
         public readonly UITable Table; // the shared table charte owns geometry, headers and rules
         // the Actions lane: both buttons sized to their own text (maintainer, 4 Aug)
-        public readonly int RenameBtnW;
-        public readonly int DeleteBtnW;
         int LastSortCol = -1;
 
         public EmpirePatrolsScreen(UniverseScreen parent, Empire player)
@@ -50,7 +48,6 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.NumWayPoints), Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = "# Fleets", Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.PatrolAssignedFleets), Foldable = true },
-                new UITable.Column { Title = "Actions", Align = TableAlign.Center },
             });
             var names = new Array<string>(); var wps = new Array<string>();
             var counts = new Array<string>(); var assigned = new Array<string>();
@@ -63,14 +60,12 @@ namespace Ship_Game
                                                                .Select(f => f.Name)));
             }
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, names);
+            // the pencil/bin pair rides RIGHT OF THE NAME (maintainer, bench 305) - the
+            // Actions column is gone, the name column pays for the two icons
+            Table.Columns[0].Width += 64;
             UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, wps);
             UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, counts);
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, assigned);
-            // plain "Rename" / "Delete" (Lek's review, bench 305): the column already says
-            // these rows are patrols
-            RenameBtnW = (int)Fonts.Arial12Bold.TextWidth("Rename") + 24;
-            DeleteBtnW = (int)Fonts.Arial12Bold.TextWidth("Delete") + 24;
-            Table.Columns[4].Width = RenameBtnW + 8 + DeleteBtnW + 2 * UITable.PadX;
             Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
 
             // Ludoal fork: the Patrols tab of the Galaxy group, content-sized (maintainer

@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using Ship_Game.Audio;
 using SDGraphics;
+using SDGraphics.Input; // InputState
 using SDUtils;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
@@ -15,8 +16,10 @@ namespace Ship_Game
     public sealed class EmpirePatrolsScreenListItem : ScrollListItem<EmpirePatrolsScreenListItem>
     {
         public readonly FleetPatrol FleetPatrol;
-        UIButton RenamePatrol;
-        UIButton DeletePatrol;
+        // icons, not text buttons (Lek's review + maintainer, bench 305) - the same
+        // pencil/bin language the build queues speak
+        TexturedButton RenamePatrol;
+        TexturedButton DeletePatrol;
         readonly EmpirePatrolsScreen Screen;
         readonly Empire Player;
 
@@ -40,7 +43,7 @@ namespace Ship_Game
             // plans no fleet runs
             Color color = fleetsAssigned.Count == 0 ? Color.Gray : Color.White;
 
-            Cell(cols[0], FleetPatrol.Name, color);
+            var nameLbl = Cell(cols[0], FleetPatrol.Name, color);
             Cell(cols[1], FleetPatrol.WayPoints.Count.ToString(), color);
             Cell(cols[2], fleetsAssigned.Count.ToString(), color);
             // foldable: cut to the column, the tooltip carries the full list
@@ -50,13 +53,17 @@ namespace Ship_Game
             if (shown != joined)
                 fleetsLbl.Tooltip = joined;
 
-            // the Actions lane: both buttons sized to their text, side by side
-            RenamePatrol = Button(ButtonStyle.Default, "Rename", OnRenamePatrolClicked);
-            DeletePatrol = Button(ButtonStyle.Military, "Delete", OnDeletePatrolClicked);
-            const int BtnH = 24;
-            int bx = cols[4].Rect.X + UITable.PadX;
-            RenamePatrol.Rect = new RectF(bx, y + h / 2 - BtnH / 2, Screen.RenameBtnW, BtnH);
-            DeletePatrol.Rect = new RectF(bx + Screen.RenameBtnW + 8, y + h / 2 - BtnH / 2, Screen.DeleteBtnW, BtnH);
+            // the pencil and the bin RIGHT OF THE NAME (maintainer, bench 305) - the build
+            // queues' own icon language, and the Actions column retired with its width
+            RenamePatrol = new TexturedButton(new Rectangle(), "NewUI/icon_build_edit", "NewUI/icon_build_edit_hover1", "NewUI/icon_build_edit_hover2");
+            RenamePatrol.Tooltip = "Rename this patrol plan";
+            DeletePatrol = new TexturedButton(new Rectangle(), "NewUI/icon_queue_delete", "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2");
+            DeletePatrol.Tooltip = "Delete this patrol plan";
+            SubTexture editTex = ResourceManager.Texture("NewUI/icon_build_edit");
+            SubTexture delTex = ResourceManager.Texture("NewUI/icon_queue_delete");
+            int bx = (int)(nameLbl.X + Fonts.Arial12Bold.TextWidth(FleetPatrol.Name)) + 10;
+            RenamePatrol.r = new Rectangle(bx, y + h / 2 - editTex.Height / 2, editTex.Width, editTex.Height);
+            DeletePatrol.r = new Rectangle(bx + editTex.Width + 6, y + h / 2 - delTex.Height / 2, delTex.Width, delTex.Height);
 
             base.PerformLayout();
         }
@@ -77,6 +84,28 @@ namespace Ship_Game
             }
 
             return fleets;
+        }
+
+        public override void Draw(SpriteBatch batch, DrawTimes elapsed)
+        {
+            base.Draw(batch, elapsed);
+            RenamePatrol.Draw(batch);
+            DeletePatrol.Draw(batch);
+        }
+
+        public override bool HandleInput(InputState input)
+        {
+            if (RenamePatrol.HandleInput(input))
+            {
+                OnRenamePatrolClicked(null);
+                return true;
+            }
+            if (DeletePatrol.HandleInput(input))
+            {
+                OnDeletePatrolClicked(null);
+                return true;
+            }
+            return base.HandleInput(input);
         }
 
         void OnDeletePatrolClicked(UIButton b)
