@@ -11,6 +11,7 @@ using Ship_Game.Ships;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Universe;
+using Ship_Game.Universe.SolarBodies; // DistanceDisplay
 using Ship_Game.UI; // UITable: the shared table charte
 
 namespace Ship_Game
@@ -74,6 +75,8 @@ namespace Ship_Game
             Table = new UITable(new[]
             {
                 new UITable.Column { Title = Localizer.Token(GameText.System), Width = 110, Sortable = true },
+                // distance to the nearest colony - live for every ship, Deep Space included
+                new UITable.Column { Title = Localizer.Token(GameText.Proximity), Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.Ship),   Width = 240, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.Role),   Width = 80,  Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Title = "Fleet",  Width = 110, Sortable = true },
@@ -92,36 +95,37 @@ namespace Ship_Game
             // EVERY column sizes itself on the fleet's DATA, header (or icon) included
             // (maintainer, 4 Aug); Orders is FOLDABLE - if the natural widths exceed the
             // resolution, its text cuts to a tooltip instead of pushing the frame off-screen
-            var vals = new Array<string>[12];
+            var vals = new Array<string>[13];
             for (int i = 0; i < vals.Length; ++i)
                 vals[i] = new Array<string>();
             foreach (Ship s in Universe.Player.OwnedShips)
             {
                 vals[0].Add(s.System?.Name ?? Localizer.Token(GameText.DeepSpace));
-                vals[1].Add(s.ShipName);
-                vals[2].Add(Localizer.GetRole(s.ShipData.Role, s.Loyalty));
-                vals[3].Add(s.Fleet?.Name ?? "");
-                vals[4].Add(s.Fleet?.Patrol?.Name ?? "");
-                vals[5].Add(ShipListScreenItem.GetStatusText(s));
-                vals[7].Add(s.GetStrength().ToString("0"));
-                vals[8].Add(s.GetMaintCost().ToString("F2"));
-                vals[9].Add(string.Concat(s.TroopCount, "/", s.TroopCapacity));
-                vals[10].Add((s.MaxFTLSpeed / 1000f).ToString("0") + "k");
-                vals[11].Add(s.MaxSTLSpeed.ToString("0"));
+                vals[1].Add(new DistanceDisplay(DistanceToNearestColony(s.Position) / 1000).Text);
+                vals[2].Add(s.ShipName);
+                vals[3].Add(Localizer.GetRole(s.ShipData.Role, s.Loyalty));
+                vals[4].Add(s.Fleet?.Name ?? "");
+                vals[5].Add(s.Fleet?.Patrol?.Name ?? "");
+                vals[6].Add(ShipListScreenItem.GetStatusText(s));
+                vals[8].Add(s.GetStrength().ToString("0"));
+                vals[9].Add(s.GetMaintCost().ToString("F2"));
+                vals[10].Add(string.Concat(s.TroopCount, "/", s.TroopCapacity));
+                vals[11].Add((s.MaxFTLSpeed / 1000f).ToString("0") + "k");
+                vals[12].Add(s.MaxSTLSpeed.ToString("0"));
             }
             // measure with the font each column actually DRAWS: sizing Orders in bold left
             // a bold-vs-regular slack after its longest text (maintainer bench 290)
             for (int i = 0; i < vals.Length; ++i)
-                if (i != 6) // the icon lane keeps its fixed width
-                    UITable.AutoSize(Table.Columns[i], i <= 4 ? Fonts.Arial12Bold : Fonts.Arial12, vals[i]);
-            Table.Columns[1].Width += 34; // the ship icon rides ahead of the name
-            Table.Columns[5].Foldable = true;
+                if (i != 7) // the icon lane keeps its fixed width
+                    UITable.AutoSize(Table.Columns[i], i <= 5 ? Fonts.Arial12Bold : Fonts.Arial12, vals[i]);
+            Table.Columns[2].Width += 34; // the ship icon rides ahead of the name
+            Table.Columns[6].Foldable = true;
             Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
 
-            // System is the standing sort from the first frame (spec: the default sort
-            // wears the orange); ResetList re-applies it after every refill
-            Table.Columns[0].Sorted = true;
-            Table.Columns[0].Ascending = true;
+            // Proximity is the standing sort from the first frame (maintainer, 4 Aug:
+            // closest first); ResetList re-applies it after every refill
+            Table.Columns[1].Sorted = true;
+            Table.Columns[1].Ascending = true;
 
             int shipRows = Universe.Player.OwnedShips.Count;
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
@@ -257,6 +261,17 @@ namespace Ship_Game
             return false;
         }
 
+        // distance to the player's nearest colony - live for every ship, Deep Space
+        // included: a ship always has galactic coordinates, a system or not
+        public float DistanceToNearestColony(Vector2 pos)
+        {
+            var planets = Universe.Player.GetPlanets();
+            float best = float.MaxValue;
+            for (int i = 0; i < planets.Count; ++i)
+                best = Math.Min(best, planets[i].Position.Distance(pos));
+            return best == float.MaxValue ? 0f : best;
+        }
+
         // header clicks come from the shared table charte; this maps a column to its sort
         bool HandleShipListSortButtonClick(InputState input)
         {
@@ -280,16 +295,17 @@ namespace Ship_Game
             switch (col)
             {
                 case 0:  Sort(sl => sl.Ship.SystemName); break;
-                case 1:  Sort(sl => sl.Ship.VanityName); break;
-                case 2:  Sort(sl => sl.Ship.ShipData.Role); break;
-                case 3:  Sort(sl => sl.Ship.Fleet?.Name ?? "None"); break;
-                case 4:  Sort(sl => sl.Ship.Fleet?.Patrol?.Name ?? ""); break;
-                case 5:  Sort(sl => ShipListScreenItem.GetStatusText(sl.Ship)); break;
-                case 7:  Sort(sl => sl.Ship.GetStrength()); break;
-                case 8:  Sort(sl => sl.Ship.GetMaintCost()); break;
-                case 9:  Sort(sl => sl.Ship.TroopCount); break;
-                case 10: Sort(sl => sl.Ship.MaxFTLSpeed); break;
-                case 11: Sort(sl => sl.Ship.MaxSTLSpeed); break;
+                case 1:  Sort(sl => DistanceToNearestColony(sl.Ship.Position)); break;
+                case 2:  Sort(sl => sl.Ship.VanityName); break;
+                case 3:  Sort(sl => sl.Ship.ShipData.Role); break;
+                case 4:  Sort(sl => sl.Ship.Fleet?.Name ?? "None"); break;
+                case 5:  Sort(sl => sl.Ship.Fleet?.Patrol?.Name ?? ""); break;
+                case 6:  Sort(sl => ShipListScreenItem.GetStatusText(sl.Ship)); break;
+                case 8:  Sort(sl => sl.Ship.GetStrength()); break;
+                case 9:  Sort(sl => sl.Ship.GetMaintCost()); break;
+                case 10: Sort(sl => sl.Ship.TroopCount); break;
+                case 11: Sort(sl => sl.Ship.MaxFTLSpeed); break;
+                case 12: Sort(sl => sl.Ship.MaxSTLSpeed); break;
                 default: return false;
             }
             return true;

@@ -8,6 +8,7 @@ using Ship_Game.Ships;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Commands.Goals;
+using Ship_Game.Universe.SolarBodies; // DistanceDisplay
 using Ship_Game.UI; // UITable: the shared table charte
 using System.Collections;
 using System.Web;
@@ -84,29 +85,32 @@ namespace Ship_Game
                 => UITable.DrawCell(batch, font, cols[i].Rect, y, h, text, color, cols[i].Align);
 
             Cell(0, SystemName, Colors.Cream, Fonts.Arial12Bold);
+            // proximity to the nearest colony, live - Deep Space ships have coordinates too
+            DistanceDisplay dd = new DistanceDisplay(Screen.DistanceToNearestColony(Ship.Position) / 1000);
+            Cell(1, dd.Text, dd.Color, Fonts.Arial12Bold);
             batch.Draw(Ship.ShipData.Icon, ShipIconRect, Color.White);
             ShipNameEntry.Draw(batch, elapsed);
-            Cell(2, Localizer.GetRole(Ship.ShipData.Role, Ship.Loyalty), Colors.Cream, Fonts.Arial12Bold);
+            Cell(3, Localizer.GetRole(Ship.ShipData.Role, Ship.Loyalty), Colors.Cream, Fonts.Arial12Bold);
             string fleetName = Ship.Fleet?.Name ?? "";
-            Graphics.Font fleetFont = Fonts.Arial12Bold.TextWidth(fleetName) > cols[3].Width - 2 * UITable.PadX
+            Graphics.Font fleetFont = Fonts.Arial12Bold.TextWidth(fleetName) > cols[4].Width - 2 * UITable.PadX
                                     ? Fonts.Arial8Bold : Fonts.Arial12Bold;
-            Cell(3, fleetName, Colors.Cream, fleetFont);
-            Cell(4, Ship.Fleet?.Patrol?.Name ?? "", Colors.Cream, Fonts.Arial12Bold);
+            Cell(4, fleetName, Colors.Cream, fleetFont);
+            Cell(5, Ship.Fleet?.Patrol?.Name ?? "", Colors.Cream, Fonts.Arial12Bold);
             // Orders is foldable: cut to the column with an ellipsis, the tooltip (in
             // HandleInput) carries the whole sentence
-            Cell(5, UITable.FitText(Fonts.Arial12, StatusText, cols[5].Width - 2 * UITable.PadX),
+            Cell(6, UITable.FitText(Fonts.Arial12, StatusText, cols[6].Width - 2 * UITable.PadX),
                  Colors.Cream, Fonts.Arial12);
 
             // numeric colours through the shared charte: every zero reads gray
             float maint = Ship.GetMaintCost();
             float str = Ship.GetStrength();
-            Cell(7, str.ToString("0"), UITable.ValueColor(TableColor.Plain, str), Fonts.Arial12);
-            Cell(8, maint.ToString("F2"), UITable.ValueColor(TableColor.Neutral, maint), Fonts.Arial12);
-            Cell(9, string.Concat(Ship.TroopCount, "/", Ship.TroopCapacity),
+            Cell(8, str.ToString("0"), UITable.ValueColor(TableColor.Plain, str), Fonts.Arial12);
+            Cell(9, maint.ToString("F2"), UITable.ValueColor(TableColor.Neutral, maint), Fonts.Arial12);
+            Cell(10, string.Concat(Ship.TroopCount, "/", Ship.TroopCapacity),
                  UITable.ValueColor(TableColor.Plain, Ship.TroopCount), Fonts.Arial12);
-            Cell(10, (Ship.MaxFTLSpeed / 1000f).ToString("0") + "k",
+            Cell(11, (Ship.MaxFTLSpeed / 1000f).ToString("0") + "k",
                  UITable.ValueColor(TableColor.Plain, Ship.MaxFTLSpeed), Fonts.Arial12);
-            Cell(11, Ship.MaxSTLSpeed.ToString("0"),
+            Cell(12, Ship.MaxSTLSpeed.ToString("0"),
                  UITable.ValueColor(TableColor.Plain, Ship.MaxSTLSpeed), Fonts.Arial12);
 
             if (IsCombat)
@@ -123,7 +127,7 @@ namespace Ship_Game
         // between combat and civilian rows
         void PositionWidgets(UITable.Column[] cols, int y, int h)
         {
-            Rectangle shipCol = cols[1].Rect;
+            Rectangle shipCol = cols[2].Rect;
             ShipIconRect = new Rectangle(shipCol.X + UITable.PadX, y + h / 2 - 14, 28, 28);
             ShipNameEntry.SetPos(ShipIconRect.Right + 6, y + h / 2 - ShipNameEntry.Font.LineSpacing / 2);
 
@@ -133,7 +137,7 @@ namespace Ship_Game
             SubTexture scrapTex   = ResourceManager.Texture("NewUI/icon_queue_delete_hover1");
             const int IconGap = 4;
             int iconsW = exploreTex.Width + IconGap + patrolTex.Width + IconGap + refitTex.Width + IconGap + scrapTex.Width;
-            Rectangle lane = cols[6].Rect;
+            Rectangle lane = cols[7].Rect;
             int ix = lane.X + (lane.Width - iconsW) / 2;
             Rectangle IconSlot(SubTexture t)
             {
@@ -340,7 +344,7 @@ namespace Ship_Game
         public override bool HandleInput(InputState input)
         {
             // a folded Orders cell explains itself: full sentence on hover when it was cut
-            UITable.Column orders = Screen.Table.Columns[5];
+            UITable.Column orders = Screen.Table.Columns[6];
             if (orders.Folded && StatusText.NotEmpty()
                 && new Rectangle(orders.Rect.X, (int)Y, orders.Rect.Width, (int)Height).HitTest(input.CursorPosition)
                 && Fonts.Arial12.TextWidth(StatusText) > orders.Rect.Width - 2 * UITable.PadX)
