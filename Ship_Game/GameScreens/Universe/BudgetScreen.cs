@@ -207,7 +207,7 @@ namespace Ship_Game.GameScreens
             float contentW = 1440 - 2 * ScreenGroups.FrameMargin;
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             float h900 = 900 - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
-            float rowsNeed = 76 + Player.GetPlanets().Count * 24 + 90; // header lane (+ its empty line) + rows + footer/margins
+            float rowsNeed = 60 + Player.GetPlanets().Count * 24 + 90; // header lane + rows + footer/margins
             float contentH = fullAvail <= h900 ? fullAvail
                            : Math.Min(fullAvail, Math.Max(h900, rowsNeed));
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 3,
@@ -242,7 +242,9 @@ namespace Ship_Game.GameScreens
             if (SortByName) Table.Columns[0].Sorted = true;
             else            Table.Columns[1 + SortCol].Sorted = true;
 
-            int headerY = (int)client.Y + 40; // one empty line between the unit note and the headers (spec 4 Aug)
+            // back to one lane under the note: the class breathes around its own header
+            // rule now, the extra empty line doubled it (maintainer, 4 Aug)
+            int headerY = (int)client.Y + 24;
             Table.Layout(client, headerY, client.Bottom - 14);
             // ONE frame, two halves: the synthesis column takes what the table leaves
             float split = Table.ListRect.Right + 10;

@@ -118,12 +118,15 @@ namespace Ship_Game.UI
                 c.Rect = new Rectangle(x, HeaderY, c.Width, HeaderH);
                 x += c.Width;
             }
-            RuleY = HeaderY + HeaderH;
+            // a breath above and below the rule (maintainer bench 288): the headers - tall
+            // header icons included - don't sit on the line, and the first row keeps its
+            // distance too
+            RuleY = HeaderY + HeaderH + 6;
             TableRect = new Rectangle(x0, HeaderY, x - x0, (int)bottom - HeaderY);
             // ScrollList insets its ItemsHousing by PaddingLeft 8 / PaddingRight 24: this
             // rect makes the item lane start at the first column and leaves the slider its
             // reserved lane right of the last one
-            ListRect = new RectF(x0 - 8, RuleY + 2, (x - x0) + 8 + SliderLane, bottom - (RuleY + 2));
+            ListRect = new RectF(x0 - 8, RuleY + 6, (x - x0) + 8 + SliderLane, bottom - (RuleY + 6));
         }
 
         // the hover selector spans the PHANTOM extremity lines: the item lane starts at
