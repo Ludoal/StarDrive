@@ -467,12 +467,9 @@ namespace Ship_Game
             // all still gets its three placeholders.
             if (e.GetRelations(Player, out Relationship toUs))
             {
-                TableRow(batch, col, ref y, maxY, Localizer.Token(GameText.Trust),
-                         toUs.Trust.Clamped(0, 100).String(0), Color.Green);
-                TableRow(batch, col, ref y, maxY, Localizer.Token(GameText.Anger),
-                         toUs.TotalAnger.Clamped(0, 100).String(0), Color.Yellow);
-                TableRow(batch, col, ref y, maxY, Localizer.Token(GameText.Threat),
-                         toUs.Threat.Clamped(0, 100).String(0), Color.Red);
+                BarRow(batch, col, ref y, Localizer.Token(GameText.Trust), toUs.Trust, Color.Green);
+                BarRow(batch, col, ref y, Localizer.Token(GameText.Anger), toUs.TotalAnger, Color.Yellow);
+                BarRow(batch, col, ref y, Localizer.Token(GameText.Threat), toUs.Threat, Color.Red);
             }
             else
             {
@@ -486,6 +483,26 @@ namespace Ship_Game
 
         void BlankRow(ref float y)
         {
+            y += Font12.LineSpacing + 3;
+        }
+
+        // Trust/Anger/Threat wear a progress bar now (maintainer bench 297): half the column
+        // wide, the negotiation screen's own gradient, palette and 0-100 clamp, with the figure
+        // keeping its right-aligned lane after the bar.
+        void BarRow(SpriteBatch batch, Rectangle col, ref float y, string label, float value, Color color)
+        {
+            batch.DrawString(Font12, label, new Vector2(col.X + 8, y), Color.Wheat);
+            float v = value.Clamped(0, 100);
+            string num = v.String(0);
+            float numLane = Font12Bold.TextWidth("100") + 4; // one lane for the three rows
+            batch.DrawString(Font12Bold, num, new Vector2(col.Right - 8 - Font12Bold.TextWidth(num), y), color);
+            int barW = col.Width / 2;
+            var bar = new Rectangle(col.Right - 8 - (int)numLane - barW, (int)y + 2, barW, Font12.LineSpacing - 4);
+            batch.FillRectangle(bar, new Color(10, 10, 10));
+            if (v > 0f)
+                batch.Draw(ResourceManager.Texture("UI/bw_bargradient_2"),
+                           new Rectangle(bar.X, bar.Y, (int)(bar.Width * v / 100f), bar.Height), color);
+            batch.DrawRectangle(bar, new Color(60, 54, 40));
             y += Font12.LineSpacing + 3;
         }
 
@@ -697,7 +714,13 @@ namespace Ship_Game
                     batch.DrawString(Font12, "...", new Vector2(col.X + 8, y), Color.Wheat);
                     break;
                 }
-                batch.DrawString(Font12, Truncate(art.NameText.Text, col.Width - 20), new Vector2(col.X + 8, y), Color.Wheat);
+                // its icon ahead of the name (maintainer bench 297), line-height sized -
+                // the artifact icons are keyed by the INTERNAL name, like the event popup's
+                int ih = Font12.LineSpacing + 2;
+                batch.Draw(ResourceManager.Texture("Artifact Icons/" + art.Name),
+                           new Rectangle(col.X + 8, (int)y - 1, ih, ih), Color.White);
+                batch.DrawString(Font12, Truncate(art.NameText.Text, col.Width - 20 - ih - 4),
+                                 new Vector2(col.X + 8 + ih + 4, y), Color.Wheat);
                 y += Font12.LineSpacing + 3;
             }
         }
