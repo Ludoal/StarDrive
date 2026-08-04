@@ -92,7 +92,10 @@ namespace Ship_Game
                                     ? Fonts.Arial8Bold : Fonts.Arial12Bold;
             Cell(3, fleetName, Colors.Cream, fleetFont);
             Cell(4, Ship.Fleet?.Patrol?.Name ?? "", Colors.Cream, Fonts.Arial12Bold);
-            Cell(5, StatusText, Colors.Cream, Fonts.Arial12);
+            // Orders is foldable: cut to the column with an ellipsis, the tooltip (in
+            // HandleInput) carries the whole sentence
+            Cell(5, UITable.FitText(Fonts.Arial12, StatusText, cols[5].Width - 2 * UITable.PadX),
+                 Colors.Cream, Fonts.Arial12);
 
             // numeric colours through the shared charte: every zero reads gray
             float maint = Ship.GetMaintCost();
@@ -212,7 +215,10 @@ namespace Ship_Game
                             case ShipAI.Plan.PickupGoods:  status = Localizer.Token(GameText.PickingUp); break;
                             case ShipAI.Plan.DropOffGoods: status = Localizer.Token(GameText.Delivering); break;
                         }
-                        return $"{status} {goodsType} from {last2.Trade?.ExportFrom.Name} to {last2.Trade?.ImportTo?.Name ?? last2.Trade?.TargetStation.Name} {blockade}";
+                        // status is empty outside Pickup/DropOff - build without the stray
+                        // leading space it used to leave ahead of "Production from ..."
+                        string head = status.IsEmpty() ? goodsType : $"{status} {goodsType}";
+                        return $"{head} from {last2.Trade?.ExportFrom.Name} to {last2.Trade?.ImportTo?.Name ?? last2.Trade?.TargetStation.Name} {blockade}".TrimEnd();
                     }
                     return $"{Localizer.Token(GameText.TradingGoods)} \n {Localizer.Token(GameText.SeekingRoute)}";
                 case AIState.Research:
@@ -333,6 +339,15 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            // a folded Orders cell explains itself: full sentence on hover when it was cut
+            UITable.Column orders = Screen.Table.Columns[5];
+            if (orders.Folded && StatusText.NotEmpty()
+                && new Rectangle(orders.Rect.X, (int)Y, orders.Rect.Width, (int)Height).HitTest(input.CursorPosition)
+                && Fonts.Arial12.TextWidth(StatusText) > orders.Rect.Width - 2 * UITable.PadX)
+            {
+                ToolTip.CreateTooltip(StatusText);
+            }
+
             if (IsCombat)
             {
                 // Explore button for ship list

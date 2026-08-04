@@ -11,6 +11,7 @@ using Ship_Game.Audio;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Universe;
+using Ship_Game.UI; // UITable: the shared table charte
 using Ship_Game.Fleets;
 
 namespace Ship_Game
@@ -26,14 +27,11 @@ namespace Ship_Game
         public Planet SelectedPlanet { get; private set; }
         readonly ScrollList<EmpirePatrolsScreenListItem> PatrolsSL;
 
-        readonly SortButton SbPatrolName;
-        readonly SortButton SbNumWaypoints;
-        readonly SortButton SbNumFleetsAssigned;
-        readonly SortButton SbFleetsAssigned;
-
-
-        RectF ERect;
-        SortButton LastSorted;
+        public readonly UITable Table; // the shared table charte owns geometry, headers and rules
+        // the Actions lane: both buttons sized to their own text (maintainer, 4 Aug)
+        public readonly int RenameBtnW;
+        public readonly int DeleteBtnW;
+        int LastSortCol = -1;
 
         public EmpirePatrolsScreen(UniverseScreen parent, Empire player)
             : base(parent, toPause: parent)
@@ -56,37 +54,51 @@ namespace Ship_Game
             Vector2 closePos = ScreenGroups.GroupClosePos(GalaxyTabs.ClientArea);
             Add(new CloseButton(closePos.X, closePos.Y));
 
+            // the table on the shared charte: every column sizes itself on the data,
+            // the Assigned Fleets column folds if the sums pass the resolution
+            Table = new UITable(new[]
+            {
+                new UITable.Column { Title = Localizer.Token(GameText.PatrolPlanName), Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.NumWayPoints), Align = TableAlign.Number, Sortable = true },
+                new UITable.Column { Title = "# Fleets", Align = TableAlign.Number, Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.PatrolAssignedFleets), Foldable = true },
+                new UITable.Column { Title = "Actions", Align = TableAlign.Center },
+            });
+            var names = new Array<string>(); var wps = new Array<string>();
+            var counts = new Array<string>(); var assigned = new Array<string>();
+            foreach (FleetPatrol p in player.FleetPatrols)
+            {
+                names.Add(p.Name);
+                wps.Add(p.WayPoints.Count.ToString());
+                counts.Add(player.AllFleets.Count(f => f.HasPatrolPlan && f.Patrol == p).ToString());
+                assigned.Add(string.Join(", ", player.AllFleets.Where(f => f.HasPatrolPlan && f.Patrol == p)
+                                                               .Select(f => f.Name)));
+            }
+            UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, names);
+            UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, wps);
+            UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, counts);
+            UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, assigned);
+            RenameBtnW = (int)Fonts.Arial12Bold.TextWidth(Localizer.Token(GameText.RenamePatrol)) + 24;
+            DeleteBtnW = (int)Fonts.Arial12Bold.TextWidth(Localizer.Token(GameText.DeletePatrol)) + 24;
+            Table.Columns[4].Width = RenameBtnW + 8 + DeleteBtnW + 2 * UITable.PadX;
+
             RectF client = GalaxyTabs.ClientArea;
-            ERect = ScreenGroups.GalaxyTable(client);
-            RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
-            PatrolsSL = Add(new ScrollList<EmpirePatrolsScreenListItem>(slRect));
+            Table.FitToWidth((int)client.W - 2 * (UITable.SideMargin - 9) - UITable.SliderLane);
+            Table.Layout(client, client.Y + 10, client.Bottom - 5);
+
+            PatrolsSL = Add(new ScrollList<EmpirePatrolsScreenListItem>(Table.ListRect, 34));
             PatrolsSL.EnableItemHighlight = true;
+            Table.ApplyHighlightTo(PatrolsSL);
             foreach (FleetPatrol patrol in player.FleetPatrols)
             {
                 PatrolsSL.AddItem(new EmpirePatrolsScreenListItem(this, patrol, player));
             }
-
-            SbPatrolName = new SortButton(Player.data.PLSort, Localizer.Token(GameText.PatrolPlanName));
-            SbNumWaypoints = new SortButton(Player.data.PLSort, Localizer.Token(GameText.NumWayPoints));
-            SbNumFleetsAssigned = new SortButton(Player.data.PLSort, Localizer.Token(GameText.PatrolNumAssignedFleets));
-            SbFleetsAssigned = new SortButton(Player.data.PLSort, Localizer.Token(GameText.PatrolAssignedFleets));
         }
-
-        // Ludoal fork: a column's rect from its two edges, so a header can be centred without a
-        // list item to read the columns off.
-        static Rectangle ColumnRect(float left, float right)
-            => new((int)left, 0, (int)(right - left), 0);
 
         // Ludoal fork: the other two tabs live in their own screen, so leaving Patrols hands over to
         // it. This tab is a no-op: we are already here.
         void OnGalaxyTabChanged(int index)
             => ScreenGroups.SwitchGalaxyTab(index, self: 2, Universe, this);
-
-        Vector2 GetCenteredTextOffset(Rectangle rect, GameText text)
-        {
-            return new Vector2(rect.X + rect.Width / 2 - Fonts.Arial20Bold.MeasureString(Localizer.Token(text)).X / 2f,
-                               ERect.Y - Fonts.Arial20Bold.LineSpacing);
-        }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
@@ -97,74 +109,28 @@ namespace Ship_Game
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(GalaxyTabs), ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed);
 
-            // Ludoal fork: the header, separators and border are drawn whether or not there is a
-            // patrol to list - an empire with no patrol plans showed a blank panel, which reads as
-            // a broken screen rather than an empty table. Column edges come from ERect and the same
-            // fractions the list items use, so they no longer need a row to exist to be known.
-            Graphics.Font fontStyle = Fonts.Arial20Bold;
-            float w = ERect.W;
-            float nameX = ERect.X;
-            float waypointsX = nameX + w * 0.15f;
-            float fleetsNumX = waypointsX + w * 0.14f;
-            float fleetsX = fleetsNumX + w * 0.14f;
-            float fleetsRight = fleetsX + w * 0.28f;
-
-            var textCursor = GetCenteredTextOffset(ColumnRect(nameX, waypointsX), GameText.PatrolPlanName);
-            SbPatrolName.Update(textCursor);
-            SbPatrolName.Draw(ScreenManager);
-
-            textCursor = GetCenteredTextOffset(ColumnRect(waypointsX, fleetsNumX), GameText.NumWayPoints);
-            SbNumWaypoints.Update(textCursor);
-            SbNumWaypoints.Draw(ScreenManager, fontStyle);
-
-            textCursor = GetCenteredTextOffset(ColumnRect(fleetsNumX, fleetsX), GameText.PatrolNumAssignedFleets);
-            SbNumFleetsAssigned.Update(textCursor);
-            SbNumFleetsAssigned.Draw(ScreenManager, fontStyle);
-
-            textCursor = GetCenteredTextOffset(ColumnRect(fleetsX, fleetsRight), GameText.PatrolAssignedFleets);
-            SbFleetsAssigned.Update(textCursor);
-            SbFleetsAssigned.Draw(ScreenManager, fontStyle);
-
-            Color lineColor = new Color(118, 102, 67, 255);
-            float columnTop = ERect.Y + 15;
-            float columnBot = ERect.Y + ERect.H - 20;
-            foreach (float lineX in new[] { waypointsX, fleetsNumX, fleetsX, fleetsRight + 5 })
-                batch.DrawLine(new Vector2(lineX, columnTop), new Vector2(lineX, columnBot), lineColor);
-
-            batch.DrawRectangle(PatrolsSL.ItemsHousing, lineColor); // items housing border
+            // the shared charte draws the headers, the rule and the separators - with or
+            // without a patrol to list, so an empty empire still reads as an empty TABLE
+            Table.DrawChrome(batch);
             ScreenGroups.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
 
-        void InitSortedItems(SortButton button)
+        void Refill(int col, bool ascending)
         {
-            LastSorted = button;
-            GameAudio.BlipClick();
-            button.Ascending = !button.Ascending;
             PatrolsSL.Reset();
-        }
-
-        void Sort<T>(SortButton button, Func<FleetPatrol, T> sortPredicate)
-        {
-            InitSortedItems(button);
-            FleetPatrol[] patrols = Player.FleetPatrols.Sorted(button.Ascending, sortPredicate);
+            FleetPatrol[] patrols;
+            switch (col)
+            {
+                case 1:  patrols = Player.FleetPatrols.Sorted(ascending, p => p.WayPoints.Count); break;
+                case 2:  patrols = Player.FleetPatrols.Sorted(ascending, p => Player.AllFleets.Count(f => f.HasPatrolPlan && f.Patrol == p)); break;
+                default: patrols = Player.FleetPatrols.Sorted(ascending, p => p.Name); break;
+            }
             foreach (FleetPatrol patrol in patrols)
             {
                 PatrolsSL.AddItem(new EmpirePatrolsScreenListItem(this, patrol, Player));
             }
-        }
-
-        void HandleButton<T>(InputState input, SortButton button, Func<FleetPatrol, T> sortPredicate)
-        {
-            if (button.HandleInput(input))
-                Sort(button, sortPredicate);
-        }
-
-        void ResetButton<T>(SortButton button, Func<FleetPatrol, T> sortPredicate)
-        {
-            if (LastSorted.Text == button.Text)
-                Sort(button, sortPredicate);
         }
 
         public override bool HandleInput(InputState input)
@@ -175,9 +141,16 @@ namespace Ship_Game
             if (PatrolsSL.NumEntries == 0)
                 ResetList();
 
-            HandleButton(input, SbPatrolName, p => p.Name);
-            HandleButton(input, SbNumWaypoints, p => p.WayPoints.Count);
-            HandleButton(input, SbNumFleetsAssigned, p => Player.AllFleets.Count(fleet => fleet.HasPatrolPlan && fleet.Patrol == p));
+            // headers - tooltips, hover and sort clicks - through the shared charte
+            int clicked = Table.HandleInput(input);
+            if (clicked >= 0)
+            {
+                GameAudio.BlipClick();
+                bool asc = Table.SetSorted(clicked);
+                LastSortCol = clicked;
+                Refill(clicked, asc);
+                return true;
+            }
 
             // Ludoal fork: close with the key that opens this screen (P) — Keys.L was a
             // copy-paste leftover from PlanetListScreen, so the hotkey felt dead in-game.
@@ -192,10 +165,9 @@ namespace Ship_Game
 
         void ResetList()
         {
-            PatrolsSL.Reset();
-
-            if (LastSorted == null)
+            if (LastSortCol < 0)
             {
+                PatrolsSL.Reset();
                 foreach (FleetPatrol patrol in Player.FleetPatrols)
                 {
                     PatrolsSL.AddItem(new EmpirePatrolsScreenListItem(this, patrol, Player));
@@ -203,9 +175,8 @@ namespace Ship_Game
             }
             else
             {
-                ResetButton(SbPatrolName, p => p.Name);
-                ResetButton(SbNumWaypoints, p => p.WayPoints.Count);
-                ResetButton(SbNumFleetsAssigned, p => Player.AllFleets.Count(fleet => fleet.HasPatrolPlan && fleet.Patrol.Name == p.Name));
+                // re-apply the standing sort with its CURRENT direction
+                Refill(LastSortCol, Table.Columns[LastSortCol].Ascending);
             }
         }
 

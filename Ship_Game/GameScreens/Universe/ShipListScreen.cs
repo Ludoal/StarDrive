@@ -89,22 +89,32 @@ namespace Ship_Game
                 new UITable.Column { Title = "FTL", Width = 60, Align = TableAlign.Number, Sortable = true, Tip = "Faster Than Light Speed of Ship" },
                 new UITable.Column { Title = "STL", Width = 60, Align = TableAlign.Number, Sortable = true, Tip = "Sublight Speed of Ship" },
             });
-            // Role and Patrol size themselves on the fleet's DATA (maintainer bench 288:
-            // "Construction" overflowed a fixed 80), then Orders takes what the screen
-            // leaves within bounds
-            var roles = new Array<string>();
-            var patrols = new Array<string>();
+            // EVERY column sizes itself on the fleet's DATA, header (or icon) included
+            // (maintainer, 4 Aug); Orders is FOLDABLE - if the natural widths exceed the
+            // resolution, its text cuts to a tooltip instead of pushing the frame off-screen
+            var vals = new Array<string>[12];
+            for (int i = 0; i < vals.Length; ++i)
+                vals[i] = new Array<string>();
             foreach (Ship s in Universe.Player.OwnedShips)
             {
-                roles.Add(Localizer.GetRole(s.ShipData.Role, s.Loyalty));
-                patrols.Add(s.Fleet?.Patrol?.Name ?? "");
+                vals[0].Add(s.System?.Name ?? Localizer.Token(GameText.DeepSpace));
+                vals[1].Add(s.ShipName);
+                vals[2].Add(Localizer.GetRole(s.ShipData.Role, s.Loyalty));
+                vals[3].Add(s.Fleet?.Name ?? "");
+                vals[4].Add(s.Fleet?.Patrol?.Name ?? "");
+                vals[5].Add(ShipListScreenItem.GetStatusText(s));
+                vals[7].Add(s.GetStrength().ToString("0"));
+                vals[8].Add(s.GetMaintCost().ToString("F2"));
+                vals[9].Add(string.Concat(s.TroopCount, "/", s.TroopCapacity));
+                vals[10].Add((s.MaxFTLSpeed / 1000f).ToString("0") + "k");
+                vals[11].Add(s.MaxSTLSpeed.ToString("0"));
             }
-            UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, roles);
-            UITable.AutoSize(Table.Columns[4], Fonts.Arial12Bold, patrols);
-            int fixedSum = 0;
-            foreach (UITable.Column c in Table.Columns)
-                fixedSum += c.Width;
-            Table.Columns[5].Width = ((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66 - fixedSum).Clamped(340, 560);
+            for (int i = 0; i < vals.Length; ++i)
+                if (i != 6) // the icon lane keeps its fixed width
+                    UITable.AutoSize(Table.Columns[i], Fonts.Arial12Bold, vals[i]);
+            Table.Columns[1].Width += 34; // the ship icon rides ahead of the name
+            Table.Columns[5].Foldable = true;
+            Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
 
             int shipRows = Universe.Player.OwnedShips.Count;
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;

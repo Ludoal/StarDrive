@@ -49,6 +49,11 @@ namespace Ship_Game.UI
             public bool Hover;
             public TableColor Coloring = TableColor.Plain; // how this column's values wear colour
             public bool Bold;         // the column's cells draw in the bold body font
+            // the fold (maintainer, 4 Aug): when the table's natural width exceeds what the
+            // resolution allows, foldable columns give the difference back - their text is
+            // CUT with an ellipsis and the full value moves to a tooltip
+            public bool Foldable;
+            public bool Folded;       // set by FitToWidth when this column actually gave width
             public Rectangle Rect;    // absolute header band, set by Layout
 
             public Font CellFont => Bold ? Fonts.Arial12Bold : Fonts.Arial12;
@@ -91,10 +96,48 @@ namespace Ship_Game.UI
         public static void AutoSize(Column c, Font font, IEnumerable<string> values)
         {
             float w = font.TextWidth(c.Title);
+            if (c.Icon != null)
+                w = Math.Max(w, c.Icon.Width);
             foreach (string v in values)
                 if (v.NotEmpty())
                     w = Math.Max(w, font.TextWidth(v));
             c.Width = (int)w + 2 * PadX;
+        }
+
+        // if the natural widths exceed what the resolution allows, the FOLDABLE columns
+        // give the difference back, split between them - call after the AutoSize passes
+        public void FitToWidth(int maxTableWidth)
+        {
+            int over = TableWidth - maxTableWidth;
+            if (over <= 0)
+                return;
+            var folds = new Array<Column>();
+            foreach (Column c in Columns)
+                if (c.Foldable)
+                    folds.Add(c);
+            if (folds.IsEmpty)
+                return;
+            int share = over / folds.Count + 1;
+            foreach (Column f in folds)
+            {
+                int cut = Math.Min(share, over);
+                f.Width = Math.Max(80, f.Width - cut);
+                f.Folded = true;
+                over -= cut;
+            }
+        }
+
+        // the fold's visible half: cut text to the room with an ellipsis; the caller
+        // shows the full value in a tooltip when the returned string differs
+        public static string FitText(Font font, string text, int room)
+        {
+            if (text.IsEmpty() || font.TextWidth(text) <= room)
+                return text;
+            int len = Math.Max(1, (int)(text.Length * (room / font.TextWidth(text))));
+            string t = text.Substring(0, len).TrimEnd() + "...";
+            while (len > 1 && font.TextWidth(t) > room)
+                t = text.Substring(0, --len).TrimEnd() + "...";
+            return t;
         }
 
         public int TableWidth
@@ -123,10 +166,12 @@ namespace Ship_Game.UI
             // distance too
             RuleY = HeaderY + HeaderH + 6;
             TableRect = new Rectangle(x0, HeaderY, x - x0, (int)bottom - HeaderY);
-            // ScrollList insets its ItemsHousing by PaddingLeft 8 / PaddingRight 24: this
-            // rect makes the item lane start at the first column and leaves the slider its
-            // reserved lane right of the last one
-            ListRect = new RectF(x0 - 8, RuleY + 6, (x - x0) + 8 + SliderLane, bottom - (RuleY + 6));
+            // ScrollList insets its ItemsHousing by PaddingLeft 8 / PaddingTop 15 /
+            // PaddingRight 24: this rect makes the item lane start at the first column,
+            // pulls the TOP padding back so the first row sits 6px under the rule (a
+            // padding, not an empty line - maintainer bench 289), and leaves the slider
+            // its reserved lane right of the last column
+            ListRect = new RectF(x0 - 8, RuleY - 9, (x - x0) + 8 + SliderLane, bottom - (RuleY - 9));
         }
 
         // the hover selector spans the PHANTOM extremity lines: the item lane starts at
