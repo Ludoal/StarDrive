@@ -72,9 +72,9 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.StarOrPlanet), Sortable = true, MinWidth = 180 },
                 new UITable.Column { Title = Localizer.Token(GameText.Proximity), Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.ResourceName), Sortable = true },
-                // the crystal, like the other tables' Richness - the production hammer read
-                // as something else - and a single digit needs no 60px lane (maintainer bench 303)
-                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_exotic_resource"), Width = 40,
+                // back to the production hammer (Lek's review, bench 305) - the crystal
+                // doubled the Resource column's own icon right beside it
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Width = 40,
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Richness) },
                 new UITable.Column { Title = Localizer.Token(GameText.Owner), Align = TableAlign.Center, Sortable = true },
                 // sized on the mining row's worst case: the 168px deploy button plus its two
@@ -110,7 +110,11 @@ namespace Ship_Game
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             // 48 = the 44px row plus the list's 4px item padding - counting 44 alone kept
             // a scrollbar alive with room to spare (maintainer bench 291)
-            float contentH = Math.Min(fullAvail, 105 + Math.Max(3, ExploredSolarBodies.Count) * 48);
+            // capped height snaps to WHOLE rows (Lek's review, bench 305): the raw cap cut
+            // the last visible line in half
+            float contentH = 105 + Math.Max(3, ExploredSolarBodies.Count) * 48;
+            if (contentH > fullAvail)
+                contentH = 105 + (int)((fullAvail - 105) / 48) * 48;
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 1,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
