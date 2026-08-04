@@ -10,6 +10,7 @@ using Ship_Game.Universe.SolarBodies;
 using System.Collections.Generic;
 using System.Linq;
 using Ship_Game.GameScreens; // ScreenGroups: the group geometry
+using Ship_Game.UI; // UITable.FitText
 
 namespace Ship_Game
 {
@@ -41,6 +42,18 @@ namespace Ship_Game
         readonly ScrollList<BlueprintsChainListItem> BlueprintsChainList;
         readonly DropOptions<Planet.ColonyType> SwitchColonyType;
         readonly UILabel LinkBlueprintsName;
+        // the STATE, separate from the label (bench 305): the shown text folds to the
+        // frame with a tooltip, so it can no longer be read back as the link's name
+        string LinkedTo = "";
+
+        void SetLinkedTo(string name)
+        {
+            LinkedTo = name ?? "";
+            string shown = UITable.FitText(Fonts.Arial12Bold, LinkedTo,
+                                           (int)(SubBlueprintsOptions.Width - 160 - 12));
+            LinkBlueprintsName.Text = shown;
+            LinkBlueprintsName.Tooltip = shown != LinkedTo ? LinkedTo : "";
+        }
 
         Building HoveredBuilding;
         // the Description tab keeps showing the LAST hovered building once the cursor
@@ -283,7 +296,7 @@ namespace Ship_Game
         void RefreshChainList()
         {
             BlueprintsChainList.Reset();
-            BuildChain(LinkBlueprintsName.Text.Text);
+            BuildChain(LinkedTo);
 
             void BuildChain(string linkTo)
             {
@@ -478,7 +491,7 @@ namespace Ship_Game
             PlannedFertilityLbl.Visible = PlannedFertility.NotEqual(InitFertility);
             PlannedPopLbl.Color = PlannedPopulation >= InitPopulationBillion ? Color.LightGreen : Color.Pink;
             PlannedFertilityLbl.Color = PlannedFertility >= InitFertility ? Color.LightGreen : Color.Pink;
-            UnlinkBlueprints.Enabled = LinkBlueprintsName.Text != "";
+            UnlinkBlueprints.Enabled = LinkedTo.NotEmpty();
             base.Update(elapsedTime);
         }
 
@@ -563,7 +576,7 @@ namespace Ship_Game
         BlueprintsTemplate CreateBlueprintsTemplate()
         {
             HashSet<string> plannedBuildings = TilesList.FilterSelect(t => t.HasBuilding && !t.Building.IsOutpost, t => t.Building.Name).ToHashSet();
-            return new BlueprintsTemplate(BlueprintsName.Text.Text, Exclusive, LinkBlueprintsName.Text.Text, plannedBuildings, SwitchColonyType.ActiveValue);
+            return new BlueprintsTemplate(BlueprintsName.Text.Text, Exclusive, LinkedTo, plannedBuildings, SwitchColonyType.ActiveValue);
         }
 
         void OnSaveBlueprintsClick()
@@ -583,7 +596,7 @@ namespace Ship_Game
 
         void OnUnlinkBlueprintsClick()
         {
-            LinkBlueprintsName.Text = "";
+            SetLinkedTo("");
             RefreshChainList();
         }
 
@@ -606,26 +619,26 @@ namespace Ship_Game
         public void RemoveAllBlueprintsLinkTo(BlueprintsTemplate template)
         {
             Player.Universe.RefreshEmpiresPlanetsBlueprints(template, delete: false);
-            if (LinkBlueprintsName.Text.Text == template.Name)
-                    LinkBlueprintsName.Text = "";
+            if (LinkedTo == template.Name)
+                    SetLinkedTo("");
         }
 
         public void OnBlueprintsLinked(BlueprintsTemplate linkedBlueprints)
         {
-            LinkBlueprintsName.Text = linkedBlueprints.Name;
+            SetLinkedTo(linkedBlueprints.Name);
             RefreshChainList();
         }
 
         public void LoadBlueprintsTemplate(BlueprintsTemplate template)
         {
             ClearPlannedBuildings();
-            LinkBlueprintsName.Text = "";
+            SetLinkedTo("");
             LinkBlueprints.Enabled = true;
             BlueprintsName.Text = template.Name;
             Exclusive = template.Exclusive;
             SwitchColonyType.ActiveValue = template.ColonyType;
             if (template.LinkTo!= null && ResourceManager.TryGetBlueprints(template.LinkTo, out _)) 
-                LinkBlueprintsName.Text = template.LinkTo;
+                SetLinkedTo(template.LinkTo);
 
             AddOutpost();
             foreach (string name in template.PlannedBuildings) 
