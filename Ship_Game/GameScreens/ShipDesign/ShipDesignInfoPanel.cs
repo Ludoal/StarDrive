@@ -73,6 +73,10 @@ namespace Ship_Game.GameScreens.ShipDesign
         // Ludoal fork (spec v4): the in-frame title takes this much height before the rows
         // start. Fixed, so every design puts its first row on the same line.
         const float TitleBandHeight = 30f;
+        // compact: the "vs <name>" moves to a SECOND line (the narrow frame has no room
+        // beside the name), and the line is RESERVED on both frames whether or not a
+        // comparison runs - the two row sets stay level (maintainer bench 303)
+        const float CompactTitleBand = 46f;
 
         // Ludoal fork: three levels of value, no colour. Removing the per-family tints left the
         // panel flat — everything was white, so nothing structured it vertically (maintainer feedback). Depth comes from brightness instead: the block headings stay cream and carry
@@ -708,13 +712,21 @@ namespace Ship_Game.GameScreens.ShipDesign
                 const float InnerTopInset = 26f;
                 var namePos = new Vector2(ContentLeft + (ShowShipPlan ? PlanSide + PlanGap : 0f),
                                           Y + (ModuleTitleFromFrame - InnerTopInset));
+                // compact hover: the name centres on the WHOLE frame, image band included
+                // (maintainer bench 303)
+                if (Compact && ShowShipPlan)
+                    namePos.X = X + (Width - nameFont.TextWidth(S.Name)) * 0.5f;
                 batch.DrawString(nameFont, S.Name, namePos, Color.White);
 
                 if (ComparedName.NotEmpty())
                 {
                     Graphics.Font vsFont = Fonts.Arial12Bold;
-                    var vsPos = new Vector2(namePos.X + nameFont.TextWidth(S.Name) + 10f,
-                                            namePos.Y + nameFont.LineSpacing - vsFont.LineSpacing - 2f);
+                    // compact: line 2, under the name - beside it there is no room
+                    var vsPos = Compact
+                        ? new Vector2(ContentLeft + (ShowShipPlan ? PlanSide + PlanGap : 0f),
+                                      namePos.Y + nameFont.LineSpacing + 2f)
+                        : new Vector2(namePos.X + nameFont.TextWidth(S.Name) + 10f,
+                                      namePos.Y + nameFont.LineSpacing - vsFont.LineSpacing - 2f);
                     string vs = "vs " + ComparedName;
                     batch.DrawString(vsFont, vs, vsPos, Colors.Cream);
 
@@ -742,7 +754,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             // leftward, which is why the longest ones ("Excess Wpn Pwr Drain") need the slack.
             // The rows now start below the in-frame title, at a FIXED offset so every design —
             // long name or short, compared or not — puts its first row on the same line.
-            float rowsY = Y + TitleBandHeight;
+            float rowsY = Y + (Compact ? CompactTitleBand : TitleBandHeight);
 
             // the ship plan owns a square band down the frame's left edge; the stat columns
             // share whatever is left of the width

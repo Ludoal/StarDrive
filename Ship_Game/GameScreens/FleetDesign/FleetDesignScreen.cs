@@ -29,12 +29,13 @@ namespace Ship_Game
         public readonly EmpireUIOverlay EmpireUI;
         public readonly Empire Player;
 
-        Vector2 TitlePos;
         Submenu DesignTabs;   // Ludoal fork: the Design group's tab row, this screen being one tab
 
         // Ludoal fork: the First Fleet cartouche's geometry, shared by the layout that places its
         // buttons and the Draw that paints the name and icon above them.
-        const float CartPad = 20f, CartIcon = 64f, CartBtnH = 33f, CartBtnGap = 6f;
+        // 10, not 20 (maintainer bench 303): minimum margins - the title lands at +10 like
+        // every other cartouche's, and the ship list above gains the difference
+        const float CartPad = 10f, CartIcon = 64f, CartBtnH = 33f, CartBtnGap = 6f;
         const float CartBtnW = 180f;
         RectF LeftMenu;
         RectF RightMenu;
@@ -262,8 +263,9 @@ namespace Ship_Game
             float blockBottom = client.Bottom - ListPad;
             float blockLeft   = client.X + ListPad;
             float blockRight  = client.Right - ListPad;
-            TitlePos = new(client.X + ListPad, client.Y + 4);
-            float listTop = TitlePos.Y + Fonts.Arial12Bold.LineSpacing + 4;
+            // 10px off the frame's edge (maintainer bench 303) - the caption row is gone,
+            // both lists gain its height and the left one fits one more fleet
+            float listTop = client.Y + 10;
 
             RectF leftRect = new(client.X + ListPad, listTop, leftW, 500);
             LeftMenu = leftRect;

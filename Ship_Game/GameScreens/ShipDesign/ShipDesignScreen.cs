@@ -718,7 +718,7 @@ namespace Ship_Game
 
             HoverSub.SetAbsPos(hover.X, hover.Y);
             HoverSub.RequiresLayout = true;
-            HoverPanel.SetAbsPos(hover.X + ShipDesignInfoPanel.Inset, hover.Y + 32);
+            HoverPanel.SetAbsPos(hover.X + ShipDesignInfoPanel.Inset, hover.Y + 26); // same top as Active (bench 303)
             HoverPanel.RequiresLayout = true;
         }
 
@@ -1290,8 +1290,10 @@ namespace Ship_Game
             // Bound to the list rather than the cartouche, it also stops travelling when the
             // cartouche grows leftwards on a pin, and it survives the frame it hides: unpinned,
             // the checkbox is the only way back.
-            RectF infoTab = infoSub.Tabs[0].Rect;
-            PinActiveCheck = Checkbox(new Vector2(hullSelectPos.X, infoTab.Y + 4),
+            // on the BROWSER's own tab row (maintainer bench 303): anchored to the Active
+            // frame's row, the compact frame - list-width now - ran the toggles into its tab
+            RectF listTab = hullSelectSub.Tabs[0].Rect;
+            PinActiveCheck = Checkbox(new Vector2(hullSelectPos.X, listTab.Y + 4),
                                       () => PinActiveDesign,
                                       (b) => { PinActiveDesign = b; },
                                       "Pin Active",
@@ -1308,7 +1310,7 @@ namespace Ship_Game
 
             // Ludoal fork (maintainer bench 302): the compact cartouche is LIVE - list-width,
             // the flying overlay's stat set, deltas wired. ResizeCartouches applies a flip.
-            CompactActiveCheck = Checkbox(new Vector2(hullSelectPos.X, infoTab.Y + 4),
+            CompactActiveCheck = Checkbox(new Vector2(hullSelectPos.X, listTab.Y + 4),
                                           () => CompactActiveDesign,
                                           (b) => { CompactActiveDesign = b; },
                                           "Compact",
@@ -1331,8 +1333,10 @@ namespace Ship_Game
             HoverSub = Add(new Submenu(hoverRect, "Hovered Design"));
             HoverSub.SetBackground(Colors.TransparentBlackFill);
 
+            // ⚠ 26, the SAME inner top as the Active frame: at 32 the hover title sat 6px
+            // lower than its two siblings (maintainer bench 303, checked against Modules)
             var hoverInner = RectF.FromPoints(hoverRect.X + Inset, hoverRect.Right - Inset,
-                                              hoverRect.Y + 32, hoverRect.Bottom - 8);
+                                              hoverRect.Y + 26, hoverRect.Bottom - 8);
             HoverPanel = Add(new ShipDesignInfoPanel(this, hoverInner));
             HoverPanel.ShowShipPlan = true; // the module plan down its left edge (maintainer feedback)
             HoverPanel.Compact = CompactActiveDesign;
