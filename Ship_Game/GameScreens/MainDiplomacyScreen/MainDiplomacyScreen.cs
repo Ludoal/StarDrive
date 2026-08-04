@@ -618,12 +618,9 @@ namespace Ship_Game
                 float rowY = y;
                 TableRow(batch, col, ref y, maxY, "Spies", espionage.InfiltrationLevelSummary(), Color.White);
                 if (new Rectangle(col.X + 8, (int)rowY, col.Width - 16, Font12.LineSpacing).HitTest(Input.CursorPosition))
-                    ToolTip.CreateTooltip("How deep THEY have infiltrated YOUR empire.
-"
-                                        + "Your own infiltration level on them sets the precision:
-"
-                                        + "level 2 says whether their network exists, 3-4 reads it
-"
+                    ToolTip.CreateTooltip("How deep THEY have infiltrated YOUR empire.\n"
+                                        + "Your own infiltration level on them sets the precision:\n"
+                                        + "level 2 says whether their network exists, 3-4 reads it\n"
                                         + "Shallow or Deep, and 5 gives their exact level.");
             }
             else
