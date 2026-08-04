@@ -43,7 +43,7 @@ namespace Ship_Game
 
         protected GenericLoadSaveScreen(
             GameScreen parent, SLMode mode, string initText, string title, string tabText, bool showSaveExport = false)
-            : base(parent, 600, 600)
+            : base(parent, 680, 600) // wide enough for Export beside the Load/Save button (maintainer bench 303)
         {
             Mode = mode;
             InitText = initText;
@@ -129,7 +129,7 @@ namespace Ship_Game
             // 20 the tabs overhung the frame's border. Bounds come from ContentArea, which knows
             // what the frame's own edges eat (11 right, 30 at the foot).
             Rectangle inner = PopupFrame.ContentArea(Window);
-            RectF sub = new(inner.X + 25, inner.Y + 4, inner.Width - 50, 80);
+            RectF sub = new(inner.X + 25, inner.Y + 16, inner.Width - 50, 80); // air over the name row (maintainer bench 303)
             NameSave = new Submenu(sub, Title);
             TitlePosition = new Vector2(sub.X + 20, sub.Y + 45);
 
@@ -156,7 +156,9 @@ namespace Ship_Game
 
             if (ShowSaveExport)
             {
-                var exportBtn = ButtonBigDip(sub.X + sub.W - 200, EnterNameArea.Y - 48, "Export Save", b => ExportSave());
+                // on the SAME row, left of Load/Save, and just "Export" - the window grew the
+                // 80px this button needs (maintainer bench 303)
+                var exportBtn = ButtonSmall(sub.X + sub.W - 176, EnterNameArea.Y - 2, "Export", b => ExportSave());
                 exportBtn.Tooltip = GameText.ThisWillLetYouEasily;
             }
             // (no base.LoadContent() here: it ran at the top, and calling it again would
