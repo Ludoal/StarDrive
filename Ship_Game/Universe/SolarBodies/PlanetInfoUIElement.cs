@@ -30,13 +30,12 @@ namespace Ship_Game
         readonly Rectangle SendTroops;
         readonly Rectangle MarkedRect;
         readonly Rectangle CancelInvasionRect;
-        readonly Rectangle ExoticRect;
-        readonly Rectangle ExoticResourceIconRect;
+        Rectangle ExoticRect;            // re-anchored per draw on the adaptive variants
+        Rectangle ExoticResourceIconRect;
         Rectangle PopRect;
-        string PlanetTypeRichness;
-        Vector2 PlanetTypeCursor;
         readonly Selector Sel;
-        readonly Rectangle UninhabIconRect; // Ludoal fork: planet sprite for uninhabitables
+        Rectangle UninhabIconRect; // Ludoal fork: planet sprite for uninhabitables
+        int PlateTop;              // the visible frame's top - ADAPTIVE (bench 308)
         readonly SkinnableButton Inspect;
         readonly SkinnableButton Invade;
         readonly Rectangle Housing;
@@ -83,7 +82,7 @@ namespace Ship_Game
                 IsToggle = false
             };
 
-            FlagRect         = new Rectangle(r.X + r.Width - 60, Housing.Y + 63, 26, 26);
+            FlagRect         = new Rectangle(r.X + r.Width - 44, Housing.Y + 96, 26, 26); // under the R/F/P lanes (bench 308)
             DefenseRect      = new Rectangle(leftRect.X + 13, Housing.Y + 114, 22, 22);
             OffenseRect      = new Rectangle(leftRect.X + 13, Housing.Y + 114 + 22, 22, 22);
             InjuryRect       = new Rectangle(leftRect.X + 13, Housing.Y + 114 + 44, 22, 22);
@@ -102,6 +101,42 @@ namespace Ship_Game
             ExoticRect = new Rectangle(RightRect.X - 17, Housing.Y + 130, 182, 25);
             ExoticResourceIconRect = new Rectangle(RightRect.X - 17, Housing.Y + 165, 20, 20);
             UninhabIconRect = new Rectangle(leftRect.X + 75, Housing.Y + 120, 80, 80); // Ludoal fork: sprite left, buttons right — same grammar as colonies
+        }
+
+        // ── the unified header (spec cartouches, bench 308) ──────────────────────────
+        // Name in 20 bold (owner's colour), class in gray under it, and the star
+        // cartouche's own R/F/P lanes top right - one grammar for every variant.
+        void DrawHeader(SpriteBatch batch, bool lanes)
+        {
+            var namePos = new Vector2(Housing.X + 16, PlateTop + 8);
+            string name = UI.UITable.FitText(Fonts.Arial20Bold, P.Name, 190);
+            batch.DrawString(Fonts.Arial20Bold, name, namePos, P.Owner?.EmpireColor ?? tColor);
+            string cls = P.IsMineable ? P.LocalizedCategory : P.LocalizedRichness;
+            batch.DrawString(Fonts.Arial12, cls,
+                             new Vector2(namePos.X + 2, namePos.Y + Fonts.Arial20Bold.LineSpacing + 2),
+                             Color.Gray);
+            if (!lanes)
+                return;
+
+            int laneP = Housing.Right - 46, laneF = laneP - 58, laneR = laneF - 44;
+            int iy = (int)namePos.Y + 2;
+            void LaneIcon(string tex, int lane)
+                => batch.Draw(ResourceManager.Texture(tex), new Rectangle(lane + 4, iy, 14, 14), Color.White);
+            void LaneVal(string v, int lane)
+                => batch.DrawString(Fonts.Arial12, v,
+                                    new Vector2(lane + 18 - Fonts.Arial12.TextWidth(v), iy + 18), Color.White);
+            LaneIcon("NewUI/icon_production", laneR);
+            LaneVal(P.MineralRichness.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture), laneR);
+            LaneIcon("NewUI/icon_food", laneF);
+            LaneVal(P.FertilityFor(Player).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture), laneF);
+            LaneIcon("UI/icon_pop_22", laneP);
+            string popShort = P.Habitable
+                ? (P.PopulationBillion > 0
+                    ? $"{P.PopulationBillion.String(1)}/{P.MaxPopulationBillionFor(Player).String(1)}"
+                    : P.MaxPopulationBillionFor(Player).String(1))
+                : "-";
+            LaneVal(popShort, laneP);
+            PopRect = new Rectangle(laneP + 4, iy, 14, 14); // the pop tooltip anchors the lane icon
         }
 
         public override void Update(UpdateTimes elapsed)
@@ -128,54 +163,46 @@ namespace Ship_Game
             // band on antenna machinery, and with it gone the plate framed empty space
             // (maintainer: "beaucoup de vide au-dessus"). The housing keeps its size - every
             // inner anchor is an offset from it - only the visible frame shrinks.
-            Rectangle frame = Housing;
-            frame.Y += FrameShave; frame.Height -= FrameShave;
+            // ADAPTIVE height (maintainer bench 308): bottom-anchored on the housing like
+            // the star cartouche - the sparse variants stop framing dead space. The owned
+            // colony (sliders) and the habitable-unowned page keep the full plate.
+            bool explored = P.IsExploredBy(Player);
+            int plateH = Housing.Height - FrameShave;
+            if (!explored)
+                plateH = 96;
+            else if (P.Owner == null && !P.Habitable)
+                plateH = 172;
+            PlateTop = Housing.Bottom - plateH;
+            var frame = new Rectangle(Housing.X, PlateTop, Housing.Width, plateH);
             Rectangle plate = frame;
             plate.Inflate(-2, -2);
             batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
             UITheme.DrawPlate(batch, frame, Color.Transparent,
                               new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
                               ruleWidthOverride: 3);
-            var namePos = new Vector2(Housing.X + 15, Housing.Y + 65);
 
-            Graphics.Font font = Fonts.Arial8Bold;
-            if (P.Name.Length < 12)      { font = Fonts.Arial20Bold; namePos.X += 15; }
-            else if (P.Name.Length < 13) { font = Fonts.Arial12Bold; namePos.X += 10; }
-            else if (P.Name.Length < 17) { font = Fonts.Arial10;     namePos.X += 5; }
-           
             P.UpdateMaxPopulation();
-            if (P.Owner == null || !P.IsExploredBy(Player))
+            if (P.Owner == null || !explored)
             {
-                DrawUnexploredUninhabited(namePos, Screen.Input.CursorPosition);
+                DrawUnexploredUninhabited(Screen.Input.CursorPosition);
                 return;
             }
 
             AddExploredTips();
-            batch.DrawString(font, P.Name, namePos, P.Owner?.EmpireColor ?? tColor);
+            DrawHeader(batch, lanes: true);
             batch.Draw(ResourceManager.Flag(P.Owner), FlagRect, P.Owner.EmpireColor);
-            var cursor = new Vector2(Sel.Rect.X + Sel.Rect.Width - 65, namePos.Y + Fonts.Arial20Bold.LineSpacing / 2 - Fonts.Arial12Bold.LineSpacing / 2 + 2f);
-
-            string pop = P.PopulationStringForPlayer;
-            cursor.X -= (Fonts.Arial12Bold.MeasureString(pop).X + 5f);
-            batch.DrawString(Fonts.Arial12Bold, pop, cursor, tColor);
-
-            PopRect = new Rectangle((int)cursor.X - 23, (int)cursor.Y - 3, 22, 22);
-            batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopRect, Color.White);
-
-            MoneyRect = new Rectangle(PopRect.X - 60, PopRect.Y, 22, 22);
-            var moneyCursor = new Vector2((float)MoneyRect.X + 24, cursor.Y);
 
             if (P.Owner == Player)
             {
+                // the net income line rides under the lanes, left of the flag
                 string sNetIncome = P.Money.NetRevenue.String(2);
-                batch.DrawString(Fonts.Arial12Bold, sNetIncome, moneyCursor, P.Money.NetRevenue > 0.0 ? Color.LightGreen : Color.Salmon);
+                MoneyRect = new Rectangle(FlagRect.X - 90, FlagRect.Y + 2, 22, 22);
                 batch.Draw(ResourceManager.Texture("UI/icon_money_22"), MoneyRect, Color.White);
+                batch.DrawString(Fonts.Arial12Bold, sNetIncome, new Vector2(MoneyRect.Right + 4, MoneyRect.Y + 4),
+                                 P.Money.NetRevenue > 0.0 ? Color.LightGreen : Color.Salmon);
             }
 
-            PlanetTypeRichness = P.LocalizedRichness;
-            PlanetTypeCursor = new Vector2(PlanetIconRect.X + PlanetIconRect.Width / 2 - Fonts.Arial12Bold.MeasureString(PlanetTypeRichness).X / 2f, PlanetIconRect.Y + PlanetIconRect.Height + 5);
-            batch.Draw(P.PlanetTexture, PlanetIconRect, Color.White);
-            batch.DrawString(Fonts.Arial12Bold, PlanetTypeRichness, PlanetTypeCursor, tColor);
+            batch.Draw(P.PlanetTexture, PlanetIconRect, Color.White); // class moved to the header
             P.UpdateIncomes();
 
             DrawPlanetStats(DefenseRect, ((float)P.TotalDefensiveStrength).String(1), "UI/icon_shield", Color.White, Color.White);
@@ -225,61 +252,44 @@ namespace Ship_Game
             }
         }
 
-        bool DrawUnexploredUninhabited(Vector2 namePos, Vector2 mousePos)
+        bool DrawUnexploredUninhabited(Vector2 mousePos)
         {
             SpriteBatch batch = ScreenManager.SpriteBatch;
 
             if (!P.IsExploredBy(Player))
             {
+                // the compact plate: a title and one line - nothing else is known
                 batch.DrawString(Fonts.Arial20Bold,
-                    Localizer.Token(GameText.Unexplored) + P.LocalizedCategory, namePos, tColor);
-
-                string text = Localizer.Token(GameText.SendAShipToThis);
-                var cursor = new Vector2(Housing.X + 20, Housing.Y + 115);
-                batch.DrawString(Fonts.Arial12Bold, text, cursor, tColor);
+                    Localizer.Token(GameText.Unexplored) + P.LocalizedCategory,
+                    new Vector2(Housing.X + 16, PlateTop + 12), tColor);
+                batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.SendAShipToThis),
+                                 new Vector2(Housing.X + 16, PlateTop + 48), Color.Gray);
                 return true;
             }
 
             if (!P.Habitable)
             {
-                batch.DrawString(Fonts.Arial20Bold, P.Name, namePos, tColor);
-                string text = Localizer.Token(GameText.ThisPlanetIsNotHabitable);
-                Vector2 cursor = new Vector2(Housing.X + 20, Housing.Y + 110);
-                batch.DrawString(Fonts.Arial12Bold, text, cursor, tColor);
+                // compact plate: unified header (no lanes - the ground stats mean nothing
+                // here), the sprite at left, the actions and mining/research block at right
+                DrawHeader(batch, lanes: false);
+                batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.ThisPlanetIsNotHabitable),
+                                 new Vector2(Housing.X + 16, PlateTop + 46), Color.Gray);
 
-                // Ludoal fork: Planet View removed — the cartouche shows the planet itself now
+                UninhabIconRect = new Rectangle(Housing.X + 60, PlateTop + 74, 80, 80);
                 batch.Draw(P.PlanetTexture, UninhabIconRect, Color.White);
-                string uninhabClass = P.IsMineable ? P.LocalizedCategory : P.LocalizedRichness; // mineable: richness lives on the resource line
-                var uninhabClassPos = new Vector2(UninhabIconRect.X + UninhabIconRect.Width / 2 - Fonts.Arial12Bold.MeasureString(uninhabClass).X / 2f,
-                                                  UninhabIconRect.Y + UninhabIconRect.Height + 5);
-                batch.DrawString(Fonts.Arial12Bold, uninhabClass, uninhabClassPos, tColor);
 
+                ExoticRect = new Rectangle(RightRect.X - 17, PlateTop + 74, 182, 25);
+                ExoticResourceIconRect = new Rectangle(RightRect.X - 17, PlateTop + 108, 20, 20);
                 if (P.IsResearchable)
                     DrawResearchStation(batch, mousePos);
                 else if (P.IsMineable)
-                    DrawMiningOps(namePos, batch, mousePos);
+                    DrawMiningOps(batch, mousePos);
 
                 return true;
             }
 
-            batch.DrawString(Fonts.Arial20Bold, P.Name, namePos, tColor);
-            Vector2 textCursor = new Vector2(Sel.Rect.X + Sel.Rect.Width - 65,
-                namePos.Y + Fonts.Arial20Bold.LineSpacing / 2f - Fonts.Arial12Bold.LineSpacing / 2f + 2f);
-
-            string pop2 = P.PopulationStringForPlayer;
-            textCursor.X -= (Fonts.Arial12Bold.MeasureString(pop2).X + 5f);
-            batch.DrawString(Fonts.Arial12Bold, pop2, textCursor, tColor);
-
-            PopRect = new Rectangle((int)textCursor.X - 23, (int)textCursor.Y - 3, 22, 22);
-            batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopRect, Color.White);
-
-            PlanetTypeRichness = P.LocalizedRichness;
-            PlanetTypeCursor = new Vector2(PlanetIconRect.X + PlanetIconRect.Width / 2 - Fonts.Arial12Bold.MeasureString(PlanetTypeRichness).X / 2f,
-                                           PlanetIconRect.Y + PlanetIconRect.Height + 5);
-
-            batch.Draw(P.PlanetTexture, PlanetIconRect,
-                Color.White);
-            batch.DrawString(Fonts.Arial12Bold, PlanetTypeRichness, PlanetTypeCursor, tColor);
+            DrawHeader(batch, lanes: true);
+            batch.Draw(P.PlanetTexture, PlanetIconRect, Color.White); // class lives in the header
             DrawFertProdStats(batch);
             AddUnExploredTips();
 
@@ -408,13 +418,10 @@ namespace Ship_Game
                                                                                        : Color.Gray);
         }
 
-        void DrawMiningOps(Vector2 namePos, SpriteBatch batch, Vector2 mousePos)
+        void DrawMiningOps(SpriteBatch batch, Vector2 mousePos)
         {
-            if (P.Mining.Owner != null)
-            {
-                batch.DrawString(Fonts.Arial20Bold, P.Name, namePos, P.Mining.Owner.EmpireColor);
+            if (P.Mining.Owner != null) // the header wrote the name; the flag says whose rig
                 batch.Draw(ResourceManager.Flag(P.Mining.Owner), FlagRect, P.Mining.Owner.EmpireColor);
-            }
 
             batch.Draw(P.Mining.ExoticResourceIcon, ExoticResourceIconRect);
             // Ludoal fork: the block lives in the right column now — two short lines
