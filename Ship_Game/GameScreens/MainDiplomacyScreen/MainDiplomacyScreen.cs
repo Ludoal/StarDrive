@@ -612,7 +612,7 @@ namespace Ship_Game
                 // them, which is why the value mixes words and figures (bench 305: the
                 // old "Infiltration" label read as yours)
                 float rowY = y;
-                TableRow(batch, col, ref y, maxY, "Their Spies", espionage.InfiltrationLevelSummary(), Color.White);
+                TableRow(batch, col, ref y, maxY, "Spies", espionage.InfiltrationLevelSummary(), Color.White);
                 if (new Rectangle(col.X + 8, (int)rowY, col.Width - 16, Font12.LineSpacing).HitTest(Input.CursorPosition))
                     ToolTip.CreateTooltip("How deep THEY have infiltrated YOUR empire.
 "
