@@ -228,7 +228,7 @@ namespace Ship_Game
                                       PlateTop + 8 + (Fonts.Arial20Bold.LineSpacing - nameFont.LineSpacing) / 2);
             batch.DrawString(nameFont, P.Name, namePos, P.Owner.EmpireColor);
 
-            string worldType = P.WorldType;
+            string worldType = P.WorldType.Text;
             batch.DrawString(Font12, worldType,
                 new Vector2(Housing.Right - 16 - Font12.TextWidth(worldType), PlateTop + 13), tColor);
 
