@@ -267,7 +267,8 @@ namespace Ship_Game
             Color nameColor = Planet.Mining?.HasOpsOwner == true ? Planet.Mining.Owner.EmpireColor : TextColor;
             Label(namePos, Planet.Name, NameFont, nameColor);
             namePos.Y += NameFont.LineSpacing + 2;
-            Label(namePos, Planet.LocalizedCategory, ClassFont, Color.Gray);
+            // class with its richness word - only the numbers left for the column
+            Label(namePos, Planet.LocalizedRichness, ClassFont, Color.Gray);
         }
 
         // "star_red3" -> "Red", "Blue_giant" -> "Blue Giant": the sun ids ARE the game's star

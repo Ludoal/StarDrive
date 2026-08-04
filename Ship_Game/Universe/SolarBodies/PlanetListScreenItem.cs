@@ -128,7 +128,9 @@ namespace Ship_Game
             var namePos = new Vector2(ShipIconRect.Right + 8, Y + Height / 2 - (NameFont.LineSpacing + ClassFont.LineSpacing + 2) / 2);
             Label(namePos, Planet.Name, NameFont, EmpireColor);
             namePos.Y += NameFont.LineSpacing + 2;
-            string category = Planet.LocalizedCategory;
+            // class WITH its richness word ("Terran Ultra Rich") - only the numeric
+            // values left for their own column (maintainer, 4 Aug)
+            string category = Planet.LocalizedRichness;
             Label(namePos, category, ClassFont, Color.Gray);
 
             float fertEnvMultiplier = Player.PlayerEnvModifier(Planet.Category);
