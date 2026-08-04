@@ -181,9 +181,13 @@ namespace Ship_Game
             Scroller.Count = Races.Count;
             Scroller.VisibleCols = visCols;
             Scroller.Pitch = colW;
-            Scroller.Track = new Rectangle(x0, (int)client.Bottom - 12, visCols * colW - ScreenGroups.ColumnGap, 8);
+            // the rail rides ON the frame's bottom border band (the nine-slice 9px), not in
+            // the columns - the screens are height-tight, ARTIFACTS takes whatever is left
+            // and a reserved lane starved it (maintainer bench 299). Drawn after base.Draw
+            // so it paints over the border.
+            Scroller.Track = new Rectangle(x0, (int)client.Bottom + 2, visCols * colW - ScreenGroups.ColumnGap, 6);
             Scroller.WheelArea = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
-            int colH = ScreenGroups.GroupColumnHeight(client) - (Scroller.Overflowing ? 16 : 0);
+            int colH = ScreenGroups.GroupColumnHeight(client);
             int j = 0;
             foreach (RaceEntry re in Races)
             {
@@ -252,9 +256,9 @@ namespace Ship_Game
                 if (!Scroller.Overflowing || Scroller.Shows(i))
                     DrawColumn(batch, Races[i], Scroller.Overflowing ? Scroller.OffsetX : 0);
             }
-            Scroller.Draw(batch);
 
             base.Draw(batch, elapsed);
+            Scroller.Draw(batch); // over the border band, after the frame painted it
             ScreenGroups.DrawGroupTabTip(GroupTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();

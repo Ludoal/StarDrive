@@ -191,9 +191,11 @@ namespace Ship_Game.GameScreens
             Scroller.Count = majors.Length;
             Scroller.VisibleCols = visCols;
             Scroller.Pitch = colW;
-            Scroller.Track = new Rectangle(x0, (int)client.Bottom - 12, visCols * colW - ScreenGroups.ColumnGap, 8);
+            // the rail rides ON the frame's bottom border band, not in the columns - this
+            // screen has no line to spare (maintainer bench 299); drawn after base.Draw
+            Scroller.Track = new Rectangle(x0, (int)client.Bottom + 2, visCols * colW - ScreenGroups.ColumnGap, 6);
             Scroller.WheelArea = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
-            int colH = ScreenGroups.GroupColumnHeight(client) - (Scroller.Overflowing ? 16 : 0);
+            int colH = ScreenGroups.GroupColumnHeight(client);
 
             for (int i = 0; i < majors.Length; ++i)
             {
@@ -393,9 +395,9 @@ namespace Ship_Game.GameScreens
             foreach (EmpireColumn c in Columns)
                 if (c.Shown)
                     DrawColumn(batch, c);
-            Scroller.Draw(batch);
 
             base.Draw(batch, elapsed); // sliders, checkboxes, buttons, close
+            Scroller.Draw(batch); // over the border band, after the frame painted it
             ScreenGroups.DrawGroupTabTip(GroupTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
