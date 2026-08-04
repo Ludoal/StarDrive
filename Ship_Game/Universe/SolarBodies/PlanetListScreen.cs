@@ -108,7 +108,7 @@ namespace Ship_Game
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Richness) },
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop_22"),
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.MaxPopulation) },
-                new UITable.Column { Title = "Pop %", Align = TableAlign.Number, Sortable = true },
+                new UITable.Column { Title = "Fill", Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.Owner), Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Width = 2 * UITable.PadX + 2 * OrdersSlotW + 6, Align = TableAlign.Center },
             });
