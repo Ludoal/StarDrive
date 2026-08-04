@@ -200,15 +200,16 @@ namespace Ship_Game
                 return;
             }
 
+            // the two counters STACK beside the button now (maintainer bench 303) - inline
+            // they forced the Actions column to 360; the 48px row holds two small lines
             int numDeployed = Planet.OrbitalStations.Count(s => s.Loyalty.isPlayer && s.IsMiningStation);
-            Vector2 miningDeployed = new Vector2(DeployButton.Rect.X + DeployButton.Rect.Width + 5, DeployButton.Rect.Y + 4);
+            Vector2 miningDeployed = new Vector2(DeployButton.Rect.X + DeployButton.Rect.Width + 6, DeployButton.Rect.Y - 4);
             MiningDeployedTextInfo = Add(new UILabel(miningDeployed, $"Deployed: {numDeployed} ", SmallFont));
             MiningDeployedTextInfo.Color = Player.EmpireColor;
             MiningDeployedTextInfo.Visible = numDeployed > 0;
 
             int numInProgress = Player.AI.CountGoals(g => g.IsMiningOpsGoal(Planet) && g.TargetShip == null);
-            Vector2 miningInProgress = new Vector2(MiningDeployedTextInfo.Rect.X + 
-                (MiningDeployedTextInfo.Visible ? MiningDeployedTextInfo.Rect.Width + 10 : 0), DeployButton.Rect.Y + 4);
+            Vector2 miningInProgress = new Vector2(miningDeployed.X, DeployButton.Rect.Y + 12);
             string miningInProgressMsg = $"In Progress: {numInProgress}";
             MiningInProgressTextInfo = Add(new UILabel(miningInProgress,miningInProgressMsg, SmallFont));
             MiningInProgressTextInfo.Color = Color.Wheat;

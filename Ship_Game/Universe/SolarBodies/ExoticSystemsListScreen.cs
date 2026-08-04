@@ -72,10 +72,14 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.StarOrPlanet), Sortable = true, MinWidth = 180 },
                 new UITable.Column { Title = Localizer.Token(GameText.Proximity), Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.ResourceName), Sortable = true },
-                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Width = 60,
+                // the crystal, like the other tables' Richness - the production hammer read
+                // as something else - and a single digit needs no 60px lane (maintainer bench 303)
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_exotic_resource"), Width = 40,
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Richness) },
                 new UITable.Column { Title = Localizer.Token(GameText.Owner), Align = TableAlign.Center, Sortable = true },
-                new UITable.Column { Title = "Actions", Width = 360, Align = TableAlign.Center },
+                // sized on the mining row's worst case: the 168px deploy button plus its two
+                // counters, STACKED on two lines now instead of inline (maintainer bench 303)
+                new UITable.Column { Title = "Actions", Width = 280, Align = TableAlign.Center },
             });
             var sys = new Array<string>(); var names = new Array<string>();
             var prox = new Array<string>();
