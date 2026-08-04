@@ -450,8 +450,11 @@ namespace Ship_Game
             rows = Math.Max(1, rows);
             const int NodeVisible = 108; // 22 title plate + 86 of visible body art
             int gh;
+            // 104: the designed 112 minus an empirical 8 - integer-division truncation
+            // (up to rows-1 px) plus the art-bounds rounding land the deepest row a hair
+            // high otherwise (bench 293)
             if (rows == 1 || (MainArea.Height + NodeVisible) / (rows + 1) - NodeVisible < 2)
-                gh = rows == 1 ? MainArea.Height - 112 : (MainArea.Height - 112) / (rows - 1);
+                gh = rows == 1 ? MainArea.Height - 104 : (MainArea.Height - 104) / (rows - 1);
             else
                 gh = (MainArea.Height + NodeVisible) / (rows + 1); // margin == inter-row gap
             int margin = Math.Max(2, gh - NodeVisible);

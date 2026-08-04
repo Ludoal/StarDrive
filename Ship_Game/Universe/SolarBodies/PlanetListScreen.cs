@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Globalization;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics.Input;
@@ -99,9 +100,9 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.Planet), Sortable = true, MinWidth = 200 },
                 new UITable.Column { Title = "Features" },
                 new UITable.Column { Title = Localizer.Token(GameText.Proximity), Align = TableAlign.Center, Sortable = true },
-                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"), Width = 60,
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"),
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Fertility) },
-                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Width = 60,
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"),
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Richness) },
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop_22"),
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.MaxPopulation) },
@@ -111,6 +112,7 @@ namespace Ship_Game
             });
             var sys = new Array<string>(); var names = new Array<string>();
             var feats = new Array<string>(); var prox = new Array<string>();
+            var ferts = new Array<string>(); var richs = new Array<string>();
             var pops = new Array<string>(); var ratios = new Array<string>();
             var owners = new Array<string>();
             foreach (Planet p in ExploredPlanets)
@@ -119,6 +121,8 @@ namespace Ship_Game
                 names.Add(p.Name);
                 feats.Add(PlanetListScreenItem.FeaturesMeasure(p));
                 prox.Add(new DistanceDisplay(GetShortestDistance(p) / 1000).Text);
+                ferts.Add(p.FertilityFor(Player).ToString("0.0", CultureInfo.InvariantCulture));
+                richs.Add(p.MineralRichness.ToString("0.0", CultureInfo.InvariantCulture));
                 string ps = p.PopulationStringForPlayer;
                 int paren = ps.IndexOf(" (");
                 pops.Add(paren < 0 ? ps : ps.Substring(0, paren));
@@ -131,6 +135,8 @@ namespace Ship_Game
             Table.Columns[1].Width += 46 + 40; // planet icon ahead, status icons behind
             UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, feats);
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, prox);
+            UITable.AutoSize(Table.Columns[4], Fonts.Arial12Bold, ferts);
+            UITable.AutoSize(Table.Columns[5], Fonts.Arial12Bold, richs);
             UITable.AutoSize(Table.Columns[6], Fonts.Arial12Bold, pops);
             UITable.AutoSize(Table.Columns[7], Fonts.Arial12Bold, ratios);
             UITable.AutoSize(Table.Columns[8], Fonts.Arial12Bold, owners);
@@ -142,7 +148,7 @@ namespace Ship_Game
 
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             // 48 = the 44px row plus the list's 4px item padding
-            float contentH = Math.Min(fullAvail, 96 + Math.Max(3, ExploredPlanets.Count) * 48);
+            float contentH = Math.Min(fullAvail, 135 + Math.Max(3, ExploredPlanets.Count) * 48);
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 0,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;

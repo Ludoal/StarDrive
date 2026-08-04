@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
@@ -8,6 +9,7 @@ using Ship_Game.GameScreens; // ScreenGroups: the group geometry
 using SDGraphics.Input;
 using SDUtils;
 using Ship_Game.Audio;
+using Ship_Game.UI; // UITable: the shared table charte
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 
@@ -21,21 +23,13 @@ namespace Ship_Game
         private readonly GovernorDetailsComponent GovernorDetails;
         private readonly RectF ERect;
 
-        private readonly SortButton SbPop;
-        private readonly SortButton SbFood;
-        private readonly SortButton SbProd;
-        private readonly SortButton SbRes;
-        private readonly SortButton SbMoney;
-        private readonly SortButton SbFert;   // Ludoal fork (wishlist)
-        private readonly SortButton SbRich;
-        private readonly SortButton SbMaxPop;
+        public readonly UITable Table; // the shared table charte owns geometry, headers and rules
 
         private RectF GovernorRect;
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
 
         private readonly Color Cream           = Colors.Cream;
         private readonly Color White           = Color.White;
-        private readonly Graphics.Font NormalFont = Fonts.Arial20Bold;
 
         public Planet SelectedPlanet { get; private set; }
         
@@ -48,42 +42,74 @@ namespace Ship_Game
             IsPopup = true;
             eui = empUI;
 
-            // Ludoal fork: the Colonies tab of the Empire group, content-sized in HEIGHT
-            // (maintainer, 4 Aug): the colony count drives the table, while the bottom band
-            // (planet cartouche, tile map, governor frame) keeps the size it has on a full
-            // frame - reserved as it is, to be revisited. The cascade holds because the band
-            // derives from ColoniesList.Bottom and the frame's own foot, not from constants.
-            int numColonies = Universe.Player.GetPlanets().Count;
+            // Ludoal fork: the Colonies tab of the Empire group, on the shared table charte
+            // (maintainer bench 293 - the surgical pass left the old skeleton showing). The
+            // colony count drives the height, while the bottom band (planet cartouche, tile
+            // map, governor frame) keeps the size it has on a full frame - reserved as it
+            // is, to be revisited. The cascade holds because the band derives from the
+            // list's bottom and the frame's own foot, not from constants.
+            var planets = Universe.Player.GetPlanets();
+            Table = new UITable(new[]
+            {
+                new UITable.Column { Title = Localizer.Token(GameText.System) },
+                new UITable.Column { Title = Localizer.Token(GameText.Planet), MinWidth = 150 },
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"), Align = TableAlign.Number,
+                                     Sortable = true, Tip = Localizer.Token(GameText.Fertility) },
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Align = TableAlign.Number,
+                                     Sortable = true, Tip = Localizer.Token(GameText.Richness) },
+                new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop_22"), Align = TableAlign.Number,
+                                     Sortable = true, Tip = Localizer.Token(GameText.MaxPopulation) },
+                new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop"), Align = TableAlign.Number,
+                                     Sortable = true, Tip = Localizer.Token(GameText.IndicatesThisColonysCurrentPopulation) },
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"), Align = TableAlign.Number,
+                                     Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfFood) },
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Align = TableAlign.Number,
+                                     Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfProduction) },
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_science"), Align = TableAlign.Number,
+                                     Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfResearch) },
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_money"), Align = TableAlign.Number,
+                                     Sortable = true, Tip = Localizer.Token(GameText.TheNetIncomeOfThis) },
+                new UITable.Column { Title = Localizer.Token(GameText.Labor), Width = 330, Align = TableAlign.Center },
+                new UITable.Column { Title = Localizer.Token(GameText.Storage2), Width = 255, Align = TableAlign.Center },
+                new UITable.Column { Title = Localizer.Token(GameText.Construction2), Width = 290, Align = TableAlign.Center },
+            });
+            var sys = new Array<string>(); var names = new Array<string>();
+            var stats = new Array<string>[8];
+            for (int i = 0; i < 8; ++i) stats[i] = new Array<string>();
+            foreach (Planet p in planets)
+            {
+                sys.Add(p.System.Name);
+                names.Add(p.Name);
+                stats[0].Add(p.FertilityFor(Universe.Player).ToString("0.0", CultureInfo.InvariantCulture));
+                stats[1].Add(p.MineralRichness.ToString("0.0", CultureInfo.InvariantCulture));
+                stats[2].Add(p.MaxPopulationBillionFor(Universe.Player).ToString("0.0", CultureInfo.InvariantCulture));
+                stats[3].Add(p.PopulationBillion.ToString("0.0", CultureInfo.InvariantCulture));
+                stats[4].Add(p.Food.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
+                stats[5].Add(p.Prod.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
+                stats[6].Add(p.Res.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
+                stats[7].Add(p.Money.NetRevenue.ToString("0.0", CultureInfo.InvariantCulture));
+            }
+            UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, sys);
+            UITable.AutoSize(Table.Columns[1], Fonts.Arial14Bold, names);
+            Table.Columns[1].Width += 44; // the planet icon rides ahead of the name
+            for (int i = 0; i < 8; ++i)
+                UITable.AutoSize(Table.Columns[2 + i], Fonts.Arial12, stats[i]);
+            Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
+
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             float bandH = 0.3f * (fullAvail - 60);
-            float contentW = Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin;
-            float contentH = Math.Min(fullAvail, 75 + Math.Max(3, numColonies) * 84 + bandH);
+            float contentH = Math.Min(fullAvail, 105 + Math.Max(3, planets.Count) * 84 + bandH);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 0,
-                                                    OnEmpireTabChanged, contentW, contentH);
+                                                    OnEmpireTabChanged, Table.ContentWidth, contentH);
             RectF client = EmpireTabs.ClientArea;
+            Table.Layout(client, client.Y + 10, client.Bottom - bandH - 8);
+            ERect = new(Table.TableRect.X, Table.TableRect.Y, Table.TableRect.Width, Table.TableRect.Height);
 
-            // Ludoal fork: full width like the other tabs' tables - the +20/-40 inset came from the
-            // brass surround this no longer has. GalaxyTable gives the row its horizontal pull-back
-            // and the column titles' band; the troop-count line is gone (maintainer, 4 Aug), so
-            // no reserved first line anymore.
-            RectF full = ScreenGroups.GalaxyTable(client);
-            ERect = new(full.X, full.Y, full.W, full.H - bandH);
-            RectF colonies = new(ERect.X, ERect.Y + 15, ERect.W, ERect.H - 15);
-            ColoniesList = Add(new ScrollList<ColoniesListItem>(colonies, 80));
+            ColoniesList = Add(new ScrollList<ColoniesListItem>(Table.ListRect, 80));
             ColoniesList.OnClick       = OnColonyListItemClicked;
             ColoniesList.OnDoubleClick = OnColonyListItemDoubleClicked;
             ColoniesList.EnableItemHighlight = true;
-
-            SbPop   = new SortButton(eui.Player.data.ESSort, "pop");
-            SbFood  = new SortButton(eui.Player.data.ESSort, "food");
-            SbProd  = new SortButton(eui.Player.data.ESSort, "prod");
-            SbRes   = new SortButton(eui.Player.data.ESSort, "res");
-            SbMoney = new SortButton(eui.Player.data.ESSort, "money");
-            SbFert   = new SortButton(eui.Player.data.ESSort, "fert");
-            SbRich   = new SortButton(eui.Player.data.ESSort, "rich");
-            SbMaxPop = new SortButton(eui.Player.data.ESSort, "maxpop");
-
-            var planets = Universe.Player.GetPlanets();
+            Table.ApplyHighlightTo(ColoniesList);
             int sidePanelWidths = (int)(ScreenWidth * 0.3f);
             // Ludoal fork: its height stops at the FRAME's foot, not the screen's - inside a framed
             // tab it would otherwise run 10px past the bottom border.
@@ -208,7 +234,6 @@ namespace Ship_Game
             }
             batch.DrawString(descFont, text, PNameCursor, White);
 
-            ColoniesListItem e1 = top;
             // Ludoal fork: same rowRight as the cartouche above - one bound for the whole row.
             var MapRect = new Rectangle(PlanetInfoRect.Right - 20, PlanetInfoRect.Y - 3,
                                         (int)rowRight - PlanetInfoRect.Right, PlanetInfoRect.Height);
@@ -254,96 +279,12 @@ namespace Ship_Game
             var GovernorRect = new Rectangle(MapRect.Right, MapRect.Y, e1.Rect.Right - MapRect.Right, MapRect.Height);
             batch.DrawRectangle(GovernorRect, new Color(118, 102, 67, 255));*/
 
-            if (ColoniesList.NumEntries > 0)
-            {
-                ColoniesListItem entry = ColoniesList.ItemAtTop;
-                var textCursor         = new Vector2(entry.SysNameRect.X + 30, ERect.Y);
-                SubTexture iconPop     = ResourceManager.Texture("UI/icon_pop");
-                SubTexture iconFood    = ResourceManager.Texture("NewUI/icon_food");
-                SubTexture iconProd    = ResourceManager.Texture("NewUI/icon_production");
-                SubTexture iconRes     = ResourceManager.Texture("NewUI/icon_science");
-                SubTexture iconMoney   = ResourceManager.Texture("NewUI/icon_money");
-
-                batch.DrawString(NormalFont, Localizer.Token(GameText.System), textCursor, Cream);
-                textCursor = new Vector2(entry.PlanetNameRect.X + 30, ERect.Y);
-                batch.DrawString(NormalFont, Localizer.Token(GameText.Planet), textCursor, Cream);
-                SbPop.rect   = DrawStatTexture(entry.PopRect.X, (int)textCursor.Y, iconPop);
-                SbFood.rect  = DrawStatTexture(entry.FoodRect.X, (int)textCursor.Y, iconFood);
-                SbProd.rect  = DrawStatTexture(entry.ProdRect.X, (int)textCursor.Y, iconProd);
-                SbRes.rect   = DrawStatTexture(entry.ResRect.X, (int)textCursor.Y, iconRes);
-                SbMoney.rect = DrawStatTexture(entry.MoneyRect.X, (int)textCursor.Y, iconMoney);
-                batch.Draw(iconPop, SbPop.rect, White);
-                batch.Draw(iconFood, SbFood.rect, White);
-                batch.Draw(iconProd, SbProd.rect, White);
-                batch.Draw(iconRes, SbRes.rect, White);
-                batch.Draw(iconMoney, SbMoney.rect, White);
-                // fertility / richness / max pop wear their icons like the other stat
-                // columns - the F R P letters retire (maintainer, 4 Aug)
-                SubTexture iconFert   = ResourceManager.Texture("NewUI/icon_food");
-                SubTexture iconRich   = ResourceManager.Texture("NewUI/icon_production");
-                SubTexture iconMaxPop = ResourceManager.Texture("UI/icon_pop_22");
-                SbFert.rect   = DrawStatTexture(entry.FertRect.X, (int)ERect.Y, iconFert);
-                SbRich.rect   = DrawStatTexture(entry.RichRect.X, (int)ERect.Y, iconRich);
-                SbMaxPop.rect = DrawStatTexture(entry.MaxPopRect.X, (int)ERect.Y, iconMaxPop);
-                batch.Draw(iconFert, SbFert.rect, White);
-                batch.Draw(iconRich, SbRich.rect, White);
-                batch.Draw(iconMaxPop, SbMaxPop.rect, White);
-                textCursor = new Vector2(entry.SliderRect.X + 30, ERect.Y);
-                batch.DrawString(NormalFont, Localizer.Token(GameText.Labor), textCursor, Cream);
-                textCursor = new Vector2(entry.StorageRect.X + 30, ERect.Y);
-                batch.DrawString(NormalFont, Localizer.Token(GameText.Storage2), textCursor, Cream);
-                textCursor = new Vector2(entry.QueueRect.X + 30, ERect.Y);
-                batch.DrawString(NormalFont, Localizer.Token(GameText.Construction2), textCursor, Cream);
-            }
-
-            var lineColor = new Color(118, 102, 67, 255);
-            float columnTop = ERect.Y + 35;
-            float columnBot = PlanetInfoRect.Y - 20;
-
-            var topLeftSL = new Vector2(e1.PlanetNameRect.X, columnTop);
-            var botSL     = new Vector2(topLeftSL.X, columnBot);
-            batch.DrawLine(topLeftSL, botSL, lineColor);
-            topLeftSL = new Vector2(e1.PopRect.X, columnTop);
-            botSL     = new Vector2(topLeftSL.X, columnBot);
-            batch.DrawLine(topLeftSL, botSL, lineColor);
-            topLeftSL = new Vector2(e1.FoodRect.X, columnTop);
-            botSL     = new Vector2(topLeftSL.X, columnBot);
-            batch.DrawLine(topLeftSL, botSL, new Color(lineColor, 100).Premultiplied());
-            topLeftSL = new Vector2(e1.ProdRect.X, columnTop);
-            botSL     = new Vector2(topLeftSL.X, columnBot);
-            batch.DrawLine(topLeftSL, botSL, new Color(lineColor, 100).Premultiplied());
-            topLeftSL = new Vector2(e1.ResRect.X, columnTop);
-            botSL     = new Vector2(topLeftSL.X, columnBot);
-            batch.DrawLine(topLeftSL, botSL, new Color(lineColor, 100).Premultiplied());
-            foreach (int colX in new[] { e1.FertRect.X, e1.RichRect.X, e1.MaxPopRect.X }) // Ludoal fork (wishlist)
-            {
-                topLeftSL = new Vector2(colX, columnTop);
-                botSL     = new Vector2(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, new Color(lineColor, 100).Premultiplied());
-            }
-            topLeftSL = new Vector2(e1.MoneyRect.X, columnTop);
-            botSL     = new Vector2(topLeftSL.X, columnBot);
-            batch.DrawLine(topLeftSL, botSL, new Color(lineColor, 100).Premultiplied());
-            topLeftSL = new Vector2(e1.SliderRect.X, columnTop);
-            botSL     = new Vector2(topLeftSL.X, columnBot);
-            batch.DrawLine(topLeftSL, botSL, lineColor);
-            topLeftSL = new Vector2(e1.StorageRect.X + 5, columnTop);
-            botSL     = new Vector2(topLeftSL.X, columnBot);
-            batch.DrawLine(topLeftSL, botSL, lineColor);
-            topLeftSL = new Vector2(e1.QueueRect.X, columnTop);
-            botSL     = new Vector2(topLeftSL.X, columnBot);
-            batch.DrawLine(topLeftSL, botSL, lineColor);
-
-            batch.DrawRectangle(ColoniesList.ItemsHousing, lineColor); // items housing border
+            // the shared charte draws the headers, the rule and the separators
+            Table.DrawChrome(batch);
 
             ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             eui.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
-        }
-
-        Rectangle DrawStatTexture(int x, int y, SubTexture icon)
-        {
-            return new Rectangle(x + 15 - icon.Width / 2, y, icon.Width, icon.Height);
         }
 
         void DrawTileIcons(PlanetGridSquare pgs, Rectangle rect)
@@ -391,33 +332,29 @@ namespace Ship_Game
                 return true;
             }
 
-            HandleSortButton(input, SbPop, GameText.IndicatesThisColonysCurrentPopulation, p => p.PopulationBillion);
-            HandleSortButton(input, SbFood, GameText.TheNetAmountOfFood, p => p.Food.NetIncome);
-            HandleSortButton(input, SbProd, GameText.TheNetAmountOfProduction, p => p.Prod.NetIncome);
-            HandleSortButton(input, SbRes, GameText.TheNetAmountOfResearch, p => p.Res.NetIncome);
-            HandleSortButton(input, SbMoney, GameText.TheNetIncomeOfThis, p => p.Money.NetRevenue);
-            // short title-only tooltips here, the long descriptions stay on their original screens
-            HandleSortButton(input, SbFert, GameText.Fertility, p => p.FertilityFor(Universe.Player));
-            HandleSortButton(input, SbRich, GameText.Richness, p => p.MineralRichness);
-            HandleSortButton(input, SbMaxPop, GameText.MaxPopulation, p => p.MaxPopulationBillionFor(Universe.Player));
+            // headers - tooltips, hover and sort clicks - through the shared charte
+            int clicked = Table.HandleInput(input);
+            if (clicked >= 0)
+            {
+                Func<Planet, float> selector = clicked switch
+                {
+                    2 => p => p.FertilityFor(Universe.Player),
+                    3 => p => p.MineralRichness,
+                    4 => p => p.MaxPopulationBillionFor(Universe.Player),
+                    5 => p => p.PopulationBillion,
+                    6 => p => p.Food.NetIncome,
+                    7 => p => p.Prod.NetIncome,
+                    8 => p => p.Res.NetIncome,
+                    _ => p => p.Money.NetRevenue,
+                };
+                bool asc = Table.SetSorted(clicked);
+                GameAudio.BlipClick();
+                var planets = Universe.Player.GetPlanets();
+                ResetColoniesList(asc ? planets.OrderBy(selector) : planets.OrderByDescending(selector));
+                return true;
+            }
 
             return base.HandleInput(input);
-        }
-
-        void HandleSortButton(InputState input, SortButton button, LocalizedText tooltip, Func<Planet, float> selector)
-        {
-            if (button.rect.HitTest(input.CursorPosition))
-            {
-                ToolTip.CreateTooltip(tooltip);
-            }
-            if (button.HandleInput(input))
-            {
-                var planets = Universe.Player.GetPlanets();
-                button.Ascending = !button.Ascending;
-                ResetColoniesList(button.Ascending
-                    ? planets.OrderBy(selector)
-                    : planets.OrderByDescending(selector));
-            }
         }
 
         void ResetColoniesList(IEnumerable<Planet> sortedList)

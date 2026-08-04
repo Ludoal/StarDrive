@@ -125,7 +125,7 @@ namespace Ship_Game
 
             int shipRows = Universe.Player.OwnedShips.Count;
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
-            float contentH = Math.Min(fullAvail, 100 + Math.Max(5, shipRows) * 34);
+            float contentH = Math.Min(fullAvail, 135 + Math.Max(5, shipRows) * 34);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 1,
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
 
@@ -353,6 +353,17 @@ namespace Ship_Game
                 if (ShouldAddForCategory(ship, category))
                 {
                     ShipSL.AddItem(new ShipListScreenItem(ship, this));
+                }
+            }
+
+            // the orange header stays truthful (bench 293: it announced a sort the list
+            // never had): re-apply the standing sort after every refill
+            for (int i = 0; i < Table.Columns.Length; ++i)
+            {
+                if (Table.Columns[i].Sorted)
+                {
+                    ApplySort(i, Table.Columns[i].Ascending);
+                    break;
                 }
             }
 

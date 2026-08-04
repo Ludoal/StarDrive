@@ -5,6 +5,7 @@ using Ship_Game.Audio;
 using Ship_Game.Commands.Goals;
 using Ship_Game.Ships;
 using System.Linq;
+using System.Globalization;
 using SDGraphics;
 using SDUtils;
 using Vector2 = SDGraphics.Vector2;
@@ -129,8 +130,11 @@ namespace Ship_Game
             Label(namePos, Planet.Name, NameFont, EmpireColor);
             namePos.Y += NameFont.LineSpacing + 2;
             // class WITH its richness word ("Terran Ultra Rich") - only the numeric
-            // values left for their own column (maintainer, 4 Aug)
+            // values left for their own column; the mineable variant appends " (8.2)",
+            // stripped here too (maintainer, 4 Aug)
             string category = Planet.LocalizedRichness;
+            int par = category.IndexOf(" (");
+            if (par >= 0) category = category.Substring(0, par);
             Label(namePos, category, ClassFont, Color.Gray);
 
             float fertEnvMultiplier = Player.PlayerEnvModifier(Planet.Category);
@@ -158,8 +162,9 @@ namespace Ship_Game
             DistanceDisplay dd = new DistanceDisplay(Distance);
             if (Distance.Greater(0))
                 Cell(3, dd.Text, dd.Color);
-            Cell(4, Planet.FertilityFor(Player).String(), PlanetStatColor);
-            Cell(5, Planet.MineralRichness.String(1), PlanetStatColor);
+            // fixed one decimal: right-aligned + constant fraction = aligned on the point
+            Cell(4, Planet.FertilityFor(Player).ToString("0.0", CultureInfo.InvariantCulture), PlanetStatColor);
+            Cell(5, Planet.MineralRichness.ToString("0.0", CultureInfo.InvariantCulture), PlanetStatColor);
             // Max Pop splits: the figure in its column, the percentage in Ratio's
             string popString = Planet.PopulationStringForPlayer;
             int paren = popString.IndexOf(" (");
@@ -186,14 +191,17 @@ namespace Ship_Game
             return groups;
         }
 
-        // the synthetic string the Features column measures itself on: an icon counts
-        // as FOUR characters (maintainer bench 291 - the column was overflowing, then
-        // the icons stepped up to 20px)
+        // a 20px icon OCCUPIES the width of four characters - the same footprint the
+        // column measures itself on and the renderer advances by (bench 293: the first
+        // pass ADDED four characters after each icon instead of counting it as four)
+        static int IconFootprint => (int)Fonts.Arial12Bold.TextWidth("0000");
+
+        // the synthetic string the Features column measures itself on
         public static string FeaturesMeasure(Planet p)
         {
             string s = "";
             foreach ((Building b, int n) in FeatureGroups(p))
-                s += "wwww" + (n > 1 ? $"({n})" : "") + " ";
+                s += "0000" + (n > 1 ? $"({n})" : "") + " ";
             return s;
         }
 
@@ -201,18 +209,17 @@ namespace Ship_Game
         {
             int fx = col.X + UITable.PadX;
             int fy = (int)Y + (int)Height / 2 - 10;
-            int iconAdvance = (int)Fonts.Arial12Bold.TextWidth("wwww"); // an icon counts as 4 characters
             foreach ((Building b, int n) in FeatureGroups(Planet))
             {
                 var iconRect = new Rectangle(fx, fy, 20, 20);
                 UIPanel icon = Panel(iconRect, ResourceManager.Texture($"Buildings/icon_{b.Icon}_48x48"));
                 icon.Tooltip = $"{b.TranslatedName.Text}:\n{b.DescriptionText.Text}";
-                fx += iconAdvance;
+                fx += IconFootprint;
                 if (n > 1)
                 {
                     string count = $"({n})";
-                    Label(new Vector2(fx, fy + 2), count, TinyFont, Cream);
-                    fx += (int)Fonts.Arial12Bold.TextWidth(count);
+                    Label(new Vector2(fx - 6, fy + 4), count, TinyFont, Cream);
+                    fx += (int)Fonts.Arial12Bold.TextWidth(count) - 6;
                 }
                 fx += (int)Fonts.Arial12Bold.TextWidth(" ");
             }

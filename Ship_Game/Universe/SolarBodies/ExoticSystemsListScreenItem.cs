@@ -267,8 +267,12 @@ namespace Ship_Game
             Color nameColor = Planet.Mining?.HasOpsOwner == true ? Planet.Mining.Owner.EmpireColor : TextColor;
             Label(namePos, Planet.Name, NameFont, nameColor);
             namePos.Y += NameFont.LineSpacing + 2;
-            // class with its richness word - only the numbers left for the column
-            Label(namePos, Planet.LocalizedRichness, ClassFont, Color.Gray);
+            // class with its richness WORD - the mineable variant appends " (8.2)" and
+            // that number lives in its own column (bench 293)
+            string cls = Planet.LocalizedRichness;
+            int par = cls.IndexOf(" (");
+            if (par >= 0) cls = cls.Substring(0, par);
+            Label(namePos, cls, ClassFont, Color.Gray);
         }
 
         // "star_red3" -> "Red", "Blue_giant" -> "Blue Giant": the sun ids ARE the game's star

@@ -81,7 +81,7 @@ namespace Ship_Game
 
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             // 38 = the 34px row plus the list's 4px item padding
-            float contentH = Math.Min(fullAvail, 90 + Math.Max(3, player.FleetPatrols.Count) * 38);
+            float contentH = Math.Min(fullAvail, 105 + Math.Max(3, player.FleetPatrols.Count) * 38);
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 2,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
@@ -90,10 +90,22 @@ namespace Ship_Game
             PatrolsSL = Add(new ScrollList<EmpirePatrolsScreenListItem>(Table.ListRect, 34));
             PatrolsSL.EnableItemHighlight = true;
             Table.ApplyHighlightTo(PatrolsSL);
+            PatrolsSL.OnDoubleClick = OnPatrolDoubleClicked; // to the plan on the map
             foreach (FleetPatrol patrol in player.FleetPatrols)
             {
                 PatrolsSL.AddItem(new EmpirePatrolsScreenListItem(this, patrol, player));
             }
+        }
+
+        // double-click flies the camera to the patrol's route (maintainer bench 293)
+        void OnPatrolDoubleClicked(EmpirePatrolsScreenListItem item)
+        {
+            var wps = item.FleetPatrol.WayPoints.ToArray();
+            if (wps.Length == 0)
+                return;
+            GameAudio.AcceptClick();
+            ExitScreen();
+            Universe.CamDestination = new Vector3d(wps[0].Position, 100000);
         }
 
         // Ludoal fork: the other two tabs live in their own screen, so leaving Patrols hands over to
@@ -121,6 +133,7 @@ namespace Ship_Game
         void Refill(int col, bool ascending)
         {
             PatrolsSL.Reset();
+            PatrolsSL.OnDoubleClick = OnPatrolDoubleClicked; // Reset drops the handlers
             FleetPatrol[] patrols;
             switch (col)
             {

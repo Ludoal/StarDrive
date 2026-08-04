@@ -106,7 +106,7 @@ namespace Ship_Game
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             // 48 = the 44px row plus the list's 4px item padding - counting 44 alone kept
             // a scrollbar alive with room to spare (maintainer bench 291)
-            float contentH = Math.Min(fullAvail, 70 + Math.Max(3, ExploredSolarBodies.Count) * 48);
+            float contentH = Math.Min(fullAvail, 105 + Math.Max(3, ExploredSolarBodies.Count) * 48);
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 1,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
