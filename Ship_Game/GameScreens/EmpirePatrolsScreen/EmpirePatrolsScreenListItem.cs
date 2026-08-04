@@ -51,8 +51,8 @@ namespace Ship_Game
                 fleetsLbl.Tooltip = joined;
 
             // the Actions lane: both buttons sized to their text, side by side
-            RenamePatrol = Button(ButtonStyle.Default, GameText.RenamePatrol, OnRenamePatrolClicked);
-            DeletePatrol = Button(ButtonStyle.Military, GameText.DeletePatrol, OnDeletePatrolClicked);
+            RenamePatrol = Button(ButtonStyle.Default, "Rename", OnRenamePatrolClicked);
+            DeletePatrol = Button(ButtonStyle.Military, "Delete", OnDeletePatrolClicked);
             const int BtnH = 24;
             int bx = cols[4].Rect.X + UITable.PadX;
             RenamePatrol.Rect = new RectF(bx, y + h / 2 - BtnH / 2, Screen.RenameBtnW, BtnH);

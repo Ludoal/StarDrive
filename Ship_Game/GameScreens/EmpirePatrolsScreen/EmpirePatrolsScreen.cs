@@ -66,8 +66,10 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, wps);
             UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, counts);
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, assigned);
-            RenameBtnW = (int)Fonts.Arial12Bold.TextWidth(Localizer.Token(GameText.RenamePatrol)) + 24;
-            DeleteBtnW = (int)Fonts.Arial12Bold.TextWidth(Localizer.Token(GameText.DeletePatrol)) + 24;
+            // plain "Rename" / "Delete" (Lek's review, bench 305): the column already says
+            // these rows are patrols
+            RenameBtnW = (int)Fonts.Arial12Bold.TextWidth("Rename") + 24;
+            DeleteBtnW = (int)Fonts.Arial12Bold.TextWidth("Delete") + 24;
             Table.Columns[4].Width = RenameBtnW + 8 + DeleteBtnW + 2 * UITable.PadX;
             Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
 
@@ -125,6 +127,16 @@ namespace Ship_Game
             // the shared charte draws the headers, the rule and the separators - with or
             // without a patrol to list, so an empty empire still reads as an empty TABLE
             Table.DrawChrome(batch);
+
+            // an empty table says how to fill it (Lek's review, bench 305)
+            if (PatrolsSL.NumEntries == 0)
+            {
+                const string hint = "Assign a patrol from a fleet.";
+                Graphics.Font font = Fonts.Arial12Bold;
+                var pos = new Vector2(Table.TableRect.X + (Table.TableRect.Width - font.TextWidth(hint)) / 2f,
+                                      Table.ListRect.Y + 40);
+                batch.DrawString(font, hint, pos.Rounded(), Color.Gray);
+            }
             ScreenGroups.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
