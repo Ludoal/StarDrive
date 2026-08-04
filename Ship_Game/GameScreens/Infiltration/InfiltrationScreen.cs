@@ -199,7 +199,7 @@ namespace Ship_Game.GameScreens
                     };
                     Add(c.Budget);
 
-                    var defRect = new Rectangle(col.X + 8, col.Y + HeaderH + BudgetH + 42, col.Width - 60, 40); // below the DEFENSE band
+                    var defRect = new Rectangle(col.X + 8, col.Y + HeaderH + BudgetH + 37, col.Width - 60, 40); // below the DEFENSE band
                     c.Weight = new FloatSlider(defRect, GameText.EspioangeDefenseWeight, min: 0,
                                                max: Empire.MaxEspionageDefenseWeight, value: Player.EspionageDefenseWeight);
                     c.Weight.Tip = GameText.EspioangeDefenseWeightTip;
@@ -390,9 +390,9 @@ namespace Ship_Game.GameScreens
 
             float budgetY = col.Y + HeaderH;
             SectionBand(batch, col, budgetY, "BUDGET");
-            // 10 higher (maintainer bench 296); the INFILTRATION block below is keyed on
-            // BudgetH + DefenseH and does not follow
-            float defenseY = col.Y + HeaderH + BudgetH + 14;
+            // 15 higher (maintainer benches 296-297); the INFILTRATION block below is keyed
+            // on BudgetH + DefenseH and does not follow
+            float defenseY = col.Y + HeaderH + BudgetH + 9;
             SectionBand(batch, col, defenseY, "DEFENSE");
 
             if (e == Player)
