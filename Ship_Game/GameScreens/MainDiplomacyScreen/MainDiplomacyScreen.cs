@@ -608,7 +608,19 @@ namespace Ship_Game
             }
             else if (e != Player)
             {
-                TableRow(batch, col, ref y, maxY, "Infiltration", espionage.InfiltrationLevelSummary(), Color.White);
+                // THEIR network in YOUR empire - the precision follows your own level on
+                // them, which is why the value mixes words and figures (bench 305: the
+                // old "Infiltration" label read as yours)
+                float rowY = y;
+                TableRow(batch, col, ref y, maxY, "Their Spies", espionage.InfiltrationLevelSummary(), Color.White);
+                if (new Rectangle(col.X + 8, (int)rowY, col.Width - 16, Font12.LineSpacing).HitTest(Input.CursorPosition))
+                    ToolTip.CreateTooltip("How deep THEY have infiltrated YOUR empire.
+"
+                                        + "Your own infiltration level on them sets the precision:
+"
+                                        + "level 2 says whether their network exists, 3-4 reads it
+"
+                                        + "Shallow or Deep, and 5 gives their exact level.");
             }
             else
             {
