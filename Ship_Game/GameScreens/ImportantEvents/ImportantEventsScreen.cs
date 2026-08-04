@@ -58,6 +58,7 @@ namespace Ship_Game
             GalaxyTabs = GameScreens.ScreenGroups.AddGroupTabs(this, GameScreens.ScreenGroups.GalaxyTabTitles, 3,
                                                                OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
+            Table.RowPitch = 84;
             Table.Layout(client, client.Y + 10, client.Bottom - 5);
 
             EventList = Add(new ScrollList<ImportantEventListItem>(Table.ListRect, 80));
@@ -88,9 +89,10 @@ namespace Ship_Game
             batch.FillRectangle(GameScreens.ScreenGroups.GroupFrameFillRect(GalaxyTabs), GameScreens.ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed);
             // the shared charte draws the headers, the rule and the separators
-            Table.DrawChrome(batch);
+            // no chrome on an empty log (maintainer bench 307): the hint speaks alone
+            if (EventList.NumEntries > 0)
+                Table.DrawChrome(batch);
 
-            // an empty log says so, like the Patrols table (Lek's review, bench 305)
             if (EventList.NumEntries == 0)
             {
                 const string hint = "Nothing to report yet.";

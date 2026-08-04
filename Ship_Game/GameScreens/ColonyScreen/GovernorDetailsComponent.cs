@@ -314,7 +314,10 @@ namespace Ship_Game
             BlueprintsCompletionLbl.Pos     = new Vector2(X + 10, Y + 70 + shift);
             BlueprintsCompletionLbl.Tooltip = GameText.CompletionTip;
 
-            BudgetLimitReached.Pos = new Vector2(ColonyTypeList.Right + 10, ColonyTypeList.Pos.Y);
+            // under the governor's description (maintainer bench 307) - beside the type
+            // picker it overflowed the panel
+            BudgetLimitReached.Pos = new Vector2(WorldDescription.X,
+                WorldDescription.Y + Font.MeasureString(GetParsedDescription()).Y + 6);
 
             // Ludoal fork: seated here rather than in the constructor, which runs before Tabs
             // exists and so cannot know how many rows the tab bar takes.

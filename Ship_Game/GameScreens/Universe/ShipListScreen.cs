@@ -139,6 +139,7 @@ namespace Ship_Game
             // Ludoal fork: the reserved first line carries the three filters and the role dropdown,
             // side by side where they used to be stacked beside the title. The table takes the rest.
             RectF client = EmpireTabs.ClientArea;
+            Table.RowPitch = 34;
             Table.Layout(client, client.Y + 30, client.Bottom - 5);
 
             ShipSL = Add(new ScrollList<ShipListScreenItem>(Table.ListRect, 30));

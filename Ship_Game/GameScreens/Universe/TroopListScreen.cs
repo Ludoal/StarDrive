@@ -77,6 +77,7 @@ namespace Ship_Game
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
             RectF client = EmpireTabs.ClientArea;
             // one lane: the filter, then the two figures on the same line (maintainer bench 288)
+            Table.RowPitch = 28;
             Table.Layout(client, client.Y + 30, client.Bottom - 5);
             TroopSL = Add(new ScrollList<TroopListScreenItem>(Table.ListRect, 24));
             TroopSL.EnableItemHighlight = true;

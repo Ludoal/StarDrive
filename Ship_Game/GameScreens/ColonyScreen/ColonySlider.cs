@@ -224,6 +224,8 @@ namespace Ship_Game
             var font = Fonts.Arial12Bold;
             var pos = new Vector2(LockRect.Right + 10, Rect.CenterY() - font.LineSpacing / 2);
             float value = NetValue;
+            if (value > -0.05f && value < 0.05f)
+                value = 0f; // what rounds to zero neither shows a minus nor wears pink (bench 307)
             string text;
             if      (IsDisabled) text = "n/a";
             else if (IsCrippled) text = Localizer.Token(GameText.Sabotaged);/*sabotaged*/

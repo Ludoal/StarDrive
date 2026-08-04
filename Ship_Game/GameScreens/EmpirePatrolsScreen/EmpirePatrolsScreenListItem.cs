@@ -55,13 +55,15 @@ namespace Ship_Game
 
             // the pencil and the bin RIGHT OF THE NAME (maintainer, bench 305) - the build
             // queues' own icon language, and the Actions column retired with its width
-            RenamePatrol = new TexturedButton(new Rectangle(), "NewUI/icon_build_edit", "NewUI/icon_build_edit_hover1", "NewUI/icon_build_edit_hover2");
+            // the LIT art as the resting state (maintainer bench 307): the base icons read
+            // darker here than the Colonies pair
+            RenamePatrol = new TexturedButton(new Rectangle(), "NewUI/icon_build_edit_hover1", "NewUI/icon_build_edit_hover2", "NewUI/icon_build_edit_hover2");
             RenamePatrol.Tooltip = "Rename this patrol plan";
-            DeletePatrol = new TexturedButton(new Rectangle(), "NewUI/icon_queue_delete", "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2");
+            DeletePatrol = new TexturedButton(new Rectangle(), "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2", "NewUI/icon_queue_delete_hover2");
             DeletePatrol.Tooltip = "Delete this patrol plan";
             DeletePatrol.BaseColor = Color.Red; // destruction reads red (maintainer bench 305)
-            SubTexture editTex = ResourceManager.Texture("NewUI/icon_build_edit");
-            SubTexture delTex = ResourceManager.Texture("NewUI/icon_queue_delete");
+            SubTexture editTex = ResourceManager.Texture("NewUI/icon_build_edit_hover1");
+            SubTexture delTex = ResourceManager.Texture("NewUI/icon_queue_delete_hover1");
             int bx = (int)(nameLbl.X + Fonts.Arial12Bold.TextWidth(FleetPatrol.Name)) + 10;
             RenamePatrol.r = new Rectangle(bx, y + h / 2 - editTex.Height / 2, editTex.Width, editTex.Height);
             DeletePatrol.r = new Rectangle(bx + editTex.Width + 6, y + h / 2 - delTex.Height / 2, delTex.Width, delTex.Height);

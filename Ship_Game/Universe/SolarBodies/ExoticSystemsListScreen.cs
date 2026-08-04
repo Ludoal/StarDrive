@@ -114,6 +114,7 @@ namespace Ship_Game
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 1,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
+            Table.RowPitch = 48;
             Table.Layout(client, client.Y + 10, client.Bottom - 5);
 
             ExoticSL = Add(new ScrollList<ExoticSystemsListScreenItem>(Table.ListRect, 44));

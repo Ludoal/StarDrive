@@ -35,9 +35,10 @@ namespace Ship_Game.GameScreens
         ScrollList<EconColonyItem> ColonySL;
 
         public UITable Table;    // the shared table charte owns geometry, headers and rules
-        int SortCol = 6;         // NET by default
-        bool SortDesc = true;
-        bool SortByName;
+        // static: the sort survives the screen for the session (maintainer bench 307)
+        static int SortCol = 6;  // NET by default
+        static bool SortDesc = true;
+        static bool SortByName;
 
         readonly UniverseScreen Universe; // Ludoal fork: for the live top bar
         public BudgetScreen(UniverseScreen screen) : base(screen, toPause: screen)
@@ -245,6 +246,7 @@ namespace Ship_Game.GameScreens
             // back to one lane under the note: the class breathes around its own header
             // rule now, the extra empty line doubled it (maintainer, 4 Aug)
             int headerY = (int)client.Y + 24;
+            Table.RowPitch = 28; // the 24px econ row plus the list's item padding
             Table.Layout(client, headerY, client.Bottom - 14);
             // ONE frame, two halves: the synthesis column takes what the table leaves
             float split = Table.ListRect.Right + 10;
@@ -590,9 +592,19 @@ namespace Ship_Game.GameScreens
             return base.HandleInput(input);
         }
 
+        float LastSortedDate;
+
         public override void Update(float fixedDeltaTime)
         {
             TreasuryGoal.Text = $"{Localizer.Token(GameText.TreasuryGoal)} : {Player.AI.ProjectedMoney:0.00}";
+            // the cells are LIVE but the ORDER was a snapshot of the click (maintainer
+            // bench 307: a few turns in, the Net column read shuffled) - re-apply the
+            // standing sort each new star date
+            if (Player.Universe.StarDate != LastSortedDate)
+            {
+                LastSortedDate = Player.Universe.StarDate;
+                FillList();
+            }
             base.Update(fixedDeltaTime);
         }
     }

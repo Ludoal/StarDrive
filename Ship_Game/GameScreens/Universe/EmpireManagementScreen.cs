@@ -101,7 +101,14 @@ namespace Ship_Game
             Table.Columns[1].Width += 44; // the planet icon rides ahead of the name
             for (int i = 0; i < 7; ++i)
                 UITable.AutoSize(Table.Columns[2 + i], Fonts.Arial12, stats[i]);
-            Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
+            int widthCap = (int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66;
+            Table.FitToWidth(widthCap);
+            // Construction absorbs what the cap leaves (maintainer bench 307): Planet is
+            // data-sized, so a save full of short names shrank the whole tab - the queue
+            // column can always use the room instead
+            int slack = widthCap - Table.TableWidth;
+            if (slack > 0)
+                Table.Columns[11].Width += slack;
 
             // capped at the 1080p footprint like the frame width, and a FIXED bottom band
             // (maintainer bench 298): the band holds the governor cartouche, which keeps the
@@ -114,6 +121,7 @@ namespace Ship_Game
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 0,
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
             RectF client = EmpireTabs.ClientArea;
+            Table.RowPitch = 84;
             Table.Layout(client, client.Y + 10, client.Bottom - bandH - 8);
             ERect = new(Table.TableRect.X, Table.TableRect.Y, Table.TableRect.Width, Table.TableRect.Height);
 
@@ -142,11 +150,11 @@ namespace Ship_Game
                 GovernorDetails = Add(new GovernorDetailsComponent(this, Universe,  planets[0], GovernorRect));
             else
                 Log.Warning("EmpireManagementScreen: player planet list is EMPTY at ctor");
-            // System ascending is the standing sort, and its header wears the amber
-            // (Lek's review, bench 305 - the table opened unsorted and unmarked)
-            Table.Columns[0].Sorted = true;
-            Table.Columns[0].Ascending = true;
-            ResetColoniesList(planets.OrderBy(p => p.System.Name));
+            // the STANDING sort survives the screen for the session (maintainer bench 307);
+            // System ascending is the factory default (Lek's review, bench 305)
+            Table.Columns[StandingSort].Sorted = true;
+            Table.Columns[StandingSort].Ascending = StandingAsc;
+            ResetColoniesList(SortedPlanets(planets, StandingSort, StandingAsc));
             // the troop count and its food bill left this screen (maintainer, 4 Aug):
             // the Troops Array carries both on its own filter line now
         }
@@ -369,29 +377,38 @@ namespace Ship_Game
             {
                 bool asc = Table.SetSorted(clicked);
                 GameAudio.BlipClick();
-                var planets = Universe.Player.GetPlanets();
-                if (clicked <= 1) // the two name columns sort as text
-                {
-                    Func<Planet, string> name = clicked == 0 ? p => p.System.Name : p => p.Name;
-                    ResetColoniesList(asc ? planets.OrderBy(name) : planets.OrderByDescending(name));
-                    return true;
-                }
-                Func<Planet, float> selector = clicked switch
-                {
-                    2 => p => p.FertilityFor(Universe.Player),
-                    3 => p => p.MineralRichness,
-                    4 => p => p.PopulationBillion,
-                    5 => p => p.Food.NetIncome,
-                    6 => p => p.Prod.NetIncome,
-                    7 => p => p.Money.NetRevenue,
-                    _ => p => p.Res.NetIncome,
-                };
-                ResetColoniesList(asc ? planets.OrderBy(selector) : planets.OrderByDescending(selector));
+                StandingSort = clicked;
+                StandingAsc = asc;
+                ResetColoniesList(SortedPlanets(Universe.Player.GetPlanets(), clicked, asc));
                 return true;
             }
 
             return base.HandleInput(input);
         }
+
+        // one arithmetic for the ctor and the header clicks - the pair that must agree
+        static IEnumerable<Planet> SortedPlanets(IReadOnlyList<Planet> planets, int col, bool asc)
+        {
+            if (col <= 1) // the two name columns sort as text
+            {
+                Func<Planet, string> name = col == 0 ? p => p.System.Name : p => p.Name;
+                return asc ? planets.OrderBy(name) : planets.OrderByDescending(name);
+            }
+            Func<Planet, float> selector = col switch
+            {
+                2 => p => p.FertilityFor(p.Universe.Player),
+                3 => p => p.MineralRichness,
+                4 => p => p.PopulationBillion,
+                5 => p => p.Food.NetIncome,
+                6 => p => p.Prod.NetIncome,
+                7 => p => p.Money.NetRevenue,
+                _ => p => p.Res.NetIncome,
+            };
+            return asc ? planets.OrderBy(selector) : planets.OrderByDescending(selector);
+        }
+
+        static int StandingSort;         // session-persistent (bench 307)
+        static bool StandingAsc = true;
 
         void ResetColoniesList(IEnumerable<Planet> sortedList)
         {

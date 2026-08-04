@@ -157,6 +157,7 @@ namespace Ship_Game
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
             // the filter lane, then the table
+            Table.RowPitch = 48;
             Table.Layout(client, client.Y + 30, client.Bottom - 5);
             PlanetSL = Add(new ScrollList<PlanetListScreenItem>(Table.ListRect, 44));
             PlanetSL.EnableItemHighlight = true;

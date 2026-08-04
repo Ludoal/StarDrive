@@ -250,14 +250,17 @@ namespace Ship_Game
                     // DOWN once unfolded - the tree convention. One asset, the queue's own
                     // down arrow, rotated -90 for the folded state so the style cannot drift.
                     SubTexture arrow = ResourceManager.Texture("NewUI/icon_queue_arrow_down");
+                    // dark on a hovered header (maintainer bench 307): the gold arrow matched
+                    // the hover fill and vanished into it
+                    Color arrowTint = Hovered ? new Color(20, 18, 10) : Color.White;
                     float cx = r.Right - 26 + arrow.Width / 2f;
                     float cy = r.CenterY();
                     if (Expanded)
                         batch.Draw(arrow, new Rectangle((int)(cx - arrow.Width / 2f),
                                                         (int)(cy - arrow.Height / 2f),
-                                                        arrow.Width, arrow.Height), Color.White);
+                                                        arrow.Width, arrow.Height), arrowTint);
                     else
-                        batch.Draw(arrow, new RectF(cx, cy, arrow.Width, arrow.Height), Color.White,
+                        batch.Draw(arrow, new RectF(cx, cy, arrow.Width, arrow.Height), arrowTint,
                                    -1.5707963f, new Vector2(arrow.Width / 2f, arrow.Height / 2f),
                                    SpriteEffects.None, 1f);
                 }

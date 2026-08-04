@@ -176,6 +176,12 @@ namespace Ship_Game.UI
 
         // client: the group frame's ClientArea. headerTop/bottom: the vertical span the
         // table may use, absolute.
+        // when set, Layout snaps the list's foot so only WHOLE rows show - the value is
+        // the row height PLUS the list's 4px item padding (maintainer bench 307: the
+        // overhead constants the screens fed ContentHeightFor were near-misses, and a
+        // few px of the next row still peeked)
+        public int RowPitch;
+
         public void Layout(in RectF client, float headerTop, float bottom)
         {
             int x0 = (int)client.X + (SideMargin - 9);
@@ -197,6 +203,14 @@ namespace Ship_Game.UI
             // padding, not an empty line - maintainer bench 289), and leaves the slider
             // its reserved lane right of the last column
             ListRect = new RectF(x0 - 8, RuleY - 9, (x - x0) + 8 + SliderLane, bottom - (RuleY - 9));
+            if (RowPitch > 0)
+            {
+                // ScrollList pads 15 top and bottom; what remains is the row lane
+                float usable = ListRect.H - 30;
+                float snapped = (int)(usable / RowPitch) * RowPitch;
+                ListRect.H = snapped + 30;
+                TableRect.Height = (int)(ListRect.Bottom - TableRect.Y); // the chrome follows
+            }
         }
 
         // the hover selector spans the PHANTOM extremity lines: the item lane starts at

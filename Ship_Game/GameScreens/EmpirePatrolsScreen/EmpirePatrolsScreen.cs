@@ -82,6 +82,7 @@ namespace Ship_Game
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 2,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
+            Table.RowPitch = 38;
             Table.Layout(client, client.Y + 10, client.Bottom - 5);
 
             PatrolsSL = Add(new ScrollList<EmpirePatrolsScreenListItem>(Table.ListRect, 34));
@@ -119,11 +120,10 @@ namespace Ship_Game
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(GalaxyTabs), ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed);
 
-            // the shared charte draws the headers, the rule and the separators - with or
-            // without a patrol to list, so an empty empire still reads as an empty TABLE
-            Table.DrawChrome(batch);
+            // no chrome on an empty table (maintainer bench 307): the hint speaks alone
+            if (PatrolsSL.NumEntries > 0)
+                Table.DrawChrome(batch);
 
-            // an empty table says how to fill it (Lek's review, bench 305)
             if (PatrolsSL.NumEntries == 0)
             {
                 const string hint = "Assign a patrol from a fleet.";
