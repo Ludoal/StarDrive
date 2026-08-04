@@ -334,7 +334,9 @@ namespace Ship_Game.GameScreens
             var netWord = Label(new Vector2(rx + 4, netY), "", Fonts.Arial12Bold);
             netWord.DropShadow = true;
             netWord.Color = Colors.Cream;
-            netWord.DynamicText = l => NetGainNow() >= 0f ? Localizer.Token(GameText.NetGain) : Localizer.Token(GameText.NetLoss);
+            // plain "Net" in the red case (bench 305): the figure's own colour and sign
+            // already say loss - "Net Loss" said it twice
+            netWord.DynamicText = l => NetGainNow() >= 0f ? Localizer.Token(GameText.NetGain) : "Net";
             // -4: closes on the same right edge as the panel values above it (maintainer bench)
             EmpireNetIncome = Label(new Vector2(rx + rw - NetValueW - 4, netY), "", Fonts.Arial12Bold);
             EmpireNetIncome.Size = new Vector2(NetValueW, Fonts.Arial12Bold.LineSpacing);
