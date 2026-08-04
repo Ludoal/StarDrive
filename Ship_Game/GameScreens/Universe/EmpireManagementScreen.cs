@@ -100,8 +100,13 @@ namespace Ship_Game
                 UITable.AutoSize(Table.Columns[2 + i], Fonts.Arial12, stats[i]);
             Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
 
-            float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
-            float bandH = 0.3f * (fullAvail - 60);
+            // capped at the 1080p footprint like the frame width, and a FIXED bottom band
+            // (maintainer bench 298): the band holds the governor cartouche, which keeps the
+            // Colony screen's own fixed height (222) - a band cut as a fraction of the screen
+            // stretched everything in it with the resolution
+            float fullAvail = Math.Min(ScreenHeight, 1080) - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
+            const float GovernorH = 222;
+            float bandH = GovernorH + 7; // the 7px the rect derivation below eats back
             float contentH = Math.Min(fullAvail, 105 + Math.Max(3, planets.Count) * 84 + bandH);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 0,
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
@@ -114,7 +119,13 @@ namespace Ship_Game
             ColoniesList.OnDoubleClick = OnColonyListItemDoubleClicked;
             ColoniesList.EnableItemHighlight = true;
             Table.ApplyHighlightTo(ColoniesList);
-            int sidePanelWidths = (int)(ScreenWidth * 0.3f);
+            // FIXED, the Colony screen's own governor width (maintainer bench 298) - a panel
+            // cut as 0.3 x screen swallowed the description at 1080p. Same per-tab arithmetic:
+            // TextWidth + 2 + the header_right texture (33px), +8 wrap slack, floored at 380.
+            float govTabsW = Fonts.Arial12Bold.TextWidth("GOVERNOR") + Fonts.Arial12Bold.TextWidth("DEFENSE")
+                           + Fonts.Arial12Bold.TextWidth("BUDGET") + Fonts.Arial12Bold.TextWidth("BP")
+                           + 4 * (2 + 33) + 8;
+            int sidePanelWidths = (int)(Math.Max(govTabsW, 380) + 40);
             // Ludoal fork: its height stops at the FRAME's foot, not the screen's - inside a framed
             // tab it would otherwise run 10px past the bottom border. 10px of margin off the
             // frame's right and under the table (maintainer bench 293).
