@@ -34,10 +34,11 @@ namespace Ship_Game
         const int MoneyRoom = 110;
         const int ResearchRoom = 250;
         // The figures in front of the research topic, on their own reserved width so the topic
-        // name keeps ONE position instead of sliding as the numbers grow. Bound, not eyeballed:
-        // GetNumberString(compact) tops out at six glyphs ("999.9M"), so the worst realistic
-        // string is "999.9k/999.9M (+999.9)" - about 150px in Arial12Bold.
-        const int ResearchNumbersRoom = 155;
+        // name keeps ONE position instead of sliding as the numbers grow. Bound on the worst
+        // realistic string, "999.9k/999.9M (+999.9)" - about 150px in Arial12Bold - then
+        // trimmed a touch (maintainer feedback): the topic sits nearer the figures, and the
+        // interpunct before it marks where the reserve ends.
+        const int ResearchNumbersRoom = 140;
         // ⚠ MEASURED, not eyeballed: StarDateString is "####.0", so "StarDate: 9999.9" is the
         // widest this can ever be - 94px in Arial12Bold, and it does not vary with the date.
         // The old 120 left 27px of unused reserve, and since the text is right-aligned on
@@ -295,7 +296,7 @@ namespace Ship_Game
                 float topicX = ResearchTextX + ResearchNumbersRoom;
                 string topic = Player.Research.TopicLocText.Text;
                 bool disrupted = Player.Research.DisruptionMultiplier < 1f;
-                batch.DrawString(font, topic, new Vector2(topicX, textY),
+                batch.DrawString(font, "\u00b7 " + topic, new Vector2(topicX, textY),
                                  disrupted ? new Color(255, 96, 96) : TextCream.Alpha(0.7f));
             }
 
