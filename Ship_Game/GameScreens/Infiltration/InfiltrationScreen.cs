@@ -50,13 +50,13 @@ namespace Ship_Game.GameScreens
         // the slider above it and there was room to spare at the foot of the block, so everything
         // below the slider moved down 14. Named because the placement (LoadContent) and the labels
         // (DrawColumn) read them from here - they used to be loose numbers in both.
+        // compacted upward (maintainer bench 300) - the row makes room for the race rail
         const int RowSlider   = 4;
-        const int RowButton   = 58;
-        const int RowPoints   = 122;  // clear of the Level Max slider's ticks above it
-        // 10 lower and bold (maintainer bench 296) - the bar keeps its distance below
-        const int RowLevel    = 152;
-        const int RowBar      = 173;
-        const int RowBarNums  = 189;
+        const int RowButton   = 53;
+        const int RowPoints   = 117;  // clear of the Level Max slider's ticks above it
+        const int RowLevel    = 142;  // bold since bench 296
+        const int RowBar      = 163;
+        const int RowBarNums  = 179;
         const int DefenseH = 52;
 
         class EmpireColumn
@@ -224,7 +224,7 @@ namespace Ship_Game.GameScreens
                     };
                     Add(c.Budget);
 
-                    var defRect = new Rectangle(col.X + 8, col.Y + HeaderH + BudgetH + 37, col.Width - 60, 40); // below the DEFENSE band
+                    var defRect = new Rectangle(col.X + 8, col.Y + HeaderH + BudgetH + 22, col.Width - 60, 40); // below the DEFENSE band
                     c.Weight = new FloatSlider(defRect, GameText.EspioangeDefenseWeight, min: 0,
                                                max: Empire.MaxEspionageDefenseWeight, value: Player.EspionageDefenseWeight);
                     c.Weight.Tip = GameText.EspioangeDefenseWeightTip;
@@ -283,7 +283,7 @@ namespace Ship_Game.GameScreens
         void ForEachInfiltrationRow(Rectangle col, Action<byte, float, bool> onLevelTitle,
                                     Action<byte, float, int> onOpRow)
         {
-            float y = col.Y + HeaderH + BudgetH + DefenseH + 24 + 24; // + the INFILTRATION band
+            float y = col.Y + HeaderH + BudgetH + DefenseH + 4 + 24; // 20 higher (bench 300), + the INFILTRATION band
             for (byte level = 1; level <= Ship_Game.Espionage.MaxLevel; ++level)
             {
                 onLevelTitle?.Invoke(level, y, true);
@@ -458,9 +458,9 @@ namespace Ship_Game.GameScreens
 
             float budgetY = col.Y + HeaderH;
             SectionBand(batch, col, budgetY, "BUDGET");
-            // 15 higher (maintainer benches 296-297); the INFILTRATION block below is keyed
+            // 30 higher (maintainer benches 296-300); the INFILTRATION block below is keyed
             // on BudgetH + DefenseH and does not follow
-            float defenseY = col.Y + HeaderH + BudgetH + 9;
+            float defenseY = col.Y + HeaderH + BudgetH - 6;
             SectionBand(batch, col, defenseY, "DEFENSE");
 
             if (e == Player)
@@ -523,7 +523,7 @@ namespace Ship_Game.GameScreens
             // Ludoal fork: one INFILTRATION band, then each level as a bold text line - cream once
             // the level is uncovered, grey while it is not. Five bands for one subject read as five
             // separate sections.
-            SectionBand(batch, col, col.Y + HeaderH + BudgetH + DefenseH + 24, "INFILTRATION");
+            SectionBand(batch, col, col.Y + HeaderH + BudgetH + DefenseH + 4, "INFILTRATION");
             ForEachInfiltrationRow(col, (level, rowY, isTitle) =>
             {
                 bool reached = esp.Level >= level;

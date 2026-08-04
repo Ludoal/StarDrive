@@ -348,7 +348,7 @@ namespace Ship_Game
             // across columns without anyone having to count them.
             // ARTIFACTS is the one variable block, so it comes last and takes whatever is left.
             y = infoY;
-            SectionBand(batch, col, ref y, "RACE INFO");
+            SectionBand(batch, col, ref y, "FACTION INFO");
             DrawInfoBlock(batch, e, col, ref y);
 
             y += 4;
