@@ -112,9 +112,10 @@ namespace Ship_Game
             Table.ApplyHighlightTo(ColoniesList);
             int sidePanelWidths = (int)(ScreenWidth * 0.3f);
             // Ludoal fork: its height stops at the FRAME's foot, not the screen's - inside a framed
-            // tab it would otherwise run 10px past the bottom border.
-            GovernorRect = new RectF(ColoniesList.Right - sidePanelWidths - 23, ColoniesList.Bottom - 5,
-                                     sidePanelWidths, client.Bottom - ColoniesList.Bottom - 5);
+            // tab it would otherwise run 10px past the bottom border. 10px of margin off the
+            // frame's right and under the table (maintainer bench 293).
+            GovernorRect = new RectF(client.Right - sidePanelWidths - 10, ColoniesList.Bottom + 10,
+                                     sidePanelWidths, client.Bottom - ColoniesList.Bottom - 15);
             // Ludoal fork: guard against an empty colony list — seen live (crash at
             // StarDate 1163: GetPlanets() returned 0 for the player on the UI thread,
             // opened from the Infiltration screen). An empire with no colonies is also
@@ -147,32 +148,26 @@ namespace Ship_Game
 
             base.Draw(batch, elapsed);
             
-            // Ludoal fork: the cartouche takes the room left of the planet map instead of a flat
-            // 30% of the screen, which left a strip of dead space at its right edge. The map keeps
-            // its own square footprint (its height is the block's, so its width follows), and the
-            // cartouche absorbs the rest - one variable block, everything else fixed.
-            ColoniesListItem top = ColoniesList.ItemAtTop;
+            // Ludoal fork: the bottom band, four blocks left to right - planet cartouche,
+            // description on the band's FULL height, ground map, governor frame (fixed,
+            // placed in the constructor with its 10px margins). The cascade runs right to
+            // left from the governor's edge: the map takes its height-driven width, the
+            // DESCRIPTION absorbs what is left (maintainer bench 293).
             float blockTop = ERect.Y + ERect.H;
             // ⚠ off the FRAME's foot, not the screen's: inside a framed tab this row would run past
             // the bottom border, and the governor frame beside it already stops there.
             float blockH = GovernorRect.Bottom - blockTop;
             float infoX = ERect.X + 22;
-            // This row holds three blocks and they cascade right to left from ONE bound: the
-            // governor frame is fixed (placed in the constructor), the map's width follows from
-            // its own height, and the cartouche absorbs what is left. A geometry belongs to the
-            // object that carries it, so the bound is the governor frame's edge - never a column
-            // of the list above, which reaches further right (Lek's reading, 29 Jul).
             float rowRight = GovernorRect.X;
-            // the map is drawn on a 7:5 grid and shrinks in steps until it fits, so its room is
-            // its height times that ratio, plus the 20px the two rects overlap by
-            float mapW = blockH * (700f / 500f) + 20f;
-            // half again as wide is plenty for the description; the rest stays margin rather than
-            // stretching four short label lines across the screen
-            float stock = ScreenWidth * 0.3f;
-            float infoW = Math.Clamp(rowRight - infoX - mapW, stock, stock * 1.5f);
-            var PlanetInfoRect = new Rectangle((int)infoX, (int)blockTop, (int)infoW, (int)blockH);
-            // Ludoal fork: the icon is 60% of the block's height.
-            int iconSize = (int)(PlanetInfoRect.Height * 0.6f);
+            // the ground map steps 10px down (maintainer) and hugs the governor block; it is
+            // drawn on a 7:5 grid, so its height decides its width
+            float mapH = blockH - 10;
+            float mapW = mapH * (700f / 500f) + 20f;
+            float mapX = rowRight - mapW;
+
+            // the planet block: icon + name + the four stat lines, at the band's left
+            int iconSize = (int)(blockH * 0.6f);
+            var PlanetInfoRect = new Rectangle((int)infoX, (int)blockTop, iconSize + 250, (int)blockH);
             var PlanetIconRect = new Rectangle(PlanetInfoRect.X + 10, PlanetInfoRect.Y + PlanetInfoRect.Height / 2 - iconSize / 2, iconSize, iconSize);
             var nameCursor = new Vector2(PlanetIconRect.X + PlanetIconRect.Width / 2 - Fonts.Pirulen16.MeasureString(SelectedPlanet.Name).X / 2f, PlanetInfoRect.Y + 15);
             batch.Draw(SelectedPlanet.PlanetTexture, PlanetIconRect, White);
@@ -209,34 +204,35 @@ namespace Ship_Game
                 ToolTip.CreateTooltip(GameText.APlanetsMineralRichnessDirectly);
             }
 
-            PNameCursor.Y += (Fonts.Arial12Bold.LineSpacing + 2) * 2;
-
-            // Ludoal fork: wrap on the room actually left to the right of the icon - the icon's
-            // 10px inset and the 5px gap are already in PNameCursor.X.
-            float descWidth = PlanetInfoRect.Right - PNameCursor.X;
-            // Ludoal fork: the block holds about six lines and many planet descriptions are
-            // longer, so the text is fitted to the room rather than drawn past the block: the
-            // smaller font first, then as many whole lines as fit, with the cut marked.
-            float descRoom = Math.Min(PlanetInfoRect.Bottom, ScreenHeight - 20) - PNameCursor.Y;
+            // the description in its OWN block, right of the cartouche, on the band's full
+            // height (maintainer bench 293) - the smaller font first if it runs long, then
+            // as many whole lines as fit with the cut marked, and the FULL text in a
+            // tooltip whenever it was cut
+            var DescRect = new Rectangle(PlanetInfoRect.Right + 10, (int)blockTop + 8,
+                                         (int)mapX - PlanetInfoRect.Right - 30, (int)blockH - 16);
             var descFont = Fonts.Arial12Bold;
-            string text = descFont.ParseText(SelectedPlanet.Description, descWidth);
-            if (descFont.MeasureString(text).Y > descRoom)
+            string text = descFont.ParseText(SelectedPlanet.Description, DescRect.Width);
+            if (descFont.MeasureString(text).Y > DescRect.Height)
             {
                 descFont = Fonts.Arial12;
-                text = descFont.ParseText(SelectedPlanet.Description, descWidth);
+                text = descFont.ParseText(SelectedPlanet.Description, DescRect.Width);
             }
-            if (descFont.MeasureString(text).Y > descRoom)
+            bool descCut = false;
+            if (descFont.MeasureString(text).Y > DescRect.Height)
             {
-                int maxLines = (int)(descRoom / descFont.LineSpacing);
+                int maxLines = (int)(DescRect.Height / descFont.LineSpacing);
                 string[] lines = text.Split('\n');
                 if (maxLines > 0 && lines.Length > maxLines)
+                {
                     text = string.Join("\n", lines, 0, maxLines - 1) + "\n...";
+                    descCut = true;
+                }
             }
-            batch.DrawString(descFont, text, PNameCursor, White);
+            batch.DrawString(descFont, text, new Vector2(DescRect.X, DescRect.Y), White);
+            if (descCut && DescRect.HitTest(Input.CursorPosition))
+                ToolTip.CreateTooltip(SelectedPlanet.Description);
 
-            // Ludoal fork: same rowRight as the cartouche above - one bound for the whole row.
-            var MapRect = new Rectangle(PlanetInfoRect.Right - 20, PlanetInfoRect.Y - 3,
-                                        (int)rowRight - PlanetInfoRect.Right, PlanetInfoRect.Height);
+            var MapRect = new Rectangle((int)mapX, (int)blockTop + 10, (int)mapW, (int)mapH);
             int desiredWidth = 700;
             int desiredHeight = 500;
             var buildingsRect = new Rectangle(MapRect.X, MapRect.Y, desiredWidth, desiredHeight);
