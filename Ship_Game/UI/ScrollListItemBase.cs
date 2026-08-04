@@ -246,13 +246,20 @@ namespace Ship_Game
 
                 if (SubEntries != null && SubEntries.NotEmpty)
                 {
-                    // an arrow, not a +/- glyph (maintainer bench 305): down = will unfold,
-                    // up = will fold - the queue's own arrows, so the language is known
-                    SubTexture arrow = ResourceManager.Texture(Expanded ? "NewUI/icon_queue_arrow_up"
-                                                                        : "NewUI/icon_queue_arrow_down");
-                    batch.Draw(arrow, new Rectangle((int)r.Right - 26,
-                                                    (int)(r.CenterY() - arrow.Height / 2f),
-                                                    arrow.Width, arrow.Height), Color.White);
+                    // an arrow, not a +/- glyph (maintainer bench 305): RIGHT while folded,
+                    // DOWN once unfolded - the tree convention. One asset, the queue's own
+                    // down arrow, rotated -90 for the folded state so the style cannot drift.
+                    SubTexture arrow = ResourceManager.Texture("NewUI/icon_queue_arrow_down");
+                    float cx = r.Right - 26 + arrow.Width / 2f;
+                    float cy = r.CenterY();
+                    if (Expanded)
+                        batch.Draw(arrow, new Rectangle((int)(cx - arrow.Width / 2f),
+                                                        (int)(cy - arrow.Height / 2f),
+                                                        arrow.Width, arrow.Height), Color.White);
+                    else
+                        batch.Draw(arrow, new RectF(cx, cy, arrow.Width, arrow.Height), Color.White,
+                                   -1.5707963f, new Vector2(arrow.Width / 2f, arrow.Height / 2f),
+                                   SpriteEffects.None, 1f);
                 }
             }
 
