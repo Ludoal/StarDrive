@@ -89,6 +89,17 @@ namespace Ship_Game
             base.Draw(batch, elapsed);
             // the shared charte draws the headers, the rule and the separators
             Table.DrawChrome(batch);
+
+            // an empty log says so, like the Patrols table (Lek's review, bench 305)
+            if (EventList.NumEntries == 0)
+            {
+                const string hint = "Nothing to report yet.";
+                Graphics.Font font = Fonts.Arial12Bold;
+                var pos = new Vector2(Table.TableRect.X + (Table.TableRect.Width - font.TextWidth(hint)) / 2f,
+                                      Table.ListRect.Y + 40);
+                batch.DrawString(font, hint, pos.Rounded(), Color.Gray);
+            }
+
             Universe.EmpireUI.Draw(batch);   // the live top bar, as on its sibling tabs
             GameScreens.ScreenGroups.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             batch.SafeEnd();
