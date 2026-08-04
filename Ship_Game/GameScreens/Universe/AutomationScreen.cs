@@ -71,17 +71,22 @@ namespace Ship_Game
             // of the neighbour, not under it.
 
             UIList notifications = NewBox(new RectF(x0, top + EmpireBoxH + BoxGap, BoxW, NotificationsBoxH), "Notifications");
-            // the Disables together, a breathing line, then the one Enable (maintainer, 3 Aug)
-            notifications.AddCheckbox(() => Universe.UState.P.SuppressOnBuildNotifications, title: GameText.DisableBuildingAlerts, tooltip: GameText.NormallyWhenYouManuallyAdd);
-            notifications.AddCheckbox(() => Universe.UState.P.DisableInhibitionWarning, title: GameText.DisableInhibitionAlerts, tooltip: GameText.InhibitionAlertsAreDisplayedWhen);
-            notifications.AddCheckbox(() => Universe.UState.P.DisableVolcanoWarning, title: GameText.DisableVolcanoAlerts, tooltip: GameText.DisableVolcanoActivationOrDeactivation);
-            notifications.AddCheckbox(() => Universe.UState.P.DisableCrashSiteWarning, title: GameText.DisableCrashSiteAlerts, tooltip: GameText.DisableCrashSiteAlertsTip);
-            // Disable like its siblings (reviewer doctrine): one verb for the whole box,
-            // checked by default - same [StarData] flag, read in the negative
-            notifications.AddCheckbox(() => Universe.UState.P.DisableStarvationWarning, title: "Disable Starvation Warnings",
-                                      tooltip: GameText.EnableStarvationWarningTip);
-            notifications.AddCheckbox(() => player.data.SpyMute, title: "Disable Espionage Messages",
-                                      tooltip: "Disable all Espionage notifications.");
+            // POSITIVE voice (maintainer bench 305): checked = you get the alert, all on
+            // by default. The [StarData] flags stay the Disable/Suppress ones - each box
+            // reads and writes them through a negation, so saves keep their meaning.
+            var P = Universe.UState.P;
+            notifications.AddCheckbox(() => !P.SuppressOnBuildNotifications, v => P.SuppressOnBuildNotifications = !v,
+                                      title: "Building Alerts", tooltip: GameText.NormallyWhenYouManuallyAdd);
+            notifications.AddCheckbox(() => !P.DisableInhibitionWarning, v => P.DisableInhibitionWarning = !v,
+                                      title: "Inhibition Alerts", tooltip: GameText.InhibitionAlertsAreDisplayedWhen);
+            notifications.AddCheckbox(() => !P.DisableVolcanoWarning, v => P.DisableVolcanoWarning = !v,
+                                      title: "Volcano Alerts", tooltip: GameText.DisableVolcanoActivationOrDeactivation);
+            notifications.AddCheckbox(() => !P.DisableCrashSiteWarning, v => P.DisableCrashSiteWarning = !v,
+                                      title: "Crash Site Alerts", tooltip: GameText.DisableCrashSiteAlertsTip);
+            notifications.AddCheckbox(() => !P.DisableStarvationWarning, v => P.DisableStarvationWarning = !v,
+                                      title: "Starvation Warnings", tooltip: GameText.EnableStarvationWarningTip);
+            notifications.AddCheckbox(() => !player.data.SpyMute, v => player.data.SpyMute = !v,
+                                      title: "Espionage Messages", tooltip: "All Espionage notifications.");
 
             UIList empire = NewBox(new RectF(x0, top, BoxW, EmpireBoxH), "Empire");
             empire.AddCheckbox(() => player.AutoTaxes, title: GameText.AutoTaxes, tooltip: GameText.YourEmpireWillAutomaticallyManage3);

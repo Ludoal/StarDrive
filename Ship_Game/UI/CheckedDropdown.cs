@@ -76,7 +76,7 @@ namespace Ship_Game
                 if (IsAutoPicked())
                 {
                     batch.DrawString(Fonts.Arial12Bold, "Auto Pick",
-                                     new Vector2(Options.X + 4, Options.Y + 3), Color.LightGreen);
+                                     new Vector2(Options.X + 4, Options.Y + 3), Color.White); // white (bench 305)
                     return;
                 }
             }
