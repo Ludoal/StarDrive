@@ -109,10 +109,12 @@ namespace Ship_Game
         static bool PinActiveDesign = true;
         UICheckBox PinActiveCheck;
 
-        // Ludoal fork: the compact Active Design cartouche - list-width, the headline stats only.
-        // The toggle is in place and remembers its state; nothing reads it yet.
+        // Ludoal fork (maintainer bench 302): the compact Active Design cartouche - the
+        // browser list's width, carrying the flying overlay's stat set. Both cartouches
+        // swap their row sets with it; ResizeCartouches applies a flip.
         static bool CompactActiveDesign;
         UICheckBox CompactActiveCheck;
+        bool AppliedCompact; // the state the cartouches are actually built for
         // Ludoal fork (bench 188): sweeping from one browser row to the next crosses a gap where
         // nothing is hovered. With Pin Active unchecked that gap let the Active cartouche flash
         // back into its seat between every pair of rows (maintainer feedback), so a hover that ENDS is held for
@@ -645,12 +647,33 @@ namespace Ship_Game
                                                  InfoSub.Y, InfoSub.Y + InfoSub.Height));
 
             bool wantDeltas = ComparedDesign != null;
-            if (InfoPanel.HasDeltaLanes == wantDeltas)
+            bool compactChanged = AppliedCompact != CompactActiveDesign;
+            if (InfoPanel.HasDeltaLanes == wantDeltas && !compactChanged)
                 return;
 
             InfoPanel.HasDeltaLanes = wantDeltas;
 
-            float w = ShipDesignInfoPanel.FrameWidthFor(wantDeltas, withPlan: false);
+            if (compactChanged)
+            {
+                // the row sets swap wholesale - the shadow comparator follows inside
+                // RebuildRows - and the hover frame changes width with them
+                AppliedCompact = CompactActiveDesign;
+                InfoPanel.Compact = CompactActiveDesign;
+                InfoPanel.RebuildRows();
+                HoverPanel.Compact = CompactActiveDesign;
+                HoverPanel.RebuildRows();
+                float hw = CompactActiveDesign ? ShipDesignInfoPanel.CompactFrameWidthFor(withPlan: true)
+                         : ShipDesignInfoPanel.FrameWidthFor(withDeltas: false, withPlan: true);
+                HoverSub.SetAbsSize(hw, HoverSub.Height);
+                HoverSub.RequiresLayout = true;
+                HoverPanel.SetAbsSize(hw - ShipDesignInfoPanel.Inset * 2f, HoverPanel.Height);
+                HoverPanel.RequiresLayout = true;
+            }
+
+            // compact: the browser list's own width, deltas fitting inside it - the frame
+            // never resizes on a pin, exactly like the module panel
+            float w = CompactActiveDesign ? ModuleSelection.ListWidth
+                    : ShipDesignInfoPanel.FrameWidthFor(wantDeltas, withPlan: false);
             // read off the element itself rather than through Rect: Submenu.Rect (RectF) shadows
             // UIElementV2.Rect (integer Rectangle), so going through it risks silently rounding
             // the anchor edge depending on which member the call site resolves to
@@ -1232,7 +1255,9 @@ namespace Ship_Game
             // last unpin. Sizing this from the player's preference is what made the frame
             // fixed-width in 46.152 (maintainer feedback).
             bool deltaLanes = false;
-            float cartoucheW = ShipDesignInfoPanel.FrameWidthFor(withDeltas: deltaLanes, withPlan: false);
+            float cartoucheW = CompactActiveDesign ? ModuleSelection.ListWidth
+                             : ShipDesignInfoPanel.FrameWidthFor(withDeltas: deltaLanes, withPlan: false);
+            AppliedCompact = CompactActiveDesign;
             var infoRect = RectF.FromPoints(hullSelectSub.Right - cartoucheW, hullSelectSub.Right,
                                             cartoucheY, cartoucheY + cartoucheH);
             // Ludoal fork: the stats live in a titled cartouche now, same frame the module
@@ -1257,6 +1282,7 @@ namespace Ship_Game
                                              infoRect.Y + 26, infoRect.Bottom - 8);
             InfoPanel = Add(new ShipDesignInfoPanel(this, infoInner));
             InfoPanel.HasDeltaLanes = deltaLanes; // widened on the first pin, see ResizeCartouches
+            InfoPanel.Compact = CompactActiveDesign; // the toggle survives the screen
             InfoSub = infoSub;
             // Ludoal fork (bench): on the frame's tab row vertically, but bound to the BROWSER,
             // not to the frame - right-aligned on the browser's right edge, exactly as its module
@@ -1274,17 +1300,20 @@ namespace Ship_Game
             // Ludoal fork: right-aligned on the browser's own right edge, the same way the module
             // twin hugs the right edge of its list. UICheckBox sizes itself in its constructor,
             // so the width is exact by the time this runs.
-            PinActiveCheck.SetAbsPos(hullSelectPos.X + hullSelSize.X - PinActiveCheck.Width,
+            // ⚠ off the ELEMENT's realized right edge - the old hullSelectPos arithmetic mixed
+            // a LocalPos into SetAbsPos, which is exactly the "not quite aligned" the bench
+            // kept seeing on these toggles (maintainer bench 302)
+            PinActiveCheck.SetAbsPos(hullSelectSub.Right - PinActiveCheck.Width,
                                      PinActiveCheck.Y);
 
-            // Ludoal fork: a second toggle to the left of Pin Active, for a compact cartouche -
-            // the width of the list, carrying only the stats worth a glance. INERT for now: the
-            // flag is read by nothing, so the box only remembers what it was clicked to.
+            // Ludoal fork (maintainer bench 302): the compact cartouche is LIVE - list-width,
+            // the flying overlay's stat set, deltas wired. ResizeCartouches applies a flip.
             CompactActiveCheck = Checkbox(new Vector2(hullSelectPos.X, infoTab.Y + 4),
                                           () => CompactActiveDesign,
                                           (b) => { CompactActiveDesign = b; },
                                           "Compact",
-                                          "Show the Active Design cartouche in its compact form.");
+                                          "Show the Active Design cartouche in its compact form:\n"
+                                        + "the browser's width, the hover overlay's stats.");
             // measured off Pin Active rather than a reserved slot, and spaced like the option row
             CompactActiveCheck.SetAbsPos(PinActiveCheck.X - CompactActiveCheck.Width - 20,
                                          PinActiveCheck.Y);
@@ -1295,7 +1324,8 @@ namespace Ship_Game
             // cursor leaves. The pinned design no longer has a frame: it only feeds the delta
             // lane of the Active cartouche.
             // same two columns, no delta lanes, plus the ship plan down its left edge
-            float hoverW = ShipDesignInfoPanel.FrameWidthFor(withDeltas: false, withPlan: true);
+            float hoverW = CompactActiveDesign ? ShipDesignInfoPanel.CompactFrameWidthFor(withPlan: true)
+                         : ShipDesignInfoPanel.FrameWidthFor(withDeltas: false, withPlan: true);
             var hoverRect = RectF.FromPoints(infoRect.X - hoverW - 10f, infoRect.X - 10f,
                                              infoRect.Y, infoRect.Bottom);
             HoverSub = Add(new Submenu(hoverRect, "Hovered Design"));
@@ -1305,6 +1335,7 @@ namespace Ship_Game
                                               hoverRect.Y + 32, hoverRect.Bottom - 8);
             HoverPanel = Add(new ShipDesignInfoPanel(this, hoverInner));
             HoverPanel.ShowShipPlan = true; // the module plan down its left edge (maintainer feedback)
+            HoverPanel.Compact = CompactActiveDesign;
             HoverSub.Visible = HoverPanel.Visible = false;
 
             // Ludoal fork (spec v4, bench): completion + issues moved ABOVE the cartouche tab

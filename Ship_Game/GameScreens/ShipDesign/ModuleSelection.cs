@@ -97,7 +97,9 @@ namespace Ship_Game
                                       "Pin Active",
                                       "Keep the Active Module panel on screen while you hover the list.\n"
                                     + "Off: the hovered module takes its place, and it comes back when you look away.");
-            pin.SetAbsPos(ClientArea.Right - pin.Width, pin.Y);
+            // the ACTIVE MODULE frame's own right edge, not the container's client area -
+            // the two differ by a few px, which read as "not quite aligned" (maintainer bench 302)
+            pin.SetAbsPos(ActiveModSubMenu.Right - pin.Width, pin.Y);
         }
 
         bool CategoryRestored;

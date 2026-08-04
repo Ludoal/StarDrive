@@ -41,6 +41,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             public LocalizedText Tip;
             public Func<float> Value;         // null when Text is used instead
             public string Text;               // a word value, e.g. "INF"
+            public Func<string> TextFn;       // a LIVE text value (compact W.Range) - no delta
             public Func<float, Color> Tint;   // value colour from the value; null => white
             public Func<bool> Visible;        // null => always visible
             public bool NonZeroOnly;          // hidden while the value is zero
@@ -301,6 +302,53 @@ namespace Ship_Game.GameScreens.ShipDesign
         // hull background. Only the hover frame turns this on.
         public bool ShowShipPlan;
 
+        // ── COMPACT (maintainer bench 302) ────────────────────────────────────────────────
+        // The flying overlay's own inventory instead of Lek's eight blocks: one column, no
+        // headings, the headline five with their icons then the verbose list. The Active
+        // cartouche wears it at the browser list's width; the Hover one keeps its plan.
+        public bool Compact;
+
+        // measured over the compact titles exactly as LongestTitle is over the full set -
+        // the short labels earn a much tighter title room
+        static readonly string[] CompactTitles = { "DPS", "ETM", "OTM", "HP", "SP", "Weapons",
+                                                   "W.Range", "Warp", "Speed", "TurnRate",
+                                                   "Repair", "EMP Def", "Hangars", "Troops",
+                                                   "BombBays", "Cargo" };
+        static float LongestCompactCache;
+        static float LongestCompactTitle
+        {
+            get
+            {
+                if (LongestCompactCache <= 0f)
+                    foreach (string t in CompactTitles)
+                    {
+                        float w = Fonts.Arial12Bold.TextWidth(t);
+                        if (w > LongestCompactCache)
+                            LongestCompactCache = w;
+                    }
+                return LongestCompactCache;
+            }
+        }
+        static float CompactTitleColumn => 10f + 20f + LongestCompactTitle - Inset;
+
+        // what a compact frame needs when it is free to hug (the hover frame) - the Active
+        // one is pinned to the browser list's width by the screen instead
+        public static float CompactFrameWidthFor(bool withPlan)
+            => Inset + CompactTitleColumn + DeltaLaneWidth + SidePad + (withPlan ? PlanSide + PlanGap : 0f);
+
+        // re-derive the rows after a Compact flip - the shadow follows, or the delta lookup
+        // would match titles across two different row sets and find nothing
+        public void RebuildRows()
+        {
+            if (S != null)
+                SetActiveDesign(S, UpdateDesignStats ? null : Ds);
+            if (CompareAgainst != null)
+            {
+                CompareAgainst.Compact = Compact;
+                CompareAgainst.RebuildRows();
+            }
+        }
+
         // Ludoal fork (spec v4): take a pinned design as the delta source. It is held as a
         // detached panel — never added to the screen, never drawn — because its row set is
         // exactly what TryGetVisibleValue needs to answer with.
@@ -316,6 +364,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             // The shadow is never updated after this: a pinned design does not change while it
             // is pinned, so its stats are captured once and stay valid.
             var shadow = new ShipDesignInfoPanel(Screen, Rect);
+            shadow.Compact = Compact; // same row set, or the title lookup finds nothing
             shadow.SetActiveDesign(ship);
             CompareAgainst = shadow;
             ComparedName = name;
@@ -395,9 +444,49 @@ namespace Ship_Game.GameScreens.ShipDesign
             base.Update(fixedDeltaTime);
         }
 
+        // the compact set: the flying overlay's inventory, kept in ITS order. The INF pairs
+        // mirror the full rows' bench-settled gates; W.Range is live text, so it carries no
+        // delta - every other line feeds the comparator exactly like the full set.
+        void BuildCompactRows()
+        {
+            Color energy = Color.LightSkyBlue;
+            Stat("DPS", () => S.TotalDps, GT.TT_ShipOffense, nonZero: true, icon: "UI/icon_offense", iconColor: Color.OrangeRed);
+            Stat("ETM", () => Ds.HasBeams() ? Ds.BurstEnergyDuration : Ds.EnergyDuration, GT.TT_WpnFirePowerTime,
+                 vis: () => Ds.HasEnergyWeapons && (Ds.HasBeams() ? Ds.HasBeamDurationNegative() : Ds.HasEnergyWepsPositive()),
+                 icon: "UI/lightningBolt", iconColor: Color.LightGoldenrodYellow);
+            Word("ETM", "INF", GT.TT_WpnFirePowerTime, energy, Color.White,
+                 vis: () => Ds.HasEnergyWeapons && (Ds.HasBeams() ? Ds.HasBeamDurationPositive() : Ds.HasEnergyWepsNegative()),
+                 icon: "UI/lightningBolt", iconColor: Color.LightGoldenrodYellow);
+            Stat("OTM", () => Ds.AmmoTime, GT.TT_AmmoTime, vis: Ds.HasOrdFinite, icon: "Modules/Ordnance", iconColor: Color.Khaki);
+            Word("OTM", "INF", GT.TT_AmmoTime, energy, Color.White, vis: Ds.HasOrdInfinite, icon: "Modules/Ordnance", iconColor: Color.Khaki);
+            Stat("HP", () => S.HealthMax, GT.TT_HitPoints, icon: "UI/icon_shield", iconColor: Color.CadetBlue);
+            Stat("SP", () => S.ShieldMax, GT.TT_ShieldPower, nonZero: true, icon: "Modules/Shield_1KW", iconColor: Color.AliceBlue);
+            Stat("Weapons", () => S.Weapons.Count, GT.TT_ShipOffense, nonZero: true);
+            TextRow("W.Range", () => $"{S.WeaponsAvgRange.GetNumberString()}..{S.WeaponsMaxRange.GetNumberString()}",
+                    GT.TT_ShipOffense, vis: () => S.WeaponsMaxRange > 0f);
+            Stat("Warp", () => S.MaxFTLSpeed, GT.TT_FtlSpeed, nonZero: true);
+            Stat("Speed", () => S.MaxSTLSpeed, GT.TT_SublightSpeed, nonZero: true);
+            Stat("TurnRate", () => S.RotationRadsPerSecond.ToDegrees(), GT.TT_TurnRate, nonZero: true);
+            Stat("Repair", () => S.RepairRate, GT.TT_RepairRate, nonZero: true);
+            Stat("EMP Def", () => S.EmpTolerance, GT.TT_EmpProtection, nonZero: true);
+            Stat("Hangars", () => S.Carrier.AllFighterHangars.Length, GT.TT_ShipOffense, nonZero: true);
+            Stat("Troops", () => S.TroopCapacity, GT.TT_TroopCapacity, nonZero: true);
+            Stat("BombBays", () => S.BombBays.Count, GT.TT_ShipOffense, nonZero: true);
+            Stat("Cargo", () => S.CargoSpaceMax, GT.TT_CargoSpace, nonZero: true);
+        }
+
+        void TextRow(in LocalizedText title, Func<string> text, in LocalizedText tip, Func<bool> vis = null)
+            => Rows.Add(new Row { Title = title, Tip = tip, TextFn = text, Color = LabelGrey, Visible = vis });
+
         // ── the content, per Lek's spec v3 ────────────────────────────────────────────────
         void BuildRows()
         {
+            if (Compact)
+            {
+                BuildCompactRows();
+                return;
+            }
+
             // "INF" is its own signal — the word says it, the colour was redundant
             Color good = Color.White;
             Color energy = Color.LightSkyBlue;
@@ -710,8 +799,8 @@ namespace Ship_Game.GameScreens.ShipDesign
             // pushes its columns right anyway, which is why only Active looked wrong (maintainer feedback). Same expression as namePos, so the two cannot part company.
             float col0X = ContentLeft + planW + Col0Shift;
             float col1X = col0X + colStep + Col1Shift - Col0Shift;
-            float spacing = TitleColumn; // the value sits at the cursor + spacing — the SAME
-                                         // number the step is built from, so they cannot drift
+            // the compact set is ONE headingless column with its own, tighter title room
+            float spacing = Compact ? CompactTitleColumn : TitleColumn;
             Graphics.Font headFont = Fonts.Arial12Bold;
 
             // a heading is only worth drawing when at least one of its own lines shows
@@ -784,7 +873,8 @@ namespace Ship_Game.GameScreens.ShipDesign
                     continue;
                 }
 
-                if (blockVisible[block] == 0 || !IsDrawn(i))
+                // block < 0: the compact set has no headings at all
+                if ((block >= 0 && blockVisible[block] == 0) || !IsDrawn(i))
                     continue;
 
                 // this design hides the row, the pinned one has it: dimmed dash + its delta
@@ -809,7 +899,12 @@ namespace Ship_Game.GameScreens.ShipDesign
                     continue;
                 }
 
-                if (r.Text != null)
+                if (r.TextFn != null)
+                {
+                    Screen.DrawStatText(ref cursor, r.Title, r.TextFn(), r.Color, r.Tip, spacing,
+                                        valueColor: null, icon: r.Icon, iconColor: r.IconColor);
+                }
+                else if (r.Text != null)
                 {
                     Screen.DrawStatText(ref cursor, r.Title, r.Text, r.Color, r.Tip, spacing,
                                         valueColor: r.Tint?.Invoke(0f), icon: r.Icon, iconColor: r.IconColor);
