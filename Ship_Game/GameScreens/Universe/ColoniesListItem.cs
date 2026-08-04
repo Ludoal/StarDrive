@@ -305,21 +305,13 @@ namespace Ship_Game
             DrawStatValue(batch, RichRect, P.MineralRichness.String(), Color.White);
             DrawStatValue(batch, MaxPopRect, P.MaxPopulationBillionFor(Universe.Player).String(), Color.White);
 
-            if (Fonts.Pirulen16.MeasureString(P.Name).X + planetIconRect.Width + 10f <= PlanetNameRect.Width)
-            {
-                var a = new Vector2(planetIconRect.X + planetIconRect.Width + 10, SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Pirulen16.LineSpacing / 2);
-                batch.DrawString(Fonts.Pirulen16, P.Name, a, TextColor);
-            }
-            else if (Fonts.Pirulen12.MeasureString(P.Name).X + planetIconRect.Width + 10f <= PlanetNameRect.Width)
-            {
-                var b = new Vector2(planetIconRect.X + planetIconRect.Width + 10, SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Pirulen12.LineSpacing / 2);
-                batch.DrawString(Fonts.Pirulen12, P.Name, b, TextColor);
-            }
-            else
-            {
-                var c = new Vector2(planetIconRect.X + planetIconRect.Width + 10, SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Arial8Bold.LineSpacing / 2);
-                batch.DrawString(Fonts.Arial8Bold, P.Name, c, TextColor);
-            }
+            // the planet name in the regular 14 (maintainer, 4 Aug) - the Pirulen display
+            // face steps down to the body family, smaller only when the room runs out
+            Graphics.Font nameFont = Fonts.Arial14Bold.MeasureString(P.Name).X + planetIconRect.Width + 10f <= PlanetNameRect.Width
+                                   ? Fonts.Arial14Bold : Fonts.Arial12Bold;
+            var namePos = new Vector2(planetIconRect.X + planetIconRect.Width + 10,
+                                      SysNameRect.Y + SysNameRect.Height / 2 - nameFont.LineSpacing / 2);
+            batch.DrawString(nameFont, P.Name, namePos, TextColor);
 
             base.Draw(batch, elapsed);
 

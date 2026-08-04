@@ -30,8 +30,6 @@ namespace Ship_Game
         private readonly SortButton SbRich;
         private readonly SortButton SbMaxPop;
 
-        readonly UILabel AvailableTroops;
-        readonly UILabel TroopConsumption;
         private RectF GovernorRect;
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
 
@@ -50,21 +48,26 @@ namespace Ship_Game
             IsPopup = true;
             eui = empUI;
 
-            // Ludoal fork: the Colonies tab of the Empire group. ⚠ mainBkg is the root of this whole
-            // screen - ERect takes 70% of its height, and the bottom row (planet cartouche, tile
-            // map, governor frame) cascades from ColoniesList.Bottom. Swapping it for the group's
-            // frame keeps that cascade intact because every one of those derives from the list, not
-            // from a constant. The first line inside the frame carries the troop counts.
+            // Ludoal fork: the Colonies tab of the Empire group, content-sized in HEIGHT
+            // (maintainer, 4 Aug): the colony count drives the table, while the bottom band
+            // (planet cartouche, tile map, governor frame) keeps the size it has on a full
+            // frame - reserved as it is, to be revisited. The cascade holds because the band
+            // derives from ColoniesList.Bottom and the frame's own foot, not from constants.
+            int numColonies = Universe.Player.GetPlanets().Count;
+            float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
+            float bandH = 0.3f * (fullAvail - 60);
+            float contentW = Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin;
+            float contentH = Math.Min(fullAvail, 75 + Math.Max(3, numColonies) * 84 + bandH);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 0,
-                                                    OnEmpireTabChanged, out Rectangle frame);
+                                                    OnEmpireTabChanged, contentW, contentH);
             RectF client = EmpireTabs.ClientArea;
-            var mainBkg = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
 
             // Ludoal fork: full width like the other tabs' tables - the +20/-40 inset came from the
             // brass surround this no longer has. GalaxyTable gives the row its horizontal pull-back
-            // and the column titles' band; the height stays 70% of what is left, as before.
-            RectF full = ScreenGroups.GalaxyTable(client, ScreenGroups.GalaxyHeaderH);
-            ERect = new(full.X, full.Y, full.W, (0.7f * full.H).RoundUpTo(40));
+            // and the column titles' band; the troop-count line is gone (maintainer, 4 Aug), so
+            // no reserved first line anymore.
+            RectF full = ScreenGroups.GalaxyTable(client);
+            ERect = new(full.X, full.Y, full.W, full.H - bandH);
             RectF colonies = new(ERect.X, ERect.Y + 15, ERect.W, ERect.H - 15);
             ColoniesList = Add(new ScrollList<ColoniesListItem>(colonies, 80));
             ColoniesList.OnClick       = OnColonyListItemClicked;
@@ -95,21 +98,8 @@ namespace Ship_Game
             else
                 Log.Warning("EmpireManagementScreen: player planet list is EMPTY at ctor");
             ResetColoniesList(planets);
-            int totalTroops = Universe.Player.TotalTroops();
-            string troopText = $"Total Troops: {totalTroops}";
-            // Ludoal fork: both counts on the reserved first line, side by side - they were stacked
-            // beside the title, which is gone.
-            Vector2 troopPos = new(client.X + 20, client.Y + 4);
-            AvailableTroops = Add(new UILabel(troopPos, troopText, Fonts.Arial20Bold, Color.White));
-            if (totalTroops > 0)
-            {
-                string consumption = $"Consuming {(totalTroops * Troop.Consumption * (1 + Universe.Player.data.Traits.ConsumptionModifier)).String(1)} " +
-                                     $"{Localizer.Token(Universe.Player.IsCybernetic ? GameText.Production : GameText.Food)}";
-
-                Vector2 consumptionPos = new(troopPos.X + 260, troopPos.Y + 4);
-                TroopConsumption = Add(new UILabel(consumptionPos, consumption, Fonts.Arial12Bold,
-                    Universe.Player.IsCybernetic ? Color.SandyBrown : Color.LightPink)); // a cost, not a gain - red, not green
-            }
+            // the troop count and its food bill left this screen (maintainer, 4 Aug):
+            // the Troops Array carries both on its own filter line now
         }
 
         // Ludoal fork: the other tabs live in their own screen, so leaving Colonies hands over to
@@ -287,10 +277,17 @@ namespace Ship_Game
                 batch.Draw(iconProd, SbProd.rect, White);
                 batch.Draw(iconRes, SbRes.rect, White);
                 batch.Draw(iconMoney, SbMoney.rect, White);
-                // Ludoal fork (wishlist): text headers for the fertility / richness / max pop columns
-                SbFert.rect   = DrawStatHeader(batch, entry.FertRect.X, (int)ERect.Y, Localizer.Token(GameText.Fertility)[0] + "");
-                SbRich.rect   = DrawStatHeader(batch, entry.RichRect.X, (int)ERect.Y, Localizer.Token(GameText.Richness)[0] + "");
-                SbMaxPop.rect = DrawStatHeader(batch, entry.MaxPopRect.X, (int)ERect.Y, "P");
+                // fertility / richness / max pop wear their icons like the other stat
+                // columns - the F R P letters retire (maintainer, 4 Aug)
+                SubTexture iconFert   = ResourceManager.Texture("NewUI/icon_food");
+                SubTexture iconRich   = ResourceManager.Texture("NewUI/icon_production");
+                SubTexture iconMaxPop = ResourceManager.Texture("UI/icon_pop_22");
+                SbFert.rect   = DrawStatTexture(entry.FertRect.X, (int)ERect.Y, iconFert);
+                SbRich.rect   = DrawStatTexture(entry.RichRect.X, (int)ERect.Y, iconRich);
+                SbMaxPop.rect = DrawStatTexture(entry.MaxPopRect.X, (int)ERect.Y, iconMaxPop);
+                batch.Draw(iconFert, SbFert.rect, White);
+                batch.Draw(iconRich, SbRich.rect, White);
+                batch.Draw(iconMaxPop, SbMaxPop.rect, White);
                 textCursor = new Vector2(entry.SliderRect.X + 30, ERect.Y);
                 batch.DrawString(NormalFont, Localizer.Token(GameText.Labor), textCursor, Cream);
                 textCursor = new Vector2(entry.StorageRect.X + 30, ERect.Y);
@@ -405,14 +402,6 @@ namespace Ship_Game
             HandleSortButton(input, SbMaxPop, GameText.MaxPopulation, p => p.MaxPopulationBillionFor(Universe.Player));
 
             return base.HandleInput(input);
-        }
-
-        Rectangle DrawStatHeader(SpriteBatch batch, int x, int y, string label)
-        {
-            var size = NormalFont.MeasureString(label);
-            var r = new Rectangle(x + 15 - (int)(size.X / 2), y, (int)size.X.LowerBound(20), NormalFont.LineSpacing);
-            batch.DrawString(NormalFont, label, new Vector2(r.X, r.Y), Colors.Cream);
-            return r;
         }
 
         void HandleSortButton(InputState input, SortButton button, LocalizedText tooltip, Func<Planet, float> selector)
