@@ -157,6 +157,11 @@ namespace Ship_Game.UI
             string t = text.Substring(0, len).TrimEnd() + "...";
             while (len > 1 && font.TextWidth(t) > room)
                 t = text.Substring(0, --len).TrimEnd() + "...";
+            // never slice a word (maintainer bench 305): back off to the last whole one -
+            // unless the FIRST word alone overflows, where a char cut beats an empty cell
+            int space = len <= text.Length ? text.LastIndexOf(' ', Math.Min(len, text.Length) - 1) : -1;
+            if (space > 0)
+                t = text.Substring(0, space).TrimEnd() + "...";
             return t;
         }
 

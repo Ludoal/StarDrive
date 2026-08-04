@@ -91,13 +91,15 @@ namespace Ship_Game
             Cell(1, dd.Text, dd.Color, Fonts.Arial12Bold);
             batch.Draw(Ship.ShipData.Icon, ShipIconRect, Color.White);
             ShipNameEntry.Draw(batch, elapsed);
-            // the role wears its family's colour (maintainer bench 294): combat red,
-            // scout blue, construction orange, colony yellow, freighter white (the majority)
+            // the role wears its family's colour (maintainer benches 294-305): combat
+            // purple, troops orange with construction, colony green, scout blue,
+            // freighter white (the majority)
             Color roleColor = Ship.IsConstructor || Ship.DesignRole == RoleName.construction ? Color.Orange
+                            : Ship.DesignRole == RoleName.troop || Ship.DesignRole == RoleName.troopShip ? Color.Orange
                             : Ship.DesignRole == RoleName.scout ? Color.CornflowerBlue
                             : Ship.DesignRole == RoleName.freighter ? Color.White
-                            : Ship.DesignRole == RoleName.colony ? Color.Yellow
-                            : IsCombat ? Color.Red
+                            : Ship.DesignRole == RoleName.colony ? Color.LightGreen
+                            : IsCombat ? Color.MediumPurple
                             : Colors.Cream;
             Cell(3, Localizer.GetRole(Ship.ShipData.Role, Ship.Loyalty), roleColor, Fonts.Arial12Bold);
             string fleetName = Ship.Fleet?.Name ?? "";

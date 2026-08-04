@@ -119,6 +119,9 @@ namespace Ship_Game
                 if (i != 7) // the icon lane keeps its fixed width
                     UITable.AutoSize(Table.Columns[i], i <= 5 ? Fonts.Arial12Bold : Fonts.Arial12, vals[i]);
             Table.Columns[2].Width += 34; // the ship icon rides ahead of the name
+            // capped (maintainer bench 305): a fleet's longest name was sizing the lane for
+            // everyone, and every pixel it hoards is a pixel Orders has to fold away
+            Table.Columns[2].Width = Math.Min(Table.Columns[2].Width, 210);
             Table.Columns[6].Foldable = true;
             Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
 
