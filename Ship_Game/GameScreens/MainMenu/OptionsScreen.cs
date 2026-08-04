@@ -294,7 +294,9 @@ namespace Ship_Game
             right.AddCheckbox(() => GlobalStats.FogOfWarMemory, title: "Fog Of War Memory",
                               tooltip: "Ships permanently paint their sensor coverage on the fog of war as they travel - the classic map memory. Off: the map stays dark and only live sensor coverage lights it.");
 
-            var apply = Add(new UIButton(ButtonStyle.Default, new Vector2(RightArea.Right - 206, RightArea.Bottom + 60), GameText.ApplySettings));
+            // bottom LEFT (maintainer bench 303) - it applies the display settings, which live
+            // in the left column, so it sits under them
+            var apply = Add(new UIButton(ButtonStyle.Default, new Vector2(LeftArea.X, RightArea.Bottom + 60), GameText.ApplySettings));
             apply.OnClick = button => RunOnNextFrame(ApplyOptions);
             // Ludoal fork: say what this button is actually for. It applies the DISPLAY settings
             // and nothing else - everything else on this screen takes effect the moment you
