@@ -112,13 +112,17 @@ namespace Ship_Game
                                                     OnDesignTabChanged, frame900.Width, frame900.Height);
             const int Pad = 10;
             RectF client = DesignTabs.ClientArea;
-            float leftX  = client.X + Pad;
+            // ⚠ measured off the FRAME's borders, not the client area: the client is
+            // already ~9px inside the nine-slice, so padding from it read as ~19px of
+            // margin on the left, bottom and right (maintainer bench 307)
+            RectF frameR = DesignTabs.RectF;
+            float leftX  = frameR.X + Pad;
             float topY   = client.Y + Pad;
-            float botY   = client.Bottom - Pad;
+            float botY   = frameR.Bottom - Pad;
 
             // BUILDINGS: the Colony screen's own list width at the 900p floor (470)
             const float BuildingsW = 470f;
-            RectF buildableMenuR = new(client.Right - Pad - BuildingsW, topY, BuildingsW, botY - topY);
+            RectF buildableMenuR = new(frameR.Right - Pad - BuildingsW, topY, BuildingsW, botY - topY);
             base.Add(new Submenu(buildableMenuR, GameText.Buildings));
 
             // BLUEPRINT OPTIONS: six lines plus the button row - width sized on its widest

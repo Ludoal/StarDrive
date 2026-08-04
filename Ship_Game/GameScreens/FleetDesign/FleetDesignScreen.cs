@@ -267,7 +267,7 @@ namespace Ship_Game
             // both lists gain its height and the left one fits one more fleet
             float listTop = client.Y + 10;
 
-            RectF leftRect = new(client.X + ListPad, listTop, leftW, 500);
+            RectF leftRect = new(client.X + ListPad + 5, listTop, leftW, 500); // 5 right (bench 307): the Patrol badge kissed the edge
             LeftMenu = leftRect;
             
             Add(new FleetButtonsList(leftRect, this, Universe,

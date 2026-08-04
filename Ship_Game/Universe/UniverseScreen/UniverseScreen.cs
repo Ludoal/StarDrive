@@ -637,7 +637,7 @@ namespace Ship_Game
             PlanetsInCombat.OnClick = CyclePlanetsInCombat;
             PlanetsInCombat.Tooltip = "Cycle through planets that are in combat";
 
-            RectF leftRect = new(20, 60, 200, 500);
+            RectF leftRect = new(25, 60, 200, 500); // 5 right (bench 307): the Patrol badge kissed the edge
             Add(new FleetButtonsList(leftRect, this, this,
                 onClick: OnFleetButtonClicked,
                 onHotKey: OnFleetHotKeyPressed,
