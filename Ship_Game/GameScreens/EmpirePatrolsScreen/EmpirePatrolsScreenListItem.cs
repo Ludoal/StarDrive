@@ -35,7 +35,10 @@ namespace Ship_Game
 
             UITable.Column[] cols = Screen.Table.Columns;
             Array<string> fleetsAssigned = GetFleetsAssignedText();
-            Color color = fleetsAssigned.Count == 0 ? Color.Gray : Player.EmpireColor;
+            // white, not the empire colour (maintainer bench 290): only ONE empire's plans
+            // ever list here, the race tint carried no information - gray stays for the
+            // plans no fleet runs
+            Color color = fleetsAssigned.Count == 0 ? Color.Gray : Color.White;
 
             Cell(cols[0], FleetPatrol.Name, color);
             Cell(cols[1], FleetPatrol.WayPoints.Count.ToString(), color);

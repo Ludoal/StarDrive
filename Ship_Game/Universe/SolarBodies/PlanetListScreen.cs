@@ -11,6 +11,7 @@ using Ship_Game.Audio;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Universe;
+using Ship_Game.UI; // UITable: the shared table charte
 
 namespace Ship_Game
 {
@@ -26,13 +27,10 @@ namespace Ship_Game
         public Planet SelectedPlanet { get; private set; }
         readonly ScrollList<PlanetListScreenItem> PlanetSL;
 
-        readonly SortButton sb_Sys;
-        readonly SortButton sb_Name;
-        readonly SortButton sb_Fert;
-        readonly SortButton sb_Rich;
-        readonly SortButton sb_Pop;
-        readonly SortButton sb_Owned;
-        readonly SortButton sb_Distance;
+        public readonly UITable Table; // the shared table charte owns geometry, headers and rules
+        // one slot width for the row buttons, from the widest text either slot can wear
+        public readonly int OrdersSlotW;
+        int LastSortCol = -1;
 
         private UICheckBox cb_hideOwned;
         private UICheckBox cb_hideUninhabitable;
@@ -51,9 +49,6 @@ namespace Ship_Game
 
         private int NumAvailableTroops;
         readonly Array<Planet> ExploredPlanets = new Array<Planet>();
-        readonly UILabel AvailableTroops;
-        RectF ERect;
-        SortButton LastSorted;
 
         // FB - this will store each planet and it's distance to the closest player colony. If the planet is owned
         // by the player - the distance will be 0, logically.
@@ -71,33 +66,6 @@ namespace Ship_Game
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
             IsPopup = true;
-            // Ludoal fork: the Planets tab of the Galaxy group - the title cartouche and its brass
-            // surround give way to the group's tab row, from ScreenGroups.
-            Rectangle frame = ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
-            GalaxyTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
-                                         ScreenGroups.GalaxyTabTitles));
-            GalaxyTabs.OnTabChange = OnGalaxyTabChanged;
-            GalaxyTabs.PerformLayout(); // ClientArea is only known once the tabs are laid out
-            GalaxyTabs.SelectedIndex = 0;
-
-            Vector2 closePos = ScreenGroups.GroupClosePos(GalaxyTabs.ClientArea);
-            Add(new CloseButton(closePos.X, closePos.Y));
-
-            // The first line inside the frame carries the filters and the troop count; the table
-            // takes what is left below it.
-            RectF client = GalaxyTabs.ClientArea;
-            ERect = ScreenGroups.GalaxyTable(client, ScreenGroups.GalaxyHeaderH);
-            RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
-            PlanetSL = Add(new ScrollList<PlanetListScreenItem>(slRect));
-            PlanetSL.EnableItemHighlight = true;
-
-            sb_Sys      = new SortButton(empireUi.Player.data.PLSort, Localizer.Token(GameText.System));
-            sb_Name     = new SortButton(empireUi.Player.data.PLSort, Localizer.Token(GameText.Planet));
-            sb_Fert     = new SortButton(empireUi.Player.data.PLSort,Localizer.Token(GameText.Fertility) );
-            sb_Rich     = new SortButton(empireUi.Player.data.PLSort,Localizer.Token(GameText.Richness));
-            sb_Pop      = new SortButton(empireUi.Player.data.PLSort,Localizer.Token(GameText.MaxPopulation));
-            sb_Owned    = new SortButton(empireUi.Player.data.PLSort, Localizer.Token(GameText.Owner));
-            sb_Distance = new SortButton(empireUi.Player.data.PLSort, Localizer.Token(GameText.Proximity));
 
             foreach (SolarSystem system in Universe.UState.Systems.OrderBy(s => s.Position.Distance(Universe.Player.WeightedCenter)))
             {
@@ -112,19 +80,68 @@ namespace Ship_Game
             }
 
             CalcPlanetsDistances();
-            // Ludoal fork: the reserved first line - both filters on the left, the troop count on
-            // the right. The Exotic Systems button is gone: it is a tab of this group now.
-            float lineY = client.Y + ScreenGroups.ColumnPadV + 4;
-            cb_hideOwned = Add(new UICheckBox(client.X + 20, lineY,
+
+            // Ludoal fork: the Planets tab of the Galaxy group, content-sized on the shared
+            // table charte - every column sizes itself on the data it will show. The button
+            // slots size from the widest text either can wear (Colonize from its Cancel
+            // Colonize toggle - maintainer, 4 Aug).
+            OrdersSlotW = 24 + (int)new[] { "Colonize", "Cancel Colonize", "Send Troops",
+                                            "Recall Troops (99)", "Invading: 99" }
+                                   .Max(t => Fonts.Arial12Bold.TextWidth(t));
+            Table = new UITable(new[]
+            {
+                new UITable.Column { Title = Localizer.Token(GameText.System), Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.Planet), Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.Proximity), Width = 90, Align = TableAlign.Number, Sortable = true },
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"), Width = 60,
+                                     Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Fertility) },
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Width = 60,
+                                     Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Richness) },
+                new UITable.Column { Title = "Features", Width = 130 },
+                new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop_22"), Width = 90,
+                                     Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.MaxPopulation) },
+                new UITable.Column { Title = "Ratio", Width = 60, Align = TableAlign.Number, Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.Owner), Sortable = true },
+                new UITable.Column { Width = 2 * UITable.PadX + 2 * OrdersSlotW + 6, Align = TableAlign.Center },
+            });
+            var sys = new Array<string>(); var names = new Array<string>();
+            var pops = new Array<string>(); var owners = new Array<string>();
+            foreach (Planet p in ExploredPlanets)
+            {
+                sys.Add(p.System.Name);
+                names.Add(p.Name);
+                string ps = p.PopulationStringForPlayer;
+                int paren = ps.IndexOf(" (");
+                pops.Add(paren < 0 ? ps : ps.Substring(0, paren));
+                owners.Add(p.GetOwnerName());
+            }
+            UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, sys);
+            Table.Columns[0].Width += 24; // the hostile-warning icon lane
+            UITable.AutoSize(Table.Columns[1], Fonts.Arial14Bold, names);
+            Table.Columns[1].Width += 46 + 40; // planet icon ahead, status icons behind
+            UITable.AutoSize(Table.Columns[6], Fonts.Arial12Bold, pops);
+            UITable.AutoSize(Table.Columns[8], Fonts.Arial12Bold, owners);
+            Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
+
+            float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
+            float contentH = Math.Min(fullAvail, 96 + Math.Max(3, ExploredPlanets.Count) * 44);
+            GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 0,
+                                                   OnGalaxyTabChanged, Table.ContentWidth, contentH);
+            RectF client = GalaxyTabs.ClientArea;
+            // the filter lane, then the table
+            Table.Layout(client, client.Y + 30, client.Bottom - 5);
+            PlanetSL = Add(new ScrollList<PlanetListScreenItem>(Table.ListRect, 44));
+            PlanetSL.EnableItemHighlight = true;
+            Table.ApplyHighlightTo(PlanetSL);
+
+            float lineY = client.Y + 8;
+            cb_hideOwned = Add(new UICheckBox(Table.TableRect.X, lineY,
                 () => HideOwned,
                 x => { HideOwned = x; ResetList(); }, Fonts.Arial12Bold, "Hide Owned", ""));
 
-            cb_hideUninhabitable = Add(new UICheckBox(client.X + 150, lineY,
+            cb_hideUninhabitable = Add(new UICheckBox(Table.TableRect.X + 130, lineY,
                 () => HideUninhab,
                 x => { HideUninhab = x; ResetList(); }, Fonts.Arial12Bold, "Hide Uninhabitable", ""));
-
-            AvailableTroops = Add(new UILabel(new Vector2(client.X + 340, lineY - 4),
-                                              "Available Troops: ", Fonts.Arial20Bold, Color.LightGreen));
         }
 
         void CalcPlanetsDistances()
@@ -149,12 +166,6 @@ namespace Ship_Game
             return PlanetDistanceToClosestColony.TryGetValue(p, out float distance) ?  distance : 0;
         }
 
-        Vector2 GetCenteredTextOffset(Rectangle rect, GameText text)
-        {
-            return new Vector2(rect.X + rect.Width / 2 - Fonts.Arial20Bold.MeasureString(Localizer.Token(text)).X / 2f, 
-                               ERect.Y - Fonts.Arial20Bold.LineSpacing);
-        }
-
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
@@ -162,138 +173,50 @@ namespace Ship_Game
             // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
             // drawn among the children, after everything below it.
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(GalaxyTabs), ScreenGroups.GroupFrameFill);
-            AvailableTroops.Text = $"Available Troops: {NumAvailableTroops}";
-            AvailableTroops.Color = NumAvailableTroops == 0 ? Color.Gray : Color.LightGreen;
             base.Draw(batch, elapsed);
 
-            if (PlanetSL.NumEntries > 0)
-            {
-                PlanetListScreenItem e1 = PlanetSL.ItemAtTop;
-                Graphics.Font fontStyle    = Fonts.Arial20Bold;
+            // the shared charte draws the headers, the rule and the separators
+            Table.DrawChrome(batch);
 
-                var textCursor = GetCenteredTextOffset(e1.SysNameRect, GameText.System);
-                sb_Sys.Update(textCursor);
-                sb_Sys.Draw(ScreenManager);
+            // "Available Troops: N" rides the header band of the buttons column
+            // (maintainer, 4 Aug): label vanilla, the count white - gray when dry
+            Graphics.Font font = Fonts.Arial12Bold;
+            Rectangle actions = Table.Columns[9].Rect;
+            string lbl = "Available Troops: ";
+            string val = NumAvailableTroops.ToString();
+            float tw = font.TextWidth(lbl) + font.TextWidth(val);
+            var pos = new Vector2(actions.X + actions.Width / 2f - tw / 2f, Table.HeaderY);
+            batch.DrawString(font, lbl, pos.Rounded(), UITable.Vanilla);
+            batch.DrawString(font, val, new Vector2(pos.X + font.TextWidth(lbl), pos.Y).Rounded(),
+                             NumAvailableTroops == 0 ? Color.Gray : Color.White);
 
-                textCursor = GetCenteredTextOffset(e1.PlanetNameRect, GameText.Planet);
-                sb_Name.Update(textCursor);
-                sb_Name.Draw(ScreenManager);
-
-                textCursor = GetCenteredTextOffset(e1.DistanceRect, GameText.Proximity);
-                sb_Distance.Update(textCursor);
-                sb_Distance.Draw(ScreenManager);
-
-                textCursor = GetCenteredTextOffset(e1.FertRect, GameText.Fertility);
-                sb_Fert.Update(textCursor);
-                sb_Fert.Draw(ScreenManager, fontStyle);
-
-                textCursor = GetCenteredTextOffset(e1.RichRect, GameText.Richness);
-                sb_Rich.Update(textCursor);
-                sb_Rich.Draw(ScreenManager, fontStyle);
-
-                textCursor = GetCenteredTextOffset(e1.PopRect, GameText.MaxPopulation);
-                sb_Pop.Update(textCursor);
-                sb_Pop.Draw(ScreenManager, fontStyle);
-
-                textCursor = GetCenteredTextOffset(e1.OwnerRect, GameText.Owner);
-                sb_Owned.Update(textCursor);
-                sb_Owned.Draw(ScreenManager, fontStyle);
-         
-                Color lineColor = new Color(118, 102, 67, 255);
-                float columnTop = ERect.Y + 15;
-                float columnBot = ERect.Y + ERect.H -20;
-                Vector2 topLeftSL = new(e1.PlanetNameRect.X, columnTop);
-                Vector2 botSL = new(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-                topLeftSL = new Vector2((e1.DistanceRect.X), columnTop);
-                botSL     = new Vector2(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-                topLeftSL = new Vector2(e1.FertRect.X, columnTop);
-                botSL     = new Vector2(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-                topLeftSL = new Vector2((e1.RichRect.X + 5), columnTop);
-                botSL     = new Vector2(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-                topLeftSL = new Vector2(e1.PopRect.X, columnTop);
-                botSL     = new Vector2(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-                topLeftSL = new Vector2((e1.PopRect.X + e1.PopRect.Width), columnTop);
-                botSL     = new Vector2(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-                topLeftSL = new Vector2((e1.OwnerRect.X + e1.OwnerRect.Width), columnTop);
-                botSL     = new Vector2(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-
-                batch.DrawRectangle(PlanetSL.ItemsHousing, lineColor); // items housing border
-            }
             ScreenGroups.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
 
-        void InitSortedItems(SortButton button)
+        void Refill(int col, bool ascending)
         {
-            LastSorted = button;
-            GameAudio.BlipClick();
-            button.Ascending = !button.Ascending;
             PlanetSL.Reset();
-        }
-
-        void Sort<T>(SortButton button, Func<Planet, T> sortPredicate)
-        {
-            InitSortedItems(button);
-            Planet[] planets = ExploredPlanets.Sorted(button.Ascending, sortPredicate);
+            PlanetSL.OnDoubleClick = OnPlanetListItemClicked;
+            NumAvailableTroops = Player.NumFreeTroops();
+            Planet[] planets;
+            switch (col)
+            {
+                case 1:  planets = ExploredPlanets.Sorted(ascending, p => p.Name); break;
+                case 2:  planets = ExploredPlanets.Sorted(ascending, GetShortestDistance); break;
+                case 3:  planets = ExploredPlanets.Sorted(ascending, p => p.FertilityFor(Player)); break;
+                case 4:  planets = ExploredPlanets.Sorted(ascending, p => p.MineralRichness); break;
+                case 6:  planets = ExploredPlanets.Sorted(ascending, p => p.MaxPopulationFor(Player)); break;
+                case 7:  planets = ExploredPlanets.Sorted(ascending, p => p.PopulationRatio); break;
+                case 8:  planets = ExploredPlanets.Sorted(ascending, p => p.GetOwnerName()); break;
+                default: planets = ExploredPlanets.Sorted(ascending, p => p.System.Name); break;
+            }
             foreach (Planet p in planets)
             {
                 if (ShouldAddItem(p))
-                {
-                    var e = new PlanetListScreenItem(this, p, GetShortestDistance(p), NumAvailableTroops > 0);
-                    PlanetSL.AddItem(e);
-                }
+                    PlanetSL.AddItem(new PlanetListScreenItem(this, p, GetShortestDistance(p), NumAvailableTroops > 0));
             }
-        }
-
-        void Sort(SortButton button, Map<Planet, float> list)
-        {
-            InitSortedItems(button);
-            var sortedList = button.Ascending ? list.OrderBy(d => d.Value) 
-                                              : list.OrderByDescending(d => d.Value);
-
-            foreach (KeyValuePair<Planet, float> kv in sortedList)
-            {
-                Planet p       = kv.Key;
-                float distance = kv.Value;
-
-                if (ShouldAddItem(p))
-                {
-                    var e = new PlanetListScreenItem(this, p, distance, NumAvailableTroops > 0);
-                    PlanetSL.AddItem(e);
-                }
-            }
-        }
-
-        void HandleButton<T>(InputState input, SortButton button, Func<Planet, T> sortPredicate)
-        {
-            if (button.HandleInput(input))
-                Sort(button, sortPredicate);
-        }
-
-        void HandleButton(InputState input, SortButton button, Map<Planet, float> list)
-        {
-            if (button.HandleInput(input))
-                Sort(button, list);
-        }
-
-        void ResetButton<T>(SortButton button, Func<Planet, T> sortPredicate)
-        {
-            if (LastSorted.Text == button.Text)
-                Sort(button, sortPredicate);
-        }
-
-        void ResetButton(SortButton button, Map<Planet, float> list)
-        {
-            if (LastSorted.Text == button.Text)
-                Sort(button, list);
         }
 
         public override bool HandleInput(InputState input)
@@ -304,13 +227,16 @@ namespace Ship_Game
             if (PlanetSL.NumEntries == 0)
                 ResetList();
 
-            HandleButton(input, sb_Sys,   p => p.System.Name);
-            HandleButton(input, sb_Name,  p => p.Name);
-            HandleButton(input, sb_Fert,  p => p.FertilityFor(Player));
-            HandleButton(input, sb_Rich,  p => p.MineralRichness);
-            HandleButton(input, sb_Pop,   p => p.MaxPopulationFor(Player));
-            HandleButton(input, sb_Owned, p => p.GetOwnerName());
-            HandleButton(input, sb_Distance, PlanetDistanceToClosestColony);
+            // headers - tooltips, hover and sort clicks - through the shared charte
+            int clicked = Table.HandleInput(input);
+            if (clicked >= 0)
+            {
+                GameAudio.BlipClick();
+                bool asc = Table.SetSorted(clicked);
+                LastSortCol = clicked;
+                Refill(clicked, asc);
+                return true;
+            }
 
             if (input.KeyPressed(Keys.L) && !GlobalStats.TakingInput)
             {
@@ -331,30 +257,21 @@ namespace Ship_Game
 
         public void ResetList()
         {
-            PlanetSL.Reset();
-            PlanetSL.OnDoubleClick = OnPlanetListItemClicked; // Ludoal fork: double-click everywhere
-            NumAvailableTroops  = Player.NumFreeTroops();
-
-            if (LastSorted == null)
+            if (LastSortCol < 0)
             {
+                PlanetSL.Reset();
+                PlanetSL.OnDoubleClick = OnPlanetListItemClicked; // Ludoal fork: double-click everywhere
+                NumAvailableTroops = Player.NumFreeTroops();
                 foreach (Planet p in ExploredPlanets)
                 {
                     if (ShouldAddItem(p))
-                    {
-                        var entry = new PlanetListScreenItem(this, p, GetShortestDistance(p), NumAvailableTroops > 0);
-                        PlanetSL.AddItem(entry);
-                    }
+                        PlanetSL.AddItem(new PlanetListScreenItem(this, p, GetShortestDistance(p), NumAvailableTroops > 0));
                 }
             }
             else
             {
-                ResetButton(sb_Sys,   p => p.System.Name);
-                ResetButton(sb_Name,  p => p.Name);
-                ResetButton(sb_Fert,  p => p.FertilityFor(Player));
-                ResetButton(sb_Rich,  p => p.MineralRichness);
-                ResetButton(sb_Pop,   p => p.MaxPopulationFor(Player));
-                ResetButton(sb_Owned, p => p.GetOwnerName());
-                ResetButton(sb_Distance, PlanetDistanceToClosestColony);
+                // re-apply the standing sort with its CURRENT direction
+                Refill(LastSortCol, Table.Columns[LastSortCol].Ascending);
             }
 
             SelectedPlanet = PlanetSL.NumEntries > 0 ? PlanetSL.AllEntries[0].Planet : null;

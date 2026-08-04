@@ -12,6 +12,7 @@ using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Graphics;
 using Ship_Game.Universe.SolarBodies;
 using Ship_Game.Universe;
+using Ship_Game.UI; // UITable: the shared table charte
 using System;
 
 namespace Ship_Game
@@ -20,25 +21,22 @@ namespace Ship_Game
     {
         public readonly Planet Planet;
         public readonly SolarSystem System;
-        public Rectangle SysNameRect;
-        public Rectangle PlanetNameRect;
-        public Rectangle OrdersRect;
-        public Rectangle DistanceRect;
-        public Rectangle ResourceRect;
-        public Rectangle RichnessRect;
-        public Rectangle OwnerRect;
+
+        // the shared table charte (Screen.Table) owns the columns
+        readonly ExoticSystemsListScreen Screen;
+        Rectangle OrdersRect; // the Actions column band of this row, for the deploy widgets
 
         Empire Player => Universe.Player;
         readonly Color Cream = Colors.Cream;
-        readonly Graphics.Font NormalFont = Fonts.Arial20Bold;
+        // a body's NAME reads a step larger than the body text, its class a plain regular
+        // (maintainer, 4 Aug - down from the old Arial20)
+        readonly Graphics.Font NameFont = Fonts.Arial14Bold;
         readonly Graphics.Font SmallFont = Fonts.Arial12Bold;
-        readonly Graphics.Font TinyFont = Fonts.Arial8Bold;
+        readonly Graphics.Font ClassFont = Fonts.Arial12;
         readonly Color TextColor = new Color(255, 239, 208);
 
         Rectangle PlanetIconRect;
         Rectangle ResourceIconRect;
-        readonly UITextEntry PlanetNameEntry = new UITextEntry();
-        readonly UITextEntry ResourceNameEntry = new UITextEntry();
         UIButton DeployButton;
         readonly float Distance;
         bool MarkedForResearch;
@@ -57,8 +55,9 @@ namespace Ship_Game
         public bool IsForDysonSwarm => IsStar && System.DysonSwarmType > 0;
         ExplorableGameObject SolarBody;
 
-        public ExoticSystemsListScreenItem(ExplorableGameObject solarBody, float distance)
+        public ExoticSystemsListScreenItem(ExoticSystemsListScreen screen, ExplorableGameObject solarBody, float distance)
         {
+            Screen = screen;
             SolarBody = solarBody;
             if (solarBody is Planet planet) 
             {
@@ -99,9 +98,7 @@ namespace Ship_Game
 
         public override void PerformLayout()
         {
-            int x = (int)X;
             int y = (int)Y;
-            int w = (int)Width;
             int h = (int)Height;
             RemoveAll();
 
@@ -127,29 +124,12 @@ namespace Ship_Game
             }
 
             DeployButton.Font = Fonts.TahomaBold9;
-            int nextX = x;
-            Rectangle NextRect(float width)
-            {
-                int next = nextX;
-                nextX += (int)width;
-                return new Rectangle(next, y, (int)width, h);
-            }
 
-            SysNameRect    = NextRect(w * 0.12f);
-            PlanetNameRect = NextRect(w * 0.20f);
-            DistanceRect   = NextRect(150);
-            ResourceRect   = NextRect(150);
-            RichnessRect   = NextRect(100);
-            OwnerRect      = NextRect(100);
-            OrdersRect     = NextRect(100);
-
-            PlanetIconRect = new Rectangle(PlanetNameRect.X + 5, PlanetNameRect.Y + 5, 50, 50);
-            PlanetNameEntry.Text = IsStar ? "" : Planet.Name;
-            PlanetNameEntry.SetPos(PlanetIconRect.Right + 10, y);
-
-            ResourceIconRect = new Rectangle(ResourceRect.X + 5, ResourceRect.Y + 10, 20, 20);
-            ResourceNameEntry.Text = GetResourceLabel();
-            ResourceNameEntry.SetPos(ResourceIconRect.Right + 10, y);
+            // cells read the shared column geometry
+            UITable.Column[] cols = Screen.Table.Columns;
+            OrdersRect = new Rectangle(cols[6].Rect.X, y, cols[6].Rect.Width, h);
+            PlanetIconRect = new Rectangle(cols[1].Rect.X + UITable.PadX, y + h / 2 - 16, 32, 32);
+            ResourceIconRect = new Rectangle(cols[3].Rect.X + UITable.PadX, y + h / 2 - 10, 20, 20);
 
             var btn = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px");
             DeployButton.Rect = new Rectangle(OrdersRect.X + 10, OrdersRect.Y + OrdersRect.Height / 2 - btn.Height / 2, btn.Width, btn.Height);
@@ -266,32 +246,28 @@ namespace Ship_Game
 
         void AddSystemName()
         {
-            string systemName = System.Name;
-            Graphics.Font systemFont = NormalFont.MeasureString(systemName).X <= SysNameRect.Width ? NormalFont : SmallFont;
-            var sysNameCursor = new Vector2(SysNameRect.X + SysNameRect.Width / 2 - systemFont.MeasureString(systemName).X / 2f,
-                                        2 + SysNameRect.Y + SysNameRect.Height / 2 - systemFont.LineSpacing / 2);
-
-            Label(sysNameCursor, systemName, systemFont, Cream);
+            UITable.Column c = Screen.Table.Columns[0];
+            Label(UITable.CellPos(SmallFont, c.Rect, Y, Height, System.Name, c.Align), System.Name, SmallFont, Cream);
         }
 
         void AddPlanetName()
         {
-            var namePos = new Vector2(PlanetNameEntry.X, PlanetNameEntry.Y + 3);
+            // two lines: the NAME a step larger (owner-coloured for a claimed body), the
+            // CLASS under it in plain regular, without the richness - it has its own
+            // column now (maintainer, 4 Aug)
+            var namePos = new Vector2(PlanetIconRect.Right + 8, Y + Height / 2 - (NameFont.LineSpacing + ClassFont.LineSpacing + 2) / 2);
             if (IsStar)
             {
-                // star rows carry the star's name with its class under it, the same two-line
-                // shape the planet rows wear (maintainer design - the cell sat empty)
-                Label(namePos, System.Name, NormalFont, TextColor);
-                namePos.Y += NormalFont.LineSpacing;
-                Label(namePos, StarClassName(System.Sun.Id), SmallFont, TextColor);
+                Label(namePos, System.Name, NameFont, TextColor);
+                namePos.Y += NameFont.LineSpacing + 2;
+                Label(namePos, StarClassName(System.Sun.Id), ClassFont, TextColor);
                 return;
             }
 
-            Label(namePos, Planet.Name, NormalFont, TextColor);
-            // Now add Richness
-            namePos.Y += NormalFont.LineSpacing;
-            string richness = Planet.LocalizedRichness;
-            Label(namePos, richness, SmallFont, TextColor);
+            Color nameColor = Planet.Mining?.HasOpsOwner == true ? Planet.Mining.Owner.EmpireColor : TextColor;
+            Label(namePos, Planet.Name, NameFont, nameColor);
+            namePos.Y += NameFont.LineSpacing + 2;
+            Label(namePos, Planet.LocalizedCategory, ClassFont, TextColor);
         }
 
         // "star_red3" -> "Red", "Blue_giant" -> "Blue Giant": the sun ids ARE the game's star
@@ -310,15 +286,17 @@ namespace Ship_Game
 
         void AddDistanceStats()
         {
-            var distancePos = new Vector2(DistanceRect.X + 45, DistanceRect.Y + DistanceRect.Height / 2 - SmallFont.LineSpacing / 2);
-            DrawDistance(Distance, distancePos, SmallFont);
+            UITable.Column c = Screen.Table.Columns[2];
+            DistanceDisplay dd = new DistanceDisplay(Distance);
+            if (Distance > 0)
+                Label(UITable.CellPos(SmallFont, c.Rect, Y, Height, dd.Text, c.Align), dd.Text, SmallFont, dd.Color);
         }
 
         void AddResourceName()
         {
             bool researchable = IsForResearch;
             bool mineable = IsForMining;
-            var namePos = new Vector2(ResourceRect.X + 30, ResourceRect.Y + ResourceRect.Height / 2 - SmallFont.LineSpacing / 2);
+            var namePos = new Vector2(ResourceIconRect.Right + 8, Y + Height / 2 - SmallFont.LineSpacing / 2);
             Color labelColor = researchable ? Color.CornflowerBlue
                                             : mineable ? Color.White 
                                                        : Color.Gold; // Dyson Swarm
@@ -344,24 +322,24 @@ namespace Ship_Game
         void AddRichnessStat()
         {
             string richness = IsStar || Planet.IsResearchable ? "" : Planet.Mining.Richness.String(0);
-            var sysNameCursor = new Vector2(RichnessRect.X + 30, RichnessRect.Y + RichnessRect.Height / 2 - SmallFont.LineSpacing / 2);
-
-            Label(sysNameCursor, richness, SmallFont, Cream);
+            UITable.Column c = Screen.Table.Columns[4];
+            Label(UITable.CellPos(SmallFont, c.Rect, Y, Height, richness, c.Align), richness, SmallFont, Cream);
         }
 
         void AddOwner()
         {
+            UITable.Column c = Screen.Table.Columns[5];
             if (IsForDysonSwarm)
             {
                 string owner = System.HasDysonSwarm ? System.DysonSwarm.Owner.data.Traits.Singular : "None";
-                var ownerNameCursor = new Vector2(OwnerRect.X + 25, OwnerRect.Y + OwnerRect.Height / 2 - SmallFont.LineSpacing / 2);
-                Owner = Label(ownerNameCursor, owner, SmallFont, owner == "None" ? Cream : System.DysonSwarm.Owner.EmpireColor);
+                Owner = Label(UITable.CellPos(SmallFont, c.Rect, Y, Height, owner, c.Align), owner, SmallFont,
+                              owner == "None" ? Cream : System.DysonSwarm.Owner.EmpireColor);
             }
             else if (Planet?.IsMineable == true)
             {
                 string owner = Planet.Mining.HasOpsOwner ? Planet.Mining.Owner.data.Traits.Singular : "None";
-                var ownerNameCursor = new Vector2(OwnerRect.X + 25, OwnerRect.Y + OwnerRect.Height / 2 - SmallFont.LineSpacing / 2);
-                Owner = Label(ownerNameCursor, owner, SmallFont, owner == "None" ? Cream : Planet.Mining.Owner.EmpireColor);
+                Owner = Label(UITable.CellPos(SmallFont, c.Rect, Y, Height, owner, c.Align), owner, SmallFont,
+                              owner == "None" ? Cream : Planet.Mining.Owner.EmpireColor);
             }
         }
 
@@ -369,27 +347,19 @@ namespace Ship_Game
         {
             if (Player.KnownEnemyStrengthIn(System) > 0)
             {
+                Rectangle c0 = Screen.Table.Columns[0].Rect;
                 SubTexture flash = ResourceManager.Texture("Ground_UI/EnemyHere");
-                UIPanel enemyHere = Panel(SysNameRect.X + SysNameRect.Width - 40, SysNameRect.Y + 5, flash);
+                UIPanel enemyHere = Panel(c0.Right - 22, (int)Y + 5, flash);
                 enemyHere.Tooltip = GameText.IndicatesThatHostileForcesWere;
             }
         }
 
         void AddTextureAndStatus()
         {
-            var icon = new Rectangle(PlanetNameRect.X + 5, PlanetNameRect.Y + 5, PlanetNameRect.Height - 10, PlanetNameRect.Height - 10);
-            Add(new UIPanel(icon, ResourceManager.Texture(IsStar ? System.Sun.IconPath : Planet.IconPath))
+            Add(new UIPanel(PlanetIconRect, ResourceManager.Texture(IsStar ? System.Sun.IconPath : Planet.IconPath))
             {
                 Tooltip = GameText.PlanetTypeAndRichnessThe
             });
-
-        }
-
-        void DrawDistance(float distance, Vector2 namePos, Graphics.Font spriteFont)
-        {
-            DistanceDisplay distanceDisplay = new DistanceDisplay(distance);
-            if (distance > 0)
-                Label(namePos, distanceDisplay.Text, spriteFont, distanceDisplay.Color);
         }
 
         void OnResearchClicked(UIButton b)

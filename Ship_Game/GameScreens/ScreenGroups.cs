@@ -261,12 +261,25 @@ namespace Ship_Game.GameScreens
             => new(FrameMargin, TabRowY, Math.Min(screenW, 1920) - 2 * FrameMargin,
                    Math.Min(screenH, 1080) - TabRowY - FrameMargin);
 
+        // Ludoal fork: a content-sized frame may hug a table NARROWER than its own tab
+        // strip, which folds the tabs into a second line (maintainer bench 290) - the
+        // frame width floors on what the strip needs, the content inside doesn't move
+        public static float MinTabStripWidth(LocalizedText[] titles)
+        {
+            float w = 22; // the nine-slice corners either side of the menu bar
+            SubTexture right = ResourceManager.Texture("NewUI/submenu_header_right");
+            foreach (LocalizedText t in titles)
+                w += Fonts.Pirulen12.TextWidth(t.Text) + 2 + right.Width;
+            return w;
+        }
+
         // Ludoal fork: the content-sized variant - the frame hugs what it holds, anchored on
         // the bar and the left margin instead of spanning the screen. First taker: the
         // Automation tab, whose content is two columns of category boxes.
         public static Submenu AddGroupTabs(GameScreen screen, LocalizedText[] titles, int selected,
                                            Action<int> onChange, float contentW, float contentH)
         {
+            contentW = Math.Max(contentW, MinTabStripWidth(titles));
             var tabs = screen.Add(new Submenu(new RectF(FrameMargin, TabRowY, contentW, contentH), titles));
             tabs.OnTabChange = onChange;
             tabs.PerformLayout();

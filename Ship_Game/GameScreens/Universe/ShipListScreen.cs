@@ -109,9 +109,11 @@ namespace Ship_Game
                 vals[10].Add((s.MaxFTLSpeed / 1000f).ToString("0") + "k");
                 vals[11].Add(s.MaxSTLSpeed.ToString("0"));
             }
+            // measure with the font each column actually DRAWS: sizing Orders in bold left
+            // a bold-vs-regular slack after its longest text (maintainer bench 290)
             for (int i = 0; i < vals.Length; ++i)
                 if (i != 6) // the icon lane keeps its fixed width
-                    UITable.AutoSize(Table.Columns[i], Fonts.Arial12Bold, vals[i]);
+                    UITable.AutoSize(Table.Columns[i], i <= 4 ? Fonts.Arial12Bold : Fonts.Arial12, vals[i]);
             Table.Columns[1].Width += 34; // the ship icon rides ahead of the name
             Table.Columns[5].Foldable = true;
             Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);

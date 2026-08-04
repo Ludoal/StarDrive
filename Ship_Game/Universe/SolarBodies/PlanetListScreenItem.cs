@@ -11,37 +11,26 @@ using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Graphics;
 using Ship_Game.Universe.SolarBodies;
+using Ship_Game.UI; // UITable: the shared table charte
 
 namespace Ship_Game
 {
     public sealed class PlanetListScreenItem : ScrollListItem<PlanetListScreenItem> // Moved to UI V2
     {
         public readonly Planet Planet;
-        public Rectangle SysNameRect;
-        public Rectangle PlanetNameRect;
-        public Rectangle FertRect;
-        public Rectangle RichRect;
-        public Rectangle PopRect;
-        public Rectangle OwnerRect;
-        public Rectangle OrdersRect;
-        public Rectangle DistanceRect;
-
-        // Ludoal fork: the orders column holds two buttons side by side - Colonize and Recall
-        // Troops never show together in practice, so the pair is Colonize-or-Recall then Send
-        // Troops. The column is sized FROM this, so it cannot be outgrown at a narrow window.
-        const int OrdersBtnW = 140, OrdersBtnH = 24, OrdersBtnGap = 6, OrdersInset = 10;
-        public const int OrdersColumnW = OrdersInset + 2 * OrdersBtnW + OrdersBtnGap + OrdersInset;
 
         Empire Player => Planet.Universe.Player;
         private readonly Color Cream = Colors.Cream;
-        private readonly Graphics.Font NormalFont = Fonts.Arial20Bold;
+        // the NAME a step larger than the body text, its class a plain regular
+        // (maintainer, 4 Aug - down from the old Arial20)
+        private readonly Graphics.Font NameFont  = Fonts.Arial14Bold;
+        private readonly Graphics.Font ClassFont = Fonts.Arial12;
         private readonly Graphics.Font SmallFont  = Fonts.Arial12Bold;
         private readonly Graphics.Font TinyFont   = Fonts.Arial8Bold;
         private readonly Color PlanetStatColor;
         private readonly Color EmpireColor;
 
         private Rectangle ShipIconRect;
-        private readonly UITextEntry PlanetNameEntry = new UITextEntry();
         private UIButton Colonize;
         private UIButton SendTroops;
         private UIButton RecallTroops;
@@ -85,43 +74,21 @@ namespace Ship_Game
             SendTroops.Tooltip = GameText.SendAvailableTroopsToThis;
             RecallTroops = Button(ButtonStyle.Wide, $"Recall Troops ({Planet.NumTroopsCanLaunchFor(Player)})", OnRecallTroopsClicked);
             RecallTroops.Tooltip = GameText.RecallAllTroopsBasedOn;
-            int nextX = x;
-            Rectangle NextRect(float width)
-            {
-                int next = nextX;
-                nextX += (int)width;
-                return new Rectangle(next, y, (int)width, h);
-            }
 
-            SysNameRect    = NextRect(w * 0.12f);
-            PlanetNameRect = NextRect(w * 0.25f);
+            // cells read the shared column geometry; the two button slots are sized from
+            // their own texts (Colonize from its Cancel Colonize toggle - maintainer, 4 Aug).
+            // Colonize and Recall Troops share the first slot: an unowned planet has no
+            // troops of yours to recall, so the two never come up together.
+            UITable.Column[] cols = Screen.Table.Columns;
+            Rectangle ordersCol = cols[9].Rect;
+            ShipIconRect = new Rectangle(cols[1].Rect.X + UITable.PadX, y + h / 2 - 16, 32, 32);
 
-            DistanceRect = NextRect(100);
-            FertRect     = NextRect(100);
-            RichRect     = NextRect(120);
-            PopRect      = NextRect(200);
-            OwnerRect    = NextRect(100);
-            // Ludoal fork: the orders column is as wide as what it HOLDS - two buttons and their
-            // gaps, plus the inset - rather than a round 100 that the buttons then ran past. At
-            // 1440 there was no slack left to the right and Send Troops was clipped by the frame.
-            OrdersRect   = NextRect(OrdersColumnW);
-
-            ShipIconRect = new Rectangle(PlanetNameRect.X + 5, PlanetNameRect.Y + 5, 50, 50);
-            PlanetNameEntry.Text = Planet.Name;
-            PlanetNameEntry.SetPos(ShipIconRect.Right + 10, y);
-            
-            // Ludoal fork: two slots, not three. UIButton stretches to the rect it is given, so
-            // the widths are spelled out, and OrdersColumnW above is derived FROM them - the
-            // column used to be a round 100 that the buttons ran straight past, which only
-            // showed at a narrow window where nothing was left to spill into.
-            // Colonize and Recall Troops share the first slot: an unowned planet has no troops
-            // of yours to recall, so the two never come up together.
-            const int btnW = OrdersBtnW, btnH = OrdersBtnH, btnGap = OrdersBtnGap;
-            int slot1X = OrdersRect.X + OrdersInset;
-            int rowY   = OrdersRect.Y + OrdersRect.Height / 2 - btnH / 2;
+            int btnW = Screen.OrdersSlotW, btnH = 24;
+            int slot1X = ordersCol.X + UITable.PadX;
+            int rowY   = y + h / 2 - btnH / 2;
             Colonize.Rect      = new Rectangle(slot1X, rowY, btnW, btnH);
             RecallTroops.Rect  = new RectF(slot1X, rowY, btnW, btnH);
-            SendTroops.Rect    = new RectF(slot1X + btnW + btnGap, rowY, btnW, btnH);
+            SendTroops.Rect    = new RectF(slot1X + btnW + 6, rowY, btnW, btnH);
 
             Colonize.Visible     = Planet.Owner == null && Planet.Habitable;
             RecallTroops.Visible = Planet.Owner != Player && Planet.NumTroopsCanLaunchFor(Player) > 0;
@@ -148,29 +115,28 @@ namespace Ship_Game
 
         void AddSystemName()
         {
-            string systemName     = Planet.System.Name;
-            Graphics.Font systemFont = NormalFont.MeasureString(systemName).X <= SysNameRect.Width ? NormalFont : SmallFont;
-            var sysNameCursor = new Vector2(SysNameRect.X + SysNameRect.Width / 2 - systemFont.MeasureString(systemName).X / 2f,
-                                        2 + SysNameRect.Y + SysNameRect.Height / 2 - systemFont.LineSpacing / 2);
-            
-            Label(sysNameCursor, systemName, systemFont, Cream);
+            UITable.Column c = Screen.Table.Columns[0];
+            Label(UITable.CellPos(SmallFont, c.Rect, Y, Height, Planet.System.Name, c.Align),
+                  Planet.System.Name, SmallFont, Cream);
         }
 
         void AddPlanetName()
         {
-            var namePos = new Vector2(PlanetNameEntry.X, PlanetNameEntry.Y + 3);
-            Label(namePos, Planet.Name, NormalFont, EmpireColor);
-            // Now add Richness
-            namePos.Y += NormalFont.LineSpacing;
-            string richness = Planet.LocalizedRichness;
-            Label(namePos, richness, SmallFont, EmpireColor);
+            // two lines: the NAME a step larger, owner-coloured; the CLASS under it in
+            // plain regular, uncoloured and without the richness - it has its own column
+            // now. The environment multiplier stays on the class line (maintainer, 4 Aug).
+            var namePos = new Vector2(ShipIconRect.Right + 8, Y + Height / 2 - (NameFont.LineSpacing + ClassFont.LineSpacing + 2) / 2);
+            Label(namePos, Planet.Name, NameFont, EmpireColor);
+            namePos.Y += NameFont.LineSpacing + 2;
+            string category = Planet.LocalizedCategory;
+            Label(namePos, category, ClassFont, Cream);
 
             float fertEnvMultiplier = Player.PlayerEnvModifier(Planet.Category);
             if (!fertEnvMultiplier.AlmostEqual(1))
             {
                 Color fertEnvColor       = fertEnvMultiplier.Less(1) ? Color.Pink : Color.LightGreen;
                 string multiplierString  = $" (x {fertEnvMultiplier.String(2)})";
-                var fertEnvMultiplierPos = new Vector2(namePos.X + SmallFont.MeasureString(richness).X + 5, namePos.Y + 2);
+                var fertEnvMultiplierPos = new Vector2(namePos.X + ClassFont.MeasureString(category).X + 5, namePos.Y + 2);
                 Label(fertEnvMultiplierPos, multiplierString, TinyFont, fertEnvColor);
             }
         }
@@ -183,32 +149,72 @@ namespace Ship_Game
             else
                 singular = (Planet.Habitable ? GameText.None3 : GameText.Impossible);
 
-            var distancePos  = new Vector2(DistanceRect.X + 35, DistanceRect.Y + DistanceRect.Height / 2 - SmallFont.LineSpacing / 2);
-            var fertilityPos = new Vector2(FertRect.X + 35, FertRect.Y + FertRect.Height / 2 - SmallFont.LineSpacing / 2);
-            var richnessPos  = new Vector2(RichRect.X + 35, RichRect.Y + RichRect.Height / 2 - SmallFont.LineSpacing / 2);
-            var popPos       = new Vector2(PopRect.X + 60, PopRect.Y + PopRect.Height / 2 - SmallFont.LineSpacing / 2);
-            var ownerPos     = new Vector2(OwnerRect.X + 20, OwnerRect.Y + OwnerRect.Height / 2 - SmallFont.LineSpacing / 2);
+            UITable.Column[] cols = Screen.Table.Columns;
+            void Cell(int col, string text, Color color)
+                => Label(UITable.CellPos(SmallFont, cols[col].Rect, Y, Height, text, cols[col].Align), text, SmallFont, color);
 
-            DrawPlanetDistance(Distance, distancePos, SmallFont);
-            Label(fertilityPos, Planet.FertilityFor(Player).String(), SmallFont, PlanetStatColor);
-            Label(richnessPos, Planet.MineralRichness.String(1), SmallFont, PlanetStatColor);
-            Label(popPos, Planet.PopulationStringForPlayer, SmallFont, PlanetStatColor);
-            Label(ownerPos, singular, SmallFont, EmpireColor);
+            DistanceDisplay dd = new DistanceDisplay(Distance);
+            if (Distance.Greater(0))
+                Cell(2, dd.Text, dd.Color);
+            Cell(3, Planet.FertilityFor(Player).String(), PlanetStatColor);
+            Cell(4, Planet.MineralRichness.String(1), PlanetStatColor);
+            AddFeatures(cols[5].Rect);
+            // Max Pop splits: the figure in its column, the percentage in Ratio's
+            string popString = Planet.PopulationStringForPlayer;
+            int paren = popString.IndexOf(" (");
+            string popMain = paren < 0 ? popString : popString.Substring(0, paren);
+            string ratio = paren < 0 ? "" : popString.Substring(paren + 2).TrimEnd(')');
+            Cell(6, popMain, PlanetStatColor);
+            Cell(7, ratio, PlanetStatColor);
+            Cell(8, singular.Text, EmpireColor);
+        }
+
+        // the Features column (maintainer, 4 Aug): the terrain/event buildings grouped by
+        // icon, each with its count - "{Rock Field}(3) {Dormant Volcano}(2) {Volcano}"
+        void AddFeatures(in Rectangle col)
+        {
+            var groups = new Array<(Building b, int n)>();
+            foreach (Building b in Planet.Buildings)
+            {
+                if (!b.ShowOnPlanetList && !(b.EventHere && (Planet.Owner == null || !Planet.Owner.IsBuildingUnlocked(b.Name))))
+                    continue;
+                int at = groups.FirstIndexOf(g => g.b.Icon == b.Icon);
+                if (at >= 0) groups[at] = (groups[at].b, groups[at].n + 1);
+                else         groups.Add((b, 1));
+            }
+
+            int fx = col.X + UITable.PadX;
+            int fy = (int)Y + (int)Height / 2 - 8;
+            foreach ((Building b, int n) in groups)
+            {
+                var iconRect = new Rectangle(fx, fy, 16, 16);
+                UIPanel icon = Panel(iconRect, ResourceManager.Texture($"Buildings/icon_{b.Icon}_48x48"));
+                icon.Tooltip = $"{b.TranslatedName.Text}:\n{b.DescriptionText.Text}";
+                fx += 18;
+                if (n > 1)
+                {
+                    string count = $"({n})";
+                    Label(new Vector2(fx, fy + 2), count, TinyFont, Cream);
+                    fx += (int)TinyFont.TextWidth(count) + 2;
+                }
+                fx += 4;
+            }
         }
 
         void AddHostileWarning()
         {
             if (Player.KnownEnemyStrengthIn(Planet.System) > 0)
             {
+                Rectangle c0 = Screen.Table.Columns[0].Rect;
                 SubTexture flash = ResourceManager.Texture("Ground_UI/EnemyHere");
-                UIPanel enemyHere = Panel(SysNameRect.X + SysNameRect.Width - 40, SysNameRect.Y + 5, flash);
+                UIPanel enemyHere = Panel(c0.Right - 22, (int)Y + 5, flash);
                 enemyHere.Tooltip = GameText.IndicatesThatHostileForcesWere;
             }
         }
 
         void AddPlanetTextureAndStatus()
         {
-            var planetIcon = new Rectangle(PlanetNameRect.X + 5, PlanetNameRect.Y + 5, PlanetNameRect.Height - 10, PlanetNameRect.Height - 10);
+            var planetIcon = ShipIconRect;
             Add( new UIPanel(planetIcon, ResourceManager.Texture(Planet.IconPath))
             {
                 Tooltip = GameText.PlanetTypeAndRichnessThe
@@ -222,15 +228,14 @@ namespace Ship_Game
 
         void AddPlanetStatusIcons(Rectangle planetIcon)
         {
-            var statusIcons = new Vector2(PlanetNameRect.X + PlanetNameRect.Width, planetIcon.Y);
+            Rectangle nameCol = Screen.Table.Columns[1].Rect;
+            var statusIcons = new Vector2(nameCol.Right, planetIcon.Y);
             int xOffset = 0;
             int numIcons = 0;
 
             AddRecentCombat(statusIcons, ref xOffset, ref numIcons);
             AddTroopsIcon(statusIcons, ref xOffset);
             AddMoleIcons(statusIcons, ref xOffset, ref numIcons);
-            AddEventIcon(statusIcons, ref xOffset, ref numIcons);
-            AddCommoditiesIcon(statusIcons, ref xOffset, ref numIcons);
         }
 
         void AddRecentCombat(Vector2 statusIcons, ref int offset, ref int numIcons)
@@ -260,46 +265,6 @@ namespace Ship_Game
                     UIPanel spy = Panel(spyRect, ResourceManager.Texture("UI/icon_spy_small"));
                     spy.Tooltip = GameText.IndicatesThatAFriendlyAgent;
                     break;
-                }
-            }
-        }
-
-        void AddBuildingIcon(Building b, Vector2 statusIcons, ref int offset, ref int numIcons)
-        {
-            if (numIcons == 13)
-                offset = 0;
-
-            offset += 18;
-            numIcons += 1;
-            var buildingRect = new Rectangle((int)statusIcons.X - offset, (int)statusIcons.Y + (numIcons > 13 ? 18 : 0), 16, 16);
-            UIPanel building = Panel(buildingRect, ResourceManager.Texture($"Buildings/icon_{b.Icon}_48x48"));
-            building.Tooltip = $"{b.TranslatedName.Text}:\n{b.DescriptionText.Text}";
-        }
-
-        void AddEventIcon(Vector2 statusIcons, ref int offset, ref int numIcons)
-        {
-            if (Planet.NumBuildings == 0)
-                return;
-
-            foreach (Building b in Planet.Buildings)
-            {
-                if (b.EventHere && (Planet.Owner == null || !Planet.Owner.IsBuildingUnlocked(b.Name)))
-                {
-                    AddBuildingIcon(b, statusIcons, ref offset, ref numIcons);
-                }
-            }
-        }
-
-        void AddCommoditiesIcon(Vector2 statusIcons, ref int offset, ref int numIcons)
-        {
-            if (Planet.NumBuildings == 0)
-                return;
-
-            foreach (Building b in Planet.Buildings)
-            {
-                if (b.ShowOnPlanetList)
-                {
-                    AddBuildingIcon(b, statusIcons, ref offset, ref numIcons);
                 }
             }
         }
@@ -382,15 +347,6 @@ namespace Ship_Game
             // Guarded: this can be called before the row has laid its buttons out.
             if (SendTroops != null)
                 UpdateButtonSendTroops();
-        }
-
-        void DrawPlanetDistance(float distance, Vector2 namePos, Graphics.Font spriteFont)
-        {
-            DistanceDisplay distanceDisplay = new DistanceDisplay(distance);
-            if (distance.Greater(0))
-            {
-                Label(namePos, distanceDisplay.Text, spriteFont, distanceDisplay.Color);
-            }
         }
 
         void OnSendTroopsClicked(UIButton b)

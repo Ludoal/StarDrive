@@ -42,18 +42,6 @@ namespace Ship_Game
             TransitionOffTime = 0.25f;
             IsPopup = true;
 
-            // Ludoal fork: the Patrols tab of the Galaxy group - the title cartouche and its brass
-            // surround give way to the group's tab row.
-            Rectangle frame = ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
-            GalaxyTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
-                                         ScreenGroups.GalaxyTabTitles));
-            GalaxyTabs.OnTabChange = OnGalaxyTabChanged;
-            GalaxyTabs.PerformLayout();
-            GalaxyTabs.SelectedIndex = 2;
-
-            Vector2 closePos = ScreenGroups.GroupClosePos(GalaxyTabs.ClientArea);
-            Add(new CloseButton(closePos.X, closePos.Y));
-
             // the table on the shared charte: every column sizes itself on the data,
             // the Assigned Fleets column folds if the sums pass the resolution
             Table = new UITable(new[]
@@ -81,9 +69,15 @@ namespace Ship_Game
             RenameBtnW = (int)Fonts.Arial12Bold.TextWidth(Localizer.Token(GameText.RenamePatrol)) + 24;
             DeleteBtnW = (int)Fonts.Arial12Bold.TextWidth(Localizer.Token(GameText.DeletePatrol)) + 24;
             Table.Columns[4].Width = RenameBtnW + 8 + DeleteBtnW + 2 * UITable.PadX;
+            Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
 
+            // Ludoal fork: the Patrols tab of the Galaxy group, content-sized (maintainer
+            // bench 290): the frame hugs the table, the plan count sets the height
+            float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
+            float contentH = Math.Min(fullAvail, 90 + Math.Max(3, player.FleetPatrols.Count) * 34);
+            GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 2,
+                                                   OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
-            Table.FitToWidth((int)client.W - 2 * (UITable.SideMargin - 9) - UITable.SliderLane);
             Table.Layout(client, client.Y + 10, client.Bottom - 5);
 
             PatrolsSL = Add(new ScrollList<EmpirePatrolsScreenListItem>(Table.ListRect, 34));
