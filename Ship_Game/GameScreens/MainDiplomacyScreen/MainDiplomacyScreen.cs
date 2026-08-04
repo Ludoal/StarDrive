@@ -600,7 +600,7 @@ namespace Ship_Game
             }
             else if (e != Player)
             {
-                TableRow(batch, col, ref y, maxY, "Infiltration", espionage.InfiltrationLevelSummary(), Color.Wheat);
+                TableRow(batch, col, ref y, maxY, "Infiltration", espionage.InfiltrationLevelSummary(), Color.White);
             }
             else
             {
@@ -613,7 +613,14 @@ namespace Ship_Game
             else
                 HiddenRow(batch, col, ref y, maxY, "Planets", 1);
 
-            TableRow(batch, col, ref y, maxY, "Population", GetPop(e).String(1) + " bn", Color.White);
+            // the estimate path sums the pop of THEIR planets we explored, so an empire
+            // with none explored read "0 bn" as if known (maintainer bench 297) - a zero
+            // estimate with no viewing right is a placeholder, not a figure
+            float pop = GetPop(e);
+            if (pop > 0f || e.isPlayer || Traders.Contains(e) || UsingNewEspioange && espionage?.CanViewPop == true)
+                TableRow(batch, col, ref y, maxY, "Population", pop.String(1) + " bn", Color.White);
+            else
+                HiddenRow(batch, col, ref y, maxY, "Population", 1);
 
             // level 2: ships, research (tech type; the exact topic is level 3)
             if (anyIntel && (alwaysShow || espionage.CanViewNumShips))
@@ -624,7 +631,9 @@ namespace Ship_Game
             if (e.Research.HasTopic && (e.isPlayer || UsingNewEspioange && espionage.CanViewResearchTopic || IntelligenceLevel(e) > 1))
                 FoldingRow(batch, col, ref y, "Research", "R.", e.Research.Current.Tech.Name.Text, Color.White);
             else if (e.Research.HasTopic && (UsingNewEspioange && espionage.CanViewTechType || IntelligenceLevel(e) > 0))
-                TableRow(batch, col, ref y, maxY, "Research", e.Research.Current.TechnologyType.ToString(), Color.White);
+                // this level sees the CATEGORY, not the topic - suffixed, because the
+                // category named Research read "Research Research" (maintainer bench 297)
+                TableRow(batch, col, ref y, maxY, "Research", e.Research.Current.TechnologyType + " tech", Color.White);
             else if (e.isPlayer && !e.Research.HasTopic)
                 TableRow(batch, col, ref y, maxY, "Research", "None", Color.Gray);
             else

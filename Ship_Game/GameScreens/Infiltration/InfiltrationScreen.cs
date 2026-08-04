@@ -76,17 +76,23 @@ namespace Ship_Game.GameScreens
             public readonly byte Level;
             readonly Empire Player;
             readonly bool UpdatesDefense;
+            // the label folds only while the turns counter needs the room beside it
+            // (maintainer bench 297): full name until the level is reached, folded after
+            readonly LocalizedText Folded, Full;
+            bool WasReached = true; // built with the folded label, first Sync settles it
 
             public OpBox(GameScreen screen, Ship_Game.Espionage esp, Empire player, byte level,
-                         InfiltrationOpsType type, LocalizedText label, LocalizedText tip,
-                         Vector2 pos, float turnsX, bool updatesDefense = false)
+                         InfiltrationOpsType type, LocalizedText folded, LocalizedText full,
+                         LocalizedText tip, Vector2 pos, float turnsX, bool updatesDefense = false)
             {
                 Esp = esp;
                 Type = type;
                 Level = level;
                 Player = player;
                 UpdatesDefense = updatesDefense;
-                Box = screen.Add(new UICheckBox(() => Flag, Fonts.Arial12, label, tip));
+                Folded = folded;
+                Full = full;
+                Box = screen.Add(new UICheckBox(() => Flag, Fonts.Arial12, folded, tip));
                 Box.Pos = pos;
                 Box.OnChange = OnChanged;
                 Turns = screen.Add(new UILabel(new Vector2(turnsX, pos.Y), "", Fonts.Arial12));
@@ -105,6 +111,12 @@ namespace Ship_Game.GameScreens
             public void Sync()
             {
                 bool reached = Esp.Level >= Level;
+                if (reached != WasReached)
+                {
+                    WasReached = reached;
+                    Box.Text = reached ? Folded : Full;
+                    Box.PerformLayout(); // the hit rect follows the text
+                }
                 Box.Enabled = reached;
                 Flag = reached && Esp.IsOperationActive(Type);
                 Box.TextColor = reached ? Color.White : Color.Gray;
@@ -228,8 +240,8 @@ namespace Ship_Game.GameScreens
                 // cascade so they land exactly where DrawColumn paints their level.
                 ForEachInfiltrationRow(col, null, (level, rowY, i) =>
                 {
-                    var (type, label, tip, def) = ActiveOpsFor(level)[i];
-                    c.Ops.Add(new OpBox(this, esp, Player, level, type, label, tip,
+                    var (type, folded, full, tip, def) = ActiveOpsFor(level)[i];
+                    c.Ops.Add(new OpBox(this, esp, Player, level, type, folded, full, tip,
                                         new Vector2(col.X + 16, rowY), col.Right - 72, def));
                 });
             }
@@ -263,23 +275,25 @@ namespace Ship_Game.GameScreens
             }
         }
 
-        // folded op labels (maintainer bench 296): the long names did not fit a 900p column
-        // beside their turn counters, so each checkbox wears the tail word and its tooltip
-        // opens on the full name. Sabotage is one word already and keeps its token.
-        static (InfiltrationOpsType, LocalizedText, LocalizedText, bool) Op(InfiltrationOpsType type,
+        // folded op labels (maintainer bench 296/297): the long names do not fit a 900p
+        // column beside their turn counters, so a checkbox wears the tail word WHILE the
+        // counter shows (level reached) and the full name the rest of the time; the tooltip
+        // always opens on the full name. Sabotage is one word already and keeps its token.
+        static (InfiltrationOpsType, LocalizedText, LocalizedText, LocalizedText, bool) Op(InfiltrationOpsType type,
             string folded, GameText fullName, GameText tip, bool def)
-            => (type, folded, Localizer.Token(fullName) + "\n\n" + Localizer.Token(tip), def);
+            => (type, folded, Localizer.Token(fullName),
+                Localizer.Token(fullName) + "\n\n" + Localizer.Token(tip), def);
 
-        static (InfiltrationOpsType, LocalizedText, LocalizedText, bool)[] ActiveOpsFor(byte level) => level switch
+        static (InfiltrationOpsType, LocalizedText, LocalizedText, LocalizedText, bool)[] ActiveOpsFor(byte level) => level switch
         {
             2 => new[] { Op(InfiltrationOpsType.PlantMole, "Agent", GameText.PlantAgent, GameText.PlantAgentTip, false) },
             3 => new[] { Op(InfiltrationOpsType.Uprise, "Uprise", GameText.ArrangeUprise, GameText.ArrangeUpriseTip, false),
                          Op(InfiltrationOpsType.CounterEspionage, "Counter", GameText.CounterEspioangeOps, GameText.CounterEspioangeOpsTip, true) },
-            4 => new[] { (InfiltrationOpsType.Sabotage, (LocalizedText)GameText.Sabotage, (LocalizedText)GameText.EspioangeOpsSabotageTip, false),
+            4 => new[] { (InfiltrationOpsType.Sabotage, (LocalizedText)GameText.Sabotage, (LocalizedText)GameText.Sabotage, (LocalizedText)GameText.EspioangeOpsSabotageTip, false),
                          Op(InfiltrationOpsType.SlowResearch, "Research", GameText.EspioangeOpsSlowResearch, GameText.EspioangeOpsSlowResearchTip, false) },
             5 => new[] { Op(InfiltrationOpsType.Rebellion, "Rebellion", GameText.EspioangeOpsRebellion, GameText.EspioangeOpsRebellionTip, false),
                          Op(InfiltrationOpsType.DisruptProjection, "Projection", GameText.EspioangeOpsDisruptProjection, GameText.EspioangeOpsDisruptProjectionTip, false) },
-            _ => System.Array.Empty<(InfiltrationOpsType, LocalizedText, LocalizedText, bool)>(),
+            _ => System.Array.Empty<(InfiltrationOpsType, LocalizedText, LocalizedText, LocalizedText, bool)>(),
         };
 
         static string PassiveFor(byte level) => level switch
