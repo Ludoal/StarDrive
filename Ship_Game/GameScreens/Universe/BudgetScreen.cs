@@ -34,8 +34,7 @@ namespace Ship_Game.GameScreens
         UILabel EmpireNetIncome;
         ScrollList<EconColonyItem> ColonySL;
 
-        SortButton[] SortButtons;
-        SortButton SbColony;
+        public UITable Table;    // the shared table charte owns geometry, headers and rules
         int SortCol = 6;         // NET by default
         bool SortDesc = true;
         bool SortByName;
@@ -104,13 +103,13 @@ namespace Ship_Game.GameScreens
             }
         }
 
-        // one colony = one row. Numeric cells sit on the shared pixel geometry
-        // (TableXpx/TableWpx) so rows, headers and totals stay aligned even with
-        // the scrollbar eating into the list width.
+        // one colony = one row. Cells sit on the shared table charte's columns, so
+        // rows, headers and totals stay aligned by construction.
         class EconColonyItem : ScrollListItem<EconColonyItem>
         {
             public readonly Planet Planet;
-            public EconColonyItem(Planet p) { Planet = p; }
+            readonly UITable Table;
+            public EconColonyItem(UITable table, Planet p) { Table = table; Planet = p; }
 
             public static float NetIncome(Planet p) => p.Money.NetRevenue - p.Money.TroopMaint;
 
@@ -135,82 +134,52 @@ namespace Ship_Game.GameScreens
 
             public override void PerformLayout()
             {
-                int x = (int)X, y = (int)Y;
+                int y = (int)Y;
                 RemoveAll();
 
-                Panel(new Rectangle(x + 4, y + 2, 18, 18), ResourceManager.Texture(Planet.IconPath));
-                var name = Label(new Vector2(x + 28, y + 4), Planet.Name, Fonts.Arial12Bold);
+                UITable.Column[] cols = Table.Columns;
+                Rectangle c0 = cols[0].Rect;
+                Panel(new Rectangle(c0.X + UITable.PadX, y + 2, 18, 18), ResourceManager.Texture(Planet.IconPath));
+                var name = Label(new Vector2(c0.X + UITable.PadX + 24, y + 4), Planet.Name, Fonts.Arial12Bold);
                 name.Color = Color.White;
 
-                UILabel Cell(int col, Func<UILabel, string> getText, Graphics.Font font = null)
+                UILabel Cell(int col, Func<UILabel, string> getText)
                 {
-                    var l = new UILabel(getText, font ?? Fonts.Arial12);
-                    l.Pos = new Vector2(TableXpx + TableWpx * ColStart(col), y + 4);
-                    l.Size = new Vector2(TableWpx * NumColW - 16, Fonts.Arial12.LineSpacing); // -16: one character of air right of the number (maintainer)
+                    var l = new UILabel(getText, cols[col].CellFont);
+                    Rectangle r = cols[col].Rect;
+                    l.Pos = new Vector2(r.X, y + 4);
+                    l.Size = new Vector2(r.Width - UITable.PadX, Fonts.Arial12.LineSpacing);
                     l.TextAlign = TextAlign.Right;
                     Add(l);
                     return l;
                 }
-                UILabel MoneyCell(int col, Func<float> getValue, Graphics.Font font = null)
-                    => Cell(col, DynamicText(getValue, f => f.MoneyString()), font);
-                // charte (Lek, étape 3): a pure-nature column reads NEUTRAL - colour is for
-                // RESULTS (Net, Left) and the anomalous, not for "this is a cost"
-                UILabel PlainCell(int col, Func<float> getValue)
-                    => Cell(col, NeutralText(getValue, f => f.MoneyString()));
+                // the column's own Coloring decides how the value wears colour
+                UILabel ValueCell(int col, Func<float> getValue)
+                    => Cell(col, ColorText(cols[col].Coloring, getValue, f => f.MoneyString()));
 
-                Cell(0, l => { l.Color = Color.White; return $"{Planet.PopulationBillion:0.00}"; });
-                PlainCell(1, () => PopIncome(Planet));
-                PlainCell(2, () => BldgIncome(Planet));
-                var gross = PlainCell(3, () => Planet.Money.GrossRevenue);
+                Cell(1, l => { l.Color = UITable.ValueColor(TableColor.Plain, Planet.PopulationBillion); return $"{Planet.PopulationBillion:0.00}"; });
+                ValueCell(2, () => PopIncome(Planet));
+                ValueCell(3, () => BldgIncome(Planet));
+                var gross = ValueCell(4, () => Planet.Money.GrossRevenue);
                 // the tax rate column moved here (maintainer feedback): the rate is already
                 // baked into the income columns, the derivation lives in the tooltip
                 float baseRate = Planet.Owner != null ? Planet.Owner.data.TaxRate * 100f : 0f;
                 gross.Tooltip = $"pop {PopIncome(Planet).MoneyString()} + buildings {BldgIncome(Planet).MoneyString()}" +
                                 $" — effective tax {Planet.Money.TaxRate * 100f:0.#}% (empire {baseRate:0.#}% × local bonus)";
-                PlainCell(4, () => -Planet.Money.Maintenance);
-                PlainCell(5, () => -Planet.Money.TroopMaint);
-                MoneyCell(6, () => NetIncome(Planet), Fonts.Arial12Bold);
-                Cell(7, l => { l.Color = Color.Wheat; return BudgetAlloc(Planet).MoneyString(); });
-                PlainCell(8, () => GovExpense(Planet));
-                MoneyCell(9, () => BudgetLeft(Planet));
+                ValueCell(5, () => -Planet.Money.Maintenance);
+                ValueCell(6, () => -Planet.Money.TroopMaint);
+                ValueCell(7, () => NetIncome(Planet));
+                Cell(8, l => { float v = BudgetAlloc(Planet); l.Color = v > 0f ? Color.Wheat : Color.Gray; return v.MoneyString(); });
+                ValueCell(9, () => GovExpense(Planet));
+                ValueCell(10, () => BudgetLeft(Planet));
 
                 base.PerformLayout();
             }
         }
 
-        // table geometry, shared by the header buttons, the rows and the total footer:
-        // the name column, then the numeric columns of equal width, right-aligned.
-        // TableWpx excludes the scrollbar so the totals stay under the rows.
-        const float NameColW = 0.20f;
-        const int NumCols = 10;
-        const float NumColW = (1f - NameColW) / NumCols;
-        static float ColStart(int i) => NameColW + i * NumColW;
-        static int TableXpx;
-        static int TableWpx;
+        // the value floor a numeric column sizes itself against (plus its own title)
+        static readonly string[] MoneyFloor = { "-9999.99" };
 
-        // Header labels follow the grammar of the game's other tables (Ship Array:
-        // "System", "Ship", "Role") — Title Case and short, not long capitals. Each
-        // column carries a shorter fallback used when the full label no longer fits
-        // its column: the labels were what spilled into the neighbouring column
-        // below 1080p, never the values.
-        static readonly string[] Headers = { "Pop", "Pop Inc", "Bldg Inc", "Gross",
-                                             "Bldg Mnt", "Troop Mnt", "Net", "Budget", "Gov Exp", "Left" };
-        static readonly string[] HeadersShort = { "Pop", "P.Inc", "B.Inc", "Gross",
-                                                  "B.Mnt", "T.Mnt", "Net", "Bdgt", "G.Exp", "Left" };
-        // hover tooltips (maintainer bench): every abbreviated or non-obvious header explains itself
-        static readonly string[] HeaderTips =
-        {
-            "Population, in billions",
-            "Tax income from the colonists",
-            "Tax income from the buildings",
-            "Gross tax revenue (colonists + buildings)",
-            "Building maintenance paid by the colony",
-            "Troop maintenance paid by the colony",
-            "Net income of the colony",
-            "Budget allocated by the governor",
-            "What the governor actually spends",
-            "Budget left after the governor's spending",
-        };
         static readonly Func<Planet, float>[] ColValue =
         {
             p => p.PopulationBillion,
@@ -244,117 +213,84 @@ namespace Ship_Game.GameScreens
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 3,
                                                     OnEmpireTabChanged, contentW, contentH);
             RectF client = EmpireTabs.ClientArea;
-            // +20 to the table, -20 to the synthesis (maintainer bench)
-            float split = client.X + client.W * 2f / 3f + 20;
+
+            // ---- LEFT: the colony table, on the shared charte (UITable) ----
+            Table = new UITable(new[]
+            {
+                new UITable.Column { Title = "Colony", Sortable = true },
+                new UITable.Column { Title = "Pop",       Align = TableAlign.Number, Sortable = true, Tip = "Population, in billions" },
+                new UITable.Column { Title = "Pop Inc",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Tax income from the colonists" },
+                new UITable.Column { Title = "Bldg Inc",  Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Tax income from the buildings" },
+                new UITable.Column { Title = "Gross",     Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Gross tax revenue (colonists + buildings)" },
+                new UITable.Column { Title = "Bldg Mnt",  Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Building maintenance paid by the colony" },
+                new UITable.Column { Title = "Troop Mnt", Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Troop maintenance paid by the colony" },
+                new UITable.Column { Title = "Net",       Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Signed, Bold = true, Tip = "Net income of the colony" },
+                new UITable.Column { Title = "Budget",    Align = TableAlign.Number, Sortable = true, Tip = "Budget allocated by the governor" },
+                new UITable.Column { Title = "Gov Exp",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "What the governor actually spends" },
+                new UITable.Column { Title = "Left",      Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Signed, Tip = "Budget left after the governor's spending" },
+            });
+            // widths from the data: the planet names size the Colony column (plus its icon
+            // lane); a numeric column takes its own title or a money figure, whichever is wider
+            var names = new Array<string>();
+            foreach (Planet p in Player.GetPlanets())
+                names.Add(p.Name);
+            UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, names);
+            Table.Columns[0].Width += 28; // the planet icon rides ahead of the name
+            for (int i = 1; i < Table.Columns.Length; ++i)
+                UITable.AutoSize(Table.Columns[i], Fonts.Arial12Bold, MoneyFloor);
+            // the sorted column reads orange from the first frame (spec)
+            if (SortByName) Table.Columns[0].Sorted = true;
+            else            Table.Columns[1 + SortCol].Sorted = true;
+
+            int headerY = (int)client.Y + 40; // one empty line between the unit note and the headers (spec 4 Aug)
+            Table.Layout(client, headerY, client.Bottom - 14);
+            // ONE frame, two halves: the synthesis column takes what the table leaves
+            float split = Table.ListRect.Right + 10;
             LeftMenu  = new Rectangle((int)client.X, (int)client.Y, (int)(split - client.X), (int)client.H);
             RightMenu = new Rectangle((int)split, (int)client.Y, (int)(client.Right - split), (int)client.H);
 
-            // the unit note of the money charte, on the reserved first line
+            // the unit note of the money charte, centred over the table's reserved first line
             string unitNote = "(all money values are per turn)";
-            // centred over the table, on its reserved first line (maintainer bench)
-            Label(new Vector2(client.X + (split - client.X - Fonts.Arial12.TextWidth(unitNote)) / 2, client.Y + 4),
+            Label(new Vector2(Table.TableRect.X + (Table.TableRect.Width - Fonts.Arial12.TextWidth(unitNote)) / 2, client.Y + 4),
                   unitNote, Fonts.Arial12, Color.Gray);
 
-            // ---- LEFT 2/3: the colony table ----
-            TableXpx = (int)LeftMenu.X + 10; // tighter left margin (maintainer bench)
-            TableWpx = (int)LeftMenu.Width - 20 - 24; // reserve the scrollbar lane
-            int headerY = (int)LeftMenu.Y + 40; // one empty line between the unit note and the headers (spec 4 Aug)
-            int sepBottom = (int)LeftMenu.Bottom - 14;
-
-            // no NET column band (maintainer bench): the bold figures carry the column alone
-
-            // headers centered over their columns, every one of them in the body's own
-            // Arial12Bold - charte (Lek): a header distinguishes itself by weight, not size
-            SbColony = new SortButton { Text = "Colony" };
-            int nameW = (int)(TableWpx * NameColW);
-            // charte (Lek): a header is never bigger than the body - weight, not size
-            int nameTxtW = (int)Fonts.Arial12Bold.TextWidth(SbColony.Text);
-            SbColony.rect = new Rectangle(TableXpx + (nameW - nameTxtW) / 2, headerY,
-                                          nameTxtW, Fonts.Arial12Bold.LineSpacing);
-            SortButtons = new SortButton[NumCols];
-            // spec (4 Aug): the sorted column's header reads orange from the start, not
-            // only after the first click
-            SbColony.Selected = SortByName;
-            for (int i = 0; i < NumCols; ++i)
-            {
-                int colLeft = TableXpx + (int)(TableWpx * ColStart(i));
-                int colWpx = (int)(TableWpx * NumColW);
-                // full label if it fits the column (2px of air each side), else the short form
-                string label = Headers[i];
-                int wTxt = (int)Fonts.Arial12Bold.TextWidth(label);
-                if (wTxt > colWpx - 16)
-                {
-                    label = HeadersShort[i];
-                    wTxt = (int)Fonts.Arial12Bold.TextWidth(label);
-                }
-                var sb = new SortButton { Text = label };
-                // centred between the SEPARATORS (both sit 4px left of a column start) -
-                // the value-lane bias read as off-centre to the eye (maintainer bench 285)
-                sb.rect = new Rectangle(colLeft - 4 + (colWpx - wTxt) / 2, headerY, wTxt, Fonts.Arial12Bold.LineSpacing);
-                SortButtons[i] = sb;
-            }
-            if (!SortByName)
-                SortButtons[SortCol].Selected = true;
-
-            // rows start right under the header rule - the old +20 read as an empty first row
-            var listRect = new RectF(TableXpx, headerY + 6, (int)LeftMenu.Width - 40, (int)LeftMenu.Height - 36 - 48);
+            // the TOTAL row keeps the table's last lane; the rules run through it
+            var listRect = Table.ListRect;
+            listRect.H -= 40;
             ColonySL = Add(new ScrollList<EconColonyItem>(listRect, 24));
-            ColonySL.EnableItemHighlight = true; // the same row selector as the game's other tables
-            // spec (4 Aug): the selector spans the PHANTOM extremity lines - 4px left of the
-            // first column, and where a closing line would sit right of the last
-            ColonySL.HighlightLeftExtend = 8;
-            ColonySL.HighlightRightExtend = (TableXpx + TableWpx - 4) - ((int)listRect.Right - 24 + 4);
+            ColonySL.EnableItemHighlight = true;
+            Table.ApplyHighlightTo(ColonySL);
             FillList();
 
-            var ruleColor = new Color(118, 102, 67, 255).Premultiplied();
-            // spec (4 Aug): one horizontal rule under the headers, spanning the table
-            int ruleY = headerY + 18;
-            Panel(new Rectangle(TableXpx, ruleY, TableWpx, 1), ruleColor);
-            // vertical separators BETWEEN the columns only - none at the extremities -
-            // starting under the headers (spec 4 Aug)
-            for (int i = 0; i < NumCols; ++i)
-            {
-                int sepX = TableXpx + (int)(TableWpx * ColStart(i)) - 4;
-                Panel(new Rectangle(sepX, ruleY, 1, sepBottom - ruleY), ruleColor);
-            }
-
-            // TOTAL footer
+            // TOTAL footer, its label aligned with the planet NAMES like every row's text
             int totalY = (int)listRect.Bottom + 10;
-            // +36: TOTAL aligns with the planet NAMES (icon lane + 28), not the icon lane itself
-            var totalLbl = Label(new Vector2(TableXpx + 36, totalY), Localizer.Token(GameText.Total2).ToUpper(), Fonts.Arial12Bold);
+            var totalLbl = Label(new Vector2(Table.Columns[0].Rect.X + UITable.PadX + 28, totalY), Localizer.Token(GameText.Total2).ToUpper(), Fonts.Arial12Bold);
             totalLbl.Color = Color.Wheat;
-            void FooterCell(int col, Func<UILabel, string> getText)
+            UILabel FooterCell(int col, Func<UILabel, string> getText)
             {
                 var l = new UILabel(getText, Fonts.Arial12Bold);
-                l.Pos = new Vector2(TableXpx + TableWpx * ColStart(col), totalY);
-                l.Size = new Vector2(TableWpx * NumColW - 16, Fonts.Arial12Bold.LineSpacing);
-                l.TextAlign = TextAlign.Right;
-                Add(l);
-            }
-            void FooterMoney(int col, Func<float> getValue) => FooterCell(col, DynamicText(getValue, f => f.MoneyString()));
-            void FooterPlain(int col, Func<float> getValue) => FooterCell(col, NeutralText(getValue, f => f.MoneyString()));
-            UILabel FooterCellL(int col, Func<UILabel, string> getText)
-            {
-                var l = new UILabel(getText, Fonts.Arial12Bold);
-                l.Pos = new Vector2(TableXpx + TableWpx * ColStart(col), totalY);
-                l.Size = new Vector2(TableWpx * NumColW - 16, Fonts.Arial12Bold.LineSpacing);
+                Rectangle r = Table.Columns[col].Rect;
+                l.Pos = new Vector2(r.X, totalY);
+                l.Size = new Vector2(r.Width - UITable.PadX, Fonts.Arial12Bold.LineSpacing);
                 l.TextAlign = TextAlign.Right;
                 Add(l);
                 return l;
             }
+            void FooterMoney(int col, Func<float> getValue) => FooterCell(col, DynamicText(getValue, f => f.MoneyString()));
+            void FooterPlain(int col, Func<float> getValue) => FooterCell(col, NeutralText(getValue, f => f.MoneyString()));
 
-            FooterCell(0, l => { l.Color = Color.White; return $"{Player.GetPlanets().Sum(p => p.PopulationBillion):0.00}"; });
-            FooterPlain(1, () => Player.GetPlanets().Sum(EconColonyItem.PopIncome));
-            FooterPlain(2, () => Player.GetPlanets().Sum(EconColonyItem.BldgIncome));
-            FooterPlain(3, () => Player.GetPlanets().Sum(p => p.Money.GrossRevenue));
-            FooterPlain(4, () => -Player.GetPlanets().Sum(p => p.Money.Maintenance));
-            FooterPlain(5, () => -Player.GetPlanets().Sum(p => p.Money.TroopMaint));
-            FooterMoney(6, () => Player.GetPlanets().Sum(EconColonyItem.NetIncome));
-            var budgetTot = FooterCellL(7, l => { l.Color = Color.Wheat; return Player.GetPlanets().Sum(EconColonyItem.BudgetAlloc).MoneyString(); });
+            FooterCell(1, l => { l.Color = Color.White; return $"{Player.GetPlanets().Sum(p => p.PopulationBillion):0.00}"; });
+            FooterPlain(2, () => Player.GetPlanets().Sum(EconColonyItem.PopIncome));
+            FooterPlain(3, () => Player.GetPlanets().Sum(EconColonyItem.BldgIncome));
+            FooterPlain(4, () => Player.GetPlanets().Sum(p => p.Money.GrossRevenue));
+            FooterPlain(5, () => -Player.GetPlanets().Sum(p => p.Money.Maintenance));
+            FooterPlain(6, () => -Player.GetPlanets().Sum(p => p.Money.TroopMaint));
+            FooterMoney(7, () => Player.GetPlanets().Sum(EconColonyItem.NetIncome));
+            var budgetTot = FooterCell(8, l => { l.Color = Color.Wheat; return Player.GetPlanets().Sum(EconColonyItem.BudgetAlloc).MoneyString(); });
             budgetTot.Tooltip = "Per-planet allocations are EMA-smoothed slices of the empire pots, plus each colony's" +
                                 " initial tolerance and terraform budget — so this sum drifts a few BC from the pots panel by design.";
-            FooterPlain(8, () => Player.GetPlanets().Sum(EconColonyItem.GovExpense));
-            FooterMoney(9, () => Player.GetPlanets().Sum(EconColonyItem.BudgetLeft));
+            FooterPlain(9, () => Player.GetPlanets().Sum(EconColonyItem.GovExpense));
+            FooterMoney(10, () => Player.GetPlanets().Sum(EconColonyItem.BudgetLeft));
 
             // ---- RIGHT 1/3: the synthesis, causal order (maintainer feedback) ----
             // auto-tax mode + sliders → governor budget (derived from the treasury
@@ -420,7 +356,7 @@ namespace Ship_Game.GameScreens
                 ? (SortDesc ? planets.OrderByDescending(p => p.Name) : planets.OrderBy(p => p.Name))
                 : (SortDesc ? planets.OrderByDescending(ColValue[SortCol]) : planets.OrderBy(ColValue[SortCol]));
             foreach (Planet p in sorted)
-                ColonySL.AddItem(new EconColonyItem(p));
+                ColonySL.AddItem(new EconColonyItem(Table, p));
         }
 
         void OnColonyClicked(EconColonyItem item)
@@ -548,33 +484,27 @@ namespace Ship_Game.GameScreens
                 TaxSlider.RelativeValue = Player.data.TaxRate;
         }
 
-        // Dynamic Text label; this is invoked every time MoneyLabels are drawn
-        static Func<UILabel, string> DynamicText(Func<float> getValue,
-                                                 Func<float, string> stringify)
-        {
-            return (label) =>
-            {
-                float f = getValue(); // update money color based on value:
-                if (f > -0.005f && f < 0.005f) f = 0f; // kill the "-0.00" display
-                label.Color = f > 0f ? Color.ForestGreen :
-                              f < 0f ? Color.Red : Color.Gray;
-                return stringify(f);
-            };
-        }
-
-        // charte (Lek, étape 3): the NEUTRAL twin - a value whose nature never changes
-        // (a cost is a cost) carries no colour; colour is reserved for results
-        static Func<UILabel, string> NeutralText(Func<float> getValue, Func<float, string> stringify)
+        // Dynamic Text label; invoked every time the label draws - the colour comes
+        // from the shared charte (UITable.ValueColor), one source for every table
+        static Func<UILabel, string> ColorText(TableColor kind, Func<float> getValue,
+                                               Func<float, string> stringify)
         {
             return (label) =>
             {
                 float f = getValue();
                 if (f > -0.005f && f < 0.005f) f = 0f; // kill the "-0.00" display
-                // zeros in gray (maintainer taste): what produces or consumes nothing recedes
-                label.Color = f == 0f ? Color.Gray : Colors.Cream;
+                label.Color = UITable.ValueColor(kind, f);
                 return stringify(f);
             };
         }
+
+        static Func<UILabel, string> DynamicText(Func<float> getValue, Func<float, string> stringify)
+            => ColorText(TableColor.Signed, getValue, stringify);
+
+        // charte (Lek, étape 3): the NEUTRAL twin - a value whose nature never changes
+        // (a cost is a cost) carries no colour; colour is reserved for results
+        static Func<UILabel, string> NeutralText(Func<float> getValue, Func<float, string> stringify)
+            => ColorText(TableColor.Neutral, getValue, stringify);
 
         // Ludoal fork: the other tabs live in their own screen, so leaving Economy hands over to it.
         // Its own index is a no-op: we are already here.
@@ -596,29 +526,32 @@ namespace Ship_Game.GameScreens
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
             // no rule on the split either (maintainer bench): the gap is the separator
             base.Draw(batch, elapsed);
-            SbColony.Draw(ScreenManager, Fonts.Arial12Bold);
-            for (int i = 0; i < SortButtons.Length; ++i)
-                SortButtons[i].Draw(ScreenManager, Fonts.Arial12Bold);
+            // the shared charte draws the headers, the rule and the column separators
+            Table.DrawChrome(batch);
             ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar
             batch.SafeEnd();
         }
 
-        void OnSortClicked(int col, bool byName)
+        // header clicks come from the shared table charte: column 0 sorts by name,
+        // the numeric columns map to ColValue (their table index minus one)
+        void OnHeaderClicked(int col)
         {
-            if (SortByName == byName && (byName || SortCol == col))
+            bool byName = col == 0;
+            int numCol = byName ? SortCol : col - 1;
+            if (SortByName == byName && (byName || SortCol == numCol))
             {
                 SortDesc = !SortDesc; // same header again: flip the direction
             }
             else
             {
                 SortByName = byName;
-                SortCol = col;
+                SortCol = numCol;
                 SortDesc = !byName; // numbers biggest-first, names A-Z
             }
-            SbColony.Selected = byName;
-            for (int i = 0; i < SortButtons.Length; ++i)
-                SortButtons[i].Selected = !byName && i == SortCol;
+            foreach (UITable.Column c in Table.Columns)
+                c.Sorted = false;
+            Table.Columns[col].Sorted = true;
             FillList();
         }
 
@@ -638,23 +571,13 @@ namespace Ship_Game.GameScreens
             if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
                 return true;
 
-            // every abbreviated or non-obvious header explains itself on hover (maintainer)
-            for (int i = 0; i < SortButtons.Length; ++i)
-                if (SortButtons[i].rect.HitTest(input.CursorPosition))
-                    ToolTip.CreateTooltip(HeaderTips[i]);
-
-            if (SbColony.HandleInput(input))
+            // headers - tooltips, hover and sort clicks - through the shared charte
+            int clicked = Table.HandleInput(input);
+            if (clicked >= 0)
             {
-                OnSortClicked(0, byName: true);
+                GameAudio.AcceptClick();
+                OnHeaderClicked(clicked);
                 return true;
-            }
-            for (int i = 0; i < SortButtons.Length; ++i)
-            {
-                if (SortButtons[i].HandleInput(input))
-                {
-                    OnSortClicked(i, byName: false);
-                    return true;
-                }
             }
 
             if (input.Escaped || input.RightMouseClick)

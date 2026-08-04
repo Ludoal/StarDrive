@@ -77,6 +77,7 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.Ship),   Width = 240, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.Role),   Width = 80,  Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Title = "Fleet",  Width = 110, Sortable = true },
+                new UITable.Column { Title = "Patrol", Sortable = true }, // the fleet's patrol plan, if any
                 new UITable.Column { Title = Localizer.Token(GameText.Orders), Sortable = true },
                 new UITable.Column { Width = 110, Align = TableAlign.Center }, // the order/refit/scrap icon lane
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_fighting_small"), Width = 60,
@@ -88,16 +89,22 @@ namespace Ship_Game
                 new UITable.Column { Title = "FTL", Width = 60, Align = TableAlign.Number, Sortable = true, Tip = "Faster Than Light Speed of Ship" },
                 new UITable.Column { Title = "STL", Width = 60, Align = TableAlign.Number, Sortable = true, Tip = "Sublight Speed of Ship" },
             });
-            // Role sizes itself on the fleet's DATA (maintainer bench 288: "Construction"
-            // overflowed the fixed 80), then Orders takes what the screen leaves within bounds
+            // Role and Patrol size themselves on the fleet's DATA (maintainer bench 288:
+            // "Construction" overflowed a fixed 80), then Orders takes what the screen
+            // leaves within bounds
             var roles = new Array<string>();
+            var patrols = new Array<string>();
             foreach (Ship s in Universe.Player.OwnedShips)
+            {
                 roles.Add(Localizer.GetRole(s.ShipData.Role, s.Loyalty));
+                patrols.Add(s.Fleet?.Patrol?.Name ?? "");
+            }
             UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, roles);
+            UITable.AutoSize(Table.Columns[4], Fonts.Arial12Bold, patrols);
             int fixedSum = 0;
             foreach (UITable.Column c in Table.Columns)
                 fixedSum += c.Width;
-            Table.Columns[4].Width = ((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66 - fixedSum).Clamped(340, 560);
+            Table.Columns[5].Width = ((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66 - fixedSum).Clamped(340, 560);
 
             int shipRows = Universe.Player.OwnedShips.Count;
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
@@ -254,12 +261,13 @@ namespace Ship_Game
                 case 1:  Sort(sl => sl.Ship.VanityName); break;
                 case 2:  Sort(sl => sl.Ship.ShipData.Role); break;
                 case 3:  Sort(sl => sl.Ship.Fleet?.Name ?? "None"); break;
-                case 4:  Sort(sl => ShipListScreenItem.GetStatusText(sl.Ship)); break;
-                case 6:  Sort(sl => sl.Ship.GetStrength()); break;
-                case 7:  Sort(sl => sl.Ship.GetMaintCost()); break;
-                case 8:  Sort(sl => sl.Ship.TroopCount); break;
-                case 9:  Sort(sl => sl.Ship.MaxFTLSpeed); break;
-                case 10: Sort(sl => sl.Ship.MaxSTLSpeed); break;
+                case 4:  Sort(sl => sl.Ship.Fleet?.Patrol?.Name ?? ""); break;
+                case 5:  Sort(sl => ShipListScreenItem.GetStatusText(sl.Ship)); break;
+                case 7:  Sort(sl => sl.Ship.GetStrength()); break;
+                case 8:  Sort(sl => sl.Ship.GetMaintCost()); break;
+                case 9:  Sort(sl => sl.Ship.TroopCount); break;
+                case 10: Sort(sl => sl.Ship.MaxFTLSpeed); break;
+                case 11: Sort(sl => sl.Ship.MaxSTLSpeed); break;
                 default: return false;
             }
             return true;

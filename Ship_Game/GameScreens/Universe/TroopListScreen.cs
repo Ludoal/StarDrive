@@ -305,8 +305,9 @@ namespace Ship_Game
             Cell(1, Location, Colors.Cream);
             Cell(2, Status, StatusColor);
             Cell(3, TroopName, Colors.Cream);
-            Cell(4, Count.ToString(), Colors.Cream);
-            Cell(5, ((int)Strength).ToString(), Colors.Cream);
+            // numeric colours through the shared charte: every zero reads gray
+            Cell(4, Count.ToString(), UITable.ValueColor(TableColor.Plain, Count));
+            Cell(5, ((int)Strength).ToString(), UITable.ValueColor(TableColor.Plain, Strength));
             base.PerformLayout();
         }
 

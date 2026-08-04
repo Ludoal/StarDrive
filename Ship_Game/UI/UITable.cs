@@ -17,6 +17,14 @@ namespace Ship_Game.UI
         Number,  // right-aligned on the decimal (callers format with fixed decimals)
     }
 
+    // the colour charte for value columns: colour carries the RESULT, never the nature
+    public enum TableColor
+    {
+        Plain,   // white - a bare figure (population, speed)
+        Neutral, // vanilla, gray at zero - a value whose nature never changes (a cost is a cost)
+        Signed,  // green/red/gray - a RESULT (net, remainder)
+    }
+
     // The table spec in ONE place (maintainer, 4 Aug) so every table screen shares a
     // single geometry instead of divergent copies:
     //   20px side margins off the frame BORDER; headers centred and bold, vanilla -
@@ -39,7 +47,27 @@ namespace Ship_Game.UI
             public bool Sorted;       // wears the orange
             public bool Ascending;    // the sort direction this column remembers
             public bool Hover;
+            public TableColor Coloring = TableColor.Plain; // how this column's values wear colour
+            public bool Bold;         // the column's cells draw in the bold body font
             public Rectangle Rect;    // absolute header band, set by Layout
+
+            public Font CellFont => Bold ? Fonts.Arial12Bold : Fonts.Arial12;
+        }
+
+        // the colour a value wears in a column of the given charte; the near-zero snap
+        // kills the "-0.00" class of display. EVERY numeric zero reads gray (maintainer,
+        // 4 Aug): what produces or consumes nothing recedes, whatever the column.
+        public static Color ValueColor(TableColor kind, float v)
+        {
+            if (v > -0.005f && v < 0.005f) v = 0f;
+            if (v == 0f)
+                return Color.Gray;
+            switch (kind)
+            {
+                case TableColor.Signed:  return v > 0f ? Color.ForestGreen : Color.Red;
+                case TableColor.Neutral: return Vanilla;
+                default:                 return Color.White;
+            }
         }
 
         public const int SideMargin = 20; // off the frame BORDER (the client sits 9px inside it)

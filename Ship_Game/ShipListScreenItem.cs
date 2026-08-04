@@ -91,15 +91,20 @@ namespace Ship_Game
             Graphics.Font fleetFont = Fonts.Arial12Bold.TextWidth(fleetName) > cols[3].Width - 2 * UITable.PadX
                                     ? Fonts.Arial8Bold : Fonts.Arial12Bold;
             Cell(3, fleetName, Colors.Cream, fleetFont);
-            Cell(4, StatusText, Colors.Cream, Fonts.Arial12);
+            Cell(4, Ship.Fleet?.Patrol?.Name ?? "", Colors.Cream, Fonts.Arial12Bold);
+            Cell(5, StatusText, Colors.Cream, Fonts.Arial12);
 
+            // numeric colours through the shared charte: every zero reads gray
             float maint = Ship.GetMaintCost();
-            Cell(6, Ship.GetStrength().ToString("0"), Colors.Cream, Fonts.Arial12);
-            // a cost is nature, not a result - neutral cream, gray when zero
-            Cell(7, maint.ToString("F2"), maint > 0f ? Colors.Cream : Color.Gray, Fonts.Arial12);
-            Cell(8, string.Concat(Ship.TroopCount, "/", Ship.TroopCapacity), Colors.Cream, Fonts.Arial12);
-            Cell(9, (Ship.MaxFTLSpeed / 1000f).ToString("0") + "k", Colors.Cream, Fonts.Arial12);
-            Cell(10, Ship.MaxSTLSpeed.ToString("0"), Colors.Cream, Fonts.Arial12);
+            float str = Ship.GetStrength();
+            Cell(7, str.ToString("0"), UITable.ValueColor(TableColor.Plain, str), Fonts.Arial12);
+            Cell(8, maint.ToString("F2"), UITable.ValueColor(TableColor.Neutral, maint), Fonts.Arial12);
+            Cell(9, string.Concat(Ship.TroopCount, "/", Ship.TroopCapacity),
+                 UITable.ValueColor(TableColor.Plain, Ship.TroopCount), Fonts.Arial12);
+            Cell(10, (Ship.MaxFTLSpeed / 1000f).ToString("0") + "k",
+                 UITable.ValueColor(TableColor.Plain, Ship.MaxFTLSpeed), Fonts.Arial12);
+            Cell(11, Ship.MaxSTLSpeed.ToString("0"),
+                 UITable.ValueColor(TableColor.Plain, Ship.MaxSTLSpeed), Fonts.Arial12);
 
             if (IsCombat)
                 ExploreButton.Draw(batch);
@@ -125,7 +130,7 @@ namespace Ship_Game
             SubTexture scrapTex   = ResourceManager.Texture("NewUI/icon_queue_delete_hover1");
             const int IconGap = 4;
             int iconsW = exploreTex.Width + IconGap + patrolTex.Width + IconGap + refitTex.Width + IconGap + scrapTex.Width;
-            Rectangle lane = cols[5].Rect;
+            Rectangle lane = cols[6].Rect;
             int ix = lane.X + (lane.Width - iconsW) / 2;
             Rectangle IconSlot(SubTexture t)
             {
