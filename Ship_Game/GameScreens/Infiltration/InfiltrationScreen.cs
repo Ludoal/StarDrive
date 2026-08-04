@@ -76,10 +76,13 @@ namespace Ship_Game.GameScreens
             public readonly byte Level;
             readonly Empire Player;
             readonly bool UpdatesDefense;
-            // the label folds only while the turns counter needs the room beside it
-            // (maintainer bench 297): full name until the level is reached, folded after
+            // the label folds only while the turns counter needs the room beside it AND the
+            // full name would actually reach it (maintainer benches 297-298): the geometry is
+            // fixed at construction, so the collision is computed once - a wide column keeps
+            // its full names even with the counter shown
             readonly LocalizedText Folded, Full;
-            bool WasReached = true; // built with the folded label, first Sync settles it
+            readonly bool FoldNeeded;
+            bool ShowsFolded;
 
             public OpBox(GameScreen screen, Ship_Game.Espionage esp, Empire player, byte level,
                          InfiltrationOpsType type, LocalizedText folded, LocalizedText full,
@@ -92,7 +95,10 @@ namespace Ship_Game.GameScreens
                 UpdatesDefense = updatesDefense;
                 Folded = folded;
                 Full = full;
-                Box = screen.Add(new UICheckBox(() => Flag, Fonts.Arial12, folded, tip));
+                // 12 + 4 mirrors UICheckBox's own box size and text padding
+                FoldNeeded = pos.X + 16 + Fonts.Arial12.TextWidth(full.Text) + 6 > turnsX;
+                ShowsFolded = FoldNeeded && esp.Level >= level;
+                Box = screen.Add(new UICheckBox(() => Flag, Fonts.Arial12, ShowsFolded ? folded : full, tip));
                 Box.Pos = pos;
                 Box.OnChange = OnChanged;
                 Turns = screen.Add(new UILabel(new Vector2(turnsX, pos.Y), "", Fonts.Arial12));
@@ -111,10 +117,11 @@ namespace Ship_Game.GameScreens
             public void Sync()
             {
                 bool reached = Esp.Level >= Level;
-                if (reached != WasReached)
+                bool wantFolded = reached && FoldNeeded;
+                if (wantFolded != ShowsFolded)
                 {
-                    WasReached = reached;
-                    Box.Text = reached ? Folded : Full;
+                    ShowsFolded = wantFolded;
+                    Box.Text = wantFolded ? Folded : Full;
                     Box.PerformLayout(); // the hit rect follows the text
                 }
                 Box.Enabled = reached;

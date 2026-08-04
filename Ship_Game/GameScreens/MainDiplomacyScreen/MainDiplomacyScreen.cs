@@ -726,6 +726,9 @@ namespace Ship_Game
                 // its icon ahead of the name (maintainer bench 297), line-height sized -
                 // the artifact icons are keyed by the INTERNAL name, like the event popup's
                 int ih = Font12.LineSpacing + 2;
+                // and its own localized description on hover (maintainer bench 298)
+                if (new Rectangle(col.X + 8, (int)y - 1, col.Width - 16, ih).HitTest(Input.CursorPosition))
+                    ToolTip.CreateTooltip(new LocalizedText(art.DescriptionIndex));
                 batch.Draw(ResourceManager.Texture("Artifact Icons/" + art.Name),
                            new Rectangle(col.X + 8, (int)y - 1, ih, ih), Color.White);
                 batch.DrawString(Font12, Truncate(art.NameText.Text, col.Width - 20 - ih - 4),
