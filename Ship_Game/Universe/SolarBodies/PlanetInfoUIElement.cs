@@ -38,6 +38,8 @@ namespace Ship_Game
         int PlateTop;              // the visible frame's top - ADAPTIVE (bench 308)
         readonly SkinnableButton Inspect;
         readonly SkinnableButton Invade;
+        readonly ToggleButton PrevColony; // walk the player's colony list from the cartouche
+        readonly ToggleButton NextColony;
         readonly Rectangle Housing;
         readonly Rectangle DefenseRect;
         readonly Rectangle InjuryRect;
@@ -101,6 +103,31 @@ namespace Ship_Game
             ExoticRect = new Rectangle(RightRect.X - 17, Housing.Y + 130, 182, 25);
             ExoticResourceIconRect = new Rectangle(RightRect.X - 17, Housing.Y + 165, 20, 20);
             UninhabIconRect = new Rectangle(leftRect.X + 75, Housing.Y + 120, 80, 80); // Ludoal fork: sprite left, buttons right — same grammar as colonies
+
+            // the colony arrows flank the name line, just outside the sprite column
+            PrevColony = new ToggleButton(new Vector2(r.X + 30, Housing.Y + FrameShave + 10), ToggleButtonStyle.ArrowLeft)
+            {
+                Tooltip = GameText.ViewPreviousColony,
+                OnClick = b => OnChangeColony(-1)
+            };
+            PrevColony.SetAbsSize(14, 20);
+            NextColony = new ToggleButton(new Vector2(r.X + 186, Housing.Y + FrameShave + 10), ToggleButtonStyle.ArrowRight)
+            {
+                Tooltip = GameText.ViewNextColony,
+                OnClick = b => OnChangeColony(+1)
+            };
+            NextColony.SetAbsSize(14, 20);
+        }
+
+        void OnChangeColony(int change)
+        {
+            // the colony screen's walk: the owner's colony list, wrapping at both ends
+            var planets = P.Owner.GetPlanets();
+            int newIndex = planets.IndexOf(P) + change;
+            if (newIndex >= planets.Count) newIndex = 0;
+            else if (newIndex < 0) newIndex = planets.Count - 1;
+            if (planets[newIndex] != P)
+                Screen.SetSelectedPlanet(planets[newIndex]);
         }
 
         // ── the unified header (spec cartouches, bench 308) ──────────────────────────
@@ -189,20 +216,65 @@ namespace Ship_Game
             }
 
             AddExploredTips();
-            DrawHeader(batch, lanes: true);
-            batch.Draw(ResourceManager.Flag(P.Owner), FlagRect, P.Owner.EmpireColor);
 
+            // the colony grammar (maintainer bench 309): the name centred over the sprite,
+            // arrows either side to walk the colony list, the governance on the same line
+            // at right; then the pop and money/research lines left-aligned on the sliders
+            Graphics.Font nameFont = Fonts.Arial8Bold;
+            if (P.Name.Length < 12)      nameFont = Fonts.Arial20Bold;
+            else if (P.Name.Length < 13) nameFont = Fonts.Arial12Bold;
+            else if (P.Name.Length < 17) nameFont = Fonts.Arial10;
+            var namePos = new Vector2(PlanetIconRect.CenterX() - nameFont.TextWidth(P.Name) / 2f,
+                                      PlateTop + 8 + (Fonts.Arial20Bold.LineSpacing - nameFont.LineSpacing) / 2);
+            batch.DrawString(nameFont, P.Name, namePos, P.Owner.EmpireColor);
+
+            string worldType = P.WorldType;
+            batch.DrawString(Font12, worldType,
+                new Vector2(Housing.Right - 16 - Font12.TextWidth(worldType), PlateTop + 13), tColor);
+
+            int lineX = PlanetIconRect.Right + 30; // the sliders' left edge (labor rect +20, housing inset +10)
             if (P.Owner == Player)
             {
-                // the net income line rides under the lanes, left of the flag
-                string sNetIncome = P.Money.NetRevenue.String(2);
-                MoneyRect = new Rectangle(FlagRect.X - 90, FlagRect.Y + 2, 22, 22);
+                PrevColony.Draw(batch, elapsed);
+                NextColony.Draw(batch, elapsed);
+
+                // the pop line as it was, the faction flag riding it
+                PopRect = new Rectangle(lineX, Housing.Y + 58, 22, 22);
+                batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopRect, Color.White);
+                string pop = P.PopulationStringForPlayer;
+                var popPos = new Vector2(PopRect.Right + 4, PopRect.Y + 11 - Font12.LineSpacing / 2);
+                batch.DrawString(Font12, pop, popPos, tColor);
+                var flagRect = new Rectangle((int)(popPos.X + Font12.TextWidth(pop)) + 8, PopRect.Y - 1, 24, 24);
+                batch.Draw(ResourceManager.Flag(P.Owner), flagRect, P.Owner.EmpireColor);
+
+                // money and research, same left edge
+                MoneyRect = new Rectangle(lineX, Housing.Y + 82, 22, 22);
                 batch.Draw(ResourceManager.Texture("UI/icon_money_22"), MoneyRect, Color.White);
-                batch.DrawString(Fonts.Arial12Bold, sNetIncome, new Vector2(MoneyRect.Right + 4, MoneyRect.Y + 4),
+                string sNetIncome = P.Money.NetRevenue.String(2);
+                batch.DrawString(Font12, sNetIncome,
+                                 new Vector2(MoneyRect.Right + 4, MoneyRect.Y + 11 - Font12.LineSpacing / 2),
                                  P.Money.NetRevenue > 0.0 ? Color.LightGreen : Color.Salmon);
+                var researchRect = new Rectangle(lineX + 90, Housing.Y + 82, 22, 22);
+                batch.Draw(ResourceManager.Texture("NewUI/icon_science"), researchRect, Color.White);
+                batch.DrawString(Font12, P.Res.NetIncome.String(2),
+                                 new Vector2(researchRect.Right + 4, researchRect.Y + 11 - Font12.LineSpacing / 2), tColor);
+            }
+            else
+            {
+                // enemy colony keeps the 308 grammar until its own pass: flag and pop top right
+                var flagRect = new Rectangle(Housing.Right - 60, Housing.Y + 63, 26, 26);
+                batch.Draw(ResourceManager.Flag(P.Owner), flagRect, P.Owner.EmpireColor);
+                string pop = P.PopulationStringForPlayer;
+                var popPos = new Vector2(flagRect.X - 5 - Font12.TextWidth(pop), flagRect.Y + 13 - Font12.LineSpacing / 2);
+                batch.DrawString(Font12, pop, popPos, tColor);
+                PopRect = new Rectangle((int)popPos.X - 23, (int)popPos.Y - 3, 22, 22);
+                batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopRect, Color.White);
             }
 
-            batch.Draw(P.PlanetTexture, PlanetIconRect, Color.White); // class moved to the header
+            batch.Draw(P.PlanetTexture, PlanetIconRect, Color.White);
+            string richness = P.LocalizedRichness; // the class caption back under the sprite (308)
+            batch.DrawString(Font12, richness,
+                new Vector2(PlanetIconRect.CenterX() - Font12.TextWidth(richness) / 2f, PlanetIconRect.Bottom + 5), tColor);
             P.UpdateIncomes();
 
             DrawPlanetStats(DefenseRect, ((float)P.TotalDefensiveStrength).String(1), "UI/icon_shield", Color.White, Color.White);
@@ -232,7 +304,6 @@ namespace Ship_Game
                     DrawPlanetStats(DefenseShipsRect, currentDefenseShips + "/" + maxDefenseShips , "UI/icon_hangar", Color.Yellow, Color.White);
             }
 
-            DrawColonyType(batch);
             DrawFertProdStats(batch);
             DrawColonization(batch, Screen.Input.CursorPosition);
             DrawSendTroops(batch, Screen.Input.CursorPosition);
@@ -349,12 +420,6 @@ namespace Ship_Game
             UIButton.DrawPlate(batch, CancelInvasionRect, UIButton.PlateActive);
             batch.DrawString(Font12, "Cancel Invasion", textPos, CancelInvasionRect.HitTest(mousePos) ? ButtonTextColor
                                                                                                       : ButtonHoverColor);
-        }
-
-        void DrawColonyType(SpriteBatch batch)
-        {
-            Vector2 textPos = new Vector2(RightRect.X -15, RightRect.Y + 65);
-            batch.DrawString(Fonts.Arial10, P.WorldType, textPos, tColor);
         }
 
         int IncomingTroops
@@ -523,6 +588,11 @@ namespace Ship_Game
             {
                 return false;
             }
+            if (P.Owner == Player && P.IsExploredBy(Player)
+                && (PrevColony.HandleInput(input) || NextColony.HandleInput(input)))
+            {
+                return true; // the click may have swapped P for the next colony
+            }
             foreach (TippedItem ti in ToolTipItems)
             {
                 if (ti.Rect.HitTest(input.CursorPosition))
@@ -647,8 +717,10 @@ namespace Ship_Game
                 if (p != null && P.Owner == Player)
                 {
                     int x = PlanetIconRect.Right + 20;
-                    var sliderRect = new RectF(x, PlanetIconRect.Y-40,
-                                               ElementRect.Right-x-20, PlanetIconRect.Height+50);
+                    // the pop and money/research lines sit above: the labor block starts
+                    // lower and keeps its old bottom (housing + 210)
+                    var sliderRect = new RectF(x, Housing.Y + 88,
+                                               ElementRect.Right-x-20, 122);
                     AssignLabor = new AssignLaborComponent(p, sliderRect, useTitleFrame: false);
                 }
                 else
