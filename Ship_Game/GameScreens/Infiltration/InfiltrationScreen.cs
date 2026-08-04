@@ -48,9 +48,10 @@ namespace Ship_Game.GameScreens
         const int RowSlider   = 4;
         const int RowButton   = 58;
         const int RowPoints   = 122;  // clear of the Level Max slider's ticks above it
-        const int RowLevel    = 142;
-        const int RowBar      = 163;
-        const int RowBarNums  = 179;
+        // 10 lower and bold (maintainer bench 296) - the bar keeps its distance below
+        const int RowLevel    = 152;
+        const int RowBar      = 173;
+        const int RowBarNums  = 189;
         const int DefenseH = 52;
 
         class EmpireColumn
@@ -186,7 +187,7 @@ namespace Ship_Game.GameScreens
                     };
                     Add(c.Budget);
 
-                    var defRect = new Rectangle(col.X + 8, col.Y + HeaderH + BudgetH + 52, col.Width - 60, 40); // below the DEFENSE band
+                    var defRect = new Rectangle(col.X + 8, col.Y + HeaderH + BudgetH + 42, col.Width - 60, 40); // below the DEFENSE band
                     c.Weight = new FloatSlider(defRect, GameText.EspioangeDefenseWeight, min: 0,
                                                max: Empire.MaxEspionageDefenseWeight, value: Player.EspionageDefenseWeight);
                     c.Weight.Tip = GameText.EspioangeDefenseWeightTip;
@@ -350,11 +351,14 @@ namespace Ship_Game.GameScreens
                 batch.DrawRectangle(portrait, e.EmpireColor,
                                     portrait.HitTest(Input.CursorPosition) ? 3 : 1);
             }
+            // the race flag rides LEFT OF THE PORTRAIT, a touch bigger, so the name gets
+            // the column's full width - some races did not fit a 900p column with the flag
+            // on their line (maintainer bench 296)
+            batch.Draw(ResourceManager.Flag(e.data.Traits.FlagIndex),
+                       new Rectangle(portrait.X - 30, portrait.Y, 24, 24), e.EmpireColor);
             string name = e.data.Traits.Name;
-            float nameW = NameFont.TextWidth(name) + 24;
-            float nameX = col.X + (col.Width - nameW) / 2f;
-            batch.Draw(ResourceManager.Flag(e.data.Traits.FlagIndex), new Rectangle((int)nameX, portrait.Bottom + 4, 18, 18), e.EmpireColor);
-            batch.DrawDropShadowText1(name, new Vector2(nameX + 24, portrait.Bottom + 4), NameFont, e.EmpireColor);
+            float nameX = col.X + (col.Width - NameFont.TextWidth(name)) / 2f;
+            batch.DrawDropShadowText1(name, new Vector2(nameX, portrait.Bottom + 4), NameFont, e.EmpireColor);
 
             if (e.IsDefeated)
             {
@@ -365,7 +369,9 @@ namespace Ship_Game.GameScreens
 
             float budgetY = col.Y + HeaderH;
             SectionBand(batch, col, budgetY, "BUDGET");
-            float defenseY = col.Y + HeaderH + BudgetH + 24;
+            // 10 higher (maintainer bench 296); the INFILTRATION block below is keyed on
+            // BudgetH + DefenseH and does not follow
+            float defenseY = col.Y + HeaderH + BudgetH + 14;
             SectionBand(batch, col, defenseY, "DEFENSE");
 
             if (e == Player)
@@ -390,7 +396,7 @@ namespace Ship_Game.GameScreens
             if (esp.Level < Ship_Game.Espionage.MaxLevel)
             {
                 byte target = (byte)(esp.Level + 1);
-                batch.DrawString(Font12, $"Infiltrating level {target}", new Vector2(col.X + 8, budgetY + RowLevel), Color.Wheat);
+                batch.DrawString(Font12Bold, $"Infiltrating level {target}", new Vector2(col.X + 8, budgetY + RowLevel), Color.Wheat);
                 float max = esp.LevelCost(target);
                 float cur = esp.LevelProgress.UpperBound(max);
                 var barRect = new Rectangle(col.X + 8, (int)budgetY + RowBar, col.Width - 16, 12);

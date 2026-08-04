@@ -277,11 +277,14 @@ namespace Ship_Game
                 bool hovered = portrait.HitTest(Input.CursorPosition);
                 batch.DrawRectangle(portrait, e.EmpireColor, hovered ? 3 : 1);
             }
+            // the race flag rides LEFT OF THE PORTRAIT, a touch bigger, so the name gets
+            // the column's full width - some races did not fit a 900p column with the flag
+            // on their line (maintainer bench 296)
+            batch.Draw(ResourceManager.Flag(e.data.Traits.FlagIndex),
+                       new Rectangle(portrait.X - 30, portrait.Y, 24, 24), e.EmpireColor);
             string name = e.data.Traits.Name;
-            float nameW = NameFont.TextWidth(name) + 24; // race flag rides left of the name
-            float nameX = col.X + (col.Width - nameW) / 2f;
-            batch.Draw(ResourceManager.Flag(e.data.Traits.FlagIndex), new Rectangle((int)nameX, portrait.Bottom + 4, 18, 18), e.EmpireColor);
-            batch.DrawDropShadowText1(name, new Vector2(nameX + 24, portrait.Bottom + 4), NameFont, e.EmpireColor);
+            float nameX = col.X + (col.Width - NameFont.TextWidth(name)) / 2f;
+            batch.DrawDropShadowText1(name, new Vector2(nameX, portrait.Bottom + 4), NameFont, e.EmpireColor);
 
             float y = portrait.Bottom + 24;
 
@@ -379,6 +382,35 @@ namespace Ship_Game
             return text + "..";
         }
 
+        // Personality and Research are the two rows whose values outgrow a 900p column
+        // (maintainer bench 296): the label folds to its initial first, then the value keeps
+        // its first word plus ".." - and any fold hangs the full pair on a hover tooltip.
+        void FoldingRow(SpriteBatch batch, Rectangle col, ref float y, string label, string shortLabel,
+                        string value, Color valueColor)
+        {
+            int room = col.Width - 16;
+            string lbl = label, val = value;
+            bool folded = false;
+            if (Font12.TextWidth(lbl) + 8 + Font12Bold.TextWidth(val) > room)
+            {
+                lbl = shortLabel;
+                folded = true;
+                int valRoom = room - (int)Font12.TextWidth(lbl) - 8;
+                if (Font12Bold.TextWidth(val) > valRoom)
+                {
+                    int cut = val.IndexOf(' ');
+                    val = (cut > 0 ? val.Substring(0, cut) : val) + "..";
+                    while (val.Length > 3 && Font12Bold.TextWidth(val) > valRoom)
+                        val = val.Substring(0, val.Length - 3) + "..";
+                }
+            }
+            if (folded && new Rectangle(col.X + 8, (int)y, room, Font12.LineSpacing).HitTest(Input.CursorPosition))
+                ToolTip.CreateTooltip($"{label}: {value}");
+            batch.DrawString(Font12, lbl, new Vector2(col.X + 8, y), Color.Wheat);
+            batch.DrawString(Font12Bold, val, new Vector2(col.Right - 8 - Font12Bold.TextWidth(val), y), valueColor);
+            y += Font12.LineSpacing + 3;
+        }
+
         void DrawInfoBlock(SpriteBatch batch, Empire e, Rectangle col, ref float y)
         {
             float maxY = float.MaxValue;
@@ -415,7 +447,7 @@ namespace Ship_Game
             if (UsingNewEspioange ? espionage.CanViewPersonality : IntelligenceLevel(e) > 0)
             {
                 string perso = $"{e.data.DiplomaticPersonality.Name} {e.data.EconomicPersonality.Name}";
-                TableRow(batch, col, ref y, maxY, "Personality", Truncate(perso, col.Width - 80), Color.White);
+                FoldingRow(batch, col, ref y, "Personality", "P.", perso, Color.White);
             }
             else
             {
@@ -573,7 +605,7 @@ namespace Ship_Game
                 HiddenRow(batch, col, ref y, maxY, "Ships", 2);
 
             if (e.Research.HasTopic && (e.isPlayer || UsingNewEspioange && espionage.CanViewResearchTopic || IntelligenceLevel(e) > 1))
-                TableRow(batch, col, ref y, maxY, "Research", Truncate(e.Research.Current.Tech.Name.Text, 110), Color.White);
+                FoldingRow(batch, col, ref y, "Research", "R.", e.Research.Current.Tech.Name.Text, Color.White);
             else if (e.Research.HasTopic && (UsingNewEspioange && espionage.CanViewTechType || IntelligenceLevel(e) > 0))
                 TableRow(batch, col, ref y, maxY, "Research", e.Research.Current.TechnologyType.ToString(), Color.White);
             else if (e.isPlayer && !e.Research.HasTopic)
@@ -624,6 +656,15 @@ namespace Ship_Game
                     string t = trait.Trim();
                     if (t.Length == 0)
                         continue;
+                    // explanatory tooltip (maintainer bench 296): the trait's own description,
+                    // found by its localized name - the set string carries names only
+                    if (new Rectangle(col.X + 8, (int)y, col.Width - 16, Font12.LineSpacing)
+                            .HitTest(Input.CursorPosition))
+                    {
+                        var opt = ResourceManager.RaceTraits.TraitList.Find(o => o.LocalizedName.Text == t);
+                        if (opt != null && opt.Description != 0)
+                            ToolTip.CreateTooltip(new LocalizedText(opt.Description));
+                    }
                     batch.DrawString(Font12, Font12.ParseText(t, col.Width - 16),
                                      new Vector2(col.X + 8, y), e.EmpireColor);
                     y += Font12.LineSpacing + 2;

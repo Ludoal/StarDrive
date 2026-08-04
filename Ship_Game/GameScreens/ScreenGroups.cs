@@ -277,8 +277,10 @@ namespace Ship_Game.GameScreens
 
         public static int RaceColumnPitch(int screenW, int count)
         {
-            int ceil  = RaceColumnRun(RaceRefCeil - 2 * FrameMargin) / GroupColumns;
-            int floor = RaceColumnRun(RaceRefFloor - 2 * FrameMargin) / GroupColumns;
+            // rounded UP like the old eight-way split - flooring shaved a pixel off
+            // every column (maintainer bench 296)
+            int ceil  = (RaceColumnRun(RaceRefCeil - 2 * FrameMargin) + GroupColumns - 1) / GroupColumns;
+            int floor = (RaceColumnRun(RaceRefFloor - 2 * FrameMargin) + GroupColumns - 1) / GroupColumns;
             int avail = RaceColumnRun(Math.Min(screenW, RaceRefCeil) - 2 * FrameMargin);
             return Math.Min(ceil, Math.Max(floor, avail / Math.Max(count, 1)));
         }

@@ -99,7 +99,9 @@ namespace Ship_Game
                 color = "green"
             };
 
-            int ddwidth = (int)(0.2f * StorageRect.Width);
+            // a quarter, not a fifth: Import and Export overflowed the fifth
+            // (maintainer bench 296)
+            int ddwidth = (int)(0.25f * StorageRect.Width);
             FoodDropDown = new DropDownMenu(new Rectangle(StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, ddwidth, 18));
             FoodDropDown.AddOption(Localizer.Token(GameText.Store));
             FoodDropDown.AddOption(Localizer.Token(GameText.Import));
@@ -281,6 +283,12 @@ namespace Ship_Game
             int clsPar = cls.IndexOf(" (");
             if (clsPar >= 0) cls = cls.Substring(0, clsPar);
             batch.DrawString(Fonts.Arial12, cls, namePos, Color.Gray);
+            // the environment multiplier rides the class line, like the Planets tab
+            // (maintainer bench 296)
+            if (!envMult.AlmostEqual(1))
+                batch.DrawString(Fonts.Arial8Bold, $" (x {envMult.String(2)})",
+                                 new Vector2(namePos.X + Fonts.Arial12.MeasureString(cls).X + 5, namePos.Y + 2),
+                                 envMult < 1f ? Color.Pink : Color.LightGreen);
 
             base.Draw(batch, elapsed);
 
