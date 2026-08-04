@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
@@ -57,7 +58,7 @@ namespace Ship_Game
             {
                 new UITable.Column { Title = "System" },
                 new UITable.Column { Title = "Location" },
-                new UITable.Column { Title = "Status",   Align = TableAlign.Center },
+                new UITable.Column { Title = "Status",   Align = TableAlign.Center, Sorted = true, Ascending = true },
                 new UITable.Column { Title = "Troop" },
                 new UITable.Column { Title = "#",        Width = 60, Align = TableAlign.Number },
                 // the offense icon with its tooltip in place of the word (bench 305)
@@ -163,8 +164,7 @@ namespace Ship_Game
                 if (groups.TryGetValue(key, out TroopListScreenItem item))
                     item.Accumulate(t);
                 else
-                    groups.Add(key, TroopSL.AddItem(
-                        new TroopListScreenItem(Table, sysName, locName, status, statusColor, t, p, s)));
+                    groups.Add(key, new TroopListScreenItem(Table, sysName, locName, status, statusColor, t, p, s));
             }
 
             foreach (SolarSystem system in Universe.UState.Systems)
@@ -190,6 +190,13 @@ namespace Ship_Game
                                transport ? "Transport" : "Stationed",
                                transport ? Color.LightSkyBlue : Color.SteelBlue, t, null, s);
             }
+
+            // the standing sort: Status, Deployed first (maintainer bench 305) - the
+            // fights you are IN outrank the garrisons at home
+            int Rank(string st) => st == "Deployed" ? 0 : st == "Garrison" ? 1
+                                 : st == "Transport" ? 2 : 3;
+            foreach (TroopListScreenItem item in groups.Values.OrderBy(v => Rank(v.StatusText)))
+                TroopSL.AddItem(item);
 
             NumTroops = 0;
             foreach (TroopListScreenItem item in TroopSL.AllEntries)
@@ -267,6 +274,7 @@ namespace Ship_Game
         readonly string SystemName;
         readonly string Location;
         readonly string Status;
+        public string StatusText => Status; // the screen's standing sort reads it
         readonly Color StatusColor;
         readonly string TroopName;
         public readonly Planet Planet;   // set for garrison/deployed rows
