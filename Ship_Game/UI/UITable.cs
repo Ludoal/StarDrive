@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
 using SDGraphics;
 using SDUtils;
@@ -55,6 +56,18 @@ namespace Ship_Game.UI
         public int RuleY;
 
         public UITable(Column[] columns) { Columns = columns; }
+
+        // column width from the DATA (maintainer, 4 Aug): the widest value the column
+        // will actually show, plus the padding pair - floored by the title's own width.
+        // Call before Layout, with the values the screen is about to display.
+        public static void AutoSize(Column c, Font font, IEnumerable<string> values)
+        {
+            float w = font.TextWidth(c.Title);
+            foreach (string v in values)
+                if (v.NotEmpty())
+                    w = Math.Max(w, font.TextWidth(v));
+            c.Width = (int)w + 2 * PadX;
+        }
 
         public int TableWidth
         {

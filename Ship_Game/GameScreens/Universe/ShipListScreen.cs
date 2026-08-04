@@ -71,14 +71,13 @@ namespace Ship_Game
             // (UITable, spec 4 Aug): fixed columns except Orders, which takes what the
             // screen offers within bounds - so the frame HUGS the table and stops after
             // the slider lane. Height follows the unfiltered fleet count.
-            int ordersW = ((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 950 - 66).Clamped(340, 560);
             Table = new UITable(new[]
             {
                 new UITable.Column { Title = Localizer.Token(GameText.System), Width = 110, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.Ship),   Width = 240, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.Role),   Width = 80,  Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Title = "Fleet",  Width = 110, Sortable = true },
-                new UITable.Column { Title = Localizer.Token(GameText.Orders), Width = ordersW, Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.Orders), Sortable = true },
                 new UITable.Column { Width = 110, Align = TableAlign.Center }, // the order/refit/scrap icon lane
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_fighting_small"), Width = 60,
                                      Align = TableAlign.Number, Sortable = true, Tip = "Indicates Ship Strength; sortable" },
@@ -89,6 +88,17 @@ namespace Ship_Game
                 new UITable.Column { Title = "FTL", Width = 60, Align = TableAlign.Number, Sortable = true, Tip = "Faster Than Light Speed of Ship" },
                 new UITable.Column { Title = "STL", Width = 60, Align = TableAlign.Number, Sortable = true, Tip = "Sublight Speed of Ship" },
             });
+            // Role sizes itself on the fleet's DATA (maintainer bench 288: "Construction"
+            // overflowed the fixed 80), then Orders takes what the screen leaves within bounds
+            var roles = new Array<string>();
+            foreach (Ship s in Universe.Player.OwnedShips)
+                roles.Add(Localizer.GetRole(s.ShipData.Role, s.Loyalty));
+            UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, roles);
+            int fixedSum = 0;
+            foreach (UITable.Column c in Table.Columns)
+                fixedSum += c.Width;
+            Table.Columns[4].Width = ((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66 - fixedSum).Clamped(340, 560);
+
             int shipRows = Universe.Player.OwnedShips.Count;
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             float contentH = Math.Min(fullAvail, 100 + Math.Max(5, shipRows) * 34);

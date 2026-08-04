@@ -50,26 +50,31 @@ namespace Ship_Game
             IsPopup = true;
 
             // Ludoal fork: the Troops tab of the Empire group, content-sized on the shared
-            // table charte (UITable): fixed columns set the width, the troop-group count the
-            // height - this page is allowed UNDER the 900p floor when the roster is short.
+            // table charte (UITable): the text columns SIZE THEMSELVES on the data they are
+            // about to show, the troop-group count sets the height - this page is allowed
+            // UNDER the 900p floor when the roster is short.
             Table = new UITable(new[]
             {
-                new UITable.Column { Title = "System",   Width = 130 },
-                new UITable.Column { Title = "Location", Width = 240 },
-                new UITable.Column { Title = "Status",   Width = 90,  Align = TableAlign.Center },
-                new UITable.Column { Title = "Troop",    Width = 200 },
-                new UITable.Column { Title = "Num",      Width = 60,  Align = TableAlign.Number },
-                new UITable.Column { Title = "Strength", Width = 80,  Align = TableAlign.Number },
+                new UITable.Column { Title = "System" },
+                new UITable.Column { Title = "Location" },
+                new UITable.Column { Title = "Status",   Align = TableAlign.Center },
+                new UITable.Column { Title = "Troop" },
+                new UITable.Column { Title = "Num",      Width = 60, Align = TableAlign.Number },
+                new UITable.Column { Title = "Strength", Width = 80, Align = TableAlign.Number },
             });
-            int rows = CountTroopGroups();
+            int rows = CountTroopGroups(out Array<string> systems, out Array<string> locations, out Array<string> troops);
+            UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, systems);
+            UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, locations);
+            UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, Statuses);
+            UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, troops);
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
-            // 150 = tab strip + filter lane + the two info lines + headers + a line at the bottom
-            float contentH = Math.Min(fullAvail, 150 + Math.Max(3, rows) * 28);
+            // 118 = tab strip + the filter/info lane + headers + a line at the bottom
+            float contentH = Math.Min(fullAvail, 118 + Math.Max(3, rows) * 28);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 2,
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
             RectF client = EmpireTabs.ClientArea;
-            // filter lane, two info lines (Total Troops / Food consumption), then the table
-            Table.Layout(client, client.Y + 62, client.Bottom - 5);
+            // one lane: the filter, then the two figures on the same line (maintainer bench 288)
+            Table.Layout(client, client.Y + 30, client.Bottom - 5);
             TroopSL = Add(new ScrollList<TroopListScreenItem>(Table.ListRect, 24));
             TroopSL.EnableItemHighlight = true;
             Table.ApplyHighlightTo(TroopSL);
@@ -87,19 +92,27 @@ namespace Ship_Game
         }
 
         // dry count of (location, troop type) groups - the frame height derives from it,
-        // BEFORE any UI exists. Unfiltered on purpose: the frame keeps one size for the
-        // screen's life, a filter just shortens the list inside it.
-        int CountTroopGroups()
+        // BEFORE any UI exists - gathering on the way the names the text columns will
+        // show, so they can size themselves on the data. Unfiltered on purpose: the
+        // frame keeps one size for the screen's life, a filter just shortens the list.
+        int CountTroopGroups(out Array<string> systems, out Array<string> locations, out Array<string> troops)
         {
             var keys = new Map<(object, string), bool>();
+            var sys = new Array<string>(); var locs = new Array<string>(); var names = new Array<string>();
+            void Add(object location, string sysName, string locName, Troop t)
+            {
+                keys[(location, t.Name)] = true;
+                sys.Add(sysName); locs.Add(locName); names.Add(t.Name);
+            }
             foreach (SolarSystem system in Universe.UState.Systems)
                 foreach (Planet p in system.PlanetList)
                     foreach (Troop t in p.Troops.GetTroopsOf(Player))
-                        keys[(p, t.Name)] = true;
+                        Add(p, system.Name, p.Name, t);
             foreach (Ship s in Player.OwnedShips)
                 if (s.TroopCount > 0)
                     foreach (Troop t in s.GetOurTroops())
-                        keys[(s, t.Name)] = true;
+                        Add(s, s.System?.Name ?? "Deep Space", s.Name, t);
+            systems = sys; locations = locs; troops = names;
             return keys.Count;
         }
 
@@ -201,18 +214,22 @@ namespace Ship_Game
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed);
 
-            // the two info lines under the filter (maintainer bench 287): labels vanilla,
+            // the two figures ride the FILTER line (maintainer bench 288): labels vanilla,
             // the count white, the food bill in pink - troops eat Troop.Consumption each
             Graphics.Font font = Fonts.Arial12Bold;
             RectF client = EmpireTabs.ClientArea;
-            float infoX = Table.TableRect.X;
+            float infoX = client.X + 190; // right of the filter dropdown
+            float infoY = client.Y + 8;
             string totalLbl = "Total Troops: ";
-            batch.DrawString(font, totalLbl, new Vector2(infoX, client.Y + 28), UITable.Vanilla);
-            batch.DrawString(font, NumTroops.ToString(), new Vector2(infoX + font.TextWidth(totalLbl), client.Y + 28), Color.White);
+            batch.DrawString(font, totalLbl, new Vector2(infoX, infoY), UITable.Vanilla);
+            infoX += font.TextWidth(totalLbl);
+            string totalVal = NumTroops.ToString();
+            batch.DrawString(font, totalVal, new Vector2(infoX, infoY), Color.White);
+            infoX += font.TextWidth(totalVal) + 24;
             string foodLbl = "Food consumption: ";
-            batch.DrawString(font, foodLbl, new Vector2(infoX, client.Y + 44), UITable.Vanilla);
+            batch.DrawString(font, foodLbl, new Vector2(infoX, infoY), UITable.Vanilla);
             batch.DrawString(font, $"-{(NumTroops * Troop.Consumption).String(1)}",
-                             new Vector2(infoX + font.TextWidth(foodLbl), client.Y + 44), Color.LightPink);
+                             new Vector2(infoX + font.TextWidth(foodLbl), infoY), Color.LightPink);
 
             Table.DrawChrome(batch);
             if (TroopSL.NumEntries == 0)
