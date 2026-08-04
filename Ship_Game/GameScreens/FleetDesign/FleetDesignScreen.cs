@@ -64,8 +64,6 @@ namespace Ship_Game
         // until the underlying systems are reworked; flip back to true when the
         // weights actually persist and OrdersRadius is honored.
         static bool ShowTargetingPanels = false;
-        RectF FleetOverviewRect;
-        UITextBox FleetOverviewText;
         WeightSlider SliderAssist;
         WeightSlider SliderVulture;
         WeightSlider SliderDefend;
@@ -258,13 +256,11 @@ namespace Ship_Game
             const float leftW = 250, rightW = 280;
             RectF client = DesignTabs.ClientArea;
 
-            // The bottom blocks are measured FIRST: the ship list above the overview runs down to
-            // it, so its height follows from the frame rather than a fixed 500.
-            const float OverviewH = 420f;
+            // The bottom blocks are measured FIRST: the ship list above the cartouche runs
+            // down to it, so its height follows from the frame rather than a fixed 500.
             float blockBottom = client.Bottom - ListPad;
             float blockLeft   = client.X + ListPad;
             float blockRight  = client.Right - ListPad;
-            float overviewTop = blockBottom - OverviewH;
             TitlePos = new(client.X + ListPad, client.Y + 4);
             float listTop = TitlePos.Y + Fonts.Arial12Bold.LineSpacing + 4;
 
@@ -277,8 +273,19 @@ namespace Ship_Game
                 isSelected: (b) => SelectedFleet?.Key == b.FleetKey
             ));
 
+            // The Fleet cartouche sits BOTTOM RIGHT now, in the slot the Fleet Design
+            // Overview held - the overview text retired to the Codex, end of Warfare
+            // (maintainer bench 300). Same content-derived height, the ship list's width,
+            // and the list above takes every row the overview freed.
+            float cartH = CartPad
+                        + Fonts.Arial20Bold.LineSpacing + 8   // name
+                        + CartIcon + 8                        // icon
+                        + 4 * CartBtnH + 3 * CartBtnGap       // the four buttons
+                        + CartPad;
+            SelectedStuffRect = new(blockRight - rightW, blockBottom - cartH, rightW, cartH);
+
             RectF shipDesignsRect = new(blockRight - rightW, listTop,
-                                        rightW, overviewTop - 10 - listTop);
+                                        rightW, SelectedStuffRect.Y - 10 - listTop);
             RightMenu = shipDesignsRect;
 
             LocalizedText[] subShipsTabs = { "Designs", "Owned" };
@@ -306,23 +313,13 @@ namespace Ship_Game
 
             ResetLists();
 
-            // The First Fleet cartouche is sized to what it holds, top to bottom: the fleet name,
-            // its icon, then the four buttons in a column. Width is the button width plus a margin
-            // each side - it used to be a 440x210 slab with the buttons floating inside it.
-            float cartH = CartPad
-                        + Fonts.Arial20Bold.LineSpacing + 8   // name
-                        + CartIcon + 8                        // icon
-                        + 4 * CartBtnH + 3 * CartBtnGap       // the four buttons
-                        + CartPad;
-            SelectedStuffRect = new(blockLeft, blockBottom - cartH,
-                                    CartBtnW + 2 * CartPad, cartH);
-
             var ordersBarPos = new Vector2(SelectedStuffRect.X + 20, SelectedStuffRect.Y + 65);
             OrdersButtons = new(this, ordersBarPos);
             Add(OrdersButtons);
 
-            // stacked under the icon, one column, the cartouche's own width
-            float btnX = SelectedStuffRect.X + CartPad;
+            // stacked under the icon, one column, centred in the cartouche - it wears the
+            // list's width now, wider than the buttons
+            float btnX = SelectedStuffRect.X + (SelectedStuffRect.W - CartBtnW) * 0.5f;
             float btnY = SelectedStuffRect.Y + CartPad
                        + Fonts.Arial20Bold.LineSpacing + 8 + CartIcon + 8;
             float BtnRow(int i) => btnY + i * (CartBtnH + CartBtnGap);
@@ -340,7 +337,9 @@ namespace Ship_Game
             LoadDesign.OnClick = (b) => ScreenManager.AddScreen(new LoadFleetDesignScreen(this));
             AutoArrange.OnClick = (b) => SelectedFleet.AutoArrange();   
 
-            OperationsRect = new(SelectedStuffRect.Right + 2, SelectedStuffRect.Y + 30, 360, SelectedStuffRect.H - 30);
+            // anchored at the frame's left edge - the cartouche that used to sit there
+            // moved to the bottom right (maintainer bench 300)
+            OperationsRect = new(blockLeft, SelectedStuffRect.Y + 30, 360, SelectedStuffRect.H - 30);
 
 
             float slidersX1 = OperationsRect.X + 15;
@@ -361,20 +360,6 @@ namespace Ship_Game
             SliderDps    = NewSlider(slidersX2, slidersY+100, "Target DPS Weight", GameText.TheWeightGivenToTargeting3);
 
             PrioritiesRect = new(OperationsRect.Right + 2, OperationsRect.Y, OperationsRect.Size);
-
-            // Fleet Design Overview: bottom RIGHT, the width of the ship list above it, so the two
-            // read as one column. Twice the height it had - the text it holds needed the room.
-            float overviewW = rightW;
-            FleetOverviewRect = new RectF(blockRight - overviewW, blockBottom - OverviewH,
-                                          overviewW, OverviewH);
-            float headerH = Fonts.Pirulen12.LineSpacing + 15;
-            RectF overviewTextRect = new(FleetOverviewRect.X + 10,
-                                          FleetOverviewRect.Y + headerH,
-                                          FleetOverviewRect.W - 20,
-                                          FleetOverviewRect.H - headerH - 10);
-            FleetOverviewText = Add(new UITextBox(overviewTextRect, useBorder: false));
-            FleetOverviewText.ItemsList.ItemPadding = Vector2.Zero;
-            FleetOverviewText.SetLines(Localizer.Token(GameText.AddShipDesignsToThis));
 
             RectF oprect = new(PrioritiesRect.X + 15, PrioritiesRect.Y + arial12.LineSpacing + 20, 300, 40);
             OperationalRadius = new FloatSlider(oprect, "Operational Radius", max: 500000, value: 10000)

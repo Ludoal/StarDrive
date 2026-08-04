@@ -97,6 +97,8 @@
       UID: warfare_ship_experience
     -
       UID: warfare_capturing_ships
+    -
+      UID: warfare_fleet_design
 -
   UID: diplomacy
   Children:

@@ -193,7 +193,7 @@ namespace Ship_Game.GameScreens
             Scroller.Pitch = colW;
             // the rail rides ON the frame's bottom border band, not in the columns - this
             // screen has no line to spare (maintainer bench 299); drawn after base.Draw
-            Scroller.Track = new Rectangle(x0, (int)client.Bottom + 2, visCols * colW - ScreenGroups.ColumnGap, 6);
+            Scroller.Track = new Rectangle(x0, (int)client.Bottom + 1, visCols * colW - ScreenGroups.ColumnGap, 9);
             Scroller.WheelArea = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
             int colH = ScreenGroups.GroupColumnHeight(client);
 

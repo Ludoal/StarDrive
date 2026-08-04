@@ -101,14 +101,16 @@ namespace Ship_Game
         void DrawProductionInfo(SpriteBatch batch, float maintenance, float prod, int cost = 0)
         {
             Font font = Font12;
-            float x = Right - ProdWidth;
+            // production 10 left, maintenance 20 left of where they sat (maintainer bench
+            // 300) - the right-edge action icons stay where they are
+            float x = Right - ProdWidth - 10;
             float y = Y+4;
             var iconSize = new Vector2(font.LineSpacing+2);
             batch.Draw(ProdIcon, new Vector2(x, y), iconSize); // Production Icon
             batch.DrawString(font, prod.String(), x + iconSize.X + 2, y); // Build Production Cost
 
             string maintString = (-maintenance).String(2) + " BC/turn";
-            float maintX       = x + iconSize.X + 50;
+            float maintX       = x + iconSize.X + 40;
 
             if (cost > 0)
             {

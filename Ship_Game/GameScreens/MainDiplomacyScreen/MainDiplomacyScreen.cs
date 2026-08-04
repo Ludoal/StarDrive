@@ -185,7 +185,7 @@ namespace Ship_Game
             // the columns - the screens are height-tight, ARTIFACTS takes whatever is left
             // and a reserved lane starved it (maintainer bench 299). Drawn after base.Draw
             // so it paints over the border.
-            Scroller.Track = new Rectangle(x0, (int)client.Bottom + 2, visCols * colW - ScreenGroups.ColumnGap, 6);
+            Scroller.Track = new Rectangle(x0, (int)client.Bottom + 1, visCols * colW - ScreenGroups.ColumnGap, 9);
             Scroller.WheelArea = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
             int colH = ScreenGroups.GroupColumnHeight(client);
             int j = 0;
@@ -348,7 +348,7 @@ namespace Ship_Game
             // across columns without anyone having to count them.
             // ARTIFACTS is the one variable block, so it comes last and takes whatever is left.
             y = infoY;
-            SectionBand(batch, col, ref y, "FACTION INFO");
+            SectionBand(batch, col, ref y, "DISPOSITION");
             DrawInfoBlock(batch, e, col, ref y);
 
             y += 4;

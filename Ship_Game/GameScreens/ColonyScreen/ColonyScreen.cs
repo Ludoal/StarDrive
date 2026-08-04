@@ -24,6 +24,9 @@ namespace Ship_Game
         readonly Submenu PStorage;
         readonly Submenu PFacilities;
         RectF LaborRect; // the Assign Labor block - the terraform details anchor on it now
+        // sticky across colonies (maintainer bench 300): a session inspecting terraform
+        // keeps the tab up from one colony screen to the next
+        static int LaborTabSticky;
         readonly UITextEntry PlanetName;
         readonly Rectangle PlanetIcon;
         public EmpireUIOverlay Eui;
@@ -236,6 +239,11 @@ namespace Ship_Game
             bool terraTab = Player.data.Traits.TerraformingLevel > 0 || P.Terraformable;
             AssignLabor = Add(new AssignLaborComponent(P, labor, useTitleFrame: true,
                 terraTab ? new LocalizedText[] { GameText.AssignLabor, GameText.BB_Tech_Terraforming_Name } : null));
+            if (terraTab)
+            {
+                AssignLabor.TitleMenu.SelectedIndex = LaborTabSticky.Clamped(0, 1);
+                AssignLabor.TitleMenu.OnTabChange = i => LaborTabSticky = i;
+            }
 
             RectF pStorageR = new(gridLeft, labor.Bottom + Pad, colLeftW,
                                   gridBottom - (labor.Bottom + Pad));
@@ -682,11 +690,12 @@ namespace Ship_Game
 
         void CreateTerraformingDetails(Vector2 pos)
         {
-            // compact cascade (maintainer bench 299): the block lives on the Assign Labor
-            // frame now, 150px tall - Font12 rows, no Font20 title (the tab names it), one
-            // line per datum. The title label stays allocated but never shows.
-            Font font    = Fonts.Arial12;
-            int spacing  = font.LineSpacing + 3;
+            // compact cascade (maintainer benches 299-300): the block lives on the Assign
+            // Labor frame, 150px tall - Font14 rows on a tight pitch, no Font20 title (the
+            // tab names it), one line per datum. The title label stays allocated but never
+            // shows.
+            Font font    = Font14;
+            int spacing  = font.LineSpacing + 1;
             int barWidth = (int)(LaborRect.W * 0.33f);
 
             AddLabel(ref TerraformTitle, pos, "", Font20, Color.White);

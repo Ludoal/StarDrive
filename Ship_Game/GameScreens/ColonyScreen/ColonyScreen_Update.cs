@@ -160,6 +160,9 @@ namespace Ship_Game
                 ? Localizer.Token(GameText.TerraformersUnknownOrigin) 
                 : $"{NumTerraformersHere}/{NumMaxTerraformers}";
 
+            // the level rides the status label (maintainer bench 300) - the Font20 title
+            // that used to carry it is retired
+            TerraformStatusTitle.Text = $"{Localizer.Token(GameText.TerraformingStatus)} (lvl {TerraformLevel})";
             if (P.TerraformingHere)
             {
                 TerraformStatus.Text  = GameText.TerraformersInProgress;

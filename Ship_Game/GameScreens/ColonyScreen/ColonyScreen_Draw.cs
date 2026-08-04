@@ -513,7 +513,12 @@ namespace Ship_Game
 
         string MultiLineFormat(LocalizedText text)
         {
-            return TextFont.ParseText(text.Text, PFacilities.Rect.Width - 40);
+            // doubled line breaks collapse to one (maintainer bench 300) - the data likes
+            // paragraph gaps the panel has no room for
+            string t = text.Text.Replace("\n\n", "\n");
+            while (t.Contains("\n\n"))
+                t = t.Replace("\n\n", "\n");
+            return TextFont.ParseText(t, PFacilities.Rect.Width - 40);
         }
 
         void DrawMultiLine(ref Vector2 cursor, LocalizedText text, Color color)
@@ -652,7 +657,7 @@ namespace Ship_Game
             batch.DrawString(Font20, selectedBuilding.TranslatedName, bCursor, color);
             bCursor.Y += Font20.LineSpacing + 5;
             string selectionText = MultiLineFormat(selectedBuilding.DescriptionText);
-            batch.DrawString(TextFont, selectionText, bCursor, color);
+            batch.DrawString(TextFont, selectionText, bCursor, Color.White); // white body (maintainer bench 300)
             bCursor.Y += TextFont.MeasureString(selectionText).Y + Font20.LineSpacing;
             if (selectedBuilding.IsWeapon)
                 selectedBuilding.CalcMilitaryStrength(P); // So the building will have TheWeapon for stats

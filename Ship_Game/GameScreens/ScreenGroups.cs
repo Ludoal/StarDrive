@@ -295,7 +295,10 @@ namespace Ship_Game.GameScreens
             count = Math.Max(count, 1);
             int pitch = RaceColumnPitch(screenW, count);
             int avail = RaceColumnRun(Math.Min(screenW, RaceRefCeil) - 2 * FrameMargin);
-            return Math.Min(count, Math.Max(1, avail / pitch));
+            // the fit test forgives what the round-UP pitch added (at most GroupColumns-1
+            // px over the whole row) - without it a 900p screen showed seven columns where
+            // eight fit (maintainer bench 300)
+            return Math.Min(count, Math.Max(1, (avail + GroupColumns - 1) / pitch));
         }
 
         // the frame that hugs the VISIBLE columns at that pitch - floored on what the group's
@@ -358,6 +361,10 @@ namespace Ship_Game.GameScreens
             }
 
             // returns true when the row moved or the gesture was consumed
+            // the GRAB zone is taller than the drawn rail (maintainer bench 300: hard to
+            // catch) - 5px of tolerance above and below
+            Rectangle GrabZone(in Rectangle r) => new(r.X, r.Y - 5, r.Width, r.Height + 10);
+
             public bool HandleInput(InputState input)
             {
                 if (!Overflowing)
@@ -379,10 +386,10 @@ namespace Ship_Game.GameScreens
                     if (input.ScrollIn)  { First = (First - 1).Clamped(0, Max); return First != first; }
                     if (input.ScrollOut) { First = (First + 1).Clamped(0, Max); return First != first; }
                 }
-                if (input.LeftMouseClick && Track.HitTest(input.CursorPosition))
+                if (input.LeftMouseClick && GrabZone(Track).HitTest(input.CursorPosition))
                 {
                     Rectangle th = Thumb;
-                    if (th.HitTest(input.CursorPosition))
+                    if (GrabZone(th).HitTest(input.CursorPosition))
                     {
                         Dragging = true;
                         GrabDX = input.CursorPosition.X - th.X;

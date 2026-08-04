@@ -292,7 +292,6 @@ namespace Ship_Game
             LoadDesign.Visible = false;
             AutoArrange.Visible = false;
 
-            FleetOverviewText.Visible = SelectedNodeList.Count == 0 && SelectedFleet != null;
 
             if (SelectedNodeList.Count == 1)
             {
@@ -387,10 +386,8 @@ namespace Ship_Game
                 var iconR = new RectF(SelectedStuffRect.X + (SelectedStuffRect.W - CartIcon) * 0.5f,
                                       iconY, CartIcon, CartIcon);
                 batch.Draw(f.Icon, iconR, f.Owner.EmpireColor);
-                PrioritySelector = new Selector(FleetOverviewRect, new Color(0, 0, 0, 180));
-                PrioritySelector.Draw(batch, elapsed);
-                cursor1 = new Vector2(FleetOverviewRect.X + 20, FleetOverviewRect.Y + 10);
-                batch.DrawString(Fonts.Pirulen12, "Fleet Design Overview", cursor1, Colors.Cream);
+                // the Fleet Design Overview cartouche is gone (maintainer bench 300): its
+                // text lives in the Codex, end of Warfare
 
                 RequisitionForces.Visible = true;
                 SaveDesign.Visible = true;

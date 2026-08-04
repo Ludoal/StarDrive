@@ -38,7 +38,7 @@ namespace Ship_Game
         // realistic string, "999.9k/999.9M (+999.9)" - about 150px in Arial12Bold - then
         // trimmed a touch (maintainer feedback): the topic sits nearer the figures, and the
         // interpunct before it marks where the reserve ends.
-        const int ResearchNumbersRoom = 140;
+        const int ResearchNumbersRoom = 120;
         // ⚠ MEASURED, not eyeballed: StarDateString is "####.0", so "StarDate: 9999.9" is the
         // widest this can ever be - 94px in Arial12Bold, and it does not vary with the date.
         // The old 120 left 27px of unused reserve, and since the text is right-aligned on

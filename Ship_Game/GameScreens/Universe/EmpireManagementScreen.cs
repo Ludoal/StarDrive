@@ -76,7 +76,7 @@ namespace Ship_Game
                                      Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfResearch), SepColor = MutedSep },
                 new UITable.Column { Title = Localizer.Token(GameText.Labor), Width = 225, Align = TableAlign.Center },
                 new UITable.Column { Title = Localizer.Token(GameText.Storage2), Width = 240, Align = TableAlign.Center },
-                new UITable.Column { Title = Localizer.Token(GameText.Construction2), Width = 280, Align = TableAlign.Center },
+                new UITable.Column { Title = Localizer.Token(GameText.Construction2), Width = 282, Align = TableAlign.Center },
             });
             var sys = new Array<string>(); var names = new Array<string>();
             var stats = new Array<string>[7];
