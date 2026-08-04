@@ -125,10 +125,10 @@ namespace Ship_Game
             Table.Columns[6].Foldable = true;
             Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
 
-            // Proximity is the standing sort from the first frame (maintainer, 4 Aug:
-            // closest first); ResetList re-applies it after every refill
-            Table.Columns[1].Sorted = true;
-            Table.Columns[1].Ascending = true;
+            // Proximity ascending is the factory default; the standing sort survives the
+            // screen for the session (maintainer bench 307) and ResetList re-applies it
+            Table.Columns[StandingCol].Sorted = true;
+            Table.Columns[StandingCol].Ascending = StandingAsc;
 
             int shipRows = Universe.Player.OwnedShips.Count;
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
@@ -284,9 +284,14 @@ namespace Ship_Game
                 return false;
 
             bool asc = Table.SetSorted(col);
+            StandingCol = col;
+            StandingAsc = asc;
             GameAudio.AcceptClick();
             return ApplySort(col, asc);
         }
+
+        static int StandingCol = 1;    // session-persistent (bench 307)
+        static bool StandingAsc = true;
 
         bool ApplySort(int col, bool asc)
         {

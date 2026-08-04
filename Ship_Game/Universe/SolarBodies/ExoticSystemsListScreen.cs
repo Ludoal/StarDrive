@@ -30,7 +30,8 @@ namespace Ship_Game
 
         public readonly UITable Table; // the shared table charte owns geometry, headers and rules
         readonly Array<ExplorableGameObject> ExploredSolarBodies = new();
-        int LastSortCol = -1;
+        static int LastSortCol = -1;   // session-persistent (bench 307)
+        static bool LastSortAsc = true;
 
         // FB - this will store each planet or system and it's distance to the closest player colony. 
         readonly Map<ExplorableGameObject, float> DistancesToClosestColony = new();
@@ -103,9 +104,10 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[5], Fonts.Arial12Bold, owners);
             Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
             // System is the standing sort from the first frame (the list arrives system-ordered)
-            Table.Columns[0].Sorted = true;
-            Table.Columns[0].Ascending = true;
-            LastSortCol = 0;
+            // the standing sort survives the screen for the session (maintainer bench 307)
+            if (LastSortCol < 0) { LastSortCol = 0; LastSortAsc = true; }
+            Table.Columns[LastSortCol].Sorted = true;
+            Table.Columns[LastSortCol].Ascending = LastSortAsc;
 
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             // 48 = the 44px row plus the list's 4px item padding - counting 44 alone kept
@@ -199,6 +201,7 @@ namespace Ship_Game
                 GameAudio.BlipClick();
                 bool asc = Table.SetSorted(clicked);
                 LastSortCol = clicked;
+                LastSortAsc = asc;
                 Refill(clicked, asc);
                 return true;
             }

@@ -29,7 +29,8 @@ namespace Ship_Game
 
         public readonly UITable Table; // the shared table charte owns geometry, headers and rules
         // the Actions lane: both buttons sized to their own text (maintainer, 4 Aug)
-        int LastSortCol = -1;
+        static int LastSortCol = -1;   // session-persistent (bench 307)
+        static bool LastSortAsc = true;
 
         public EmpirePatrolsScreen(UniverseScreen parent, Empire player)
             : base(parent, toPause: parent)
@@ -72,9 +73,10 @@ namespace Ship_Game
             // bench 290): the frame hugs the table, the plan count sets the height
             // Name is the standing sort from the first frame (spec: the default sort wears
             // the orange)
-            Table.Columns[0].Sorted = true;
-            Table.Columns[0].Ascending = true;
-            LastSortCol = 0;
+            // the standing sort survives the screen for the session (maintainer bench 307)
+            if (LastSortCol < 0) { LastSortCol = 0; LastSortAsc = true; }
+            Table.Columns[LastSortCol].Sorted = true;
+            Table.Columns[LastSortCol].Ascending = LastSortAsc;
 
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             // 38 = the 34px row plus the list's 4px item padding
@@ -89,10 +91,7 @@ namespace Ship_Game
             PatrolsSL.EnableItemHighlight = true;
             Table.ApplyHighlightTo(PatrolsSL);
             PatrolsSL.OnDoubleClick = OnPatrolDoubleClicked; // to the plan on the map
-            foreach (FleetPatrol patrol in player.FleetPatrols)
-            {
-                PatrolsSL.AddItem(new EmpirePatrolsScreenListItem(this, patrol, player));
-            }
+            ResetList(); // honors the session's standing sort (bench 307)
         }
 
         // double-click flies the camera to the patrol's route (maintainer bench 293)
@@ -169,6 +168,7 @@ namespace Ship_Game
                 GameAudio.BlipClick();
                 bool asc = Table.SetSorted(clicked);
                 LastSortCol = clicked;
+                LastSortAsc = asc;
                 Refill(clicked, asc);
                 return true;
             }
