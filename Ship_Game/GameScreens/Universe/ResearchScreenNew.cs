@@ -191,6 +191,11 @@ namespace Ship_Game
 
             batch.SafeBegin();
             base.Draw(batch, elapsed);
+            // TEMP DEBUG (one build): the magenta rect is MainArea (the frame's ClientArea)
+            // exactly as the layout believes it - if its bottom edge floats 20-35px above
+            // the frame's visible inner border, the client rect lies and the tree is
+            // innocent; if it touches, the lie is in the tree. Remove after the bench.
+            batch.DrawRectangle(new Rectangle(MainArea.X, MainArea.Y, MainArea.Width, MainArea.Height), Color.Magenta);
             ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             if (ScreenHeight > 720)
                 empireUI.Draw(batch); // Ludoal fork: live top bar (paused indicator included)
