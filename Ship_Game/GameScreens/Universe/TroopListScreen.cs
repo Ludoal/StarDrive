@@ -235,10 +235,9 @@ namespace Ship_Game
             string totalVal = NumTroops.ToString();
             batch.DrawString(font, totalVal, new Vector2(infoX, infoY), Color.White);
             infoX += font.TextWidth(totalVal) + 24;
-            string foodLbl = "Food consumption: ";
+            string foodLbl = "Food: ";
             batch.DrawString(font, foodLbl, new Vector2(infoX, infoY), UITable.Vanilla);
-            // no leading minus (bench 305): "consumption" already says the direction
-            batch.DrawString(font, (NumTroops * Troop.Consumption).String(1),
+            batch.DrawString(font, $"-{(NumTroops * Troop.Consumption).String(1)}",
                              new Vector2(infoX + font.TextWidth(foodLbl), infoY), Color.LightPink);
 
             Table.DrawChrome(batch);

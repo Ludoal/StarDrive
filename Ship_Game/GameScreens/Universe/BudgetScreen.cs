@@ -226,7 +226,7 @@ namespace Ship_Game.GameScreens
                 new UITable.Column { Title = "Troop Mnt", Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Troop maintenance paid by the colony" },
                 new UITable.Column { Title = "Net",       Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Signed, Bold = true, Tip = "Net income of the colony" },
                 new UITable.Column { Title = "Budget",    Align = TableAlign.Number, Sortable = true, Tip = "Budget allocated by the governor" },
-                new UITable.Column { Title = "Gov Exp",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "What the governor actually spends" },
+                new UITable.Column { Title = "Gov Exp",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "What the governor actually spends: building maintenance plus SPACE defense - the delta against Bldg Mnt is the orbital defense bill" },
                 new UITable.Column { Title = "Left",      Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Signed, Tip = "Budget left after the governor's spending" },
             });
             // widths from the data: the planet names size the Colony column (plus its icon
@@ -334,9 +334,7 @@ namespace Ship_Game.GameScreens
             var netWord = Label(new Vector2(rx + 4, netY), "", Fonts.Arial12Bold);
             netWord.DropShadow = true;
             netWord.Color = Colors.Cream;
-            // plain "Net" in the red case (bench 305): the figure's own colour and sign
-            // already say loss - "Net Loss" said it twice
-            netWord.DynamicText = l => NetGainNow() >= 0f ? Localizer.Token(GameText.NetGain) : "Net";
+            netWord.DynamicText = l => NetGainNow() >= 0f ? Localizer.Token(GameText.NetGain) : Localizer.Token(GameText.NetLoss);
             // -4: closes on the same right edge as the panel values above it (maintainer bench)
             EmpireNetIncome = Label(new Vector2(rx + rw - NetValueW - 4, netY), "", Fonts.Arial12Bold);
             EmpireNetIncome.Size = new Vector2(NetValueW, Fonts.Arial12Bold.LineSpacing);
