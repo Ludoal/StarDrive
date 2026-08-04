@@ -246,9 +246,13 @@ namespace Ship_Game
 
                 if (SubEntries != null && SubEntries.NotEmpty)
                 {
-                    string open = Expanded ? "-" : "+";
-                    var textPos = new Vector2(r.Right - 26, r.CenterY() - Fonts.Arial20Bold.LineSpacing / 2 - 2);
-                    batch.DrawString(Fonts.Arial20Bold, open, textPos, Color.White);
+                    // an arrow, not a +/- glyph (maintainer bench 305): down = will unfold,
+                    // up = will fold - the queue's own arrows, so the language is known
+                    SubTexture arrow = ResourceManager.Texture(Expanded ? "NewUI/icon_queue_arrow_up"
+                                                                        : "NewUI/icon_queue_arrow_down");
+                    batch.Draw(arrow, new Rectangle((int)r.Right - 26,
+                                                    (int)(r.CenterY() - arrow.Height / 2f),
+                                                    arrow.Width, arrow.Height), Color.White);
                 }
             }
 
