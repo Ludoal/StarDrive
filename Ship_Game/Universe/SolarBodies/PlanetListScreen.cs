@@ -97,12 +97,14 @@ namespace Ship_Game
             Table = new UITable(new[]
             {
                 new UITable.Column { Title = Localizer.Token(GameText.System), Sortable = true },
-                new UITable.Column { Title = Localizer.Token(GameText.Planet), Sortable = true, MinWidth = 200 },
+                new UITable.Column { Title = Localizer.Token(GameText.Planet), Sortable = true, MinWidth = 180 },
                 new UITable.Column { Title = "Features" },
                 new UITable.Column { Title = Localizer.Token(GameText.Proximity), Align = TableAlign.Center, Sortable = true },
-                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"),
+                // biospheres/crystal, not food/production: the INTRINSIC stats wear their
+                // own icons so they never read as the net-income pair (maintainer bench 294)
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_biospheres"),
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Fertility) },
-                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"),
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_exotic_resource"),
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Richness) },
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop_22"),
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.MaxPopulation) },

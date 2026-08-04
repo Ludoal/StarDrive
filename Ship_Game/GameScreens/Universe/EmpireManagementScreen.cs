@@ -53,46 +53,48 @@ namespace Ship_Game
             {
                 new UITable.Column { Title = Localizer.Token(GameText.System) },
                 new UITable.Column { Title = Localizer.Token(GameText.Planet), MinWidth = 150 },
-                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"), Align = TableAlign.Number,
-                                     Sortable = true, Tip = Localizer.Token(GameText.Fertility) },
-                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Align = TableAlign.Number,
-                                     Sortable = true, Tip = Localizer.Token(GameText.Richness) },
-                new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop_22"), Align = TableAlign.Number,
-                                     Sortable = true, Tip = Localizer.Token(GameText.MaxPopulation) },
+                // biospheres/crystal, not food/production: the INTRINSIC pair wears its own
+                // icons and a muted gray separator to sub-group it (maintainer bench 294)
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_biospheres"), Align = TableAlign.Number,
+                                     Sortable = true, Tip = Localizer.Token(GameText.Fertility), SepColor = Color.Gray },
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_exotic_resource"), Align = TableAlign.Number,
+                                     Sortable = true, Tip = Localizer.Token(GameText.Richness), SepColor = Color.Gray },
+                // population reads "x / y" like the Planets tab - Max Pop merged in; the
+                // whole stat block keeps MUTED gray separators (bench 294, like the old
+                // look), and Money rides before Research, the top bar's own order
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop"), Align = TableAlign.Number,
-                                     Sortable = true, Tip = Localizer.Token(GameText.IndicatesThisColonysCurrentPopulation) },
+                                     Sortable = true, Tip = Localizer.Token(GameText.IndicatesThisColonysCurrentPopulation), SepColor = Color.Gray },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"), Align = TableAlign.Number,
-                                     Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfFood) },
+                                     Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfFood), SepColor = Color.Gray },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Align = TableAlign.Number,
-                                     Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfProduction) },
-                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_science"), Align = TableAlign.Number,
-                                     Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfResearch) },
+                                     Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfProduction), SepColor = Color.Gray },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_money"), Align = TableAlign.Number,
-                                     Sortable = true, Tip = Localizer.Token(GameText.TheNetIncomeOfThis) },
-                new UITable.Column { Title = Localizer.Token(GameText.Labor), Width = 330, Align = TableAlign.Center },
+                                     Sortable = true, Tip = Localizer.Token(GameText.TheNetIncomeOfThis), SepColor = Color.Gray },
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_science"), Align = TableAlign.Number,
+                                     Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfResearch), SepColor = Color.Gray },
+                new UITable.Column { Title = Localizer.Token(GameText.Labor), Width = 300, Align = TableAlign.Center },
                 new UITable.Column { Title = Localizer.Token(GameText.Storage2), Width = 255, Align = TableAlign.Center },
-                new UITable.Column { Title = Localizer.Token(GameText.Construction2), Width = 290, Align = TableAlign.Center },
+                new UITable.Column { Title = Localizer.Token(GameText.Construction2), Width = 260, Align = TableAlign.Center },
             });
             var sys = new Array<string>(); var names = new Array<string>();
-            var stats = new Array<string>[8];
-            for (int i = 0; i < 8; ++i) stats[i] = new Array<string>();
+            var stats = new Array<string>[7];
+            for (int i = 0; i < 7; ++i) stats[i] = new Array<string>();
             foreach (Planet p in planets)
             {
                 sys.Add(p.System.Name);
                 names.Add(p.Name);
                 stats[0].Add(p.FertilityFor(Universe.Player).ToString("0.0", CultureInfo.InvariantCulture));
                 stats[1].Add(p.MineralRichness.ToString("0.0", CultureInfo.InvariantCulture));
-                stats[2].Add(p.MaxPopulationBillionFor(Universe.Player).ToString("0.0", CultureInfo.InvariantCulture));
-                stats[3].Add(p.PopulationBillion.ToString("0.0", CultureInfo.InvariantCulture));
-                stats[4].Add(p.Food.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
-                stats[5].Add(p.Prod.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
+                stats[2].Add(PopCombined(p));
+                stats[3].Add(p.Food.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
+                stats[4].Add(p.Prod.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
+                stats[5].Add(p.Money.NetRevenue.ToString("0.0", CultureInfo.InvariantCulture));
                 stats[6].Add(p.Res.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
-                stats[7].Add(p.Money.NetRevenue.ToString("0.0", CultureInfo.InvariantCulture));
             }
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, sys);
             UITable.AutoSize(Table.Columns[1], Fonts.Arial14Bold, names);
             Table.Columns[1].Width += 44; // the planet icon rides ahead of the name
-            for (int i = 0; i < 8; ++i)
+            for (int i = 0; i < 7; ++i)
                 UITable.AutoSize(Table.Columns[2 + i], Fonts.Arial12, stats[i]);
             Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
 
@@ -127,6 +129,14 @@ namespace Ship_Game
             ResetColoniesList(planets);
             // the troop count and its food bill left this screen (maintainer, 4 Aug):
             // the Troops Array carries both on its own filter line now
+        }
+
+        // "current / max", the Planets tab's population shape
+        string PopCombined(Planet p)
+        {
+            string ps = p.PopulationStringForPlayer;
+            int paren = ps.IndexOf(" (");
+            return paren < 0 ? ps : ps.Substring(0, paren);
         }
 
         // Ludoal fork: the other tabs live in their own screen, so leaving Colonies hands over to
@@ -173,7 +183,9 @@ namespace Ship_Game
             batch.Draw(SelectedPlanet.PlanetTexture, PlanetIconRect, White);
             batch.DrawString(Fonts.Pirulen16, SelectedPlanet.Name, nameCursor, White);
             
-            var PNameCursor = new Vector2(PlanetIconRect.X + PlanetIconRect.Width + 5, nameCursor.Y + 20f);
+            // the four stat lines centre on the planet image (maintainer bench 294)
+            var PNameCursor = new Vector2(PlanetIconRect.X + PlanetIconRect.Width + 5,
+                                          PlanetIconRect.Y + PlanetIconRect.Height / 2 - 2 * (Fonts.Arial12Bold.LineSpacing + 2));
             var InfoCursor = new Vector2(PNameCursor.X + 80f, PNameCursor.Y);
             batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.Class)+":", PNameCursor, Color.Orange);
             batch.DrawString(Fonts.Arial12Bold, SelectedPlanet.CategoryName, InfoCursor, Cream);
@@ -228,7 +240,9 @@ namespace Ship_Game
                     descCut = true;
                 }
             }
-            batch.DrawString(descFont, text, new Vector2(DescRect.X, DescRect.Y), White);
+            // the description centres vertically in its block (maintainer bench 294)
+            float descY = DescRect.Y + Math.Max(0f, (DescRect.Height - descFont.MeasureString(text).Y) / 2f);
+            batch.DrawString(descFont, text, new Vector2(DescRect.X, descY), White);
             if (descCut && DescRect.HitTest(Input.CursorPosition))
                 ToolTip.CreateTooltip(SelectedPlanet.Description);
 
@@ -336,12 +350,11 @@ namespace Ship_Game
                 {
                     2 => p => p.FertilityFor(Universe.Player),
                     3 => p => p.MineralRichness,
-                    4 => p => p.MaxPopulationBillionFor(Universe.Player),
-                    5 => p => p.PopulationBillion,
-                    6 => p => p.Food.NetIncome,
-                    7 => p => p.Prod.NetIncome,
-                    8 => p => p.Res.NetIncome,
-                    _ => p => p.Money.NetRevenue,
+                    4 => p => p.PopulationBillion,
+                    5 => p => p.Food.NetIncome,
+                    6 => p => p.Prod.NetIncome,
+                    7 => p => p.Money.NetRevenue,
+                    _ => p => p.Res.NetIncome,
                 };
                 bool asc = Table.SetSorted(clicked);
                 GameAudio.BlipClick();

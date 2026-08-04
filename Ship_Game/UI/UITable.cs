@@ -55,6 +55,9 @@ namespace Ship_Game.UI
             // CUT with an ellipsis and the full value moves to a tooltip
             public bool Foldable;
             public bool Folded;       // set by FitToWidth when this column actually gave width
+            // the separator drawn at this column's LEFT edge, when it should differ from
+            // the charte's warm line (e.g. a muted gray to sub-group columns)
+            public Color? SepColor;
             public Rectangle Rect;    // absolute header band, set by Layout
 
             public Font CellFont => Bold ? Fonts.Arial12Bold : Fonts.Arial12;
@@ -207,7 +210,8 @@ namespace Ship_Game.UI
 
             batch.FillRectangle(new Rectangle(TableRect.X, RuleY, TableRect.Width, 1), RuleColor);
             for (int i = 1; i < Columns.Length; ++i)
-                batch.FillRectangle(new Rectangle(Columns[i].Rect.X, RuleY, 1, TableRect.Bottom - RuleY), RuleColor);
+                batch.FillRectangle(new Rectangle(Columns[i].Rect.X, RuleY, 1, TableRect.Bottom - RuleY),
+                                    Columns[i].SepColor ?? RuleColor);
         }
 
         // header hover (tooltips, white sortables) and clicks. Returns the clicked

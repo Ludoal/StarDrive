@@ -27,9 +27,8 @@ namespace Ship_Game
         public Rectangle ProdRect;
         public Rectangle ResRect;
         public Rectangle MoneyRect;
-        public Rectangle FertRect;   // Ludoal fork (wishlist): fertility / richness / max pop columns
+        public Rectangle FertRect;   // Ludoal fork (wishlist): fertility / richness columns
         public Rectangle RichRect;
-        public Rectangle MaxPopRect;
 
         AssignLaborComponent AssignLabor;
 
@@ -77,15 +76,14 @@ namespace Ship_Game
             PlanetNameRect = Band(1);
             FertRect    = Band(2);
             RichRect    = Band(3);
-            MaxPopRect  = Band(4);
-            PopRect     = Band(5);
-            FoodRect    = Band(6);
-            ProdRect    = Band(7);
+            PopRect     = Band(4);
+            FoodRect    = Band(5);
+            ProdRect    = Band(6);
+            MoneyRect   = Band(7); // money before research, the top bar's order (bench 294)
             ResRect     = Band(8);
-            MoneyRect   = Band(9);
-            SliderRect  = new Rectangle(cols[10].Rect.X + 4, y - 30, cols[10].Rect.Width - 8, Rect.Height + 25);
-            StorageRect = Band(11);
-            QueueRect   = Band(12);
+            SliderRect  = new Rectangle(cols[9].Rect.X + 4, y - 30, cols[9].Rect.Width - 8, Rect.Height + 25);
+            StorageRect = Band(10);
+            QueueRect   = Band(11);
 
             if (AssignLabor == null)
             {
@@ -256,28 +254,33 @@ namespace Ship_Game
             }
 
             // every stat with a fixed decimal - right-aligned + constant fraction =
-            // aligned on the point (maintainer bench 293)
+            // aligned on the point (maintainer bench 293); population reads "x / y"
+            // like the Planets tab, Max Pop merged in (bench 294)
             string F1(float v) => v.ToString("0.0", CultureInfo.InvariantCulture);
-            DrawStatValue(batch, PopRect, F1(P.PopulationBillion), Color.White);
+            string popString = P.PopulationStringForPlayer;
+            int popParen = popString.IndexOf(" (");
+            DrawStatValue(batch, PopRect, popParen < 0 ? popString : popString.Substring(0, popParen), Color.White);
             DrawStatValue(batch, FoodRect, F1(P.Food.NetIncome), P.Food.NetIncome >= 0f ? Color.White : Color.LightPink);
             DrawStatValue(batch, ProdRect, F1(P.Prod.NetIncome), P.Prod.NetIncome >= 0f ? Color.White : Color.LightPink);
             DrawStatValue(batch, ResRect, F1(P.Res.NetIncome), Color.White);
             DrawStatValue(batch, MoneyRect, F1(P.Money.NetRevenue), P.Money.NetRevenue >= 0f ? Color.White : Color.LightPink);
 
-            // Ludoal fork (wishlist): fertility (env-adjusted, tinted by racial multiplier), richness, max pop
+            // Ludoal fork (wishlist): fertility (env-adjusted, tinted by racial multiplier), richness
             float envMult = Universe.Player.PlayerEnvModifier(P.Category);
             Color fertColor = envMult.AlmostEqual(1) ? Color.White : envMult < 1f ? Color.LightPink : Color.LightGreen;
             DrawStatValue(batch, FertRect, F1(P.FertilityFor(Universe.Player)), fertColor);
             DrawStatValue(batch, RichRect, F1(P.MineralRichness), Color.White);
-            DrawStatValue(batch, MaxPopRect, F1(P.MaxPopulationBillionFor(Universe.Player)), Color.White);
 
-            // the planet name in the regular 14 (maintainer, 4 Aug) - the Pirulen display
-            // face steps down to the body family, smaller only when the room runs out
-            Graphics.Font nameFont = Fonts.Arial14Bold.MeasureString(P.Name).X + planetIconRect.Width + 10f <= PlanetNameRect.Width
-                                   ? Fonts.Arial14Bold : Fonts.Arial12Bold;
+            // two lines like the Planets tab (bench 294): the name in 14, the class with
+            // its richness word under it in gray
             var namePos = new Vector2(planetIconRect.X + planetIconRect.Width + 10,
-                                      SysNameRect.Y + SysNameRect.Height / 2 - nameFont.LineSpacing / 2);
-            batch.DrawString(nameFont, P.Name, namePos, TextColor);
+                                      SysNameRect.Y + SysNameRect.Height / 2 - (Fonts.Arial14Bold.LineSpacing + Fonts.Arial12.LineSpacing + 2) / 2);
+            batch.DrawString(Fonts.Arial14Bold, P.Name, namePos, TextColor);
+            namePos.Y += Fonts.Arial14Bold.LineSpacing + 2;
+            string cls = P.LocalizedRichness;
+            int clsPar = cls.IndexOf(" (");
+            if (clsPar >= 0) cls = cls.Substring(0, clsPar);
+            batch.DrawString(Fonts.Arial12, cls, namePos, Color.Gray);
 
             base.Draw(batch, elapsed);
 

@@ -90,7 +90,15 @@ namespace Ship_Game
             Cell(1, dd.Text, dd.Color, Fonts.Arial12Bold);
             batch.Draw(Ship.ShipData.Icon, ShipIconRect, Color.White);
             ShipNameEntry.Draw(batch, elapsed);
-            Cell(3, Localizer.GetRole(Ship.ShipData.Role, Ship.Loyalty), Colors.Cream, Fonts.Arial12Bold);
+            // the role wears its family's colour (maintainer bench 294): combat red,
+            // scout blue, construction orange, freighter yellow, colony white
+            Color roleColor = Ship.IsConstructor || Ship.DesignRole == RoleName.construction ? Color.Orange
+                            : Ship.DesignRole == RoleName.scout ? Color.CornflowerBlue
+                            : Ship.DesignRole == RoleName.freighter ? Color.Yellow
+                            : Ship.DesignRole == RoleName.colony ? Color.White
+                            : IsCombat ? Color.Red
+                            : Colors.Cream;
+            Cell(3, Localizer.GetRole(Ship.ShipData.Role, Ship.Loyalty), roleColor, Fonts.Arial12Bold);
             string fleetName = Ship.Fleet?.Name ?? "";
             Graphics.Font fleetFont = Fonts.Arial12Bold.TextWidth(fleetName) > cols[4].Width - 2 * UITable.PadX
                                     ? Fonts.Arial8Bold : Fonts.Arial12Bold;

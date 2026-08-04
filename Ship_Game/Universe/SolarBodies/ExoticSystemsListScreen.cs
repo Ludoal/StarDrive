@@ -69,7 +69,7 @@ namespace Ship_Game
             Table = new UITable(new[]
             {
                 new UITable.Column { Title = Localizer.Token(GameText.System), Sortable = true },
-                new UITable.Column { Title = Localizer.Token(GameText.StarOrPlanet), Sortable = true, MinWidth = 200 },
+                new UITable.Column { Title = Localizer.Token(GameText.StarOrPlanet), Sortable = true, MinWidth = 180 },
                 new UITable.Column { Title = Localizer.Token(GameText.Proximity), Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.ResourceName), Sortable = true },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Width = 60,

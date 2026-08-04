@@ -191,26 +191,42 @@ namespace Ship_Game
             return groups;
         }
 
-        // a 20px icon OCCUPIES the width of four characters - the same footprint the
-        // column measures itself on and the renderer advances by (bench 293: the first
-        // pass ADDED four characters after each icon instead of counting it as four)
-        static int IconFootprint => (int)Fonts.Arial12Bold.TextWidth("0000");
+        // a 20px icon OCCUPIES the width of three characters - the same footprint the
+        // column measures itself on and the renderer advances by; at most SIX features
+        // sit on a line, the rest wrap to a second one (maintainer bench 294)
+        const int FeaturesPerLine = 6;
+        static int IconFootprint => (int)Fonts.Arial12Bold.TextWidth("000");
 
-        // the synthetic string the Features column measures itself on
+        // the synthetic string the Features column measures itself on - the first
+        // line's worth of groups only, since the rest wraps
         public static string FeaturesMeasure(Planet p)
         {
             string s = "";
+            int i = 0;
             foreach ((Building b, int n) in FeatureGroups(p))
-                s += "0000" + (n > 1 ? $"({n})" : "") + " ";
+            {
+                if (i++ >= FeaturesPerLine)
+                    break;
+                s += "000" + (n > 1 ? $"({n})" : "") + " ";
+            }
             return s;
         }
 
         void AddFeatures(in Rectangle col)
         {
+            var groups = FeatureGroups(Planet);
+            bool twoLines = groups.Count > FeaturesPerLine;
             int fx = col.X + UITable.PadX;
-            int fy = (int)Y + (int)Height / 2 - 10;
-            foreach ((Building b, int n) in FeatureGroups(Planet))
+            int fy = (int)Y + (int)Height / 2 - (twoLines ? 21 : 10);
+            int onLine = 0;
+            foreach ((Building b, int n) in groups)
             {
+                if (onLine++ == FeaturesPerLine)
+                {
+                    fx = col.X + UITable.PadX;
+                    fy += 22;
+                    onLine = 1;
+                }
                 var iconRect = new Rectangle(fx, fy, 20, 20);
                 UIPanel icon = Panel(iconRect, ResourceManager.Texture($"Buildings/icon_{b.Icon}_48x48"));
                 icon.Tooltip = $"{b.TranslatedName.Text}:\n{b.DescriptionText.Text}";
@@ -218,8 +234,8 @@ namespace Ship_Game
                 if (n > 1)
                 {
                     string count = $"({n})";
-                    Label(new Vector2(fx - 6, fy + 4), count, TinyFont, Cream);
-                    fx += (int)Fonts.Arial12Bold.TextWidth(count) - 6;
+                    Label(new Vector2(fx - 4, fy + 4), count, TinyFont, Cream);
+                    fx += (int)Fonts.Arial12Bold.TextWidth(count) - 4;
                 }
                 fx += (int)Fonts.Arial12Bold.TextWidth(" ");
             }
