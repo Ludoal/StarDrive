@@ -141,7 +141,9 @@ namespace Ship_Game.GameScreens
         {
             // Ludoal fork: the Espionage tab of the Diplomacy group - same frame and tab row as
             // its three siblings, from ScreenGroups, in place of the title and its surround.
-            LeftRect = ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
+            // The frame hugs the race columns (maintainer, 4 Aug), so the majors come first.
+            Empire[] majors = Universe.UState.ActiveMajorEmpires;
+            LeftRect = ScreenGroups.RaceColumnsFrame(ScreenWidth, ScreenHeight, majors.Length);
             GroupTabs = Add(new Submenu(new RectF(LeftRect.X, LeftRect.Y, LeftRect.Width, LeftRect.Height),
                                         ScreenGroups.GroupTabTitles));
             GroupTabs.OnTabChange = OnGroupTabChanged;
@@ -151,10 +153,10 @@ namespace Ship_Game.GameScreens
             Vector2 closePos = ScreenGroups.GroupClosePos(GroupTabs.ClientArea);
             CloseButton(closePos.X, closePos.Y);
 
-            Empire[] majors = Universe.UState.ActiveMajorEmpires;
+            // the race-column doctrine: one bounded pitch, the row centred in its hugging frame
             RectF client = GroupTabs.ClientArea;
-            int colW = ScreenGroups.GroupColumnWidth(client);
-            int x0 = ScreenGroups.GroupColumnsLeft(client, majors.Length.LowerBound(1));
+            int colW = ScreenGroups.RaceColumnPitch(ScreenWidth, majors.Length);
+            int x0 = ScreenGroups.RaceColumnsLeft(client, colW, majors.Length);
 
             for (int i = 0; i < majors.Length; ++i)
             {

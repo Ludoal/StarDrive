@@ -143,14 +143,22 @@ namespace Ship_Game
 
         public override void LoadContent()
         {
-            float screenWidth = ScreenWidth;
             // Ludoal fork: the Diplomacy group of the unified top bar - four tabs where this
             // screen had a title cartouche, a view toggle and a diagram button. The tab row takes
             // the title's place and rides the same line as the top bar's Help and speed buttons,
             // to their left: those move into the unified bar later, so leaving a band free above
             // the frame would be building for a state that is going away (maintainer decision).
             // Y=64 is where EmpireUIOverlay draws that row, on a 24px texture.
-            LeftRect = ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
+            // The races come FIRST now: the frame hugs their columns (maintainer, 4 Aug), so
+            // their count is an input to its geometry.
+            foreach (Empire e in Universe.UState.Empires)
+            {
+                if (e != Player && e.IsFaction)
+                    continue;
+                Races.Add(new RaceEntry { e = e });
+            }
+
+            LeftRect = ScreenGroups.RaceColumnsFrame(ScreenWidth, ScreenHeight, Races.Count);
             GroupTabs = Add(new Submenu(new RectF(LeftRect.X, LeftRect.Y, LeftRect.Width, LeftRect.Height),
                                         ScreenGroups.GroupTabTitles));
             GroupTabs.OnTabChange = OnGroupTabChanged;
@@ -159,19 +167,11 @@ namespace Ship_Game
             Vector2 closePos = ScreenGroups.GroupClosePos(GroupTabs.ClientArea);
             Add(new CloseButton(closePos.X, closePos.Y));
 
-            foreach (Empire e in Universe.UState.Empires)
-            {
-                if (e != Player && e.IsFaction)
-                    continue;
-                Races.Add(new RaceEntry { e = e });
-            }
-
-            // Ludoal fork: the columns fill the frame - client area less a gutter each side, split
-            // eight ways - rather than sitting in a narrower band of it. One width for the whole
-            // group, from ScreenGroups.
+            // Ludoal fork: the race-column doctrine - one bounded pitch from ScreenGroups, the
+            // row centred in a frame that was sized on it
             RectF client = GroupTabs.ClientArea;
-            int colW = ScreenGroups.GroupColumnWidth(client);
-            int x0 = ScreenGroups.GroupColumnsLeft(client, Races.Count.LowerBound(1));
+            int colW = ScreenGroups.RaceColumnPitch(ScreenWidth, Races.Count);
+            int x0 = ScreenGroups.RaceColumnsLeft(client, colW, Races.Count);
             int j = 0;
             foreach (RaceEntry re in Races)
             {

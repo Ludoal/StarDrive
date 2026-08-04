@@ -58,10 +58,11 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             TransitionOnTime  = 0.25f;
             TransitionOffTime = 0.25f;
 
-            // Ludoal fork: the Relationships tab of the Diplomacy group. Same frame and tab row as
-            // its three siblings, from ScreenGroups, rather than the 1000x768 popup this used to
-            // be as a stacked screen.
-            Rectangle frame = ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
+            // Ludoal fork: the Relationships tab of the Diplomacy group. Same tab row as its
+            // three siblings, but a frame pinned to the 900p footprint whatever the resolution
+            // (maintainer, 4 Aug): the diagram was laid out for it and does not rearrange, so a
+            // bigger screen just leaves space at the frame's right.
+            Rectangle frame = ScreenGroups.GroupFrame900(ScreenWidth, ScreenHeight);
             GroupTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
                                         ScreenGroups.GroupTabTitles));
             GroupTabs.OnTabChange = OnGroupTabChanged;

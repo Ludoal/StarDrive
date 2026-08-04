@@ -261,6 +261,55 @@ namespace Ship_Game.GameScreens
             => new(FrameMargin, TabRowY, Math.Min(screenW, 1920) - 2 * FrameMargin,
                    Math.Min(screenH, 1080) - TabRowY - FrameMargin);
 
+        // ── Race columns (Diplomacy group) ────────────────────────────────────────────────────
+        // Maintainer doctrine (4 Aug): a race column's width is bounded by the 900p footprint
+        // (floor) and the 1080p one (ceiling) - (frame width - margins) / 8 at each - and the
+        // frame HUGS its columns instead of spanning the screen. Between the two resolutions the
+        // columns hold the ceiling width until the row no longer fits the screen, then shrink
+        // with the race count down to the floor. The height is always the 900p frame's.
+        const int RaceRefFloor = 1440, RaceRefCeil = 1920, RaceRefH = 900;
+        const int NineSliceCorners = 18; // what Submenu cuts off a frame to get its ClientArea
+
+        // the column run inside a frame that wide: client area less a gutter each side, plus one
+        // gap because the pitch below carries a trailing gap the last column does not draw
+        static int RaceColumnRun(int frameW)
+            => frameW - NineSliceCorners - 2 * ColumnGutter + ColumnGap;
+
+        public static int RaceColumnPitch(int screenW, int count)
+        {
+            int ceil  = RaceColumnRun(RaceRefCeil - 2 * FrameMargin) / GroupColumns;
+            int floor = RaceColumnRun(RaceRefFloor - 2 * FrameMargin) / GroupColumns;
+            int avail = RaceColumnRun(Math.Min(screenW, RaceRefCeil) - 2 * FrameMargin);
+            return Math.Min(ceil, Math.Max(floor, avail / Math.Max(count, 1)));
+        }
+
+        // the frame that hugs `count` columns at that pitch - floored on what the group's own
+        // tab strip needs, so the tabs never fold into a second line (the bench-290 lesson)
+        public static Rectangle RaceColumnsFrame(int screenW, int screenH, int count)
+        {
+            count = Math.Max(count, 1);
+            int pitch = RaceColumnPitch(screenW, count);
+            int frameW = pitch * count - ColumnGap + 2 * ColumnGutter + NineSliceCorners;
+            frameW = Math.Max(frameW, (int)MinTabStripWidth(GroupTabTitles) + 1);
+            return new(FrameMargin, TabRowY, frameW,
+                       Math.Min(screenH, RaceRefH) - TabRowY - FrameMargin);
+        }
+
+        // the left edge of a centred row of `count` race columns - centred against the client
+        // rather than pinned to the gutter, for the case where the tab-strip floor won
+        public static int RaceColumnsLeft(in RectF client, int pitch, int count)
+        {
+            int drawn = pitch * Math.Max(count, 1) - ColumnGap;
+            return (int)client.X + ((int)client.W - drawn) / 2;
+        }
+
+        // The 900p footprint, whatever the resolution: Relationships keeps this frame - its
+        // diagram was laid out for it and does not rearrange, so a bigger screen just leaves
+        // space at the frame's right (maintainer, 4 Aug).
+        public static Rectangle GroupFrame900(int screenW, int screenH)
+            => new(FrameMargin, TabRowY, Math.Min(screenW, RaceRefFloor) - 2 * FrameMargin,
+                   Math.Min(screenH, RaceRefH) - TabRowY - FrameMargin);
+
         // Ludoal fork: a content-sized frame may hug a table NARROWER than its own tab
         // strip, which folds the tabs into a second line (maintainer bench 290) - the
         // frame width floors on what the strip needs, the content inside doesn't move
