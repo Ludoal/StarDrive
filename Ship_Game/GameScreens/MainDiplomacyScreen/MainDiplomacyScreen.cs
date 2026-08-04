@@ -716,7 +716,15 @@ namespace Ship_Game
                 batch.DrawString(Font12, "None", new Vector2(col.X + 8, y), Color.Gray);
                 return;
             }
-            foreach (Artifact art in e.data.OwnedArtifacts)
+            // duplicates collapse to one line with a count, "(x2)" (maintainer bench 298)
+            var counts = new Map<string, int>();
+            var order = new Array<Artifact>();
+            foreach (Artifact a in e.data.OwnedArtifacts)
+            {
+                if (counts.ContainsKey(a.Name)) counts[a.Name] += 1;
+                else { counts[a.Name] = 1; order.Add(a); }
+            }
+            foreach (Artifact art in order)
             {
                 if (y > maxY - Font12.LineSpacing)
                 {
@@ -731,7 +739,9 @@ namespace Ship_Game
                     ToolTip.CreateTooltip(new LocalizedText(art.DescriptionIndex));
                 batch.Draw(ResourceManager.Texture("Artifact Icons/" + art.Name),
                            new Rectangle(col.X + 8, (int)y - 1, ih, ih), Color.White);
-                batch.DrawString(Font12, Truncate(art.NameText.Text, col.Width - 20 - ih - 4),
+                int n = counts[art.Name];
+                string label = n > 1 ? $"{art.NameText.Text} (x{n})" : art.NameText.Text;
+                batch.DrawString(Font12, Truncate(label, col.Width - 20 - ih - 4),
                                  new Vector2(col.X + 8 + ih + 4, y), Color.Wheat);
                 y += Font12.LineSpacing + 3;
             }
