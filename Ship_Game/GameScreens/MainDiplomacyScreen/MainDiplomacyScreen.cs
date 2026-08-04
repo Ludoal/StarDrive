@@ -436,34 +436,21 @@ namespace Ship_Game
             float maxY = float.MaxValue;
             Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
 
+            // Status and Trade retired (maintainer bench 299): the TREATIES matrix carries
+            // both - each column's rows run against every empire, the player included - and
+            // their two lines go to ARTIFACTS, which takes whatever is left.
+            // ⚠ The four slots below are what an empire has ABOUT you and you cannot have
+            // about yourself - reserved rather than skipped: this column has to stay level
+            // with the others, which is why every unavailable value in this screen keeps
+            // its line.
             if (e == Player)
             {
-                TableRow(batch, col, ref y, maxY, "Status", Localizer.Token(GameText.You), Color.White);
-                BlankRow(ref y); // player call: keep the line, drop the noise
                 BlankRow(ref y); // (personality slot)
-                // ⚠ and the three below, which an empire has ABOUT you and you cannot have about
-                // yourself. Reserved rather than skipped: this column has to stay level with the
-                // others, which is why every unavailable value in this screen keeps its line.
                 BlankRow(ref y); // (trust slot)
                 BlankRow(ref y); // (anger slot)
                 BlankRow(ref y); // (threat slot)
+                return;
             }
-            else
-            {
-                Relationship rel = Player.GetRelations(e);
-                string status; Color c;
-                if (rel.AtWar) { status = Localizer.Token(GameText.AtWar); c = Color.LightPink; }
-                else if (rel.Treaty_Alliance) { status = Localizer.Token(GameText.Alliance); c = Color.Gold; }
-                else if (rel.Treaty_Peace) { status = $"Peace ({rel.PeaceTurnsRemaining})"; c = Color.LightGreen; }
-                else if (rel.Treaty_OpenBorders) { status = Localizer.Token(GameText.OpenBorders); c = Color.Cyan; }
-                else if (rel.Treaty_NAPact) { status = "NA Pact"; c = Color.LightGreen; }
-                else { status = "Neutral"; c = Color.White; }
-                TableRow(batch, col, ref y, maxY, "Status", status, c);
-                TableRow(batch, col, ref y, maxY, "Trade", rel.Treaty_Trade ? "Yes" : "No", rel.Treaty_Trade ? Color.LightGreen : Color.Gray);
-            }
-
-            if (e.isPlayer)
-                return; // blanks already reserved above
             if (UsingNewEspioange ? espionage.CanViewPersonality : IntelligenceLevel(e) > 0)
             {
                 string perso = $"{e.data.DiplomaticPersonality.Name} {e.data.EconomicPersonality.Name}";
