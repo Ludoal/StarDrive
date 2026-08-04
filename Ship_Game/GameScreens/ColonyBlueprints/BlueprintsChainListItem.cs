@@ -31,9 +31,10 @@ namespace Ship_Game
             batch.Draw(BlueprintsIcon, Pos, new Vector2(iconWidth, iconHeight), IconColor);
 
             var tCursor = new Vector2(X + 50f, Y);
-            batch.DrawString(Fonts.Arial20Bold, BlueprintsName, tCursor, Color.Orange);
+            // 14, not 20 (maintainer bench 301): the chain names crowded their rows
+            batch.DrawString(Fonts.Arial14Bold, BlueprintsName, tCursor, Color.Orange);
 
-            tCursor.Y += Fonts.Arial20Bold.LineSpacing;
+            tCursor.Y += Fonts.Arial14Bold.LineSpacing + 2;
             batch.DrawString(Fonts.Arial12Bold, Info, tCursor, Color.White);
         }
     }
