@@ -260,14 +260,14 @@ namespace Ship_Game
             {
                 Label(namePos, System.Name, NameFont, TextColor);
                 namePos.Y += NameFont.LineSpacing + 2;
-                Label(namePos, StarClassName(System.Sun.Id), ClassFont, TextColor);
+                Label(namePos, StarClassName(System.Sun.Id), ClassFont, Color.Gray);
                 return;
             }
 
             Color nameColor = Planet.Mining?.HasOpsOwner == true ? Planet.Mining.Owner.EmpireColor : TextColor;
             Label(namePos, Planet.Name, NameFont, nameColor);
             namePos.Y += NameFont.LineSpacing + 2;
-            Label(namePos, Planet.LocalizedCategory, ClassFont, TextColor);
+            Label(namePos, Planet.LocalizedCategory, ClassFont, Color.Gray);
         }
 
         // "star_red3" -> "Red", "Blue_giant" -> "Blue Giant": the sun ids ARE the game's star

@@ -129,7 +129,7 @@ namespace Ship_Game
             Label(namePos, Planet.Name, NameFont, EmpireColor);
             namePos.Y += NameFont.LineSpacing + 2;
             string category = Planet.LocalizedCategory;
-            Label(namePos, category, ClassFont, Cream);
+            Label(namePos, category, ClassFont, Color.Gray);
 
             float fertEnvMultiplier = Player.PlayerEnvModifier(Planet.Category);
             if (!fertEnvMultiplier.AlmostEqual(1))
