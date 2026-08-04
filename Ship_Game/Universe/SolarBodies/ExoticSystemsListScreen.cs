@@ -79,7 +79,7 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.Owner), Align = TableAlign.Center, Sortable = true },
                 // sized on the mining row's worst case: the 168px deploy button plus its two
                 // counters, STACKED on two lines now instead of inline (maintainer bench 303)
-                new UITable.Column { Title = "Actions", Width = 280, Align = TableAlign.Center },
+                new UITable.Column { Title = "Stations", Width = 280, Align = TableAlign.Center },
             });
             var sys = new Array<string>(); var names = new Array<string>();
             var prox = new Array<string>();

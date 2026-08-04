@@ -520,7 +520,9 @@ namespace Ship_Game
             Graphics.Font font = Fonts.Arial12Bold;
             var pos = new Vector2(dropdown.X - font.TextWidth(title) - TitleGap,
                                   dropdown.CenterY() - font.LineSpacing / 2);
-            batch.DrawString(font, title, pos, Color.Orange);
+            // the panels' own label grey (maintainer bench 304) - orange read louder than
+            // everything around it
+            batch.DrawString(font, title, pos, new Color(168, 172, 178));
         }
 
         void DrawUi(SpriteBatch batch, DrawTimes elapsed)

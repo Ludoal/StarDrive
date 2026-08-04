@@ -83,7 +83,9 @@ namespace Ship_Game
             base.LoadContent();
 
             Rectangle inner = PopupFrame.ContentArea(Rect);
-            RectF bkg = new(inner.X + 25, inner.Y + 4, inner.Width - 50, 80);
+            // 10px margins and air over the name row, like the game's Load/Save popup
+            // (maintainer bench 304)
+            RectF bkg = new(inner.X + 10, inner.Y + 16, inner.Width - 20, 80);
             Submenu background = Add(new Submenu(bkg, Hulls ? GameText.SaveHullDesign : GameText.SaveShipDesign));
 
             RectF subAllDesignsR = new(background.X, background.Y + 90, background.Width, inner.Bottom - (background.Y + 90));

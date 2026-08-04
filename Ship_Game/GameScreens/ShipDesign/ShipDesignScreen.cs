@@ -1290,10 +1290,11 @@ namespace Ship_Game
             // Bound to the list rather than the cartouche, it also stops travelling when the
             // cartouche grows leftwards on a pin, and it survives the frame it hides: unpinned,
             // the checkbox is the only way back.
-            // on the BROWSER's own tab row (maintainer bench 303): anchored to the Active
-            // frame's row, the compact frame - list-width now - ran the toggles into its tab
+            // Pin Active back on the ACTIVE frame's tab row (maintainer bench 304) - only
+            // Compact moves to the browser's row, where the narrow frame cannot bite it
             RectF listTab = hullSelectSub.Tabs[0].Rect;
-            PinActiveCheck = Checkbox(new Vector2(hullSelectPos.X, listTab.Y + 4),
+            RectF infoTab = infoSub.Tabs[0].Rect;
+            PinActiveCheck = Checkbox(new Vector2(hullSelectPos.X, infoTab.Y + 4),
                                       () => PinActiveDesign,
                                       (b) => { PinActiveDesign = b; },
                                       "Pin Active",
@@ -1317,8 +1318,8 @@ namespace Ship_Game
                                           "Show the Active Design cartouche in its compact form:\n"
                                         + "the browser's width, the hover overlay's stats.");
             // measured off Pin Active rather than a reserved slot, and spaced like the option row
-            CompactActiveCheck.SetAbsPos(PinActiveCheck.X - CompactActiveCheck.Width - 20,
-                                         PinActiveCheck.Y);
+            CompactActiveCheck.SetAbsPos(hullSelectSub.Right - CompactActiveCheck.Width,
+                                         CompactActiveCheck.Y);
 
             // Ludoal fork (spec v4): the HOVER cartouche takes the slot the Compared one used to
             // hold. Like its module counterpart it is the plain frame — no delta lane — showing

@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using Ship_Game.Ships;
+using Ship_Game.Gameplay; // HullSlot
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Universe;
@@ -115,9 +116,32 @@ namespace Ship_Game.GameScreens.ShipDesign
             float availH = Height - 20;
             float ms = Math.Min(Math.Min(availW, availH) / (maxSpan + 1f), 24f);
             int size = (int)(ms * (maxSpan + 1));
-            float shipW = gw * ms;
-            var shipOverlay = new Rectangle((int)(Right - 10 - shipW - (size - shipW) / 2f),
-                                            (int)(CenterY - size / 2f), size, size);
+            // ⚠ the GRID can carry empty rows and columns around the hull, and by how much
+            // varies per model (maintainer bench 304: the picture sat off-centre on some) -
+            // so the anchor is the HULL's own bounds, read from the slots exactly as
+            // RenderOverlay draws them, never the grid's
+            int minX = int.MaxValue, minY = int.MaxValue, maxX = 0, maxY = 0;
+            var hullSlots = s.ShipData?.BaseHull?.HullSlots;
+            if (hullSlots != null && hullSlots.Length > 0)
+            {
+                foreach (HullSlot hs in hullSlots)
+                {
+                    if (hs.Pos.X < minX) minX = hs.Pos.X;
+                    if (hs.Pos.Y < minY) minY = hs.Pos.Y;
+                    if (hs.Pos.X > maxX) maxX = hs.Pos.X;
+                    if (hs.Pos.Y > maxY) maxY = hs.Pos.Y;
+                }
+            }
+            else
+            {
+                minX = 0; minY = 0; maxX = gw - 1; maxY = gh - 1;
+            }
+            // RenderOverlay centres the GRID in the rect it is handed; the rect is placed so
+            // the HULL's right edge sits 10px off the frame, its centre on the panel's
+            float hullRight = (maxX + 1 - gw / 2f) * ms;                    // from the rect's centre
+            float hullCy    = (minY + (maxY - minY + 1) / 2f - gh / 2f) * ms;
+            var shipOverlay = new Rectangle((int)(Right - 10 - size / 2f - hullRight),
+                                            (int)(CenterY - size / 2f - hullCy), size, size);
             // Ludoal fork: the submenu frame without its tab (maintainer: "cadre style slider")
             // instead of a per-frame Menu2, which now draws the full popup window - far too much
             // furniture for a hover overlay. Same nine-slice the sliders on the Fleets page wear.

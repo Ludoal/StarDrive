@@ -129,7 +129,8 @@ namespace Ship_Game
             // 20 the tabs overhung the frame's border. Bounds come from ContentArea, which knows
             // what the frame's own edges eat (11 right, 30 at the foot).
             Rectangle inner = PopupFrame.ContentArea(Window);
-            RectF sub = new(inner.X + 25, inner.Y + 16, inner.Width - 50, 80); // air over the name row (maintainer bench 303)
+            // standard 10px margins (maintainer bench 304) + the 12px of air over the name row
+            RectF sub = new(inner.X + 10, inner.Y + 16, inner.Width - 20, 80);
             NameSave = new Submenu(sub, Title);
             TitlePosition = new Vector2(sub.X + 20, sub.Y + 45);
 
@@ -158,7 +159,10 @@ namespace Ship_Game
             {
                 // on the SAME row, left of Load/Save, and just "Export" - the window grew the
                 // 80px this button needs (maintainer bench 303)
-                var exportBtn = ButtonSmall(sub.X + sub.W - 176, EnterNameArea.Y - 2, "Export", b => ExportSave());
+                // blue - the fork's active-control plate (maintainer bench 304)
+                var exportBtn = Add(new UIButton(ButtonStyle.WideActive, new Vector2(sub.X + sub.W - 176, EnterNameArea.Y - 2), "Export"));
+                exportBtn.OnClick = b => ExportSave();
+                exportBtn.SetAbsSize(80, 24);
                 exportBtn.Tooltip = GameText.ThisWillLetYouEasily;
             }
             // (no base.LoadContent() here: it ran at the top, and calling it again would
