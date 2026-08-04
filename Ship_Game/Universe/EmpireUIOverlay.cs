@@ -141,10 +141,12 @@ namespace Ship_Game
             rx -= SpeedRoom + gap;
 
             // ── centre: the four groups ─────────────────────────────────────────────────────
+            // EMPIRE before GALAXY (maintainer, bench 305): you explore the galaxy FROM
+            // the empire - the bar reads inside-out
             (string launch, string text, ScreenGroups.Group group)[] groups =
             {
-                ("Planets",   "GALAXY",    ScreenGroups.Group.Galaxy),
                 ("Empire",    "EMPIRE",    ScreenGroups.Group.Empire),
+                ("Planets",   "GALAXY",    ScreenGroups.Group.Galaxy),
                 ("Diplomacy", "DIPLOMACY", ScreenGroups.Group.Diplomacy),
                 ("Fleets",    "DESIGN",    ScreenGroups.Group.Design),
             };
