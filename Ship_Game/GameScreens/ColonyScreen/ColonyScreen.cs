@@ -463,7 +463,7 @@ namespace Ship_Game
             Vector2 detailsVector = new Vector2(PFacilities.Rect.X + 15, PFacilities.Rect.Y + 35);
             CreateTradeDetails(detailsVector);
             // terraform details live on the ASSIGN LABOR block now (maintainer bench 299)
-            CreateTerraformingDetails(new Vector2(LaborRect.X + 15, LaborRect.Y + 28));
+            CreateTerraformingDetails(new Vector2(LaborRect.X + 15, LaborRect.Y + 38)); // air under the tab strip (bench 302)
             CreateDysonSwarmDetails(detailsVector);
         }
 
@@ -701,7 +701,7 @@ namespace Ship_Game
             // update applies.
             int lvlRows = Player.data.Traits.TerraformingLevel >= 3 ? 7
                         : Player.data.Traits.TerraformingLevel == 2 ? 4 : 3;
-            int spacing = (int)((LaborRect.H - 45) / lvlRows).Clamped(font.LineSpacing + 1, 34);
+            int spacing = (int)((LaborRect.H - 55) / lvlRows).Clamped(font.LineSpacing + 1, 34);
             int barWidth = (int)(LaborRect.W * 0.33f);
 
             AddLabel(ref TerraformTitle, pos, "", Font20, Color.White);

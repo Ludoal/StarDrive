@@ -87,7 +87,6 @@ namespace Ship_Game
             if (Universe.IsExiting)
                 return;
 
-            batch.DrawString(Fonts.Arial12Bold, "Fleets (with hotkeys):", TitlePos, Colors.Cream);
             ScreenGroups.DrawDesignTabTip(DesignTabs, Input.CursorPosition);
 
             EmpireUI.Draw(batch);
@@ -297,20 +296,16 @@ namespace Ship_Game
             {
                 StuffSelector = new Selector(SelectedStuffRect, new Color(0, 0, 0, 180));
                 StuffSelector.Draw(batch, elapsed);
-                var cursor = new Vector2(SelectedStuffRect.X + 20, SelectedStuffRect.Y + 10);
-
                 FleetDataNode node = SelectedNodeList[0];
                 Ship ship = node.Ship;
-                if (ship == null)
-                {
-                    batch.DrawString(Fonts.Arial20Bold, $"({node.ShipName})", cursor, Colors.Cream);
-                }
-                else
-                {
-                    string text = ship.VanityName.NotEmpty()
+                string text = ship == null ? $"({node.ShipName})"
+                            : ship.VanityName.NotEmpty()
                                 ? ship.VanityName : $"{ship.Name} ({ship.ShipData.Role})";
-                    batch.DrawString(Fonts.Arial20Bold, text, cursor, Colors.Cream);
-                }
+                // centred on the cartouche, like the fleet name (maintainer bench 302)
+                var cursor = new Vector2(
+                    SelectedStuffRect.X + (SelectedStuffRect.W - Fonts.Arial20Bold.TextWidth(text)) * 0.5f,
+                    SelectedStuffRect.Y + 10);
+                batch.DrawString(Fonts.Arial20Bold, text, cursor, Colors.Cream);
 
                 if (ShowTargetingPanels)
                 {

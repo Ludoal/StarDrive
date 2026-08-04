@@ -314,7 +314,10 @@ namespace Ship_Game
 
             ResetLists();
 
-            var ordersBarPos = new Vector2(SelectedStuffRect.X + 20, SelectedStuffRect.Y + 65);
+            // centred on the cartouche (maintainer bench 302): the stance bar's first row is
+            // seven 25px buttons, 175 wide - StanceButtons owns that arithmetic
+            var ordersBarPos = new Vector2(SelectedStuffRect.X + (SelectedStuffRect.W - 175f) * 0.5f,
+                                           SelectedStuffRect.Y + 65);
             OrdersButtons = new(this, ordersBarPos);
             Add(OrdersButtons);
 
