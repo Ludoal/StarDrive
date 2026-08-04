@@ -80,7 +80,7 @@ namespace Ship_Game
 
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             // 38 = the 34px row plus the list's 4px item padding
-            float contentH = UITable.ContentHeightFor(105, Math.Max(3, player.FleetPatrols.Count), 38, fullAvail);
+            float contentH = UITable.ContentHeightFor(99, Math.Max(3, player.FleetPatrols.Count), 38, fullAvail);
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 2,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;

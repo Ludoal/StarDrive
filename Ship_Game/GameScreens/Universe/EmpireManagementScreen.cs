@@ -117,7 +117,7 @@ namespace Ship_Game
             float fullAvail = Math.Min(ScreenHeight, 1080) - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             const float GovernorH = 222;
             float bandH = GovernorH + 7; // the 7px the rect derivation below eats back
-            float contentH = UITable.ContentHeightFor(105 + bandH, Math.Max(3, planets.Count), 84, fullAvail);
+            float contentH = UITable.ContentHeightFor(102 + bandH, Math.Max(3, planets.Count), 84, fullAvail);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 0,
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
             RectF client = EmpireTabs.ClientArea;

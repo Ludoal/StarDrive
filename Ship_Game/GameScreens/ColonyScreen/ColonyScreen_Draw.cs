@@ -237,8 +237,8 @@ namespace Ship_Game
             EditNameButton = new Rectangle((int)(cursor.X + (double)Font20.MeasureString(P.Name).X + 12.0), (int)(cursor.Y + (double)(Font20.LineSpacing / 2) - ResourceManager.Texture("NewUI/icon_build_edit").Height / 2) - 2, ResourceManager.Texture("NewUI/icon_build_edit").Width, ResourceManager.Texture("NewUI/icon_build_edit").Height);
             // the bright variant at rest too (maintainer bench: the pencil was near-invisible),
             // dimmed a step so the hover still answers
-            batch.Draw(ResourceManager.Texture("NewUI/icon_build_edit_hover2"), EditNameButton,
-                       PlanetName.HandlingInput ? Color.White : Color.White.Alpha(0.75f));
+            batch.Draw(ResourceManager.Texture("NewUI/icon_build_edit_hover1"), EditNameButton,
+                       PlanetName.HandlingInput ? Color.White : Color.White.Alpha(0.75f)); // hover1: the Patrols pencil's own lit brown (bench 308)
 
             // Ludoal fork: the eye by the name (maintainer design) - the row is the planet's
             // identity, the eye is "go to it" on the map, beside the rename pencil
