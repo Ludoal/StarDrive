@@ -40,6 +40,8 @@ namespace Ship_Game.UI
         {
             public string Title = "";
             public SubTexture Icon;   // header icon instead of text (money, troops, strength)
+            public Color? Badge;      // small corner dot: two columns may share an icon and
+                                      // still tell apart (bench 305 - the intrinsic pair)
             public int Width;         // fixed px - the column doctrine
             public int MinWidth;      // AutoSize floor: zero means the data alone decides
             public TableAlign Align = TableAlign.Left;
@@ -108,6 +110,18 @@ namespace Ship_Game.UI
             // MinWidth floors the result when set (maintainer, 4 Aug) - the data alone
             // decides otherwise
             c.Width = Math.Max((int)w + 2 * PadX, c.MinWidth);
+        }
+
+        // a capped table never cuts a row in half (maintainer bench 305): the height a
+        // screen asks for snaps DOWN to whole rows when the resolution cannot hold them
+        // all. `overhead` is everything that is not rows - header band, margins, any
+        // reserved footer - and `pitch` the row height PLUS the list's item padding.
+        public static float ContentHeightFor(float overhead, int rows, int pitch, float available)
+        {
+            float wanted = overhead + rows * pitch;
+            if (wanted <= available)
+                return wanted;
+            return overhead + (int)((available - overhead) / pitch) * pitch;
         }
 
         // if the natural widths exceed what the resolution allows, the FOLDABLE columns
@@ -196,8 +210,11 @@ namespace Ship_Game.UI
             {
                 if (c.Icon != null)
                 {
-                    batch.Draw(c.Icon, new Rectangle(c.Rect.X + c.Rect.Width / 2 - c.Icon.Width / 2,
-                                                     HeaderY - 2, c.Icon.Width, c.Icon.Height), Color.White);
+                    var iconR = new Rectangle(c.Rect.X + c.Rect.Width / 2 - c.Icon.Width / 2,
+                                              HeaderY - 2, c.Icon.Width, c.Icon.Height);
+                    batch.Draw(c.Icon, iconR, Color.White);
+                    if (c.Badge != null)
+                        batch.FillRectangle(new RectF(iconR.Right - 3, iconR.Bottom - 3, 5, 5), c.Badge.Value);
                 }
                 else if (c.Title.NotEmpty())
                 {

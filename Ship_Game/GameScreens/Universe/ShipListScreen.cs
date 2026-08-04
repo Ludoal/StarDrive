@@ -129,7 +129,7 @@ namespace Ship_Game
 
             int shipRows = Universe.Player.OwnedShips.Count;
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
-            float contentH = Math.Min(fullAvail, 135 + Math.Max(5, shipRows) * 34);
+            float contentH = UITable.ContentHeightFor(135, Math.Max(5, shipRows), 34, fullAvail);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 1,
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
 

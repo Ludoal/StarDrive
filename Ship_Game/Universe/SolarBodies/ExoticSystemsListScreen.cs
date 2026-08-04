@@ -110,11 +110,7 @@ namespace Ship_Game
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             // 48 = the 44px row plus the list's 4px item padding - counting 44 alone kept
             // a scrollbar alive with room to spare (maintainer bench 291)
-            // capped height snaps to WHOLE rows (Lek's review, bench 305): the raw cap cut
-            // the last visible line in half
-            float contentH = 105 + Math.Max(3, ExploredSolarBodies.Count) * 48;
-            if (contentH > fullAvail)
-                contentH = 105 + (int)((fullAvail - 105) / 48) * 48;
+            float contentH = UITable.ContentHeightFor(105, Math.Max(3, ExploredSolarBodies.Count), 48, fullAvail);
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 1,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;

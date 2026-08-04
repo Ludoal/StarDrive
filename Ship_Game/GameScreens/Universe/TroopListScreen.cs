@@ -69,7 +69,7 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, troops);
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             // 118 = tab strip + the filter/info lane + headers + a line at the bottom
-            float contentH = Math.Min(fullAvail, 135 + Math.Max(3, rows) * 28);
+            float contentH = UITable.ContentHeightFor(135, Math.Max(3, rows), 28, fullAvail);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 2,
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
             RectF client = EmpireTabs.ClientArea;

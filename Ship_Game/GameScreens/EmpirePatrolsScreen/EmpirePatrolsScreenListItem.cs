@@ -59,6 +59,7 @@ namespace Ship_Game
             RenamePatrol.Tooltip = "Rename this patrol plan";
             DeletePatrol = new TexturedButton(new Rectangle(), "NewUI/icon_queue_delete", "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2");
             DeletePatrol.Tooltip = "Delete this patrol plan";
+            DeletePatrol.BaseColor = Color.Red; // destruction reads red (maintainer bench 305)
             SubTexture editTex = ResourceManager.Texture("NewUI/icon_build_edit");
             SubTexture delTex = ResourceManager.Texture("NewUI/icon_queue_delete");
             int bx = (int)(nameLbl.X + Fonts.Arial12Bold.TextWidth(FleetPatrol.Name)) + 10;

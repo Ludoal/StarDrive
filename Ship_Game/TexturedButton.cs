@@ -28,7 +28,7 @@ namespace Ship_Game
 		public void Draw(SpriteBatch batch)
 		{
 			SubTexture tex = ResourceManager.Texture(Hover ? hPath : tPath);
-			batch.Draw(tex, r, Color.White);
+			batch.Draw(tex, r, BaseColor); // Ludoal fork: the delete icons wear red (bench 305)
         }
 
 		public bool HandleInput(InputState input)

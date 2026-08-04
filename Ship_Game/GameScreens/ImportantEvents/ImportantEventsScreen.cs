@@ -54,7 +54,7 @@ namespace Ship_Game
             Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * GameScreens.ScreenGroups.FrameMargin) - 66);
 
             float fullAvail = ScreenHeight - GameScreens.ScreenGroups.TabRowY - GameScreens.ScreenGroups.FrameMargin;
-            float contentH = Math.Min(fullAvail, 105 + Math.Max(3, Events.Length) * 84);
+            float contentH = UITable.ContentHeightFor(105, Math.Max(3, Events.Length), 84, fullAvail);
             GalaxyTabs = GameScreens.ScreenGroups.AddGroupTabs(this, GameScreens.ScreenGroups.GalaxyTabTitles, 3,
                                                                OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;

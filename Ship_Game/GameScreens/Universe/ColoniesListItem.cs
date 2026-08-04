@@ -262,14 +262,17 @@ namespace Ship_Game
             // every stat with a fixed decimal - right-aligned + constant fraction =
             // aligned on the point (maintainer bench 293); population reads "x / y"
             // like the Planets tab, Max Pop merged in (bench 294)
-            string F1(float v) => v.ToString("0.0", CultureInfo.InvariantCulture);
+            // the value the cell SAYS is the value that picks the colour: -0.04 rounds to
+            // "0.0" at one decimal, so it must neither read "-0.0" nor wear pink (bench 305)
+            float R1(float v) => Math.Abs(v) < 0.05f ? 0f : v;
+            string F1(float v) => R1(v).ToString("0.0", CultureInfo.InvariantCulture);
             string popString = P.PopulationStringForPlayer;
             int popParen = popString.IndexOf(" (");
             DrawStatValue(batch, PopRect, popParen < 0 ? popString : popString.Substring(0, popParen), Color.White);
-            DrawStatValue(batch, FoodRect, F1(P.Food.NetIncome), P.Food.NetIncome >= 0f ? Color.White : Color.LightPink);
-            DrawStatValue(batch, ProdRect, F1(P.Prod.NetIncome), P.Prod.NetIncome >= 0f ? Color.White : Color.LightPink);
+            DrawStatValue(batch, FoodRect, F1(P.Food.NetIncome), R1(P.Food.NetIncome) >= 0f ? Color.White : Color.LightPink);
+            DrawStatValue(batch, ProdRect, F1(P.Prod.NetIncome), R1(P.Prod.NetIncome) >= 0f ? Color.White : Color.LightPink);
             DrawStatValue(batch, ResRect, F1(P.Res.NetIncome), Color.White);
-            DrawStatValue(batch, MoneyRect, F1(P.Money.NetRevenue), P.Money.NetRevenue >= 0f ? Color.White : Color.LightPink);
+            DrawStatValue(batch, MoneyRect, F1(P.Money.NetRevenue), R1(P.Money.NetRevenue) >= 0f ? Color.White : Color.LightPink);
 
             // Ludoal fork (wishlist): fertility (env-adjusted, tinted by racial multiplier), richness
             float envMult = Universe.Player.PlayerEnvModifier(P.Category);
@@ -305,7 +308,7 @@ namespace Ship_Game
                 QueueItem qi = queue[0];
                 qi.DrawAt(P.Universe, batch, new Vector2(QueueRect.X + 10, QueueRect.Y + QueueRect.Height / 2 - 30));
                 batch.Draw((ApplyProdHover ? ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover1") : ResourceManager.Texture("NewUI/icon_queue_rushconstruction")), ApplyProductionRect, Color.White);
-                batch.Draw((CancelProdHover ? ResourceManager.Texture("NewUI/icon_queue_delete_hover1") : ResourceManager.Texture("NewUI/icon_queue_delete")), CancelProductionRect, Color.White);
+                batch.Draw((CancelProdHover ? ResourceManager.Texture("NewUI/icon_queue_delete_hover1") : ResourceManager.Texture("NewUI/icon_queue_delete")), CancelProductionRect, Color.Red); // destruction reads red (bench 305)
                 DrawQueueStats(batch, queue.Length);
             }
         }

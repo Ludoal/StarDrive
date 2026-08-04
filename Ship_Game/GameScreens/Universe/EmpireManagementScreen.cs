@@ -53,13 +53,16 @@ namespace Ship_Game
             Color MutedSep = new Color(70, 70, 70);
             Table = new UITable(new[]
             {
-                new UITable.Column { Title = Localizer.Token(GameText.System) },
-                new UITable.Column { Title = Localizer.Token(GameText.Planet), MinWidth = 150 },
-                // biospheres/crystal, not food/production: the INTRINSIC pair wears its own
-                // icons and a muted gray separator to sub-group it (maintainer bench 294)
-                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_biospheres"), Align = TableAlign.Number,
+                new UITable.Column { Title = Localizer.Token(GameText.System), Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.Planet), MinWidth = 150, Sortable = true },
+                // the ORIGINAL food/production icons again, each wearing a small corner
+                // badge so the intrinsic pair still tells apart from the yield columns
+                // (Lek's review, bench 305); the muted separator sub-groups them
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"), Badge = Color.LightGreen,
+                                     Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.Fertility), SepColor = MutedSep },
-                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_exotic_resource"), Align = TableAlign.Number,
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Badge = Color.Orange,
+                                     Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.Richness), SepColor = MutedSep },
                 // population reads "x / y" like the Planets tab - Max Pop merged in; the
                 // whole stat block keeps MUTED gray separators (bench 294, like the old
@@ -107,7 +110,7 @@ namespace Ship_Game
             float fullAvail = Math.Min(ScreenHeight, 1080) - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             const float GovernorH = 222;
             float bandH = GovernorH + 7; // the 7px the rect derivation below eats back
-            float contentH = Math.Min(fullAvail, 105 + Math.Max(3, planets.Count) * 84 + bandH);
+            float contentH = UITable.ContentHeightFor(105 + bandH, Math.Max(3, planets.Count), 84, fullAvail);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 0,
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
             RectF client = EmpireTabs.ClientArea;
@@ -139,7 +142,11 @@ namespace Ship_Game
                 GovernorDetails = Add(new GovernorDetailsComponent(this, Universe,  planets[0], GovernorRect));
             else
                 Log.Warning("EmpireManagementScreen: player planet list is EMPTY at ctor");
-            ResetColoniesList(planets);
+            // System ascending is the standing sort, and its header wears the amber
+            // (Lek's review, bench 305 - the table opened unsorted and unmarked)
+            Table.Columns[0].Sorted = true;
+            Table.Columns[0].Ascending = true;
+            ResetColoniesList(planets.OrderBy(p => p.System.Name));
             // the troop count and its food bill left this screen (maintainer, 4 Aug):
             // the Troops Array carries both on its own filter line now
         }
@@ -360,6 +367,15 @@ namespace Ship_Game
             int clicked = Table.HandleInput(input);
             if (clicked >= 0)
             {
+                bool asc = Table.SetSorted(clicked);
+                GameAudio.BlipClick();
+                var planets = Universe.Player.GetPlanets();
+                if (clicked <= 1) // the two name columns sort as text
+                {
+                    Func<Planet, string> name = clicked == 0 ? p => p.System.Name : p => p.Name;
+                    ResetColoniesList(asc ? planets.OrderBy(name) : planets.OrderByDescending(name));
+                    return true;
+                }
                 Func<Planet, float> selector = clicked switch
                 {
                     2 => p => p.FertilityFor(Universe.Player),
@@ -370,9 +386,6 @@ namespace Ship_Game
                     7 => p => p.Money.NetRevenue,
                     _ => p => p.Res.NetIncome,
                 };
-                bool asc = Table.SetSorted(clicked);
-                GameAudio.BlipClick();
-                var planets = Universe.Player.GetPlanets();
                 ResetColoniesList(asc ? planets.OrderBy(selector) : planets.OrderByDescending(selector));
                 return true;
             }

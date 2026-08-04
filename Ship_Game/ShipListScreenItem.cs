@@ -63,6 +63,7 @@ namespace Ship_Game
             PatrolButton = new TexturedButton(new Rectangle(), "NewUI/icon_order_patrol", "NewUI/icon_order_patrol_hover1", "NewUI/icon_order_patrol_hover2");
             RefitButton = new TexturedButton(new Rectangle(), "NewUI/icon_queue_rushconstruction", "NewUI/icon_queue_rushconstruction_hover1", "NewUI/icon_queue_rushconstruction_hover2");
             ScrapButton = new TexturedButton(new Rectangle(), "NewUI/icon_queue_delete", "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2");
+            ScrapButton.BaseColor = Color.Red; // destruction reads red (maintainer bench 305)
 
             if (Ship.IsPlatformOrStation || Ship.Stats.Thrust <= 0f)
             {

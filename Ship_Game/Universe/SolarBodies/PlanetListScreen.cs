@@ -152,10 +152,7 @@ namespace Ship_Game
 
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             // 48 = the 44px row plus the list's 4px item padding
-            // capped height snaps to WHOLE rows, like Exotic (Lek's review, bench 305)
-            float contentH = 135 + Math.Max(3, ExploredPlanets.Count) * 48;
-            if (contentH > fullAvail)
-                contentH = 135 + (int)((fullAvail - 135) / 48) * 48;
+            float contentH = UITable.ContentHeightFor(135, Math.Max(3, ExploredPlanets.Count), 48, fullAvail);
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 0,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
