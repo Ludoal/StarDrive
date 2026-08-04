@@ -134,13 +134,17 @@ namespace Ship_Game
 
         void UpdateTerraformTab()
         {
+            // the block shares the Assign Labor frame now: the sliders yield while the
+            // terraform tab is up - BEFORE the level gate, because the tab can exist on a
+            // terraformable planet before any terraform tech
+            AssignLabor.SlidersVisible = !IsTerraformTabSelected;
             if (TerraformLevel < 1)
                 return;
 
+            TerraformTitle.Visible = false; // the tab names the block, the Font20 title retired
             TerrainTerraformTitle.Visible =
             TerraformStatusTitle.Visible  =
-            TerraformStatus.Visible       =
-            TerraformTitle.Visible        = IsTerraformTabSelected;
+            TerraformStatus.Visible       = IsTerraformTabSelected;
 
             TerraformersHereTitle.Visible =
             TerraformersHere.Visible      = IsTerraformTabSelected && Terraformable;
@@ -189,7 +193,10 @@ namespace Ship_Game
         }
 
         bool IsDysonSwarmTabSelected => PFacilities.IsTabSelected(Localizer.Token(GameText.DysonSwarm));
-        bool IsTerraformTabSelected  => PFacilities.IsTabSelected(Localizer.Token(GameText.BB_Tech_Terraforming_Name));
+        // Ludoal fork (maintainer bench 299): Terraforming is a tab of the Assign Labor
+        // block now, not of the facilities row
+        bool IsTerraformTabSelected  => AssignLabor.TitleMenu != null
+                                     && AssignLabor.TitleMenu.IsTabSelected(Localizer.Token(GameText.BB_Tech_Terraforming_Name));
         bool IsTradeTabSelected      => PFacilities.IsTabSelected(Localizer.Token(GameText.Trade2)); // Ludoal fork: title-based, indices shifted by Stats+
         // ⚠ the literal "Stats", NOT the Statistics2 token: the tab is ADDED with the shortened
         // literal (one-line row), so matching the token never hit and the tab fell through to

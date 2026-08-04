@@ -23,6 +23,7 @@ namespace Ship_Game
         readonly Submenu PlanetInfo;
         readonly Submenu PStorage;
         readonly Submenu PFacilities;
+        RectF LaborRect; // the Assign Labor block - the terraform details anchor on it now
         readonly UITextEntry PlanetName;
         readonly Rectangle PlanetIcon;
         public EmpireUIOverlay Eui;
@@ -228,7 +229,13 @@ namespace Ship_Game
             Submenu pDescription = new(gridLeft, PlanetInfo.Bottom + Pad, colLeftW, governorH);
 
             var labor = new RectF(gridLeft, pDescription.Bottom + Pad, colLeftW, laborH);
-            AssignLabor = Add(new AssignLaborComponent(P, labor, useTitleFrame: true));
+            LaborRect = labor;
+            // Terraforming rides as a second tab of this block (maintainer bench 299): the
+            // facilities row was folding to a second line once CA's terraform tab joined it,
+            // and the terraform panel is light enough to live here
+            bool terraTab = Player.data.Traits.TerraformingLevel > 0 || P.Terraformable;
+            AssignLabor = Add(new AssignLaborComponent(P, labor, useTitleFrame: true,
+                terraTab ? new LocalizedText[] { GameText.AssignLabor, GameText.BB_Tech_Terraforming_Name } : null));
 
             RectF pStorageR = new(gridLeft, labor.Bottom + Pad, colLeftW,
                                   gridBottom - (labor.Bottom + Pad));
@@ -447,7 +454,8 @@ namespace Ship_Game
             P.RefreshBuildingsWeCanBuildHere();
             Vector2 detailsVector = new Vector2(PFacilities.Rect.X + 15, PFacilities.Rect.Y + 35);
             CreateTradeDetails(detailsVector);
-            CreateTerraformingDetails(detailsVector);
+            // terraform details live on the ASSIGN LABOR block now (maintainer bench 299)
+            CreateTerraformingDetails(new Vector2(LaborRect.X + 15, LaborRect.Y + 28));
             CreateDysonSwarmDetails(detailsVector);
         }
 
@@ -460,9 +468,7 @@ namespace Ship_Game
             PFacilities.AddTab(StatsPlusTabTitle); // Ludoal fork: Stats+ add-on tab, next to its witness
             PFacilities.AddTab(GameText.Description);
             PFacilities.AddTab(GameText.Trade2);
-
-            if (Player.data.Traits.TerraformingLevel > 0 || P.Terraformable)
-                PFacilities.AddTab(GameText.BB_Tech_Terraforming_Name);
+            // Terraforming is a tab of the ASSIGN LABOR block now (maintainer bench 299)
 
             if (DysonSwarmTabAllowed)
             {
@@ -676,18 +682,21 @@ namespace Ship_Game
 
         void CreateTerraformingDetails(Vector2 pos)
         {
-            Font font    = Font14;
-            int spacing  = font.LineSpacing + 2;
-            int barWidth = (int)(PFacilities.Width * 0.33f);
+            // compact cascade (maintainer bench 299): the block lives on the Assign Labor
+            // frame now, 150px tall - Font12 rows, no Font20 title (the tab names it), one
+            // line per datum. The title label stays allocated but never shows.
+            Font font    = Fonts.Arial12;
+            int spacing  = font.LineSpacing + 3;
+            int barWidth = (int)(LaborRect.W * 0.33f);
 
             AddLabel(ref TerraformTitle, pos, "", Font20, Color.White);
 
-            Vector2 statusTitlePos = new Vector2(pos.X, pos.Y + spacing*2);
+            Vector2 statusTitlePos = new Vector2(pos.X, pos.Y);
             AddLabel(ref TerraformStatusTitle, statusTitlePos, GameText.TerraformingStatus, font, Color.White);
 
-            float indent = font.MeasureString(TerraformStatusTitle.Text).X + 125;
+            float indent = font.MeasureString(TerraformStatusTitle.Text).X + 100;
 
-            Vector2 statusPos = new Vector2(pos.X + indent, pos.Y + spacing*2);
+            Vector2 statusPos = new Vector2(pos.X + indent, pos.Y);
             AddLabel(ref TerraformStatus, statusPos, " ", font, Color.Gray);
 
             Vector2 numTerraformersTitlePos = new Vector2(pos.X, TerraformStatusTitle.Y + spacing);
@@ -696,13 +705,13 @@ namespace Ship_Game
             Vector2 numTerraformersPos = new Vector2(pos.X + indent, numTerraformersTitlePos.Y);
             AddLabel(ref TerraformersHere, numTerraformersPos, " ", font, Color.White);
 
-            Vector2 terraVolcanoTitlePos = new Vector2(pos.X, numTerraformersTitlePos.Y + spacing*2);
+            Vector2 terraVolcanoTitlePos = new Vector2(pos.X, numTerraformersTitlePos.Y + spacing);
             AddLabel(ref TerrainTerraformTitle, terraVolcanoTitlePos, " ", font, Color.Gray);
 
             Vector2 terraVolcanoPos = new Vector2(pos.X + indent, terraVolcanoTitlePos.Y);
             AddLabel(ref VolcanoTerraformDone, terraVolcanoPos, GameText.TerraformersDone, font, Color.Green);
 
-            Rectangle terraVolcanoRect = new Rectangle((int)terraVolcanoPos.X, (int)terraVolcanoPos.Y, barWidth, 20);
+            Rectangle terraVolcanoRect = new Rectangle((int)terraVolcanoPos.X, (int)terraVolcanoPos.Y, barWidth, 14);
             AddProgressBar(ref TerrainTerraformBar, terraVolcanoRect, 100, "brown", percentage: true);
 
             Vector2 terraTileTitlePos = new Vector2(pos.X, terraVolcanoTitlePos.Y + spacing);
@@ -711,7 +720,7 @@ namespace Ship_Game
             Vector2 terraTilePos = new Vector2(pos.X + indent, terraTileTitlePos.Y);
             AddLabel(ref TileTerraformDone, terraTilePos, GameText.TerraformersDone, font, Color.Green);
 
-            Rectangle terraTileRect = new Rectangle((int)terraTilePos.X, (int)terraTilePos.Y, barWidth, 20);
+            Rectangle terraTileRect = new Rectangle((int)terraTilePos.X, (int)terraTilePos.Y, barWidth, 14);
             AddProgressBar(ref TileTerraformBar, terraTileRect, 100, "green", percentage: true);
 
             Vector2 terraPlanetTitlePos = new Vector2(pos.X, terraTileTitlePos.Y + spacing);
@@ -720,10 +729,10 @@ namespace Ship_Game
             Vector2 terraPlanetPos = new Vector2(pos.X + indent, terraPlanetTitlePos.Y);
             AddLabel(ref PlanetTerraformDone, terraPlanetPos, GameText.TerraformersDone, font, Color.Green);
 
-            Rectangle terraPlanetRect = new Rectangle((int)terraPlanetPos.X, (int)terraPlanetPos.Y, barWidth, 20);
+            Rectangle terraPlanetRect = new Rectangle((int)terraPlanetPos.X, (int)terraPlanetPos.Y, barWidth, 14);
             AddProgressBar(ref PlanetTerraformBar, terraPlanetRect, 100, "blue", percentage: true);
 
-            Vector2 targetFertilityTitlePos = new Vector2(pos.X, terraPlanetTitlePos.Y + spacing * 2);
+            Vector2 targetFertilityTitlePos = new Vector2(pos.X, terraPlanetTitlePos.Y + spacing);
             AddLabel(ref TargetFertilityTitle, targetFertilityTitlePos, GameText.TerraformTargetFert, font, Color.Gray);
 
             Vector2 targetFertilityPos = new Vector2(pos.X + indent, targetFertilityTitlePos.Y);

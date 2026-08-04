@@ -15,7 +15,14 @@ namespace Ship_Game
         Submenu Title;
         bool UseTitle;
 
-        public AssignLaborComponent(Planet p, RectF rect, bool useTitleFrame) : base(rect)
+        // Ludoal fork (maintainer bench 299): the title row can carry EXTRA TABS - the
+        // Terraforming tab migrated here from the facilities block, whose row was folding
+        // to a second line. The host wires OnTabChange and hides the sliders itself.
+        public Submenu TitleMenu => Title;
+        public bool SlidersVisible { get => Sliders.Visible; set => Sliders.Visible = value; }
+
+        public AssignLaborComponent(Planet p, RectF rect, bool useTitleFrame,
+                                    LocalizedText[] titleTabs = null) : base(rect)
         {
             Planet = p;
             UseTitle = useTitleFrame;
@@ -27,7 +34,7 @@ namespace Ship_Game
 
             if (useTitleFrame)
             {
-                Title = Add(new Submenu(rect, GameText.AssignLabor));
+                Title = Add(new Submenu(rect, titleTabs ?? new LocalizedText[] { GameText.AssignLabor }));
             }
 
             RequiresLayout = true;

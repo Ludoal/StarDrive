@@ -119,8 +119,12 @@ namespace Ship_Game
             ProdDropDown.AddOption(Localizer.Token(GameText.Import));
             ProdDropDown.AddOption(Localizer.Token(GameText.Export));
             ProdDropDown.ActiveIndex = (int)P.PS;
-            ApplyProductionRect = new Rectangle(QueueRect.X + QueueRect.Width - 50, QueueRect.Y + 10, ResourceManager.Texture("NewUI/icon_queue_rushconstruction").Width, ResourceManager.Texture("NewUI/icon_queue_rushconstruction").Height);
-            CancelProductionRect = new Rectangle(QueueRect.X + QueueRect.Width - 20, QueueRect.Y + 10, ResourceManager.Texture("NewUI/icon_queue_delete").Width, ResourceManager.Texture("NewUI/icon_queue_delete").Height);
+            // on the PROGRESS BAR's line, not the name's (maintainer bench 299) - the item
+            // name gets the column's full width. The bar sits one bold line under the name
+            // anchor, which itself rides at mid-height - 30 (QueueItem.DrawAt).
+            int iconY = QueueRect.Y + QueueRect.Height / 2 - 30 + Fonts.Arial12Bold.LineSpacing + 3;
+            ApplyProductionRect = new Rectangle(QueueRect.X + QueueRect.Width - 50, iconY, ResourceManager.Texture("NewUI/icon_queue_rushconstruction").Width, ResourceManager.Texture("NewUI/icon_queue_rushconstruction").Height);
+            CancelProductionRect = new Rectangle(QueueRect.X + QueueRect.Width - 20, iconY, ResourceManager.Texture("NewUI/icon_queue_delete").Width, ResourceManager.Texture("NewUI/icon_queue_delete").Height);
             UpdateQueueItemsList();
 
             base.PerformLayout();

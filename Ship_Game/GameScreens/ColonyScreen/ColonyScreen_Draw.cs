@@ -534,6 +534,16 @@ namespace Ship_Game
                 return;
             }
 
+            // terraform lives on the ASSIGN LABOR block now (maintainer bench 299): its bars
+            // draw whenever ITS tab is up, BEFORE the facilities branches - those return, and
+            // the two tab rows are independent (Trade and Terraforming can be up together)
+            if (IsTerraformTabSelected)
+            {
+                if (NeedLevel1Terraform && TerraformLevel >= 1) TerrainTerraformBar.Draw(batch);
+                if (NeedLevel2Terraform && TerraformLevel >= 2) TileTerraformBar.Draw(batch);
+                if (NeedLevel3Terraform && TerraformLevel >= 3) PlanetTerraformBar.Draw(batch);
+            }
+
             if (IsStatTabSelected)
             {
                 DrawMoney(ref bCursor, batch);
@@ -555,14 +565,6 @@ namespace Ship_Game
                 OutgoingFoodBar.Draw(batch);
                 OutgoingProdBar.Draw(batch);
                 OutgoingColoBar.Draw(batch);
-                return;
-            }
-
-            if (IsTerraformTabSelected)
-            {
-                if (NeedLevel1Terraform && TerraformLevel >= 1) TerrainTerraformBar.Draw(batch);
-                if (NeedLevel2Terraform && TerraformLevel >= 2) TileTerraformBar.Draw(batch);
-                if (NeedLevel3Terraform && TerraformLevel >= 3) PlanetTerraformBar.Draw(batch);
                 return;
             }
 

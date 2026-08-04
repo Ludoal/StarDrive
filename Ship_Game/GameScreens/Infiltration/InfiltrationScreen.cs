@@ -32,6 +32,11 @@ namespace Ship_Game.GameScreens
         Rectangle LeftRect;
 
         Array<EmpireColumn> Columns = new();
+        // Combined Arms fields more than eight majors (maintainer bench 299): the row
+        // scrolls by whole columns; this screen's widgets are real UI children, so a
+        // scroll REPOSITIONS them and hides the columns outside the window
+        readonly ScreenGroups.RaceRowScroller Scroller = new();
+        int AppliedFirst = -1; // last scroll position applied to the widgets
 
         Font Font12 = Fonts.Arial12;
         Font Font12Bold = Fonts.Arial12Bold;
@@ -59,6 +64,8 @@ namespace Ship_Game.GameScreens
             public Empire E;
             public Ship_Game.Espionage Esp; // null for the player
             public Rectangle Rect;
+            public Rectangle Base;   // unscrolled position - Rect = Base shifted by the scroll
+            public bool Shown = true;
             public FloatSlider Weight;      // infiltration weight (others) / defense weight (player)
             public FloatSlider Budget;      // player only
             public FloatSlider Limit;       // others only: infiltration level ceiling
@@ -83,6 +90,7 @@ namespace Ship_Game.GameScreens
             readonly LocalizedText Folded, Full;
             readonly bool FoldNeeded;
             bool ShowsFolded;
+            public bool ColumnShown = true; // the scroll window; Sync composes it in
 
             public OpBox(GameScreen screen, Ship_Game.Espionage esp, Empire player, byte level,
                          InfiltrationOpsType type, LocalizedText folded, LocalizedText full,
@@ -124,10 +132,11 @@ namespace Ship_Game.GameScreens
                     Box.Text = wantFolded ? Folded : Full;
                     Box.PerformLayout(); // the hit rect follows the text
                 }
-                Box.Enabled = reached;
+                Box.Enabled = reached && ColumnShown;
+                Box.Visible = ColumnShown;
                 Flag = reached && Esp.IsOperationActive(Type);
                 Box.TextColor = reached ? Color.White : Color.Gray;
-                Turns.Visible = reached;
+                Turns.Visible = reached && ColumnShown;
                 if (reached)
                 {
                     Turns.Text = Esp.RemainingTurnsForOps(Type);
@@ -173,19 +182,26 @@ namespace Ship_Game.GameScreens
             Vector2 closePos = ScreenGroups.GroupClosePos(GroupTabs.ClientArea);
             CloseButton(closePos.X, closePos.Y);
 
-            // the race-column doctrine: one bounded pitch, the row centred in its hugging frame
+            // the race-column doctrine: one bounded pitch, the row centred in its hugging
+            // frame - and scrolling by whole columns when the majors outnumber the window
             RectF client = GroupTabs.ClientArea;
             int colW = ScreenGroups.RaceColumnPitch(ScreenWidth, majors.Length);
-            int x0 = ScreenGroups.RaceColumnsLeft(client, colW, majors.Length);
+            int visCols = ScreenGroups.RaceVisibleColumns(ScreenWidth, majors.Length);
+            int x0 = ScreenGroups.RaceColumnsLeft(client, colW, visCols);
+            Scroller.Count = majors.Length;
+            Scroller.VisibleCols = visCols;
+            Scroller.Pitch = colW;
+            Scroller.Track = new Rectangle(x0, (int)client.Bottom - 12, visCols * colW - ScreenGroups.ColumnGap, 8);
+            Scroller.WheelArea = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
+            int colH = ScreenGroups.GroupColumnHeight(client) - (Scroller.Overflowing ? 16 : 0);
 
             for (int i = 0; i < majors.Length; ++i)
             {
                 Empire e = majors[i];
                 // Ludoal fork: inside the tab frame's client area, like the other tabs
                 var col = new Rectangle(x0 + i * colW, ScreenGroups.GroupColumnTop(client),
-                                        colW - ScreenGroups.ColumnGap,
-                                        ScreenGroups.GroupColumnHeight(client));
-                var c = new EmpireColumn { E = e, Rect = col };
+                                        colW - ScreenGroups.ColumnGap, colH);
+                var c = new EmpireColumn { E = e, Rect = col, Base = col };
                 Columns.Add(c);
 
                 bool known = e == Player || Player.IsKnown(e);
@@ -314,10 +330,51 @@ namespace Ship_Game.GameScreens
 
         public override void Update(float fixedDeltaTime)
         {
+            if (AppliedFirst != Scroller.First)
+                ApplyScroll();
             foreach (EmpireColumn c in Columns)
                 foreach (OpBox op in c.Ops)
                     op.Sync();
             base.Update(fixedDeltaTime);
+        }
+
+        // reposition every column and its widgets for the current scroll window - the
+        // widgets are real UI children, so sliding the window means moving them
+        void ApplyScroll()
+        {
+            AppliedFirst = Scroller.First;
+            int dx = Scroller.Overflowing ? Scroller.OffsetX : 0;
+            for (int i = 0; i < Columns.Count; ++i)
+            {
+                EmpireColumn c = Columns[i];
+                bool shown = !Scroller.Overflowing || Scroller.Shows(i);
+                c.Shown = shown;
+                Rectangle col = c.Base;
+                col.X -= dx;
+                c.Rect = col;
+                if (c.Weight != null)
+                {
+                    c.Weight.Visible = shown;
+                    c.Weight.Rect = new Rectangle(col.X + 8, (int)c.Weight.Rect.Y, (int)c.Weight.Rect.Width, (int)c.Weight.Rect.Height);
+                }
+                if (c.Budget != null)
+                {
+                    c.Budget.Visible = shown;
+                    c.Budget.Rect = new Rectangle(col.X + 8, (int)c.Budget.Rect.Y, (int)c.Budget.Rect.Width, (int)c.Budget.Rect.Height);
+                }
+                if (c.Limit != null)
+                {
+                    c.Limit.Visible = shown;
+                    c.Limit.Rect = new Rectangle(col.X + 8, (int)c.Limit.Rect.Y, (int)c.Limit.Rect.Width, (int)c.Limit.Rect.Height);
+                }
+                foreach (OpBox op in c.Ops)
+                {
+                    op.ColumnShown = shown;
+                    op.Box.Pos = new Vector2(col.X + 16, op.Box.Pos.Y);
+                    op.Box.PerformLayout();
+                    op.Turns.Pos = new Vector2(col.Right - 72, op.Turns.Pos.Y);
+                }
+            }
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -334,7 +391,9 @@ namespace Ship_Game.GameScreens
             // clickable rect behind over whatever takes its place.
             PortraitRects.Clear();
             foreach (EmpireColumn c in Columns)
-                DrawColumn(batch, c);
+                if (c.Shown)
+                    DrawColumn(batch, c);
+            Scroller.Draw(batch);
 
             base.Draw(batch, elapsed); // sliders, checkboxes, buttons, close
             ScreenGroups.DrawGroupTabTip(GroupTabs, Input.CursorPosition);
@@ -494,6 +553,9 @@ namespace Ship_Game.GameScreens
             }
 
             if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
+            if (Scroller.HandleInput(input))
                 return true;
 
             // Ludoal fork: the portrait opens negotiation, as on the other Diplomacy tabs. The

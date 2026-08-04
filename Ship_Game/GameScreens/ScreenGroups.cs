@@ -1,5 +1,7 @@
 using System;
+using Microsoft.Xna.Framework.Graphics;
 using SDGraphics;
+using SDGraphics.Input;
 using Color = Microsoft.Xna.Framework.Color;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
@@ -285,24 +287,112 @@ namespace Ship_Game.GameScreens
             return Math.Min(ceil, Math.Max(floor, avail / Math.Max(count, 1)));
         }
 
-        // the frame that hugs `count` columns at that pitch - floored on what the group's own
-        // tab strip needs, so the tabs never fold into a second line (the bench-290 lesson)
+        // how many columns the screen can SHOW at that pitch - Combined Arms fields more
+        // than eight majors (maintainer bench 299), and the frame never grows past the
+        // screen's own footprint: the rest scrolls
+        public static int RaceVisibleColumns(int screenW, int count)
+        {
+            count = Math.Max(count, 1);
+            int pitch = RaceColumnPitch(screenW, count);
+            int avail = RaceColumnRun(Math.Min(screenW, RaceRefCeil) - 2 * FrameMargin);
+            return Math.Min(count, Math.Max(1, avail / pitch));
+        }
+
+        // the frame that hugs the VISIBLE columns at that pitch - floored on what the group's
+        // own tab strip needs, so the tabs never fold into a second line (the bench-290 lesson)
         public static Rectangle RaceColumnsFrame(int screenW, int screenH, int count)
         {
             count = Math.Max(count, 1);
             int pitch = RaceColumnPitch(screenW, count);
-            int frameW = pitch * count - ColumnGap + 2 * ColumnGutter + NineSliceCorners;
+            int vis = RaceVisibleColumns(screenW, count);
+            int frameW = pitch * vis - ColumnGap + 2 * ColumnGutter + NineSliceCorners;
             frameW = Math.Max(frameW, (int)MinTabStripWidth(GroupTabTitles) + 1);
             return new(FrameMargin, TabRowY, frameW,
                        Math.Min(screenH, RaceRefH) - TabRowY - FrameMargin);
         }
 
-        // the left edge of a centred row of `count` race columns - centred against the client
-        // rather than pinned to the gutter, for the case where the tab-strip floor won
+        // the left edge of a centred row of race columns - centred against the client
+        // rather than pinned to the gutter, for the case where the tab-strip floor won.
+        // `count` is the VISIBLE count; an overflowing row pins to the gutter.
         public static int RaceColumnsLeft(in RectF client, int pitch, int count)
         {
             int drawn = pitch * Math.Max(count, 1) - ColumnGap;
-            return (int)client.X + ((int)client.W - drawn) / 2;
+            return Math.Max((int)client.X + ColumnGutter,
+                            (int)client.X + ((int)client.W - drawn) / 2);
+        }
+
+        // ── the race-row scroller (maintainer bench 299) ─────────────────────────────────────
+        // Scrolls BY WHOLE COLUMNS: the row always lands on the column grid, so no partial
+        // column ever bleeds past the frame border and no scissor clipping is needed. The
+        // fork's own control: FloatSlider is a value slider and ScrollList only goes vertical.
+        public class RaceRowScroller
+        {
+            public Rectangle Track;     // where the bar lives, set by the screen at layout
+            public Rectangle WheelArea; // the wheel scrolls when the cursor is anywhere in here
+            public int Count, VisibleCols, Pitch;
+            public int First;           // index of the leftmost visible column
+            bool Dragging; float GrabDX;
+
+            public bool Overflowing => Count > VisibleCols;
+            public int Max => Math.Max(0, Count - VisibleCols);
+            public int OffsetX => First * Pitch;
+            public bool Shows(int i) => i >= First && i < First + VisibleCols;
+
+            Rectangle Thumb
+            {
+                get
+                {
+                    int w = Math.Max(30, Track.Width * VisibleCols / Math.Max(Count, 1));
+                    int x = Track.X + (Max == 0 ? 0 : (Track.Width - w) * First / Max);
+                    return new Rectangle(x, Track.Y, w, Track.Height);
+                }
+            }
+
+            public void Draw(SpriteBatch batch)
+            {
+                if (!Overflowing)
+                    return;
+                batch.FillRectangle(Track, new Color(10, 10, 10));
+                batch.DrawRectangle(Track, new Color(60, 54, 40));
+                batch.FillRectangle(Thumb.Bevel(-1), new Color(118, 102, 67));
+            }
+
+            // returns true when the row moved or the gesture was consumed
+            public bool HandleInput(InputState input)
+            {
+                if (!Overflowing)
+                    return false;
+                int first = First;
+                if (Dragging)
+                {
+                    if (input.LeftMouseDown)
+                    {
+                        Rectangle th = Thumb;
+                        float t = (input.CursorPosition.X - GrabDX - Track.X) / Math.Max(1, Track.Width - th.Width);
+                        First = ((int)Math.Round(t * Max)).Clamped(0, Max);
+                        return true;
+                    }
+                    Dragging = false;
+                }
+                if (WheelArea.HitTest(input.CursorPosition))
+                {
+                    if (input.ScrollIn)  { First = (First - 1).Clamped(0, Max); return First != first; }
+                    if (input.ScrollOut) { First = (First + 1).Clamped(0, Max); return First != first; }
+                }
+                if (input.LeftMouseClick && Track.HitTest(input.CursorPosition))
+                {
+                    Rectangle th = Thumb;
+                    if (th.HitTest(input.CursorPosition))
+                    {
+                        Dragging = true;
+                        GrabDX = input.CursorPosition.X - th.X;
+                    }
+                    else // a page toward the click
+                        First = (First + (input.CursorPosition.X > th.Center.X ? VisibleCols : -VisibleCols)).Clamped(0, Max);
+                    return true;
+                }
+                return false;
+            }
         }
 
         // The 900p footprint, whatever the resolution: Relationships keeps this frame - its

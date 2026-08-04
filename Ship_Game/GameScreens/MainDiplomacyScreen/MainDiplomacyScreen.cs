@@ -51,6 +51,9 @@ namespace Ship_Game
         // Ludoal fork: where each empire's portrait landed this frame, so HandleInput can test it.
         // Filled by the draw because the columns are laid out there; the portrait is the control.
         readonly Map<Empire, Rectangle> PortraitRects = new();
+        // Combined Arms fields more than eight majors (maintainer bench 299): the row
+        // scrolls by whole columns behind this bar
+        readonly ScreenGroups.RaceRowScroller Scroller = new();
 
         const int TreatyBlockH = 114; // player design: 3 icon rows (state / borders / trade), labels gone
 
@@ -168,18 +171,26 @@ namespace Ship_Game
             Add(new CloseButton(closePos.X, closePos.Y));
 
             // Ludoal fork: the race-column doctrine - one bounded pitch from ScreenGroups, the
-            // row centred in a frame that was sized on it
+            // row centred in a frame that was sized on it. With more majors than the frame
+            // shows (Combined Arms), the row scrolls by whole columns and the columns give
+            // the scrollbar its lane at the foot.
             RectF client = GroupTabs.ClientArea;
             int colW = ScreenGroups.RaceColumnPitch(ScreenWidth, Races.Count);
-            int x0 = ScreenGroups.RaceColumnsLeft(client, colW, Races.Count);
+            int visCols = ScreenGroups.RaceVisibleColumns(ScreenWidth, Races.Count);
+            int x0 = ScreenGroups.RaceColumnsLeft(client, colW, visCols);
+            Scroller.Count = Races.Count;
+            Scroller.VisibleCols = visCols;
+            Scroller.Pitch = colW;
+            Scroller.Track = new Rectangle(x0, (int)client.Bottom - 12, visCols * colW - ScreenGroups.ColumnGap, 8);
+            Scroller.WheelArea = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
+            int colH = ScreenGroups.GroupColumnHeight(client) - (Scroller.Overflowing ? 16 : 0);
             int j = 0;
             foreach (RaceEntry re in Races)
             {
                 // Ludoal fork: inside the tab frame's client area, top and bottom - the Submenu is
                 // the only thing that knows how tall its own tab row is.
                 re.container = new Rectangle(x0 + j * colW, ScreenGroups.GroupColumnTop(client),
-                                             colW - ScreenGroups.ColumnGap,
-                                             ScreenGroups.GroupColumnHeight(client));
+                                             colW - ScreenGroups.ColumnGap, colH);
                 j++;
             }
 
@@ -236,8 +247,12 @@ namespace Ship_Game
             // stops drawing its portrait - and a rect left behind would stay clickable over
             // whatever took its place.
             PortraitRects.Clear();
-            foreach (RaceEntry race in Races)
-                DrawColumn(batch, race);
+            for (int i = 0; i < Races.Count; ++i)
+            {
+                if (!Scroller.Overflowing || Scroller.Shows(i))
+                    DrawColumn(batch, Races[i], Scroller.Overflowing ? Scroller.OffsetX : 0);
+            }
+            Scroller.Draw(batch);
 
             base.Draw(batch, elapsed);
             ScreenGroups.DrawGroupTabTip(GroupTabs, Input.CursorPosition);
@@ -245,10 +260,11 @@ namespace Ship_Game
             batch.SafeEnd();
         }
 
-        void DrawColumn(SpriteBatch batch, RaceEntry race)
+        void DrawColumn(SpriteBatch batch, RaceEntry race, int scrollX)
         {
             Empire e = race.e;
             Rectangle col = race.container;
+            col.X -= scrollX; // whole-column scroll: the grid holds, only the window slides
             batch.FillRectangle(col, new Color(23, 20, 14));
             batch.DrawRectangle(col, new Color(60, 54, 40));
 
@@ -903,6 +919,9 @@ namespace Ship_Game
             if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
                 return true;
 
+
+            if (Scroller.HandleInput(input))
+                return true;
 
             // Ludoal fork: the portrait opens negotiation, as it does in the Relationships
             // diagram. The rects come from the last draw, which is where the columns are laid
