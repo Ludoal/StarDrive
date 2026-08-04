@@ -103,8 +103,21 @@ namespace Ship_Game.GameScreens.ShipDesign
             if (!Visible || s == null)
                 return;
 
-            int size = (int)(Height - 56);
-            var shipOverlay = new Rectangle((int)Right - size - 24, (int)Y + 28, size, size);
+            // The housing is sized on the HULL's grid, not a blind square (maintainer bench
+            // 300): a wide hull letterboxed in a square left a void under and beside it. The
+            // module size obeys RenderOverlay's own arithmetic - width / (maxSpan+1), capped
+            // 24 - so handing it a rect of ms*(maxSpan+1) reproduces the ms we measured; the
+            // grid centres in that rect, so the rect is placed off the SHIP's edges: right
+            // edge 10px off the frame, vertically centred on the panel.
+            int gw = Math.Max(1, s.Grid.Width), gh = Math.Max(1, s.Grid.Height);
+            int maxSpan = Math.Max(gw, gh);
+            float availW = Width - TextWidth - 20;
+            float availH = Height - 20;
+            float ms = Math.Min(Math.Min(availW, availH) / (maxSpan + 1f), 24f);
+            int size = (int)(ms * (maxSpan + 1));
+            float shipW = gw * ms;
+            var shipOverlay = new Rectangle((int)(Right - 10 - shipW - (size - shipW) / 2f),
+                                            (int)(CenterY - size / 2f), size, size);
             // Ludoal fork: the submenu frame without its tab (maintainer: "cadre style slider")
             // instead of a per-frame Menu2, which now draws the full popup window - far too much
             // furniture for a hover overlay. Same nine-slice the sliders on the Fleets page wear.
