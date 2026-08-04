@@ -359,6 +359,11 @@ namespace Ship_Game
             }
             else if (input.LeftMouseReleased)
             {
+                // the BOX path fills SelectedNodeList but never armed the stance bar - only
+                // the click path did - so a group picked by rectangle showed nothing but its
+                // count and could not change stance (maintainer bench 302)
+                if (IsDragging)
+                    OrdersButtons.ResetButtons(SelectedNodeList);
                 IsDragging = false;
                 SelectionBox = new(0, 0, -1, -1);
             }
