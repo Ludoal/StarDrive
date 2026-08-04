@@ -107,6 +107,7 @@ namespace Ship_Game
             ShipInfoOverlay = Add(new ShipInfoOverlayComponent(this, u.UState));
 
             FleetNameEntry = new();
+            FleetNameEntry.Font = Fonts.Arial20Bold; // the cartouche's headline (maintainer bench 301)
             FleetNameEntry.OnTextChanged = (text) => SelectedFleet.Name = text;
             FleetNameEntry.SetColors(Colors.Cream, Color.Orange);
             
@@ -342,8 +343,10 @@ namespace Ship_Game
             OperationsRect = new(blockLeft, SelectedStuffRect.Y + 30, 360, SelectedStuffRect.H - 30);
 
 
-            float slidersX1 = OperationsRect.X + 15;
-            float slidersX2 = OperationsRect.X + 15 + 180;
+            // centred in the block (maintainer bench 301): two 150-wide sliders on a 180
+            // pitch, so the pair spans 330 of the 360 frame
+            float slidersX1 = OperationsRect.X + (OperationsRect.W - 330) / 2;
+            float slidersX2 = slidersX1 + 180;
             float slidersY = OperationsRect.Y + arial12.LineSpacing + 20;
             
             WeightSlider NewSlider(float x, float y, string title, LocalizedText tooltip)

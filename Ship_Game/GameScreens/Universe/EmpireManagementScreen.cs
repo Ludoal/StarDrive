@@ -235,13 +235,12 @@ namespace Ship_Game
             // tooltip whenever it was cut
             var DescRect = new Rectangle(PlanetInfoRect.Right + 10, (int)blockTop + 8,
                                          (int)mapX - PlanetInfoRect.Right - 30, (int)blockH - 16);
-            // the 14 first (maintainer bench 295: the description was hard to read),
-            // stepping down to 12 only when the room runs out
-            var descFont = Fonts.Arial14Bold;
+            // small regular type (maintainer bench 301: the bold 14 was too loud)
+            var descFont = Fonts.Arial12;
             string text = descFont.ParseText(SelectedPlanet.Description, DescRect.Width);
             if (descFont.MeasureString(text).Y > DescRect.Height)
             {
-                descFont = Fonts.Arial12Bold;
+                descFont = Fonts.Arial12;
                 text = descFont.ParseText(SelectedPlanet.Description, DescRect.Width);
             }
             bool descCut = false;

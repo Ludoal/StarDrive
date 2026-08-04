@@ -377,8 +377,11 @@ namespace Ship_Game
 
                 // name, then the icon directly under it, then the buttons - the label the icon
                 // used to carry said nothing the icon does not.
-                Vector2 cursor1 = new Vector2(SelectedStuffRect.X + CartPad, SelectedStuffRect.Y + CartPad);
+                // centred on the cartouche, in the headline font (maintainer bench 301)
                 FleetNameEntry.Text = f.Name;
+                Vector2 cursor1 = new Vector2(
+                    SelectedStuffRect.X + (SelectedStuffRect.W - FleetNameEntry.Font.TextWidth(f.Name)) * 0.5f,
+                    SelectedStuffRect.Y + CartPad);
                 FleetNameEntry.SetPos(cursor1);
                 FleetNameEntry.Draw(batch, elapsed);
 

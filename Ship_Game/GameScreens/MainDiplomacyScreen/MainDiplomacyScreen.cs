@@ -181,13 +181,11 @@ namespace Ship_Game
             Scroller.Count = Races.Count;
             Scroller.VisibleCols = visCols;
             Scroller.Pitch = colW;
-            // the rail rides ON the frame's bottom border band (the nine-slice 9px), not in
-            // the columns - the screens are height-tight, ARTIFACTS takes whatever is left
-            // and a reserved lane starved it (maintainer bench 299). Drawn after base.Draw
-            // so it paints over the border.
-            Scroller.Track = new Rectangle(x0, (int)client.Bottom + 1, visCols * colW - ScreenGroups.ColumnGap, 9);
+            // the rail sits INSIDE the frame, its foot 5px off the bottom border, and the
+            // columns give it the room (maintainer bench 301)
+            Scroller.Track = new Rectangle(x0, (int)client.Bottom - 5, visCols * colW - ScreenGroups.ColumnGap, 9);
             Scroller.WheelArea = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
-            int colH = ScreenGroups.GroupColumnHeight(client);
+            int colH = ScreenGroups.GroupColumnHeight(client) - (Scroller.Overflowing ? 14 : 0);
             int j = 0;
             foreach (RaceEntry re in Races)
             {
@@ -348,7 +346,10 @@ namespace Ship_Game
             // across columns without anyone having to count them.
             // ARTIFACTS is the one variable block, so it comes last and takes whatever is left.
             y = infoY;
-            SectionBand(batch, col, ref y, "DISPOSITION");
+            if (e == Player)
+                y += 24; // no DISPOSITION band on our own column - but the cascade stays level
+            else
+                SectionBand(batch, col, ref y, "DISPOSITION");
             DrawInfoBlock(batch, e, col, ref y);
 
             y += 4;

@@ -695,7 +695,13 @@ namespace Ship_Game
             // tab names it), one line per datum. The title label stays allocated but never
             // shows.
             Font font    = Font14;
-            int spacing  = font.LineSpacing + 1;
+            // the rows SPREAD over the block's full height (maintainer bench 301): three
+            // rows at terraform level 1 read bunched at the top of a mostly-empty frame.
+            // The row count follows the owner's terraforming level, the same gates the
+            // update applies.
+            int lvlRows = Player.data.Traits.TerraformingLevel >= 3 ? 7
+                        : Player.data.Traits.TerraformingLevel == 2 ? 4 : 3;
+            int spacing = (int)((LaborRect.H - 45) / lvlRows).Clamped(font.LineSpacing + 1, 34);
             int barWidth = (int)(LaborRect.W * 0.33f);
 
             AddLabel(ref TerraformTitle, pos, "", Font20, Color.White);
