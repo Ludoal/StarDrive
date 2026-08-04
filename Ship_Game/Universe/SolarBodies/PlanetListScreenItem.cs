@@ -147,7 +147,7 @@ namespace Ship_Game
         {
             // an unowned habitable world shows NOTHING for owner (maintainer bench 291:
             // "None" read like a race); an uninhabitable one keeps its Impossible
-            string owner = Planet.Owner != null ? Planet.Owner.data.Traits.Singular.Text
+            string owner = Planet.Owner != null ? Planet.Owner.data.Traits.Singular
                          : Planet.Habitable ? "" : Localizer.Token(GameText.Impossible);
 
             UITable.Column[] cols = Screen.Table.Columns;

@@ -11,6 +11,7 @@ using Ship_Game.Audio;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Universe;
+using Ship_Game.Universe.SolarBodies; // DistanceDisplay
 using Ship_Game.UI; // UITable: the shared table charte
 
 namespace Ship_Game

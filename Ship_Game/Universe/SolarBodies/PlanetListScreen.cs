@@ -11,6 +11,7 @@ using Ship_Game.Audio;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Universe;
+using Ship_Game.Universe.SolarBodies; // DistanceDisplay
 using Ship_Game.UI; // UITable: the shared table charte
 
 namespace Ship_Game
@@ -173,7 +174,7 @@ namespace Ship_Game
             var seenOwners = new Array<string>();
             foreach (Planet p in ExploredPlanets)
             {
-                string o = p.Owner?.data.Traits.Singular.Text ?? "";
+                string o = p.Owner?.data.Traits.Singular ?? "";
                 if (o.NotEmpty() && !seenOwners.Contains(o))
                 {
                     seenOwners.Add(o);
@@ -334,7 +335,7 @@ namespace Ship_Game
             string wantOwner = OwnerFilter?.ActiveValue ?? "";
             if (wantOwner == "-" && p.Owner != null)
                 return false;
-            if (wantOwner.NotEmpty() && wantOwner != "-" && (p.Owner?.data.Traits.Singular.Text ?? "") != wantOwner)
+            if (wantOwner.NotEmpty() && wantOwner != "-" && (p.Owner?.data.Traits.Singular ?? "") != wantOwner)
                 return false;
 
             if (!HideOwned && !HideUninhab)                                 return true;
