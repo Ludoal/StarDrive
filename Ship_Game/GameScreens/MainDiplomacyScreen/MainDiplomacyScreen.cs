@@ -389,6 +389,10 @@ namespace Ship_Game
             if (y > maxY - Font12.LineSpacing)
                 return;
             string lbl = Truncate(label, col.Width - 16 - (int)Font12Bold.TextWidth(value) - 8);
+            // a folded label hangs its full self on hover (bench 305)
+            if (lbl != label && new Rectangle(col.X + 8, (int)y, col.Width - 16, Font12.LineSpacing)
+                                    .HitTest(Input.CursorPosition))
+                ToolTip.CreateTooltip(label);
             batch.DrawString(Font12, lbl, new Vector2(col.X + 8, y), Color.Wheat);
             batch.DrawString(Font12Bold, value, new Vector2(col.Right - 8 - Font12Bold.TextWidth(value), y), valueColor);
             y += Font12.LineSpacing + 3;
@@ -702,17 +706,21 @@ namespace Ship_Game
                     string t = trait.Trim();
                     if (t.Length == 0)
                         continue;
-                    // explanatory tooltip (maintainer bench 296): the trait's own description,
-                    // found by its localized name - the set string carries names only
-                    if (new Rectangle(col.X + 8, (int)y, col.Width - 16, Font12.LineSpacing)
-                            .HitTest(Input.CursorPosition))
+                    // the trait's own record serves twice: its Cost signs the COLOUR (green
+                    // bonus, pink malus - the race tint said nothing, bench 305) and its
+                    // Description hangs on hover (bench 296)
+                    var opt = ResourceManager.RaceTraits.TraitList.Find(o => o.LocalizedName.Text == t);
+                    if (opt != null && opt.Description != 0
+                        && new Rectangle(col.X + 8, (int)y, col.Width - 16, Font12.LineSpacing)
+                               .HitTest(Input.CursorPosition))
                     {
-                        var opt = ResourceManager.RaceTraits.TraitList.Find(o => o.LocalizedName.Text == t);
-                        if (opt != null && opt.Description != 0)
-                            ToolTip.CreateTooltip(new LocalizedText(opt.Description));
+                        ToolTip.CreateTooltip(new LocalizedText(opt.Description));
                     }
+                    Color tc = opt == null ? Color.White
+                             : opt.Cost > 0 ? Color.LightGreen
+                             : opt.Cost < 0 ? Color.LightPink : Color.White;
                     batch.DrawString(Font12, Font12.ParseText(t, col.Width - 16),
-                                     new Vector2(col.X + 8, y), e.EmpireColor);
+                                     new Vector2(col.X + 8, y), tc);
                     y += Font12.LineSpacing + 2;
                 }
             }
@@ -805,7 +813,7 @@ namespace Ship_Game
             Row("Tax income", t.TaxMod);
             if (t.MaintMod != 0) Row("Maintenance", t.MaintMod, opposite: true);
             if (t.MaintMod != 0 || t.ShipMaintMultiplier < 1)
-                Row("Ship maintenance", (1 + t.MaintMod) * t.ShipMaintMultiplier - 1, opposite: true);
+                Row("Ship Maint", (1 + t.MaintMod) * t.ShipMaintMultiplier - 1, opposite: true); // short: the long label folded mid-word (bench 305)
             Row("In-borders FTL", t.InBordersSpeedBonus);
             TableRow(batch, col, ref yy, maxY, "FTL speed", e.data.FTLModifier + "x", Color.White);
             TableRow(batch, col, ref yy, maxY, "FTL power drain", e.data.FTLPowerDrainModifier + "x", Color.White);
@@ -813,8 +821,10 @@ namespace Ship_Game
             if (e.data.SubLightModifier != 1) Row("Sublight speed", e.data.SubLightModifier - 1f);
             if (e.data.SensorModifier != 1) Row("Sensor range", e.data.SensorModifier - 1f);
             Row("Ship experience", e.data.ExperienceMod);
+            // ⚠ no hand-prefixed sign on the negative branch: ToString("#") already carries
+            // it, and the pair printed "--10" (bench 305)
             if (e.data.SpyModifier > 0f) TableRow(batch, col, ref yy, maxY, "Spy effectiveness", "+" + e.data.SpyModifier.ToString("#"), Color.LightGreen);
-            else if (e.data.SpyModifier < 0f) TableRow(batch, col, ref yy, maxY, "Spy effectiveness", "-" + e.data.SpyModifier.ToString("#"), Color.LightPink);
+            else if (e.data.SpyModifier < 0f) TableRow(batch, col, ref yy, maxY, "Spy effectiveness", e.data.SpyModifier.ToString("#"), Color.LightPink);
             Row("Artifact bonus", t.Spiritual);
             Row("Cannon accuracy", t.TargetingModifier);
             if (t.DodgeMod > 0) Row("Dodge", t.DodgeMod);
