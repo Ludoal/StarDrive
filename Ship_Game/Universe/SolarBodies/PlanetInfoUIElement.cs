@@ -72,7 +72,7 @@ namespace Ship_Game
             TransitionOffTime = TimeSpan.FromSeconds(0.25);
             var leftRect = new Rectangle(r.X, r.Y + 44, 200, r.Height - 44);
             RightRect = new Rectangle(r.X + 200, r.Y + 44, 200, r.Height - 44);
-            PlanetIconRect = new Rectangle(leftRect.X + 75, Housing.Y + 120, 80, 80);
+            PlanetIconRect = new Rectangle(leftRect.X + 75, Housing.Y + 128, 80, 80);
             Inspect = new SkinnableButton(new Rectangle(PlanetIconRect.CenterX() - 16, PlanetIconRect.Y, 32, 32), "UI/viewPlanetIcon")
             {
                 HoverColor = tColor,
@@ -85,11 +85,11 @@ namespace Ship_Game
             };
 
             FlagRect         = new Rectangle(r.X + r.Width - 44, Housing.Y + 96, 26, 26); // under the R/F/P lanes (bench 308)
-            DefenseRect      = new Rectangle(leftRect.X + 13, Housing.Y + 114, 22, 22);
-            OffenseRect      = new Rectangle(leftRect.X + 13, Housing.Y + 114 + 22, 22, 22);
-            InjuryRect       = new Rectangle(leftRect.X + 13, Housing.Y + 114 + 44, 22, 22);
-            ShieldRect       = new Rectangle(leftRect.X + 13, Housing.Y + 114 + 66, 22, 22);
-            DefenseShipsRect = new Rectangle(leftRect.X + 13, Housing.Y + 114 + 88, 22, 22);
+            DefenseRect      = new Rectangle(leftRect.X + 13, Housing.Y + 122, 22, 22);
+            OffenseRect      = new Rectangle(leftRect.X + 13, Housing.Y + 122 + 22, 22, 22);
+            InjuryRect       = new Rectangle(leftRect.X + 13, Housing.Y + 122 + 44, 22, 22);
+            ShieldRect       = new Rectangle(leftRect.X + 13, Housing.Y + 122 + 66, 22, 22);
+            DefenseShipsRect = new Rectangle(leftRect.X + 13, Housing.Y + 122 + 88, 22, 22);
 
             // Use the same positions for unexplored planet data
             TilesRect          = DefenseRect;
@@ -530,11 +530,11 @@ namespace Ship_Game
         void DrawFertProdStats(SpriteBatch batch)
         {
             var foodTex = ResourceManager.Texture("NewUI/icon_food");
-            var fIcon = new Rectangle(200,Housing.Y + 210 + Fonts.Arial12Bold.LineSpacing - foodTex.Height, foodTex.Width, foodTex.Height);
+            var fIcon = new Rectangle(200,Housing.Y + 218 + Fonts.Arial12Bold.LineSpacing - foodTex.Height, foodTex.Width, foodTex.Height);
             batch.Draw(foodTex, fIcon, Color.White);
             ToolTipItems.Add(new TippedItem(fIcon, GameText.IndicatesHowMuchFoodThis));
 
-            var tcurs = new Vector2(fIcon.X + 25, Housing.Y + 205);
+            var tcurs = new Vector2(fIcon.X + 25, Housing.Y + 213);
             float fertility   = P.FertilityFor(Player);
             float maxFert     = P.MaxFertilityFor(Player);
             string fertString = fertility.AlmostEqual(maxFert) ? fertility.String(2) : $"{fertility.String(2)}/{maxFert.String(2)}";
@@ -549,11 +549,11 @@ namespace Ship_Game
             }
 
             var prodTex = ResourceManager.Texture("NewUI/icon_production");
-            var pIcon = new Rectangle(325, Housing.Y + 210 + Fonts.Arial12Bold.LineSpacing - prodTex.Height, prodTex.Width, prodTex.Height);
+            var pIcon = new Rectangle(325, Housing.Y + 218 + Fonts.Arial12Bold.LineSpacing - prodTex.Height, prodTex.Width, prodTex.Height);
             batch.Draw(prodTex, pIcon, Color.White);
             ToolTipItems.Add(new TippedItem(pIcon, GameText.APlanetsMineralRichnessDirectly));
 
-            tcurs = new Vector2(350f, Housing.Y + 205);
+            tcurs = new Vector2(350f, Housing.Y + 213);
             batch.DrawString(Fonts.Arial12Bold, P.MineralRichness.String(), tcurs, tColor);
         }
 
@@ -717,10 +717,10 @@ namespace Ship_Game
                 if (p != null && P.Owner == Player)
                 {
                     int x = PlanetIconRect.Right + 20;
-                    // the pop and money/research lines sit above: the labor block starts
-                    // lower and keeps its old bottom (housing + 210)
+                    // the pop and money/research lines sit above: the whole block under
+                    // them rides 8px lower, using the room at the plate's foot
                     var sliderRect = new RectF(x, Housing.Y + 88,
-                                               ElementRect.Right-x-20, 122);
+                                               ElementRect.Right-x-20, 130);
                     AssignLabor = new AssignLaborComponent(p, sliderRect, useTitleFrame: false);
                 }
                 else
