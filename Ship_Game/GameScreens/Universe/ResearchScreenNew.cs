@@ -191,11 +191,6 @@ namespace Ship_Game
 
             batch.SafeBegin();
             base.Draw(batch, elapsed);
-            // TEMP DEBUG (one build): the magenta rect is MainArea (the frame's ClientArea)
-            // exactly as the layout believes it - if its bottom edge floats 20-35px above
-            // the frame's visible inner border, the client rect lies and the tree is
-            // innocent; if it touches, the lie is in the tree. Remove after the bench.
-            batch.DrawRectangle(new Rectangle(MainArea.X, MainArea.Y, MainArea.Width, MainArea.Height), Color.Magenta);
             ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             if (ScreenHeight > 720)
                 empireUI.Draw(batch); // Ludoal fork: live top bar (paused indicator included)
@@ -445,18 +440,21 @@ namespace Ship_Game
         // the tree's top/bottom margins MIRROR the gap between rows, floored at 2px
         // (maintainer, 4 Aug): at the 900p floor the rows touch and the margins collapse
         // to 2px; on a tall frame the same air runs above, between and below the rows.
-        // A node is 120px tall anchor-to-anchor: 22 of title plate + 98 of body.
+        // ⚠ the node's VISIBLE height is 108, not its 120 rect: the base texture carries
+        // ~12px of transparent padding at its foot (92x90 png, content stops at row 79 -
+        // the magenta bench closed the "dead lane" mystery: the rect was flush, the ART
+        // inside it was not). The rect is allowed to overrun by that invisible slack.
         // ⚠ this also OWNS MainMenuOffset.Y - the first anchor rides the margin.
         int SubGridHeight(int rows)
         {
             rows = Math.Max(1, rows);
-            const int NodeFull = 120;
+            const int NodeVisible = 108; // 22 title plate + 86 of visible body art
             int gh;
-            if (rows == 1 || (MainArea.Height + NodeFull) / (rows + 1) - NodeFull < 2)
-                gh = rows == 1 ? MainArea.Height - 124 : (MainArea.Height - 124) / (rows - 1);
+            if (rows == 1 || (MainArea.Height + NodeVisible) / (rows + 1) - NodeVisible < 2)
+                gh = rows == 1 ? MainArea.Height - 112 : (MainArea.Height - 112) / (rows - 1);
             else
-                gh = (MainArea.Height + NodeFull) / (rows + 1); // margin == inter-row gap
-            int margin = Math.Max(2, gh - NodeFull);
+                gh = (MainArea.Height + NodeVisible) / (rows + 1); // margin == inter-row gap
+            int margin = Math.Max(2, gh - NodeVisible);
             if (rows == 1)
                 margin = 2;
             MainMenuOffset.Y = MainArea.Y + margin + 22;

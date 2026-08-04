@@ -73,8 +73,15 @@ namespace Ship_Game
 
             // Ludoal fork: the Patrols tab of the Galaxy group, content-sized (maintainer
             // bench 290): the frame hugs the table, the plan count sets the height
+            // Name is the standing sort from the first frame (spec: the default sort wears
+            // the orange)
+            Table.Columns[0].Sorted = true;
+            Table.Columns[0].Ascending = true;
+            LastSortCol = 0;
+
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
-            float contentH = Math.Min(fullAvail, 90 + Math.Max(3, player.FleetPatrols.Count) * 34);
+            // 38 = the 34px row plus the list's 4px item padding
+            float contentH = Math.Min(fullAvail, 90 + Math.Max(3, player.FleetPatrols.Count) * 38);
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 2,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;

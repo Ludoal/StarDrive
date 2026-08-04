@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
@@ -72,8 +73,9 @@ namespace Ship_Game
             // their upstream widths (maintainer feedback)
             const int statBlock = 240;
             const int extra = (statBlock - 150) / 2; // 45px each from Labor and Storage
+            // min widths (maintainer, 4 Aug): the shares never fall under their 1440p sizes
             SysNameRect    = new Rectangle(x, y, (int)((Rect.Width - (sliderWidth + 150)) * 0.17f) - 30, Rect.Height);
-            PlanetNameRect = new Rectangle(x + SysNameRect.Width, y, (int)((Rect.Width - (sliderWidth + 150)) * 0.17f), Rect.Height);
+            PlanetNameRect = new Rectangle(x + SysNameRect.Width, y, Math.Max((int)((Rect.Width - (sliderWidth + 150)) * 0.17f), 150), Rect.Height);
             FertRect    = new Rectangle(PlanetNameRect.Right,      y,  30, Rect.Height);
             RichRect    = new Rectangle(PlanetNameRect.Right + 30, y, 30, Rect.Height);
             MaxPopRect  = new Rectangle(PlanetNameRect.Right + 60, y, 30, Rect.Height);
@@ -82,10 +84,10 @@ namespace Ship_Game
             ProdRect    = new Rectangle(PlanetNameRect.Right + 150, y, 30, Rect.Height);
             ResRect     = new Rectangle(PlanetNameRect.Right + 180, y, 30, Rect.Height);
             MoneyRect   = new Rectangle(PlanetNameRect.Right + 210, y, 30, Rect.Height);
-            int laborWidth = sliderWidth - extra;
+            int laborWidth = Math.Max(sliderWidth - extra, 330);
             SliderRect  = new Rectangle(PlanetNameRect.Right + statBlock, y - 30, laborWidth, Rect.Height + 25);
-            StorageRect = new Rectangle(PlanetNameRect.Right + laborWidth + statBlock, y, (int)((Rect.Width - (sliderWidth + 120)) * 0.33f) - extra, Rect.Height);
-            QueueRect   = new Rectangle(PlanetNameRect.Right + laborWidth + StorageRect.Width + statBlock, y, (int)((Rect.Width - (sliderWidth + 150)) * 0.33f), Rect.Height);
+            StorageRect = new Rectangle(PlanetNameRect.Right + laborWidth + statBlock, y, Math.Max((int)((Rect.Width - (sliderWidth + 120)) * 0.33f) - extra, 255), Rect.Height);
+            QueueRect   = new Rectangle(PlanetNameRect.Right + laborWidth + StorageRect.Width + statBlock, y, Math.Max((int)((Rect.Width - (sliderWidth + 150)) * 0.33f), 290), Rect.Height);
 
             if (AssignLabor == null)
             {

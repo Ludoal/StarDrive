@@ -328,18 +328,20 @@ namespace Ship_Game
 
         void AddOwner()
         {
+            // an unclaimed body shows NOTHING (maintainer bench 291: "None" read like a
+            // white-named race)
             UITable.Column c = Screen.Table.Columns[5];
-            if (IsForDysonSwarm)
+            if (IsForDysonSwarm && System.HasDysonSwarm)
             {
-                string owner = System.HasDysonSwarm ? System.DysonSwarm.Owner.data.Traits.Singular : "None";
+                string owner = System.DysonSwarm.Owner.data.Traits.Singular;
                 Owner = Label(UITable.CellPos(SmallFont, c.Rect, Y, Height, owner, c.Align), owner, SmallFont,
-                              owner == "None" ? Cream : System.DysonSwarm.Owner.EmpireColor);
+                              System.DysonSwarm.Owner.EmpireColor);
             }
-            else if (Planet?.IsMineable == true)
+            else if (Planet?.IsMineable == true && Planet.Mining.HasOpsOwner)
             {
-                string owner = Planet.Mining.HasOpsOwner ? Planet.Mining.Owner.data.Traits.Singular : "None";
+                string owner = Planet.Mining.Owner.data.Traits.Singular;
                 Owner = Label(UITable.CellPos(SmallFont, c.Rect, Y, Height, owner, c.Align), owner, SmallFont,
-                              owner == "None" ? Cream : Planet.Mining.Owner.EmpireColor);
+                              Planet.Mining.Owner.EmpireColor);
             }
         }
 
@@ -423,8 +425,8 @@ namespace Ship_Game
                 DeployButton.Text = GameText.BuildDysonSwarm;
                 DeployButton.Style = ButtonStyle.Default;
                 DysonSwarmActiveByPlayer = false;
-                Owner.Text = "None";
-                Owner.Color = Cream;
+                if (Owner != null)
+                    Owner.Text = ""; // unclaimed shows nothing
             }
             else
             {
@@ -432,8 +434,15 @@ namespace Ship_Game
                 DeployButton.Text = GameText.KillDysonSwarm;
                 DeployButton.Style = ButtonStyle.Military;
                 DysonSwarmActiveByPlayer = true;
-                Owner.Text = Player.data.Traits.Singular;
-                Owner.Color = Player.EmpireColor;
+                if (Owner != null)
+                {
+                    Owner.Text = Player.data.Traits.Singular;
+                    Owner.Color = Player.EmpireColor;
+                }
+                else
+                {
+                    RequiresLayout = true; // the row had no owner label - rebuild creates it
+                }
             }
         }
     }

@@ -41,6 +41,7 @@ namespace Ship_Game.UI
             public string Title = "";
             public SubTexture Icon;   // header icon instead of text (money, troops, strength)
             public int Width;         // fixed px - the column doctrine
+            public int MinWidth;      // AutoSize floor: zero means the data alone decides
             public TableAlign Align = TableAlign.Left;
             public LocalizedText Tip;
             public bool Sortable;
@@ -101,7 +102,9 @@ namespace Ship_Game.UI
             foreach (string v in values)
                 if (v.NotEmpty())
                     w = Math.Max(w, font.TextWidth(v));
-            c.Width = (int)w + 2 * PadX;
+            // MinWidth floors the result when set (maintainer, 4 Aug) - the data alone
+            // decides otherwise
+            c.Width = Math.Max((int)w + 2 * PadX, c.MinWidth);
         }
 
         // if the natural widths exceed what the resolution allows, the FOLDABLE columns

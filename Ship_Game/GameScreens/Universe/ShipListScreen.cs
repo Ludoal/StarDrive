@@ -118,6 +118,11 @@ namespace Ship_Game
             Table.Columns[5].Foldable = true;
             Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
 
+            // System is the standing sort from the first frame (spec: the default sort
+            // wears the orange); ResetList re-applies it after every refill
+            Table.Columns[0].Sorted = true;
+            Table.Columns[0].Ascending = true;
+
             int shipRows = Universe.Player.OwnedShips.Count;
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             float contentH = Math.Min(fullAvail, 100 + Math.Max(5, shipRows) * 34);
@@ -261,6 +266,11 @@ namespace Ship_Game
 
             bool asc = Table.SetSorted(col);
             GameAudio.AcceptClick();
+            return ApplySort(col, asc);
+        }
+
+        bool ApplySort(int col, bool asc)
+        {
             void Sort<T>(Func<ShipListScreenItem, T> key)
             {
                 if (asc) ShipSL.Sort(key);

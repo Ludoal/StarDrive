@@ -68,35 +68,44 @@ namespace Ship_Game
             Table = new UITable(new[]
             {
                 new UITable.Column { Title = Localizer.Token(GameText.System), Sortable = true },
-                new UITable.Column { Title = Localizer.Token(GameText.StarOrPlanet), Sortable = true },
-                new UITable.Column { Title = Localizer.Token(GameText.Proximity), Width = 90, Align = TableAlign.Number, Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.StarOrPlanet), Sortable = true, MinWidth = 200 },
+                new UITable.Column { Title = Localizer.Token(GameText.Proximity), Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.ResourceName), Sortable = true },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Width = 60,
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Richness) },
-                new UITable.Column { Title = Localizer.Token(GameText.Owner), Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.Owner), Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Title = "Actions", Width = 360, Align = TableAlign.Center },
             });
             var sys = new Array<string>(); var names = new Array<string>();
+            var prox = new Array<string>();
             var res = new Array<string>(); var owners = new Array<string>();
             foreach (ExplorableGameObject sb in ExploredSolarBodies)
             {
                 Planet p = sb as Planet;
                 sys.Add(p?.System.Name ?? (sb as SolarSystem)?.Name ?? "");
                 names.Add(p?.Name ?? (sb as SolarSystem)?.Name ?? "");
+                prox.Add(new DistanceDisplay(GetShortestDistance(sb) / 1000).Text);
                 res.Add(p != null ? (p.Mining?.TranslatedResourceName.Text ?? "Research") : "Dyson Swarm 0");
-                owners.Add(p?.Mining?.Owner?.data.Traits.Singular ?? "None");
+                owners.Add(p?.Mining?.Owner?.data.Traits.Singular ?? "");
             }
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, sys);
             Table.Columns[0].Width += 24; // the hostile-warning icon lane
             UITable.AutoSize(Table.Columns[1], Fonts.Arial14Bold, names);
             Table.Columns[1].Width += 46; // the body icon rides ahead of the two-line name
+            UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, prox);
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, res);
             Table.Columns[3].Width += 30; // the resource icon
             UITable.AutoSize(Table.Columns[5], Fonts.Arial12Bold, owners);
             Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
+            // System is the standing sort from the first frame (the list arrives system-ordered)
+            Table.Columns[0].Sorted = true;
+            Table.Columns[0].Ascending = true;
+            LastSortCol = 0;
 
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
-            float contentH = Math.Min(fullAvail, 70 + Math.Max(3, ExploredSolarBodies.Count) * 44);
+            // 48 = the 44px row plus the list's 4px item padding - counting 44 alone kept
+            // a scrollbar alive with room to spare (maintainer bench 291)
+            float contentH = Math.Min(fullAvail, 70 + Math.Max(3, ExploredSolarBodies.Count) * 48);
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 1,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;

@@ -34,6 +34,8 @@ namespace Ship_Game
 
         private UICheckBox cb_hideOwned;
         private UICheckBox cb_hideUninhabitable;
+        private DropOptions<string> ProximityFilter;
+        private DropOptions<string> OwnerFilter;
 
         bool HideOwned
         {
@@ -88,43 +90,58 @@ namespace Ship_Game
             OrdersSlotW = 24 + (int)new[] { "Colonize", "Cancel Colonize", "Send Troops",
                                             "Recall Troops (99)", "Invading: 99" }
                                    .Max(t => Fonts.Arial12Bold.TextWidth(t));
+            // Features rides right after Planet (maintainer bench 291); Proximity and
+            // Owner read centred
             Table = new UITable(new[]
             {
                 new UITable.Column { Title = Localizer.Token(GameText.System), Sortable = true },
-                new UITable.Column { Title = Localizer.Token(GameText.Planet), Sortable = true },
-                new UITable.Column { Title = Localizer.Token(GameText.Proximity), Width = 90, Align = TableAlign.Number, Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.Planet), Sortable = true, MinWidth = 200 },
+                new UITable.Column { Title = "Features" },
+                new UITable.Column { Title = Localizer.Token(GameText.Proximity), Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"), Width = 60,
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Fertility) },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Width = 60,
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Richness) },
-                new UITable.Column { Title = "Features", Width = 130 },
-                new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop_22"), Width = 90,
+                new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop_22"),
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.MaxPopulation) },
-                new UITable.Column { Title = "Ratio", Width = 60, Align = TableAlign.Number, Sortable = true },
-                new UITable.Column { Title = Localizer.Token(GameText.Owner), Sortable = true },
+                new UITable.Column { Title = "Ratio", Align = TableAlign.Number, Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.Owner), Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Width = 2 * UITable.PadX + 2 * OrdersSlotW + 6, Align = TableAlign.Center },
             });
             var sys = new Array<string>(); var names = new Array<string>();
-            var pops = new Array<string>(); var owners = new Array<string>();
+            var feats = new Array<string>(); var prox = new Array<string>();
+            var pops = new Array<string>(); var ratios = new Array<string>();
+            var owners = new Array<string>();
             foreach (Planet p in ExploredPlanets)
             {
                 sys.Add(p.System.Name);
                 names.Add(p.Name);
+                feats.Add(PlanetListScreenItem.FeaturesMeasure(p));
+                prox.Add(new DistanceDisplay(GetShortestDistance(p) / 1000).Text);
                 string ps = p.PopulationStringForPlayer;
                 int paren = ps.IndexOf(" (");
                 pops.Add(paren < 0 ? ps : ps.Substring(0, paren));
+                ratios.Add(paren < 0 ? "" : ps.Substring(paren + 2).TrimEnd(')'));
                 owners.Add(p.GetOwnerName());
             }
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, sys);
             Table.Columns[0].Width += 24; // the hostile-warning icon lane
             UITable.AutoSize(Table.Columns[1], Fonts.Arial14Bold, names);
             Table.Columns[1].Width += 46 + 40; // planet icon ahead, status icons behind
+            UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, feats);
+            UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, prox);
             UITable.AutoSize(Table.Columns[6], Fonts.Arial12Bold, pops);
+            UITable.AutoSize(Table.Columns[7], Fonts.Arial12Bold, ratios);
             UITable.AutoSize(Table.Columns[8], Fonts.Arial12Bold, owners);
             Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
+            // System is the standing sort from the first frame (the list arrives system-ordered)
+            Table.Columns[0].Sorted = true;
+            Table.Columns[0].Ascending = true;
+            LastSortCol = 0;
 
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
-            float contentH = Math.Min(fullAvail, 96 + Math.Max(3, ExploredPlanets.Count) * 44);
+            // 48 = the 44px row plus the list's 4px item padding
+            float contentH = Math.Min(fullAvail, 96 + Math.Max(3, ExploredPlanets.Count) * 48);
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 0,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
@@ -142,6 +159,28 @@ namespace Ship_Game
             cb_hideUninhabitable = Add(new UICheckBox(Table.TableRect.X + 130, lineY,
                 () => HideUninhab,
                 x => { HideUninhab = x; ResetList(); }, Fonts.Arial12Bold, "Hide Uninhabitable", ""));
+
+            // proximity and owner filters on the same line (maintainer bench 291)
+            ProximityFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 290, (int)lineY, 110, 18)));
+            ProximityFilter.AddOption("All Distances", "");
+            foreach (string cat in new[] { "Local", "Near", "Midway", "Distant", "Beyond" })
+                ProximityFilter.AddOption(cat, cat);
+            ProximityFilter.OnValueChange = _ => ResetList();
+
+            OwnerFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 410, (int)lineY, 130, 18)));
+            OwnerFilter.AddOption("All Owners", "");
+            OwnerFilter.AddOption("Unowned", "-");
+            var seenOwners = new Array<string>();
+            foreach (Planet p in ExploredPlanets)
+            {
+                string o = p.Owner?.data.Traits.Singular.Text ?? "";
+                if (o.NotEmpty() && !seenOwners.Contains(o))
+                {
+                    seenOwners.Add(o);
+                    OwnerFilter.AddOption(o, o);
+                }
+            }
+            OwnerFilter.OnValueChange = _ => ResetList();
         }
 
         void CalcPlanetsDistances()
@@ -204,9 +243,9 @@ namespace Ship_Game
             switch (col)
             {
                 case 1:  planets = ExploredPlanets.Sorted(ascending, p => p.Name); break;
-                case 2:  planets = ExploredPlanets.Sorted(ascending, GetShortestDistance); break;
-                case 3:  planets = ExploredPlanets.Sorted(ascending, p => p.FertilityFor(Player)); break;
-                case 4:  planets = ExploredPlanets.Sorted(ascending, p => p.MineralRichness); break;
+                case 3:  planets = ExploredPlanets.Sorted(ascending, GetShortestDistance); break;
+                case 4:  planets = ExploredPlanets.Sorted(ascending, p => p.FertilityFor(Player)); break;
+                case 5:  planets = ExploredPlanets.Sorted(ascending, p => p.MineralRichness); break;
                 case 6:  planets = ExploredPlanets.Sorted(ascending, p => p.MaxPopulationFor(Player)); break;
                 case 7:  planets = ExploredPlanets.Sorted(ascending, p => p.PopulationRatio); break;
                 case 8:  planets = ExploredPlanets.Sorted(ascending, p => p.GetOwnerName()); break;
@@ -288,6 +327,16 @@ namespace Ship_Game
 
         public bool ShouldAddItem(Planet p)
         {
+            // the two dropdown filters (maintainer bench 291)
+            string wantProx = ProximityFilter?.ActiveValue ?? "";
+            if (wantProx.NotEmpty() && new DistanceDisplay(GetShortestDistance(p) / 1000).Text != wantProx)
+                return false;
+            string wantOwner = OwnerFilter?.ActiveValue ?? "";
+            if (wantOwner == "-" && p.Owner != null)
+                return false;
+            if (wantOwner.NotEmpty() && wantOwner != "-" && (p.Owner?.data.Traits.Singular.Text ?? "") != wantOwner)
+                return false;
+
             if (!HideOwned && !HideUninhab)                                 return true;
             if (HideOwned && HideUninhab && p.Habitable && p.Owner == null) return true;
             if (HideOwned && !HideUninhab && p.Owner == null)               return true;

@@ -143,22 +143,21 @@ namespace Ship_Game
 
         void AddPlanetStats()
         {
-            LocalizedText singular;
-            if (Planet.Owner != null)
-                singular = Planet.Owner.data.Traits.Singular;
-            else
-                singular = (Planet.Habitable ? GameText.None3 : GameText.Impossible);
+            // an unowned habitable world shows NOTHING for owner (maintainer bench 291:
+            // "None" read like a race); an uninhabitable one keeps its Impossible
+            string owner = Planet.Owner != null ? Planet.Owner.data.Traits.Singular.Text
+                         : Planet.Habitable ? "" : Localizer.Token(GameText.Impossible);
 
             UITable.Column[] cols = Screen.Table.Columns;
             void Cell(int col, string text, Color color)
                 => Label(UITable.CellPos(SmallFont, cols[col].Rect, Y, Height, text, cols[col].Align), text, SmallFont, color);
 
+            AddFeatures(cols[2].Rect);
             DistanceDisplay dd = new DistanceDisplay(Distance);
             if (Distance.Greater(0))
-                Cell(2, dd.Text, dd.Color);
-            Cell(3, Planet.FertilityFor(Player).String(), PlanetStatColor);
-            Cell(4, Planet.MineralRichness.String(1), PlanetStatColor);
-            AddFeatures(cols[5].Rect);
+                Cell(3, dd.Text, dd.Color);
+            Cell(4, Planet.FertilityFor(Player).String(), PlanetStatColor);
+            Cell(5, Planet.MineralRichness.String(1), PlanetStatColor);
             // Max Pop splits: the figure in its column, the percentage in Ratio's
             string popString = Planet.PopulationStringForPlayer;
             int paren = popString.IndexOf(" (");
@@ -166,38 +165,54 @@ namespace Ship_Game
             string ratio = paren < 0 ? "" : popString.Substring(paren + 2).TrimEnd(')');
             Cell(6, popMain, PlanetStatColor);
             Cell(7, ratio, PlanetStatColor);
-            Cell(8, singular.Text, EmpireColor);
+            Cell(8, owner, EmpireColor);
         }
 
         // the Features column (maintainer, 4 Aug): the terrain/event buildings grouped by
         // icon, each with its count - "{Rock Field}(3) {Dormant Volcano}(2) {Volcano}"
-        void AddFeatures(in Rectangle col)
+        public static Array<(Building b, int n)> FeatureGroups(Planet p)
         {
             var groups = new Array<(Building b, int n)>();
-            foreach (Building b in Planet.Buildings)
+            foreach (Building b in p.Buildings)
             {
-                if (!b.ShowOnPlanetList && !(b.EventHere && (Planet.Owner == null || !Planet.Owner.IsBuildingUnlocked(b.Name))))
+                if (!b.ShowOnPlanetList && !(b.EventHere && (p.Owner == null || !p.Owner.IsBuildingUnlocked(b.Name))))
                     continue;
                 int at = groups.FirstIndexOf(g => g.b.Icon == b.Icon);
                 if (at >= 0) groups[at] = (groups[at].b, groups[at].n + 1);
                 else         groups.Add((b, 1));
             }
+            return groups;
+        }
 
+        // the synthetic string the Features column measures itself on: an icon counts
+        // as FOUR characters (maintainer bench 291 - the column was overflowing, then
+        // the icons stepped up to 20px)
+        public static string FeaturesMeasure(Planet p)
+        {
+            string s = "";
+            foreach ((Building b, int n) in FeatureGroups(p))
+                s += "wwww" + (n > 1 ? $"({n})" : "") + " ";
+            return s;
+        }
+
+        void AddFeatures(in Rectangle col)
+        {
             int fx = col.X + UITable.PadX;
-            int fy = (int)Y + (int)Height / 2 - 8;
-            foreach ((Building b, int n) in groups)
+            int fy = (int)Y + (int)Height / 2 - 10;
+            int iconAdvance = (int)Fonts.Arial12Bold.TextWidth("wwww"); // an icon counts as 4 characters
+            foreach ((Building b, int n) in FeatureGroups(Planet))
             {
-                var iconRect = new Rectangle(fx, fy, 16, 16);
+                var iconRect = new Rectangle(fx, fy, 20, 20);
                 UIPanel icon = Panel(iconRect, ResourceManager.Texture($"Buildings/icon_{b.Icon}_48x48"));
                 icon.Tooltip = $"{b.TranslatedName.Text}:\n{b.DescriptionText.Text}";
-                fx += 18;
+                fx += iconAdvance;
                 if (n > 1)
                 {
                     string count = $"({n})";
                     Label(new Vector2(fx, fy + 2), count, TinyFont, Cream);
-                    fx += (int)TinyFont.TextWidth(count) + 2;
+                    fx += (int)Fonts.Arial12Bold.TextWidth(count);
                 }
-                fx += 4;
+                fx += (int)Fonts.Arial12Bold.TextWidth(" ");
             }
         }
 
