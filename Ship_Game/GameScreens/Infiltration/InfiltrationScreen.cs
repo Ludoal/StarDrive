@@ -263,15 +263,22 @@ namespace Ship_Game.GameScreens
             }
         }
 
+        // folded op labels (maintainer bench 296): the long names did not fit a 900p column
+        // beside their turn counters, so each checkbox wears the tail word and its tooltip
+        // opens on the full name. Sabotage is one word already and keeps its token.
+        static (InfiltrationOpsType, LocalizedText, LocalizedText, bool) Op(InfiltrationOpsType type,
+            string folded, GameText fullName, GameText tip, bool def)
+            => (type, folded, Localizer.Token(fullName) + "\n\n" + Localizer.Token(tip), def);
+
         static (InfiltrationOpsType, LocalizedText, LocalizedText, bool)[] ActiveOpsFor(byte level) => level switch
         {
-            2 => new[] { (InfiltrationOpsType.PlantMole, (LocalizedText)GameText.PlantAgent, (LocalizedText)GameText.PlantAgentTip, false) },
-            3 => new[] { (InfiltrationOpsType.Uprise, (LocalizedText)GameText.ArrangeUprise, (LocalizedText)GameText.ArrangeUpriseTip, false),
-                         (InfiltrationOpsType.CounterEspionage, (LocalizedText)GameText.CounterEspioangeOps, (LocalizedText)GameText.CounterEspioangeOpsTip, true) },
+            2 => new[] { Op(InfiltrationOpsType.PlantMole, "Agent", GameText.PlantAgent, GameText.PlantAgentTip, false) },
+            3 => new[] { Op(InfiltrationOpsType.Uprise, "Uprise", GameText.ArrangeUprise, GameText.ArrangeUpriseTip, false),
+                         Op(InfiltrationOpsType.CounterEspionage, "Counter", GameText.CounterEspioangeOps, GameText.CounterEspioangeOpsTip, true) },
             4 => new[] { (InfiltrationOpsType.Sabotage, (LocalizedText)GameText.Sabotage, (LocalizedText)GameText.EspioangeOpsSabotageTip, false),
-                         (InfiltrationOpsType.SlowResearch, (LocalizedText)GameText.EspioangeOpsSlowResearch, (LocalizedText)GameText.EspioangeOpsSlowResearchTip, false) },
-            5 => new[] { (InfiltrationOpsType.Rebellion, (LocalizedText)GameText.EspioangeOpsRebellion, (LocalizedText)GameText.EspioangeOpsRebellionTip, false),
-                         (InfiltrationOpsType.DisruptProjection, (LocalizedText)GameText.EspioangeOpsDisruptProjection, (LocalizedText)GameText.EspioangeOpsDisruptProjectionTip, false) },
+                         Op(InfiltrationOpsType.SlowResearch, "Research", GameText.EspioangeOpsSlowResearch, GameText.EspioangeOpsSlowResearchTip, false) },
+            5 => new[] { Op(InfiltrationOpsType.Rebellion, "Rebellion", GameText.EspioangeOpsRebellion, GameText.EspioangeOpsRebellionTip, false),
+                         Op(InfiltrationOpsType.DisruptProjection, "Projection", GameText.EspioangeOpsDisruptProjection, GameText.EspioangeOpsDisruptProjectionTip, false) },
             _ => System.Array.Empty<(InfiltrationOpsType, LocalizedText, LocalizedText, bool)>(),
         };
 
