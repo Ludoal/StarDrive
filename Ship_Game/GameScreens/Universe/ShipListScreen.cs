@@ -11,6 +11,7 @@ using Ship_Game.Ships;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Universe;
+using Ship_Game.UI; // UITable: the shared table charte
 
 namespace Ship_Game
 {
@@ -23,12 +24,7 @@ namespace Ship_Game
         private readonly ScrollList<ShipListScreenItem> ShipSL;
         public EmpireUIOverlay EmpireUi;
         private readonly DropOptions<int> ShowRoles;
-        private readonly SortButton SortSystem;
-        private readonly SortButton SortName;
-        private readonly SortButton SortRole;
-        private readonly SortButton SortOrder;
-        private readonly SortButton SortFleet;
-        private readonly RectF ERect;
+        public readonly UITable Table; // the shared table charte owns geometry, headers and rules
 
         private bool PlayerDesignsOnly
         {
@@ -59,16 +55,6 @@ namespace Ship_Game
         }
 
         private static int IndexLast;
-        private RectF StrIconRect;
-        private readonly SortButton SB_STR;
-        private RectF MaintRect;
-        private readonly SortButton Maint;
-        private RectF TroopRect;
-        private readonly SortButton SB_Troop;
-        private RectF FTL;
-        private readonly SortButton SB_FTL;
-        private RectF STL;
-        private readonly SortButton SB_STL;
 
         public ShipListScreen(UniverseScreen parent, EmpireUIOverlay empUi, string audioCue = "")
             : base(parent, toPause: parent)
@@ -81,27 +67,43 @@ namespace Ship_Game
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
             IsPopup = true;
-            // Ludoal fork: the Ships tab of the Empire group, content-sized (spec 4 Aug):
-            // width follows the column doctrine (bounded at the 1080p cap), height follows
-            // the fleet size - counted unfiltered, a filter only shortens the list inside.
+            // Ludoal fork: the Ships tab of the Empire group on the shared table charte
+            // (UITable, spec 4 Aug): fixed columns except Orders, which takes what the
+            // screen offers within bounds - so the frame HUGS the table and stops after
+            // the slider lane. Height follows the unfiltered fleet count.
+            int ordersW = ((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 950 - 66).Clamped(340, 560);
+            Table = new UITable(new[]
+            {
+                new UITable.Column { Title = Localizer.Token(GameText.System), Width = 110, Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.Ship),   Width = 240, Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.Role),   Width = 80,  Align = TableAlign.Center, Sortable = true },
+                new UITable.Column { Title = "Fleet",  Width = 110, Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.Orders), Width = ordersW, Sortable = true },
+                new UITable.Column { Width = 110, Align = TableAlign.Center }, // the order/refit/scrap icon lane
+                new UITable.Column { Icon = ResourceManager.Texture("UI/icon_fighting_small"), Width = 60,
+                                     Align = TableAlign.Number, Sortable = true, Tip = "Indicates Ship Strength; sortable" },
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_money"), Width = 60,
+                                     Align = TableAlign.Number, Sortable = true, Tip = "Maintenance Cost of Ship; sortable" },
+                new UITable.Column { Icon = ResourceManager.Texture("UI/icon_troop"), Width = 60,
+                                     Align = TableAlign.Number, Sortable = true, Tip = "Indicates Troops on board, friendly or hostile; sortable" },
+                new UITable.Column { Title = "FTL", Width = 60, Align = TableAlign.Number, Sortable = true, Tip = "Faster Than Light Speed of Ship" },
+                new UITable.Column { Title = "STL", Width = 60, Align = TableAlign.Number, Sortable = true, Tip = "Sublight Speed of Ship" },
+            });
             int shipRows = Universe.Player.OwnedShips.Count;
-            float contentW = Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin;
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
-            float contentH = Math.Min(fullAvail, 120 + Math.Max(5, shipRows) * 34);
+            float contentH = Math.Min(fullAvail, 100 + Math.Max(5, shipRows) * 34);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 1,
-                                                    OnEmpireTabChanged, contentW, contentH);
+                                                    OnEmpireTabChanged, Table.ContentWidth, contentH);
 
             // Ludoal fork: the reserved first line carries the three filters and the role dropdown,
             // side by side where they used to be stacked beside the title. The table takes the rest.
             RectF client = EmpireTabs.ClientArea;
-            ERect = ScreenGroups.GalaxyTable(client, ScreenGroups.GalaxyHeaderH);
-            // +15/-30: GalaxyTable extends past the client for the list's own padding - this
-            // pulls the visible table back to the 20px side margins (spec 4 Aug)
-            RectF slRect = new(ERect.X + 15, ERect.Y + 15, ERect.W - 30, ERect.H - 15);
+            Table.Layout(client, client.Y + 30, client.Bottom - 5);
 
-            ShipSL = Add(new ScrollList<ShipListScreenItem>(slRect, 30));
+            ShipSL = Add(new ScrollList<ShipListScreenItem>(Table.ListRect, 30));
             ShipSL.OnDoubleClick = OnShipListScreenItemClicked;
             ShipSL.EnableItemHighlight = true;
+            Table.ApplyHighlightTo(ShipSL);
 
             float lineY = client.Y + 6;
             Add(new UICheckBox(client.X + 10, lineY,
@@ -141,16 +143,6 @@ namespace Ship_Game
             ShowRoles.AddOption("All Structures", 12);
             ShowRoles.AddOption("Civilian", 13);
 
-            SortSystem = new SortButton(EmpireUi.Player.data.SLSort, Localizer.Token(GameText.System));
-            SortName   = new SortButton(EmpireUi.Player.data.SLSort, Localizer.Token(GameText.Ship));
-            SortRole   = new SortButton(EmpireUi.Player.data.SLSort, Localizer.Token(GameText.Role));
-            SortOrder  = new SortButton(EmpireUi.Player.data.SLSort, Localizer.Token(GameText.Orders));
-            SortFleet  = new SortButton(EmpireUi.Player.data.SLSort, "Fleet");
-            Maint      = new SortButton(EmpireUi.Player.data.SLSort, "maint");
-            SB_FTL     = new SortButton(EmpireUi.Player.data.SLSort, "FTL");
-            SB_STL     = new SortButton(EmpireUi.Player.data.SLSort, "STL");
-            SB_Troop   = new SortButton(EmpireUi.Player.data.SLSort, "TROOP");
-            SB_STR     = new SortButton(EmpireUi.Player.data.SLSort, "STR");
             ShowRoles.ActiveIndex = IndexLast;  //fbedard: remember last filter
             ResetList(ShowRoles.ActiveValue);
         }
@@ -173,80 +165,8 @@ namespace Ship_Game
 
             base.Draw(batch, elapsed);
 
-            // Draw List Header
-            if (ShipSL.NumEntries > 0)
-            {
-                ShipListScreenItem e1 = ShipSL.ItemAtTop;
-                // charte (Lek): a header is never bigger than the body - weight, not size
-                Graphics.Font font = Fonts.Arial12Bold;
-                var cursor = new Vector2(e1.SysNameRect.CenterX() - font.TextWidth(SortSystem.Text) / 2f, ERect.Y - font.LineSpacing + 18);
-                SortSystem.rect = new Rectangle((int)cursor.X, (int)cursor.Y, font.TextWidth(SortSystem.Text), font.LineSpacing);
-                SortSystem.Draw(ScreenManager, font);
-
-                cursor = new Vector2(e1.ShipNameRect.CenterX() - font.TextWidth(SortName.Text) / 2f, ERect.Y - font.LineSpacing + 18);
-                SortName.rect = new Rectangle((int)cursor.X, (int)cursor.Y, font.TextWidth(SortName.Text), font.LineSpacing);
-                SortName.Draw(ScreenManager, font);
-                
-                cursor = new Vector2(e1.RoleRect.CenterX() - font.TextWidth(SortRole.Text) / 2f, ERect.Y - font.LineSpacing + 18);
-                SortRole.rect = new Rectangle((int)cursor.X, (int)cursor.Y, font.TextWidth(SortRole.Text), font.LineSpacing);
-                SortRole.Draw(ScreenManager, font);
-
-                cursor = new Vector2(e1.FleetRect.CenterX() - font.TextWidth(SortFleet.Text) / 2f, ERect.Y - font.LineSpacing + 18);
-                SortFleet.rect = new Rectangle((int)cursor.X, (int)cursor.Y, font.TextWidth(SortFleet.Text), font.LineSpacing);
-                SortFleet.Draw(ScreenManager, font);
-
-                // spec (4 Aug): every header centred, even over a left-aligned column
-                cursor = new Vector2(e1.OrdersRect.CenterX() - font.TextWidth(SortOrder.Text) / 2f, ERect.Y - font.LineSpacing + 18);
-                SortOrder.rect = new Rectangle((int)cursor.X, (int)cursor.Y, font.TextWidth(SortOrder.Text), font.LineSpacing);
-                SortOrder.Draw(ScreenManager, font);
-
-                StrIconRect = new(e1.StrRect.X + e1.StrRect.Width / 2 - 6, ERect.Y, 18, 18);
-                SB_STR.rect = StrIconRect;
-                batch.Draw(ResourceManager.Texture("UI/icon_fighting_small"), StrIconRect, Color.White);
-                MaintRect = new(e1.MaintRect.X + e1.MaintRect.Width / 2 - 7, ERect.Y - 2, 21, 20);
-                Maint.rect = MaintRect;
-                batch.Draw(ResourceManager.Texture("NewUI/icon_money"), MaintRect, Color.White);
-                TroopRect = new(e1.TroopRect.X + e1.TroopRect.Width / 2 - 5, ERect.Y - 2, 18, 22);
-                SB_Troop.rect = TroopRect;
-                batch.Draw(ResourceManager.Texture("UI/icon_troop"), TroopRect, Color.White);
-                cursor = new Vector2(e1.FTLRect.X + e1.FTLRect.Width / 2 - Fonts.Arial12Bold.MeasureString("FTL").X / 2f + 4f, ERect.Y - Fonts.Arial12Bold.LineSpacing + 18);
-                cursor = cursor.ToFloored();
-                batch.DrawString(Fonts.Arial12Bold, "FTL", cursor, Colors.Cream);
-                FTL = new(e1.FTLRect.X, ERect.Y - 20 + 35, e1.FTLRect.Width, 20);
-                SB_FTL.rect = FTL;
-                STL = new(e1.STLRect.X, ERect.Y - 20 + 35, e1.STLRect.Width, 20);
-                SB_STL.rect = STL;
-                cursor = new Vector2(e1.STLRect.X + e1.STLRect.Width / 2 - Fonts.Arial12Bold.MeasureString("STL").X / 2f + 4f, ERect.Y - Fonts.Arial12Bold.LineSpacing + 18);
-                cursor = cursor.ToFloored();
-                batch.DrawString(Fonts.Arial12Bold, "STL", cursor, Colors.Cream);
-
-                void DrawLine(float aX, float aY, float bX, float bY)
-                {
-                    batch.DrawLine(new Vector2(aX, aY), new Vector2(bX, bY), new Color(118, 102, 67, 255));
-                }
-                void DrawVerticalSeparator(int x)
-                {
-                    DrawLine(x, ERect.Y + 26, x, ERect.Bottom - 10);
-                }
-                void DrawHorizontalSeparator(float y)
-                {
-                     DrawLine(e1.TotalEntrySize.X, y, e1.TotalEntrySize.Right, y);
-                }
-
-                // spec (4 Aug): verticals BETWEEN columns only - no extremity lines, and the
-                // only horizontal is the rule under the headers
-                DrawVerticalSeparator(e1.ShipNameRect.X);
-                DrawVerticalSeparator(e1.RoleRect.X);
-                DrawVerticalSeparator(e1.FleetRect.X);
-                DrawVerticalSeparator(e1.OrdersRect.X);
-                DrawVerticalSeparator(e1.RefitRect.X);
-                DrawVerticalSeparator(e1.StrRect.X);
-                DrawVerticalSeparator(e1.MaintRect.X + 5);
-                DrawVerticalSeparator(e1.TroopRect.X + 5);
-                DrawVerticalSeparator(e1.FTLRect.X + 5);
-                DrawVerticalSeparator(e1.STLRect.X + 5);
-                DrawHorizontalSeparator(ERect.Y + 25);
-            }
+            // the shared charte draws the headers, the rule and the column separators
+            Table.DrawChrome(batch);
             ShowRoles.Draw(batch, elapsed);
             ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             EmpireUi.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
@@ -303,50 +223,36 @@ namespace Ship_Game
             return false;
         }
 
+        // header clicks come from the shared table charte; this maps a column to its sort
         bool HandleShipListSortButtonClick(InputState input)
         {
-            bool clickedOnSomething = false;
+            int col = Table.HandleInput(input);
+            if (col < 0)
+                return false;
 
-            void Sort<T>(SortButton button, Func<ShipListScreenItem, T> sortPredicate)
+            bool asc = Table.SetSorted(col);
+            GameAudio.AcceptClick();
+            void Sort<T>(Func<ShipListScreenItem, T> key)
             {
-                clickedOnSomething = true;
-                GameAudio.AcceptClick();
-                button.Ascending = !button.Ascending;
-                if (button.Ascending) ShipSL.Sort(sortPredicate);
-                else ShipSL.SortDescending(sortPredicate);
+                if (asc) ShipSL.Sort(key);
+                else     ShipSL.SortDescending(key);
             }
 
-            if (SB_FTL.HandleInput(input)) Sort(SB_FTL, sl => sl.Ship.MaxFTLSpeed);
-            else if (SB_FTL.Hover) ToolTip.CreateTooltip("Faster Than Light Speed of Ship");
-
-            if (SB_STL.HandleInput(input)) Sort(SB_STL, sl => sl.Ship.MaxSTLSpeed);
-            else if (SB_STL.Hover) ToolTip.CreateTooltip("Sublight Speed of Ship");
-
-            if (Maint.HandleInput(input)) Sort(Maint, sl => sl.Ship.GetMaintCost());
-            else if (Maint.Hover) ToolTip.CreateTooltip("Maintenance Cost of Ship; sortable");
-
-            if (SB_Troop.HandleInput(input)) Sort(SB_Troop, sl => sl.Ship.TroopCount);
-            else if (SB_Troop.Hover) ToolTip.CreateTooltip("Indicates Troops on board, friendly or hostile; sortable");
-
-            if (SB_STR.HandleInput(input)) Sort(SB_STR, sl => sl.Ship.GetStrength());
-            else if (SB_STR.Hover) ToolTip.CreateTooltip("Indicates Ship Strength; sortable");
-
-            void SortAndReset<T>(SortButton button, Func<ShipListScreenItem, T> sortPredicate)
+            switch (col)
             {
-                clickedOnSomething = true;
-                GameAudio.BlipClick();
-                button.Ascending = !button.Ascending;
-                if (button.Ascending) ShipSL.Sort(sortPredicate);
-                else ShipSL.SortDescending(sortPredicate);
+                case 0:  Sort(sl => sl.Ship.SystemName); break;
+                case 1:  Sort(sl => sl.Ship.VanityName); break;
+                case 2:  Sort(sl => sl.Ship.ShipData.Role); break;
+                case 3:  Sort(sl => sl.Ship.Fleet?.Name ?? "None"); break;
+                case 4:  Sort(sl => ShipListScreenItem.GetStatusText(sl.Ship)); break;
+                case 6:  Sort(sl => sl.Ship.GetStrength()); break;
+                case 7:  Sort(sl => sl.Ship.GetMaintCost()); break;
+                case 8:  Sort(sl => sl.Ship.TroopCount); break;
+                case 9:  Sort(sl => sl.Ship.MaxFTLSpeed); break;
+                case 10: Sort(sl => sl.Ship.MaxSTLSpeed); break;
+                default: return false;
             }
-
-            if (SortName.HandleInput(input))   SortAndReset(SortName,  sl => sl.Ship.VanityName);
-            if (SortRole.HandleInput(input))   SortAndReset(SortRole,  sl => sl.Ship.ShipData.Role);
-            if (SortOrder.HandleInput(input))  SortAndReset(SortOrder, sl => ShipListScreenItem.GetStatusText(sl.Ship));
-            if (SortSystem.HandleInput(input)) SortAndReset(SortOrder, sl => sl.Ship.SystemName);
-            if (SortFleet.HandleInput(input))  SortAndReset(SortOrder, sl => sl.Ship.Fleet?.Name ?? "None");
-
-            return clickedOnSomething;
+            return true;
         }
 
         void ResetUniverseShipSelectionMessy(UniverseScreen u)
@@ -406,7 +312,7 @@ namespace Ship_Game
             {
                 if (ShouldAddForCategory(ship, category))
                 {
-                    ShipSL.AddItem(new ShipListScreenItem(ship, (int)ERect.X + 130, (int)EmpireTabs.ClientArea.Y + 20, (int)EmpireTabs.ClientArea.W - 60, 30, this));
+                    ShipSL.AddItem(new ShipListScreenItem(ship, this));
                 }
             }
 

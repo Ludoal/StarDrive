@@ -7,6 +7,7 @@ using SDUtils;
 using Ship_Game.Audio;
 using Ship_Game.Ships;
 using Ship_Game.Universe;
+using Ship_Game.UI; // UITable: the shared table charte
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 
@@ -26,9 +27,8 @@ namespace Ship_Game
         Empire Player => Universe.Player;
         readonly ScrollList<TroopListScreenItem> TroopSL;
         readonly EmpireUIOverlay EmpireUI;
-        RectF ERect;
+        public readonly UITable Table; // the shared table charte owns the geometry
         int NumTroops;
-        float StrengthTotal;
 
         // Ludoal fork: status filter, the same shape as the Ships Array's role dropdown - to the
         // right of the title, and it remembers the last pick for the session the way that one
@@ -49,25 +49,30 @@ namespace Ship_Game
             TransitionOffTime = 0.25f;
             IsPopup = true;
 
-            // Ludoal fork: the Troops tab of the Empire group, content-sized (maintainer bench,
-            // the Economy pattern): fixed columns set the width, the troop-group count sets the
+            // Ludoal fork: the Troops tab of the Empire group, content-sized on the shared
+            // table charte (UITable): fixed columns set the width, the troop-group count the
             // height - this page is allowed UNDER the 900p floor when the roster is short.
+            Table = new UITable(new[]
+            {
+                new UITable.Column { Title = "System",   Width = 130 },
+                new UITable.Column { Title = "Location", Width = 240 },
+                new UITable.Column { Title = "Status",   Width = 90,  Align = TableAlign.Center },
+                new UITable.Column { Title = "Troop",    Width = 200 },
+                new UITable.Column { Title = "Num",      Width = 60,  Align = TableAlign.Number },
+                new UITable.Column { Title = "Strength", Width = 80,  Align = TableAlign.Number },
+            });
             int rows = CountTroopGroups();
-            // +40: 20px of margin each side of the table (spec 4 Aug, the Economy values)
-            float contentW = TroopListScreenItem.TableW + 40;
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
-            // 136 = tab strip + filter lane + column titles + TOTAL footer lane + a line at the bottom
-            float contentH = Math.Min(fullAvail, 136 + Math.Max(3, rows) * 28);
+            // 150 = tab strip + filter lane + the two info lines + headers + a line at the bottom
+            float contentH = Math.Min(fullAvail, 150 + Math.Max(3, rows) * 28);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 2,
-                                                    OnEmpireTabChanged, contentW, contentH);
+                                                    OnEmpireTabChanged, Table.ContentWidth, contentH);
             RectF client = EmpireTabs.ClientArea;
-            ERect = ScreenGroups.GalaxyTable(client, ScreenGroups.GalaxyHeaderH);
-            // the last lane of the frame belongs to the TOTAL footer, not the list.
-            // +15/-30: GalaxyTable extends past the client for the list's own padding,
-            // this pulls the visible table back to the 20px side margins (spec 4 Aug)
-            RectF slRect = new(ERect.X + 15, ERect.Y - 10, ERect.W - 30, ERect.H + 10 - 26);
-            TroopSL = Add(new ScrollList<TroopListScreenItem>(slRect, 24));
+            // filter lane, two info lines (Total Troops / Food consumption), then the table
+            Table.Layout(client, client.Y + 62, client.Bottom - 5);
+            TroopSL = Add(new ScrollList<TroopListScreenItem>(Table.ListRect, 24));
             TroopSL.EnableItemHighlight = true;
+            Table.ApplyHighlightTo(TroopSL);
             TroopSL.OnDoubleClick = OnRowClicked; // Ludoal fork: double-click everywhere, like Ships/Empire
 
             ShowStatus = Add(new DropOptions<string>(
@@ -144,7 +149,7 @@ namespace Ship_Game
                     item.Accumulate(t);
                 else
                     groups.Add(key, TroopSL.AddItem(
-                        new TroopListScreenItem(sysName, locName, status, statusColor, t, p, s)));
+                        new TroopListScreenItem(Table, sysName, locName, status, statusColor, t, p, s)));
             }
 
             foreach (SolarSystem system in Universe.UState.Systems)
@@ -172,12 +177,8 @@ namespace Ship_Game
             }
 
             NumTroops = 0;
-            StrengthTotal = 0f;
             foreach (TroopListScreenItem item in TroopSL.AllEntries)
-            {
                 NumTroops += item.Count;
-                StrengthTotal += item.Strength;
-            }
         }
 
 
@@ -200,57 +201,29 @@ namespace Ship_Game
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed);
 
-            if (TroopSL.NumEntries > 0)
+            // the two info lines under the filter (maintainer bench 287): labels vanilla,
+            // the count white, the food bill in pink - troops eat Troop.Consumption each
+            Graphics.Font font = Fonts.Arial12Bold;
+            RectF client = EmpireTabs.ClientArea;
+            float infoX = Table.TableRect.X;
+            string totalLbl = "Total Troops: ";
+            batch.DrawString(font, totalLbl, new Vector2(infoX, client.Y + 28), UITable.Vanilla);
+            batch.DrawString(font, NumTroops.ToString(), new Vector2(infoX + font.TextWidth(totalLbl), client.Y + 28), Color.White);
+            string foodLbl = "Food consumption: ";
+            batch.DrawString(font, foodLbl, new Vector2(infoX, client.Y + 44), UITable.Vanilla);
+            batch.DrawString(font, $"-{(NumTroops * Troop.Consumption).String(1)}",
+                             new Vector2(infoX + font.TextWidth(foodLbl), client.Y + 44), Color.LightPink);
+
+            Table.DrawChrome(batch);
+            if (TroopSL.NumEntries == 0)
             {
-                TroopListScreenItem e1 = TroopSL.ItemAtTop;
-                // charte (Lek): a header is never bigger than the body - weight, not size
-                Graphics.Font font = Fonts.Arial12Bold;
-
-                DrawHeader(batch, font, e1.SysNameRect, "System");
-                DrawHeader(batch, font, e1.LocationRect, "Location");
-                DrawHeader(batch, font, e1.StatusRect, "Status");
-                DrawHeader(batch, font, e1.TroopRect, "Troop");
-                // the numeric pair centres on its VALUE lane, whose numbers end 16px short
-                DrawHeader(batch, font, e1.NumRect, "Num", rightInset: 16);
-                // Ludoal fork: the word alone. This header carried "Strength" AND a fist icon
-                // saying the same thing, and it was the only column of the six to do so — the
-                // text stays because the other five are text (maintainer feedback).
-                DrawHeader(batch, font, e1.StrRect, "Strength", rightInset: 16);
-
-                Color lineColor = new Color(118, 102, 67, 255);
-                float footY = TroopSL.ItemsHousing.Bottom + 6;
-                // spec (4 Aug): one horizontal rule under the headers, then verticals BETWEEN
-                // the columns only - none at the extremities - starting under that rule
-                float ruleY = ERect.Y + 2;
-                batch.DrawLine(new Vector2(e1.SysNameRect.X, ruleY), new Vector2(e1.StrRect.Right, ruleY), lineColor);
-                float columnBot = ERect.Bottom - 15;
-                foreach (int colX in new[] { e1.LocationRect.X, e1.StatusRect.X, e1.TroopRect.X,
-                                             e1.NumRect.X, e1.StrRect.X })
-                    batch.DrawLine(new Vector2(colX, ruleY), new Vector2(colX, columnBot), lineColor);
-
-                // TOTAL footer, aligned with the rows' own text lane (spec 4 Aug)
-                batch.DrawString(font, "TOTAL", new Vector2(TroopSL.ItemsHousing.X + 8, footY), Color.Wheat);
-                string num = NumTroops.ToString();
-                batch.DrawString(font, num, new Vector2(e1.NumRect.Right - 16 - font.TextWidth(num), footY), Colors.Cream);
-                string str = ((int)StrengthTotal).ToString();
-                batch.DrawString(font, str, new Vector2(e1.StrRect.Right - 16 - font.TextWidth(str), footY), Colors.Cream);
-            }
-            else
-            {
-                var msgPos = new Vector2(ERect.X + 30, ERect.Y + 30);
-                batch.DrawString(Fonts.Arial12Bold, "No troops anywhere — recruit some before the neighbours visit.",
+                var msgPos = new Vector2(Table.TableRect.X + 30, Table.TableRect.Y + 30);
+                batch.DrawString(font, "No troops anywhere — recruit some before the neighbours visit.",
                                  msgPos, Color.Gray);
             }
             ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
-        }
-
-        void DrawHeader(SpriteBatch batch, Graphics.Font font, Rectangle rect, string text, int rightInset = 0)
-        {
-            var pos = new Vector2(rect.X + (rect.Width - rightInset) / 2 - font.MeasureString(text).X / 2f,
-                                  ERect.Y - font.LineSpacing);
-            batch.DrawString(font, text, pos, Colors.Cream);
         }
 
         public override bool HandleInput(InputState input)
@@ -271,13 +244,6 @@ namespace Ship_Game
 
     public sealed class TroopListScreenItem : ScrollListItem<TroopListScreenItem>
     {
-        public Rectangle SysNameRect;
-        public Rectangle LocationRect;
-        public Rectangle StatusRect;
-        public Rectangle TroopRect;
-        public Rectangle NumRect;
-        public Rectangle StrRect;
-
         readonly string SystemName;
         readonly string Location;
         readonly string Status;
@@ -288,15 +254,13 @@ namespace Ship_Game
         public int Count { get; private set; }
         public float Strength { get; private set; }
 
-        // fixed pixel columns (the column doctrine): free text gets the room a name
-        // needs, a datum gets a number's room - and the frame is sized FROM the sum,
-        // so there is no gutter to feed anymore
-        public const int SysW = 150, LocW = 290, StatusW = 90, TroopW = 240, NumW = 70, StrW = 90;
-        public const int TableW = SysW + LocW + StatusW + TroopW + NumW + StrW;
+        // the shared table charte owns the columns - the row only knows its data
+        readonly UITable Table;
 
-        public TroopListScreenItem(string systemName, string location, string status, Color statusColor,
-                                   Troop troop, Planet planet, Ship ship)
+        public TroopListScreenItem(UITable table, string systemName, string location, string status,
+                                   Color statusColor, Troop troop, Planet planet, Ship ship)
         {
+            Table = table;
             SystemName = systemName;
             Location = location;
             Status = status;
@@ -317,61 +281,25 @@ namespace Ship_Game
 
         public override void PerformLayout()
         {
-            int x = (int)X;
-            int y = (int)Y;
-            int h = (int)Height;
             RemoveAll();
 
-            int nextX = x;
-            Rectangle NextRect(int width)
-            {
-                int next = nextX;
-                nextX += width;
-                return new Rectangle(next, y, width, h);
-            }
-
-            SysNameRect  = NextRect(SysW);
-            LocationRect = NextRect(LocW);
-            StatusRect   = NextRect(StatusW);
-            TroopRect    = NextRect(TroopW);
-            NumRect      = NextRect(NumW);
-            StrRect      = NextRect(StrW);
-
-            // charte (maintainer bench, the Economy pattern): names read from the left,
-            // numbers close right on a shared edge; the status stays a centred tag with
-            // its colour - a state, not a quantity
-            AddLeft(SysNameRect, SystemName, Colors.Cream);
-            AddLeft(LocationRect, Location, Colors.Cream);
-            AddCentered(StatusRect, Status, StatusColor);
-            AddLeft(TroopRect, TroopName, Colors.Cream);
-            AddRight(NumRect, Count.ToString(), Colors.Cream);
-            AddRight(StrRect, ((int)Strength).ToString(), Colors.Cream);
+            // cells read the shared column geometry; the row only supplies its Y band
+            Cell(0, SystemName, Colors.Cream);
+            Cell(1, Location, Colors.Cream);
+            Cell(2, Status, StatusColor);
+            Cell(3, TroopName, Colors.Cream);
+            Cell(4, Count.ToString(), Colors.Cream);
+            Cell(5, ((int)Strength).ToString(), Colors.Cream);
             base.PerformLayout();
         }
 
-        Graphics.Font FitFont(string text, int room) =>
-            Fonts.Arial12Bold.MeasureString(text).X <= room ? Fonts.Arial12Bold : Fonts.Arial8Bold;
-
-        void AddLeft(Rectangle rect, string text, Color color)
+        void Cell(int col, string text, Color color)
         {
-            Graphics.Font font = FitFont(text, rect.Width - 12);
-            Label(new Vector2(rect.X + 8, rect.Y + rect.Height / 2 - font.LineSpacing / 2), text, font, color);
-        }
-
-        void AddRight(Rectangle rect, string text, Color color)
-        {
-            // -16: one character of air right of the number, the Economy lane
-            Graphics.Font font = Fonts.Arial12;
-            Label(new Vector2(rect.Right - 16 - font.MeasureString(text).X,
-                              rect.Y + rect.Height / 2 - font.LineSpacing / 2), text, font, color);
-        }
-
-        void AddCentered(Rectangle rect, string text, Color color)
-        {
-            Graphics.Font font = FitFont(text, rect.Width);
-            var pos = new Vector2(rect.X + rect.Width / 2 - font.MeasureString(text).X / 2f,
-                                  rect.Y + rect.Height / 2 - font.LineSpacing / 2);
-            Label(pos, text, font, color);
+            UITable.Column c = Table.Columns[col];
+            Graphics.Font font = c.Align == TableAlign.Number ? Fonts.Arial12
+                : Fonts.Arial12Bold.MeasureString(text).X <= c.Width - 2 * UITable.PadX
+                    ? Fonts.Arial12Bold : Fonts.Arial8Bold;
+            Label(UITable.CellPos(font, c.Rect, Y, Height, text, c.Align), text, font, color);
         }
     }
 }
