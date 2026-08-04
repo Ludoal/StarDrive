@@ -59,8 +59,10 @@ namespace Ship_Game
                 new UITable.Column { Title = "Location" },
                 new UITable.Column { Title = "Status",   Align = TableAlign.Center },
                 new UITable.Column { Title = "Troop" },
-                new UITable.Column { Title = "Num",      Width = 60, Align = TableAlign.Number },
-                new UITable.Column { Title = "Strength", Width = 80, Align = TableAlign.Number },
+                new UITable.Column { Title = "#",        Width = 60, Align = TableAlign.Number },
+                // the offense icon with its tooltip in place of the word (bench 305)
+                new UITable.Column { Icon = ResourceManager.Texture("UI/icon_offense"), Width = 80,
+                                     Align = TableAlign.Number, Tip = Localizer.Token(GameText.Strength) },
             });
             int rows = CountTroopGroups(out Array<string> systems, out Array<string> locations, out Array<string> troops);
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, systems);
@@ -228,7 +230,8 @@ namespace Ship_Game
             infoX += font.TextWidth(totalVal) + 24;
             string foodLbl = "Food consumption: ";
             batch.DrawString(font, foodLbl, new Vector2(infoX, infoY), UITable.Vanilla);
-            batch.DrawString(font, $"-{(NumTroops * Troop.Consumption).String(1)}",
+            // no leading minus (bench 305): "consumption" already says the direction
+            batch.DrawString(font, (NumTroops * Troop.Consumption).String(1),
                              new Vector2(infoX + font.TextWidth(foodLbl), infoY), Color.LightPink);
 
             Table.DrawChrome(batch);

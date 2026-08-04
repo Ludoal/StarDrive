@@ -95,7 +95,7 @@ namespace Ship_Game
             // purple, troops orange with construction, colony green, scout blue,
             // freighter white (the majority)
             Color roleColor = Ship.IsConstructor || Ship.DesignRole == RoleName.construction ? Color.Orange
-                            : Ship.DesignRole == RoleName.troop || Ship.DesignRole == RoleName.troopShip ? Color.Orange
+                            : Ship.DesignRole == RoleName.troop || Ship.DesignRole == RoleName.troopShip ? Color.IndianRed
                             : Ship.DesignRole == RoleName.scout ? Color.CornflowerBlue
                             : Ship.DesignRole == RoleName.freighter ? Color.White
                             : Ship.DesignRole == RoleName.colony ? Color.LightGreen
