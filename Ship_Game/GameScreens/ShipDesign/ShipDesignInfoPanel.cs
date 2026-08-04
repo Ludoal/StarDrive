@@ -667,6 +667,19 @@ namespace Ship_Game.GameScreens.ShipDesign
             if (!CompareAgainst.TryGetVisibleValue(r.Title.Text, out _))
                 return false;
 
+            // ⚠ a sibling with the same title that IS visible means the design does show
+            // the stat - the INF variant of ETM, say - and a missing-dash beside it
+            // doubled the line (bench 305: "ETM (-24.56)" over "ETM INF"). Word rows
+            // count: they carry no Value but they are the stat, said differently.
+            for (int i = 0; i < Rows.Count; ++i)
+            {
+                if (i == index)
+                    continue;
+                Row o = Rows[i];
+                if (o.Heading == null && o.Title.Text == r.Title.Text && IsVisible(o))
+                    return false;
+            }
+
             // Several rows can share a title while being mutually exclusive by their vis()
             // predicate — Shield Power is declared twice, once plain and once amplified. Only
             // the FIRST of them may stand in as the missing row, or the panel shows the same
