@@ -167,7 +167,7 @@ namespace Ship_Game
             {
                 DeployButton.Visible = false;
                 DeployTextInfo.Text = Localizer.Token(GameText.ResearchStationDeployed);
-                DeployTextInfo.Color = Player.EmpireColor;
+                DeployTextInfo.Color = Color.CornflowerBlue; // research wears blue (maintainer bench 303)
             }
             else
             {
