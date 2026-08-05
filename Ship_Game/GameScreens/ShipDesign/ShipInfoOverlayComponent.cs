@@ -25,6 +25,10 @@ namespace Ship_Game.GameScreens.ShipDesign
         Graphics.Font TitleFont;
         Graphics.Font Font;
         int TextWidth;
+        // every label the verbose list can wear - the value column is measured over them
+        static readonly string[] VerboseLabels = { "WIP:", "Offense:", "Weapons:", "Hangars:",
+                                                   "BombBays:", "Max Range:", "Repair:", "EMP Prot:",
+                                                   "FTL Speed:", "Sub Speed:", "Turn:", "Troops:", "Cargo:" };
 
         public ShipInfoOverlayComponent(GameScreen screen, UniverseState us)
         {
@@ -199,6 +203,13 @@ namespace Ship_Game.GameScreens.ShipDesign
             // combat, defence, mobility, payload, with air between the categories. The
             // air is paid only when a later line draws, so an empty block folds with it.
             p = new(start.X, start.Y + 60);
+            // the value column starts past the LONGEST label, measured - the old
+            // 0.36-of-text-width room was sized for the short dialect, and the new labels
+            // ran straight into their values (maintainer bench 323)
+            float labelRoom = 0f;
+            foreach (string l in VerboseLabels)
+                labelRoom = Math.Max(labelRoom, Font.TextWidth(l));
+            labelRoom += 10f;
             bool lineDrawn = false, airPending = false;
             void Air() => airPending = true;
             void PayAir()
@@ -242,7 +253,7 @@ namespace Ship_Game.GameScreens.ShipDesign
 
             void DrawText(Graphics.Font font, string title, string text, Color color)
             {
-                var ident = new Vector2(p.X + (TextWidth*0.36f).RoundTo10(), p.Y);
+                var ident = new Vector2(p.X + labelRoom, p.Y);
                 batch.DrawString(font, title, p, color);
                 batch.DrawString(font, text, ident, color);
                 p.Y += font.LineSpacing + 2;
@@ -253,7 +264,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                 if (value <= 0f)
                     return;
                 PayAir(); // a pending block break is paid by the first line that draws
-                var ident = new Vector2(p.X + (TextWidth*0.36f).RoundTo10(), p.Y);
+                var ident = new Vector2(p.X + labelRoom, p.Y);
                 batch.DrawString(Font, title, p, color);
                 batch.DrawString(Font, Str(value), ident, color);
                 p.Y += Font.LineSpacing + 2;

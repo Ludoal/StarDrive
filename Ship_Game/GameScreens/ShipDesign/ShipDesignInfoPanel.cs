@@ -700,44 +700,10 @@ namespace Ship_Game.GameScreens.ShipDesign
             return !r.NonZeroOnly || (r.Value != null && r.Value() > 0f);
         }
 
-        // Ludoal fork (spec v4): while a design is pinned, a row this design hides but the
-        // pinned one shows is still drawn — dimmed, with a dash and its delta (maintainer feedback). Outside a
-        // comparison the row simply does not exist.
-        bool ShownAsMissing(int index)
-        {
-            Row r = Rows[index];
-            if (CompareAgainst == null || r.Heading != null || r.Value == null)
-                return false;
-            if (!CompareAgainst.TryGetVisibleValue(r.Title.Text, out _))
-                return false;
-
-            // ⚠ a sibling with the same title that IS visible means the design does show
-            // the stat - the INF variant of ETM, say - and a missing-dash beside it
-            // doubled the line (bench 305: "ETM (-24.56)" over "ETM INF"). Word rows
-            // count: they carry no Value but they are the stat, said differently.
-            for (int i = 0; i < Rows.Count; ++i)
-            {
-                if (i == index)
-                    continue;
-                Row o = Rows[i];
-                if (o.Heading == null && o.Title.Text == r.Title.Text && IsVisible(o))
-                    return false;
-            }
-
-            // Several rows can share a title while being mutually exclusive by their vis()
-            // predicate — Shield Power is declared twice, once plain and once amplified. Only
-            // the FIRST of them may stand in as the missing row, or the panel shows the same
-            // dimmed line as many times as it was declared (bench, 46.134).
-            for (int i = 0; i < index; ++i)
-            {
-                Row o = Rows[i];
-                if (o.Heading == null && o.Value != null && o.Title.Text == r.Title.Text)
-                    return false;
-            }
-            return true;
-        }
-
-        bool IsDrawn(int index) => IsVisible(Rows[index]) || ShownAsMissing(index);
+        // Ludoal fork (bench 323): no comparison on an element a design does not have -
+        // the spec-v4 dimmed dash-with-delta for missing rows retires. A row either
+        // exists on this design or it is not drawn at all.
+        bool IsDrawn(int index) => IsVisible(Rows[index]);
 
         // ── the draw, two columns, split on a block boundary ──────────────────────────────
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -822,7 +788,10 @@ namespace Ship_Game.GameScreens.ShipDesign
                 // squash the screen well below the supported floor)
                 float side = Math.Min(PlanSide, Height - TitleBandHeight - 10f);
                 planW = PlanSide + PlanGap; // the columns keep their place even if the square shrinks
-                S.RenderOverlay(batch, new Rectangle((int)X, (int)rowsY, (int)side, (int)side),
+                // maintainer bench 323: the plan rides 40px right - the frame's left margin
+                // was dead surface
+                const float PlanShift = 40f;
+                S.RenderOverlay(batch, new Rectangle((int)(X + PlanShift), (int)rowsY, (int)side, (int)side),
                                 showModules: true, drawHullBackground: true,
                                 moduleHealthColor: false, markLockedModules: true);
 
@@ -837,7 +806,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                     // aligned it floated away from the square it belongs to (maintainer feedback)
                     float w = Fonts.Arial12Bold.TextWidth(settings);
                     batch.DrawString(Fonts.Arial12Bold, settings,
-                                     new Vector2(X + (side - w) * 0.5f, rowsY + side + 6f), Color.White);
+                                     new Vector2(X + PlanShift + (side - w) * 0.5f, rowsY + side + 6f), Color.White);
                 }
             }
 
@@ -867,10 +836,10 @@ namespace Ship_Game.GameScreens.ShipDesign
             // 10px left of the name on every panel — the Hover frame hid it because its plan
             // pushes its columns right anyway, which is why only Active looked wrong (maintainer feedback). Same expression as namePos, so the two cannot part company.
             float col0X = ContentLeft + planW + Col0Shift;
-            // maintainer bench 322: the compact column rides right - 20px when a delta
-            // lane is in use, 30px when single (hover included)
+            // maintainer benches 322-323: the compact column rides right - 30px when a
+            // delta lane is in use, 40px when single (hover included)
             if (Compact)
-                col0X += CompareAgainst != null ? 20f : 30f;
+                col0X += CompareAgainst != null ? 30f : 40f;
             float col1X = col0X + colStep + Col1Shift - Col0Shift;
             // the compact set is ONE headingless column with its own, tighter title room
             float spacing = Compact ? CompactTitleColumn : TitleColumn;
@@ -963,28 +932,6 @@ namespace Ship_Game.GameScreens.ShipDesign
                     cursor.Y += headFont.LineSpacing * 0.5f; // same air as between headed blocks
                 pendingGap = false;
                 anyRowDrawn = true;
-
-                // this design hides the row, the pinned one has it: dimmed dash + its delta
-                if (!IsVisible(r))
-                {
-                    var dim = new Color(105, 105, 105);
-                    cursor.Y += headFont.LineSpacing;
-                    string missTitle = r.Title.Text; // no trailing colon, same as the drawn rows
-                    var missCursor = new Vector2(cursor.X + spacing, cursor.Y);
-                    batch.DrawString(headFont, missTitle,
-                                     new Vector2(missCursor.X - 20f - headFont.TextWidth(missTitle), missCursor.Y), dim);
-                    batch.DrawString(headFont, "-", missCursor, dim);
-
-                    if (CompareAgainst.TryGetVisibleValue(r.Title.Text, out float miss) && !miss.AlmostEqual(0f))
-                    {
-                        float dmiss = -miss; // this design has none: the delta is the whole of it
-                        bool betterMiss = LowerIsBetter(r.Title.Text) ? dmiss < 0f : dmiss > 0f;
-                        batch.DrawString(headFont, "(" + dmiss.GetNumberString() + ")",
-                                         new Vector2(cursor.X + spacing + DeltaLaneOffset, cursor.Y),
-                                         betterMiss ? Color.LightGreen : Color.LightPink);
-                    }
-                    continue;
-                }
 
                 if (r.TextFn != null)
                 {
