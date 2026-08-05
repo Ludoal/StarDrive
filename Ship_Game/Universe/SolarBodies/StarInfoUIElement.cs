@@ -23,6 +23,11 @@ namespace Ship_Game
 		Empire Player => Screen.Player;
 		readonly Rectangle Housing;
 		Rectangle DeployRect;   // computed each draw - the plate's height moves with the content
+
+		// the roll's rows are clickable (maintainer bench 315): a click selects the
+		// planet and glides the camera onto it - the arrows' spatial walk, from the list
+		struct RollRow { public Rectangle Rect; public Planet P; }
+		readonly Array<RollRow> RollRows = new Array<RollRow>();
 		readonly Graphics.Font Font12 = Fonts.Arial12Bold;
 		readonly Color ButtonTextColor  = new Color(174, 202, 255);
 		readonly Color ButtonHoverColor = new Color(88, 108, 146);
@@ -38,7 +43,11 @@ namespace Ship_Game
 			TransitionOffTime = TimeSpan.FromSeconds(0.25);
 		}
 
-		public void SetSystem(SolarSystem s) => Sys = s;
+		public void SetSystem(SolarSystem s)
+		{
+			Sys = s;
+			RollRows.Clear();
+		}
 
 		bool ShowDeployButton => Sys != null && Sys.IsExploredBy(Player) && Sys.IsResearchable;
 
@@ -104,7 +113,9 @@ namespace Ship_Game
 			// bench 315: the roll widens 30px (10 left with the block, 20 on its right edge)
 			// and F and R swap - food first, as on the colony sliders
 			int laneP = frame.Right - 50, laneR = laneP - 42, laneF = laneR - 42;
+			int blockRight = laneP + 18;
 			float y = Housing.Y + PlanetInfoUIElement.TopLineIconY - 3; // the icon header rides the name line
+			RollRows.Clear();
 			int rows = 0;
 			foreach (Planet p in planets)
 				if (p.IsExploredBy(Player))
@@ -144,6 +155,11 @@ namespace Ship_Game
 					Lane(p.FertilityFor(Player), laneF);
 					Lane(p.MineralRichness, laneR);
 					Lane(p.MaxPopulationBillionFor(Player), laneP);
+					RollRows.Add(new RollRow
+					{
+						Rect = new Rectangle(listX, (int)y - 2, blockRight - listX, RowH),
+						P = p
+					});
 					y += RowH;
 				}
 			}
@@ -152,7 +168,6 @@ namespace Ship_Game
 			{
 				// the deploy button under the roll, centred on it - no label, the button says it all
 				int by = ((int)y + 8).UpperBound(Housing.Bottom - 33);
-				int blockRight = laneP + 18;
 				DeployRect = new Rectangle(listX + (blockRight - listX - 182) / 2, by, 182, 25);
 				DrawDeployButton(batch);
 			}
@@ -180,6 +195,22 @@ namespace Ship_Game
 
 		public override bool HandleInput(InputState input)
 		{
+			// a click on a roll row selects that planet - the arrows' spatial walk
+			if (input.LeftMouseClick)
+			{
+				foreach (RollRow r in RollRows)
+				{
+					if (r.Rect.HitTest(input.CursorPosition))
+					{
+						GameAudio.AcceptClick();
+						Screen.SetSelectedPlanet(r.P);
+						Screen.SnapViewTo(new(r.P.Position.X, r.P.Position.Y,
+							Screen.GetZfromScreenState(UniverseScreen.UnivScreenState.PlanetView)), 5f, 2f);
+						return true;
+					}
+				}
+			}
+
 			if (!ShowDeployButton || Sys.IsResearchStationDeployedBy(Player))
 				return false;
 
