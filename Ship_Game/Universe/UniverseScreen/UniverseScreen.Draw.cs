@@ -517,13 +517,19 @@ namespace Ship_Game
                 EmpireUI.Draw(batch);
                 if (LookingAtPlanet)
                 {
+                    // Ludoal fork (benches 314-319): opened FROM a list tab, the group's frame
+                    // and tab row stay behind the colony as a dimmed silhouette, origin tab
+                    // still selected - the group page was the thing that vanished, not the
+                    // EmpireUI bar. Ground fill + tab row (the group screens' own recipe),
+                    // then the estompe veil; the colony paints over the middle.
+                    if (ReturnToListScreen != null && ReturnToListTabs != null)
+                    {
+                        batch.FillRectangle(GameScreens.ScreenGroups.GroupFrameFillRect(ReturnToListTabs),
+                                            GameScreens.ScreenGroups.GroupFrameFill);
+                        ReturnToListTabs.Draw(batch, elapsed);
+                        batch.FillRectangle(ReturnToListTabs.Rect, new Color(6, 8, 12).Alpha(0.45f));
+                    }
                     workersPanel?.Draw(batch, elapsed);
-                    // Ludoal fork (benches 314-319): opened FROM a list tab, the tab bar stays
-                    // behind the panel as a dimmed backdrop, origin tab lit - opened from the
-                    // map there is no bar. Drawn HERE, over the panel: hosted at the end of
-                    // ColonyScreen.Draw it never showed on the bench.
-                    if (ReturnToListScreen != null)
-                        EmpireUI.DrawDimmed(batch, ReturnToListGroup);
                 }
                 else
                 {

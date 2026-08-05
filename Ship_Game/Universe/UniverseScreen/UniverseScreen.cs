@@ -76,9 +76,10 @@ namespace Ship_Game
         // three different constructors, and an enum here would be one more thing to keep in
         // step with them. Cleared as soon as it is used, and by any colony opened from the map.
         public Action ReturnToListScreen;
-        // the group tab the hook came from - the dimmed backdrop bar lights it. Written
-        // at every arming site; only read while ReturnToListScreen is non-null.
-        public GameScreens.ScreenGroups.Group ReturnToListGroup;
+        // the exited list screen's group frame + tab row, drawn as a dimmed silhouette
+        // under a list-opened colony - origin tab still selected. Written at every
+        // arming site; only read while ReturnToListScreen is non-null.
+        public Submenu ReturnToListTabs;
         public EmpireUIOverlay EmpireUI;
         public BloomComponent bloomComponent;
         public DistortionComponent distortionComponent;

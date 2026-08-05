@@ -188,18 +188,7 @@ namespace Ship_Game
 
         int VeilBottom => BarTop + BarH + 10;
 
-        // Ludoal fork (bench 314/318): the bar as a dimmed backdrop - a colony opened FROM
-        // a list tab keeps it behind the panel, its origin tab still lit, telling it apart
-        // from a map-opened colony. The tab must be forced: the list screen exited, so the
-        // stack read finds no open group.
-        public void DrawDimmed(SpriteBatch batch, ScreenGroups.Group litGroup)
-        {
-            Draw(batch, litGroup);
-            batch.FillRectangle(new Rectangle(0, 0, Universe.ScreenWidth, VeilBottom),
-                                new Color(6, 8, 12).Alpha(0.45f));
-        }
-
-        public void Draw(SpriteBatch batch, ScreenGroups.Group forcedOpen = ScreenGroups.Group.None)
+        public void Draw(SpriteBatch batch)
         {
             if (Universe.IsExiting || Universe.IsDisposed)
                 return;
@@ -214,10 +203,7 @@ namespace Ship_Game
 
             // Which group is open is read from the screen stack rather than passed in: fifteen
             // screens draw this bar, and a parameter is a parameter one of them will forget.
-            // (forcedOpen serves the one caller with no screen on the stack: the dimmed backdrop.)
-            ScreenGroups.Group open = forcedOpen != ScreenGroups.Group.None
-                                    ? forcedOpen
-                                    : ScreenGroups.GroupOf(Universe.ScreenManager.Current);
+            ScreenGroups.Group open = ScreenGroups.GroupOf(Universe.ScreenManager.Current);
             Graphics.Font font = Fonts.Arial12Bold;
 
             foreach (Button b in Buttons)

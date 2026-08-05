@@ -371,7 +371,7 @@ namespace Ship_Game.GameScreens
             // Ludoal fork (bench 191): right-click in the colony comes back HERE, not to the
             // map (maintainer feedback). The universe screen calls this once, when that colony closes.
             Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new BudgetScreen(Universe));
-            Universe.ReturnToListGroup  = ScreenGroups.GroupOf(this); // the backdrop bar lights this tab
+            Universe.ReturnToListTabs   = EmpireTabs; // the dimmed silhouette behind the colony
             Universe.workersPanel = new ColonyScreen(Universe, item.Planet, Universe.EmpireUI);
             Universe.LookingAtPlanet = true;
             // same anchor as the double-click path: the panel covers the map, no snap,

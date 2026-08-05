@@ -356,7 +356,7 @@ namespace Ship_Game
             // (maintainer feedback). ⚠ Set AFTER the snap: opening a colony clears this hook, so a line placed
             // above would be wiped by the very call it is meant to follow.
             Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new EmpireManagementScreen(Universe, eui));
-            Universe.ReturnToListGroup  = ScreenGroups.GroupOf(this); // the backdrop bar lights this tab
+            Universe.ReturnToListTabs   = EmpireTabs; // the dimmed silhouette behind the colony
             ExitScreen();
         }
 
