@@ -328,13 +328,6 @@ namespace Ship_Game
             StarvationLabel.Color   = ApplyCurrentAlphaToColor(Color.Red);
 
             base.Draw(batch, elapsed);
-
-            // Ludoal fork (benches 314/318): opened FROM a list tab, the tab bar stays behind
-            // the colony as a dimmed backdrop with the origin tab still lit - opened from the
-            // map there is no bar. The glance tells where right-click lands.
-            UniverseScreen us = P.Universe.Screen;
-            if (us.ReturnToListScreen != null)
-                us.EmpireUI.DrawDimmed(batch, us.ReturnToListGroup);
         }
 
         string IncomingPopString => IncomingPop.LessOrEqual(1) ? $"{(IncomingPop * 1000).String(2)}m" : $"{IncomingPop.String()}b";

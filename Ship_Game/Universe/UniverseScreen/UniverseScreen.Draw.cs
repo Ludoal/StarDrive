@@ -518,6 +518,12 @@ namespace Ship_Game
                 if (LookingAtPlanet)
                 {
                     workersPanel?.Draw(batch, elapsed);
+                    // Ludoal fork (benches 314-319): opened FROM a list tab, the tab bar stays
+                    // behind the panel as a dimmed backdrop, origin tab lit - opened from the
+                    // map there is no bar. Drawn HERE, over the panel: hosted at the end of
+                    // ColonyScreen.Draw it never showed on the bench.
+                    if (ReturnToListScreen != null)
+                        EmpireUI.DrawDimmed(batch, ReturnToListGroup);
                 }
                 else
                 {

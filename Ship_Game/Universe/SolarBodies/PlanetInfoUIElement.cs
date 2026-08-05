@@ -462,8 +462,11 @@ namespace Ship_Game
             }
 
             Vector2 textPos = new Vector2(ExoticRect.X + 13, ExoticRect.Y + 13 - Font12.LineSpacing / 2 - 2);
-            UIButton.DrawPlate(batch, ExoticRect, Player.CanBuildResearchStations ? UIButton.PlateActive
-                                                                                 : UIButton.PlateNeutral);
+            // hand-drawn plate: the real buttons' hover lift (maintainer bench 319)
+            Color researchPlate = Player.CanBuildResearchStations ? UIButton.PlateActive : UIButton.PlateNeutral;
+            if (Player.CanBuildResearchStations && ExoticRect.HitTest(mousePos))
+                researchPlate = UITheme.Hover(researchPlate);
+            UIButton.DrawPlate(batch, ExoticRect, researchPlate);
 
             LocalizedText tip = Player.CanBuildResearchStations ? GameText.DeployResearchStationTip : GameText.CannotBuildResearchStationTip;
             LocalizedText tipText = GameText.DeployResearchStation;
@@ -506,10 +509,11 @@ namespace Ship_Game
                 return;
 
             Vector2 textPos = new Vector2(ExoticRect.X + 13, ExoticRect.Y + 13 - Font12.LineSpacing / 2 - 2);
-            UIButton.DrawPlate(batch, ExoticRect,
-                Player.CanBuildMiningStations && P.Mining.CanAddMiningStationFor(Player)
-                ? UIButton.PlateActive   // active like every other action button
-                : UIButton.PlateNeutral);
+            bool canDeploy = Player.CanBuildMiningStations && P.Mining.CanAddMiningStationFor(Player);
+            Color miningPlate = canDeploy ? UIButton.PlateActive : UIButton.PlateNeutral;
+            if (canDeploy && ExoticRect.HitTest(mousePos))
+                miningPlate = UITheme.Hover(miningPlate); // the real buttons' hover lift
+            UIButton.DrawPlate(batch, ExoticRect, miningPlate);
 
             LocalizedText tip = Player.CanBuildMiningStations ? GameText.DeployMiningStationTip : GameText.CannotBuildMiningStationTip;
             LocalizedText tipText = P.Mining.Owner != null && P.Mining.Owner != Player ? GameText.CannotDeployMiningStationNotOwnerTip : GameText.DeployMiningStation;
