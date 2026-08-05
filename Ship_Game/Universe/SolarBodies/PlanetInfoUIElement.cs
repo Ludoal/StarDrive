@@ -21,8 +21,12 @@ namespace Ship_Game
         // gone the frame starts this far under the housing. Anything aligned on the visible
         // frame top derives from this, not from the housing. 26 covered the machinery;
         // the rest trims the dead margin the old frame left (maintainer benches 311-313).
-        const int FrameShave = 61;
-        const int RightTrim  = 10; // same trim on the plate's right edge
+        // Public with SpriteBox and TopLineIconY: the star cartouche wears the same frame.
+        public const int FrameShave = 61;
+        public const int RightTrim  = 10; // same trim on the plate's right edge
+        public const int TopLineIconY = 76; // the pop/flag line - the top text row
+        public static Rectangle SpriteBox(in Rectangle housing)
+            => new Rectangle(housing.X + 85, housing.Y + 128, 80, 80);
         const int LaborW = 200;    // labor block width - its rail is (W * 0.6).RoundTo10()
         int LaborX   => PlanetIconRect.Right + 20;
         // the lock/tool column: labor housing inset (+10), the rail, the lock gap (+10) -
@@ -79,7 +83,7 @@ namespace Ship_Game
             TransitionOffTime = TimeSpan.FromSeconds(0.25);
             var leftRect = new Rectangle(r.X, r.Y + 44, 200, r.Height - 44);
             RightRect = new Rectangle(r.X + 200, r.Y + 44, 200, r.Height - 44);
-            PlanetIconRect = new Rectangle(leftRect.X + 85, Housing.Y + 128, 80, 80);
+            PlanetIconRect = SpriteBox(r);
             Inspect = new SkinnableButton(new Rectangle(PlanetIconRect.CenterX() - 16, PlanetIconRect.Y, 32, 32), "UI/viewPlanetIcon")
             {
                 HoverColor = tColor,
@@ -220,15 +224,11 @@ namespace Ship_Game
             // band on antenna machinery, and with it gone the plate framed empty space
             // (maintainer: "beaucoup de vide au-dessus"). The housing keeps its size - every
             // inner anchor is an offset from it - only the visible frame shrinks.
-            // ADAPTIVE height (maintainer bench 308): bottom-anchored on the housing like
-            // the star cartouche - the sparse variants stop framing dead space. The owned
-            // colony (sliders) and the habitable-unowned page keep the full plate.
+            // One fixed plate for every status now, the unexplored page included
+            // (maintainer bench 313) - only the content degrades down the ladder.
             bool explored = P.IsExploredBy(Player);
-            int plateH = Housing.Height - FrameShave;
-            if (!explored)
-                plateH = 96;
-            PlateTop = Housing.Bottom - plateH;
-            var frame = new Rectangle(Housing.X, PlateTop, Housing.Width - RightTrim, plateH);
+            PlateTop = Housing.Y + FrameShave;
+            var frame = new Rectangle(Housing.X, PlateTop, Housing.Width - RightTrim, Housing.Height - FrameShave);
             Rectangle plate = frame;
             plate.Inflate(-2, -2);
             batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
@@ -237,33 +237,27 @@ namespace Ship_Game
                               ruleWidthOverride: 3);
 
             P.UpdateMaxPopulation();
-            if (!explored)
-            {
-                DrawUnexplored();
-                return;
-            }
+            if (explored && P.Owner != null)  AddExploredTips();
+            else if (explored && P.Habitable) AddUnExploredTips();
 
-            // every explored planet shares the grammar below, whatever its status
-            if (P.Owner != null)      AddExploredTips();
-            else if (P.Habitable)     AddUnExploredTips();
-
-            // one grammar for own and enemy colonies (maintainer bench 312): the pop line
+            // one grammar for every status (maintainer benches 312-313): the pop line
             // right-aligned with its flag, the name sharing its line - bottom-aligned, the
             // bigger font grows upward - and the governance on the money/research level,
             // both centred over the sprite
+            string name = explored ? P.Name : Localizer.Token(GameText.Unexplored).Trim();
             Graphics.Font nameFont = Fonts.Arial8Bold;
-            if (P.Name.Length < 12)      nameFont = Fonts.Arial20Bold;
-            else if (P.Name.Length < 13) nameFont = Fonts.Arial12Bold;
-            else if (P.Name.Length < 17) nameFont = Fonts.Arial10;
+            if (name.Length < 12)      nameFont = Fonts.Arial20Bold;
+            else if (name.Length < 13) nameFont = Fonts.Arial12Bold;
+            else if (name.Length < 17) nameFont = Fonts.Arial10;
 
             int frameRight = Housing.Right - RightTrim;
-            var flagRect = new Rectangle(frameRight - 40, Housing.Y + 76, 26, 26);
-            Empire flagOwner = P.Owner ?? (P.IsMineable ? P.Mining.Owner : null);
+            var flagRect = new Rectangle(frameRight - 40, Housing.Y + TopLineIconY, 26, 26);
+            Empire flagOwner = !explored ? null : P.Owner ?? (P.IsMineable ? P.Mining.Owner : null);
             if (flagOwner != null)
                 batch.Draw(ResourceManager.Flag(flagOwner), flagRect, flagOwner.EmpireColor);
             string pop = P.PopulationStringForPlayer;
             var popPos = new Vector2(flagRect.X - 5 - Font12.TextWidth(pop), flagRect.Y + 13 - Font12.LineSpacing / 2);
-            if (P.Habitable)
+            if (explored && P.Habitable)
             {
                 batch.DrawString(Font12, pop, popPos, tColor);
                 PopRect = new Rectangle((int)popPos.X - 23, (int)popPos.Y - 3, 22, 22);
@@ -271,22 +265,23 @@ namespace Ship_Game
             }
             else
             {
-                PopRect = default; // no pop line on a dead rock, no tooltip either
+                PopRect = default; // no pop line, no tooltip
             }
 
             int spriteCX = PlanetIconRect.CenterX();
-            var namePos = new Vector2(spriteCX - nameFont.TextWidth(P.Name) / 2f,
+            var namePos = new Vector2(spriteCX - nameFont.TextWidth(name) / 2f,
                                       popPos.Y + Font12.LineSpacing - nameFont.LineSpacing);
-            batch.DrawString(nameFont, P.Name, namePos, P.Owner?.EmpireColor ?? tColor);
+            batch.DrawString(nameFont, name, namePos,
+                             !explored ? Color.Gray : P.Owner?.EmpireColor ?? tColor);
 
             float mrTextY = Housing.Y + 102 + 11 - Font12.LineSpacing / 2;
-            if (P.Owner != null) // no governance before there is a colony
+            if (explored && P.Owner != null) // no governance before there is a colony
             {
                 string worldType = P.WorldType.Text;
                 batch.DrawString(Font12, worldType,
                     new Vector2(spriteCX - Font12.TextWidth(worldType) / 2f, mrTextY), tColor);
             }
-            else if (!P.Habitable)
+            else if (explored && !P.Habitable)
             {
                 const string notHab = "Not habitable";
                 batch.DrawString(Font12, notHab,
@@ -311,12 +306,13 @@ namespace Ship_Game
             }
 
             batch.Draw(P.PlanetTexture, PlanetIconRect, Color.White);
-            // the class caption under the sprite; a mineable's richness lives on its resource line
-            string cls = P.IsMineable ? P.LocalizedCategory : P.LocalizedRichness;
+            // the class caption under the sprite; a mineable's richness lives on its
+            // resource line, an unexplored planet only shows its generic category
+            string cls = !explored || P.IsMineable ? P.LocalizedCategory : P.LocalizedRichness;
             batch.DrawString(Font12, cls,
                 new Vector2(spriteCX - Font12.TextWidth(cls) / 2f, PlanetIconRect.Bottom + 5), tColor);
 
-            if (P.Owner != null)
+            if (explored && P.Owner != null)
             {
                 P.UpdateIncomes();
 
@@ -347,7 +343,7 @@ namespace Ship_Game
                         DrawPlanetStats(DefenseShipsRect, currentDefenseShips + "/" + maxDefenseShips , "UI/icon_hangar", Color.Yellow, Color.White);
                 }
             }
-            else if (P.Habitable)
+            else if (explored && P.Habitable)
             {
                 // the colonisable page: the ground survey in the left column
                 float fertEnvMultiplier = Player.PlayerEnvModifier(P.Category);
@@ -361,6 +357,9 @@ namespace Ship_Game
                 DrawPlanetStats(BiospheredPopRect, biospherePop.String(2), "NewUI/icon_biospheres", Color.White, Color.White);
                 DrawPlanetStats(TerraformedPopRect, terraformedPop.String(1), "NewUI/icon_terraformer", Color.White, Color.White);
             }
+
+            if (!explored)
+                return; // sprite and generic class are all an unexplored planet shows
 
             if (P.Habitable)
             {
@@ -402,17 +401,6 @@ namespace Ship_Game
                 if (budget.Length == 1)
                     budget[0].DrawBudgetInfo(Screen);
             }
-        }
-
-        void DrawUnexplored()
-        {
-            // the compact plate: a title and one line - nothing else is known
-            SpriteBatch batch = ScreenManager.SpriteBatch;
-            batch.DrawString(Fonts.Arial20Bold,
-                Localizer.Token(GameText.Unexplored) + P.LocalizedCategory,
-                new Vector2(Housing.X + 16, PlateTop + 12), tColor);
-            batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.SendAShipToThis),
-                             new Vector2(Housing.X + 16, PlateTop + 48), Color.Gray);
         }
 
         void DrawSendTroops(SpriteBatch batch, Vector2 mousePos)

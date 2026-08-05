@@ -63,23 +63,12 @@ namespace Ship_Game
 			bool explored = Sys.IsExploredBy(Player);
 			var planets = Sys.PlanetList;
 
-			// the plate grows UPWARD from the housing's foot: header (icon, name, class),
-			// then one row per explored planet under a small icon header, then the
-			// research line and its button when the star earns them
-			const int HeaderH = 86;
-			int rows = 0;
-			if (explored)
-				foreach (Planet p in planets)
-					if (p.IsExploredBy(Player))
-						rows++;
-			bool research = explored && Sys.IsResearchable;
-			int listH   = rows > 0 ? RowH + rows * RowH + 6 : 0; // icon header + rows + air
-			int deployH = research ? 56 : 0;
-			int plateH  = explored ? HeaderH + listH + deployH + 10 : HeaderH + 10;
-			int top     = Housing.Bottom - plateH;
-
-			// the minimap's recipe: near-opaque flat ground, rounded grey rule
-			var frame = new Rectangle(Housing.X, top, Housing.Width, plateH);
+			// the planet cartouche's fixed frame (maintainer bench 313): the adaptive
+			// plate retires, every info cartouche wears the same dimensions
+			int top = Housing.Y + PlanetInfoUIElement.FrameShave;
+			var frame = new Rectangle(Housing.X, top,
+			                          Housing.Width - PlanetInfoUIElement.RightTrim,
+			                          Housing.Height - PlanetInfoUIElement.FrameShave);
 			Rectangle plate = frame;
 			plate.Inflate(-2, -2);
 			batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
@@ -87,21 +76,39 @@ namespace Ship_Game
 			                  new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
 			                  ruleWidthOverride: 3);
 
-			// header: the star at left, name and class beside it
+			// the planet grammar: the star in the sprite box, its name bottom-aligned on
+			// the top text line centred over it, the class caption under it
+			Rectangle iconBox = PlanetInfoUIElement.SpriteBox(Housing);
 			if (Sys.Sun.Icon != null)
-				batch.Draw(Sys.Sun.Icon, new Rectangle(frame.X + 12, top + 10, 64, 64), Color.White);
-			batch.DrawString(Fonts.Arial20Bold, Sys.Name, new Vector2(frame.X + 86, top + 18), Colors.Cream);
-			batch.DrawString(Fonts.Arial12, explored ? StarClassName(Sys.Sun.Id) : "Unexplored star",
-			                 new Vector2(frame.X + 88, top + 18 + Fonts.Arial20Bold.LineSpacing + 2),
-			                 Color.Gray);
+				batch.Draw(Sys.Sun.Icon, iconBox, Color.White);
+
+			string name = Sys.Name;
+			Graphics.Font nameFont = Fonts.Arial8Bold;
+			if (name.Length < 12)      nameFont = Fonts.Arial20Bold;
+			else if (name.Length < 13) nameFont = Fonts.Arial12Bold;
+			else if (name.Length < 17) nameFont = Fonts.Arial10;
+			int spriteCX = iconBox.CenterX();
+			float topTextY = Housing.Y + PlanetInfoUIElement.TopLineIconY + 13 - Font12.LineSpacing / 2;
+			batch.DrawString(nameFont, name,
+			                 new Vector2(spriteCX - nameFont.TextWidth(name) / 2f,
+			                             topTextY + Font12.LineSpacing - nameFont.LineSpacing),
+			                 Colors.Cream);
+			string cls = explored ? StarClassName(Sys.Sun.Id) : "Unexplored star";
+			batch.DrawString(Font12, cls,
+			                 new Vector2(spriteCX - Font12.TextWidth(cls) / 2f, iconBox.Bottom + 5), tColor);
 			if (!explored)
 				return;
 
-			// the planet roll: name, class, then R / F / P on three fixed lanes
-			int laneP = frame.Right - 46;   // max population
-			int laneF = laneP - 42;         // fertility
-			int laneR = laneF - 42;         // richness
-			float y = top + HeaderH;
+			// the system's planet roll rides the right column, where the planet pages
+			// keep their sliders: name then R / F / P lanes; a zero reads as a gray dash
+			// (a gas giant has no ground to rate)
+			int listX = iconBox.Right + 30;
+			int laneP = frame.Right - 20, laneF = laneP - 42, laneR = laneF - 42;
+			float y = Housing.Y + PlanetInfoUIElement.TopLineIconY;
+			int rows = 0;
+			foreach (Planet p in planets)
+				if (p.IsExploredBy(Player))
+					rows++;
 			if (rows > 0)
 			{
 				void LaneIcon(string tex, int lane, int size)
@@ -117,25 +124,29 @@ namespace Ship_Game
 					if (!p.IsExploredBy(Player))
 						continue;
 					Color nameColor = p.Owner?.EmpireColor ?? Colors.Cream;
-					batch.DrawString(Font12, p.Name, new Vector2(frame.X + 16, y), nameColor);
-					batch.DrawString(Fonts.Arial12,
-					                 UITable.FitText(Fonts.Arial12, p.LocalizedCategory, laneR - 24 - (frame.X + 150)),
-					                 new Vector2(frame.X + 150, y), Color.Gray);
-					void Lane(string v, int lane)
-						=> batch.DrawString(Fonts.Arial12, v,
-						                    new Vector2(lane + 18 - Fonts.Arial12.TextWidth(v), y), Color.White);
-					Lane(p.MineralRichness.ToString("0.0", CultureInfo.InvariantCulture), laneR);
-					Lane(p.FertilityFor(Player).ToString("0.0", CultureInfo.InvariantCulture), laneF);
-					Lane(p.MaxPopulationBillionFor(Player).ToString("0.0", CultureInfo.InvariantCulture), laneP);
+					batch.DrawString(Font12,
+					                 UITable.FitText(Font12, p.Name, laneR - 24 - listX),
+					                 new Vector2(listX, y), nameColor);
+					void Lane(float v, int lane)
+					{
+						bool zero = v < 0.05f;
+						string s = zero ? "-" : v.ToString("0.0", CultureInfo.InvariantCulture);
+						batch.DrawString(Fonts.Arial12, s,
+						                 new Vector2(lane + 18 - Fonts.Arial12.TextWidth(s), y),
+						                 zero ? Color.Gray : Color.White);
+					}
+					Lane(p.MineralRichness, laneR);
+					Lane(p.FertilityFor(Player), laneF);
+					Lane(p.MaxPopulationBillionFor(Player), laneP);
 					y += RowH;
 				}
-				y += 6;
 			}
 
-			if (research)
+			if (Sys.IsResearchable)
 			{
-				batch.DrawString(Font12, "Researchable phenomena", new Vector2(frame.X + 16, y + 2), Colors.Cream);
-				DeployRect = new Rectangle(frame.X + 16, (int)y + 22, 182, 25);
+				// the deploy button under the roll - no label, the button says it all
+				int by = ((int)y + 8).UpperBound(Housing.Bottom - 33);
+				DeployRect = new Rectangle(listX, by, 182, 25);
 				DrawDeployButton(batch);
 			}
 		}
