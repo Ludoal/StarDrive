@@ -28,7 +28,7 @@ namespace Ship_Game
         public static Rectangle SpriteBox(in Rectangle housing)
             => new Rectangle(housing.X + 85, housing.Y + 128, 80, 80);
         const int LaborW = 180;    // labor block width - its rail is (W * 0.6).RoundTo10()
-        int LaborX   => PlanetIconRect.Right + 10;
+        int LaborX   => PlanetIconRect.Right + 30;
         // the lock/tool column: labor housing inset (+10), the rail, the lock gap (+10) -
         // the same walk AssignLaborComponent and ColonySlider take to place the locks
         int LockColX => LaborX + 10 + (LaborW * 0.6f).RoundTo10() + 10;
@@ -128,13 +128,13 @@ namespace Ship_Game
                                 .Max(t => Fonts.Arial12Bold.TextWidth(t));
             BtnSendTroops = new UIButton(ButtonStyle.Wide, "Send Troops")
             {
-                Rect = new Rectangle(LaborX + 40, Housing.Y + 120, btnW, 24),
+                Rect = new Rectangle(LaborX + 20, Housing.Y + 130, btnW, 24),
                 Tooltip = GameText.SendAvailableTroopsToThis,
                 OnClick = OnSendTroopsClicked
             };
             BtnColonize = new UIButton(ButtonStyle.WideActive, GameText.Colonize)
             {
-                Rect = new Rectangle(LaborX + 40, Housing.Y + 155, btnW, 24),
+                Rect = new Rectangle(LaborX + 20, Housing.Y + 165, btnW, 24),
                 OnClick = OnColonizeClicked
             };
         }
@@ -285,7 +285,7 @@ namespace Ship_Game
             float topTextY = Housing.Y + TopLineIconY + 13 - Font12.LineSpacing / 2;
             if (explored && P.Habitable)
             {
-                PopRect = new Rectangle(NextColony.Rect.Right + 20, Housing.Y + TopLineIconY, 22, 22);
+                PopRect = new Rectangle(NextColony.Rect.Right + 10, Housing.Y + TopLineIconY, 22, 22);
                 batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopRect, Color.White);
                 batch.DrawString(Font12, P.PopulationStringForPlayer,
                                  new Vector2(PopRect.Right + 4, topTextY), tColor);
