@@ -233,22 +233,22 @@ namespace Ship_Game
             string worldType = P.WorldType.Text;
             int lineX = PlanetIconRect.Right + 30; // the sliders' left edge (labor rect +20, housing inset +10)
             int frameRight = Housing.Right - RightTrim;
+            // one grammar for own and enemy colonies (maintainer bench 311): pop
+            // right-aligned with its flag, the governance centred over the sprite
+            var flagRect = new Rectangle(frameRight - 50, Housing.Y + 71, 26, 26);
+            batch.Draw(ResourceManager.Flag(P.Owner), flagRect, P.Owner.EmpireColor);
+            string pop = P.PopulationStringForPlayer;
+            var popPos = new Vector2(flagRect.X - 5 - Font12.TextWidth(pop), flagRect.Y + 13 - Font12.LineSpacing / 2);
+            batch.DrawString(Font12, pop, popPos, tColor);
+            PopRect = new Rectangle((int)popPos.X - 23, (int)popPos.Y - 3, 22, 22);
+            batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopRect, Color.White);
+            batch.DrawString(Font12, worldType,
+                new Vector2(PlanetIconRect.CenterX() - Font12.TextWidth(worldType) / 2f, popPos.Y), tColor);
+
             if (P.Owner == Player)
             {
                 PrevColony.Draw(batch, elapsed);
                 NextColony.Draw(batch, elapsed);
-
-                // pop right-aligned as on enemy pages, flag at its right; the governance
-                // on the same line, centred over the sprite
-                var flagRect = new Rectangle(frameRight - 50, Housing.Y + 71, 26, 26);
-                batch.Draw(ResourceManager.Flag(P.Owner), flagRect, P.Owner.EmpireColor);
-                string pop = P.PopulationStringForPlayer;
-                var popPos = new Vector2(flagRect.X - 5 - Font12.TextWidth(pop), flagRect.Y + 13 - Font12.LineSpacing / 2);
-                batch.DrawString(Font12, pop, popPos, tColor);
-                PopRect = new Rectangle((int)popPos.X - 23, (int)popPos.Y - 3, 22, 22);
-                batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopRect, Color.White);
-                batch.DrawString(Font12, worldType,
-                    new Vector2(PlanetIconRect.CenterX() - Font12.TextWidth(worldType) / 2f, popPos.Y), tColor);
 
                 // money and research, left-aligned on the sliders, just above them
                 MoneyRect = new Rectangle(lineX, Housing.Y + 97, 22, 22);
@@ -261,20 +261,6 @@ namespace Ship_Game
                 batch.Draw(ResourceManager.Texture("NewUI/icon_science"), researchRect, Color.White);
                 batch.DrawString(Font12, P.Res.NetIncome.String(2),
                                  new Vector2(researchRect.Right + 4, researchRect.Y + 11 - Font12.LineSpacing / 2), tColor);
-            }
-            else
-            {
-                // enemy colony keeps the 308 grammar until its own pass: flag and pop top
-                // right, the governance in the top-right corner
-                batch.DrawString(Font12, worldType,
-                    new Vector2(frameRight - 16 - Font12.TextWidth(worldType), PlateTop + 13), tColor);
-                var flagRect = new Rectangle(Housing.Right - 60, Housing.Y + 63, 26, 26);
-                batch.Draw(ResourceManager.Flag(P.Owner), flagRect, P.Owner.EmpireColor);
-                string pop = P.PopulationStringForPlayer;
-                var popPos = new Vector2(flagRect.X - 5 - Font12.TextWidth(pop), flagRect.Y + 13 - Font12.LineSpacing / 2);
-                batch.DrawString(Font12, pop, popPos, tColor);
-                PopRect = new Rectangle((int)popPos.X - 23, (int)popPos.Y - 3, 22, 22);
-                batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopRect, Color.White);
             }
 
             batch.Draw(P.PlanetTexture, PlanetIconRect, Color.White);
