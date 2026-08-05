@@ -145,7 +145,9 @@ namespace Ship_Game
             //   top:    one tab strip LOWER than TabRowY, so this frame matches the group
             //           screens' frames and does not peek out behind them in the stack.
             const int m = GameScreens.ScreenGroups.FrameMargin;
-            int frameTop = GameScreens.ScreenGroups.TabRowY + 25;   // Submenu.TabHeight
+            // the strip's TRUE bottom: tabs advance by TabHeight-2, and the group silhouette
+            // behind a list-opened colony exposed the 2px slip (maintainer bench 320)
+            int frameTop = GameScreens.ScreenGroups.TabRowY + Submenu.TabHeight - 2;
             // ⚠ Colony is the ONE screen centred in width (maintainer, 3 Aug): past the 1920
             // doctrine ceiling the frame stops growing and centres horizontally. Y never moves -
             // the frame hangs at the same frameTop whatever the resolution.

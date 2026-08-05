@@ -178,7 +178,7 @@ public class Submenu : UIPanel
     public int NumTabs => Tabs.Count;
     int TabRows;
     Vector2 NextTabPos; // relative position for next tab
-    const int TabHeight = 25;
+    public const int TabHeight = 25; // tabs advance by TabHeight-2 - the strip's true bottom
         
     public void AddTab(LocalizedText title)
     {

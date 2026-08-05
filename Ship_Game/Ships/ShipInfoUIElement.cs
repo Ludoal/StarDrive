@@ -71,21 +71,21 @@ namespace Ship_Game.Ships
             };
             ShipNameArea.Color = tColor;
             
-            Power = new Rectangle(Housing.X + 187, Housing.Y + 115, 20, 20);
+            Power = new Rectangle(Housing.X + 197, Housing.Y + 115, 20, 20);
             PBar = new ProgressBar(Power.X + Power.Width + 15, Power.Y, 150, 18) { color = "green" };
             ToolTipItems.Add(new TippedItem(Power, GameText.IndicatesThisShipsCurrentPower));
             // the faction flag's right edge rides the bars' end (maintainer bench 319)
             FlagRect = new Rectangle(PBar.pBar.X + PBar.pBar.Width - 18, r.Y + 71, 18, 18);
 
-            Shields = new Rectangle(Housing.X + 187, Housing.Y + 115 + 20 + spacing, 20, 20);
+            Shields = new Rectangle(Housing.X + 197, Housing.Y + 115 + 20 + spacing, 20, 20);
             SBar = new ProgressBar(Shields.X + Shields.Width + 15, Shields.Y, 150, 18) { color = "blue" };
             ToolTipItems.Add(new TippedItem(Shields, GameText.IndicatesTheTotalPowerOf));
 
-            Ordnance = new Rectangle(Housing.X + 187, Housing.Y + 115 + 20 + spacing + 20 + spacing, 20, 20);
+            Ordnance = new Rectangle(Housing.X + 197, Housing.Y + 115 + 20 + spacing + 20 + spacing, 20, 20);
             OBar = new ProgressBar(Ordnance.X + Ordnance.Width + 15, Ordnance.Y, 150, 18);
             ToolTipItems.Add(new TippedItem(Ordnance, GameText.IndicatesThisShipsCurrentStores));
 
-            ConstructionRect = new Rectangle(Housing.X + 187, Housing.Y + 115 + 20 + spacing*3 + 40, 20, 20);
+            ConstructionRect = new Rectangle(Housing.X + 197, Housing.Y + 115 + 20 + spacing*3 + 40, 20, 20);
             ConstructionBar = new ProgressBar(ConstructionRect.X + ConstructionRect.Width + 15, ConstructionRect.Y, 150, 18) { color = "yellow" };
 
             MiningRect = ConstructionRect;
@@ -97,7 +97,7 @@ namespace Ship_Game.Ships
             TroopRect = new Rectangle(Housing.X + 13, Housing.Y + 137, 22, 22);
             ToolTipItems.Add(new TippedItem(TroopRect, GameText.IndicatesTheNumberOfTroops));
 
-            ShipInfoRect = new Rectangle(Housing.X + 60, Housing.Y + 110, 115, 115);
+            ShipInfoRect = new Rectangle(Housing.X + 70, Housing.Y + 110, 115, 115);
             Vector2 gridRect = new Vector2(Housing.X + 16, Universe.ScreenHeight - 45);
             GridButton = new ToggleButton(gridRect, ToggleButtonStyle.Grid, "SelectionBox/icon_grid")
             {
@@ -158,9 +158,9 @@ namespace Ship_Game.Ships
                 FollowButton.Draw(batch, elapsed);
             }
 
-            // the name block left-aligns on the status icon column, 5px lower (bench 319)
-            Vector2 namePos       = new(Housing.X + 13, Housing.Y + 68);
-            Vector2 shipSuperName = new(Housing.X + 13, Housing.Y + 84);
+            // the name block left-aligns on the status icon column (benches 319-320)
+            Vector2 namePos       = new(Housing.X + 13, Housing.Y + 71);
+            Vector2 shipSuperName = new(Housing.X + 13, Housing.Y + 87);
             ShipNameArea.SetPos(namePos);
             ShipNameArea.Draw(batch, elapsed);
 
@@ -173,7 +173,7 @@ namespace Ship_Game.Ships
 
             // the order rides the name line, left-aligned on the bars' start (bench 319)
             var shipStatus = new Vector2(PBar.pBar.X,
-                                         Housing.Y + 68 + (Fonts.Arial14Bold.LineSpacing - Fonts.TahomaBold9.LineSpacing) / 2).ToFloored();
+                                         Housing.Y + 71 + (Fonts.Arial14Bold.LineSpacing - Fonts.TahomaBold9.LineSpacing) / 2).ToFloored();
             string text = Fonts.TahomaBold9.ParseText(ShipListScreenItem.GetStatusText(s), 120);
             batch.DrawString(Fonts.TahomaBold9, text, shipStatus, tColor);
 
@@ -214,8 +214,9 @@ namespace Ship_Game.Ships
             //Added by McShooterz: kills display
             star       = new Rectangle(star.X, star.Y + 19, 22, 22);
             levelPos   = new Vector2(star.X + star.Width + 2, star.Y + 11 - Fonts.Arial12Bold.LineSpacing / 2);
-            // just inside the shaved frame's top, wherever that lands
-            StatusArea = new Vector2(Housing.X + 175, Housing.Y + FrameShave + 2);
+            // just inside the shaved frame's top; the row starts on the Power/Shield icon
+            // column, so the FTL icon lines up with them (maintainer bench 320)
+            StatusArea = new Vector2(Housing.X + 197, Housing.Y + FrameShave + 2);
             batch.Draw(ResourceManager.Texture("UI/icon_kills_shipUI"), star, Color.White);
             batch.DrawString(Fonts.Arial12Bold, s.Kills.ToString(), levelPos, Color.White);
             int numStatus = 0;
@@ -372,13 +373,17 @@ namespace Ship_Game.Ships
 
         void DrawCargoUsed(SpriteBatch batch, Vector2 mousePos, Ship ship, ref int numStatus)
         {
-            if (ship.CargoSpaceUsed.AlmostZero()) 
+            if (ship.CargoSpaceUsed.AlmostZero())
                 return;
 
+            // the cargo goods ride the cartouche's foot, 5px off the edge, on the
+            // Shield/Ordnance icon column (maintainer bench 320) - their own row,
+            // independent of the top status strip
+            int numCargo = 0;
             foreach (Cargo cargo in ship.EnumLoadedCargo())
             {
                 SubTexture texture = ResourceManager.Texture("Goods/" + cargo.CargoId);
-                var goodRect = new Rectangle((int)StatusArea.X + numStatus * 53, (int)StatusArea.Y, 32, 32);
+                var goodRect = new Rectangle(Housing.X + 197 + numCargo * 53, Housing.Bottom - 37, 32, 32);
                 batch.Draw(texture, goodRect, Color.White);
 
                 var textPos = new Vector2(goodRect.X + 32, goodRect.Y + 16 - Fonts.Arial12.LineSpacing / 2);
@@ -387,10 +392,10 @@ namespace Ship_Game.Ships
                 if (goodRect.HitTest(mousePos))
                 {
                     Good good = ResourceManager.TransportableGoods.Find(g => g.UID == cargo.CargoId);
-                    if (good != null) 
+                    if (good != null)
                         ToolTip.CreateTooltip($"{new LocalizedText(good.NameIndex).Text}\n\n{new LocalizedText(good.DescriptionIndex).Text}");
                 }
-                numStatus++;
+                numCargo++;
             }
         }
 
