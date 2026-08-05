@@ -27,8 +27,8 @@ namespace Ship_Game
         public const int TopLineIconY = 76; // the pop/flag line - the top text row
         public static Rectangle SpriteBox(in Rectangle housing)
             => new Rectangle(housing.X + 85, housing.Y + 128, 80, 80);
-        const int LaborW = 200;    // labor block width - its rail is (W * 0.6).RoundTo10()
-        int LaborX   => PlanetIconRect.Right + 20;
+        const int LaborW = 180;    // labor block width - its rail is (W * 0.6).RoundTo10()
+        int LaborX   => PlanetIconRect.Right + 10;
         // the lock/tool column: labor housing inset (+10), the rail, the lock gap (+10) -
         // the same walk AssignLaborComponent and ColonySlider take to place the locks
         int LockColX => LaborX + 10 + (LaborW * 0.6f).RoundTo10() + 10;
@@ -38,9 +38,6 @@ namespace Ship_Game
         readonly Array<TippedItem> ToolTipItems = new Array<TippedItem>();
 
         Rectangle MoneyRect;
-        readonly Rectangle SendTroops;
-        readonly Rectangle MarkedRect;
-        readonly Rectangle CancelInvasionRect;
         Rectangle ExoticRect;            // re-anchored per draw on the adaptive variants
         Rectangle ExoticResourceIconRect;
         Rectangle PopRect;
@@ -107,10 +104,6 @@ namespace Ship_Game
             BiospheredPopRect  = InjuryRect;
             TerraformedPopRect = ShieldRect;
 
-            // the action buttons sit where the colony page keeps its sliders (bench 312)
-            SendTroops = new Rectangle(LaborX + 10, Housing.Y + 120, 182, 25);
-            MarkedRect = new Rectangle(LaborX + 10, Housing.Y + 155, 182, 25);
-            CancelInvasionRect = MarkedRect; // Replaces the colonization rect when invading
             ExoticRect = new Rectangle(RightRect.X - 17, Housing.Y + 130, 182, 25);
             ExoticResourceIconRect = new Rectangle(RightRect.X - 17, Housing.Y + 165, 20, 20);
             // the colony arrows flank the name line, just outside the sprite column
@@ -135,13 +128,13 @@ namespace Ship_Game
                                 .Max(t => Fonts.Arial12Bold.TextWidth(t));
             BtnSendTroops = new UIButton(ButtonStyle.Wide, "Send Troops")
             {
-                Rect = new Rectangle(LaborX + 10, Housing.Y + 120, btnW, 24),
+                Rect = new Rectangle(LaborX + 40, Housing.Y + 120, btnW, 24),
                 Tooltip = GameText.SendAvailableTroopsToThis,
                 OnClick = OnSendTroopsClicked
             };
             BtnColonize = new UIButton(ButtonStyle.WideActive, GameText.Colonize)
             {
-                Rect = new Rectangle(LaborX + 10, Housing.Y + 155, btnW, 24),
+                Rect = new Rectangle(LaborX + 40, Housing.Y + 155, btnW, 24),
                 OnClick = OnColonizeClicked
             };
         }
@@ -179,8 +172,39 @@ namespace Ship_Game
             BtnColonize.Style   = marked ? ButtonStyle.WideHostile : ButtonStyle.WideActive;
             BtnColonize.Tooltip = marked ? GameText.CancelTheColonizationMissionThat
                                          : GameText.MarkThisPlanetForColonization;
+            BtnColonize.OnClick = OnColonizeClicked;
             int landing = IncomingTroops;
-            BtnSendTroops.Text = landing > 0 ? $"Landing: {landing}" : "Send Troops";
+            BtnSendTroops.Text    = landing > 0 ? $"Landing: {landing}" : "Send Troops";
+            BtnSendTroops.Style   = ButtonStyle.Wide;
+            BtnSendTroops.Tooltip = GameText.SendAvailableTroopsToThis;
+        }
+
+        // the enemy page wears the same pair (bench 314): same size, same seats, centred
+        // text - Invade in the hostile red, Cancel Invasion in the active blue
+        void UpdateEnemyButtons(int invading)
+        {
+            BtnSendTroops.Text    = invading > 0 ? $"Invading: {invading}" : "Invade";
+            BtnSendTroops.Style   = ButtonStyle.WideHostile;
+            BtnSendTroops.Tooltip = default;
+            BtnColonize.Text    = "Cancel Invasion";
+            BtnColonize.Style   = ButtonStyle.WideActive;
+            BtnColonize.Tooltip = default;
+            BtnColonize.OnClick = OnCancelInvasionClicked;
+        }
+
+        void OnCancelInvasionClicked(UIButton b)
+        {
+            foreach (Ship ship in Player.OwnedShips)
+            {
+                if (ship.AI.State == AIState.AssaultPlanet && ship.AI.OrderQueue.Any(g => g.TargetPlanet == P))
+                {
+                    if (ship.DesignRole == RoleName.troopShip)
+                        ship.AI.OrderOrbitNearest(true);
+                    else
+                        ship.AI.OrderRebaseToNearest();
+                }
+            }
+            GameAudio.EchoAffirmative();
         }
 
         void OnChangeColony(int change)
@@ -245,23 +269,26 @@ namespace Ship_Game
             // bigger font grows upward - and the governance on the money/research level,
             // both centred over the sprite
             string name = explored ? P.Name : Localizer.Token(GameText.Unexplored).Trim();
-            Graphics.Font nameFont = Fonts.Arial8Bold;
-            if (name.Length < 12)      nameFont = Fonts.Arial20Bold;
-            else if (name.Length < 13) nameFont = Fonts.Arial12Bold;
-            else if (name.Length < 17) nameFont = Fonts.Arial10;
+            // fixed 20 bold (maintainer bench 314) - the length-adaptive downsizing read as
+            // random shrinking; if a name ever overflows, widen the arrows or bring the
+            // adaptive back with bench-proven thresholds
+            Graphics.Font nameFont = Fonts.Arial20Bold;
 
             int frameRight = Housing.Right - RightTrim;
+            // the faction flag keeps its own right anchor ("parfaitement placé" - bench
+            // 314); the pop block anchors LEFT, 20px right of the arrow, so its variable
+            // width stops moving every icon column keyed on it
             var flagRect = new Rectangle(frameRight - 40, Housing.Y + TopLineIconY, 26, 26);
             Empire flagOwner = !explored ? null : P.Owner ?? (P.IsMineable ? P.Mining.Owner : null);
             if (flagOwner != null)
                 batch.Draw(ResourceManager.Flag(flagOwner), flagRect, flagOwner.EmpireColor);
-            string pop = P.PopulationStringForPlayer;
-            var popPos = new Vector2(flagRect.X - 5 - Font12.TextWidth(pop), flagRect.Y + 13 - Font12.LineSpacing / 2);
+            float topTextY = Housing.Y + TopLineIconY + 13 - Font12.LineSpacing / 2;
             if (explored && P.Habitable)
             {
-                batch.DrawString(Font12, pop, popPos, tColor);
-                PopRect = new Rectangle((int)popPos.X - 23, (int)popPos.Y - 3, 22, 22);
+                PopRect = new Rectangle(NextColony.Rect.Right + 20, Housing.Y + TopLineIconY, 22, 22);
                 batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopRect, Color.White);
+                batch.DrawString(Font12, P.PopulationStringForPlayer,
+                                 new Vector2(PopRect.Right + 4, topTextY), tColor);
             }
             else
             {
@@ -270,7 +297,7 @@ namespace Ship_Game
 
             int spriteCX = PlanetIconRect.CenterX();
             var namePos = new Vector2(spriteCX - nameFont.TextWidth(name) / 2f,
-                                      popPos.Y + Font12.LineSpacing - nameFont.LineSpacing);
+                                      topTextY + Font12.LineSpacing - nameFont.LineSpacing);
             batch.DrawString(nameFont, name, namePos,
                              !explored ? Color.Gray : P.Owner?.EmpireColor ?? tColor);
 
@@ -299,7 +326,7 @@ namespace Ship_Game
                 string sNetIncome = P.Money.NetRevenue.String(2);
                 batch.DrawString(Font12, sNetIncome, new Vector2(MoneyRect.Right + 4, mrTextY),
                                  P.Money.NetRevenue > 0.0 ? Color.LightGreen : Color.Salmon);
-                var researchRect = new Rectangle(MoneyRect.X + 90, Housing.Y + 102, 22, 22);
+                var researchRect = new Rectangle(MoneyRect.X + 75, Housing.Y + 102, 22, 22);
                 batch.Draw(ResourceManager.Texture("NewUI/icon_science"), researchRect, Color.White);
                 batch.DrawString(Font12, P.Res.NetIncome.String(2),
                                  new Vector2(researchRect.Right + 4, mrTextY), tColor);
@@ -377,7 +404,14 @@ namespace Ship_Game
             }
             else if (P.Owner != null && P.Owner != Player)
             {
-                DrawSendTroops(batch, Screen.Input.CursorPosition);
+                if (Player.IsAtWarWith(P.Owner))
+                {
+                    int invading = IncomingTroops;
+                    UpdateEnemyButtons(invading);
+                    BtnSendTroops.Draw(batch, elapsed);
+                    if (invading > 0)
+                        BtnColonize.Draw(batch, elapsed);
+                }
             }
             else if (P.Owner == null)
             {
@@ -401,40 +435,6 @@ namespace Ship_Game
                 if (budget.Length == 1)
                     budget[0].DrawBudgetInfo(Screen);
             }
-        }
-
-        void DrawSendTroops(SpriteBatch batch, Vector2 mousePos)
-        {
-            // enemy colonies only - the colonisable page wears the Planets page's buttons
-            if (P.Owner == Player || !Player.IsAtWarWith(P.Owner))
-                return;
-
-            Vector2 textPos        = new Vector2(SendTroops.X + 25, SendTroops.Y + 12 - Font12.LineSpacing / 2 - 2);
-            int incomingTroops     = IncomingTroops;
-            Color buttonBaseColor  = ButtonTextColor;
-            Color buttonHoverColor = ButtonHoverColor;
-            Color plate            = UIButton.PlateActive;
-            string text = "Invade";
-            if (incomingTroops > 0)
-            {
-                text             = $"Invading: {incomingTroops}";
-                buttonBaseColor  = Color.Red;
-                plate            = UIButton.PlateHostile;
-                buttonHoverColor = Color.White;
-                DrawCancelInvasion(batch, mousePos);
-            }
-
-            UIButton.DrawPlate(batch, SendTroops, plate);
-            batch.DrawString(Font12, text, textPos, SendTroops.HitTest(mousePos) ? buttonBaseColor
-                                                                                 : buttonHoverColor);
-        }
-
-        void DrawCancelInvasion(SpriteBatch batch, Vector2 mousePos)
-        {
-            Vector2 textPos = new Vector2(CancelInvasionRect.X + 5, CancelInvasionRect.Y + 12 - Font12.LineSpacing / 2 - 2);
-            UIButton.DrawPlate(batch, CancelInvasionRect, UIButton.PlateActive);
-            batch.DrawString(Font12, "Cancel Invasion", textPos, CancelInvasionRect.HitTest(mousePos) ? ButtonTextColor
-                                                                                                      : ButtonHoverColor);
         }
 
         int IncomingTroops
@@ -586,35 +586,23 @@ namespace Ship_Game
             {
                 return true; // the click may have swapped P for the next colony
             }
-            if (P.Owner == null && P.Habitable && P.IsExploredBy(Player)
-                && (BtnSendTroops.HandleInput(input) || BtnColonize.HandleInput(input)))
+            if (P.Owner == null && P.Habitable && P.IsExploredBy(Player))
             {
-                return true;
+                UpdateColonisableButtons(); // input can run before the first draw of a fresh selection
+                if (BtnSendTroops.HandleInput(input) || BtnColonize.HandleInput(input))
+                    return true;
+            }
+            if (P.Owner != null && P.Owner != Player && P.IsExploredBy(Player) && Player.IsAtWarWith(P.Owner))
+            {
+                int invading = IncomingTroops;
+                UpdateEnemyButtons(invading);
+                if (BtnSendTroops.HandleInput(input) || (invading > 0 && BtnColonize.HandleInput(input)))
+                    return true;
             }
             foreach (TippedItem ti in ToolTipItems)
             {
                 if (ti.Rect.HitTest(input.CursorPosition))
                     ToolTip.CreateTooltip(ti.Tooltip);
-            }
-            if (P.Owner != null && SendTroops.HitTest(input.CursorPosition) && input.InGameSelect)
-            {
-                if (Player.GetTroopShipForRebase(out Ship troopShip, P.Position, P.Name))
-                {
-                    if (!troopShip.AI.OrderLandAllTroops(P, clearOrders: true, input.CursorPosition))
-                    {
-                        GameAudio.NegativeClick();
-                    }
-                    else
-                    {
-                        GameAudio.EchoAffirmative();
-                        if (Player.Universe.Paused)
-                            Player.Universe.Objects.UpdateLists();
-                    }
-                }
-                else
-                {
-                    GameAudio.BlipClick();
-                }
             }
 
             if (P.IsResearchable && ExoticRect.HitTest(input.CursorPosition) && input.InGameSelect)
@@ -637,26 +625,6 @@ namespace Ship_Game
                     GameAudio.NegativeClick(); 
                 }
                 return true;
-            }
-
-            if (P.Owner != null 
-                && !P.IsResearchable
-                && !P.IsMineable
-                && P.Owner != Player 
-                && CancelInvasionRect.HitTest(input.CursorPosition) 
-                && input.InGameSelect)
-            {
-                var shipList = Player.OwnedShips;
-                foreach (Ship ship in shipList)
-                {
-                    if (ship.AI.State == AIState.AssaultPlanet && ship.AI.OrderQueue.Any(g => g.TargetPlanet == P))
-                    {
-                        if (ship.DesignRole == RoleName.troopShip)
-                            ship.AI.OrderOrbitNearest(true);
-                        else
-                            ship.AI.OrderRebaseToNearest();
-                    }
-                }
             }
 
             if (Inspect.Hover && P.Habitable)

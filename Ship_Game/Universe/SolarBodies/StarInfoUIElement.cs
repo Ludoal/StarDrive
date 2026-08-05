@@ -79,14 +79,12 @@ namespace Ship_Game
 			// the planet grammar: the star in the sprite box, its name bottom-aligned on
 			// the top text line centred over it, the class caption under it
 			Rectangle iconBox = PlanetInfoUIElement.SpriteBox(Housing);
+			iconBox.X -= 50; // maintainer bench 314: the star's name/image/class block rides left
 			if (Sys.Sun.Icon != null)
 				batch.Draw(Sys.Sun.Icon, iconBox, Color.White);
 
 			string name = Sys.Name;
-			Graphics.Font nameFont = Fonts.Arial8Bold;
-			if (name.Length < 12)      nameFont = Fonts.Arial20Bold;
-			else if (name.Length < 13) nameFont = Fonts.Arial12Bold;
-			else if (name.Length < 17) nameFont = Fonts.Arial10;
+			Graphics.Font nameFont = Fonts.Arial20Bold; // fixed, like the planet pages (bench 314)
 			int spriteCX = iconBox.CenterX();
 			float topTextY = Housing.Y + PlanetInfoUIElement.TopLineIconY + 13 - Font12.LineSpacing / 2;
 			batch.DrawString(nameFont, name,
@@ -103,8 +101,8 @@ namespace Ship_Game
 			// keep their sliders: name then R / F / P lanes; a zero reads as a gray dash
 			// (a gas giant has no ground to rate)
 			int listX = iconBox.Right + 30;
-			int laneP = frame.Right - 20, laneF = laneP - 42, laneR = laneF - 42;
-			float y = Housing.Y + PlanetInfoUIElement.TopLineIconY;
+			int laneP = frame.Right - 70, laneF = laneP - 42, laneR = laneF - 42; // the roll rides left with the block
+			float y = Housing.Y + PlanetInfoUIElement.TopLineIconY + 5;
 			int rows = 0;
 			foreach (Planet p in planets)
 				if (p.IsExploredBy(Player))
@@ -114,19 +112,25 @@ namespace Ship_Game
 				void LaneIcon(string tex, int lane, int size)
 					=> batch.Draw(ResourceManager.Texture(tex),
 					              new Rectangle(lane + 18 - size, (int)y, size, size), Color.White);
-				LaneIcon("NewUI/icon_production", laneR, 14);
-				LaneIcon("NewUI/icon_food", laneF, 14);
-				LaneIcon("UI/icon_pop_22", laneP, 14);
-				y += RowH;
+				// standard 22px icons, as the planet pages wear them (bench 314)
+				LaneIcon("NewUI/icon_production", laneR, 22);
+				LaneIcon("NewUI/icon_food", laneF, 22);
+				LaneIcon("UI/icon_pop_22", laneP, 22);
+				y += 24; // the icon header is taller than a text row
 
 				foreach (Planet p in planets)
 				{
 					if (!p.IsExploredBy(Player))
 						continue;
 					Color nameColor = p.Owner?.EmpireColor ?? Colors.Cream;
-					batch.DrawString(Font12,
-					                 UITable.FitText(Font12, p.Name, laneR - 24 - listX),
-					                 new Vector2(listX, y), nameColor);
+					string pn = UITable.FitText(Font12, p.Name, laneR - 24 - listX);
+					batch.DrawString(Font12, pn, new Vector2(listX, y), nameColor);
+					// the class squeezes in after the name in small type, when it fits
+					int clsRoom = laneR - 24 - listX - (int)Font12.TextWidth(pn) - 6;
+					if (clsRoom > 20)
+						batch.DrawString(Fonts.Arial10,
+						                 UITable.FitText(Fonts.Arial10, p.LocalizedCategory, clsRoom),
+						                 new Vector2(listX + Font12.TextWidth(pn) + 6, y + 2), Color.Gray);
 					void Lane(float v, int lane)
 					{
 						bool zero = v < 0.05f;
