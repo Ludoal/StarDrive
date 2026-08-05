@@ -141,10 +141,13 @@ namespace Ship_Game.GameScreens.ShipDesign
                 minX = 0; minY = 0; maxX = gw - 1; maxY = gh - 1;
             }
             // RenderOverlay centres the GRID in the rect it is handed; the rect is placed so
-            // the HULL's right edge sits 10px off the frame, its centre on the panel's
-            float hullRight = (maxX + 1 - gw / 2f) * ms;                    // from the rect's centre
+            // the HULL sits CENTRED in the image band, both axes (maintainer bench 325:
+            // right-edge anchoring filled the window with wide hulls but glued the narrow
+            // ones to the right - a narrow tower now sits mid-band like a wide platform)
+            float hullCx    = (minX + (maxX - minX + 1) / 2f - gw / 2f) * ms;
             float hullCy    = (minY + (maxY - minY + 1) / 2f - gh / 2f) * ms;
-            var shipOverlay = new Rectangle((int)(Right - 10 - size / 2f - hullRight),
+            float bandCentre = X + TextWidth + 10 + availW / 2f;
+            var shipOverlay = new Rectangle((int)(bandCentre - size / 2f - hullCx),
                                             (int)(CenterY - size / 2f - hullCy), size, size);
             // Ludoal fork: the submenu frame without its tab (maintainer: "cadre style slider")
             // instead of a per-frame Menu2, which now draws the full popup window - far too much
