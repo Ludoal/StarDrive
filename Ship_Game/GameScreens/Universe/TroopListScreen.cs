@@ -142,7 +142,10 @@ namespace Ship_Game
                 // would sit and fire on some later, unrelated close.
                 // ⚠ And AFTER the snap, which clears the hook on its way in.
                 if (!deployed)
+                {
                     Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new TroopListScreen(Universe, EmpireUI));
+                    Universe.ReturnToListGroup  = ScreenGroups.GroupOf(this); // the backdrop bar lights this tab
+                }
             }
         }
 

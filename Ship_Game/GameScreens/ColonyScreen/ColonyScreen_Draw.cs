@@ -329,12 +329,12 @@ namespace Ship_Game
 
             base.Draw(batch, elapsed);
 
-            // Ludoal fork (bench 314): opened FROM a list tab, the tab bar stays behind the
-            // colony as a dimmed backdrop - opened from the map there is no bar. The glance
-            // tells where right-click lands: back to the list, or back to the map.
+            // Ludoal fork (benches 314/318): opened FROM a list tab, the tab bar stays behind
+            // the colony as a dimmed backdrop with the origin tab still lit - opened from the
+            // map there is no bar. The glance tells where right-click lands.
             UniverseScreen us = P.Universe.Screen;
             if (us.ReturnToListScreen != null)
-                us.EmpireUI.DrawDimmed(batch);
+                us.EmpireUI.DrawDimmed(batch, us.ReturnToListGroup);
         }
 
         string IncomingPopString => IncomingPop.LessOrEqual(1) ? $"{(IncomingPop * 1000).String(2)}m" : $"{IncomingPop.String()}b";
