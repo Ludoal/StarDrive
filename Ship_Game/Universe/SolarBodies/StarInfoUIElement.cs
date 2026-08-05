@@ -158,9 +158,9 @@ namespace Ship_Game
 					int clsRoom = laneF - 24 - classCol;
 					if (clsRoom > 12)
 					{
-						string cls = UITable.FitText(Fonts.Arial10, p.LocalizedCategory, clsRoom);
-						batch.DrawString(Fonts.Arial10, cls, new Vector2(classCol, y + 2), Color.Gray);
-						if (cls != p.LocalizedCategory)
+						string pCls = UITable.FitText(Fonts.Arial10, p.LocalizedCategory, clsRoom);
+						batch.DrawString(Fonts.Arial10, pCls, new Vector2(classCol, y + 2), Color.Gray);
+						if (pCls != p.LocalizedCategory)
 							RollTips.Add(new RollTip { Rect = new Rectangle(classCol, (int)y, clsRoom, RowH), Text = p.LocalizedCategory });
 					}
 					void Lane(float v, int lane)
