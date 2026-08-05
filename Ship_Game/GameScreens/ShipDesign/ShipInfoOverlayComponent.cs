@@ -26,9 +26,9 @@ namespace Ship_Game.GameScreens.ShipDesign
         Graphics.Font Font;
         int TextWidth;
         // every label the verbose list can wear - the value column is measured over them
-        static readonly string[] VerboseLabels = { "WIP:", "Offense:", "Weapons:", "Hangars:",
-                                                   "BombBays:", "Max Range:", "Repair:", "EMP Prot:",
-                                                   "FTL Speed:", "Sub Speed:", "Turn:", "Troops:", "Cargo:" };
+        static readonly string[] VerboseLabels = { "WIP", "Offense", "Weapons", "Hangars",
+                                                   "Bomb Bays", "Max Range", "Repair", "EMP Prot",
+                                                   "FTL Speed", "Sub Speed", "Turn", "Troops", "Cargo" };
 
         public ShipInfoOverlayComponent(GameScreen screen, UniverseState us)
         {
@@ -202,14 +202,15 @@ namespace Ship_Game.GameScreens.ShipDesign
             // verbose stats - the compact panel's block order (maintainer bench 322):
             // combat, defence, mobility, payload, with air between the categories. The
             // air is paid only when a later line draws, so an empty block folds with it.
-            p = new(start.X, start.Y + 60);
+            // air under the iconed core block, then the verbose list (maintainer bench 323)
+            p = new(start.X, start.Y + 60 + Font.LineSpacing * 0.5f);
             // the value column starts past the LONGEST label, measured - the old
             // 0.36-of-text-width room was sized for the short dialect, and the new labels
             // ran straight into their values (maintainer bench 323)
             float labelRoom = 0f;
             foreach (string l in VerboseLabels)
                 labelRoom = Math.Max(labelRoom, Font.TextWidth(l));
-            labelRoom += 10f;
+            labelRoom += 24f; // the column rides right of the longest label by a clear lane
             bool lineDrawn = false, airPending = false;
             void Air() => airPending = true;
             void PayAir()
@@ -223,25 +224,26 @@ namespace Ship_Game.GameScreens.ShipDesign
             if (Ds.CompletionPercent != 100)
             {
                 PayAir();
-                DrawText(Font, "WIP:", $"{Ds.CompletionPercent}%", Color.Yellow);
+                DrawText(Font, "WIP", $"{Ds.CompletionPercent}%", Color.Yellow, titleColor: Color.Gray);
             }
 
-            // the compact's own labels, abbreviated for the micro (maintainer bench 322)
-            DrawValue("Offense:", Ds.Strength, Color.LightBlue);
-            DrawValue("Weapons:", s.Weapons.Count, Color.LightBlue);
-            DrawValue("Hangars:", s.Carrier.AllFighterHangars.Length, Color.IndianRed);
-            DrawValue("BombBays:", s.BombBays.Count, Color.IndianRed);
-            DrawValue("Max Range:", s.WeaponsMaxRange, Color.LightBlue);
+            // the compact's own labels, abbreviated for the micro (maintainer benches
+            // 322-323): grey labels, no colon, values in the charte's neutral white
+            DrawValue("Offense", Ds.Strength);
+            DrawValue("Weapons", s.Weapons.Count);
+            DrawValue("Hangars", s.Carrier.AllFighterHangars.Length);
+            DrawValue("Bomb Bays", s.BombBays.Count);
+            DrawValue("Max Range", s.WeaponsMaxRange);
             Air();
-            DrawValue("Repair:", s.RepairRate, Color.Goldenrod);
-            DrawValue("EMP Prot:", s.EmpTolerance, Color.Goldenrod);
+            DrawValue("Repair", s.RepairRate);
+            DrawValue("EMP Prot", s.EmpTolerance);
             Air();
-            DrawValue("FTL Speed:", warpSpeed, Color.LightGreen);
-            DrawValue("Sub Speed:", subLightSpeed, Color.LightGreen);
-            DrawValue("Turn:", turnRateDeg, Color.LightGreen);
+            DrawValue("FTL Speed", warpSpeed);
+            DrawValue("Sub Speed", subLightSpeed);
+            DrawValue("Turn", turnRateDeg);
             Air();
-            DrawValue("Troops:", s.TroopCapacity, Color.IndianRed);
-            DrawValue("Cargo:", s.CargoSpaceMax, Color.Khaki);
+            DrawValue("Troops", s.TroopCapacity);
+            DrawValue("Cargo", s.CargoSpaceMax);
 
             void CoreValue(float ident, string icon, string title, string value, Color color)
             {
@@ -251,22 +253,22 @@ namespace Ship_Game.GameScreens.ShipDesign
                 p.Y += 20;
             }
 
-            void DrawText(Graphics.Font font, string title, string text, Color color)
+            void DrawText(Graphics.Font font, string title, string text, Color color, Color? titleColor = null)
             {
                 var ident = new Vector2(p.X + labelRoom, p.Y);
-                batch.DrawString(font, title, p, color);
+                batch.DrawString(font, title, p, titleColor ?? color);
                 batch.DrawString(font, text, ident, color);
                 p.Y += font.LineSpacing + 2;
             }
 
-            void DrawValue(string title, float value, Color color)
+            void DrawValue(string title, float value)
             {
                 if (value <= 0f)
                     return;
                 PayAir(); // a pending block break is paid by the first line that draws
                 var ident = new Vector2(p.X + labelRoom, p.Y);
-                batch.DrawString(Font, title, p, color);
-                batch.DrawString(Font, Str(value), ident, color);
+                batch.DrawString(Font, title, p, Color.Gray);
+                batch.DrawString(Font, Str(value), ident, Color.White);
                 p.Y += Font.LineSpacing + 2;
             }
         }

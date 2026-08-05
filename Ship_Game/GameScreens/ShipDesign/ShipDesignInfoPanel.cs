@@ -319,7 +319,7 @@ namespace Ship_Game.GameScreens.ShipDesign
         static string[] CompactTitlesCache;
         static string[] CompactTitles => CompactTitlesCache ??= new[]
         {
-            Localizer.Token(GT.ShipOffense), "DPS", "Weapons", "Hangars", "BombBays",
+            Localizer.Token(GT.ShipOffense), "DPS", "Weapons", "Hangars", "Bomb Bays",
             "Max Wpn Range",
             Localizer.Token(GT.WpnFirePowerTime), Localizer.Token(GT.AmmoTime),
             Localizer.Token(GT.TroopCapacity), Localizer.Token(GT.CargoSpace),
@@ -479,7 +479,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             Stat("Weapons", () => S.Weapons.Count, GT.TT_ShipOffense, nonZero: true);
             // the carrier and bomber armament, right under the guns (maintainer bench 322)
             Stat("Hangars", () => S.Carrier.AllFighterHangars.Length, GT.TT_ShipOffense, nonZero: true);
-            Stat("BombBays", () => S.BombBays.Count, GT.TT_ShipOffense, nonZero: true);
+            Stat("Bomb Bays", () => S.BombBays.Count, GT.TT_ShipOffense, nonZero: true);
             Stat("Max Wpn Range", () => S.WeaponsMaxRange, GT.TT_ShipOffense, nonZero: true);
             Stat(GT.WpnFirePowerTime, () => Ds.HasBeams() ? Ds.BurstEnergyDuration : Ds.EnergyDuration, GT.TT_WpnFirePowerTime, energy,
                  vis: () => Ds.HasEnergyWeapons && (Ds.HasBeams() ? Ds.HasBeamDurationNegative() : Ds.HasEnergyWepsPositive()),
