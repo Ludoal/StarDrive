@@ -164,10 +164,16 @@ namespace Ship_Game
             // Race tab below it; Empire and Galaxy share the remaining width.
             const int Row1H = 192;   // +20 on the bench's word - the fields were tight
             const int SideW = 330;   // the fixed side-column width, shared with row 2
-            EnvTab = Add(new Submenu(new RectF(gridLeft, gridTop, SideW, Row1H), "Environment"));
-            int halfW = (gridRight - gridLeft - SideW - 2 * Pad) / 2;
-            EmpireTab = Add(new Submenu(new RectF(gridLeft + SideW + Pad, gridTop, halfW, Row1H), "Empire"));
-            GalaxyTab = Add(new Submenu(new RectF(gridLeft + SideW + 2 * Pad + halfW, gridTop, halfW, Row1H), "Galaxy"));
+            // Ludoal fork (maintainer feedback): the Environment tab needs 30px more for its two
+            // columns at 900p; it takes them from Galaxy (the last tab), NOT from SideW, which the
+            // Race and Points columns below depend on. Empire keeps its width; Galaxy gives the 30.
+            const int EnvExtra = 30;
+            int envW = SideW + EnvExtra;
+            EnvTab = Add(new Submenu(new RectF(gridLeft, gridTop, envW, Row1H), "Environment"));
+            int halfW = (gridRight - gridLeft - SideW - 2 * Pad) / 2;   // Empire keeps this
+            int galaxyW = halfW - EnvExtra;                            // Galaxy yields the 30
+            EmpireTab = Add(new Submenu(new RectF(gridLeft + envW + Pad, gridTop, halfW, Row1H), "Empire"));
+            GalaxyTab = Add(new Submenu(new RectF(gridLeft + envW + 2 * Pad + halfW, gridTop, galaxyW, Row1H), "Galaxy"));
 
             // row 2 takes what row 1 and the foot leave - the dynamic block
             int row2Top = gridTop + Row1H + Pad;
@@ -177,23 +183,34 @@ namespace Ship_Game
             // separate panel drawn behind it
             RectF nameArea = EmpireTab.ClientArea;
 
-            var flagPos = new Vector2(nameArea.Right - 80 - 100, nameArea.Y + 12);
-            FlagRect = new Rectangle((int)flagPos.X, (int)flagPos.Y + 15, 80, 80);
-            
-            Add(new UILabel(flagPos, GameText.FlagColor, Fonts.Arial14Bold, Color.BurlyWood));
-            
+            // ── the EMPIRE tab is three columns (maintainer feedback, for 900p headroom) ──────
+            // 1: the labels, 2: the value fields, 3: the flag picker on the right. The flag used
+            // to overlap the value fields at 900p; giving it its own fixed column and pulling the
+            // two text columns left (labels -10, values -20) opens the gap. Constants, not a
+            // divide of the leftover, so nothing shifts when the tab resizes.
+            const float FormLeftPull = 10f;     // labels start 10px further left
+            const float SplitPull    = 10f;     // values recede another 10 (=> -20 total)
+            const float FlagColW     = 120f;    // the flag picker column, arrows included
+            const float FormSplit    = 205f - SplitPull;
+
             SelectedData = GetDefaultRace(); //SelectedData is used to populate the UI
 
-            UIList raceCustomizatioForm = AddList(new Vector2(nameArea.X + 20, nameArea.Y + 10));
+            UIList raceCustomizatioForm = AddList(new Vector2(nameArea.X + 20 - FormLeftPull, nameArea.Y + 10));
             raceCustomizatioForm.Padding = new Vector2(4,4);
 
-            const float padRight = 200f;
-            var splitItemWidth = nameArea.W - FlagRect.Width - padRight;
-            NameEntry = AddSplitter(raceCustomizatioForm, "{EmpireName}: ", SelectedData.Name,splitItemWidth);
-            SingEntry = AddSplitter(raceCustomizatioForm, "{RaceNameSingular}: ", SelectedData.Singular, splitItemWidth);
-            PlurEntry = AddSplitter(raceCustomizatioForm, "{RaceNamePlural}: ", SelectedData.Plural, splitItemWidth);
-            SysEntry = AddSplitter(raceCustomizatioForm,  "{HomeSystemName}: ", SelectedData.HomeSystemName, splitItemWidth);
+            // the text block stops where the flag column starts, so the value underline never
+            // runs under the flag - the ONE width all four rows share
+            float formWidth = nameArea.W - FlagColW - (20 - FormLeftPull);
+            NameEntry = AddSplitter(raceCustomizatioForm, "{EmpireName}: ", SelectedData.Name, formWidth, FormSplit);
+            SingEntry = AddSplitter(raceCustomizatioForm, "{RaceNameSingular}: ", SelectedData.Singular, formWidth, FormSplit);
+            PlurEntry = AddSplitter(raceCustomizatioForm, "{RaceNamePlural}: ", SelectedData.Plural, formWidth, FormSplit);
+            SysEntry = AddSplitter(raceCustomizatioForm,  "{HomeSystemName}: ", SelectedData.HomeSystemName, formWidth, FormSplit);
             HomeWorldName = SelectedData.HomeWorldName;
+
+            // column 3: the flag picker, its "Flag Color" caption aligned on the Empire Name row
+            var flagPos = new Vector2(nameArea.Right - FlagColW + 6, nameArea.Y + 10);
+            Add(new UILabel(flagPos, GameText.FlagColor, Fonts.Arial14Bold, Color.BurlyWood));
+            FlagRect = new Rectangle((int)flagPos.X, (int)flagPos.Y + 26, 80, 80);
 
             // ── ROW 2: Race | Traits | Points+Description, all sharing row2Top and row2H ─────
             // The two side columns are FIXED width (SideW, declared with row 1); the traits
@@ -319,29 +336,44 @@ namespace Ship_Game
                 return b;
             }
 
-            // under RACE: its own load/save
+            // under RACE: its own load/save, centred on the left column (maintainer feedback).
+            // Two Medium buttons span 2*BtnW+BtnGap; the column is SideW wide, so inset by half
+            // the slack. The pair shares the ONE arithmetic the column already declares.
+            const int TwoBtnW = 2 * BtnW + BtnGap;
+            bx = gridLeft + (SideW - TwoBtnW) / 2;
             Foot("Load Race", OnLoadRaceClicked);
             Foot("Save Race", OnSaveRaceClicked);
 
-            // centred under the TRAITS block: the whole-setup actions
-            const int MidBtns = 3;
+            // centred under the TRAITS block: the whole-setup actions. Load/Save stay a pair;
+            // Select Opponents is wider (its "(N/M)" count would clip a Medium plate) and sits
+            // slightly detached from them (maintainer feedback). The row's own width is the ONE
+            // arithmetic all three share.
+            const int OppW = 190, DetachGap = 22;
             int midLeft = gridLeft + SideW + Pad;
             int midW    = gridRight - SideW - Pad - midLeft;
-            bx = midLeft + (midW - (MidBtns * BtnW + (MidBtns - 1) * BtnGap)) / 2;
+            int midRowW = 2 * BtnW + BtnGap + DetachGap + OppW;   // Load + Save + gap + Opponents
+            bx = midLeft + (midW - midRowW) / 2;
             Foot("Load Setup", OnLoadSetupClicked);
             Foot("Save Setup", OnSaveSetupClicked);
-            SelectOpponentsBtn = Foot("", OnSelectOpponentsClicked);
+            bx += DetachGap;                                      // the little air before Opponents
+            SelectOpponentsBtn = Button(ButtonStyle.BigDip, bx, footY, "", click: OnSelectOpponentsClicked);
+            SelectOpponentsBtn.SetAbsSize(OppW, 24);
 
-            // right end: Exit cancels (hostile), Engage commits (active blue) - maintainer call.
+            // right column: Engage commits (active blue), centred on the right column. Ludoal fork
+            // (maintainer feedback): Exit is gone from the foot - the frame's close cross top-right
+            // does the cancel now (it calls ExitScreen on its own).
             // ⚠ the Wide styles are PAINTED, so their width is whatever we set.
-            UIButton exit = Button(ButtonStyle.WideHostile, gridRight - 2 * BtnW - BtnGap, footY, "Exit", click: OnAbortClicked);
-            exit.SetAbsSize(BtnW, 24);
-            UIButton engage = Button(ButtonStyle.WideActive, gridRight - BtnW, footY, GameText.Engage, click: OnEngageClicked);
+            UIButton engage = Button(ButtonStyle.WideActive, gridRight - SideW + (SideW - BtnW) / 2, footY, GameText.Engage, click: OnEngageClicked);
             engage.SetAbsSize(BtnW, 24);
 
-            // Rule Options lives in the Galaxy tab it configures
-            Button(ButtonStyle.Medium, (int)(galaxyArea.Right - BtnW - 10), (int)(galaxyArea.Bottom - 28),
+            Vector2 closePos = PopupFrame.ClosePos(ScreenFrame);
+            CloseButton(closePos.X, closePos.Y);
+
+            // Rule Options lives in the Galaxy tab it configures; blue (active) plate per maintainer.
+            // ⚠ WideActive is painted, so pin its width to the Medium footprint it replaces.
+            UIButton ruleOptions = Button(ButtonStyle.WideActive, (int)(galaxyArea.Right - BtnW - 10), (int)(galaxyArea.Bottom - 28),
                    Localizer.Token(GameText.RuleOptions), click: OnRuleOptionsClicked);
+            ruleOptions.SetAbsSize(BtnW, 24);
 
             // Clear Traits lives on the Points page and follows its tab
             ClearTraitsBtn = Button(ButtonStyle.Medium, (int)(description.X + 10), (int)(description.Bottom - 28),
@@ -375,9 +407,8 @@ namespace Ship_Game
             return empires[0];
         }
 
-        UITextEntry AddSplitter(UIList list, string title, string inputText, float width)
+        UITextEntry AddSplitter(UIList list, string title, string inputText, float width, float splitAt = 205f)
         {
-            const float splitAt = 205f;
             var label = new UILabel(LocalizedText.Parse(title), Fonts.Arial14Bold, Color.BurlyWood);
             var input = new UITextEntry(Vector2.Zero, Fonts.Arial14Bold, inputText)
             {
@@ -385,7 +416,7 @@ namespace Ship_Game
                 DrawUnderline = true,
                 Color = Colors.Cream
             };
-                
+
             list.AddSplit(label, input).Split = splitAt;
             return input;
         }
@@ -457,11 +488,6 @@ namespace Ship_Game
         void OnSelectOpponentsClicked(UIButton b)
         {
             ScreenManager.AddScreen(new SelectOpponentsScreen(this, P, SelectedData));
-        }
-
-        void OnAbortClicked(UIButton b)
-        {
-            ExitScreen();
         }
 
         void OnClearClicked(UIButton b)

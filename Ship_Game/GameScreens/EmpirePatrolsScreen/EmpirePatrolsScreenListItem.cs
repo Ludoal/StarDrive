@@ -43,7 +43,7 @@ namespace Ship_Game
             // plans no fleet runs
             Color color = fleetsAssigned.Count == 0 ? Color.Gray : Color.White;
 
-            var nameLbl = Cell(cols[0], FleetPatrol.Name, color);
+            Cell(cols[0], FleetPatrol.Name, color);
             Cell(cols[1], FleetPatrol.WayPoints.Count.ToString(), color);
             Cell(cols[2], fleetsAssigned.Count.ToString(), color);
             // foldable: cut to the column, the tooltip carries the full list
@@ -64,9 +64,13 @@ namespace Ship_Game
             DeletePatrol.BaseColor = Color.Red; // destruction reads red (maintainer bench 305)
             SubTexture editTex = ResourceManager.Texture("NewUI/icon_build_edit_hover1");
             SubTexture delTex = ResourceManager.Texture("NewUI/icon_queue_delete_hover1");
-            int bx = (int)(nameLbl.X + Fonts.Arial12Bold.TextWidth(FleetPatrol.Name)) + 10;
-            RenamePatrol.r = new Rectangle(bx, y + h / 2 - editTex.Height / 2, editTex.Width, editTex.Height);
-            DeletePatrol.r = new Rectangle(bx + editTex.Width + 6, y + h / 2 - delTex.Height / 2, delTex.Width, delTex.Height);
+            // Ludoal fork (maintainer feedback): the pencil and bin sit at the END of the row now,
+            // right-aligned on the last column, rather than trailing the name.
+            int rowRight = cols[cols.Length - 1].Rect.Right - UITable.PadX;
+            int delX = rowRight - delTex.Width;
+            int editX = delX - 6 - editTex.Width;
+            RenamePatrol.r = new Rectangle(editX, y + h / 2 - editTex.Height / 2, editTex.Width, editTex.Height);
+            DeletePatrol.r = new Rectangle(delX, y + h / 2 - delTex.Height / 2, delTex.Width, delTex.Height);
 
             base.PerformLayout();
         }

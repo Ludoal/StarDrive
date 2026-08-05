@@ -11,7 +11,6 @@ namespace Ship_Game
         readonly FleetPatrol FleetPatrol;
         UITextEntry PatrolNameEntry;
         UIButton RenameButton;
-        UIButton CancelButton;
         UILabel NameAlreadyExistsLabel;
 
         public RenamePatrolPlanScreen(EmpirePatrolsScreen screen, FleetPatrol fleetPatrol)
@@ -30,20 +29,20 @@ namespace Ship_Game
             base.LoadContent();
 
             Rectangle inner = PopupFrame.ContentArea(Rect);
-            PatrolNameEntry = Add(new UITextEntry(inner.X + 15, inner.Y + 12, 200, Fonts.Arial20Bold, FleetPatrol.Name));
+            // Ludoal fork (maintainer feedback): a little more air around the name field, and no
+            // Cancel button - the frame's close cross top-right dismisses the dialog.
+            PatrolNameEntry = Add(new UITextEntry(inner.X + 20, inner.Y + 22, 200, Fonts.Arial20Bold, FleetPatrol.Name));
             PatrolNameEntry.AutoCaptureOnHover = true;
             PatrolNameEntry.AutoCaptureOnKeys = true;
             PatrolNameEntry.MaxCharacters = 40;
             PatrolNameEntry.OnTextChanged = OnPatrolNameTextChanged;
-            PatrolNameEntry.Background = new Submenu(new RectF(PatrolNameEntry.X-10, PatrolNameEntry.Y-3, PatrolNameEntry.Width+220, PatrolNameEntry.Height+6));
-            NameAlreadyExistsLabel = Add(new UILabel(inner.X + 15, PatrolNameEntry.Y + 40, GameText.PatrolNameAlreadyExists));
+            PatrolNameEntry.Background = new Submenu(new RectF(PatrolNameEntry.X-14, PatrolNameEntry.Y-8, PatrolNameEntry.Width+228, PatrolNameEntry.Height+16));
+            NameAlreadyExistsLabel = Add(new UILabel(inner.X + 20, PatrolNameEntry.Y + 48, GameText.PatrolNameAlreadyExists));
             NameAlreadyExistsLabel.Color = Color.Red;
             NameAlreadyExistsLabel.Visible = false;
-            RenameButton = ButtonMedium(inner.X + 15, inner.Bottom - 40, GameText.RenamePatrol, OnRenameClicked);
-            CancelButton = ButtonBigDip(inner.X + 165, inner.Bottom - 40, GameText.RenamePatrol, OnCancelClicked);
+            RenameButton = ButtonMedium(inner.X + 20, inner.Bottom - 40, GameText.RenamePatrol, OnRenameClicked);
             RenameButton.Enabled = false;
             RenameButton.Text = "Rename";
-            CancelButton.Text = "Cancel";
         }
 
         void OnPatrolNameTextChanged(string newName)
@@ -69,11 +68,6 @@ namespace Ship_Game
         void OnRenameClicked(UIButton b)
         {
             Screen.RenamePatrol(FleetPatrol, PatrolNameEntry.Text);
-            ExitScreen();
-        }
-
-        void OnCancelClicked(UIButton b)
-        {
             ExitScreen();
         }
     }

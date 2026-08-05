@@ -628,7 +628,8 @@ namespace Ship_Game
             {
                 Pause    = true,
                 Message  = message,
-                IconPath = "UI/icon_warning_money"
+                IconPath = "UI/icon_warning_money",
+                Action   = "Economy"  // Ludoal fork (maintainer feedback): click opens the economy panel
             }, "sd_ui_notification_warning", "sd_trade_01");
         }
 

@@ -180,7 +180,8 @@ public sealed class RuleOptionsScreen : PopupWindow
         // Ludoal fork: back to the game's own defaults, and clear the saved ruleset with them -
         // otherwise the next new game would restore what the player just reset. Rebuilding the
         // screen is what moves the sliders: they read their value at construction.
-        Button(ButtonStyle.Default, leftRect.X + 40, leftRect.Y + leftRect.Height - 60,
+        // Ludoal fork (maintainer feedback): Reset is a destructive action, so the red plate.
+        UIButton resetBtn = Button(ButtonStyle.WideHostile, leftRect.X + 40, leftRect.Y + leftRect.Height - 60,
                "Reset", b =>
         {
             var stock = new UniverseParams();
@@ -205,6 +206,7 @@ public sealed class RuleOptionsScreen : PopupWindow
             GlobalStats.ClearSavedRuleOptions();
             LoadContent();
         });
+        resetBtn.SetAbsSize(168, 24);   // WideActive/Hostile is painted - pin the width
 
         // the heading is the frame's title now - only the explanatory line stays, tucked under
         // the title bar rather than under a heading this screen drew for itself

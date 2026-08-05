@@ -85,6 +85,16 @@ namespace Ship_Game.GameScreens.MainMenu
             if (list.Find("info",      out UIButton info))      info.OnClick      = Info_Clicked;
             if (list.Find("support",   out UIButton support))   support.OnClick   = Support_Clicked;
             if (list.Find("exit",      out UIButton exit))      exit.OnClick      = Exit_Clicked;
+
+            // Ludoal fork (maintainer feedback): the main menu sits over black, so its buttons
+            // carry their full body rather than the bar's map-friendly 0.92. And the Support
+            // entry reads as an active call to action, so it takes the active (blue) plate.
+            for (int i = 0; i < list.Count; ++i)
+                if (list[i] is UIButton b)
+                    b.Opacity = 1f;
+            if (support != null)
+                support.Style = ButtonStyle.WideActive;
+
             list.PerformLayout();
 
             // Ludoal fork: no slide-in/slide-out on the menu buttons (maintainer decision - we

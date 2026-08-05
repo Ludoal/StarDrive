@@ -152,7 +152,8 @@ namespace Ship_Game.GameScreens.ShipDesign
             // Ludoal fork: the submenu frame without its tab (maintainer: "cadre style slider")
             // instead of a per-frame Menu2, which now draws the full popup window - far too much
             // furniture for a hover overlay. Same nine-slice the sliders on the Fleets page wear.
-            batch.FillRectangle(Rect, new Color(8, 10, 14).Alpha(0.94f));
+            // Ludoal fork (maintainer feedback): a touch more opaque so the map does not read through
+            batch.FillRectangle(Rect, new Color(8, 10, 14).Alpha(0.98f));
             Frame.Update(new RectF(Rect),
                          ResourceManager.Texture("NewUI/submenu_corner_TL"),
                          ResourceManager.Texture("NewUI/submenu_corner_TR"),

@@ -258,16 +258,19 @@ namespace Ship_Game.GameScreens
             Label(new Vector2(Table.TableRect.X + (Table.TableRect.Width - Fonts.Arial12.TextWidth(unitNote)) / 2, client.Y + 4),
                   unitNote, Fonts.Arial12, Color.Gray);
 
-            // the TOTAL row keeps the table's last lane; the rules run through it
+            // the TOTAL row keeps the table's last lane; the rules run through it. Ludoal fork
+            // (maintainer feedback): reserve a whole number of 24px rows (72 = 3) so the last row
+            // is never cut mid-height - the old 40 clipped it and its selection box - and the
+            // TOTAL drops clear below the list.
             var listRect = Table.ListRect;
-            listRect.H -= 40;
+            listRect.H -= 72;
             ColonySL = Add(new ScrollList<EconColonyItem>(listRect, 24));
             ColonySL.EnableItemHighlight = true;
             Table.ApplyHighlightTo(ColonySL);
             FillList();
 
             // TOTAL footer, its label aligned with the planet NAMES like every row's text
-            int totalY = (int)listRect.Bottom + 10;
+            int totalY = (int)listRect.Bottom + 24;
             var totalLbl = Label(new Vector2(Table.Columns[0].Rect.X + UITable.PadX + 28, totalY), Localizer.Token(GameText.Total2).ToUpper(), Fonts.Arial12Bold);
             totalLbl.Color = Color.Wheat;
             UILabel FooterCell(int col, Func<UILabel, string> getText)

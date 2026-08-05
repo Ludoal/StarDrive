@@ -44,11 +44,14 @@ namespace Ship_Game.GameScreens.MainMenu
             float wrapWidth = BottomBigFill.Width - 24f;
             WrappedBody = Fonts.Arial14Bold.ParseText(BodyText, wrapWidth);
 
-            // Bottom-center the affirmative button inside the body area.
-            // Military style is texture-driven, ~168px wide.
-            float btnX = BottomBigFill.CenterX() - 84;
+            // Bottom-center the affirmative button inside the body area. Ludoal fork (maintainer
+            // feedback): the Support action reads as active, so it takes the active (blue) plate;
+            // the plate stretches to whatever width we set, so give it one and centre on that.
+            const int btnW = 168;
+            float btnX = BottomBigFill.CenterX() - btnW / 2;
             float btnY = BottomBigFill.Bottom - 30;
-            Button(ButtonStyle.Military, btnX, btnY, "Support", _ => OpenKofi());
+            UIButton support = Button(ButtonStyle.WideActive, btnX, btnY, "Support", _ => OpenKofi());
+            support.SetAbsSize(btnW, 24);
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)

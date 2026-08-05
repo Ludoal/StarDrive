@@ -39,14 +39,18 @@ namespace Ship_Game.GameScreens.NewGame
             Title.Tooltip = "Some races have modifiers to their Max Population and Fertility based on the planet type.";
 
             BestType = Add(new UILabel("Best Planet Type", font, Color.BurlyWood));
-            BestType.SetLocalPos(35 + 275, 15);
+            // Ludoal fork (maintainer feedback): -40 to clear the widened value columns; the
+            // planet icon reads BestType.LocalPos, so it follows on its own.
+            BestType.SetLocalPos(35 + 275 - 40, 15);
             BestType.Tooltip = "This is the best suited environment for this race, Terraforming a planet will transform it to this planet type.";
             
 
+            // Ludoal fork (maintainer feedback): pull the two value columns left (col1 -10, col2
+            // -20) so the panel fits its widened tab at 900p without the values crowding the edge.
             UIList column1 = Add(new UIList(ListLayoutStyle.ResizeList));
             UIList column2 = Add(new UIList(ListLayoutStyle.ResizeList));
-            column1.SetLocalPos(15, 35);
-            column2.SetLocalPos(15 + 140, 35);
+            column1.SetLocalPos(5, 35);
+            column2.SetLocalPos(15 + 140 - 20, 35);
             column1.Padding = column2.Padding = new Vector2(4, 4);
 
             UILabel AddEnvSplitter(UIList list, string title, Func<float> getValue)

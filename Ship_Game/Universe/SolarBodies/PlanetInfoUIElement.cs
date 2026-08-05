@@ -105,14 +105,15 @@ namespace Ship_Game
 
             ExoticRect = new Rectangle(RightRect.X - 17, Housing.Y + 130, 182, 25);
             ExoticResourceIconRect = new Rectangle(RightRect.X - 17, Housing.Y + 165, 20, 20);
-            // the colony arrows flank the name line, just outside the sprite column
-            PrevColony = new ToggleButton(new Vector2(r.X + 40, Housing.Y + 76), ToggleButtonStyle.ArrowLeft)
+            // the colony arrows flank the name line, just outside the sprite column - pushed 10px
+            // further out on each side (maintainer feedback) so they clear the name
+            PrevColony = new ToggleButton(new Vector2(r.X + 30, Housing.Y + 76), ToggleButtonStyle.ArrowLeft)
             {
                 Tooltip = GameText.ViewPreviousColony,
                 OnClick = b => OnChangeColony(-1)
             };
             PrevColony.SetAbsSize(14, 20);
-            NextColony = new ToggleButton(new Vector2(r.X + 196, Housing.Y + 76), ToggleButtonStyle.ArrowRight)
+            NextColony = new ToggleButton(new Vector2(r.X + 206, Housing.Y + 76), ToggleButtonStyle.ArrowRight)
             {
                 Tooltip = GameText.ViewNextColony,
                 OnClick = b => OnChangeColony(+1)
@@ -485,39 +486,47 @@ namespace Ship_Game
         {
             // the shared header already drew the rig owner's flag in the flag slot
             batch.Draw(P.Mining.ExoticResourceIcon, ExoticResourceIconRect);
-            // Ludoal fork: the block lives in the right column now — two short lines
-            Vector2 resourceStatPos = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 2);
-            Vector2 resourceStatRefine = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 17);
-            Vector2 resourceStatDeployed = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 32);
-            string stats = $"{P.Mining.TranslatedResourceName.Text}: Richness {P.Mining.Richness}";
+            // Ludoal fork (maintainer feedback): the resource name gets its own line, with Richness
+            // on the next - three stat lines now, the deploy count last.
+            Vector2 resourceStatName    = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 2);
+            Vector2 resourceStatRich    = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 17);
+            Vector2 resourceStatRefine  = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 32);
+            Vector2 resourceStatDeployed = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 47);
+            string name = P.Mining.TranslatedResourceName.Text;
+            string rich = $"Richness {P.Mining.Richness}";
             string refine = $"Refine Ratio: {(P.Mining.RefiningRatio * Player.data.RefiningRatioMultiplier).UpperBound(1)}";
-            batch.DrawString(Font12, stats, resourceStatPos, Color.White);
+            batch.DrawString(Font12, name, resourceStatName, Color.White);
+            batch.DrawString(Font12, rich, resourceStatRich, Color.White);
             batch.DrawString(Font12, refine, resourceStatRefine, Color.White);
 
             int numDeployed = P.OrbitalStations.Filter(s => s.IsMiningStation && s.Loyalty == Player).Length;
             int numInProgress = Player.AI.CountGoals(g => g.IsMiningOpsGoal(P) && g.TargetShip == null);
-            string statsDeployed = $"{numDeployed}/{Mineable.MaximumMiningStations} Deployed    ";
+            string statsDeployed = $"{numDeployed}/{Mineable.MaximumMiningStations} Deployed";
             batch.DrawString(Font12, statsDeployed, resourceStatDeployed, numDeployed > 0 ? Color.Green : Color.Gray);
-            if (numInProgress > 0)
-            {
-                string statsInProgress = $"{numInProgress} In Progress";
-                batch.DrawString(Font12, statsInProgress,
-                                 resourceStatDeployed + new Vector2(Font12.MeasureString(statsDeployed).X, 0f), Color.Gold);
-            }
             ToolTipItems.Add(new TippedItem(ExoticResourceIconRect, $"{P.Mining.ResourceDescription.Text}\n{new LocalizedText(GameText.MineableRichnessTip).Text}"));
             if (P.Mining.Owner != null && P.Mining.Owner != Player)
                 return;
 
+            // Ludoal fork (maintainer feedback): the deploy button carries the in-progress count and
+            // wears amber; it disappears once the deployed stations reach the max, so the
+            // "In Progress" line is gone - the button says it.
+            if (numDeployed >= Mineable.MaximumMiningStations)
+                return;
+
             Vector2 textPos = new Vector2(ExoticRect.X + 13, ExoticRect.Y + 13 - Font12.LineSpacing / 2 - 2);
             bool canDeploy = Player.CanBuildMiningStations && P.Mining.CanAddMiningStationFor(Player);
-            Color miningPlate = canDeploy ? UIButton.PlateActive : UIButton.PlateNeutral;
+            // PlateNeutral IS the Codex amber (193,113,26); muted grey for the unavailable action
+            Color miningPlate = canDeploy ? UIButton.PlateNeutral : UIButton.PlateMuted;
             if (canDeploy && ExoticRect.HitTest(mousePos))
                 miningPlate = UITheme.Hover(miningPlate); // the real buttons' hover lift
             UIButton.DrawPlate(batch, ExoticRect, miningPlate);
 
             LocalizedText tip = Player.CanBuildMiningStations ? GameText.DeployMiningStationTip : GameText.CannotBuildMiningStationTip;
-            LocalizedText tipText = P.Mining.Owner != null && P.Mining.Owner != Player ? GameText.CannotDeployMiningStationNotOwnerTip : GameText.DeployMiningStation;
-
+            string tipText = P.Mining.Owner != null && P.Mining.Owner != Player
+                ? new LocalizedText(GameText.CannotDeployMiningStationNotOwnerTip).Text
+                : new LocalizedText(GameText.DeployMiningStation).Text;
+            if (numInProgress > 0)
+                tipText = $"{tipText} ({numInProgress})";
 
             ToolTipItems.Add(new TippedItem(ExoticRect, tip));
             // lit text always - gray only for the unavailable action (maintainer bench 318)

@@ -131,8 +131,11 @@ namespace Ship_Game
             PlanetIconRect = new Rectangle(cols[1].Rect.X + UITable.PadX, y + h / 2 - 16, 32, 32);
             ResourceIconRect = new Rectangle(cols[3].Rect.X + UITable.PadX, y + h / 2 - 10, 20, 20);
 
+            // Ludoal fork (maintainer feedback): a narrower deploy/abort button - the 168px plate
+            // was wider than these short labels need.
             var btn = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px");
-            DeployButton.Rect = new Rectangle(OrdersRect.X + 10, OrdersRect.Y + OrdersRect.Height / 2 - btn.Height / 2, btn.Width, btn.Height);
+            const int deployBtnW = 140;
+            DeployButton.Rect = new Rectangle(OrdersRect.X + 10, OrdersRect.Y + OrdersRect.Height / 2 - btn.Height / 2, deployBtnW, btn.Height);
 
             AddSystemName();
             AddHostileWarning();
@@ -167,7 +170,7 @@ namespace Ship_Game
             {
                 DeployButton.Visible = false;
                 DeployTextInfo.Text = Localizer.Token(GameText.ResearchStationDeployed);
-                DeployTextInfo.Color = Color.CornflowerBlue; // research wears blue (maintainer bench 303)
+                DeployTextInfo.Color = Color.LimeGreen; // deployed reads green (maintainer feedback)
             }
             else
             {
@@ -209,7 +212,9 @@ namespace Ship_Game
             MiningDeployedTextInfo.Visible = numDeployed > 0;
 
             int numInProgress = Player.AI.CountGoals(g => g.IsMiningOpsGoal(Planet) && g.TargetShip == null);
-            Vector2 miningInProgress = new Vector2(miningDeployed.X, DeployButton.Rect.Y + 12);
+            // Ludoal fork (maintainer feedback): In Progress centred on the row height, not stacked
+            // under Deployed - it sits on the row's vertical middle beside the button.
+            Vector2 miningInProgress = new Vector2(miningDeployed.X, OrdersRect.Y + OrdersRect.Height / 2 - SmallFont.LineSpacing / 2);
             string miningInProgressMsg = $"In Progress: {numInProgress}";
             MiningInProgressTextInfo = Add(new UILabel(miningInProgress,miningInProgressMsg, SmallFont));
             MiningInProgressTextInfo.Color = Color.Wheat;
@@ -399,8 +404,8 @@ namespace Ship_Game
 
         void OnMiningClicked(UIButton b)
         {
-            if (!MarkedForMining) 
-            { 
+            if (!MarkedForMining)
+            {
                 Player.AI.AddGoalAndEvaluate(new MiningOps(Player, Planet));
                 if (!Planet.Mining.CanAddMiningStationFor(Player))
                 {

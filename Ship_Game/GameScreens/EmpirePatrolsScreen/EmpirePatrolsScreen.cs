@@ -102,7 +102,13 @@ namespace Ship_Game
                 return;
             GameAudio.AcceptClick();
             ExitScreen();
-            Universe.CamDestination = new Vector3d(wps[0].Position, 100000);
+            // Ludoal fork (maintainer feedback): centre on the ROUTE's midpoint, not its first
+            // waypoint - zooming to wps[0] landed the camera at the corner of the plan, not on it.
+            Vector2 center = Vector2.Zero;
+            foreach (var wp in wps)
+                center += wp.Position;
+            center /= wps.Length;
+            Universe.CamDestination = new Vector3d(center, 100000);
         }
 
         // Ludoal fork: the other two tabs live in their own screen, so leaving Patrols hands over to

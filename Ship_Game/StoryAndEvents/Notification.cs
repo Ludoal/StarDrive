@@ -84,6 +84,9 @@ public sealed class Notification
                 case "EspionageScreen": // Ludoal fork (wishlist): spy notifications open the espionage panel
                     m.ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(m.Screen));
                     break;
+                case "Economy": // Ludoal fork (maintainer feedback): the treasury warning opens the economy panel
+                    m.ScreenManager.AddScreen(GameScreens.ScreenGroups.Economy(m.Screen));
+                    break;
             }
             return true;
         }
