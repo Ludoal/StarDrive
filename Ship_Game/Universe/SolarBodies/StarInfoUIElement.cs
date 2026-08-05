@@ -155,7 +155,18 @@ namespace Ship_Game
 					batch.DrawString(Font12, pn, new Vector2(listX, y), nameColor);
 					if (pn != p.Name)
 						RollTips.Add(new RollTip { Rect = new Rectangle(listX, (int)y, classCol - 6 - listX, RowH), Text = p.Name });
-					int clsRoom = laneF - 24 - classCol;
+
+					string LaneStr(float v)
+						=> v < 0.05f ? "-" : v.ToString("0.0", CultureInfo.InvariantCulture);
+					void Lane(string s, int lane)
+						=> batch.DrawString(Fonts.Arial12, s,
+						                    new Vector2(lane + 18 - Fonts.Arial12.TextWidth(s), y),
+						                    s == "-" ? Color.Gray : Color.White);
+					string fs = LaneStr(p.FertilityFor(Player));
+
+					// the class folds on a MEASURED collision with THIS row's F value -
+					// a narrow dash leaves it almost the whole lane
+					int clsRoom = laneF + 18 - (int)Fonts.Arial12.TextWidth(fs) - 8 - classCol;
 					if (clsRoom > 12)
 					{
 						string pCls = UITable.FitText(Fonts.Arial10, p.LocalizedCategory, clsRoom);
@@ -163,17 +174,9 @@ namespace Ship_Game
 						if (pCls != p.LocalizedCategory)
 							RollTips.Add(new RollTip { Rect = new Rectangle(classCol, (int)y, clsRoom, RowH), Text = p.LocalizedCategory });
 					}
-					void Lane(float v, int lane)
-					{
-						bool zero = v < 0.05f;
-						string s = zero ? "-" : v.ToString("0.0", CultureInfo.InvariantCulture);
-						batch.DrawString(Fonts.Arial12, s,
-						                 new Vector2(lane + 18 - Fonts.Arial12.TextWidth(s), y),
-						                 zero ? Color.Gray : Color.White);
-					}
-					Lane(p.FertilityFor(Player), laneF);
-					Lane(p.MineralRichness, laneR);
-					Lane(p.MaxPopulationBillionFor(Player), laneP);
+					Lane(fs, laneF);
+					Lane(LaneStr(p.MineralRichness), laneR);
+					Lane(LaneStr(p.MaxPopulationBillionFor(Player)), laneP);
 					RollRows.Add(new RollRow
 					{
 						Rect = new Rectangle(listX, (int)y - 2, blockRight - listX, RowH),
