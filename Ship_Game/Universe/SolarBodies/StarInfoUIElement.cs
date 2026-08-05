@@ -75,13 +75,20 @@ namespace Ship_Game
 
 			bool explored = Sys.IsExploredBy(Player);
 			var planets = Sys.PlanetList;
+			int rows = 0;
+			if (explored)
+				foreach (Planet p in planets)
+					if (p.IsExploredBy(Player))
+						rows++;
 
-			// the planet cartouche's fixed frame (maintainer bench 313): the adaptive
-			// plate retires, every info cartouche wears the same dimensions
-			int top = Housing.Y + PlanetInfoUIElement.FrameShave;
+			// the planet cartouche's fixed frame (maintainer bench 313)... which grows
+			// UPWARD row by row past 8 planets (maintainer, bench 317) - the standard
+			// plate seats 8, a crowded system lifts the roof instead of spilling
+			int extra = rows > 8 ? (rows - 8) * RowH : 0;
+			int top = Housing.Y + PlanetInfoUIElement.FrameShave - extra;
 			var frame = new Rectangle(Housing.X, top,
 			                          Housing.Width - PlanetInfoUIElement.RightTrim,
-			                          Housing.Height - PlanetInfoUIElement.FrameShave);
+			                          Housing.Height - PlanetInfoUIElement.FrameShave + extra);
 			Rectangle plate = frame;
 			plate.Inflate(-2, -2);
 			batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
@@ -118,13 +125,9 @@ namespace Ship_Game
 			int listX = iconBox.Right + 20;
 			int laneP = frame.Right - 40, laneR = laneP - 40, laneF = laneR - 40;
 			int blockRight = laneP + 18;
-			float y = Housing.Y + PlanetInfoUIElement.TopLineIconY + 2;
+			float y = Housing.Y + PlanetInfoUIElement.TopLineIconY + 2 - extra; // the roll climbs into the lifted roof
 			RollRows.Clear();
 			RollTips.Clear();
-			int rows = 0;
-			foreach (Planet p in planets)
-				if (p.IsExploredBy(Player))
-					rows++;
 			if (rows > 0)
 			{
 				void LaneIcon(string tex, int lane, int size)
