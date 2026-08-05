@@ -166,6 +166,15 @@ namespace Ship_Game.GameScreens.ShipDesign
             float subLightSpeed = s.Stats.GetSTLSpeed(mass, Player);
             float turnRateDeg   = s.Stats.GetTurnRadsPerSec(s.Level).ToDegrees();
 
+            // the value column starts past the LONGEST label, measured - the old
+            // 0.36-of-text-width room was sized for the short dialect, and the new labels
+            // ran straight into their values (maintainer bench 323). Declared before the
+            // first DrawText call: the local functions capture it (CS0165 otherwise).
+            float labelRoom = 0f;
+            foreach (string l in VerboseLabels)
+                labelRoom = Math.Max(labelRoom, Font.TextWidth(l));
+            labelRoom += 24f; // the column rides right of the longest label by a clear lane
+
             var p = new Vector2(X + 25, Y + 22);
             DrawText(TitleFont, s.Name, "", Color.White);
             DrawText(Font, $"{s.ShipData.ShipCategory}, {s.ShipData.DefaultCombatState}", "", Color.Gray);
@@ -204,13 +213,6 @@ namespace Ship_Game.GameScreens.ShipDesign
             // air is paid only when a later line draws, so an empty block folds with it.
             // air under the iconed core block, then the verbose list (maintainer bench 323)
             p = new(start.X, start.Y + 60 + Font.LineSpacing * 0.5f);
-            // the value column starts past the LONGEST label, measured - the old
-            // 0.36-of-text-width room was sized for the short dialect, and the new labels
-            // ran straight into their values (maintainer bench 323)
-            float labelRoom = 0f;
-            foreach (string l in VerboseLabels)
-                labelRoom = Math.Max(labelRoom, Font.TextWidth(l));
-            labelRoom += 24f; // the column rides right of the longest label by a clear lane
             bool lineDrawn = false, airPending = false;
             void Air() => airPending = true;
             void PayAir()
