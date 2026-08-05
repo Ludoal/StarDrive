@@ -180,14 +180,15 @@ namespace Ship_Game
         }
 
         // the enemy page wears the same pair (bench 314): same size, same seats, centred
-        // text - Invade in the hostile red, Cancel Invasion in the active blue
+        // text - Invade on the gold plate, Cancel Invasion in the hostile red (the
+        // Colonize toggle's own convention: the action in its colour, the cancel in red)
         void UpdateEnemyButtons(int invading)
         {
             BtnSendTroops.Text    = invading > 0 ? $"Invading: {invading}" : "Invade";
-            BtnSendTroops.Style   = ButtonStyle.WideHostile;
+            BtnSendTroops.Style   = ButtonStyle.Wide;
             BtnSendTroops.Tooltip = default;
             BtnColonize.Text    = "Cancel Invasion";
-            BtnColonize.Style   = ButtonStyle.WideActive;
+            BtnColonize.Style   = ButtonStyle.WideHostile;
             BtnColonize.Tooltip = default;
             BtnColonize.OnClick = OnCancelInvasionClicked;
         }
