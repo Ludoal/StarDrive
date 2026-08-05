@@ -105,8 +105,9 @@ namespace Ship_Game
             BiospheredPopRect  = InjuryRect;
             TerraformedPopRect = ShieldRect;
 
-            SendTroops = new Rectangle(RightRect.X - 17, Housing.Y + 130, 182, 25);
-            MarkedRect = new Rectangle(RightRect.X - 17, Housing.Y + 160, 182, 25);
+            // the action buttons sit where the colony page keeps its sliders (bench 312)
+            SendTroops = new Rectangle(LaborX + 10, Housing.Y + 120, 182, 25);
+            MarkedRect = new Rectangle(LaborX + 10, Housing.Y + 155, 182, 25);
             CancelInvasionRect = MarkedRect; // Replaces the colonization rect when invading
             ExoticRect = new Rectangle(RightRect.X - 17, Housing.Y + 130, 182, 25);
             ExoticResourceIconRect = new Rectangle(RightRect.X - 17, Housing.Y + 165, 20, 20);
@@ -223,13 +224,15 @@ namespace Ship_Game
                               ruleWidthOverride: 3);
 
             P.UpdateMaxPopulation();
-            if (P.Owner == null || !explored)
+            if (!explored || P.Owner == null && !P.Habitable)
             {
                 DrawUnexploredUninhabited(Screen.Input.CursorPosition);
                 return;
             }
 
-            AddExploredTips();
+            // explored colonies AND the colonisable page share the grammar below
+            if (P.Owner != null) AddExploredTips();
+            else                 AddUnExploredTips();
 
             // one grammar for own and enemy colonies (maintainer bench 312): the pop line
             // right-aligned with its flag, the name sharing its line - bottom-aligned, the
@@ -240,10 +243,10 @@ namespace Ship_Game
             else if (P.Name.Length < 13) nameFont = Fonts.Arial12Bold;
             else if (P.Name.Length < 17) nameFont = Fonts.Arial10;
 
-            string worldType = P.WorldType.Text;
             int frameRight = Housing.Right - RightTrim;
             var flagRect = new Rectangle(frameRight - 50, Housing.Y + 76, 26, 26);
-            batch.Draw(ResourceManager.Flag(P.Owner), flagRect, P.Owner.EmpireColor);
+            if (P.Owner != null)
+                batch.Draw(ResourceManager.Flag(P.Owner), flagRect, P.Owner.EmpireColor);
             string pop = P.PopulationStringForPlayer;
             var popPos = new Vector2(flagRect.X - 5 - Font12.TextWidth(pop), flagRect.Y + 13 - Font12.LineSpacing / 2);
             batch.DrawString(Font12, pop, popPos, tColor);
@@ -256,11 +259,15 @@ namespace Ship_Game
             int spriteCX = PlanetIconRect.CenterX() - 10;
             var namePos = new Vector2(spriteCX - nameFont.TextWidth(P.Name) / 2f,
                                       popPos.Y + Font12.LineSpacing - nameFont.LineSpacing);
-            batch.DrawString(nameFont, P.Name, namePos, P.Owner.EmpireColor);
+            batch.DrawString(nameFont, P.Name, namePos, P.Owner?.EmpireColor ?? tColor);
 
             float mrTextY = Housing.Y + 102 + 11 - Font12.LineSpacing / 2;
-            batch.DrawString(Font12, worldType,
-                new Vector2(spriteCX - Font12.TextWidth(worldType) / 2f, mrTextY), tColor);
+            if (P.Owner != null) // no governance before there is a colony
+            {
+                string worldType = P.WorldType.Text;
+                batch.DrawString(Font12, worldType,
+                    new Vector2(spriteCX - Font12.TextWidth(worldType) / 2f, mrTextY), tColor);
+            }
 
             if (P.Owner == Player)
             {
@@ -283,33 +290,51 @@ namespace Ship_Game
             string richness = P.LocalizedRichness; // the class caption back under the sprite (308)
             batch.DrawString(Font12, richness,
                 new Vector2(spriteCX - Font12.TextWidth(richness) / 2f, PlanetIconRect.Bottom + 5), tColor);
-            P.UpdateIncomes();
 
-            DrawPlanetStats(DefenseRect, ((float)P.TotalDefensiveStrength).String(1), "UI/icon_shield", Color.White, Color.White);
-
-            // Added by Fat Bastard - display total injury level inflicted automatically to invading troops
-            if (P.TotalInvadeInjure > 0)
-                DrawPlanetStats(InjuryRect, ((float)P.TotalInvadeInjure).String(1), "UI/icon_injury", Color.White, Color.White);
-
-            // Added by Fat Bastard - display total space offense of the planet
-            if (P.TotalGeodeticOffense > 0)
+            if (P.Owner != null)
             {
-                string offenseNumberString = ((float) Math.Round(P.TotalGeodeticOffense, 0)).GetNumberString();
-                DrawPlanetStats(OffenseRect, offenseNumberString, "UI/icon_offense", Color.White, Color.White);
+                P.UpdateIncomes();
+
+                DrawPlanetStats(DefenseRect, ((float)P.TotalDefensiveStrength).String(1), "UI/icon_shield", Color.White, Color.White);
+
+                // Added by Fat Bastard - display total injury level inflicted automatically to invading troops
+                if (P.TotalInvadeInjure > 0)
+                    DrawPlanetStats(InjuryRect, ((float)P.TotalInvadeInjure).String(1), "UI/icon_injury", Color.White, Color.White);
+
+                // Added by Fat Bastard - display total space offense of the planet
+                if (P.TotalGeodeticOffense > 0)
+                {
+                    string offenseNumberString = ((float) Math.Round(P.TotalGeodeticOffense, 0)).GetNumberString();
+                    DrawPlanetStats(OffenseRect, offenseNumberString, "UI/icon_offense", Color.White, Color.White);
+                }
+
+                if (P.ShieldStrengthMax > 0f)
+                    DrawPlanetStats(ShieldRect, P.ShieldStrengthCurrent.String(0), "NewUI/icon_planetshield", Color.White, Color.Green);
+
+                // Added by Fat Bastard - display total defense ships stationed on this planet
+                int maxDefenseShips = P.MaxDefenseShips;
+                if (maxDefenseShips > 0 )
+                {
+                    int currentDefenseShips = P.CurrentDefenseShips;
+                    if (currentDefenseShips == maxDefenseShips)
+                        DrawPlanetStats(DefenseShipsRect, currentDefenseShips.ToString(), "UI/icon_hangar", Color.White, Color.White);
+                    else
+                        DrawPlanetStats(DefenseShipsRect, currentDefenseShips + "/" + maxDefenseShips , "UI/icon_hangar", Color.Yellow, Color.White);
+                }
             }
-
-            if (P.ShieldStrengthMax > 0f)
-                DrawPlanetStats(ShieldRect, P.ShieldStrengthCurrent.String(0), "NewUI/icon_planetshield", Color.White, Color.Green);
-
-            // Added by Fat Bastard - display total defense ships stationed on this planet
-            int maxDefenseShips = P.MaxDefenseShips;
-            if (maxDefenseShips > 0 )
+            else
             {
-                int currentDefenseShips = P.CurrentDefenseShips;
-                if (currentDefenseShips == maxDefenseShips)
-                    DrawPlanetStats(DefenseShipsRect, currentDefenseShips.ToString(), "UI/icon_hangar", Color.White, Color.White);
-                else
-                    DrawPlanetStats(DefenseShipsRect, currentDefenseShips + "/" + maxDefenseShips , "UI/icon_hangar", Color.Yellow, Color.White);
+                // the colonisable page: the ground survey in the left column
+                float fertEnvMultiplier = Player.PlayerEnvModifier(P.Category);
+                int numHabitableTile    = P.TotalHabitableTiles;
+                float popPerTile        = P.BasePopPerTile * fertEnvMultiplier;
+                float biospherePop      = P.PotentialMaxPopBillionsFor(Player, true);
+                float terraformedPop    = P.PotentialMaxPopBillionsWithTerraformFor(Player);
+
+                DrawPlanetStats(TilesRect, $"{numHabitableTile}", "NewUI/icon_tiles", Color.White, Color.White);
+                DrawPlanetStats(PopPerTileRect, $"{popPerTile.String(0)}m", "NewUI/icon_poppertile", Color.White, Color.White);
+                DrawPlanetStats(BiospheredPopRect, biospherePop.String(2), "NewUI/icon_biospheres", Color.White, Color.White);
+                DrawPlanetStats(TerraformedPopRect, terraformedPop.String(1), "NewUI/icon_terraformer", Color.White, Color.White);
             }
 
             DrawFertProdStats(batch);
@@ -367,28 +392,7 @@ namespace Ship_Game
                 return true;
             }
 
-            DrawHeader(batch, lanes: true);
-            batch.Draw(P.PlanetTexture, PlanetIconRect, Color.White); // class lives in the header
-            DrawFertProdStats(batch);
-            AddUnExploredTips();
-
-            float fertEnvMultiplier = Player.PlayerEnvModifier(P.Category);
-            int numHabitableTile    = P.TotalHabitableTiles;
-            float popPerTile        = P.BasePopPerTile * fertEnvMultiplier;
-            float biospherePop      = P.PotentialMaxPopBillionsFor(Player, true);
-
-            DrawPlanetStats(TilesRect, $"{numHabitableTile}", "NewUI/icon_tiles", Color.White, Color.White);
-            DrawPlanetStats(PopPerTileRect, $"{popPerTile.String(0)}m", "NewUI/icon_poppertile", Color.White, Color.White);
-            DrawPlanetStats(BiospheredPopRect, biospherePop.String(2), "NewUI/icon_biospheres", Color.White, Color.White);
-
-            float terraformedPop = P.PotentialMaxPopBillionsWithTerraformFor(Player);
-            DrawPlanetStats(TerraformedPopRect, terraformedPop.String(1),
-                "NewUI/icon_terraformer", Color.White, Color.White);
-
-            DrawColonization(batch, mousePos);
-            DrawSendTroops(batch, mousePos);
-            Inspect.Draw(batch);
-            Invade.Draw(batch);
+            // the habitable page routes to the colony grammar in Draw, never here
             return false;
         }
 
@@ -415,7 +419,12 @@ namespace Ship_Game
                 }
             }
             else
-                text = incomingTroops > 0 ? $"Enroute: {incomingTroops}" : "Send Troops";
+            {
+                // the colonisable page's pair: Send Troops in the theme's brown,
+                // Colonize (drawn by DrawColonization) in its blue
+                text  = incomingTroops > 0 ? $"Enroute: {incomingTroops}" : "Send Troops";
+                plate = UIButton.PlateNeutral;
+            }
 
             UIButton.DrawPlate(batch, SendTroops, plate);
             batch.DrawString(Font12, text, textPos, SendTroops.HitTest(mousePos) ? buttonBaseColor
@@ -424,7 +433,7 @@ namespace Ship_Game
 
         void DrawCancelInvasion(SpriteBatch batch, Vector2 mousePos)
         {
-            Vector2 textPos = new Vector2(RightRect.X - 12, CancelInvasionRect.Y + 12 - Font12.LineSpacing / 2 - 2);
+            Vector2 textPos = new Vector2(CancelInvasionRect.X + 5, CancelInvasionRect.Y + 12 - Font12.LineSpacing / 2 - 2);
             UIButton.DrawPlate(batch, CancelInvasionRect, UIButton.PlateActive);
             batch.DrawString(Font12, "Cancel Invasion", textPos, CancelInvasionRect.HitTest(mousePos) ? ButtonTextColor
                                                                                                       : ButtonHoverColor);
@@ -448,7 +457,7 @@ namespace Ship_Game
             if (P.Owner != null)
                 return;
 
-            Vector2 textPos = new Vector2(RightRect.X + 18, MarkedRect.Y + 12 - Font12.LineSpacing / 2 - 2);
+            Vector2 textPos = new Vector2(MarkedRect.X + 35, MarkedRect.Y + 12 - Font12.LineSpacing / 2 - 2);
             UIButton.DrawPlate(batch, MarkedRect, UIButton.PlateActive);
 
             LocalizedText tip = GameText.MarkThisPlanetForColonization;
