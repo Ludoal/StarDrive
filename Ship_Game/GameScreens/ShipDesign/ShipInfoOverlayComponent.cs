@@ -195,27 +195,43 @@ namespace Ship_Game.GameScreens.ShipDesign
 
             ////////////////////////////////////
 
-            // verbose stats
+            // verbose stats - the compact panel's block order (maintainer bench 322):
+            // combat, defence, mobility, payload, with air between the categories. The
+            // air is paid only when a later line draws, so an empty block folds with it.
             p = new(start.X, start.Y + 60);
+            bool lineDrawn = false, airPending = false;
+            void Air() => airPending = true;
+            void PayAir()
+            {
+                if (airPending && lineDrawn)
+                    p.Y += Font.LineSpacing * 0.5f;
+                airPending = false;
+                lineDrawn = true;
+            }
 
             if (Ds.CompletionPercent != 100)
             {
+                PayAir();
                 DrawText(Font, "WIP:", $"{Ds.CompletionPercent}%", Color.Yellow);
             }
 
             DrawValue("Weapons:", s.Weapons.Count, Color.LightBlue);
+            DrawValue("Hangars:", s.Carrier.AllFighterHangars.Length, Color.IndianRed);
+            DrawValue("BombBays:", s.BombBays.Count, Color.IndianRed);
             if (s.WeaponsMaxRange > 0)
             {
+                PayAir();
                 DrawText(Font, "W.Range:", $"{Str(s.WeaponsAvgRange)}..{Str(s.WeaponsMaxRange)}", Color.LightBlue);
             }
+            Air();
+            DrawValue("Repair:", s.RepairRate, Color.Goldenrod);
+            DrawValue("EMP Def:", s.EmpTolerance, Color.Goldenrod);
+            Air();
             DrawValue("Warp:", warpSpeed, Color.LightGreen);
             DrawValue("Speed:", subLightSpeed, Color.LightGreen);
             DrawValue("TurnRate:", turnRateDeg, Color.LightGreen);
-            DrawValue("Repair:", s.RepairRate, Color.Goldenrod);
-            DrawValue("EMP Def:", s.EmpTolerance, Color.Goldenrod);
-            DrawValue("Hangars:", s.Carrier.AllFighterHangars.Length, Color.IndianRed);
+            Air();
             DrawValue("Troops:", s.TroopCapacity, Color.IndianRed);
-            DrawValue("BombBays:", s.BombBays.Count, Color.IndianRed);
             DrawValue("Cargo:", s.CargoSpaceMax, Color.Khaki);
 
             void CoreValue(float ident, string icon, string title, string value, Color color)
@@ -238,6 +254,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             {
                 if (value <= 0f)
                     return;
+                PayAir(); // a pending block break is paid by the first line that draws
                 var ident = new Vector2(p.X + (TextWidth*0.36f).RoundTo10(), p.Y);
                 batch.DrawString(Font, title, p, color);
                 batch.DrawString(Font, Str(value), ident, color);
