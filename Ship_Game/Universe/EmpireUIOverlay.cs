@@ -186,6 +186,17 @@ namespace Ship_Game
         // an ink, bright enough to read over the map - a plate-fill red would sink into it
         static readonly Color PausedRed  = new Color(255, 92, 92);
 
+        int VeilBottom => BarTop + BarH + 10;
+
+        // Ludoal fork (bench 314): the bar as a dimmed backdrop - a colony opened FROM a
+        // list tab keeps it behind the panel, telling it apart from a map-opened colony.
+        public void DrawDimmed(SpriteBatch batch)
+        {
+            Draw(batch);
+            batch.FillRectangle(new Rectangle(0, 0, Universe.ScreenWidth, VeilBottom),
+                                new Color(6, 8, 12).Alpha(0.55f));
+        }
+
         public void Draw(SpriteBatch batch)
         {
             if (Universe.IsExiting || Universe.IsDisposed)
@@ -196,8 +207,7 @@ namespace Ship_Game
             // world-overlay draw pass, and the maintainer judged the flat band acceptable until
             // then. Top band only: it covers 0..veilBottom, under everything the screens draw,
             // so unlike the late minimap ground it cannot land on their content.
-            int veilBottom = BarTop + BarH + 10;
-            batch.FillRectangle(new Rectangle(0, 0, Universe.ScreenWidth, veilBottom),
+            batch.FillRectangle(new Rectangle(0, 0, Universe.ScreenWidth, VeilBottom),
                                 new Color(6, 8, 12).Alpha(0.82f));
 
             // Which group is open is read from the screen stack rather than passed in: fifteen
