@@ -28,6 +28,9 @@ namespace Ship_Game
 		// planet and glides the camera onto it - the arrows' spatial walk, from the list
 		struct RollRow { public Rectangle Rect; public Planet P; }
 		readonly Array<RollRow> RollRows = new Array<RollRow>();
+		// a folded name or class carries its full text in a tooltip (bench 316)
+		struct RollTip { public Rectangle Rect; public string Text; }
+		readonly Array<RollTip> RollTips = new Array<RollTip>();
 		readonly Graphics.Font Font12 = Fonts.Arial12Bold;
 		readonly Color ButtonTextColor  = new Color(174, 202, 255);
 		readonly Color ButtonHoverColor = new Color(88, 108, 146);
@@ -47,6 +50,7 @@ namespace Ship_Game
 		{
 			Sys = s;
 			RollRows.Clear();
+			RollTips.Clear();
 		}
 
 		bool ShowDeployButton => Sys != null && Sys.IsExploredBy(Player) && Sys.IsResearchable;
@@ -109,13 +113,14 @@ namespace Ship_Game
 			// the system's planet roll rides the right column, where the planet pages
 			// keep their sliders: name then R / F / P lanes; a zero reads as a gray dash
 			// (a gas giant has no ground to rate)
-			int listX = iconBox.Right + 30;
-			// bench 315: the roll widens 30px (10 left with the block, 20 on its right edge)
-			// and F and R swap - food first, as on the colony sliders
-			int laneP = frame.Right - 50, laneR = laneP - 42, laneF = laneR - 42;
+			// benches 315-316: the roll widens again (10 left, 10 right), the FRP lanes
+			// tighten to a 40px pitch, F before R - food first, the colony sliders' order
+			int listX = iconBox.Right + 20;
+			int laneP = frame.Right - 40, laneR = laneP - 40, laneF = laneR - 40;
 			int blockRight = laneP + 18;
-			float y = Housing.Y + PlanetInfoUIElement.TopLineIconY - 3; // the icon header rides the name line
+			float y = Housing.Y + PlanetInfoUIElement.TopLineIconY + 2;
 			RollRows.Clear();
+			RollTips.Clear();
 			int rows = 0;
 			foreach (Planet p in planets)
 				if (p.IsExploredBy(Player))
@@ -131,19 +136,30 @@ namespace Ship_Game
 				LaneIcon("UI/icon_pop_22", laneP, 22);
 				y += 24; // the icon header is taller than a text row
 
+				// the classes align in their own column, sized on the longest planet name
+				float maxNameW = 0;
+				foreach (Planet p in planets)
+					if (p.IsExploredBy(Player))
+						maxNameW = Math.Max(maxNameW, Font12.TextWidth(p.Name));
+				int classCol = listX + (int)maxNameW + 8;
+
 				foreach (Planet p in planets)
 				{
 					if (!p.IsExploredBy(Player))
 						continue;
 					Color nameColor = p.Owner?.EmpireColor ?? Colors.Cream;
-					string pn = UITable.FitText(Font12, p.Name, laneF - 24 - listX);
+					string pn = UITable.FitText(Font12, p.Name, classCol - 6 - listX);
 					batch.DrawString(Font12, pn, new Vector2(listX, y), nameColor);
-					// the class squeezes in after the name in small type, when it fits
-					int clsRoom = laneF - 24 - listX - (int)Font12.TextWidth(pn) - 6;
-					if (clsRoom > 20)
-						batch.DrawString(Fonts.Arial10,
-						                 UITable.FitText(Fonts.Arial10, p.LocalizedCategory, clsRoom),
-						                 new Vector2(listX + Font12.TextWidth(pn) + 6, y + 2), Color.Gray);
+					if (pn != p.Name)
+						RollTips.Add(new RollTip { Rect = new Rectangle(listX, (int)y, classCol - 6 - listX, RowH), Text = p.Name });
+					int clsRoom = laneF - 24 - classCol;
+					if (clsRoom > 12)
+					{
+						string cls = UITable.FitText(Fonts.Arial10, p.LocalizedCategory, clsRoom);
+						batch.DrawString(Fonts.Arial10, cls, new Vector2(classCol, y + 2), Color.Gray);
+						if (cls != p.LocalizedCategory)
+							RollTips.Add(new RollTip { Rect = new Rectangle(classCol, (int)y, clsRoom, RowH), Text = p.LocalizedCategory });
+					}
 					void Lane(float v, int lane)
 					{
 						bool zero = v < 0.05f;
@@ -195,6 +211,13 @@ namespace Ship_Game
 
 		public override bool HandleInput(InputState input)
 		{
+			// a folded name or class tells its full story on hover
+			foreach (RollTip t in RollTips)
+			{
+				if (t.Rect.HitTest(input.CursorPosition))
+					ToolTip.CreateTooltip(t.Text);
+			}
+
 			// a click on a roll row selects that planet - the arrows' spatial walk
 			if (input.LeftMouseClick)
 			{
