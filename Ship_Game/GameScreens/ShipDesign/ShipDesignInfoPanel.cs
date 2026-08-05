@@ -47,6 +47,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             public bool NonZeroOnly;          // hidden while the value is zero
             public string Icon;               // Ludoal fork: optional inline icon, left of the title
             public Color IconColor;           // its own colour, the load popup's
+            public bool Gap;                  // headingless block break (compact) - air, no text
         }
 
         readonly Array<Row> Rows = new Array<Row>();
@@ -312,12 +313,19 @@ namespace Ship_Game.GameScreens.ShipDesign
         // cartouche wears it at the browser list's width; the Hover one keeps its plan.
         public bool Compact;
 
-        // measured over the compact titles exactly as LongestTitle is over the full set -
-        // the short labels earn a much tighter title room
-        static readonly string[] CompactTitles = { "DPS", "ETM", "OTM", "HP", "SP", "Weapons",
-                                                   "W.Range", "Warp", "Speed", "TurnRate",
-                                                   "Repair", "EMP Def", "Hangars", "Troops",
-                                                   "BombBays", "Cargo" };
+        // measured over the compact titles exactly as LongestTitle is over the full set.
+        // Localized lazily (LowerIsBetterCache's pattern): the set now speaks the full
+        // rows' own labels - the ETM/OTM dialect stays with the micro overlay only.
+        static string[] CompactTitlesCache;
+        static string[] CompactTitles => CompactTitlesCache ??= new[]
+        {
+            Localizer.Token(GT.ShipOffense), "DPS", "Weapons", "Max Wpn Range",
+            Localizer.Token(GT.WpnFirePowerTime), Localizer.Token(GT.AmmoTime),
+            Localizer.Token(GT.TotalHitpoints), Localizer.Token(GT.ShieldPower),
+            Localizer.Token(GT.RepairRate), Localizer.Token(GT.EmpProtection),
+            Localizer.Token(GT.FtlSpeed), Localizer.Token(GT.FtlTime),
+            Localizer.Token(GT.SublightSpeed), Localizer.Token(GT.TurnRate),
+        };
         static float LongestCompactCache;
         static float LongestCompactTitle
         {
@@ -448,36 +456,60 @@ namespace Ship_Game.GameScreens.ShipDesign
             base.Update(fixedDeltaTime);
         }
 
-        // the compact set: the flying overlay's inventory, kept in ITS order. The INF pairs
-        // mirror the full rows' bench-settled gates; W.Range is live text, so it carries no
-        // delta - every other line feeds the comparator exactly like the full set.
+        // ── the compact set (maintainer design, bench 321): the FULL rows' own definitions,
+        // filtered - same titles, same lambdas, the densities only select. One headingless
+        // column in the operational order: what the ship inflicts, what it takes, how it
+        // moves - three blocks split by air. The ETM/OTM dialect retires to the micro
+        // overlay, where a two-letter label is the right coin.
         void BuildCompactRows()
         {
+            Color good = Color.White;
             Color energy = Color.LightSkyBlue;
+            Color protect = Color.Goldenrod;
+            Color engines = Color.DarkSeaGreen;
+            Color ordnance = Color.IndianRed;
+
+            // COMBAT - the two verdicts first, then the guns, then the firing reserves.
+            // One merged fire-power line: a beam boat reads its burst duration (the old
+            // compact's own rule), under the full row's label.
+            Stat(GT.ShipOffense, () => Ds.Strength, GT.TT_ShipOffense, nonZero: true);
             Stat("DPS", () => S.TotalDps, GT.TT_ShipOffense, nonZero: true, icon: "UI/icon_offense", iconColor: Color.OrangeRed);
-            Stat("ETM", () => Ds.HasBeams() ? Ds.BurstEnergyDuration : Ds.EnergyDuration, GT.TT_WpnFirePowerTime,
+            Stat("Weapons", () => S.Weapons.Count, GT.TT_ShipOffense, nonZero: true);
+            Stat("Max Wpn Range", () => S.WeaponsMaxRange, GT.TT_ShipOffense, nonZero: true);
+            Stat(GT.WpnFirePowerTime, () => Ds.HasBeams() ? Ds.BurstEnergyDuration : Ds.EnergyDuration, GT.TT_WpnFirePowerTime, energy,
                  vis: () => Ds.HasEnergyWeapons && (Ds.HasBeams() ? Ds.HasBeamDurationNegative() : Ds.HasEnergyWepsPositive()),
                  icon: "UI/lightningBolt", iconColor: Color.LightGoldenrodYellow);
-            Word("ETM", "INF", GT.TT_WpnFirePowerTime, energy, Color.White,
+            Word(GT.WpnFirePowerTime, "INF", GT.TT_WpnFirePowerTime, energy, good,
                  vis: () => Ds.HasEnergyWeapons && (Ds.HasBeams() ? Ds.HasBeamDurationPositive() : Ds.HasEnergyWepsNegative()),
                  icon: "UI/lightningBolt", iconColor: Color.LightGoldenrodYellow);
-            Stat("OTM", () => Ds.AmmoTime, GT.TT_AmmoTime, vis: Ds.HasOrdFinite, icon: "Modules/Ordnance", iconColor: Color.Khaki);
-            Word("OTM", "INF", GT.TT_AmmoTime, energy, Color.White, vis: Ds.HasOrdInfinite, icon: "Modules/Ordnance", iconColor: Color.Khaki);
-            Stat("HP", () => S.HealthMax, GT.TT_HitPoints, icon: "UI/icon_shield", iconColor: Color.CadetBlue);
-            Stat("SP", () => S.ShieldMax, GT.TT_ShieldPower, nonZero: true, icon: "Modules/Shield_1KW", iconColor: Color.AliceBlue);
-            Stat("Weapons", () => S.Weapons.Count, GT.TT_ShipOffense, nonZero: true);
-            TextRow("W.Range", () => $"{S.WeaponsAvgRange.GetNumberString()}..{S.WeaponsMaxRange.GetNumberString()}",
-                    GT.TT_ShipOffense, vis: () => S.WeaponsMaxRange > 0f);
-            Stat("Warp", () => S.MaxFTLSpeed, GT.TT_FtlSpeed, nonZero: true);
-            Stat("Speed", () => S.MaxSTLSpeed, GT.TT_SublightSpeed, nonZero: true);
-            Stat("TurnRate", () => S.RotationRadsPerSecond.ToDegrees(), GT.TT_TurnRate, nonZero: true);
-            Stat("Repair", () => S.RepairRate, GT.TT_RepairRate, nonZero: true);
-            Stat("EMP Def", () => S.EmpTolerance, GT.TT_EmpProtection, nonZero: true);
-            Stat("Hangars", () => S.Carrier.AllFighterHangars.Length, GT.TT_ShipOffense, nonZero: true);
-            Stat("Troops", () => S.TroopCapacity, GT.TT_TroopCapacity, nonZero: true);
-            Stat("BombBays", () => S.BombBays.Count, GT.TT_ShipOffense, nonZero: true);
-            Stat("Cargo", () => S.CargoSpaceMax, GT.TT_CargoSpace, nonZero: true);
+            Stat(GT.AmmoTime, () => Ds.AmmoTime, GT.TT_AmmoTime, ordnance, tint: Above(30f), vis: Ds.HasOrdFinite, icon: "Modules/Ordnance", iconColor: Color.Khaki);
+            Word(GT.AmmoTime, "INF", GT.TT_AmmoTime, ordnance, good, vis: Ds.HasOrdInfinite, icon: "Modules/Ordnance", iconColor: Color.Khaki);
+
+            Gap();
+
+            // DEFENCE - the full set's rows, verbatim
+            Stat(GT.TotalHitpoints, () => S.Health, GT.TT_HitPoints, protect, tint: Positive, icon: "UI/icon_shield", iconColor: Color.CadetBlue);
+            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, protect, tint: Positive, vis: Ds.HasRegularShields, icon: "Modules/Shield_1KW", iconColor: Color.AliceBlue);
+            Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, Color.Gold, tint: Positive, vis: Ds.HasAmplifiedMains, icon: "Modules/Shield_1KW", iconColor: Color.AliceBlue);
+            Stat(GT.RepairRate, () => S.RepairRate, GT.TT_RepairRate, protect, tint: Positive, nonZero: true);
+            Stat(GT.EmpProtection, () => S.EmpTolerance, GT.TT_EmpProtection, protect, tint: Positive);
+
+            Gap();
+
+            // MOBILITY - a platform or station shows none of it, and the gap folds with it
+            Stat(GT.FtlSpeed, () => S.MaxFTLSpeed, GT.TT_FtlSpeed, engines, tint: Above(20_000f), vis: Ds.IsWarpCapable);
+            if (!S.IsPlatformOrStation)
+            {
+                Stat(GT.FtlTime, () => Ds.WarpTime, GT.TT_FtlTime, engines, tint: Positive, vis: Ds.HasFiniteWarp);
+                Word(GT.FtlTime, "INF", GT.TT_FtlTime, engines, good, vis: Ds.HasInfiniteWarp);
+            }
+            Stat(GT.SublightSpeed, () => S.MaxSTLSpeed, GT.TT_SublightSpeed, engines, tint: Above(50f),
+                 vis: () => !S.IsPlatformOrStation);
+            Stat(GT.TurnRate, () => S.RotationRadsPerSecond.ToDegrees(), GT.TT_TurnRate, engines, tint: Above(15f),
+                 vis: () => !S.IsPlatformOrStation);
         }
+
+        void Gap() => Rows.Add(new Row { Gap = true });
 
         void TextRow(in LocalizedText title, Func<string> text, in LocalizedText tip, Func<bool> vis = null)
             => Rows.Add(new Row { Title = title, Tip = tip, TextFn = text, Color = LabelGrey, Visible = vis });
@@ -864,6 +896,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             var cursor = new Vector2(col0X, rowsY);
             int block = -1;
             bool firstHeadingOfColumn = true;
+            bool pendingGap = false, anyRowDrawn = false; // headingless block breaks (compact)
             for (int i = 0; i < Rows.Count; ++i)
             {
                 Row r = Rows[i];
@@ -898,9 +931,22 @@ namespace Ship_Game.GameScreens.ShipDesign
                     continue;
                 }
 
+                // a headingless block break: the air is paid only when a later row draws,
+                // so a fully hidden block (MOBILITY on a station) folds its gap with it
+                if (r.Gap)
+                {
+                    pendingGap = true;
+                    continue;
+                }
+
                 // block < 0: the compact set has no headings at all
                 if ((block >= 0 && blockVisible[block] == 0) || !IsDrawn(i))
                     continue;
+
+                if (pendingGap && anyRowDrawn)
+                    cursor.Y += headFont.LineSpacing * 0.5f; // same air as between headed blocks
+                pendingGap = false;
+                anyRowDrawn = true;
 
                 // this design hides the row, the pinned one has it: dimmed dash + its delta
                 if (!IsVisible(r))
