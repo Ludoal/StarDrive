@@ -855,6 +855,10 @@ namespace Ship_Game.GameScreens.ShipDesign
             // 10px left of the name on every panel — the Hover frame hid it because its plan
             // pushes its columns right anyway, which is why only Active looked wrong (maintainer feedback). Same expression as namePos, so the two cannot part company.
             float col0X = ContentLeft + planW + Col0Shift;
+            // maintainer bench 322: the compact column rides right - 20px when a delta
+            // lane is in use, 30px when single (hover included)
+            if (Compact)
+                col0X += CompareAgainst != null ? 20f : 30f;
             float col1X = col0X + colStep + Col1Shift - Col0Shift;
             // the compact set is ONE headingless column with its own, tighter title room
             float spacing = Compact ? CompactTitleColumn : TitleColumn;
