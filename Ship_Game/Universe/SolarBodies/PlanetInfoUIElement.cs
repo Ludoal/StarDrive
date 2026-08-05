@@ -19,8 +19,10 @@ namespace Ship_Game
     {
         // Ludoal fork: the sculpted texture spent this top band on antenna machinery; with it
         // gone the frame starts this far under the housing. Anything aligned on the visible
-        // frame top derives from this, not from the housing.
-        const int FrameShave = 26;
+        // frame top derives from this, not from the housing. 26 covered the machinery;
+        // +10 more trims the dead margin the old frame left (maintainer bench 311).
+        const int FrameShave = 36;
+        const int RightTrim  = 10; // same trim on the plate's right edge
         Planet P;
         readonly UniverseScreen Screen;
         Empire Player => Screen.Player;
@@ -200,7 +202,7 @@ namespace Ship_Game
             else if (P.Owner == null && !P.Habitable)
                 plateH = 172;
             PlateTop = Housing.Bottom - plateH;
-            var frame = new Rectangle(Housing.X, PlateTop, Housing.Width, plateH);
+            var frame = new Rectangle(Housing.X, PlateTop, Housing.Width - RightTrim, plateH);
             Rectangle plate = frame;
             plate.Inflate(-2, -2);
             batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
@@ -229,39 +231,43 @@ namespace Ship_Game
             batch.DrawString(nameFont, P.Name, namePos, P.Owner.EmpireColor);
 
             string worldType = P.WorldType.Text;
-            batch.DrawString(Font12, worldType,
-                new Vector2(Housing.Right - 16 - Font12.TextWidth(worldType), PlateTop + 13), tColor);
-
             int lineX = PlanetIconRect.Right + 30; // the sliders' left edge (labor rect +20, housing inset +10)
+            int frameRight = Housing.Right - RightTrim;
             if (P.Owner == Player)
             {
                 PrevColony.Draw(batch, elapsed);
                 NextColony.Draw(batch, elapsed);
 
-                // the pop line as it was, the faction flag riding it
-                PopRect = new Rectangle(lineX, Housing.Y + 58, 22, 22);
-                batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopRect, Color.White);
-                string pop = P.PopulationStringForPlayer;
-                var popPos = new Vector2(PopRect.Right + 4, PopRect.Y + 11 - Font12.LineSpacing / 2);
-                batch.DrawString(Font12, pop, popPos, tColor);
-                var flagRect = new Rectangle((int)(popPos.X + Font12.TextWidth(pop)) + 8, PopRect.Y - 1, 24, 24);
+                // pop right-aligned as on enemy pages, flag at its right; the governance
+                // on the same line, centred over the sprite
+                var flagRect = new Rectangle(frameRight - 50, Housing.Y + 71, 26, 26);
                 batch.Draw(ResourceManager.Flag(P.Owner), flagRect, P.Owner.EmpireColor);
+                string pop = P.PopulationStringForPlayer;
+                var popPos = new Vector2(flagRect.X - 5 - Font12.TextWidth(pop), flagRect.Y + 13 - Font12.LineSpacing / 2);
+                batch.DrawString(Font12, pop, popPos, tColor);
+                PopRect = new Rectangle((int)popPos.X - 23, (int)popPos.Y - 3, 22, 22);
+                batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopRect, Color.White);
+                batch.DrawString(Font12, worldType,
+                    new Vector2(PlanetIconRect.CenterX() - Font12.TextWidth(worldType) / 2f, popPos.Y), tColor);
 
-                // money and research, same left edge
-                MoneyRect = new Rectangle(lineX, Housing.Y + 82, 22, 22);
+                // money and research, left-aligned on the sliders, just above them
+                MoneyRect = new Rectangle(lineX, Housing.Y + 97, 22, 22);
                 batch.Draw(ResourceManager.Texture("UI/icon_money_22"), MoneyRect, Color.White);
                 string sNetIncome = P.Money.NetRevenue.String(2);
                 batch.DrawString(Font12, sNetIncome,
                                  new Vector2(MoneyRect.Right + 4, MoneyRect.Y + 11 - Font12.LineSpacing / 2),
                                  P.Money.NetRevenue > 0.0 ? Color.LightGreen : Color.Salmon);
-                var researchRect = new Rectangle(lineX + 90, Housing.Y + 82, 22, 22);
+                var researchRect = new Rectangle(lineX + 90, Housing.Y + 97, 22, 22);
                 batch.Draw(ResourceManager.Texture("NewUI/icon_science"), researchRect, Color.White);
                 batch.DrawString(Font12, P.Res.NetIncome.String(2),
                                  new Vector2(researchRect.Right + 4, researchRect.Y + 11 - Font12.LineSpacing / 2), tColor);
             }
             else
             {
-                // enemy colony keeps the 308 grammar until its own pass: flag and pop top right
+                // enemy colony keeps the 308 grammar until its own pass: flag and pop top
+                // right, the governance in the top-right corner
+                batch.DrawString(Font12, worldType,
+                    new Vector2(frameRight - 16 - Font12.TextWidth(worldType), PlateTop + 13), tColor);
                 var flagRect = new Rectangle(Housing.Right - 60, Housing.Y + 63, 26, 26);
                 batch.Draw(ResourceManager.Flag(P.Owner), flagRect, P.Owner.EmpireColor);
                 string pop = P.PopulationStringForPlayer;
