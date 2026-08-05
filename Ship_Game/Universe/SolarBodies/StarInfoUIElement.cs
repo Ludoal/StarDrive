@@ -33,7 +33,6 @@ namespace Ship_Game
 		readonly Array<RollTip> RollTips = new Array<RollTip>();
 		readonly Graphics.Font Font12 = Fonts.Arial12Bold;
 		readonly Color ButtonTextColor  = new Color(174, 202, 255);
-		readonly Color ButtonHoverColor = new Color(88, 108, 146);
 		const int RowH = 16;
 
 		public StarInfoUIElement(in Rectangle r, ScreenManager sm, UniverseScreen screen)
@@ -216,9 +215,9 @@ namespace Ship_Game
 			            ? Localizer.Token(GameText.AbortDeployent)
 			            : Localizer.Token(GameText.DeployResearchStation);
 			var textPos = new Vector2(DeployRect.X + 13, DeployRect.Y + 13 - Font12.LineSpacing / 2 - 2);
-			bool hover = DeployRect.HitTest(Screen.Input.CursorPosition);
-			batch.DrawString(Font12, text, textPos,
-			                 canBuild ? (hover ? ButtonTextColor : ButtonHoverColor) : Color.Gray);
+			// the text stays lit (maintainer bench 318): dimmed-until-hover read as
+			// unreadable; gray marks the genuinely unavailable action only
+			batch.DrawString(Font12, text, textPos, canBuild ? ButtonTextColor : Color.Gray);
 		}
 
 		public override bool HandleInput(InputState input)

@@ -67,7 +67,6 @@ namespace Ship_Game
         readonly Graphics.Font Font8  = Fonts.Arial8Bold;
         readonly Graphics.Font Font12 = Fonts.Arial12Bold;
         readonly Color ButtonTextColor   = new Color(174, 202, 255);
-        readonly Color ButtonHoverColor  = new Color(88, 108, 146);
                                                                                   
         public PlanetInfoUIElement(in Rectangle r, ScreenManager sm, UniverseScreen screen)
         {
@@ -475,8 +474,8 @@ namespace Ship_Game
             }
 
             ToolTipItems.Add(new TippedItem(ExoticRect, tip));
-            batch.DrawString(Font12, tipText, textPos, Player.CanBuildResearchStations ? ExoticRect.HitTest(mousePos) ? ButtonTextColor : ButtonHoverColor
-                                                                                       : Color.Gray);
+            // lit text always - gray only for the unavailable action (maintainer bench 318)
+            batch.DrawString(Font12, tipText, textPos, Player.CanBuildResearchStations ? ButtonTextColor : Color.Gray);
         }
 
         void DrawMiningOps(SpriteBatch batch, Vector2 mousePos)
@@ -517,8 +516,8 @@ namespace Ship_Game
 
 
             ToolTipItems.Add(new TippedItem(ExoticRect, tip));
-            batch.DrawString(Font12, tipText, textPos, Player.CanBuildMiningStations ? ExoticRect.HitTest(mousePos) ? ButtonTextColor : ButtonHoverColor
-                                                                                     : Color.Gray);
+            // lit text always - gray only for the unavailable action (maintainer bench 318)
+            batch.DrawString(Font12, tipText, textPos, Player.CanBuildMiningStations ? ButtonTextColor : Color.Gray);
         }
 
         void DrawFertProdStats(SpriteBatch batch)
