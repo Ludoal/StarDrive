@@ -348,7 +348,8 @@ namespace Ship_Game.GameScreens.ShipDesign
         // what a compact frame needs when it is free to hug (the hover frame) - the Active
         // one is pinned to the browser list's width by the screen instead
         public static float CompactFrameWidthFor(bool withPlan)
-            => Inset + CompactTitleColumn + DeltaLaneWidth + SidePad + (withPlan ? PlanSide + PlanGap : 0f);
+            => Inset + CompactTitleColumn + DeltaLaneWidth + SidePad
+             + (withPlan ? PlanSide + PlanGap - 10f : 0f); // hover window trimmed 10 (bench 325)
 
         // re-derive the rows after a Compact flip - the shadow follows, or the delta lookup
         // would match titles across two different row sets and find nothing
@@ -788,9 +789,9 @@ namespace Ship_Game.GameScreens.ShipDesign
                 // squash the screen well below the supported floor)
                 float side = Math.Min(PlanSide, Height - TitleBandHeight - 10f);
                 planW = PlanSide + PlanGap; // the columns keep their place even if the square shrinks
-                // maintainer bench 323: the plan rides 40px right - the frame's left margin
-                // was dead surface
-                const float PlanShift = 40f;
+                // maintainer benches 323-325: the plan rides 30px right - the frame's left
+                // margin was dead surface
+                const float PlanShift = 30f;
                 S.RenderOverlay(batch, new Rectangle((int)(X + PlanShift), (int)rowsY, (int)side, (int)side),
                                 showModules: true, drawHullBackground: true,
                                 moduleHealthColor: false, markLockedModules: true);
