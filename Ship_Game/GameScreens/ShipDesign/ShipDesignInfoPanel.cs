@@ -319,8 +319,10 @@ namespace Ship_Game.GameScreens.ShipDesign
         static string[] CompactTitlesCache;
         static string[] CompactTitles => CompactTitlesCache ??= new[]
         {
-            Localizer.Token(GT.ShipOffense), "DPS", "Weapons", "Max Wpn Range",
+            Localizer.Token(GT.ShipOffense), "DPS", "Weapons", "Hangars", "BombBays",
+            "Max Wpn Range",
             Localizer.Token(GT.WpnFirePowerTime), Localizer.Token(GT.AmmoTime),
+            Localizer.Token(GT.TroopCapacity), Localizer.Token(GT.CargoSpace),
             Localizer.Token(GT.TotalHitpoints), Localizer.Token(GT.ShieldPower),
             Localizer.Token(GT.RepairRate), Localizer.Token(GT.EmpProtection),
             Localizer.Token(GT.FtlSpeed), Localizer.Token(GT.FtlTime),
@@ -475,6 +477,9 @@ namespace Ship_Game.GameScreens.ShipDesign
             Stat(GT.ShipOffense, () => Ds.Strength, GT.TT_ShipOffense, nonZero: true);
             Stat("DPS", () => S.TotalDps, GT.TT_ShipOffense, nonZero: true, icon: "UI/icon_offense", iconColor: Color.OrangeRed);
             Stat("Weapons", () => S.Weapons.Count, GT.TT_ShipOffense, nonZero: true);
+            // the carrier and bomber armament, right under the guns (maintainer bench 322)
+            Stat("Hangars", () => S.Carrier.AllFighterHangars.Length, GT.TT_ShipOffense, nonZero: true);
+            Stat("BombBays", () => S.BombBays.Count, GT.TT_ShipOffense, nonZero: true);
             Stat("Max Wpn Range", () => S.WeaponsMaxRange, GT.TT_ShipOffense, nonZero: true);
             Stat(GT.WpnFirePowerTime, () => Ds.HasBeams() ? Ds.BurstEnergyDuration : Ds.EnergyDuration, GT.TT_WpnFirePowerTime, energy,
                  vis: () => Ds.HasEnergyWeapons && (Ds.HasBeams() ? Ds.HasBeamDurationNegative() : Ds.HasEnergyWepsPositive()),
@@ -507,6 +512,13 @@ namespace Ship_Game.GameScreens.ShipDesign
                  vis: () => !S.IsPlatformOrStation);
             Stat(GT.TurnRate, () => S.RotationRadsPerSecond.ToDegrees(), GT.TT_TurnRate, engines, tint: Above(15f),
                  vis: () => !S.IsPlatformOrStation);
+
+            Gap();
+
+            // PAYLOAD, role-adaptive (maintainer bench 322): a warship carries neither,
+            // so the whole block - air included - folds away on its own
+            Stat(GT.TroopCapacity, () => S.TroopCapacity, GT.TT_TroopCapacity, ordnance, nonZero: true);
+            Stat(GT.CargoSpace, () => S.CargoSpaceMax, GT.TT_CargoSpace, nonZero: true);
         }
 
         void Gap() => Rows.Add(new Row { Gap = true });
