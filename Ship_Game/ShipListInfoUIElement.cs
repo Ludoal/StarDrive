@@ -20,6 +20,7 @@ namespace Ship_Game
         // - one plate for every cartouche. The orders strip above docks on the visible
         // frame top, so it re-seats along with it.
         const int FrameShave = PlanetInfoUIElement.FrameShave;
+        const int BarsLeft = 45; // the fleet bars' left edge (absolute) - Total Strength shares it
         public readonly UniverseScreen Screen;
         Empire Player => Screen.Player;
 
@@ -242,7 +243,9 @@ namespace Ship_Game
             DrawProgressBar(batch, fleetHealthPercent, 100, "green", "StatusIcons/icon_structure", ref barYPos, true);
             DrawProgressBar(batch, fleetOrdnance, fleetOrdnanceMax, "brown", "Modules/Ordnance", ref barYPos);
             DrawProgressBar(batch, fleetShields, fleetShieldsMax, "blue", "Modules/Shield_1KW", ref barYPos);
-            batch.DrawString(Fonts.Arial12, $"Total Strength: {fleetStr.GetNumberString()}", Housing.X + 45, barYPos, Color.White);
+            // left-aligned on the bars above - ONE seat for both (they sit at absolute
+            // BarsLeft, not off the housing; the old Housing.X + 45 was 10px adrift)
+            batch.DrawString(Fonts.Arial12, $"Total Strength: {fleetStr.GetNumberString()}", BarsLeft, barYPos, Color.White);
         }
 
         public void DrawProgressBar(SpriteBatch batch, float value, float maxValue, string color, string texture, ref int yPos, bool percentage = false)
@@ -250,7 +253,7 @@ namespace Ship_Game
             if (maxValue.LessOrEqual(0))
                 return;
 
-            var barRect = new Rectangle(45, yPos, 130, 18);
+            var barRect = new Rectangle(BarsLeft, yPos, 130, 18);
             var bar = new ProgressBar(barRect)
             {
                 Max            = maxValue,
