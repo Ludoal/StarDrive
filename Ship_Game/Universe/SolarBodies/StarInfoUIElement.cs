@@ -170,9 +170,15 @@ namespace Ship_Game
 					if (clsRoom > 12)
 					{
 						string pCls = UITable.FitText(Fonts.Arial10, p.LocalizedCategory, clsRoom);
-						batch.DrawString(Fonts.Arial10, pCls, new Vector2(classCol, y + 2), Color.Gray);
-						if (pCls != p.LocalizedCategory)
-							RollTips.Add(new RollTip { Rect = new Rectangle(classCol, (int)y, clsRoom, RowH), Text = p.LocalizedCategory });
+						bool folded = pCls != p.LocalizedCategory;
+						// never a first-letter stump (review feedback): three surviving
+						// letters or nothing - a bare gap says "no room" louder than "B..."
+						if (!folded || pCls.Length >= 6)
+						{
+							batch.DrawString(Fonts.Arial10, pCls, new Vector2(classCol, y + 2), Color.Gray);
+							if (folded)
+								RollTips.Add(new RollTip { Rect = new Rectangle(classCol, (int)y, clsRoom, RowH), Text = p.LocalizedCategory });
+						}
 					}
 					Lane(fs, laneF);
 					Lane(LaneStr(p.MineralRichness), laneR);
