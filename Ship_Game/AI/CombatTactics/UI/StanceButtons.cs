@@ -22,6 +22,9 @@ namespace Ship_Game.AI.CombatTactics.UI
         readonly Array<OrdersToggleButton> OrdersButtons = new Array<OrdersToggleButton>();
         public readonly GameScreen Screen;
         Vector2 OrdersBarPos;
+        // LoadContent's top row: 7 buttons at a 25px pitch - the block's full width,
+        // for callers that right-align it
+        public const int RowWidth = 7 * 25;
 
         protected StanceButtons(GameScreen parent, Vector2 topLeft) : base(parent.Rect)
         {

@@ -14,10 +14,10 @@ namespace Ship_Game.Ships
 {
     public sealed class ShipInfoUIElement : UIElement
     {
-        // Ludoal fork: the sculpted texture spent this top band on antenna machinery; with it
-        // gone the frame starts this far under the housing. Anything aligned on the visible
-        // frame top derives from this, not from the housing.
-        const int FrameShave = 26;
+        // Ludoal fork: the ship cartouche wears the planet cartouche's standard frame
+        // (maintainer bench 319) - one plate for every cartouche. The orders strip above
+        // docks on the visible frame top, so it rides along automatically.
+        const int FrameShave = PlanetInfoUIElement.FrameShave;
         public ShipStanceButtons OrdersButtons;
         private readonly Array<TippedItem> ToolTipItems = new Array<TippedItem>();
         public Array<OrdersButton> Orders = new Array<OrdersButton>();
@@ -56,7 +56,6 @@ namespace Ship_Game.Ships
             Universe = universe;
             ScreenManager = sm;
             ElementRect = r;
-            FlagRect = new Rectangle(r.X + 365, r.Y + 71, 18, 18);
             Sel = new Selector(r, Color.Black);
             TransitionOnTime = TimeSpan.FromSeconds(0.25);
             TransitionOffTime = TimeSpan.FromSeconds(0.25);
@@ -72,19 +71,21 @@ namespace Ship_Game.Ships
             };
             ShipNameArea.Color = tColor;
             
-            Power = new Rectangle(Housing.X + 187, Housing.Y + 110, 20, 20);
+            Power = new Rectangle(Housing.X + 187, Housing.Y + 115, 20, 20);
             PBar = new ProgressBar(Power.X + Power.Width + 15, Power.Y, 150, 18) { color = "green" };
             ToolTipItems.Add(new TippedItem(Power, GameText.IndicatesThisShipsCurrentPower));
+            // the faction flag's right edge rides the bars' end (maintainer bench 319)
+            FlagRect = new Rectangle(PBar.pBar.X + PBar.pBar.Width - 18, r.Y + 71, 18, 18);
 
-            Shields = new Rectangle(Housing.X + 187, Housing.Y + 110 + 20 + spacing, 20, 20);
+            Shields = new Rectangle(Housing.X + 187, Housing.Y + 115 + 20 + spacing, 20, 20);
             SBar = new ProgressBar(Shields.X + Shields.Width + 15, Shields.Y, 150, 18) { color = "blue" };
             ToolTipItems.Add(new TippedItem(Shields, GameText.IndicatesTheTotalPowerOf));
 
-            Ordnance = new Rectangle(Housing.X + 187, Housing.Y + 110 + 20 + spacing + 20 + spacing, 20, 20);
+            Ordnance = new Rectangle(Housing.X + 187, Housing.Y + 115 + 20 + spacing + 20 + spacing, 20, 20);
             OBar = new ProgressBar(Ordnance.X + Ordnance.Width + 15, Ordnance.Y, 150, 18);
             ToolTipItems.Add(new TippedItem(Ordnance, GameText.IndicatesThisShipsCurrentStores));
 
-            ConstructionRect = new Rectangle(Housing.X + 187, Housing.Y + 110 + 20 + spacing*3 + 40, 20, 20);
+            ConstructionRect = new Rectangle(Housing.X + 187, Housing.Y + 115 + 20 + spacing*3 + 40, 20, 20);
             ConstructionBar = new ProgressBar(ConstructionRect.X + ConstructionRect.Width + 15, ConstructionRect.Y, 150, 18) { color = "yellow" };
 
             MiningRect = ConstructionRect;
@@ -107,7 +108,8 @@ namespace Ship_Game.Ships
             FollowButton = new ToggleButton(new Vector2(Housing.X + 54, Universe.ScreenHeight - 45),
                                             ToggleButtonStyle.Formation, "UI/FollowIcon"); // 24x24 — field report 45.42: too big
 
-            float startX = OBar.pBar.X - 15;
+            // the stance block right-aligns with the bars above it (maintainer bench 319)
+            float startX = OBar.pBar.X + OBar.pBar.Width - StanceButtons.RowWidth;
             var ordersBarPos = new Vector2(startX, (Ordnance.Y + Ordnance.Height + spacing + 3));
 
             OrdersButtons = new ShipStanceButtons(universe, ordersBarPos);
@@ -138,6 +140,7 @@ namespace Ship_Game.Ships
             // inner anchor is an offset from it - only the visible frame shrinks.
             Rectangle frame = Housing;
             frame.Y += FrameShave; frame.Height -= FrameShave;
+            frame.Width -= PlanetInfoUIElement.RightTrim;
             Rectangle plate = frame;
             plate.Inflate(-2, -2);
             batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
@@ -155,8 +158,9 @@ namespace Ship_Game.Ships
                 FollowButton.Draw(batch, elapsed);
             }
 
-            Vector2 namePos       = new(Housing.X + 30, Housing.Y + 63);
-            Vector2 shipSuperName = new(Housing.X + 30, Housing.Y + 79);
+            // the name block left-aligns on the status icon column, 5px lower (bench 319)
+            Vector2 namePos       = new(Housing.X + 13, Housing.Y + 68);
+            Vector2 shipSuperName = new(Housing.X + 13, Housing.Y + 84);
             ShipNameArea.SetPos(namePos);
             ShipNameArea.Draw(batch, elapsed);
 
@@ -167,7 +171,9 @@ namespace Ship_Game.Ships
 
             batch.DrawString(Fonts.Visitor10, longName, shipSuperName, Color.Orange);
 
-            var shipStatus = new Vector2(Sel.Rect.X + Sel.Rect.Width - 168, Housing.Y + 64).ToFloored();
+            // the order rides the name line, left-aligned on the bars' start (bench 319)
+            var shipStatus = new Vector2(PBar.pBar.X,
+                                         Housing.Y + 68 + (Fonts.Arial14Bold.LineSpacing - Fonts.TahomaBold9.LineSpacing) / 2).ToFloored();
             string text = Fonts.TahomaBold9.ParseText(ShipListScreenItem.GetStatusText(s), 120);
             batch.DrawString(Fonts.TahomaBold9, text, shipStatus, tColor);
 
@@ -208,8 +214,8 @@ namespace Ship_Game.Ships
             //Added by McShooterz: kills display
             star       = new Rectangle(star.X, star.Y + 19, 22, 22);
             levelPos   = new Vector2(star.X + star.Width + 2, star.Y + 11 - Fonts.Arial12Bold.LineSpacing / 2);
-            // just inside the shaved frame's top - it sat at +15, above the new frame line
-            StatusArea = new Vector2(Housing.X + 175, Housing.Y + 28);
+            // just inside the shaved frame's top, wherever that lands
+            StatusArea = new Vector2(Housing.X + 175, Housing.Y + FrameShave + 2);
             batch.Draw(ResourceManager.Texture("UI/icon_kills_shipUI"), star, Color.White);
             batch.DrawString(Fonts.Arial12Bold, s.Kills.ToString(), levelPos, Color.White);
             int numStatus = 0;
@@ -424,7 +430,9 @@ namespace Ship_Game.Ships
                             text += " (" + numTroopRebasing + " on route)";
                         break;
                 }
-            var supplyTextPos = new Vector2(Housing.X + 175, Housing.Y + 5);
+            // floats above the cartouche like the radiation warning - its old seat is
+            // under the orders strip since the frame wears the standard shave
+            var supplyTextPos = new Vector2(Housing.X + 175, Housing.Y - Fonts.Arial12.LineSpacing);
             batch.DrawString(Fonts.Arial12, text, supplyTextPos, color);
         }
 
