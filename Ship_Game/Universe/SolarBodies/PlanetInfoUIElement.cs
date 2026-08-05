@@ -20,9 +20,15 @@ namespace Ship_Game
         // Ludoal fork: the sculpted texture spent this top band on antenna machinery; with it
         // gone the frame starts this far under the housing. Anything aligned on the visible
         // frame top derives from this, not from the housing. 26 covered the machinery;
-        // +10 more trims the dead margin the old frame left (maintainer bench 311).
-        const int FrameShave = 36;
+        // the rest trims the dead margin the old frame left (maintainer benches 311-312).
+        const int FrameShave = 51;
         const int RightTrim  = 10; // same trim on the plate's right edge
+        const int LaborW = 200;    // labor block width - its rail is (W * 0.6).RoundTo10()
+        int LaborX   => PlanetIconRect.Right + 20;
+        int FoodColX => Housing.X + 200; // the foot line's food icon; money aligns on it
+        // the lock/tool column: labor housing inset (+10), the rail, the lock gap (+10) -
+        // the same walk AssignLaborComponent and ColonySlider take to place the locks
+        int LockColX => LaborX + 10 + (LaborW * 0.6f).RoundTo10() + 10;
         Planet P;
         readonly UniverseScreen Screen;
         Empire Player => Screen.Player;
@@ -74,7 +80,7 @@ namespace Ship_Game
             TransitionOffTime = TimeSpan.FromSeconds(0.25);
             var leftRect = new Rectangle(r.X, r.Y + 44, 200, r.Height - 44);
             RightRect = new Rectangle(r.X + 200, r.Y + 44, 200, r.Height - 44);
-            PlanetIconRect = new Rectangle(leftRect.X + 75, Housing.Y + 128, 80, 80);
+            PlanetIconRect = new Rectangle(leftRect.X + 85, Housing.Y + 128, 80, 80);
             Inspect = new SkinnableButton(new Rectangle(PlanetIconRect.CenterX() - 16, PlanetIconRect.Y, 32, 32), "UI/viewPlanetIcon")
             {
                 HoverColor = tColor,
@@ -107,13 +113,13 @@ namespace Ship_Game
             UninhabIconRect = new Rectangle(leftRect.X + 75, Housing.Y + 120, 80, 80); // Ludoal fork: sprite left, buttons right — same grammar as colonies
 
             // the colony arrows flank the name line, just outside the sprite column
-            PrevColony = new ToggleButton(new Vector2(r.X + 30, Housing.Y + FrameShave + 10), ToggleButtonStyle.ArrowLeft)
+            PrevColony = new ToggleButton(new Vector2(r.X + 40, Housing.Y + 76), ToggleButtonStyle.ArrowLeft)
             {
                 Tooltip = GameText.ViewPreviousColony,
                 OnClick = b => OnChangeColony(-1)
             };
             PrevColony.SetAbsSize(14, 20);
-            NextColony = new ToggleButton(new Vector2(r.X + 186, Housing.Y + FrameShave + 10), ToggleButtonStyle.ArrowRight)
+            NextColony = new ToggleButton(new Vector2(r.X + 196, Housing.Y + 76), ToggleButtonStyle.ArrowRight)
             {
                 Tooltip = GameText.ViewNextColony,
                 OnClick = b => OnChangeColony(+1)
@@ -128,8 +134,14 @@ namespace Ship_Game
             int newIndex = planets.IndexOf(P) + change;
             if (newIndex >= planets.Count) newIndex = 0;
             else if (newIndex < 0) newIndex = planets.Count - 1;
-            if (planets[newIndex] != P)
-                Screen.SetSelectedPlanet(planets[newIndex]);
+            Planet next = planets[newIndex];
+            if (next != P)
+            {
+                Screen.SetSelectedPlanet(next);
+                // the arrows also glide the camera onto the colony now displayed
+                Screen.SnapViewTo(new(next.Position.X, next.Position.Y,
+                    Screen.GetZfromScreenState(UniverseScreen.UnivScreenState.PlanetView)), 5f, 2f);
+            }
         }
 
         // ── the unified header (spec cartouches, bench 308) ──────────────────────────
@@ -219,54 +231,58 @@ namespace Ship_Game
 
             AddExploredTips();
 
-            // the colony grammar (maintainer bench 309): the name centred over the sprite,
-            // arrows either side to walk the colony list, the governance on the same line
-            // at right; then the pop and money/research lines left-aligned on the sliders
+            // one grammar for own and enemy colonies (maintainer bench 312): the pop line
+            // right-aligned with its flag, the name sharing its line - bottom-aligned, the
+            // bigger font grows upward - and the governance on the money/research level,
+            // both centred over the sprite
             Graphics.Font nameFont = Fonts.Arial8Bold;
             if (P.Name.Length < 12)      nameFont = Fonts.Arial20Bold;
             else if (P.Name.Length < 13) nameFont = Fonts.Arial12Bold;
             else if (P.Name.Length < 17) nameFont = Fonts.Arial10;
-            var namePos = new Vector2(PlanetIconRect.CenterX() - nameFont.TextWidth(P.Name) / 2f,
-                                      PlateTop + 8 + (Fonts.Arial20Bold.LineSpacing - nameFont.LineSpacing) / 2);
-            batch.DrawString(nameFont, P.Name, namePos, P.Owner.EmpireColor);
 
             string worldType = P.WorldType.Text;
-            int lineX = PlanetIconRect.Right + 30; // the sliders' left edge (labor rect +20, housing inset +10)
             int frameRight = Housing.Right - RightTrim;
-            // one grammar for own and enemy colonies (maintainer bench 311): pop
-            // right-aligned with its flag, the governance centred over the sprite
-            var flagRect = new Rectangle(frameRight - 50, Housing.Y + 71, 26, 26);
+            var flagRect = new Rectangle(frameRight - 50, Housing.Y + 76, 26, 26);
             batch.Draw(ResourceManager.Flag(P.Owner), flagRect, P.Owner.EmpireColor);
             string pop = P.PopulationStringForPlayer;
             var popPos = new Vector2(flagRect.X - 5 - Font12.TextWidth(pop), flagRect.Y + 13 - Font12.LineSpacing / 2);
             batch.DrawString(Font12, pop, popPos, tColor);
             PopRect = new Rectangle((int)popPos.X - 23, (int)popPos.Y - 3, 22, 22);
             batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopRect, Color.White);
+
+            // the ball sits left of its box's centre - centring on the box lands 10px right
+            // of the visible sprite (maintainer bench 312), so every image-centred string
+            // centres on this instead
+            int spriteCX = PlanetIconRect.CenterX() - 10;
+            var namePos = new Vector2(spriteCX - nameFont.TextWidth(P.Name) / 2f,
+                                      popPos.Y + Font12.LineSpacing - nameFont.LineSpacing);
+            batch.DrawString(nameFont, P.Name, namePos, P.Owner.EmpireColor);
+
+            float mrTextY = Housing.Y + 102 + 11 - Font12.LineSpacing / 2;
             batch.DrawString(Font12, worldType,
-                new Vector2(PlanetIconRect.CenterX() - Font12.TextWidth(worldType) / 2f, popPos.Y), tColor);
+                new Vector2(spriteCX - Font12.TextWidth(worldType) / 2f, mrTextY), tColor);
 
             if (P.Owner == Player)
             {
                 PrevColony.Draw(batch, elapsed);
                 NextColony.Draw(batch, elapsed);
 
-                // money and research, left-aligned on the sliders, just above them
-                MoneyRect = new Rectangle(lineX, Housing.Y + 97, 22, 22);
+                // money rides the foot line's food column, research the lock column
+                MoneyRect = new Rectangle(FoodColX, Housing.Y + 102, 22, 22);
                 batch.Draw(ResourceManager.Texture("UI/icon_money_22"), MoneyRect, Color.White);
                 string sNetIncome = P.Money.NetRevenue.String(2);
-                batch.DrawString(Font12, sNetIncome,
-                                 new Vector2(MoneyRect.Right + 4, MoneyRect.Y + 11 - Font12.LineSpacing / 2),
+                batch.DrawString(Font12, sNetIncome, new Vector2(MoneyRect.Right + 4, mrTextY),
                                  P.Money.NetRevenue > 0.0 ? Color.LightGreen : Color.Salmon);
-                var researchRect = new Rectangle(lineX + 90, Housing.Y + 97, 22, 22);
+                var researchRect = new Rectangle(LockColX, Housing.Y + 102, 22, 22);
                 batch.Draw(ResourceManager.Texture("NewUI/icon_science"), researchRect, Color.White);
                 batch.DrawString(Font12, P.Res.NetIncome.String(2),
-                                 new Vector2(researchRect.Right + 4, researchRect.Y + 11 - Font12.LineSpacing / 2), tColor);
+                                 new Vector2(researchRect.Right + 4, mrTextY), tColor);
             }
 
             batch.Draw(P.PlanetTexture, PlanetIconRect, Color.White);
             string richness = P.LocalizedRichness; // the class caption back under the sprite (308)
             batch.DrawString(Font12, richness,
-                new Vector2(PlanetIconRect.CenterX() - Font12.TextWidth(richness) / 2f, PlanetIconRect.Bottom + 5), tColor);
+                new Vector2(spriteCX - Font12.TextWidth(richness) / 2f, PlanetIconRect.Bottom + 5), tColor);
             P.UpdateIncomes();
 
             DrawPlanetStats(DefenseRect, ((float)P.TotalDefensiveStrength).String(1), "UI/icon_shield", Color.White, Color.White);
@@ -522,7 +538,7 @@ namespace Ship_Game
         void DrawFertProdStats(SpriteBatch batch)
         {
             var foodTex = ResourceManager.Texture("NewUI/icon_food");
-            var fIcon = new Rectangle(200,Housing.Y + 218 + Fonts.Arial12Bold.LineSpacing - foodTex.Height, foodTex.Width, foodTex.Height);
+            var fIcon = new Rectangle(FoodColX, Housing.Y + 218 + Fonts.Arial12Bold.LineSpacing - foodTex.Height, foodTex.Width, foodTex.Height);
             batch.Draw(foodTex, fIcon, Color.White);
             ToolTipItems.Add(new TippedItem(fIcon, GameText.IndicatesHowMuchFoodThis));
 
@@ -541,11 +557,11 @@ namespace Ship_Game
             }
 
             var prodTex = ResourceManager.Texture("NewUI/icon_production");
-            var pIcon = new Rectangle(325, Housing.Y + 218 + Fonts.Arial12Bold.LineSpacing - prodTex.Height, prodTex.Width, prodTex.Height);
+            var pIcon = new Rectangle(LockColX, Housing.Y + 218 + Fonts.Arial12Bold.LineSpacing - prodTex.Height, prodTex.Width, prodTex.Height);
             batch.Draw(prodTex, pIcon, Color.White);
             ToolTipItems.Add(new TippedItem(pIcon, GameText.APlanetsMineralRichnessDirectly));
 
-            tcurs = new Vector2(350f, Housing.Y + 213);
+            tcurs = new Vector2(pIcon.X + 25, Housing.Y + 213);
             batch.DrawString(Fonts.Arial12Bold, P.MineralRichness.String(), tcurs, tColor);
         }
 
@@ -708,11 +724,7 @@ namespace Ship_Game
                 P = p;
                 if (p != null && P.Owner == Player)
                 {
-                    int x = PlanetIconRect.Right + 20;
-                    // the pop and money/research lines sit above: the whole block under
-                    // them rides 8px lower, using the room at the plate's foot
-                    var sliderRect = new RectF(x, Housing.Y + 88,
-                                               ElementRect.Right-x-20, 130);
+                    var sliderRect = new RectF(LaborX, Housing.Y + 88, LaborW, 130);
                     AssignLabor = new AssignLaborComponent(p, sliderRect, useTitleFrame: false);
                 }
                 else
