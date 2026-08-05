@@ -16,10 +16,10 @@ namespace Ship_Game
 {
     public sealed class ShipListInfoUIElement : UIElement
     {
-        // Ludoal fork: the sculpted texture spent this top band on antenna machinery; with it
-        // gone the frame starts this far under the housing. Anything aligned on the visible
-        // frame top derives from this, not from the housing.
-        const int FrameShave = 26;
+        // Ludoal fork: the fleet cartouche wears the standard frame (maintainer bench 320)
+        // - one plate for every cartouche. The orders strip above docks on the visible
+        // frame top, so it re-seats along with it.
+        const int FrameShave = PlanetInfoUIElement.FrameShave;
         public readonly UniverseScreen Screen;
         Empire Player => Screen.Player;
 
@@ -57,7 +57,9 @@ namespace Ship_Game
             TransitionOnTime = TimeSpan.FromSeconds(0.25);
             TransitionOffTime = TimeSpan.FromSeconds(0.25);
             LeftRect = new Rectangle(r.X, r.Y + 44, 180, r.Height - 44);
-            FlagRect = new Rectangle(r.X + 365, r.Y + 71, 18, 18);
+            // the ship cartouche's seats (bench 320): flag's right edge on the bars' end
+            // (382 = icon column 197 + 20 + 15 + bar 150), stance right-aligned on it
+            FlagRect = new Rectangle(r.X + 382 - 18, r.Y + 71, 18, 18);
             RightRect = new Rectangle(LeftRect.X + LeftRect.Width, LeftRect.Y, 220, LeftRect.Height);
             float spacing = LeftRect.Height - 26 - 96;
             Power = new Rectangle(RightRect.X, LeftRect.Y + 12, 20, 20);
@@ -72,8 +74,8 @@ namespace Ship_Game
             };
             ShipInfoRect = new Rectangle(Housing.X + 60, Housing.Y + 110, 115, 115);
 
-            float ordersStartX = Power.X + 27f;
-            var ordersBarPos = new Vector2(ordersStartX, Screen.Height - 68f);
+            // the stance block takes the ship cartouche's exact seat (bench 320)
+            var ordersBarPos = new Vector2(Housing.X + 382 - StanceButtons.RowWidth, Housing.Y + 184);
 
             OrdersButtons = new ShipStanceButtons(screen, ordersBarPos);
 
@@ -115,13 +117,14 @@ namespace Ship_Game
             // inner anchor is an offset from it - only the visible frame shrinks.
             Rectangle frame = Housing;
             frame.Y += FrameShave; frame.Height -= FrameShave;
+            frame.Width -= PlanetInfoUIElement.RightTrim;
             Rectangle plate = frame;
             plate.Inflate(-2, -2);
             batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
             UITheme.DrawPlate(batch, frame, Color.Transparent,
                               new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
                               ruleWidthOverride: 3);
-            var namePos = new Vector2(Housing.X + 41, Housing.Y + 64);
+            var namePos = new Vector2(Housing.X + 13, Housing.Y + 71); // the ship cartouche's name seat
             byte alpha  = Screen.CurrentFlashColor.A;
 
             foreach (SelectedShipListItem item in SelectedShipsSL.AllEntries)
@@ -150,7 +153,9 @@ namespace Ship_Game
                     namePos.Y += 3;
                     batch.DrawString(Fonts.Arial14Bold, $" ({ShipList.Count})", namePos, Color.LightBlue);
 
-                    var shipStatus = new Vector2(Selector.Rect.X + Selector.Rect.Width - 168, Housing.Y + 64).ToFloored();
+                    // the order on the name line, at the ship cartouche's bars-start seat
+                    var shipStatus = new Vector2(Housing.X + 232,
+                                                 Housing.Y + 71 + (Fonts.Arial14Bold.LineSpacing - Fonts.TahomaBold9.LineSpacing) / 2).ToFloored();
                     string statusTxt = Fonts.TahomaBold9.ParseText(ShipListScreenItem.GetStatusText(ShipList[0]), 120);
                     batch.DrawString(Fonts.TahomaBold9, statusTxt, shipStatus, tColor);
 
@@ -162,15 +167,14 @@ namespace Ship_Game
                 HoverOff = 0f;
                 HoveredShip.RenderOverlay(batch, ShipInfoRect, ShowModules && HoveredShip.Loyalty.CanBeScannedByPlayer);
                 string text = HoveredShip.VanityName;
-                Vector2 tpos = new Vector2(Housing.X + 30, Housing.Y + 63);
+                Vector2 tpos = new Vector2(Housing.X + 13, Housing.Y + 71); // the ship cartouche's name seat
                 string name = (!string.IsNullOrEmpty(HoveredShip.VanityName) ? HoveredShip.VanityName : HoveredShip.Name);
                 Graphics.Font TitleFont = Fonts.Arial14Bold;
-                Vector2 ShipSuperName = new Vector2(Housing.X + 30, Housing.Y + 79);
+                Vector2 ShipSuperName = new Vector2(Housing.X + 13, Housing.Y + 87);
                 if (Fonts.Arial14Bold.MeasureString(name).X > 180f)
                 {
                     TitleFont = Fonts.Arial12Bold;
                     tpos.Y = tpos.Y + 1;
-                    tpos.X = tpos.X - 8;
                 }
                 batch.DrawString(TitleFont, (!string.IsNullOrEmpty(HoveredShip.VanityName) ? HoveredShip.VanityName : HoveredShip.Name), tpos, tColor);
                 //Added by Doctor, adds McShooterz' class/hull data to the rollover in the list too:
@@ -185,8 +189,8 @@ namespace Ship_Game
                 Graphics.Font arial12Bold = Fonts.Arial12Bold;
                 float totalBoardingDefense = HoveredShip.CurrentMechanicalBoardingDefense + HoveredShip.TroopBoardingDefense;
                 spriteBatch.DrawString(arial12Bold, totalBoardingDefense.String(), defPos, Color.White);
-                text = Fonts.Arial10.ParseText(ShipListScreenItem.GetStatusText(HoveredShip), 155f);
-                Vector2 shipStatus = new Vector2(Selector.Rect.X + Selector.Rect.Width - 168, Housing.Y + 64);
+                Vector2 shipStatus = new Vector2(Housing.X + 232,
+                                                 Housing.Y + 71 + (Fonts.Arial14Bold.LineSpacing - Fonts.TahomaBold9.LineSpacing) / 2);
                 text = Fonts.TahomaBold9.ParseText(ShipListScreenItem.GetStatusText(HoveredShip), 120f);
                 shipStatus = shipStatus.ToFloored();
                 batch.DrawString(Fonts.TahomaBold9, text, shipStatus, tColor);
