@@ -669,10 +669,8 @@ namespace Ship_Game
                 DrawTopCenterStatusText(batch, "Cinematic Mode - Press F11 to exit", Color.White, 3);
             }
 
-            if (!Player.Research.NoResearchLeft && Player.Research.NoTopic && !Player.AutoResearch && !Debug)
-            {
-                DrawTopCenterStatusText(batch, "No Research!",  ApplyCurrentAlphaToColor(Color.Red), 2);
-            }
+            // the idle-research alarm moved into the top bar's topic slot (maintainer
+            // bench 319) - the mid-map banner retires
         }
 
         void DrawShipRangeOverlay()

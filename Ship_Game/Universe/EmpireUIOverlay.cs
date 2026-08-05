@@ -281,10 +281,21 @@ namespace Ship_Game
             batch.DrawString(font, money, new Vector2(MoneyTextX, textY), TextCream);
 
             // research: progress, net gain, and what is being researched
+            // the topic slot, after the numbers - on a RESERVED width, never measured off
+            // this turn's figures: the numbers change every turn, and a topic placed behind
+            // them slid left and right as they did. The median dot wears the bar's vanilla.
+            float topicX = ResearchTextX + ResearchNumbersRoom - 5;
+            float topicTextX = topicX + font.TextWidth("\u00b7 ");
             if (Player.Research.NoTopic)
             {
                 batch.DrawString(font, Localizer.Token(GameText.Choose) + "...",
                                  new Vector2(ResearchTextX, textY), TextCream);
+                // the idle-research alarm lives HERE now, not as a mid-map banner
+                if (!Player.Research.NoResearchLeft && !Player.AutoResearch)
+                {
+                    batch.DrawString(font, "\u00b7 ", new Vector2(topicX, textY), TextCream);
+                    batch.DrawString(font, "NO RESEARCH!", new Vector2(topicTextX, textY), Color.Red);
+                }
             }
             else
             {
@@ -293,13 +304,10 @@ namespace Ship_Game
                 string res = $"{progress}/{cost} (+{Player.Research.NetResearch.String(1)})";
                 batch.DrawString(font, res, new Vector2(ResearchTextX, textY), TextCream);
 
-                // the topic itself, after the numbers - dimmer, it is context rather than a value.
-                // On a RESERVED width, never measured off this turn's figures: the numbers change
-                // every turn, and a topic placed behind them slid left and right as they did.
-                float topicX = ResearchTextX + ResearchNumbersRoom;
                 string topic = Player.Research.TopicLocText.Text;
                 bool disrupted = Player.Research.DisruptionMultiplier < 1f;
-                batch.DrawString(font, "\u00b7 " + topic, new Vector2(topicX, textY),
+                batch.DrawString(font, "\u00b7 ", new Vector2(topicX, textY), TextCream);
+                batch.DrawString(font, topic, new Vector2(topicTextX, textY),
                                  disrupted ? new Color(255, 96, 96) : TextCream.Alpha(0.7f));
             }
 
