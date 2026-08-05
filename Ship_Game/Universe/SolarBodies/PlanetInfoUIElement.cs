@@ -20,12 +20,11 @@ namespace Ship_Game
         // Ludoal fork: the sculpted texture spent this top band on antenna machinery; with it
         // gone the frame starts this far under the housing. Anything aligned on the visible
         // frame top derives from this, not from the housing. 26 covered the machinery;
-        // the rest trims the dead margin the old frame left (maintainer benches 311-312).
-        const int FrameShave = 51;
+        // the rest trims the dead margin the old frame left (maintainer benches 311-313).
+        const int FrameShave = 61;
         const int RightTrim  = 10; // same trim on the plate's right edge
         const int LaborW = 200;    // labor block width - its rail is (W * 0.6).RoundTo10()
         int LaborX   => PlanetIconRect.Right + 20;
-        int FoodColX => Housing.X + 200; // the foot line's food icon; money aligns on it
         // the lock/tool column: labor housing inset (+10), the rail, the lock gap (+10) -
         // the same walk AssignLaborComponent and ColonySlider take to place the locks
         int LockColX => LaborX + 10 + (LaborW * 0.6f).RoundTo10() + 10;
@@ -42,12 +41,13 @@ namespace Ship_Game
         Rectangle ExoticResourceIconRect;
         Rectangle PopRect;
         readonly Selector Sel;
-        Rectangle UninhabIconRect; // Ludoal fork: planet sprite for uninhabitables
         int PlateTop;              // the visible frame's top - ADAPTIVE (bench 308)
         readonly SkinnableButton Inspect;
         readonly SkinnableButton Invade;
         readonly ToggleButton PrevColony; // walk the player's colony list from the cartouche
         readonly ToggleButton NextColony;
+        readonly UIButton BtnSendTroops;  // the Planets page's pair, on the colonisable page
+        readonly UIButton BtnColonize;
         readonly Rectangle Housing;
         readonly Rectangle DefenseRect;
         readonly Rectangle InjuryRect;
@@ -56,7 +56,6 @@ namespace Ship_Game
         readonly Rectangle DefenseShipsRect;
         readonly Rectangle RightRect;
         readonly Rectangle PlanetIconRect;
-        readonly Rectangle FlagRect;
 
         readonly Rectangle TilesRect;
         readonly Rectangle PopPerTileRect;
@@ -92,7 +91,6 @@ namespace Ship_Game
                 IsToggle = false
             };
 
-            FlagRect         = new Rectangle(r.X + r.Width - 44, Housing.Y + 96, 26, 26); // under the R/F/P lanes (bench 308)
             DefenseRect      = new Rectangle(leftRect.X + 13, Housing.Y + 122, 22, 22);
             OffenseRect      = new Rectangle(leftRect.X + 13, Housing.Y + 122 + 22, 22, 22);
             InjuryRect       = new Rectangle(leftRect.X + 13, Housing.Y + 122 + 44, 22, 22);
@@ -111,8 +109,6 @@ namespace Ship_Game
             CancelInvasionRect = MarkedRect; // Replaces the colonization rect when invading
             ExoticRect = new Rectangle(RightRect.X - 17, Housing.Y + 130, 182, 25);
             ExoticResourceIconRect = new Rectangle(RightRect.X - 17, Housing.Y + 165, 20, 20);
-            UninhabIconRect = new Rectangle(leftRect.X + 75, Housing.Y + 120, 80, 80); // Ludoal fork: sprite left, buttons right — same grammar as colonies
-
             // the colony arrows flank the name line, just outside the sprite column
             PrevColony = new ToggleButton(new Vector2(r.X + 40, Housing.Y + 76), ToggleButtonStyle.ArrowLeft)
             {
@@ -126,6 +122,61 @@ namespace Ship_Game
                 OnClick = b => OnChangeColony(+1)
             };
             NextColony.SetAbsSize(14, 20);
+
+            // the colonisable page borrows the Planets page's buttons: same width formula
+            // (PlanetListScreen sizes the slot off the widest text either can wear), 24
+            // high, centred text - stacked where the colony page keeps its sliders
+            int btnW = 24 + (int)new[] { "Colonize", "Cancel Colonize", "Send Troops",
+                                         "Recall Troops (99)", "Invading: 99" }
+                                .Max(t => Fonts.Arial12Bold.TextWidth(t));
+            BtnSendTroops = new UIButton(ButtonStyle.Wide, "Send Troops")
+            {
+                Rect = new Rectangle(LaborX + 10, Housing.Y + 120, btnW, 24),
+                Tooltip = GameText.SendAvailableTroopsToThis,
+                OnClick = OnSendTroopsClicked
+            };
+            BtnColonize = new UIButton(ButtonStyle.WideActive, GameText.Colonize)
+            {
+                Rect = new Rectangle(LaborX + 10, Housing.Y + 155, btnW, 24),
+                OnClick = OnColonizeClicked
+            };
+        }
+
+        void OnColonizeClicked(UIButton b)
+        {
+            if (Player.AI.HasGoal(g => g.IsColonizationGoal(P)))
+                Player.AI.CancelColonization(P);
+            else
+                Player.AI.AddGoalAndEvaluate(new MarkForColonization(P, Player, isManual: true));
+            GameAudio.EchoAffirmative();
+        }
+
+        void OnSendTroopsClicked(UIButton b)
+        {
+            if (Player.GetTroopShipForRebase(out Ship troopShip, P.Position, P.Name))
+            {
+                if (!troopShip.AI.OrderLandAllTroops(P, clearOrders: true, Screen.Input.CursorPosition))
+                    GameAudio.NegativeClick();
+                else
+                {
+                    GameAudio.EchoAffirmative();
+                    if (Player.Universe.Paused)
+                        Player.Universe.Objects.UpdateLists();
+                }
+            }
+            else
+                GameAudio.BlipClick();
+        }
+
+        void UpdateColonisableButtons()
+        {
+            bool marked = Player.AI.HasGoal(g => g.IsColonizationGoal(P));
+            BtnColonize.Text    = marked ? GameText.CancelColonize : GameText.Colonize;
+            BtnColonize.Style   = marked ? ButtonStyle.WideHostile : ButtonStyle.WideActive;
+            BtnColonize.Tooltip = marked ? GameText.CancelTheColonizationMissionThat
+                                         : GameText.MarkThisPlanetForColonization;
+            int landing = IncomingTroops;
+            BtnSendTroops.Text = landing > 0 ? $"Landing: {landing}" : "Send Troops";
         }
 
         void OnChangeColony(int change)
@@ -143,42 +194,6 @@ namespace Ship_Game
                 Screen.SnapViewTo(new(next.Position.X, next.Position.Y,
                     Screen.GetZfromScreenState(UniverseScreen.UnivScreenState.PlanetView)), 5f, 2f);
             }
-        }
-
-        // ── the unified header (spec cartouches, bench 308) ──────────────────────────
-        // Name in 20 bold (owner's colour), class in gray under it, and the star
-        // cartouche's own R/F/P lanes top right - one grammar for every variant.
-        void DrawHeader(SpriteBatch batch, bool lanes)
-        {
-            var namePos = new Vector2(Housing.X + 16, PlateTop + 8);
-            string name = UI.UITable.FitText(Fonts.Arial20Bold, P.Name, 190);
-            batch.DrawString(Fonts.Arial20Bold, name, namePos, P.Owner?.EmpireColor ?? tColor);
-            string cls = P.IsMineable ? P.LocalizedCategory : P.LocalizedRichness;
-            batch.DrawString(Fonts.Arial12, cls,
-                             new Vector2(namePos.X + 2, namePos.Y + Fonts.Arial20Bold.LineSpacing + 2),
-                             Color.Gray);
-            if (!lanes)
-                return;
-
-            int laneP = Housing.Right - 46, laneF = laneP - 58, laneR = laneF - 44;
-            int iy = (int)namePos.Y + 2;
-            void LaneIcon(string tex, int lane)
-                => batch.Draw(ResourceManager.Texture(tex), new Rectangle(lane + 4, iy, 14, 14), Color.White);
-            void LaneVal(string v, int lane)
-                => batch.DrawString(Fonts.Arial12, v,
-                                    new Vector2(lane + 18 - Fonts.Arial12.TextWidth(v), iy + 18), Color.White);
-            LaneIcon("NewUI/icon_production", laneR);
-            LaneVal(P.MineralRichness.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture), laneR);
-            LaneIcon("NewUI/icon_food", laneF);
-            LaneVal(P.FertilityFor(Player).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture), laneF);
-            LaneIcon("UI/icon_pop_22", laneP);
-            string popShort = P.Habitable
-                ? (P.PopulationBillion > 0
-                    ? $"{P.PopulationBillion.String(1)}/{P.MaxPopulationBillionFor(Player).String(1)}"
-                    : P.MaxPopulationBillionFor(Player).String(1))
-                : "-";
-            LaneVal(popShort, laneP);
-            PopRect = new Rectangle(laneP + 4, iy, 14, 14); // the pop tooltip anchors the lane icon
         }
 
         public override void Update(UpdateTimes elapsed)
@@ -212,8 +227,6 @@ namespace Ship_Game
             int plateH = Housing.Height - FrameShave;
             if (!explored)
                 plateH = 96;
-            else if (P.Owner == null && !P.Habitable)
-                plateH = 172;
             PlateTop = Housing.Bottom - plateH;
             var frame = new Rectangle(Housing.X, PlateTop, Housing.Width - RightTrim, plateH);
             Rectangle plate = frame;
@@ -224,15 +237,15 @@ namespace Ship_Game
                               ruleWidthOverride: 3);
 
             P.UpdateMaxPopulation();
-            if (!explored || P.Owner == null && !P.Habitable)
+            if (!explored)
             {
-                DrawUnexploredUninhabited(Screen.Input.CursorPosition);
+                DrawUnexplored();
                 return;
             }
 
-            // explored colonies AND the colonisable page share the grammar below
-            if (P.Owner != null) AddExploredTips();
-            else                 AddUnExploredTips();
+            // every explored planet shares the grammar below, whatever its status
+            if (P.Owner != null)      AddExploredTips();
+            else if (P.Habitable)     AddUnExploredTips();
 
             // one grammar for own and enemy colonies (maintainer bench 312): the pop line
             // right-aligned with its flag, the name sharing its line - bottom-aligned, the
@@ -244,19 +257,24 @@ namespace Ship_Game
             else if (P.Name.Length < 17) nameFont = Fonts.Arial10;
 
             int frameRight = Housing.Right - RightTrim;
-            var flagRect = new Rectangle(frameRight - 50, Housing.Y + 76, 26, 26);
-            if (P.Owner != null)
-                batch.Draw(ResourceManager.Flag(P.Owner), flagRect, P.Owner.EmpireColor);
+            var flagRect = new Rectangle(frameRight - 40, Housing.Y + 76, 26, 26);
+            Empire flagOwner = P.Owner ?? (P.IsMineable ? P.Mining.Owner : null);
+            if (flagOwner != null)
+                batch.Draw(ResourceManager.Flag(flagOwner), flagRect, flagOwner.EmpireColor);
             string pop = P.PopulationStringForPlayer;
             var popPos = new Vector2(flagRect.X - 5 - Font12.TextWidth(pop), flagRect.Y + 13 - Font12.LineSpacing / 2);
-            batch.DrawString(Font12, pop, popPos, tColor);
-            PopRect = new Rectangle((int)popPos.X - 23, (int)popPos.Y - 3, 22, 22);
-            batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopRect, Color.White);
+            if (P.Habitable)
+            {
+                batch.DrawString(Font12, pop, popPos, tColor);
+                PopRect = new Rectangle((int)popPos.X - 23, (int)popPos.Y - 3, 22, 22);
+                batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopRect, Color.White);
+            }
+            else
+            {
+                PopRect = default; // no pop line on a dead rock, no tooltip either
+            }
 
-            // the ball sits left of its box's centre - centring on the box lands 10px right
-            // of the visible sprite (maintainer bench 312), so every image-centred string
-            // centres on this instead
-            int spriteCX = PlanetIconRect.CenterX() - 10;
+            int spriteCX = PlanetIconRect.CenterX();
             var namePos = new Vector2(spriteCX - nameFont.TextWidth(P.Name) / 2f,
                                       popPos.Y + Font12.LineSpacing - nameFont.LineSpacing);
             batch.DrawString(nameFont, P.Name, namePos, P.Owner?.EmpireColor ?? tColor);
@@ -268,28 +286,35 @@ namespace Ship_Game
                 batch.DrawString(Font12, worldType,
                     new Vector2(spriteCX - Font12.TextWidth(worldType) / 2f, mrTextY), tColor);
             }
+            else if (!P.Habitable)
+            {
+                const string notHab = "Not habitable";
+                batch.DrawString(Font12, notHab,
+                    new Vector2(spriteCX - Font12.TextWidth(notHab) / 2f, mrTextY), Color.Gray);
+            }
 
             if (P.Owner == Player)
             {
                 PrevColony.Draw(batch, elapsed);
                 NextColony.Draw(batch, elapsed);
 
-                // money rides the foot line's food column, research the lock column
-                MoneyRect = new Rectangle(FoodColX, Housing.Y + 102, 22, 22);
+                // money rides the pop icon's column, research just right of it (bench 313)
+                MoneyRect = new Rectangle(PopRect.X, Housing.Y + 102, 22, 22);
                 batch.Draw(ResourceManager.Texture("UI/icon_money_22"), MoneyRect, Color.White);
                 string sNetIncome = P.Money.NetRevenue.String(2);
                 batch.DrawString(Font12, sNetIncome, new Vector2(MoneyRect.Right + 4, mrTextY),
                                  P.Money.NetRevenue > 0.0 ? Color.LightGreen : Color.Salmon);
-                var researchRect = new Rectangle(LockColX, Housing.Y + 102, 22, 22);
+                var researchRect = new Rectangle(MoneyRect.X + 90, Housing.Y + 102, 22, 22);
                 batch.Draw(ResourceManager.Texture("NewUI/icon_science"), researchRect, Color.White);
                 batch.DrawString(Font12, P.Res.NetIncome.String(2),
                                  new Vector2(researchRect.Right + 4, mrTextY), tColor);
             }
 
             batch.Draw(P.PlanetTexture, PlanetIconRect, Color.White);
-            string richness = P.LocalizedRichness; // the class caption back under the sprite (308)
-            batch.DrawString(Font12, richness,
-                new Vector2(spriteCX - Font12.TextWidth(richness) / 2f, PlanetIconRect.Bottom + 5), tColor);
+            // the class caption under the sprite; a mineable's richness lives on its resource line
+            string cls = P.IsMineable ? P.LocalizedCategory : P.LocalizedRichness;
+            batch.DrawString(Font12, cls,
+                new Vector2(spriteCX - Font12.TextWidth(cls) / 2f, PlanetIconRect.Bottom + 5), tColor);
 
             if (P.Owner != null)
             {
@@ -322,7 +347,7 @@ namespace Ship_Game
                         DrawPlanetStats(DefenseShipsRect, currentDefenseShips + "/" + maxDefenseShips , "UI/icon_hangar", Color.Yellow, Color.White);
                 }
             }
-            else
+            else if (P.Habitable)
             {
                 // the colonisable page: the ground survey in the left column
                 float fertEnvMultiplier = Player.PlayerEnvModifier(P.Category);
@@ -337,11 +362,34 @@ namespace Ship_Game
                 DrawPlanetStats(TerraformedPopRect, terraformedPop.String(1), "NewUI/icon_terraformer", Color.White, Color.White);
             }
 
-            DrawFertProdStats(batch);
-            DrawColonization(batch, Screen.Input.CursorPosition);
-            DrawSendTroops(batch, Screen.Input.CursorPosition);
-            Inspect.Draw(batch);
-            Invade.Draw(batch);
+            if (P.Habitable)
+            {
+                DrawFertProdStats(batch);
+                Inspect.Draw(batch);
+                Invade.Draw(batch);
+            }
+
+            if (P.Owner == null && P.Habitable)
+            {
+                // the Planets page's pair, stacked where the colony keeps its sliders
+                UpdateColonisableButtons();
+                BtnSendTroops.Draw(batch, elapsed);
+                BtnColonize.Draw(batch, elapsed);
+            }
+            else if (P.Owner != null && P.Owner != Player)
+            {
+                DrawSendTroops(batch, Screen.Input.CursorPosition);
+            }
+            else if (P.Owner == null)
+            {
+                // the exotic block rides the slider zone, kept as it was on the compact card
+                ExoticRect = new Rectangle(LaborX + 10, Housing.Y + 120, 182, 25);
+                ExoticResourceIconRect = new Rectangle(LaborX + 10, Housing.Y + 155, 20, 20);
+                if (P.IsResearchable)
+                    DrawResearchStation(batch, Screen.Input.CursorPosition);
+                else if (P.IsMineable)
+                    DrawMiningOps(batch, Screen.Input.CursorPosition);
+            }
 
             AssignLabor?.Draw(batch, elapsed);
         }
@@ -356,50 +404,22 @@ namespace Ship_Game
             }
         }
 
-        bool DrawUnexploredUninhabited(Vector2 mousePos)
+        void DrawUnexplored()
         {
+            // the compact plate: a title and one line - nothing else is known
             SpriteBatch batch = ScreenManager.SpriteBatch;
-
-            if (!P.IsExploredBy(Player))
-            {
-                // the compact plate: a title and one line - nothing else is known
-                batch.DrawString(Fonts.Arial20Bold,
-                    Localizer.Token(GameText.Unexplored) + P.LocalizedCategory,
-                    new Vector2(Housing.X + 16, PlateTop + 12), tColor);
-                batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.SendAShipToThis),
-                                 new Vector2(Housing.X + 16, PlateTop + 48), Color.Gray);
-                return true;
-            }
-
-            if (!P.Habitable)
-            {
-                // compact plate: unified header (no lanes - the ground stats mean nothing
-                // here), the sprite at left, the actions and mining/research block at right
-                DrawHeader(batch, lanes: false);
-                batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.ThisPlanetIsNotHabitable),
-                                 new Vector2(Housing.X + 16, PlateTop + 46), Color.Gray);
-
-                UninhabIconRect = new Rectangle(Housing.X + 60, PlateTop + 74, 80, 80);
-                batch.Draw(P.PlanetTexture, UninhabIconRect, Color.White);
-
-                ExoticRect = new Rectangle(RightRect.X - 17, PlateTop + 74, 182, 25);
-                ExoticResourceIconRect = new Rectangle(RightRect.X - 17, PlateTop + 108, 20, 20);
-                if (P.IsResearchable)
-                    DrawResearchStation(batch, mousePos);
-                else if (P.IsMineable)
-                    DrawMiningOps(batch, mousePos);
-
-                return true;
-            }
-
-            // the habitable page routes to the colony grammar in Draw, never here
-            return false;
+            batch.DrawString(Fonts.Arial20Bold,
+                Localizer.Token(GameText.Unexplored) + P.LocalizedCategory,
+                new Vector2(Housing.X + 16, PlateTop + 12), tColor);
+            batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.SendAShipToThis),
+                             new Vector2(Housing.X + 16, PlateTop + 48), Color.Gray);
         }
 
         void DrawSendTroops(SpriteBatch batch, Vector2 mousePos)
         {
-            if (P.Owner == Player || P.Owner != null && !Player.IsAtWarWith(P.Owner))
-                return; // Cannot send troops to this planet or different UI for player owner.
+            // enemy colonies only - the colonisable page wears the Planets page's buttons
+            if (P.Owner == Player || !Player.IsAtWarWith(P.Owner))
+                return;
 
             Vector2 textPos        = new Vector2(SendTroops.X + 25, SendTroops.Y + 12 - Font12.LineSpacing / 2 - 2);
             int incomingTroops     = IncomingTroops;
@@ -407,23 +427,13 @@ namespace Ship_Game
             Color buttonHoverColor = ButtonHoverColor;
             Color plate            = UIButton.PlateActive;
             string text = "Invade";
-            if (P.Owner != null)
+            if (incomingTroops > 0)
             {
-                if (incomingTroops > 0)
-                {
-                    text             = $"Invading: {incomingTroops}";
-                    buttonBaseColor  = Color.Red;
-                    plate            = UIButton.PlateHostile;
-                    buttonHoverColor = Color.White;
-                    DrawCancelInvasion(batch, mousePos);
-                }
-            }
-            else
-            {
-                // the colonisable page's pair: Send Troops in the theme's brown,
-                // Colonize (drawn by DrawColonization) in its blue
-                text  = incomingTroops > 0 ? $"Enroute: {incomingTroops}" : "Send Troops";
-                plate = UIButton.PlateNeutral;
+                text             = $"Invading: {incomingTroops}";
+                buttonBaseColor  = Color.Red;
+                plate            = UIButton.PlateHostile;
+                buttonHoverColor = Color.White;
+                DrawCancelInvasion(batch, mousePos);
             }
 
             UIButton.DrawPlate(batch, SendTroops, plate);
@@ -452,26 +462,6 @@ namespace Ship_Game
             }
         }
 
-        void DrawColonization(SpriteBatch batch, Vector2 mousePos)
-        {
-            if (P.Owner != null)
-                return;
-
-            Vector2 textPos = new Vector2(MarkedRect.X + 35, MarkedRect.Y + 12 - Font12.LineSpacing / 2 - 2);
-            UIButton.DrawPlate(batch, MarkedRect, UIButton.PlateActive);
-
-            LocalizedText tip = GameText.MarkThisPlanetForColonization;
-            LocalizedText tipText = GameText.Colonize;
-            if (Player.AI.HasGoal(g => g.IsColonizationGoal(P)))
-            {
-                tip = GameText.CancelTheColonizationMissionThat;
-                tipText = GameText.CancelColonize;
-            }
-
-            ToolTipItems.Add(new TippedItem(MarkedRect, tip));
-            batch.DrawString(Font12, tipText, textPos, MarkedRect.HitTest(mousePos) ? ButtonTextColor 
-                                                                                    : ButtonHoverColor);
-        }
 
         void DrawResearchStation(SpriteBatch batch, Vector2 mousePos)
         {
@@ -502,9 +492,7 @@ namespace Ship_Game
 
         void DrawMiningOps(SpriteBatch batch, Vector2 mousePos)
         {
-            if (P.Mining.Owner != null) // the header wrote the name; the flag says whose rig
-                batch.Draw(ResourceManager.Flag(P.Mining.Owner), FlagRect, P.Mining.Owner.EmpireColor);
-
+            // the shared header already drew the rig owner's flag in the flag slot
             batch.Draw(P.Mining.ExoticResourceIcon, ExoticResourceIconRect);
             // Ludoal fork: the block lives in the right column now — two short lines
             Vector2 resourceStatPos = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 2);
@@ -547,7 +535,7 @@ namespace Ship_Game
         void DrawFertProdStats(SpriteBatch batch)
         {
             var foodTex = ResourceManager.Texture("NewUI/icon_food");
-            var fIcon = new Rectangle(FoodColX, Housing.Y + 218 + Fonts.Arial12Bold.LineSpacing - foodTex.Height, foodTex.Width, foodTex.Height);
+            var fIcon = new Rectangle(PopRect.X, Housing.Y + 218 + Fonts.Arial12Bold.LineSpacing - foodTex.Height, foodTex.Width, foodTex.Height);
             batch.Draw(foodTex, fIcon, Color.White);
             ToolTipItems.Add(new TippedItem(fIcon, GameText.IndicatesHowMuchFoodThis));
 
@@ -610,25 +598,17 @@ namespace Ship_Game
             {
                 return true; // the click may have swapped P for the next colony
             }
+            if (P.Owner == null && P.Habitable && P.IsExploredBy(Player)
+                && (BtnSendTroops.HandleInput(input) || BtnColonize.HandleInput(input)))
+            {
+                return true;
+            }
             foreach (TippedItem ti in ToolTipItems)
             {
                 if (ti.Rect.HitTest(input.CursorPosition))
                     ToolTip.CreateTooltip(ti.Tooltip);
             }
-            if (P.Owner == null && MarkedRect.HitTest(input.CursorPosition) && input.InGameSelect)
-            {
-                if (Player.AI.HasGoal(g => g.IsColonizationGoal(P)))
-                {
-                    Player.AI.CancelColonization(P);
-                    GameAudio.EchoAffirmative();
-                }
-                else
-                {
-                    GameAudio.EchoAffirmative();
-                    Player.AI.AddGoalAndEvaluate(new MarkForColonization(P, Player, isManual:true));
-                }
-            }
-            if (SendTroops.HitTest(input.CursorPosition) && input.InGameSelect)
+            if (P.Owner != null && SendTroops.HitTest(input.CursorPosition) && input.InGameSelect)
             {
                 if (Player.GetTroopShipForRebase(out Ship troopShip, P.Position, P.Name))
                 {
