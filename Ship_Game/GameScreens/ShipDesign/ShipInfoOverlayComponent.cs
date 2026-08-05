@@ -215,21 +215,19 @@ namespace Ship_Game.GameScreens.ShipDesign
                 DrawText(Font, "WIP:", $"{Ds.CompletionPercent}%", Color.Yellow);
             }
 
+            // the compact's own labels, abbreviated for the micro (maintainer bench 322)
+            DrawValue("Offense:", Ds.Strength, Color.LightBlue);
             DrawValue("Weapons:", s.Weapons.Count, Color.LightBlue);
             DrawValue("Hangars:", s.Carrier.AllFighterHangars.Length, Color.IndianRed);
             DrawValue("BombBays:", s.BombBays.Count, Color.IndianRed);
-            if (s.WeaponsMaxRange > 0)
-            {
-                PayAir();
-                DrawText(Font, "W.Range:", $"{Str(s.WeaponsAvgRange)}..{Str(s.WeaponsMaxRange)}", Color.LightBlue);
-            }
+            DrawValue("Max Range:", s.WeaponsMaxRange, Color.LightBlue);
             Air();
             DrawValue("Repair:", s.RepairRate, Color.Goldenrod);
-            DrawValue("EMP Def:", s.EmpTolerance, Color.Goldenrod);
+            DrawValue("EMP Prot:", s.EmpTolerance, Color.Goldenrod);
             Air();
-            DrawValue("Warp:", warpSpeed, Color.LightGreen);
-            DrawValue("Speed:", subLightSpeed, Color.LightGreen);
-            DrawValue("TurnRate:", turnRateDeg, Color.LightGreen);
+            DrawValue("FTL Speed:", warpSpeed, Color.LightGreen);
+            DrawValue("Sub Speed:", subLightSpeed, Color.LightGreen);
+            DrawValue("Turn:", turnRateDeg, Color.LightGreen);
             Air();
             DrawValue("Troops:", s.TroopCapacity, Color.IndianRed);
             DrawValue("Cargo:", s.CargoSpaceMax, Color.Khaki);
