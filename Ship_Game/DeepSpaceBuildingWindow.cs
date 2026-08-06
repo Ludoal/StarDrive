@@ -39,10 +39,10 @@ namespace Ship_Game
             // alignment to solve a problem the exclusion now solves properly: the two windows
             // are mutually exclusive, so they can share the anchor - opening one closes the
             // other, the way the Exotic and Freighter windows already do.
-            // 10px off the right edge, the margin the minimap and every reworked frame keep;
-            // top aligned with the group tabs (maintainer feedback) - the same TabRowY the
-            // Diplomacy/Economy/etc. tab strips sit on, rather than a hand-graven 89.
-            RectF = new(Screen.ScreenWidth - 10 - windowWidth, GameScreens.ScreenGroups.TabRowY, windowWidth, 300);
+            // 10px off the right edge, the margin the minimap and every reworked frame keep; top
+            // aligned with the group FRAMES (maintainer feedback) - one tab strip below the tab
+            // row, so it lines up with the Diplomacy/Economy/etc. window bodies, not their tabs.
+            RectF = new(Screen.ScreenWidth - 10 - windowWidth, GameScreens.ScreenGroups.GroupFrameTop, windowWidth, 300);
 
             var sl = Add(new SubmenuScrollList<ConstructionListItem>(RectF, "Deep Space Build"));
             sl.SetBackground(Colors.TransparentBlackFill);

@@ -38,6 +38,9 @@ namespace Ship_Game.GameScreens
         // the bar, over the treasury and research readouts.
         const int TabStripH = 25; // Submenu.TabHeight, which is private
         public const int TabRowY = EmpireUIOverlay.BarTop + EmpireUIOverlay.BarH + 10;
+        // the top of a group's visible FRAME - one tab strip below the tab row. Bar overlays that
+        // want to line up with the group frames (not the tab strip) anchor here.
+        public const int GroupFrameTop = TabRowY + TabStripH;
         // the same margin the top bar keeps: the frame's sides line up with the bar above it,
         // and one of the two moving is a thing you would only notice once it looked wrong
         public const int FrameMargin = EmpireUIOverlay.BarTop;

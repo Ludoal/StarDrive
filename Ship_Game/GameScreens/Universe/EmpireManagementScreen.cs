@@ -22,6 +22,9 @@ namespace Ship_Game
         private readonly ScrollList<ColoniesListItem> ColoniesList;
         private readonly GovernorDetailsComponent GovernorDetails;
         private readonly RectF ERect;
+        // Ludoal fork (maintainer feedback): the little "sort by Homeworld then distance" button,
+        // sitting at the right end of the Planet header. Amber when that sort is active.
+        Rectangle HomeSortButton;
 
         public readonly UITable Table; // the shared table charte owns geometry, headers and rules
 
@@ -150,10 +153,14 @@ namespace Ship_Game
                 GovernorDetails = Add(new GovernorDetailsComponent(this, Universe,  planets[0], GovernorRect));
             else
                 Log.Warning("EmpireManagementScreen: player planet list is EMPTY at ctor");
-            // the STANDING sort survives the screen for the session (maintainer bench 307);
-            // System ascending is the factory default (Lek's review, bench 305)
-            Table.Columns[StandingSort].Sorted = true;
-            Table.Columns[StandingSort].Ascending = StandingAsc;
+            // the STANDING sort survives the screen for the session (maintainer bench 307); the
+            // Homeworld sort (StandingSort==-1) is the factory default now, and it highlights no
+            // column - only a real column click marks a header sorted.
+            if (!HomeworldSort)
+            {
+                Table.Columns[StandingSort].Sorted = true;
+                Table.Columns[StandingSort].Ascending = StandingAsc;
+            }
             ResetColoniesList(SortedPlanets(planets, StandingSort, StandingAsc));
             // the troop count and its food bill left this screen (maintainer, 4 Aug):
             // the Troops Array carries both on its own filter line now
@@ -321,6 +328,15 @@ namespace Ship_Game
             // the shared charte draws the headers, the rule and the separators
             Table.DrawChrome(batch);
 
+            // Ludoal fork (maintainer feedback): the Homeworld-sort button at the right of the
+            // Planet header. Amber when that sort is active, dim otherwise; a tooltip explains it.
+            Rectangle planetHdr = Table.Columns[1].Rect;
+            HomeSortButton = new Rectangle(planetHdr.Right - 16, planetHdr.Y, 14, 14);
+            SubTexture homeIcon = ResourceManager.Texture("UI/icon_home");
+            batch.Draw(homeIcon, HomeSortButton, HomeworldSort ? Color.Orange : new Color(150, 150, 150));
+            if (HomeSortButton.HitTest(Input.CursorPosition))
+                ToolTip.CreateTooltip("Sort colonies by distance from the Homeworld (Homeworld first)");
+
             ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             eui.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
@@ -372,6 +388,19 @@ namespace Ship_Game
                 return true;
             }
 
+            // Ludoal fork (maintainer feedback): the Homeworld-sort button, tested before the
+            // headers so the Planet column click below never swallows it.
+            if (input.LeftMouseClick && HomeSortButton.HitTest(input.CursorPosition))
+            {
+                GameAudio.BlipClick();
+                foreach (UITable.Column c in Table.Columns)
+                    c.Sorted = false;              // no column owns the sort now
+                StandingSort = -1;                 // back to the Homeworld sort
+                StandingAsc = true;
+                ResetColoniesList(SortedPlanets(Universe.Player.GetPlanets(), -1, true));
+                return true;
+            }
+
             // headers - tooltips, hover and sort clicks - through the shared charte
             int clicked = Table.HandleInput(input);
             if (clicked >= 0)
@@ -390,6 +419,13 @@ namespace Ship_Game
         // one arithmetic for the ctor and the header clicks - the pair that must agree
         static IEnumerable<Planet> SortedPlanets(IReadOnlyList<Planet> planets, int col, bool asc)
         {
+            if (col < 0) // the Homeworld sort: the capital first, then the rest by distance from it
+            {
+                Planet capital = planets.Count > 0 ? planets[0].Universe.Player.Capital : null;
+                if (capital == null)
+                    return planets; // capital lost - leave the native order
+                return planets.Sorted(p => p == capital ? -1f : p.Position.SqDist(capital.Position));
+            }
             if (col <= 1) // the two name columns sort as text
             {
                 Func<Planet, string> name = col == 0 ? p => p.System.Name : p => p.Name;
@@ -408,8 +444,12 @@ namespace Ship_Game
             return asc ? planets.OrderBy(selector) : planets.OrderByDescending(selector);
         }
 
-        static int StandingSort;         // session-persistent (bench 307)
+        static int StandingSort = -1;    // session-persistent (bench 307); -1 = the Homeworld sort
         static bool StandingAsc = true;
+        // Ludoal fork (maintainer feedback): the DEFAULT order is the Homeworld first, then the
+        // other colonies by distance from it. It is not a table column - a header button toggles
+        // it, and clicking any real column leaves it. HomeworldSort is on whenever StandingSort==-1.
+        static bool HomeworldSort => StandingSort == -1;
 
         void ResetColoniesList(IEnumerable<Planet> sortedList)
         {

@@ -210,16 +210,26 @@ namespace Ship_Game
 
         void OnChangeColony(int change)
         {
-            // the colony screen's walk: the owner's colony list, wrapping at both ends
-            var planets = P.Owner.GetPlanets();
-            int newIndex = planets.IndexOf(P) + change;
-            if (newIndex >= planets.Count) newIndex = 0;
-            else if (newIndex < 0) newIndex = planets.Count - 1;
+            // Ludoal fork (maintainer feedback): walk the colonies ordered by distance from the
+            // Homeworld, stepping from the currently shown planet's slot in that order. The camera
+            // then glides onto the colony now displayed. Falls back to the native list if the
+            // capital was lost.
+            IReadOnlyList<Planet> owned = P.Owner.GetPlanets();
+            Planet capital = P.Owner.Capital;
+            Planet[] planets = capital != null
+                ? owned.Sorted(p => p.Position.SqDist(capital.Position))
+                : owned.ToArray();
+
+            int idx = System.Array.IndexOf(planets, P);
+            if (idx < 0) return;
+            int newIndex = idx + change;
+            if (newIndex >= planets.Length) newIndex = 0;
+            else if (newIndex < 0) newIndex = planets.Length - 1;
+
             Planet next = planets[newIndex];
             if (next != P)
             {
                 Screen.SetSelectedPlanet(next);
-                // the arrows also glide the camera onto the colony now displayed
                 Screen.SnapViewTo(new(next.Position.X, next.Position.Y,
                     Screen.GetZfromScreenState(UniverseScreen.UnivScreenState.PlanetView)), 5f, 2f);
             }

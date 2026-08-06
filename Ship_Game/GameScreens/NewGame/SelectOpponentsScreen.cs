@@ -41,8 +41,7 @@ namespace Ship_Game.GameScreens.NewGame
 
             // the window IS the frame now: no title bar of its own, no list frame, no close cross.
             // Ludoal fork (maintainer feedback): the count gets its own strip with air under the
-            // title, the list starts below it (no longer crowding the top), and the list is
-            // centred in the frame - equal 12px margins either side.
+            // title, and the list starts below it (no longer crowding the top).
             Rectangle rect = Rect;
             int top = PopupFrame.ContentTop(rect);
             const int countStrip = 36;      // the caption's row, with air above and below it

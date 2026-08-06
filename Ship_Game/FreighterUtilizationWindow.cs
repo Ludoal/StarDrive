@@ -75,6 +75,7 @@ namespace Ship_Game
         {
             UtilizationBar.SetRect(new Rectangle((int)Pos.X + 10, (int)Pos.Y+65, 150, 18));
             BuildFreighter.Pos = new Vector2(Pos.X + 5, Pos.Y + 135);
+            BuildFreighter.SetAbsSize(130, 24); // Ludoal fork (maintainer feedback): smaller button
             base.PerformLayout();
         }
 

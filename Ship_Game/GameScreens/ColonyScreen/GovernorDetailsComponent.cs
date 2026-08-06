@@ -290,7 +290,8 @@ namespace Ship_Game
             // the type picker rides the TITLE line, to its right (maintainer, 3 Aug) - the
             // description gains the row it occupied and no longer runs over the toggles
             WorldType.Pos           = new Vector2(ColumnX, Portrait.Y);
-            ColonyTypeList.Pos      = new Vector2(Math.Max(WorldType.Right + 12, ColumnX + 130), Portrait.Y);
+            // Ludoal fork (maintainer feedback): the colony-type picker sits 20px further right
+            ColonyTypeList.Pos      = new Vector2(Math.Max(WorldType.Right + 12, ColumnX + 130) + 20, Portrait.Y);
             WorldDescription.Pos    = new Vector2(ColumnX, Portrait.Y + 21);
             WorldDescription.Text   = GetParsedDescription();
             ColonyBlueprints.Pos    = new Vector2(X + 10, Y + 40 + shift);

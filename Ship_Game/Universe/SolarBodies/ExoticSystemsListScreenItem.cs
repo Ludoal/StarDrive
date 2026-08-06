@@ -38,6 +38,7 @@ namespace Ship_Game
         Rectangle PlanetIconRect;
         Rectangle ResourceIconRect;
         UIButton DeployButton;
+        UIButton MiningAbortButton; // Ludoal fork: mining has TWO buttons - deploy (amber) + abort (red)
         readonly float Distance;
         bool MarkedForResearch;
         bool MarkedForMining;
@@ -46,7 +47,6 @@ namespace Ship_Game
 
         UILabel DeployTextInfo;
         UILabel MiningDeployedTextInfo;
-        UILabel MiningInProgressTextInfo;
         UILabel Owner;
         bool IsPlanet => Planet != null;
         public bool IsStar => Planet == null;
@@ -112,9 +112,18 @@ namespace Ship_Game
             }
             else if (Planet?.IsMineable == true)
             {
-                ButtonStyle mineableStyle = MarkedForMining ? ButtonStyle.Military : ButtonStyle.Default;
-                LocalizedText miningText = !MarkedForMining ? GameText.DeployMiningStation : GameText.AbortDeployent;
-                DeployButton = Button(mineableStyle, miningText, OnMiningClicked);
+                // Ludoal fork (maintainer feedback): TWO buttons like the Planet Info cartouche -
+                // Deploy (amber, always present, greyed at max, carrying the in-progress count) and
+                // a separate Abort (red) that appears once at least one station is deploying and
+                // removes them one by one. No more "In Progress" line beside them.
+                DeployButton = Button(ButtonStyle.Default, GameText.DeployMiningStation, OnMiningDeployClicked);
+                DeployButton.DefaultColor = UIButton.PlateNeutral;   // the Codex amber
+                DeployButton.HoverColor   = UITheme.Hover(UIButton.PlateNeutral);
+                DeployButton.PressColor   = UITheme.Press(UIButton.PlateNeutral);
+                MiningAbortButton = Button(ButtonStyle.Default, GameText.AbortDeployent, OnMiningAbortClicked);
+                MiningAbortButton.DefaultColor = UIButton.PlateHostile;
+                MiningAbortButton.HoverColor   = UITheme.Hover(UIButton.PlateHostile);
+                MiningAbortButton.PressColor   = UITheme.Press(UIButton.PlateHostile);
             }
             else
             {
@@ -123,19 +132,19 @@ namespace Ship_Game
                 DeployButton = Button(dysonStyle, dysonText, OnDysonSwarmClicked);
             }
 
-            DeployButton.Font = Fonts.TahomaBold9;
-
             // cells read the shared column geometry
             UITable.Column[] cols = Screen.Table.Columns;
             OrdersRect = new Rectangle(cols[6].Rect.X, y, cols[6].Rect.Width, h);
             PlanetIconRect = new Rectangle(cols[1].Rect.X + UITable.PadX, y + h / 2 - 16, 32, 32);
             ResourceIconRect = new Rectangle(cols[3].Rect.X + UITable.PadX, y + h / 2 - 10, 20, 20);
 
-            // Ludoal fork (maintainer feedback): a narrower deploy/abort button - the 168px plate
-            // was wider than these short labels need.
+            // Ludoal fork (maintainer feedback): the button keeps the default font (the earlier
+            // narrowing shrank the text); the plate height is the 168px asset's.
             var btn = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px");
-            const int deployBtnW = 140;
-            DeployButton.Rect = new Rectangle(OrdersRect.X + 10, OrdersRect.Y + OrdersRect.Height / 2 - btn.Height / 2, deployBtnW, btn.Height);
+            int btnY = OrdersRect.Y + OrdersRect.Height / 2 - btn.Height / 2;
+            DeployButton.Rect = new Rectangle(OrdersRect.X + 10, btnY, 168, btn.Height);
+            if (MiningAbortButton != null) // mining: Abort sits just right of Deploy
+                MiningAbortButton.Rect = new Rectangle(DeployButton.Rect.Right + 6, btnY, 140, btn.Height);
 
             AddSystemName();
             AddHostileWarning();
@@ -184,52 +193,55 @@ namespace Ship_Game
             if (!IsForMining)
                 return;
 
-            Vector2 miningTextBox = new Vector2(DeployButton.Rect.X, DeployButton.Rect.Y + 4);
-            DeployTextInfo = Add(new UILabel(miningTextBox, GameText.CannotBuildMiningStationTip, SmallFont));
-            DeployTextInfo.Color = Color.Gray;
-            DeployButton.Visible = false;
-            DeployTextInfo.Visible = true;
-
-            
+            // a rig owned by someone else: no controls, no counts
             if (Planet.Mining.Owner != null && Planet.Mining.Owner != Player)
             {
-                DeployTextInfo.Text = "";
+                DeployButton.Visible = false;
+                MiningAbortButton.Visible = false;
                 return;
             }
 
+            // can't build at all: a single greyed hint where the button would be
             if (!Player.CanBuildMiningStations)
             {
-                DeployTextInfo.Text = Localizer.Token(GameText.CannotBuildMiningStationTip2);
+                DeployButton.Visible = false;
+                MiningAbortButton.Visible = false;
+                DeployTextInfo = Add(new UILabel(new Vector2(DeployButton.Rect.X, DeployButton.Rect.Y + 4),
+                                                 Localizer.Token(GameText.CannotBuildMiningStationTip2), SmallFont));
+                DeployTextInfo.Color = Color.Gray;
                 return;
             }
 
-            // the two counters STACK beside the button now (maintainer bench 303) - inline
-            // they forced the Actions column to 360; the 48px row holds two small lines
-            int numDeployed = Planet.OrbitalStations.Count(s => s.Loyalty.isPlayer && s.IsMiningStation);
-            Vector2 miningDeployed = new Vector2(DeployButton.Rect.X + DeployButton.Rect.Width + 6, DeployButton.Rect.Y - 4);
-            MiningDeployedTextInfo = Add(new UILabel(miningDeployed, $"Deployed: {numDeployed} ", SmallFont));
-            MiningDeployedTextInfo.Color = Player.EmpireColor;
-            MiningDeployedTextInfo.Visible = numDeployed > 0;
-
+            int numDeployed   = Planet.OrbitalStations.Count(s => s.Loyalty.isPlayer && s.IsMiningStation);
             int numInProgress = Player.AI.CountGoals(g => g.IsMiningOpsGoal(Planet) && g.TargetShip == null);
-            // Ludoal fork (maintainer feedback): In Progress centred on the row height, not stacked
-            // under Deployed - it sits on the row's vertical middle beside the button.
-            Vector2 miningInProgress = new Vector2(miningDeployed.X, OrdersRect.Y + OrdersRect.Height / 2 - SmallFont.LineSpacing / 2);
-            string miningInProgressMsg = $"In Progress: {numInProgress}";
-            MiningInProgressTextInfo = Add(new UILabel(miningInProgress,miningInProgressMsg, SmallFont));
-            MiningInProgressTextInfo.Color = Color.Wheat;
-            MiningInProgressTextInfo.Visible = numInProgress > 0;
+            bool atMax        = numDeployed >= Mineable.MaximumMiningStations;
 
-            if (numDeployed >= Mineable.MaximumMiningStations)
+            // Ludoal fork (maintainer feedback): at max, the buttons give way to a green text like
+            // the research row does - carrying the station count.
+            if (atMax)
             {
-                DeployTextInfo.Visible = false;
-                MiningDeployedTextInfo.SetRelPos(DeployButton.Rect.X, DeployButton.Rect.Y + 4);
+                DeployButton.Visible = false;
+                MiningAbortButton.Visible = false;
+                DeployTextInfo = Add(new UILabel(new Vector2(DeployButton.Rect.X, DeployButton.Rect.Y + 4),
+                                     $"{numDeployed}/{Mineable.MaximumMiningStations} Mining Stations Deployed", SmallFont));
+                DeployTextInfo.Color = Color.LimeGreen;
+                return;
             }
-            else
-            {
-                DeployButton.Visible = true;
-                DeployTextInfo.Visible = false;
-            }
+
+            // Deploy carries the in-progress count; Abort shows only when at least one is deploying
+            // and removes them one by one. No separate "In Progress" line.
+            DeployButton.Visible = true;
+            DeployButton.Text = numInProgress > 0
+                ? $"{new LocalizedText(GameText.DeployMiningStation).Text} ({numInProgress})"
+                : new LocalizedText(GameText.DeployMiningStation).Text;
+
+            MiningAbortButton.Visible = numInProgress > 0;
+
+            // "N/M Deployed" beside the buttons - the stations actually in orbit
+            Vector2 deployedPos = new Vector2(MiningAbortButton.Rect.Right + 8,
+                                              OrdersRect.Y + OrdersRect.Height / 2 - SmallFont.LineSpacing / 2);
+            MiningDeployedTextInfo = Add(new UILabel(deployedPos, $"{numDeployed}/{Mineable.MaximumMiningStations} Deployed", SmallFont));
+            MiningDeployedTextInfo.Color = numDeployed > 0 ? Color.Green : Color.Gray;
         }
 
         void SetDysonSwarmVisibility()
@@ -402,30 +414,26 @@ namespace Ship_Game
             }
         }
 
-        void OnMiningClicked(UIButton b)
+        // Ludoal fork (maintainer feedback): mining now has two dedicated buttons. Deploy queues one
+        // more station; Abort cancels one deploying station at a time. The row rebuilds so the
+        // counts, the greyed-at-max state and the Abort button's visibility all refresh.
+        void OnMiningDeployClicked(UIButton b)
         {
-            if (!MarkedForMining)
+            if (!Planet.Mining.CanAddMiningStationFor(Player))
             {
-                Player.AI.AddGoalAndEvaluate(new MiningOps(Player, Planet));
-                if (!Planet.Mining.CanAddMiningStationFor(Player))
-                {
-                    DeployButton.Text = GameText.AbortDeployent;
-                    DeployButton.Style = ButtonStyle.Military;
-                    MarkedForMining = true;
-                }
+                GameAudio.NegativeClick();
+                return;
             }
-            else
-            {
-                Player.AI.CancelMiningStation(Planet);
-                if (Planet.Mining.CanAddMiningStationFor(Player))
-                {
-                    DeployButton.Text = GameText.DeployMiningStation;
-                    DeployButton.Style = ButtonStyle.Default;
-                    MarkedForMining = false;
-                }
-            }
+            GameAudio.EchoAffirmative();
+            Player.AI.AddGoalAndEvaluate(new MiningOps(Player, Planet));
+            RequiresLayout = true;
+        }
 
-            SetMiningVisibility();
+        void OnMiningAbortClicked(UIButton b)
+        {
+            GameAudio.EchoAffirmative();
+            Player.AI.CancelMiningStation(Planet); // one goal at a time
+            RequiresLayout = true;
         }
 
         void OnDysonSwarmClicked(UIButton b)

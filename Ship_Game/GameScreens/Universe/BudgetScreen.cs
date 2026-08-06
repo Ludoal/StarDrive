@@ -247,7 +247,9 @@ namespace Ship_Game.GameScreens
             // rule now, the extra empty line doubled it (maintainer, 4 Aug)
             int headerY = (int)client.Y + 24;
             Table.RowPitch = 28; // the 24px econ row plus the list's item padding
-            Table.Layout(client, headerY, client.Bottom - 14);
+            // Ludoal fork (maintainer feedback): the table runs down to 10px off the frame's foot,
+            // like the Ships list that falls cleanly - the old value left a gap.
+            Table.Layout(client, headerY, client.Bottom - 10);
             // ONE frame, two halves: the synthesis column takes what the table leaves
             float split = Table.ListRect.Right + 10;
             LeftMenu  = new Rectangle((int)client.X, (int)client.Y, (int)(split - client.X), (int)client.H);
@@ -258,19 +260,20 @@ namespace Ship_Game.GameScreens
             Label(new Vector2(Table.TableRect.X + (Table.TableRect.Width - Fonts.Arial12.TextWidth(unitNote)) / 2, client.Y + 4),
                   unitNote, Fonts.Arial12, Color.Gray);
 
-            // the TOTAL row keeps the table's last lane; the rules run through it. Ludoal fork
-            // (maintainer feedback): reserve a whole number of 24px rows (72 = 3) so the last row
-            // is never cut mid-height - the old 40 clipped it and its selection box - and the
-            // TOTAL drops clear below the list.
+            // the TOTAL row keeps the table's last lane. Ludoal fork (maintainer feedback): the
+            // scrolling list stops ONE row-pitch above the table foot, leaving exactly that lane
+            // for the TOTAL footer just below it - copied from the clean Ships list rather than
+            // reserving a hand-guessed band.
             var listRect = Table.ListRect;
-            listRect.H -= 72;
+            listRect.H -= Table.RowPitch;
             ColonySL = Add(new ScrollList<EconColonyItem>(listRect, 24));
             ColonySL.EnableItemHighlight = true;
             Table.ApplyHighlightTo(ColonySL);
             FillList();
 
-            // TOTAL footer, its label aligned with the planet NAMES like every row's text
-            int totalY = (int)listRect.Bottom + 24;
+            // TOTAL footer sits in the lane freed just below the list, as close to it as the row
+            // pitch allows - its label aligned with the planet NAMES like every row's text
+            int totalY = (int)listRect.Bottom + 4;
             var totalLbl = Label(new Vector2(Table.Columns[0].Rect.X + UITable.PadX + 28, totalY), Localizer.Token(GameText.Total2).ToUpper(), Fonts.Arial12Bold);
             totalLbl.Color = Color.Wheat;
             UILabel FooterCell(int col, Func<UILabel, string> getText)

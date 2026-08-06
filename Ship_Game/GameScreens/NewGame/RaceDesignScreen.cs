@@ -73,6 +73,7 @@ namespace Ship_Game
         UILabel NumSystemsLabel;
         UILabel ExtraPlanetsLabel;
         UILabel PerformanceWarning;
+        float PerfWarnWrapW;   // wrap width for the performance warning, from its X to the tab edge
         int FlagIndex;
         public int TotalPointsUsed { get; private set; }
 
@@ -189,8 +190,9 @@ namespace Ship_Game
             // two text columns left (labels -10, values -20) opens the gap. Constants, not a
             // divide of the leftover, so nothing shifts when the tab resizes.
             const float FormLeftPull = 10f;     // labels start 10px further left
-            const float SplitPull    = 10f;     // values recede another 10 (=> -20 total)
+            const float SplitPull    = 30f;     // values recede 30 from stock (maintainer: -20 more)
             const float FlagColW     = 120f;    // the flag picker column, arrows included
+            const float FlagNudgeX   = 10f;     // maintainer: push the whole flag block 10px right
             const float FormSplit    = 205f - SplitPull;
 
             SelectedData = GetDefaultRace(); //SelectedData is used to populate the UI
@@ -208,7 +210,7 @@ namespace Ship_Game
             HomeWorldName = SelectedData.HomeWorldName;
 
             // column 3: the flag picker, its "Flag Color" caption aligned on the Empire Name row
-            var flagPos = new Vector2(nameArea.Right - FlagColW + 6, nameArea.Y + 10);
+            var flagPos = new Vector2(nameArea.Right - FlagColW + 6 + FlagNudgeX, nameArea.Y + 10);
             Add(new UILabel(flagPos, GameText.FlagColor, Fonts.Arial14Bold, Color.BurlyWood));
             FlagRect = new Rectangle((int)flagPos.X, (int)flagPos.Y + 26, 80, 80);
 
@@ -262,6 +264,9 @@ namespace Ship_Game
             // panel's foot, away from the numbers that trigger it (maintainer)
             PerformanceWarning = Add(new UILabel(labelX, labelY + 2 * (font.LineSpacing + 3), ""));
             PerformanceWarning.Font = font;
+            // Ludoal fork (maintainer feedback): the warning wraps to the tab's right edge instead
+            // of running off it - the width from the label's X to the frame edge, less a margin.
+            PerfWarnWrapW = galaxyArea.Right - labelX - 12;
 
             UIList optionButtons = AddList(galaxyArea.X + 10, galaxyArea.Y + 6);
             optionButtons.CaptureInput = true;
@@ -731,16 +736,12 @@ namespace Ship_Game
 
         void UpdateSelectedOpponentsButton()
         {
-            if (P.SelectedOpponents.Count > 0)
-            {
-                SelectOpponentsBtn.Style = ButtonStyle.Military;
-                SelectOpponentsBtn.Text = $"Select Opponents ({P.SelectedOpponents.Count}/{P.NumOpponents})";
-            }
-            else
-            {
-                SelectOpponentsBtn.Style = ButtonStyle.BigDip;
-                SelectOpponentsBtn.Text = $"Select Opponents";
-            }
+            // Ludoal fork (maintainer feedback): always the blue (active) plate - it used to flip to
+            // the red Military plate once an opponent was picked, which read as a hostile action.
+            SelectOpponentsBtn.Style = ButtonStyle.BigDip;
+            SelectOpponentsBtn.Text = P.SelectedOpponents.Count > 0
+                ? $"Select Opponents ({P.SelectedOpponents.Count}/{P.NumOpponents})"
+                : "Select Opponents";
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -762,7 +763,7 @@ namespace Ship_Game
             Frame.DrawFill(batch, ScreenFrame);
             Frame.Draw(batch);
             // the window title font, the one Colony and every popup uses - not Laserian
-            string screenTitle = Localizer.Token(GameText.DesignYourRace);
+            string screenTitle = "New Game"; // Ludoal fork (maintainer feedback): was "Design Your Race"
             batch.DrawString(UITheme.WindowTitle, screenTitle,
                 new Vector2(ScreenFrame.X + ScreenFrame.Width / 2 - UITheme.WindowTitle.TextWidth(screenTitle) / 2f,
                             Frame.TitleRect.CenterY() - UITheme.WindowTitle.LineSpacing / 2f), UITheme.TextPrimary);
@@ -789,12 +790,14 @@ namespace Ship_Game
             if (numSystems >= 200)
             {
                 PerformanceWarning.Color = NumSystemsLabel.Color = Color.Orange;
-                PerformanceWarning.Text = "Warning, performance issues are expected mid to late game.";
+                PerformanceWarning.Text = PerformanceWarning.Font.ParseText(
+                    "Caution, performance issues are expected mid to late game.", PerfWarnWrapW);
             }
             else if (numSystems >= 100)
             {
                 PerformanceWarning.Color = NumSystemsLabel.Color = Color.Yellow;
-                PerformanceWarning.Text = "Warning, you might experience performance issues late game.";
+                PerformanceWarning.Text = PerformanceWarning.Font.ParseText(
+                    "Caution, you might experience performance issues late game.", PerfWarnWrapW);
 
             }
             else
