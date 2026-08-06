@@ -41,7 +41,6 @@ namespace Ship_Game
         UIButton MiningAbortButton; // Ludoal fork: mining has TWO buttons - deploy (amber) + abort (red)
         readonly float Distance;
         bool MarkedForResearch;
-        bool MarkedForMining;
         bool DysonSwarmActiveByPlayer;
         readonly UniverseState Universe;
 
@@ -86,9 +85,11 @@ namespace Ship_Game
                     }
                 }
             }
-            else if (Planet?.IsMineable == true && Player.AI.Goals.Any(g => g.IsMiningOpsGoal(Planet) && g.TargetShip == null))
+            else if (Planet?.IsMineable == true)
             {
-                MarkedForMining = true;
+                // a mining row: its deploy/abort state is read live from the goal count in
+                // SetMiningVisibility, so nothing is cached here - the branch keeps mining rows
+                // out of the Dyson case below.
             }
             else if (Player.CanBuildDysonSwarmIn(System))
             {
