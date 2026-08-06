@@ -213,6 +213,11 @@ namespace Ship_Game
                 ScreenGroups.Group g = ScreenGroups.GroupOf(stack[i]);
                 if (g != ScreenGroups.Group.None) { open = g; break; }
             }
+            // Ludoal fork (maintainer feedback): a colony opened FROM a list screen removed that
+            // screen from the stack (it re-adds itself on close), so the scan finds nothing - fall
+            // back to the group it belonged to, kept lit while that return is pending.
+            if (open == ScreenGroups.Group.None && Universe.ReturnToListScreen != null)
+                open = Universe.ReturnToListGroup;
             Graphics.Font font = Fonts.Arial12Bold;
 
             foreach (Button b in Buttons)

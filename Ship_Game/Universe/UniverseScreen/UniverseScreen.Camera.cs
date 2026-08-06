@@ -106,6 +106,7 @@ namespace Ship_Game
                     // map. Clear any hook a list screen left standing, or a later map double-click
                     // would still fly back to that list.
                     ReturnToListScreen = null;
+                    ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
                     ClearSelectedItems();
                     returnToShip = doReturnToShip;
                     LookingAtPlanet = true;

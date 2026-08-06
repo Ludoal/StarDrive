@@ -76,6 +76,7 @@ namespace Ship_Game
                 GameAudio.AcceptClick();
                 UniverseScreen universe = P.Universe.Screen;
                 universe.ReturnToListScreen = null;
+                universe.ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
                 ScreenManager.ExitAllAbove(universe);
                 universe.ClosePlanetPanelStayHere(); // camera lands at the planet, planet selected
                 return true;

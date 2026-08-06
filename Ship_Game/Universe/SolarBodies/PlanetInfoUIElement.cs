@@ -634,21 +634,22 @@ namespace Ship_Game
                 if (BtnSendTroops.HandleInput(input) || BtnColonize.HandleInput(input))
                     return true;
             }
+            // Ludoal fork (maintainer feedback): RIGHT-click the Send Troops button recalls ONE
+            // incoming troop ship - copied verbatim from the Planets table's working right-click
+            // (SendTroops.HitTest at the TOP of HandleInput, using the element's HitTest not
+            // .Rect.HitTest, and NOT gated by the owner/at-war context that hid it before).
+            if (input.RightMouseClick && BtnSendTroops.Visible && BtnSendTroops.HitTest(input.CursorPosition))
+            {
+                if (RecallOneIncomingTroopShip())
+                    GameAudio.EchoAffirmative();
+                else
+                    GameAudio.NegativeClick();
+                return true;
+            }
             if (P.Owner != null && P.Owner != Player && P.IsExploredBy(Player) && Player.IsAtWarWith(P.Owner))
             {
                 int invading = IncomingTroops;
                 UpdateEnemyButtons(invading);
-                // Ludoal fork (maintainer feedback): RIGHT-click the Send Troops/Invade button recalls
-                // ONE incoming troop ship, exactly like the Planets table's working right-click
-                // (rebase the last inbound). Tested before the button's own HandleInput (left only).
-                if (input.RightMouseClick && BtnSendTroops.Rect.HitTest(input.CursorPosition))
-                {
-                    if (RecallOneIncomingTroopShip())
-                        GameAudio.EchoAffirmative();
-                    else
-                        GameAudio.NegativeClick();
-                    return true;
-                }
                 if (BtnSendTroops.HandleInput(input) || (invading > 0 && BtnColonize.HandleInput(input)))
                     return true;
             }

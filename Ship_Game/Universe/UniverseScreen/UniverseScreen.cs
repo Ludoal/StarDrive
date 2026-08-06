@@ -80,6 +80,10 @@ namespace Ship_Game
         // under a list-opened colony - origin tab still selected. Written at every
         // arming site; only read while ReturnToListScreen is non-null.
         public Submenu ReturnToListTabs;
+        // Ludoal fork (maintainer feedback): the group the exited list screen belonged to, so the
+        // top bar keeps that group's button lit while a list-opened colony is up (the list screen
+        // itself has left the stack). Armed alongside ReturnToListScreen; None when it clears.
+        public GameScreens.ScreenGroups.Group ReturnToListGroup = GameScreens.ScreenGroups.Group.None;
         public EmpireUIOverlay EmpireUI;
         public BloomComponent bloomComponent;
         public DistortionComponent distortionComponent;

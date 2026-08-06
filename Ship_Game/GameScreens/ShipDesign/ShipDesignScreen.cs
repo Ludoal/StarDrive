@@ -1079,12 +1079,9 @@ namespace Ship_Game
                                                 Fonts.Arial12Bold, DefaultBrowserFilter));
             BrowserFilter.AutoCaptureOnKeys = true;
             BrowserFilter.AutoCaptureLoseFocusTime = 0.5f;
-            // Ludoal fork (bench): it read as a stray line of text over the starfield. The
-            // control already knows how to underline itself and to light up on hover — that is
-            // enough to say "you can type here", without painting a box of our own.
-            // (not AutoCaptureOnHover: that would steal the screen's keyboard shortcuts as soon
-            // as the cursor drifted over the field)
-            BrowserFilter.DrawUnderline = true;
+            // Ludoal fork (maintainer feedback): the standard framed search field, like Colony's
+            // building filter - the bare underline read as a stray line of text over the starfield.
+            BrowserFilter.Background = new Submenu(new RectF(filterX, searchY - 3, hullSelSize.X, Fonts.Arial12Bold.LineSpacing + 6));
             BrowserFilter.Color = Colors.Cream;
             // Ludoal fork (bench 46.150): the placeholder clears itself on click - it had to be
             // deleted by hand before you could type (maintainer feedback).
@@ -1122,7 +1119,8 @@ namespace Ship_Game
                                                Fonts.Arial12Bold, DefaultModuleFilter));
             ModuleFilter.AutoCaptureOnKeys = true;
             ModuleFilter.AutoCaptureLoseFocusTime = 0.5f;
-            ModuleFilter.DrawUnderline = true;
+            // Ludoal fork (maintainer feedback): the standard framed search field, like Colony's.
+            ModuleFilter.Background = new Submenu(new RectF(ModuleSelection.BandLeft, searchY - 3, ModuleSelection.ListWidth, Fonts.Arial12Bold.LineSpacing + 6));
             ModuleFilter.Color = Colors.Cream;
             ModuleFilter.AutoClearTextOnInputCapture = true;
             ModuleFilter.OnTextChanged = (text) =>

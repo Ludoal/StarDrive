@@ -374,6 +374,7 @@ namespace Ship_Game
             // above would be wiped by the very call it is meant to follow.
             Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new EmpireManagementScreen(Universe, eui));
             Universe.ReturnToListTabs   = EmpireTabs; // the dimmed silhouette behind the colony
+            Universe.ReturnToListGroup  = ScreenGroups.GroupOf(this); // keep the group button lit (maintainer)
             ExitScreen();
         }
 

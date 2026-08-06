@@ -145,6 +145,7 @@ namespace Ship_Game
                 {
                     Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new TroopListScreen(Universe, EmpireUI));
                     Universe.ReturnToListTabs   = EmpireTabs; // the dimmed silhouette behind the colony
+                    Universe.ReturnToListGroup  = ScreenGroups.GroupOf(this); // keep the group button lit (maintainer)
                 }
             }
         }

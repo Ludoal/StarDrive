@@ -395,6 +395,17 @@ namespace Ship_Game
         // rebuilt child, dropped the click. OnClick stays wired but no-op; the rect drives it.
         void OnMiningClicked(UIButton b) { }
 
+        // ⚠ the mining widgets refresh EVERY FRAME (like the Planet Info cartouche, which recomputes
+        // its state in Draw), NOT only on click. Refreshing at click-time alone showed the previous
+        // state until the NEXT click: AddGoalAndEvaluate takes effect after HandleInput, so the
+        // click-time count was stale by one. Reading it per-frame in Update always shows current.
+        public override void Update(float fixedDeltaTime)
+        {
+            if (IsForMining)
+                RefreshMiningState();
+            base.Update(fixedDeltaTime);
+        }
+
         // left = add a station, right = cancel one deploying. Returns true if it consumed the click.
         bool HandleMiningClick(InputState input)
         {
@@ -409,7 +420,6 @@ namespace Ship_Game
                     GameAudio.EchoAffirmative();
                 }
                 else GameAudio.NegativeClick();
-                RefreshMiningState();
                 return true;
             }
             if (input.RightMouseClick)
@@ -420,7 +430,6 @@ namespace Ship_Game
                     GameAudio.EchoAffirmative();
                 }
                 else GameAudio.NegativeClick();
-                RefreshMiningState();
                 return true;
             }
             return false;

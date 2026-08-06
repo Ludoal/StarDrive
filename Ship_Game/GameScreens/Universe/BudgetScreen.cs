@@ -378,6 +378,7 @@ namespace Ship_Game.GameScreens
             // map (maintainer feedback). The universe screen calls this once, when that colony closes.
             Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new BudgetScreen(Universe));
             Universe.ReturnToListTabs   = EmpireTabs; // the dimmed silhouette behind the colony
+            Universe.ReturnToListGroup  = ScreenGroups.GroupOf(this); // keep the group button lit (maintainer)
             Universe.workersPanel = new ColonyScreen(Universe, item.Planet, Universe.EmpireUI);
             Universe.LookingAtPlanet = true;
             // same anchor as the double-click path: the panel covers the map, no snap,

@@ -207,6 +207,7 @@ namespace Ship_Game
                 // setup, and a hook still standing would send the NEXT close there too.
                 Action back = ReturnToListScreen;
                 ReturnToListScreen = null;
+                ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
 
                 AdjustCamTimer = 1f;
                 if (returnToShip)
