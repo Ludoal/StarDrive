@@ -452,13 +452,32 @@ namespace Ship_Game
         {
             get
             {
-                // todo: double loop sum. 
+                // todo: double loop sum.
                 var ships = Screen.Player.OwnedShips;
                 return ships
                     .Where(s => s != null && s.HasOurTroops &&
                                 s.AI.OrderQueue.Any(g => g.Plan == ShipAI.Plan.LandTroop && g.TargetPlanet == P))
                     .Sum(s => s.TroopCount);
             }
+        }
+
+        // Ludoal fork (maintainer feedback): recall the LAST inbound troop ship, one per right-click -
+        // the same gesture the Planets table's OnSendTroopsRightClick performs. Returns false if none.
+        bool RecallOneIncomingTroopShip()
+        {
+            Ship last = null;
+            foreach (Ship s in Screen.Player.OwnedShips)
+            {
+                if (s?.AI == null || !s.HasOurTroops)
+                    continue;
+                if (s.AI.OrderQueue.Any(g => g.TargetPlanet == P
+                                             && (g.Plan == ShipAI.Plan.LandTroop || g.Plan == ShipAI.Plan.Rebase)))
+                    last = s;
+            }
+            if (last == null)
+                return false;
+            last.AI.OrderRebaseToNearest();
+            return true;
         }
 
 
@@ -619,6 +638,17 @@ namespace Ship_Game
             {
                 int invading = IncomingTroops;
                 UpdateEnemyButtons(invading);
+                // Ludoal fork (maintainer feedback): RIGHT-click the Send Troops/Invade button recalls
+                // ONE incoming troop ship, exactly like the Planets table's working right-click
+                // (rebase the last inbound). Tested before the button's own HandleInput (left only).
+                if (input.RightMouseClick && BtnSendTroops.Rect.HitTest(input.CursorPosition))
+                {
+                    if (RecallOneIncomingTroopShip())
+                        GameAudio.EchoAffirmative();
+                    else
+                        GameAudio.NegativeClick();
+                    return true;
+                }
                 if (BtnSendTroops.HandleInput(input) || (invading > 0 && BtnColonize.HandleInput(input)))
                     return true;
             }
@@ -638,14 +668,29 @@ namespace Ship_Game
             }
             else if (P.IsMineable && ExoticRect.HitTest(input.CursorPosition) && input.InGameSelect)
             {
+                // Ludoal fork (maintainer feedback): left-click adds a mining station...
                 if (P.Mining.CanAddMiningStationFor(Player))
                 {
                     Player.AI.AddGoalAndEvaluate(new MiningOps(Player, P));
                     GameAudio.EchoAffirmative();
                 }
                 else
-                { 
-                    GameAudio.NegativeClick(); 
+                {
+                    GameAudio.NegativeClick();
+                }
+                return true;
+            }
+            else if (P.IsMineable && ExoticRect.HitTest(input.CursorPosition) && input.RightMouseClick)
+            {
+                // ...right-click cancels one deploying station (like Send Troops' left/right pair)
+                if (Player.AI.CountGoals(g => g.IsMiningOpsGoal(P) && g.TargetShip == null) > 0)
+                {
+                    Player.AI.CancelMiningStation(P);
+                    GameAudio.EchoAffirmative();
+                }
+                else
+                {
+                    GameAudio.NegativeClick();
                 }
                 return true;
             }

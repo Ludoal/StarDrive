@@ -38,7 +38,6 @@ namespace Ship_Game
         Rectangle PlanetIconRect;
         Rectangle ResourceIconRect;
         UIButton DeployButton;
-        UIButton MiningAbortButton; // Ludoal fork: mining has TWO buttons - deploy (amber) + abort (red)
         readonly float Distance;
         bool MarkedForResearch;
         bool DysonSwarmActiveByPlayer;
@@ -113,18 +112,15 @@ namespace Ship_Game
             }
             else if (Planet?.IsMineable == true)
             {
-                // Ludoal fork (maintainer feedback): TWO buttons like the Planet Info cartouche -
-                // Deploy (amber, always present, greyed at max, carrying the in-progress count) and
-                // a separate Abort (red) that appears once at least one station is deploying and
-                // removes them one by one. No more "In Progress" line beside them.
-                DeployButton = Button(ButtonStyle.Default, GameText.DeployMiningStation, OnMiningDeployClicked);
+                // Ludoal fork (maintainer feedback): ONE amber button like the Planet Info cartouche -
+                // LEFT-click adds a station, RIGHT-click cancels one deploying (the Send Troops
+                // pattern). One button, two gestures - no rebuild between click and release, which is
+                // what made the two-button version act one click late. Greyed when the field is full.
+                DeployButton = Button(ButtonStyle.Default, GameText.DeployMiningStation, OnMiningClicked);
+                DeployButton.AcceptRightClicks = true;
                 DeployButton.DefaultColor = UIButton.PlateNeutral;   // the Codex amber
                 DeployButton.HoverColor   = UITheme.Hover(UIButton.PlateNeutral);
                 DeployButton.PressColor   = UITheme.Press(UIButton.PlateNeutral);
-                MiningAbortButton = Button(ButtonStyle.Default, GameText.AbortDeployent, OnMiningAbortClicked);
-                MiningAbortButton.DefaultColor = UIButton.PlateHostile;
-                MiningAbortButton.HoverColor   = UITheme.Hover(UIButton.PlateHostile);
-                MiningAbortButton.PressColor   = UITheme.Press(UIButton.PlateHostile);
             }
             else
             {
@@ -144,8 +140,6 @@ namespace Ship_Game
             var btn = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px");
             int btnY = OrdersRect.Y + OrdersRect.Height / 2 - btn.Height / 2;
             DeployButton.Rect = new Rectangle(OrdersRect.X + 10, btnY, 168, btn.Height);
-            if (MiningAbortButton != null) // mining: Abort sits just right of Deploy
-                MiningAbortButton.Rect = new Rectangle(DeployButton.Rect.Right + 6, btnY, 140, btn.Height);
 
             AddSystemName();
             AddHostileWarning();
@@ -198,7 +192,6 @@ namespace Ship_Game
             if (Planet.Mining.Owner != null && Planet.Mining.Owner != Player)
             {
                 DeployButton.Visible = false;
-                MiningAbortButton.Visible = false;
                 return;
             }
 
@@ -206,7 +199,6 @@ namespace Ship_Game
             if (!Player.CanBuildMiningStations)
             {
                 DeployButton.Visible = false;
-                MiningAbortButton.Visible = false;
                 DeployTextInfo = Add(new UILabel(new Vector2(DeployButton.Rect.X, DeployButton.Rect.Y + 4),
                                                  Localizer.Token(GameText.CannotBuildMiningStationTip2), SmallFont));
                 DeployTextInfo.Color = Color.Gray;
@@ -214,10 +206,10 @@ namespace Ship_Game
             }
 
             // Both labels are created ONCE here (at layout); RefreshMiningState only toggles their
-            // visibility and text afterwards, so a click never rebuilds them. The green "at max"
-            // text sits where the button would be; the "N/M Deployed" beside the buttons.
+            // text/visibility afterwards, so a click never rebuilds them. The green "at max" text
+            // sits where the button would be; the "N/M Deployed" just right of the button.
             DeployTextInfo = Add(new UILabel(new Vector2(DeployButton.Rect.X, DeployButton.Rect.Y + 4), "", SmallFont));
-            Vector2 deployedPos = new Vector2(MiningAbortButton.Rect.Right + 8,
+            Vector2 deployedPos = new Vector2(DeployButton.Rect.Right + 8,
                                               OrdersRect.Y + OrdersRect.Height / 2 - SmallFont.LineSpacing / 2);
             MiningDeployedTextInfo = Add(new UILabel(deployedPos, "", SmallFont));
             RefreshMiningState();
@@ -238,6 +230,10 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            // Ludoal fork: the mining button's left/right gestures are read here, before base routes
+            // the click to the button's (no-op) OnClick - so both buttons reach HandleMiningClick.
+            if (HandleMiningClick(input))
+                return true;
             return base.HandleInput(input);
         }
 
@@ -393,28 +389,41 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork (maintainer feedback): mining has two dedicated buttons. Deploy queues one
-        // more station; Abort cancels one deploying station at a time. ⚠ they refresh their state
-        // IN PLACE (like the research button), NOT by RequiresLayout - a rebuild destroys the very
-        // button being clicked between its Pressed and Released, so the action landed one click
-        // late (the bench's "Deploy does nothing, Abort deploys the previous click").
-        void OnMiningDeployClicked(UIButton b)
-        {
-            if (!Planet.Mining.CanAddMiningStationFor(Player))
-            {
-                GameAudio.NegativeClick();
-                return;
-            }
-            GameAudio.EchoAffirmative();
-            Player.AI.AddGoalAndEvaluate(new MiningOps(Player, Planet));
-            RefreshMiningState();
-        }
+        // Ludoal fork (maintainer feedback): ONE amber button, left-click adds / right-click removes
+        // (the Send Troops pattern). The click is read in HandleInput below by hit-testing the
+        // button rect - NOT via the button's OnClick, which cannot tell left from right and, being a
+        // rebuilt child, dropped the click. OnClick stays wired but no-op; the rect drives it.
+        void OnMiningClicked(UIButton b) { }
 
-        void OnMiningAbortClicked(UIButton b)
+        // left = add a station, right = cancel one deploying. Returns true if it consumed the click.
+        bool HandleMiningClick(InputState input)
         {
-            GameAudio.EchoAffirmative();
-            Player.AI.CancelMiningStation(Planet); // one goal at a time
-            RefreshMiningState();
+            if (!IsForMining || !DeployButton.Visible || !DeployButton.Rect.HitTest(input.CursorPosition))
+                return false;
+
+            if (input.LeftMouseClick)
+            {
+                if (Planet.Mining.CanAddMiningStationFor(Player))
+                {
+                    Player.AI.AddGoalAndEvaluate(new MiningOps(Player, Planet));
+                    GameAudio.EchoAffirmative();
+                }
+                else GameAudio.NegativeClick();
+                RefreshMiningState();
+                return true;
+            }
+            if (input.RightMouseClick)
+            {
+                if (Player.AI.CountGoals(g => g.IsMiningOpsGoal(Planet) && g.TargetShip == null) > 0)
+                {
+                    Player.AI.CancelMiningStation(Planet);
+                    GameAudio.EchoAffirmative();
+                }
+                else GameAudio.NegativeClick();
+                RefreshMiningState();
+                return true;
+            }
+            return false;
         }
 
         // update the mining widgets on the EXISTING objects - no Add, no RemoveAll, no rebuild
@@ -427,11 +436,10 @@ namespace Ship_Game
             // when the field is full of IN-PROGRESS stations, not just deployed ones
             bool canAdd         = Planet.Mining.CanAddMiningStationFor(Player);
 
-            // all stations actually built: buttons give way to the green text (like research)
+            // all stations actually built: button gives way to the green text (like research)
             if (atMaxDeployed)
             {
                 DeployButton.Visible = false;
-                MiningAbortButton.Visible = false;
                 if (DeployTextInfo != null)
                 {
                     DeployTextInfo.Text = $"{numDeployed}/{Mineable.MaximumMiningStations} Mining Stations Deployed";
@@ -447,7 +455,6 @@ namespace Ship_Game
             DeployButton.Text = numInProgress > 0
                 ? $"{new LocalizedText(GameText.DeployMiningStation).Text} ({numInProgress})"
                 : new LocalizedText(GameText.DeployMiningStation).Text;
-            MiningAbortButton.Visible = numInProgress > 0;
 
             if (MiningDeployedTextInfo != null)
             {

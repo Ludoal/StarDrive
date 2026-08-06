@@ -56,10 +56,15 @@ public sealed class GamePlayMenuScreen : PopupWindow
         buttons.Padding = new Vector2(2f, 12f);
         buttons.LayoutStyle = ListLayoutStyle.ResizeList;
 
-        SaveButton = buttons.Add(ButtonStyle.Default, GameText.Save, Save_OnClick);
+        // Ludoal fork (maintainer feedback): three pairs, a gap after each - [Save, Load],
+        // [Options, Hotkeys], [Exit Main, Exit Windows]. "Return to Game" is gone (the close cross
+        // does it); its slot becomes Hotkeys, opening a placeholder to be filled later.
+        SaveButton = buttons.Add(ButtonStyle.Default, "Save Game", Save_OnClick);
         LoadButton = buttons.Add(ButtonStyle.Default, GameText.LoadGame,   Load_OnClick);
+        buttons.AddLabel(new Vector2(btnW, 14), "");   // gap after the save/load pair
         buttons.Add(ButtonStyle.Default, GameText.Options,   Options_OnClick);
-        buttons.Add(ButtonStyle.Default, GameText.ReturnToGame, Return_OnClick);
+        buttons.Add(ButtonStyle.Default, "Hotkeys", Hotkeys_OnClick);
+        buttons.AddLabel(new Vector2(btnW, 14), "");   // gap after the options/hotkeys pair
         ExitToMainMenu = buttons.Add(ButtonStyle.Default, GameText.ExitToMainMenu, ExitToMain_OnClick);
         ExitToWindows = buttons.Add(ButtonStyle.Default, GameText.ExitToWindows, Exit_OnClick);
     }
@@ -135,9 +140,11 @@ public sealed class GamePlayMenuScreen : PopupWindow
         });
     }
 
-    void Return_OnClick(UIButton button)
+    void Hotkeys_OnClick(UIButton button)
     {
-        ExitScreen(); 
+        // Ludoal fork (maintainer feedback): the coming hotkeys screen - a framed popup with a
+        // close cross, empty for now.
+        ScreenManager.AddScreen(new HotkeysScreen(this));
     }
 
     void ExitToMain_OnClick(UIButton button)

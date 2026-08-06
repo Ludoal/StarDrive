@@ -14,6 +14,8 @@ using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Universe;
 using Ship_Game.Universe.SolarBodies; // DistanceDisplay
 using Ship_Game.UI; // UITable: the shared table charte
+using Ship_Game.Ships; // Ship, for the rebasing-troops count
+using Ship_Game.AI;    // ShipAI.Plan.Rebase
 
 namespace Ship_Game
 {
@@ -54,6 +56,7 @@ namespace Ship_Game
         }
 
         private int NumAvailableTroops;
+        private int NumRebasingTroops;   // Ludoal fork: troops rebasing to our own worlds, shown on line 1
         readonly Array<Planet> ExploredPlanets = new Array<Planet>();
 
         // FB - this will store each planet and it's distance to the closest player colony. If the planet is owned
@@ -231,22 +234,56 @@ namespace Ship_Game
             // the shared charte draws the headers, the rule and the separators
             Table.DrawChrome(batch);
 
-            // "Available Troops: N" rides LINE 1 - the filter row - centred over the
-            // Send Troops column (Lek's review, bench 305); label vanilla, count white,
-            // gray when dry
+            // "Available Troops: N" rides LINE 1 - the filter row - centred over the Send Troops
+            // column (Lek's review, bench 305); label vanilla, count white, gray when dry. Ludoal
+            // fork (maintainer feedback): "Rebasing: N" follows it (same convention), and the pair
+            // is centred as a whole - it carries the count the Homeworld button used to show.
             Graphics.Font font = Fonts.Arial12Bold;
             Rectangle actions = Table.Columns[9].Rect;
-            string lbl = "Available Troops: ";
-            string val = NumAvailableTroops.ToString();
-            float tw = font.TextWidth(lbl) + font.TextWidth(val);
-            var pos = new Vector2(actions.X + actions.Width / 2f - tw / 2f, FilterLineY);
-            batch.DrawString(font, lbl, pos.Rounded(), UITable.Vanilla);
-            batch.DrawString(font, val, new Vector2(pos.X + font.TextWidth(lbl), pos.Y).Rounded(),
+            NumRebasingTroops = CountRebasingTroops();
+
+            string availLbl = "Available Troops: ";
+            string availVal = NumAvailableTroops.ToString();
+            string rebLbl   = "   Rebasing: ";
+            string rebVal   = NumRebasingTroops.ToString();
+            bool showReb    = NumRebasingTroops > 0;
+
+            float tw = font.TextWidth(availLbl) + font.TextWidth(availVal)
+                     + (showReb ? font.TextWidth(rebLbl) + font.TextWidth(rebVal) : 0f);
+            float x  = actions.X + actions.Width / 2f - tw / 2f;
+            var pos  = new Vector2(x, FilterLineY);
+
+            batch.DrawString(font, availLbl, pos.Rounded(), UITable.Vanilla);
+            x += font.TextWidth(availLbl);
+            batch.DrawString(font, availVal, new Vector2(x, pos.Y).Rounded(),
                              NumAvailableTroops == 0 ? Color.Gray : Color.White);
+            if (showReb)
+            {
+                x += font.TextWidth(availVal);
+                batch.DrawString(font, rebLbl, new Vector2(x, pos.Y).Rounded(), UITable.Vanilla);
+                x += font.TextWidth(rebLbl);
+                batch.DrawString(font, rebVal, new Vector2(x, pos.Y).Rounded(), Color.White);
+            }
 
             ScreenGroups.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
+        }
+
+        // Ludoal fork (maintainer feedback): total troops aboard ships rebasing to one of our own
+        // worlds - the count the Homeworld's inert "Rebasing" button used to carry.
+        int CountRebasingTroops()
+        {
+            int total = 0;
+            foreach (Ship s in Player.OwnedShips)
+            {
+                if (s?.AI == null || !s.HasOurTroops)
+                    continue;
+                if (s.AI.OrderQueue.Any(g => g.Plan == ShipAI.Plan.Rebase
+                                             && g.TargetPlanet != null && g.TargetPlanet.Owner == Player))
+                    total += s.TroopCount;
+            }
+            return total;
         }
 
         void Refill(int col, bool ascending)

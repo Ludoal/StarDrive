@@ -79,9 +79,9 @@ namespace Ship_Game
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Richness) },
                 new UITable.Column { Title = Localizer.Token(GameText.Owner), Align = TableAlign.Center, Sortable = true },
                 // sized on the mining row's worst case: the 168px deploy button plus its two
-                // wide enough for the two mining buttons (Deploy + Abort) side by side plus the
-                // "N/M Deployed" count beside them (maintainer feedback: they overflowed at 280)
-                new UITable.Column { Title = "Stations", Width = 420, Align = TableAlign.Center },
+                // wide enough for the single deploy button (168) plus the "N/M Deployed" count
+                // beside it - back down from 420 now that the two-button layout is gone
+                new UITable.Column { Title = "Stations", Width = 290, Align = TableAlign.Center },
             });
             var sys = new Array<string>(); var names = new Array<string>();
             var prox = new Array<string>();

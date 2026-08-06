@@ -767,6 +767,7 @@
     <Compile Include="Ship_Game\SelectedShipListItem.cs" />
     <Compile Include="Ship_Game\UI\UIElement.cs" />
     <Compile Include="Ship_Game\GameScreens\Universe\GamePlayMenuScreen.cs" />
+    <Compile Include="Ship_Game\GameScreens\Universe\HotkeysScreen.cs" />
     <Compile Include="Ship_Game\Spatial\SpatialManager.cs" />
     <Compile Include="Ship_Game\AI\MissileAI.cs" />
     <Compile Include="Ship_Game\ShipListInfoUIElement.cs" />

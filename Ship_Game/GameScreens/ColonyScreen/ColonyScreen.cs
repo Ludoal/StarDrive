@@ -255,8 +255,11 @@ namespace Ship_Game
             BlockadeLabel = Add(new UILabel(blockadePos, Localizer.Token(GameText.Blockade2), Fonts.Pirulen16, Color.Red));
             BlockadeLabel.Tooltip = GameText.IndicatesThatThisPlanetIs;
             
-            Vector2 starvationPos = new Vector2(PStorage.X + 200, PStorage.Y + 35);
-            StarvationLabel = Add(new UILabel(starvationPos, Localizer.Token(GameText.Starvation), Fonts.Pirulen16, Color.Red));
+            // Ludoal fork (maintainer feedback): STARVATION! rides the title bar's empty right end
+            // instead of overlapping the food bar and Import button below it.
+            string starvTxt = Localizer.Token(GameText.Starvation);
+            Vector2 starvationPos = new Vector2(PStorage.Right - Fonts.Pirulen16.TextWidth(starvTxt) - 15, PStorage.Y + 4);
+            StarvationLabel = Add(new UILabel(starvationPos, starvTxt, Fonts.Pirulen16, Color.Red));
             // ⚠ the two bars sit a FIXED distance below the title bar (maintainer: content aligned
             // to the TOP, not centred). They rode 0.33 and 0.66 of the panel's height, so they
             // drifted apart and floated in the middle as STORAGE - the column's variable block -

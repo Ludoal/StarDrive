@@ -203,7 +203,16 @@ namespace Ship_Game
 
             // Which group is open is read from the screen stack rather than passed in: fifteen
             // screens draw this bar, and a parameter is a parameter one of them will forget.
-            ScreenGroups.Group open = ScreenGroups.GroupOf(Universe.ScreenManager.Current);
+            // Ludoal fork (maintainer feedback): scan the stack top-to-bottom for the first screen
+            // that belongs to a group, so a popup with no group of its own (e.g. the Colony panel
+            // opened over Empire) does not switch the lit group button off.
+            ScreenGroups.Group open = ScreenGroups.Group.None;
+            var stack = Universe.ScreenManager.Screens;
+            for (int i = stack.Count - 1; i >= 0; --i)
+            {
+                ScreenGroups.Group g = ScreenGroups.GroupOf(stack[i]);
+                if (g != ScreenGroups.Group.None) { open = g; break; }
+            }
             Graphics.Font font = Fonts.Arial12Bold;
 
             foreach (Button b in Buttons)

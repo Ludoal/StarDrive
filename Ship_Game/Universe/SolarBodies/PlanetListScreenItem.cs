@@ -329,15 +329,16 @@ namespace Ship_Game
 
         void UpdateButtonSendTroops()
         {
-            if (TryGetIncomingTroops(out int troopsInvading, out _))
+            // Ludoal fork (maintainer feedback): troops rebasing to one of OUR OWN worlds no longer
+            // put a "Rebasing: N" count on the button - its right-click was inert there (recalling a
+            // rebase-to-home does nothing), and the count now lives beside Available Troops on line 1.
+            // Only the Landing (neutral) / Invading (hostile) cases keep the count-on-button, whose
+            // right-click DOES cancel an inbound landing.
+            if (Planet.Owner != Player && TryGetIncomingTroops(out int troopsInvading, out _))
             {
                 // red on a hostile target, plain otherwise - the convention of the new look
-                ButtonStyle style  = Planet.Owner == Player || Planet.Owner == null
-                                   ? ButtonStyle.Wide : ButtonStyle.WideHostile;
-                string text        = "Invading:";
-
-                if (Planet.Owner == Player)    text = "Rebasing:";
-                else if (Planet.Owner == null) text = "Landing:";
+                ButtonStyle style  = Planet.Owner == null ? ButtonStyle.Wide : ButtonStyle.WideHostile;
+                string text        = Planet.Owner == null ? "Landing:" : "Invading:";
 
                 SendTroops.Text = $"{text} {troopsInvading}";
                 SendTroops.Style = style;
