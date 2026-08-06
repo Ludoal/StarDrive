@@ -209,8 +209,9 @@ namespace Ship_Game
             SysEntry = AddSplitter(raceCustomizatioForm,  "{HomeSystemName}: ", SelectedData.HomeSystemName, formWidth, FormSplit);
             HomeWorldName = SelectedData.HomeWorldName;
 
-            // column 3: the flag picker, its "Flag Color" caption aligned on the Empire Name row
-            var flagPos = new Vector2(nameArea.Right - FlagColW + 6 + FlagNudgeX, nameArea.Y + 10);
+            // column 3: the flag picker, its "Flag Color" caption aligned on the Empire Name row.
+            // +6 on Y for the form list's internal padding, which pushed row 1 below this caption.
+            var flagPos = new Vector2(nameArea.Right - FlagColW + 6 + FlagNudgeX, nameArea.Y + 10 + 6);
             Add(new UILabel(flagPos, GameText.FlagColor, Fonts.Arial14Bold, Color.BurlyWood));
             FlagRect = new Rectangle((int)flagPos.X, (int)flagPos.Y + 26, 80, 80);
 
@@ -368,7 +369,7 @@ namespace Ship_Game
             // (maintainer feedback): Exit is gone from the foot - the frame's close cross top-right
             // does the cancel now (it calls ExitScreen on its own).
             // ⚠ the Wide styles are PAINTED, so their width is whatever we set.
-            UIButton engage = Button(ButtonStyle.WideActive, gridRight - SideW + (SideW - BtnW) / 2, footY, GameText.Engage, click: OnEngageClicked);
+            UIButton engage = Button(ButtonStyle.WideActive, gridRight - SideW + (SideW - BtnW) / 2, footY, "Start Game", click: OnEngageClicked); // maintainer: was "Engage"
             engage.SetAbsSize(BtnW, 24);
 
             Vector2 closePos = PopupFrame.ClosePos(ScreenFrame);
@@ -380,9 +381,11 @@ namespace Ship_Game
                    Localizer.Token(GameText.RuleOptions), click: OnRuleOptionsClicked);
             ruleOptions.SetAbsSize(BtnW, 24);
 
-            // Clear Traits lives on the Points page and follows its tab
-            ClearTraitsBtn = Button(ButtonStyle.Medium, (int)(description.X + 10), (int)(description.Bottom - 28),
+            // Clear Traits lives on the Points page and follows its tab; red (hostile) plate per
+            // maintainer. ⚠ WideHostile is painted, so pin its width to the Medium footprint.
+            ClearTraitsBtn = Button(ButtonStyle.WideHostile, (int)(description.X + 10), (int)(description.Bottom - 28),
                                     "Clear Traits", click: OnClearClicked);
+            ClearTraitsBtn.SetAbsSize(132, 24);
 
             DoRaceDescription();
             SetRacialTraits(SelectedData.Traits);

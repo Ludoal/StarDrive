@@ -79,8 +79,9 @@ namespace Ship_Game
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Richness) },
                 new UITable.Column { Title = Localizer.Token(GameText.Owner), Align = TableAlign.Center, Sortable = true },
                 // sized on the mining row's worst case: the 168px deploy button plus its two
-                // counters, STACKED on two lines now instead of inline (maintainer bench 303)
-                new UITable.Column { Title = "Stations", Width = 280, Align = TableAlign.Center },
+                // wide enough for the two mining buttons (Deploy + Abort) side by side plus the
+                // "N/M Deployed" count beside them (maintainer feedback: they overflowed at 280)
+                new UITable.Column { Title = "Stations", Width = 420, Align = TableAlign.Center },
             });
             var sys = new Array<string>(); var names = new Array<string>();
             var prox = new Array<string>();
@@ -226,8 +227,12 @@ namespace Ship_Game
             }
             else
             {
-                Universe.SetSelectedSystem(item.System);
-                Universe.CamDestination = new Vector3d(item.Planet.Position, 10000);
+                // Ludoal fork (maintainer feedback): select the PLANET (not just its system) and
+                // glide to the planet-view zoom, copied from the Planet Info cartouche's arrows -
+                // the old Z=10000 zoomed in far too hard and left the planet unselected.
+                Universe.SetSelectedPlanet(item.Planet);
+                Universe.SnapViewTo(new Vector3d(item.Planet.Position.X, item.Planet.Position.Y,
+                    Universe.GetZfromScreenState(UniverseScreen.UnivScreenState.PlanetView)), 5f, 2f);
             }
         }
 

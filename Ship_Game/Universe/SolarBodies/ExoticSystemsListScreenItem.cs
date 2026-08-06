@@ -213,36 +213,14 @@ namespace Ship_Game
                 return;
             }
 
-            int numDeployed   = Planet.OrbitalStations.Count(s => s.Loyalty.isPlayer && s.IsMiningStation);
-            int numInProgress = Player.AI.CountGoals(g => g.IsMiningOpsGoal(Planet) && g.TargetShip == null);
-            bool atMax        = numDeployed >= Mineable.MaximumMiningStations;
-
-            // Ludoal fork (maintainer feedback): at max, the buttons give way to a green text like
-            // the research row does - carrying the station count.
-            if (atMax)
-            {
-                DeployButton.Visible = false;
-                MiningAbortButton.Visible = false;
-                DeployTextInfo = Add(new UILabel(new Vector2(DeployButton.Rect.X, DeployButton.Rect.Y + 4),
-                                     $"{numDeployed}/{Mineable.MaximumMiningStations} Mining Stations Deployed", SmallFont));
-                DeployTextInfo.Color = Color.LimeGreen;
-                return;
-            }
-
-            // Deploy carries the in-progress count; Abort shows only when at least one is deploying
-            // and removes them one by one. No separate "In Progress" line.
-            DeployButton.Visible = true;
-            DeployButton.Text = numInProgress > 0
-                ? $"{new LocalizedText(GameText.DeployMiningStation).Text} ({numInProgress})"
-                : new LocalizedText(GameText.DeployMiningStation).Text;
-
-            MiningAbortButton.Visible = numInProgress > 0;
-
-            // "N/M Deployed" beside the buttons - the stations actually in orbit
+            // Both labels are created ONCE here (at layout); RefreshMiningState only toggles their
+            // visibility and text afterwards, so a click never rebuilds them. The green "at max"
+            // text sits where the button would be; the "N/M Deployed" beside the buttons.
+            DeployTextInfo = Add(new UILabel(new Vector2(DeployButton.Rect.X, DeployButton.Rect.Y + 4), "", SmallFont));
             Vector2 deployedPos = new Vector2(MiningAbortButton.Rect.Right + 8,
                                               OrdersRect.Y + OrdersRect.Height / 2 - SmallFont.LineSpacing / 2);
-            MiningDeployedTextInfo = Add(new UILabel(deployedPos, $"{numDeployed}/{Mineable.MaximumMiningStations} Deployed", SmallFont));
-            MiningDeployedTextInfo.Color = numDeployed > 0 ? Color.Green : Color.Gray;
+            MiningDeployedTextInfo = Add(new UILabel(deployedPos, "", SmallFont));
+            RefreshMiningState();
         }
 
         void SetDysonSwarmVisibility()
@@ -415,9 +393,11 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork (maintainer feedback): mining now has two dedicated buttons. Deploy queues one
-        // more station; Abort cancels one deploying station at a time. The row rebuilds so the
-        // counts, the greyed-at-max state and the Abort button's visibility all refresh.
+        // Ludoal fork (maintainer feedback): mining has two dedicated buttons. Deploy queues one
+        // more station; Abort cancels one deploying station at a time. ⚠ they refresh their state
+        // IN PLACE (like the research button), NOT by RequiresLayout - a rebuild destroys the very
+        // button being clicked between its Pressed and Released, so the action landed one click
+        // late (the bench's "Deploy does nothing, Abort deploys the previous click").
         void OnMiningDeployClicked(UIButton b)
         {
             if (!Planet.Mining.CanAddMiningStationFor(Player))
@@ -427,14 +407,53 @@ namespace Ship_Game
             }
             GameAudio.EchoAffirmative();
             Player.AI.AddGoalAndEvaluate(new MiningOps(Player, Planet));
-            RequiresLayout = true;
+            RefreshMiningState();
         }
 
         void OnMiningAbortClicked(UIButton b)
         {
             GameAudio.EchoAffirmative();
             Player.AI.CancelMiningStation(Planet); // one goal at a time
-            RequiresLayout = true;
+            RefreshMiningState();
+        }
+
+        // update the mining widgets on the EXISTING objects - no Add, no RemoveAll, no rebuild
+        void RefreshMiningState()
+        {
+            int numDeployed     = Planet.OrbitalStations.Count(s => s.Loyalty.isPlayer && s.IsMiningStation);
+            int numInProgress   = Player.AI.CountGoals(g => g.IsMiningOpsGoal(Planet) && g.TargetShip == null);
+            bool atMaxDeployed  = numDeployed >= Mineable.MaximumMiningStations;
+            // the game's own rule for "can another one be queued" - counts goals, so it also blocks
+            // when the field is full of IN-PROGRESS stations, not just deployed ones
+            bool canAdd         = Planet.Mining.CanAddMiningStationFor(Player);
+
+            // all stations actually built: buttons give way to the green text (like research)
+            if (atMaxDeployed)
+            {
+                DeployButton.Visible = false;
+                MiningAbortButton.Visible = false;
+                if (DeployTextInfo != null)
+                {
+                    DeployTextInfo.Text = $"{numDeployed}/{Mineable.MaximumMiningStations} Mining Stations Deployed";
+                    DeployTextInfo.Color = Color.LimeGreen;
+                    DeployTextInfo.Visible = true;
+                }
+                return;
+            }
+
+            if (DeployTextInfo != null) DeployTextInfo.Visible = false;
+            DeployButton.Visible = true;
+            DeployButton.Enabled = canAdd; // greyed once the field is full (deployed + in progress)
+            DeployButton.Text = numInProgress > 0
+                ? $"{new LocalizedText(GameText.DeployMiningStation).Text} ({numInProgress})"
+                : new LocalizedText(GameText.DeployMiningStation).Text;
+            MiningAbortButton.Visible = numInProgress > 0;
+
+            if (MiningDeployedTextInfo != null)
+            {
+                MiningDeployedTextInfo.Text = $"{numDeployed}/{Mineable.MaximumMiningStations} Deployed";
+                MiningDeployedTextInfo.Color = numDeployed > 0 ? Color.Green : Color.Gray;
+            }
         }
 
         void OnDysonSwarmClicked(UIButton b)

@@ -49,6 +49,9 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.NumWayPoints), Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = "# Fleets", Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.PatrolAssignedFleets), Foldable = true },
+                // Ludoal fork (maintainer feedback): a dedicated Actions column for the edit/delete
+                // icons, so the table lays them out in their own lane at the right end.
+                new UITable.Column { Title = "", Width = 60, Align = TableAlign.Center },
             });
             var names = new Array<string>(); var wps = new Array<string>();
             var counts = new Array<string>(); var assigned = new Array<string>();
@@ -61,9 +64,6 @@ namespace Ship_Game
                                                                .Select(f => f.Name)));
             }
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, names);
-            // the pencil/bin pair rides RIGHT OF THE NAME (maintainer, bench 305) - the
-            // Actions column is gone, the name column pays for the two icons
-            Table.Columns[0].Width += 64;
             UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, wps);
             UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, counts);
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, assigned);

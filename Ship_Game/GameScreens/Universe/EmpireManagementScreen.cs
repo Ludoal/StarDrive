@@ -328,10 +328,11 @@ namespace Ship_Game
             // the shared charte draws the headers, the rule and the separators
             Table.DrawChrome(batch);
 
-            // Ludoal fork (maintainer feedback): the Homeworld-sort button at the right of the
-            // Planet header. Amber when that sort is active, dim otherwise; a tooltip explains it.
+            // Ludoal fork (maintainer feedback): the Homeworld-sort button on the LEFT of the Planet
+            // header, centred over the column's planet-icon lane (icons draw at col.X + 5, ~34 wide).
+            // Amber when that sort is active, dim otherwise; a tooltip explains it.
             Rectangle planetHdr = Table.Columns[1].Rect;
-            HomeSortButton = new Rectangle(planetHdr.Right - 16, planetHdr.Y, 14, 14);
+            HomeSortButton = new Rectangle(planetHdr.X + 5 + 17 - 7, planetHdr.Y, 14, 14);
             SubTexture homeIcon = ResourceManager.Texture("UI/icon_home");
             batch.Draw(homeIcon, HomeSortButton, HomeworldSort ? Color.Orange : new Color(150, 150, 150));
             if (HomeSortButton.HitTest(Input.CursorPosition))
