@@ -763,7 +763,13 @@ namespace Ship_Game
             }
         }
 
-        bool CanShowInfo => !LookingAtPlanet && !IsCinematicModeEnabled;
+        // Ludoal fork (47-b): the selection cartouches (Ship/Star/Fleet Info) now persist behind
+        // Colony, matching how they stay up behind the table screens. LookingAtPlanet is set by
+        // exactly three paths (Camera double-click, pie-menu, Economy->colony) and ALL THREE open a
+        // Colony popup - the flag means "a Colony is open", nothing else, so dropping it here only
+        // frees the cartouches for that one case (same reasoning as the minimap at bench 347). No
+        // planet-cartouche doubling: the map paths ClearSelectedItems() before opening Colony.
+        bool CanShowInfo => !IsCinematicModeEnabled;
         bool ShowSystemInfoOverlay => SelectedSystem != null && CanShowInfo && viewState == UnivScreenState.GalaxyView;
         bool ShowPlanetInfo => SelectedPlanet != null && CanShowInfo;
         // Ludoal fork (wishlist): star cartouche at EVERY zoom (field report 45.42);

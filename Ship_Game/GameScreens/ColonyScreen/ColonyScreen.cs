@@ -145,24 +145,13 @@ namespace Ship_Game
             //           are drop shadow, which falls past the screen edge by design
             //   top:    one tab strip LOWER than TabRowY, so this frame matches the group
             //           screens' frames and does not peek out behind them in the stack.
-            const int m = GameScreens.ScreenGroups.FrameMargin;
-            // the strip's TRUE bottom: tabs advance by TabHeight-2, and the group silhouette
-            // behind a list-opened colony exposed the 2px slip (maintainer bench 320)
-            int frameTop = GameScreens.ScreenGroups.TabRowY + Submenu.TabHeight - 2;
-            // bench 347: Colony sits on the rail like a group tab now (anchored left at FrameMargin),
-            // not centred - the extra width past the cap falls to the right, and the universe map
-            // shows through it (IsPopup). Y never moves - the frame hangs at frameTop whatever the res.
-            int layoutW = Math.Min(ScreenWidth, GameScreens.ScreenGroups.MaxFrameWidth);
-            // bench 347: start on the rail exactly like GroupFrame - at FrameMargin (m), NOT
-            // FrameMargin + m. The old centred layout added layoutX on top of m, which pushed Colony
-            // ~one margin too far right; anchored left, the left edge is just m (less the border ink
-            // that pushes out so the visible rule lands on the margin).
-            // ⚠ height caps at the 1080p footprint too (maintainer bench 334): past 1080 the frame
-            // stops growing, the foot rises, and it stays hung at frameTop.
-            int layoutH = Math.Min(ScreenHeight, 1080);
-            ColonyFrame = new Rectangle(m - PopupFrame.BorderLeft, frameTop,
-                                        layoutW - 2 * m + PopupFrame.BorderLeft + PopupFrame.BorderRight,
-                                        layoutH - frameTop - m + PopupFrame.BottomLine);
+            // bench 350: Colony is now a group tab exactly like Research/Ships - so its frame IS
+            // GroupFrame, pixel for pixel. The old layout hung one tab-strip lower (bench 320's
+            // silhouette fix) and added the PopupFrame border ink to the width, which read ~10px too
+            // wide and 2-3px too low against the real group frames. Copy the instance that works:
+            // same X (FrameMargin), same Y (TabRowY), same size. The PopupFrame draws its cadre INSIDE
+            // this rect now, so the border ink no longer overhangs.
+            ColonyFrame = GameScreens.ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
             // ⚠ NOT Add()ed: a child is drawn by base.Draw, which lands AFTER everything this
             // screen paints by hand - the frame's body would bury the panels. Painted first
             // thing in Draw instead (see ColonyScreen_Draw).

@@ -56,9 +56,6 @@ namespace Ship_Game
         }
 
         Building HoveredBuilding;
-        // the Description tab keeps showing the LAST hovered building once the cursor
-        // leaves - hover auto-raises the tab, the player's own choice is remembered
-        Building DescribedBuilding;
         int StatsTabPlayerChoice;
         readonly Font Font8 = Fonts.Arial8Bold;
         readonly Font Font12 = Fonts.Arial12Bold;
@@ -370,8 +367,11 @@ namespace Ship_Game
 
         void DrawHoveredBuildListBuildingInfo(SpriteBatch batch)
         {
-            // the LAST hovered building - the tab keeps its subject after the cursor leaves
-            Building b = DescribedBuilding;
+            // Ludoal fork (47-b): the Description tab lives only while the cursor is over a building,
+            // then falls back to Statistics - so it draws the CURRENTLY hovered building, and the
+            // single HoveredBuilding drives both the tab switch (Draw) and the content (here). No
+            // second "described" variable to keep in sync: one owner, they can't disagree.
+            Building b = HoveredBuilding;
             if (b == null)
                 return;
 
@@ -519,6 +519,11 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            // bench 347 (Lek): clear the hover FIRST, so any early-return below (the live top bar
+            // especially) can't leave HoveredBuilding stuck on its last value - which kept the
+            // Description tab raised and frozen. Recomputed further down when the cursor is over a row.
+            HoveredBuilding = null;
+
             if (input.OpenScreenSaveMenu && SaveBlueprints.Enabled)
             {
                 OnSaveBlueprintsClick();
@@ -540,8 +545,6 @@ namespace Ship_Game
 
             PlanAreaHovered = BuildableList.IsDragging && SubPlanArea.HitTest(Input.CursorPosition);
             HoveredBuilding = GetHoveredBuildingFromBuildableList(input);
-            if (HoveredBuilding != null)
-                DescribedBuilding = HoveredBuilding;
             foreach (BlueprintsTile tile in TilesList)
             {
                 if (tile.HasBuilding && tile.Panel.HitTest(input.CursorPosition))
