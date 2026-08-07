@@ -167,16 +167,16 @@ namespace Ship_Game
             // changes from a right anchor to the end of the cascade.
             float bandTop    = ColoniesList.Bottom + 10;
             float bandBottom = client.Bottom - 15;
-            float bandH      = bandBottom - bandTop;
-            BandMapW    = (bandH - 10) * (700f / 500f) + 20f;
+            float govBandH   = bandBottom - bandTop; // real band height (bandH above is the layout reserve)
+            BandMapW    = (govBandH - 10) * (700f / 500f) + 20f;
             BandEmpireX = ERect.X + 22;
             BandPlanetX = BandEmpireX + EmpireBoxW + BandGap;
             BandMapX    = BandPlanetX + PlanetBoxW + BandGap;
             BandGovX    = BandMapX + BandMapW + BandGap;
-            GovernorRect = new RectF(BandGovX, bandTop, sidePanelWidths, bandH);
+            GovernorRect = new RectF(BandGovX, bandTop, sidePanelWidths, govBandH);
 
             // the EMPIRE totals tab at the band's left - a one-tab Submenu, like the group frames
-            EmpireSummaryTab = Add(new Submenu(new RectF(BandEmpireX, bandTop, EmpireBoxW, bandH),
+            EmpireSummaryTab = Add(new Submenu(new RectF(BandEmpireX, bandTop, EmpireBoxW, govBandH),
                                                new LocalizedText[] { "EMPIRE" }));
             // Ludoal fork: guard against an empty colony list — seen live (crash at
             // StarDate 1163: GetPlanets() returned 0 for the player on the UI thread,
