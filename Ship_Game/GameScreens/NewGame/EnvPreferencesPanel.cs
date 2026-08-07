@@ -107,19 +107,11 @@ namespace Ship_Game.GameScreens.NewGame
 
         void UpdateVisibility()
         {
-            Visible = PreferredEnv != PlanetCategory.Terran
-                || EnvTerran != 1
-                || EnvOceanic != 1
-                || EnvSteppe != 1
-                || EnvTundra != 1
-                || EnvSwamp != 1
-                || EnvDesert != 1
-                || EnvIce != 1
-                || EnvBarren != 1
-                || EnvVolcanic != 1;
-
-            // (no slide when this panel appears - Race Design stays sober, and its transition
-            // times are 0 now anyway, so the call did nothing but mislead)
+            // Ludoal fork (maintainer feedback, 7 Aug): the Environment panel stays shown at all
+            // times. It used to hide itself for a race with no environment modifiers (neutral
+            // Terran, every Env* == 1); now it always displays, a neutral race simply reading 1.00
+            // across the board.
+            Visible = true;
         }
 
         void UpdatePlanetIcon()

@@ -59,15 +59,42 @@ namespace Ship_Game
             if (ClearTraitsBtn != null)
                 ClearTraitsBtn.Visible = tab == 0;
         }
+
+        // the two tabs of the left column share one area - Race (0) or Opponents (1) shows
+        void OnLeftTabChanged(int tab)
+        {
+            if (ChooseRaceList != null)
+                ChooseRaceList.Visible = tab == 0;
+            if (ChooseOpponentsList != null)
+                ChooseOpponentsList.Visible = tab == 1;
+            if (OpponentsCountLabel != null)
+                OpponentsCountLabel.Visible = tab == 1;
+            if (OpponentsCountValue != null)
+                OpponentsCountValue.Visible = tab == 1;
+        }
+
+        // clicking an opponent toggles it in/out of the chosen set (from the old popup)
+        void OnOpponentItemSelected(SelectOpponentListItem item)
+        {
+            if (P.SelectedOpponents.Remove(item.EmpireData))
+                return;
+            if (P.SelectedOpponents.Count >= P.NumOpponents)
+                GameAudio.NegativeClick();
+            else
+                P.SelectedOpponents.Add(item.EmpireData);
+        }
         EnvPreferencesPanel EnvMenu;
         SubmenuScrollList<TraitsListItem> Traits;
         ScrollList<TraitsListItem> TraitsList;
         UIColorPicker Picker;
 
         UIButton ModeBtn;
-        UIButton SelectOpponentsBtn;
         Rectangle FlagRect;
         ScrollList<RaceArchetypeListItem> ChooseRaceList;
+        // the Opponents tab (folded in from the old SelectOpponentsScreen popup)
+        ScrollList<SelectOpponentListItem> ChooseOpponentsList;
+        UILabel OpponentsCountLabel;   // "Random Opponents:" caption
+        UILabel OpponentsCountValue;   // the remaining-random count that follows it
         UITextBox DescriptionTextList;
 
         UILabel NumSystemsLabel;
@@ -138,13 +165,21 @@ namespace Ship_Game
         public override void LoadContent()
         {
             // ── the frame and the ONE grid every block measures from ─────────────────────────
-            const int Margin = 10, Pad = 8;
+            const int Pad = 8;
+            // Ludoal fork (maintainer feedback, 7 Aug): New Game is a CATEGORY-1 screen now - a
+            // FIXED 1440x900 window, centred on the display, not a full-screen popup that grew with
+            // the resolution. Everything inside derives from ScreenFrame, so fixing the frame fixes
+            // the whole layout at its 900p form (the size the bench is tuned on). Narrow/Tall no
+            // longer vary here - at 1440x900 both are false, the plain middle branch throughout.
+            const int WinW = 1440, WinH = 900;
+            int winX = (ScreenWidth  - WinW) / 2;
+            int winY = (ScreenHeight - WinH) / 2;
             // ⚠ the rect is pushed OUT by what each edge's texture leaves blank, so the visible
-            // rule lands on the margin: 7 transparent rows at the top, 2 at the foot, plus the
+            // rule lands on the window bound: 7 transparent rows at the top, 2 at the foot, plus the
             // side borders. Measured in the PNGs - guessing these is what cost four passes.
-            ScreenFrame = new Rectangle(Margin - PopupFrame.BorderLeft, Margin - PopupFrame.TopInk,
-                                        ScreenWidth - 2 * Margin + PopupFrame.BorderLeft + PopupFrame.BorderRight,
-                                        ScreenHeight - 2 * Margin + PopupFrame.TopInk + PopupFrame.BottomLine);
+            ScreenFrame = new Rectangle(winX - PopupFrame.BorderLeft, winY - PopupFrame.TopInk,
+                                        WinW + PopupFrame.BorderLeft + PopupFrame.BorderRight,
+                                        WinH + PopupFrame.TopInk + PopupFrame.BottomLine);
             Frame = new PopupFrame(ScreenFrame);
 
             Rectangle inner = PopupFrame.ContentArea(ScreenFrame);
@@ -215,11 +250,13 @@ namespace Ship_Game
             Add(new UILabel(flagPos, GameText.FlagColor, Fonts.Arial14Bold, Color.BurlyWood));
             FlagRect = new Rectangle((int)flagPos.X, (int)flagPos.Y + 26, 80, 80);
 
-            // ── ROW 2: Race | Traits | Points+Description, all sharing row2Top and row2H ─────
-            // The two side columns are FIXED width (SideW, declared with row 1); the traits
-            // block in the middle absorbs what is left. One arithmetic for the three.
-            RectF traitsList = new(gridLeft + SideW + Pad, row2Top,
-                                   gridRight - gridLeft - 2 * (SideW + Pad), row2H);
+            // ── ROW 2: Race|Opponents | Traits | Points+Description, sharing row2Top and row2H ──
+            // Ludoal fork (maintainer feedback, 7 Aug): the LEFT column widens to match Environment
+            // above it (envW), so the two column heads line up; the extra 30 comes off the middle
+            // Traits block (the right Points column keeps its fixed SideW). The Traits block is the
+            // one that absorbs - one arithmetic for the three.
+            RectF traitsList = new(gridLeft + envW + Pad, row2Top,
+                                   gridRight - gridLeft - envW - SideW - 2 * Pad, row2H);
 
             LocalizedText[] traitNames = { GameText.Physical, GameText.Sociological, GameText.HistoryAndTradition, "Environment" };
             // ⚠ no Bevel and NO Menu1 background (maintainer: "supprimer le cadre du bloc
@@ -232,14 +269,42 @@ namespace Ship_Game
             TraitsList.EnableItemHighlight = true;
             TraitsList.OnClick = OnTraitsListItemClicked;
 
-            // row 2 LEFT: the race list under a tab of its own
-            RaceTab = Add(new Submenu(new RectF(gridLeft, row2Top, SideW, row2H), "Race"));
+            // row 2 LEFT: two tabs sharing one area, Race and Opponents. Ludoal fork (maintainer
+            // feedback, 7 Aug): the Select Opponents popup folds in here as a second tab (same
+            // pattern as Points|Description on the right), so it is no longer a separate window and
+            // its foot button is gone. The tab is envW wide, aligned with Environment above.
+            LocalizedText[] leftTabs = { "Race", "Opponents" };
+            RaceTab = Add(new Submenu(new RectF(gridLeft, row2Top, envW, row2H), leftTabs));
+            RaceTab.OnTabChange = OnLeftTabChanged;
             RectF chooseRace = RaceTab.ClientArea;
             ChooseRaceList = Add(new ScrollList<RaceArchetypeListItem>(chooseRace, 135));
             ChooseRaceList.OnClick = OnRaceArchetypeItemClicked;
 
             foreach (IEmpireData e in ResourceManager.MajorRaces)
                 ChooseRaceList.AddItem(new RaceArchetypeListItem(this, e));
+
+            // the Opponents tab: a count caption plus the opponent list, the same content the
+            // SelectOpponentsScreen popup carried. Both share chooseRace; OnLeftTabChanged flips
+            // which one shows. The count strip sits at the top, the list below it.
+            const int OppCountStrip = 30;
+            OpponentsCountLabel = Add(new UILabel(
+                new Vector2(chooseRace.X + 6, chooseRace.Y + 4),
+                "Random Opponents: ", Fonts.Arial14Bold, Colors.Cream));
+            OpponentsCountValue = Add(new UILabel(
+                new Vector2(chooseRace.X + 6 + Fonts.Arial14Bold.TextWidth("Random Opponents: "), chooseRace.Y + 4),
+                "", Fonts.Arial14Bold, Color.White));
+            RectF oppListArea = new(chooseRace.X, chooseRace.Y + OppCountStrip,
+                                    chooseRace.W, chooseRace.H - OppCountStrip);
+            ChooseOpponentsList = Add(new ScrollList<SelectOpponentListItem>(oppListArea, 135));
+            ChooseOpponentsList.OnClick = OnOpponentItemSelected;
+            ChooseOpponentsList.OnDoubleClick = OnOpponentItemSelected;
+            IEmpireData[] majorRaces = ResourceManager.MajorRaces.Filter(
+                data => data.ArchetypeName != SelectedData.ArchetypeName);
+            foreach (IEmpireData e in majorRaces)
+                ChooseOpponentsList.AddItem(new SelectOpponentListItem(P, e));
+
+            // Race shows first; the opponents controls start hidden.
+            OnLeftTabChanged(0);
 
             Graphics.Font font = Fonts.Arial12Bold;
             // the galaxy readouts live in the Galaxy tab now, not off the right of a name panel
@@ -350,20 +415,17 @@ namespace Ship_Game
             Foot("Load Race", OnLoadRaceClicked);
             Foot("Save Race", OnSaveRaceClicked);
 
-            // centred under the TRAITS block: the whole-setup actions. Load/Save stay a pair;
-            // Select Opponents is wider (its "(N/M)" count would clip a Medium plate) and sits
-            // slightly detached from them (maintainer feedback). The row's own width is the ONE
-            // arithmetic all three share.
-            const int OppW = 190, DetachGap = 22;
-            int midLeft = gridLeft + SideW + Pad;
+            // centred under the TRAITS block: the whole-setup Load/Save pair. Ludoal fork
+            // (maintainer feedback, 7 Aug): the Select Opponents button is gone - opponents are a tab
+            // in the left column now - so the pair centres on the middle block on its own. The row's
+            // width is the ONE arithmetic both buttons share.
+            // the middle block now starts at envW (the widened left column), not SideW
+            int midLeft = gridLeft + envW + Pad;
             int midW    = gridRight - SideW - Pad - midLeft;
-            int midRowW = 2 * BtnW + BtnGap + DetachGap + OppW;   // Load + Save + gap + Opponents
+            int midRowW = 2 * BtnW + BtnGap;                      // Load + Save
             bx = midLeft + (midW - midRowW) / 2;
             Foot("Load Setup", OnLoadSetupClicked);
             Foot("Save Setup", OnSaveSetupClicked);
-            bx += DetachGap;                                      // the little air before Opponents
-            SelectOpponentsBtn = Button(ButtonStyle.BigDip, bx, footY, "", click: OnSelectOpponentsClicked);
-            SelectOpponentsBtn.SetAbsSize(OppW, 24);
 
             // right column: Engage commits (active blue), centred on the right column. Ludoal fork
             // (maintainer feedback): Exit is gone from the foot - the frame's close cross top-right
@@ -420,7 +482,9 @@ namespace Ship_Game
             var label = new UILabel(LocalizedText.Parse(title), Fonts.Arial14Bold, Color.BurlyWood);
             var input = new UITextEntry(Vector2.Zero, Fonts.Arial14Bold, inputText)
             {
-                Width = width - splitAt,
+                // maintainer feedback (7 Aug): the underline runs 20px shorter at its right end -
+                // the field starts where it did, it just stops sooner.
+                Width = width - splitAt - 20,
                 DrawUnderline = true,
                 Color = Colors.Cream
             };
@@ -491,11 +555,6 @@ namespace Ship_Game
         void OnRuleOptionsClicked(UIButton b)
         {
             ScreenManager.AddScreen(new RuleOptionsScreen(this, P));
-        }
-
-        void OnSelectOpponentsClicked(UIButton b)
-        {
-            ScreenManager.AddScreen(new SelectOpponentsScreen(this, P, SelectedData));
         }
 
         void OnClearClicked(UIButton b)
@@ -589,7 +648,6 @@ namespace Ship_Game
             P.NumOpponents += OptionIncrement;
             if (P.NumOpponents > maxOpponents) P.NumOpponents = 1;
             else if (P.NumOpponents < 1)       P.NumOpponents = maxOpponents;
-            SelectOpponentsBtn.Visible = P.NumOpponents != maxOpponents;
             VerifySelectedOpponents();
         }
 
@@ -733,18 +791,10 @@ namespace Ship_Game
         public override void Update(float fixedDeltaTime)
         {
             CreateRaceSummary();
-            UpdateSelectedOpponentsButton();
+            // the Opponents tab's count: how many of the NumOpponents slots are still random
+            OpponentsCountValue.Text = $"{P.NumOpponents - P.SelectedOpponents.Count}";
+            OpponentsCountValue.Color = P.SelectedOpponents.Count == P.NumOpponents ? Color.Gray : Color.White;
             base.Update(fixedDeltaTime);
-        }
-
-        void UpdateSelectedOpponentsButton()
-        {
-            // Ludoal fork (maintainer feedback): always the blue (active) plate - it used to flip to
-            // the red Military plate once an opponent was picked, which read as a hostile action.
-            SelectOpponentsBtn.Style = ButtonStyle.BigDip;
-            SelectOpponentsBtn.Text = P.SelectedOpponents.Count > 0
-                ? $"Select Opponents ({P.SelectedOpponents.Count}/{P.NumOpponents})"
-                : "Select Opponents";
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
