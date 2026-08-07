@@ -348,6 +348,10 @@ namespace Ship_Game
             // veil the table screens use, so the map recedes rather than competing with the screen.
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
+            // bench 347: an OPAQUE frame fill behind the content - the fade alone let the universe
+            // show through the cadre (it read opaque only when the backdrop was black). Same fill the
+            // table popups use (copied the instance that works).
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(DesignTabs), ScreenGroups.GroupFrameFill);
             // hovering a building raises the Description tab by itself; the cursor leaving
             // falls back to the player's own choice. SelectedIndex does not fire OnTabChange,
             // so the auto-switch never overwrites the remembered choice.
@@ -560,6 +564,10 @@ namespace Ship_Game
                         {
                             GameAudio.NegativeClick();
                         }
+                        // bench 347: CONSUME the click - since the screen became a popup, an
+                        // unconsumed right-click falls through to base.HandleInput's generic
+                        // popup-close and shut the screen instead of just removing the building.
+                        return true;
                     }
                 }
                 else

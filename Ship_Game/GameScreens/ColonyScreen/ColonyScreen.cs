@@ -153,12 +153,14 @@ namespace Ship_Game
             // not centred - the extra width past the cap falls to the right, and the universe map
             // shows through it (IsPopup). Y never moves - the frame hangs at frameTop whatever the res.
             int layoutW = Math.Min(ScreenWidth, GameScreens.ScreenGroups.MaxFrameWidth);
-            int layoutX = GameScreens.ScreenGroups.FrameMargin;
+            // bench 347: start on the rail exactly like GroupFrame - at FrameMargin (m), NOT
+            // FrameMargin + m. The old centred layout added layoutX on top of m, which pushed Colony
+            // ~one margin too far right; anchored left, the left edge is just m (less the border ink
+            // that pushes out so the visible rule lands on the margin).
             // ⚠ height caps at the 1080p footprint too (maintainer bench 334): past 1080 the frame
-            // stops growing, the foot rises, and it stays hung at frameTop - it never re-centres in
-            // Y the way width does in X, because the frame always hangs from the bar.
+            // stops growing, the foot rises, and it stays hung at frameTop.
             int layoutH = Math.Min(ScreenHeight, 1080);
-            ColonyFrame = new Rectangle(layoutX + m - PopupFrame.BorderLeft, frameTop,
+            ColonyFrame = new Rectangle(m - PopupFrame.BorderLeft, frameTop,
                                         layoutW - 2 * m + PopupFrame.BorderLeft + PopupFrame.BorderRight,
                                         layoutH - frameTop - m + PopupFrame.BottomLine);
             // ⚠ NOT Add()ed: a child is drawn by base.Draw, which lands AFTER everything this

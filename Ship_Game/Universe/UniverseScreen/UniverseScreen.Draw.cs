@@ -547,7 +547,12 @@ namespace Ship_Game
             ExoticBonusesWindow.Visible = showGeneralUI && ExoticBonusesWindow.IsOpen && !LookingAtPlanet;
             FreighterUtilizationWindow.Visible = showGeneralUI && FreighterUtilizationWindow.IsOpen && !LookingAtPlanet;
 
-            Minimap.Visible = showGeneralUI && !LookingAtPlanet; // Ludoal fork: Planet View removed
+            // Ludoal fork (bench 347): the minimap no longer hides on LookingAtPlanet. That flag's
+            // one full-screen case (Planet View) is gone, and its remaining setters (Colony popup,
+            // the Budget table) now keep the universe drawn behind them - so the minimap should stay
+            // visible with them. The flag still gates the cartouches/overlays; only the minimap's own
+            // condition is freed here (Lek's diagnostic, bench 347). Full flag audit is post-47-b.
+            Minimap.Visible = showGeneralUI;
 
             DrawSelectedItems(batch, elapsed);
             DrawSystemAndPlanetBrackets(batch);
