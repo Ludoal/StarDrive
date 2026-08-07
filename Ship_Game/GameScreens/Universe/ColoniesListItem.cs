@@ -23,6 +23,7 @@ namespace Ship_Game
         public Rectangle StorageRect;
         public Rectangle QueueRect;
         public Rectangle PopRect;
+        public Rectangle GrowthRect; // Ludoal fork (bench 339): population growth per turn
         public Rectangle FoodRect;
         public Rectangle ProdRect;
         public Rectangle ResRect;
@@ -74,16 +75,22 @@ namespace Ship_Game
             Rectangle Band(int i) => new Rectangle(cols[i].Rect.X, y, cols[i].Rect.Width, Rect.Height);
             SysNameRect    = Band(0);
             PlanetNameRect = Band(1);
+            // Ludoal fork (bench 339): a Pop Growth column sits between Pop (4) and Food, so every
+            // band from Food onward is one index later than before.
             FertRect    = Band(2);
             RichRect    = Band(3);
             PopRect     = Band(4);
-            FoodRect    = Band(5);
-            ProdRect    = Band(6);
-            MoneyRect   = Band(7); // money before research, the top bar's order (bench 294)
-            ResRect     = Band(8);
-            SliderRect  = new Rectangle(cols[9].Rect.X + 4, y - 30, cols[9].Rect.Width - 8, Rect.Height + 25);
-            StorageRect = Band(10);
-            QueueRect   = Band(11);
+            GrowthRect  = Band(5);
+            FoodRect    = Band(6);
+            ProdRect    = Band(7);
+            MoneyRect   = Band(8); // money before research, the top bar's order (bench 294)
+            ResRect     = Band(9);
+            SliderRect  = new Rectangle(cols[10].Rect.X + 4, y - 30, cols[10].Rect.Width - 8, Rect.Height + 25);
+            // maintainer bench 339: the Storage content starts 5px further left (its whole content
+            // is placed off StorageRect.X, so shifting the rect shifts all of it at once)
+            StorageRect = Band(11);
+            StorageRect.X -= 5;
+            QueueRect   = Band(12);
 
             if (AssignLabor == null)
             {
@@ -266,9 +273,31 @@ namespace Ship_Game
             // "0.0" at one decimal, so it must neither read "-0.0" nor wear pink (bench 305)
             float R1(float v) => Math.Abs(v) < 0.05f ? 0f : v;
             string F1(float v) => R1(v).ToString("0.0", CultureInfo.InvariantCulture);
+            string F2(float v) => (Math.Abs(v) < 0.005f ? 0f : v).ToString("0.00", CultureInfo.InvariantCulture);
+            // give each number of an "a / b" string one decimal place (12 -> 12.0), leaving text as-is
+            string OneDecimalEachSide(string s)
+            {
+                string[] parts = s.Split('/');
+                for (int i = 0; i < parts.Length; ++i)
+                {
+                    string t = parts[i].Trim();
+                    if (float.TryParse(t, System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture, out float f))
+                        parts[i] = f.ToString("0.0", CultureInfo.InvariantCulture);
+                    else
+                        parts[i] = t;
+                }
+                return string.Join(" / ", parts);
+            }
             string popString = P.PopulationStringForPlayer;
             int popParen = popString.IndexOf(" (");
-            DrawStatValue(batch, PopRect, popParen < 0 ? popString : popString.Substring(0, popParen), Color.White);
+            if (popParen >= 0) popString = popString.Substring(0, popParen);
+            // maintainer bench 339: a ".0" on the whole numbers of "x / y" so a mixed row does not
+            // jump between integer and decimal widths (a first step toward aligning on the slash).
+            popString = OneDecimalEachSide(popString);
+            DrawStatValue(batch, PopRect, popString, Color.White);
+            // Ludoal fork (bench 339): population growth per turn, in billions, between Pop and Food
+            DrawStatValue(batch, GrowthRect, F2(P.EstimatedPopGrowthPerTurn / 1000f),
+                          P.EstimatedPopGrowthPerTurn > 0.5f ? Color.LightGreen : Color.Gray);
             DrawStatValue(batch, FoodRect, F1(P.Food.NetIncome), R1(P.Food.NetIncome) >= 0f ? Color.White : Color.LightPink);
             DrawStatValue(batch, ProdRect, F1(P.Prod.NetIncome), R1(P.Prod.NetIncome) >= 0f ? Color.White : Color.LightPink);
             DrawStatValue(batch, ResRect, F1(P.Res.NetIncome), Color.White);

@@ -100,7 +100,7 @@ namespace Ship_Game
             // Ludoal fork (maintainer bench 339): the totals row under the goods rows. The caption
             // left-aligns on the Cargo Distribution bars (win.X + 210); the values right-align on the
             // SAME 3-digit columns as the goods rows above (centred under each header).
-            float totalsY = win.Y + Height - 26;
+            float totalsY = win.Y + Height - 25;
             TotalFreightersLabel = Add(new UILabel(new Vector2(win.X + 210, totalsY), "Total freighters:", Fonts.Arial12Bold, Color.Wheat));
             TotalFreightersValue = Add(RightAlignedValue(FreightersRightX, totalsY));
             TotalImportingValue  = Add(RightAlignedValue(ImportingRightX, totalsY));

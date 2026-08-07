@@ -30,6 +30,17 @@ namespace Ship_Game
 
         private RectF GovernorRect;
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
+        Submenu EmpireSummaryTab; // Ludoal fork (bench 339): the EMPIRE totals tab at the band's left
+
+        // Ludoal fork (maintainer bench 339): the bottom band is laid out LEFT to RIGHT now, all of
+        // it anchored to the left - extra width falls to the RIGHT of the governor. Fixed block
+        // widths (the map derives its own from the fixed band height), so nothing floats. The X of
+        // each block is computed ONCE (BandLayout) and shared by the ctor's GovernorRect and Draw.
+        const float EmpireBoxW = 250f;  // the EMPIRE totals box
+        const float PlanetBoxW = 340f;  // icon + name + the four stat lines
+        const float BandGap    = 10f;
+        // set in the ctor from the fixed band height, reused in Draw
+        float BandMapW, BandEmpireX, BandPlanetX, BandMapX, BandGovX;
 
         private readonly Color Cream           = Colors.Cream;
         private readonly Color White           = Color.White;
@@ -72,6 +83,10 @@ namespace Ship_Game
                 // look), and Money rides before Research, the top bar's own order
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop"), Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.IndicatesThisColonysCurrentPopulation) },
+                // Ludoal fork (maintainer bench 339): population growth per turn, between Pop and the
+                // Food yield. icon_poppertile reads as "extra population"; tooltip spells it out.
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_poppertile"), Align = TableAlign.Number,
+                                     Sortable = true, Tip = "Population growth per turn", SepColor = MutedSep },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"), Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfFood), SepColor = MutedSep },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Align = TableAlign.Number,
@@ -85,8 +100,9 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.Construction2), Width = 282, Align = TableAlign.Center },
             });
             var sys = new Array<string>(); var names = new Array<string>();
-            var stats = new Array<string>[7];
-            for (int i = 0; i < 7; ++i) stats[i] = new Array<string>();
+            // eight numeric columns now: Fertility, Richness, Pop, GROWTH (new), Food, Prod, Money, Research
+            var stats = new Array<string>[8];
+            for (int i = 0; i < 8; ++i) stats[i] = new Array<string>();
             foreach (Planet p in planets)
             {
                 sys.Add(p.System.Name);
@@ -94,15 +110,16 @@ namespace Ship_Game
                 stats[0].Add(p.FertilityFor(Universe.Player).ToString("0.0", CultureInfo.InvariantCulture));
                 stats[1].Add(p.MineralRichness.ToString("0.0", CultureInfo.InvariantCulture));
                 stats[2].Add(PopCombined(p));
-                stats[3].Add(p.Food.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
-                stats[4].Add(p.Prod.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
-                stats[5].Add(p.Money.NetRevenue.ToString("0.0", CultureInfo.InvariantCulture));
-                stats[6].Add(p.Res.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
+                stats[3].Add((p.EstimatedPopGrowthPerTurn / 1000f).ToString("0.00", CultureInfo.InvariantCulture)); // per-turn, billions
+                stats[4].Add(p.Food.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
+                stats[5].Add(p.Prod.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
+                stats[6].Add(p.Money.NetRevenue.ToString("0.0", CultureInfo.InvariantCulture));
+                stats[7].Add(p.Res.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
             }
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, sys);
             UITable.AutoSize(Table.Columns[1], Fonts.Arial14Bold, names);
             Table.Columns[1].Width += 44; // the planet icon rides ahead of the name
-            for (int i = 0; i < 7; ++i)
+            for (int i = 0; i < 8; ++i)
                 UITable.AutoSize(Table.Columns[2 + i], Fonts.Arial12, stats[i]);
             int widthCap = (int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66;
             Table.FitToWidth(widthCap);
@@ -111,7 +128,7 @@ namespace Ship_Game
             // column can always use the room instead
             int slack = widthCap - Table.TableWidth;
             if (slack > 0)
-                Table.Columns[11].Width += slack;
+                Table.Columns[12].Width += slack; // Construction, now index 12 (Pop Growth pushed it +1)
 
             // capped at the 1080p footprint like the frame width, and a FIXED bottom band
             // (maintainer bench 298): the band holds the governor cartouche, which keeps the
@@ -143,8 +160,24 @@ namespace Ship_Game
             // Ludoal fork: its height stops at the FRAME's foot, not the screen's - inside a framed
             // tab it would otherwise run 10px past the bottom border. 10px of margin off the
             // frame's right and under the table (maintainer bench 293).
-            GovernorRect = new RectF(client.Right - sidePanelWidths - 10, ColoniesList.Bottom + 10,
-                                     sidePanelWidths, client.Bottom - ColoniesList.Bottom - 15);
+            // Ludoal fork (bench 339): the band runs LEFT to RIGHT now - EMPIRE, Planet, map,
+            // governor - all anchored to the left, extra width spilling right. The block heights are
+            // fixed, so the map's width (7:5) is known here and the whole cascade resolves at the
+            // ctor; Draw reads the same X values. GovernorRect keeps its fixed width, only its X
+            // changes from a right anchor to the end of the cascade.
+            float bandTop    = ColoniesList.Bottom + 10;
+            float bandBottom = client.Bottom - 15;
+            float bandH      = bandBottom - bandTop;
+            BandMapW    = (bandH - 10) * (700f / 500f) + 20f;
+            BandEmpireX = ERect.X + 22;
+            BandPlanetX = BandEmpireX + EmpireBoxW + BandGap;
+            BandMapX    = BandPlanetX + PlanetBoxW + BandGap;
+            BandGovX    = BandMapX + BandMapW + BandGap;
+            GovernorRect = new RectF(BandGovX, bandTop, sidePanelWidths, bandH);
+
+            // the EMPIRE totals tab at the band's left - a one-tab Submenu, like the group frames
+            EmpireSummaryTab = Add(new Submenu(new RectF(BandEmpireX, bandTop, EmpireBoxW, bandH),
+                                               new LocalizedText[] { "EMPIRE" }));
             // Ludoal fork: guard against an empty colony list — seen live (crash at
             // StarDate 1163: GetPlanets() returned 0 for the player on the UI thread,
             // opened from the Infiltration screen). An empire with no colonies is also
@@ -193,31 +226,29 @@ namespace Ship_Game
 
             base.Draw(batch, elapsed);
             
-            // Ludoal fork: the bottom band, four blocks left to right - planet cartouche,
-            // description on the band's FULL height, ground map, governor frame (fixed,
-            // placed in the constructor with its 10px margins). The cascade runs right to
-            // left from the governor's edge: the map takes its height-driven width, the
-            // DESCRIPTION absorbs what is left (maintainer bench 293).
+            // Ludoal fork (maintainer bench 339): the bottom band, LEFT to RIGHT - the EMPIRE totals
+            // box, the planet cartouche, the ground map, then the fixed governor frame; all anchored
+            // left, extra width spilling right. The block X's were fixed in the ctor (BandLayout) so
+            // the ctor's GovernorRect and this row share one arithmetic. The planet DESCRIPTION is
+            // gone from the band - it rides the planet icon's tooltip now.
             float blockTop = ERect.Y + ERect.H;
-            // ⚠ off the FRAME's foot, not the screen's: inside a framed tab this row would run past
-            // the bottom border, and the governor frame beside it already stops there.
-            float blockH = GovernorRect.Bottom - blockTop;
-            float infoX = ERect.X + 22;
-            float rowRight = GovernorRect.X;
-            // the ground map steps 10px down (maintainer) and hugs the governor block; it is
-            // drawn on a 7:5 grid, so its height decides its width
-            float mapH = blockH - 10;
-            float mapW = mapH * (700f / 500f) + 20f;
-            float mapX = rowRight - mapW;
+            float blockH   = GovernorRect.Bottom - blockTop;
+            float mapH     = blockH - 10;
 
-            // the planet block: icon + name + the four stat lines, at the band's left
+            // the EMPIRE box: colony count, total population, total per-turn growth, at the far left
+            DrawEmpireSummary(batch, BandEmpireX, blockTop, blockH);
+
+            // the planet block: icon + name + the four stat lines, pushed right of the EMPIRE box
             int iconSize = (int)(blockH * 0.6f);
-            var PlanetInfoRect = new Rectangle((int)infoX, (int)blockTop, iconSize + 210, (int)blockH);
+            var PlanetInfoRect = new Rectangle((int)BandPlanetX, (int)blockTop, (int)PlanetBoxW, (int)blockH);
             var PlanetIconRect = new Rectangle(PlanetInfoRect.X + 10, PlanetInfoRect.Y + PlanetInfoRect.Height / 2 - iconSize / 2, iconSize, iconSize);
             var nameCursor = new Vector2(PlanetIconRect.X + PlanetIconRect.Width / 2 - Fonts.Pirulen16.MeasureString(SelectedPlanet.Name).X / 2f, PlanetInfoRect.Y + 15);
             batch.Draw(SelectedPlanet.PlanetTexture, PlanetIconRect, White);
             batch.DrawString(Fonts.Pirulen16, SelectedPlanet.Name, nameCursor, White);
-            
+            // the planet's flavour description now lives on the icon's tooltip (maintainer bench 339)
+            if (PlanetIconRect.HitTest(Input.CursorPosition))
+                ToolTip.CreateTooltip(SelectedPlanet.Description);
+
             // the four stat lines centre on the planet image (maintainer bench 294)
             var PNameCursor = new Vector2(PlanetIconRect.X + PlanetIconRect.Width + 5,
                                           PlanetIconRect.Y + PlanetIconRect.Height / 2 - 2 * (Fonts.Arial12Bold.LineSpacing + 2));
@@ -225,7 +256,7 @@ namespace Ship_Game
             batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.Class)+":", PNameCursor, Color.Orange);
             batch.DrawString(Fonts.Arial12Bold, SelectedPlanet.CategoryName, InfoCursor, Cream);
             PNameCursor.Y += (Fonts.Arial12Bold.LineSpacing + 2);
-            
+
             InfoCursor = new Vector2(PNameCursor.X + 80f, PNameCursor.Y);
             batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.Population)+":", PNameCursor, Color.Orange);
             batch.DrawString(Fonts.Arial12Bold, SelectedPlanet.PopulationStringForPlayer, InfoCursor, Cream);
@@ -251,38 +282,7 @@ namespace Ship_Game
                 ToolTip.CreateTooltip(GameText.APlanetsMineralRichnessDirectly);
             }
 
-            // the description in its OWN block, right of the cartouche, on the band's full
-            // height (maintainer bench 293) - the smaller font first if it runs long, then
-            // as many whole lines as fit with the cut marked, and the FULL text in a
-            // tooltip whenever it was cut
-            var DescRect = new Rectangle(PlanetInfoRect.Right + 10, (int)blockTop + 8,
-                                         (int)mapX - PlanetInfoRect.Right - 30, (int)blockH - 16);
-            // small regular type (maintainer bench 301: the bold 14 was too loud)
-            var descFont = Fonts.Arial12;
-            string text = descFont.ParseText(SelectedPlanet.Description, DescRect.Width);
-            if (descFont.MeasureString(text).Y > DescRect.Height)
-            {
-                descFont = Fonts.Arial12;
-                text = descFont.ParseText(SelectedPlanet.Description, DescRect.Width);
-            }
-            bool descCut = false;
-            if (descFont.MeasureString(text).Y > DescRect.Height)
-            {
-                int maxLines = (int)(DescRect.Height / descFont.LineSpacing);
-                string[] lines = text.Split('\n');
-                if (maxLines > 0 && lines.Length > maxLines)
-                {
-                    text = string.Join("\n", lines, 0, maxLines - 1) + "\n...";
-                    descCut = true;
-                }
-            }
-            // the description centres vertically in its block (maintainer bench 294)
-            float descY = DescRect.Y + Math.Max(0f, (DescRect.Height - descFont.MeasureString(text).Y) / 2f);
-            batch.DrawString(descFont, text, new Vector2(DescRect.X, descY), White);
-            if (descCut && DescRect.HitTest(Input.CursorPosition))
-                ToolTip.CreateTooltip(SelectedPlanet.Description);
-
-            var MapRect = new Rectangle((int)mapX, (int)blockTop + 10, (int)mapW, (int)mapH);
+            var MapRect = new Rectangle((int)BandMapX, (int)blockTop + 10, (int)BandMapW, (int)mapH);
             int desiredWidth = 700;
             int desiredHeight = 500;
             var buildingsRect = new Rectangle(MapRect.X, MapRect.Y, desiredWidth, desiredHeight);
@@ -341,6 +341,34 @@ namespace Ship_Game
             ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             eui.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
+        }
+
+        // Ludoal fork (maintainer bench 339): the EMPIRE totals - colony count, total population and
+        // total per-turn growth, summed across the player's colonies. Drawn inside the EMPIRE tab's
+        // client area; the tab frame itself is a child, painted by base.Draw before this.
+        void DrawEmpireSummary(SpriteBatch batch, float boxX, float bandTop, float bandH)
+        {
+            IReadOnlyList<Planet> planets = Universe.Player.GetPlanets();
+            float totalPop = 0f, totalGrowth = 0f;
+            for (int i = 0; i < planets.Count; ++i)
+            {
+                totalPop    += planets[i].PopulationBillion;
+                totalGrowth += planets[i].EstimatedPopGrowthPerTurn / 1000f; // per-turn, in billions
+            }
+
+            RectF client = EmpireSummaryTab.ClientArea;
+            float labelX = client.X + 14;
+            float valueX = client.X + 120;
+            float y      = client.Y + 14;
+            void Row(string label, string value)
+            {
+                batch.DrawString(Fonts.Arial12Bold, label, new Vector2(labelX, y), Color.Orange);
+                batch.DrawString(Fonts.Arial12Bold, value, new Vector2(valueX, y), Cream);
+                y += Fonts.Arial12Bold.LineSpacing + 8;
+            }
+            Row("Colonies:",   planets.Count.ToString());
+            Row("Population:", totalPop.String(1) + "B");
+            Row("Growth:",     "+" + totalGrowth.String(2) + "B/turn");
         }
 
         void DrawTileIcons(PlanetGridSquare pgs, Rectangle rect)
@@ -433,14 +461,16 @@ namespace Ship_Game
                 Func<Planet, string> name = col == 0 ? p => p.System.Name : p => p.Name;
                 return asc ? planets.OrderBy(name) : planets.OrderByDescending(name);
             }
+            // maintainer bench 339: a Pop Growth column at index 5 shifts Food..Research by one
             Func<Planet, float> selector = col switch
             {
                 2 => p => p.FertilityFor(p.Universe.Player),
                 3 => p => p.MineralRichness,
                 4 => p => p.PopulationBillion,
-                5 => p => p.Food.NetIncome,
-                6 => p => p.Prod.NetIncome,
-                7 => p => p.Money.NetRevenue,
+                5 => p => p.EstimatedPopGrowthPerTurn,
+                6 => p => p.Food.NetIncome,
+                7 => p => p.Prod.NetIncome,
+                8 => p => p.Money.NetRevenue,
                 _ => p => p.Res.NetIncome,
             };
             return asc ? planets.OrderBy(selector) : planets.OrderByDescending(selector);
