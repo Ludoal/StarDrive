@@ -22,13 +22,19 @@ namespace Ship_Game
             Portrait = ResourceManager.Texture("Races/" + empireData.VideoPath);
         }
 
+        // maintainer feedback (7 Aug): the opponent rows size the SAME way as the race rows - the
+        // shared RaceArchetypeListItem.RowHeight rule - just a touch smaller (no ExtraHeight). One
+        // arithmetic for both lists, so their sizing can never drift.
+        public override int ItemHeight => RaceArchetypeListItem.RowHeight(List, Portrait, 0);
+
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             base.Draw(batch, elapsed);
 
+            // centred, like the race rows - the portrait used to sit hard left and overflow
             int height = (int)Height;
             int width = (int)Portrait.GetWidthFromHeightAspect(height);
-            var portrait = new Rectangle((int)X +10, (int)Y, width, height);
+            var portrait = new Rectangle((int)CenterX - width/2, (int)Y, width, height);
             bool selected = Params.SelectedOpponents.Contains(EmpireData);
             float alpha = selected ? 1f : 0.3f;
             batch.Draw(Portrait, portrait, Color.White.Alpha(alpha));

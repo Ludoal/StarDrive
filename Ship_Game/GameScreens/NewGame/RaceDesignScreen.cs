@@ -171,15 +171,13 @@ namespace Ship_Game
             // the resolution. Everything inside derives from ScreenFrame, so fixing the frame fixes
             // the whole layout at its 900p form (the size the bench is tuned on). Narrow/Tall no
             // longer vary here - at 1440x900 both are false, the plain middle branch throughout.
+            // ⚠ 1440x900 is the WHOLE frame, borders included - a centred window has no screen edge
+            // for the side/bottom ink to spill past (unlike the old full-screen popup), so it must
+            // stay INSIDE the window or the fill overruns bottom-right by BorderRight/BottomLine.
             const int WinW = 1440, WinH = 900;
             int winX = (ScreenWidth  - WinW) / 2;
             int winY = (ScreenHeight - WinH) / 2;
-            // ⚠ the rect is pushed OUT by what each edge's texture leaves blank, so the visible
-            // rule lands on the window bound: 7 transparent rows at the top, 2 at the foot, plus the
-            // side borders. Measured in the PNGs - guessing these is what cost four passes.
-            ScreenFrame = new Rectangle(winX - PopupFrame.BorderLeft, winY - PopupFrame.TopInk,
-                                        WinW + PopupFrame.BorderLeft + PopupFrame.BorderRight,
-                                        WinH + PopupFrame.TopInk + PopupFrame.BottomLine);
+            ScreenFrame = new Rectangle(winX, winY, WinW, WinH);
             Frame = new PopupFrame(ScreenFrame);
 
             Rectangle inner = PopupFrame.ContentArea(ScreenFrame);
@@ -286,12 +284,15 @@ namespace Ship_Game
             // the Opponents tab: a count caption plus the opponent list, the same content the
             // SelectOpponentsScreen popup carried. Both share chooseRace; OnLeftTabChanged flips
             // which one shows. The count strip sits at the top, the list below it.
-            const int OppCountStrip = 30;
+            // maintainer feedback (7 Aug): give the caption air above it, and align it on the list
+            // items' own left edge (the 0.8-width portraits are centred, so their left is inset).
+            const int OppCountStrip = 42;
+            const int OppCountTop = 14;   // air above the caption
             OpponentsCountLabel = Add(new UILabel(
-                new Vector2(chooseRace.X + 6, chooseRace.Y + 4),
+                new Vector2(chooseRace.X + 12, chooseRace.Y + OppCountTop),
                 "Random Opponents: ", Fonts.Arial14Bold, Colors.Cream));
             OpponentsCountValue = Add(new UILabel(
-                new Vector2(chooseRace.X + 6 + Fonts.Arial14Bold.TextWidth("Random Opponents: "), chooseRace.Y + 4),
+                new Vector2(chooseRace.X + 12 + Fonts.Arial14Bold.TextWidth("Random Opponents: "), chooseRace.Y + OppCountTop),
                 "", Fonts.Arial14Bold, Color.White));
             RectF oppListArea = new(chooseRace.X, chooseRace.Y + OppCountStrip,
                                     chooseRace.W, chooseRace.H - OppCountStrip);
@@ -408,10 +409,10 @@ namespace Ship_Game
             }
 
             // under RACE: its own load/save, centred on the left column (maintainer feedback).
-            // Two Medium buttons span 2*BtnW+BtnGap; the column is SideW wide, so inset by half
-            // the slack. The pair shares the ONE arithmetic the column already declares.
+            // Two Medium buttons span 2*BtnW+BtnGap; the column is envW wide now (the widened Race
+            // column), so inset by half the slack against envW - the SAME width the column declares.
             const int TwoBtnW = 2 * BtnW + BtnGap;
-            bx = gridLeft + (SideW - TwoBtnW) / 2;
+            bx = gridLeft + (envW - TwoBtnW) / 2;
             Foot("Load Race", OnLoadRaceClicked);
             Foot("Save Race", OnSaveRaceClicked);
 
