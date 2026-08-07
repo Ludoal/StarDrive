@@ -247,7 +247,11 @@ namespace Ship_Game
             // a surround rather than a container - the 3D fleet view keeps its own layout.
             DesignTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.DesignTabTitles, 0,
                                                     OnDesignTabChanged, out Rectangle _);
-            SetPerspectiveProjection(maxDistance: 100_000);
+            // Ludoal fork (maintainer feedback, 7 Aug): the Fleets 3D view fills the same capped
+            // group frame as the Shipyard, so it centres on that frame, not the whole screen, using
+            // the shared offset. Without it the fleet drifts down-right at hi-res.
+            SetPerspectiveProjection(maxDistance: 100_000,
+                offsetXY: ScreenGroups.GroupFrameCameraOffset(ScreenWidth, ScreenHeight));
 
             Graphics.Font arial12 = Fonts.Arial12Bold;
 

@@ -595,10 +595,14 @@ namespace Ship_Game
             {
                 double top    = 100.0 * Math.Tan(fieldOfViewYrads / 2.0);
                 double right  = top * aspectRatio;
+                // offset is frame-centre-minus-screen-centre. Bench 334 reported the VERTICAL good
+                // and the HORIZONTAL worse, so only X had the wrong sign: shifting the frustum by -dx
+                // moves the rendered content the SAME way as the frame (frame left of centre -> model
+                // left). Y keeps the 334 sign, which the bench confirmed correct.
                 double dx     = offsetXY.X * (2.0 * right); // fraction of frustum width
                 double dy     = offsetXY.Y * (2.0 * top);
                 Projection = Matrix.CreatePerspectiveOffCenter(
-                    (float)(-right + dx), (float)(right + dx),
+                    (float)(-right - dx), (float)(right - dx),
                     (float)(-top + dy),   (float)(top + dy), 100.0f, (float)maxDistance);
             }
             UpdateWorldScreenProjection();

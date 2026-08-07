@@ -153,9 +153,13 @@ namespace Ship_Game
             // the same frameTop whatever the resolution.
             int layoutW = Math.Min(ScreenWidth, GameScreens.ScreenGroups.MaxFrameWidth);
             int layoutX = (ScreenWidth - layoutW) / 2;
+            // ⚠ height caps at the 1080p footprint too (maintainer bench 334): past 1080 the frame
+            // stops growing, the foot rises, and it stays hung at frameTop - it never re-centres in
+            // Y the way width does in X, because the frame always hangs from the bar.
+            int layoutH = Math.Min(ScreenHeight, 1080);
             ColonyFrame = new Rectangle(layoutX + m - PopupFrame.BorderLeft, frameTop,
                                         layoutW - 2 * m + PopupFrame.BorderLeft + PopupFrame.BorderRight,
-                                        ScreenHeight - frameTop - m + PopupFrame.BottomLine);
+                                        layoutH - frameTop - m + PopupFrame.BottomLine);
             // ⚠ NOT Add()ed: a child is drawn by base.Draw, which lands AFTER everything this
             // screen paints by hand - the frame's body would bury the panels. Painted first
             // thing in Draw instead (see ColonyScreen_Draw).

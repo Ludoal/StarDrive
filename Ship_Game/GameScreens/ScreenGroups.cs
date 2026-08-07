@@ -271,6 +271,19 @@ namespace Ship_Game.GameScreens
             => new(FrameMargin, TabRowY, Math.Min(screenW, MaxFrameWidth) - 2 * FrameMargin,
                    Math.Min(screenH, 1080) - TabRowY - FrameMargin);
 
+        // Ludoal fork (maintainer feedback, 7 Aug): the group frame is anchored to the left margin
+        // and the bar, so once it caps (1680 wide) its centre sits LEFT of and ABOVE the screen
+        // centre. A 3D screen that fills this frame (Shipyard, Fleets) must shift its optical centre
+        // by the same amount, or the model drifts down-right at hi-res. Returned as a fraction of the
+        // screen, feeding SetPerspectiveProjection's offCentre - the ONE place this offset is
+        // computed, so the two screens can never disagree.
+        public static Vector2 GroupFrameCameraOffset(int screenW, int screenH)
+        {
+            Rectangle frame = GroupFrame(screenW, screenH);
+            return new Vector2((frame.CenterX() - screenW * 0.5f) / screenW,
+                               (frame.CenterY() - screenH * 0.5f) / screenH);
+        }
+
         // ── Race columns (Diplomacy group) ────────────────────────────────────────────────────
         // A race column is a FIXED width; the frame HUGS its visible columns rather than spanning
         // the screen, and the window grows with the faction count, bounded only by the physical

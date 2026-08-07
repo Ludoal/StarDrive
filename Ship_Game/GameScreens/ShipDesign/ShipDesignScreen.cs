@@ -1443,14 +1443,11 @@ namespace Ship_Game
         {
             // Ludoal fork (maintainer feedback, 7 Aug): the 3D workbench centres on the SHIPYARD
             // WINDOW (frame capped at 1680), not the whole screen - otherwise the ship drifts down
-            // and right at hi-res, where screen centre no longer matches the frame's. Offset is the
-            // frame-centre-minus-screen-centre, as a fraction of the screen. ⚠ signs/scale to verify
-            // at the bench.
-            Rectangle frame = ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
-            float offX = (frame.CenterX() - ScreenWidth  * 0.5f) / ScreenWidth;
-            float offY = (frame.CenterY() - ScreenHeight * 0.5f) / ScreenHeight;
+            // and right at hi-res, where screen centre no longer matches the frame's. The offset is
+            // computed once in ScreenGroups so the Fleets surround uses the very same arithmetic.
+            Vector2 camOffset = ScreenGroups.GroupFrameCameraOffset(ScreenWidth, ScreenHeight);
             // set shipyard's fov much lower to reduce parallax
-            SetPerspectiveProjection(fovYdegrees: 20, maxDistance: 30000, offsetXY: new Vector2(offX, offY));
+            SetPerspectiveProjection(fovYdegrees: 20, maxDistance: 30000, offsetXY: camOffset);
             UpdateViewMatrix(CameraPos);
         }
 
