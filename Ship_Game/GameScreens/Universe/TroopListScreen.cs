@@ -60,9 +60,9 @@ namespace Ship_Game
                 new UITable.Column { Title = "Location" },
                 new UITable.Column { Title = "Status",   Align = TableAlign.Center, Sorted = true, Ascending = true },
                 new UITable.Column { Title = "Troop", Foldable = true }, // repli si la table dépasse 1680 (rarissime)
-                new UITable.Column { Title = "#",        Width = 60, Align = TableAlign.Number },
+                new UITable.Column { Title = "#",        Align = TableAlign.Number },
                 // the offense icon with its tooltip in place of the word (bench 305)
-                new UITable.Column { Icon = ResourceManager.Texture("UI/icon_offense"), Width = 80,
+                new UITable.Column { Icon = ResourceManager.Texture("UI/icon_offense"),
                                      Align = TableAlign.Number, Tip = Localizer.Token(GameText.Strength) },
             });
             int rows = CountTroopGroups(out Array<string> systems, out Array<string> locations, out Array<string> troops);
@@ -70,6 +70,11 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, locations);
             UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, Statuses);
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, troops);
+            // bench 343: the last two columns size to their header + default margins like the rest,
+            // not a hardcoded 60/80. The counts/strengths are short, so the "#" header and the
+            // offense icon are the real floor - AutoSize on an empty value set gives exactly that.
+            UITable.AutoSize(Table.Columns[4], Fonts.Arial12Bold, System.Array.Empty<string>());
+            UITable.AutoSize(Table.Columns[5], Fonts.Arial12Bold, System.Array.Empty<string>());
             // Ludoal fork (maintainer feedback): the table caps at 1680 like the rest of the group -
             // the Troop column folds if it ever overflows (in practice it never will).
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
@@ -242,11 +247,15 @@ namespace Ship_Game
             infoX += font.TextWidth(totalLbl);
             string totalVal = NumTroops.ToString();
             batch.DrawString(font, totalVal, new Vector2(infoX, infoY), Color.White);
-            infoX += font.TextWidth(totalVal) + 24;
-            string foodLbl = "Food: ";
-            batch.DrawString(font, foodLbl, new Vector2(infoX, infoY), UITable.Vanilla);
-            batch.DrawString(font, $"-{(NumTroops * Troop.Consumption).String(1)}",
-                             new Vector2(infoX + font.TextWidth(foodLbl), infoY), Color.LightPink);
+            // bench 343: no food bill when there are no troops - it read "-0.0" in pink for nothing
+            if (NumTroops > 0)
+            {
+                infoX += font.TextWidth(totalVal) + 24;
+                string foodLbl = "Food: ";
+                batch.DrawString(font, foodLbl, new Vector2(infoX, infoY), UITable.Vanilla);
+                batch.DrawString(font, $"-{(NumTroops * Troop.Consumption).String(1)}",
+                                 new Vector2(infoX + font.TextWidth(foodLbl), infoY), Color.LightPink);
+            }
 
             // maintainer bench 336: with no troops there is nothing to tabulate - skip the empty
             // table chrome (headers, column rules) and show only the note.

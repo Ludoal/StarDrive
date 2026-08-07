@@ -31,7 +31,9 @@ namespace Ship_Game
         {
             ScreenManager.BeginFrameRendering(elapsed, ref View, ref Projection);
 
-            ScreenManager.ClearScreen(Color.Black);
+            // Ludoal fork (bench 343): NO black clear - the screen is a popup now, so the paused
+            // universe drawn underneath shows through the frame's margin. Clearing to black here
+            // would paint over it. (ClearScreen is colour-only, so the 3D depth is unaffected.)
 
             // Ludoal fork: the starfield and the fleet grid are clipped to the tab frame - the
             // screen is one tab of the Design group now, so its scene stays inside the frame.

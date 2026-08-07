@@ -102,6 +102,11 @@ namespace Ship_Game
             EmpireUI = empireUI;
             Player = u.Player;
 
+            // Ludoal fork (bench 343): a popup, so the paused universe keeps drawing BEHIND the
+            // screen (the map shows through the frame's margin) instead of a dead black backdrop -
+            // like the table screens. The Draw stops clearing to black for the same reason.
+            IsPopup = true;
+
             // Ludoal fork: no fade in, same as the Shipyard beside it - the two are tabs of one
             // group now, and a tab that fades in reads as a screen change rather than a switch.
             Player.UpdateShipsWeCanBuild();
