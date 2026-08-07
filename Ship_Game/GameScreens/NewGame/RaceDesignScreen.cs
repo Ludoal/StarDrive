@@ -274,7 +274,10 @@ namespace Ship_Game
             RaceTab = Add(new Submenu(new RectF(gridLeft, row2Top, envW, row2H), leftTabs));
             RaceTab.OnTabChange = OnLeftTabChanged;
             RectF chooseRace = RaceTab.ClientArea;
-            ChooseRaceList = Add(new ScrollList<RaceArchetypeListItem>(chooseRace, 135));
+            // maintainer feedback (bench 343): both lists 10px narrower - the tab frame stays aligned
+            // with Environment above, only the list area (and so the 0.8-width portraits) shrinks.
+            RectF raceListArea = new(chooseRace.X, chooseRace.Y, chooseRace.W - 10, chooseRace.H);
+            ChooseRaceList = Add(new ScrollList<RaceArchetypeListItem>(raceListArea, 135));
             ChooseRaceList.OnClick = OnRaceArchetypeItemClicked;
 
             foreach (IEmpireData e in ResourceManager.MajorRaces)
@@ -294,7 +297,7 @@ namespace Ship_Game
                 new Vector2(chooseRace.X + 12 + Fonts.Arial14Bold.TextWidth("Random Opponents: "), chooseRace.Y + OppCountTop),
                 "", Fonts.Arial14Bold, Color.White));
             RectF oppListArea = new(chooseRace.X, chooseRace.Y + OppCountStrip,
-                                    chooseRace.W, chooseRace.H - OppCountStrip);
+                                    chooseRace.W - 10, chooseRace.H - OppCountStrip);
             ChooseOpponentsList = Add(new ScrollList<SelectOpponentListItem>(oppListArea, 135));
             ChooseOpponentsList.OnClick = OnOpponentItemSelected;
             ChooseOpponentsList.OnDoubleClick = OnOpponentItemSelected;
