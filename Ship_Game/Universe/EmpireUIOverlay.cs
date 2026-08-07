@@ -323,6 +323,21 @@ namespace Ship_Game
                 batch.DrawString(font, "\u00b7 ", new Vector2(topicX, textY), TextCream);
                 batch.DrawString(font, topic, new Vector2(topicTextX, textY),
                                  disrupted ? new Color(255, 96, 96) : TextCream.Alpha(0.7f));
+
+                // maintainer bench 336: the turns left to finish the current topic, in parentheses
+                // to the right of its name. ceil((cost - progress) / net per turn); only when the
+                // net research is positive (a stalled topic has no finite ETA).
+                float net = Player.Research.NetResearch;
+                if (net > 0)
+                {
+                    float remaining = Player.Research.Current.TechCost - Player.Research.Current.Progress;
+                    // ceil(remaining / net) without System.Math: whole turns, plus one if any remainder
+                    int turns = (int)(remaining / net);
+                    if (turns * net < remaining) turns += 1;
+                    if (turns < 1) turns = 1;
+                    float afterTopicX = topicTextX + font.TextWidth(topic) + 6;
+                    batch.DrawString(font, $"({turns})", new Vector2(afterTopicX, textY), TextCream.Alpha(0.7f));
+                }
             }
 
             // the speed factor, right-aligned on its reserved width. Same reading as the floating

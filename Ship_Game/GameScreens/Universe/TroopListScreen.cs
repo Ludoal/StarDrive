@@ -248,12 +248,17 @@ namespace Ship_Game
             batch.DrawString(font, $"-{(NumTroops * Troop.Consumption).String(1)}",
                              new Vector2(infoX + font.TextWidth(foodLbl), infoY), Color.LightPink);
 
-            Table.DrawChrome(batch);
+            // maintainer bench 336: with no troops there is nothing to tabulate - skip the empty
+            // table chrome (headers, column rules) and show only the note.
             if (TroopSL.NumEntries == 0)
             {
                 var msgPos = new Vector2(Table.TableRect.X + 30, Table.TableRect.Y + 30);
                 batch.DrawString(font, "No troops anywhere — recruit some before the neighbours visit.",
                                  msgPos, Color.Gray);
+            }
+            else
+            {
+                Table.DrawChrome(batch);
             }
             ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel

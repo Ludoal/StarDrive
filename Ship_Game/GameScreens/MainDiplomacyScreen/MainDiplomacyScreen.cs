@@ -873,31 +873,36 @@ namespace Ship_Game
                     SubTexture icon = null;
                     Color tint = Color.White;
                     string glyph = "?";
+                    string tip = null;   // maintainer bench 336: hover text for the treaty icon
                     if (CanSeeRelation(e, others[jx]) && e.GetRelations(others[jx], out Relationship rel) && rel.Known)
                     {
                         // tints match the Relationships Cross Reference palette:
                         // War red, Peace white, Alliance green, NA blue, Open Borders purple, Trade yellow
                         glyph = "-";
+                        string them = others[jx].data.Traits.Name;
                         switch (iy)
                         {
                             case 0: // the state of the relation, strongest bond first
-                                if (rel.AtWar) { icon = ResourceManager.Texture("UI/icon_fighting_small"); tint = Color.Red; }
-                                else if (rel.Treaty_Alliance) { icon = ResourceManager.Texture("UI/flagicon"); tint = Color.Green; }
-                                else if (rel.Treaty_NAPact) { icon = ResourceManager.Texture("UI/icon_shield"); tint = Color.DeepSkyBlue; }
-                                else if (rel.Treaty_Peace) { icon = ResourceManager.Texture("UI/icon_peace"); tint = Color.White; }
+                                if (rel.AtWar) { icon = ResourceManager.Texture("UI/icon_fighting_small"); tint = Color.Red; tip = $"At war with {them}"; }
+                                else if (rel.Treaty_Alliance) { icon = ResourceManager.Texture("UI/flagicon"); tint = Color.Green; tip = $"Allied with {them}"; }
+                                else if (rel.Treaty_NAPact) { icon = ResourceManager.Texture("UI/icon_shield"); tint = Color.DeepSkyBlue; tip = $"Non-Aggression Pact with {them}"; }
+                                else if (rel.Treaty_Peace) { icon = ResourceManager.Texture("UI/icon_peace"); tint = Color.White; tip = $"At peace with {them}"; }
                                 break;
                             case 1:
-                                if (rel.Treaty_OpenBorders) { icon = ResourceManager.Texture("NewUI/icon_intertrade"); tint = Color.Violet; }
+                                if (rel.Treaty_OpenBorders) { icon = ResourceManager.Texture("NewUI/icon_intertrade"); tint = Color.Violet; tip = $"Open Borders with {them}"; }
                                 break;
                             case 2:
-                                if (rel.Treaty_Trade) { icon = ResourceManager.Texture("NewUI/icon_money"); tint = Color.Yellow; }
+                                if (rel.Treaty_Trade) { icon = ResourceManager.Texture("NewUI/icon_money"); tint = Color.Yellow; tip = $"Trade Treaty with {them}"; }
                                 break;
                         }
                     }
+                    var iconRect = new Rectangle((int)(x0 + jx * cellW) + (cellW - 14) / 2, (int)ry, 14, 14);
                     if (icon != null)
-                        batch.Draw(icon, new Rectangle((int)(x0 + jx * cellW) + (cellW - 14) / 2, (int)ry, 14, 14), tint);
+                        batch.Draw(icon, iconRect, tint);
                     else
                         batch.DrawString(Font12Bold, glyph, new Vector2(x0 + jx * cellW + (cellW - Font12Bold.TextWidth(glyph)) / 2f, ry), new Color(90, 90, 90));
+                    if (tip != null && iconRect.HitTest(Input.CursorPosition))
+                        ToolTip.CreateTooltip(tip);
                 }
             }
         }

@@ -518,6 +518,13 @@ namespace Ship_Game.GameScreens
         public static bool InTopBand(Vector2 cursor)
             => cursor.Y < TabRowY + TabStripH;
 
+        // Ludoal fork (maintainer bench 336): the margin OUTSIDE the group frame - the bare
+        // starfield around a capped 3D window. The Shipyard and Fleets close on a right-click
+        // there too (as well as the top band), since nothing on the workbench owns that gesture
+        // out here. Uses the same GroupFrame the window is drawn from, so the two agree.
+        public static bool OutsideGroupFrame(Vector2 cursor, int screenW, int screenH)
+            => !GroupFrame(screenW, screenH).HitTest(cursor);
+
         // The vertical span of a column inside the frame. ⚠ ClientArea.H already stops short of the
         // frame's bottom border, so only the TOP pad is added - taking one off the bottom as well
         // left roughly twice the gap there.

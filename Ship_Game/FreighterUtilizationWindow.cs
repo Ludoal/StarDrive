@@ -25,6 +25,13 @@ namespace Ship_Game
         int NumUtilizedFreighters;
         UILabel FreighterConstructingLabel;
         UILabel NumIdleFreightersLabel;
+        // Ludoal fork (maintainer bench 336): a "Total freighters:" row under the goods rows.
+        // The freighters value is the OPERATIONAL count (NumUtilizedFreighters), not a sum of the
+        // per-goods needs; importing/exporting are the planet-slot totals across the goods.
+        UILabel TotalFreightersLabel;
+        UILabel TotalFreightersValue;
+        UILabel TotalImportingValue;
+        UILabel TotalExportingValue;
 
         public FreighterUtilizationWindow(UniverseScreen screen) : base(screen, toPause: null)
         {
@@ -69,6 +76,15 @@ namespace Ship_Game
             utilizationData.Padding = new(2f, 25f);
             foreach (GoodsUtilization gu in  GoodsUtilizationMap.Values)
                 utilizationData.Add(gu);
+
+            // Ludoal fork (maintainer bench 336): the totals row under the goods rows. The caption
+            // left-aligns on the Cargo Distribution bars (win.X + 210); the values sit under the
+            // Freighters / Importing / Exporting columns (+390/+490/+590), same X as the goods rows.
+            float totalsY = win.Y + Height - 28;
+            TotalFreightersLabel = Add(new UILabel(new Vector2(win.X + 210, totalsY), "Total freighters:", Fonts.Arial12Bold, Color.Wheat));
+            TotalFreightersValue = Add(new UILabel(new Vector2(win.X + 390, totalsY), "", Fonts.Arial12Bold, Color.White));
+            TotalImportingValue  = Add(new UILabel(new Vector2(win.X + 490, totalsY), "", Fonts.Arial12Bold, Color.White));
+            TotalExportingValue  = Add(new UILabel(new Vector2(win.X + 590, totalsY), "", Fonts.Arial12Bold, Color.White));
         }
 
         public override void PerformLayout()
@@ -173,6 +189,18 @@ namespace Ship_Game
                 UtilizationBar.Progress = TotalFreighters == 0 ? 0 : (float)NumUtilizedFreighters/TotalFreighters*100;
                 FreighterConstructingLabel.Text = Player.FreightersBeingBuilt.String();
                 NumIdleFreightersLabel.Text = (TotalFreighters - NumUtilizedFreighters).String();
+
+                // the totals row: OPERATIONAL freighters (not a sum of per-goods needs), and the
+                // planet-slot totals across the goods rows
+                int totalImporting = 0, totalExporting = 0;
+                foreach (GoodsUtilization gu in GoodsUtilizationMap.Values)
+                {
+                    totalImporting += gu.NumImportingPlanets;
+                    totalExporting += gu.NumExportingPlanets;
+                }
+                TotalFreightersValue.Text = NumUtilizedFreighters.String();
+                TotalImportingValue.Text  = totalImporting.String();
+                TotalExportingValue.Text  = totalExporting.String();
             }
 
             base.Update(fixedDeltaTime);

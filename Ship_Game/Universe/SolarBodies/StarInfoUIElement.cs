@@ -155,12 +155,20 @@ namespace Ship_Game
 					if (pn != p.Name)
 						RollTips.Add(new RollTip { Rect = new Rectangle(listX, (int)y, classCol - 6 - listX, RowH), Text = p.Name });
 
+					// maintainer bench 336: a dash means "not applicable" - keep it for a Gas Giant
+					// (no surface to farm or mine), but a real zero on any other world reads "0.0".
+					bool isGasGiant = p.Category == PlanetCategory.GasGiant;
 					string LaneStr(float v)
-						=> v < 0.05f ? "-" : v.ToString("0.0", CultureInfo.InvariantCulture);
+						=> v >= 0.05f ? v.ToString("0.0", CultureInfo.InvariantCulture)
+						              : isGasGiant ? "-" : "0.0";
+					// a dash is centred in its lane; a value stays right-aligned as before
 					void Lane(string s, int lane)
-						=> batch.DrawString(Fonts.Arial12, s,
-						                    new Vector2(lane + 18 - Fonts.Arial12.TextWidth(s), y),
-						                    s == "-" ? Color.Gray : Color.White);
+					{
+						bool dash = s == "-";
+						float tw = Fonts.Arial12.TextWidth(s);
+						float lx = dash ? lane + 9 - tw / 2 : lane + 18 - tw;
+						batch.DrawString(Fonts.Arial12, s, new Vector2(lx, y), dash ? Color.Gray : Color.White);
+					}
 					string fs = LaneStr(p.FertilityFor(Player));
 
 					// the class folds on a MEASURED collision with THIS row's F value -

@@ -313,7 +313,8 @@ namespace Ship_Game
 
             int theirInfiltrationLevel = Them.GetRelations(Owner).Espionage.EffectiveLevel;
             if (Level <= 2)
-                return theirInfiltrationLevel > 0 ? "Exists" : "Probably None";
+                // "Exist" not "Exists": the label reads "Spies" (plural) now (maintainer bench 336)
+                return theirInfiltrationLevel > 0 ? "Exist" : "Probably None";
 
             if (Level <= 4)
                 return theirInfiltrationLevel == 0 ? "None" 

@@ -50,6 +50,9 @@ namespace Ship_Game.Ships
         private bool CanRename   = true;
         private bool ShowModules = true;
         private Vector2 StatusArea;
+        // the left edge of the orders-button row below; the status/FTL row aligns its start on it
+        // so the FTL icon sits over those buttons rather than floating right (maintainer bench 336)
+        private float OrdersRowX;
 
         public ShipInfoUIElement(Rectangle r, ScreenManager sm, UniverseScreen universe)
         {
@@ -74,8 +77,9 @@ namespace Ship_Game.Ships
             Power = new Rectangle(Housing.X + 197, Housing.Y + 115, 20, 20);
             PBar = new ProgressBar(Power.X + Power.Width + 15, Power.Y, 150, 18) { color = "green" };
             ToolTipItems.Add(new TippedItem(Power, GameText.IndicatesThisShipsCurrentPower));
-            // the faction flag's right edge rides the bars' end (maintainer bench 319)
-            FlagRect = new Rectangle(PBar.pBar.X + PBar.pBar.Width - 18, r.Y + 71, 18, 18);
+            // the faction flag's right edge rides the bars' end (maintainer bench 319); 24px now,
+            // grown left and down from that top-right anchor (maintainer bench 336)
+            FlagRect = new Rectangle(PBar.pBar.X + PBar.pBar.Width - 24, r.Y + 71, 24, 24);
 
             Shields = new Rectangle(Housing.X + 197, Housing.Y + 115 + 20 + spacing, 20, 20);
             SBar = new ProgressBar(Shields.X + Shields.Width + 15, Shields.Y, 150, 18) { color = "blue" };
@@ -110,6 +114,7 @@ namespace Ship_Game.Ships
 
             // the stance block right-aligns with the bars above it (maintainer bench 319)
             float startX = OBar.pBar.X + OBar.pBar.Width - StanceButtons.RowWidth;
+            OrdersRowX = startX;   // the status/FTL row above lines its start up with this
             var ordersBarPos = new Vector2(startX, (Ordnance.Y + Ordnance.Height + spacing + 3));
 
             OrdersButtons = new ShipStanceButtons(universe, ordersBarPos);
@@ -214,9 +219,10 @@ namespace Ship_Game.Ships
             //Added by McShooterz: kills display
             star       = new Rectangle(star.X, star.Y + 19, 22, 22);
             levelPos   = new Vector2(star.X + star.Width + 2, star.Y + 11 - Fonts.Arial12Bold.LineSpacing / 2);
-            // just inside the shaved frame's top; the row starts on the Power/Shield icon
-            // column, so the FTL icon lines up with them (maintainer bench 320)
-            StatusArea = new Vector2(Housing.X + 197, Housing.Y + FrameShave + 2);
+            // just inside the shaved frame's top; the row's start lines up with the orders-button
+            // row below it, so the FTL icon sits over those buttons (maintainer bench 336 - it used
+            // to start at Housing.X + 197, floating well to the right of them)
+            StatusArea = new Vector2(OrdersRowX, Housing.Y + FrameShave + 2);
             batch.Draw(ResourceManager.Texture("UI/icon_kills_shipUI"), star, Color.White);
             batch.DrawString(Fonts.Arial12Bold, s.Kills.ToString(), levelPos, Color.White);
             int numStatus = 0;
