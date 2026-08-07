@@ -36,7 +36,7 @@ namespace Ship_Game
         // it anchored to the left - extra width falls to the RIGHT of the governor. Fixed block
         // widths (the map derives its own from the fixed band height), so nothing floats. The X of
         // each block is computed ONCE (BandLayout) and shared by the ctor's GovernorRect and Draw.
-        const float EmpireBoxW = 250f;  // the EMPIRE totals box
+        const float EmpireBoxW = 265f;  // the EMPIRE totals box (bench 343: +15, grown left)
         const float PlanetBoxW = 340f;  // icon + name + the four stat lines
         const float BandGap    = 10f;
         // set in the ctor from the fixed band height, reused in Draw
@@ -165,11 +165,11 @@ namespace Ship_Game
             // fixed, so the map's width (7:5) is known here and the whole cascade resolves at the
             // ctor; Draw reads the same X values. GovernorRect keeps its fixed width, only its X
             // changes from a right anchor to the end of the cascade.
-            float bandTop    = ColoniesList.Bottom + 10;
+            float bandTop    = ColoniesList.Bottom + 20; // bench 343: the bottom band drops 10px
             float bandBottom = client.Bottom - 15;
             float govBandH   = bandBottom - bandTop; // real band height (bandH above is the layout reserve)
             BandMapW    = (govBandH - 10) * (700f / 500f) + 20f;
-            BandEmpireX = ERect.X + 22;
+            BandEmpireX = ERect.X + 7; // bench 343: EMPIRE box grew 15 to the LEFT (X -15, width +15), so its right edge and the rest of the cascade stay put
             BandPlanetX = BandEmpireX + EmpireBoxW + BandGap;
             BandMapX    = BandPlanetX + PlanetBoxW + BandGap;
             BandGovX    = BandMapX + BandMapW + BandGap;
@@ -231,7 +231,7 @@ namespace Ship_Game
             // left, extra width spilling right. The block X's were fixed in the ctor (BandLayout) so
             // the ctor's GovernorRect and this row share one arithmetic. The planet DESCRIPTION is
             // gone from the band - it rides the planet icon's tooltip now.
-            float blockTop = ERect.Y + ERect.H;
+            float blockTop = ERect.Y + ERect.H + 10; // bench 343: the bottom band drops 10px (matches bandTop's +10 in the ctor)
             float blockH   = GovernorRect.Bottom - blockTop;
             float mapH     = blockH - 10;
 

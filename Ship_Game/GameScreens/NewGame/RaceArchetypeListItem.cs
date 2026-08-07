@@ -18,9 +18,10 @@ namespace Ship_Game
             Portrait = ResourceManager.Texture("Races/" + empireData.VideoPath);
         }
 
-        // maintainer feedback (7 Aug): the race rows read 30px taller than the plain portrait
-        // aspect gave - the portrait grows to fill, since Draw derives its width from Height.
-        public const int ExtraHeight = 30;
+        // maintainer feedback (7 Aug, bench 343): the rows read 20px taller than the plain portrait
+        // aspect gave (30 no longer fit the frame). BOTH the race and the opponent lists use this one
+        // constant, so they stay identical in height and can't drift apart.
+        public const int ExtraHeight = 20;
 
         // the ONE sizing rule for both the Race and the Opponents rows: portrait at 0.8 of the
         // list width, by aspect, plus an optional extra. The Opponents item can't inherit this

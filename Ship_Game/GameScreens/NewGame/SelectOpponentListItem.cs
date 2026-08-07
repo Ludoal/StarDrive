@@ -22,10 +22,10 @@ namespace Ship_Game
             Portrait = ResourceManager.Texture("Races/" + empireData.VideoPath);
         }
 
-        // maintainer feedback (7 Aug): the opponent rows size the SAME way as the race rows - the
-        // shared RaceArchetypeListItem.RowHeight rule - just a touch smaller (no ExtraHeight). One
-        // arithmetic for both lists, so their sizing can never drift.
-        public override int ItemHeight => RaceArchetypeListItem.RowHeight(List, Portrait, 0);
+        // maintainer feedback (7 Aug, bench 343): the opponent rows size EXACTLY like the race rows
+        // - same RowHeight rule AND the same ExtraHeight constant, so the two lists are identical in
+        // height and can never drift apart.
+        public override int ItemHeight => RaceArchetypeListItem.RowHeight(List, Portrait, RaceArchetypeListItem.ExtraHeight);
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {

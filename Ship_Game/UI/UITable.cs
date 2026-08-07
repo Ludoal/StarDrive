@@ -81,7 +81,7 @@ namespace Ship_Game.UI
             }
         }
 
-        public const int SideMargin = 10; // off the frame BORDER (maintainer bench 339: 20 -> 10 to win table width at 1440)
+        public const int SideMargin = 15; // off the frame BORDER (maintainer bench 343: 10 was too tight on the left, the selection box crowded the edge)
         public const int PadX = 8;        // one character of cell padding
         public const int SliderLane = 26; // reserved after the last column
         public const int HeaderH = 16;
