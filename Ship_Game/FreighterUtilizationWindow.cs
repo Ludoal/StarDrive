@@ -77,14 +77,15 @@ namespace Ship_Game
             foreach (GoodsUtilization gu in  GoodsUtilizationMap.Values)
                 utilizationData.Add(gu);
 
-            // Ludoal fork (maintainer bench 336): the totals row under the goods rows. The caption
-            // left-aligns on the Cargo Distribution bars (win.X + 210); the values sit under the
-            // Freighters / Importing / Exporting columns (+390/+490/+590), same X as the goods rows.
-            float totalsY = win.Y + Height - 28;
+            // Ludoal fork (maintainer bench 338): the totals row under the goods rows. The caption
+            // left-aligns on the Cargo Distribution bars (win.X + 210); the values sit UNDER the
+            // goods-row values, which are drawn from the list item's Pos (win.X + 5), so the totals
+            // line up on the same +395/+495/+595 rather than +390 (a 5px slip in bench 336). +2 down.
+            float totalsY = win.Y + Height - 26;
             TotalFreightersLabel = Add(new UILabel(new Vector2(win.X + 210, totalsY), "Total freighters:", Fonts.Arial12Bold, Color.Wheat));
-            TotalFreightersValue = Add(new UILabel(new Vector2(win.X + 390, totalsY), "", Fonts.Arial12Bold, Color.White));
-            TotalImportingValue  = Add(new UILabel(new Vector2(win.X + 490, totalsY), "", Fonts.Arial12Bold, Color.White));
-            TotalExportingValue  = Add(new UILabel(new Vector2(win.X + 590, totalsY), "", Fonts.Arial12Bold, Color.White));
+            TotalFreightersValue = Add(new UILabel(new Vector2(win.X + 395, totalsY), "", Fonts.Arial12Bold, Color.White));
+            TotalImportingValue  = Add(new UILabel(new Vector2(win.X + 495, totalsY), "", Fonts.Arial12Bold, Color.White));
+            TotalExportingValue  = Add(new UILabel(new Vector2(win.X + 595, totalsY), "", Fonts.Arial12Bold, Color.White));
         }
 
         public override void PerformLayout()
@@ -190,17 +191,19 @@ namespace Ship_Game
                 FreighterConstructingLabel.Text = Player.FreightersBeingBuilt.String();
                 NumIdleFreightersLabel.Text = (TotalFreighters - NumUtilizedFreighters).String();
 
-                // the totals row: OPERATIONAL freighters (not a sum of per-goods needs), and the
-                // planet-slot totals across the goods rows
-                int totalImporting = 0, totalExporting = 0;
-                foreach (GoodsUtilization gu in GoodsUtilizationMap.Values)
+                // the totals row (maintainer bench 338): all OPERATIONAL freighters, then how many
+                // of THEM import and export. The per-goods Importing/Exporting columns count PLANET
+                // slots, so summing them gave a figure unrelated to the freighter count - these
+                // count the freighters themselves by their trade direction.
+                int importingFreighters = 0, exportingFreighters = 0;
+                foreach (Ship freighter in allUtilizedFreightesr)
                 {
-                    totalImporting += gu.NumImportingPlanets;
-                    totalExporting += gu.NumExportingPlanets;
+                    if (freighter.AI.IsImportingTrade) importingFreighters++;
+                    if (freighter.AI.IsExportingTrade) exportingFreighters++;
                 }
                 TotalFreightersValue.Text = NumUtilizedFreighters.String();
-                TotalImportingValue.Text  = totalImporting.String();
-                TotalExportingValue.Text  = totalExporting.String();
+                TotalImportingValue.Text  = importingFreighters.String();
+                TotalExportingValue.Text  = exportingFreighters.String();
             }
 
             base.Update(fixedDeltaTime);

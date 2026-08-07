@@ -127,9 +127,18 @@ namespace Ship_Game
 
         /// The body fill, drawn UNDER the frame. Separate from Draw because a caller may want to
         /// paint its own content between the two - the frame's edges must land on top of it.
+        /// Ludoal fork (maintainer bench 337): the fill is INSET by the border thicknesses so the
+        /// grey stops at the visible rule, not at the rect edge. The right/bottom border is a narrow
+        /// rule with transparent shadow past it; a fill run to the rect edge shows grey through that
+        /// shadow, ~10px past the rule bottom-right. Every caller passes the FULL frame rect and
+        /// gets the same clean inset - a centred window (New Game) showed the overrun a screen-edge
+        /// popup used to hide off-screen.
         public readonly void DrawFill(SpriteBatch batch, in Rectangle rect)
         {
-            batch.Draw(ResourceManager.Texture("Popup/popup_filler_lower"), rect, Color.White);
+            var fill = new Rectangle(rect.X + BorderLeft, rect.Y + TopInk,
+                                     rect.Width - BorderLeft - BorderRight,
+                                     rect.Height - TopInk - BottomLine);
+            batch.Draw(ResourceManager.Texture("Popup/popup_filler_lower"), fill, Color.White);
         }
 
         public readonly void Draw(SpriteBatch batch)

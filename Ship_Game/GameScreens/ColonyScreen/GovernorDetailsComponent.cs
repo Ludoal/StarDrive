@@ -315,12 +315,13 @@ namespace Ship_Game
             BlueprintsCompletionLbl.Pos     = new Vector2(X + 10, Y + 70 + shift);
             BlueprintsCompletionLbl.Tooltip = GameText.CompletionTip;
 
-            // maintainer bench 336: anchor the warning to the BOTTOM OF THE PORTRAIT, not the end
-            // of the description text - a long description let MeasureString under-count the wrapped
-            // height and the red line dropped INTO the text. The portrait bottom is a fixed anchor
-            // whatever the description's length. X stays in the description column beside it.
+            // maintainer bench 338: the warning's BOTTOM lines up with the portrait's bottom - a
+            // fixed anchor, whatever the description length (a long one let MeasureString under-count
+            // the wrapped height and the red line dropped into the text). A label draws from its top,
+            // so seat its top one line-height above the portrait foot. X stays in the description
+            // column beside it.
             BudgetLimitReached.Pos = new Vector2(WorldDescription.X,
-                Portrait.Pos.Y + Portrait.Size.Y + 8);
+                Portrait.Pos.Y + Portrait.Size.Y - FontBig.LineSpacing);
 
             // Ludoal fork: seated here rather than in the constructor, which runs before Tabs
             // exists and so cannot know how many rows the tab bar takes.

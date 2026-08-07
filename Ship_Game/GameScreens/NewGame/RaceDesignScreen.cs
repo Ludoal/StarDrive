@@ -171,9 +171,8 @@ namespace Ship_Game
             // the resolution. Everything inside derives from ScreenFrame, so fixing the frame fixes
             // the whole layout at its 900p form (the size the bench is tuned on). Narrow/Tall no
             // longer vary here - at 1440x900 both are false, the plain middle branch throughout.
-            // ⚠ 1440x900 is the WHOLE frame, borders included - a centred window has no screen edge
-            // for the side/bottom ink to spill past (unlike the old full-screen popup), so it must
-            // stay INSIDE the window or the fill overruns bottom-right by BorderRight/BottomLine.
+            // 1440x900 is the whole frame; it sits centred with a black margin on a larger display.
+            // (The body-fill inset that keeps the grey off the border shadow is in Draw, not here.)
             const int WinW = 1440, WinH = 900;
             int winX = (ScreenWidth  - WinW) / 2;
             int winY = (ScreenHeight - WinH) / 2;
@@ -814,6 +813,7 @@ namespace Ship_Game
             batch.SafeBegin();
             // ⚠ the frame goes FIRST, before base.Draw: it is painted by hand, not added as a
             // child, so drawing it after would bury every tab and list on the screen.
+            // DrawFill insets the body fill off the border rule itself now (bench 337).
             Frame.DrawFill(batch, ScreenFrame);
             Frame.Draw(batch);
             // the window title font, the one Colony and every popup uses - not Laserian

@@ -253,7 +253,7 @@ namespace Ship_Game
             if (TroopSL.NumEntries == 0)
             {
                 var msgPos = new Vector2(Table.TableRect.X + 30, Table.TableRect.Y + 30);
-                batch.DrawString(font, "No troops anywhere — recruit some before the neighbours visit.",
+                batch.DrawString(font, "No troops anywhere. Recruit some before the neighbours visit.",
                                  msgPos, Color.Gray);
             }
             else

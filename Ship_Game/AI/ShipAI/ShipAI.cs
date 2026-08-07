@@ -652,6 +652,12 @@ namespace Ship_Game.AI
             return OrderQueue.Any(g => g.Trade?.Goods == goods);
         }
 
+        // Ludoal fork (maintainer bench 338): a freighter EXPORTS if its trade plan pulls from a
+        // planet, and IMPORTS if it delivers to one. A planet-to-planet run counts as both; a
+        // station-supply run (ImportTo null) counts only as an export.
+        public bool IsExportingTrade => OrderQueue.Any(g => g.Trade?.ExportFrom != null);
+        public bool IsImportingTrade => OrderQueue.Any(g => g.Trade?.ImportTo != null);
+
         public bool WaitForBlockadeRemoval(ShipGoal g, Planet planet, FixedSimTime timeStep)
         {
             if (planet.TradeBlocked && Owner.System != planet.System)

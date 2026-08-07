@@ -336,6 +336,8 @@ namespace Ship_Game
                     if (turns * net < remaining) turns += 1;
                     if (turns < 1) turns = 1;
                     float afterTopicX = topicTextX + font.TextWidth(topic) + 6;
+                    // just "(N)" - "(N turns)" overran the reserved width at 1440 for the longest
+                    // tech names (maintainer bench 338)
                     batch.DrawString(font, $"({turns})", new Vector2(afterTopicX, textY), TextCream.Alpha(0.7f));
                 }
             }
