@@ -29,7 +29,10 @@ namespace Ship_Game
         // it through this static instead - one arithmetic, no second copy to drift.
         public static int RowHeight(ScrollListBase list, SubTexture portrait, int extra)
         {
-            int width = (int)(list.Width * 0.8f);
+            // bench 345: size off the ITEMS area (ItemsHousing), which already excludes the scrollbar
+            // lane and side padding - list.Width is the whole list, so 0.8 of it ran the portrait
+            // under the slider. 0.9 of the (narrower) items area keeps the same visual size.
+            int width = (int)(list.ItemsHousing.Width * 0.9f);
             return (int)portrait.GetHeightFromWidthAspect(width) + extra;
         }
 

@@ -186,6 +186,7 @@ namespace Ship_Game
             ParentUniverse = universe;
             Name = "ShipDesignScreen";
             EmpireUI = empireUi;
+            IsPopup = true; // Ludoal fork (bench 345): the paused universe shows behind, dimmed - like the table screens
             // Ludoal fork: no fade in. The two-second one left this screen translucent while it
             // built, so whatever sat under it in the stack showed through - opening the Shipyard
             // with Fleets already open drew Fleets' cartouche for a moment. Nothing here reads

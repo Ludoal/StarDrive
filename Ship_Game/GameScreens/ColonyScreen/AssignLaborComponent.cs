@@ -51,7 +51,7 @@ namespace Ship_Game
             {
                 int sliderX = (int)X + (UseTitle ? 60 : 10);
                 int sliderY = (int)Y + 25;
-                int sliderW = (Width * 0.6f).RoundTo10();
+                int sliderW = (Width * 0.55f).RoundTo10(); // bench 345: -5% off the slider so a 3-digit value (100.2) fits to its right
                 int sliderH = (int)Height - 25;
                 return new Rectangle(sliderX, sliderY, sliderW, sliderH);
             }

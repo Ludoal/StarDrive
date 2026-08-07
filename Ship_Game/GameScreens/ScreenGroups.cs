@@ -258,11 +258,13 @@ namespace Ship_Game.GameScreens
             return tabs;
         }
 
-        // Ludoal fork (maintainer feedback, 7 Aug): the target frame width. Group screens never
-        // grow past this even at 1920 fullscreen, so a screen looks identical windowed at 1680 and
-        // fullscreen at 1920 - the whole point of the resolution charter. One named constant, the
-        // single point of truth for the width cap (height stays at the 1080p footprint).
-        public const int MaxFrameWidth = 1680;
+        // Ludoal fork (maintainer feedback): the target frame width. Group screens never grow past
+        // this even at 1920 fullscreen, so a screen looks identical windowed and fullscreen - the
+        // whole point of the resolution charter. One named constant, the single point of truth for
+        // the width cap (height stays at the 1080p footprint).
+        // bench 345: 1680 -> 1600, so at 1920 the right margin is wide enough to show the whole
+        // minimap beside the capped frame.
+        public const int MaxFrameWidth = 1600;
         // and the height cap: no group screen grows past the 1080p footprint (the resolution charter)
         public const int MaxFrameHeight = 1080;
 

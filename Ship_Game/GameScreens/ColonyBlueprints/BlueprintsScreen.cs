@@ -99,6 +99,7 @@ namespace Ship_Game
         {
             Universe = parent; // Ludoal fork: kept for the live top bar
             Player = player;
+            IsPopup = true; // Ludoal fork (bench 345): the paused universe shows behind, dimmed - like the table screens
             GovernorTab = govTab;
             TextFont = Font12;
             BigFont = Font12; // the general stats read smaller (maintainer bench 301)
@@ -343,6 +344,9 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
+            // Ludoal fork (bench 345): dim the paused universe drawn behind this popup, the same
+            // veil the table screens use, so the map recedes rather than competing with the screen.
+            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
             // hovering a building raises the Description tab by itself; the cursor leaving
             // falls back to the player's own choice. SelectedIndex does not fire OnTabChange,
