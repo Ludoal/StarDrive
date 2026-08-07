@@ -258,37 +258,39 @@ namespace Ship_Game.GameScreens
             return tabs;
         }
 
-        // the 1080p cap (maintainer, 4 Aug): a group frame never grows past the 1920x1080
-        // footprint - anchored to the bar and the left margin, like every frame. Tables
-        // that develop in height do it through the content-sized variant by explicit
-        // instruction, never through this cap.
+        // Ludoal fork (maintainer feedback, 7 Aug): the target frame width. Group screens never
+        // grow past this even at 1920 fullscreen, so a screen looks identical windowed at 1680 and
+        // fullscreen at 1920 - the whole point of the resolution charter. One named constant, the
+        // single point of truth for the width cap (height stays at the 1080p footprint).
+        public const int MaxFrameWidth = 1680;
+
+        // the height cap (maintainer, 4 Aug): a group frame never grows past the 1080p footprint -
+        // anchored to the bar and the left margin, like every frame. Tables that develop in height
+        // do it through the content-sized variant by explicit instruction, never through this cap.
         public static Rectangle GroupFrame(int screenW, int screenH)
-            => new(FrameMargin, TabRowY, Math.Min(screenW, 1920) - 2 * FrameMargin,
+            => new(FrameMargin, TabRowY, Math.Min(screenW, MaxFrameWidth) - 2 * FrameMargin,
                    Math.Min(screenH, 1080) - TabRowY - FrameMargin);
 
         // ── Race columns (Diplomacy group) ────────────────────────────────────────────────────
-        // Maintainer doctrine (4 Aug): a race column's width is bounded by the 900p footprint
-        // (floor) and the 1080p one (ceiling) - (frame width - margins) / 8 at each - and the
-        // frame HUGS its columns instead of spanning the screen. Between the two resolutions the
-        // columns hold the ceiling width until the row no longer fits the screen, then shrink
-        // with the race count down to the floor. The height is always the 900p frame's.
-        const int RaceRefFloor = 1440, RaceRefCeil = 1920, RaceRefH = 900;
+        // A race column is a FIXED width; the frame HUGS its visible columns rather than spanning
+        // the screen, and the window grows with the faction count, bounded only by the physical
+        // screen - the horizontal scroller pages whatever does not fit. The height is the 900p
+        // frame's, always.
+        const int RaceRefH = 900;
         const int NineSliceCorners = 18; // what Submenu cuts off a frame to get its ClientArea
+        // Ludoal fork (maintainer feedback, 7 Aug): race columns are a FIXED width now, not a share
+        // of the frame. The window grows with the faction count, capped only by the physical screen
+        // (the horizontal scroller pages the rest). 230 is the measured column width (name + flag),
+        // WITHOUT the inter-column gap; the pitch adds ColumnGap on top.
+        public const int RaceColumnWidth = 230;
 
         // the column run inside a frame that wide: client area less a gutter each side, plus one
         // gap because the pitch below carries a trailing gap the last column does not draw
         static int RaceColumnRun(int frameW)
             => frameW - NineSliceCorners - 2 * ColumnGutter + ColumnGap;
 
-        public static int RaceColumnPitch(int screenW, int count)
-        {
-            // rounded UP like the old eight-way split - flooring shaved a pixel off
-            // every column (maintainer bench 296)
-            int ceil  = (RaceColumnRun(RaceRefCeil - 2 * FrameMargin) + GroupColumns - 1) / GroupColumns;
-            int floor = (RaceColumnRun(RaceRefFloor - 2 * FrameMargin) + GroupColumns - 1) / GroupColumns;
-            int avail = RaceColumnRun(Math.Min(screenW, RaceRefCeil) - 2 * FrameMargin);
-            return Math.Min(ceil, Math.Max(floor, avail / Math.Max(count, 1)));
-        }
+        // fixed pitch: the column width plus one inter-column gap. No longer varies with count.
+        public static int RaceColumnPitch(int screenW, int count) => RaceColumnWidth + ColumnGap;
 
         // how many columns the screen can SHOW at that pitch - Combined Arms fields more
         // than eight majors (maintainer bench 299), and the frame never grows past the
@@ -297,7 +299,9 @@ namespace Ship_Game.GameScreens
         {
             count = Math.Max(count, 1);
             int pitch = RaceColumnPitch(screenW, count);
-            int avail = RaceColumnRun(Math.Min(screenW, RaceRefCeil) - 2 * FrameMargin);
+            // Ludoal fork (maintainer feedback, 7 Aug): no 1920 ceiling now - how many fixed-width
+            // columns fit is judged against the PHYSICAL screen; the rest scrolls.
+            int avail = RaceColumnRun(screenW - 2 * FrameMargin);
             // the fit test forgives what the round-UP pitch added (at most GroupColumns-1
             // px over the whole row) - without it a 900p screen showed seven columns where
             // eight fit (maintainer bench 300)
@@ -405,11 +409,13 @@ namespace Ship_Game.GameScreens
             }
         }
 
-        // The 900p footprint, whatever the resolution: Relationships keeps this frame - its
-        // diagram was laid out for it and does not rearrange, so a bigger screen just leaves
-        // space at the frame's right (maintainer, 4 Aug).
+        // The 900p footprint, whatever the resolution: Relationships/Blueprints keep this frame -
+        // their diagram was laid out for it and does not rearrange, so a bigger screen just leaves
+        // space at the frame's right (maintainer, 4 Aug). Fixed 1440x900, independent of the race
+        // columns (which now grow unbounded on their own pitch).
+        const int Fixed900Width = 1440;
         public static Rectangle GroupFrame900(int screenW, int screenH)
-            => new(FrameMargin, TabRowY, Math.Min(screenW, RaceRefFloor) - 2 * FrameMargin,
+            => new(FrameMargin, TabRowY, Math.Min(screenW, Fixed900Width) - 2 * FrameMargin,
                    Math.Min(screenH, RaceRefH) - TabRowY - FrameMargin);
 
         // Ludoal fork: a content-sized frame may hug a table NARROWER than its own tab

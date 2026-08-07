@@ -51,7 +51,7 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, dates);
             UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, titles);
             Table.Columns[1].Width += 48; // the faction flag rides left of the title
-            Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * GameScreens.ScreenGroups.FrameMargin) - 66);
+            Table.FitToWidth((int)(Math.Min(ScreenWidth, GameScreens.ScreenGroups.MaxFrameWidth) - 2 * GameScreens.ScreenGroups.FrameMargin) - 66);
 
             float fullAvail = ScreenHeight - GameScreens.ScreenGroups.TabRowY - GameScreens.ScreenGroups.FrameMargin;
             float contentH = UITable.ContentHeightFor(99, Math.Max(3, Events.Length), 84, fullAvail);

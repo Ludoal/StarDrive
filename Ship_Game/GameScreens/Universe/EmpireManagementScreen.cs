@@ -104,7 +104,7 @@ namespace Ship_Game
             Table.Columns[1].Width += 44; // the planet icon rides ahead of the name
             for (int i = 0; i < 7; ++i)
                 UITable.AutoSize(Table.Columns[2 + i], Fonts.Arial12, stats[i]);
-            int widthCap = (int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66;
+            int widthCap = (int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66;
             Table.FitToWidth(widthCap);
             // Construction absorbs what the cap leaves (maintainer bench 307): Planet is
             // data-sized, so a save full of short names shrank the whole tab - the queue

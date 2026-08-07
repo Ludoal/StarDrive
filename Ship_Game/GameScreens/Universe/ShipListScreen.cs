@@ -123,7 +123,7 @@ namespace Ship_Game
             // everyone, and every pixel it hoards is a pixel Orders has to fold away
             Table.Columns[2].Width = Math.Min(Table.Columns[2].Width, 210);
             Table.Columns[6].Foldable = true;
-            Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
+            Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
 
             // Proximity ascending is the factory default; the standing sort survives the
             // screen for the session (maintainer bench 307) and ResetList re-applies it

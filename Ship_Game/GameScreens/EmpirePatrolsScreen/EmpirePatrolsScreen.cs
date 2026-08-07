@@ -67,7 +67,7 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, wps);
             UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, counts);
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, assigned);
-            Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
+            Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
 
             // Ludoal fork: the Patrols tab of the Galaxy group, content-sized (maintainer
             // bench 290): the frame hugs the table, the plan count sets the height

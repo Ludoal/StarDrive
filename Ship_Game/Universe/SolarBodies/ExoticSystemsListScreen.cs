@@ -103,7 +103,7 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, res);
             Table.Columns[3].Width += 30; // the resource icon
             UITable.AutoSize(Table.Columns[5], Fonts.Arial12Bold, owners);
-            Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
+            Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
             // System is the standing sort from the first frame (the list arrives system-ordered)
             // the standing sort survives the screen for the session (maintainer bench 307)
             if (LastSortCol < 0) { LastSortCol = 0; LastSortAsc = true; }

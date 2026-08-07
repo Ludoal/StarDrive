@@ -148,7 +148,7 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[6], Fonts.Arial12Bold, pops);
             UITable.AutoSize(Table.Columns[7], Fonts.Arial12Bold, ratios);
             UITable.AutoSize(Table.Columns[8], Fonts.Arial12Bold, owners);
-            Table.FitToWidth((int)(Math.Min(ScreenWidth, 1920) - 2 * ScreenGroups.FrameMargin) - 66);
+            Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
             // the standing sort survives the screen for the session (maintainer bench 307)
             if (LastSortCol < 0) { LastSortCol = 0; LastSortAsc = true; }
             Table.Columns[LastSortCol].Sorted = true;

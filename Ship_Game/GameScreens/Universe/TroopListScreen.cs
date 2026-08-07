@@ -59,7 +59,7 @@ namespace Ship_Game
                 new UITable.Column { Title = "System" },
                 new UITable.Column { Title = "Location" },
                 new UITable.Column { Title = "Status",   Align = TableAlign.Center, Sorted = true, Ascending = true },
-                new UITable.Column { Title = "Troop" },
+                new UITable.Column { Title = "Troop", Foldable = true }, // repli si la table dépasse 1680 (rarissime)
                 new UITable.Column { Title = "#",        Width = 60, Align = TableAlign.Number },
                 // the offense icon with its tooltip in place of the word (bench 305)
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_offense"), Width = 80,
@@ -70,6 +70,9 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, locations);
             UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, Statuses);
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, troops);
+            // Ludoal fork (maintainer feedback): the table caps at 1680 like the rest of the group -
+            // the Troop column folds if it ever overflows (in practice it never will).
+            Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
             float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             // 118 = tab strip + the filter/info lane + headers + a line at the bottom
             float contentH = UITable.ContentHeightFor(119, Math.Max(3, rows), 28, fullAvail);
