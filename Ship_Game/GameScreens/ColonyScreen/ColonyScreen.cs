@@ -148,10 +148,10 @@ namespace Ship_Game
             // the strip's TRUE bottom: tabs advance by TabHeight-2, and the group silhouette
             // behind a list-opened colony exposed the 2px slip (maintainer bench 320)
             int frameTop = GameScreens.ScreenGroups.TabRowY + Submenu.TabHeight - 2;
-            // ⚠ Colony is the ONE screen centred in width (maintainer, 3 Aug): past the 1920
-            // doctrine ceiling the frame stops growing and centres horizontally. Y never moves -
-            // the frame hangs at the same frameTop whatever the resolution.
-            int layoutW = Math.Min(ScreenWidth, 1920);
+            // ⚠ Colony is the ONE screen centred in width (maintainer): past the target ceiling
+            // the frame stops growing and centres horizontally. Y never moves - the frame hangs at
+            // the same frameTop whatever the resolution.
+            int layoutW = Math.Min(ScreenWidth, GameScreens.ScreenGroups.MaxFrameWidth);
             int layoutX = (ScreenWidth - layoutW) / 2;
             ColonyFrame = new Rectangle(layoutX + m - PopupFrame.BorderLeft, frameTop,
                                         layoutW - 2 * m + PopupFrame.BorderLeft + PopupFrame.BorderRight,
@@ -290,12 +290,15 @@ namespace Ship_Game
             // Centre column: the colony grid keeps its height, STATISTICS below takes the rest -
             // it is the variable block of this column, and it closes on the grid's foot.
             // Right column: FIXED width - the buildable rows and the queue rows are written for
-            // a known width. The CENTRE is what stretches, taking whatever the two fixed columns
-            // leave, which is what makes the screen fill any window.
-            // flexible bounded: 470 at the 1440 floor, +100 by the 1920 ceiling (bench numbers)
-            float colRightW = (470f + (ScreenWidth - 1440) * (100f / 480f)).Clamped(470f, 570f);
+            // Ludoal fork (maintainer feedback, 7 Aug): col 2 (COLONY + STATS) is the BOUNDED one
+            // now, capped at 672; col 3 (BUILDINGS + QUEUE) absorbs the surplus. From 1440 to the
+            // point col 2 hits 672 the two grow together off the leftover; past that, everything
+            // extra goes to col 3. This is the reverse of the old rule (col 2 took all the surplus).
+            const float ColCentreMax = 672f;
             float colCentreX = gridLeft + colLeftW + Pad;
-            float colCentreW = gridRight - colRightW - Pad - colCentreX;
+            float available  = gridRight - colCentreX - Pad;     // what col 2 + col 3 share
+            float colCentreW = Math.Min(available * 0.5f, ColCentreMax); // 50/50 until the 672 cap
+            float colRightW  = available - colCentreW;           // col 3 takes the rest
 
             // COLONY holds a 7x5 tile grid, so its height FOLLOWS its width - square tiles are the
             // point of it. The panel's chrome (10 each side, 30 above, 5 below) is taken off

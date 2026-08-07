@@ -578,14 +578,29 @@ namespace Ship_Game
         // The default FOV is 45 degrees
         // @param maxDistance The maximum distance for objects on screen.
         //                    For Universe this is the Maximum supported HEIGHT of the CAMERA
-        public void SetPerspectiveProjection(double fovYdegrees = 45, double maxDistance = 5000.0)
+        // Ludoal fork (maintainer feedback, 7 Aug): offsetXY shifts the optical centre by a fraction
+        // of the frustum, so a screen whose content area is NOT the whole viewport (e.g. the Shipyard,
+        // capped at 1680 with side panels) can centre its 3D on its OWN window rather than the screen.
+        // offset (0,0) = the plain symmetric perspective, unchanged for every other caller.
+        public void SetPerspectiveProjection(double fovYdegrees = 45, double maxDistance = 5000.0,
+                                             Vector2 offsetXY = default)
         {
-            //SetProjection(Matrix.CreatePerspectiveFieldOfView(0.7853982f, Viewport.AspectRatio, 100f, 15000f)); // FleetDesignScreen
-            //SetProjection(Matrix.CreatePerspectiveFieldOfView(0.7853982f, aspectRatio, 1f, 120000f)); // ShipDesignScreen
-            //SetProjection(Matrix.CreatePerspectiveFieldOfView(0.7853982f/*45 DEGREES*/, aspect, 100f, 3E+07f)); // UniverseScreen
             double fieldOfViewYrads = fovYdegrees.ToRadians();
             double aspectRatio = (double)Viewport.Width / Viewport.Height;
-            Projection = Matrix.CreatePerspectiveFieldOfView(fieldOfViewYrads, aspectRatio, 100.0, maxDistance);
+            if (offsetXY == default)
+            {
+                Projection = Matrix.CreatePerspectiveFieldOfView(fieldOfViewYrads, aspectRatio, 100.0, maxDistance);
+            }
+            else
+            {
+                double top    = 100.0 * Math.Tan(fieldOfViewYrads / 2.0);
+                double right  = top * aspectRatio;
+                double dx     = offsetXY.X * (2.0 * right); // fraction of frustum width
+                double dy     = offsetXY.Y * (2.0 * top);
+                Projection = Matrix.CreatePerspectiveOffCenter(
+                    (float)(-right + dx), (float)(right + dx),
+                    (float)(-top + dy),   (float)(top + dy), 100.0f, (float)maxDistance);
+            }
             UpdateWorldScreenProjection();
         }
 

@@ -280,9 +280,9 @@ namespace Ship_Game.GameScreens
         const int NineSliceCorners = 18; // what Submenu cuts off a frame to get its ClientArea
         // Ludoal fork (maintainer feedback, 7 Aug): race columns are a FIXED width now, not a share
         // of the frame. The window grows with the faction count, capped only by the physical screen
-        // (the horizontal scroller pages the rest). 230 is the measured column width (name + flag),
+        // (the horizontal scroller pages the rest). 228 is the measured column width (name + flag),
         // WITHOUT the inter-column gap; the pitch adds ColumnGap on top.
-        public const int RaceColumnWidth = 230;
+        public const int RaceColumnWidth = 228; // maintainer: 228 fits one more column at 1440/1680; 8 still fit cleanly at 1920
 
         // the column run inside a frame that wide: client area less a gutter each side, plus one
         // gap because the pitch below carries a trailing gap the last column does not draw
