@@ -107,7 +107,9 @@ namespace Ship_Game
                     // would still fly back to that list.
                     ReturnToListScreen = null;
                     ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
-                    ClearSelectedItems();
+                    // bench 351: keep the current selection so its cartouche (Ship/Fleet/Star Info)
+                    // persists behind Colony, like it does behind the table screens. The old
+                    // ClearSelectedItems() here is what left nothing to draw once CanShowInfo was freed.
                     returnToShip = doReturnToShip;
                     LookingAtPlanet = true;
                     // No camera snap — the panel covers the map. But the removed snap

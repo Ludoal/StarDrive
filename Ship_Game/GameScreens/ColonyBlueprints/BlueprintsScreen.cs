@@ -349,12 +349,19 @@ namespace Ship_Game
             // show through the cadre (it read opaque only when the backdrop was black). Same fill the
             // table popups use (copied the instance that works).
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(DesignTabs), ScreenGroups.GroupFrameFill);
-            // hovering a building raises the Description tab by itself; the cursor leaving
-            // falls back to the player's own choice. SelectedIndex does not fire OnTabChange,
-            // so the auto-switch never overwrites the remembered choice.
+            // hovering a building raises the Description tab by itself; the cursor leaving falls
+            // back to the player's own choice. bench 351: setting SelectedIndex DOES fire OnTabChange
+            // (verified in Submenu.cs) - so the auto-switch was writing StatsTabPlayerChoice=1 and the
+            // tab stayed stuck on Description forever. Detach the handler around the automatic write;
+            // only a real click on the tab strip (its own HandleInput path) records a player choice.
             int wantTab = HoveredBuilding != null ? 1 : StatsTabPlayerChoice;
             if (PlanStats.SelectedIndex != wantTab)
+            {
+                var savedHandler = PlanStats.OnTabChange;
+                PlanStats.OnTabChange = null;
                 PlanStats.SelectedIndex = wantTab;
+                PlanStats.OnTabChange = savedHandler;
+            }
             base.Draw(batch, elapsed);
             if (PlanStats.SelectedIndex == 1)
                 DrawHoveredBuildListBuildingInfo(batch);

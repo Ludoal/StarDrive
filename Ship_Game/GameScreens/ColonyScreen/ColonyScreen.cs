@@ -145,13 +145,15 @@ namespace Ship_Game
             //           are drop shadow, which falls past the screen edge by design
             //   top:    one tab strip LOWER than TabRowY, so this frame matches the group
             //           screens' frames and does not peek out behind them in the stack.
-            // bench 350: Colony is now a group tab exactly like Research/Ships - so its frame IS
-            // GroupFrame, pixel for pixel. The old layout hung one tab-strip lower (bench 320's
-            // silhouette fix) and added the PopupFrame border ink to the width, which read ~10px too
-            // wide and 2-3px too low against the real group frames. Copy the instance that works:
-            // same X (FrameMargin), same Y (TabRowY), same size. The PopupFrame draws its cadre INSIDE
-            // this rect now, so the border ink no longer overhangs.
-            ColonyFrame = GameScreens.ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
+            // bench 351: Colony derives from GroupFrame but starts one tab-strip LOWER. GroupFrame's Y
+            // is TabRowY because a group frame INCLUDES its own tab row inside the rect; Colony has no
+            // tab row (planet name rides the title bar), so starting at TabRowY made it occupy the tab
+            // strip's band - which read as eating the EMPIRE bar. Start at GroupFrameTop (below the tab
+            // strip) instead, and take X / width / bottom edge straight from GroupFrame so the two can
+            // never diverge (the ~10px width surplus was the old PopupFrame border ink, now gone).
+            Rectangle g = GameScreens.ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
+            int colTop = GameScreens.ScreenGroups.GroupFrameTop;
+            ColonyFrame = new Rectangle(g.X, colTop, g.Width, g.Bottom - colTop);
             // ⚠ NOT Add()ed: a child is drawn by base.Draw, which lands AFTER everything this
             // screen paints by hand - the frame's body would bury the panels. Painted first
             // thing in Draw instead (see ColonyScreen_Draw).
