@@ -73,7 +73,7 @@ namespace Ship_Game
             // Ludoal fork (maintainer feedback): the table caps at 1680 like the rest of the group -
             // the Troop column folds if it ever overflows (in practice it never will).
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
-            float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 343: capped at 1080p
             // 118 = tab strip + the filter/info lane + headers + a line at the bottom
             float contentH = UITable.ContentHeightFor(119, Math.Max(3, rows), 28, fullAvail);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 2,

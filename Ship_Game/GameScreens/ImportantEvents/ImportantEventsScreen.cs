@@ -53,7 +53,7 @@ namespace Ship_Game
             Table.Columns[1].Width += 48; // the faction flag rides left of the title
             Table.FitToWidth((int)(Math.Min(ScreenWidth, GameScreens.ScreenGroups.MaxFrameWidth) - 2 * GameScreens.ScreenGroups.FrameMargin) - 66);
 
-            float fullAvail = ScreenHeight - GameScreens.ScreenGroups.TabRowY - GameScreens.ScreenGroups.FrameMargin;
+            float fullAvail = GameScreens.ScreenGroups.FullTableHeight(ScreenHeight); // bench 343: capped at 1080p
             float contentH = UITable.ContentHeightFor(99, Math.Max(3, Events.Length), 84, fullAvail);
             GalaxyTabs = GameScreens.ScreenGroups.AddGroupTabs(this, GameScreens.ScreenGroups.GalaxyTabTitles, 3,
                                                                OnGalaxyTabChanged, Table.ContentWidth, contentH);

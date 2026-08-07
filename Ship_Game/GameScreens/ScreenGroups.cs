@@ -263,6 +263,14 @@ namespace Ship_Game.GameScreens
         // fullscreen at 1920 - the whole point of the resolution charter. One named constant, the
         // single point of truth for the width cap (height stays at the 1080p footprint).
         public const int MaxFrameWidth = 1680;
+        // and the height cap: no group screen grows past the 1080p footprint (the resolution charter)
+        public const int MaxFrameHeight = 1080;
+
+        // Ludoal fork (maintainer bench 343): the vertical space a group table may use, capped at the
+        // 1080p footprint. Every table screen reads THIS instead of ScreenHeight, so none can forget
+        // the cap and grow past 1080 on a taller display (the bug Planets/Ships/Troops/etc. showed).
+        public static float FullTableHeight(int screenH)
+            => Math.Min(screenH, MaxFrameHeight) - TabRowY - FrameMargin;
 
         // the height cap (maintainer, 4 Aug): a group frame never grows past the 1080p footprint -
         // anchored to the bar and the left margin, like every frame. Tables that develop in height

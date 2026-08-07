@@ -206,7 +206,7 @@ namespace Ship_Game.GameScreens
             // the columns fixed; height fills 900p, and past it grows only as the planet list
             // needs, capped by the screen.
             float contentW = 1440 - 2 * ScreenGroups.FrameMargin;
-            float fullAvail = ScreenHeight - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 343: capped at 1080p
             float h900 = 900 - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             float rowsNeed = 60 + Player.GetPlanets().Count * 24 + 90; // header lane + rows + footer/margins
             float contentH = fullAvail <= h900 ? fullAvail
@@ -271,9 +271,11 @@ namespace Ship_Game.GameScreens
             Table.ApplyHighlightTo(ColonySL);
             FillList();
 
-            // TOTAL footer sits in the lane freed just below the list, as close to it as the row
-            // pitch allows - its label aligned with the planet NAMES like every row's text
-            int totalY = (int)listRect.Bottom + 4;
+            // TOTAL footer sits in the lane freed just below the list - CENTRED in that lane so it
+            // rides near the frame's foot rather than hugging the list top (maintainer bench 343: it
+            // read too high off the bottom edge). The lane runs from listRect.Bottom to the table
+            // foot (client.Bottom - 10), one RowPitch tall.
+            int totalY = (int)listRect.Bottom + (Table.RowPitch - Fonts.Arial12Bold.LineSpacing) / 2;
             var totalLbl = Label(new Vector2(Table.Columns[0].Rect.X + UITable.PadX + 28, totalY), Localizer.Token(GameText.Total2).ToUpper(), Fonts.Arial12Bold);
             totalLbl.Color = Color.Wheat;
             UILabel FooterCell(int col, Func<UILabel, string> getText)

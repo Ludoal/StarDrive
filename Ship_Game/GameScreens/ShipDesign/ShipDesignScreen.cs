@@ -1105,7 +1105,7 @@ namespace Ship_Game
             // checkbox draws itself around its centre and measures max(12, LineSpacing) tall, so
             // its top is pulled up by its own height plus the gap.
             float toggleH = Math.Max(12, Fonts.Arial12Bold.LineSpacing);
-            float toggleY = searchY - toggleH - 4;
+            float toggleY = searchY - toggleH - 6; // bench 343: 2px higher, to air the row off the filter frame
 
             Checkbox(new Vector2(ModuleSelection.BandLeft + 6, toggleY),
                      () => IsFilterOldModulesMode,

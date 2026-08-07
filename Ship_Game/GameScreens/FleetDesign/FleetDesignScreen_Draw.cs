@@ -48,26 +48,46 @@ namespace Ship_Game
                 DrawHoveredNodes(batch);
                 DrawSelectedNodes(batch);
                 DrawFleetManagementIndicators(batch);
+                // the node icons belong to the scene, so they clip with the grid (bench 343: they
+                // spilled outside the frame when drawn in the unclipped UI pass)
+                if (SelectedFleet != null)
+                    foreach (FleetDataNode node in SelectedFleet.DataNodes)
+                        DrawFleetNode(batch, node);
 
                 if (SelectionBox.W > 0)
                     batch.DrawRectangle(SelectionBox, Color.Green);
             }
             batch.SafeEnd();
-            Ship_Game.Graphics.RenderStates.DisableScissorTest(batch.GraphicsDevice);
 
-            // render 3D
+            // render 3D. Ludoal fork (maintainer bench 343): the 3D sprite and the tactical icon are
+            // MUTUALLY EXCLUSIVE on the same zoom threshold (5000) - the sprite showed
+            // unconditionally while the icon only showed past 5000, so above it BOTH drew and the
+            // ships flickered. Below the threshold the sprite shows and the icon is held; above it
+            // the sprite is removed and the icon draws.
+            // ⚠ The scissor stays ENABLED across RenderSceneObjects (it is disabled AFTER, below) -
+            // the Shipyard already renders its 3D under scissor; Fleets was disabling it too early,
+            // so the fleet sprites spilled OUTSIDE the frame when the map was dragged (bench 343).
             if (SelectedFleet != null)
             {
                 foreach (FleetDataNode node in SelectedFleet.DataNodes)
                 {
-                    if (node.Ship != null)
+                    Ship ship = node.Ship;
+                    if (ship == null)
+                        continue;
+                    bool showSprite = CamPos.Z <= 5000f && !ship.Resupplying;
+                    if (showSprite)
                     {
-                        node.Ship.RelativeFleetOffset = node.RelativeFleetOffset;
-                        node.Ship.ShowSceneObjectAt(node.Ship.RelativeFleetOffset, 0);
+                        ship.RelativeFleetOffset = node.RelativeFleetOffset;
+                        ship.ShowSceneObjectAt(ship.RelativeFleetOffset, 0);
+                    }
+                    else
+                    {
+                        ship.RemoveSceneObject();
                     }
                 }
             }
             ScreenManager.RenderSceneObjects();
+            Ship_Game.Graphics.RenderStates.DisableScissorTest(batch.GraphicsDevice);
             
             if (!Universe.IsExiting)
             {
@@ -91,12 +111,8 @@ namespace Ship_Game
 
             EmpireUI.Draw(batch);
 
-            if (SelectedFleet != null)
-            {
-                foreach (FleetDataNode node in SelectedFleet.DataNodes)
-                    DrawFleetNode(batch, node);
-
-            }
+            // the fleet node icons moved into the scissor-clipped scene block (see Draw), so they
+            // stay inside the frame when the map is dragged - like the grid and the selection rings.
 
             if (ActiveShipDesign != null)
                 DrawActiveShipDesign(batch);
