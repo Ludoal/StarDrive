@@ -222,16 +222,34 @@ namespace Ship_Game
         void DrawValueText(SpriteBatch batch)
         {
             var font = Fonts.Arial12Bold;
-            var pos = new Vector2(LockRect.Right + 10, Rect.CenterY() - font.LineSpacing / 2);
+            float left = LockRect.Right + 10;
+            float y    = Rect.CenterY() - font.LineSpacing / 2;
             float value = NetValue;
             if (value > -0.05f && value < 0.05f)
                 value = 0f; // what rounds to zero neither shows a minus nor wears pink (bench 307)
-            string text;
-            if      (IsDisabled) text = "n/a";
-            else if (IsCrippled) text = Localizer.Token(GameText.Sabotaged);/*sabotaged*/
-            else if (IsInvasion) text = Localizer.Token(GameText.Invasion);/*invasion!*/
-            else                 text = value.String();
-            batch.DrawString(font, text, pos, (value < 0.0f ? Color.LightPink : Colors.Cream));
+
+            // non-numeric states keep the plain left-aligned label
+            if (IsDisabled || IsCrippled || IsInvasion)
+            {
+                string label = IsDisabled ? "n/a"
+                             : IsCrippled ? Localizer.Token(GameText.Sabotaged)
+                                          : Localizer.Token(GameText.Invasion);
+                batch.DrawString(font, label, new Vector2(left, y), Colors.Cream);
+                return;
+            }
+
+            // bench 347: align the numbers on the decimal point. The integer part is RIGHT-aligned
+            // on a fixed comma column (room for 3 digits + a sign), the fraction runs to its right -
+            // so "7", "100.2" and "-3.2" all line their point/units up instead of floating.
+            Color color = value < 0f ? Color.LightPink : Colors.Cream;
+            string text = value.String(); // "0.#": integer, or integer + one decimal
+            int dot = text.IndexOf('.');
+            string intPart = dot < 0 ? text : text.Substring(0, dot);
+            string fracPart = dot < 0 ? "" : text.Substring(dot);
+            float commaX = left + font.TextWidth("-100"); // the fixed units/point column
+            batch.DrawString(font, intPart, new Vector2(commaX - font.TextWidth(intPart), y), color);
+            if (fracPart.Length > 0)
+                batch.DrawString(font, fracPart, new Vector2(commaX, y), color);
         }
     }
 }

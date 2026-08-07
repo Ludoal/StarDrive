@@ -279,7 +279,7 @@ namespace Ship_Game.GameScreens
         // do it through the content-sized variant by explicit instruction, never through this cap.
         public static Rectangle GroupFrame(int screenW, int screenH)
             => new(FrameMargin, TabRowY, Math.Min(screenW, MaxFrameWidth) - 2 * FrameMargin,
-                   Math.Min(screenH, 1080) - TabRowY - FrameMargin);
+                   Math.Min(screenH, MaxFrameHeight) - TabRowY - FrameMargin);
 
         // Ludoal fork (maintainer feedback, 7 Aug): the group frame is anchored to the left margin
         // and the bar, so once it caps (1680 wide) its centre sits LEFT of and ABOVE the screen

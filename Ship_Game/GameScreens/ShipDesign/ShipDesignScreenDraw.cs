@@ -39,7 +39,11 @@ namespace Ship_Game
 
             ParentUniverse.DrawStarField(ScreenManager.SpriteRenderer);
             ParentUniverse.Particles.Draw(View, Projection, nearView:true);
-            ParentUniverse.Particles.Update(elapsed.CurrentGameTime);
+            // ⚠ Ludoal fork (bench 347): do NOT Update the universe's particles here. Since the
+            // screen became a popup, the universe underneath is visible again and runs its OWN
+            // Update (particles included), so updating them a second time from Draw advanced them
+            // twice per frame and they piled up - the Shipyard-only slowdown Fleet never had
+            // (Fleet does not touch particles). Draw them, let the universe update them.
 
             ScreenManager.RenderSceneObjects();
 

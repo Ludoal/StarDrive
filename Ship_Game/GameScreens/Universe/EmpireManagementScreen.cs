@@ -349,12 +349,14 @@ namespace Ship_Game
         void DrawEmpireSummary(SpriteBatch batch, float boxX, float bandTop, float bandH)
         {
             IReadOnlyList<Planet> planets = Universe.Player.GetPlanets();
-            float totalPop = 0f, totalGrowth = 0f;
+            // bench 345: total pop reads the empire's own TotalPopBillion - the SAME source the
+            // Intelligence screen uses - so the two agree. Summing the planets here missed the
+            // colonists in transit aboard ships, which TotalPopBillion counts. Growth has no such
+            // aggregate, so it is still summed per planet.
+            float totalPop = Universe.Player.TotalPopBillion;
+            float totalGrowth = 0f;
             for (int i = 0; i < planets.Count; ++i)
-            {
-                totalPop    += planets[i].PopulationBillion;
                 totalGrowth += planets[i].EstimatedPopGrowthPerTurn / 1000f; // per-turn, in billions
-            }
 
             RectF client = EmpireSummaryTab.ClientArea;
             float labelX = client.X + 14;

@@ -132,6 +132,7 @@ namespace Ship_Game
             : base(parent, p)
         {
             Eui = empUI;
+            IsPopup = true; // bench 347: the full live universe map (and its cartouches) shows behind Colony
             Player.UpdateShipsWeCanBuild();
             TextFont = Font12;
 
@@ -148,11 +149,11 @@ namespace Ship_Game
             // the strip's TRUE bottom: tabs advance by TabHeight-2, and the group silhouette
             // behind a list-opened colony exposed the 2px slip (maintainer bench 320)
             int frameTop = GameScreens.ScreenGroups.TabRowY + Submenu.TabHeight - 2;
-            // ⚠ Colony is the ONE screen centred in width (maintainer): past the target ceiling
-            // the frame stops growing and centres horizontally. Y never moves - the frame hangs at
-            // the same frameTop whatever the resolution.
+            // bench 347: Colony sits on the rail like a group tab now (anchored left at FrameMargin),
+            // not centred - the extra width past the cap falls to the right, and the universe map
+            // shows through it (IsPopup). Y never moves - the frame hangs at frameTop whatever the res.
             int layoutW = Math.Min(ScreenWidth, GameScreens.ScreenGroups.MaxFrameWidth);
-            int layoutX = (ScreenWidth - layoutW) / 2;
+            int layoutX = GameScreens.ScreenGroups.FrameMargin;
             // ⚠ height caps at the 1080p footprint too (maintainer bench 334): past 1080 the frame
             // stops growing, the foot rises, and it stays hung at frameTop - it never re-centres in
             // Y the way width does in X, because the frame always hangs from the bar.
