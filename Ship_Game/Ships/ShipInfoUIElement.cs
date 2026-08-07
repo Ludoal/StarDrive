@@ -215,10 +215,11 @@ namespace Ship_Game.Ships
             //Added by McShooterz: kills display
             star       = new Rectangle(star.X, star.Y + 19, 22, 22);
             levelPos   = new Vector2(star.X + star.Width + 2, star.Y + 11 - Fonts.Arial12Bold.LineSpacing / 2);
-            // just inside the shaved frame's top; the row starts on the Power/Shield icon column
-            // (Housing.X + 197), so the FTL status icon lines up with those icons (maintainer bench
-            // 338 - aligned on Power/Shield, not the orders row)
-            StatusArea = new Vector2(Housing.X + 197, Housing.Y + FrameShave + 2);
+            // just inside the shaved frame's top; the status/FTL icon (48 wide) is CENTRED on the
+            // Power/Shield icon column, whose 20px icons sit at Housing.X + 197 (centre + 207).
+            // So the row starts at 207 - 24 = Housing.X + 183 (maintainer bench 339 - centred, not
+            // left-aligned).
+            StatusArea = new Vector2(Housing.X + 183, Housing.Y + FrameShave + 2);
             batch.Draw(ResourceManager.Texture("UI/icon_kills_shipUI"), star, Color.White);
             batch.DrawString(Fonts.Arial12Bold, s.Kills.ToString(), levelPos, Color.White);
             int numStatus = 0;

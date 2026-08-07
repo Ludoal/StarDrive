@@ -161,6 +161,10 @@ namespace Ship_Game
             ManualShipyards.Tip = GameText.ManuallyAdjustTheNumberOf2;
             ManualStations.Tip  = GameText.ManuallyAdjustTheNumberOf3;
 
+            // maintainer bench 339: the budget warning is added BEFORE the colony-type dropdown so
+            // the open dropdown list draws OVER it, not the other way round.
+            BudgetLimitReached = Add(new UILabel(GameText.BudgetLimitReached, FontBig, Color.Red));
+
             // Dropdowns will go on top of everything else
             ColonyTypeList = Add(new DropOptions<Planet.ColonyType>(100, 18));
             ColonyTypeList.AddOption(option:"--", Planet.ColonyType.Colony);
@@ -207,7 +211,6 @@ namespace Ship_Game
             StationsText       = Add(new UILabel(" "));
             NoGovernor         = Add(new UILabel(GameText.NoGovernor, Font, Color.Gray));
             ColonyRank         = Add(new UILabel(" ", Font, Color.LightGreen));
-            BudgetLimitReached = Add(new UILabel(GameText.BudgetLimitReached, FontBig, Color.Red));
 
             CivBudgetRect     = new Rectangle((int)X + 57, (int)Y + 40, (int)(Width*0.33f), 20);
             GrdBudgetRect     = new Rectangle((int)X + 57, (int)Y + 70, (int)(Width*0.33f), 20);

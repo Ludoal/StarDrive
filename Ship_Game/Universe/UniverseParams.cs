@@ -81,6 +81,7 @@ public class UniverseParams
     [StarData] public bool DisableVolcanoWarning;
     [StarData] public bool DisableCrashSiteWarning;
     [StarData] public bool PrioitizeProjectors;
+    [StarData] public bool PrioritizeFreighters; // Ludoal fork: freighters jump the build queue, like projectors
     [StarData(DefaultValue=true)] public bool ShowAllDesigns = true;
     [StarData] public bool FilterOldModules;
 

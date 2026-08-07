@@ -36,7 +36,7 @@ namespace Ship_Game
         // BoxW2: the dropdown boxes are WIDER instead of taller - label room + picker.
         const float BoxW = 320f, BoxW2 = 450f, BoxGap = 10f;
         const float EmpireBoxH = 160f, ColonizationBoxH = 130f, ConstructionBoxH = 165f,
-                    TradeBoxH = 100f, NotificationsBoxH = 230f;
+                    TradeBoxH = 126f, NotificationsBoxH = 230f; // Trade grew a row (Prioritize Freighters): +26
 
         public AutomationScreen(UniverseScreen u) : base(u, toPause: u)
         {
@@ -98,6 +98,10 @@ namespace Ship_Game
             FreighterDropDown = trade.Add(new CheckedDropdown())
                 .Create(() => player.AutoFreighters, title: GameText.AutomaticTrade, tooltip: GameText.YourEmpireWillAutomaticallyManage2,
                         autoPick: () => player.AutoPickBestFreighter);
+            // right under Automatic Trade, whose output it prioritizes - the freighter twin of
+            // Prioritize Projectors under Autobuild Projectors (maintainer design)
+            trade.AddCheckbox(() => Universe.UState.P.PrioritizeFreighters, title: "Prioritize Freighters",
+                              tooltip: "New freighters jump ahead of other production in your colonies' build queues, so trade capacity comes up quickly.");
             trade.AddCheckbox(() => Universe.UState.P.AllowPlayerInterTrade, title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.AllowPlayerInterTradeTip);
 
             UIList construction = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap, BoxW2, ConstructionBoxH), "Construction");
