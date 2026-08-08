@@ -115,6 +115,13 @@ namespace Ship_Game
         static bool CompactActiveDesign;
         UICheckBox CompactActiveCheck;
         bool AppliedCompact; // the state the cartouches are actually built for
+
+        // Ludoal fork (bench 355): Full Screen drops the resolution-charter cap for the Shipyard only,
+        // so the frame spans the whole display (still anchored on the rail) instead of the 1600x1080
+        // footprint - room to breathe at 1440p+. Session-persistent like the others; flipping it
+        // re-runs LoadContent so every panel and the 3D projection rebuild on the new frame.
+        static bool FullScreenDesign;
+        UICheckBox FullScreenCheck;
         // Ludoal fork (bench 188): sweeping from one browser row to the next crosses a gap where
         // nothing is hovered. With Pin Active unchecked that gap let the Active cartouche flash
         // back into its seat between every pair of rows (maintainer feedback), so a hover that ENDS is held for
@@ -535,6 +542,9 @@ namespace Ship_Game
             ModuleSelectComponent.SelectedIndex = -1;
             if (zoomToHull)
                 ZoomCameraToEncloseHull();
+            else
+                RefreshZoomBounds(); // bench 355: bounds track the hull size even when we don't re-zoom
+                                     // (Lek: recompute on hull change; ZoomCameraToEncloseHull already does)
 
             // TODO: remove DesignIssues from this page
             InfoPanel.SetActiveDesign(DesignedShip);
@@ -863,7 +873,7 @@ namespace Ship_Game
             // frame is a surround rather than a container - the 3D workbench, the module grid and
             // the two columns keep their own layout inside it.
             DesignTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.DesignTabTitles, 1,
-                                                    OnDesignTabChanged, out Rectangle _);
+                                                    OnDesignTabChanged, out Rectangle _, FullScreenDesign);
 
             // The tab frame is the container: every column bound is measured from it, with the
             // same 5px margin on all four sides. ModuleSelection carries the band so the two
@@ -1325,6 +1335,16 @@ namespace Ship_Game
             CompactActiveCheck.SetAbsPos(hullSelectSub.Right - CompactActiveCheck.Width,
                                          CompactActiveCheck.Y);
 
+            // Ludoal fork (bench 355): Full Screen toggle, on the identity row to the left of the hull
+            // name. Its setter re-runs LoadContent because the frame, every anchored panel and the 3D
+            // projection all rebuild from the new (uncapped) frame - none of them relayout on their own.
+            FullScreenCheck = Checkbox(new Vector2(DesignTabs.ClientArea.X + 12, IdentityRowY),
+                                       () => FullScreenDesign,
+                                       (b) => { FullScreenDesign = b; ReloadContent(); },
+                                       "Full Screen",
+                                       "Expand the Shipyard to the whole display instead of the fixed\n"
+                                     + "1600x1080 working size. Anchored on the rail either way.");
+
             // Ludoal fork (spec v4): the HOVER cartouche takes the slot the Compared one used to
             // hold. Like its module counterpart it is the plain frame — no delta lane — showing
             // whatever design the cursor rests on in the browser, and it goes away when the
@@ -1451,7 +1471,9 @@ namespace Ship_Game
             // WINDOW (frame capped at 1680), not the whole screen - otherwise the ship drifts down
             // and right at hi-res, where screen centre no longer matches the frame's. The offset is
             // computed once in ScreenGroups so the Fleets surround uses the very same arithmetic.
-            Vector2 camOffset = ScreenGroups.GroupFrameCameraOffset(ScreenWidth, ScreenHeight);
+            // bench 355: the offset reads the SAME full-screen flag as the frame, so the 3D workbench
+            // recentres on the wider frame in Full Screen instead of drifting toward the capped centre.
+            Vector2 camOffset = ScreenGroups.GroupFrameCameraOffset(ScreenWidth, ScreenHeight, FullScreenDesign);
             // set shipyard's fov much lower to reduce parallax
             SetPerspectiveProjection(fovYdegrees: 20, maxDistance: 30000, offsetXY: camOffset);
             UpdateViewMatrix(CameraPos);

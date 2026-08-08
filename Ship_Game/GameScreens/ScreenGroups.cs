@@ -250,9 +250,9 @@ namespace Ship_Game.GameScreens
         // order they have to happen. PerformLayout is what makes ClientArea known, and it has to
         // run before anything is measured against it.
         public static Submenu AddGroupTabs(GameScreen screen, LocalizedText[] titles, int selected,
-                                           Action<int> onChange, out Rectangle frame)
+                                           Action<int> onChange, out Rectangle frame, bool fullScreen = false)
         {
-            frame = GroupFrame(screen.ScreenWidth, screen.ScreenHeight);
+            frame = GroupFrame(screen.ScreenWidth, screen.ScreenHeight, fullScreen);
             var tabs = screen.Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height), titles));
             tabs.OnTabChange = onChange;
             tabs.PerformLayout();
@@ -284,6 +284,24 @@ namespace Ship_Game.GameScreens
         public static Rectangle GroupFrame(int screenW, int screenH)
             => new(FrameMargin, TabRowY, Math.Min(screenW, MaxFrameWidth) - 2 * FrameMargin,
                    Math.Min(screenH, MaxFrameHeight) - TabRowY - FrameMargin);
+
+        // Ludoal fork (bench 355): a Shipyard-only full-screen frame. Same left/top anchor on the rail
+        // (FrameMargin, TabRowY) so it still reads as the Design tab, but it drops the MaxFrame caps and
+        // spans the whole display less the margins. Used only when the Shipyard's Full Screen toggle is
+        // on; every table screen keeps the capped GroupFrame (the resolution charter). The camera offset
+        // below reads this SAME function, so the 3D workbench recentres with the wider frame instead of
+        // drifting.
+        public static Rectangle GroupFrame(int screenW, int screenH, bool fullScreen)
+            => fullScreen
+                ? new(FrameMargin, TabRowY, screenW - 2 * FrameMargin, screenH - TabRowY - FrameMargin)
+                : GroupFrame(screenW, screenH);
+
+        public static Vector2 GroupFrameCameraOffset(int screenW, int screenH, bool fullScreen)
+        {
+            Rectangle frame = GroupFrame(screenW, screenH, fullScreen);
+            return new Vector2((frame.CenterX() - screenW * 0.5f) / screenW,
+                               (frame.CenterY() - screenH * 0.5f) / screenH);
+        }
 
         // Ludoal fork (maintainer feedback, 7 Aug): the group frame is anchored to the left margin
         // and the bar, so once it caps (1680 wide) its centre sits LEFT of and ABOVE the screen
@@ -532,12 +550,13 @@ namespace Ship_Game.GameScreens
         public static bool InTopBand(Vector2 cursor)
             => cursor.Y < TabRowY + TabStripH;
 
-        // Ludoal fork (maintainer bench 336): the margin OUTSIDE the group frame - the bare
-        // starfield around a capped 3D window. The Shipyard and Fleets close on a right-click
-        // there too (as well as the top band), since nothing on the workbench owns that gesture
-        // out here. Uses the same GroupFrame the window is drawn from, so the two agree.
-        public static bool OutsideGroupFrame(Vector2 cursor, int screenW, int screenH)
-            => !GroupFrame(screenW, screenH).HitTest(cursor);
+        // Ludoal fork (maintainer bench 336): the margin OUTSIDE the group frame - the live universe
+        // map showing around the window. A right-click there closes the Shipyard / Fleets; inside the
+        // frame the click keeps its design gesture. bench 355: takes the fullScreen flag so it tests
+        // against the SAME frame the window is drawn from - in Full Screen the frame fills the display,
+        // so the close margin shrinks to nothing instead of sitting under the expanded workbench.
+        public static bool OutsideGroupFrame(Vector2 cursor, int screenW, int screenH, bool fullScreen = false)
+            => !GroupFrame(screenW, screenH, fullScreen).HitTest(cursor);
 
         // The vertical span of a column inside the frame. ⚠ ClientArea.H already stops short of the
         // frame's bottom border, so only the TOP pad is added - taking one off the bottom as well

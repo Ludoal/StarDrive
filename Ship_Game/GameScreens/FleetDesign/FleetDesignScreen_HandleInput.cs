@@ -42,14 +42,13 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // Ludoal fork: right-click closes the screen from the top band - the bar and the tab
-            // row - OR outside the group frame entirely, the starfield margin round the window
-            // (maintainer bench 336). Over the fleet grid the gesture is already spoken for (it
-            // drops the design being placed / deselects nodes), so it closes only in these free
-            // zones where nothing else wants it.
-            if (input.RightMouseClick
-                && (GameScreens.ScreenGroups.InTopBand(input.CursorPosition)
-                    || GameScreens.ScreenGroups.OutsideGroupFrame(input.CursorPosition, ScreenWidth, ScreenHeight)))
+            // Ludoal fork (maintainer bench 355): input regime by cursor position vs the DRAWN frame,
+            // same as the Shipyard. INSIDE the frame the right-click belongs to the fleet grid (drops
+            // the design being placed / deselects nodes); OUTSIDE it (the universe map around the
+            // window) it closes the screen. Test DesignTabs.Rect, the frame actually drawn, so the
+            // gesture never fires over the workbench where the scene overspills the frame.
+            bool cursorInFrame = DesignTabs.Rect.HitTest(input.CursorPosition);
+            if (input.RightMouseClick && !cursorInFrame)
             {
                 GameAudio.EchoAffirmative();
                 ExitScreen();

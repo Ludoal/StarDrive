@@ -152,7 +152,12 @@ namespace Ship_Game
             // strip below TabRowY, height capped at the 1080p footprint. Y and height are the values
             // that read correctly at the bench; only the left-anchor X is the intended change.
             const int m = GameScreens.ScreenGroups.FrameMargin;
-            int frameTop = GameScreens.ScreenGroups.TabRowY + Submenu.TabHeight - 2;
+            // bench 355 (maintainer): coarse pass. Research (the pixel reference) starts its frame at
+            // its Submenu ClientArea top, which sits at TabRowY - not TabRowY + TabHeight. Colony was
+            // starting a tab-strip lower (too low + a bit too tall). Match TabRowY here as a stopgap;
+            // the real fix is phase 2, when Colony becomes an actual submenu tab and derives its own
+            // ClientArea like Research does. One line, throwaway.
+            int frameTop = GameScreens.ScreenGroups.TabRowY;
             int layoutW = Math.Min(ScreenWidth, GameScreens.ScreenGroups.MaxFrameWidth);
             int layoutH = Math.Min(ScreenHeight, 1080);
             ColonyFrame = new Rectangle(m - PopupFrame.BorderLeft, frameTop,

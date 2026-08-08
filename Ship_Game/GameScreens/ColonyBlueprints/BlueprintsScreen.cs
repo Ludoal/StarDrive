@@ -352,10 +352,13 @@ namespace Ship_Game
             // veil the table screens use, so the map recedes rather than competing with the screen.
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
-            // bench 347: an OPAQUE frame fill behind the content - the fade alone let the universe
-            // show through the cadre (it read opaque only when the backdrop was black). Same fill the
-            // table popups use (copied the instance that works).
-            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(DesignTabs), ScreenGroups.GroupFrameFill);
+            // bench 354 (maintainer): a TRULY opaque frame fill behind the content. GroupFrameFill is
+            // only 0.92 alpha, so the dimmed universe still showed through and washed out the text -
+            // Stats+' gray labels read terne/illegible where Colony's opaque facilities panel keeps
+            // them crisp. Fill with the same colour at full alpha, local to Blueprints (the shared
+            // GroupFrameFill stays 0.92 for the table screens that want the veil). All three tabs
+            // (Stats / Stats+ / Description) gain the contrast.
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(DesignTabs), new Color(14, 12, 9));
             // hovering a building raises the Description tab by itself; the cursor leaving falls
             // back to the player's own choice. bench 351: setting SelectedIndex DOES fire OnTabChange
             // (verified in Submenu.cs) - so the auto-switch was writing StatsTabPlayerChoice=1 and the

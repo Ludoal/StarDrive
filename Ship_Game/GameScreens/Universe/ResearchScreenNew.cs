@@ -58,7 +58,9 @@ namespace Ship_Game
             Universe = u;
             Player = u.Player;
             empireUI = empireUi;
-            IsPopup = false;
+            // bench 355 (maintainer): Research was the last group screen without the live universe
+            // behind it. IsPopup lets the map draw underneath, like every table/design screen.
+            IsPopup = true;
             CanEscapeFromScreen = true;
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
@@ -160,10 +162,15 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
+            // bench 355 (maintainer): the universe shows behind Research now (IsPopup). The tech tree
+            // still needs an opaque backdrop to stay legible, so fill the FRAME only, not the whole
+            // screen - the fade dims the universe around it, the frame fill sits the tree on solid dark
+            // inside. Opaque (14,12,9), not the 0.92 GroupFrameFill, for the same crispness the
+            // Blueprints panel needed this morning.
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
 
             batch.SafeBegin();
-            batch.FillRectangle(new Rectangle(0, 0, ScreenWidth, ScreenHeight), Color.Black);
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), new Color(14, 12, 9));
             batch.SafeEnd();
 
             batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:false, saveState:false, camera.Transform);
