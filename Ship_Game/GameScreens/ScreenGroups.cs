@@ -278,6 +278,12 @@ namespace Ship_Game.GameScreens
         public static float FullTableHeight(int screenH)
             => Math.Min(screenH, MaxFrameHeight) - TabRowY - FrameMargin;
 
+        // Ludoal fork (bench 361): the UNCAPPED variant - the Colonies table runs the full display
+        // height by explicit maintainer choice. The other tables keep the 1080 cap: the bottom-left
+        // they leave free is where the 47-c click-info cartouche (planet/ship) will live.
+        public static float FullTableHeightUncapped(int screenH)
+            => screenH - TabRowY - FrameMargin;
+
         // the height cap (maintainer, 4 Aug): a group frame never grows past the 1080p footprint -
         // anchored to the bar and the left margin, like every frame. Tables that develop in height
         // do it through the content-sized variant by explicit instruction, never through this cap.

@@ -123,7 +123,7 @@ namespace Ship_Game
         // so the frame spans the whole display (still anchored on the rail) instead of the 1600x1080
         // footprint - room to breathe at 1440p+. Session-persistent like the others; flipping it
         // re-runs LoadContent so every panel and the 3D projection rebuild on the new frame.
-        static bool FullScreenDesign;
+        public static bool FullScreenDesign; // public: Design Issues centres itself on the same frame (bench 361)
         UICheckBox FullScreenCheck;
         // Ludoal fork (bench 188): sweeping from one browser row to the next crosses a gap where
         // nothing is hovered. With Pin Active unchecked that gap let the Active cartouche flash

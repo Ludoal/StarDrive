@@ -71,22 +71,24 @@ namespace Ship_Game.Ships
             };
             ShipNameArea.Color = tColor;
             
-            Power = new Rectangle(Housing.X + 197, Housing.Y + 115, 20, 20);
+            // bench 361 (maintainer): the whole Power/Shield/Ordnance/Stance block sits 3px lower,
+            // making room for the status strip that now rides 7px above the Power icon.
+            Power = new Rectangle(Housing.X + 197, Housing.Y + 118, 20, 20);
             PBar = new ProgressBar(Power.X + Power.Width + 15, Power.Y, 150, 18) { color = "green" };
             ToolTipItems.Add(new TippedItem(Power, GameText.IndicatesThisShipsCurrentPower));
             // the faction flag's right edge rides the bars' end (maintainer bench 319); 24px now,
             // grown left and down from that top-right anchor (maintainer bench 336)
             FlagRect = new Rectangle(PBar.pBar.X + PBar.pBar.Width - 24, r.Y + 71, 24, 24);
 
-            Shields = new Rectangle(Housing.X + 197, Housing.Y + 115 + 20 + spacing, 20, 20);
+            Shields = new Rectangle(Housing.X + 197, Housing.Y + 118 + 20 + spacing, 20, 20);
             SBar = new ProgressBar(Shields.X + Shields.Width + 15, Shields.Y, 150, 18) { color = "blue" };
             ToolTipItems.Add(new TippedItem(Shields, GameText.IndicatesTheTotalPowerOf));
 
-            Ordnance = new Rectangle(Housing.X + 197, Housing.Y + 115 + 20 + spacing + 20 + spacing, 20, 20);
+            Ordnance = new Rectangle(Housing.X + 197, Housing.Y + 118 + 20 + spacing + 20 + spacing, 20, 20);
             OBar = new ProgressBar(Ordnance.X + Ordnance.Width + 15, Ordnance.Y, 150, 18);
             ToolTipItems.Add(new TippedItem(Ordnance, GameText.IndicatesThisShipsCurrentStores));
 
-            ConstructionRect = new Rectangle(Housing.X + 197, Housing.Y + 115 + 20 + spacing*3 + 40, 20, 20);
+            ConstructionRect = new Rectangle(Housing.X + 197, Housing.Y + 118 + 20 + spacing*3 + 40, 20, 20);
             ConstructionBar = new ProgressBar(ConstructionRect.X + ConstructionRect.Width + 15, ConstructionRect.Y, 150, 18) { color = "yellow" };
 
             MiningRect = ConstructionRect;
@@ -215,11 +217,11 @@ namespace Ship_Game.Ships
             //Added by McShooterz: kills display
             star       = new Rectangle(star.X, star.Y + 19, 22, 22);
             levelPos   = new Vector2(star.X + star.Width + 2, star.Y + 11 - Fonts.Arial12Bold.LineSpacing / 2);
-            // just inside the shaved frame's top; the status/FTL icon (48 wide) is CENTRED on the
-            // Power/Shield icon column, whose 20px icons sit at Housing.X + 197 (centre + 207).
-            // So the row starts at 207 - 24 = Housing.X + 183 (maintainer bench 339 - centred, not
-            // left-aligned).
-            StatusArea = new Vector2(Housing.X + 183, Housing.Y + FrameShave + 2);
+            // bench 361 (maintainer): the status strip rides 7px edge-to-edge ABOVE the Power icon
+            // (which dropped to Y+118 with its block), on the Power column - its old home at the
+            // frame top collided with the name/order line the moment a combat status lit up.
+            // Icons are 33x22 (the 48x32 art at 2/3), text in the small TahomaBold9.
+            StatusArea = new Vector2(Housing.X + 190, Housing.Y + 118 - 7 - 22);
             batch.Draw(ResourceManager.Texture("UI/icon_kills_shipUI"), star, Color.White);
             batch.DrawString(Fonts.Arial12Bold, s.Kills.ToString(), levelPos, Color.White);
             int numStatus = 0;
@@ -243,7 +245,7 @@ namespace Ship_Game.Ships
 
         void DrawIconWithTooltip(SpriteBatch batch, SubTexture icon, Func<string> tooltip, Vector2 mousePos, Color color, int numStatus)
         {
-            var rect = new Rectangle((int)StatusArea.X + numStatus * 53, (int)StatusArea.Y, 48, 32);
+            var rect = new Rectangle((int)StatusArea.X + numStatus * 37, (int)StatusArea.Y, 33, 22);
             batch.Draw(icon, rect, color);
             if (rect.HitTest(mousePos)) ToolTip.CreateTooltip(tooltip());
         }
@@ -255,11 +257,11 @@ namespace Ship_Game.Ships
             if (!ship.Loyalty.HavePackMentality)
                 return;
 
-            var packRect = new Rectangle((int)StatusArea.X, (int)StatusArea.Y, 48, 32);
+            var packRect = new Rectangle((int)StatusArea.X, (int)StatusArea.Y, 33, 22);
             batch.Draw(iconPack, packRect, Color.White);
-            var textPos          = new Vector2(packRect.X + 26, packRect.Y + 15);
+            var textPos          = new Vector2(packRect.X + 20, packRect.Y + 7);
             float damageModifier = ship.PackDamageModifier * 100f;
-            batch.DrawString(Fonts.Arial12, damageModifier.ToString("0")+"%", textPos, Color.White);
+            batch.DrawString(Fonts.TahomaBold9, damageModifier.ToString("0")+"%", textPos, Color.White);
             if (packRect.HitTest(mousePos))
                 ToolTip.CreateTooltip(Localizer.Token(GameText.IndicatesThisShipsCurrentBonus));
 
@@ -294,9 +296,9 @@ namespace Ship_Game.Ships
             DrawIconWithTooltip(batch, iconDisabled, () => Localizer.Token(GameText.EmpOverloadShipIsDisabled), mousePos,
                 Color.White, numStatus);
 
-            var textPos    = new Vector2((int)StatusArea.X + 25 + numStatus * 53, (int)StatusArea.Y);
+            var textPos    = new Vector2((int)StatusArea.X + 20 + numStatus * 37, (int)StatusArea.Y + 7);
             float empState = ship.EMPDamage / ship.EmpTolerance;
-            batch.DrawString(Fonts.Arial12, empState.String(1), textPos, Color.White);
+            batch.DrawString(Fonts.TahomaBold9, empState.String(1), textPos, Color.White);
             numStatus++;
         }
 
@@ -309,13 +311,13 @@ namespace Ship_Game.Ships
             DrawIconWithTooltip(batch, iconStructure, () => Localizer.Token(GameText.StructuralIntegrityOfTheShip), mousePos,
                 Color.White, numStatus);
 
-            var textPos = new Vector2((int)StatusArea.X + 33 + numStatus * 53, (int)StatusArea.Y + 15);
+            var textPos = new Vector2((int)StatusArea.X + 36 + numStatus * 37, (int)StatusArea.Y + 6);
             int integrity = (int)(ship.InternalSlotsHealthPercent * 100);
 
             float repairPerSec = ship.CurrentRepairPerSecond;
             float timeUntilRepaired = (ship.HealthMax - ship.Health) / repairPerSec;
             string integrityText = $"{integrity}% (+{(int)repairPerSec}HP/s ETA:{timeUntilRepaired.TimeString()})";
-            batch.DrawString(Fonts.Arial12, integrityText, textPos, Color.White);
+            batch.DrawString(Fonts.TahomaBold9, integrityText, textPos, Color.White);
             numStatus++;
         }
 

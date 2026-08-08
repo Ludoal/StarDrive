@@ -562,7 +562,9 @@ namespace Ship_Game
 
         public void ExitMessageBox(GameScreen screen, Action accepted, Action cancelled, GameText message)
         {
-            MakeMessageBox(screen, accepted, cancelled, message, "Save", "Exit");
+            // bench 361 (maintainer): "Cancel", not "Exit" - the dialog also fires on design-switch
+            // and Battle Arena launch, where nothing exits
+            MakeMessageBox(screen, accepted, cancelled, message, "Save", "Cancel");
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////

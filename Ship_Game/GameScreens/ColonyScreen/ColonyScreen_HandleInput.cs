@@ -97,6 +97,12 @@ namespace Ship_Game
             // We are monitoring AI Colonies
             if (P.Owner != Player && !Log.HasDebugger)
             {
+                // bench 361 (maintainer): the read-only early-out skipped base.HandleInput, so the
+                // close cross - an Add()ed element - never got served on an infiltrated colony
+                // (right-click worked: that path belongs to the universe, not this panel). Serve
+                // the cross explicitly before handing the rest of the input back.
+                if (CloseBtn.HandleInput(input))
+                    return true;
                 // Input not captured, let Universe Screen manager what happens
                 return false;
             }

@@ -25,7 +25,10 @@ namespace Ship_Game.GameScreens.ShipDesign
             TransitionOnTime  = 0.25f;
             TransitionOffTime = 0.25f;
 
-            Window = new Rectangle(ScreenWidth / 2 - 600, ScreenHeight / 2 - 300, 1200, 540);
+            // bench 361 (maintainer): centred on the Shipyard FRAME, not the screen - at wide
+            // resolutions (or Full Screen off) the two centres diverge and the popup sat off-frame.
+            Rectangle frame = GameScreens.ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight, ShipDesignScreen.FullScreenDesign);
+            Window = new Rectangle(frame.CenterX() - 600, frame.CenterY() - 270, 1200, 540);
             int x  = (int)Window.X + 20;
             int y  = (int)Window.Y + 70;
             int w  = (int)Window.Width - 30;
@@ -65,9 +68,11 @@ namespace Ship_Game.GameScreens.ShipDesign
         {
             CloseButton(Window.Right - 40, Window.Y + 20);
             //Screen Title
+            // bench 361 (maintainer): the default popup title font (UITheme.WindowTitle), like
+            // every other popup - Laserian was the odd one out
             string title    = "Current Ship Issues";
-            Vector2 menuPos = new Vector2(Window.CenterTextX(title, Fonts.Laserian14), Window.Y + 30);
-            Label(menuPos, title, Fonts.Laserian14, Cream);
+            Vector2 menuPos = new Vector2(Window.CenterTextX(title, UITheme.WindowTitle), Window.Y + 30);
+            Label(menuPos, title, UITheme.WindowTitle, Cream);
             PopulateIssues();
             base.LoadContent();
         }

@@ -130,11 +130,11 @@ namespace Ship_Game
             if (slack > 0)
                 Table.Columns[12].Width += slack; // Construction, now index 12 (Pop Growth pushed it +1)
 
-            // capped at the 1080p footprint like the frame width, and a FIXED bottom band
+            // FULL display height (uncapped, bench 361), and a FIXED bottom band
             // (maintainer bench 298): the band holds the governor cartouche, which keeps the
             // Colony screen's own fixed height (222) - a band cut as a fraction of the screen
             // stretched everything in it with the resolution
-            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // capped at 1080p (shared helper)
+            float fullAvail = ScreenGroups.FullTableHeightUncapped(ScreenHeight); // bench 361: Colonies alone runs full height (maintainer)
             const float GovernorH = 222;
             float bandH = GovernorH + 7; // the 7px the rect derivation below eats back
             float contentH = UITable.ContentHeightFor(102 + bandH, Math.Max(3, planets.Count), 84, fullAvail);

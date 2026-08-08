@@ -64,12 +64,13 @@ namespace Ship_Game
             base.LoadContent();
 
             Rectangle rect = Rect;
-            ButtonMedium(rect.X + 30, rect.Bottom - 55, "Rematch", b =>
+            // bench 361 (maintainer): the step-back on the LEFT, the action on the RIGHT
+            ButtonMedium(rect.X + 30, rect.Bottom - 55, "Back to Shipyard", b => ToShipyard());
+            ButtonMedium(rect.Right - 210, rect.Bottom - 55, "Rematch", b =>
             {
                 ExitScreen();
                 Sim.Rematch();
             });
-            ButtonMedium(rect.Right - 210, rect.Bottom - 55, "Back to Shipyard", b => ToShipyard());
         }
 
         void ToShipyard()

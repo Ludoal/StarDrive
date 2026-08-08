@@ -20,6 +20,7 @@ namespace Ship_Game
         // window uses, declared with the colours it goes with.
         Rectangle ColonyFrame;
         PopupFrame Frame;
+        CloseButton CloseBtn; // bench 361: served explicitly on read-only (infiltrated) colonies
         readonly Submenu PlanetInfo;
         readonly Submenu PStorage;
         readonly Submenu PFacilities;
@@ -170,7 +171,7 @@ namespace Ship_Game
 
             // the close cross where every popup window puts its own, from the same source
             Vector2 closePos = PopupFrame.ClosePos(ColonyFrame);
-            Add(new CloseButton(closePos.X, closePos.Y));
+            CloseBtn = Add(new CloseButton(closePos.X, closePos.Y)); // ref kept: the read-only early-out must still serve it (bench 361)
 
             // ⚠ the popup frame's borders are NOT a 2px rule: 11 on the right, 30 at the foot.
             // Content laid out on the raw rect runs underneath them, which is exactly the width

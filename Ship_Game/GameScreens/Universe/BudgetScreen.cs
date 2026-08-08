@@ -276,8 +276,10 @@ namespace Ship_Game.GameScreens
             // read too high off the bottom edge). The lane runs from listRect.Bottom to the table
             // foot (client.Bottom - 10), one RowPitch tall.
             int totalY = (int)listRect.Bottom + (Table.RowPitch - Fonts.Arial12Bold.LineSpacing) / 2;
+            var footerLabels = new Array<UILabel>(); // bench 361: the whole row nudges onto the net line below
             var totalLbl = Label(new Vector2(Table.Columns[0].Rect.X + UITable.PadX + 28, totalY), Localizer.Token(GameText.Total2).ToUpper(), Fonts.Arial12Bold);
             totalLbl.Color = Color.Wheat;
+            footerLabels.Add(totalLbl);
             UILabel FooterCell(int col, Func<UILabel, string> getText)
             {
                 var l = new UILabel(getText, Fonts.Arial12Bold);
@@ -286,6 +288,7 @@ namespace Ship_Game.GameScreens
                 l.Size = new Vector2(r.Width - UITable.PadX, Fonts.Arial12Bold.LineSpacing);
                 l.TextAlign = TextAlign.Right;
                 Add(l);
+                footerLabels.Add(l);
                 return l;
             }
             void FooterMoney(int col, Func<float> getValue) => FooterCell(col, DynamicText(getValue, f => f.MoneyString()));
@@ -351,6 +354,15 @@ namespace Ship_Game.GameScreens
             EmpireNetIncome.TextAlign = TextAlign.Right;
             EmpireNetIncome.DropShadow  = true;
             EmpireNetIncome.DynamicText = DynamicText(NetGainNow, f => f.MoneyString());
+
+            // bench 361 (maintainer): while the table is SHORT (not yet stretched), its TOTAL lane
+            // sits a few px above the synthesis' Net Gain/Loss line - nudge the whole footer row
+            // down onto netY so the two bottom lines read as one. Never up (a stretched table's
+            // TOTAL belongs to its own lane), and never further than one lane (geometry sanity).
+            int footerNudge = netY - totalY;
+            if (footerNudge > 0 && footerNudge <= Table.RowPitch)
+                foreach (UILabel l in footerLabels)
+                    l.Pos = new Vector2(l.Pos.X, l.Pos.Y + footerNudge);
 
             base.LoadContent();
         }
