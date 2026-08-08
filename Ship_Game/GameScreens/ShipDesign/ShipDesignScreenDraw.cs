@@ -47,11 +47,13 @@ namespace Ship_Game
 
             ScreenManager.RenderSceneObjects();
 
-            Ship_Game.Graphics.RenderStates.DisableScissorTest(batch.GraphicsDevice);
-
             if (ToggleOverlay)
             {
-                batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:true);
+                // bench 360 (maintainer): the module tiles clip to the frame like the 3D hull does -
+                // this pass now rides the scene scissor (the scissor rect is still set on the device;
+                // the pinned rasterizer makes the batch honour it).
+                batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:true,
+                                Ship_Game.Graphics.RenderStates.ScissorEnabled);
 
                 DrawEmptySlots(batch);
                 DrawModules(batch);
@@ -67,6 +69,9 @@ namespace Ship_Game
 
                 batch.SafeEnd();
             }
+
+            // scissor off before the UI pass - the panels drawn from here on span the whole screen
+            Ship_Game.Graphics.RenderStates.DisableScissorTest(batch.GraphicsDevice);
 
             batch.SafeBegin();
             if (ActiveModule != null && !ModuleSelectComponent.HitTest(Input))

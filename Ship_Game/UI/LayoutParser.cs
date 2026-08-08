@@ -173,6 +173,11 @@ namespace Ship_Game.UI
             // preserving the texture's aspect, cropping the overflow. The menu planet is height-fit
             // (auto-aspect width = height * 16:9), which left a bare band on displays wider than
             // 16:9 (2560x1372: 2439px of planet on a 2560px screen).
+            // ⚠ expressed as REL size, not abs (bench 360): the CenterScale animation rewrites size
+            // AND position every frame via SetAutoPos/SetAutoSize in whatever regime the element
+            // uses - an abs size with the default REL position made it write a pixel offset into a
+            // fractional position, teleporting the planet off-world. Staying all-relative keeps the
+            // effect coherent, exactly like the old height-fit layout it replaces.
             if (info.CoverParent == true)
             {
                 Point texSize = GetTextureSize(info);
@@ -180,7 +185,8 @@ namespace Ship_Game.UI
                 {
                     Vector2 parentSize = element.ParentSize;
                     float scale = Math.Max(parentSize.X / texSize.X, parentSize.Y / texSize.Y);
-                    element.SetAbsSize(texSize.X * scale, texSize.Y * scale);
+                    element.SetRelSize(texSize.X * scale / parentSize.X,
+                                       texSize.Y * scale / parentSize.Y);
                 }
             }
 
