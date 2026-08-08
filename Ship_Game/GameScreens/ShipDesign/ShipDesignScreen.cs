@@ -1338,12 +1338,15 @@ namespace Ship_Game
             // Ludoal fork (bench 355): Full Screen toggle, on the identity row to the left of the hull
             // name. Its setter re-runs LoadContent because the frame, every anchored panel and the 3D
             // projection all rebuild from the new (uncapped) frame - none of them relayout on their own.
-            FullScreenCheck = Checkbox(new Vector2(DesignTabs.ClientArea.X + 12, IdentityRowY),
+            FullScreenCheck = Checkbox(new Vector2(idLeft, IdentityRowY),
                                        () => FullScreenDesign,
                                        (b) => { FullScreenDesign = b; ReloadContent(); },
                                        "Full Screen",
                                        "Expand the Shipyard to the whole display instead of the fixed\n"
                                      + "1600x1080 working size. Anchored on the rail either way.");
+            // bench 356 (maintainer): sit it right next to the identity row, its right edge a gap
+            // before the role/name block, rather than out at the frame's left margin.
+            FullScreenCheck.SetAbsPos(idLeft - FullScreenCheck.Width - idGap, IdentityRowY);
 
             // Ludoal fork (spec v4): the HOVER cartouche takes the slot the Compared one used to
             // hold. Like its module counterpart it is the plain frame — no delta lane — showing

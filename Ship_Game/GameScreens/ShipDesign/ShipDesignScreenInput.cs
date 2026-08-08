@@ -184,24 +184,34 @@ namespace Ship_Game
                 return true;
             }
 
-            // Ludoal fork (maintainer bench 355): input regime is decided by the cursor's position
-            // relative to the DRAWN frame (DesignTabs.Rect, not a recomputed GroupFrame that can
-            // diverge). INSIDE the frame the mouse gestures belong to the design (deselect/delete a
-            // module, zoom, pan); OUTSIDE (the universe map around the window) a right-click closes.
+            // Ludoal fork (bench 356): the ENTIRE right-click is resolved here, before anything else
+            // can see it - because GameScreen.HandleInput closes any IsPopup screen on an unconsumed
+            // right-click (GameScreen.cs:354). That base behaviour is what closed the window on an
+            // empty right-click inside the frame all along (since bench 345 made this screen IsPopup
+            // to show the universe behind); the old InTopBand/OutsideGroupFrame conditions never were
+            // the culprit. Regime by cursor position (maintainer rule): inside the drawn frame the
+            // right-click is a design gesture (cancel the module in hand, delete the module under the
+            // cursor, else drop the highlight); outside it, it closes the screen. Every branch returns
+            // true so the click NEVER reaches the base popup-dismiss.
             bool cursorInFrame = DesignTabs.Rect.HitTest(input.CursorPosition);
-
-            // bench 355 (Lek's review): a right-click while a module is IN HAND cancels the module,
-            // everywhere, BEFORE the close test - otherwise dropping a module by right-clicking toward
-            // the list (cursor outside the frame) would close the screen with the module still held.
-            if (input.RightMouseClick && ActiveModule != null)
+            if (input.RightMouseClick)
             {
-                ActiveModule = null;
-                return true;
-            }
-
-            // ExitScreen, not ReallyExit: the unsaved-design prompt still gets its say.
-            if (input.RightMouseClick && !cursorInFrame)
-            {
+                if (ActiveModule != null)
+                {
+                    ActiveModule = null; // cancel the module in hand, everywhere (Lek's review)
+                    return true;
+                }
+                if (cursorInFrame)
+                {
+                    (SlotUnderCursor, GridPosUnderCursor) = GetSlotUnderCursor();
+                    if (SlotUnderCursor != null)
+                        DeleteModuleAtSlot(SlotUnderCursor); // the design gesture on a fitted module
+                    else
+                        HighlightedModule = null;            // empty space: just drop the highlight
+                    return true;
+                }
+                // outside the frame: the universe margin - close. ExitScreen, not ReallyExit:
+                // the unsaved-design prompt still gets its say.
                 GameAudio.EchoAffirmative();
                 ExitScreen();
                 return true;
@@ -247,7 +257,7 @@ namespace Ship_Game
                     return true;
 
                 ProjectedSlot = SlotUnderCursor;
-                HandleDeleteModule(input, SlotUnderCursor);
+                // (right-click delete/deselect is fully resolved at the top of HandleInput)
                 HandlePlaceNewModule(input, SlotUnderCursor);
             }
             return false;
@@ -293,8 +303,16 @@ namespace Ship_Game
                 float dx = input.CursorPosition.X - StartDragPos.X;
                 float dy = input.CursorPosition.Y - StartDragPos.Y;
                 StartDragPos = input.CursorPosition;
-                CameraPos.X += -dx;
-                CameraPos.Y += -dy;
+                // bench 356 (maintainer: "pas smooth et pas proportionnel"): scale the raw pixel delta
+                // to WORLD units at the current zoom, so the ship tracks the mouse 1:1. The factor is
+                // derived from the same projection the zoom clamp uses: GetHullScreenSize maps world ->
+                // pixels, its inverse is world-per-pixel. The old raw += -dx moved the camera one world
+                // unit per pixel - several times faster than the mouse at working zooms.
+                float hullH = DesignedShip.Radius * 2;
+                float onScreen = GetHullScreenSize(CameraPos, hullH);
+                float worldPerPixel = onScreen > 0.01f ? hullH / onScreen : 1f;
+                CameraPos.X += -dx * worldPerPixel;
+                CameraPos.Y += -dy * worldPerPixel;
             }
             else
             {
@@ -515,17 +533,6 @@ namespace Ship_Game
                 ToolTip.CreateFloatingText(GameText.YouCanUseShiftClick, "", pos, 5);
                 DisplayedBulkReplacementHint = true;
             }
-        }
-
-        void HandleDeleteModule(InputState input, SlotStruct slotUnderCursor)
-        {
-            if (!input.RightMouseClick)
-                return;
-
-            if (slotUnderCursor != null)
-                DeleteModuleAtSlot(slotUnderCursor);
-            else
-                ActiveModule = null;
         }
 
         void HandleInputZoom(InputState input)

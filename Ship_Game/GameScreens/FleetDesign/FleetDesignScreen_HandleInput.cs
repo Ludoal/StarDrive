@@ -42,14 +42,24 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // Ludoal fork (maintainer bench 355): input regime by cursor position vs the DRAWN frame,
-            // same as the Shipyard. INSIDE the frame the right-click belongs to the fleet grid (drops
-            // the design being placed / deselects nodes); OUTSIDE it (the universe map around the
-            // window) it closes the screen. Test DesignTabs.Rect, the frame actually drawn, so the
-            // gesture never fires over the workbench where the scene overspills the frame.
+            // Ludoal fork (bench 356): the ENTIRE right-click is resolved here, first - because
+            // GameScreen.HandleInput dismisses any IsPopup screen on an unconsumed right-click
+            // (GameScreen.cs:354), and base.HandleInput below ran BEFORE the grid's own right-click
+            // gestures: the base closed the window before the design-drop or node-deselect could
+            // speak. Regime by cursor position (maintainer rule): inside the drawn frame the click is
+            // a grid gesture (drop the design in hand, else deselect nodes); outside it, it closes.
+            // Every branch returns true so the click never reaches the base popup-dismiss.
             bool cursorInFrame = DesignTabs.Rect.HitTest(input.CursorPosition);
-            if (input.RightMouseClick && !cursorInFrame)
+            if (input.RightMouseClick)
             {
+                if (cursorInFrame)
+                {
+                    if (ActiveShipDesign != null)
+                        ActiveShipDesign = null;        // drop the design being placed
+                    else if (SelectedNodeList.Count > 0)
+                        SelectedNodeList.Clear();       // deselect the selected nodes
+                    return true;                        // empty: just consume, never dismiss
+                }
                 GameAudio.EchoAffirmative();
                 ExitScreen();
                 return true;
@@ -70,10 +80,8 @@ namespace Ship_Game
             if (base.HandleInput(input))
                 return true;
 
-            if (SelectedNodeList.Count > 0 && Input.RightMouseClick)
-            {
-                SelectedNodeList.Clear();
-            }
+            // (right-click deselect is resolved at the top of HandleInput now, before the base
+            // popup-dismiss could swallow it)
 
             if (HandleSingleNodeSelection(input, input.CursorPosition))
                 return false;
@@ -136,11 +144,7 @@ namespace Ship_Game
                     ActiveShipDesign = null;
             }
 
-            if (input.RightMouseClick)
-            {
-                ActiveShipDesign = null;
-                return true;
-            }
+            // (right-click drop is resolved at the top of HandleInput now)
             return false;
         }
 
