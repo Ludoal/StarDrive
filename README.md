@@ -14,16 +14,20 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00047** release, m
 ## What's in it
 
 ### Design choices
+
 **Gameplay**
 - The one departure from the no-gameplay rule: the legacy espionage system is removed. Jupiter's infiltration is the only regime left, hence the save-compatibility note above.
+
 **Look**
 - The whole UI moved to one consistent flat "painted plate" look: a thin frame replacing the old sculpted textures on buttons, windows, popups and panels, drawn from one shared theme instead of per-screen art. The look is theme-agnostic: it is painted in code rather than baked into skin textures.
 - Resolution charter: table and list screens cap at a fixed width rather than stretch on ultra-wide / 4K displays.
 - The universe shows behind every panel.
+
 **UI**
 - The four new screen groups (Galaxy / Empire / Diplomacy / Design) share one tab-row frame; every major table rebuilt on one shared component: sortable headers with remembered sort, auto-sizing columns, consistent colour rules.
 - Sort, column and filter choices persist for the whole session across every table and the Shipyard browser.
 - List rows activate on double-click in all panels, so no more accidental exits.
+
 **Texts & units** *(work in progress)*
 - Money flows labeled `BC/turn` everywhere (they are all per-turn), population rates per billion colonists; a game-term capitalization pass is ongoing.
 
@@ -59,21 +63,27 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00047** release, m
 - View on map exits at the planet instead of flying back.
 
 ### Empire group
+
 **Colonies (the former Empire screen)**
 - Renamed from Empire. Fertility / Richness / Max Population / Pop Growth columns added.
 - A new EMPIRE totals tab in the bottom band: colony count, total population, total per-turn growth.
 - The planet flavour text moved from the band into the planet-icon tooltip.
 - The table runs the full display height (the other tables keep the 1080p cap).
+
 **Ships**
 - Military Ships filter (every combat-capable role in one view).
 - A Proximity column (sorts closest-first) and a live Patrol column.
+
 **Troops**
 - **NEW** Troops Array: every ground troop you own in one screen: system, location, status (garrison, deployed, in transport, stationed), type, count and strength. Rows group by location and troop type; double-click jumps to the ship or opens the colony.
 - A status filter dropdown (All / Deployed / Garrison / Transport / Stationed).
+
 **Economy**
 - Fully reworked: the whole budget on one screen, planet by planet. Double-click a row to open that colony.
+
 **Research**
 - Integrated frame under the top bar, compact branch packing.
+
 **Automation**
 - Automation moved off the map into its own Empire-group tab, five categories (Empire, Colonization, Construction, Trade, Notifications), all visible at once.
 - Auto Pick per design dropdown (Explorer, Colony Ship, Constructors, Freighter, Research/Mining Station): one checkbox each, manual pick or auto.
@@ -82,32 +92,41 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00047** release, m
 - Prioritize Freighters: newly-built freighters jump ahead in a colony's build queue, so trade capacity comes up fast (the freighter twin of Prioritize Projectors).
 
 ### Galaxy group
+
 **Planets**
 - A separate Features column, a Proximity filter, an Owner filter, a split-out Pop % column.
+
 **Exotic Systems**
 - The number of deployed Mining Stations is displayed.
 
 ### Diplomacy group
+
 **Diplomacy**
 - Faction portraits are clickable on all tabs to jump straight into negotiation (the old separate Contact button is gone).
 - Every empire in columns, showing what they know, what they want, and what you have signed.
+
 **Intelligence**
 - Trust / Anger / Threat bars are displayed.
 - The Intelligence treaty-matrix icons carry hover tooltips naming the treaty and the empire.
+
 **Bonuses**
 - You can hover a trait to read its description.
+
 **Relationships**
 - One filter per treaty type instead of two blanket toggles, and each treaty draws as its own parallel chord rather than all six stacking on the same line between two empires.
+
 **Espionage**
 - Infiltration laid out by level, so you can see what an operation costs before you commit to it.
 - The "Limit Level" is a slider now, and the infiltration levels read as one consolidated band.
 - Your own column carries an INFILTRATION block: the planets your moles sit on, clickable. The click opens that colony in mole vision, and closing it comes back to the Espionage screen.
 
 ### Design group
+
 **Fleets**
 - Wider magnetic grid steps.
 - A box-selected fleet group gets a working stance bar (before, only a click-selected group armed the stance controls).
 - Mouse zoom and pan belong to the frame, like the Shipyard; the selected ship's sensor halo clips to it.
+
 **Shipyard**
 - **NEW** Designs load straight from the Shipyard: the hull list and the load popup are one browser now. Filter by name or hull, show only your designs or include locked ones, and group the list **By Hull** (a carcass and what you built on it) or **By Role** (every carrier you own, wherever it is built). Double-click loads.
 - **NEW** Designs can be marked obsolete, the way modules already could: a button in the Active Design frame, the name in red in the browser, and a **Hide obsolete** filter. Saved with your game, per empire. The module list gets its own obsolete filter as a checkbox above it, where it belongs, instead of a button at the far end of the bottom bar.
@@ -119,21 +138,26 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00047** release, m
 - A **Full Screen** toggle by the hull name: the workbench spans the whole display instead of the fixed working size, and the design in progress survives the flip.
 - Mouse gestures follow the cursor: inside the frame they belong to the design (zoom, pan, module pick/remove), outside it a right-click closes the screen. The pan glides like the Fleets one now.
 - Symmetric design starts OFF for new games (the in-game toggle still persists per save).
+
 **Battle Arena (work in progress)**
 - Practice arena from the Shipyard: pick enemies per race grouped by hull class, full-tech sim empires (carrier hangars work), combat stances honored at contact.
 - Group fights: click the list to build an opponent roster (click a roster line to remove one), Fight group launches them all; battle report aggregates the group. Planned: per-opponent report rows, spawn distance control, encounter-filtered list.
+
 **Blueprints**
 - A Stats+ tab of its own (the default): the plan's budget broken down (colonist income + building income = gross, less upkeep = net) and a per-source yields grid, same layout as the Colony one.
 
 ### Other screens
+
 **New Game / Race Design**
 - Rebuilt: a fixed 1440×900 window, Environment enabled, Race and Opponents as two tabs sharing one column (the old separate Opponents popup is gone), and Rule Options moved into the Galaxy tab.
 - Rule Options: a Reset button restores the stock defaults, and your house rules (sliders and checkboxes) are captured on exit and seeded into the next new game.
+
 **Colony**
 - Panels aligned with the bar.
 - Stats+ tab (the default) with the full production accounting.
 - The full live universe map (and the minimap) shows behind the colony panel, which sits on the tab rail like a group tab.
 - Opening a Colony from a list screen keeps the list dimmed behind it, telegraphing where right-click sends you back.
+
 **Misc**
 - Options: Autosave measured in game years (slider, 0 = legacy wall-clock).
 - A Hotkeys reference popup in the in-game menu, every binding by category (remapping is planned).
