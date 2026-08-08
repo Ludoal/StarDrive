@@ -268,7 +268,9 @@ namespace Ship_Game
                 StartDragPos = input.CursorPosition;
                 PanLatched = true;
             }
-            if (!input.MiddleMouseHeld())
+            // clear on RELEASE, never on !Held - Held carries a 0.15s threshold, and testing !Held
+            // right after the click killed the latch before it armed (the bench-358 dead pan)
+            if (input.MiddleMouseReleased)
                 PanLatched = false;
 
             if (input.MiddleMouseHeld() && PanLatched)

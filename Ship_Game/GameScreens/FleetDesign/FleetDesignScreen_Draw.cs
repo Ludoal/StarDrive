@@ -256,11 +256,15 @@ namespace Ship_Game
                 // Switch this single draw to Additive (src*srcA + dst), which
                 // zeroes out alpha=0 pixels naturally and matches how the
                 // FOW / shield / fogmap consumers handle the same texture.
+                // bench 358 (maintainer): keep the SCISSOR through the blend switch. This runs inside
+                // the scene-clipped batch; re-opening without the scissored rasterizer let the halo
+                // flood past the frame - and worse, the final plain Begin handed the rest of the
+                // scene pass back UNCLIPPED.
                 batch.SafeEnd();
-                batch.SafeBegin(SpriteBlendMode.Additive);
+                batch.SafeBegin(SpriteBlendMode.Additive, Ship_Game.Graphics.RenderStates.ScissorEnabled);
                 batch.Draw(nodeTexture, nodeRect, NeonGreen, 0f, nodeTexture.CenterF);
                 batch.SafeEnd();
-                batch.SafeBegin();
+                batch.SafeBegin(SpriteBlendMode.AlphaBlend, Ship_Game.Graphics.RenderStates.ScissorEnabled);
             }
         }
 

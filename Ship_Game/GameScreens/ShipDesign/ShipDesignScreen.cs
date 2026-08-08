@@ -874,9 +874,9 @@ namespace Ship_Game
             // the two columns keep their own layout inside it.
             DesignTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.DesignTabTitles, 1,
                                                     OnDesignTabChanged, out Rectangle _, FullScreenDesign);
-            // bench 357: the hull restore above ran before DesignTabs existed, so RefreshZoomBounds
-            // skipped itself - do it now that the frame is real (it also re-clamps the camera target).
-            RefreshZoomBounds();
+            // ⚠ no RefreshZoomBounds here: CreateGUI runs BEFORE the hull restore (the 358 crash -
+            // DesignedShip is still null at this point; the line numbers lied about the order, the
+            // stack trace didn't). ChangeHull right after refreshes the bounds with everything in place.
 
             // The tab frame is the container: every column bound is measured from it, with the
             // same 5px margin on all four sides. ModuleSelection carries the band so the two

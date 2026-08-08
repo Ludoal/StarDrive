@@ -295,7 +295,8 @@ namespace Ship_Game
                 StartDragPos = input.CursorPosition;
                 PanLatched = true;
             }
-            if (!input.MiddleMouseHeld())
+            // clear on RELEASE, never on !Held - Held carries a 0.15s threshold (bench 358, Fleets)
+            if (input.MiddleMouseReleased)
                 PanLatched = false;
 
             if (input.MiddleMouseHeld())
@@ -741,9 +742,9 @@ namespace Ship_Game
 
         void RefreshZoomBounds()
         {
-            // first LoadContent restores the hull BEFORE AddGroupTabs builds DesignTabs - the
-            // explicit RefreshZoomBounds right after the tabs are built covers that pass (bench 357)
-            if (DesignTabs == null)
+            // bench 358 crash: CreateGUI (tabs) runs BEFORE the hull restore in LoadContent, and
+            // ChangeHull can run in odd orders - guard both ends, refresh when both exist.
+            if (DesignTabs == null || DesignedShip == null)
                 return;
             float frameH = DesignTabs.ClientArea.H * 0.9f;
             float fit = CamHeightToFitHull(frameH);
