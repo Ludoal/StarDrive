@@ -638,10 +638,10 @@ namespace Ship_Game
             batch.DrawString(Font20, pgs.Building.TranslatedName, bCursor, color);
             bCursor.Y += Font20.LineSpacing + 5;
             string buildingDescription = MultiLineFormat(pgs.Building.DescriptionText);
-            batch.DrawString(TextFont, buildingDescription, bCursor, color);
+            batch.DrawString(TextFont, buildingDescription, bCursor, Color.White); // white body (maintainer bench 353), matching the build-list panel
             bCursor.Y += TextFont.MeasureString(buildingDescription).Y + Font20.LineSpacing;
             DrawSelectedBuildingInfo(ref bCursor, batch, TextFont, P.Owner, P.Fertility, P.MineralRichness, P.Category, P.Level, pgs.Building, pgs);
-            DrawTilePopInfo(ref bCursor, batch, pgs, 2);
+            DrawTilePopInfo(ref bCursor, batch, pgs, 1); // bench 353 (maintainer): single gap before the colonists-per-tile line, not double
             if (!pgs.Building.Scrappable)
                 return;
 

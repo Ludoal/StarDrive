@@ -40,7 +40,11 @@ namespace Ship_Game.GameScreens
         public const int TabRowY = EmpireUIOverlay.BarTop + EmpireUIOverlay.BarH + 10;
         // the top of a group's visible FRAME - one tab strip below the tab row. Bar overlays that
         // want to line up with the group frames (not the tab strip) anchor here.
-        public const int GroupFrameTop = TabRowY + TabStripH;
+        // bench 353 (Lek's diagnosis): the strip's USEFUL height is TabHeight-2, not TabHeight - tabs
+        // overlap by 2px (Submenu.cs:181/155, Rect.CutTop(TabHeight-2)). The real visible frame top an
+        // etalon group screen (Research) opens at is TabRowY + TabHeight - 2 = 77, so GroupFrameTop was
+        // 2px too low. Fixed at the source so every client (Colony) inherits the truth, not the slip.
+        public const int GroupFrameTop = TabRowY + TabStripH - 2;
         // the same margin the top bar keeps: the frame's sides line up with the bar above it,
         // and one of the two moving is a thing you would only notice once it looked wrong
         public const int FrameMargin = EmpireUIOverlay.BarTop;

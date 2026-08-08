@@ -273,7 +273,8 @@ namespace Ship_Game
             // "0.0" at one decimal, so it must neither read "-0.0" nor wear pink (bench 305)
             float R1(float v) => Math.Abs(v) < 0.05f ? 0f : v;
             string F1(float v) => R1(v).ToString("0.0", CultureInfo.InvariantCulture);
-            string F2(float v) => (Math.Abs(v) < 0.005f ? 0f : v).ToString("0.00", CultureInfo.InvariantCulture);
+            // Ludoal fork (bench 353): Pop Growth reads in millions with one decimal (maintainer request)
+            string F2(float v) => (Math.Abs(v) < 0.05f ? 0f : v).ToString("0.0", CultureInfo.InvariantCulture);
             // give each number of an "a / b" string one decimal place (12 -> 12.0), leaving text as-is
             string OneDecimalEachSide(string s)
             {

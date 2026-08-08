@@ -86,7 +86,7 @@ namespace Ship_Game
                 // Ludoal fork (maintainer bench 339): population growth per turn, between Pop and the
                 // Food yield. icon_poppertile reads as "extra population"; tooltip spells it out.
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_poppertile"), Align = TableAlign.Number,
-                                     Sortable = true, Tip = "Population growth per turn", SepColor = MutedSep },
+                                     Sortable = true, Tip = "Population growth per turn (millions)", SepColor = MutedSep },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"), Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfFood), SepColor = MutedSep },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Align = TableAlign.Number,

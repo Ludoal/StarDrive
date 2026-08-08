@@ -68,6 +68,8 @@ namespace Ship_Game
         Submenu DesignTabs;   // Ludoal fork: the Design group's tab row, this screen being one tab
 
         float PlannedGrossMoney;
+        float PlannedColonistIncome; // bench 353: the budget breakdown for Stats+, sums to Gross
+        float PlannedBuildingIncome;
         float PlannedMaintenance;
         float PlannedNetIncome;
         float PlannedFertility;
@@ -151,9 +153,12 @@ namespace Ship_Game
             // (maintainer bench 301, the Colony screen's behavior)
             RectF blueprintsStatsRect = new(centreX, planAreaR.Bottom + Pad, centreW,
                                             botY - (planAreaR.Bottom + Pad));
+            // bench 353: STATS | STATS+ | DESCRIPTION. Stats+ (index 1) is the default view; hovering a
+            // building raises Description (2). A literal for Stats+, matching the Colony tab title.
             PlanStats = base.Add(new Submenu(blueprintsStatsRect,
-                new LocalizedText[] { GameText.Statistics2, GameText.Description }));
+                new LocalizedText[] { GameText.Statistics2, ColonyScreen.StatsPlusTabTitle, GameText.Description }));
             PlanStats.OnTabChange = i => StatsTabPlayerChoice = i; // manual clicks only
+            StatsTabPlayerChoice = 1; // default to Stats+
 
 
             // one 20px row per line, six lines, then the button row - the block's height
@@ -354,7 +359,11 @@ namespace Ship_Game
             // (verified in Submenu.cs) - so the auto-switch was writing StatsTabPlayerChoice=1 and the
             // tab stayed stuck on Description forever. Detach the handler around the automatic write;
             // only a real click on the tab strip (its own HandleInput path) records a player choice.
-            int wantTab = HoveredBuilding != null ? 1 : StatsTabPlayerChoice;
+            // bench 353: three tabs now - 0 STATS, 1 STATS+, 2 DESCRIPTION. Hovering a building raises
+            // DESCRIPTION (2) on its own; the cursor leaving falls back to the player's own choice
+            // (default STATS+). Detach OnTabChange around the automatic write so the auto-switch never
+            // records itself as a player choice (setting SelectedIndex fires OnTabChange, Submenu.cs).
+            int wantTab = HoveredBuilding != null ? 2 : StatsTabPlayerChoice;
             if (PlanStats.SelectedIndex != wantTab)
             {
                 var savedHandler = PlanStats.OnTabChange;
@@ -363,8 +372,10 @@ namespace Ship_Game
                 PlanStats.OnTabChange = savedHandler;
             }
             base.Draw(batch, elapsed);
-            if (PlanStats.SelectedIndex == 1)
+            if (PlanStats.SelectedIndex == 2)
                 DrawHoveredBuildListBuildingInfo(batch);
+            else if (PlanStats.SelectedIndex == 1)
+                DrawStatsPlus(batch);
             else
                 DrawPlanStatistics(batch);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
@@ -386,12 +397,19 @@ namespace Ship_Game
             Color color = Color.Wheat;
             batch.DrawString(Font20, b.TranslatedName, bCursor, color);
             bCursor.Y += Font20.LineSpacing + 5;
-            string selectionText = TextFont.ParseText(b.DescriptionText.Text, PlanStats.Width - 40);
-            batch.DrawString(TextFont, selectionText, bCursor, Color.White);
-            bCursor.Y += TextFont.MeasureString(selectionText).Y + Font20.LineSpacing;
-            ColonyScreen.DrawBuildingStaticInfo(ref bCursor, batch, TextFont, Player, PlannedFertility, 
+            // bench 353 (maintainer): the Outpost is the one building whose stat blocks overflow this
+            // panel (it carries repair/sensor/storage/defense/infra all at once). Skip its description
+            // here to make room - the stats are what matter on a plan. Colony keeps the description
+            // (separate draw path); this only trims Blueprints' hover panel.
+            if (!b.IsOutpost)
+            {
+                string selectionText = TextFont.ParseText(b.DescriptionText.Text, PlanStats.Width - 40);
+                batch.DrawString(TextFont, selectionText, bCursor, Color.White);
+                bCursor.Y += TextFont.MeasureString(selectionText).Y + Font20.LineSpacing;
+            }
+            ColonyScreen.DrawBuildingStaticInfo(ref bCursor, batch, TextFont, Player, PlannedFertility,
                 InitRichness, Player.data.Traits.PreferredEnv, b);
-            ColonyScreen.DrawBuildingInfo(ref bCursor, batch, TextFont, b.ActualShipRepair(PlanetLevel), 
+            ColonyScreen.DrawBuildingInfo(ref bCursor, batch, TextFont, b.ActualShipRepair(PlanetLevel),
                 "NewUI/icon_queue_rushconstruction", GameText.ShipRepair);
             ColonyScreen.DrawBuildingWeaponStats(ref bCursor, batch, TextFont, b, PlanetLevel);
         }
@@ -427,6 +445,50 @@ namespace Ship_Game
                 "NewUI/icon_storage_production", GameText.ShipRepair);
         }
 
+        // bench 353 (maintainer): Stats+ on a PLAN. Same layout as the Colony Stats+ tab (shared
+        // StatsPlusLayout, tuned to the mm for 1440px), but every figure is a SIMULATED Planned* value,
+        // not a live colony's. Its point over the flat STATS tab is the BUDGET BREAKDOWN: where the net
+        // comes from. ColonistIncome + BuildingIncome == PlannedGrossMoney by construction (RecalcPlan),
+        // so the lines sum to the displayed net exactly. Saturation / starvation / defense are omitted -
+        // a plan has no live population to have them.
+        void DrawStatsPlus(SpriteBatch batch)
+        {
+            Vector2 bCursor = new Vector2(PlanStats.X + 15, PlanStats.Y + 35);
+            float blockW = (PlanStats.Width - 40) * 0.5f;
+            SPCols cols = StatsPlusLayout.SPSetColumns(TextFont, blockW);
+            var left = bCursor;
+
+            // ── BUDGET (BC / turn) — the two sources, then upkeep, summing to Net exactly ──
+            StatsPlusLayout.SPHeader(ref left, batch, "BUDGET (BC / turn)");
+            if (PlannedColonistIncome.NotZero())
+                StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Colonist income",
+                    StatsPlusLayout.SPSigned(PlannedColonistIncome), StatsPlusLayout.SPTone(PlannedColonistIncome));
+            if (PlannedBuildingIncome.NotZero())
+                StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Building income",
+                    StatsPlusLayout.SPSigned(PlannedBuildingIncome), StatsPlusLayout.SPTone(PlannedBuildingIncome));
+            StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, Localizer.Token(GameText.GrossIncome),
+                StatsPlusLayout.SPSigned(PlannedGrossMoney), StatsPlusLayout.SPTone(PlannedGrossMoney));
+            if (PlannedMaintenance.NotZero())
+                StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Building upkeep",
+                    StatsPlusLayout.SPSigned(-PlannedMaintenance), StatsPlusLayout.SPTone(-PlannedMaintenance));
+            StatsPlusLayout.SPLine(ref left, batch, TextFont, cols,
+                Localizer.Token(PlannedNetIncome >= 0 ? GameText.NetIncome : GameText.NetLosses),
+                StatsPlusLayout.SPSigned(PlannedNetIncome), PlannedNetIncome >= 0 ? Color.Green : Color.Red);
+            StatsPlusLayout.SPGap(ref left, TextFont);
+
+            // ── YIELDS (per turn) — the plan's flat + per-colonist figures, on the right block ──
+            float usable = PlanStats.Width - 40;
+            var right = new Vector2(bCursor.X + usable + 10 - (cols.YieldColTotal + TextFont.TextWidth(".00") + 2), bCursor.Y);
+            StatsPlusLayout.SPHeader(ref right, batch, "YIELDS (per turn)");
+            StatsPlusLayout.SPYieldHeader(ref right, batch, TextFont, cols);
+            StatsPlusLayout.SPYield(ref right, batch, TextFont, cols, Localizer.Token(GameText.Food),
+                PlannedFoodPerCol * PlannedPopulation, PlannedFlatFood, PlannedFoodPerCol * PlannedPopulation + PlannedFlatFood, 0f);
+            StatsPlusLayout.SPYield(ref right, batch, TextFont, cols, Localizer.Token(GameText.Production),
+                PlannedProdPerCol * PlannedPopulation, PlannedFlatProd, PlannedProdPerCol * PlannedPopulation + PlannedFlatProd, 0f);
+            StatsPlusLayout.SPYield(ref right, batch, TextFont, cols, Localizer.Token(GameText.Research),
+                PlannedResearchPerCol * PlannedPopulation, PlannedFlatResearch, PlannedResearchPerCol * PlannedPopulation + PlannedFlatResearch, 0f);
+        }
+
 
         void RecalculateGeneralStats()
         {
@@ -440,6 +502,11 @@ namespace Ship_Game
             PlannedFertility   = InitFertility;
             PlannedPopulation  = InitPopulationBillion + plannedBuildings.Sum(b => b.MaxPopIncrease)*0.001f;
             PlannedGrossMoney  = PlannedPopulation;
+            // bench 353: split the two income sources so Stats+ can show the budget breakdown. The
+            // colonist base is PlannedPopulation; buildings add Income + CreditsPerColonist*Pop below.
+            // Both get the same *tax*taxRateMultiplier at the end, so their sum stays exactly Gross.
+            PlannedColonistIncome = PlannedPopulation;
+            PlannedBuildingIncome = 0;
             PlannedFlatFood        = 0;
             PlannedFoodPerCol      = 0;
             PlannedFlatProd        = 0;
@@ -457,6 +524,7 @@ namespace Ship_Game
             foreach (Building b in plannedBuildings)
             {
                 PlannedGrossMoney += b.Income + b.CreditsPerColonist*PlannedPopulation;
+                PlannedBuildingIncome += b.Income + b.CreditsPerColonist*PlannedPopulation;
                 taxRateMultiplier += b.PlusTaxPercentage;
                 PlannedMaintenance += b.Maintenance;
                 PlannedFertility += b.MaxFertilityOnBuildFor(Player, Player.data.PreferredEnvPlanet);
@@ -476,6 +544,9 @@ namespace Ship_Game
             }
 
             PlannedGrossMoney  = PlannedGrossMoney * tax * taxRateMultiplier;
+            // same factor on each source: ColonistIncome + BuildingIncome == PlannedGrossMoney (bench 353)
+            PlannedColonistIncome = PlannedColonistIncome * tax * taxRateMultiplier;
+            PlannedBuildingIncome = PlannedBuildingIncome * tax * taxRateMultiplier;
             PlannedMaintenance *= Player.data.Traits.MaintMultiplier;
             PlannedNetIncome = PlannedGrossMoney - PlannedMaintenance;
             PlannedShields *= 1 + Player.data.ShieldPowerMod;
