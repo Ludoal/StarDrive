@@ -296,8 +296,11 @@ namespace Ship_Game
             // jump between integer and decimal widths (a first step toward aligning on the slash).
             popString = OneDecimalEachSide(popString);
             DrawStatValue(batch, PopRect, popString, Color.White);
-            // Ludoal fork (bench 339): population growth per turn, in billions, between Pop and Food
-            DrawStatValue(batch, GrowthRect, F2(P.EstimatedPopGrowthPerTurn / 1000f),
+            // Ludoal fork (bench 354): population growth per turn in MILLIONS, one decimal. The raw
+            // EstimatedPopGrowthPerTurn is already in millions (Population is millions, /1000 = billions
+            // per MaxPopulationBillion) - the old /1000f put it in billions, which at one decimal read
+            // 0.0 on every colony. Show the raw value; tooltip says "(millions)".
+            DrawStatValue(batch, GrowthRect, F2(P.EstimatedPopGrowthPerTurn),
                           P.EstimatedPopGrowthPerTurn > 0.5f ? Color.LightGreen : Color.Gray);
             DrawStatValue(batch, FoodRect, F1(P.Food.NetIncome), R1(P.Food.NetIncome) >= 0f ? Color.White : Color.LightPink);
             DrawStatValue(batch, ProdRect, F1(P.Prod.NetIncome), R1(P.Prod.NetIncome) >= 0f ? Color.White : Color.LightPink);

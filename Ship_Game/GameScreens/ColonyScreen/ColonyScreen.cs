@@ -145,15 +145,19 @@ namespace Ship_Game
             //           are drop shadow, which falls past the screen edge by design
             //   top:    one tab strip LOWER than TabRowY, so this frame matches the group
             //           screens' frames and does not peek out behind them in the stack.
-            // bench 351: Colony derives from GroupFrame but starts one tab-strip LOWER. GroupFrame's Y
-            // is TabRowY because a group frame INCLUDES its own tab row inside the rect; Colony has no
-            // tab row (planet name rides the title bar), so starting at TabRowY made it occupy the tab
-            // strip's band - which read as eating the EMPIRE bar. Start at GroupFrameTop (below the tab
-            // strip) instead, and take X / width / bottom edge straight from GroupFrame so the two can
-            // never diverge (the ~10px width surplus was the old PopupFrame border ink, now gone).
-            Rectangle g = GameScreens.ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight);
-            int colTop = GameScreens.ScreenGroups.GroupFrameTop;
-            ColonyFrame = new Rectangle(g.X, colTop, g.Width, g.Bottom - colTop);
+            // bench 354 (maintainer): restore the bench-347 vertical, which WAS well aligned. My later
+            // "align on GroupFrame" passes (351/352) changed the Y as a side effect of the left-align
+            // rework - but decentring should only touch X. This is the 347 rect verbatim: left-anchored
+            // at FrameMargin (less the border ink so the visible rule lands on the margin), top one tab
+            // strip below TabRowY, height capped at the 1080p footprint. Y and height are the values
+            // that read correctly at the bench; only the left-anchor X is the intended change.
+            const int m = GameScreens.ScreenGroups.FrameMargin;
+            int frameTop = GameScreens.ScreenGroups.TabRowY + Submenu.TabHeight - 2;
+            int layoutW = Math.Min(ScreenWidth, GameScreens.ScreenGroups.MaxFrameWidth);
+            int layoutH = Math.Min(ScreenHeight, 1080);
+            ColonyFrame = new Rectangle(m - PopupFrame.BorderLeft, frameTop,
+                                        layoutW - 2 * m + PopupFrame.BorderLeft + PopupFrame.BorderRight,
+                                        layoutH - frameTop - m + PopupFrame.BottomLine);
             // ⚠ NOT Add()ed: a child is drawn by base.Draw, which lands AFTER everything this
             // screen paints by hand - the frame's body would bury the panels. Painted first
             // thing in Draw instead (see ColonyScreen_Draw).

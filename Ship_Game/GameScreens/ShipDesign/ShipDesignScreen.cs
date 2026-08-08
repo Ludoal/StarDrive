@@ -736,7 +736,12 @@ namespace Ship_Game
             DesignedShip.Velocity = new Vector2(0, 100);
             DesignedShip.UpdateThrusters(simTime);
 
-            ScreenManager.StartMusic("ShipyardTheme");
+            // bench 354 (Lek's diagnosis): do NOT StartMusic here. This runs EVERY FRAME, and once the
+            // mixer force-stops the track (cue limit) or PlayMusic returns DoNotPlay, StartMusic's guard
+            // (CurrentMusic != name || Music.IsStopped) is true every frame - it re-fires forever,
+            // stacking fade-out instances until the mixer saturates: music dies, only crackle left.
+            // LoadContent already starts the theme once; that is enough. (Fleets never did this - which
+            // is why Fleets was fine and the Shipyard leaked.)
 
             base.Update(fixedDeltaTime);
         }

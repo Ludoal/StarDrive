@@ -110,7 +110,7 @@ namespace Ship_Game
                 stats[0].Add(p.FertilityFor(Universe.Player).ToString("0.0", CultureInfo.InvariantCulture));
                 stats[1].Add(p.MineralRichness.ToString("0.0", CultureInfo.InvariantCulture));
                 stats[2].Add(PopCombined(p));
-                stats[3].Add((p.EstimatedPopGrowthPerTurn / 1000f).ToString("0.00", CultureInfo.InvariantCulture)); // per-turn, billions
+                stats[3].Add(p.EstimatedPopGrowthPerTurn.ToString("0.0", CultureInfo.InvariantCulture)); // bench 354: millions/turn, one decimal, like Colony's Stats+ "Net growth (M/turn)"
                 stats[4].Add(p.Food.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
                 stats[5].Add(p.Prod.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
                 stats[6].Add(p.Money.NetRevenue.ToString("0.0", CultureInfo.InvariantCulture));

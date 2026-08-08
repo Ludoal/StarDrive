@@ -70,6 +70,8 @@ namespace Ship_Game
         float PlannedGrossMoney;
         float PlannedColonistIncome; // bench 353: the budget breakdown for Stats+, sums to Gross
         float PlannedBuildingIncome;
+        float PlannedFoodEatenPerCol; // bench 354: consumption exposed for the Stats+ yields 'eaten' column
+        float PlannedProdEatenPerCol;
         float PlannedMaintenance;
         float PlannedNetIncome;
         float PlannedFertility;
@@ -397,11 +399,15 @@ namespace Ship_Game
             Color color = Color.Wheat;
             batch.DrawString(Font20, b.TranslatedName, bCursor, color);
             bCursor.Y += Font20.LineSpacing + 5;
-            // bench 353 (maintainer): the Outpost is the one building whose stat blocks overflow this
-            // panel (it carries repair/sensor/storage/defense/infra all at once). Skip its description
-            // here to make room - the stats are what matter on a plan. Colony keeps the description
-            // (separate draw path); this only trims Blueprints' hover panel.
-            if (!b.IsOutpost)
+            // bench 354 (maintainer): the Outpost is the one building whose stat blocks overflow this
+            // panel (repair/sensor/storage/defense/infra all at once). Replace its description with a
+            // single blank line - keep the air between the name and the stats, drop the text that
+            // pushed the blocks off the bottom. Colony keeps the full description (separate draw path).
+            if (b.IsOutpost)
+            {
+                bCursor.Y += Font20.LineSpacing;
+            }
+            else
             {
                 string selectionText = TextFont.ParseText(b.DescriptionText.Text, PlanStats.Width - 40);
                 batch.DrawString(TextFont, selectionText, bCursor, Color.White);
@@ -479,14 +485,21 @@ namespace Ship_Game
             // ── YIELDS (per turn) — the plan's flat + per-colonist figures, on the right block ──
             float usable = PlanStats.Width - 40;
             var right = new Vector2(bCursor.X + usable + 10 - (cols.YieldColTotal + TextFont.TextWidth(".00") + 2), bCursor.Y);
+            // pop = gross per-colonist × pop (net + eaten re-added), flat, eaten = consumption × pop,
+            // total = pop + flat - eaten = the net. Sums exactly, like Colony's yields grid (bench 354).
             StatsPlusLayout.SPHeader(ref right, batch, "YIELDS (per turn)");
             StatsPlusLayout.SPYieldHeader(ref right, batch, TextFont, cols);
+            float foodEaten = PlannedFoodEatenPerCol * PlannedPopulation;
+            float prodEaten = PlannedProdEatenPerCol * PlannedPopulation;
             StatsPlusLayout.SPYield(ref right, batch, TextFont, cols, Localizer.Token(GameText.Food),
-                PlannedFoodPerCol * PlannedPopulation, PlannedFlatFood, PlannedFoodPerCol * PlannedPopulation + PlannedFlatFood, 0f);
+                (PlannedFoodPerCol + PlannedFoodEatenPerCol) * PlannedPopulation, PlannedFlatFood,
+                PlannedFoodPerCol * PlannedPopulation + PlannedFlatFood, foodEaten);
             StatsPlusLayout.SPYield(ref right, batch, TextFont, cols, Localizer.Token(GameText.Production),
-                PlannedProdPerCol * PlannedPopulation, PlannedFlatProd, PlannedProdPerCol * PlannedPopulation + PlannedFlatProd, 0f);
+                (PlannedProdPerCol + PlannedProdEatenPerCol) * PlannedPopulation, PlannedFlatProd,
+                PlannedProdPerCol * PlannedPopulation + PlannedFlatProd, prodEaten);
             StatsPlusLayout.SPYield(ref right, batch, TextFont, cols, Localizer.Token(GameText.Research),
-                PlannedResearchPerCol * PlannedPopulation, PlannedFlatResearch, PlannedResearchPerCol * PlannedPopulation + PlannedFlatResearch, 0f);
+                PlannedResearchPerCol * PlannedPopulation, PlannedFlatResearch,
+                PlannedResearchPerCol * PlannedPopulation + PlannedFlatResearch, 0f);
         }
 
 
@@ -554,12 +567,14 @@ namespace Ship_Game
             PlanetLevel = Planet.GetLevel(PlannedPopulation);
 
             float foodConsumptionPerColonist = Player.NonCybernetic ? 1 + Player.data.Traits.ConsumptionModifier : 0;
+            PlannedFoodEatenPerCol = foodConsumptionPerColonist; // bench 354: kept before it folds into the net
             PlannedFoodPerCol = ColonyResource.FoodYieldFormula(PlannedFertility, PlannedFoodPerCol) - foodConsumptionPerColonist;
             float productionTax = Player.IsCybernetic ? tax * 0.5f : tax;
 
             float ProdConsumptionPerColonist = Player.IsCybernetic ? 1 + Player.data.Traits.ConsumptionModifier : 0;
+            PlannedProdEatenPerCol = ProdConsumptionPerColonist; // bench 354
             PlannedFlatProd *= (1 - productionTax);
-            PlannedProdPerCol = ColonyResource.ProdYieldFormula(InitRichness, PlannedProdPerCol, Player) 
+            PlannedProdPerCol = ColonyResource.ProdYieldFormula(InitRichness, PlannedProdPerCol, Player)
                 * (1 - productionTax) - ProdConsumptionPerColonist;
 
             float researchMultiplier = 1 + Player.data.Traits.ResearchMod;
