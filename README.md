@@ -6,7 +6,7 @@
 
 Quality-of-life patches on top of the official **Jupiter 1.60.00047** release, made by a new player still learning the game, with an AI assistant doing the heavy lifting on code archaeology. **No gameplay changes**: UI fixes and comfort only. The point of publishing is simple: the BlackBox team is welcome to take whatever they find worth keeping, and patches 46 and 47 already integrated a number of them. Thanks!
 
-- **Install**: grab the latest `BlackBox_Jupiter_Patch_*.exe` from [Releases](https://github.com/Ludoal/StarDrive/releases) and run it over an official Jupiter 1.60.00047 install, game closed. Cumulative, saves unaffected. **Not compatible with legacy espionage saves.**
+- **Install**: grab the latest `BlackBox_Jupiter_Patch_*.exe` from [Releases](https://github.com/Ludoal/StarDrive/releases) and run it over an official Jupiter 1.60.00047 install, game closed. Cumulative, saves unaffected. **Legacy espionage saves are unusable** (they load, but espionage reads INF everywhere).
 - **Revert**: the patch only touches files the official patch also ships, so re-applying the official 47 patch is a complete revert. No kit needed.
 - **Versioning**: public releases are lettered (`47-a`, `47-b`, ...); the embedded build version stays numeric (`1.60.00047.N`), so the in-game updater will still offer the next official patch (48+) normally.
 - **Branch**: [`qol-47`](https://github.com/Ludoal/StarDrive/tree/qol-47), the official 47 tag plus these changes. Not based on upstream `main`/`develop`, so it stays save-compatible with the official 47.
