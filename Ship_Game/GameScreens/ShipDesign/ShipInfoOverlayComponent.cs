@@ -3,9 +3,11 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using Ship_Game.Ships;
+using Ship_Game.Gameplay; // HullSlot
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Universe;
+using Ship_Game.UI;   // NineSliceSprite - the submenu frame, worn tabless
 #pragma warning disable CA1001
 
 namespace Ship_Game.GameScreens.ShipDesign
@@ -14,27 +16,30 @@ namespace Ship_Game.GameScreens.ShipDesign
     {
         readonly GameScreen Screen;
         readonly UniverseState Universe;
-        readonly bool LowRes;
         Empire Player => Universe.Player;
 
         IShipDesign SelectedDesign;
+        readonly NineSliceSprite Frame = new();
         DesignShip TempShip;
         ShipDesignStats Ds => TempShip.DesignStats;
         Graphics.Font TitleFont;
         Graphics.Font Font;
         int TextWidth;
+        // every label the verbose list can wear - the value column is measured over them
+        static readonly string[] VerboseLabels = { "WIP", "Offense", "Weapons", "Hangars",
+                                                   "Bomb Bays", "Max Range", "Repair", "EMP Prot",
+                                                   "FTL Speed", "Sub Speed", "Turn", "Troops", "Cargo" };
 
         public ShipInfoOverlayComponent(GameScreen screen, UniverseState us)
         {
             Visible = false;
             Screen = screen;
             Universe = us;
-            LowRes = screen.LowRes;
         }
 
         float GetSize()
         {
-            float minimumSize = LowRes ? 272 : 340;
+            float minimumSize = 340;
             return Math.Max(minimumSize, (Screen.Width * 0.16f).RoundTo10());
         }
 
@@ -88,8 +93,8 @@ namespace Ship_Game.GameScreens.ShipDesign
             if (Pos.Y < 0) Pos.Y = 0;
             if (Bottom > Screen.Height) Pos.Y -= (Bottom - Screen.Height);
 
-            TitleFont = LowRes ? Fonts.Arial12Bold : Fonts.Arial14Bold;
-            Font      = LowRes ? Fonts.Arial8Bold : Fonts.Arial11Bold;
+            TitleFont = Fonts.Arial14Bold;
+            Font      = Fonts.Arial11Bold;
         }
 
         public override bool HandleInput(InputState input)
@@ -103,9 +108,61 @@ namespace Ship_Game.GameScreens.ShipDesign
             if (!Visible || s == null)
                 return;
 
-            int size = (int)(Height - 56);
-            var shipOverlay = new Rectangle((int)Right - size - 24, (int)Y + 28, size, size);
-            new Menu2(Rect).Draw(batch, elapsed); // background with menu2 borders
+            // The housing is sized on the HULL's grid, not a blind square (maintainer bench
+            // 300): a wide hull letterboxed in a square left a void under and beside it. The
+            // module size obeys RenderOverlay's own arithmetic - width / (maxSpan+1), capped
+            // 24 - so handing it a rect of ms*(maxSpan+1) reproduces the ms we measured; the
+            // grid centres in that rect, so the rect is placed off the SHIP's edges: right
+            // edge 10px off the frame, vertically centred on the panel.
+            int gw = Math.Max(1, s.Grid.Width), gh = Math.Max(1, s.Grid.Height);
+            int maxSpan = Math.Max(gw, gh);
+            float availW = Width - TextWidth - 20;
+            float availH = Height - 20;
+            float ms = Math.Min(Math.Min(availW, availH) / (maxSpan + 1f), 24f);
+            int size = (int)(ms * (maxSpan + 1));
+            // ⚠ the GRID can carry empty rows and columns around the hull, and by how much
+            // varies per model (maintainer bench 304: the picture sat off-centre on some) -
+            // so the anchor is the HULL's own bounds, read from the slots exactly as
+            // RenderOverlay draws them, never the grid's
+            int minX = int.MaxValue, minY = int.MaxValue, maxX = 0, maxY = 0;
+            var hullSlots = s.ShipData?.BaseHull?.HullSlots;
+            if (hullSlots != null && hullSlots.Length > 0)
+            {
+                foreach (HullSlot hs in hullSlots)
+                {
+                    if (hs.Pos.X < minX) minX = hs.Pos.X;
+                    if (hs.Pos.Y < minY) minY = hs.Pos.Y;
+                    if (hs.Pos.X > maxX) maxX = hs.Pos.X;
+                    if (hs.Pos.Y > maxY) maxY = hs.Pos.Y;
+                }
+            }
+            else
+            {
+                minX = 0; minY = 0; maxX = gw - 1; maxY = gh - 1;
+            }
+            // RenderOverlay centres the GRID in the rect it is handed; the rect is placed so
+            // the HULL sits CENTRED in the image band, both axes (maintainer bench 325:
+            // right-edge anchoring filled the window with wide hulls but glued the narrow
+            // ones to the right - a narrow tower now sits mid-band like a wide platform)
+            float hullCx    = (minX + (maxX - minX + 1) / 2f - gw / 2f) * ms;
+            float hullCy    = (minY + (maxY - minY + 1) / 2f - gh / 2f) * ms;
+            float bandCentre = X + TextWidth + 10 + availW / 2f;
+            var shipOverlay = new Rectangle((int)(bandCentre - size / 2f - hullCx),
+                                            (int)(CenterY - size / 2f - hullCy), size, size);
+            // Ludoal fork: the submenu frame without its tab (maintainer: "cadre style slider")
+            // instead of a per-frame Menu2, which now draws the full popup window - far too much
+            // furniture for a hover overlay. Same nine-slice the sliders on the Fleets page wear.
+            // Ludoal fork (maintainer feedback): a touch more opaque so the map does not read through
+            batch.FillRectangle(Rect, new Color(8, 10, 14).Alpha(0.98f));
+            Frame.Update(new RectF(Rect),
+                         ResourceManager.Texture("NewUI/submenu_corner_TL"),
+                         ResourceManager.Texture("NewUI/submenu_corner_TR"),
+                         ResourceManager.Texture("NewUI/submenu_corner_BL"),
+                         ResourceManager.Texture("NewUI/submenu_corner_BR"),
+                         ResourceManager.Texture("NewUI/submenu_horiz_vert"),
+                         ResourceManager.Texture("NewUI/submenu_horiz_vert"),
+                         borderWidth: 2);
+            Frame.DrawBorders(batch);
 
             s.RenderOverlay(batch, shipOverlay, showModules:true, drawHullBackground:true, moduleHealthColor:false, markLockedModules: true);
             float mass          = s.Stats.GetMass(Player);
@@ -113,13 +170,22 @@ namespace Ship_Game.GameScreens.ShipDesign
             float subLightSpeed = s.Stats.GetSTLSpeed(mass, Player);
             float turnRateDeg   = s.Stats.GetTurnRadsPerSec(s.Level).ToDegrees();
 
+            // the value column starts past the LONGEST label, measured - the old
+            // 0.36-of-text-width room was sized for the short dialect, and the new labels
+            // ran straight into their values (maintainer bench 323). Declared before the
+            // first DrawText call: the local functions capture it (CS0165 otherwise).
+            float labelRoom = 0f;
+            foreach (string l in VerboseLabels)
+                labelRoom = Math.Max(labelRoom, Font.TextWidth(l));
+            labelRoom += 24f; // the column rides right of the longest label by a clear lane
+
             var p = new Vector2(X + 25, Y + 22);
             DrawText(TitleFont, s.Name, "", Color.White);
             DrawText(Font, $"{s.ShipData.ShipCategory}, {s.ShipData.DefaultCombatState}", "", Color.Gray);
 
             Vector2 start = p;
             // --- Core values with icons --- //
-            float charWidth = LowRes ? 8 : 10;
+            float charWidth = 10;
 
             // left side
             CoreValue(charWidth*3.5f, "UI/icon_offense", "DPS", Str(s.TotalDps), Color.OrangeRed);
@@ -146,28 +212,44 @@ namespace Ship_Game.GameScreens.ShipDesign
 
             ////////////////////////////////////
 
-            // verbose stats
-            p = new(start.X, start.Y + 60);
+            // verbose stats - the compact panel's block order (maintainer bench 322):
+            // combat, defence, mobility, payload, with air between the categories. The
+            // air is paid only when a later line draws, so an empty block folds with it.
+            // air under the iconed core block, then the verbose list (maintainer bench 323)
+            p = new(start.X, start.Y + 60 + Font.LineSpacing * 0.5f);
+            bool lineDrawn = false, airPending = false;
+            void Air() => airPending = true;
+            void PayAir()
+            {
+                if (airPending && lineDrawn)
+                    p.Y += Font.LineSpacing * 0.5f;
+                airPending = false;
+                lineDrawn = true;
+            }
 
             if (Ds.CompletionPercent != 100)
             {
-                DrawText(Font, "WIP:", $"{Ds.CompletionPercent}%", Color.Yellow);
+                PayAir();
+                DrawText(Font, "WIP", $"{Ds.CompletionPercent}%", Color.Yellow, titleColor: Color.Gray);
             }
 
-            DrawValue("Weapons:", s.Weapons.Count, Color.LightBlue);
-            if (s.WeaponsMaxRange > 0)
-            {
-                DrawText(Font, "W.Range:", $"{Str(s.WeaponsAvgRange)}..{Str(s.WeaponsMaxRange)}", Color.LightBlue);
-            }
-            DrawValue("Warp:", warpSpeed, Color.LightGreen);
-            DrawValue("Speed:", subLightSpeed, Color.LightGreen);
-            DrawValue("TurnRate:", turnRateDeg, Color.LightGreen);
-            DrawValue("Repair:", s.RepairRate, Color.Goldenrod);
-            DrawValue("EMP Def:", s.EmpTolerance, Color.Goldenrod);
-            DrawValue("Hangars:", s.Carrier.AllFighterHangars.Length, Color.IndianRed);
-            DrawValue("Troops:", s.TroopCapacity, Color.IndianRed);
-            DrawValue("BombBays:", s.BombBays.Count, Color.IndianRed);
-            DrawValue("Cargo:", s.CargoSpaceMax, Color.Khaki);
+            // the compact's own labels, abbreviated for the micro (maintainer benches
+            // 322-323): grey labels, no colon, values in the charte's neutral white
+            DrawValue("Offense", Ds.Strength);
+            DrawValue("Weapons", s.Weapons.Count);
+            DrawValue("Hangars", s.Carrier.AllFighterHangars.Length);
+            DrawValue("Bomb Bays", s.BombBays.Count);
+            DrawValue("Max Range", s.WeaponsMaxRange);
+            Air();
+            DrawValue("Repair", s.RepairRate);
+            DrawValue("EMP Prot", s.EmpTolerance);
+            Air();
+            DrawValue("FTL Speed", warpSpeed);
+            DrawValue("Sub Speed", subLightSpeed);
+            DrawValue("Turn", turnRateDeg);
+            Air();
+            DrawValue("Troops", s.TroopCapacity);
+            DrawValue("Cargo", s.CargoSpaceMax);
 
             void CoreValue(float ident, string icon, string title, string value, Color color)
             {
@@ -177,21 +259,22 @@ namespace Ship_Game.GameScreens.ShipDesign
                 p.Y += 20;
             }
 
-            void DrawText(Graphics.Font font, string title, string text, Color color)
+            void DrawText(Graphics.Font font, string title, string text, Color color, Color? titleColor = null)
             {
-                var ident = new Vector2(p.X + (TextWidth*0.36f).RoundTo10(), p.Y);
-                batch.DrawString(font, title, p, color);
+                var ident = new Vector2(p.X + labelRoom, p.Y);
+                batch.DrawString(font, title, p, titleColor ?? color);
                 batch.DrawString(font, text, ident, color);
                 p.Y += font.LineSpacing + 2;
             }
 
-            void DrawValue(string title, float value, Color color)
+            void DrawValue(string title, float value)
             {
                 if (value <= 0f)
                     return;
-                var ident = new Vector2(p.X + (TextWidth*0.36f).RoundTo10(), p.Y);
-                batch.DrawString(Font, title, p, color);
-                batch.DrawString(Font, Str(value), ident, color);
+                PayAir(); // a pending block break is paid by the first line that draws
+                var ident = new Vector2(p.X + labelRoom, p.Y);
+                batch.DrawString(Font, title, p, Color.Gray);
+                batch.DrawString(Font, Str(value), ident, Color.White);
                 p.Y += Font.LineSpacing + 2;
             }
         }

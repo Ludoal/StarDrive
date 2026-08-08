@@ -112,7 +112,7 @@ namespace Ship_Game
         [StarData] public bool AutoExplore;
         [StarData] public bool AutoPickBestScout; // Ludoal fork (wishlist): Auto Pick Explorer
         [StarData] public bool AutoColonize;
-        [StarData] public bool AutoCoreGovernor; // Ludoal fork: new colonies start with a Core governor
+        [StarData] public bool AutoCoreGovernor; // Ludoal fork: Auto Governor - new colonies get a fitting governor (name kept for save compat)
         [StarData] public bool AutoResearch;
         [StarData] public bool AutoBuildResearchStations;
         [StarData] public bool AutoBuildMiningStations;
@@ -1380,7 +1380,7 @@ namespace Ship_Game
             UpdateNetPlanetIncomes();
             UpdateShipMaintenance();
             UpdatePlanetStorageStats();
-            EspionageCostLastTurn = LegacyEspionageEnabled ? 0 : GetEspionageCost();
+            EspionageCostLastTurn = GetEspionageCost();
             // AllSpending already includes EspionageCostLastTurn, so NetIncome
             // has it subtracted. Don't subtract again here.
             AddMoney(MoneyAfterLeech(NetIncome));
@@ -1388,7 +1388,7 @@ namespace Ship_Game
 
         float MoneyAfterLeech(float money)
         {
-            if (LegacyEspionageEnabled || money <= 0)
+            if (money <= 0)
                 return money;
 
             float remainingMoney = money;
@@ -1618,40 +1618,11 @@ namespace Ship_Game
             return relations.AtWar && relations.TurnsAtWar < 5; 
         }
 
-        public int GetSpyDefense()
-        {
-            if (NewEspionageEnabled)
-                throw new InvalidOperationException("Tried getting spy defense while legacy espionage is disabled." +
-                    " Check Empire_Espionage.cs for new espionage logic");
-
-            float defense = 0;
-            for (int i = 0; i < data.AgentList.Count; i++)
-            {
-                if (data.AgentList[i].Mission == AgentMission.Defending)
-                    defense += data.AgentList[i].Level;
-            }
-
-            defense *= ResourceManager.AgentMissionData.DefenseLevelBonus;
-            defense /= (OwnedPlanets.Count / 3).LowerBound(1);
-            defense += data.SpyModifier;
-            defense += data.DefensiveSpyBonus;
-
-            return (int)defense;
-        }
-
         public bool DetectPrepareForWarVsPlayer(Empire ai)
         {
             if (!isPlayer) // Only for the Player
                 return false;
 
-            if (LegacyEspionageEnabled)
-            {
-                int playerSpyDefense = GetSpyDefense();
-                int aiSpyDefense = ai.GetSpyDefense() + ai.DifficultyModifiers.WarSneakiness + ai.PersonalityModifiers.WarSneakiness;
-                int rollModifier = playerSpyDefense - aiSpyDefense; // higher modifier will make the roll smaller, which is better
-                return Random.RollDie(100 - rollModifier) <= playerSpyDefense;
-            }
-            else
             {
                 Espionage espionage = GetEspionage(ai);
                 float detectionChance = espionage.EffectiveLevel*20;
@@ -1867,12 +1838,6 @@ namespace Ship_Game
             }
             foreach (Planet planet in list1)
                 OwnedPlanets.Remove(planet);
-
-            if (LegacyEspionageEnabled)
-            {
-                for (int index = 0; index < data.AgentList.Count; ++index)
-                    data.AgentList[index].Update(this);
-            }
 
             if (Money < 0.0 && !IsFaction)
             {
@@ -2744,11 +2709,6 @@ namespace Ship_Game
                 if (mole.PlanetId == planetId)
                 {
                     RemoveMole(mole, planetOwner);
-                    if (LegacyEspionageEnabled)
-                    {
-                        Agent agent = data.AgentList.Find(a => a.TargetPlanetId == planetId);
-                        agent.AssignMission(AgentMission.Defending, this, "");
-                    }
                 }
             }
         }
@@ -2756,7 +2716,7 @@ namespace Ship_Game
         public void RemoveMole(Mole m, Empire victim)
         {
             data.MoleList.Remove(m);
-            if (NewEspionageEnabled && victim != null && !victim.IsFaction && victim != this)
+            if (victim != null && !victim.IsFaction && victim != this)
                 GetEspionage(victim).DecreasePlantedMoleCount();
         }
 

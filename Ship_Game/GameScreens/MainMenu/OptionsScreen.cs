@@ -294,25 +294,19 @@ namespace Ship_Game
             right.AddCheckbox(() => GlobalStats.FogOfWarMemory, title: "Fog Of War Memory",
                               tooltip: "Ships permanently paint their sensor coverage on the fog of war as they travel - the classic map memory. Off: the map stays dark and only live sensor coverage lights it.");
 
-            var apply = Add(new UIButton(ButtonStyle.Default, new Vector2(RightArea.Right - 206, RightArea.Bottom + 60), GameText.ApplySettings));
+            // bottom LEFT (maintainer bench 303) - it applies the display settings, which live
+            // in the left column, so it sits under them
+            var apply = Add(new UIButton(ButtonStyle.Default, new Vector2(LeftArea.X, RightArea.Bottom + 60), GameText.ApplySettings));
             apply.OnClick = button => RunOnNextFrame(ApplyOptions);
             // Ludoal fork: say what this button is actually for. It applies the DISPLAY settings
             // and nothing else - everything else on this screen takes effect the moment you
             // change it and is saved when you leave. A button called "Apply Settings" sitting
-            // among settings that apply themselves is a fair way to be misread (Ludo).
+            // among settings that apply themselves is a fair way to be misread (maintainer feedback).
             apply.Tooltip = "For the display settings only: resolution and screen mode.\n"
                           + "You get 10 seconds to confirm, or they revert.\n\n"
                           + "Everything else applies as you change it,\n"
                           + "and is saved when you leave this screen.";
 
-            // Ludoal fork: the rebuilt screens live behind their own page — they are a different
-            // kind of choice from the settings above (which interface, not which preference),
-            // and they are beta, so they get a door of their own rather than four more
-            // checkboxes in this list.
-            var rework = Add(new UIButton(ButtonStyle.Default,
-                             new Vector2(RightArea.Right - 412, RightArea.Bottom + 60), "Rework Options"));
-            rework.OnClick = button => ScreenManager.AddScreen(new ReworkOptionsScreen(this));
-            rework.Tooltip = "Opt in to the screens this fork has rebuilt (beta)";
 
             RefreshZOrder();
             PerformLayout();

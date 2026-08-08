@@ -14,6 +14,10 @@ namespace Ship_Game.Ships
 {
     public sealed class ShipInfoUIElement : UIElement
     {
+        // Ludoal fork: the ship cartouche wears the planet cartouche's standard frame
+        // (maintainer bench 319) - one plate for every cartouche. The orders strip above
+        // docks on the visible frame top, so it rides along automatically.
+        const int FrameShave = PlanetInfoUIElement.FrameShave;
         public ShipStanceButtons OrdersButtons;
         private readonly Array<TippedItem> ToolTipItems = new Array<TippedItem>();
         public Array<OrdersButton> Orders = new Array<OrdersButton>();
@@ -40,7 +44,6 @@ namespace Ship_Game.Ships
         readonly ProgressBar ConstructionBar;
         readonly ProgressBar MiningBar;
         UITextEntry ShipNameArea;
-        private readonly SlidingElement SlidingElement;
         private readonly Rectangle DefenseRect;
         private readonly Rectangle TroopRect;
         private readonly Rectangle FlagRect;  //fbedard
@@ -53,11 +56,9 @@ namespace Ship_Game.Ships
             Universe = universe;
             ScreenManager = sm;
             ElementRect = r;
-            FlagRect = new Rectangle(r.X + 365, r.Y + 71, 18, 18);
             Sel = new Selector(r, Color.Black);
             TransitionOnTime = TimeSpan.FromSeconds(0.25);
             TransitionOffTime = TimeSpan.FromSeconds(0.25);
-            SlidingElement = new SlidingElement(new Rectangle(r.X - 100, r.Y + r.Height - 140, 530, 130));
             Housing = r;
             LeftRect = new Rectangle(r.X, r.Y + 44, 180, r.Height - 44);
             RightRect = new Rectangle(LeftRect.X + LeftRect.Width, LeftRect.Y, 220, LeftRect.Height);
@@ -70,19 +71,24 @@ namespace Ship_Game.Ships
             };
             ShipNameArea.Color = tColor;
             
-            Power = new Rectangle(Housing.X + 187, Housing.Y + 110, 20, 20);
+            // bench 361 (maintainer): the whole Power/Shield/Ordnance/Stance block sits 3px lower,
+            // making room for the status strip that now rides 7px above the Power icon.
+            Power = new Rectangle(Housing.X + 197, Housing.Y + 118, 20, 20);
             PBar = new ProgressBar(Power.X + Power.Width + 15, Power.Y, 150, 18) { color = "green" };
             ToolTipItems.Add(new TippedItem(Power, GameText.IndicatesThisShipsCurrentPower));
+            // the faction flag's right edge rides the bars' end (maintainer bench 319); 24px now,
+            // grown left and down from that top-right anchor (maintainer bench 336)
+            FlagRect = new Rectangle(PBar.pBar.X + PBar.pBar.Width - 24, r.Y + 71, 24, 24);
 
-            Shields = new Rectangle(Housing.X + 187, Housing.Y + 110 + 20 + spacing, 20, 20);
+            Shields = new Rectangle(Housing.X + 197, Housing.Y + 118 + 20 + spacing, 20, 20);
             SBar = new ProgressBar(Shields.X + Shields.Width + 15, Shields.Y, 150, 18) { color = "blue" };
             ToolTipItems.Add(new TippedItem(Shields, GameText.IndicatesTheTotalPowerOf));
 
-            Ordnance = new Rectangle(Housing.X + 187, Housing.Y + 110 + 20 + spacing + 20 + spacing, 20, 20);
+            Ordnance = new Rectangle(Housing.X + 197, Housing.Y + 118 + 20 + spacing + 20 + spacing, 20, 20);
             OBar = new ProgressBar(Ordnance.X + Ordnance.Width + 15, Ordnance.Y, 150, 18);
             ToolTipItems.Add(new TippedItem(Ordnance, GameText.IndicatesThisShipsCurrentStores));
 
-            ConstructionRect = new Rectangle(Housing.X + 187, Housing.Y + 110 + 20 + spacing*3 + 40, 20, 20);
+            ConstructionRect = new Rectangle(Housing.X + 197, Housing.Y + 118 + 20 + spacing*3 + 40, 20, 20);
             ConstructionBar = new ProgressBar(ConstructionRect.X + ConstructionRect.Width + 15, ConstructionRect.Y, 150, 18) { color = "yellow" };
 
             MiningRect = ConstructionRect;
@@ -94,7 +100,7 @@ namespace Ship_Game.Ships
             TroopRect = new Rectangle(Housing.X + 13, Housing.Y + 137, 22, 22);
             ToolTipItems.Add(new TippedItem(TroopRect, GameText.IndicatesTheNumberOfTroops));
 
-            ShipInfoRect = new Rectangle(Housing.X + 60, Housing.Y + 110, 115, 115);
+            ShipInfoRect = new Rectangle(Housing.X + 70, Housing.Y + 110, 115, 115);
             Vector2 gridRect = new Vector2(Housing.X + 16, Universe.ScreenHeight - 45);
             GridButton = new ToggleButton(gridRect, ToggleButtonStyle.Grid, "SelectionBox/icon_grid")
             {
@@ -105,20 +111,17 @@ namespace Ship_Game.Ships
             FollowButton = new ToggleButton(new Vector2(Housing.X + 54, Universe.ScreenHeight - 45),
                                             ToggleButtonStyle.Formation, "UI/FollowIcon"); // 24x24 — field report 45.42: too big
 
-            float startX = OBar.pBar.X - 15;
+            // the stance block right-aligns with the bars above it (maintainer bench 319)
+            float startX = OBar.pBar.X + OBar.pBar.Width - StanceButtons.RowWidth;
             var ordersBarPos = new Vector2(startX, (Ordnance.Y + Ordnance.Height + spacing + 3));
 
             OrdersButtons = new ShipStanceButtons(universe, ordersBarPos);
         }
 
-        void DrawOrderButtons(SpriteBatch batch, float transitionOffset)
+        void DrawOrderButtons(SpriteBatch batch)
         {
             foreach (OrdersButton ob in Orders)
-            {
-                Rectangle r = ob.ClickRect;
-                r.X -= (int)(transitionOffset * 300f);
-                ob.Draw(batch, ScreenManager.input.CursorPosition, r);
-            }
+                ob.Draw(batch, ScreenManager.input.CursorPosition, ob.ClickRect);
         }
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
@@ -126,12 +129,27 @@ namespace Ship_Game.Ships
             if (Universe.SelectedShip == null || s?.ShipData == null)
                 return;  //fbedard
 
-            float transitionOffset = 0f.SmoothStep(1f, TransitionPosition);
-            int columns = Orders.Count / 2 + Orders.Count % 2;
-            SlidingElement.Draw(ScreenManager, (int)(columns * 55 * (1f - TransitionPosition)) + (SlidingElement.Open ? 20 - columns : 0));
+            // Ludoal fork: the orders ride a VISIBLE strip above the cartouche now - the 2013
+            // sliding drawer hid a variable set of actions behind a click, and an order you
+            // cannot see is an order you forget (maintainer decision, option B).
+            DrawOrderButtons(batch);
 
-            DrawOrderButtons(batch, transitionOffset);
-            batch.Draw(ResourceManager.Texture("SelectionBox/unitselmenu_main"), Housing, Color.White);
+            // the minimap's recipe instead of the sculpted unitselmenu texture: a near-opaque
+            // flat ground and a rounded grey rule, so the cartouche reads with the rest of the
+            // reworked interface
+            // ⚠ the frame starts 26 under the housing's top: the sculpted texture spent that
+            // band on antenna machinery, and with it gone the plate framed empty space
+            // (maintainer: "beaucoup de vide au-dessus"). The housing keeps its size - every
+            // inner anchor is an offset from it - only the visible frame shrinks.
+            Rectangle frame = Housing;
+            frame.Y += FrameShave; frame.Height -= FrameShave;
+            frame.Width -= PlanetInfoUIElement.RightTrim;
+            Rectangle plate = frame;
+            plate.Inflate(-2, -2);
+            batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
+            UITheme.DrawPlate(batch, frame, Color.Transparent,
+                              new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
+                              ruleWidthOverride: 3);
             if (s.Loyalty.CanBeScannedByPlayer)
                 GridButton.Draw(batch, elapsed);
             // Ludoal fork: follow toggle reflects the live chase state — hidden for
@@ -143,8 +161,9 @@ namespace Ship_Game.Ships
                 FollowButton.Draw(batch, elapsed);
             }
 
-            Vector2 namePos       = new(Housing.X + 30, Housing.Y + 63);
-            Vector2 shipSuperName = new(Housing.X + 30, Housing.Y + 79);
+            // the name block left-aligns on the status icon column (benches 319-320)
+            Vector2 namePos       = new(Housing.X + 13, Housing.Y + 71);
+            Vector2 shipSuperName = new(Housing.X + 13, Housing.Y + 87);
             ShipNameArea.SetPos(namePos);
             ShipNameArea.Draw(batch, elapsed);
 
@@ -155,7 +174,9 @@ namespace Ship_Game.Ships
 
             batch.DrawString(Fonts.Visitor10, longName, shipSuperName, Color.Orange);
 
-            var shipStatus = new Vector2(Sel.Rect.X + Sel.Rect.Width - 168, Housing.Y + 64).ToFloored();
+            // the order rides the name line, left-aligned on the bars' start (bench 319)
+            var shipStatus = new Vector2(PBar.pBar.X,
+                                         Housing.Y + 67 + (Fonts.Arial14Bold.LineSpacing - Fonts.TahomaBold9.LineSpacing) / 2).ToFloored(); // bench 362: 4px up (maintainer)
             string text = Fonts.TahomaBold9.ParseText(ShipListScreenItem.GetStatusText(s), 120);
             batch.DrawString(Fonts.TahomaBold9, text, shipStatus, tColor);
 
@@ -196,7 +217,11 @@ namespace Ship_Game.Ships
             //Added by McShooterz: kills display
             star       = new Rectangle(star.X, star.Y + 19, 22, 22);
             levelPos   = new Vector2(star.X + star.Width + 2, star.Y + 11 - Fonts.Arial12Bold.LineSpacing / 2);
-            StatusArea = new Vector2(Housing.X + 175, Housing.Y + 15);
+            // bench 361 (maintainer): the status strip rides 7px edge-to-edge ABOVE the Power icon
+            // (which dropped to Y+118 with its block), on the Power column - its old home at the
+            // frame top collided with the name/order line the moment a combat status lit up.
+            // Icons are 33x22 (the 48x32 art at 2/3), text in the small TahomaBold9.
+            StatusArea = new Vector2(Housing.X + 190, Housing.Y + 118 - 4 - 22); // bench 362: 4px gap (maintainer)
             batch.Draw(ResourceManager.Texture("UI/icon_kills_shipUI"), star, Color.White);
             batch.DrawString(Fonts.Arial12Bold, s.Kills.ToString(), levelPos, Color.White);
             int numStatus = 0;
@@ -220,7 +245,7 @@ namespace Ship_Game.Ships
 
         void DrawIconWithTooltip(SpriteBatch batch, SubTexture icon, Func<string> tooltip, Vector2 mousePos, Color color, int numStatus)
         {
-            var rect = new Rectangle((int)StatusArea.X + numStatus * 53, (int)StatusArea.Y, 48, 32);
+            var rect = new Rectangle((int)StatusArea.X + numStatus * 37, (int)StatusArea.Y, 33, 22);
             batch.Draw(icon, rect, color);
             if (rect.HitTest(mousePos)) ToolTip.CreateTooltip(tooltip());
         }
@@ -232,11 +257,11 @@ namespace Ship_Game.Ships
             if (!ship.Loyalty.HavePackMentality)
                 return;
 
-            var packRect = new Rectangle((int)StatusArea.X, (int)StatusArea.Y, 48, 32);
+            var packRect = new Rectangle((int)StatusArea.X, (int)StatusArea.Y, 33, 22);
             batch.Draw(iconPack, packRect, Color.White);
-            var textPos          = new Vector2(packRect.X + 26, packRect.Y + 15);
+            var textPos          = new Vector2(packRect.X + 20, packRect.Y + 7);
             float damageModifier = ship.PackDamageModifier * 100f;
-            batch.DrawString(Fonts.Arial12, damageModifier.ToString("0")+"%", textPos, Color.White);
+            batch.DrawString(Fonts.TahomaBold9, damageModifier.ToString("0")+"%", textPos, Color.White);
             if (packRect.HitTest(mousePos))
                 ToolTip.CreateTooltip(Localizer.Token(GameText.IndicatesThisShipsCurrentBonus));
 
@@ -271,9 +296,9 @@ namespace Ship_Game.Ships
             DrawIconWithTooltip(batch, iconDisabled, () => Localizer.Token(GameText.EmpOverloadShipIsDisabled), mousePos,
                 Color.White, numStatus);
 
-            var textPos    = new Vector2((int)StatusArea.X + 25 + numStatus * 53, (int)StatusArea.Y);
+            var textPos    = new Vector2((int)StatusArea.X + 20 + numStatus * 37, (int)StatusArea.Y + 7);
             float empState = ship.EMPDamage / ship.EmpTolerance;
-            batch.DrawString(Fonts.Arial12, empState.String(1), textPos, Color.White);
+            batch.DrawString(Fonts.TahomaBold9, empState.String(1), textPos, Color.White);
             numStatus++;
         }
 
@@ -286,13 +311,13 @@ namespace Ship_Game.Ships
             DrawIconWithTooltip(batch, iconStructure, () => Localizer.Token(GameText.StructuralIntegrityOfTheShip), mousePos,
                 Color.White, numStatus);
 
-            var textPos = new Vector2((int)StatusArea.X + 33 + numStatus * 53, (int)StatusArea.Y + 15);
+            var textPos = new Vector2((int)StatusArea.X + 36 + numStatus * 37, (int)StatusArea.Y + 6);
             int integrity = (int)(ship.InternalSlotsHealthPercent * 100);
 
             float repairPerSec = ship.CurrentRepairPerSecond;
             float timeUntilRepaired = (ship.HealthMax - ship.Health) / repairPerSec;
             string integrityText = $"{integrity}% (+{(int)repairPerSec}HP/s ETA:{timeUntilRepaired.TimeString()})";
-            batch.DrawString(Fonts.Arial12, integrityText, textPos, Color.White);
+            batch.DrawString(Fonts.TahomaBold9, integrityText, textPos, Color.White);
             numStatus++;
         }
 
@@ -353,13 +378,17 @@ namespace Ship_Game.Ships
 
         void DrawCargoUsed(SpriteBatch batch, Vector2 mousePos, Ship ship, ref int numStatus)
         {
-            if (ship.CargoSpaceUsed.AlmostZero()) 
+            if (ship.CargoSpaceUsed.AlmostZero())
                 return;
 
+            // the cargo goods ride the cartouche's foot, 5px off the edge, on the
+            // Shield/Ordnance icon column (maintainer bench 320) - their own row,
+            // independent of the top status strip
+            int numCargo = 0;
             foreach (Cargo cargo in ship.EnumLoadedCargo())
             {
                 SubTexture texture = ResourceManager.Texture("Goods/" + cargo.CargoId);
-                var goodRect = new Rectangle((int)StatusArea.X + numStatus * 53, (int)StatusArea.Y, 32, 32);
+                var goodRect = new Rectangle(Housing.X + 197 + numCargo * 53, Housing.Bottom - 37, 32, 32);
                 batch.Draw(texture, goodRect, Color.White);
 
                 var textPos = new Vector2(goodRect.X + 32, goodRect.Y + 16 - Fonts.Arial12.LineSpacing / 2);
@@ -368,10 +397,10 @@ namespace Ship_Game.Ships
                 if (goodRect.HitTest(mousePos))
                 {
                     Good good = ResourceManager.TransportableGoods.Find(g => g.UID == cargo.CargoId);
-                    if (good != null) 
+                    if (good != null)
                         ToolTip.CreateTooltip($"{new LocalizedText(good.NameIndex).Text}\n\n{new LocalizedText(good.DescriptionIndex).Text}");
                 }
-                numStatus++;
+                numCargo++;
             }
         }
 
@@ -411,7 +440,11 @@ namespace Ship_Game.Ships
                             text += " (" + numTroopRebasing + " on route)";
                         break;
                 }
-            var supplyTextPos = new Vector2(Housing.X + 175, Housing.Y + 5);
+            // bench 362 (maintainer): the alert sits to the RIGHT of the orders strip, centred on
+            // its row - it used to float above the cartouche, outside the window
+            int ordersW = Math.Min(Orders.Count, 7) * 52;
+            var supplyTextPos = new Vector2(ElementRect.X + ordersW + 8,
+                                            ElementRect.Y + FrameShave - 52 - 4 + (52 - Fonts.Arial12.LineSpacing) / 2);
             batch.DrawString(Fonts.Arial12, text, supplyTextPos, color);
         }
 
@@ -518,12 +551,6 @@ namespace Ship_Game.Ships
                 return false;
             }
 
-            if (SlidingElement.HandleInput(input))
-            {
-                State = SlidingElement.Open ? ElementState.TransitionOn : ElementState.TransitionOff;
-                return true;
-            }
-
             if (ShipNameArea.HandleInput(input))
                 return true;
 
@@ -587,14 +614,10 @@ namespace Ship_Game.Ships
             if (ElementRect.HitTest(input.CursorPosition))
                 return true;
 
-            if (State == ElementState.Open)
+            // the strip is always live - no drawer to open first
+            foreach (OrdersButton ordersButton in Orders)
             {
-                foreach (OrdersButton ordersButton in Orders)
-                {
-                    if (ordersButton.HandleInput(input))
-                        return true;
-                }
-                if (SlidingElement.ButtonHousing.HitTest(input.CursorPosition))
+                if (ordersButton.HandleInput(input))
                     return true;
             }
             return false;
@@ -751,19 +774,16 @@ namespace Ship_Game.Ships
                 Orders.Add(sc);
             }
 
-            int ex = 0;
-            int y = 0;
+            // Ludoal fork: the orders strip - one row docked ABOVE the cartouche, growing with
+            // the ship's own set (a freighter shows its trade orders, a carrier its fighter
+            // toggles). Wraps to a second row above the first past seven, which only the
+            // busiest freighters reach.
             for (int i = 0; i < Orders.Count; i++)
             {
                 OrdersButton ob = Orders[i];
-                if (i % 2 == 0 && i > 0)
-                {
-                    ex++;
-                    y = 0;
-                }
-                ob.ClickRect.X = ElementRect.X + ElementRect.Width + 2 + 52 * ex;
-                ob.ClickRect.Y = SlidingElement.Housing.Y + 15 + y * 52;
-                y++;
+                int col = i % 7, row = i / 7;
+                ob.ClickRect.X = ElementRect.X + col * 52;
+                ob.ClickRect.Y = ElementRect.Y + FrameShave - 52 - 4 - row * 52; // docked on the VISIBLE frame top
             }
         }
     }

@@ -1,8 +1,11 @@
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
+using SDUtils;
+using System;
 using Ship_Game.Audio;
 using Ship_Game.ExtensionMethods;
+using Ship_Game.UI; // UITable: the shared table charte
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 
@@ -10,58 +13,69 @@ using Rectangle = SDGraphics.Rectangle;
 namespace Ship_Game
 {
     // Permanent log of Important notifications (empire defeat, merge/surrender,
-    // remnant story progression), opened from the minimap. Styled after ShipDesignIssuesScreen.
+    // remnant story progression), opened from the minimap. On the shared table charte.
     public sealed class ImportantEventsScreen : GameScreen
     {
-        readonly Menu2 Window;
-        readonly Color Cream = Colors.Cream;
+        readonly UniverseScreen Universe;
+        Submenu GalaxyTabs;   // Ludoal fork: the Galaxy group's tab row, this screen being one tab
+
+        void OnGalaxyTabChanged(int index)
+            => GameScreens.ScreenGroups.SwitchGalaxyTab(index, self: 3, Universe, this);
+
         readonly ImportantNotification[] Events;
         readonly ScrollList<ImportantEventListItem> EventList;
-        readonly Graphics.Font LargeFont = Fonts.Arial20Bold;
+        public readonly UITable Table; // the shared table charte owns geometry, headers and rules
 
         public ImportantEventsScreen(UniverseScreen screen) : base(screen, toPause: null)
         {
+            Universe          = screen;
             Events            = screen.UState.GetImportantEvents();
             IsPopup           = true;
             TransitionOnTime  = 0.25f;
             TransitionOffTime = 0.25f;
 
-            Window = Add(new Menu2(new Rectangle(ScreenWidth / 2 - 600, ScreenHeight / 2 - 300, 1200, 540)));
-            int x  = (int)Window.X + 20;
-            int y  = (int)Window.Y + 70;
-            int w  = (int)Window.Width - 30;
-            int h  = (int)Window.Height - 80;
+            // Ludoal fork: the Events tab of the Galaxy group, content-sized on the shared
+            // table charte - the star dates and titles size their columns on the data
+            Table = new UITable(new[]
+            {
+                new UITable.Column { Title = "Star Date", Width = 90, Align = TableAlign.Number },
+                new UITable.Column { Title = "Title", Width = 200 },
+                new UITable.Column { Title = "Description", Width = 700 },
+            });
+            var dates = new Array<string>(); var titles = new Array<string>();
+            foreach (ImportantNotification ev in Events)
+            {
+                dates.Add(ev.StarDate.StarDateString());
+                titles.Add(ev.Title);
+            }
+            UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, dates);
+            UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, titles);
+            Table.Columns[1].Width += 48; // the faction flag rides left of the title
+            Table.FitToWidth((int)(Math.Min(ScreenWidth, GameScreens.ScreenGroups.MaxFrameWidth) - 2 * GameScreens.ScreenGroups.FrameMargin) - 66);
 
-            EventList = Add(new ScrollList<ImportantEventListItem>(new RectF(x, y, w, h), 80));
+            float fullAvail = GameScreens.ScreenGroups.FullTableHeight(ScreenHeight); // bench 343: capped at 1080p
+            float contentH = UITable.ContentHeightFor(99, Math.Max(3, Events.Length), 84, fullAvail);
+            GalaxyTabs = GameScreens.ScreenGroups.AddGroupTabs(this, GameScreens.ScreenGroups.GalaxyTabTitles, 3,
+                                                               OnGalaxyTabChanged, Table.ContentWidth, contentH);
+            RectF client = GalaxyTabs.ClientArea;
+            Table.RowPitch = 84;
+            Table.Layout(client, client.Y + 10, client.Bottom - 5);
+
+            EventList = Add(new ScrollList<ImportantEventListItem>(Table.ListRect, 80));
             EventList.EnableItemHighlight = true;
-
-            UILabel starDateLabel    = Add(new UILabel("Star Date", LargeFont, Cream));
-            UILabel titleLabel       = Add(new UILabel("Title", LargeFont, Cream));
-            UILabel descriptionLabel = Add(new UILabel("Description", LargeFont, Cream));
-            starDateLabel.Size       = new Vector2(120, 20);
-            titleLabel.Size          = new Vector2(230, 20);
-            descriptionLabel.Size    = new Vector2(700, 20);
-            starDateLabel.Pos        = new Vector2(x + 60, y - 10);
-            titleLabel.Pos           = new Vector2(x + 190, y - 10);
-            descriptionLabel.Pos     = new Vector2(x + 430, y - 10);
-            starDateLabel.TextAlign    = TextAlign.HorizontalCenter;
-            titleLabel.TextAlign       = TextAlign.HorizontalCenter;
-            descriptionLabel.TextAlign = TextAlign.HorizontalCenter;
+            Table.ApplyHighlightTo(EventList);
         }
 
         void PopulateEvents()
         {
             // newest first
             for (int i = Events.Length - 1; i >= 0; --i)
-                EventList.AddItem(new ImportantEventListItem(Events[i]));
+                EventList.AddItem(new ImportantEventListItem(Table, Events[i]));
         }
 
         public override void LoadContent()
         {
-            CloseButton(Window.Menu.Right - 40, Window.Menu.Y + 20);
-            string title    = "Important Events";
-            Vector2 menuPos = new Vector2(Window.Menu.CenterTextX(title, Fonts.Laserian14), Window.Menu.Y + 30);
-            Label(menuPos, title, Fonts.Laserian14, Cream);
+            // the close cross and the screen's name come from the group's tab row now
             PopulateEvents();
             base.LoadContent();
         }
@@ -70,12 +84,34 @@ namespace Ship_Game
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
+            // Ludoal fork: the frame is filled by hand before its children, the way every screen
+            // in this group does - the group's frame is transparent, so the map showed through.
+            batch.FillRectangle(GameScreens.ScreenGroups.GroupFrameFillRect(GalaxyTabs), GameScreens.ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed);
+            // the shared charte draws the headers, the rule and the separators
+            // no chrome on an empty log (maintainer bench 307): the hint speaks alone
+            if (EventList.NumEntries > 0)
+                Table.DrawChrome(batch);
+
+            if (EventList.NumEntries == 0)
+            {
+                const string hint = "Nothing to report yet.";
+                Graphics.Font font = Fonts.Arial12Bold;
+                var pos = new Vector2(Table.TableRect.X + (Table.TableRect.Width - font.TextWidth(hint)) / 2f,
+                                      Table.ListRect.Y + 40);
+                batch.DrawString(font, hint, pos.Rounded(), Color.Gray);
+            }
+
+            Universe.EmpireUI.Draw(batch);   // the live top bar, as on its sibling tabs
+            GameScreens.ScreenGroups.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             batch.SafeEnd();
         }
 
         public override bool HandleInput(InputState input)
         {
+            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
+
             if (input.ImportantEventsScreen && !GlobalStats.TakingInput) // Ludoal fork: F7 toggles the screen
             {
                 GameAudio.EchoAffirmative();

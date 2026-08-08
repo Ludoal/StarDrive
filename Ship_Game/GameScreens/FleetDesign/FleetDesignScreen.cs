@@ -29,12 +29,16 @@ namespace Ship_Game
         public readonly EmpireUIOverlay EmpireUI;
         public readonly Empire Player;
 
-        Menu2 TitleBar;
-        Menu2 ShipDesigns;
-        Vector2 TitlePos;
-        Vector2 ShipDesignsTitlePos;
-        Menu1 LeftMenu;
-        Menu1 RightMenu;
+        Submenu DesignTabs;   // Ludoal fork: the Design group's tab row, this screen being one tab
+
+        // Ludoal fork: the First Fleet cartouche's geometry, shared by the layout that places its
+        // buttons and the Draw that paints the name and icon above them.
+        // 10, not 20 (maintainer bench 303): minimum margins - the title lands at +10 like
+        // every other cartouche's, and the ship list above gains the difference
+        const float CartPad = 10f, CartIcon = 64f, CartBtnH = 33f, CartBtnGap = 6f;
+        const float CartBtnW = 180f;
+        RectF LeftMenu;
+        RectF RightMenu;
 
         // never null, if a fleet doesn't exist, an empty one is created
         public Fleet SelectedFleet;
@@ -46,10 +50,10 @@ namespace Ship_Game
         #pragma warning restore CA2213
 
         ScrollList<FleetDesignShipListItem> ShipSL;
-        BlueButton RequisitionForces;
-        BlueButton SaveDesign;
-        BlueButton LoadDesign;
-        BlueButton AutoArrange;
+        UIButton RequisitionForces;
+        UIButton SaveDesign;
+        UIButton LoadDesign;
+        UIButton AutoArrange;
         RectF SelectedStuffRect;
         RectF OperationsRect;
         RectF PrioritiesRect;
@@ -61,8 +65,6 @@ namespace Ship_Game
         // until the underlying systems are reworked; flip back to true when the
         // weights actually persist and OrdersRadius is honored.
         static bool ShowTargetingPanels = false;
-        RectF FleetOverviewRect;
-        UITextBox FleetOverviewText;
         WeightSlider SliderAssist;
         WeightSlider SliderVulture;
         WeightSlider SliderDefend;
@@ -100,11 +102,18 @@ namespace Ship_Game
             EmpireUI = empireUI;
             Player = u.Player;
 
-            TransitionOnTime = 0.75f;
+            // Ludoal fork (bench 343): a popup, so the paused universe keeps drawing BEHIND the
+            // screen (the map shows through the frame's margin) instead of a dead black backdrop -
+            // like the table screens. The Draw stops clearing to black for the same reason.
+            IsPopup = true;
+
+            // Ludoal fork: no fade in, same as the Shipyard beside it - the two are tabs of one
+            // group now, and a tab that fades in reads as a screen change rather than a switch.
             Player.UpdateShipsWeCanBuild();
             ShipInfoOverlay = Add(new ShipInfoOverlayComponent(this, u.UState));
 
             FleetNameEntry = new();
+            FleetNameEntry.Font = Fonts.Arial20Bold; // the cartouche's headline (maintainer bench 301)
             FleetNameEntry.OnTextChanged = (text) => SelectedFleet.Name = text;
             FleetNameEntry.SetColors(Colors.Cream, Color.Orange);
             
@@ -223,22 +232,52 @@ namespace Ship_Game
             RemoveSceneObjects(SelectedFleet);
         }
 
+        // Ludoal fork: the Design group's tabs.
+        void OnDesignTabChanged(int tab)
+        {
+            if (tab == 0)
+                return; // already here
+
+            GameAudio.EchoAffirmative();
+            ExitScreen();
+            if (tab == 1)
+                ScreenManager.AddScreen(new ShipDesignScreen(Universe, EmpireUI));
+            else
+                ScreenManager.AddScreen(new BlueprintsScreen(Universe, Universe.Player));
+        }
+
         public override void LoadContent()
         {
-            Add(new CloseButton(ScreenWidth - 38, 97));
-            SetPerspectiveProjection(maxDistance: 100_000);
+            // Ludoal fork: the Fleets tab of the Design group. Like the Shipyard, the frame is
+            // a surround rather than a container - the 3D fleet view keeps its own layout.
+            DesignTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.DesignTabTitles, 0,
+                                                    OnDesignTabChanged, out Rectangle _);
+            // Ludoal fork (maintainer feedback, 7 Aug): the Fleets 3D view fills the same capped
+            // group frame as the Shipyard, so it centres on that frame, not the whole screen, using
+            // the shared offset. Without it the fleet drifts down-right at hi-res.
+            SetPerspectiveProjection(maxDistance: 100_000,
+                offsetXY: ScreenGroups.GroupFrameCameraOffset(ScreenWidth, ScreenHeight));
 
-            Graphics.Font titleFont = Fonts.Laserian14;
-            Graphics.Font arial20 = Fonts.Arial20Bold;
             Graphics.Font arial12 = Fonts.Arial12Bold;
 
-            RectF titleRect = new(2, 44, 250, 80);
-            TitleBar = new(titleRect);
-            TitlePos = new(titleRect.CenterX - titleFont.TextWidth("Fleet Hotkeys") / 2f,
-                           titleRect.CenterY - titleFont.LineSpacing / 2f);
+            // Ludoal fork: the two 80px title bars are gone - a single label above the fleet list
+            // says what they said, and the right one is already titled by its Designs/Owned tabs.
+            // Everything is laid out from the tab frame, 5px in on every side.
+            const float ListPad = 5f;
+            const float leftW = 250, rightW = 280;
+            RectF client = DesignTabs.ClientArea;
 
-            RectF leftRect = new(20, titleRect.Bottom + 5, titleRect.W, 500);
-            LeftMenu = new(leftRect, true);
+            // The bottom blocks are measured FIRST: the ship list above the cartouche runs
+            // down to it, so its height follows from the frame rather than a fixed 500.
+            float blockBottom = client.Bottom - ListPad;
+            float blockLeft   = client.X + ListPad;
+            float blockRight  = client.Right - ListPad;
+            // 10px off the frame's edge (maintainer bench 303) - the caption row is gone,
+            // both lists gain its height and the left one fits one more fleet
+            float listTop = client.Y + 10;
+
+            RectF leftRect = new(client.X + ListPad + 5, listTop, leftW, 500); // 5 right (bench 307): the Patrol badge kissed the edge
+            LeftMenu = leftRect;
             
             Add(new FleetButtonsList(leftRect, this, Universe,
                 onClick: InputSelectFleet,
@@ -246,11 +285,20 @@ namespace Ship_Game
                 isSelected: (b) => SelectedFleet?.Key == b.FleetKey
             ));
 
-            RectF shipRect = new(ScreenWidth - 282, 140, 280, 80);
-            ShipDesigns = new Menu2(shipRect);
-            ShipDesignsTitlePos = new(shipRect.CenterX - titleFont.TextWidth("Ship Designs") / 2f, shipRect.CenterY - titleFont.LineSpacing / 2);
-            RectF shipDesignsRect = new(ScreenWidth - shipRect.W - 2, shipRect.Bottom + 5, shipRect.W, 500);
-            RightMenu = new(shipDesignsRect);
+            // The Fleet cartouche sits BOTTOM RIGHT now, in the slot the Fleet Design
+            // Overview held - the overview text retired to the Codex, end of Warfare
+            // (maintainer bench 300). Same content-derived height, the ship list's width,
+            // and the list above takes every row the overview freed.
+            float cartH = CartPad
+                        + Fonts.Arial20Bold.LineSpacing + 8   // name
+                        + CartIcon + 8                        // icon
+                        + 4 * CartBtnH + 3 * CartBtnGap       // the four buttons
+                        + CartPad;
+            SelectedStuffRect = new(blockRight - rightW, blockBottom - cartH, rightW, cartH);
+
+            RectF shipDesignsRect = new(blockRight - rightW, listTop,
+                                        rightW, SelectedStuffRect.Y - 10 - listTop);
+            RightMenu = shipDesignsRect;
 
             LocalizedText[] subShipsTabs = { "Designs", "Owned" };
             SubShips = Add(new SubmenuScrollList<FleetDesignShipListItem>(shipDesignsRect, subShipsTabs));
@@ -276,26 +324,43 @@ namespace Ship_Game
             };
 
             ResetLists();
-            SelectedStuffRect = new(ScreenWidth / 2 - 220, -13 + ScreenHeight - 210, 440, 210);
 
-            var ordersBarPos = new Vector2(SelectedStuffRect.X + 20, SelectedStuffRect.Y + 65);
+            // centred on the cartouche (maintainer bench 302): the stance bar's first row is
+            // seven 25px buttons, 175 wide - StanceButtons owns that arithmetic
+            var ordersBarPos = new Vector2(SelectedStuffRect.X + (SelectedStuffRect.W - 175f) * 0.5f,
+                                           SelectedStuffRect.Y + 65);
             OrdersButtons = new(this, ordersBarPos);
             Add(OrdersButtons);
 
-            RequisitionForces = Add(new BlueButton(new(SelectedStuffRect.X + 240, SelectedStuffRect.Y + arial20.LineSpacing + 20 - 10), "Requisition..."));
-            SaveDesign = Add(new BlueButton(new(SelectedStuffRect.X + 240, SelectedStuffRect.Y + arial20.LineSpacing + 20 + 30), "Save Design..."));
-            LoadDesign = Add(new BlueButton(new(SelectedStuffRect.X + 240, SelectedStuffRect.Y + arial20.LineSpacing + 20 + 70), "Load Design..."));
-            AutoArrange = Add(new BlueButton(new(SelectedStuffRect.X + 240, SelectedStuffRect.Y + arial20.LineSpacing + 20 + 110), "Auto Arrange..."));
+            // stacked under the icon, one column, centred in the cartouche - it wears the
+            // list's width now, wider than the buttons
+            float btnX = SelectedStuffRect.X + (SelectedStuffRect.W - CartBtnW) * 0.5f;
+            float btnY = SelectedStuffRect.Y + CartPad
+                       + Fonts.Arial20Bold.LineSpacing + 8 + CartIcon + 8;
+            float BtnRow(int i) => btnY + i * (CartBtnH + CartBtnGap);
+
+            RequisitionForces = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(0)), "Requisition..."));
+            SaveDesign  = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(1)), "Save Design..."));
+            LoadDesign  = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(2)), "Load Design..."));
+            AutoArrange = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(3)), "Auto Arrange..."));
+
+            foreach (UIButton b in new[] { RequisitionForces, SaveDesign, LoadDesign, AutoArrange })
+                b.SetAbsSize(CartBtnW, CartBtnH);
 
             RequisitionForces.OnClick = (b) => ScreenManager.AddScreen(new RequisitionScreen(this));
             SaveDesign.OnClick = (b) => ScreenManager.AddScreen(new SaveFleetDesignScreen(this, SelectedFleet));
             LoadDesign.OnClick = (b) => ScreenManager.AddScreen(new LoadFleetDesignScreen(this));
             AutoArrange.OnClick = (b) => SelectedFleet.AutoArrange();   
 
-            OperationsRect = new(SelectedStuffRect.Right + 2, SelectedStuffRect.Y + 30, 360, SelectedStuffRect.H - 30);
+            // anchored at the frame's left edge - the cartouche that used to sit there
+            // moved to the bottom right (maintainer bench 300)
+            OperationsRect = new(blockLeft, SelectedStuffRect.Y + 30, 360, SelectedStuffRect.H - 30);
 
-            float slidersX1 = OperationsRect.X + 15;
-            float slidersX2 = OperationsRect.X + 15 + 180;
+
+            // centred in the block (maintainer bench 301): two 150-wide sliders on a 180
+            // pitch, so the pair spans 330 of the 360 frame
+            float slidersX1 = OperationsRect.X + (OperationsRect.W - 330) / 2;
+            float slidersX2 = slidersX1 + 180;
             float slidersY = OperationsRect.Y + arial12.LineSpacing + 20;
             
             WeightSlider NewSlider(float x, float y, string title, LocalizedText tooltip)
@@ -311,19 +376,7 @@ namespace Ship_Game
             SliderShield = NewSlider(slidersX2, slidersY+50, "Target Shielded Weight", GameText.TheWeightGivenToTargeting2);
             SliderDps    = NewSlider(slidersX2, slidersY+100, "Target DPS Weight", GameText.TheWeightGivenToTargeting3);
 
-            PrioritiesRect = new(SelectedStuffRect.X - OperationsRect.W - 2, OperationsRect.Y, OperationsRect.Size);
-
-            // Fleet Design Overview panel: same vertical span as the First Fleet panel,
-            // at PrioritiesRect's X so it sits left of First Fleet. Hidden when a node is selected.
-            FleetOverviewRect = new RectF(PrioritiesRect.X, SelectedStuffRect.Y, PrioritiesRect.W, SelectedStuffRect.H);
-            float headerH = Fonts.Pirulen12.LineSpacing + 15;
-            RectF overviewTextRect = new(FleetOverviewRect.X + 10,
-                                          FleetOverviewRect.Y + headerH,
-                                          FleetOverviewRect.W - 20,
-                                          FleetOverviewRect.H - headerH - 10);
-            FleetOverviewText = Add(new UITextBox(overviewTextRect, useBorder: false));
-            FleetOverviewText.ItemsList.ItemPadding = Vector2.Zero;
-            FleetOverviewText.SetLines(Localizer.Token(GameText.AddShipDesignsToThis));
+            PrioritiesRect = new(OperationsRect.Right + 2, OperationsRect.Y, OperationsRect.Size);
 
             RectF oprect = new(PrioritiesRect.X + 15, PrioritiesRect.Y + arial12.LineSpacing + 20, 300, 40);
             OperationalRadius = new FloatSlider(oprect, "Operational Radius", max: 500000, value: 10000)

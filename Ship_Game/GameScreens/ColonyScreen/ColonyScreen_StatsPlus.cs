@@ -4,6 +4,7 @@ using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using SDUtils;
 using Ship_Game.Universe.SolarBodies;
+using Font = Ship_Game.Graphics.Font;
 
 namespace Ship_Game
 {
@@ -11,7 +12,7 @@ namespace Ship_Game
     // Everything about the tab lives in this file; the only hooks in existing
     // code are one AddTab() call and one dispatch line in DrawDetailInfo().
     //
-    // Design v1.2 (Ludo's review, 20 Jul): totals and diagnostics on the panel,
+    // Design v1.2 (maintainer feedback): totals and diagnostics on the panel,
     // marginal per-colonist rates belong to the Assign Labor tooltips, dead
     // lines are omitted. Budget is decomposed like the Economic Review and its
     // lines sum to the displayed net. All figures are per TURN: Empire.DoMoney()
@@ -24,63 +25,8 @@ namespace Ship_Game
 
         bool IsStatsPlusTabSelected => PFacilities.IsTabSelected(StatsPlusTabTitle);
 
-        void SPHeader(ref Vector2 c, SpriteBatch batch, string title)
-        {
-            batch.DrawString(Fonts.Arial14Bold, title, c, Color.Wheat);
-            c.Y += Fonts.Arial14Bold.LineSpacing + 4;
-        }
-
-        void SPLine(ref Vector2 c, SpriteBatch batch, string label, string value, Color valueColor)
-        {
-            batch.DrawString(TextFont, label, new Vector2(c.X + 10, c.Y), Color.LightGray);
-            batch.DrawString(TextFont, value, new Vector2(c.X + SPValueCol, c.Y), valueColor);
-            c.Y += TextFont.LineSpacing + 2;
-        }
-
-        void SPGap(ref Vector2 c) => c.Y += TextFont.LineSpacing;
-
-        // Yield table columns, relative to the block cursor. Fractions of the block
-        // width, not bench-measured pixels: the tab is 2/3 of a 2/3-screen menu, so
-        // its width follows the resolution. The ratios are calibrated on the original
-        // 1080p layout (105/165/220/280 out of a 350px block), so 1080p is unchanged
-        // and narrower frames compress instead of spilling out of the panel.
-        float SPYieldColPop, SPYieldColFlat, SPYieldColEaten, SPYieldColTotal, SPValueCol;
-
-        void SPSetColumns(float blockW)
-        {
-            SPValueCol      = blockW * 0.543f; // the label/value split of SPLine
-            SPYieldColPop   = blockW * 0.300f;
-            SPYieldColFlat  = blockW * 0.471f;
-            SPYieldColEaten = blockW * 0.629f;
-            SPYieldColTotal = blockW * 0.800f;
-        }
-
-        void SPYieldHeader(ref Vector2 c, SpriteBatch batch)
-        {
-            batch.DrawString(TextFont, "from pop", new Vector2(c.X + SPYieldColPop, c.Y), Color.DarkGray);
-            batch.DrawString(TextFont, "flat", new Vector2(c.X + SPYieldColFlat, c.Y), Color.DarkGray);
-            batch.DrawString(TextFont, "eaten", new Vector2(c.X + SPYieldColEaten, c.Y), Color.DarkGray);
-            batch.DrawString(TextFont, "total", new Vector2(c.X + SPYieldColTotal, c.Y), Color.DarkGray);
-            c.Y += TextFont.LineSpacing + 2;
-        }
-
-        // One yield row: from pop + flat [- eaten] = total, sums exactly to NetIncome
-        // (AfterTax is linear, so the parts are each net of tax like the total).
-        void SPYield(ref Vector2 c, SpriteBatch batch, string label, ColonyResource res, float eaten)
-        {
-            float fromColonists = res.ColonistIncome(res.NetYieldPerColonist);
-            float total = res.NetIncome;
-            batch.DrawString(TextFont, label, new Vector2(c.X + 10, c.Y), Color.LightGray);
-            batch.DrawString(TextFont, SPSigned(fromColonists, 2), new Vector2(c.X + SPYieldColPop, c.Y), Color.White);
-            batch.DrawString(TextFont, SPSigned(res.NetFlatBonus, 2), new Vector2(c.X + SPYieldColFlat, c.Y), Color.White);
-            if (eaten.NotZero())
-                batch.DrawString(TextFont, "-" + eaten.String(2), new Vector2(c.X + SPYieldColEaten, c.Y), Color.Pink); // ASCII minus — the game font has no U+2212 (renders '?')
-            batch.DrawString(TextFont, SPSigned(total, 2), new Vector2(c.X + SPYieldColTotal, c.Y), SPTone(total));
-            c.Y += TextFont.LineSpacing + 2;
-        }
-
-        static string SPSigned(float v, int digits = 2) => (v >= 0 ? "+" : "") + v.String(digits);
-        static Color SPTone(float v) => v > 0 ? Color.LightGreen : v < 0 ? Color.Pink : Color.LightGray;
+        // Layout helpers (SPHeader/SPLine/SPNum/SPSetColumns/SPYield*/SPSigned/SPTone) now live in
+        // the shared StatsPlusLayout (bench 353) so Colony and Blueprints draw the exact same panel.
 
         // Read-only mirror of Planet.GrowPopulation() (same branches, no side
         // effects) — the engine computes the rate inline and never exposes it.
@@ -120,10 +66,16 @@ namespace Ship_Game
             // (20px inner margin per side) — was a flat +350, which overflowed the
             // panel as soon as the frame was narrower than 1080p.
             float blockW = (PFacilities.Width - 40) * 0.5f;
-            SPSetColumns(blockW);
+            SPCols cols = StatsPlusLayout.SPSetColumns(TextFont, blockW);
 
             var left  = bCursor;
-            var right = new Vector2(bCursor.X + blockW, bCursor.Y);
+            // the yields grid closes flush on the panel's right edge (maintainer bench 281):
+            // its last pivot plus a fraction of room lands at the margin, and the block start
+            // derives from that - as far right as it can sit
+            float usable = PFacilities.Width - 40;
+            // +10: the yields grid borrows the panel's right inner margin (bench 286,
+            // "du vide exploitable à droite")
+            var right = new Vector2(bCursor.X + usable + 10 - (cols.YieldColTotal + TextFont.TextWidth(".00") + 2), bCursor.Y);
 
             // ── BUDGET (BC / turn) — gross sources as the building screen promises them,
             // the tax mill as one visible line, everything still sums to Net exactly ──
@@ -136,56 +88,64 @@ namespace Ship_Game
             float troops   = P.Money.TroopMaint;
             float net      = P.Money.GrossRevenue - bldgUp - spaceDef - troops;
 
-            SPHeader(ref left, batch, "BUDGET (BC / turn)");
-            if (colInc.NotZero())   SPLine(ref left, batch, "Colonist income", SPSigned(colInc), SPTone(colInc));
-            if (bldgInc.NotZero())  SPLine(ref left, batch, "Building income", SPSigned(bldgInc), SPTone(bldgInc));
-            if (sources.NotZero())  SPLine(ref left, batch,
+            StatsPlusLayout.SPHeader(ref left, batch, "BUDGET (BC / turn)");
+            if (colInc.NotZero())   StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Colonist income", StatsPlusLayout.SPSigned(colInc), StatsPlusLayout.SPTone(colInc));
+            if (bldgInc.NotZero())  StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Building income", StatsPlusLayout.SPSigned(bldgInc), StatsPlusLayout.SPTone(bldgInc));
+            if (sources.NotZero())  StatsPlusLayout.SPLine(ref left, batch, TextFont, cols,
                    "× tax rate (" + (P.Money.TaxRate * 100f).String(0) + " %)",
-                   SPSigned(taxMill), SPTone(taxMill));
-            if (bldgUp.NotZero())   SPLine(ref left, batch, "Building upkeep", SPSigned(-bldgUp), SPTone(-bldgUp));
-            if (spaceDef.NotZero()) SPLine(ref left, batch, "Space defense upkeep", SPSigned(-spaceDef), SPTone(-spaceDef));
-            if (troops.NotZero())   SPLine(ref left, batch, "Troop upkeep", SPSigned(-troops), SPTone(-troops));
-            SPLine(ref left, batch, Localizer.Token(net >= 0 ? GameText.NetIncome : GameText.NetLosses),
-                   SPSigned(net), net >= 0 ? Color.Green : Color.Red);
-            SPGap(ref left);
+                   StatsPlusLayout.SPSigned(taxMill), StatsPlusLayout.SPTone(taxMill));
+            if (bldgUp.NotZero())   StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Building upkeep", StatsPlusLayout.SPSigned(-bldgUp), StatsPlusLayout.SPTone(-bldgUp));
+            if (spaceDef.NotZero()) StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Space defense upkeep", StatsPlusLayout.SPSigned(-spaceDef), StatsPlusLayout.SPTone(-spaceDef));
+            if (troops.NotZero())   StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Troop upkeep", StatsPlusLayout.SPSigned(-troops), StatsPlusLayout.SPTone(-troops));
+            StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, Localizer.Token(net >= 0 ? GameText.NetIncome : GameText.NetLosses),
+                   StatsPlusLayout.SPSigned(net), net >= 0 ? Color.Green : Color.Red);
+            StatsPlusLayout.SPGap(ref left, TextFont);
 
             // ── POPULATION — net growth and saturation (totals live in Planet Info already) ──
             float growth = SPPopGrowthPerTurn(); // raw thousands = millions of colonists
-            SPHeader(ref left, batch, "POPULATION");
-            SPLine(ref left, batch, "Net growth (M / turn)", SPSigned(growth, 1),
-                   P.IsStarving ? Color.Red : SPTone(growth));
-            SPLine(ref left, batch, "Saturation", (P.PopulationRatio * 100f).String(1) + " %",
+            StatsPlusLayout.SPHeader(ref left, batch, "POPULATION");
+            StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Net growth (M / turn)", StatsPlusLayout.SPSigned(growth, 1),
+                   P.IsStarving ? Color.Red : StatsPlusLayout.SPTone(growth));
+            StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Saturation", (P.PopulationRatio * 100f).String(1) + " %",
                    P.PopulationRatio > 1f ? Color.Orange : Color.White);
 
             // ── YIELDS (per turn) — per-source sums, same principle as the Budget ──
-            SPHeader(ref right, batch, "YIELDS (per turn)");
-            SPYieldHeader(ref right, batch);
-            SPYield(ref right, batch, Localizer.Token(GameText.Food), P.Food,
+            StatsPlusLayout.SPHeader(ref right, batch, "YIELDS (per turn)");
+            StatsPlusLayout.SPYieldHeader(ref right, batch, TextFont, cols);
+            SPDrawYield(ref right, batch, TextFont, cols, Localizer.Token(GameText.Food), P.Food,
                     P.NonCybernetic ? P.Consumption : 0f);
-            SPYield(ref right, batch, Localizer.Token(GameText.Production), P.Prod,
+            SPDrawYield(ref right, batch, TextFont, cols, Localizer.Token(GameText.Production), P.Prod,
                     P.IsCybernetic ? P.Consumption : 0f);
-            SPYield(ref right, batch, Localizer.Token(GameText.Research), P.Res, 0f);
-            SPGap(ref right);
+            SPDrawYield(ref right, batch, TextFont, cols, Localizer.Token(GameText.Research), P.Res, 0f);
+            StatsPlusLayout.SPGap(ref right, TextFont);
 
             // ── CONSTRUCTION (per turn) — flow to the queue + how long storage holds ──
-            SPHeader(ref right, batch, "CONSTRUCTION (per turn)");
-            SPLine(ref right, batch, "Max prod to queue", P.CurrentProductionToQueue.String(1), Color.White);
+            StatsPlusLayout.SPHeader(ref right, batch, "CONSTRUCTION (per turn)");
+            StatsPlusLayout.SPLine(ref right, batch, TextFont, cols, "Max prod to queue", P.CurrentProductionToQueue.String(1), Color.White);
             if (P.InfraStructure.NotZero() && P.ProdHere.NotZero())
             {
                 float turnsLeft = P.ProdHere / P.InfraStructure;
-                SPLine(ref right, batch, "  from storage",
+                StatsPlusLayout.SPLine(ref right, batch, TextFont, cols, "  from storage",
                        P.InfraStructure.String(1) + "  (~" + turnsLeft.String(0) + " turns)", Color.LightGray);
             }
-            SPGap(ref right);
+            StatsPlusLayout.SPGap(ref right, TextFont);
 
             // ── DEFENSE (per turn) — only when there is something to say ──
             float repairPerTurn = P.GeodeticManager.GetPlanetRepairRatePerSecond() * P.Universe.P.TurnTimer;
             if (repairPerTurn.NotZero())
             {
-                SPHeader(ref right, batch, "DEFENSE (per turn)");
-                SPLine(ref right, batch, "Ship repair" + (P.SpaceCombatNearPlanet ? " (space combat)" : ""),
+                StatsPlusLayout.SPHeader(ref right, batch, "DEFENSE (per turn)");
+                StatsPlusLayout.SPLine(ref right, batch, TextFont, cols, "Ship repair" + (P.SpaceCombatNearPlanet ? " (space combat)" : ""),
                        repairPerTurn.String(0), Color.White);
             }
+        }
+
+        // Colony's yield row pulls the three numbers off the live ColonyResource, then hands them to
+        // the shared layout (which no longer knows about ColonyResource - Blueprints has no such thing)
+        void SPDrawYield(ref Vector2 c, SpriteBatch batch, Font font, in SPCols cols, string label, ColonyResource res, float eaten)
+        {
+            StatsPlusLayout.SPYield(ref c, batch, font, cols, label,
+                res.ColonistIncome(res.NetYieldPerColonist), res.NetFlatBonus, res.NetIncome, eaten);
         }
     }
 }

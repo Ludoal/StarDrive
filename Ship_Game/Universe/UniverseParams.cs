@@ -42,6 +42,8 @@ public class UniverseParams
     [StarData] public float ShipMaintenanceMultiplier;
     [StarData] public bool AIUsesPlayerDesigns;
     [StarData] public bool UseUpkeepByHullSize;
+    // Ludoal fork: SAVE BALLAST - the legacy espionage system is gone; the field remains so
+    // saves written under that rule still deserialize. Never set, never read.
     [StarData] public bool UseLegacyEspionage;
     [StarData] public float StartingPlanetRichnessBonus;
 
@@ -66,6 +68,9 @@ public class UniverseParams
     [StarData(DefaultValue=true)] public bool PlanetsScreenHideInhospitable = true;
     [StarData(DefaultValue=true)] public bool DisableInhibitionWarning = true;
     [StarData(DefaultValue=false)] public bool EnableStarvationWarning = false;
+    // Ludoal fork: the Automation tab lists DISABLES (reviewer doctrine, maintainer call) -
+    // same [StarData] flag read in the negative, not serialized itself. Default: disabled.
+    public bool DisableStarvationWarning { get => !EnableStarvationWarning; set => EnableStarvationWarning = !value; }
     [StarData(DefaultValue=true)] public bool AllowPlayerInterTrade  = true;
     [StarData] public bool SuppressOnBuildNotifications;
     [StarData] public bool PlanetScreenHideOwned;
@@ -76,6 +81,7 @@ public class UniverseParams
     [StarData] public bool DisableVolcanoWarning;
     [StarData] public bool DisableCrashSiteWarning;
     [StarData] public bool PrioitizeProjectors;
+    [StarData] public bool PrioritizeFreighters; // Ludoal fork: freighters jump the build queue, like projectors
     [StarData(DefaultValue=true)] public bool ShowAllDesigns = true;
     [StarData] public bool FilterOldModules;
 
@@ -110,6 +116,37 @@ public class UniverseParams
         DisableRemnantStory = s.DisableRemnantStory;
         DisablePirates = s.DisablePirates;
         EnableRandomizedAIFleetSizes = s.EnableRandomizedAIFleetSizes;
+    }
+
+    // Ludoal fork: overlay the Rule Options the player last set up, so a new game starts on
+    // their house ruleset instead of the stock one. Called only when the setup screen builds a
+    // fresh params object - a save carries its own rules and must never be touched by this.
+    // Each value is only applied if it was actually customised, so an untouched install keeps
+    // every stock default.
+    public void ApplySavedRuleOptions()
+    {
+        if (GlobalStats.RuleFTLModifier >= 0f) FTLModifier = GlobalStats.RuleFTLModifier;
+        if (GlobalStats.RuleEnemyFTLModifier >= 0f) EnemyFTLModifier = GlobalStats.RuleEnemyFTLModifier;
+        if (GlobalStats.RuleGravityWellRange >= 0f) GravityWellRange = GlobalStats.RuleGravityWellRange;
+        if (GlobalStats.RuleExtraPlanets >= 0) ExtraPlanets = GlobalStats.RuleExtraPlanets;
+        if (GlobalStats.RuleShipMaintenanceMultiplier >= 0f) ShipMaintenanceMultiplier = GlobalStats.RuleShipMaintenanceMultiplier;
+        if (GlobalStats.RuleStartingPlanetRichnessBonus >= 0f) StartingPlanetRichnessBonus = GlobalStats.RuleStartingPlanetRichnessBonus;
+        if (GlobalStats.RuleTurnTimer >= 0) TurnTimer = GlobalStats.RuleTurnTimer;
+        if (GlobalStats.RuleCustomMineralDecay >= 0f) CustomMineralDecay = GlobalStats.RuleCustomMineralDecay;
+        if (GlobalStats.RuleVolcanicActivity >= 0f) VolcanicActivity = GlobalStats.RuleVolcanicActivity;
+
+        if (GlobalStats.RulesCustomised)
+        {
+            PreventFederations = GlobalStats.RulePreventFederations;
+            FixedPlayerCreditCharge = GlobalStats.RuleFixedPlayerCreditCharge;
+            AIUsesPlayerDesigns = GlobalStats.RuleAIUsesPlayerDesigns;
+            DisablePirates = GlobalStats.RuleDisablePirates;
+            DisableRemnantStory = GlobalStats.RuleDisableRemnantStory;
+            DisableAlternateAITraits = GlobalStats.RuleDisableAlternateAITraits;
+            DisableResearchStations = GlobalStats.RuleDisableResearchStations;
+            DisableMiningOps = GlobalStats.RuleDisableMiningOps;
+            UseUpkeepByHullSize = GlobalStats.RuleUseUpkeepByHullSize;
+        }
     }
 
     [StarDataDeserialized]

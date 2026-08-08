@@ -64,7 +64,7 @@ internal class SpatialDebug : DebugPage
             f.Text = $"Search Type: {FilterByType}";
         };
             
-        var changeLoyaltyBtn = list.Add(new UIButton(ButtonStyle.DanButtonBlue, $"Change Loyalty"));
+        var changeLoyaltyBtn = list.Add(new UIButton(ButtonStyle.WideActive, $"Change Loyalty"));
         changeLoyaltyBtn.OnClick = (UIButton b) =>
         {
             if (Screen.SelectedShip != null)

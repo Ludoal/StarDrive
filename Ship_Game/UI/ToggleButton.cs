@@ -15,6 +15,11 @@ namespace Ship_Game
         public int Height { get; private set; }
         public int ContentId { get; private set; }
         string Folder;
+
+        /// Ludoal fork: TRUE for the styles whose art is a PLATE (the Minimap family), FALSE for
+        /// the bare glyphs (the SelectionBox arrows). A plate gets an opaque ground painted under
+        /// it so it reads over the starfield; an arrow must not.
+        public bool Plated;
         public SubTexture Active   { get; private set; }
         public SubTexture Inactive { get; private set; }
         public SubTexture Hover    { get; private set; }
@@ -101,53 +106,19 @@ namespace Ship_Game
             Press    = ResourceManager.Texture("SelectionBox/button_arrow_right_hover")
         };
 
-        public static readonly ToggleButtonStyle ButtonB = new ToggleButtonStyle
-        {
-            Width  = 25,
-            Height = 22,
-            ContentId = ResourceManager.ContentId,
-            Folder   = "Minimap/",
-            Active   = ResourceManager.Texture("Minimap/button_B_active"),
-            Inactive = ResourceManager.Texture("Minimap/button_B_normal"),
-            Hover    = ResourceManager.Texture("Minimap/button_B_hover"),
-            Press    = ResourceManager.Texture("Minimap/button_B_normal")
-        };
-
-        public static readonly ToggleButtonStyle ButtonC = new ToggleButtonStyle
-        {
-            Width  = 25,
-            Height = 22,
-            ContentId = ResourceManager.ContentId,
-            Folder   = "Minimap/",
-            Active   = ResourceManager.Texture("Minimap/button_C_normal"),
-            Inactive = ResourceManager.Texture("Minimap/button_C_normal"),
-            Hover    = ResourceManager.Texture("Minimap/button_C_hover"),
-            Press    = ResourceManager.Texture("Minimap/button_C_normal")
-        };
-
         public static readonly ToggleButtonStyle Button = new ToggleButtonStyle
         {
             Width  = 25,
             Height = 22,
             ContentId = ResourceManager.ContentId,
             Folder   = "Minimap/",
+            Plated   = true,
             Active   = ResourceManager.Texture("Minimap/button_active"),
             Inactive = ResourceManager.Texture("Minimap/button_normal"),
             Hover    = ResourceManager.Texture("Minimap/button_hover"),
             Press    = ResourceManager.Texture("Minimap/button_normal")
         };
 
-        public static readonly ToggleButtonStyle ButtonDown = new ToggleButtonStyle
-        {
-            Width  = 25,
-            Height = 26,
-            ContentId = ResourceManager.ContentId,
-            Folder   = "Minimap/",
-            Active   = ResourceManager.Texture("Minimap/button_active"),
-            Inactive = ResourceManager.Texture("Minimap/button_down_inactive"),
-            Hover    = ResourceManager.Texture("Minimap/button_down_hover"),
-            Press    = ResourceManager.Texture("Minimap/button_down_inactive")
-        };
     }
 
     // TODO: Replace with UIButton
@@ -247,13 +218,25 @@ namespace Ship_Game
                 WasClicked = false;
                 batch.Draw(Style.Press, Rect, Color.White);
             }
+            // Ludoal fork: a solid ground UNDER the texture (maintainer: "les boutons sont trop
+            // transparents"). The Minimap art averages alpha 182, so over a starfield the button
+            // reads as a ghost - and the alpha lives in the PNGs, where raising it would mean
+            // redrawing shared assets. An opaque plate behind them costs nothing and lifts every
+            // state at once; the toggled one wears the theme's active tint so ON still reads ON.
+            // ⚠ only the Minimap family: those are plates, and a solid ground behind them is what
+            // makes them read. The arrow styles are bare glyphs from SelectionBox/ - a dark
+            // square behind an arrow would be worse than the transparency it fixes.
+            if (Style.Plated)
+                batch.FillRectangle(Rect, IsToggled ? UITheme.PlateActive.Alpha(0.55f)
+                                                    : new Color(12, 12, 12).Alpha(0.72f));
+
             if (IsToggled)
             {
                 batch.Draw(Style.Active, Rect, Color.White);
             }
             else if (Hover)
             {
-                batch.Draw(Style.Hover, Rect, Color.White);                
+                batch.Draw(Style.Hover, Rect, Color.White);
             }
             else
             {

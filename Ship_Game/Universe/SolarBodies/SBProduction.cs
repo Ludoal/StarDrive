@@ -505,6 +505,16 @@ namespace Ship_Game.Universe.SolarBodies
                             ++insertAt;
                         MoveTo(insertAt, Count - 1);
                     }
+                    else if (P.Universe.P.PrioritizeFreighters && item.QType == QueueItemType.Freighter)
+                    {
+                        // Ludoal fork (maintainer): the same treatment for freighters - a new one
+                        // jumps ahead of the rest, sitting below the freighters already leading the
+                        // queue so trade capacity comes up quickly.
+                        int insertAt = 0;
+                        while (insertAt < Count - 1 && ConstructionQueue[insertAt].QType == QueueItemType.Freighter)
+                            ++insertAt;
+                        MoveTo(insertAt, Count - 1);
+                    }
                 }
 
                 // Ship and orbital refits jump the queue so the ship returns to service fast.

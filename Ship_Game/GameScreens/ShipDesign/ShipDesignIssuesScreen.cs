@@ -12,7 +12,7 @@ namespace Ship_Game.GameScreens.ShipDesign
 {
     public sealed class ShipDesignIssuesScreen : GameScreen
     {
-        private readonly Menu2 Window;
+        private readonly Rectangle Window;
         private readonly Color Cream = Colors.Cream;
         private readonly Array<DesignIssueDetails> DesignIssues;
         private readonly ScrollList<ShipDesignIssuesListItem> IssueList;
@@ -25,7 +25,10 @@ namespace Ship_Game.GameScreens.ShipDesign
             TransitionOnTime  = 0.25f;
             TransitionOffTime = 0.25f;
 
-            Window = Add(new Menu2(new Rectangle(ScreenWidth / 2 - 600, ScreenHeight / 2 - 300, 1200, 540)));
+            // bench 361 (maintainer): centred on the Shipyard FRAME, not the screen - at wide
+            // resolutions (or Full Screen off) the two centres diverge and the popup sat off-frame.
+            Rectangle frame = GameScreens.ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight, ShipDesignScreen.FullScreenDesign);
+            Window = new Rectangle(frame.CenterX() - 600, frame.CenterY() - 270, 1200, 540);
             int x  = (int)Window.X + 20;
             int y  = (int)Window.Y + 70;
             int w  = (int)Window.Width - 30;
@@ -63,11 +66,14 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         public override void LoadContent()
         {
-            CloseButton(Window.Menu.Right - 40, Window.Menu.Y + 20);
+            CloseButton(Window.Right - 40, Window.Y + 20);
             //Screen Title
-            string title    = "Current Ship Issues";
-            Vector2 menuPos = new Vector2(Window.Menu.CenterTextX(title, Fonts.Laserian14), Window.Menu.Y + 30);
-            Label(menuPos, title, Fonts.Laserian14, Cream);
+            // bench 362 (maintainer): default popup title font, ALL CAPS, and centred VERTICALLY in
+            // the title bar by the bar's own metrics instead of a hand-measured offset
+            string title    = "CURRENT SHIP ISSUES";
+            float titleY    = Window.Y + PopupFrame.TitleBarTop + (PopupFrame.TitleBarHeight - UITheme.WindowTitle.LineSpacing) / 2f;
+            Vector2 menuPos = new Vector2(Window.CenterTextX(title, UITheme.WindowTitle), titleY);
+            Label(menuPos, title, UITheme.WindowTitle, Cream);
             PopulateIssues();
             base.LoadContent();
         }
@@ -76,6 +82,10 @@ namespace Ship_Game.GameScreens.ShipDesign
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
+            // the popup window's surface, drawn in place before the children
+            var frame = new PopupFrame(Window);
+            frame.DrawFill(batch, Window);
+            frame.Draw(batch);
             base.Draw(batch, elapsed);
             batch.SafeEnd();
         }

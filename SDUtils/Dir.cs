@@ -79,11 +79,19 @@ public static class Dir
     // Without it, nothing changes.
     //
     // Why: this folder holds far more than saves — the user config (resolution, options), ship
-    // designs, fleet designs, saved setups and the logs. Three installs sharing it means three
-    // installs sharing all of that, and a game saved by a build with changed serialization may
-    // not load in another. The UI chantier build gets its own; the QoL build stays compatible
-    // with stock BlackBox and keeps the default folder, so saves carry across those two freely.
+    // designs, fleet designs, saved setups and the logs. The UI chantier build gets its own; the
+    // QoL build stays compatible with stock BlackBox and keeps the default folder.
     public static readonly string StarDriveAppData = ResolveAppDataDir();
+
+    // Ludoal fork: the PLAYER'S OWN WORK is shared across side-by-side installs, whatever
+    // STARDRIVE_APPDATA says - saves, ship and fleet designs, blueprints, setups, races. Copying
+    // those between installs by hand was the whole friction (maintainer feedback). What stays
+    // per-install is the plumbing: StarDrive.user.config and the logs, which are about THIS build
+    // and would otherwise fight over resolution and options.
+    //
+    // ⚠ The accepted price: a save written by a build with changed serialization may fail to load
+    // in another. That is the trade - one folder of work rather than three copies of it.
+    public static readonly string StarDriveUserData = AppData + "/StarDrive";
 
     static string ResolveAppDataDir()
     {

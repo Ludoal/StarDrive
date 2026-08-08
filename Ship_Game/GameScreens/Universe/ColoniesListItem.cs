@@ -1,8 +1,11 @@
+using System;
+using System.Globalization;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using SDUtils;
 using Ship_Game.Audio;
+using Ship_Game.UI; // UITable: the shared table charte
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 
@@ -20,13 +23,13 @@ namespace Ship_Game
         public Rectangle StorageRect;
         public Rectangle QueueRect;
         public Rectangle PopRect;
+        public Rectangle GrowthRect; // Ludoal fork (bench 339): population growth per turn
         public Rectangle FoodRect;
         public Rectangle ProdRect;
         public Rectangle ResRect;
         public Rectangle MoneyRect;
-        public Rectangle FertRect;   // Ludoal fork (wishlist): fertility / richness / max pop columns
+        public Rectangle FertRect;   // Ludoal fork (wishlist): fertility / richness columns
         public Rectangle RichRect;
-        public Rectangle MaxPopRect;
 
         AssignLaborComponent AssignLabor;
 
@@ -45,13 +48,11 @@ namespace Ship_Game
 
         bool ApplyProdHover;
         bool CancelProdHover;
-        readonly bool LowRes;
 
         public ColoniesListItem(EmpireManagementScreen screen, Planet planet)
         {
             Screen = screen;
             Universe = screen.Universe;
-            LowRes = Screen.LowRes;
             P = planet;
 
             //UIList columns = Add(new UIList());
@@ -64,30 +65,32 @@ namespace Ship_Game
 
         public override void PerformLayout()
         {
-            int x = (int)X;
             int y = (int)Y;
-            int sliderWidth = Screen.LowRes ? 250 : 375;
 
             P.UpdateIncomes();
-            // Ludoal fork (wishlist): stat block widened 150 -> 240 for the three new columns;
-            // the 90 extra pixels come out of the Labor slider and Storage, System/Planet keep
-            // their upstream widths (maintainer feedback)
-            const int statBlock = 240;
-            const int extra = (statBlock - 150) / 2; // 45px each from Labor and Storage
-            SysNameRect    = new Rectangle(x, y, (int)((Rect.Width - (sliderWidth + 150)) * 0.17f) - 30, Rect.Height);
-            PlanetNameRect = new Rectangle(x + SysNameRect.Width, y, (int)((Rect.Width - (sliderWidth + 150)) * 0.17f), Rect.Height);
-            FertRect    = new Rectangle(PlanetNameRect.Right,      y,  30, Rect.Height);
-            RichRect    = new Rectangle(PlanetNameRect.Right + 30, y, 30, Rect.Height);
-            MaxPopRect  = new Rectangle(PlanetNameRect.Right + 60, y, 30, Rect.Height);
-            PopRect     = new Rectangle(PlanetNameRect.Right + 90, y, 30, Rect.Height);
-            FoodRect    = new Rectangle(PlanetNameRect.Right + 120, y, 30, Rect.Height);
-            ProdRect    = new Rectangle(PlanetNameRect.Right + 150, y, 30, Rect.Height);
-            ResRect     = new Rectangle(PlanetNameRect.Right + 180, y, 30, Rect.Height);
-            MoneyRect   = new Rectangle(PlanetNameRect.Right + 210, y, 30, Rect.Height);
-            int laborWidth = sliderWidth - extra;
-            SliderRect  = new Rectangle(PlanetNameRect.Right + statBlock, y - 30, laborWidth, Rect.Height + 25);
-            StorageRect = new Rectangle(PlanetNameRect.Right + laborWidth + statBlock, y, (int)((Rect.Width - (sliderWidth + 120)) * 0.33f) - extra, Rect.Height);
-            QueueRect   = new Rectangle(PlanetNameRect.Right + laborWidth + StorageRect.Width + statBlock, y, (int)((Rect.Width - (sliderWidth + 150)) * 0.33f), Rect.Height);
+            // the shared table charte owns the columns (maintainer bench 293) - the row
+            // reads its bands off them and only keeps its own vertical quirks (the labor
+            // slider block runs taller than the row)
+            UITable.Column[] cols = Screen.Table.Columns;
+            Rectangle Band(int i) => new Rectangle(cols[i].Rect.X, y, cols[i].Rect.Width, Rect.Height);
+            SysNameRect    = Band(0);
+            PlanetNameRect = Band(1);
+            // Ludoal fork (bench 339): a Pop Growth column sits between Pop (4) and Food, so every
+            // band from Food onward is one index later than before.
+            FertRect    = Band(2);
+            RichRect    = Band(3);
+            PopRect     = Band(4);
+            GrowthRect  = Band(5);
+            FoodRect    = Band(6);
+            ProdRect    = Band(7);
+            MoneyRect   = Band(8); // money before research, the top bar's order (bench 294)
+            ResRect     = Band(9);
+            SliderRect  = new Rectangle(cols[10].Rect.X + 4, y - 30, cols[10].Rect.Width - 8, Rect.Height + 25);
+            // maintainer bench 339: the Storage content starts 5px further left (its whole content
+            // is placed off StorageRect.X, so shifting the rect shifts all of it at once)
+            StorageRect = Band(11);
+            StorageRect.X -= 5;
+            QueueRect   = Band(12);
 
             if (AssignLabor == null)
             {
@@ -103,7 +106,9 @@ namespace Ship_Game
                 color = "green"
             };
 
-            int ddwidth = (int)(0.2f * StorageRect.Width);
+            // a quarter, not a fifth: Import and Export overflowed the fifth
+            // (maintainer bench 296)
+            int ddwidth = (int)(0.25f * StorageRect.Width);
             FoodDropDown = new DropDownMenu(new Rectangle(StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, ddwidth, 18));
             FoodDropDown.AddOption(Localizer.Token(GameText.Store));
             FoodDropDown.AddOption(Localizer.Token(GameText.Import));
@@ -121,8 +126,12 @@ namespace Ship_Game
             ProdDropDown.AddOption(Localizer.Token(GameText.Import));
             ProdDropDown.AddOption(Localizer.Token(GameText.Export));
             ProdDropDown.ActiveIndex = (int)P.PS;
-            ApplyProductionRect = new Rectangle(QueueRect.X + QueueRect.Width - 50, QueueRect.Y + 10, ResourceManager.Texture("NewUI/icon_queue_rushconstruction").Width, ResourceManager.Texture("NewUI/icon_queue_rushconstruction").Height);
-            CancelProductionRect = new Rectangle(QueueRect.X + QueueRect.Width - 20, QueueRect.Y + 10, ResourceManager.Texture("NewUI/icon_queue_delete").Width, ResourceManager.Texture("NewUI/icon_queue_delete").Height);
+            // on the PROGRESS BAR's line, not the name's (maintainer bench 299) - the item
+            // name gets the column's full width. The bar sits one bold line under the name
+            // anchor, which itself rides at mid-height - 30 (QueueItem.DrawAt).
+            int iconY = QueueRect.Y + QueueRect.Height / 2 - 30 + Fonts.Arial12Bold.LineSpacing + 3;
+            ApplyProductionRect = new Rectangle(QueueRect.X + QueueRect.Width - 50, iconY, ResourceManager.Texture("NewUI/icon_queue_rushconstruction").Width, ResourceManager.Texture("NewUI/icon_queue_rushconstruction").Height);
+            CancelProductionRect = new Rectangle(QueueRect.X + QueueRect.Width - 20, iconY, ResourceManager.Texture("NewUI/icon_queue_delete").Width, ResourceManager.Texture("NewUI/icon_queue_delete").Height);
             UpdateQueueItemsList();
 
             base.PerformLayout();
@@ -130,7 +139,7 @@ namespace Ship_Game
 
         void DrawStatValue(SpriteBatch batch, Rectangle rect, string value, Color color)
         {
-            var cursor = new Vector2(rect.X + rect.Width - 5 - Fonts.Arial12.MeasureString(value).X,
+            var cursor = new Vector2(rect.X + rect.Width - UITable.PadX - Fonts.Arial12.MeasureString(value).X,
                                      PlanetNameRect.Y + PlanetNameRect.Height / 2 - Fonts.Arial12.LineSpacing / 2).ToFloored();
             batch.DrawString(Fonts.Arial12, value, cursor, color);
         }
@@ -229,28 +238,18 @@ namespace Ship_Game
         {
             ProdStorage.Progress = P.ProdHere;
             FoodStorage.Progress = P.FoodHere;
-            var TextColor2 = new Color(118, 102, 67, 50).Premultiplied();
-            var smallHighlight = new Color(118, 102, 67, 25).Premultiplied();
-            if (ItemIndex % 2 == 0)
-            {
-                batch.FillRectangle(Rect, smallHighlight);
-            }
+            // charte (bench 293): the zebra fill and the per-row border are gone - the
+            // shared chrome delimits; only the SELECTED colony keeps its marker fill
             if (P == Screen.SelectedPlanet)
             {
-                batch.FillRectangle(Rect, TextColor2);
+                batch.FillRectangle(Rect, new Color(118, 102, 67, 50).Premultiplied());
             }
 
             Color TextColor = Colors.Cream;
-            if (Fonts.Pirulen16.MeasureString(P.System.Name).X <= SysNameRect.Width)
-            {
-                Vector2 SysNameCursor = new Vector2(SysNameRect.X + SysNameRect.Width / 2 - Fonts.Pirulen16.MeasureString(P.System.Name).X / 2f, SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Pirulen16.LineSpacing / 2);
-                batch.DrawString(Fonts.Pirulen16, P.System.Name, SysNameCursor, TextColor);
-            }
-            else
-            {
-                Vector2 SysNameCursor = new Vector2(SysNameRect.X + SysNameRect.Width / 2 - Fonts.Pirulen12.MeasureString(P.System.Name).X / 2f, SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Pirulen12.LineSpacing / 2);
-                batch.DrawString(Fonts.Pirulen12, P.System.Name, SysNameCursor, TextColor);
-            }
+            // System in the regular body face, from the left (maintainer bench 293)
+            var SysNameCursor = new Vector2(SysNameRect.X + UITable.PadX,
+                                            SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2);
+            batch.DrawString(Fonts.Arial12Bold, P.System.Name, SysNameCursor, TextColor);
             Rectangle planetIconRect = new Rectangle(PlanetNameRect.X + 5, PlanetNameRect.Y + 25, PlanetNameRect.Height - 50, PlanetNameRect.Height - 50);
             batch.Draw(P.PlanetTexture, planetIconRect, Color.White);
             if (P.PrioritizedPort)
@@ -267,61 +266,69 @@ namespace Ship_Game
                     new Vector2(planetIconRect.X+2, planetIconRect.Bottom), new Vector2(25, 25), color);
             }
 
-            var cursor = new Vector2(PopRect.X + PopRect.Width - 5, PlanetNameRect.Y + PlanetNameRect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
-            float population = P.PopulationBillion;
-            string popstring = population.String();
-            cursor.X = cursor.X - Fonts.Arial12.MeasureString(popstring).X;
-            cursor = cursor.ToFloored();
-            batch.DrawString(Fonts.Arial12, popstring, cursor, Color.White);
-            cursor = new Vector2(FoodRect.X + FoodRect.Width - 5, PlanetNameRect.Y + PlanetNameRect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
+            // every stat with a fixed decimal - right-aligned + constant fraction =
+            // aligned on the point (maintainer bench 293); population reads "x / y"
+            // like the Planets tab, Max Pop merged in (bench 294)
+            // the value the cell SAYS is the value that picks the colour: -0.04 rounds to
+            // "0.0" at one decimal, so it must neither read "-0.0" nor wear pink (bench 305)
+            float R1(float v) => Math.Abs(v) < 0.05f ? 0f : v;
+            string F1(float v) => R1(v).ToString("0.0", CultureInfo.InvariantCulture);
+            // Ludoal fork (bench 353): Pop Growth reads in millions with one decimal (maintainer request)
+            string F2(float v) => (Math.Abs(v) < 0.05f ? 0f : v).ToString("0.0", CultureInfo.InvariantCulture);
+            // give each number of an "a / b" string one decimal place (12 -> 12.0), leaving text as-is
+            string OneDecimalEachSide(string s)
+            {
+                string[] parts = s.Split('/');
+                for (int i = 0; i < parts.Length; ++i)
+                {
+                    string t = parts[i].Trim();
+                    if (float.TryParse(t, System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture, out float f))
+                        parts[i] = f.ToString("0.0", CultureInfo.InvariantCulture);
+                    else
+                        parts[i] = t;
+                }
+                return string.Join(" / ", parts);
+            }
+            string popString = P.PopulationStringForPlayer;
+            int popParen = popString.IndexOf(" (");
+            if (popParen >= 0) popString = popString.Substring(0, popParen);
+            // maintainer bench 339: a ".0" on the whole numbers of "x / y" so a mixed row does not
+            // jump between integer and decimal widths (a first step toward aligning on the slash).
+            popString = OneDecimalEachSide(popString);
+            DrawStatValue(batch, PopRect, popString, Color.White);
+            // Ludoal fork (bench 354): population growth per turn in MILLIONS, one decimal. The raw
+            // EstimatedPopGrowthPerTurn is already in millions (Population is millions, /1000 = billions
+            // per MaxPopulationBillion) - the old /1000f put it in billions, which at one decimal read
+            // 0.0 on every colony. Show the raw value; tooltip says "(millions)".
+            DrawStatValue(batch, GrowthRect, F2(P.EstimatedPopGrowthPerTurn),
+                          P.EstimatedPopGrowthPerTurn > 0.5f ? Color.LightGreen : Color.Gray);
+            DrawStatValue(batch, FoodRect, F1(P.Food.NetIncome), R1(P.Food.NetIncome) >= 0f ? Color.White : Color.LightPink);
+            DrawStatValue(batch, ProdRect, F1(P.Prod.NetIncome), R1(P.Prod.NetIncome) >= 0f ? Color.White : Color.LightPink);
+            DrawStatValue(batch, ResRect, F1(P.Res.NetIncome), Color.White);
+            DrawStatValue(batch, MoneyRect, F1(P.Money.NetRevenue), R1(P.Money.NetRevenue) >= 0f ? Color.White : Color.LightPink);
 
-            string fstring = P.Food.NetIncome.String();
-            cursor.X -= Fonts.Arial12.MeasureString(fstring).X;
-            cursor = cursor.ToFloored();
-            batch.DrawString(Fonts.Arial12, fstring, cursor, (P.Food.NetIncome >= 0f ? Color.White : Color.LightPink));
-            
-            cursor = new Vector2(ProdRect.X + FoodRect.Width - 5, PlanetNameRect.Y + PlanetNameRect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
-            string pstring = P.Prod.NetIncome.String();
-            cursor.X -= Fonts.Arial12.MeasureString(pstring).X;
-            cursor = cursor.ToFloored();
-            bool pink = P.Prod.NetIncome < 0f;
-            batch.DrawString(Fonts.Arial12, pstring, cursor, (pink ? Color.LightPink : Color.White));
-            
-            cursor = new Vector2(ResRect.X + FoodRect.Width - 5, PlanetNameRect.Y + PlanetNameRect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
-            string rstring = P.Res.NetIncome.String();
-            cursor.X = cursor.X - Fonts.Arial12.MeasureString(rstring).X;
-            cursor = cursor.ToFloored();
-            batch.DrawString(Fonts.Arial12, rstring, cursor, Color.White);
-            
-            cursor = new Vector2(MoneyRect.X + FoodRect.Width - 5, PlanetNameRect.Y + PlanetNameRect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
-            float money = P.Money.NetRevenue;
-            string mstring = money.String();
-            cursor.X = cursor.X - Fonts.Arial12.MeasureString(mstring).X;
-            cursor = cursor.ToFloored();
-            batch.DrawString(Fonts.Arial12, mstring, cursor, (money >= 0f ? Color.White : Color.LightPink));
-
-            // Ludoal fork (wishlist): fertility (env-adjusted, tinted by racial multiplier), richness, max pop
+            // Ludoal fork (wishlist): fertility (env-adjusted, tinted by racial multiplier), richness
             float envMult = Universe.Player.PlayerEnvModifier(P.Category);
             Color fertColor = envMult.AlmostEqual(1) ? Color.White : envMult < 1f ? Color.LightPink : Color.LightGreen;
-            DrawStatValue(batch, FertRect, P.FertilityFor(Universe.Player).String(), fertColor);
-            DrawStatValue(batch, RichRect, P.MineralRichness.String(), Color.White);
-            DrawStatValue(batch, MaxPopRect, P.MaxPopulationBillionFor(Universe.Player).String(), Color.White);
+            DrawStatValue(batch, FertRect, F1(P.FertilityFor(Universe.Player)), fertColor);
+            DrawStatValue(batch, RichRect, F1(P.MineralRichness), Color.White);
 
-            if (Fonts.Pirulen16.MeasureString(P.Name).X + planetIconRect.Width + 10f <= PlanetNameRect.Width)
-            {
-                var a = new Vector2(planetIconRect.X + planetIconRect.Width + 10, SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Pirulen16.LineSpacing / 2);
-                batch.DrawString(Fonts.Pirulen16, P.Name, a, TextColor);
-            }
-            else if (Fonts.Pirulen12.MeasureString(P.Name).X + planetIconRect.Width + 10f <= PlanetNameRect.Width)
-            {
-                var b = new Vector2(planetIconRect.X + planetIconRect.Width + 10, SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Pirulen12.LineSpacing / 2);
-                batch.DrawString(Fonts.Pirulen12, P.Name, b, TextColor);
-            }
-            else
-            {
-                var c = new Vector2(planetIconRect.X + planetIconRect.Width + 10, SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Arial8Bold.LineSpacing / 2);
-                batch.DrawString(Fonts.Arial8Bold, P.Name, c, TextColor);
-            }
+            // two lines like the Planets tab (bench 294): the name in 14, the class with
+            // its richness word under it in gray
+            var namePos = new Vector2(planetIconRect.X + planetIconRect.Width + 10,
+                                      SysNameRect.Y + SysNameRect.Height / 2 - (Fonts.Arial14Bold.LineSpacing + Fonts.Arial12.LineSpacing + 2) / 2);
+            batch.DrawString(Fonts.Arial14Bold, P.Name, namePos, TextColor);
+            namePos.Y += Fonts.Arial14Bold.LineSpacing + 2;
+            string cls = P.LocalizedRichness;
+            int clsPar = cls.IndexOf(" (");
+            if (clsPar >= 0) cls = cls.Substring(0, clsPar);
+            batch.DrawString(Fonts.Arial12, cls, namePos, Color.Gray);
+            // the environment multiplier rides the class line, like the Planets tab
+            // (maintainer bench 296)
+            if (!envMult.AlmostEqual(1))
+                batch.DrawString(Fonts.Arial8Bold, $" (x {envMult.String(2)})",
+                                 new Vector2(namePos.X + Fonts.Arial12.MeasureString(cls).X + 5, namePos.Y + 2),
+                                 envMult < 1f ? Color.Pink : Color.LightGreen);
 
             base.Draw(batch, elapsed);
 
@@ -332,13 +339,11 @@ namespace Ship_Game
             if (queue.Length > 0)
             {
                 QueueItem qi = queue[0];
-                qi.DrawAt(P.Universe, batch, new Vector2(QueueRect.X + 10, QueueRect.Y + QueueRect.Height / 2 - 30), LowRes);
+                qi.DrawAt(P.Universe, batch, new Vector2(QueueRect.X + 10, QueueRect.Y + QueueRect.Height / 2 - 30));
                 batch.Draw((ApplyProdHover ? ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover1") : ResourceManager.Texture("NewUI/icon_queue_rushconstruction")), ApplyProductionRect, Color.White);
-                batch.Draw((CancelProdHover ? ResourceManager.Texture("NewUI/icon_queue_delete_hover1") : ResourceManager.Texture("NewUI/icon_queue_delete")), CancelProductionRect, Color.White);
+                batch.Draw((CancelProdHover ? ResourceManager.Texture("NewUI/icon_queue_delete_hover1") : ResourceManager.Texture("NewUI/icon_queue_delete")), CancelProductionRect, Color.Red); // destruction reads red (bench 305)
                 DrawQueueStats(batch, queue.Length);
             }
-
-            batch.DrawRectangle(Rect, TextColor2);
         }
 
         void DrawQueueStats(SpriteBatch batch, int queueCount)
@@ -360,7 +365,7 @@ namespace Ship_Game
             stats   = $"{stats}. Total: {TotalProdNeeded}";
             var pos = new Vector2(QueueRect.X + 10, QueueRect.Y + QueueRect.Height / 2 + 15);
 
-            Graphics.Font font = LowRes ? Fonts.Arial8Bold : Fonts.Arial12;
+            Graphics.Font font = Fonts.Arial12;
             batch.DrawString(font, stats, pos, Color.Gray);
         }
 

@@ -13,10 +13,14 @@ using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game
 {
-    public abstract class GenericLoadSaveScreen : GameScreen
+    // Ludoal fork: a PopupWindow - and this one class carries NINE screens (load/save game, race,
+    // fleet design, setups, blueprints), so it is the single most useful place in the sweep. They
+    // were a Menu1 frame that went see-through once frames were painted rather than textured
+    // (maintainer observation on Load Saved Race), and they now wear the frame Options wears.
+    public abstract class GenericLoadSaveScreen : PopupWindow
     {
         protected Rectangle Window;
-        protected Menu1 SaveMenu;
+        // (SaveMenu is gone: the window frame is PopupWindow's now, not a Menu1 of our own)
         protected Submenu NameSave;
         protected SubmenuScrollList<SaveLoadListItem> AllSaves;
         protected Vector2 TitlePosition;
@@ -39,14 +43,13 @@ namespace Ship_Game
 
         protected GenericLoadSaveScreen(
             GameScreen parent, SLMode mode, string initText, string title, string tabText, bool showSaveExport = false)
-            : base(parent, toPause: parent as UniverseScreen)
+            : base(parent, 680, 600) // wide enough for Export beside the Load/Save button (maintainer bench 303)
         {
             Mode = mode;
             InitText = initText;
             Title = title;
             TabText = tabText;
             ShowSaveExport = showSaveExport;
-            IsPopup = true;
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
         }
@@ -95,14 +98,14 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
+            // ⚠ base.Draw goes FIRST now: it paints the window frame, which used to be SaveMenu's
+            // job here. Leaving it last would lay the frame's body over the two lists.
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-            batch.SafeBegin();
-            SaveMenu.Draw(batch, elapsed);
-            NameSave.Draw(batch, elapsed);
-            AllSaves.Draw(batch, elapsed);
-
             base.Draw(batch, elapsed);
 
+            batch.SafeBegin();
+            NameSave.Draw(batch, elapsed);
+            AllSaves.Draw(batch, elapsed);
             batch.SafeEnd();
         }
 
@@ -114,15 +117,24 @@ namespace Ship_Game
 
         public override void LoadContent()
         {
-            Window = new Rectangle(ScreenWidth / 2 - 300, ScreenHeight / 2 - 300, 600, 600);
-            SaveMenu = new Menu1(Window);
-            CloseButton(Window.X + Window.Width - 35, Window.Y + 10);
+            // ⚠ base.LoadContent() lays the frame out and calls RemoveAll(): it goes FIRST, and
+            // it supplies the frame and the close cross this method used to build itself.
+            // the window names itself in its own title bar; Title used to reach the player only
+            // as a Submenu tab label, so the bar sat empty (maintainer observation)
+            TitleText = Title;
+            base.LoadContent();
 
-            RectF sub = new(Window.X + 20, Window.Y + 20, Window.Width - 40, 80);
+            Window = Rect;
+            // ⚠ inset 28, not 20: a Submenu's tab sticks out to the LEFT of its own rect, so at
+            // 20 the tabs overhung the frame's border. Bounds come from ContentArea, which knows
+            // what the frame's own edges eat (11 right, 30 at the foot).
+            Rectangle inner = PopupFrame.ContentArea(Window);
+            // standard 10px margins (maintainer bench 304) + the 12px of air over the name row
+            RectF sub = new(inner.X + 10, inner.Y + 16, inner.Width - 20, 80);
             NameSave = new Submenu(sub, Title);
             TitlePosition = new Vector2(sub.X + 20, sub.Y + 45);
 
-            RectF scrollList = new(sub.X, sub.Y + 90, sub.W, Window.Height - sub.H - 50);
+            RectF scrollList = new(sub.X, sub.Y + 90, sub.W, inner.Bottom - (sub.Y + 90));
 
             AllSaves = Add(new SubmenuScrollList<SaveLoadListItem>(scrollList, TabText, EntryHeight));
             SavesSL = AllSaves.List;
@@ -145,10 +157,16 @@ namespace Ship_Game
 
             if (ShowSaveExport)
             {
-                var exportBtn = ButtonBigDip(sub.X + sub.W - 200, EnterNameArea.Y - 48, "Export Save", b => ExportSave());
+                // on the SAME row, left of Load/Save, and just "Export" - the window grew the
+                // 80px this button needs (maintainer bench 303)
+                // blue - the fork's active-control plate (maintainer bench 304)
+                var exportBtn = Add(new UIButton(ButtonStyle.WideActive, new Vector2(sub.X + sub.W - 176, EnterNameArea.Y - 2), "Export"));
+                exportBtn.OnClick = b => ExportSave();
+                exportBtn.SetAbsSize(80, 24);
                 exportBtn.Tooltip = GameText.ThisWillLetYouEasily;
             }
-            base.LoadContent();
+            // (no base.LoadContent() here: it ran at the top, and calling it again would
+            // RemoveAll() everything this method just built)
         }
 
         protected virtual void OnSaveLoadItemClicked(SaveLoadListItem item)
@@ -246,7 +264,7 @@ namespace Ship_Game
 
             // include the user's colony blueprints for the current mod/BBplus context
             string modScope = BlueprintsTemplate.CurrentModName;
-            string blueprintsSrc = Dir.StarDriveAppData + "/Colony Blueprints/" + modScope;
+            string blueprintsSrc = Dir.StarDriveUserData + "/Colony Blueprints/" + modScope;
             if (Directory.Exists(blueprintsSrc))
             {
                 string blueprintsDest = $"{tmpDir}/blueprints/{modScope}";

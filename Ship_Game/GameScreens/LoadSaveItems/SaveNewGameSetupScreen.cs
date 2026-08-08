@@ -16,7 +16,7 @@ public sealed class SaveNewGameSetupScreen : GenericLoadSaveScreen
         : base(screen, SLMode.Save, "New Saved Setup", "Save Setup", "Saved Setups", 
             "Saved Setup already exists.  Overwrite?")
     {
-        Path = Dir.StarDriveAppData + "/Saved Setups/";
+        Path = Dir.StarDriveUserData + "/Saved Setups/";
         SavedSetup = new(settings);
     }
 

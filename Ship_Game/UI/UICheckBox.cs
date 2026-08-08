@@ -13,7 +13,9 @@ namespace Ship_Game
     public sealed class UICheckBox : UIElementV2
     {
         public readonly Graphics.Font Font;
-        public readonly LocalizedText Text;
+        // Ludoal fork: mutable - the espionage ops swap folded/full labels with their
+        // state; call PerformLayout after a swap so the hit rect follows the text
+        public LocalizedText Text;
         public readonly LocalizedText Tooltip;
         Ref<bool> Binding;
 

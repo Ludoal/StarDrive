@@ -24,6 +24,10 @@ namespace Ship_Game
 
         public PressState State = PressState.Default;
 
+        // Ludoal fork: the rule around a painted button - the same brass line the reworked
+        // screens and the top bar draw, so a plate reads as part of one interface.
+        static Color PlateRule => GameScreens.ScreenGroups.FrameRule;
+
         public SubTexture Normal;
         public SubTexture Hover;
         public SubTexture Pressed;
@@ -121,8 +125,27 @@ namespace Ship_Game
 
         public static SubTexture StyleTexture(ButtonStyle style = ButtonStyle.Default)
         {
-            return GetDefaultStyle(style).Normal;
+            // ⚠ Callers want this for SIZE, not for pixels: the layout parser auto-fits a button
+            // from its aspect ratio ("AbsSize: [200, 0]" reads the height off it). The slice asset
+            // is square, so handing it back turned every laid-out button into a 200x200 slab -
+            // the size reference is the one that still carries the proportions.
+            StyleTextures s = GetDefaultStyle(style);
+            return s.SizeRef ?? s.Normal;
         }
+
+        // Ludoal fork: draw `tex` into `r` as a nine-slice - the four corners keep their pixel
+        // size, the edges stretch along one axis and the middle along both. The slices are cut
+        // Ludoal fork: SEPARATE bar and corner textures, the way Submenu's NineSliceSprite does
+        // it - because that is the frame whose edges stay clean at any size. Slicing one bitmap
+        // put the edge bands at the mercy of the middle's height: a 32px asset had to squeeze
+        // 20px of source into the 12px a 24px-tall button leaves, and a 1px rule at 0.6 lands
+        // between two pixels. The bar is 2x2 and uniform, so there is nothing in it to squeeze;
+        // the corners are drawn once at their own size and never stretched at all.
+        // `tint` multiplies: the assets are greyscale, the colour lives in the code.
+        // Ludoal fork: a button is the plate with ONE tint - face and rule the same colour,
+        // the alpha ramps in UITheme doing the rest. Window frames call the same method with two.
+        public static void DrawPlate(SpriteBatch batch, in Rectangle r, Color tint)
+            => UITheme.DrawPlate(batch, r, tint, tint.Alpha(UITheme.Theme.RuleStrength));
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
@@ -137,15 +160,23 @@ namespace Ship_Game
 
             Rectangle r = Rect;
             SubTexture texture = ButtonTexture();
-            if (texture != null)
+            if (Plated)
+            {
+                // Ludoal fork: ONE mechanism for every button - the painted plate, tinted and
+                // faded from code. A 52px and a 182px button are the same control; the tint
+                // carries the meaning (neutral, active, hostile) that used to need a texture of
+                // its own, and the two tiny assets restyle the whole game when redrawn.
+                DrawPlate(batch, r, BackgroundColor().Alpha(Enabled ? Opacity : Opacity * 0.5f));
+            }
+            else if (texture != null)
             {
                 batch.Draw(texture, r, Color.White);
             }
             else if (DrawBackground)
             {
                 Color c = BackgroundColor();
-                batch.FillRectangle(r, c.Alpha(0.75f));
-                batch.DrawRectangle(r, c.AddRgb(-0.1f), 2);
+                batch.FillRectangle(r, c.Alpha(Enabled ? 0.85f : 0.55f));
+                batch.DrawRectangle(r, PlateRule.Alpha(Enabled ? 0.75f : 0.35f));
             }
             // else: we only draw Text, nothing else
 

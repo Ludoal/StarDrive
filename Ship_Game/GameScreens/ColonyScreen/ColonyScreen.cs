@@ -16,13 +16,18 @@ namespace Ship_Game
     public partial class ColonyScreen : PlanetScreen
     {
         readonly ToggleButton PlayerDesignsToggle;
-        readonly Menu2 TitleBar;
-        readonly Vector2 TitlePos;
-        readonly Menu1 LeftMenu;
-        readonly Menu1 RightMenu;
+        // Ludoal fork: the screen's frame. The title bar the planet name sits in is the one every
+        // window uses, declared with the colours it goes with.
+        Rectangle ColonyFrame;
+        PopupFrame Frame;
+        CloseButton CloseBtn; // bench 361: served explicitly on read-only (infiltrated) colonies
         readonly Submenu PlanetInfo;
         readonly Submenu PStorage;
         readonly Submenu PFacilities;
+        RectF LaborRect; // the Assign Labor block - the terraform details anchor on it now
+        // sticky across colonies (maintainer bench 300): a session inspecting terraform
+        // keeps the tab up from one colony screen to the next
+        static int LaborTabSticky;
         readonly UITextEntry PlanetName;
         readonly Rectangle PlanetIcon;
         public EmpireUIOverlay Eui;
@@ -58,13 +63,13 @@ namespace Ship_Game
         public bool ClickedTroop;
 
         Rectangle EditNameButton;
+        Rectangle ViewOnMapButton; // the eye by the name - jump to the planet on the map
         readonly Font Font8  = Fonts.Arial8Bold;
         readonly Font Font12 = Fonts.Arial12Bold;
         readonly Font Font14 = Fonts.Arial14Bold;
         readonly Font Font20 = Fonts.Arial20Bold;
         readonly Font TextFont;
 
-        UILabel TradeTitle;
         UILabel IncomingTradeTitle;
         UILabel OutgoingTradeTitle;
         UILabel ManualImportTitle;
@@ -128,46 +133,146 @@ namespace Ship_Game
             : base(parent, p)
         {
             Eui = empUI;
+            IsPopup = true; // bench 347: the full live universe map (and its cartouches) shows behind Colony
             Player.UpdateShipsWeCanBuild();
-            TextFont = LowRes ? Font8 : Font12;
+            TextFont = Font12;
 
-            var titleBar = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            TitleBar = new Menu2(titleBar);
+            // Ludoal fork: a plain popup frame, no tab row - Colony has no siblings, and its
+            // planet name rides the title bar (see ColonyScreen_Draw).
+            // The rect is pushed OUT past the margins by what each edge's texture spends on
+            // non-line pixels, so the visible RULE is what lands at FrameMargin:
+            //   sides:  BorderLeft/BorderRight (the side bands' width)
+            //   bottom: BottomLine - the band's bright rule is at its TOP, the 12 rows under it
+            //           are drop shadow, which falls past the screen edge by design
+            //   top:    one tab strip LOWER than TabRowY, so this frame matches the group
+            //           screens' frames and does not peek out behind them in the stack.
+            // bench 354 (maintainer): restore the bench-347 vertical, which WAS well aligned. My later
+            // "align on GroupFrame" passes (351/352) changed the Y as a side effect of the left-align
+            // rework - but decentring should only touch X. This is the 347 rect verbatim: left-anchored
+            // at FrameMargin (less the border ink so the visible rule lands on the margin), top one tab
+            // strip below TabRowY, height capped at the 1080p footprint. Y and height are the values
+            // that read correctly at the bench; only the left-anchor X is the intended change.
+            const int m = GameScreens.ScreenGroups.FrameMargin;
+            // bench 364 (maintainer): one tab-strip BELOW the row, so the origin tab of the dimmed
+            // silhouette behind stays readable above the colony panel. GroupFrameTop is that exact
+            // edge (TabRowY + the strip's useful TabHeight-2, Lek's constant). The real fix is still
+            // phase 2, when Colony becomes an actual submenu tab.
+            int frameTop = GameScreens.ScreenGroups.GroupFrameTop;
+            int layoutW = Math.Min(ScreenWidth, GameScreens.ScreenGroups.MaxFrameWidth);
+            int layoutH = Math.Min(ScreenHeight, 1080);
+            ColonyFrame = new Rectangle(m - PopupFrame.BorderLeft, frameTop,
+                                        layoutW - 2 * m + PopupFrame.BorderLeft + PopupFrame.BorderRight,
+                                        layoutH - frameTop - m + PopupFrame.BottomLine);
+            // ⚠ NOT Add()ed: a child is drawn by base.Draw, which lands AFTER everything this
+            // screen paints by hand - the frame's body would bury the panels. Painted first
+            // thing in Draw instead (see ColonyScreen_Draw).
+            Frame = new PopupFrame(ColonyFrame);
 
-            LeftColony = Add(new ToggleButton(titleBar.X + 25, titleBar.Y + 24, ToggleButtonStyle.ArrowLeft));
-            LeftColony.Tooltip = GameText.ViewPreviousColony;
-            LeftColony.OnClick = b => OnChangeColony(-1);
+            // the close cross where every popup window puts its own, from the same source
+            Vector2 closePos = PopupFrame.ClosePos(ColonyFrame);
+            CloseBtn = Add(new CloseButton(closePos.X, closePos.Y)); // ref kept: the read-only early-out must still serve it (bench 361)
 
-            RightColony = Add(new ToggleButton(titleBar.Right - 39, titleBar.Y + 24, ToggleButtonStyle.ArrowRight));
-            RightColony.Tooltip = GameText.ViewNextColony;
-            RightColony.OnClick = b => OnChangeColony(+1);
+            // ⚠ the popup frame's borders are NOT a 2px rule: 11 on the right, 30 at the foot.
+            // Content laid out on the raw rect runs underneath them, which is exactly the width
+            // and height the bench reported missing (maintainer observation). ContentArea is the
+            // rect less the title bar and those borders - the one thing the grid may measure.
+            Rectangle inner = PopupFrame.ContentArea(ColonyFrame);
+            RectF client = new(inner.X, inner.Y, inner.Width, inner.Height);
+            // ⚠ At 900 high the LEFT COLUMN does not fit and that is not the frame's doing: its
+            // three fixed panels are 250 + 300 + 220 = 770, plus gaps, against 749px of usable
+            // height. It overflows before STORAGE gets a single pixel. The column needs real
+            // rework at that height (maintainer: "on refaçonnera le contenu en temps utile") -
+            // shrinking the frame would only hide it.
 
-            TitlePos = new Vector2(titleBar.X + titleBar.Width / 2 - Fonts.Laserian14.MeasureString("Colony Overview").X / 2f, titleBar.Y + titleBar.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
-            LeftMenu = new Menu1(2, titleBar.Y + titleBar.Height + 5, titleBar.Width, ScreenHeight - (titleBar.Y + titleBar.Height) - 7);
-            RightMenu = new Menu1(titleBar.Right + 5, titleBar.Y + titleBar.Height + 5, ScreenWidth / 3 - 10, ScreenHeight - (titleBar.Y + titleBar.Height) - 7); // Ludoal fork: align top with the central block, like every other panel
-            Add(new CloseButton(RightMenu.Right - 52, RightMenu.Y + 22));
+            // ── the screen's one grid ────────────────────────────────────────────────────────
+            // Ludoal fork: every panel is placed from THESE, and nothing re-derives a margin of
+            // its own. Pad is the gap to the frame AND between panels - one number, so a change
+            // moves the whole layout together rather than half of it.
+            const float Pad = 10;
+            float gridLeft   = inner.X + Pad;
+            float gridRight  = inner.Right - Pad;
+            float gridTop    = inner.Y + Pad;
+            // ⚠ measured from the FRAME's foot, not from ContentArea: the latter already reserves
+            // 30px for the bottom band, so subtracting Pad on top of it left the last row 40px
+            // short of the frame instead of 10 (maintainer).
+            float gridBottom = ColonyFrame.Bottom - PopupFrame.BottomLine - Pad;
 
-            RectF planetInfoR = new(LeftMenu.X + 20, LeftMenu.Y + 20, 
-                                    (int)(0.4f * LeftMenu.Width),
-                                    (int)(0.23f * (LeftMenu.Height - 80)));
+            // ── what is FIXED and what STRETCHES (Ludoal fork, bench 232) ────────────────────
+            // Left column: FIXED width. Planet Info, Governor and Assign Labor keep fixed
+            // heights; STORAGE is the one that stretches, taking what is left to the foot.
+            // The left column's width comes from the Governor tab row with its settled "BP"
+            // label (maintainer bench, 3 Aug: BLUEPRINT in full starves the 900p centre - the
+            // short tab carries a tooltip instead). Submenu's REAL per-tab arithmetic, read in
+            // UpdateTabRect: TextWidth + 2 + the header_right texture (33px), +8 wrap slack.
+            float govTabsW = Fonts.Arial12Bold.TextWidth("GOVERNOR") + Fonts.Arial12Bold.TextWidth("DEFENSE")
+                           + Fonts.Arial12Bold.TextWidth("BUDGET") + Fonts.Arial12Bold.TextWidth("BP")
+                           + 4 * (2 + 33) + 8;
+            float colLeftW = Math.Max(govTabsW, 380) + 40;
+
+            // ── the three fixed heights, each derived from what it HOLDS ─────────────────────
+            // ⚠ They were 250 + 300 + 220 = 770 against 749px of usable height at 900, so the
+            // column overflowed before STORAGE got a pixel. Each is now the content's own size:
+            // PLANET INFO is the portrait plus its lines; GOVERNOR is measured on DEFENSE, the
+            // tallest of its four tabs, now that its buttons ride under the slider instead of
+            // hanging off the bottom; ASSIGN LABOR is three sliders and nothing more.
+            // ⚠ the PORTRAIT sets this height, not the other way round (maintainer). It is 128
+            // square - the same number the icon itself uses below, so the two cannot drift.
+            // Title bar + the portrait + a margin under it.
+            float portraitH   = 128;
+            // ⚠ the panel holds TWO things side by side: the portrait on the right, and the name
+            // plus four lines on the left. Sizing on the portrait alone left 3px of slack, which
+            // one font change would eat - so it takes the TALLER of the two, measured in the
+            // fonts that draw them.
+            // ⚠ FIVE lines, not four: Incoming/Outgoing Pop is conditional but the room is the
+            // OBJECT's, not the moment's - reserved on everything the panel can declare
+            float infoLinesH  = 45 + Fonts.Arial20Bold.LineSpacing * 2
+                              + 5 * (TextFont.LineSpacing + 2);
+            float planetInfoH = Math.Max(26 + portraitH + 14, infoLinesH + 10);
+            const float governorH   = 222;   // one line back down (maintainer bench) - STORAGE breathes
+            const float laborH      = 150;   // three sliders, their locks and the title bar
+
+            RectF planetInfoR = new(gridLeft, gridTop, colLeftW, planetInfoH);
             PlanetInfo = new(planetInfoR, GameText.PlanetInfo);
-            Submenu pDescription = new(LeftMenu.X + 20, LeftMenu.Y + 40 + PlanetInfo.Height, 0.4f * LeftMenu.Width, 0.25f * (LeftMenu.Height - 80));
 
-            var labor = new RectF(LeftMenu.X + 20, LeftMenu.Y + 20 + PlanetInfo.Height + pDescription.Height + 40,
-                                  0.4f * LeftMenu.Width, 0.25f * (LeftMenu.Height - 80));
+            // The left column stacks four panels with ONE gap between each. The first three carry
+            // fixed content and keep their height; STORAGE is the variable block - it takes what
+            // is left down to the foot, so the column always closes on the grid rather than
+            // wherever four quarters happen to land.
+            Submenu pDescription = new(gridLeft, PlanetInfo.Bottom + Pad, colLeftW, governorH);
 
-            AssignLabor = Add(new AssignLaborComponent(P, labor, useTitleFrame: true));
+            var labor = new RectF(gridLeft, pDescription.Bottom + Pad, colLeftW, laborH);
+            LaborRect = labor;
+            // Terraforming rides as a second tab of this block (maintainer bench 299): the
+            // facilities row was folding to a second line once CA's terraform tab joined it,
+            // and the terraform panel is light enough to live here
+            bool terraTab = Player.data.Traits.TerraformingLevel > 0 || P.Terraformable;
+            AssignLabor = Add(new AssignLaborComponent(P, labor, useTitleFrame: true,
+                terraTab ? new LocalizedText[] { GameText.AssignLabor, GameText.BB_Tech_Terraforming_Name } : null));
+            if (terraTab)
+            {
+                AssignLabor.TitleMenu.SelectedIndex = LaborTabSticky.Clamped(0, 1);
+                AssignLabor.TitleMenu.OnTabChange = i => LaborTabSticky = i;
+            }
 
-            RectF pStorageR = new(LeftMenu.X + 20, LeftMenu.Y + 20 + PlanetInfo.Height + pDescription.Height + labor.H + 60, 0.4f * LeftMenu.Width, 0.25f * (LeftMenu.Height - 80));
+            RectF pStorageR = new(gridLeft, labor.Bottom + Pad, colLeftW,
+                                  gridBottom - (labor.Bottom + Pad));
             PStorage = new(pStorageR, GameText.Storage);
 
             Vector2 blockadePos = new Vector2(PStorage.X + 20, PStorage.Y + 35);
             BlockadeLabel = Add(new UILabel(blockadePos, Localizer.Token(GameText.Blockade2), Fonts.Pirulen16, Color.Red));
             BlockadeLabel.Tooltip = GameText.IndicatesThatThisPlanetIs;
             
-            Vector2 starvationPos = new Vector2(PStorage.X + 200, PStorage.Y + 35);
-            StarvationLabel = Add(new UILabel(starvationPos, Localizer.Token(GameText.Starvation), Fonts.Pirulen16, Color.Red));
-            FoodStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + 25 + 0.33f*(PStorage.Height - 25), 0.4f*PStorage.Width, 18);
+            // Ludoal fork (maintainer feedback): STARVATION! rides the title bar's empty right end
+            // instead of overlapping the food bar and Import button below it.
+            string starvTxt = Localizer.Token(GameText.Starvation);
+            Vector2 starvationPos = new Vector2(PStorage.Right - Fonts.Pirulen16.TextWidth(starvTxt) - 15, PStorage.Y + 4);
+            StarvationLabel = Add(new UILabel(starvationPos, starvTxt, Fonts.Pirulen16, Color.Red));
+            // ⚠ the two bars sit a FIXED distance below the title bar (maintainer: content aligned
+            // to the TOP, not centred). They rode 0.33 and 0.66 of the panel's height, so they
+            // drifted apart and floated in the middle as STORAGE - the column's variable block -
+            // grew. Rows now, not fractions.
+            const float storeRow1 = 46, storeRow2 = 92; // +8 of air between the bars (maintainer bench)
+            FoodStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + storeRow1, 0.4f*PStorage.Width, 18);
             FoodStorage.Max = p.Storage.Max;
             FoodStorage.Progress = p.FoodHere;
             FoodStorage.color = "green";
@@ -178,7 +283,7 @@ namespace Ship_Game
             FoodDropDown.ActiveIndex = (int)p.FS;
             var iconStorageFood = ResourceManager.Texture("NewUI/icon_storage_food");
             FoodStorageIcon = new Rectangle((int)PStorage.X + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - iconStorageFood.Height / 2, iconStorageFood.Width, iconStorageFood.Height);
-            ProdStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + 25 + 0.66f*(PStorage.Height - 25), 0.4f*PStorage.Width, 18);
+            ProdStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + storeRow2, 0.4f*PStorage.Width, 18);
             ProdStorage.Max = p.Storage.Max;
             ProdStorage.Progress = p.ProdHere;
             var iconStorageProd = ResourceManager.Texture("NewUI/icon_storage_production");
@@ -189,14 +294,34 @@ namespace Ship_Game
             ProdDropDown.AddOption(Localizer.Token(GameText.Export));
             ProdDropDown.ActiveIndex = (int)p.PS;
 
-            RectF subColonyR = new(LeftMenu.X + 20 + PlanetInfo.Width + 20, PlanetInfo.Y, 
-                                   LeftMenu.Width - 60 - PlanetInfo.Width, LeftMenu.Height * 0.5f);
+            // Centre column: the colony grid keeps its height, STATISTICS below takes the rest -
+            // it is the variable block of this column, and it closes on the grid's foot.
+            // Right column: FIXED width - the buildable rows and the queue rows are written for
+            // Ludoal fork (maintainer feedback, 7 Aug): col 2 (COLONY + STATS) is the BOUNDED one
+            // now, capped at 672; col 3 (BUILDINGS + QUEUE) absorbs the surplus. From 1440 to the
+            // point col 2 hits 672 the two grow together off the leftover; past that, everything
+            // extra goes to col 3. This is the reverse of the old rule (col 2 took all the surplus).
+            const float ColCentreMax = 672f;
+            float colCentreX = gridLeft + colLeftW + Pad;
+            float available  = gridRight - colCentreX - Pad;     // what col 2 + col 3 share
+            float colCentreW = Math.Min(available * 0.5f, ColCentreMax); // 50/50 until the 672 cap
+            float colRightW  = available - colCentreW;           // col 3 takes the rest
+
+            // COLONY holds a 7x5 tile grid, so its height FOLLOWS its width - square tiles are the
+            // point of it. The panel's chrome (10 each side, 30 above, 5 below) is taken off
+            // before the ratio and added back, so it is the GRID that keeps 7:5, not the frame.
+            // COLONY keeps its 7:5 from the WIDTH again, the width itself bounded so the grid
+            // cannot go giant at high resolutions (maintainer bench 281) - the stats block
+            // below takes the rest, which at 900p is taller than a fixed reserve gave it.
+            float gridInnerW = Math.Min(colCentreW - 20, 620f); // width cap - bench number
+            float subColonyH = gridInnerW * (5f / 7f) + 35;
+            subColonyH = Math.Min(subColonyH, gridBottom - gridTop - Pad - 260); // stats floor, safety
+
+            RectF subColonyR = new(colCentreX, gridTop, colCentreW, subColonyH);
             SubColonyGrid = new(subColonyR, GameText.Colony);
 
-            RectF pFacilitiesR = new(LeftMenu.X + 20 + PlanetInfo.Width + 20,
-                                     SubColonyGrid.Bottom + 20,
-                                     LeftMenu.Width - 60 - PlanetInfo.Width,
-                                     LeftMenu.Height - 20 - SubColonyGrid.Height - 40);
+            RectF pFacilitiesR = new(colCentreX, SubColonyGrid.Bottom + Pad, colCentreW,
+                                     gridBottom - (SubColonyGrid.Bottom + Pad));
 
             PFacilities = base.Add(new Submenu(pFacilitiesR));
             PopulatePfacilitieTabs();
@@ -216,12 +341,20 @@ namespace Ship_Game
             if (facilitiesTabSelected < PFacilities.Tabs.Count)
                 PFacilities.SelectedIndex = facilitiesTabSelected;
 
-            var filterBgRect = new RectF(RightMenu.X + 70, RightMenu.Y + 15, RightMenu.Width - 400, 20);
+            // Right column. BUILDINGS starts on COLONY's top line; the filter row sits ABOVE it,
+            // outside the frame, right-aligned on it - the clear button ends where the panel ends.
+            float colRightX = gridRight - colRightW;
+            float filterH = 20;
+            float clearW = 17;
+            float buildingsTop = gridTop + filterH + Pad;
+
+            var filterBgRect = new RectF(colRightX + 60, gridTop,
+                                         colRightW - 60 - clearW - 10, filterH);
             var filterRect = new RectF(filterBgRect.X + 5, filterBgRect.Y, filterBgRect.W, filterBgRect.H);
             FilterBuildableItems = Add(new UITextEntry(filterRect, Font12, ""));
             FilterBuildableItems.AutoCaptureOnHover = true;
             FilterBuildableItems.Background = new Submenu(filterBgRect);
-            Vector2 filterLabelPos = new Vector2(RightMenu.X + 25, filterRect.Y+2);
+            Vector2 filterLabelPos = new Vector2(colRightX, filterRect.Y + 2);
             FilterBuildableItemsLabel = Add(new UILabel(filterLabelPos, "Filter:", Font12, Color.Gray));
             
             var customStyle = new UIButton.StyleTextures("NewUI/icon_clear_filter", "NewUI/icon_clear_filter_hover2");
@@ -232,8 +365,10 @@ namespace Ship_Game
                 Pos     = new Vector2(filterRect.Right + 10, filterRect.Y + 3)
             });
 
-            RectF buildableR = new(RightMenu.X + 20, RightMenu.Y + 40, 
-                                   RightMenu.Width - 40, 0.5f*(RightMenu.Height-40));
+            // BUILDINGS and the queue split the column 50/50 (maintainer spec, 3 Aug) - the
+            // column no longer chases COLONY's foot, which now floats with the stats block.
+            RectF buildableR = new(colRightX, buildingsTop, colRightW,
+                                   (gridBottom - buildingsTop - Pad) / 2);
             BuildableTabs = base.Add(new SubmenuScrollList<BuildableListItem>(buildableR, BuildingsTabText));
             BuildableTabs.OnTabChange = OnBuildableTabChanged;
 
@@ -252,9 +387,8 @@ namespace Ship_Game
             PlayerDesignsToggle.OnClick = OnPlayerDesignsToggleClicked;
             ResetBuildableTabs();
 
-            float queueBottom = RightMenu.Bottom - 20;
-            float queueTop = BuildableTabs.Bottom + 10;
-            RectF queueR = new(RightMenu.X + 20, queueTop, RightMenu.Width - 40, queueBottom - queueTop);
+            float queueTop = BuildableTabs.Bottom + Pad;
+            RectF queueR = new(colRightX, queueTop, colRightW, gridBottom - queueTop);
             var queue = base.Add(new SubmenuScrollList<ConstructionQueueScrollListItem>(queueR, GameText.ConstructionQueue));
 
             ConstructionQueue = queue.List;
@@ -263,12 +397,45 @@ namespace Ship_Game
             if (p.OwnerIsPlayer || p.Universe.Debug)
                 ConstructionQueue.OnDragReorder = OnConstructionItemReorder;
 
-            int iconSize = LowRes ? 80 : 128;
-            int iconOffsetX = LowRes ? 100 : 148;
-            int iconOffsetY = LowRes ? 0 : 25;
+            // ⚠ ONE source for the portrait's size: portraitH decided this panel's height above,
+            // so the icon reads it back rather than repeating the number. It sits UNDER the title
+            // bar instead of centring itself in the panel - a portrait that centres in a panel
+            // sized for it just floats.
+            int iconSize = (int)portraitH;
+            int iconOffsetX = 148;
 
-            PlanetIcon = new Rectangle((int)PlanetInfo.Right - iconOffsetX, 
-                (int)PlanetInfo.Y + ((int)PlanetInfo.Height - iconOffsetY) / 2 - iconSize/2 + (LowRes ? 0 : 25), iconSize, iconSize);
+            // ⚠ CENTRED in the panel again (maintainer): pinning it under the title bar left it
+            // sitting high once the panel took the taller of the portrait and the text column.
+            // Centred BELOW the title bar, not in the whole rect - or it rides up into it.
+            float iconBandTop = PlanetInfo.Y + 26;
+            float iconBandH   = PlanetInfo.Bottom - iconBandTop;
+            PlanetIcon = new Rectangle((int)PlanetInfo.Right - iconOffsetX,
+                                       (int)(iconBandTop + (iconBandH - iconSize) / 2),
+                                       iconSize, iconSize);
+
+            // Ludoal fork: the colony arrows straddle the planet portrait's centre line - they
+            // step through planets, so they belong under the planet. Shortened from the style's
+            // 35: that height belongs to the selection box they were drawn for.
+            // the style's own size, restored (maintainer): they were cut to 14x20 for the narrow
+            // slot under the portrait, and that slot is gone.
+            const int arrowW = 24, arrowH = 35;
+            // ⚠ the colony arrows ride the TITLE BAR now (maintainer), not the foot of the planet
+            // portrait - and they align on the ground map's edges, so the gesture that changes
+            // colony sits over the thing that shows the colony.
+            int arrowY = ColonyFrame.Y + PopupFrame.TitleBarTop
+                       + (PopupFrame.TitleBarHeight - arrowH) / 2;
+
+            LeftColony = Add(new ToggleButton((int)SubColonyGrid.X, arrowY,
+                                              ToggleButtonStyle.ArrowLeft));
+            LeftColony.SetAbsSize(arrowW, arrowH);
+            LeftColony.Tooltip = GameText.ViewPreviousColony;
+            LeftColony.OnClick = b => OnChangeColony(-1);
+
+            RightColony = Add(new ToggleButton((int)SubColonyGrid.Right - arrowW, arrowY,
+                                               ToggleButtonStyle.ArrowRight));
+            RightColony.SetAbsSize(arrowW, arrowH);
+            RightColony.Tooltip = GameText.ViewNextColony;
+            RightColony.OnClick = b => OnChangeColony(+1);
 
             Rectangle planetShieldBarRect = new Rectangle(PlanetIcon.X, PlanetInfo.Rect.Y + 4, PlanetIcon.Width, 20);
             PlanetShieldBar = new ProgressBar(planetShieldBarRect)
@@ -278,9 +445,16 @@ namespace Ship_Game
 
             PlanetShieldIconRect = new Rectangle(planetShieldBarRect.X - 30, planetShieldBarRect.Y-2, 20, 20);
 
-            GridPos = new Rectangle(SubColonyGrid.Rect.X + 10, SubColonyGrid.Rect.Y + 30, SubColonyGrid.Rect.Width - 20, SubColonyGrid.Rect.Height - 35);
-            int width = GridPos.Width / 7;
-            int height = GridPos.Height / 5;
+            // square tiles whatever shaped the panel: the limiting dimension sets the tile,
+            // and the grid centres in the other one
+            int innerW = SubColonyGrid.Rect.Width - 20;
+            int innerH = SubColonyGrid.Rect.Height - 35;
+            int tileSize = Math.Min(innerW / 7, innerH / 5);
+            GridPos = new Rectangle(SubColonyGrid.Rect.X + 10 + (innerW - tileSize * 7) / 2,
+                                    SubColonyGrid.Rect.Y + 30 + (innerH - tileSize * 5) / 2,
+                                    tileSize * 7, tileSize * 5);
+            int width = tileSize;
+            int height = tileSize;
             foreach (PlanetGridSquare planetGridSquare in p.TilesList)
                 planetGridSquare.ClickRect = new Rectangle(GridPos.X + planetGridSquare.X * width, GridPos.Y + planetGridSquare.Y * height, width, height);
             
@@ -303,20 +477,21 @@ namespace Ship_Game
             P.RefreshBuildingsWeCanBuildHere();
             Vector2 detailsVector = new Vector2(PFacilities.Rect.X + 15, PFacilities.Rect.Y + 35);
             CreateTradeDetails(detailsVector);
-            CreateTerraformingDetails(detailsVector);
+            // terraform details live on the ASSIGN LABOR block now (maintainer bench 299)
+            CreateTerraformingDetails(new Vector2(LaborRect.X + 15, LaborRect.Y + 38)); // air under the tab strip (bench 302)
             CreateDysonSwarmDetails(detailsVector);
         }
 
         void PopulatePfacilitieTabs()
         {
             PFacilities.ClearTabs();
-            PFacilities.AddTab(GameText.Statistics2);
+            // ⚠ a literal, not the Statistics2 token: shortening the token would rename it
+            // everywhere in the game. Only this row needs to fit on one line (maintainer).
+            PFacilities.AddTab("Stats");
             PFacilities.AddTab(StatsPlusTabTitle); // Ludoal fork: Stats+ add-on tab, next to its witness
             PFacilities.AddTab(GameText.Description);
             PFacilities.AddTab(GameText.Trade2);
-
-            if (Player.data.Traits.TerraformingLevel > 0 || P.Terraformable)
-                PFacilities.AddTab(GameText.BB_Tech_Terraforming_Name);
+            // Terraforming is a tab of the ASSIGN LABOR block now (maintainer bench 299)
 
             if (DysonSwarmTabAllowed)
             {
@@ -383,7 +558,7 @@ namespace Ship_Game
             if (P.Owner == null || !DysonSwarmTabAllowed)
                 return;
 
-            Font font = LowRes ? Font8 : Font14;
+            Font font = Font14;
             int spacing = font.LineSpacing + 10;
             int barWidth = (int)(PFacilities.Width * 0.5f);
             float indent = 30;
@@ -450,18 +625,18 @@ namespace Ship_Game
 
         void CreateTradeDetails(Vector2 pos)
         {
-            Font font       = LowRes ? Font8 : Font14;
+            Font font       = Font14;
             int spacing     = font.LineSpacing + 10;
             int barWidth    = (int)(PFacilities.Width * 0.33f);
             int sliderWidth = (int)(PFacilities.Width * 0.33f);
             int sliderSize  = 30;
             float indent    = 30;
             float indentTradeAmount = indent + barWidth + 5;
-            float indentSlider      = indentTradeAmount + 60;
+            float indentSlider      = indentTradeAmount + 35; // slid left for 900p (maintainer bench)
 
-            AddLabel(ref TradeTitle, pos, GameText.ColonyTrade, LowRes ? Font14 : Font20, Color.White);
-
-            Vector2 incomingTitlePos = new Vector2(pos.X, pos.Y + spacing * (LowRes ? 1 : 1.5f));
+            // no "Colony Trade" title (maintainer, 3 Aug): the tab already names the page, and
+            // this is the tallest tab - the row it frees is what makes it fit
+            Vector2 incomingTitlePos = new Vector2(pos.X, pos.Y);
             AddLabel(ref IncomingTradeTitle, incomingTitlePos, GameText.IncomingFreighters, font, Color.Gray);
 
             Vector2 manualImportTitlePos = new Vector2(pos.X + indentSlider - 10, incomingTitlePos.Y);
@@ -472,7 +647,7 @@ namespace Ship_Game
             AddPanel(ref IncomingFoodPanel, incomingFoodPos, "NewUI/icon_food", font.LineSpacing, GameText.IncomingOutGoingTip);
             Rectangle incomingFoodRect = new Rectangle((int)(incomingFoodPos.X + indent), (int)incomingFoodPos.Y, barWidth, 20);
             AddProgressBar(ref IncomingFoodBar, incomingFoodRect, P.FoodImportSlots, "green");
-            Vector2 incomingFoodAmountPos = new Vector2(pos.X + indentTradeAmount, incomingFoodPos.Y + (LowRes ? 0 : 2));
+            Vector2 incomingFoodAmountPos = new Vector2(pos.X + indentTradeAmount, incomingFoodPos.Y + 2);
             AddLabel(ref IncomingFoodAmount, incomingFoodAmountPos, "", Font8, Color.White);
             Rectangle importFoodSlotsRect = new Rectangle((int)(pos.X + indentSlider), (int)(incomingFoodPos.Y-12), sliderWidth, sliderSize);
             AddUiSlider(ref ImportFoodSlotSlider, importFoodSlotsRect, "", 0, 20, P.ManualFoodImportSlots, GameText.ManualTradeSlotTip);
@@ -482,7 +657,7 @@ namespace Ship_Game
             AddPanel(ref IncomingProdPanel, incomingProdPos, "NewUI/icon_production", font.LineSpacing, GameText.IncomingOutGoingTip);
             Rectangle incomingProdRect = new Rectangle((int)(incomingProdPos.X + indent), (int)incomingProdPos.Y, barWidth, 20);
             AddProgressBar(ref IncomingProdBar, incomingProdRect, P.ProdImportSlots, "brown");
-            Vector2 incomingProdAmountPos = new Vector2(pos.X + indentTradeAmount, incomingProdPos.Y + (LowRes ? 0 : 2));
+            Vector2 incomingProdAmountPos = new Vector2(pos.X + indentTradeAmount, incomingProdPos.Y + 2);
             AddLabel(ref IncomingProdAmount, incomingProdAmountPos, "", Font8, Color.White);
             Rectangle importProdSlotsRect = new Rectangle((int)(pos.X + indentSlider), (int)(incomingProdPos.Y-12), sliderWidth, sliderSize);
             AddUiSlider(ref ImportProdSlotSlider, importProdSlotsRect, "", 0, 20, P.ManualProdImportSlots, GameText.ManualTradeSlotTip);
@@ -492,12 +667,12 @@ namespace Ship_Game
             AddPanel(ref IncomingColoPanel, incomingColoPos, "UI/icon_pop", font.LineSpacing, GameText.IncomingOutGoingTip);
             Rectangle incomingColoRect = new Rectangle((int)(incomingColoPos.X + indent), (int)incomingColoPos.Y, barWidth, 20);
             AddProgressBar(ref IncomingColoBar, incomingColoRect, P.ColonistsImportSlots, "blue");
-            Vector2 incomingColoAmountPos = new Vector2(pos.X + indentTradeAmount, incomingColoPos.Y + (LowRes ? 0 : 2));
+            Vector2 incomingColoAmountPos = new Vector2(pos.X + indentTradeAmount, incomingColoPos.Y + 2);
             AddLabel(ref IncomingColoAmount, incomingColoAmountPos, "", Font8, Color.White);
             Rectangle importColoSlotsRect = new Rectangle((int)(pos.X + indentSlider), (int)(incomingColoPos.Y-12), sliderWidth, sliderSize);
             AddUiSlider(ref ImportColoSlotSlider, importColoSlotsRect, "", 0, 20, P.ManualColoImportSlots, GameText.ManualTradeSlotTip);
 
-            Vector2 outgoingTitlePos = new Vector2(pos.X, incomingColoAmountPos.Y + spacing * (LowRes ? 1 : 1.5f));
+            Vector2 outgoingTitlePos = new Vector2(pos.X, incomingColoAmountPos.Y + spacing * 1.5f);
             AddLabel(ref OutgoingTradeTitle, outgoingTitlePos, GameText.OutgoingFreighters, font, Color.Gray);
 
             Vector2 manualExportTitlePos = new Vector2(pos.X + indentSlider - 10, outgoingTitlePos.Y);
@@ -530,18 +705,28 @@ namespace Ship_Game
 
         void CreateTerraformingDetails(Vector2 pos)
         {
-            Font font    = LowRes ? Font8 : Font14;
-            int spacing  = font.LineSpacing + 2;
-            int barWidth = (int)(PFacilities.Width * 0.33f);
+            // compact cascade (maintainer benches 299-300): the block lives on the Assign
+            // Labor frame, 150px tall - Font14 rows on a tight pitch, no Font20 title (the
+            // tab names it), one line per datum. The title label stays allocated but never
+            // shows.
+            Font font    = Font14;
+            // the rows SPREAD over the block's full height (maintainer bench 301): three
+            // rows at terraform level 1 read bunched at the top of a mostly-empty frame.
+            // The row count follows the owner's terraforming level, the same gates the
+            // update applies.
+            int lvlRows = Player.data.Traits.TerraformingLevel >= 3 ? 7
+                        : Player.data.Traits.TerraformingLevel == 2 ? 4 : 3;
+            int spacing = (int)((LaborRect.H - 55) / lvlRows).Clamped(font.LineSpacing + 1, 34);
+            int barWidth = (int)(LaborRect.W * 0.33f);
 
-            AddLabel(ref TerraformTitle, pos, "", LowRes ? Font14 : Font20, Color.White);
+            AddLabel(ref TerraformTitle, pos, "", Font20, Color.White);
 
-            Vector2 statusTitlePos = new Vector2(pos.X, pos.Y + spacing*2);
+            Vector2 statusTitlePos = new Vector2(pos.X, pos.Y);
             AddLabel(ref TerraformStatusTitle, statusTitlePos, GameText.TerraformingStatus, font, Color.White);
 
-            float indent = font.MeasureString(TerraformStatusTitle.Text).X + 125;
+            float indent = font.MeasureString(TerraformStatusTitle.Text).X + 100;
 
-            Vector2 statusPos = new Vector2(pos.X + indent, pos.Y + spacing*2);
+            Vector2 statusPos = new Vector2(pos.X + indent, pos.Y);
             AddLabel(ref TerraformStatus, statusPos, " ", font, Color.Gray);
 
             Vector2 numTerraformersTitlePos = new Vector2(pos.X, TerraformStatusTitle.Y + spacing);
@@ -550,13 +735,13 @@ namespace Ship_Game
             Vector2 numTerraformersPos = new Vector2(pos.X + indent, numTerraformersTitlePos.Y);
             AddLabel(ref TerraformersHere, numTerraformersPos, " ", font, Color.White);
 
-            Vector2 terraVolcanoTitlePos = new Vector2(pos.X, numTerraformersTitlePos.Y + spacing*2);
+            Vector2 terraVolcanoTitlePos = new Vector2(pos.X, numTerraformersTitlePos.Y + spacing);
             AddLabel(ref TerrainTerraformTitle, terraVolcanoTitlePos, " ", font, Color.Gray);
 
             Vector2 terraVolcanoPos = new Vector2(pos.X + indent, terraVolcanoTitlePos.Y);
             AddLabel(ref VolcanoTerraformDone, terraVolcanoPos, GameText.TerraformersDone, font, Color.Green);
 
-            Rectangle terraVolcanoRect = new Rectangle((int)terraVolcanoPos.X, (int)terraVolcanoPos.Y, barWidth, 20);
+            Rectangle terraVolcanoRect = new Rectangle((int)terraVolcanoPos.X, (int)terraVolcanoPos.Y, barWidth, 14);
             AddProgressBar(ref TerrainTerraformBar, terraVolcanoRect, 100, "brown", percentage: true);
 
             Vector2 terraTileTitlePos = new Vector2(pos.X, terraVolcanoTitlePos.Y + spacing);
@@ -565,7 +750,7 @@ namespace Ship_Game
             Vector2 terraTilePos = new Vector2(pos.X + indent, terraTileTitlePos.Y);
             AddLabel(ref TileTerraformDone, terraTilePos, GameText.TerraformersDone, font, Color.Green);
 
-            Rectangle terraTileRect = new Rectangle((int)terraTilePos.X, (int)terraTilePos.Y, barWidth, 20);
+            Rectangle terraTileRect = new Rectangle((int)terraTilePos.X, (int)terraTilePos.Y, barWidth, 14);
             AddProgressBar(ref TileTerraformBar, terraTileRect, 100, "green", percentage: true);
 
             Vector2 terraPlanetTitlePos = new Vector2(pos.X, terraTileTitlePos.Y + spacing);
@@ -574,10 +759,10 @@ namespace Ship_Game
             Vector2 terraPlanetPos = new Vector2(pos.X + indent, terraPlanetTitlePos.Y);
             AddLabel(ref PlanetTerraformDone, terraPlanetPos, GameText.TerraformersDone, font, Color.Green);
 
-            Rectangle terraPlanetRect = new Rectangle((int)terraPlanetPos.X, (int)terraPlanetPos.Y, barWidth, 20);
+            Rectangle terraPlanetRect = new Rectangle((int)terraPlanetPos.X, (int)terraPlanetPos.Y, barWidth, 14);
             AddProgressBar(ref PlanetTerraformBar, terraPlanetRect, 100, "blue", percentage: true);
 
-            Vector2 targetFertilityTitlePos = new Vector2(pos.X, terraPlanetTitlePos.Y + spacing * 2);
+            Vector2 targetFertilityTitlePos = new Vector2(pos.X, terraPlanetTitlePos.Y + spacing);
             AddLabel(ref TargetFertilityTitle, targetFertilityTitlePos, GameText.TerraformTargetFert, font, Color.Gray);
 
             Vector2 targetFertilityPos = new Vector2(pos.X + indent, targetFertilityTitlePos.Y);

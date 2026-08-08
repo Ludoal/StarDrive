@@ -106,6 +106,9 @@ namespace Ship_Game
                     // map. Clear any hook a list screen left standing, or a later map double-click
                     // would still fly back to that list.
                     ReturnToListScreen = null;
+                    ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
+                    // bench 352: opening a colony makes it THE selected object, so a prior selection's
+                    // cartouche vanishing is correct - we don't keep a stray selection behind Colony.
                     ClearSelectedItems();
                     returnToShip = doReturnToShip;
                     LookingAtPlanet = true;

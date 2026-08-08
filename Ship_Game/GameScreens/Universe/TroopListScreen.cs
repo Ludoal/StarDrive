@@ -1,10 +1,14 @@
+using System;
+using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
+using Ship_Game.GameScreens; // ScreenGroups: the group geometry
 using SDUtils;
 using Ship_Game.Audio;
 using Ship_Game.Ships;
 using Ship_Game.Universe;
+using Ship_Game.UI; // UITable: the shared table charte
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 
@@ -18,16 +22,21 @@ namespace Ship_Game
     // colony view (own) or the planet view (not ours) via SnapViewColony.
     public sealed class TroopListScreen : GameScreen
     {
-        readonly Menu2 TitleBar;
-        readonly Vector2 TitlePos;
-        readonly Menu2 EMenu;
+        Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
 
         public UniverseScreen Universe;
         Empire Player => Universe.Player;
         readonly ScrollList<TroopListScreenItem> TroopSL;
         readonly EmpireUIOverlay EmpireUI;
-        RectF ERect;
+        public readonly UITable Table; // the shared table charte owns the geometry
         int NumTroops;
+
+        // Ludoal fork: status filter, the same shape as the Ships Array's role dropdown - to the
+        // right of the title, and it remembers the last pick for the session the way that one
+        // does. The statuses are the four PopulateList assigns.
+        DropOptions<string> ShowStatus;
+        static string LastStatus = "";   // "" = all
+        static readonly string[] Statuses = { "Garrison", "Deployed", "Transport", "Stationed" };
 
         public TroopListScreen(UniverseScreen parent, EmpireUIOverlay empireUi, string audioCue = "")
             : base(parent, toPause: parent)
@@ -41,22 +50,82 @@ namespace Ship_Game
             TransitionOffTime = 0.25f;
             IsPopup = true;
 
-            Rectangle titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            TitleBar = new Menu2(titleRect);
-            TitlePos = new Vector2(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString("Troops Array").X / 2f,
-                                   titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
-            Rectangle leftRect = new Rectangle(2, titleRect.Y + titleRect.Height + 5, ScreenWidth - 10,
-                                               ScreenHeight - titleRect.Bottom - 7);
-            EMenu = new Menu2(leftRect);
-            Add(new CloseButton(leftRect.Right - 40, leftRect.Y + 20));
-            ERect = new(leftRect.X + 20, titleRect.Bottom + 50, ScreenWidth - 40,
-                        leftRect.Bottom - (titleRect.Bottom + 46) - 31);
-            RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
-            TroopSL = Add(new ScrollList<TroopListScreenItem>(slRect, 40));
+            // Ludoal fork: the Troops tab of the Empire group, content-sized on the shared
+            // table charte (UITable): the text columns SIZE THEMSELVES on the data they are
+            // about to show, the troop-group count sets the height - this page is allowed
+            // UNDER the 900p floor when the roster is short.
+            Table = new UITable(new[]
+            {
+                new UITable.Column { Title = "System" },
+                new UITable.Column { Title = "Location" },
+                new UITable.Column { Title = "Status",   Align = TableAlign.Center, Sorted = true, Ascending = true },
+                new UITable.Column { Title = "Troop", Foldable = true }, // repli si la table dépasse 1680 (rarissime)
+                new UITable.Column { Title = "#",        Align = TableAlign.Number },
+                // the offense icon with its tooltip in place of the word (bench 305)
+                new UITable.Column { Icon = ResourceManager.Texture("UI/icon_offense"),
+                                     Align = TableAlign.Number, Tip = Localizer.Token(GameText.Strength) },
+            });
+            int rows = CountTroopGroups(out Array<string> systems, out Array<string> locations, out Array<string> troops);
+            UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, systems);
+            UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, locations);
+            UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, Statuses);
+            UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, troops);
+            // bench 343: the last two columns size to their header + default margins like the rest,
+            // not a hardcoded 60/80. The counts/strengths are short, so the "#" header and the
+            // offense icon are the real floor - AutoSize on an empty value set gives exactly that.
+            UITable.AutoSize(Table.Columns[4], Fonts.Arial12Bold, System.Array.Empty<string>());
+            UITable.AutoSize(Table.Columns[5], Fonts.Arial12Bold, System.Array.Empty<string>());
+            // Ludoal fork (maintainer feedback): the table caps at 1680 like the rest of the group -
+            // the Troop column folds if it ever overflows (in practice it never will).
+            Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 343: capped at 1080p
+            // 118 = tab strip + the filter/info lane + headers + a line at the bottom
+            float contentH = UITable.ContentHeightFor(119, Math.Max(3, rows), 28, fullAvail);
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 2,
+                                                    OnEmpireTabChanged, Table.ContentWidth, contentH);
+            RectF client = EmpireTabs.ClientArea;
+            // one lane: the filter, then the two figures on the same line (maintainer bench 288)
+            Table.RowPitch = 28;
+            Table.Layout(client, client.Y + 30, client.Bottom - 5);
+            TroopSL = Add(new ScrollList<TroopListScreenItem>(Table.ListRect, 24));
             TroopSL.EnableItemHighlight = true;
+            Table.ApplyHighlightTo(TroopSL);
             TroopSL.OnDoubleClick = OnRowClicked; // Ludoal fork: double-click everywhere, like Ships/Empire
 
+            ShowStatus = Add(new DropOptions<string>(
+                new Rectangle((int)client.X + 10, (int)client.Y + 6, 160, 18)));
+            ShowStatus.AddOption("All Troops", "");
+            foreach (string s in Statuses)
+                ShowStatus.AddOption(s, s);
+            ShowStatus.ActiveValue = LastStatus;   // setter finds the index, defaults to "All"
+            ShowStatus.OnValueChange = _ => PopulateList();
+
             PopulateList();
+        }
+
+        // dry count of (location, troop type) groups - the frame height derives from it,
+        // BEFORE any UI exists - gathering on the way the names the text columns will
+        // show, so they can size themselves on the data. Unfiltered on purpose: the
+        // frame keeps one size for the screen's life, a filter just shortens the list.
+        int CountTroopGroups(out Array<string> systems, out Array<string> locations, out Array<string> troops)
+        {
+            var keys = new Map<(object, string), bool>();
+            var sys = new Array<string>(); var locs = new Array<string>(); var names = new Array<string>();
+            void Add(object location, string sysName, string locName, Troop t)
+            {
+                keys[(location, t.Name)] = true;
+                sys.Add(sysName); locs.Add(locName); names.Add(t.Name);
+            }
+            foreach (SolarSystem system in Universe.UState.Systems)
+                foreach (Planet p in system.PlanetList)
+                    foreach (Troop t in p.Troops.GetTroopsOf(Player))
+                        Add(p, system.Name, p.Name, t);
+            foreach (Ship s in Player.OwnedShips)
+                if (s.TroopCount > 0)
+                    foreach (Troop t in s.GetOurTroops())
+                        Add(s, s.System?.Name ?? "Deep Space", s.Name, t);
+            systems = sys; locations = locs; troops = names;
+            return keys.Count;
         }
 
         void OnRowClicked(TroopListScreenItem item)
@@ -75,30 +144,40 @@ namespace Ship_Game
                 // routes to the Ground Assault View via OpenCombatMenu.
                 bool deployed = item.Planet.Owner != Player;
                 Universe.SnapViewColony(item.Planet, deployed);
-                // Ludoal fork (bench 191): closing that colony comes back HERE (Ludo).
+                // Ludoal fork (bench 191): closing that colony comes back HERE (maintainer feedback).
                 // ⚠ Colony view only: the deployed path opens the Ground Assault view instead,
                 // which never reaches the close handler that consumes this, so a hook set there
                 // would sit and fire on some later, unrelated close.
                 // ⚠ And AFTER the snap, which clears the hook on its way in.
                 if (!deployed)
+                {
                     Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new TroopListScreen(Universe, EmpireUI));
+                    Universe.ReturnToListTabs   = EmpireTabs; // the dimmed silhouette behind the colony
+                    Universe.ReturnToListGroup  = ScreenGroups.GroupOf(this); // keep the group button lit (maintainer)
+                }
             }
         }
 
         void PopulateList()
         {
+            // Ludoal fork: called again on every filter change, so the rows have to go first
+            TroopSL.Reset();
+            LastStatus = ShowStatus?.ActiveValue ?? "";
+            string wanted = LastStatus;
+
             // group rows by (location, troop type) — accumulate count and strength
             var groups = new Map<(object Location, string TroopName), TroopListScreenItem>();
 
             void Accumulate(object location, string sysName, string locName, string status,
                             Color statusColor, Troop t, Planet p, Ship s)
             {
+                if (wanted.NotEmpty() && status != wanted)
+                    return;
                 var key = (location, t.Name);
                 if (groups.TryGetValue(key, out TroopListScreenItem item))
                     item.Accumulate(t);
                 else
-                    groups.Add(key, TroopSL.AddItem(
-                        new TroopListScreenItem(sysName, locName, status, statusColor, t, p, s)));
+                    groups.Add(key, new TroopListScreenItem(Table, sysName, locName, status, statusColor, t, p, s));
             }
 
             foreach (SolarSystem system in Universe.UState.Systems)
@@ -125,61 +204,74 @@ namespace Ship_Game
                                transport ? Color.LightSkyBlue : Color.SteelBlue, t, null, s);
             }
 
+            // the standing sort: Status, Deployed first (maintainer bench 305) - the
+            // fights you are IN outrank the garrisons at home
+            int Rank(string st) => st == "Deployed" ? 0 : st == "Garrison" ? 1
+                                 : st == "Transport" ? 2 : 3;
+            foreach (TroopListScreenItem item in groups.Values.OrderBy(v => Rank(v.StatusText)))
+                TroopSL.AddItem(item);
+
             NumTroops = 0;
             foreach (TroopListScreenItem item in TroopSL.AllEntries)
                 NumTroops += item.Count;
         }
 
+
+        // Ludoal fork: the other tabs live in their own screen, so leaving this one hands over to
+        // it. Its own index is a no-op: we are already here.
+        void OnEmpireTabChanged(int index)
+        {
+            // one factory for the whole group (ScreenGroups) - this screen only says which tab it is
+            ScreenGroups.SwitchEmpireTab(index, self: 2, Universe, this);
+        }
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
-            TitleBar.Draw(batch, elapsed);
-            batch.DrawString(Fonts.Laserian14, $"Troops Array ({NumTroops})", TitlePos, Colors.Cream);
-            EMenu.Draw(batch, elapsed);
+            // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
+            // drawn among the children, after everything below it. The troop total moves onto the
+            // reserved line beside the filter, where the title used to carry it.
+            // the canonical fill rect - ClientArea stops short of the frame border and let the
+            // map bleed through the rim (maintainer bench, Economy)
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed);
 
-            if (TroopSL.NumEntries > 0)
+            // the two figures ride the FILTER line (maintainer bench 288): labels vanilla,
+            // the count white, the food bill in pink - troops eat Troop.Consumption each
+            Graphics.Font font = Fonts.Arial12Bold;
+            RectF client = EmpireTabs.ClientArea;
+            float infoX = client.X + 190; // right of the filter dropdown
+            float infoY = client.Y + 8;
+            string totalLbl = "Total Troops: ";
+            batch.DrawString(font, totalLbl, new Vector2(infoX, infoY), UITable.Vanilla);
+            infoX += font.TextWidth(totalLbl);
+            string totalVal = NumTroops.ToString();
+            batch.DrawString(font, totalVal, new Vector2(infoX, infoY), Color.White);
+            // bench 343: no food bill when there are no troops - it read "-0.0" in pink for nothing
+            if (NumTroops > 0)
             {
-                TroopListScreenItem e1 = TroopSL.ItemAtTop;
-                Graphics.Font font = Fonts.Arial20Bold;
+                infoX += font.TextWidth(totalVal) + 24;
+                string foodLbl = "Food: ";
+                batch.DrawString(font, foodLbl, new Vector2(infoX, infoY), UITable.Vanilla);
+                batch.DrawString(font, $"-{(NumTroops * Troop.Consumption).String(1)}",
+                                 new Vector2(infoX + font.TextWidth(foodLbl), infoY), Color.LightPink);
+            }
 
-                DrawHeader(batch, font, e1.SysNameRect, "System");
-                DrawHeader(batch, font, e1.LocationRect, "Location");
-                DrawHeader(batch, font, e1.StatusRect, "Status");
-                DrawHeader(batch, font, e1.TroopRect, "Troop");
-                DrawHeader(batch, font, e1.NumRect, "Num");
-                // Ludoal fork: the word alone. This header carried "Strength" AND a fist icon
-                // saying the same thing, and it was the only column of the six to do so — the
-                // text stays because the other five are text (Ludo).
-                DrawHeader(batch, font, e1.StrRect, "Strength");
-
-                Color lineColor = new Color(118, 102, 67, 255);
-                float columnTop = ERect.Y + 15;
-                float columnBot = ERect.Y + ERect.H - 20;
-                // Ludoal fork (bench): the loop drew each column's LEFT edge, so the last column
-                // had no line closing it and Strength bled into the empty gutter (Ludo). Its
-                // right edge closes the table.
-                foreach (int colX in new[] { e1.LocationRect.X, e1.StatusRect.X, e1.TroopRect.X,
-                                             e1.NumRect.X, e1.StrRect.X, e1.StrRect.Right })
-                    batch.DrawLine(new Vector2(colX, columnTop), new Vector2(colX, columnBot), lineColor);
-                batch.DrawRectangle(TroopSL.ItemsHousing, lineColor);
+            // maintainer bench 336: with no troops there is nothing to tabulate - skip the empty
+            // table chrome (headers, column rules) and show only the note.
+            if (TroopSL.NumEntries == 0)
+            {
+                var msgPos = new Vector2(Table.TableRect.X + 30, Table.TableRect.Y + 30);
+                batch.DrawString(font, "No troops anywhere. Recruit some before the neighbours visit.",
+                                 msgPos, Color.Gray);
             }
             else
             {
-                var msgPos = new Vector2(ERect.X + 30, ERect.Y + 30);
-                batch.DrawString(Fonts.Arial20Bold, "No troops anywhere — recruit some before the neighbours visit.",
-                                 msgPos, Color.Gray);
+                Table.DrawChrome(batch);
             }
+            ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
-        }
-
-        void DrawHeader(SpriteBatch batch, Graphics.Font font, Rectangle rect, string text)
-        {
-            var pos = new Vector2(rect.X + rect.Width / 2 - font.MeasureString(text).X / 2f,
-                                  ERect.Y - font.LineSpacing);
-            batch.DrawString(font, text, pos, Colors.Cream);
         }
 
         public override bool HandleInput(InputState input)
@@ -200,26 +292,24 @@ namespace Ship_Game
 
     public sealed class TroopListScreenItem : ScrollListItem<TroopListScreenItem>
     {
-        public Rectangle SysNameRect;
-        public Rectangle LocationRect;
-        public Rectangle StatusRect;
-        public Rectangle TroopRect;
-        public Rectangle NumRect;
-        public Rectangle StrRect;
-
         readonly string SystemName;
         readonly string Location;
         readonly string Status;
+        public string StatusText => Status; // the screen's standing sort reads it
         readonly Color StatusColor;
         readonly string TroopName;
         public readonly Planet Planet;   // set for garrison/deployed rows
         public readonly Ship Ship;       // set for transport/stationed rows
         public int Count { get; private set; }
-        float Strength;
+        public float Strength { get; private set; }
 
-        public TroopListScreenItem(string systemName, string location, string status, Color statusColor,
-                                   Troop troop, Planet planet, Ship ship)
+        // the shared table charte owns the columns - the row only knows its data
+        readonly UITable Table;
+
+        public TroopListScreenItem(UITable table, string systemName, string location, string status,
+                                   Color statusColor, Troop troop, Planet planet, Ship ship)
         {
+            Table = table;
             SystemName = systemName;
             Location = location;
             Status = status;
@@ -240,75 +330,26 @@ namespace Ship_Game
 
         public override void PerformLayout()
         {
-            int x = (int)X;
-            int y = (int)Y;
-            int w = (int)Width;
-            int h = (int)Height;
             RemoveAll();
 
-            // Ludoal fork: laid out the way the Ships list and the Planet Array do it (Ludo),
-            // which took three benches to copy rather than approximate.
-            //
-            // THE RULE, read off both of them: a column holding FREE TEXT (a name, a place) takes
-            // a share of the row; a column holding a DATUM (a count, a strength, a status) takes
-            // a FIXED pixel width, because a number needs the same room whatever the window does.
-            // Planet Array is 30px per stat, Ships is 60px per trailing column — neither ever
-            // divides the whole row between everything it shows.
-            //
-            // That is also what produces the empty column for free: the fixed part does not grow,
-            // so the gutter is a floor rather than a share. 46.158 took 60px off before applying
-            // the fractions, which could not leave a gap at all (six fractions summing to 1.0
-            // just redistribute whatever total they are handed); 46.159 made them sum to 0.90,
-            // which left a gutter that SHRANK on a small window, exactly when space is tightest.
-            const int DataCol = 90;     // Status, Num, Strength — a number's room is its own
-            const int MinGutter = 150;  // the empty column, wide enough for buttons later
-
-            // ⚠ and a CEILING on the text columns (Ludo, bench 46.161): an uncapped share gave
-            // Location ~620px at 1920 for names like "Terran-Prototype". A name needs the room a
-            // name needs; past that the width is spread, not used. The text columns take their
-            // share UP TO a maximum, and everything beyond falls into the gutter — which is
-            // where growing space belongs anyway.
-            // 850 puts Location near 375px and the whole table near 1100 at 1920, leaving the
-            // gutter roomy without turning the screen into two thirds of nothing.
-            const int MaxText = 850;    // the three text columns together, at their widest
-
-            int fixedPart = DataCol * 3 + MinGutter;
-            int textPart = w > fixedPart ? w - fixedPart : w / 2;
-            if (textPart > MaxText)
-                textPart = MaxText;
-
-            int nextX = x;
-            Rectangle NextRect(float width)
-            {
-                int next = nextX;
-                nextX += (int)width;
-                return new Rectangle(next, y, (int)width, h);
-            }
-
-            // the three text columns share what is left, keeping the proportions they had
-            // (0.14 : 0.28 : 0.22 of the old row, renormalised over the three of them)
-            SysNameRect  = NextRect(textPart * 0.22f);
-            LocationRect = NextRect(textPart * 0.44f);
-            StatusRect   = NextRect(DataCol);
-            TroopRect    = NextRect(textPart * 0.34f);
-            NumRect      = NextRect(DataCol);
-            StrRect      = NextRect(DataCol);
-
-            AddCentered(SysNameRect, SystemName, Colors.Cream);
-            AddCentered(LocationRect, Location, Colors.Cream);
-            AddCentered(StatusRect, Status, StatusColor); // the status carries the color, like other panels
-            AddCentered(TroopRect, TroopName, Colors.Cream);
-            AddCentered(NumRect, Count.ToString(), Colors.Cream);
-            AddCentered(StrRect, ((int)Strength).ToString(), Colors.Cream);
+            // cells read the shared column geometry; the row only supplies its Y band
+            Cell(0, SystemName, Colors.Cream);
+            Cell(1, Location, Colors.Cream);
+            Cell(2, Status, StatusColor);
+            Cell(3, TroopName, Colors.Cream);
+            // numeric colours through the shared charte: every zero reads gray
+            Cell(4, Count.ToString(), UITable.ValueColor(TableColor.Plain, Count));
+            Cell(5, ((int)Strength).ToString(), UITable.ValueColor(TableColor.Plain, Strength));
             base.PerformLayout();
         }
 
-        void AddCentered(Rectangle rect, string text, Color color)
+        void Cell(int col, string text, Color color)
         {
-            Graphics.Font font = Fonts.Arial12Bold.MeasureString(text).X <= rect.Width ? Fonts.Arial12Bold : Fonts.Arial8Bold;
-            var pos = new Vector2(rect.X + rect.Width / 2 - font.MeasureString(text).X / 2f,
-                                  rect.Y + rect.Height / 2 - font.LineSpacing / 2);
-            Label(pos, text, font, color);
+            UITable.Column c = Table.Columns[col];
+            Graphics.Font font = c.Align == TableAlign.Number ? Fonts.Arial12
+                : Fonts.Arial12Bold.MeasureString(text).X <= c.Width - 2 * UITable.PadX
+                    ? Fonts.Arial12Bold : Fonts.Arial8Bold;
+            Label(UITable.CellPos(font, c.Rect, Y, Height, text, c.Align), text, font, color);
         }
     }
 }

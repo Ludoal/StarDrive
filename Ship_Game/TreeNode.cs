@@ -279,6 +279,26 @@ namespace Ship_Game
                 if (Complete && !Entry.MultiLevelComplete && !Screen.Player.Research.IsQueued(Entry.UID))
                     text = string.Format(new LocalizedText(GameText.ResearchMultiLevelTech).Text, Entry.Level + 1, text);
 
+                // the status line heads the tooltip (reviewer feedback, bench 305): queued,
+                // multi-level progress, or the lock and the tech that opens it
+                string status = null;
+                if (Screen.Player.Research.IsQueued(Entry.UID))
+                    status = "Queued";
+                else if (!Entry.Unlocked)
+                {
+                    TechEntry pre = Entry.GetPreReq(Screen.Player);
+                    if (pre != null && pre.Discovered && !pre.Unlocked)
+                        status = $"Locked - requires {pre.Tech.Name.Text}";
+                }
+                if (Entry.MaxLevel > 1)
+                {
+                    string lvl = RomanNumerals.ToRoman((Entry.Level + 1).UpperBound(Entry.MaxLevel))
+                               + "/" + RomanNumerals.ToRoman(Entry.MaxLevel);
+                    status = status == null ? $"Multi-level {lvl}" : $"{status} - Multi-level {lvl}";
+                }
+                if (status != null)
+                    text = status + "\n\n" + text;
+
                 ToolTip.CreateTooltip(text);
             }
             return false;

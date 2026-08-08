@@ -371,6 +371,33 @@ namespace Ship_Game
             }
         }
 
+        // Ludoal fork (bench 360): the immediate-sort variant with a pinned rasterizer - the
+        // Shipyard's module pass needs BOTH (immediate draw order AND the scene scissor, so the
+        // fitted modules clip to the frame like the 3D hull does).
+        public static bool SafeBegin(this SpriteBatch batch, SpriteBlendMode blendMode, bool sortImmediate, RasterizerState rasterizer)
+        {
+            SpriteSortMode sortMode = sortImmediate ? SpriteSortMode.Immediate : SpriteSortMode.Deferred;
+            BlendState bs = ToBlendState(blendMode);
+            try
+            {
+                batch.Begin(sortMode, bs,
+                            samplerState: null, depthStencilState: null,
+                            rasterizerState: rasterizer);
+                return true;
+            }
+            catch
+            {
+                if (batch.SafeEnd())
+                {
+                    batch.Begin(sortMode, bs,
+                                samplerState: null, depthStencilState: null,
+                                rasterizerState: rasterizer);
+                    return true;
+                }
+                return false;
+            }
+        }
+
         // Overload that lets the caller pin a custom RasterizerState (e.g. one with
         // ScissorTestEnable=true). Needed for scroll-list scissor clipping under
         // MonoGame: device.RasterizerState set externally before Begin is fine,

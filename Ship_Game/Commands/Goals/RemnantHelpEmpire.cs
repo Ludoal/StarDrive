@@ -203,7 +203,7 @@ namespace Ship_Game.Commands.Goals
                     s.LoyaltyChangeByGift(TargetEmpire, false);
                 }
 
-                if (Owner.LegacyEspionageEnabled || TargetEmpire.isPlayer || Owner.Universe.Player.GetEspionage(TargetEmpire).CanDetectRemnantGifts)
+                if (TargetEmpire.isPlayer || Owner.Universe.Player.GetEspionage(TargetEmpire).CanDetectRemnantGifts)
                     Remnants.IncrementKillsForStory(Owner.Universe.Player, (int)(Remnants.StepXpTrigger * (TargetEmpire.isPlayer ? 0.1f : 0.05f)));
 
                 if (TargetEmpire.isPlayer)

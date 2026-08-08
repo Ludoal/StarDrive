@@ -31,13 +31,24 @@ namespace Ship_Game.Codex
         // after the tree is built.
         string PendingUid;
 
-        // Codex sizes to 60% of the screen on monitors big enough that 60%
-        // width stays above 1024px; smaller screens get a fullscreen popup
-        // so the layout (480px categories + body + margins) still fits.
-        static int CodexSize(int dim) => (int)(GameBase.ScreenWidth * 0.6f) < 1024 ? dim : (int)(dim * 0.6f);
+        // Codex sizes to 60% of the screen, with a FLOOR rather than a jump to fullscreen: the
+        // layout needs 1024 of width (480px categories + body + margins), so below that the
+        // window widens to the minimum instead of swallowing the screen. Ludoal fork: the test
+        // compared 60% of the WIDTH and then applied its verdict to both dimensions, so a 1680
+        // screen - where 60% is 1008, sixteen pixels short - opened the codex fullscreen.
+        const int CodexMinWidth = 1024;
+
+        static int CodexWidth()
+            => ((int)(GameBase.ScreenWidth * 0.6f))
+               .LowerBound(CodexMinWidth.UpperBound(GameBase.ScreenWidth));
+
+        // the height keeps the width's ratio, so a widened window stays in proportion
+        static int CodexHeight()
+            => ((int)(GameBase.ScreenHeight * ((float)CodexWidth() / GameBase.ScreenWidth)))
+               .UpperBound(GameBase.ScreenHeight);
 
         public CodexScreen(GameScreen parent)
-            : base(parent, CodexSize(GameBase.ScreenWidth), CodexSize(GameBase.ScreenHeight))
+            : base(parent, CodexWidth(), CodexHeight())
         {
             IsPopup           = true;
             TransitionOnTime  = 0.25f;

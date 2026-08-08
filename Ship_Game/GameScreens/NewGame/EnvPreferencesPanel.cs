@@ -33,23 +33,24 @@ namespace Ship_Game.GameScreens.NewGame
             Screen = parent;
             Data = Screen.SelectedData;
 
-            bool lo = parent.LowRes;
-            Add(new Menu1(rect, withSub: false)).SetLocalPos(0,0);
-
-            var font = lo ? Fonts.Arial8Bold : Fonts.Arial12Bold;
+            var font = Fonts.Arial12Bold;
             Title = Add(new UILabel("Environment Preferences", font, Color.BurlyWood));
             Title.SetLocalPos(35, 15);
             Title.Tooltip = "Some races have modifiers to their Max Population and Fertility based on the planet type.";
 
             BestType = Add(new UILabel("Best Planet Type", font, Color.BurlyWood));
-            BestType.SetLocalPos(35 + (lo ? 175 : 275), 15);
+            // Ludoal fork (maintainer feedback): -78 total to clear the widened value columns; the
+            // planet icon reads BestType.LocalPos, so it follows on its own.
+            BestType.SetLocalPos(35 + 275 - 78, 15);
             BestType.Tooltip = "This is the best suited environment for this race, Terraforming a planet will transform it to this planet type.";
             
 
+            // Ludoal fork (maintainer feedback): pull the value columns left to fit the tab at 900p
+            // - column1 at 5, column2 pulled a further 15 (135 -> 120).
             UIList column1 = Add(new UIList(ListLayoutStyle.ResizeList));
             UIList column2 = Add(new UIList(ListLayoutStyle.ResizeList));
-            column1.SetLocalPos(15, 35);
-            column2.SetLocalPos(15 + (lo ? 60 : 140), 35);
+            column1.SetLocalPos(5, 35);
+            column2.SetLocalPos(15 + 140 - 20 - 15, 35);
             column1.Padding = column2.Padding = new Vector2(4, 4);
 
             UILabel AddEnvSplitter(UIList list, string title, Func<float> getValue)
@@ -64,7 +65,7 @@ namespace Ship_Game.GameScreens.NewGame
                     if (value < 1) return Color.Red;
                     return Color.White;
                 };
-                list.AddSplit(key, val).Split = Screen.LowRes ? 50 : 80;
+                list.AddSplit(key, val).Split = 75; // maintainer: values -5 in each column
                 return val;
             }
 
@@ -106,27 +107,18 @@ namespace Ship_Game.GameScreens.NewGame
 
         void UpdateVisibility()
         {
-            bool wasVisibile = Visible;
-            Visible = PreferredEnv != PlanetCategory.Terran
-                || EnvTerran != 1
-                || EnvOceanic != 1
-                || EnvSteppe != 1
-                || EnvTundra != 1
-                || EnvSwamp != 1
-                || EnvDesert != 1
-                || EnvIce != 1
-                || EnvBarren != 1
-                || EnvVolcanic != 1;
-
-            if (!wasVisibile && Visible)
-                SlideInFromOffset(offset: new(-Width, 0), Screen.TransitionOffTime);
+            // Ludoal fork (maintainer feedback, 7 Aug): the Environment panel stays shown at all
+            // times. It used to hide itself for a race with no environment modifiers (neutral
+            // Terran, every Env* == 1); now it always displays, a neutral race simply reading 1.00
+            // across the board.
+            Visible = true;
         }
 
         void UpdatePlanetIcon()
         {
             PlanetIcon?.RemoveFromParent(true);
 
-            int size = Screen.LowRes ? 80 : 100;
+            int size = 100;
             PlanetIcon = Add(new UIPanel(BestType.LocalPos.Add(0, 20), new Vector2(size),
                                          GetPlanetIcon())
             {

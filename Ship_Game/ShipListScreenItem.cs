@@ -8,6 +8,8 @@ using Ship_Game.Ships;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Commands.Goals;
+using Ship_Game.Universe.SolarBodies; // DistanceDisplay
+using Ship_Game.UI; // UITable: the shared table charte
 using System.Collections;
 using System.Web;
 
@@ -17,25 +19,14 @@ namespace Ship_Game
     {
         public Ship Ship;
 
-        public Rectangle TotalEntrySize;
-        public Rectangle SysNameRect;
-        public Rectangle ShipNameRect;
-        public Rectangle RoleRect;
-        public Rectangle FleetRect;
-        public Rectangle OrdersRect;
-        public Rectangle RefitRect;
-        public Rectangle StrRect;
-        public Rectangle MaintRect;
-        public Rectangle TroopRect;
-        public Rectangle FTLRect;
-        public Rectangle STLRect;
-        public Rectangle RemainderRect;
-
+        // the shared table charte (Screen.Table) owns the columns; the row only carries
+        // its data and its widgets
         Rectangle ShipIconRect;
-        readonly UITextEntry ShipNameEntry ;
+        readonly UITextEntry ShipNameEntry;
         readonly TexturedButton RefitButton;
         readonly TexturedButton ScrapButton;
         readonly TexturedButton ExploreButton; //Auto-explore button for ShipListScreen
+        readonly TexturedButton PatrolButton;  // patrol is a FLEET mechanic: shown on fleet ships, opens the fleet's patrol-plan picker
 
         public ShipListScreen Screen;
         public string StatusText;
@@ -43,54 +34,36 @@ namespace Ship_Game
         readonly bool IsCombat;  //fbedard
         public bool Selected = false;  //fbedard: for multi-select
         private readonly string SystemName;
-        private readonly Graphics.Font Font12 = Fonts.Arial12Bold;
-        private readonly Graphics.Font Font8  = Fonts.Arial8Bold;
 
-        public ShipListScreenItem(Ship s, int x, int y, int width1, int height, ShipListScreen caller)
+        public ShipListScreenItem(Ship s, ShipListScreen caller)
         {
             Screen = caller;
             Ship = s;
-            TotalEntrySize = new Rectangle(x, y, width1 - 60, height);
-            SysNameRect = new Rectangle(x, y, (int)(TotalEntrySize.Width * 0.10f), height);
-            ShipNameRect = new Rectangle(x + SysNameRect.Width, y, (int)(TotalEntrySize.Width * 0.175f), height);
-            RoleRect = new Rectangle(x + SysNameRect.Width + ShipNameRect.Width, y, (int)(TotalEntrySize.Width * 0.05f), height);
-            FleetRect = new Rectangle(x + SysNameRect.Width + ShipNameRect.Width, y, (int)(TotalEntrySize.Width * 0.075f), height);
-            OrdersRect = new Rectangle(x + SysNameRect.Width + ShipNameRect.Width + RoleRect.Width + FleetRect.Width, y, (int)(TotalEntrySize.Width * 0.175f), height);
-            RefitRect = new Rectangle(OrdersRect.X + OrdersRect.Width, y, 125, height);
-            StrRect = new Rectangle(RefitRect.X + RefitRect.Width, y, 60, height);
-            MaintRect = new Rectangle(StrRect.X + StrRect.Width, y, 60, height);
-            TroopRect = new Rectangle(MaintRect.X + MaintRect.Width, y, 60, height);
-            FTLRect = new Rectangle(TroopRect.X + TroopRect.Width, y, 60, height);
-            STLRect = new Rectangle(FTLRect.X + FTLRect.Width, y, 60, height);
             StatusText = GetStatusText(Ship);
-            ShipIconRect = new Rectangle(ShipNameRect.X + 5, ShipNameRect.Y + 2, 28, 28);
             SystemName = Ship.System?.Name ?? Localizer.Token(GameText.DeepSpace);
 
-            ShipNameEntry = new UITextEntry(new Vector2(ShipIconRect.Right + 10, 2 + SysNameRect.CenterY() - Fonts.Arial12Bold.LineSpacing / 2),
-                                            Fonts.Arial12Bold, Ship.ShipName);
+            ShipNameEntry = new UITextEntry(Vector2.Zero, Fonts.Arial12Bold, Ship.ShipName);
             ShipNameEntry.Color = Colors.Cream;
             ShipNameEntry.OnTextChanged = (text) => Ship.VanityName = text;
 
-            float width = (int)(OrdersRect.Width * 0.8f);
-            while (width % 10f != 0f)
-                width += 1f;
-
-            if (!Ship.IsPlatformOrStation && !Ship.IsHangarShip 
-                                          && Ship.ShipData.Role != RoleName.troop 
-                                          && Ship.AI.State != AIState.Colonize 
-                                          && Ship.ShipData.Role != RoleName.freighter 
+            if (!Ship.IsPlatformOrStation && !Ship.IsHangarShip
+                                          && Ship.ShipData.Role != RoleName.troop
+                                          && Ship.AI.State != AIState.Colonize
+                                          && Ship.ShipData.Role != RoleName.freighter
                                           && Ship.ShipData.ShipCategory != ShipCategory.Civilian)
                 IsCombat = true;
 
-            Rectangle refit = new Rectangle(RefitRect.X + RefitRect.Width / 2 - 5 - ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover1").Width, RefitRect.Y + RefitRect.Height / 2 - ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover2").Height / 2, ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover2").Width, ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover2").Height);
-
+            // widget rects are positioned every frame from the table's columns
             if (IsCombat)
             {
-                ExploreButton = new TexturedButton(refit, "NewUI/icon_order_explore", "NewUI/icon_order_explore_hover1", "NewUI/icon_order_explore_hover2");
-                //PatrolButton = new TexturedButton(refit, "NewUI/icon_order_patrol", "NewUI/icon_order_patrol_hover1", "NewUI/icon_order_patrol_hover2");
+                ExploreButton = new TexturedButton(new Rectangle(), "NewUI/icon_order_explore", "NewUI/icon_order_explore_hover1", "NewUI/icon_order_explore_hover2");
             }
-            RefitButton = new TexturedButton(refit, "NewUI/icon_queue_rushconstruction", "NewUI/icon_queue_rushconstruction_hover1", "NewUI/icon_queue_rushconstruction_hover2");			
-            ScrapButton = new TexturedButton(refit, "NewUI/icon_queue_delete", "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2");
+            // built for every row - fleet membership changes at runtime, visibility is
+            // decided at draw time (maintainer feedback: wire the disabled upstream button)
+            PatrolButton = new TexturedButton(new Rectangle(), "NewUI/icon_order_patrol", "NewUI/icon_order_patrol_hover1", "NewUI/icon_order_patrol_hover2");
+            RefitButton = new TexturedButton(new Rectangle(), "NewUI/icon_queue_rushconstruction", "NewUI/icon_queue_rushconstruction_hover1", "NewUI/icon_queue_rushconstruction_hover2");
+            ScrapButton = new TexturedButton(new Rectangle(), "NewUI/icon_queue_delete", "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2");
+            ScrapButton.BaseColor = Color.Red; // destruction reads red (maintainer bench 305)
 
             if (Ship.IsPlatformOrStation || Ship.Stats.Thrust <= 0f)
             {
@@ -100,80 +73,102 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            SetNewPos((int)X, (int)Y);
+            UITable table = Screen.Table;
+            UITable.Column[] cols = table.Columns;
+            int y = (int)Y, h = (int)Height;
+            PositionWidgets(cols, y, h);
 
             if (Selected)
-            {
-                batch.FillRectangle(TotalEntrySize, Color.DarkGreen);
-            }
+                batch.FillRectangle(new Rectangle(table.TableRect.X, y, table.TableRect.Width, h), Color.DarkGreen);
 
-            var textColor = Colors.Cream;
+            // every cell through the shared charte: alignment and padding come from the column
+            void Cell(int i, string text, Color color, Graphics.Font font)
+                => UITable.DrawCell(batch, font, cols[i].Rect, y, h, text, color, cols[i].Align);
 
-            if (Fonts.Arial20Bold.MeasureString(SystemName).X <= SysNameRect.Width)
-            {
-                var sysNameCursor = new Vector2(SysNameRect.X + SysNameRect.Width / 2 - Font12.MeasureString(SystemName).X / 2f, 2 + SysNameRect.Y + SysNameRect.Height / 2 - Font12.LineSpacing / 2);
-                batch.DrawString(Font12, SystemName, sysNameCursor, textColor);
-            }
-            else
-            {
-                var sysNameCursor = new Vector2(SysNameRect.X + SysNameRect.Width / 2 - Font12.MeasureString(SystemName).X / 2f, 2 + SysNameRect.Y + SysNameRect.Height / 2 - Font12.LineSpacing / 2);
-                batch.DrawString(Font12, SystemName, sysNameCursor, textColor);
-            }
-
+            Cell(0, SystemName, Colors.Cream, Fonts.Arial12Bold);
+            // proximity to the nearest colony, live - Deep Space ships have coordinates too
+            DistanceDisplay dd = new DistanceDisplay(Screen.DistanceToNearestColony(Ship.Position) / 1000);
+            Cell(1, dd.Text, dd.Color, Fonts.Arial12Bold);
             batch.Draw(Ship.ShipData.Icon, ShipIconRect, Color.White);
             ShipNameEntry.Draw(batch, elapsed);
+            // the role wears its family's colour (maintainer benches 294-305): combat
+            // purple, troops orange with construction, colony green, scout blue,
+            // freighter white (the majority)
+            Color roleColor = Ship.IsConstructor || Ship.DesignRole == RoleName.construction ? Color.Orange
+                            : Ship.DesignRole == RoleName.troop || Ship.DesignRole == RoleName.troopShip ? Color.IndianRed
+                            : Ship.DesignRole == RoleName.scout ? Color.CornflowerBlue
+                            : Ship.DesignRole == RoleName.freighter ? Color.White
+                            : Ship.DesignRole == RoleName.colony ? Color.LightGreen
+                            : IsCombat ? Color.MediumPurple
+                            : Colors.Cream;
+            Cell(3, Localizer.GetRole(Ship.ShipData.Role, Ship.Loyalty), roleColor, Fonts.Arial12Bold);
+            string fleetName = Ship.Fleet?.Name ?? "";
+            Graphics.Font fleetFont = Fonts.Arial12Bold.TextWidth(fleetName) > cols[4].Width - 2 * UITable.PadX
+                                    ? Fonts.Arial8Bold : Fonts.Arial12Bold;
+            Cell(4, fleetName, Colors.Cream, fleetFont);
+            Cell(5, Ship.Fleet?.Patrol?.Name ?? "", Colors.Cream, Fonts.Arial12Bold);
+            // Orders is foldable: cut to the column with an ellipsis, the tooltip (in
+            // HandleInput) carries the whole sentence
+            Cell(6, UITable.FitText(Fonts.Arial12, StatusText, cols[6].Width - 2 * UITable.PadX),
+                 Colors.Cream, Fonts.Arial12);
 
-            var rolePos = new Vector2(RoleRect.X + RoleRect.Width / 2 - Font12.MeasureString(Localizer.GetRole(Ship.ShipData.Role, Ship.Loyalty)).X / 2f, RoleRect.Y + RoleRect.Height / 2 - Font12.LineSpacing / 2);
-            rolePos = rolePos.ToFloored();
-            batch.DrawString(Font12, Localizer.GetRole(Ship.ShipData.Role, Ship.Loyalty), rolePos, textColor);
-
-            string fleetName     = Ship.Fleet?.Name ?? "";
-            Graphics.Font fleetFont = Font12.MeasureString(fleetName).X > FleetRect.Width - 5 ? Font8 : Font12;
-            var fleetPos = new Vector2(FleetRect.X + FleetRect.Width / 2 - fleetFont.MeasureString(fleetName).X / 2f, FleetRect.Y + FleetRect.Height / 2 - fleetFont.LineSpacing / 2);
-            fleetPos = fleetPos.ToFloored();
-            batch.DrawString(fleetFont, fleetName, fleetPos, textColor);
-
-            var statusPos = new Vector2(OrdersRect.X + OrdersRect.Width / 2 - Fonts.Arial12.MeasureString(StatusText).X / 2f, 2 + SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Arial12.MeasureString(StatusText).Y / 2f);
-            statusPos = statusPos.ToFloored();
-            batch.DrawString(Fonts.Arial12, StatusText, statusPos, textColor);
-
+            // numeric colours through the shared charte: every zero reads gray
             float maint = Ship.GetMaintCost();
-
-            var mainPos = new Vector2(MaintRect.X + MaintRect.Width / 2, MaintRect.Y + MaintRect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
-            mainPos.X -= Fonts.Arial12.MeasureString(maint.ToString("F2")).X / 2f + 6;
-            mainPos = mainPos.ToFloored();
-            batch.DrawString(Fonts.Arial12, maint.ToString("F2"), mainPos, maint > 0.00 ? Color.Salmon : Color.White);
-
-            var strPos = new Vector2(StrRect.X + StrRect.Width / 2, MaintRect.Y + MaintRect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
-            strPos.X -= Fonts.Arial12.MeasureString(Ship.GetStrength().ToString("0")).X / 2f + 6;
-            strPos = strPos.ToFloored();
-            batch.DrawString(Fonts.Arial12, Ship.GetStrength().ToString("0"), strPos, Color.White);
-
-            var troopPos = new Vector2(TroopRect.X + TroopRect.Width / 2f, MaintRect.Y + MaintRect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
-            troopPos.X -= Fonts.Arial12.MeasureString(string.Concat(Ship.TroopCount, "/", Ship.TroopCapacity)).X / 2f + 6;
-            troopPos = troopPos.ToFloored();
-            batch.DrawString(Fonts.Arial12, string.Concat(Ship.TroopCount, "/", Ship.TroopCapacity), troopPos, Color.White);
-            
-            var ftlPos = new Vector2(FTLRect.X + FTLRect.Width / 2f, MaintRect.Y + MaintRect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
-            ftlPos.X -= Fonts.Arial12.MeasureString((Ship.MaxFTLSpeed / 1000f).ToString("0")+"k").X / 2f + 6;
-            ftlPos = ftlPos.ToFloored();
-            batch.DrawString(Fonts.Arial12, (Ship.MaxFTLSpeed / 1000f).ToString("0")+"k", ftlPos, Color.White);
-
-            var stlPos = new Vector2(STLRect.X + STLRect.Width / 2f, MaintRect.Y + MaintRect.Height / 2 - Fonts.Arial12.LineSpacing / 2);
-            stlPos.X -= Fonts.Arial12.MeasureString(Ship.MaxSTLSpeed.ToString("0")).X / 2f + 6;
-            stlPos = stlPos.ToFloored();
-            batch.DrawString(Fonts.Arial12, Ship.MaxSTLSpeed.ToString("0"), stlPos, Color.White);
+            float str = Ship.GetStrength();
+            Cell(8, str.ToString("0"), UITable.ValueColor(TableColor.Plain, str), Fonts.Arial12);
+            Cell(9, maint.ToString("F2"), UITable.ValueColor(TableColor.Neutral, maint), Fonts.Arial12);
+            Cell(10, string.Concat(Ship.TroopCount, "/", Ship.TroopCapacity),
+                 UITable.ValueColor(TableColor.Plain, Ship.TroopCount), Fonts.Arial12);
+            Cell(11, (Ship.MaxFTLSpeed / 1000f).ToString("0") + "k",
+                 UITable.ValueColor(TableColor.Plain, Ship.MaxFTLSpeed), Fonts.Arial12);
+            Cell(12, Ship.MaxSTLSpeed.ToString("0"),
+                 UITable.ValueColor(TableColor.Plain, Ship.MaxSTLSpeed), Fonts.Arial12);
 
             if (IsCombat)
-            {
                 ExploreButton.Draw(batch);
-                //PatrolButton.Draw(batch); // FB - Disabled until we make it better
-            }
+            if (Ship.Fleet != null)
+                PatrolButton.Draw(batch);
             if (!Ship.IsSubspaceProjector)
                 RefitButton.Draw(batch);
             ScrapButton.Draw(batch);
+        }
 
-            batch.DrawRectangle(TotalEntrySize, new Color(118, 102, 67, 50).Premultiplied());
+        // widgets (ship icon, name entry, the order/refit/scrap icon lane) follow the
+        // table's columns; every row keeps all four icon slots so nothing shifts
+        // between combat and civilian rows
+        void PositionWidgets(UITable.Column[] cols, int y, int h)
+        {
+            Rectangle shipCol = cols[2].Rect;
+            ShipIconRect = new Rectangle(shipCol.X + UITable.PadX, y + h / 2 - 14, 28, 28);
+            ShipNameEntry.SetPos(ShipIconRect.Right + 6, y + h / 2 - ShipNameEntry.Font.LineSpacing / 2);
+
+            SubTexture exploreTex = ResourceManager.Texture("NewUI/icon_order_explore_hover1");
+            SubTexture patrolTex  = ResourceManager.Texture("NewUI/icon_order_patrol_hover1");
+            SubTexture refitTex   = ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover2");
+            SubTexture scrapTex   = ResourceManager.Texture("NewUI/icon_queue_delete_hover1");
+            const int IconGap = 4;
+            int iconsW = exploreTex.Width + IconGap + patrolTex.Width + IconGap + refitTex.Width + IconGap + scrapTex.Width;
+            Rectangle lane = cols[7].Rect;
+            int ix = lane.X + (lane.Width - iconsW) / 2;
+            Rectangle IconSlot(SubTexture t)
+            {
+                var r = new Rectangle(ix, y + h / 2 - t.Height / 2, t.Width, t.Height);
+                ix += t.Width + IconGap;
+                return r;
+            }
+
+            Rectangle explore = IconSlot(exploreTex);
+            if (IsCombat)
+            {
+                ExploreButton.r = explore;
+                ExploreButton.Tooltip = GameText.OrdersThisShipToExplore;
+            }
+            PatrolButton.r = IconSlot(patrolTex);
+            PatrolButton.Tooltip = "Choose a patrol plan for this ship's fleet";
+            RefitButton.r = IconSlot(refitTex);
+            ScrapButton.r = IconSlot(scrapTex);
+            RefitButton.Tooltip = GameText.OpensAMenuAllowingYou;
+            ScrapButton.Tooltip = GameText.OrdersTheShipToReturn;
         }
 
         public static string GetStatusText(Ship ship)
@@ -235,7 +230,10 @@ namespace Ship_Game
                             case ShipAI.Plan.PickupGoods:  status = Localizer.Token(GameText.PickingUp); break;
                             case ShipAI.Plan.DropOffGoods: status = Localizer.Token(GameText.Delivering); break;
                         }
-                        return $"{status} {goodsType} from {last2.Trade?.ExportFrom.Name} to {last2.Trade?.ImportTo?.Name ?? last2.Trade?.TargetStation.Name} {blockade}";
+                        // status is empty outside Pickup/DropOff - build without the stray
+                        // leading space it used to leave ahead of "Production from ..."
+                        string head = status.IsEmpty() ? goodsType : $"{status} {goodsType}";
+                        return $"{head} from {last2.Trade?.ExportFrom.Name} to {last2.Trade?.ImportTo?.Name ?? last2.Trade?.TargetStation.Name} {blockade}".TrimEnd();
                     }
                     return $"{Localizer.Token(GameText.TradingGoods)} \n {Localizer.Token(GameText.SeekingRoute)}";
                 case AIState.Research:
@@ -356,6 +354,15 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            // a folded Orders cell explains itself: full sentence on hover when it was cut
+            UITable.Column orders = Screen.Table.Columns[6];
+            if (orders.Folded && StatusText.NotEmpty()
+                && new Rectangle(orders.Rect.X, (int)Y, orders.Rect.Width, (int)Height).HitTest(input.CursorPosition)
+                && Fonts.Arial12.TextWidth(StatusText) > orders.Rect.Width - 2 * UITable.PadX)
+            {
+                ToolTip.CreateTooltip(StatusText);
+            }
+
             if (IsCombat)
             {
                 // Explore button for ship list
@@ -372,6 +379,14 @@ namespace Ship_Game
                     StatusText = GetStatusText(Ship);
                     return true;
                 }
+            }
+
+            // patrol rides the ship's FLEET: the picker loads a patrol plan for it
+            if (Ship.Fleet != null && PatrolButton.HandleInput(input))
+            {
+                GameAudio.EchoAffirmative();
+                Screen.ScreenManager.AddScreen(new ChoosePatrolPlan(Screen.Universe, Ship.Fleet));
+                return true;
             }
 
             if (!Ship.IsSubspaceProjector && RefitButton.HandleInput(input))
@@ -435,45 +450,6 @@ namespace Ship_Game
             return base.HandleInput(input);
         }
 
-        void SetNewPos(int x, int y)
-        {
-            TotalEntrySize = new Rectangle(x, y, TotalEntrySize.Width, TotalEntrySize.Height);
-            SysNameRect = new Rectangle(x, y, (int)(TotalEntrySize.Width * 0.10f), TotalEntrySize.Height);
-            ShipNameRect = new Rectangle(x + SysNameRect.Width, y, (int)(TotalEntrySize.Width * 0.2f), TotalEntrySize.Height);
-            RoleRect = new Rectangle(x + SysNameRect.Width + ShipNameRect.Width, y, (int)(TotalEntrySize.Width * 0.05f), TotalEntrySize.Height);
-            FleetRect = new Rectangle(x + SysNameRect.Width + ShipNameRect.Width + RoleRect.Width, y, (int)(TotalEntrySize.Width * 0.075f), TotalEntrySize.Height);
-            OrdersRect = new Rectangle(x + SysNameRect.Width + ShipNameRect.Width + RoleRect.Width + FleetRect.Width, y, (int)(TotalEntrySize.Width * 0.2f), TotalEntrySize.Height);
-            RefitRect = new Rectangle(OrdersRect.X + OrdersRect.Width, y, 125, TotalEntrySize.Height);
-            StrRect = new Rectangle(RefitRect.X + RefitRect.Width, y, 60, TotalEntrySize.Height);
-            MaintRect = new Rectangle(StrRect.X + StrRect.Width, y, 60, TotalEntrySize.Height);
-            TroopRect = new Rectangle(MaintRect.X + MaintRect.Width, y, 60, TotalEntrySize.Height);
-            FTLRect = new Rectangle(TroopRect.X + TroopRect.Width, y, 60, TotalEntrySize.Height);
-            STLRect = new Rectangle(FTLRect.X + FTLRect.Width, y, 60, TotalEntrySize.Height);
-            ShipIconRect = new Rectangle(ShipNameRect.X + 5, ShipNameRect.Y + 2, 28, 28);
-            ShipNameEntry.SetPos(ShipIconRect.Right + 10, 2 + SysNameRect.CenterY() - ShipNameEntry.Font.LineSpacing / 2);
 
-            if (IsCombat)
-            {
-                Rectangle explore = new Rectangle(RefitRect.X + RefitRect.Width / 4 + 5 - ResourceManager.Texture("NewUI/icon_order_explore_hover1").Width, RefitRect.Y + RefitRect.Height / 2 - ResourceManager.Texture("NewUI/icon_order_explore_hover1").Height / 2, ResourceManager.Texture("NewUI/icon_order_explore_hover1").Width, ResourceManager.Texture("NewUI/icon_order_explore_hover1").Height);
-                Rectangle patrol = new Rectangle(RefitRect.X + RefitRect.Width / 4 + 10, RefitRect.Y + RefitRect.Height / 2 - ResourceManager.Texture("NewUI/icon_order_patrol_hover2").Height / 2, ResourceManager.Texture("NewUI/icon_order_patrol_hover2").Width, ResourceManager.Texture("NewUI/icon_order_patrol_hover2").Height);
-                ExploreButton.r = explore;
-                //PatrolButton.r = patrol; // FB - Disabled until we make it better
-                ExploreButton.Tooltip = GameText.OrdersThisShipToExplore;
-                //PatrolButton.LocalizerTip = 7080; // FB - Disabled until we make it better
-            }
-
-            Rectangle refit = new Rectangle(RefitRect.X + RefitRect.Width / 4 + 15 + ResourceManager.Texture("NewUI/icon_order_patrol_hover1").Width, RefitRect.Y + RefitRect.Height / 2 - ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover2").Height / 2, ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover2").Width, ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover2").Height);
-            Rectangle scrap = new Rectangle(RefitRect.X + RefitRect.Width / 4 + 20 + ResourceManager.Texture("NewUI/icon_order_patrol_hover1").Width + ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover1").Width, RefitRect.Y + RefitRect.Height / 2 - ResourceManager.Texture("NewUI/icon_queue_delete_hover1").Height / 2, ResourceManager.Texture("NewUI/icon_queue_delete_hover1").Width, ResourceManager.Texture("NewUI/icon_queue_delete_hover1").Height);                       
-            RefitButton.r = refit;
-            ScrapButton.r = scrap;
-            RefitButton.Tooltip = GameText.OpensAMenuAllowingYou;
-            ScrapButton.Tooltip = GameText.OrdersTheShipToReturn;
-
-            float width = (int)(OrdersRect.Width * 0.8f);
-            while (width % 10f != 0f)
-            {
-                width = width + 1f;
-            }
-        }
     }
 }

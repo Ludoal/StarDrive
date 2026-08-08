@@ -12,7 +12,10 @@ namespace Ship_Game
     // (the engine keeps no cumulative damage counters — a per-damage-type
     // breakdown needs combat hooks and is deferred). Escape or the button
     // returns to the Shipyard; Rematch respawns the same pairing in place.
-    public sealed class BattleSimResultScreen : GameScreen
+    // Ludoal fork: a PopupWindow rather than a GameScreen carrying a Menu2. This screen was ours
+    // and was built in the wrong shape - it is modal, titled and closable, which is what a popup
+    // is here, so it now wears the same frame as Options and the Codex.
+    public sealed class BattleSimResultScreen : PopupWindow
     {
         public struct ShipReport
         {
@@ -30,15 +33,16 @@ namespace Ship_Game
         readonly string Verdict;
         readonly Color VerdictColor;
         readonly string Duration;
-        readonly Menu2 Window;
 
+        // PopupWindow centres the rect and supplies the frame, its title bar and the close cross;
+        // 640x420 is the size this always had.
         public BattleSimResultScreen(BattleSimUniverse sim, in ShipReport us, in ShipReport them,
-                                     float fightSeconds, bool aborted) : base(sim, toPause: null)
+                                     float fightSeconds, bool aborted) : base(sim, 640, 420)
         {
             Sim = sim;
             Us = us;
             Them = them;
-            IsPopup = true;
+            TitleText = "BATTLE REPORT";
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0f;
 
@@ -51,15 +55,22 @@ namespace Ship_Game
             int secs = (int)fightSeconds;
             Duration = (secs / 60) + ":" + (secs % 60).ToString("00");
 
-            var rect = new Rectangle(ScreenWidth / 2 - 320, ScreenHeight / 2 - 210, 640, 420);
-            Window = Add(new Menu2(rect));
+        }
 
-            ButtonMedium(rect.X + 30, rect.Bottom - 55, "Rematch", b =>
+        // ⚠ the buttons are built HERE and not in the constructor: PopupWindow.LoadContent calls
+        // RemoveAll() before laying its own frame out, so anything added earlier is discarded.
+        public override void LoadContent()
+        {
+            base.LoadContent();
+
+            Rectangle rect = Rect;
+            // bench 361 (maintainer): the step-back on the LEFT, the action on the RIGHT
+            ButtonMedium(rect.X + 30, rect.Bottom - 55, "Back to Shipyard", b => ToShipyard());
+            ButtonMedium(rect.Right - 210, rect.Bottom - 55, "Rematch", b =>
             {
                 ExitScreen();
                 Sim.Rematch();
             });
-            ButtonMedium(rect.Right - 210, rect.Bottom - 55, "Back to Shipyard", b => ToShipyard());
         }
 
         void ToShipyard()
@@ -83,18 +94,20 @@ namespace Ship_Game
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-            batch.SafeBegin();
+            // ⚠ base.Draw opens and closes its OWN batch now (PopupWindow draws the frame there),
+            // so this screen's own content goes after it, in a batch of its own - a SafeBegin
+            // before it would be closed out from under this method's first strings.
             base.Draw(batch, elapsed);
+            batch.SafeBegin();
 
-            string title = "BATTLE REPORT";
-            batch.DrawString(Fonts.Laserian14, title,
-                new Vector2(Window.Menu.CenterTextX(title, Fonts.Laserian14), Window.Menu.Y + 24), Color.Wheat);
-
+            // the title rides the frame's own title bar now; the verdict stays hand-drawn rather
+            // than going through MiddleText, whose 88px band would push this table down
+            int top = PopupFrame.ContentTop(Rect);
             string verdictLine = Verdict + "  -  " + Duration;
             batch.DrawString(Fonts.Arial14Bold, verdictLine,
-                new Vector2(Window.Menu.CenterTextX(verdictLine, Fonts.Arial14Bold), Window.Menu.Y + 58), VerdictColor);
+                new Vector2(Rect.CenterTextX(verdictLine, Fonts.Arial14Bold), top + 4), VerdictColor);
 
-            var c = new Vector2(Window.Menu.X + 40, Window.Menu.Y + 100);
+            var c = new Vector2(Rect.X + 40, top + 32);
             Row(batch, ref c, "", "YOU", "ENEMY", Color.Wheat, Color.Wheat);
             Row(batch, ref c, "Design", Us.Design, Them.Design, Color.White, Color.White);
             Row(batch, ref c, "Status", Us.Alive ? "intact" : "destroyed", Them.Alive ? "intact" : "destroyed",

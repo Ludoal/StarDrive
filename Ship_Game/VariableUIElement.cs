@@ -9,6 +9,10 @@ namespace Ship_Game
 {
 	public sealed class VariableUIElement : UIElement
 	{
+		// Ludoal fork: same shave as its four cartouche siblings - the sculpted texture spent
+		// that band on antenna machinery, and with it gone the frame starts under the housing
+		const int FrameShave = 26;
+
 		private UniverseScreen screen;
 
 		public Rectangle LeftRect;
@@ -42,7 +46,17 @@ namespace Ship_Game
 		public void Draw(string TitleText, string BodyText)
 		{
 			0f.SmoothStep(1f, TransitionPosition);
-			ScreenManager.SpriteBatch.Draw(ResourceManager.Texture("SelectionBox/unitselmenu_main"), Housing, Color.White);
+			// Ludoal fork: the minimap's recipe instead of the sculpted unitselmenu texture -
+			// a near-opaque flat ground and a rounded grey rule, frame shaved like its siblings
+			SpriteBatch batch = ScreenManager.SpriteBatch;
+			Rectangle frame = Housing;
+			frame.Y += FrameShave; frame.Height -= FrameShave;
+			Rectangle plate = frame;
+			plate.Inflate(-2, -2);
+			batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
+			UITheme.DrawPlate(batch, frame, Color.Transparent,
+			                  new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
+			                  ruleWidthOverride: 3);
 			Vector2 NamePos = new Vector2(Housing.X + 41, Housing.Y + 65);
 			ScreenManager.SpriteBatch.DrawString(Fonts.Arial20Bold, TitleText, NamePos, tColor);
 			Vector2 BodyPos = new Vector2(NamePos.X, Housing.Y + 115);

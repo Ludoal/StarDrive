@@ -11,6 +11,7 @@ using SDUtils;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Point = SDGraphics.Point;
+using Ship_Game.GameScreens; // ScreenGroups: the group geometry
 
 // ReSharper disable once CheckNamespace
 namespace Ship_Game
@@ -23,15 +24,36 @@ namespace Ship_Game
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             ScreenManager.BeginFrameRendering(elapsed, ref View, ref Projection);
+
+            // Ludoal fork (bench 345): a popup now - dim the paused universe drawn behind it with the
+            // table screens' veil, instead of the dead black backdrop it used to have.
+            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
+
+            // Ludoal fork: the starfield, the particles and the 3D workbench are clipped to the
+            // tab frame - the screen is one tab of the Design group now, so its scene belongs
+            // inside the frame rather than running under the top bar and past the edges. Scissor
+            // is device state: it has to be turned off again before the UI pass, or every panel
+            // drawn afterwards inherits the crop.
+            RectF sceneClip = ScreenGroups.GroupSceneArea(DesignTabs.Rect, DesignTabs.ClientArea);
+            Ship_Game.Graphics.RenderStates.EnableScissorTest(batch.GraphicsDevice, sceneClip);
+
             ParentUniverse.DrawStarField(ScreenManager.SpriteRenderer);
             ParentUniverse.Particles.Draw(View, Projection, nearView:true);
-            ParentUniverse.Particles.Update(elapsed.CurrentGameTime);
+            // ⚠ Ludoal fork (bench 347): do NOT Update the universe's particles here. Since the
+            // screen became a popup, the universe underneath is visible again and runs its OWN
+            // Update (particles included), so updating them a second time from Draw advanced them
+            // twice per frame and they piled up - the Shipyard-only slowdown Fleet never had
+            // (Fleet does not touch particles). Draw them, let the universe update them.
 
             ScreenManager.RenderSceneObjects();
 
             if (ToggleOverlay)
             {
-                batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:true);
+                // bench 360 (maintainer): the module tiles clip to the frame like the 3D hull does -
+                // this pass now rides the scene scissor (the scissor rect is still set on the device;
+                // the pinned rasterizer makes the batch honour it).
+                batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:true,
+                                Ship_Game.Graphics.RenderStates.ScissorEnabled);
 
                 DrawEmptySlots(batch);
                 DrawModules(batch);
@@ -48,6 +70,9 @@ namespace Ship_Game
                 batch.SafeEnd();
             }
 
+            // scissor off before the UI pass - the panels drawn from here on span the whole screen
+            Ship_Game.Graphics.RenderStates.DisableScissorTest(batch.GraphicsDevice);
+
             batch.SafeBegin();
             if (ActiveModule != null && !ModuleSelectComponent.HitTest(Input))
             {
@@ -55,7 +80,6 @@ namespace Ship_Game
             }
 
             DrawUi(batch, elapsed);
-            ArcsButton.Draw(batch, elapsed);
 
             base.Draw(batch, elapsed);
 
@@ -68,6 +92,11 @@ namespace Ship_Game
                                          ? Color.Red : Color.White;
                 ObsoleteDesign.Draw(batch);
             }
+
+            // Ludoal fork: the Design group's tab tooltip. No frame fill on this screen - the
+            // starfield IS the workbench's background, so the surround is drawn as an outline
+            // only and the 3D view keeps showing through.
+            ScreenGroups.DrawDesignTabTip(DesignTabs, Input.CursorPosition);
 
             batch.SafeEnd();
             ScreenManager.EndFrameRendering();
@@ -486,11 +515,27 @@ namespace Ship_Game
             }
         }
 
-        static void DrawTitle(SpriteBatch batch, float x, string title)
+        // Ludoal fork: the label sits on its OWN dropdown rather than on a screen fraction - the two
+        // used to be written separately and drifted apart the moment either moved. Arial12: these
+        // are secondary options, not headings.
+        //
+        // To the LEFT of the field and centred on it, so the whole options row reads as one line
+        // with the carrier-only checkbox. The label measures itself, which is what keeps it clear
+        // of the field whatever the string.
+        public const int TitleGap = 6;   // between a dropdown caption and its field
+
+        // Ludoal fork: one source for each caption - the layout reserves its width from the same
+        // string DrawTitle paints, so a reworded label cannot leave the row measured for the old one.
+        public const string RepairCaption = "Repair";
+        public const string HangarCaption = "Hangar Type";
+        static void DrawTitle(SpriteBatch batch, in Rectangle dropdown, string title)
         {
-            int buttonHeight = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_132px").Height + 10;
-            var pos = new Vector2(x, buttonHeight);
-            batch.DrawString(Fonts.Arial14Bold, title, pos, Color.Orange);
+            Graphics.Font font = Fonts.Arial12Bold;
+            var pos = new Vector2(dropdown.X - font.TextWidth(title) - TitleGap,
+                                  dropdown.CenterY() - font.LineSpacing / 2);
+            // the panels' own label grey (maintainer bench 304) - orange read louder than
+            // everything around it
+            batch.DrawString(font, title, pos, new Color(168, 172, 178));
         }
 
         void DrawUi(SpriteBatch batch, DrawTimes elapsed)
@@ -499,41 +544,32 @@ namespace Ship_Game
             CategoryList.Draw(batch, elapsed);
 
             // TODO: these should be split into separate parts
-            DrawTitle(batch, ScreenWidth * 0.375f, "Repair Options");
-            DrawTitle(batch, ScreenWidth * 0.65f, "Hangar Designation");
+            DrawTitle(batch, new Rectangle((int)CategoryList.X, (int)CategoryList.Y,
+                                          (int)CategoryList.Width, (int)CategoryList.Height), RepairCaption);
+            DrawTitle(batch, new Rectangle((int)HangarOptionsList.X, (int)HangarOptionsList.Y,
+                                          (int)HangarOptionsList.Width, (int)HangarOptionsList.Height), HangarCaption);
             HangarOptionsList.Draw(batch, elapsed);
 
-            float transitionOffset = (float) Math.Pow(TransitionPosition, 2);
+            // Ludoal fork: the design's identity plates, drawn in the reworked screens' grammar
+            // (dark fill, brass rule). They appear at their place rather than sliding in.
+            var plate = new Color(14, 12, 9).Alpha(0.92f);
+            var rule  = new Color(118, 102, 67, 255).Premultiplied();
 
-            Rectangle r = BlackBar;
-            if (IsTransitioning)
-                r.Y += (int)(transitionOffset * 50f);
-            batch.FillRectangle(r, Color.Black);
-
-
-            r = BottomSep;
-            if (IsTransitioning)
-                r.Y += (int) (transitionOffset * 50f);
-            batch.FillRectangle(r, new Color(77, 55, 25));
-
+            Rectangle r = DesignRoleRect;
+            batch.FillRectangle(r, plate);
+            batch.DrawRectangle(r, rule);
+            var cursor = new Vector2(r.X + 8, r.Y + r.Height / 2 - Fonts.Arial20Bold.LineSpacing / 2);
+            batch.DrawString(Fonts.Arial20Bold, Localizer.GetRole(Role, Player), cursor, Colors.Cream);
 
             r = SearchBar;
-            if (IsTransitioning)
-                r.Y += (int)(transitionOffset * 50f);
-            batch.FillRectangle(r, new Color(54, 54, 54));
+            batch.FillRectangle(r, plate);
+            batch.DrawRectangle(r, rule);
 
             string name = DesignOrHullName;
-            Graphics.Font font = Fonts.Arial20Bold.TextWidth(name) <= (SearchBar.Width - 5)
+            Graphics.Font font = Fonts.Arial20Bold.TextWidth(name) <= (SearchBar.Width - 10)
                                ? Fonts.Arial20Bold : Fonts.Arial12Bold;
-            var cursor1 = new Vector2(SearchBar.X + 3, r.Y + 14 - font.LineSpacing / 2);
+            var cursor1 = new Vector2(r.X + 8, r.Y + r.Height / 2 - font.LineSpacing / 2);
             batch.DrawString(font, name, cursor1, ShipSaved || IsEmptyHull ? Color.White : Color.OrangeRed);
-
-            r = new Rectangle(r.X - r.Width - 12, r.Y, r.Width, r.Height);
-            DesignRoleRect = new Rectangle(r.X , r.Y, r.Width, r.Height);
-            batch.FillRectangle(r, new Color(54, 54, 54));
-
-            var cursor = new Vector2(r.X + 3, r.Y + 14 - Fonts.Arial20Bold.LineSpacing / 2);
-            batch.DrawString(Fonts.Arial20Bold, Localizer.GetRole(Role, Player), cursor, Color.White);
         }
     }
 }

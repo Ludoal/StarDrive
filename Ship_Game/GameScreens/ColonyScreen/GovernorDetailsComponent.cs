@@ -59,8 +59,6 @@ namespace Ship_Game
 
         private readonly Graphics.Font Font14 = Fonts.Arial14Bold;
         private readonly Graphics.Font Font12 = Fonts.Arial12Bold;
-        private readonly Graphics.Font Font10 = Fonts.Arial10;
-        private readonly Graphics.Font Font8  = Fonts.Arial8Bold;
         private Graphics.Font Font;
         private Graphics.Font FontBig;
         private bool OverrideCivBudget, OverrideGrdBudget, OverrideSpcBudget;
@@ -109,34 +107,39 @@ namespace Ship_Game
             Planet = p;
             RemoveAll(); // delete all components
 
+            // full size at every width (maintainer, 3 Aug): the column is FIXED on the tab
+            // measure, identical at 900p and 1080p - a width-based font fold piloted nothing
             Font    = Font12;
             FontBig = Font14;
-            if      (Screen.Width < 1600) { Font = Font8; FontBig = Font10; }
-            else if (Screen.Width < 1920) { Font = Font10; FontBig = Font12; }
 
             // NOTE: Using RootContent here to avoid lag from resource unloading and reloading
             PortraitSprite = DrawableSprite.SubTex(ResourceManager.RootContent, $"Portraits/{Planet.Owner.data.PortraitName}");
 
             Portrait         = Add(new UIPanel(PortraitSprite));
             BluePrintsIcon   = Add(new UIPanel(ResourceManager.Texture("NewUI/blueprints")));
-            WorldType        = Add(new UILabel(Planet.WorldType, FontBig));
-            WorldDescription = Add(new UILabel(Font12));
+            WorldType        = Add(new UILabel(Planet.WorldType, Font14)); // full size at every width (maintainer): the title does not fold
+            // Ludoal fork: Font, not Font12 - GetParsedDescription wraps with Font, which is
+            // smaller than Font12 below 1920, so a hardcoded Font12 here drew text measured for
+            // a narrower glyph set and it ran past the frame.
+            WorldDescription = Add(new UILabel(Font));
             ColonyBlueprints = Add(new UILabel(GameText.ColonyBlueprintsTitle, FontBig, Color.Wheat));
             BlueprintsName   = Add(new UILabel("", FontBig, Color.Gold));
             BlueprintsCompletionLbl = Add(new UILabel(GameText.Completion, Font, Color.Wheat));
             BlueprintsAchiveable    = Add(new UILabel(GameText.Achievable, Font, Color.Gray));
-            BlueprintsGovChange     = Add(new UILabel(GameText.GovernorChangedTo, Font, Color.Gray));
+            // white body text (maintainer bench) - the semantic colours (green/gold) stay
+            BlueprintsGovChange     = Add(new UILabel(GameText.GovernorChangedTo, Font, Color.White));
             BlueprintsExclusive     = Add(new UILabel("", Font, Color.LightGreen));
-            BlueprintsLink          = Add(new UILabel("", Font, Color.Wheat));
-            Blueprintsoverview    = Add(new UILabel("", Font, Color.Wheat));
+            BlueprintsLink          = Add(new UILabel("", Font, Color.White));
+            Blueprintsoverview    = Add(new UILabel("", Font, Color.White));
             BlueprintsEnableGov     = Add(new UILabel("", Font, Color.Gold));
 
-            GovOrbitals    = Add(new UICheckBox(() => Planet.GovOrbitals, Font, title:GameText.GovernorManagesOrbitals, tooltip:GameText.TheGovernorWillBuildStations));
+            // "Gov." (maintainer bench): the full word ran past the Defense column
+            GovOrbitals    = Add(new UICheckBox(() => Planet.GovOrbitals, Font, title:"Gov. Manages Space Defense", tooltip:GameText.TheGovernorWillBuildStations));
             AutoTroops     = Add(new UICheckBox(() => Planet.AutoBuildTroops, Font, title:GameText.GovernorBuildsMilitia, tooltip:GameText.TheGovernorWillCreateA));
             GovNoScrap     = Add(new UICheckBox(() => Planet.DontScrapBuildings, Font, title:GameText.GovernorWillNotScrapBuildings, tooltip:GameText.NormallyGovernorsOperateWithinA));
             Quarantine     = Add(new UICheckBox(() => Planet.Quarantine, Font, title: GameText.QuarantinePlanet, tooltip: GameText.PreventGoodsTransportationInAnd));
             ManualOrbitals = Add(new UICheckBox(() => Planet.ManualOrbitals, Font, title: GameText.ManualOrbitalLimit, tooltip: GameText.OverrideGovernorDecisionsRegardingOrbital));
-            GovGround      = Add(new UICheckBox(() => Planet.GovGroundDefense, Font, title: GameText.GovernorManagesGroundDefense, tooltip: GameText.TheGovernorWillManageGround));
+            GovGround      = Add(new UICheckBox(() => Planet.GovGroundDefense, Font, title: "Gov. Manages Ground Defense", tooltip: GameText.TheGovernorWillManageGround));
             OverrideCiv    = Add(new UICheckBox(() => OverrideCivBudget, Font, title: GameText.Override, tooltip: GameText.OverrideThisBudgetAndSet));
             OverrideGrd    = Add(new UICheckBox(() => OverrideGrdBudget, Font, title: GameText.Override, tooltip: GameText.OverrideThisBudgetAndSet));
             OverrideSpc    = Add(new UICheckBox(() => OverrideSpcBudget, Font, title: GameText.Override, tooltip: GameText.OverrideThisBudgetAndSet));
@@ -157,6 +160,10 @@ namespace Ship_Game
             ManualPlatforms.Tip = GameText.ManuallyAdjustTheNumberOf;
             ManualShipyards.Tip = GameText.ManuallyAdjustTheNumberOf2;
             ManualStations.Tip  = GameText.ManuallyAdjustTheNumberOf3;
+
+            // maintainer bench 339: the budget warning is added BEFORE the colony-type dropdown so
+            // the open dropdown list draws OVER it, not the other way round.
+            BudgetLimitReached = Add(new UILabel(GameText.BudgetLimitReached, FontBig, Color.Red));
 
             // Dropdowns will go on top of everything else
             ColonyTypeList = Add(new DropOptions<Planet.ColonyType>(100, 18));
@@ -204,7 +211,6 @@ namespace Ship_Game
             StationsText       = Add(new UILabel(" "));
             NoGovernor         = Add(new UILabel(GameText.NoGovernor, Font, Color.Gray));
             ColonyRank         = Add(new UILabel(" ", Font, Color.LightGreen));
-            BudgetLimitReached = Add(new UILabel(GameText.BudgetLimitReached, FontBig, Color.Red));
 
             CivBudgetRect     = new Rectangle((int)X + 57, (int)Y + 40, (int)(Width*0.33f), 20);
             GrdBudgetRect     = new Rectangle((int)X + 57, (int)Y + 70, (int)(Width*0.33f), 20);
@@ -249,7 +255,10 @@ namespace Ship_Game
 
             Tabs = Add(new Submenu(rect, new LocalizedText[]
             {
-                GameText.Governor, GameText.Defense2, GameText.Budget, "Blueprints"
+                // "BP", settled (maintainer bench, 3 Aug): BLUEPRINT in full cannot fit at the
+                // width the 900p centre column allows - the short label carries a hover tooltip
+                // instead (see HandleInput)
+                GameText.Governor, GameText.Defense2, GameText.Budget, "BP"
             }));
 
             if (selectedIndex < Tabs.NumTabs)
@@ -263,66 +272,112 @@ namespace Ship_Game
         public override void PerformLayout()
         {
             float aspect  = PortraitSprite.Size.X / PortraitSprite.Size.Y;
-            float height  = (float)Math.Round(Height * 0.6f);
+            // 0.55, not 0.6 (maintainer bench, 3 Aug): the toggles ride under the portrait now
+            float height  = (float)Math.Round(Height * 0.55f);
             Portrait.Size = new Vector2((float)Math.Round(aspect*height), height);
-            Portrait.Pos  = new Vector2(X + 10, Y + 30);
+            // Ludoal fork: all four tabs lay their content out from this one value, so they
+            // cannot disagree. It follows the tab bar's real bottom, which matters because
+            // Submenu wraps its tabs onto a second row once they no longer fit the width - a
+            // fixed offset would put every tab's content under the tabs themselves. The 30f is
+            // the single-row spacing, used while Tabs is not built yet.
+            float contentTop = Tabs != null ? Tabs.ClientArea.Y - Y + 4 : 30f;
+            float shift = contentTop - 30f; // what the extra tab rows add
+            Portrait.Pos  = new Vector2(X + 10, Y + contentTop);
             BluePrintsIcon.Size = new Vector2(40, 40);
             BluePrintsIcon.Pos  = Portrait.Pos;
             BluePrintsIcon.Color = BlueprintsName.Color = BlueprintsColor;
 
-            WorldType.Pos           = new Vector2(Portrait.Right + 10, Portrait.Y);
-            ColonyTypeList.Pos      = new Vector2(WorldType.X, Portrait.Y + 21);
-            WorldDescription.Pos    = new Vector2(WorldType.X, Portrait.Y + 40);
+            // Ludoal fork: the right-hand column follows the portrait, whose width is a fraction
+            // of the panel height - so at reduced heights it slid left, under the tab row. It
+            // keeps a floor (see ColumnX), and the description wraps on that same value.
+            // the type picker rides the TITLE line, to its right (maintainer, 3 Aug) - the
+            // description gains the row it occupied and no longer runs over the toggles
+            WorldType.Pos           = new Vector2(ColumnX, Portrait.Y);
+            // Ludoal fork (maintainer feedback): the colony-type picker sits 20px further right
+            ColonyTypeList.Pos      = new Vector2(Math.Max(WorldType.Right + 12, ColumnX + 130) + 20, Portrait.Y);
+            WorldDescription.Pos    = new Vector2(ColumnX, Portrait.Y + 21);
             WorldDescription.Text   = GetParsedDescription();
-            ColonyBlueprints.Pos    = new Vector2(X + 10, Y + 40);
+            ColonyBlueprints.Pos    = new Vector2(X + 10, Y + 40 + shift);
             ColonyBlueprints.Text   = ColonyBlueprints.Text.Text + ":";
-            BlueprintsName.Pos      = new Vector2(X + 15 + FontBig.MeasureString(ColonyBlueprints.Text).X, Y + 40);
-            BlueprintsGovChange.Pos = new Vector2(X + 10, Y + 100);
-            BlueprintsExclusive.Pos = new Vector2(X + 10, Y + 130);
-            BlueprintsLink.Pos      = new Vector2(X + 10, Y + 160);
+            BlueprintsName.Pos      = new Vector2(X + 15 + FontBig.MeasureString(ColonyBlueprints.Text).X, Y + 40 + shift);
+            BlueprintsGovChange.Pos = new Vector2(X + 10, Y + 100 + shift);
+            BlueprintsExclusive.Pos = new Vector2(X + 10, Y + 130 + shift);
+            BlueprintsLink.Pos      = new Vector2(X + 10, Y + 160 + shift);
             Blueprintsoverview.Pos  = ColonyBlueprints.Pos;
             Blueprintsoverview.Text = GetParsedBlueprintsOverview();
             BlueprintsEnableGov.Pos  = new Vector2(X + 10, Bottom - 60);
             BlueprintsEnableGov.Text = GameText.BluePrintsEnableGovernorToLoad;
 
-            CreateBlueprints.Pos   = new Vector2(X+ 10,  Y+ Height - 30);
+            CreateBlueprints.Pos   = new Vector2(X+ 10,  Y+ Height - 38); // 8px up (maintainer bench)
             EditBlueprints.Pos     = new Vector2(X + Width - 240, CreateBlueprints.Y);
             ClearBlueprints.Pos    = new Vector2(X + Width - 160, CreateBlueprints.Y);
             LoadBlueprints.Pos     = new Vector2(X + Width - 80, CreateBlueprints.Y); 
 
-            BlueprintsAchiveable.Pos        = new Vector2(X+110 + Width*0.5f, Y + 70);
+            BlueprintsAchiveable.Pos        = new Vector2(X+110 + Width*0.5f, Y + 70 + shift);
             BlueprintsAchiveable.Tooltip    = GameText.AchievableTip;
-            BlueprintsCompletionLbl.Pos     = new Vector2(X + 10, Y + 70);
+            BlueprintsCompletionLbl.Pos     = new Vector2(X + 10, Y + 70 + shift);
             BlueprintsCompletionLbl.Tooltip = GameText.CompletionTip;
 
-            BudgetLimitReached.Pos = new Vector2(ColonyTypeList.Right + 10, ColonyTypeList.Pos.Y);
+            // maintainer bench 338: the warning's BOTTOM lines up with the portrait's bottom - a
+            // fixed anchor, whatever the description length (a long one let MeasureString under-count
+            // the wrapped height and the red line dropped into the text). A label draws from its top,
+            // so seat its top one line-height above the portrait foot. X stays in the description
+            // column beside it.
+            BudgetLimitReached.Pos = new Vector2(WorldDescription.X,
+                Portrait.Pos.Y + Portrait.Size.Y - FontBig.LineSpacing);
 
-            SpecializedTradeHub.Pos = new Vector2(Portrait.X, Bottom - 20);
-            GovNoScrap.Pos          = new Vector2(TopRight.X - 250, SpecializedTradeHub.Pos.Y);
-            BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, SpecializedTradeHub.Pos.Y - 35);
-            Quarantine.Pos          = new Vector2(Portrait.X, SpecializedTradeHub.Pos.Y - 35);
-            Prioritized.Pos         = new Vector2(Portrait.X, SpecializedTradeHub.Pos.Y - 17);
+            // Ludoal fork: seated here rather than in the constructor, which runs before Tabs
+            // exists and so cannot know how many rows the tab bar takes.
+            CivBudgetRect     = new Rectangle((int)X + 57, (int)(Y + 40 + shift), (int)(Width*0.33f), 20);
+            GrdBudgetRect     = new Rectangle((int)X + 57, (int)(Y + 70 + shift), (int)(Width*0.33f), 20);
+            SpcBudgetRect     = new Rectangle((int)X + 57, (int)(Y + 100 + shift), (int)(Width*0.33f), 20);
+            CivBudgetIconRect = new Rectangle((int)X + 5, (int)(Y + 38 + shift), 47, 23);
+            GrdBudgetIconRect = new Rectangle((int)X + 5, (int)(Y + 68 + shift), 47, 23);
+            SpcBudgetIconRect = new Rectangle((int)X + 5, (int)(Y + 96 + shift), 47, 23);
+            CivBudgetBar.SetRect(CivBudgetRect);
+            GrdBudgetBar.SetRect(GrdBudgetRect);
+            SpcBudgetBar.SetRect(SpcBudgetRect);
+            BlueprintsCompletion.SetRect(new Rectangle((int)X + 100, (int)(Y + 70 + shift), (int)(Width * 0.5f), 30));
 
-            AutoTroops.Pos        = new Vector2(TopLeft.X + 10, Y + 30);
-            Garrison.Pos          = new Vector2(TopLeft.X + 20, Y + 50);
-            CallTroops.Pos        = new Vector2(TopLeft.X + 10, Bottom - 30);
-            LaunchSingleTroop.Pos = new Vector2(TopLeft.X + 10, Bottom - 60);
-            LaunchAllTroops.Pos   = new Vector2(TopLeft.X + 10, Bottom - 90);
-            ColonyRank.Pos        = new Vector2(TopLeft.X + 200, Y + 30);
+            // Ludoal fork: the bottom row sat at Bottom - 20, but a checkbox is drawn CENTRED on
+            // its Y, so half of its height fell past that and the row was clipped by the frame
+            // at the heights this panel actually gets. The margin now comes from the row's own
+            // height instead of a guessed constant. The column sits to the RIGHT of the portrait,
+            // on the same left edge as the world title above it.
+            // two toggles per line (maintainer bench, 3 Aug): Quarantine and Prioritized sit
+            // UNDER the portrait; the two contextual toggles share their exact lines at ColumnX
+            Quarantine.Pos          = new Vector2(X + 10, Portrait.Bottom + 14); // a step lower - there is room below (maintainer bench)
+            Prioritized.Pos         = new Vector2(X + 10, Portrait.Bottom + 34);
+            SpecializedTradeHub.Pos = new Vector2(ColumnX + 25, Quarantine.Pos.Y); // +25: clear of the left labels at 1080 fonts (bench)
+            GovNoScrap.Pos          = new Vector2(ColumnX + 25, Prioritized.Pos.Y);
+            BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, Quarantine.Pos.Y - 35);
+
+            // Defense tab. ⚠ These six buttons used to hang off Bottom, which is why the panel
+            // needed 300px of height for ~120px of content: the gap in the middle was pure
+            // anchoring, not spacing (maintainer: "remonter les 3 boutons sous le slider").
+            // They follow their own column now, so the panel's height can be its content's.
+            AutoTroops.Pos        = new Vector2(TopLeft.X + 10, Y + 30 + shift);
+            Garrison.Pos          = new Vector2(TopLeft.X + 20, Y + 50 + shift);
+            float defRow          = Y + 100 + shift;  // a breath under the garrison slider
+            // 34 per row, not 26 (maintainer, 3 Aug): the buttons breathe vertically
+            LaunchAllTroops.Pos   = new Vector2(TopLeft.X + 10, defRow);
+            LaunchSingleTroop.Pos = new Vector2(TopLeft.X + 10, defRow + 34);
+            CallTroops.Pos        = new Vector2(TopLeft.X + 10, defRow + 68);
+            ColonyRank.Pos        = new Vector2(TopLeft.X + 200, Y + 30 + shift);
             NoGovernor.Pos        = ColonyRank.Pos;
-            GovGround.Pos         = new Vector2(TopLeft.X + 200, Y + 50);
-            GovOrbitals.Pos       = new Vector2(TopLeft.X + 200, Y + 70);
-            ManualOrbitals.Pos    = new Vector2(TopLeft.X + 200, Y + 90);
-            BuildPlatform.Pos     = new Vector2(TopLeft.X + 200, Bottom - 90);
-            BuildShipyard.Pos     = new Vector2(TopLeft.X + 200, Bottom - 60);
-            BuildStation.Pos      = new Vector2(TopLeft.X + 200, Bottom - 30);
+            GovGround.Pos         = new Vector2(TopLeft.X + 200, Y + 50 + shift);
+            GovOrbitals.Pos       = new Vector2(TopLeft.X + 200, Y + 70 + shift);
+            ManualOrbitals.Pos    = new Vector2(TopLeft.X + 200, Y + 90 + shift);
+            BuildPlatform.Pos     = new Vector2(TopLeft.X + 200, defRow);
+            BuildShipyard.Pos     = new Vector2(TopLeft.X + 200, defRow + 34);
+            BuildStation.Pos      = new Vector2(TopLeft.X + 200, defRow + 68);
             Vector2 manualOffset  = new Vector2(125, -15);
             ManualPlatforms.Pos   = BuildPlatform.Pos + manualOffset;
             ManualShipyards.Pos   = BuildShipyard.Pos + manualOffset;
             ManualStations.Pos    = BuildStation.Pos + manualOffset;
 
-            BudgetSum.Pos         = new Vector2(TopLeft.X + 8, Y + 130);
-            BudgetPercent.Pos     = new Vector2(TopLeft.X + CivBudgetRect.Width + 15, Y + 130);
+            BudgetSum.Pos         = new Vector2(TopLeft.X + 8, Y + 130 + shift);
+            BudgetPercent.Pos     = new Vector2(TopLeft.X + CivBudgetRect.Width + 15, Y + 130 + shift);
             OverrideCiv.Pos       = new Vector2(CivBudgetRect.X + CivBudgetRect.Width + 10, CivBudgetRect.Y + 2);
             OverrideGrd.Pos       = new Vector2(GrdBudgetRect.X + GrdBudgetRect.Width + 10, GrdBudgetRect.Y + 2);
             OverrideSpc.Pos       = new Vector2(SpcBudgetRect.X + SpcBudgetRect.Width + 10, SpcBudgetRect.Y + 2);
@@ -330,9 +385,9 @@ namespace Ship_Game
             ManualGrdBudget.Pos   = new Vector2(OverrideGrd.X + OverrideGrd.Width + 20, OverrideGrd.Y);
             ManualSpcBudget.Pos   = new Vector2(OverrideSpc.X + OverrideSpc.Width + 20, OverrideSpc.Y);
 
-            NoGovernorCivExpense.Pos = new Vector2(TopLeft.X + 60, Y + 40);
-            NoGovernorGrdExpense.Pos = new Vector2(TopLeft.X + 60, Y + 70);
-            NoGovernorSpcExpense.Pos = new Vector2(TopLeft.X + 60, Y + 100);
+            NoGovernorCivExpense.Pos = new Vector2(TopLeft.X + 60, Y + 40 + shift);
+            NoGovernorGrdExpense.Pos = new Vector2(TopLeft.X + 60, Y + 70 + shift);
+            NoGovernorSpcExpense.Pos = new Vector2(TopLeft.X + 60, Y + 100 + shift);
 
             OverrideCivBudget = Planet.ManualCivilianBudget.Greater(0);
             OverrideGrdBudget = Planet.ManualGrdDefBudget.Greater(0);
@@ -378,15 +433,26 @@ namespace Ship_Game
             base.PerformLayout(); // update all the sub-elements, like checkbox rects
         }
 
+        // Ludoal fork: the right-hand column's left edge, in one place - both its position and
+        // the width the description wraps on come from here, so they cannot disagree. The floor
+        // keeps the column off the tab row when the portrait shrinks with the panel height.
+        // It must not be read off WorldType.X: OnColonyTypeChanged re-wraps the description
+        // outside of a layout pass, when that X is stale.
+        float ColumnX => Math.Max(Portrait.Right + 10, X + 130);
+
         string GetParsedDescription()
         {
-            float maxWidth = Right - 10 - WorldType.X;
+            float maxWidth = Right - 10 - ColumnX;
             return Font.ParseText(Planet.ColonyTypeInfoText, maxWidth);
         }
 
         string GetParsedBlueprintsOverview()
         {
-            float maxWidth = Right - 30;
+            // Ludoal fork: Right is an absolute coordinate, not a width - wrapping on it gave
+            // the text far more room than the frame has, so it ran to the right edge with no
+            // margin at all. The text starts at X + 10, so the room it really has is the
+            // frame's width less that indent and a matching margin on the right.
+            float maxWidth = Width - 40;
             return Font.ParseText(Localizer.Token(GameText.BluePrintsOverView), maxWidth);
         }
 
@@ -928,6 +994,10 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            // the folded BP tab says its full name on hover (maintainer, 3 Aug)
+            if (Tabs != null && Tabs.Tabs.Count > 3 && Tabs.Tabs[3].Rect.HitTest(input.CursorPosition))
+                ToolTip.CreateTooltip("Blueprint");
+
             if (GovOrbitals.HitTest(input.CursorPosition))
                 UpdateGovOrbitalStats();
 

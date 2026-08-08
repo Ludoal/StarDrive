@@ -6,7 +6,6 @@ using Ship_Game.Audio;
 using Ship_Game.Gameplay;
 using Ship_Game.GameScreens;
 using Ship_Game.GameScreens.ShipDesign;
-using Ship_Game.GameScreens.Espionage;
 using Ship_Game.Ships;
 using Vector2 = SDGraphics.Vector2;
 using Vector3 = SDGraphics.Vector3;
@@ -24,7 +23,7 @@ namespace Ship_Game
         // LeftMouseHeld's default of 0.15s, and ShipYardArcMove calls it with no argument — so
         // this screen was cutting the click 50ms EARLIER than the arc drag starts. Anything
         // between the two was neither a click nor a hold: on a turret, a normal-speed click fell
-        // into the gap and went to the firing arc instead of picking the module up (Ludo). Two
+        // into the gap and went to the firing arc instead of picking the module up (maintainer feedback). Two
         // numbers for one boundary, again.
         const float ClickThresholdSeconds = 0.15f;
 
@@ -99,7 +98,7 @@ namespace Ship_Game
             bool goodDesign = IsGoodDesign();
             if (goodDesign && !ShipSaved)
             {
-                ExitMessageBox(this, SaveChanges, DoExit, GameText.YouHaveUnsavedChangesSave);
+                ExitMessageBox(this, SaveChanges, DoExit, GameText.YouHaveUnsavedChangesSave, FrameCentre);
                 return;
             }
 
@@ -132,7 +131,7 @@ namespace Ship_Game
 
             if (!ShipSaved && goodDesign)
             {
-                ExitMessageBox(this, SaveChanges, LaunchScreen, GameText.YouHaveUnsavedChangesSave);
+                ExitMessageBox(this, SaveChanges, LaunchScreen, GameText.YouHaveUnsavedChangesSave, FrameCentre);
                 return;
             }
 
@@ -185,6 +184,42 @@ namespace Ship_Game
                 return true;
             }
 
+            // Ludoal fork (bench 356): the ENTIRE right-click is resolved here, before anything else
+            // can see it - because GameScreen.HandleInput closes any IsPopup screen on an unconsumed
+            // right-click (GameScreen.cs:354). That base behaviour is what closed the window on an
+            // empty right-click inside the frame all along (since bench 345 made this screen IsPopup
+            // to show the universe behind); the old InTopBand/OutsideGroupFrame conditions never were
+            // the culprit. Regime by cursor position (maintainer rule): inside the drawn frame the
+            // right-click is a design gesture (cancel the module in hand, delete the module under the
+            // cursor, else drop the highlight); outside it, it closes the screen. Every branch returns
+            // true so the click NEVER reaches the base popup-dismiss.
+            bool cursorInFrame = DesignTabs.Rect.HitTest(input.CursorPosition);
+            if (input.RightMouseClick)
+            {
+                if (ActiveModule != null)
+                {
+                    ActiveModule = null; // cancel the module in hand, everywhere (Lek's review)
+                    return true;
+                }
+                if (cursorInFrame)
+                {
+                    (SlotUnderCursor, GridPosUnderCursor) = GetSlotUnderCursor();
+                    if (SlotUnderCursor != null)
+                        DeleteModuleAtSlot(SlotUnderCursor); // the design gesture on a fitted module
+                    else
+                        HighlightedModule = null;            // empty space: just drop the highlight
+                    return true;
+                }
+                // outside the frame: the universe margin - close. ExitScreen, not ReallyExit:
+                // the unsaved-design prompt still gets its say.
+                GameAudio.EchoAffirmative();
+                ExitScreen();
+                return true;
+            }
+
+            // Non-positional inputs run whatever the cursor is over: undo/redo, the live top bar,
+            // the UI buttons, and the hotkeys below. Only the workbench GESTURES (zoom, pan, module
+            // pick/place/delete) are gated on the frame, so they never fire out over the universe map.
             if (HandleInputUndoRedo(input))
                 return true;
 
@@ -193,38 +228,38 @@ namespace Ship_Game
             if (base.HandleInput(input)) // handle any buttons before any other selection logic
                 return true;
 
-            HandleInputZoom(input);
-
-            if (ArcsButton.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.TogglesTheWeaponFireArc, "Tab");
-
-            if (ArcsButton.HandleInput(input))
-            {
-                ArcsButton.ToggleOn = !ArcsButton.ToggleOn;
-                ShowAllArcs = ArcsButton.ToggleOn;
-                return true;
-            }
-
+            // Arcs is a UIButton in the foot row now; base.HandleInput above serves its click
+            // and its Tab hotkey. Only the style has to follow the state.
             if (input.Tab && !input.IsAltKeyDown)
             {
                 ShowAllArcs = !ShowAllArcs;
-                ArcsButton.ToggleOn = ShowAllArcs;
+                BtnArcs.Style = ArcsBtnStyle;
                 return true;
             }
 
-            HandleCameraMovement(input);
+            // bench 355 (maintainer): scene gestures only inside the frame. Outside it, scroll/pan/
+            // click belong to the universe map behind, not the workbench.
+            // Pan runs whenever it is latched too (Lek's review): a drag begun inside the frame keeps
+            // going until the button is released, even past the edge.
+            if (cursorInFrame || PanLatched)
+                HandleCameraMovement(input);
 
-            if (HighlightedModule != null && HandleInputMoveArcs(input, HighlightedModule))
-                return true;
+            if (cursorInFrame)
+            {
+                HandleInputZoom(input);
 
-            (SlotUnderCursor, GridPosUnderCursor) = GetSlotUnderCursor();
+                if (HighlightedModule != null && HandleInputMoveArcs(input, HighlightedModule))
+                    return true;
 
-            if (HandleModuleSelection(input, SlotUnderCursor))
-                return true;
+                (SlotUnderCursor, GridPosUnderCursor) = GetSlotUnderCursor();
 
-            ProjectedSlot = SlotUnderCursor;
-            HandleDeleteModule(input, SlotUnderCursor);
-            HandlePlaceNewModule(input, SlotUnderCursor);
+                if (HandleModuleSelection(input, SlotUnderCursor))
+                    return true;
+
+                ProjectedSlot = SlotUnderCursor;
+                // (right-click delete/deselect is fully resolved at the top of HandleInput)
+                HandlePlaceNewModule(input, SlotUnderCursor);
+            }
             return false;
         }
 
@@ -247,30 +282,51 @@ namespace Ship_Game
             }
         }
 
+        // bench 355 (Lek's review): a held pan latches to where it STARTED. The pan is gated to begin
+        // inside the frame, but once dragging it keeps the mouse until release even if the cursor
+        // leaves the frame - otherwise a pan begun at the centre snaps dead the instant it crosses the
+        // edge (mouse-feels-broken). Set on middle-click inside the frame, cleared on release.
+        bool PanLatched;
+
         void HandleCameraMovement(InputState input)
         {
             if (input.MiddleMouseClick)
             {
                 StartDragPos = input.CursorPosition;
+                PanLatched = true;
             }
+            // clear on RELEASE, never on !Held - Held carries a 0.15s threshold (bench 358, Fleets)
+            if (input.MiddleMouseReleased)
+                PanLatched = false;
 
             if (input.MiddleMouseHeld())
             {
                 float dx = input.CursorPosition.X - StartDragPos.X;
                 float dy = input.CursorPosition.Y - StartDragPos.Y;
                 StartDragPos = input.CursorPosition;
-                CameraPos.X += -dx;
-                CameraPos.Y += -dy;
+                // bench 356 (maintainer: "pas smooth et pas proportionnel"): scale the raw pixel delta
+                // to WORLD units at the current zoom, so the ship tracks the mouse 1:1. The factor is
+                // derived from the same projection the zoom clamp uses: GetHullScreenSize maps world ->
+                // pixels, its inverse is world-per-pixel. The old raw += -dx moved the camera one world
+                // unit per pixel - several times faster than the mouse at working zooms.
+                float hullH = DesignedShip.Radius * 2;
+                float onScreen = GetHullScreenSize(CameraPos, hullH);
+                float worldPerPixel = onScreen > 0.01f ? hullH / onScreen : 1f;
+                // bench 359 (maintainer: pan "toujours direct"): write a TARGET, like Fleets - Update
+                // glides CameraPos toward it with the same SmoothStep the zoom already uses. Stock BB
+                // pans raw too; Fleets is the reference feel.
+                DesiredCamXY.X += -dx * worldPerPixel;
+                DesiredCamXY.Y += -dy * worldPerPixel;
             }
             else
             {
                 float limit = 2000f;
                 float cameraPanSpeed = GlobalStats.CameraPanSpeed * 2;
                 if (input.IsCtrlKeyDown) return;
-                if (input.WASDLeft  && CameraPos.X > -limit) CameraPos.X -= cameraPanSpeed;
-                if (input.WASDRight && CameraPos.X < +limit) CameraPos.X += cameraPanSpeed;
-                if (input.WASDUp   && CameraPos.Y > -limit) CameraPos.Y -= cameraPanSpeed;
-                if (input.WASDDown && CameraPos.Y < +limit) CameraPos.Y += cameraPanSpeed;
+                if (input.WASDLeft  && DesiredCamXY.X > -limit) DesiredCamXY.X -= cameraPanSpeed;
+                if (input.WASDRight && DesiredCamXY.X < +limit) DesiredCamXY.X += cameraPanSpeed;
+                if (input.WASDUp   && DesiredCamXY.Y > -limit) DesiredCamXY.Y -= cameraPanSpeed;
+                if (input.WASDDown && DesiredCamXY.Y < +limit) DesiredCamXY.Y += cameraPanSpeed;
             }
         }
 
@@ -290,7 +346,7 @@ namespace Ship_Game
 
                 // Ludoal fork (bench): leaving the hull clears the highlight, so the orange
                 // rectangle and its stats panel go with the cursor instead of staying lit on the
-                // last module hovered — there was no way to dismiss it short of clicking (Ludo).
+                // last module hovered — there was no way to dismiss it short of clicking (maintainer feedback).
                 // ⚠ not while the button is down: dragging a firing arc walks the cursor well
                 // off its own tile, and clearing here would drop the module mid-drag.
                 else if (!input.LeftMouseDown)
@@ -483,21 +539,11 @@ namespace Ship_Game
             }
         }
 
-        void HandleDeleteModule(InputState input, SlotStruct slotUnderCursor)
-        {
-            if (!input.RightMouseClick)
-                return;
-
-            if (slotUnderCursor != null)
-                DeleteModuleAtSlot(slotUnderCursor);
-            else
-                ActiveModule = null;
-        }
-
         void HandleInputZoom(InputState input)
         {
             if (input.ScrollOut) DesiredCamHeight *= 1.05f;
             if (input.ScrollIn)  DesiredCamHeight *= 0.95f;
+            // bench 359: stock bounds - free zoom, the frame's scissor clips the hull (like Fleets)
             DesiredCamHeight = DesiredCamHeight.Clamped(1000, 5000);
         }
 
@@ -537,7 +583,7 @@ namespace Ship_Game
                         break;
                     case "Budget":
                         GameAudio.EchoAffirmative();
-                        ScreenManager.AddScreen(GameScreens.ReworkScreens.Economy(ParentUniverse));
+                        ScreenManager.AddScreen(GameScreens.ScreenGroups.Economy(ParentUniverse));
                         break;
                     case "Main Menu":
                         GameAudio.EchoAffirmative();
@@ -577,10 +623,7 @@ namespace Ship_Game
                         ScreenManager.AddScreen(new TroopListScreen(ParentUniverse, EmpireUI));
                         break;
                     case "Espionage":
-                        if (ParentUniverse.Player.LegacyEspionageEnabled)
-                            ScreenManager.AddScreen(new EspionageScreen(ParentUniverse));
-                        else
-                            ScreenManager.AddScreen(GameScreens.ReworkScreens.Espionage(ParentUniverse));
+                        ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(ParentUniverse));
                         GameAudio.EchoAffirmative();
                         break;
                     case "Empire":
@@ -588,7 +631,7 @@ namespace Ship_Game
                         GameAudio.EchoAffirmative();
                         break;
                     case "Diplomacy":
-                        ScreenManager.AddScreen(GameScreens.ReworkScreens.Diplomacy(ParentUniverse));
+                        ScreenManager.AddScreen(GameScreens.ScreenGroups.Diplomacy(ParentUniverse));
                         GameAudio.EchoAffirmative();
                         break;
                     case "?":
@@ -652,7 +695,7 @@ namespace Ship_Game
             {
                 SaveWIP();
                 load();
-            }, GameText.YouHaveUnsavedChangesSave);
+            }, GameText.YouHaveUnsavedChangesSave, FrameCentre);
         }
 
         void UpdateViewMatrix(in Vector3 cameraPosition)
@@ -669,6 +712,33 @@ namespace Ship_Game
             return (float)ProjectToScreenSize(hullSize);
         }
 
+        // bench 355 (Lek's review): the ONE convergence loop. Returns the camera height at which the
+        // hull's on-screen HEIGHT lands on wantedPx. Extracted so the entry animation AND the manual
+        // zoom clamp share a single formula (same doctrine as GroupFrameTop) - they cannot disagree.
+        float CamHeightToFitHull(float wantedPx)
+        {
+            float hullHeight = DesignedShip.Radius * 2;
+            float camHeight = CameraPos.Z;
+            float currentHeight = GetHullScreenSize(new Vector3(CameraPos.X, CameraPos.Y, camHeight), hullHeight);
+            float diff = wantedPx - currentHeight;
+            // scaling is non-linear, so step through it rather than solve it
+            while (Math.Abs(diff) > 20)
+            {
+                camHeight += diff < 0 ? 10 : -10;
+                currentHeight = GetHullScreenSize(new Vector3(CameraPos.X, CameraPos.Y, camHeight), hullHeight);
+                float newDiff = wantedPx - currentHeight;
+                if (diff < 0 && newDiff > 0 || diff > 0 && newDiff < 0)
+                    break; // overshoot, quit the loop
+                diff = newDiff;
+            }
+            return camHeight;
+        }
+
+        // bench 359 (maintainer): NO dynamic zoom clamp - free zoom like Fleets, the frame's scissor
+        // clips the hull instead. The clamp guarded against dead click-zones on overspilling modules,
+        // but the right-click is resolved at the top of HandleInput now and an off-frame module is
+        // invisible anyway - the clamp only blocked close-ups.
+
         void ZoomCameraToEncloseHull()
         {
             // This ensures our module grid overlay is the same size as the mesh
@@ -678,27 +748,14 @@ namespace Ship_Game
             float ratio = visibleSize / hullHeight;
             CameraPos.Z = (CameraPos.Z * ratio).RoundUpTo(1);
 
-            // and now we zoom in the camera so the ship is all visible
-            float wantedHeight = ScreenHeight * 0.75f;
-            float currentHeight = GetHullScreenSize(CameraPos, hullHeight);
-
-            float diff = wantedHeight - currentHeight;
-            float camHeight = CameraPos.Z;
-
-            // zoom in or out until we are past the desired visual height,
-            // the scaling is not linear which is why we step through it with a loop
-            while (Math.Abs(diff) > 20)
-            {
-                camHeight += diff < 0 ? 10 : -10;
-                currentHeight = GetHullScreenSize(new Vector3(CameraPos.X, CameraPos.Y, camHeight), hullHeight);
-                float newDiff = wantedHeight - currentHeight;
-                if (diff < 0 && newDiff > 0 || diff > 0 && newDiff < 0)
-                    break; // overshoot, quit the loop
-                diff = newDiff;
-            }
+            // bench 357 (maintainer: "zoom not smooth"): the entry poses the ship at 0.75 of the FRAME,
+            // not the screen - the ship in its frame with margin, whatever the resolution.
+            // (DesignTabs is null on the very first restore pass - fall back to the screen.)
+            float entryTarget = (DesignTabs != null ? DesignTabs.ClientArea.H : ScreenHeight) * 0.75f;
+            float camHeight = CamHeightToFitHull(entryTarget);
 
             UpdateViewMatrix(CameraPos);
-            DesiredCamHeight = camHeight.Clamped(1000, 5000);
+            DesiredCamHeight = camHeight.Clamped(1000, 5000); // bench 359: stock bounds, free zoom
         }
 
         void ReallyExit()
@@ -712,7 +769,7 @@ namespace Ship_Game
 
         void SaveChanges()
         {
-            ScreenManager.AddScreen(new ShipDesignSaveScreen(this, DesignOrHullName, hullDesigner:false));
+            ScreenManager.AddScreen(new ShipDesignSaveScreen(this, DesignOrHullName, hullDesigner:false) { CenterOn = FrameCentre });
             ShipSaved = true;
         }
 
@@ -763,7 +820,7 @@ namespace Ship_Game
         public void SaveShipDesign(string name, FileInfo overwriteProtected)
         {
             ShipDesign toSave = CloneCurrentDesign(name);
-            SaveDesign(toSave, overwriteProtected ?? new FileInfo($"{Dir.StarDriveAppData}/Saved Designs/{name}.design"));
+            SaveDesign(toSave, overwriteProtected ?? new FileInfo($"{Dir.StarDriveUserData}/Saved Designs/{name}.design"));
 
             bool playerDesign = overwriteProtected == null;
             bool readOnlyDesign = overwriteProtected != null;
@@ -812,7 +869,7 @@ namespace Ship_Game
                     toSave = CloneCurrentDesign(ShipDesignWIP.GetNewWipName(DesignOrHullName));
                 }
 
-                SaveDesign(toSave, new FileInfo($"{Dir.StarDriveAppData}/WIP/{toSave.Name}.design"));
+                SaveDesign(toSave, new FileInfo($"{Dir.StarDriveUserData}/WIP/{toSave.Name}.design"));
                 Vector2 pos = new(ModuleSelectComponent.X + ModuleSelectComponent.Width + 20, ModuleSelectComponent.Y + 100);
                 ToolTip.CreateFloatingText($"Work in progress ship was saved as {toSave.Name}", "", pos, 5);
                 CurrentDesign.Name = toSave.Name;
@@ -820,7 +877,7 @@ namespace Ship_Game
             else
             {
                 ShipHull toSave = CloneCurrentHull($"{DateTime.Now:yyyy-MM-dd}__{DesignOrHullName}");
-                SaveHull(toSave, new FileInfo($"{Dir.StarDriveAppData}/WIP/{toSave.VisibleName}.hull"));
+                SaveHull(toSave, new FileInfo($"{Dir.StarDriveUserData}/WIP/{toSave.VisibleName}.hull"));
             }
 
             ShipSaved = true;

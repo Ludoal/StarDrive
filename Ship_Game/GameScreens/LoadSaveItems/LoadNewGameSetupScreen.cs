@@ -14,7 +14,7 @@ public sealed class LoadNewGameSetupScreen : GenericLoadSaveScreen
         : base(screen, SLMode.Load, "", "Load Saved Setup", "Saved Setups")
     {
         Screen = screen;
-        Path = Dir.StarDriveAppData + "/Saved Setups/";
+        Path = Dir.StarDriveUserData + "/Saved Setups/";
     }
 
     protected override void Load()

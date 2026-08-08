@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -180,7 +180,6 @@
     <Compile Include="Ship_Game\Debug\DebugEmpireSelectionSubmenu.cs" />
     <Compile Include="Ship_Game\Debug\DebugInfoScreen_VisualizeShipGoals.cs" />
     <Compile Include="Ship_Game\Debug\DebugModes.cs" />
-    <Compile Include="Ship_Game\Debug\Page\AgentsDebug.cs" />
     <Compile Include="Ship_Game\Debug\Page\EmpireGoalsDebug.cs" />
     <Compile Include="Ship_Game\Debug\Page\InfluenceDebug.cs" />
     <Compile Include="Ship_Game\Debug\Page\SpaceRoadsDebug.cs" />
@@ -235,16 +234,8 @@
     <Compile Include="Ship_Game\GameScreens\EmpirePatrolsScreen\RenamePatrolPlanScreen.cs" />
     <Compile Include="Ship_Game\GameScreens\ImportantEvents\ImportantEventsScreen.cs" />
     <Compile Include="Ship_Game\GameScreens\ImportantEvents\ImportantEventListItem.cs" />
-    <Compile Include="Ship_Game\GameScreens\Infiltration\EspionageLevelPanel.cs" />
     <Compile Include="Ship_Game\Espionage\InfiltrationOperation.cs" />
-    <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationOpsLevel1.cs" />
-    <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationOpsLevel2.cs" />
-    <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationOpsLevel3.cs" />
-    <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationOpsLevel4.cs" />
-    <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationOpsLevel5.cs" />
     <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationScreen.cs" />
-    <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationScreenRework.cs" />
-    <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationPanel.cs" />
     <Compile Include="Ship_Game\GameScreens\FleetDesign\FleetButton.cs" />
     <Compile Include="Ship_Game\GameScreens\FleetDesign\FleetButtonsList.cs" />
     <Compile Include="Ship_Game\GameScreens\GameCursors.cs" />
@@ -253,7 +244,6 @@
     <Compile Include="Ship_Game\GameScreens\MainMenu\AutoUpdateChecker.cs" />
     <Compile Include="Ship_Game\GameScreens\MainMenu\MainMenusDescr.cs" />
     <Compile Include="Ship_Game\GameScreens\NewGame\SelectOpponentListItem.cs" />
-    <Compile Include="Ship_Game\GameScreens\NewGame\SelectOpponentsScreen.cs" />
     <Compile Include="Ship_Game\GameScreens\NewGame\UniverseGenerator.cs" />
     <Compile Include="Ship_Game\GameScreens\Scene\ObjectSpawnInfo.cs" />
     <Compile Include="Ship_Game\GameScreens\Scene\SceneActions.cs" />
@@ -290,7 +280,6 @@
     <Compile Include="Ship_Game\AI\StrategyAI\FleetShips.cs" />
     <Compile Include="Ship_Game\AI\EmpireAI\ShipBuilder.cs" />
     <Compile Include="Ship_Game\AI\EmpireAI\EmpireAI.DiplomacyOffers.cs" />
-    <Compile Include="Ship_Game\AI\EmpireAI\EmpireAI.RunAgentManager.cs" />
     <Compile Include="Ship_Game\AI\EmpireAI\EmpireAI.RunDiplomaticPlanner.cs" />
     <Compile Include="Ship_Game\AI\EmpireAI\EmpireAI.RunEconomicPlanner.cs" />
     <Compile Include="Ship_Game\AI\EmpireAI\EmpireAI.RunGroundPlanner.cs" />
@@ -533,11 +522,6 @@
     <Compile Include="Ship_Game\GameScreens\ColonyScreen\GovernorDetailsComponent.cs" />
     <Compile Include="Ship_Game\GameScreens\CombatScreen\CombatScreenOrbitListItem.cs" />
     <Compile Include="Ship_Game\GameScreens\DiplomacyScreen\DiplomacyOffersComponent.cs" />
-    <Compile Include="Ship_Game\GameScreens\Espionage\AgentsPanel.cs" />
-    <Compile Include="Ship_Game\GameScreens\Espionage\DossierPanel.cs" />
-    <Compile Include="Ship_Game\GameScreens\Espionage\EmpiresButton.cs" />
-    <Compile Include="Ship_Game\GameScreens\Espionage\EmpiresPanel.cs" />
-    <Compile Include="Ship_Game\GameScreens\Espionage\OperationsPanel.cs" />
     <Compile Include="Ship_Game\GameScreens\FleetDesign\FleetDesignScreen_Draw.cs" />
     <Compile Include="Ship_Game\GameScreens\FleetDesign\FleetDesignScreen_HandleInput.cs" />
     <Compile Include="Ship_Game\GameScreens\FleetDesign\FleetDesignScreen_Update.cs" />
@@ -566,7 +550,6 @@
     <Compile Include="Ship_Game\GameScreens\ShipDesign\HangarDesignationDropDown.cs" />
     <Compile Include="Ship_Game\GameScreens\ShipDesign\DesignModuleGrid.cs" />
     <Compile Include="Ship_Game\GameScreens\ShipDesign\FighterScrollList.cs" />
-    <Compile Include="Ship_Game\GameScreens\ShipDesign\ShipDesignLoadScreen.cs" />
     <Compile Include="Ship_Game\GameScreens\ShipDesign\ModuleSelection.cs" />
     <Compile Include="Ship_Game\GameScreens\ShipDesign\ShipDesignScreen.CategoryDropDown.cs" />
     <Compile Include="Ship_Game\GameScreens\ShipDesign\ShipDesignScreenDraw.cs" />
@@ -662,7 +645,6 @@
     <Compile Include="Ship_Game\UI\Effects\AnimationCurve.cs" />
     <Compile Include="Ship_Game\SpriteSystem\AtlasPath.cs" />
     <Compile Include="Ship_Game\SpriteSystem\DrawableSprite.cs" />
-    <Compile Include="Ship_Game\GameScreens\Espionage\AgentListItem.cs" />
     <Compile Include="Ship_Game\SpriteSystem\TextureAtlas.Utils.cs" />
     <Compile Include="Ship_Game\SpriteSystem\TextureBinding.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\ArtifactItemListItem.cs" />
@@ -673,8 +655,6 @@
     <Compile Include="Ship_Game\SpriteSystem\SpriteExtensions.cs" />
     <Compile Include="Ship_Game\SpriteSystem\TextureInfo.cs" />
     <Compile Include="Ship_Game\SpriteSystem\TexturePacker.cs" />
-    <Compile Include="Ship_Game\StoryAndEvents\Agents\AgentMissionData.cs" />
-    <Compile Include="Ship_Game\GameScreens\Espionage\EspionageScreen.cs" />
     <Compile Include="Ship_Game\HullBonus.cs" />
     <Compile Include="Ship_Game\GameScreens\LoadSaveItems\LoadRaceScreen.cs" />
     <Compile Include="Ship_Game\UI\Effects\UIEffect.cs" />
@@ -684,6 +664,7 @@
     <Compile Include="Ship_Game\UI\PrettyText.cs" />
     <Compile Include="Ship_Game\UI\ScrollList.cs" />
     <Compile Include="Ship_Game\UI\ScrollListBase.cs" />
+    <Compile Include="Ship_Game\UI\UITable.cs" />
     <Compile Include="Ship_Game\UI\ScrollListItem.cs" />
     <Compile Include="Ship_Game\UI\ScrollListItemBase.cs" />
     <Compile Include="Ship_Game\UI\ScrollListStyleTextures.cs" />
@@ -773,7 +754,6 @@
     <Compile Include="Ship_Game\Body.cs" />
     <Compile Include="Ship_Game\Header.cs" />
     <Compile Include="Ship_Game\GameScreens\Universe\BudgetScreen.cs" />
-    <Compile Include="Ship_Game\GameScreens\Universe\BudgetScreenRework.cs" />
     <Compile Include="Ship_Game\Gameplay\Relationship.cs" />
     <Compile Include="Ship_Game\GameScreens\DiplomacyScreen\ItemToOffer.cs" />
     <Compile Include="Ship_Game\ToolTip.cs" />
@@ -786,6 +766,7 @@
     <Compile Include="Ship_Game\SelectedShipListItem.cs" />
     <Compile Include="Ship_Game\UI\UIElement.cs" />
     <Compile Include="Ship_Game\GameScreens\Universe\GamePlayMenuScreen.cs" />
+    <Compile Include="Ship_Game\GameScreens\Universe\HotkeysScreen.cs" />
     <Compile Include="Ship_Game\Spatial\SpatialManager.cs" />
     <Compile Include="Ship_Game\AI\MissileAI.cs" />
     <Compile Include="Ship_Game\ShipListInfoUIElement.cs" />
@@ -876,8 +857,11 @@
     <Compile Include="Ship_Game\AI\DroneAI.cs" />
     <Compile Include="Ship_Game\Graphics\Particles\Particle.cs" />
     <Compile Include="Ship_Game\Universe\UniverseScreen\UniverseScreen.cs" />
-    <Compile Include="Ship_Game\Menu2.cs" />
     <Compile Include="Ship_Game\UI\UIButton.cs" />
+    <Compile Include="Ship_Game\UI\UITheme.cs" />
+    <Compile Include="Ship_Game\UI\CheckedDropdown.cs" />
+    <Compile Include="Ship_Game\GameScreens\Universe\AutomationScreen.cs" />
+    <Compile Include="Ship_Game\UI\PopupFrame.cs" />
     <Compile Include="Ship_Game\GameScreens\FleetDesign\RequisitionScreen.cs" />
     <Compile Include="Ship_Game\Primitives2D.cs" />
     <Compile Include="Ship_Game\Fleets\Fleet.cs" />
@@ -903,8 +887,7 @@
     <Compile Include="Ship_Game\ModEntry.cs" />
     <Compile Include="Ship_Game\Gameplay\RacialTraits.cs" />
     <Compile Include="Ship_Game\AI\StrategyAI\WarGoals\War.cs" />
-    <Compile Include="Ship_Game\GameScreens\ReworkScreens.cs" />
-    <Compile Include="Ship_Game\GameScreens\MainMenu\ReworkOptionsScreen.cs" />
+    <Compile Include="Ship_Game\GameScreens\ScreenGroups.cs" />
     <Compile Include="Ship_Game\PopupWindow.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\EventPopup.cs" />
     <Compile Include="Ship_Game\GameScreens\MainMenu\MainMenuScreen.cs" />
@@ -915,6 +898,7 @@
     <Compile Include="Ship_Game\GameScreens\BattleSim\BattleSimEnemyPicker.cs" />
     <Compile Include="Ship_Game\GameScreens\BattleSim\BattleSimResultScreen.cs" />
     <Compile Include="Ship_Game\GameScreens\ColonyScreen\ColonyScreen_StatsPlus.cs" />
+    <Compile Include="Ship_Game\GameScreens\StatsPlusLayout.cs" />
     <Compile Include="Ship_Game\NodeState.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\YouLoseScreen.cs" />
     <Compile Include="Ship_Game\Gameplay\DiplomaticTraits.cs" />
@@ -931,7 +915,6 @@
     <Compile Include="Ship_Game\Shield.cs" />
     <Compile Include="Ship_Game\Gameplay\ModuleSlot.cs" />
     <Compile Include="Ship_Game\GameScreens\MainDiplomacyScreen\MainDiplomacyScreen.cs" />
-    <Compile Include="Ship_Game\GameScreens\MainDiplomacyScreen\MainDiplomacyScreenRework.cs" />
     <Compile Include="Ship_Game\AI\Tasks\MilitaryTask.cs" />
     <Compile Include="Ship_Game\OrderType.cs" />
     <Compile Include="Ship_Game\OrdersButton.cs" />
@@ -941,14 +924,12 @@
     <Compile Include="Ship_Game\Building.cs" />
     <Compile Include="Ship_Game\AI\EmpireAI\EmpireAI.cs" />
     <Compile Include="Ship_Game\AI\ShipAI\CombatAI.cs" />
-    <Compile Include="Ship_Game\Menu1.cs" />
     <Compile Include="Ship_Game\EconomicResearchStrategy.cs" />
     <Compile Include="Ship_Game\ScreenState.cs" />
     <Compile Include="Ship_Game\AI\ShipAI\AIState.cs" />
     <Compile Include="Ship_Game\AI\ShipAI\CombatState.cs" />
     <Compile Include="Ship_Game\GenericButton.cs" />
     <Compile Include="Ship_Game\Ships\ShipInfoUIElement.cs" />
-    <Compile Include="Ship_Game\SlidingElement.cs" />
     <Compile Include="Ship_Game\AI\Goal.cs" />
     <Compile Include="Ship_Game\UI\UITextEntry.cs" />
     <Compile Include="Ship_Game\ResearchQueueUIComponent.cs" />
@@ -956,13 +937,10 @@
     <Compile Include="Ship_Game\ResearchQItem.cs" />
     <Compile Include="Ship_Game\Universe\SolarBodies\PlanetInfoUIElement.cs" />
     <Compile Include="Ship_Game\Universe\SolarBodies\StarInfoUIElement.cs" />
-    <Compile Include="Ship_Game\AutomationWindow.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\Artifact.cs" />
     <Compile Include="Ship_Game\ExplorationEvent.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\Outcome.cs" />
-    <Compile Include="Ship_Game\GameScreens\Espionage\MissionListItem.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\Agents\Agent.cs" />
-    <Compile Include="Ship_Game\GameScreens\Espionage\AgentComponent.cs" />
     <Compile Include="Ship_Game\GameScreens\DiplomacyScreen\DiplomacyScreen.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\NotificationManager.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\Notification.cs" />

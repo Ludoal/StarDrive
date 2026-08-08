@@ -13,7 +13,7 @@ namespace Ship_Game;
 /// <summary>
 /// In-Game Menu for Load/Save/Options and Exit to Windows
 /// </summary>
-public sealed class GamePlayMenuScreen : GameScreen
+public sealed class GamePlayMenuScreen : PopupWindow
 {
     readonly UniverseScreen Universe;
     UILabel SavingText;
@@ -22,35 +22,49 @@ public sealed class GamePlayMenuScreen : GameScreen
     UIButton ExitToMainMenu;
     UIButton ExitToWindows;
 
-    public GamePlayMenuScreen(UniverseScreen screen) : base(screen, toPause: screen)
+    // Ludoal fork: 200x330 -> 380x360. Width is not cosmetic here: the popup frame's gradient
+    // bands are 433px wide and only shrink to fit, so a window under ~493 gets a squeezed
+    // band - and at 260 it was narrower than the frame's own furniture (maintainer
+    // observation). 380 carries the 168px buttons with room either side.
+    public GamePlayMenuScreen(UniverseScreen screen) : base(screen, 380, 360)
     {
         Universe = screen;
-        IsPopup = true;
         TransitionOnTime  = 0.25f;
         TransitionOffTime = 0.25f;
     }
 
     public override void LoadContent()
     {
-        RemoveAll();
+        // the window names itself in its own title bar; frame and close cross are
+        // PopupWindow's - base.LoadContent goes FIRST and lays them out. Escape and O
+        // still close it on top of the cross.
+        TitleText = "Menu";
+        base.LoadContent();
 
         Vector2 c = ScreenCenter;
-        Add(new Menu2(new RectF(c.X - 100, c.Y - 150, 200, 330)));
-
         SavingText = Add(new UILabel(GameText.Saving, Fonts.Pirulen16, Color.White));
         SavingText.Visible = false;
         SavingText.TextAlign = TextAlign.Center;
-        SavingText.Pos = new Vector2(c.X - SavingText.Size.X*0.5f, 
+        SavingText.Pos = new Vector2(c.X - SavingText.Size.X*0.5f,
             50 + Fonts.Pirulen16.LineSpacing * 2);
 
-        UIList buttons = AddList(new Vector2(c.X - 84, c.Y - 100));
+        // ⚠ derived from the frame, not from screen centre: the two used to be placed
+        // independently, so widening the window left the buttons where they were.
+        const float btnW = 168;
+        UIList buttons = AddList(new Vector2(Rect.X + (Rect.Width - btnW) / 2,
+                                             PopupFrame.ContentTop(Rect) + 12));
         buttons.Padding = new Vector2(2f, 12f);
         buttons.LayoutStyle = ListLayoutStyle.ResizeList;
 
-        SaveButton = buttons.Add(ButtonStyle.Default, GameText.Save, Save_OnClick);
+        // Ludoal fork (maintainer feedback): three pairs, a gap after each - [Save, Load],
+        // [Options, Hotkeys], [Exit Main, Exit Windows]. "Return to Game" is gone (the close cross
+        // does it); its slot becomes Hotkeys, opening a placeholder to be filled later.
+        SaveButton = buttons.Add(ButtonStyle.Default, "Save Game", Save_OnClick);
         LoadButton = buttons.Add(ButtonStyle.Default, GameText.LoadGame,   Load_OnClick);
+        buttons.AddLabel(new Vector2(btnW, 14), "");   // gap after the save/load pair
         buttons.Add(ButtonStyle.Default, GameText.Options,   Options_OnClick);
-        buttons.Add(ButtonStyle.Default, GameText.ReturnToGame, Return_OnClick);
+        buttons.Add(ButtonStyle.Default, "Hotkeys", Hotkeys_OnClick);
+        buttons.AddLabel(new Vector2(btnW, 14), "");   // gap after the options/hotkeys pair
         ExitToMainMenu = buttons.Add(ButtonStyle.Default, GameText.ExitToMainMenu, ExitToMain_OnClick);
         ExitToWindows = buttons.Add(ButtonStyle.Default, GameText.ExitToWindows, Exit_OnClick);
     }
@@ -86,10 +100,9 @@ public sealed class GamePlayMenuScreen : GameScreen
 
     public override void Draw(SpriteBatch batch, DrawTimes elapsed)
     {
+        // base.Draw paints the window frame and every child inside its own batch
         ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-        batch.SafeBegin();
         base.Draw(batch, elapsed);
-        batch.SafeEnd();
     }
 
     // double layer of security, the Save/Load/Exit actions must be double-checked
@@ -127,9 +140,11 @@ public sealed class GamePlayMenuScreen : GameScreen
         });
     }
 
-    void Return_OnClick(UIButton button)
+    void Hotkeys_OnClick(UIButton button)
     {
-        ExitScreen(); 
+        // Ludoal fork (maintainer feedback): the coming hotkeys screen - a framed popup with a
+        // close cross, empty for now.
+        ScreenManager.AddScreen(new HotkeysScreen(this));
     }
 
     void ExitToMain_OnClick(UIButton button)

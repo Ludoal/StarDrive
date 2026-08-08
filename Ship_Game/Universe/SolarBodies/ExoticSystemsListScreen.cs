@@ -5,19 +5,20 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics.Input;
 using SDGraphics;
+using Ship_Game.GameScreens; // ScreenGroups: the group geometry
 using SDUtils;
 using Ship_Game.Audio;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Universe;
+using Ship_Game.Universe.SolarBodies; // DistanceDisplay
+using Ship_Game.UI; // UITable: the shared table charte
 
 namespace Ship_Game
 {
     public sealed class ExoticSystemsListScreen : GameScreen
     {
-        readonly Menu2 TitleBar;
-        readonly Vector2 TitlePos;
-        readonly Menu2 EMenu;
+        Submenu GalaxyTabs; // Ludoal fork: the Galaxy group's tab row, this screen being one tab
 
         public UniverseScreen Universe;
         public UniverseState UState => Universe.UState;
@@ -27,17 +28,10 @@ namespace Ship_Game
         public Planet SelectedPlanet { get; private set; }
         readonly ScrollList<ExoticSystemsListScreenItem> ExoticSL;
 
-        readonly SortButton Sb_Sys;
-        readonly SortButton Sb_Name;
-        readonly SortButton Sb_Distance;
-        readonly SortButton Sb_Resource;
-        readonly SortButton Sb_Richness;
-        readonly SortButton Sb_Owner;
+        public readonly UITable Table; // the shared table charte owns geometry, headers and rules
         readonly Array<ExplorableGameObject> ExploredSolarBodies = new();
-        UIButton PlanetArrayListButton;
-
-        RectF ERect;
-        SortButton LastSorted;
+        static int LastSortCol = -1;   // session-persistent (bench 307)
+        static bool LastSortAsc = true;
 
         // FB - this will store each planet or system and it's distance to the closest player colony. 
         readonly Map<ExplorableGameObject, float> DistancesToClosestColony = new();
@@ -54,29 +48,6 @@ namespace Ship_Game
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
             IsPopup = true;
-            if (ScreenWidth <= 1280)
-            {
-                //LowRes = true;
-            }
-
-            Rectangle titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            TitleBar = new Menu2(titleRect);
-            TitlePos = new Vector2((titleRect.X + titleRect.Width / 2) - Fonts.Laserian14.MeasureString(Localizer.Token(GameText.ExoticSystemsArray)).X / 2f, (titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2));
-            Rectangle leftRect = new Rectangle(2, titleRect.Y + titleRect.Height + 5, ScreenWidth - 10, ScreenHeight - titleRect.Bottom - 7);
-            EMenu = new Menu2(leftRect);
-            Add(new CloseButton(leftRect.Right - 40, leftRect.Y + 20));
-            ERect = new(leftRect.X + 20, titleRect.Bottom + 50, ScreenWidth - 40,
-                        leftRect.Bottom - (titleRect.Bottom + 46) - 31);
-            RectF slRect = new(ERect.X, ERect.Y - 10, ERect.W, ERect.H + 10);
-            ExoticSL = Add(new ScrollList<ExoticSystemsListScreenItem>(slRect));
-            ExoticSL.EnableItemHighlight = true;
-
-            Sb_Sys      = new SortButton(empireUi.Player.data.PLSort, Localizer.Token(GameText.System));
-            Sb_Name     = new SortButton(empireUi.Player.data.PLSort, Localizer.Token(GameText.StarOrPlanet));
-            Sb_Distance = new SortButton(empireUi.Player.data.PLSort, Localizer.Token(GameText.Proximity));
-            Sb_Resource = new SortButton(empireUi.Player.data.PLSort, Localizer.Token(GameText.ResourceName));
-            Sb_Richness = new SortButton(empireUi.Player.data.PLSort, Localizer.Token(GameText.Richness));
-            Sb_Owner    = new SortButton(empireUi.Player.data.PLSort, Localizer.Token(GameText.Owner));
 
             foreach (SolarSystem system in Universe.UState.Systems.OrderBy(s => s.Position.Distance(Universe.Player.WeightedCenter)))
             {
@@ -93,10 +64,71 @@ namespace Ship_Game
             }
 
             CalcPlanetsDistances();
-            Vector2 planetArrayPos = new Vector2(TitleBar.Menu.X + TitleBar.Menu.Width - 200, TitleBar.Menu.Y + 30);
-            PlanetArrayListButton = Add(new UIButton(ButtonStyle.BigDip, planetArrayPos, GameText.PlanetArray));
-            PlanetArrayListButton.OnClick = (b) => OnPlanetArrayListClick();
+
+            // Ludoal fork: the Exotic Systems tab of the Galaxy group, content-sized on the
+            // shared table charte - every column sizes itself on the data it will show
+            Table = new UITable(new[]
+            {
+                new UITable.Column { Title = Localizer.Token(GameText.System), Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.StarOrPlanet), Sortable = true, MinWidth = 180 },
+                new UITable.Column { Title = Localizer.Token(GameText.Proximity), Align = TableAlign.Center, Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.ResourceName), Sortable = true },
+                // back to the production hammer (Lek's review, bench 305) - the crystal
+                // doubled the Resource column's own icon right beside it
+                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Width = 40,
+                                     Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Richness) },
+                new UITable.Column { Title = Localizer.Token(GameText.Owner), Align = TableAlign.Center, Sortable = true },
+                // sized on the mining row's worst case: the 168px deploy button plus its two
+                // wide enough for the single deploy button (168) plus the "N/M Deployed" count
+                // beside it - back down from 420 now that the two-button layout is gone
+                new UITable.Column { Title = "Stations", Width = 290, Align = TableAlign.Center },
+            });
+            var sys = new Array<string>(); var names = new Array<string>();
+            var prox = new Array<string>();
+            var res = new Array<string>(); var owners = new Array<string>();
+            foreach (ExplorableGameObject sb in ExploredSolarBodies)
+            {
+                Planet p = sb as Planet;
+                sys.Add(p?.System.Name ?? (sb as SolarSystem)?.Name ?? "");
+                names.Add(p?.Name ?? (sb as SolarSystem)?.Name ?? "");
+                prox.Add(new DistanceDisplay(GetShortestDistance(sb) / 1000).Text);
+                res.Add(p != null ? (p.Mining?.TranslatedResourceName.Text ?? "Research") : "Dyson Swarm 0");
+                owners.Add(p?.Mining?.Owner?.data.Traits.Singular ?? "");
+            }
+            UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, sys);
+            Table.Columns[0].Width += 24; // the hostile-warning icon lane
+            UITable.AutoSize(Table.Columns[1], Fonts.Arial14Bold, names);
+            Table.Columns[1].Width += 46; // the body icon rides ahead of the two-line name
+            UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, prox);
+            UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, res);
+            Table.Columns[3].Width += 30; // the resource icon
+            UITable.AutoSize(Table.Columns[5], Fonts.Arial12Bold, owners);
+            Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
+            // System is the standing sort from the first frame (the list arrives system-ordered)
+            // the standing sort survives the screen for the session (maintainer bench 307)
+            if (LastSortCol < 0) { LastSortCol = 0; LastSortAsc = true; }
+            Table.Columns[LastSortCol].Sorted = true;
+            Table.Columns[LastSortCol].Ascending = LastSortAsc;
+
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 343: capped at 1080p
+            // 48 = the 44px row plus the list's 4px item padding - counting 44 alone kept
+            // a scrollbar alive with room to spare (maintainer bench 291)
+            float contentH = UITable.ContentHeightFor(99, Math.Max(3, ExploredSolarBodies.Count), 48, fullAvail);
+            GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 1,
+                                                   OnGalaxyTabChanged, Table.ContentWidth, contentH);
+            RectF client = GalaxyTabs.ClientArea;
+            Table.RowPitch = 48;
+            Table.Layout(client, client.Y + 10, client.Bottom - 5);
+
+            ExoticSL = Add(new ScrollList<ExoticSystemsListScreenItem>(Table.ListRect, 44));
+            ExoticSL.EnableItemHighlight = true;
+            Table.ApplyHighlightTo(ExoticSL);
         }
+
+        // Ludoal fork: the other two tabs live in their own screen, so leaving Exotic Systems hands
+        // over to it. This tab is a no-op: we are already here.
+        void OnGalaxyTabChanged(int index)
+            => ScreenGroups.SwitchGalaxyTab(index, self: 1, Universe, this);
 
         void CalcPlanetsDistances()
         {
@@ -121,133 +153,38 @@ namespace Ship_Game
             return DistancesToClosestColony.TryGetValue(solarBody, out float distance) ? distance : 0;
         }
 
-        Vector2 GetCenteredTextOffset(Rectangle rect, GameText text)
-        {
-            return new Vector2(rect.X + rect.Width / 2 - Fonts.Arial20Bold.MeasureString(Localizer.Token(text)).X / 2f,
-                               ERect.Y - Fonts.Arial20Bold.LineSpacing);
-        }
-
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
-            TitleBar.Draw(batch, elapsed);
-            batch.DrawString(Fonts.Laserian14, Localizer.Token(GameText.ExoticSystemsArray), TitlePos, Colors.Cream);
-            EMenu.Draw(batch, elapsed);
+            // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
+            // drawn among the children, after everything below it.
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(GalaxyTabs), ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed);
 
-            if (ExoticSL.NumEntries > 0)
-            {
-                ExoticSystemsListScreenItem e1 = ExoticSL.ItemAtTop;
-
-                var textCursor = GetCenteredTextOffset(e1.SysNameRect, GameText.System);
-                Sb_Sys.Update(textCursor);
-                Sb_Sys.Draw(ScreenManager);
-
-                textCursor = GetCenteredTextOffset(e1.PlanetNameRect, GameText.Planet);
-                Sb_Name.Update(textCursor);
-                Sb_Name.Draw(ScreenManager);
-
-                textCursor = GetCenteredTextOffset(e1.DistanceRect, GameText.Proximity);
-                Sb_Distance.Update(textCursor);
-                Sb_Distance.Draw(ScreenManager);
-
-                textCursor = GetCenteredTextOffset(e1.ResourceRect, GameText.ResourceName);
-                Sb_Resource.Update(textCursor);
-                Sb_Resource.Draw(ScreenManager);
-
-                textCursor = GetCenteredTextOffset(e1.RichnessRect, GameText.Richness);
-                Sb_Richness.Update(textCursor);
-                Sb_Richness.Draw(ScreenManager);
-
-                textCursor = GetCenteredTextOffset(e1.OwnerRect, GameText.Owner);
-                Sb_Owner.Update(textCursor);
-                Sb_Owner.Draw(ScreenManager);
-
-                Color lineColor = new Color(118, 102, 67, 255);
-                float columnTop = ERect.Y + 15;
-                float columnBot = ERect.Y + ERect.H - 20;
-                Vector2 topLeftSL = new(e1.PlanetNameRect.X, columnTop);
-                Vector2 botSL = new(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-                topLeftSL = new Vector2((e1.DistanceRect.X), columnTop);
-                botSL = new Vector2(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-                topLeftSL = new Vector2((e1.ResourceRect.X), columnTop);
-                botSL = new Vector2(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-                topLeftSL = new Vector2((e1.RichnessRect.X), columnTop);
-                botSL = new Vector2(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-                topLeftSL = new Vector2((e1.OwnerRect.X), columnTop);
-                botSL = new Vector2(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-                topLeftSL = new Vector2((e1.OrdersRect.X), columnTop);
-                botSL = new Vector2(topLeftSL.X, columnBot);
-                batch.DrawLine(topLeftSL, botSL, lineColor);
-
-                batch.DrawRectangle(ExoticSL.ItemsHousing, lineColor); // items housing border
-            }
+            // the shared charte draws the headers, the rule and the separators
+            Table.DrawChrome(batch);
+            ScreenGroups.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
 
-        void InitSortedItems(SortButton button)
+        void Refill(int col, bool ascending)
         {
-            LastSorted = button;
-            GameAudio.BlipClick();
-            button.Ascending = !button.Ascending;
             ExoticSL.Reset();
-        }
-
-        void Sort<T>(SortButton button, Func<ExplorableGameObject, T> sortPredicate)
-        {
-            InitSortedItems(button);
-            ExplorableGameObject[] solarBodies = ExploredSolarBodies.Sorted(button.Ascending, sortPredicate);
-            foreach (ExplorableGameObject solarBody in solarBodies)
+            ExoticSL.OnDoubleClick = OnExoticSystemsListItemClicked;
+            ExplorableGameObject[] bodies;
+            switch (col)
             {
-                var e = new ExoticSystemsListScreenItem(solarBody, GetShortestDistance(solarBody));
-                ExoticSL.AddItem(e);
+                case 1:  bodies = ExploredSolarBodies.Sorted(ascending, sb => sb is Planet p ? p.Name : ""); break;
+                case 2:  bodies = ExploredSolarBodies.Sorted(ascending, GetShortestDistance); break;
+                case 3:  bodies = ExploredSolarBodies.Sorted(ascending, sb => sb is Planet p ? (p.Mining?.TranslatedResourceName.Text ?? "") : sb is SolarSystem s && s.DysonSwarmType > 0 ? s.DysonSwarmType.ToString() : ""); break;
+                case 4:  bodies = ExploredSolarBodies.Sorted(ascending, sb => sb is Planet p ? (p.Mining?.Richness ?? 0f) : 0f); break;
+                case 5:  bodies = ExploredSolarBodies.Sorted(ascending, sb => sb is Planet p && p.IsMineable && p.Mining.HasOpsOwner ? p.Mining.Owner.data.Traits.Singular : ""); break;
+                default: bodies = ExploredSolarBodies.Sorted(ascending, sb => sb is Planet p ? p.System.Name : sb is SolarSystem s ? s.Name : ""); break;
             }
-        }
-
-        void Sort(SortButton button, Map<ExplorableGameObject, float> list)
-        {
-            InitSortedItems(button);
-            var sortedList = button.Ascending ? list.OrderBy(d => d.Value)
-                                              : list.OrderByDescending(d => d.Value);
-
-            foreach (KeyValuePair<ExplorableGameObject, float> kv in sortedList)
-            {
-                ExplorableGameObject solarBody = kv.Key;
-                float distance = kv.Value;
-                var e = new ExoticSystemsListScreenItem(solarBody, distance);
-                ExoticSL.AddItem(e);
-            }
-        }
-
-        void HandleButton<T>(InputState input, SortButton button, Func<ExplorableGameObject, T> sortPredicate)
-        {
-            if (button.HandleInput(input))
-                Sort(button, sortPredicate);
-        }
-
-        void HandleButton(InputState input, SortButton button, Map<ExplorableGameObject, float> list)
-        {
-            if (button.HandleInput(input))
-                Sort(button, list);
-        }
-
-        void ResetButton<T>(SortButton button, Func<ExplorableGameObject, T> sortPredicate)
-        {
-            if (LastSorted.Text == button.Text)
-                Sort(button, sortPredicate);
-        }
-
-        void ResetButton(SortButton button, Map<ExplorableGameObject, float> list)
-        {
-            if (LastSorted.Text == button.Text)
-                Sort(button, list);
+            foreach (ExplorableGameObject solarBody in bodies)
+                ExoticSL.AddItem(new ExoticSystemsListScreenItem(this, solarBody, GetShortestDistance(solarBody)));
         }
 
         public override bool HandleInput(InputState input)
@@ -258,12 +195,17 @@ namespace Ship_Game
             if (ExoticSL.NumEntries == 0)
                 ResetList();
 
-            HandleButton(input, Sb_Sys, sb => sb is Planet p ? p.System.Name : sb is SolarSystem s ? s.Name : "");
-            HandleButton(input, Sb_Name, sb => sb is Planet p ? p.Name : "");
-            HandleButton(input, Sb_Distance, DistancesToClosestColony);
-            HandleButton(input, Sb_Resource, sb => sb is Planet p ? (p?.Mining?.TranslatedResourceName.Text ?? "" ) : sb is SolarSystem s && s.DysonSwarmType > 0 ? s.DysonSwarmType.ToString() : "");
-            HandleButton(input, Sb_Richness, sb => sb is Planet p ? (p?.Mining?.Richness ?? (Sb_Richness.Ascending ? 1000 : 0)) : (Sb_Richness.Ascending ? 1000 : 0));
-            HandleButton(input, Sb_Owner, sb => sb is Planet p && p.IsMineable && p.Mining.HasOpsOwner? p.Mining.Owner.data.Traits.Singular : "");
+            // headers - tooltips, hover and sort clicks - through the shared charte
+            int clicked = Table.HandleInput(input);
+            if (clicked >= 0)
+            {
+                GameAudio.BlipClick();
+                bool asc = Table.SetSorted(clicked);
+                LastSortCol = clicked;
+                LastSortAsc = asc;
+                Refill(clicked, asc);
+                return true;
+            }
 
             if (input.KeyPressed(Keys.G) && !GlobalStats.TakingInput)
             {
@@ -285,42 +227,32 @@ namespace Ship_Game
             }
             else
             {
-                Universe.SetSelectedSystem(item.System);
-                Universe.CamDestination = new Vector3d(item.Planet.Position, 10000);
+                // Ludoal fork (maintainer feedback): select the PLANET (not just its system) and
+                // glide to the planet-view zoom, copied from the Planet Info cartouche's arrows -
+                // the old Z=10000 zoomed in far too hard and left the planet unselected.
+                Universe.SetSelectedPlanet(item.Planet);
+                Universe.SnapViewTo(new Vector3d(item.Planet.Position.X, item.Planet.Position.Y,
+                    Universe.GetZfromScreenState(UniverseScreen.UnivScreenState.PlanetView)), 5f, 2f);
             }
         }
 
         public void ResetList()
         {
-            ExoticSL.Reset();
-            ExoticSL.OnDoubleClick = OnExoticSystemsListItemClicked; // Ludoal fork: double-click everywhere
-
-            if (LastSorted == null)
+            if (LastSortCol < 0)
             {
+                ExoticSL.Reset();
+                ExoticSL.OnDoubleClick = OnExoticSystemsListItemClicked; // Ludoal fork: double-click everywhere
                 foreach (ExplorableGameObject solarBody in ExploredSolarBodies)
-                {
-                    var entry = new ExoticSystemsListScreenItem(solarBody, GetShortestDistance(solarBody));
-                    ExoticSL.AddItem(entry);
-                }
+                    ExoticSL.AddItem(new ExoticSystemsListScreenItem(this, solarBody, GetShortestDistance(solarBody)));
             }
             else
             {
-                ResetButton(Sb_Sys, sb => sb is Planet p ? p.System.Name : sb is SolarSystem s ? s.Name : "");
-                ResetButton(Sb_Name, sb => sb is Planet p ? p.Name : "");
-                ResetButton(Sb_Distance, DistancesToClosestColony);
-                ResetButton(Sb_Resource, sb => sb is Planet p ? p?.Mining?.TranslatedResourceName ?? "Research" : "");
-                ResetButton(Sb_Richness, sb => sb is Planet p ? (p?.Mining?.Richness ?? 0) : 0);
-                ResetButton(Sb_Owner, sb => sb is Planet p && p.IsMineable && p.Mining.HasOpsOwner ? p.Mining.Owner.data.Traits.Singular : "");
+                // re-apply the standing sort with its CURRENT direction
+                Refill(LastSortCol, Table.Columns[LastSortCol].Ascending);
             }
 
             SelectedPlanet = ExoticSL.NumEntries > 0 ? ExoticSL.AllEntries[0].Planet : null;
         }
 
-        void OnPlanetArrayListClick()
-        {
-            ExitScreen();
-            GameAudio.AcceptClick();
-            Universe.ScreenManager.AddScreen(new PlanetListScreen(Universe, Universe.EmpireUI));
-        }
     }
 }

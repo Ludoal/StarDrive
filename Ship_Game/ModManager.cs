@@ -16,24 +16,21 @@ using Ship_Game.Utils;
 
 namespace Ship_Game
 {
-    public sealed class ModManager : GameScreen
+    public sealed class ModManager : PopupWindow
     {
         readonly MainMenuScreen MainMenu;
-        Rectangle Window;
         SubmenuScrollList<ModsListItem> AllSaves;
         Vector2 TitlePosition;
         UITextEntry EnterNameArea;
-        UIButton Visit;
         UIButton UnloadMod;
         UIButton CurrentButton;
 
         ScrollList<ModsListItem> ModsList;
         ModEntry SelectedMod;
 
-        public ModManager(MainMenuScreen mainMenu) : base(mainMenu, toPause: null)
+        public ModManager(MainMenuScreen mainMenu) : base(mainMenu, 850, 600)
         {
             MainMenu = mainMenu;
-            IsPopup = true;
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
         }
@@ -53,13 +50,24 @@ namespace Ship_Game
 
         public override void LoadContent()
         {
-            Window = new(ScreenWidth / 2 - 425, ScreenHeight / 2 - 300, 850, 600);
-            Add(new Menu1(Window));
+            // the window names itself in its own title bar; frame and close cross are
+            // PopupWindow's - base.LoadContent goes FIRST and lays them out
+            // Ludoal fork (maintainer feedback): the three headers used to share one token and
+            // all read "Load Modification"; the window is MODS, the loader tab LOAD MOD, the
+            // list MOD - three distinct labels, so they carry literals now.
+            TitleText = "MODS";
+            base.LoadContent();
 
-            RectF sub = new(Window.X + 20, Window.Y + 20, Window.Width - 40, 80);
-            Add(new Submenu(sub, GameText.LoadModification));
+            Rectangle inner = PopupFrame.ContentArea(Rect);
+            // Ludoal fork (maintainer feedback): a little air above the LOAD MOD tab
+            RectF sub = new(inner.X + 25, inner.Y + 18, inner.Width - 50, 80);
+            Add(new Submenu(sub, "LOAD MOD"));
 
-            RectF scrollList = new(sub.X, sub.Y + 90, sub.W, Window.Height - sub.H - 50);
+            // Ludoal fork (maintainer feedback): reserve a strip at the foot of the MOD list frame
+            // for the Unload Mod button, so it sits inside the frame's bottom-right without
+            // overlapping the last rows.
+            const int unloadStrip = 40;
+            RectF scrollList = new(sub.X, sub.Y + 90, sub.W, inner.Bottom - (sub.Y + 90) - unloadStrip);
             LoadMods(scrollList);
 
             TitlePosition = new Vector2(sub.X + 20, sub.Y + 45);
@@ -67,16 +75,21 @@ namespace Ship_Game
             EnterNameArea.SetColors(Color.Orange, Color.White);
 
             ButtonSmall(sub.X + sub.W - 88, EnterNameArea.Y - 2, text:GameText.Load, click: OnLoadClicked);
-            Visit = Button(Window.X + 3, Window.Y + Window.Height + 20, text:GameText.LoadModsWeb, click: OnVisitClicked);
-            UnloadMod = Button(Window.X + Window.Width - 172, Window.Y + Window.Height + 20, "Unload Mod", click:OnUnloadModClicked);
+            // the "Load Mods (Web)" button did nothing, so it is gone. Unload Mod sits at the
+            // bottom-right of the MOD list frame and reads as the one hostile action here, so it
+            // takes the red (hostile) plate over the Small button's size.
+            const int unloadW = 110;   // wider than Small's 68 so "Unload Mod" doesn't clip
+            UnloadMod = ButtonSmall(scrollList.Right - unloadW, scrollList.Bottom + 8, "Unload Mod", click:OnUnloadModClicked);
+            UnloadMod.SetAbsSize(unloadW, 24);
+            UnloadMod.DefaultColor = UIButton.PlateHostile;
+            UnloadMod.HoverColor   = UITheme.Hover(UIButton.PlateHostile);
+            UnloadMod.PressColor   = UITheme.Press(UIButton.PlateHostile);
             UnloadMod.Enabled = GlobalStats.HasMod;
-
-            base.LoadContent();
         }
 
         void LoadMods(RectF scrollList)
         {
-            AllSaves = Add(new SubmenuScrollList<ModsListItem>(scrollList, GameText.LoadModification, 140));
+            AllSaves = Add(new SubmenuScrollList<ModsListItem>(scrollList, "MOD", 140));
             ModsList = AllSaves.List;
             ModsList.EnableItemHighlight = true;
             ModsList.OnClick = OnModItemClicked;
@@ -110,7 +123,6 @@ namespace Ship_Game
         {
             SelectedMod = item.Mod;
             EnterNameArea.Text = SelectedMod.Mod.Name;
-            Visit.Text = SelectedMod.Settings.URL.IsEmpty() ? Localizer.Token(GameText.LoadModsWeb) : "Goto Mod URL";
         }
 
         public override bool HandleInput(InputState input)
@@ -127,10 +139,9 @@ namespace Ship_Game
         {
             if (IsExiting)
                 return;
+            // base.Draw paints the window frame and every child inside its own batch
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-            batch.SafeBegin();
             base.Draw(batch, elapsed);
-            batch.SafeEnd();
         }
 
         void OnLoadClicked(UIButton b)
@@ -143,14 +154,6 @@ namespace Ship_Game
             CurrentButton = b;
             b.Text = "Loading";
             LoadModTask();
-        }
-
-        void OnVisitClicked(UIButton b)
-        {
-            if (!string.IsNullOrEmpty(SelectedMod?.Settings.URL))
-            {
-                Log.OpenURL(SelectedMod.Settings.URL);
-            }
         }
 
         void OnUnloadModClicked(UIButton b)

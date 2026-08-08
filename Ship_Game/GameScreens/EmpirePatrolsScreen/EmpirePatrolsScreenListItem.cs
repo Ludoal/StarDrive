@@ -1,40 +1,27 @@
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
-using Ship_Game.AI;
 using Ship_Game.Audio;
-using Ship_Game.Commands.Goals;
-using Ship_Game.Ships;
-using System.Linq;
 using SDGraphics;
+using SDGraphics.Input; // InputState
 using SDUtils;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
-using Ship_Game.Graphics;
-using Ship_Game.Universe.SolarBodies;
+using Ship_Game.UI; // UITable: the shared table charte
 using Ship_Game.Fleets;
 
 namespace Ship_Game
 {
-    public sealed class EmpirePatrolsScreenListItem : ScrollListItem<EmpirePatrolsScreenListItem> // Moved to UI V2
+    // one patrol plan = one row, on the shared table charte: the row only carries its
+    // data and its two action buttons, sized to their own text (maintainer, 4 Aug)
+    public sealed class EmpirePatrolsScreenListItem : ScrollListItem<EmpirePatrolsScreenListItem>
     {
         public readonly FleetPatrol FleetPatrol;
-        public Rectangle PatrolNameRect;
-        public Rectangle NumWaypointsRect;
-        public Rectangle NumFleetsRect;
-        public Rectangle FleetsRect;
-
-        readonly Color Cream = Colors.Cream;
-        readonly Graphics.Font NormalFont = Fonts.Arial20Bold;
-        readonly Graphics.Font SmallFont = Fonts.Arial12Bold;
-
-        Rectangle ShipIconRect;
-        readonly UITextEntry PlanetNameEntry = new UITextEntry();
-        UIButton RenamePatrol;
-        UIButton DeletePatrol;
+        // icons, not text buttons (Lek's review + maintainer, bench 305) - the same
+        // pencil/bin language the build queues speak
+        TexturedButton RenamePatrol;
+        TexturedButton DeletePatrol;
         readonly EmpirePatrolsScreen Screen;
         readonly Empire Player;
-
-
 
         public EmpirePatrolsScreenListItem(EmpirePatrolsScreen screen, FleetPatrol fleetPatrol, Empire player)
         {
@@ -45,43 +32,54 @@ namespace Ship_Game
 
         public override void PerformLayout()
         {
-            int x = (int)X;
             int y = (int)Y;
-            int w = (int)Width;
             int h = (int)Height;
             RemoveAll();
 
-            RenamePatrol = Button(ButtonStyle.Default, GameText.RenamePatrol, OnRenamePatrolClicked);
-            DeletePatrol = Button(ButtonStyle.Military, GameText.DeletePatrol, OnDeletePatrolClicked);
-            int nextX = x;
-            Rectangle NextRect(float width)
-            {
-                int next = nextX;
-                nextX += (int)width;
-                return new Rectangle(next, y, (int)width, h);
-            }
-
-            PatrolNameRect = NextRect(w * 0.15f);
-            NumWaypointsRect = NextRect(w * 0.08f);
-            NumFleetsRect = NextRect(w * 0.08f);
-            FleetsRect = NextRect(w * 0.4f);
-
-
-            ShipIconRect = new Rectangle(PatrolNameRect.X + 5, PatrolNameRect.Y + 5, 50, 50);
-            PlanetNameEntry.Text = FleetPatrol.Name;
-            PlanetNameEntry.SetPos(ShipIconRect.Right + 10, y);
-
-            var btn = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px");
-            RenamePatrol.Rect = new Rectangle(FleetsRect.X + FleetsRect.Width + 10, FleetsRect.Y + FleetsRect.Height / 2 - btn.Height / 2, btn.Width, btn.Height);
-            DeletePatrol.Rect = new RectF(FleetsRect.X + FleetsRect.Width +  RenamePatrol.Width + 10, RenamePatrol.Y, RenamePatrol.Width, RenamePatrol.Height);
-
+            UITable.Column[] cols = Screen.Table.Columns;
             Array<string> fleetsAssigned = GetFleetsAssignedText();
-            Color color = fleetsAssigned.Count == 0 ? Color.Gray : Player.EmpireColor;
-            AddLabels(PatrolNameRect, FleetPatrol.Name, color);
-            AddLabels(NumWaypointsRect, FleetPatrol.WayPoints.Count.ToString(), color);
-            AddLabels(NumFleetsRect, fleetsAssigned.Count.ToString(), color);
-            AddLabels(FleetsRect, AssignedFleetNames(fleetsAssigned), color, centered: false);
+            // white, not the empire colour (maintainer bench 290): only ONE empire's plans
+            // ever list here, the race tint carried no information - gray stays for the
+            // plans no fleet runs
+            Color color = fleetsAssigned.Count == 0 ? Color.Gray : Color.White;
+
+            Cell(cols[0], FleetPatrol.Name, color);
+            Cell(cols[1], FleetPatrol.WayPoints.Count.ToString(), color);
+            Cell(cols[2], fleetsAssigned.Count.ToString(), color);
+            // foldable: cut to the column, the tooltip carries the full list
+            string joined = string.Join(", ", fleetsAssigned);
+            string shown = UITable.FitText(Fonts.Arial12Bold, joined, cols[3].Rect.Width - 2 * UITable.PadX);
+            var fleetsLbl = Cell(cols[3], shown, color);
+            if (shown != joined)
+                fleetsLbl.Tooltip = joined;
+
+            // the pencil and the bin RIGHT OF THE NAME (maintainer, bench 305) - the build
+            // queues' own icon language, and the Actions column retired with its width
+            // the LIT art as the resting state (maintainer bench 307): the base icons read
+            // darker here than the Colonies pair
+            RenamePatrol = new TexturedButton(new Rectangle(), "NewUI/icon_build_edit_hover1", "NewUI/icon_build_edit_hover2", "NewUI/icon_build_edit_hover2");
+            RenamePatrol.Tooltip = "Rename this patrol plan";
+            DeletePatrol = new TexturedButton(new Rectangle(), "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2", "NewUI/icon_queue_delete_hover2");
+            DeletePatrol.Tooltip = "Delete this patrol plan";
+            DeletePatrol.BaseColor = Color.Red; // destruction reads red (maintainer bench 305)
+            SubTexture editTex = ResourceManager.Texture("NewUI/icon_build_edit_hover1");
+            SubTexture delTex = ResourceManager.Texture("NewUI/icon_queue_delete_hover1");
+            // Ludoal fork (maintainer feedback): the pencil and bin live in their own Actions column
+            // (the last one), centred as a pair within its cell.
+            Rectangle actions = cols[cols.Length - 1].Rect;
+            int pairW = editTex.Width + 8 + delTex.Width;
+            int editX = actions.X + (actions.Width - pairW) / 2;
+            int delX  = editX + editTex.Width + 8;
+            RenamePatrol.r = new Rectangle(editX, y + h / 2 - editTex.Height / 2, editTex.Width, editTex.Height);
+            DeletePatrol.r = new Rectangle(delX, y + h / 2 - delTex.Height / 2, delTex.Width, delTex.Height);
+
             base.PerformLayout();
+        }
+
+        UILabel Cell(UITable.Column c, string text, Color color)
+        {
+            return Label(UITable.CellPos(Fonts.Arial12Bold, c.Rect, Y, Height, text, c.Align),
+                         text, Fonts.Arial12Bold, color);
         }
 
         Array<string> GetFleetsAssignedText()
@@ -96,36 +94,26 @@ namespace Ship_Game
             return fleets;
         }
 
-        string AssignedFleetNames(Array<string> fleets)
+        public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            if (fleets.Count == 0)
-                return "";
-
-            string text = "";
-            foreach (string fleet in fleets)
-                text = text == "" ? $"{fleet}" : $"{text}, {fleet}";
-
-            return text;
+            base.Draw(batch, elapsed);
+            RenamePatrol.Draw(batch);
+            DeletePatrol.Draw(batch);
         }
 
         public override bool HandleInput(InputState input)
         {
+            if (RenamePatrol.HandleInput(input))
+            {
+                OnRenamePatrolClicked(null);
+                return true;
+            }
+            if (DeletePatrol.HandleInput(input))
+            {
+                OnDeletePatrolClicked(null);
+                return true;
+            }
             return base.HandleInput(input);
-        }
-
-        void AddLabels(Rectangle rect, string text, Color color, bool centered = true)
-        {
-            Graphics.Font font = NormalFont.MeasureString(text).X < rect.Width 
-                                ? NormalFont 
-                                : SmallFont.MeasureString(text).X < rect.Width ? SmallFont
-                                                                               : Fonts.Arial8Bold;
-                        
-            var cursor = centered ? new Vector2(rect.X + rect.Width / 2 - font.MeasureString(text).X / 2f,
-                                        2 + rect.Y + rect.Height / 2 - font.LineSpacing / 2)
-                                  : new Vector2(rect.X +5,
-                                        2 + rect.Y + rect.Height / 2 - font.LineSpacing / 2);
-
-            Label(cursor, text, font, color);
         }
 
         void OnDeletePatrolClicked(UIButton b)
@@ -134,7 +122,7 @@ namespace Ship_Game
             Screen.ScreenManager.AddScreen(new MessageBoxScreen(Screen, "This will permanently remove the Patrol Plan from your Empire's database and from any fleets assigned to it as well.")
             {
                 Accepted = () => Screen.DeletePatrol(FleetPatrol)
-            }); 
+            });
         }
 
         void OnRenamePatrolClicked(UIButton b)

@@ -18,13 +18,11 @@ namespace Ship_Game
         readonly SubTexture CostIcon = ResourceManager.Texture("UI/icon_money_22");
         readonly Font Font8 = Fonts.Arial8Bold;
         readonly Font Font12 = Fonts.Arial12Bold;
-        readonly bool LowRes;
 
         public BlueprintsBuildableListItem(BlueprintsScreen screen, Building b)
         {
             Building = b;
             Screen   = screen;
-            LowRes   = screen.LowRes;
         }
 
         public override bool HandleInput(InputState input)
@@ -38,10 +36,10 @@ namespace Ship_Game
         }
 
         // Give a custom height for this scroll list item
-        public override int ItemHeight => LowRes ? 32 : 42;
+        public override int ItemHeight => 42;
 
-        float IconSize => LowRes ? 36 : 48;
-        float ProdWidth => LowRes ? 90 : 120;
+        float IconSize => 48;
+        float ProdWidth => 120;
         float TextWidth => Width - IconSize - ProdWidth;
         float TextX => X + IconSize;
 
@@ -53,15 +51,17 @@ namespace Ship_Game
 
         void DrawProductionInfo(SpriteBatch batch, float maintenance, float prod, int cost = 0)
         {
-            Font font = LowRes ? Fonts.Arial10 : Font12;
-            float x = Right - ProdWidth;
+            Font font = Font12;
+            // production 10 left, maintenance 20 left, like the Colony build list
+            // (maintainer bench 301) - the right-edge icons stay put
+            float x = Right - ProdWidth - 10;
             float y = Y + 4;
             var iconSize = new Vector2(font.LineSpacing + 2);
             batch.Draw(ProdIcon, new Vector2(x, y), iconSize); // Production Icon
             batch.DrawString(font, prod.String(), x + iconSize.X + 2, y); // Build Production Cost
 
             string maintString = (-maintenance).String(2) + " BC/turn";
-            float maintX = x + iconSize.X + 50;
+            float maintX = x + iconSize.X + 40;
 
             if (cost > 0)
             {

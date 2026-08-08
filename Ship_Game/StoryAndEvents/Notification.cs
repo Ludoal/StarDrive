@@ -3,7 +3,6 @@ using SDGraphics;
 using Ship_Game.Audio;
 using Ship_Game.Ships;
 using Ship_Game.GameScreens;
-using Ship_Game.GameScreens.Espionage;
 using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game;
@@ -80,13 +79,13 @@ public sealed class Notification
                     m.SnapToStation(ReferencedItem1 as Ship);
                     break;
                 case "Diplomacy": // Ludoal fork: diplomacy notifications open the diplomacy panel
-                    m.ScreenManager.AddScreen(GameScreens.ReworkScreens.Diplomacy(m.Screen));
+                    m.ScreenManager.AddScreen(GameScreens.ScreenGroups.Diplomacy(m.Screen));
                     break;
                 case "EspionageScreen": // Ludoal fork (wishlist): spy notifications open the espionage panel
-                    if (m.Screen.Player.LegacyEspionageEnabled)
-                        m.ScreenManager.AddScreen(new EspionageScreen(m.Screen));
-                    else
-                        m.ScreenManager.AddScreen(GameScreens.ReworkScreens.Espionage(m.Screen));
+                    m.ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(m.Screen));
+                    break;
+                case "Economy": // Ludoal fork (maintainer feedback): the treasury warning opens the economy panel
+                    m.ScreenManager.AddScreen(GameScreens.ScreenGroups.Economy(m.Screen));
                     break;
             }
             return true;

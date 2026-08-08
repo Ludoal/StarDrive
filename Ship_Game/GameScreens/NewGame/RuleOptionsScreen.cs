@@ -1,16 +1,16 @@
 using Microsoft.Xna.Framework.Graphics;
-using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using Ship_Game.Universe;
 using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game;
 
-public sealed class RuleOptionsScreen : GameScreen
+// Ludoal fork: a PopupWindow rather than a GameScreen holding a Menu2 - it is modal, it has a
+// title and a close cross, so it wears the same frame as Options and the Codex now.
+public sealed class RuleOptionsScreen : PopupWindow
 {
     readonly UniverseParams P;
 
-    Menu2 MainMenu;
     FloatSlider FTLPenaltySlider;
     FloatSlider EnemyFTLPenaltySlider;
     FloatSlider GravityWellSize;
@@ -21,35 +21,90 @@ public sealed class RuleOptionsScreen : GameScreen
     FloatSlider CustomMineralDecay;
     FloatSlider VolcanicActivity;
 
-    public RuleOptionsScreen(GameScreen parent, UniverseParams settings) : base(parent, toPause: null)
+    // 720x580: the width Options uses, and the height this screen's slider column always had.
+    public RuleOptionsScreen(GameScreen parent, UniverseParams settings) : base(parent, 720, 580)
     {
         P = settings;
-        IsPopup = true;
+        TitleText = Localizer.Token(GameText.AdvancedRuleOptions);
         TransitionOnTime  = 0.25f;
         TransitionOffTime = 0.25f;
     }
 
+    // Ludoal fork: whatever the player leaves this panel on becomes the default ruleset of the
+    // next new game, so a house ruleset is entered once instead of at every start. Captured on
+    // the way out, which covers the close button and Escape alike - the sliders write straight
+    // into P as they move, so P is already the final answer by the time we get here.
+    public override void ExitScreen()
+    {
+        // Leaving the panel on the stock ruleset means "no house rules" - saving it would make
+        // the Reset button undo itself the moment the panel closes.
+        var stock = new UniverseParams();
+        if (P.FTLModifier == stock.FTLModifier
+            && P.EnemyFTLModifier == stock.EnemyFTLModifier
+            && P.GravityWellRange == stock.GravityWellRange
+            && P.ExtraPlanets == stock.ExtraPlanets
+            && P.ShipMaintenanceMultiplier == stock.ShipMaintenanceMultiplier
+            && P.StartingPlanetRichnessBonus == stock.StartingPlanetRichnessBonus
+            && P.TurnTimer == stock.TurnTimer
+            && P.CustomMineralDecay == stock.CustomMineralDecay
+            && P.VolcanicActivity == stock.VolcanicActivity
+            && P.PreventFederations == stock.PreventFederations
+            && P.FixedPlayerCreditCharge == stock.FixedPlayerCreditCharge
+            && P.AIUsesPlayerDesigns == stock.AIUsesPlayerDesigns
+            && P.DisablePirates == stock.DisablePirates
+            && P.DisableRemnantStory == stock.DisableRemnantStory
+            && P.DisableAlternateAITraits == stock.DisableAlternateAITraits
+            && P.DisableResearchStations == stock.DisableResearchStations
+            && P.DisableMiningOps == stock.DisableMiningOps
+            && P.UseUpkeepByHullSize == stock.UseUpkeepByHullSize)
+        {
+            GlobalStats.ClearSavedRuleOptions();
+            base.ExitScreen();
+            return;
+        }
+
+        GlobalStats.RuleFTLModifier = P.FTLModifier;
+        GlobalStats.RuleEnemyFTLModifier = P.EnemyFTLModifier;
+        GlobalStats.RuleGravityWellRange = P.GravityWellRange;
+        GlobalStats.RuleExtraPlanets = P.ExtraPlanets;
+        GlobalStats.RuleShipMaintenanceMultiplier = P.ShipMaintenanceMultiplier;
+        GlobalStats.RuleStartingPlanetRichnessBonus = P.StartingPlanetRichnessBonus;
+        GlobalStats.RuleTurnTimer = P.TurnTimer;
+        GlobalStats.RuleCustomMineralDecay = P.CustomMineralDecay;
+        GlobalStats.RuleVolcanicActivity = P.VolcanicActivity;
+
+        GlobalStats.RulePreventFederations = P.PreventFederations;
+        GlobalStats.RuleFixedPlayerCreditCharge = P.FixedPlayerCreditCharge;
+        GlobalStats.RuleAIUsesPlayerDesigns = P.AIUsesPlayerDesigns;
+        GlobalStats.RuleDisablePirates = P.DisablePirates;
+        GlobalStats.RuleDisableRemnantStory = P.DisableRemnantStory;
+        GlobalStats.RuleDisableAlternateAITraits = P.DisableAlternateAITraits;
+        GlobalStats.RuleDisableResearchStations = P.DisableResearchStations;
+        GlobalStats.RuleDisableMiningOps = P.DisableMiningOps;
+        GlobalStats.RuleUseUpkeepByHullSize = P.UseUpkeepByHullSize;
+        GlobalStats.RulesCustomised = true;
+        GlobalStats.SaveSettings();
+        base.ExitScreen();
+    }
+
     public override void Draw(SpriteBatch batch, DrawTimes elapsed)
     {
+        // base.Draw opens and closes its own batch (PopupWindow draws the frame there), and this
+        // screen adds nothing of its own on top - its sliders and boxes are all children.
         ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-        batch.SafeBegin();
         base.Draw(batch, elapsed);
-        batch.SafeEnd();
     }
 
     public override void LoadContent()
     {
+        // ⚠ base.LoadContent() lays the frame out and calls RemoveAll(): everything below is
+        // added AFTER it, or it would be discarded. The frame supplies the title and the cross.
         base.LoadContent();
-        RemoveAll();
-        int width  = ScreenWidth;
-        int height = ScreenHeight;
 
-        var titleRect = new Rectangle(width / 2 - 203, (LowRes ? 10 : 44), 406, 80);
-        var nameRect  = new Rectangle(width / 2 - height / 4, titleRect.Y + titleRect.Height + 5, width / 2, 150);
-        var leftRect  = new Rectangle(width / 2 - width / 4,  height /2 -(nameRect.Y + nameRect.Height + 5), width / 2, 580);
+        // the window's own rect is the anchor now, centred by PopupWindow rather than computed
+        // from a chain of screen fractions that shifted with every resolution
+        Rectangle leftRect = Rect;
         int x = leftRect.X + 60;
-        MainMenu = Add(new Menu2(leftRect, Color.Black));
-        CloseButton(leftRect.X + leftRect.Width - 40, leftRect.Y + 20);
 
         var ftlRect = new Rectangle(x, leftRect.Y + 100, 270, 50);
         FTLPenaltySlider = Add(new FloatSlider(SliderStyle.Percent, ftlRect,
@@ -61,7 +116,10 @@ public sealed class RuleOptionsScreen : GameScreen
                                                     GameText.InsystemEnemyFtlSpeedModifier, 0.1f, 1f, P.EnemyFTLModifier));
         EnemyFTLPenaltySlider.OnChange = (s) => P.EnemyFTLModifier = s.AbsoluteValue;
             
-        int indent = (int)(width / 4.5f);
+        // the second column, measured from the FRAME rather than from the screen: at 1440 the old
+        // ScreenWidth/4.5 gave 320, which started before the 270-wide sliders at X+60 had ended,
+        // and it moved with the display while the panel no longer does. 280 clears them.
+        const int indent = 280;
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*0, () => P.PreventFederations, title: GameText.PreventAiFederations, tooltip: GameText.PreventsAiEmpiresFromMerging);
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*1, () => P.FixedPlayerCreditCharge, title: GameText.FixedShipAndBuildingsCost, tooltip: GameText.KeepFixedCreditCostOf);
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*2, () => P.AIUsesPlayerDesigns, title: GameText.UsePlayerDesignsTitle, tooltip: GameText.UsePlayerDesignsTip);
@@ -71,7 +129,6 @@ public sealed class RuleOptionsScreen : GameScreen
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*6, () => P.DisableResearchStations, title: GameText.DisableResearchStationsName, tooltip: GameText.DisableResearchStationsTip);
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*7, () => P.DisableMiningOps, title: GameText.DisableMiningOpsName, tooltip: GameText.DisableMiningOpsTip);
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*8, () => P.UseUpkeepByHullSize, title: GameText.RuleOptionsUseHullUpkeepName, tooltip: GameText.RuleOptionsUseHullUpkeepTip);
-        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*9, () => P.UseLegacyEspionage, title: GameText.UseLegacyEspionage, tooltip: GameText.UseLegacyEspionageTip);
 
         var mdRect = new Rectangle(ftlRect.X + indent+2, ftlRect.Y + 250, 270, 50);
         CustomMineralDecay = SliderDecimal1(mdRect, GameText.MineralDecayRate, 0.2f, 3, P.CustomMineralDecay);
@@ -120,8 +177,40 @@ public sealed class RuleOptionsScreen : GameScreen
         TurnTimer.Tip = GameText.TimeInSecondsPerTurn;
 
 
-        Label(MainMenu.Menu.X + 40, MainMenu.Menu.Y + 40, GameText.AdvancedRuleOptions, Fonts.Arial20Bold);
-        string text = Fonts.Arial12.ParseText(GameText.InThisPanelYouMay, MainMenu.Menu.Width - 80);
-        Label(MainMenu.Menu.X + 40, MainMenu.Menu.Y + 40 + Fonts.Arial20Bold.LineSpacing + 2, text, Fonts.Arial12);
+        // Ludoal fork: back to the game's own defaults, and clear the saved ruleset with them -
+        // otherwise the next new game would restore what the player just reset. Rebuilding the
+        // screen is what moves the sliders: they read their value at construction.
+        // Ludoal fork (maintainer feedback): Reset is a destructive action, so the red plate.
+        UIButton resetBtn = Button(ButtonStyle.WideHostile, leftRect.X + 40, leftRect.Y + leftRect.Height - 60,
+               "Reset", b =>
+        {
+            var stock = new UniverseParams();
+            P.FTLModifier = stock.FTLModifier;
+            P.EnemyFTLModifier = stock.EnemyFTLModifier;
+            P.GravityWellRange = stock.GravityWellRange;
+            P.ExtraPlanets = stock.ExtraPlanets;
+            P.ShipMaintenanceMultiplier = stock.ShipMaintenanceMultiplier;
+            P.StartingPlanetRichnessBonus = stock.StartingPlanetRichnessBonus;
+            P.TurnTimer = stock.TurnTimer;
+            P.CustomMineralDecay = stock.CustomMineralDecay;
+            P.VolcanicActivity = stock.VolcanicActivity;
+            P.PreventFederations = stock.PreventFederations;
+            P.FixedPlayerCreditCharge = stock.FixedPlayerCreditCharge;
+            P.AIUsesPlayerDesigns = stock.AIUsesPlayerDesigns;
+            P.DisablePirates = stock.DisablePirates;
+            P.DisableRemnantStory = stock.DisableRemnantStory;
+            P.DisableAlternateAITraits = stock.DisableAlternateAITraits;
+            P.DisableResearchStations = stock.DisableResearchStations;
+            P.DisableMiningOps = stock.DisableMiningOps;
+            P.UseUpkeepByHullSize = stock.UseUpkeepByHullSize;
+            GlobalStats.ClearSavedRuleOptions();
+            LoadContent();
+        });
+        resetBtn.SetAbsSize(168, 24);   // WideActive/Hostile is painted - pin the width
+
+        // the heading is the frame's title now - only the explanatory line stays, tucked under
+        // the title bar rather than under a heading this screen drew for itself
+        string text = Fonts.Arial12.ParseText(GameText.InThisPanelYouMay, leftRect.Width - 80);
+        Label(leftRect.X + 40, PopupFrame.ContentTop(leftRect) + 4, text, Fonts.Arial12);
     }
 }

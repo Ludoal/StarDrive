@@ -66,6 +66,22 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            // Ludoal fork: the eye by the name means "take me THERE" - close the whole stack
+            // down to the map (and don't let the closing colony reopen the list it came from),
+            // then dismiss THIS panel with the stay-here gesture: Colony is not a stacked
+            // screen, it is the universe's workersPanel, so ExitAllAbove never touches it.
+            // ⚠ not SnapViewColony: on an owned planet that call REOPENS a colony view.
+            if (input.LeftMouseClick && ViewOnMapButton.HitTest(input.CursorPosition))
+            {
+                GameAudio.AcceptClick();
+                UniverseScreen universe = P.Universe.Screen;
+                universe.ReturnToListScreen = null;
+                universe.ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
+                ScreenManager.ExitAllAbove(universe);
+                universe.ClosePlanetPanelStayHere(); // camera lands at the planet, planet selected
+                return true;
+            }
+
             // always get the currently hovered item
             DetailInfo = GetHoveredDetailItem(input);
 
@@ -81,6 +97,12 @@ namespace Ship_Game
             // We are monitoring AI Colonies
             if (P.Owner != Player && !Log.HasDebugger)
             {
+                // bench 361 (maintainer): the read-only early-out skipped base.HandleInput, so the
+                // close cross - an Add()ed element - never got served on an infiltrated colony
+                // (right-click worked: that path belongs to the universe, not this panel). Serve
+                // the cross explicitly before handing the rest of the input back.
+                if (CloseBtn.HandleInput(input))
+                    return true;
                 // Input not captured, let Universe Screen manager what happens
                 return false;
             }

@@ -177,8 +177,7 @@ namespace Ship_Game.Gameplay
         {
             Them = them;
             Risk = new EmpireRiskAssessment(this);
-            if (us.NewEspionageEnabled)
-                Espionage = new Espionage(us, them);
+            Espionage = new Espionage(us, them);
         }
 
         public void SetDeclaredWarOnAlly()
@@ -255,7 +254,7 @@ namespace Ship_Game.Gameplay
                 case TreatyType.Trade:         Treaty_Trade       = value; HandleTrade();    break;
             }
 
-            if (!us.isPlayer && us.NewEspionageEnabled)
+            if (!us.isPlayer)
                 us.AI.EspionageManager.Update(forceRun: true);
 
             void HandleTrade()

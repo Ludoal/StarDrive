@@ -47,8 +47,12 @@ namespace Ship_Game
 
         void UpdateNotificationArea()
         {
+            // ⚠ the stack now stops ABOVE the Ships/Planets counters (maintainer): the old 275
+            // bottom margin left notifications running halfway down them. Derived from the same
+            // numbers that place the counters - minimap housing 256 tall, 10 off the edge, the
+            // counters 30 above it, plus a small gap.
             NotificationArea = new Rectangle(GameBase.ScreenWidth - 70, 70, 70,
-                                             GameBase.ScreenHeight - 70 - 275);
+                                             GameBase.ScreenHeight - 70 - (256 + 10 + 30 + 8));
             MaxEntriesToDisplay = NotificationArea.Height / 70;
         }
 
@@ -624,7 +628,8 @@ namespace Ship_Game
             {
                 Pause    = true,
                 Message  = message,
-                IconPath = "UI/icon_warning_money"
+                IconPath = "UI/icon_warning_money",
+                Action   = "Economy"  // Ludoal fork (maintainer feedback): click opens the economy panel
             }, "sd_ui_notification_warning", "sd_trade_01");
         }
 

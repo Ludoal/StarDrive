@@ -27,7 +27,16 @@ namespace Ship_Game.GameScreens.Universe.Debug
             InputState input = ScreenManager.Instance.input;
 
             Add(new UIPanel(LocalPos.Zero, Size, Color.Transparent.Alpha(0.2f)));
-            var style = new UIButton.StyleTextures("NewUI/Debug/tech_button.png", ButtonStyle.DanButton);
+            // Ludoal fork: this debug panel keeps its own texture, so it builds the style rather
+            // than taking one from the shared table. Written out here since the constructor that
+            // paired a texture with a ButtonStyle went with the merge of the wide styles.
+            SubTexture tech = ResourceManager.Texture("NewUI/Debug/tech_button.png");
+            var style = new UIButton.StyleTextures
+            {
+                Normal = tech, Hover = tech, Pressed = tech,
+                HoverTextColor = new Color(255, 255, 255, 150).Premultiplied(),
+                PressTextColor = new Color(255, 255, 255, 150).Premultiplied(),
+            };
 
             AddCustomBtn(BtnSpacing*0, style,
                 () => "Reset ALL\nTechs",

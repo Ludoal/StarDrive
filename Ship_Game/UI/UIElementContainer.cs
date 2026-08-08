@@ -330,7 +330,7 @@ namespace Ship_Game
             // Array.Sort, which is UNSTABLE, and this screen has several Submenus whose
             // backgrounds were pushed to min-1 by SendToBackZOrder - so a sort can reorder
             // equal-ZOrder siblings arbitrarily and drop a panel behind an opaque background.
-            // That is exactly what emptied the design cartouche at bench 46.172 (Ludo).
+            // That is exactly what emptied the design cartouche at bench 46.172 (maintainer feedback).
             int maxZOrder = int.MinValue;
             foreach (UIElementV2 e in Elements)
                 if (e.ZOrder > maxZOrder)

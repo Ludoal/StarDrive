@@ -67,13 +67,13 @@ namespace Ship_Game
 
         public void SetCanceled(bool state = true) => IsCancelled = state;
 
-        public void DrawAt(UniverseState us, SpriteBatch batch, Vector2 at, bool lowRes)
+        public void DrawAt(UniverseState us, SpriteBatch batch, Vector2 at)
         {
             var r = new Rectangle((int)at.X, (int)at.Y, 29, 30);
             var tCursor = new Vector2(at.X + 40f, at.Y);
             var pbRect = new Rectangle((int)tCursor.X, (int)tCursor.Y + Fonts.Arial12Bold.LineSpacing + 4, 150, 18);
             var pb = new ProgressBar(pbRect, ActualCost, ProductionSpent);
-            Graphics.Font font = lowRes ? Fonts.Arial8Bold : Fonts.Arial10;
+            Graphics.Font font = Fonts.Arial10;
 
             if (isBuilding)
             {

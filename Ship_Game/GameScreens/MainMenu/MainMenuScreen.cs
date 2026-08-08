@@ -85,12 +85,22 @@ namespace Ship_Game.GameScreens.MainMenu
             if (list.Find("info",      out UIButton info))      info.OnClick      = Info_Clicked;
             if (list.Find("support",   out UIButton support))   support.OnClick   = Support_Clicked;
             if (list.Find("exit",      out UIButton exit))      exit.OnClick      = Exit_Clicked;
+
+            // Ludoal fork (maintainer feedback): the main menu sits over black, so its buttons
+            // carry their full body rather than the bar's map-friendly 0.92. Support reads as an
+            // active call to action (blue plate); Exit is the one hostile action (red plate).
+            for (int i = 0; i < list.Count; ++i)
+                if (list[i] is UIButton b)
+                    b.Opacity = 1f;
+            if (support != null)
+                support.Style = ButtonStyle.WideActive;
+            if (exit != null)
+                exit.Style = ButtonStyle.WideHostile;
+
             list.PerformLayout();
 
-            // Animate the buttons in and out
-            var animOffset = new Vector2(512f * (ScreenWidth / 1920f), 0);
-            list.StartGroupTransition<UIButton>(animOffset, -1, time:0.5f);
-            OnExit += () => list.StartGroupTransition<UIButton>(animOffset, +1, time:0.5f);
+            // Ludoal fork: no slide-in/slide-out on the menu buttons (maintainer decision - we
+            // stay sober). They appear where the layout puts them.
 
             Scene = SceneInstance.FromFile(this, menu.SceneFile);
 
@@ -208,8 +218,24 @@ namespace Ship_Game.GameScreens.MainMenu
         // We need a simulation time accumulator in order to run sim at arbitrary X fps while UI runs at smooth 60 fps
         float SimTimeSink;
 
+        // bench 357 (maintainer): the layout is parsed at LoadContent for the screen size of that
+        // moment. If the window is resized afterwards (VMware auto-fit at launch, a windowed drag),
+        // the 2D panels keep the stale width - the background and the planet cut off on the right
+        // while the 3D scene and edge-anchored buttons follow the live size. Track the size the
+        // layout was built for and rebuild when it no longer matches.
+        Vector2 LayoutArea;
+
         public override void Update(float fixedDeltaTime)
         {
+            if (LayoutArea == Vector2.Zero)
+                LayoutArea = ScreenArea;
+            else if (LayoutArea != ScreenArea)
+            {
+                LayoutArea = ScreenArea;
+                ReloadContent();
+                return;
+            }
+
             if (Scene != null)
             {
                 Vector3 listenerPos = new(Scene.CameraPos.X, Scene.CameraPos.Y, Scene.CameraPos.Z);

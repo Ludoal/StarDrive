@@ -100,8 +100,11 @@ Elements:
   - Panel:
     Name: planet
     Texture: MMenu/Jupiter.png
-    Size: [1, 0] # fill to width, auto-pick height
-    RelSize: [0, 1] # set relative height, auto-aspect width
+    # Ludoal fork (bench 359): cover the screen in BOTH dimensions, aspect preserved, overflow
+    # cropped. The old height-fit (auto-aspect width = height * 16:9) left a bare band on the
+    # right on displays wider than 16:9 - only visible when the CenterScale animation was near
+    # its low point, which is why it came and went.
+    CoverParent: true
     AxisAlign: BottomLeft # Align our Pos and Axis
     DrawDepth: Background
     Animation:
@@ -189,13 +192,13 @@ Elements:
           Title: "{1}" # "New Game"
           ClickSfx: sd_ui_tactical_pause
       - Button:
-          Name: tutorials
-          Title: "{3}" # "Tutorials"
+          Name: load_game
+          Title: "{2}" # "Load Game"
           AbsSize: [200, 0] # aspect fill width
           ClickSfx: sd_ui_tactical_pause
       - Button:
-          Name: load_game
-          Title: "{2}" # "Load Game"
+          Name: tutorials
+          Title: "{3}" # "Tutorials"
           AbsSize: [200, 0] # aspect fill width
           ClickSfx: sd_ui_tactical_pause
       - Button:

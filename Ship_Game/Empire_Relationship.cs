@@ -322,8 +322,7 @@ namespace Ship_Game
                 them.AddNewRelationToThem(us, rel: new(them, us));
             }
 
-            if (us.NewEspionageEnabled)
-                us.SetCanBeScannedByPlayer(false);
+            us.SetCanBeScannedByPlayer(false);
         }
 
         public void SetRelationsAsKnown(Relationship rel, Empire them)
@@ -469,9 +468,6 @@ namespace Ship_Game
 
             float GetDetectionChance()
             {
-                if (LegacyEspionageEnabled)
-                    return GetSpyDefense() * 5;
-
                 Espionage espionageToThem = GetEspionage(them);
                 Espionage espionageTo3rdParty = GetEspionage(empireTheySignedWith);
                 Espionage theirEspionagetoUs = them.GetEspionage(this);
@@ -623,7 +619,7 @@ namespace Ship_Game
                             .Sum(e => e != ally
                                  && e != this
                                  && !e.IsAtWarWith(enemy)
-                                 && (LegacyEspionageEnabled || NewEspionageEnabled && GetEspionage(e).Level >= 3)
+                                 && GetEspionage(e).Level >= 3
                                  && e.IsPreparingForWarWith(enemy) ? e.OffensiveStrength : 0);
 
                         if (prepareForWarStr + combinedStr > enemy.CurrentMilitaryStrength)

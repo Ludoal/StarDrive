@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
@@ -189,12 +190,35 @@ namespace Ship_Game
                 return;
 
             P.UpdateIncomes();
-            LeftMenu.Draw(batch, elapsed);
-            RightMenu.Draw(batch, elapsed);
-            TitleBar.Draw(batch, elapsed);
+
+            // Ludoal fork: the frame is filled FIRST, by hand. The group's frame is built
+            // transparent, so the galaxy behind it showed straight through - planet names ran
+            // across the panels. Painted here rather than via SetBackground: a background is a
+            // CHILD, drawn by base.Draw, which lands after everything this method paints.
+            // Ludoal fork: THE popup window's own surface, not an imitation of it. Painting this
+            // frame procedurally never matched Options on the bench and could not: those corners
+            // are hand-drawn 28x30 bitmaps and that rule under the title is an artist's gradient.
+            // PopupFrame carries the same arithmetic PopupWindow uses, taking a rect - which is
+            // what this screen needs, since it must span the display under the top bar rather
+            // than be centred the way PopupWindow centres its own.
+            Frame.DrawFill(batch, ColonyFrame);
+            Frame.Draw(batch);
+
+            // Ludoal fork: the planet's name in the title bar, centred - it used to ride the one
+            // tab of a group that had no second tab to switch to.
+            // ⚠ centred BETWEEN THE ARROWS (maintainer), not on the frame: the arrows sit on the
+            // ground map's edges, so the name belongs on that span's centre - which is not the
+            // window's centre, the left column being wider than the right one.
+            string title = P.Name;
+            float navCentre = (LeftColony.Rect.Right + RightColony.Rect.X) / 2f;
+            var titleAt = new Vector2(navCentre - Font20.TextWidth(title) / 2f,
+                                      Frame.TitleRect.CenterY() - Font20.LineSpacing / 2f);
+            batch.DrawString(Font20, title, titleAt, Colors.Cream);
+
+            // the two panels' brass surrounds were drawn here by hand and are gone - the frame
+            // supplies the one border this screen needs.
             LeftColony.Draw(batch, elapsed);
             RightColony.Draw(batch, elapsed);
-            batch.DrawString(Fonts.Laserian14, Localizer.Token(GameText.ColonyOverview), TitlePos, Colors.Cream);
 
             PlanetInfo.Draw(batch, elapsed);
             PStorage.Draw(batch, elapsed);
@@ -211,14 +235,22 @@ namespace Ship_Game
             PlanetName.Draw(batch, elapsed);
 
             EditNameButton = new Rectangle((int)(cursor.X + (double)Font20.MeasureString(P.Name).X + 12.0), (int)(cursor.Y + (double)(Font20.LineSpacing / 2) - ResourceManager.Texture("NewUI/icon_build_edit").Height / 2) - 2, ResourceManager.Texture("NewUI/icon_build_edit").Width, ResourceManager.Texture("NewUI/icon_build_edit").Height);
-            batch.Draw(PlanetName.HandlingInput
-                       ? ResourceManager.Texture("NewUI/icon_build_edit_hover2")
-                       : ResourceManager.Texture("NewUI/icon_build_edit"), EditNameButton, Color.White);
+            // the bright variant at rest too (maintainer bench: the pencil was near-invisible),
+            // dimmed a step so the hover still answers
+            batch.Draw(ResourceManager.Texture("NewUI/icon_build_edit_hover1"), EditNameButton,
+                       PlanetName.HandlingInput ? Color.White : Color.White.Alpha(0.75f)); // hover1: the Patrols pencil's own lit brown (bench 308)
 
-            if (ScreenHeight > 768)
-                cursor.Y += Font20.LineSpacing * 2;
-            else
-                cursor.Y += Font20.LineSpacing;
+            // Ludoal fork: the eye by the name (maintainer design) - the row is the planet's
+            // identity, the eye is "go to it" on the map, beside the rename pencil
+            SubTexture eye = ResourceManager.Texture("UI/viewPlanetIcon");
+            ViewOnMapButton = new Rectangle(EditNameButton.Right + 8, EditNameButton.Y,
+                                            EditNameButton.Height, EditNameButton.Height);
+            bool eyeHover = ViewOnMapButton.HitTest(Input.CursorPosition);
+            batch.Draw(eye, ViewOnMapButton, eyeHover ? Color.White : Color.White.Alpha(0.7f));
+            if (eyeHover && P.Universe.Screen.IsActive)
+                ToolTip.CreateTooltip("View this planet on the map");
+
+            cursor.Y += Font20.LineSpacing * 2;
             batch.DrawString(TextFont, Localizer.Token(GameText.Class) + ":", cursor, Color.Orange);
             Vector2 position3 = new Vector2(cursor.X + num5, cursor.Y);
             batch.DrawString(TextFont, P.CategoryName, position3, Colors.Cream);
@@ -481,7 +513,12 @@ namespace Ship_Game
 
         string MultiLineFormat(LocalizedText text)
         {
-            return TextFont.ParseText(text.Text, PFacilities.Rect.Width - 40);
+            // doubled line breaks collapse to one (maintainer bench 300) - the data likes
+            // paragraph gaps the panel has no room for
+            string t = text.Text.Replace("\n\n", "\n");
+            while (t.Contains("\n\n"))
+                t = t.Replace("\n\n", "\n");
+            return TextFont.ParseText(t, PFacilities.Rect.Width - 40);
         }
 
         void DrawMultiLine(ref Vector2 cursor, LocalizedText text, Color color)
@@ -500,6 +537,16 @@ namespace Ship_Game
                 DysonSwarmProgress.Draw(batch);
                 DysonSwarmProductionBoost.Draw(batch);
                 return;
+            }
+
+            // terraform lives on the ASSIGN LABOR block now (maintainer bench 299): its bars
+            // draw whenever ITS tab is up, BEFORE the facilities branches - those return, and
+            // the two tab rows are independent (Trade and Terraforming can be up together)
+            if (IsTerraformTabSelected)
+            {
+                if (NeedLevel1Terraform && TerraformLevel >= 1) TerrainTerraformBar.Draw(batch);
+                if (NeedLevel2Terraform && TerraformLevel >= 2) TileTerraformBar.Draw(batch);
+                if (NeedLevel3Terraform && TerraformLevel >= 3) PlanetTerraformBar.Draw(batch);
             }
 
             if (IsStatTabSelected)
@@ -523,14 +570,6 @@ namespace Ship_Game
                 OutgoingFoodBar.Draw(batch);
                 OutgoingProdBar.Draw(batch);
                 OutgoingColoBar.Draw(batch);
-                return;
-            }
-
-            if (IsTerraformTabSelected)
-            {
-                if (NeedLevel1Terraform && TerraformLevel >= 1) TerrainTerraformBar.Draw(batch);
-                if (NeedLevel2Terraform && TerraformLevel >= 2) TileTerraformBar.Draw(batch);
-                if (NeedLevel3Terraform && TerraformLevel >= 3) PlanetTerraformBar.Draw(batch);
                 return;
             }
 
@@ -599,10 +638,10 @@ namespace Ship_Game
             batch.DrawString(Font20, pgs.Building.TranslatedName, bCursor, color);
             bCursor.Y += Font20.LineSpacing + 5;
             string buildingDescription = MultiLineFormat(pgs.Building.DescriptionText);
-            batch.DrawString(TextFont, buildingDescription, bCursor, color);
+            batch.DrawString(TextFont, buildingDescription, bCursor, Color.White); // white body (maintainer bench 353), matching the build-list panel
             bCursor.Y += TextFont.MeasureString(buildingDescription).Y + Font20.LineSpacing;
             DrawSelectedBuildingInfo(ref bCursor, batch, TextFont, P.Owner, P.Fertility, P.MineralRichness, P.Category, P.Level, pgs.Building, pgs);
-            DrawTilePopInfo(ref bCursor, batch, pgs, 2);
+            DrawTilePopInfo(ref bCursor, batch, pgs, 1); // bench 353 (maintainer): single gap before the colonists-per-tile line, not double
             if (!pgs.Building.Scrappable)
                 return;
 
@@ -618,7 +657,7 @@ namespace Ship_Game
             batch.DrawString(Font20, selectedBuilding.TranslatedName, bCursor, color);
             bCursor.Y += Font20.LineSpacing + 5;
             string selectionText = MultiLineFormat(selectedBuilding.DescriptionText);
-            batch.DrawString(TextFont, selectionText, bCursor, color);
+            batch.DrawString(TextFont, selectionText, bCursor, Color.White); // white body (maintainer bench 300)
             bCursor.Y += TextFont.MeasureString(selectionText).Y + Font20.LineSpacing;
             if (selectedBuilding.IsWeapon)
                 selectedBuilding.CalcMilitaryStrength(P); // So the building will have TheWeapon for stats
@@ -647,7 +686,8 @@ namespace Ship_Game
         // TODO: extracted method, needs refactor/clean
         void DrawColonyDescription(Vector2 bCursor)
         {
-            DrawMultiLine(ref bCursor, P.Description);
+            // white (maintainer bench): the default TextColor read too dim on this page
+            DrawMultiLine(ref bCursor, P.Description, Color.White);
             string desc = "";
             if (P.IsCybernetic) desc = Localizer.Token(GameText.TheOccupantsOfThisPlanet);
             else switch (P.FS)
@@ -657,7 +697,7 @@ namespace Ship_Game
                     case Planet.GoodState.STORE: desc = Localizer.Token(GameText.ThisPlanetIsNeitherImporting); break;
                 }
 
-            DrawMultiLine(ref bCursor, desc);
+            DrawMultiLine(ref bCursor, desc, Color.White);
             desc = "";
             if (P.CType == Planet.ColonyType.Colony)
             {
@@ -675,7 +715,7 @@ namespace Ship_Game
                     case Planet.GoodState.IMPORT: desc = Localizer.Token(GameText.TheGovernorIsImportingProduction); break;
                     case Planet.GoodState.STORE: desc = Localizer.Token(GameText.TheGovernorIsStoringProduction); break;
                 }
-            DrawMultiLine(ref bCursor, desc);
+            DrawMultiLine(ref bCursor, desc, Color.White);
             if (P.IsStarving)
                 DrawMultiLine(ref bCursor, Localizer.Token(GameText.ThisPlanetsPopulationIsShrinking), Color.LightPink);
         }
@@ -691,19 +731,27 @@ namespace Ship_Game
             float grossUpkeep = P.Money.Maintenance + P.SpaceDefMaintenance;
             float netIncome   = P.Money.NetRevenue;
 
-            Font font = LowRes ? Font8 : Font14;
+            Font font = Font14;
 
-            batch.DrawString(font, $"{gIncome}: ", cursor, Color.LightGray);
-            batch.DrawString(font, $"{grossIncome.String(2)} BC/turn", new Vector2(cursor.X + 150, cursor.Y), Color.LightGreen);
-            cursor.Y += font.LineSpacing +  1;
+            // decimal-aligned (maintainer bench): the integer part ends on one pivot for the
+            // three money lines, the fraction and unit hang right of it
+            Vector2 cur = cursor; // a local function cannot capture a ref parameter (CS1628)
+            void MoneyLine(string label, float v, Color c)
+            {
+                batch.DrawString(font, $"{label}: ", cur, Color.LightGray);
+                // fixed two decimals: String(2) trims trailing zeros, which let the
+                // "BC/turn" unit drift line to line (maintainer bench)
+                string s = $"{v.ToString("0.00", CultureInfo.InvariantCulture)} BC/turn";
+                string intPart = s.Substring(0, s.IndexOf('.') < 0 ? s.Length : s.IndexOf('.'));
+                batch.DrawString(font, s, new Vector2(cur.X + 178 - font.TextWidth(intPart), cur.Y), c);
+                cur.Y += font.LineSpacing + 1;
+            }
+            MoneyLine(gIncome, grossIncome, Color.LightGreen);
 
-            batch.DrawString(font, $"{gUpkeep}: ", cursor, Color.LightGray);
-            batch.DrawString(font, $"{grossUpkeep.String(2)} BC/turn", new Vector2(cursor.X + 150, cursor.Y), Color.Pink);
-            cursor.Y += font.LineSpacing + 1;
-
-            batch.DrawString(font, $"{(netIncome > 0 ? nIncome : nLosses)}: ", cursor, Color.LightGray);
-            batch.DrawString(font, $"{netIncome.String(2)} BC/turn", new Vector2(cursor.X + 150, cursor.Y), netIncome > 0.0 ? Color.Green : Color.Red);
-            cursor.Y += font.LineSpacing*2 + 1;
+            MoneyLine(gUpkeep, grossUpkeep, Color.Pink);
+            MoneyLine(netIncome > 0 ? nIncome : nLosses, netIncome, netIncome > 0.0 ? Color.Green : Color.Red);
+            cursor = cur;
+            cursor.Y += font.LineSpacing;
         }
 
         void DrawTilePopInfo(ref Vector2 cursor, SpriteBatch batch, PlanetGridSquare tile, int spacing = 5)

@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Graphics;
 using SDGraphics;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
@@ -9,6 +9,8 @@ using Font = Ship_Game.Graphics.Font;
 using Ship_Game.Universe.SolarBodies;
 using System.Collections.Generic;
 using System.Linq;
+using Ship_Game.GameScreens; // ScreenGroups: the group geometry
+using Ship_Game.UI; // UITable.FitText
 
 namespace Ship_Game
 {
@@ -16,8 +18,6 @@ namespace Ship_Game
     {
         public bool PlanAreaHovered { get; private set; }
         readonly Array<BlueprintsTile> TilesList = new(35);
-        readonly Menu1 LeftMenu;
-        readonly Menu1 RightMenu;
         readonly Submenu SubBlueprintsOptions;
         readonly Submenu PlanStats;
         readonly UILabel BlueprintsName;
@@ -42,8 +42,21 @@ namespace Ship_Game
         readonly ScrollList<BlueprintsChainListItem> BlueprintsChainList;
         readonly DropOptions<Planet.ColonyType> SwitchColonyType;
         readonly UILabel LinkBlueprintsName;
+        // the STATE, separate from the label (bench 305): the shown text folds to the
+        // frame with a tooltip, so it can no longer be read back as the link's name
+        string LinkedTo = "";
+
+        void SetLinkedTo(string name)
+        {
+            LinkedTo = name ?? "";
+            string shown = UITable.FitText(Fonts.Arial12Bold, LinkedTo,
+                                           (int)(SubBlueprintsOptions.Width - 160 - 12));
+            LinkBlueprintsName.Text = shown;
+            LinkBlueprintsName.Tooltip = shown != LinkedTo ? LinkedTo : "";
+        }
 
         Building HoveredBuilding;
+        int StatsTabPlayerChoice;
         readonly Font Font8 = Fonts.Arial8Bold;
         readonly Font Font12 = Fonts.Arial12Bold;
         readonly Font Font14 = Fonts.Arial14Bold;
@@ -52,8 +65,13 @@ namespace Ship_Game
         readonly Font BigFont;
         public readonly Empire Player;
         readonly UniverseScreen Universe; // Ludoal fork: for the live top bar
+        Submenu DesignTabs;   // Ludoal fork: the Design group's tab row, this screen being one tab
 
         float PlannedGrossMoney;
+        float PlannedColonistIncome; // bench 353: the budget breakdown for Stats+, sums to Gross
+        float PlannedBuildingIncome;
+        float PlannedFoodEatenPerCol; // bench 354: consumption exposed for the Stats+ yields 'eaten' column
+        float PlannedProdEatenPerCol;
         float PlannedMaintenance;
         float PlannedNetIncome;
         float PlannedFertility;
@@ -82,75 +100,94 @@ namespace Ship_Game
         {
             Universe = parent; // Ludoal fork: kept for the live top bar
             Player = player;
+            IsPopup = true; // Ludoal fork (bench 345): the paused universe shows behind, dimmed - like the table screens
             GovernorTab = govTab;
-            TextFont = LowRes ? Font8 : Font12;
-            BigFont = LowRes ? Font12 : Font14;
-            var titleRect = new Rectangle(2, 44, ScreenWidth * 2 / 3, 80);
-            base.Add(new Menu2(titleRect));
-            Vector2 titlePos = new(titleRect.X + titleRect.Width / 2 - Fonts.Laserian14.MeasureString
-                (Localizer.Token(GameText.ColonyBlueprintsTitle)).X / 2f, titleRect.Y + titleRect.Height / 2 - Fonts.Laserian14.LineSpacing / 2);
+            TextFont = Font12;
+            BigFont = Font12; // the general stats read smaller (maintainer bench 301)
+            // Ludoal fork: the Blueprints tab of the Design group - a FIXED 900p footprint
+            // (maintainer bench 301) like Relationships: the blocks are written for it, a
+            // bigger screen just leaves space at its right. Inner blocks sit on 10px margins;
+            // heights are derived from what each block HOLDS, not cut as fractions - the old
+            // fractional cuts clipped the warnings and pushed the Tax slider out of its frame.
+            Rectangle frame900 = ScreenGroups.GroupFrame900(ScreenWidth, ScreenHeight);
+            DesignTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.DesignTabTitles, 2,
+                                                    OnDesignTabChanged, frame900.Width, frame900.Height);
+            const int Pad = 10;
+            RectF client = DesignTabs.ClientArea;
+            // ⚠ measured off the FRAME's borders, not the client area: the client is
+            // already ~9px inside the nine-slice, so padding from it read as ~19px of
+            // margin on the left, bottom and right (maintainer bench 307)
+            RectF frameR = DesignTabs.RectF;
+            float leftX  = frameR.X + Pad;
+            float topY   = client.Y + Pad;
+            float botY   = frameR.Bottom - Pad;
 
-            base.Add(new UILabel(titlePos, GameText.ColonyBlueprintsTitle, Fonts.Laserian14));
-            LeftMenu = base.Add(new Menu1(2, titleRect.Y + titleRect.Height + 5, titleRect.Width, ScreenHeight - (titleRect.Y + titleRect.Height) - 7));
-            RightMenu = base.Add(new Menu1(titleRect.Right + 5, titleRect.Y + titleRect.Height + 5, ScreenWidth / 3 - 10, ScreenHeight - (titleRect.Y + titleRect.Height) - 7)); // Ludoal fork: align top with the main panel (was overlapping the top bar buttons)
-            Add(new CloseButton(RightMenu.Right - 52, RightMenu.Y + 22));
-
-            RectF blueprintsStatsR = new(LeftMenu.X + 20, LeftMenu.Y + 20,
-                                        (int)(0.4f * LeftMenu.Width),
-                                        (int)(0.23f * (LeftMenu.Height - 80)));
-            SubBlueprintsOptions = base.Add(new Submenu(blueprintsStatsR, GameText.BlueprintsOptions));
-
-            RectF planAreaR = new(LeftMenu.X + 20 + SubBlueprintsOptions.Width + 20, SubBlueprintsOptions.Y,
-                                   LeftMenu.Width - 60 - SubBlueprintsOptions.Width, LeftMenu.Height * 0.5f);
-            SubPlanArea = base.Add(new Submenu(planAreaR, GameText.CurrentBlueprintsSubMenu));
-
-            RectF blueprintsStatsRect = new(LeftMenu.X + 20 + SubBlueprintsOptions.Width + 20,
-                                        SubPlanArea.Bottom + 20,
-                                        LeftMenu.Width - 60 - SubBlueprintsOptions.Width,
-                                        LeftMenu.Height - 20 - SubPlanArea.Height - 40);
-            PlanStats = base.Add(new Submenu(blueprintsStatsRect, GameText.Statistics2));
-
-
-            RectF buildableMenuR = new(RightMenu.X + 20, RightMenu.Y + 20,
-                                   RightMenu.Width - 40, RightMenu.Height - 40);
+            // BUILDINGS: the Colony screen's own list width at the 900p floor (470)
+            const float BuildingsW = 470f;
+            RectF buildableMenuR = new(frameR.Right - Pad - BuildingsW, topY, BuildingsW, botY - topY);
             base.Add(new Submenu(buildableMenuR, GameText.Buildings));
 
-            RectF experimentalR = new(LeftMenu.X + 20, LeftMenu.Y + 40 + SubBlueprintsOptions.Height, 0.4f * LeftMenu.Width, 0.294f * (LeftMenu.Height - 80));
+            // BLUEPRINT OPTIONS: six lines plus the button row - width sized on its widest
+            // row (label 150 + dropdown 100 + margins vs four small buttons at 80 pitch)
+            const float OptionsW = 360f;
+            const float OptionsRow = 20f;
+            float optionsH = 28 + 6 * OptionsRow + 8 + 24 + 8;
+            RectF blueprintsStatsR = new(leftX, topY, OptionsW, optionsH);
+            SubBlueprintsOptions = base.Add(new Submenu(blueprintsStatsR, GameText.BlueprintsOptions));
+
+            // COLONY SIMULATION: exactly the four sliders (50px pitch each, 35px lead-in)
+            float simH = 35 + 4 * 50 + 10;
+            RectF experimentalR = new(leftX, blueprintsStatsR.Bottom + Pad, OptionsW, simH);
             base.Add(new Submenu(experimentalR, GameText.BlueprintsSimulation));
 
-            RectF chainR = new(LeftMenu.X + 20, 
-                               blueprintsStatsRect.Y,
-                               0.4f * LeftMenu.Width,
-                               LeftMenu.Height - 20 - SubPlanArea.Height - 40);
+            // FORWARD LINK CHAIN: whatever the column has left
+            RectF chainR = new(leftX, experimentalR.Bottom + Pad, OptionsW,
+                               botY - (experimentalR.Bottom + Pad));
             base.Add(new Submenu(chainR, GameText.LinksChain));
 
+            // centre column: the plan grid on top, the tabbed stats block under it
+            float centreX = leftX + OptionsW + Pad;
+            float centreW = buildableMenuR.X - Pad - centreX;
+            RectF planAreaR = new(centreX, topY, centreW, (botY - topY) * 0.5f);
+            SubPlanArea = base.Add(new Submenu(planAreaR, GameText.CurrentBlueprintsSubMenu));
 
+            // STATISTICS | DESCRIPTION - hovering a building raises Description on its own
+            // (maintainer bench 301, the Colony screen's behavior)
+            RectF blueprintsStatsRect = new(centreX, planAreaR.Bottom + Pad, centreW,
+                                            botY - (planAreaR.Bottom + Pad));
+            // bench 353: STATS | STATS+ | DESCRIPTION. Stats+ (index 1) is the default view; hovering a
+            // building raises Description (2). A literal for Stats+, matching the Colony tab title.
+            PlanStats = base.Add(new Submenu(blueprintsStatsRect,
+                new LocalizedText[] { GameText.Statistics2, ColonyScreen.StatsPlusTabTitle, GameText.Description }));
+            PlanStats.OnTabChange = i => StatsTabPlayerChoice = i; // manual clicks only
+            StatsTabPlayerChoice = 1; // default to Stats+
+
+
+            // one 20px row per line, six lines, then the button row - the block's height
+            // was derived from exactly this cascade
             float blueprintsOptionsX = SubBlueprintsOptions.X + 10;
-            BlueprintsName = base.Add(new UILabel(new Vector2(blueprintsOptionsX, SubBlueprintsOptions.Y + 30), 
+            float optRow0 = SubBlueprintsOptions.Y + 28;
+            BlueprintsName = base.Add(new UILabel(new Vector2(blueprintsOptionsX, optRow0),
                 GameText.NewBlueprints, Font14, Color.Gold));
-            ExclusiveCheckbox = base.Add(new UICheckBox(blueprintsOptionsX, SubBlueprintsOptions.Y + 40 + Font14.LineSpacing,
+            ExclusiveCheckbox = base.Add(new UICheckBox(blueprintsOptionsX, optRow0 + OptionsRow,
                 () => Exclusive, TextFont, GameText.ExclusiveBlueprints, GameText.ExclusiveBlueprintsTip));
-
             ExclusiveCheckbox.TextColor = Color.Wheat;
-            CannotBuildShipsWarning = base.Add(new UILabel(new Vector2(blueprintsOptionsX, SubBlueprintsOptions.Y + 35 + Font14.LineSpacing*5),
+            CannotBuildShipsWarning = base.Add(new UILabel(new Vector2(blueprintsOptionsX, optRow0 + 4 * OptionsRow),
                 GameText.BlueprintsCannotBuildShips, Font12, Color.Pink));
-            CannotBuildTroopsWarning = base.Add(new UILabel(new Vector2(blueprintsOptionsX, SubBlueprintsOptions.Y + 35 + Font14.LineSpacing * 6),
+            CannotBuildTroopsWarning = base.Add(new UILabel(new Vector2(blueprintsOptionsX, optRow0 + 5 * OptionsRow),
                 GameText.BlueprintsCannotBuildTroops, Font12, Color.Pink));
 
-            Vector2 savePos = new(blueprintsOptionsX, SubBlueprintsOptions.Y + 170);
-            SaveBlueprints = base.Add(new UIButton(ButtonStyle.Small, savePos, GameText.Save));
+            float buttonsY = optRow0 + 6 * OptionsRow + 8;
+            SaveBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX, buttonsY), GameText.Save));
             SaveBlueprints.OnClick = (b) => OnSaveBlueprintsClick();
-            Vector2 loadPos = new(blueprintsOptionsX + SubBlueprintsOptions.Width - 90, SubBlueprintsOptions.Y + 170);
-            LoadBlueprints = base.Add(new UIButton(ButtonStyle.Small, loadPos, GameText.Load));
-            LoadBlueprints.OnClick = (b) => OnLoadBlueprintsClick();
-            Vector2 linkPos = new(blueprintsOptionsX + SubBlueprintsOptions.Width - 170, SubBlueprintsOptions.Y + 170);
-            LinkBlueprints = base.Add(new UIButton(ButtonStyle.Small, linkPos, "Link"));
-            LinkBlueprints.OnClick = (b) => OnLinkBlueprintsClick();
-            LinkBlueprints.Enabled = false;
-            Vector2 unlinkPos = new(blueprintsOptionsX + SubBlueprintsOptions.Width - 250, SubBlueprintsOptions.Y + 170);
-            UnlinkBlueprints = base.Add(new UIButton(ButtonStyle.Small, unlinkPos, "Unlink"));
+            UnlinkBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX + 80, buttonsY), "Unlink"));
             UnlinkBlueprints.OnClick = (b) => OnUnlinkBlueprintsClick();
             UnlinkBlueprints.Enabled = false;
+            LinkBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX + 160, buttonsY), "Link"));
+            LinkBlueprints.OnClick = (b) => OnLinkBlueprintsClick();
+            LinkBlueprints.Enabled = false;
+            LoadBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX + 240, buttonsY), GameText.Load));
+            LoadBlueprints.OnClick = (b) => OnLoadBlueprintsClick();
 
             RectF initPopR = new(blueprintsOptionsX, experimentalR.Y + 40, SubBlueprintsOptions.Width*0.6, 50);
             InitPopulationSlider = SliderDecimal1(initPopR, GameText.Population, 0.1f, 20, InitPopulationBillion);
@@ -182,14 +219,14 @@ namespace Ship_Game
             BlueprintsChainList.EnableItemHighlight = true;
 
 
-            base.Add(new UILabel(new Vector2(blueprintsOptionsX, SubBlueprintsOptions.Y + 50 + Font14.LineSpacing * 3),
+            base.Add(new UILabel(new Vector2(blueprintsOptionsX, optRow0 + 3 * OptionsRow),
                 "Linked Blueprints:", TextFont, Color.Wheat, GameText.LinkBlueprintsTip));
-            LinkBlueprintsName = base.Add(new UILabel(new Vector2(blueprintsOptionsX + 150, SubBlueprintsOptions.Y + 50 + Font14.LineSpacing * 3),
+            LinkBlueprintsName = base.Add(new UILabel(new Vector2(blueprintsOptionsX + 150, optRow0 + 3 * OptionsRow),
                 "", TextFont, Color.White));
 
-            base.Add(new UILabel(new Vector2(blueprintsOptionsX, SubBlueprintsOptions.Y + 45 + Font14.LineSpacing * 2),
+            base.Add(new UILabel(new Vector2(blueprintsOptionsX, optRow0 + 2 * OptionsRow),
                 "Switch Governor to:", TextFont, Color.Wheat, GameText.ExclusiveBlueprintsTip));
-            SwitchColonyType = base.Add(Add(new DropOptions<Planet.ColonyType>(blueprintsOptionsX + 150, SubBlueprintsOptions.Y + 45 + Font14.LineSpacing * 2, 100, 18)));
+            SwitchColonyType = base.Add(Add(new DropOptions<Planet.ColonyType>(blueprintsOptionsX + 150, optRow0 + 2 * OptionsRow, 100, 18)));
             SwitchColonyType.AddOption(option: "--", Planet.ColonyType.Colony);
             SwitchColonyType.AddOption(option: GameText.Core, Planet.ColonyType.Core);
             SwitchColonyType.AddOption(option: GameText.Industrial, Planet.ColonyType.Industrial);
@@ -268,7 +305,7 @@ namespace Ship_Game
         void RefreshChainList()
         {
             BlueprintsChainList.Reset();
-            BuildChain(LinkBlueprintsName.Text.Text);
+            BuildChain(LinkedTo);
 
             void BuildChain(string linkTo)
             {
@@ -295,40 +332,99 @@ namespace Ship_Game
             }
         }
 
+        // Ludoal fork: the Design group's tabs.
+        void OnDesignTabChanged(int tab)
+        {
+            if (tab == 2)
+                return; // already here
+
+            GameAudio.EchoAffirmative();
+            ExitScreen();
+            if (tab == 0)
+                ScreenManager.AddScreen(new FleetDesignScreen(Universe, Universe.EmpireUI));
+            else
+                ScreenManager.AddScreen(new ShipDesignScreen(Universe, Universe.EmpireUI));
+        }
+
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
+            // Ludoal fork (bench 345): dim the paused universe drawn behind this popup, the same
+            // veil the table screens use, so the map recedes rather than competing with the screen.
+            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
+            // bench 354 (maintainer): a TRULY opaque frame fill behind the content. GroupFrameFill is
+            // only 0.92 alpha, so the dimmed universe still showed through and washed out the text -
+            // Stats+' gray labels read terne/illegible where Colony's opaque facilities panel keeps
+            // them crisp. Fill with the same colour at full alpha, local to Blueprints (the shared
+            // GroupFrameFill stays 0.92 for the table screens that want the veil). All three tabs
+            // (Stats / Stats+ / Description) gain the contrast.
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(DesignTabs), new Color(14, 12, 9));
+            // hovering a building raises the Description tab by itself; the cursor leaving falls
+            // back to the player's own choice. bench 351: setting SelectedIndex DOES fire OnTabChange
+            // (verified in Submenu.cs) - so the auto-switch was writing StatsTabPlayerChoice=1 and the
+            // tab stayed stuck on Description forever. Detach the handler around the automatic write;
+            // only a real click on the tab strip (its own HandleInput path) records a player choice.
+            // bench 353: three tabs now - 0 STATS, 1 STATS+, 2 DESCRIPTION. Hovering a building raises
+            // DESCRIPTION (2) on its own; the cursor leaving falls back to the player's own choice
+            // (default STATS+). Detach OnTabChange around the automatic write so the auto-switch never
+            // records itself as a player choice (setting SelectedIndex fires OnTabChange, Submenu.cs).
+            int wantTab = HoveredBuilding != null ? 2 : StatsTabPlayerChoice;
+            if (PlanStats.SelectedIndex != wantTab)
+            {
+                var savedHandler = PlanStats.OnTabChange;
+                PlanStats.OnTabChange = null;
+                PlanStats.SelectedIndex = wantTab;
+                PlanStats.OnTabChange = savedHandler;
+            }
             base.Draw(batch, elapsed);
-            DrawHoveredBuildListBuildingInfo(batch);
-            DrawPlanStatistics(batch);
+            if (PlanStats.SelectedIndex == 2)
+                DrawHoveredBuildListBuildingInfo(batch);
+            else if (PlanStats.SelectedIndex == 1)
+                DrawStatsPlus(batch);
+            else
+                DrawPlanStatistics(batch);
             Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
+            ScreenGroups.DrawDesignTabTip(DesignTabs, Input.CursorPosition);
             batch.SafeEnd();
         }
 
         void DrawHoveredBuildListBuildingInfo(SpriteBatch batch)
         {
-            if (HoveredBuilding == null)
+            // Ludoal fork (47-b): the Description tab lives only while the cursor is over a building,
+            // then falls back to Statistics - so it draws the CURRENTLY hovered building, and the
+            // single HoveredBuilding drives both the tab switch (Draw) and the content (here). No
+            // second "described" variable to keep in sync: one owner, they can't disagree.
+            Building b = HoveredBuilding;
+            if (b == null)
                 return;
 
             Vector2 bCursor = new Vector2(PlanStats.X + 15, PlanStats.Y + 35);
             Color color = Color.Wheat;
-            batch.DrawString(Font20, HoveredBuilding.TranslatedName, bCursor, color);
+            batch.DrawString(Font20, b.TranslatedName, bCursor, color);
             bCursor.Y += Font20.LineSpacing + 5;
-            string selectionText = TextFont.ParseText(HoveredBuilding.DescriptionText.Text, PlanStats.Width - 40);
-            batch.DrawString(TextFont, selectionText, bCursor, color);
-            bCursor.Y += TextFont.MeasureString(selectionText).Y + Font20.LineSpacing;
-            ColonyScreen.DrawBuildingStaticInfo(ref bCursor, batch, TextFont, Player, PlannedFertility, 
-                InitRichness, Player.data.Traits.PreferredEnv, HoveredBuilding);
-            ColonyScreen.DrawBuildingInfo(ref bCursor, batch, TextFont, HoveredBuilding.ActualShipRepair(PlanetLevel), 
+            // bench 354 (maintainer): the Outpost is the one building whose stat blocks overflow this
+            // panel (repair/sensor/storage/defense/infra all at once). Replace its description with a
+            // single blank line - keep the air between the name and the stats, drop the text that
+            // pushed the blocks off the bottom. Colony keeps the full description (separate draw path).
+            if (b.IsOutpost)
+            {
+                bCursor.Y += Font20.LineSpacing;
+            }
+            else
+            {
+                string selectionText = TextFont.ParseText(b.DescriptionText.Text, PlanStats.Width - 40);
+                batch.DrawString(TextFont, selectionText, bCursor, Color.White);
+                bCursor.Y += TextFont.MeasureString(selectionText).Y + Font20.LineSpacing;
+            }
+            ColonyScreen.DrawBuildingStaticInfo(ref bCursor, batch, TextFont, Player, PlannedFertility,
+                InitRichness, Player.data.Traits.PreferredEnv, b);
+            ColonyScreen.DrawBuildingInfo(ref bCursor, batch, TextFont, b.ActualShipRepair(PlanetLevel),
                 "NewUI/icon_queue_rushconstruction", GameText.ShipRepair);
-            ColonyScreen.DrawBuildingWeaponStats(ref bCursor, batch, TextFont, HoveredBuilding, PlanetLevel);
+            ColonyScreen.DrawBuildingWeaponStats(ref bCursor, batch, TextFont, b, PlanetLevel);
         }
 
         void DrawPlanStatistics(SpriteBatch batch)
         {
-            if (HoveredBuilding != null)
-                return;
-
             Vector2 bCursor = new Vector2(PlanStats.X + 15, PlanStats.Y + 35);
             ColonyScreen.DrawBuildingInfo(ref bCursor, batch, BigFont, PlannedGrossMoney,
                 "UI/icon_money_22", GameText.GrossIncome);
@@ -358,6 +454,57 @@ namespace Ship_Game
                 "NewUI/icon_storage_production", GameText.ShipRepair);
         }
 
+        // bench 353 (maintainer): Stats+ on a PLAN. Same layout as the Colony Stats+ tab (shared
+        // StatsPlusLayout, tuned to the mm for 1440px), but every figure is a SIMULATED Planned* value,
+        // not a live colony's. Its point over the flat STATS tab is the BUDGET BREAKDOWN: where the net
+        // comes from. ColonistIncome + BuildingIncome == PlannedGrossMoney by construction (RecalcPlan),
+        // so the lines sum to the displayed net exactly. Saturation / starvation / defense are omitted -
+        // a plan has no live population to have them.
+        void DrawStatsPlus(SpriteBatch batch)
+        {
+            Vector2 bCursor = new Vector2(PlanStats.X + 15, PlanStats.Y + 35);
+            float blockW = (PlanStats.Width - 40) * 0.5f;
+            SPCols cols = StatsPlusLayout.SPSetColumns(TextFont, blockW);
+            var left = bCursor;
+
+            // ── BUDGET (BC / turn) — the two sources, then upkeep, summing to Net exactly ──
+            StatsPlusLayout.SPHeader(ref left, batch, "BUDGET (BC / turn)");
+            if (PlannedColonistIncome.NotZero())
+                StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Colonist income",
+                    StatsPlusLayout.SPSigned(PlannedColonistIncome), StatsPlusLayout.SPTone(PlannedColonistIncome));
+            if (PlannedBuildingIncome.NotZero())
+                StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Building income",
+                    StatsPlusLayout.SPSigned(PlannedBuildingIncome), StatsPlusLayout.SPTone(PlannedBuildingIncome));
+            StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, Localizer.Token(GameText.GrossIncome),
+                StatsPlusLayout.SPSigned(PlannedGrossMoney), StatsPlusLayout.SPTone(PlannedGrossMoney));
+            if (PlannedMaintenance.NotZero())
+                StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Building upkeep",
+                    StatsPlusLayout.SPSigned(-PlannedMaintenance), StatsPlusLayout.SPTone(-PlannedMaintenance));
+            StatsPlusLayout.SPLine(ref left, batch, TextFont, cols,
+                Localizer.Token(PlannedNetIncome >= 0 ? GameText.NetIncome : GameText.NetLosses),
+                StatsPlusLayout.SPSigned(PlannedNetIncome), PlannedNetIncome >= 0 ? Color.Green : Color.Red);
+            StatsPlusLayout.SPGap(ref left, TextFont);
+
+            // ── YIELDS (per turn) — the plan's flat + per-colonist figures, on the right block ──
+            float usable = PlanStats.Width - 40;
+            var right = new Vector2(bCursor.X + usable + 10 - (cols.YieldColTotal + TextFont.TextWidth(".00") + 2), bCursor.Y);
+            // pop = gross per-colonist × pop (net + eaten re-added), flat, eaten = consumption × pop,
+            // total = pop + flat - eaten = the net. Sums exactly, like Colony's yields grid (bench 354).
+            StatsPlusLayout.SPHeader(ref right, batch, "YIELDS (per turn)");
+            StatsPlusLayout.SPYieldHeader(ref right, batch, TextFont, cols);
+            float foodEaten = PlannedFoodEatenPerCol * PlannedPopulation;
+            float prodEaten = PlannedProdEatenPerCol * PlannedPopulation;
+            StatsPlusLayout.SPYield(ref right, batch, TextFont, cols, Localizer.Token(GameText.Food),
+                (PlannedFoodPerCol + PlannedFoodEatenPerCol) * PlannedPopulation, PlannedFlatFood,
+                PlannedFoodPerCol * PlannedPopulation + PlannedFlatFood, foodEaten);
+            StatsPlusLayout.SPYield(ref right, batch, TextFont, cols, Localizer.Token(GameText.Production),
+                (PlannedProdPerCol + PlannedProdEatenPerCol) * PlannedPopulation, PlannedFlatProd,
+                PlannedProdPerCol * PlannedPopulation + PlannedFlatProd, prodEaten);
+            StatsPlusLayout.SPYield(ref right, batch, TextFont, cols, Localizer.Token(GameText.Research),
+                PlannedResearchPerCol * PlannedPopulation, PlannedFlatResearch,
+                PlannedResearchPerCol * PlannedPopulation + PlannedFlatResearch, 0f);
+        }
+
 
         void RecalculateGeneralStats()
         {
@@ -371,6 +518,11 @@ namespace Ship_Game
             PlannedFertility   = InitFertility;
             PlannedPopulation  = InitPopulationBillion + plannedBuildings.Sum(b => b.MaxPopIncrease)*0.001f;
             PlannedGrossMoney  = PlannedPopulation;
+            // bench 353: split the two income sources so Stats+ can show the budget breakdown. The
+            // colonist base is PlannedPopulation; buildings add Income + CreditsPerColonist*Pop below.
+            // Both get the same *tax*taxRateMultiplier at the end, so their sum stays exactly Gross.
+            PlannedColonistIncome = PlannedPopulation;
+            PlannedBuildingIncome = 0;
             PlannedFlatFood        = 0;
             PlannedFoodPerCol      = 0;
             PlannedFlatProd        = 0;
@@ -388,6 +540,7 @@ namespace Ship_Game
             foreach (Building b in plannedBuildings)
             {
                 PlannedGrossMoney += b.Income + b.CreditsPerColonist*PlannedPopulation;
+                PlannedBuildingIncome += b.Income + b.CreditsPerColonist*PlannedPopulation;
                 taxRateMultiplier += b.PlusTaxPercentage;
                 PlannedMaintenance += b.Maintenance;
                 PlannedFertility += b.MaxFertilityOnBuildFor(Player, Player.data.PreferredEnvPlanet);
@@ -407,6 +560,9 @@ namespace Ship_Game
             }
 
             PlannedGrossMoney  = PlannedGrossMoney * tax * taxRateMultiplier;
+            // same factor on each source: ColonistIncome + BuildingIncome == PlannedGrossMoney (bench 353)
+            PlannedColonistIncome = PlannedColonistIncome * tax * taxRateMultiplier;
+            PlannedBuildingIncome = PlannedBuildingIncome * tax * taxRateMultiplier;
             PlannedMaintenance *= Player.data.Traits.MaintMultiplier;
             PlannedNetIncome = PlannedGrossMoney - PlannedMaintenance;
             PlannedShields *= 1 + Player.data.ShieldPowerMod;
@@ -414,12 +570,14 @@ namespace Ship_Game
             PlanetLevel = Planet.GetLevel(PlannedPopulation);
 
             float foodConsumptionPerColonist = Player.NonCybernetic ? 1 + Player.data.Traits.ConsumptionModifier : 0;
+            PlannedFoodEatenPerCol = foodConsumptionPerColonist; // bench 354: kept before it folds into the net
             PlannedFoodPerCol = ColonyResource.FoodYieldFormula(PlannedFertility, PlannedFoodPerCol) - foodConsumptionPerColonist;
             float productionTax = Player.IsCybernetic ? tax * 0.5f : tax;
 
             float ProdConsumptionPerColonist = Player.IsCybernetic ? 1 + Player.data.Traits.ConsumptionModifier : 0;
+            PlannedProdEatenPerCol = ProdConsumptionPerColonist; // bench 354
             PlannedFlatProd *= (1 - productionTax);
-            PlannedProdPerCol = ColonyResource.ProdYieldFormula(InitRichness, PlannedProdPerCol, Player) 
+            PlannedProdPerCol = ColonyResource.ProdYieldFormula(InitRichness, PlannedProdPerCol, Player)
                 * (1 - productionTax) - ProdConsumptionPerColonist;
 
             float researchMultiplier = 1 + Player.data.Traits.ResearchMod;
@@ -441,7 +599,7 @@ namespace Ship_Game
             PlannedFertilityLbl.Visible = PlannedFertility.NotEqual(InitFertility);
             PlannedPopLbl.Color = PlannedPopulation >= InitPopulationBillion ? Color.LightGreen : Color.Pink;
             PlannedFertilityLbl.Color = PlannedFertility >= InitFertility ? Color.LightGreen : Color.Pink;
-            UnlinkBlueprints.Enabled = LinkBlueprintsName.Text != "";
+            UnlinkBlueprints.Enabled = LinkedTo.NotEmpty();
             base.Update(elapsedTime);
         }
 
@@ -457,6 +615,11 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            // bench 347 (Lek): clear the hover FIRST, so any early-return below (the live top bar
+            // especially) can't leave HoveredBuilding stuck on its last value - which kept the
+            // Description tab raised and frozen. Recomputed further down when the cursor is over a row.
+            HoveredBuilding = null;
+
             if (input.OpenScreenSaveMenu && SaveBlueprints.Enabled)
             {
                 OnSaveBlueprintsClick();
@@ -500,6 +663,10 @@ namespace Ship_Game
                         {
                             GameAudio.NegativeClick();
                         }
+                        // bench 347: CONSUME the click - since the screen became a popup, an
+                        // unconsumed right-click falls through to base.HandleInput's generic
+                        // popup-close and shut the screen instead of just removing the building.
+                        return true;
                     }
                 }
                 else
@@ -524,7 +691,7 @@ namespace Ship_Game
         BlueprintsTemplate CreateBlueprintsTemplate()
         {
             HashSet<string> plannedBuildings = TilesList.FilterSelect(t => t.HasBuilding && !t.Building.IsOutpost, t => t.Building.Name).ToHashSet();
-            return new BlueprintsTemplate(BlueprintsName.Text.Text, Exclusive, LinkBlueprintsName.Text.Text, plannedBuildings, SwitchColonyType.ActiveValue);
+            return new BlueprintsTemplate(BlueprintsName.Text.Text, Exclusive, LinkedTo, plannedBuildings, SwitchColonyType.ActiveValue);
         }
 
         void OnSaveBlueprintsClick()
@@ -544,7 +711,7 @@ namespace Ship_Game
 
         void OnUnlinkBlueprintsClick()
         {
-            LinkBlueprintsName.Text = "";
+            SetLinkedTo("");
             RefreshChainList();
         }
 
@@ -567,26 +734,26 @@ namespace Ship_Game
         public void RemoveAllBlueprintsLinkTo(BlueprintsTemplate template)
         {
             Player.Universe.RefreshEmpiresPlanetsBlueprints(template, delete: false);
-            if (LinkBlueprintsName.Text.Text == template.Name)
-                    LinkBlueprintsName.Text = "";
+            if (LinkedTo == template.Name)
+                    SetLinkedTo("");
         }
 
         public void OnBlueprintsLinked(BlueprintsTemplate linkedBlueprints)
         {
-            LinkBlueprintsName.Text = linkedBlueprints.Name;
+            SetLinkedTo(linkedBlueprints.Name);
             RefreshChainList();
         }
 
         public void LoadBlueprintsTemplate(BlueprintsTemplate template)
         {
             ClearPlannedBuildings();
-            LinkBlueprintsName.Text = "";
+            SetLinkedTo("");
             LinkBlueprints.Enabled = true;
             BlueprintsName.Text = template.Name;
             Exclusive = template.Exclusive;
             SwitchColonyType.ActiveValue = template.ColonyType;
             if (template.LinkTo!= null && ResourceManager.TryGetBlueprints(template.LinkTo, out _)) 
-                LinkBlueprintsName.Text = template.LinkTo;
+                SetLinkedTo(template.LinkTo);
 
             AddOutpost();
             foreach (string name in template.PlannedBuildings) 

@@ -71,11 +71,19 @@ namespace Ship_Game
         public bool snappingToShip;
         public bool returnToShip;
         // Ludoal fork (bench 191): when a colony was opened from a LIST screen (Economy,
-        // Empire, Troops), closing it goes back to that list rather than to the map (Ludo).
+        // Empire, Troops), closing it goes back to that list rather than to the map (maintainer feedback).
         // What is remembered is how to REOPEN it, not which one it was: the three screens have
         // three different constructors, and an enum here would be one more thing to keep in
         // step with them. Cleared as soon as it is used, and by any colony opened from the map.
         public Action ReturnToListScreen;
+        // the exited list screen's group frame + tab row, drawn as a dimmed silhouette
+        // under a list-opened colony - origin tab still selected. Written at every
+        // arming site; only read while ReturnToListScreen is non-null.
+        public Submenu ReturnToListTabs;
+        // Ludoal fork (maintainer feedback): the group the exited list screen belonged to, so the
+        // top bar keeps that group's button lit while a list-opened colony is up (the list screen
+        // itself has left the stack). Armed alongside ReturnToListScreen; None when it clears.
+        public GameScreens.ScreenGroups.Group ReturnToListGroup = GameScreens.ScreenGroups.Group.None;
         public EmpireUIOverlay EmpireUI;
         public BloomComponent bloomComponent;
         public DistortionComponent distortionComponent;
@@ -144,7 +152,6 @@ namespace Ship_Game
         float MusicCheckTimer;
         public Ship ShipToView;
         public float AdjustCamTimer;
-        public AutomationWindow aw;
         public ExoticBonusesWindow ExoticBonusesWindow;
         public FreighterUtilizationWindow FreighterUtilizationWindow;
         public bool DefiningAO; // are we defining a new AO?
@@ -354,7 +361,6 @@ namespace Ship_Game
             UState.ResearchRootUIDToDisplay = GlobalStats.Defaults.ResearchRootUIDToDisplay;
 
             NotificationManager = new(ScreenManager, this);
-            aw = Add(new AutomationWindow(this));
 
             Shields = new(this);
 
@@ -532,15 +538,26 @@ namespace Ship_Game
             }
 
             Frustum = new BoundingFrustum(ViewProjection);
-            mmHousing = new Rectangle(width - (276 + minimapOffSet), height - 256, 276 + minimapOffSet, 256);
+            // Ludoal fork: 10px off both edges, the margin the overlay tabs and every reworked
+            // frame keep - the housing used to sit flush in the corner (maintainer).
+            const int mmMargin = 10;
+            mmHousing = new Rectangle(width - (276 + minimapOffSet) - mmMargin, height - 256 - mmMargin,
+                                      276 + minimapOffSet, 256);
             Minimap = Add(new MiniMap(this, mmHousing));
             ExoticBonusesWindow = Add(new ExoticBonusesWindow(this));
             FreighterUtilizationWindow = Add(new FreighterUtilizationWindow(this));
 
-            MinimapDisplayRect = new Rectangle(mmHousing.X + 61 + minimapOffSet, mmHousing.Y + 43, 200, 200);
+            // ⚠ the CLICK target is the map's own rect, asked of the MiniMap - it was a separate
+            // 200x200 at hand-measured offsets, built for the old brass housing. The moment the
+            // frame was reworked the two drifted, so clicking the minimap moved the camera to
+            // somewhere other than where you clicked.
+            MinimapDisplayRect = Minimap.MapRect;
             mmShowBorders = new Rectangle(MinimapDisplayRect.X, MinimapDisplayRect.Y - 25, 32, 32);
 
-            SelectedStuffRect = new Rectangle(0, height - 247, 407, 242);
+            // Ludoal fork: 10px off the left and bottom edges, the margin the whole reworked
+            // interface keeps - every info cartouche (ship, system, planet, star, fleet list)
+            // derives from this one rect, so they all move together.
+            SelectedStuffRect = new Rectangle(10, height - 257, 407, 247); // visible frame = 247-26 shave = 221, the minimap frame's height
             DsbCancelRect = new Rectangle(SelectedStuffRect.X + 25, SelectedStuffRect.Y + 150, 182, 25); // Ludoal fork
             ShipInfoUIElement = new ShipInfoUIElement(SelectedStuffRect, ScreenManager, this);
             SystemInfoOverlay = new SolarsystemOverlay(SelectedStuffRect, ScreenManager, this);
@@ -600,7 +617,15 @@ namespace Ship_Game
 
             FTLManager.LoadContent(this);
 
-            ShipsInCombat = ButtonMediumMenu(width - 275, height - 280, "Ships: 0");
+            // ⚠ derived from the minimap FRAME (asked of the MiniMap), not from screen-foot
+            // constants: the two counters span the frame's width, half each (maintainer), and
+            // sit just above the widget, clear of its icon bands.
+            Rectangle mmap = Minimap.MapRect;
+            int mmFrameL = mmap.X - 6, mmFrameR = mmap.Right + 6;   // the painted rule's edges
+            int counterW = (mmFrameR - mmFrameL - 6) / 2;
+            int counterY = mmHousing.Y - 30;
+            ShipsInCombat = ButtonMediumMenu(mmFrameL, counterY, "Ships: 0");
+            ShipsInCombat.Size = new Vector2(counterW, 24);
             ShipsInCombat.DynamicText = () =>
             {
                 ShipsInCombat.Style = Player.EmpireShipCombat > 0 ? ButtonStyle.Medium : ButtonStyle.MediumMenu;
@@ -610,7 +635,8 @@ namespace Ship_Game
             ShipsInCombat.OnClick = ShipsInCombatClick;
             Add(ShipsInCombat);
 
-            PlanetsInCombat = ButtonMediumMenu(width - 135, height - 280, "Planets: 0");
+            PlanetsInCombat = ButtonMediumMenu(mmFrameR - counterW, counterY, "Planets: 0");
+            PlanetsInCombat.Size = new Vector2(counterW, 24);
             PlanetsInCombat.DynamicText = () =>
             {
                 PlanetsInCombat.Style = Player.EmpirePlanetCombat > 0 ? ButtonStyle.Medium : ButtonStyle.MediumMenu;
@@ -619,7 +645,7 @@ namespace Ship_Game
             PlanetsInCombat.OnClick = CyclePlanetsInCombat;
             PlanetsInCombat.Tooltip = "Cycle through planets that are in combat";
 
-            RectF leftRect = new(20, 60, 200, 500);
+            RectF leftRect = new(25, 60, 200, 500); // 5 right (bench 307): the Patrol badge kissed the edge
             Add(new FleetButtonsList(leftRect, this, this,
                 onClick: OnFleetButtonClicked,
                 onHotKey: OnFleetHotKeyPressed,
@@ -803,7 +829,6 @@ namespace Ship_Game
             Mem.Dispose(ref PostDistortTarget);
             Mem.Dispose(ref Particles);
             Mem.Dispose(ref Shields);
-            Mem.Dispose(ref aw);
             Mem.Dispose(ref ExoticBonusesWindow);
             Mem.Dispose(ref FreighterUtilizationWindow);
             Mem.Dispose(ref DebugWin);

@@ -152,7 +152,7 @@ namespace Ship_Game
                 float y = (RelPos.Y >= 0 ? Parent.Y : Parent.Bottom) + RelPos.Y;
                 // Ludoal fork: optional size override, for an icon whose texture does not match
                 // its neighbours - x_red ships at 24px where the others are 17, so a row mixing
-                // them looked lopsided (Ludo). Zero keeps the texture's own size.
+                // them looked lopsided (maintainer feedback). Zero keeps the texture's own size.
                 int w = IconSize > 0 ? IconSize : icon.Width;
                 int h = IconSize > 0 ? IconSize : icon.Height;
                 AbsRect = new Rectangle((int)x, (int)(y + 15f - h / 2f), w, h);
@@ -246,9 +246,23 @@ namespace Ship_Game
 
                 if (SubEntries != null && SubEntries.NotEmpty)
                 {
-                    string open = Expanded ? "-" : "+";
-                    var textPos = new Vector2(r.Right - 26, r.CenterY() - Fonts.Arial20Bold.LineSpacing / 2 - 2);
-                    batch.DrawString(Fonts.Arial20Bold, open, textPos, Color.White);
+                    // an arrow, not a +/- glyph (maintainer bench 305): RIGHT while folded,
+                    // DOWN once unfolded - the tree convention. One asset, the queue's own
+                    // down arrow, rotated -90 for the folded state so the style cannot drift.
+                    SubTexture arrow = ResourceManager.Texture("NewUI/icon_queue_arrow_down");
+                    // dark on a hovered header (maintainer bench 307): the gold arrow matched
+                    // the hover fill and vanished into it
+                    Color arrowTint = Hovered ? new Color(20, 18, 10) : Color.White;
+                    float cx = r.Right - 26 + arrow.Width / 2f;
+                    float cy = r.CenterY();
+                    if (Expanded)
+                        batch.Draw(arrow, new Rectangle((int)(cx - arrow.Width / 2f),
+                                                        (int)(cy - arrow.Height / 2f),
+                                                        arrow.Width, arrow.Height), arrowTint);
+                    else
+                        batch.Draw(arrow, new RectF(cx, cy, arrow.Width, arrow.Height), arrowTint,
+                                   -1.5707963f, new Vector2(arrow.Width / 2f, arrow.Height / 2f),
+                                   SpriteEffects.None, 1f);
                 }
             }
 

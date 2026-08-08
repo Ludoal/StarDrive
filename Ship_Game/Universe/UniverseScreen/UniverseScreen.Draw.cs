@@ -342,7 +342,7 @@ namespace Ship_Game
                 // a lighter veil there (150 = ~41% visibility, tuned on the bench;
                 // 130 was a touch bright), keep 170 when painting.
                 // Ludoal fork (bench 190): the veil is the VISION OVERLAY's statement, so at
-                // rest it only hints. Cutting it out entirely was too bright (Ludo) and lost
+                // rest it only hints. Cutting it out entirely was too bright (maintainer feedback) and lost
                 // the explored/unexplored distinction with it, so F3 off keeps a light veil
                 // rather than none. Bench numbers, meant to be moved.
                 int fogAlpha = GlobalStats.FogOfWarMemory ? 170 : 150;
@@ -517,6 +517,31 @@ namespace Ship_Game
                 EmpireUI.Draw(batch);
                 if (LookingAtPlanet)
                 {
+                    // Ludoal fork (benches 314-319): opened FROM a list tab, the group's tab
+                    // row stays behind the colony as a dimmed silhouette, origin tab still
+                    // selected - the group page was the thing that vanished, not the
+                    // EmpireUI bar. Bench 366: the whole pass clips to the tab band. The
+                    // list frame behind is CONTENT-sized (and Colonies runs full height
+                    // since bench 362), so its edges overhung the opaque colony panel below
+                    // and on both sides - and under the panel nothing of it can show
+                    // anyway. The only part with a job is the tab row above the panel's top
+                    // edge; the veil estompes it. (Ground fill dropped: it starts below the
+                    // tab strip, entirely under the panel.)
+                    if (ReturnToListScreen != null && ReturnToListTabs != null)
+                    {
+                        Rectangle tabsR = ReturnToListTabs.Rect;
+                        var band = new Rectangle(tabsR.X, GameScreens.ScreenGroups.TabRowY, tabsR.Width,
+                                                 GameScreens.ScreenGroups.GroupFrameTop
+                                                 - GameScreens.ScreenGroups.TabRowY + 2);
+                        batch.SafeEnd();
+                        RenderStates.EnableScissorTest(batch.GraphicsDevice, band);
+                        batch.SafeBegin(SpriteBlendMode.AlphaBlend, RenderStates.ScissorEnabled);
+                        ReturnToListTabs.Draw(batch, elapsed);
+                        batch.FillRectangle(band, new Color(6, 8, 12).Alpha(0.45f));
+                        batch.SafeEnd();
+                        RenderStates.DisableScissorTest(batch.GraphicsDevice);
+                        batch.SafeBegin();
+                    }
                     workersPanel?.Draw(batch, elapsed);
                 }
                 else
@@ -532,11 +557,15 @@ namespace Ship_Game
             // This uses the new UIElementV2 system to automatically toggle visibility of items
             // In general, a much saner way than the old cluster-f*ck of IF statements :)
             PlanetsInCombat.Visible = ShipsInCombat.Visible = showGeneralUI && !LookingAtPlanet;
-            aw.Visible = showGeneralUI && aw.IsOpen && !LookingAtPlanet;
             ExoticBonusesWindow.Visible = showGeneralUI && ExoticBonusesWindow.IsOpen && !LookingAtPlanet;
             FreighterUtilizationWindow.Visible = showGeneralUI && FreighterUtilizationWindow.IsOpen && !LookingAtPlanet;
 
-            Minimap.Visible = showGeneralUI && !LookingAtPlanet; // Ludoal fork: Planet View removed
+            // Ludoal fork (bench 347): the minimap no longer hides on LookingAtPlanet. That flag's
+            // one full-screen case (Planet View) is gone, and its remaining setters (Colony popup,
+            // the Budget table) now keep the universe drawn behind them - so the minimap should stay
+            // visible with them. The flag still gates the cartouches/overlays; only the minimap's own
+            // condition is freed here (Lek's diagnostic, bench 347). Full flag audit is post-47-b.
+            Minimap.Visible = showGeneralUI;
 
             DrawSelectedItems(batch, elapsed);
             DrawSystemAndPlanetBrackets(batch);
@@ -641,14 +670,8 @@ namespace Ship_Game
                 DrawTopCenterStatusText(batch, "Debug", Color.GreenYellow, 2);
             }
 
-            if (IsActive && UState.GameSpeed.NotEqual(1)) //don't show "1.0x"
-            {
-                string speed = UState.GameSpeed.ToString("0.0##") + "x";
-                Font font = UState.GameSpeed is > 3 or < 0.25f ? Fonts.Pirulen20 : Fonts.Pirulen16;
-                Color color = font == Fonts.Pirulen20 ? Color.Red : Color.LightGreen;
-                var pos = new Vector2(ScreenWidth - font.TextWidth(speed) - 20f, 90f);
-                batch.DrawString(font, speed, pos, color);
-            }
+            // Ludoal fork: the speed factor is read off the top bar now, beside the controls that
+            // change it, rather than floating over the map.
 
             if (IsActive && !IsCinematicModeEnabled && (Debug || Debugger.IsAttached))
             {
@@ -664,10 +687,8 @@ namespace Ship_Game
                 DrawTopCenterStatusText(batch, "Cinematic Mode - Press F11 to exit", Color.White, 3);
             }
 
-            if (!Player.Research.NoResearchLeft && Player.Research.NoTopic && !Player.AutoResearch && !Debug)
-            {
-                DrawTopCenterStatusText(batch, "No Research!",  ApplyCurrentAlphaToColor(Color.Red), 2);
-            }
+            // the idle-research alarm moved into the top bar's topic slot (maintainer
+            // bench 319) - the mid-map banner retires
         }
 
         void DrawShipRangeOverlay()
@@ -817,7 +838,7 @@ namespace Ship_Game
                     if (goal.Owner == Player)
                     {
                         bool hover = DsbCancelRect.HitTest(Input.CursorPosition);
-                        batch.Draw(ResourceManager.Texture("NewUI/dan_button_blue_clear"), DsbCancelRect, Color.White);
+                        UIButton.DrawPlate(batch, DsbCancelRect, UIButton.PlateActive);
                         batch.DrawString(Fonts.Arial12Bold, "Cancel Construction",
                             new Vector2(DsbCancelRect.X + 13, DsbCancelRect.Y + 13 - Fonts.Arial12Bold.LineSpacing / 2 - 2),
                             hover ? new Color(174, 202, 255) : new Color(88, 108, 146));

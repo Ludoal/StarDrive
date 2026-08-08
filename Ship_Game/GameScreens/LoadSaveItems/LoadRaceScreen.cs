@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Linq;
 using SDUtils;
 using Ship_Game.Audio;
@@ -12,7 +12,7 @@ public sealed class LoadRaceScreen : GenericLoadSaveScreen
     public LoadRaceScreen(RaceDesignScreen screen) : base(screen, SLMode.Load, "", "Load Saved Race", "Saved Races")
     {
         Screen = screen;
-        Path = Dir.StarDriveAppData + "/Saved Races/";
+        Path = Dir.StarDriveUserData + "/Saved Races/";
     }
 
     protected override void Load()

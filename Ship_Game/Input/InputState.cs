@@ -61,6 +61,10 @@ namespace Ship_Game
         public bool MiddleMouseClick   => MouseButtonClicked(MouseCurr.MiddleButton, MousePrev.MiddleButton);
         public bool LeftMouseReleased  => MouseButtonReleased(MouseCurr.LeftButton, MousePrev.LeftButton);
         public bool RightMouseReleased => MouseButtonReleased(MouseCurr.RightButton, MousePrev.RightButton);
+        // Ludoal fork (bench 358): the pan latch must clear on RELEASE, not on !MiddleMouseHeld() -
+        // Held carries a 0.15s threshold, so testing !Held right after the click killed the latch
+        // before it could ever arm (the dead Fleets pan).
+        public bool MiddleMouseReleased => MouseButtonReleased(MouseCurr.MiddleButton, MousePrev.MiddleButton);
         public bool LeftMouseDown      => MouseCurr.LeftButton  == XnaInput.ButtonState.Pressed;
         public bool RightMouseDown     => MouseCurr.RightButton == XnaInput.ButtonState.Pressed;
         public bool LeftMouseUp        => MouseCurr.LeftButton  != XnaInput.ButtonState.Pressed;

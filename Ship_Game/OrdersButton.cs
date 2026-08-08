@@ -46,6 +46,8 @@ namespace Ship_Game
         public void Draw(SpriteBatch batch, Vector2 cursor, Rectangle rect)
         {
             bool hovering = rect.HitTest(cursor);
+            // ⚠ the ship-command strip KEEPS its sculpted chrome (maintainer decision, 3 Aug) -
+            // it is the one button family excluded from the painted-plate conversion
             if (SimpleToggle)
             {
                 batch.Draw(!hovering

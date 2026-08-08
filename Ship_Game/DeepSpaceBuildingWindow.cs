@@ -35,13 +35,16 @@ namespace Ship_Game
 
             const int windowWidth = 320;
             // Ludoal fork (bench): right-anchored on the same edge as the Automation window
-            // (Ludo). It used to sit to its left to avoid overlapping, which cost a screen-edge
+            // (maintainer feedback). It used to sit to its left to avoid overlapping, which cost a screen-edge
             // alignment to solve a problem the exclusion now solves properly: the two windows
             // are mutually exclusive, so they can share the anchor - opening one closes the
             // other, the way the Exotic and Freighter windows already do.
-            RectF = new(Screen.ScreenWidth - 15 - windowWidth, 89, windowWidth, 300);
+            // 10px off the right edge, the margin the minimap and every reworked frame keep; top
+            // aligned with the group FRAMES (maintainer feedback) - one tab strip below the tab
+            // row, so it lines up with the Diplomacy/Economy/etc. window bodies, not their tabs.
+            RectF = new(Screen.ScreenWidth - 10 - windowWidth, GameScreens.ScreenGroups.GroupFrameTop, windowWidth, 300);
 
-            var sl = Add(new SubmenuScrollList<ConstructionListItem>(RectF, "Build Menu"));
+            var sl = Add(new SubmenuScrollList<ConstructionListItem>(RectF, "Deep Space Build"));
             sl.SetBackground(Colors.TransparentBlackFill);
             SL = sl.List;
             SL.OnClick = (item) => { ShipToBuild = item.Template; };

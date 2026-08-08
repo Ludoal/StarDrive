@@ -7,15 +7,15 @@ using Ship_Game.UI;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Universe;
+using Ship_Game.GameScreens; // InfiltrationScreen, sibling tab of this group
 
 namespace Ship_Game.GameScreens.DiplomacyScreen
 {
     public sealed class RelationshipsDiagramScreen : GameScreen
     {
-        private readonly Menu2 Window;
+        private readonly Rectangle Window; // geometry only - the tab frame is the delimiter
         readonly Array<Peer> Peers = new Array<Peer>();
         readonly Vector2 WeightCenter; // Offset from window center for circle of empires
-        UILabel Title;
 
         // Ludoal fork: one filter per treaty type (replaces the old two toggles),
         // ordered War → Peace → Alliance → NA → Open Borders → Trade, all on by default
@@ -38,19 +38,58 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
         Empire Player;
         Empire SelectedEmpire;
 
-        public RelationshipsDiagramScreen(GameScreen screen, UniverseScreen us, Array<EmpireAndIntelLevel> empiresAndIntel)
-            : base(screen, toPause: null)
+        readonly UniverseScreen Universe;
+        Submenu GroupTabs; // Ludoal fork: the Diplomacy group's tab row, this screen being one tab
+
+        // The stock diplomacy screen - kept upstream-identical as a reference - opens this with
+        // itself as parent, so that signature stays valid. Ludoal fork.
+        public RelationshipsDiagramScreen(GameScreen parent, UniverseScreen us,
+                                          Array<EmpireAndIntelLevel> empiresAndIntel)
+            : this(us, empiresAndIntel)
         {
+        }
+
+        public RelationshipsDiagramScreen(UniverseScreen us, Array<EmpireAndIntelLevel> empiresAndIntel)
+            : base(us, toPause: us)
+        {
+            Universe = us;
             Player = us.Player;
             IsPopup           = true;
             TransitionOnTime  = 0.25f;
             TransitionOffTime = 0.25f;
 
-            Rectangle diagramRect = new Rectangle(ScreenWidth / 2 - 500, ScreenHeight / 2 - 384, 1000, 768);
-            Window                = Add(new Menu2(diagramRect));
-            WeightCenter          = new Vector2(Window.X + Window.Width / 2 + 100, Window.Y + Window.Height / 2);
+            // Ludoal fork: the Relationships tab of the Diplomacy group. Same tab row as its
+            // three siblings, but a frame pinned to the 900p footprint whatever the resolution
+            // (maintainer, 4 Aug): the diagram was laid out for it and does not rearrange, so a
+            // bigger screen just leaves space at the frame's right.
+            Rectangle frame = ScreenGroups.GroupFrame900(ScreenWidth, ScreenHeight);
+            GroupTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
+                                        ScreenGroups.GroupTabTitles));
+            GroupTabs.OnTabChange = OnGroupTabChanged;
+            GroupTabs.PerformLayout();
+            GroupTabs.SelectedIndex = (int)MainDiplomacyScreen.Tab.Relationships;
+
+            // geometry only: the tab frame is the delimiter, the diagram lays itself out
+            // against this rect
+            Window                = frame;
+            RectF client          = GroupTabs.ClientArea;
+            WeightCenter          = new Vector2(client.X + client.W / 2 + 100, client.Y + client.H / 2);
             EmpiresAndIntel       = empiresAndIntel;
             AddPeers();
+        }
+
+        // Ludoal fork: the other three tabs live on their own screen, so leaving Relationships
+        // hands over to it. Relationships itself is a no-op: we are already here.
+        void OnGroupTabChanged(int index)
+        {
+            var tab = (MainDiplomacyScreen.Tab)index;
+            if (tab == MainDiplomacyScreen.Tab.Relationships)
+                return;
+            ExitScreen();
+            if (tab == MainDiplomacyScreen.Tab.Espionage)
+                ScreenManager.AddScreen(new InfiltrationScreen(Universe));
+            else
+                ScreenManager.AddScreen(new MainDiplomacyScreen(Universe, tab));
         }
 
         Color RowColor(T t) => t switch
@@ -77,8 +116,10 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
 
         public override void LoadContent()
         {
-            CloseButton(Window.Menu.Right - 40, Window.Menu.Y + 20);
-            Title = Add(new UILabel(GameText.EmpireRelationships, Fonts.Arial20Bold, Color.Wheat));
+            // Ludoal fork: in the frame's own top-right corner. The tab row names the screen now,
+            // so the "Empire Relationships" label that used to head this panel is gone with it.
+            Vector2 closePos = ScreenGroups.GroupClosePos(GroupTabs.ClientArea);
+            CloseButton(closePos.X, closePos.Y);
 
             // one checkbox + legend line per treaty type, in the fixed order.
             // explicit getter/setter so the array element is writable (a lambda
@@ -101,18 +142,13 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             base.LoadContent();
         }
 
-        public override void PerformLayout()
-        {
-            Title.Pos = new Vector2(Window.X + 25, Window.Y + 30);
-        }
-
         void AddPeers()
         {
             int angle = 360 / EmpiresAndIntel.Count;
             int peerAngle = 0;
             foreach (EmpireAndIntelLevel empireAndIntelLevel in EmpiresAndIntel)
             {
-                Peer peer = new Peer(WeightCenter, Window.Rect, peerAngle, empireAndIntelLevel);
+                Peer peer = new Peer(WeightCenter, Window, peerAngle, empireAndIntelLevel);
                 Peers.Add(peer);
                 peerAngle += angle;
             }
@@ -122,14 +158,21 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
+            // Ludoal fork: by hand and first, like its sibling tabs - as a Submenu background it
+            // would be drawn among the children, after everything below.
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(GroupTabs), ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed); // window
             DrawRelations(batch); // links and then portraits
+            ScreenGroups.DrawGroupTabTip(GroupTabs, Input.CursorPosition);
+            Universe.EmpireUI.Draw(batch); // Ludoal fork: live top bar, like its sibling tabs
             batch.SafeEnd();
         }
 
         public override bool HandleInput(InputState input)
         {
             HandleSelectedEmpire(input);
+            if (Universe.EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
+                return true;
             if (input.Escaped || input.RightMouseClick)
             {
                 ExitScreen();

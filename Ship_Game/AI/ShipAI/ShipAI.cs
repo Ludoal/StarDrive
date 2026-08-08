@@ -652,6 +652,12 @@ namespace Ship_Game.AI
             return OrderQueue.Any(g => g.Trade?.Goods == goods);
         }
 
+        // Ludoal fork (maintainer bench 339): a freighter counts once, by its CURRENT phase - it is
+        // IMPORTING while delivering (a drop-off leg queued) and EXPORTING otherwise (picking up or
+        // hauling). So importing + exporting sums to the freighter count, no double-count.
+        public bool IsDeliveringTrade => OrderQueue.Any(g => g?.Plan == Plan.DropOffGoods
+                                                          || g?.Plan == Plan.DropOffGoodsForStation);
+
         public bool WaitForBlockadeRemoval(ShipGoal g, Planet planet, FixedSimTime timeStep)
         {
             if (planet.TradeBlocked && Owner.System != planet.System)

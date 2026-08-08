@@ -29,9 +29,10 @@ namespace Ship_Game
 
         public Action Accepted;
         public Action Cancelled;
+        public Vector2? CenterOn; // Ludoal fork (bench 362): centre on a frame instead of the display
 
         public MessageBoxScreen(GameScreen parent, string message,
-                                MessageBoxButtons buttons = MessageBoxButtons.Default, int width = 270)
+                                MessageBoxButtons buttons = MessageBoxButtons.Default, int width = 320)
             : this(parent, message, Localizer.Token(GameText.Ok), Localizer.Token(GameText.Cancel), buttons, width)
         {
         }
@@ -50,7 +51,7 @@ namespace Ship_Game
         }
 
         public MessageBoxScreen(GameScreen parent, string message, string okText, string cancelText,
-                                MessageBoxButtons buttons = MessageBoxButtons.Default, int width = 270)
+                                MessageBoxButtons buttons = MessageBoxButtons.Default, int width = 320)
             : base(parent, toPause: parent as UniverseScreen /*only pause if message box is shown on top of universe*/)
         {
             Original = message;
@@ -60,9 +61,17 @@ namespace Ship_Game
             TransitionOffTime = 0.25f;
             BoxWidth = width;
 
-            Ok = ButtonSmall(0f, 0f, okText, click: OnOkClicked);
+            // bench 363 (maintainer): the confirm is a neutral Wide, the cancel a red WideHostile -
+            // the same meaning-coloured pair the Shipyard's own rows use. bench 364: at the SMALL
+            // button's size - every style is nine-sliced, so the meaning colour and the compact
+            // format compose freely.
+            Ok = Button(ButtonStyle.Wide, 0f, 0f, okText, click: OnOkClicked);
+            Ok.SetAbsSize(96, 26);
             if (buttons == MessageBoxButtons.Default)
-                Cancel = ButtonSmall(0f, 0f, cancelText, click: OnCancelClicked);
+            {
+                Cancel = Button(ButtonStyle.WideHostile, 0f, 0f, cancelText, click: OnCancelClicked);
+                Cancel.SetAbsSize(96, 26);
+            }
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -71,13 +80,15 @@ namespace Ship_Game
 
             Message = Fonts.Arial12Bold.ParseText(Original + ToAppend, 250f);
             Vector2 msgSize = Fonts.Arial12Bold.MeasureString(Message);
-            var r = new Rectangle(ScreenWidth / 2 - BoxWidth/2, ScreenHeight / 2 - (int)(msgSize.Y + 40f) / 2,
-                                  BoxWidth, (int)(msgSize.Y + 40f) + 15);
+            // Ludoal fork (bench 362): a box summoned by a frame-bound screen centres on that frame
+            Vector2 c = CenterOn ?? new Vector2(ScreenWidth / 2f, ScreenHeight / 2f);
+            var r = new Rectangle((int)c.X - BoxWidth/2, (int)c.Y - (int)(msgSize.Y + 40f) / 2,
+                                  BoxWidth, (int)(msgSize.Y + 40f) + 30); // bench 363: buttons breathe off the edge
 
             var textPosition = new Vector2(r.X + r.Width / 2 - Fonts.Arial12Bold.MeasureString(Message).X / 2f, r.Y + 10);
 
-            Ok.SetAbsPos(     r.X + r.Width / 2 + 5,  r.Y + r.Height - 28);
-            Cancel?.SetAbsPos(r.X + r.Width / 2 - 73, r.Y + r.Height - 28);
+            Ok.SetAbsPos(     r.X + r.Width / 2 + 6,   r.Y + r.Height - 38);
+            Cancel?.SetAbsPos(r.X + r.Width / 2 - 102, r.Y + r.Height - 38);
 
             batch.SafeBegin();
             batch.FillRectangle(r, Color.Black);

@@ -81,8 +81,7 @@ public class EmpireInfoDebug : DebugPage
         Text.String($"Scrap:  {(int)e.TotalMaintenanceInScrap}");
 
         Text.String($"Build Maint/Budget:   {(int)e.TotalBuildingMaintenance}/{(int)e.AI.ColonyBudget}");
-        Text.String($"Spy Count (Budget):   {e.data.AgentList.Count} ({(int)e.AI.SpyBudget})");
-        Text.String("Spy Defenders: "+e.data.AgentList.Count(defenders => defenders.Mission == AgentMission.Defending));
+        Text.String($"Spy Budget:    {(int)e.AI.SpyBudget}");
         Text.String("Planet Count:  "+e.GetPlanets().Count);
         if (e.Research.HasTopic)
         {

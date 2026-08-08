@@ -34,10 +34,14 @@ namespace Ship_Game
                 HandleCameraZoomScrolling(input);
                 if (input.LeftMouseDown)
                 {
-                    Vector2 pos = input.CursorPosition - new Vector2(MinimapDisplayRect.X, MinimapDisplayRect.Y);
-                    float num = MinimapDisplayRect.Width / (UState.Size * 2);
-                    CamDestination.X = -UState.Size + (pos.X / num); //Fixed clicking on the mini-map on location with negative coordinates -Gretman
-                    CamDestination.Y = -UState.Size + (pos.Y / num);
+                    // ⚠ the SAME projection the MiniMap draws with, asked of it: this used to
+                    // divide the rect's width by Size*2 while the map plotted stars at
+                    // shortSide/(Size*2.1) from the map's CENTRE. Two formulas for one mapping,
+                    // so a click landed off target - visibly so once the frame was reworked.
+                    Vector2 c = Minimap.MapCentre;
+                    float scale = Minimap.MapScale;
+                    CamDestination.X = (input.CursorPosition.X - c.X) / scale;
+                    CamDestination.Y = (input.CursorPosition.Y - c.Y) / scale;
                     snappingToShip = false;
                     ViewingShip = false;
                 }
@@ -84,13 +88,10 @@ namespace Ship_Game
             if (input.BlueprintsSceen)            ScreenManager.AddScreen(new BlueprintsScreen(this, Player));
             if (input.EmpirePatrolsScreen)        ScreenManager.AddScreen(new EmpirePatrolsScreen(this, Player));
             if (input.ImportantEventsScreen)      ScreenManager.AddScreen(new ImportantEventsScreen(this)); // Ludoal fork: F7
-            // Ludoal fork (bench): mutually exclusive with the Build Menu — they share the
-            // right screen edge now, so opening one closes the other (Ludo).
+            // Ludoal fork: H opens the Automation tab of the Empire group - the map overlay
+            // it used to toggle is gone (maintainer). The screen closes on H or right-click.
             if (input.AutomationWindow && !Debug)
-            {
-                if (!aw.IsOpen) DeepSpaceBuildWindow.Hide();
-                aw.ToggleVisibility();
-            }
+                ScreenManager.AddScreen(new AutomationScreen(this));
             if (input.ExoticBonusesWindow) ExoticBonusesWindow.ToggleVisibility();
             if (input.FreighterUtilWindow) FreighterUtilizationWindow.ToggleVisibility();
             if (input.PlanetListScreen)  ScreenManager.AddScreen(new PlanetListScreen(this, EmpireUI, "sd_ui_accept_alt3"));
@@ -202,10 +203,11 @@ namespace Ship_Game
             if (dismiss || !workersPanel.IsActive)
             {
                 // Ludoal fork (bench 191): opened from a list screen, closing goes back to that
-                // list (Ludo). Taken before it is called: reopening the screen runs its own
+                // list (maintainer feedback). Taken before it is called: reopening the screen runs its own
                 // setup, and a hook still standing would send the NEXT close there too.
                 Action back = ReturnToListScreen;
                 ReturnToListScreen = null;
+                ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
 
                 AdjustCamTimer = 1f;
                 if (returnToShip)

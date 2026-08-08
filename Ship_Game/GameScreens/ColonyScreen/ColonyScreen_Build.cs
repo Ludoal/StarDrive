@@ -35,9 +35,20 @@ namespace Ship_Game
             int selected = BuildableTabs.SelectedIndex;
 
             BuildableTabs.ClearTabs();
+            // TROOPS before SHIPS (maintainer bench): SHIPS carries the designs toggle at its
+            // right, so it closes the row
             BuildableTabs.AddTab(BuildingsTabText);
-            if (P.HasSpacePort)     BuildableTabs.AddTab(ShipsTabText);
             if (P.CanBuildInfantry) BuildableTabs.AddTab(TroopsTabText);
+            if (P.HasSpacePort)     BuildableTabs.AddTab(ShipsTabText);
+
+            // the designs toggle rides just right of the SHIPS tab, wherever the row ends
+            // (maintainer bench) - tab rects are valid as soon as AddTab returns
+            if (PlayerDesignsToggle != null && BuildableTabs.Tabs.Count > 0)
+            {
+                RectF last = BuildableTabs.Tabs[BuildableTabs.Tabs.Count - 1].Rect;
+                PlayerDesignsToggle.Pos = new Vector2(last.Right + 6, BuildableTabs.Y + 1);
+                PlayerDesignsToggle.PerformLayout(); // its word position derives from Pos
+            }
 
             BuildableTabs.SelectedIndex = selected;
         }
@@ -89,7 +100,7 @@ namespace Ship_Game
                 QueueItem[] queue = P.ConstructionQueueSnapshot;
                 if (!ConstructionQueue.AllEntries.Select(item => item.Item).EqualElements(queue))
                 {
-                    var newItems = queue.Select(qi => new ConstructionQueueScrollListItem(qi, LowRes));
+                    var newItems = queue.Select(qi => new ConstructionQueueScrollListItem(qi));
                     ConstructionQueue.SetItems(newItems);
                 }
             }

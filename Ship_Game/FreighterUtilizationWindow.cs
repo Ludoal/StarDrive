@@ -25,6 +25,28 @@ namespace Ship_Game
         int NumUtilizedFreighters;
         UILabel FreighterConstructingLabel;
         UILabel NumIdleFreightersLabel;
+        // Ludoal fork (maintainer bench 336): a "Total freighters:" row under the goods rows.
+        // The freighters value is the OPERATIONAL count (NumUtilizedFreighters), not a sum of the
+        // per-goods needs; importing/exporting are the planet-slot totals across the goods.
+        UILabel TotalFreightersLabel;
+        UILabel TotalFreightersValue;
+        UILabel TotalImportingValue;
+        UILabel TotalExportingValue;
+
+        // Ludoal fork (maintainer bench 339): the numbers are right-aligned on a 3-digit column
+        // centred under each header. These are the RIGHT edges of those columns (absolute X), the
+        // ONE source both the per-goods rows and the totals row align on, so they cannot disagree.
+        const float NumberColW = 24f; // room for three digits in Arial12Bold
+        float FreightersRightX, ImportingRightX, ExportingRightX;
+
+        // the right edge that centres a NumberColW-wide column under a header at headerX
+        static float ColumnRightUnder(float headerX, GameText header)
+            => headerX + Fonts.Arial12Bold.TextWidth(new LocalizedText(header).Text) * 0.5f + NumberColW * 0.5f;
+
+        // a white number label right-aligned so its right edge lands on rightX
+        static UILabel RightAlignedValue(float rightX, float y)
+            => new(new Vector2(rightX - NumberColW, y), "", Fonts.Arial12Bold, Color.White)
+               { TextAlign = TextAlign.Right, Width = NumberColW };
 
         public FreighterUtilizationWindow(UniverseScreen screen) : base(screen, toPause: null)
         {
@@ -32,7 +54,7 @@ namespace Ship_Game
             const int windowWidth = 650;
             int windowHeight = 4 * (Fonts.Arial12Bold.LineSpacing + 25);
             Rect = new Rectangle((int)Screen.Minimap.X - 5 - windowWidth, (int)Screen.Minimap.Y +
-                (int)Screen.Minimap.Height - windowHeight - 10, windowWidth, windowHeight);
+                (int)Screen.Minimap.Height - windowHeight, windowWidth, windowHeight); // Ludoal fork: foot flush with the minimap frame
             CanEscapeFromScreen = false;
             if (Player.NonCybernetic)
                 GoodsUtilizationMap.Add(Goods.Food, new GoodsUtilization(Goods.Food, this));
@@ -49,7 +71,8 @@ namespace Ship_Game
             RemoveAll();
 
             RectF win = new(Rect);
-            ConstructionSubMenu = new(win, GameText.FreighterUtilization);
+            // Ludoal fork (maintainer feedback): the window title is just "Freighters" now
+            ConstructionSubMenu = new(win, "Freighters");
             float titleOffset = win.Y + 40;
             Add(new UILabel(new Vector2(win.X + 15, titleOffset), GameText.TotalFreighterUtilization, Fonts.Arial12Bold, Color.Gold, GameText.TotalUtilizationTip));
             Add(new UILabel(new Vector2(win.X + 210, titleOffset), GameText.CargoDistribution, Fonts.Arial12Bold, Color.White, GameText.CargoDistributionTip));
@@ -58,6 +81,11 @@ namespace Ship_Game
             // the only headers of this window without a tooltip, and the mixed units confused readers
             Add(new UILabel(new Vector2(win.X + 470, titleOffset), GameText.ImportingPlanets, Fonts.Arial12Bold, Color.White, GameText.ImportingPlanetsTip));
             Add(new UILabel(new Vector2(win.X + 570, titleOffset), GameText.ExportingPlanets, Fonts.Arial12Bold, Color.White, GameText.ExportingPlanetsTip));
+            // the 3-digit number columns, centred under each header - shared by the goods rows and
+            // the totals row (maintainer bench 339)
+            FreightersRightX = ColumnRightUnder(win.X + 370, GameText.Freighters);
+            ImportingRightX  = ColumnRightUnder(win.X + 470, GameText.ImportingPlanets);
+            ExportingRightX  = ColumnRightUnder(win.X + 570, GameText.ExportingPlanets);
             Add(new UILabel(new Vector2(win.X + 15, titleOffset + 50), GameText.IdleFrieghters, Fonts.Arial12Bold, Color.Wheat));
             Add(new UILabel(new Vector2(win.X + 15, titleOffset + 70), GameText.FreightersUnderConstruction, Fonts.Arial12Bold, Color.Wheat));
 
@@ -68,12 +96,24 @@ namespace Ship_Game
             utilizationData.Padding = new(2f, 25f);
             foreach (GoodsUtilization gu in  GoodsUtilizationMap.Values)
                 utilizationData.Add(gu);
+
+            // Ludoal fork (maintainer bench 339): the totals row under the goods rows. The caption
+            // left-aligns on the Cargo Distribution bars (win.X + 210); the values right-align on the
+            // SAME 3-digit columns as the goods rows above (centred under each header).
+            float totalsY = win.Y + Height - 25;
+            TotalFreightersLabel = Add(new UILabel(new Vector2(win.X + 210, totalsY), "Total freighters:", Fonts.Arial12Bold, Color.Wheat));
+            TotalFreightersValue = Add(RightAlignedValue(FreightersRightX, totalsY));
+            TotalImportingValue  = Add(RightAlignedValue(ImportingRightX, totalsY));
+            TotalExportingValue  = Add(RightAlignedValue(ExportingRightX, totalsY));
         }
 
         public override void PerformLayout()
         {
-            UtilizationBar.SetRect(new Rectangle((int)Pos.X + 10, (int)Pos.Y+65, 150, 18));
-            BuildFreighter.Pos = new Vector2(Pos.X + 5, Pos.Y + 135);
+            const int utilColX = 10, utilColW = 150, buildBtnW = 130;
+            UtilizationBar.SetRect(new Rectangle((int)Pos.X + utilColX, (int)Pos.Y+65, utilColW, 18));
+            // Ludoal fork (maintainer feedback): the Build Freighter button centred on the util column
+            BuildFreighter.Pos = new Vector2(Pos.X + utilColX + (utilColW - buildBtnW) / 2, Pos.Y + 135);
+            BuildFreighter.SetAbsSize(buildBtnW, 24);
             base.PerformLayout();
         }
 
@@ -169,6 +209,20 @@ namespace Ship_Game
                 UtilizationBar.Progress = TotalFreighters == 0 ? 0 : (float)NumUtilizedFreighters/TotalFreighters*100;
                 FreighterConstructingLabel.Text = Player.FreightersBeingBuilt.String();
                 NumIdleFreightersLabel.Text = (TotalFreighters - NumUtilizedFreighters).String();
+
+                // the totals row (maintainer bench 339): all OPERATIONAL freighters, split by their
+                // CURRENT phase so importing + exporting == the total. A freighter delivering counts
+                // as importing; picking up or hauling, as exporting. (The per-goods Importing/
+                // Exporting columns count PLANET slots, unrelated to the freighter count.)
+                int importingFreighters = 0, exportingFreighters = 0;
+                foreach (Ship freighter in allUtilizedFreightesr)
+                {
+                    if (freighter.AI.IsDeliveringTrade) importingFreighters++;
+                    else                                exportingFreighters++;
+                }
+                TotalFreightersValue.Text = NumUtilizedFreighters.String();
+                TotalImportingValue.Text  = importingFreighters.String();
+                TotalExportingValue.Text  = exportingFreighters.String();
             }
 
             base.Update(fixedDeltaTime);
@@ -225,13 +279,21 @@ namespace Ship_Game
                 IconPanel.Pos = new Vector2(Pos.X + 175, Pos.Y - 5);
                 IconPanel.PerformLayout();
                 UtilizationBar.SetRect(new Rectangle((int)Pos.X + 200, (int)Pos.Y, 150, 18));
-                NumFreightersLabel.Pos = new Vector2(Pos.X + 390, Pos.Y);
-                NumFreightersLabel.PerformLayout();
-                NumImportingLabel.Pos = new Vector2(Pos.X + 490, Pos.Y);
-                NumImportingLabel.PerformLayout();
-                NumExportingLabel.Pos = new Vector2(Pos.X + 590, Pos.Y);
-                NumExportingLabel.PerformLayout();
+                // maintainer bench 339: numbers RIGHT-aligned on the SAME columns as the totals row
+                // (centred under each header, room for 3 digits). Window owns the right edges, so
+                // the goods rows and the totals cannot disagree.
+                LayoutRightAligned(NumFreightersLabel, Window.FreightersRightX, Pos.Y);
+                LayoutRightAligned(NumImportingLabel,  Window.ImportingRightX, Pos.Y);
+                LayoutRightAligned(NumExportingLabel,  Window.ExportingRightX, Pos.Y);
                 base.PerformLayout();
+            }
+
+            static void LayoutRightAligned(UILabel label, float rightX, float y)
+            {
+                label.TextAlign = TextAlign.Right;
+                label.Pos = new Vector2(rightX - NumberColW, y);
+                label.Width = NumberColW;
+                label.PerformLayout();
             }
 
             public override bool HandleInput(InputState input)

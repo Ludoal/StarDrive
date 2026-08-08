@@ -30,7 +30,7 @@ namespace Ship_Game
         {
             string designPath = fleetUid + ".yaml";
             FileInfo info = ResourceManager.GetModOrVanillaFile(designPath) ??
-                            new FileInfo(Dir.StarDriveAppData + "/Fleet Designs/" + designPath);
+                            new FileInfo(Dir.StarDriveUserData + "/Fleet Designs/" + designPath);
             if (info.Exists)
                 return YamlParser.Deserialize<FleetDesign>(info);
 

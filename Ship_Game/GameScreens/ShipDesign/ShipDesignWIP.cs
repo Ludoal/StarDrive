@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Windows.Forms;
 using SDUtils;
@@ -40,7 +40,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             // Ludoal fork (bench): built from the PREFIX, not from the name as given. Handed a
             // name that already carries a suffix - which is what the caller passes when saving a
             // WIP a second time - appending to it produced "Design_ship3_v1_WIP_v1_WIP", and
-            // every further save stacked another one (Ludo).
+            // every further save stacked another one (maintainer feedback).
             string shipPrefix      = GetWipShipNameAndNum(wipFileName);
             string defaultShipName = $"{shipPrefix}_v1_WIP";
             FileInfo[] wipFiles    = GetWipFiles().Filter(f => f.NameNoExt().StartsWith(shipPrefix));
@@ -81,15 +81,18 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         // Will return ship name and version number
         // Example: "VulcanScout_ship12_v33_WIP" will return "VulcanScout_ship12"
+        // ⚠ A design name need not contain '_' at all - most do not. Indexing [1] blindly threw
+        // on those, and the throw happened BEFORE the confirmation box was raised, so the button
+        // simply did nothing. A name with no underscore is its own prefix.
         public static string GetWipShipNameAndNum(string wipFileName)
         {
             string[] slicedName = wipFileName.Split('_');
-            return $"{slicedName[0]}_{slicedName[1]}";
+            return slicedName.Length >= 2 ? $"{slicedName[0]}_{slicedName[1]}" : wipFileName;
         }
 
         static FileInfo[] GetWipFiles()
         {
-            return Dir.GetFiles(Dir.StarDriveAppData + "/WIP/", "design");
+            return Dir.GetFiles(Dir.StarDriveUserData + "/WIP/", "design");
         }
 
         public static Ships.ShipDesign GetLatestWipToLoad(Empire player)

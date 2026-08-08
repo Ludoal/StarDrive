@@ -76,10 +76,12 @@ namespace Ship_Game
 
         void SetupColonyType()
         {
-            if (OwnerIsPlayer && !Owner.AutoColonize)
-                CType = Owner.AutoCoreGovernor ? ColonyType.Core : ColonyType.Colony;
-            else
-                CType = Owner.AssessColonyNeeds(this);
+            // Ludoal fork: Auto Governor stands on its own - it used to be a hidden side
+            // effect of Autocolonize (maintainer). ON, a new colony gets a governor fit
+            // to its needs; OFF, the player governs by hand. The AI always self-governs.
+            CType = (OwnerIsPlayer && !Owner.AutoCoreGovernor)
+                  ? ColonyType.Colony
+                  : Owner.AssessColonyNeeds(this);
 
             if (OwnerIsPlayer)
                 Universe.Notifications?.AddColonizedNotification(this, Universe.Player);

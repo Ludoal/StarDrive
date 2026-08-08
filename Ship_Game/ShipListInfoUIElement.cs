@@ -16,6 +16,11 @@ namespace Ship_Game
 {
     public sealed class ShipListInfoUIElement : UIElement
     {
+        // Ludoal fork: the fleet cartouche wears the standard frame (maintainer bench 320)
+        // - one plate for every cartouche. The orders strip above docks on the visible
+        // frame top, so it re-seats along with it.
+        const int FrameShave = PlanetInfoUIElement.FrameShave;
+        const int BarsLeft = 45; // the fleet bars' left edge (absolute) - Total Strength shares it
         public readonly UniverseScreen Screen;
         Empire Player => Screen.Player;
 
@@ -33,7 +38,6 @@ namespace Ship_Game
         public Rectangle Shields;
         public ToggleButton GridButton;
         readonly Rectangle Housing;
-        readonly SlidingElement SlidingElement;
         private readonly Rectangle FlagRect;
         readonly Rectangle DefenseRect;
         readonly Rectangle TroopRect;
@@ -53,10 +57,10 @@ namespace Ship_Game
             Selector = new Selector(r, Color.Black);
             TransitionOnTime = TimeSpan.FromSeconds(0.25);
             TransitionOffTime = TimeSpan.FromSeconds(0.25);
-            var sliderRect = new Rectangle(r.X - 100, r.Y + r.Height - 140, 530, 130);
             LeftRect = new Rectangle(r.X, r.Y + 44, 180, r.Height - 44);
-            FlagRect = new Rectangle(r.X + 365, r.Y + 71, 18, 18);
-            SlidingElement = new SlidingElement(sliderRect);
+            // the ship cartouche's seats (bench 320): flag's right edge on the bars' end
+            // (382 = icon column 197 + 20 + 15 + bar 150), stance right-aligned on it
+            FlagRect = new Rectangle(r.X + 382 - 18, r.Y + 71, 18, 18);
             RightRect = new Rectangle(LeftRect.X + LeftRect.Width, LeftRect.Y, 220, LeftRect.Height);
             float spacing = LeftRect.Height - 26 - 96;
             Power = new Rectangle(RightRect.X, LeftRect.Y + 12, 20, 20);
@@ -71,8 +75,8 @@ namespace Ship_Game
             };
             ShipInfoRect = new Rectangle(Housing.X + 60, Housing.Y + 110, 115, 115);
 
-            float ordersStartX = Power.X + 27f;
-            var ordersBarPos = new Vector2(ordersStartX, Screen.Height - 68f);
+            // the stance block takes the ship cartouche's exact seat (bench 320)
+            var ordersBarPos = new Vector2(Housing.X + 382 - StanceButtons.RowWidth, Housing.Y + 184);
 
             OrdersButtons = new ShipStanceButtons(screen, ordersBarPos);
 
@@ -99,21 +103,29 @@ namespace Ship_Game
             if (Screen.SelectedShips == null || SelectedShipsSL.NumEntries == 0)
                 return;  //fbedard
 
-            float transitionOffset = 0f.SmoothStep(1f, TransitionPosition);
-            int columns = Orders.Count / 2 + Orders.Count % 2;
+            // Ludoal fork: the orders ride a visible strip above the cartouche - same call as
+            // the single-ship cartouche, the drawer went with it (maintainer, option B).
             if (AllShipsMine)
             {
-                SlidingElement.Draw(ScreenManager, (int)(columns * 55 * (1f - TransitionPosition)) + (SlidingElement.Open ? 20 - columns : 0));
                 foreach (OrdersButton ob in Orders)
-                {
-                    Rectangle r = ob.ClickRect;
-                    r.X -= (int)(transitionOffset * 300f);
-                    ob.Draw(batch, ScreenManager.input.CursorPosition, r);
-                }
+                    ob.Draw(batch, ScreenManager.input.CursorPosition, ob.ClickRect);
             }
 
-            batch.Draw(ResourceManager.Texture("SelectionBox/unitselmenu_main"), Housing, Color.White);
-            var namePos = new Vector2(Housing.X + 41, Housing.Y + 64);
+            // the minimap's recipe instead of the sculpted unitselmenu texture
+            // ⚠ the frame starts 26 under the housing's top: the sculpted texture spent that
+            // band on antenna machinery, and with it gone the plate framed empty space
+            // (maintainer: "beaucoup de vide au-dessus"). The housing keeps its size - every
+            // inner anchor is an offset from it - only the visible frame shrinks.
+            Rectangle frame = Housing;
+            frame.Y += FrameShave; frame.Height -= FrameShave;
+            frame.Width -= PlanetInfoUIElement.RightTrim;
+            Rectangle plate = frame;
+            plate.Inflate(-2, -2);
+            batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
+            UITheme.DrawPlate(batch, frame, Color.Transparent,
+                              new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
+                              ruleWidthOverride: 3);
+            var namePos = new Vector2(Housing.X + 13, Housing.Y + 71); // the ship cartouche's name seat
             byte alpha  = Screen.CurrentFlashColor.A;
 
             foreach (SelectedShipListItem item in SelectedShipsSL.AllEntries)
@@ -142,7 +154,9 @@ namespace Ship_Game
                     namePos.Y += 3;
                     batch.DrawString(Fonts.Arial14Bold, $" ({ShipList.Count})", namePos, Color.LightBlue);
 
-                    var shipStatus = new Vector2(Selector.Rect.X + Selector.Rect.Width - 168, Housing.Y + 64).ToFloored();
+                    // the order on the name line, at the ship cartouche's bars-start seat
+                    var shipStatus = new Vector2(Housing.X + 232,
+                                                 Housing.Y + 71 + (Fonts.Arial14Bold.LineSpacing - Fonts.TahomaBold9.LineSpacing) / 2).ToFloored();
                     string statusTxt = Fonts.TahomaBold9.ParseText(ShipListScreenItem.GetStatusText(ShipList[0]), 120);
                     batch.DrawString(Fonts.TahomaBold9, statusTxt, shipStatus, tColor);
 
@@ -154,15 +168,14 @@ namespace Ship_Game
                 HoverOff = 0f;
                 HoveredShip.RenderOverlay(batch, ShipInfoRect, ShowModules && HoveredShip.Loyalty.CanBeScannedByPlayer);
                 string text = HoveredShip.VanityName;
-                Vector2 tpos = new Vector2(Housing.X + 30, Housing.Y + 63);
+                Vector2 tpos = new Vector2(Housing.X + 13, Housing.Y + 71); // the ship cartouche's name seat
                 string name = (!string.IsNullOrEmpty(HoveredShip.VanityName) ? HoveredShip.VanityName : HoveredShip.Name);
                 Graphics.Font TitleFont = Fonts.Arial14Bold;
-                Vector2 ShipSuperName = new Vector2(Housing.X + 30, Housing.Y + 79);
+                Vector2 ShipSuperName = new Vector2(Housing.X + 13, Housing.Y + 87);
                 if (Fonts.Arial14Bold.MeasureString(name).X > 180f)
                 {
                     TitleFont = Fonts.Arial12Bold;
                     tpos.Y = tpos.Y + 1;
-                    tpos.X = tpos.X - 8;
                 }
                 batch.DrawString(TitleFont, (!string.IsNullOrEmpty(HoveredShip.VanityName) ? HoveredShip.VanityName : HoveredShip.Name), tpos, tColor);
                 //Added by Doctor, adds McShooterz' class/hull data to the rollover in the list too:
@@ -177,8 +190,8 @@ namespace Ship_Game
                 Graphics.Font arial12Bold = Fonts.Arial12Bold;
                 float totalBoardingDefense = HoveredShip.CurrentMechanicalBoardingDefense + HoveredShip.TroopBoardingDefense;
                 spriteBatch.DrawString(arial12Bold, totalBoardingDefense.String(), defPos, Color.White);
-                text = Fonts.Arial10.ParseText(ShipListScreenItem.GetStatusText(HoveredShip), 155f);
-                Vector2 shipStatus = new Vector2(Selector.Rect.X + Selector.Rect.Width - 168, Housing.Y + 64);
+                Vector2 shipStatus = new Vector2(Housing.X + 232,
+                                                 Housing.Y + 71 + (Fonts.Arial14Bold.LineSpacing - Fonts.TahomaBold9.LineSpacing) / 2);
                 text = Fonts.TahomaBold9.ParseText(ShipListScreenItem.GetStatusText(HoveredShip), 120f);
                 shipStatus = shipStatus.ToFloored();
                 batch.DrawString(Fonts.TahomaBold9, text, shipStatus, tColor);
@@ -230,7 +243,9 @@ namespace Ship_Game
             DrawProgressBar(batch, fleetHealthPercent, 100, "green", "StatusIcons/icon_structure", ref barYPos, true);
             DrawProgressBar(batch, fleetOrdnance, fleetOrdnanceMax, "brown", "Modules/Ordnance", ref barYPos);
             DrawProgressBar(batch, fleetShields, fleetShieldsMax, "blue", "Modules/Shield_1KW", ref barYPos);
-            batch.DrawString(Fonts.Arial12, $"Total Strength: {fleetStr.GetNumberString()}", Housing.X + 45, barYPos, Color.White);
+            // left-aligned on the bars above - ONE seat for both (they sit at absolute
+            // BarsLeft, not off the housing; the old Housing.X + 45 was 10px adrift)
+            batch.DrawString(Fonts.Arial12, $"Total Strength: {fleetStr.GetNumberString()}", BarsLeft, barYPos, Color.White);
         }
 
         public void DrawProgressBar(SpriteBatch batch, float value, float maxValue, string color, string texture, ref int yPos, bool percentage = false)
@@ -238,7 +253,7 @@ namespace Ship_Game
             if (maxValue.LessOrEqual(0))
                 return;
 
-            var barRect = new Rectangle(45, yPos, 130, 18);
+            var barRect = new Rectangle(BarsLeft, yPos, 130, 18);
             var bar = new ProgressBar(barRect)
             {
                 Max            = maxValue,
@@ -282,13 +297,7 @@ namespace Ship_Game
             {
                 if (OrdersButtons.HandleInput(input)) return true;
 
-                if (SlidingElement.HandleInput(input))
-                {
-                    State = !SlidingElement.Open ? ElementState.TransitionOff : ElementState.TransitionOn;
-                    return true;
-                }
-                
-                if (State == ElementState.Open)
+                // the strip is always live - no drawer to open first
                 {
                     bool orderHover = false;
                     foreach (OrdersButton ob in Orders)
@@ -332,8 +341,6 @@ namespace Ship_Game
             }
 
             if (ElementRect.HitTest(input.CursorPosition))
-                return true;
-            if (SlidingElement.ButtonHousing.HitTest(input.CursorPosition))
                 return true;
             return false;
         }
@@ -518,19 +525,14 @@ namespace Ship_Game
             };
             Orders.Add(scrap);
 
-            int ex = 0;
-            int y = 0;
+            // one row docked above the cartouche, wrapping past seven - the same strip the
+            // single-ship cartouche wears
             for (int i = 0; i < Orders.Count; i++)
             {
                 OrdersButton ob = Orders[i];
-                if (i % 2 == 0 && i > 0)
-                {
-                    ex++;
-                    y = 0;
-                }
-                ob.ClickRect.X = ElementRect.X + ElementRect.Width + 2 + 52 * ex;
-                ob.ClickRect.Y = SlidingElement.Housing.Y + 15 + y * 52;
-                y++;
+                int col = i % 7, row = i / 7;
+                ob.ClickRect.X = ElementRect.X + col * 52;
+                ob.ClickRect.Y = ElementRect.Y + FrameShave - 52 - 4 - row * 52; // docked on the VISIBLE frame top
             }
         }
     }

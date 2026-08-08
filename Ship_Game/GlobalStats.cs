@@ -171,23 +171,50 @@ public static class GlobalStats
     // (the classic pre-46-a look). Default off = the map stays dark, live sensors only.
     public static bool FogOfWarMemory;
 
-    // Ludoal fork: the screens this fork has rebuilt, opt-in from Options -> Rework Options.
-    //
-    // OFF by default, deliberately: these are BETA. They have not all been through enough
-    // bench time to be imposed on someone loading a save, and an experienced player should
-    // meet the door they already know unless they choose otherwise. They flip to on by
-    // default once they are considered solid.
-    //
-    // Applied when the screen opens, not live: two complete layouts never coexist on screen.
-    // A player preference rather than a game setting — it holds across every save.
-    public static bool ReworkEconomy;
-    public static bool ReworkDiplomacy;
-    public static bool ReworkEspionage;
-
     // Ludoal fork: symmetric ship design is a PLAYER preference, not a save property —
     // it used to live on the Empire ([StarData]) so every existing save re-imposed ON.
     // Default off.
     public static bool SymmetricDesign;
+
+    // Ludoal fork: the Rule Options a player last set up become the defaults of the NEXT new
+    // game, so a house ruleset does not have to be re-entered through that panel at every
+    // start. They are seeded into UniverseParams when the setup screen builds a fresh one;
+    // loading a save is untouched, since a save carries its own rules.
+    // Sentinel -1 (or 0 for the multiplier) means "never customised" and leaves the game's
+    // own default alone — without it, a first run would write zeroes over everything.
+    public static float RuleFTLModifier = -1f;
+    public static float RuleEnemyFTLModifier = -1f;
+    public static float RuleGravityWellRange = -1f;
+    public static int RuleExtraPlanets = -1;
+    public static float RuleShipMaintenanceMultiplier = -1f;
+    public static float RuleStartingPlanetRichnessBonus = -1f;
+    public static int RuleTurnTimer = -1;
+    public static float RuleCustomMineralDecay = -1f;
+    public static float RuleVolcanicActivity = -1f;
+
+    // The panel's checkboxes, same deal. A bool has no free sentinel value, so one flag says
+    // whether the set was ever saved; until it is, every box keeps the game's own default.
+    public static bool RulesCustomised;
+    public static bool RulePreventFederations;
+    public static bool RuleFixedPlayerCreditCharge;
+    public static bool RuleAIUsesPlayerDesigns;
+    public static bool RuleDisablePirates;
+    public static bool RuleDisableRemnantStory;
+    public static bool RuleDisableAlternateAITraits;
+    public static bool RuleDisableResearchStations;
+    public static bool RuleDisableMiningOps;
+    public static bool RuleUseUpkeepByHullSize;
+
+    // Ludoal fork: forget the saved ruleset, so new games fall back to the stock defaults.
+    public static void ClearSavedRuleOptions()
+    {
+        RuleFTLModifier = RuleEnemyFTLModifier = RuleGravityWellRange = -1f;
+        RuleShipMaintenanceMultiplier = RuleStartingPlanetRichnessBonus = -1f;
+        RuleCustomMineralDecay = RuleVolcanicActivity = -1f;
+        RuleExtraPlanets = RuleTurnTimer = -1;
+        RulesCustomised = false;
+        SaveSettings();
+    }
 
     // USER_EXPERIENCE
     // this is a global user setting, changed in game settings screen
@@ -384,10 +411,26 @@ public static class GlobalStats
         GetSetting(config, "AutoSaveFreq", ref AutoSaveFreq);
         GetSetting(config, "AutoSaveYears", ref AutoSaveYears);
         GetSetting(config, "FogOfWarMemory", ref FogOfWarMemory);
-        GetSetting(config, "ReworkEconomy", ref ReworkEconomy);
-        GetSetting(config, "ReworkDiplomacy", ref ReworkDiplomacy);
-        GetSetting(config, "ReworkEspionage", ref ReworkEspionage);
         GetSetting(config, "SymmetricDesign", ref SymmetricDesign);
+        GetSetting(config, "RuleFTLModifier", ref RuleFTLModifier);
+        GetSetting(config, "RuleEnemyFTLModifier", ref RuleEnemyFTLModifier);
+        GetSetting(config, "RuleGravityWellRange", ref RuleGravityWellRange);
+        GetSetting(config, "RuleExtraPlanets", ref RuleExtraPlanets);
+        GetSetting(config, "RuleShipMaintenanceMultiplier", ref RuleShipMaintenanceMultiplier);
+        GetSetting(config, "RuleStartingPlanetRichnessBonus", ref RuleStartingPlanetRichnessBonus);
+        GetSetting(config, "RuleTurnTimer", ref RuleTurnTimer);
+        GetSetting(config, "RuleCustomMineralDecay", ref RuleCustomMineralDecay);
+        GetSetting(config, "RuleVolcanicActivity", ref RuleVolcanicActivity);
+        GetSetting(config, "RulesCustomised", ref RulesCustomised);
+        GetSetting(config, "RulePreventFederations", ref RulePreventFederations);
+        GetSetting(config, "RuleFixedPlayerCreditCharge", ref RuleFixedPlayerCreditCharge);
+        GetSetting(config, "RuleAIUsesPlayerDesigns", ref RuleAIUsesPlayerDesigns);
+        GetSetting(config, "RuleDisablePirates", ref RuleDisablePirates);
+        GetSetting(config, "RuleDisableRemnantStory", ref RuleDisableRemnantStory);
+        GetSetting(config, "RuleDisableAlternateAITraits", ref RuleDisableAlternateAITraits);
+        GetSetting(config, "RuleDisableResearchStations", ref RuleDisableResearchStations);
+        GetSetting(config, "RuleDisableMiningOps", ref RuleDisableMiningOps);
+        GetSetting(config, "RuleUseUpkeepByHullSize", ref RuleUseUpkeepByHullSize);
         GetSetting(config, "AntiAliasSamples", ref AntiAlias);
         GetSetting(config, "PostProcessBloom", ref RenderBloom);
         GetSetting(config, "PostProcessShieldDistortion", ref RenderShieldDistortion);
@@ -584,10 +627,26 @@ public static class GlobalStats
         WriteSetting(config, "AutoSaveFreq", AutoSaveFreq);
         WriteSetting(config, "AutoSaveYears", AutoSaveYears);
         WriteSetting(config, "FogOfWarMemory", FogOfWarMemory);
-        WriteSetting(config, "ReworkEconomy", ReworkEconomy);
-        WriteSetting(config, "ReworkDiplomacy", ReworkDiplomacy);
-        WriteSetting(config, "ReworkEspionage", ReworkEspionage);
         WriteSetting(config, "SymmetricDesign", SymmetricDesign);
+        WriteSetting(config, "RuleFTLModifier", RuleFTLModifier);
+        WriteSetting(config, "RuleEnemyFTLModifier", RuleEnemyFTLModifier);
+        WriteSetting(config, "RuleGravityWellRange", RuleGravityWellRange);
+        WriteSetting(config, "RuleExtraPlanets", RuleExtraPlanets);
+        WriteSetting(config, "RuleShipMaintenanceMultiplier", RuleShipMaintenanceMultiplier);
+        WriteSetting(config, "RuleStartingPlanetRichnessBonus", RuleStartingPlanetRichnessBonus);
+        WriteSetting(config, "RuleTurnTimer", RuleTurnTimer);
+        WriteSetting(config, "RuleCustomMineralDecay", RuleCustomMineralDecay);
+        WriteSetting(config, "RuleVolcanicActivity", RuleVolcanicActivity);
+        WriteSetting(config, "RulesCustomised", RulesCustomised);
+        WriteSetting(config, "RulePreventFederations", RulePreventFederations);
+        WriteSetting(config, "RuleFixedPlayerCreditCharge", RuleFixedPlayerCreditCharge);
+        WriteSetting(config, "RuleAIUsesPlayerDesigns", RuleAIUsesPlayerDesigns);
+        WriteSetting(config, "RuleDisablePirates", RuleDisablePirates);
+        WriteSetting(config, "RuleDisableRemnantStory", RuleDisableRemnantStory);
+        WriteSetting(config, "RuleDisableAlternateAITraits", RuleDisableAlternateAITraits);
+        WriteSetting(config, "RuleDisableResearchStations", RuleDisableResearchStations);
+        WriteSetting(config, "RuleDisableMiningOps", RuleDisableMiningOps);
+        WriteSetting(config, "RuleUseUpkeepByHullSize", RuleUseUpkeepByHullSize);
         WriteSetting(config, "AntiAliasSamples", AntiAlias);
         WriteSetting(config, "PostProcessBloom", RenderBloom);
         WriteSetting(config, "PostProcessShieldDistortion", RenderShieldDistortion);

@@ -12,6 +12,7 @@ using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Graphics;
 using Ship_Game.Universe.SolarBodies;
 using Ship_Game.Universe;
+using Ship_Game.UI; // UITable: the shared table charte
 using System;
 
 namespace Ship_Game
@@ -20,35 +21,30 @@ namespace Ship_Game
     {
         public readonly Planet Planet;
         public readonly SolarSystem System;
-        public Rectangle SysNameRect;
-        public Rectangle PlanetNameRect;
-        public Rectangle OrdersRect;
-        public Rectangle DistanceRect;
-        public Rectangle ResourceRect;
-        public Rectangle RichnessRect;
-        public Rectangle OwnerRect;
+
+        // the shared table charte (Screen.Table) owns the columns
+        readonly ExoticSystemsListScreen Screen;
+        Rectangle OrdersRect; // the Actions column band of this row, for the deploy widgets
 
         Empire Player => Universe.Player;
         readonly Color Cream = Colors.Cream;
-        readonly Graphics.Font NormalFont = Fonts.Arial20Bold;
+        // a body's NAME reads a step larger than the body text, its class a plain regular
+        // (maintainer, 4 Aug - down from the old Arial20)
+        readonly Graphics.Font NameFont = Fonts.Arial14Bold;
         readonly Graphics.Font SmallFont = Fonts.Arial12Bold;
-        readonly Graphics.Font TinyFont = Fonts.Arial8Bold;
+        readonly Graphics.Font ClassFont = Fonts.Arial12;
         readonly Color TextColor = new Color(255, 239, 208);
 
         Rectangle PlanetIconRect;
         Rectangle ResourceIconRect;
-        readonly UITextEntry PlanetNameEntry = new UITextEntry();
-        readonly UITextEntry ResourceNameEntry = new UITextEntry();
         UIButton DeployButton;
         readonly float Distance;
         bool MarkedForResearch;
-        bool MarkedForMining;
         bool DysonSwarmActiveByPlayer;
         readonly UniverseState Universe;
 
         UILabel DeployTextInfo;
         UILabel MiningDeployedTextInfo;
-        UILabel MiningInProgressTextInfo;
         UILabel Owner;
         bool IsPlanet => Planet != null;
         public bool IsStar => Planet == null;
@@ -57,8 +53,9 @@ namespace Ship_Game
         public bool IsForDysonSwarm => IsStar && System.DysonSwarmType > 0;
         ExplorableGameObject SolarBody;
 
-        public ExoticSystemsListScreenItem(ExplorableGameObject solarBody, float distance)
+        public ExoticSystemsListScreenItem(ExoticSystemsListScreen screen, ExplorableGameObject solarBody, float distance)
         {
+            Screen = screen;
             SolarBody = solarBody;
             if (solarBody is Planet planet) 
             {
@@ -87,9 +84,11 @@ namespace Ship_Game
                     }
                 }
             }
-            else if (Planet?.IsMineable == true && Player.AI.Goals.Any(g => g.IsMiningOpsGoal(Planet) && g.TargetShip == null))
+            else if (Planet?.IsMineable == true)
             {
-                MarkedForMining = true;
+                // a mining row: its deploy/abort state is read live from the goal count in
+                // SetMiningVisibility, so nothing is cached here - the branch keeps mining rows
+                // out of the Dyson case below.
             }
             else if (Player.CanBuildDysonSwarmIn(System))
             {
@@ -99,9 +98,7 @@ namespace Ship_Game
 
         public override void PerformLayout()
         {
-            int x = (int)X;
             int y = (int)Y;
-            int w = (int)Width;
             int h = (int)Height;
             RemoveAll();
 
@@ -115,9 +112,15 @@ namespace Ship_Game
             }
             else if (Planet?.IsMineable == true)
             {
-                ButtonStyle mineableStyle = MarkedForMining ? ButtonStyle.Military : ButtonStyle.Default;
-                LocalizedText miningText = !MarkedForMining ? GameText.DeployMiningStation : GameText.AbortDeployent;
-                DeployButton = Button(mineableStyle, miningText, OnMiningClicked);
+                // Ludoal fork (maintainer feedback): ONE amber button like the Planet Info cartouche -
+                // LEFT-click adds a station, RIGHT-click cancels one deploying (the Send Troops
+                // pattern). One button, two gestures - no rebuild between click and release, which is
+                // what made the two-button version act one click late. Greyed when the field is full.
+                DeployButton = Button(ButtonStyle.Default, GameText.DeployMiningStation, OnMiningClicked);
+                DeployButton.AcceptRightClicks = true;
+                DeployButton.DefaultColor = UIButton.PlateNeutral;   // the Codex amber
+                DeployButton.HoverColor   = UITheme.Hover(UIButton.PlateNeutral);
+                DeployButton.PressColor   = UITheme.Press(UIButton.PlateNeutral);
             }
             else
             {
@@ -126,33 +129,17 @@ namespace Ship_Game
                 DeployButton = Button(dysonStyle, dysonText, OnDysonSwarmClicked);
             }
 
-            DeployButton.Font = Fonts.TahomaBold9;
-            int nextX = x;
-            Rectangle NextRect(float width)
-            {
-                int next = nextX;
-                nextX += (int)width;
-                return new Rectangle(next, y, (int)width, h);
-            }
+            // cells read the shared column geometry
+            UITable.Column[] cols = Screen.Table.Columns;
+            OrdersRect = new Rectangle(cols[6].Rect.X, y, cols[6].Rect.Width, h);
+            PlanetIconRect = new Rectangle(cols[1].Rect.X + UITable.PadX, y + h / 2 - 16, 32, 32);
+            ResourceIconRect = new Rectangle(cols[3].Rect.X + UITable.PadX, y + h / 2 - 10, 20, 20);
 
-            SysNameRect    = NextRect(w * 0.12f);
-            PlanetNameRect = NextRect(w * 0.20f);
-            DistanceRect   = NextRect(150);
-            ResourceRect   = NextRect(150);
-            RichnessRect   = NextRect(100);
-            OwnerRect      = NextRect(100);
-            OrdersRect     = NextRect(100);
-
-            PlanetIconRect = new Rectangle(PlanetNameRect.X + 5, PlanetNameRect.Y + 5, 50, 50);
-            PlanetNameEntry.Text = IsStar ? "" : Planet.Name;
-            PlanetNameEntry.SetPos(PlanetIconRect.Right + 10, y);
-
-            ResourceIconRect = new Rectangle(ResourceRect.X + 5, ResourceRect.Y + 10, 20, 20);
-            ResourceNameEntry.Text = GetResourceLabel();
-            ResourceNameEntry.SetPos(ResourceIconRect.Right + 10, y);
-
+            // Ludoal fork (maintainer feedback): the button keeps the default font (the earlier
+            // narrowing shrank the text); the plate height is the 168px asset's.
             var btn = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px");
-            DeployButton.Rect = new Rectangle(OrdersRect.X + 10, OrdersRect.Y + OrdersRect.Height / 2 - btn.Height / 2, btn.Width, btn.Height);
+            int btnY = OrdersRect.Y + OrdersRect.Height / 2 - btn.Height / 2;
+            DeployButton.Rect = new Rectangle(OrdersRect.X + 10, btnY, 168, btn.Height);
 
             AddSystemName();
             AddHostileWarning();
@@ -187,7 +174,7 @@ namespace Ship_Game
             {
                 DeployButton.Visible = false;
                 DeployTextInfo.Text = Localizer.Token(GameText.ResearchStationDeployed);
-                DeployTextInfo.Color = Player.EmpireColor;
+                DeployTextInfo.Color = Color.LimeGreen; // deployed reads green (maintainer feedback)
             }
             else
             {
@@ -201,49 +188,31 @@ namespace Ship_Game
             if (!IsForMining)
                 return;
 
-            Vector2 miningTextBox = new Vector2(DeployButton.Rect.X, DeployButton.Rect.Y + 4);
-            DeployTextInfo = Add(new UILabel(miningTextBox, GameText.CannotBuildMiningStationTip, SmallFont));
-            DeployTextInfo.Color = Color.Gray;
-            DeployButton.Visible = false;
-            DeployTextInfo.Visible = true;
-
-            
+            // a rig owned by someone else: no controls, no counts
             if (Planet.Mining.Owner != null && Planet.Mining.Owner != Player)
             {
-                DeployTextInfo.Text = "";
+                DeployButton.Visible = false;
                 return;
             }
 
+            // can't build at all: a single greyed hint where the button would be
             if (!Player.CanBuildMiningStations)
             {
-                DeployTextInfo.Text = Localizer.Token(GameText.CannotBuildMiningStationTip2);
+                DeployButton.Visible = false;
+                DeployTextInfo = Add(new UILabel(new Vector2(DeployButton.Rect.X, DeployButton.Rect.Y + 4),
+                                                 Localizer.Token(GameText.CannotBuildMiningStationTip2), SmallFont));
+                DeployTextInfo.Color = Color.Gray;
                 return;
             }
 
-            int numDeployed = Planet.OrbitalStations.Count(s => s.Loyalty.isPlayer && s.IsMiningStation);
-            Vector2 miningDeployed = new Vector2(DeployButton.Rect.X + DeployButton.Rect.Width + 5, DeployButton.Rect.Y + 4);
-            MiningDeployedTextInfo = Add(new UILabel(miningDeployed, $"Deployed: {numDeployed} ", SmallFont));
-            MiningDeployedTextInfo.Color = Player.EmpireColor;
-            MiningDeployedTextInfo.Visible = numDeployed > 0;
-
-            int numInProgress = Player.AI.CountGoals(g => g.IsMiningOpsGoal(Planet) && g.TargetShip == null);
-            Vector2 miningInProgress = new Vector2(MiningDeployedTextInfo.Rect.X + 
-                (MiningDeployedTextInfo.Visible ? MiningDeployedTextInfo.Rect.Width + 10 : 0), DeployButton.Rect.Y + 4);
-            string miningInProgressMsg = $"In Progress: {numInProgress}";
-            MiningInProgressTextInfo = Add(new UILabel(miningInProgress,miningInProgressMsg, SmallFont));
-            MiningInProgressTextInfo.Color = Color.Wheat;
-            MiningInProgressTextInfo.Visible = numInProgress > 0;
-
-            if (numDeployed >= Mineable.MaximumMiningStations)
-            {
-                DeployTextInfo.Visible = false;
-                MiningDeployedTextInfo.SetRelPos(DeployButton.Rect.X, DeployButton.Rect.Y + 4);
-            }
-            else
-            {
-                DeployButton.Visible = true;
-                DeployTextInfo.Visible = false;
-            }
+            // Both labels are created ONCE here (at layout); RefreshMiningState only toggles their
+            // text/visibility afterwards, so a click never rebuilds them. The green "at max" text
+            // sits where the button would be; the "N/M Deployed" just right of the button.
+            DeployTextInfo = Add(new UILabel(new Vector2(DeployButton.Rect.X, DeployButton.Rect.Y + 4), "", SmallFont));
+            Vector2 deployedPos = new Vector2(DeployButton.Rect.Right + 8,
+                                              OrdersRect.Y + OrdersRect.Height / 2 - SmallFont.LineSpacing / 2);
+            MiningDeployedTextInfo = Add(new UILabel(deployedPos, "", SmallFont));
+            RefreshMiningState();
         }
 
         void SetDysonSwarmVisibility()
@@ -261,43 +230,71 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            // Ludoal fork: the mining button's left/right gestures are read here, before base routes
+            // the click to the button's (no-op) OnClick - so both buttons reach HandleMiningClick.
+            if (HandleMiningClick(input))
+                return true;
             return base.HandleInput(input);
         }
 
         void AddSystemName()
         {
-            string systemName = System.Name;
-            Graphics.Font systemFont = NormalFont.MeasureString(systemName).X <= SysNameRect.Width ? NormalFont : SmallFont;
-            var sysNameCursor = new Vector2(SysNameRect.X + SysNameRect.Width / 2 - systemFont.MeasureString(systemName).X / 2f,
-                                        2 + SysNameRect.Y + SysNameRect.Height / 2 - systemFont.LineSpacing / 2);
-
-            Label(sysNameCursor, systemName, systemFont, Cream);
+            UITable.Column c = Screen.Table.Columns[0];
+            Label(UITable.CellPos(SmallFont, c.Rect, Y, Height, System.Name, c.Align), System.Name, SmallFont, Cream);
         }
 
         void AddPlanetName()
         {
+            // two lines: the NAME a step larger (owner-coloured for a claimed body), the
+            // CLASS under it in plain regular, without the richness - it has its own
+            // column now (maintainer, 4 Aug)
+            var namePos = new Vector2(PlanetIconRect.Right + 8, Y + Height / 2 - (NameFont.LineSpacing + ClassFont.LineSpacing + 2) / 2);
             if (IsStar)
+            {
+                Label(namePos, System.Name, NameFont, TextColor);
+                namePos.Y += NameFont.LineSpacing + 2;
+                Label(namePos, StarClassName(System.Sun.Id), ClassFont, Color.Gray);
                 return;
+            }
 
-            var namePos = new Vector2(PlanetNameEntry.X, PlanetNameEntry.Y + 3);
-            Label(namePos, Planet.Name, NormalFont, TextColor);
-            // Now add Richness
-            namePos.Y += NormalFont.LineSpacing;
-            string richness = Planet.LocalizedRichness;
-            Label(namePos, richness, SmallFont, TextColor);
+            Color nameColor = Planet.Mining?.HasOpsOwner == true ? Planet.Mining.Owner.EmpireColor : TextColor;
+            Label(namePos, Planet.Name, NameFont, nameColor);
+            namePos.Y += NameFont.LineSpacing + 2;
+            // class with its richness WORD - the mineable variant appends " (8.2)" and
+            // that number lives in its own column (bench 293)
+            string cls = Planet.LocalizedRichness;
+            int par = cls.IndexOf(" (");
+            if (par >= 0) cls = cls.Substring(0, par);
+            Label(namePos, cls, ClassFont, Color.Gray);
+        }
+
+        // "star_red3" -> "Red", "Blue_giant" -> "Blue Giant": the sun ids ARE the game's star
+        // taxonomy, trailing digits being art variants of the same class
+        static string StarClassName(string sunId)
+        {
+            string s = sunId.TrimEnd('0','1','2','3','4','5','6','7','8','9');
+            if (s.StartsWith("star_"))
+                s = s.Substring(5);
+            string[] words = s.Split('_');
+            for (int i = 0; i < words.Length; i++)
+                if (words[i].Length > 0)
+                    words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1);
+            return string.Join(" ", words);
         }
 
         void AddDistanceStats()
         {
-            var distancePos = new Vector2(DistanceRect.X + 45, DistanceRect.Y + DistanceRect.Height / 2 - SmallFont.LineSpacing / 2);
-            DrawDistance(Distance, distancePos, SmallFont);
+            UITable.Column c = Screen.Table.Columns[2];
+            DistanceDisplay dd = new DistanceDisplay(Distance);
+            if (Distance > 0)
+                Label(UITable.CellPos(SmallFont, c.Rect, Y, Height, dd.Text, c.Align), dd.Text, SmallFont, dd.Color);
         }
 
         void AddResourceName()
         {
             bool researchable = IsForResearch;
             bool mineable = IsForMining;
-            var namePos = new Vector2(ResourceRect.X + 30, ResourceRect.Y + ResourceRect.Height / 2 - SmallFont.LineSpacing / 2);
+            var namePos = new Vector2(ResourceIconRect.Right + 8, Y + Height / 2 - SmallFont.LineSpacing / 2);
             Color labelColor = researchable ? Color.CornflowerBlue
                                             : mineable ? Color.White 
                                                        : Color.Gold; // Dyson Swarm
@@ -323,24 +320,26 @@ namespace Ship_Game
         void AddRichnessStat()
         {
             string richness = IsStar || Planet.IsResearchable ? "" : Planet.Mining.Richness.String(0);
-            var sysNameCursor = new Vector2(RichnessRect.X + 30, RichnessRect.Y + RichnessRect.Height / 2 - SmallFont.LineSpacing / 2);
-
-            Label(sysNameCursor, richness, SmallFont, Cream);
+            UITable.Column c = Screen.Table.Columns[4];
+            Label(UITable.CellPos(SmallFont, c.Rect, Y, Height, richness, c.Align), richness, SmallFont, Cream);
         }
 
         void AddOwner()
         {
-            if (IsForDysonSwarm)
+            // an unclaimed body shows NOTHING (maintainer bench 291: "None" read like a
+            // white-named race)
+            UITable.Column c = Screen.Table.Columns[5];
+            if (IsForDysonSwarm && System.HasDysonSwarm)
             {
-                string owner = System.HasDysonSwarm ? System.DysonSwarm.Owner.data.Traits.Singular : "None";
-                var ownerNameCursor = new Vector2(OwnerRect.X + 25, OwnerRect.Y + OwnerRect.Height / 2 - SmallFont.LineSpacing / 2);
-                Owner = Label(ownerNameCursor, owner, SmallFont, owner == "None" ? Cream : System.DysonSwarm.Owner.EmpireColor);
+                string owner = System.DysonSwarm.Owner.data.Traits.Singular;
+                Owner = Label(UITable.CellPos(SmallFont, c.Rect, Y, Height, owner, c.Align), owner, SmallFont,
+                              System.DysonSwarm.Owner.EmpireColor);
             }
-            else if (Planet?.IsMineable == true)
+            else if (Planet?.IsMineable == true && Planet.Mining.HasOpsOwner)
             {
-                string owner = Planet.Mining.HasOpsOwner ? Planet.Mining.Owner.data.Traits.Singular : "None";
-                var ownerNameCursor = new Vector2(OwnerRect.X + 25, OwnerRect.Y + OwnerRect.Height / 2 - SmallFont.LineSpacing / 2);
-                Owner = Label(ownerNameCursor, owner, SmallFont, owner == "None" ? Cream : Planet.Mining.Owner.EmpireColor);
+                string owner = Planet.Mining.Owner.data.Traits.Singular;
+                Owner = Label(UITable.CellPos(SmallFont, c.Rect, Y, Height, owner, c.Align), owner, SmallFont,
+                              Planet.Mining.Owner.EmpireColor);
             }
         }
 
@@ -348,27 +347,19 @@ namespace Ship_Game
         {
             if (Player.KnownEnemyStrengthIn(System) > 0)
             {
+                Rectangle c0 = Screen.Table.Columns[0].Rect;
                 SubTexture flash = ResourceManager.Texture("Ground_UI/EnemyHere");
-                UIPanel enemyHere = Panel(SysNameRect.X + SysNameRect.Width - 40, SysNameRect.Y + 5, flash);
+                UIPanel enemyHere = Panel(c0.Right - 22, (int)Y + 5, flash);
                 enemyHere.Tooltip = GameText.IndicatesThatHostileForcesWere;
             }
         }
 
         void AddTextureAndStatus()
         {
-            var icon = new Rectangle(PlanetNameRect.X + 5, PlanetNameRect.Y + 5, PlanetNameRect.Height - 10, PlanetNameRect.Height - 10);
-            Add(new UIPanel(icon, ResourceManager.Texture(IsStar ? System.Sun.IconPath : Planet.IconPath))
+            Add(new UIPanel(PlanetIconRect, ResourceManager.Texture(IsStar ? System.Sun.IconPath : Planet.IconPath))
             {
                 Tooltip = GameText.PlanetTypeAndRichnessThe
             });
-
-        }
-
-        void DrawDistance(float distance, Vector2 namePos, Graphics.Font spriteFont)
-        {
-            DistanceDisplay distanceDisplay = new DistanceDisplay(distance);
-            if (distance > 0)
-                Label(namePos, distanceDisplay.Text, spriteFont, distanceDisplay.Color);
         }
 
         void OnResearchClicked(UIButton b)
@@ -398,30 +389,87 @@ namespace Ship_Game
             }
         }
 
-        void OnMiningClicked(UIButton b)
+        // Ludoal fork (maintainer feedback): ONE amber button, left-click adds / right-click removes
+        // (the Send Troops pattern). The click is read in HandleInput below by hit-testing the
+        // button rect - NOT via the button's OnClick, which cannot tell left from right and, being a
+        // rebuilt child, dropped the click. OnClick stays wired but no-op; the rect drives it.
+        void OnMiningClicked(UIButton b) { }
+
+        // ⚠ the mining widgets refresh EVERY FRAME (like the Planet Info cartouche, which recomputes
+        // its state in Draw), NOT only on click. Refreshing at click-time alone showed the previous
+        // state until the NEXT click: AddGoalAndEvaluate takes effect after HandleInput, so the
+        // click-time count was stale by one. Reading it per-frame in Update always shows current.
+        public override void Update(float fixedDeltaTime)
         {
-            if (!MarkedForMining) 
-            { 
-                Player.AI.AddGoalAndEvaluate(new MiningOps(Player, Planet));
-                if (!Planet.Mining.CanAddMiningStationFor(Player))
-                {
-                    DeployButton.Text = GameText.AbortDeployent;
-                    DeployButton.Style = ButtonStyle.Military;
-                    MarkedForMining = true;
-                }
-            }
-            else
+            if (IsForMining)
+                RefreshMiningState();
+            base.Update(fixedDeltaTime);
+        }
+
+        // left = add a station, right = cancel one deploying. Returns true if it consumed the click.
+        bool HandleMiningClick(InputState input)
+        {
+            if (!IsForMining || !DeployButton.Visible || !DeployButton.Rect.HitTest(input.CursorPosition))
+                return false;
+
+            if (input.LeftMouseClick)
             {
-                Player.AI.CancelMiningStation(Planet);
                 if (Planet.Mining.CanAddMiningStationFor(Player))
                 {
-                    DeployButton.Text = GameText.DeployMiningStation;
-                    DeployButton.Style = ButtonStyle.Default;
-                    MarkedForMining = false;
+                    Player.AI.AddGoalAndEvaluate(new MiningOps(Player, Planet));
+                    GameAudio.EchoAffirmative();
                 }
+                else GameAudio.NegativeClick();
+                return true;
+            }
+            if (input.RightMouseClick)
+            {
+                if (Player.AI.CountGoals(g => g.IsMiningOpsGoal(Planet) && g.TargetShip == null) > 0)
+                {
+                    Player.AI.CancelMiningStation(Planet);
+                    GameAudio.EchoAffirmative();
+                }
+                else GameAudio.NegativeClick();
+                return true;
+            }
+            return false;
+        }
+
+        // update the mining widgets on the EXISTING objects - no Add, no RemoveAll, no rebuild
+        void RefreshMiningState()
+        {
+            int numDeployed     = Planet.OrbitalStations.Count(s => s.Loyalty.isPlayer && s.IsMiningStation);
+            int numInProgress   = Player.AI.CountGoals(g => g.IsMiningOpsGoal(Planet) && g.TargetShip == null);
+            bool atMaxDeployed  = numDeployed >= Mineable.MaximumMiningStations;
+            // the game's own rule for "can another one be queued" - counts goals, so it also blocks
+            // when the field is full of IN-PROGRESS stations, not just deployed ones
+            bool canAdd         = Planet.Mining.CanAddMiningStationFor(Player);
+
+            // all stations actually built: button gives way to the green text (like research)
+            if (atMaxDeployed)
+            {
+                DeployButton.Visible = false;
+                if (DeployTextInfo != null)
+                {
+                    DeployTextInfo.Text = $"{numDeployed}/{Mineable.MaximumMiningStations} Mining Stations Deployed";
+                    DeployTextInfo.Color = Color.LimeGreen;
+                    DeployTextInfo.Visible = true;
+                }
+                return;
             }
 
-            SetMiningVisibility();
+            if (DeployTextInfo != null) DeployTextInfo.Visible = false;
+            DeployButton.Visible = true;
+            DeployButton.Enabled = canAdd; // greyed once the field is full (deployed + in progress)
+            DeployButton.Text = numInProgress > 0
+                ? $"{new LocalizedText(GameText.DeployMiningStation).Text} ({numInProgress})"
+                : new LocalizedText(GameText.DeployMiningStation).Text;
+
+            if (MiningDeployedTextInfo != null)
+            {
+                MiningDeployedTextInfo.Text = $"{numDeployed}/{Mineable.MaximumMiningStations} Deployed";
+                MiningDeployedTextInfo.Color = numDeployed > 0 ? Color.Green : Color.Gray;
+            }
         }
 
         void OnDysonSwarmClicked(UIButton b)
@@ -432,8 +480,8 @@ namespace Ship_Game
                 DeployButton.Text = GameText.BuildDysonSwarm;
                 DeployButton.Style = ButtonStyle.Default;
                 DysonSwarmActiveByPlayer = false;
-                Owner.Text = "None";
-                Owner.Color = Cream;
+                if (Owner != null)
+                    Owner.Text = ""; // unclaimed shows nothing
             }
             else
             {
@@ -441,8 +489,15 @@ namespace Ship_Game
                 DeployButton.Text = GameText.KillDysonSwarm;
                 DeployButton.Style = ButtonStyle.Military;
                 DysonSwarmActiveByPlayer = true;
-                Owner.Text = Player.data.Traits.Singular;
-                Owner.Color = Player.EmpireColor;
+                if (Owner != null)
+                {
+                    Owner.Text = Player.data.Traits.Singular;
+                    Owner.Color = Player.EmpireColor;
+                }
+                else
+                {
+                    RequiresLayout = true; // the row had no owner label - rebuild creates it
+                }
             }
         }
     }

@@ -19,8 +19,6 @@ namespace Ship_Game
         [StarData] public float EspionageBudgetMultiplier { get; private set; } = 1; // 1-5
         public const int MaxEspionageDefenseWeight = 50;
 
-        public bool LegacyEspionageEnabled => Universe.P.UseLegacyEspionage;
-        public bool NewEspionageEnabled => !Universe.P.UseLegacyEspionage;
         public float EspionagePointsPerTurn => TotalPopBillion * EspionageBudgetMultiplier;
 
         public void SetCanBeScannedByPlayer(bool value)
@@ -30,7 +28,7 @@ namespace Ship_Game
 
         public void UpdateMoneyLeechedLastTurn()
         {
-            if (LegacyEspionageEnabled || IsFaction || data.IsRebelFaction)
+            if (IsFaction || data.IsRebelFaction)
                 return;
 
             TotalMoneyLeechedLastTurn = 0;
@@ -76,9 +74,6 @@ namespace Ship_Game
 
         public void UpdateEspionage()
         {
-            if (LegacyEspionageEnabled)
-                return;
-
             int totalWeight = CalcTotalEspionageWeight();
             foreach (Empire empire in Universe.ActiveMajorEmpires.Filter(e => e != this))
                 GetEspionage(empire).Update(totalWeight);
@@ -132,13 +127,12 @@ namespace Ship_Game
 
         public int GetNumOfTheirMoles(Empire them)
         {
-            return NewEspionageEnabled ? them.GetEspionage(this).NumPlantedMoles
-                                       : them.data.MoleList.Count(m =>  Universe.GetPlanet(m.PlanetId).Owner == this);
+            return them.GetEspionage(this).NumPlantedMoles;
         }
 
         public float GetEspionageDefenseStrVsPiratesOrRemnants(int factionMaxLevel)
         {
-            return LegacyEspionageEnabled ? GetSpyDefense() : EspionageDefenseRatio * factionMaxLevel;
+            return EspionageDefenseRatio * factionMaxLevel;
         }
 
         public bool IsSafeToActivateOpsOnAllies(Empire ally) => !IsHonorable  && (ally.isPlayer || ally.GetRelations(this).TimesSpiedOnAlly <= 1);
