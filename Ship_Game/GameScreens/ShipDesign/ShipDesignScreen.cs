@@ -54,6 +54,9 @@ namespace Ship_Game
         static string LastDesignThisSession; // Ludoal fork: reopen where we left off, this run only
 
         Vector3 CameraPos = new Vector3(0f, 0f, 1300f);
+        // bench 359: the pan target - HandleCameraMovement writes here, Update glides CameraPos
+        // toward it (the XY twin of DesiredCamHeight), so the pan feels like Fleets' instead of raw
+        Vector2 DesiredCamXY;
         float DesiredCamHeight = 1300f;
         Vector2 StartDragPos;
 
@@ -542,9 +545,6 @@ namespace Ship_Game
             ModuleSelectComponent.SelectedIndex = -1;
             if (zoomToHull)
                 ZoomCameraToEncloseHull();
-            else
-                RefreshZoomBounds(); // bench 355: bounds track the hull size even when we don't re-zoom
-                                     // (Lek: recompute on hull change; ZoomCameraToEncloseHull already does)
 
             // TODO: remove DesignIssues from this page
             InfoPanel.SetActiveDesign(DesignedShip);
@@ -736,6 +736,9 @@ namespace Ship_Game
         public override void Update(float fixedDeltaTime)
         {
             CameraPos.Z = CameraPos.Z.SmoothStep(DesiredCamHeight, 0.2f);
+            // bench 359: XY glides toward the pan target like Z toward the zoom target
+            CameraPos.X = CameraPos.X.SmoothStep(DesiredCamXY.X, 0.2f);
+            CameraPos.Y = CameraPos.Y.SmoothStep(DesiredCamXY.Y, 0.2f);
             ResizeCartouches(fixedDeltaTime);
             UpdateViewMatrix(CameraPos);
 
@@ -874,9 +877,9 @@ namespace Ship_Game
             // the two columns keep their own layout inside it.
             DesignTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.DesignTabTitles, 1,
                                                     OnDesignTabChanged, out Rectangle _, FullScreenDesign);
-            // ⚠ no RefreshZoomBounds here: CreateGUI runs BEFORE the hull restore (the 358 crash -
-            // DesignedShip is still null at this point; the line numbers lied about the order, the
-            // stack trace didn't). ChangeHull right after refreshes the bounds with everything in place.
+            // ⚠ CreateGUI runs BEFORE the hull restore - DesignedShip is still null here (the 358
+            // crash; the line numbers lied about the order, the stack trace didn't). Nothing at this
+            // point may touch the ship.
 
             // The tab frame is the container: every column bound is measured from it, with the
             // same 5px margin on all four sides. ModuleSelection carries the band so the two

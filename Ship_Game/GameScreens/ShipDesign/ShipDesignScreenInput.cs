@@ -312,18 +312,21 @@ namespace Ship_Game
                 float hullH = DesignedShip.Radius * 2;
                 float onScreen = GetHullScreenSize(CameraPos, hullH);
                 float worldPerPixel = onScreen > 0.01f ? hullH / onScreen : 1f;
-                CameraPos.X += -dx * worldPerPixel;
-                CameraPos.Y += -dy * worldPerPixel;
+                // bench 359 (maintainer: pan "toujours direct"): write a TARGET, like Fleets - Update
+                // glides CameraPos toward it with the same SmoothStep the zoom already uses. Stock BB
+                // pans raw too; Fleets is the reference feel.
+                DesiredCamXY.X += -dx * worldPerPixel;
+                DesiredCamXY.Y += -dy * worldPerPixel;
             }
             else
             {
                 float limit = 2000f;
                 float cameraPanSpeed = GlobalStats.CameraPanSpeed * 2;
                 if (input.IsCtrlKeyDown) return;
-                if (input.WASDLeft  && CameraPos.X > -limit) CameraPos.X -= cameraPanSpeed;
-                if (input.WASDRight && CameraPos.X < +limit) CameraPos.X += cameraPanSpeed;
-                if (input.WASDUp   && CameraPos.Y > -limit) CameraPos.Y -= cameraPanSpeed;
-                if (input.WASDDown && CameraPos.Y < +limit) CameraPos.Y += cameraPanSpeed;
+                if (input.WASDLeft  && DesiredCamXY.X > -limit) DesiredCamXY.X -= cameraPanSpeed;
+                if (input.WASDRight && DesiredCamXY.X < +limit) DesiredCamXY.X += cameraPanSpeed;
+                if (input.WASDUp   && DesiredCamXY.Y > -limit) DesiredCamXY.Y -= cameraPanSpeed;
+                if (input.WASDDown && DesiredCamXY.Y < +limit) DesiredCamXY.Y += cameraPanSpeed;
             }
         }
 
@@ -540,9 +543,8 @@ namespace Ship_Game
         {
             if (input.ScrollOut) DesiredCamHeight *= 1.05f;
             if (input.ScrollIn)  DesiredCamHeight *= 0.95f;
-            // bench 355: the closest zoom keeps the hull inside the frame (RefreshZoomBounds), so a big
-            // hull no longer overspills into the dead zone outside DesignTabs.Rect where clicks miss.
-            DesiredCamHeight = DesiredCamHeight.Clamped(MinCamHeight, MaxCamHeight);
+            // bench 359: stock bounds - free zoom, the frame's scissor clips the hull (like Fleets)
+            DesiredCamHeight = DesiredCamHeight.Clamped(1000, 5000);
         }
 
         bool HandleInputUndoRedo(InputState input)
@@ -732,28 +734,10 @@ namespace Ship_Game
             return camHeight;
         }
 
-        // bench 355: the zoom bounds, recomputed at hull change AND ReloadContent (resolution/full
-        // screen move DesignTabs.Rect.H under the clamp - Lek's two triggers). MinCam is the closest
-        // zoom that still keeps the hull inside the frame (0.9 of the frame height, comfortable click
-        // margin on the periphery); MaxCam never drops below the fit, so a monster hull can always be
-        // pulled back far enough to see it whole (min can never exceed max).
-        float MinCamHeight = 1000f;
-        float MaxCamHeight = 5000f;
-
-        void RefreshZoomBounds()
-        {
-            // bench 358 crash: CreateGUI (tabs) runs BEFORE the hull restore in LoadContent, and
-            // ChangeHull can run in odd orders - guard both ends, refresh when both exist.
-            if (DesignTabs == null || DesignedShip == null)
-                return;
-            float frameH = DesignTabs.ClientArea.H * 0.9f;
-            float fit = CamHeightToFitHull(frameH);
-            MinCamHeight = fit;
-            MaxCamHeight = Math.Max(5000f, fit);
-            // pull the current target inside the fresh bounds now, softly (SmoothStep animates it) -
-            // otherwise the first scroll after a bounds change snaps instead of glides
-            DesiredCamHeight = DesiredCamHeight.Clamped(MinCamHeight, MaxCamHeight);
-        }
+        // bench 359 (maintainer): NO dynamic zoom clamp - free zoom like Fleets, the frame's scissor
+        // clips the hull instead. The clamp guarded against dead click-zones on overspilling modules,
+        // but the right-click is resolved at the top of HandleInput now and an off-frame module is
+        // invisible anyway - the clamp only blocked close-ups.
 
         void ZoomCameraToEncloseHull()
         {
@@ -765,17 +749,13 @@ namespace Ship_Game
             CameraPos.Z = (CameraPos.Z * ratio).RoundUpTo(1);
 
             // bench 357 (maintainer: "zoom not smooth"): the entry poses the ship at 0.75 of the FRAME,
-            // not the screen. The old screen-based target (1080px of hull at 1440p) sat PAST the zoom
-            // clamp's wall (0.9 of the frame = ~914px), so the entry was born pinned against the limit
-            // and the first scroll-in hit a dead stop. Framed at 0.75 there is ~20% of zoom-in room
-            // before the clamp. (DesignTabs is null on the very first restore pass - fall back to the
-            // screen; the explicit RefreshZoomBounds after AddGroupTabs re-clamps right after.)
-            RefreshZoomBounds();
+            // not the screen - the ship in its frame with margin, whatever the resolution.
+            // (DesignTabs is null on the very first restore pass - fall back to the screen.)
             float entryTarget = (DesignTabs != null ? DesignTabs.ClientArea.H : ScreenHeight) * 0.75f;
             float camHeight = CamHeightToFitHull(entryTarget);
 
             UpdateViewMatrix(CameraPos);
-            DesiredCamHeight = camHeight.Clamped(MinCamHeight, MaxCamHeight);
+            DesiredCamHeight = camHeight.Clamped(1000, 5000); // bench 359: stock bounds, free zoom
         }
 
         void ReallyExit()

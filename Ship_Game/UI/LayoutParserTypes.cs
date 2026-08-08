@@ -40,6 +40,10 @@ namespace Ship_Game.UI
         [StarData] public Vector2? LocalPos;
         [StarData] public Vector2? RelPos;
         [StarData] public Vector2? RelSize;
+        // Ludoal fork (bench 359): CSS-style cover - size the element to FILL the parent in both
+        // dimensions while preserving the texture's aspect ratio, cropping the overflow. For full
+        // screen art (the menu planet) on displays wider or narrower than the texture's aspect.
+        [StarData] public bool? CoverParent;
 
         /**
          * Sets the auto-layout axis of the UIElement. Default is Align.TopLeft
