@@ -52,6 +52,10 @@ namespace Ship_Game
                 new Hotkey("J", "Fleets"),
                 new Hotkey("F", "Blueprints"),
                 new Hotkey("K", "Ships"),
+                new Hotkey("E", "Espionage"),
+                new Hotkey("I", "Intelligence"),
+                new Hotkey("T", "Economy"),
+                new Hotkey("U", "Colonies"),
                 new Hotkey("L", "Planets"),
                 new Hotkey("C", "Troops"),
                 new Hotkey("P", "Patrols"),
@@ -84,9 +88,10 @@ namespace Ship_Game
             {
                 new Hotkey("Arrows", "Rotate module in hand"),
                 new Hotkey("Tab", "Show all firing arcs"),
+                new Hotkey("T", "Design issues"),
                 new Hotkey("Ctrl+Z / Ctrl+Y", "Undo / redo"),
                 new Hotkey("Hold Left-click", "Set firing arc"),
-                new Hotkey("Right-click", "Cancel / remove module (in frame), close (outside)"),
+                new Hotkey("Right-click", "Cancel / remove module; outside: close"),
             }),
             ("FLEET DESIGN", new[]
             {

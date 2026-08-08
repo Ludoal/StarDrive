@@ -176,7 +176,7 @@ namespace Ship_Game.Ships
 
             // the order rides the name line, left-aligned on the bars' start (bench 319)
             var shipStatus = new Vector2(PBar.pBar.X,
-                                         Housing.Y + 71 + (Fonts.Arial14Bold.LineSpacing - Fonts.TahomaBold9.LineSpacing) / 2).ToFloored();
+                                         Housing.Y + 67 + (Fonts.Arial14Bold.LineSpacing - Fonts.TahomaBold9.LineSpacing) / 2).ToFloored(); // bench 362: 4px up (maintainer)
             string text = Fonts.TahomaBold9.ParseText(ShipListScreenItem.GetStatusText(s), 120);
             batch.DrawString(Fonts.TahomaBold9, text, shipStatus, tColor);
 
@@ -221,7 +221,7 @@ namespace Ship_Game.Ships
             // (which dropped to Y+118 with its block), on the Power column - its old home at the
             // frame top collided with the name/order line the moment a combat status lit up.
             // Icons are 33x22 (the 48x32 art at 2/3), text in the small TahomaBold9.
-            StatusArea = new Vector2(Housing.X + 190, Housing.Y + 118 - 7 - 22);
+            StatusArea = new Vector2(Housing.X + 190, Housing.Y + 118 - 4 - 22); // bench 362: 4px gap (maintainer)
             batch.Draw(ResourceManager.Texture("UI/icon_kills_shipUI"), star, Color.White);
             batch.DrawString(Fonts.Arial12Bold, s.Kills.ToString(), levelPos, Color.White);
             int numStatus = 0;
@@ -440,9 +440,11 @@ namespace Ship_Game.Ships
                             text += " (" + numTroopRebasing + " on route)";
                         break;
                 }
-            // floats above the cartouche like the radiation warning - its old seat is
-            // under the orders strip since the frame wears the standard shave
-            var supplyTextPos = new Vector2(Housing.X + 175, Housing.Y - Fonts.Arial12.LineSpacing);
+            // bench 362 (maintainer): the alert sits to the RIGHT of the orders strip, centred on
+            // its row - it used to float above the cartouche, outside the window
+            int ordersW = Math.Min(Orders.Count, 7) * 52;
+            var supplyTextPos = new Vector2(ElementRect.X + ordersW + 8,
+                                            ElementRect.Y + FrameShave - 52 - 4 + (52 - Fonts.Arial12.LineSpacing) / 2);
             batch.DrawString(Fonts.Arial12, text, supplyTextPos, color);
         }
 

@@ -68,10 +68,11 @@ namespace Ship_Game.GameScreens.ShipDesign
         {
             CloseButton(Window.Right - 40, Window.Y + 20);
             //Screen Title
-            // bench 361 (maintainer): the default popup title font (UITheme.WindowTitle), like
-            // every other popup - Laserian was the odd one out
-            string title    = "Current Ship Issues";
-            Vector2 menuPos = new Vector2(Window.CenterTextX(title, UITheme.WindowTitle), Window.Y + 30);
+            // bench 362 (maintainer): default popup title font, ALL CAPS, and centred VERTICALLY in
+            // the title bar by the bar's own metrics instead of a hand-measured offset
+            string title    = "CURRENT SHIP ISSUES";
+            float titleY    = Window.Y + PopupFrame.TitleBarTop + (PopupFrame.TitleBarHeight - UITheme.WindowTitle.LineSpacing) / 2f;
+            Vector2 menuPos = new Vector2(Window.CenterTextX(title, UITheme.WindowTitle), titleY);
             Label(menuPos, title, UITheme.WindowTitle, Cream);
             PopulateIssues();
             base.LoadContent();

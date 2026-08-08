@@ -72,11 +72,18 @@ namespace Ship_Game
             batch.SafeEnd();
         }
 
+        // Ludoal fork (bench 362): a popup summoned by a frame-bound screen (the Shipyard) centres
+        // on that frame instead of the display - set before AddScreen, applied at LoadContent.
+        public Vector2? CenterOn;
+
         public override void LoadContent()
         {
             RemoveAll();
 
             Rect = CenterScreen(Rect.Width, Rect.Height);
+            if (CenterOn != null)
+                Rect = new Rectangle((int)(CenterOn.Value.X - Rect.Width / 2f),
+                                     (int)(CenterOn.Value.Y - Rect.Height / 2f), Rect.Width, Rect.Height);
             Frame = new PopupFrame(Rect);
             // the title band is the frame's, but this class places text and a flag on it
             TitleRect  = Frame.TitleRect;

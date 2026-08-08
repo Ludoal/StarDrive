@@ -124,6 +124,15 @@ namespace Ship_Game
         // footprint - room to breathe at 1440p+. Session-persistent like the others; flipping it
         // re-runs LoadContent so every panel and the 3D projection rebuild on the new frame.
         public static bool FullScreenDesign; // public: Design Issues centres itself on the same frame (bench 361)
+        // bench 362: every dialog the Shipyard summons centres on ITS frame, not the display
+        public Vector2 FrameCentre
+        {
+            get
+            {
+                Rectangle f = GameScreens.ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight, FullScreenDesign);
+                return new Vector2(f.CenterX(), f.CenterY());
+            }
+        }
         UICheckBox FullScreenCheck;
         // Ludoal fork (bench 188): sweeping from one browser row to the next crosses a gap where
         // nothing is hovered. With Pin Active unchecked that gap let the Active cartouche flash
@@ -952,7 +961,7 @@ namespace Ship_Game
                     //return;*/
                 }
 
-                ScreenManager.AddScreen(new ShipDesignSaveScreen(this, DesignOrHullName, hullDesigner:HullEditMode));
+                ScreenManager.AddScreen(new ShipDesignSaveScreen(this, DesignOrHullName, hullDesigner:HullEditMode) { CenterOn = FrameCentre });
             });
             BtnSaveAs.Tooltip = Localizer.Token(GameText.SaveShipDesignDesc);
             BtnSaveAs.Hotkey = InputBindings.FromString("Ctrl+S");

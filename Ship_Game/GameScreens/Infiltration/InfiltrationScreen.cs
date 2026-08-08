@@ -21,6 +21,8 @@ namespace Ship_Game.GameScreens
     public sealed class InfiltrationScreen : GameScreen
     {
         public readonly UniverseScreen Universe;
+        // bench 362: the player's mole-planet rows, harvested at draw, clicked in HandleInput
+        readonly Array<(Rectangle Rect, Planet P)> MoleRows = new();
         public Empire SelectedEmpire; // legacy bookkeeping (external callers)
         readonly Empire Player;
         // Ludoal fork: where each portrait landed this frame, so the click can find it - the
@@ -283,7 +285,7 @@ namespace Ship_Game.GameScreens
         void ForEachInfiltrationRow(Rectangle col, Action<byte, float, bool> onLevelTitle,
                                     Action<byte, float, int> onOpRow)
         {
-            float y = col.Y + HeaderH + BudgetH + DefenseH + 4 + 24; // 20 higher (bench 300), + the INFILTRATION band
+            float y = col.Y + HeaderH + BudgetH + DefenseH + 14 + 24; // bench 362: 10px lower (maintainer)
             for (byte level = 1; level <= Ship_Game.Espionage.MaxLevel; ++level)
             {
                 onLevelTitle?.Invoke(level, y, true);
@@ -471,6 +473,36 @@ namespace Ship_Game.GameScreens
                 batch.DrawString(Font12, cost, new Vector2(col.X + 8, budgetY + 70), espionageCost > 0 ? Color.Pink : Color.LightGreen);
                 // Ludoal fork: the SETTINGS band that lived here (Disable Messages) moved to the
                 // Automation tab of the Empire group, with the other notification switches.
+
+                // bench 362 (maintainer): the player's own INFILTRATION block - the planets our
+                // moles sit on, clickable (opens that colony in mole vision, like a map
+                // double-click). Rects harvested here, hit-tested in HandleInput like the portraits.
+                float infilY = col.Y + HeaderH + BudgetH + DefenseH + 14;
+                SectionBand(batch, col, infilY, "INFILTRATION");
+                MoleRows.Clear();
+                float rowY = infilY + 24;
+                var moles = Player.data.MoleList;
+                if (moles.Count == 0)
+                {
+                    batch.DrawString(Font12, "No planets infiltrated", new Vector2(col.X + 8, rowY), Color.Gray);
+                }
+                else
+                {
+                    for (int i = 0; i < moles.Count; i++)
+                    {
+                        Planet moleP = Universe.UState.GetPlanet(moles[i].PlanetId);
+                        if (moleP == null)
+                            continue;
+                        if (rowY + Font12.LineSpacing > col.Bottom - 6)
+                            break; // column is full
+                        var rowRect = new Rectangle(col.X + 8, (int)rowY, col.Width - 16, Font12.LineSpacing + 2);
+                        bool hover = rowRect.HitTest(Input.CursorPosition);
+                        batch.DrawString(Font12, moleP.Name, new Vector2(rowRect.X, rowRect.Y),
+                                         hover ? Color.White : (moleP.Owner?.EmpireColor ?? Colors.Cream));
+                        MoleRows.Add((rowRect, moleP));
+                        rowY += Font12.LineSpacing + 2;
+                    }
+                }
                 return;
             }
 
@@ -523,7 +555,7 @@ namespace Ship_Game.GameScreens
             // Ludoal fork: one INFILTRATION band, then each level as a bold text line - cream once
             // the level is uncovered, grey while it is not. Five bands for one subject read as five
             // separate sections.
-            SectionBand(batch, col, col.Y + HeaderH + BudgetH + DefenseH + 4, "INFILTRATION");
+            SectionBand(batch, col, col.Y + HeaderH + BudgetH + DefenseH + 14, "INFILTRATION"); // bench 362: 10px lower
             ForEachInfiltrationRow(col, (level, rowY, isTitle) =>
             {
                 bool reached = esp.Level >= level;
@@ -572,6 +604,19 @@ namespace Ship_Game.GameScreens
                         // ⚠ fully qualified: this file sits in Ship_Game.GameScreens, where the
                         // DiplomacyScreen NAMESPACE shadows the class of the same name
                         DiplomacyScreen.DiplomacyScreen.Show(kv.Key, "Greeting", parent: this);
+                        return true;
+                    }
+                }
+
+                // bench 362 (maintainer): a mole-planet row opens that colony in mole vision,
+                // the same door the map double-click uses
+                foreach ((Rectangle rect, Planet moleP) in MoleRows)
+                {
+                    if (rect.HitTest(input.CursorPosition))
+                    {
+                        GameAudio.AcceptClick();
+                        ExitScreen();
+                        Universe.SnapViewColony(moleP, combatView: false);
                         return true;
                     }
                 }

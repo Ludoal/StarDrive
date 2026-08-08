@@ -29,6 +29,7 @@ namespace Ship_Game
 
         public Action Accepted;
         public Action Cancelled;
+        public Vector2? CenterOn; // Ludoal fork (bench 362): centre on a frame instead of the display
 
         public MessageBoxScreen(GameScreen parent, string message,
                                 MessageBoxButtons buttons = MessageBoxButtons.Default, int width = 270)
@@ -71,7 +72,9 @@ namespace Ship_Game
 
             Message = Fonts.Arial12Bold.ParseText(Original + ToAppend, 250f);
             Vector2 msgSize = Fonts.Arial12Bold.MeasureString(Message);
-            var r = new Rectangle(ScreenWidth / 2 - BoxWidth/2, ScreenHeight / 2 - (int)(msgSize.Y + 40f) / 2,
+            // Ludoal fork (bench 362): a box summoned by a frame-bound screen centres on that frame
+            Vector2 c = CenterOn ?? new Vector2(ScreenWidth / 2f, ScreenHeight / 2f);
+            var r = new Rectangle((int)c.X - BoxWidth/2, (int)c.Y - (int)(msgSize.Y + 40f) / 2,
                                   BoxWidth, (int)(msgSize.Y + 40f) + 15);
 
             var textPosition = new Vector2(r.X + r.Width / 2 - Fonts.Arial12Bold.MeasureString(Message).X / 2f, r.Y + 10);

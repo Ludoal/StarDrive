@@ -551,20 +551,22 @@ namespace Ship_Game
             ScreenManager.SpriteBatch.DrawString(font, text, posOnScreen, textColor, rotation, Vector2.Zero, textScale);
         }
 
-        public void MakeMessageBox(GameScreen screen, Action accepted, Action cancelled, GameText message, string okText, string cancelledText)
+        public void MakeMessageBox(GameScreen screen, Action accepted, Action cancelled, GameText message, string okText, string cancelledText,
+                                   Vector2? centerOn = null)
         {
             ScreenManager.AddScreen(new MessageBoxScreen(screen, message, okText, cancelledText)
             {
                 Accepted = accepted,
                 Cancelled = cancelled,
+                CenterOn = centerOn, // bench 362: frame-bound screens centre their dialogs on the frame
             });
         }
 
-        public void ExitMessageBox(GameScreen screen, Action accepted, Action cancelled, GameText message)
+        public void ExitMessageBox(GameScreen screen, Action accepted, Action cancelled, GameText message, Vector2? centerOn = null)
         {
             // bench 361 (maintainer): "Cancel", not "Exit" - the dialog also fires on design-switch
             // and Battle Arena launch, where nothing exits
-            MakeMessageBox(screen, accepted, cancelled, message, "Save", "Cancel");
+            MakeMessageBox(screen, accepted, cancelled, message, "Save", "Cancel", centerOn);
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////

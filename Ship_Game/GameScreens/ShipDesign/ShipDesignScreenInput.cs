@@ -98,7 +98,7 @@ namespace Ship_Game
             bool goodDesign = IsGoodDesign();
             if (goodDesign && !ShipSaved)
             {
-                ExitMessageBox(this, SaveChanges, DoExit, GameText.YouHaveUnsavedChangesSave);
+                ExitMessageBox(this, SaveChanges, DoExit, GameText.YouHaveUnsavedChangesSave, FrameCentre);
                 return;
             }
 
@@ -131,7 +131,7 @@ namespace Ship_Game
 
             if (!ShipSaved && goodDesign)
             {
-                ExitMessageBox(this, SaveChanges, LaunchScreen, GameText.YouHaveUnsavedChangesSave);
+                ExitMessageBox(this, SaveChanges, LaunchScreen, GameText.YouHaveUnsavedChangesSave, FrameCentre);
                 return;
             }
 
@@ -695,7 +695,7 @@ namespace Ship_Game
             {
                 SaveWIP();
                 load();
-            }, GameText.YouHaveUnsavedChangesSave);
+            }, GameText.YouHaveUnsavedChangesSave, FrameCentre);
         }
 
         void UpdateViewMatrix(in Vector3 cameraPosition)
@@ -769,7 +769,7 @@ namespace Ship_Game
 
         void SaveChanges()
         {
-            ScreenManager.AddScreen(new ShipDesignSaveScreen(this, DesignOrHullName, hullDesigner:false));
+            ScreenManager.AddScreen(new ShipDesignSaveScreen(this, DesignOrHullName, hullDesigner:false) { CenterOn = FrameCentre });
             ShipSaved = true;
         }
 
