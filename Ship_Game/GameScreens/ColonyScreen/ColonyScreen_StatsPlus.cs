@@ -4,6 +4,7 @@ using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using SDUtils;
 using Ship_Game.Universe.SolarBodies;
+using Font = Ship_Game.Graphics.Font;
 
 namespace Ship_Game
 {
