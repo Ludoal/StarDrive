@@ -241,6 +241,10 @@ namespace Ship_Game
         
         Vector2 StartDragPos;
 
+        // bench 357 (maintainer): a held pan latches to where it STARTED, like the Shipyard's - begun
+        // inside the frame it keeps the mouse until release, but it cannot start outside.
+        bool PanLatched;
+
         void HandleCameraMovement(InputState input)
         {
             const float minHeight = 3000;
@@ -248,15 +252,26 @@ namespace Ship_Game
             float scrollSpeed = minHeight + (CamPos.Z / maxHeight)*10_000;
             float worldWidthOnScreen = (float)VisibleWorldRect.Width;
 
-            if      (input.ScrollIn)  DesiredCamPos.Z -= scrollSpeed;
-            else if (input.ScrollOut) DesiredCamPos.Z += scrollSpeed;
+            // bench 357 (maintainer): mouse zoom and pan belong to the frame - outside it they are
+            // standard inputs, not fleet-grid gestures. Edge-scroll and the arrow keys stay live
+            // everywhere (pushing the screen edge is by nature outside the frame).
+            bool cursorInFrame = DesignTabs.Rect.HitTest(input.CursorPosition);
 
-            if (input.MiddleMouseClick)
+            if (cursorInFrame)
             {
-                StartDragPos = input.CursorPosition;
+                if      (input.ScrollIn)  DesiredCamPos.Z -= scrollSpeed;
+                else if (input.ScrollOut) DesiredCamPos.Z += scrollSpeed;
             }
 
-            if (input.MiddleMouseHeld())
+            if (input.MiddleMouseClick && cursorInFrame)
+            {
+                StartDragPos = input.CursorPosition;
+                PanLatched = true;
+            }
+            if (!input.MiddleMouseHeld())
+                PanLatched = false;
+
+            if (input.MiddleMouseHeld() && PanLatched)
             {
                 Vector2 dv = input.CursorPosition - StartDragPos;
                 StartDragPos = input.CursorPosition;

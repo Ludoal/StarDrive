@@ -874,6 +874,9 @@ namespace Ship_Game
             // the two columns keep their own layout inside it.
             DesignTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.DesignTabTitles, 1,
                                                     OnDesignTabChanged, out Rectangle _, FullScreenDesign);
+            // bench 357: the hull restore above ran before DesignTabs existed, so RefreshZoomBounds
+            // skipped itself - do it now that the frame is real (it also re-clamps the camera target).
+            RefreshZoomBounds();
 
             // The tab frame is the container: every column bound is measured from it, with the
             // same 5px margin on all four sides. ModuleSelection carries the band so the two
@@ -1340,13 +1343,25 @@ namespace Ship_Game
             // projection all rebuild from the new (uncapped) frame - none of them relayout on their own.
             FullScreenCheck = Checkbox(new Vector2(idLeft, IdentityRowY),
                                        () => FullScreenDesign,
-                                       (b) => { FullScreenDesign = b; ReloadContent(); },
+                                       (b) =>
+                                       {
+                                           FullScreenDesign = b;
+                                           // bench 357 (maintainer): keep the work across the flip.
+                                           // ReloadContent rebuilds via LoadContent, whose hull-restore
+                                           // can fall back to the bare hull - clone the design WITH its
+                                           // fitted modules and put it back after the relayout.
+                                           ShipDesign keep = CurrentDesign != null ? CloneCurrentDesign(CurrentDesign.Name) : null;
+                                           ReloadContent();
+                                           if (keep != null)
+                                               ChangeHull(keep, zoomToHull: false);
+                                       },
                                        "Full Screen",
                                        "Expand the Shipyard to the whole display instead of the fixed\n"
                                      + "1600x1080 working size. Anchored on the rail either way.");
-            // bench 356 (maintainer): sit it right next to the identity row, its right edge a gap
-            // before the role/name block, rather than out at the frame's left margin.
-            FullScreenCheck.SetAbsPos(idLeft - FullScreenCheck.Width - idGap, IdentityRowY);
+            // bench 357 (maintainer): right beside the role/name block, and centred on the identity
+            // row's height rather than hanging from its top.
+            FullScreenCheck.SetAbsPos(idLeft - FullScreenCheck.Width - idGap,
+                                      IdentityRowY + (idH - (int)FullScreenCheck.Height) / 2);
 
             // Ludoal fork (spec v4): the HOVER cartouche takes the slot the Compared one used to
             // hold. Like its module counterpart it is the plain frame — no delta lane — showing

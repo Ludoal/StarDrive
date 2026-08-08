@@ -218,8 +218,24 @@ namespace Ship_Game.GameScreens.MainMenu
         // We need a simulation time accumulator in order to run sim at arbitrary X fps while UI runs at smooth 60 fps
         float SimTimeSink;
 
+        // bench 357 (maintainer): the layout is parsed at LoadContent for the screen size of that
+        // moment. If the window is resized afterwards (VMware auto-fit at launch, a windowed drag),
+        // the 2D panels keep the stale width - the background and the planet cut off on the right
+        // while the 3D scene and edge-anchored buttons follow the live size. Track the size the
+        // layout was built for and rebuild when it no longer matches.
+        Vector2 LayoutArea;
+
         public override void Update(float fixedDeltaTime)
         {
+            if (LayoutArea == Vector2.Zero)
+                LayoutArea = ScreenArea;
+            else if (LayoutArea != ScreenArea)
+            {
+                LayoutArea = ScreenArea;
+                ReloadContent();
+                return;
+            }
+
             if (Scene != null)
             {
                 Vector3 listenerPos = new(Scene.CameraPos.X, Scene.CameraPos.Y, Scene.CameraPos.Z);

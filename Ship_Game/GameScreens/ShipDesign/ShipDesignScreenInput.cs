@@ -741,10 +741,17 @@ namespace Ship_Game
 
         void RefreshZoomBounds()
         {
+            // first LoadContent restores the hull BEFORE AddGroupTabs builds DesignTabs - the
+            // explicit RefreshZoomBounds right after the tabs are built covers that pass (bench 357)
+            if (DesignTabs == null)
+                return;
             float frameH = DesignTabs.ClientArea.H * 0.9f;
             float fit = CamHeightToFitHull(frameH);
             MinCamHeight = fit;
             MaxCamHeight = Math.Max(5000f, fit);
+            // pull the current target inside the fresh bounds now, softly (SmoothStep animates it) -
+            // otherwise the first scroll after a bounds change snaps instead of glides
+            DesiredCamHeight = DesiredCamHeight.Clamped(MinCamHeight, MaxCamHeight);
         }
 
         void ZoomCameraToEncloseHull()
@@ -756,9 +763,15 @@ namespace Ship_Game
             float ratio = visibleSize / hullHeight;
             CameraPos.Z = (CameraPos.Z * ratio).RoundUpTo(1);
 
-            // the ship posed in its frame: the entry keeps its 0.75-screen aesthetic margin
+            // bench 357 (maintainer: "zoom not smooth"): the entry poses the ship at 0.75 of the FRAME,
+            // not the screen. The old screen-based target (1080px of hull at 1440p) sat PAST the zoom
+            // clamp's wall (0.9 of the frame = ~914px), so the entry was born pinned against the limit
+            // and the first scroll-in hit a dead stop. Framed at 0.75 there is ~20% of zoom-in room
+            // before the clamp. (DesignTabs is null on the very first restore pass - fall back to the
+            // screen; the explicit RefreshZoomBounds after AddGroupTabs re-clamps right after.)
             RefreshZoomBounds();
-            float camHeight = CamHeightToFitHull(ScreenHeight * 0.75f);
+            float entryTarget = (DesignTabs != null ? DesignTabs.ClientArea.H : ScreenHeight) * 0.75f;
+            float camHeight = CamHeightToFitHull(entryTarget);
 
             UpdateViewMatrix(CameraPos);
             DesiredCamHeight = camHeight.Clamped(MinCamHeight, MaxCamHeight);
