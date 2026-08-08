@@ -72,7 +72,7 @@ namespace Ship_Game
 
             // S5: group controls — hidden until the roster has a first opponent.
             // bench 361 (maintainer): the step-back on the LEFT, the action on the RIGHT
-            ClearBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(rect.X + 20, rect.Bottom - 48), "Clear"));
+            ClearBtn = Add(new UIButton(ButtonStyle.WideHostile, new Vector2(rect.X + 20, rect.Bottom - 48), "Clear")); // bench 363: red (maintainer)
             ClearBtn.OnClick = b => { GameAudio.AcceptClick(); Roster.Clear(); RefreshRoster(); };
             FightBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(rect.Right - 220, rect.Bottom - 48), "Fight group"));
             FightBtn.OnClick = b => LaunchGroup();

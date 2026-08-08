@@ -212,7 +212,7 @@ namespace Ship_Game
             if (shipOrHullName.IsEmpty())
             {
                 string what = Hulls ? "hull" : "design";
-                ScreenManager.AddScreen(new MessageBoxScreen(this, $"Please enter a name for your {what}", MessageBoxButtons.Ok));
+                ScreenManager.AddScreen(new MessageBoxScreen(this, $"Please enter a name for your {what}", MessageBoxButtons.Ok) { CenterOn = CenterOn });
                 GameAudio.NegativeClick();
                 return;
             }
@@ -237,7 +237,7 @@ namespace Ship_Game
                 if (reserved && !Screen.EnableDebugFeatures)
                 {
                     GameAudio.NegativeClick();
-                    ScreenManager.AddScreen(new MessageBoxScreen(this, $"{shipOrHullName} is a reserved ship name and you cannot overwrite this design"));
+                    ScreenManager.AddScreen(new MessageBoxScreen(this, $"{shipOrHullName} is a reserved ship name and you cannot overwrite this design") { CenterOn = CenterOn });
                     return;
                 }
 
@@ -247,7 +247,7 @@ namespace Ship_Game
                     GameAudio.NegativeClick();
                     ScreenManager.AddScreen(new MessageBoxScreen(this, $"{shipOrHullName} currently exist the universe." +
                                                                        " You cannot overwrite a design with this name.",
-                                                                       MessageBoxButtons.Ok));
+                                                                       MessageBoxButtons.Ok) { CenterOn = CenterOn });
                     return;
                 }
 
@@ -259,13 +259,13 @@ namespace Ship_Game
                         ScreenManager.AddScreen(new MessageBoxScreen
                             (this, $"{shipOrHullName} currently exist the your planets' build queue." +
                                    $" You cannot overwrite this design name.\n Related planets: {playerPlanets}.",
-                                   MessageBoxButtons.Ok));
+                                   MessageBoxButtons.Ok) { CenterOn = CenterOn });
                     }
                     else
                     {
                         ScreenManager.AddScreen(new MessageBoxScreen
                             (this, $"{shipOrHullName} currently exist the universe (maybe by another empire). " +
-                                   "You cannot overwrite this design name.", MessageBoxButtons.Ok));
+                                   "You cannot overwrite this design name.", MessageBoxButtons.Ok) { CenterOn = CenterOn });
                     }
 
                     return;
@@ -282,8 +282,9 @@ namespace Ship_Game
 
                 ScreenManager.AddScreen(new MessageBoxScreen(this, alreadyExists)
                 {
-                    Accepted = () => OverWriteAccepted(shipOrHullName, reserved ? source : null)
-                });;
+                    Accepted = () => OverWriteAccepted(shipOrHullName, reserved ? source : null),
+                    CenterOn = CenterOn, // bench 363: ride the Shipyard frame like the parent popup
+                });
             }
             else
             {

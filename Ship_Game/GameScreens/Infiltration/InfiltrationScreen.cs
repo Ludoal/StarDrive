@@ -614,9 +614,18 @@ namespace Ship_Game.GameScreens
                 {
                     if (rect.HitTest(input.CursorPosition))
                     {
+                        // bench 363 (maintainer): closing that colony comes BACK HERE, like the
+                        // Economy/Empire lists - the BudgetScreen pattern, copied. SnapViewColony
+                        // would clear the hook, so the panel is opened directly.
                         GameAudio.AcceptClick();
                         ExitScreen();
-                        Universe.SnapViewColony(moleP, combatView: false);
+                        Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new InfiltrationScreen(Universe));
+                        Universe.ReturnToListTabs   = GroupTabs;
+                        Universe.ReturnToListGroup  = GameScreens.ScreenGroups.GroupOf(this);
+                        Universe.workersPanel = new ColonyScreen(Universe, moleP, Universe.EmpireUI);
+                        Universe.LookingAtPlanet = true;
+                        Universe.transitionStartPosition = Universe.CamPos;
+                        Universe.CamDestination = Universe.CamPos;
                         return true;
                     }
                 }
