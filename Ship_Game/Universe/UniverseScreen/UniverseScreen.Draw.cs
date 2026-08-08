@@ -517,17 +517,30 @@ namespace Ship_Game
                 EmpireUI.Draw(batch);
                 if (LookingAtPlanet)
                 {
-                    // Ludoal fork (benches 314-319): opened FROM a list tab, the group's frame
-                    // and tab row stay behind the colony as a dimmed silhouette, origin tab
-                    // still selected - the group page was the thing that vanished, not the
-                    // EmpireUI bar. Ground fill + tab row (the group screens' own recipe),
-                    // then the estompe veil; the colony paints over the middle.
+                    // Ludoal fork (benches 314-319): opened FROM a list tab, the group's tab
+                    // row stays behind the colony as a dimmed silhouette, origin tab still
+                    // selected - the group page was the thing that vanished, not the
+                    // EmpireUI bar. Bench 366: the whole pass clips to the tab band. The
+                    // list frame behind is CONTENT-sized (and Colonies runs full height
+                    // since bench 362), so its edges overhung the opaque colony panel below
+                    // and on both sides - and under the panel nothing of it can show
+                    // anyway. The only part with a job is the tab row above the panel's top
+                    // edge; the veil estompes it. (Ground fill dropped: it starts below the
+                    // tab strip, entirely under the panel.)
                     if (ReturnToListScreen != null && ReturnToListTabs != null)
                     {
-                        batch.FillRectangle(GameScreens.ScreenGroups.GroupFrameFillRect(ReturnToListTabs),
-                                            GameScreens.ScreenGroups.GroupFrameFill);
+                        Rectangle tabsR = ReturnToListTabs.Rect;
+                        var band = new Rectangle(tabsR.X, GameScreens.ScreenGroups.TabRowY, tabsR.Width,
+                                                 GameScreens.ScreenGroups.GroupFrameTop
+                                                 - GameScreens.ScreenGroups.TabRowY + 2);
+                        batch.SafeEnd();
+                        RenderStates.EnableScissorTest(batch.GraphicsDevice, band);
+                        batch.SafeBegin(SpriteBlendMode.AlphaBlend, RenderStates.ScissorEnabled);
                         ReturnToListTabs.Draw(batch, elapsed);
-                        batch.FillRectangle(ReturnToListTabs.Rect, new Color(6, 8, 12).Alpha(0.45f));
+                        batch.FillRectangle(band, new Color(6, 8, 12).Alpha(0.45f));
+                        batch.SafeEnd();
+                        RenderStates.DisableScissorTest(batch.GraphicsDevice);
+                        batch.SafeBegin();
                     }
                     workersPanel?.Draw(batch, elapsed);
                 }
