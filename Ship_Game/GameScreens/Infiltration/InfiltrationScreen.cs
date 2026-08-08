@@ -481,10 +481,13 @@ namespace Ship_Game.GameScreens
                 SectionBand(batch, col, infilY, "INFILTRATION");
                 MoleRows.Clear();
                 float rowY = infilY + 24;
+                // bench 364 (maintainer): the block opens on its header line, in the theme's vanilla
+                batch.DrawString(Font12Bold, "Planets with Moles:", new Vector2(col.X + 8, rowY), Colors.Cream);
+                rowY += Font12Bold.LineSpacing + 4;
                 var moles = Player.data.MoleList;
                 if (moles.Count == 0)
                 {
-                    batch.DrawString(Font12, "No planets infiltrated", new Vector2(col.X + 8, rowY), Color.Gray);
+                    batch.DrawString(Font12, "None yet", new Vector2(col.X + 8, rowY), Color.Gray);
                 }
                 else
                 {

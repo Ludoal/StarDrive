@@ -62,10 +62,16 @@ namespace Ship_Game
             BoxWidth = width;
 
             // bench 363 (maintainer): the confirm is a neutral Wide, the cancel a red WideHostile -
-            // the same meaning-coloured pair the Shipyard's own rows use
+            // the same meaning-coloured pair the Shipyard's own rows use. bench 364: at the SMALL
+            // button's size - every style is nine-sliced, so the meaning colour and the compact
+            // format compose freely.
             Ok = Button(ButtonStyle.Wide, 0f, 0f, okText, click: OnOkClicked);
+            Ok.SetAbsSize(96, 26);
             if (buttons == MessageBoxButtons.Default)
+            {
                 Cancel = Button(ButtonStyle.WideHostile, 0f, 0f, cancelText, click: OnCancelClicked);
+                Cancel.SetAbsSize(96, 26);
+            }
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -81,8 +87,8 @@ namespace Ship_Game
 
             var textPosition = new Vector2(r.X + r.Width / 2 - Fonts.Arial12Bold.MeasureString(Message).X / 2f, r.Y + 10);
 
-            Ok.SetAbsPos(     r.X + r.Width / 2 + 6,   r.Y + r.Height - 40);
-            Cancel?.SetAbsPos(r.X + r.Width / 2 - 126, r.Y + r.Height - 40);
+            Ok.SetAbsPos(     r.X + r.Width / 2 + 6,   r.Y + r.Height - 38);
+            Cancel?.SetAbsPos(r.X + r.Width / 2 - 102, r.Y + r.Height - 38);
 
             batch.SafeBegin();
             batch.FillRectangle(r, Color.Black);
