@@ -16,11 +16,13 @@ namespace Ship_Game
             if (target.IsDefeated) 
                 return null;
 
-            var potentials = target.GetPlanets().Filter(p => p.IsExploredBy(owner) 
+            // Ludoal fork: no fallback onto the full planet list - a mole cannot infiltrate a
+            // planet its owner never explored (nor stack onto an already infiltrated one). The
+            // operation reports its stock "no colony for infiltration" failure text instead.
+            var potentials = target.GetPlanets().Filter(p => p.IsExploredBy(owner)
                                                              && !owner.data.MoleList.Any(m => m.PlanetId == p.Id));
-
             if (potentials.Length == 0)
-                potentials = target.GetPlanets().ToArray();
+                return null;
 
             targetPlanet = target.Random.Item(potentials);
             Mole mole = new()
@@ -38,9 +40,12 @@ namespace Ship_Game
         public static Mole PlantStickyMoleAtHomeworld(Empire owner, Empire target, out Planet targetPlanet)
         {
             targetPlanet = null;
-            var planets = target.GetPlanets().Filter(p => p.IsHomeworld || p.HasCapital);
+            // Ludoal fork: only planets the owner explored qualify. The level perk retries on
+            // the espionage tick, so the sticky mole simply lands once the homeworld is found.
+            var planets = target.GetPlanets().Filter(p => (p.IsHomeworld || p.HasCapital) && p.IsExploredBy(owner));
 
-            targetPlanet = planets.Length == 0 ? target.GetPlanets().FindMax(p => p.PopulationBillion)
+            targetPlanet = planets.Length == 0 ? target.GetPlanets().Filter(p => p.IsExploredBy(owner))
+                                                                    .FindMax(p => p.PopulationBillion)
                                                 : target.Random.Item(planets);
 
             if (targetPlanet == null)
