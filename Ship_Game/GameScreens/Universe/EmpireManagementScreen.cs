@@ -405,6 +405,11 @@ namespace Ship_Game
             Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new EmpireManagementScreen(Universe, eui));
             Universe.ReturnToListTabs   = EmpireTabs; // the dimmed silhouette behind the colony
             Universe.ReturnToListGroup  = ScreenGroups.GroupOf(this); // keep the group button lit (maintainer)
+            // Ludoal fork: the colony inherits this list's automatic pause - consulting a colony
+            // from a paused list must not restart the simulation (maintainer bench). Before
+            // ExitScreen, which would resume it; skipped when the snap did not open a colony.
+            if (Universe.LookingAtPlanet)
+                HandOverUniversePause(Universe.workersPanel);
             ExitScreen();
         }
 

@@ -126,6 +126,32 @@ namespace Ship_Game
         UniverseScreen PauseRequested;
         public bool HoldsUniversePause => PauseRequested != null;
 
+        // Ludoal fork: give the simulation back. ExitScreen does this on its own; the colony
+        // workersPanel's dismiss path closes without ExitScreen and calls it explicitly.
+        public void ReleaseUniversePause()
+        {
+            PauseRequested = null;
+            if (PausedUniverse != null)
+            {
+                PausedUniverse.UState.Paused = false;
+                PausedUniverse = null;
+            }
+        }
+
+        // Ludoal fork: a list screen hands its automatic pause to the colony it opens (and the
+        // colony walk hands it to the next colony) - the simulation must not resume in the gap
+        // between the two owners. No-op when this screen holds nothing: a pause the player set
+        // himself is nobody's to hand over, it survives on its own.
+        public void HandOverUniversePause(GameScreen to)
+        {
+            if (to == null || PausedUniverse == null)
+                return;
+            to.PauseRequested = PauseRequested;
+            to.PausedUniverse = PausedUniverse;
+            PauseRequested = null;
+            PausedUniverse = null;
+        }
+
         /// <summary>Game screen that is the same size as the current screen/window</summary>
         /// <param name="parent">Parent to this screen, or null</param>
         /// <param name="toPause">If not null, pauses the universe simulation until this screen finishes</param>
@@ -212,12 +238,7 @@ namespace Ship_Game
         {
             IsExiting = true;
 
-            PauseRequested = null;   // Ludoal fork: the hold goes with the screen
-            if (PausedUniverse != null)
-            {
-                PausedUniverse.UState.Paused = false;
-                PausedUniverse = null;
-            }
+            ReleaseUniversePause();   // Ludoal fork: the hold goes with the screen
 
             PendingActions.Clear();
 

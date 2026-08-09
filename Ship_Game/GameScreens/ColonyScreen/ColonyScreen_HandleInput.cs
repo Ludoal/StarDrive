@@ -219,8 +219,11 @@ namespace Ship_Game
             Planet nextOrPrevPlanet = planets[newIndex];
             if (nextOrPrevPlanet != P)
             {
-                Universe.Screen.workersPanel = new ColonyScreen(Universe.Screen, nextOrPrevPlanet, Eui,
+                var next = new ColonyScreen(Universe.Screen, nextOrPrevPlanet, Eui,
                     GovernorDetails.CurrentTabIndex, PFacilitiesPlayerTabSelected);
+                // Ludoal fork: the colony walk keeps an inherited list pause alive across the swap
+                HandOverUniversePause(next);
+                Universe.Screen.workersPanel = next;
             }
         }
 

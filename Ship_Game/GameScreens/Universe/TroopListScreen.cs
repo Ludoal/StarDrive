@@ -131,14 +131,7 @@ namespace Ship_Game
         void OnRowClicked(TroopListScreenItem item)
         {
             GameAudio.AcceptClick();
-            ExitScreen();
-            if (item.Ship != null)
-            {
-                // same gentle zoom as the Ships Array (SnapViewShip dives way too deep)
-                Universe.ViewToShip(item.Ship);
-                Universe.returnToShip = true;
-            }
-            else if (item.Planet != null)
+            if (item.Planet != null && item.Ship == null)
             {
                 // Garrison: colony view. Deployed (planet not ours): combatView=true
                 // routes to the Ground Assault View via OpenCombatMenu.
@@ -154,6 +147,23 @@ namespace Ship_Game
                     Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new TroopListScreen(Universe, EmpireUI));
                     Universe.ReturnToListTabs   = EmpireTabs; // the dimmed silhouette behind the colony
                     Universe.ReturnToListGroup  = ScreenGroups.GroupOf(this); // keep the group button lit (maintainer)
+                    // Ludoal fork: the colony inherits this list's automatic pause - consulting a
+                    // colony from a paused list must not restart the simulation (maintainer bench).
+                    // The Ground Assault view is a live battle, it keeps the resume. Before
+                    // ExitScreen, which would resume it; skipped if the snap opened nothing.
+                    if (Universe.LookingAtPlanet)
+                        HandOverUniversePause(Universe.workersPanel);
+                }
+                ExitScreen();
+            }
+            else
+            {
+                ExitScreen();
+                if (item.Ship != null)
+                {
+                    // same gentle zoom as the Ships Array (SnapViewShip dives way too deep)
+                    Universe.ViewToShip(item.Ship);
+                    Universe.returnToShip = true;
                 }
             }
         }

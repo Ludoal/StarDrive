@@ -621,12 +621,16 @@ namespace Ship_Game.GameScreens
                         // Economy/Empire lists - the BudgetScreen pattern, copied. SnapViewColony
                         // would clear the hook, so the panel is opened directly.
                         GameAudio.AcceptClick();
-                        ExitScreen();
                         Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new InfiltrationScreen(Universe));
                         Universe.ReturnToListTabs   = GroupTabs;
                         Universe.ReturnToListGroup  = GameScreens.ScreenGroups.GroupOf(this);
                         Universe.workersPanel = new ColonyScreen(Universe, moleP, Universe.EmpireUI);
                         Universe.LookingAtPlanet = true;
+                        // Ludoal fork: the colony inherits this screen's automatic pause -
+                        // consulting a colony from a paused list must not restart the simulation
+                        // (maintainer bench). Before ExitScreen, which would resume it.
+                        HandOverUniversePause(Universe.workersPanel);
+                        ExitScreen();
                         Universe.transitionStartPosition = Universe.CamPos;
                         Universe.CamDestination = Universe.CamPos;
                         return true;

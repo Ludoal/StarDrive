@@ -224,6 +224,11 @@ namespace Ship_Game
                 }
                 transitionElapsedTime = 0f;
                 LookingAtPlanet = false;
+                // Ludoal fork: the colony may HOLD the pause it inherited from the list that
+                // opened it, and this close path never calls ExitScreen - give the simulation
+                // back here. When going back to a list, the reopened screen takes the pause
+                // again with its own toPause in this same stack, so no tick runs in between.
+                workersPanel.ReleaseUniversePause();
                 back?.Invoke();
             }
         }

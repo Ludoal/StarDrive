@@ -387,7 +387,6 @@ namespace Ship_Game.GameScreens
         {
             // the economy screen is the door into the diagnosis: a red row → why?
             GameAudio.AcceptClick();
-            ExitScreen();
             // Ludoal fork (bench 191): right-click in the colony comes back HERE, not to the
             // map (maintainer feedback). The universe screen calls this once, when that colony closes.
             Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new BudgetScreen(Universe));
@@ -395,6 +394,11 @@ namespace Ship_Game.GameScreens
             Universe.ReturnToListGroup  = ScreenGroups.GroupOf(this); // keep the group button lit (maintainer)
             Universe.workersPanel = new ColonyScreen(Universe, item.Planet, Universe.EmpireUI);
             Universe.LookingAtPlanet = true;
+            // Ludoal fork: the colony inherits this screen's automatic pause - consulting a
+            // colony from a paused list must not restart the simulation (maintainer bench).
+            // Handed over BEFORE ExitScreen, which would otherwise resume it on the way out.
+            HandOverUniversePause(Universe.workersPanel);
+            ExitScreen();
             // same anchor as the double-click path: the panel covers the map, no snap,
             // but the close handler restores transitionStartPosition — keep it current
             Universe.transitionStartPosition = Universe.CamPos;
