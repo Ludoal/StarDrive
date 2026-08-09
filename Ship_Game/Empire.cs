@@ -1825,6 +1825,10 @@ namespace Ship_Game
             AI.AddGoalAndEvaluate(new AssaultBombers(planet, this, enemy));
         }
 
+        // Ludoal fork: the treasury warning's repeat throttle. Not serialized - after a load
+        // the first deficit turn may warn immediately, then the yearly cadence resumes.
+        float LastMoneyWarningDate;
+
         void TakeTurn(UniverseState us)
         {
             if (UpdateIsEmpireDefeated())
@@ -1868,8 +1872,16 @@ namespace Ship_Game
                 CheckFederationVsPlayer(us);
                 Universe.Events.UpdateEvents(Universe);
 
-                if ((Money / AllSpending.LowerBound(1)) < 2)
+                // Ludoal fork (maintainer request): only warn when the empire is actually
+                // LOSING money - a light cash cushion with a positive net income is a
+                // strategy, not an emergency. And at most once a StarDate year: it used to
+                // re-fire every turn the moment the notification was dismissed.
+                if (NetIncome < 0 && (Money / AllSpending.LowerBound(1)) < 2
+                                  && Universe.StarDate - LastMoneyWarningDate >= 1f)
+                {
+                    LastMoneyWarningDate = Universe.StarDate;
                     Universe.Notifications.AddMoneyWarning();
+                }
 
                 if (!Universe.NoEliminationVictory)
                 {
