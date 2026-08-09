@@ -549,6 +549,16 @@ namespace Ship_Game
             ExoticBonusesWindow = Add(new ExoticBonusesWindow(this));
             FreighterUtilizationWindow = Add(new FreighterUtilizationWindow(this));
 
+            // Ludoal fork: reopen the utility windows the save had open. Done here because
+            // LoadContent also runs on a device reset, so a resize keeps them open too.
+            // Freighters/Exotic are exclusive - the else-if enforces it even on a bad save.
+            if (UState.ShowDeepSpaceBuildWindow && !DeepSpaceBuildWindow.Visible)
+                DeepSpaceBuildWindow.InitializeAndShow();
+            if (UState.ShowExoticBonusesWindow)
+                ExoticBonusesWindow.ToggleVisibility(playSound: false);
+            else if (UState.ShowFreighterUtilWindow)
+                FreighterUtilizationWindow.ToggleVisibility(playSound: false);
+
             // ⚠ the CLICK target is the map's own rect, asked of the MiniMap - it was a separate
             // 200x200 at hand-measured offsets, built for the old brass housing. The moment the
             // frame was reworked the two drifted, so clicking the minimap moved the camera to
@@ -731,7 +741,13 @@ namespace Ship_Game
         {
             if (LookingAtPlanet)
                 workersPanel?.Update(fixedDeltaTime);
-            
+
+            // Ludoal fork: the utility windows ride the save like the overlays - their open
+            // state is polled so no toggle site is ever missed.
+            UState.ShowDeepSpaceBuildWindow = DeepSpaceBuildWindow.Visible;
+            UState.ShowExoticBonusesWindow  = ExoticBonusesWindow?.IsOpen == true;
+            UState.ShowFreighterUtilWindow  = FreighterUtilizationWindow?.IsOpen == true;
+
             DeepSpaceBuildWindow.Update(fixedDeltaTime);
             pieMenu.Update(fixedDeltaTime);
             SelectedSomethingTimer -= fixedDeltaTime;

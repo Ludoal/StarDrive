@@ -75,6 +75,12 @@ namespace Ship_Game.Universe
         [StarData] public bool ShowGravityWellOverlay; // F5
         [StarData] public bool ShowRangeOverlay;       // F6
 
+        // Ludoal fork: the minimap's utility windows ride the save too. Polled from
+        // UniverseScreen.Update (no toggle site can be missed), restored in LoadContent.
+        [StarData] public bool ShowDeepSpaceBuildWindow;
+        [StarData] public bool ShowExoticBonusesWindow;  // exclusive with Freighter Utilization
+        [StarData] public bool ShowFreighterUtilWindow;
+
         [StarData] public Vector3d CamPos;
 
         // generated once during universe generation

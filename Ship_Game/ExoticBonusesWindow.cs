@@ -50,9 +50,10 @@ namespace Ship_Game
                 bonusData.Add(new ExoticStats(Player, type));
         }
 
-        public void ToggleVisibility()
+        public void ToggleVisibility(bool playSound = true)
         {
-            GameAudio.AcceptClick();
+            if (playSound) // silent when restored from a save
+                GameAudio.AcceptClick();
             IsOpen = !IsOpen;
             if (IsOpen)
             {

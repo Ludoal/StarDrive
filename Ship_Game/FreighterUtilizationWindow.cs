@@ -117,9 +117,10 @@ namespace Ship_Game
             base.PerformLayout();
         }
 
-        public void ToggleVisibility()
+        public void ToggleVisibility(bool playSound = true)
         {
-            GameAudio.AcceptClick();
+            if (playSound) // silent when restored from a save
+                GameAudio.AcceptClick();
             IsOpen = !IsOpen;
             if (IsOpen)
             {
