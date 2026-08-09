@@ -236,6 +236,13 @@ namespace Ship_Game.GameScreens.MainMenu
                 return;
             }
 
+            // Ludoal fork: while New Game sits on top, the menu keeps its animated backdrop
+            // but hides its button column (maintainer request) - the buttons used to read
+            // through the panels, which is why New Game wore an opaque veil before.
+            // IsShowing, not Current: a dialog opened over New Game must not bring them back.
+            if (Find("buttons", out UIList buttons))
+                buttons.Visible = !ScreenManager.IsShowing<RaceDesignScreen>();
+
             if (Scene != null)
             {
                 Vector3 listenerPos = new(Scene.CameraPos.X, Scene.CameraPos.Y, Scene.CameraPos.Z);
