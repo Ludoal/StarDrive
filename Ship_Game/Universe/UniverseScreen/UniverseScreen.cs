@@ -158,11 +158,13 @@ namespace Ship_Game
         public bool DefiningTradeRoutes; // are we defining  trade routes for a freighter?
         public Rectangle AORect; // used for showing current AO Rect definition
 
-        public bool ShowingFTLOverlay;
-        public bool ShowingInfluenceOverlay;   // Ludoal fork: F4 - colored empire influence zones
-        public bool ShowingGravityWellOverlay; // Ludoal fork: F5 - gravity wells / inhibitor fields
-        public bool ShowingVisionOverlay;      // Ludoal fork: F7 - sensor coverage highlights (spies included)
-        public bool ShowingRangeOverlay;
+        // Ludoal fork: the five map overlays live in UState so the selection rides the save;
+        // these properties keep every call site (hotkeys, minimap buttons) unchanged.
+        public bool ShowingFTLOverlay         { get => UState.ShowFTLOverlay;         set => UState.ShowFTLOverlay = value; }         // F4
+        public bool ShowingInfluenceOverlay   { get => UState.ShowInfluenceOverlay;   set => UState.ShowInfluenceOverlay = value; }   // F2
+        public bool ShowingGravityWellOverlay { get => UState.ShowGravityWellOverlay; set => UState.ShowGravityWellOverlay = value; } // F5
+        public bool ShowingVisionOverlay      { get => UState.ShowVisionOverlay;      set => UState.ShowVisionOverlay = value; }      // F3
+        public bool ShowingRangeOverlay       { get => UState.ShowRangeOverlay;       set => UState.ShowRangeOverlay = value; }       // F6
 
         /// <summary>
         /// Toggles Cinematic Mode (no UI) on or off

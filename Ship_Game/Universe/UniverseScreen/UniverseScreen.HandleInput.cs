@@ -79,11 +79,11 @@ namespace Ship_Game
         bool HandleInputNotLookingAtPlanet(InputState input)
         {
             if (input.DeepSpaceBuildWindow)       InputOpenDeepSpaceBuildWindow();
-            if (input.FTLOverlay)                 ToggleUIComponent("sd_ui_accept_alt3", ref ShowingFTLOverlay);
-            if (input.RangeOverlay)               ToggleUIComponent("sd_ui_accept_alt3", ref ShowingRangeOverlay);
-            if (input.InfluenceOverlay)           ToggleUIComponent("sd_ui_accept_alt3", ref ShowingInfluenceOverlay);
-            if (input.GravityWellOverlay)         ToggleUIComponent("sd_ui_accept_alt3", ref ShowingGravityWellOverlay);
-            if (input.VisionOverlay)              ToggleUIComponent("sd_ui_accept_alt3", ref ShowingVisionOverlay);
+            if (input.FTLOverlay)                 ShowingFTLOverlay         = ToggleUIComponent("sd_ui_accept_alt3", ShowingFTLOverlay);
+            if (input.RangeOverlay)               ShowingRangeOverlay       = ToggleUIComponent("sd_ui_accept_alt3", ShowingRangeOverlay);
+            if (input.InfluenceOverlay)           ShowingInfluenceOverlay   = ToggleUIComponent("sd_ui_accept_alt3", ShowingInfluenceOverlay);
+            if (input.GravityWellOverlay)         ShowingGravityWellOverlay = ToggleUIComponent("sd_ui_accept_alt3", ShowingGravityWellOverlay);
+            if (input.VisionOverlay)              ShowingVisionOverlay      = ToggleUIComponent("sd_ui_accept_alt3", ShowingVisionOverlay);
             if (input.CodexHelp)                  HandleCodexHelp();
             if (input.BlueprintsSceen)            ScreenManager.AddScreen(new BlueprintsScreen(this, Player));
             if (input.EmpirePatrolsScreen)        ScreenManager.AddScreen(new EmpirePatrolsScreen(this, Player));

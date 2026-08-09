@@ -66,6 +66,15 @@ namespace Ship_Game.Universe
         [StarData] public float GameSpeed = 1f;
         [StarData] public float StarDate = 1000f;
 
+        // Ludoal fork: the map overlay selection (the minimap's F2-F6 buttons) rides the save,
+        // so reopening a game restores the overlays you were playing with. The UniverseScreen
+        // exposes these as its Showing* properties - this is the single owner.
+        [StarData] public bool ShowInfluenceOverlay;   // F2
+        [StarData] public bool ShowVisionOverlay;      // F3
+        [StarData] public bool ShowFTLOverlay;         // F4 subspace projection
+        [StarData] public bool ShowGravityWellOverlay; // F5
+        [StarData] public bool ShowRangeOverlay;       // F6
+
         [StarData] public Vector3d CamPos;
 
         // generated once during universe generation

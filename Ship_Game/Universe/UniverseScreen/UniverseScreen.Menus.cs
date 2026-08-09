@@ -95,10 +95,12 @@ namespace Ship_Game
             LookingAtPlanet = true;
         }
 
-        void ToggleUIComponent(string audioCue, ref bool toggle)
+        // Ludoal fork: returns the flipped state instead of taking a ref - the overlay flags
+        // are UState-backed properties now, and a property cannot be passed by ref.
+        bool ToggleUIComponent(string audioCue, bool current)
         {
             GameAudio.PlaySfxAsync(audioCue);
-            toggle = !toggle;
+            return !current;
         }
 
         public void InputOpenDeepSpaceBuildWindow()
