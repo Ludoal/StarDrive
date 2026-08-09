@@ -70,15 +70,21 @@ namespace Ship_Game
                 batch.SafeEnd();
             }
 
+            // Ludoal fork: the module brush and its firing arcs belong to the scene, so they
+            // clip to the frame exactly like the fitted modules do. Independent of the module
+            // overlay toggle, hence its own pass.
+            if (ActiveModule != null && !ModuleSelectComponent.HitTest(Input))
+            {
+                batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:true,
+                                Ship_Game.Graphics.RenderStates.ScissorEnabled);
+                DrawActiveModule(batch);
+                batch.SafeEnd();
+            }
+
             // scissor off before the UI pass - the panels drawn from here on span the whole screen
             Ship_Game.Graphics.RenderStates.DisableScissorTest(batch.GraphicsDevice);
 
             batch.SafeBegin();
-            if (ActiveModule != null && !ModuleSelectComponent.HitTest(Input))
-            {
-                DrawActiveModule(batch);
-            }
-
             DrawUi(batch, elapsed);
 
             base.Draw(batch, elapsed);
