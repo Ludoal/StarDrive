@@ -1378,7 +1378,7 @@ namespace Ship_Game
                                            // The claim follows the toggle, both directions.
                                            if (!GlobalStats.PauseOnPageOpen)
                                            {
-                                               if (b) ClaimUniversePause(Universe);
+                                               if (b) ClaimUniversePause(ParentUniverse);
                                                else   ReleaseUniversePause();
                                            }
                                            // bench 357 (maintainer): keep the work across the flip.
