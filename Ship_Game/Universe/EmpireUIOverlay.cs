@@ -721,6 +721,15 @@ namespace Ship_Game
                     }
                 }
             }
+
+            // Ludoal fork (spec: interactive band): past the bar and the hotkeys, the visible
+            // map band answers - the live top bar's pattern, one storey down. The page's own
+            // frame keeps the cursor; the Shipyard's Full Screen leaves no band at all.
+            bool fullScreen = caller is ShipDesignScreen && ShipDesignScreen.FullScreenDesign;
+            Rectangle frame = ScreenGroups.GroupFrame(caller.ScreenWidth, caller.ScreenHeight, fullScreen);
+            if (Universe.HandleVisibleBandInput(input, frame))
+                return true;
+
             return false;
         }
 

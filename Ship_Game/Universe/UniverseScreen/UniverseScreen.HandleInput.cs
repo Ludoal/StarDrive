@@ -25,28 +25,50 @@ namespace Ship_Game
 
         RectF SelectionBox = new(-1, -1, 0, 0);
 
+        // Ludoal fork (spec: interactive band): the minimap's navigation, extracted so the
+        // visible-band entry and the map-side path share the one arithmetic.
+        public bool HandleMinimapNavigation(InputState input)
+        {
+            if (!MinimapDisplayRect.HitTest(input.CursorPosition) || SelectingWithBox)
+                return false;
+            HandleCameraZoomScrolling(input);
+            if (input.LeftMouseDown)
+            {
+                // ⚠ the SAME projection the MiniMap draws with, asked of it: this used to
+                // divide the rect's width by Size*2 while the map plotted stars at
+                // shortSide/(Size*2.1) from the map's CENTRE. Two formulas for one mapping,
+                // so a click landed off target - visibly so once the frame was reworked.
+                Vector2 c = Minimap.MapCentre;
+                float scale = Minimap.MapScale;
+                CamDestination.X = (input.CursorPosition.X - c.X) / scale;
+                CamDestination.Y = (input.CursorPosition.Y - c.Y) / scale;
+                snappingToShip = false;
+                ViewingShip = false;
+            }
+            return true;
+        }
+
+        // Ludoal fork (spec: interactive band): the map answers a curated set of gestures
+        // while a PAGE is open, LIMITED to the visible band outside the page's frame.
+        // Reached through the live top bar's shared path - never via the main HandleInput,
+        // whose hosted-seat bookkeeping assumes no input arrives under stacked pages.
+        // v1 gestures: the minimap (overlay buttons and navigation) and the wheel zoom.
+        public bool HandleVisibleBandInput(InputState input, in Rectangle pageFrame)
+        {
+            if (pageFrame.HitTest(input.CursorPosition))
+                return false; // inside the page: its own input owns the cursor
+            if (Minimap != null && Minimap.HandleInput(input))
+                return true;
+            if (HandleMinimapNavigation(input))
+                return true;
+            HandleCameraZoomScrolling(input);
+            return false;
+        }
+
         bool HandleGUIClicks(InputState input)
         {
             bool captured = DeepSpaceBuildWindow.HandleInput(input);
-
-            if (MinimapDisplayRect.HitTest(input.CursorPosition) && !SelectingWithBox)
-            {
-                HandleCameraZoomScrolling(input);
-                if (input.LeftMouseDown)
-                {
-                    // ⚠ the SAME projection the MiniMap draws with, asked of it: this used to
-                    // divide the rect's width by Size*2 while the map plotted stars at
-                    // shortSide/(Size*2.1) from the map's CENTRE. Two formulas for one mapping,
-                    // so a click landed off target - visibly so once the frame was reworked.
-                    Vector2 c = Minimap.MapCentre;
-                    float scale = Minimap.MapScale;
-                    CamDestination.X = (input.CursorPosition.X - c.X) / scale;
-                    CamDestination.Y = (input.CursorPosition.Y - c.Y) / scale;
-                    snappingToShip = false;
-                    ViewingShip = false;
-                }
-                captured = true;
-            }
+            captured |= HandleMinimapNavigation(input);
 
             // @note Make sure HandleInputs are called here
             if (!LookingAtPlanet)
@@ -406,6 +428,13 @@ namespace Ship_Game
             else
             {
                 ClearSelectedItems();
+                // Ludoal fork (spec: interactive band): the minimap navigates and the wheel
+                // zooms beside the colony too. Its overlay buttons already ride the
+                // base.HandleInput pass above - only the gestures the colony path lacks.
+                if (HandleMinimapNavigation(input))
+                    return true;
+                if (!GameScreens.ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight).HitTest(input.CursorPosition))
+                    HandleCameraZoomScrolling(input);
             }
 
             if (input.ScrapShip && (SelectedItem != null && SelectedItem.AssociatedGoal.Owner == Player))
@@ -424,8 +453,8 @@ namespace Ship_Game
                 }
             }
 
-            ShipsInCombat.Visible = !LookingAtPlanet;
-            PlanetsInCombat.Visible = !LookingAtPlanet;
+            // (the combat counters' visibility is the Draw side's business - bench 384:
+            // nothing about the map changes when a panel opens)
 
             if (LookingAtPlanet && workersPanel.HandleInput(input))
                 return true;
