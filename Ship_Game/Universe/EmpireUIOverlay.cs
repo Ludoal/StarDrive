@@ -268,7 +268,10 @@ namespace Ship_Game
                     bool paused = b.launches == "Pause" && Universe.UState.Paused;
                     // A pause held by an open screen is not the player's to lift, so the control
                     // reads as inert: dimmed, and it does not light up under the cursor either.
-                    bool locked = paused && PauseIsAutomatic && !Universe.UState.PausedByPlayer;
+                    // Ludoal fork (bench 384): the COLOR keys on who owns the pause, not on a
+                    // scan of the screen stack - the scan lagged a frame on the Shipyard's
+                    // open and flashed red before the orange settled.
+                    bool locked = paused && !Universe.UState.PausedByPlayer;
                     string label = paused ? "PAUSED" : b.Text;
                     // A BARE control is its glyph and nothing else, so the glyph itself has to
                     // answer the cursor - the same orange the icons already use, rather than a
@@ -727,21 +730,28 @@ namespace Ship_Game
         // its own pause when it closes, so the control simply refuses here.
         bool PauseIsAutomatic => Universe.ScreenManager.AnyScreenHoldsUniversePause();
 
-        // Ludoal fork (bench 383): the manual pause is always available and OUTRANKS the
-        // automatic one. Under an automatic hold, the first press takes the pause over as
-        // the player's own (it now survives the pages); the next press runs the simulation
-        // even under an open page; the next pauses again. The claims never lift a manual
-        // pause (see ReleaseUniversePause).
+        // Ludoal fork (bench 384): the manual pause's one job is to SURVIVE the pages.
+        // Under an automatic hold, a press takes the pause over as the player's own
+        // (orange turns red, and closing the page will not lift it); lifting it while a
+        // page still holds falls BACK to the automatic hold (red returns to orange) - the
+        // simulation only runs under a page when no page claims and no manual pause stands.
         public void TogglePause() // public: the universe's spacebar routes here too
         {
             GameAudio.AcceptClick();
-            if (Universe.UState.Paused && !Universe.UState.PausedByPlayer && PauseIsAutomatic)
+            var us = Universe.UState;
+            if (us.Paused)
             {
-                Universe.UState.PausedByPlayer = true;
+                if (!us.PausedByPlayer && PauseIsAutomatic)
+                {
+                    us.PausedByPlayer = true; // take the pause over: it is the player's now
+                    return;
+                }
+                us.PausedByPlayer = false;
+                us.Paused = PauseIsAutomatic; // a page still holds: back to the automatic hold
                 return;
             }
-            Universe.UState.Paused = !Universe.UState.Paused;
-            Universe.UState.PausedByPlayer = Universe.UState.Paused;
+            us.Paused = true;
+            us.PausedByPlayer = true;
         }
 
         // Ludoal fork: one place decides what "go to screen X while screen Y is open" does.

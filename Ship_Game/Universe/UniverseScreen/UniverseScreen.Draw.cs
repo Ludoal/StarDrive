@@ -28,14 +28,14 @@ namespace Ship_Game
 
         void DrawSystemAndPlanetBrackets(SpriteBatch batch)
         {
-            if (SelectedSystem != null && !LookingAtPlanet)
+            if (SelectedSystem != null)
             {
                 ProjectToScreenCoords(SelectedSystem.Position, 4500f, out Vector2d sysPos, out double sysRadius);
                 if (sysRadius < 5.0)
                     sysRadius = 5.0;
                 batch.BracketRectangle(sysPos, sysRadius, Color.White);
             }
-            if (SelectedPlanet != null && !LookingAtPlanet &&  viewState < UnivScreenState.GalaxyView)
+            if (SelectedPlanet != null && viewState < UnivScreenState.GalaxyView)
             {
                 ProjectToScreenCoords(SelectedPlanet.Position3D, SelectedPlanet.Radius,
                                       out Vector2d planetPos, out double planetRadius);
@@ -185,7 +185,7 @@ namespace Ship_Game
 
         void DrawOverlayShieldBubbles(SpriteBatch sb)
         {
-            if (ShowShipNames && !LookingAtPlanet &&
+            if (ShowShipNames &&
                 viewState <= UnivScreenState.SystemView && 
                 Shields != null && Shields.VisibleShields.Length != 0)
             {
@@ -493,7 +493,10 @@ namespace Ship_Game
             IconsGroupTotalPerf.Stop();
 
             // Advance the simulation time just before we Notify
-            if (!UState.Paused && IsActive)
+            // Ludoal fork (bench 384): SimulationActive, not IsActive - THIS was the time
+            // feeder, and gated on screen focus it STARVED the sim under any open page,
+            // pause state notwithstanding. The third and last hidden gate.
+            if (!UState.Paused && SimulationActive)
             {
                 AdvanceSimulationTargetTime(elapsed.RealTime.Seconds);
             }
@@ -515,6 +518,12 @@ namespace Ship_Game
             {
                 DrawPlanetInfo();
                 EmpireUI.Draw(batch);
+                // Ludoal fork (bench 384, maintainer): NOTHING about the map changes when a
+                // panel opens - the map UI draws identically, the panel simply lands on top.
+                // The LookingAtPlanet gates dated from the panel covering the whole display.
+                DeepSpaceBuildWindow.Draw(batch, elapsed);
+                pieMenu.DrawAt(batch, GetPieMenuPosition(), Fonts.Arial12Bold);
+                NotificationManager.Draw(batch);
                 if (LookingAtPlanet)
                 {
                     // Ludoal fork (benches 314-319): opened FROM a list tab, the group's tab
@@ -543,11 +552,8 @@ namespace Ship_Game
                         batch.SafeBegin();
                     }
                     workersPanel?.Draw(batch, elapsed);
-                }
-                else
-                {
-                    DeepSpaceBuildWindow.Draw(batch, elapsed);
-                    pieMenu.DrawAt(batch, GetPieMenuPosition(), Fonts.Arial12Bold);
+                    // Ludoal fork (bench 384): the map lives beside the colony now - the
+                    // notifications keep drawing, they were gated to the map-only branch
                     NotificationManager.Draw(batch);
                 }
             }
@@ -556,9 +562,10 @@ namespace Ship_Game
 
             // This uses the new UIElementV2 system to automatically toggle visibility of items
             // In general, a much saner way than the old cluster-f*ck of IF statements :)
-            PlanetsInCombat.Visible = ShipsInCombat.Visible = showGeneralUI && !LookingAtPlanet;
-            ExoticBonusesWindow.Visible = showGeneralUI && ExoticBonusesWindow.IsOpen && !LookingAtPlanet;
-            FreighterUtilizationWindow.Visible = showGeneralUI && FreighterUtilizationWindow.IsOpen && !LookingAtPlanet;
+            // the map UI ignores LookingAtPlanet (bench 384): nothing changes when a panel opens
+            PlanetsInCombat.Visible = ShipsInCombat.Visible = showGeneralUI;
+            ExoticBonusesWindow.Visible = showGeneralUI && ExoticBonusesWindow.IsOpen;
+            FreighterUtilizationWindow.Visible = showGeneralUI && FreighterUtilizationWindow.IsOpen;
 
             // Ludoal fork (bench 347): the minimap no longer hides on LookingAtPlanet. That flag's
             // one full-screen case (Planet View) is gone, and its remaining setters (Colony popup,
@@ -637,8 +644,7 @@ namespace Ship_Game
         {
             DrawIcons.Start();
             DrawProjectedGroup();
-            if (!LookingAtPlanet)
-                DeepSpaceBuildWindow.DrawBlendedBuildIcons(ClickableBuildGoals);
+            DeepSpaceBuildWindow.DrawBlendedBuildIcons(ClickableBuildGoals);
             DrawTacticalPlanetIcons(batch);
             DrawFTLInhibitionNodes();
             DrawShipRangeOverlay();
@@ -693,7 +699,7 @@ namespace Ship_Game
 
         void DrawShipRangeOverlay()
         {
-            if (ShowingRangeOverlay && !LookingAtPlanet)
+            if (ShowingRangeOverlay)
             {
                 var shipRangeTex = ResourceManager.Texture("UI/node_shiprange");
                 foreach (Ship ship in UState.Objects.VisibleShips)
@@ -733,7 +739,7 @@ namespace Ship_Game
         // this is called quite rarely, only when the FTL (F2) or gravity wells (F5) overlay is enabled
         void DrawFTLInhibitionNodes()
         {
-            if ((ShowingFTLOverlay || ShowingGravityWellOverlay) && !LookingAtPlanet)
+            if (ShowingFTLOverlay || ShowingGravityWellOverlay)
             {
                 var inhibit = ResourceManager.Texture("UI/node_inhibit");
 
@@ -935,7 +941,7 @@ namespace Ship_Game
 
         void DrawTacticalPlanetIcons(SpriteBatch batch)
         {
-            if (LookingAtPlanet || viewState <= UnivScreenState.SystemView || viewState >= UnivScreenState.GalaxyView)
+            if (viewState <= UnivScreenState.SystemView || viewState >= UnivScreenState.GalaxyView)
                 return;
 
             for (int i = 0; i < UState.Systems.Count; i++)
@@ -969,8 +975,7 @@ namespace Ship_Game
         {
             var goal = SelectedItem?.AssociatedGoal;
             if (goal == null) return;
-            if (!LookingAtPlanet)
-                DrawCircleProjected(goal.BuildPosition, 50f, goal.Owner.EmpireColor);
+            DrawCircleProjected(goal.BuildPosition, 50f, goal.Owner.EmpireColor);
         }
 
         void DrawShipsAndProjectiles(SpriteBatch batch)
@@ -1065,7 +1070,7 @@ namespace Ship_Game
 
         void DrawOverlay(Ship ship)
         {
-            if (ship.InFrustum && ship.Active && !ship.Dying && !LookingAtPlanet && viewState <= UnivScreenState.DetailView)
+            if (ship.InFrustum && ship.Active && !ship.Dying && viewState <= UnivScreenState.DetailView)
             {
                 // if we check for a missing model here we can show the ship modules instead. 
                 // that will solve invisible ships when the ship model load hits an OOM.
@@ -1080,7 +1085,7 @@ namespace Ship_Game
 
         void DrawTacticalIcon(Ship ship)
         {
-            if (!LookingAtPlanet && (!ship.IsSubspaceProjector || ShowingFTLOverlay))  
+            if (!ship.IsSubspaceProjector || ShowingFTLOverlay)  
             {
                 ship.DrawTacticalIcon(this, viewState);
             }
@@ -1287,7 +1292,7 @@ namespace Ship_Game
 
         private void DrawPlanetInfo()
         {
-            if (LookingAtPlanet || viewState > UnivScreenState.SectorView || viewState < UnivScreenState.ShipView)
+            if (viewState > UnivScreenState.SectorView || viewState < UnivScreenState.ShipView)
                 return;
             Vector2 mousePos = Input.CursorPosition;
             SubTexture planetNamePointer = ResourceManager.Texture("UI/planetNamePointer");
