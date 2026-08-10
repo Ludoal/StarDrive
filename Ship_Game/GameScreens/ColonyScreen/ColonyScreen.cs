@@ -21,6 +21,9 @@ namespace Ship_Game
         // window uses, declared with the colours it goes with.
         CloseButton CloseBtn; // bench 361: served explicitly on read-only (infiltrated) colonies
         Submenu GroupRow;     // the hosting group's live tab row, when opened on a hosted seat
+        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => GroupRow?.Rect ?? base.PageFrame;
 
         void OnGroupRowTabChanged(int index)
         {

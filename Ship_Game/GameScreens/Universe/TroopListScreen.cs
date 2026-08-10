@@ -23,6 +23,9 @@ namespace Ship_Game
     public sealed class TroopListScreen : GameScreen
     {
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
+        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
 
         public UniverseScreen Universe;
         Empire Player => Universe.Player;

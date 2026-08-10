@@ -32,6 +32,9 @@ namespace Ship_Game
         // the same columns, drawn here; Relationships and Espionage hand over to their own screen
         // and snap the tab back, so the row never lies about where you are.
         Submenu GroupTabs;
+        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => GroupTabs?.Rect ?? base.PageFrame;
         readonly Tab OpenOn;
         public enum Tab { Intelligence = 0, Bonuses = 1, Relationships = 2, Espionage = 3 }
         bool ShowBonuses;

@@ -40,6 +40,9 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
 
         readonly UniverseScreen Universe;
         Submenu GroupTabs; // Ludoal fork: the Diplomacy group's tab row, this screen being one tab
+        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => GroupTabs?.Rect ?? base.PageFrame;
 
         // The stock diplomacy screen - kept upstream-identical as a reference - opens this with
         // itself as parent, so that signature stays valid. Ludoal fork.

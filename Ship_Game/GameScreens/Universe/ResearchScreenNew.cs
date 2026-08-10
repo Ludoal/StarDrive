@@ -22,6 +22,9 @@ namespace Ship_Game
         public Map<string, TreeNode> SubNodes = new(StringComparer.OrdinalIgnoreCase);
 
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row
+        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
         UIButton Search;
         // Ludoal fork: the slot the Search / Hide Queue pair sits in. The dan_button texture is
         // 182x25 and both are placed off the queue's right edge, so the width is pinned rather

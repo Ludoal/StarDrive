@@ -25,6 +25,15 @@ namespace Ship_Game
         {
             ScreenManager.BeginFrameRendering(elapsed, ref View, ref Projection);
 
+            // Ludoal fork (bench 387, maintainer): Full Screen dims the universe behind the
+            // workbench; windowed leaves the band alive and bright like every other page.
+            if (FullScreenDesign)
+            {
+                batch.SafeBegin();
+                batch.FillRectangle(new Rectangle(0, 0, ScreenWidth, ScreenHeight), new Color(0, 0, 0, 160));
+                batch.SafeEnd();
+            }
+
             // Ludoal fork: the starfield, the particles and the 3D workbench are clipped to the
             // tab frame - the screen is one tab of the Design group now, so its scene belongs
             // inside the frame rather than running under the top bar and past the edges. Scissor

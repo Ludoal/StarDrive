@@ -30,6 +30,9 @@ namespace Ship_Game
         public readonly Empire Player;
 
         Submenu DesignTabs;   // Ludoal fork: the Design group's tab row, this screen being one tab
+        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => DesignTabs?.Rect ?? base.PageFrame;
         // Ludoal fork: every dialog this screen summons centres on ITS frame, not the display -
         // the same rule the Shipyard follows (bench 362)
         public Vector2 FrameCentre => DesignTabs.RectF.Center;

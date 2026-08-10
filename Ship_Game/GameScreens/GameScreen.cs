@@ -130,6 +130,11 @@ namespace Ship_Game
         // Shipyard's Full Screen mode covers the whole display (maintainer decision).
         protected virtual bool PageAlwaysPauses => false;
 
+        // Ludoal fork (bench 387): the rect the visible band excludes - each page KNOWS its
+        // own frame, and the frames are dynamic (content-sized tables, race-hugging rows).
+        // Default: the whole display, i.e. NO band - a page opts in by exposing its frame.
+        public virtual Rectangle PageFrame => new(0, 0, ScreenWidth, ScreenHeight);
+
         // Ludoal fork: claim the pause after construction - the Shipyard's Full Screen
         // toggle flips mid-life, and its pause must follow the toggle, not the ctor.
         public void ClaimUniversePause(UniverseScreen toPause)

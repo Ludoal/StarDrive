@@ -21,6 +21,9 @@ namespace Ship_Game
         public readonly UniverseScreen Universe;
         public UniverseState UState => Universe.UState;
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
+        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
         private Ship SelectedShip;
         private readonly ScrollList<ShipListScreenItem> ShipSL;
         public EmpireUIOverlay EmpireUi;

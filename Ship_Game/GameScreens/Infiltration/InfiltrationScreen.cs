@@ -31,6 +31,9 @@ namespace Ship_Game.GameScreens
         public static readonly Color PanelBackground = new Color(23, 20, 14);
 
         Submenu GroupTabs; // Ludoal fork: the Diplomacy group's tab row, this screen being one tab
+        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => GroupTabs?.Rect ?? base.PageFrame;
         Rectangle LeftRect;
 
         Array<EmpireColumn> Columns = new();
@@ -601,6 +604,28 @@ namespace Ship_Game.GameScreens
             if (Scroller.HandleInput(input))
                 return true;
 
+            // bench 387 (maintainer): DOUBLE-click opens the mole colony - checked before the
+            // single-click block, or the second click would pan again instead of opening
+            if (input.LeftMouseDoubleClick)
+            {
+                foreach ((Rectangle rect, Planet moleP) in MoleRows)
+                {
+                    if (rect.HitTest(input.CursorPosition))
+                    {
+                        GameAudio.AcceptClick();
+                        // Ludoal fork (bench 379): the mole colony rides the Diplomacy seat now,
+                        // Espionage as the Esc origin - the last group joins the mechanism.
+                        Universe.HostColonyTab(moleP, GameScreens.ScreenGroups.Group.Diplomacy,
+                                               (int)MainDiplomacyScreen.Tab.Espionage);
+                        // a stacked page like every tab (migration, bench 386): exit + open in
+                        // the same frame, the fresh ctor claims the pause before any tick
+                        ExitScreen();
+                        Universe.ScreenManager.AddScreen(new ColonyScreen(Universe, moleP, Universe.EmpireUI));
+                        return true;
+                    }
+                }
+            }
+
             // Ludoal fork: the portrait opens negotiation, as on the other Diplomacy tabs. The
             // rects come from the last draw, which is where the columns are laid out.
             if (input.LeftMouseClick)
@@ -617,24 +642,15 @@ namespace Ship_Game.GameScreens
                     }
                 }
 
-                // bench 362 (maintainer): a mole-planet row opens that colony in mole vision,
-                // the same door the map double-click uses
+                // bench 387 (maintainer): a SINGLE click pans the map to the mole planet,
+                // live in the band behind the page - the first taste of click-to-cartouche.
+                // Opening the colony moved up to the double-click.
                 foreach ((Rectangle rect, Planet moleP) in MoleRows)
                 {
                     if (rect.HitTest(input.CursorPosition))
                     {
-                        // bench 363 (maintainer): closing that colony comes BACK HERE, like the
-                        // Economy/Empire lists - the BudgetScreen pattern, copied. SnapViewColony
-                        // would clear the hook, so the panel is opened directly.
                         GameAudio.AcceptClick();
-                        // Ludoal fork (bench 379): the mole colony rides the Diplomacy seat now,
-                        // Espionage as the Esc origin - the last group joins the mechanism.
-                        Universe.HostColonyTab(moleP, GameScreens.ScreenGroups.Group.Diplomacy,
-                                               (int)MainDiplomacyScreen.Tab.Espionage);
-                        // a stacked page like every tab (migration, bench 386): exit + open in
-                        // the same frame, the fresh ctor claims the pause before any tick
-                        ExitScreen();
-                        Universe.ScreenManager.AddScreen(new ColonyScreen(Universe, moleP, Universe.EmpireUI));
+                        Universe.SnapToPlanetStayHere(moleP);
                         return true;
                     }
                 }

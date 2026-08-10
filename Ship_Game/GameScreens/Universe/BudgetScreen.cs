@@ -24,6 +24,9 @@ namespace Ship_Game.GameScreens
     {
         readonly Empire Player;
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
+        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
         // NOT Add()ed: geometry only. The group's frame is the border now, so drawing these would
         // double it - the two halves are separated by a single rule instead.
         Rectangle LeftMenu;

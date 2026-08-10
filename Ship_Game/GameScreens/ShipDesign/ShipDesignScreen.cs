@@ -74,6 +74,9 @@ namespace Ship_Game
         UIButton BtnStripShip;       // Removes all modules but armor, shields and command modules
         UIButton BtnToggleOverlay;
         Submenu DesignTabs;   // Ludoal fork: the Design group's tab row, this screen being one tab
+        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => DesignTabs?.Rect ?? base.PageFrame;
         UIButton BtnArcs;            // weapon fire arcs overlay
         Rectangle SearchBar;
 
@@ -124,9 +127,9 @@ namespace Ship_Game
         // footprint - room to breathe at 1440p+. Session-persistent like the others; flipping it
         // re-runs LoadContent so every panel and the 3D projection rebuild on the new frame.
         public static bool FullScreenDesign; // public: Design Issues centres itself on the same frame (bench 361)
-        // Ludoal fork (bench 383, maintainer): the WHOLE Shipyard pauses regardless of the
-        // page-pause option - its own music takes over, a running sim underneath jars
-        protected override bool PageAlwaysPauses => true;
+        // Ludoal fork (bench 387, maintainer): the hard pause is a Full Screen perk only -
+        // windowed, the Shipyard rides the page-pause option like any other page
+        protected override bool PageAlwaysPauses => FullScreenDesign;
         // bench 362: every dialog the Shipyard summons centres on ITS frame, not the display
         public Vector2 FrameCentre
         {
@@ -788,7 +791,10 @@ namespace Ship_Game
             UpdateAvailableHulls();
             CreateGUI();
             InitializeCamera();
-            ScreenManager.StartMusic("ShipyardTheme");
+            // Ludoal fork (bench 387, maintainer): the theme is a Full Screen perk -
+            // windowed, the universe's ambient keeps playing under the workbench
+            if (FullScreenDesign)
+                ScreenManager.StartMusic("ShipyardTheme");
             AssignLightRig(LightRigIdentity.Shipyard);
             SetupShipyardLighting();
 
@@ -1380,6 +1386,16 @@ namespace Ship_Game
                                            ReloadContent();
                                            if (keep != null)
                                                ChangeHull(keep, zoomToHull: false);
+                                           // bench 387 (maintainer): the hard pause and the theme follow
+                                           // the toggle, not the ctor - windowed hands both back
+                                           if (FullScreenDesign)
+                                               ClaimUniversePause(ParentUniverse);
+                                           else
+                                           {
+                                               if (!GlobalStats.PauseOnPageOpen)
+                                                   ReleaseUniversePause();
+                                               ScreenManager.StartMusic("AmbientMusic");
+                                           }
                                        },
                                        "Full Screen",
                                        "Expand the Shipyard to the whole display instead of the fixed\n"

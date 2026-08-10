@@ -18,6 +18,9 @@ namespace Ship_Game
     {
         readonly UniverseScreen Universe;
         Submenu GalaxyTabs;   // Ludoal fork: the Galaxy group's tab row, this screen being one tab
+        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => GalaxyTabs?.Rect ?? base.PageFrame;
 
         void OnGalaxyTabChanged(int index)
             => GameScreens.ScreenGroups.SwitchGalaxyTab(index, self: 3, Universe, this);

@@ -30,6 +30,9 @@ namespace Ship_Game
 
         private RectF GovernorRect;
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
+        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
         Submenu EmpireSummaryTab; // Ludoal fork (bench 339): the EMPIRE totals tab at the band's left
 
         // Ludoal fork (maintainer bench 339): the bottom band is laid out LEFT to RIGHT now, all of
