@@ -30,6 +30,9 @@ namespace Ship_Game
         public readonly Empire Player;
 
         Submenu DesignTabs;   // Ludoal fork: the Design group's tab row, this screen being one tab
+        // Ludoal fork: every dialog this screen summons centres on ITS frame, not the display -
+        // the same rule the Shipyard follows (bench 362)
+        public Vector2 FrameCentre => DesignTabs.RectF.Center;
 
         // Ludoal fork: the First Fleet cartouche's geometry, shared by the layout that places its
         // buttons and the Draw that paints the name and icon above them.
@@ -348,8 +351,8 @@ namespace Ship_Game
                 b.SetAbsSize(CartBtnW, CartBtnH);
 
             RequisitionForces.OnClick = (b) => ScreenManager.AddScreen(new RequisitionScreen(this));
-            SaveDesign.OnClick = (b) => ScreenManager.AddScreen(new SaveFleetDesignScreen(this, SelectedFleet));
-            LoadDesign.OnClick = (b) => ScreenManager.AddScreen(new LoadFleetDesignScreen(this));
+            SaveDesign.OnClick = (b) => ScreenManager.AddScreen(new SaveFleetDesignScreen(this, SelectedFleet) { CenterOn = FrameCentre });
+            LoadDesign.OnClick = (b) => ScreenManager.AddScreen(new LoadFleetDesignScreen(this) { CenterOn = FrameCentre });
             AutoArrange.OnClick = (b) => SelectedFleet.AutoArrange();   
 
             // anchored at the frame's left edge - the cartouche that used to sit there

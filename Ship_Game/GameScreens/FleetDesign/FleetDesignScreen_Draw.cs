@@ -58,6 +58,12 @@ namespace Ship_Game
                     foreach (FleetDataNode node in SelectedFleet.DataNodes)
                         DrawFleetNode(batch, node);
 
+                // the placement brush belongs to the scene too (maintainer feedback): drawn in
+                // the unclipped UI pass it followed the cursor over the side panels and past
+                // the frame's edges
+                if (ActiveShipDesign != null)
+                    DrawActiveShipDesign(batch);
+
                 if (SelectionBox.W > 0)
                     batch.DrawRectangle(SelectionBox, Color.Green);
             }
@@ -115,11 +121,8 @@ namespace Ship_Game
 
             EmpireUI.Draw(batch);
 
-            // the fleet node icons moved into the scissor-clipped scene block (see Draw), so they
-            // stay inside the frame when the map is dragged - like the grid and the selection rings.
-
-            if (ActiveShipDesign != null)
-                DrawActiveShipDesign(batch);
+            // the fleet node icons and the placement brush live in the scissor-clipped scene
+            // block (see Draw), so they stay inside the frame like the grid and the rings.
 
             DrawSelectedData(batch, elapsed);
         }
