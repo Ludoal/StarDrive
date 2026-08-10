@@ -61,11 +61,16 @@ namespace Ship_Game
                 return true;
             if (HandleMinimapNavigation(input))
                 return true;
-            // bench 388 (maintainer): the left-click selects in the band, the MAP's own
-            // resolver doing the work (system/planet/fleet/ship/sun, empty space clears).
-            // The double-click colony-open stays off here - a page is already up, the band
-            // only selects and the cartouche answers.
-            if (input.LeftMouseClick && LeftClickOnClickableItem(input, allowColonyOpen: false))
+            // bench 389 (maintainer): the band carries the map's OWN input suite, in the
+            // main flow's order - the cartouches and their order buttons, the exploded
+            // system view, the notifications (HandleGUIClicks, which also arms the
+            // tooltips), then box-select, then the click resolver. The double-click
+            // colony-open is allowed now: the maintainer wants the map door everywhere.
+            if (HandleGUIClicks(input))
+                return true;
+            if (HandleSelectionBox(input))
+                return true;
+            if (input.LeftMouseClick && LeftClickOnClickableItem(input))
                 return true;
             HandleMiddleMousePan(input);
             HandleCameraZoomScrolling(input);
@@ -833,14 +838,21 @@ namespace Ship_Game
             return false;
         }
 
-        bool SelectPlanetClicks(InputState input, bool allowColonyOpen = true)
+        bool SelectPlanetClicks(InputState input)
         {
             Planet planet = FindPlanetUnderCursor();
             if (planet != null)
             {
-                if (input.LeftMouseDoubleClick && allowColonyOpen)
+                if (input.LeftMouseDoubleClick)
                 {
-                    SnapViewColony(planet, planet.Owner != Player && !Debug);
+                    // bench 389 (maintainer): a MOLE planet opens its colony (mole vision)
+                    // like an owned one - combatView=true used to detour it to the combat
+                    // menu before the snap's own mole branch could answer
+                    bool mole = false;
+                    if (planet.Owner != Player)
+                        foreach (Mole m in Player.data.MoleList)
+                            if (m.PlanetId == planet.Id) { mole = true; break; }
+                    SnapViewColony(planet, planet.Owner != Player && !mole && !Debug);
                     SelectionBox = new();
                 }
                 else
@@ -853,7 +865,7 @@ namespace Ship_Game
             return false;
         }
 
-        bool LeftClickOnClickableItem(InputState input, bool allowColonyOpen = true)
+        bool LeftClickOnClickableItem(InputState input)
         {
             Project.Started = false;
 
@@ -868,7 +880,7 @@ namespace Ship_Game
                 }
 
                 // in SectorView, always prefer selecting planets
-                if (SelectPlanetClicks(input, allowColonyOpen))
+                if (SelectPlanetClicks(input))
                     return true;
             }
 
@@ -889,7 +901,7 @@ namespace Ship_Game
             // in SystemView, prefer ship clicks over planet clicks
             if (viewState < UnivScreenState.SectorView)
             {
-                if (SelectPlanetClicks(input, allowColonyOpen))
+                if (SelectPlanetClicks(input))
                     return true;
             }
 

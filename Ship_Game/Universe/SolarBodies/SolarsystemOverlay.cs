@@ -343,7 +343,12 @@ namespace Ship_Game
                 Planet p = CurrentlyHoveredPlanet;
                 if (ClickTimer < (double)TimerDelay)
                 {
-                    Universe.SnapViewColony(p, p.Owner != Universe.Player);
+                    // bench 389 (maintainer): mole planets open their colony here too
+                    bool mole = false;
+                    if (p.Owner != Universe.Player)
+                        foreach (Mole m in Universe.Player.data.MoleList)
+                            if (m.PlanetId == p.Id) { mole = true; break; }
+                    Universe.SnapViewColony(p, p.Owner != Universe.Player && !mole);
                 }
                 else
                 {

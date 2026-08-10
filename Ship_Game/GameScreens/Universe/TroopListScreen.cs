@@ -81,7 +81,7 @@ namespace Ship_Game
             // Ludoal fork (maintainer feedback): the table caps at 1680 like the rest of the group -
             // the Troop column folds if it ever overflows (in practice it never will).
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
-            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight, shipRows: true); // bench 388: embarked rows select their carrier - ship floor
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 389: the one floor (cartouche + order rows)
             // 118 = tab strip + the filter/info lane + headers + a line at the bottom
             float contentH = UITable.ContentHeightFor(119, Math.Max(3, rows), 28, fullAvail);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 2,
