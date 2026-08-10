@@ -19,11 +19,13 @@ Theme:
   # The Textures folder the popup frame's bitmaps come from. Point it at a folder of
   # same-named, SAME-SIZED textures and every popup window follows; any piece the folder
   # lacks falls back to the classic Popup set, so a partial skin still draws whole.
-  PopupSkin: Popup
+  # LudoalTheme starts as a byte-for-byte copy of the classic sets - retouch its PNGs
+  # (same names, same sizes) and relaunch to see the result.
+  PopupSkin: LudoalTheme
   # Same lever for the tab groups' chrome (frame, headers): the folder holding the
   # submenu_* pieces. Falls back piece by piece to the classic NewUI set. Only the default
   # Brown style follows this; the Blue research style keeps its own look.
-  SubmenuSkin: NewUI
+  SubmenuSkin: LudoalTheme
 
   # ── Buttons ──────────────────────────────────────────────────────────────────
   # One tint per MEANING. Hover and Pressed are derived from the tint rather than
