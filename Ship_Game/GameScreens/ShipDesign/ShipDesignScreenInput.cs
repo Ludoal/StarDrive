@@ -150,15 +150,10 @@ namespace Ship_Game
                 return true;
             }
 
-            // Ludoal fork: the obsolete-design toggle, the design-side twin of the module one
-            if (InfoSub.Visible && CurrentDesign != null && ObsoleteDesign.HandleInput(input)
-                && input.LeftMouseClick)
-            {
-                GameAudio.AcceptClick();
-                Player.ToggleDesignObsolete(CurrentDesign.Name);
-                RefreshHullSelectList(); // the browser greys the row straight away
+            // Ludoal fork: the obsolete-design toggle, the design-side twin of the module one.
+            // The action lives on OnClick now; the guards still gate whether it takes input.
+            if (InfoSub.Visible && CurrentDesign != null && ObsoleteDesign.HandleInput(input))
                 return true;
-            }
 
             if (CategoryList.HandleInput(input))
                 return true;

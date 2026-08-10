@@ -82,7 +82,7 @@ namespace Ship_Game
         // Ludoal fork (bench): the design-side twin of the module panel's obsolete button, same
         // icon and same corner. Marking a design obsolete greys it in the browser and a filter
         // hides them — a design you have moved past but do not want to delete (maintainer feedback).
-        TexturedButton ObsoleteDesign;
+        UIButton ObsoleteDesign;
         // Ludoal fork (spec v4): the pinned design has no frame of its own — it only feeds the
         // delta lane of InfoPanel. This frame shows the design under the cursor instead.
         ShipDesignInfoPanel HoverPanel;
@@ -714,7 +714,7 @@ namespace Ship_Game
 
             // the obsolete button hangs off the frame's RIGHT edge, so it travels with it —
             // same lesson the module panel's own button taught at bench 46.157
-            ObsoleteDesign.r.X = (int)(frame.X + frame.W - ObsoleteDesign.r.Width - 10);
+            ObsoleteDesign.Pos.X = (int)(frame.X + frame.W - ObsoleteDesign.Width - 10);
 
             // (the Pin Active checkbox is anchored to the BROWSER's left edge, not to this
             // frame, so unlike the two elements above it does not travel when the frame grows)
@@ -1299,9 +1299,20 @@ namespace Ship_Game
             int obsW = ResourceManager.Texture("NewUI/icon_queue_delete").Width;
             int obsH = ResourceManager.Texture("NewUI/icon_queue_delete").Height;
             var obsPos = new RectF(infoRect.X + infoRect.W - obsW - 10, infoRect.Y + 38, obsW, obsH);
-            ObsoleteDesign = new(obsPos, "NewUI/icon_queue_delete",
-                                 "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2");
-            ObsoleteDesign.Tooltip = "Mark this design as obsolete";
+            ObsoleteDesign = new UIButton(new UIButton.StyleTextures("NewUI/icon_queue_delete",
+                                          "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2"),
+                                          new Vector2(obsW, obsH), "")
+            {
+                Tooltip = "Mark this design as obsolete",
+                OnClick = OnObsoleteDesignClicked,
+                ClickSfx = "sd_ui_accept_alt3", // AcceptClick, as this toggle always played
+            };
+            ObsoleteDesign.Rect = obsPos;
+            void OnObsoleteDesignClicked(UIButton b)
+            {
+                Player.ToggleDesignObsolete(CurrentDesign.Name);
+                RefreshHullSelectList(); // the browser greys the row straight away
+            }
 
             // Ludoal fork (bench): the inner panel takes the module frame's own left margin (10),
             // so the design name starts exactly where "Light Kinetic Cannon" does in its frame —

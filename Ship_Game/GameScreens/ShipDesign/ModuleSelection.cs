@@ -31,7 +31,7 @@ namespace Ship_Game
         // the Active frame and gave the freed slot to the hover frame, which shows whatever the
         // cursor is on in the list — transient, so it costs no permanent surface.
         readonly Submenu HoverModSubMenu;
-        readonly TexturedButton Obsolete;
+        readonly UIButton Obsolete;
 
         public ModuleSelection(ShipDesignScreen screen, LocalPos pos, Vector2 size)
             : base(pos, size, new LocalizedText[]{ "Wpn", "Pwr", "Def", "Spc" })
@@ -61,8 +61,14 @@ namespace Ship_Game
             int obsoleteW = ResourceManager.Texture("NewUI/icon_queue_delete").Width;
             int obsoleteH = ResourceManager.Texture("NewUI/icon_queue_delete").Height;
             var obsoletePos = new RectF(ActiveModSubMenu.X + ActiveModSubMenu.Width - obsoleteW - 10, ActiveModSubMenu.Y + 38, obsoleteW, obsoleteH);
-            Obsolete = new(obsoletePos, "NewUI/icon_queue_delete", "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2");
-            Obsolete.Tooltip = GameText.MarkThisModuleAsObsolete;
+            Obsolete = new UIButton(new UIButton.StyleTextures("NewUI/icon_queue_delete", "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2"),
+                                    new Vector2(obsoleteW, obsoleteH), "")
+            {
+                Tooltip = GameText.MarkThisModuleAsObsolete,
+                OnClick = OnObsoleteClicked,
+                ClickSfx = "sd_ui_accept_alt3", // the design-side twin's click, now shared
+            };
+            Obsolete.Rect = obsoletePos;
             
             RectF fighterR = acsub.Move(acsub.W + 20, 0);
 
@@ -487,20 +493,22 @@ namespace Ship_Game
             return base.HandleInput(input);
         }
 
+        void OnObsoleteClicked(UIButton b)
+        {
+            ShipModule m = Screen.ActiveModule;
+            if (m == null)
+                return;
+            if (!m.IsObsolete(Player))
+                Player.ObsoletePlayerShipModules.Add(m.UID);
+            else
+                Player.ObsoletePlayerShipModules.Remove(m.UID);
+        }
+
         bool HandleObsoleteInput(InputState input)
         {
             if (Obsolete.HandleInput(input))
             {
-                ShipModule m = Screen.ActiveModule;
-                if (input.LeftMouseClick && m != null)
-                {
-                    if (!m.IsObsolete(Player))
-                        Player.ObsoletePlayerShipModules.Add(m.UID);
-                    else
-                        Player.ObsoletePlayerShipModules.Remove(m.UID);
-
-                    return true;
-                }
+                return true;
             }
 
             return false;
@@ -545,8 +553,8 @@ namespace Ship_Game
                 // the obsolete button hangs off the frame's RIGHT edge, so it has to travel with
                 // it — it was placed once at construction and stayed put while the frame grew
                 // (bench 46.157, the one thing left behind).
-                // (TexturedButton is not a UIElement — it is a bare public Rectangle)
-                Obsolete.r.X = (int)(ActiveModSubMenu.X + wantWidth - Obsolete.r.Width - 10);
+                // (driven by hand: the button is never Added to the tree, we place its rect)
+                Obsolete.Pos.X = (int)(ActiveModSubMenu.X + wantWidth - Obsolete.Width - 10);
             }
 
             ChooseFighterSub.Visible = ChooseFighterSL.GetFighterHangar() != null;
@@ -622,7 +630,7 @@ namespace Ship_Game
 
             if (ActiveModSubMenu.Visible)
             {
-                DrawActiveModuleData(batch);
+                DrawActiveModuleData(batch, elapsed);
 
                 // Ludoal fork (spec v4): one frame, active values, compared deltas.
                 // ⚠ Inside the visibility test, not beside it (bench 186): this paints INTO the
@@ -681,7 +689,7 @@ namespace Ship_Game
             return 0;
         }
 
-        void DrawActiveModuleData(SpriteBatch batch)
+        void DrawActiveModuleData(SpriteBatch batch, DrawTimes elapsed)
         {
             ShipModule mod = Screen.ActiveModule;   // the brush, and only the brush
 
@@ -690,8 +698,8 @@ namespace Ship_Game
 
             bool isObsolete = mod.IsObsolete(Player);
             Color nameColor = isObsolete ? Color.Red : Color.White;
-            Obsolete.BaseColor = nameColor;
-            Obsolete.Draw(batch);
+            Obsolete.IconTint = nameColor;
+            Obsolete.Draw(batch, elapsed);
             DrawModuleData(batch, mod, ActiveModSubMenu);
         }
 

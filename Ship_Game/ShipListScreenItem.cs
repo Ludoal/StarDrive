@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
@@ -23,10 +24,14 @@ namespace Ship_Game
         // its data and its widgets
         Rectangle ShipIconRect;
         readonly UITextEntry ShipNameEntry;
-        readonly TexturedButton RefitButton;
-        readonly TexturedButton ScrapButton;
-        readonly TexturedButton ExploreButton; //Auto-explore button for ShipListScreen
-        readonly TexturedButton PatrolButton;  // patrol is a FLEET mechanic: shown on fleet ships, opens the fleet's patrol-plan picker
+        readonly UIButton RefitButton;
+        readonly UIButton ScrapButton;
+        readonly UIButton ExploreButton; //Auto-explore button for ShipListScreen
+        readonly UIButton PatrolButton;  // patrol is a FLEET mechanic: shown on fleet ships, opens the fleet's patrol-plan picker
+
+        // icon buttons driven by the row: sized by their Rect each layout, actions on OnClick
+        static UIButton IconButton(string normal, string hover, string pressed, Action<UIButton> onClick)
+            => new(new UIButton.StyleTextures(normal, hover, pressed), Vector2.Zero, "") { OnClick = onClick };
 
         public ShipListScreen Screen;
         public string StatusText;
@@ -56,14 +61,14 @@ namespace Ship_Game
             // widget rects are positioned every frame from the table's columns
             if (IsCombat)
             {
-                ExploreButton = new TexturedButton(new Rectangle(), "NewUI/icon_order_explore", "NewUI/icon_order_explore_hover1", "NewUI/icon_order_explore_hover2");
+                ExploreButton = IconButton("NewUI/icon_order_explore", "NewUI/icon_order_explore_hover1", "NewUI/icon_order_explore_hover2", OnExploreClicked);
             }
             // built for every row - fleet membership changes at runtime, visibility is
             // decided at draw time (maintainer feedback: wire the disabled upstream button)
-            PatrolButton = new TexturedButton(new Rectangle(), "NewUI/icon_order_patrol", "NewUI/icon_order_patrol_hover1", "NewUI/icon_order_patrol_hover2");
-            RefitButton = new TexturedButton(new Rectangle(), "NewUI/icon_queue_rushconstruction", "NewUI/icon_queue_rushconstruction_hover1", "NewUI/icon_queue_rushconstruction_hover2");
-            ScrapButton = new TexturedButton(new Rectangle(), "NewUI/icon_queue_delete", "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2");
-            ScrapButton.BaseColor = Color.Red; // destruction reads red (maintainer bench 305)
+            PatrolButton = IconButton("NewUI/icon_order_patrol", "NewUI/icon_order_patrol_hover1", "NewUI/icon_order_patrol_hover2", OnPatrolClicked);
+            RefitButton = IconButton("NewUI/icon_queue_rushconstruction", "NewUI/icon_queue_rushconstruction_hover1", "NewUI/icon_queue_rushconstruction_hover2", OnRefitClicked);
+            ScrapButton = IconButton("NewUI/icon_queue_delete", "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2", OnScrapClicked);
+            ScrapButton.IconTint = Color.Red; // destruction reads red (maintainer bench 305)
 
             if (Ship.IsPlatformOrStation || Ship.Stats.Thrust <= 0f)
             {
@@ -125,12 +130,12 @@ namespace Ship_Game
                  UITable.ValueColor(TableColor.Plain, Ship.MaxSTLSpeed), Fonts.Arial12);
 
             if (IsCombat)
-                ExploreButton.Draw(batch);
+                ExploreButton.Draw(batch, elapsed);
             if (Ship.Fleet != null)
-                PatrolButton.Draw(batch);
+                PatrolButton.Draw(batch, elapsed);
             if (!Ship.IsSubspaceProjector)
-                RefitButton.Draw(batch);
-            ScrapButton.Draw(batch);
+                RefitButton.Draw(batch, elapsed);
+            ScrapButton.Draw(batch, elapsed);
         }
 
         // widgets (ship icon, name entry, the order/refit/scrap icon lane) follow the
@@ -160,15 +165,71 @@ namespace Ship_Game
             Rectangle explore = IconSlot(exploreTex);
             if (IsCombat)
             {
-                ExploreButton.r = explore;
+                ExploreButton.Rect = explore;
                 ExploreButton.Tooltip = GameText.OrdersThisShipToExplore;
             }
-            PatrolButton.r = IconSlot(patrolTex);
+            PatrolButton.Rect = IconSlot(patrolTex);
             PatrolButton.Tooltip = "Choose a patrol plan for this ship's fleet";
-            RefitButton.r = IconSlot(refitTex);
-            ScrapButton.r = IconSlot(scrapTex);
+            RefitButton.Rect = IconSlot(refitTex);
+            ScrapButton.Rect = IconSlot(scrapTex);
             RefitButton.Tooltip = GameText.OpensAMenuAllowingYou;
             ScrapButton.Tooltip = GameText.OrdersTheShipToReturn;
+        }
+
+        void OnExploreClicked(UIButton b)
+        {
+            if (Ship.AI.State == AIState.Explore)
+                Ship.AI.ClearOrders();
+            else
+                Ship.AI.OrderExplore();
+            StatusText = GetStatusText(Ship);
+        }
+
+        void OnPatrolClicked(UIButton b)
+        {
+            Screen.ScreenManager.AddScreen(new ChoosePatrolPlan(Screen.Universe, Ship.Fleet));
+        }
+
+        void OnRefitClicked(UIButton b)
+        {
+            Screen.ScreenManager.AddScreen(new RefitToWindow(Screen, this));
+        }
+
+        void OnScrapClicked(UIButton b)
+        {
+            if (!IsScuttle)
+            {
+                if (Ship.AI.State == AIState.Scrap)
+                {
+                    Ship.AI.ClearOrders();
+                }
+                else if (Screen.Input.IsShiftKeyDown)
+                {
+                    Screen.Universe.RunOnSimThread(() => Ship.Loyalty.MassScrap(Ship));
+                    Screen.Universe.RunOnSimThread(() => Screen.ResetStatus());
+                }
+                else
+                {
+                    // OrderScrapShip defers the ScrapShip goal to the sim thread,
+                    // so refresh the status only after the goal has actually run
+                    Ship.AI.OrderScrapShip();
+                    Screen.Universe.RunOnSimThread(() => Screen.ResetStatus());
+                }
+            }
+            else
+            {
+                if (Ship.ScuttleTimer != -1f)
+                {
+                    Ship.ScuttleTimer = -1f;
+                    Ship.AI.ClearOrders();
+                }
+                else
+                {
+                    Ship.ScuttleTimer = 10f;
+                    Ship.AI.ClearOrders(AIState.Scuttle, priority:true);
+                }
+            }
+            StatusText = GetStatusText(Ship);
         }
 
         public static string GetStatusText(Ship ship)
@@ -363,89 +424,20 @@ namespace Ship_Game
                 ToolTip.CreateTooltip(StatusText);
             }
 
-            if (IsCombat)
-            {
-                // Explore button for ship list
-                if (ExploreButton.HandleInput(input))
-                {
-                    if (Ship.AI.State == AIState.Explore)
-                    {
-                        Ship.AI.ClearOrders();
-                    }
-                    else
-                    {
-                        Ship.AI.OrderExplore();
-                    }
-                    StatusText = GetStatusText(Ship);
-                    return true;
-                }
-            }
+            // actions live on the buttons' OnClick now; the guards still gate whether a
+            // button takes input at all, and a consumed press stops the row underneath
+            if (IsCombat && ExploreButton.HandleInput(input))
+                return true;
 
             // patrol rides the ship's FLEET: the picker loads a patrol plan for it
             if (Ship.Fleet != null && PatrolButton.HandleInput(input))
-            {
-                GameAudio.EchoAffirmative();
-                Screen.ScreenManager.AddScreen(new ChoosePatrolPlan(Screen.Universe, Ship.Fleet));
                 return true;
-            }
 
             if (!Ship.IsSubspaceProjector && RefitButton.HandleInput(input))
-            {
-                GameAudio.EchoAffirmative();
-                Screen.ScreenManager.AddScreen(new RefitToWindow(Screen, this));
                 return true;
-            }
 
             if (ScrapButton.HandleInput(input))
-            {
-                if (!IsScuttle)
-                {
-                    StatusText = GetStatusText(Ship);
-                }
-                else
-                {
-                    StatusText = GetStatusText(Ship);
-                }
-                GameAudio.EchoAffirmative();
-                if (!IsScuttle)
-                {
-                    if (Ship.AI.State == AIState.Scrap)
-                    {
-                        Ship.AI.ClearOrders();
-                    }
-                    else
-                    {
-                        if (input.IsShiftKeyDown)
-                        {
-                            Screen.Universe.RunOnSimThread(() => Ship.Loyalty.MassScrap(Ship));
-                            Screen.Universe.RunOnSimThread(() => Screen.ResetStatus());
-                        }
-                        else
-                        {
-                            // OrderScrapShip defers the ScrapShip goal to the sim thread,
-                            // so refresh the status only after the goal has actually run
-                            Ship.AI.OrderScrapShip();
-                            Screen.Universe.RunOnSimThread(() => Screen.ResetStatus());
-                        }
-                    }
-                    StatusText = GetStatusText(Ship);
-                }
-                else
-                {
-                    if (Ship.ScuttleTimer != -1f)
-                    {
-                        Ship.ScuttleTimer = -1f;
-                        Ship.AI.ClearOrders();
-                    }
-                    else
-                    {
-                        Ship.ScuttleTimer = 10f;
-                        Ship.AI.ClearOrders(AIState.Scuttle, priority:true);
-                    }
-                    StatusText = GetStatusText(Ship);
-                }
                 return true;
-            }
 
             return base.HandleInput(input);
         }

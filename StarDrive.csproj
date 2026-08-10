@@ -805,7 +805,6 @@
     <Compile Include="Ship_Game\GameScreens\FleetDesign\FleetDesignScreen.cs" />
     <Compile Include="Ship_Game\SkinnableButton.cs" />
     <Compile Include="Ship_Game\UI\ToggleButton.cs" />
-    <Compile Include="Ship_Game\TexturedButton.cs" />
     <Compile Include="Ship_Game\ShipListScreenItem.cs" />
     <Compile Include="Ship_Game\SortButton.cs" />
     <Compile Include="Ship_Game\Universe\EmpireUIOverlay.cs" />

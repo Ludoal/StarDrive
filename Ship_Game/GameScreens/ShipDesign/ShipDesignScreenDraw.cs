@@ -90,13 +90,13 @@ namespace Ship_Game
             base.Draw(batch, elapsed);
 
             // Ludoal fork: the obsolete-design button, drawn after the frame it sits on.
-            // TexturedButton is not a UIElement, so it does not draw itself. Red when the design
-            // is marked, exactly as the module panel colours its own.
+            // Driven by hand - never Added to the tree, this screen places and draws it.
+            // Red when the design is marked, exactly as the module panel colours its own.
             if (InfoSub.Visible && CurrentDesign != null)
             {
-                ObsoleteDesign.BaseColor = Player.IsDesignObsolete(CurrentDesign.Name)
-                                         ? Color.Red : Color.White;
-                ObsoleteDesign.Draw(batch);
+                ObsoleteDesign.IconTint = Player.IsDesignObsolete(CurrentDesign.Name)
+                                        ? Color.Red : Color.White;
+                ObsoleteDesign.Draw(batch, elapsed);
             }
 
             // Ludoal fork: the Design group's tab tooltip. No frame fill on this screen - the
