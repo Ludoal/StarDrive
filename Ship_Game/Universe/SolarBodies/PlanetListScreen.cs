@@ -35,8 +35,6 @@ namespace Ship_Game
         readonly ScrollList<PlanetListScreenItem> PlanetSL;
 
         public readonly UITable Table; // the shared table charte owns geometry, headers and rules
-        // one slot width for the row buttons, from the widest text either slot can wear
-        public readonly int OrdersSlotW;
         static int LastSortCol = -1;   // session-persistent (bench 307)
         static bool LastSortAsc = true;
 
@@ -94,12 +92,7 @@ namespace Ship_Game
             CalcPlanetsDistances();
 
             // Ludoal fork: the Planets tab of the Galaxy group, content-sized on the shared
-            // table charte - every column sizes itself on the data it will show. The button
-            // slots size from the widest text either can wear (Colonize from its Cancel
-            // Colonize toggle - maintainer, 4 Aug).
-            OrdersSlotW = 24 + (int)new[] { "Colonize", "Cancel Colonize", "Send Troops",
-                                            "Recall Troops (99)", "Invading: 99" }
-                                   .Max(t => Fonts.Arial12Bold.TextWidth(t));
+            // table charte - every column sizes itself on the data it will show.
             // Features rides right after Planet (maintainer bench 291); Proximity and
             // Owner read centred
             Table = new UITable(new[]
@@ -119,7 +112,12 @@ namespace Ship_Game
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.MaxPopulation) },
                 new UITable.Column { Title = "Fill", Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.Owner), Align = TableAlign.Center, Sortable = true },
-                new UITable.Column { Width = 2 * UITable.PadX + 2 * OrdersSlotW + 6, Align = TableAlign.Center },
+                // bench 393 (maintainer): the two order buttons became a compact icon lane, like
+                // the Ships list - a colonize icon (red to cancel) and a troop icon (left/right
+                // click as Send Troops did). Two 22px icons plus gaps and padding.
+                new UITable.Column { Width = 2 * UITable.PadX + 2 * 22 + 8, Align = TableAlign.Center },
+                // bench 393: the "En route: N  Deployed: M" counters, off the button now.
+                new UITable.Column { Title = "Troops", Align = TableAlign.Center },
             });
             var sys = new Array<string>(); var names = new Array<string>();
             var feats = new Array<string>(); var prox = new Array<string>();
@@ -151,6 +149,9 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[6], Fonts.Arial12Bold, pops);
             UITable.AutoSize(Table.Columns[7], Fonts.Arial12Bold, ratios);
             UITable.AutoSize(Table.Columns[8], Fonts.Arial12Bold, owners);
+            // bench 393: the Troops counter column sizes on its widest possible label
+            UITable.AutoSize(Table.Columns[10], Fonts.Arial12Bold,
+                             new Array<string> { PlanetListScreenItem.TroopsCounterMeasure });
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
             // the standing sort survives the screen for the session (maintainer bench 307)
             if (LastSortCol < 0) { LastSortCol = 0; LastSortAsc = true; }

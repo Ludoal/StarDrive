@@ -32,9 +32,16 @@ namespace Ship_Game
         private readonly Color EmpireColor;
 
         private Rectangle ShipIconRect;
-        private UIButton Colonize;
-        private UIButton SendTroops;
-        private UIButton RecallTroops;
+        // bench 393 (maintainer): the two order buttons are a compact icon lane now (Ships-list
+        // style). ColonizeIcon: click to colonise, RED to cancel. TroopIcon: left = Send Troops,
+        // right = cancel one inbound landing (Recall reuses it on our own worlds). Rects are laid
+        // in PerformLayout and hit-tested in HandleInput - no UIButton, so the icon can go red.
+        private Rectangle ColonizeIconRect;
+        private Rectangle TroopIconRect;
+        private bool ShowColonizeIcon;
+        private bool ShowTroopIcon;
+        // the widest the "En route: N  Deployed: M" counter column ever gets, for auto-size
+        public const string TroopsCounterMeasure = "En route: 99   Deployed: 99";
         private readonly PlanetListScreen Screen;
         private readonly float Distance;
         private bool MarkedForColonization;
@@ -59,42 +66,58 @@ namespace Ship_Game
 
         public override void PerformLayout()
         {
-            int x = (int)X;
             int y = (int)Y;
-            int w = (int)Width;
             int h = (int)Height;
             RemoveAll();
 
-            // Ludoal fork: the NewUI dan_button family. Blue to ORDER a colonisation, red to cancel
-            // one, plain for Send and Recall Troops - the convention reads action / undo / neutral.
-            LocalizedText colonizeText = !MarkedForColonization ? GameText.Colonize : GameText.CancelColonize;
-            ButtonStyle colonizeStyle  = MarkedForColonization ? ButtonStyle.WideHostile
-                                                               : ButtonStyle.WideActive;
-            Colonize   = Button(colonizeStyle, colonizeText, OnColonizeClicked);
-            SendTroops = Button(ButtonStyle.Wide, "Send Troops", OnSendTroopsClicked);
-            SendTroops.Tooltip = GameText.SendAvailableTroopsToThis;
-            RecallTroops = Button(ButtonStyle.Wide, $"Recall Troops ({Planet.NumTroopsCanLaunchFor(Player)})", OnRecallTroopsClicked);
-            RecallTroops.Tooltip = GameText.RecallAllTroopsBasedOn;
-
-            // cells read the shared column geometry; the two button slots are sized from
-            // their own texts (Colonize from its Cancel Colonize toggle - maintainer, 4 Aug).
-            // Colonize and Recall Troops share the first slot: an unowned planet has no
-            // troops of yours to recall, so the two never come up together.
+            // bench 393 (maintainer): the two order icons, centred in the orders column. Colonize
+            // shows on a colonisable unowned world; the troop icon shows whenever there is a troop
+            // action available (send, or cancel an inbound landing, or recall from our own world).
             UITable.Column[] cols = Screen.Table.Columns;
             Rectangle ordersCol = cols[9].Rect;
             ShipIconRect = new Rectangle(cols[1].Rect.X + UITable.PadX, y + h / 2 - 16, 32, 32);
 
-            int btnW = Screen.OrdersSlotW, btnH = 24;
-            int slot1X = ordersCol.X + UITable.PadX;
-            int rowY   = y + h / 2 - btnH / 2;
-            Colonize.Rect      = new Rectangle(slot1X, rowY, btnW, btnH);
-            RecallTroops.Rect  = new RectF(slot1X, rowY, btnW, btnH);
-            SendTroops.Rect    = new RectF(slot1X + btnW + 6, rowY, btnW, btnH);
+            const int IconSize = 22, IconGap = 8;
+            ShowColonizeIcon = Planet.Owner == null && Planet.Habitable;
+            TryGetIncomingTroops(out int incoming, out _);
+            bool canRecall = Planet.NumTroopsCanLaunchFor(Player) > 0;
+            ShowTroopIcon = (Planet.Habitable && CanSendTroops && !Player.IsNAPactWith(Planet.Owner))
+                          || incoming > 0 || canRecall;
 
-            Colonize.Visible     = Planet.Owner == null && Planet.Habitable;
-            RecallTroops.Visible = Planet.Owner != Player && Planet.NumTroopsCanLaunchFor(Player) > 0;
-            
-            UpdateButtonSendTroops();
+            // the two icons ride side by side, centred in the column; when only one shows it
+            // centres alone (a fixed slot each would leave a lopsided gap)
+            int shown = (ShowColonizeIcon ? 1 : 0) + (ShowTroopIcon ? 1 : 0);
+            int laneW = shown * IconSize + (shown - 1) * IconGap;
+            int ix = ordersCol.X + (ordersCol.Width - laneW) / 2;
+            int iy = y + h / 2 - IconSize / 2;
+            ColonizeIconRect = Rectangle.Empty;
+            TroopIconRect    = Rectangle.Empty;
+            if (ShowColonizeIcon)
+            {
+                ColonizeIconRect = new Rectangle(ix, iy, IconSize, IconSize);
+                ix += IconSize + IconGap;
+            }
+            if (ShowTroopIcon)
+                TroopIconRect = new Rectangle(ix, iy, IconSize, IconSize);
+
+            // the icons themselves - UIPanels so the colonize one can go RED to cancel. Tooltips
+            // ride the panels; the CLICKS are hit-tested in HandleInput off the same rects.
+            if (ShowColonizeIcon)
+            {
+                Color tint = MarkedForColonization ? Color.Red : Color.White;
+                UIPanel col = Panel(ColonizeIconRect, tint, ResourceManager.Texture("UI/ColonizeIcon"));
+                col.Tooltip = MarkedForColonization ? GameText.CancelColonize : GameText.Colonize;
+            }
+            if (ShowTroopIcon)
+            {
+                // red on a hostile target, as the old button was
+                Color tint = Planet.Owner != null && Planet.Owner != Player ? Color.OrangeRed : Color.White;
+                UIPanel tr = Panel(TroopIconRect, tint, ResourceManager.Texture("UI/icon_troop"));
+                tr.Tooltip = Planet.Owner == Player ? GameText.RecallAllTroopsBasedOn
+                                                    : GameText.SendAvailableTroopsToThis;
+            }
+
+            AddTroopsCounter(cols[10].Rect, incoming);
             AddSystemName();
             AddPlanetName();
             AddPlanetTextureAndStatus();
@@ -103,12 +126,41 @@ namespace Ship_Game
             base.PerformLayout();
         }
 
+        // bench 393 (maintainer): "En route: N  Deployed: M" - N troops inbound (granular now:
+        // travelling, not yet landed), M already garrisoned. Off the button, in its own column.
+        void AddTroopsCounter(in Rectangle cell, int incoming)
+        {
+            int deployed = Planet.CountEmpireTroops(Player);
+            if (incoming == 0 && deployed == 0)
+                return;
+            var parts = new Array<string>();
+            if (incoming > 0) parts.Add($"En route: {incoming}");
+            if (deployed > 0) parts.Add($"Deployed: {deployed}");
+            string text = string.Join("   ", parts.ToArray());
+            Label(UITable.CellPos(SmallFont, cell, Y, Height, text, TableAlign.Center), text, SmallFont, Cream);
+        }
+
         public override bool HandleInput(InputState input)
         {
-            if (SendTroops.HitTest(input.CursorPosition) && input.RightMouseClick)
+            if (ShowColonizeIcon && ColonizeIconRect.HitTest(input.CursorPosition) && input.LeftMouseClick)
             {
-                OnSendTroopsRightClick();
+                OnColonizeClicked(null);
                 return true;
+            }
+            if (ShowTroopIcon && TroopIconRect.HitTest(input.CursorPosition))
+            {
+                if (input.RightMouseClick)
+                {
+                    OnSendTroopsRightClick();
+                    return true;
+                }
+                if (input.LeftMouseClick)
+                {
+                    // our own world: the icon RECALLS; anyone else's (or unowned): it SENDS
+                    if (Planet.Owner == Player) OnRecallTroopsClicked(null);
+                    else                        OnSendTroopsClicked(null);
+                    return true;
+                }
             }
 
             return base.HandleInput(input);
@@ -327,40 +379,6 @@ namespace Ship_Game
             }
         }
 
-        void UpdateButtonSendTroops()
-        {
-            // Ludoal fork (maintainer feedback): troops rebasing to one of OUR OWN worlds no longer
-            // put a "Rebasing: N" count on the button - its right-click was inert there (recalling a
-            // rebase-to-home does nothing), and the count now lives beside Available Troops on line 1.
-            // Only the Landing (neutral) / Invading (hostile) cases keep the count-on-button, whose
-            // right-click DOES cancel an inbound landing.
-            if (Planet.Owner != Player && TryGetIncomingTroops(out int troopsInvading, out _))
-            {
-                // red on a hostile target, plain otherwise - the convention of the new look
-                ButtonStyle style  = Planet.Owner == null ? ButtonStyle.Wide : ButtonStyle.WideHostile;
-                string text        = Planet.Owner == null ? "Landing:" : "Invading:";
-
-                SendTroops.Text = $"{text} {troopsInvading}";
-                SendTroops.Style = style;
-                // ⚠ visible even with no free troop left: right-clicking this button is the only
-                // way to cancel the landing, and a hidden button takes no click. Sending your last
-                // troop would otherwise be irreversible.
-                SendTroops.Visible = true;
-            }
-            else
-            {
-                SendTroops.Text    = "Send Troops";
-                // ⚠ Ludoal fork: hiding this button when no troop is free is right - there is
-                // nothing to send. But right-clicking it is how an inbound landing is CANCELLED,
-                // and the branch above (troops on their way) is the one that keeps it visible.
-                // Do not extend the hiding to that branch: a hidden button takes no click, so the
-                // last free troop sent would be impossible to recall.
-                SendTroops.Visible = Planet.Habitable && CanSendTroops && !Player.IsNAPactWith(Planet.Owner);
-                SendTroops.Style   = Planet.Owner == Player || Planet.Owner == null
-                                   ? ButtonStyle.Wide : ButtonStyle.WideHostile;
-            }
-        }
-
         bool TryGetIncomingTroops(out int incomingTroops, out Array<Ship> incomingTroopShips)
         {
             incomingTroopShips = new Array<Ship>();
@@ -388,12 +406,9 @@ namespace Ship_Game
         public void SetCanSendTroops(bool value)
         {
             CanSendTroops = value;
-            // Ludoal fork: the flag alone changed nothing on screen - Visible is only recomputed in
-            // UpdateButtonSendTroops, so a row that had hidden its button kept it hidden until
-            // something else redrew it. Refresh here and every row follows the new count at once.
-            // Guarded: this can be called before the row has laid its buttons out.
-            if (SendTroops != null)
-                UpdateButtonSendTroops();
+            // bench 393: the troop icon's visibility is decided in PerformLayout now - re-lay the
+            // row so it follows the new free-troop count at once (every row shares the count).
+            PerformLayout();
         }
 
         void OnSendTroopsClicked(UIButton b)
@@ -411,7 +426,7 @@ namespace Ship_Game
                 troopShip.AI.OrderLandAllTroops(Planet, clearOrders: true);
                 Screen.RefreshSendTroopButtonsVisibility();
                 Player.Universe.Objects.UpdateLists();
-                UpdateButtonSendTroops();
+                PerformLayout(); // bench 393: recolour/re-show the troop icon
             }
             else
             {
@@ -431,7 +446,7 @@ namespace Ship_Game
             // CanSendTroops - refreshing this row alone left the others hiding on a stale count,
             // so one right-click made the whole column of buttons vanish.
             Screen.RefreshSendTroopButtonsVisibility();
-            UpdateButtonSendTroops();
+            PerformLayout(); // bench 393
         }
 
         void OnRecallTroopsClicked(UIButton b)
@@ -464,16 +479,14 @@ namespace Ship_Game
             if (!MarkedForColonization)
             {
                 Player.AI.AddGoalAndEvaluate(new MarkForColonization(Planet, Planet.Universe.Player, isManual:true));
-                Colonize.Text = "Cancel Colonize";
-                Colonize.Style = ButtonStyle.WideHostile; // red once it undoes something
                 MarkedForColonization = true;
+                PerformLayout(); // bench 393: the colonize icon goes red (cancel)
                 return;
             }
 
             Planet.Universe.Player.AI.CancelColonization(Planet);
             MarkedForColonization = false;
-            Colonize.Text  = "Colonize";
-            Colonize.Style = ButtonStyle.WideActive;
+            PerformLayout(); // bench 393: back to white (order)
         }
     }
 }
