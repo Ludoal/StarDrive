@@ -61,6 +61,12 @@ namespace Ship_Game
                 return true;
             if (HandleMinimapNavigation(input))
                 return true;
+            // bench 388 (maintainer): the left-click selects in the band, the MAP's own
+            // resolver doing the work (system/planet/fleet/ship/sun, empty space clears).
+            // The double-click colony-open stays off here - a page is already up, the band
+            // only selects and the cartouche answers.
+            if (input.LeftMouseClick && LeftClickOnClickableItem(input, allowColonyOpen: false))
+                return true;
             HandleMiddleMousePan(input);
             HandleCameraZoomScrolling(input);
             return false;
@@ -827,12 +833,12 @@ namespace Ship_Game
             return false;
         }
 
-        bool SelectPlanetClicks(InputState input)
+        bool SelectPlanetClicks(InputState input, bool allowColonyOpen = true)
         {
             Planet planet = FindPlanetUnderCursor();
             if (planet != null)
             {
-                if (input.LeftMouseDoubleClick)
+                if (input.LeftMouseDoubleClick && allowColonyOpen)
                 {
                     SnapViewColony(planet, planet.Owner != Player && !Debug);
                     SelectionBox = new();
@@ -847,7 +853,7 @@ namespace Ship_Game
             return false;
         }
 
-        bool LeftClickOnClickableItem(InputState input)
+        bool LeftClickOnClickableItem(InputState input, bool allowColonyOpen = true)
         {
             Project.Started = false;
 
@@ -862,7 +868,7 @@ namespace Ship_Game
                 }
 
                 // in SectorView, always prefer selecting planets
-                if (SelectPlanetClicks(input))
+                if (SelectPlanetClicks(input, allowColonyOpen))
                     return true;
             }
 
@@ -883,7 +889,7 @@ namespace Ship_Game
             // in SystemView, prefer ship clicks over planet clicks
             if (viewState < UnivScreenState.SectorView)
             {
-                if (SelectPlanetClicks(input))
+                if (SelectPlanetClicks(input, allowColonyOpen))
                     return true;
             }
 

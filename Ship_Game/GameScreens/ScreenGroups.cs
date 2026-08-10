@@ -322,17 +322,19 @@ namespace Ship_Game.GameScreens
         // and the height cap: no group screen grows past the 1080p footprint (the resolution charter)
         public const int MaxFrameHeight = 1080;
 
-        // Ludoal fork (maintainer bench 343): the vertical space a group table may use, capped at the
-        // 1080p footprint. Every table screen reads THIS instead of ScreenHeight, so none can forget
-        // the cap and grow past 1080 on a taller display (the bug Planets/Ships/Troops/etc. showed).
-        public static float FullTableHeight(int screenH)
-            => Math.Min(screenH, MaxFrameHeight) - TabRowY - FrameMargin;
+        // Ludoal fork (bench 388, maintainer): the tables' floor is the info cartouche now - the
+        // max height descends to 10 px above the cartouche zone instead of the 1080p cap (which
+        // this replaces, bench 343/361: the freed bottom-left was announced as the cartouche's
+        // home). The housing anchors at screenH-257 (UniverseScreen.LoadContent) and its VISIBLE
+        // frame starts FrameShave=61 lower; ship cartouches stack up to TWO rows of order buttons
+        // above that (52 each + 4 gap, ShipInfoUIElement), so tables whose single-click selects
+        // ships reserve those too. The reservation is permanent - it belongs to the zone, not to
+        // whether a cartouche is showing at this instant.
+        public const int CartoucheClearance     = 257 - 61 + 10;            // planet/star cartouche
+        public const int ShipCartoucheClearance = CartoucheClearance + 108; // + 2 order rows (2*52 + 4)
 
-        // Ludoal fork (bench 361): the UNCAPPED variant - the Colonies table runs the full display
-        // height by explicit maintainer choice. The other tables keep the 1080 cap: the bottom-left
-        // they leave free is where the 47-c click-info cartouche (planet/ship) will live.
-        public static float FullTableHeightUncapped(int screenH)
-            => screenH - TabRowY - FrameMargin;
+        public static float FullTableHeight(int screenH, bool shipRows = false)
+            => screenH - (shipRows ? ShipCartoucheClearance : CartoucheClearance) - TabRowY;
 
         // the height cap (maintainer, 4 Aug): a group frame never grows past the 1080p footprint -
         // anchored to the bar and the left margin, like every frame. Tables that develop in height

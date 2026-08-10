@@ -134,7 +134,7 @@ namespace Ship_Game
             Table.Columns[StandingCol].Ascending = StandingAsc;
 
             int shipRows = Universe.Player.OwnedShips.Count;
-            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 343: capped at 1080p
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight, shipRows: true); // bench 388: floor = ship cartouche + 2 order rows
             // 119, measured: frame->client 41, filter line + headers 43, foot 5, paddings 30
             float contentH = UITable.ContentHeightFor(119, Math.Max(5, shipRows), 34, fullAvail);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 1,

@@ -209,7 +209,7 @@ namespace Ship_Game.GameScreens
             // the columns fixed; height fills 900p, and past it grows only as the planet list
             // needs, capped by the screen.
             float contentW = 1440 - 2 * ScreenGroups.FrameMargin;
-            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 343: capped at 1080p
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 388: floor = the info cartouche
             float h900 = 900 - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             float rowsNeed = 60 + Player.GetPlanets().Count * 24 + 90; // header lane + rows + footer/margins
             float contentH = fullAvail <= h900 ? fullAvail

@@ -81,7 +81,7 @@ namespace Ship_Game
             Table.Columns[LastSortCol].Sorted = true;
             Table.Columns[LastSortCol].Ascending = LastSortAsc;
 
-            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 343: capped at 1080p
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 388: floor = the info cartouche
             // 38 = the 34px row plus the list's 4px item padding
             float contentH = UITable.ContentHeightFor(99, Math.Max(3, player.FleetPatrols.Count), 38, fullAvail);
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Galaxy, Universe), 2,
