@@ -1418,7 +1418,7 @@ namespace Ship_Game
             double scrollAmount = 1000.0;
             double camDestZ = CamDestination.Z;
 
-            if ((input.ScrollOut || input.BButtonHeld) && !LookingAtPlanet)
+            if (input.ScrollOut || input.BButtonHeld)
             {
                 // gradually adjust scroll-out based on CamPos.Z
                 if      (camDestZ >= 5_000_000) scrollAmount = 2000_000;
@@ -1443,7 +1443,7 @@ namespace Ship_Game
                     transitionElapsedTime = 0f;
                 }
             }
-            else if ((input.ScrollIn || input.YButtonHeld) && !LookingAtPlanet)
+            else if (input.ScrollIn || input.YButtonHeld)
             {
                 // gradually adjusts scroll-in based on CamPos.Z
                 if      (camDestZ >= 3200_000) scrollAmount = 1800_000;
