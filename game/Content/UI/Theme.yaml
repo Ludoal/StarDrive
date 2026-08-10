@@ -38,6 +38,13 @@ Theme:
   HoverLift:     0.22   # how far the tint moves toward white under the cursor
   PressDrop:     0.28   # and toward black while held
 
+  # ── Controls ─────────────────────────────────────────────────────────────────
+  # The small input furniture: slider tracks, checkbox boxes, dropdown panels.
+  ControlOutline:      [96, 81, 49]      # the box or track line at rest
+  ControlOutlineHover: [164, 154, 133]   # the same line under the cursor
+  ControlFill:         [22, 22, 23]      # what fills an open panel, e.g. a dropdown's list
+  ControlHoverFill:    [128, 87, 43, 50] # the wash over a hovered row
+
   # ── Text ─────────────────────────────────────────────────────────────────────
   TextPrimary: [255, 240, 189]   # the default ink
   TextDim:     [190, 180, 150]   # secondary lines, captions

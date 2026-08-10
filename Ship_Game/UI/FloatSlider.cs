@@ -63,10 +63,6 @@ namespace Ship_Game
 
         public override string ToString() => $"{TypeName} {ElementDescr} r:{Value} a:{AbsoluteValue} [{Min}..{Max}] {Text}";
 
-        static readonly Color TextColor   = Colors.Cream;
-        static readonly Color HoverColor  = new Color(164, 154, 133);
-        static readonly Color NormalColor = new Color(72, 61, 38);
-
         static int ContentId;
         static SubTexture SliderKnob;
         static SubTexture SliderKnobHover;
@@ -177,11 +173,11 @@ namespace Ship_Game
             if (!Visible)
                 return;
 
-            batch.DrawString(Fonts.Arial12Bold, Text, Pos, TextColor);
+            batch.DrawString(Fonts.Arial12Bold, Text, Pos, UITheme.TextPrimary);
 
             var gradient = new Rectangle(SliderRect.X, SliderRect.Y, (int)(RelativeValue * SliderRect.Width), 6);
             batch.Draw(SliderGradient, gradient, Color.White);
-            batch.DrawRectangle(SliderRect, Hover ? HoverColor : NormalColor);
+            UITheme.DrawControlOutline(batch, SliderRect, Hover);
 
             var tickPos = new Vector2(SliderRect.X, SliderRect.Bottom + 1);
             for (int i = 0; i < 11; i++)
@@ -195,7 +191,7 @@ namespace Ship_Game
             batch.Draw(Hover ? SliderKnobHover : SliderKnob, knobRect, Color.White);
 
             var textPos = new Vector2(SliderRect.Right + 8, SliderRect.Y + SliderRect.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2);
-            batch.DrawString(Fonts.Arial12Bold, StyledValue, textPos, Colors.Cream);
+            batch.DrawString(Fonts.Arial12Bold, StyledValue, textPos, UITheme.TextPrimary);
 
             if (Hover)
             {
