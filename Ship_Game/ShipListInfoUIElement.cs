@@ -119,12 +119,7 @@ namespace Ship_Game
             Rectangle frame = Housing;
             frame.Y += FrameShave; frame.Height -= FrameShave;
             frame.Width -= PlanetInfoUIElement.RightTrim;
-            Rectangle plate = frame;
-            plate.Inflate(-2, -2);
-            batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
-            UITheme.DrawPlate(batch, frame, Color.Transparent,
-                              new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
-                              ruleWidthOverride: 3);
+            Submenu.DrawFrameWithGround(batch, new RectF(frame));
             var namePos = new Vector2(Housing.X + 13, Housing.Y + 71); // the ship cartouche's name seat
             byte alpha  = Screen.CurrentFlashColor.A;
 

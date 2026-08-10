@@ -525,4 +525,14 @@ public class Submenu : UIPanel
         FrameSprite.DrawBorders(batch);
     }
 
+    // Ludoal fork: the cartouche recipe, written once - the near-opaque ground 2px inside
+    // the chrome, then the frame on top. The star/planet/ship/fleet cartouches and the
+    // minimap each carried this pair as their own copy; one arithmetic, several consumers.
+    public static void DrawFrameWithGround(SpriteBatch batch, in RectF r, SubmenuStyle style = SubmenuStyle.Brown)
+    {
+        RectF ground = new(r.X + 2, r.Y + 2, r.W - 4, r.H - 4);
+        batch.FillRectangle(ground, new Color(8, 10, 14).Alpha(0.94f));
+        DrawFrameOnly(batch, r, style);
+    }
+
 }

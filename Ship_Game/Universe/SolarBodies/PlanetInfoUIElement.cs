@@ -264,12 +264,7 @@ namespace Ship_Game
             bool explored = P.IsExploredBy(Player);
             PlateTop = Housing.Y + FrameShave;
             var frame = new Rectangle(Housing.X, PlateTop, Housing.Width - RightTrim, Housing.Height - FrameShave);
-            Rectangle plate = frame;
-            plate.Inflate(-2, -2);
-            batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
-            UITheme.DrawPlate(batch, frame, Color.Transparent,
-                              new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
-                              ruleWidthOverride: 3);
+            Submenu.DrawFrameWithGround(batch, new RectF(frame));
 
             P.UpdateMaxPopulation();
             if (explored && P.Owner != null)  AddExploredTips();

@@ -88,12 +88,7 @@ namespace Ship_Game
 			var frame = new Rectangle(Housing.X, top,
 			                          Housing.Width - PlanetInfoUIElement.RightTrim,
 			                          Housing.Height - PlanetInfoUIElement.FrameShave + extra);
-			Rectangle plate = frame;
-			plate.Inflate(-2, -2);
-			batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
-			UITheme.DrawPlate(batch, frame, Color.Transparent,
-			                  new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
-			                  ruleWidthOverride: 3);
+			Submenu.DrawFrameWithGround(batch, new RectF(frame));
 
 			// the planet grammar: the star in the sprite box, its name bottom-aligned on
 			// the top text line centred over it, the class caption under it
