@@ -149,7 +149,10 @@ namespace Ship_Game
             PauseRequested = null;
             if (PausedUniverse != null)
             {
-                PausedUniverse.UState.Paused = false;
+                // Ludoal fork (bench 383): a manual pause outranks the automatic one - the
+                // player took the pause over, and a closing page has no business lifting it
+                if (!PausedUniverse.UState.PausedByPlayer)
+                    PausedUniverse.UState.Paused = false;
                 PausedUniverse = null;
             }
         }

@@ -57,6 +57,10 @@ namespace Ship_Game.Universe
 
         public bool CanShowDiplomacyScreen = true;
         public bool Paused = true; // always start paused
+        // Ludoal fork (spec: living universe, bench 383): the pause the PLAYER set, as
+        // opposed to a page's automatic hold. A manual pause survives the pages that open
+        // and close over it - releasing an automatic claim never lifts it.
+        public bool PausedByPlayer;
         public bool Debug;
         public DebugModes DebugMode;
         DebugModes PrevDebugMode;

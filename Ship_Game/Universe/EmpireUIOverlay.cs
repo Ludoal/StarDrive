@@ -268,7 +268,7 @@ namespace Ship_Game
                     bool paused = b.launches == "Pause" && Universe.UState.Paused;
                     // A pause held by an open screen is not the player's to lift, so the control
                     // reads as inert: dimmed, and it does not light up under the cursor either.
-                    bool locked = paused && PauseIsAutomatic;
+                    bool locked = paused && PauseIsAutomatic && !Universe.UState.PausedByPlayer;
                     string label = paused ? "PAUSED" : b.Text;
                     // A BARE control is its glyph and nothing else, so the glyph itself has to
                     // answer the cursor - the same orange the icons already use, rather than a
@@ -664,6 +664,12 @@ namespace Ship_Game
             // apply unchanged. Text fields still win: TakingInput means the letter is being typed.
             if (!GlobalStats.TakingInput)
             {
+                // Ludoal fork (bench 383): the manual pause works from inside any page too
+                if (input.PauseGame)
+                {
+                    TogglePause();
+                    return true;
+                }
                 string target = HotkeyTarget(input);
                 if (target != null)
                     return SwitchTo(target, ScreenGroups.Group.None, caller);
@@ -721,15 +727,21 @@ namespace Ship_Game
         // its own pause when it closes, so the control simply refuses here.
         bool PauseIsAutomatic => Universe.ScreenManager.AnyScreenHoldsUniversePause();
 
-        void TogglePause()
+        // Ludoal fork (bench 383): the manual pause is always available and OUTRANKS the
+        // automatic one. Under an automatic hold, the first press takes the pause over as
+        // the player's own (it now survives the pages); the next press runs the simulation
+        // even under an open page; the next pauses again. The claims never lift a manual
+        // pause (see ReleaseUniversePause).
+        public void TogglePause() // public: the universe's spacebar routes here too
         {
-            if (PauseIsAutomatic)
+            GameAudio.AcceptClick();
+            if (Universe.UState.Paused && !Universe.UState.PausedByPlayer && PauseIsAutomatic)
             {
-                GameAudio.NegativeClick();
+                Universe.UState.PausedByPlayer = true;
                 return;
             }
-            GameAudio.AcceptClick();
             Universe.UState.Paused = !Universe.UState.Paused;
+            Universe.UState.PausedByPlayer = Universe.UState.Paused;
         }
 
         // Ludoal fork: one place decides what "go to screen X while screen Y is open" does.

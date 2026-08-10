@@ -257,9 +257,9 @@ namespace Ship_Game
             Add(botLeft, GameText.Language, CurrentLanguage);
             botLeft.ReverseZOrder(); // @todo This is a hacky workaround to zorder limitations
             
-            // Ludoal fork: +206 aligns Max Dynamic Light Sources with the Music Volume
-            // row on the left (the 11-checkbox list above still clears the first label).
-            UIList botRight = AddList(new Vector2(RightArea.X, RightArea.Y + 206), RightArea.Size());
+            // Ludoal fork: +231 clears the 12-checkbox list above (bench 383: the page-pause
+            // checkbox pushed the column, the first slider label sat in its lap).
+            UIList botRight = AddList(new Vector2(RightArea.X, RightArea.Y + 231), RightArea.Size());
             botRight.Padding = new Vector2(2f, 8f);
             botRight.LayoutStyle = ListLayoutStyle.Clip;
             MaxDynamicLightSources = botRight.Add(new FloatSlider(SliderStyle.Decimal, 288f, 50f, GameText.MaxDynamicLightSources, 0, 1000, GlobalStats.MaxDynamicLightSources));
