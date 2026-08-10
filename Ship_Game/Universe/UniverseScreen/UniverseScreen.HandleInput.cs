@@ -55,6 +55,14 @@ namespace Ship_Game
         // v1 gestures: the minimap (overlay buttons and navigation) and the wheel zoom.
         public bool HandleVisibleBandInput(InputState input, in Rectangle pageFrame)
         {
+            // bench 390 (maintainer): the cartouches and their order buttons answer BEFORE the
+            // page-frame gate. They draw ON TOP of the open page and reach into the reserved
+            // corner (a ship cartouche's SECOND order row climbs above the first, into the
+            // page's own rect) - gated by the frame, that top row's clicks and tooltips were
+            // eaten by the table. HandleGUIClicks also arms the tooltips, so it has to run
+            // regardless of where the cursor sits over the cartouche stack.
+            if (HandleGUIClicks(input))
+                return true;
             if (pageFrame.HitTest(input.CursorPosition))
                 return false; // inside the page: its own input owns the cursor
             if (Minimap != null && Minimap.HandleInput(input))
@@ -62,12 +70,8 @@ namespace Ship_Game
             if (HandleMinimapNavigation(input))
                 return true;
             // bench 389 (maintainer): the band carries the map's OWN input suite, in the
-            // main flow's order - the cartouches and their order buttons, the exploded
-            // system view, the notifications (HandleGUIClicks, which also arms the
-            // tooltips), then box-select, then the click resolver. The double-click
-            // colony-open is allowed now: the maintainer wants the map door everywhere.
-            if (HandleGUIClicks(input))
-                return true;
+            // main flow's order - the exploded system view, then box-select, then the click
+            // resolver. The double-click colony-open is allowed: the map door works here too.
             if (HandleSelectionBox(input))
                 return true;
             if (input.LeftMouseClick && LeftClickOnClickableItem(input))

@@ -335,12 +335,15 @@ namespace Ship_Game.GameScreens
         public static float FullTableHeight(int screenH)
             => screenH - CartoucheClearance - TabRowY;
 
-        // the height cap (maintainer, 4 Aug): a group frame never grows past the 1080p footprint -
-        // anchored to the bar and the left margin, like every frame. Tables that develop in height
-        // do it through the content-sized variant by explicit instruction, never through this cap.
+        // the height cap: the full-frame group screens (Research, Fleets, Shipyard windowed) stop
+        // at inf(1080p footprint, the tables' own floor) - bench 390 (maintainer): they must not
+        // dive past where a table stops, so the info cartouche keeps its reserved bottom-left at
+        // every resolution. FullTableHeight already carries the cartouche+order-rows clearance;
+        // Min with the 1080 cap keeps the resolution charter. Tables that DEVELOP in height go
+        // through the content-sized variant, never this frame.
         public static Rectangle GroupFrame(int screenW, int screenH)
             => new(FrameMargin, TabRowY, Math.Min(screenW, MaxFrameWidth) - 2 * FrameMargin,
-                   Math.Min(screenH, MaxFrameHeight) - TabRowY - FrameMargin);
+                   Math.Min(MaxFrameHeight - TabRowY - FrameMargin, (int)FullTableHeight(screenH)));
 
         // the group's CLIENT area - the frame less the tab row and the chrome, computed by
         // the formula's owner (Submenu.CalcGroupClientArea) so a panel hosted in a group's

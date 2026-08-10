@@ -308,8 +308,58 @@ namespace Ship_Game
                 }
 
                 //Log.Info($"View: {newViewState} MaxDistance: {maxDistance}  CamHeight: {CamPos.Z}");
-                SetPerspectiveProjection(maxDistance: maxDistance);
+                ProjMaxDistance = maxDistance;
+                ApplyUniverseProjection();
             }
+            // bench 390 (maintainer): a page opening/closing (or a resize under/over 1920) moves
+            // the viewport offset without touching the view state - re-lay the projection when
+            // the offset condition flips, so the map recentres into the free band and back.
+            else if (PageOffsetApplied != (PageViewportOffset() != default))
+            {
+                ApplyUniverseProjection();
+            }
+        }
+
+        // bench 390 (maintainer): the last maxDistance the view-state ladder chose. Kept so a
+        // page opening/closing can re-lay the projection with the viewport offset WITHOUT
+        // changing the zoom clamp - only the frustum's off-centre moves.
+        double ProjMaxDistance = 15_000_000 + (int)UnivScreenState.GalaxyView;
+        bool PageOffsetApplied; // the offset state the current projection was built for
+
+        // bench 390 (maintainer): with a page open on a wide display the map's visible band is
+        // the strip LEFT of the 1680 frame plus what sits right of it; centre the view there.
+        // Target: x = (width + 1680)/2 (mid of the free right band), y = mid of the left band
+        // between the top bar's bottom and the minimap's top. Off only under 1920 or with no
+        // page open. Returned as a fraction of the screen (frame-centre-minus-screen-centre),
+        // the shape SetPerspectiveProjection's offsetXY already speaks.
+        public Vector2 PageViewportOffset()
+        {
+            if (ScreenWidth < 1920 || !AnyGroupPageOpen())
+                return default;
+            // 1680 is the maintainer's number for the frame's right edge (spec), not MaxFrameWidth
+            float targetX = (ScreenWidth + 1680) * 0.5f;
+            float barBottom = EmpireUIOverlay.BarTop + EmpireUIOverlay.BarH;
+            float minimapTop = ScreenHeight - 256 - 10; // mmHousing.Y (LoadContent)
+            float targetY = (barBottom + minimapTop) * 0.5f;
+            return new Vector2((targetX - ScreenWidth * 0.5f) / ScreenWidth,
+                               (targetY - ScreenHeight * 0.5f) / ScreenHeight);
+        }
+
+        // a group screen (or a hosted colony) sitting in the stack = a page is open
+        bool AnyGroupPageOpen()
+        {
+            var stack = ScreenManager.Screens;
+            for (int i = 0; i < stack.Count; ++i)
+                if (GameScreens.ScreenGroups.GroupOf(stack[i]) != GameScreens.ScreenGroups.Group.None)
+                    return true;
+            return false;
+        }
+
+        public void ApplyUniverseProjection()
+        {
+            Vector2 offset = PageViewportOffset();
+            PageOffsetApplied = offset != default;
+            SetPerspectiveProjection(maxDistance: ProjMaxDistance, offsetXY: offset);
         }
 
         public void InputZoomToShip()

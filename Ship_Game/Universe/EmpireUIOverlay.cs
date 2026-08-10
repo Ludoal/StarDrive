@@ -764,6 +764,14 @@ namespace Ship_Game
         // reachable by its hotkey and cannot drift apart from it.
         bool SwitchTo(string launches, ScreenGroups.Group group, GameScreen caller)
         {
+            // bench 390 (maintainer): jumping to ANOTHER group closes the current one for good,
+            // colony included - so the hosted seat must die with it. Without this, a colony
+            // opened on the Galaxy seat left the seat armed after the jump, and a later close
+            // of the new group resurrected the Galaxy row. The self-close branch below leaves
+            // the seat alone (staying in the group keeps the tab, spec).
+            if (group != ScreenGroups.GroupOf(caller) && Universe.HostedTabTitle != null)
+                Universe.ClearHostedTab();
+
             // Ludoal fork: a GROUP button whose group is already open just closes it,
             // whichever of its tabs you are on. The per-class guards below only know
             // the group's FIRST screen, so pressing DESIGN from the Shipyard used to
