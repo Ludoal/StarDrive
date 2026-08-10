@@ -277,9 +277,10 @@ namespace Ship_Game
                     // ⚠ the hover BRIGHTENS the state colour, never replaces it: red means the
                     // game is stopped, and that must not vanish under the cursor.
                     bool hot = b.Bare && b.State != PressState.Normal;
-                    // dimmed enough to say "not yours to lift", not so much that the stopped
-                    // state stops reading - it is the one thing on the bar that must be seen
-                    Color ink = locked ? PausedRed.Alpha(0.8f)
+                    // Ludoal fork (spec: living universe): the AUTOMATIC pause reads ORANGE -
+                    // a page is holding the simulation, not the player - while the player's
+                    // own pause keeps its red. Still inert under the cursor: not yours to lift.
+                    Color ink = locked ? Color.Orange
                               : paused ? (hot ? PausedRed.LerpTo(Color.White, 0.35f) : PausedRed)
                               : hot    ? Color.Orange
                               : b.State == PressState.Normal ? TextCream

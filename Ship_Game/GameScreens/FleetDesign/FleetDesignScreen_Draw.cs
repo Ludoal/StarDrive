@@ -31,12 +31,6 @@ namespace Ship_Game
         {
             ScreenManager.BeginFrameRendering(elapsed, ref View, ref Projection);
 
-            // Ludoal fork (bench 345): no black clear - the screen is a popup, so the paused universe
-            // drawn underneath shows through the frame's margin. Instead of erasing it, DIM it with
-            // the same semi-transparent veil the table screens use, so the map recedes behind the
-            // screen rather than competing with it.
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-
             // Ludoal fork: the starfield and the fleet grid are clipped to the tab frame - the
             // screen is one tab of the Design group now, so its scene stays inside the frame.
             // Scissor is device state: it goes off again before the UI pass, or the panels drawn

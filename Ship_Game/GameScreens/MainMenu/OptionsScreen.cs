@@ -293,6 +293,8 @@ namespace Ship_Game
             // Ludoal fork: bring back the explored-system fog discs for those who miss them
             right.AddCheckbox(() => GlobalStats.FogOfWarMemory, title: "Fog Of War Memory",
                               tooltip: "Ships permanently paint their sensor coverage on the fog of war as they travel - the classic map memory. Off: the map stays dark and only live sensor coverage lights it.");
+            right.AddCheckbox(() => GlobalStats.PauseOnPageOpen, title: "Auto-pause on page opening",
+                              tooltip: "Opening a screen pauses the simulation. Untick to let the universe run behind your pages - manual pause still works. The Shipyard's Full Screen mode always pauses.");
 
             // bottom LEFT (maintainer bench 303) - it applies the display settings, which live
             // in the left column, so it sits under them

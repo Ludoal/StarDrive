@@ -124,6 +124,9 @@ namespace Ship_Game
         // footprint - room to breathe at 1440p+. Session-persistent like the others; flipping it
         // re-runs LoadContent so every panel and the 3D projection rebuild on the new frame.
         public static bool FullScreenDesign; // public: Design Issues centres itself on the same frame (bench 361)
+        // Ludoal fork (spec: living universe): Full Screen covers the whole display, so it
+        // pauses regardless of the page-pause option (maintainer decision)
+        protected override bool PageAlwaysPauses => FullScreenDesign;
         // bench 362: every dialog the Shipyard summons centres on ITS frame, not the display
         public Vector2 FrameCentre
         {
@@ -1369,6 +1372,15 @@ namespace Ship_Game
                                        (b) =>
                                        {
                                            FullScreenDesign = b;
+                                           // Ludoal fork (spec: living universe): Full Screen
+                                           // pauses REGARDLESS of the page-pause option - it
+                                           // covers the whole display (maintainer decision).
+                                           // The claim follows the toggle, both directions.
+                                           if (!GlobalStats.PauseOnPageOpen)
+                                           {
+                                               if (b) ClaimUniversePause(Universe);
+                                               else   ReleaseUniversePause();
+                                           }
                                            // bench 357 (maintainer): keep the work across the flip.
                                            // ReloadContent rebuilds via LoadContent, whose hull-restore
                                            // can fall back to the bare hull - clone the design WITH its

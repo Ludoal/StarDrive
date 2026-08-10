@@ -154,6 +154,13 @@ public static class GlobalStats
     public static bool PauseOnNotification;
 
     // USER_EXPERIENCE
+    // Ludoal fork: whether opening a page (group screens, colony) auto-pauses the
+    // simulation. ON by default - the game's historical behavior. Opting out lets the
+    // universe live behind the pages; manual pause still works, and the Shipyard's
+    // Full Screen mode always pauses regardless (it covers the whole display).
+    public static bool PauseOnPageOpen = true;
+
+    // USER_EXPERIENCE
     // global option for disabling universe screen pan, default should be OFF
     public static bool DisableScreenPanning;
 
@@ -446,6 +453,7 @@ public static class GlobalStats
 
         GetSetting(config, "NotifyEmptyPlanetQueue", ref NotifyEmptyPlanetQueue);
         GetSetting(config, "PauseOnNotification", ref PauseOnNotification);
+        GetSetting(config, "PauseOnPageOpen", ref PauseOnPageOpen);
         GetSetting(config, "IconSize", ref IconSize);
         IconSize = Math.Max(1, IconSize); // BUGFIX: must be at least 1
         GetSetting(config, "ZoomTracking", ref ZoomTracking);
@@ -662,6 +670,7 @@ public static class GlobalStats
 
         WriteSetting(config, "NotifyEmptyPlanetQueue", NotifyEmptyPlanetQueue);
         WriteSetting(config, "PauseOnNotification", PauseOnNotification);
+        WriteSetting(config, "PauseOnPageOpen", PauseOnPageOpen);
         WriteSetting(config, "IconSize", IconSize);
         WriteSetting(config, "ZoomTracking", ZoomTracking);
         WriteSetting(config, "CameraPanSpeed", CameraPanSpeed);

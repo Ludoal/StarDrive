@@ -217,7 +217,6 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
 
             // Ludoal fork: the frame fill FIRST - before base.Draw and before the bottom row this

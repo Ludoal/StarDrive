@@ -544,7 +544,6 @@ namespace Ship_Game.GameScreens
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
             // Ludoal fork: the frame fill by hand and first, then ONE rule between the colony table
             // and the treasury column - the two halves share the group's frame rather than carrying

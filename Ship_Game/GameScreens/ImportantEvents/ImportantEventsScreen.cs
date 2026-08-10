@@ -82,7 +82,6 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
             // Ludoal fork: the frame is filled by hand before its children, the way every screen
             // in this group does - the group's frame is transparent, so the map showed through.

@@ -138,7 +138,7 @@ namespace Ship_Game
 
         public ColonyScreen(GameScreen parent, Planet p, EmpireUIOverlay empUI, 
             int governorTabSelected = 0, int facilitiesTabSelected = -1) // Ludoal fork: -1 = fresh open, defaults to Stats+
-            : base(parent, p)
+            : base(parent, p, p.Universe.Screen) // uniform auto-pause, like any page
         {
             Eui = empUI;
             IsPopup = true; // bench 347: the full live universe map (and its cartouches) shows behind Colony

@@ -167,7 +167,6 @@ namespace Ship_Game
             // screen - the fade dims the universe around it, the frame fill sits the tree on solid dark
             // inside. Opaque (14,12,9), not the 0.92 GroupFrameFill, for the same crispness the
             // Blueprints panel needed this morning.
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
 
             batch.SafeBegin();
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), new Color(14, 12, 9));

@@ -350,7 +350,6 @@ namespace Ship_Game
         {
             // Ludoal fork (bench 345): dim the paused universe drawn behind this popup, the same
             // veil the table screens use, so the map recedes rather than competing with the screen.
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
             // bench 354 (maintainer): a TRULY opaque frame fill behind the content. GroupFrameFill is
             // only 0.92 alpha, so the dimmed universe still showed through and washed out the text -

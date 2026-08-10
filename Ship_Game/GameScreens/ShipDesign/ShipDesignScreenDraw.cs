@@ -25,10 +25,6 @@ namespace Ship_Game
         {
             ScreenManager.BeginFrameRendering(elapsed, ref View, ref Projection);
 
-            // Ludoal fork (bench 345): a popup now - dim the paused universe drawn behind it with the
-            // table screens' veil, instead of the dead black backdrop it used to have.
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-
             // Ludoal fork: the starfield, the particles and the 3D workbench are clipped to the
             // tab frame - the screen is one tab of the Design group now, so its scene belongs
             // inside the frame rather than running under the top bar and past the edges. Scissor

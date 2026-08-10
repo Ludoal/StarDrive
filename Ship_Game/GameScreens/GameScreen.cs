@@ -126,6 +126,22 @@ namespace Ship_Game
         UniverseScreen PauseRequested;
         public bool HoldsUniversePause => PauseRequested != null;
 
+        // Ludoal fork: a page that must pause NO MATTER the page-pause option - the
+        // Shipyard's Full Screen mode covers the whole display (maintainer decision).
+        protected virtual bool PageAlwaysPauses => false;
+
+        // Ludoal fork: claim the pause after construction - the Shipyard's Full Screen
+        // toggle flips mid-life, and its pause must follow the toggle, not the ctor.
+        public void ClaimUniversePause(UniverseScreen toPause)
+        {
+            PauseRequested = toPause;
+            if (toPause != null && !toPause.UState.Paused)
+            {
+                toPause.UState.Paused = true;
+                PausedUniverse = toPause;
+            }
+        }
+
         // Ludoal fork: give the simulation back. ExitScreen does this on its own; the colony
         // workersPanel's dismiss path closes without ExitScreen and calls it explicitly.
         public void ReleaseUniversePause()
@@ -176,12 +192,12 @@ namespace Ship_Game
             // Ludoal fork: the IsActive condition is gone — during top-bar navigation the
             // closing screen resumes the universe first, but the universe is still flagged
             // covered when this ctor runs, so the new screen never took ownership.
-            PauseRequested = toPause;   // Ludoal fork: what this screen ASKS for, see HoldsUniversePause
-            if (toPause != null && !toPause.UState.Paused)
-            {
-                toPause.UState.Paused = true;
-                PausedUniverse = toPause;
-            }
+            // Ludoal fork (spec: living universe): the page-pause option gates the claim at
+            // its single source - opted out, a page no longer stops the simulation; the
+            // manual pause and the always-pausing pages (Shipyard Full Screen) still do.
+            if (!GlobalStats.PauseOnPageOpen && !PageAlwaysPauses)
+                toPause = null;
+            ClaimUniversePause(toPause);
 
             Input ??= parent?.Input ?? ScreenManager?.input;
 
