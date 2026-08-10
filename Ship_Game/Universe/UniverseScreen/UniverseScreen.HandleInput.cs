@@ -61,6 +61,7 @@ namespace Ship_Game
                 return true;
             if (HandleMinimapNavigation(input))
                 return true;
+            HandleMiddleMousePan(input);
             HandleCameraZoomScrolling(input);
             return false;
         }
@@ -1330,6 +1331,30 @@ namespace Ship_Game
 
         Vector2 StartDragPos;
 
+        // Ludoal fork (spec: interactive band): the middle-drag pan, ONE arithmetic shared
+        // by the map path and the visible band. Ctrl+middle stays the chase gesture
+        // (wishlist #1: a held chase click used to fall into the pan and kill the snap).
+        public void HandleMiddleMousePan(InputState input)
+        {
+            if (input.IsCtrlKeyDown)
+                return;
+            if (input.MiddleMouseClick)
+                StartDragPos = input.CursorPosition;
+            if (input.MiddleMouseHeld())
+            {
+                float worldWidthOnScreen = (float)VisibleWorldRect.Width;
+                float dx = input.CursorPosition.X - StartDragPos.X;
+                float dy = input.CursorPosition.Y - StartDragPos.Y;
+                StartDragPos = input.CursorPosition;
+                CamDestination.X += -dx * worldWidthOnScreen * 0.001f;
+                CamDestination.Y += -dy * worldWidthOnScreen * 0.001f;
+                snappingToShip = false;
+                ViewingShip    = false;
+                CamDestination.X = CamDestination.X.Clamped(-UState.Size, UState.Size);
+                CamDestination.Y = CamDestination.Y.Clamped(-UState.Size, UState.Size);
+            }
+        }
+
         void HandleEdgeDetection(InputState input)
         {
             if (LookingAtPlanet)
@@ -1356,25 +1381,8 @@ namespace Ship_Game
             bool enableKeys = !ViewingShip;
             bool arrowKeys = Debug == false;
 
-            if (!input.IsCtrlKeyDown && input.MiddleMouseClick)
-            {
-                StartDragPos = input.CursorPosition;
-            }
-
-            // Ludoal fork (wishlist #1): a Ctrl+middle (or quick chase click) held a
-            // beat past 0.15s used to fall into this pan branch, killing the ship
-            // snap mid-flight — the camera froze in the void. Pan only without Ctrl.
-            if (!input.IsCtrlKeyDown && input.MiddleMouseHeld())
-            {
-                float dx = input.CursorPosition.X - StartDragPos.X;
-                float dy = input.CursorPosition.Y - StartDragPos.Y;
-                StartDragPos = input.CursorPosition;
-                CamDestination.X += -dx * worldWidthOnScreen * 0.001f;
-                CamDestination.Y += -dy * worldWidthOnScreen * 0.001f;
-                snappingToShip = false;
-                ViewingShip    = false;
-            }
-            else
+            HandleMiddleMousePan(input);
+            if (input.IsCtrlKeyDown || !input.MiddleMouseHeld())
             {
                 if (ShipInfoUIElement.IsHandlingNameInput)
                     return; // don't pan the camera if the ship name area is being edited
