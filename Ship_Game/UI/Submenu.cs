@@ -198,6 +198,40 @@ public class Submenu : UIPanel
         RecalculateTabRects();
     }
 
+    // Ludoal fork: the two primitives a DYNAMIC tab needs - a hosted panel's tab (the colony)
+    // is added, renamed and removed at runtime, which the append-only tab set never allowed.
+    // Removing the selected tab routes its collapse through SelectedIndex, so OnTabChange
+    // fires exactly once: closing a hosted tab IS a tab change, and the host's handler is
+    // what restores the panel the tab was opened from.
+    public void RemoveTab(int index)
+    {
+        if ((uint)index >= (uint)Tabs.Count)
+            return;
+        bool wasSelected = CurSelectedIndex == index;
+        Tabs.RemoveAt(index);
+        for (int i = 0; i < Tabs.Count; ++i)
+            Tabs[i].Index = i;
+        RecalculateTabRects();
+        if (wasSelected)
+        {
+            CurSelectedIndex = -1; // points at a gone tab; the setter below fires the change
+            SelectedIndex = Math.Min(index, Tabs.Count - 1);
+        }
+        else if (CurSelectedIndex > index)
+        {
+            --CurSelectedIndex; // same tab, new seat - no event
+        }
+    }
+
+    /// the "another colony replaces the tab" path: rename + panel swap, no create/destroy
+    public void RenameTab(int index, LocalizedText title)
+    {
+        if ((uint)index >= (uint)Tabs.Count)
+            return;
+        Tabs[index].Title = title.Text;
+        RecalculateTabRects(); // the tab's width follows its text
+    }
+
     int IndexOf(string title) => Tabs.FirstIndexOf(tab => tab.Title == title);
     public bool IsSelected(string title) => SelectedIndex != -1 && IndexOf(title) == SelectedIndex;
     public bool ContainsTab(string title) => IndexOf(title) != -1;
