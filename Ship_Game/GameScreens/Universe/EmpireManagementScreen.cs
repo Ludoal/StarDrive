@@ -138,7 +138,7 @@ namespace Ship_Game
             const float GovernorH = 222;
             float bandH = GovernorH + 7; // the 7px the rect derivation below eats back
             float contentH = UITable.ContentHeightFor(102 + bandH, Math.Max(3, planets.Count), 84, fullAvail);
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 0,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 0,
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
             RectF client = EmpireTabs.ClientArea;
             Table.RowPitch = 84;
@@ -398,13 +398,12 @@ namespace Ship_Game
 
         void OnColonyListItemDoubleClicked(ColoniesListItem item)
         {
+            // Ludoal fork (spec: colony-as-tab): armed BEFORE the snap - the colony's ctor
+            // reads the seat to wear the EMPIRE row, planet tab appended, Colonies (0) as
+            // the Esc origin. The snap's map-open path sees this planet's seat standing and
+            // leaves it be. Replaces the ReturnToList trio and its dimmed silhouette.
+            Universe.HostColonyTab(item.P, ScreenGroups.Group.Empire, 0);
             Universe.SnapViewColony(item.P, combatView: false);
-            // Ludoal fork (bench 191): closing that colony comes back HERE, not to the map
-            // (maintainer feedback). ⚠ Set AFTER the snap: opening a colony clears this hook, so a line placed
-            // above would be wiped by the very call it is meant to follow.
-            Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new EmpireManagementScreen(Universe, eui));
-            Universe.ReturnToListTabs   = EmpireTabs; // the dimmed silhouette behind the colony
-            Universe.ReturnToListGroup  = ScreenGroups.GroupOf(this); // keep the group button lit (maintainer)
             // Ludoal fork: the colony inherits this list's automatic pause - consulting a colony
             // from a paused list must not restart the simulation (maintainer bench). Before
             // ExitScreen, which would resume it; skipped when the snap did not open a colony.

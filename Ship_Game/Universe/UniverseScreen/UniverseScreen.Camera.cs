@@ -101,10 +101,14 @@ namespace Ship_Game
                 // when tactically visible, otherwise just the camera snap.
                 if ((p.Owner == Player || flag || Debug) && p.Owner != null)
                 {
+                    // Ludoal fork (spec: colony-as-tab): a map-opened colony rides the GALAXY
+                    // group's row with origin -1 - Esc closes to the map, as it always did.
+                    // Armed BEFORE the panel: the colony's constructor reads the seat to wear
+                    // the live row. ⚠ A list screen arms its own seat for this planet before
+                    // calling the snap - that arming wins, don't demote it to Galaxy/-1.
+                    if (HostedTabTitle != p.Name)
+                        HostColonyTab(p, GameScreens.ScreenGroups.Group.Galaxy, -1);
                     workersPanel = new ColonyScreen(this, p, EmpireUI);
-                    // Ludoal fork (bench 191): opened FROM THE MAP, so closing goes back to the
-                    // map. Clear any hook a list screen left standing, or a later map double-click
-                    // would still fly back to that list.
                     ReturnToListScreen = null;
                     ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
                     // bench 352: opening a colony makes it THE selected object, so a prior selection's

@@ -71,7 +71,7 @@ namespace Ship_Game
             camera = new Camera2D { Pos = new Vector2(Viewport.Width, Viewport.Height) / 2f };
             // Ludoal fork: the Research tab of the Empire group. The node grids derive from
             // MainArea.Height, so they compress on their own down to the 900px floor.
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 4,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 4,
                                                     OnEmpireTabChanged, out Rectangle frame);
             RectF client = EmpireTabs.ClientArea;
             var main = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);

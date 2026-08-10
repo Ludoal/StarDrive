@@ -280,17 +280,26 @@ namespace Ship_Game.GameScreens
         // order they have to happen. PerformLayout is what makes ClientArea known, and it has to
         // run before anything is measured against it.
         public static Submenu AddGroupTabs(GameScreen screen, LocalizedText[] titles, int selected,
-                                           Action<int> onChange, out Rectangle frame, bool fullScreen = false)
+                                           Action<int> onChange, out Rectangle frame, bool fullScreen = false,
+                                           bool withClose = true)
         {
             frame = GroupFrame(screen.ScreenWidth, screen.ScreenHeight, fullScreen);
             var tabs = screen.Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height), titles));
             tabs.OnTabChange = onChange;
             tabs.PerformLayout();
             tabs.SelectedIndex = selected;
-            Vector2 closePos = GroupClosePos(tabs.ClientArea);
-            screen.Add(new CloseButton(closePos.X, closePos.Y));
+            if (withClose) // the hosted colony keeps its own popup close cross instead
+            {
+                Vector2 closePos = GroupClosePos(tabs.ClientArea);
+                screen.Add(new CloseButton(closePos.X, closePos.Y));
+            }
             return tabs;
         }
+
+        /// the factory of a HOSTING group - only the two groups with central factories can
+        /// host a tab today (the Diplomacy screens still build their rows by hand)
+        public static GameScreen TabOf(Group g, int index, UniverseScreen u)
+            => g == Group.Galaxy ? GalaxyTab(index, u) : EmpireTab(index, u);
 
         // Ludoal fork (maintainer feedback): the target frame width. Group screens never grow past
         // this even at 1920 fullscreen, so a screen looks identical windowed and fullscreen - the

@@ -621,6 +621,11 @@ namespace Ship_Game.GameScreens
                         // Economy/Empire lists - the BudgetScreen pattern, copied. SnapViewColony
                         // would clear the hook, so the panel is opened directly.
                         GameAudio.AcceptClick();
+                        // Ludoal fork (spec: colony-as-tab): the mole colony keeps the OLD return
+                        // mechanism - the Diplomacy group has no central factory to host a tab
+                        // yet. A leftover hosted seat must not dress this colony in another
+                        // group's row, so it is cleared before the panel is built.
+                        Universe.ClearHostedTab();
                         Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new InfiltrationScreen(Universe));
                         Universe.ReturnToListTabs   = GroupTabs;
                         Universe.ReturnToListGroup  = GameScreens.ScreenGroups.GroupOf(this);

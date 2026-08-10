@@ -7,6 +7,7 @@ using Ship_Game.Universe;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.UI;
+using Ship_Game.Audio;
 using System;
 using SDUtils;
 using Ship_Game.Universe.SolarBodies;
@@ -21,6 +22,15 @@ namespace Ship_Game
         Rectangle ColonyFrame;
         PopupFrame Frame;
         CloseButton CloseBtn; // bench 361: served explicitly on read-only (infiltrated) colonies
+        Submenu GroupRow;     // the hosting group's live tab row, when opened on a hosted seat
+
+        void OnGroupRowTabChanged(int index)
+        {
+            if (GroupRow == null || index == GroupRow.NumTabs - 1)
+                return; // the colony's own tab - already here
+            GameAudio.AcceptClick();
+            P.Universe.Screen.CloseHostedPanelToTab(index);
+        }
         readonly Submenu PlanetInfo;
         readonly Submenu PStorage;
         readonly Submenu PFacilities;
@@ -171,6 +181,18 @@ namespace Ship_Game
             // the close cross where every popup window puts its own, from the same source
             Vector2 closePos = PopupFrame.ClosePos(ColonyFrame);
             CloseBtn = Add(new CloseButton(closePos.X, closePos.Y)); // ref kept: the read-only early-out must still serve it (bench 361)
+
+            // Ludoal fork (spec: colony-as-tab): opened on a hosted seat, the colony wears its
+            // group's LIVE row - real tabs, the planet's own tab appended and selected - in
+            // place of the dimmed silhouette. A neighbor click closes this panel into that
+            // tab; the row's close cross is skipped, the popup frame already carries ours.
+            UniverseScreen u = p.Universe.Screen;
+            if (u.HostedTabTitle != null)
+            {
+                var titles = GameScreens.ScreenGroups.LiveTitles(u.HostedTabGroup, u);
+                GroupRow = GameScreens.ScreenGroups.AddGroupTabs(this, titles, titles.Length - 1,
+                                                                 OnGroupRowTabChanged, out _, withClose: false);
+            }
 
             // ⚠ the popup frame's borders are NOT a 2px rule: 11 on the right, 30 at the foot.
             // Content laid out on the raw rect runs underneath them, which is exactly the width

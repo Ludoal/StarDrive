@@ -134,7 +134,7 @@ namespace Ship_Game
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 343: capped at 1080p
             // 119, measured: frame->client 41, filter line + headers 43, foot 5, paddings 30
             float contentH = UITable.ContentHeightFor(119, Math.Max(5, shipRows), 34, fullAvail);
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 1,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 1,
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
 
             // Ludoal fork: the reserved first line carries the three filters and the role dropdown,

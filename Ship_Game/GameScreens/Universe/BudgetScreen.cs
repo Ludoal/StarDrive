@@ -211,7 +211,7 @@ namespace Ship_Game.GameScreens
             float rowsNeed = 60 + Player.GetPlanets().Count * 24 + 90; // header lane + rows + footer/margins
             float contentH = fullAvail <= h900 ? fullAvail
                            : Math.Min(fullAvail, Math.Max(h900, rowsNeed));
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 3,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 3,
                                                     OnEmpireTabChanged, contentW, contentH);
             RectF client = EmpireTabs.ClientArea;
 
@@ -387,11 +387,9 @@ namespace Ship_Game.GameScreens
         {
             // the economy screen is the door into the diagnosis: a red row → why?
             GameAudio.AcceptClick();
-            // Ludoal fork (bench 191): right-click in the colony comes back HERE, not to the
-            // map (maintainer feedback). The universe screen calls this once, when that colony closes.
-            Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new BudgetScreen(Universe));
-            Universe.ReturnToListTabs   = EmpireTabs; // the dimmed silhouette behind the colony
-            Universe.ReturnToListGroup  = ScreenGroups.GroupOf(this); // keep the group button lit (maintainer)
+            // Ludoal fork (spec: colony-as-tab): armed before the panel - the colony wears the
+            // EMPIRE row, Economy (3) as the Esc origin. Replaces the ReturnToList trio.
+            Universe.HostColonyTab(item.Planet, ScreenGroups.Group.Empire, 3);
             Universe.workersPanel = new ColonyScreen(Universe, item.Planet, Universe.EmpireUI);
             Universe.LookingAtPlanet = true;
             // Ludoal fork: the colony inherits this screen's automatic pause - consulting a

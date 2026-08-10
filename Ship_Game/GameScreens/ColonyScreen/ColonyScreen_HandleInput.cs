@@ -219,11 +219,17 @@ namespace Ship_Game
             Planet nextOrPrevPlanet = planets[newIndex];
             if (nextOrPrevPlanet != P)
             {
-                var next = new ColonyScreen(Universe.Screen, nextOrPrevPlanet, Eui,
+                // Ludoal fork (spec: colony-as-tab): the walk re-arms the hosted seat FIRST -
+                // the fresh screen's constructor reads it, so the row rebuilds with the new
+                // planet's name on the tab, same group, same Esc origin.
+                UniverseScreen u = Universe.Screen;
+                if (u.HostedTabTitle != null)
+                    u.HostColonyTab(nextOrPrevPlanet, u.HostedTabGroup, u.HostedTabOrigin);
+                var next = new ColonyScreen(u, nextOrPrevPlanet, Eui,
                     GovernorDetails.CurrentTabIndex, PFacilitiesPlayerTabSelected);
                 // Ludoal fork: the colony walk keeps an inherited list pause alive across the swap
                 HandOverUniversePause(next);
-                Universe.Screen.workersPanel = next;
+                u.workersPanel = next;
             }
         }
 

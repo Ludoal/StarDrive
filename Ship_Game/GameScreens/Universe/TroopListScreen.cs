@@ -81,7 +81,7 @@ namespace Ship_Game
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 343: capped at 1080p
             // 118 = tab strip + the filter/info lane + headers + a line at the bottom
             float contentH = UITable.ContentHeightFor(119, Math.Max(3, rows), 28, fullAvail);
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 2,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 2,
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
             RectF client = EmpireTabs.ClientArea;
             // one lane: the filter, then the two figures on the same line (maintainer bench 288)
@@ -136,17 +136,14 @@ namespace Ship_Game
                 // Garrison: colony view. Deployed (planet not ours): combatView=true
                 // routes to the Ground Assault View via OpenCombatMenu.
                 bool deployed = item.Planet.Owner != Player;
+                // Ludoal fork (spec: colony-as-tab): colony view only - the deployed path opens
+                // the Ground Assault view, which hosts no tab. Armed BEFORE the snap so the
+                // colony's ctor wears the EMPIRE row, Troops (2) as the Esc origin.
+                if (!deployed)
+                    Universe.HostColonyTab(item.Planet, ScreenGroups.Group.Empire, 2);
                 Universe.SnapViewColony(item.Planet, deployed);
-                // Ludoal fork (bench 191): closing that colony comes back HERE (maintainer feedback).
-                // ⚠ Colony view only: the deployed path opens the Ground Assault view instead,
-                // which never reaches the close handler that consumes this, so a hook set there
-                // would sit and fire on some later, unrelated close.
-                // ⚠ And AFTER the snap, which clears the hook on its way in.
                 if (!deployed)
                 {
-                    Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new TroopListScreen(Universe, EmpireUI));
-                    Universe.ReturnToListTabs   = EmpireTabs; // the dimmed silhouette behind the colony
-                    Universe.ReturnToListGroup  = ScreenGroups.GroupOf(this); // keep the group button lit (maintainer)
                     // Ludoal fork: the colony inherits this list's automatic pause - consulting a
                     // colony from a paused list must not restart the simulation (maintainer bench).
                     // The Ground Assault view is a live battle, it keeps the resume. Before

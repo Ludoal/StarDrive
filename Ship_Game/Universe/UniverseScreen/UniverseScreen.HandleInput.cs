@@ -209,6 +209,20 @@ namespace Ship_Game
                 ReturnToListScreen = null;
                 ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
 
+                // Ludoal fork (spec: colony-as-tab): closing the hosted panel closes its TAB -
+                // back to the panel it was opened from, or to the map when it came from there
+                // (origin -1). The seat clears first: the reopened screen must build the stock
+                // row, without the tab that just died.
+                if (back == null && HostedTabTitle != null)
+                {
+                    var hostedGroup = HostedTabGroup;
+                    int origin = HostedTabOrigin;
+                    ClearHostedTab();
+                    if (origin >= 0)
+                        back = () => ScreenManager.AddScreen(
+                            GameScreens.ScreenGroups.TabOf(hostedGroup, origin, this));
+                }
+
                 AdjustCamTimer = 1f;
                 if (returnToShip)
                 {
@@ -283,6 +297,14 @@ namespace Ship_Game
         public override bool HandleInput(InputState input)
         {
             Input = input;
+
+            // Ludoal fork (spec: colony-as-tab): the hosted tab dies WITH its group. The
+            // universe only receives input once nothing is stacked above it - so a seat
+            // still armed here, with no colony panel up, means its group was closed to the
+            // map and the tab goes with it. (Every in-group path opens the next screen in
+            // the same frame, before input ever returns to the universe.)
+            if (HostedTabTitle != null && !LookingAtPlanet)
+                ClearHostedTab();
 
             if (input.PauseGame && !GlobalStats.TakingInput)
                 UState.Paused = !UState.Paused;

@@ -124,6 +124,21 @@ namespace Ship_Game
             HostedTabGroup = GameScreens.ScreenGroups.Group.None;
             HostedTabOrigin = -1;
         }
+
+        // Ludoal fork: a NEIGHBOR tab clicked on the hosted panel's row - close the panel
+        // (camera and pause exactly like the dismiss path) and open that tab's screen. The
+        // seat stays armed: the hosted tab survives visits to its neighbors (spec), it only
+        // dies on Esc or with the group.
+        public void CloseHostedPanelToTab(int index)
+        {
+            AdjustCamTimer = 1f;
+            CamDestination = transitionStartPosition;
+            SetSelectedPlanet(workersPanel.P);
+            transitionElapsedTime = 0f;
+            LookingAtPlanet = false;
+            workersPanel.ReleaseUniversePause(); // the opened screen takes it back with its own toPause
+            ScreenManager.AddScreen(GameScreens.ScreenGroups.TabOf(HostedTabGroup, index, this));
+        }
         public EmpireUIOverlay EmpireUI;
         public BloomComponent bloomComponent;
         public DistortionComponent distortionComponent;
