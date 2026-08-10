@@ -82,30 +82,6 @@ namespace Ship_Game
             Press    = ResourceManager.Texture("SelectionBox/button_grid_pressed")
         };
 
-        public static readonly ToggleButtonStyle ArrowLeft = new ToggleButtonStyle
-        {
-            Width  = 14,
-            Height = 35,
-            ContentId = ResourceManager.ContentId,
-            Folder   = "SelectionBox/",
-            Active   = ResourceManager.Texture("SelectionBox/button_arrow_left"),
-            Inactive = ResourceManager.Texture("SelectionBox/button_arrow_left"),
-            Hover    = ResourceManager.Texture("SelectionBox/button_arrow_left_hover"),
-            Press    = ResourceManager.Texture("SelectionBox/button_arrow_left_hover")
-        };
-
-        public static readonly ToggleButtonStyle ArrowRight = new ToggleButtonStyle
-        {
-            Width  = 14,
-            Height = 35,
-            ContentId = ResourceManager.ContentId,
-            Folder   = "SelectionBox/",
-            Active   = ResourceManager.Texture("SelectionBox/button_arrow_right"),
-            Inactive = ResourceManager.Texture("SelectionBox/button_arrow_right"),
-            Hover    = ResourceManager.Texture("SelectionBox/button_arrow_right_hover"),
-            Press    = ResourceManager.Texture("SelectionBox/button_arrow_right_hover")
-        };
-
         public static readonly ToggleButtonStyle Button = new ToggleButtonStyle
         {
             Width  = 25,
@@ -121,7 +97,11 @@ namespace Ship_Game
 
     }
 
-    // TODO: Replace with UIButton
+    /// Ludoal fork: the TOGGLE socle, kept on purpose (maintainer decision) - the upstream
+    /// "replace with UIButton" TODO died on contact. A toggle here is a three-layer
+    /// composition UIButton does not carry: per-state chrome, an icon overlaid on it (with
+    /// its _active variant), and an optional opaque ground wearing the theme's active tint.
+    /// The navigation arrows were the only fakes in the family; they are plain UIButtons now.
     public class ToggleButton : UIElementV2
     {
         // If TRUE, this ToggleButton is Toggled Active [x], if false, it is inactive [ ]

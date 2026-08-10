@@ -31,8 +31,8 @@ namespace Ship_Game
         readonly UITextEntry PlanetName;
         readonly Rectangle PlanetIcon;
         public EmpireUIOverlay Eui;
-        readonly ToggleButton LeftColony;
-        readonly ToggleButton RightColony;
+        readonly UIButton LeftColony;
+        readonly UIButton RightColony;
         readonly UITextEntry FilterBuildableItems;
         readonly Rectangle GridPos;
         readonly Submenu SubColonyGrid;
@@ -425,17 +425,25 @@ namespace Ship_Game
             int arrowY = ColonyFrame.Y + PopupFrame.TitleBarTop
                        + (PopupFrame.TitleBarHeight - arrowH) / 2;
 
-            LeftColony = Add(new ToggleButton((int)SubColonyGrid.X, arrowY,
-                                              ToggleButtonStyle.ArrowLeft));
-            LeftColony.SetAbsSize(arrowW, arrowH);
-            LeftColony.Tooltip = GameText.ViewPreviousColony;
-            LeftColony.OnClick = b => OnChangeColony(-1);
+            // plain buttons, not toggles - the arrows only ever navigate (maintainer decision:
+            // ToggleButton keeps the real toggles, the fakes move out)
+            LeftColony = Add(new UIButton(new UIButton.StyleTextures("SelectionBox/button_arrow_left", "SelectionBox/button_arrow_left_hover"),
+                                          new Vector2(arrowW, arrowH), "")
+            {
+                Pos = new Vector2((int)SubColonyGrid.X, arrowY),
+                Tooltip = GameText.ViewPreviousColony,
+                OnClick = b => OnChangeColony(-1),
+                ClickSfx = "sd_ui_accept_alt3", // the click every toggle played
+            });
 
-            RightColony = Add(new ToggleButton((int)SubColonyGrid.Right - arrowW, arrowY,
-                                               ToggleButtonStyle.ArrowRight));
-            RightColony.SetAbsSize(arrowW, arrowH);
-            RightColony.Tooltip = GameText.ViewNextColony;
-            RightColony.OnClick = b => OnChangeColony(+1);
+            RightColony = Add(new UIButton(new UIButton.StyleTextures("SelectionBox/button_arrow_right", "SelectionBox/button_arrow_right_hover"),
+                                           new Vector2(arrowW, arrowH), "")
+            {
+                Pos = new Vector2((int)SubColonyGrid.Right - arrowW, arrowY),
+                Tooltip = GameText.ViewNextColony,
+                OnClick = b => OnChangeColony(+1),
+                ClickSfx = "sd_ui_accept_alt3",
+            });
 
             Rectangle planetShieldBarRect = new Rectangle(PlanetIcon.X, PlanetInfo.Rect.Y + 4, PlanetIcon.Width, 20);
             PlanetShieldBar = new ProgressBar(planetShieldBarRect)

@@ -45,8 +45,8 @@ namespace Ship_Game
         int PlateTop;              // the visible frame's top - ADAPTIVE (bench 308)
         readonly SkinnableButton Inspect;
         readonly SkinnableButton Invade;
-        readonly ToggleButton PrevColony; // walk the player's colony list from the cartouche
-        readonly ToggleButton NextColony;
+        readonly UIButton PrevColony; // walk the player's colony list from the cartouche
+        readonly UIButton NextColony;
         readonly UIButton BtnSendTroops;  // the Planets page's pair, on the colonisable page
         readonly UIButton BtnColonize;
         readonly Rectangle Housing;
@@ -107,18 +107,23 @@ namespace Ship_Game
             ExoticResourceIconRect = new Rectangle(RightRect.X - 17, Housing.Y + 165, 20, 20);
             // the colony arrows flank the name line, just outside the sprite column - pushed 10px
             // further out on each side (maintainer feedback) so they clear the name
-            PrevColony = new ToggleButton(new Vector2(r.X + 30, Housing.Y + 76), ToggleButtonStyle.ArrowLeft)
+            // plain buttons, not toggles - see ColonyScreen's pair
+            PrevColony = new UIButton(new UIButton.StyleTextures("SelectionBox/button_arrow_left", "SelectionBox/button_arrow_left_hover"),
+                                      new Vector2(14, 20), "")
             {
+                Pos = new Vector2(r.X + 30, Housing.Y + 76),
                 Tooltip = GameText.ViewPreviousColony,
-                OnClick = b => OnChangeColony(-1)
+                OnClick = b => OnChangeColony(-1),
+                ClickSfx = "sd_ui_accept_alt3",
             };
-            PrevColony.SetAbsSize(14, 20);
-            NextColony = new ToggleButton(new Vector2(r.X + 206, Housing.Y + 76), ToggleButtonStyle.ArrowRight)
+            NextColony = new UIButton(new UIButton.StyleTextures("SelectionBox/button_arrow_right", "SelectionBox/button_arrow_right_hover"),
+                                      new Vector2(14, 20), "")
             {
+                Pos = new Vector2(r.X + 206, Housing.Y + 76),
                 Tooltip = GameText.ViewNextColony,
-                OnClick = b => OnChangeColony(+1)
+                OnClick = b => OnChangeColony(+1),
+                ClickSfx = "sd_ui_accept_alt3",
             };
-            NextColony.SetAbsSize(14, 20);
 
             // the colonisable page borrows the Planets page's buttons: same width formula
             // (PlanetListScreen sizes the slot off the widest text either can wear), 24
