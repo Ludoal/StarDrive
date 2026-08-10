@@ -291,6 +291,12 @@ namespace Ship_Game.GameScreens
             => new(FrameMargin, TabRowY, Math.Min(screenW, MaxFrameWidth) - 2 * FrameMargin,
                    Math.Min(screenH, MaxFrameHeight) - TabRowY - FrameMargin);
 
+        // the group's CLIENT area - the frame less the tab row and the chrome, computed by
+        // the formula's owner (Submenu.CalcGroupClientArea) so a panel hosted in a group's
+        // frame without being a Submenu sits pixel-identical to a real tab's content
+        public static RectF GroupClientArea(int screenW, int screenH)
+            => Submenu.CalcGroupClientArea(new RectF(GroupFrame(screenW, screenH)), SubmenuStyle.Brown);
+
         // Ludoal fork (bench 355): a Shipyard-only full-screen frame. Same left/top anchor on the rail
         // (FrameMargin, TabRowY) so it still reads as the Design tab, but it drops the MaxFrame caps and
         // spans the whole display less the margins. Used only when the Shipyard's Full Screen toggle is

@@ -234,7 +234,11 @@ public class Submenu : UIPanel
         
         NextTabPos.X += w;
         MenuBar = new(MenuBar.X, MenuBar.Y, MenuBar.W, TabRows*TabHeight);
-        ClientArea = new(MenuBar.X, MenuBar.Bottom, MenuBar.W, Height - (MenuBar.H + N.BL.H));
+        // same terms as before, through the owner formula (MenuBar.X/W derive from N.Top,
+        // which derives from the same corner textures CalcGroupClientArea reads).
+        // ⚠ new RectF(Rect), not RectF: N was laid out on the INTEGER rect, and the formula
+        // must read the same one to stay bit-identical.
+        ClientArea = CalcGroupClientArea(new RectF(Rect), Style, TabRows);
 
         tab.Rect = new(newPos, new(w, TabHeight));
     }
@@ -533,6 +537,20 @@ public class Submenu : UIPanel
         RectF ground = new(r.X + 2, r.Y + 2, r.W - 4, r.H - 4);
         batch.FillRectangle(ground, new Color(8, 10, 14).Alpha(0.94f));
         DrawFrameOnly(batch, r, style);
+    }
+
+    // Ludoal fork: the group client-area formula, extracted to its owner. The tab-layout
+    // path below calls this (the formula exists ONCE), and a screen hosted in a group's
+    // frame without being a Submenu reads the same rect - pixel-identical to a real tab's
+    // content by construction, not by calibration. Terms: the menu bar starts at the TL
+    // corner texture's width and is amputated of both corners; the client area starts under
+    // tabRows of tabs and stops above the BL corner's height.
+    public static RectF CalcGroupClientArea(in RectF rect, SubmenuStyle style, int tabRows = 1)
+    {
+        StyleTextures s = GetStyle(style);
+        float menuW = rect.W - (s.CornerTL.Width + s.CornerTR.Width);
+        float menuH = tabRows * TabHeight;
+        return new(rect.X + s.CornerTL.Width, rect.Y + menuH, menuW, rect.H - (menuH + s.CornerBL.Height));
     }
 
 }
