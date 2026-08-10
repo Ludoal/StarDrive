@@ -158,11 +158,13 @@ namespace Ship_Game
         public bool DefiningTradeRoutes; // are we defining  trade routes for a freighter?
         public Rectangle AORect; // used for showing current AO Rect definition
 
-        public bool ShowingFTLOverlay;
-        public bool ShowingInfluenceOverlay;   // Ludoal fork: F4 - colored empire influence zones
-        public bool ShowingGravityWellOverlay; // Ludoal fork: F5 - gravity wells / inhibitor fields
-        public bool ShowingVisionOverlay;      // Ludoal fork: F7 - sensor coverage highlights (spies included)
-        public bool ShowingRangeOverlay;
+        // Ludoal fork: the five map overlays live in UState so the selection rides the save;
+        // these properties keep every call site (hotkeys, minimap buttons) unchanged.
+        public bool ShowingFTLOverlay         { get => UState.ShowFTLOverlay;         set => UState.ShowFTLOverlay = value; }         // F4
+        public bool ShowingInfluenceOverlay   { get => UState.ShowInfluenceOverlay;   set => UState.ShowInfluenceOverlay = value; }   // F2
+        public bool ShowingGravityWellOverlay { get => UState.ShowGravityWellOverlay; set => UState.ShowGravityWellOverlay = value; } // F5
+        public bool ShowingVisionOverlay      { get => UState.ShowVisionOverlay;      set => UState.ShowVisionOverlay = value; }      // F3
+        public bool ShowingRangeOverlay       { get => UState.ShowRangeOverlay;       set => UState.ShowRangeOverlay = value; }       // F6
 
         /// <summary>
         /// Toggles Cinematic Mode (no UI) on or off
@@ -547,6 +549,16 @@ namespace Ship_Game
             ExoticBonusesWindow = Add(new ExoticBonusesWindow(this));
             FreighterUtilizationWindow = Add(new FreighterUtilizationWindow(this));
 
+            // Ludoal fork: reopen the utility windows the save had open. Done here because
+            // LoadContent also runs on a device reset, so a resize keeps them open too.
+            // Freighters/Exotic are exclusive - the else-if enforces it even on a bad save.
+            if (UState.ShowDeepSpaceBuildWindow && !DeepSpaceBuildWindow.Visible)
+                DeepSpaceBuildWindow.InitializeAndShow();
+            if (UState.ShowExoticBonusesWindow)
+                ExoticBonusesWindow.ToggleVisibility(playSound: false);
+            else if (UState.ShowFreighterUtilWindow)
+                FreighterUtilizationWindow.ToggleVisibility(playSound: false);
+
             // ⚠ the CLICK target is the map's own rect, asked of the MiniMap - it was a separate
             // 200x200 at hand-measured offsets, built for the old brass housing. The moment the
             // frame was reworked the two drifted, so clicking the minimap moved the camera to
@@ -729,7 +741,13 @@ namespace Ship_Game
         {
             if (LookingAtPlanet)
                 workersPanel?.Update(fixedDeltaTime);
-            
+
+            // Ludoal fork: the utility windows ride the save like the overlays - their open
+            // state is polled so no toggle site is ever missed.
+            UState.ShowDeepSpaceBuildWindow = DeepSpaceBuildWindow.Visible;
+            UState.ShowExoticBonusesWindow  = ExoticBonusesWindow?.IsOpen == true;
+            UState.ShowFreighterUtilWindow  = FreighterUtilizationWindow?.IsOpen == true;
+
             DeepSpaceBuildWindow.Update(fixedDeltaTime);
             pieMenu.Update(fixedDeltaTime);
             SelectedSomethingTimer -= fixedDeltaTime;
