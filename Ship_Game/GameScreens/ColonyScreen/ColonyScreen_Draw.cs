@@ -191,29 +191,12 @@ namespace Ship_Game
 
             P.UpdateIncomes();
 
-            // Ludoal fork: the frame is filled FIRST, by hand. The group's frame is built
-            // transparent, so the galaxy behind it showed straight through - planet names ran
-            // across the panels. Painted here rather than via SetBackground: a background is a
-            // CHILD, drawn by base.Draw, which lands after everything this method paints.
-            // Ludoal fork: THE popup window's own surface, not an imitation of it. Painting this
-            // frame procedurally never matched Options on the bench and could not: those corners
-            // are hand-drawn 28x30 bitmaps and that rule under the title is an artist's gradient.
-            // PopupFrame carries the same arithmetic PopupWindow uses, taking a rect - which is
-            // what this screen needs, since it must span the display under the top bar rather
-            // than be centred the way PopupWindow centres its own.
-            Frame.DrawFill(batch, ColonyFrame);
-            Frame.Draw(batch);
-
-            // Ludoal fork: the planet's name in the title bar, centred - it used to ride the one
-            // tab of a group that had no second tab to switch to.
-            // ⚠ centred BETWEEN THE ARROWS (maintainer), not on the frame: the arrows sit on the
-            // ground map's edges, so the name belongs on that span's centre - which is not the
-            // window's centre, the left column being wider than the right one.
-            string title = P.Name;
-            float navCentre = (LeftColony.Rect.Right + RightColony.Rect.X) / 2f;
-            var titleAt = new Vector2(navCentre - Font20.TextWidth(title) / 2f,
-                                      Frame.TitleRect.CenterY() - Font20.LineSpacing / 2f);
-            batch.DrawString(Font20, title, titleAt, Colors.Cream);
+            // Ludoal fork (spec: colony-as-tab, bench 379): the group's own ground, filled
+            // FIRST by hand - the row's Submenu chrome is a CHILD, drawn by base.Draw after
+            // everything this method paints, so it lands on top like on every group screen.
+            // The popup chrome and the centred title are gone: the planet's name rides the tab.
+            batch.FillRectangle(GameScreens.ScreenGroups.GroupFrameFillRect(GroupRow),
+                                GameScreens.ScreenGroups.GroupFrameFill);
 
             // the two panels' brass surrounds were drawn here by hand and are gone - the frame
             // supplies the one border this screen needs.

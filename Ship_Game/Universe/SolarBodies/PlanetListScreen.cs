@@ -341,6 +341,17 @@ namespace Ship_Game
 
         void OnPlanetListItemClicked(PlanetListScreenItem item)
         {
+            // Ludoal fork (spec: colony-as-tab, bench 379): OUR colonies open their panel on
+            // the Galaxy seat, Planets (0) as the Esc origin - armed before the snap so the
+            // colony's ctor wears the row. Anything else keeps the plain camera flight.
+            if (item.Planet.Owner == Player)
+            {
+                GameAudio.AcceptClick();
+                Universe.HostColonyTab(item.Planet, ScreenGroups.Group.Galaxy, 0);
+                Universe.SnapViewColony(item.Planet, combatView: false);
+                ExitScreen();
+                return;
+            }
             ExitScreen();
             GameAudio.AcceptClick();
             Universe.SetSelectedPlanet(item.Planet);

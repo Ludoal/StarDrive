@@ -19,8 +19,7 @@ namespace Ship_Game
         readonly ToggleButton PlayerDesignsToggle;
         // Ludoal fork: the screen's frame. The title bar the planet name sits in is the one every
         // window uses, declared with the colours it goes with.
-        Rectangle ColonyFrame;
-        PopupFrame Frame;
+        Rectangle ColonyFrame; // = the group row's rect; the Submenu chrome is the frame now
         CloseButton CloseBtn; // bench 361: served explicitly on read-only (infiltrated) colonies
         Submenu GroupRow;     // the hosting group's live tab row, when opened on a hosted seat
 
@@ -147,59 +146,27 @@ namespace Ship_Game
             Player.UpdateShipsWeCanBuild();
             TextFont = Font12;
 
-            // Ludoal fork: a plain popup frame, no tab row - Colony has no siblings, and its
-            // planet name rides the title bar (see ColonyScreen_Draw).
-            // The rect is pushed OUT past the margins by what each edge's texture spends on
-            // non-line pixels, so the visible RULE is what lands at FrameMargin:
-            //   sides:  BorderLeft/BorderRight (the side bands' width)
-            //   bottom: BottomLine - the band's bright rule is at its TOP, the 12 rows under it
-            //           are drop shadow, which falls past the screen edge by design
-            //   top:    one tab strip LOWER than TabRowY, so this frame matches the group
-            //           screens' frames and does not peek out behind them in the stack.
-            // bench 354 (maintainer): restore the bench-347 vertical, which WAS well aligned. My later
-            // "align on GroupFrame" passes (351/352) changed the Y as a side effect of the left-align
-            // rework - but decentring should only touch X. This is the 347 rect verbatim: left-anchored
-            // at FrameMargin (less the border ink so the visible rule lands on the margin), top one tab
-            // strip below TabRowY, height capped at the 1080p footprint. Y and height are the values
-            // that read correctly at the bench; only the left-anchor X is the intended change.
-            const int m = GameScreens.ScreenGroups.FrameMargin;
-            // bench 364 (maintainer): one tab-strip BELOW the row, so the origin tab of the dimmed
-            // silhouette behind stays readable above the colony panel. GroupFrameTop is that exact
-            // edge (TabRowY + the strip's useful TabHeight-2, Lek's constant). The real fix is still
-            // phase 2, when Colony becomes an actual submenu tab.
-            int frameTop = GameScreens.ScreenGroups.GroupFrameTop;
-            int layoutW = Math.Min(ScreenWidth, GameScreens.ScreenGroups.MaxFrameWidth);
-            int layoutH = Math.Min(ScreenHeight, 1080);
-            ColonyFrame = new Rectangle(m - PopupFrame.BorderLeft, frameTop,
-                                        layoutW - 2 * m + PopupFrame.BorderLeft + PopupFrame.BorderRight,
-                                        layoutH - frameTop - m + PopupFrame.BottomLine);
-            // ⚠ NOT Add()ed: a child is drawn by base.Draw, which lands AFTER everything this
-            // screen paints by hand - the frame's body would bury the panels. Painted first
-            // thing in Draw instead (see ColonyScreen_Draw).
-            Frame = new PopupFrame(ColonyFrame);
-
-            // the close cross where every popup window puts its own, from the same source
-            Vector2 closePos = PopupFrame.ClosePos(ColonyFrame);
-            CloseBtn = Add(new CloseButton(closePos.X, closePos.Y)); // ref kept: the read-only early-out must still serve it (bench 361)
-
-            // Ludoal fork (spec: colony-as-tab): opened on a hosted seat, the colony wears its
-            // group's LIVE row - real tabs, the planet's own tab appended and selected - in
-            // place of the dimmed silhouette. A neighbor click closes this panel into that
-            // tab; the row's close cross is skipped, the popup frame already carries ours.
+            // Ludoal fork (spec: colony-as-tab, bench 379): the colony lives INSIDE the tab
+            // frame now. The group row's Submenu IS the frame - its ClientArea comes from the
+            // owner formula, so the content rect is pixel-identical to a real tab's, by
+            // construction. The popup chrome, its title bar and the centred name are gone:
+            // the planet's name rides the tab. An unhosted colony (the infiltration mole)
+            // wears a one-tab row of its own name - same furniture, no neighbors.
             UniverseScreen u = p.Universe.Screen;
-            if (u.HostedTabTitle != null)
-            {
-                var titles = GameScreens.ScreenGroups.LiveTitles(u.HostedTabGroup, u);
-                GroupRow = GameScreens.ScreenGroups.AddGroupTabs(this, titles, titles.Length - 1,
-                                                                 OnGroupRowTabChanged, out _, withClose: false);
-            }
+            var titles = u.HostedTabTitle != null
+                ? GameScreens.ScreenGroups.LiveTitles(u.HostedTabGroup, u)
+                : new[] { new LocalizedText(p.Name, LocalizationMethod.RawText) };
+            GroupRow = GameScreens.ScreenGroups.AddGroupTabs(this, titles, titles.Length - 1,
+                                                             OnGroupRowTabChanged, out _, withClose: false);
+            ColonyFrame = GroupRow.Rect;
 
-            // ⚠ the popup frame's borders are NOT a 2px rule: 11 on the right, 30 at the foot.
-            // Content laid out on the raw rect runs underneath them, which is exactly the width
-            // and height the bench reported missing (maintainer observation). ContentArea is the
-            // rect less the title bar and those borders - the one thing the grid may measure.
-            Rectangle inner = PopupFrame.ContentArea(ColonyFrame);
-            RectF client = new(inner.X, inner.Y, inner.Width, inner.Height);
+            // the close cross at the group's standard seat; ref kept - the read-only
+            // early-out must still serve it (bench 361)
+            Vector2 closePos = GameScreens.ScreenGroups.GroupClosePos(GroupRow.ClientArea);
+            CloseBtn = Add(new CloseButton(closePos.X, closePos.Y));
+
+            RectF client = GroupRow.ClientArea;
+            Rectangle inner = new((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
             // ⚠ At 900 high the LEFT COLUMN does not fit and that is not the frame's doing: its
             // three fixed panels are 250 + 300 + 220 = 770, plus gaps, against 749px of usable
             // height. It overflows before STORAGE gets a single pixel. The column needs real
@@ -214,10 +181,7 @@ namespace Ship_Game
             float gridLeft   = inner.X + Pad;
             float gridRight  = inner.Right - Pad;
             float gridTop    = inner.Y + Pad;
-            // ⚠ measured from the FRAME's foot, not from ContentArea: the latter already reserves
-            // 30px for the bottom band, so subtracting Pad on top of it left the last row 40px
-            // short of the frame instead of 10 (maintainer).
-            float gridBottom = ColonyFrame.Bottom - PopupFrame.BottomLine - Pad;
+            float gridBottom = inner.Bottom - Pad; // the Submenu client already stops above the chrome
 
             // ── what is FIXED and what STRETCHES (Ludoal fork, bench 232) ────────────────────
             // Left column: FIXED width. Planet Info, Governor and Assign Labor keep fixed
@@ -435,24 +399,19 @@ namespace Ship_Game
                                        (int)(iconBandTop + (iconBandH - iconSize) / 2),
                                        iconSize, iconSize);
 
-            // Ludoal fork: the colony arrows straddle the planet portrait's centre line - they
-            // step through planets, so they belong under the planet. Shortened from the style's
-            // 35: that height belongs to the selection box they were drawn for.
-            // the style's own size, restored (maintainer): they were cut to 14x20 for the narrow
-            // slot under the portrait, and that slot is gone.
-            const int arrowW = 24, arrowH = 35;
-            // ⚠ the colony arrows ride the TITLE BAR now (maintainer), not the foot of the planet
-            // portrait - and they align on the ground map's edges, so the gesture that changes
-            // colony sits over the thing that shows the colony.
-            int arrowY = ColonyFrame.Y + PopupFrame.TitleBarTop
-                       + (PopupFrame.TitleBarHeight - arrowH) / 2;
+            // Ludoal fork (bench 379, spec): the arrows ride the TAB STRIP, flanking the
+            // planet image's edges - outside the PLANET INFO frame, aligned on the tab text,
+            // over the thing the gesture changes. Sized to fit the strip.
+            const int arrowW = 14, arrowH = 20;
+            int stripH = GameScreens.ScreenGroups.GroupFrameTop - GameScreens.ScreenGroups.TabRowY + 2;
+            int arrowY = GameScreens.ScreenGroups.TabRowY + (stripH - arrowH) / 2;
 
             // plain buttons, not toggles - the arrows only ever navigate (maintainer decision:
             // ToggleButton keeps the real toggles, the fakes move out)
             LeftColony = Add(new UIButton(new UIButton.StyleTextures("SelectionBox/button_arrow_left", "SelectionBox/button_arrow_left_hover"),
                                           new Vector2(arrowW, arrowH), "")
             {
-                Pos = new Vector2((int)SubColonyGrid.X, arrowY),
+                Pos = new Vector2(PlanetIcon.X, arrowY),
                 Tooltip = GameText.ViewPreviousColony,
                 OnClick = b => OnChangeColony(-1),
                 ClickSfx = "sd_ui_accept_alt3", // the click every toggle played
@@ -461,7 +420,7 @@ namespace Ship_Game
             RightColony = Add(new UIButton(new UIButton.StyleTextures("SelectionBox/button_arrow_right", "SelectionBox/button_arrow_right_hover"),
                                            new Vector2(arrowW, arrowH), "")
             {
-                Pos = new Vector2((int)SubColonyGrid.Right - arrowW, arrowY),
+                Pos = new Vector2(PlanetIcon.Right - arrowW, arrowY),
                 Tooltip = GameText.ViewNextColony,
                 OnClick = b => OnChangeColony(+1),
                 ClickSfx = "sd_ui_accept_alt3",

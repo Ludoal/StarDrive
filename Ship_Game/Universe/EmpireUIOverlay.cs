@@ -218,6 +218,10 @@ namespace Ship_Game
             // back to the group it belonged to, kept lit while that return is pending.
             if (open == ScreenGroups.Group.None && Universe.ReturnToListScreen != null)
                 open = Universe.ReturnToListGroup;
+            // Ludoal fork (bench 379): a colony riding a hosted seat keeps its group's button
+            // lit the same way - the panel is no stacked screen, so the scan finds nothing.
+            if (open == ScreenGroups.Group.None && Universe.HostedTabTitle != null && Universe.LookingAtPlanet)
+                open = Universe.HostedTabGroup;
             Graphics.Font font = Fonts.Arial12Bold;
 
             foreach (Button b in Buttons)
