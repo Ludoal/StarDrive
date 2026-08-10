@@ -21,7 +21,7 @@ namespace Ship_Game
         ScrollList<ChoosePatrolListItem> AvailablePatrols;
         UIButton LoadPatrol;
         FleetPatrol SelectedPatrol;
-        DanButton ConfirmPatrol;
+        Vector2 CaptionPos; // where the "Load Patrol '<name>'" caption sits, once a plan is picked
 
         public ChoosePatrolPlan(UniverseScreen parent, Fleet fleet) : base(parent, toPause: parent)
         {
@@ -104,7 +104,7 @@ namespace Ship_Game
                     Fleet.GetMinFleetSpeedSTL(), Fleet.GetAverageWarpOutDistance(), Player));
             }
 
-            ConfirmPatrol = new DanButton(new Vector2(shipDesignsRect.X, (shipDesignsRect.Y + 485)), "Load Patrol");
+            CaptionPos = new Vector2(shipDesignsRect.X, shipDesignsRect.Y + 485 + 60);
             LoadPatrol = ButtonMedium(shipDesignsRect.X + 10, shipDesignsRect.Y + 505, text: GameText.LoadPatrol, click: OnLoadPatrolClicked);
             LoadPatrol.Tooltip = GameText.LoadPatrolTip;
 
@@ -125,9 +125,8 @@ namespace Ship_Game
             base.Draw(batch, elapsed);
             if (SelectedPatrol != null)
             {
-                var cursor = new Vector2(ConfirmPatrol.r.X, (ConfirmPatrol.r.Y + 60));
                 string text = Fonts.Arial14Bold.ParseText($"Load Patrol '{SelectedPatrol.Name}' to {Fleet.Name}", 270f);
-                batch.DrawString(Fonts.Arial14Bold, text, cursor, Color.White);
+                batch.DrawString(Fonts.Arial14Bold, text, CaptionPos, Color.White);
             }
             batch.SafeEnd();
         }

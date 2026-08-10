@@ -242,12 +242,6 @@ namespace Ship_Game
         [StarData] public Array<string> unlockBuilding = new();
         [StarData] public Array<string> unlockShips    = new();
 
-        // designsWeHave our techTree has techs for.
-        // sortsaves
-        public SortButton PLSort = new();
-        public SortButton ESSort = new();
-        public SortButton SLSort = new();
-
         // techTimers
         [StarData] public short TechDelayTime    = 0;
         [StarData] public bool  SpyMute          = false;

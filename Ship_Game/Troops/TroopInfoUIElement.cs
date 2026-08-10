@@ -18,7 +18,7 @@ namespace Ship_Game
         readonly Rectangle HardAttackRect;
         readonly Rectangle RangeRect;
         Rectangle ItemDisplayRect;
-        DanButton LaunchTroop;
+        UIButton LaunchTroop;
         readonly Selector Sel;
         readonly UITextBox DescriptionBox;
         readonly Array<TippedItem> ToolTipItems = new Array<TippedItem>();
@@ -111,7 +111,7 @@ namespace Ship_Game
             DrawInfoData(batch, HardAttackRect, troop.ActualHardAttack.ToString(), color, 5, 8);
             DrawInfoData(batch, RangeRect, troop.ActualRange.ToString(), color, 5, 8);
             ItemDisplayRect = new Rectangle(LeftRect.X + 85 + 16, LeftRect.Y + 5 + 16, 64, 64);
-            DrawLaunchButton(batch, troop, slant);
+            DrawLaunchButton(batch, elapsed, troop, slant);
             DrawLevelStars(batch, troop.Level, mousePos);
             slant.text = troop.Name;
         }
@@ -123,18 +123,31 @@ namespace Ship_Game
             batch.DrawString(font, data, pos, color);
         }
 
-        void DrawLaunchButton(SpriteBatch batch, Troop troop, Header slant)
+        void DrawLaunchButton(SpriteBatch batch, DrawTimes elapsed, Troop troop, Header slant)
         {
             troop.Draw(Universe.UState, batch, ItemDisplayRect);
             if (troop.Loyalty != Universe.Player)
-                LaunchTroop = null;
+                LaunchTroop = null; // the input path reads null as "no button this frame"
             else
             {
                 string buttonText =  troop.AvailableAttackActions >= 1 ? "" : string.Concat(" (", troop.MoveTimer.ToString("0"), ")");
-                LaunchTroop = new DanButton(new Vector2(slant.leftRect.X + 5, Sel.Bottom + 15), 
-                                            Localizer.Token(GameText.Launch)+buttonText);
-                LaunchTroop.DrawBlue(batch);
+                LaunchTroop ??= new UIButton(ButtonStyle.WideActive, "")
+                {
+                    Tooltip = GameText.LaunchThisTroopIntoOrbit,
+                    OnClick = OnLaunchTroopClicked,
+                };
+                LaunchTroop.Text = Localizer.Token(GameText.Launch)+buttonText;
+                LaunchTroop.Pos = new Vector2(slant.leftRect.X + 5, Sel.Bottom + 15);
+                LaunchTroop.Draw(batch, elapsed);
             }
+        }
+
+        void OnLaunchTroopClicked(UIButton b)
+        {
+            if (Universe.workersPanel is CombatScreen cs && cs.TryLaunchTroopFromActiveTile())
+                GameAudio.TroopTakeOff();
+            else
+                GameAudio.NegativeClick();
         }
 
         void DrawLevelStars(SpriteBatch batch, int level, Vector2 mousePos)
@@ -177,19 +190,9 @@ namespace Ship_Game
                     ToolTip.CreateTooltip(ti.Tooltip);
             }
 
-            // currently selected troop Launch
-            if (LaunchTroop != null && LaunchTroop.r.HitTest(input.CursorPosition))
-            {
-                ToolTip.CreateTooltip(GameText.LaunchThisTroopIntoOrbit);
-                if (LaunchTroop.HandleInput(input))
-                {
-                    if (Universe.workersPanel is CombatScreen cs && cs.TryLaunchTroopFromActiveTile())
-                        GameAudio.TroopTakeOff();
-                    else
-                        GameAudio.NegativeClick();
-                    return true;
-                }
-            }
+            // currently selected troop Launch - action and tooltip live on the button now
+            if (LaunchTroop != null && LaunchTroop.HandleInput(input))
+                return true;
 
             for (int i = 0; i < Tile.TroopsHere.Count; ++i)
             {

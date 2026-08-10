@@ -25,7 +25,7 @@ namespace Ship_Game
         UIButton RefitInFleet;
         UICheckBox RushRefit;
         IShipDesign RefitTo;
-        DanButton ConfirmRefit;
+        Vector2 CaptionPos; // where the "Refit <a> to <b>" caption sits, once a target is picked
         ShipInfoOverlayComponent ShipInfoOverlay;
         bool Rush;
 
@@ -103,7 +103,7 @@ namespace Ship_Game
                 }
             }
 
-            ConfirmRefit = new DanButton(new Vector2(shipDesignsRect.X, (shipDesignsRect.Y + 505)), "Do Refit");
+            CaptionPos = new Vector2(shipDesignsRect.X, shipDesignsRect.Y + 505 + 60);
 
             RefitOne = ButtonMedium(shipDesignsRect.X + 10, shipDesignsRect.Y + 505, text:GameText.RefitOne, click: OnRefitOneClicked);
             RefitOne.Tooltip = GameText.RefitOnlyThisShipTo;
@@ -142,9 +142,8 @@ namespace Ship_Game
             base.Draw(batch, elapsed);
             if (RefitTo != null)
             {
-                var cursor = new Vector2(ConfirmRefit.r.X, (ConfirmRefit.r.Y + 60));
                 string text = Fonts.Arial14Bold.ParseText($"Refit {ShipToRefit.Name} to {RefitTo.Name}", 270f);
-                batch.DrawString(Fonts.Arial14Bold, text, cursor, Color.White);
+                batch.DrawString(Fonts.Arial14Bold, text, CaptionPos, Color.White);
             }
             batch.SafeEnd();
         }
