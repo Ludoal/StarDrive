@@ -326,18 +326,18 @@ namespace Ship_Game
         double ProjMaxDistance = 15_000_000 + (int)UnivScreenState.GalaxyView;
         bool PageOffsetApplied; // the offset state the current projection was built for
 
-        // bench 390 (maintainer): with a page open on a wide display the map's visible band is
-        // the strip LEFT of the 1680 frame plus what sits right of it; centre the view there.
-        // Target: x = (width + 1680)/2 (mid of the free right band), y = mid of the left band
-        // between the top bar's bottom and the minimap's top. Off only under 1920 or with no
-        // page open. Returned as a fraction of the screen (frame-centre-minus-screen-centre),
-        // the shape SetPerspectiveProjection's offsetXY already speaks.
+        // bench 391 (maintainer): with a page open on a wide display the map's visible band is
+        // the strip LEFT of the open panel plus what sits right of it; centre the view there.
+        // Target: x = mid of the free band right of the OPEN PANEL'S own right edge (short panels
+        // leave more room than the old fixed 1680), y = mid of the left band between the top
+        // bar's bottom and the minimap's top. Off under 1920 or with no page open. Returned as a
+        // fraction of the screen (frame-centre-minus-screen-centre), the shape offsetXY speaks.
         public Vector2 PageViewportOffset()
         {
-            if (ScreenWidth < 1920 || !AnyGroupPageOpen())
+            if (ScreenWidth < 1920 || !OpenGroupPage(out GameScreen page))
                 return default;
-            // 1680 is the maintainer's number for the frame's right edge (spec), not MaxFrameWidth
-            float targetX = (ScreenWidth + 1680) * 0.5f;
+            float panelRight = page.PageFrame.Right; // the actual open panel's width (bench 391)
+            float targetX = (ScreenWidth + panelRight) * 0.5f;
             float barBottom = EmpireUIOverlay.BarTop + EmpireUIOverlay.BarH;
             float minimapTop = ScreenHeight - 256 - 10; // mmHousing.Y (LoadContent)
             float targetY = (barBottom + minimapTop) * 0.5f;
@@ -345,13 +345,17 @@ namespace Ship_Game
                                (targetY - ScreenHeight * 0.5f) / ScreenHeight);
         }
 
-        // a group screen (or a hosted colony) sitting in the stack = a page is open
-        bool AnyGroupPageOpen()
+        // the top-most group screen (or hosted colony) in the stack, when a page is open
+        bool OpenGroupPage(out GameScreen page)
         {
             var stack = ScreenManager.Screens;
-            for (int i = 0; i < stack.Count; ++i)
+            for (int i = stack.Count - 1; i >= 0; --i)
                 if (GameScreens.ScreenGroups.GroupOf(stack[i]) != GameScreens.ScreenGroups.Group.None)
+                {
+                    page = stack[i];
                     return true;
+                }
+            page = null;
             return false;
         }
 

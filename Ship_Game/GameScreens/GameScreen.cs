@@ -108,6 +108,12 @@ namespace Ship_Game
         public Matrix Projection; // @see SetPerspectiveProjection
         public Matrix ViewProjection; // View * Projection
         public Matrix InverseViewProjection; // Inverse(View * Projection)
+        // bench 391 (maintainer): the projection WITHOUT the page viewport offset. Equal to
+        // Projection unless a page shifts the frustum (UniverseScreen), where the map recentres
+        // into the visible band but the nebula background must stay full-screen. View * this is
+        // recomputed each frame in UpdateWorldScreenProjection, so it tracks the camera exactly.
+        public Matrix BaseProjection;
+        public Matrix BaseViewProjection; // View * BaseProjection
         public Matrix OrthographicProjection; // for drawing the UI
 
         // deferred renderer allows some basic commands to be queued up to be drawn. 
@@ -636,9 +642,12 @@ namespace Ship_Game
         {
             double fieldOfViewYrads = fovYdegrees.ToRadians();
             double aspectRatio = (double)Viewport.Width / Viewport.Height;
+            // the un-offset perspective is always built - it is the base the background reads
+            // (bench 391), and the offset branch below only replaces the LIVE Projection.
+            BaseProjection = Matrix.CreatePerspectiveFieldOfView(fieldOfViewYrads, aspectRatio, 100.0, maxDistance);
             if (offsetXY == default)
             {
-                Projection = Matrix.CreatePerspectiveFieldOfView(fieldOfViewYrads, aspectRatio, 100.0, maxDistance);
+                Projection = BaseProjection;
             }
             else
             {
@@ -671,6 +680,10 @@ namespace Ship_Game
         {
             View.Multiply(Projection, out ViewProjection);
             Matrix.Invert(in ViewProjection, out InverseViewProjection);
+            // bench 391: the un-offset pair the background reads. SetViewMatrix runs this every
+            // frame, so BaseViewProjection tracks the moving camera even between projection sets.
+            View.Multiply(BaseProjection, out Matrix baseVP);
+            BaseViewProjection = baseVP;
 
             OrthographicProjection = Matrix.CreateOrthographicOffCenter(0, Viewport.Width, Viewport.Height, 0, zNearPlane:1, zFarPlane:0);
             //OrthographicProjection = Matrix.CreateOrthographic(Viewport.Width, Viewport.Height, 0.0f, 5000.0f);

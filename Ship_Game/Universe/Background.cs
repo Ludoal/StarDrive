@@ -159,10 +159,14 @@ public sealed class Background : IDisposable
             backgroundDepth
         );
 
+        // bench 391 (maintainer): the far backdrop reads the UN-OFFSET projection - the page
+        // viewport shift recentres the map objects (and the added nebulae) into the visible
+        // band, but this distant nebula/star curtain must stay put, or it slides out under an
+        // open panel. BaseViewProjection == ViewProjection whenever no page offset is active.
         Texture2D nebula = BackgroundNebula;
         if (nebula != null)
         {
-            sr.Begin(Universe.ViewProjection);
+            sr.Begin(Universe.BaseViewProjection);
             RenderStates.BasicBlendMode(Universe.Device, additive: false, depthWrite: false);
 
             Vector2d nebulaSize = SubTexture.GetAspectFill(nebula.Width, nebula.Height, 20_000_000.0);
@@ -170,7 +174,7 @@ public sealed class Background : IDisposable
             sr.End();
         }
 
-        sr.Begin(Universe.ViewProjection);
+        sr.Begin(Universe.BaseViewProjection);
         RenderStates.BasicBlendMode(Universe.Device, additive: true, depthWrite: false);
         Texture2D stars = BackgroundStars;
         Vector2d starsSize = SubTexture.GetAspectFill(stars.Width, stars.Height, 12_000_000.0);

@@ -606,15 +606,18 @@ namespace Ship_Game.Ships
                     ToolTip.CreateTooltip(tippedItem.Tooltip);
             }
 
-            if (ElementRect.HitTest(input.CursorPosition))
-                return true;
-
-            // the strip is always live - no drawer to open first
+            // bench 391 (maintainer): the orders strip answers BEFORE the ElementRect catch-all.
+            // The BOTTOM order row sits INSIDE ElementRect (docked on the frame top), so the
+            // early `return true` on ElementRect swallowed its clicks and tooltips - only the
+            // SECOND row, which climbs above the cartouche, escaped it. The strip is always live.
             foreach (OrdersButton ordersButton in Orders)
             {
                 if (ordersButton.HandleInput(input))
                     return true;
             }
+
+            if (ElementRect.HitTest(input.CursorPosition))
+                return true;
             return false;
         }
 
