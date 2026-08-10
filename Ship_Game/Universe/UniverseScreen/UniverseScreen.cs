@@ -794,6 +794,32 @@ namespace Ship_Game
 
         public override void Update(float fixedDeltaTime)
         {
+            // Ludoal fork (bench 380): jumping to another GROUP from an open colony closes the
+            // panel AND its seat - the colony belonged to the group being left, and the tab
+            // dies with its group. Detected centrally: a group screen stacked above while the
+            // panel is up can only be a top-bar jump or hotkey, since every in-group path
+            // closes the panel before opening the next screen.
+            if (LookingAtPlanet && workersPanel != null)
+            {
+                var stack = ScreenManager.Screens;
+                for (int i = 0; i < stack.Count; ++i)
+                {
+                    // ⚠ not the EXITING list the colony was just opened from - it lingers in
+                    // the stack for its 0.25s transition, and reacting to it would close the
+                    // panel the instant it was born
+                    if (!stack[i].IsExiting
+                        && GameScreens.ScreenGroups.GroupOf(stack[i]) != GameScreens.ScreenGroups.Group.None)
+                    {
+                        ClearHostedTab();
+                        LookingAtPlanet = false;
+                        workersPanel.ReleaseUniversePause(); // the new group holds its own pause
+                        CamDestination = transitionStartPosition;
+                        SetSelectedPlanet(workersPanel.P);
+                        break;
+                    }
+                }
+            }
+
             if (LookingAtPlanet)
                 workersPanel?.Update(fixedDeltaTime);
 

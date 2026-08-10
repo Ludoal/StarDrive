@@ -328,10 +328,13 @@ namespace Ship_Game
             // outside the frame, right-aligned on it - the clear button ends where the panel ends.
             float colRightX = gridRight - colRightW;
             float filterH = 20;
+            // bench 380 (maintainer): column 3 steps down one tab strip - the filter's top on
+            // the frames' rule line of columns 1 and 2, clear of the close cross at the seat
+            float col3Top = gridTop + Submenu.TabHeight - 2;
             float clearW = 17;
-            float buildingsTop = gridTop + filterH + Pad;
+            float buildingsTop = col3Top + filterH + Pad;
 
-            var filterBgRect = new RectF(colRightX + 60, gridTop,
+            var filterBgRect = new RectF(colRightX + 60, col3Top,
                                          colRightW - 60 - clearW - 10, filterH);
             var filterRect = new RectF(filterBgRect.X + 5, filterBgRect.Y, filterBgRect.W, filterBgRect.H);
             FilterBuildableItems = Add(new UITextEntry(filterRect, Font12, ""));
@@ -396,19 +399,18 @@ namespace Ship_Game
                                        (int)(iconBandTop + (iconBandH - iconSize) / 2),
                                        iconSize, iconSize);
 
-            // Ludoal fork (bench 379, spec): the arrows ride the TAB STRIP, flanking the
-            // planet image's edges - outside the PLANET INFO frame, aligned on the tab text,
-            // over the thing the gesture changes. Sized to fit the strip.
-            const int arrowW = 14, arrowH = 20;
-            int stripH = GameScreens.ScreenGroups.GroupFrameTop - GameScreens.ScreenGroups.TabRowY + 2;
-            int arrowY = GameScreens.ScreenGroups.TabRowY + (stripH - arrowH) / 2;
+            // bench 380 (maintainer): the arrows sit AU DROIT de PLANET INFO - on the panel's
+            // own header band, a tight pair centred over the planet image.
+            const int arrowW = 14, arrowH = 20, NavGap = 40; // between the two arrows
+            int arrowY = (int)PlanetInfo.Y + (Submenu.TabHeight - 2 - arrowH) / 2;
+            int navCentre = PlanetIcon.CenterX();
 
             // plain buttons, not toggles - the arrows only ever navigate (maintainer decision:
             // ToggleButton keeps the real toggles, the fakes move out)
             LeftColony = Add(new UIButton(new UIButton.StyleTextures("SelectionBox/button_arrow_left", "SelectionBox/button_arrow_left_hover"),
                                           new Vector2(arrowW, arrowH), "")
             {
-                Pos = new Vector2(PlanetIcon.X, arrowY),
+                Pos = new Vector2(navCentre - NavGap / 2 - arrowW, arrowY),
                 Tooltip = GameText.ViewPreviousColony,
                 OnClick = b => OnChangeColony(-1),
                 ClickSfx = "sd_ui_accept_alt3", // the click every toggle played
@@ -417,7 +419,7 @@ namespace Ship_Game
             RightColony = Add(new UIButton(new UIButton.StyleTextures("SelectionBox/button_arrow_right", "SelectionBox/button_arrow_right_hover"),
                                            new Vector2(arrowW, arrowH), "")
             {
-                Pos = new Vector2(PlanetIcon.Right - arrowW, arrowY),
+                Pos = new Vector2(navCentre + NavGap / 2, arrowY),
                 Tooltip = GameText.ViewNextColony,
                 OnClick = b => OnChangeColony(+1),
                 ClickSfx = "sd_ui_accept_alt3",
