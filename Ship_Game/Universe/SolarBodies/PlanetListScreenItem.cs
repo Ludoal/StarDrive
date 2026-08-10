@@ -70,9 +70,9 @@ namespace Ship_Game
             int h = (int)Height;
             RemoveAll();
 
-            // bench 393 (maintainer): the two order icons, centred in the orders column. Colonize
-            // shows on a colonisable unowned world; the troop icon shows whenever there is a troop
-            // action available (send, or cancel an inbound landing, or recall from our own world).
+            // two dedicated slots (Colonize left, Send Troops right), fixed whether the other
+            // shows or not. Colonize on a colonisable unowned world; the troop icon whenever a
+            // troop action is available (send, cancel an inbound landing, or recall from our own).
             UITable.Column[] cols = Screen.Table.Columns;
             Rectangle ordersCol = cols[9].Rect;
             ShipIconRect = new Rectangle(cols[1].Rect.X + UITable.PadX, y + h / 2 - 16, 32, 32);
@@ -84,21 +84,13 @@ namespace Ship_Game
             ShowTroopIcon = (Planet.Habitable && CanSendTroops && !Player.IsNAPactWith(Planet.Owner))
                           || incoming > 0 || canRecall;
 
-            // the two icons ride side by side, centred in the column; when only one shows it
-            // centres alone (a fixed slot each would leave a lopsided gap)
-            int shown = (ShowColonizeIcon ? 1 : 0) + (ShowTroopIcon ? 1 : 0);
-            int laneW = shown * IconSize + (shown - 1) * IconGap;
-            int ix = ordersCol.X + (ordersCol.Width - laneW) / 2;
+            // the two slots are fixed and centred as a PAIR, so a row with only one icon keeps it
+            // in its own column (Colonize left / Send Troops right) - the Ships-list convention
+            int laneW = 2 * IconSize + IconGap;
+            int slotX = ordersCol.X + (ordersCol.Width - laneW) / 2;
             int iy = y + h / 2 - IconSize / 2;
-            ColonizeIconRect = Rectangle.Empty;
-            TroopIconRect    = Rectangle.Empty;
-            if (ShowColonizeIcon)
-            {
-                ColonizeIconRect = new Rectangle(ix, iy, IconSize, IconSize);
-                ix += IconSize + IconGap;
-            }
-            if (ShowTroopIcon)
-                TroopIconRect = new Rectangle(ix, iy, IconSize, IconSize);
+            ColonizeIconRect = new Rectangle(slotX, iy, IconSize, IconSize);
+            TroopIconRect    = new Rectangle(slotX + IconSize + IconGap, iy, IconSize, IconSize);
 
             // the icons themselves - UIPanels so the colonize one can go RED to cancel. Tooltips
             // ride the panels; the CLICKS are hit-tested in HandleInput off the same rects.
@@ -110,9 +102,9 @@ namespace Ship_Game
             }
             if (ShowTroopIcon)
             {
-                // red on a hostile target, as the old button was
-                Color tint = Planet.Owner != null && Planet.Owner != Player ? Color.OrangeRed : Color.White;
-                UIPanel tr = Panel(TroopIconRect, tint, ResourceManager.Texture("UI/icon_troop"));
+                // the ship cartouche's troop art - icon_troop washes out at this size. Hostile red.
+                Color tint = Planet.Owner != null && Planet.Owner != Player ? Color.Red : Color.White;
+                UIPanel tr = Panel(TroopIconRect, tint, ResourceManager.Texture("UI/icon_troop_shipUI"));
                 tr.Tooltip = Planet.Owner == Player ? GameText.RecallAllTroopsBasedOn
                                                     : GameText.SendAvailableTroopsToThis;
             }
@@ -137,7 +129,7 @@ namespace Ship_Game
             if (incoming > 0) parts.Add($"En route: {incoming}");
             if (deployed > 0) parts.Add($"Deployed: {deployed}");
             string text = string.Join("   ", parts.ToArray());
-            Label(UITable.CellPos(SmallFont, cell, Y, Height, text, TableAlign.Center), text, SmallFont, Cream);
+            Label(UITable.CellPos(SmallFont, cell, Y, Height, text, TableAlign.Left), text, SmallFont, Cream);
         }
 
         public override bool HandleInput(InputState input)
@@ -334,43 +326,6 @@ namespace Ship_Game
             AddRecentCombat(statusIcons, ref xOffset, ref numIcons);
             AddTroopsIcon(statusIcons, ref xOffset);
             AddMoleIcons(statusIcons, ref xOffset, ref numIcons);
-            // bench 393 (maintainer): the event and commodity building icons were dropped in the
-            // UITable conversion - restored here. These are the CONTEXTUAL icons (an anomaly to
-            // investigate, a commodity the world advertises), distinct from Features (own column).
-            AddEventIcon(statusIcons, ref xOffset, ref numIcons);
-            AddCommoditiesIcon(statusIcons, ref xOffset, ref numIcons);
-        }
-
-        // an event building not yet unlocked (an anomaly to investigate)
-        void AddEventIcon(Vector2 statusIcons, ref int offset, ref int numIcons)
-        {
-            if (Planet.NumBuildings == 0)
-                return;
-            foreach (Building b in Planet.Buildings)
-                if (b.EventHere && (Planet.Owner == null || !Planet.Owner.IsBuildingUnlocked(b.Name)))
-                    AddBuildingIcon(b, statusIcons, ref offset, ref numIcons);
-        }
-
-        // a building the world advertises on the list (a commodity source)
-        void AddCommoditiesIcon(Vector2 statusIcons, ref int offset, ref int numIcons)
-        {
-            if (Planet.NumBuildings == 0)
-                return;
-            foreach (Building b in Planet.Buildings)
-                if (b.ShowOnPlanetList)
-                    AddBuildingIcon(b, statusIcons, ref offset, ref numIcons);
-        }
-
-        void AddBuildingIcon(Building b, Vector2 statusIcons, ref int offset, ref int numIcons)
-        {
-            if (numIcons == 13) // wrap to a second row of icons on the busiest worlds
-                offset = 0;
-            offset += 18;
-            numIcons += 1;
-            var buildingRect = new Rectangle((int)statusIcons.X - offset,
-                                             (int)statusIcons.Y + (numIcons > 13 ? 18 : 0), 16, 16);
-            UIPanel building = Panel(buildingRect, ResourceManager.Texture($"Buildings/icon_{b.Icon}_48x48"));
-            building.Tooltip = $"{b.TranslatedName.Text}:\n{b.DescriptionText.Text}";
         }
 
         void AddRecentCombat(Vector2 statusIcons, ref int offset, ref int numIcons)

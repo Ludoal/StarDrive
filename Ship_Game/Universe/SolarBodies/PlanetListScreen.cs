@@ -112,11 +112,10 @@ namespace Ship_Game
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.MaxPopulation) },
                 new UITable.Column { Title = "Fill", Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.Owner), Align = TableAlign.Center, Sortable = true },
-                // bench 393 (maintainer): the two order buttons became a compact icon lane, like
-                // the Ships list - a colonize icon (red to cancel) and a troop icon (left/right
-                // click as Send Troops did). Two 22px icons plus gaps and padding.
-                new UITable.Column { Width = 2 * UITable.PadX + 2 * 22 + 8, Align = TableAlign.Center },
-                // bench 393: the "En route: N  Deployed: M" counters, off the button now.
+                // a colonize icon (red to cancel) and a troop icon (left/right click as Send Troops
+                // did) - two 22px icons plus gaps and padding, the Ships-list convention
+                new UITable.Column { Title = "Actions", Width = 2 * UITable.PadX + 2 * 22 + 8, Align = TableAlign.Center },
+                // the "En route: N  Deployed: M" counters; header centred, content left (in the item)
                 new UITable.Column { Title = "Troops", Align = TableAlign.Center },
             });
             var sys = new Array<string>(); var names = new Array<string>();
@@ -242,8 +241,15 @@ namespace Ship_Game
             // fork (maintainer feedback): "Rebasing: N" follows it (same convention), and the pair
             // is centred as a whole - it carries the count the Homeworld button used to show.
             Graphics.Font font = Fonts.Arial12Bold;
-            Rectangle actions = Table.Columns[9].Rect;
-            NumRebasingTroops = CountRebasingTroops();
+            // the "Available Troops / Rebasing" line centres over the icon lane and the counter
+            // column together, not the icon column alone
+            Rectangle iconCol = Table.Columns[9].Rect;
+            Rectangle troopCol = Table.Columns[10].Rect;
+            var actions = new Rectangle(iconCol.X, iconCol.Y, troopCol.Right - iconCol.X, iconCol.Height);
+            NumRebasingTroops  = CountRebasingTroops();
+            // both counts recompute every frame - a troop reaching home must not leave the free
+            // count stale until the rows are redrawn for another reason
+            NumAvailableTroops = Player.NumFreeTroops();
 
             string availLbl = "Available Troops: ";
             string availVal = NumAvailableTroops.ToString();

@@ -85,7 +85,7 @@ namespace Ship_Game
                 new UITable.Column { Title = "Fleet",  Width = 110, Sortable = true },
                 new UITable.Column { Title = "Patrol", Sortable = true }, // the fleet's patrol plan, if any
                 new UITable.Column { Title = Localizer.Token(GameText.Orders), Sortable = true },
-                new UITable.Column { Width = 110, Align = TableAlign.Center }, // the order/refit/scrap icon lane
+                new UITable.Column { Title = "Actions", Width = 110, Align = TableAlign.Center }, // the order/refit/scrap icon lane
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_fighting_small"), Width = 60,
                                      Align = TableAlign.Number, Sortable = true, Tip = "Indicates Ship Strength; sortable" },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_money"), Width = 60,
