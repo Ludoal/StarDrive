@@ -64,7 +64,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             // bigger screen just leaves space at the frame's right.
             Rectangle frame = ScreenGroups.GroupFrame900(ScreenWidth, ScreenHeight);
             GroupTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
-                                        ScreenGroups.GroupTabTitles));
+                                        ScreenGroups.LiveTitles(ScreenGroups.Group.Diplomacy, Universe)));
             GroupTabs.OnTabChange = OnGroupTabChanged;
             GroupTabs.PerformLayout();
             GroupTabs.SelectedIndex = (int)MainDiplomacyScreen.Tab.Relationships;
@@ -82,6 +82,13 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
         // hands over to it. Relationships itself is a no-op: we are already here.
         void OnGroupTabChanged(int index)
         {
+            // Ludoal fork (bench 379): the hosted colony's tab, appended past the stock four
+            if (ScreenGroups.IsHostedTab(ScreenGroups.Group.Diplomacy, index, Universe))
+            {
+                ExitScreen();
+                Universe.OpenHostedTabPanel?.Invoke();
+                return;
+            }
             var tab = (MainDiplomacyScreen.Tab)index;
             if (tab == MainDiplomacyScreen.Tab.Relationships)
                 return;

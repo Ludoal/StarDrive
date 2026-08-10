@@ -161,6 +161,13 @@ namespace Ship_Game.GameScreens
         // hands over to it on the right tab. Espionage itself is a no-op: we are already here.
         void OnGroupTabChanged(int index)
         {
+            // Ludoal fork (bench 379): the hosted colony's tab, appended past the stock four
+            if (ScreenGroups.IsHostedTab(ScreenGroups.Group.Diplomacy, index, Universe))
+            {
+                ExitScreen();
+                Universe.OpenHostedTabPanel?.Invoke();
+                return;
+            }
             var tab = (MainDiplomacyScreen.Tab)index;
             if (tab == MainDiplomacyScreen.Tab.Espionage)
                 return;
@@ -176,7 +183,7 @@ namespace Ship_Game.GameScreens
             Empire[] majors = Universe.UState.ActiveMajorEmpires;
             LeftRect = ScreenGroups.RaceColumnsFrame(ScreenWidth, ScreenHeight, majors.Length);
             GroupTabs = Add(new Submenu(new RectF(LeftRect.X, LeftRect.Y, LeftRect.Width, LeftRect.Height),
-                                        ScreenGroups.GroupTabTitles));
+                                        ScreenGroups.LiveTitles(ScreenGroups.Group.Diplomacy, Universe)));
             GroupTabs.OnTabChange = OnGroupTabChanged;
             GroupTabs.PerformLayout(); // ClientArea is only known once the tabs are laid out
             GroupTabs.SelectedIndex = (int)MainDiplomacyScreen.Tab.Espionage;
@@ -621,14 +628,10 @@ namespace Ship_Game.GameScreens
                         // Economy/Empire lists - the BudgetScreen pattern, copied. SnapViewColony
                         // would clear the hook, so the panel is opened directly.
                         GameAudio.AcceptClick();
-                        // Ludoal fork (spec: colony-as-tab): the mole colony keeps the OLD return
-                        // mechanism - the Diplomacy group has no central factory to host a tab
-                        // yet. A leftover hosted seat must not dress this colony in another
-                        // group's row, so it is cleared before the panel is built.
-                        Universe.ClearHostedTab();
-                        Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new InfiltrationScreen(Universe));
-                        Universe.ReturnToListTabs   = GroupTabs;
-                        Universe.ReturnToListGroup  = GameScreens.ScreenGroups.GroupOf(this);
+                        // Ludoal fork (bench 379): the mole colony rides the Diplomacy seat now,
+                        // Espionage as the Esc origin - the last group joins the mechanism.
+                        Universe.HostColonyTab(moleP, GameScreens.ScreenGroups.Group.Diplomacy,
+                                               (int)MainDiplomacyScreen.Tab.Espionage);
                         Universe.workersPanel = new ColonyScreen(Universe, moleP, Universe.EmpireUI);
                         Universe.LookingAtPlanet = true;
                         // Ludoal fork: the colony inherits this screen's automatic pause -

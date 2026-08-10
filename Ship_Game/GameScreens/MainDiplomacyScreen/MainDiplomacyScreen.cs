@@ -163,7 +163,7 @@ namespace Ship_Game
 
             LeftRect = ScreenGroups.RaceColumnsFrame(ScreenWidth, ScreenHeight, Races.Count);
             GroupTabs = Add(new Submenu(new RectF(LeftRect.X, LeftRect.Y, LeftRect.Width, LeftRect.Height),
-                                        ScreenGroups.GroupTabTitles));
+                                        ScreenGroups.LiveTitles(ScreenGroups.Group.Diplomacy, Universe)));
             GroupTabs.OnTabChange = OnGroupTabChanged;
             GroupTabs.PerformLayout(); // necessary: ClientArea is only known once the tabs are laid out
 
@@ -217,6 +217,13 @@ namespace Ship_Game
 
         void OnGroupTabChanged(int index)
         {
+            // Ludoal fork (bench 379): the hosted colony's tab, appended past the stock four
+            if (ScreenGroups.IsHostedTab(ScreenGroups.Group.Diplomacy, index, Universe))
+            {
+                ExitScreen();
+                Universe.OpenHostedTabPanel?.Invoke();
+                return;
+            }
             switch ((Tab)index)
             {
                 case Tab.Intelligence: ShowBonuses = false; break;

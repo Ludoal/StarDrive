@@ -128,7 +128,9 @@ namespace Ship_Game.GameScreens
             && index == StockTitles(g).Length;
 
         static LocalizedText[] StockTitles(Group g)
-            => g == Group.Galaxy ? GalaxyTabTitles : EmpireTabTitles;
+            => g == Group.Galaxy    ? GalaxyTabTitles
+             : g == Group.Diplomacy ? GroupTabTitles
+             : EmpireTabTitles;
 
         /// the live tab row of a group: the stock titles, plus the hosted tab when armed
         public static LocalizedText[] LiveTitles(Group g, UniverseScreen u)
@@ -296,10 +298,19 @@ namespace Ship_Game.GameScreens
             return tabs;
         }
 
-        /// the factory of a HOSTING group - only the two groups with central factories can
-        /// host a tab today (the Diplomacy screens still build their rows by hand)
+        // Ludoal fork (bench 379): the Diplomacy group's own factory, born for the hosted
+        // seat's Esc-return. Relationships needs a caller-built intel array, so its index
+        // routes through the main screen, which opens the diagram on arrival by itself.
+        public static GameScreen DiploTab(int index, UniverseScreen u)
+            => (MainDiplomacyScreen.Tab)index == MainDiplomacyScreen.Tab.Espionage
+                ? new InfiltrationScreen(u)
+                : new MainDiplomacyScreen(u, (MainDiplomacyScreen.Tab)index);
+
+        /// the factory of a HOSTING group
         public static GameScreen TabOf(Group g, int index, UniverseScreen u)
-            => g == Group.Galaxy ? GalaxyTab(index, u) : EmpireTab(index, u);
+            => g == Group.Galaxy  ? GalaxyTab(index, u)
+             : g == Group.Empire  ? EmpireTab(index, u)
+             : DiploTab(index, u);
 
         // Ludoal fork (maintainer feedback): the target frame width. Group screens never grow past
         // this even at 1920 fullscreen, so a screen looks identical windowed and fullscreen - the
