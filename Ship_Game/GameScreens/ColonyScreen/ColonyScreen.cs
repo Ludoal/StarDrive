@@ -19,7 +19,6 @@ namespace Ship_Game
         readonly ToggleButton PlayerDesignsToggle;
         // Ludoal fork: the screen's frame. The title bar the planet name sits in is the one every
         // window uses, declared with the colours it goes with.
-        Rectangle ColonyFrame; // = the group row's rect; the Submenu chrome is the frame now
         CloseButton CloseBtn; // bench 361: served explicitly on read-only (infiltrated) colonies
         Submenu GroupRow;     // the hosting group's live tab row, when opened on a hosted seat
 
@@ -158,8 +157,6 @@ namespace Ship_Game
                 : new[] { new LocalizedText(p.Name, LocalizationMethod.RawText) };
             GroupRow = GameScreens.ScreenGroups.AddGroupTabs(this, titles, titles.Length - 1,
                                                              OnGroupRowTabChanged, out _, withClose: false);
-            ColonyFrame = GroupRow.Rect;
-
             // the close cross at the group's standard seat; ref kept - the read-only
             // early-out must still serve it (bench 361)
             Vector2 closePos = GameScreens.ScreenGroups.GroupClosePos(GroupRow.ClientArea);
