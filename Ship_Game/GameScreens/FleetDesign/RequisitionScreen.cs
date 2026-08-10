@@ -16,7 +16,7 @@ namespace Ship_Game
         readonly FleetDesignScreen Fds;
 
         Submenu Background;
-        BlueButton AssignNow;
+        UIButton AssignNow;
         UIList OwnedShips;
         UIList BuildNewShips;
         UIList NoRequisitionNeeded;
@@ -57,7 +57,7 @@ namespace Ship_Game
             OwnedShips = main.Add(new UIList(new(main.Width, 20), ListLayoutStyle.ResizeList));
             OwnedShips.Add(new UILabel("Owned Ships", Fonts.Pirulen16));
             OwnedShips.Add(new UILabel(_ => GetNumThatFitText()));
-            AssignNow = OwnedShips.Add(new BlueButton("Assign Now")
+            AssignNow = OwnedShips.Add(new UIButton(ButtonStyle.WideActive, "Assign Now")
             {
                 OnClick = (_) => AssignAvailableShips()
             });
@@ -65,11 +65,11 @@ namespace Ship_Game
             BuildNewShips = main.Add(new UIList(new(main.Width, 20), ListLayoutStyle.ResizeList));
             BuildNewShips.Add(new UILabel("Build New Ships", Fonts.Pirulen16));
             BuildNewShips.Add(new UILabel(_ => GetSlotsToFillText()));
-            BuildNewShips.Add(new BlueButton("Build Now")
+            BuildNewShips.Add(new UIButton(ButtonStyle.WideActive, "Build Now")
             {
                 OnClick = (_) => CreateFleetRequisitionGoals()
             });
-            BuildNewShips.Add(new BlueButton("Rush Now")
+            BuildNewShips.Add(new UIButton(ButtonStyle.WideActive, "Rush Now")
             {
                 Tooltip = GameText.BuildAllShipsNowPrioritize,
                 OnClick = (_) => CreateFleetRequisitionGoals(true)

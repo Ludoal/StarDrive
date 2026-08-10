@@ -636,22 +636,22 @@ namespace Ship_Game
             int mmFrameL = mmap.X - 6, mmFrameR = mmap.Right + 6;   // the painted rule's edges
             int counterW = (mmFrameR - mmFrameL - 6) / 2;
             int counterY = mmHousing.Y - 30;
-            ShipsInCombat = ButtonMediumMenu(mmFrameL, counterY, "Ships: 0");
+            ShipsInCombat = ButtonMediumMuted(mmFrameL, counterY, "Ships: 0");
             ShipsInCombat.Size = new Vector2(counterW, 24);
             ShipsInCombat.DynamicText = () =>
             {
-                ShipsInCombat.Style = Player.EmpireShipCombat > 0 ? ButtonStyle.Medium : ButtonStyle.MediumMenu;
+                ShipsInCombat.Style = Player.EmpireShipCombat > 0 ? ButtonStyle.Medium : ButtonStyle.MediumMuted;
                 return $"Ships: {Player.EmpireShipCombat}";
             };
             ShipsInCombat.Tooltip = "Cycle through ships not in fleet that are in combat";
             ShipsInCombat.OnClick = ShipsInCombatClick;
             Add(ShipsInCombat);
 
-            PlanetsInCombat = ButtonMediumMenu(mmFrameR - counterW, counterY, "Planets: 0");
+            PlanetsInCombat = ButtonMediumMuted(mmFrameR - counterW, counterY, "Planets: 0");
             PlanetsInCombat.Size = new Vector2(counterW, 24);
             PlanetsInCombat.DynamicText = () =>
             {
-                PlanetsInCombat.Style = Player.EmpirePlanetCombat > 0 ? ButtonStyle.Medium : ButtonStyle.MediumMenu;
+                PlanetsInCombat.Style = Player.EmpirePlanetCombat > 0 ? ButtonStyle.Medium : ButtonStyle.MediumMuted;
                 return $"Planets: {Player.EmpirePlanetCombat}";
             };
             PlanetsInCombat.OnClick = CyclePlanetsInCombat;

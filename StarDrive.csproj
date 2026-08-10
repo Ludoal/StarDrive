@@ -794,7 +794,6 @@
     <Compile Include="Ship_Game\Utils\TimeTypes.cs" />
     <Compile Include="Ship_Game\WeightSlider.cs" />
     <Compile Include="Ship_Game\UI\FloatSlider.cs" />
-    <Compile Include="Ship_Game\BlueButton.cs" />
     <Compile Include="Ship_Game\AI\DefensiveCoordinator.cs" />
     <Compile Include="Ship_Game\AI\SystemCommander.cs" />
     <Compile Include="Ship_Game\ShipModuleType.cs" />

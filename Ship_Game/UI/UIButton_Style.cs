@@ -8,14 +8,18 @@ namespace Ship_Game
 {
     public enum ButtonStyle
     {
-        Default,    // empiretopbar_btn_168px
-        Small,      // empiretopbar_btn_68px
-        Low80,      // empiretopbar_low_btn_80px
-        Low100,     // empiretopbar_low_btn_100px
-        Medium,     // empiretopbar_btn_132px       -- GoldenBrown button
-        MediumMenu, // empiretopbar_btn_132px_menu  -- Grayed out button
-        BigDip,     // empiretopbar_btn_168px_dip
-        Military,   // empiretopbar_btn_168px_military
+        // Ludoal fork: a style names its SIZE and its MEANING, never a colour or the screen it
+        // was born on (maintainer feedback) - the tint comes from the theme, so a colour name
+        // lies the day the theme changes. BigDip/Military/MediumMenu renamed on that rule; the
+        // bitmap comments below are the size references, nothing more.
+        Default,       // empiretopbar_btn_168px - neutral
+        Small,         // empiretopbar_btn_68px
+        Low80,         // empiretopbar_low_btn_80px
+        Low100,        // empiretopbar_low_btn_100px
+        Medium,        // empiretopbar_btn_132px - neutral
+        MediumMuted,   // empiretopbar_btn_132px_menu - out of reach for now
+        DefaultActive, // empiretopbar_btn_168px_dip - an active control, or the order that starts something
+        DefaultHostile, // empiretopbar_btn_168px_military - a hostile action, or the one that cancels
         Close,      // NewUI/Close_Normal
         ResearchQueueUp, // "ResearchMenu/button_queue_up"
         ResearchQueueDown, // "ResearchMenu/button_queue_down"

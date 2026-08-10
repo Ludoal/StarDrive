@@ -567,7 +567,7 @@ namespace Ship_Game
 
             Vector2 buttonsPos = new Vector2(pos.X, pos.Y + spacing);
             AddButton(ref DysonSwarmStartButton, buttonsPos, GameText.BuildDysonSwarm, ButtonStyle.Default, GameText.BuildDysonSwarmTip);
-            AddButton(ref DysonSwarmKillButton, new Vector2(buttonsPos.X + barWidth- spacing-110, buttonsPos.Y), GameText.KillDysonSwarm, ButtonStyle.Military, GameText.KillDysonSwarmTip);
+            AddButton(ref DysonSwarmKillButton, new Vector2(buttonsPos.X + barWidth- spacing-110, buttonsPos.Y), GameText.KillDysonSwarm, ButtonStyle.DefaultHostile, GameText.KillDysonSwarmTip);
             DysonSwarmOverclock = Add(new UICheckBox(buttonsPos.X, buttonsPos.Y + 130,
                 () => DysonSwarmEnabled,
                 (x) => { if (P.System.HasDysonSwarm)

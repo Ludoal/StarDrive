@@ -187,7 +187,7 @@ namespace Ship_Game
             LoadBlueprints.Tooltip   = GameText.UploadBluprintsTip;
 
             ButtonUpdateTimer    = 1;
-            BuildCapital         = Button(ButtonStyle.BigDip, GameText.ButtonBuildCapitalName, OnBuildCapitalClicked);
+            BuildCapital         = Button(ButtonStyle.DefaultActive, GameText.ButtonBuildCapitalName, OnBuildCapitalClicked);
             BuildCapital.Tooltip = GameText.ButtonBuildCapitalTip;
 
             LaunchAllTroops   = Button(ButtonStyle.Default, GameText.LaunchAllTroops, OnLaunchTroopsClicked);
@@ -785,7 +785,7 @@ namespace Ship_Game
             if (troopsLanding > 0)
             {
                 CallTroops.Text = $"{Localizer.Token(GameText.IncomingTroops)} {troopsLanding}"; // "Incoming Troops
-                CallTroops.Style = ButtonStyle.Military;
+                CallTroops.Style = ButtonStyle.DefaultHostile;
             }
             else
             {

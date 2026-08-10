@@ -355,8 +355,8 @@ namespace Ship_Game
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
 
-        public UIButton ButtonMediumMenu(float x, float y, in LocalizedText text)
-            => Add(new UIButton(ButtonStyle.MediumMenu, new Vector2(x, y), text));
+        public UIButton ButtonMediumMuted(float x, float y, in LocalizedText text)
+            => Add(new UIButton(ButtonStyle.MediumMuted, new Vector2(x, y), text));
 
         // @note CloseButton automatically calls ExitScreen() on this screen
         public CloseButton CloseButton(float x, float y) => Add(new CloseButton(x, y));
@@ -388,8 +388,8 @@ namespace Ship_Game
         public UIButton ButtonLow(float x, float y, in LocalizedText text, Action<UIButton> click)
             => Button(ButtonStyle.Low80, new Vector2(x, y), text, click);
 
-        public UIButton ButtonBigDip(float x, float y, in LocalizedText text, Action<UIButton> click)
-            => Button(ButtonStyle.BigDip, new Vector2(x, y), text, click);
+        public UIButton ButtonDefaultActive(float x, float y, in LocalizedText text, Action<UIButton> click)
+            => Button(ButtonStyle.DefaultActive, new Vector2(x, y), text, click);
 
 
         public UIButton ButtonSmall(float x, float y, in LocalizedText text, Action<UIButton> click)

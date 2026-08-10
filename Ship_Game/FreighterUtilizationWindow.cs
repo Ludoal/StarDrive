@@ -62,7 +62,7 @@ namespace Ship_Game
             GoodsUtilizationMap.Add(Goods.Production, new GoodsUtilization(Goods.Production, this));
             GoodsUtilizationMap.Add(Goods.Colonists, new GoodsUtilization(Goods.Colonists, this));
             UtilizationBar = new ProgressBar(new Rectangle(-100, -100, 150, 18), 0, 0) { DrawPercentage = true };
-            BuildFreighter = Button(ButtonStyle.BigDip, GameText.BuildFreighter, OnBuildFreighterClick);
+            BuildFreighter = Button(ButtonStyle.DefaultActive, GameText.BuildFreighter, OnBuildFreighterClick);
         }
 
         public override void LoadContent()

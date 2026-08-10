@@ -105,7 +105,7 @@ namespace Ship_Game
             if (Planet?.IsResearchable == true || System.IsResearchable)
             {
                 bool deployed = SolarBody.IsResearchStationDeployedBy(Player); // built: neither Deploy nor Abort
-                ButtonStyle researchStyle = MarkedForResearch || deployed ? ButtonStyle.Military : ButtonStyle.BigDip;
+                ButtonStyle researchStyle = MarkedForResearch || deployed ? ButtonStyle.DefaultHostile : ButtonStyle.DefaultActive;
                 LocalizedText researchText = deployed ? new LocalizedText("Station Deployed", LocalizationMethod.RawText)
                                            : !MarkedForResearch ? new LocalizedText(GameText.DeployResearchStation) : new LocalizedText(GameText.AbortDeployent);
                 DeployButton = Button(researchStyle, researchText, OnResearchClicked);
@@ -124,7 +124,7 @@ namespace Ship_Game
             }
             else
             {
-                ButtonStyle dysonStyle = DysonSwarmActiveByPlayer ? ButtonStyle.Military : ButtonStyle.Default;
+                ButtonStyle dysonStyle = DysonSwarmActiveByPlayer ? ButtonStyle.DefaultHostile : ButtonStyle.Default;
                 LocalizedText dysonText = !DysonSwarmActiveByPlayer ? GameText.BuildDysonSwarm : GameText.KillDysonSwarm;
                 DeployButton = Button(dysonStyle, dysonText, OnDysonSwarmClicked);
             }
@@ -378,14 +378,14 @@ namespace Ship_Game
                     Player.AI.AddGoalAndEvaluate(new ProcessResearchStation(Player, Planet));
 
                 DeployButton.Text = GameText.AbortDeployent;
-                DeployButton.Style = ButtonStyle.Military;
+                DeployButton.Style = ButtonStyle.DefaultHostile;
                 MarkedForResearch = true;
             }
             else
             {
                 Player.AI.CancelResearchStation(Planet);
                 DeployButton.Text = GameText.DeployResearchStation;
-                DeployButton.Style = ButtonStyle.BigDip;
+                DeployButton.Style = ButtonStyle.DefaultActive;
             }
         }
 
@@ -487,7 +487,7 @@ namespace Ship_Game
             {
                 System.ActivateDysonSwarm(Player);
                 DeployButton.Text = GameText.KillDysonSwarm;
-                DeployButton.Style = ButtonStyle.Military;
+                DeployButton.Style = ButtonStyle.DefaultHostile;
                 DysonSwarmActiveByPlayer = true;
                 if (Owner != null)
                 {
