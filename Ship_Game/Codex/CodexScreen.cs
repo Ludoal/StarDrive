@@ -275,7 +275,7 @@ namespace Ship_Game.Codex
 
             EntryBody?.Draw(batch);
 
-            batch.Draw(ResourceManager.Texture("Popup/popup_separator"), TitleSeparator, Color.White);
+            batch.Draw(PopupFrame.Style.Separator, TitleSeparator, Color.White);
 
             // Title is drawn above the body text for every entry; the original
             // wiki only showed it during paused video, which hid the topic name

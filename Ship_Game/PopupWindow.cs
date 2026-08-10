@@ -56,14 +56,15 @@ namespace Ship_Game
 
             // this window's own extras, drawn UNDER the frame so its edges land on top: the big
             // lower fill, and the subtitle band with its separators when a caller sets MiddleText
-            batch.Draw(ResourceManager.Texture("Popup/popup_filler_lower"), BottomBigFill, Color.White);
+            PopupFrame.StyleTextures s = PopupFrame.Style;
+            batch.Draw(s.FillerLower, BottomBigFill, Color.White);
 
             if (MidContainer.Height != 0)
-                batch.Draw(ResourceManager.Texture("Popup/popup_filler_lower"), MidContainer, Color.White);
+                batch.Draw(s.FillerLower, MidContainer, Color.White);
             if (MidSepTop.Height != 0)
-                batch.Draw(ResourceManager.Texture("Popup/popup_separator"), MidSepTop, Color.White);
+                batch.Draw(s.Separator, MidSepTop, Color.White);
             if (MidSepBot.Height != 0)
-                batch.Draw(ResourceManager.Texture("Popup/popup_separator"), MidSepBot, Color.White);
+                batch.Draw(s.Separator, MidSepBot, Color.White);
 
             Frame.Draw(batch);
 

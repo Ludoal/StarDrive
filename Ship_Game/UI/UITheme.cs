@@ -29,6 +29,10 @@ namespace Ship_Game
         [StarData] public Color FrameBody      = new(14, 14, 14, 240);
         [StarData] public Color FrameTitleBar  = new(54, 54, 54, 240);
         [StarData] public int   TitleBarHeight = 46;
+        // the Content/Textures folder the popup frame's bitmaps come from - swapping the
+        // folder reskins every popup window; PopupFrame falls back piece by piece to the
+        // classic Popup set for anything the folder lacks
+        [StarData] public string PopupSkin = "Popup";
 
         // buttons - hover and press are DERIVED from the tint, never separate colours
         [StarData] public Color PlateNeutral = new(193, 113, 26);
@@ -118,6 +122,7 @@ namespace Ship_Game
         public static Color FrameBody     => Theme.FrameBody;
         public static Color FrameTitleBar => Theme.FrameTitleBar;
         public static int   TitleBarH     => Theme.TitleBarHeight;
+        public static string PopupSkin    => Theme.PopupSkin;
 
         // ── buttons ──────────────────────────────────────────────────────────────────────────
         public static Color PlateNeutral => Theme.PlateNeutral;

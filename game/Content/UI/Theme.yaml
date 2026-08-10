@@ -16,6 +16,10 @@ Theme:
   FrameBody:      [14, 14, 14, 240]   # what fills a window
   FrameTitleBar:  [54, 54, 54, 240]   # one step lighter, so a title bar reads as one
   TitleBarHeight: 46
+  # The Textures folder the popup frame's bitmaps come from. Point it at a folder of
+  # same-named, SAME-SIZED textures and every popup window follows; any piece the folder
+  # lacks falls back to the classic Popup set, so a partial skin still draws whole.
+  PopupSkin: Popup
 
   # ── Buttons ──────────────────────────────────────────────────────────────────
   # One tint per MEANING. Hover and Pressed are derived from the tint rather than

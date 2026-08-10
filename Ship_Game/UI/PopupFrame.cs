@@ -125,6 +125,67 @@ namespace Ship_Game
             BottomFill = new Rectangle(BL.Right, BL.Y, rect.Width - BL.Width - BR.Width, BL.Height - 12);
         }
 
+        /// Ludoal fork: the frame's texture set, resolved once per skin instead of name by name
+        /// inside Draw. The skin is a Content/Textures folder declared in UI/Theme.yaml
+        /// (PopupSkin); any piece the folder lacks falls back to the classic Popup set, so a
+        /// partial skin still draws whole. ⚠ A replacement set must keep the classic
+        /// dimensions - the geometry above (28x30 corners, the 4- and 12-tall bands, the
+        /// border eats) is measured off these bitmaps, not derived from them.
+        public class StyleTextures
+        {
+            public SubTexture CornerTL, CornerTR, CornerBL, CornerBR;
+            public SubTexture StrokeTL, StrokeTR, StrokeBL, StrokeBR;
+            public SubTexture HorizTop, HorizTopGradient;
+            public SubTexture HorizBot, HorizBotGradient;
+            public SubTexture VertL, VertR;
+            public SubTexture FillerLower, FillerTitle, Separator;
+
+            public StyleTextures(string skin)
+            {
+                SubTexture Tex(string piece)
+                    => ResourceManager.TextureOrDefault($"{skin}/{piece}", $"Popup/{piece}");
+
+                CornerTL = Tex("popup_corner_TL");
+                CornerTR = Tex("popup_corner_TR");
+                CornerBL = Tex("popup_corner_BL");
+                CornerBR = Tex("popup_corner_BR");
+                StrokeTL = Tex("popup_corner_TL_stroke");
+                StrokeTR = Tex("popup_corner_TR_stroke");
+                StrokeBL = Tex("popup_corner_BL_stroke");
+                StrokeBR = Tex("popup_corner_BR_stroke");
+                HorizTop         = Tex("popup_horiz_T");
+                HorizTopGradient = Tex("popup_horiz_T_gradient");
+                HorizBot         = Tex("popup_horiz_B");
+                HorizBotGradient = Tex("popup_horiz_B_gradient");
+                VertL = Tex("popup_vert_L");
+                VertR = Tex("popup_vert_R");
+                FillerLower = Tex("popup_filler_lower");
+                FillerTitle = Tex("popup_filler_title");
+                Separator   = Tex("popup_separator");
+            }
+        }
+
+        static StyleTextures Styling;
+        static int ContentId = -1;
+        static string SkinName;
+
+        /// The live texture set - public because PopupWindow's subtitle band and the Codex's
+        /// title separator are cut from the same cloth and must follow the same skin.
+        public static StyleTextures Style
+        {
+            get
+            {
+                string skin = UITheme.PopupSkin;
+                if (Styling == null || ContentId != ResourceManager.ContentId || SkinName != skin)
+                {
+                    ContentId = ResourceManager.ContentId;
+                    SkinName = skin;
+                    Styling = new StyleTextures(skin);
+                }
+                return Styling;
+            }
+        }
+
         /// The body fill, drawn UNDER the frame. Separate from Draw because a caller may want to
         /// paint its own content between the two - the frame's edges must land on top of it.
         /// Ludoal fork (maintainer bench 337): the fill is INSET by the border thicknesses so the
@@ -138,34 +199,36 @@ namespace Ship_Game
             var fill = new Rectangle(rect.X + BorderLeft, rect.Y + TopInk,
                                      rect.Width - BorderLeft - BorderRight,
                                      rect.Height - TopInk - BottomLine);
-            batch.Draw(ResourceManager.Texture("Popup/popup_filler_lower"), fill, Color.White);
+            batch.Draw(Style.FillerLower, fill, Color.White);
         }
 
         public readonly void Draw(SpriteBatch batch)
         {
-            batch.Draw(ResourceManager.Texture("Popup/popup_corner_TL"), TL, Color.White);
-            batch.Draw(ResourceManager.Texture("Popup/popup_corner_TR"), TR, Color.White);
-            batch.Draw(ResourceManager.Texture("Popup/popup_corner_BL"), BL, Color.White);
-            batch.Draw(ResourceManager.Texture("Popup/popup_corner_BR"), BR, Color.White);
+            StyleTextures s = Style;
 
-            batch.Draw(ResourceManager.Texture("Popup/popup_horiz_T"), TopHoriz, Color.White);
-            batch.Draw(ResourceManager.Texture("Popup/popup_horiz_T_gradient"), TopSep, Color.White);
-            batch.Draw(ResourceManager.Texture("Popup/popup_vert_L"), LeftVert, Color.White);
-            batch.Draw(ResourceManager.Texture("Popup/popup_vert_R"), RightVert, Color.White);
+            batch.Draw(s.CornerTL, TL, Color.White);
+            batch.Draw(s.CornerTR, TR, Color.White);
+            batch.Draw(s.CornerBL, BL, Color.White);
+            batch.Draw(s.CornerBR, BR, Color.White);
 
-            batch.Draw(ResourceManager.Texture("Popup/popup_horiz_B"), BotHoriz, Color.White);
-            batch.Draw(ResourceManager.Texture("Popup/popup_horiz_B_gradient"), BotSep, Color.White);
-            batch.Draw(ResourceManager.Texture("Popup/popup_filler_lower"), BottomFill, Color.White);
+            batch.Draw(s.HorizTop, TopHoriz, Color.White);
+            batch.Draw(s.HorizTopGradient, TopSep, Color.White);
+            batch.Draw(s.VertL, LeftVert, Color.White);
+            batch.Draw(s.VertR, RightVert, Color.White);
 
-            batch.Draw(ResourceManager.Texture("Popup/popup_filler_title"), TitleRect, Color.White);
-            batch.Draw(ResourceManager.Texture("Popup/popup_filler_title"), TitleLeft, Color.White);
-            batch.Draw(ResourceManager.Texture("Popup/popup_filler_title"), TitleRight, Color.White);
-            batch.Draw(ResourceManager.Texture("Popup/popup_separator"), TitleSep, Color.White);
+            batch.Draw(s.HorizBot, BotHoriz, Color.White);
+            batch.Draw(s.HorizBotGradient, BotSep, Color.White);
+            batch.Draw(s.FillerLower, BottomFill, Color.White);
 
-            batch.Draw(ResourceManager.Texture("Popup/popup_corner_TL_stroke"), TLc, Color.White);
-            batch.Draw(ResourceManager.Texture("Popup/popup_corner_TR_stroke"), TRc, Color.White);
-            batch.Draw(ResourceManager.Texture("Popup/popup_corner_BL_stroke"), BLc, Color.White);
-            batch.Draw(ResourceManager.Texture("Popup/popup_corner_BR_stroke"), BRc, Color.White);
+            batch.Draw(s.FillerTitle, TitleRect, Color.White);
+            batch.Draw(s.FillerTitle, TitleLeft, Color.White);
+            batch.Draw(s.FillerTitle, TitleRight, Color.White);
+            batch.Draw(s.Separator, TitleSep, Color.White);
+
+            batch.Draw(s.StrokeTL, TLc, Color.White);
+            batch.Draw(s.StrokeTR, TRc, Color.White);
+            batch.Draw(s.StrokeBL, BLc, Color.White);
+            batch.Draw(s.StrokeBR, BRc, Color.White);
         }
     }
 }
