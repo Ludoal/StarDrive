@@ -108,20 +108,13 @@ namespace Ship_Game
                     // calling the snap - that arming wins, don't demote it to Galaxy/-1.
                     if (HostedTabTitle != p.Name)
                         HostColonyTab(p, GameScreens.ScreenGroups.Group.Galaxy, -1);
-                    workersPanel = new ColonyScreen(this, p, EmpireUI);
+                    // Ludoal fork (migration, bench 386): a STACKED page like every tab - no
+                    // mount, no camera anchoring, the map simply keeps living underneath.
+                    // bench 352: opening a colony makes it THE selected object.
+                    ClearSelectedItems();
                     ReturnToListScreen = null;
                     ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
-                    // bench 352: opening a colony makes it THE selected object, so a prior selection's
-                    // cartouche vanishing is correct - we don't keep a stray selection behind Colony.
-                    ClearSelectedItems();
-                    returnToShip = doReturnToShip;
-                    LookingAtPlanet = true;
-                    // No camera snap — the panel covers the map. But the removed snap
-                    // also refreshed transitionStartPosition, which the close handler
-                    // restores to; left stale, closing flew the camera to wherever the
-                    // last transition started. Anchor both to the current camera.
-                    transitionStartPosition = CamPos;
-                    CamDestination = CamPos;
+                    ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI));
                     return;
                 }
                 else if (combatView && p.Habitable
@@ -380,13 +373,22 @@ namespace Ship_Game
         {
             if (workersPanel == null)
                 return;
-            SetSelectedPlanet(workersPanel.P);
+            Planet p = workersPanel.P;
+            LookingAtPlanet = false;
+            SnapToPlanetStayHere(p);
+        }
+
+        // Ludoal fork (migration, bench 386): the stay-here landing with the planet passed
+        // in - the stacked colony has no mount this could read. One camera arithmetic for
+        // the eye gesture and the combat panel's own close.
+        public void SnapToPlanetStayHere(Planet p)
+        {
+            SetSelectedPlanet(p);
             returnToShip = false;
-            CamDestination = new Vector3d(workersPanel.P.Position.X, workersPanel.P.Position.Y,
+            CamDestination = new Vector3d(p.Position.X, p.Position.Y,
                                           GetZfromScreenState(UnivScreenState.PlanetView)); // aligned with the planet-snap standard (was 2500, too strong)
             AdjustCamTimer = 1f;
             transitionElapsedTime = 0f;
-            LookingAtPlanet = false;
         }
 
         void ToggleViewingShip()

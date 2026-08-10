@@ -27,7 +27,26 @@ namespace Ship_Game
             if (GroupRow == null || index == GroupRow.NumTabs - 1)
                 return; // the colony's own tab - already here
             GameAudio.AcceptClick();
-            P.Universe.Screen.CloseHostedPanelToTab(index);
+            // a stacked page swaps like every tab; the seat stays armed - the hosted tab
+            // survives visits to its neighbors (spec), it only dies on Esc or with the group
+            UniverseScreen u = P.Universe.Screen;
+            ExitScreen();
+            ScreenManager.AddScreen(GameScreens.ScreenGroups.TabOf(u.HostedTabGroup, index, u));
+        }
+
+        // Ludoal fork (migration, bench 386): Esc and right-click close the colony's TAB -
+        // seat cleared, back to the origin panel, or nothing more when it came from the map.
+        // Handled BEFORE the base popup dismiss, which exits without the routing.
+        void CloseColonyPage()
+        {
+            UniverseScreen u = P.Universe.Screen;
+            var group = u.HostedTabGroup;
+            int origin = u.HostedTabOrigin;
+            u.ClearHostedTab();
+            ExitScreen();
+            u.SetSelectedPlanet(P); // land on the planet, selected - as closing always did
+            if (origin >= 0)
+                ScreenManager.AddScreen(GameScreens.ScreenGroups.TabOf(group, origin, u));
         }
         readonly Submenu PlanetInfo;
         readonly Submenu PStorage;

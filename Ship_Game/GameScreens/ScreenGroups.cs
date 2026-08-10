@@ -691,6 +691,10 @@ namespace Ship_Game.GameScreens
         {
             null => Group.None,
 
+            // Ludoal fork (migration, bench 386): a stacked colony belongs to whichever
+            // group its hosted seat names - the one membership that is dynamic
+            ColonyScreen c => c.P.Universe.Screen.HostedTabGroup,
+
             PlanetListScreen or ExoticSystemsListScreen or EmpirePatrolsScreen
                 or ImportantEventsScreen
                 => Group.Galaxy,

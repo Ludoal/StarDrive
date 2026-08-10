@@ -107,13 +107,12 @@ namespace Ship_Game
             HostedTabTitle = p.Name;
             HostedTabGroup = group;
             HostedTabOrigin = originTab;
+            // Ludoal fork (migration, bench 386): the colony is a STACKED page now, like
+            // every tab - one code path for input, pause, band and closing.
             OpenHostedTabPanel = () =>
             {
-                workersPanel = new ColonyScreen(this, p, EmpireUI);
-                ClearSelectedItems();
-                LookingAtPlanet = true;
-                transitionStartPosition = CamPos;
-                CamDestination = CamPos;
+                ClearSelectedItems(); // bench 352: the colony becomes THE selected object
+                ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI));
             };
         }
 
@@ -125,20 +124,6 @@ namespace Ship_Game
             HostedTabOrigin = -1;
         }
 
-        // Ludoal fork: a NEIGHBOR tab clicked on the hosted panel's row - close the panel
-        // (camera and pause exactly like the dismiss path) and open that tab's screen. The
-        // seat stays armed: the hosted tab survives visits to its neighbors (spec), it only
-        // dies on Esc or with the group.
-        public void CloseHostedPanelToTab(int index)
-        {
-            AdjustCamTimer = 1f;
-            CamDestination = transitionStartPosition;
-            SetSelectedPlanet(workersPanel.P);
-            transitionElapsedTime = 0f;
-            LookingAtPlanet = false;
-            workersPanel.ReleaseUniversePause(); // the opened screen takes it back with its own toPause
-            ScreenManager.AddScreen(GameScreens.ScreenGroups.TabOf(HostedTabGroup, index, this));
-        }
         public EmpireUIOverlay EmpireUI;
         public BloomComponent bloomComponent;
         public DistortionComponent distortionComponent;
@@ -256,7 +241,15 @@ namespace Ship_Game
         bool IsUniverseInitialized;
 
         public bool IsViewingCombatScreen(Planet p) => LookingAtPlanet && workersPanel is CombatScreen cs && cs.P == p;
-        public bool IsViewingColonyScreen(Planet p) => LookingAtPlanet && workersPanel is ColonyScreen cs && cs.P == p;
+        // Ludoal fork (migration, bench 386): the colony is a stacked page - ask the stack
+        public bool IsViewingColonyScreen(Planet p)
+        {
+            var stack = ScreenManager.Screens;
+            for (int i = 0; i < stack.Count; ++i)
+                if (stack[i] is ColonyScreen cs && cs.P == p && !stack[i].IsExiting)
+                    return true;
+            return false;
+        }
 
         /// <summary>
         /// RADIUS of the universe, Stars are generated within XY range [-universeRadius, +universeRadius]
@@ -794,31 +787,8 @@ namespace Ship_Game
 
         public override void Update(float fixedDeltaTime)
         {
-            // Ludoal fork (bench 380): jumping to another GROUP from an open colony closes the
-            // panel AND its seat - the colony belonged to the group being left, and the tab
-            // dies with its group. Detected centrally: a group screen stacked above while the
-            // panel is up can only be a top-bar jump or hotkey, since every in-group path
-            // closes the panel before opening the next screen.
-            if (LookingAtPlanet && workersPanel != null)
-            {
-                var stack = ScreenManager.Screens;
-                for (int i = 0; i < stack.Count; ++i)
-                {
-                    // ⚠ not the EXITING list the colony was just opened from - it lingers in
-                    // the stack for its 0.25s transition, and reacting to it would close the
-                    // panel the instant it was born
-                    if (!stack[i].IsExiting
-                        && GameScreens.ScreenGroups.GroupOf(stack[i]) != GameScreens.ScreenGroups.Group.None)
-                    {
-                        ClearHostedTab();
-                        LookingAtPlanet = false;
-                        workersPanel.ReleaseUniversePause(); // the new group holds its own pause
-                        CamDestination = transitionStartPosition;
-                        SetSelectedPlanet(workersPanel.P);
-                        break;
-                    }
-                }
-            }
+            // (bench 386 migration: the colony is a stacked page - the top bar closes it on a
+            // group jump like any page, and the seat still dies where the universe regains input)
 
             if (LookingAtPlanet)
                 workersPanel?.Update(fixedDeltaTime);

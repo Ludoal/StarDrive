@@ -66,21 +66,37 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // Ludoal fork: the eye by the name means "take me THERE" - close the whole stack
-            // down to the map (and don't let the closing colony reopen the list it came from),
-            // then dismiss THIS panel with the stay-here gesture: Colony is not a stacked
-            // screen, it is the universe's workersPanel, so ExitAllAbove never touches it.
+            // Ludoal fork (migration, bench 386): Esc, right-click and the close cross all
+            // close the colony's tab WITH the seat routing - intercepted before the base
+            // popup dismiss and the child pass, which would exit bare.
+            if ((CanEscapeFromScreen && (input.Escaped || (input.RightMouseClick && !ClickedTroop)))
+                || (input.LeftMouseClick && CloseBtn.Rect.HitTest(input.CursorPosition)))
+            {
+                GameAudio.EchoAffirmative();
+                CloseColonyPage();
+                return true;
+            }
+
+            // Ludoal fork: the eye by the name means "take me THERE" - the colony is a
+            // stacked page now, so closing everything above the universe closes it too.
+            // The seat dies with the gesture: a later map double-click starts fresh.
             // ⚠ not SnapViewColony: on an owned planet that call REOPENS a colony view.
             if (input.LeftMouseClick && ViewOnMapButton.HitTest(input.CursorPosition))
             {
                 GameAudio.AcceptClick();
                 UniverseScreen universe = P.Universe.Screen;
-                universe.ReturnToListScreen = null;
-                universe.ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
+                universe.ClearHostedTab();
+                Planet p = P; // the screen dies in ExitAllAbove; the camera gesture follows
                 ScreenManager.ExitAllAbove(universe);
-                universe.ClosePlanetPanelStayHere(); // camera lands at the planet, planet selected
+                universe.SetSelectedPlanet(p);
+                universe.SnapToPlanetStayHere(p); // camera lands at the planet, planet selected
                 return true;
             }
+
+            // Ludoal fork (migration, bench 386): the live top bar and the visible band, like
+            // every page - the universe's own input no longer runs under a stacked colony
+            if (Eui.HandleInput(input, caller: this))
+                return true;
 
             // always get the currently hovered item
             DetailInfo = GetHoveredDetailItem(input);
@@ -221,15 +237,14 @@ namespace Ship_Game
             {
                 // Ludoal fork (spec: colony-as-tab): the walk re-arms the hosted seat FIRST -
                 // the fresh screen's constructor reads it, so the row rebuilds with the new
-                // planet's name on the tab, same group, same Esc origin.
+                // planet's name on the tab, same group, same Esc origin. A stacked page
+                // swaps screens like the tabs do; the fresh ctor claims the pause same-frame.
                 UniverseScreen u = Universe.Screen;
                 if (u.HostedTabTitle != null)
                     u.HostColonyTab(nextOrPrevPlanet, u.HostedTabGroup, u.HostedTabOrigin);
-                var next = new ColonyScreen(u, nextOrPrevPlanet, Eui,
-                    GovernorDetails.CurrentTabIndex, PFacilitiesPlayerTabSelected);
-                // Ludoal fork: the colony walk keeps an inherited list pause alive across the swap
-                HandOverUniversePause(next);
-                u.workersPanel = next;
+                ExitScreen();
+                ScreenManager.AddScreen(new ColonyScreen(u, nextOrPrevPlanet, Eui,
+                    GovernorDetails.CurrentTabIndex, PFacilitiesPlayerTabSelected));
             }
         }
 

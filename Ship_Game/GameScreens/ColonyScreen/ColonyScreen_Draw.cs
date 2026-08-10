@@ -189,6 +189,10 @@ namespace Ship_Game
             if (P.Owner == null || !Visible)
                 return;
 
+            // Ludoal fork (migration, bench 386): a stacked page owns its batch - as the
+            // universe's mounted panel it used to draw inside the universe's own pass
+            batch.SafeBegin();
+
             P.UpdateIncomes();
 
             // Ludoal fork (spec: colony-as-tab, bench 379): the group's own ground, filled
@@ -311,6 +315,7 @@ namespace Ship_Game
             StarvationLabel.Color   = ApplyCurrentAlphaToColor(Color.Red);
 
             base.Draw(batch, elapsed);
+            batch.SafeEnd();
         }
 
         string IncomingPopString => IncomingPop.LessOrEqual(1) ? $"{(IncomingPop * 1000).String(2)}m" : $"{IncomingPop.String()}b";

@@ -390,17 +390,10 @@ namespace Ship_Game.GameScreens
             // Ludoal fork (spec: colony-as-tab): armed before the panel - the colony wears the
             // EMPIRE row, Economy (3) as the Esc origin. Replaces the ReturnToList trio.
             Universe.HostColonyTab(item.Planet, ScreenGroups.Group.Empire, 3);
-            Universe.workersPanel = new ColonyScreen(Universe, item.Planet, Universe.EmpireUI);
-            Universe.LookingAtPlanet = true;
-            // Ludoal fork: the colony inherits this screen's automatic pause - consulting a
-            // colony from a paused list must not restart the simulation (maintainer bench).
-            // Handed over BEFORE ExitScreen, which would otherwise resume it on the way out.
-            HandOverUniversePause(Universe.workersPanel);
+            // a stacked page like every tab (migration, bench 386): exit + open in the same
+            // frame, the fresh ctor claims the pause before any tick can run
             ExitScreen();
-            // same anchor as the double-click path: the panel covers the map, no snap,
-            // but the close handler restores transitionStartPosition — keep it current
-            Universe.transitionStartPosition = Universe.CamPos;
-            Universe.CamDestination = Universe.CamPos;
+            Universe.ScreenManager.AddScreen(new ColonyScreen(Universe, item.Planet, Universe.EmpireUI));
         }
 
         private UICheckBox AutoTaxCheckBox(Rectangle footerRect)

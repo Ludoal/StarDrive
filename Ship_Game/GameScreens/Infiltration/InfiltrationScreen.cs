@@ -631,15 +631,10 @@ namespace Ship_Game.GameScreens
                         // Espionage as the Esc origin - the last group joins the mechanism.
                         Universe.HostColonyTab(moleP, GameScreens.ScreenGroups.Group.Diplomacy,
                                                (int)MainDiplomacyScreen.Tab.Espionage);
-                        Universe.workersPanel = new ColonyScreen(Universe, moleP, Universe.EmpireUI);
-                        Universe.LookingAtPlanet = true;
-                        // Ludoal fork: the colony inherits this screen's automatic pause -
-                        // consulting a colony from a paused list must not restart the simulation
-                        // (maintainer bench). Before ExitScreen, which would resume it.
-                        HandOverUniversePause(Universe.workersPanel);
+                        // a stacked page like every tab (migration, bench 386): exit + open in
+                        // the same frame, the fresh ctor claims the pause before any tick
                         ExitScreen();
-                        Universe.transitionStartPosition = Universe.CamPos;
-                        Universe.CamDestination = Universe.CamPos;
+                        Universe.ScreenManager.AddScreen(new ColonyScreen(Universe, moleP, Universe.EmpireUI));
                         return true;
                     }
                 }
