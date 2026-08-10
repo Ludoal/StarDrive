@@ -112,7 +112,34 @@ namespace Ship_Game.GameScreens
                 return;
             caller.ExitScreen();
             Audio.GameAudio.AcceptClick();
-            u.ScreenManager.AddScreen(GalaxyTab(index, u));
+            if (IsHostedTab(Group.Galaxy, index, u))
+                u.OpenHostedTabPanel?.Invoke();
+            else
+                u.ScreenManager.AddScreen(GalaxyTab(index, u));
+        }
+
+        // ── the hosted tab (spec: colony-as-tab; universal by maintainer decision) ──────────
+        // Ludoal fork: when a subject rides a group's row (u.HostedTab* armed for that group),
+        // the row shows one extra tab at the end wearing the subject's name. The subject's
+        // panel is not a stacked screen (the colony is the universe's workersPanel), so the
+        // switches route its index to the armed opener instead of a factory.
+        public static bool IsHostedTab(Group g, int index, UniverseScreen u)
+            => u.HostedTabTitle != null && u.HostedTabGroup == g
+            && index == StockTitles(g).Length;
+
+        static LocalizedText[] StockTitles(Group g)
+            => g == Group.Galaxy ? GalaxyTabTitles : EmpireTabTitles;
+
+        /// the live tab row of a group: the stock titles, plus the hosted tab when armed
+        public static LocalizedText[] LiveTitles(Group g, UniverseScreen u)
+        {
+            LocalizedText[] stock = StockTitles(g);
+            if (u.HostedTabTitle == null || u.HostedTabGroup != g)
+                return stock;
+            var live = new LocalizedText[stock.Length + 1];
+            Array.Copy(stock, live, stock.Length);
+            live[stock.Length] = new LocalizedText(u.HostedTabTitle, LocalizationMethod.RawText);
+            return live;
         }
 
         // ── Empire group ──────────────────────────────────────────────────────────────────────
@@ -156,7 +183,10 @@ namespace Ship_Game.GameScreens
                 return;
             caller.ExitScreen();
             Audio.GameAudio.AcceptClick();
-            u.ScreenManager.AddScreen(EmpireTab(index, u));
+            if (IsHostedTab(Group.Empire, index, u))
+                u.OpenHostedTabPanel?.Invoke();
+            else
+                u.ScreenManager.AddScreen(EmpireTab(index, u));
         }
 
         // ── Design group ──────────────────────────────────────────────────────────────────────

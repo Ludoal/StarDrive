@@ -84,6 +84,46 @@ namespace Ship_Game
         // top bar keeps that group's button lit while a list-opened colony is up (the list screen
         // itself has left the stack). Armed alongside ReturnToListScreen; None when it clears.
         public GameScreens.ScreenGroups.Group ReturnToListGroup = GameScreens.ScreenGroups.Group.None;
+
+        // Ludoal fork: the HOSTED tab's state - the successor of the trio above (spec:
+        // colony-as-tab, maintainer decision: the mechanism is universal, the colony is
+        // only its first subject; a ship or a troop panel rides the same seat later).
+        // A group's screens are born and die at every tab swap; only the universe survives
+        // them, so it carries what rides a group's row: the tab's title, HOW to (re)open
+        // its panel (never which type it was - the ReturnToListScreen philosophy), which
+        // group hosts it, and the tab index Esc returns to (-1 = opened from the map,
+        // where Esc closes to the map). One hosted seat: a new subject replaces the old.
+        public string HostedTabTitle;                 // null = no hosted tab
+        public Action OpenHostedTabPanel;             // how the tab's click reopens its panel
+        public GameScreens.ScreenGroups.Group HostedTabGroup = GameScreens.ScreenGroups.Group.None;
+        public int HostedTabOrigin = -1;
+
+        // Ludoal fork: arm the hosted seat for a colony - the panel-open mirrors the
+        // map-open block (Camera.cs) except it must NOT clear the tab state: the tab is
+        // precisely what is being opened. Camera anchoring identical - the panel covers
+        // the map. The title follows the planet; the colony arrows re-arm on navigation.
+        public void HostColonyTab(Planet p, GameScreens.ScreenGroups.Group group, int originTab)
+        {
+            HostedTabTitle = p.Name;
+            HostedTabGroup = group;
+            HostedTabOrigin = originTab;
+            OpenHostedTabPanel = () =>
+            {
+                workersPanel = new ColonyScreen(this, p, EmpireUI);
+                ClearSelectedItems();
+                LookingAtPlanet = true;
+                transitionStartPosition = CamPos;
+                CamDestination = CamPos;
+            };
+        }
+
+        public void ClearHostedTab()
+        {
+            HostedTabTitle = null;
+            OpenHostedTabPanel = null;
+            HostedTabGroup = GameScreens.ScreenGroups.Group.None;
+            HostedTabOrigin = -1;
+        }
         public EmpireUIOverlay EmpireUI;
         public BloomComponent bloomComponent;
         public DistortionComponent distortionComponent;
