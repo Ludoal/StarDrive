@@ -77,7 +77,7 @@ namespace Ship_Game
                         troopToDraw = troop;
                 }
 
-                DrawTroopStats(batch, troopToDraw, slant, Universe.Input.CursorPosition, color);
+                DrawTroopStats(batch, elapsed, troopToDraw, slant, Universe.Input.CursorPosition, color);
             }
             else // draw building stats
             {
@@ -97,7 +97,7 @@ namespace Ship_Game
             base.Draw(batch, elapsed);
         }
 
-        void DrawTroopStats(SpriteBatch batch, Troop troop, Header slant, Vector2 mousePos, Color color)
+        void DrawTroopStats(SpriteBatch batch, DrawTimes elapsed, Troop troop, Header slant, Vector2 mousePos, Color color)
         {
             if (troop == null)
                 return;
