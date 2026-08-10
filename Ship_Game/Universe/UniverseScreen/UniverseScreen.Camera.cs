@@ -311,10 +311,11 @@ namespace Ship_Game
                 ProjMaxDistance = maxDistance;
                 ApplyUniverseProjection();
             }
-            // bench 390 (maintainer): a page opening/closing (or a resize under/over 1920) moves
-            // the viewport offset without touching the view state - re-lay the projection when
-            // the offset condition flips, so the map recentres into the free band and back.
-            else if (PageOffsetApplied != (PageViewportOffset() != default))
+            // bench 392 (maintainer): a page opening/closing, a resize, OR a switch to a panel of
+            // a DIFFERENT width all move the viewport offset without touching the view state -
+            // re-lay the projection whenever the offset VALUE changes (not just its existence, or
+            // wide->short panel kept the old shift), so the map recentres to the current panel.
+            else if (PageViewportOffset() != AppliedPageOffset)
             {
                 ApplyUniverseProjection();
             }
@@ -324,7 +325,7 @@ namespace Ship_Game
         // page opening/closing can re-lay the projection with the viewport offset WITHOUT
         // changing the zoom clamp - only the frustum's off-centre moves.
         double ProjMaxDistance = 15_000_000 + (int)UnivScreenState.GalaxyView;
-        bool PageOffsetApplied; // the offset state the current projection was built for
+        Vector2 AppliedPageOffset; // the exact offset the current projection was built for (bench 392)
 
         // bench 391 (maintainer): with a page open on a wide display the map's visible band is
         // the strip LEFT of the open panel plus what sits right of it; centre the view there.
@@ -362,7 +363,7 @@ namespace Ship_Game
         public void ApplyUniverseProjection()
         {
             Vector2 offset = PageViewportOffset();
-            PageOffsetApplied = offset != default;
+            AppliedPageOffset = offset;
             SetPerspectiveProjection(maxDistance: ProjMaxDistance, offsetXY: offset);
         }
 
