@@ -160,6 +160,11 @@ public static class GlobalStats
     // Full Screen mode always pauses regardless (it covers the whole display).
     public static bool PauseOnPageOpen = true;
 
+    // Ludoal fork (bench 392): the Colony panel is exempt from auto-pause unless this is set -
+    // default OFF restores the original behaviour (the colony runs live while you read it).
+    // Subordinate to PauseOnPageOpen: meaningless, and greyed in Options, when that is off.
+    public static bool AutoPauseColonyPanel;
+
     // USER_EXPERIENCE
     // global option for disabling universe screen pan, default should be OFF
     public static bool DisableScreenPanning;
@@ -454,6 +459,7 @@ public static class GlobalStats
         GetSetting(config, "NotifyEmptyPlanetQueue", ref NotifyEmptyPlanetQueue);
         GetSetting(config, "PauseOnNotification", ref PauseOnNotification);
         GetSetting(config, "PauseOnPageOpen", ref PauseOnPageOpen);
+        GetSetting(config, "AutoPauseColonyPanel", ref AutoPauseColonyPanel);
         GetSetting(config, "IconSize", ref IconSize);
         IconSize = Math.Max(1, IconSize); // BUGFIX: must be at least 1
         GetSetting(config, "ZoomTracking", ref ZoomTracking);
@@ -671,6 +677,7 @@ public static class GlobalStats
         WriteSetting(config, "NotifyEmptyPlanetQueue", NotifyEmptyPlanetQueue);
         WriteSetting(config, "PauseOnNotification", PauseOnNotification);
         WriteSetting(config, "PauseOnPageOpen", PauseOnPageOpen);
+        WriteSetting(config, "AutoPauseColonyPanel", AutoPauseColonyPanel);
         WriteSetting(config, "IconSize", IconSize);
         WriteSetting(config, "ZoomTracking", ZoomTracking);
         WriteSetting(config, "CameraPanSpeed", CameraPanSpeed);

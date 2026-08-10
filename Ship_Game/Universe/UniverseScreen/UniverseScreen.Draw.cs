@@ -662,10 +662,8 @@ namespace Ship_Game
         void DrawGeneralStatusText(SpriteBatch batch, DrawTimes elapsed)
         {
 
-            if (UState.Events.ActiveEvent != null && UState.Events.ActiveEvent.InhibitWarp)
-            {
-                DrawTopCenterStatusText(batch, "Hyperspace Flux", Color.Yellow, 1);
-            }
+            // bench 392 (maintainer): the Hyperspace Flux banner moved into the top bar, left of
+            // the speed block (EmpireUIOverlay.Draw) - no longer floating over the map centre.
 
             if (IsActive && IsSaving)
             {

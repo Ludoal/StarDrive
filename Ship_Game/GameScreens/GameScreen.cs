@@ -136,6 +136,11 @@ namespace Ship_Game
         // Shipyard's Full Screen mode covers the whole display (maintainer decision).
         protected virtual bool PageAlwaysPauses => false;
 
+        // Ludoal fork (bench 392): a page that opts OUT of auto-pause even when the page-pause
+        // option is on - the Colony panel unless its own sub-option is ticked. PageAlwaysPauses
+        // overrides this (nothing keeps the Shipyard Full Screen from pausing).
+        protected virtual bool PageOptsOutOfAutoPause => false;
+
         // Ludoal fork (bench 387): the rect the visible band excludes - each page KNOWS its
         // own frame, and the frames are dynamic (content-sized tables, race-hugging rows).
         // Default: the whole display, i.e. NO band - a page opts in by exposing its frame.
@@ -210,6 +215,10 @@ namespace Ship_Game
             // its single source - opted out, a page no longer stops the simulation; the
             // manual pause and the always-pausing pages (Shipyard Full Screen) still do.
             if (!GlobalStats.PauseOnPageOpen && !PageAlwaysPauses)
+                toPause = null;
+            // bench 392 (maintainer): the Colony panel opts OUT of auto-pause unless the user
+            // ticks its own sub-option - even when page-pause is on. PageAlwaysPauses still wins.
+            if (PageOptsOutOfAutoPause && !PageAlwaysPauses)
                 toPause = null;
             ClaimUniversePause(toPause);
 

@@ -48,6 +48,7 @@ namespace Ship_Game
         const int SpeedRoom = 46;       // "0.25x" - reserved, so the cluster never shifts
         const int PauseRoom = 62;       // "PAUSED", the longer of the two words it shows
         int SpeedTextRight;             // the factor is right-aligned here, left of "<<"
+        int SpeedClusterLeft;           // the flux alert is right-aligned here, left of the speed block
 
         // Ludoal fork: the bar is laid out in three zones and drawn flat - the military plating,
         // the five resource cartouches and the ten-button row are gone. Left: what the empire HAS
@@ -139,6 +140,10 @@ namespace Ship_Game
             // to "0.25x" then stays put, where on the right it would push the stardate about
             SpeedTextRight = rx;
             rx -= SpeedRoom + gap;
+
+            // bench 392 (maintainer): the HYPERSPACE FLUX alert lives here, right-aligned just
+            // left of the speed cluster, instead of floating over the map centre.
+            SpeedClusterLeft = rx;
 
             // ── centre: the four groups ─────────────────────────────────────────────────────
             // EMPIRE before GALAXY (maintainer, bench 305): you explore the galaxy FROM
@@ -345,6 +350,15 @@ namespace Ship_Game
                     // tech names (maintainer bench 338)
                     batch.DrawString(font, $"({turns})", new Vector2(afterTopicX, textY), TextCream.Alpha(0.7f));
                 }
+            }
+
+            // bench 392 (maintainer): the HYPERSPACE FLUX alert, right-aligned just left of the
+            // speed block instead of floating over the map. Only while the warp-inhibiting event
+            // runs; yellow, as the mid-map banner was.
+            if (Universe.UState.Events.ActiveEvent != null && Universe.UState.Events.ActiveEvent.InhibitWarp)
+            {
+                const string flux = "HYPERSPACE FLUX";
+                batch.DrawString(font, flux, new Vector2(SpeedClusterLeft - font.TextWidth(flux), textY), Color.Yellow);
             }
 
             // the speed factor, right-aligned on its reserved width. Same reading as the floating

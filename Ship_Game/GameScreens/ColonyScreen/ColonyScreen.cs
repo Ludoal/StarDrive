@@ -25,6 +25,10 @@ namespace Ship_Game
         // the band excludes exactly what the page occupies, dynamic size included
         public override Rectangle PageFrame => GroupRow?.Rect ?? base.PageFrame;
 
+        // Ludoal fork (bench 392): the Colony panel runs live by default - it opts out of
+        // auto-pause unless the player ticks "Auto-pause Colony panel" in Options.
+        protected override bool PageOptsOutOfAutoPause => !GlobalStats.AutoPauseColonyPanel;
+
         void OnGroupRowTabChanged(int index)
         {
             if (GroupRow == null || index == GroupRow.NumTabs - 1)
@@ -160,7 +164,7 @@ namespace Ship_Game
 
         public ColonyScreen(GameScreen parent, Planet p, EmpireUIOverlay empUI, 
             int governorTabSelected = 0, int facilitiesTabSelected = -1) // Ludoal fork: -1 = fresh open, defaults to Stats+
-            : base(parent, p, p.Universe.Screen) // uniform auto-pause, like any page
+            : base(parent, p, p.Universe.Screen) // bench 392: auto-pause gated by its own opt-in sub-option
         {
             Eui = empUI;
             IsPopup = true; // bench 347: the full live universe map (and its cartouches) shows behind Colony

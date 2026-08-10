@@ -212,11 +212,13 @@ namespace Ship_Game.Ships
             //Added by McShooterz: kills display
             star       = new Rectangle(star.X, star.Y + 19, 22, 22);
             levelPos   = new Vector2(star.X + star.Width + 2, star.Y + 11 - Fonts.Arial12Bold.LineSpacing / 2);
-            // bench 361 (maintainer): the status strip rides 7px edge-to-edge ABOVE the Power icon
-            // (which dropped to Y+118 with its block), on the Power column - its old home at the
-            // frame top collided with the name/order line the moment a combat status lit up.
-            // Icons are 33x22 (the 48x32 art at 2/3), text in the small TahomaBold9.
-            StatusArea = new Vector2(Housing.X + 190, Housing.Y + 118 - 4 - 22); // bench 362: 4px gap (maintainer)
+            // bench 392 (maintainer): the status strip's BOTTOM aligns with the ship title's
+            // bottom - derived from the name line, not a fixed Y that drifted. namePos is
+            // Housing.Y+71 in Arial14Bold; icons are 22 tall, so the top sits one line-height
+            // below the name minus the icon height. (The strip rides the Power column, X+190.)
+            const int StatusIconH = 22;
+            int titleBottom = 71 + Fonts.Arial14Bold.LineSpacing;
+            StatusArea = new Vector2(Housing.X + 190, Housing.Y + titleBottom - StatusIconH);
             batch.Draw(ResourceManager.Texture("UI/icon_kills_shipUI"), star, Color.White);
             batch.DrawString(Fonts.Arial12Bold, s.Kills.ToString(), levelPos, Color.White);
             int numStatus = 0;

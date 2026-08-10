@@ -86,6 +86,11 @@ namespace Ship_Game
             SetSelectedPlanet(planet);
             returnToShip = doReturnToShip;
 
+            // bench 392 (maintainer): the ground battle view covers the map, so any open group
+            // tab closes with it - the hosted seat dies too, or it would resurrect on the way out.
+            ClearHostedTab();
+            ScreenManager.ExitAllAbove(this);
+
             workersPanel = new CombatScreen(this, planet);
 
             // no camera snap: the ground battle view covers the map (Ludoal fork);

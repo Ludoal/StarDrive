@@ -25,6 +25,14 @@ namespace Ship_Game
 
         int TextPadding = 4;
         int CheckBoxSize = 12;
+        // Ludoal fork (bench 392): a horizontal indent for a subordinate checkbox. Added to the
+        // draw and the hit-test, NOT to Pos - a parent UIList rewrites Pos every layout, so the
+        // indent has to live outside it.
+        public int Indent;
+
+        // Ludoal fork: greyed + click-refused when its parent option is off (a subordinate box).
+        // Draw dims the label; HandleInput below ignores the click while this is set.
+        public bool Greyed;
 
         public bool Checked => Binding.Value;
         public override string ToString() => $"{TypeName} {ElementDescr} Text={Text} Checked={Checked}";
@@ -69,14 +77,15 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            var checkBox = new Rectangle((int)Pos.X, (int)CenterY - CheckBoxSize/2, CheckBoxSize, CheckBoxSize);
+            var checkBox = new Rectangle((int)Pos.X + Indent, (int)CenterY - CheckBoxSize/2, CheckBoxSize, CheckBoxSize);
             UITheme.DrawControlOutline(batch, checkBox);
             //batch.DrawRectangle(Rect, Color.Red); // DEBUG
 
             if (Text.NotEmpty)
             {
                 var textPos = new Vector2(checkBox.X + CheckBoxSize + TextPadding, (int)CenterY - Font.LineSpacing / 2);
-                batch.DrawString(Font, Text, textPos, Binding.Value ? CheckedTextColor : TextColor);
+                Color ink = Greyed ? Color.Gray : (Binding.Value ? CheckedTextColor : TextColor);
+                batch.DrawString(Font, Text, textPos, ink);
             }
 
             if (Binding.Value)
@@ -89,8 +98,14 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            if (!Rect.HitTest(input.CursorPosition))
+            // Ludoal fork (bench 392): the indent shifts the hit rect with the drawn box.
+            var hit = new Rectangle((int)Pos.X + Indent, (int)Rect.Y, (int)Rect.Width, (int)Rect.Height);
+            if (!hit.HitTest(input.CursorPosition))
                 return false;
+
+            // greyed = subordinate to an option that is off: read-only, but still eats the click
+            if (Greyed)
+                return true;
 
             if (input.LeftMouseClick)
             {

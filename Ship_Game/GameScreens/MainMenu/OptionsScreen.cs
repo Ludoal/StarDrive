@@ -116,6 +116,7 @@ namespace Ship_Game
 
         FloatSlider IconSize;
         FloatSlider AutoSaveYears; // Ludoal fork: autosave counts in star-years now
+        UICheckBox AutoPauseColonyBox; // Ludoal fork (bench 392): greyed when its parent option is off
 
         FloatSlider SimulationFps;
         FloatSlider MaxDynamicLightSources;
@@ -259,7 +260,7 @@ namespace Ship_Game
             
             // Ludoal fork: +231 clears the 12-checkbox list above (bench 383: the page-pause
             // checkbox pushed the column, the first slider label sat in its lap).
-            UIList botRight = AddList(new Vector2(RightArea.X, RightArea.Y + 231), RightArea.Size());
+            UIList botRight = AddList(new Vector2(RightArea.X, RightArea.Y + 237), RightArea.Size()); // bench 392: +6px, clear of the new Colony sub-option
             botRight.Padding = new Vector2(2f, 8f);
             botRight.LayoutStyle = ListLayoutStyle.Clip;
             MaxDynamicLightSources = botRight.Add(new FloatSlider(SliderStyle.Decimal, 288f, 50f, GameText.MaxDynamicLightSources, 0, 1000, GlobalStats.MaxDynamicLightSources));
@@ -295,6 +296,15 @@ namespace Ship_Game
                               tooltip: "Ships permanently paint their sensor coverage on the fog of war as they travel - the classic map memory. Off: the map stays dark and only live sensor coverage lights it.");
             right.AddCheckbox(() => GlobalStats.PauseOnPageOpen, title: "Auto-pause on page opening",
                               tooltip: "Opening a screen pauses the simulation. Untick to let the universe run behind your pages - manual pause still works. The Shipyard's Full Screen mode always pauses.");
+            // bench 392 (maintainer): the Colony panel opts OUT of auto-pause by default (its
+            // original behaviour). Subordinate to the option above - the setter refuses and the
+            // label greys when auto-pause is off, and it is indented under it.
+            AutoPauseColonyBox = right.AddCheckbox(
+                () => GlobalStats.AutoPauseColonyPanel,
+                b => { if (GlobalStats.PauseOnPageOpen) GlobalStats.AutoPauseColonyPanel = b; },
+                title: "Auto-pause Colony panel",
+                tooltip: "When Auto-pause on page opening is on, also pause for the Colony panel. Off (default): the colony runs live while you read it.");
+            AutoPauseColonyBox.Indent = 20; // indented under its parent option (bench 392)
 
             // bottom LEFT (maintainer bench 303) - it applies the display settings, which live
             // in the left column, so it sits under them
@@ -448,6 +458,9 @@ namespace Ship_Game
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             if (Fade) ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
+            // bench 392: the Colony sub-option greys out live when its parent option is off
+            if (AutoPauseColonyBox != null)
+                AutoPauseColonyBox.Greyed = !GlobalStats.PauseOnPageOpen;
             base.Draw(batch, elapsed);
         }
 
