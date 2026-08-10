@@ -564,6 +564,11 @@ namespace Ship_Game
                             Universe.AdjustGameSpeed(b.launches == "SpeedUp");
                             return true;
                         }
+                        // bench 393 (maintainer): opening a group PAGE from the ground battle view
+                        // closes that view first - it covers the map, so the two should not stack.
+                        // Pause/Speed above already returned; everything past here opens a page.
+                        if (Universe.LookingAtPlanet)
+                            Universe.ClosePlanetPanelStayHere();
                         if (b.launches == "Research")
                         {
                             GameAudio.EchoAffirmative();

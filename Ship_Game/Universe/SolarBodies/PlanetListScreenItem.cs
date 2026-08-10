@@ -334,6 +334,43 @@ namespace Ship_Game
             AddRecentCombat(statusIcons, ref xOffset, ref numIcons);
             AddTroopsIcon(statusIcons, ref xOffset);
             AddMoleIcons(statusIcons, ref xOffset, ref numIcons);
+            // bench 393 (maintainer): the event and commodity building icons were dropped in the
+            // UITable conversion - restored here. These are the CONTEXTUAL icons (an anomaly to
+            // investigate, a commodity the world advertises), distinct from Features (own column).
+            AddEventIcon(statusIcons, ref xOffset, ref numIcons);
+            AddCommoditiesIcon(statusIcons, ref xOffset, ref numIcons);
+        }
+
+        // an event building not yet unlocked (an anomaly to investigate)
+        void AddEventIcon(Vector2 statusIcons, ref int offset, ref int numIcons)
+        {
+            if (Planet.NumBuildings == 0)
+                return;
+            foreach (Building b in Planet.Buildings)
+                if (b.EventHere && (Planet.Owner == null || !Planet.Owner.IsBuildingUnlocked(b.Name)))
+                    AddBuildingIcon(b, statusIcons, ref offset, ref numIcons);
+        }
+
+        // a building the world advertises on the list (a commodity source)
+        void AddCommoditiesIcon(Vector2 statusIcons, ref int offset, ref int numIcons)
+        {
+            if (Planet.NumBuildings == 0)
+                return;
+            foreach (Building b in Planet.Buildings)
+                if (b.ShowOnPlanetList)
+                    AddBuildingIcon(b, statusIcons, ref offset, ref numIcons);
+        }
+
+        void AddBuildingIcon(Building b, Vector2 statusIcons, ref int offset, ref int numIcons)
+        {
+            if (numIcons == 13) // wrap to a second row of icons on the busiest worlds
+                offset = 0;
+            offset += 18;
+            numIcons += 1;
+            var buildingRect = new Rectangle((int)statusIcons.X - offset,
+                                             (int)statusIcons.Y + (numIcons > 13 ? 18 : 0), 16, 16);
+            UIPanel building = Panel(buildingRect, ResourceManager.Texture($"Buildings/icon_{b.Icon}_48x48"));
+            building.Tooltip = $"{b.TranslatedName.Text}:\n{b.DescriptionText.Text}";
         }
 
         void AddRecentCombat(Vector2 statusIcons, ref int offset, ref int numIcons)
