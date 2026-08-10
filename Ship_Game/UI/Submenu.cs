@@ -436,25 +436,32 @@ public class Submenu : UIPanel
             switch (style)
             {
                 case SubmenuStyle.Brown:
-                    HorizVert       = Tex("NewUI/submenu_horiz_vert");
-                    CornerTL        = Tex("NewUI/submenu_corner_TL");
-                    CornerTR        = Tex("NewUI/submenu_corner_TR");
-                    CornerBR        = Tex("NewUI/submenu_corner_BR");
-                    CornerBL        = Tex("NewUI/submenu_corner_BL");
+                    // Ludoal fork: the Brown set follows UI/Theme.yaml's SubmenuSkin folder,
+                    // falling back piece by piece to the classic NewUI set - same lever as
+                    // PopupFrame's PopupSkin
+                    string skin = UITheme.SubmenuSkin;
+                    SubTexture Skinned(string piece)
+                        => ResourceManager.TextureOrDefault($"{skin}/{piece}", $"NewUI/{piece}");
 
-                    HoverLeftEdge = Tex("NewUI/submenu_header_hover_leftedge");
-                    HoverLeft     = Tex("NewUI/submenu_header_hover_left");
-                    HoverMid      = Tex("NewUI/submenu_header_hover_mid");
-                    HoverRight    = Tex("NewUI/submenu_header_hover_right");
+                    HorizVert       = Skinned("submenu_horiz_vert");
+                    CornerTL        = Skinned("submenu_corner_TL");
+                    CornerTR        = Skinned("submenu_corner_TR");
+                    CornerBR        = Skinned("submenu_corner_BR");
+                    CornerBL        = Skinned("submenu_corner_BL");
 
-                    HeaderLeft          = Tex("NewUI/submenu_header_left");
-                    HeaderLeftUnsel     = Tex("NewUI/submenu_header_left_unsel");
-                    HeaderMiddle        = Tex("NewUI/submenu_header_middle");
-                    HeaderMiddleUnsel   = Tex("NewUI/submenu_header_middle_unsel");
-                    HeaderRight         = Tex("NewUI/submenu_header_right");
-                    HeaderRightUnsel    = Tex("NewUI/submenu_header_right_unsel");
-                    HeaderRightExt      = Tex("NewUI/submenu_header_rightextend");
-                    HeaderRightExtUnsel = Tex("NewUI/submenu_header_rightextend_unsel");
+                    HoverLeftEdge = Skinned("submenu_header_hover_leftedge");
+                    HoverLeft     = Skinned("submenu_header_hover_left");
+                    HoverMid      = Skinned("submenu_header_hover_mid");
+                    HoverRight    = Skinned("submenu_header_hover_right");
+
+                    HeaderLeft          = Skinned("submenu_header_left");
+                    HeaderLeftUnsel     = Skinned("submenu_header_left_unsel");
+                    HeaderMiddle        = Skinned("submenu_header_middle");
+                    HeaderMiddleUnsel   = Skinned("submenu_header_middle_unsel");
+                    HeaderRight         = Skinned("submenu_header_right");
+                    HeaderRightUnsel    = Skinned("submenu_header_right_unsel");
+                    HeaderRightExt      = Skinned("submenu_header_rightextend");
+                    HeaderRightExtUnsel = Skinned("submenu_header_rightextend_unsel");
                     break;
                     
                 case SubmenuStyle.Blue:
@@ -485,19 +492,37 @@ public class Submenu : UIPanel
 
     static int ContentId;
     static StyleTextures[] Styling;
+    static string StylingSkin;
 
-    StyleTextures GetStyle()
+    StyleTextures GetStyle() => GetStyle(Style);
+
+    static StyleTextures GetStyle(SubmenuStyle style)
     {
-        if (Styling == null || ContentId != ResourceManager.ContentId)
+        if (Styling == null || ContentId != ResourceManager.ContentId || StylingSkin != UITheme.SubmenuSkin)
         {
             ContentId = ResourceManager.ContentId;
+            StylingSkin = UITheme.SubmenuSkin;
             Styling = new[]
             {
                 new StyleTextures(SubmenuStyle.Brown),
                 new StyleTextures(SubmenuStyle.Blue),
             };
         }
-        return Styling[(int)Style];
+        return Styling[(int)style];
+    }
+
+    // Ludoal fork: the tab group's chrome WITHOUT the tabs, for elements that wear the same
+    // furniture without being Submenus - the cartouches, the minimap. One scratch sprite,
+    // refreshed on every call: Draw runs on the UI thread only, and the alternative is an
+    // allocation per frame.
+    static readonly NineSliceSprite FrameSprite = new();
+
+    public static void DrawFrameOnly(SpriteBatch batch, in RectF r, SubmenuStyle style = SubmenuStyle.Brown)
+    {
+        StyleTextures s = GetStyle(style);
+        FrameSprite.Update(r, s.CornerTL, s.CornerTR, s.CornerBL, s.CornerBR,
+                              s.HorizVert, s.HorizVert, borderWidth: 2);
+        FrameSprite.DrawBorders(batch);
     }
 
 }

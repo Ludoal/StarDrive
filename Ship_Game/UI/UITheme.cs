@@ -33,6 +33,10 @@ namespace Ship_Game
         // folder reskins every popup window; PopupFrame falls back piece by piece to the
         // classic Popup set for anything the folder lacks
         [StarData] public string PopupSkin = "Popup";
+        // same lever for the submenu chrome (the tab groups' frame and headers): the folder
+        // holding the submenu_* pieces. Applies to the default Brown style; the Blue research
+        // style is its own deliberate look and stays put.
+        [StarData] public string SubmenuSkin = "NewUI";
 
         // buttons - hover and press are DERIVED from the tint, never separate colours
         [StarData] public Color PlateNeutral = new(193, 113, 26);
@@ -131,6 +135,7 @@ namespace Ship_Game
         public static Color FrameTitleBar => Theme.FrameTitleBar;
         public static int   TitleBarH     => Theme.TitleBarHeight;
         public static string PopupSkin    => Theme.PopupSkin;
+        public static string SubmenuSkin  => Theme.SubmenuSkin;
 
         // ── buttons ──────────────────────────────────────────────────────────────────────────
         public static Color PlateNeutral => Theme.PlateNeutral;
