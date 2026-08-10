@@ -175,6 +175,7 @@ namespace Ship_Game
         {
             ExoticSL.Reset();
             ExoticSL.OnDoubleClick = OnExoticSystemsListItemClicked;
+            ExoticSL.OnClick = OnExoticRowSingleClicked; // bench 388 (maintainer): single-click = select on the map and pan at current zoom
             ExplorableGameObject[] bodies;
             switch (col)
             {
@@ -218,6 +219,16 @@ namespace Ship_Game
             return base.HandleInput(input);
         }
 
+        // bench 388 (maintainer): single-click = select on the map and pan at current zoom -
+        // stars select their system, everything else its planet; double-click still flies
+        void OnExoticRowSingleClicked(ExoticSystemsListScreenItem item)
+        {
+            if (item.IsStar)
+                Universe.PanToSystemKeepZoom(item.System);
+            else if (item.Planet != null)
+                Universe.PanToPlanetKeepZoom(item.Planet);
+        }
+
         void OnExoticSystemsListItemClicked(ExoticSystemsListScreenItem item)
         {
             ExitScreen();
@@ -244,6 +255,7 @@ namespace Ship_Game
             {
                 ExoticSL.Reset();
                 ExoticSL.OnDoubleClick = OnExoticSystemsListItemClicked; // Ludoal fork: double-click everywhere
+                ExoticSL.OnClick = OnExoticRowSingleClicked; // bench 388 (maintainer): single-click = select on the map and pan at current zoom
                 foreach (ExplorableGameObject solarBody in ExploredSolarBodies)
                     ExoticSL.AddItem(new ExoticSystemsListScreenItem(this, solarBody, GetShortestDistance(solarBody)));
             }

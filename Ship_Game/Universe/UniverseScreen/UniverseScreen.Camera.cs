@@ -391,6 +391,35 @@ namespace Ship_Game
             transitionElapsedTime = 0f;
         }
 
+        // Ludoal fork (bench 388): the table single-click - select the subject on the map
+        // and pan to it at the CURRENT zoom, cartouche showing through the band. Zooming
+        // onto the subject is the cartouche's own business (click-to-cartouche spec).
+        public void PanToKeepZoom(in Vector2 pos)
+        {
+            CamDestination = new Vector3d(pos.X, pos.Y, CamPos.Z);
+            AdjustCamTimer = 1f;
+            transitionElapsedTime = 0f;
+        }
+
+        public void PanToPlanetKeepZoom(Planet p)
+        {
+            SetSelectedPlanet(p);
+            returnToShip = false;
+            PanToKeepZoom(p.Position);
+        }
+
+        public void PanToShipKeepZoom(Ship s)
+        {
+            SetSelectedShip(s);
+            PanToKeepZoom(s.Position);
+        }
+
+        public void PanToSystemKeepZoom(SolarSystem s)
+        {
+            SetSelectedSystem(s);
+            PanToKeepZoom(s.Position);
+        }
+
         void ToggleViewingShip()
         {
             // Ludoal fork (wishlist #1): ViewToShip sets ViewingShip=true itself —

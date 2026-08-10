@@ -94,6 +94,7 @@ namespace Ship_Game
             TroopSL.EnableItemHighlight = true;
             Table.ApplyHighlightTo(TroopSL);
             TroopSL.OnDoubleClick = OnRowClicked; // Ludoal fork: double-click everywhere, like Ships/Empire
+            TroopSL.OnClick = OnRowSingleClicked; // bench 388 (maintainer): single-click = select on the map and pan at current zoom
 
             ShowStatus = Add(new DropOptions<string>(
                 new Rectangle((int)client.X + 10, (int)client.Y + 6, 160, 18)));
@@ -129,6 +130,16 @@ namespace Ship_Game
                         Add(s, s.System?.Name ?? "Deep Space", s.Name, t);
             systems = sys; locations = locs; troops = names;
             return keys.Count;
+        }
+
+        // bench 388 (maintainer): single-click = select on the map and pan at current zoom -
+        // garrison rows pan to their planet, embarked rows to their carrier ship
+        void OnRowSingleClicked(TroopListScreenItem item)
+        {
+            if (item.Planet != null && item.Ship == null)
+                Universe.PanToPlanetKeepZoom(item.Planet);
+            else if (item.Ship != null)
+                Universe.PanToShipKeepZoom(item.Ship);
         }
 
         void OnRowClicked(TroopListScreenItem item)

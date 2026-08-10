@@ -650,7 +650,9 @@ namespace Ship_Game.GameScreens
                     if (rect.HitTest(input.CursorPosition))
                     {
                         GameAudio.AcceptClick();
-                        Universe.SnapToPlanetStayHere(moleP);
+                        // bench 388 (maintainer): pan at the CURRENT zoom - the planet-view
+                        // snap dived; the cartouche's own buttons do the zooming
+                        Universe.PanToPlanetKeepZoom(moleP);
                         return true;
                     }
                 }

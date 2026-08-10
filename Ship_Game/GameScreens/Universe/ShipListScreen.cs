@@ -148,6 +148,7 @@ namespace Ship_Game
 
             ShipSL = Add(new ScrollList<ShipListScreenItem>(Table.ListRect, 30));
             ShipSL.OnDoubleClick = OnShipListScreenItemClicked;
+            ShipSL.OnClick = OnShipRowSingleClicked; // bench 388 (maintainer): single-click = select on the map and pan at current zoom
             ShipSL.EnableItemHighlight = true;
             Table.ApplyHighlightTo(ShipSL);
 
@@ -216,6 +217,13 @@ namespace Ship_Game
             ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             EmpireUi.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
+        }
+
+        // bench 388 (maintainer): single-click = select on the map and pan at current zoom -
+        // the double-click still exits and chases the ship
+        void OnShipRowSingleClicked(ShipListScreenItem item)
+        {
+            Universe.PanToShipKeepZoom(item.Ship);
         }
 
         void OnShipListScreenItemClicked(ShipListScreenItem item)

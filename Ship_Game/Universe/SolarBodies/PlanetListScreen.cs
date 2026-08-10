@@ -292,6 +292,7 @@ namespace Ship_Game
         {
             PlanetSL.Reset();
             PlanetSL.OnDoubleClick = OnPlanetListItemClicked;
+            PlanetSL.OnClick = OnPlanetRowSingleClicked; // bench 388 (maintainer): single-click = select on the map and pan at current zoom
             NumAvailableTroops = Player.NumFreeTroops();
             Planet[] planets;
             switch (col)
@@ -341,6 +342,13 @@ namespace Ship_Game
             return base.HandleInput(input);
         }
 
+        // bench 388 (maintainer): single-click = select on the map and pan at current zoom -
+        // the cartouche shows through the band, the double-click still opens (bench 190)
+        void OnPlanetRowSingleClicked(PlanetListScreenItem item)
+        {
+            Universe.PanToPlanetKeepZoom(item.Planet);
+        }
+
         void OnPlanetListItemClicked(PlanetListScreenItem item)
         {
             // Ludoal fork (spec: colony-as-tab, bench 379): OUR colonies open their panel on
@@ -366,6 +374,7 @@ namespace Ship_Game
             {
                 PlanetSL.Reset();
                 PlanetSL.OnDoubleClick = OnPlanetListItemClicked; // Ludoal fork: double-click everywhere
+                PlanetSL.OnClick = OnPlanetRowSingleClicked; // bench 388 (maintainer): single-click = select on the map and pan at current zoom
                 NumAvailableTroops = Player.NumFreeTroops();
                 foreach (Planet p in ExploredPlanets)
                 {

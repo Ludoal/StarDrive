@@ -368,7 +368,9 @@ namespace Ship_Game
             if (ScreenHeight > 720 && empireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
                 return true;
 
-            if (input.MiddleMouseHeld())
+            // bench 388 (maintainer): the tree drag stops at the page frame - a middle-drag
+            // in the band pans the MAP, and both used to fire on the same gesture
+            if (input.MiddleMouseHeld() && PageFrame.HitTest(input.CursorPosition))
                 camera.MoveClamped(input.CursorVelocity, ScreenCenter, new Vector2(3200));
 
             foreach (RootNode root in RootNodes.Values)

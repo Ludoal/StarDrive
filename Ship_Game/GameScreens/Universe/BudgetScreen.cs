@@ -378,6 +378,7 @@ namespace Ship_Game.GameScreens
             // of it. Same gesture as the Empire screen's colony list.
             // ⚠ re-armed here rather than at construction: Reset drops the handlers.
             ColonySL.OnDoubleClick = OnColonyClicked;
+            ColonySL.OnClick = item => Universe.PanToPlanetKeepZoom(item.Planet); // bench 388 (maintainer): single-click = select on the map and pan at current zoom
             var planets = Player.GetPlanets();
             var sorted = SortByName
                 ? (SortDesc ? planets.OrderByDescending(p => p.Name) : planets.OrderBy(p => p.Name))

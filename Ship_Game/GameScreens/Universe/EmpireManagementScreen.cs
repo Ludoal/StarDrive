@@ -393,6 +393,9 @@ namespace Ship_Game
 
         void OnColonyListItemClicked(ColoniesListItem item)
         {
+            // bench 388 (maintainer): single-click = select on the map and pan at current zoom -
+            // the governor panel keeps following the row, as before
+            Universe.PanToPlanetKeepZoom(item.P);
             SelectedPlanet = item.P;
             GovernorDetails?.SetPlanetDetails(SelectedPlanet, GovernorRect, (int)(GovernorDetails?.CurrentTabIndex ?? 0));
             GovernorDetails?.PerformLayout();
