@@ -75,12 +75,6 @@ namespace Ship_Game
             if (IsPlayerBombing())
                 Bombard.Style = ButtonStyle.WideHostile;
 
-            // Ludoal fork (wishlist): same exit as the planet panel — leave the
-            // assault view AT the planet on the main map (notification workflow)
-            var viewOnMap = Button(ButtonStyle.WideActive, assetsX, AssetsRect.Y + 170, "View on map",
-                                   b => p.Universe.Screen.ClosePlanetPanelStayHere());
-            viewOnMap.TextAlign = ButtonTextAlign.Left;
-
             RectF orbitalAssetRect = new(assetsX + 220, AssetsRect.Y, 200, AssetsRect.Height * 2);
             var orbitalAssets = Add(new SubmenuScrollList<CombatScreenOrbitListItem>(orbitalAssetRect, "In Orbit", style:ListStyle.Blue));
             OrbitSL = orbitalAssets.List;
@@ -226,7 +220,6 @@ namespace Ship_Game
 
             batch.Draw(ResourceManager.Texture($"PlanetTiles/{P.PlanetTileId}_tilt"), GridRect, Color.White);
             batch.Draw(ResourceManager.Texture("Ground_UI/grid"), GridRect, Color.White);
-            batch.DrawString(Fonts.Arial20Bold, P.Name, TitlePos, OwnerColor);
 
             LaunchAll.Draw(batch, elapsed);
             LandAll.Draw(batch, elapsed);

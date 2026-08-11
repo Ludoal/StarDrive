@@ -119,7 +119,7 @@ public sealed class RuleOptionsScreen : PopupWindow
         // the second column, measured from the FRAME rather than from the screen: at 1440 the old
         // ScreenWidth/4.5 gave 320, which started before the 270-wide sliders at X+60 had ended,
         // and it moved with the display while the panel no longer does. 280 clears them.
-        const int indent = 280;
+        const int indent = 300; // 20 more (bench 408): air between the sliders and the checkbox column
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*0, () => P.PreventFederations, title: GameText.PreventAiFederations, tooltip: GameText.PreventsAiEmpiresFromMerging);
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*1, () => P.FixedPlayerCreditCharge, title: GameText.FixedShipAndBuildingsCost, tooltip: GameText.KeepFixedCreditCostOf);
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*2, () => P.AIUsesPlayerDesigns, title: GameText.UsePlayerDesignsTitle, tooltip: GameText.UsePlayerDesignsTip);

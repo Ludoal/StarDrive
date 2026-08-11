@@ -103,8 +103,8 @@ namespace Ship_Game
             if (Screen.SelectedShips == null || SelectedShipsSL.NumEntries == 0)
                 return;  //fbedard
 
-            // Ludoal fork: the orders ride a visible strip above the cartouche - same call as
-            // the single-ship cartouche, the drawer went with it (maintainer, option B).
+            // Ludoal fork: the orders ride a visible strip above the cartouche, same as the
+            // single-ship cartouche.
             if (AllShipsMine)
             {
                 foreach (OrdersButton ob in Orders)
@@ -112,19 +112,13 @@ namespace Ship_Game
             }
 
             // the minimap's recipe instead of the sculpted unitselmenu texture
-            // ⚠ the frame starts 26 under the housing's top: the sculpted texture spent that
-            // band on antenna machinery, and with it gone the plate framed empty space
-            // (maintainer: "beaucoup de vide au-dessus"). The housing keeps its size - every
-            // inner anchor is an offset from it - only the visible frame shrinks.
+            // ⚠ the frame starts 26 under the housing's top (maintainer feedback: avoids empty
+            // space at the top of the plate). The housing keeps its size - every inner anchor is
+            // an offset from it - only the visible frame shrinks.
             Rectangle frame = Housing;
             frame.Y += FrameShave; frame.Height -= FrameShave;
             frame.Width -= PlanetInfoUIElement.RightTrim;
-            Rectangle plate = frame;
-            plate.Inflate(-2, -2);
-            batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
-            UITheme.DrawPlate(batch, frame, Color.Transparent,
-                              new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
-                              ruleWidthOverride: 3);
+            Submenu.DrawFrameWithGround(batch, new RectF(frame));
             var namePos = new Vector2(Housing.X + 13, Housing.Y + 71); // the ship cartouche's name seat
             byte alpha  = Screen.CurrentFlashColor.A;
 

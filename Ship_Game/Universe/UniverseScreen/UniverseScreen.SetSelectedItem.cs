@@ -89,10 +89,9 @@ public partial class UniverseScreen
     /// <summary>
     /// Sets the currently selected ship and clears selected ships list
     /// </summary>
-    // Ludoal fork (wishlist #1): clearFlags=false lets the per-frame UI refresh in
-    // UpdateSelectedShips keep the chase camera alive — the unconditional clear
-    // switched ViewingShip off EVERY FRAME while a ship was selected, which is
-    // exactly the chase use-case (why 'follow' never survived the initial snap).
+    // Ludoal fork: clearFlags=false lets the per-frame UI refresh in UpdateSelectedShips
+    // keep the chase camera alive — an unconditional clear would switch ViewingShip off
+    // every frame while a ship is selected.
     public void SetSelectedShip(Ship selectedShip, Fleet fleet = null, bool clearFlags = true)
     {
         SelectedSomethingTimer = 3f;

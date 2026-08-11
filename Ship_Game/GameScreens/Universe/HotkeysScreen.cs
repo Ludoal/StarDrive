@@ -5,10 +5,8 @@ using Vector2 = SDGraphics.Vector2;
 
 namespace Ship_Game
 {
-    // Ludoal fork (maintainer feedback): the hotkey reference, opened from the in-game menu.
-    // The bindings live in ONE flat data table (category -> action -> keys) rather than
-    // hand-drawn text: the planned remapping feature will edit this same table, and at that
-    // point InputState reads its keys from here instead of hardcoding them.
+    // Ludoal fork: the hotkey reference, opened from the in-game menu.
+    // The bindings live in one flat data table (category -> action -> keys).
     public sealed class HotkeysScreen : PopupWindow
     {
         struct Hotkey
@@ -65,6 +63,7 @@ namespace Ship_Game
                 new Hotkey("M", "Exotic Bonuses"),
                 new Hotkey("N", "Freighter Utilization"),
                 new Hotkey("F7", "Important Events log"),
+                new Hotkey("F8", "Last viewed colony"),
                 new Hotkey("F1", "Help"),
                 new Hotkey("Esc", "Close screen"),
             }),
@@ -112,7 +111,8 @@ namespace Ship_Game
             new[] { 4, 5, 6, 7 },    // fleets, selection, shipyard, fleet design
         };
 
-        public HotkeysScreen(GameScreen parent) : base(parent, 1200, 620)
+        // 660 high (bench 408): the remapping note needs air under the SCREENS column
+        public HotkeysScreen(GameScreen parent) : base(parent, 1200, 660)
         {
             TransitionOnTime = 0.25f;
         }

@@ -29,6 +29,14 @@ namespace Ship_Game
         [StarData] public Color FrameBody      = new(14, 14, 14, 240);
         [StarData] public Color FrameTitleBar  = new(54, 54, 54, 240);
         [StarData] public int   TitleBarHeight = 46;
+        // the Content/Textures folder the popup frame's bitmaps come from - swapping the
+        // folder reskins every popup window; PopupFrame falls back piece by piece to the
+        // classic Popup set for anything the folder lacks
+        [StarData] public string PopupSkin = "Popup";
+        // same lever for the submenu chrome (the tab groups' frame and headers): the folder
+        // holding the submenu_* pieces. Applies to the default Brown style; the Blue research
+        // style is its own deliberate look and stays put.
+        [StarData] public string SubmenuSkin = "NewUI";
 
         // buttons - hover and press are DERIVED from the tint, never separate colours
         [StarData] public Color PlateNeutral = new(193, 113, 26);
@@ -49,6 +57,14 @@ namespace Ship_Game
         [StarData] public int   RuleWidth    = 2;   // how thick the line around a plate runs
         [StarData] public float HoverLift    = 0.22f;
         [StarData] public float PressDrop    = 0.28f;
+
+        // controls - the small input furniture: slider tracks, checkbox boxes, dropdown
+        // panels. One outline for all of them: the slider's track and the checkbox's box
+        // disagreed by a shade (72,61,38 vs 96,81,49) for no reason anyone could name.
+        [StarData] public Color ControlOutline      = new(96, 81, 49);
+        [StarData] public Color ControlOutlineHover = new(164, 154, 133);
+        [StarData] public Color ControlFill         = new(22, 22, 23);
+        [StarData] public Color ControlHoverFill    = new(128, 87, 43, 50);
 
         // text
         [StarData] public Color TextPrimary = new(255, 240, 189);
@@ -118,6 +134,8 @@ namespace Ship_Game
         public static Color FrameBody     => Theme.FrameBody;
         public static Color FrameTitleBar => Theme.FrameTitleBar;
         public static int   TitleBarH     => Theme.TitleBarHeight;
+        public static string PopupSkin    => Theme.PopupSkin;
+        public static string SubmenuSkin  => Theme.SubmenuSkin;
 
         // ── buttons ──────────────────────────────────────────────────────────────────────────
         public static Color PlateNeutral => Theme.PlateNeutral;
@@ -186,6 +204,26 @@ namespace Ship_Game
                 }
             }
         }
+
+        // ── controls ─────────────────────────────────────────────────────────────────────────
+        /// Ludoal fork: the themed layer the leaf widgets were missing. A slider, checkbox or
+        /// dropdown asks for its outline, panel fill or hover wash here instead of carrying its
+        /// own colour literals - which is how the track and the box ended up two different
+        /// browns. New widgets get the theme for free by drawing through these.
+        public static Color ControlOutline(bool hovered = false)
+            => hovered ? Theme.ControlOutlineHover : Theme.ControlOutline;
+
+        public static void DrawControlOutline(SpriteBatch batch, in Rectangle r, bool hovered = false)
+            => batch.DrawRectangle(r, ControlOutline(hovered));
+
+        /// the solid fill behind an open panel - a dropdown's list, a combo's tray
+        public static void DrawControlFill(SpriteBatch batch, in Rectangle r)
+            => batch.FillRectangle(r, Theme.ControlFill);
+
+        /// the translucent wash over a hovered row or surface; premultiplied here so no
+        /// caller trips the additive-blend analyzer by filling with a raw alpha colour
+        public static void DrawControlHoverFill(SpriteBatch batch, in Rectangle r)
+            => batch.FillRectangle(r, Theme.ControlHoverFill.Premultiplied());
 
         // ── text ─────────────────────────────────────────────────────────────────────────────
         public static Color TextPrimary => Theme.TextPrimary;

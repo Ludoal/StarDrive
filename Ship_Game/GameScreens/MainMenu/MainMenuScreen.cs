@@ -86,9 +86,9 @@ namespace Ship_Game.GameScreens.MainMenu
             if (list.Find("support",   out UIButton support))   support.OnClick   = Support_Clicked;
             if (list.Find("exit",      out UIButton exit))      exit.OnClick      = Exit_Clicked;
 
-            // Ludoal fork (maintainer feedback): the main menu sits over black, so its buttons
-            // carry their full body rather than the bar's map-friendly 0.92. Support reads as an
-            // active call to action (blue plate); Exit is the one hostile action (red plate).
+            // Ludoal fork: the main menu sits over black, so its buttons carry full opacity
+            // rather than the bar's map-friendly 0.92. Support is a call to action (blue plate);
+            // Exit is the hostile action (red plate).
             for (int i = 0; i < list.Count; ++i)
                 if (list[i] is UIButton b)
                     b.Opacity = 1f;
@@ -99,8 +99,7 @@ namespace Ship_Game.GameScreens.MainMenu
 
             list.PerformLayout();
 
-            // Ludoal fork: no slide-in/slide-out on the menu buttons (maintainer decision - we
-            // stay sober). They appear where the layout puts them.
+            // Ludoal fork: no slide-in/slide-out on the menu buttons - they appear where the layout puts them.
 
             Scene = SceneInstance.FromFile(this, menu.SceneFile);
 
@@ -218,11 +217,10 @@ namespace Ship_Game.GameScreens.MainMenu
         // We need a simulation time accumulator in order to run sim at arbitrary X fps while UI runs at smooth 60 fps
         float SimTimeSink;
 
-        // bench 357 (maintainer): the layout is parsed at LoadContent for the screen size of that
-        // moment. If the window is resized afterwards (VMware auto-fit at launch, a windowed drag),
-        // the 2D panels keep the stale width - the background and the planet cut off on the right
-        // while the 3D scene and edge-anchored buttons follow the live size. Track the size the
-        // layout was built for and rebuild when it no longer matches.
+        // The layout is parsed at LoadContent for the screen size of that moment. If the window is
+        // resized afterwards, the 2D panels keep the stale width while the 3D scene and
+        // edge-anchored buttons follow the live size. Track the size the layout was built for
+        // and rebuild when it no longer matches.
         Vector2 LayoutArea;
 
         public override void Update(float fixedDeltaTime)
@@ -237,8 +235,7 @@ namespace Ship_Game.GameScreens.MainMenu
             }
 
             // Ludoal fork: while New Game sits on top, the menu keeps its animated backdrop
-            // but hides its button column (maintainer request) - the buttons used to read
-            // through the panels, which is why New Game wore an opaque veil before.
+            // but hides its button column.
             // IsShowing, not Current: a dialog opened over New Game must not bring them back.
             if (Find("buttons", out UIList buttons))
                 buttons.Visible = !ScreenManager.IsShowing<RaceDesignScreen>();

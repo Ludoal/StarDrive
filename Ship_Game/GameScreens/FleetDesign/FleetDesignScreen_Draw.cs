@@ -31,12 +31,6 @@ namespace Ship_Game
         {
             ScreenManager.BeginFrameRendering(elapsed, ref View, ref Projection);
 
-            // Ludoal fork (bench 345): no black clear - the screen is a popup, so the paused universe
-            // drawn underneath shows through the frame's margin. Instead of erasing it, DIM it with
-            // the same semi-transparent veil the table screens use, so the map recedes behind the
-            // screen rather than competing with it.
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-
             // Ludoal fork: the starfield and the fleet grid are clipped to the tab frame - the
             // screen is one tab of the Design group now, so its scene stays inside the frame.
             // Scissor is device state: it goes off again before the UI pass, or the panels drawn
@@ -52,25 +46,25 @@ namespace Ship_Game
                 DrawHoveredNodes(batch);
                 DrawSelectedNodes(batch);
                 DrawFleetManagementIndicators(batch);
-                // the node icons belong to the scene, so they clip with the grid (bench 343: they
-                // spilled outside the frame when drawn in the unclipped UI pass)
+                // the node icons belong to the scene, so they clip with the grid
                 if (SelectedFleet != null)
                     foreach (FleetDataNode node in SelectedFleet.DataNodes)
                         DrawFleetNode(batch, node);
+
+                // the placement brush belongs to the scene too - it must stay clipped to the frame
+                if (ActiveShipDesign != null)
+                    DrawActiveShipDesign(batch);
 
                 if (SelectionBox.W > 0)
                     batch.DrawRectangle(SelectionBox, Color.Green);
             }
             batch.SafeEnd();
 
-            // render 3D. Ludoal fork (maintainer bench 343): the 3D sprite and the tactical icon are
-            // MUTUALLY EXCLUSIVE on the same zoom threshold (5000) - the sprite showed
-            // unconditionally while the icon only showed past 5000, so above it BOTH drew and the
-            // ships flickered. Below the threshold the sprite shows and the icon is held; above it
-            // the sprite is removed and the icon draws.
+            // render 3D. Ludoal fork: the 3D sprite and the tactical icon are MUTUALLY EXCLUSIVE
+            // on the same zoom threshold (5000). Below the threshold the sprite shows and the icon
+            // is held; above it the sprite is removed and the icon draws.
             // ⚠ The scissor stays ENABLED across RenderSceneObjects (it is disabled AFTER, below) -
-            // the Shipyard already renders its 3D under scissor; Fleets was disabling it too early,
-            // so the fleet sprites spilled OUTSIDE the frame when the map was dragged (bench 343).
+            // otherwise the fleet sprites spill OUTSIDE the frame when the map is dragged.
             if (SelectedFleet != null)
             {
                 foreach (FleetDataNode node in SelectedFleet.DataNodes)
@@ -115,11 +109,8 @@ namespace Ship_Game
 
             EmpireUI.Draw(batch);
 
-            // the fleet node icons moved into the scissor-clipped scene block (see Draw), so they
-            // stay inside the frame when the map is dragged - like the grid and the selection rings.
-
-            if (ActiveShipDesign != null)
-                DrawActiveShipDesign(batch);
+            // the fleet node icons and the placement brush live in the scissor-clipped scene
+            // block (see Draw), so they stay inside the frame like the grid and the rings.
 
             DrawSelectedData(batch, elapsed);
         }
@@ -256,10 +247,9 @@ namespace Ship_Game
                 // Switch this single draw to Additive (src*srcA + dst), which
                 // zeroes out alpha=0 pixels naturally and matches how the
                 // FOW / shield / fogmap consumers handle the same texture.
-                // bench 358 (maintainer): keep the SCISSOR through the blend switch. This runs inside
-                // the scene-clipped batch; re-opening without the scissored rasterizer let the halo
-                // flood past the frame - and worse, the final plain Begin handed the rest of the
-                // scene pass back UNCLIPPED.
+                // keep the SCISSOR through the blend switch - this runs inside the scene-clipped
+                // batch, and re-opening without the scissored rasterizer lets the halo flood past
+                // the frame.
                 batch.SafeEnd();
                 batch.SafeBegin(SpriteBlendMode.Additive, Ship_Game.Graphics.RenderStates.ScissorEnabled);
                 batch.Draw(nodeTexture, nodeRect, NeonGreen, 0f, nodeTexture.CenterF);
@@ -325,7 +315,7 @@ namespace Ship_Game
                 string text = ship == null ? $"({node.ShipName})"
                             : ship.VanityName.NotEmpty()
                                 ? ship.VanityName : $"{ship.Name} ({ship.ShipData.Role})";
-                // centred on the cartouche, like the fleet name (maintainer bench 302)
+                // centred on the cartouche, like the fleet name
                 var cursor = new Vector2(
                     SelectedStuffRect.X + (SelectedStuffRect.W - Fonts.Arial20Bold.TextWidth(text)) * 0.5f,
                     SelectedStuffRect.Y + 10);
@@ -394,9 +384,8 @@ namespace Ship_Game
                 if (f == null)
                     return;
 
-                // name, then the icon directly under it, then the buttons - the label the icon
-                // used to carry said nothing the icon does not.
-                // centred on the cartouche, in the headline font (maintainer bench 301)
+                // name, then the icon directly under it, then the buttons.
+                // centred on the cartouche, in the headline font
                 FleetNameEntry.Text = f.Name;
                 Vector2 cursor1 = new Vector2(
                     SelectedStuffRect.X + (SelectedStuffRect.W - FleetNameEntry.Font.TextWidth(f.Name)) * 0.5f,
@@ -408,8 +397,7 @@ namespace Ship_Game
                 var iconR = new RectF(SelectedStuffRect.X + (SelectedStuffRect.W - CartIcon) * 0.5f,
                                       iconY, CartIcon, CartIcon);
                 batch.Draw(f.Icon, iconR, f.Owner.EmpireColor);
-                // the Fleet Design Overview cartouche is gone (maintainer bench 300): its
-                // text lives in the Codex, end of Warfare
+                // the Fleet Design Overview cartouche is gone: its text lives in the Codex, end of Warfare
 
                 RequisitionForces.Visible = true;
                 SaveDesign.Visible = true;

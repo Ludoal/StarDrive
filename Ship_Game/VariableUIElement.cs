@@ -9,8 +9,7 @@ namespace Ship_Game
 {
 	public sealed class VariableUIElement : UIElement
 	{
-		// Ludoal fork: same shave as its four cartouche siblings - the sculpted texture spent
-		// that band on antenna machinery, and with it gone the frame starts under the housing
+		// Ludoal fork: same shave as its four cartouche siblings - frame starts 26px under the housing
 		const int FrameShave = 26;
 
 		private UniverseScreen screen;

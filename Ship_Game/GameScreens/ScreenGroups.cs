@@ -112,7 +112,41 @@ namespace Ship_Game.GameScreens
                 return;
             caller.ExitScreen();
             Audio.GameAudio.AcceptClick();
-            u.ScreenManager.AddScreen(GalaxyTab(index, u));
+            if (IsHostedTab(Group.Galaxy, index, u))
+                u.OpenHostedTabPanel?.Invoke();
+            else
+                u.ScreenManager.AddScreen(GalaxyTab(index, u));
+        }
+
+        // ── the hosted tab (spec: colony-as-tab; universal by maintainer decision) ──────────
+        // Ludoal fork: when a subject rides a group's row (u.HostedTab* armed for that group),
+        // the row shows one extra tab at the end wearing the subject's name. The subject's
+        // panel is not a stacked screen (the colony is the universe's workersPanel), so the
+        // switches route its index to the armed opener instead of a factory.
+        public static bool IsHostedTab(Group g, int index, UniverseScreen u)
+            => u.HostedTabTitle != null && u.HostedTabGroup == g
+            && index == StockTitles(g).Length;
+
+        static LocalizedText[] StockTitles(Group g)
+            => g == Group.Galaxy    ? GalaxyTabTitles
+             : g == Group.Diplomacy ? GroupTabTitles
+             : EmpireTabTitles;
+
+        /// the live tab row of a group: the stock titles, plus the hosted tab when armed.
+        /// The EMPIRE group's colony tab is PERMANENT (maintainer): with no seat armed it
+        /// wears the remembered colony (the capital by default).
+        public static LocalizedText[] LiveTitles(Group g, UniverseScreen u)
+        {
+            LocalizedText[] stock = StockTitles(g);
+            string colonyTitle = u.HostedTabTitle != null && u.HostedTabGroup == g
+                               ? u.HostedTabTitle
+                               : g == Group.Empire ? u.EmpireColonyDefault?.Name : null;
+            if (colonyTitle == null)
+                return stock;
+            var live = new LocalizedText[stock.Length + 1];
+            Array.Copy(stock, live, stock.Length);
+            live[stock.Length] = new LocalizedText(colonyTitle, LocalizationMethod.RawText);
+            return live;
         }
 
         // ── Empire group ──────────────────────────────────────────────────────────────────────
@@ -156,7 +190,10 @@ namespace Ship_Game.GameScreens
                 return;
             caller.ExitScreen();
             Audio.GameAudio.AcceptClick();
-            u.ScreenManager.AddScreen(EmpireTab(index, u));
+            if (index == EmpireTabTitles.Length) // the PERMANENT colony tab (maintainer)
+                u.OpenEmpireColonyTab();
+            else
+                u.ScreenManager.AddScreen(EmpireTab(index, u));
         }
 
         // ── Design group ──────────────────────────────────────────────────────────────────────
@@ -250,17 +287,35 @@ namespace Ship_Game.GameScreens
         // order they have to happen. PerformLayout is what makes ClientArea known, and it has to
         // run before anything is measured against it.
         public static Submenu AddGroupTabs(GameScreen screen, LocalizedText[] titles, int selected,
-                                           Action<int> onChange, out Rectangle frame, bool fullScreen = false)
+                                           Action<int> onChange, out Rectangle frame, bool fullScreen = false,
+                                           bool withClose = true)
         {
             frame = GroupFrame(screen.ScreenWidth, screen.ScreenHeight, fullScreen);
             var tabs = screen.Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height), titles));
             tabs.OnTabChange = onChange;
             tabs.PerformLayout();
             tabs.SelectedIndex = selected;
-            Vector2 closePos = GroupClosePos(tabs.ClientArea);
-            screen.Add(new CloseButton(closePos.X, closePos.Y));
+            if (withClose) // the hosted colony keeps its own popup close cross instead
+            {
+                Vector2 closePos = GroupClosePos(tabs.ClientArea);
+                screen.Add(new CloseButton(closePos.X, closePos.Y));
+            }
             return tabs;
         }
+
+        // Ludoal fork (bench 379): the Diplomacy group's own factory, born for the hosted
+        // seat's Esc-return. Relationships needs a caller-built intel array, so its index
+        // routes through the main screen, which opens the diagram on arrival by itself.
+        public static GameScreen DiploTab(int index, UniverseScreen u)
+            => (MainDiplomacyScreen.Tab)index == MainDiplomacyScreen.Tab.Espionage
+                ? new InfiltrationScreen(u)
+                : new MainDiplomacyScreen(u, (MainDiplomacyScreen.Tab)index);
+
+        /// the factory of a HOSTING group
+        public static GameScreen TabOf(Group g, int index, UniverseScreen u)
+            => g == Group.Galaxy  ? GalaxyTab(index, u)
+             : g == Group.Empire  ? EmpireTab(index, u)
+             : DiploTab(index, u);
 
         // Ludoal fork (maintainer feedback): the target frame width. Group screens never grow past
         // this even at 1920 fullscreen, so a screen looks identical windowed and fullscreen - the
@@ -272,24 +327,40 @@ namespace Ship_Game.GameScreens
         // and the height cap: no group screen grows past the 1080p footprint (the resolution charter)
         public const int MaxFrameHeight = 1080;
 
-        // Ludoal fork (maintainer bench 343): the vertical space a group table may use, capped at the
-        // 1080p footprint. Every table screen reads THIS instead of ScreenHeight, so none can forget
-        // the cap and grow past 1080 on a taller display (the bug Planets/Ships/Troops/etc. showed).
+        // Ludoal fork (bench 389, maintainer): ONE floor for every table - the info cartouche
+        // zone plus the ship cartouche's two possible rows of order buttons (52 each + 4 gap,
+        // ShipInfoUIElement), 10 px of air. Replaces the 1080p cap (bench 343/361 announced the
+        // freed bottom-left as the cartouche's home) and the short-lived per-table split: a ship
+        // can be selected from the band under ANY panel, and the stretched star cartouche fits
+        // too. The housing anchors at screenH-257 (UniverseScreen.LoadContent), visible frame
+        // FrameShave=61 lower. The reservation is permanent - it belongs to the zone, not to
+        // whether a cartouche is showing at this instant.
+        public const int CartoucheClearance = 257 - 61 + 10 + 108;
+
+        // bench 409 (maintainer decision): below 1200 of display height every frame runs to
+        // the display foot - at 1080 the tables still read short, so the cartouche
+        // reservation only holds at 1200 and above. One change here feeds GroupFrame and
+        // every content-sized table alike.
+        public const int FullHeightBelow = 1200;
         public static float FullTableHeight(int screenH)
-            => Math.Min(screenH, MaxFrameHeight) - TabRowY - FrameMargin;
+            => screenH < FullHeightBelow ? screenH - TabRowY - FrameMargin
+                                         : screenH - CartoucheClearance - TabRowY;
 
-        // Ludoal fork (bench 361): the UNCAPPED variant - the Colonies table runs the full display
-        // height by explicit maintainer choice. The other tables keep the 1080 cap: the bottom-left
-        // they leave free is where the 47-c click-info cartouche (planet/ship) will live.
-        public static float FullTableHeightUncapped(int screenH)
-            => screenH - TabRowY - FrameMargin;
-
-        // the height cap (maintainer, 4 Aug): a group frame never grows past the 1080p footprint -
-        // anchored to the bar and the left margin, like every frame. Tables that develop in height
-        // do it through the content-sized variant by explicit instruction, never through this cap.
+        // the height cap: the full-frame group screens (Research, Fleets, Shipyard windowed) stop
+        // at inf(1080p footprint, the tables' own floor) - bench 390 (maintainer): they must not
+        // dive past where a table stops, so the info cartouche keeps its reserved bottom-left at
+        // every resolution. FullTableHeight already carries the cartouche+order-rows clearance;
+        // Min with the 1080 cap keeps the resolution charter. Tables that DEVELOP in height go
+        // through the content-sized variant, never this frame.
         public static Rectangle GroupFrame(int screenW, int screenH)
             => new(FrameMargin, TabRowY, Math.Min(screenW, MaxFrameWidth) - 2 * FrameMargin,
-                   Math.Min(screenH, MaxFrameHeight) - TabRowY - FrameMargin);
+                   Math.Min(MaxFrameHeight - TabRowY - FrameMargin, (int)FullTableHeight(screenH)));
+
+        // the group's CLIENT area - the frame less the tab row and the chrome, computed by
+        // the formula's owner (Submenu.CalcGroupClientArea) so a panel hosted in a group's
+        // frame without being a Submenu sits pixel-identical to a real tab's content
+        public static RectF GroupClientArea(int screenW, int screenH)
+            => Submenu.CalcGroupClientArea(new RectF(GroupFrame(screenW, screenH)), SubmenuStyle.Brown);
 
         // Ludoal fork (bench 355): a Shipyard-only full-screen frame. Same left/top anchor on the rail
         // (FrameMargin, TabRowY) so it still reads as the Design tab, but it drops the MaxFrame caps and
@@ -309,12 +380,11 @@ namespace Ship_Game.GameScreens
                                (frame.CenterY() - screenH * 0.5f) / screenH);
         }
 
-        // Ludoal fork (maintainer feedback, 7 Aug): the group frame is anchored to the left margin
-        // and the bar, so once it caps (1680 wide) its centre sits LEFT of and ABOVE the screen
-        // centre. A 3D screen that fills this frame (Shipyard, Fleets) must shift its optical centre
-        // by the same amount, or the model drifts down-right at hi-res. Returned as a fraction of the
-        // screen, feeding SetPerspectiveProjection's offCentre - the ONE place this offset is
-        // computed, so the two screens can never disagree.
+        // Ludoal fork: the group frame is anchored to the left margin and the bar, so once it caps
+        // (1680 wide) its centre sits left of and above the screen centre. A 3D screen that fills
+        // this frame (Shipyard, Fleets) must shift its optical centre by the same amount, or the
+        // model drifts down-right at hi-res. Returned as a fraction of the screen, feeding
+        // SetPerspectiveProjection's offCentre - the one place this offset is computed.
         public static Vector2 GroupFrameCameraOffset(int screenW, int screenH)
         {
             Rectangle frame = GroupFrame(screenW, screenH);
@@ -329,11 +399,11 @@ namespace Ship_Game.GameScreens
         // frame's, always.
         const int RaceRefH = 900;
         const int NineSliceCorners = 18; // what Submenu cuts off a frame to get its ClientArea
-        // Ludoal fork (maintainer feedback, 7 Aug): race columns are a FIXED width now, not a share
-        // of the frame. The window grows with the faction count, capped only by the physical screen
-        // (the horizontal scroller pages the rest). 228 is the measured column width (name + flag),
-        // WITHOUT the inter-column gap; the pitch adds ColumnGap on top.
-        public const int RaceColumnWidth = 228; // maintainer: 228 fits one more column at 1440/1680; 8 still fit cleanly at 1920
+        // Ludoal fork: race columns are a FIXED width, not a share of the frame. The window grows
+        // with the faction count, capped only by the physical screen (the horizontal scroller pages
+        // the rest). 228 is the measured column width (name + flag), without the inter-column gap;
+        // the pitch adds ColumnGap on top - it fits one more column at 1440/1680, 8 still fit at 1920.
+        public const int RaceColumnWidth = 228;
 
         // the column run inside a frame that wide: client area less a gutter each side, plus one
         // gap because the pitch below carries a trailing gap the last column does not draw
@@ -343,19 +413,17 @@ namespace Ship_Game.GameScreens
         // fixed pitch: the column width plus one inter-column gap. No longer varies with count.
         public static int RaceColumnPitch(int screenW, int count) => RaceColumnWidth + ColumnGap;
 
-        // how many columns the screen can SHOW at that pitch - Combined Arms fields more
-        // than eight majors (maintainer bench 299), and the frame never grows past the
-        // screen's own footprint: the rest scrolls
+        // how many columns the screen can show at that pitch - the frame never grows past the
+        // screen's own footprint, the rest scrolls
         public static int RaceVisibleColumns(int screenW, int count)
         {
             count = Math.Max(count, 1);
             int pitch = RaceColumnPitch(screenW, count);
-            // Ludoal fork (maintainer feedback, 7 Aug): no 1920 ceiling now - how many fixed-width
-            // columns fit is judged against the PHYSICAL screen; the rest scrolls.
+            // Ludoal fork: how many fixed-width columns fit is judged against the physical screen,
+            // no 1920 ceiling; the rest scrolls.
             int avail = RaceColumnRun(screenW - 2 * FrameMargin);
             // the fit test forgives what the round-UP pitch added (at most GroupColumns-1
-            // px over the whole row) - without it a 900p screen showed seven columns where
-            // eight fit (maintainer bench 300)
+            // px over the whole row), or a row can fall one column short of what actually fits
             return Math.Min(count, Math.Max(1, (avail + GroupColumns - 1) / pitch));
         }
 
@@ -462,16 +530,16 @@ namespace Ship_Game.GameScreens
 
         // The 900p footprint, whatever the resolution: Relationships/Blueprints keep this frame -
         // their diagram was laid out for it and does not rearrange, so a bigger screen just leaves
-        // space at the frame's right (maintainer, 4 Aug). Fixed 1440x900, independent of the race
-        // columns (which now grow unbounded on their own pitch).
+        // space at the frame's right. Fixed 1440x900, independent of the race columns (which grow
+        // unbounded on their own pitch).
         const int Fixed900Width = 1440;
         public static Rectangle GroupFrame900(int screenW, int screenH)
             => new(FrameMargin, TabRowY, Math.Min(screenW, Fixed900Width) - 2 * FrameMargin,
                    Math.Min(screenH, RaceRefH) - TabRowY - FrameMargin);
 
-        // Ludoal fork: a content-sized frame may hug a table NARROWER than its own tab
-        // strip, which folds the tabs into a second line (maintainer bench 290) - the
-        // frame width floors on what the strip needs, the content inside doesn't move
+        // Ludoal fork: a content-sized frame may hug a table narrower than its own tab strip,
+        // which folds the tabs into a second line - the frame width floors on what the strip
+        // needs, the content inside doesn't move
         public static float MinTabStripWidth(LocalizedText[] titles)
         {
             float w = 22; // the nine-slice corners either side of the menu bar
@@ -634,6 +702,10 @@ namespace Ship_Game.GameScreens
         public static Group GroupOf(GameScreen s) => s switch
         {
             null => Group.None,
+
+            // Ludoal fork (migration, bench 386): a stacked colony belongs to whichever
+            // group its hosted seat names - the one membership that is dynamic
+            ColonyScreen c => c.P.Universe.Screen.HostedTabGroup,
 
             PlanetListScreen or ExoticSystemsListScreen or EmpirePatrolsScreen
                 or ImportantEventsScreen

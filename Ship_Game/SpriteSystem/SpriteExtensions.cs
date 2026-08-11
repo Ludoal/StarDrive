@@ -426,6 +426,32 @@ namespace Ship_Game
             }
         }
 
+        // Ludoal fork (bench 408): transform AND a pinned rasterizer together - the Research
+        // tree draws through its camera and must clip to its frame
+        public static bool SafeBegin(this SpriteBatch batch, SpriteBlendMode blendMode, bool sortImmediate,
+                                     RasterizerState rasterizer, in XnaMatrix transform)
+        {
+            SpriteSortMode sortMode = sortImmediate ? SpriteSortMode.Immediate : SpriteSortMode.Deferred;
+            BlendState bs = ToBlendState(blendMode);
+            XnaMatrix t = transform;
+            try
+            {
+                batch.Begin(sortMode, bs, samplerState: null, depthStencilState: null,
+                            rasterizerState: rasterizer, effect: null, transformMatrix: t);
+                return true;
+            }
+            catch
+            {
+                if (batch.SafeEnd())
+                {
+                    batch.Begin(sortMode, bs, samplerState: null, depthStencilState: null,
+                                rasterizerState: rasterizer, effect: null, transformMatrix: t);
+                    return true;
+                }
+                return false;
+            }
+        }
+
         public static bool SafeBegin(this SpriteBatch batch, SpriteBlendMode blendMode, bool sortImmediate, bool saveState, in XnaMatrix transform)
         {
             SpriteSortMode sortMode = sortImmediate ? SpriteSortMode.Immediate : SpriteSortMode.Deferred;

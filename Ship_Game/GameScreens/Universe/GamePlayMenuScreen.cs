@@ -22,10 +22,9 @@ public sealed class GamePlayMenuScreen : PopupWindow
     UIButton ExitToMainMenu;
     UIButton ExitToWindows;
 
-    // Ludoal fork: 200x330 -> 380x360. Width is not cosmetic here: the popup frame's gradient
-    // bands are 433px wide and only shrink to fit, so a window under ~493 gets a squeezed
-    // band - and at 260 it was narrower than the frame's own furniture (maintainer
-    // observation). 380 carries the 168px buttons with room either side.
+    // Ludoal fork: width is not cosmetic here - the popup frame's gradient bands are 433px
+    // wide and only shrink to fit, so a window under ~493 gets a squeezed band. 380 carries
+    // the 168px buttons with room either side.
     public GamePlayMenuScreen(UniverseScreen screen) : base(screen, 380, 360)
     {
         Universe = screen;
@@ -56,9 +55,9 @@ public sealed class GamePlayMenuScreen : PopupWindow
         buttons.Padding = new Vector2(2f, 12f);
         buttons.LayoutStyle = ListLayoutStyle.ResizeList;
 
-        // Ludoal fork (maintainer feedback): three pairs, a gap after each - [Save, Load],
-        // [Options, Hotkeys], [Exit Main, Exit Windows]. "Return to Game" is gone (the close cross
-        // does it); its slot becomes Hotkeys, opening a placeholder to be filled later.
+        // Ludoal fork: three pairs, a gap after each - [Save, Load], [Options, Hotkeys],
+        // [Exit Main, Exit Windows]. The close cross returns to the game, so that slot is free
+        // for Hotkeys.
         SaveButton = buttons.Add(ButtonStyle.Default, "Save Game", Save_OnClick);
         LoadButton = buttons.Add(ButtonStyle.Default, GameText.LoadGame,   Load_OnClick);
         buttons.AddLabel(new Vector2(btnW, 14), "");   // gap after the save/load pair
@@ -133,17 +132,12 @@ public sealed class GamePlayMenuScreen : PopupWindow
 
     void Options_OnClick(UIButton button)
     {
-        ScreenManager.AddScreen(new OptionsScreen(Universe)
-        {
-            TitleText  = Localizer.Token(GameText.Options),
-            MiddleText = Localizer.Token(GameText.ChangeAudioVideoAndGameplay)
-        });
+        ScreenManager.AddScreen(new OptionsScreen(Universe));
     }
 
     void Hotkeys_OnClick(UIButton button)
     {
-        // Ludoal fork (maintainer feedback): the coming hotkeys screen - a framed popup with a
-        // close cross, empty for now.
+        // Ludoal fork: hotkeys screen - a framed popup with a close cross, empty for now.
         ScreenManager.AddScreen(new HotkeysScreen(this));
     }
 

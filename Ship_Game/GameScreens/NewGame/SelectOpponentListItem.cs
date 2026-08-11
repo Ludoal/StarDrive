@@ -8,9 +8,8 @@ namespace Ship_Game
 {
     public class SelectOpponentListItem : ScrollListItem<SelectOpponentListItem>
     {
-        // Ludoal fork (maintainer feedback, 7 Aug): the item holds the params it reads, not the
-        // whole screen - the opponent list moved from its own popup into a New Game tab, so it can
-        // no longer assume a SelectOpponentsScreen owner.
+        // Ludoal fork: the item holds the params it reads, not the whole screen - it cannot
+        // assume a SelectOpponentsScreen owner.
         public UniverseParams Params;
         public IEmpireData EmpireData;
         public SubTexture Portrait;
@@ -22,9 +21,8 @@ namespace Ship_Game
             Portrait = ResourceManager.Texture("Races/" + empireData.VideoPath);
         }
 
-        // maintainer feedback (7 Aug, bench 343): the opponent rows size EXACTLY like the race rows
-        // - same RowHeight rule AND the same ExtraHeight constant, so the two lists are identical in
-        // height and can never drift apart.
+        // The opponent rows size exactly like the race rows - same RowHeight rule and the same
+        // ExtraHeight constant, so the two lists stay identical in height.
         public override int ItemHeight => RaceArchetypeListItem.RowHeight(List, Portrait, RaceArchetypeListItem.ExtraHeight);
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)

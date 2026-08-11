@@ -19,6 +19,8 @@ namespace Ship_Game
     public sealed class EmpirePatrolsScreen : GameScreen
     {
         Submenu GalaxyTabs; // Ludoal fork: the Galaxy group's tab row, this screen being one tab
+        // Ludoal fork: this page's real frame is its tab row's rect
+        public override Rectangle PageFrame => GalaxyTabs?.Rect ?? base.PageFrame;
 
         public UniverseScreen Universe;
         public UniverseState UState => Universe.UState;
@@ -28,8 +30,8 @@ namespace Ship_Game
         readonly ScrollList<EmpirePatrolsScreenListItem> PatrolsSL;
 
         public readonly UITable Table; // the shared table charte owns geometry, headers and rules
-        // the Actions lane: both buttons sized to their own text (maintainer, 4 Aug)
-        static int LastSortCol = -1;   // session-persistent (bench 307)
+        // the Actions lane: both buttons sized to their own text
+        static int LastSortCol = -1;   // session-persistent
         static bool LastSortAsc = true;
 
         public EmpirePatrolsScreen(UniverseScreen parent, Empire player)
@@ -49,8 +51,8 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.NumWayPoints), Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = "# Fleets", Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.PatrolAssignedFleets), Foldable = true },
-                // Ludoal fork (maintainer feedback): a dedicated Actions column for the edit/delete
-                // icons, so the table lays them out in their own lane at the right end.
+                // Ludoal fork: a dedicated Actions column for the edit/delete icons,
+                // so the table lays them out in their own lane at the right end.
                 new UITable.Column { Title = "", Width = 60, Align = TableAlign.Center },
             });
             var names = new Array<string>(); var wps = new Array<string>();
@@ -69,19 +71,17 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, assigned);
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
 
-            // Ludoal fork: the Patrols tab of the Galaxy group, content-sized (maintainer
-            // bench 290): the frame hugs the table, the plan count sets the height
-            // Name is the standing sort from the first frame (spec: the default sort wears
-            // the orange)
-            // the standing sort survives the screen for the session (maintainer bench 307)
+            // Ludoal fork: the Patrols tab of the Galaxy group is content-sized -
+            // the frame hugs the table, the plan count sets the height.
+            // The standing sort survives the screen for the session.
             if (LastSortCol < 0) { LastSortCol = 0; LastSortAsc = true; }
             Table.Columns[LastSortCol].Sorted = true;
             Table.Columns[LastSortCol].Ascending = LastSortAsc;
 
-            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 343: capped at 1080p
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // floor = the info cartouche
             // 38 = the 34px row plus the list's 4px item padding
             float contentH = UITable.ContentHeightFor(99, Math.Max(3, player.FleetPatrols.Count), 38, fullAvail);
-            GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 2,
+            GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Galaxy, Universe), 2,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
             Table.RowPitch = 38;
@@ -91,10 +91,26 @@ namespace Ship_Game
             PatrolsSL.EnableItemHighlight = true;
             Table.ApplyHighlightTo(PatrolsSL);
             PatrolsSL.OnDoubleClick = OnPatrolDoubleClicked; // to the plan on the map
-            ResetList(); // honors the session's standing sort (bench 307)
+            PatrolsSL.OnClick = OnPatrolSingleClicked; // single-click pans at current zoom
+            ResetList(); // honors the session's standing sort
         }
 
-        // double-click flies the camera to the patrol's route (maintainer bench 293)
+        // double-click flies the camera to the patrol's route.
+        // single-click pans to the route's midpoint at the CURRENT zoom -
+        // the screen stays open, the flight shows in the band.
+        void OnPatrolSingleClicked(EmpirePatrolsScreenListItem item)
+        {
+            var wps = item.FleetPatrol.WayPoints.ToArray();
+            if (wps.Length == 0)
+                return;
+            GameAudio.AcceptClick();
+            Vector2 center = Vector2.Zero;
+            foreach (var wp in wps)
+                center += wp.Position;
+            center /= wps.Length;
+            Universe.PanToKeepZoom(center);
+        }
+
         void OnPatrolDoubleClicked(EmpirePatrolsScreenListItem item)
         {
             var wps = item.FleetPatrol.WayPoints.ToArray();
@@ -102,8 +118,8 @@ namespace Ship_Game
                 return;
             GameAudio.AcceptClick();
             ExitScreen();
-            // Ludoal fork (maintainer feedback): centre on the ROUTE's midpoint, not its first
-            // waypoint - zooming to wps[0] landed the camera at the corner of the plan, not on it.
+            // Ludoal fork: centre on the ROUTE's midpoint, not its first waypoint -
+            // zooming to wps[0] lands the camera at the corner of the plan, not on it.
             Vector2 center = Vector2.Zero;
             foreach (var wp in wps)
                 center += wp.Position;
@@ -118,14 +134,13 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
             // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
             // drawn among the children, after everything below it.
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(GalaxyTabs), ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed);
 
-            // no chrome on an empty table (maintainer bench 307): the hint speaks alone
+            // no chrome on an empty table: the hint speaks alone
             if (PatrolsSL.NumEntries > 0)
                 Table.DrawChrome(batch);
 
@@ -142,10 +157,47 @@ namespace Ship_Game
             batch.SafeEnd();
         }
 
+        float LiveRefreshTimer;
+        int LivePatrolsHash = -1;
+
+        // the live-data pass: plans made or edited and fleets (un)assigned while the page
+        // is open rebuild the rows - a throttled identity walk, free while nothing moves
+        public override void Update(float fixedDeltaTime)
+        {
+            LiveRefreshTimer -= fixedDeltaTime;
+            if (LiveRefreshTimer <= 0f)
+            {
+                LiveRefreshTimer = 1f;
+                int h = ComputePatrolsHash();
+                if (LivePatrolsHash != -1 && h != LivePatrolsHash)
+                    ResetList();
+                LivePatrolsHash = h;
+            }
+            base.Update(fixedDeltaTime);
+        }
+
+        int ComputePatrolsHash()
+        {
+            int h = 17;
+            foreach (FleetPatrol p in Player.FleetPatrols)
+            {
+                h = h * 31 + (p.Name?.GetHashCode() ?? 0);
+                h = h * 31 + p.WayPoints.Count;
+            }
+            foreach (Fleet f in Player.AllFleets)
+                if (f.HasPatrolPlan)
+                {
+                    h = h * 31 + (f.Patrol?.Name?.GetHashCode() ?? 0);
+                    h = h * 31 + (f.Name?.GetHashCode() ?? 0);
+                }
+            return h;
+        }
+
         void Refill(int col, bool ascending)
         {
             PatrolsSL.Reset();
             PatrolsSL.OnDoubleClick = OnPatrolDoubleClicked; // Reset drops the handlers
+            PatrolsSL.OnClick = OnPatrolSingleClicked;
             FleetPatrol[] patrols;
             switch (col)
             {

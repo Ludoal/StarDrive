@@ -41,13 +41,13 @@ namespace Ship_Game
         const int ResearchNumbersRoom = 120;
         // ⚠ MEASURED, not eyeballed: StarDateString is "####.0", so "StarDate: 9999.9" is the
         // widest this can ever be - 94px in Arial12Bold, and it does not vary with the date.
-        // The old 120 left 27px of unused reserve, and since the text is right-aligned on
-        // StarDateRight that slack all fell on the LEFT, opening a gap before the speed cluster
-        // roughly three times the one after the menu icon (maintainer feedback).
+        // Since the text is right-aligned on StarDateRight, over-reserving here opens a gap
+        // before the speed cluster (maintainer feedback).
         const int StarDateRoom = 94;
         const int SpeedRoom = 46;       // "0.25x" - reserved, so the cluster never shifts
         const int PauseRoom = 62;       // "PAUSED", the longer of the two words it shows
         int SpeedTextRight;             // the factor is right-aligned here, left of "<<"
+        int SpeedClusterLeft;           // the flux alert is right-aligned here, left of the speed block
 
         // Ludoal fork: the bar is laid out in three zones and drawn flat - the military plating,
         // the five resource cartouches and the ten-button row are gone. Left: what the empire HAS
@@ -140,8 +140,12 @@ namespace Ship_Game
             SpeedTextRight = rx;
             rx -= SpeedRoom + gap;
 
+            // (maintainer feedback) the HYPERSPACE FLUX alert lives here, right-aligned just
+            // left of the speed cluster.
+            SpeedClusterLeft = rx;
+
             // ── centre: the four groups ─────────────────────────────────────────────────────
-            // EMPIRE before GALAXY (maintainer, bench 305): you explore the galaxy FROM
+            // EMPIRE before GALAXY (maintainer feedback): you explore the galaxy FROM
             // the empire - the bar reads inside-out
             (string launch, string text, ScreenGroups.Group group)[] groups =
             {
@@ -193,11 +197,10 @@ namespace Ship_Game
             if (Universe.IsExiting || Universe.IsDisposed)
                 return;
 
-            // Ludoal fork: the veil under the bar. It dims the stars along with the foreground -
-            // keeping the starfield while hiding world icons would mean scissor-clipping the
-            // world-overlay draw pass, and the maintainer judged the flat band acceptable until
-            // then. Top band only: it covers 0..veilBottom, under everything the screens draw,
-            // so unlike the late minimap ground it cannot land on their content.
+            // Ludoal fork: the veil under the bar dims the stars along with the foreground -
+            // keeping the starfield while hiding world icons would need scissor-clipping the
+            // world-overlay draw pass. Top band only: covers 0..veilBottom, under everything
+            // the screens draw, so it cannot land on their content.
             batch.FillRectangle(new Rectangle(0, 0, Universe.ScreenWidth, VeilBottom),
                                 new Color(6, 8, 12).Alpha(0.82f));
 
@@ -213,7 +216,7 @@ namespace Ship_Game
                 ScreenGroups.Group g = ScreenGroups.GroupOf(stack[i]);
                 if (g != ScreenGroups.Group.None) { open = g; break; }
             }
-            // Ludoal fork (maintainer feedback): a colony opened FROM a list screen removed that
+            // Ludoal fork (maintainer feedback): a colony opened FROM a list screen removes that
             // screen from the stack (it re-adds itself on close), so the scan finds nothing - fall
             // back to the group it belonged to, kept lit while that return is pending.
             if (open == ScreenGroups.Group.None && Universe.ReturnToListScreen != null)
@@ -245,26 +248,23 @@ namespace Ship_Game
                 // where the glyph already says it.
                 if (!b.Bare)
                 {
-                    // Ludoal fork: the same nine-sliced plate every button in the game draws, so
-                    // the four group tabs belong to the set rather than being flat rectangles
-                    // beside it. Translucent still: the bar sits over the map, where a solid
-                    // plate reads as a hole punched in it, and the group you are inside carries
-                    // more weight than the rest.
-                    // Ludoal fork: full strength. The plate already carries its own translucency
-                    // in its body, so fading the tint on top of that left the group tabs barely
-                    // visible over the map (maintainer feedback).
+                    // Ludoal fork (maintainer feedback): the same nine-sliced plate every button
+                    // in the game draws, at full tint strength - the plate already carries its
+                    // own translucency in its body, so fading the tint further left the group
+                    // tabs barely visible over the map.
                     UIButton.DrawPlate(batch, b.Rect, fill);
                 }
 
                 if (!string.IsNullOrEmpty(b.Text))
                 {
-                    // The pause control says what the game IS, not what the click would do, and
-                    // says it in red - it now carries the paused state on its own, the plate that
-                    // used to shout it having gone with the rest of the trim.
+                    // The pause control says what the game IS, not what the click would do,
+                    // and says it in red.
                     bool paused = b.launches == "Pause" && Universe.UState.Paused;
                     // A pause held by an open screen is not the player's to lift, so the control
                     // reads as inert: dimmed, and it does not light up under the cursor either.
-                    bool locked = paused && PauseIsAutomatic;
+                    // Ludoal fork (maintainer feedback): the COLOR keys on who owns the pause,
+                    // not on a scan of the screen stack, which can lag a frame on screen open.
+                    bool locked = paused && !Universe.UState.PausedByPlayer;
                     string label = paused ? "PAUSED" : b.Text;
                     // A BARE control is its glyph and nothing else, so the glyph itself has to
                     // answer the cursor - the same orange the icons already use, rather than a
@@ -273,9 +273,10 @@ namespace Ship_Game
                     // ⚠ the hover BRIGHTENS the state colour, never replaces it: red means the
                     // game is stopped, and that must not vanish under the cursor.
                     bool hot = b.Bare && b.State != PressState.Normal;
-                    // dimmed enough to say "not yours to lift", not so much that the stopped
-                    // state stops reading - it is the one thing on the bar that must be seen
-                    Color ink = locked ? PausedRed.Alpha(0.8f)
+                    // Ludoal fork (spec: living universe): the AUTOMATIC pause reads ORANGE -
+                    // a page is holding the simulation, not the player - while the player's
+                    // own pause keeps its red. Still inert under the cursor: not yours to lift.
+                    Color ink = locked ? Color.Orange
                               : paused ? (hot ? PausedRed.LerpTo(Color.White, 0.35f) : PausedRed)
                               : hot    ? Color.Orange
                               : b.State == PressState.Normal ? TextCream
@@ -324,7 +325,7 @@ namespace Ship_Game
                 batch.DrawString(font, topic, new Vector2(topicTextX, textY),
                                  disrupted ? new Color(255, 96, 96) : TextCream.Alpha(0.7f));
 
-                // maintainer bench 336: the turns left to finish the current topic, in parentheses
+                // (maintainer feedback) the turns left to finish the current topic, in parentheses
                 // to the right of its name. ceil((cost - progress) / net per turn); only when the
                 // net research is positive (a stalled topic has no finite ETA).
                 float net = Player.Research.NetResearch;
@@ -336,10 +337,24 @@ namespace Ship_Game
                     if (turns * net < remaining) turns += 1;
                     if (turns < 1) turns = 1;
                     float afterTopicX = topicTextX + font.TextWidth(topic) + 6;
-                    // just "(N)" - "(N turns)" overran the reserved width at 1440 for the longest
-                    // tech names (maintainer bench 338)
+                    // just "(N)" - "(N turns)" overruns the reserved width at 1440 for the
+                    // longest tech names (maintainer feedback)
                     batch.DrawString(font, $"({turns})", new Vector2(afterTopicX, textY), TextCream.Alpha(0.7f));
                 }
+            }
+
+            // (maintainer feedback) the HYPERSPACE FLUX alert, right-aligned just left of the
+            // speed block. Only while the warp-inhibiting event runs; yellow.
+            if (Universe.UState.Events.ActiveEvent != null && Universe.UState.Events.ActiveEvent.InhibitWarp)
+            {
+                // abbreviated below 1680 of width - the full alert overruns the groups; the
+                // tooltip carries the event's own notification text (bench 410)
+                string flux = Universe.ScreenWidth < 1680 ? "FLUX" : "HYPERSPACE FLUX";
+                var fluxPos = new Vector2(SpeedClusterLeft - font.TextWidth(flux), textY);
+                batch.DrawString(font, flux, fluxPos, Color.Yellow);
+                var fluxRect = new Rectangle((int)fluxPos.X, (int)fluxPos.Y, (int)font.TextWidth(flux), font.LineSpacing);
+                if (fluxRect.HitTest(Universe.Input.CursorPosition))
+                    ToolTip.CreateTooltip(Universe.UState.Events.ActiveEvent.NotificationString);
             }
 
             // the speed factor, right-aligned on its reserved width. Same reading as the floating
@@ -372,8 +387,8 @@ namespace Ship_Game
             Vector2 tipPos = new Vector2(b.Rect.X, b.Rect.Bottom + (lowRow ? 26 : 4));
 
             // Ludoal fork: a button that carries its own tip wins. The group buttons open a GROUP
-            // rather than the single screen their launch key names, so the cases below - written
-            // for the old per-screen row - would describe the wrong thing.
+            // rather than the single screen their launch key names, so the cases below would
+            // describe the wrong thing.
             if (b.Group != ScreenGroups.Group.None)
             {
                 ToolTip.CreateTooltip($"Open the {b.Text} group", "", tipPos);
@@ -545,6 +560,11 @@ namespace Ship_Game
                             Universe.AdjustGameSpeed(b.launches == "SpeedUp");
                             return true;
                         }
+                        // opening a group page closes the ground battle view first (it covers the
+                        // map). No camera snap: the page hides the map anyway. Pause/Speed above
+                        // already returned; everything past here opens a page.
+                        if (Universe.LookingAtPlanet)
+                            Universe.LookingAtPlanet = false;
                         if (b.launches == "Research")
                         {
                             GameAudio.EchoAffirmative();
@@ -659,6 +679,12 @@ namespace Ship_Game
             // apply unchanged. Text fields still win: TakingInput means the letter is being typed.
             if (!GlobalStats.TakingInput)
             {
+                // Ludoal fork: the manual pause works from inside any page too
+                if (input.PauseGame)
+                {
+                    TogglePause();
+                    return true;
+                }
                 string target = HotkeyTarget(input);
                 if (target != null)
                     return SwitchTo(target, ScreenGroups.Group.None, caller);
@@ -707,24 +733,42 @@ namespace Ship_Game
                     }
                 }
             }
+
+            // Ludoal fork: past the bar and the hotkeys, the visible map band answers - the live
+            // top bar's pattern, one storey down. Each page exposes its OWN frame (dynamic);
+            // the default is the whole display, i.e. no band until a page opts in.
+            if (Universe.HandleVisibleBandInput(input, caller.PageFrame))
+                return true;
+
             return false;
         }
 
-        // Ludoal fork: a pause a SCREEN owns is not the player's to lift. Clicking PAUSED while
-        // an open screen holds the simulation used to flip the label back to PAUSE while the game
-        // stayed stopped - the button lied about a state it did not control. The screen releases
+        // Ludoal fork: a pause a SCREEN owns is not the player's to lift. The screen releases
         // its own pause when it closes, so the control simply refuses here.
         bool PauseIsAutomatic => Universe.ScreenManager.AnyScreenHoldsUniversePause();
 
-        void TogglePause()
+        // Ludoal fork: the manual pause's one job is to SURVIVE the pages.
+        // Under an automatic hold, a press takes the pause over as the player's own
+        // (orange turns red, and closing the page will not lift it); lifting it while a
+        // page still holds falls BACK to the automatic hold (red returns to orange) - the
+        // simulation only runs under a page when no page claims and no manual pause stands.
+        public void TogglePause() // public: the universe's spacebar routes here too
         {
-            if (PauseIsAutomatic)
+            GameAudio.AcceptClick();
+            var us = Universe.UState;
+            if (us.Paused)
             {
-                GameAudio.NegativeClick();
+                if (!us.PausedByPlayer && PauseIsAutomatic)
+                {
+                    us.PausedByPlayer = true; // take the pause over: it is the player's now
+                    return;
+                }
+                us.PausedByPlayer = false;
+                us.Paused = PauseIsAutomatic; // a page still holds: back to the automatic hold
                 return;
             }
-            GameAudio.AcceptClick();
-            Universe.UState.Paused = !Universe.UState.Paused;
+            us.Paused = true;
+            us.PausedByPlayer = true;
         }
 
         // Ludoal fork: one place decides what "go to screen X while screen Y is open" does.
@@ -732,10 +776,15 @@ namespace Ship_Game
         // reachable by its hotkey and cannot drift apart from it.
         bool SwitchTo(string launches, ScreenGroups.Group group, GameScreen caller)
         {
+            // (maintainer feedback) jumping to ANOTHER group closes the current one for good,
+            // colony included - so the hosted seat must die with it. The self-close branch below
+            // leaves the seat alone (staying in the group keeps the tab).
+            if (group != ScreenGroups.GroupOf(caller) && Universe.HostedTabTitle != null)
+                Universe.ClearHostedTab();
+
             // Ludoal fork: a GROUP button whose group is already open just closes it,
             // whichever of its tabs you are on. The per-class guards below only know
-            // the group's FIRST screen, so pressing DESIGN from the Shipyard used to
-            // close it and reopen Fleets rather than leave the group.
+            // the group's FIRST screen.
             if (group != ScreenGroups.Group.None &&
                 group == ScreenGroups.GroupOf(caller))
             {

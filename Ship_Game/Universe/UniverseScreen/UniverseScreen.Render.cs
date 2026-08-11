@@ -174,8 +174,8 @@ namespace Ship_Game
                     {
                         var screenPos = ProjectToScreenPosition(projector.Position);
                         var flag = enemy.data.Traits.FlagIndex;
-                        int xPos = (int)screenPos.X + (15 + GlobalStats.IconSize) * spacing;
-                        var rectangle2 = new RectF(xPos, (int)screenPos.Y, 15 + GlobalStats.IconSize, 15 + GlobalStats.IconSize);
+                        int xPos = (int)screenPos.X + (15 + GlobalStats.StationIconSize) * spacing;
+                        var rectangle2 = new RectF(xPos, (int)screenPos.Y, 15 + GlobalStats.StationIconSize, 15 + GlobalStats.StationIconSize);
                         batch.Draw(ResourceManager.Flag(flag), rectangle2, ApplyCurrentAlphaToColor(enemy.EmpireColor));
                         spacing++;
                     }
@@ -331,22 +331,14 @@ namespace Ship_Game
                                                               : GameText.ResearchStationCanBePlaced);
             }
 
-            if (sys.IsAnyKnownPlanetCanBeMined(Player))
-            {
-                var mining_icon = Mineable.Icon;
-                var miningRect = new RectF(sysPos.X, sysPos.Y, mining_icon.Width, mining_icon.Height);
-                sysPos.X += 20f;
-
-                batch.Draw(mining_icon, miningRect, CurrentFlashColor);
-                if (miningRect.HitTest(Input.CursorPosition))
-                    ToolTip.CreateTooltip(GameText.MiningStationsCanBePlaced);
-            }
-
+            // ONE icon per minable - the resource icon alone says "this can be mined" (and
+            // which resource), and it goes out once an ops station is deployed, like the
+            // research icon does.
             if (sys.HasMinables())
             {
                 foreach (Planet planet in sys.PlanetList)
                 {
-                    if (planet.IsMineable && planet.IsExploredBy(Player))
+                    if (planet.IsMineable && planet.IsExploredBy(Player) && !planet.Mining.HasOpsOwner)
                     {
                         sysPos.X += 2f;
                         var resourceRect = new RectF(sysPos.X, sysPos.Y, 20, 20);

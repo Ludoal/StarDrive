@@ -37,10 +37,9 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         static string GetWipFileNameToSave(string wipFileName)
         {
-            // Ludoal fork (bench): built from the PREFIX, not from the name as given. Handed a
-            // name that already carries a suffix - which is what the caller passes when saving a
-            // WIP a second time - appending to it produced "Design_ship3_v1_WIP_v1_WIP", and
-            // every further save stacked another one (maintainer feedback).
+            // Ludoal fork: built from the PREFIX, not from the name as given - the caller passes
+            // a name that already carries a suffix when saving a WIP a second time, and appending
+            // to it would stack another "_v1_WIP" each save.
             string shipPrefix      = GetWipShipNameAndNum(wipFileName);
             string defaultShipName = $"{shipPrefix}_v1_WIP";
             FileInfo[] wipFiles    = GetWipFiles().Filter(f => f.NameNoExt().StartsWith(shipPrefix));

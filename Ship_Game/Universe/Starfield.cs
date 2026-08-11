@@ -35,7 +35,10 @@ public sealed class StarField
 
     public void Draw(SpriteRenderer sr, GameScreen screen)
     {
-        sr.Begin(screen.ViewProjection);
+        // (maintainer feedback) the scattered background stars belong to the far curtain -
+        // they drift with it (very little), so they read the UN-OFFSET projection like the
+        // nebula backdrop, or they slide out under an open panel. Base == View when no page offset.
+        sr.Begin(screen.BaseViewProjection);
         RenderStates.BasicBlendMode(screen.Device, additive: true, depthWrite: false);
 
         foreach (ref Star star in Stars.AsSpan())

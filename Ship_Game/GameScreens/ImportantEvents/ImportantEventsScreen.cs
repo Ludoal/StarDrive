@@ -18,11 +18,14 @@ namespace Ship_Game
     {
         readonly UniverseScreen Universe;
         Submenu GalaxyTabs;   // Ludoal fork: the Galaxy group's tab row, this screen being one tab
+        // Ludoal fork: this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => GalaxyTabs?.Rect ?? base.PageFrame;
 
         void OnGalaxyTabChanged(int index)
             => GameScreens.ScreenGroups.SwitchGalaxyTab(index, self: 3, Universe, this);
 
-        readonly ImportantNotification[] Events;
+        ImportantNotification[] Events; // refreshed live - an event landing while the page is open joins the log
         readonly ScrollList<ImportantEventListItem> EventList;
         public readonly UITable Table; // the shared table charte owns geometry, headers and rules
 
@@ -53,9 +56,9 @@ namespace Ship_Game
             Table.Columns[1].Width += 48; // the faction flag rides left of the title
             Table.FitToWidth((int)(Math.Min(ScreenWidth, GameScreens.ScreenGroups.MaxFrameWidth) - 2 * GameScreens.ScreenGroups.FrameMargin) - 66);
 
-            float fullAvail = GameScreens.ScreenGroups.FullTableHeight(ScreenHeight); // bench 343: capped at 1080p
+            float fullAvail = GameScreens.ScreenGroups.FullTableHeight(ScreenHeight); // floor = the info cartouche
             float contentH = UITable.ContentHeightFor(99, Math.Max(3, Events.Length), 84, fullAvail);
-            GalaxyTabs = GameScreens.ScreenGroups.AddGroupTabs(this, GameScreens.ScreenGroups.GalaxyTabTitles, 3,
+            GalaxyTabs = GameScreens.ScreenGroups.AddGroupTabs(this, GameScreens.ScreenGroups.LiveTitles(GameScreens.ScreenGroups.Group.Galaxy, Universe), 3,
                                                                OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
             Table.RowPitch = 84;
@@ -73,6 +76,27 @@ namespace Ship_Game
                 EventList.AddItem(new ImportantEventListItem(Table, Events[i]));
         }
 
+        float LiveRefreshTimer;
+
+        // the live-data pass: an event landing while the log is open joins it - count
+        // checked on a throttle, the list rebuilt only when it grew
+        public override void Update(float fixedDeltaTime)
+        {
+            LiveRefreshTimer -= fixedDeltaTime;
+            if (LiveRefreshTimer <= 0f)
+            {
+                LiveRefreshTimer = 1f;
+                ImportantNotification[] fresh = Universe.UState.GetImportantEvents();
+                if (fresh.Length != Events.Length)
+                {
+                    Events = fresh;
+                    EventList.Reset();
+                    PopulateEvents();
+                }
+            }
+            base.Update(fixedDeltaTime);
+        }
+
         public override void LoadContent()
         {
             // the close cross and the screen's name come from the group's tab row now
@@ -82,14 +106,13 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
             // Ludoal fork: the frame is filled by hand before its children, the way every screen
-            // in this group does - the group's frame is transparent, so the map showed through.
+            // in this group does - the group's frame is transparent.
             batch.FillRectangle(GameScreens.ScreenGroups.GroupFrameFillRect(GalaxyTabs), GameScreens.ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed);
             // the shared charte draws the headers, the rule and the separators
-            // no chrome on an empty log (maintainer bench 307): the hint speaks alone
+            // no chrome on an empty log: the hint speaks alone
             if (EventList.NumEntries > 0)
                 Table.DrawChrome(batch);
 

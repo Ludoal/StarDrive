@@ -160,8 +160,7 @@ namespace Ship_Game
                 ? Localizer.Token(GameText.TerraformersUnknownOrigin) 
                 : $"{NumTerraformersHere}/{NumMaxTerraformers}";
 
-            // the level rides the status label (maintainer bench 300) - the Font20 title
-            // that used to carry it is retired
+            // The level rides the status label.
             TerraformStatusTitle.Text = $"{Localizer.Token(GameText.TerraformingStatus)} (lvl {TerraformLevel})";
             if (P.TerraformingHere)
             {
@@ -196,14 +195,13 @@ namespace Ship_Game
         }
 
         bool IsDysonSwarmTabSelected => PFacilities.IsTabSelected(Localizer.Token(GameText.DysonSwarm));
-        // Ludoal fork (maintainer bench 299): Terraforming is a tab of the Assign Labor
-        // block now, not of the facilities row
+        // Ludoal fork: Terraforming is a tab of the Assign Labor block, not of the facilities row.
         bool IsTerraformTabSelected  => AssignLabor.TitleMenu != null
                                      && AssignLabor.TitleMenu.IsTabSelected(Localizer.Token(GameText.BB_Tech_Terraforming_Name));
         bool IsTradeTabSelected      => PFacilities.IsTabSelected(Localizer.Token(GameText.Trade2)); // Ludoal fork: title-based, indices shifted by Stats+
         // ⚠ the literal "Stats", NOT the Statistics2 token: the tab is ADDED with the shortened
-        // literal (one-line row), so matching the token never hit and the tab fell through to
-        // the description switch (bench 279)
+        // literal (one-line row), so matching the token misses and the tab falls through to
+        // the description switch.
         bool IsStatTabSelected       => PFacilities.IsTabSelected("Stats");
 
         Color GetManualImportSlotsOverrideColor()

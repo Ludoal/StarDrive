@@ -31,6 +31,10 @@ namespace Ship_Game
 
         public ListLayoutStyle LayoutStyle = ListLayoutStyle.Fill;
 
+        // Ludoal fork: centre each item on the list's span instead of seating it at the left
+        // edge. A centred item keeps its own width - the width-forcing styles would defeat it.
+        public bool CenterItems;
+
         public Vector2 Direction = new Vector2(0f, 1f);
 
         UIElementV2 HeaderElement, FooterElement;
@@ -125,6 +129,12 @@ namespace Ship_Game
 
         void LayoutItem(UIElementV2 item, Vector2 pos, Vector2 itemSize)
         {
+            if (CenterItems)
+            {
+                itemSize.X = 0f; // zero skips the width adjustment below
+                pos.X = Pos.X + (Width - item.Width) * 0.5f;
+            }
+
             bool updated = false;
             if (item.Pos.NotEqual(pos))
             {

@@ -53,20 +53,6 @@ namespace Ship_Game
         // If TRUE, ESC key will close this screen
         public bool CanEscapeFromScreen { get; protected set; } = true;
         
-        // Ludoal fork: HiRes recomputed on a live resolution change (a rebuilt screen must not
-        // redraw itself with the previous size's flag). Set in the ctor, and again by
-        // RefreshResolutionFlags() after a resize. The legacy LowRes flag is gone: our floor is
-        // 1440x900, nothing below it is served.
-        public bool HiRes { get; private set; }
-
-        // Ludoal fork: the resolution flags. Deliberately SEPARATE and one-dimensional, so each
-        // can be reasoned about alone.
-        //
-        // Narrow: the band that needs FOLDING — a font size down, abbreviations, tighter spacing.
-        // Tall:   room to ZOOM — a font size up, more generous icons. Never adds content.
-        public bool Narrow { get; private set; }
-        public bool Tall { get; private set; }
-
         // @return TRUE if content was loaded this frame
         public bool DidLoadContent { get; private set; }
 
@@ -108,6 +94,12 @@ namespace Ship_Game
         public Matrix Projection; // @see SetPerspectiveProjection
         public Matrix ViewProjection; // View * Projection
         public Matrix InverseViewProjection; // Inverse(View * Projection)
+        // the projection WITHOUT the page viewport offset. Equal to Projection unless a page
+        // shifts the frustum (UniverseScreen), where the map recentres into the visible band
+        // but the nebula background must stay full-screen. View * this is recomputed each frame
+        // in UpdateWorldScreenProjection, so it tracks the camera exactly.
+        public Matrix BaseProjection;
+        public Matrix BaseViewProjection; // View * BaseProjection
         public Matrix OrthographicProjection; // for drawing the UI
 
         // deferred renderer allows some basic commands to be queued up to be drawn. 
@@ -126,6 +118,42 @@ namespace Ship_Game
         UniverseScreen PauseRequested;
         public bool HoldsUniversePause => PauseRequested != null;
 
+        // Ludoal fork: a page that must pause NO MATTER the page-pause option - the
+        // Shipyard's Full Screen mode covers the whole display.
+        protected virtual bool PageAlwaysPauses => false;
+
+        // Ludoal fork: a page that opts OUT of auto-pause even when the page-pause
+        // option is on - the Colony panel unless its own sub-option is ticked. PageAlwaysPauses
+        // overrides this (nothing keeps the Shipyard Full Screen from pausing).
+        protected virtual bool PageOptsOutOfAutoPause => false;
+
+        // Ludoal fork: the rect the visible band excludes - each page KNOWS its
+        // own frame, and the frames are dynamic (content-sized tables, race-hugging rows).
+        // Default: the whole display, i.e. NO band - a page opts in by exposing its frame.
+        public virtual Rectangle PageFrame => new(0, 0, ScreenWidth, ScreenHeight);
+
+        // Ludoal fork (bench 407): the centre a dialog summoned by this screen should sit on -
+        // the page frame's centre when the screen is frame-bound, null when it spans the display
+        public Vector2? PageFrameCentre()
+        {
+            Rectangle pf = PageFrame;
+            if (pf.Width > 0 && (pf.Width < ScreenWidth || pf.Height < ScreenHeight))
+                return new Vector2(pf.X + pf.Width / 2f, pf.Y + pf.Height / 2f);
+            return null;
+        }
+
+        // Ludoal fork: claim the pause after construction - the Shipyard's Full Screen
+        // toggle flips mid-life, and its pause must follow the toggle, not the ctor.
+        public void ClaimUniversePause(UniverseScreen toPause)
+        {
+            PauseRequested = toPause;
+            if (toPause != null && !toPause.UState.Paused)
+            {
+                toPause.UState.Paused = true;
+                PausedUniverse = toPause;
+            }
+        }
+
         // Ludoal fork: give the simulation back. ExitScreen does this on its own; the colony
         // workersPanel's dismiss path closes without ExitScreen and calls it explicitly.
         public void ReleaseUniversePause()
@@ -133,7 +161,10 @@ namespace Ship_Game
             PauseRequested = null;
             if (PausedUniverse != null)
             {
-                PausedUniverse.UState.Paused = false;
+                // Ludoal fork: a manual pause outranks the automatic one - the
+                // player took the pause over, and a closing page has no business lifting it
+                if (!PausedUniverse.UState.PausedByPlayer)
+                    PausedUniverse.UState.Paused = false;
                 PausedUniverse = null;
             }
         }
@@ -173,22 +204,24 @@ namespace Ship_Game
 
             // if we have `toPause`, check that it is not already paused
             // this way only a single pausing screen will be allowed to resume the simulation automatically.
-            // Ludoal fork: the IsActive condition is gone — during top-bar navigation the
-            // closing screen resumes the universe first, but the universe is still flagged
-            // covered when this ctor runs, so the new screen never took ownership.
-            PauseRequested = toPause;   // Ludoal fork: what this screen ASKS for, see HoldsUniversePause
-            if (toPause != null && !toPause.UState.Paused)
-            {
-                toPause.UState.Paused = true;
-                PausedUniverse = toPause;
-            }
+            // Ludoal fork: during top-bar navigation the closing screen resumes the universe
+            // first, but the universe is still flagged covered when this ctor runs, so the new
+            // screen never took ownership without this.
+            // The page-pause option gates the claim at its single source - opted out, a page no
+            // longer stops the simulation; the manual pause and the always-pausing pages
+            // (Shipyard Full Screen) still do.
+            if (!GlobalStats.PauseOnPageOpen && !PageAlwaysPauses)
+                toPause = null;
+            // the Colony panel opts OUT of auto-pause unless the user
+            // ticks its own sub-option - even when page-pause is on. PageAlwaysPauses still wins.
+            if (PageOptsOutOfAutoPause && !PageAlwaysPauses)
+                toPause = null;
+            ClaimUniversePause(toPause);
 
             Input ??= parent?.Input ?? ScreenManager?.input;
 
             // Every time we open a screen, we should release any input handlers
             GlobalStats.TakingInput = false;
-
-            RefreshResolutionFlags();
 
             Func<int> simTurnSource = null;
             if (parent is UniverseScreen us)
@@ -334,31 +367,7 @@ namespace Ship_Game
         {
             UnloadContent();
             UpdateViewport();
-            RefreshResolutionFlags(); // before LoadContent: the layout reads them
             InvokeLoadContent();
-        }
-
-        // Ludoal fork: one source for the layout flags, called from the ctor and again from
-        // ReloadContent.
-        //
-        // These used to be readonly, set inline in the ctor. ReloadContent rebuilds a screen's
-        // ELEMENTS but not the screen object, so the flags survived every resize — which means
-        // changing resolution from the Options screen left the flags stale until the next
-        // restart. That is an upstream bug, not one the test tool introduced; the tool only
-        // made it impossible to ignore, since exercising those flags is its whole purpose.
-        public void RefreshResolutionFlags()
-        {
-            HiRes  = ScreenWidth > 1920 || ScreenHeight > 1400;
-            // width only — what breaks below 1920 is horizontal (maintainer feedback). Height is handled by
-            // giving one block per screen the job of absorbing it, not by a flag.
-            Narrow = ScreenWidth < 1920;
-            // height only. In 16:9 and 16:10 a height of 1440 already implies 2304+ of width,
-            // so this never fires on a small screen — it is purely the zoom cue.
-            //
-            // Inclusive: strictly-greater made 1440p itself fall outside, which is both the
-            // second-largest slice of the Steam install base and the bench display, so the flag
-            // was unreachable on the machine meant to test it (maintainer feedback).
-            Tall = ScreenHeight >= 1440;
         }
 
         public override bool HandleInput(InputState input)
@@ -579,13 +588,13 @@ namespace Ship_Game
             {
                 Accepted = accepted,
                 Cancelled = cancelled,
-                CenterOn = centerOn, // bench 362: frame-bound screens centre their dialogs on the frame
+                CenterOn = centerOn, // frame-bound screens centre their dialogs on the frame
             });
         }
 
         public void ExitMessageBox(GameScreen screen, Action accepted, Action cancelled, GameText message, Vector2? centerOn = null)
         {
-            // bench 361 (maintainer): "Cancel", not "Exit" - the dialog also fires on design-switch
+            // "Cancel", not "Exit" - the dialog also fires on design-switch
             // and Battle Arena launch, where nothing exits
             MakeMessageBox(screen, accepted, cancelled, message, "Save", "Cancel", centerOn);
         }
@@ -603,27 +612,28 @@ namespace Ship_Game
         // The default FOV is 45 degrees
         // @param maxDistance The maximum distance for objects on screen.
         //                    For Universe this is the Maximum supported HEIGHT of the CAMERA
-        // Ludoal fork (maintainer feedback, 7 Aug): offsetXY shifts the optical centre by a fraction
-        // of the frustum, so a screen whose content area is NOT the whole viewport (e.g. the Shipyard,
-        // capped at 1680 with side panels) can centre its 3D on its OWN window rather than the screen.
+        // Ludoal fork: offsetXY shifts the optical centre by a fraction of the frustum, so a
+        // screen whose content area is NOT the whole viewport (e.g. the Shipyard, capped at
+        // 1680 with side panels) can centre its 3D on its OWN window rather than the screen.
         // offset (0,0) = the plain symmetric perspective, unchanged for every other caller.
         public void SetPerspectiveProjection(double fovYdegrees = 45, double maxDistance = 5000.0,
                                              Vector2 offsetXY = default)
         {
             double fieldOfViewYrads = fovYdegrees.ToRadians();
             double aspectRatio = (double)Viewport.Width / Viewport.Height;
+            // the un-offset perspective is always built - it is the base the background reads,
+            // and the offset branch below only replaces the LIVE Projection.
+            BaseProjection = Matrix.CreatePerspectiveFieldOfView(fieldOfViewYrads, aspectRatio, 100.0, maxDistance);
             if (offsetXY == default)
             {
-                Projection = Matrix.CreatePerspectiveFieldOfView(fieldOfViewYrads, aspectRatio, 100.0, maxDistance);
+                Projection = BaseProjection;
             }
             else
             {
                 double top    = 100.0 * Math.Tan(fieldOfViewYrads / 2.0);
                 double right  = top * aspectRatio;
-                // offset is frame-centre-minus-screen-centre. Bench 334 reported the VERTICAL good
-                // and the HORIZONTAL worse, so only X had the wrong sign: shifting the frustum by -dx
-                // moves the rendered content the SAME way as the frame (frame left of centre -> model
-                // left). Y keeps the 334 sign, which the bench confirmed correct.
+                // offset is frame-centre-minus-screen-centre. Shifting the frustum by -dx moves the
+                // rendered content the SAME way as the frame (frame left of centre -> model left).
                 double dx     = offsetXY.X * (2.0 * right); // fraction of frustum width
                 double dy     = offsetXY.Y * (2.0 * top);
                 Projection = Matrix.CreatePerspectiveOffCenter(
@@ -647,6 +657,10 @@ namespace Ship_Game
         {
             View.Multiply(Projection, out ViewProjection);
             Matrix.Invert(in ViewProjection, out InverseViewProjection);
+            // the un-offset pair the background reads. SetViewMatrix runs this every
+            // frame, so BaseViewProjection tracks the moving camera even between projection sets.
+            View.Multiply(BaseProjection, out Matrix baseVP);
+            BaseViewProjection = baseVP;
 
             OrthographicProjection = Matrix.CreateOrthographicOffCenter(0, Viewport.Width, Viewport.Height, 0, zNearPlane:1, zFarPlane:0);
             //OrthographicProjection = Matrix.CreateOrthographic(Viewport.Width, Viewport.Height, 0.0f, 5000.0f);

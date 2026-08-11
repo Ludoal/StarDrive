@@ -11,20 +11,17 @@ using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game
 {
-    // Ludoal fork: the Automation tab of the Empire group (maintainer design). These settings
-    // lived in a floating overlay window docked to the right screen edge - which had no reason
-    // to sit on the map, fought the deep-space build menu for that edge, and lately had its
-    // last lines buried under the minimap. The window dies with its minimap icon; the H
-    // shortcut opens this tab instead.
+    // Ludoal fork: the Automation tab of the Empire group. The H shortcut opens this tab.
     //
-    // The categories are the maintainer's: EMPIRE (what runs the empire), COLONIZATION,
-    // CONSTRUCTION, TRADE, and NOTIFICATIONS (what stays quiet). Each wears its own one-tab
-    // frame and they are ALL visible at once (maintainer: there is room, and a settings page
-    // you have to leaf through hides what it is for).
+    // Categories: EMPIRE, COLONIZATION, CONSTRUCTION, TRADE, NOTIFICATIONS. Each wears its own
+    // one-tab frame and they are ALL visible at once.
     public sealed class AutomationScreen : GameScreen
     {
         readonly UniverseScreen Universe;
         Submenu EmpireTabs;
+        // Ludoal fork: this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
 
         DropOptions<int> FreighterDropDown, ColonyShipDropDown, ScoutDropDown,
                          ConstructorDropDown, ResearchStationDropDown, MiningStationDropDown;
@@ -34,9 +31,9 @@ namespace Ship_Game
         // Heights: one-tab strip (~24) + 12 top pad + 26 per row (a checked-dropdown rides
         // its toggle's row now, so it costs the same 26 as a plain checkbox) + 12 bottom pad.
         // BoxW2: the dropdown boxes are WIDER instead of taller - label room + picker.
-        const float BoxW = 320f, BoxW2 = 450f, BoxGap = 10f;
-        const float EmpireBoxH = 160f, ColonizationBoxH = 130f, ConstructionBoxH = 165f,
-                    TradeBoxH = 126f, NotificationsBoxH = 230f; // Trade grew a row (Prioritize Freighters): +26
+        const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
+        const float EmpireBoxH = 160f, ColonizationBoxH = 130f, ConstructionBoxH = 139f,
+                    TradeBoxH = 100f, NotificationsBoxH = 230f, PriorityBoxH = 330f;
 
         public AutomationScreen(UniverseScreen u) : base(u, toPause: u)
         {
@@ -49,14 +46,13 @@ namespace Ship_Game
         public override void LoadContent()
         {
             RemoveAll();
-            // the frame hugs its content, anchored on the bar and the left margin
-            // (maintainer, 3 Aug) - the first group screen that does not span the display.
+            // the frame hugs its content, anchored on the bar and the left margin.
             // Two columns: [Empire / Notifications] and [Colonization / Construction / Trade].
             float col1H = EmpireBoxH + BoxGap + NotificationsBoxH;
             float col2H = ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap + TradeBoxH;
-            float contentW = 9 + 10 + BoxW + BoxGap + BoxW2 + 10 + 9;  // ClientArea insets + gutters
-            float contentH = 60 + Math.Max(col1H, col2H) + 22;         // tab strip + cross clearance + pads - bench number
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 5,
+            float contentW = 9 + 10 + BoxW + BoxGap + BoxW2 + BoxGap + BoxW3 + 10 + 9;  // ClientArea insets + gutters
+            float contentH = 60 + Math.Max(Math.Max(col1H, col2H), PriorityBoxH) + 22;  // tab strip + cross clearance + pads
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 5,
                                                     OnEmpireTabChanged, contentW, contentH);
             ResearchStationsEnabled = !Universe.Player.Universe.P.DisableResearchStations;
             MiningOpsEnabled       = !Universe.Player.Universe.P.DisableMiningOps;
@@ -71,9 +67,9 @@ namespace Ship_Game
             // of the neighbour, not under it.
 
             UIList notifications = NewBox(new RectF(x0, top + EmpireBoxH + BoxGap, BoxW, NotificationsBoxH), "Notifications");
-            // POSITIVE voice (maintainer bench 305): checked = you get the alert, all on
-            // by default. The [StarData] flags stay the Disable/Suppress ones - each box
-            // reads and writes them through a negation, so saves keep their meaning.
+            // POSITIVE voice: checked = you get the alert, all on by default. The [StarData]
+            // flags stay the Disable/Suppress ones - each box reads and writes them through
+            // a negation, so saves keep their meaning.
             var P = Universe.UState.P;
             notifications.AddCheckbox(() => !P.SuppressOnBuildNotifications, v => P.SuppressOnBuildNotifications = !v,
                                       title: "Building Alerts", tooltip: GameText.NormallyWhenYouManuallyAdd);
@@ -98,18 +94,12 @@ namespace Ship_Game
             FreighterDropDown = trade.Add(new CheckedDropdown())
                 .Create(() => player.AutoFreighters, title: GameText.AutomaticTrade, tooltip: GameText.YourEmpireWillAutomaticallyManage2,
                         autoPick: () => player.AutoPickBestFreighter);
-            // right under Automatic Trade, whose output it prioritizes - the freighter twin of
-            // Prioritize Projectors under Autobuild Projectors (maintainer design)
-            trade.AddCheckbox(() => Universe.UState.P.PrioritizeFreighters, title: "Prioritize Freighters",
-                              tooltip: "New freighters jump ahead of other production in your colonies' build queues, so trade capacity comes up quickly.");
             trade.AddCheckbox(() => Universe.UState.P.AllowPlayerInterTrade, title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.AllowPlayerInterTradeTip);
 
             UIList construction = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap, BoxW2, ConstructionBoxH), "Construction");
             ConstructorDropDown = construction.Add(new CheckedDropdown())
                 .Create(() => player.AutoBuildSpaceRoads, Localizer.Token(GameText.Autobuild) + " Projectors", GameText.YourEmpireWillAutomaticallyCreate2,
                         autoPick: () => player.AutoPickConstructors);
-            // right under Autobuild Projectors, whose behaviour it modifies (maintainer bench)
-            construction.AddCheckbox(() => Universe.UState.P.PrioitizeProjectors, title: GameText.PrioritizeProjector, tooltip: GameText.PrioritizeProjectorTip);
             if (ResearchStationsEnabled)
                 ResearchStationDropDown = construction.Add(new CheckedDropdown())
                     .Create(() => player.AutoBuildResearchStations, title: GameText.AutoBuildResearchStation, tooltip: GameText.AutoBuildResearchStationTip,
@@ -126,14 +116,136 @@ namespace Ship_Game
             ColonyShipDropDown = colonization.Add(new CheckedDropdown())
                 .Create(() => player.AutoColonize, title: GameText.Autocolonize, tooltip: GameText.YourEmpireWillAutomaticallyCreate,
                         autoPick: () => player.AutoPickBestColonizer);
-            // ⚠ "Auto Governor", no longer "Core": this flag now decides whether a new
-            // colony gets an ASSESSED governor (the behaviour that used to hide inside
-            // Autocolonize) - see Planet_Colonize.SetupColonyType (maintainer design).
+            // ⚠ "Auto Governor" decides whether a new colony gets an ASSESSED governor -
+            // see Planet_Colonize.SetupColonyType.
             colonization.AddCheckbox(() => player.AutoCoreGovernor, title: "Auto Governor",
                                      tooltip: "New colonies are assigned a governor suited to the planet. Unchecked, they start unmanaged.");
 
+            // ── third column: the construction Prioritization list ──
+            // Upper block = the prioritized categories, their ORDER is the hierarchy; arrows
+            // reorder, the inhibit glyph demotes. Lower block = the rest; the plus promotes.
+            // Acts at queue INSERTION only (SBProduction) - reordering never reshuffles
+            // queues already filled.
+            float x2 = x1 + BoxW2 + BoxGap;
+            NewBox(new RectF(x2, top, BoxW3, PriorityBoxH), "Prioritization");
+            PriorityHost = Add(new UIPanel(new Rectangle((int)x2 + 6, (int)top + 30,
+                                                         (int)BoxW3 - 12, (int)PriorityBoxH - 36),
+                                           new Color(0, 0, 0, 0)));
+            RebuildPriorityRows();
+
             UpdateDropDowns();
             base.LoadContent();
+        }
+
+        // the categories the queue insertion knows, in display order (keys match SBProduction)
+        static readonly (string Key, string Label)[] PriorityCategories =
+        {
+            ("Explorers",        "Explorers"),
+            ("Colonizers",       "Colonizers"),
+            ("Projectors",       "Projectors"),
+            ("ResearchStations", "Research Stations"),
+            ("MiningStations",   "Mining Stations"),
+            ("Freighters",       "Freighters"),
+            ("Troops",           "Troops"),
+            ("MilitaryShips",    "Military Ships"),
+        };
+
+        UIPanel PriorityHost;
+
+        static string LabelOf(string key)
+        {
+            foreach ((string k, string label) in PriorityCategories)
+                if (k == key) return label;
+            return key;
+        }
+
+        UIButton IconBtn(string normal, string hover, in Rectangle r, LocalizedText tip, Action onClick)
+        {
+            var b = new UIButton(new UIButton.StyleTextures(normal, hover, hover), Vector2.Zero, "")
+            {
+                Tooltip = tip,
+                OnClick = _ => onClick(),
+                ClickSfx = "sd_ui_accept_alt3",
+            };
+            b.Rect = r;
+            return b;
+        }
+
+        void RebuildPriorityRows()
+        {
+            PriorityHost.RemoveAll();
+            var prio = Universe.UState.P.ConstructionPriorities;
+            int x = (int)PriorityHost.X, w = (int)PriorityHost.Width;
+            int y = (int)PriorityHost.Y;
+            const int RowH = 26, Icon = 20;
+
+            void Section(string title)
+            {
+                PriorityHost.Add(new UILabel(new Vector2(x, y + 3), title, Fonts.Arial12Bold, Colors.Cream));
+                y += RowH - 2;
+            }
+            UILabel Row(string key)
+            {
+                var l = new UILabel(new Vector2(x + 8, y + 4), LabelOf(key), Fonts.Arial12Bold, Color.White);
+                PriorityHost.Add(l);
+                return l;
+            }
+            Rectangle Slot(int fromRight) => new(x + w - fromRight, y + (RowH - Icon) / 2, Icon, Icon);
+
+            Section("Prioritize");
+            for (int i = 0; i < prio.Count; i++)
+            {
+                string key = prio[i];
+                Row(key);
+                int idx = i;
+                if (i > 0)
+                    PriorityHost.Add(IconBtn("NewUI/icon_queue_arrow_up", "NewUI/icon_queue_arrow_up_hover1",
+                                             Slot(72), "Higher priority", () => MoveCategory(idx, -1)));
+                if (i < prio.Count - 1)
+                    PriorityHost.Add(IconBtn("NewUI/icon_queue_arrow_down", "NewUI/icon_queue_arrow_down_hover1",
+                                             Slot(48), "Lower priority", () => MoveCategory(idx, +1)));
+                PriorityHost.Add(IconBtn("NewUI/icon_queue_delete", "NewUI/icon_queue_delete_hover1",
+                                         Slot(24), "Stop prioritizing this category", () => DemoteCategory(key)));
+                y += RowH;
+            }
+            if (prio.Count == 0)
+            {
+                PriorityHost.Add(new UILabel(new Vector2(x + 8, y + 4), "Nothing prioritized", Fonts.Arial12, Color.Gray));
+                y += RowH;
+            }
+
+            y += 6;
+            Section("Do not prioritize");
+            foreach ((string key, string _) in PriorityCategories)
+            {
+                if (prio.Contains(key))
+                    continue;
+                Row(key);
+                PriorityHost.Add(IconBtn("NewUI/icon_build_add", "NewUI/icon_build_add_hover1",
+                                         Slot(24), "Prioritize this category", () => PromoteCategory(key)));
+                y += RowH;
+            }
+        }
+
+        void MoveCategory(int index, int delta)
+        {
+            var prio = Universe.UState.P.ConstructionPriorities;
+            string key = prio[index];
+            prio.RemoveAt(index);
+            prio.Insert(index + delta, key);
+            RebuildPriorityRows();
+        }
+
+        void DemoteCategory(string key)
+        {
+            Universe.UState.P.ConstructionPriorities.Remove(key);
+            RebuildPriorityRows();
+        }
+
+        void PromoteCategory(string key)
+        {
+            Universe.UState.P.ConstructionPriorities.Add(key);
+            RebuildPriorityRows();
         }
 
         // one category box: a one-tab frame bearing the category's name, with its rows inside
@@ -201,7 +313,6 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
 
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);

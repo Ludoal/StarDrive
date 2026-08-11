@@ -59,6 +59,10 @@ namespace Ship_Game
         public LocalizedText Tooltip;
         public string ClickSfx = "echo_affirm";
 
+        // Ludoal fork: tint for texture-styled (icon) buttons - destruction reads red
+        // (maintainer bench 305). Plated styles carry their meaning in the plate instead.
+        public Color IconTint = Color.White;
+
         // If set TRUE, this button will also capture Right Mouse Clicks
         public bool AcceptRightClicks;
 
@@ -170,7 +174,7 @@ namespace Ship_Game
             }
             else if (texture != null)
             {
-                batch.Draw(texture, r, Color.White);
+                batch.Draw(texture, r, IconTint);
             }
             else if (DrawBackground)
             {

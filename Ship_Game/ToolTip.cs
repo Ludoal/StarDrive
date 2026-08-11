@@ -74,6 +74,17 @@ namespace Ship_Game
                 // Update the codex hook on every hover frame — the hovered
                 // UI element decides the current target, not the cached tip.
                 tipItem.CodexUid = codexUid;
+                // re-seat a cursor-anchored tip once the cursor leaves its anchor (bench 408):
+                // list rows share tip texts, and the cached tip stayed parked at the first row
+                if (tipItem.FollowsCursor)
+                {
+                    Vector2 cur = GameBase.ScreenManager.input.CursorPosition;
+                    if (cur.Distance(tipItem.Anchor) > 40f)
+                    {
+                        tipItem.Anchor = cur;
+                        tipItem.Rect = PlaceTip(cur, tipItem.MeasuredSize);
+                    }
+                }
                 return;
             }
 
@@ -96,16 +107,25 @@ namespace Ship_Game
                 size.Y += font.LineSpacing;
 
             Vector2 pos = position ?? GameBase.ScreenManager.input.CursorPosition;
-            var tipRect = new Rectangle((int)pos.X  + 10, (int)pos.Y  + 10,
-                                        (int)size.X + 20, (int)size.Y + 10);
+            tipItem.FollowsCursor = position == null;
+            tipItem.Anchor = pos;
+            tipItem.MeasuredSize = size;
+            tipItem.Rect = PlaceTip(pos, size);
+        }
 
-            if (tipRect.X + tipRect.Width > GameBase.ScreenWidth)
-                tipRect.X -= (tipRect.Width + 10);
-
-            while (tipRect.Y + tipRect.Height > GameBase.ScreenHeight)
-                tipRect.Y -= 1;
-
-            tipItem.Rect = tipRect;
+        // bench 408: below-right of the anchor; flips left/above when it would leave the
+        // display - it used to slide up pixel by pixel and ended covering the cursor
+        static Rectangle PlaceTip(Vector2 pos, Vector2 size)
+        {
+            var r = new Rectangle((int)pos.X + 10, (int)pos.Y + 10,
+                                  (int)size.X + 20, (int)size.Y + 10);
+            if (r.X + r.Width > GameBase.ScreenWidth)
+                r.X = (int)pos.X - r.Width - 10;
+            if (r.Y + r.Height > GameBase.ScreenHeight)
+                r.Y = (int)pos.Y - r.Height - 10;
+            r.X = Math.Max(0, r.X);
+            r.Y = Math.Max(0, r.Y);
+            return r;
         }
 
         public static void CreateTooltip(in LocalizedText tip, string hotKey, float maxWidth = 0, string codexUid = null)
@@ -136,6 +156,11 @@ namespace Ship_Game
             public string HotKey;
             public string CodexUid;
             public Rectangle Rect;
+            // bench 408: rows can share one tip text - the tip must re-seat when the cursor
+            // moves to another anchor, or it stays parked at the first hover's position
+            public Vector2 Anchor;
+            public Vector2 MeasuredSize;
+            public bool FollowsCursor;
             public bool HoveredThisFrame = true;
             float MinShowTime; // Let the tip show regardless of being hovered on
             readonly Font TipFont;
@@ -157,12 +182,10 @@ namespace Ship_Game
                 MinShowTime -= deltaTime;
 
                 // if tip is hovered, we increase its lifetime
-                // Ludoal fork (bench 46.154): leaving the element ends the tip AT ONCE instead
-                // of fading it out over TipTime. Sweeping a list, the fade meant the previous
-                // row's tip was still on screen while the cursor was already two rows down —
-                // which reads as a tooltip that lags, sticks and shows the wrong text (maintainer feedback).
-                // Dropping to the reappear point rather than to zero keeps the grace period, so
-                // moving along a list does not re-arm the 0.35s dwell on every single row.
+                // Ludoal fork (maintainer feedback): leaving the element ends the tip AT ONCE
+                // instead of fading it out over TipTime - avoids a stale tip lagging behind the
+                // cursor when sweeping a list. Drops to the reappear point rather than zero, so
+                // moving along a list does not re-arm the 0.35s dwell on every row.
                 const float TipReappearTimePoint = TipShowTimePoint - TipReappearTimeDelay;
                 const float TipResetTimePoint = TipReappearTimePoint - TipResetTimeDelay;
 

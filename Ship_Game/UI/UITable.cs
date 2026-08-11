@@ -25,8 +25,8 @@ namespace Ship_Game.UI
         Signed,  // green/red/gray - a RESULT (net, remainder)
     }
 
-    // The table spec in ONE place (maintainer, 4 Aug) so every table screen shares a
-    // single geometry instead of divergent copies:
+    // The table spec in ONE place so every table screen shares a single geometry instead of
+    // divergent copies:
     //   20px side margins off the frame BORDER; headers centred and bold, vanilla -
     //   orange on the sorted column; one horizontal rule under the headers; verticals
     //   BETWEEN columns only, never at the extremities; numbers right on the decimal,
@@ -41,7 +41,7 @@ namespace Ship_Game.UI
             public string Title = "";
             public SubTexture Icon;   // header icon instead of text (money, troops, strength)
             public Color? Badge;      // small corner dot: two columns may share an icon and
-                                      // still tell apart (bench 305 - the intrinsic pair)
+                                      // still tell apart
             public int Width;         // fixed px - the column doctrine
             public int MinWidth;      // AutoSize floor: zero means the data alone decides
             public TableAlign Align = TableAlign.Left;
@@ -52,9 +52,9 @@ namespace Ship_Game.UI
             public bool Hover;
             public TableColor Coloring = TableColor.Plain; // how this column's values wear colour
             public bool Bold;         // the column's cells draw in the bold body font
-            // the fold (maintainer, 4 Aug): when the table's natural width exceeds what the
-            // resolution allows, foldable columns give the difference back - their text is
-            // CUT with an ellipsis and the full value moves to a tooltip
+            // When the table's natural width exceeds what the resolution allows, foldable
+            // columns give the difference back - their text is cut with an ellipsis and the
+            // full value moves to a tooltip
             public bool Foldable;
             public bool Folded;       // set by FitToWidth when this column actually gave width
             // the separator drawn at this column's LEFT edge, when it should differ from
@@ -66,8 +66,8 @@ namespace Ship_Game.UI
         }
 
         // the colour a value wears in a column of the given charte; the near-zero snap
-        // kills the "-0.00" class of display. EVERY numeric zero reads gray (maintainer,
-        // 4 Aug): what produces or consumes nothing recedes, whatever the column.
+        // kills the "-0.00" class of display. Every numeric zero reads gray: what produces
+        // or consumes nothing recedes, whatever the column.
         public static Color ValueColor(TableColor kind, float v)
         {
             if (v > -0.005f && v < 0.005f) v = 0f;
@@ -81,7 +81,7 @@ namespace Ship_Game.UI
             }
         }
 
-        public const int SideMargin = 15; // off the frame BORDER (maintainer bench 343: 10 was too tight on the left, the selection box crowded the edge)
+        public const int SideMargin = 15; // off the frame border; the selection box needs the room on the left
         public const int PadX = 8;        // one character of cell padding
         public const int SliderLane = 26; // reserved after the last column
         public const int HeaderH = 16;
@@ -96,9 +96,9 @@ namespace Ship_Game.UI
 
         public UITable(Column[] columns) { Columns = columns; }
 
-        // column width from the DATA (maintainer, 4 Aug): the widest value the column
-        // will actually show, plus the padding pair - floored by the title's own width.
-        // Call before Layout, with the values the screen is about to display.
+        // Column width from the data: the widest value the column will actually show, plus
+        // the padding pair - floored by the title's own width. Call before Layout, with the
+        // values the screen is about to display.
         public static void AutoSize(Column c, Font font, IEnumerable<string> values)
         {
             float w = font.TextWidth(c.Title);
@@ -107,15 +107,14 @@ namespace Ship_Game.UI
             foreach (string v in values)
                 if (v.NotEmpty())
                     w = Math.Max(w, font.TextWidth(v));
-            // MinWidth floors the result when set (maintainer, 4 Aug) - the data alone
-            // decides otherwise
+            // MinWidth floors the result when set - the data alone decides otherwise
             c.Width = Math.Max((int)w + 2 * PadX, c.MinWidth);
         }
 
-        // a capped table never cuts a row in half (maintainer bench 305): the height a
-        // screen asks for snaps DOWN to whole rows when the resolution cannot hold them
-        // all. `overhead` is everything that is not rows - header band, margins, any
-        // reserved footer - and `pitch` the row height PLUS the list's item padding.
+        // A capped table never cuts a row in half: the height a screen asks for snaps down
+        // to whole rows when the resolution cannot hold them all. `overhead` is everything
+        // that is not rows - header band, margins, any reserved footer - and `pitch` the row
+        // height plus the list's item padding.
         public static float ContentHeightFor(float overhead, int rows, int pitch, float available)
         {
             float wanted = overhead + rows * pitch;

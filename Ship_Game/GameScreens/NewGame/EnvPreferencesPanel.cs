@@ -107,9 +107,7 @@ namespace Ship_Game.GameScreens.NewGame
 
         void UpdateVisibility()
         {
-            // Ludoal fork (maintainer feedback, 7 Aug): the Environment panel stays shown at all
-            // times. It used to hide itself for a race with no environment modifiers (neutral
-            // Terran, every Env* == 1); now it always displays, a neutral race simply reading 1.00
+            // Ludoal fork: the Environment panel always stays shown, a neutral race reading 1.00
             // across the board.
             Visible = true;
         }

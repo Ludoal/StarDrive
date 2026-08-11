@@ -23,6 +23,14 @@ namespace Ship_Game.AI.Budget
         [StarData] public float GrdDefAlloc { get; private set; }
         [StarData] public float SpcDefAlloc { get; private set; }
         [StarData] public float TotalAlloc { get; private set; }
+        // not serialized: recomputed every Update from the live empire budgets
+        public float TargetAlloc { get; private set; }
+        bool SnapNextUpdate;
+
+        // Ludoal fork (maintainer bench 405): leaving a manual budget seeds the EMA with the
+        // last manual value, and the smoothing takes ages to walk back to the auto target -
+        // the sliders looked stuck. Re-ticking Auto snaps the allocations to the raw target.
+        public void SnapToTarget() => SnapNextUpdate = true;
 
         float EmpireRatio;
 
@@ -48,8 +56,30 @@ namespace Ship_Game.AI.Budget
             float orbitalRatio  = 1 - groundRatio;
             float civBudget     = EmpireColonizationBudget * EmpireRatio + P.GetColonyInitialBudgetTolerance() + P.TerraformBudget;
             float grdBudget     = defenseBudget * groundRatio;
+            // Ludoal fork (maintainer spec): the Governor Spending tap - the player throttles
+            // what governors may spend of their AUTO allocations; treasury keeps the rest.
+            // Manual overrides below bypass it: an explicit order is not throttled.
+            if (Owner.isPlayer)
+            {
+                float tap = Owner.Universe.P.GovernorSpendingRatio;
+                civBudget     *= tap;
+                grdBudget     *= tap;
+                defenseBudget *= tap;
+            }
             if (!Owner.isPlayer && P.System.HostileForcesPresent(Owner))
                 grdBudget *= 3; // Try to add more temp ground defense to clear enemies
+
+            // the raw (pre-smoothing) target the EMA allocations converge to - the colony
+            // Budget tab shows it beside the smoothed value while on Auto
+            TargetAlloc = civBudget + grdBudget + defenseBudget * orbitalRatio;
+
+            if (SnapNextUpdate)
+            {
+                SnapNextUpdate = false;
+                GrdDefAlloc   = grdBudget;
+                SpcDefAlloc   = defenseBudget * orbitalRatio;
+                CivilianAlloc = civBudget;
+            }
 
             GrdDefAlloc = P.ManualGrdDefBudget <= 0 ? ExponentialMovingAverage(GrdDefAlloc, grdBudget) : P.ManualGrdDefBudget;
             SpcDefAlloc = P.ManualSpcDefBudget <= 0 ? ExponentialMovingAverage(SpcDefAlloc, defenseBudget * orbitalRatio) : P.ManualSpcDefBudget;

@@ -42,11 +42,10 @@ namespace Ship_Game
             if (Name == ExtraInfoOnPlanet)
                 return true;
 
-            // Debug eval planet if we have colony screen open
+            // Debug eval planet if we have colony screen open (the colony is a stacked
+            // page - ask the stack)
             return Debugger.IsAttached
-                   && Universe.Screen.LookingAtPlanet
-                   && Universe.Screen.workersPanel is ColonyScreen colony
-                   && colony.P == this;
+                   && Universe.Screen.IsViewingColonyScreen(this);
         }
 
         void BuildAndScrapCivilianBuildings(float budget, float tolerance)

@@ -28,14 +28,14 @@ namespace Ship_Game
 
         void DrawSystemAndPlanetBrackets(SpriteBatch batch)
         {
-            if (SelectedSystem != null && !LookingAtPlanet)
+            if (SelectedSystem != null)
             {
                 ProjectToScreenCoords(SelectedSystem.Position, 4500f, out Vector2d sysPos, out double sysRadius);
                 if (sysRadius < 5.0)
                     sysRadius = 5.0;
                 batch.BracketRectangle(sysPos, sysRadius, Color.White);
             }
-            if (SelectedPlanet != null && !LookingAtPlanet &&  viewState < UnivScreenState.GalaxyView)
+            if (SelectedPlanet != null && viewState < UnivScreenState.GalaxyView)
             {
                 ProjectToScreenCoords(SelectedPlanet.Position3D, SelectedPlanet.Radius,
                                       out Vector2d planetPos, out double planetRadius);
@@ -61,9 +61,8 @@ namespace Ship_Game
 
                 // Ludoal fork: fog highlights are curated. Projector halos are retired
                 // from the default view (they smeared the whole map and duplicate the F4
-                // overlay); spy/mole coverage (Source == null) shows only on the F7
-                // Vision overlay, which lights every sensor source.
-                // (bench round 3: everything — planets included — lives on the F3 overlay)
+                // overlay); every sensor source, planets included, lives on the F3 Vision
+                // overlay instead.
                 if (!ShowingVisionOverlay)
                     continue;
 
@@ -185,7 +184,7 @@ namespace Ship_Game
 
         void DrawOverlayShieldBubbles(SpriteBatch sb)
         {
-            if (ShowShipNames && !LookingAtPlanet &&
+            if (ShowShipNames &&
                 viewState <= UnivScreenState.SystemView && 
                 Shields != null && Shields.VisibleShields.Length != 0)
             {
@@ -248,6 +247,13 @@ namespace Ship_Game
                 BorderRT?.Dispose();
                 BorderRT = RenderTargets.Create(device);
             }
+            // Ludoal fork: the component allocates lazily, so the Bloom toggle applies the
+            // moment it is ticked in Options - no device reset, no screen reload needed
+            if (GlobalStats.RenderBloom && bloomComponent == null)
+            {
+                bloomComponent = new BloomComponent(device, TransientContent);
+                bloomComponent.LoadContent();
+            }
             if (GlobalStats.RenderBloom && RtNeedsRebuild(PostBloomTarget, w, h))
             {
                 PostBloomTarget?.Dispose();
@@ -271,9 +277,7 @@ namespace Ship_Game
             EnsureFogMapRenderTargets(device);
 
             // Ping-pong: read from front (current FogMap), render to back, swap.
-            // Reading and writing the same texture is undefined under D3D11, which
-            // is why pre-migration's `fogMapTarget.GetTexture()` snapshot semantics
-            // mattered (and silently broke when migrated to `(rt as Texture2D)`).
+            // Reading and writing the same texture is undefined under D3D11.
             RenderTarget2D back = (FogMap == FogMapTargetA) ? FogMapTargetB : FogMapTargetA;
             Texture2D       front = FogMap;
 
@@ -290,10 +294,8 @@ namespace Ship_Game
             // Ludoal fork: nothing stamps the fog map BY DEFAULT — the map stays
             // dark and live sensors carry current vision. The FogOfWarMemory option
             // (default off) restores the CLASSIC painted map: ships stamp their
-            // sensor disc as they travel, exactly the pre-fork behavior (field
-            // feedback: the option must bring back the ship wakes, not the
-            // explored-system discs of an intermediate build). Toggling it off
-            // purges old paint when the render targets are recreated.
+            // sensor disc as they travel. Toggling it off purges old paint when the
+            // render targets are recreated.
             if (GlobalStats.FogOfWarMemory)
             {
                 batch.SafeBegin(SpriteBlendMode.Additive);
@@ -334,17 +336,12 @@ namespace Ship_Game
             {
                 // fill screen with transparent black and draw FogMap darker light on top of it
                 Rectangle fogRect = ProjectToScreenCoords(new Vector2(-UState.Size), UState.Size*2f);
-                // Phase 3.7 step 3: fillrect alpha 170 matches pre-migration —
-                // ~33% unexplored scene visibility (1 - 170/255).
-                // Ludoal fork: that value was calibrated for a PAINTED map, where explored
-                // space got lifted to ~48% by the FogMap tint. With the dark map (memory
-                // off) everything sits under the veil and the starfield washes out — use
-                // a lighter veil there (150 = ~41% visibility, tuned on the bench;
-                // 130 was a touch bright), keep 170 when painting.
-                // Ludoal fork (bench 190): the veil is the VISION OVERLAY's statement, so at
-                // rest it only hints. Cutting it out entirely was too bright (maintainer feedback) and lost
-                // the explored/unexplored distinction with it, so F3 off keeps a light veil
-                // rather than none. Bench numbers, meant to be moved.
+                // fillrect alpha ~33% unexplored scene visibility (1 - 170/255) when painting
+                // (FogOfWarMemory on). With the dark map (memory off) everything sits under
+                // the veil and the starfield washes out, so alpha 150 gives a lighter veil there.
+                // Ludoal fork (maintainer feedback): the veil is the VISION OVERLAY's statement,
+                // so at rest it only hints - F3 off keeps a light veil rather than none, to
+                // preserve the explored/unexplored distinction.
                 int fogAlpha = GlobalStats.FogOfWarMemory ? 170 : 150;
                 if (!ShowingVisionOverlay)
                     fogAlpha = 90;
@@ -472,10 +469,9 @@ namespace Ship_Game
                 DrawShipAndPlanetIcons(batch);
                 DrawSolarSystems(batch);
                 DrawSystemThreatIndicators(batch);
-                // Ludoal fork: a UI draw failure must never starve the sim thread —
-                // an exception here used to skip DrawCompletedEvt.Set() below, freezing
-                // the simulation for as long as the failing element kept drawing
-                // (battle sim arena: selecting a ship froze the game). Log and go on.
+                // Ludoal fork: a UI draw failure must never starve the sim thread — an
+                // uncaught exception here would skip DrawCompletedEvt.Set() below, freezing
+                // the simulation. Log and go on.
                 try
                 {
                     DrawGeneralUI(batch, elapsed);
@@ -493,7 +489,9 @@ namespace Ship_Game
             IconsGroupTotalPerf.Stop();
 
             // Advance the simulation time just before we Notify
-            if (!UState.Paused && IsActive)
+            // Ludoal fork (maintainer feedback): gate on SimulationActive, not IsActive -
+            // IsActive is gated on screen focus and would starve the sim under any open page.
+            if (!UState.Paused && SimulationActive)
             {
                 AdvanceSimulationTargetTime(elapsed.RealTime.Seconds);
             }
@@ -515,18 +513,20 @@ namespace Ship_Game
             {
                 DrawPlanetInfo();
                 EmpireUI.Draw(batch);
+                // Ludoal fork (maintainer feedback): NOTHING about the map changes when a
+                // panel opens - the map UI draws identically, the panel simply lands on top.
+                DeepSpaceBuildWindow.Draw(batch, elapsed);
+                pieMenu.DrawAt(batch, GetPieMenuPosition(), Fonts.Arial12Bold);
+                NotificationManager.Draw(batch);
                 if (LookingAtPlanet)
                 {
-                    // Ludoal fork (benches 314-319): opened FROM a list tab, the group's tab
-                    // row stays behind the colony as a dimmed silhouette, origin tab still
-                    // selected - the group page was the thing that vanished, not the
-                    // EmpireUI bar. Bench 366: the whole pass clips to the tab band. The
-                    // list frame behind is CONTENT-sized (and Colonies runs full height
-                    // since bench 362), so its edges overhung the opaque colony panel below
-                    // and on both sides - and under the panel nothing of it can show
-                    // anyway. The only part with a job is the tab row above the panel's top
-                    // edge; the veil estompes it. (Ground fill dropped: it starts below the
-                    // tab strip, entirely under the panel.)
+                    // Ludoal fork (maintainer feedback): opened FROM a list tab, the group's
+                    // tab row stays behind the colony as a dimmed silhouette, origin tab still
+                    // selected. The whole pass clips to the tab band - the list frame behind is
+                    // CONTENT-sized and can overhang the opaque colony panel below and on both
+                    // sides; only the tab row above the panel's top edge has a job, the veil
+                    // dims it. Ground fill dropped: it starts below the tab strip, entirely
+                    // under the panel.
                     if (ReturnToListScreen != null && ReturnToListTabs != null)
                     {
                         Rectangle tabsR = ReturnToListTabs.Rect;
@@ -543,11 +543,7 @@ namespace Ship_Game
                         batch.SafeBegin();
                     }
                     workersPanel?.Draw(batch, elapsed);
-                }
-                else
-                {
-                    DeepSpaceBuildWindow.Draw(batch, elapsed);
-                    pieMenu.DrawAt(batch, GetPieMenuPosition(), Fonts.Arial12Bold);
+                    // Ludoal fork: the map lives beside the colony - notifications keep drawing.
                     NotificationManager.Draw(batch);
                 }
             }
@@ -556,15 +552,15 @@ namespace Ship_Game
 
             // This uses the new UIElementV2 system to automatically toggle visibility of items
             // In general, a much saner way than the old cluster-f*ck of IF statements :)
-            PlanetsInCombat.Visible = ShipsInCombat.Visible = showGeneralUI && !LookingAtPlanet;
-            ExoticBonusesWindow.Visible = showGeneralUI && ExoticBonusesWindow.IsOpen && !LookingAtPlanet;
-            FreighterUtilizationWindow.Visible = showGeneralUI && FreighterUtilizationWindow.IsOpen && !LookingAtPlanet;
+            // the map UI ignores LookingAtPlanet: nothing changes when a panel opens
+            PlanetsInCombat.Visible = ShipsInCombat.Visible = showGeneralUI;
+            ExoticBonusesWindow.Visible = showGeneralUI && ExoticBonusesWindow.IsOpen;
+            FreighterUtilizationWindow.Visible = showGeneralUI && FreighterUtilizationWindow.IsOpen;
 
-            // Ludoal fork (bench 347): the minimap no longer hides on LookingAtPlanet. That flag's
-            // one full-screen case (Planet View) is gone, and its remaining setters (Colony popup,
-            // the Budget table) now keep the universe drawn behind them - so the minimap should stay
-            // visible with them. The flag still gates the cartouches/overlays; only the minimap's own
-            // condition is freed here (Lek's diagnostic, bench 347). Full flag audit is post-47-b.
+            // Ludoal fork (maintainer feedback): the minimap does not hide on LookingAtPlanet -
+            // its remaining setters (Colony popup, the Budget table) keep the universe drawn
+            // behind them, so the minimap stays visible with them. The flag still gates the
+            // cartouches/overlays; only the minimap's own condition is freed here.
             Minimap.Visible = showGeneralUI;
 
             DrawSelectedItems(batch, elapsed);
@@ -637,8 +633,7 @@ namespace Ship_Game
         {
             DrawIcons.Start();
             DrawProjectedGroup();
-            if (!LookingAtPlanet)
-                DeepSpaceBuildWindow.DrawBlendedBuildIcons(ClickableBuildGoals);
+            DeepSpaceBuildWindow.DrawBlendedBuildIcons(ClickableBuildGoals);
             DrawTacticalPlanetIcons(batch);
             DrawFTLInhibitionNodes();
             DrawShipRangeOverlay();
@@ -656,10 +651,8 @@ namespace Ship_Game
         void DrawGeneralStatusText(SpriteBatch batch, DrawTimes elapsed)
         {
 
-            if (UState.Events.ActiveEvent != null && UState.Events.ActiveEvent.InhibitWarp)
-            {
-                DrawTopCenterStatusText(batch, "Hyperspace Flux", Color.Yellow, 1);
-            }
+            // (maintainer feedback) the Hyperspace Flux banner lives in the top bar, left of
+            // the speed block (EmpireUIOverlay.Draw), not floating over the map centre.
 
             if (IsActive && IsSaving)
             {
@@ -670,7 +663,7 @@ namespace Ship_Game
                 DrawTopCenterStatusText(batch, "Debug", Color.GreenYellow, 2);
             }
 
-            // Ludoal fork: the speed factor is read off the top bar now, beside the controls that
+            // Ludoal fork: the speed factor is read off the top bar, beside the controls that
             // change it, rather than floating over the map.
 
             if (IsActive && !IsCinematicModeEnabled && (Debug || Debugger.IsAttached))
@@ -687,13 +680,12 @@ namespace Ship_Game
                 DrawTopCenterStatusText(batch, "Cinematic Mode - Press F11 to exit", Color.White, 3);
             }
 
-            // the idle-research alarm moved into the top bar's topic slot (maintainer
-            // bench 319) - the mid-map banner retires
+            // (maintainer feedback) the idle-research alarm lives in the top bar's topic slot
         }
 
         void DrawShipRangeOverlay()
         {
-            if (ShowingRangeOverlay && !LookingAtPlanet)
+            if (ShowingRangeOverlay)
             {
                 var shipRangeTex = ResourceManager.Texture("UI/node_shiprange");
                 foreach (Ship ship in UState.Objects.VisibleShips)
@@ -733,7 +725,7 @@ namespace Ship_Game
         // this is called quite rarely, only when the FTL (F2) or gravity wells (F5) overlay is enabled
         void DrawFTLInhibitionNodes()
         {
-            if ((ShowingFTLOverlay || ShowingGravityWellOverlay) && !LookingAtPlanet)
+            if (ShowingFTLOverlay || ShowingGravityWellOverlay)
             {
                 var inhibit = ResourceManager.Texture("UI/node_inhibit");
 
@@ -778,9 +770,12 @@ namespace Ship_Game
 
         bool CanShowInfo => !LookingAtPlanet && !IsCinematicModeEnabled;
         bool ShowSystemInfoOverlay => SelectedSystem != null && CanShowInfo && viewState == UnivScreenState.GalaxyView;
-        bool ShowPlanetInfo => SelectedPlanet != null && CanShowInfo;
-        // Ludoal fork (wishlist): star cartouche at EVERY zoom (field report 45.42);
-        // the GalaxyView system overlay coexists with it
+        // the planet cartouche survives the ground battle view - during the battle the panel's
+        // own planet feeds it (pInfoUI keeps its P), so it stays up even when the map selection
+        // got cleared on the way in. Cinematic mode still hides it.
+        bool ShowPlanetInfo => !IsCinematicModeEnabled
+                            && (SelectedPlanet != null || LookingAtPlanet && workersPanel != null);
+        // Ludoal fork: star cartouche at EVERY zoom; the GalaxyView system overlay coexists with it
         bool ShowStarInfo => SelectedSystem != null && CanShowInfo;
         bool ShowShipInfo => SelectedShip != null && CanShowInfo;
         bool ShowShipList => SelectedShips.Count > 1 && SelectedFleet == null && CanShowInfo;
@@ -833,8 +828,7 @@ namespace Ship_Game
 
                     vuiElement.Draw(titleText, bodyText);
                     DrawItemInfoForUI();
-                    // Ludoal fork (field report 45.42): a real Cancel button with tooltip
-                    // instead of the text hint — same look as the cartouche buttons
+                    // Ludoal fork: a real Cancel button with tooltip - same look as the cartouche buttons
                     if (goal.Owner == Player)
                     {
                         bool hover = DsbCancelRect.HitTest(Input.CursorPosition);
@@ -935,7 +929,7 @@ namespace Ship_Game
 
         void DrawTacticalPlanetIcons(SpriteBatch batch)
         {
-            if (LookingAtPlanet || viewState <= UnivScreenState.SystemView || viewState >= UnivScreenState.GalaxyView)
+            if (viewState <= UnivScreenState.SystemView || viewState >= UnivScreenState.GalaxyView)
                 return;
 
             for (int i = 0; i < UState.Systems.Count; i++)
@@ -969,8 +963,7 @@ namespace Ship_Game
         {
             var goal = SelectedItem?.AssociatedGoal;
             if (goal == null) return;
-            if (!LookingAtPlanet)
-                DrawCircleProjected(goal.BuildPosition, 50f, goal.Owner.EmpireColor);
+            DrawCircleProjected(goal.BuildPosition, 50f, goal.Owner.EmpireColor);
         }
 
         void DrawShipsAndProjectiles(SpriteBatch batch)
@@ -1065,7 +1058,7 @@ namespace Ship_Game
 
         void DrawOverlay(Ship ship)
         {
-            if (ship.InFrustum && ship.Active && !ship.Dying && !LookingAtPlanet && viewState <= UnivScreenState.DetailView)
+            if (ship.InFrustum && ship.Active && !ship.Dying && viewState <= UnivScreenState.DetailView)
             {
                 // if we check for a missing model here we can show the ship modules instead. 
                 // that will solve invisible ships when the ship model load hits an OOM.
@@ -1080,7 +1073,7 @@ namespace Ship_Game
 
         void DrawTacticalIcon(Ship ship)
         {
-            if (!LookingAtPlanet && (!ship.IsSubspaceProjector || ShowingFTLOverlay))  
+            if (!ship.IsSubspaceProjector || ShowingFTLOverlay)  
             {
                 ship.DrawTacticalIcon(this, viewState);
             }
@@ -1287,7 +1280,7 @@ namespace Ship_Game
 
         private void DrawPlanetInfo()
         {
-            if (LookingAtPlanet || viewState > UnivScreenState.SectorView || viewState < UnivScreenState.ShipView)
+            if (viewState > UnivScreenState.SectorView || viewState < UnivScreenState.ShipView)
                 return;
             Vector2 mousePos = Input.CursorPosition;
             SubTexture planetNamePointer = ResourceManager.Texture("UI/planetNamePointer");

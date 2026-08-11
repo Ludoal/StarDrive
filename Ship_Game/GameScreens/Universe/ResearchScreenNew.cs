@@ -4,6 +4,7 @@ using Ship_Game.Audio;
 using System;
 using Ship_Game.GameScreens;
 using Ship_Game.GameScreens.Universe.Debug;
+using Ship_Game.Graphics; // RenderStates: the frame scissor
 using SDGraphics;
 using SDUtils;
 using Vector2 = SDGraphics.Vector2;
@@ -22,10 +23,12 @@ namespace Ship_Game
         public Map<string, TreeNode> SubNodes = new(StringComparer.OrdinalIgnoreCase);
 
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row
+        // Ludoal fork: this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
         UIButton Search;
-        // Ludoal fork: the slot the Search / Hide Queue pair sits in. The dan_button texture is
-        // 182x25 and both are placed off the queue's right edge, so the width is pinned rather
-        // than taken from the texture - UIButton stretches to whatever rect it is given.
+        // Ludoal fork: the slot the Search / Hide Queue pair sits in. UIButton stretches to
+        // whatever rect it is given, so the width is pinned rather than taken from the texture.
         public const int ResearchButtonW = 150;
         // where the Search / Hide Queue pair sits, shared with ResearchQueueUIComponent so the two
         // buttons cannot drift apart. Ludoal fork.
@@ -58,8 +61,7 @@ namespace Ship_Game
             Universe = u;
             Player = u.Player;
             empireUI = empireUi;
-            // bench 355 (maintainer): Research was the last group screen without the live universe
-            // behind it. IsPopup lets the map draw underneath, like every table/design screen.
+            // IsPopup lets the map draw underneath, like every table/design screen.
             IsPopup = true;
             CanEscapeFromScreen = true;
             TransitionOnTime = 0.25f;
@@ -71,7 +73,7 @@ namespace Ship_Game
             camera = new Camera2D { Pos = new Vector2(Viewport.Width, Viewport.Height) / 2f };
             // Ludoal fork: the Research tab of the Empire group. The node grids derive from
             // MainArea.Height, so they compress on their own down to the 900px floor.
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.EmpireTabTitles, 4,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 4,
                                                     OnEmpireTabChanged, out Rectangle frame);
             RectF client = EmpireTabs.ClientArea;
             var main = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
@@ -87,8 +89,10 @@ namespace Ship_Game
             int numDiscoveredRoots = Player.TechEntries.Count(t => t.IsRoot && t.Discovered);
 
             // roots pitch: first anchor at the offset, the last one's 76px body ends 2px
-            // above the floor - the pitch divides what remains between the anchors
-            GridHeight = numDiscoveredRoots > 1 ? (main.Height - 102) / (numDiscoveredRoots - 1)
+            // above the floor - the pitch divides what remains between the anchors, and never
+            // compresses below the body plus a breath (bench 408): the frame scissor clips
+            // what overruns instead
+            GridHeight = numDiscoveredRoots > 1 ? Math.Max((main.Height - 102) / (numDiscoveredRoots - 1), 80)
                                                 : main.Height - 102;
 
             Vector2 nodePos = Vector2.Zero;
@@ -112,15 +116,12 @@ namespace Ship_Game
             PopulateNodesFromRoot(root);
 
             // Create queue once all techs are populated. 34 down: the frame's close cross sits
-            // on the client's first lane and the panel was covering it (maintainer bench). The
-            // button pair closes 10px above the frame BORDER - the client bottom is 9px inside
-            // it - and the queue stretches down to meet the buttons.
+            // on the client's first lane. The button pair closes 10px above the frame BORDER -
+            // the client bottom is 9px inside it - and the queue stretches down to meet the buttons.
             var queue = new Rectangle(main.X + main.Width - 340, main.Y + 34, 330,
                                       main.Height - 34 - 8 - ResearchButtonH - 1);
             // Ludoal fork: both buttons hang off the QUEUE rect, one on each of its edges, so they
-            // are level and evenly spaced - Search used to measure from main.Width and Hide Queue
-            // from the container, which is why they never lined up. The blue dan_button is the new
-            // look's "active" colour; the width is pinned since UIButton stretches to its rect.
+            // stay level and evenly spaced. UIButton stretches to its rect, so the width is pinned.
             // ⚠ set BEFORE the queue component is built: it reads them in its own constructor.
             ResearchButtonY = queue.Bottom + 8;
             ResearchButtonsRight = queue.Right;
@@ -162,18 +163,18 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            // bench 355 (maintainer): the universe shows behind Research now (IsPopup). The tech tree
-            // still needs an opaque backdrop to stay legible, so fill the FRAME only, not the whole
-            // screen - the fade dims the universe around it, the frame fill sits the tree on solid dark
-            // inside. Opaque (14,12,9), not the 0.92 GroupFrameFill, for the same crispness the
-            // Blueprints panel needed this morning.
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
+            // The universe shows behind Research (IsPopup), so the tech tree needs an opaque
+            // backdrop to stay legible - fill the FRAME only, not the whole screen. Opaque
+            // (14,12,9), not the 0.92 GroupFrameFill, for crispness.
 
             batch.SafeBegin();
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), new Color(14, 12, 9));
             batch.SafeEnd();
 
-            batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:false, saveState:false, camera.Transform);
+            // the tree clips to the frame (bench 408): with the pan unclamped from the row
+            // grid, nodes can sit past the frame edge and must not draw over the map below
+            RenderStates.EnableScissorTest(batch.GraphicsDevice, ScreenGroups.GroupFrameFillRect(EmpireTabs));
+            batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:false, RenderStates.ScissorEnabled, camera.Transform);
             {
                 DrawConnectingLines(batch);
 
@@ -366,8 +367,22 @@ namespace Ship_Game
             if (ScreenHeight > 720 && empireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
                 return true;
 
-            if (input.MiddleMouseHeld())
-                camera.MoveClamped(input.CursorVelocity, ScreenCenter, new Vector2(3200));
+            // the tree drag stops at the page frame - a middle-drag in the band pans the MAP.
+            // Pan clamps to the tree's real extent (bench 408): the neutral seat is the low
+            // bound (the tree never pans right/down of its origin), and the far bound is what
+            // overruns the frame, zero when everything already fits.
+            if (input.MiddleMouseHeld() && PageFrame.HitTest(input.CursorPosition))
+            {
+                float maxX = 0, maxY = 0;
+                foreach (TreeNode n in SubNodes.Values)
+                {
+                    maxX = Math.Max(maxX, n.BaseRect.Right);
+                    maxY = Math.Max(maxY, n.BaseRect.Bottom);
+                }
+                var overrun = new Vector2(Math.Max(0, maxX + 10 - MainArea.Right),
+                                          Math.Max(0, maxY + 10 - MainArea.Bottom));
+                camera.MoveClamped(input.CursorVelocity, ScreenCenter, ScreenCenter + overrun);
+            }
 
             foreach (RootNode root in RootNodes.Values)
             {
@@ -444,27 +459,24 @@ namespace Ship_Game
 
         Vector2 GridSize => new(GridWidth, GridHeight);
 
-        // the tree's top/bottom margins MIRROR the gap between rows, floored at 2px
-        // (maintainer, 4 Aug): at the 900p floor the rows touch and the margins collapse
-        // to 2px; on a tall frame the same air runs above, between and below the rows.
+        // the tree PANS, so rows never compress (bench 408): the grid step keeps at least
+        // MinGap between rows and the tree simply overruns the frame on small displays -
+        // panning reaches the rest. Top/bottom margins mirror the inter-row gap.
         // ⚠ the node's VISIBLE height is 108, not its 120 rect: the base texture carries
-        // ~12px of transparent padding at its foot (92x90 png, content stops at row 79 -
-        // the magenta bench closed the "dead lane" mystery: the rect was flush, the ART
-        // inside it was not). The rect is allowed to overrun by that invisible slack.
+        // ~12px of transparent padding at its foot (92x90 png, content stops at row 79).
         // ⚠ this also OWNS MainMenuOffset.Y - the first anchor rides the margin.
         int SubGridHeight(int rows)
         {
             rows = Math.Max(1, rows);
             const int NodeVisible = 108; // 22 title plate + 86 of visible body art
+            const int MinGap = 4;
             int gh;
-            // 104: the designed 112 minus an empirical 8 - integer-division truncation
-            // (up to rows-1 px) plus the art-bounds rounding land the deepest row a hair
-            // high otherwise (bench 293)
-            if (rows == 1 || (MainArea.Height + NodeVisible) / (rows + 1) - NodeVisible < 2)
-                gh = rows == 1 ? MainArea.Height - 104 : (MainArea.Height - 104) / (rows - 1);
+            if (rows == 1)
+                gh = MainArea.Height - 104; // one row: the step only seats the anchor
             else
-                gh = (MainArea.Height + NodeVisible) / (rows + 1); // margin == inter-row gap
-            int margin = Math.Max(2, gh - NodeVisible);
+                gh = Math.Max((MainArea.Height + NodeVisible) / (rows + 1), // margin == inter-row gap
+                              NodeVisible + MinGap);
+            int margin = Math.Max(MinGap, gh - NodeVisible);
             if (rows == 1)
                 margin = 2;
             MainMenuOffset.Y = MainArea.Y + margin + 22;
@@ -494,9 +506,7 @@ namespace Ship_Game
             // Ludoal fork: the row ESTIMATE overcounts branches that merge back into the
             // main line, so some tabs squeezed toward the top with dead space below.
             // Measure the rows actually laid out and rebuild once at the exact height.
-            // +1: the deepest node needs its own height below its anchor — the old
-            // estimator's overcount used to absorb that by accident, an exact division
-            // pushed the last row past the frame (bench, 45.70).
+            // +1: the deepest node needs its own height below its anchor.
             int actualRows = Math.Max(1, FindDeepestYSubNodes());
             int wantRows = Math.Min(actualRows + 1, 9);
             if (wantRows != Math.Min(rows, 9))
@@ -575,10 +585,8 @@ namespace Ship_Game
         
         bool PositionIsClaimed(Vector2 position) => ClaimedSpots.Any(p => p.AlmostEqual(position));
 
-        // Ludoal fork: branches used to always open a fresh row below EVERYTHING, so a
-        // one-node dead-end (Massive Disruptor...) cost a full row while the same level
-        // had free space further right. A branch now takes the first row at or below its
-        // parent where its whole rectangle (own rows x own columns) is free.
+        // Ludoal fork: a branch takes the first row at or below its parent where its
+        // whole rectangle (own rows x own columns) is free.
         int FindFreeRowFor(TechEntry branch, int parentY, int col)
         {
             int bRows = 1;

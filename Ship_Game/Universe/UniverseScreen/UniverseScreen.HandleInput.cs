@@ -25,28 +25,64 @@ namespace Ship_Game
 
         RectF SelectionBox = new(-1, -1, 0, 0);
 
+        // Ludoal fork (spec: interactive band): the minimap's navigation, extracted so the
+        // visible-band entry and the map-side path share the one arithmetic.
+        public bool HandleMinimapNavigation(InputState input)
+        {
+            if (!MinimapDisplayRect.HitTest(input.CursorPosition) || SelectingWithBox)
+                return false;
+            HandleCameraZoomScrolling(input);
+            if (input.LeftMouseDown)
+            {
+                // ⚠ the SAME projection the MiniMap draws with, asked of it - two separate
+                // formulas for one mapping put a click off target.
+                Vector2 c = Minimap.MapCentre;
+                float scale = Minimap.MapScale;
+                CamDestination.X = (input.CursorPosition.X - c.X) / scale;
+                CamDestination.Y = (input.CursorPosition.Y - c.Y) / scale;
+                snappingToShip = false;
+                ViewingShip = false;
+            }
+            return true;
+        }
+
+        // Ludoal fork (spec: interactive band): the map answers a curated set of gestures
+        // while a PAGE is open, LIMITED to the visible band outside the page's frame.
+        // Reached through the live top bar's shared path - never via the main HandleInput,
+        // whose hosted-seat bookkeeping assumes no input arrives under stacked pages.
+        // v1 gestures: the minimap (overlay buttons and navigation) and the wheel zoom.
+        public bool HandleVisibleBandInput(InputState input, in Rectangle pageFrame)
+        {
+            // (maintainer feedback) the cartouches and their order buttons answer BEFORE the
+            // page-frame gate. They draw ON TOP of the open page and reach into the reserved
+            // corner (a ship cartouche's SECOND order row climbs above the first, into the
+            // page's own rect) - gated by the frame, that top row's clicks and tooltips would
+            // be eaten by the table. HandleGUIClicks also arms the tooltips, so it has to run
+            // regardless of where the cursor sits over the cartouche stack.
+            if (HandleGUIClicks(input))
+                return true;
+            if (pageFrame.HitTest(input.CursorPosition))
+                return false; // inside the page: its own input owns the cursor
+            if (Minimap != null && Minimap.HandleInput(input))
+                return true;
+            if (HandleMinimapNavigation(input))
+                return true;
+            // (maintainer feedback) the band carries the map's OWN input suite, in the
+            // main flow's order - the exploded system view, then box-select, then the click
+            // resolver. The double-click colony-open is allowed: the map door works here too.
+            if (HandleSelectionBox(input))
+                return true;
+            if (input.LeftMouseClick && LeftClickOnClickableItem(input))
+                return true;
+            HandleMiddleMousePan(input);
+            HandleCameraZoomScrolling(input);
+            return false;
+        }
+
         bool HandleGUIClicks(InputState input)
         {
             bool captured = DeepSpaceBuildWindow.HandleInput(input);
-
-            if (MinimapDisplayRect.HitTest(input.CursorPosition) && !SelectingWithBox)
-            {
-                HandleCameraZoomScrolling(input);
-                if (input.LeftMouseDown)
-                {
-                    // ⚠ the SAME projection the MiniMap draws with, asked of it: this used to
-                    // divide the rect's width by Size*2 while the map plotted stars at
-                    // shortSide/(Size*2.1) from the map's CENTRE. Two formulas for one mapping,
-                    // so a click landed off target - visibly so once the frame was reworked.
-                    Vector2 c = Minimap.MapCentre;
-                    float scale = Minimap.MapScale;
-                    CamDestination.X = (input.CursorPosition.X - c.X) / scale;
-                    CamDestination.Y = (input.CursorPosition.Y - c.Y) / scale;
-                    snappingToShip = false;
-                    ViewingShip = false;
-                }
-                captured = true;
-            }
+            captured |= HandleMinimapNavigation(input);
 
             // @note Make sure HandleInputs are called here
             if (!LookingAtPlanet)
@@ -88,8 +124,8 @@ namespace Ship_Game
             if (input.BlueprintsSceen)            ScreenManager.AddScreen(new BlueprintsScreen(this, Player));
             if (input.EmpirePatrolsScreen)        ScreenManager.AddScreen(new EmpirePatrolsScreen(this, Player));
             if (input.ImportantEventsScreen)      ScreenManager.AddScreen(new ImportantEventsScreen(this)); // Ludoal fork: F7
-            // Ludoal fork: H opens the Automation tab of the Empire group - the map overlay
-            // it used to toggle is gone (maintainer). The screen closes on H or right-click.
+            // Ludoal fork (maintainer feedback): H opens the Automation tab of the Empire
+            // group. The screen closes on H or right-click.
             if (input.AutomationWindow && !Debug)
                 ScreenManager.AddScreen(new AutomationScreen(this));
             if (input.ExoticBonusesWindow) ExoticBonusesWindow.ToggleVisibility();
@@ -98,6 +134,7 @@ namespace Ship_Game
             if (input.ExoticListScreen)  ScreenManager.AddScreen(new ExoticSystemsListScreen(this, EmpireUI, "sd_ui_accept_alt3"));
             if (input.ShipListScreen)    ScreenManager.AddScreen(new ShipListScreen(this, EmpireUI, "sd_ui_accept_alt3"));
             if (input.TroopListScreen)   ScreenManager.AddScreen(new TroopListScreen(this, EmpireUI, "sd_ui_accept_alt3"));
+            if (input.ColonyOverviewScreen) OpenEmpireColonyTab(); // Ludoal fork: F8, the Empire Colony tab
             if (input.FleetDesignScreen) ScreenManager.AddScreen(new FleetDesignScreen(this, EmpireUI, "sd_ui_accept_alt3"));
             if (input.ZoomToShip) InputZoomToShip();
             if (input.ZoomOut)    InputZoomOut();
@@ -202,12 +239,26 @@ namespace Ship_Game
             bool dismiss = (input.Escaped || input.RightMouseClick) && colonyScreen?.ClickedTroop == false;
             if (dismiss || !workersPanel.IsActive)
             {
-                // Ludoal fork (bench 191): opened from a list screen, closing goes back to that
-                // list (maintainer feedback). Taken before it is called: reopening the screen runs its own
+                // Ludoal fork (maintainer feedback): opened from a list screen, closing goes back
+                // to that list. Taken before it is called: reopening the screen runs its own
                 // setup, and a hook still standing would send the NEXT close there too.
                 Action back = ReturnToListScreen;
                 ReturnToListScreen = null;
                 ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
+
+                // Ludoal fork (spec: colony-as-tab): closing the hosted panel closes its TAB -
+                // back to the panel it was opened from, or to the map when it came from there
+                // (origin -1). The seat clears first: the reopened screen must build the stock
+                // row, without the tab that just died.
+                if (back == null && HostedTabTitle != null)
+                {
+                    var hostedGroup = HostedTabGroup;
+                    int origin = HostedTabOrigin;
+                    ClearHostedTab();
+                    if (origin >= 0)
+                        back = () => ScreenManager.AddScreen(
+                            GameScreens.ScreenGroups.TabOf(hostedGroup, origin, this));
+                }
 
                 AdjustCamTimer = 1f;
                 if (returnToShip)
@@ -284,8 +335,16 @@ namespace Ship_Game
         {
             Input = input;
 
+            // Ludoal fork (spec: colony-as-tab): the hosted tab dies WITH its group. The
+            // universe only receives input once nothing is stacked above it - so a seat
+            // still armed here, with no colony panel up, means its group was closed to the
+            // map and the tab goes with it. (Every in-group path opens the next screen in
+            // the same frame, before input ever returns to the universe.)
+            if (HostedTabTitle != null && !LookingAtPlanet)
+                ClearHostedTab();
+
             if (input.PauseGame && !GlobalStats.TakingInput)
-                UState.Paused = !UState.Paused;
+                EmpireUI.TogglePause(); // one owner for the pause gesture
 
             if (input.DebugMode)
             {
@@ -384,12 +443,19 @@ namespace Ship_Game
             else
             {
                 ClearSelectedItems();
+                // Ludoal fork: the minimap navigates and the wheel zooms beside the colony too.
+                // Its overlay buttons already ride the base.HandleInput pass above - only the
+                // gestures the colony path lacks.
+                if (HandleMinimapNavigation(input))
+                    return true;
+                if (!GameScreens.ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight).HitTest(input.CursorPosition))
+                    HandleCameraZoomScrolling(input);
             }
 
             if (input.ScrapShip && (SelectedItem != null && SelectedItem.AssociatedGoal.Owner == Player))
                 OnScrapSelectedItem();
 
-            // Ludoal fork (field report 45.42): the Cancel button on the build cartouche
+            // Ludoal fork: the Cancel button on the build cartouche
             if (SelectedItem != null && SelectedItem.AssociatedGoal.Owner == Player
                 && DsbCancelRect.HitTest(input.CursorPosition))
             {
@@ -402,8 +468,8 @@ namespace Ship_Game
                 }
             }
 
-            ShipsInCombat.Visible = !LookingAtPlanet;
-            PlanetsInCombat.Visible = !LookingAtPlanet;
+            // (the combat counters' visibility is the Draw side's business - nothing about the
+            // map changes when a panel opens)
 
             if (LookingAtPlanet && workersPanel.HandleInput(input))
                 return true;
@@ -611,9 +677,7 @@ namespace Ship_Game
             // Also no InFrustum gate: a Project per candidate already validates on-screen
             // position, and InFrustum can be momentarily stale in the camera-move window
             // before UpdateVisibleObjects re-runs.
-            float iconHalfPx = (16f + GlobalStats.IconSize) * 0.5f;
             const float MarginPx = 4f;
-            float iconClickRadiusPx = iconHalfPx + MarginPx;
 
             Vector2 cursor = input.CursorPosition;
             Ship best = null;
@@ -630,6 +694,9 @@ namespace Ship_Game
 
                 ProjectToScreenCoords(ship.Position, ship.Radius,
                                       out Vector2d shipScreen, out double shipScreenRadius);
+                // per-candidate: ships and stations have separate icon-size settings,
+                // and the click radius must match what is actually drawn
+                float iconClickRadiusPx = (16f + Ship.IconSizeSetting(ship)) * 0.5f + MarginPx;
                 float threshold = Math.Max(iconClickRadiusPx, (float)shipScreenRadius + MarginPx);
                 float distPx = cursor.Distance(shipScreen.ToVec2f());
                 if (distPx <= threshold && distPx < bestDistPx)
@@ -782,7 +849,14 @@ namespace Ship_Game
             {
                 if (input.LeftMouseDoubleClick)
                 {
-                    SnapViewColony(planet, planet.Owner != Player && !Debug);
+                    // (maintainer feedback) a MOLE planet opens its colony (mole vision)
+                    // like an owned one - combatView must be false so it doesn't detour to
+                    // the combat menu before the snap's own mole branch can answer
+                    bool mole = false;
+                    if (planet.Owner != Player)
+                        foreach (Mole m in Player.data.MoleList)
+                            if (m.PlanetId == planet.Id) { mole = true; break; }
+                    SnapViewColony(planet, planet.Owner != Player && !mole && !Debug);
                     SelectionBox = new();
                 }
                 else
@@ -835,7 +909,7 @@ namespace Ship_Game
                     return true;
             }
 
-            // Ludoal fork (wishlist): the sun itself is clickable up close — star cartouche
+            // Ludoal fork: the sun itself is clickable up close — star cartouche
             if (viewState < UnivScreenState.SectorView)
             {
                 SolarSystem sun = FindSunUnderCursorClose(input.CursorPosition);
@@ -858,8 +932,7 @@ namespace Ship_Game
             if (!input.IsShiftKeyDown && !input.IsAltKeyDown && !input.IsCtrlKeyDown)
             {
                 ClearSelectedItems(clearFlags: false);
-                // Ludoal fork (field report 45.42): deselecting on empty space also
-                // decouples the chase camera — it used to keep following a ghost
+                // Ludoal fork: deselecting on empty space also decouples the chase camera
                 ViewingShip = false;
             }
             return false;
@@ -1279,6 +1352,30 @@ namespace Ship_Game
 
         Vector2 StartDragPos;
 
+        // Ludoal fork: the middle-drag pan, ONE arithmetic shared by the map path and the
+        // visible band. Ctrl+middle stays the chase gesture and returns early here, or a
+        // held chase click would fall into the pan and kill the snap.
+        public void HandleMiddleMousePan(InputState input)
+        {
+            if (input.IsCtrlKeyDown)
+                return;
+            if (input.MiddleMouseClick)
+                StartDragPos = input.CursorPosition;
+            if (input.MiddleMouseHeld())
+            {
+                float worldWidthOnScreen = (float)VisibleWorldRect.Width;
+                float dx = input.CursorPosition.X - StartDragPos.X;
+                float dy = input.CursorPosition.Y - StartDragPos.Y;
+                StartDragPos = input.CursorPosition;
+                CamDestination.X += -dx * worldWidthOnScreen * 0.001f;
+                CamDestination.Y += -dy * worldWidthOnScreen * 0.001f;
+                snappingToShip = false;
+                ViewingShip    = false;
+                CamDestination.X = CamDestination.X.Clamped(-UState.Size, UState.Size);
+                CamDestination.Y = CamDestination.Y.Clamped(-UState.Size, UState.Size);
+            }
+        }
+
         void HandleEdgeDetection(InputState input)
         {
             if (LookingAtPlanet)
@@ -1305,25 +1402,8 @@ namespace Ship_Game
             bool enableKeys = !ViewingShip;
             bool arrowKeys = Debug == false;
 
-            if (!input.IsCtrlKeyDown && input.MiddleMouseClick)
-            {
-                StartDragPos = input.CursorPosition;
-            }
-
-            // Ludoal fork (wishlist #1): a Ctrl+middle (or quick chase click) held a
-            // beat past 0.15s used to fall into this pan branch, killing the ship
-            // snap mid-flight — the camera froze in the void. Pan only without Ctrl.
-            if (!input.IsCtrlKeyDown && input.MiddleMouseHeld())
-            {
-                float dx = input.CursorPosition.X - StartDragPos.X;
-                float dy = input.CursorPosition.Y - StartDragPos.Y;
-                StartDragPos = input.CursorPosition;
-                CamDestination.X += -dx * worldWidthOnScreen * 0.001f;
-                CamDestination.Y += -dy * worldWidthOnScreen * 0.001f;
-                snappingToShip = false;
-                ViewingShip    = false;
-            }
-            else
+            HandleMiddleMousePan(input);
+            if (input.IsCtrlKeyDown || !input.MiddleMouseHeld())
             {
                 if (ShipInfoUIElement.IsHandlingNameInput)
                     return; // don't pan the camera if the ship name area is being edited
@@ -1367,7 +1447,7 @@ namespace Ship_Game
             double scrollAmount = 1000.0;
             double camDestZ = CamDestination.Z;
 
-            if ((input.ScrollOut || input.BButtonHeld) && !LookingAtPlanet)
+            if (input.ScrollOut || input.BButtonHeld)
             {
                 // gradually adjust scroll-out based on CamPos.Z
                 if      (camDestZ >= 5_000_000) scrollAmount = 2000_000;
@@ -1392,7 +1472,7 @@ namespace Ship_Game
                     transitionElapsedTime = 0f;
                 }
             }
-            else if ((input.ScrollIn || input.YButtonHeld) && !LookingAtPlanet)
+            else if (input.ScrollIn || input.YButtonHeld)
             {
                 // gradually adjusts scroll-in based on CamPos.Z
                 if      (camDestZ >= 3200_000) scrollAmount = 1800_000;

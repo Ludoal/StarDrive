@@ -25,9 +25,14 @@ namespace Ship_Game
         {
             ScreenManager.BeginFrameRendering(elapsed, ref View, ref Projection);
 
-            // Ludoal fork (bench 345): a popup now - dim the paused universe drawn behind it with the
-            // table screens' veil, instead of the dead black backdrop it used to have.
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
+            // Ludoal fork: Full Screen dims the universe behind the workbench; windowed leaves
+            // the band alive and bright like every other page.
+            if (FullScreenDesign)
+            {
+                batch.SafeBegin();
+                batch.FillRectangle(new Rectangle(0, 0, ScreenWidth, ScreenHeight), new Color(0, 0, 0, 160));
+                batch.SafeEnd();
+            }
 
             // Ludoal fork: the starfield, the particles and the 3D workbench are clipped to the
             // tab frame - the screen is one tab of the Design group now, so its scene belongs
@@ -39,19 +44,18 @@ namespace Ship_Game
 
             ParentUniverse.DrawStarField(ScreenManager.SpriteRenderer);
             ParentUniverse.Particles.Draw(View, Projection, nearView:true);
-            // ⚠ Ludoal fork (bench 347): do NOT Update the universe's particles here. Since the
-            // screen became a popup, the universe underneath is visible again and runs its OWN
-            // Update (particles included), so updating them a second time from Draw advanced them
-            // twice per frame and they piled up - the Shipyard-only slowdown Fleet never had
-            // (Fleet does not touch particles). Draw them, let the universe update them.
+            // ⚠ Ludoal fork: do NOT Update the universe's particles here. This screen is a popup,
+            // so the universe underneath is visible and runs its OWN Update (particles included);
+            // updating them a second time from Draw advances them twice per frame and they pile
+            // up. Draw them, let the universe update them.
 
             ScreenManager.RenderSceneObjects();
 
             if (ToggleOverlay)
             {
-                // bench 360 (maintainer): the module tiles clip to the frame like the 3D hull does -
-                // this pass now rides the scene scissor (the scissor rect is still set on the device;
-                // the pinned rasterizer makes the batch honour it).
+                // The module tiles clip to the frame like the 3D hull does - this pass rides the
+                // scene scissor (the scissor rect is still set on the device; the pinned
+                // rasterizer makes the batch honour it).
                 batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:true,
                                 Ship_Game.Graphics.RenderStates.ScissorEnabled);
 
@@ -90,13 +94,13 @@ namespace Ship_Game
             base.Draw(batch, elapsed);
 
             // Ludoal fork: the obsolete-design button, drawn after the frame it sits on.
-            // TexturedButton is not a UIElement, so it does not draw itself. Red when the design
-            // is marked, exactly as the module panel colours its own.
+            // Driven by hand - never Added to the tree, this screen places and draws it.
+            // Red when the design is marked, exactly as the module panel colours its own.
             if (InfoSub.Visible && CurrentDesign != null)
             {
-                ObsoleteDesign.BaseColor = Player.IsDesignObsolete(CurrentDesign.Name)
-                                         ? Color.Red : Color.White;
-                ObsoleteDesign.Draw(batch);
+                ObsoleteDesign.IconTint = Player.IsDesignObsolete(CurrentDesign.Name)
+                                        ? Color.Red : Color.White;
+                ObsoleteDesign.Draw(batch, elapsed);
             }
 
             // Ludoal fork: the Design group's tab tooltip. No frame fill on this screen - the
@@ -521,9 +525,9 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork: the label sits on its OWN dropdown rather than on a screen fraction - the two
-        // used to be written separately and drifted apart the moment either moved. Arial12: these
-        // are secondary options, not headings.
+        // Ludoal fork: the label sits on its OWN dropdown rather than on a screen fraction, so
+        // the two cannot drift apart when either moves. Arial12: these are secondary options,
+        // not headings.
         //
         // To the LEFT of the field and centred on it, so the whole options row reads as one line
         // with the carrier-only checkbox. The label measures itself, which is what keeps it clear
@@ -539,8 +543,7 @@ namespace Ship_Game
             Graphics.Font font = Fonts.Arial12Bold;
             var pos = new Vector2(dropdown.X - font.TextWidth(title) - TitleGap,
                                   dropdown.CenterY() - font.LineSpacing / 2);
-            // the panels' own label grey (maintainer bench 304) - orange read louder than
-            // everything around it
+            // the panels' own label grey - orange reads louder than everything around it
             batch.DrawString(font, title, pos, new Color(168, 172, 178));
         }
 

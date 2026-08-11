@@ -11,9 +11,8 @@ using Font = Ship_Game.Graphics.Font;
 
 namespace Ship_Game.GameScreens
 {
-    // Ludoal fork v2 (player design): one COLUMN per major empire, everything built
-    // ONCE in LoadContent (the previous draft leaked: EmpireButton re-Added elements
-    // on every layout pass). Portraits Diplomacy-style, and they open negotiation. Sections:
+    // Ludoal fork: one COLUMN per major empire, everything built ONCE in LoadContent.
+    // Portraits Diplomacy-style, and they open negotiation. Sections:
     // BUDGET (player: budget multiplier + cost; others: infiltration weight, limit
     // level, points/turn, target level + progress), DEFENSE (player: defense weight;
     // others: their shield ratio), then the five levels with ALL options — passives
@@ -21,7 +20,7 @@ namespace Ship_Game.GameScreens
     public sealed class InfiltrationScreen : GameScreen
     {
         public readonly UniverseScreen Universe;
-        // bench 362: the player's mole-planet rows, harvested at draw, clicked in HandleInput
+        // the player's mole-planet rows, harvested at draw, clicked in HandleInput
         readonly Array<(Rectangle Rect, Planet P)> MoleRows = new();
         public Empire SelectedEmpire; // legacy bookkeeping (external callers)
         readonly Empire Player;
@@ -31,12 +30,15 @@ namespace Ship_Game.GameScreens
         public static readonly Color PanelBackground = new Color(23, 20, 14);
 
         Submenu GroupTabs; // Ludoal fork: the Diplomacy group's tab row, this screen being one tab
+        // Ludoal fork: this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => GroupTabs?.Rect ?? base.PageFrame;
         Rectangle LeftRect;
 
         Array<EmpireColumn> Columns = new();
-        // Combined Arms fields more than eight majors (maintainer bench 299): the row
-        // scrolls by whole columns; this screen's widgets are real UI children, so a
-        // scroll REPOSITIONS them and hides the columns outside the window
+        // Combined Arms fields more than eight majors: the row scrolls by whole columns;
+        // this screen's widgets are real UI children, so a scroll REPOSITIONS them and
+        // hides the columns outside the window
         readonly ScreenGroups.RaceRowScroller Scroller = new();
         int AppliedFirst = -1; // last scroll position applied to the widgets
 
@@ -48,15 +50,12 @@ namespace Ship_Game.GameScreens
         const int HeaderH = 110;
         const int BudgetH = 212; // sliders overflow their rect (title above, ticks below): breathe
 
-        // Ludoal fork: the BUDGET block's rows, off its own top. The button row was tight against
-        // the slider above it and there was room to spare at the foot of the block, so everything
-        // below the slider moved down 14. Named because the placement (LoadContent) and the labels
-        // (DrawColumn) read them from here - they used to be loose numbers in both.
-        // compacted upward (maintainer bench 300) - the row makes room for the race rail
+        // Ludoal fork: the BUDGET block's rows, off its own top. Named because the placement
+        // (LoadContent) and the labels (DrawColumn) both read them from here.
         const int RowSlider   = 4;
         const int RowButton   = 53;
         const int RowPoints   = 117;  // clear of the Level Max slider's ticks above it
-        const int RowLevel    = 142;  // bold since bench 296
+        const int RowLevel    = 142;
         const int RowBar      = 163;
         const int RowBarNums  = 179;
         const int DefenseH = 52;
@@ -86,9 +85,9 @@ namespace Ship_Game.GameScreens
             readonly Empire Player;
             readonly bool UpdatesDefense;
             // the label folds only while the turns counter needs the room beside it AND the
-            // full name would actually reach it (maintainer benches 297-298): the geometry is
-            // fixed at construction, so the collision is computed once - a wide column keeps
-            // its full names even with the counter shown
+            // full name would actually reach it. The geometry is fixed at construction, so the
+            // collision is computed once - a wide column keeps its full names even with the
+            // counter shown
             readonly LocalizedText Folded, Full;
             readonly bool FoldNeeded;
             bool ShowsFolded;
@@ -161,6 +160,13 @@ namespace Ship_Game.GameScreens
         // hands over to it on the right tab. Espionage itself is a no-op: we are already here.
         void OnGroupTabChanged(int index)
         {
+            // Ludoal fork: the hosted colony's tab, appended past the stock four
+            if (ScreenGroups.IsHostedTab(ScreenGroups.Group.Diplomacy, index, Universe))
+            {
+                ExitScreen();
+                Universe.OpenHostedTabPanel?.Invoke();
+                return;
+            }
             var tab = (MainDiplomacyScreen.Tab)index;
             if (tab == MainDiplomacyScreen.Tab.Espionage)
                 return;
@@ -172,11 +178,11 @@ namespace Ship_Game.GameScreens
         {
             // Ludoal fork: the Espionage tab of the Diplomacy group - same frame and tab row as
             // its three siblings, from ScreenGroups, in place of the title and its surround.
-            // The frame hugs the race columns (maintainer, 4 Aug), so the majors come first.
+            // The frame hugs the race columns, so the majors come first.
             Empire[] majors = Universe.UState.ActiveMajorEmpires;
             LeftRect = ScreenGroups.RaceColumnsFrame(ScreenWidth, ScreenHeight, majors.Length);
             GroupTabs = Add(new Submenu(new RectF(LeftRect.X, LeftRect.Y, LeftRect.Width, LeftRect.Height),
-                                        ScreenGroups.GroupTabTitles));
+                                        ScreenGroups.LiveTitles(ScreenGroups.Group.Diplomacy, Universe)));
             GroupTabs.OnTabChange = OnGroupTabChanged;
             GroupTabs.PerformLayout(); // ClientArea is only known once the tabs are laid out
             GroupTabs.SelectedIndex = (int)MainDiplomacyScreen.Tab.Espionage;
@@ -194,7 +200,7 @@ namespace Ship_Game.GameScreens
             Scroller.VisibleCols = visCols;
             Scroller.Pitch = colW;
             // the rail sits INSIDE the frame, its foot 5px off the bottom border, and the
-            // columns give it the room (maintainer bench 301)
+            // columns give it the room
             Scroller.Track = new Rectangle(x0, (int)client.Bottom - 5, visCols * colW - ScreenGroups.ColumnGap, 9);
             Scroller.WheelArea = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
             int colH = ScreenGroups.GroupColumnHeight(client) - (Scroller.Overflowing ? 14 : 0);
@@ -279,13 +285,13 @@ namespace Ship_Game.GameScreens
         // Ludoal fork: ONE band, "INFILTRATION", and the five levels as bold text lines under it -
         // five stacked bands read as five sections when it is one subject. The layout of that block
         // lives here so LoadContent (which places the operation checkboxes) and DrawColumn (which
-        // paints the labels) cannot disagree: they used to run the same cascade twice.
+        // paints the labels) cannot disagree.
         //
         // Yields the Y of each level's title line, then of each of its operation rows.
         void ForEachInfiltrationRow(Rectangle col, Action<byte, float, bool> onLevelTitle,
                                     Action<byte, float, int> onOpRow)
         {
-            float y = col.Y + HeaderH + BudgetH + DefenseH + 14 + 24; // bench 362: 10px lower (maintainer)
+            float y = col.Y + HeaderH + BudgetH + DefenseH + 14 + 24;
             for (byte level = 1; level <= Ship_Game.Espionage.MaxLevel; ++level)
             {
                 onLevelTitle?.Invoke(level, y, true);
@@ -302,10 +308,10 @@ namespace Ship_Game.GameScreens
             }
         }
 
-        // folded op labels (maintainer bench 296/297): the long names do not fit a 900p
-        // column beside their turn counters, so a checkbox wears the tail word WHILE the
-        // counter shows (level reached) and the full name the rest of the time; the tooltip
-        // always opens on the full name. Sabotage is one word already and keeps its token.
+        // folded op labels: the long names do not fit a 900p column beside their turn counters,
+        // so a checkbox wears the tail word WHILE the counter shows (level reached) and the
+        // full name the rest of the time; the tooltip always opens on the full name. Sabotage
+        // is one word already and keeps its token.
         static (InfiltrationOpsType, LocalizedText, LocalizedText, LocalizedText, bool) Op(InfiltrationOpsType type,
             string folded, GameText fullName, GameText tip, bool def)
             => (type, folded, Localizer.Token(fullName),
@@ -383,12 +389,11 @@ namespace Ship_Game.GameScreens
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
 
             // Ludoal fork: the frame fill goes down FIRST, by hand. As a Submenu background it is
-            // one of the screen's children, so base.Draw painted it AFTER the columns below and
-            // covered them - SendToBackZOrder only orders it among the other children.
+            // one of the screen's children, so base.Draw would paint it AFTER the columns below -
+            // SendToBackZOrder only orders it among the other children.
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(GroupTabs), ScreenGroups.GroupFrameFill);
 
             // ⚠ cleared every pass: a column that stops drawing its portrait must not leave a
@@ -443,8 +448,7 @@ namespace Ship_Game.GameScreens
                                     portrait.HitTest(Input.CursorPosition) ? 3 : 1);
             }
             // the race flag rides LEFT OF THE PORTRAIT, a touch bigger, so the name gets
-            // the column's full width - some races did not fit a 900p column with the flag
-            // on their line (maintainer bench 296)
+            // the column's full width
             batch.Draw(ResourceManager.Flag(e.data.Traits.FlagIndex),
                        new Rectangle(portrait.X - 30, portrait.Y, 24, 24), e.EmpireColor);
             string name = e.data.Traits.Name;
@@ -460,7 +464,7 @@ namespace Ship_Game.GameScreens
 
             float budgetY = col.Y + HeaderH;
             SectionBand(batch, col, budgetY, "BUDGET");
-            // 30 higher (maintainer benches 296-300); the INFILTRATION block below is keyed
+            // 30 higher; the INFILTRATION block below is keyed
             // on BudgetH + DefenseH and does not follow
             float defenseY = col.Y + HeaderH + BudgetH - 6;
             SectionBand(batch, col, defenseY, "DEFENSE");
@@ -474,14 +478,13 @@ namespace Ship_Game.GameScreens
                 // Ludoal fork: the SETTINGS band that lived here (Disable Messages) moved to the
                 // Automation tab of the Empire group, with the other notification switches.
 
-                // bench 362 (maintainer): the player's own INFILTRATION block - the planets our
-                // moles sit on, clickable (opens that colony in mole vision, like a map
-                // double-click). Rects harvested here, hit-tested in HandleInput like the portraits.
+                // the player's own INFILTRATION block - the planets our moles sit on, clickable
+                // (opens that colony in mole vision, like a map double-click). Rects harvested
+                // here, hit-tested in HandleInput like the portraits.
                 float infilY = col.Y + HeaderH + BudgetH + DefenseH + 14;
                 SectionBand(batch, col, infilY, "INFILTRATION");
                 MoleRows.Clear();
                 float rowY = infilY + 24;
-                // bench 364 (maintainer): the block opens on its header line, in the theme's vanilla
                 batch.DrawString(Font12Bold, "Planets with Moles:", new Vector2(col.X + 8, rowY), Colors.Cream);
                 rowY += Font12Bold.LineSpacing + 4;
                 var moles = Player.data.MoleList;
@@ -558,7 +561,7 @@ namespace Ship_Game.GameScreens
             // Ludoal fork: one INFILTRATION band, then each level as a bold text line - cream once
             // the level is uncovered, grey while it is not. Five bands for one subject read as five
             // separate sections.
-            SectionBand(batch, col, col.Y + HeaderH + BudgetH + DefenseH + 14, "INFILTRATION"); // bench 362: 10px lower
+            SectionBand(batch, col, col.Y + HeaderH + BudgetH + DefenseH + 14, "INFILTRATION");
             ForEachInfiltrationRow(col, (level, rowY, isTitle) =>
             {
                 bool reached = esp.Level >= level;
@@ -578,10 +581,10 @@ namespace Ship_Game.GameScreens
 
         public override bool HandleInput(InputState input)
         {
-            // Ludoal fork (bench 46.173): the closing key is tested BEFORE the top bar, not
-            // after. The bar reads the same key to OPEN this screen and returns true, so with the
-            // bar first the key never reached the line below and the screen would not close on
-            // its own hotkey (maintainer feedback). The stock screen has no bar, which is why it never showed.
+            // Ludoal fork: the closing key is tested BEFORE the top bar, not after - the bar
+            // reads the same key to OPEN this screen and returns true, so with the bar first
+            // the key would never reach the line below and the screen would not close on its
+            // own hotkey.
             if (input.KeyPressed(Keys.E) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();
@@ -594,6 +597,28 @@ namespace Ship_Game.GameScreens
 
             if (Scroller.HandleInput(input))
                 return true;
+
+            // DOUBLE-click opens the mole colony - checked before the
+            // single-click block, or the second click would pan again instead of opening
+            if (input.LeftMouseDoubleClick)
+            {
+                foreach ((Rectangle rect, Planet moleP) in MoleRows)
+                {
+                    if (rect.HitTest(input.CursorPosition))
+                    {
+                        GameAudio.AcceptClick();
+                        // Ludoal fork: the mole colony rides the Diplomacy seat,
+                        // Espionage as the Esc origin.
+                        Universe.HostColonyTab(moleP, GameScreens.ScreenGroups.Group.Diplomacy,
+                                               (int)MainDiplomacyScreen.Tab.Espionage);
+                        // a stacked page like every tab: exit + open in
+                        // the same frame, the fresh ctor claims the pause before any tick
+                        ExitScreen();
+                        Universe.ScreenManager.AddScreen(new ColonyScreen(Universe, moleP, Universe.EmpireUI));
+                        return true;
+                    }
+                }
+            }
 
             // Ludoal fork: the portrait opens negotiation, as on the other Diplomacy tabs. The
             // rects come from the last draw, which is where the columns are laid out.
@@ -611,28 +636,15 @@ namespace Ship_Game.GameScreens
                     }
                 }
 
-                // bench 362 (maintainer): a mole-planet row opens that colony in mole vision,
-                // the same door the map double-click uses
+                // a SINGLE click pans the map to the mole planet, live in the band behind the
+                // page. Opening the colony is on the double-click.
                 foreach ((Rectangle rect, Planet moleP) in MoleRows)
                 {
                     if (rect.HitTest(input.CursorPosition))
                     {
-                        // bench 363 (maintainer): closing that colony comes BACK HERE, like the
-                        // Economy/Empire lists - the BudgetScreen pattern, copied. SnapViewColony
-                        // would clear the hook, so the panel is opened directly.
                         GameAudio.AcceptClick();
-                        Universe.ReturnToListScreen = () => Universe.ScreenManager.AddScreen(new InfiltrationScreen(Universe));
-                        Universe.ReturnToListTabs   = GroupTabs;
-                        Universe.ReturnToListGroup  = GameScreens.ScreenGroups.GroupOf(this);
-                        Universe.workersPanel = new ColonyScreen(Universe, moleP, Universe.EmpireUI);
-                        Universe.LookingAtPlanet = true;
-                        // Ludoal fork: the colony inherits this screen's automatic pause -
-                        // consulting a colony from a paused list must not restart the simulation
-                        // (maintainer bench). Before ExitScreen, which would resume it.
-                        HandOverUniversePause(Universe.workersPanel);
-                        ExitScreen();
-                        Universe.transitionStartPosition = Universe.CamPos;
-                        Universe.CamDestination = Universe.CamPos;
+                        // pan at the CURRENT zoom - the cartouche's own buttons do the zooming
+                        Universe.PanToPlanetKeepZoom(moleP);
                         return true;
                     }
                 }

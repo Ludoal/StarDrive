@@ -70,8 +70,8 @@ namespace Ship_Game
         public bool LookingAtPlanet;
         public bool snappingToShip;
         public bool returnToShip;
-        // Ludoal fork (bench 191): when a colony was opened from a LIST screen (Economy,
-        // Empire, Troops), closing it goes back to that list rather than to the map (maintainer feedback).
+        // Ludoal fork (maintainer feedback): when a colony was opened from a LIST screen
+        // (Economy, Empire, Troops), closing it goes back to that list rather than to the map.
         // What is remembered is how to REOPEN it, not which one it was: the three screens have
         // three different constructors, and an enum here would be one more thing to keep in
         // step with them. Cleared as soon as it is used, and by any colony opened from the map.
@@ -84,6 +84,73 @@ namespace Ship_Game
         // top bar keeps that group's button lit while a list-opened colony is up (the list screen
         // itself has left the stack). Armed alongside ReturnToListScreen; None when it clears.
         public GameScreens.ScreenGroups.Group ReturnToListGroup = GameScreens.ScreenGroups.Group.None;
+
+        // Ludoal fork (maintainer decision): the HOSTED tab's state - the successor of the trio
+        // above. The mechanism is universal, the colony is only its first subject; a ship or a
+        // troop panel rides the same seat later.
+        // A group's screens are born and die at every tab swap; only the universe survives
+        // them, so it carries what rides a group's row: the tab's title, HOW to (re)open
+        // its panel (never which type it was - the ReturnToListScreen philosophy), which
+        // group hosts it, and the tab index Esc returns to (-1 = opened from the map,
+        // where Esc closes to the map). One hosted seat: a new subject replaces the old.
+        public string HostedTabTitle;                 // null = no hosted tab
+        public Action OpenHostedTabPanel;             // how the tab's click reopens its panel
+        public GameScreens.ScreenGroups.Group HostedTabGroup = GameScreens.ScreenGroups.Group.None;
+        public int HostedTabOrigin = -1;
+
+        // Ludoal fork: arm the hosted seat for a colony - the panel-open mirrors the
+        // map-open block (Camera.cs) except it must NOT clear the tab state: the tab is
+        // precisely what is being opened. Camera anchoring identical - the panel covers
+        // the map. The title follows the planet; the colony arrows re-arm on navigation.
+        // Ludoal fork (maintainer): the Empire group's colony tab is PERMANENT - it remembers
+        // the last colony viewed there, the capital by default. The seat above is transient
+        // (per-visit, any group); this survives seat clears and group jumps.
+        public Planet EmpireColonyPlanet;
+        public Planet EmpireColonyDefault
+        {
+            get
+            {
+                if (EmpireColonyPlanet != null && EmpireColonyPlanet.Owner == Player)
+                    return EmpireColonyPlanet;
+                return Player.GetCurrentCapital(out Planet capital) ? capital : null;
+            }
+        }
+
+        // the permanent Colony tab's opener - activating it pans (no zoom) to the planet
+        public void OpenEmpireColonyTab()
+        {
+            Planet p = EmpireColonyDefault;
+            if (p == null)
+                return;
+            HostColonyTab(p, GameScreens.ScreenGroups.Group.Empire, -1);
+            PanToPlanetKeepZoom(p); // selects the planet too - the cartouche shows through
+            ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI));
+        }
+
+        public void HostColonyTab(Planet p, GameScreens.ScreenGroups.Group group, int originTab)
+        {
+            if (group == GameScreens.ScreenGroups.Group.Empire)
+                EmpireColonyPlanet = p; // the permanent tab follows the last colony viewed
+            HostedTabTitle = p.Name;
+            HostedTabGroup = group;
+            HostedTabOrigin = originTab;
+            // Ludoal fork: the colony is a STACKED page, like every tab - one code path for
+            // input, pause, band and closing.
+            OpenHostedTabPanel = () =>
+            {
+                SetSelectedPlanet(p); // stays selected - the cartouche shows through
+                ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI));
+            };
+        }
+
+        public void ClearHostedTab()
+        {
+            HostedTabTitle = null;
+            OpenHostedTabPanel = null;
+            HostedTabGroup = GameScreens.ScreenGroups.Group.None;
+            HostedTabOrigin = -1;
+        }
+
         public EmpireUIOverlay EmpireUI;
         public BloomComponent bloomComponent;
         public DistortionComponent distortionComponent;
@@ -201,7 +268,15 @@ namespace Ship_Game
         bool IsUniverseInitialized;
 
         public bool IsViewingCombatScreen(Planet p) => LookingAtPlanet && workersPanel is CombatScreen cs && cs.P == p;
-        public bool IsViewingColonyScreen(Planet p) => LookingAtPlanet && workersPanel is ColonyScreen cs && cs.P == p;
+        // Ludoal fork: the colony is a stacked page - ask the stack
+        public bool IsViewingColonyScreen(Planet p)
+        {
+            var stack = ScreenManager.Screens;
+            for (int i = 0; i < stack.Count; ++i)
+                if (stack[i] is ColonyScreen cs && cs.P == p && !stack[i].IsExiting)
+                    return true;
+            return false;
+        }
 
         /// <summary>
         /// RADIUS of the universe, Stars are generated within XY range [-universeRadius, +universeRadius]
@@ -519,10 +594,43 @@ namespace Ship_Game
             }
         }
 
-        void LoadGraphics()
+        // Ludoal fork (maintainer spec): the minimap housing scales with an options slider.
+        // One seat for everything the widget anchors - the housing, the click target, the
+        // border toggle, and the two combat counters above the frame - so a live change from
+        // the options screen cannot leave them drifted apart. ⚠ the CLICK target is the map's
+        // own rect, asked of the MiniMap: a separate hand-measured rect drifted the moment the
+        // frame was reworked, and clicks panned the camera off-target.
+        public void SeatMinimap()
         {
             const int minimapOffSet = 14;
+            // 10px off both edges, the margin the overlay tabs and every reworked frame keep
+            const int mmMargin = 10;
+            float mult = GlobalStats.MinimapSizeMult.Clamped(1f, 2f);
+            int mmW = (int)((276 + minimapOffSet) * mult);
+            int mmH = (int)(256 * mult);
+            mmHousing = new Rectangle(GameBase.ScreenWidth - mmW - mmMargin,
+                                      GameBase.ScreenHeight - mmH - mmMargin, mmW, mmH);
+            Minimap?.RemoveFromParent();
+            Minimap = Add(new MiniMap(this, mmHousing));
+            MinimapDisplayRect = Minimap.MapRect;
+            mmShowBorders = new Rectangle(MinimapDisplayRect.X, MinimapDisplayRect.Y - 25, 32, 32);
 
+            if (ShipsInCombat != null)
+            {
+                Rectangle mmap = Minimap.MapRect;
+                int mmFrameL = mmap.X - 6, mmFrameR = mmap.Right + 6;
+                int counterW = (mmFrameR - mmFrameL - 6) / 2;
+                int counterY = mmHousing.Y - 30;
+                ShipsInCombat.Rect   = new Rectangle(mmFrameL, counterY, counterW, 24);
+                PlanetsInCombat.Rect = new Rectangle(mmFrameR - counterW, counterY, counterW, 24);
+            }
+            // the utility overlays hang off the minimap frame - they follow it (bench 406)
+            ExoticBonusesWindow?.SeatByMinimap();
+            FreighterUtilizationWindow?.SeatByMinimap();
+        }
+
+        void LoadGraphics()
+        {
             var device  = ScreenManager.GraphicsDevice;
             int width   = GameBase.ScreenWidth;
             int height  = GameBase.ScreenHeight;
@@ -540,12 +648,7 @@ namespace Ship_Game
             }
 
             Frustum = new BoundingFrustum(ViewProjection);
-            // Ludoal fork: 10px off both edges, the margin the overlay tabs and every reworked
-            // frame keep - the housing used to sit flush in the corner (maintainer).
-            const int mmMargin = 10;
-            mmHousing = new Rectangle(width - (276 + minimapOffSet) - mmMargin, height - 256 - mmMargin,
-                                      276 + minimapOffSet, 256);
-            Minimap = Add(new MiniMap(this, mmHousing));
+            SeatMinimap();
             ExoticBonusesWindow = Add(new ExoticBonusesWindow(this));
             FreighterUtilizationWindow = Add(new FreighterUtilizationWindow(this));
 
@@ -559,12 +662,6 @@ namespace Ship_Game
             else if (UState.ShowFreighterUtilWindow)
                 FreighterUtilizationWindow.ToggleVisibility(playSound: false);
 
-            // ⚠ the CLICK target is the map's own rect, asked of the MiniMap - it was a separate
-            // 200x200 at hand-measured offsets, built for the old brass housing. The moment the
-            // frame was reworked the two drifted, so clicking the minimap moved the camera to
-            // somewhere other than where you clicked.
-            MinimapDisplayRect = Minimap.MapRect;
-            mmShowBorders = new Rectangle(MinimapDisplayRect.X, MinimapDisplayRect.Y - 25, 32, 32);
 
             // Ludoal fork: 10px off the left and bottom edges, the margin the whole reworked
             // interface keeps - every info cartouche (ship, system, planet, star, fleet list)
@@ -636,28 +733,28 @@ namespace Ship_Game
             int mmFrameL = mmap.X - 6, mmFrameR = mmap.Right + 6;   // the painted rule's edges
             int counterW = (mmFrameR - mmFrameL - 6) / 2;
             int counterY = mmHousing.Y - 30;
-            ShipsInCombat = ButtonMediumMenu(mmFrameL, counterY, "Ships: 0");
+            ShipsInCombat = ButtonMediumMuted(mmFrameL, counterY, "Ships: 0");
             ShipsInCombat.Size = new Vector2(counterW, 24);
             ShipsInCombat.DynamicText = () =>
             {
-                ShipsInCombat.Style = Player.EmpireShipCombat > 0 ? ButtonStyle.Medium : ButtonStyle.MediumMenu;
+                ShipsInCombat.Style = Player.EmpireShipCombat > 0 ? ButtonStyle.Medium : ButtonStyle.MediumMuted;
                 return $"Ships: {Player.EmpireShipCombat}";
             };
             ShipsInCombat.Tooltip = "Cycle through ships not in fleet that are in combat";
             ShipsInCombat.OnClick = ShipsInCombatClick;
             Add(ShipsInCombat);
 
-            PlanetsInCombat = ButtonMediumMenu(mmFrameR - counterW, counterY, "Planets: 0");
+            PlanetsInCombat = ButtonMediumMuted(mmFrameR - counterW, counterY, "Planets: 0");
             PlanetsInCombat.Size = new Vector2(counterW, 24);
             PlanetsInCombat.DynamicText = () =>
             {
-                PlanetsInCombat.Style = Player.EmpirePlanetCombat > 0 ? ButtonStyle.Medium : ButtonStyle.MediumMenu;
+                PlanetsInCombat.Style = Player.EmpirePlanetCombat > 0 ? ButtonStyle.Medium : ButtonStyle.MediumMuted;
                 return $"Planets: {Player.EmpirePlanetCombat}";
             };
             PlanetsInCombat.OnClick = CyclePlanetsInCombat;
             PlanetsInCombat.Tooltip = "Cycle through planets that are in combat";
 
-            RectF leftRect = new(25, 60, 200, 500); // 5 right (bench 307): the Patrol badge kissed the edge
+            RectF leftRect = new(25, 60, 200, 500); // 5px margin: the Patrol badge kissed the edge
             Add(new FleetButtonsList(leftRect, this, this,
                 onClick: OnFleetButtonClicked,
                 onHotKey: OnFleetHotKeyPressed,
@@ -739,6 +836,9 @@ namespace Ship_Game
 
         public override void Update(float fixedDeltaTime)
         {
+            // the colony is a stacked page - the top bar closes it on a group jump like any
+            // page, and the seat still dies where the universe regains input
+
             if (LookingAtPlanet)
                 workersPanel?.Update(fixedDeltaTime);
 
@@ -773,13 +873,9 @@ namespace Ship_Game
             {
                 SystemInfoOverlay.Update(elapsed);
             }
-            // Ludoal fork (field report 45.44): the clickable build goals froze while paused, so
-            // a DSB under construction could not be selected. We fixed it here, on the UI thread;
-            // upstream took the diagnosis (PR #356) but rewrote the fix onto the SIM thread,
-            // because reading GoalsList from here reopens the torn-read race their fixes_24 had
-            // closed. The patch 47 merge brought their version in and left ours in place, so the
-            // refresh ran on both threads at once - the exact race their rewrite exists to avoid.
-            // Theirs owns it now: see ProcessSimulationTurns in UniverseScreen.UpdateGame.cs.
+            // ⚠ do not refresh clickable build goals from here: reading GoalsList off the UI
+            // thread reopens a torn-read race with the sim thread. That refresh lives on the
+            // sim thread - see ProcessSimulationTurns in UniverseScreen.UpdateGame.cs.
 
             if (ShowPlanetInfo)
             {

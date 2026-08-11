@@ -154,12 +154,30 @@ public static class GlobalStats
     public static bool PauseOnNotification;
 
     // USER_EXPERIENCE
+    // Ludoal fork: whether opening a page (group screens, colony) auto-pauses the
+    // simulation. ON by default - the game's historical behavior. Opting out lets the
+    // universe live behind the pages; manual pause still works, and the Shipyard's
+    // Full Screen mode always pauses regardless (it covers the whole display).
+    public static bool PauseOnPageOpen = true;
+
+    // Ludoal fork (bench 392): the Colony panel is exempt from auto-pause unless this is set -
+    // default OFF restores the original behaviour (the colony runs live while you read it).
+    // Subordinate to PauseOnPageOpen: meaningless, and greyed in Options, when that is off.
+    public static bool AutoPauseColonyPanel;
+
+    // USER_EXPERIENCE
     // global option for disabling universe screen pan, default should be OFF
     public static bool DisableScreenPanning;
 
     // USER_EXPERIENCE
-    // global option for Icon size
+    // global option for Icon size (ships). Stations/platforms have their own knob below.
     public static int IconSize = 1;
+    // Ludoal fork (maintainer spec): stations and platforms scale separately from ships
+    public static int StationIconSize = 1;
+    // Ludoal fork: visual multiplier on asteroid scale, applied in the per-frame transform
+    public static float AsteroidSizeMult = 1f;
+    // Ludoal fork: multiplier on the minimap housing; the map band absorbs, buttons stay fixed
+    public static float MinimapSizeMult = 1f;
 
     // USER_EXPERIENCE
     // autosave frequency in seconds
@@ -171,8 +189,7 @@ public static class GlobalStats
     // (the classic pre-46-a look). Default off = the map stays dark, live sensors only.
     public static bool FogOfWarMemory;
 
-    // Ludoal fork: symmetric ship design is a PLAYER preference, not a save property —
-    // it used to live on the Empire ([StarData]) so every existing save re-imposed ON.
+    // Ludoal fork: symmetric ship design is a PLAYER preference, not a save property.
     // Default off.
     public static bool SymmetricDesign;
 
@@ -446,8 +463,15 @@ public static class GlobalStats
 
         GetSetting(config, "NotifyEmptyPlanetQueue", ref NotifyEmptyPlanetQueue);
         GetSetting(config, "PauseOnNotification", ref PauseOnNotification);
+        GetSetting(config, "PauseOnPageOpen", ref PauseOnPageOpen);
+        GetSetting(config, "AutoPauseColonyPanel", ref AutoPauseColonyPanel);
         GetSetting(config, "IconSize", ref IconSize);
         IconSize = Math.Max(1, IconSize); // BUGFIX: must be at least 1
+        StationIconSize = IconSize; // pre-split configs: both icon knobs start from the old shared value
+        GetSetting(config, "StationIconSize", ref StationIconSize);
+        StationIconSize = Math.Max(1, StationIconSize);
+        GetSetting(config, "AsteroidSizeMult", ref AsteroidSizeMult);
+        GetSetting(config, "MinimapSizeMult", ref MinimapSizeMult);
         GetSetting(config, "ZoomTracking", ref ZoomTracking);
         GetSetting(config, "CameraPanSpeed", ref CameraPanSpeed);
         GetSetting(config, "AltArcControl", ref AltArcControl);
@@ -662,7 +686,12 @@ public static class GlobalStats
 
         WriteSetting(config, "NotifyEmptyPlanetQueue", NotifyEmptyPlanetQueue);
         WriteSetting(config, "PauseOnNotification", PauseOnNotification);
+        WriteSetting(config, "PauseOnPageOpen", PauseOnPageOpen);
+        WriteSetting(config, "AutoPauseColonyPanel", AutoPauseColonyPanel);
         WriteSetting(config, "IconSize", IconSize);
+        WriteSetting(config, "StationIconSize", StationIconSize);
+        WriteSetting(config, "AsteroidSizeMult", AsteroidSizeMult);
+        WriteSetting(config, "MinimapSizeMult", MinimapSizeMult);
         WriteSetting(config, "ZoomTracking", ZoomTracking);
         WriteSetting(config, "CameraPanSpeed", CameraPanSpeed);
         WriteSetting(config, "AltArcControl", AltArcControl);

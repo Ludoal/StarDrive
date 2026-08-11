@@ -51,10 +51,7 @@ namespace Ship_Game
         public FreighterUtilizationWindow(UniverseScreen screen) : base(screen, toPause: null)
         {
             Screen = screen;
-            const int windowWidth = 650;
-            int windowHeight = 4 * (Fonts.Arial12Bold.LineSpacing + 25);
-            Rect = new Rectangle((int)Screen.Minimap.X - 5 - windowWidth, (int)Screen.Minimap.Y +
-                (int)Screen.Minimap.Height - windowHeight, windowWidth, windowHeight); // Ludoal fork: foot flush with the minimap frame
+            SeatByMinimap();
             CanEscapeFromScreen = false;
             if (Player.NonCybernetic)
                 GoodsUtilizationMap.Add(Goods.Food, new GoodsUtilization(Goods.Food, this));
@@ -62,16 +59,30 @@ namespace Ship_Game
             GoodsUtilizationMap.Add(Goods.Production, new GoodsUtilization(Goods.Production, this));
             GoodsUtilizationMap.Add(Goods.Colonists, new GoodsUtilization(Goods.Colonists, this));
             UtilizationBar = new ProgressBar(new Rectangle(-100, -100, 150, 18), 0, 0) { DrawPercentage = true };
-            BuildFreighter = Button(ButtonStyle.BigDip, GameText.BuildFreighter, OnBuildFreighterClick);
+            BuildFreighter = Button(ButtonStyle.DefaultActive, GameText.BuildFreighter, OnBuildFreighterClick);
         }
+
+        // Ludoal fork (bench 406): the minimap can be resized live from Options - the window
+        // re-anchors on it, and reflows its content if it is already built
+        public void SeatByMinimap()
+        {
+            const int windowWidth = 650;
+            int windowHeight = 4 * (Fonts.Arial12Bold.LineSpacing + 25);
+            Rect = new Rectangle((int)Screen.Minimap.X - 5 - windowWidth, (int)Screen.Minimap.Y +
+                (int)Screen.Minimap.Height - windowHeight, windowWidth, windowHeight); // foot flush with the minimap frame
+            if (HasContent)
+                LoadContent();
+        }
+        bool HasContent;
 
         public override void LoadContent()
         {
             base.LoadContent();
             RemoveAll();
+            HasContent = true;
 
             RectF win = new(Rect);
-            // Ludoal fork (maintainer feedback): the window title is just "Freighters" now
+            // Ludoal fork: window title is "Freighters"
             ConstructionSubMenu = new(win, "Freighters");
             float titleOffset = win.Y + 40;
             Add(new UILabel(new Vector2(win.X + 15, titleOffset), GameText.TotalFreighterUtilization, Fonts.Arial12Bold, Color.Gold, GameText.TotalUtilizationTip));
@@ -135,9 +146,12 @@ namespace Ship_Game
             Visible = false;
         }
 
+        // bench 406: the overlay steps aside during ground combat and returns with the view
+        bool HiddenByGroundCombat => Screen.LookingAtPlanet && Screen.workersPanel is CombatScreen;
+
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            if (!Visible)
+            if (!Visible || HiddenByGroundCombat)
                 return;
 
             Rectangle r = ConstructionSubMenu.Rect;
@@ -156,7 +170,7 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            if (!IsOpen)
+            if (!IsOpen || HiddenByGroundCombat)
                 return false;
 
             if (BuildFreighter.HandleInput(input))

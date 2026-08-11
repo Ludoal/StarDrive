@@ -30,6 +30,7 @@ namespace Ship_Game
         public Action Accepted;
         public Action Cancelled;
         public Vector2? CenterOn; // Ludoal fork (bench 362): centre on a frame instead of the display
+        readonly GameScreen Summoner; // bench 407: default CenterOn source (the summoner's page frame)
 
         public MessageBoxScreen(GameScreen parent, string message,
                                 MessageBoxButtons buttons = MessageBoxButtons.Default, int width = 320)
@@ -54,6 +55,7 @@ namespace Ship_Game
                                 MessageBoxButtons buttons = MessageBoxButtons.Default, int width = 320)
             : base(parent, toPause: parent as UniverseScreen /*only pause if message box is shown on top of universe*/)
         {
+            Summoner = parent;
             Original = message;
             Message = message;
             IsPopup = true;
@@ -81,7 +83,7 @@ namespace Ship_Game
             Message = Fonts.Arial12Bold.ParseText(Original + ToAppend, 250f);
             Vector2 msgSize = Fonts.Arial12Bold.MeasureString(Message);
             // Ludoal fork (bench 362): a box summoned by a frame-bound screen centres on that frame
-            Vector2 c = CenterOn ?? new Vector2(ScreenWidth / 2f, ScreenHeight / 2f);
+            Vector2 c = CenterOn ?? Summoner?.PageFrameCentre() ?? new Vector2(ScreenWidth / 2f, ScreenHeight / 2f);
             var r = new Rectangle((int)c.X - BoxWidth/2, (int)c.Y - (int)(msgSize.Y + 40f) / 2,
                                   BoxWidth, (int)(msgSize.Y + 40f) + 30); // bench 363: buttons breathe off the edge
 

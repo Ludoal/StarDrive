@@ -35,7 +35,7 @@ namespace Ship_Game
         Rectangle FlagLeft;
         Rectangle FlagRight;
 
-        // Ludoal fork: one full-screen popup frame carrying two rows of tabs (maintainer layout).
+        // Ludoal fork: one full-screen popup frame carrying two rows of tabs.
         //   row 1, FIXED:   [Empire] [Galaxy] - side by side, half the width each
         //   row 2, DYNAMIC: [Race] | [Physical..Environment] | [Points|Description]
         // Everything stays visible: row 1 sits ABOVE row 2, it never hides it. Row 2 is the one
@@ -154,25 +154,20 @@ namespace Ship_Game
             P = settings;
         }
         
-        // Ludoal fork: first screen converted to Narrow/Tall. Same three sizes as before, but the
-        // small one now covers the whole sub-1920 band instead of only sub-1366, and the large
-        // one keys off height rather than either dimension.
-        // ⚠ a size up (maintainer): the description is a tab with a full column now, not a strip
-        // sharing its area with the points summary.
-        Graphics.Font DescriptionTextFont => Narrow ? Fonts.Arial12
-                                                    : Tall ? Fonts.Arial20Bold : Fonts.Arial14Bold;
+        // fixed like the rest of the fixed-window layout
+        Graphics.Font DescriptionTextFont => Fonts.Arial14Bold;
+
+        // Ludoal fork: dialogs summoned by this fixed window centre on its frame
+        public override Rectangle PageFrame => ScreenFrame.Width > 0 ? ScreenFrame : base.PageFrame;
 
         public override void LoadContent()
         {
             // ── the frame and the ONE grid every block measures from ─────────────────────────
             const int Pad = 8;
-            // Ludoal fork (maintainer feedback, 7 Aug): New Game is a CATEGORY-1 screen now - a
-            // FIXED 1440x900 window, centred on the display, not a full-screen popup that grew with
-            // the resolution. Everything inside derives from ScreenFrame, so fixing the frame fixes
-            // the whole layout at its 900p form (the size the bench is tuned on). Narrow/Tall no
-            // longer vary here - at 1440x900 both are false, the plain middle branch throughout.
-            // 1440x900 is the whole frame; it sits centred with a black margin on a larger display.
-            // (The body-fill inset that keeps the grey off the border shadow is in Draw, not here.)
+            // Ludoal fork: New Game is a CATEGORY-1 screen - a FIXED 1440x900 window, centred on
+            // the display, not a full-screen popup that grows with the resolution. Everything
+            // inside derives from ScreenFrame. It sits centred with a black margin on a larger
+            // display. (The body-fill inset that keeps the grey off the border shadow is in Draw.)
             const int WinW = 1440, WinH = 900;
             int winX = (ScreenWidth  - WinW) / 2;
             int winY = (ScreenHeight - WinH) / 2;
@@ -183,23 +178,23 @@ namespace Ship_Game
             int gridLeft   = inner.X + Pad;
             int gridRight  = inner.Right - Pad;
             int gridTop    = inner.Y + Pad;
-            // ⚠ from the FRAME's foot: ContentArea already holds back 30px for the bottom band,
-            // so measuring from it left the content well short of the frame (maintainer).
-            // ⚠ the frame's VISIBLE bottom line - the rect runs BottomLine past it, those rows
-            // being the band's drop shadow. The foot buttons close 10px above that line
-            // (maintainer), and the grid closes one pad above the buttons.
+            // ⚠ Measure from the FRAME's foot: ContentArea already holds back 30px for the bottom
+            // band, so measuring from it leaves the content short of the frame.
+            // ⚠ The frame's VISIBLE bottom line - the rect runs BottomLine past it, those rows
+            // being the band's drop shadow. The foot buttons close 10px above that line, and the
+            // grid closes one pad above the buttons.
             int visibleBottom = ScreenFrame.Bottom - PopupFrame.BottomLine;
             int footY = visibleBottom - 10 - 24;   // 24 = the painted buttons' height
             int gridBottom = footY - Pad;
 
             // ── ROW 1: Environment | Empire | Galaxy, FIXED height ──────────────────────────
-            // The standing Environment tab heads the row (maintainer), column-aligned with the
-            // Race tab below it; Empire and Galaxy share the remaining width.
-            const int Row1H = 192;   // +20 on the bench's word - the fields were tight
+            // The standing Environment tab heads the row, column-aligned with the Race tab below
+            // it; Empire and Galaxy share the remaining width.
+            const int Row1H = 192;
             const int SideW = 330;   // the fixed side-column width, shared with row 2
-            // Ludoal fork (maintainer feedback): the Environment tab needs 30px more for its two
-            // columns at 900p; it takes them from Galaxy (the last tab), NOT from SideW, which the
-            // Race and Points columns below depend on. Empire keeps its width; Galaxy gives the 30.
+            // Ludoal fork: the Environment tab needs 30px more for its two columns at 900p; it
+            // takes them from Galaxy (the last tab), NOT from SideW, which the Race and Points
+            // columns below depend on. Empire keeps its width; Galaxy gives the 30.
             const int EnvExtra = 30;
             int envW = SideW + EnvExtra;
             EnvTab = Add(new Submenu(new RectF(gridLeft, gridTop, envW, Row1H), "Environment"));
@@ -216,15 +211,15 @@ namespace Ship_Game
             // separate panel drawn behind it
             RectF nameArea = EmpireTab.ClientArea;
 
-            // ── the EMPIRE tab is three columns (maintainer feedback, for 900p headroom) ──────
-            // 1: the labels, 2: the value fields, 3: the flag picker on the right. The flag used
-            // to overlap the value fields at 900p; giving it its own fixed column and pulling the
-            // two text columns left (labels -10, values -20) opens the gap. Constants, not a
-            // divide of the leftover, so nothing shifts when the tab resizes.
+            // ── the EMPIRE tab is three columns, for 900p headroom ────────────────────────────
+            // 1: the labels, 2: the value fields, 3: the flag picker on the right. The flag has
+            // its own fixed column, with the two text columns pulled left, so the picker doesn't
+            // overlap the value fields at 900p. Constants, not a divide of the leftover, so
+            // nothing shifts when the tab resizes.
             const float FormLeftPull = 10f;     // labels start 10px further left
-            const float SplitPull    = 30f;     // values recede 30 from stock (maintainer: -20 more)
+            const float SplitPull    = 30f;     // values recede 30 from stock
             const float FlagColW     = 120f;    // the flag picker column, arrows included
-            const float FlagNudgeX   = 10f;     // maintainer: push the whole flag block 10px right
+            const float FlagNudgeX   = 10f;     // push the whole flag block 10px right
             const float FormSplit    = 205f - SplitPull;
 
             SelectedData = GetDefaultRace(); //SelectedData is used to populate the UI
@@ -248,17 +243,16 @@ namespace Ship_Game
             FlagRect = new Rectangle((int)flagPos.X, (int)flagPos.Y + 26, 80, 80);
 
             // ── ROW 2: Race|Opponents | Traits | Points+Description, sharing row2Top and row2H ──
-            // Ludoal fork (maintainer feedback, 7 Aug): the LEFT column widens to match Environment
-            // above it (envW), so the two column heads line up; the extra 30 comes off the middle
-            // Traits block (the right Points column keeps its fixed SideW). The Traits block is the
-            // one that absorbs - one arithmetic for the three.
+            // Ludoal fork: the LEFT column widens to match Environment above it (envW), so the two
+            // column heads line up; the extra 30 comes off the middle Traits block (the right
+            // Points column keeps its fixed SideW). The Traits block is the one that absorbs - one
+            // arithmetic for the three.
             RectF traitsList = new(gridLeft + envW + Pad, row2Top,
                                    gridRight - gridLeft - envW - SideW - 2 * Pad, row2H);
 
             LocalizedText[] traitNames = { GameText.Physical, GameText.Sociological, GameText.HistoryAndTradition, "Environment" };
-            // ⚠ no Bevel and NO Menu1 background (maintainer: "supprimer le cadre du bloc
-            // central"). The Menu1 painted a second popup frame INSIDE the tab's own, which is
-            // the double border the bench saw - and with it goes the SetAbsPos pin it needed.
+            // ⚠ No Bevel and no Menu1 background - Menu1 paints a second popup frame INSIDE the
+            // tab's own, producing a double border; with it goes the SetAbsPos pin it needed.
             Traits = Add(new SubmenuScrollList<TraitsListItem>(traitsList, traitNames));
             Traits.OnTabChange = OnTraitsTabChanged;
 
@@ -266,16 +260,16 @@ namespace Ship_Game
             TraitsList.EnableItemHighlight = true;
             TraitsList.OnClick = OnTraitsListItemClicked;
 
-            // row 2 LEFT: two tabs sharing one area, Race and Opponents. Ludoal fork (maintainer
-            // feedback, 7 Aug): the Select Opponents popup folds in here as a second tab (same
-            // pattern as Points|Description on the right), so it is no longer a separate window and
-            // its foot button is gone. The tab is envW wide, aligned with Environment above.
+            // row 2 LEFT: two tabs sharing one area, Race and Opponents. Ludoal fork: Select
+            // Opponents is a second tab here (same pattern as Points|Description on the right),
+            // not a separate window - no foot button. The tab is envW wide, aligned with
+            // Environment above.
             LocalizedText[] leftTabs = { "Race", "Opponents" };
             RaceTab = Add(new Submenu(new RectF(gridLeft, row2Top, envW, row2H), leftTabs));
             RaceTab.OnTabChange = OnLeftTabChanged;
             RectF chooseRace = RaceTab.ClientArea;
-            // maintainer feedback (bench 343): both lists 10px narrower - the tab frame stays aligned
-            // with Environment above, only the list area (and so the 0.8-width portraits) shrinks.
+            // Both lists 10px narrower - the tab frame stays aligned with Environment above, only
+            // the list area (and so the 0.8-width portraits) shrinks.
             RectF raceListArea = new(chooseRace.X, chooseRace.Y, chooseRace.W - 10, chooseRace.H);
             ChooseRaceList = Add(new ScrollList<RaceArchetypeListItem>(raceListArea, 135));
             ChooseRaceList.OnClick = OnRaceArchetypeItemClicked;
@@ -286,8 +280,8 @@ namespace Ship_Game
             // the Opponents tab: a count caption plus the opponent list, the same content the
             // SelectOpponentsScreen popup carried. Both share chooseRace; OnLeftTabChanged flips
             // which one shows. The count strip sits at the top, the list below it.
-            // maintainer feedback (7 Aug): give the caption air above it, and align it on the list
-            // items' own left edge (the 0.8-width portraits are centred, so their left is inset).
+            // The caption gets air above it, aligned on the list items' own left edge (the
+            // 0.8-width portraits are centred, so their left is inset).
             const int OppCountStrip = 42;
             const int OppCountTop = 14;   // air above the caption
             OpponentsCountLabel = Add(new UILabel(
@@ -312,9 +306,8 @@ namespace Ship_Game
             Graphics.Font font = Fonts.Arial12Bold;
             // the galaxy readouts live in the Galaxy tab now, not off the right of a name panel
             RectF galaxyArea = GalaxyTab.ClientArea;
-            // ⚠ the readouts sit on the FIRST option row (Galaxy Size), to its right - they were
-            // anchored on the panel's bottom, which floated them away from the row they comment
-            // (maintainer). 190 clears the 180-wide split of the option buttons below.
+            // ⚠ the readouts sit on the FIRST option row (Galaxy Size), to its right. 190 clears
+            // the 180-wide split of the option buttons below.
             // ⚠ derived from the option list below, not from the panel: that list starts at X+10
             // and its splitter is 180 wide, so its VALUES sit at X+190 - a label at X+200 landed
             // on top of them. Its first row is one padding down from the list's own Y.
@@ -329,12 +322,11 @@ namespace Ship_Game
             ExtraPlanetsLabel.Font  = font;
             ExtraPlanetsLabel.Color = Color.Green;
 
-            // under the two readouts it comments, in the same column - it was anchored on the
-            // panel's foot, away from the numbers that trigger it (maintainer)
+            // under the two readouts it comments, in the same column
             PerformanceWarning = Add(new UILabel(labelX, labelY + 2 * (font.LineSpacing + 3), ""));
             PerformanceWarning.Font = font;
-            // Ludoal fork (maintainer feedback): the warning wraps to the tab's right edge instead
-            // of running off it - the width from the label's X to the frame edge, less a margin.
+            // Ludoal fork: the warning wraps to the tab's right edge instead of running off it -
+            // the width from the label's X to the frame edge, less a margin.
             PerfWarnWrapW = galaxyArea.Right - labelX - 12;
 
             UIList optionButtons = AddList(galaxyArea.X + 10, galaxyArea.Y + 6);
@@ -382,7 +374,7 @@ namespace Ship_Game
             // row 2 RIGHT: two tabs over one area - the points summary, and the race description.
             // Same rect for both; OnTabChange flips which one is visible.
             // ⚠ the tab list is an IEnumerable - there is no variadic overload
-            // "Points", not the full token: the two tabs have to share ONE row (maintainer)
+            // "Points", not the full token: the two tabs have to share ONE row
             LocalizedText[] infoTabs = { "Points", "Description" };
             InfoTab = Add(new Submenu(new RectF(gridRight - SideW, row2Top, SideW, row2H), infoTabs));
             InfoTab.OnTabChange = OnInfoTabChanged;
@@ -398,7 +390,7 @@ namespace Ship_Game
             Picker.Title = "Empire Color";
             Picker.Visible = false;
 
-            // ── the FOOT: each button sits under the sector it affects (maintainer) ─────────
+            // ── the FOOT: each button sits under the sector it affects ─────────────────────
             // ⚠ Medium, not Default: BtnW is 132 and that IS the Medium plate's width. A
             // Default button is 168 wide and a row would overlap itself by 36 per button.
             const int BtnW = 132, BtnGap = 6;
@@ -410,19 +402,18 @@ namespace Ship_Game
                 return b;
             }
 
-            // under RACE: its own load/save, centred on the left column (maintainer feedback).
-            // Two Medium buttons span 2*BtnW+BtnGap; the column is envW wide now (the widened Race
-            // column), so inset by half the slack against envW - the SAME width the column declares.
+            // under RACE: its own load/save, centred on the left column. Two Medium buttons span
+            // 2*BtnW+BtnGap; the column is envW wide, so inset by half the slack against envW -
+            // the SAME width the column declares.
             const int TwoBtnW = 2 * BtnW + BtnGap;
             bx = gridLeft + (envW - TwoBtnW) / 2;
             Foot("Load Race", OnLoadRaceClicked);
             Foot("Save Race", OnSaveRaceClicked);
 
-            // centred under the TRAITS block: the whole-setup Load/Save pair. Ludoal fork
-            // (maintainer feedback, 7 Aug): the Select Opponents button is gone - opponents are a tab
-            // in the left column now - so the pair centres on the middle block on its own. The row's
-            // width is the ONE arithmetic both buttons share.
-            // the middle block now starts at envW (the widened left column), not SideW
+            // centred under the TRAITS block: the whole-setup Load/Save pair. Ludoal fork:
+            // opponents are a tab in the left column, so the pair centres on the middle block on
+            // its own. The row's width is the ONE arithmetic both buttons share.
+            // the middle block starts at envW (the widened left column), not SideW
             int midLeft = gridLeft + envW + Pad;
             int midW    = gridRight - SideW - Pad - midLeft;
             int midRowW = 2 * BtnW + BtnGap;                      // Load + Save
@@ -430,24 +421,24 @@ namespace Ship_Game
             Foot("Load Setup", OnLoadSetupClicked);
             Foot("Save Setup", OnSaveSetupClicked);
 
-            // right column: Engage commits (active blue), centred on the right column. Ludoal fork
-            // (maintainer feedback): Exit is gone from the foot - the frame's close cross top-right
-            // does the cancel now (it calls ExitScreen on its own).
+            // right column: Engage commits (active blue), centred on the right column. Ludoal
+            // fork: the frame's close cross top-right does the cancel (it calls ExitScreen on
+            // its own), so Exit is not in the foot.
             // ⚠ the Wide styles are PAINTED, so their width is whatever we set.
-            UIButton engage = Button(ButtonStyle.WideActive, gridRight - SideW + (SideW - BtnW) / 2, footY, "Start Game", click: OnEngageClicked); // maintainer: was "Engage"
+            UIButton engage = Button(ButtonStyle.WideActive, gridRight - SideW + (SideW - BtnW) / 2, footY, "Start Game", click: OnEngageClicked);
             engage.SetAbsSize(BtnW, 24);
 
             Vector2 closePos = PopupFrame.ClosePos(ScreenFrame);
             CloseButton(closePos.X, closePos.Y);
 
-            // Rule Options lives in the Galaxy tab it configures; blue (active) plate per maintainer.
+            // Rule Options lives in the Galaxy tab it configures; blue (active) plate.
             // ⚠ WideActive is painted, so pin its width to the Medium footprint it replaces.
             UIButton ruleOptions = Button(ButtonStyle.WideActive, (int)(galaxyArea.Right - BtnW - 10), (int)(galaxyArea.Bottom - 28),
                    Localizer.Token(GameText.RuleOptions), click: OnRuleOptionsClicked);
             ruleOptions.SetAbsSize(BtnW, 24);
 
-            // Clear Traits lives on the Points page and follows its tab; red (hostile) plate per
-            // maintainer. ⚠ WideHostile is painted, so pin its width to the Medium footprint.
+            // Clear Traits lives on the Points page and follows its tab; red (hostile) plate.
+            // ⚠ WideHostile is painted, so pin its width to the Medium footprint.
             ClearTraitsBtn = Button(ButtonStyle.WideHostile, (int)(description.X + 10), (int)(description.Bottom - 28),
                                     "Clear Traits", click: OnClearClicked);
             ClearTraitsBtn.SetAbsSize(132, 24);
@@ -461,8 +452,8 @@ namespace Ship_Game
             var envRect = new Rectangle((int)envArea.X, (int)envArea.Y, (int)envArea.W, (int)envArea.H);
             EnvMenu = Add(new EnvPreferencesPanel(this, RaceSummary, envRect));
 
-            // Ludoal fork: no slide-in/slide-out on this screen (maintainer decision) - the panels
-            // appear where they belong.
+            // Ludoal fork: no slide-in/slide-out on this screen - the panels appear where they
+            // belong.
 
             base.LoadContent();
         }
@@ -485,8 +476,7 @@ namespace Ship_Game
             var label = new UILabel(LocalizedText.Parse(title), Fonts.Arial14Bold, Color.BurlyWood);
             var input = new UITextEntry(Vector2.Zero, Fonts.Arial14Bold, inputText)
             {
-                // maintainer feedback (7 Aug): the underline runs 20px shorter at its right end -
-                // the field starts where it did, it just stops sooner.
+                // the underline runs 20px shorter at its right end than the field's full width.
                 Width = width - splitAt - 20,
                 DrawUnderline = true,
                 Color = Colors.Cream
@@ -803,10 +793,9 @@ namespace Ship_Game
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             // Ludoal fork: the standard popup dim, not an opaque veil - the menu's animated
-            // backdrop stays alive behind New Game (maintainer request). The screen stays
-            // IsPopup so the menu underneath keeps being drawn (remove that and this one draws
-            // on nothing); the menu hides its own button column while we sit on top, which is
-            // what the old opaque veil was really covering for.
+            // backdrop stays alive behind New Game. The screen stays IsPopup so the menu
+            // underneath keeps being drawn (remove that and this one draws on nothing); the menu
+            // hides its own button column while we sit on top.
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             int numSystems = GetSystemsNum();
             NumSystemsLabel.Text = $"Solar Systems: {numSystems}";
@@ -816,11 +805,11 @@ namespace Ship_Game
             batch.SafeBegin();
             // ⚠ the frame goes FIRST, before base.Draw: it is painted by hand, not added as a
             // child, so drawing it after would bury every tab and list on the screen.
-            // DrawFill insets the body fill off the border rule itself now (bench 337).
+            // DrawFill insets the body fill off the border rule itself.
             Frame.DrawFill(batch, ScreenFrame);
             Frame.Draw(batch);
             // the window title font, the one Colony and every popup uses - not Laserian
-            string screenTitle = "New Game"; // Ludoal fork (maintainer feedback): was "Design Your Race"
+            string screenTitle = "New Game";
             batch.DrawString(UITheme.WindowTitle, screenTitle,
                 new Vector2(ScreenFrame.X + ScreenFrame.Width / 2 - UITheme.WindowTitle.TextWidth(screenTitle) / 2f,
                             Frame.TitleRect.CenterY() - UITheme.WindowTitle.LineSpacing / 2f), UITheme.TextPrimary);
@@ -870,10 +859,8 @@ namespace Ship_Game
             public SelectedTraitsSummary(RaceDesignScreen screen)
             {
                 Screen = screen;
-                // ⚠ a size up (maintainer): this is a tab of its own now with a full column to
-                // itself, so it no longer has to squeeze under the description.
-                Font = screen.Narrow ? Fonts.Arial12Bold
-                                     : screen.Tall ? Fonts.Arial20Bold : Fonts.Arial14Bold;
+                // fixed like the rest of the fixed-window layout
+                Font = Fonts.Arial14Bold;
             }
 
             public override bool HandleInput(InputState input)
@@ -886,9 +873,8 @@ namespace Ship_Game
                 if (!Visible)
                     return;
 
-                // Ludoal fork: this used to trail BELOW the description, both being visible at
-                // once. They are two tabs over one area now, so the summary starts at the top of
-                // that area rather than wherever the description happened to end.
+                // Ludoal fork: the summary and the description are two tabs over one area, so the
+                // summary starts at the top of that area.
                 RectF area = Screen.InfoTab.ClientArea;
                 var r = new Vector2(area.X + 20, area.Y + 12);
                 string title = Localizer.Token(GameText.PointsToSpend);
@@ -896,9 +882,8 @@ namespace Ship_Game
                 r.Y += (Font.LineSpacing + 8);
                 Vector2 cursor = r;
 
-                // ⚠ ONE column (maintainer): the negative traits used to start a second column to
-                // the right, which is what kept the font small. The tab has a whole column to
-                // itself now, so the list simply runs down it.
+                // ⚠ ONE column: the tab has a whole column to itself, so the list simply runs
+                // down it.
                 int line = 0;
                 foreach (TraitEntry t in Screen.AllTraits.OrderByDescending(t => t.Trait.Cost))
                 {

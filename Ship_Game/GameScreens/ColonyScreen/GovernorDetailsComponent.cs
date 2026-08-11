@@ -28,7 +28,7 @@ namespace Ship_Game
         private UILabel WorldType, WorldDescription;
         DropOptions<Planet.ColonyType> ColonyTypeList;
         private UICheckBox GovOrbitals, AutoTroops, GovNoScrap, Quarantine, ManualOrbitals, GovGround, SpecializedTradeHub, Prioritized;
-        private UICheckBox OverrideCiv, OverrideGrd, OverrideSpc;
+        private UICheckBox AutoBudgetCheck;
         private FloatSlider Garrison;
         private FloatSlider ManualPlatforms;
         private FloatSlider ManualShipyards;
@@ -51,9 +51,6 @@ namespace Ship_Game
         UILabel ColonyRank;
         UILabel BudgetSum;
         UILabel BudgetPercent;
-        UILabel NoGovernorCivExpense;
-        UILabel NoGovernorGrdExpense;
-        UILabel NoGovernorSpcExpense;
         UILabel BudgetLimitReached;
 
 
@@ -61,7 +58,10 @@ namespace Ship_Game
         private readonly Graphics.Font Font12 = Fonts.Arial12Bold;
         private Graphics.Font Font;
         private Graphics.Font FontBig;
-        private bool OverrideCivBudget, OverrideGrdBudget, OverrideSpcBudget;
+        private bool PlanetAutoBudget;
+        private bool LinkingPlanetShares; // guard: renormalizing the others re-fires their OnChange
+        private readonly float[] PlanetShares = new float[3];
+        private readonly bool[] PlanetShareLocked = new bool[3];
         private bool BudgetLimitWarningVisible;
 
         Rectangle CivBudgetRect;
@@ -73,9 +73,18 @@ namespace Ship_Game
         ProgressBar CivBudgetBar;
         ProgressBar GrdBudgetBar;
         ProgressBar SpcBudgetBar;
-        UITextEntry ManualCivBudget;
-        UITextEntry ManualGrdBudget;
-        UITextEntry ManualSpcBudget;
+        // Ludoal fork: one Auto toggle + a monetary Governor Spending
+        // slider, and the split as linked % sliders with padlocks beside the bars - the same
+        // grammar as the empire Budget screen. Storage is unchanged: the three manual budgets
+        // carry total*share; all zero = the governor allocates on its own.
+        FloatSlider GovSpending;
+        UILabel SpendingLabel;
+        UILabel SpendValue;   // current spending, white
+        UILabel SpendTarget;  // on Auto: the raw pre-smoothing target, grey, in parentheses
+        FloatSlider ShareCiv, ShareGrd, ShareSpc;
+        UILabel PctCiv, PctGrd, PctSpc; // own % labels, right-aligned so 100% cannot shove the padlock
+        UIButton LockCiv, LockGrd, LockSpc;
+        float SpendValueXWithTarget, SpendValueXAtEdge; // the white value's two seats, laid out once
 
         UILabel ColonyBlueprints, BlueprintsCompletionLbl, BlueprintsAchiveable, BlueprintsName,
             BlueprintsExclusive, BlueprintsLink, BlueprintsGovChange, Blueprintsoverview, BlueprintsEnableGov;
@@ -107,8 +116,8 @@ namespace Ship_Game
             Planet = p;
             RemoveAll(); // delete all components
 
-            // full size at every width (maintainer, 3 Aug): the column is FIXED on the tab
-            // measure, identical at 900p and 1080p - a width-based font fold piloted nothing
+            // Full size at every width: the column is FIXED on the tab measure, identical at
+            // 900p and 1080p - a width-based font fold piloted nothing.
             Font    = Font12;
             FontBig = Font14;
 
@@ -117,32 +126,30 @@ namespace Ship_Game
 
             Portrait         = Add(new UIPanel(PortraitSprite));
             BluePrintsIcon   = Add(new UIPanel(ResourceManager.Texture("NewUI/blueprints")));
-            WorldType        = Add(new UILabel(Planet.WorldType, Font14)); // full size at every width (maintainer): the title does not fold
-            // Ludoal fork: Font, not Font12 - GetParsedDescription wraps with Font, which is
-            // smaller than Font12 below 1920, so a hardcoded Font12 here drew text measured for
-            // a narrower glyph set and it ran past the frame.
+            WorldType        = Add(new UILabel(Planet.WorldType, Font14)); // full size at every width: the title does not fold
+            // Ludoal fork: Font, not Font12 - GetParsedDescription wraps with Font; a wider
+            // font here overruns the frame below 1920.
             WorldDescription = Add(new UILabel(Font));
             ColonyBlueprints = Add(new UILabel(GameText.ColonyBlueprintsTitle, FontBig, Color.Wheat));
             BlueprintsName   = Add(new UILabel("", FontBig, Color.Gold));
             BlueprintsCompletionLbl = Add(new UILabel(GameText.Completion, Font, Color.Wheat));
             BlueprintsAchiveable    = Add(new UILabel(GameText.Achievable, Font, Color.Gray));
-            // white body text (maintainer bench) - the semantic colours (green/gold) stay
+            // White body text - the semantic colours (green/gold) stay.
             BlueprintsGovChange     = Add(new UILabel(GameText.GovernorChangedTo, Font, Color.White));
             BlueprintsExclusive     = Add(new UILabel("", Font, Color.LightGreen));
             BlueprintsLink          = Add(new UILabel("", Font, Color.White));
             Blueprintsoverview    = Add(new UILabel("", Font, Color.White));
             BlueprintsEnableGov     = Add(new UILabel("", Font, Color.Gold));
 
-            // "Gov." (maintainer bench): the full word ran past the Defense column
+            // "Gov.": the full word ran past the Defense column.
             GovOrbitals    = Add(new UICheckBox(() => Planet.GovOrbitals, Font, title:"Gov. Manages Space Defense", tooltip:GameText.TheGovernorWillBuildStations));
             AutoTroops     = Add(new UICheckBox(() => Planet.AutoBuildTroops, Font, title:GameText.GovernorBuildsMilitia, tooltip:GameText.TheGovernorWillCreateA));
             GovNoScrap     = Add(new UICheckBox(() => Planet.DontScrapBuildings, Font, title:GameText.GovernorWillNotScrapBuildings, tooltip:GameText.NormallyGovernorsOperateWithinA));
             Quarantine     = Add(new UICheckBox(() => Planet.Quarantine, Font, title: GameText.QuarantinePlanet, tooltip: GameText.PreventGoodsTransportationInAnd));
             ManualOrbitals = Add(new UICheckBox(() => Planet.ManualOrbitals, Font, title: GameText.ManualOrbitalLimit, tooltip: GameText.OverrideGovernorDecisionsRegardingOrbital));
             GovGround      = Add(new UICheckBox(() => Planet.GovGroundDefense, Font, title: "Gov. Manages Ground Defense", tooltip: GameText.TheGovernorWillManageGround));
-            OverrideCiv    = Add(new UICheckBox(() => OverrideCivBudget, Font, title: GameText.Override, tooltip: GameText.OverrideThisBudgetAndSet));
-            OverrideGrd    = Add(new UICheckBox(() => OverrideGrdBudget, Font, title: GameText.Override, tooltip: GameText.OverrideThisBudgetAndSet));
-            OverrideSpc    = Add(new UICheckBox(() => OverrideSpcBudget, Font, title: GameText.Override, tooltip: GameText.OverrideThisBudgetAndSet));
+            AutoBudgetCheck = Add(new UICheckBox(() => PlanetAutoBudget, Font, title: "Auto",
+                tooltip: "The governor sets this colony's budget on its own. Untick to fix the total and the split yourself."));
             Prioritized    = Add(new UICheckBox(() => Planet.PrioritizedPort, Font, title: GameText.PrioritizedPort, tooltip: GameText.PrioritizedPortTip));
 
             SpecializedTradeHub = Add(new UICheckBox(() => p.SpecializedTradeHub, Font, title: GameText.SpecializedTradeHub, tooltip: GameText.SpecializedTradeHubTip));
@@ -161,8 +168,8 @@ namespace Ship_Game
             ManualShipyards.Tip = GameText.ManuallyAdjustTheNumberOf2;
             ManualStations.Tip  = GameText.ManuallyAdjustTheNumberOf3;
 
-            // maintainer bench 339: the budget warning is added BEFORE the colony-type dropdown so
-            // the open dropdown list draws OVER it, not the other way round.
+            // The budget warning is added BEFORE the colony-type dropdown so the open dropdown
+            // list draws OVER it, not the other way round.
             BudgetLimitReached = Add(new UILabel(GameText.BudgetLimitReached, FontBig, Color.Red));
 
             // Dropdowns will go on top of everything else
@@ -187,7 +194,7 @@ namespace Ship_Game
             LoadBlueprints.Tooltip   = GameText.UploadBluprintsTip;
 
             ButtonUpdateTimer    = 1;
-            BuildCapital         = Button(ButtonStyle.BigDip, GameText.ButtonBuildCapitalName, OnBuildCapitalClicked);
+            BuildCapital         = Button(ButtonStyle.DefaultActive, GameText.ButtonBuildCapitalName, OnBuildCapitalClicked);
             BuildCapital.Tooltip = GameText.ButtonBuildCapitalTip;
 
             LaunchAllTroops   = Button(ButtonStyle.Default, GameText.LaunchAllTroops, OnLaunchTroopsClicked);
@@ -233,31 +240,38 @@ namespace Ship_Game
             CivBudgetBar.color = "green";
             SpcBudgetBar.color = "blue";
 
-            ManualCivBudget = Add(new UITextEntry(Planet.ManualCivilianBudget.String(2)));
-            ManualGrdBudget = Add(new UITextEntry(Planet.ManualGrdDefBudget.String(2)));
-            ManualSpcBudget = Add(new UITextEntry(Planet.ManualSpcDefBudget.String(2)));
-            ManualCivBudget.Color = Color.MediumSeaGreen;
-            ManualSpcBudget.Color = Color.SteelBlue;
+            // the spending range is seated per planet: twice its current envelope, floor 20
+            PlanetShareLocked[0] = PlanetShareLocked[1] = PlanetShareLocked[2] = false;
+            float manualTotal = Planet.ManualCivilianBudget + Planet.ManualGrdDefBudget + Planet.ManualSpcDefBudget;
+            float seedTotal   = Math.Max(manualTotal, Planet.Budget.TotalAlloc);
+            SpendingLabel = Add(new UILabel("Spending:", Font, Color.White));
+            GovSpending   = Add(new FloatSlider(SliderStyle.Decimal1, new Vector2(150, 12), "",
+                                                0, (seedTotal * 2f).LowerBound(20f), seedTotal) { DrawValueText = false });
+            GovSpending.Tip = "Total the governor may spend on this colony each turn, split by the sliders beside the bars";
+            GovSpending.OnChange = s => { if (!LinkingPlanetShares && !PlanetAutoBudget) CommitPlanetBudget(); };
+            SpendValue  = Add(new UILabel(l => GovSpending.AbsoluteValue.String(1), Font));
+            SpendValue.Color = Color.White;
+            SpendTarget = Add(new UILabel(l => $"({Planet.Budget.TargetAlloc.String(1)})", Font));
+            SpendTarget.Color = Color.Gray;
 
-            ManualCivBudget.AutoCaptureOnHover = true;
-            ManualGrdBudget.AutoCaptureOnHover = true;
-            ManualSpcBudget.AutoCaptureOnHover = true;
-            ManualCivBudget.Font          = ManualGrdBudget.Font          = ManualSpcBudget.Font          = Font;
-            ManualCivBudget.MaxCharacters = ManualGrdBudget.MaxCharacters = ManualSpcBudget.MaxCharacters = 6;
-            ManualCivBudget.AllowPeriod   = ManualGrdBudget.AllowPeriod   = ManualSpcBudget.AllowPeriod   = true;
+            ShareCiv = Add(MakeShareSlider(0));
+            ShareGrd = Add(MakeShareSlider(1));
+            ShareSpc = Add(MakeShareSlider(2));
+            PctCiv = Add(MakeShareLabel(() => ShareCiv));
+            PctGrd = Add(MakeShareLabel(() => ShareGrd));
+            PctSpc = Add(MakeShareLabel(() => ShareSpc));
+            LockCiv  = Add(MakeShareLock(0));
+            LockGrd  = Add(MakeShareLock(1));
+            LockSpc  = Add(MakeShareLock(2));
 
             BudgetSum     = Add(new UILabel(" ", FontBig, Color.White));
             BudgetPercent = Add(new UILabel(" ", FontBig, Color.White));
 
-            NoGovernorCivExpense = Add(new UILabel(" ", FontBig, Color.MediumSeaGreen));
-            NoGovernorGrdExpense = Add(new UILabel(" ", FontBig, Color.DarkOrange));
-            NoGovernorSpcExpense = Add(new UILabel(" ", FontBig, Color.SteelBlue));
 
             Tabs = Add(new Submenu(rect, new LocalizedText[]
             {
-                // "BP", settled (maintainer bench, 3 Aug): BLUEPRINT in full cannot fit at the
-                // width the 900p centre column allows - the short label carries a hover tooltip
-                // instead (see HandleInput)
+                // "BP": BLUEPRINT in full cannot fit at the width the 900p centre column
+                // allows - the short label carries a hover tooltip instead (see HandleInput).
                 GameText.Governor, GameText.Defense2, GameText.Budget, "BP"
             }));
 
@@ -272,7 +286,7 @@ namespace Ship_Game
         public override void PerformLayout()
         {
             float aspect  = PortraitSprite.Size.X / PortraitSprite.Size.Y;
-            // 0.55, not 0.6 (maintainer bench, 3 Aug): the toggles ride under the portrait now
+            // 0.55: the toggles ride under the portrait.
             float height  = (float)Math.Round(Height * 0.55f);
             Portrait.Size = new Vector2((float)Math.Round(aspect*height), height);
             // Ludoal fork: all four tabs lay their content out from this one value, so they
@@ -288,12 +302,11 @@ namespace Ship_Game
             BluePrintsIcon.Color = BlueprintsName.Color = BlueprintsColor;
 
             // Ludoal fork: the right-hand column follows the portrait, whose width is a fraction
-            // of the panel height - so at reduced heights it slid left, under the tab row. It
-            // keeps a floor (see ColumnX), and the description wraps on that same value.
-            // the type picker rides the TITLE line, to its right (maintainer, 3 Aug) - the
-            // description gains the row it occupied and no longer runs over the toggles
+            // of the panel height. It keeps a floor (see ColumnX), and the description wraps on
+            // that same value. The type picker rides the TITLE line, to its right - the
+            // description gains the row it occupied and no longer runs over the toggles.
             WorldType.Pos           = new Vector2(ColumnX, Portrait.Y);
-            // Ludoal fork (maintainer feedback): the colony-type picker sits 20px further right
+            // Ludoal fork: the colony-type picker sits 20px further right.
             ColonyTypeList.Pos      = new Vector2(Math.Max(WorldType.Right + 12, ColumnX + 130) + 20, Portrait.Y);
             WorldDescription.Pos    = new Vector2(ColumnX, Portrait.Y + 21);
             WorldDescription.Text   = GetParsedDescription();
@@ -308,7 +321,7 @@ namespace Ship_Game
             BlueprintsEnableGov.Pos  = new Vector2(X + 10, Bottom - 60);
             BlueprintsEnableGov.Text = GameText.BluePrintsEnableGovernorToLoad;
 
-            CreateBlueprints.Pos   = new Vector2(X+ 10,  Y+ Height - 38); // 8px up (maintainer bench)
+            CreateBlueprints.Pos   = new Vector2(X+ 10,  Y+ Height - 38); // 8px up
             EditBlueprints.Pos     = new Vector2(X + Width - 240, CreateBlueprints.Y);
             ClearBlueprints.Pos    = new Vector2(X + Width - 160, CreateBlueprints.Y);
             LoadBlueprints.Pos     = new Vector2(X + Width - 80, CreateBlueprints.Y); 
@@ -318,11 +331,9 @@ namespace Ship_Game
             BlueprintsCompletionLbl.Pos     = new Vector2(X + 10, Y + 70 + shift);
             BlueprintsCompletionLbl.Tooltip = GameText.CompletionTip;
 
-            // maintainer bench 338: the warning's BOTTOM lines up with the portrait's bottom - a
-            // fixed anchor, whatever the description length (a long one let MeasureString under-count
-            // the wrapped height and the red line dropped into the text). A label draws from its top,
-            // so seat its top one line-height above the portrait foot. X stays in the description
-            // column beside it.
+            // The warning's BOTTOM lines up with the portrait's bottom - a fixed anchor,
+            // whatever the description length. A label draws from its top, so seat its top one
+            // line-height above the portrait foot. X stays in the description column beside it.
             BudgetLimitReached.Pos = new Vector2(WorldDescription.X,
                 Portrait.Pos.Y + Portrait.Size.Y - FontBig.LineSpacing);
 
@@ -339,27 +350,23 @@ namespace Ship_Game
             SpcBudgetBar.SetRect(SpcBudgetRect);
             BlueprintsCompletion.SetRect(new Rectangle((int)X + 100, (int)(Y + 70 + shift), (int)(Width * 0.5f), 30));
 
-            // Ludoal fork: the bottom row sat at Bottom - 20, but a checkbox is drawn CENTRED on
-            // its Y, so half of its height fell past that and the row was clipped by the frame
-            // at the heights this panel actually gets. The margin now comes from the row's own
-            // height instead of a guessed constant. The column sits to the RIGHT of the portrait,
-            // on the same left edge as the world title above it.
-            // two toggles per line (maintainer bench, 3 Aug): Quarantine and Prioritized sit
-            // UNDER the portrait; the two contextual toggles share their exact lines at ColumnX
-            Quarantine.Pos          = new Vector2(X + 10, Portrait.Bottom + 14); // a step lower - there is room below (maintainer bench)
+            // Ludoal fork: a checkbox is drawn CENTRED on its Y, so the margin comes from the
+            // row's own height rather than a guessed constant. The column sits to the RIGHT of
+            // the portrait, on the same left edge as the world title above it. Quarantine and
+            // Prioritized sit UNDER the portrait; the two contextual toggles share their exact
+            // lines at ColumnX.
+            Quarantine.Pos          = new Vector2(X + 10, Portrait.Bottom + 14); // a step lower - there is room below
             Prioritized.Pos         = new Vector2(X + 10, Portrait.Bottom + 34);
-            SpecializedTradeHub.Pos = new Vector2(ColumnX + 25, Quarantine.Pos.Y); // +25: clear of the left labels at 1080 fonts (bench)
+            SpecializedTradeHub.Pos = new Vector2(ColumnX + 25, Quarantine.Pos.Y); // +25: clear of the left labels at 1080 fonts
             GovNoScrap.Pos          = new Vector2(ColumnX + 25, Prioritized.Pos.Y);
             BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, Quarantine.Pos.Y - 35);
 
-            // Defense tab. ⚠ These six buttons used to hang off Bottom, which is why the panel
-            // needed 300px of height for ~120px of content: the gap in the middle was pure
-            // anchoring, not spacing (maintainer: "remonter les 3 boutons sous le slider").
-            // They follow their own column now, so the panel's height can be its content's.
+            // Defense tab. These six buttons follow their own column, so the panel's height
+            // can be its content's.
             AutoTroops.Pos        = new Vector2(TopLeft.X + 10, Y + 30 + shift);
             Garrison.Pos          = new Vector2(TopLeft.X + 20, Y + 50 + shift);
             float defRow          = Y + 100 + shift;  // a breath under the garrison slider
-            // 34 per row, not 26 (maintainer, 3 Aug): the buttons breathe vertically
+            // 34 per row, not 26: the buttons breathe vertically
             LaunchAllTroops.Pos   = new Vector2(TopLeft.X + 10, defRow);
             LaunchSingleTroop.Pos = new Vector2(TopLeft.X + 10, defRow + 34);
             CallTroops.Pos        = new Vector2(TopLeft.X + 10, defRow + 68);
@@ -376,22 +383,70 @@ namespace Ship_Game
             ManualShipyards.Pos   = BuildShipyard.Pos + manualOffset;
             ManualStations.Pos    = BuildStation.Pos + manualOffset;
 
-            BudgetSum.Pos         = new Vector2(TopLeft.X + 8, Y + 130 + shift);
-            BudgetPercent.Pos     = new Vector2(TopLeft.X + CivBudgetRect.Width + 15, Y + 130 + shift);
-            OverrideCiv.Pos       = new Vector2(CivBudgetRect.X + CivBudgetRect.Width + 10, CivBudgetRect.Y + 2);
-            OverrideGrd.Pos       = new Vector2(GrdBudgetRect.X + GrdBudgetRect.Width + 10, GrdBudgetRect.Y + 2);
-            OverrideSpc.Pos       = new Vector2(SpcBudgetRect.X + SpcBudgetRect.Width + 10, SpcBudgetRect.Y + 2);
-            ManualCivBudget.Pos   = new Vector2(OverrideCiv.X + OverrideCiv.Width + 20, OverrideCiv.Y);
-            ManualGrdBudget.Pos   = new Vector2(OverrideGrd.X + OverrideGrd.Width + 20, OverrideGrd.Y);
-            ManualSpcBudget.Pos   = new Vector2(OverrideSpc.X + OverrideSpc.Width + 20, OverrideSpc.Y);
+            // the share sliders ride their bars: from the bar's right edge to their own %
+            // label (right-aligned, so 100% grows leftward), then the padlock at the margin
+            // ⚠ lane widths must cover the WIDEST text: UILabel.SetText GROWS Size to fit,
+            // and a grown Size shifts the right-align anchor - "100%" in a 34px lane drifted
+            const int LockSide = 16, LockGap = 6, RightMargin = 10, PctW = 40, PctGap = 4;
+            float lockX  = X + Width - RightMargin - LockSide;
+            float pctX   = lockX - LockGap - PctW;
+            float shareX = CivBudgetRect.X + CivBudgetRect.Width + 12;
+            // +32: the slider track is Width-32; the unused value reserve folds back in
+            var shareSize = new Vector2(pctX - PctGap - shareX + 32, 12);
+            ShareCiv.Pos = new Vector2(shareX, CivBudgetRect.Y + 1); ShareCiv.Size = shareSize;
+            ShareGrd.Pos = new Vector2(shareX, GrdBudgetRect.Y + 1); ShareGrd.Size = shareSize;
+            ShareSpc.Pos = new Vector2(shareX, SpcBudgetRect.Y + 1); ShareSpc.Size = shareSize;
+            var pctSize = new Vector2(PctW, Font.LineSpacing);
+            PctCiv.Pos = new Vector2(pctX, CivBudgetRect.Y + 5); PctCiv.Size = pctSize;
+            PctGrd.Pos = new Vector2(pctX, GrdBudgetRect.Y + 5); PctGrd.Size = pctSize;
+            PctSpc.Pos = new Vector2(pctX, SpcBudgetRect.Y + 5); PctSpc.Size = pctSize;
+            LockCiv.Rect = new Rectangle((int)lockX, CivBudgetRect.Y + 3, LockSide, LockSide);
+            LockGrd.Rect = new Rectangle((int)lockX, GrdBudgetRect.Y + 3, LockSide, LockSide);
+            LockSpc.Rect = new Rectangle((int)lockX, SpcBudgetRect.Y + 3, LockSide, LockSide);
 
-            NoGovernorCivExpense.Pos = new Vector2(TopLeft.X + 60, Y + 40 + shift);
-            NoGovernorGrdExpense.Pos = new Vector2(TopLeft.X + 60, Y + 70 + shift);
-            NoGovernorSpcExpense.Pos = new Vector2(TopLeft.X + 60, Y + 100 + shift);
+            // the Auto/Spending row under the bars; the total drops one line below it.
+            // Value lanes at the line's end: current spending (white), and on Auto the raw
+            // target in parentheses (grey) - UpdateBudgets slides the value to the edge
+            // when the target lane is hidden.
+            // 20, not RightMargin: the Submenu frame is inset ~9px; RightMargin would let the
+            // grey target kiss the painted edge.
+            const int TargetW = 50, SpendValueW = 40;
+            float spendRow = Y + 130 + shift;
+            float rowRight = X + Width - 20;
+            AutoBudgetCheck.Pos = new Vector2(TopLeft.X + 10, spendRow + 2);
+            SpendingLabel.Pos   = new Vector2(TopLeft.X + 70, spendRow + 3);
+            GovSpending.Pos     = new Vector2(TopLeft.X + 70 + Font.TextWidth(SpendingLabel.Text) + 8, spendRow - 6);
+            GovSpending.Size    = new Vector2(rowRight - TargetW - SpendValueW - 6 - GovSpending.Pos.X + 32, 12);
+            SpendValueXWithTarget = rowRight - TargetW - 4 - SpendValueW;
+            SpendValueXAtEdge     = rowRight - SpendValueW;
+            SpendValue.TextAlign = TextAlign.Right;
+            SpendValue.Size      = new Vector2(SpendValueW, Font.LineSpacing);
+            SpendValue.Pos       = new Vector2(SpendValueXWithTarget, spendRow + 3);
+            SpendTarget.TextAlign = TextAlign.Right;
+            SpendTarget.Size      = new Vector2(TargetW, Font.LineSpacing);
+            SpendTarget.Pos       = new Vector2(rowRight - TargetW, spendRow + 3);
 
-            OverrideCivBudget = Planet.ManualCivilianBudget.Greater(0);
-            OverrideGrdBudget = Planet.ManualGrdDefBudget.Greater(0);
-            OverrideSpcBudget = Planet.ManualSpcDefBudget.Greater(0);
+            BudgetSum.Pos         = new Vector2(TopLeft.X + 8, Y + 160 + shift);
+            BudgetPercent.Pos     = new Vector2(TopLeft.X + CivBudgetRect.Width + 15, Y + 160 + shift);
+
+
+            PlanetAutoBudget = !(Planet.ManualCivilianBudget.Greater(0) || Planet.ManualGrdDefBudget.Greater(0)
+                                 || Planet.ManualSpcDefBudget.Greater(0));
+            if (!PlanetAutoBudget)
+            {
+                // manual planet: the sliders re-read the stored budgets (total * share each)
+                float mTotal = Planet.ManualCivilianBudget + Planet.ManualGrdDefBudget + Planet.ManualSpcDefBudget;
+                PlanetShares[0] = Planet.ManualCivilianBudget / mTotal;
+                PlanetShares[1] = Planet.ManualGrdDefBudget / mTotal;
+                PlanetShares[2] = Planet.ManualSpcDefBudget / mTotal;
+                LinkingPlanetShares = true;
+                GovSpending.AbsoluteValue = mTotal;
+                ShareCiv.RelativeValue = PlanetShares[0];
+                ShareGrd.RelativeValue = PlanetShares[1];
+                ShareSpc.RelativeValue = PlanetShares[2];
+                LinkingPlanetShares = false;
+            }
+            SyncBudgetEnables();
 
             GovOrbitals.OnChange = cb =>
             {
@@ -402,19 +457,35 @@ namespace Ship_Game
                 }
             };
 
-            OverrideCiv.OnChange = cb =>
+            AutoBudgetCheck.OnChange = cb =>
             {
-                Planet.SetManualCivBudget(cb.Checked ? Planet.Budget.CivilianAlloc : 0);
-            };
-
-            OverrideGrd.OnChange = cb =>
-            {
-                Planet.SetManualGroundDefBudget(cb.Checked ? Planet.Budget.GrdDefAlloc : 0);
-            };
-
-            OverrideSpc.OnChange = cb =>
-            {
-                Planet.SetManualSpaceDefBudget(cb.Checked ? Planet.Budget.SpcDefAlloc : 0);
+                if (cb.Checked)
+                {
+                    // Back to the governor's own allocation; the padlocks release too -
+                    // a pin held across the mode switch would otherwise stick.
+                    Planet.SetManualCivBudget(0);
+                    Planet.SetManualGroundDefBudget(0);
+                    Planet.SetManualSpaceDefBudget(0);
+                    PlanetShareLocked[0] = PlanetShareLocked[1] = PlanetShareLocked[2] = false;
+                    Planet.Budget.SnapToTarget(); // the EMA would crawl back from the manual values otherwise
+                }
+                else
+                {
+                    // take over at the current auto allocation
+                    var b = Planet.Budget;
+                    float total = b.TotalAlloc.LowerBound(0.1f);
+                    PlanetShares[0] = b.CivilianAlloc.LowerBound(0f) / total;
+                    PlanetShares[1] = b.GrdDefAlloc.LowerBound(0f) / total;
+                    PlanetShares[2] = b.SpcDefAlloc.LowerBound(0f) / total;
+                    LinkingPlanetShares = true;
+                    GovSpending.AbsoluteValue = total;
+                    ShareCiv.RelativeValue = PlanetShares[0];
+                    ShareGrd.RelativeValue = PlanetShares[1];
+                    ShareSpc.RelativeValue = PlanetShares[2];
+                    LinkingPlanetShares = false;
+                    CommitPlanetBudget();
+                }
+                SyncBudgetEnables();
             };
 
             Prioritized.OnChange = cb =>
@@ -546,9 +617,7 @@ namespace Ship_Game
                 ManualOrbitals.TextColor  = Planet.ManualOrbitals     ? Color.White : Color.Gray;
                 AutoTroops.TextColor      = Planet.AutoBuildTroops    ? Color.White : Color.Gray;
                 GovNoScrap.TextColor      = Planet.DontScrapBuildings ? Color.White : Color.Gray;
-                OverrideCiv.TextColor     = OverrideCivBudget ? Color.White : Color.Gray;
-                OverrideGrd.TextColor     = OverrideGrdBudget ? Color.White : Color.Gray;
-                OverrideSpc.TextColor     = OverrideSpcBudget ? Color.White : Color.Gray;
+                AutoBudgetCheck.TextColor = PlanetAutoBudget ? Color.White : Color.Gray;
 
                 if (ManualOrbitals.Visible && Planet.ManualOrbitals)
                 {
@@ -565,16 +634,23 @@ namespace Ship_Game
 
                 BudgetSum.Visible       = BudgetTabView;
                 BudgetPercent.Visible   = BudgetTabView && GovernorOn;
-                OverrideCiv.Visible     = BudgetTabView && GovernorOn && Planet.OwnerIsPlayer && Planet.CType is not Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub;
-                OverrideGrd.Visible     = OverrideCiv.Visible;
-                OverrideSpc.Visible     = OverrideCiv.Visible;
-                ManualCivBudget.Visible = OverrideCiv.Visible && OverrideCiv.Checked;
-                ManualGrdBudget.Visible = OverrideGrd.Visible && OverrideGrd.Checked;
-                ManualSpcBudget.Visible = OverrideSpc.Visible && OverrideSpc.Checked;
+                AutoBudgetCheck.Visible = BudgetTabView && GovernorOn && Planet.OwnerIsPlayer && Planet.CType is not Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub;
+                SpendingLabel.Visible   = AutoBudgetCheck.Visible;
+                GovSpending.Visible     = AutoBudgetCheck.Visible;
+                SpendValue.Visible      = AutoBudgetCheck.Visible;
+                SpendTarget.Visible     = AutoBudgetCheck.Visible && PlanetAutoBudget;
+                // the white value slides to the edge when the grey target lane is hidden
+                SpendValue.Pos = new Vector2(SpendTarget.Visible ? SpendValueXWithTarget : SpendValueXAtEdge,
+                                             SpendValue.Pos.Y);
+                ShareCiv.Visible = ShareGrd.Visible = ShareSpc.Visible = AutoBudgetCheck.Visible;
+                PctCiv.Visible   = PctGrd.Visible   = PctSpc.Visible   = AutoBudgetCheck.Visible;
+                LockCiv.Visible  = LockGrd.Visible  = LockSpc.Visible  = AutoBudgetCheck.Visible;
+                // On Auto the whole row is read-only, every padlock reads solid white;
+                // manual keeps solid = locked, faint = free.
+                LockCiv.IconTint = PlanetAutoBudget || PlanetShareLocked[0] ? Color.White : Color.White.Alpha(0.35f);
+                LockGrd.IconTint = PlanetAutoBudget || PlanetShareLocked[1] ? Color.White : Color.White.Alpha(0.35f);
+                LockSpc.IconTint = PlanetAutoBudget || PlanetShareLocked[2] ? Color.White : Color.White.Alpha(0.35f);
 
-                NoGovernorCivExpense.Visible = BudgetTabView && !OverrideCiv.Visible;
-                NoGovernorGrdExpense.Visible = NoGovernorCivExpense.Visible;
-                NoGovernorSpcExpense.Visible = NoGovernorCivExpense.Visible;
 
                 CreateBlueprints.Visible = BlueprintsTabView && Planet.OwnerIsPlayer;
                 LoadBlueprints.Visible   = CreateBlueprints.Visible && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub;
@@ -668,7 +744,9 @@ namespace Ship_Game
 
         void DrawBudgetsTab(SpriteBatch batch)
         {
-            if (GovernorOn && Planet.CType is not Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub)
+            // The bars draw with or without a governor - same presentation, the spent/allocation
+            // reading holds either way; only the CONTROLS need a governor.
+            if (Planet.CType is not Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub)
             {
                 CivBudgetBar.Draw(batch);
                 GrdBudgetBar.Draw(batch);
@@ -725,14 +803,23 @@ namespace Ship_Game
             if (potentialBuildings.Count > 0)
             {
                 BlueprintsTemplate template = new BlueprintsTemplate($"Snapshot of {Planet.Name}", false, "", potentialBuildings, Planet.CType);
-                Screen.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Player, template));
+                // The colony closes first - two groups must not stack; closing Blueprints
+                // reopens it (the hosted seat survives the round trip).
+                Screen.ExitScreen();
+                Screen.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Player, template,
+                                                                    returnToColony: Planet));
             }
         }
 
         void OnEditblueprintsClicked(UIButton b)
         {
             if (Planet.HasBlueprints && ResourceManager.TryGetBlueprints(Planet.Blueprints.Name, out BlueprintsTemplate template))
-                Screen.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Player, template, this));
+            {
+                // Same round trip as Snapshot.
+                Screen.ExitScreen();
+                Screen.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Player, template, this,
+                                                                    returnToColony: Planet));
+            }
         }
 
         void OnLaunchTroopsClicked(UIButton b)
@@ -785,7 +872,7 @@ namespace Ship_Game
             if (troopsLanding > 0)
             {
                 CallTroops.Text = $"{Localizer.Token(GameText.IncomingTroops)} {troopsLanding}"; // "Incoming Troops
-                CallTroops.Style = ButtonStyle.Military;
+                CallTroops.Style = ButtonStyle.DefaultHostile;
             }
             else
             {
@@ -838,57 +925,6 @@ namespace Ship_Game
             }
         }
 
-        void UpdateCivBudget(PlanetBudget budget)
-        {
-            if (ManualCivBudget.HandlingInput)
-                return;
-
-            if (BudgetTabView && OverrideCivBudget && ManualCivBudget.Visible
-                && float.TryParse(ManualCivBudget.Text, out float value)
-                && value > 0 && value < 250)
-            {
-                Planet.SetManualCivBudget(value);
-            }
-            else
-            {
-                ManualCivBudget.Text = budget.CivilianAlloc.String(2);
-            }
-        }
-
-        void UpdateGrdBudget(PlanetBudget budget)
-        {
-            if (ManualGrdBudget.HandlingInput)
-                return;
-
-            if (BudgetTabView && OverrideGrdBudget && ManualGrdBudget.Visible
-                && float.TryParse(ManualGrdBudget.Text, out float value)
-                && value > 0 && value < 250)
-            {
-                Planet.SetManualGroundDefBudget(value);
-            }
-            else
-            {
-                ManualGrdBudget.Text = budget.GrdDefAlloc.String(2);
-            }
-        }
-
-        void UpdateSpcBudget(PlanetBudget budget)
-        {
-            if (ManualSpcBudget.HandlingInput)
-                return;
-
-            if (BudgetTabView && OverrideSpcBudget && ManualSpcBudget.Visible
-                && float.TryParse(ManualSpcBudget.Text, out float value)
-                && value > 0 && value < 250)
-            {
-                Planet.SetManualSpaceDefBudget(value);
-            }
-            else
-            {
-                ManualSpcBudget.Text = budget.SpcDefAlloc.String(2);
-            }
-        }
-
         void UpdateBlueprintsStats()
         {
             if (!Planet.HasBlueprints || !Planet.OwnerIsPlayer)
@@ -900,13 +936,92 @@ namespace Ship_Game
                 UpdateBlueprintsChanged();
         }
 
+        FloatSlider MakeShareSlider(int which)
+        {
+            var s = new FloatSlider(SliderStyle.Percent, new Vector2(150, 12), "", 0f, 1f, 0.34f)
+            { DrawValueText = false }; // the row draws its own %, right-aligned before the padlock
+            s.OnChange = _ => OnPlanetShareChanged(which);
+            return s;
+        }
+
+        UILabel MakeShareLabel(Func<FloatSlider> slider)
+        {
+            var l = new UILabel(_ => ((int)Math.Round(slider().RelativeValue * 100f)) + "%", Font);
+            l.Color = Color.White;
+            l.TextAlign = TextAlign.Right;
+            return l;
+        }
+
+        UIButton MakeShareLock(int which)
+        {
+            var b = new UIButton(new UIButton.StyleTextures("NewUI/icon_lock", "NewUI/icon_lock"), Vector2.Zero, "")
+            {
+                Tooltip = "Lock this share - adjusting the others leaves it untouched",
+            };
+            b.OnClick = _ =>
+            {
+                PlanetShareLocked[which] = !PlanetShareLocked[which];
+                SyncBudgetEnables();
+            };
+            return b;
+        }
+
+        void SyncBudgetEnables()
+        {
+            bool manual = !PlanetAutoBudget;
+            GovSpending.Enabled = manual;
+            ShareCiv.Enabled = manual && !PlanetShareLocked[0];
+            ShareGrd.Enabled = manual && !PlanetShareLocked[1];
+            ShareSpc.Enabled = manual && !PlanetShareLocked[2];
+            LockCiv.Enabled = LockGrd.Enabled = LockSpc.Enabled = manual;
+        }
+
+        void CommitPlanetBudget()
+        {
+            float total = GovSpending.AbsoluteValue;
+            // the floor keeps the planet on manual: a stored zero would read as "auto"
+            Planet.SetManualCivBudget((total * PlanetShares[0]).LowerBound(0.01f));
+            Planet.SetManualGroundDefBudget((total * PlanetShares[1]).LowerBound(0.01f));
+            Planet.SetManualSpaceDefBudget((total * PlanetShares[2]).LowerBound(0.01f));
+        }
+
+        void OnPlanetShareChanged(int which)
+        {
+            if (LinkingPlanetShares || PlanetAutoBudget)
+                return;
+            LinkingPlanetShares = true;
+            float[] v = { ShareCiv.RelativeValue, ShareGrd.RelativeValue, ShareSpc.RelativeValue };
+            // locked shares hold their value: the mover is clamped to what the locks leave,
+            // and the remainder spreads over the UNLOCKED others by their mutual ratio
+            float lockedSum = 0f;
+            float unlockedSum = 0f;
+            for (int i = 0; i < 3; i++)
+            {
+                if (i == which) continue;
+                if (PlanetShareLocked[i]) lockedSum += v[i];
+                else unlockedSum += v[i];
+            }
+            v[which] = v[which].Clamped(0f, (1f - lockedSum).LowerBound(0f));
+            float rest = 1f - lockedSum - v[which];
+            for (int i = 0; i < 3; i++)
+            {
+                if (i == which || PlanetShareLocked[i]) continue;
+                v[i] = unlockedSum > 0.0001f ? rest * v[i] / unlockedSum : rest; // one unlocked: it takes it all
+            }
+            PlanetShares[0] = v[0];
+            PlanetShares[1] = v[1];
+            PlanetShares[2] = v[2];
+            ShareCiv.RelativeValue = v[0];
+            ShareGrd.RelativeValue = v[1];
+            ShareSpc.RelativeValue = v[2];
+            LinkingPlanetShares = false;
+            CommitPlanetBudget();
+        }
+
         void UpdateBudgets()
         {
             var budget = Planet.Budget;
 
-            UpdateCivBudget(budget);
-            UpdateGrdBudget(budget);
-            UpdateSpcBudget(budget);
             budget.UpdateManualUI();
 
             CivBudgetBar.Max      = budget.CivilianAlloc;
@@ -915,6 +1030,18 @@ namespace Ship_Game
             GrdBudgetBar.Progress = Planet.GroundDefMaintenance;
             SpcBudgetBar.Max      = budget.SpcDefAlloc;
             SpcBudgetBar.Progress = Planet.SpaceDefMaintenance;
+
+            // on Auto the sliders mirror the governor's own allocation (read-only)
+            if (PlanetAutoBudget && GovSpending != null)
+            {
+                float total = budget.TotalAlloc.LowerBound(0.01f);
+                LinkingPlanetShares = true;
+                GovSpending.AbsoluteValue = total;
+                ShareCiv.RelativeValue = budget.CivilianAlloc.LowerBound(0f) / total;
+                ShareGrd.RelativeValue = budget.GrdDefAlloc.LowerBound(0f) / total;
+                ShareSpc.RelativeValue = budget.SpcDefAlloc.LowerBound(0f) / total;
+                LinkingPlanetShares = false;
+            }
 
             BudgetLimitWarningVisible = CivBudgetBar.Progress >= CivBudgetBar.Max && Planet.GetBuildingsCanBuild().Any(b => !b.IsMilitary);
             float spent = Planet.CivilianBuildingsMaintenance + Planet.GroundDefMaintenance + Planet.SpaceDefMaintenance;
@@ -929,9 +1056,6 @@ namespace Ship_Game
             }
             else
             {
-                NoGovernorCivExpense.Text = $"{Planet.CivilianBuildingsMaintenance.String(2)} BC/turn";
-                NoGovernorGrdExpense.Text = $"{Planet.GroundDefMaintenance.String(2)} BC/turn";
-                NoGovernorSpcExpense.Text = $"{Planet.SpaceDefMaintenance.String(2)} BC/turn";
                 BudgetSum.Text            = $"{Localizer.Token(GameText.Total3)} {spent.String(2)} BC/turn";
                 BudgetPercent.Text        = "";
             }
@@ -994,7 +1118,7 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // the folded BP tab says its full name on hover (maintainer, 3 Aug)
+            // The folded BP tab says its full name on hover.
             if (Tabs != null && Tabs.Tabs.Count > 3 && Tabs.Tabs[3].Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip("Blueprint");
 

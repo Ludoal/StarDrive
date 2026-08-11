@@ -42,13 +42,11 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // Ludoal fork (bench 356): the ENTIRE right-click is resolved here, first - because
-            // GameScreen.HandleInput dismisses any IsPopup screen on an unconsumed right-click
-            // (GameScreen.cs:354), and base.HandleInput below ran BEFORE the grid's own right-click
-            // gestures: the base closed the window before the design-drop or node-deselect could
-            // speak. Regime by cursor position (maintainer rule): inside the drawn frame the click is
-            // a grid gesture (drop the design in hand, else deselect nodes); outside it, it closes.
-            // Every branch returns true so the click never reaches the base popup-dismiss.
+            // Ludoal fork: the ENTIRE right-click is resolved here, first - GameScreen.HandleInput
+            // dismisses any IsPopup screen on an unconsumed right-click (GameScreen.cs:354), so this
+            // must run before base.HandleInput. Regime by cursor position: inside the drawn frame
+            // the click is a grid gesture (drop the design in hand, else deselect nodes); outside it,
+            // it closes. Every branch returns true so the click never reaches the base popup-dismiss.
             bool cursorInFrame = DesignTabs.Rect.HitTest(input.CursorPosition);
             if (input.RightMouseClick)
             {
@@ -79,9 +77,6 @@ namespace Ship_Game
 
             if (base.HandleInput(input))
                 return true;
-
-            // (right-click deselect is resolved at the top of HandleInput now, before the base
-            // popup-dismiss could swallow it)
 
             if (HandleSingleNodeSelection(input, input.CursorPosition))
                 return false;
@@ -241,7 +236,7 @@ namespace Ship_Game
         
         Vector2 StartDragPos;
 
-        // bench 357 (maintainer): a held pan latches to where it STARTED, like the Shipyard's - begun
+        // a held pan latches to where it STARTED, like the Shipyard's - begun
         // inside the frame it keeps the mouse until release, but it cannot start outside.
         bool PanLatched;
 
@@ -252,9 +247,8 @@ namespace Ship_Game
             float scrollSpeed = minHeight + (CamPos.Z / maxHeight)*10_000;
             float worldWidthOnScreen = (float)VisibleWorldRect.Width;
 
-            // bench 357 (maintainer): mouse zoom and pan belong to the frame - outside it they are
-            // standard inputs, not fleet-grid gestures. Edge-scroll and the arrow keys stay live
-            // everywhere (pushing the screen edge is by nature outside the frame).
+            // mouse zoom and pan belong to the frame - outside it they are standard inputs, not
+            // fleet-grid gestures. Edge-scroll and the arrow keys stay live everywhere.
             bool cursorInFrame = DesignTabs.Rect.HitTest(input.CursorPosition);
 
             if (cursorInFrame)
@@ -269,7 +263,7 @@ namespace Ship_Game
                 PanLatched = true;
             }
             // clear on RELEASE, never on !Held - Held carries a 0.15s threshold, and testing !Held
-            // right after the click killed the latch before it armed (the bench-358 dead pan)
+            // right after the click would kill the latch before it arms.
             if (input.MiddleMouseReleased)
                 PanLatched = false;
 
@@ -383,9 +377,8 @@ namespace Ship_Game
             }
             else if (input.LeftMouseReleased)
             {
-                // the BOX path fills SelectedNodeList but never armed the stance bar - only
-                // the click path did - so a group picked by rectangle showed nothing but its
-                // count and could not change stance (maintainer bench 302)
+                // the BOX path fills SelectedNodeList but must also arm the stance bar,
+                // same as the click path.
                 if (IsDragging)
                     OrdersButtons.ResetButtons(SelectedNodeList);
                 IsDragging = false;

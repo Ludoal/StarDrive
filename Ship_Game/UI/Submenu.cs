@@ -198,6 +198,40 @@ public class Submenu : UIPanel
         RecalculateTabRects();
     }
 
+    // Ludoal fork: the two primitives a DYNAMIC tab needs - a hosted panel's tab (the colony)
+    // is added, renamed and removed at runtime, which the append-only tab set never allowed.
+    // Removing the selected tab routes its collapse through SelectedIndex, so OnTabChange
+    // fires exactly once: closing a hosted tab IS a tab change, and the host's handler is
+    // what restores the panel the tab was opened from.
+    public void RemoveTab(int index)
+    {
+        if ((uint)index >= (uint)Tabs.Count)
+            return;
+        bool wasSelected = CurSelectedIndex == index;
+        Tabs.RemoveAt(index);
+        for (int i = 0; i < Tabs.Count; ++i)
+            Tabs[i].Index = i;
+        RecalculateTabRects();
+        if (wasSelected)
+        {
+            CurSelectedIndex = -1; // points at a gone tab; the setter below fires the change
+            SelectedIndex = Math.Min(index, Tabs.Count - 1);
+        }
+        else if (CurSelectedIndex > index)
+        {
+            --CurSelectedIndex; // same tab, new seat - no event
+        }
+    }
+
+    /// the "another colony replaces the tab" path: rename + panel swap, no create/destroy
+    public void RenameTab(int index, LocalizedText title)
+    {
+        if ((uint)index >= (uint)Tabs.Count)
+            return;
+        Tabs[index].Title = title.Text;
+        RecalculateTabRects(); // the tab's width follows its text
+    }
+
     int IndexOf(string title) => Tabs.FirstIndexOf(tab => tab.Title == title);
     public bool IsSelected(string title) => SelectedIndex != -1 && IndexOf(title) == SelectedIndex;
     public bool ContainsTab(string title) => IndexOf(title) != -1;
@@ -234,7 +268,11 @@ public class Submenu : UIPanel
         
         NextTabPos.X += w;
         MenuBar = new(MenuBar.X, MenuBar.Y, MenuBar.W, TabRows*TabHeight);
-        ClientArea = new(MenuBar.X, MenuBar.Bottom, MenuBar.W, Height - (MenuBar.H + N.BL.H));
+        // same terms as before, through the owner formula (MenuBar.X/W derive from N.Top,
+        // which derives from the same corner textures CalcGroupClientArea reads).
+        // ⚠ new RectF(Rect), not RectF: N was laid out on the INTEGER rect, and the formula
+        // must read the same one to stay bit-identical.
+        ClientArea = CalcGroupClientArea(new RectF(Rect), Style, TabRows);
 
         tab.Rect = new(newPos, new(w, TabHeight));
     }
@@ -436,25 +474,32 @@ public class Submenu : UIPanel
             switch (style)
             {
                 case SubmenuStyle.Brown:
-                    HorizVert       = Tex("NewUI/submenu_horiz_vert");
-                    CornerTL        = Tex("NewUI/submenu_corner_TL");
-                    CornerTR        = Tex("NewUI/submenu_corner_TR");
-                    CornerBR        = Tex("NewUI/submenu_corner_BR");
-                    CornerBL        = Tex("NewUI/submenu_corner_BL");
+                    // Ludoal fork: the Brown set follows UI/Theme.yaml's SubmenuSkin folder,
+                    // falling back piece by piece to the classic NewUI set - same lever as
+                    // PopupFrame's PopupSkin
+                    string skin = UITheme.SubmenuSkin;
+                    SubTexture Skinned(string piece)
+                        => ResourceManager.TextureOrDefault($"{skin}/{piece}", $"NewUI/{piece}");
 
-                    HoverLeftEdge = Tex("NewUI/submenu_header_hover_leftedge");
-                    HoverLeft     = Tex("NewUI/submenu_header_hover_left");
-                    HoverMid      = Tex("NewUI/submenu_header_hover_mid");
-                    HoverRight    = Tex("NewUI/submenu_header_hover_right");
+                    HorizVert       = Skinned("submenu_horiz_vert");
+                    CornerTL        = Skinned("submenu_corner_TL");
+                    CornerTR        = Skinned("submenu_corner_TR");
+                    CornerBR        = Skinned("submenu_corner_BR");
+                    CornerBL        = Skinned("submenu_corner_BL");
 
-                    HeaderLeft          = Tex("NewUI/submenu_header_left");
-                    HeaderLeftUnsel     = Tex("NewUI/submenu_header_left_unsel");
-                    HeaderMiddle        = Tex("NewUI/submenu_header_middle");
-                    HeaderMiddleUnsel   = Tex("NewUI/submenu_header_middle_unsel");
-                    HeaderRight         = Tex("NewUI/submenu_header_right");
-                    HeaderRightUnsel    = Tex("NewUI/submenu_header_right_unsel");
-                    HeaderRightExt      = Tex("NewUI/submenu_header_rightextend");
-                    HeaderRightExtUnsel = Tex("NewUI/submenu_header_rightextend_unsel");
+                    HoverLeftEdge = Skinned("submenu_header_hover_leftedge");
+                    HoverLeft     = Skinned("submenu_header_hover_left");
+                    HoverMid      = Skinned("submenu_header_hover_mid");
+                    HoverRight    = Skinned("submenu_header_hover_right");
+
+                    HeaderLeft          = Skinned("submenu_header_left");
+                    HeaderLeftUnsel     = Skinned("submenu_header_left_unsel");
+                    HeaderMiddle        = Skinned("submenu_header_middle");
+                    HeaderMiddleUnsel   = Skinned("submenu_header_middle_unsel");
+                    HeaderRight         = Skinned("submenu_header_right");
+                    HeaderRightUnsel    = Skinned("submenu_header_right_unsel");
+                    HeaderRightExt      = Skinned("submenu_header_rightextend");
+                    HeaderRightExtUnsel = Skinned("submenu_header_rightextend_unsel");
                     break;
                     
                 case SubmenuStyle.Blue:
@@ -485,19 +530,61 @@ public class Submenu : UIPanel
 
     static int ContentId;
     static StyleTextures[] Styling;
+    static string StylingSkin;
 
-    StyleTextures GetStyle()
+    StyleTextures GetStyle() => GetStyle(Style);
+
+    static StyleTextures GetStyle(SubmenuStyle style)
     {
-        if (Styling == null || ContentId != ResourceManager.ContentId)
+        if (Styling == null || ContentId != ResourceManager.ContentId || StylingSkin != UITheme.SubmenuSkin)
         {
             ContentId = ResourceManager.ContentId;
+            StylingSkin = UITheme.SubmenuSkin;
             Styling = new[]
             {
                 new StyleTextures(SubmenuStyle.Brown),
                 new StyleTextures(SubmenuStyle.Blue),
             };
         }
-        return Styling[(int)Style];
+        return Styling[(int)style];
+    }
+
+    // Ludoal fork: the tab group's chrome WITHOUT the tabs, for elements that wear the same
+    // furniture without being Submenus - the cartouches, the minimap. One scratch sprite,
+    // refreshed on every call: Draw runs on the UI thread only, and the alternative is an
+    // allocation per frame.
+    static readonly NineSliceSprite FrameSprite = new();
+
+    public static void DrawFrameOnly(SpriteBatch batch, in RectF r, SubmenuStyle style = SubmenuStyle.Brown)
+    {
+        StyleTextures s = GetStyle(style);
+        FrameSprite.Update(r, s.CornerTL, s.CornerTR, s.CornerBL, s.CornerBR,
+                              s.HorizVert, s.HorizVert, borderWidth: 2);
+        FrameSprite.DrawBorders(batch);
+    }
+
+    // Ludoal fork: the cartouche recipe, written once - the near-opaque ground 2px inside
+    // the chrome, then the frame on top. The star/planet/ship/fleet cartouches and the
+    // minimap each carried this pair as their own copy; one arithmetic, several consumers.
+    public static void DrawFrameWithGround(SpriteBatch batch, in RectF r, SubmenuStyle style = SubmenuStyle.Brown)
+    {
+        RectF ground = new(r.X + 2, r.Y + 2, r.W - 4, r.H - 4);
+        batch.FillRectangle(ground, new Color(8, 10, 14).Alpha(0.94f));
+        DrawFrameOnly(batch, r, style);
+    }
+
+    // Ludoal fork: the group client-area formula, extracted to its owner. The tab-layout
+    // path below calls this (the formula exists ONCE), and a screen hosted in a group's
+    // frame without being a Submenu reads the same rect - pixel-identical to a real tab's
+    // content by construction, not by calibration. Terms: the menu bar starts at the TL
+    // corner texture's width and is amputated of both corners; the client area starts under
+    // tabRows of tabs and stops above the BL corner's height.
+    public static RectF CalcGroupClientArea(in RectF rect, SubmenuStyle style, int tabRows = 1)
+    {
+        StyleTextures s = GetStyle(style);
+        float menuW = rect.W - (s.CornerTL.Width + s.CornerTR.Width);
+        float menuH = tabRows * TabHeight;
+        return new(rect.X + s.CornerTL.Width, rect.Y + menuH, menuW, rect.H - (menuH + s.CornerBL.Height));
     }
 
 }

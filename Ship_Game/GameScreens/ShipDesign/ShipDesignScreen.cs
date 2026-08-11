@@ -38,7 +38,7 @@ namespace Ship_Game
         public Empire Player => ParentUniverse.Player;
         public DesignStanceButtons OrdersButton;
         // Ludoal fork: the two rows under the top bar - identity, then options. Held as fields so
-        // the pieces built later in LoadContent land on the same lines rather than recomputing them.
+        // pieces built later in LoadContent land on the same lines.
         int IdentityRowY;
         int OptionsRowY;
 
@@ -54,7 +54,7 @@ namespace Ship_Game
         static string LastDesignThisSession; // Ludoal fork: reopen where we left off, this run only
 
         Vector3 CameraPos = new Vector3(0f, 0f, 1300f);
-        // bench 359: the pan target - HandleCameraMovement writes here, Update glides CameraPos
+        // The pan target - HandleCameraMovement writes here, Update glides CameraPos
         // toward it (the XY twin of DesiredCamHeight), so the pan feels like Fleets' instead of raw
         Vector2 DesiredCamXY;
         float DesiredCamHeight = 1300f;
@@ -74,15 +74,17 @@ namespace Ship_Game
         UIButton BtnStripShip;       // Removes all modules but armor, shields and command modules
         UIButton BtnToggleOverlay;
         Submenu DesignTabs;   // Ludoal fork: the Design group's tab row, this screen being one tab
+        // Ludoal fork: this page's real frame is its tab row's rect - the band excludes
+        // exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => DesignTabs?.Rect ?? base.PageFrame;
         UIButton BtnArcs;            // weapon fire arcs overlay
         Rectangle SearchBar;
 
         ShipDesignInfoPanel InfoPanel;
         Submenu InfoSub;
-        // Ludoal fork (bench): the design-side twin of the module panel's obsolete button, same
-        // icon and same corner. Marking a design obsolete greys it in the browser and a filter
-        // hides them — a design you have moved past but do not want to delete (maintainer feedback).
-        TexturedButton ObsoleteDesign;
+        // Ludoal fork: the design-side twin of the module panel's obsolete button, same icon and
+        // corner. Marking a design obsolete greys it in the browser and a filter hides them.
+        UIButton ObsoleteDesign;
         // Ludoal fork (spec v4): the pinned design has no frame of its own — it only feeds the
         // delta lane of InfoPanel. This frame shows the design under the cursor instead.
         ShipDesignInfoPanel HoverPanel;
@@ -101,30 +103,32 @@ namespace Ship_Game
         UITextEntry ModuleFilter;          // Ludoal fork: same field, over the module list
         public string ModuleSearchText { get; private set; }
         // Ludoal fork: the browser's view toggles outlive the screen, which is rebuilt on every
-        // open, and last as long as the game runs. They stay out of the config: they are ways of
-        // looking at the list, not preferences.
+        // open, and last as long as the game runs. They stay out of the config: ways of looking
+        // at the list, not preferences.
         static bool ShowLockedDesigns;
         static bool HideObsoleteDesigns; // Ludoal fork: the browser's obsolete filter
-        // Ludoal fork (bench): ON = the two cartouches coexist, hover to the left of the active
-        // one. OFF = one cartouche at that place: the active design, replaced by the hovered one
-        // for as long as the cursor rests on a row. It stays out of the config - a way of looking
-        // at the list, not a preference - but it survives the screen for the rest of the session.
+        // Ludoal fork: ON = the two cartouches coexist, hover to the left of the active one.
+        // OFF = one cartouche at that place: the active design, replaced by the hovered one for
+        // as long as the cursor rests on a row. Stays out of the config; survives the session.
         static bool PinActiveDesign = true;
         UICheckBox PinActiveCheck;
 
-        // Ludoal fork (maintainer bench 302): the compact Active Design cartouche - the
-        // browser list's width, carrying the flying overlay's stat set. Both cartouches
-        // swap their row sets with it; ResizeCartouches applies a flip.
+        // Ludoal fork: the compact Active Design cartouche - the browser list's width, carrying
+        // the flying overlay's stat set. Both cartouches swap their row sets with it;
+        // ResizeCartouches applies a flip.
         static bool CompactActiveDesign;
         UICheckBox CompactActiveCheck;
         bool AppliedCompact; // the state the cartouches are actually built for
 
-        // Ludoal fork (bench 355): Full Screen drops the resolution-charter cap for the Shipyard only,
-        // so the frame spans the whole display (still anchored on the rail) instead of the 1600x1080
-        // footprint - room to breathe at 1440p+. Session-persistent like the others; flipping it
-        // re-runs LoadContent so every panel and the 3D projection rebuild on the new frame.
-        public static bool FullScreenDesign; // public: Design Issues centres itself on the same frame (bench 361)
-        // bench 362: every dialog the Shipyard summons centres on ITS frame, not the display
+        // Ludoal fork: Full Screen drops the resolution-charter cap for the Shipyard only, so the
+        // frame spans the whole display (still anchored on the rail) instead of the 1600x1080
+        // footprint. Session-persistent; flipping it re-runs LoadContent so every panel and the
+        // 3D projection rebuild on the new frame.
+        public static bool FullScreenDesign; // public: Design Issues centres itself on the same frame
+        // Ludoal fork: the hard pause is a Full Screen perk only - windowed, the Shipyard rides
+        // the page-pause option like any other page
+        protected override bool PageAlwaysPauses => FullScreenDesign;
+        // Every dialog the Shipyard summons centres on ITS frame, not the display
         public Vector2 FrameCentre
         {
             get
@@ -134,29 +138,27 @@ namespace Ship_Game
             }
         }
         UICheckBox FullScreenCheck;
-        // Ludoal fork (bench 188): sweeping from one browser row to the next crosses a gap where
-        // nothing is hovered. With Pin Active unchecked that gap let the Active cartouche flash
-        // back into its seat between every pair of rows (maintainer feedback), so a hover that ENDS is held for
-        // a moment before the frame actually goes. Negative = not counting. Only the hover path
-        // sets it: loading a design must still clear the frame at once, with no ghost.
+        // Ludoal fork: sweeping from one browser row to the next crosses a gap where nothing is
+        // hovered. With Pin Active unchecked that gap lets the Active cartouche flash back into
+        // its seat between every pair of rows, so a hover that ENDS is held for a moment before
+        // the frame actually goes. Negative = not counting. Only the hover path sets it: loading
+        // a design must still clear the frame at once, with no ghost.
         const float HoverLinger = 0.12f;
         float HoverLeftAt = -1f;
         // which groups were open before the last rebuild, so a filter change does not refold
-        // the whole browser (bench 46.172). Both group builders read it.
+        // the whole browser. Both group builders read it.
         readonly Array<string> ExpandedGroups = new();
         // which of the browser's designs are WIPs, so a row knows which affordances to carry
         readonly Array<string> WipDesigns = new();
-        // Ludoal fork (bench 46.152): how the browser groups its rows. By hull is the
-        // build view (a carcass and what we already put on it); by role is the use view
-        // ("my carriers", wherever they are built). Same list, same filters, one key
-        // change - which is why this is a grouping mode and not a second list with its
-        // own scroll, filter and selection to keep in step (maintainer feedback).
+        // Ludoal fork: how the browser groups its rows. By hull is the build view (a carcass and
+        // what we already put on it); by role is the use view ("my carriers", wherever they are
+        // built). Same list, same filters, one key change - a grouping mode, not a second list
+        // with its own scroll, filter and selection to keep in step.
         static bool GroupByRole; // Ludoal fork: browser grouping tab, kept for the session
         const string DefaultBrowserFilter = "filter by name or hull...";
         const string DefaultModuleFilter = "filter modules...";
-        // Ludoal fork (spec v4): the flying hover overlay gave way to the Hover cartouche.
-        // The overlay component itself lives on: the load and save popups still use it, as do
-        // seven other screens. It is only this screen that no longer has a use for it.
+        // Ludoal fork: this screen uses the Hover cartouche instead of the flying hover overlay.
+        // The overlay component itself lives on - the load/save popups and other screens still use it.
 
         public ShipModule HighlightedModule;
         SlotStruct ProjectedSlot;
@@ -200,16 +202,24 @@ namespace Ship_Game
             public int TurretAngle;
         }
 
-        public ShipDesignScreen(UniverseScreen universe, EmpireUIOverlay empireUi) : base(universe, toPause: universe)
+        // "Edit this ship" arrives FROM a colony: a user close of the Shipyard goes back to it.
+        // Tab switches and group jumps suppress the return - they land elsewhere, and the
+        // reopened colony would bury their target.
+        readonly Planet ReturnToColony;
+        bool ReturnSuppressed;
+
+        public ShipDesignScreen(UniverseScreen universe, EmpireUIOverlay empireUi, Planet returnToColony = null)
+            : base(universe, toPause: universe)
         {
+            ReturnToColony = returnToColony;
             ParentUniverse = universe;
             Name = "ShipDesignScreen";
             EmpireUI = empireUi;
-            IsPopup = true; // Ludoal fork (bench 345): the paused universe shows behind, dimmed - like the table screens
-            // Ludoal fork: no fade in. The two-second one left this screen translucent while it
-            // built, so whatever sat under it in the stack showed through - opening the Shipyard
-            // with Fleets already open drew Fleets' cartouche for a moment. Nothing here reads
-            // TransitionPosition, so the fade animated nothing; it only delayed the screen.
+            IsPopup = true; // Ludoal fork: the paused universe shows behind, dimmed - like the table screens
+            // Ludoal fork: no fade in. A fade leaves this screen translucent while it builds, so
+            // whatever sat under it in the stack shows through - e.g. opening the Shipyard with
+            // Fleets already open would draw Fleets' cartouche for a moment. Nothing here reads
+            // TransitionPosition, so a fade would only delay the screen, not animate it.
             HullEditMode = false;
             UnlockAllFactionDesigns = universe is DeveloperUniverse;
             EnableDebugFeatures = universe is DeveloperUniverse || universe.Debug;
@@ -228,11 +238,8 @@ namespace Ship_Game
         // comparison with the Active Module panel; same module again unpins it.
         public void SetCompareModule(ShipModule template)
         {
-            // Comparing a module with itself says nothing: every delta is zero. Refuse the pin
-            // rather than show a frame full of blanks (maintainer feedback).
-            // Ludoal fork (bench 46.172): null means CANCEL, and it has to short-circuit here.
-            // Every branch below fell through to CreateModuleListItem(null), which dereferences
-            // its argument - clicking the new x crashed the game (maintainer feedback).
+            // Ludoal fork: null means CANCEL, and it has to short-circuit here - CreateModuleListItem(null)
+            // dereferences its argument.
             if (template == null)
             {
                 CompareModule = null;
@@ -240,7 +247,7 @@ namespace Ship_Game
             }
 
             // Comparing a module with itself says nothing: every delta is zero. Refuse the pin
-            // rather than show a frame full of blanks (maintainer feedback).
+            // rather than show a frame full of blanks.
             if (ActiveModule != null && ActiveModule.UID == template.UID)
                 return;
 
@@ -250,11 +257,10 @@ namespace Ship_Game
                 CompareModule = CreateModuleListItem(template);
         }
 
-        // Ludoal fork (spec v4): Shift-click in the browser pins a design, and the same design
-        // again unpins it. The pinned design gets no frame — it only feeds the delta lane of the
-        // Active cartouche, exactly as a pinned module does. Pinning the design already on the
+        // Ludoal fork: Shift-click in the browser pins a design, and the same design again unpins
+        // it. The pinned design gets no frame — it only feeds the delta lane of the Active
+        // cartouche, exactly as a pinned module does. Pinning the design already on the
         // workbench is refused: every delta would be zero.
-        // The try/catch is inherited from the hover overlay, which needed it on real designs.
         public void SetComparedDesign(IShipDesign design)
         {
             if (design != null && DesignedShip?.Name == design.Name)
@@ -286,9 +292,8 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork (spec v4): the design under the cursor in the browser, shown in the Hover
-        // cartouche. Passing null hides it.
-        // Ludoal fork (bench 188): the actual hide, and the one place that clears the linger.
+        // Ludoal fork: the design under the cursor in the browser, shown in the Hover cartouche.
+        // Passing null hides it. This is the actual hide, and the one place that clears the linger.
         void HideHoveredDesign()
         {
             HoverLeftAt = -1f;
@@ -360,11 +365,9 @@ namespace Ship_Game
             SpawnActiveModule(moduleUID, moduleRot, turretAngle, hangarShipUID);
             HighlightedModule = null;
 
-            // Ludoal fork (bench 184): picking up the very module that is pinned drops the pin,
-            // the same way loading a design does on the browser side. Comparing a thing with
-            // itself is all zeroes, and SetComparedModule already refuses that pin outright, so
-            // leaving it here would strand one that can never be shown. Any OTHER module keeps
-            // the pin: swapping the brush to weigh it against the pinned one is the whole point.
+            // Ludoal fork: picking up the very module that is pinned drops the pin, the same way
+            // loading a design does on the browser side. Any OTHER module keeps the pin: swapping
+            // the brush to weigh it against the pinned one is the whole point.
             if (CompareModule != null && CompareModule.UID == moduleUID)
                 CompareModule = null;
         }
@@ -527,10 +530,9 @@ namespace Ship_Game
             if (shipDesignTemplate == null) // no design selected in the browser
                 return;
 
-            // Ludoal fork: remember where we were, so reopening the shipyard lands on the
-            // design we left. Static on purpose — the screen is rebuilt on every open, so the
-            // memory has to outlive the instance, and it dies with the process, which is
-            // exactly what "for this session" means (maintainer feedback).
+            // Ludoal fork: remember where we were, so reopening the shipyard lands on the design
+            // we left. Static on purpose — the screen is rebuilt on every open, so the memory has
+            // to outlive the instance; it dies with the process ("for this session").
             LastDesignThisSession = shipDesignTemplate.Name;
 
             RemoveVisibleMesh();
@@ -630,10 +632,9 @@ namespace Ship_Game
             return true;
         }
 
-        // Ludoal fork (bench 46.154): the design cartouche is variable-geometry like the module
-        // one — it only pays for the delta lanes while a design is actually pinned. It was sized
-        // ONCE at construction, from the player's preference rather than from the pin, so it
-        // could never shrink back (maintainer feedback).
+        // Ludoal fork: the design cartouche is variable-geometry like the module one — it only
+        // pays for the delta lanes while a design is actually pinned. It is resized here rather
+        // than once at construction, so it can shrink back when the pin is dropped.
         //
         // ⚠ Frame and inner panel move TOGETHER, from one arithmetic: they are two blocks that
         // must agree, so they cannot each compute their own edge. And the frame's right edge is
@@ -641,10 +642,9 @@ namespace Ship_Game
         // keeps the Hover cartouche's own right edge glued to the Active frame's left.
         void ResizeCartouches(float deltaTime)
         {
-            // Ludoal fork (bench): unpinned, the active cartouche steps aside for the hovered one
-            // rather than sharing the row with it. Decided here, every frame, from the hover
-            // frame's own visibility - the three places that toggle the hover would otherwise
-            // each have to remember this rule (maintainer feedback).
+            // Ludoal fork: unpinned, the active cartouche steps aside for the hovered one rather
+            // than sharing the row with it. Decided here, every frame, from the hover frame's
+            // own visibility.
             // the deferred hide from SetHoveredDesign, see HoverLinger
             if (HoverLeftAt >= 0f)
             {
@@ -659,10 +659,8 @@ namespace Ship_Game
 
             // ⚠ and its POSITION is settled here too, above the early return below: the hover
             // frame moves when the toggle flips, which has nothing to do with the delta lanes.
-            // Left under that return it only ever ran on a pin or an unpin, so unpinned the
-            // Active frame vanished while the hover frame stayed put on the left, over the
-            // browser (bench 183, Ludo). Its module twin never had this: there the placement
-            // sits at the end of Update, with no early return above it.
+            // Left under that return it only runs on a pin or an unpin, so unpinned the Active
+            // frame vanishes while the hover frame stays put on the left, over the browser.
             PlaceHoverCartouche(RectF.FromPoints(InfoSub.X, InfoSub.X + InfoSub.Width,
                                                  InfoSub.Y, InfoSub.Y + InfoSub.Height));
 
@@ -707,14 +705,12 @@ namespace Ship_Game
             InfoPanel.SetAbsSize(frame.W - ShipDesignInfoPanel.Inset * 2f, frame.H - 34);
             InfoPanel.RequiresLayout = true;   // SetAbsSize does not arm it, same as the frame
 
-            // Design Completion / DESIGN ISSUES hang off the cartouche's left edge too — they
-            // were placed once at construction and stayed put while the frame grew leftwards on
-            // the first pin (bench 46.163, Ludo).
+            // Design Completion / DESIGN ISSUES hang off the cartouche's left edge too — placed
+            // once at construction, so they must move here when the frame grows leftward.
             IssuesPanel.SetAbsPos(frame.X, IssuesPanel.Y);
 
-            // the obsolete button hangs off the frame's RIGHT edge, so it travels with it —
-            // same lesson the module panel's own button taught at bench 46.157
-            ObsoleteDesign.r.X = (int)(frame.X + frame.W - ObsoleteDesign.r.Width - 10);
+            // the obsolete button hangs off the frame's RIGHT edge, so it travels with it
+            ObsoleteDesign.Pos.X = (int)(frame.X + frame.W - ObsoleteDesign.Width - 10);
 
             // (the Pin Active checkbox is anchored to the BROWSER's left edge, not to this
             // frame, so unlike the two elements above it does not travel when the frame grows)
@@ -738,14 +734,14 @@ namespace Ship_Game
 
             HoverSub.SetAbsPos(hover.X, hover.Y);
             HoverSub.RequiresLayout = true;
-            HoverPanel.SetAbsPos(hover.X + ShipDesignInfoPanel.Inset, hover.Y + 26); // same top as Active (bench 303)
+            HoverPanel.SetAbsPos(hover.X + ShipDesignInfoPanel.Inset, hover.Y + 26); // same top as Active
             HoverPanel.RequiresLayout = true;
         }
 
         public override void Update(float fixedDeltaTime)
         {
             CameraPos.Z = CameraPos.Z.SmoothStep(DesiredCamHeight, 0.2f);
-            // bench 359: XY glides toward the pan target like Z toward the zoom target
+            // XY glides toward the pan target like Z toward the zoom target
             CameraPos.X = CameraPos.X.SmoothStep(DesiredCamXY.X, 0.2f);
             CameraPos.Y = CameraPos.Y.SmoothStep(DesiredCamXY.Y, 0.2f);
             ResizeCartouches(fixedDeltaTime);
@@ -758,12 +754,11 @@ namespace Ship_Game
             DesignedShip.Velocity = new Vector2(0, 100);
             DesignedShip.UpdateThrusters(simTime);
 
-            // bench 354 (Lek's diagnosis): do NOT StartMusic here. This runs EVERY FRAME, and once the
-            // mixer force-stops the track (cue limit) or PlayMusic returns DoNotPlay, StartMusic's guard
+            // Do NOT StartMusic here. This runs EVERY FRAME, and once the mixer force-stops the
+            // track (cue limit) or PlayMusic returns DoNotPlay, StartMusic's guard
             // (CurrentMusic != name || Music.IsStopped) is true every frame - it re-fires forever,
             // stacking fade-out instances until the mixer saturates: music dies, only crackle left.
-            // LoadContent already starts the theme once; that is enough. (Fleets never did this - which
-            // is why Fleets was fine and the Shipyard leaked.)
+            // LoadContent already starts the theme once; that is enough.
 
             base.Update(fixedDeltaTime);
         }
@@ -785,13 +780,16 @@ namespace Ship_Game
             UpdateAvailableHulls();
             CreateGUI();
             InitializeCamera();
-            ScreenManager.StartMusic("ShipyardTheme");
+            // Ludoal fork: the theme is a Full Screen perk - windowed, the universe's ambient
+            // keeps playing under the workbench
+            if (FullScreenDesign)
+                ScreenManager.StartMusic("ShipyardTheme");
             AssignLightRig(LightRigIdentity.Shipyard);
             SetupShipyardLighting();
 
             ShipDesign lastWIP = ShipDesignWIP.GetLatestWipToLoad(Player);
             // Ludoal fork: coming back from the battle sim reopens the tested design
-            // (it is SAVED, not a WIP — the lastWIP path missed it, field report 45.38)
+            // (it is SAVED, not a WIP — the lastWIP path misses it)
             if (!string.IsNullOrEmpty(InitialDesign)
                 && ResourceManager.Ships.GetDesign(InitialDesign, out Ships.IShipDesign bsDesign))
                 ChangeHull(bsDesign);
@@ -877,10 +875,9 @@ namespace Ship_Game
         {
             RemoveAll();
 
-            // Ludoal fork (bench 46.135): the module list runs DOWN TO the Active frame instead
-            // of stopping at an arbitrary 45% of the screen, which left a gap of dead starfield
-            // between them. ModuleSelection owns that arithmetic — one place decides where the
-            // list ends and the frame begins, so the two can never drift apart.
+            // Ludoal fork: the module list runs DOWN TO the Active frame instead of stopping at
+            // an arbitrary fraction of the screen. ModuleSelection owns that arithmetic — one
+            // place decides where the list ends and the frame begins, so the two cannot drift apart.
             // Ludoal fork: the Shipyard tab of the Design group. Unlike the table screens, the
             // frame is a surround rather than a container - the 3D workbench, the module grid and
             // the two columns keep their own layout inside it.
@@ -980,7 +977,7 @@ namespace Ship_Game
                     // and its input layer leaked through. Design is saved: exit is silent.
                     string design = CurrentDesign.Name;
                     ExitScreen();
-                    ScreenManager.AddScreen(new BattleSimEnemyPicker(ParentUniverse, design)); // Ludoal fork S2: pick the enemy first
+                    ScreenManager.AddScreen(new BattleSimEnemyPicker(ParentUniverse, design)); // Ludoal fork: pick the enemy first
                 }
             });
             testFight.ClickSfx = "blip_click";
@@ -1073,9 +1070,9 @@ namespace Ship_Game
             float colBottom   = ModuleSelection.FramesBottom();
             // The right column mirrors the left one exactly: the cartouche keeps the module
             // frame's height, and the browser runs down to it with the module list's own gap, so
-            // both columns' feet land on one line. Nothing else is allowed into that arithmetic
-            // (maintainer feedback) — the completion + issues strip is INDEPENDENT: it keeps its place above
-            // the cartouche and is simply narrow enough not to reach under the browser.
+            // both columns' feet land on one line. Nothing else is allowed into that arithmetic —
+            // the completion + issues strip is INDEPENDENT: it keeps its place above the
+            // cartouche and is simply narrow enough not to reach under the browser.
             float cartoucheH  = ModuleSelectComponent.FrameHeight;
             float cartoucheY  = colBottom - cartoucheH; // colBottom already carries the margin
             // the browser runs down to the cartouche with the same gap the module list keeps
@@ -1085,14 +1082,14 @@ namespace Ship_Game
             float listBottom  = cartoucheY - ModuleSelection.FrameGap - ModuleSelection.ToggleRowBand;
             // the completion line sits at local y 0, the issues button at 18 in Pirulen20
             float issuesH     = 18f + Fonts.Pirulen20.LineSpacing;
-            // Ludoal fork (bench 46.150): the strip moves INSIDE the cartouche, on its last
-            // line - above the frame it bit into the browser list, and the cartouche has
-            // spare room at the bottom (maintainer feedback). Completion and the issues button share the
-            // row, so it costs one line rather than two.
+            // Ludoal fork: the strip moves INSIDE the cartouche, on its last line - above the
+            // frame it bites into the browser list, and the cartouche has spare room at the
+            // bottom. Completion and the issues button share the row, so it costs one line
+            // rather than two.
             float issuesY     = cartoucheY + cartoucheH - issuesH - 6f;
 
-            // Ludoal fork (bench): the right column had no margin — its frames were flush with
-            // the screen edge while the left ones breathe. Same padding on both sides now.
+            // Ludoal fork: same padding on both sides — the right column's frames stay flush
+            // with the screen edge otherwise, while the left ones breathe.
             // Ludoal fork: same width as the module list on the other side of the screen.
             Vector2 hullSelSize = new(ModuleSelection.ListWidth, Math.Max(160f, listBottom - colTop));
             var hullSelectPos = new LocalPos(ModuleSelection.BandRight - hullSelSize.X, colTop);
@@ -1110,12 +1107,12 @@ namespace Ship_Game
                                                 Fonts.Arial12Bold, DefaultBrowserFilter));
             BrowserFilter.AutoCaptureOnKeys = true;
             BrowserFilter.AutoCaptureLoseFocusTime = 0.5f;
-            // Ludoal fork (maintainer feedback): the standard framed search field, like Colony's
-            // building filter - the bare underline read as a stray line of text over the starfield.
+            // Ludoal fork: the standard framed search field, like Colony's building filter - a
+            // bare underline reads as a stray line of text over the starfield.
             BrowserFilter.Background = new Submenu(new RectF(filterX, searchY - 3, hullSelSize.X, Fonts.Arial12Bold.LineSpacing + 6));
             BrowserFilter.Color = Colors.Cream;
-            // Ludoal fork (bench 46.150): the placeholder clears itself on click - it had to be
-            // deleted by hand before you could type (maintainer feedback).
+            // Ludoal fork: the placeholder clears itself on click, instead of needing to be
+            // deleted by hand before you can type.
             BrowserFilter.AutoClearTextOnInputCapture = true;
             BrowserFilter.OnTextChanged = (text) =>
             {
@@ -1124,19 +1121,18 @@ namespace Ship_Game
             };
 
             // side by side on one row: stacked, the second one slipped under the frame's title tab
-            // Ludoal fork: three toggles on the row now, so it starts further left and runs
-            // past the frame's left edge — deliberate (maintainer feedback): there is empty starfield there and
-            // nothing to collide with, whereas the right side is the browser's own margin.
-            // Ludoal fork: the module list gets its filter as a checkbox directly above it,
-            // where the designs have theirs. It used to be a button in the bottom bar, a long way
-            // from the list it filters (maintainer feedback) — a first taste of the wider UI pass to come.
+            // Ludoal fork: three toggles on the row, so it starts further left and runs past the
+            // frame's left edge — deliberate: there is empty starfield there and nothing to
+            // collide with, whereas the right side is the browser's own margin.
+            // Ludoal fork: the module list gets its filter as a checkbox directly above it, where
+            // the designs have theirs — close to the list it filters.
             // 26px ABOVE the list, not below its top edge: filterTop IS the list's own top, so
-            // +26 put the checkbox inside the list, which drew straight over it (bench 46.172).
+            // +26 would put the checkbox inside the list, drawing straight over it.
             // The filter toggles sit directly ABOVE their search field, with their list: a
             // checkbox draws itself around its centre and measures max(12, LineSpacing) tall, so
             // its top is pulled up by its own height plus the gap.
             float toggleH = Math.Max(12, Fonts.Arial12Bold.LineSpacing);
-            float toggleY = searchY - toggleH - 6; // bench 343: 2px higher, to air the row off the filter frame
+            float toggleY = searchY - toggleH - 6; // 2px higher, to air the row off the filter frame
 
             Checkbox(new Vector2(ModuleSelection.BandLeft + 6, toggleY),
                      () => IsFilterOldModulesMode,
@@ -1150,7 +1146,7 @@ namespace Ship_Game
                                                Fonts.Arial12Bold, DefaultModuleFilter));
             ModuleFilter.AutoCaptureOnKeys = true;
             ModuleFilter.AutoCaptureLoseFocusTime = 0.5f;
-            // Ludoal fork (maintainer feedback): the standard framed search field, like Colony's.
+            // Ludoal fork: the standard framed search field, like Colony's.
             ModuleFilter.Background = new Submenu(new RectF(ModuleSelection.BandLeft, searchY - 3, ModuleSelection.ListWidth, Fonts.Arial12Bold.LineSpacing + 6));
             ModuleFilter.Color = Colors.Cream;
             ModuleFilter.AutoClearTextOnInputCapture = true;
@@ -1160,8 +1156,8 @@ namespace Ship_Game
                 ModuleSelectComponent.ResetActiveCategory();
             };
 
-            // Ludoal fork (bench 46.172): the row is right-aligned on the frame's own right
-            // edge with a 5px margin, rather than pushed left by a guessed amount (maintainer feedback).
+            // Ludoal fork: the row is right-aligned on the frame's own right edge with a 5px
+            // margin, rather than pushed left by a guessed amount.
             const float togglesWidth = 246f + 108f;   // three checkboxes, last one included
             float row3 = hullSelSize.X - togglesWidth - 5f;
             Checkbox(new Vector2(filterX + row3 + 6, toggleY),
@@ -1210,7 +1206,7 @@ namespace Ship_Game
             // hover preview: the same overlay the load popup used, so a design can be
             // inspected without paying for a load. Hull rows carry no design, and the
             // overlay hides itself when handed a null one.
-            // Ludoal fork (spec v4): hovering a design fills the Hover cartouche instead of the
+            // Ludoal fork: hovering a design fills the Hover cartouche.
             HullSelectList.OnHovered = item => SetHoveredDesign(item?.Design);
             RefreshHullSelectList();
             hullSelectSub.PerformLayout();
@@ -1223,8 +1219,7 @@ namespace Ship_Game
             // too: measured in the font that draws it, never guessed.
             // Ludoal fork: the row reads Carrier Only, Repair, Stance, Hangar Type - the checkbox
             // first because it decides what the two dropdowns even mean. The captions are short
-            // enough to fit the row at 1440 wide (maintainer feedback), and each is measured in
-            // the font that draws it.
+            // enough to fit the row at 1440 wide, each measured in the font that draws it.
             const int ddW = 125, ddHangarW = 150, ddH = 18, optGap = 20;
             int lblRepairW = (int)Fonts.Arial12Bold.TextWidth(RepairCaption) + TitleGap;
             int lblHangarW = (int)Fonts.Arial12Bold.TextWidth(HangarCaption) + TitleGap;
@@ -1249,9 +1244,9 @@ namespace Ship_Game
             foreach (ShipCategory item in Enum.GetValues(typeof(ShipCategory)).Cast<ShipCategory>())
                 CategoryList.AddOption(item.ToString(), item);
 
-            // Ludoal fork: Stance before Hangar Type (maintainer feedback). Stance is a block of
-            // icons rather than a labelled dropdown, so it breaks the row's rhythm less in the
-            // middle than at the end, where it left the widest thing hanging off the edge.
+            // Ludoal fork: Stance before Hangar Type. Stance is a block of icons rather than a
+            // labelled dropdown, so it breaks the row's rhythm less in the middle than at the
+            // end, where the widest thing would hang off the edge.
             OrdersButton = new DesignStanceButtons(this,
                 new Vector2(dropdownRect.Right + optGap, optY));
             Add(OrdersButton);
@@ -1262,36 +1257,33 @@ namespace Ship_Game
             foreach (HangarOptions item in Enum.GetValues(typeof(HangarOptions)).Cast<HangarOptions>())
                 HangarOptionsList.AddOption(item.ToString(), item);
 
-            // DESIGN ISSUES sits UNDER the cartouche (maintainer feedback) instead of in a narrow 200px
-            // column to its left, so its text gets the full width. Both boxes use the bottom-up
+            // DESIGN ISSUES sits UNDER the cartouche instead of in a narrow 200px column to its
+            // left, so its text gets the full width. Both boxes use the bottom-up
             // geometry computed above, which is why the list stretches and these do not.
             // The cartouche's right edge follows the browser frame above it — one margin for the
             // whole column — and it grows LEFTWARD to a width that actually fits two columns of
             // labels: at the browser's own width a half-column left ~54px for titles like
             // "Total Module Slots", so the value landed in the middle of its own label.
             // 400 = 2 × (longest title ~105 + value 60) + gutter + frame margins.
-            // Ludoal fork: the frames are sized BY THEIR CONTENT, the module panel's way — two
-            // column steps plus the panel's own margins — instead of a fraction of something
-            // else. Its right edge stays on the browser's, which keeps the column's right
-            // margin, and it grows leftward. (Five benches were spent on widths derived from
-            // available space; each change of width moved a column somewhere.)
-            // Ludoal fork: no comparison means no delta lanes, so the frame does not pay for
-            // them either. One value feeds both the width and the panel's own reservation -
-            // they must agree or the columns sit wrong inside the frame.
-            // Ludoal fork (bench 46.154): built at its NARROW size. The delta lanes are paid for
-            // only while a design is actually pinned, and nothing is pinned when the screen
-            // opens - ResizeCartouches widens it on the first pin and narrows it back on the
-            // last unpin. Sizing this from the player's preference is what made the frame
-            // fixed-width in 46.152 (maintainer feedback).
+            // Ludoal fork: the frame is sized BY ITS CONTENT, the module panel's way — two column
+            // steps plus the panel's own margins — instead of a fraction of available space. Its
+            // right edge stays on the browser's, which keeps the column's right margin, and it
+            // grows leftward.
+            // Ludoal fork: no comparison means no delta lanes, so the frame does not pay for them
+            // either. One value feeds both the width and the panel's own reservation - they must
+            // agree or the columns sit wrong inside the frame.
+            // Ludoal fork: built at its NARROW size. The delta lanes are paid for only while a
+            // design is actually pinned, and nothing is pinned when the screen opens -
+            // ResizeCartouches widens it on the first pin and narrows it back on the last unpin.
             bool deltaLanes = false;
             float cartoucheW = CompactActiveDesign ? ModuleSelection.ListWidth
                              : ShipDesignInfoPanel.FrameWidthFor(withDeltas: deltaLanes, withPlan: false);
             AppliedCompact = CompactActiveDesign;
             var infoRect = RectF.FromPoints(hullSelectSub.Right - cartoucheW, hullSelectSub.Right,
                                             cartoucheY, cartoucheY + cartoucheH);
-            // Ludoal fork: the stats live in a titled cartouche now, same frame the module
-            // panel uses ("Active Module"), so the two read as the same kind of object.
-            // The frame is added first so it draws behind the values.
+            // Ludoal fork: the stats live in a titled cartouche, same frame the module panel uses
+            // ("Active Module"), so the two read as the same kind of object. The frame is added
+            // first so it draws behind the values.
             var infoSub = Add(new Submenu(infoRect, "Active Design"));
             infoSub.SetBackground(Colors.TransparentBlackFill);
 
@@ -1299,13 +1291,23 @@ namespace Ship_Game
             int obsW = ResourceManager.Texture("NewUI/icon_queue_delete").Width;
             int obsH = ResourceManager.Texture("NewUI/icon_queue_delete").Height;
             var obsPos = new RectF(infoRect.X + infoRect.W - obsW - 10, infoRect.Y + 38, obsW, obsH);
-            ObsoleteDesign = new(obsPos, "NewUI/icon_queue_delete",
-                                 "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2");
-            ObsoleteDesign.Tooltip = "Mark this design as obsolete";
+            ObsoleteDesign = new UIButton(new UIButton.StyleTextures("NewUI/icon_queue_delete",
+                                          "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2"),
+                                          new Vector2(obsW, obsH), "")
+            {
+                Tooltip = "Mark this design as obsolete",
+                OnClick = OnObsoleteDesignClicked,
+                ClickSfx = "sd_ui_accept_alt3", // AcceptClick, as this toggle always played
+            };
+            ObsoleteDesign.Rect = obsPos;
+            void OnObsoleteDesignClicked(UIButton b)
+            {
+                Player.ToggleDesignObsolete(CurrentDesign.Name);
+                RefreshHullSelectList(); // the browser greys the row straight away
+            }
 
-            // Ludoal fork (bench): the inner panel takes the module frame's own left margin (10),
-            // so the design name starts exactly where "Light Kinetic Cannon" does in its frame —
-            // it was inset by 12 here and read as pushed to the right.
+            // Ludoal fork: the inner panel takes the module frame's own left margin (10), so the
+            // design name starts exactly where "Light Kinetic Cannon" does in its frame.
             const float Inset = ShipDesignInfoPanel.Inset;   // one number, read by all four sites
             var infoInner = RectF.FromPoints(infoRect.X + Inset, infoRect.Right - Inset,
                                              infoRect.Y + 26, infoRect.Bottom - 8);
@@ -1313,14 +1315,13 @@ namespace Ship_Game
             InfoPanel.HasDeltaLanes = deltaLanes; // widened on the first pin, see ResizeCartouches
             InfoPanel.Compact = CompactActiveDesign; // the toggle survives the screen
             InfoSub = infoSub;
-            // Ludoal fork (bench): on the frame's tab row vertically, but bound to the BROWSER,
-            // not to the frame - right-aligned on the browser's right edge, exactly as its module
-            // twin sits on the right edge of ITS list, so the two toggles read the same way.
-            // Bound to the list rather than the cartouche, it also stops travelling when the
-            // cartouche grows leftwards on a pin, and it survives the frame it hides: unpinned,
-            // the checkbox is the only way back.
-            // Pin Active back on the ACTIVE frame's tab row (maintainer bench 304) - only
-            // Compact moves to the browser's row, where the narrow frame cannot bite it
+            // Ludoal fork: on the frame's tab row vertically, but bound to the BROWSER, not to
+            // the frame - right-aligned on the browser's right edge, exactly as its module twin
+            // sits on the right edge of ITS list. Bound to the list rather than the cartouche, it
+            // also stops travelling when the cartouche grows leftward on a pin, and it survives
+            // the frame it hides: unpinned, the checkbox is the only way back.
+            // Pin Active stays on the ACTIVE frame's tab row - only Compact moves to the
+            // browser's row, where the narrow frame cannot bite it.
             RectF listTab = hullSelectSub.Tabs[0].Rect;
             RectF infoTab = infoSub.Tabs[0].Rect;
             PinActiveCheck = Checkbox(new Vector2(hullSelectPos.X, infoTab.Y + 4),
@@ -1332,14 +1333,13 @@ namespace Ship_Game
             // Ludoal fork: right-aligned on the browser's own right edge, the same way the module
             // twin hugs the right edge of its list. UICheckBox sizes itself in its constructor,
             // so the width is exact by the time this runs.
-            // ⚠ off the ELEMENT's realized right edge - the old hullSelectPos arithmetic mixed
-            // a LocalPos into SetAbsPos, which is exactly the "not quite aligned" the bench
-            // kept seeing on these toggles (maintainer bench 302)
+            // ⚠ off the ELEMENT's realized right edge - mixing a LocalPos into SetAbsPos here
+            // reads as "not quite aligned".
             PinActiveCheck.SetAbsPos(hullSelectSub.Right - PinActiveCheck.Width,
                                      PinActiveCheck.Y);
 
-            // Ludoal fork (maintainer bench 302): the compact cartouche is LIVE - list-width,
-            // the flying overlay's stat set, deltas wired. ResizeCartouches applies a flip.
+            // Ludoal fork: the compact cartouche is LIVE - list-width, the flying overlay's stat
+            // set, deltas wired. ResizeCartouches applies a flip.
             CompactActiveCheck = Checkbox(new Vector2(hullSelectPos.X, listTab.Y + 4),
                                           () => CompactActiveDesign,
                                           (b) => { CompactActiveDesign = b; },
@@ -1350,35 +1350,44 @@ namespace Ship_Game
             CompactActiveCheck.SetAbsPos(hullSelectSub.Right - CompactActiveCheck.Width,
                                          CompactActiveCheck.Y);
 
-            // Ludoal fork (bench 355): Full Screen toggle, on the identity row to the left of the hull
-            // name. Its setter re-runs LoadContent because the frame, every anchored panel and the 3D
+            // Ludoal fork: Full Screen toggle, on the identity row to the left of the hull name.
+            // Its setter re-runs LoadContent because the frame, every anchored panel and the 3D
             // projection all rebuild from the new (uncapped) frame - none of them relayout on their own.
             FullScreenCheck = Checkbox(new Vector2(idLeft, IdentityRowY),
                                        () => FullScreenDesign,
                                        (b) =>
                                        {
                                            FullScreenDesign = b;
-                                           // bench 357 (maintainer): keep the work across the flip.
-                                           // ReloadContent rebuilds via LoadContent, whose hull-restore
-                                           // can fall back to the bare hull - clone the design WITH its
-                                           // fitted modules and put it back after the relayout.
+                                           // Keep the work across the flip. ReloadContent rebuilds via
+                                           // LoadContent, whose hull-restore can fall back to the bare
+                                           // hull - clone the design WITH its fitted modules and put it
+                                           // back after the relayout.
                                            ShipDesign keep = CurrentDesign != null ? CloneCurrentDesign(CurrentDesign.Name) : null;
                                            ReloadContent();
                                            if (keep != null)
                                                ChangeHull(keep, zoomToHull: false);
+                                           // The hard pause and the theme follow the toggle, not the ctor
+                                           // - windowed hands both back
+                                           if (FullScreenDesign)
+                                               ClaimUniversePause(ParentUniverse);
+                                           else
+                                           {
+                                               if (!GlobalStats.PauseOnPageOpen)
+                                                   ReleaseUniversePause();
+                                               ScreenManager.StartMusic("AmbientMusic");
+                                           }
                                        },
                                        "Full Screen",
                                        "Expand the Shipyard to the whole display instead of the fixed\n"
                                      + "1600x1080 working size. Anchored on the rail either way.");
-            // bench 357 (maintainer): right beside the role/name block, and centred on the identity
-            // row's height rather than hanging from its top.
+            // Right beside the role/name block, and centred on the identity row's height rather
+            // than hanging from its top.
             FullScreenCheck.SetAbsPos(idLeft - FullScreenCheck.Width - idGap,
                                       IdentityRowY + (idH - (int)FullScreenCheck.Height) / 2);
 
-            // Ludoal fork (spec v4): the HOVER cartouche takes the slot the Compared one used to
-            // hold. Like its module counterpart it is the plain frame — no delta lane — showing
+            // Ludoal fork: the HOVER cartouche is the plain frame — no delta lane — showing
             // whatever design the cursor rests on in the browser, and it goes away when the
-            // cursor leaves. The pinned design no longer has a frame: it only feeds the delta
+            // cursor leaves. The pinned design has no frame of its own: it only feeds the delta
             // lane of the Active cartouche.
             // same two columns, no delta lanes, plus the ship plan down its left edge
             float hoverW = CompactActiveDesign ? ShipDesignInfoPanel.CompactFrameWidthFor(withPlan: true)
@@ -1388,22 +1397,20 @@ namespace Ship_Game
             HoverSub = Add(new Submenu(hoverRect, "Hovered Design"));
             HoverSub.SetBackground(Colors.TransparentBlackFill);
 
-            // ⚠ 26, the SAME inner top as the Active frame: at 32 the hover title sat 6px
-            // lower than its two siblings (maintainer bench 303, checked against Modules)
+            // ⚠ 26, the SAME inner top as the Active frame: at 32 the hover title sits 6px
+            // lower than its two siblings.
             var hoverInner = RectF.FromPoints(hoverRect.X + Inset, hoverRect.Right - Inset,
                                               hoverRect.Y + 26, hoverRect.Bottom - 8);
             HoverPanel = Add(new ShipDesignInfoPanel(this, hoverInner));
-            HoverPanel.ShowShipPlan = true; // the module plan down its left edge (maintainer feedback)
+            HoverPanel.ShowShipPlan = true; // the module plan down its left edge
             HoverPanel.Compact = CompactActiveDesign;
             HoverSub.Visible = HoverPanel.Visible = false;
 
-            // Ludoal fork (spec v4, bench): completion + issues moved ABOVE the cartouche tab
-            // (maintainer feedback). They sit between the browser and the frames, spanning the same width.
-            // Stays exactly where the bench has it (maintainer feedback): above the cartouche, left-aligned on
-            // it. Only as WIDE as its own two lines, though — spanning the whole cartouche gave
-            // it a click area that reached under the browser list beside it. It is INDEPENDENT
-            // of the column's arithmetic and will move again when the bottom button bar is
-            // redone; nothing else should be shaped around it in the meantime.
+            // Ludoal fork: completion + issues sit ABOVE the cartouche tab, between the browser
+            // and the frames, spanning the same width, left-aligned on the cartouche. Only as
+            // WIDE as its own two lines, though — spanning the whole cartouche gives it a click
+            // area that reaches under the browser list beside it. It is INDEPENDENT of the
+            // column's arithmetic; nothing else should be shaped around it.
             var issuesRect = RectF.FromPoints(infoRect.X, infoRect.X + ShipDesignIssuesPanel.ContentWidth,
                                               issuesY, issuesY + issuesH);
             IssuesPanel = Add(new ShipDesignIssuesPanel(this, issuesRect));
@@ -1424,6 +1431,7 @@ namespace Ship_Game
                 return; // already here
 
             GameAudio.EchoAffirmative();
+            ReturnSuppressed = true; // a tab switch lands on a sibling, not back on the colony
             ExitScreen();
             if (tab == 0)
                 ScreenManager.AddScreen(new FleetDesignScreen(ParentUniverse, EmpireUI));
@@ -1431,11 +1439,10 @@ namespace Ship_Game
                 ScreenManager.AddScreen(new BlueprintsScreen(ParentUniverse, ParentUniverse.Player));
         }
 
-        // Ludoal fork: the visibility policy ported verbatim from the load popup, so the
-        // merged list shows exactly what the popup showed. ShowAllDesigns is a PERSISTED
-        // player preference — ignoring it would silently pour every faction's designs on
-        // someone who had chosen to see only their own. Locked designs stay hidden, which
-        // is the popup's default state; its toggle comes with the filter bar.
+        // Ludoal fork: the visibility policy ported verbatim from the load popup. ShowAllDesigns
+        // is a PERSISTED player preference — ignoring it would silently pour every faction's
+        // designs on someone who chose to see only their own. Locked designs stay hidden by
+        // default; the toggle comes with the filter bar.
         bool CanShowDesign(IShipDesign design)
         {
             // the browser's own text filter, matching name or hull like the popup's did
@@ -1447,8 +1454,7 @@ namespace Ship_Game
             if (!Player.Universe.P.ShowAllDesigns && !design.IsPlayerDesign)
                 return false;
 
-            // Ludoal fork: retired designs are hidden on demand — the module list never had this
-            // filter either, and it now does (maintainer feedback).
+            // Ludoal fork: retired designs are hidden on demand.
             if (HideObsoleteDesigns && Player.IsDesignObsolete(design.Name))
                 return false;
 
@@ -1497,30 +1503,28 @@ namespace Ship_Game
 
         void InitializeCamera()
         {
-            // Ludoal fork (maintainer feedback, 7 Aug): the 3D workbench centres on the SHIPYARD
-            // WINDOW (frame capped at 1680), not the whole screen - otherwise the ship drifts down
-            // and right at hi-res, where screen centre no longer matches the frame's. The offset is
-            // computed once in ScreenGroups so the Fleets surround uses the very same arithmetic.
-            // bench 355: the offset reads the SAME full-screen flag as the frame, so the 3D workbench
-            // recentres on the wider frame in Full Screen instead of drifting toward the capped centre.
+            // Ludoal fork: the 3D workbench centres on the SHIPYARD WINDOW (frame capped at 1680),
+            // not the whole screen - otherwise the ship drifts down and right at hi-res, where
+            // screen centre no longer matches the frame's. The offset is computed once in
+            // ScreenGroups so the Fleets surround uses the same arithmetic, and it reads the SAME
+            // full-screen flag as the frame, so it recentres on the wider frame in Full Screen.
             Vector2 camOffset = ScreenGroups.GroupFrameCameraOffset(ScreenWidth, ScreenHeight, FullScreenDesign);
             // set shipyard's fov much lower to reduce parallax
             SetPerspectiveProjection(fovYdegrees: 20, maxDistance: 30000, offsetXY: camOffset);
             UpdateViewMatrix(CameraPos);
         }
 
-        // Ludoal fork: one list grouped BY HULL, replacing the old role-grouped hull list
-        // and the separate "load design" popup. Each hull group opens with its own bare
-        // hull, so starting from an empty carcass is row #1, then the designs built on it.
-        // The role shown on a design row is IShipDesign.Role (what the fitted modules make
-        // it), which is a different field from the hull's own role — they never disagree.
-        // Ludoal fork (bench): deleting a design from the browser, with the same two guards the
-        // load popup used. Nothing was ported: DeleteShip and RemoveRelatedWiPs are already
-        // public statics, and DesignInQueue even takes a ShipDesignScreen - the popup's own
-        // versions were just these calls wrapped in its private plumbing (maintainer feedback).
-        // Ludoal fork (bench): one place builds a design row, so both grouping modes carry the
-        // same affordances. Deleting is refused on read-only and from-save designs, exactly as
-        // the load popup refused it.
+        // Ludoal fork: one list grouped BY HULL, merging the role-grouped hull list and the
+        // separate "load design" popup. Each hull group opens with its own bare hull as row #1,
+        // then the designs built on it. The role shown on a design row is IShipDesign.Role (what
+        // the fitted modules make it), a different field from the hull's own role — they never
+        // disagree.
+        // Ludoal fork: deleting a design from the browser uses the same two guards the load popup
+        // used - DeleteShip and RemoveRelatedWiPs are public statics, DesignInQueue takes a
+        // ShipDesignScreen.
+        // Ludoal fork: one place builds a design row, so both grouping modes carry the same
+        // affordances. Deleting is refused on read-only and from-save designs, exactly as the
+        // load popup refused it.
         ShipYardBrowserItem NewDesignRow(IShipDesign design, bool hullInBadge)
         {
             bool isWip = WipDesigns.Contains(design.Name);
@@ -1541,9 +1545,9 @@ namespace Ship_Game
             return row;
         }
 
-        // Ludoal fork (bench): queue the techs a design still needs, straight from its browser
-        // row - the load popup had this and it was lost in the merge (maintainer feedback). Same shape as the
-        // deletions: nothing ported, AddTechToQueue and GetTechEntry are already public.
+        // Ludoal fork: queue the techs a design still needs, straight from its browser row.
+        // Same shape as the deletions: nothing ported, AddTechToQueue and GetTechEntry are
+        // already public.
         void PromptResearchDesign(string designName, string[] missingTechs, string[] alreadyQueued)
         {
             string ToNames(string[] techs)
@@ -1571,10 +1575,9 @@ namespace Ship_Game
             });
         }
 
-        // Ludoal fork (bench): the shipyard is never without a design, so deleting the one on
-        // the workbench falls back to a bare hull rather than leaving the screen holding a
-        // design that no longer exists (maintainer feedback). Same fallback the screen uses when it opens with
-        // nothing to restore.
+        // Ludoal fork: the shipyard is never without a design, so deleting the one on the
+        // workbench falls back to a bare hull rather than leaving the screen holding a design
+        // that no longer exists. Same fallback the screen uses when it opens with nothing to restore.
         void LoadDefaultDesign()
         {
             if (AvailableHulls.NotEmpty)
@@ -1610,7 +1613,7 @@ namespace Ship_Game
                     ResourceManager.DeleteShip(ParentUniverse.UState, designName);
                     GameAudio.EchoAffirmative();
                     if (wasOnTheBench)
-                        LoadDefaultDesign(); // the screen always holds a design (maintainer feedback)
+                        LoadDefaultDesign(); // the screen always holds a design
                     RefreshHullSelectList();
                 }
             });
@@ -1637,10 +1640,9 @@ namespace Ship_Game
 
         void RefreshHullSelectList()
         {
-            // Ludoal fork (bench 46.172): remember which groups were open. Rebuilding the list
-            // creates new row objects, so their expanded state is lost and every category snaps
-            // shut - which turned marking one design obsolete into refolding the whole browser
-            // (maintainer feedback). Keyed by heading text, the only thing that survives the rebuild.
+            // Ludoal fork: remember which groups were open. Rebuilding the list creates new row
+            // objects, so their expanded state is lost and every category snaps shut otherwise.
+            // Keyed by heading text, the only thing that survives the rebuild.
             ExpandedGroups.Clear();
             foreach (ShipYardBrowserItem row in HullSelectList.AllEntries)
                 if (row.Expanded && row.HeaderText.NotEmpty())
@@ -1661,9 +1663,8 @@ namespace Ship_Game
                 onHull.Add(design);
             }
 
-            // Ludoal fork (bench): work-in-progress designs belong in the browser too. They were
-            // in the load popup and got lost when the two lists were merged (maintainer feedback). Read the same
-            // way the popup read them, and filed under their own hull like everything else.
+            // Ludoal fork: work-in-progress designs belong in the browser too. Read the same way
+            // the load popup read them, and filed under their own hull like everything else.
             WipDesigns.Clear();
             foreach (FileInfo info in Dir.GetFiles(Dir.StarDriveUserData + "/WIP", "design"))
             {
@@ -1721,31 +1722,26 @@ namespace Ship_Game
                     AddHullAndItsDesigns(group, hull, designsByHull);
                 }
 
-                // Ludoal fork (bench 46.154): a class the filter emptied is a heading promising
-                // rows that are not there — By Role dropped them for free because its groups are
-                // built from what survived, while this one builds the heading first (maintainer feedback).
-                // (added first and removed after, rather than deferred: AddSubItem refuses to
-                // run on a header that is not in a list yet)
+                // Ludoal fork: a class the filter emptied is a heading promising rows that are
+                // not there, so it is removed after the fact (added first and removed after,
+                // rather than deferred: AddSubItem refuses to run on a header not in a list yet).
                 if (group.NumSubItems == 0)
                 {
                     HullSelectList.Remove(group);
                     continue;
                 }
 
-                // Ludoal fork (bench 46.152): a search that leaves every class collapsed and
-                // every hull in place is not a search (maintainer feedback). The filter reaches the hull
-                // rows too now, and what survives is opened so the matches are on screen
-                // rather than behind a fold.
+                // Ludoal fork: the filter reaches the hull rows too, and what survives is opened
+                // so the matches are on screen rather than behind a fold.
                 if (BrowserFilterText.NotEmpty() || ExpandedGroups.Contains(cls))
                     group.Expand(true);
             }
         }
 
         // The use view: group by what a ship IS FOR rather than what it is built on. A design's
-        // role is the one its fitted modules express (Carrier, Colony, Scout); a bare hull has
-        // no fitted modules, so it falls under its carcass role - which is exactly the answer
-        // to "what could I build here". The two therefore stop being adjacent in this mode, and
-        // that is the price of sorting by use (maintainer feedback).
+        // role is the one its fitted modules express (Carrier, Colony, Scout); a bare hull has no
+        // fitted modules, so it falls under its carcass role - which is exactly the answer to
+        // "what could I build here". The two therefore stop being adjacent in this mode.
         void BuildGroupsByRole(Map<string, Array<IShipDesign>> designsByHull)
         {
             var byRole = new Map<string, Array<ShipYardBrowserItem>>();

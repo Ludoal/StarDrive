@@ -29,8 +29,7 @@ namespace Ship_Game
             base.LoadContent();
 
             Rectangle inner = PopupFrame.ContentArea(Rect);
-            // Ludoal fork (maintainer feedback): a little more air around the name field, and no
-            // Cancel button - the frame's close cross top-right dismisses the dialog.
+            // Ludoal fork: no Cancel button - the frame's close cross top-right dismisses the dialog.
             PatrolNameEntry = Add(new UITextEntry(inner.X + 20, inner.Y + 22, 200, Fonts.Arial20Bold, FleetPatrol.Name));
             PatrolNameEntry.AutoCaptureOnHover = true;
             PatrolNameEntry.AutoCaptureOnKeys = true;

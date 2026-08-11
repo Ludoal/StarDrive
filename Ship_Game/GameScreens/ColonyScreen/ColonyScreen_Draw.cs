@@ -189,34 +189,17 @@ namespace Ship_Game
             if (P.Owner == null || !Visible)
                 return;
 
+            // Ludoal fork: a stacked page owns its batch as the universe's mounted panel.
+            batch.SafeBegin();
+
             P.UpdateIncomes();
 
-            // Ludoal fork: the frame is filled FIRST, by hand. The group's frame is built
-            // transparent, so the galaxy behind it showed straight through - planet names ran
-            // across the panels. Painted here rather than via SetBackground: a background is a
-            // CHILD, drawn by base.Draw, which lands after everything this method paints.
-            // Ludoal fork: THE popup window's own surface, not an imitation of it. Painting this
-            // frame procedurally never matched Options on the bench and could not: those corners
-            // are hand-drawn 28x30 bitmaps and that rule under the title is an artist's gradient.
-            // PopupFrame carries the same arithmetic PopupWindow uses, taking a rect - which is
-            // what this screen needs, since it must span the display under the top bar rather
-            // than be centred the way PopupWindow centres its own.
-            Frame.DrawFill(batch, ColonyFrame);
-            Frame.Draw(batch);
+            // Ludoal fork: the group's own ground, filled FIRST by hand - the row's Submenu
+            // chrome is a CHILD, drawn by base.Draw after everything this method paints, so
+            // it lands on top like on every group screen. The planet's name rides the tab.
+            batch.FillRectangle(GameScreens.ScreenGroups.GroupFrameFillRect(GroupRow),
+                                GameScreens.ScreenGroups.GroupFrameFill);
 
-            // Ludoal fork: the planet's name in the title bar, centred - it used to ride the one
-            // tab of a group that had no second tab to switch to.
-            // ⚠ centred BETWEEN THE ARROWS (maintainer), not on the frame: the arrows sit on the
-            // ground map's edges, so the name belongs on that span's centre - which is not the
-            // window's centre, the left column being wider than the right one.
-            string title = P.Name;
-            float navCentre = (LeftColony.Rect.Right + RightColony.Rect.X) / 2f;
-            var titleAt = new Vector2(navCentre - Font20.TextWidth(title) / 2f,
-                                      Frame.TitleRect.CenterY() - Font20.LineSpacing / 2f);
-            batch.DrawString(Font20, title, titleAt, Colors.Cream);
-
-            // the two panels' brass surrounds were drawn here by hand and are gone - the frame
-            // supplies the one border this screen needs.
             LeftColony.Draw(batch, elapsed);
             RightColony.Draw(batch, elapsed);
 
@@ -235,20 +218,9 @@ namespace Ship_Game
             PlanetName.Draw(batch, elapsed);
 
             EditNameButton = new Rectangle((int)(cursor.X + (double)Font20.MeasureString(P.Name).X + 12.0), (int)(cursor.Y + (double)(Font20.LineSpacing / 2) - ResourceManager.Texture("NewUI/icon_build_edit").Height / 2) - 2, ResourceManager.Texture("NewUI/icon_build_edit").Width, ResourceManager.Texture("NewUI/icon_build_edit").Height);
-            // the bright variant at rest too (maintainer bench: the pencil was near-invisible),
-            // dimmed a step so the hover still answers
+            // Dimmed a step at rest so the hover state still stands out.
             batch.Draw(ResourceManager.Texture("NewUI/icon_build_edit_hover1"), EditNameButton,
-                       PlanetName.HandlingInput ? Color.White : Color.White.Alpha(0.75f)); // hover1: the Patrols pencil's own lit brown (bench 308)
-
-            // Ludoal fork: the eye by the name (maintainer design) - the row is the planet's
-            // identity, the eye is "go to it" on the map, beside the rename pencil
-            SubTexture eye = ResourceManager.Texture("UI/viewPlanetIcon");
-            ViewOnMapButton = new Rectangle(EditNameButton.Right + 8, EditNameButton.Y,
-                                            EditNameButton.Height, EditNameButton.Height);
-            bool eyeHover = ViewOnMapButton.HitTest(Input.CursorPosition);
-            batch.Draw(eye, ViewOnMapButton, eyeHover ? Color.White : Color.White.Alpha(0.7f));
-            if (eyeHover && P.Universe.Screen.IsActive)
-                ToolTip.CreateTooltip("View this planet on the map");
+                       PlanetName.HandlingInput ? Color.White : Color.White.Alpha(0.75f));
 
             cursor.Y += Font20.LineSpacing * 2;
             batch.DrawString(TextFont, Localizer.Token(GameText.Class) + ":", cursor, Color.Orange);
@@ -328,6 +300,7 @@ namespace Ship_Game
             StarvationLabel.Color   = ApplyCurrentAlphaToColor(Color.Red);
 
             base.Draw(batch, elapsed);
+            batch.SafeEnd();
         }
 
         string IncomingPopString => IncomingPop.LessOrEqual(1) ? $"{(IncomingPop * 1000).String(2)}m" : $"{IncomingPop.String()}b";
@@ -513,8 +486,7 @@ namespace Ship_Game
 
         string MultiLineFormat(LocalizedText text)
         {
-            // doubled line breaks collapse to one (maintainer bench 300) - the data likes
-            // paragraph gaps the panel has no room for
+            // Doubled line breaks collapse to one - the data has paragraph gaps the panel has no room for.
             string t = text.Text.Replace("\n\n", "\n");
             while (t.Contains("\n\n"))
                 t = t.Replace("\n\n", "\n");
@@ -539,9 +511,9 @@ namespace Ship_Game
                 return;
             }
 
-            // terraform lives on the ASSIGN LABOR block now (maintainer bench 299): its bars
-            // draw whenever ITS tab is up, BEFORE the facilities branches - those return, and
-            // the two tab rows are independent (Trade and Terraforming can be up together)
+            // Terraform lives on the ASSIGN LABOR block: its bars draw whenever ITS tab is up,
+            // BEFORE the facilities branches - those return, and the two tab rows are
+            // independent (Trade and Terraforming can be up together).
             if (IsTerraformTabSelected)
             {
                 if (NeedLevel1Terraform && TerraformLevel >= 1) TerrainTerraformBar.Draw(batch);
@@ -638,10 +610,10 @@ namespace Ship_Game
             batch.DrawString(Font20, pgs.Building.TranslatedName, bCursor, color);
             bCursor.Y += Font20.LineSpacing + 5;
             string buildingDescription = MultiLineFormat(pgs.Building.DescriptionText);
-            batch.DrawString(TextFont, buildingDescription, bCursor, Color.White); // white body (maintainer bench 353), matching the build-list panel
+            batch.DrawString(TextFont, buildingDescription, bCursor, Color.White); // white body, matching the build-list panel
             bCursor.Y += TextFont.MeasureString(buildingDescription).Y + Font20.LineSpacing;
             DrawSelectedBuildingInfo(ref bCursor, batch, TextFont, P.Owner, P.Fertility, P.MineralRichness, P.Category, P.Level, pgs.Building, pgs);
-            DrawTilePopInfo(ref bCursor, batch, pgs, 1); // bench 353 (maintainer): single gap before the colonists-per-tile line, not double
+            DrawTilePopInfo(ref bCursor, batch, pgs, 1); // single gap before the colonists-per-tile line, not double
             if (!pgs.Building.Scrappable)
                 return;
 
@@ -657,7 +629,7 @@ namespace Ship_Game
             batch.DrawString(Font20, selectedBuilding.TranslatedName, bCursor, color);
             bCursor.Y += Font20.LineSpacing + 5;
             string selectionText = MultiLineFormat(selectedBuilding.DescriptionText);
-            batch.DrawString(TextFont, selectionText, bCursor, Color.White); // white body (maintainer bench 300)
+            batch.DrawString(TextFont, selectionText, bCursor, Color.White); // white body
             bCursor.Y += TextFont.MeasureString(selectionText).Y + Font20.LineSpacing;
             if (selectedBuilding.IsWeapon)
                 selectedBuilding.CalcMilitaryStrength(P); // So the building will have TheWeapon for stats
@@ -686,7 +658,7 @@ namespace Ship_Game
         // TODO: extracted method, needs refactor/clean
         void DrawColonyDescription(Vector2 bCursor)
         {
-            // white (maintainer bench): the default TextColor read too dim on this page
+            // White - the default TextColor reads too dim on this page.
             DrawMultiLine(ref bCursor, P.Description, Color.White);
             string desc = "";
             if (P.IsCybernetic) desc = Localizer.Token(GameText.TheOccupantsOfThisPlanet);
@@ -733,14 +705,14 @@ namespace Ship_Game
 
             Font font = Font14;
 
-            // decimal-aligned (maintainer bench): the integer part ends on one pivot for the
-            // three money lines, the fraction and unit hang right of it
+            // Decimal-aligned: the integer part ends on one pivot for the three money lines,
+            // the fraction and unit hang right of it.
             Vector2 cur = cursor; // a local function cannot capture a ref parameter (CS1628)
             void MoneyLine(string label, float v, Color c)
             {
                 batch.DrawString(font, $"{label}: ", cur, Color.LightGray);
-                // fixed two decimals: String(2) trims trailing zeros, which let the
-                // "BC/turn" unit drift line to line (maintainer bench)
+                // Fixed two decimals: String(2) trims trailing zeros, which lets the
+                // "BC/turn" unit drift line to line.
                 string s = $"{v.ToString("0.00", CultureInfo.InvariantCulture)} BC/turn";
                 string intPart = s.Substring(0, s.IndexOf('.') < 0 ? s.Length : s.IndexOf('.'));
                 batch.DrawString(font, s, new Vector2(cur.X + 178 - font.TextWidth(intPart), cur.Y), c);

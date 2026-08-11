@@ -108,12 +108,12 @@ namespace Ship_Game.GameScreens.ShipDesign
             if (!Visible || s == null)
                 return;
 
-            // The housing is sized on the HULL's grid, not a blind square (maintainer bench
-            // 300): a wide hull letterboxed in a square left a void under and beside it. The
-            // module size obeys RenderOverlay's own arithmetic - width / (maxSpan+1), capped
-            // 24 - so handing it a rect of ms*(maxSpan+1) reproduces the ms we measured; the
-            // grid centres in that rect, so the rect is placed off the SHIP's edges: right
-            // edge 10px off the frame, vertically centred on the panel.
+            // The housing is sized on the HULL's grid, not a blind square: a wide hull
+            // letterboxed in a square leaves a void under and beside it. The module size obeys
+            // RenderOverlay's own arithmetic - width / (maxSpan+1), capped 24 - so handing it a
+            // rect of ms*(maxSpan+1) reproduces the ms measured; the grid centres in that rect,
+            // so the rect is placed off the SHIP's edges: right edge 10px off the frame,
+            // vertically centred on the panel.
             int gw = Math.Max(1, s.Grid.Width), gh = Math.Max(1, s.Grid.Height);
             int maxSpan = Math.Max(gw, gh);
             float availW = Width - TextWidth - 20;
@@ -121,9 +121,8 @@ namespace Ship_Game.GameScreens.ShipDesign
             float ms = Math.Min(Math.Min(availW, availH) / (maxSpan + 1f), 24f);
             int size = (int)(ms * (maxSpan + 1));
             // ⚠ the GRID can carry empty rows and columns around the hull, and by how much
-            // varies per model (maintainer bench 304: the picture sat off-centre on some) -
-            // so the anchor is the HULL's own bounds, read from the slots exactly as
-            // RenderOverlay draws them, never the grid's
+            // varies per model - so the anchor is the HULL's own bounds, read from the slots
+            // exactly as RenderOverlay draws them, never the grid's
             int minX = int.MaxValue, minY = int.MaxValue, maxX = 0, maxY = 0;
             var hullSlots = s.ShipData?.BaseHull?.HullSlots;
             if (hullSlots != null && hullSlots.Length > 0)
@@ -141,18 +140,17 @@ namespace Ship_Game.GameScreens.ShipDesign
                 minX = 0; minY = 0; maxX = gw - 1; maxY = gh - 1;
             }
             // RenderOverlay centres the GRID in the rect it is handed; the rect is placed so
-            // the HULL sits CENTRED in the image band, both axes (maintainer bench 325:
-            // right-edge anchoring filled the window with wide hulls but glued the narrow
-            // ones to the right - a narrow tower now sits mid-band like a wide platform)
+            // the HULL sits CENTRED in the image band, both axes - right-edge anchoring fills
+            // the window with wide hulls but glues narrow ones to the right.
             float hullCx    = (minX + (maxX - minX + 1) / 2f - gw / 2f) * ms;
             float hullCy    = (minY + (maxY - minY + 1) / 2f - gh / 2f) * ms;
             float bandCentre = X + TextWidth + 10 + availW / 2f;
             var shipOverlay = new Rectangle((int)(bandCentre - size / 2f - hullCx),
                                             (int)(CenterY - size / 2f - hullCy), size, size);
-            // Ludoal fork: the submenu frame without its tab (maintainer: "cadre style slider")
-            // instead of a per-frame Menu2, which now draws the full popup window - far too much
-            // furniture for a hover overlay. Same nine-slice the sliders on the Fleets page wear.
-            // Ludoal fork (maintainer feedback): a touch more opaque so the map does not read through
+            // Ludoal fork: the submenu frame without its tab, instead of a per-frame Menu2, which
+            // draws the full popup window - far too much furniture for a hover overlay. Same
+            // nine-slice the sliders on the Fleets page wear.
+            // Ludoal fork: a touch more opaque so the map does not read through
             batch.FillRectangle(Rect, new Color(8, 10, 14).Alpha(0.98f));
             Frame.Update(new RectF(Rect),
                          ResourceManager.Texture("NewUI/submenu_corner_TL"),
@@ -170,9 +168,8 @@ namespace Ship_Game.GameScreens.ShipDesign
             float subLightSpeed = s.Stats.GetSTLSpeed(mass, Player);
             float turnRateDeg   = s.Stats.GetTurnRadsPerSec(s.Level).ToDegrees();
 
-            // the value column starts past the LONGEST label, measured - the old
-            // 0.36-of-text-width room was sized for the short dialect, and the new labels
-            // ran straight into their values (maintainer bench 323). Declared before the
+            // the value column starts past the LONGEST label, measured - a share of text width
+            // sized for a short label runs the value straight into it. Declared before the
             // first DrawText call: the local functions capture it (CS0165 otherwise).
             float labelRoom = 0f;
             foreach (string l in VerboseLabels)
@@ -212,10 +209,10 @@ namespace Ship_Game.GameScreens.ShipDesign
 
             ////////////////////////////////////
 
-            // verbose stats - the compact panel's block order (maintainer bench 322):
-            // combat, defence, mobility, payload, with air between the categories. The
-            // air is paid only when a later line draws, so an empty block folds with it.
-            // air under the iconed core block, then the verbose list (maintainer bench 323)
+            // verbose stats - the compact panel's block order: combat, defence, mobility,
+            // payload, with air between the categories. The air is paid only when a later line
+            // draws, so an empty block folds with it. Air under the iconed core block, then the
+            // verbose list.
             p = new(start.X, start.Y + 60 + Font.LineSpacing * 0.5f);
             bool lineDrawn = false, airPending = false;
             void Air() => airPending = true;
@@ -233,8 +230,8 @@ namespace Ship_Game.GameScreens.ShipDesign
                 DrawText(Font, "WIP", $"{Ds.CompletionPercent}%", Color.Yellow, titleColor: Color.Gray);
             }
 
-            // the compact's own labels, abbreviated for the micro (maintainer benches
-            // 322-323): grey labels, no colon, values in the charte's neutral white
+            // the compact's own labels, abbreviated for the micro: grey labels, no colon,
+            // values in the charte's neutral white
             DrawValue("Offense", Ds.Strength);
             DrawValue("Weapons", s.Weapons.Count);
             DrawValue("Hangars", s.Carrier.AllFighterHangars.Length);

@@ -16,7 +16,7 @@ namespace Ship_Game
         readonly FleetDesignScreen Fds;
 
         Submenu Background;
-        BlueButton AssignNow;
+        UIList AssignNowRow; // the row is what shows/hides - its button centres inside it
         UIList OwnedShips;
         UIList BuildNewShips;
         UIList NoRequisitionNeeded;
@@ -29,7 +29,9 @@ namespace Ship_Game
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
 
-            RectF = new RectF(fds.CenterX - 172, fds.CenterY - 300, 345, 600);
+            // centred on the Design group's frame, not the display - the rule every dialog
+            // of a frame-bound screen follows
+            RectF = RectF.FromCenter(fds.FrameCentre, 345, 600);
         }
 
         public override void LoadContent()
@@ -57,7 +59,9 @@ namespace Ship_Game
             OwnedShips = main.Add(new UIList(new(main.Width, 20), ListLayoutStyle.ResizeList));
             OwnedShips.Add(new UILabel("Owned Ships", Fonts.Pirulen16));
             OwnedShips.Add(new UILabel(_ => GetNumThatFitText()));
-            AssignNow = OwnedShips.Add(new BlueButton("Assign Now")
+            // maintainer feedback: the action buttons sit centred on the panel, not at its left edge
+            AssignNowRow = OwnedShips.Add(new UIList(new Vector2(main.Width, 29), ListLayoutStyle.Clip) { CenterItems = true });
+            AssignNowRow.Add(new UIButton(ButtonStyle.WideActive, "Assign Now")
             {
                 OnClick = (_) => AssignAvailableShips()
             });
@@ -65,11 +69,12 @@ namespace Ship_Game
             BuildNewShips = main.Add(new UIList(new(main.Width, 20), ListLayoutStyle.ResizeList));
             BuildNewShips.Add(new UILabel("Build New Ships", Fonts.Pirulen16));
             BuildNewShips.Add(new UILabel(_ => GetSlotsToFillText()));
-            BuildNewShips.Add(new BlueButton("Build Now")
+            var buildRow = BuildNewShips.Add(new UIList(new Vector2(main.Width, 56), ListLayoutStyle.Clip) { CenterItems = true });
+            buildRow.Add(new UIButton(ButtonStyle.WideActive, "Build Now")
             {
                 OnClick = (_) => CreateFleetRequisitionGoals()
             });
-            BuildNewShips.Add(new BlueButton("Rush Now")
+            buildRow.Add(new UIButton(ButtonStyle.WideActive, "Rush Now")
             {
                 Tooltip = GameText.BuildAllShipsNowPrioritize,
                 OnClick = (_) => CreateFleetRequisitionGoals(true)
@@ -117,7 +122,7 @@ namespace Ship_Game
             batch.SafeBegin();
 
             int slotsToFill = GetSlotsToFill();
-            AssignNow.Visible = slotsToFill > 0 && GetNumThatFit(GetAvailableShips()) > 0;
+            AssignNowRow.Visible = slotsToFill > 0 && GetNumThatFit(GetAvailableShips()) > 0;
             OwnedShips.Visible = slotsToFill > 0;
             BuildNewShips.Visible = slotsToFill > 0;
             NoRequisitionNeeded.Visible = slotsToFill <= 0;

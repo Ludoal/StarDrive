@@ -44,8 +44,8 @@ namespace Ship_Game
 
         public override void PerformLayout()
         {
-            // ONE line (maintainer, 3 Aug): the picker rides the toggle's own row, to its
-            // right - the row is as tall as a plain checkbox and the boxes widen instead
+            // The picker rides the toggle's own row, to its right - the row stays as tall as a
+            // plain checkbox and the boxes widen instead
             Check.Pos = Pos;
             Check.PerformLayout();
             float optionsX = Pos.X + LabelRoom;

@@ -26,8 +26,7 @@ namespace Ship_Game
         readonly Rectangle Housing;
         Rectangle ActualMap;
         /// Ludoal fork: the drawn map's real rect, and the projection that plots on it. The click
-        /// handler reads all three so the INVERSE of WorldToMiniPos is guaranteed to match it -
-        /// they were separate constants and drifted the moment the frame changed.
+        /// handler reads all three so the INVERSE of WorldToMiniPos is guaranteed to match it.
         public Rectangle MapRect => ActualMap;
         public Vector2 MapCentre => MiniMapZero;
         public float MapScale => Scale;
@@ -58,15 +57,10 @@ namespace Ship_Game
             // it, one to its LEFT - plus the frame's own margin. Constants, not fractions of the
             // housing: a button is 25x22 whatever the box does, so the bands cannot be a ratio.
             // Edge is the gap the whole widget keeps from the screen corner - the same 10 the
-            // overlay tabs use, so the minimap sits on the interface's margin rather than in the
-            // very corner. BandGap is how far the icons stand off the frame (maintainer: they
-            // were touching it).
-            // ⚠ Edge is INSIDE the housing, and the housing is already 10px off the screen edge
-            // now - so this one goes back to 0 or the widget sits 20 from the corner. BandGap is
-            // how far the icons stand off the frame itself (maintainer: +5).
-            // ⚠ Edge must cover the frame's INFLATE (6) or the painted rule spills past the
-            // housing, which is itself only 10px off the screen - that is the margin the bench
-            // kept reporting missing. BandGap is how far the icons stand off that rule.
+            // overlay tabs use. ⚠ Edge is INSIDE the housing, which is already 10px off the
+            // screen edge - going higher pushes the widget further from the corner. Edge must
+            // also cover the frame's INFLATE (6) or the painted rule spills past the housing.
+            // BandGap (maintainer feedback) is how far the icons stand off that rule.
             const int BtnW = 25, BtnH = 22, BandGap = 13, Edge = 6;
             ActualMap = new Rectangle(housing.X + BtnW + BandGap + Edge,
                                       housing.Y + BtnH + BandGap + Edge,
@@ -75,18 +69,16 @@ namespace Ship_Game
 
             // ── the two bands (Ludoal fork, maintainer layout) ──────────────────────────────
             // Two families, and the gap between them is what says so: an OVERLAY toggles a
-            // rendering on the map and stays lit; a TAB pops a panel at a screen edge. They used
-            // to wear three texture styles between them and sit in two arbitrary columns.
+            // rendering on the map and stays lit; a TAB pops a panel at a screen edge.
             //
             // TOP band:   [Influence Vision Subspace Gravity Range] ..... [DSB]
             // LEFT band:  [ reserved for route filters ] ..... [Freighters Exotic]
             //
             // Three groups, each on its own axis. The top row is the map OVERLAYS - what the map
             // draws over itself - and they read as one family. The head of the LEFT band is kept
-            // free for ROUTE FILTERS (Trade Routes, Colonization Routes, ...), a second family
-            // the maintainer plans to grow there. The tabs sit at the far end of their band, and
-            // are placed by where their panel comes out: DSB opens at the right edge and is
-            // are temporary, Freighters and Exotic open at the bottom and stay open.
+            // free for ROUTE FILTERS (Trade Routes, Colonization Routes, ...). The tabs sit at
+            // the far end of their band, placed by where their panel comes out: DSB opens at the
+            // right edge and is temporary, Freighters and Exotic open at the bottom and stay open.
 
             UIList topOverlays = AddList(new Vector2(ActualMap.X, Housing.Y + Edge));
             topOverlays.Name = "MiniMapOverlaysTop";
@@ -117,12 +109,11 @@ namespace Ship_Game
             FreighterUtil = leftTabs.Add(new ToggleButton(ToggleButtonStyle.Button, "NewUI/icon_freighter_util", FreighterUtilizationScreen_OnClick));
             ExoticBonuses = leftTabs.Add(new ToggleButton(ToggleButtonStyle.Button, "NewUI/icon_exotic_Bonuses_big", ExoticBonusScreen_OnClick));
             // ⚠ the SMALLER side, not the width: the galaxy is square, so scaling on the long
-            // edge would push it past the short one. It happened to work while the map was
-            // taller than it was wide; the reworked frame makes it wider than tall.
+            // edge would push it past the short one.
             int shortSide = ActualMap.Width < ActualMap.Height ? ActualMap.Width : ActualMap.Height;
             Scale = shortSide / (Universe.UState.Size * 2.1f); // negative map values are fine
-            // ⚠ the map's CENTRE, derived - the old +100/+100 was half of a 200x210 map and would
-            // put the origin off-centre now that the frame gives the map its full width.
+            // ⚠ the map's CENTRE, derived - a fixed constant would put the origin off-centre
+            // whenever the frame's width changes.
             MiniMapZero = new Vector2(ActualMap.X + ActualMap.Width * 0.5f,
                                       ActualMap.Y + ActualMap.Height * 0.5f);
         }
@@ -143,27 +134,13 @@ namespace Ship_Game
             if (!Visible)
                 return;
 
-            // Ludoal fork: a plain frame instead of the brass radar housing (maintainer decision).
-            // That texture spent 81px on the left and 33 on top being decorative, which is why
-            // the map itself was a 200x210 island inside a 276x256 box. The frame is a rule and
-            // a fill now, so the map gets the room back.
-            // ⚠ the SAME painted plate the buttons wear (maintainer's own suggestion): rounded,
-            // ruled, and thick enough to read as a frame. UITheme.DrawPlate is what draws every
-            // button in the game, so the minimap stops being the one square-cornered thing on
-            // screen. Grey rather than brass - it frames a map, not a control.
-            // Ludoal fork: the map's ground is ITS OWN, drawn here - a fill painted from the top
-            // bar landed on top of other screens' content, since every screen draws that bar.
-            // A flat near-opaque fill rather than DrawPlate's face: the face ramp reads blue
-            // over the starfield, and the maintainer wants the map solid, not tinted. The fill
-            // sits 2px inside the rounded rule, so its square corners stay within the arc.
+            // Ludoal fork (maintainer decision): a plain frame instead of the brass radar
+            // housing. The minimap wears the same furniture as every Submenu, without being
+            // one. The ground is the map's OWN, drawn here rather than by the top bar - a fill
+            // painted from the bar would land on top of other screens' content.
             Rectangle inflateMap = ActualMap;
             inflateMap.Inflate(6, 6);
-            Rectangle mapFill = ActualMap;
-            mapFill.Inflate(4, 4);
-            batch.FillRectangle(mapFill, new Color(8, 10, 14).Alpha(0.94f));
-            UITheme.DrawPlate(batch, inflateMap, Color.Transparent,
-                              new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
-                              ruleWidthOverride: 3);
+            Submenu.DrawFrameWithGround(batch, new RectF(inflateMap));
             
             foreach (SolarSystem system in Universe.UState.Systems)
             {
@@ -261,8 +238,8 @@ namespace Ship_Game
             RangeOverley.IsToggled         = Universe.ShowingRangeOverlay;
             InfluenceZones.IsToggled       = Universe.ShowingInfluenceOverlay;   // Ludoal fork (F4)
             GravityWellsOnly.IsToggled     = Universe.ShowingGravityWellOverlay; // Ludoal fork (F5)
-            // Ludoal fork (bench): Vision was missing from this list, so its button only lit up
-            // when clicked — pressing F3 turned the overlay on with the button still dark (maintainer feedback).
+            // Ludoal fork (maintainer feedback): without this sync, pressing F3 turns the
+            // overlay on but leaves the button dark until clicked.
             VisionOverlayBtn.IsToggled     = Universe.ShowingVisionOverlay;      // Ludoal fork (F3)
             
             base.Draw(batch, elapsed);
@@ -506,14 +483,9 @@ namespace Ship_Game
                 // TODO: phase 5 — wire up a dedicated FTL-overlay codex entry, then re-add codexUid here.
                 ToolTip.CreateTooltip(GameText.FtlOverlayVisualisesSubspaceProjection, "F4");
 
-            // Ludoal fork (bench): F6, not F3 — the label was left behind when Range moved off
-            // F3 to make room for the Vision overlay, so the tooltip promised the wrong key.
             if (RangeOverley.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.WeaponsRangeOverlayVisualisesShips, "F6");
 
-            // Ludoal fork (bench): the Vision button had no tooltip at all — it was added to the
-            // row without a matching entry here, so it was the one button on the minimap that
-            // said nothing (maintainer feedback).
             if (VisionOverlayBtn.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip("Vision overlay: everything your sensors actually see — "
                                     + "ships, planets and the coverage your spies bring in", "F3");

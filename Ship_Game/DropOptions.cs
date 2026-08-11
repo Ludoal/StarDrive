@@ -180,7 +180,7 @@ namespace Ship_Game
 
             bool hover = IsMouseHoveringOver(Rect);
             if (hover) // draw border if mouse is hovering
-                batch.FillRectangle(Rect, new Color(128, 87, 43, 50).Premultiplied());
+                UITheme.DrawControlHoverFill(batch, Rect);
 
             for (int i = 0; i < BorderCount; ++i) // draw borders
                 Border[i].Draw(batch, Color.White);
@@ -199,7 +199,7 @@ namespace Ship_Game
 
         void DrawOpenOptions(SpriteBatch batch)
         {
-            batch.FillRectangle(OpenRect, new Color(22, 22, 23));
+            UITheme.DrawControlFill(batch, OpenRect);
 
             int drawOffset = 1;
             for (int i = 0; i < Options.Count; ++i)

@@ -37,7 +37,7 @@ namespace Ship_Game
             TechList = Add(new SubmenuScrollList<SearchTechItem>(techList, 125, ListStyle.Blue)).List;
             TechList.OnClick = (item) => ResearchToTech(item.Tech);
 
-            // 16px under the title bar - the field used to sit right against it (maintainer bench)
+            // Ludoal fork: 16px under the title bar.
             Rectangle rect = new RectF(inner.X + 10, inner.Y + 16, inner.Width - 20, 20);
             SearchTech = Add(new UITextEntry(rect.Bevel(-4, -2), Fonts.Arial12Bold,
                                              GameText.StartTypingToFindTechs));

@@ -25,14 +25,8 @@ namespace Ship_Game
         readonly ColonyResType Type;
         public Planet P;
         readonly SubTexture Slider, Icon;
-        readonly SubTexture Lock           = ResourceManager.Texture("NewUI/icon_lock");
-        readonly SubTexture Minute         = ResourceManager.Texture("NewUI/slider_minute");
-        readonly SubTexture MinuteHover    = ResourceManager.Texture("NewUI/slider_minute_hover");
-        readonly SubTexture Crosshair      = ResourceManager.Texture("NewUI/slider_crosshair");
-        readonly SubTexture CrosshairHover = ResourceManager.Texture("NewUI/slider_crosshair_hover");
+        readonly SubTexture Lock = ResourceManager.Texture("NewUI/icon_lock");
         Rectangle LockRect;
-        static readonly Color DefaultColor = new Color(72, 61, 38);
-        static readonly Color HoverColor = new Color(164, 154, 133);
 
         bool SliderHover;
         bool LockHover;
@@ -165,13 +159,6 @@ namespace Ship_Game
             }
         }
 
-        Rectangle CursorRect()
-        {
-            int posX = Rect.RelativeX(Value) - Crosshair.CenterX;
-            int posY = Rect.CenterY() - Crosshair.CenterY;
-            return new Rectangle(posX, posY, Crosshair.Width, Crosshair.Height);
-        }
-
         Rectangle IconRect()
         {
             return new Rectangle(Rect.X-40, Rect.Center.Y - Icon.CenterY, Icon.Width, Icon.Height);
@@ -181,8 +168,8 @@ namespace Ship_Game
         {
             Color sliderTint = IsDisabled ? Color.DarkGray : Color.White;
 
-            batch.Draw(Slider, new Rectangle(Rect.X, Rect.Y, (int)(Value * Rect.Width), Rect.Height), sliderTint);
-            batch.DrawRectangle(Rect, SliderHover ? HoverColor : DefaultColor);
+            // the track is the socle's drawing now - one arithmetic for every slider
+            FloatSlider.DrawTrack(batch, Rect, Slider, Value, SliderHover, sliderTint);
 
             if (DrawIcons)
             {
@@ -190,15 +177,7 @@ namespace Ship_Game
             }
 
             if (!IsDisabled)
-                batch.Draw(SliderHover ? CrosshairHover : Crosshair, CursorRect(), sliderTint);
-
-            SubTexture minute = SliderHover ? MinuteHover : Minute;
-            var tickPos = new Vector2(Rect.X, Rect.Bottom + 1);
-            for (int i = 0; i < 11; ++i)
-            {
-                tickPos.X = Rect.X + (int)(((Rect.Width-1) / 10f)*i); // @note Yeah, cast is important
-                batch.Draw(minute, tickPos, sliderTint);
-            }
+                FloatSlider.DrawKnob(batch, Rect, Value, SliderHover, sliderTint);
 
             DrawLock(batch);
             DrawValueText(batch);
@@ -226,7 +205,7 @@ namespace Ship_Game
             float y    = Rect.CenterY() - font.LineSpacing / 2;
             float value = NetValue;
             if (value > -0.05f && value < 0.05f)
-                value = 0f; // what rounds to zero neither shows a minus nor wears pink (bench 307)
+                value = 0f; // what rounds to zero neither shows a minus nor wears pink
 
             // non-numeric states keep the plain left-aligned label
             if (IsDisabled || IsCrippled || IsInvasion)
@@ -238,8 +217,8 @@ namespace Ship_Game
                 return;
             }
 
-            // bench 347: align the numbers on the decimal point. The integer part is RIGHT-aligned
-            // on a fixed comma column (room for 3 digits + a sign), the fraction runs to its right -
+            // Align the numbers on the decimal point. The integer part is RIGHT-aligned on a
+            // fixed comma column (room for 3 digits + a sign), the fraction runs to its right -
             // so "7", "100.2" and "-3.2" all line their point/units up instead of floating.
             Color color = value < 0f ? Color.LightPink : Colors.Cream;
             string text = value.String(); // "0.#": integer, or integer + one decimal

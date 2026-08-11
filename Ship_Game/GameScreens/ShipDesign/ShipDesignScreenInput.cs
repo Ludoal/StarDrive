@@ -19,12 +19,10 @@ namespace Ship_Game
         Vector2 ClassifCursor;
         UICheckBox CarrierOnlyCheckBox;
         bool DisplayedBulkReplacementHint;
-        // Ludoal fork (bench): 0.15, not 0.10. The game's own idea of a held mouse button is
-        // LeftMouseHeld's default of 0.15s, and ShipYardArcMove calls it with no argument — so
-        // this screen was cutting the click 50ms EARLIER than the arc drag starts. Anything
-        // between the two was neither a click nor a hold: on a turret, a normal-speed click fell
-        // into the gap and went to the firing arc instead of picking the module up (maintainer feedback). Two
-        // numbers for one boundary, again.
+        // Ludoal fork: 0.15, matching LeftMouseHeld's default (ShipYardArcMove calls it with no
+        // argument). A shorter threshold here than the arc drag's own opens a gap that is
+        // neither a click nor a hold: on a turret, a normal-speed click can fall into it and go
+        // to the firing arc instead of picking the module up.
         const float ClickThresholdSeconds = 0.15f;
 
         void UpdateCarrierShip()
@@ -110,6 +108,7 @@ namespace Ship_Game
 
         public void ExitToMenu(string launches)
         {
+            ReturnSuppressed = true; // a group jump lands elsewhere - no colony return
             ScreenToLaunch = launches;
             bool isEmptyDesign = ModuleGrid.IsEmptyDesign();
 
@@ -150,15 +149,10 @@ namespace Ship_Game
                 return true;
             }
 
-            // Ludoal fork: the obsolete-design toggle, the design-side twin of the module one
-            if (InfoSub.Visible && CurrentDesign != null && ObsoleteDesign.HandleInput(input)
-                && input.LeftMouseClick)
-            {
-                GameAudio.AcceptClick();
-                Player.ToggleDesignObsolete(CurrentDesign.Name);
-                RefreshHullSelectList(); // the browser greys the row straight away
+            // Ludoal fork: the obsolete-design toggle, the design-side twin of the module one.
+            // The action lives on OnClick now; the guards still gate whether it takes input.
+            if (InfoSub.Visible && CurrentDesign != null && ObsoleteDesign.HandleInput(input))
                 return true;
-            }
 
             if (CategoryList.HandleInput(input))
                 return true;
@@ -184,14 +178,12 @@ namespace Ship_Game
                 return true;
             }
 
-            // Ludoal fork (bench 356): the ENTIRE right-click is resolved here, before anything else
-            // can see it - because GameScreen.HandleInput closes any IsPopup screen on an unconsumed
-            // right-click (GameScreen.cs:354). That base behaviour is what closed the window on an
-            // empty right-click inside the frame all along (since bench 345 made this screen IsPopup
-            // to show the universe behind); the old InTopBand/OutsideGroupFrame conditions never were
-            // the culprit. Regime by cursor position (maintainer rule): inside the drawn frame the
-            // right-click is a design gesture (cancel the module in hand, delete the module under the
-            // cursor, else drop the highlight); outside it, it closes the screen. Every branch returns
+            // Ludoal fork: the ENTIRE right-click is resolved here, before anything else can see
+            // it - because GameScreen.HandleInput closes any IsPopup screen on an unconsumed
+            // right-click (GameScreen.cs:354), and this screen is IsPopup to show the universe
+            // behind. Regime by cursor position: inside the drawn frame the right-click is a
+            // design gesture (cancel the module in hand, delete the module under the cursor,
+            // else drop the highlight); outside it, it closes the screen. Every branch returns
             // true so the click NEVER reaches the base popup-dismiss.
             bool cursorInFrame = DesignTabs.Rect.HitTest(input.CursorPosition);
             if (input.RightMouseClick)
@@ -237,8 +229,8 @@ namespace Ship_Game
                 return true;
             }
 
-            // bench 355 (maintainer): scene gestures only inside the frame. Outside it, scroll/pan/
-            // click belong to the universe map behind, not the workbench.
+            // Scene gestures only inside the frame. Outside it, scroll/pan/click belong to the
+            // universe map behind, not the workbench.
             // Pan runs whenever it is latched too (Lek's review): a drag begun inside the frame keeps
             // going until the button is released, even past the edge.
             if (cursorInFrame || PanLatched)
@@ -282,10 +274,10 @@ namespace Ship_Game
             }
         }
 
-        // bench 355 (Lek's review): a held pan latches to where it STARTED. The pan is gated to begin
-        // inside the frame, but once dragging it keeps the mouse until release even if the cursor
-        // leaves the frame - otherwise a pan begun at the centre snaps dead the instant it crosses the
-        // edge (mouse-feels-broken). Set on middle-click inside the frame, cleared on release.
+        // A held pan latches to where it STARTED. The pan is gated to begin inside the frame,
+        // but once dragging it keeps the mouse until release even if the cursor leaves the frame
+        // - otherwise a pan begun at the centre snaps dead the instant it crosses the edge. Set
+        // on middle-click inside the frame, cleared on release.
         bool PanLatched;
 
         void HandleCameraMovement(InputState input)
@@ -295,7 +287,7 @@ namespace Ship_Game
                 StartDragPos = input.CursorPosition;
                 PanLatched = true;
             }
-            // clear on RELEASE, never on !Held - Held carries a 0.15s threshold (bench 358, Fleets)
+            // clear on RELEASE, never on !Held - Held carries a 0.15s threshold
             if (input.MiddleMouseReleased)
                 PanLatched = false;
 
@@ -304,17 +296,15 @@ namespace Ship_Game
                 float dx = input.CursorPosition.X - StartDragPos.X;
                 float dy = input.CursorPosition.Y - StartDragPos.Y;
                 StartDragPos = input.CursorPosition;
-                // bench 356 (maintainer: "pas smooth et pas proportionnel"): scale the raw pixel delta
-                // to WORLD units at the current zoom, so the ship tracks the mouse 1:1. The factor is
-                // derived from the same projection the zoom clamp uses: GetHullScreenSize maps world ->
-                // pixels, its inverse is world-per-pixel. The old raw += -dx moved the camera one world
-                // unit per pixel - several times faster than the mouse at working zooms.
+                // Scale the raw pixel delta to WORLD units at the current zoom, so the ship
+                // tracks the mouse 1:1. The factor is derived from the same projection the zoom
+                // clamp uses: GetHullScreenSize maps world -> pixels, its inverse is
+                // world-per-pixel.
                 float hullH = DesignedShip.Radius * 2;
                 float onScreen = GetHullScreenSize(CameraPos, hullH);
                 float worldPerPixel = onScreen > 0.01f ? hullH / onScreen : 1f;
-                // bench 359 (maintainer: pan "toujours direct"): write a TARGET, like Fleets - Update
-                // glides CameraPos toward it with the same SmoothStep the zoom already uses. Stock BB
-                // pans raw too; Fleets is the reference feel.
+                // Write a TARGET, like Fleets - Update glides CameraPos toward it with the same
+                // SmoothStep the zoom already uses.
                 DesiredCamXY.X += -dx * worldPerPixel;
                 DesiredCamXY.Y += -dy * worldPerPixel;
             }
@@ -344,9 +334,9 @@ namespace Ship_Game
                         HighlightedModule = null;
                 }
 
-                // Ludoal fork (bench): leaving the hull clears the highlight, so the orange
-                // rectangle and its stats panel go with the cursor instead of staying lit on the
-                // last module hovered — there was no way to dismiss it short of clicking (maintainer feedback).
+                // Ludoal fork: leaving the hull clears the highlight, so the orange rectangle and
+                // its stats panel go with the cursor instead of staying lit on the last module
+                // hovered.
                 // ⚠ not while the button is down: dragging a firing arc walks the cursor well
                 // off its own tile, and clearing here would drop the module mid-drag.
                 else if (!input.LeftMouseDown)
@@ -543,7 +533,7 @@ namespace Ship_Game
         {
             if (input.ScrollOut) DesiredCamHeight *= 1.05f;
             if (input.ScrollIn)  DesiredCamHeight *= 0.95f;
-            // bench 359: stock bounds - free zoom, the frame's scissor clips the hull (like Fleets)
+            // Stock bounds - free zoom, the frame's scissor clips the hull (like Fleets)
             DesiredCamHeight = DesiredCamHeight.Clamped(1000, 5000);
         }
 
@@ -712,9 +702,9 @@ namespace Ship_Game
             return (float)ProjectToScreenSize(hullSize);
         }
 
-        // bench 355 (Lek's review): the ONE convergence loop. Returns the camera height at which the
-        // hull's on-screen HEIGHT lands on wantedPx. Extracted so the entry animation AND the manual
-        // zoom clamp share a single formula (same doctrine as GroupFrameTop) - they cannot disagree.
+        // The ONE convergence loop. Returns the camera height at which the hull's on-screen
+        // HEIGHT lands on wantedPx. Extracted so the entry animation AND the manual zoom clamp
+        // share a single formula (same doctrine as GroupFrameTop) - they cannot disagree.
         float CamHeightToFitHull(float wantedPx)
         {
             float hullHeight = DesignedShip.Radius * 2;
@@ -734,10 +724,9 @@ namespace Ship_Game
             return camHeight;
         }
 
-        // bench 359 (maintainer): NO dynamic zoom clamp - free zoom like Fleets, the frame's scissor
-        // clips the hull instead. The clamp guarded against dead click-zones on overspilling modules,
-        // but the right-click is resolved at the top of HandleInput now and an off-frame module is
-        // invisible anyway - the clamp only blocked close-ups.
+        // NO dynamic zoom clamp - free zoom like Fleets, the frame's scissor clips the hull
+        // instead. The right-click is resolved at the top of HandleInput, and an off-frame
+        // module is invisible anyway, so a clamp here would only block close-ups.
 
         void ZoomCameraToEncloseHull()
         {
@@ -748,14 +737,14 @@ namespace Ship_Game
             float ratio = visibleSize / hullHeight;
             CameraPos.Z = (CameraPos.Z * ratio).RoundUpTo(1);
 
-            // bench 357 (maintainer: "zoom not smooth"): the entry poses the ship at 0.75 of the FRAME,
-            // not the screen - the ship in its frame with margin, whatever the resolution.
+            // The entry poses the ship at 0.75 of the FRAME, not the screen - the ship in its
+            // frame with margin, whatever the resolution.
             // (DesignTabs is null on the very first restore pass - fall back to the screen.)
             float entryTarget = (DesignTabs != null ? DesignTabs.ClientArea.H : ScreenHeight) * 0.75f;
             float camHeight = CamHeightToFitHull(entryTarget);
 
             UpdateViewMatrix(CameraPos);
-            DesiredCamHeight = camHeight.Clamped(1000, 5000); // bench 359: stock bounds, free zoom
+            DesiredCamHeight = camHeight.Clamped(1000, 5000); // stock bounds, free zoom
         }
 
         void ReallyExit()
@@ -765,6 +754,10 @@ namespace Ship_Game
             // this should go some where else, need to find it a home
             ScreenManager.RemoveScreen(this);
             base.ExitScreen();
+            // the user-close route goes back to the colony "Edit this ship" came from -
+            // its hosted seat survives the Snapshot round trip
+            if (ReturnToColony != null && !ReturnSuppressed)
+                ScreenManager.AddScreen(new ColonyScreen(ParentUniverse, ReturnToColony, EmpireUI));
         }
 
         void SaveChanges()

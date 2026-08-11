@@ -66,21 +66,21 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // Ludoal fork: the eye by the name means "take me THERE" - close the whole stack
-            // down to the map (and don't let the closing colony reopen the list it came from),
-            // then dismiss THIS panel with the stay-here gesture: Colony is not a stacked
-            // screen, it is the universe's workersPanel, so ExitAllAbove never touches it.
-            // ⚠ not SnapViewColony: on an owned planet that call REOPENS a colony view.
-            if (input.LeftMouseClick && ViewOnMapButton.HitTest(input.CursorPosition))
+            // Ludoal fork: Esc, right-click and the close cross all close the colony's tab
+            // WITH the seat routing - intercepted before the base popup dismiss and the
+            // child pass, which would exit bare.
+            if ((CanEscapeFromScreen && (input.Escaped || (input.RightMouseClick && !ClickedTroop)))
+                || (input.LeftMouseClick && CloseBtn.Rect.HitTest(input.CursorPosition)))
             {
-                GameAudio.AcceptClick();
-                UniverseScreen universe = P.Universe.Screen;
-                universe.ReturnToListScreen = null;
-                universe.ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
-                ScreenManager.ExitAllAbove(universe);
-                universe.ClosePlanetPanelStayHere(); // camera lands at the planet, planet selected
+                GameAudio.EchoAffirmative();
+                CloseColonyPage();
                 return true;
             }
+
+            // Ludoal fork: the live top bar and the visible band, like every page - the
+            // universe's own input does not run under a stacked colony.
+            if (Eui.HandleInput(input, caller: this))
+                return true;
 
             // always get the currently hovered item
             DetailInfo = GetHoveredDetailItem(input);
@@ -97,10 +97,10 @@ namespace Ship_Game
             // We are monitoring AI Colonies
             if (P.Owner != Player && !Log.HasDebugger)
             {
-                // bench 361 (maintainer): the read-only early-out skipped base.HandleInput, so the
-                // close cross - an Add()ed element - never got served on an infiltrated colony
-                // (right-click worked: that path belongs to the universe, not this panel). Serve
-                // the cross explicitly before handing the rest of the input back.
+                // The read-only early-out skips base.HandleInput, so the close cross - an
+                // Add()ed element - never gets served on an infiltrated colony (right-click
+                // works: that path belongs to the universe, not this panel). Serve the cross
+                // explicitly before handing the rest of the input back.
                 if (CloseBtn.HandleInput(input))
                     return true;
                 // Input not captured, let Universe Screen manager what happens
@@ -219,12 +219,31 @@ namespace Ship_Game
             Planet nextOrPrevPlanet = planets[newIndex];
             if (nextOrPrevPlanet != P)
             {
-                var next = new ColonyScreen(Universe.Screen, nextOrPrevPlanet, Eui,
-                    GovernorDetails.CurrentTabIndex, PFacilitiesPlayerTabSelected);
-                // Ludoal fork: the colony walk keeps an inherited list pause alive across the swap
-                HandOverUniversePause(next);
-                Universe.Screen.workersPanel = next;
+                // Ludoal fork: the walk re-arms the hosted seat FIRST - the fresh screen's
+                // constructor reads it, so the row rebuilds with the new planet's name on the
+                // tab, same group, same Esc origin.
+                UniverseScreen u = Universe.Screen;
+                if (u.HostedTabTitle != null)
+                    u.HostColonyTab(nextOrPrevPlanet, u.HostedTabGroup, u.HostedTabOrigin);
+                u.PanToPlanetKeepZoom(nextOrPrevPlanet); // the walk pans, no zoom
+                ExitScreen();
+                ScreenManager.AddScreen(new ColonyScreen(u, nextOrPrevPlanet, Eui,
+                    GovernorDetails.CurrentTabIndex, PFacilitiesPlayerTabSelected));
             }
+        }
+
+        // the Home button - straight to the capital, the arrows' walk mechanics
+        void GoToHomeworld()
+        {
+            if (!Player.GetCurrentCapital(out Planet home) || home == P)
+                return;
+            UniverseScreen u = Universe.Screen;
+            if (u.HostedTabTitle != null)
+                u.HostColonyTab(home, u.HostedTabGroup, u.HostedTabOrigin);
+            u.PanToPlanetKeepZoom(home);
+            ExitScreen();
+            ScreenManager.AddScreen(new ColonyScreen(u, home, Eui,
+                GovernorDetails.CurrentTabIndex, PFacilitiesPlayerTabSelected));
         }
 
         bool HandleCycleColoniesLeftRight(InputState input)

@@ -16,6 +16,16 @@ Theme:
   FrameBody:      [14, 14, 14, 240]   # what fills a window
   FrameTitleBar:  [54, 54, 54, 240]   # one step lighter, so a title bar reads as one
   TitleBarHeight: 46
+  # The Textures folder the popup frame's bitmaps come from. Point it at a folder of
+  # same-named, SAME-SIZED textures and every popup window follows; any piece the folder
+  # lacks falls back to the classic Popup set, so a partial skin still draws whole.
+  # LudoalTheme starts as a byte-for-byte copy of the classic sets - retouch its PNGs
+  # (same names, same sizes) and relaunch to see the result.
+  PopupSkin: LudoalTheme
+  # Same lever for the tab groups' chrome (frame, headers): the folder holding the
+  # submenu_* pieces. Falls back piece by piece to the classic NewUI set. Only the default
+  # Brown style follows this; the Blue research style keeps its own look.
+  SubmenuSkin: LudoalTheme
 
   # ── Buttons ──────────────────────────────────────────────────────────────────
   # One tint per MEANING. Hover and Pressed are derived from the tint rather than
@@ -33,6 +43,13 @@ Theme:
   RuleWidth:     2      # how thick that line runs, in pixels
   HoverLift:     0.22   # how far the tint moves toward white under the cursor
   PressDrop:     0.28   # and toward black while held
+
+  # ── Controls ─────────────────────────────────────────────────────────────────
+  # The small input furniture: slider tracks, checkbox boxes, dropdown panels.
+  ControlOutline:      [96, 81, 49]      # the box or track line at rest
+  ControlOutlineHover: [164, 154, 133]   # the same line under the cursor
+  ControlFill:         [22, 22, 23]      # what fills an open panel, e.g. a dropdown's list
+  ControlHoverFill:    [128, 87, 43, 50] # the wash over a hovered row
 
   # ── Text ─────────────────────────────────────────────────────────────────────
   TextPrimary: [255, 240, 189]   # the default ink

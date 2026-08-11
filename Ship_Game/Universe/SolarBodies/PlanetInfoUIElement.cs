@@ -17,11 +17,10 @@ namespace Ship_Game
 {
     public sealed class PlanetInfoUIElement : UIElement
     {
-        // Ludoal fork: the sculpted texture spent this top band on antenna machinery; with it
-        // gone the frame starts this far under the housing. Anything aligned on the visible
-        // frame top derives from this, not from the housing. 26 covered the machinery;
-        // the rest trims the dead margin the old frame left (maintainer benches 311-313).
-        // Public with SpriteBox and TopLineIconY: the star cartouche wears the same frame.
+        // Ludoal fork: the frame starts this far under the housing. Anything aligned on the
+        // visible frame top derives from this constant, not from the housing (maintainer
+        // feedback). Public with SpriteBox and TopLineIconY: the star cartouche wears the
+        // same frame.
         public const int FrameShave = 61;
         public const int RightTrim  = 10; // same trim on the plate's right edge
         public const int TopLineIconY = 76; // the pop/flag line - the top text row
@@ -33,6 +32,25 @@ namespace Ship_Game
         // the same walk AssignLaborComponent and ColonySlider take to place the locks
         int LockColX => LaborX + 10 + (LaborW * 0.6f).RoundTo10() + 10;
         Planet P;
+        Rectangle NameRect; // where the last draw put the name - clicking it pans+zooms (bench 395)
+
+        // the eye shows only where it can OPEN a colony panel: our own world, or a mole's
+        // host (mole vision). Everywhere else the name's own zoom covers the gesture, and
+        // a dead eye would just lie (bench 396).
+        bool InspectOpensColony
+        {
+            get
+            {
+                if (P.Owner == Player)
+                    return true;
+                if (P.Owner == null)
+                    return false;
+                foreach (Mole m in Player.data.MoleList)
+                    if (m.PlanetId == P.Id)
+                        return true;
+                return false;
+            }
+        }
         readonly UniverseScreen Screen;
         Empire Player => Screen.Player;
         readonly Array<TippedItem> ToolTipItems = new Array<TippedItem>();
@@ -45,8 +63,8 @@ namespace Ship_Game
         int PlateTop;              // the visible frame's top - ADAPTIVE (bench 308)
         readonly SkinnableButton Inspect;
         readonly SkinnableButton Invade;
-        readonly ToggleButton PrevColony; // walk the player's colony list from the cartouche
-        readonly ToggleButton NextColony;
+        readonly UIButton PrevColony; // walk the player's colony list from the cartouche
+        readonly UIButton NextColony;
         readonly UIButton BtnSendTroops;  // the Planets page's pair, on the colonisable page
         readonly UIButton BtnColonize;
         readonly Rectangle Housing;
@@ -107,18 +125,23 @@ namespace Ship_Game
             ExoticResourceIconRect = new Rectangle(RightRect.X - 17, Housing.Y + 165, 20, 20);
             // the colony arrows flank the name line, just outside the sprite column - pushed 10px
             // further out on each side (maintainer feedback) so they clear the name
-            PrevColony = new ToggleButton(new Vector2(r.X + 30, Housing.Y + 76), ToggleButtonStyle.ArrowLeft)
+            // plain buttons, not toggles - see ColonyScreen's pair
+            PrevColony = new UIButton(new UIButton.StyleTextures("SelectionBox/button_arrow_left", "SelectionBox/button_arrow_left_hover"),
+                                      new Vector2(14, 20), "")
             {
+                Pos = new Vector2(r.X + 30, Housing.Y + 76),
                 Tooltip = GameText.ViewPreviousColony,
-                OnClick = b => OnChangeColony(-1)
+                OnClick = b => OnChangeColony(-1),
+                ClickSfx = "sd_ui_accept_alt3",
             };
-            PrevColony.SetAbsSize(14, 20);
-            NextColony = new ToggleButton(new Vector2(r.X + 206, Housing.Y + 76), ToggleButtonStyle.ArrowRight)
+            NextColony = new UIButton(new UIButton.StyleTextures("SelectionBox/button_arrow_right", "SelectionBox/button_arrow_right_hover"),
+                                      new Vector2(14, 20), "")
             {
+                Pos = new Vector2(r.X + 206, Housing.Y + 76),
                 Tooltip = GameText.ViewNextColony,
-                OnClick = b => OnChangeColony(+1)
+                OnClick = b => OnChangeColony(+1),
+                ClickSfx = "sd_ui_accept_alt3",
             };
-            NextColony.SetAbsSize(14, 20);
 
             // the colonisable page borrows the Planets page's buttons: same width formula
             // (PlanetListScreen sizes the slot off the widest text either can wear), 24
@@ -179,9 +202,9 @@ namespace Ship_Game
             BtnSendTroops.Tooltip = GameText.SendAvailableTroopsToThis;
         }
 
-        // the enemy page wears the same pair (bench 314): same size, same seats, centred
-        // text - Invade on the gold plate, Cancel Invasion in the hostile red (the
-        // Colonize toggle's own convention: the action in its colour, the cancel in red)
+        // the enemy page wears the same pair: same size, same seats, centred text -
+        // Invade on the gold plate, Cancel Invasion in the hostile red (the Colonize
+        // toggle's own convention: the action in its colour, the cancel in red)
         void UpdateEnemyButtons(int invading)
         {
             BtnSendTroops.Text    = invading > 0 ? $"Invading: {invading}" : "Invade";
@@ -253,42 +276,32 @@ namespace Ship_Game
             ToolTipItems.Clear();
             ToolTipItems.Add(new TippedItem(PopRect, GameText.PopulationInBillionsVsMax));
 
-            // Ludoal fork: the minimap's recipe instead of the sculpted unitselmenu texture -
-            // a near-opaque flat ground and a rounded grey rule (maintainer, last reskin)
-            // ⚠ the frame starts 26 under the housing's top: the sculpted texture spent that
-            // band on antenna machinery, and with it gone the plate framed empty space
-            // (maintainer: "beaucoup de vide au-dessus"). The housing keeps its size - every
-            // inner anchor is an offset from it - only the visible frame shrinks.
-            // One fixed plate for every status now, the unexplored page included
-            // (maintainer bench 313) - only the content degrades down the ladder.
+            // Ludoal fork (maintainer feedback): the minimap's recipe instead of the sculpted
+            // unitselmenu texture - a near-opaque flat ground and a rounded grey rule. The
+            // housing keeps its size - every inner anchor is an offset from it - only the
+            // visible frame shrinks. One fixed plate for every status, the unexplored page
+            // included - only the content degrades down the ladder.
             bool explored = P.IsExploredBy(Player);
             PlateTop = Housing.Y + FrameShave;
             var frame = new Rectangle(Housing.X, PlateTop, Housing.Width - RightTrim, Housing.Height - FrameShave);
-            Rectangle plate = frame;
-            plate.Inflate(-2, -2);
-            batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
-            UITheme.DrawPlate(batch, frame, Color.Transparent,
-                              new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
-                              ruleWidthOverride: 3);
+            Submenu.DrawFrameWithGround(batch, new RectF(frame));
 
             P.UpdateMaxPopulation();
             if (explored && P.Owner != null)  AddExploredTips();
             else if (explored && P.Habitable) AddUnExploredTips();
 
-            // one grammar for every status (maintainer benches 312-313): the pop line
+            // one grammar for every status (maintainer feedback): the pop line
             // right-aligned with its flag, the name sharing its line - bottom-aligned, the
             // bigger font grows upward - and the governance on the money/research level,
             // both centred over the sprite
             string name = explored ? P.Name : Localizer.Token(GameText.Unexplored).Trim();
-            // fixed 20 bold (maintainer bench 314) - the length-adaptive downsizing read as
-            // random shrinking; if a name ever overflows, widen the arrows or bring the
-            // adaptive back with bench-proven thresholds
+            // fixed 20 bold (maintainer feedback) - a length-adaptive downsizing here reads as
+            // random shrinking; if a name ever overflows, widen the arrows instead
             Graphics.Font nameFont = Fonts.Arial20Bold;
 
             int frameRight = Housing.Right - RightTrim;
-            // the faction flag keeps its own right anchor ("parfaitement placé" - bench
-            // 314); the pop block anchors LEFT, 20px right of the arrow, so its variable
-            // width stops moving every icon column keyed on it
+            // the faction flag keeps its own right anchor; the pop block anchors LEFT, 20px
+            // right of the arrow, so its variable width stops moving every icon column keyed on it
             var flagRect = new Rectangle(frameRight - 40, Housing.Y + TopLineIconY, 26, 26);
             Empire flagOwner = !explored ? null : P.Owner ?? (P.IsMineable ? P.Mining.Owner : null);
             if (flagOwner != null)
@@ -311,6 +324,8 @@ namespace Ship_Game
                                       topTextY + Font12.LineSpacing - nameFont.LineSpacing);
             batch.DrawString(nameFont, name, namePos,
                              !explored ? Color.Gray : P.Owner?.EmpireColor ?? tColor);
+            NameRect = new Rectangle((int)namePos.X, (int)namePos.Y,
+                                     (int)nameFont.TextWidth(name), nameFont.LineSpacing);
 
             float mrTextY = Housing.Y + 102 + 11 - Font12.LineSpacing / 2;
             if (explored && P.Owner != null) // no governance before there is a colony
@@ -402,7 +417,8 @@ namespace Ship_Game
             if (P.Habitable)
             {
                 DrawFertProdStats(batch);
-                Inspect.Draw(batch);
+                if (InspectOpensColony)
+                    Inspect.Draw(batch);
                 Invade.Draw(batch);
             }
 
@@ -492,7 +508,7 @@ namespace Ship_Game
             }
 
             Vector2 textPos = new Vector2(ExoticRect.X + 13, ExoticRect.Y + 13 - Font12.LineSpacing / 2 - 2);
-            // hand-drawn plate: the real buttons' hover lift (maintainer bench 319)
+            // hand-drawn plate: the real buttons' hover lift (maintainer feedback)
             Color researchPlate = Player.CanBuildResearchStations ? UIButton.PlateActive : UIButton.PlateNeutral;
             if (Player.CanBuildResearchStations && ExoticRect.HitTest(mousePos))
                 researchPlate = UITheme.Hover(researchPlate);
@@ -507,7 +523,7 @@ namespace Ship_Game
             }
 
             ToolTipItems.Add(new TippedItem(ExoticRect, tip));
-            // lit text always - gray only for the unavailable action (maintainer bench 318)
+            // lit text always - gray only for the unavailable action (maintainer feedback)
             batch.DrawString(Font12, tipText, textPos, Player.CanBuildResearchStations ? ButtonTextColor : Color.Gray);
         }
 
@@ -558,7 +574,7 @@ namespace Ship_Game
                 tipText = $"{tipText} ({numInProgress})";
 
             ToolTipItems.Add(new TippedItem(ExoticRect, tip));
-            // lit text always - gray only for the unavailable action (maintainer bench 318)
+            // lit text always - gray only for the unavailable action (maintainer feedback)
             batch.DrawString(Font12, tipText, textPos, Player.CanBuildMiningStations ? ButtonTextColor : Color.Gray);
         }
 
@@ -628,6 +644,17 @@ namespace Ship_Game
             {
                 return true; // the click may have swapped P for the next colony
             }
+            // the planet's NAME pans and zooms onto it (maintainer feedback)
+            if (NameRect.HitTest(input.CursorPosition))
+            {
+                ToolTip.CreateTooltip("Zoom to planet");
+                if (input.LeftMouseClick)
+                {
+                    GameAudio.AcceptClick();
+                    Screen.SnapToPlanetStayHere(P);
+                    return true;
+                }
+            }
             if (P.Owner == null && P.Habitable && P.IsExploredBy(Player))
             {
                 UpdateColonisableButtons(); // input can run before the first draw of a fresh selection
@@ -696,16 +723,11 @@ namespace Ship_Game
                 return true;
             }
 
-            if (Inspect.Hover && P.Habitable)
+            if (Inspect.Hover && P.Habitable && InspectOpensColony)
             {
-                if (P.Owner == null || P.Owner != Player)
-                {
-                    ToolTip.CreateTooltip(GameText.ViewPlanetDetails);
-                }
-                else
-                {
-                    ToolTip.CreateTooltip(GameText.OpensColonyOverviewScreen);
-                }
+                // our colony opens the management screen; a mole's host opens the read-only view
+                ToolTip.CreateTooltip(P.Owner == Player ? GameText.OpensColonyOverviewScreen
+                                                        : GameText.ViewPlanetDetails);
             }
             if (Invade.Hover && P.Habitable)
             {
@@ -713,7 +735,7 @@ namespace Ship_Game
             }
             if (P.Habitable || P.Universe.Debug)
             {
-                if (Inspect.HandleInput(input))
+                if (InspectOpensColony && Inspect.HandleInput(input))
                 {
                     Screen.SnapViewColony(P, combatView: false);
                 }

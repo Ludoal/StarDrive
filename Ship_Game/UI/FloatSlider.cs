@@ -31,6 +31,8 @@ namespace Ship_Game
 
         // If Step != 0, then AbsoluteValue can only change in increments of this value
         public float Step = 0;
+        // Ludoal fork: an inline row draws its own value label - silence the built-in one
+        public bool DrawValueText = true;
         public float Range => Max-Min;
 
         float GetAbsValue(float relValue)
@@ -63,10 +65,6 @@ namespace Ship_Game
 
         public override string ToString() => $"{TypeName} {ElementDescr} r:{Value} a:{AbsoluteValue} [{Min}..{Max}] {Text}";
 
-        static readonly Color TextColor   = Colors.Cream;
-        static readonly Color HoverColor  = new Color(164, 154, 133);
-        static readonly Color NormalColor = new Color(72, 61, 38);
-
         static int ContentId;
         static SubTexture SliderKnob;
         static SubTexture SliderKnobHover;
@@ -74,8 +72,7 @@ namespace Ship_Game
         static SubTexture SliderMinuteHover;
         static SubTexture SliderGradient;   // background gradient for the slider
 
-        public FloatSlider(Rectangle r, LocalizedText text, float min = 0f, float max = 10000f, float value = 5000f)
-            : base(r)
+        static void EnsureTextures()
         {
             if (SliderKnob == null || ContentId != ResourceManager.ContentId)
             {
@@ -86,7 +83,43 @@ namespace Ship_Game
                 SliderMinuteHover = ResourceManager.Texture("NewUI/slider_minute_hover");
                 SliderGradient    = ResourceManager.Texture("NewUI/slider_grd_green");
             }
+        }
 
+        // Ludoal fork: the track drawn ONCE for every slider in the game - fill, themed
+        // outline, eleven ticks. ColonySlider carried its own copy of these lines (and of the
+        // outline browns the theme now owns); the socle lends its drawing instead, the same
+        // way Submenu lends its frame.
+        public static void DrawTrack(SpriteBatch batch, in Rectangle track, SubTexture gradient,
+                                     float relValue, bool hover, Color tint)
+        {
+            EnsureTextures();
+            var fill = new Rectangle(track.X, track.Y, (int)(relValue * track.Width), track.Height);
+            batch.Draw(gradient ?? SliderGradient, fill, tint);
+            UITheme.DrawControlOutline(batch, track, hover);
+
+            SubTexture minute = hover ? SliderMinuteHover : SliderMinute;
+            var tickPos = new Vector2(track.X, track.Bottom + 1);
+            for (int i = 0; i < 11; ++i)
+            {
+                tickPos.X = track.X + (int)(((track.Width - 1) / 10f) * i); // @note Yeah, cast is important
+                batch.Draw(minute, tickPos, tint);
+            }
+        }
+
+        /// the crosshair, centred on the value - shared for the same reason as the track
+        public static void DrawKnob(SpriteBatch batch, in Rectangle track, float relValue, bool hover, Color tint)
+        {
+            EnsureTextures();
+            SubTexture knob = hover ? SliderKnobHover : SliderKnob;
+            var r = new Rectangle(track.X + (int)(relValue * track.Width) - knob.CenterX,
+                                  track.CenterY() - knob.CenterY, knob.Width, knob.Height);
+            batch.Draw(knob, r, tint);
+        }
+
+        public FloatSlider(Rectangle r, LocalizedText text, float min = 0f, float max = 10000f, float value = 5000f)
+            : base(r)
+        {
+            EnsureTextures();
             Text  = text;
             Min   = min;
             Max   = max;
@@ -110,16 +143,7 @@ namespace Ship_Game
 
         public FloatSlider(SliderStyle style, float w, float h, LocalizedText text, float min, float max, float value)
         {
-            if (SliderKnob == null || ContentId != ResourceManager.ContentId)
-            {
-                ContentId = ResourceManager.ContentId;
-                SliderKnob        = ResourceManager.Texture("NewUI/slider_crosshair");
-                SliderKnobHover   = ResourceManager.Texture("NewUI/slider_crosshair_hover");
-                SliderMinute      = ResourceManager.Texture("NewUI/slider_minute");
-                SliderMinuteHover = ResourceManager.Texture("NewUI/slider_minute_hover");
-                SliderGradient    = ResourceManager.Texture("NewUI/slider_grd_green");
-            }
-
+            EnsureTextures();
             Size = new Vector2(w, h);
             Text  = text;
             Min   = min;
@@ -177,25 +201,19 @@ namespace Ship_Game
             if (!Visible)
                 return;
 
-            batch.DrawString(Fonts.Arial12Bold, Text, Pos, TextColor);
+            batch.DrawString(Fonts.Arial12Bold, Text, Pos, UITheme.TextPrimary);
 
-            var gradient = new Rectangle(SliderRect.X, SliderRect.Y, (int)(RelativeValue * SliderRect.Width), 6);
-            batch.Draw(SliderGradient, gradient, Color.White);
-            batch.DrawRectangle(SliderRect, Hover ? HoverColor : NormalColor);
-
-            var tickPos = new Vector2(SliderRect.X, SliderRect.Bottom + 1);
-            for (int i = 0; i < 11; i++)
-            {
-                tickPos.X = SliderRect.X + (int)(((SliderRect.Width-1) / 10f)*i); // @note Yeah, cast is important
-                batch.Draw(Hover ? SliderMinuteHover : SliderMinute, tickPos, Color.White);
-            }
+            DrawTrack(batch, SliderRect, SliderGradient, RelativeValue, Hover, Color.White);
 
             Rectangle knobRect = KnobRect;
             knobRect.X -= knobRect.Width / 2;
             batch.Draw(Hover ? SliderKnobHover : SliderKnob, knobRect, Color.White);
 
-            var textPos = new Vector2(SliderRect.Right + 8, SliderRect.Y + SliderRect.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2);
-            batch.DrawString(Fonts.Arial12Bold, StyledValue, textPos, Colors.Cream);
+            if (DrawValueText)
+            {
+                var textPos = new Vector2(SliderRect.Right + 8, SliderRect.Y + SliderRect.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2);
+                batch.DrawString(Fonts.Arial12Bold, StyledValue, textPos, UITheme.TextPrimary);
+            }
 
             if (Hover)
             {

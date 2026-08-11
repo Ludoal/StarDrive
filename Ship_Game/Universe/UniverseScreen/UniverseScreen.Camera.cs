@@ -96,28 +96,34 @@ namespace Ship_Game
                     }
                 }
 
-                // Ludoal fork: Planet View removed — the selection cartouche carries its info.
-                // Double-click: colony view on real colonies (incl. mole vision), combat view
-                // when tactically visible, otherwise just the camera snap.
+                // Ludoal fork: the selection cartouche carries the planet's info. Double-click:
+                // colony view on real colonies (incl. mole vision), combat view when
+                // tactically visible, otherwise just the camera snap.
                 if ((p.Owner == Player || flag || Debug) && p.Owner != null)
                 {
-                    workersPanel = new ColonyScreen(this, p, EmpireUI);
-                    // Ludoal fork (bench 191): opened FROM THE MAP, so closing goes back to the
-                    // map. Clear any hook a list screen left standing, or a later map double-click
-                    // would still fly back to that list.
+                    // Ludoal fork: a map-opened colony rides the GALAXY group's row with origin
+                    // -1 - Esc closes to the map. A MOLE's host opens on the DIPLOMACY row with
+                    // Espionage as the origin instead - its reader came from espionage territory,
+                    // and Esc goes back there. ⚠ A list screen arms its own seat for this planet
+                    // before calling the snap - that arming wins, don't demote it.
+                    if (HostedTabTitle != p.Name)
+                    {
+                        if (p.Owner != Player && flag)
+                            HostColonyTab(p, GameScreens.ScreenGroups.Group.Diplomacy,
+                                          (int)MainDiplomacyScreen.Tab.Espionage);
+                        else
+                            HostColonyTab(p, GameScreens.ScreenGroups.Group.Galaxy, -1);
+                    }
+                    // Ludoal fork: a STACKED page like every tab - no mount, no camera
+                    // anchoring, the map simply keeps living underneath. The planet STAYS
+                    // selected - its cartouche shows through.
+                    SetSelectedPlanet(p);
                     ReturnToListScreen = null;
                     ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
-                    // bench 352: opening a colony makes it THE selected object, so a prior selection's
-                    // cartouche vanishing is correct - we don't keep a stray selection behind Colony.
-                    ClearSelectedItems();
-                    returnToShip = doReturnToShip;
-                    LookingAtPlanet = true;
-                    // No camera snap — the panel covers the map. But the removed snap
-                    // also refreshed transitionStartPosition, which the close handler
-                    // restores to; left stale, closing flew the camera to wherever the
-                    // last transition started. Anchor both to the current camera.
-                    transitionStartPosition = CamPos;
-                    CamDestination = CamPos;
+                    // any page still open closes first: the cartouche eye can fire with a page
+                    // up, and the colony must not bury it under a foreign tab row
+                    ScreenManager.ExitAllAbove(this);
+                    ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI));
                     return;
                 }
                 else if (combatView && p.Habitable
@@ -130,7 +136,7 @@ namespace Ship_Game
                     return;
                 }
 
-                SnapViewTo(new(p.Position.X, p.Position.Y, GetZfromScreenState(UnivScreenState.PlanetView)), 5f, 2f); // Ludoal fork: 2500 was nose-on-the-planet; PlanetView is the named level for this
+                SnapViewTo(new(p.Position.X, p.Position.Y, GetZfromScreenState(UnivScreenState.PlanetView)), 5f, 2f); // Ludoal fork: PlanetView is the named level for this
             }
         }
 
@@ -311,8 +317,63 @@ namespace Ship_Game
                 }
 
                 //Log.Info($"View: {newViewState} MaxDistance: {maxDistance}  CamHeight: {CamPos.Z}");
-                SetPerspectiveProjection(maxDistance: maxDistance);
+                ProjMaxDistance = maxDistance;
+                ApplyUniverseProjection();
             }
+            // (maintainer feedback) a page opening/closing, a resize, OR a switch to a panel of
+            // a DIFFERENT width all move the viewport offset without touching the view state -
+            // re-lay the projection whenever the offset VALUE changes (not just its existence),
+            // so the map recentres to the current panel.
+            else if (PageViewportOffset() != AppliedPageOffset)
+            {
+                ApplyUniverseProjection();
+            }
+        }
+
+        // bench 390 (maintainer): the last maxDistance the view-state ladder chose. Kept so a
+        // page opening/closing can re-lay the projection with the viewport offset WITHOUT
+        // changing the zoom clamp - only the frustum's off-centre moves.
+        double ProjMaxDistance = 15_000_000 + (int)UnivScreenState.GalaxyView;
+        Vector2 AppliedPageOffset; // the exact offset the current projection was built for (bench 392)
+
+        // bench 391 (maintainer): with a page open on a wide display the map's visible band is
+        // the strip LEFT of the open panel plus what sits right of it; centre the view there.
+        // Target: x = mid of the free band right of the OPEN PANEL'S own right edge (short panels
+        // leave more room than the old fixed 1680), y = mid of the left band between the top
+        // bar's bottom and the minimap's top. Off under 1920 or with no page open. Returned as a
+        // fraction of the screen (frame-centre-minus-screen-centre), the shape offsetXY speaks.
+        public Vector2 PageViewportOffset()
+        {
+            if (ScreenWidth < 1920 || !OpenGroupPage(out GameScreen page))
+                return default;
+            float panelRight = page.PageFrame.Right; // the actual open panel's width (bench 391)
+            float targetX = (ScreenWidth + panelRight) * 0.5f;
+            float barBottom = EmpireUIOverlay.BarTop + EmpireUIOverlay.BarH;
+            float minimapTop = ScreenHeight - 256 - 10; // mmHousing.Y (LoadContent)
+            float targetY = (barBottom + minimapTop) * 0.5f;
+            return new Vector2((targetX - ScreenWidth * 0.5f) / ScreenWidth,
+                               (targetY - ScreenHeight * 0.5f) / ScreenHeight);
+        }
+
+        // the top-most group screen (or hosted colony) in the stack, when a page is open
+        bool OpenGroupPage(out GameScreen page)
+        {
+            var stack = ScreenManager.Screens;
+            for (int i = stack.Count - 1; i >= 0; --i)
+                if (GameScreens.ScreenGroups.GroupOf(stack[i]) != GameScreens.ScreenGroups.Group.None)
+                {
+                    page = stack[i];
+                    return true;
+                }
+            page = null;
+            return false;
+        }
+
+        public void ApplyUniverseProjection()
+        {
+            Vector2 offset = PageViewportOffset();
+            AppliedPageOffset = offset;
+            SetPerspectiveProjection(maxDistance: ProjMaxDistance, offsetXY: offset);
         }
 
         public void InputZoomToShip()
@@ -376,20 +437,57 @@ namespace Ship_Game
         {
             if (workersPanel == null)
                 return;
-            SetSelectedPlanet(workersPanel.P);
+            Planet p = workersPanel.P;
+            LookingAtPlanet = false;
+            SnapToPlanetStayHere(p);
+        }
+
+        // Ludoal fork: the stay-here landing takes the planet passed in - the stacked colony
+        // has no mount this could read. One camera arithmetic for the eye gesture and the
+        // combat panel's own close.
+        public void SnapToPlanetStayHere(Planet p)
+        {
+            SetSelectedPlanet(p);
             returnToShip = false;
-            CamDestination = new Vector3d(workersPanel.P.Position.X, workersPanel.P.Position.Y,
-                                          GetZfromScreenState(UnivScreenState.PlanetView)); // aligned with the planet-snap standard (was 2500, too strong)
+            CamDestination = new Vector3d(p.Position.X, p.Position.Y,
+                                          GetZfromScreenState(UnivScreenState.PlanetView)); // aligned with the planet-snap standard
             AdjustCamTimer = 1f;
             transitionElapsedTime = 0f;
-            LookingAtPlanet = false;
+        }
+
+        // Ludoal fork (bench 388): the table single-click - select the subject on the map
+        // and pan to it at the CURRENT zoom, cartouche showing through the band. Zooming
+        // onto the subject is the cartouche's own business (click-to-cartouche spec).
+        public void PanToKeepZoom(in Vector2 pos)
+        {
+            CamDestination = new Vector3d(pos.X, pos.Y, CamPos.Z);
+            AdjustCamTimer = 1f;
+            transitionElapsedTime = 0f;
+        }
+
+        public void PanToPlanetKeepZoom(Planet p)
+        {
+            SetSelectedPlanet(p);
+            returnToShip = false;
+            PanToKeepZoom(p.Position);
+        }
+
+        public void PanToShipKeepZoom(Ship s)
+        {
+            SetSelectedShip(s);
+            PanToKeepZoom(s.Position);
+        }
+
+        public void PanToSystemKeepZoom(SolarSystem s)
+        {
+            SetSelectedSystem(s);
+            PanToKeepZoom(s.Position);
         }
 
         void ToggleViewingShip()
         {
-            // Ludoal fork (wishlist #1): ViewToShip sets ViewingShip=true itself —
-            // the old unconditional flip flipped it back OFF right after arming,
-            // leaving only the initial snap (chase died if anything interrupted it)
+            // Ludoal fork: ViewToShip sets ViewingShip=true itself - an unconditional flip
+            // here would immediately flip it back OFF after arming.
             if (!ViewingShip)
                 ViewToShip(SelectedShip);
             else

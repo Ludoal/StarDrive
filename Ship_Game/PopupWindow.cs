@@ -43,10 +43,14 @@ namespace Ship_Game
                                  GameBase.ScreenHeight / 2 - height / 2, width, height);
         }
 
+        // Ludoal fork (bench 407): kept so a popup can centre on its summoner's page frame
+        readonly GameScreen Summoner;
+
         protected PopupWindow(GameScreen parent, int width, int height)
             : base(parent, CenterScreen(width, height),
                    toPause: parent as UniverseScreen/*only pause if popup on top of universe*/)
         {
+            Summoner = parent;
             IsPopup = true;
         }
 
@@ -56,14 +60,15 @@ namespace Ship_Game
 
             // this window's own extras, drawn UNDER the frame so its edges land on top: the big
             // lower fill, and the subtitle band with its separators when a caller sets MiddleText
-            batch.Draw(ResourceManager.Texture("Popup/popup_filler_lower"), BottomBigFill, Color.White);
+            PopupFrame.StyleTextures s = PopupFrame.Style;
+            batch.Draw(s.FillerLower, BottomBigFill, Color.White);
 
             if (MidContainer.Height != 0)
-                batch.Draw(ResourceManager.Texture("Popup/popup_filler_lower"), MidContainer, Color.White);
+                batch.Draw(s.FillerLower, MidContainer, Color.White);
             if (MidSepTop.Height != 0)
-                batch.Draw(ResourceManager.Texture("Popup/popup_separator"), MidSepTop, Color.White);
+                batch.Draw(s.Separator, MidSepTop, Color.White);
             if (MidSepBot.Height != 0)
-                batch.Draw(ResourceManager.Texture("Popup/popup_separator"), MidSepBot, Color.White);
+                batch.Draw(s.Separator, MidSepBot, Color.White);
 
             Frame.Draw(batch);
 
@@ -79,6 +84,10 @@ namespace Ship_Game
         public override void LoadContent()
         {
             RemoveAll();
+
+            // Ludoal fork (bench 407): a popup summoned by a frame-bound page centres on that
+            // page's frame by default - callers no longer have to remember to pass CenterOn
+            CenterOn ??= Summoner?.PageFrameCentre();
 
             Rect = CenterScreen(Rect.Width, Rect.Height);
             if (CenterOn != null)

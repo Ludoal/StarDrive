@@ -84,7 +84,6 @@ namespace Ship_Game
 
             Rectangle inner = PopupFrame.ContentArea(Rect);
             // 10px margins and air over the name row, like the game's Load/Save popup
-            // (maintainer bench 304)
             RectF bkg = new(inner.X + 10, inner.Y + 16, inner.Width - 20, 80);
             Submenu background = Add(new Submenu(bkg, Hulls ? GameText.SaveHullDesign : GameText.SaveShipDesign));
 
@@ -283,7 +282,7 @@ namespace Ship_Game
                 ScreenManager.AddScreen(new MessageBoxScreen(this, alreadyExists)
                 {
                     Accepted = () => OverWriteAccepted(shipOrHullName, reserved ? source : null),
-                    CenterOn = CenterOn, // bench 363: ride the Shipyard frame like the parent popup
+                    CenterOn = CenterOn, // ride the Shipyard frame like the parent popup
                 });
             }
             else

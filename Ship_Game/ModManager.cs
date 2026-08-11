@@ -52,9 +52,8 @@ namespace Ship_Game
         {
             // the window names itself in its own title bar; frame and close cross are
             // PopupWindow's - base.LoadContent goes FIRST and lays them out
-            // Ludoal fork (maintainer feedback): the three headers used to share one token and
-            // all read "Load Modification"; the window is MODS, the loader tab LOAD MOD, the
-            // list MOD - three distinct labels, so they carry literals now.
+            // Ludoal fork (maintainer feedback): three distinct labels - window is MODS,
+            // loader tab LOAD MOD, list MOD.
             TitleText = "MODS";
             base.LoadContent();
 

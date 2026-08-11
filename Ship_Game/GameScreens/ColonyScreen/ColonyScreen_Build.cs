@@ -35,14 +35,13 @@ namespace Ship_Game
             int selected = BuildableTabs.SelectedIndex;
 
             BuildableTabs.ClearTabs();
-            // TROOPS before SHIPS (maintainer bench): SHIPS carries the designs toggle at its
-            // right, so it closes the row
+            // TROOPS before SHIPS: SHIPS carries the designs toggle at its right, so it closes the row.
             BuildableTabs.AddTab(BuildingsTabText);
             if (P.CanBuildInfantry) BuildableTabs.AddTab(TroopsTabText);
             if (P.HasSpacePort)     BuildableTabs.AddTab(ShipsTabText);
 
-            // the designs toggle rides just right of the SHIPS tab, wherever the row ends
-            // (maintainer bench) - tab rects are valid as soon as AddTab returns
+            // The designs toggle rides just right of the SHIPS tab, wherever the row ends -
+            // tab rects are valid as soon as AddTab returns.
             if (PlayerDesignsToggle != null && BuildableTabs.Tabs.Count > 0)
             {
                 RectF last = BuildableTabs.Tabs[BuildableTabs.Tabs.Count - 1].Rect;

@@ -22,6 +22,9 @@ namespace Ship_Game
     public sealed class PlanetListScreen : GameScreen
     {
         Submenu GalaxyTabs; // Ludoal fork: the Galaxy group's tab row, this screen being one tab
+        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // the band excludes exactly what the page occupies, dynamic size included
+        public override Rectangle PageFrame => GalaxyTabs?.Rect ?? base.PageFrame;
 
         public UniverseScreen Universe;
         public UniverseState UState => Universe.UState;
@@ -32,22 +35,14 @@ namespace Ship_Game
         readonly ScrollList<PlanetListScreenItem> PlanetSL;
 
         public readonly UITable Table; // the shared table charte owns geometry, headers and rules
-        // one slot width for the row buttons, from the widest text either slot can wear
-        public readonly int OrdersSlotW;
         static int LastSortCol = -1;   // session-persistent (bench 307)
         static bool LastSortAsc = true;
 
-        private UICheckBox cb_hideOwned;
         private UICheckBox cb_hideUninhabitable;
         float FilterLineY; // line 1, where the filters live - the troops count rides it too
         private DropOptions<string> ProximityFilter;
         private DropOptions<string> OwnerFilter;
 
-        bool HideOwned
-        {
-            get => UState.P.PlanetScreenHideOwned;
-            set => UState.P.PlanetScreenHideOwned = value;
-        }
 
         bool HideUninhab
         {
@@ -91,13 +86,8 @@ namespace Ship_Game
             CalcPlanetsDistances();
 
             // Ludoal fork: the Planets tab of the Galaxy group, content-sized on the shared
-            // table charte - every column sizes itself on the data it will show. The button
-            // slots size from the widest text either can wear (Colonize from its Cancel
-            // Colonize toggle - maintainer, 4 Aug).
-            OrdersSlotW = 24 + (int)new[] { "Colonize", "Cancel Colonize", "Send Troops",
-                                            "Recall Troops (99)", "Invading: 99" }
-                                   .Max(t => Fonts.Arial12Bold.TextWidth(t));
-            // Features rides right after Planet (maintainer bench 291); Proximity and
+            // table charte - every column sizes itself on the data it will show.
+            // Features rides right after Planet (maintainer feedback); Proximity and
             // Owner read centred
             Table = new UITable(new[]
             {
@@ -106,8 +96,8 @@ namespace Ship_Game
                 new UITable.Column { Title = "Features" },
                 new UITable.Column { Title = Localizer.Token(GameText.Proximity), Align = TableAlign.Center, Sortable = true },
                 // biospheres/crystal, not food/production: the INTRINSIC stats wear their
-                // own icons so they never read as the net-income pair (maintainer bench 294)
-                // the Planet Info cartouche's own pair (Lek's review, bench 305)
+                // own icons so they never read as the net-income pair - the Planet Info
+                // cartouche's own pair (maintainer feedback)
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"),
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Fertility) },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"),
@@ -116,7 +106,11 @@ namespace Ship_Game
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.MaxPopulation) },
                 new UITable.Column { Title = "Fill", Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.Owner), Align = TableAlign.Center, Sortable = true },
-                new UITable.Column { Width = 2 * UITable.PadX + 2 * OrdersSlotW + 6, Align = TableAlign.Center },
+                // a colonize icon (red to cancel) and a troop icon (left/right click as Send Troops
+                // did) - two 22px icons plus gaps and padding, the Ships-list convention
+                new UITable.Column { Title = "Actions", Width = 2 * UITable.PadX + 2 * 22 + 8, Align = TableAlign.Center },
+                // the "En route: N  Deployed: M" counters; header centred, content left (in the item)
+                new UITable.Column { Title = "Troops", Align = TableAlign.Center },
             });
             var sys = new Array<string>(); var names = new Array<string>();
             var feats = new Array<string>(); var prox = new Array<string>();
@@ -148,16 +142,19 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[6], Fonts.Arial12Bold, pops);
             UITable.AutoSize(Table.Columns[7], Fonts.Arial12Bold, ratios);
             UITable.AutoSize(Table.Columns[8], Fonts.Arial12Bold, owners);
+            // the Troops counter column sizes on its widest possible label
+            UITable.AutoSize(Table.Columns[10], Fonts.Arial12Bold,
+                             new Array<string> { PlanetListScreenItem.TroopsCounterMeasure });
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
-            // the standing sort survives the screen for the session (maintainer bench 307)
+            // the standing sort survives the screen for the session
             if (LastSortCol < 0) { LastSortCol = 0; LastSortAsc = true; }
             Table.Columns[LastSortCol].Sorted = true;
             Table.Columns[LastSortCol].Ascending = LastSortAsc;
 
-            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 343: capped at 1080p
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // floor = the info cartouche
             // 48 = the 44px row plus the list's 4px item padding
             float contentH = UITable.ContentHeightFor(119, Math.Max(3, ExploredPlanets.Count), 48, fullAvail);
-            GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.GalaxyTabTitles, 0,
+            GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Galaxy, Universe), 0,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
             // the filter lane, then the table
@@ -169,22 +166,21 @@ namespace Ship_Game
 
             float lineY = client.Y + 8;
             FilterLineY = lineY;
-            cb_hideOwned = Add(new UICheckBox(Table.TableRect.X, lineY,
-                () => HideOwned,
-                x => { HideOwned = x; ResetList(); }, Fonts.Arial12Bold, "Hide Owned", ""));
-
-            cb_hideUninhabitable = Add(new UICheckBox(Table.TableRect.X + 130, lineY,
+            // "Hide Owned" is gone (bench 408): the Owner filter's Unowned option is the
+            // same predicate; the saved flag stays in UniverseParams, inert
+            cb_hideUninhabitable = Add(new UICheckBox(Table.TableRect.X, lineY,
                 () => HideUninhab,
                 x => { HideUninhab = x; ResetList(); }, Fonts.Arial12Bold, "Hide Uninhabitable", ""));
 
-            // proximity and owner filters on the same line (maintainer bench 291)
-            ProximityFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 290, (int)lineY, 110, 18)));
+            // proximity and owner filters on the same line (maintainer feedback)
+            // 160/280, not 290/410 (bench 408): the lane the Hide Owned toggle occupied closes up
+            ProximityFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 160, (int)lineY, 110, 18)));
             ProximityFilter.AddOption("All Distances", "");
             foreach (string cat in new[] { "Local", "Near", "Midway", "Distant", "Beyond" })
                 ProximityFilter.AddOption(cat, cat);
             ProximityFilter.OnValueChange = _ => ResetList();
 
-            OwnerFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 410, (int)lineY, 130, 18)));
+            OwnerFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 280, (int)lineY, 130, 18)));
             OwnerFilter.AddOption("All Owners", "");
             OwnerFilter.AddOption("Unowned", "-");
             var seenOwners = new Array<string>();
@@ -224,7 +220,6 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             batch.SafeBegin();
             // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
             // drawn among the children, after everything below it.
@@ -235,12 +230,18 @@ namespace Ship_Game
             Table.DrawChrome(batch);
 
             // "Available Troops: N" rides LINE 1 - the filter row - centred over the Send Troops
-            // column (Lek's review, bench 305); label vanilla, count white, gray when dry. Ludoal
-            // fork (maintainer feedback): "Rebasing: N" follows it (same convention), and the pair
-            // is centred as a whole - it carries the count the Homeworld button used to show.
+            // column; label vanilla, count white, gray when dry. "Rebasing: N" follows it (same
+            // convention, maintainer feedback), and the pair is centred as a whole.
             Graphics.Font font = Fonts.Arial12Bold;
-            Rectangle actions = Table.Columns[9].Rect;
-            NumRebasingTroops = CountRebasingTroops();
+            // the "Available Troops / Rebasing" line centres over the icon lane and the counter
+            // column together, not the icon column alone
+            Rectangle iconCol = Table.Columns[9].Rect;
+            Rectangle troopCol = Table.Columns[10].Rect;
+            var actions = new Rectangle(iconCol.X, iconCol.Y, troopCol.Right - iconCol.X, iconCol.Height);
+            NumRebasingTroops  = CountRebasingTroops();
+            // both counts recompute every frame - a troop reaching home must not leave the free
+            // count stale until the rows are redrawn for another reason
+            NumAvailableTroops = Player.NumFreeTroops();
 
             string availLbl = "Available Troops: ";
             string availVal = NumAvailableTroops.ToString();
@@ -265,13 +266,18 @@ namespace Ship_Game
                 batch.DrawString(font, rebVal, new Vector2(x, pos.Y).Rounded(), Color.White);
             }
 
+            // an OPEN filter list redraws last: the table chrome above draws after base.Draw
+            // and would sit on top of it (bench 408)
+            if (ProximityFilter.Open)
+                ProximityFilter.Draw(batch, elapsed);
+            if (OwnerFilter.Open)
+                OwnerFilter.Draw(batch, elapsed);
             ScreenGroups.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }
 
-        // Ludoal fork (maintainer feedback): total troops aboard ships rebasing to one of our own
-        // worlds - the count the Homeworld's inert "Rebasing" button used to carry.
+        // Ludoal fork (maintainer feedback): total troops aboard ships rebasing to one of our own worlds.
         int CountRebasingTroops()
         {
             int total = 0;
@@ -290,6 +296,7 @@ namespace Ship_Game
         {
             PlanetSL.Reset();
             PlanetSL.OnDoubleClick = OnPlanetListItemClicked;
+            PlanetSL.OnClick = OnPlanetRowSingleClicked; // bench 388 (maintainer): single-click = select on the map and pan at current zoom
             NumAvailableTroops = Player.NumFreeTroops();
             Planet[] planets;
             switch (col)
@@ -339,8 +346,26 @@ namespace Ship_Game
             return base.HandleInput(input);
         }
 
+        // (maintainer feedback) single-click = select on the map and pan at current zoom -
+        // the cartouche shows through the band, the double-click still opens
+        void OnPlanetRowSingleClicked(PlanetListScreenItem item)
+        {
+            Universe.PanToPlanetKeepZoom(item.Planet);
+        }
+
         void OnPlanetListItemClicked(PlanetListScreenItem item)
         {
+            // Ludoal fork: OUR colonies open their panel on the Galaxy seat, Planets (0) as the
+            // Esc origin - armed before the snap so the colony's ctor wears the row. Anything
+            // else keeps the plain camera flight.
+            if (item.Planet.Owner == Player)
+            {
+                GameAudio.AcceptClick();
+                Universe.HostColonyTab(item.Planet, ScreenGroups.Group.Galaxy, 0);
+                Universe.SnapViewColony(item.Planet, combatView: false);
+                ExitScreen();
+                return;
+            }
             ExitScreen();
             GameAudio.AcceptClick();
             Universe.SetSelectedPlanet(item.Planet);
@@ -353,6 +378,7 @@ namespace Ship_Game
             {
                 PlanetSL.Reset();
                 PlanetSL.OnDoubleClick = OnPlanetListItemClicked; // Ludoal fork: double-click everywhere
+                PlanetSL.OnClick = OnPlanetRowSingleClicked; // bench 388 (maintainer): single-click = select on the map and pan at current zoom
                 NumAvailableTroops = Player.NumFreeTroops();
                 foreach (Planet p in ExploredPlanets)
                 {
@@ -380,7 +406,7 @@ namespace Ship_Game
 
         public bool ShouldAddItem(Planet p)
         {
-            // the two dropdown filters (maintainer bench 291)
+            // the two dropdown filters (maintainer feedback)
             string wantProx = ProximityFilter?.ActiveValue ?? "";
             if (wantProx.NotEmpty() && new DistanceDisplay(GetShortestDistance(p) / 1000).Text != wantProx)
                 return false;
@@ -390,11 +416,7 @@ namespace Ship_Game
             if (wantOwner.NotEmpty() && wantOwner != "-" && (p.Owner?.data.Traits.Singular ?? "") != wantOwner)
                 return false;
 
-            if (!HideOwned && !HideUninhab)                                 return true;
-            if (HideOwned && HideUninhab && p.Habitable && p.Owner == null) return true;
-            if (HideOwned && !HideUninhab && p.Owner == null)               return true;
-            if (!HideOwned && HideUninhab && p.Habitable)                   return true;
-            return false;
+            return !HideUninhab || p.Habitable;
         }
 
         // Ludoal fork: the other two tabs live in their own screen, so leaving Planets hands over

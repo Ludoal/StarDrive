@@ -65,8 +65,15 @@ namespace Ship_Game
         public bool AnyScreenHoldsUniversePause()
         {
             foreach (GameScreen gs in GameScreens)
+            {
                 if (gs.HoldsUniversePause)
                     return true;
+                // Ludoal fork (spec: living universe): the colony claims its pause like any
+                // page, but it is the universe's workersPanel, never stacked - ask it too.
+                if (gs is UniverseScreen u && u.LookingAtPlanet
+                                           && u.workersPanel?.HoldsUniversePause == true)
+                    return true;
+            }
             return false;
         }
 
