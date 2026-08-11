@@ -87,7 +87,7 @@ namespace Ship_Game
                 // bench 399 (maintainer): the deploy buttons become a compact icon lane like
                 // Planets - fixed slots (research left, mining right), shown only with the tech
                 new UITable.Column { Title = "Actions", Width = 2 * UITable.PadX + 2 * 22 + 8, Align = TableAlign.Center },
-                new UITable.Column { Title = "Stations", Width = 290, Align = TableAlign.Center },
+                new UITable.Column { Title = "Stations", Width = 175 + 2 * UITable.PadX, Align = TableAlign.Center }, // the widest counter (175, measured) plus the cell padding; the Dyson button (178) still fits
             });
             var sys = new Array<string>(); var names = new Array<string>();
             var prox = new Array<string>();

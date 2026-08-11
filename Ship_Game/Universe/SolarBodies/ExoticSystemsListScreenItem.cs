@@ -125,10 +125,11 @@ namespace Ship_Game
             ResearchIconRect = new Rectangle(slotX, iy, IconSize, IconSize);
             MiningIconRect   = new Rectangle(slotX + IconSize + IconGap, iy, IconSize, IconSize);
 
-            // the state text, centred in the Stations column, refreshed live
-            StationsLabel = Add(new UILabel(SmallFont) { Color = Color.White, TextAlign = TextAlign.HorizontalCenter });
-            StationsLabel.Pos  = new Vector2(OrdersRect.X, (int)(Y + Height / 2f - SmallFont.LineSpacing / 2f));
-            StationsLabel.Size = new Vector2(OrdersRect.Width, SmallFont.LineSpacing);
+            // the state text, left-aligned in the Stations column (header stays centred),
+            // refreshed live
+            StationsLabel = Add(new UILabel(SmallFont) { Color = Color.White });
+            StationsLabel.Pos  = new Vector2(OrdersRect.X + UITable.PadX, (int)(Y + Height / 2f - SmallFont.LineSpacing / 2f));
+            StationsLabel.Size = new Vector2(OrdersRect.Width - 2 * UITable.PadX, SmallFont.LineSpacing);
 
             if (IsForResearch)
             {
@@ -137,7 +138,7 @@ namespace Ship_Game
             }
             else if (IsForMining)
             {
-                MiningPanel = Panel(MiningIconRect, Color.White, ResourceManager.Texture("Buildings/icon_fission_mine_48x48"));
+                MiningPanel = Panel(MiningIconRect, Color.White, ResourceManager.Texture("NewUI/icon_queue_rushconstruction"));
                 RefreshMiningState();
             }
             else
@@ -437,8 +438,12 @@ namespace Ship_Game
             MiningPanel.Visible = Player.CanBuildMiningStations && rigOk && numDeployed < max;
             MiningPanel.Tooltip = new LocalizedText(GameText.DeployMiningStation);
 
-            StationsLabel.Text = numInProgress > 0 || numDeployed > 0
-                               ? $"Deploying: {numInProgress} - Deployed: {numDeployed}/{max}" : "";
+            // each half only while it has something to say: all-deployed reads
+            // "Deployed: 5/5" alone, no "Deploying: 0 -" stub (maintainer bench 400)
+            var parts = new Array<string>();
+            if (numInProgress > 0) parts.Add($"Deploying: {numInProgress}");
+            if (numDeployed > 0)   parts.Add($"Deployed: {numDeployed}/{max}");
+            StationsLabel.Text = string.Join(" - ", parts.ToArray());
         }
 
         // drive the research icon (white = deploy, red = abort) and the Stations text

@@ -224,7 +224,9 @@ namespace Ship_Game
 			string text = aborting
 			            ? Localizer.Token(GameText.AbortDeployent)
 			            : Localizer.Token(GameText.DeployResearchStation);
-			var textPos = new Vector2(DeployRect.X + 13, DeployRect.Y + 13 - Font12.LineSpacing / 2 - 2);
+			// centred on the plate (maintainer bench 400)
+			var textPos = new Vector2(DeployRect.X + (DeployRect.Width - Font12.TextWidth(text)) / 2f,
+			                          DeployRect.Y + 13 - Font12.LineSpacing / 2 - 2);
 			// the text stays lit (maintainer bench 318): dimmed-until-hover read as
 			// unreadable; gray marks the genuinely unavailable action only
 			batch.DrawString(Font12, text, textPos, canBuild ? ButtonTextColor : Color.Gray);
