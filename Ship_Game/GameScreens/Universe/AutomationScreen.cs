@@ -212,10 +212,8 @@ namespace Ship_Game
                 if (i < prio.Count - 1)
                     PriorityHost.Add(IconBtn("NewUI/icon_queue_arrow_down", "NewUI/icon_queue_arrow_down_hover1",
                                              Slot(48), "Lower priority", () => MoveCategory(idx, +1)));
-                var stop = IconBtn("UI/node_inhibit", "UI/node_inhibit",
-                                   Slot(24), "Stop prioritizing this category", () => DemoteCategory(key));
-                stop.IconTint = Color.Red;
-                PriorityHost.Add(stop);
+                PriorityHost.Add(IconBtn("UI/icon_minus", "UI/icon_minus",
+                                         Slot(24), "Stop prioritizing this category", () => DemoteCategory(key)));
                 y += RowH;
             }
             if (prio.Count == 0)

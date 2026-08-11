@@ -34,6 +34,10 @@ namespace Ship_Game.GameScreens
 
         FloatSlider TaxSlider;
         FloatSlider TreasuryGoal;
+        FloatSlider GovSpendingSlider;   // the governors' tap (maintainer spec)
+        FloatSlider ColonyPotSlider;     // per-area ratios, titles carry the live pot values
+        FloatSlider DefensePotSlider;
+        FloatSlider SSPPotSlider;
         UILabel EmpireNetIncome;
         ScrollList<EconColonyItem> ColonySL;
 
@@ -428,23 +432,82 @@ namespace Ship_Game.GameScreens
             SummaryPanel budget = Add(new SummaryPanel("Governor Budget  (allocated on treasury goal)", budgetRect, new Color(30, 26, 19)));
             budget.Spacer();
             float Pots() => Player.AI.ColonyBudget + Player.AI.SSPBudget + Player.AI.DefenseBudget;
-            void PotItem(string name, Func<float> pot, Color keyColor)
-            {
-                // the share rides the name label, white like it — left of the value
-                var key = new UILabel(l => { float t = Pots(); return t > 0f ? $"{name} ({pot() / t * 100:0}%)" : name; });
-                key.Color = keyColor;
-                budget.AddSplit(key, new UILabel(NeutralText(pot, f => f.MoneyString()))); // pots are nature, not results (charte)
-            }
-            PotItem("Colony", () => Player.AI.ColonyBudget, Color.White);
-            PotItem("Defense", () => Player.AI.DefenseBudget, Color.White);
+            var up = Universe.UState.P;
+            // Ludoal fork (maintainer spec): the governors' tap leads the panel - what share of
+            // their AUTO allocations the governors may spend; the treasury keeps the rest.
+            // Manual per-colony overrides bypass it.
+            GovSpendingSlider = budget.AddSlider("Governor Spending", up.GovernorSpendingRatio);
+            GovSpendingSlider.Tip = "How much of their automatic budget your governors may spend. Lower it to curb building sprees and let the treasury grow. Manual colony budgets are not throttled.";
+            GovSpendingSlider.OnChange = sl => up.GovernorSpendingRatio = sl.RelativeValue;
             budget.Spacer();
-            budget.AddSplit(new UILabel("Planets subtotal", Color.Wheat),
-                            new UILabel(DynamicText(() => Player.AI.ColonyBudget + Player.AI.DefenseBudget, f => f.MoneyString())));
-            budget.Spacer();
-            PotItem("Space Roads", () => Player.AI.SSPBudget, Color.White);
+            // the three LINKED shares: the pooled budget's split, always summing to 100% -
+            // moving one renormalizes the other two, keeping their mutual ratio. The titles
+            // carry the LIVE pot values, refreshed in Draw; Planets subtotal made way.
+            // The Auto toggle locks the split on the default 55/25/20 (maintainer spec).
+            var autoShares = budget.AddCheckbox(() => Universe.UState.P.AutoBudgetShares,
+                title: "Auto split (55/25/20)",
+                tooltip: "Locks the budget split on the default 55% Colony / 25% Defense / 20% Space Roads. Untick to divide the pool yourself.");
+            ColonyPotSlider = budget.AddSlider("Colony", up.ColonyBudgetShare);
+            DefensePotSlider = budget.AddSlider("Defense", up.DefenseBudgetShare);
+            SSPPotSlider = budget.AddSlider("Space Roads", up.SSPBudgetShare);
+            ColonyPotSlider.OnChange  = sl => OnShareChanged(0);
+            DefensePotSlider.OnChange = sl => OnShareChanged(1);
+            SSPPotSlider.OnChange     = sl => OnShareChanged(2);
+            autoShares.OnChange = cb => ApplyAutoShares(cb.Checked);
+            ApplyAutoShares(up.AutoBudgetShares); // initial lock state
             budget.Spacer();
             budget.AddTotal(Pots);
             return budget;
+        }
+
+        // Auto = the split pinned on 55/25/20 and the sliders frozen; untick to take over
+        void ApplyAutoShares(bool auto)
+        {
+            var up = Universe.UState.P;
+            if (auto)
+            {
+                LinkingShares = true;
+                up.ColonyBudgetShare  = 0.55f;
+                up.DefenseBudgetShare = 0.25f;
+                up.SSPBudgetShare     = 0.20f;
+                ColonyPotSlider.RelativeValue  = 0.55f;
+                DefensePotSlider.RelativeValue = 0.25f;
+                SSPPotSlider.RelativeValue     = 0.20f;
+                LinkingShares = false;
+            }
+            ColonyPotSlider.Enabled = DefensePotSlider.Enabled = SSPPotSlider.Enabled = !auto;
+        }
+
+        bool LinkingShares; // guard: renormalizing the two others re-fires their OnChange
+
+        void OnShareChanged(int which)
+        {
+            if (LinkingShares)
+                return;
+            LinkingShares = true;
+            float c = ColonyPotSlider.RelativeValue;
+            float d = DefensePotSlider.RelativeValue;
+            float s = SSPPotSlider.RelativeValue;
+            float moved = which == 0 ? c : which == 1 ? d : s;
+            float rest = 1f - moved;
+            // the two others share the remainder, keeping their mutual ratio; both at
+            // zero split it evenly
+            float a = which == 0 ? d : c;
+            float b = which == 2 ? d : s;
+            float ab = a + b;
+            if (ab > 0.0001f) { a = rest * a / ab; b = rest * b / ab; }
+            else              { a = rest / 2f;     b = rest / 2f; }
+            if (which == 0) { d = a; s = b; }
+            else if (which == 1) { c = a; s = b; }
+            else { c = a; d = b; }
+            var up = Universe.UState.P;
+            up.ColonyBudgetShare = c;
+            up.DefenseBudgetShare = d;
+            up.SSPBudgetShare = s;
+            ColonyPotSlider.RelativeValue = c;
+            DefensePotSlider.RelativeValue = d;
+            SSPPotSlider.RelativeValue = s;
+            LinkingShares = false;
         }
 
         private SummaryPanel CostsTab(Rectangle costRect)
@@ -542,6 +605,13 @@ namespace Ship_Game.GameScreens
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             batch.SafeBegin();
+            // the pot sliders carry their live values in their titles (maintainer spec)
+            if (ColonyPotSlider != null)
+            {
+                ColonyPotSlider.Text  = $"Colony  {Player.AI.ColonyBudget.MoneyString()}";
+                DefensePotSlider.Text = $"Defense  {Player.AI.DefenseBudget.MoneyString()}";
+                SSPPotSlider.Text     = $"Space Roads  {Player.AI.SSPBudget.MoneyString()}";
+            }
             // Ludoal fork: the frame fill by hand and first, then ONE rule between the colony table
             // and the treasury column - the two halves share the group's frame rather than carrying
             // a border each.

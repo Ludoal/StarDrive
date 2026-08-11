@@ -120,11 +120,28 @@ namespace Ship_Game.AI
 
             float moneyStrategy = treasuryGoal.LowerBound(money);
 
-            DefenseBudget   = ExponentialMovingAverage(DefenseBudget, DetermineDefenseBudget(moneyStrategy, defense, ThreatLevel));
-            SSPBudget       = ExponentialMovingAverage(SSPBudget, DetermineSSPBudget(moneyStrategy, SSP));
+            // Ludoal fork (maintainer spec): for the PLAYER, the three stock area targets
+            // are POOLED and split by the Budget screen's linked shares (they sum to 1) -
+            // the envelope stays stock, only its division answers to the player. Applied
+            // inside the EMA so the smoothing keeps working. AI keeps the stock arithmetic.
+            if (OwnerEmpire.isPlayer)
+            {
+                var up = OwnerEmpire.Universe.P;
+                float pool = DetermineDefenseBudget(moneyStrategy, defense, ThreatLevel)
+                           + DetermineSSPBudget(moneyStrategy, SSP)
+                           + DetermineColonyBudget(moneyStrategy, colony);
+                DefenseBudget = ExponentialMovingAverage(DefenseBudget, pool * up.DefenseBudgetShare);
+                SSPBudget     = ExponentialMovingAverage(SSPBudget, pool * up.SSPBudgetShare);
+                ColonyBudget  = ExponentialMovingAverage(ColonyBudget, pool * up.ColonyBudgetShare);
+            }
+            else
+            {
+                DefenseBudget = ExponentialMovingAverage(DefenseBudget, DetermineDefenseBudget(moneyStrategy, defense, ThreatLevel));
+                SSPBudget     = ExponentialMovingAverage(SSPBudget, DetermineSSPBudget(moneyStrategy, SSP));
+                ColonyBudget  = ExponentialMovingAverage(ColonyBudget, DetermineColonyBudget(moneyStrategy, colony));
+            }
             BuildCapacity   = ExponentialMovingAverage(BuildCapacity, DetermineBuildCapacity(moneyStrategy, ThreatLevel, build));
             SpyBudget       = ExponentialMovingAverage(SpyBudget, spy);
-            ColonyBudget    = ExponentialMovingAverage(ColonyBudget, DetermineColonyBudget(moneyStrategy, colony));
             TerraformBudget = ExponentialMovingAverage(TerraformBudget, DetermineColonyBudget(moneyStrategy, terraform));
 
             PlanetBudgetDebugInfo();

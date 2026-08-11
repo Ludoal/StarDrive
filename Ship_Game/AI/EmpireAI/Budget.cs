@@ -48,6 +48,16 @@ namespace Ship_Game.AI.Budget
             float orbitalRatio  = 1 - groundRatio;
             float civBudget     = EmpireColonizationBudget * EmpireRatio + P.GetColonyInitialBudgetTolerance() + P.TerraformBudget;
             float grdBudget     = defenseBudget * groundRatio;
+            // Ludoal fork (maintainer spec): the Governor Spending tap - the player throttles
+            // what governors may spend of their AUTO allocations; treasury keeps the rest.
+            // Manual overrides below bypass it: an explicit order is not throttled.
+            if (Owner.isPlayer)
+            {
+                float tap = Owner.Universe.P.GovernorSpendingRatio;
+                civBudget     *= tap;
+                grdBudget     *= tap;
+                defenseBudget *= tap;
+            }
             if (!Owner.isPlayer && P.System.HostileForcesPresent(Owner))
                 grdBudget *= 3; // Try to add more temp ground defense to clear enemies
 

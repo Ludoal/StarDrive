@@ -85,6 +85,17 @@ public class UniverseParams
     // Ludoal fork (maintainer spec): the ORDERED construction priority list. Categories in
     // it jump the colony build queues at insertion, best rank first, FIFO within a category.
     [StarData] public Array<string> ConstructionPriorities = new();
+
+    // Ludoal fork (maintainer spec, the budget pass): the player's taps on the economy.
+    // GovernorSpendingRatio throttles what the governors may spend of their AUTO allocations
+    // (manual overrides bypass it - an explicit order is not throttled). The three SHARES
+    // are a linked split summing to 1: how the pooled governor budget divides between the
+    // areas (the Budget screen keeps them linked).
+    [StarData] public float GovernorSpendingRatio = 1f;
+    [StarData] public bool AutoBudgetShares = true;   // locked on the default split below
+    [StarData] public float ColonyBudgetShare = 0.55f;
+    [StarData] public float DefenseBudgetShare = 0.25f;
+    [StarData] public float SSPBudgetShare = 0.20f;
     [StarData(DefaultValue=true)] public bool ShowAllDesigns = true;
     [StarData] public bool FilterOldModules;
 

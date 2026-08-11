@@ -73,9 +73,11 @@ namespace Ship_Game
         ProgressBar CivBudgetBar;
         ProgressBar GrdBudgetBar;
         ProgressBar SpcBudgetBar;
-        UITextEntry ManualCivBudget;
-        UITextEntry ManualGrdBudget;
-        UITextEntry ManualSpcBudget;
+        // Ludoal fork (maintainer spec): the manual budgets are SLIDERS now - the text
+        // entries were unusable. Set to the auto alloc on Override-check; OnChange commits.
+        FloatSlider ManualCivBudget;
+        FloatSlider ManualGrdBudget;
+        FloatSlider ManualSpcBudget;
 
         UILabel ColonyBlueprints, BlueprintsCompletionLbl, BlueprintsAchiveable, BlueprintsName,
             BlueprintsExclusive, BlueprintsLink, BlueprintsGovChange, Blueprintsoverview, BlueprintsEnableGov;
@@ -233,18 +235,13 @@ namespace Ship_Game
             CivBudgetBar.color = "green";
             SpcBudgetBar.color = "blue";
 
-            ManualCivBudget = Add(new UITextEntry(Planet.ManualCivilianBudget.String(2)));
-            ManualGrdBudget = Add(new UITextEntry(Planet.ManualGrdDefBudget.String(2)));
-            ManualSpcBudget = Add(new UITextEntry(Planet.ManualSpcDefBudget.String(2)));
-            ManualCivBudget.Color = Color.MediumSeaGreen;
-            ManualSpcBudget.Color = Color.SteelBlue;
-
-            ManualCivBudget.AutoCaptureOnHover = true;
-            ManualGrdBudget.AutoCaptureOnHover = true;
-            ManualSpcBudget.AutoCaptureOnHover = true;
-            ManualCivBudget.Font          = ManualGrdBudget.Font          = ManualSpcBudget.Font          = Font;
-            ManualCivBudget.MaxCharacters = ManualGrdBudget.MaxCharacters = ManualSpcBudget.MaxCharacters = 6;
-            ManualCivBudget.AllowPeriod   = ManualGrdBudget.AllowPeriod   = ManualSpcBudget.AllowPeriod   = true;
+            var sliderSize = new Vector2(150, 26);
+            ManualCivBudget = Add(new FloatSlider(SliderStyle.Decimal, sliderSize, "", 0, 100, Planet.ManualCivilianBudget));
+            ManualGrdBudget = Add(new FloatSlider(SliderStyle.Decimal, sliderSize, "", 0, 100, Planet.ManualGrdDefBudget));
+            ManualSpcBudget = Add(new FloatSlider(SliderStyle.Decimal, sliderSize, "", 0, 100, Planet.ManualSpcDefBudget));
+            ManualCivBudget.OnChange = sl => Planet.SetManualCivBudget(sl.AbsoluteValue);
+            ManualGrdBudget.OnChange = sl => Planet.SetManualGroundDefBudget(sl.AbsoluteValue);
+            ManualSpcBudget.OnChange = sl => Planet.SetManualSpaceDefBudget(sl.AbsoluteValue);
 
             BudgetSum     = Add(new UILabel(" ", FontBig, Color.White));
             BudgetPercent = Add(new UILabel(" ", FontBig, Color.White));
@@ -404,17 +401,20 @@ namespace Ship_Game
 
             OverrideCiv.OnChange = cb =>
             {
-                Planet.SetManualCivBudget(cb.Checked ? Planet.Budget.CivilianAlloc : 0);
+                if (cb.Checked) ManualCivBudget.AbsoluteValue = Planet.Budget.CivilianAlloc;
+                else            Planet.SetManualCivBudget(0);
             };
 
             OverrideGrd.OnChange = cb =>
             {
-                Planet.SetManualGroundDefBudget(cb.Checked ? Planet.Budget.GrdDefAlloc : 0);
+                if (cb.Checked) ManualGrdBudget.AbsoluteValue = Planet.Budget.GrdDefAlloc;
+                else            Planet.SetManualGroundDefBudget(0);
             };
 
             OverrideSpc.OnChange = cb =>
             {
-                Planet.SetManualSpaceDefBudget(cb.Checked ? Planet.Budget.SpcDefAlloc : 0);
+                if (cb.Checked) ManualSpcBudget.AbsoluteValue = Planet.Budget.SpcDefAlloc;
+                else            Planet.SetManualSpaceDefBudget(0);
             };
 
             Prioritized.OnChange = cb =>
@@ -847,57 +847,6 @@ namespace Ship_Game
             }
         }
 
-        void UpdateCivBudget(PlanetBudget budget)
-        {
-            if (ManualCivBudget.HandlingInput)
-                return;
-
-            if (BudgetTabView && OverrideCivBudget && ManualCivBudget.Visible
-                && float.TryParse(ManualCivBudget.Text, out float value)
-                && value > 0 && value < 250)
-            {
-                Planet.SetManualCivBudget(value);
-            }
-            else
-            {
-                ManualCivBudget.Text = budget.CivilianAlloc.String(2);
-            }
-        }
-
-        void UpdateGrdBudget(PlanetBudget budget)
-        {
-            if (ManualGrdBudget.HandlingInput)
-                return;
-
-            if (BudgetTabView && OverrideGrdBudget && ManualGrdBudget.Visible
-                && float.TryParse(ManualGrdBudget.Text, out float value)
-                && value > 0 && value < 250)
-            {
-                Planet.SetManualGroundDefBudget(value);
-            }
-            else
-            {
-                ManualGrdBudget.Text = budget.GrdDefAlloc.String(2);
-            }
-        }
-
-        void UpdateSpcBudget(PlanetBudget budget)
-        {
-            if (ManualSpcBudget.HandlingInput)
-                return;
-
-            if (BudgetTabView && OverrideSpcBudget && ManualSpcBudget.Visible
-                && float.TryParse(ManualSpcBudget.Text, out float value)
-                && value > 0 && value < 250)
-            {
-                Planet.SetManualSpaceDefBudget(value);
-            }
-            else
-            {
-                ManualSpcBudget.Text = budget.SpcDefAlloc.String(2);
-            }
-        }
-
         void UpdateBlueprintsStats()
         {
             if (!Planet.HasBlueprints || !Planet.OwnerIsPlayer)
@@ -913,9 +862,6 @@ namespace Ship_Game
         {
             var budget = Planet.Budget;
 
-            UpdateCivBudget(budget);
-            UpdateGrdBudget(budget);
-            UpdateSpcBudget(budget);
             budget.UpdateManualUI();
 
             CivBudgetBar.Max      = budget.CivilianAlloc;
