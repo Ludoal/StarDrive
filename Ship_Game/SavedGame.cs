@@ -5,6 +5,7 @@ using Ship_Game.Data.Serialization;
 using Ship_Game.Universe;
 using SDUtils;
 using Ship_Game.Data.Binary;
+using Color = Microsoft.Xna.Framework.Color;
 
 namespace Ship_Game
 {
@@ -18,6 +19,11 @@ namespace Ship_Game
         [StarData] public string RealDate;
         [StarData] public string ModName = "";
         [StarData] public DateTime Time;
+        // the player's flag, so the save list can show it without a race-name lookup
+        // (a renamed or custom race matches nothing and fell back to the default icon).
+        // -1 = header written before the field existed; the reader falls back to the lookup.
+        [StarData] public int FlagIndex = -1;
+        [StarData] public Color EmpireColor;
     }
 
     public sealed class SavedGame
@@ -84,6 +90,8 @@ namespace Ship_Game
                 RealDate   = now.ToString("M/d/yyyy") + " " + now.ToString("t", CultureInfo.CreateSpecificCulture("en-US").DateTimeFormat),
                 ModName    = GlobalStats.ModName,
                 Time       = now,
+                FlagIndex  = state.Player.data.Traits.FlagIndex,
+                EmpireColor = state.Player.EmpireColor,
             };
 
             // an annoying edge case, someone has created a folder with the same name

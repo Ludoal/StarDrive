@@ -369,6 +369,13 @@ namespace Ship_Game
                 string extraInfo = header.RealDate;
                 string tooltip = file.Name;
 
+                // the header carries the player's flag since 47-d; older headers read -1
+                // and fall back to the race-name lookup (wrong for custom races, which is
+                // why the flag is stored now - maintainer feedback)
+                if (header.FlagIndex >= 0)
+                    return new(file, header, header.SaveName, info, extraInfo, tooltip,
+                               ResourceManager.Flag(header.FlagIndex), header.EmpireColor);
+
                 IEmpireData empire = ResourceManager.AllRaces.FirstOrDefault(e => e.Name == header.PlayerName)
                                   ?? ResourceManager.AllRaces[0];
                 return new(file, header, header.SaveName, info, extraInfo, tooltip,
