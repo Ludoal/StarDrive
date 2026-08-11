@@ -115,7 +115,7 @@ namespace Ship_Game
         public bool VisionOverlay        => KeyPressed(Keys.F3); // Ludoal fork: sensor/vision coverage, spies included
         public bool ShipListScreen       => KeyPressed(Keys.K);
         public bool TroopListScreen      => KeyPressed(Keys.C); // Ludoal fork: Troops Array (C was debug-spawn only)
-        public bool ColonyOverviewScreen => KeyPressed(Keys.O); // Ludoal fork: the Empire group's permanent Colony tab
+        public bool ColonyOverviewScreen => KeyPressed(Keys.F8); // Ludoal fork: the Empire group's permanent Colony tab (O is the game menu, hardwired in the top bar)
         public bool FleetDesignScreen    => KeyPressed(Keys.J);
         public bool AutomationWindow     => KeyPressed(Keys.H);
         public bool BlueprintsSceen      => KeyPressed(Keys.F);

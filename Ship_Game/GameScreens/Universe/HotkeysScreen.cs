@@ -65,6 +65,7 @@ namespace Ship_Game
                 new Hotkey("M", "Exotic Bonuses"),
                 new Hotkey("N", "Freighter Utilization"),
                 new Hotkey("F7", "Important Events log"),
+                new Hotkey("F8", "Colony overview (the Empire group's colony tab)"),
                 new Hotkey("F1", "Help"),
                 new Hotkey("Esc", "Close screen"),
             }),
