@@ -440,24 +440,79 @@ namespace Ship_Game.GameScreens
             GovSpendingSlider.Tip = "How much of their automatic budget your governors may spend. Lower it to curb building sprees and let the treasury grow. Manual colony budgets are not throttled.";
             GovSpendingSlider.OnChange = sl => up.GovernorSpendingRatio = sl.RelativeValue;
             budget.Spacer();
-            // the three LINKED shares: the pooled budget's split, always summing to 100% -
-            // moving one renormalizes the other two, keeping their mutual ratio. The titles
-            // carry the LIVE pot values, refreshed in Draw; Planets subtotal made way.
-            // The Auto toggle locks the split on the default 55/25/20 (maintainer spec).
+            // the three LINKED shares as one-line rows [name][slider][lock][value] -
+            // no percent text, the money value rides the right edge (maintainer bench 403).
+            // A LOCK pins a share: renormalization spreads over the unlocked ones only.
+            // The Auto toggle pins the split on the default 55/25/20.
             var autoShares = budget.AddCheckbox(() => Universe.UState.P.AutoBudgetShares,
                 title: "Auto split (55/25/20)",
                 tooltip: "Locks the budget split on the default 55% Colony / 25% Defense / 20% Space Roads. Untick to divide the pool yourself.");
-            ColonyPotSlider = budget.AddSlider("Colony", up.ColonyBudgetShare);
-            DefensePotSlider = budget.AddSlider("Defense", up.DefenseBudgetShare);
-            SSPPotSlider = budget.AddSlider("Space Roads", up.SSPBudgetShare);
-            ColonyPotSlider.OnChange  = sl => OnShareChanged(0);
-            DefensePotSlider.OnChange = sl => OnShareChanged(1);
-            SSPPotSlider.OnChange     = sl => OnShareChanged(2);
+            ShareRows[0] = budget.Add(new ShareRow("Colony", up.ColonyBudgetShare,
+                                                   () => Player.AI.ColonyBudget, sl => OnShareChanged(0)));
+            ShareRows[1] = budget.Add(new ShareRow("Defense", up.DefenseBudgetShare,
+                                                   () => Player.AI.DefenseBudget, sl => OnShareChanged(1)));
+            ShareRows[2] = budget.Add(new ShareRow("Space Roads", up.SSPBudgetShare,
+                                                   () => Player.AI.SSPBudget, sl => OnShareChanged(2)));
+            ColonyPotSlider  = ShareRows[0].Slider;
+            DefensePotSlider = ShareRows[1].Slider;
+            SSPPotSlider     = ShareRows[2].Slider;
             autoShares.OnChange = cb => ApplyAutoShares(cb.Checked);
             ApplyAutoShares(up.AutoBudgetShares); // initial lock state
             budget.Spacer();
             budget.AddTotal(Pots);
             return budget;
+        }
+
+        readonly ShareRow[] ShareRows = new ShareRow[3];
+
+        // one line: [name][slider][padlock][live money value] - the compact grammar the
+        // maintainer specced for the linked shares (bench 403)
+        class ShareRow : UIElementContainer
+        {
+            public readonly FloatSlider Slider;
+            public bool Locked;
+            readonly UILabel Name;
+            readonly UIButton LockBtn;
+            readonly UILabel Value;
+
+            public ShareRow(string name, float value, Func<float> livePot, Action<FloatSlider> onChange)
+                : base(Vector2.Zero, new Vector2(100, 20))
+            {
+                Name = base.Add(new UILabel(Vector2.Zero, name, Fonts.Arial12Bold, Color.Wheat));
+                Slider = base.Add(new FloatSlider(SliderStyle.Percent, new Vector2(80, 12), "", 0f, 1f, value)
+                {
+                    DrawValueText = false,
+                    OnChange = onChange,
+                });
+                LockBtn = base.Add(new UIButton(new UIButton.StyleTextures("NewUI/icon_lock", "NewUI/icon_lock"),
+                                                Vector2.Zero, "")
+                {
+                    Tooltip = "Lock this share - adjusting the others leaves it untouched",
+                });
+                LockBtn.OnClick = b =>
+                {
+                    Locked = !Locked;
+                    Slider.Enabled = !Locked;
+                };
+                Value = base.Add(new UILabel(l => livePot().MoneyString(), Fonts.Arial12Bold));
+                Value.Color = Color.White;
+            }
+
+            public override void PerformLayout()
+            {
+                const int NameW = 84, LockW = 18, ValueW = 52, Gap = 6;
+                float cy = Y + 2;
+                Name.Pos = new Vector2(X, cy);
+                Slider.Pos  = new Vector2(X + NameW, Y + 1);
+                Slider.Size = new Vector2(Width - NameW - LockW - ValueW - 2 * Gap + 32, 12); // +32: the track is Width-32
+                LockBtn.Rect = new Rectangle((int)(Right - ValueW - Gap - LockW), (int)Y + 1, 16, 16);
+                Value.Pos = new Vector2(Right - ValueW + 6, cy);
+                Value.TextAlign = TextAlign.Right;
+                Value.Size = new Vector2(ValueW - 6, Fonts.Arial12Bold.LineSpacing);
+                // the padlock reads its state: solid when locked, faint when free
+                LockBtn.IconTint = Locked ? Color.White : Color.White.Alpha(0.35f);
+                base.PerformLayout();
+            }
         }
 
         // Auto = the split pinned on 55/25/20 and the sliders frozen; untick to take over
@@ -478,35 +533,38 @@ namespace Ship_Game.GameScreens
             ColonyPotSlider.Enabled = DefensePotSlider.Enabled = SSPPotSlider.Enabled = !auto;
         }
 
-        bool LinkingShares; // guard: renormalizing the two others re-fires their OnChange
+        bool LinkingShares; // guard: renormalizing the others re-fires their OnChange
 
         void OnShareChanged(int which)
         {
             if (LinkingShares)
                 return;
             LinkingShares = true;
-            float c = ColonyPotSlider.RelativeValue;
-            float d = DefensePotSlider.RelativeValue;
-            float s = SSPPotSlider.RelativeValue;
-            float moved = which == 0 ? c : which == 1 ? d : s;
-            float rest = 1f - moved;
-            // the two others share the remainder, keeping their mutual ratio; both at
-            // zero split it evenly
-            float a = which == 0 ? d : c;
-            float b = which == 2 ? d : s;
-            float ab = a + b;
-            if (ab > 0.0001f) { a = rest * a / ab; b = rest * b / ab; }
-            else              { a = rest / 2f;     b = rest / 2f; }
-            if (which == 0) { d = a; s = b; }
-            else if (which == 1) { c = a; s = b; }
-            else { c = a; d = b; }
+            float[] v = { ColonyPotSlider.RelativeValue, DefensePotSlider.RelativeValue, SSPPotSlider.RelativeValue };
+            // locked shares hold their value: the mover is clamped to what the locks leave,
+            // and the remainder spreads over the UNLOCKED others by their mutual ratio
+            float lockedSum = 0f;
+            float unlockedSum = 0f;
+            for (int i = 0; i < 3; i++)
+            {
+                if (i == which) continue;
+                if (ShareRows[i].Locked) lockedSum += v[i];
+                else unlockedSum += v[i];
+            }
+            v[which] = v[which].Clamped(0f, (1f - lockedSum).LowerBound(0f));
+            float rest = 1f - lockedSum - v[which];
+            for (int i = 0; i < 3; i++)
+            {
+                if (i == which || ShareRows[i].Locked) continue;
+                v[i] = unlockedSum > 0.0001f ? rest * v[i] / unlockedSum : rest; // one unlocked: it takes it all
+            }
             var up = Universe.UState.P;
-            up.ColonyBudgetShare = c;
-            up.DefenseBudgetShare = d;
-            up.SSPBudgetShare = s;
-            ColonyPotSlider.RelativeValue = c;
-            DefensePotSlider.RelativeValue = d;
-            SSPPotSlider.RelativeValue = s;
+            up.ColonyBudgetShare = v[0];
+            up.DefenseBudgetShare = v[1];
+            up.SSPBudgetShare = v[2];
+            ColonyPotSlider.RelativeValue = v[0];
+            DefensePotSlider.RelativeValue = v[1];
+            SSPPotSlider.RelativeValue = v[2];
             LinkingShares = false;
         }
 
@@ -605,13 +663,6 @@ namespace Ship_Game.GameScreens
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             batch.SafeBegin();
-            // the pot sliders carry their live values in their titles (maintainer spec)
-            if (ColonyPotSlider != null)
-            {
-                ColonyPotSlider.Text  = $"Colony  {Player.AI.ColonyBudget.MoneyString()}";
-                DefensePotSlider.Text = $"Defense  {Player.AI.DefenseBudget.MoneyString()}";
-                SSPPotSlider.Text     = $"Space Roads  {Player.AI.SSPBudget.MoneyString()}";
-            }
             // Ludoal fork: the frame fill by hand and first, then ONE rule between the colony table
             // and the treasury column - the two halves share the group's frame rather than carrying
             // a border each.

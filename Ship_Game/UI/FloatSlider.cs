@@ -31,6 +31,8 @@ namespace Ship_Game
 
         // If Step != 0, then AbsoluteValue can only change in increments of this value
         public float Step = 0;
+        // Ludoal fork: an inline row draws its own value label - silence the built-in one
+        public bool DrawValueText = true;
         public float Range => Max-Min;
 
         float GetAbsValue(float relValue)
@@ -207,8 +209,11 @@ namespace Ship_Game
             knobRect.X -= knobRect.Width / 2;
             batch.Draw(Hover ? SliderKnobHover : SliderKnob, knobRect, Color.White);
 
-            var textPos = new Vector2(SliderRect.Right + 8, SliderRect.Y + SliderRect.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2);
-            batch.DrawString(Fonts.Arial12Bold, StyledValue, textPos, UITheme.TextPrimary);
+            if (DrawValueText)
+            {
+                var textPos = new Vector2(SliderRect.Right + 8, SliderRect.Y + SliderRect.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2);
+                batch.DrawString(Fonts.Arial12Bold, StyledValue, textPos, UITheme.TextPrimary);
+            }
 
             if (Hover)
             {
