@@ -355,6 +355,13 @@ namespace Ship_Game
                 string extraInfo = header.RealDate;
                 string tooltip = file.Name;
 
+                // headers that carry the player's flag draw it directly; older headers read
+                // -1 and fall back to the race-name lookup below, which shows the default
+                // flag for custom and renamed races
+                if (header.FlagIndex >= 0)
+                    return new(file, header, header.SaveName, info, extraInfo, tooltip,
+                               ResourceManager.Flag(header.FlagIndex), header.EmpireColor);
+
                 IEmpireData empire = ResourceManager.AllRaces.FirstOrDefault(e => e.Name == header.PlayerName)
                                   ?? ResourceManager.AllRaces[0];
                 return new(file, header, header.SaveName, info, extraInfo, tooltip,
