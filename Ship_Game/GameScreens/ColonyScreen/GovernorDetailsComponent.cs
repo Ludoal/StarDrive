@@ -82,8 +82,12 @@ namespace Ship_Game
         // carry total*share; all zero = the governor allocates on its own.
         FloatSlider GovSpending;
         UILabel SpendingLabel;
+        UILabel SpendValue;   // current spending, white
+        UILabel SpendTarget;  // on Auto: the raw pre-smoothing target, grey, in parentheses
         FloatSlider ShareCiv, ShareGrd, ShareSpc;
+        UILabel PctCiv, PctGrd, PctSpc; // own % labels, right-aligned so 100% cannot shove the padlock
         UIButton LockCiv, LockGrd, LockSpc;
+        float SpendValueXWithTarget, SpendValueXAtEdge; // the white value's two seats, laid out once
 
         UILabel ColonyBlueprints, BlueprintsCompletionLbl, BlueprintsAchiveable, BlueprintsName,
             BlueprintsExclusive, BlueprintsLink, BlueprintsGovChange, Blueprintsoverview, BlueprintsEnableGov;
@@ -244,15 +248,22 @@ namespace Ship_Game
             PlanetShareLocked[0] = PlanetShareLocked[1] = PlanetShareLocked[2] = false;
             float manualTotal = Planet.ManualCivilianBudget + Planet.ManualGrdDefBudget + Planet.ManualSpcDefBudget;
             float seedTotal   = Math.Max(manualTotal, Planet.Budget.TotalAlloc);
-            SpendingLabel = Add(new UILabel("Spending:", Font, Color.Wheat));
+            SpendingLabel = Add(new UILabel("Spending:", Font, Color.White));
             GovSpending   = Add(new FloatSlider(SliderStyle.Decimal1, new Vector2(150, 12), "",
-                                                0, (seedTotal * 2f).LowerBound(20f), seedTotal));
+                                                0, (seedTotal * 2f).LowerBound(20f), seedTotal) { DrawValueText = false });
             GovSpending.Tip = "Total the governor may spend on this colony each turn, split by the sliders beside the bars";
             GovSpending.OnChange = s => { if (!LinkingPlanetShares && !PlanetAutoBudget) CommitPlanetBudget(); };
+            SpendValue  = Add(new UILabel(l => GovSpending.AbsoluteValue.String(1), Font));
+            SpendValue.Color = Color.White;
+            SpendTarget = Add(new UILabel(l => $"({Planet.Budget.TargetAlloc.String(1)})", Font));
+            SpendTarget.Color = Color.Gray;
 
             ShareCiv = Add(MakeShareSlider(0));
             ShareGrd = Add(MakeShareSlider(1));
             ShareSpc = Add(MakeShareSlider(2));
+            PctCiv = Add(MakeShareLabel(() => ShareCiv));
+            PctGrd = Add(MakeShareLabel(() => ShareGrd));
+            PctSpc = Add(MakeShareLabel(() => ShareSpc));
             LockCiv  = Add(MakeShareLock(0));
             LockGrd  = Add(MakeShareLock(1));
             LockSpc  = Add(MakeShareLock(2));
@@ -387,25 +398,44 @@ namespace Ship_Game
             ManualShipyards.Pos   = BuildShipyard.Pos + manualOffset;
             ManualStations.Pos    = BuildStation.Pos + manualOffset;
 
-            // the share sliders ride their bars: from the bar's right edge to the padlock at
-            // the panel's right margin. The % value draws inside the slider's own 32px reserve.
-            const int LockSide = 16, LockGap = 6, RightMargin = 10;
+            // the share sliders ride their bars: from the bar's right edge to their own %
+            // label (right-aligned, so 100% grows leftward), then the padlock at the margin
+            const int LockSide = 16, LockGap = 6, RightMargin = 10, PctW = 34, PctGap = 4;
             float lockX  = X + Width - RightMargin - LockSide;
+            float pctX   = lockX - LockGap - PctW;
             float shareX = CivBudgetRect.X + CivBudgetRect.Width + 12;
-            var shareSize = new Vector2(lockX - LockGap - shareX, 12);
+            // +32: the slider track is Width-32; the unused value reserve folds back in
+            var shareSize = new Vector2(pctX - PctGap - shareX + 32, 12);
             ShareCiv.Pos = new Vector2(shareX, CivBudgetRect.Y + 1); ShareCiv.Size = shareSize;
             ShareGrd.Pos = new Vector2(shareX, GrdBudgetRect.Y + 1); ShareGrd.Size = shareSize;
             ShareSpc.Pos = new Vector2(shareX, SpcBudgetRect.Y + 1); ShareSpc.Size = shareSize;
+            var pctSize = new Vector2(PctW, Font.LineSpacing);
+            PctCiv.Pos = new Vector2(pctX, CivBudgetRect.Y + 5); PctCiv.Size = pctSize;
+            PctGrd.Pos = new Vector2(pctX, GrdBudgetRect.Y + 5); PctGrd.Size = pctSize;
+            PctSpc.Pos = new Vector2(pctX, SpcBudgetRect.Y + 5); PctSpc.Size = pctSize;
             LockCiv.Rect = new Rectangle((int)lockX, CivBudgetRect.Y + 3, LockSide, LockSide);
             LockGrd.Rect = new Rectangle((int)lockX, GrdBudgetRect.Y + 3, LockSide, LockSide);
             LockSpc.Rect = new Rectangle((int)lockX, SpcBudgetRect.Y + 3, LockSide, LockSide);
 
-            // the Auto/Spending row under the bars; the total drops one line below it
+            // the Auto/Spending row under the bars; the total drops one line below it.
+            // Value lanes at the line's end: current spending (white), and on Auto the raw
+            // target in parentheses (grey) - UpdateBudgets slides the value to the edge
+            // when the target lane is hidden.
+            const int TargetW = 46, SpendValueW = 40;
             float spendRow = Y + 130 + shift;
+            float rowRight = X + Width - RightMargin;
             AutoBudgetCheck.Pos = new Vector2(TopLeft.X + 10, spendRow + 2);
             SpendingLabel.Pos   = new Vector2(TopLeft.X + 70, spendRow + 3);
             GovSpending.Pos     = new Vector2(TopLeft.X + 70 + Font.TextWidth(SpendingLabel.Text) + 8, spendRow - 6);
-            GovSpending.Size    = new Vector2(X + Width - RightMargin - GovSpending.Pos.X, 12);
+            GovSpending.Size    = new Vector2(rowRight - TargetW - SpendValueW - 6 - GovSpending.Pos.X + 32, 12);
+            SpendValueXWithTarget = rowRight - TargetW - 4 - SpendValueW;
+            SpendValueXAtEdge     = rowRight - SpendValueW;
+            SpendValue.TextAlign = TextAlign.Right;
+            SpendValue.Size      = new Vector2(SpendValueW, Font.LineSpacing);
+            SpendValue.Pos       = new Vector2(SpendValueXWithTarget, spendRow + 3);
+            SpendTarget.TextAlign = TextAlign.Right;
+            SpendTarget.Size      = new Vector2(TargetW, Font.LineSpacing);
+            SpendTarget.Pos       = new Vector2(rowRight - TargetW, spendRow + 3);
 
             BudgetSum.Pos         = new Vector2(TopLeft.X + 8, Y + 160 + shift);
             BudgetPercent.Pos     = new Vector2(TopLeft.X + CivBudgetRect.Width + 15, Y + 160 + shift);
@@ -445,10 +475,13 @@ namespace Ship_Game
             {
                 if (cb.Checked)
                 {
-                    // back to the governor's own allocation
+                    // back to the governor's own allocation; the padlocks release too -
+                    // a pin held across the mode switch surprised the bench (405)
                     Planet.SetManualCivBudget(0);
                     Planet.SetManualGroundDefBudget(0);
                     Planet.SetManualSpaceDefBudget(0);
+                    PlanetShareLocked[0] = PlanetShareLocked[1] = PlanetShareLocked[2] = false;
+                    Planet.Budget.SnapToTarget(); // the EMA would crawl back from the manual values otherwise
                 }
                 else
                 {
@@ -618,12 +651,19 @@ namespace Ship_Game
                 AutoBudgetCheck.Visible = BudgetTabView && GovernorOn && Planet.OwnerIsPlayer && Planet.CType is not Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub;
                 SpendingLabel.Visible   = AutoBudgetCheck.Visible;
                 GovSpending.Visible     = AutoBudgetCheck.Visible;
+                SpendValue.Visible      = AutoBudgetCheck.Visible;
+                SpendTarget.Visible     = AutoBudgetCheck.Visible && PlanetAutoBudget;
+                // the white value slides to the edge when the grey target lane is hidden
+                SpendValue.Pos = new Vector2(SpendTarget.Visible ? SpendValueXWithTarget : SpendValueXAtEdge,
+                                             SpendValue.Pos.Y);
                 ShareCiv.Visible = ShareGrd.Visible = ShareSpc.Visible = AutoBudgetCheck.Visible;
+                PctCiv.Visible   = PctGrd.Visible   = PctSpc.Visible   = AutoBudgetCheck.Visible;
                 LockCiv.Visible  = LockGrd.Visible  = LockSpc.Visible  = AutoBudgetCheck.Visible;
-                // the padlocks read their state: solid when locked, faint when free
-                LockCiv.IconTint = PlanetShareLocked[0] ? Color.White : Color.White.Alpha(0.35f);
-                LockGrd.IconTint = PlanetShareLocked[1] ? Color.White : Color.White.Alpha(0.35f);
-                LockSpc.IconTint = PlanetShareLocked[2] ? Color.White : Color.White.Alpha(0.35f);
+                // bench 405: on Auto the whole row is read-only, every padlock reads solid
+                // white; manual keeps solid = locked, faint = free
+                LockCiv.IconTint = PlanetAutoBudget || PlanetShareLocked[0] ? Color.White : Color.White.Alpha(0.35f);
+                LockGrd.IconTint = PlanetAutoBudget || PlanetShareLocked[1] ? Color.White : Color.White.Alpha(0.35f);
+                LockSpc.IconTint = PlanetAutoBudget || PlanetShareLocked[2] ? Color.White : Color.White.Alpha(0.35f);
 
                 NoGovernorCivExpense.Visible = BudgetTabView && !AutoBudgetCheck.Visible;
                 NoGovernorGrdExpense.Visible = NoGovernorCivExpense.Visible;
@@ -913,9 +953,18 @@ namespace Ship_Game
 
         FloatSlider MakeShareSlider(int which)
         {
-            var s = new FloatSlider(SliderStyle.Percent, new Vector2(150, 12), "", 0f, 1f, 0.34f);
+            var s = new FloatSlider(SliderStyle.Percent, new Vector2(150, 12), "", 0f, 1f, 0.34f)
+            { DrawValueText = false }; // the row draws its own %, right-aligned before the padlock
             s.OnChange = _ => OnPlanetShareChanged(which);
             return s;
+        }
+
+        UILabel MakeShareLabel(Func<FloatSlider> slider)
+        {
+            var l = new UILabel(_ => ((int)Math.Round(slider().RelativeValue * 100f)) + "%", Font);
+            l.Color = Color.White;
+            l.TextAlign = TextAlign.Right;
+            return l;
         }
 
         UIButton MakeShareLock(int which)

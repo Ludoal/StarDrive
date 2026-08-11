@@ -319,7 +319,7 @@ namespace Ship_Game.GameScreens
             // goal) → vertical arithmetic Income − Expenditure = Net Gain
             int rx = (int)RightMenu.X + 12; // tighter margins (maintainer bench)
             int rw = (int)RightMenu.Width - 24;
-            var taxRect    = new Rectangle(rx, (int)RightMenu.Y + 42, rw, 104); // top rhythm = the left table's headerY, checkbox first
+            var taxRect    = new Rectangle(rx, (int)RightMenu.Y + 42, rw, 96); // top rhythm = the left table's headerY, checkbox first; 96: trimmed under the goal slider so Net Gain breathes at the foot (bench 405)
 
             SummaryPanel tax = Add(new SummaryPanel("", taxRect, new Color(17, 21, 28)));
 
@@ -362,12 +362,12 @@ namespace Ship_Game.GameScreens
             EmpireNetIncome.DropShadow  = true;
             EmpireNetIncome.DynamicText = DynamicText(NetGainNow, f => f.MoneyString());
 
-            // bench 361 (maintainer): while the table is SHORT (not yet stretched), its TOTAL lane
-            // sits a few px above the synthesis' Net Gain/Loss line - nudge the whole footer row
-            // down onto netY so the two bottom lines read as one. Never up (a stretched table's
-            // TOTAL belongs to its own lane), and never further than one lane (geometry sanity).
+            // bench 361, widened at bench 405: the table's TOTAL lane always drops onto the
+            // synthesis' Net Gain/Loss line so the two bottom rows read as one. Never up (a
+            // stretched table's TOTAL belongs to its own lane); the two-lane bound is sanity
+            // against a degenerate layout, not a tuning knob.
             int footerNudge = netY - totalY;
-            if (footerNudge > 0 && footerNudge <= Table.RowPitch)
+            if (footerNudge > 0 && footerNudge <= 2 * Table.RowPitch)
                 foreach (UILabel l in footerLabels)
                     l.Pos = new Vector2(l.Pos.X, l.Pos.Y + footerNudge);
 
@@ -478,7 +478,7 @@ namespace Ship_Game.GameScreens
             public ShareRow(string name, float value, Func<float> livePot, Action<FloatSlider> onChange)
                 : base(Vector2.Zero, new Vector2(100, 20))
             {
-                NameLbl = base.Add(new UILabel(Vector2.Zero, name, Fonts.Arial12Bold, Color.Wheat));
+                NameLbl = base.Add(new UILabel(Vector2.Zero, name, Fonts.Arial12Bold, Color.White));
                 ShareSlider = base.Add(new FloatSlider(SliderStyle.Percent, new Vector2(80, 12), "", 0f, 1f, value)
                 {
                     DrawValueText = false,
@@ -500,12 +500,15 @@ namespace Ship_Game.GameScreens
 
             public override void PerformLayout()
             {
-                const int NameW = 84, LockW = 18, ValueW = 52, Gap = 6;
-                float cy = Y + 2;
+                // bench 405: name lane widened (Space Roads kissed its slider), and the text
+                // lane rides 4px BELOW the slider's seat so text, padlock and value centre on
+                // the track - the slider itself keeps its Y
+                const int NameW = 94, LockW = 18, ValueW = 52, Gap = 6;
+                float cy = Y + 6;
                 NameLbl.Pos = new Vector2(X, cy);
                 ShareSlider.Pos  = new Vector2(X + NameW, Y + 1);
                 ShareSlider.Size = new Vector2(Width - NameW - LockW - ValueW - 2 * Gap + 32, 12); // +32: the track is Width-32
-                LockBtn.Rect = new Rectangle((int)(Right - ValueW - Gap - LockW), (int)Y + 1, 16, 16);
+                LockBtn.Rect = new Rectangle((int)(Right - ValueW - Gap - LockW), (int)Y + 5, 16, 16);
                 Value.Pos = new Vector2(Right - ValueW + 6, cy);
                 Value.TextAlign = TextAlign.Right;
                 Value.Size = new Vector2(ValueW - 6, Fonts.Arial12Bold.LineSpacing);

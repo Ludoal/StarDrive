@@ -302,7 +302,7 @@ namespace Ship_Game
             // Ludoal fork: bring back the explored-system fog discs for those who miss them
             visuals.AddCheckbox(() => GlobalStats.FogOfWarMemory, title: "Fog Of War Memory",
                                 tooltip: "Ships permanently paint their sensor coverage on the fog of war as they travel - the classic map memory. Off: the map stays dark and only live sensor coverage lights it.");
-            AsteroidSize = visuals.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, "Asteroid Size", 0.25f, 1.5f, GlobalStats.AsteroidSizeMult));
+            AsteroidSize = visuals.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, "Asteroid Size", 0.25f, 1f, GlobalStats.AsteroidSizeMult));
             EffectsInfluenceNodeAlpha = visuals.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, GameText.GameOptionsInfluenceAlpha, 0f, 1f, GlobalStats.InfluenceNodeAlpha));
             EffectsInfluenceNodeAlpha.Tip = GameText.GameOptionsInfluenceAlphaTip;
             MaxDynamicLightSources = visuals.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, GameText.MaxDynamicLightSources, 0, 1000, GlobalStats.MaxDynamicLightSources));
@@ -311,7 +311,7 @@ namespace Ship_Game
             UIList ui = NewBox(new RectF(x2, top, BoxW, UIBoxH), "UI");
             IconSize        = ui.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, "Ship Icon Sizes", 1, 30, GlobalStats.IconSize));
             StationIconSize = ui.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, "Station Icon Sizes", 1, 30, GlobalStats.StationIconSize));
-            MinimapSize     = ui.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, "Minimap Size", 1f, 1.5f, GlobalStats.MinimapSizeMult));
+            MinimapSize     = ui.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, "Minimap Size", 1f, 2f, GlobalStats.MinimapSizeMult));
             ui.AddCheckbox(() => GlobalStats.ZoomTracking,         title: GameText.ToggleZoomTracking, tooltip: GameText.ZoomWillCenterOnSelected);
             ui.AddCheckbox(() => GlobalStats.DisableScreenPanning, title: GameText.DisableScreenPanningOption, tooltip: GameText.DisableScreenPanningOptionTip);
             ui.AddCheckbox(() => GlobalStats.AltArcControl,        title: GameText.KeyboardFireArcLocking, tooltip: GameText.WhenActiveArcsInThe);
