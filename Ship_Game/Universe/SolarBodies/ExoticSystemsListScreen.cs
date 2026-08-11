@@ -84,6 +84,9 @@ namespace Ship_Game
                 // sized on the mining row's worst case: the 168px deploy button plus its two
                 // wide enough for the single deploy button (168) plus the "N/M Deployed" count
                 // beside it - back down from 420 now that the two-button layout is gone
+                // bench 399 (maintainer): the deploy buttons become a compact icon lane like
+                // Planets - fixed slots (research left, mining right), shown only with the tech
+                new UITable.Column { Title = "Actions", Width = 2 * UITable.PadX + 2 * 22 + 8, Align = TableAlign.Center },
                 new UITable.Column { Title = "Stations", Width = 290, Align = TableAlign.Center },
             });
             var sys = new Array<string>(); var names = new Array<string>();

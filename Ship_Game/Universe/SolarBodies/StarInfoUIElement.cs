@@ -212,13 +212,16 @@ namespace Ship_Game
 				return;
 			}
 			bool canBuild = Player.CanBuildResearchStations;
-			// hand-drawn plate: give it the real buttons' hover lift (maintainer bench 319)
-			Color plateTint = canBuild ? UIButton.PlateActive : UIButton.PlateNeutral;
+			bool aborting = Player.AI.HasGoal(g => g.IsResearchStationGoal(Sys));
+			// hand-drawn plate: the real buttons' hover lift (maintainer bench 319), and the
+			// HOSTILE red while a deployment can be aborted - same face as the table's icon
+			Color plateTint = !canBuild ? UIButton.PlateNeutral
+			                : aborting  ? UIButton.PlateHostile : UIButton.PlateActive;
 			if (canBuild && DeployRect.HitTest(Screen.Input.CursorPosition))
 				plateTint = UITheme.Hover(plateTint);
 			UIButton.DrawPlate(batch, DeployRect, plateTint);
 
-			string text = Player.AI.HasGoal(g => g.IsResearchStationGoal(Sys))
+			string text = aborting
 			            ? Localizer.Token(GameText.AbortDeployent)
 			            : Localizer.Token(GameText.DeployResearchStation);
 			var textPos = new Vector2(DeployRect.X + 13, DeployRect.Y + 13 - Font12.LineSpacing / 2 - 2);

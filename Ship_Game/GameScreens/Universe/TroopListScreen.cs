@@ -179,6 +179,42 @@ namespace Ship_Game
             }
         }
 
+        float LiveRefreshTimer;
+        int LiveTroopsHash = -1;
+
+        // the sim moves troops while the list is open (the live-data pass): rebuild the rows
+        // when the troop landscape changes - a throttled scan of the same ground PopulateList
+        // walks on every filter change. Identity (Id) + count per holder, so a troop moving
+        // from one place to another flips the hash even when the totals match.
+        public override void Update(float fixedDeltaTime)
+        {
+            LiveRefreshTimer -= fixedDeltaTime;
+            if (LiveRefreshTimer <= 0f)
+            {
+                LiveRefreshTimer = 1f;
+                int h = ComputeTroopsHash();
+                if (LiveTroopsHash != -1 && h != LiveTroopsHash)
+                    PopulateList();
+                LiveTroopsHash = h;
+            }
+            base.Update(fixedDeltaTime);
+        }
+
+        int ComputeTroopsHash()
+        {
+            int h = 17;
+            foreach (SolarSystem system in Universe.UState.Systems)
+                foreach (Planet p in system.PlanetList)
+                {
+                    int n = 0;
+                    foreach (Troop t in p.Troops.GetTroopsOf(Player)) n++;
+                    if (n > 0) { h = h * 31 + p.Id; h = h * 31 + n; }
+                }
+            foreach (Ship sh in Player.OwnedShips)
+                if (sh.TroopCount > 0) { h = h * 31 + sh.Id; h = h * 31 + sh.TroopCount; }
+            return h;
+        }
+
         void PopulateList()
         {
             // Ludoal fork: called again on every filter change, so the rows have to go first

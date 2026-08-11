@@ -43,9 +43,16 @@ namespace Ship_Game
         bool DysonSwarmActiveByPlayer;
         readonly UniverseState Universe;
 
-        UILabel DeployTextInfo;
-        UILabel MiningDeployedTextInfo;
         UILabel Owner;
+        // bench 399 (maintainer): the deploy buttons are a fixed-slot icon lane now, the
+        // Planets-list convention. Research: white = deploy, RED = abort. Mining: left-click
+        // adds, right-click cancels one deploying; gone once every station is deployed.
+        // Icons show only with their tech. The Stations column carries the state as text.
+        Rectangle ResearchIconRect;
+        Rectangle MiningIconRect;
+        UIPanel ResearchPanel;
+        UIPanel MiningPanel;
+        UILabel StationsLabel;
         bool IsPlanet => Planet != null;
         public bool IsStar => Planet == null;
         public bool IsForResearch => IsStar && System.IsResearchable || Planet?.IsResearchable == true;
@@ -102,50 +109,51 @@ namespace Ship_Game
             int h = (int)Height;
             RemoveAll();
 
-            if (Planet?.IsResearchable == true || System.IsResearchable)
-            {
-                bool deployed = SolarBody.IsResearchStationDeployedBy(Player); // built: neither Deploy nor Abort
-                ButtonStyle researchStyle = MarkedForResearch || deployed ? ButtonStyle.DefaultHostile : ButtonStyle.DefaultActive;
-                LocalizedText researchText = deployed ? new LocalizedText("Station Deployed", LocalizationMethod.RawText)
-                                           : !MarkedForResearch ? new LocalizedText(GameText.DeployResearchStation) : new LocalizedText(GameText.AbortDeployent);
-                DeployButton = Button(researchStyle, researchText, OnResearchClicked);
-            }
-            else if (Planet?.IsMineable == true)
-            {
-                // Ludoal fork (maintainer feedback): ONE amber button like the Planet Info cartouche -
-                // LEFT-click adds a station, RIGHT-click cancels one deploying (the Send Troops
-                // pattern). One button, two gestures - no rebuild between click and release, which is
-                // what made the two-button version act one click late. Greyed when the field is full.
-                DeployButton = Button(ButtonStyle.Default, GameText.DeployMiningStation, OnMiningClicked);
-                DeployButton.AcceptRightClicks = true;
-                DeployButton.DefaultColor = UIButton.PlateNeutral;   // the Codex amber
-                DeployButton.HoverColor   = UITheme.Hover(UIButton.PlateNeutral);
-                DeployButton.PressColor   = UITheme.Press(UIButton.PlateNeutral);
-            }
-            else
-            {
-                ButtonStyle dysonStyle = DysonSwarmActiveByPlayer ? ButtonStyle.DefaultHostile : ButtonStyle.Default;
-                LocalizedText dysonText = !DysonSwarmActiveByPlayer ? GameText.BuildDysonSwarm : GameText.KillDysonSwarm;
-                DeployButton = Button(dysonStyle, dysonText, OnDysonSwarmClicked);
-            }
-
-            // cells read the shared column geometry
+            // cells read the shared column geometry; Actions is col 6, Stations col 7
             UITable.Column[] cols = Screen.Table.Columns;
-            OrdersRect = new Rectangle(cols[6].Rect.X, y, cols[6].Rect.Width, h);
+            Rectangle actionsCol = cols[6].Rect;
+            OrdersRect = new Rectangle(cols[7].Rect.X, y, cols[7].Rect.Width, h);
             PlanetIconRect = new Rectangle(cols[1].Rect.X + UITable.PadX, y + h / 2 - 16, 32, 32);
             ResourceIconRect = new Rectangle(cols[3].Rect.X + UITable.PadX, y + h / 2 - 10, 20, 20);
 
-            // Ludoal fork (maintainer feedback): the button keeps the default font (the earlier
-            // narrowing shrank the text); the plate height is the 168px asset's.
-            var btn = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px");
-            int btnY = OrdersRect.Y + OrdersRect.Height / 2 - btn.Height / 2;
-            DeployButton.Rect = new Rectangle(OrdersRect.X + 10, btnY, 168, btn.Height);
+            // fixed icon slots, centred as a pair (research left, mining right) - a row uses
+            // the slots its nature calls for, and an icon only shows with its tech
+            const int IconSize = 22, IconGap = 8;
+            int laneW = 2 * IconSize + IconGap;
+            int slotX = actionsCol.X + (actionsCol.Width - laneW) / 2;
+            int iy = y + h / 2 - IconSize / 2;
+            ResearchIconRect = new Rectangle(slotX, iy, IconSize, IconSize);
+            MiningIconRect   = new Rectangle(slotX + IconSize + IconGap, iy, IconSize, IconSize);
+
+            // the state text, centred in the Stations column, refreshed live
+            StationsLabel = Add(new UILabel(SmallFont) { Color = Color.White, TextAlign = TextAlign.HorizontalCenter });
+            StationsLabel.Pos  = new Vector2(OrdersRect.X, (int)(Y + Height / 2f - SmallFont.LineSpacing / 2f));
+            StationsLabel.Size = new Vector2(OrdersRect.Width, SmallFont.LineSpacing);
+
+            if (IsForResearch)
+            {
+                ResearchPanel = Panel(ResearchIconRect, Color.White, ResourceManager.Texture("NewUI/icon_science"));
+                RefreshResearchState();
+            }
+            else if (IsForMining)
+            {
+                MiningPanel = Panel(MiningIconRect, Color.White, ResourceManager.Texture("Buildings/icon_fission_mine_48x48"));
+                RefreshMiningState();
+            }
+            else
+            {
+                // the Dyson swarm keeps its wide button, riding the Stations column
+                ButtonStyle dysonStyle = DysonSwarmActiveByPlayer ? ButtonStyle.DefaultHostile : ButtonStyle.Default;
+                LocalizedText dysonText = !DysonSwarmActiveByPlayer ? GameText.BuildDysonSwarm : GameText.KillDysonSwarm;
+                DeployButton = Button(dysonStyle, dysonText, OnDysonSwarmClicked);
+                var btn = ResourceManager.Texture("EmpireTopBar/empiretopbar_btn_168px");
+                int btnY = OrdersRect.Y + OrdersRect.Height / 2 - btn.Height / 2;
+                DeployButton.Rect = new Rectangle(OrdersRect.X + 10, btnY, 168, btn.Height);
+                SetDysonSwarmVisibility();
+            }
 
             AddSystemName();
             AddHostileWarning();
-            SetResearchVisibility();
-            SetMiningVisibility();
-            SetDysonSwarmVisibility();
             AddTextureAndStatus();
             AddDistanceStats();
             AddPlanetName();
@@ -153,66 +161,6 @@ namespace Ship_Game
             AddRichnessStat();
             AddOwner();
             base.PerformLayout();
-        }
-
-        void SetResearchVisibility()
-        {
-            if (!IsForResearch)
-                return;
-
-            Vector2 researchTextBox = new Vector2(DeployButton.Rect.X, DeployButton.Rect.Y + 4);
-            DeployTextInfo = Add(new UILabel(researchTextBox, GameText.CannotBuildResearchStationTip2, SmallFont));
-            DeployTextInfo.Color = Color.Gray;
-
-            if (!Player.CanBuildResearchStations) 
-            {
-                DeployButton.Visible = false;
-                return;
-            }
-
-            if (SolarBody.IsResearchStationDeployedBy(Player))
-            {
-                DeployButton.Visible = false;
-                DeployTextInfo.Text = Localizer.Token(GameText.ResearchStationDeployed);
-                DeployTextInfo.Color = Color.LimeGreen; // deployed reads green (maintainer feedback)
-            }
-            else
-            {
-                DeployButton.Visible = true;
-                DeployTextInfo.Visible= false;
-            }
-        }
-
-        void SetMiningVisibility()
-        {
-            if (!IsForMining)
-                return;
-
-            // a rig owned by someone else: no controls, no counts
-            if (Planet.Mining.Owner != null && Planet.Mining.Owner != Player)
-            {
-                DeployButton.Visible = false;
-                return;
-            }
-
-            // can't build at all: a single greyed hint where the button would be
-            if (!Player.CanBuildMiningStations)
-            {
-                DeployButton.Visible = false;
-                DeployTextInfo = Add(new UILabel(new Vector2(DeployButton.Rect.X, DeployButton.Rect.Y + 4),
-                                                 Localizer.Token(GameText.CannotBuildMiningStationTip2), SmallFont));
-                DeployTextInfo.Color = Color.Gray;
-                return;
-            }
-
-            // Both labels are created ONCE here (at layout); RefreshMiningState only toggles their
-            // text/visibility afterwards, so a click never rebuilds them. The green "at max" text
-            // sits where the button would be; the "N/M Deployed" just right of the button.
-            DeployTextInfo = Add(new UILabel(new Vector2(DeployButton.Rect.X, DeployButton.Rect.Y + 4), "", SmallFont));
-            Vector2 deployedPos = new Vector2(DeployButton.Rect.Right + 8,
-                                              OrdersRect.Y + OrdersRect.Height / 2 - SmallFont.LineSpacing / 2);
-            MiningDeployedTextInfo = Add(new UILabel(deployedPos, "", SmallFont));
-            RefreshMiningState();
         }
 
         void SetDysonSwarmVisibility()
@@ -230,8 +178,12 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // Ludoal fork: the mining button's left/right gestures are read here, before base routes
-            // the click to the button's (no-op) OnClick - so both buttons reach HandleMiningClick.
+            if (ResearchPanel is { Visible: true } && ResearchIconRect.HitTest(input.CursorPosition)
+                && input.LeftMouseClick)
+            {
+                OnResearchIconClicked();
+                return true;
+            }
             if (HandleMiningClick(input))
                 return true;
             return base.HandleInput(input);
@@ -389,11 +341,11 @@ namespace Ship_Game
             });
         }
 
-        void OnResearchClicked(UIButton b)
+        void OnResearchIconClicked()
         {
             if (SolarBody.IsResearchStationDeployedBy(Player))
             {
-                GameAudio.NegativeClick(); // already built - clicking Deploy again would queue a duplicate goal
+                GameAudio.NegativeClick(); // already built
                 return;
             }
             GameAudio.EchoAffirmative();
@@ -403,24 +355,17 @@ namespace Ship_Game
                     Player.AI.AddGoalAndEvaluate(new ProcessResearchStation(Player, System, System.SelectStarResearchStationPos()));
                 else
                     Player.AI.AddGoalAndEvaluate(new ProcessResearchStation(Player, Planet));
-
-                DeployButton.Text = GameText.AbortDeployent;
-                DeployButton.Style = ButtonStyle.DefaultHostile;
-                MarkedForResearch = true;
             }
             else
             {
-                Player.AI.CancelResearchStation(Planet);
-                DeployButton.Text = GameText.DeployResearchStation;
-                DeployButton.Style = ButtonStyle.DefaultActive;
+                // ⚠ per-nature overloads: the old code cancelled with the Planet overload on
+                // STAR rows too (a null planet), so the abort silently did nothing there -
+                // the table/cartouche desync the bench reported
+                if (IsStar) Player.AI.CancelResearchStation(System);
+                else        Player.AI.CancelResearchStation(Planet);
             }
+            RefreshResearchState(); // the icon flips white/red immediately
         }
-
-        // Ludoal fork (maintainer feedback): ONE amber button, left-click adds / right-click removes
-        // (the Send Troops pattern). The click is read in HandleInput below by hit-testing the
-        // button rect - NOT via the button's OnClick, which cannot tell left from right and, being a
-        // rebuilt child, dropped the click. OnClick stays wired but no-op; the rect drives it.
-        void OnMiningClicked(UIButton b) { }
 
         // ⚠ the mining widgets refresh EVERY FRAME (like the Planet Info cartouche, which recomputes
         // its state in Draw), NOT only on click. Refreshing at click-time alone showed the previous
@@ -430,9 +375,10 @@ namespace Ship_Game
         {
             if (IsForMining)
                 RefreshMiningState();
-            // the OTHER live states (research deployed, tech unlocks, rig owner, dyson)
-            // rebuild the row on change - throttled, free while nothing moves. A full
-            // rebuild routes through the Set*Visibility branches so every cell follows.
+            if (IsForResearch)
+                RefreshResearchState(); // per-frame like the star cartouche - never out of sync
+            // the OTHER live states (rig owner flip, dyson) rebuild the row on change -
+            // throttled, free while nothing moves.
             LiveRefreshTimer -= fixedDeltaTime;
             if (LiveRefreshTimer <= 0f)
             {
@@ -448,9 +394,10 @@ namespace Ship_Game
         }
 
         // left = add a station, right = cancel one deploying. Returns true if it consumed the click.
+        // left = add a station, right = cancel one deploying - on the mining ICON now
         bool HandleMiningClick(InputState input)
         {
-            if (!IsForMining || !DeployButton.Visible || !DeployButton.Rect.HitTest(input.CursorPosition))
+            if (MiningPanel is not { Visible: true } || !MiningIconRect.HitTest(input.CursorPosition))
                 return false;
 
             if (input.LeftMouseClick)
@@ -476,41 +423,38 @@ namespace Ship_Game
             return false;
         }
 
-        // update the mining widgets on the EXISTING objects - no Add, no RemoveAll, no rebuild
+        // drive the mining icon and the Stations text on the EXISTING widgets - no rebuild
         void RefreshMiningState()
         {
-            int numDeployed     = Planet.OrbitalStations.Count(s => s.Loyalty.isPlayer && s.IsMiningStation);
-            int numInProgress   = Player.AI.CountGoals(g => g.IsMiningOpsGoal(Planet) && g.TargetShip == null);
-            bool atMaxDeployed  = numDeployed >= Mineable.MaximumMiningStations;
-            // the game's own rule for "can another one be queued" - counts goals, so it also blocks
-            // when the field is full of IN-PROGRESS stations, not just deployed ones
-            bool canAdd         = Planet.Mining.CanAddMiningStationFor(Player);
-
-            // all stations actually built: button gives way to the green text (like research)
-            if (atMaxDeployed)
-            {
-                DeployButton.Visible = false;
-                if (DeployTextInfo != null)
-                {
-                    DeployTextInfo.Text = $"{numDeployed}/{Mineable.MaximumMiningStations} Mining Stations Deployed";
-                    DeployTextInfo.Color = Color.LimeGreen;
-                    DeployTextInfo.Visible = true;
-                }
+            if (MiningPanel == null)
                 return;
-            }
+            int numDeployed   = Planet.OrbitalStations.Count(st => st.Loyalty.isPlayer && st.IsMiningStation);
+            int numInProgress = Player.AI.CountGoals(g => g.IsMiningOpsGoal(Planet) && g.TargetShip == null);
+            int max = Mineable.MaximumMiningStations;
+            bool rigOk = Planet.Mining.Owner == null || Planet.Mining.Owner == Player;
 
-            if (DeployTextInfo != null) DeployTextInfo.Visible = false;
-            DeployButton.Visible = true;
-            DeployButton.Enabled = canAdd; // greyed once the field is full (deployed + in progress)
-            DeployButton.Text = numInProgress > 0
-                ? $"{new LocalizedText(GameText.DeployMiningStation).Text} ({numInProgress})"
-                : new LocalizedText(GameText.DeployMiningStation).Text;
+            // the icon needs its tech, a free (or our) rig, and room left to deploy
+            MiningPanel.Visible = Player.CanBuildMiningStations && rigOk && numDeployed < max;
+            MiningPanel.Tooltip = new LocalizedText(GameText.DeployMiningStation);
 
-            if (MiningDeployedTextInfo != null)
-            {
-                MiningDeployedTextInfo.Text = $"{numDeployed}/{Mineable.MaximumMiningStations} Deployed";
-                MiningDeployedTextInfo.Color = numDeployed > 0 ? Color.Green : Color.Gray;
-            }
+            StationsLabel.Text = numInProgress > 0 || numDeployed > 0
+                               ? $"Deploying: {numInProgress} - Deployed: {numDeployed}/{max}" : "";
+        }
+
+        // drive the research icon (white = deploy, red = abort) and the Stations text
+        void RefreshResearchState()
+        {
+            if (ResearchPanel == null)
+                return;
+            bool deployed = SolarBody.IsResearchStationDeployedBy(Player);
+            MarkedForResearch = !deployed && Player.AI.HasGoal(g => g.IsResearchStationGoal(SolarBody));
+
+            ResearchPanel.Visible = Player.CanBuildResearchStations && !deployed;
+            ResearchPanel.Color   = MarkedForResearch ? Color.Red : Color.White;
+            ResearchPanel.Tooltip = MarkedForResearch ? new LocalizedText(GameText.AbortDeployent)
+                                                      : new LocalizedText(GameText.DeployResearchStation);
+
+            StationsLabel.Text = deployed ? "Research Station" : "";
         }
 
         void OnDysonSwarmClicked(UIButton b)
