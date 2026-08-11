@@ -453,9 +453,9 @@ namespace Ship_Game.GameScreens
                                                    () => Player.AI.DefenseBudget, sl => OnShareChanged(1)));
             ShareRows[2] = budget.Add(new ShareRow("Space Roads", up.SSPBudgetShare,
                                                    () => Player.AI.SSPBudget, sl => OnShareChanged(2)));
-            ColonyPotSlider  = ShareRows[0].Slider;
-            DefensePotSlider = ShareRows[1].Slider;
-            SSPPotSlider     = ShareRows[2].Slider;
+            ColonyPotSlider  = ShareRows[0].ShareSlider;
+            DefensePotSlider = ShareRows[1].ShareSlider;
+            SSPPotSlider     = ShareRows[2].ShareSlider;
             autoShares.OnChange = cb => ApplyAutoShares(cb.Checked);
             ApplyAutoShares(up.AutoBudgetShares); // initial lock state
             budget.Spacer();
@@ -469,17 +469,17 @@ namespace Ship_Game.GameScreens
         // maintainer specced for the linked shares (bench 403)
         class ShareRow : UIElementContainer
         {
-            public readonly FloatSlider Slider;
+            public readonly FloatSlider ShareSlider;
             public bool Locked;
-            readonly UILabel Name;
+            readonly UILabel NameLbl;
             readonly UIButton LockBtn;
             readonly UILabel Value;
 
             public ShareRow(string name, float value, Func<float> livePot, Action<FloatSlider> onChange)
                 : base(Vector2.Zero, new Vector2(100, 20))
             {
-                Name = base.Add(new UILabel(Vector2.Zero, name, Fonts.Arial12Bold, Color.Wheat));
-                Slider = base.Add(new FloatSlider(SliderStyle.Percent, new Vector2(80, 12), "", 0f, 1f, value)
+                NameLbl = base.Add(new UILabel(Vector2.Zero, name, Fonts.Arial12Bold, Color.Wheat));
+                ShareSlider = base.Add(new FloatSlider(SliderStyle.Percent, new Vector2(80, 12), "", 0f, 1f, value)
                 {
                     DrawValueText = false,
                     OnChange = onChange,
@@ -492,7 +492,7 @@ namespace Ship_Game.GameScreens
                 LockBtn.OnClick = b =>
                 {
                     Locked = !Locked;
-                    Slider.Enabled = !Locked;
+                    ShareSlider.Enabled = !Locked;
                 };
                 Value = base.Add(new UILabel(l => livePot().MoneyString(), Fonts.Arial12Bold));
                 Value.Color = Color.White;
@@ -502,9 +502,9 @@ namespace Ship_Game.GameScreens
             {
                 const int NameW = 84, LockW = 18, ValueW = 52, Gap = 6;
                 float cy = Y + 2;
-                Name.Pos = new Vector2(X, cy);
-                Slider.Pos  = new Vector2(X + NameW, Y + 1);
-                Slider.Size = new Vector2(Width - NameW - LockW - ValueW - 2 * Gap + 32, 12); // +32: the track is Width-32
+                NameLbl.Pos = new Vector2(X, cy);
+                ShareSlider.Pos  = new Vector2(X + NameW, Y + 1);
+                ShareSlider.Size = new Vector2(Width - NameW - LockW - ValueW - 2 * Gap + 32, 12); // +32: the track is Width-32
                 LockBtn.Rect = new Rectangle((int)(Right - ValueW - Gap - LockW), (int)Y + 1, 16, 16);
                 Value.Pos = new Vector2(Right - ValueW + 6, cy);
                 Value.TextAlign = TextAlign.Right;
