@@ -53,20 +53,6 @@ namespace Ship_Game
         // If TRUE, ESC key will close this screen
         public bool CanEscapeFromScreen { get; protected set; } = true;
         
-        // Ludoal fork: HiRes recomputed on a live resolution change (a rebuilt screen must not
-        // redraw itself with the previous size's flag). Set in the ctor, and again by
-        // RefreshResolutionFlags() after a resize. The legacy LowRes flag is gone: our floor is
-        // 1440x900, nothing below it is served.
-        public bool HiRes { get; private set; }
-
-        // Ludoal fork: the resolution flags. Deliberately SEPARATE and one-dimensional, so each
-        // can be reasoned about alone.
-        //
-        // Narrow: the band that needs FOLDING — a font size down, abbreviations, tighter spacing.
-        // Tall:   room to ZOOM — a font size up, more generous icons. Never adds content.
-        public bool Narrow { get; private set; }
-        public bool Tall { get; private set; }
-
         // @return TRUE if content was loaded this frame
         public bool DidLoadContent { get; private set; }
 
@@ -145,6 +131,16 @@ namespace Ship_Game
         // own frame, and the frames are dynamic (content-sized tables, race-hugging rows).
         // Default: the whole display, i.e. NO band - a page opts in by exposing its frame.
         public virtual Rectangle PageFrame => new(0, 0, ScreenWidth, ScreenHeight);
+
+        // Ludoal fork (bench 407): the centre a dialog summoned by this screen should sit on -
+        // the page frame's centre when the screen is frame-bound, null when it spans the display
+        public Vector2? PageFrameCentre()
+        {
+            Rectangle pf = PageFrame;
+            if (pf.Width > 0 && (pf.Width < ScreenWidth || pf.Height < ScreenHeight))
+                return new Vector2(pf.X + pf.Width / 2f, pf.Y + pf.Height / 2f);
+            return null;
+        }
 
         // Ludoal fork: claim the pause after construction - the Shipyard's Full Screen
         // toggle flips mid-life, and its pause must follow the toggle, not the ctor.
@@ -226,8 +222,6 @@ namespace Ship_Game
 
             // Every time we open a screen, we should release any input handlers
             GlobalStats.TakingInput = false;
-
-            RefreshResolutionFlags();
 
             Func<int> simTurnSource = null;
             if (parent is UniverseScreen us)
@@ -373,31 +367,7 @@ namespace Ship_Game
         {
             UnloadContent();
             UpdateViewport();
-            RefreshResolutionFlags(); // before LoadContent: the layout reads them
             InvokeLoadContent();
-        }
-
-        // Ludoal fork: one source for the layout flags, called from the ctor and again from
-        // ReloadContent.
-        //
-        // These used to be readonly, set inline in the ctor. ReloadContent rebuilds a screen's
-        // ELEMENTS but not the screen object, so the flags survived every resize — which means
-        // changing resolution from the Options screen left the flags stale until the next
-        // restart. That is an upstream bug, not one the test tool introduced; the tool only
-        // made it impossible to ignore, since exercising those flags is its whole purpose.
-        public void RefreshResolutionFlags()
-        {
-            HiRes  = ScreenWidth > 1920 || ScreenHeight > 1400;
-            // width only — what breaks below 1920 is horizontal. Height is handled by
-            // giving one block per screen the job of absorbing it, not by a flag.
-            Narrow = ScreenWidth < 1920;
-            // height only. In 16:9 and 16:10 a height of 1440 already implies 2304+ of width,
-            // so this never fires on a small screen — it is purely the zoom cue.
-            //
-            // Inclusive: strictly-greater made 1440p itself fall outside, which is both the
-            // second-largest slice of the Steam install base and the bench display, so the flag
-            // was unreachable on the machine meant to test it.
-            Tall = ScreenHeight >= 1440;
         }
 
         public override bool HandleInput(InputState input)

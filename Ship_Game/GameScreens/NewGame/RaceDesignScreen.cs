@@ -154,10 +154,11 @@ namespace Ship_Game
             P = settings;
         }
         
-        // ⚠ a size up: the description is a tab with a full column, not a strip sharing its
-        // area with the points summary.
-        Graphics.Font DescriptionTextFont => Narrow ? Fonts.Arial12
-                                                    : Tall ? Fonts.Arial20Bold : Fonts.Arial14Bold;
+        // fixed like the rest of the fixed-window layout
+        Graphics.Font DescriptionTextFont => Fonts.Arial14Bold;
+
+        // Ludoal fork: dialogs summoned by this fixed window centre on its frame
+        public override Rectangle PageFrame => ScreenFrame.Width > 0 ? ScreenFrame : base.PageFrame;
 
         public override void LoadContent()
         {
@@ -165,8 +166,7 @@ namespace Ship_Game
             const int Pad = 8;
             // Ludoal fork: New Game is a CATEGORY-1 screen - a FIXED 1440x900 window, centred on
             // the display, not a full-screen popup that grows with the resolution. Everything
-            // inside derives from ScreenFrame. At 1440x900 both Narrow and Tall are false, so the
-            // plain middle branch runs throughout. It sits centred with a black margin on a larger
+            // inside derives from ScreenFrame. It sits centred with a black margin on a larger
             // display. (The body-fill inset that keeps the grey off the border shadow is in Draw.)
             const int WinW = 1440, WinH = 900;
             int winX = (ScreenWidth  - WinW) / 2;
@@ -859,10 +859,8 @@ namespace Ship_Game
             public SelectedTraitsSummary(RaceDesignScreen screen)
             {
                 Screen = screen;
-                // ⚠ a size up: this is a tab of its own with a full column to itself, so it
-                // does not have to squeeze under the description.
-                Font = screen.Narrow ? Fonts.Arial12Bold
-                                     : screen.Tall ? Fonts.Arial20Bold : Fonts.Arial14Bold;
+                // fixed like the rest of the fixed-window layout
+                Font = Fonts.Arial14Bold;
             }
 
             public override bool HandleInput(InputState input)

@@ -43,10 +43,14 @@ namespace Ship_Game
                                  GameBase.ScreenHeight / 2 - height / 2, width, height);
         }
 
+        // Ludoal fork (bench 407): kept so a popup can centre on its summoner's page frame
+        readonly GameScreen Summoner;
+
         protected PopupWindow(GameScreen parent, int width, int height)
             : base(parent, CenterScreen(width, height),
                    toPause: parent as UniverseScreen/*only pause if popup on top of universe*/)
         {
+            Summoner = parent;
             IsPopup = true;
         }
 
@@ -80,6 +84,10 @@ namespace Ship_Game
         public override void LoadContent()
         {
             RemoveAll();
+
+            // Ludoal fork (bench 407): a popup summoned by a frame-bound page centres on that
+            // page's frame by default - callers no longer have to remember to pass CenterOn
+            CenterOn ??= Summoner?.PageFrameCentre();
 
             Rect = CenterScreen(Rect.Width, Rect.Height);
             if (CenterOn != null)
