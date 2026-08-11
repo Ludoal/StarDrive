@@ -312,7 +312,7 @@ namespace Ship_Game
             MaxDynamicLightSources = visuals.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, GameText.MaxDynamicLightSources, 0, 1000, GlobalStats.MaxDynamicLightSources));
 
             // ---- column 3: UI
-            UIList ui = NewBox(new RectF(x2, top, BoxW, UIBoxH), "UI");
+            UIList ui = NewBox(new RectF(x2, top, BoxW, UIBoxH), "Interface");
             CurrentLanguage = new DropOptions<Language>(126, 18);
             ui.AddSplit(new UILabel(GameText.Language), CurrentLanguage).Split = 90; // first row (bench 406)
             IconSize        = ui.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, "Ship Icon Sizes", 1, 30, GlobalStats.IconSize));
