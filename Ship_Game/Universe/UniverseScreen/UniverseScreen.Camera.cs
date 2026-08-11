@@ -349,7 +349,7 @@ namespace Ship_Game
             float panelRight = page.PageFrame.Right; // the actual open panel's width (bench 391)
             float targetX = (ScreenWidth + panelRight) * 0.5f;
             float barBottom = EmpireUIOverlay.BarTop + EmpireUIOverlay.BarH;
-            float minimapTop = ScreenHeight - 256 - 10; // mmHousing.Y (LoadContent)
+            float minimapTop = mmHousing.Y; // the seated housing tracks the options size slider
             float targetY = (barBottom + minimapTop) * 0.5f;
             return new Vector2((targetX - ScreenWidth * 0.5f) / ScreenWidth,
                                (targetY - ScreenHeight * 0.5f) / ScreenHeight);
