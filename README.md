@@ -20,7 +20,7 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00047** release, m
 
 **Look**
 - The whole UI moved to one consistent flat "painted plate" look: a thin frame replacing the old sculpted textures on buttons, windows, popups and panels - drawn from one shared theme whose palette lives in a single theme file, so the look is re-skinnable without touching code.
-- Resolution charter: table and list screens cap at a fixed width rather than stretch on ultra-wide displays, and below 1200px of display height every frame runs to the display foot.
+- Resolution charter: table and list screens cap at a fixed width rather than stretch on ultra-wide displays, and at 1200px of display height and above, frames reserve the info-panel corner so the ship/planet cartouches stay visible beside an open screen.
 - The universe shows, and can **run**, behind every panel: every table and readout stays live while the universe runs.
 
 **UI**
