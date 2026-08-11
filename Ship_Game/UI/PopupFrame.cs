@@ -220,9 +220,11 @@ namespace Ship_Game
             batch.Draw(s.HorizBotGradient, BotSep, Color.White);
             batch.Draw(s.FillerLower, BottomFill, Color.White);
 
-            batch.Draw(s.FillerTitle, TitleRect, Color.White);
-            batch.Draw(s.FillerTitle, TitleLeft, Color.White);
-            batch.Draw(s.FillerTitle, TitleRight, Color.White);
+            // no title-band tint (maintainer bench 411): the band wears the BODY fill, so the
+            // title reads on the same dark ground as the content, closed by the gradient rule
+            batch.Draw(s.FillerLower, TitleRect, Color.White);
+            batch.Draw(s.FillerLower, TitleLeft, Color.White);
+            batch.Draw(s.FillerLower, TitleRight, Color.White);
             batch.Draw(s.Separator, TitleSep, Color.White);
 
             batch.Draw(s.StrokeTL, TLc, Color.White);
