@@ -28,6 +28,7 @@ namespace Ship_Game
         public Rectangle ProdRect;
         public Rectangle ResRect;
         public Rectangle MoneyRect;
+        public Rectangle GovernorRect; // bench 406: governor type, wide displays only
         public Rectangle FertRect;   // Ludoal fork (wishlist): fertility / richness columns
         public Rectangle RichRect;
 
@@ -85,12 +86,16 @@ namespace Ship_Game
             ProdRect    = Band(7);
             MoneyRect   = Band(8); // money before research, the top bar's order (bench 294)
             ResRect     = Band(9);
-            SliderRect  = new Rectangle(cols[10].Rect.X + 4, y - 30, cols[10].Rect.Width - 8, Rect.Height + 25);
+            // bench 406: on wide displays a Governor column rides ahead of Labor - every
+            // band from Labor onward shifts one index when it is present
+            int gv = cols.Length >= 14 ? 1 : 0;
+            GovernorRect = gv == 1 ? Band(10) : default;
+            SliderRect  = new Rectangle(cols[10 + gv].Rect.X + 4, y - 30, cols[10 + gv].Rect.Width - 8, Rect.Height + 25);
             // maintainer bench 339: the Storage content starts 5px further left (its whole content
             // is placed off StorageRect.X, so shifting the rect shifts all of it at once)
-            StorageRect = Band(11);
+            StorageRect = Band(11 + gv);
             StorageRect.X -= 5;
-            QueueRect   = Band(12);
+            QueueRect   = Band(12 + gv);
 
             if (AssignLabor == null)
             {
@@ -312,6 +317,26 @@ namespace Ship_Game
             Color fertColor = envMult.AlmostEqual(1) ? Color.White : envMult < 1f ? Color.LightPink : Color.LightGreen;
             DrawStatValue(batch, FertRect, F1(P.FertilityFor(Universe.Player)), fertColor);
             DrawStatValue(batch, RichRect, F1(P.MineralRichness), Color.White);
+
+            // bench 406: the governor type, centred, wearing the type colour the governor
+            // portrait border already uses
+            if (GovernorRect.Width > 0)
+            {
+                string gov; Color govColor;
+                switch (P.CType)
+                {
+                    case Planet.ColonyType.Colony:       gov = "--";                 govColor = Color.Gray; break;
+                    case Planet.ColonyType.TradeHub:     gov = P.CType.ToString();   govColor = Color.Yellow; break;
+                    case Planet.ColonyType.Industrial:   gov = P.CType.ToString();   govColor = Color.Orange; break;
+                    case Planet.ColonyType.Agricultural: gov = P.CType.ToString();   govColor = Color.Green; break;
+                    case Planet.ColonyType.Research:     gov = P.CType.ToString();   govColor = Color.CornflowerBlue; break;
+                    case Planet.ColonyType.Military:     gov = P.CType.ToString();   govColor = Color.Red; break;
+                    default:                             gov = P.CType.ToString();   govColor = Color.White; break;
+                }
+                var govPos = new Vector2(GovernorRect.X + (GovernorRect.Width - Fonts.Arial12.MeasureString(gov).X) / 2,
+                                         PlanetNameRect.Y + PlanetNameRect.Height / 2 - Fonts.Arial12.LineSpacing / 2).ToFloored();
+                batch.DrawString(Fonts.Arial12, gov, govPos, govColor);
+            }
 
             // two lines like the Planets tab (bench 294): the name in 14, the class with
             // its richness word under it in gray

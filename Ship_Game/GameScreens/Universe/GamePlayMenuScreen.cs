@@ -133,11 +133,9 @@ public sealed class GamePlayMenuScreen : PopupWindow
 
     void Options_OnClick(UIButton button)
     {
-        ScreenManager.AddScreen(new OptionsScreen(Universe)
-        {
-            TitleText  = Localizer.Token(GameText.Options),
-            MiddleText = Localizer.Token(GameText.ChangeAudioVideoAndGameplay)
-        });
+        // no MiddleText (bench 406): the subtitle band and its separator ate a row of the
+        // reworked five-box layout; the panel explains itself
+        ScreenManager.AddScreen(new OptionsScreen(Universe));
     }
 
     void Hotkeys_OnClick(UIButton button)

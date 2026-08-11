@@ -108,7 +108,7 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            if (!Visible || !Enabled)
+            if (!Visible || !Enabled || HiddenByGroundCombat)
                 return false;
 
             // only capture input from window UI if we haven't made a selection
@@ -247,9 +247,12 @@ namespace Ship_Game
             return true;
         }
 
+        // bench 406: the window steps aside during ground combat and returns with the view
+        bool HiddenByGroundCombat => Screen.LookingAtPlanet && Screen.workersPanel is CombatScreen;
+
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            if (!Visible)
+            if (!Visible || HiddenByGroundCombat)
                 return;
 
             var nodeTex = ResourceManager.Texture("UI/node1");

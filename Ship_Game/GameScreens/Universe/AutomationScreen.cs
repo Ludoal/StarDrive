@@ -212,7 +212,9 @@ namespace Ship_Game
                 if (i < prio.Count - 1)
                     PriorityHost.Add(IconBtn("NewUI/icon_queue_arrow_down", "NewUI/icon_queue_arrow_down_hover1",
                                              Slot(48), "Lower priority", () => MoveCategory(idx, +1)));
-                PriorityHost.Add(IconBtn("UI/icon_minus", "UI/icon_minus",
+                // the queue's own delete glyph (bench 406): icon_minus was a bare dash that
+                // read as a text character
+                PriorityHost.Add(IconBtn("NewUI/icon_queue_delete", "NewUI/icon_queue_delete_hover1",
                                          Slot(24), "Stop prioritizing this category", () => DemoteCategory(key)));
                 y += RowH;
             }

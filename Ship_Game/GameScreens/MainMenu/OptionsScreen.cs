@@ -242,7 +242,9 @@ namespace Ship_Game
         {
             Rectangle inner = PopupFrame.ContentArea(Rect);
             const float BoxW = 340f, BoxGap = 10f;
-            const float GraphicsBoxH = 260, AudioBoxH = 160, VisualsBoxH = 260, GameplayBoxH = 210, UIBoxH = 310;
+            // bench 406: taller Visuals/Gameplay/UI so every row clears the frame with a
+            // bottom padding
+            const float GraphicsBoxH = 260, AudioBoxH = 160, VisualsBoxH = 292, GameplayBoxH = 240, UIBoxH = 344;
             float x0 = inner.X + 16, x1 = x0 + BoxW + BoxGap, x2 = x1 + BoxW + BoxGap;
             float top = inner.Y + 10;
 
@@ -253,7 +255,7 @@ namespace Ship_Game
             // ---- column 1: Graphics (Apply-gated device settings) over Audio
             UIList audio = NewBox(new RectF(x0, top + GraphicsBoxH + BoxGap, BoxW, AudioBoxH), "Audio");
             SoundDevices = new DropOptions<MMDevice>(190, 18);
-            audio.AddSplit(new UILabel(GameText.SoundDevice), SoundDevices).Split = 90;
+            audio.AddSplit(new UILabel(GameText.SoundDevice), SoundDevices).Split = 105; // 15px right of the label (bench 406)
             MusicVolumeSlider   = audio.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, GameText.MusicVolume, 0f, 1f, GlobalStats.MusicVolume));
             EffectsVolumeSlider = audio.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, GameText.EffectsVolume, 0f, 1f, GlobalStats.EffectsVolume));
             audio.ReverseZOrder(); // the device dropdown draws over the sliders below it
@@ -275,6 +277,7 @@ namespace Ship_Game
 
             // Apply lives INSIDE the Graphics box: it is the device settings' button, no one else's
             var apply = Add(new UIButton(ButtonStyle.Default, new Vector2(x0 + 12, top + GraphicsBoxH - 44), GameText.ApplySettings));
+            apply.Pos = new Vector2(x0 + (BoxW - apply.Width) / 2f, apply.Pos.Y); // centred in the box (bench 406)
             apply.OnClick = button => RunOnNextFrame(ApplyOptions);
             // Ludoal fork: say what this button is actually for. It applies the DISPLAY settings
             // and nothing else - everything else on this screen takes effect the moment you
@@ -298,17 +301,20 @@ namespace Ship_Game
             // Bloom applies instantly now (lazy component allocation) - it left the Apply pack
             visuals.AddCheckbox(() => GlobalStats.RenderBloom,        title: GameText.Bloom, tooltip: GameText.DisablingBloomEffectWillIncrease);
             visuals.AddCheckbox(() => GlobalStats.EnableEngineTrails, title: GameText.EngineTrails, tooltip: GameText.TT_EngineTrails);
-            visuals.AddCheckbox(() => GlobalStats.DisableAsteroids,   title: GameText.DisableAsteroids, tooltip: GameText.ThisWillPreventAsteroidsFrom);
             // Ludoal fork: bring back the explored-system fog discs for those who miss them
             visuals.AddCheckbox(() => GlobalStats.FogOfWarMemory, title: "Fog Of War Memory",
                                 tooltip: "Ships permanently paint their sensor coverage on the fog of war as they travel - the classic map memory. Off: the map stays dark and only live sensor coverage lights it.");
+            // the asteroid pair rides together: the toggle, then its size (bench 406)
+            visuals.AddCheckbox(() => GlobalStats.DisableAsteroids,   title: GameText.DisableAsteroids, tooltip: GameText.ThisWillPreventAsteroidsFrom);
             AsteroidSize = visuals.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, "Asteroid Size", 0.25f, 1f, GlobalStats.AsteroidSizeMult));
             EffectsInfluenceNodeAlpha = visuals.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, GameText.GameOptionsInfluenceAlpha, 0f, 1f, GlobalStats.InfluenceNodeAlpha));
             EffectsInfluenceNodeAlpha.Tip = GameText.GameOptionsInfluenceAlphaTip;
             MaxDynamicLightSources = visuals.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, GameText.MaxDynamicLightSources, 0, 1000, GlobalStats.MaxDynamicLightSources));
 
-            // ---- column 3: UI, with Reset below it
+            // ---- column 3: UI
             UIList ui = NewBox(new RectF(x2, top, BoxW, UIBoxH), "UI");
+            CurrentLanguage = new DropOptions<Language>(126, 18);
+            ui.AddSplit(new UILabel(GameText.Language), CurrentLanguage).Split = 90; // first row (bench 406)
             IconSize        = ui.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, "Ship Icon Sizes", 1, 30, GlobalStats.IconSize));
             StationIconSize = ui.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, "Station Icon Sizes", 1, 30, GlobalStats.StationIconSize));
             MinimapSize     = ui.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, "Minimap Size", 1f, 2f, GlobalStats.MinimapSizeMult));
@@ -326,11 +332,10 @@ namespace Ship_Game
                 title: "Auto-pause Colony panel",
                 tooltip: "When Auto-pause on page opening is on, also pause for the Colony panel. Off (default): the colony runs live while you read it.");
             AutoPauseColonyBox.Indent = 20; // indented under its parent option (bench 392)
-            CurrentLanguage = new DropOptions<Language>(126, 18);
-            ui.AddSplit(new UILabel(GameText.Language), CurrentLanguage).Split = 90;
             ui.ReverseZOrder();
 
-            var reset = Add(new UIButton(ButtonStyle.Medium, new Vector2(x2 + 12, top + UIBoxH + BoxGap + 4), "Reset to Defaults"));
+            // bottom-left of the main frame (bench 406)
+            var reset = Add(new UIButton(ButtonStyle.Medium, new Vector2(x0 + 16, inner.Bottom - 40), "Reset to Defaults"));
             reset.Tooltip = "Reset every option except the display settings (Graphics),\n"
                           + "the language and the sound device to its default value.";
             reset.OnClick = b => RunOnNextFrame(ResetToDefaults);

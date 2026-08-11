@@ -471,9 +471,19 @@ namespace Ship_Game.GameScreens
         {
             public readonly FloatSlider ShareSlider;
             public bool Locked;
+            public bool AutoMode; // bench 406: on Auto split the whole row is read-only - solid padlock
             readonly UILabel NameLbl;
             readonly UIButton LockBtn;
             readonly UILabel Value;
+
+            // bench 406: the tint was only computed at layout time, so clicking a padlock gave
+            // no feedback at all - it looked dead. One refresher, called from every state change.
+            public void RefreshLockState()
+            {
+                LockBtn.IconTint = (AutoMode || Locked) ? Color.White : Color.White.Alpha(0.35f);
+                ShareSlider.Enabled = !AutoMode && !Locked;
+                LockBtn.Enabled = !AutoMode;
+            }
 
             public ShareRow(string name, float value, Func<float> livePot, Action<FloatSlider> onChange)
                 : base(Vector2.Zero, new Vector2(100, 20))
@@ -492,7 +502,7 @@ namespace Ship_Game.GameScreens
                 LockBtn.OnClick = b =>
                 {
                     Locked = !Locked;
-                    ShareSlider.Enabled = !Locked;
+                    RefreshLockState();
                 };
                 Value = base.Add(new UILabel(l => livePot().MoneyString(), Fonts.Arial12Bold));
                 Value.Color = Color.White;
@@ -512,8 +522,7 @@ namespace Ship_Game.GameScreens
                 Value.Pos = new Vector2(Right - ValueW + 6, cy);
                 Value.TextAlign = TextAlign.Right;
                 Value.Size = new Vector2(ValueW - 6, Fonts.Arial12Bold.LineSpacing);
-                // the padlock reads its state: solid when locked, faint when free
-                LockBtn.IconTint = Locked ? Color.White : Color.White.Alpha(0.35f);
+                RefreshLockState();
                 base.PerformLayout();
             }
         }
@@ -533,7 +542,14 @@ namespace Ship_Game.GameScreens
                 SSPPotSlider.RelativeValue     = 0.20f;
                 LinkingShares = false;
             }
-            ColonyPotSlider.Enabled = DefensePotSlider.Enabled = SSPPotSlider.Enabled = !auto;
+            // bench 406: enable/tint per row - a flat "!auto" re-enabled LOCKED sliders,
+            // which is exactly what a padlock is for. Auto also releases the pins.
+            for (int i = 0; i < 3; i++)
+            {
+                if (auto) ShareRows[i].Locked = false;
+                ShareRows[i].AutoMode = auto;
+                ShareRows[i].RefreshLockState();
+            }
         }
 
         bool LinkingShares; // guard: renormalizing the others re-fires their OnChange

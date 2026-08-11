@@ -331,22 +331,14 @@ namespace Ship_Game
                                                               : GameText.ResearchStationCanBePlaced);
             }
 
-            if (sys.IsAnyKnownPlanetCanBeMined(Player))
-            {
-                var mining_icon = Mineable.Icon;
-                var miningRect = new RectF(sysPos.X, sysPos.Y, mining_icon.Width, mining_icon.Height);
-                sysPos.X += 20f;
-
-                batch.Draw(mining_icon, miningRect, CurrentFlashColor);
-                if (miningRect.HitTest(Input.CursorPosition))
-                    ToolTip.CreateTooltip(GameText.MiningStationsCanBePlaced);
-            }
-
+            // bench 406: ONE icon per minable - the resource icon alone says "this can be
+            // mined" (and which resource), and it goes out once an ops station is deployed,
+            // like the research icon does. The generic pickaxe doubled it for no extra info.
             if (sys.HasMinables())
             {
                 foreach (Planet planet in sys.PlanetList)
                 {
-                    if (planet.IsMineable && planet.IsExploredBy(Player))
+                    if (planet.IsMineable && planet.IsExploredBy(Player) && !planet.Mining.HasOpsOwner)
                     {
                         sysPos.X += 2f;
                         var resourceRect = new RectF(sysPos.X, sysPos.Y, 20, 20);

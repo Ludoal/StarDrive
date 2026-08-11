@@ -51,9 +51,6 @@ namespace Ship_Game
         UILabel ColonyRank;
         UILabel BudgetSum;
         UILabel BudgetPercent;
-        UILabel NoGovernorCivExpense;
-        UILabel NoGovernorGrdExpense;
-        UILabel NoGovernorSpcExpense;
         UILabel BudgetLimitReached;
 
 
@@ -271,9 +268,6 @@ namespace Ship_Game
             BudgetSum     = Add(new UILabel(" ", FontBig, Color.White));
             BudgetPercent = Add(new UILabel(" ", FontBig, Color.White));
 
-            NoGovernorCivExpense = Add(new UILabel(" ", FontBig, Color.MediumSeaGreen));
-            NoGovernorGrdExpense = Add(new UILabel(" ", FontBig, Color.DarkOrange));
-            NoGovernorSpcExpense = Add(new UILabel(" ", FontBig, Color.SteelBlue));
 
             Tabs = Add(new Submenu(rect, new LocalizedText[]
             {
@@ -400,7 +394,9 @@ namespace Ship_Game
 
             // the share sliders ride their bars: from the bar's right edge to their own %
             // label (right-aligned, so 100% grows leftward), then the padlock at the margin
-            const int LockSide = 16, LockGap = 6, RightMargin = 10, PctW = 34, PctGap = 4;
+            // ⚠ lane widths must cover the WIDEST text: UILabel.SetText GROWS Size to fit,
+            // and a grown Size shifts the right-align anchor - "100%" in a 34px lane drifted
+            const int LockSide = 16, LockGap = 6, RightMargin = 10, PctW = 40, PctGap = 4;
             float lockX  = X + Width - RightMargin - LockSide;
             float pctX   = lockX - LockGap - PctW;
             float shareX = CivBudgetRect.X + CivBudgetRect.Width + 12;
@@ -421,9 +417,11 @@ namespace Ship_Game
             // Value lanes at the line's end: current spending (white), and on Auto the raw
             // target in parentheses (grey) - UpdateBudgets slides the value to the edge
             // when the target lane is hidden.
-            const int TargetW = 46, SpendValueW = 40;
+            // 20, not RightMargin: the Submenu frame is inset ~9px, the grey target kissed
+            // the painted edge (bench 406)
+            const int TargetW = 50, SpendValueW = 40;
             float spendRow = Y + 130 + shift;
-            float rowRight = X + Width - RightMargin;
+            float rowRight = X + Width - 20;
             AutoBudgetCheck.Pos = new Vector2(TopLeft.X + 10, spendRow + 2);
             SpendingLabel.Pos   = new Vector2(TopLeft.X + 70, spendRow + 3);
             GovSpending.Pos     = new Vector2(TopLeft.X + 70 + Font.TextWidth(SpendingLabel.Text) + 8, spendRow - 6);
@@ -440,9 +438,6 @@ namespace Ship_Game
             BudgetSum.Pos         = new Vector2(TopLeft.X + 8, Y + 160 + shift);
             BudgetPercent.Pos     = new Vector2(TopLeft.X + CivBudgetRect.Width + 15, Y + 160 + shift);
 
-            NoGovernorCivExpense.Pos = new Vector2(TopLeft.X + 60, Y + 40 + shift);
-            NoGovernorGrdExpense.Pos = new Vector2(TopLeft.X + 60, Y + 70 + shift);
-            NoGovernorSpcExpense.Pos = new Vector2(TopLeft.X + 60, Y + 100 + shift);
 
             PlanetAutoBudget = !(Planet.ManualCivilianBudget.Greater(0) || Planet.ManualGrdDefBudget.Greater(0)
                                  || Planet.ManualSpcDefBudget.Greater(0));
@@ -665,9 +660,6 @@ namespace Ship_Game
                 LockGrd.IconTint = PlanetAutoBudget || PlanetShareLocked[1] ? Color.White : Color.White.Alpha(0.35f);
                 LockSpc.IconTint = PlanetAutoBudget || PlanetShareLocked[2] ? Color.White : Color.White.Alpha(0.35f);
 
-                NoGovernorCivExpense.Visible = BudgetTabView && !AutoBudgetCheck.Visible;
-                NoGovernorGrdExpense.Visible = NoGovernorCivExpense.Visible;
-                NoGovernorSpcExpense.Visible = NoGovernorCivExpense.Visible;
 
                 CreateBlueprints.Visible = BlueprintsTabView && Planet.OwnerIsPlayer;
                 LoadBlueprints.Visible   = CreateBlueprints.Visible && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub;
@@ -761,7 +753,9 @@ namespace Ship_Game
 
         void DrawBudgetsTab(SpriteBatch batch)
         {
-            if (GovernorOn && Planet.CType is not Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub)
+            // bench 406: the bars draw with or without a governor - same presentation, the
+            // spent/allocation reading holds either way; only the CONTROLS need a governor
+            if (Planet.CType is not Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub)
             {
                 CivBudgetBar.Draw(batch);
                 GrdBudgetBar.Draw(batch);
@@ -1071,9 +1065,6 @@ namespace Ship_Game
             }
             else
             {
-                NoGovernorCivExpense.Text = $"{Planet.CivilianBuildingsMaintenance.String(2)} BC/turn";
-                NoGovernorGrdExpense.Text = $"{Planet.GroundDefMaintenance.String(2)} BC/turn";
-                NoGovernorSpcExpense.Text = $"{Planet.SpaceDefMaintenance.String(2)} BC/turn";
                 BudgetSum.Text            = $"{Localizer.Token(GameText.Total3)} {spent.String(2)} BC/turn";
                 BudgetPercent.Text        = "";
             }

@@ -102,6 +102,14 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.Storage2), Width = 240, Align = TableAlign.Center },
                 new UITable.Column { Title = Localizer.Token(GameText.Construction2), Width = 282, Align = TableAlign.Center },
             });
+            // bench 406: a Governor column ahead of Labor on wide displays only - the frame
+            // keeps its max width, the column eats the slack that otherwise fed Construction
+            if (ScreenWidth >= 1680)
+            {
+                var cols = new Array<UITable.Column>(Table.Columns);
+                cols.Insert(10, new UITable.Column { Title = "Governor", Width = 92, Align = TableAlign.Center, SepColor = MutedSep });
+                Table = new UITable(cols.ToArray());
+            }
             var sys = new Array<string>(); var names = new Array<string>();
             // eight numeric columns now: Fertility, Richness, Pop, GROWTH (new), Food, Prod, Money, Research
             var stats = new Array<string>[8];
@@ -131,7 +139,7 @@ namespace Ship_Game
             // column can always use the room instead
             int slack = widthCap - Table.TableWidth;
             if (slack > 0)
-                Table.Columns[12].Width += slack; // Construction, now index 12 (Pop Growth pushed it +1)
+                Table.Columns[Table.Columns.Length - 1].Width += slack; // Construction is always last (the Governor column can shift its index)
 
             // FULL display height (uncapped, bench 361), and a FIXED bottom band
             // (maintainer bench 298): the band holds the governor cartouche, which keeps the

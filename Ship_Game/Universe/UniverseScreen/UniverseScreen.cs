@@ -624,6 +624,9 @@ namespace Ship_Game
                 ShipsInCombat.Rect   = new Rectangle(mmFrameL, counterY, counterW, 24);
                 PlanetsInCombat.Rect = new Rectangle(mmFrameR - counterW, counterY, counterW, 24);
             }
+            // the utility overlays hang off the minimap frame - they follow it (bench 406)
+            ExoticBonusesWindow?.SeatByMinimap();
+            FreighterUtilizationWindow?.SeatByMinimap();
         }
 
         void LoadGraphics()
