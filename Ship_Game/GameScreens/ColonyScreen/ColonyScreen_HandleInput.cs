@@ -77,19 +77,12 @@ namespace Ship_Game
                 return true;
             }
 
-            // Ludoal fork: the eye by the name means "take me THERE" - the colony is a
-            // stacked page now, so closing everything above the universe closes it too.
-            // The seat dies with the gesture: a later map double-click starts fresh.
-            // ⚠ not SnapViewColony: on an owned planet that call REOPENS a colony view.
+            // Ludoal fork: the eye pans and ZOOMS onto the planet - the screen STAYS open,
+            // the flight shows in the visible band (maintainer bench 395)
             if (input.LeftMouseClick && ViewOnMapButton.HitTest(input.CursorPosition))
             {
                 GameAudio.AcceptClick();
-                UniverseScreen universe = P.Universe.Screen;
-                universe.ClearHostedTab();
-                Planet p = P; // the screen dies in ExitAllAbove; the camera gesture follows
-                ScreenManager.ExitAllAbove(universe);
-                universe.SetSelectedPlanet(p);
-                universe.SnapToPlanetStayHere(p); // camera lands at the planet, planet selected
+                P.Universe.Screen.SnapToPlanetStayHere(P);
                 return true;
             }
 
@@ -242,6 +235,7 @@ namespace Ship_Game
                 UniverseScreen u = Universe.Screen;
                 if (u.HostedTabTitle != null)
                     u.HostColonyTab(nextOrPrevPlanet, u.HostedTabGroup, u.HostedTabOrigin);
+                u.PanToPlanetKeepZoom(nextOrPrevPlanet); // the walk pans, no zoom (maintainer bench 395)
                 ExitScreen();
                 ScreenManager.AddScreen(new ColonyScreen(u, nextOrPrevPlanet, Eui,
                     GovernorDetails.CurrentTabIndex, PFacilitiesPlayerTabSelected));

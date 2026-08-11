@@ -132,15 +132,20 @@ namespace Ship_Game.GameScreens
              : g == Group.Diplomacy ? GroupTabTitles
              : EmpireTabTitles;
 
-        /// the live tab row of a group: the stock titles, plus the hosted tab when armed
+        /// the live tab row of a group: the stock titles, plus the hosted tab when armed.
+        /// The EMPIRE group's colony tab is PERMANENT (maintainer): with no seat armed it
+        /// wears the remembered colony (the capital by default).
         public static LocalizedText[] LiveTitles(Group g, UniverseScreen u)
         {
             LocalizedText[] stock = StockTitles(g);
-            if (u.HostedTabTitle == null || u.HostedTabGroup != g)
+            string colonyTitle = u.HostedTabTitle != null && u.HostedTabGroup == g
+                               ? u.HostedTabTitle
+                               : g == Group.Empire ? u.EmpireColonyDefault?.Name : null;
+            if (colonyTitle == null)
                 return stock;
             var live = new LocalizedText[stock.Length + 1];
             Array.Copy(stock, live, stock.Length);
-            live[stock.Length] = new LocalizedText(u.HostedTabTitle, LocalizationMethod.RawText);
+            live[stock.Length] = new LocalizedText(colonyTitle, LocalizationMethod.RawText);
             return live;
         }
 
@@ -185,8 +190,8 @@ namespace Ship_Game.GameScreens
                 return;
             caller.ExitScreen();
             Audio.GameAudio.AcceptClick();
-            if (IsHostedTab(Group.Empire, index, u))
-                u.OpenHostedTabPanel?.Invoke();
+            if (index == EmpireTabTitles.Length) // the PERMANENT colony tab (maintainer)
+                u.OpenEmpireColonyTab();
             else
                 u.ScreenManager.AddScreen(EmpireTab(index, u));
         }

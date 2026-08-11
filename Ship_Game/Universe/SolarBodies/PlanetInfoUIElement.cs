@@ -33,6 +33,7 @@ namespace Ship_Game
         // the same walk AssignLaborComponent and ColonySlider take to place the locks
         int LockColX => LaborX + 10 + (LaborW * 0.6f).RoundTo10() + 10;
         Planet P;
+        Rectangle NameRect; // where the last draw put the name - clicking it pans+zooms (bench 395)
         readonly UniverseScreen Screen;
         Empire Player => Screen.Player;
         readonly Array<TippedItem> ToolTipItems = new Array<TippedItem>();
@@ -311,6 +312,8 @@ namespace Ship_Game
                                       topTextY + Font12.LineSpacing - nameFont.LineSpacing);
             batch.DrawString(nameFont, name, namePos,
                              !explored ? Color.Gray : P.Owner?.EmpireColor ?? tColor);
+            NameRect = new Rectangle((int)namePos.X, (int)namePos.Y,
+                                     (int)nameFont.TextWidth(name), nameFont.LineSpacing);
 
             float mrTextY = Housing.Y + 102 + 11 - Font12.LineSpacing / 2;
             if (explored && P.Owner != null) // no governance before there is a colony
@@ -627,6 +630,13 @@ namespace Ship_Game
                 && (PrevColony.HandleInput(input) || NextColony.HandleInput(input)))
             {
                 return true; // the click may have swapped P for the next colony
+            }
+            // clicking the planet's NAME pans and zooms onto it (maintainer bench 395)
+            if (input.LeftMouseClick && NameRect.HitTest(input.CursorPosition))
+            {
+                GameAudio.AcceptClick();
+                Screen.SnapToPlanetStayHere(P);
+                return true;
             }
             if (P.Owner == null && P.Habitable && P.IsExploredBy(Player))
             {

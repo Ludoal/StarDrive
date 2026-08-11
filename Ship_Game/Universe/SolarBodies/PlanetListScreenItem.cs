@@ -40,6 +40,10 @@ namespace Ship_Game
         private Rectangle TroopIconRect;
         private bool ShowColonizeIcon;
         private bool ShowTroopIcon;
+        UIPanel ColonizePanel;
+        UIPanel TroopPanel;
+        UILabel TroopsLabel;
+        float LiveRefreshTimer;
         // the widest the "En route: N  Deployed: M" counter column ever gets, for auto-size
         public const string TroopsCounterMeasure = "En route: 99   Deployed: 99";
         private readonly PlanetListScreen Screen;
@@ -77,39 +81,24 @@ namespace Ship_Game
             Rectangle ordersCol = cols[9].Rect;
             ShipIconRect = new Rectangle(cols[1].Rect.X + UITable.PadX, y + h / 2 - 16, 32, 32);
 
-            const int IconSize = 22, IconGap = 8;
-            ShowColonizeIcon = Planet.Owner == null && Planet.Habitable;
-            TryGetIncomingTroops(out int incoming, out _);
-            bool canRecall = Planet.NumTroopsCanLaunchFor(Player) > 0;
-            ShowTroopIcon = (Planet.Habitable && CanSendTroops && !Player.IsNAPactWith(Planet.Owner))
-                          || incoming > 0 || canRecall;
-
             // the two slots are fixed and centred as a PAIR, so a row with only one icon keeps it
             // in its own column (Colonize left / Send Troops right) - the Ships-list convention
+            const int IconSize = 22, IconGap = 8;
             int laneW = 2 * IconSize + IconGap;
             int slotX = ordersCol.X + (ordersCol.Width - laneW) / 2;
             int iy = y + h / 2 - IconSize / 2;
             ColonizeIconRect = new Rectangle(slotX, iy, IconSize, IconSize);
             TroopIconRect    = new Rectangle(slotX + IconSize + IconGap, iy, IconSize, IconSize);
 
-            // the icons themselves - UIPanels so the colonize one can go RED to cancel. Tooltips
-            // ride the panels; the CLICKS are hit-tested in HandleInput off the same rects.
-            if (ShowColonizeIcon)
-            {
-                Color tint = MarkedForColonization ? Color.Red : Color.White;
-                UIPanel col = Panel(ColonizeIconRect, tint, ResourceManager.Texture("UI/ColonizeIcon"));
-                col.Tooltip = MarkedForColonization ? GameText.CancelColonize : GameText.Colonize;
-            }
-            if (ShowTroopIcon)
-            {
-                // the ship cartouche's troop art - icon_troop washes out at this size. Hostile red.
-                Color tint = Planet.Owner != null && Planet.Owner != Player ? Color.Red : Color.White;
-                UIPanel tr = Panel(TroopIconRect, tint, ResourceManager.Texture("UI/icon_troop_shipUI"));
-                tr.Tooltip = Planet.Owner == Player ? GameText.RecallAllTroopsBasedOn
-                                                    : GameText.SendAvailableTroopsToThis;
-            }
+            // the widgets are built once; RefreshLiveState owns visibility, tints, tooltips and
+            // the counter - the sim moves troops and colonisation goals while the list is open.
+            // (icon_troop_shipUI: the plain icon_troop washes out at this size)
+            ColonizePanel = Panel(ColonizeIconRect, Color.White, ResourceManager.Texture("UI/ColonizeIcon"));
+            TroopPanel    = Panel(TroopIconRect, Color.White, ResourceManager.Texture("UI/icon_troop_shipUI"));
+            TroopsLabel   = Label(UITable.CellPos(SmallFont, cols[10].Rect, Y, Height, "", TableAlign.Left),
+                                  "", SmallFont, Cream);
+            RefreshLiveState();
 
-            AddTroopsCounter(cols[10].Rect, incoming);
             AddSystemName();
             AddPlanetName();
             AddPlanetTextureAndStatus();
@@ -118,18 +107,52 @@ namespace Ship_Game
             base.PerformLayout();
         }
 
-        // bench 393 (maintainer): "En route: N  Deployed: M" - N troops inbound (granular now:
-        // travelling, not yet landed), M already garrisoned. Off the button, in its own column.
-        void AddTroopsCounter(in Rectangle cell, int incoming)
+        // the sim keeps moving while the list is open - refresh the live cells on a small
+        // throttle (a per-frame OwnedShips scan for every row would be too dear)
+        public override void Update(float fixedDeltaTime)
+        {
+            LiveRefreshTimer -= fixedDeltaTime;
+            if (LiveRefreshTimer <= 0f)
+            {
+                LiveRefreshTimer = 0.5f;
+                RefreshLiveState();
+            }
+            base.Update(fixedDeltaTime);
+        }
+
+        void RefreshLiveState()
+        {
+            TryGetIncomingTroops(out int incoming, out _);
+            bool canRecall = Planet.NumTroopsCanLaunchFor(Player) > 0;
+            ShowColonizeIcon = Planet.Owner == null && Planet.Habitable;
+            ShowTroopIcon = (Planet.Habitable && CanSendTroops && !Player.IsNAPactWith(Planet.Owner))
+                          || incoming > 0 || canRecall;
+
+            if (ColonizePanel != null)
+            {
+                ColonizePanel.Visible = ShowColonizeIcon;
+                ColonizePanel.Color   = MarkedForColonization ? Color.Red : Color.White;
+                ColonizePanel.Tooltip = MarkedForColonization ? GameText.CancelColonize : GameText.Colonize;
+            }
+            if (TroopPanel != null)
+            {
+                TroopPanel.Visible = ShowTroopIcon;
+                TroopPanel.Color   = Planet.Owner != null && Planet.Owner != Player ? Color.Red : Color.White;
+                TroopPanel.Tooltip = Planet.Owner == Player ? GameText.RecallAllTroopsBasedOn
+                                                            : GameText.SendAvailableTroopsToThis;
+            }
+            if (TroopsLabel != null)
+                TroopsLabel.Text = TroopsCounterText(incoming);
+        }
+
+        // "En route: N   Deployed: M" - N inbound (travelling, not yet landed), M garrisoned
+        string TroopsCounterText(int incoming)
         {
             int deployed = Planet.CountEmpireTroops(Player);
-            if (incoming == 0 && deployed == 0)
-                return;
             var parts = new Array<string>();
             if (incoming > 0) parts.Add($"En route: {incoming}");
             if (deployed > 0) parts.Add($"Deployed: {deployed}");
-            string text = string.Join("   ", parts.ToArray());
-            Label(UITable.CellPos(SmallFont, cell, Y, Height, text, TableAlign.Left), text, SmallFont, Cream);
+            return string.Join("   ", parts.ToArray());
         }
 
         public override bool HandleInput(InputState input)
@@ -319,7 +342,8 @@ namespace Ship_Game
         void AddPlanetStatusIcons(Rectangle planetIcon)
         {
             Rectangle nameCol = Screen.Table.Columns[1].Rect;
-            var statusIcons = new Vector2(nameCol.Right, planetIcon.Y);
+            // 16px icons vertically centred in the cell, level with the Features column's icons
+            var statusIcons = new Vector2(nameCol.Right, (int)Y + (int)Height / 2 - 8);
             int xOffset = 0;
             int numIcons = 0;
 

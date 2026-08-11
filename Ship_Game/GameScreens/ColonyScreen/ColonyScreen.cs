@@ -52,6 +52,10 @@ namespace Ship_Game
             u.ClearHostedTab();
             ExitScreen();
             u.SetSelectedPlanet(P); // land on the planet, selected - as closing always did
+            // the Empire colony tab is PERMANENT (maintainer): closing the colony closes the
+            // whole group, wherever it was opened from - no origin routing there
+            if (group == GameScreens.ScreenGroups.Group.Empire)
+                return;
             if (origin >= 0)
                 ScreenManager.AddScreen(GameScreens.ScreenGroups.TabOf(group, origin, u));
         }

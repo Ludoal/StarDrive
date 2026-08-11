@@ -102,8 +102,36 @@ namespace Ship_Game
         // map-open block (Camera.cs) except it must NOT clear the tab state: the tab is
         // precisely what is being opened. Camera anchoring identical - the panel covers
         // the map. The title follows the planet; the colony arrows re-arm on navigation.
+        // Ludoal fork (maintainer): the Empire group's colony tab is PERMANENT - it remembers
+        // the last colony viewed there, the capital by default. The seat above is transient
+        // (per-visit, any group); this survives seat clears and group jumps.
+        public Planet EmpireColonyPlanet;
+        public Planet EmpireColonyDefault
+        {
+            get
+            {
+                if (EmpireColonyPlanet != null && EmpireColonyPlanet.Owner == Player)
+                    return EmpireColonyPlanet;
+                return Player.GetCurrentCapital(out Planet capital) ? capital : null;
+            }
+        }
+
+        // the permanent Colony tab's opener - activating it pans (no zoom) to the planet
+        public void OpenEmpireColonyTab()
+        {
+            Planet p = EmpireColonyDefault;
+            if (p == null)
+                return;
+            HostColonyTab(p, GameScreens.ScreenGroups.Group.Empire, -1);
+            ClearSelectedItems();
+            PanToPlanetKeepZoom(p);
+            ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI));
+        }
+
         public void HostColonyTab(Planet p, GameScreens.ScreenGroups.Group group, int originTab)
         {
+            if (group == GameScreens.ScreenGroups.Group.Empire)
+                EmpireColonyPlanet = p; // the permanent tab follows the last colony viewed
             HostedTabTitle = p.Name;
             HostedTabGroup = group;
             HostedTabOrigin = originTab;
