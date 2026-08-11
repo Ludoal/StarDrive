@@ -31,6 +31,7 @@ namespace Ship_Game
         private readonly Color PlanetStatColor;
         private Color EmpireColor;   // recomputed on owner change (live refresh)
         private Empire LastSeenOwner;
+        private int LastSeenBuildings;
 
         private Rectangle ShipIconRect;
         // bench 393 (maintainer): the two order buttons are a compact icon lane now (Ships-list
@@ -60,7 +61,8 @@ namespace Ship_Game
 
             PlanetStatColor = Planet.Habitable ? Color.White : Color.LightPink;
             EmpireColor     = Planet.Owner?.EmpireColor ?? new Color(255, 239, 208);
-            LastSeenOwner   = planet.Owner;
+            LastSeenOwner     = planet.Owner;
+            LastSeenBuildings = planet.NumBuildings;
             CanSendTroops   = canSendTroops;
 
             foreach (Goal g in planet.Universe.Player.AI.Goals)
@@ -126,11 +128,12 @@ namespace Ship_Game
         {
             // the row's static cells (planet icon flag, owner colours, class) rebuild when the
             // owner changes - a colonisation completing must show without a re-sort
-            if (Planet.Owner != LastSeenOwner)
+            if (Planet.Owner != LastSeenOwner || Planet.NumBuildings != LastSeenBuildings)
             {
-                LastSeenOwner = Planet.Owner;
-                EmpireColor   = Planet.Owner?.EmpireColor ?? new Color(255, 239, 208);
-                PerformLayout(); // the layout re-runs this refresh
+                LastSeenOwner     = Planet.Owner;
+                LastSeenBuildings = Planet.NumBuildings;
+                EmpireColor       = Planet.Owner?.EmpireColor ?? new Color(255, 239, 208);
+                PerformLayout(); // the layout re-runs this refresh; Features follow the buildings
                 return;
             }
             // colonisation marks placed elsewhere (the cartouche button, an auto-colonize goal)
@@ -243,26 +246,43 @@ namespace Ship_Game
             void Cell(int col, string text, Color color)
                 => Label(UITable.CellPos(SmallFont, cols[col].Rect, Y, Height, text, cols[col].Align), text, SmallFont, color);
 
+            // pop grows, terraforming and mining move fertility/richness - these four cells
+            // are LIVE labels, right-aligned in their box (a Func label re-measures itself,
+            // so CellPos' width math cannot place it)
+            UILabel DynCell(int col, System.Func<UILabel, string> getText)
+            {
+                var l = new UILabel(getText, SmallFont) { Color = PlanetStatColor, TextAlign = TextAlign.Right };
+                Rectangle r = cols[col].Rect;
+                l.Pos  = new Vector2(r.X, (int)(Y + Height / 2f - SmallFont.LineSpacing / 2f));
+                l.Size = new Vector2(r.Width - UITable.PadX, SmallFont.LineSpacing);
+                Add(l);
+                return l;
+            }
+
             AddFeatures(cols[2].Rect);
             DistanceDisplay dd = new DistanceDisplay(Distance);
             if (Distance.Greater(0))
                 Cell(3, dd.Text, dd.Color);
             // fixed one decimal: right-aligned + constant fraction = aligned on the point
-            Cell(4, Planet.FertilityFor(Player).ToString("0.0", CultureInfo.InvariantCulture), PlanetStatColor);
-            Cell(5, Planet.MineralRichness.ToString("0.0", CultureInfo.InvariantCulture), PlanetStatColor);
+            DynCell(4, l => Planet.FertilityFor(Player).ToString("0.0", CultureInfo.InvariantCulture));
+            DynCell(5, l => Planet.MineralRichness.ToString("0.0", CultureInfo.InvariantCulture));
             // Max Pop splits: the figure in its column, the percentage in Fill's.
-            // ⚠ the percentage is computed HERE, against the player's own max - the string's
+            // ⚠ the percentage is computed against the player's own max - the string's
             // built-in ratio divides by the BASE max, so a racial max-pop bonus read as
             // "100.4%" (Lek's review, bench 305). Clamped: a brief overshoot is the sim's
             // business, not the table's.
-            string popString = Planet.PopulationStringForPlayer;
-            int paren = popString.IndexOf(" (");
-            string popMain = paren < 0 ? popString : popString.Substring(0, paren);
-            float maxPop = Planet.MaxPopulationBillionFor(Player);
-            string ratio = maxPop > 0f && Planet.PopulationBillion > 0f
-                         ? (Planet.PopulationBillion / maxPop * 100f).UpperBound(100f).String() + "%" : "";
-            Cell(6, popMain, PlanetStatColor);
-            Cell(7, ratio, PlanetStatColor);
+            DynCell(6, l =>
+            {
+                string ps = Planet.PopulationStringForPlayer;
+                int paren = ps.IndexOf(" (");
+                return paren < 0 ? ps : ps.Substring(0, paren);
+            });
+            DynCell(7, l =>
+            {
+                float maxPop = Planet.MaxPopulationBillionFor(Player);
+                return maxPop > 0f && Planet.PopulationBillion > 0f
+                     ? (Planet.PopulationBillion / maxPop * 100f).UpperBound(100f).String() + "%" : "";
+            });
             Cell(8, owner, EmpireColor);
         }
 

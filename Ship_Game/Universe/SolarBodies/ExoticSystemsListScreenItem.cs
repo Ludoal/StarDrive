@@ -237,6 +237,53 @@ namespace Ship_Game
             return base.HandleInput(input);
         }
 
+        float LiveRefreshTimer;
+        int LiveStateHash = -1;
+
+        // the sim deploys stations, unlocks techs and flips rig owners while the list is
+        // open - rebuild the row when a KEY state changes. Throttled, and free while nothing
+        // moves; a full rebuild routes through the Set*Visibility branches so every cell,
+        // button and colour follows (bench 397, the live-data pass).
+        public override void Update(float fixedDeltaTime)
+        {
+            LiveRefreshTimer -= fixedDeltaTime;
+            if (LiveRefreshTimer <= 0f)
+            {
+                LiveRefreshTimer = 0.5f;
+                int h = ComputeLiveHash();
+                if (h != LiveStateHash)
+                {
+                    LiveStateHash = h;
+                    PerformLayout();
+                }
+            }
+            base.Update(fixedDeltaTime);
+        }
+
+        int ComputeLiveHash()
+        {
+            int h = 17;
+            if (IsForResearch)
+            {
+                h = h * 31 + (SolarBody.IsResearchStationDeployedBy(Player) ? 1 : 0);
+                h = h * 31 + (Player.CanBuildResearchStations ? 1 : 0);
+            }
+            if (IsForMining)
+            {
+                h = h * 31 + Planet.OrbitalStations.Count(st => st.Loyalty.isPlayer && st.IsMiningStation);
+                h = h * 31 + Player.AI.CountGoals(g => g.IsMiningOpsGoal(Planet) && g.TargetShip == null);
+                // the branches only distinguish nobody / us / someone else
+                h = h * 31 + (Planet.Mining.Owner == Player ? 1 : Planet.Mining.Owner != null ? 2 : 0);
+                h = h * 31 + (Player.CanBuildMiningStations ? 1 : 0);
+            }
+            if (IsForDysonSwarm)
+            {
+                h = h * 31 + (System.HasDysonSwarm ? 1 : 0);
+                h = h * 31 + (System.HasPlanetsOwnedBy(Player) ? 1 : 0);
+            }
+            return h;
+        }
+
         void AddSystemName()
         {
             UITable.Column c = Screen.Table.Columns[0];
