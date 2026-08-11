@@ -627,6 +627,8 @@ namespace Ship_Game
             // the utility overlays hang off the minimap frame - they follow it (bench 406)
             ExoticBonusesWindow?.SeatByMinimap();
             FreighterUtilizationWindow?.SeatByMinimap();
+            // the notification stack's floor tracks the housing top (maintainer feedback)
+            NotificationManager?.ReSize();
         }
 
         void LoadGraphics()
