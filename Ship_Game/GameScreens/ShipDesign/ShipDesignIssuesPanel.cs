@@ -22,9 +22,8 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         // Ludoal fork: the panel only ever shows the completion line and ONE button ("Design
         // Issues", "Information", or nothing) — no variable text, the issues themselves open in
-        // their own screen. So its width is knowable up front, and it is worth knowing: it used
-        // to span the whole cartouche, and its click area swallowed the browser list beside it.
-        // Measured from the fonts the button actually composes with, so it survives a font change.
+        // their own screen. Width is measured from the fonts the button actually composes with,
+        // so it survives a font change.
         public static float ContentWidth
         {
             get

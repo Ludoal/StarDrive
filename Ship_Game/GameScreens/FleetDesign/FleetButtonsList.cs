@@ -44,8 +44,7 @@ public class FleetButtonsList : UIList
         }
 
         base.PerformLayout();
-        // Ludoal fork: no slide-in/slide-out on the fleet buttons (maintainer decision - we stay
-        // sober). They appear where the layout puts them.
+        // Ludoal fork: no slide-in/slide-out on the fleet buttons. They appear where the layout puts them.
     }
 
     // In some conditions, the fleet buttons should automatically be disabled

@@ -15,15 +15,11 @@ namespace Ship_Game.GameScreens.ShipDesign
     /// Displays STATS information of the currently active design.
     ///
     /// Ludoal fork: drawn in IMMEDIATE MODE, on the same pattern as the module comparator in
-    /// ModuleSelection (which is our own code) — rows are data, the draw walks them with a
-    /// cursor per column, and a row that must not show is simply never drawn. That is why
-    /// there are no gaps and no layout passes here. The previous element-based version (a
-    /// UIList of labels toggled visible) cost two bugs in one evening and, worse, left two
-    /// different architectures for the same kind of panel in the same screen — which is what
-    /// makes a contribution hard for the upstream devs to take.
+    /// ModuleSelection — rows are data, the draw walks them with a cursor per column, and a row
+    /// that must not show is simply never drawn. No gaps, no layout passes.
     ///
-    /// Content and order come from Lek's spec v3: eight blocks by decision, costs first,
-    /// FTL time with the speeds, block headings hidden along with their block.
+    /// Content and order: eight blocks by decision, costs first, FTL time with the speeds,
+    /// block headings hidden along with their block.
     /// </summary>
     public class ShipDesignInfoPanel : UIElementContainer
     {
@@ -52,19 +48,17 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         readonly Array<Row> Rows = new Array<Row>();
 
-        // Ludoal fork (spec v4): the pinned design has no frame of its own — it lives here, as a
-        // shadow row set whose only job is to produce the delta after each of THIS panel's
-        // values. Rows are matched by their title, not by index, because the two designs hide
-        // different lines. Null when nothing is pinned.
+        // Ludoal fork: the pinned design has no frame of its own — it lives here, as a shadow
+        // row set whose only job is to produce the delta after each of THIS panel's values. Rows
+        // are matched by their title, not by index, because the two designs hide different
+        // lines. Null when nothing is pinned.
         public ShipDesignInfoPanel CompareAgainst;
         string ComparedName;
         // where the "x" that drops the comparison sits; empty when nothing is pinned
         public RectF CancelCompareRect;
 
-        // column offsets, bench values
-        // Ludoal fork (bench 46.152): zero. The panel is already inset 10px inside its frame,
-        // so any shift here is added ON TOP of that - the left margin was 20 against 10 in the
-        // middle and 0 on the right. Ten all round now (maintainer feedback).
+        // Ludoal fork: zero. The panel is already inset 10px inside its frame, so any shift here
+        // is added ON TOP of that - ten all round.
         public float Col0Shift = 0f;
         // shared with FrameWidthFor, which is static: the placement and the width read the SAME
         // number, they do not each carry their own copy of it
@@ -76,87 +70,60 @@ namespace Ship_Game.GameScreens.ShipDesign
         const float TitleBandHeight = 30f;
         // compact: the "vs <name>" moves to a SECOND line (the narrow frame has no room
         // beside the name), and the line is RESERVED on both frames whether or not a
-        // comparison runs - the two row sets stay level (maintainer bench 303)
+        // comparison runs - the two row sets stay level
         const float CompactTitleBand = 46f;
 
-        // Ludoal fork: three levels of value, no colour. Removing the per-family tints left the
-        // panel flat — everything was white, so nothing structured it vertically (maintainer feedback). Depth comes from brightness instead: the block headings stay cream and carry
-        // the eye down the page, the labels drop to grey and become the background, and only
-        // the numbers keep full white. The column of figures then stands out on its own, and
-        // the pink of a bad value is the single colour left on the panel, so it lands hard.
+        // Ludoal fork: three levels of value, no per-family colour. Depth comes from brightness
+        // instead: block headings stay cream and carry the eye down the page, labels drop to
+        // grey and become the background, and only the numbers keep full white. The column of
+        // figures stands out on its own, and the pink of a bad value is the single colour left
+        // on the panel, so it lands hard.
         static readonly Color LabelGrey = new Color(168, 172, 178);
 
 
-        // room a delta needs after a value: the offset it is drawn at, plus the widest delta
-        // string we can expect ("(+157.2k)")
-        // the delta is drawn this far past the value, and runs to about "(-27.35k)" wide
-        // ⚠ found by Lek reading this file at midday, and she is right: the lane reserved
-        // DeltaLaneOffset + 14 while the string it has to hold ("(-27.35k)", "(+157.2k)") runs
-        // to ~55px in Arial12Bold — a lane 40px short of its own content. It went unnoticed
-        // because the delta is drawn LEFT-aligned at spacing + DeltaLaneOffset and simply spilled
-        // into whatever was to its right; on the widest values it ate the frame's right margin.
-        //
-        // Unlike the titles above, this text grows RIGHTWARD from its anchor, so the lane is
-        // offset + text, not offset + a number nobody can reconstruct.
-        // ⚠ Lek's third one, and the subtlest: this was a bare 46 sitting UNDER a value column
-        // 52 wide. The value is drawn LEFT-aligned at cursor.X + spacing and runs its own width,
-        // so a delta starting 46px later began 6px BEFORE the widest value ended — "107.1k
-        // (-27.35k)" overlapped and nobody noticed because most values are short.
-        // It is where the value ENDS, plus air. Derived, so the two can never collide again.
+        // Room a delta needs after a value: the offset it is drawn at, plus the widest delta
+        // string expected ("(+157.2k)"). The delta is drawn LEFT-aligned at spacing +
+        // DeltaLaneOffset, growing RIGHTWARD from its anchor, so the lane must be offset + text
+        // width, not a guessed constant — the lane also has to clear where the value itself
+        // ends (cursor.X + spacing, running its own width), or the two overlap.
         static float DeltaLaneOffset => ValueRoom + 8f;
-        // MEASURED, not guessed — the whole point of this file's history. "(-27.35k)" is the
-        // widest delta the formatter can produce: sign, four significant digits, a decimal point
-        // and the k suffix, in brackets.
+        // MEASURED, not guessed. "(-27.35k)" is the widest delta the formatter can produce:
+        // sign, four significant digits, a decimal point and the k suffix, in brackets.
         static float WidestDelta => Fonts.Arial12Bold.TextWidth("(-27.35k)");
         public static float DeltaLaneWidth => DeltaLaneOffset + WidestDelta;
 
-        // ★ THE MODULE PANEL'S GEOMETRY, ACTUALLY COPIED THIS TIME (maintainer feedback). Two brute
-        // constants, ONE per régime — no derivation, no measurement, nothing divided out of an
-        // available width. The module panel is WideColStep = 210 / TightColStep = 152; a design
-        // row's titles are longer ("Total Module Slots" against "Complexity"), so ours are
-        // larger, but they are constants exactly as its are.
+        // ★ THE MODULE PANEL'S GEOMETRY, copied. Two brute constants, ONE per régime — no
+        // derivation, no measurement, nothing divided out of an available width. The module
+        // panel is WideColStep = 210 / TightColStep = 152; a design row's titles are longer
+        // ("Total Module Slots" against "Complexity"), so ours are larger, but they are
+        // constants exactly as its are. A step computed from its contents moves whenever the
+        // contents change, which is why it is not derived that way.
         //
-        // ⚠ What went wrong in 46.157, and why the derivation had to go: measuring the title
-        // room to kill the dead air in the middle SHRANK the step, so column 2 walked left and
-        // drew its values straight over column 1's labels. A step that is computed from its
-        // contents moves whenever the contents change - which is the whole reason the module
-        // panel does not compute it.
-        // ⚠ 46.159 posed these as round numbers with ~20px of slack invented on top, which is
-        // exactly the margin the bench then found in the wrong places: no air on the right when
-        // plain, too much in the middle when comparing (maintainer feedback). They are DERIVED from what a
-        // column paints now — still constants, still not divisions of available space, but each
-        // one the sum of its parts rather than a number that looked about right.
-        //
+        // Each constant is the sum of its parts:
         //   title room (the longest label plus its gap) + the value + , when comparing,
         //   the delta lane it is followed by + the gap that separates the two columns
-        // ⚠ 46.161's mistake, and the reason the alignment got WORSE: this was built on
-        // TitleRoomFloor (92, the floor) while the draw placed values at MeasuredTitleRoom
-        // (~127 with real labels). The step was ~35px shorter than what it had to hold, so every
-        // value overflowed into the next column. TWO numbers for one distance, again.
-        // One number now: the measurement is gone and the draw reads this constant.
-        // ⚠⚠ THE ONE THAT COST SEVEN BUILDS. The titles are drawn RIGHT-ALIGNED: DrawStatText
-        // places them via FontSpace(cursor.X + spacing, -20, ...), i.e. at
+        //
+        // The titles are drawn RIGHT-ALIGNED: DrawStatText places them via
+        // FontSpace(cursor.X + spacing, -20, ...), i.e. at
         //
         //     titleLeft = cursor.X + spacing - 20 - textWidth(title)
         //
         // so cursor.X anchors the VALUE, never the title, and the block's visible left edge is
-        // wherever the LONGEST label lands. With spacing = 127 the longest title ("Total Module
-        // Slots", ~115px) started 2px from the frame instead of 10 — the "whole block shifted
-        // 10px left" the bench kept reporting, and the reason moving ContentLeft changed nothing:
-        // the culprit was never the cursor, it was the hidden -20 plus the label's own width.
+        // wherever the LONGEST label lands. The title room constant must therefore already
+        // include the -20 and the longest label's own width, or the whole block reads as
+        // shifted left regardless of ContentLeft.
         //
-        // The module panel escapes it because its spacing is a fraction of its frame
+        // The module panel escapes this because its spacing is a fraction of its frame
         // (panel.Width * 0.27f), which happens to land right for its shorter labels.
         //
         //   135 = 10 (left margin) + 20 (FontSpace's own inset) + 115 (longest label) - 10 (Inset,
         //   already paid by the inner rect the cursor starts at)
-        // Likewise measured. If a longer label is ever added to the rows, the column follows
-        // it instead of quietly clipping — and a font change cannot silently break the layout.
-        // ⚠ measured over EVERY label this panel can draw, not a chosen specimen. "Total Module
-        // Slots" was the reference and it is not the longest: "Excess Wpn Pwr Drain" and
-        // "Processing Time (turns)" are wider, and since the titles are RIGHT-aligned a label
-        // longer than the reserve runs off the left edge of the frame (maintainer feedback).
-        // Cached: the widths cannot change while the game runs, and this is read every frame.
+        // Measured, so if a longer label is ever added to the rows the column follows it instead
+        // of quietly clipping — and a font change cannot silently break the layout.
+        // ⚠ measured over EVERY label this panel can draw, not a chosen specimen: "Excess Wpn Pwr
+        // Drain" and "Processing Time (turns)" are wider than "Total Module Slots", and since the
+        // titles are RIGHT-aligned a label longer than the reserve runs off the left edge of the
+        // frame. Cached: the widths cannot change while the game runs, and this is read every frame.
         static float LongestTitleCache;
         static float LongestTitle
         {
@@ -171,8 +138,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                             LongestTitleCache = w;
                     }
                     // ⚠ and the rows written as raw strings, which carry no GameText key and
-                    // would otherwise never be measured - the very hole the comment above warns
-                    // about, and the COMBAT block walked straight into it.
+                    // would otherwise never be measured.
                     foreach (string t in RawRowTitles)
                     {
                         float w = Fonts.Arial12Bold.TextWidth(t);
@@ -203,55 +169,45 @@ namespace Ship_Game.GameScreens.ShipDesign
         };
         static float TitleColumn => 10f + 20f + LongestTitle - Inset;
 
-        // ⚠ NOT + DeltaLaneOffset + DeltaLaneWidth: the width ALREADY contains the offset
-        // (it is offset + text). Adding both counted the 46px lead-in twice, so the comparing
-        // frame was 46px wider than its own content — the "too much space in the middle when
-        // comparing" the bench reported, still there under every other fix.
+        // ⚠ NOT + DeltaLaneOffset + DeltaLaneWidth: the width ALREADY contains the offset (it
+        // is offset + text). Adding both counts the lead-in twice, widening the comparing frame
+        // beyond its own content.
         static float WideColumnStep  => TitleColumn + DeltaLaneWidth + MidGap;
         static float TightColumnStep => TitleColumn + ValueRoom + MidGap;
         float ColumnStep => HasDeltaLanes ? WideColumnStep : TightColumnStep;
         static float StepFor(bool withDeltas) => withDeltas ? WideColumnStep : TightColumnStep;
-        // air between the two columns: on the 46.138 shot column 1's delta lane nearly touched
-        // "MOBILITY" (maintainer feedback). It belongs to the STEP, so the gap opens between the columns rather
-        // than just pushing column 2 further right.
+        // air between the two columns. It belongs to the STEP, so the gap opens between the
+        // columns rather than just pushing column 2 further right.
         const float MidGap = 10f;
-        // ⚠ there were TWO of these — ValueColumn and ValueRoom, both 52, one of them dead.
-        // Same disease as the rest of this panel: a second number for a distance that already
-        // had one (Lek, reading the file at midday).
-        // measured like the other two — and it now feeds DeltaLaneOffset, so a wrong guess here
-        // would put the delta back on top of the value
+        // Measured like the other two — and it feeds DeltaLaneOffset, so a wrong guess here
+        // would put the delta back on top of the value.
         static float ValueRoom => Fonts.Arial12Bold.TextWidth("107.1k");
         // ⚠ the RIGHT margin only. The left one is the inner rect's own inset, which the frame
-        // does not pay for again — 46.163 counted it twice and, since the frame is anchored on
-        // its right edge and grows leftwards, the surplus 10px opened as a gap down the left of
-        // the whole block, image included (maintainer feedback). Content sits Inset in from the frame's left
-        // edge and SidePad in from its right: same 10 both sides, counted once each.
+        // does not pay for again — since the frame is anchored on its right edge and grows
+        // leftwards, double-counting it opens a gap down the left of the whole block. Content
+        // sits Inset in from the frame's left edge and SidePad in from its right: same 10 both
+        // sides, counted once each.
         const float SidePad = 10f;
 
         // What a frame must measure to hold two of those columns — the screen asks this rather
         // than sizing the frame from whatever space is going spare and hoping the columns fit.
-        // ⚠ ONE arithmetic for two blocks that must agree. This used to compute the frame as
-        // 2*step - MidGap + SidePad while the draw placed column 1 at col0 + step + Col1Shift:
-        // the extra 10px of Col1Shift existed in the placement and NOT in the width, so column 2
-        // started further right than the frame had been sized for and its values were clipped by
-        // the border (bench 46.158). The frame is now derived from the SAME expression the draw
-        // uses — column 1's origin plus what one column needs — so the two cannot drift apart.
+        // ⚠ ONE arithmetic for two blocks that must agree: the frame is derived from the SAME
+        // expression the draw uses — column 1's origin plus what one column needs — so the two
+        // cannot drift apart (a frame computed independently from where the draw actually places
+        // column 1 will clip that column's values against the border).
         public static float FrameWidthFor(bool withDeltas, bool withPlan)
         {
-            // ⚠ include the left margin the draw starts at: content begins at ContentLeft,
-            // i.e. Inset px in from the frame's edge, not at the frame's edge. Leaving it out
-            // meant the frame was exactly as wide as its content ended, so the right margin
-            // vanished the moment the columns were correctly aligned with the title.
+            // Include the left margin the draw starts at: content begins at ContentLeft, i.e.
+            // Inset px in from the frame's edge, not at the frame's edge.
             // The frame, read left edge to right edge exactly as the draw consumes it:
             //
             //   [Inset] [column 0] [Col1Shift] [column 1] [SidePad]
             //
-            // ⚠ the two margins are NOT interchangeable and both have to be here once. 46.162
-            // left Inset out, so the right margin vanished the moment the columns lined up with
-            // the title; 46.163 put it in twice (once here, once via ContentLeft) and, because
-            // the frame is anchored on its RIGHT edge and grows leftwards, the surplus showed up
-            // as a 10px gap down the left of the whole block. Content starts at ContentLeft —
-            // Inset in from the frame — so Inset is the LEFT margin and SidePad the right.
+            // ⚠ the two margins are NOT interchangeable and both have to be here once. Content
+            // starts at ContentLeft — Inset in from the frame — so Inset is the LEFT margin and
+            // SidePad the right; double-counting Inset (once here, once via ContentLeft) opens a
+            // gap down the left of the whole block, since the frame is anchored on its RIGHT
+            // edge and grows leftwards.
             float col1Origin = Inset + StepFor(withDeltas) + Col1ShiftConst;  // where the draw puts it
             float w = col1Origin + ColumnContentWidth(withDeltas) + SidePad;
             if (withPlan)
@@ -266,33 +222,24 @@ namespace Ship_Game.GameScreens.ShipDesign
             => StepFor(withDeltas) - MidGap;
 
         // The ship plan is a FIXED square, not a fraction of the frame: the frame's width is
-        // computed FROM the plan, so deriving the plan back from the width was circular and
-        // left a hole between the picture and the columns (bench 46.140).
-        // 250 is what 46.139 actually drew (it worked out at 32% of a 790px frame there), kept
-        // as the size itself now rather than as a fraction that has to be reverse-engineered.
-        // Ludoal fork (bench): trimmed from 250. What reads as margin around the picture is
-        // mostly the plan's own empty space — a ship rarely fills its square — so the way to
-        // recover it is to shrink the square, not to chase a margin that is not there.
+        // computed FROM the plan, so deriving the plan back from the width would be circular.
+        // What reads as margin around the picture is mostly the plan's own empty space — a ship
+        // rarely fills its square — so the way to recover it is to shrink the square, not to
+        // chase a margin that is not there.
         const float PlanSide = 220f;
         const float PlanGap = 6f;
 
         // How far this panel is inset inside its frame. The screen builds the inner rect, so it
         // tells us here rather than us guessing a constant that would have to stay in step.
-        // ⚠ THE inset, and the only one. It was 10 here while the screen built the Active panel
-        // at +10 and the Hover panel at +12 — four numbers for one distance, so Hover happened
-        // to land right (its extra 2px cancelled the mismatch) and Active sat too far left
-        // (bench 46.162). Callers now read this constant instead of each carrying their own.
+        // ⚠ THE inset, and the only one — callers read this constant instead of each carrying
+        // their own; separate copies for Active and Hover can silently drift apart.
         public const float Inset = 10f;
         public float InnerInset = Inset;
 
         // Where content starts: the inner rect's own left edge, full stop. The rect is already
         // inset inside the frame, so that IS the margin — nothing to back out and nothing to add.
-        //
-        // ⚠ this used to be X - InnerInset + 10, which lands 10px further left, i.e. hard against
-        // the frame's own inset. The frame and the columns were each right on their own terms and
-        // the whole block still sat 10px too far left inside it (bench 46.163, Ludo). It also put
-        // the text on a different left edge from the ship plan, which draws at X — so the two
-        // could never line up. One edge for the title, the columns and the plan now.
+        // One edge for the title, the columns and the ship plan, which also draws at X — any
+        // other origin here puts the text on a different left edge from the plan.
         float ContentLeft => X;
 
         // Whether this frame reserves room for delta lanes. A property of the FRAME, not of the
@@ -301,13 +248,13 @@ namespace Ship_Game.GameScreens.ShipDesign
         // frame never compares, so it gives the space to its columns instead.
         public bool HasDeltaLanes;
 
-        // Ludoal fork (spec v4): the Hover cartouche draws the design's MODULE PLAN at its far
-        // left (maintainer feedback) — the picture the flying overlay used to give, and the reason to keep a
-        // hover frame at all. Same call the overlay made: RenderOverlay with the modules and the
-        // hull background. Only the hover frame turns this on.
+        // Ludoal fork: the Hover cartouche draws the design's MODULE PLAN at its far left — the
+        // picture the flying overlay used to give, and the reason to keep a hover frame at all.
+        // Same call the overlay made: RenderOverlay with the modules and the hull background.
+        // Only the hover frame turns this on.
         public bool ShowShipPlan;
 
-        // ── COMPACT (maintainer bench 302) ────────────────────────────────────────────────
+        // ── COMPACT ────────────────────────────────────────────────
         // The flying overlay's own inventory instead of Lek's eight blocks: one column, no
         // headings, the headline five with their icons then the verbose list. The Active
         // cartouche wears it at the browser list's width; the Hover one keeps its plan.
@@ -349,7 +296,7 @@ namespace Ship_Game.GameScreens.ShipDesign
         // one is pinned to the browser list's width by the screen instead
         public static float CompactFrameWidthFor(bool withPlan)
             => Inset + CompactTitleColumn + DeltaLaneWidth + SidePad
-             + (withPlan ? PlanSide + PlanGap - 10f : 0f); // hover window trimmed 10 (bench 325)
+             + (withPlan ? PlanSide + PlanGap - 10f : 0f); // hover window trimmed 10
 
         // re-derive the rows after a Compact flip - the shadow follows, or the delta lookup
         // would match titles across two different row sets and find nothing
@@ -459,11 +406,10 @@ namespace Ship_Game.GameScreens.ShipDesign
             base.Update(fixedDeltaTime);
         }
 
-        // ── the compact set (maintainer design, bench 321): the FULL rows' own definitions,
-        // filtered - same titles, same lambdas, the densities only select. One headingless
-        // column in the operational order: what the ship inflicts, what it takes, how it
-        // moves - three blocks split by air. The ETM/OTM dialect retires to the micro
-        // overlay, where a two-letter label is the right coin.
+        // ── the compact set: the FULL rows' own definitions, filtered - same titles, same
+        // lambdas, the densities only select. One headingless column in the operational order:
+        // what the ship inflicts, what it takes, how it moves - three blocks split by air. The
+        // ETM/OTM dialect retires to the micro overlay, where a two-letter label is the right coin.
         void BuildCompactRows()
         {
             Color good = Color.White;
@@ -478,7 +424,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             Stat(GT.ShipOffense, () => Ds.Strength, GT.TT_ShipOffense, nonZero: true);
             Stat("DPS", () => S.TotalDps, GT.TT_ShipOffense, nonZero: true, icon: "UI/icon_offense", iconColor: Color.OrangeRed);
             Stat("Weapons", () => S.Weapons.Count, GT.TT_ShipOffense, nonZero: true);
-            // the carrier and bomber armament, right under the guns (maintainer bench 322)
+            // the carrier and bomber armament, right under the guns
             Stat("Hangars", () => S.Carrier.AllFighterHangars.Length, GT.TT_ShipOffense, nonZero: true);
             Stat("Bomb Bays", () => S.BombBays.Count, GT.TT_ShipOffense, nonZero: true);
             Stat("Max Wpn Range", () => S.WeaponsMaxRange, GT.TT_ShipOffense, nonZero: true);
@@ -516,8 +462,8 @@ namespace Ship_Game.GameScreens.ShipDesign
 
             Gap();
 
-            // PAYLOAD, role-adaptive (maintainer bench 322): a warship carries neither,
-            // so the whole block - air included - folds away on its own
+            // PAYLOAD, role-adaptive: a warship carries neither, so the whole block - air
+            // included - folds away on its own
             Stat(GT.TroopCapacity, () => S.TroopCapacity, GT.TT_TroopCapacity, ordnance, nonZero: true);
             Stat(GT.CargoSpace, () => S.CargoSpaceMax, GT.TT_CargoSpace, nonZero: true);
         }

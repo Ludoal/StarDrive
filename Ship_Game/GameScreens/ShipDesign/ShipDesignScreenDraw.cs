@@ -25,8 +25,8 @@ namespace Ship_Game
         {
             ScreenManager.BeginFrameRendering(elapsed, ref View, ref Projection);
 
-            // Ludoal fork (bench 387, maintainer): Full Screen dims the universe behind the
-            // workbench; windowed leaves the band alive and bright like every other page.
+            // Ludoal fork: Full Screen dims the universe behind the workbench; windowed leaves
+            // the band alive and bright like every other page.
             if (FullScreenDesign)
             {
                 batch.SafeBegin();
@@ -44,19 +44,18 @@ namespace Ship_Game
 
             ParentUniverse.DrawStarField(ScreenManager.SpriteRenderer);
             ParentUniverse.Particles.Draw(View, Projection, nearView:true);
-            // ⚠ Ludoal fork (bench 347): do NOT Update the universe's particles here. Since the
-            // screen became a popup, the universe underneath is visible again and runs its OWN
-            // Update (particles included), so updating them a second time from Draw advanced them
-            // twice per frame and they piled up - the Shipyard-only slowdown Fleet never had
-            // (Fleet does not touch particles). Draw them, let the universe update them.
+            // ⚠ Ludoal fork: do NOT Update the universe's particles here. This screen is a popup,
+            // so the universe underneath is visible and runs its OWN Update (particles included);
+            // updating them a second time from Draw advances them twice per frame and they pile
+            // up. Draw them, let the universe update them.
 
             ScreenManager.RenderSceneObjects();
 
             if (ToggleOverlay)
             {
-                // bench 360 (maintainer): the module tiles clip to the frame like the 3D hull does -
-                // this pass now rides the scene scissor (the scissor rect is still set on the device;
-                // the pinned rasterizer makes the batch honour it).
+                // The module tiles clip to the frame like the 3D hull does - this pass rides the
+                // scene scissor (the scissor rect is still set on the device; the pinned
+                // rasterizer makes the batch honour it).
                 batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:true,
                                 Ship_Game.Graphics.RenderStates.ScissorEnabled);
 
@@ -526,9 +525,9 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork: the label sits on its OWN dropdown rather than on a screen fraction - the two
-        // used to be written separately and drifted apart the moment either moved. Arial12: these
-        // are secondary options, not headings.
+        // Ludoal fork: the label sits on its OWN dropdown rather than on a screen fraction, so
+        // the two cannot drift apart when either moves. Arial12: these are secondary options,
+        // not headings.
         //
         // To the LEFT of the field and centred on it, so the whole options row reads as one line
         // with the carrier-only checkbox. The label measures itself, which is what keeps it clear
@@ -544,8 +543,7 @@ namespace Ship_Game
             Graphics.Font font = Fonts.Arial12Bold;
             var pos = new Vector2(dropdown.X - font.TextWidth(title) - TitleGap,
                                   dropdown.CenterY() - font.LineSpacing / 2);
-            // the panels' own label grey (maintainer bench 304) - orange read louder than
-            // everything around it
+            // the panels' own label grey - orange reads louder than everything around it
             batch.DrawString(font, title, pos, new Color(168, 172, 178));
         }
 

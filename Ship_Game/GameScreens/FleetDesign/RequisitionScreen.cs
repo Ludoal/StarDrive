@@ -30,7 +30,7 @@ namespace Ship_Game
             TransitionOffTime = 0.25f;
 
             // centred on the Design group's frame, not the display - the rule every dialog
-            // of a frame-bound screen follows (the Shipyard set it, bench 362)
+            // of a frame-bound screen follows
             RectF = RectF.FromCenter(fds.FrameCentre, 345, 600);
         }
 

@@ -498,11 +498,10 @@ namespace Ship_Game.Universe.SolarBodies
                     }
                     else
                     {
-                        // Ludoal fork (maintainer spec): the ordered priority list, generalized
-                        // from the old projector/freighter booleans. A prioritized item slots
-                        // above everything ranked worse or unranked, below same-or-better ranks -
-                        // FIFO within a category, better-ranked categories stay ahead. Insertion
-                        // only: reordering the list never reshuffles queues already filled.
+                        // Ludoal fork (maintainer spec): the ordered priority list. A prioritized
+                        // item slots above everything ranked worse or unranked, below same-or-better
+                        // ranks - FIFO within a category, better-ranked categories stay ahead.
+                        // Insertion only: reordering the list never reshuffles queues already filled.
                         int rank = ConstructionPriorityRank(item);
                         if (rank >= 0)
                         {

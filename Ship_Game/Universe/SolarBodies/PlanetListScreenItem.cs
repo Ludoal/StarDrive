@@ -23,7 +23,7 @@ namespace Ship_Game
         Empire Player => Planet.Universe.Player;
         private readonly Color Cream = Colors.Cream;
         // the NAME a step larger than the body text, its class a plain regular
-        // (maintainer, 4 Aug - down from the old Arial20)
+        // (maintainer feedback)
         private readonly Graphics.Font NameFont  = Fonts.Arial14Bold;
         private readonly Graphics.Font ClassFont = Fonts.Arial12;
         private readonly Graphics.Font SmallFont  = Fonts.Arial12Bold;
@@ -34,7 +34,7 @@ namespace Ship_Game
         private int LastSeenBuildings;
 
         private Rectangle ShipIconRect;
-        // bench 393 (maintainer): the two order buttons are a compact icon lane now (Ships-list
+        // (maintainer feedback) the two order buttons are a compact icon lane (Ships-list
         // style). ColonizeIcon: click to colonise, RED to cancel. TroopIcon: left = Send Troops,
         // right = cancel one inbound landing (Recall reuses it on our own worlds). Rects are laid
         // in PerformLayout and hit-tested in HandleInput - no UIButton, so the icon can go red.
@@ -212,14 +212,14 @@ namespace Ship_Game
         void AddPlanetName()
         {
             // two lines: the NAME a step larger, owner-coloured; the CLASS under it in
-            // plain regular, uncoloured and without the richness - it has its own column
-            // now. The environment multiplier stays on the class line (maintainer, 4 Aug).
+            // plain regular, uncoloured and without the richness - it has its own column.
+            // The environment multiplier stays on the class line (maintainer feedback).
             var namePos = new Vector2(ShipIconRect.Right + 8, Y + Height / 2 - (NameFont.LineSpacing + ClassFont.LineSpacing + 2) / 2);
             Label(namePos, Planet.Name, NameFont, EmpireColor);
             namePos.Y += NameFont.LineSpacing + 2;
             // class WITH its richness word ("Terran Ultra Rich") - only the numeric
             // values left for their own column; the mineable variant appends " (8.2)",
-            // stripped here too (maintainer, 4 Aug)
+            // stripped here too
             string category = Planet.LocalizedRichness;
             int par = category.IndexOf(" (");
             if (par >= 0) category = category.Substring(0, par);
@@ -237,7 +237,7 @@ namespace Ship_Game
 
         void AddPlanetStats()
         {
-            // an unowned habitable world shows NOTHING for owner (maintainer bench 291:
+            // an unowned habitable world shows NOTHING for owner (maintainer feedback:
             // "None" read like a race); an uninhabitable one keeps its Impossible
             string owner = Planet.Owner != null ? Planet.Owner.data.Traits.Singular
                          : Planet.Habitable ? "" : Localizer.Token(GameText.Impossible);
@@ -268,9 +268,8 @@ namespace Ship_Game
             DynCell(5, l => Planet.MineralRichness.ToString("0.0", CultureInfo.InvariantCulture));
             // Max Pop splits: the figure in its column, the percentage in Fill's.
             // ⚠ the percentage is computed against the player's own max - the string's
-            // built-in ratio divides by the BASE max, so a racial max-pop bonus read as
-            // "100.4%" (Lek's review, bench 305). Clamped: a brief overshoot is the sim's
-            // business, not the table's.
+            // built-in ratio divides by the BASE max, so a racial max-pop bonus reads over
+            // 100%. Clamped: a brief overshoot is the sim's business, not the table's.
             DynCell(6, l =>
             {
                 string ps = Planet.PopulationStringForPlayer;
@@ -286,8 +285,8 @@ namespace Ship_Game
             Cell(8, owner, EmpireColor);
         }
 
-        // the Features column (maintainer, 4 Aug): the terrain/event buildings grouped by
-        // icon, each with its count - "{Rock Field}(3) {Dormant Volcano}(2) {Volcano}"
+        // the Features column: the terrain/event buildings grouped by icon, each with
+        // its count - "{Rock Field}(3) {Dormant Volcano}(2) {Volcano}"
         public static Array<(Building b, int n)> FeatureGroups(Planet p)
         {
             var groups = new Array<(Building b, int n)>();
@@ -304,7 +303,7 @@ namespace Ship_Game
 
         // a 20px icon OCCUPIES the width of three characters - the same footprint the
         // column measures itself on and the renderer advances by; at most SIX features
-        // sit on a line, the rest wrap to a second one (maintainer bench 294)
+        // sit on a line, the rest wrap to a second one (maintainer feedback)
         const int FeaturesPerLine = 6;
         static int IconFootprint => (int)Fonts.Arial12Bold.TextWidth("000");
 
@@ -495,10 +494,9 @@ namespace Ship_Game
 
             Ship ship = incomingTroopShips.Last();
             ship.AI.OrderRebaseToNearest();
-            // Ludoal fork: the free-troop count has to be recomputed too. Cancelling an inbound
-            // landing frees its troops again, and every row's Send Troops button hides itself on
-            // CanSendTroops - refreshing this row alone left the others hiding on a stale count,
-            // so one right-click made the whole column of buttons vanish.
+            // Ludoal fork: cancelling an inbound landing frees its troops again, and every row's
+            // Send Troops button hides itself on CanSendTroops - refreshing this row alone would
+            // leave the others hiding on a stale count.
             Screen.RefreshSendTroopButtonsVisibility();
             PerformLayout(); // bench 393
         }

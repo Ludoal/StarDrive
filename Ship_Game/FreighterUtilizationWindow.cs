@@ -82,7 +82,7 @@ namespace Ship_Game
             HasContent = true;
 
             RectF win = new(Rect);
-            // Ludoal fork (maintainer feedback): the window title is just "Freighters" now
+            // Ludoal fork: window title is "Freighters"
             ConstructionSubMenu = new(win, "Freighters");
             float titleOffset = win.Y + 40;
             Add(new UILabel(new Vector2(win.X + 15, titleOffset), GameText.TotalFreighterUtilization, Fonts.Arial12Bold, Color.Gold, GameText.TotalUtilizationTip));

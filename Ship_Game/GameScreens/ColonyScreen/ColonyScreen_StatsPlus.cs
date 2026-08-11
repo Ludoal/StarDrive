@@ -12,12 +12,11 @@ namespace Ship_Game
     // Everything about the tab lives in this file; the only hooks in existing
     // code are one AddTab() call and one dispatch line in DrawDetailInfo().
     //
-    // Design v1.2 (maintainer feedback): totals and diagnostics on the panel,
-    // marginal per-colonist rates belong to the Assign Labor tooltips, dead
-    // lines are omitted. Budget is decomposed like the Economic Review and its
-    // lines sum to the displayed net. All figures are per TURN: Empire.DoMoney()
-    // credits NetIncome once per turn — the engine's per-year labels (now BC/turn) are display
-    // convention, not data.
+    // Totals and diagnostics on the panel; marginal per-colonist rates belong to
+    // the Assign Labor tooltips, dead lines are omitted. Budget is decomposed like
+    // the Economic Review and its lines sum to the displayed net. All figures are
+    // per TURN: Empire.DoMoney() credits NetIncome once per turn — the engine's
+    // per-year labels (BC/turn) are display convention, not data.
     // TODO localization pass: block titles/short labels need GameText tokens.
     public partial class ColonyScreen
     {
@@ -25,8 +24,8 @@ namespace Ship_Game
 
         bool IsStatsPlusTabSelected => PFacilities.IsTabSelected(StatsPlusTabTitle);
 
-        // Layout helpers (SPHeader/SPLine/SPNum/SPSetColumns/SPYield*/SPSigned/SPTone) now live in
-        // the shared StatsPlusLayout (bench 353) so Colony and Blueprints draw the exact same panel.
+        // Layout helpers (SPHeader/SPLine/SPNum/SPSetColumns/SPYield*/SPSigned/SPTone) live in
+        // the shared StatsPlusLayout so Colony and Blueprints draw the exact same panel.
 
         // Read-only mirror of Planet.GrowPopulation() (same branches, no side
         // effects) — the engine computes the rate inline and never exposes it.
@@ -63,18 +62,15 @@ namespace Ship_Game
         void DrawStatsPlusTab(SpriteBatch batch, Vector2 bCursor)
         {
             // Two side-by-side blocks inside the tab, each half of the usable width
-            // (20px inner margin per side) — was a flat +350, which overflowed the
-            // panel as soon as the frame was narrower than 1080p.
+            // (20px inner margin per side).
             float blockW = (PFacilities.Width - 40) * 0.5f;
             SPCols cols = StatsPlusLayout.SPSetColumns(TextFont, blockW);
 
             var left  = bCursor;
-            // the yields grid closes flush on the panel's right edge (maintainer bench 281):
-            // its last pivot plus a fraction of room lands at the margin, and the block start
-            // derives from that - as far right as it can sit
+            // The yields grid closes flush on the panel's right edge: its last pivot plus a
+            // fraction of room lands at the margin, and the block start derives from that.
             float usable = PFacilities.Width - 40;
-            // +10: the yields grid borrows the panel's right inner margin (bench 286,
-            // "du vide exploitable à droite")
+            // +10: the yields grid borrows the panel's right inner margin.
             var right = new Vector2(bCursor.X + usable + 10 - (cols.YieldColTotal + TextFont.TextWidth(".00") + 2), bCursor.Y);
 
             // ── BUDGET (BC / turn) — gross sources as the building screen promises them,

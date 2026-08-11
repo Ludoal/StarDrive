@@ -61,9 +61,8 @@ namespace Ship_Game
 
                 // Ludoal fork: fog highlights are curated. Projector halos are retired
                 // from the default view (they smeared the whole map and duplicate the F4
-                // overlay); spy/mole coverage (Source == null) shows only on the F7
-                // Vision overlay, which lights every sensor source.
-                // (bench round 3: everything — planets included — lives on the F3 overlay)
+                // overlay); every sensor source, planets included, lives on the F3 Vision
+                // overlay instead.
                 if (!ShowingVisionOverlay)
                     continue;
 

@@ -374,12 +374,11 @@ namespace Ship_Game.GameScreens
                                (frame.CenterY() - screenH * 0.5f) / screenH);
         }
 
-        // Ludoal fork (maintainer feedback, 7 Aug): the group frame is anchored to the left margin
-        // and the bar, so once it caps (1680 wide) its centre sits LEFT of and ABOVE the screen
-        // centre. A 3D screen that fills this frame (Shipyard, Fleets) must shift its optical centre
-        // by the same amount, or the model drifts down-right at hi-res. Returned as a fraction of the
-        // screen, feeding SetPerspectiveProjection's offCentre - the ONE place this offset is
-        // computed, so the two screens can never disagree.
+        // Ludoal fork: the group frame is anchored to the left margin and the bar, so once it caps
+        // (1680 wide) its centre sits left of and above the screen centre. A 3D screen that fills
+        // this frame (Shipyard, Fleets) must shift its optical centre by the same amount, or the
+        // model drifts down-right at hi-res. Returned as a fraction of the screen, feeding
+        // SetPerspectiveProjection's offCentre - the one place this offset is computed.
         public static Vector2 GroupFrameCameraOffset(int screenW, int screenH)
         {
             Rectangle frame = GroupFrame(screenW, screenH);
@@ -394,11 +393,11 @@ namespace Ship_Game.GameScreens
         // frame's, always.
         const int RaceRefH = 900;
         const int NineSliceCorners = 18; // what Submenu cuts off a frame to get its ClientArea
-        // Ludoal fork (maintainer feedback, 7 Aug): race columns are a FIXED width now, not a share
-        // of the frame. The window grows with the faction count, capped only by the physical screen
-        // (the horizontal scroller pages the rest). 228 is the measured column width (name + flag),
-        // WITHOUT the inter-column gap; the pitch adds ColumnGap on top.
-        public const int RaceColumnWidth = 228; // maintainer: 228 fits one more column at 1440/1680; 8 still fit cleanly at 1920
+        // Ludoal fork: race columns are a FIXED width, not a share of the frame. The window grows
+        // with the faction count, capped only by the physical screen (the horizontal scroller pages
+        // the rest). 228 is the measured column width (name + flag), without the inter-column gap;
+        // the pitch adds ColumnGap on top - it fits one more column at 1440/1680, 8 still fit at 1920.
+        public const int RaceColumnWidth = 228;
 
         // the column run inside a frame that wide: client area less a gutter each side, plus one
         // gap because the pitch below carries a trailing gap the last column does not draw
@@ -408,19 +407,17 @@ namespace Ship_Game.GameScreens
         // fixed pitch: the column width plus one inter-column gap. No longer varies with count.
         public static int RaceColumnPitch(int screenW, int count) => RaceColumnWidth + ColumnGap;
 
-        // how many columns the screen can SHOW at that pitch - Combined Arms fields more
-        // than eight majors (maintainer bench 299), and the frame never grows past the
-        // screen's own footprint: the rest scrolls
+        // how many columns the screen can show at that pitch - the frame never grows past the
+        // screen's own footprint, the rest scrolls
         public static int RaceVisibleColumns(int screenW, int count)
         {
             count = Math.Max(count, 1);
             int pitch = RaceColumnPitch(screenW, count);
-            // Ludoal fork (maintainer feedback, 7 Aug): no 1920 ceiling now - how many fixed-width
-            // columns fit is judged against the PHYSICAL screen; the rest scrolls.
+            // Ludoal fork: how many fixed-width columns fit is judged against the physical screen,
+            // no 1920 ceiling; the rest scrolls.
             int avail = RaceColumnRun(screenW - 2 * FrameMargin);
             // the fit test forgives what the round-UP pitch added (at most GroupColumns-1
-            // px over the whole row) - without it a 900p screen showed seven columns where
-            // eight fit (maintainer bench 300)
+            // px over the whole row), or a row can fall one column short of what actually fits
             return Math.Min(count, Math.Max(1, (avail + GroupColumns - 1) / pitch));
         }
 
@@ -527,16 +524,16 @@ namespace Ship_Game.GameScreens
 
         // The 900p footprint, whatever the resolution: Relationships/Blueprints keep this frame -
         // their diagram was laid out for it and does not rearrange, so a bigger screen just leaves
-        // space at the frame's right (maintainer, 4 Aug). Fixed 1440x900, independent of the race
-        // columns (which now grow unbounded on their own pitch).
+        // space at the frame's right. Fixed 1440x900, independent of the race columns (which grow
+        // unbounded on their own pitch).
         const int Fixed900Width = 1440;
         public static Rectangle GroupFrame900(int screenW, int screenH)
             => new(FrameMargin, TabRowY, Math.Min(screenW, Fixed900Width) - 2 * FrameMargin,
                    Math.Min(screenH, RaceRefH) - TabRowY - FrameMargin);
 
-        // Ludoal fork: a content-sized frame may hug a table NARROWER than its own tab
-        // strip, which folds the tabs into a second line (maintainer bench 290) - the
-        // frame width floors on what the strip needs, the content inside doesn't move
+        // Ludoal fork: a content-sized frame may hug a table narrower than its own tab strip,
+        // which folds the tabs into a second line - the frame width floors on what the strip
+        // needs, the content inside doesn't move
         public static float MinTabStripWidth(LocalizedText[] titles)
         {
             float w = 22; // the nine-slice corners either side of the menu bar

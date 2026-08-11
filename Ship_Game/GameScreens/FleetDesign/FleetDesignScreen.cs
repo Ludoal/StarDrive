@@ -30,17 +30,17 @@ namespace Ship_Game
         public readonly Empire Player;
 
         Submenu DesignTabs;   // Ludoal fork: the Design group's tab row, this screen being one tab
-        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // Ludoal fork: this page's real frame is its tab row's rect -
         // the band excludes exactly what the page occupies, dynamic size included
         public override Rectangle PageFrame => DesignTabs?.Rect ?? base.PageFrame;
         // Ludoal fork: every dialog this screen summons centres on ITS frame, not the display -
-        // the same rule the Shipyard follows (bench 362)
+        // the same rule the Shipyard follows
         public Vector2 FrameCentre => DesignTabs.RectF.Center;
 
         // Ludoal fork: the First Fleet cartouche's geometry, shared by the layout that places its
         // buttons and the Draw that paints the name and icon above them.
-        // 10, not 20 (maintainer bench 303): minimum margins - the title lands at +10 like
-        // every other cartouche's, and the ship list above gains the difference
+        // 10, not 20: minimum margins - the title lands at +10 like every other cartouche's,
+        // and the ship list above gains the difference
         const float CartPad = 10f, CartIcon = 64f, CartBtnH = 33f, CartBtnGap = 6f;
         const float CartBtnW = 180f;
         RectF LeftMenu;
@@ -108,9 +108,9 @@ namespace Ship_Game
             EmpireUI = empireUI;
             Player = u.Player;
 
-            // Ludoal fork (bench 343): a popup, so the paused universe keeps drawing BEHIND the
-            // screen (the map shows through the frame's margin) instead of a dead black backdrop -
-            // like the table screens. The Draw stops clearing to black for the same reason.
+            // Ludoal fork: a popup, so the paused universe keeps drawing BEHIND the screen
+            // (the map shows through the frame's margin) instead of a dead black backdrop,
+            // like the table screens. Draw does not clear to black for the same reason.
             IsPopup = true;
 
             // Ludoal fork: no fade in, same as the Shipyard beside it - the two are tabs of one
@@ -119,7 +119,7 @@ namespace Ship_Game
             ShipInfoOverlay = Add(new ShipInfoOverlayComponent(this, u.UState));
 
             FleetNameEntry = new();
-            FleetNameEntry.Font = Fonts.Arial20Bold; // the cartouche's headline (maintainer bench 301)
+            FleetNameEntry.Font = Fonts.Arial20Bold; // the cartouche's headline
             FleetNameEntry.OnTextChanged = (text) => SelectedFleet.Name = text;
             FleetNameEntry.SetColors(Colors.Cream, Color.Orange);
             
@@ -258,9 +258,9 @@ namespace Ship_Game
             // a surround rather than a container - the 3D fleet view keeps its own layout.
             DesignTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.DesignTabTitles, 0,
                                                     OnDesignTabChanged, out Rectangle _);
-            // Ludoal fork (maintainer feedback, 7 Aug): the Fleets 3D view fills the same capped
-            // group frame as the Shipyard, so it centres on that frame, not the whole screen, using
-            // the shared offset. Without it the fleet drifts down-right at hi-res.
+            // Ludoal fork: the Fleets 3D view fills the same capped group frame as the Shipyard,
+            // so it centres on that frame, not the whole screen, using the shared offset -
+            // without it the fleet drifts down-right at hi-res.
             SetPerspectiveProjection(maxDistance: 100_000,
                 offsetXY: ScreenGroups.GroupFrameCameraOffset(ScreenWidth, ScreenHeight));
 
@@ -278,11 +278,11 @@ namespace Ship_Game
             float blockBottom = client.Bottom - ListPad;
             float blockLeft   = client.X + ListPad;
             float blockRight  = client.Right - ListPad;
-            // 10px off the frame's edge (maintainer bench 303) - the caption row is gone,
+            // 10px off the frame's edge - the caption row is gone,
             // both lists gain its height and the left one fits one more fleet
             float listTop = client.Y + 10;
 
-            RectF leftRect = new(client.X + ListPad + 5, listTop, leftW, 500); // 5 right (bench 307): the Patrol badge kissed the edge
+            RectF leftRect = new(client.X + ListPad + 5, listTop, leftW, 500); // 5 right: clears the Patrol badge from the edge
             LeftMenu = leftRect;
             
             Add(new FleetButtonsList(leftRect, this, Universe,
@@ -291,10 +291,9 @@ namespace Ship_Game
                 isSelected: (b) => SelectedFleet?.Key == b.FleetKey
             ));
 
-            // The Fleet cartouche sits BOTTOM RIGHT now, in the slot the Fleet Design
-            // Overview held - the overview text retired to the Codex, end of Warfare
-            // (maintainer bench 300). Same content-derived height, the ship list's width,
-            // and the list above takes every row the overview freed.
+            // The Fleet cartouche sits BOTTOM RIGHT, in the slot the Fleet Design Overview held -
+            // that text lives in the Codex, end of Warfare. Same content-derived height, the ship
+            // list's width, and the list above takes every row the overview freed.
             float cartH = CartPad
                         + Fonts.Arial20Bold.LineSpacing + 8   // name
                         + CartIcon + 8                        // icon
@@ -331,7 +330,7 @@ namespace Ship_Game
 
             ResetLists();
 
-            // centred on the cartouche (maintainer bench 302): the stance bar's first row is
+            // centred on the cartouche: the stance bar's first row is
             // seven 25px buttons, 175 wide - StanceButtons owns that arithmetic
             var ordersBarPos = new Vector2(SelectedStuffRect.X + (SelectedStuffRect.W - 175f) * 0.5f,
                                            SelectedStuffRect.Y + 65);
@@ -358,12 +357,11 @@ namespace Ship_Game
             LoadDesign.OnClick = (b) => ScreenManager.AddScreen(new LoadFleetDesignScreen(this) { CenterOn = FrameCentre });
             AutoArrange.OnClick = (b) => SelectedFleet.AutoArrange();   
 
-            // anchored at the frame's left edge - the cartouche that used to sit there
-            // moved to the bottom right (maintainer bench 300)
+            // anchored at the frame's left edge
             OperationsRect = new(blockLeft, SelectedStuffRect.Y + 30, 360, SelectedStuffRect.H - 30);
 
 
-            // centred in the block (maintainer bench 301): two 150-wide sliders on a 180
+            // centred in the block: two 150-wide sliders on a 180
             // pitch, so the pair spans 330 of the 360 frame
             float slidersX1 = OperationsRect.X + (OperationsRect.W - 330) / 2;
             float slidersX2 = slidersX1 + 180;

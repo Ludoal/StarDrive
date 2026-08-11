@@ -29,7 +29,7 @@ namespace Ship_Game
         Empire Player => Universe.Player;
         readonly Color Cream = Colors.Cream;
         // a body's NAME reads a step larger than the body text, its class a plain regular
-        // (maintainer, 4 Aug - down from the old Arial20)
+        // (maintainer feedback)
         readonly Graphics.Font NameFont = Fonts.Arial14Bold;
         readonly Graphics.Font SmallFont = Fonts.Arial12Bold;
         readonly Graphics.Font ClassFont = Fonts.Arial12;
@@ -44,7 +44,7 @@ namespace Ship_Game
         readonly UniverseState Universe;
 
         UILabel Owner;
-        // bench 399 (maintainer): the deploy buttons are a fixed-slot icon lane now, the
+        // (maintainer feedback) the deploy buttons are a fixed-slot icon lane, the
         // Planets-list convention. Research: white = deploy, RED = abort. Mining: left-click
         // adds, right-click cancels one deploying; gone once every station is deployed.
         // Icons show only with their tech. The Stations column carries the state as text.
@@ -226,8 +226,7 @@ namespace Ship_Game
         void AddPlanetName()
         {
             // two lines: the NAME a step larger (owner-coloured for a claimed body), the
-            // CLASS under it in plain regular, without the richness - it has its own
-            // column now (maintainer, 4 Aug)
+            // CLASS under it in plain regular, without the richness - it has its own column
             var namePos = new Vector2(PlanetIconRect.Right + 8, Y + Height / 2 - (NameFont.LineSpacing + ClassFont.LineSpacing + 2) / 2);
             if (IsStar)
             {
@@ -241,7 +240,7 @@ namespace Ship_Game
             Label(namePos, Planet.Name, NameFont, nameColor);
             namePos.Y += NameFont.LineSpacing + 2;
             // class with its richness WORD - the mineable variant appends " (8.2)" and
-            // that number lives in its own column (bench 293)
+            // that number lives in its own column
             string cls = Planet.LocalizedRichness;
             int par = cls.IndexOf(" (");
             if (par >= 0) cls = cls.Substring(0, par);
@@ -306,7 +305,7 @@ namespace Ship_Game
 
         void AddOwner()
         {
-            // an unclaimed body shows NOTHING (maintainer bench 291: "None" read like a
+            // an unclaimed body shows NOTHING (maintainer feedback: "None" read like a
             // white-named race)
             UITable.Column c = Screen.Table.Columns[5];
             if (IsForDysonSwarm && System.HasDysonSwarm)
@@ -359,9 +358,8 @@ namespace Ship_Game
             }
             else
             {
-                // ⚠ per-nature overloads: the old code cancelled with the Planet overload on
-                // STAR rows too (a null planet), so the abort silently did nothing there -
-                // the table/cartouche desync the bench reported
+                // ⚠ per-nature overloads: cancelling a STAR row with the Planet overload
+                // (a null planet) makes the abort silently do nothing.
                 if (IsStar) Player.AI.CancelResearchStation(System);
                 else        Player.AI.CancelResearchStation(Planet);
             }
@@ -439,7 +437,7 @@ namespace Ship_Game
             MiningPanel.Tooltip = new LocalizedText(GameText.DeployMiningStation);
 
             // each half only while it has something to say: all-deployed reads
-            // "Deployed: 5/5" alone, no "Deploying: 0 -" stub (maintainer bench 400)
+            // "Deployed: 5/5" alone, no "Deploying: 0 -" stub
             var parts = new Array<string>();
             if (numInProgress > 0) parts.Add($"Deploying: {numInProgress}");
             if (numDeployed > 0)   parts.Add($"Deployed: {numDeployed}/{max}");

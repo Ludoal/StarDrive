@@ -27,10 +27,9 @@ namespace Ship_Game
         public readonly IShipDesign Design;    // set on Design rows
         public readonly bool IsBareHull;
         public readonly bool IsWIP;
-        // Ludoal fork (bench 46.152): the badge carries what the GROUP HEADING does not
-        // say. Grouped by hull, the heading is the hull class, so the badge shows the role;
-        // grouped by role, the heading is the role, so it shows the hull instead. Same pill,
-        // no repetition either way (maintainer feedback).
+        // Ludoal fork: the badge carries what the GROUP HEADING does not say. Grouped by hull,
+        // the heading is the hull class, so the badge shows the role; grouped by role, the
+        // heading is the role, so it shows the hull instead. Same pill, no repetition either way.
         public bool ShowHullInBadge;
         public readonly bool CanBeBuilt;
 
@@ -63,18 +62,17 @@ namespace Ship_Game
             IsWIP = isWIP;
             CanBeBuilt = player.WeCanBuildThis(design);
 
-            // Ludoal fork (bench): DELETING uses the red cross, never the no-entry sign, which
-            // this fork now uses to mark a design OBSOLETE - one image cannot mean both "put
-            // this aside" and "destroy it" (maintainer feedback). ⚠ nor AddDelete: its texture is called
-            // icon_clear_filter and it draws a PENCIL, which reads as "edit". The two deletions
-            // differ by position and tooltip: the upper one is this WIP, the lower one every
-            // version of it.
+            // Ludoal fork: DELETING uses the red cross, never the no-entry sign, which marks a
+            // design OBSOLETE - one image cannot mean both "put this aside" and "destroy it".
+            // ⚠ nor AddDelete: its texture is called icon_clear_filter and it draws a PENCIL,
+            // which reads as "edit". The two deletions differ by position and tooltip: the upper
+            // one is this WIP, the lower one every version of it.
             if (isWIP)
             {
                 if (onDelete != null)
                     AddDeleteCross(new(-30, -45), "Delete this WIP Design", onDelete);
-                // the load popup used this very icon for "all versions" (maintainer feedback) - keeping its
-                // pairing means a player who knows that screen reads these two straight away
+                // the load popup used this very icon for "all versions" - keeping its pairing
+                // means a player who knows that screen reads these two straight away
                 if (onDeleteAllWipVersions != null)
                     AddDelete(new(-30, 15), "Delete ALL versions of this WIP Design", onDeleteAllWipVersions);
             }
@@ -94,10 +92,8 @@ namespace Ship_Game
             int h = (int)Height;
             if (Design != null)
             {
-                // Ludoal fork (bench 46.152): the gesture hint belongs to the ROW. Hung off the
-                // list's rect it appeared wherever the cursor first entered and stayed there,
-                // and it fired over the class headers too - those carry no Design, so they no
-                // longer qualify.
+                // Ludoal fork: the gesture hint belongs to the ROW, not the list - hung off the
+                // list's rect it would fire over the class headers too, which carry no Design.
                 if (HitTest(GameBase.ScreenManager.input.CursorPosition))
                     ToolTip.CreateTooltip("Double-click to load\nShift-click to pin for comparison");
 
@@ -105,13 +101,13 @@ namespace Ship_Game
 
                 // Ludoal fork: red for obsolete, the same code the module list uses, and it wins
                 // over the not-buildable grey — a design you have retired is a stronger statement
-                // than one you cannot afford yet (maintainer feedback).
+                // than one you cannot afford yet.
                 Color nameColor = Player.IsDesignObsolete(Design.Name) ? Color.Red
                                 : CanBeBuilt ? Color.White : Color.Gray;
-                // Ludoal fork (bench): clipped short of the affordances on the right, which sit
-                // at -30 from the row's edge. A long name ran straight under them and hid the
-                // delete cross entirely - and WIP names are long by construction, since each
-                // save appends its own version suffix (maintainer feedback).
+                // Ludoal fork: clipped short of the affordances on the right, which sit at -30
+                // from the row's edge. A long name would run straight under them and hide the
+                // delete cross - and WIP names are long by construction, since each save appends
+                // its own version suffix.
                 float nameX = X + h + 6;
                 float nameRoom = Right - 56 - nameX;
                 // trimmed by CHARACTER, not by word: a WIP name is one long token with no spaces
@@ -143,9 +139,9 @@ namespace Ship_Game
                 // it would be the same on every row of the group. A header row itself gets
                 // nothing drawn by us — the base class renders its title in a larger font
                 // and anything of ours lands on top of it.
-                // Ludoal fork (bench 46.157): the bare hull rows had no hint at all — the tooltip
-                // lived in the Design branch, and a hull carries no Design (maintainer feedback). No comparison
-                // line here: pinning compares designs, and an empty hull is not one.
+                // Ludoal fork: the bare hull rows get their own tooltip, since the Design branch's
+                // does not apply — a hull carries no Design. No comparison line here: pinning
+                // compares designs, and an empty hull is not one.
                 if (HitTest(GameBase.ScreenManager.input.CursorPosition))
                     ToolTip.CreateTooltip("Double-click to start a new design on this hull");
 

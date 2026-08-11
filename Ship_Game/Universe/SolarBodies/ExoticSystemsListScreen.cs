@@ -19,8 +19,8 @@ namespace Ship_Game
     public sealed class ExoticSystemsListScreen : GameScreen
     {
         Submenu GalaxyTabs; // Ludoal fork: the Galaxy group's tab row, this screen being one tab
-        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
-        // the band excludes exactly what the page occupies, dynamic size included
+        // Ludoal fork: this page's real frame is its tab row's rect - the band excludes
+        // exactly what the page occupies, dynamic size included
         public override Rectangle PageFrame => GalaxyTabs?.Rect ?? base.PageFrame;
 
         public UniverseScreen Universe;
@@ -76,15 +76,14 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.StarOrPlanet), Sortable = true, MinWidth = 180 },
                 new UITable.Column { Title = Localizer.Token(GameText.Proximity), Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.ResourceName), Sortable = true },
-                // back to the production hammer (Lek's review, bench 305) - the crystal
-                // doubled the Resource column's own icon right beside it
+                // production hammer icon - a crystal icon here would duplicate the Resource
+                // column's own icon right beside it
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Width = 40,
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Richness) },
                 new UITable.Column { Title = Localizer.Token(GameText.Owner), Align = TableAlign.Center, Sortable = true },
-                // sized on the mining row's worst case: the 168px deploy button plus its two
-                // wide enough for the single deploy button (168) plus the "N/M Deployed" count
-                // beside it - back down from 420 now that the two-button layout is gone
-                // bench 399 (maintainer): the deploy buttons become a compact icon lane like
+                // sized on the mining row's worst case: wide enough for the single deploy
+                // button (168) plus the "N/M Deployed" count beside it.
+                // (maintainer feedback) the deploy buttons are a compact icon lane like
                 // Planets - fixed slots (research left, mining right), shown only with the tech
                 new UITable.Column { Title = "Actions", Width = 2 * UITable.PadX + 2 * 22 + 8, Align = TableAlign.Center },
                 new UITable.Column { Title = "Stations", Width = 175 + 2 * UITable.PadX, Align = TableAlign.Center }, // the widest counter (175, measured) plus the cell padding; the Dyson button (178) still fits
@@ -110,15 +109,15 @@ namespace Ship_Game
             Table.Columns[3].Width += 30; // the resource icon
             UITable.AutoSize(Table.Columns[5], Fonts.Arial12Bold, owners);
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
-            // System is the standing sort from the first frame (the list arrives system-ordered)
-            // the standing sort survives the screen for the session (maintainer bench 307)
+            // System is the standing sort from the first frame (the list arrives system-ordered);
+            // the standing sort survives the screen for the session
             if (LastSortCol < 0) { LastSortCol = 0; LastSortAsc = true; }
             Table.Columns[LastSortCol].Sorted = true;
             Table.Columns[LastSortCol].Ascending = LastSortAsc;
 
-            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 388: floor = the info cartouche
-            // 48 = the 44px row plus the list's 4px item padding - counting 44 alone kept
-            // a scrollbar alive with room to spare (maintainer bench 291)
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // floor = the info cartouche
+            // 48 = the 44px row plus the list's 4px item padding - counting 44 alone keeps
+            // a scrollbar alive with room to spare
             float contentH = UITable.ContentHeightFor(99, Math.Max(3, ExploredSolarBodies.Count), 48, fullAvail);
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Galaxy, Universe), 1,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
@@ -222,7 +221,7 @@ namespace Ship_Game
             return base.HandleInput(input);
         }
 
-        // bench 388 (maintainer): single-click = select on the map and pan at current zoom -
+        // (maintainer feedback) single-click = select on the map and pan at current zoom -
         // stars select their system, everything else its planet; double-click still flies
         void OnExoticRowSingleClicked(ExoticSystemsListScreenItem item)
         {
@@ -244,8 +243,7 @@ namespace Ship_Game
             else
             {
                 // Ludoal fork (maintainer feedback): select the PLANET (not just its system) and
-                // glide to the planet-view zoom, copied from the Planet Info cartouche's arrows -
-                // the old Z=10000 zoomed in far too hard and left the planet unselected.
+                // glide to the planet-view zoom, copied from the Planet Info cartouche's arrows.
                 Universe.SetSelectedPlanet(item.Planet);
                 Universe.SnapViewTo(new Vector3d(item.Planet.Position.X, item.Planet.Position.Y,
                     Universe.GetZfromScreenState(UniverseScreen.UnivScreenState.PlanetView)), 5f, 2f);

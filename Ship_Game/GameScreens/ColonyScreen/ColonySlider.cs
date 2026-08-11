@@ -205,7 +205,7 @@ namespace Ship_Game
             float y    = Rect.CenterY() - font.LineSpacing / 2;
             float value = NetValue;
             if (value > -0.05f && value < 0.05f)
-                value = 0f; // what rounds to zero neither shows a minus nor wears pink (bench 307)
+                value = 0f; // what rounds to zero neither shows a minus nor wears pink
 
             // non-numeric states keep the plain left-aligned label
             if (IsDisabled || IsCrippled || IsInvasion)
@@ -217,8 +217,8 @@ namespace Ship_Game
                 return;
             }
 
-            // bench 347: align the numbers on the decimal point. The integer part is RIGHT-aligned
-            // on a fixed comma column (room for 3 digits + a sign), the fraction runs to its right -
+            // Align the numbers on the decimal point. The integer part is RIGHT-aligned on a
+            // fixed comma column (room for 3 digits + a sign), the fraction runs to its right -
             // so "7", "100.2" and "-3.2" all line their point/units up instead of floating.
             Color color = value < 0f ? Color.LightPink : Colors.Cream;
             string text = value.String(); // "0.#": integer, or integer + one decimal

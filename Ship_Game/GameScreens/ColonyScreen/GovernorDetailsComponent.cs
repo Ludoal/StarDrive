@@ -73,7 +73,7 @@ namespace Ship_Game
         ProgressBar CivBudgetBar;
         ProgressBar GrdBudgetBar;
         ProgressBar SpcBudgetBar;
-        // Ludoal fork (maintainer spec): one Auto toggle + a monetary Governor Spending
+        // Ludoal fork: one Auto toggle + a monetary Governor Spending
         // slider, and the split as linked % sliders with padlocks beside the bars - the same
         // grammar as the empire Budget screen. Storage is unchanged: the three manual budgets
         // carry total*share; all zero = the governor allocates on its own.
@@ -116,8 +116,8 @@ namespace Ship_Game
             Planet = p;
             RemoveAll(); // delete all components
 
-            // full size at every width (maintainer, 3 Aug): the column is FIXED on the tab
-            // measure, identical at 900p and 1080p - a width-based font fold piloted nothing
+            // Full size at every width: the column is FIXED on the tab measure, identical at
+            // 900p and 1080p - a width-based font fold piloted nothing.
             Font    = Font12;
             FontBig = Font14;
 
@@ -126,23 +126,22 @@ namespace Ship_Game
 
             Portrait         = Add(new UIPanel(PortraitSprite));
             BluePrintsIcon   = Add(new UIPanel(ResourceManager.Texture("NewUI/blueprints")));
-            WorldType        = Add(new UILabel(Planet.WorldType, Font14)); // full size at every width (maintainer): the title does not fold
-            // Ludoal fork: Font, not Font12 - GetParsedDescription wraps with Font, which is
-            // smaller than Font12 below 1920, so a hardcoded Font12 here drew text measured for
-            // a narrower glyph set and it ran past the frame.
+            WorldType        = Add(new UILabel(Planet.WorldType, Font14)); // full size at every width: the title does not fold
+            // Ludoal fork: Font, not Font12 - GetParsedDescription wraps with Font; a wider
+            // font here overruns the frame below 1920.
             WorldDescription = Add(new UILabel(Font));
             ColonyBlueprints = Add(new UILabel(GameText.ColonyBlueprintsTitle, FontBig, Color.Wheat));
             BlueprintsName   = Add(new UILabel("", FontBig, Color.Gold));
             BlueprintsCompletionLbl = Add(new UILabel(GameText.Completion, Font, Color.Wheat));
             BlueprintsAchiveable    = Add(new UILabel(GameText.Achievable, Font, Color.Gray));
-            // white body text (maintainer bench) - the semantic colours (green/gold) stay
+            // White body text - the semantic colours (green/gold) stay.
             BlueprintsGovChange     = Add(new UILabel(GameText.GovernorChangedTo, Font, Color.White));
             BlueprintsExclusive     = Add(new UILabel("", Font, Color.LightGreen));
             BlueprintsLink          = Add(new UILabel("", Font, Color.White));
             Blueprintsoverview    = Add(new UILabel("", Font, Color.White));
             BlueprintsEnableGov     = Add(new UILabel("", Font, Color.Gold));
 
-            // "Gov." (maintainer bench): the full word ran past the Defense column
+            // "Gov.": the full word ran past the Defense column.
             GovOrbitals    = Add(new UICheckBox(() => Planet.GovOrbitals, Font, title:"Gov. Manages Space Defense", tooltip:GameText.TheGovernorWillBuildStations));
             AutoTroops     = Add(new UICheckBox(() => Planet.AutoBuildTroops, Font, title:GameText.GovernorBuildsMilitia, tooltip:GameText.TheGovernorWillCreateA));
             GovNoScrap     = Add(new UICheckBox(() => Planet.DontScrapBuildings, Font, title:GameText.GovernorWillNotScrapBuildings, tooltip:GameText.NormallyGovernorsOperateWithinA));
@@ -169,8 +168,8 @@ namespace Ship_Game
             ManualShipyards.Tip = GameText.ManuallyAdjustTheNumberOf2;
             ManualStations.Tip  = GameText.ManuallyAdjustTheNumberOf3;
 
-            // maintainer bench 339: the budget warning is added BEFORE the colony-type dropdown so
-            // the open dropdown list draws OVER it, not the other way round.
+            // The budget warning is added BEFORE the colony-type dropdown so the open dropdown
+            // list draws OVER it, not the other way round.
             BudgetLimitReached = Add(new UILabel(GameText.BudgetLimitReached, FontBig, Color.Red));
 
             // Dropdowns will go on top of everything else
@@ -271,9 +270,8 @@ namespace Ship_Game
 
             Tabs = Add(new Submenu(rect, new LocalizedText[]
             {
-                // "BP", settled (maintainer bench, 3 Aug): BLUEPRINT in full cannot fit at the
-                // width the 900p centre column allows - the short label carries a hover tooltip
-                // instead (see HandleInput)
+                // "BP": BLUEPRINT in full cannot fit at the width the 900p centre column
+                // allows - the short label carries a hover tooltip instead (see HandleInput).
                 GameText.Governor, GameText.Defense2, GameText.Budget, "BP"
             }));
 
@@ -288,7 +286,7 @@ namespace Ship_Game
         public override void PerformLayout()
         {
             float aspect  = PortraitSprite.Size.X / PortraitSprite.Size.Y;
-            // 0.55, not 0.6 (maintainer bench, 3 Aug): the toggles ride under the portrait now
+            // 0.55: the toggles ride under the portrait.
             float height  = (float)Math.Round(Height * 0.55f);
             Portrait.Size = new Vector2((float)Math.Round(aspect*height), height);
             // Ludoal fork: all four tabs lay their content out from this one value, so they
@@ -304,12 +302,11 @@ namespace Ship_Game
             BluePrintsIcon.Color = BlueprintsName.Color = BlueprintsColor;
 
             // Ludoal fork: the right-hand column follows the portrait, whose width is a fraction
-            // of the panel height - so at reduced heights it slid left, under the tab row. It
-            // keeps a floor (see ColumnX), and the description wraps on that same value.
-            // the type picker rides the TITLE line, to its right (maintainer, 3 Aug) - the
-            // description gains the row it occupied and no longer runs over the toggles
+            // of the panel height. It keeps a floor (see ColumnX), and the description wraps on
+            // that same value. The type picker rides the TITLE line, to its right - the
+            // description gains the row it occupied and no longer runs over the toggles.
             WorldType.Pos           = new Vector2(ColumnX, Portrait.Y);
-            // Ludoal fork (maintainer feedback): the colony-type picker sits 20px further right
+            // Ludoal fork: the colony-type picker sits 20px further right.
             ColonyTypeList.Pos      = new Vector2(Math.Max(WorldType.Right + 12, ColumnX + 130) + 20, Portrait.Y);
             WorldDescription.Pos    = new Vector2(ColumnX, Portrait.Y + 21);
             WorldDescription.Text   = GetParsedDescription();
@@ -324,7 +321,7 @@ namespace Ship_Game
             BlueprintsEnableGov.Pos  = new Vector2(X + 10, Bottom - 60);
             BlueprintsEnableGov.Text = GameText.BluePrintsEnableGovernorToLoad;
 
-            CreateBlueprints.Pos   = new Vector2(X+ 10,  Y+ Height - 38); // 8px up (maintainer bench)
+            CreateBlueprints.Pos   = new Vector2(X+ 10,  Y+ Height - 38); // 8px up
             EditBlueprints.Pos     = new Vector2(X + Width - 240, CreateBlueprints.Y);
             ClearBlueprints.Pos    = new Vector2(X + Width - 160, CreateBlueprints.Y);
             LoadBlueprints.Pos     = new Vector2(X + Width - 80, CreateBlueprints.Y); 
@@ -334,11 +331,9 @@ namespace Ship_Game
             BlueprintsCompletionLbl.Pos     = new Vector2(X + 10, Y + 70 + shift);
             BlueprintsCompletionLbl.Tooltip = GameText.CompletionTip;
 
-            // maintainer bench 338: the warning's BOTTOM lines up with the portrait's bottom - a
-            // fixed anchor, whatever the description length (a long one let MeasureString under-count
-            // the wrapped height and the red line dropped into the text). A label draws from its top,
-            // so seat its top one line-height above the portrait foot. X stays in the description
-            // column beside it.
+            // The warning's BOTTOM lines up with the portrait's bottom - a fixed anchor,
+            // whatever the description length. A label draws from its top, so seat its top one
+            // line-height above the portrait foot. X stays in the description column beside it.
             BudgetLimitReached.Pos = new Vector2(WorldDescription.X,
                 Portrait.Pos.Y + Portrait.Size.Y - FontBig.LineSpacing);
 
@@ -355,27 +350,23 @@ namespace Ship_Game
             SpcBudgetBar.SetRect(SpcBudgetRect);
             BlueprintsCompletion.SetRect(new Rectangle((int)X + 100, (int)(Y + 70 + shift), (int)(Width * 0.5f), 30));
 
-            // Ludoal fork: the bottom row sat at Bottom - 20, but a checkbox is drawn CENTRED on
-            // its Y, so half of its height fell past that and the row was clipped by the frame
-            // at the heights this panel actually gets. The margin now comes from the row's own
-            // height instead of a guessed constant. The column sits to the RIGHT of the portrait,
-            // on the same left edge as the world title above it.
-            // two toggles per line (maintainer bench, 3 Aug): Quarantine and Prioritized sit
-            // UNDER the portrait; the two contextual toggles share their exact lines at ColumnX
-            Quarantine.Pos          = new Vector2(X + 10, Portrait.Bottom + 14); // a step lower - there is room below (maintainer bench)
+            // Ludoal fork: a checkbox is drawn CENTRED on its Y, so the margin comes from the
+            // row's own height rather than a guessed constant. The column sits to the RIGHT of
+            // the portrait, on the same left edge as the world title above it. Quarantine and
+            // Prioritized sit UNDER the portrait; the two contextual toggles share their exact
+            // lines at ColumnX.
+            Quarantine.Pos          = new Vector2(X + 10, Portrait.Bottom + 14); // a step lower - there is room below
             Prioritized.Pos         = new Vector2(X + 10, Portrait.Bottom + 34);
-            SpecializedTradeHub.Pos = new Vector2(ColumnX + 25, Quarantine.Pos.Y); // +25: clear of the left labels at 1080 fonts (bench)
+            SpecializedTradeHub.Pos = new Vector2(ColumnX + 25, Quarantine.Pos.Y); // +25: clear of the left labels at 1080 fonts
             GovNoScrap.Pos          = new Vector2(ColumnX + 25, Prioritized.Pos.Y);
             BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, Quarantine.Pos.Y - 35);
 
-            // Defense tab. ⚠ These six buttons used to hang off Bottom, which is why the panel
-            // needed 300px of height for ~120px of content: the gap in the middle was pure
-            // anchoring, not spacing (maintainer: "remonter les 3 boutons sous le slider").
-            // They follow their own column now, so the panel's height can be its content's.
+            // Defense tab. These six buttons follow their own column, so the panel's height
+            // can be its content's.
             AutoTroops.Pos        = new Vector2(TopLeft.X + 10, Y + 30 + shift);
             Garrison.Pos          = new Vector2(TopLeft.X + 20, Y + 50 + shift);
             float defRow          = Y + 100 + shift;  // a breath under the garrison slider
-            // 34 per row, not 26 (maintainer, 3 Aug): the buttons breathe vertically
+            // 34 per row, not 26: the buttons breathe vertically
             LaunchAllTroops.Pos   = new Vector2(TopLeft.X + 10, defRow);
             LaunchSingleTroop.Pos = new Vector2(TopLeft.X + 10, defRow + 34);
             CallTroops.Pos        = new Vector2(TopLeft.X + 10, defRow + 68);
@@ -417,8 +408,8 @@ namespace Ship_Game
             // Value lanes at the line's end: current spending (white), and on Auto the raw
             // target in parentheses (grey) - UpdateBudgets slides the value to the edge
             // when the target lane is hidden.
-            // 20, not RightMargin: the Submenu frame is inset ~9px, the grey target kissed
-            // the painted edge (bench 406)
+            // 20, not RightMargin: the Submenu frame is inset ~9px; RightMargin would let the
+            // grey target kiss the painted edge.
             const int TargetW = 50, SpendValueW = 40;
             float spendRow = Y + 130 + shift;
             float rowRight = X + Width - 20;
@@ -470,8 +461,8 @@ namespace Ship_Game
             {
                 if (cb.Checked)
                 {
-                    // back to the governor's own allocation; the padlocks release too -
-                    // a pin held across the mode switch surprised the bench (405)
+                    // Back to the governor's own allocation; the padlocks release too -
+                    // a pin held across the mode switch would otherwise stick.
                     Planet.SetManualCivBudget(0);
                     Planet.SetManualGroundDefBudget(0);
                     Planet.SetManualSpaceDefBudget(0);
@@ -654,8 +645,8 @@ namespace Ship_Game
                 ShareCiv.Visible = ShareGrd.Visible = ShareSpc.Visible = AutoBudgetCheck.Visible;
                 PctCiv.Visible   = PctGrd.Visible   = PctSpc.Visible   = AutoBudgetCheck.Visible;
                 LockCiv.Visible  = LockGrd.Visible  = LockSpc.Visible  = AutoBudgetCheck.Visible;
-                // bench 405: on Auto the whole row is read-only, every padlock reads solid
-                // white; manual keeps solid = locked, faint = free
+                // On Auto the whole row is read-only, every padlock reads solid white;
+                // manual keeps solid = locked, faint = free.
                 LockCiv.IconTint = PlanetAutoBudget || PlanetShareLocked[0] ? Color.White : Color.White.Alpha(0.35f);
                 LockGrd.IconTint = PlanetAutoBudget || PlanetShareLocked[1] ? Color.White : Color.White.Alpha(0.35f);
                 LockSpc.IconTint = PlanetAutoBudget || PlanetShareLocked[2] ? Color.White : Color.White.Alpha(0.35f);
@@ -753,8 +744,8 @@ namespace Ship_Game
 
         void DrawBudgetsTab(SpriteBatch batch)
         {
-            // bench 406: the bars draw with or without a governor - same presentation, the
-            // spent/allocation reading holds either way; only the CONTROLS need a governor
+            // The bars draw with or without a governor - same presentation, the spent/allocation
+            // reading holds either way; only the CONTROLS need a governor.
             if (Planet.CType is not Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub)
             {
                 CivBudgetBar.Draw(batch);
@@ -812,8 +803,8 @@ namespace Ship_Game
             if (potentialBuildings.Count > 0)
             {
                 BlueprintsTemplate template = new BlueprintsTemplate($"Snapshot of {Planet.Name}", false, "", potentialBuildings, Planet.CType);
-                // the colony closes first (bench 397) - two groups must not stack; closing
-                // Blueprints reopens it (the hosted seat survives the round trip)
+                // The colony closes first - two groups must not stack; closing Blueprints
+                // reopens it (the hosted seat survives the round trip).
                 Screen.ExitScreen();
                 Screen.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Player, template,
                                                                     returnToColony: Planet));
@@ -824,7 +815,7 @@ namespace Ship_Game
         {
             if (Planet.HasBlueprints && ResourceManager.TryGetBlueprints(Planet.Blueprints.Name, out BlueprintsTemplate template))
             {
-                // same round trip as Snapshot (bench 397)
+                // Same round trip as Snapshot.
                 Screen.ExitScreen();
                 Screen.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Player, template, this,
                                                                     returnToColony: Planet));
@@ -1127,7 +1118,7 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // the folded BP tab says its full name on hover (maintainer, 3 Aug)
+            // The folded BP tab says its full name on hover.
             if (Tabs != null && Tabs.Tabs.Count > 3 && Tabs.Tabs[3].Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip("Blueprint");
 

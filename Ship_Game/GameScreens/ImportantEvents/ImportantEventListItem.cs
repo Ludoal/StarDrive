@@ -21,7 +21,7 @@ namespace Ship_Game
             Event    = importantEvent;
             RowColor = Event.RelevantEmpire?.EmpireColor ?? Color.LightGray;
 
-            // the faction flag rides LEFT of the title (maintainer, 4 Aug)
+            // the faction flag rides LEFT of the title
             if (Event.RelevantEmpire != null)
             {
                 EventIcon = Add(new UIPanel(Pos, ResourceManager.Flag(Event.RelevantEmpire.data.Traits.FlagIndex),

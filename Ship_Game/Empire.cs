@@ -1872,10 +1872,9 @@ namespace Ship_Game
                 CheckFederationVsPlayer(us);
                 Universe.Events.UpdateEvents(Universe);
 
-                // Ludoal fork (maintainer request): only warn when the empire is actually
+                // Ludoal fork (maintainer feedback): only warns when the empire is actually
                 // LOSING money - a light cash cushion with a positive net income is a
-                // strategy, not an emergency. And at most once a StarDate year: it used to
-                // re-fire every turn the moment the notification was dismissed.
+                // strategy, not an emergency. At most once per StarDate year.
                 if (NetIncome < 0 && (Money / AllSpending.LowerBound(1)) < 2
                                   && Universe.StarDate - LastMoneyWarningDate >= 1f)
                 {

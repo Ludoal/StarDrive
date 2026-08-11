@@ -31,10 +31,8 @@ namespace Ship_Game
             {
                 DrawModule(batch);
 
-                // Ludoal fork (bench 46.152): the gesture hint belongs to the ROW, not to the
-                // list. Hung off the list's rect it appeared wherever the cursor first entered
-                // and stayed there, and it fired over category headers too - those have no
-                // Module, so they no longer qualify.
+                // Ludoal fork: the gesture hint belongs to the ROW, not to the list - hung off
+                // the list's rect it would fire over category headers too, which have no Module.
                 if (HitTest(GameBase.ScreenManager.input.CursorPosition))
                     ToolTip.CreateTooltip("Click to pick this module\nShift-click to pin it for comparison");
             }

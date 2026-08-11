@@ -189,8 +189,7 @@ public static class GlobalStats
     // (the classic pre-46-a look). Default off = the map stays dark, live sensors only.
     public static bool FogOfWarMemory;
 
-    // Ludoal fork: symmetric ship design is a PLAYER preference, not a save property —
-    // it used to live on the Empire ([StarData]) so every existing save re-imposed ON.
+    // Ludoal fork: symmetric ship design is a PLAYER preference, not a save property.
     // Default off.
     public static bool SymmetricDesign;
 

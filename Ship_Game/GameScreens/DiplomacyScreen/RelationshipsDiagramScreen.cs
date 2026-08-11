@@ -40,8 +40,8 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
 
         readonly UniverseScreen Universe;
         Submenu GroupTabs; // Ludoal fork: the Diplomacy group's tab row, this screen being one tab
-        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
-        // the band excludes exactly what the page occupies, dynamic size included
+        // Ludoal fork: this page's real frame is its tab row's rect - the band excludes
+        // exactly what the page occupies, dynamic size included.
         public override Rectangle PageFrame => GroupTabs?.Rect ?? base.PageFrame;
 
         // The stock diplomacy screen - kept upstream-identical as a reference - opens this with
@@ -62,9 +62,9 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             TransitionOffTime = 0.25f;
 
             // Ludoal fork: the Relationships tab of the Diplomacy group. Same tab row as its
-            // three siblings, but a frame pinned to the 900p footprint whatever the resolution
-            // (maintainer, 4 Aug): the diagram was laid out for it and does not rearrange, so a
-            // bigger screen just leaves space at the frame's right.
+            // three siblings, but a frame pinned to the 900p footprint whatever the resolution -
+            // the diagram is laid out for it and does not rearrange, so a bigger screen just
+            // leaves space at the frame's right.
             Rectangle frame = ScreenGroups.GroupFrame900(ScreenWidth, ScreenHeight);
             GroupTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
                                         ScreenGroups.LiveTitles(ScreenGroups.Group.Diplomacy, Universe)));
@@ -85,7 +85,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
         // hands over to it. Relationships itself is a no-op: we are already here.
         void OnGroupTabChanged(int index)
         {
-            // Ludoal fork (bench 379): the hosted colony's tab, appended past the stock four
+            // Ludoal fork: the hosted colony's tab, appended past the stock four.
             if (ScreenGroups.IsHostedTab(ScreenGroups.Group.Diplomacy, index, Universe))
             {
                 ExitScreen();

@@ -70,8 +70,8 @@ namespace Ship_Game
         public bool LookingAtPlanet;
         public bool snappingToShip;
         public bool returnToShip;
-        // Ludoal fork (bench 191): when a colony was opened from a LIST screen (Economy,
-        // Empire, Troops), closing it goes back to that list rather than to the map (maintainer feedback).
+        // Ludoal fork (maintainer feedback): when a colony was opened from a LIST screen
+        // (Economy, Empire, Troops), closing it goes back to that list rather than to the map.
         // What is remembered is how to REOPEN it, not which one it was: the three screens have
         // three different constructors, and an enum here would be one more thing to keep in
         // step with them. Cleared as soon as it is used, and by any colony opened from the map.
@@ -85,9 +85,9 @@ namespace Ship_Game
         // itself has left the stack). Armed alongside ReturnToListScreen; None when it clears.
         public GameScreens.ScreenGroups.Group ReturnToListGroup = GameScreens.ScreenGroups.Group.None;
 
-        // Ludoal fork: the HOSTED tab's state - the successor of the trio above (spec:
-        // colony-as-tab, maintainer decision: the mechanism is universal, the colony is
-        // only its first subject; a ship or a troop panel rides the same seat later).
+        // Ludoal fork (maintainer decision): the HOSTED tab's state - the successor of the trio
+        // above. The mechanism is universal, the colony is only its first subject; a ship or a
+        // troop panel rides the same seat later.
         // A group's screens are born and die at every tab swap; only the universe survives
         // them, so it carries what rides a group's row: the tab's title, HOW to (re)open
         // its panel (never which type it was - the ReturnToListScreen philosophy), which
@@ -134,11 +134,11 @@ namespace Ship_Game
             HostedTabTitle = p.Name;
             HostedTabGroup = group;
             HostedTabOrigin = originTab;
-            // Ludoal fork (migration, bench 386): the colony is a STACKED page now, like
-            // every tab - one code path for input, pause, band and closing.
+            // Ludoal fork: the colony is a STACKED page, like every tab - one code path for
+            // input, pause, band and closing.
             OpenHostedTabPanel = () =>
             {
-                SetSelectedPlanet(p); // stays selected - the cartouche shows through (bench 396)
+                SetSelectedPlanet(p); // stays selected - the cartouche shows through
                 ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI));
             };
         }
@@ -268,7 +268,7 @@ namespace Ship_Game
         bool IsUniverseInitialized;
 
         public bool IsViewingCombatScreen(Planet p) => LookingAtPlanet && workersPanel is CombatScreen cs && cs.P == p;
-        // Ludoal fork (migration, bench 386): the colony is a stacked page - ask the stack
+        // Ludoal fork: the colony is a stacked page - ask the stack
         public bool IsViewingColonyScreen(Planet p)
         {
             var stack = ScreenManager.Screens;
@@ -754,7 +754,7 @@ namespace Ship_Game
             PlanetsInCombat.OnClick = CyclePlanetsInCombat;
             PlanetsInCombat.Tooltip = "Cycle through planets that are in combat";
 
-            RectF leftRect = new(25, 60, 200, 500); // 5 right (bench 307): the Patrol badge kissed the edge
+            RectF leftRect = new(25, 60, 200, 500); // 5px margin: the Patrol badge kissed the edge
             Add(new FleetButtonsList(leftRect, this, this,
                 onClick: OnFleetButtonClicked,
                 onHotKey: OnFleetHotKeyPressed,
@@ -836,8 +836,8 @@ namespace Ship_Game
 
         public override void Update(float fixedDeltaTime)
         {
-            // (bench 386 migration: the colony is a stacked page - the top bar closes it on a
-            // group jump like any page, and the seat still dies where the universe regains input)
+            // the colony is a stacked page - the top bar closes it on a group jump like any
+            // page, and the seat still dies where the universe regains input
 
             if (LookingAtPlanet)
                 workersPanel?.Update(fixedDeltaTime);
@@ -873,13 +873,9 @@ namespace Ship_Game
             {
                 SystemInfoOverlay.Update(elapsed);
             }
-            // Ludoal fork (field report 45.44): the clickable build goals froze while paused, so
-            // a DSB under construction could not be selected. We fixed it here, on the UI thread;
-            // upstream took the diagnosis (PR #356) but rewrote the fix onto the SIM thread,
-            // because reading GoalsList from here reopens the torn-read race their fixes_24 had
-            // closed. The patch 47 merge brought their version in and left ours in place, so the
-            // refresh ran on both threads at once - the exact race their rewrite exists to avoid.
-            // Theirs owns it now: see ProcessSimulationTurns in UniverseScreen.UpdateGame.cs.
+            // ⚠ do not refresh clickable build goals from here: reading GoalsList off the UI
+            // thread reopens a torn-read race with the sim thread. That refresh lives on the
+            // sim thread - see ProcessSimulationTurns in UniverseScreen.UpdateGame.cs.
 
             if (ShowPlanetInfo)
             {

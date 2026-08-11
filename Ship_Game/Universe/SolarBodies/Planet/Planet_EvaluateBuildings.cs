@@ -42,8 +42,8 @@ namespace Ship_Game
             if (Name == ExtraInfoOnPlanet)
                 return true;
 
-            // Debug eval planet if we have colony screen open (migration, bench 386: the
-            // colony is a stacked page - ask the stack)
+            // Debug eval planet if we have colony screen open (the colony is a stacked
+            // page - ask the stack)
             return Debugger.IsAttached
                    && Universe.Screen.IsViewingColonyScreen(this);
         }

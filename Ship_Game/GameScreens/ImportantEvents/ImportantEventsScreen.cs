@@ -18,7 +18,7 @@ namespace Ship_Game
     {
         readonly UniverseScreen Universe;
         Submenu GalaxyTabs;   // Ludoal fork: the Galaxy group's tab row, this screen being one tab
-        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // Ludoal fork: this page's real frame is its tab row's rect -
         // the band excludes exactly what the page occupies, dynamic size included
         public override Rectangle PageFrame => GalaxyTabs?.Rect ?? base.PageFrame;
 
@@ -56,7 +56,7 @@ namespace Ship_Game
             Table.Columns[1].Width += 48; // the faction flag rides left of the title
             Table.FitToWidth((int)(Math.Min(ScreenWidth, GameScreens.ScreenGroups.MaxFrameWidth) - 2 * GameScreens.ScreenGroups.FrameMargin) - 66);
 
-            float fullAvail = GameScreens.ScreenGroups.FullTableHeight(ScreenHeight); // bench 388: floor = the info cartouche
+            float fullAvail = GameScreens.ScreenGroups.FullTableHeight(ScreenHeight); // floor = the info cartouche
             float contentH = UITable.ContentHeightFor(99, Math.Max(3, Events.Length), 84, fullAvail);
             GalaxyTabs = GameScreens.ScreenGroups.AddGroupTabs(this, GameScreens.ScreenGroups.LiveTitles(GameScreens.ScreenGroups.Group.Galaxy, Universe), 3,
                                                                OnGalaxyTabChanged, Table.ContentWidth, contentH);
@@ -108,11 +108,11 @@ namespace Ship_Game
         {
             batch.SafeBegin();
             // Ludoal fork: the frame is filled by hand before its children, the way every screen
-            // in this group does - the group's frame is transparent, so the map showed through.
+            // in this group does - the group's frame is transparent.
             batch.FillRectangle(GameScreens.ScreenGroups.GroupFrameFillRect(GalaxyTabs), GameScreens.ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed);
             // the shared charte draws the headers, the rule and the separators
-            // no chrome on an empty log (maintainer bench 307): the hint speaks alone
+            // no chrome on an empty log: the hint speaks alone
             if (EventList.NumEntries > 0)
                 Table.DrawChrome(batch);
 

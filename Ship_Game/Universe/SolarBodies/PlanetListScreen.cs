@@ -93,7 +93,7 @@ namespace Ship_Game
 
             // Ludoal fork: the Planets tab of the Galaxy group, content-sized on the shared
             // table charte - every column sizes itself on the data it will show.
-            // Features rides right after Planet (maintainer bench 291); Proximity and
+            // Features rides right after Planet (maintainer feedback); Proximity and
             // Owner read centred
             Table = new UITable(new[]
             {
@@ -102,8 +102,8 @@ namespace Ship_Game
                 new UITable.Column { Title = "Features" },
                 new UITable.Column { Title = Localizer.Token(GameText.Proximity), Align = TableAlign.Center, Sortable = true },
                 // biospheres/crystal, not food/production: the INTRINSIC stats wear their
-                // own icons so they never read as the net-income pair (maintainer bench 294)
-                // the Planet Info cartouche's own pair (Lek's review, bench 305)
+                // own icons so they never read as the net-income pair - the Planet Info
+                // cartouche's own pair (maintainer feedback)
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"),
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Fertility) },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"),
@@ -148,16 +148,16 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[6], Fonts.Arial12Bold, pops);
             UITable.AutoSize(Table.Columns[7], Fonts.Arial12Bold, ratios);
             UITable.AutoSize(Table.Columns[8], Fonts.Arial12Bold, owners);
-            // bench 393: the Troops counter column sizes on its widest possible label
+            // the Troops counter column sizes on its widest possible label
             UITable.AutoSize(Table.Columns[10], Fonts.Arial12Bold,
                              new Array<string> { PlanetListScreenItem.TroopsCounterMeasure });
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
-            // the standing sort survives the screen for the session (maintainer bench 307)
+            // the standing sort survives the screen for the session
             if (LastSortCol < 0) { LastSortCol = 0; LastSortAsc = true; }
             Table.Columns[LastSortCol].Sorted = true;
             Table.Columns[LastSortCol].Ascending = LastSortAsc;
 
-            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 388: floor = the info cartouche
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // floor = the info cartouche
             // 48 = the 44px row plus the list's 4px item padding
             float contentH = UITable.ContentHeightFor(119, Math.Max(3, ExploredPlanets.Count), 48, fullAvail);
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Galaxy, Universe), 0,
@@ -180,7 +180,7 @@ namespace Ship_Game
                 () => HideUninhab,
                 x => { HideUninhab = x; ResetList(); }, Fonts.Arial12Bold, "Hide Uninhabitable", ""));
 
-            // proximity and owner filters on the same line (maintainer bench 291)
+            // proximity and owner filters on the same line (maintainer feedback)
             ProximityFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 290, (int)lineY, 110, 18)));
             ProximityFilter.AddOption("All Distances", "");
             foreach (string cat in new[] { "Local", "Near", "Midway", "Distant", "Beyond" })
@@ -237,9 +237,8 @@ namespace Ship_Game
             Table.DrawChrome(batch);
 
             // "Available Troops: N" rides LINE 1 - the filter row - centred over the Send Troops
-            // column (Lek's review, bench 305); label vanilla, count white, gray when dry. Ludoal
-            // fork (maintainer feedback): "Rebasing: N" follows it (same convention), and the pair
-            // is centred as a whole - it carries the count the Homeworld button used to show.
+            // column; label vanilla, count white, gray when dry. "Rebasing: N" follows it (same
+            // convention, maintainer feedback), and the pair is centred as a whole.
             Graphics.Font font = Fonts.Arial12Bold;
             // the "Available Troops / Rebasing" line centres over the icon lane and the counter
             // column together, not the icon column alone
@@ -279,8 +278,7 @@ namespace Ship_Game
             batch.SafeEnd();
         }
 
-        // Ludoal fork (maintainer feedback): total troops aboard ships rebasing to one of our own
-        // worlds - the count the Homeworld's inert "Rebasing" button used to carry.
+        // Ludoal fork (maintainer feedback): total troops aboard ships rebasing to one of our own worlds.
         int CountRebasingTroops()
         {
             int total = 0;
@@ -349,8 +347,8 @@ namespace Ship_Game
             return base.HandleInput(input);
         }
 
-        // bench 388 (maintainer): single-click = select on the map and pan at current zoom -
-        // the cartouche shows through the band, the double-click still opens (bench 190)
+        // (maintainer feedback) single-click = select on the map and pan at current zoom -
+        // the cartouche shows through the band, the double-click still opens
         void OnPlanetRowSingleClicked(PlanetListScreenItem item)
         {
             Universe.PanToPlanetKeepZoom(item.Planet);
@@ -358,9 +356,9 @@ namespace Ship_Game
 
         void OnPlanetListItemClicked(PlanetListScreenItem item)
         {
-            // Ludoal fork (spec: colony-as-tab, bench 379): OUR colonies open their panel on
-            // the Galaxy seat, Planets (0) as the Esc origin - armed before the snap so the
-            // colony's ctor wears the row. Anything else keeps the plain camera flight.
+            // Ludoal fork: OUR colonies open their panel on the Galaxy seat, Planets (0) as the
+            // Esc origin - armed before the snap so the colony's ctor wears the row. Anything
+            // else keeps the plain camera flight.
             if (item.Planet.Owner == Player)
             {
                 GameAudio.AcceptClick();
@@ -409,7 +407,7 @@ namespace Ship_Game
 
         public bool ShouldAddItem(Planet p)
         {
-            // the two dropdown filters (maintainer bench 291)
+            // the two dropdown filters (maintainer feedback)
             string wantProx = ProximityFilter?.ActiveValue ?? "";
             if (wantProx.NotEmpty() && new DistanceDisplay(GetShortestDistance(p) / 1000).Text != wantProx)
                 return false;

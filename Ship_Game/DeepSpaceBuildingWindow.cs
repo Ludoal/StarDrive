@@ -34,14 +34,11 @@ namespace Ship_Game
             RemoveAll();
 
             const int windowWidth = 320;
-            // Ludoal fork (bench): right-anchored on the same edge as the Automation window
-            // (maintainer feedback). It used to sit to its left to avoid overlapping, which cost a screen-edge
-            // alignment to solve a problem the exclusion now solves properly: the two windows
-            // are mutually exclusive, so they can share the anchor - opening one closes the
-            // other, the way the Exotic and Freighter windows already do.
-            // 10px off the right edge, the margin the minimap and every reworked frame keep; top
-            // aligned with the group FRAMES (maintainer feedback) - one tab strip below the tab
-            // row, so it lines up with the Diplomacy/Economy/etc. window bodies, not their tabs.
+            // Ludoal fork: right-anchored on the same edge as the Automation window - the two
+            // windows are mutually exclusive (opening one closes the other, like Exotic/Freighter),
+            // so they can share the anchor. 10px off the right edge, the margin the minimap and
+            // every reworked frame keep; top aligned with the group FRAMES, one tab strip below
+            // the tab row, so it lines up with the Diplomacy/Economy/etc. window bodies, not their tabs.
             RectF = new(Screen.ScreenWidth - 10 - windowWidth, GameScreens.ScreenGroups.GroupFrameTop, windowWidth, 300);
 
             var sl = Add(new SubmenuScrollList<ConstructionListItem>(RectF, "Deep Space Build"));
@@ -247,7 +244,7 @@ namespace Ship_Game
             return true;
         }
 
-        // bench 406: the window steps aside during ground combat and returns with the view
+        // (bench 406) the window steps aside during ground combat and returns with the view
         bool HiddenByGroundCombat => Screen.LookingAtPlanet && Screen.workersPanel is CombatScreen;
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)

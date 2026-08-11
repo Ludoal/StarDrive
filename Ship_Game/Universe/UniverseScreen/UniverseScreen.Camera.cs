@@ -96,16 +96,15 @@ namespace Ship_Game
                     }
                 }
 
-                // Ludoal fork: Planet View removed — the selection cartouche carries its info.
-                // Double-click: colony view on real colonies (incl. mole vision), combat view
-                // when tactically visible, otherwise just the camera snap.
+                // Ludoal fork: the selection cartouche carries the planet's info. Double-click:
+                // colony view on real colonies (incl. mole vision), combat view when
+                // tactically visible, otherwise just the camera snap.
                 if ((p.Owner == Player || flag || Debug) && p.Owner != null)
                 {
-                    // Ludoal fork (spec: colony-as-tab): a map-opened colony rides the GALAXY
-                    // group's row with origin -1 - Esc closes to the map, as it always did.
-                    // A MOLE's host opens on the DIPLOMACY row with Espionage as the origin
-                    // instead (bench 397): its reader came from espionage territory, and Esc
-                    // goes back there. ⚠ A list screen arms its own seat for this planet
+                    // Ludoal fork: a map-opened colony rides the GALAXY group's row with origin
+                    // -1 - Esc closes to the map. A MOLE's host opens on the DIPLOMACY row with
+                    // Espionage as the origin instead - its reader came from espionage territory,
+                    // and Esc goes back there. ⚠ A list screen arms its own seat for this planet
                     // before calling the snap - that arming wins, don't demote it.
                     if (HostedTabTitle != p.Name)
                     {
@@ -115,14 +114,14 @@ namespace Ship_Game
                         else
                             HostColonyTab(p, GameScreens.ScreenGroups.Group.Galaxy, -1);
                     }
-                    // Ludoal fork (migration, bench 386): a STACKED page like every tab - no
-                    // mount, no camera anchoring, the map simply keeps living underneath.
-                    // The planet STAYS selected - its cartouche shows through (bench 396).
+                    // Ludoal fork: a STACKED page like every tab - no mount, no camera
+                    // anchoring, the map simply keeps living underneath. The planet STAYS
+                    // selected - its cartouche shows through.
                     SetSelectedPlanet(p);
                     ReturnToListScreen = null;
                     ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
-                    // any page still open closes first (bench 397): the cartouche eye can fire
-                    // with a page up, and the colony must not bury it under a foreign tab row
+                    // any page still open closes first: the cartouche eye can fire with a page
+                    // up, and the colony must not bury it under a foreign tab row
                     ScreenManager.ExitAllAbove(this);
                     ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI));
                     return;
@@ -137,7 +136,7 @@ namespace Ship_Game
                     return;
                 }
 
-                SnapViewTo(new(p.Position.X, p.Position.Y, GetZfromScreenState(UnivScreenState.PlanetView)), 5f, 2f); // Ludoal fork: 2500 was nose-on-the-planet; PlanetView is the named level for this
+                SnapViewTo(new(p.Position.X, p.Position.Y, GetZfromScreenState(UnivScreenState.PlanetView)), 5f, 2f); // Ludoal fork: PlanetView is the named level for this
             }
         }
 
@@ -321,10 +320,10 @@ namespace Ship_Game
                 ProjMaxDistance = maxDistance;
                 ApplyUniverseProjection();
             }
-            // bench 392 (maintainer): a page opening/closing, a resize, OR a switch to a panel of
+            // (maintainer feedback) a page opening/closing, a resize, OR a switch to a panel of
             // a DIFFERENT width all move the viewport offset without touching the view state -
-            // re-lay the projection whenever the offset VALUE changes (not just its existence, or
-            // wide->short panel kept the old shift), so the map recentres to the current panel.
+            // re-lay the projection whenever the offset VALUE changes (not just its existence),
+            // so the map recentres to the current panel.
             else if (PageViewportOffset() != AppliedPageOffset)
             {
                 ApplyUniverseProjection();
@@ -443,15 +442,15 @@ namespace Ship_Game
             SnapToPlanetStayHere(p);
         }
 
-        // Ludoal fork (migration, bench 386): the stay-here landing with the planet passed
-        // in - the stacked colony has no mount this could read. One camera arithmetic for
-        // the eye gesture and the combat panel's own close.
+        // Ludoal fork: the stay-here landing takes the planet passed in - the stacked colony
+        // has no mount this could read. One camera arithmetic for the eye gesture and the
+        // combat panel's own close.
         public void SnapToPlanetStayHere(Planet p)
         {
             SetSelectedPlanet(p);
             returnToShip = false;
             CamDestination = new Vector3d(p.Position.X, p.Position.Y,
-                                          GetZfromScreenState(UnivScreenState.PlanetView)); // aligned with the planet-snap standard (was 2500, too strong)
+                                          GetZfromScreenState(UnivScreenState.PlanetView)); // aligned with the planet-snap standard
             AdjustCamTimer = 1f;
             transitionElapsedTime = 0f;
         }
@@ -487,9 +486,8 @@ namespace Ship_Game
 
         void ToggleViewingShip()
         {
-            // Ludoal fork (wishlist #1): ViewToShip sets ViewingShip=true itself —
-            // the old unconditional flip flipped it back OFF right after arming,
-            // leaving only the initial snap (chase died if anything interrupted it)
+            // Ludoal fork: ViewToShip sets ViewingShip=true itself - an unconditional flip
+            // here would immediately flip it back OFF after arming.
             if (!ViewingShip)
                 ViewToShip(SelectedShip);
             else

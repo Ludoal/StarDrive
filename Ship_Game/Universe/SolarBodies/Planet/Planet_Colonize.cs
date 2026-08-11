@@ -76,9 +76,8 @@ namespace Ship_Game
 
         void SetupColonyType()
         {
-            // Ludoal fork: Auto Governor stands on its own - it used to be a hidden side
-            // effect of Autocolonize (maintainer). ON, a new colony gets a governor fit
-            // to its needs; OFF, the player governs by hand. The AI always self-governs.
+            // Ludoal fork: Auto Governor. ON, a new colony gets a governor fit to its
+            // needs; OFF, the player governs by hand. The AI always self-governs.
             CType = (OwnerIsPlayer && !Owner.AutoCoreGovernor)
                   ? ColonyType.Colony
                   : Owner.AssessColonyNeeds(this);

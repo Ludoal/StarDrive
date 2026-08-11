@@ -19,13 +19,13 @@ namespace Ship_Game
         readonly ToggleButton PlayerDesignsToggle;
         // Ludoal fork: the screen's frame. The title bar the planet name sits in is the one every
         // window uses, declared with the colours it goes with.
-        CloseButton CloseBtn; // bench 361: served explicitly on read-only (infiltrated) colonies
+        CloseButton CloseBtn; // served explicitly on read-only (infiltrated) colonies
         Submenu GroupRow;     // the hosting group's live tab row, when opened on a hosted seat
-        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
-        // the band excludes exactly what the page occupies, dynamic size included
+        // Ludoal fork: this page's real frame is its tab row's rect - the band excludes
+        // exactly what the page occupies, dynamic size included.
         public override Rectangle PageFrame => GroupRow?.Rect ?? base.PageFrame;
 
-        // Ludoal fork (bench 392): the Colony panel runs live by default - it opts out of
+        // Ludoal fork: the Colony panel runs live by default - it opts out of
         // auto-pause unless the player ticks "Auto-pause Colony panel" in Options.
         protected override bool PageOptsOutOfAutoPause => !GlobalStats.AutoPauseColonyPanel;
 
@@ -41,9 +41,9 @@ namespace Ship_Game
             ScreenManager.AddScreen(GameScreens.ScreenGroups.TabOf(u.HostedTabGroup, index, u));
         }
 
-        // Ludoal fork (migration, bench 386): Esc and right-click close the colony's TAB -
-        // seat cleared, back to the origin panel, or nothing more when it came from the map.
-        // Handled BEFORE the base popup dismiss, which exits without the routing.
+        // Ludoal fork: Esc and right-click close the colony's TAB - seat cleared, back to the
+        // origin panel, or nothing more when it came from the map. Handled BEFORE the base
+        // popup dismiss, which exits without the routing.
         void CloseColonyPage()
         {
             UniverseScreen u = P.Universe.Screen;
@@ -52,8 +52,8 @@ namespace Ship_Game
             u.ClearHostedTab();
             ExitScreen();
             u.SetSelectedPlanet(P); // land on the planet, selected - as closing always did
-            // the Empire colony tab is PERMANENT (maintainer): closing the colony closes the
-            // whole group, wherever it was opened from - no origin routing there
+            // The Empire colony tab is PERMANENT: closing the colony closes the whole group,
+            // wherever it was opened from - no origin routing there.
             if (group == GameScreens.ScreenGroups.Group.Empire)
                 return;
             if (origin >= 0)
@@ -63,8 +63,8 @@ namespace Ship_Game
         readonly Submenu PStorage;
         readonly Submenu PFacilities;
         RectF LaborRect; // the Assign Labor block - the terraform details anchor on it now
-        // sticky across colonies (maintainer bench 300): a session inspecting terraform
-        // keeps the tab up from one colony screen to the next
+        // Sticky across colonies: a session inspecting terraform keeps the tab up from one
+        // colony screen to the next.
         static int LaborTabSticky;
         readonly UITextEntry PlanetName;
         readonly Rectangle PlanetIcon;
@@ -167,27 +167,26 @@ namespace Ship_Game
 
         public ColonyScreen(GameScreen parent, Planet p, EmpireUIOverlay empUI, 
             int governorTabSelected = 0, int facilitiesTabSelected = -1) // Ludoal fork: -1 = fresh open, defaults to Stats+
-            : base(parent, p, p.Universe.Screen) // bench 392: auto-pause gated by its own opt-in sub-option
+            : base(parent, p, p.Universe.Screen) // auto-pause gated by its own opt-in sub-option
         {
             Eui = empUI;
-            IsPopup = true; // bench 347: the full live universe map (and its cartouches) shows behind Colony
+            IsPopup = true; // the full live universe map (and its cartouches) shows behind Colony
             Player.UpdateShipsWeCanBuild();
             TextFont = Font12;
 
-            // Ludoal fork (spec: colony-as-tab, bench 379): the colony lives INSIDE the tab
-            // frame now. The group row's Submenu IS the frame - its ClientArea comes from the
-            // owner formula, so the content rect is pixel-identical to a real tab's, by
-            // construction. The popup chrome, its title bar and the centred name are gone:
-            // the planet's name rides the tab. An unhosted colony (the infiltration mole)
-            // wears a one-tab row of its own name - same furniture, no neighbors.
+            // Ludoal fork: the colony lives INSIDE the tab frame. The group row's Submenu IS
+            // the frame - its ClientArea comes from the owner formula, so the content rect is
+            // pixel-identical to a real tab's, by construction. The planet's name rides the
+            // tab. An unhosted colony (the infiltration mole) wears a one-tab row of its own
+            // name - same furniture, no neighbors.
             UniverseScreen u = p.Universe.Screen;
             var titles = u.HostedTabTitle != null
                 ? GameScreens.ScreenGroups.LiveTitles(u.HostedTabGroup, u)
                 : new[] { new LocalizedText(p.Name, LocalizationMethod.RawText) };
             GroupRow = GameScreens.ScreenGroups.AddGroupTabs(this, titles, titles.Length - 1,
                                                              OnGroupRowTabChanged, out _, withClose: false);
-            // the close cross at the group's standard seat; ref kept - the read-only
-            // early-out must still serve it (bench 361)
+            // The close cross at the group's standard seat; ref kept - the read-only
+            // early-out must still serve it.
             Vector2 closePos = GameScreens.ScreenGroups.GroupClosePos(GroupRow.ClientArea);
             CloseBtn = Add(new CloseButton(closePos.X, closePos.Y));
 
@@ -196,8 +195,7 @@ namespace Ship_Game
             // ⚠ At 900 high the LEFT COLUMN does not fit and that is not the frame's doing: its
             // three fixed panels are 250 + 300 + 220 = 770, plus gaps, against 749px of usable
             // height. It overflows before STORAGE gets a single pixel. The column needs real
-            // rework at that height (maintainer: "on refaçonnera le contenu en temps utile") -
-            // shrinking the frame would only hide it.
+            // rework at that height - shrinking the frame would only hide it.
 
             // ── the screen's one grid ────────────────────────────────────────────────────────
             // Ludoal fork: every panel is placed from THESE, and nothing re-derives a margin of
@@ -209,26 +207,24 @@ namespace Ship_Game
             float gridTop    = inner.Y + Pad;
             float gridBottom = inner.Bottom - Pad; // the Submenu client already stops above the chrome
 
-            // ── what is FIXED and what STRETCHES (Ludoal fork, bench 232) ────────────────────
+            // ── what is FIXED and what STRETCHES (Ludoal fork) ────────────────────
             // Left column: FIXED width. Planet Info, Governor and Assign Labor keep fixed
             // heights; STORAGE is the one that stretches, taking what is left to the foot.
             // The left column's width comes from the Governor tab row with its settled "BP"
-            // label (maintainer bench, 3 Aug: BLUEPRINT in full starves the 900p centre - the
-            // short tab carries a tooltip instead). Submenu's REAL per-tab arithmetic, read in
-            // UpdateTabRect: TextWidth + 2 + the header_right texture (33px), +8 wrap slack.
+            // label - BLUEPRINT in full starves the 900p centre, so the short tab carries a
+            // tooltip instead. Submenu's REAL per-tab arithmetic, read in UpdateTabRect:
+            // TextWidth + 2 + the header_right texture (33px), +8 wrap slack.
             float govTabsW = Fonts.Arial12Bold.TextWidth("GOVERNOR") + Fonts.Arial12Bold.TextWidth("DEFENSE")
                            + Fonts.Arial12Bold.TextWidth("BUDGET") + Fonts.Arial12Bold.TextWidth("BP")
                            + 4 * (2 + 33) + 8;
             float colLeftW = Math.Max(govTabsW, 380) + 40;
 
             // ── the three fixed heights, each derived from what it HOLDS ─────────────────────
-            // ⚠ They were 250 + 300 + 220 = 770 against 749px of usable height at 900, so the
-            // column overflowed before STORAGE got a pixel. Each is now the content's own size:
-            // PLANET INFO is the portrait plus its lines; GOVERNOR is measured on DEFENSE, the
-            // tallest of its four tabs, now that its buttons ride under the slider instead of
-            // hanging off the bottom; ASSIGN LABOR is three sliders and nothing more.
-            // ⚠ the PORTRAIT sets this height, not the other way round (maintainer). It is 128
-            // square - the same number the icon itself uses below, so the two cannot drift.
+            // Each height is the content's own size: PLANET INFO is the portrait plus its
+            // lines; GOVERNOR is measured on DEFENSE, the tallest of its four tabs, with its
+            // buttons riding under the slider; ASSIGN LABOR is three sliders and nothing more.
+            // ⚠ the PORTRAIT sets this height, not the other way round. It is 128 square - the
+            // same number the icon itself uses below, so the two cannot drift.
             // Title bar + the portrait + a margin under it.
             float portraitH   = 128;
             // ⚠ the panel holds TWO things side by side: the portrait on the right, and the name
@@ -240,7 +236,7 @@ namespace Ship_Game
             float infoLinesH  = 45 + Fonts.Arial20Bold.LineSpacing * 2
                               + 5 * (TextFont.LineSpacing + 2);
             float planetInfoH = Math.Max(26 + portraitH + 14, infoLinesH + 10);
-            const float governorH   = 222;   // one line back down (maintainer bench) - STORAGE breathes
+            const float governorH   = 222;   // one line back down - STORAGE breathes
             const float laborH      = 150;   // three sliders, their locks and the title bar
 
             RectF planetInfoR = new(gridLeft, gridTop, colLeftW, planetInfoH);
@@ -254,9 +250,8 @@ namespace Ship_Game
 
             var labor = new RectF(gridLeft, pDescription.Bottom + Pad, colLeftW, laborH);
             LaborRect = labor;
-            // Terraforming rides as a second tab of this block (maintainer bench 299): the
-            // facilities row was folding to a second line once CA's terraform tab joined it,
-            // and the terraform panel is light enough to live here
+            // Terraforming rides as a second tab of this block: the terraform panel is
+            // light enough to live here.
             bool terraTab = Player.data.Traits.TerraformingLevel > 0 || P.Terraformable;
             AssignLabor = Add(new AssignLaborComponent(P, labor, useTitleFrame: true,
                 terraTab ? new LocalizedText[] { GameText.AssignLabor, GameText.BB_Tech_Terraforming_Name } : null));
@@ -274,16 +269,14 @@ namespace Ship_Game
             BlockadeLabel = Add(new UILabel(blockadePos, Localizer.Token(GameText.Blockade2), Fonts.Pirulen16, Color.Red));
             BlockadeLabel.Tooltip = GameText.IndicatesThatThisPlanetIs;
             
-            // Ludoal fork (maintainer feedback): STARVATION! rides the title bar's empty right end
-            // instead of overlapping the food bar and Import button below it.
+            // Ludoal fork: STARVATION! rides the title bar's empty right end instead of
+            // overlapping the food bar and Import button below it.
             string starvTxt = Localizer.Token(GameText.Starvation);
             Vector2 starvationPos = new Vector2(PStorage.Right - Fonts.Pirulen16.TextWidth(starvTxt) - 15, PStorage.Y + 4);
             StarvationLabel = Add(new UILabel(starvationPos, starvTxt, Fonts.Pirulen16, Color.Red));
-            // ⚠ the two bars sit a FIXED distance below the title bar (maintainer: content aligned
-            // to the TOP, not centred). They rode 0.33 and 0.66 of the panel's height, so they
-            // drifted apart and floated in the middle as STORAGE - the column's variable block -
-            // grew. Rows now, not fractions.
-            const float storeRow1 = 46, storeRow2 = 92; // +8 of air between the bars (maintainer bench)
+            // ⚠ the two bars sit a FIXED distance below the title bar - content aligned to the
+            // TOP, not centred, so they stay put as STORAGE (the column's variable block) grows.
+            const float storeRow1 = 46, storeRow2 = 92;
             FoodStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + storeRow1, 0.4f*PStorage.Width, 18);
             FoodStorage.Max = p.Storage.Max;
             FoodStorage.Progress = p.FoodHere;
@@ -309,10 +302,9 @@ namespace Ship_Game
             // Centre column: the colony grid keeps its height, STATISTICS below takes the rest -
             // it is the variable block of this column, and it closes on the grid's foot.
             // Right column: FIXED width - the buildable rows and the queue rows are written for
-            // Ludoal fork (maintainer feedback, 7 Aug): col 2 (COLONY + STATS) is the BOUNDED one
-            // now, capped at 672; col 3 (BUILDINGS + QUEUE) absorbs the surplus. From 1440 to the
-            // point col 2 hits 672 the two grow together off the leftover; past that, everything
-            // extra goes to col 3. This is the reverse of the old rule (col 2 took all the surplus).
+            // Ludoal fork: col 2 (COLONY + STATS) is the BOUNDED one, capped at 672; col 3
+            // (BUILDINGS + QUEUE) absorbs the surplus. From 1440 to the point col 2 hits 672 the
+            // two grow together off the leftover; past that, everything extra goes to col 3.
             const float ColCentreMax = 672f;
             float colCentreX = gridLeft + colLeftW + Pad;
             float available  = gridRight - colCentreX - Pad;     // what col 2 + col 3 share
@@ -323,9 +315,8 @@ namespace Ship_Game
             // point of it. The panel's chrome (10 each side, 30 above, 5 below) is taken off
             // before the ratio and added back, so it is the GRID that keeps 7:5, not the frame.
             // COLONY keeps its 7:5 from the WIDTH again, the width itself bounded so the grid
-            // cannot go giant at high resolutions (maintainer bench 281) - the stats block
-            // below takes the rest, which at 900p is taller than a fixed reserve gave it.
-            float gridInnerW = Math.Min(colCentreW - 20, 620f); // width cap - bench number
+            // cannot go giant at high resolutions - the stats block below takes the rest.
+            float gridInnerW = Math.Min(colCentreW - 20, 620f); // width cap
             float subColonyH = gridInnerW * (5f / 7f) + 35;
             subColonyH = Math.Min(subColonyH, gridBottom - gridTop - Pad - 260); // stats floor, safety
 
@@ -357,8 +348,8 @@ namespace Ship_Game
             // outside the frame, right-aligned on it - the clear button ends where the panel ends.
             float colRightX = gridRight - colRightW;
             float filterH = 20;
-            // bench 380 (maintainer): column 3 steps down one tab strip - the filter's top on
-            // the frames' rule line of columns 1 and 2, clear of the close cross at the seat
+            // Column 3 steps down one tab strip - the filter's top on the frames' rule line of
+            // columns 1 and 2, clear of the close cross at the seat.
             float col3Top = gridTop + Submenu.TabHeight - 2;
             float clearW = 17;
             float buildingsTop = col3Top + filterH + Pad;
@@ -380,8 +371,8 @@ namespace Ship_Game
                 Pos     = new Vector2(filterRect.Right + 10, filterRect.Y + 3)
             });
 
-            // BUILDINGS and the queue split the column 50/50 (maintainer spec, 3 Aug) - the
-            // column no longer chases COLONY's foot, which now floats with the stats block.
+            // BUILDINGS and the queue split the column 50/50 - the column does not chase
+            // COLONY's foot, which floats with the stats block.
             RectF buildableR = new(colRightX, buildingsTop, colRightW,
                                    (gridBottom - buildingsTop - Pad) / 2);
             BuildableTabs = base.Add(new SubmenuScrollList<BuildableListItem>(buildableR, BuildingsTabText));
@@ -419,23 +410,19 @@ namespace Ship_Game
             int iconSize = (int)portraitH;
             int iconOffsetX = 148;
 
-            // ⚠ CENTRED in the panel again (maintainer): pinning it under the title bar left it
-            // sitting high once the panel took the taller of the portrait and the text column.
-            // Centred BELOW the title bar, not in the whole rect - or it rides up into it.
+            // ⚠ Centred BELOW the title bar, not in the whole rect - or it rides up into it.
             float iconBandTop = PlanetInfo.Y + 26;
             float iconBandH   = PlanetInfo.Bottom - iconBandTop;
             PlanetIcon = new Rectangle((int)PlanetInfo.Right - iconOffsetX,
                                        (int)(iconBandTop + (iconBandH - iconSize) / 2),
                                        iconSize, iconSize);
 
-            // bench 380 (maintainer): the arrows sit AU DROIT de PLANET INFO - on the panel's
-            // own header band, a tight pair centred over the planet image.
+            // The arrows sit on the panel's own header band, a tight pair centred over the planet image.
             const int arrowW = 14, arrowH = 20, NavGap = 40; // between the two arrows
             int arrowY = (int)PlanetInfo.Y + (Submenu.TabHeight - 2 - arrowH) / 2;
             int navCentre = PlanetIcon.CenterX();
 
-            // plain buttons, not toggles - the arrows only ever navigate (maintainer decision:
-            // ToggleButton keeps the real toggles, the fakes move out)
+            // Plain buttons, not toggles - the arrows only ever navigate.
             LeftColony = Add(new UIButton(new UIButton.StyleTextures("SelectionBox/button_arrow_left", "SelectionBox/button_arrow_left_hover"),
                                           new Vector2(arrowW, arrowH), "")
             {
@@ -456,7 +443,7 @@ namespace Ship_Game
 
             // the HOME button between the arrows - straight back to the capital. Panel
             // navigation pans without zooming; the zoomed route is the cartouche's.
-            const int homeSize = 16; // a notch under the arrows (maintainer bench 397)
+            const int homeSize = 16; // a notch under the arrows
             Add(new UIButton(new UIButton.StyleTextures("UI/icon_home", "UI/icon_home"),
                              new Vector2(homeSize, homeSize), "")
             {
@@ -506,8 +493,8 @@ namespace Ship_Game
             P.RefreshBuildingsWeCanBuildHere();
             Vector2 detailsVector = new Vector2(PFacilities.Rect.X + 15, PFacilities.Rect.Y + 35);
             CreateTradeDetails(detailsVector);
-            // terraform details live on the ASSIGN LABOR block now (maintainer bench 299)
-            CreateTerraformingDetails(new Vector2(LaborRect.X + 15, LaborRect.Y + 38)); // air under the tab strip (bench 302)
+            // Terraform details live on the ASSIGN LABOR block.
+            CreateTerraformingDetails(new Vector2(LaborRect.X + 15, LaborRect.Y + 38)); // air under the tab strip
             CreateDysonSwarmDetails(detailsVector);
         }
 
@@ -515,12 +502,12 @@ namespace Ship_Game
         {
             PFacilities.ClearTabs();
             // ⚠ a literal, not the Statistics2 token: shortening the token would rename it
-            // everywhere in the game. Only this row needs to fit on one line (maintainer).
+            // everywhere in the game. Only this row needs to fit on one line.
             PFacilities.AddTab("Stats");
             PFacilities.AddTab(StatsPlusTabTitle); // Ludoal fork: Stats+ add-on tab, next to its witness
             PFacilities.AddTab(GameText.Description);
             PFacilities.AddTab(GameText.Trade2);
-            // Terraforming is a tab of the ASSIGN LABOR block now (maintainer bench 299)
+            // Terraforming is a tab of the ASSIGN LABOR block.
 
             if (DysonSwarmTabAllowed)
             {
@@ -661,10 +648,10 @@ namespace Ship_Game
             int sliderSize  = 30;
             float indent    = 30;
             float indentTradeAmount = indent + barWidth + 5;
-            float indentSlider      = indentTradeAmount + 35; // slid left for 900p (maintainer bench)
+            float indentSlider      = indentTradeAmount + 35; // slid left for 900p
 
-            // no "Colony Trade" title (maintainer, 3 Aug): the tab already names the page, and
-            // this is the tallest tab - the row it frees is what makes it fit
+            // No "Colony Trade" title: the tab already names the page, and this is the
+            // tallest tab - the row it frees is what makes it fit.
             Vector2 incomingTitlePos = new Vector2(pos.X, pos.Y);
             AddLabel(ref IncomingTradeTitle, incomingTitlePos, GameText.IncomingFreighters, font, Color.Gray);
 
@@ -734,15 +721,12 @@ namespace Ship_Game
 
         void CreateTerraformingDetails(Vector2 pos)
         {
-            // compact cascade (maintainer benches 299-300): the block lives on the Assign
-            // Labor frame, 150px tall - Font14 rows on a tight pitch, no Font20 title (the
-            // tab names it), one line per datum. The title label stays allocated but never
-            // shows.
+            // Compact cascade: the block lives on the Assign Labor frame, 150px tall - Font14
+            // rows on a tight pitch, no Font20 title (the tab names it), one line per datum.
+            // The title label stays allocated but never shows.
             Font font    = Font14;
-            // the rows SPREAD over the block's full height (maintainer bench 301): three
-            // rows at terraform level 1 read bunched at the top of a mostly-empty frame.
-            // The row count follows the owner's terraforming level, the same gates the
-            // update applies.
+            // The rows SPREAD over the block's full height. The row count follows the owner's
+            // terraforming level, the same gates the update applies.
             int lvlRows = Player.data.Traits.TerraformingLevel >= 3 ? 7
                         : Player.data.Traits.TerraformingLevel == 2 ? 4 : 3;
             int spacing = (int)((LaborRect.H - 55) / lvlRows).Clamped(font.LineSpacing + 1, 34);

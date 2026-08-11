@@ -29,8 +29,7 @@ namespace Ship_Game
             Screen = screen;
 
             // Ludoal fork: the blue dan_button, on the queue's RIGHT edge and the same line as its
-            // Search neighbour on the left one - both read the screen's shared slot, so they cannot
-            // drift apart the way two separate origins did.
+            // Search neighbour on the left - both read the screen's shared slot, so they cannot drift apart.
             float btnX = screen.ResearchButtonsRight - ResearchScreenNew.ResearchButtonW;
             BtnShowQueue = Button(ButtonStyle.WideActive,
                 new Vector2(btnX, screen.ResearchButtonY), "", OnBtnShowQueuePressed);

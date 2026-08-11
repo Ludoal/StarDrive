@@ -125,10 +125,8 @@ namespace Ship_Game
                     batch.DrawCircle(pPos, pPos.Distance(planetPos), color, 2f);
                 }
 
-                // Ludoal fork (wishlist): the exploded view was unreadable when orbits
-                // aligned — labels stacked on labels. The hovered planet now draws LAST
-                // (on top) and the stat block only shows for the hovered planet;
-                // names and side icons stay always visible.
+                // Ludoal fork: the hovered planet draws LAST (on top) and the stat block only
+                // shows for the hovered planet; names and side icons stay always visible.
                 int hoveredIdx = -1;
                 for (int i = 0; i < Sys.PlanetList.Count; i++)
                 {
@@ -343,7 +341,7 @@ namespace Ship_Game
                 Planet p = CurrentlyHoveredPlanet;
                 if (ClickTimer < (double)TimerDelay)
                 {
-                    // bench 389 (maintainer): mole planets open their colony here too
+                    // (maintainer feedback) mole planets open their colony here too
                     bool mole = false;
                     if (p.Owner != Universe.Player)
                         foreach (Mole m in Universe.Player.data.MoleList)

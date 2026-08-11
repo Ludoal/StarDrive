@@ -74,9 +74,9 @@ namespace Ship_Game
             cursor.Y += Fonts.Arial12Bold.LineSpacing * lines;
         }
 
-        // Ludoal fork: no trailing colon on stat labels (maintainer feedback). The columns are right-aligned
-        // against a fixed value column, so the separator was doing no work — it only added a
-        // ragged edge to an otherwise clean vertical line.
+        // Ludoal fork: no trailing colon on stat labels. The columns are right-aligned against a
+        // fixed value column, so the separator does no work — it only adds a ragged edge to an
+        // otherwise clean vertical line.
         static StatValue MakeStat(in LocalizedText title, float value, LocalizedText tooltip, Color titleColor, ValueTint tint = ValueTint.None, float spacing = 165, int lineSpacing = 1)
             => new StatValue(title.Text, value, tooltip, titleColor, tint, spacing, lineSpacing);
 
@@ -124,16 +124,16 @@ namespace Ship_Game
             // Ludoal fork: an optional icon INLINE, immediately left of the title rather than in
             // a column of its own - scaled to the line height the way the infiltration screen
             // scales its spy icon, so it costs the width of a character or two and the frame
-            // does not have to grow for it (maintainer feedback).
+            // does not have to grow for it.
             if (icon != null)
             {
                 SubTexture tex = ResourceManager.Texture(icon);
                 int h = font.LineSpacing - 2;
                 int w = tex.Width * h / tex.Height;
                 var r = new Rectangle((int)(titlePos.X - w - 4), (int)titlePos.Y + 1, w, h);
-                // Ludoal fork (bench): the icon carries its OWN colour, not the label grey - tinted
-                // like the text it sits next to it was barely visible (maintainer feedback). Same colours the
-                // load popup gives them, which is where a player has already met them.
+                // Ludoal fork: the icon carries its OWN colour, not the label grey - tinted like
+                // the text it sits next to, it would otherwise be barely visible. Same colours
+                // the load popup gives them, which is where a player has already met them.
                 ScreenManager.SpriteBatch.Draw(tex, r, iconColor ?? Color.White);
             }
 

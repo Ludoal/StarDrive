@@ -25,8 +25,8 @@ namespace Ship_Game.GameScreens.ShipDesign
             TransitionOnTime  = 0.25f;
             TransitionOffTime = 0.25f;
 
-            // bench 361 (maintainer): centred on the Shipyard FRAME, not the screen - at wide
-            // resolutions (or Full Screen off) the two centres diverge and the popup sat off-frame.
+            // Centred on the Shipyard FRAME, not the screen - at wide resolutions (or Full Screen
+            // off) the two centres diverge.
             Rectangle frame = GameScreens.ScreenGroups.GroupFrame(ScreenWidth, ScreenHeight, ShipDesignScreen.FullScreenDesign);
             Window = new Rectangle(frame.CenterX() - 600, frame.CenterY() - 270, 1200, 540);
             int x  = (int)Window.X + 20;
@@ -68,8 +68,8 @@ namespace Ship_Game.GameScreens.ShipDesign
         {
             CloseButton(Window.Right - 40, Window.Y + 20);
             //Screen Title
-            // bench 362 (maintainer): default popup title font, ALL CAPS, and centred VERTICALLY in
-            // the title bar by the bar's own metrics instead of a hand-measured offset
+            // Default popup title font, ALL CAPS, centred VERTICALLY in the title bar by the
+            // bar's own metrics.
             string title    = "CURRENT SHIP ISSUES";
             float titleY    = Window.Y + PopupFrame.TitleBarTop + (PopupFrame.TitleBarHeight - UITheme.WindowTitle.LineSpacing) / 2f;
             Vector2 menuPos = new Vector2(Window.CenterTextX(title, UITheme.WindowTitle), titleY);

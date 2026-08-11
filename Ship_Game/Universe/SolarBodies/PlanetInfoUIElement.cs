@@ -17,11 +17,10 @@ namespace Ship_Game
 {
     public sealed class PlanetInfoUIElement : UIElement
     {
-        // Ludoal fork: the sculpted texture spent this top band on antenna machinery; with it
-        // gone the frame starts this far under the housing. Anything aligned on the visible
-        // frame top derives from this, not from the housing. 26 covered the machinery;
-        // the rest trims the dead margin the old frame left (maintainer benches 311-313).
-        // Public with SpriteBox and TopLineIconY: the star cartouche wears the same frame.
+        // Ludoal fork: the frame starts this far under the housing. Anything aligned on the
+        // visible frame top derives from this constant, not from the housing (maintainer
+        // feedback). Public with SpriteBox and TopLineIconY: the star cartouche wears the
+        // same frame.
         public const int FrameShave = 61;
         public const int RightTrim  = 10; // same trim on the plate's right edge
         public const int TopLineIconY = 76; // the pop/flag line - the top text row
@@ -203,9 +202,9 @@ namespace Ship_Game
             BtnSendTroops.Tooltip = GameText.SendAvailableTroopsToThis;
         }
 
-        // the enemy page wears the same pair (bench 314): same size, same seats, centred
-        // text - Invade on the gold plate, Cancel Invasion in the hostile red (the
-        // Colonize toggle's own convention: the action in its colour, the cancel in red)
+        // the enemy page wears the same pair: same size, same seats, centred text -
+        // Invade on the gold plate, Cancel Invasion in the hostile red (the Colonize
+        // toggle's own convention: the action in its colour, the cancel in red)
         void UpdateEnemyButtons(int invading)
         {
             BtnSendTroops.Text    = invading > 0 ? $"Invading: {invading}" : "Invade";
@@ -277,14 +276,11 @@ namespace Ship_Game
             ToolTipItems.Clear();
             ToolTipItems.Add(new TippedItem(PopRect, GameText.PopulationInBillionsVsMax));
 
-            // Ludoal fork: the minimap's recipe instead of the sculpted unitselmenu texture -
-            // a near-opaque flat ground and a rounded grey rule (maintainer, last reskin)
-            // ⚠ the frame starts 26 under the housing's top: the sculpted texture spent that
-            // band on antenna machinery, and with it gone the plate framed empty space
-            // (maintainer: "beaucoup de vide au-dessus"). The housing keeps its size - every
-            // inner anchor is an offset from it - only the visible frame shrinks.
-            // One fixed plate for every status now, the unexplored page included
-            // (maintainer bench 313) - only the content degrades down the ladder.
+            // Ludoal fork (maintainer feedback): the minimap's recipe instead of the sculpted
+            // unitselmenu texture - a near-opaque flat ground and a rounded grey rule. The
+            // housing keeps its size - every inner anchor is an offset from it - only the
+            // visible frame shrinks. One fixed plate for every status, the unexplored page
+            // included - only the content degrades down the ladder.
             bool explored = P.IsExploredBy(Player);
             PlateTop = Housing.Y + FrameShave;
             var frame = new Rectangle(Housing.X, PlateTop, Housing.Width - RightTrim, Housing.Height - FrameShave);
@@ -294,20 +290,18 @@ namespace Ship_Game
             if (explored && P.Owner != null)  AddExploredTips();
             else if (explored && P.Habitable) AddUnExploredTips();
 
-            // one grammar for every status (maintainer benches 312-313): the pop line
+            // one grammar for every status (maintainer feedback): the pop line
             // right-aligned with its flag, the name sharing its line - bottom-aligned, the
             // bigger font grows upward - and the governance on the money/research level,
             // both centred over the sprite
             string name = explored ? P.Name : Localizer.Token(GameText.Unexplored).Trim();
-            // fixed 20 bold (maintainer bench 314) - the length-adaptive downsizing read as
-            // random shrinking; if a name ever overflows, widen the arrows or bring the
-            // adaptive back with bench-proven thresholds
+            // fixed 20 bold (maintainer feedback) - a length-adaptive downsizing here reads as
+            // random shrinking; if a name ever overflows, widen the arrows instead
             Graphics.Font nameFont = Fonts.Arial20Bold;
 
             int frameRight = Housing.Right - RightTrim;
-            // the faction flag keeps its own right anchor ("parfaitement placé" - bench
-            // 314); the pop block anchors LEFT, 20px right of the arrow, so its variable
-            // width stops moving every icon column keyed on it
+            // the faction flag keeps its own right anchor; the pop block anchors LEFT, 20px
+            // right of the arrow, so its variable width stops moving every icon column keyed on it
             var flagRect = new Rectangle(frameRight - 40, Housing.Y + TopLineIconY, 26, 26);
             Empire flagOwner = !explored ? null : P.Owner ?? (P.IsMineable ? P.Mining.Owner : null);
             if (flagOwner != null)
@@ -514,7 +508,7 @@ namespace Ship_Game
             }
 
             Vector2 textPos = new Vector2(ExoticRect.X + 13, ExoticRect.Y + 13 - Font12.LineSpacing / 2 - 2);
-            // hand-drawn plate: the real buttons' hover lift (maintainer bench 319)
+            // hand-drawn plate: the real buttons' hover lift (maintainer feedback)
             Color researchPlate = Player.CanBuildResearchStations ? UIButton.PlateActive : UIButton.PlateNeutral;
             if (Player.CanBuildResearchStations && ExoticRect.HitTest(mousePos))
                 researchPlate = UITheme.Hover(researchPlate);
@@ -529,7 +523,7 @@ namespace Ship_Game
             }
 
             ToolTipItems.Add(new TippedItem(ExoticRect, tip));
-            // lit text always - gray only for the unavailable action (maintainer bench 318)
+            // lit text always - gray only for the unavailable action (maintainer feedback)
             batch.DrawString(Font12, tipText, textPos, Player.CanBuildResearchStations ? ButtonTextColor : Color.Gray);
         }
 
@@ -580,7 +574,7 @@ namespace Ship_Game
                 tipText = $"{tipText} ({numInProgress})";
 
             ToolTipItems.Add(new TippedItem(ExoticRect, tip));
-            // lit text always - gray only for the unavailable action (maintainer bench 318)
+            // lit text always - gray only for the unavailable action (maintainer feedback)
             batch.DrawString(Font12, tipText, textPos, Player.CanBuildMiningStations ? ButtonTextColor : Color.Gray);
         }
 
@@ -650,7 +644,7 @@ namespace Ship_Game
             {
                 return true; // the click may have swapped P for the next colony
             }
-            // the planet's NAME pans and zooms onto it (maintainer bench 395/396)
+            // the planet's NAME pans and zooms onto it (maintainer feedback)
             if (NameRect.HitTest(input.CursorPosition))
             {
                 ToolTip.CreateTooltip("Zoom to planet");

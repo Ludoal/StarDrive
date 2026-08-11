@@ -11,11 +11,10 @@ using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game
 {
-	// Ludoal fork (spec cartouches, bench 306): the star cartouche — name, class and
-	// image up top, the system's planet roll with class and R/F/P, and the Research
-	// Station deployment when the star is eligible. The plate is BOTTOM-ANCHORED on
-	// the housing and grows UPWARD with its content: the first of the info cartouches
-	// to take an adaptive height (maintainer direction).
+	// Ludoal fork: the star cartouche — name, class and image up top, the system's
+	// planet roll with class and R/F/P, and the Research Station deployment when the
+	// star is eligible. The plate is BOTTOM-ANCHORED on the housing and grows UPWARD
+	// with its content.
 	public sealed class StarInfoUIElement : UIElement
 	{
 		SolarSystem Sys;
@@ -24,11 +23,11 @@ namespace Ship_Game
 		readonly Rectangle Housing;
 		Rectangle DeployRect;   // computed each draw - the plate's height moves with the content
 
-		// the roll's rows are clickable (maintainer bench 315): a click selects the
+		// the roll's rows are clickable (maintainer feedback): a click selects the
 		// planet and glides the camera onto it - the arrows' spatial walk, from the list
 		struct RollRow { public Rectangle Rect; public Planet P; }
 		readonly Array<RollRow> RollRows = new Array<RollRow>();
-		// a folded name or class carries its full text in a tooltip (bench 316)
+		// a folded name or class carries its full text in a tooltip
 		struct RollTip { public Rectangle Rect; public string Text; }
 		readonly Array<RollTip> RollTips = new Array<RollTip>();
 		readonly Graphics.Font Font12 = Fonts.Arial12Bold;
@@ -80,9 +79,9 @@ namespace Ship_Game
 					if (p.IsExploredBy(Player))
 						rows++;
 
-			// the planet cartouche's fixed frame (maintainer bench 313)... which grows
-			// UPWARD row by row past 8 planets (maintainer, bench 317) - the standard
-			// plate seats 8, a crowded system lifts the roof instead of spilling
+			// the planet cartouche's fixed frame grows UPWARD row by row past 8 planets
+			// (maintainer feedback) - the standard plate seats 8, a crowded system lifts
+			// the roof instead of spilling
 			int extra = rows > 8 ? (rows - 8) * RowH : 0;
 			int top = Housing.Y + PlanetInfoUIElement.FrameShave - extra;
 			var frame = new Rectangle(Housing.X, top,
@@ -93,7 +92,7 @@ namespace Ship_Game
 			// the planet grammar: the star in the sprite box, its name bottom-aligned on
 			// the top text line centred over it, the class caption under it
 			Rectangle iconBox = PlanetInfoUIElement.SpriteBox(Housing);
-			iconBox.X -= 60; // maintainer benches 314-315: the star's name/image/class block rides left
+			iconBox.X -= 60; // (maintainer feedback) the star's name/image/class block rides left
 			if (Sys.Sun.Icon != null)
 				batch.Draw(Sys.Sun.Icon, iconBox, Color.White);
 
@@ -114,7 +113,7 @@ namespace Ship_Game
 			// the system's planet roll rides the right column, where the planet pages
 			// keep their sliders: name then R / F / P lanes; a zero reads as a gray dash
 			// (a gas giant has no ground to rate)
-			// benches 315-316: the roll widens again (10 left, 10 right), the FRP lanes
+			// (maintainer feedback) the roll widens (10 left, 10 right), the FRP lanes
 			// tighten to a 40px pitch, F before R - food first, the colony sliders' order
 			int listX = iconBox.Right + 20;
 			int laneP = frame.Right - 40, laneR = laneP - 40, laneF = laneR - 40;
@@ -150,7 +149,7 @@ namespace Ship_Game
 					if (pn != p.Name)
 						RollTips.Add(new RollTip { Rect = new Rectangle(listX, (int)y, classCol - 6 - listX, RowH), Text = p.Name });
 
-					// maintainer bench 336: a dash means "not applicable" - keep it for a Gas Giant
+					// (maintainer feedback) a dash means "not applicable" - keep it for a Gas Giant
 					// (no surface to farm or mine), but a real zero on any other world reads "0.0".
 					bool isGasGiant = p.Category == PlanetCategory.GasGiant;
 					string LaneStr(float v)
@@ -213,8 +212,8 @@ namespace Ship_Game
 			}
 			bool canBuild = Player.CanBuildResearchStations;
 			bool aborting = Player.AI.HasGoal(g => g.IsResearchStationGoal(Sys));
-			// hand-drawn plate: the real buttons' hover lift (maintainer bench 319), and the
-			// HOSTILE red while a deployment can be aborted - same face as the table's icon
+			// hand-drawn plate: the real buttons' hover lift, and the HOSTILE red while a
+			// deployment can be aborted - same face as the table's icon
 			Color plateTint = !canBuild ? UIButton.PlateNeutral
 			                : aborting  ? UIButton.PlateHostile : UIButton.PlateActive;
 			if (canBuild && DeployRect.HitTest(Screen.Input.CursorPosition))
@@ -224,10 +223,10 @@ namespace Ship_Game
 			string text = aborting
 			            ? Localizer.Token(GameText.AbortDeployent)
 			            : Localizer.Token(GameText.DeployResearchStation);
-			// centred on the plate (maintainer bench 400)
+			// centred on the plate
 			var textPos = new Vector2(DeployRect.X + (DeployRect.Width - Font12.TextWidth(text)) / 2f,
 			                          DeployRect.Y + 13 - Font12.LineSpacing / 2 - 2);
-			// the text stays lit (maintainer bench 318): dimmed-until-hover read as
+			// the text stays lit (maintainer feedback): dimmed-until-hover read as
 			// unreadable; gray marks the genuinely unavailable action only
 			batch.DrawString(Font12, text, textPos, canBuild ? ButtonTextColor : Color.Gray);
 		}

@@ -159,10 +159,9 @@ public sealed class Background : IDisposable
             backgroundDepth
         );
 
-        // bench 391 (maintainer): the far backdrop reads the UN-OFFSET projection - the page
-        // viewport shift recentres the map objects (and the added nebulae) into the visible
-        // band, but this distant nebula/star curtain must stay put, or it slides out under an
-        // open panel. BaseViewProjection == ViewProjection whenever no page offset is active.
+        // (maintainer feedback) the far backdrop reads the UN-OFFSET projection - the page
+        // viewport shift recentres map objects into the visible band, but this distant
+        // nebula/star curtain must stay put or it slides out under an open panel.
         Texture2D nebula = BackgroundNebula;
         if (nebula != null)
         {

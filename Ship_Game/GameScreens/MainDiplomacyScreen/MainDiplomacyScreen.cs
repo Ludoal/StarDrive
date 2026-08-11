@@ -32,7 +32,7 @@ namespace Ship_Game
         // the same columns, drawn here; Relationships and Espionage hand over to their own screen
         // and snap the tab back, so the row never lies about where you are.
         Submenu GroupTabs;
-        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // Ludoal fork: this page's real frame is its tab row's rect -
         // the band excludes exactly what the page occupies, dynamic size included
         public override Rectangle PageFrame => GroupTabs?.Rect ?? base.PageFrame;
         readonly Tab OpenOn;
@@ -54,8 +54,7 @@ namespace Ship_Game
         // Ludoal fork: where each empire's portrait landed this frame, so HandleInput can test it.
         // Filled by the draw because the columns are laid out there; the portrait is the control.
         readonly Map<Empire, Rectangle> PortraitRects = new();
-        // Combined Arms fields more than eight majors (maintainer bench 299): the row
-        // scrolls by whole columns behind this bar
+        // Combined Arms fields more than eight majors: the row scrolls by whole columns behind this bar
         readonly ScreenGroups.RaceRowScroller Scroller = new();
 
         const int TreatyBlockH = 114; // player design: 3 icon rows (state / borders / trade), labels gone
@@ -149,14 +148,11 @@ namespace Ship_Game
 
         public override void LoadContent()
         {
-            // Ludoal fork: the Diplomacy group of the unified top bar - four tabs where this
-            // screen had a title cartouche, a view toggle and a diagram button. The tab row takes
-            // the title's place and rides the same line as the top bar's Help and speed buttons,
-            // to their left: those move into the unified bar later, so leaving a band free above
-            // the frame would be building for a state that is going away (maintainer decision).
+            // Ludoal fork: the Diplomacy group of the unified top bar - four tabs. The tab row
+            // rides the same line as the top bar's Help and speed buttons, to their left.
             // Y=64 is where EmpireUIOverlay draws that row, on a 24px texture.
-            // The races come FIRST now: the frame hugs their columns (maintainer, 4 Aug), so
-            // their count is an input to its geometry.
+            // The races come FIRST: the frame hugs their columns, so their count is an input
+            // to its geometry.
             foreach (Empire e in Universe.UState.Empires)
             {
                 if (e != Player && e.IsFaction)
@@ -185,7 +181,7 @@ namespace Ship_Game
             Scroller.VisibleCols = visCols;
             Scroller.Pitch = colW;
             // the rail sits INSIDE the frame, its foot 5px off the bottom border, and the
-            // columns give it the room (maintainer bench 301)
+            // columns give it the room
             Scroller.Track = new Rectangle(x0, (int)client.Bottom - 5, visCols * colW - ScreenGroups.ColumnGap, 9);
             Scroller.WheelArea = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
             int colH = ScreenGroups.GroupColumnHeight(client) - (Scroller.Overflowing ? 14 : 0);
@@ -220,7 +216,7 @@ namespace Ship_Game
 
         void OnGroupTabChanged(int index)
         {
-            // Ludoal fork (bench 379): the hosted colony's tab, appended past the stock four
+            // Ludoal fork: the hosted colony's tab, appended past the stock four
             if (ScreenGroups.IsHostedTab(ScreenGroups.Group.Diplomacy, index, Universe))
             {
                 ExitScreen();
@@ -296,8 +292,6 @@ namespace Ship_Game
 
             // Ludoal fork: the portrait IS the way in to negotiation, the way it is in the
             // Relationships diagram - framed in the empire's colour, thicker under the cursor.
-            // It replaces the Contact button that used to sit below it, which cost a whole row
-            // of every column to say what the portrait already stands for.
             if (e != Player && !e.IsDefeated)
             {
                 PortraitRects[e] = portrait;
@@ -305,8 +299,7 @@ namespace Ship_Game
                 batch.DrawRectangle(portrait, e.EmpireColor, hovered ? 3 : 1);
             }
             // the race flag rides LEFT OF THE PORTRAIT, a touch bigger, so the name gets
-            // the column's full width - some races did not fit a 900p column with the flag
-            // on their line (maintainer bench 296)
+            // the column's full width
             batch.Draw(ResourceManager.Flag(e.data.Traits.FlagIndex),
                        new Rectangle(portrait.X - 30, portrait.Y, 24, 24), e.EmpireColor);
             string name = e.data.Traits.Name;
@@ -324,9 +317,7 @@ namespace Ship_Game
             }
 
             // FIXED section offsets: the bands align across columns whatever the content.
-            // Ludoal fork: 150 -> 108. The portrait ends at +76 and the name sits just under it;
-            // the rest was the room the Contact button needed, and the portrait carries that job
-            // now. Every column gains the row.
+            // The portrait ends at +76 and the name sits just under it.
             float infoY = col.Y + 108;
 
             if (ShowBonuses)
@@ -348,11 +339,9 @@ namespace Ship_Game
 
             // Intelligence tab.
             // Ludoal fork: the bands FOLLOW each other - every block advances y and the next one
-            // starts where it stopped. They used to be placed at heights computed from a graven
-            // row count apiece, so adding three rows to one of them did not push the rest down,
-            // it drew over them. Every block here paints a CONSTANT number of rows whatever the
-            // empire (a value you may not see reads "---"), which is what keeps the bands level
-            // across columns without anyone having to count them.
+            // starts where it stopped. Every block here paints a CONSTANT number of rows whatever
+            // the empire (a value you may not see reads "---"), which is what keeps the bands
+            // level across columns without anyone having to count them.
             // ARTIFACTS is the one variable block, so it comes last and takes whatever is left.
             y = infoY;
             if (e == Player)
@@ -398,7 +387,7 @@ namespace Ship_Game
             if (y > maxY - Font12.LineSpacing)
                 return;
             string lbl = Truncate(label, col.Width - 16 - (int)Font12Bold.TextWidth(value) - 8);
-            // a folded label hangs its full self on hover (bench 305)
+            // a folded label hangs its full self on hover
             if (lbl != label && new Rectangle(col.X + 8, (int)y, col.Width - 16, Font12.LineSpacing)
                                     .HitTest(Input.CursorPosition))
                 ToolTip.CreateTooltip(label);
@@ -416,8 +405,8 @@ namespace Ship_Game
             return text + "..";
         }
 
-        // Personality and Research are the two rows whose values outgrow a 900p column
-        // (maintainer bench 296): the label folds to its initial first, then the value keeps
+        // Personality and Research are the two rows whose values outgrow a 900p column:
+        // the label folds to its initial first, then the value keeps
         // its first word plus ".." - and any fold hangs the full pair on a hover tooltip.
         void FoldingRow(SpriteBatch batch, Rectangle col, ref float y, string label, string shortLabel,
                         string value, Color valueColor)
@@ -450,9 +439,9 @@ namespace Ship_Game
             float maxY = float.MaxValue;
             Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
 
-            // Status and Trade retired (maintainer bench 299): the TREATIES matrix carries
-            // both - each column's rows run against every empire, the player included - and
-            // their two lines go to ARTIFACTS, which takes whatever is left.
+            // Status and Trade retired: the TREATIES matrix carries both - each column's rows
+            // run against every empire, the player included - and their two lines go to
+            // ARTIFACTS, which takes whatever is left.
             // ⚠ The four slots below are what an empire has ABOUT you and you cannot have
             // about yourself - reserved rather than skipped: this column has to stay level
             // with the others, which is why every unavailable value in this screen keeps
@@ -475,13 +464,13 @@ namespace Ship_Game
                 HiddenRow(batch, col, ref y, maxY, "Personality", 1);
             }
 
-            // Ludoal fork: what this empire actually FEELS about you, in the room the Contact
-            // button used to take - the three the negotiation screen graphs, at a glance and for
-            // every empire at once instead of one at a time. Same colours it uses (green, yellow,
-            // red) and the same 0-100 clamp, so the numbers here and the bars there agree.
+            // Ludoal fork: what this empire actually FEELS about you - the three the negotiation
+            // screen graphs, at a glance and for every empire at once instead of one at a time.
+            // Same colours it uses (green, yellow, red) and the same 0-100 clamp, so the numbers
+            // here and the bars there agree.
             // NO espionage gate: the negotiation screen has always drawn these three bars for
             // anyone you can talk to, so gating the same three numbers here would make the
-            // overview say LESS than a screen one click away (maintainer feedback).
+            // overview say LESS than a screen one click away.
             // ⚠ Every path through this draws THREE rows, whatever it can show - the column has to
             // stay level with its neighbours, and a branch that quietly drew none would shift
             // every band below it in that one column. An empire we have no relationship with at
@@ -507,9 +496,9 @@ namespace Ship_Game
             y += Font12.LineSpacing + 3;
         }
 
-        // Trust/Anger/Threat wear a progress bar now (maintainer bench 297): half the column
-        // wide, the negotiation screen's own gradient, palette and 0-100 clamp, with the figure
-        // keeping its right-aligned lane after the bar.
+        // Trust/Anger/Threat wear a progress bar: half the column wide, the negotiation screen's
+        // own gradient, palette and 0-100 clamp, with the figure keeping its right-aligned lane
+        // after the bar.
         void BarRow(SpriteBatch batch, Rectangle col, ref float y, string label, float value, Color color)
         {
             batch.DrawString(Font12, label, new Vector2(col.X + 8, y), Color.Wheat);
@@ -622,8 +611,7 @@ namespace Ship_Game
             else if (e != Player)
             {
                 // THEIR network in YOUR empire - the precision follows your own level on
-                // them, which is why the value mixes words and figures (bench 305: the
-                // old "Infiltration" label read as yours)
+                // them, which is why the value mixes words and figures
                 float rowY = y;
                 TableRow(batch, col, ref y, maxY, "Spies", espionage.InfiltrationLevelSummary(), Color.White);
                 if (new Rectangle(col.X + 8, (int)rowY, col.Width - 16, Font12.LineSpacing).HitTest(Input.CursorPosition))
@@ -643,8 +631,7 @@ namespace Ship_Game
             else
                 HiddenRow(batch, col, ref y, maxY, "Planets", 1);
 
-            // the estimate path sums the pop of THEIR planets we explored, so an empire
-            // with none explored read "0 bn" as if known (maintainer bench 297) - a zero
+            // the estimate path sums the pop of THEIR planets we explored - a zero
             // estimate with no viewing right is a placeholder, not a figure
             float pop = GetPop(e);
             if (pop > 0f || e.isPlayer || Traders.Contains(e) || UsingNewEspioange && espionage?.CanViewPop == true)
@@ -662,7 +649,7 @@ namespace Ship_Game
                 FoldingRow(batch, col, ref y, "Research", "R.", e.Research.Current.Tech.Name.Text, Color.White);
             else if (e.Research.HasTopic && (UsingNewEspioange && espionage.CanViewTechType || IntelligenceLevel(e) > 0))
                 // this level sees the CATEGORY, not the topic - suffixed, because the
-                // category named Research read "Research Research" (maintainer bench 297)
+                // category named Research would otherwise read "Research Research"
                 TableRow(batch, col, ref y, maxY, "Research", e.Research.Current.TechnologyType + " tech", Color.White);
             else if (e.isPlayer && !e.Research.HasTopic)
                 TableRow(batch, col, ref y, maxY, "Research", "None", Color.Gray);
@@ -705,16 +692,14 @@ namespace Ship_Game
                     return;
                 }
                 // Ludoal fork: one line per trait. The set is comma separated, so it splits on the
-                // separator rather than on the column width - wrapping packed several traits per
-                // line and cut the list at three. The Bonuses tab has the room for all of them.
+                // separator rather than on the column width. The Bonuses tab has the room for all of them.
                 foreach (string trait in traitSet.Split(','))
                 {
                     string t = trait.Trim();
                     if (t.Length == 0)
                         continue;
                     // the trait's own record serves twice: its Cost signs the COLOUR (green
-                    // bonus, pink malus - the race tint said nothing, bench 305) and its
-                    // Description hangs on hover (bench 296)
+                    // bonus, pink malus) and its Description hangs on hover
                     var opt = ResourceManager.RaceTraits.TraitList.Find(o => o.LocalizedName.Text == t);
                     if (opt != null && opt.Description != 0
                         && new Rectangle(col.X + 8, (int)y, col.Width - 16, Font12.LineSpacing)
@@ -750,7 +735,7 @@ namespace Ship_Game
                 batch.DrawString(Font12, "None", new Vector2(col.X + 8, y), Color.Gray);
                 return;
             }
-            // duplicates collapse to one line with a count, "(x2)" (maintainer bench 298)
+            // duplicates collapse to one line with a count, "(x2)"
             var counts = new Map<string, int>();
             var order = new Array<Artifact>();
             foreach (Artifact a in e.data.OwnedArtifacts)
@@ -765,10 +750,10 @@ namespace Ship_Game
                     batch.DrawString(Font12, "...", new Vector2(col.X + 8, y), Color.Wheat);
                     break;
                 }
-                // its icon ahead of the name (maintainer bench 297), line-height sized -
+                // its icon ahead of the name, line-height sized -
                 // the artifact icons are keyed by the INTERNAL name, like the event popup's
                 int ih = Font12.LineSpacing + 2;
-                // and its own localized description on hover (maintainer bench 298)
+                // and its own localized description on hover
                 if (new Rectangle(col.X + 8, (int)y - 1, col.Width - 16, ih).HitTest(Input.CursorPosition))
                     ToolTip.CreateTooltip(new LocalizedText(art.DescriptionIndex));
                 batch.Draw(ResourceManager.Texture("Artifact Icons/" + art.Name),
@@ -819,7 +804,7 @@ namespace Ship_Game
             Row("Tax income", t.TaxMod);
             if (t.MaintMod != 0) Row("Maintenance", t.MaintMod, opposite: true);
             if (t.MaintMod != 0 || t.ShipMaintMultiplier < 1)
-                Row("Ship Maint", (1 + t.MaintMod) * t.ShipMaintMultiplier - 1, opposite: true); // short: the long label folded mid-word (bench 305)
+                Row("Ship Maint", (1 + t.MaintMod) * t.ShipMaintMultiplier - 1, opposite: true); // short: the long label folded mid-word
             Row("In-borders FTL", t.InBordersSpeedBonus);
             TableRow(batch, col, ref yy, maxY, "FTL speed", e.data.FTLModifier + "x", Color.White);
             TableRow(batch, col, ref yy, maxY, "FTL power drain", e.data.FTLPowerDrainModifier + "x", Color.White);
@@ -827,8 +812,7 @@ namespace Ship_Game
             if (e.data.SubLightModifier != 1) Row("Sublight speed", e.data.SubLightModifier - 1f);
             if (e.data.SensorModifier != 1) Row("Sensor range", e.data.SensorModifier - 1f);
             Row("Ship experience", e.data.ExperienceMod);
-            // ⚠ no hand-prefixed sign on the negative branch: ToString("#") already carries
-            // it, and the pair printed "--10" (bench 305)
+            // ⚠ no hand-prefixed sign on the negative branch: ToString("#") already carries it
             if (e.data.SpyModifier > 0f) TableRow(batch, col, ref yy, maxY, "Spy effectiveness", "+" + e.data.SpyModifier.ToString("#"), Color.LightGreen);
             else if (e.data.SpyModifier < 0f) TableRow(batch, col, ref yy, maxY, "Spy effectiveness", e.data.SpyModifier.ToString("#"), Color.LightPink);
             Row("Artifact bonus", t.Spiritual);
@@ -870,7 +854,7 @@ namespace Ship_Game
             int sepW = (int)(cellW * others.Length);
             batch.DrawLine(new Vector2(sepX, sepY), new Vector2(sepX + sepW, sepY), new Color(255, 255, 255, 40).Premultiplied());
 
-            // merged status row (maintainer feedback): war BREAKS every treaty at declaration
+            // merged status row: war BREAKS every treaty at declaration
             // (DeclareWarOn → BreakAllTreatiesWith includingPeace) and alliance
             // auto-signs NA — so one row with priority W > A > N > P loses nothing
             // but a truce still ticking under a fresher alliance. Icons, not letters.
@@ -882,7 +866,7 @@ namespace Ship_Game
                     SubTexture icon = null;
                     Color tint = Color.White;
                     string glyph = "?";
-                    string tip = null;   // maintainer bench 336: hover text for the treaty icon
+                    string tip = null;   // hover text for the treaty icon
                     if (CanSeeRelation(e, others[jx]) && e.GetRelations(others[jx], out Relationship rel) && rel.Known)
                     {
                         // tints match the Relationships Cross Reference palette:
@@ -930,10 +914,10 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // Ludoal fork (bench 46.173): the closing key is tested BEFORE the top bar, not
-            // after. The bar reads the same key to OPEN this screen and returns true, so with the
-            // bar first the key never reached the line below and the screen would not close on
-            // its own hotkey (maintainer feedback). The stock screen has no bar, which is why it never showed.
+            // Ludoal fork: the closing key is tested BEFORE the top bar, not after - the bar
+            // reads the same key to OPEN this screen and returns true, so with the bar first
+            // the key would never reach the line below and the screen would not close on its
+            // own hotkey.
             if (input.KeyPressed(Keys.I) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();
