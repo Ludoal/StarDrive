@@ -227,16 +227,6 @@ namespace Ship_Game
             batch.Draw(ResourceManager.Texture("NewUI/icon_build_edit_hover1"), EditNameButton,
                        PlanetName.HandlingInput ? Color.White : Color.White.Alpha(0.75f)); // hover1: the Patrols pencil's own lit brown (bench 308)
 
-            // Ludoal fork: the eye by the name (maintainer design) - the row is the planet's
-            // identity, the eye is "go to it" on the map, beside the rename pencil
-            SubTexture eye = ResourceManager.Texture("UI/viewPlanetIcon");
-            ViewOnMapButton = new Rectangle(EditNameButton.Right + 8, EditNameButton.Y,
-                                            EditNameButton.Height, EditNameButton.Height);
-            bool eyeHover = ViewOnMapButton.HitTest(Input.CursorPosition);
-            batch.Draw(eye, ViewOnMapButton, eyeHover ? Color.White : Color.White.Alpha(0.7f));
-            if (eyeHover && P.Universe.Screen.IsActive)
-                ToolTip.CreateTooltip("View this planet on the map");
-
             cursor.Y += Font20.LineSpacing * 2;
             batch.DrawString(TextFont, Localizer.Token(GameText.Class) + ":", cursor, Color.Orange);
             Vector2 position3 = new Vector2(cursor.X + num5, cursor.Y);

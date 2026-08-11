@@ -34,6 +34,24 @@ namespace Ship_Game
         int LockColX => LaborX + 10 + (LaborW * 0.6f).RoundTo10() + 10;
         Planet P;
         Rectangle NameRect; // where the last draw put the name - clicking it pans+zooms (bench 395)
+
+        // the eye shows only where it can OPEN a colony panel: our own world, or a mole's
+        // host (mole vision). Everywhere else the name's own zoom covers the gesture, and
+        // a dead eye would just lie (bench 396).
+        bool InspectOpensColony
+        {
+            get
+            {
+                if (P.Owner == Player)
+                    return true;
+                if (P.Owner == null)
+                    return false;
+                foreach (Mole m in Player.data.MoleList)
+                    if (m.PlanetId == P.Id)
+                        return true;
+                return false;
+            }
+        }
         readonly UniverseScreen Screen;
         Empire Player => Screen.Player;
         readonly Array<TippedItem> ToolTipItems = new Array<TippedItem>();
@@ -405,7 +423,8 @@ namespace Ship_Game
             if (P.Habitable)
             {
                 DrawFertProdStats(batch);
-                Inspect.Draw(batch);
+                if (InspectOpensColony)
+                    Inspect.Draw(batch);
                 Invade.Draw(batch);
             }
 
@@ -631,12 +650,16 @@ namespace Ship_Game
             {
                 return true; // the click may have swapped P for the next colony
             }
-            // clicking the planet's NAME pans and zooms onto it (maintainer bench 395)
-            if (input.LeftMouseClick && NameRect.HitTest(input.CursorPosition))
+            // the planet's NAME pans and zooms onto it (maintainer bench 395/396)
+            if (NameRect.HitTest(input.CursorPosition))
             {
-                GameAudio.AcceptClick();
-                Screen.SnapToPlanetStayHere(P);
-                return true;
+                ToolTip.CreateTooltip("Zoom to planet");
+                if (input.LeftMouseClick)
+                {
+                    GameAudio.AcceptClick();
+                    Screen.SnapToPlanetStayHere(P);
+                    return true;
+                }
             }
             if (P.Owner == null && P.Habitable && P.IsExploredBy(Player))
             {
@@ -706,16 +729,11 @@ namespace Ship_Game
                 return true;
             }
 
-            if (Inspect.Hover && P.Habitable)
+            if (Inspect.Hover && P.Habitable && InspectOpensColony)
             {
-                if (P.Owner == null || P.Owner != Player)
-                {
-                    ToolTip.CreateTooltip(GameText.ViewPlanetDetails);
-                }
-                else
-                {
-                    ToolTip.CreateTooltip(GameText.OpensColonyOverviewScreen);
-                }
+                // our colony opens the management screen; a mole's host opens the read-only view
+                ToolTip.CreateTooltip(P.Owner == Player ? GameText.OpensColonyOverviewScreen
+                                                        : GameText.ViewPlanetDetails);
             }
             if (Invade.Hover && P.Habitable)
             {
@@ -723,7 +741,7 @@ namespace Ship_Game
             }
             if (P.Habitable || P.Universe.Debug)
             {
-                if (Inspect.HandleInput(input))
+                if (InspectOpensColony && Inspect.HandleInput(input))
                 {
                     Screen.SnapViewColony(P, combatView: false);
                 }

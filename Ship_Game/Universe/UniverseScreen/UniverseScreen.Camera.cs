@@ -110,8 +110,8 @@ namespace Ship_Game
                         HostColonyTab(p, GameScreens.ScreenGroups.Group.Galaxy, -1);
                     // Ludoal fork (migration, bench 386): a STACKED page like every tab - no
                     // mount, no camera anchoring, the map simply keeps living underneath.
-                    // bench 352: opening a colony makes it THE selected object.
-                    ClearSelectedItems();
+                    // The planet STAYS selected - its cartouche shows through (bench 396).
+                    SetSelectedPlanet(p);
                     ReturnToListScreen = null;
                     ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
                     ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI));

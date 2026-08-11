@@ -77,15 +77,6 @@ namespace Ship_Game
                 return true;
             }
 
-            // Ludoal fork: the eye pans and ZOOMS onto the planet - the screen STAYS open,
-            // the flight shows in the visible band (maintainer bench 395)
-            if (input.LeftMouseClick && ViewOnMapButton.HitTest(input.CursorPosition))
-            {
-                GameAudio.AcceptClick();
-                P.Universe.Screen.SnapToPlanetStayHere(P);
-                return true;
-            }
-
             // Ludoal fork (migration, bench 386): the live top bar and the visible band, like
             // every page - the universe's own input no longer runs under a stacked colony
             if (Eui.HandleInput(input, caller: this))
@@ -240,6 +231,20 @@ namespace Ship_Game
                 ScreenManager.AddScreen(new ColonyScreen(u, nextOrPrevPlanet, Eui,
                     GovernorDetails.CurrentTabIndex, PFacilitiesPlayerTabSelected));
             }
+        }
+
+        // the Home button - straight to the capital, the arrows' walk mechanics
+        void GoToHomeworld()
+        {
+            if (!Player.GetCurrentCapital(out Planet home) || home == P)
+                return;
+            UniverseScreen u = Universe.Screen;
+            if (u.HostedTabTitle != null)
+                u.HostColonyTab(home, u.HostedTabGroup, u.HostedTabOrigin);
+            u.PanToPlanetKeepZoom(home);
+            ExitScreen();
+            ScreenManager.AddScreen(new ColonyScreen(u, home, Eui,
+                GovernorDetails.CurrentTabIndex, PFacilitiesPlayerTabSelected));
         }
 
         bool HandleCycleColoniesLeftRight(InputState input)

@@ -29,7 +29,8 @@ namespace Ship_Game
         private readonly Graphics.Font SmallFont  = Fonts.Arial12Bold;
         private readonly Graphics.Font TinyFont   = Fonts.Arial8Bold;
         private readonly Color PlanetStatColor;
-        private readonly Color EmpireColor;
+        private Color EmpireColor;   // recomputed on owner change (live refresh)
+        private Empire LastSeenOwner;
 
         private Rectangle ShipIconRect;
         // bench 393 (maintainer): the two order buttons are a compact icon lane now (Ships-list
@@ -59,6 +60,7 @@ namespace Ship_Game
 
             PlanetStatColor = Planet.Habitable ? Color.White : Color.LightPink;
             EmpireColor     = Planet.Owner?.EmpireColor ?? new Color(255, 239, 208);
+            LastSeenOwner   = planet.Owner;
             CanSendTroops   = canSendTroops;
 
             foreach (Goal g in planet.Universe.Player.AI.Goals)
@@ -122,6 +124,22 @@ namespace Ship_Game
 
         void RefreshLiveState()
         {
+            // the row's static cells (planet icon flag, owner colours, class) rebuild when the
+            // owner changes - a colonisation completing must show without a re-sort
+            if (Planet.Owner != LastSeenOwner)
+            {
+                LastSeenOwner = Planet.Owner;
+                EmpireColor   = Planet.Owner?.EmpireColor ?? new Color(255, 239, 208);
+                PerformLayout(); // the layout re-runs this refresh
+                return;
+            }
+            // colonisation marks placed elsewhere (the cartouche button, an auto-colonize goal)
+            // colour the icon too - the constructor snapshot went stale
+            bool marked = false;
+            foreach (Goal g in Player.AI.Goals)
+                if (g.IsColonizationGoal(Planet)) { marked = true; break; }
+            MarkedForColonization = marked;
+
             TryGetIncomingTroops(out int incoming, out _);
             bool canRecall = Planet.NumTroopsCanLaunchFor(Player) > 0;
             ShowColonizeIcon = Planet.Owner == null && Planet.Habitable;

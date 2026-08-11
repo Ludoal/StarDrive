@@ -782,7 +782,9 @@ namespace Ship_Game
 
         bool CanShowInfo => !LookingAtPlanet && !IsCinematicModeEnabled;
         bool ShowSystemInfoOverlay => SelectedSystem != null && CanShowInfo && viewState == UnivScreenState.GalaxyView;
-        bool ShowPlanetInfo => SelectedPlanet != null && CanShowInfo;
+        // the planet cartouche survives the ground battle view (bench 396) - only the
+        // cinematic mode hides it; the other cartouches keep the LookingAtPlanet gate
+        bool ShowPlanetInfo => SelectedPlanet != null && !IsCinematicModeEnabled;
         // Ludoal fork (wishlist): star cartouche at EVERY zoom (field report 45.42);
         // the GalaxyView system overlay coexists with it
         bool ShowStarInfo => SelectedSystem != null && CanShowInfo;

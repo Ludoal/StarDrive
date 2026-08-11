@@ -101,7 +101,6 @@ namespace Ship_Game
         public bool ClickedTroop;
 
         Rectangle EditNameButton;
-        Rectangle ViewOnMapButton; // the eye by the name - jump to the planet on the map
         readonly Font Font8  = Fonts.Arial8Bold;
         readonly Font Font12 = Fonts.Arial12Bold;
         readonly Font Font14 = Fonts.Arial14Bold;
@@ -452,6 +451,17 @@ namespace Ship_Game
                 Pos = new Vector2(navCentre + NavGap / 2, arrowY),
                 Tooltip = GameText.ViewNextColony,
                 OnClick = b => OnChangeColony(+1),
+                ClickSfx = "sd_ui_accept_alt3",
+            });
+
+            // the HOME button between the arrows - straight back to the capital. Panel
+            // navigation pans without zooming; the zoomed route is the cartouche's.
+            Add(new UIButton(new UIButton.StyleTextures("UI/icon_home", "UI/icon_home"),
+                             new Vector2(arrowH, arrowH), "")
+            {
+                Pos = new Vector2(navCentre - arrowH / 2, arrowY),
+                Tooltip = "View your Homeworld",
+                OnClick = b => GoToHomeworld(),
                 ClickSfx = "sd_ui_accept_alt3",
             });
 

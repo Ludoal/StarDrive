@@ -123,8 +123,7 @@ namespace Ship_Game
             if (p == null)
                 return;
             HostColonyTab(p, GameScreens.ScreenGroups.Group.Empire, -1);
-            ClearSelectedItems();
-            PanToPlanetKeepZoom(p);
+            PanToPlanetKeepZoom(p); // selects the planet too - the cartouche shows through
             ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI));
         }
 
@@ -139,7 +138,7 @@ namespace Ship_Game
             // every tab - one code path for input, pause, band and closing.
             OpenHostedTabPanel = () =>
             {
-                ClearSelectedItems(); // bench 352: the colony becomes THE selected object
+                SetSelectedPlanet(p); // stays selected - the cartouche shows through (bench 396)
                 ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI));
             };
         }
