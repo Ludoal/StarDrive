@@ -103,17 +103,27 @@ namespace Ship_Game
                 {
                     // Ludoal fork (spec: colony-as-tab): a map-opened colony rides the GALAXY
                     // group's row with origin -1 - Esc closes to the map, as it always did.
-                    // Armed BEFORE the panel: the colony's constructor reads the seat to wear
-                    // the live row. ⚠ A list screen arms its own seat for this planet before
-                    // calling the snap - that arming wins, don't demote it to Galaxy/-1.
+                    // A MOLE's host opens on the DIPLOMACY row with Espionage as the origin
+                    // instead (bench 397): its reader came from espionage territory, and Esc
+                    // goes back there. ⚠ A list screen arms its own seat for this planet
+                    // before calling the snap - that arming wins, don't demote it.
                     if (HostedTabTitle != p.Name)
-                        HostColonyTab(p, GameScreens.ScreenGroups.Group.Galaxy, -1);
+                    {
+                        if (p.Owner != Player && flag)
+                            HostColonyTab(p, GameScreens.ScreenGroups.Group.Diplomacy,
+                                          (int)MainDiplomacyScreen.Tab.Espionage);
+                        else
+                            HostColonyTab(p, GameScreens.ScreenGroups.Group.Galaxy, -1);
+                    }
                     // Ludoal fork (migration, bench 386): a STACKED page like every tab - no
                     // mount, no camera anchoring, the map simply keeps living underneath.
                     // The planet STAYS selected - its cartouche shows through (bench 396).
                     SetSelectedPlanet(p);
                     ReturnToListScreen = null;
                     ReturnToListGroup  = GameScreens.ScreenGroups.Group.None;
+                    // any page still open closes first (bench 397): the cartouche eye can fire
+                    // with a page up, and the colony must not bury it under a foreign tab row
+                    ScreenManager.ExitAllAbove(this);
                     ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI));
                     return;
                 }

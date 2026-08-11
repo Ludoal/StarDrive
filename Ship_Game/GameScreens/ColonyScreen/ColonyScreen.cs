@@ -456,10 +456,11 @@ namespace Ship_Game
 
             // the HOME button between the arrows - straight back to the capital. Panel
             // navigation pans without zooming; the zoomed route is the cartouche's.
+            const int homeSize = 16; // a notch under the arrows (maintainer bench 397)
             Add(new UIButton(new UIButton.StyleTextures("UI/icon_home", "UI/icon_home"),
-                             new Vector2(arrowH, arrowH), "")
+                             new Vector2(homeSize, homeSize), "")
             {
-                Pos = new Vector2(navCentre - arrowH / 2, arrowY),
+                Pos = new Vector2(navCentre - homeSize / 2, arrowY + (arrowH - homeSize) / 2),
                 Tooltip = "View your Homeworld",
                 OnClick = b => GoToHomeworld(),
                 ClickSfx = "sd_ui_accept_alt3",

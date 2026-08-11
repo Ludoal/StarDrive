@@ -782,9 +782,11 @@ namespace Ship_Game
 
         bool CanShowInfo => !LookingAtPlanet && !IsCinematicModeEnabled;
         bool ShowSystemInfoOverlay => SelectedSystem != null && CanShowInfo && viewState == UnivScreenState.GalaxyView;
-        // the planet cartouche survives the ground battle view (bench 396) - only the
-        // cinematic mode hides it; the other cartouches keep the LookingAtPlanet gate
-        bool ShowPlanetInfo => SelectedPlanet != null && !IsCinematicModeEnabled;
+        // the planet cartouche survives the ground battle view (bench 396/397) - during the
+        // battle the panel's own planet feeds it (pInfoUI keeps its P), so it stays up even
+        // when the map selection got cleared on the way in. Cinematic mode still hides it.
+        bool ShowPlanetInfo => !IsCinematicModeEnabled
+                            && (SelectedPlanet != null || LookingAtPlanet && workersPanel != null);
         // Ludoal fork (wishlist): star cartouche at EVERY zoom (field report 45.42);
         // the GalaxyView system overlay coexists with it
         bool ShowStarInfo => SelectedSystem != null && CanShowInfo;

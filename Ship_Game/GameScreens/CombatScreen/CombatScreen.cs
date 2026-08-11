@@ -220,7 +220,7 @@ namespace Ship_Game
 
             batch.Draw(ResourceManager.Texture($"PlanetTiles/{P.PlanetTileId}_tilt"), GridRect, Color.White);
             batch.Draw(ResourceManager.Texture("Ground_UI/grid"), GridRect, Color.White);
-            batch.DrawString(Fonts.Arial20Bold, P.Name, TitlePos, OwnerColor);
+            // the big top title retired (bench 397): the planet cartouche carries the name
 
             LaunchAll.Draw(batch, elapsed);
             LandAll.Draw(batch, elapsed);
