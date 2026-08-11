@@ -344,7 +344,7 @@ namespace Ship_Game
                 ClearHostedTab();
 
             if (input.PauseGame && !GlobalStats.TakingInput)
-                EmpireUI.TogglePause(); // one owner for the pause gesture (bench 383)
+                EmpireUI.TogglePause(); // one owner for the pause gesture
 
             if (input.DebugMode)
             {
