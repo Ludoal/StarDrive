@@ -347,9 +347,14 @@ namespace Ship_Game
             // speed block. Only while the warp-inhibiting event runs; yellow.
             if (Universe.UState.Events.ActiveEvent != null && Universe.UState.Events.ActiveEvent.InhibitWarp)
             {
-                // abbreviated below 1680 of width - the full alert overruns the groups (bench 410)
+                // abbreviated below 1680 of width - the full alert overruns the groups; the
+                // tooltip carries the event's own notification text (bench 410)
                 string flux = Universe.ScreenWidth < 1680 ? "FLUX" : "HYPERSPACE FLUX";
-                batch.DrawString(font, flux, new Vector2(SpeedClusterLeft - font.TextWidth(flux), textY), Color.Yellow);
+                var fluxPos = new Vector2(SpeedClusterLeft - font.TextWidth(flux), textY);
+                batch.DrawString(font, flux, fluxPos, Color.Yellow);
+                var fluxRect = new Rectangle((int)fluxPos.X, (int)fluxPos.Y, (int)font.TextWidth(flux), font.LineSpacing);
+                if (fluxRect.HitTest(Universe.Input.CursorPosition))
+                    ToolTip.CreateTooltip(Universe.UState.Events.ActiveEvent.NotificationString);
             }
 
             // the speed factor, right-aligned on its reserved width. Same reading as the floating
