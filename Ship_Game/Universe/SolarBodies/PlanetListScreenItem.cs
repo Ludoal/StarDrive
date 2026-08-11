@@ -98,7 +98,9 @@ namespace Ship_Game
             // the counter - the sim moves troops and colonisation goals while the list is open.
             // (icon_troop_shipUI: the plain icon_troop washes out at this size)
             ColonizePanel = Panel(ColonizeIconRect, Color.White, ResourceManager.Texture("UI/ColonizeIcon"));
-            TroopPanel    = Panel(TroopIconRect, Color.White, ResourceManager.Texture("UI/icon_troop_shipUI"));
+            // the _bright variant (bench 410): the stock art peaks at ~35 of luminance, so a
+            // Red tint - the hostile-owner state - was near-black. Normalized to 230.
+            TroopPanel    = Panel(TroopIconRect, Color.White, ResourceManager.Texture("UI/icon_troop_shipUI_bright"));
             TroopsLabel   = Label(UITable.CellPos(SmallFont, cols[10].Rect, Y, Height, "", TableAlign.Left),
                                   "", SmallFont, Cream);
             RefreshLiveState();
