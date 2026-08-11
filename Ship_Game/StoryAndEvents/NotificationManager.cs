@@ -47,12 +47,15 @@ namespace Ship_Game
 
         void UpdateNotificationArea()
         {
-            // ⚠ the stack now stops ABOVE the Ships/Planets counters (maintainer): the old 275
-            // bottom margin left notifications running halfway down them. Derived from the same
-            // numbers that place the counters - minimap housing 256 tall, 10 off the edge, the
-            // counters 30 above it, plus a small gap.
-            NotificationArea = new Rectangle(GameBase.ScreenWidth - 70, 70, 70,
-                                             GameBase.ScreenHeight - 70 - (256 + 10 + 30 + 8));
+            // the stack's floor sits above the Ships/Planets counters, which SeatMinimap places
+            // 30px above the minimap housing. Asked of the seated housing so the options size
+            // slider moves the floor with the widget (maintainer feedback); before the first
+            // SeatMinimap the housing is empty - use the default-size footprint until
+            // LoadGraphics reseats us.
+            int floor = Screen.mmHousing.Height > 0
+                      ? Screen.mmHousing.Y - 30 - 8
+                      : GameBase.ScreenHeight - (256 + 10 + 30 + 8);
+            NotificationArea = new Rectangle(GameBase.ScreenWidth - 70, 70, 70, floor - 70);
             MaxEntriesToDisplay = NotificationArea.Height / 70;
         }
 
