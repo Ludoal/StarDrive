@@ -80,8 +80,11 @@ public class UniverseParams
     [StarData] public bool CordrazinePlanetCaptured;
     [StarData] public bool DisableVolcanoWarning;
     [StarData] public bool DisableCrashSiteWarning;
-    [StarData] public bool PrioitizeProjectors;
-    [StarData] public bool PrioritizeFreighters; // Ludoal fork: freighters jump the build queue, like projectors
+    [StarData] public bool PrioitizeProjectors;  // superseded by ConstructionPriorities - kept so old saves load, nothing reads it
+    [StarData] public bool PrioritizeFreighters; // superseded by ConstructionPriorities - kept so old saves load, nothing reads it
+    // Ludoal fork (maintainer spec): the ORDERED construction priority list. Categories in
+    // it jump the colony build queues at insertion, best rank first, FIFO within a category.
+    [StarData] public Array<string> ConstructionPriorities = new();
     [StarData(DefaultValue=true)] public bool ShowAllDesigns = true;
     [StarData] public bool FilterOldModules;
 

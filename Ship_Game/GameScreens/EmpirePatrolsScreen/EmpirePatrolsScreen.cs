@@ -94,10 +94,26 @@ namespace Ship_Game
             PatrolsSL.EnableItemHighlight = true;
             Table.ApplyHighlightTo(PatrolsSL);
             PatrolsSL.OnDoubleClick = OnPatrolDoubleClicked; // to the plan on the map
+            PatrolsSL.OnClick = OnPatrolSingleClicked; // bench 401: single-click pans at current zoom
             ResetList(); // honors the session's standing sort (bench 307)
         }
 
         // double-click flies the camera to the patrol's route (maintainer bench 293)
+        // bench 401 (maintainer): the single-click pans to the route's midpoint at the
+        // CURRENT zoom - the screen stays open, the flight shows in the band
+        void OnPatrolSingleClicked(EmpirePatrolsScreenListItem item)
+        {
+            var wps = item.FleetPatrol.WayPoints.ToArray();
+            if (wps.Length == 0)
+                return;
+            GameAudio.AcceptClick();
+            Vector2 center = Vector2.Zero;
+            foreach (var wp in wps)
+                center += wp.Position;
+            center /= wps.Length;
+            Universe.PanToKeepZoom(center);
+        }
+
         void OnPatrolDoubleClicked(EmpirePatrolsScreenListItem item)
         {
             var wps = item.FleetPatrol.WayPoints.ToArray();
@@ -184,6 +200,7 @@ namespace Ship_Game
         {
             PatrolsSL.Reset();
             PatrolsSL.OnDoubleClick = OnPatrolDoubleClicked; // Reset drops the handlers
+            PatrolsSL.OnClick = OnPatrolSingleClicked;
             FleetPatrol[] patrols;
             switch (col)
             {

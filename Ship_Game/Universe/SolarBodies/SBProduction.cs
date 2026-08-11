@@ -496,24 +496,26 @@ namespace Ship_Game.Universe.SolarBodies
                     {
                         MoveTo(0, Count - 1);
                     }
-                    else if (P.Universe.P.PrioitizeProjectors && item.QType == QueueItemType.RoadNode)
+                    else
                     {
-                        // prioritize projector bridges for the player, below the projectors
-                        // already leading the queue so a road completes segment by segment
-                        int insertAt = 0;
-                        while (insertAt < Count - 1 && ConstructionQueue[insertAt].QType == QueueItemType.RoadNode)
-                            ++insertAt;
-                        MoveTo(insertAt, Count - 1);
-                    }
-                    else if (P.Universe.P.PrioritizeFreighters && item.QType == QueueItemType.Freighter)
-                    {
-                        // Ludoal fork (maintainer): the same treatment for freighters - a new one
-                        // jumps ahead of the rest, sitting below the freighters already leading the
-                        // queue so trade capacity comes up quickly.
-                        int insertAt = 0;
-                        while (insertAt < Count - 1 && ConstructionQueue[insertAt].QType == QueueItemType.Freighter)
-                            ++insertAt;
-                        MoveTo(insertAt, Count - 1);
+                        // Ludoal fork (maintainer spec): the ordered priority list, generalized
+                        // from the old projector/freighter booleans. A prioritized item slots
+                        // above everything ranked worse or unranked, below same-or-better ranks -
+                        // FIFO within a category, better-ranked categories stay ahead. Insertion
+                        // only: reordering the list never reshuffles queues already filled.
+                        int rank = ConstructionPriorityRank(item);
+                        if (rank >= 0)
+                        {
+                            int insertAt = 0;
+                            while (insertAt < Count - 1)
+                            {
+                                int r = ConstructionPriorityRank(ConstructionQueue[insertAt]);
+                                if (r < 0 || r > rank)
+                                    break;
+                                ++insertAt;
+                            }
+                            MoveTo(insertAt, Count - 1);
+                        }
                     }
                 }
 
@@ -521,6 +523,24 @@ namespace Ship_Game.Universe.SolarBodies
                 if (item.Goal is RefitShip or RefitOrbital)
                     PromoteRefitToFront(item);
             }
+        }
+
+        // a queue item's rank in the ordered Prioritization list; -1 = not prioritized
+        int ConstructionPriorityRank(QueueItem item)
+        {
+            string key = item.QType switch
+            {
+                QueueItemType.Scout => "Explorers",
+                QueueItemType.ColonyShip or QueueItemType.ColonyShipClaim => "Colonizers",
+                QueueItemType.RoadNode => "Projectors",
+                QueueItemType.Freighter => "Freighters",
+                QueueItemType.Troop => "Troops",
+                QueueItemType.CombatShip => "MilitaryShips",
+                QueueItemType.Orbital => item.Goal is ProcessResearchStation ? "ResearchStations"
+                                       : item.Goal is MiningOps ? "MiningStations" : null,
+                _ => null,
+            };
+            return key == null ? -1 : P.Universe.P.ConstructionPriorities.IndexOf(key);
         }
 
         void Finish(QueueItem q, bool success)
