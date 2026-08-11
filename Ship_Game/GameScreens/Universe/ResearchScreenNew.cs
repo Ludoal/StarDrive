@@ -440,26 +440,24 @@ namespace Ship_Game
 
         Vector2 GridSize => new(GridWidth, GridHeight);
 
-        // the tree's top/bottom margins MIRROR the gap between rows, floored at 2px:
-        // at the 900p floor the rows touch and the margins collapse to 2px; on a tall
-        // frame the same air runs above, between and below the rows.
+        // the tree PANS, so rows never compress (bench 408): the grid step keeps at least
+        // MinGap between rows and the tree simply overruns the frame on small displays -
+        // panning reaches the rest. Top/bottom margins mirror the inter-row gap.
         // ⚠ the node's VISIBLE height is 108, not its 120 rect: the base texture carries
         // ~12px of transparent padding at its foot (92x90 png, content stops at row 79).
-        // The rect is allowed to overrun by that invisible slack.
         // ⚠ this also OWNS MainMenuOffset.Y - the first anchor rides the margin.
         int SubGridHeight(int rows)
         {
             rows = Math.Max(1, rows);
             const int NodeVisible = 108; // 22 title plate + 86 of visible body art
+            const int MinGap = 4;
             int gh;
-            // 104: the designed 112 minus an empirical 8 - integer-division truncation
-            // (up to rows-1 px) plus the art-bounds rounding land the deepest row a hair
-            // high otherwise
-            if (rows == 1 || (MainArea.Height + NodeVisible) / (rows + 1) - NodeVisible < 2)
-                gh = rows == 1 ? MainArea.Height - 104 : (MainArea.Height - 104) / (rows - 1);
+            if (rows == 1)
+                gh = MainArea.Height - 104; // one row: the step only seats the anchor
             else
-                gh = (MainArea.Height + NodeVisible) / (rows + 1); // margin == inter-row gap
-            int margin = Math.Max(2, gh - NodeVisible);
+                gh = Math.Max((MainArea.Height + NodeVisible) / (rows + 1), // margin == inter-row gap
+                              NodeVisible + MinGap);
+            int margin = Math.Max(MinGap, gh - NodeVisible);
             if (rows == 1)
                 margin = 2;
             MainMenuOffset.Y = MainArea.Y + margin + 22;

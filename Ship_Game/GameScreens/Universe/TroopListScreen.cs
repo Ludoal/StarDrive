@@ -324,6 +324,10 @@ namespace Ship_Game
             {
                 Table.DrawChrome(batch);
             }
+            // an OPEN filter list redraws last: the table chrome above draws after base.Draw
+            // and would sit on top of it (bench 408)
+            if (ShowStatus.Open)
+                ShowStatus.Draw(batch, elapsed);
             ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();

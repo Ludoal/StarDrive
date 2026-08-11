@@ -38,17 +38,11 @@ namespace Ship_Game
         static int LastSortCol = -1;   // session-persistent (bench 307)
         static bool LastSortAsc = true;
 
-        private UICheckBox cb_hideOwned;
         private UICheckBox cb_hideUninhabitable;
         float FilterLineY; // line 1, where the filters live - the troops count rides it too
         private DropOptions<string> ProximityFilter;
         private DropOptions<string> OwnerFilter;
 
-        bool HideOwned
-        {
-            get => UState.P.PlanetScreenHideOwned;
-            set => UState.P.PlanetScreenHideOwned = value;
-        }
 
         bool HideUninhab
         {
@@ -172,11 +166,9 @@ namespace Ship_Game
 
             float lineY = client.Y + 8;
             FilterLineY = lineY;
-            cb_hideOwned = Add(new UICheckBox(Table.TableRect.X, lineY,
-                () => HideOwned,
-                x => { HideOwned = x; ResetList(); }, Fonts.Arial12Bold, "Hide Owned", ""));
-
-            cb_hideUninhabitable = Add(new UICheckBox(Table.TableRect.X + 130, lineY,
+            // "Hide Owned" is gone (bench 408): the Owner filter's Unowned option is the
+            // same predicate; the saved flag stays in UniverseParams, inert
+            cb_hideUninhabitable = Add(new UICheckBox(Table.TableRect.X, lineY,
                 () => HideUninhab,
                 x => { HideUninhab = x; ResetList(); }, Fonts.Arial12Bold, "Hide Uninhabitable", ""));
 
@@ -273,6 +265,12 @@ namespace Ship_Game
                 batch.DrawString(font, rebVal, new Vector2(x, pos.Y).Rounded(), Color.White);
             }
 
+            // an OPEN filter list redraws last: the table chrome above draws after base.Draw
+            // and would sit on top of it (bench 408)
+            if (ProximityFilter.Open)
+                ProximityFilter.Draw(batch, elapsed);
+            if (OwnerFilter.Open)
+                OwnerFilter.Draw(batch, elapsed);
             ScreenGroups.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
@@ -417,11 +415,7 @@ namespace Ship_Game
             if (wantOwner.NotEmpty() && wantOwner != "-" && (p.Owner?.data.Traits.Singular ?? "") != wantOwner)
                 return false;
 
-            if (!HideOwned && !HideUninhab)                                 return true;
-            if (HideOwned && HideUninhab && p.Habitable && p.Owner == null) return true;
-            if (HideOwned && !HideUninhab && p.Owner == null)               return true;
-            if (!HideOwned && HideUninhab && p.Habitable)                   return true;
-            return false;
+            return !HideUninhab || p.Habitable;
         }
 
         // Ludoal fork: the other two tabs live in their own screen, so leaving Planets hands over
