@@ -173,13 +173,14 @@ namespace Ship_Game
                 x => { HideUninhab = x; ResetList(); }, Fonts.Arial12Bold, "Hide Uninhabitable", ""));
 
             // proximity and owner filters on the same line (maintainer feedback)
-            ProximityFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 290, (int)lineY, 110, 18)));
+            // 160/280, not 290/410 (bench 408): the lane the Hide Owned toggle occupied closes up
+            ProximityFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 160, (int)lineY, 110, 18)));
             ProximityFilter.AddOption("All Distances", "");
             foreach (string cat in new[] { "Local", "Near", "Midway", "Distant", "Beyond" })
                 ProximityFilter.AddOption(cat, cat);
             ProximityFilter.OnValueChange = _ => ResetList();
 
-            OwnerFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 410, (int)lineY, 130, 18)));
+            OwnerFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 280, (int)lineY, 130, 18)));
             OwnerFilter.AddOption("All Owners", "");
             OwnerFilter.AddOption("Unowned", "-");
             var seenOwners = new Array<string>();

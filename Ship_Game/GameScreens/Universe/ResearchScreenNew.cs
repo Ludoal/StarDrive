@@ -4,6 +4,7 @@ using Ship_Game.Audio;
 using System;
 using Ship_Game.GameScreens;
 using Ship_Game.GameScreens.Universe.Debug;
+using Ship_Game.Graphics; // RenderStates: the frame scissor
 using SDGraphics;
 using SDUtils;
 using Vector2 = SDGraphics.Vector2;
@@ -88,8 +89,10 @@ namespace Ship_Game
             int numDiscoveredRoots = Player.TechEntries.Count(t => t.IsRoot && t.Discovered);
 
             // roots pitch: first anchor at the offset, the last one's 76px body ends 2px
-            // above the floor - the pitch divides what remains between the anchors
-            GridHeight = numDiscoveredRoots > 1 ? (main.Height - 102) / (numDiscoveredRoots - 1)
+            // above the floor - the pitch divides what remains between the anchors, and never
+            // compresses below the body plus a breath (bench 408): the frame scissor clips
+            // what overruns instead
+            GridHeight = numDiscoveredRoots > 1 ? Math.Max((main.Height - 102) / (numDiscoveredRoots - 1), 80)
                                                 : main.Height - 102;
 
             Vector2 nodePos = Vector2.Zero;
@@ -168,7 +171,10 @@ namespace Ship_Game
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), new Color(14, 12, 9));
             batch.SafeEnd();
 
-            batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:false, saveState:false, camera.Transform);
+            // the tree clips to the frame (bench 408): with the pan unclamped from the row
+            // grid, nodes can sit past the frame edge and must not draw over the map below
+            RenderStates.EnableScissorTest(batch.GraphicsDevice, ScreenGroups.GroupFrameFillRect(EmpireTabs));
+            batch.SafeBegin(SpriteBlendMode.AlphaBlend, sortImmediate:false, RenderStates.ScissorEnabled, camera.Transform);
             {
                 DrawConnectingLines(batch);
 
@@ -361,9 +367,22 @@ namespace Ship_Game
             if (ScreenHeight > 720 && empireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
                 return true;
 
-            // the tree drag stops at the page frame - a middle-drag in the band pans the MAP
+            // the tree drag stops at the page frame - a middle-drag in the band pans the MAP.
+            // Pan clamps to the tree's real extent (bench 408): the neutral seat is the low
+            // bound (the tree never pans right/down of its origin), and the far bound is what
+            // overruns the frame, zero when everything already fits.
             if (input.MiddleMouseHeld() && PageFrame.HitTest(input.CursorPosition))
-                camera.MoveClamped(input.CursorVelocity, ScreenCenter, new Vector2(3200));
+            {
+                float maxX = 0, maxY = 0;
+                foreach (TreeNode n in SubNodes.Values)
+                {
+                    maxX = Math.Max(maxX, n.BaseRect.Right);
+                    maxY = Math.Max(maxY, n.BaseRect.Bottom);
+                }
+                var overrun = new Vector2(Math.Max(0, maxX + 10 - MainArea.Right),
+                                          Math.Max(0, maxY + 10 - MainArea.Bottom));
+                camera.MoveClamped(input.CursorVelocity, ScreenCenter, ScreenCenter + overrun);
+            }
 
             foreach (RootNode root in RootNodes.Values)
             {

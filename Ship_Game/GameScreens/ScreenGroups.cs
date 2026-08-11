@@ -337,8 +337,12 @@ namespace Ship_Game.GameScreens
         // whether a cartouche is showing at this instant.
         public const int CartoucheClearance = 257 - 61 + 10 + 108;
 
+        // bench 408 (maintainer decision): below 1080 of display height every frame runs to
+        // the display foot - the cartouche reservation only holds where there is room for it.
+        // One change here feeds GroupFrame and every content-sized table alike.
         public static float FullTableHeight(int screenH)
-            => screenH - CartoucheClearance - TabRowY;
+            => screenH < MaxFrameHeight ? screenH - TabRowY - FrameMargin
+                                        : screenH - CartoucheClearance - TabRowY;
 
         // the height cap: the full-frame group screens (Research, Fleets, Shipyard windowed) stop
         // at inf(1080p footprint, the tables' own floor) - bench 390 (maintainer): they must not

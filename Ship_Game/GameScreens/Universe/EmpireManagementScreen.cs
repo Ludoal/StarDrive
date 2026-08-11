@@ -83,10 +83,6 @@ namespace Ship_Game
                 // Research, the top bar's own order
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop"), Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.IndicatesThisColonysCurrentPopulation) },
-                // Ludoal fork: population growth per turn, between Pop and the Food yield.
-                // icon_poppertile reads as "extra population"; tooltip spells it out.
-                new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_poppertile"), Align = TableAlign.Number,
-                                     Sortable = true, Tip = "Population growth per turn (millions)", SepColor = MutedSep },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"), Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfFood), SepColor = MutedSep },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Align = TableAlign.Number,
@@ -99,11 +95,15 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.Storage2), Width = 240, Align = TableAlign.Center },
                 new UITable.Column { Title = Localizer.Token(GameText.Construction2), Width = 282, Align = TableAlign.Center },
             });
-            // a Governor column ahead of Labor on wide displays only - the frame keeps its
-            // max width, the column eats the slack that otherwise fed Construction
-            if (ScreenWidth >= 1680)
+            // Pop Growth and Governor ride wide displays only (bench 408): at 1440 the base
+            // twelve columns already fill the cap. The row items and the sorter tell the two
+            // regimes apart by the column count (12 vs 14).
+            bool wideCols = ScreenWidth >= 1680;
+            if (wideCols)
             {
                 var cols = new Array<UITable.Column>(Table.Columns);
+                cols.Insert(5, new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_poppertile"), Align = TableAlign.Number,
+                                                    Sortable = true, Tip = "Population growth per turn (millions)", SepColor = MutedSep });
                 // one bold letter per type (bench 407); gold rule on its left (default),
                 // muted on its right - the muted one is Labor's, set below
                 cols.Insert(10, new UITable.Column { Title = "Gov.", Width = 40, Align = TableAlign.Center, Sortable = true });
@@ -130,8 +130,13 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, sys);
             UITable.AutoSize(Table.Columns[1], Fonts.Arial14Bold, names);
             Table.Columns[1].Width += 44; // the planet icon rides ahead of the name
-            for (int i = 0; i < 8; ++i)
-                UITable.AutoSize(Table.Columns[2 + i], Fonts.Arial12, stats[i]);
+            // stats: 0=Fert 1=Rich 2=Pop 3=Growth 4=Food 5=Prod 6=Money 7=Res; the Growth
+            // column only exists on wide displays
+            for (int i = 0, c = 2; i < 8; ++i)
+            {
+                if (i == 3 && !wideCols) continue;
+                UITable.AutoSize(Table.Columns[c++], Fonts.Arial12, stats[i]);
+            }
             int widthCap = (int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66;
             Table.FitToWidth(widthCap);
             // Construction absorbs what the cap leaves: Planet is data-sized, so a save full of
@@ -201,7 +206,7 @@ namespace Ship_Game
                 Table.Columns[StandingSort].Sorted = true;
                 Table.Columns[StandingSort].Ascending = StandingAsc;
             }
-            ResetColoniesList(SortedPlanets(planets, StandingSort, StandingAsc));
+            ResetColoniesList(SortedPlanets(planets, StandingSort, StandingAsc, wideCols));
         }
 
         // "current / max", the Planets tab's population shape
@@ -438,7 +443,7 @@ namespace Ship_Game
                     c.Sorted = false;              // no column owns the sort now
                 StandingSort = -1;                 // back to the Homeworld sort
                 StandingAsc = true;
-                ResetColoniesList(SortedPlanets(Universe.Player.GetPlanets(), -1, true));
+                ResetColoniesList(SortedPlanets(Universe.Player.GetPlanets(), -1, true, Table.Columns.Length >= 14));
                 return true;
             }
 
@@ -450,7 +455,7 @@ namespace Ship_Game
                 GameAudio.BlipClick();
                 StandingSort = clicked;
                 StandingAsc = asc;
-                ResetColoniesList(SortedPlanets(Universe.Player.GetPlanets(), clicked, asc));
+                ResetColoniesList(SortedPlanets(Universe.Player.GetPlanets(), clicked, asc, Table.Columns.Length >= 14));
                 return true;
             }
 
@@ -458,7 +463,7 @@ namespace Ship_Game
         }
 
         // one arithmetic for the ctor and the header clicks - the pair that must agree
-        static IEnumerable<Planet> SortedPlanets(IReadOnlyList<Planet> planets, int col, bool asc)
+        static IEnumerable<Planet> SortedPlanets(IReadOnlyList<Planet> planets, int col, bool asc, bool wide)
         {
             if (col < 0) // the Homeworld sort: the capital first, then the rest by distance from it
             {
@@ -472,18 +477,20 @@ namespace Ship_Game
                 Func<Planet, string> name = col == 0 ? p => p.System.Name : p => p.Name;
                 return asc ? planets.OrderBy(name) : planets.OrderByDescending(name);
             }
-            // a Pop Growth column at index 5 shifts Food..Research by one
+            // two regimes (bench 408): wide displays carry Pop Growth at 5 and Governor at 10,
+            // which shifts Food..Research by one. "--" (no governor) sorts FIRST ascending.
+            static float GovKey(Planet p) => p.CType == Planet.ColonyType.Colony ? -1f : (float)(int)p.CType;
             Func<Planet, float> selector = col switch
             {
                 2 => p => p.FertilityFor(p.Universe.Player),
                 3 => p => p.MineralRichness,
                 4 => p => p.PopulationBillion,
-                5 => p => p.EstimatedPopGrowthPerTurn,
-                6 => p => p.Food.NetIncome,
-                7 => p => p.Prod.NetIncome,
-                8 => p => p.Money.NetRevenue,
+                5 => wide ? p => p.EstimatedPopGrowthPerTurn : p => p.Food.NetIncome,
+                6 => wide ? p => p.Food.NetIncome  : p => p.Prod.NetIncome,
+                7 => wide ? p => p.Prod.NetIncome  : p => p.Money.NetRevenue,
+                8 => wide ? p => p.Money.NetRevenue : (Func<Planet, float>)(p => p.Res.NetIncome),
                 9 => p => p.Res.NetIncome,
-                _ => p => (float)(int)p.CType, // 10 = the Governor column (wide displays)
+                _ => GovKey, // 10 = the Governor column (wide displays)
             };
             return asc ? planets.OrderBy(selector) : planets.OrderByDescending(selector);
         }

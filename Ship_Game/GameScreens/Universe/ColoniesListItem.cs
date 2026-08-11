@@ -75,26 +75,26 @@ namespace Ship_Game
             Rectangle Band(int i) => new Rectangle(cols[i].Rect.X, y, cols[i].Rect.Width, Rect.Height);
             SysNameRect    = Band(0);
             PlanetNameRect = Band(1);
-            // Ludoal fork: a Pop Growth column sits between Pop (4) and Food, so every
-            // band from Food onward is one index later.
+            // two regimes (bench 408): wide displays (14 columns) carry Pop Growth between
+            // Pop and Food, and Governor ahead of Labor; the bands shift with them
+            bool wideCols = cols.Length >= 14;
+            int g = wideCols ? 1 : 0;
             FertRect    = Band(2);
             RichRect    = Band(3);
             PopRect     = Band(4);
-            GrowthRect  = Band(5);
-            FoodRect    = Band(6);
-            ProdRect    = Band(7);
-            MoneyRect   = Band(8); // money before research, the top bar's order
-            ResRect     = Band(9);
-            // on wide displays a Governor column rides ahead of Labor - every
-            // band from Labor onward shifts one index when it is present
-            int gv = cols.Length >= 14 ? 1 : 0;
-            GovernorRect = gv == 1 ? Band(10) : default;
-            SliderRect  = new Rectangle(cols[10 + gv].Rect.X + 4, y - 30, cols[10 + gv].Rect.Width - 8, Rect.Height + 25);
+            GrowthRect  = wideCols ? Band(5) : default;
+            FoodRect    = Band(5 + g);
+            ProdRect    = Band(6 + g);
+            MoneyRect   = Band(7 + g); // money before research, the top bar's order
+            ResRect     = Band(8 + g);
+            GovernorRect = wideCols ? Band(10) : default;
+            int g2 = wideCols ? 2 : 0;
+            SliderRect  = new Rectangle(cols[9 + g2].Rect.X + 4, y - 30, cols[9 + g2].Rect.Width - 8, Rect.Height + 25);
             // the Storage content starts 5px further left (its whole content
             // is placed off StorageRect.X, so shifting the rect shifts all of it at once)
-            StorageRect = Band(11 + gv);
+            StorageRect = Band(10 + g2);
             StorageRect.X -= 5;
-            QueueRect   = Band(12 + gv);
+            QueueRect   = Band(11 + g2);
 
             if (AssignLabor == null)
             {
@@ -300,8 +300,9 @@ namespace Ship_Game
             // Ludoal fork: population growth per turn in MILLIONS, one decimal. EstimatedPopGrowthPerTurn
             // is already in millions (Population is millions, /1000 = billions per MaxPopulationBillion) -
             // show the raw value; tooltip says "(millions)".
-            DrawStatValue(batch, GrowthRect, F2(P.EstimatedPopGrowthPerTurn),
-                          P.EstimatedPopGrowthPerTurn > 0.5f ? Color.LightGreen : Color.Gray);
+            if (GrowthRect.Width > 0) // wide displays only (bench 408)
+                DrawStatValue(batch, GrowthRect, F2(P.EstimatedPopGrowthPerTurn),
+                              P.EstimatedPopGrowthPerTurn > 0.5f ? Color.LightGreen : Color.Gray);
             DrawStatValue(batch, FoodRect, F1(P.Food.NetIncome), R1(P.Food.NetIncome) >= 0f ? Color.White : Color.LightPink);
             DrawStatValue(batch, ProdRect, F1(P.Prod.NetIncome), R1(P.Prod.NetIncome) >= 0f ? Color.White : Color.LightPink);
             DrawStatValue(batch, ResRect, F1(P.Res.NetIncome), Color.White);
