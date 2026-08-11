@@ -98,13 +98,19 @@ namespace Ship_Game
 
         readonly GovernorDetailsComponent GovernorTab;
 
-        public BlueprintsScreen(UniverseScreen parent, Empire player, BlueprintsTemplate template = null, GovernorDetailsComponent govTab = null)
+        // Snapshot/Edit arrive FROM a colony (bench 397): closing this screen goes back to
+        // it. Group jumps and Design tab switches call ExitScreen directly and skip this.
+        readonly Planet ReturnToColony;
+
+        public BlueprintsScreen(UniverseScreen parent, Empire player, BlueprintsTemplate template = null,
+                                GovernorDetailsComponent govTab = null, Planet returnToColony = null)
             : base(parent, toPause: parent)
         {
             Universe = parent; // Ludoal fork: kept for the live top bar
             Player = player;
             IsPopup = true; // Ludoal fork (bench 345): the paused universe shows behind, dimmed - like the table screens
             GovernorTab = govTab;
+            ReturnToColony = returnToColony;
             TextFont = Font12;
             BigFont = Font12; // the general stats read smaller (maintainer bench 301)
             // Ludoal fork: the Blueprints tab of the Design group - a FIXED 900p footprint
@@ -115,6 +121,11 @@ namespace Ship_Game
             Rectangle frame900 = ScreenGroups.GroupFrame900(ScreenWidth, ScreenHeight);
             DesignTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.DesignTabTitles, 2,
                                                     OnDesignTabChanged, frame900.Width, frame900.Height);
+            // the close cross fires ExitScreen itself, then its OnClick - hook the return there
+            if (ReturnToColony != null)
+                foreach (UIElementV2 e in GetElements())
+                    if (e is CloseButton cross)
+                        cross.OnClick = b => ReopenParentColony();
             const int Pad = 10;
             RectF client = DesignTabs.ClientArea;
             // ⚠ measured off the FRAME's borders, not the client area: the client is
@@ -638,6 +649,7 @@ namespace Ship_Game
             {
                 GameAudio.EchoAffirmative();
                 ExitScreen();
+                ReopenParentColony();
                 return true;
             }
 
@@ -677,17 +689,28 @@ namespace Ship_Game
                 }
             }
 
-            // Ludoal fork: right-click closes the screen like other full-screen panels —
-            // only when it's not aimed at a building (tile removal keeps priority) and
-            // nothing is being dragged.
-            if (input.RightMouseClick && HoveredBuilding == null && !BuildableList.IsDragging)
+            // Ludoal fork: right-click and Esc close the screen like other full-screen panels —
+            // only when not aimed at a building (tile removal keeps priority) and nothing is
+            // dragged. Esc is intercepted BEFORE the base popup dismiss so the return fires.
+            if ((input.RightMouseClick && HoveredBuilding == null || input.Escaped)
+                && !BuildableList.IsDragging)
             {
                 GameAudio.EchoAffirmative();
                 ExitScreen();
+                ReopenParentColony();
                 return true;
             }
 
             return base.HandleInput(input);
+
+        }
+
+        // the user-close routes land here; the hosted seat survived the trip, so the
+        // reopened colony wears its row again
+        void ReopenParentColony()
+        {
+            if (ReturnToColony != null)
+                Universe.ScreenManager.AddScreen(new ColonyScreen(Universe, ReturnToColony, Universe.EmpireUI));
         }
 
         BlueprintsTemplate CreateBlueprintsTemplate()

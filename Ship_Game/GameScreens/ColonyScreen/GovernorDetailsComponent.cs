@@ -725,14 +725,23 @@ namespace Ship_Game
             if (potentialBuildings.Count > 0)
             {
                 BlueprintsTemplate template = new BlueprintsTemplate($"Snapshot of {Planet.Name}", false, "", potentialBuildings, Planet.CType);
-                Screen.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Player, template));
+                // the colony closes first (bench 397) - two groups must not stack; closing
+                // Blueprints reopens it (the hosted seat survives the round trip)
+                Screen.ExitScreen();
+                Screen.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Player, template,
+                                                                    returnToColony: Planet));
             }
         }
 
         void OnEditblueprintsClicked(UIButton b)
         {
             if (Planet.HasBlueprints && ResourceManager.TryGetBlueprints(Planet.Blueprints.Name, out BlueprintsTemplate template))
-                Screen.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Player, template, this));
+            {
+                // same round trip as Snapshot (bench 397)
+                Screen.ExitScreen();
+                Screen.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Player, template, this,
+                                                                    returnToColony: Planet));
+            }
         }
 
         void OnLaunchTroopsClicked(UIButton b)
