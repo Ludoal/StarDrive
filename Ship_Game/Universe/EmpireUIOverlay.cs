@@ -347,7 +347,8 @@ namespace Ship_Game
             // speed block. Only while the warp-inhibiting event runs; yellow.
             if (Universe.UState.Events.ActiveEvent != null && Universe.UState.Events.ActiveEvent.InhibitWarp)
             {
-                const string flux = "HYPERSPACE FLUX";
+                // abbreviated below 1680 of width - the full alert overruns the groups (bench 410)
+                string flux = Universe.ScreenWidth < 1680 ? "FLUX" : "HYPERSPACE FLUX";
                 batch.DrawString(font, flux, new Vector2(SpeedClusterLeft - font.TextWidth(flux), textY), Color.Yellow);
             }
 
