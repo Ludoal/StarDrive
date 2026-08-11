@@ -104,7 +104,10 @@ namespace Ship_Game
             if (ScreenWidth >= 1680)
             {
                 var cols = new Array<UITable.Column>(Table.Columns);
-                cols.Insert(10, new UITable.Column { Title = "Governor", Width = 92, Align = TableAlign.Center, SepColor = MutedSep });
+                // one bold letter per type (bench 407); gold rule on its left (default),
+                // muted on its right - the muted one is Labor's, set below
+                cols.Insert(10, new UITable.Column { Title = "Gov.", Width = 40, Align = TableAlign.Center, Sortable = true });
+                cols[11].SepColor = MutedSep; // Labor
                 Table = new UITable(cols.ToArray());
             }
             var sys = new Array<string>(); var names = new Array<string>();
@@ -479,7 +482,8 @@ namespace Ship_Game
                 6 => p => p.Food.NetIncome,
                 7 => p => p.Prod.NetIncome,
                 8 => p => p.Money.NetRevenue,
-                _ => p => p.Res.NetIncome,
+                9 => p => p.Res.NetIncome,
+                _ => p => (float)(int)p.CType, // 10 = the Governor column (wide displays)
             };
             return asc ? planets.OrderBy(selector) : planets.OrderByDescending(selector);
         }

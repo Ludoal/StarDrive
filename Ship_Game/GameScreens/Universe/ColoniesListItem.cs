@@ -317,20 +317,21 @@ namespace Ship_Game
             // portrait border already uses
             if (GovernorRect.Width > 0)
             {
+                // one bold letter, the governor portrait's type colour (bench 407)
                 string gov; Color govColor;
                 switch (P.CType)
                 {
-                    case Planet.ColonyType.Colony:       gov = "--";                 govColor = Color.Gray; break;
-                    case Planet.ColonyType.TradeHub:     gov = P.CType.ToString();   govColor = Color.Yellow; break;
-                    case Planet.ColonyType.Industrial:   gov = P.CType.ToString();   govColor = Color.Orange; break;
-                    case Planet.ColonyType.Agricultural: gov = P.CType.ToString();   govColor = Color.Green; break;
-                    case Planet.ColonyType.Research:     gov = P.CType.ToString();   govColor = Color.CornflowerBlue; break;
-                    case Planet.ColonyType.Military:     gov = P.CType.ToString();   govColor = Color.Red; break;
-                    default:                             gov = P.CType.ToString();   govColor = Color.White; break;
+                    case Planet.ColonyType.Colony:       gov = "--"; govColor = Color.Gray; break;
+                    case Planet.ColonyType.TradeHub:     gov = "T";  govColor = Color.Yellow; break;
+                    case Planet.ColonyType.Industrial:   gov = "I";  govColor = Color.Orange; break;
+                    case Planet.ColonyType.Agricultural: gov = "A";  govColor = Color.Green; break;
+                    case Planet.ColonyType.Research:     gov = "R";  govColor = Color.CornflowerBlue; break;
+                    case Planet.ColonyType.Military:     gov = "M";  govColor = Color.Red; break;
+                    default:                             gov = "C";  govColor = Color.White; break; // Core
                 }
-                var govPos = new Vector2(GovernorRect.X + (GovernorRect.Width - Fonts.Arial12.MeasureString(gov).X) / 2,
-                                         PlanetNameRect.Y + PlanetNameRect.Height / 2 - Fonts.Arial12.LineSpacing / 2).ToFloored();
-                batch.DrawString(Fonts.Arial12, gov, govPos, govColor);
+                var govPos = new Vector2(GovernorRect.X + (GovernorRect.Width - Fonts.Arial12Bold.MeasureString(gov).X) / 2,
+                                         PlanetNameRect.Y + PlanetNameRect.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2).ToFloored();
+                batch.DrawString(Fonts.Arial12Bold, gov, govPos, govColor);
             }
 
             // two lines like the Planets tab: the name in 14, the class with
@@ -370,7 +371,7 @@ namespace Ship_Game
             if (queueCount < 2)
                 return;
 
-            string stats = $"In Queue ({queueCount}):";
+            string stats = $"Queue ({queueCount}):";
             if (NumShipsInQueue > 0)
                 stats = $"{stats} ships ({NumShipsInQueue}),";
 
