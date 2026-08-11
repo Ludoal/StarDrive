@@ -290,7 +290,15 @@ namespace Ship_Game
                 }
                 else
                 {
-                    P.Construction.Enqueue(ship, ship.IsFreighter ? QueueItemType.Freighter : QueueItemType.CombatShip);
+                    // the queue item's type is what ConstructionPriorityRank files the item
+                    // under, so a player-queued ship must carry its real role - the old
+                    // freighter/combat binary filed scouts and colony ships as MilitaryShips
+                    // and the priority list sorted auto-built ships above them (bench)
+                    QueueItemType type = ship.IsColonyShip              ? QueueItemType.ColonyShip
+                                       : ship.Role == RoleName.scout    ? QueueItemType.Scout
+                                       : ship.IsFreighter               ? QueueItemType.Freighter
+                                       : QueueItemType.CombatShip;
+                    P.Construction.Enqueue(ship, type);
                 }
             }
 
