@@ -269,11 +269,17 @@ namespace Ship_Game.Ships
             }
         }
 
-        public static float ScaleIconSize(float screenRadius, float minSize, float maxSize)
-        {            
+        // Ludoal fork (maintainer spec): ships and stations carry separate icon-size knobs,
+        // so this is an instance method now - it routes on what the ship is
+        public float ScaleIconSize(float screenRadius, float minSize, float maxSize)
+        {
             float size = (screenRadius * 2).Clamped(minSize, maxSize);
-            return size + GlobalStats.IconSize;
+            return size + IconSizeSetting(this);
         }
+
+        public static int IconSizeSetting(Ship ship)
+            => ship.IsPlatformOrStation || ship.IsSubspaceProjector ? GlobalStats.StationIconSize
+                                                                    : GlobalStats.IconSize;
 
         public void DrawTacticalIcon(UniverseScreen us, UniverseScreen.UnivScreenState viewState)
         {

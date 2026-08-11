@@ -174,8 +174,8 @@ namespace Ship_Game
                     {
                         var screenPos = ProjectToScreenPosition(projector.Position);
                         var flag = enemy.data.Traits.FlagIndex;
-                        int xPos = (int)screenPos.X + (15 + GlobalStats.IconSize) * spacing;
-                        var rectangle2 = new RectF(xPos, (int)screenPos.Y, 15 + GlobalStats.IconSize, 15 + GlobalStats.IconSize);
+                        int xPos = (int)screenPos.X + (15 + GlobalStats.StationIconSize) * spacing;
+                        var rectangle2 = new RectF(xPos, (int)screenPos.Y, 15 + GlobalStats.StationIconSize, 15 + GlobalStats.StationIconSize);
                         batch.Draw(ResourceManager.Flag(flag), rectangle2, ApplyCurrentAlphaToColor(enemy.EmpireColor));
                         spacing++;
                     }

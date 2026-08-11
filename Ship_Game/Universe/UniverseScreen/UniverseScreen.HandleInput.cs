@@ -679,9 +679,7 @@ namespace Ship_Game
             // Also no InFrustum gate: a Project per candidate already validates on-screen
             // position, and InFrustum can be momentarily stale in the camera-move window
             // before UpdateVisibleObjects re-runs.
-            float iconHalfPx = (16f + GlobalStats.IconSize) * 0.5f;
             const float MarginPx = 4f;
-            float iconClickRadiusPx = iconHalfPx + MarginPx;
 
             Vector2 cursor = input.CursorPosition;
             Ship best = null;
@@ -698,6 +696,9 @@ namespace Ship_Game
 
                 ProjectToScreenCoords(ship.Position, ship.Radius,
                                       out Vector2d shipScreen, out double shipScreenRadius);
+                // per-candidate: ships and stations have separate icon-size settings,
+                // and the click radius must match what is actually drawn
+                float iconClickRadiusPx = (16f + Ship.IconSizeSetting(ship)) * 0.5f + MarginPx;
                 float threshold = Math.Max(iconClickRadiusPx, (float)shipScreenRadius + MarginPx);
                 float distPx = cursor.Distance(shipScreen.ToVec2f());
                 if (distPx <= threshold && distPx < bestDistPx)

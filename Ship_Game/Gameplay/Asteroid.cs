@@ -21,6 +21,7 @@ namespace Ship_Game.Gameplay
         Vector3 SpinSpeed; // the speed of rotation around its own axis
         int AsteroidId; // which asteroid?
         SceneObject So; // 3D mesh
+        float BaseRadius; // model radius * Scale, before the visual size multiplier
 
         // Serialized (SaveGame) asteroid
         [StarDataConstructor]
@@ -69,9 +70,13 @@ namespace Ship_Game.Gameplay
             So = model.CreateSceneObject(ObjectType.Static);
             So.Visibility = GlobalStats.AsteroidVisibility; // shadows or no shadows?
 
-            Radius = model.Radius * Scale * 0.65f;
+            // Ludoal fork (maintainer spec): AsteroidSizeMult is a purely visual knob, applied
+            // in the per-frame transform so the slider takes effect on asteroids already on
+            // screen. Orbit speed stays on the serialized Scale - size is cosmetic here.
+            BaseRadius = model.Radius * Scale * 0.65f;
+            Radius = BaseRadius * GlobalStats.AsteroidSizeMult;
             UpdatePosition(systemPos);
-            So.AffineTransform(new(Position, -500f), CurrentSpin, Scale);
+            So.AffineTransform(new(Position, -500f), CurrentSpin, Scale * GlobalStats.AsteroidSizeMult);
             ScreenManager.Instance.AddObject(So);
         }
 
@@ -97,9 +102,10 @@ namespace Ship_Game.Gameplay
 
                 CurrentSpin += SpinSpeed * timeStep.FixedTime;
                 UpdatePosition(systemPos);
+                Radius = BaseRadius * GlobalStats.AsteroidSizeMult;
 
                 // check for null here, because another thread might be Removing the scene object
-                So?.AffineTransform(new(Position, -500f), CurrentSpin, Scale);
+                So?.AffineTransform(new(Position, -500f), CurrentSpin, Scale * GlobalStats.AsteroidSizeMult);
             }
             else
             {

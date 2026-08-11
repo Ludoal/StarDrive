@@ -594,10 +594,40 @@ namespace Ship_Game
             }
         }
 
-        void LoadGraphics()
+        // Ludoal fork (maintainer spec): the minimap housing scales with an options slider.
+        // One seat for everything the widget anchors - the housing, the click target, the
+        // border toggle, and the two combat counters above the frame - so a live change from
+        // the options screen cannot leave them drifted apart. ⚠ the CLICK target is the map's
+        // own rect, asked of the MiniMap: a separate hand-measured rect drifted the moment the
+        // frame was reworked, and clicks panned the camera off-target.
+        public void SeatMinimap()
         {
             const int minimapOffSet = 14;
+            // 10px off both edges, the margin the overlay tabs and every reworked frame keep
+            const int mmMargin = 10;
+            float mult = GlobalStats.MinimapSizeMult.Clamped(1f, 2f);
+            int mmW = (int)((276 + minimapOffSet) * mult);
+            int mmH = (int)(256 * mult);
+            mmHousing = new Rectangle(GameBase.ScreenWidth - mmW - mmMargin,
+                                      GameBase.ScreenHeight - mmH - mmMargin, mmW, mmH);
+            Minimap?.RemoveFromParent();
+            Minimap = Add(new MiniMap(this, mmHousing));
+            MinimapDisplayRect = Minimap.MapRect;
+            mmShowBorders = new Rectangle(MinimapDisplayRect.X, MinimapDisplayRect.Y - 25, 32, 32);
 
+            if (ShipsInCombat != null)
+            {
+                Rectangle mmap = Minimap.MapRect;
+                int mmFrameL = mmap.X - 6, mmFrameR = mmap.Right + 6;
+                int counterW = (mmFrameR - mmFrameL - 6) / 2;
+                int counterY = mmHousing.Y - 30;
+                ShipsInCombat.Rect   = new Rectangle(mmFrameL, counterY, counterW, 24);
+                PlanetsInCombat.Rect = new Rectangle(mmFrameR - counterW, counterY, counterW, 24);
+            }
+        }
+
+        void LoadGraphics()
+        {
             var device  = ScreenManager.GraphicsDevice;
             int width   = GameBase.ScreenWidth;
             int height  = GameBase.ScreenHeight;
@@ -615,12 +645,7 @@ namespace Ship_Game
             }
 
             Frustum = new BoundingFrustum(ViewProjection);
-            // Ludoal fork: 10px off both edges, the margin the overlay tabs and every reworked
-            // frame keep - the housing used to sit flush in the corner (maintainer).
-            const int mmMargin = 10;
-            mmHousing = new Rectangle(width - (276 + minimapOffSet) - mmMargin, height - 256 - mmMargin,
-                                      276 + minimapOffSet, 256);
-            Minimap = Add(new MiniMap(this, mmHousing));
+            SeatMinimap();
             ExoticBonusesWindow = Add(new ExoticBonusesWindow(this));
             FreighterUtilizationWindow = Add(new FreighterUtilizationWindow(this));
 
@@ -634,12 +659,6 @@ namespace Ship_Game
             else if (UState.ShowFreighterUtilWindow)
                 FreighterUtilizationWindow.ToggleVisibility(playSound: false);
 
-            // ⚠ the CLICK target is the map's own rect, asked of the MiniMap - it was a separate
-            // 200x200 at hand-measured offsets, built for the old brass housing. The moment the
-            // frame was reworked the two drifted, so clicking the minimap moved the camera to
-            // somewhere other than where you clicked.
-            MinimapDisplayRect = Minimap.MapRect;
-            mmShowBorders = new Rectangle(MinimapDisplayRect.X, MinimapDisplayRect.Y - 25, 32, 32);
 
             // Ludoal fork: 10px off the left and bottom edges, the margin the whole reworked
             // interface keeps - every info cartouche (ship, system, planet, star, fleet list)

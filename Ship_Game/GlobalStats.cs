@@ -170,8 +170,14 @@ public static class GlobalStats
     public static bool DisableScreenPanning;
 
     // USER_EXPERIENCE
-    // global option for Icon size
+    // global option for Icon size (ships). Stations/platforms have their own knob below.
     public static int IconSize = 1;
+    // Ludoal fork (maintainer spec): stations and platforms scale separately from ships
+    public static int StationIconSize = 1;
+    // Ludoal fork: visual multiplier on asteroid scale, applied in the per-frame transform
+    public static float AsteroidSizeMult = 1f;
+    // Ludoal fork: multiplier on the minimap housing; the map band absorbs, buttons stay fixed
+    public static float MinimapSizeMult = 1f;
 
     // USER_EXPERIENCE
     // autosave frequency in seconds
@@ -462,6 +468,11 @@ public static class GlobalStats
         GetSetting(config, "AutoPauseColonyPanel", ref AutoPauseColonyPanel);
         GetSetting(config, "IconSize", ref IconSize);
         IconSize = Math.Max(1, IconSize); // BUGFIX: must be at least 1
+        StationIconSize = IconSize; // pre-split configs: both icon knobs start from the old shared value
+        GetSetting(config, "StationIconSize", ref StationIconSize);
+        StationIconSize = Math.Max(1, StationIconSize);
+        GetSetting(config, "AsteroidSizeMult", ref AsteroidSizeMult);
+        GetSetting(config, "MinimapSizeMult", ref MinimapSizeMult);
         GetSetting(config, "ZoomTracking", ref ZoomTracking);
         GetSetting(config, "CameraPanSpeed", ref CameraPanSpeed);
         GetSetting(config, "AltArcControl", ref AltArcControl);
@@ -679,6 +690,9 @@ public static class GlobalStats
         WriteSetting(config, "PauseOnPageOpen", PauseOnPageOpen);
         WriteSetting(config, "AutoPauseColonyPanel", AutoPauseColonyPanel);
         WriteSetting(config, "IconSize", IconSize);
+        WriteSetting(config, "StationIconSize", StationIconSize);
+        WriteSetting(config, "AsteroidSizeMult", AsteroidSizeMult);
+        WriteSetting(config, "MinimapSizeMult", MinimapSizeMult);
         WriteSetting(config, "ZoomTracking", ZoomTracking);
         WriteSetting(config, "CameraPanSpeed", CameraPanSpeed);
         WriteSetting(config, "AltArcControl", AltArcControl);

@@ -371,7 +371,7 @@ namespace Ship_Game
                     // pixel sizes — here the result is used as a texture scale multiplier, blowing the
                     // intended 0.2-0.4 range up to 1.2+ even at IconSize=1. Keep the designed range and
                     // let the setting nudge it gently (+5% per step) instead.
-                    float scale = ((float)size * 2f).Clamped(0.2f, 0.4f) + (GlobalStats.IconSize - 1) * 0.05f;
+                    float scale = ((float)size * 2f).Clamped(0.2f, 0.4f) + (GlobalStats.StationIconSize - 1) * 0.05f;
                     Screen.DrawTextureSized(platform, posOnScreen, 0.0f, platform.Width * scale,
                                             platform.Height * scale, new Color(0, 255, 0, 100).Premultiplied());
 

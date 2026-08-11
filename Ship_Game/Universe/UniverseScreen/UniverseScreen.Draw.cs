@@ -248,6 +248,13 @@ namespace Ship_Game
                 BorderRT?.Dispose();
                 BorderRT = RenderTargets.Create(device);
             }
+            // Ludoal fork: the component allocates lazily, so the Bloom toggle applies the
+            // moment it is ticked in Options - no device reset, no screen reload needed
+            if (GlobalStats.RenderBloom && bloomComponent == null)
+            {
+                bloomComponent = new BloomComponent(device, TransientContent);
+                bloomComponent.LoadContent();
+            }
             if (GlobalStats.RenderBloom && RtNeedsRebuild(PostBloomTarget, w, h))
             {
                 PostBloomTarget?.Dispose();
