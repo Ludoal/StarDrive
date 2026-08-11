@@ -63,7 +63,7 @@ namespace Ship_Game
                 new Hotkey("M", "Exotic Bonuses"),
                 new Hotkey("N", "Freighter Utilization"),
                 new Hotkey("F7", "Important Events log"),
-                new Hotkey("F8", "Colony overview (the Empire group's colony tab)"),
+                new Hotkey("F8", "Colonies overview"),
                 new Hotkey("F1", "Help"),
                 new Hotkey("Esc", "Close screen"),
             }),
@@ -111,7 +111,8 @@ namespace Ship_Game
             new[] { 4, 5, 6, 7 },    // fleets, selection, shipyard, fleet design
         };
 
-        public HotkeysScreen(GameScreen parent) : base(parent, 1200, 620)
+        // 660 high (bench 408): the remapping note needs air under the SCREENS column
+        public HotkeysScreen(GameScreen parent) : base(parent, 1200, 660)
         {
             TransitionOnTime = 0.25f;
         }
