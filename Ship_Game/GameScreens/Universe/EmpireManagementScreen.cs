@@ -22,24 +22,24 @@ namespace Ship_Game
         private readonly ScrollList<ColoniesListItem> ColoniesList;
         private readonly GovernorDetailsComponent GovernorDetails;
         private readonly RectF ERect;
-        // Ludoal fork (maintainer feedback): the little "sort by Homeworld then distance" button,
-        // sitting at the right end of the Planet header. Amber when that sort is active.
+        // Ludoal fork: sort-by-Homeworld-then-distance button, right end of the Planet header.
+        // Amber when that sort is active.
         Rectangle HomeSortButton;
 
         public readonly UITable Table; // the shared table charte owns geometry, headers and rules
 
         private RectF GovernorRect;
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
-        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // Ludoal fork: this page's real frame is its tab row's rect -
         // the band excludes exactly what the page occupies, dynamic size included
         public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
-        Submenu EmpireSummaryTab; // Ludoal fork (bench 339): the EMPIRE totals tab at the band's left
+        Submenu EmpireSummaryTab; // Ludoal fork: the EMPIRE totals tab at the band's left
 
-        // Ludoal fork (maintainer bench 339): the bottom band is laid out LEFT to RIGHT now, all of
-        // it anchored to the left - extra width falls to the RIGHT of the governor. Fixed block
-        // widths (the map derives its own from the fixed band height), so nothing floats. The X of
-        // each block is computed ONCE (BandLayout) and shared by the ctor's GovernorRect and Draw.
-        const float EmpireBoxW = 265f;  // the EMPIRE totals box (bench 343: +15, grown left)
+        // Ludoal fork: the bottom band lays out LEFT to RIGHT, anchored left - extra width falls
+        // to the RIGHT of the governor. Fixed block widths (the map derives its own from the fixed
+        // band height), so nothing floats. Each block's X is computed ONCE (BandLayout) and shared
+        // by the ctor's GovernorRect and Draw.
+        const float EmpireBoxW = 265f;  // the EMPIRE totals box
         const float PlanetBoxW = 340f;  // icon + name + the four stat lines
         const float BandGap    = 10f;
         // set in the ctor from the fixed band height, reused in Draw
@@ -59,22 +59,19 @@ namespace Ship_Game
             IsPopup = true;
             eui = empUI;
 
-            // Ludoal fork: the Colonies tab of the Empire group, on the shared table charte
-            // (maintainer bench 293 - the surgical pass left the old skeleton showing). The
-            // colony count drives the height, while the bottom band (planet cartouche, tile
-            // map, governor frame) keeps the size it has on a full frame - reserved as it
-            // is, to be revisited. The cascade holds because the band derives from the
-            // list's bottom and the frame's own foot, not from constants.
+            // Ludoal fork: the Colonies tab of the Empire group, on the shared table charte. The
+            // colony count drives the height; the bottom band (planet cartouche, tile map,
+            // governor frame) keeps a fixed size. The cascade holds because the band derives from
+            // the list's bottom and the frame's own foot, not from constants.
             var planets = Universe.Player.GetPlanets();
-            // the muted in-block separator, darker than plain Gray (bench 295)
+            // the muted in-block separator, darker than plain Gray
             Color MutedSep = new Color(70, 70, 70);
             Table = new UITable(new[]
             {
                 new UITable.Column { Title = Localizer.Token(GameText.System), Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.Planet), MinWidth = 150, Sortable = true },
-                // the ORIGINAL food/production icons again, each wearing a small corner
-                // badge so the intrinsic pair still tells apart from the yield columns
-                // (Lek's review, bench 305); the muted separator sub-groups them
+                // food/production icons each wear a small corner badge so the intrinsic pair
+                // still tells apart from the yield columns; the muted separator sub-groups them
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"), Badge = Color.LightGreen,
                                      Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.Fertility), SepColor = MutedSep },
@@ -82,12 +79,12 @@ namespace Ship_Game
                                      Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.Richness), SepColor = MutedSep },
                 // population reads "x / y" like the Planets tab - Max Pop merged in; the
-                // whole stat block keeps MUTED gray separators (bench 294, like the old
-                // look), and Money rides before Research, the top bar's own order
+                // whole stat block keeps MUTED gray separators, and Money rides before
+                // Research, the top bar's own order
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop"), Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.IndicatesThisColonysCurrentPopulation) },
-                // Ludoal fork (maintainer bench 339): population growth per turn, between Pop and the
-                // Food yield. icon_poppertile reads as "extra population"; tooltip spells it out.
+                // Ludoal fork: population growth per turn, between Pop and the Food yield.
+                // icon_poppertile reads as "extra population"; tooltip spells it out.
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_poppertile"), Align = TableAlign.Number,
                                      Sortable = true, Tip = "Population growth per turn (millions)", SepColor = MutedSep },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"), Align = TableAlign.Number,
@@ -102,8 +99,8 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.Storage2), Width = 240, Align = TableAlign.Center },
                 new UITable.Column { Title = Localizer.Token(GameText.Construction2), Width = 282, Align = TableAlign.Center },
             });
-            // bench 406: a Governor column ahead of Labor on wide displays only - the frame
-            // keeps its max width, the column eats the slack that otherwise fed Construction
+            // a Governor column ahead of Labor on wide displays only - the frame keeps its
+            // max width, the column eats the slack that otherwise fed Construction
             if (ScreenWidth >= 1680)
             {
                 var cols = new Array<UITable.Column>(Table.Columns);
@@ -121,7 +118,7 @@ namespace Ship_Game
                 stats[0].Add(p.FertilityFor(Universe.Player).ToString("0.0", CultureInfo.InvariantCulture));
                 stats[1].Add(p.MineralRichness.ToString("0.0", CultureInfo.InvariantCulture));
                 stats[2].Add(PopCombined(p));
-                stats[3].Add(p.EstimatedPopGrowthPerTurn.ToString("0.0", CultureInfo.InvariantCulture)); // bench 354: millions/turn, one decimal, like Colony's Stats+ "Net growth (M/turn)"
+                stats[3].Add(p.EstimatedPopGrowthPerTurn.ToString("0.0", CultureInfo.InvariantCulture)); // millions/turn, one decimal, like Colony's Stats+ "Net growth (M/turn)"
                 stats[4].Add(p.Food.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
                 stats[5].Add(p.Prod.NetIncome.ToString("0.0", CultureInfo.InvariantCulture));
                 stats[6].Add(p.Money.NetRevenue.ToString("0.0", CultureInfo.InvariantCulture));
@@ -134,18 +131,16 @@ namespace Ship_Game
                 UITable.AutoSize(Table.Columns[2 + i], Fonts.Arial12, stats[i]);
             int widthCap = (int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66;
             Table.FitToWidth(widthCap);
-            // Construction absorbs what the cap leaves (maintainer bench 307): Planet is
-            // data-sized, so a save full of short names shrank the whole tab - the queue
-            // column can always use the room instead
+            // Construction absorbs what the cap leaves: Planet is data-sized, so a save full of
+            // short names would shrink the whole tab otherwise - the queue column uses the room
             int slack = widthCap - Table.TableWidth;
             if (slack > 0)
                 Table.Columns[Table.Columns.Length - 1].Width += slack; // Construction is always last (the Governor column can shift its index)
 
-            // FULL display height (uncapped, bench 361), and a FIXED bottom band
-            // (maintainer bench 298): the band holds the governor cartouche, which keeps the
-            // Colony screen's own fixed height (222) - a band cut as a fraction of the screen
-            // stretched everything in it with the resolution
-            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 388: the cartouche floor replaced the full-height exception
+            // FULL display height (uncapped), and a FIXED bottom band: the band holds the governor
+            // cartouche, which keeps the Colony screen's own fixed height (222) - cutting the band
+            // as a fraction of the screen would stretch everything in it with the resolution
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight);
             const float GovernorH = 222;
             float bandH = GovernorH + 7; // the 7px the rect derivation below eats back
             float contentH = UITable.ContentHeightFor(102 + bandH, Math.Max(3, planets.Count), 84, fullAvail);
@@ -161,8 +156,8 @@ namespace Ship_Game
             ColoniesList.OnDoubleClick = OnColonyListItemDoubleClicked;
             ColoniesList.EnableItemHighlight = true;
             Table.ApplyHighlightTo(ColoniesList);
-            // FIXED, the Colony screen's own governor width (maintainer bench 298) - a panel
-            // cut as 0.3 x screen swallowed the description at 1080p. Same per-tab arithmetic:
+            // FIXED, the Colony screen's own governor width - cutting it as 0.3 x screen would
+            // swallow the description at 1080p. Per-tab arithmetic:
             // TextWidth + 2 + the header_right texture (33px), +8 wrap slack, floored at 380.
             float govTabsW = Fonts.Arial12Bold.TextWidth("GOVERNOR") + Fonts.Arial12Bold.TextWidth("DEFENSE")
                            + Fonts.Arial12Bold.TextWidth("BUDGET") + Fonts.Arial12Bold.TextWidth("BP")
@@ -170,17 +165,17 @@ namespace Ship_Game
             int sidePanelWidths = (int)(Math.Max(govTabsW, 380) + 40);
             // Ludoal fork: its height stops at the FRAME's foot, not the screen's - inside a framed
             // tab it would otherwise run 10px past the bottom border. 10px of margin off the
-            // frame's right and under the table (maintainer bench 293).
-            // Ludoal fork (bench 339): the band runs LEFT to RIGHT now - EMPIRE, Planet, map,
-            // governor - all anchored to the left, extra width spilling right. The block heights are
-            // fixed, so the map's width (7:5) is known here and the whole cascade resolves at the
-            // ctor; Draw reads the same X values. GovernorRect keeps its fixed width, only its X
-            // changes from a right anchor to the end of the cascade.
-            float bandTop    = ColoniesList.Bottom + 20; // bench 343: the bottom band drops 10px
+            // frame's right and under the table.
+            // Ludoal fork: the band runs LEFT to RIGHT - EMPIRE, Planet, map, governor - all
+            // anchored to the left, extra width spilling right. The block heights are fixed, so the
+            // map's width (7:5) is known here and the whole cascade resolves at the ctor; Draw reads
+            // the same X values. GovernorRect keeps its fixed width, only its X changes from a right
+            // anchor to the end of the cascade.
+            float bandTop    = ColoniesList.Bottom + 20;
             float bandBottom = client.Bottom - 15;
             float govBandH   = bandBottom - bandTop; // real band height (bandH above is the layout reserve)
             BandMapW    = (govBandH - 10) * (700f / 500f) + 20f;
-            BandEmpireX = ERect.X + 7; // bench 343: EMPIRE box grew 15 to the LEFT (X -15, width +15), so its right edge and the rest of the cascade stay put
+            BandEmpireX = ERect.X + 7;
             BandPlanetX = BandEmpireX + EmpireBoxW + BandGap;
             BandMapX    = BandPlanetX + PlanetBoxW + BandGap;
             BandGovX    = BandMapX + BandMapW + BandGap;
@@ -189,25 +184,21 @@ namespace Ship_Game
             // the EMPIRE totals tab at the band's left - a one-tab Submenu, like the group frames
             EmpireSummaryTab = Add(new Submenu(new RectF(BandEmpireX, bandTop, EmpireBoxW, govBandH),
                                                new LocalizedText[] { "EMPIRE" }));
-            // Ludoal fork: guard against an empty colony list — seen live (crash at
-            // StarDate 1163: GetPlanets() returned 0 for the player on the UI thread,
-            // opened from the Infiltration screen). An empire with no colonies is also
-            // a legitimate state (defeated-but-alive). The governor panel just stays off.
+            // Ludoal fork: guard against an empty colony list. An empire with no colonies is a
+            // legitimate state (defeated-but-alive) - the governor panel just stays off.
             if (planets.Count > 0)
                 GovernorDetails = Add(new GovernorDetailsComponent(this, Universe,  planets[0], GovernorRect));
             else
                 Log.Warning("EmpireManagementScreen: player planet list is EMPTY at ctor");
-            // the STANDING sort survives the screen for the session (maintainer bench 307); the
-            // Homeworld sort (StandingSort==-1) is the factory default now, and it highlights no
-            // column - only a real column click marks a header sorted.
+            // the STANDING sort survives the screen for the session; the Homeworld sort
+            // (StandingSort==-1) is the factory default, and it highlights no column -
+            // only a real column click marks a header sorted.
             if (!HomeworldSort)
             {
                 Table.Columns[StandingSort].Sorted = true;
                 Table.Columns[StandingSort].Ascending = StandingAsc;
             }
             ResetColoniesList(SortedPlanets(planets, StandingSort, StandingAsc));
-            // the troop count and its food bill left this screen (maintainer, 4 Aug):
-            // the Troops Array carries both on its own filter line now
         }
 
         // "current / max", the Planets tab's population shape
@@ -236,12 +227,12 @@ namespace Ship_Game
 
             base.Draw(batch, elapsed);
             
-            // Ludoal fork (maintainer bench 339): the bottom band, LEFT to RIGHT - the EMPIRE totals
-            // box, the planet cartouche, the ground map, then the fixed governor frame; all anchored
-            // left, extra width spilling right. The block X's were fixed in the ctor (BandLayout) so
-            // the ctor's GovernorRect and this row share one arithmetic. The planet DESCRIPTION is
-            // gone from the band - it rides the planet icon's tooltip now.
-            float blockTop = ERect.Y + ERect.H + 10; // bench 343: the bottom band drops 10px (matches bandTop's +10 in the ctor)
+            // Ludoal fork: the bottom band, LEFT to RIGHT - the EMPIRE totals box, the planet
+            // cartouche, the ground map, then the fixed governor frame; all anchored left, extra
+            // width spilling right. The block X's are fixed in the ctor (BandLayout) so the ctor's
+            // GovernorRect and this row share one arithmetic. The planet DESCRIPTION rides the
+            // planet icon's tooltip, not the band.
+            float blockTop = ERect.Y + ERect.H + 10;
             float blockH   = GovernorRect.Bottom - blockTop;
             float mapH     = blockH - 10;
 
@@ -255,11 +246,11 @@ namespace Ship_Game
             var nameCursor = new Vector2(PlanetIconRect.X + PlanetIconRect.Width / 2 - Fonts.Pirulen16.MeasureString(SelectedPlanet.Name).X / 2f, PlanetInfoRect.Y + 15);
             batch.Draw(SelectedPlanet.PlanetTexture, PlanetIconRect, White);
             batch.DrawString(Fonts.Pirulen16, SelectedPlanet.Name, nameCursor, White);
-            // the planet's flavour description now lives on the icon's tooltip (maintainer bench 339)
+            // the planet's flavour description lives on the icon's tooltip
             if (PlanetIconRect.HitTest(Input.CursorPosition))
                 ToolTip.CreateTooltip(SelectedPlanet.Description);
 
-            // the four stat lines centre on the planet image (maintainer bench 294)
+            // the four stat lines centre on the planet image
             var PNameCursor = new Vector2(PlanetIconRect.X + PlanetIconRect.Width + 5,
                                           PlanetIconRect.Y + PlanetIconRect.Height / 2 - 2 * (Fonts.Arial12Bold.LineSpacing + 2));
             var InfoCursor = new Vector2(PNameCursor.X + 80f, PNameCursor.Y);
@@ -338,9 +329,9 @@ namespace Ship_Game
             // the shared charte draws the headers, the rule and the separators
             Table.DrawChrome(batch);
 
-            // Ludoal fork (maintainer feedback): the Homeworld-sort button on the LEFT of the Planet
-            // header, centred over the column's planet-icon lane (icons draw at col.X + 5, ~34 wide).
-            // Amber when that sort is active, dim otherwise; a tooltip explains it.
+            // Ludoal fork: the Homeworld-sort button, LEFT of the Planet header, centred over the
+            // column's planet-icon lane (icons draw at col.X + 5, ~34 wide). Amber when that sort
+            // is active, dim otherwise; a tooltip explains it.
             Rectangle planetHdr = Table.Columns[1].Rect;
             HomeSortButton = new Rectangle(planetHdr.X + 5 + 17 - 7, planetHdr.Y, 14, 14);
             SubTexture homeIcon = ResourceManager.Texture("UI/icon_home");
@@ -353,16 +344,15 @@ namespace Ship_Game
             batch.SafeEnd();
         }
 
-        // Ludoal fork (maintainer bench 339): the EMPIRE totals - colony count, total population and
-        // total per-turn growth, summed across the player's colonies. Drawn inside the EMPIRE tab's
-        // client area; the tab frame itself is a child, painted by base.Draw before this.
+        // Ludoal fork: the EMPIRE totals - colony count, total population and total per-turn growth,
+        // summed across the player's colonies. Drawn inside the EMPIRE tab's client area; the tab
+        // frame itself is a child, painted by base.Draw before this.
         void DrawEmpireSummary(SpriteBatch batch, float boxX, float bandTop, float bandH)
         {
             IReadOnlyList<Planet> planets = Universe.Player.GetPlanets();
-            // bench 345: total pop reads the empire's own TotalPopBillion - the SAME source the
-            // Intelligence screen uses - so the two agree. Summing the planets here missed the
-            // colonists in transit aboard ships, which TotalPopBillion counts. Growth has no such
-            // aggregate, so it is still summed per planet.
+            // total pop reads the empire's own TotalPopBillion - the SAME source the Intelligence
+            // screen uses, so the two agree; it also counts colonists in transit aboard ships, which
+            // summing the planets would miss. Growth has no such aggregate, so it is summed per planet.
             float totalPop = Universe.Player.TotalPopBillion;
             float totalGrowth = 0f;
             for (int i = 0; i < planets.Count; ++i)
@@ -401,8 +391,8 @@ namespace Ship_Game
 
         void OnColonyListItemClicked(ColoniesListItem item)
         {
-            // bench 388 (maintainer): single-click = select on the map and pan at current zoom -
-            // the governor panel keeps following the row, as before
+            // single-click = select on the map and pan at current zoom -
+            // the governor panel keeps following the row
             Universe.PanToPlanetKeepZoom(item.P);
             SelectedPlanet = item.P;
             GovernorDetails?.SetPlanetDetails(SelectedPlanet, GovernorRect, (int)(GovernorDetails?.CurrentTabIndex ?? 0));
@@ -411,15 +401,14 @@ namespace Ship_Game
 
         void OnColonyListItemDoubleClicked(ColoniesListItem item)
         {
-            // Ludoal fork (spec: colony-as-tab): armed BEFORE the snap - the colony's ctor
-            // reads the seat to wear the EMPIRE row, planet tab appended, Colonies (0) as
-            // the Esc origin. The snap's map-open path sees this planet's seat standing and
-            // leaves it be. Replaces the ReturnToList trio and its dimmed silhouette.
+            // Ludoal fork: armed BEFORE the snap - the colony's ctor reads the seat to wear the
+            // EMPIRE row, planet tab appended, Colonies (0) as the Esc origin. The snap's map-open
+            // path sees this planet's seat standing and leaves it be.
             Universe.HostColonyTab(item.P, ScreenGroups.Group.Empire, 0);
             Universe.SnapViewColony(item.P, combatView: false);
             // Ludoal fork: the colony inherits this list's automatic pause - consulting a colony
-            // from a paused list must not restart the simulation (maintainer bench). Before
-            // ExitScreen, which would resume it; skipped when the snap did not open a colony.
+            // from a paused list must not restart the simulation. Before ExitScreen, which would
+            // resume it; skipped when the snap did not open a colony.
             if (Universe.LookingAtPlanet)
                 HandOverUniversePause(Universe.workersPanel);
             ExitScreen();
@@ -437,8 +426,8 @@ namespace Ship_Game
                 return true;
             }
 
-            // Ludoal fork (maintainer feedback): the Homeworld-sort button, tested before the
-            // headers so the Planet column click below never swallows it.
+            // Ludoal fork: the Homeworld-sort button, tested before the headers so the Planet
+            // column click below never swallows it.
             if (input.LeftMouseClick && HomeSortButton.HitTest(input.CursorPosition))
             {
                 GameAudio.BlipClick();
@@ -480,7 +469,7 @@ namespace Ship_Game
                 Func<Planet, string> name = col == 0 ? p => p.System.Name : p => p.Name;
                 return asc ? planets.OrderBy(name) : planets.OrderByDescending(name);
             }
-            // maintainer bench 339: a Pop Growth column at index 5 shifts Food..Research by one
+            // a Pop Growth column at index 5 shifts Food..Research by one
             Func<Planet, float> selector = col switch
             {
                 2 => p => p.FertilityFor(p.Universe.Player),
@@ -495,11 +484,11 @@ namespace Ship_Game
             return asc ? planets.OrderBy(selector) : planets.OrderByDescending(selector);
         }
 
-        static int StandingSort = -1;    // session-persistent (bench 307); -1 = the Homeworld sort
+        static int StandingSort = -1;    // session-persistent; -1 = the Homeworld sort
         static bool StandingAsc = true;
-        // Ludoal fork (maintainer feedback): the DEFAULT order is the Homeworld first, then the
-        // other colonies by distance from it. It is not a table column - a header button toggles
-        // it, and clicking any real column leaves it. HomeworldSort is on whenever StandingSort==-1.
+        // Ludoal fork: the DEFAULT order is the Homeworld first, then the other colonies by distance
+        // from it. It is not a table column - a header button toggles it, and clicking any real
+        // column leaves it. HomeworldSort is on whenever StandingSort==-1.
         static bool HomeworldSort => StandingSort == -1;
 
         void ResetColoniesList(IEnumerable<Planet> sortedList)

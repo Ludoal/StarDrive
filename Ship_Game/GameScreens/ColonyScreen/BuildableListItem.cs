@@ -57,8 +57,8 @@ namespace Ship_Game
         {
             if (Ship != null)
             {
-                // the colony closes first (bench 397) - two groups must not stack; a user
-                // close of the Shipyard reopens it (the hosted seat survives the round trip)
+                // The colony closes first - two groups must not stack; a user
+                // close of the Shipyard reopens it (the hosted seat survives the round trip).
                 Screen.ExitScreen();
                 var sdScreen = new ShipDesignScreen(Screen.Universe.Screen, Screen.Eui,
                                                     returnToColony: Screen.P);
@@ -105,8 +105,7 @@ namespace Ship_Game
         void DrawProductionInfo(SpriteBatch batch, float maintenance, float prod, int cost = 0)
         {
             Font font = Font12;
-            // production 10 left, maintenance 20 left of where they sat (maintainer bench
-            // 300) - the right-edge action icons stay where they are
+            // Production 10 left, maintenance 20 left - the right-edge action icons stay where they are.
             float x = Right - ProdWidth - 10;
             float y = Y+4;
             var iconSize = new Vector2(font.LineSpacing+2);

@@ -11,21 +11,15 @@ using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game
 {
-    // Ludoal fork: the Automation tab of the Empire group (maintainer design). These settings
-    // lived in a floating overlay window docked to the right screen edge - which had no reason
-    // to sit on the map, fought the deep-space build menu for that edge, and lately had its
-    // last lines buried under the minimap. The window dies with its minimap icon; the H
-    // shortcut opens this tab instead.
+    // Ludoal fork: the Automation tab of the Empire group. The H shortcut opens this tab.
     //
-    // The categories are the maintainer's: EMPIRE (what runs the empire), COLONIZATION,
-    // CONSTRUCTION, TRADE, and NOTIFICATIONS (what stays quiet). Each wears its own one-tab
-    // frame and they are ALL visible at once (maintainer: there is room, and a settings page
-    // you have to leaf through hides what it is for).
+    // Categories: EMPIRE, COLONIZATION, CONSTRUCTION, TRADE, NOTIFICATIONS. Each wears its own
+    // one-tab frame and they are ALL visible at once.
     public sealed class AutomationScreen : GameScreen
     {
         readonly UniverseScreen Universe;
         Submenu EmpireTabs;
-        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // Ludoal fork: this page's real frame is its tab row's rect -
         // the band excludes exactly what the page occupies, dynamic size included
         public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
 
@@ -52,13 +46,12 @@ namespace Ship_Game
         public override void LoadContent()
         {
             RemoveAll();
-            // the frame hugs its content, anchored on the bar and the left margin
-            // (maintainer, 3 Aug) - the first group screen that does not span the display.
+            // the frame hugs its content, anchored on the bar and the left margin.
             // Two columns: [Empire / Notifications] and [Colonization / Construction / Trade].
             float col1H = EmpireBoxH + BoxGap + NotificationsBoxH;
             float col2H = ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap + TradeBoxH;
             float contentW = 9 + 10 + BoxW + BoxGap + BoxW2 + BoxGap + BoxW3 + 10 + 9;  // ClientArea insets + gutters
-            float contentH = 60 + Math.Max(Math.Max(col1H, col2H), PriorityBoxH) + 22;  // tab strip + cross clearance + pads - bench number
+            float contentH = 60 + Math.Max(Math.Max(col1H, col2H), PriorityBoxH) + 22;  // tab strip + cross clearance + pads
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 5,
                                                     OnEmpireTabChanged, contentW, contentH);
             ResearchStationsEnabled = !Universe.Player.Universe.P.DisableResearchStations;
@@ -74,9 +67,9 @@ namespace Ship_Game
             // of the neighbour, not under it.
 
             UIList notifications = NewBox(new RectF(x0, top + EmpireBoxH + BoxGap, BoxW, NotificationsBoxH), "Notifications");
-            // POSITIVE voice (maintainer bench 305): checked = you get the alert, all on
-            // by default. The [StarData] flags stay the Disable/Suppress ones - each box
-            // reads and writes them through a negation, so saves keep their meaning.
+            // POSITIVE voice: checked = you get the alert, all on by default. The [StarData]
+            // flags stay the Disable/Suppress ones - each box reads and writes them through
+            // a negation, so saves keep their meaning.
             var P = Universe.UState.P;
             notifications.AddCheckbox(() => !P.SuppressOnBuildNotifications, v => P.SuppressOnBuildNotifications = !v,
                                       title: "Building Alerts", tooltip: GameText.NormallyWhenYouManuallyAdd);
@@ -123,13 +116,12 @@ namespace Ship_Game
             ColonyShipDropDown = colonization.Add(new CheckedDropdown())
                 .Create(() => player.AutoColonize, title: GameText.Autocolonize, tooltip: GameText.YourEmpireWillAutomaticallyCreate,
                         autoPick: () => player.AutoPickBestColonizer);
-            // ⚠ "Auto Governor", no longer "Core": this flag now decides whether a new
-            // colony gets an ASSESSED governor (the behaviour that used to hide inside
-            // Autocolonize) - see Planet_Colonize.SetupColonyType (maintainer design).
+            // ⚠ "Auto Governor" decides whether a new colony gets an ASSESSED governor -
+            // see Planet_Colonize.SetupColonyType.
             colonization.AddCheckbox(() => player.AutoCoreGovernor, title: "Auto Governor",
                                      tooltip: "New colonies are assigned a governor suited to the planet. Unchecked, they start unmanaged.");
 
-            // ── third column: the construction Prioritization list (maintainer spec) ──
+            // ── third column: the construction Prioritization list ──
             // Upper block = the prioritized categories, their ORDER is the hierarchy; arrows
             // reorder, the inhibit glyph demotes. Lower block = the rest; the plus promotes.
             // Acts at queue INSERTION only (SBProduction) - reordering never reshuffles
@@ -212,8 +204,6 @@ namespace Ship_Game
                 if (i < prio.Count - 1)
                     PriorityHost.Add(IconBtn("NewUI/icon_queue_arrow_down", "NewUI/icon_queue_arrow_down_hover1",
                                              Slot(48), "Lower priority", () => MoveCategory(idx, +1)));
-                // the queue's own delete glyph (bench 406): icon_minus was a bare dash that
-                // read as a text character
                 PriorityHost.Add(IconBtn("NewUI/icon_queue_delete", "NewUI/icon_queue_delete_hover1",
                                          Slot(24), "Stop prioritizing this category", () => DemoteCategory(key)));
                 y += RowH;

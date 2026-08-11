@@ -21,7 +21,7 @@ namespace Ship_Game
         public readonly UniverseScreen Universe;
         public UniverseState UState => Universe.UState;
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
-        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // Ludoal fork: this page's real frame is its tab row's rect -
         // the band excludes exactly what the page occupies, dynamic size included
         public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
         private Ship SelectedShip;
@@ -72,9 +72,9 @@ namespace Ship_Game
             TransitionOffTime = 0.25f;
             IsPopup = true;
             // Ludoal fork: the Ships tab of the Empire group on the shared table charte
-            // (UITable, spec 4 Aug): fixed columns except Orders, which takes what the
-            // screen offers within bounds - so the frame HUGS the table and stops after
-            // the slider lane. Height follows the unfiltered fleet count.
+            // (UITable): fixed columns except Orders, which takes what the screen offers
+            // within bounds - the frame hugs the table and stops after the slider lane.
+            // Height follows the unfiltered fleet count.
             Table = new UITable(new[]
             {
                 new UITable.Column { Title = Localizer.Token(GameText.System), Width = 110, Sortable = true },
@@ -95,9 +95,9 @@ namespace Ship_Game
                 new UITable.Column { Title = "FTL", Width = 60, Align = TableAlign.Number, Sortable = true, Tip = "Faster Than Light Speed of Ship" },
                 new UITable.Column { Title = "STL", Width = 60, Align = TableAlign.Number, Sortable = true, Tip = "Sublight Speed of Ship" },
             });
-            // EVERY column sizes itself on the fleet's DATA, header (or icon) included
-            // (maintainer, 4 Aug); Orders is FOLDABLE - if the natural widths exceed the
-            // resolution, its text cuts to a tooltip instead of pushing the frame off-screen
+            // EVERY column sizes itself on the fleet's DATA, header (or icon) included.
+            // Orders is FOLDABLE - if the natural widths exceed the resolution, its text
+            // cuts to a tooltip instead of pushing the frame off-screen
             var vals = new Array<string>[13];
             for (int i = 0; i < vals.Length; ++i)
                 vals[i] = new Array<string>();
@@ -116,39 +116,39 @@ namespace Ship_Game
                 vals[11].Add((s.MaxFTLSpeed / 1000f).ToString("0") + "k");
                 vals[12].Add(s.MaxSTLSpeed.ToString("0"));
             }
-            // measure with the font each column actually DRAWS: sizing Orders in bold left
-            // a bold-vs-regular slack after its longest text (maintainer bench 290)
+            // measure with the font each column actually DRAWS: sizing Orders in bold leaves
+            // a bold-vs-regular slack after its longest text
             for (int i = 0; i < vals.Length; ++i)
                 if (i != 7) // the icon lane keeps its fixed width
                     UITable.AutoSize(Table.Columns[i], i <= 5 ? Fonts.Arial12Bold : Fonts.Arial12, vals[i]);
             Table.Columns[2].Width += 34; // the ship icon rides ahead of the name
-            // capped (maintainer bench 305): a fleet's longest name was sizing the lane for
-            // everyone, and every pixel it hoards is a pixel Orders has to fold away
+            // capped: a fleet's longest name would size the lane for everyone, and every
+            // pixel it hoards is a pixel Orders has to fold away
             Table.Columns[2].Width = Math.Min(Table.Columns[2].Width, 210);
             Table.Columns[6].Foldable = true;
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
 
             // Proximity ascending is the factory default; the standing sort survives the
-            // screen for the session (maintainer bench 307) and ResetList re-applies it
+            // screen for the session and ResetList re-applies it
             Table.Columns[StandingCol].Sorted = true;
             Table.Columns[StandingCol].Ascending = StandingAsc;
 
             int shipRows = Universe.Player.OwnedShips.Count;
-            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 389: the one floor (cartouche + order rows)
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // the one floor (cartouche + order rows)
             // 119, measured: frame->client 41, filter line + headers 43, foot 5, paddings 30
             float contentH = UITable.ContentHeightFor(119, Math.Max(5, shipRows), 34, fullAvail);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 1,
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
 
-            // Ludoal fork: the reserved first line carries the three filters and the role dropdown,
-            // side by side where they used to be stacked beside the title. The table takes the rest.
+            // Ludoal fork: the reserved first line carries the three filters and the role
+            // dropdown, side by side. The table takes the rest.
             RectF client = EmpireTabs.ClientArea;
             Table.RowPitch = 34;
             Table.Layout(client, client.Y + 30, client.Bottom - 5);
 
             ShipSL = Add(new ScrollList<ShipListScreenItem>(Table.ListRect, 30));
             ShipSL.OnDoubleClick = OnShipListScreenItemClicked;
-            ShipSL.OnClick = OnShipRowSingleClicked; // bench 388 (maintainer): single-click = select on the map and pan at current zoom
+            ShipSL.OnClick = OnShipRowSingleClicked; // single-click selects on the map and pans at current zoom
             ShipSL.EnableItemHighlight = true;
             Table.ApplyHighlightTo(ShipSL);
 
@@ -195,8 +195,8 @@ namespace Ship_Game
         }
 
 
-        // Ludoal fork: the other tabs live in their own screen, so leaving this one hands over to
-        // it. Its own index is a no-op: we are already here.
+        // Ludoal fork: the other tabs live in their own screen, so leaving this one hands
+        // over to it. Its own index is a no-op: we are already here.
         void OnEmpireTabChanged(int index)
         {
             // one factory for the whole group (ScreenGroups) - this screen only says which tab it is
@@ -205,8 +205,8 @@ namespace Ship_Game
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             batch.SafeBegin();
-            // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
-            // drawn among the children, after everything below it.
+            // Ludoal fork: the frame fill is drawn by hand, first - as a Submenu background
+            // it would be drawn among the children, after everything below it.
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
 
             base.Draw(batch, elapsed);
@@ -219,7 +219,7 @@ namespace Ship_Game
             batch.SafeEnd();
         }
 
-        // bench 388 (maintainer): single-click = select on the map and pan at current zoom -
+        // single-click selects on the map and pans at current zoom -
         // the double-click still exits and chases the ship
         void OnShipRowSingleClicked(ShipListScreenItem item)
         {
@@ -301,7 +301,7 @@ namespace Ship_Game
             return ApplySort(col, asc);
         }
 
-        static int StandingCol = 1;    // session-persistent (bench 307)
+        static int StandingCol = 1;    // session-persistent
         static bool StandingAsc = true;
 
         bool ApplySort(int col, bool asc)
@@ -392,8 +392,7 @@ namespace Ship_Game
                 }
             }
 
-            // the orange header stays truthful (bench 293: it announced a sort the list
-            // never had): re-apply the standing sort after every refill
+            // the orange header stays truthful: re-apply the standing sort after every refill
             for (int i = 0; i < Table.Columns.Length; ++i)
             {
                 if (Table.Columns[i].Sorted)

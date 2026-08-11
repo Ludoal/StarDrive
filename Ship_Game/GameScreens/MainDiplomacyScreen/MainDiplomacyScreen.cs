@@ -16,7 +16,7 @@ using Font = Ship_Game.Graphics.Font;
 
 namespace Ship_Game
 {
-    // Ludoal fork v3 (player design): full-surface dashboard — one COLUMN per major
+    // Ludoal fork: full-surface dashboard — one COLUMN per major
     // empire, everything visible at once. Each column: header (portrait, click to
     // contact), fixed INFO block, a global INTELLIGENCE/BONUSES switch (intelligence
     // by default, one click flips every column so rows stay comparable), and a

@@ -12,12 +12,11 @@ using Ship_Game.Fleets;
 namespace Ship_Game
 {
     // one patrol plan = one row, on the shared table charte: the row only carries its
-    // data and its two action buttons, sized to their own text (maintainer, 4 Aug)
+    // data and its two action buttons, sized to their own text
     public sealed class EmpirePatrolsScreenListItem : ScrollListItem<EmpirePatrolsScreenListItem>
     {
         public readonly FleetPatrol FleetPatrol;
-        // icons, not text buttons (Lek's review + maintainer, bench 305) - the same
-        // pencil/bin language the build queues speak
+        // icons, not text buttons - the same pencil/bin language the build queues speak
         UIButton RenamePatrol;
         UIButton DeletePatrol;
         readonly EmpirePatrolsScreen Screen;
@@ -38,9 +37,8 @@ namespace Ship_Game
 
             UITable.Column[] cols = Screen.Table.Columns;
             Array<string> fleetsAssigned = GetFleetsAssignedText();
-            // white, not the empire colour (maintainer bench 290): only ONE empire's plans
-            // ever list here, the race tint carried no information - gray stays for the
-            // plans no fleet runs
+            // white, not the empire colour: only ONE empire's plans ever list here, so the
+            // race tint carries no information - gray stays for plans no fleet runs
             Color color = fleetsAssigned.Count == 0 ? Color.Gray : Color.White;
 
             Cell(cols[0], FleetPatrol.Name, color);
@@ -53,10 +51,9 @@ namespace Ship_Game
             if (shown != joined)
                 fleetsLbl.Tooltip = joined;
 
-            // the pencil and the bin RIGHT OF THE NAME (maintainer, bench 305) - the build
-            // queues' own icon language, and the Actions column retired with its width
-            // the LIT art as the resting state (maintainer bench 307): the base icons read
-            // darker here than the Colonies pair
+            // the pencil and the bin sit right of the name, using the build queues' own
+            // icon language. The lit art is the resting state here; the base icons read
+            // darker than the Colonies pair.
             RenamePatrol ??= new UIButton(new UIButton.StyleTextures("NewUI/icon_build_edit_hover1", "NewUI/icon_build_edit_hover2", "NewUI/icon_build_edit_hover2"), Vector2.Zero, "")
             {
                 Tooltip = "Rename this patrol plan",
@@ -66,12 +63,12 @@ namespace Ship_Game
             {
                 Tooltip = "Delete this patrol plan",
                 OnClick = OnDeletePatrolClicked,
-                IconTint = Color.Red, // destruction reads red (maintainer bench 305)
+                IconTint = Color.Red, // destruction reads red
             };
             SubTexture editTex = ResourceManager.Texture("NewUI/icon_build_edit_hover1");
             SubTexture delTex = ResourceManager.Texture("NewUI/icon_queue_delete_hover1");
-            // Ludoal fork (maintainer feedback): the pencil and bin live in their own Actions column
-            // (the last one), centred as a pair within its cell.
+            // Ludoal fork: the pencil and bin live in their own Actions column (the last one),
+            // centred as a pair within its cell.
             Rectangle actions = cols[cols.Length - 1].Rect;
             int pairW = editTex.Width + 8 + delTex.Width;
             int editX = actions.X + (actions.Width - pairW) / 2;

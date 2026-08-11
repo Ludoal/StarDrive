@@ -23,13 +23,13 @@ namespace Ship_Game
         public Rectangle StorageRect;
         public Rectangle QueueRect;
         public Rectangle PopRect;
-        public Rectangle GrowthRect; // Ludoal fork (bench 339): population growth per turn
+        public Rectangle GrowthRect; // Ludoal fork: population growth per turn
         public Rectangle FoodRect;
         public Rectangle ProdRect;
         public Rectangle ResRect;
         public Rectangle MoneyRect;
-        public Rectangle GovernorRect; // bench 406: governor type, wide displays only
-        public Rectangle FertRect;   // Ludoal fork (wishlist): fertility / richness columns
+        public Rectangle GovernorRect; // governor type, wide displays only
+        public Rectangle FertRect;   // Ludoal fork: fertility / richness columns
         public Rectangle RichRect;
 
         AssignLaborComponent AssignLabor;
@@ -69,29 +69,28 @@ namespace Ship_Game
             int y = (int)Y;
 
             P.UpdateIncomes();
-            // the shared table charte owns the columns (maintainer bench 293) - the row
-            // reads its bands off them and only keeps its own vertical quirks (the labor
-            // slider block runs taller than the row)
+            // the shared table charte owns the columns - the row reads its bands off them
+            // and only keeps its own vertical quirks (the labor slider block runs taller than the row)
             UITable.Column[] cols = Screen.Table.Columns;
             Rectangle Band(int i) => new Rectangle(cols[i].Rect.X, y, cols[i].Rect.Width, Rect.Height);
             SysNameRect    = Band(0);
             PlanetNameRect = Band(1);
-            // Ludoal fork (bench 339): a Pop Growth column sits between Pop (4) and Food, so every
-            // band from Food onward is one index later than before.
+            // Ludoal fork: a Pop Growth column sits between Pop (4) and Food, so every
+            // band from Food onward is one index later.
             FertRect    = Band(2);
             RichRect    = Band(3);
             PopRect     = Band(4);
             GrowthRect  = Band(5);
             FoodRect    = Band(6);
             ProdRect    = Band(7);
-            MoneyRect   = Band(8); // money before research, the top bar's order (bench 294)
+            MoneyRect   = Band(8); // money before research, the top bar's order
             ResRect     = Band(9);
-            // bench 406: on wide displays a Governor column rides ahead of Labor - every
+            // on wide displays a Governor column rides ahead of Labor - every
             // band from Labor onward shifts one index when it is present
             int gv = cols.Length >= 14 ? 1 : 0;
             GovernorRect = gv == 1 ? Band(10) : default;
             SliderRect  = new Rectangle(cols[10 + gv].Rect.X + 4, y - 30, cols[10 + gv].Rect.Width - 8, Rect.Height + 25);
-            // maintainer bench 339: the Storage content starts 5px further left (its whole content
+            // the Storage content starts 5px further left (its whole content
             // is placed off StorageRect.X, so shifting the rect shifts all of it at once)
             StorageRect = Band(11 + gv);
             StorageRect.X -= 5;
@@ -111,8 +110,7 @@ namespace Ship_Game
                 color = "green"
             };
 
-            // a quarter, not a fifth: Import and Export overflowed the fifth
-            // (maintainer bench 296)
+            // a quarter, not a fifth: Import and Export overflow the fifth
             int ddwidth = (int)(0.25f * StorageRect.Width);
             FoodDropDown = new DropDownMenu(new Rectangle(StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, ddwidth, 18));
             FoodDropDown.AddOption(Localizer.Token(GameText.Store));
@@ -131,9 +129,9 @@ namespace Ship_Game
             ProdDropDown.AddOption(Localizer.Token(GameText.Import));
             ProdDropDown.AddOption(Localizer.Token(GameText.Export));
             ProdDropDown.ActiveIndex = (int)P.PS;
-            // on the PROGRESS BAR's line, not the name's (maintainer bench 299) - the item
-            // name gets the column's full width. The bar sits one bold line under the name
-            // anchor, which itself rides at mid-height - 30 (QueueItem.DrawAt).
+            // on the PROGRESS BAR's line, not the name's - the item name gets the column's
+            // full width. The bar sits one bold line under the name anchor, which itself
+            // rides at mid-height - 30 (QueueItem.DrawAt).
             int iconY = QueueRect.Y + QueueRect.Height / 2 - 30 + Fonts.Arial12Bold.LineSpacing + 3;
             ApplyProductionRect = new Rectangle(QueueRect.X + QueueRect.Width - 50, iconY, ResourceManager.Texture("NewUI/icon_queue_rushconstruction").Width, ResourceManager.Texture("NewUI/icon_queue_rushconstruction").Height);
             CancelProductionRect = new Rectangle(QueueRect.X + QueueRect.Width - 20, iconY, ResourceManager.Texture("NewUI/icon_queue_delete").Width, ResourceManager.Texture("NewUI/icon_queue_delete").Height);
@@ -243,15 +241,14 @@ namespace Ship_Game
         {
             ProdStorage.Progress = P.ProdHere;
             FoodStorage.Progress = P.FoodHere;
-            // charte (bench 293): the zebra fill and the per-row border are gone - the
-            // shared chrome delimits; only the SELECTED colony keeps its marker fill
+            // the shared chrome delimits rows; only the SELECTED colony keeps a marker fill
             if (P == Screen.SelectedPlanet)
             {
                 batch.FillRectangle(Rect, new Color(118, 102, 67, 50).Premultiplied());
             }
 
             Color TextColor = Colors.Cream;
-            // System in the regular body face, from the left (maintainer bench 293)
+            // System name in the regular body face, from the left
             var SysNameCursor = new Vector2(SysNameRect.X + UITable.PadX,
                                             SysNameRect.Y + SysNameRect.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2);
             batch.DrawString(Fonts.Arial12Bold, P.System.Name, SysNameCursor, TextColor);
@@ -272,13 +269,12 @@ namespace Ship_Game
             }
 
             // every stat with a fixed decimal - right-aligned + constant fraction =
-            // aligned on the point (maintainer bench 293); population reads "x / y"
-            // like the Planets tab, Max Pop merged in (bench 294)
+            // aligned on the point; population reads "x / y" like the Planets tab
             // the value the cell SAYS is the value that picks the colour: -0.04 rounds to
-            // "0.0" at one decimal, so it must neither read "-0.0" nor wear pink (bench 305)
+            // "0.0" at one decimal, so it must neither read "-0.0" nor wear pink
             float R1(float v) => Math.Abs(v) < 0.05f ? 0f : v;
             string F1(float v) => R1(v).ToString("0.0", CultureInfo.InvariantCulture);
-            // Ludoal fork (bench 353): Pop Growth reads in millions with one decimal (maintainer request)
+            // Ludoal fork: Pop Growth reads in millions with one decimal
             string F2(float v) => (Math.Abs(v) < 0.05f ? 0f : v).ToString("0.0", CultureInfo.InvariantCulture);
             // give each number of an "a / b" string one decimal place (12 -> 12.0), leaving text as-is
             string OneDecimalEachSide(string s)
@@ -297,14 +293,13 @@ namespace Ship_Game
             string popString = P.PopulationStringForPlayer;
             int popParen = popString.IndexOf(" (");
             if (popParen >= 0) popString = popString.Substring(0, popParen);
-            // maintainer bench 339: a ".0" on the whole numbers of "x / y" so a mixed row does not
-            // jump between integer and decimal widths (a first step toward aligning on the slash).
+            // a ".0" on the whole numbers of "x / y" so a mixed row does not
+            // jump between integer and decimal widths.
             popString = OneDecimalEachSide(popString);
             DrawStatValue(batch, PopRect, popString, Color.White);
-            // Ludoal fork (bench 354): population growth per turn in MILLIONS, one decimal. The raw
-            // EstimatedPopGrowthPerTurn is already in millions (Population is millions, /1000 = billions
-            // per MaxPopulationBillion) - the old /1000f put it in billions, which at one decimal read
-            // 0.0 on every colony. Show the raw value; tooltip says "(millions)".
+            // Ludoal fork: population growth per turn in MILLIONS, one decimal. EstimatedPopGrowthPerTurn
+            // is already in millions (Population is millions, /1000 = billions per MaxPopulationBillion) -
+            // show the raw value; tooltip says "(millions)".
             DrawStatValue(batch, GrowthRect, F2(P.EstimatedPopGrowthPerTurn),
                           P.EstimatedPopGrowthPerTurn > 0.5f ? Color.LightGreen : Color.Gray);
             DrawStatValue(batch, FoodRect, F1(P.Food.NetIncome), R1(P.Food.NetIncome) >= 0f ? Color.White : Color.LightPink);
@@ -312,13 +307,13 @@ namespace Ship_Game
             DrawStatValue(batch, ResRect, F1(P.Res.NetIncome), Color.White);
             DrawStatValue(batch, MoneyRect, F1(P.Money.NetRevenue), R1(P.Money.NetRevenue) >= 0f ? Color.White : Color.LightPink);
 
-            // Ludoal fork (wishlist): fertility (env-adjusted, tinted by racial multiplier), richness
+            // Ludoal fork: fertility (env-adjusted, tinted by racial multiplier), richness
             float envMult = Universe.Player.PlayerEnvModifier(P.Category);
             Color fertColor = envMult.AlmostEqual(1) ? Color.White : envMult < 1f ? Color.LightPink : Color.LightGreen;
             DrawStatValue(batch, FertRect, F1(P.FertilityFor(Universe.Player)), fertColor);
             DrawStatValue(batch, RichRect, F1(P.MineralRichness), Color.White);
 
-            // bench 406: the governor type, centred, wearing the type colour the governor
+            // the governor type, centred, wearing the type colour the governor
             // portrait border already uses
             if (GovernorRect.Width > 0)
             {
@@ -338,7 +333,7 @@ namespace Ship_Game
                 batch.DrawString(Fonts.Arial12, gov, govPos, govColor);
             }
 
-            // two lines like the Planets tab (bench 294): the name in 14, the class with
+            // two lines like the Planets tab: the name in 14, the class with
             // its richness word under it in gray
             var namePos = new Vector2(planetIconRect.X + planetIconRect.Width + 10,
                                       SysNameRect.Y + SysNameRect.Height / 2 - (Fonts.Arial14Bold.LineSpacing + Fonts.Arial12.LineSpacing + 2) / 2);
@@ -349,7 +344,6 @@ namespace Ship_Game
             if (clsPar >= 0) cls = cls.Substring(0, clsPar);
             batch.DrawString(Fonts.Arial12, cls, namePos, Color.Gray);
             // the environment multiplier rides the class line, like the Planets tab
-            // (maintainer bench 296)
             if (!envMult.AlmostEqual(1))
                 batch.DrawString(Fonts.Arial8Bold, $" (x {envMult.String(2)})",
                                  new Vector2(namePos.X + Fonts.Arial12.MeasureString(cls).X + 5, namePos.Y + 2),
@@ -366,7 +360,7 @@ namespace Ship_Game
                 QueueItem qi = queue[0];
                 qi.DrawAt(P.Universe, batch, new Vector2(QueueRect.X + 10, QueueRect.Y + QueueRect.Height / 2 - 30));
                 batch.Draw((ApplyProdHover ? ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover1") : ResourceManager.Texture("NewUI/icon_queue_rushconstruction")), ApplyProductionRect, Color.White);
-                batch.Draw((CancelProdHover ? ResourceManager.Texture("NewUI/icon_queue_delete_hover1") : ResourceManager.Texture("NewUI/icon_queue_delete")), CancelProductionRect, Color.Red); // destruction reads red (bench 305)
+                batch.Draw((CancelProdHover ? ResourceManager.Texture("NewUI/icon_queue_delete_hover1") : ResourceManager.Texture("NewUI/icon_queue_delete")), CancelProductionRect, Color.Red); // destruction reads red
                 DrawQueueStats(batch, queue.Length);
             }
         }

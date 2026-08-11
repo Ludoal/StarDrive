@@ -23,7 +23,7 @@ namespace Ship_Game
     public sealed class TroopListScreen : GameScreen
     {
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
-        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // Ludoal fork: this page's real frame is its tab row's rect -
         // the band excludes exactly what the page occupies, dynamic size included
         public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
 
@@ -64,7 +64,7 @@ namespace Ship_Game
                 new UITable.Column { Title = "Status",   Align = TableAlign.Center, Sorted = true, Ascending = true },
                 new UITable.Column { Title = "Troop", Foldable = true }, // repli si la table dépasse 1680 (rarissime)
                 new UITable.Column { Title = "#",        Align = TableAlign.Number },
-                // the offense icon with its tooltip in place of the word (bench 305)
+                // the offense icon with its tooltip in place of the word
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_offense"),
                                      Align = TableAlign.Number, Tip = Localizer.Token(GameText.Strength) },
             });
@@ -73,28 +73,28 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, locations);
             UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, Statuses);
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, troops);
-            // bench 343: the last two columns size to their header + default margins like the rest,
-            // not a hardcoded 60/80. The counts/strengths are short, so the "#" header and the
-            // offense icon are the real floor - AutoSize on an empty value set gives exactly that.
+            // the last two columns size to their header + default margins: the counts/strengths
+            // are short, so the "#" header and the offense icon are the real floor -
+            // AutoSize on an empty value set gives exactly that.
             UITable.AutoSize(Table.Columns[4], Fonts.Arial12Bold, System.Array.Empty<string>());
             UITable.AutoSize(Table.Columns[5], Fonts.Arial12Bold, System.Array.Empty<string>());
-            // Ludoal fork (maintainer feedback): the table caps at 1680 like the rest of the group -
+            // Ludoal fork: the table caps at 1680 like the rest of the group -
             // the Troop column folds if it ever overflows (in practice it never will).
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
-            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 389: the one floor (cartouche + order rows)
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // the one floor (cartouche + order rows)
             // 118 = tab strip + the filter/info lane + headers + a line at the bottom
             float contentH = UITable.ContentHeightFor(119, Math.Max(3, rows), 28, fullAvail);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 2,
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
             RectF client = EmpireTabs.ClientArea;
-            // one lane: the filter, then the two figures on the same line (maintainer bench 288)
+            // one lane: the filter, then the two figures on the same line
             Table.RowPitch = 28;
             Table.Layout(client, client.Y + 30, client.Bottom - 5);
             TroopSL = Add(new ScrollList<TroopListScreenItem>(Table.ListRect, 24));
             TroopSL.EnableItemHighlight = true;
             Table.ApplyHighlightTo(TroopSL);
             TroopSL.OnDoubleClick = OnRowClicked; // Ludoal fork: double-click everywhere, like Ships/Empire
-            TroopSL.OnClick = OnRowSingleClicked; // bench 388 (maintainer): single-click = select on the map and pan at current zoom
+            TroopSL.OnClick = OnRowSingleClicked; // single-click = select on the map and pan at current zoom
 
             ShowStatus = Add(new DropOptions<string>(
                 new Rectangle((int)client.X + 10, (int)client.Y + 6, 160, 18)));
@@ -132,7 +132,7 @@ namespace Ship_Game
             return keys.Count;
         }
 
-        // bench 388 (maintainer): single-click = select on the map and pan at current zoom -
+        // single-click = select on the map and pan at current zoom -
         // garrison rows pan to their planet, embarked rows to their carrier ship
         void OnRowSingleClicked(TroopListScreenItem item)
         {
@@ -150,7 +150,7 @@ namespace Ship_Game
                 // Garrison: colony view. Deployed (planet not ours): combatView=true
                 // routes to the Ground Assault View via OpenCombatMenu.
                 bool deployed = item.Planet.Owner != Player;
-                // Ludoal fork (spec: colony-as-tab): colony view only - the deployed path opens
+                // Ludoal fork: colony view only - the deployed path opens
                 // the Ground Assault view, which hosts no tab. Armed BEFORE the snap so the
                 // colony's ctor wears the EMPIRE row, Troops (2) as the Esc origin.
                 if (!deployed)
@@ -159,7 +159,7 @@ namespace Ship_Game
                 if (!deployed)
                 {
                     // Ludoal fork: the colony inherits this list's automatic pause - consulting a
-                    // colony from a paused list must not restart the simulation (maintainer bench).
+                    // colony from a paused list must not restart the simulation.
                     // The Ground Assault view is a live battle, it keeps the resume. Before
                     // ExitScreen, which would resume it; skipped if the snap opened nothing.
                     if (Universe.LookingAtPlanet)
@@ -261,7 +261,7 @@ namespace Ship_Game
                                transport ? Color.LightSkyBlue : Color.SteelBlue, t, null, s);
             }
 
-            // the standing sort: Status, Deployed first (maintainer bench 305) - the
+            // the standing sort: Status, Deployed first - the
             // fights you are IN outrank the garrisons at home
             int Rank(string st) => st == "Deployed" ? 0 : st == "Garrison" ? 1
                                  : st == "Transport" ? 2 : 3;
@@ -285,14 +285,13 @@ namespace Ship_Game
         {
             batch.SafeBegin();
             // Ludoal fork: the frame fill by hand and first - as a Submenu background it would be
-            // drawn among the children, after everything below it. The troop total moves onto the
-            // reserved line beside the filter, where the title used to carry it.
-            // the canonical fill rect - ClientArea stops short of the frame border and let the
-            // map bleed through the rim (maintainer bench, Economy)
+            // drawn among the children, after everything below it.
+            // the canonical fill rect - ClientArea stops short of the frame border and lets the
+            // map bleed through the rim
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed);
 
-            // the two figures ride the FILTER line (maintainer bench 288): labels vanilla,
+            // the two figures ride the FILTER line: labels vanilla,
             // the count white, the food bill in pink - troops eat Troop.Consumption each
             Graphics.Font font = Fonts.Arial12Bold;
             RectF client = EmpireTabs.ClientArea;
@@ -303,7 +302,7 @@ namespace Ship_Game
             infoX += font.TextWidth(totalLbl);
             string totalVal = NumTroops.ToString();
             batch.DrawString(font, totalVal, new Vector2(infoX, infoY), Color.White);
-            // bench 343: no food bill when there are no troops - it read "-0.0" in pink for nothing
+            // no food bill when there are no troops
             if (NumTroops > 0)
             {
                 infoX += font.TextWidth(totalVal) + 24;
@@ -313,7 +312,7 @@ namespace Ship_Game
                                  new Vector2(infoX + font.TextWidth(foodLbl), infoY), Color.LightPink);
             }
 
-            // maintainer bench 336: with no troops there is nothing to tabulate - skip the empty
+            // with no troops there is nothing to tabulate - skip the empty
             // table chrome (headers, column rules) and show only the note.
             if (TroopSL.NumEntries == 0)
             {

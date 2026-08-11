@@ -5,10 +5,8 @@ using Vector2 = SDGraphics.Vector2;
 
 namespace Ship_Game
 {
-    // Ludoal fork (maintainer feedback): the hotkey reference, opened from the in-game menu.
-    // The bindings live in ONE flat data table (category -> action -> keys) rather than
-    // hand-drawn text: the planned remapping feature will edit this same table, and at that
-    // point InputState reads its keys from here instead of hardcoding them.
+    // Ludoal fork: the hotkey reference, opened from the in-game menu.
+    // The bindings live in one flat data table (category -> action -> keys).
     public sealed class HotkeysScreen : PopupWindow
     {
         struct Hotkey

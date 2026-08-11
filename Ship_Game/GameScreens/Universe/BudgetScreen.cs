@@ -16,7 +16,6 @@ namespace Ship_Game.GameScreens
 {
     // Ludoal fork: full-screen dashboard (Colony grammar — title bar, 2/3 colony
     // table on the left, the synthesis in the 1/3 right block).
-    // Spec: Lek, economic-overview-spec.md (v1 + Ludo's bench remarks v2/v3).
     // Left table: one row per colony, sortable columns, NET highlighted after the
     // upkeep columns (the order of the calculation is the order of reading),
     // deficits red, click opens the Colony Overview.
@@ -24,7 +23,7 @@ namespace Ship_Game.GameScreens
     {
         readonly Empire Player;
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
-        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // Ludoal fork: this page's real frame is its tab row's rect -
         // the band excludes exactly what the page occupies, dynamic size included
         public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
         // NOT Add()ed: geometry only. The group's frame is the border now, so drawing these would
@@ -34,7 +33,7 @@ namespace Ship_Game.GameScreens
 
         FloatSlider TaxSlider;
         FloatSlider TreasuryGoal;
-        FloatSlider GovSpendingSlider;   // the governors' tap (maintainer spec)
+        FloatSlider GovSpendingSlider;   // the governors' tap
         FloatSlider ColonyPotSlider;     // per-area ratios, titles carry the live pot values
         FloatSlider DefensePotSlider;
         FloatSlider SSPPotSlider;
@@ -42,7 +41,7 @@ namespace Ship_Game.GameScreens
         ScrollList<EconColonyItem> ColonySL;
 
         public UITable Table;    // the shared table charte owns geometry, headers and rules
-        // static: the sort survives the screen for the session (maintainer bench 307)
+        // static: the sort survives the screen for the session
         static int SortCol = 6;  // NET by default
         static bool SortDesc = true;
         static bool SortByName;
@@ -68,7 +67,7 @@ namespace Ship_Game.GameScreens
                         DropShadow = true
                     };
                 }
-                Padding     = new Vector2(4f, 1f); // tighter rows (maintainer bench)
+                Padding     = new Vector2(4f, 1f); // tighter rows
                 LayoutStyle = ListLayoutStyle.Fill;
             }
 
@@ -81,10 +80,10 @@ namespace Ship_Game.GameScreens
                          new UILabel(NeutralText(getValue, f => f.MoneyString())) );
             }
 
-            public void Spacer() => Add(new UILabel(" ", Fonts.Arial8Bold)); // half-height breath (maintainer: tighter lines)
+            public void Spacer() => Add(new UILabel(" ", Fonts.Arial8Bold)); // half-height breath
 
             // totals are regular rows, not the UIList Footer — the Footer pins to the
-            // rect bottom and breaks the even row pitch (maintainer feedback)
+            // rect bottom and breaks the even row pitch
             public void AddTotal(Func<float> getValue)
             {
                 AddSplit(new UILabel(Localizer.Token(GameText.Total2), Colors.Cream),
@@ -169,8 +168,8 @@ namespace Ship_Game.GameScreens
                 ValueCell(2, () => PopIncome(Planet));
                 ValueCell(3, () => BldgIncome(Planet));
                 var gross = ValueCell(4, () => Planet.Money.GrossRevenue);
-                // the tax rate column moved here (maintainer feedback): the rate is already
-                // baked into the income columns, the derivation lives in the tooltip
+                // the tax rate is already baked into the income columns; the derivation
+                // lives in the tooltip
                 float baseRate = Planet.Owner != null ? Planet.Owner.data.TaxRate * 100f : 0f;
                 gross.Tooltip = $"pop {PopIncome(Planet).MoneyString()} + buildings {BldgIncome(Planet).MoneyString()}" +
                                 $" — effective tax {Planet.Money.TaxRate * 100f:0.#}% (empire {baseRate:0.#}% × local bonus)";
@@ -207,13 +206,12 @@ namespace Ship_Game.GameScreens
             // Ludoal fork: the Economy tab of the Empire group. ONE frame for the whole page rather
             // than two side by side: the colony table and the treasury column are two halves of one
             // view - you read a colony against its budget - so they share the frame and a single
-            // vertical rule separates them. Two thirds / one third, as before.
-            // the Automation pattern (maintainer bench): a content-sized frame, anchored bar
-            // and left. Width is the 900p width at EVERY resolution - which is what makes all
-            // the columns fixed; height fills 900p, and past it grows only as the planet list
-            // needs, capped by the screen.
+            // vertical rule separates them. Two thirds / one third.
+            // Content-sized frame, anchored bar and left. Width is the 900p width at EVERY
+            // resolution - which is what makes all the columns fixed; height fills 900p, and
+            // past it grows only as the planet list needs, capped by the screen.
             float contentW = 1440 - 2 * ScreenGroups.FrameMargin;
-            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // bench 388: floor = the info cartouche
+            float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // floor = the info cartouche
             float h900 = 900 - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             float rowsNeed = 60 + Player.GetPlanets().Count * 24 + 90; // header lane + rows + footer/margins
             float contentH = fullAvail <= h900 ? fullAvail
@@ -250,12 +248,10 @@ namespace Ship_Game.GameScreens
             if (SortByName) Table.Columns[0].Sorted = true;
             else            Table.Columns[1 + SortCol].Sorted = true;
 
-            // back to one lane under the note: the class breathes around its own header
-            // rule now, the extra empty line doubled it (maintainer, 4 Aug)
             int headerY = (int)client.Y + 24;
             Table.RowPitch = 28; // the 24px econ row plus the list's item padding
-            // Ludoal fork (maintainer feedback): the table runs down to 10px off the frame's foot,
-            // like the Ships list that falls cleanly - the old value left a gap.
+            // Ludoal fork: the table runs down to 10px off the frame's foot,
+            // like the Ships list that falls cleanly.
             Table.Layout(client, headerY, client.Bottom - 10);
             // ONE frame, two halves: the synthesis column takes what the table leaves
             float split = Table.ListRect.Right + 10;
@@ -267,10 +263,9 @@ namespace Ship_Game.GameScreens
             Label(new Vector2(Table.TableRect.X + (Table.TableRect.Width - Fonts.Arial12.TextWidth(unitNote)) / 2, client.Y + 4),
                   unitNote, Fonts.Arial12, Color.Gray);
 
-            // the TOTAL row keeps the table's last lane. Ludoal fork (maintainer feedback): the
-            // scrolling list stops ONE row-pitch above the table foot, leaving exactly that lane
-            // for the TOTAL footer just below it - copied from the clean Ships list rather than
-            // reserving a hand-guessed band.
+            // the TOTAL row keeps the table's last lane. Ludoal fork: the scrolling list stops
+            // ONE row-pitch above the table foot, leaving exactly that lane for the TOTAL
+            // footer just below it.
             var listRect = Table.ListRect;
             listRect.H -= Table.RowPitch;
             ColonySL = Add(new ScrollList<EconColonyItem>(listRect, 24));
@@ -278,12 +273,11 @@ namespace Ship_Game.GameScreens
             Table.ApplyHighlightTo(ColonySL);
             FillList();
 
-            // TOTAL footer sits in the lane freed just below the list - CENTRED in that lane so it
-            // rides near the frame's foot rather than hugging the list top (maintainer bench 343: it
-            // read too high off the bottom edge). The lane runs from listRect.Bottom to the table
-            // foot (client.Bottom - 10), one RowPitch tall.
+            // TOTAL footer sits in the lane freed just below the list - CENTRED in that lane.
+            // The lane runs from listRect.Bottom to the table foot (client.Bottom - 10),
+            // one RowPitch tall.
             int totalY = (int)listRect.Bottom + (Table.RowPitch - Fonts.Arial12Bold.LineSpacing) / 2;
-            var footerLabels = new Array<UILabel>(); // bench 361: the whole row nudges onto the net line below
+            var footerLabels = new Array<UILabel>(); // the whole row can nudge onto the net line below
             var totalLbl = Label(new Vector2(Table.Columns[0].Rect.X + UITable.PadX + 28, totalY), Localizer.Token(GameText.Total2).ToUpper(), Fonts.Arial12Bold);
             totalLbl.Color = Color.Wheat;
             footerLabels.Add(totalLbl);
@@ -314,12 +308,12 @@ namespace Ship_Game.GameScreens
             FooterPlain(9, () => Player.GetPlanets().Sum(EconColonyItem.GovExpense));
             FooterMoney(10, () => Player.GetPlanets().Sum(EconColonyItem.BudgetLeft));
 
-            // ---- RIGHT 1/3: the synthesis, causal order (maintainer feedback) ----
+            // ---- RIGHT 1/3: the synthesis, causal order ----
             // auto-tax mode + sliders → governor budget (derived from the treasury
             // goal) → vertical arithmetic Income − Expenditure = Net Gain
-            int rx = (int)RightMenu.X + 12; // tighter margins (maintainer bench)
+            int rx = (int)RightMenu.X + 12; // tighter margins
             int rw = (int)RightMenu.Width - 24;
-            var taxRect    = new Rectangle(rx, (int)RightMenu.Y + 42, rw, 96); // top rhythm = the left table's headerY, checkbox first; 96: trimmed under the goal slider so Net Gain breathes at the foot (bench 405)
+            var taxRect    = new Rectangle(rx, (int)RightMenu.Y + 42, rw, 96); // top rhythm = the left table's headerY, checkbox first; 96: trimmed under the goal slider so Net Gain breathes at the foot
 
             SummaryPanel tax = Add(new SummaryPanel("", taxRect, new Color(17, 21, 28)));
 
@@ -347,7 +341,7 @@ namespace Ship_Game.GameScreens
             costs.FitHeightToRows();
 
             // the net verdict: the word at the panel labels' own left edge, the figure in
-            // the values' lane - one breath of air above (maintainer bench)
+            // the values' lane - one breath of air above
             float NetGainNow() => Player.NetIncome - Player.MoneySpendOnProductionNow;
             const int NetValueW = 110;
             int netY = (int)costs.Bottom + 20;
@@ -355,17 +349,17 @@ namespace Ship_Game.GameScreens
             netWord.DropShadow = true;
             netWord.Color = Colors.Cream;
             netWord.DynamicText = l => NetGainNow() >= 0f ? Localizer.Token(GameText.NetGain) : Localizer.Token(GameText.NetLoss);
-            // -4: closes on the same right edge as the panel values above it (maintainer bench)
+            // -4: closes on the same right edge as the panel values above it
             EmpireNetIncome = Label(new Vector2(rx + rw - NetValueW - 4, netY), "", Fonts.Arial12Bold);
             EmpireNetIncome.Size = new Vector2(NetValueW, Fonts.Arial12Bold.LineSpacing);
             EmpireNetIncome.TextAlign = TextAlign.Right;
             EmpireNetIncome.DropShadow  = true;
             EmpireNetIncome.DynamicText = DynamicText(NetGainNow, f => f.MoneyString());
 
-            // bench 361, widened at bench 405: the table's TOTAL lane always drops onto the
-            // synthesis' Net Gain/Loss line so the two bottom rows read as one. Never up (a
-            // stretched table's TOTAL belongs to its own lane); the two-lane bound is sanity
-            // against a degenerate layout, not a tuning knob.
+            // the table's TOTAL lane always drops onto the synthesis' Net Gain/Loss line so
+            // the two bottom rows read as one. Never up (a stretched table's TOTAL belongs to
+            // its own lane); the two-lane bound is sanity against a degenerate layout, not a
+            // tuning knob.
             int footerNudge = netY - totalY;
             if (footerNudge > 0 && footerNudge <= 2 * Table.RowPitch)
                 foreach (UILabel l in footerLabels)
@@ -377,12 +371,12 @@ namespace Ship_Game.GameScreens
         void FillList()
         {
             ColonySL.Reset();
-            // Ludoal fork (bench 190): DOUBLE click, not single (maintainer feedback). Opening a colony
-            // tears down this screen, so a stray click while reading the table threw you out
-            // of it. Same gesture as the Empire screen's colony list.
+            // Ludoal fork: DOUBLE click, not single. Opening a colony tears down this screen,
+            // so a stray click while reading the table would throw you out of it. Same
+            // gesture as the Empire screen's colony list.
             // ⚠ re-armed here rather than at construction: Reset drops the handlers.
             ColonySL.OnDoubleClick = OnColonyClicked;
-            ColonySL.OnClick = item => Universe.PanToPlanetKeepZoom(item.Planet); // bench 388 (maintainer): single-click = select on the map and pan at current zoom
+            ColonySL.OnClick = item => Universe.PanToPlanetKeepZoom(item.Planet); // single-click = select on the map and pan at current zoom
             var planets = Player.GetPlanets();
             var sorted = SortByName
                 ? (SortDesc ? planets.OrderByDescending(p => p.Name) : planets.OrderBy(p => p.Name))
@@ -395,11 +389,11 @@ namespace Ship_Game.GameScreens
         {
             // the economy screen is the door into the diagnosis: a red row → why?
             GameAudio.AcceptClick();
-            // Ludoal fork (spec: colony-as-tab): armed before the panel - the colony wears the
-            // EMPIRE row, Economy (3) as the Esc origin. Replaces the ReturnToList trio.
+            // Ludoal fork: armed before the panel - the colony wears the EMPIRE row,
+            // Economy (3) as the Esc origin.
             Universe.HostColonyTab(item.Planet, ScreenGroups.Group.Empire, 3);
-            // a stacked page like every tab (migration, bench 386): exit + open in the same
-            // frame, the fresh ctor claims the pause before any tick can run
+            // a stacked page like every tab: exit + open in the same frame, the fresh ctor
+            // claims the pause before any tick can run
             ExitScreen();
             Universe.ScreenManager.AddScreen(new ColonyScreen(Universe, item.Planet, Universe.EmpireUI));
         }
@@ -423,17 +417,17 @@ namespace Ship_Game.GameScreens
         }
 
         // pots = EMA(treasury goal × weights) — a treasury ALLOCATION, deliberately
-        // outside the per-turn arithmetic. Two sub-sections (maintainer feedback): what the
-        // planets receive (Colony + Defense), then Space Roads, then the total.
+        // outside the per-turn arithmetic. Two sub-sections: what the planets receive
+        // (Colony + Defense), then Space Roads, then the total.
         // Shares sit LEFT of the values; share = of the allocated total.
         private SummaryPanel BudgetTab(Rectangle budgetRect)
         {
-            // the note rides the title line (maintainer bench: one row back to the synthesis)
+            // the note rides the title line
             SummaryPanel budget = Add(new SummaryPanel("Governor Budget  (allocated on treasury goal)", budgetRect, new Color(30, 26, 19)));
             budget.Spacer();
             float Pots() => Player.AI.ColonyBudget + Player.AI.SSPBudget + Player.AI.DefenseBudget;
             var up = Universe.UState.P;
-            // Ludoal fork (maintainer spec): the governors' tap leads the panel - what share of
+            // Ludoal fork: the governors' tap leads the panel - what share of
             // their AUTO allocations the governors may spend; the treasury keeps the rest.
             // Manual per-colony overrides bypass it.
             GovSpendingSlider = budget.AddSlider("Governor Spending", up.GovernorSpendingRatio);
@@ -441,7 +435,7 @@ namespace Ship_Game.GameScreens
             GovSpendingSlider.OnChange = sl => up.GovernorSpendingRatio = sl.RelativeValue;
             budget.Spacer();
             // the three LINKED shares as one-line rows [name][slider][lock][value] -
-            // no percent text, the money value rides the right edge (maintainer bench 403).
+            // no percent text, the money value rides the right edge.
             // A LOCK pins a share: renormalization spreads over the unlocked ones only.
             // The Auto toggle pins the split on the default 55/25/20.
             var autoShares = budget.AddCheckbox(() => Universe.UState.P.AutoBudgetShares,
@@ -465,19 +459,19 @@ namespace Ship_Game.GameScreens
 
         readonly ShareRow[] ShareRows = new ShareRow[3];
 
-        // one line: [name][slider][padlock][live money value] - the compact grammar the
-        // maintainer specced for the linked shares (bench 403)
+        // one line: [name][slider][padlock][live money value] - the compact grammar for
+        // the linked shares
         class ShareRow : UIElementContainer
         {
             public readonly FloatSlider ShareSlider;
             public bool Locked;
-            public bool AutoMode; // bench 406: on Auto split the whole row is read-only - solid padlock
+            public bool AutoMode; // on Auto split the whole row is read-only - solid padlock
             readonly UILabel NameLbl;
             readonly UIButton LockBtn;
             readonly UILabel Value;
 
-            // bench 406: the tint was only computed at layout time, so clicking a padlock gave
-            // no feedback at all - it looked dead. One refresher, called from every state change.
+            // one refresher, called from every state change - the tint must not depend
+            // solely on layout time, or a padlock click gives no visible feedback.
             public void RefreshLockState()
             {
                 LockBtn.IconTint = (AutoMode || Locked) ? Color.White : Color.White.Alpha(0.35f);
@@ -510,9 +504,8 @@ namespace Ship_Game.GameScreens
 
             public override void PerformLayout()
             {
-                // bench 405: name lane widened (Space Roads kissed its slider), and the text
-                // lane rides 4px BELOW the slider's seat so text, padlock and value centre on
-                // the track - the slider itself keeps its Y
+                // the text lane rides 4px BELOW the slider's seat so text, padlock and value
+                // centre on the track - the slider itself keeps its Y
                 const int NameW = 94, LockW = 18, ValueW = 52, Gap = 6;
                 float cy = Y + 6;
                 NameLbl.Pos = new Vector2(X, cy);
@@ -542,8 +535,8 @@ namespace Ship_Game.GameScreens
                 SSPPotSlider.RelativeValue     = 0.20f;
                 LinkingShares = false;
             }
-            // bench 406: enable/tint per row - a flat "!auto" re-enabled LOCKED sliders,
-            // which is exactly what a padlock is for. Auto also releases the pins.
+            // enable/tint per row, not a flat "!auto" - that would re-enable LOCKED
+            // sliders, defeating the padlock. Auto also releases the pins.
             for (int i = 0; i < 3; i++)
             {
                 if (auto) ShareRows[i].Locked = false;
@@ -593,8 +586,8 @@ namespace Ship_Game.GameScreens
 
             // planet-side lines first, then their subtotal, then the off-planet lines.
             // Building line = Gross − Net (the true maintenance sum, matches the table);
-            // upstream's TotalBuildingMaintenance subtracts troop cost from it — the
-            // 0.50 gap of the bench. Troop line = TroopCostOnPlanets, the figure the
+            // upstream's TotalBuildingMaintenance subtracts troop cost from it, which
+            // would understate this line. Troop line = TroopCostOnPlanets, the figure the
             // treasury actually debits (and the table column sum), not just our own.
             float PlanetsExpense() => -(Player.GrossPlanetIncome - Player.NetPlanetIncomes
                                         + Player.TroopCostOnPlanets
@@ -685,10 +678,10 @@ namespace Ship_Game.GameScreens
             // Ludoal fork: the frame fill by hand and first, then ONE rule between the colony table
             // and the treasury column - the two halves share the group's frame rather than carrying
             // a border each.
-            // the canonical fill rect - ClientArea stops short of the frame border and let the
-            // map bleed through the rim (maintainer bench)
+            // the canonical fill rect - ClientArea stops short of the frame border and lets the
+            // map bleed through the rim
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
-            // no rule on the split either (maintainer bench): the gap is the separator
+            // no rule on the split either: the gap is the separator
             base.Draw(batch, elapsed);
             // the shared charte draws the headers, the rule and the column separators
             Table.DrawChrome(batch);
@@ -721,10 +714,10 @@ namespace Ship_Game.GameScreens
 
         public override bool HandleInput(InputState input)
         {
-            // Ludoal fork (bench 46.173): the closing key is tested BEFORE the top bar, not
-            // after. The bar reads the same key to OPEN this screen and returns true, so with the
-            // bar first the key never reached the line below and the screen would not close on
-            // its own hotkey (maintainer feedback). The stock screen has no bar, which is why it never showed.
+            // Ludoal fork: the closing key is tested BEFORE the top bar, not after. The bar
+            // reads the same key to OPEN this screen and returns true, so if the bar ran
+            // first the key would never reach the line below and the screen would not
+            // close on its own hotkey.
             if (input.KeyPressed(Keys.T) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();
@@ -757,9 +750,8 @@ namespace Ship_Game.GameScreens
         public override void Update(float fixedDeltaTime)
         {
             TreasuryGoal.Text = $"{Localizer.Token(GameText.TreasuryGoal)} : {Player.AI.ProjectedMoney:0.00}";
-            // the cells are LIVE but the ORDER was a snapshot of the click (maintainer
-            // bench 307: a few turns in, the Net column read shuffled) - re-apply the
-            // standing sort each new star date
+            // the cells are LIVE but the ORDER is a snapshot of the click - re-apply the
+            // standing sort each new star date, or values drift out of sorted order
             if (Player.Universe.StarDate != LastSortedDate)
             {
                 LastSortedDate = Player.Universe.StarDate;

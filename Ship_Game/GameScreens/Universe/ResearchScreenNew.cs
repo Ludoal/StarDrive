@@ -22,13 +22,12 @@ namespace Ship_Game
         public Map<string, TreeNode> SubNodes = new(StringComparer.OrdinalIgnoreCase);
 
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row
-        // Ludoal fork (bench 387): this page's real frame is its tab row's rect -
+        // Ludoal fork: this page's real frame is its tab row's rect -
         // the band excludes exactly what the page occupies, dynamic size included
         public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
         UIButton Search;
-        // Ludoal fork: the slot the Search / Hide Queue pair sits in. The dan_button texture is
-        // 182x25 and both are placed off the queue's right edge, so the width is pinned rather
-        // than taken from the texture - UIButton stretches to whatever rect it is given.
+        // Ludoal fork: the slot the Search / Hide Queue pair sits in. UIButton stretches to
+        // whatever rect it is given, so the width is pinned rather than taken from the texture.
         public const int ResearchButtonW = 150;
         // where the Search / Hide Queue pair sits, shared with ResearchQueueUIComponent so the two
         // buttons cannot drift apart. Ludoal fork.
@@ -61,8 +60,7 @@ namespace Ship_Game
             Universe = u;
             Player = u.Player;
             empireUI = empireUi;
-            // bench 355 (maintainer): Research was the last group screen without the live universe
-            // behind it. IsPopup lets the map draw underneath, like every table/design screen.
+            // IsPopup lets the map draw underneath, like every table/design screen.
             IsPopup = true;
             CanEscapeFromScreen = true;
             TransitionOnTime = 0.25f;
@@ -115,15 +113,12 @@ namespace Ship_Game
             PopulateNodesFromRoot(root);
 
             // Create queue once all techs are populated. 34 down: the frame's close cross sits
-            // on the client's first lane and the panel was covering it (maintainer bench). The
-            // button pair closes 10px above the frame BORDER - the client bottom is 9px inside
-            // it - and the queue stretches down to meet the buttons.
+            // on the client's first lane. The button pair closes 10px above the frame BORDER -
+            // the client bottom is 9px inside it - and the queue stretches down to meet the buttons.
             var queue = new Rectangle(main.X + main.Width - 340, main.Y + 34, 330,
                                       main.Height - 34 - 8 - ResearchButtonH - 1);
             // Ludoal fork: both buttons hang off the QUEUE rect, one on each of its edges, so they
-            // are level and evenly spaced - Search used to measure from main.Width and Hide Queue
-            // from the container, which is why they never lined up. The blue dan_button is the new
-            // look's "active" colour; the width is pinned since UIButton stretches to its rect.
+            // stay level and evenly spaced. UIButton stretches to its rect, so the width is pinned.
             // ⚠ set BEFORE the queue component is built: it reads them in its own constructor.
             ResearchButtonY = queue.Bottom + 8;
             ResearchButtonsRight = queue.Right;
@@ -165,11 +160,9 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            // bench 355 (maintainer): the universe shows behind Research now (IsPopup). The tech tree
-            // still needs an opaque backdrop to stay legible, so fill the FRAME only, not the whole
-            // screen - the fade dims the universe around it, the frame fill sits the tree on solid dark
-            // inside. Opaque (14,12,9), not the 0.92 GroupFrameFill, for the same crispness the
-            // Blueprints panel needed this morning.
+            // The universe shows behind Research (IsPopup), so the tech tree needs an opaque
+            // backdrop to stay legible - fill the FRAME only, not the whole screen. Opaque
+            // (14,12,9), not the 0.92 GroupFrameFill, for crispness.
 
             batch.SafeBegin();
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), new Color(14, 12, 9));
@@ -368,8 +361,7 @@ namespace Ship_Game
             if (ScreenHeight > 720 && empireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
                 return true;
 
-            // bench 388 (maintainer): the tree drag stops at the page frame - a middle-drag
-            // in the band pans the MAP, and both used to fire on the same gesture
+            // the tree drag stops at the page frame - a middle-drag in the band pans the MAP
             if (input.MiddleMouseHeld() && PageFrame.HitTest(input.CursorPosition))
                 camera.MoveClamped(input.CursorVelocity, ScreenCenter, new Vector2(3200));
 
@@ -448,13 +440,12 @@ namespace Ship_Game
 
         Vector2 GridSize => new(GridWidth, GridHeight);
 
-        // the tree's top/bottom margins MIRROR the gap between rows, floored at 2px
-        // (maintainer, 4 Aug): at the 900p floor the rows touch and the margins collapse
-        // to 2px; on a tall frame the same air runs above, between and below the rows.
+        // the tree's top/bottom margins MIRROR the gap between rows, floored at 2px:
+        // at the 900p floor the rows touch and the margins collapse to 2px; on a tall
+        // frame the same air runs above, between and below the rows.
         // ⚠ the node's VISIBLE height is 108, not its 120 rect: the base texture carries
-        // ~12px of transparent padding at its foot (92x90 png, content stops at row 79 -
-        // the magenta bench closed the "dead lane" mystery: the rect was flush, the ART
-        // inside it was not). The rect is allowed to overrun by that invisible slack.
+        // ~12px of transparent padding at its foot (92x90 png, content stops at row 79).
+        // The rect is allowed to overrun by that invisible slack.
         // ⚠ this also OWNS MainMenuOffset.Y - the first anchor rides the margin.
         int SubGridHeight(int rows)
         {
@@ -463,7 +454,7 @@ namespace Ship_Game
             int gh;
             // 104: the designed 112 minus an empirical 8 - integer-division truncation
             // (up to rows-1 px) plus the art-bounds rounding land the deepest row a hair
-            // high otherwise (bench 293)
+            // high otherwise
             if (rows == 1 || (MainArea.Height + NodeVisible) / (rows + 1) - NodeVisible < 2)
                 gh = rows == 1 ? MainArea.Height - 104 : (MainArea.Height - 104) / (rows - 1);
             else
@@ -498,9 +489,7 @@ namespace Ship_Game
             // Ludoal fork: the row ESTIMATE overcounts branches that merge back into the
             // main line, so some tabs squeezed toward the top with dead space below.
             // Measure the rows actually laid out and rebuild once at the exact height.
-            // +1: the deepest node needs its own height below its anchor — the old
-            // estimator's overcount used to absorb that by accident, an exact division
-            // pushed the last row past the frame (bench, 45.70).
+            // +1: the deepest node needs its own height below its anchor.
             int actualRows = Math.Max(1, FindDeepestYSubNodes());
             int wantRows = Math.Min(actualRows + 1, 9);
             if (wantRows != Math.Min(rows, 9))
@@ -579,10 +568,8 @@ namespace Ship_Game
         
         bool PositionIsClaimed(Vector2 position) => ClaimedSpots.Any(p => p.AlmostEqual(position));
 
-        // Ludoal fork: branches used to always open a fresh row below EVERYTHING, so a
-        // one-node dead-end (Massive Disruptor...) cost a full row while the same level
-        // had free space further right. A branch now takes the first row at or below its
-        // parent where its whole rectangle (own rows x own columns) is free.
+        // Ludoal fork: a branch takes the first row at or below its parent where its
+        // whole rectangle (own rows x own columns) is free.
         int FindFreeRowFor(TechEntry branch, int parentY, int col)
         {
             int bRows = 1;
