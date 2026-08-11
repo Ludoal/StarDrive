@@ -57,7 +57,11 @@ namespace Ship_Game
         {
             if (Ship != null)
             {
-                var sdScreen = new ShipDesignScreen(Screen.Universe.Screen, Screen.Eui);
+                // the colony closes first (bench 397) - two groups must not stack; a user
+                // close of the Shipyard reopens it (the hosted seat survives the round trip)
+                Screen.ExitScreen();
+                var sdScreen = new ShipDesignScreen(Screen.Universe.Screen, Screen.Eui,
+                                                    returnToColony: Screen.P);
                 sdScreen.OnLoaded = () => { sdScreen.ChangeHull(Ship); };
                 Screen.ScreenManager.AddScreen(sdScreen);
             }

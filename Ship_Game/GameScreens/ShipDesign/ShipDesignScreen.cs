@@ -206,8 +206,16 @@ namespace Ship_Game
             public int TurretAngle;
         }
 
-        public ShipDesignScreen(UniverseScreen universe, EmpireUIOverlay empireUi) : base(universe, toPause: universe)
+        // "Edit this ship" arrives FROM a colony (bench 397): a user close of the Shipyard
+        // goes back to it. Tab switches and group jumps suppress the return - they land
+        // elsewhere, and the reopened colony would bury their target.
+        readonly Planet ReturnToColony;
+        bool ReturnSuppressed;
+
+        public ShipDesignScreen(UniverseScreen universe, EmpireUIOverlay empireUi, Planet returnToColony = null)
+            : base(universe, toPause: universe)
         {
+            ReturnToColony = returnToColony;
             ParentUniverse = universe;
             Name = "ShipDesignScreen";
             EmpireUI = empireUi;
@@ -1454,6 +1462,7 @@ namespace Ship_Game
                 return; // already here
 
             GameAudio.EchoAffirmative();
+            ReturnSuppressed = true; // a tab switch lands on a sibling, not back on the colony
             ExitScreen();
             if (tab == 0)
                 ScreenManager.AddScreen(new FleetDesignScreen(ParentUniverse, EmpireUI));

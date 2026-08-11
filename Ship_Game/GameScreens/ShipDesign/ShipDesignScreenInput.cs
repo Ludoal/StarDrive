@@ -110,6 +110,7 @@ namespace Ship_Game
 
         public void ExitToMenu(string launches)
         {
+            ReturnSuppressed = true; // a group jump lands elsewhere - no colony return
             ScreenToLaunch = launches;
             bool isEmptyDesign = ModuleGrid.IsEmptyDesign();
 
@@ -760,6 +761,10 @@ namespace Ship_Game
             // this should go some where else, need to find it a home
             ScreenManager.RemoveScreen(this);
             base.ExitScreen();
+            // the user-close route goes back to the colony "Edit this ship" came from -
+            // its hosted seat survived the trip (bench 397, the Snapshot round trip)
+            if (ReturnToColony != null && !ReturnSuppressed)
+                ScreenManager.AddScreen(new ColonyScreen(ParentUniverse, ReturnToColony, EmpireUI));
         }
 
         void SaveChanges()
