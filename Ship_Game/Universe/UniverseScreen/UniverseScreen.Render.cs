@@ -331,9 +331,9 @@ namespace Ship_Game
                                                               : GameText.ResearchStationCanBePlaced);
             }
 
-            // bench 406: ONE icon per minable - the resource icon alone says "this can be
-            // mined" (and which resource), and it goes out once an ops station is deployed,
-            // like the research icon does. The generic pickaxe doubled it for no extra info.
+            // ONE icon per minable - the resource icon alone says "this can be mined" (and
+            // which resource), and it goes out once an ops station is deployed, like the
+            // research icon does.
             if (sys.HasMinables())
             {
                 foreach (Planet planet in sys.PlanetList)

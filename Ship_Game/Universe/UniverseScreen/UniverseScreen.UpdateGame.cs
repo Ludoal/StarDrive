@@ -128,7 +128,7 @@ namespace Ship_Game
             }
             else
             {
-                if (SimulationActive) // Ludoal fork (bench 383): the sim gate, not screen focus
+                if (SimulationActive) // Ludoal fork: the sim gate, not screen focus
                 {
                     // Edge case: user manually edited global sim FPS
                     while (SimFPSModifier < 0 && CurrentSimFPS < 10)
@@ -296,11 +296,10 @@ namespace Ship_Game
                 UState.JunkList[i]?.TryReset(id);
         }
 
-        // Ludoal fork (spec: living universe, bench 383): the sim's OWN gate. GameScreen's
-        // IsActive dies the moment any screen takes focus above the universe - a hidden
-        // second auto-pause that ignored the page-pause option entirely. The simulation
-        // cares about two things only: the pause state (the claims carry the pages' hold)
-        // and the WINDOW being active - alt-tab still rests the game.
+        // Ludoal fork: the sim's OWN gate, not GameScreen's IsActive (which dies the moment
+        // any screen takes focus above the universe). The simulation cares about two things
+        // only: the pause state (the claims carry the pages' hold) and the WINDOW being
+        // active - alt-tab still rests the game.
         bool SimulationActive => Enabled && !IsExiting
                               && (StarDriveGame.Instance == null || StarDriveGame.Instance.IsActive);
 
@@ -336,7 +335,7 @@ namespace Ship_Game
                 return; // nothing to do
 
             PostEmpirePerf.Start();
-            if (SimulationActive) // Ludoal fork (bench 383): the sim gate, not screen focus
+            if (SimulationActive) // Ludoal fork: the sim gate, not screen focus
             {
                 void PostEmpireUpdate(int start, int end)
                 {
