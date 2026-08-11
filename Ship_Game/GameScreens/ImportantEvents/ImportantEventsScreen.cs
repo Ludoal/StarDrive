@@ -25,7 +25,7 @@ namespace Ship_Game
         void OnGalaxyTabChanged(int index)
             => GameScreens.ScreenGroups.SwitchGalaxyTab(index, self: 3, Universe, this);
 
-        readonly ImportantNotification[] Events;
+        ImportantNotification[] Events; // refreshed live - an event landing while the page is open joins the log
         readonly ScrollList<ImportantEventListItem> EventList;
         public readonly UITable Table; // the shared table charte owns geometry, headers and rules
 
@@ -74,6 +74,27 @@ namespace Ship_Game
             // newest first
             for (int i = Events.Length - 1; i >= 0; --i)
                 EventList.AddItem(new ImportantEventListItem(Table, Events[i]));
+        }
+
+        float LiveRefreshTimer;
+
+        // the live-data pass: an event landing while the log is open joins it - count
+        // checked on a throttle, the list rebuilt only when it grew
+        public override void Update(float fixedDeltaTime)
+        {
+            LiveRefreshTimer -= fixedDeltaTime;
+            if (LiveRefreshTimer <= 0f)
+            {
+                LiveRefreshTimer = 1f;
+                ImportantNotification[] fresh = Universe.UState.GetImportantEvents();
+                if (fresh.Length != Events.Length)
+                {
+                    Events = fresh;
+                    EventList.Reset();
+                    PopulateEvents();
+                }
+            }
+            base.Update(fixedDeltaTime);
         }
 
         public override void LoadContent()

@@ -144,6 +144,42 @@ namespace Ship_Game
             batch.SafeEnd();
         }
 
+        float LiveRefreshTimer;
+        int LivePatrolsHash = -1;
+
+        // the live-data pass: plans made or edited and fleets (un)assigned while the page
+        // is open rebuild the rows - a throttled identity walk, free while nothing moves
+        public override void Update(float fixedDeltaTime)
+        {
+            LiveRefreshTimer -= fixedDeltaTime;
+            if (LiveRefreshTimer <= 0f)
+            {
+                LiveRefreshTimer = 1f;
+                int h = ComputePatrolsHash();
+                if (LivePatrolsHash != -1 && h != LivePatrolsHash)
+                    ResetList();
+                LivePatrolsHash = h;
+            }
+            base.Update(fixedDeltaTime);
+        }
+
+        int ComputePatrolsHash()
+        {
+            int h = 17;
+            foreach (FleetPatrol p in Player.FleetPatrols)
+            {
+                h = h * 31 + (p.Name?.GetHashCode() ?? 0);
+                h = h * 31 + p.WayPoints.Count;
+            }
+            foreach (Fleet f in Player.AllFleets)
+                if (f.HasPatrolPlan)
+                {
+                    h = h * 31 + (f.Patrol?.Name?.GetHashCode() ?? 0);
+                    h = h * 31 + (f.Name?.GetHashCode() ?? 0);
+                }
+            return h;
+        }
+
         void Refill(int col, bool ascending)
         {
             PatrolsSL.Reset();
