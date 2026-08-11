@@ -33,6 +33,7 @@ namespace Ship_Game
 
         /// the title band - public because callers place their title text and close cross on it
         public Rectangle TitleRect, TitleLeft, TitleRight;
+        public Rectangle TitleBand; // the grey band under the title (bench 410)
         Rectangle TitleSep;
 
         /// the top of the foot band: where a caller's own filler must stop
@@ -117,6 +118,8 @@ namespace Ship_Game
             TitleSep = new Rectangle(rect.X + 28, TitleRect.Bottom - 1, rect.Width - 56, 2);
             TitleLeft  = new Rectangle(TitleRect.X - 25, TitleRect.Y + 23, 25, TitleRect.Height - 23);
             TitleRight = new Rectangle(TitleRect.Right, TitleRect.Y + 23, 17, TitleRect.Height - 23);
+            // a grey band under the title, the corner blocks' own tint (bench 410)
+            TitleBand = new Rectangle(TitleLeft.X, TitleRect.Bottom, TitleRight.Right - TitleLeft.X, 8);
 
             LeftVert  = new Rectangle(TL.X + 1, TL.Bottom, 2, rect.Height - 60);
             RightVert = new Rectangle(rect.Right - 11, TL.Bottom, 11, rect.Height - 60);
@@ -223,6 +226,8 @@ namespace Ship_Game
             batch.Draw(s.FillerTitle, TitleRect, Color.White);
             batch.Draw(s.FillerTitle, TitleLeft, Color.White);
             batch.Draw(s.FillerTitle, TitleRight, Color.White);
+            // the grey band closes the title bar, in the corner blocks' tint (54,54,54)
+            batch.FillRectangle(TitleBand, new Color(54, 54, 54));
             batch.Draw(s.Separator, TitleSep, Color.White);
 
             batch.Draw(s.StrokeTL, TLc, Color.White);
