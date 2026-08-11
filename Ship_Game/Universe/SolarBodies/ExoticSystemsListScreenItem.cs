@@ -240,26 +240,6 @@ namespace Ship_Game
         float LiveRefreshTimer;
         int LiveStateHash = -1;
 
-        // the sim deploys stations, unlocks techs and flips rig owners while the list is
-        // open - rebuild the row when a KEY state changes. Throttled, and free while nothing
-        // moves; a full rebuild routes through the Set*Visibility branches so every cell,
-        // button and colour follows (bench 397, the live-data pass).
-        public override void Update(float fixedDeltaTime)
-        {
-            LiveRefreshTimer -= fixedDeltaTime;
-            if (LiveRefreshTimer <= 0f)
-            {
-                LiveRefreshTimer = 0.5f;
-                int h = ComputeLiveHash();
-                if (h != LiveStateHash)
-                {
-                    LiveStateHash = h;
-                    PerformLayout();
-                }
-            }
-            base.Update(fixedDeltaTime);
-        }
-
         int ComputeLiveHash()
         {
             int h = 17;
@@ -450,6 +430,20 @@ namespace Ship_Game
         {
             if (IsForMining)
                 RefreshMiningState();
+            // the OTHER live states (research deployed, tech unlocks, rig owner, dyson)
+            // rebuild the row on change - throttled, free while nothing moves. A full
+            // rebuild routes through the Set*Visibility branches so every cell follows.
+            LiveRefreshTimer -= fixedDeltaTime;
+            if (LiveRefreshTimer <= 0f)
+            {
+                LiveRefreshTimer = 0.5f;
+                int h = ComputeLiveHash();
+                if (h != LiveStateHash)
+                {
+                    LiveStateHash = h;
+                    PerformLayout();
+                }
+            }
             base.Update(fixedDeltaTime);
         }
 
