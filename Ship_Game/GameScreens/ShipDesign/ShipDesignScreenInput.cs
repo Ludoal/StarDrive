@@ -19,10 +19,6 @@ namespace Ship_Game
         Vector2 ClassifCursor;
         UICheckBox CarrierOnlyCheckBox;
         bool DisplayedBulkReplacementHint;
-        // Ludoal fork: 0.15, matching LeftMouseHeld's default (ShipYardArcMove calls it with no
-        // argument). A shorter threshold here than the arc drag's own opens a gap that is
-        // neither a click nor a hold: on a turret, a normal-speed click can fall into it and go
-        // to the firing arc instead of picking the module up.
         const float ClickThresholdSeconds = 0.15f;
 
         void UpdateCarrierShip()
