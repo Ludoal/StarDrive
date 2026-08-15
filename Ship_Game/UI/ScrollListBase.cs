@@ -133,9 +133,7 @@ namespace Ship_Game
 
         #region ScrollList HandleInput
 
-        // Ludoal fork: wheel/buttons used to move the SCROLLBAR by EntryHeight-derived pixels,
-        // so the real content jump scaled with list length and resolution (a notch skipped
-        // rows at 1080p on the Empire screen). Content-space deltas, converted exactly.
+        // scrollbar delta which moves the content by the requested amount of entries
         float ScrollBarDeltaForEntries(float entries)
         {
             float scrollableEntries = FlatEntries.Count - ItemsHousing.H / (EntryHeight + ItemPadding.Y);
@@ -190,16 +188,14 @@ namespace Ship_Game
 
         bool HandleInputMouseWheel(InputState input)
         {
-            if (Rect.HitTest(input.CursorPosition))
+            if ((input.ScrollIn || input.ScrollOut) && Rect.HitTest(input.CursorPosition))
             {
-                float amount = 0;
-                if (input.ScrollIn) amount = -ScrollWheelAmount;
-                if (input.ScrollOut) amount = ScrollWheelAmount;
+                float amount = input.ScrollOut ? ScrollWheelAmount : -ScrollWheelAmount;
                 if (amount != 0)
-                {
                     ScrollByScrollBar(amount);
-                    return true;
-                }
+                // capture the wheel even when the list is too short to scroll,
+                // otherwise it falls through to the universe camera zoom
+                return true;
             }
             return false;
         }
