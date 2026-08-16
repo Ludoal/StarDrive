@@ -357,10 +357,13 @@ namespace Ship_Game
 
                 // headers that carry the player's flag draw it directly; older headers read
                 // -1 and fall back to the race-name lookup below, which shows the default
-                // flag for custom and renamed races
-                if (header.FlagIndex >= 0)
+                // flag for custom and renamed races. Flag() is null if the index is not in
+                // the loaded atlas (a modded save listed in the unfiltered Save dialog), and
+                // the lookup is a better guess than the ctor's generic icon fallback
+                SubTexture flag = header.FlagIndex >= 0 ? ResourceManager.Flag(header.FlagIndex) : null;
+                if (flag != null)
                     return new(file, header, header.SaveName, info, extraInfo, tooltip,
-                               ResourceManager.Flag(header.FlagIndex), header.EmpireColor);
+                               flag, header.EmpireColor);
 
                 IEmpireData empire = ResourceManager.AllRaces.FirstOrDefault(e => e.Name == header.PlayerName)
                                   ?? ResourceManager.AllRaces[0];
