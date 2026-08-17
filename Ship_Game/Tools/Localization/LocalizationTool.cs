@@ -41,6 +41,7 @@ namespace Ship_Game.Tools.Localization
                     db.AddFromYaml($"{gameContent}\\GameText.Missing.GER.yaml", logMerge:true);
                     db.AddFromYaml($"{gameContent}\\GameText.Missing.PTB.yaml", logMerge:true);
                     db.AddFromYaml($"{gameContent}\\GameText.Missing.POL.yaml", logMerge:true);
+                    db.AddFromYaml($"{gameContent}\\GameText.Missing.FRA.yaml", logMerge:true); // Ludoal fork
                 }
             }
             if (db.NumLocalizations == 0)
@@ -66,6 +67,7 @@ namespace Ship_Game.Tools.Localization
             db.ExportMissingTranslationsYaml("GER", $"{gameContent}\\GameText.Missing.GER.yaml");
             db.ExportMissingTranslationsYaml("PTB", $"{gameContent}\\GameText.Missing.PTB.yaml");
             db.ExportMissingTranslationsYaml("POL", $"{gameContent}\\GameText.Missing.POL.yaml");
+            db.ExportMissingTranslationsYaml("FRA", $"{gameContent}\\GameText.Missing.FRA.yaml"); // Ludoal fork
 
             if (Directory.Exists(modContent))
             {
@@ -223,7 +225,7 @@ namespace Ship_Game.Tools.Localization
             if (!File.Exists(yamlFile))
                 throw new Exception($"Could not load base localization: {yamlFile}");
 
-            string[] langs = { "RUS", "SPA", "UKR", "GER", "PTB", "POL" };
+            string[] langs = { "RUS", "SPA", "UKR", "GER", "PTB", "POL", "FRA" };
             int totalMerged = 0, totalSkipped = 0;
             foreach (string lang in langs)
             {

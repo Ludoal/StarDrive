@@ -49,6 +49,7 @@ namespace Ship_Game.Tools.Localization
                     if (t.GER != null) tokens.Add(new TextToken("GER", t.Id, nameId, t.GER));
                     if (t.PTB != null) tokens.Add(new TextToken("PTB", t.Id, nameId, t.PTB));
                     if (t.POL != null) tokens.Add(new TextToken("POL", t.Id, nameId, t.POL));
+                    if (t.FRA != null) tokens.Add(new TextToken("FRA", t.Id, nameId, t.FRA)); // Ludoal fork
                 }
             }
             return tokens;

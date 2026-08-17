@@ -18,6 +18,7 @@ public enum Language
     German,
     Portuguese, // Brazilian Portuguese (PTB column in GameText.yaml)
     Polish,     // POL column in GameText.yaml
+    French,     // FRA column in GameText.yaml (Ludoal fork)
 }
 
 public enum WindowMode
