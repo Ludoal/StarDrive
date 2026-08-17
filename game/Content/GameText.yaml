@@ -6,6 +6,7 @@
 NewGame:
  Id: 1
  ENG: "New Game"
+ FRA: "Nouvelle partie"
  RUS: "Новая игра"
  SPA: "Nueva partida"
  UKR: "Нова гра"
@@ -14,6 +15,7 @@ NewGame:
 LoadGame:
  Id: 2
  ENG: "Load Game"
+ FRA: "Charger une partie"
  RUS: "Загрузить игру"
  SPA: "Cargar partida"
  UKR: "Завантажити гру"
@@ -22,6 +24,7 @@ LoadGame:
 Tutorials:
  Id: 3
  ENG: "Tutorials"
+ FRA: "Tutoriels"
  RUS: "Обучение"
  SPA: "Tutoriales"
  UKR: "Навчання"
@@ -29,6 +32,7 @@ Tutorials:
 Options:
  Id: 4
  ENG: "Options"
+ FRA: "Options"
  RUS: "Настройки"
  SPA: "Opciones"
  UKR: "Налаштування"
@@ -36,6 +40,7 @@ Options:
 Exit:
  Id: 5
  ENG: "Exit"
+ FRA: "Quitter"
  RUS: "Выход"
  SPA: "Salir"
  UKR: "Вихід"
@@ -43,6 +48,7 @@ Exit:
 LoadSavedGame:
  Id: 6
  ENG: "Load Saved Game..."
+ FRA: "Charger une sauvegarde..."
  RUS: "Загрузка сохраненной игры"
  SPA: "Cargar partida guardada..."
  UKR: "Завантаження збереження..."
@@ -50,6 +56,7 @@ LoadSavedGame:
 AllSaves:
  Id: 7
  ENG: "All Saves"
+ FRA: "Toutes les sauvegardes"
  RUS: "Все сохранения"
  SPA: "Todas las partidas guardadas"
  UKR: "Всі збереження"
@@ -57,6 +64,7 @@ AllSaves:
 Load:
  Id: 8
  ENG: "Load"
+ FRA: "Charger"
  RUS: "Загрузить"
  SPA: "Cargar"
  UKR: "Завантажити"
@@ -64,6 +72,7 @@ Load:
 Resolution:
  Id: 9
  ENG: "Resolution"
+ FRA: "Résolution"
  RUS: "Разрешение"
  SPA: "Resolución"
  UKR: "Розподільність"
@@ -71,6 +80,7 @@ Resolution:
 ScreenMode:
  Id: 10
  ENG: "Screen Mode"
+ FRA: "Mode d'affichage"
  RUS: "Режим экрана"
  SPA: "Modo de pantalla"
  UKR: "Екранний режим"
@@ -78,6 +88,7 @@ ScreenMode:
 Windowed:
  Id: 11
  ENG: "Windowed"
+ FRA: "Fenêtré"
  RUS: "Оконный режим"
  SPA: "En ventana"
  UKR: "Віконний режим"
@@ -85,6 +96,7 @@ Windowed:
 FullScreen:
  Id: 12
  ENG: "Full Screen"
+ FRA: "Plein écran"
  RUS: "Полный экран"
  SPA: "Pantalla completa"
  UKR: "Повноекранний"
@@ -92,6 +104,7 @@ FullScreen:
 ApplySettings:
  Id: 13
  ENG: "Apply Settings"
+ FRA: "Appliquer les réglages"
  RUS: "Применить настройки"
  SPA: "Aplicar ajustes"
  UKR: "Застосувати"
@@ -99,6 +112,7 @@ ApplySettings:
 KeepChangesRevertingIn:
  Id: 14
  ENG: "Keep Changes? Reverting in..."
+ FRA: "Conserver les changements ? Annulation dans..."
  RUS: "Сохранить изменения? Возврат через..."
  SPA: "¿Mantener cambios? Revirtiendo en..."
  UKR: "Зберегти зміни? Скасування через..."
@@ -106,6 +120,7 @@ KeepChangesRevertingIn:
 Ok:
  Id: 15
  ENG: "OK"
+ FRA: "OK"
  RUS: "OK"
  SPA: "Aceptar"
  UKR: "ОК"
@@ -113,6 +128,7 @@ Ok:
 Cancel:
  Id: 16
  ENG: "Cancel"
+ FRA: "Annuler"
  RUS: "Отмена"
  SPA: "Cancelar"
  UKR: "Відмінити"
@@ -120,6 +136,7 @@ Cancel:
 Seconds:
  Id: 17
  ENG: "seconds"
+ FRA: "secondes"
  RUS: "сек."
  SPA: "segundos"
  UKR: "секунд"
@@ -127,6 +144,7 @@ Seconds:
 DesignYourRace:
  Id: 18
  ENG: "Design Your Race"
+ FRA: "Créez votre race"
  RUS: "Создайте свою расу"
  SPA: "Diseña tu raza"
  UKR: "Створіть свою расу"
@@ -134,6 +152,7 @@ DesignYourRace:
 Physical:
  Id: 19
  ENG: "Physical"
+ FRA: "Physique"
  RUS: "Физиология"
  SPA: "Físico"
  UKR: "Фізіологія"
@@ -141,6 +160,7 @@ Physical:
 Sociological:
  Id: 20
  ENG: "Sociological"
+ FRA: "Sociologie"
  RUS: "Социология"
  SPA: "Sociología"
  UKR: "Соціологія"
@@ -148,6 +168,7 @@ Sociological:
 HistoryAndTradition:
  Id: 21
  ENG: "History and Tradition"
+ FRA: "Histoire et tradition"
  RUS: "История и традиции"
  SPA: "Historia y tradición"
  UKR: "Історії та традиції"
@@ -155,6 +176,7 @@ HistoryAndTradition:
 Engage:
  Id: 22
  ENG: "Engage"
+ FRA: "En avant"
  RUS: "Активировать"
  SPA: "Listo"
  UKR: "Запустити"
@@ -162,6 +184,7 @@ Engage:
 Abort:
  Id: 23
  ENG: "Abort"
+ FRA: "Abandonner"
  RUS: "Прервать"
  SPA: "Anular"
  UKR: "Перервати"
@@ -169,6 +192,7 @@ Abort:
 GalaxySize:
  Id: 24
  ENG: "Galaxy Size"
+ FRA: "Taille de la galaxie"
  RUS: "Размер галактики"
  SPA: "Tamaño de galaxia"
  UKR: "Розмір Галактики"
@@ -176,6 +200,7 @@ GalaxySize:
 SolarSystems:
  Id: 25
  ENG: "Solar Systems"
+ FRA: "Systèmes solaires"
  RUS: "Солнечные системы"
  SPA: "Sistemas solares"
  UKR: "Зоряні системи"
@@ -183,6 +208,7 @@ SolarSystems:
 RaceNameSingular:
  Id: 26
  ENG: "Race Name Singular"
+ FRA: "Nom de la race (singulier)"
  RUS: "Назв. расы-ед. ч."
  SPA: "Nombre de raza en singular"
  UKR: "Назва раси в однині"
@@ -190,6 +216,7 @@ RaceNameSingular:
 RaceNamePlural:
  Id: 27
  ENG: "Race Name Plural"
+ FRA: "Nom de la race (pluriel)"
  RUS: "Назв. расы-мн. ч."
  SPA: "Nombre de raza en plural"
  UKR: "Назва раси в множині"
@@ -197,6 +224,7 @@ RaceNamePlural:
 HomeSystemName:
  Id: 28
  ENG: "Home System Name"
+ FRA: "Nom du système natal"
  RUS: "Назв. родной сис."
  SPA: "Nombre de sistema de origen"
  UKR: "Назва Рідної системи"
@@ -204,6 +232,7 @@ HomeSystemName:
 FlagColor:
  Id: 29
  ENG: "Flag + Color"
+ FRA: "Drapeau + couleur"
  RUS: "Флаг и цвет"
  SPA: "Bandera + color"
  UKR: "Прапор та колір"
@@ -211,6 +240,7 @@ FlagColor:
 PointsToSpend:
  Id: 30
  ENG: "Points to Spend"
+ FRA: "Points à répartir"
  RUS: "Доступные очки"
  SPA: "Puntos para gastar"
  UKR: "Доступні бали"
@@ -218,6 +248,7 @@ PointsToSpend:
 EmpireName:
  Id: 31
  ENG: "Empire Name"
+ FRA: "Nom de l'empire"
  RUS: "Название империи"
  SPA: "Nombre del imperio"
  UKR: "Назва Імперії"
@@ -225,6 +256,7 @@ EmpireName:
 EfficientMetabolism:
  Id: 32
  ENG: "Efficient Metabolism"
+ FRA: "Métabolisme efficace"
  RUS: "Эффективный метаболизм"
  SPA: "Metabolismo eficiente"
  UKR: "Ефективний метаболізм"
@@ -239,6 +271,7 @@ RacesWithHighlyEfficientMetabolisms:
 Gluttonous:
  Id: 34
  ENG: "Gluttonous"
+ FRA: "Glouton"
  RUS: "Прожорливые"
  SPA: "Glotona"
  UKR: "Ненажерливі"
@@ -253,6 +286,7 @@ GluttonousRacesWillGorgeThemselves:
 Fertile:
  Id: 36
  ENG: "Fertile"
+ FRA: "Fécond"
  RUS: "Плодородные"
  SPA: "Fértil"
  UKR: "Плодовиті"
@@ -267,6 +301,7 @@ PromiscuousNaturesShortGestationPeriods:
 LessFertile:
  Id: 38
  ENG: "Less Fertile"
+ FRA: "Peu fécond"
  RUS: "Менее плодородные"
  SPA: "Menos fértil"
  UKR: "Менш плодовиті"
@@ -281,6 +316,7 @@ LongGestationPeriodsAndDifficult:
 Savage:
  Id: 40
  ENG: "Savage"
+ FRA: "Féroce"
  RUS: "Дикие"
  SPA: "Salvaje"
  UKR: "Дикуни"
@@ -295,6 +331,7 @@ SavageRacesGainABonus:
 Timid:
  Id: 42
  ENG: "Timid"
+ FRA: "Craintif"
  RUS: "Боязливые"
  SPA: "Tímida"
  UKR: "Боязкі"
@@ -309,6 +346,7 @@ TimidRacesAreInstinctivelyTerrified:
 Alluring:
  Id: 44
  ENG: "Alluring"
+ FRA: "Charismatique"
  RUS: "Привлекательные"
  SPA: "Seductora"
  UKR: "Привабливі"
@@ -323,6 +361,7 @@ AlluringRacesGainAOut:
 Repulsive:
  Id: 46
  ENG: "Repulsive"
+ FRA: "Repoussant"
  RUS: "Отталкивающие"
  SPA: "Repulsiva"
  UKR: "Відразливі"
@@ -337,6 +376,7 @@ OffensiveSmellsAndRevoltingCountenances:
 Smart:
  Id: 48
  ENG: "Smart"
+ FRA: "Brillant"
  RUS: "Умные"
  SPA: "Inteligente"
  UKR: "Розумні"
@@ -351,6 +391,7 @@ IntelligentRacesGainABonus:
 Dumb:
  Id: 50
  ENG: "Dumb"
+ FRA: "Obtus"
  RUS: "Тупые"
  SPA: "Tontas"
  UKR: "Недалекі"
@@ -365,6 +406,7 @@ DumbRacesSufferAPenalty:
 Eagleeyed:
  Id: 52
  ENG: "Eagle-Eyed"
+ FRA: "Œil de lynx"
  RUS: "Остроглазые"
  SPA: "Ojo de halcón"
  UKR: "Гостроокі"
@@ -379,6 +421,7 @@ IncredibleEyesightGivesPilotsFrom:
 Blind:
  Id: 54
  ENG: "Blind"
+ FRA: "Myope"
  RUS: "Слепые"
  SPA: "Ciega"
  UKR: "Близорукі"
@@ -393,6 +436,7 @@ RacesThatEvolveWeakOptical:
 Reflexes:
  Id: 56
  ENG: "Reflexes"
+ FRA: "Réflexes"
  RUS: "Рефлексы"
  SPA: "Reflejos"
  UKR: "Швидкі"
@@ -407,6 +451,7 @@ UltrafastReflexesGrantShipPilots:
 Ponderous:
  Id: 58
  ENG: "Ponderous"
+ FRA: "Lent"
  RUS: "Медлительные"
  SPA: "Pesada"
  UKR: "Повільні"
@@ -421,6 +466,7 @@ RacesWithPonderousAndDeliberate:
 Cybernetic:
  Id: 60
  ENG: "Cybernetic"
+ FRA: "Cybernétique"
  RUS: "Кибернетические"
  SPA: "Cibernética"
  UKR: "Кібернетичні"
@@ -435,6 +481,7 @@ CyberneticRacesHaveInorganicBodies:
 Industrious:
  Id: 62
  ENG: "Industrious"
+ FRA: "Industrieux"
  RUS: "Работящие"
  SPA: "Industriosa"
  UKR: "Працьовиті"
@@ -449,6 +496,7 @@ IndustriousRacesEnjoyABonus:
 Lazy:
  Id: 64
  ENG: "Lazy"
+ FRA: "Paresseux"
  RUS: "Ленивые"
  SPA: "Perezosa"
  UKR: "Нероби"
@@ -463,6 +511,7 @@ LazyRacesJustDontLike:
 Mercantile:
  Id: 66
  ENG: "Mercantile"
+ FRA: "Marchand"
  RUS: "Меркантильные"
  SPA: "Mercantil"
  UKR: "Меркантильні"
@@ -475,6 +524,7 @@ MercantileRacesAreNaturalTraders:
 Wasteful:
  Id: 68
  ENG: "Wasteful"
+ FRA: "Gaspilleur"
  RUS: "Расточительные"
  SPA: "Derrochadora"
  UKR: "Марнотратні"
@@ -489,6 +539,7 @@ WastefulRacesLeadLivesOf:
 Efficient:
  Id: 70
  ENG: "Efficient"
+ FRA: "Économe"
  RUS: "Эффективные"
  SPA: "Eficiente"
  UKR: "Ощадливі"
@@ -503,6 +554,7 @@ EfficientRacesEarnAReduction:
 Corrupt:
  Id: 72
  ENG: "Corrupt"
+ FRA: "Corrompu"
  RUS: "Коррумпированные"
  SPA: "Corrupta"
  UKR: "Корумповані"
@@ -517,6 +569,7 @@ RacesWithAStrongTradition:
 Meticulous:
  Id: 74
  ENG: "Meticulous"
+ FRA: "Méticuleux"
  RUS: "Педантичные"
  SPA: "Meticulosa"
  UKR: "Педантичні"
@@ -531,6 +584,7 @@ MeticulousRacesHonorTheActuarial:
 SkilledEngineers:
  Id: 76
  ENG: "Skilled Engineers"
+ FRA: "Ingénieurs habiles"
  RUS: "Опытные инженеры"
  SPA: "Ingenieros hábiles"
  UKR: "Досвідчені Інженери"
@@ -545,6 +599,7 @@ RacesWithANaturalEngineering:
 HaphazardEngineers:
  Id: 78
  ENG: "Haphazard Engineers"
+ FRA: "Ingénieurs brouillons"
  RUS: "Горе-инженеры"
  SPA: "Ingenieros descuidados"
  UKR: "Безсистемні інженери"
@@ -559,6 +614,7 @@ RacesWhoFollowHaphazardShip:
 Astronomers:
  Id: 80
  ENG: "Astronomers"
+ FRA: "Astronomes"
  RUS: "Астрономы"
  SPA: "Astrónomos"
  UKR: "Астрономи"
@@ -573,6 +629,7 @@ RacesThatHaveExtensivelyStudied:
 NavalTradition:
  Id: 82
  ENG: "Naval Tradition"
+ FRA: "Tradition navale"
  RUS: "Флотские традиции"
  SPA: "Tradición naval"
  UKR: "Корабельні традиції"
@@ -587,6 +644,7 @@ RacesWithStrongNavalTraditions:
 Militaristic:
  Id: 84
  ENG: "Militaristic"
+ FRA: "Militariste"
  RUS: "Милитаристы"
  SPA: "Militarista"
  UKR: "Войовничі"
@@ -601,6 +659,7 @@ RacesWithStrongMilitaryTraditions:
 PollutedHomeworld:
  Id: 86
  ENG: "Polluted Homeworld"
+ FRA: "Monde natal pollué"
  RUS: "Загрязненный родной мир"
  SPA: "Mundo natal contaminado"
  UKR: "Забруднений рідний світ"
@@ -615,6 +674,7 @@ RacesThatHaveBeenFoolish:
 HugeHomeworld:
  Id: 88
  ENG: "Huge Homeworld"
+ FRA: "Monde natal immense"
  RUS: "Огромный родной мир"
  SPA: "Mundo natal enorme"
  UKR: "Величезний рідний світ"
@@ -629,6 +689,7 @@ TheRacialHomeworldIsMuch:
 SmallHomeworld:
  Id: 90
  ENG: "Small Homeworld"
+ FRA: "Monde natal exigu"
  RUS: "Маленький родной мир"
  SPA: "Mundo natal pequeño"
  UKR: "Маленький рідний світ"
@@ -643,6 +704,7 @@ TheRacialHomeworldIsMuch2:
 PrototypeFlagship:
  Id: 92
  ENG: "Prototype Flagship"
+ FRA: "Vaisseau amiral prototype"
  RUS: "Прототип флагмана"
  SPA: "Prototipo de nave almirante"
  UKR: "Прототип флагмана"
@@ -657,6 +719,7 @@ BeginTheGameWithAn:
 Prewarp:
  Id: 94
  ENG: "Pre-Warp"
+ FRA: "Pré-warp"
  RUS: "Пре-варп"
  SPA: "Velocidad presupraluminal"
  UKR: "Пре-варп"
@@ -671,6 +734,7 @@ PrewarpRacesDiscoveredAnAncient:
 ManifestDestiny:
  Id: 96
  ENG: "Manifest Destiny"
+ FRA: "Destinée manifeste"
  RUS: "Ведомые предназначением"
  SPA: "Destino manifiesto"
  UKR: "Маніфест долі"
@@ -685,6 +749,7 @@ RacesPossessingAPioneeringSpirit:
 Shipyard:
  Id: 98
  ENG: "Shipyard"
+ FRA: "Chantier naval"
  RUS: "Верфь"
  SPA: "Astillero"
  UKR: "Верф"
@@ -692,6 +757,7 @@ Shipyard:
 Empire:
  Id: 99
  ENG: "Empire"
+ FRA: "Empire"
  RUS: "Империя"
  SPA: "Imperio"
  UKR: "Імперія"
@@ -699,6 +765,7 @@ Empire:
 Diplomacy:
  Id: 100
  ENG: "Diplomacy"
+ FRA: "Diplomatie"
  RUS: "Дипломатия"
  SPA: "Diplomacia"
  UKR: "Дипломатія"
@@ -706,6 +773,7 @@ Diplomacy:
 MainMenu:
  Id: 101
  ENG: "Main Menu"
+ FRA: "Menu principal"
  RUS: "Главное меню"
  SPA: "Menú principal"
  UKR: "Головне меню"
@@ -713,6 +781,7 @@ MainMenu:
 Choose:
  Id: 102
  ENG: "Choose"
+ FRA: "Choisir"
  RUS: "Выбрать"
  SPA: "Elegir"
  UKR: "Обрати"
@@ -720,6 +789,7 @@ Choose:
 Fleets:
  Id: 103
  ENG: "Fleets"
+ FRA: "Flottes"
  RUS: "Флоты"
  SPA: "Flotas"
  UKR: "Флоти"
@@ -727,6 +797,7 @@ Fleets:
 ShipsArray:
  Id: 104
  ENG: "Ships Array"
+ FRA: "Registre des vaisseaux"
  RUS: "Список кораблей"
  SPA: "Lista de naves"
  UKR: "Список кораблів"
@@ -734,6 +805,7 @@ ShipsArray:
 SaveAs:
  Id: 105
  ENG: "Save As"
+ FRA: "Enregistrer sous"
  RUS: "Сохранить как"
  SPA: "Guardar como"
  UKR: "Зберегти як"
@@ -752,6 +824,7 @@ ToggleOverlay:
 SelectHull:
  Id: 107
  ENG: "Select Hull"
+ FRA: "Choisir une coque"
  RUS: "Выбрать корпус"
  SPA: "Seleccionar casco"
  UKR: "Оберіть корпус"
@@ -759,6 +832,7 @@ SelectHull:
 ShipStats:
  Id: 108
  ENG: "Ship Stats"
+ FRA: "Caractéristiques du vaisseau"
  RUS: "Параметры корабля"
  SPA: "Estadísticas de nave"
  UKR: "Статистика корабля"
@@ -766,6 +840,7 @@ ShipStats:
 ProductionCost:
  Id: 109
  ENG: "Production Cost"
+ FRA: "Coût de production"
  RUS: "Цена производства"
  SPA: "Coste de producción"
  UKR: "Ціна виробництва"
@@ -773,6 +848,7 @@ ProductionCost:
 PowerCapacity:
  Id: 110
  ENG: "Power Capacity"
+ FRA: "Capacité d'énergie"
  RUS: "Энергоемкость"
  SPA: "Capacidad de energía"
  UKR: "Потужність"
@@ -780,6 +856,7 @@ PowerCapacity:
 PowerRecharge:
  Id: 111
  ENG: "Power Recharge"
+ FRA: "Recharge d'énergie"
  RUS: "Перезарядка"
  SPA: "Recarga de energía"
  UKR: "Перезарядка"
@@ -787,6 +864,7 @@ PowerRecharge:
 RechargeAtWarp:
  Id: 112
  ENG: "Recharge at Warp"
+ FRA: "Recharge en warp"
  RUS: "Перезарядка в варпе"
  SPA: "Recarga a velocidad supraluminal"
  UKR: "Перез. у викривленні"
@@ -794,6 +872,7 @@ RechargeAtWarp:
 TotalHitpoints:
  Id: 113
  ENG: "Total Hitpoints"
+ FRA: "Points de coque totaux"
  RUS: "Всего ОП"
  SPA: "Puntos de vida totales"
  UKR: "Всього очок життя"
@@ -801,6 +880,7 @@ TotalHitpoints:
 ShieldPower:
  Id: 114
  ENG: "Shield Power"
+ FRA: "Puissance des boucliers"
  RUS: "Мощность щита"
  SPA: "Energía de escudos"
  UKR: "Міцність щита"
@@ -808,6 +888,7 @@ ShieldPower:
 Mass:
  Id: 115
  ENG: "Mass"
+ FRA: "Masse"
  RUS: "Масса"
  SPA: "Masa"
  UKR: "Маса"
@@ -815,6 +896,7 @@ Mass:
 SublightSpeed:
  Id: 116
  ENG: "Sub-light Speed"
+ FRA: "Vitesse subluminique"
  RUS: "Субсветовая скорость"
  SPA: "Velocidad infraluminal"
  UKR: "Досвітлова швидкість"
@@ -822,6 +904,7 @@ SublightSpeed:
 TurnRate:
  Id: 117
  ENG: "Turn Rate"
+ FRA: "Vitesse de rotation"
  RUS: "Скорость поворота"
  SPA: "Velocidad de giro"
  UKR: "Швидкість повороту"
@@ -829,6 +912,7 @@ TurnRate:
 OrdnanceCapacity:
  Id: 118
  ENG: "Ordnance Capacity"
+ FRA: "Capacité de munitions"
  RUS: "Боекомплект"
  SPA: "Capacidad de munición"
  UKR: "Боєкомплект"
@@ -836,6 +920,7 @@ OrdnanceCapacity:
 CargoSpace:
  Id: 119
  ENG: "Cargo Space"
+ FRA: "Espace de soute"
  RUS: "Вместимость трюма"
  SPA: "Espacio de carga"
  UKR: "Вантажний простір"
@@ -2045,6 +2130,7 @@ Storage:
 Store:
  Id: 329
  ENG: "Store"
+ FRA: "Stocker"
  RUS: "Склад"
  SPA: "Almacenar"
  UKR: "Склад"
@@ -2052,6 +2138,7 @@ Store:
 Import:
  Id: 330
  ENG: "Import"
+ FRA: "Importer"
  RUS: "Импорт"
  SPA: "Importar"
  UKR: "Імпорт"
@@ -2059,6 +2146,7 @@ Import:
 Export:
  Id: 331
  ENG: "Export"
+ FRA: "Exporter"
  RUS: "Экспорт"
  SPA: "Exportar"
  UKR: "Експорт"
@@ -17742,9 +17830,11 @@ ExportingPlanetsTip:
 Map:
  Id: 4544
  ENG: "Map"
+ FRA: "Carte"
 List:
  Id: 4545
  ENG: "List"
+ FRA: "Liste"
 FcsBonus:
  Id: 6186
  ENG: "FCS Bonus"
