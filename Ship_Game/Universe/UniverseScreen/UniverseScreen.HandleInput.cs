@@ -909,8 +909,12 @@ namespace Ship_Game
                     return true;
             }
 
-            // Ludoal fork: the sun itself is clickable up close — star cartouche
-            if (viewState < UnivScreenState.SectorView)
+            // Ludoal fork: the sun itself is clickable up close — star cartouche.
+            // Extended to SectorView (bench 420): the far path's world-space hit radius
+            // bottoms out at close zoom, and an unexplored system has no planets to
+            // rescue the click - explored ones only felt clickable through theirs. The
+            // screen-space sun test has no such dead zone.
+            if (viewState <= UnivScreenState.SectorView)
             {
                 SolarSystem sun = FindSunUnderCursorClose(input.CursorPosition);
                 if (sun != null)
