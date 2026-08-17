@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
@@ -94,10 +94,15 @@ namespace Ship_Game
             GravityWells = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_ftloverlay", GravityWells_OnClick)); // subspace projectors (F4)
             GravityWellsOnly = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/node_inhibit", GravityWellsOnly_OnClick)); // F5
             RangeOverley = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_rangeoverlay", RangeOverly_OnClick)); // F6
-            // Ludoal fork (wishlist): the route overlays join the family - no hotkeys yet,
-            // they will get theirs with the key-customization workstream
-            TradeRoutes = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "NewUI/icon_freighter_util", TradeRoutes_OnClick));
-            ColonizationRoutes = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/ColonizeIcon", ColonizationRoutes_OnClick));
+
+            // Ludoal fork (wishlist): the ROUTE FILTERS take the seat the left band's head
+            // has kept reserved for them (see the band map above). No hotkeys yet - they
+            // will get theirs with the key-customization workstream.
+            UIList leftOverlays = AddList(new Vector2(Housing.X + Edge, ActualMap.Y));
+            leftOverlays.Name = "MiniMapRouteFilters";
+            leftOverlays.LayoutStyle = ListLayoutStyle.ResizeList;
+            TradeRoutes = leftOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "NewUI/icon_freighter_util", TradeRoutes_OnClick));
+            ColonizationRoutes = leftOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/ColonizeIcon", ColonizationRoutes_OnClick));
 
             // ⚠ the tabs go to the OPPOSITE end of their band, not beside the overlays
             // (maintainer): top band pushes them RIGHT, left band pushes them DOWN. The empty
@@ -499,18 +504,18 @@ namespace Ship_Game
             // (the two zoom buttons are gone - Page Up and Page Down still do the job, and the
             // wheel does it better; zoom-to-ship belongs with the ship, not with the map)
             if (DeepSpaceBuild.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.OpensTheDeepSpaceBuilding, "B");
+                ToolTip.CreateTooltip(GameText.OpensTheDeepSpaceBuilding, KeyBindings.Name(KeyBindings.DeepSpaceBuildWindow));
 
             if (GravityWells.Rect.HitTest(input.CursorPosition))
                 // TODO: phase 5 — wire up a dedicated FTL-overlay codex entry, then re-add codexUid here.
-                ToolTip.CreateTooltip(GameText.FtlOverlayVisualisesSubspaceProjection, "F4");
+                ToolTip.CreateTooltip(GameText.FtlOverlayVisualisesSubspaceProjection, KeyBindings.Name(KeyBindings.FTLOverlay));
 
             if (RangeOverley.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.WeaponsRangeOverlayVisualisesShips, "F6");
+                ToolTip.CreateTooltip(GameText.WeaponsRangeOverlayVisualisesShips, KeyBindings.Name(KeyBindings.RangeOverlay));
 
             if (VisionOverlayBtn.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip("Vision overlay: everything your sensors actually see — "
-                                    + "ships, planets and the coverage your spies bring in", "F3");
+                                    + "ships, planets and the coverage your spies bring in", KeyBindings.Name(KeyBindings.VisionOverlay));
 
             if (TradeRoutes.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip("Trade routes overlay: links each pair of planets with an active freighter run");
@@ -519,10 +524,10 @@ namespace Ship_Game
                 ToolTip.CreateTooltip("Colonization routes overlay: links the planet building or sending a colonizer to its destination");
 
             if (InfluenceZones.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.InfluenceOverlayVisualises, "F2");
+                ToolTip.CreateTooltip(GameText.InfluenceOverlayVisualises, KeyBindings.Name(KeyBindings.InfluenceOverlay));
 
             if (GravityWellsOnly.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.GravityWellOverlayVisualises, "F5");
+                ToolTip.CreateTooltip(GameText.GravityWellOverlayVisualises, KeyBindings.Name(KeyBindings.GravityWellOverlay));
 
             // (Important Events has its own tab in the Galaxy group now)
             if (ExoticBonuses.Rect.HitTest(input.CursorPosition))
@@ -533,7 +538,7 @@ namespace Ship_Game
 
             if (FreighterUtil.Rect.HitTest(input.CursorPosition))
             {
-                ToolTip.CreateTooltip(GameText.OpenFreighterUtilWindow, "N");
+                ToolTip.CreateTooltip(GameText.OpenFreighterUtilWindow, KeyBindings.Name(KeyBindings.FreighterUtilWindow));
             }
             return base.HandleInput(input);
         }

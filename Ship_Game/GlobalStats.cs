@@ -412,6 +412,7 @@ public static class GlobalStats
 
     public static void LoadConfig()
     {
+        KeyBindings.Load(); // Ludoal fork (wishlist): player hotkey overrides ride the config load
         Version = (Assembly.GetEntryAssembly()?
                 .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
             as AssemblyInformationalVersionAttribute[])?[0].InformationalVersion ?? "";

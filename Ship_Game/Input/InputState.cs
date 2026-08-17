@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Vector2 = SDGraphics.Vector2;
 using XnaInput = Microsoft.Xna.Framework.Input;
 using SDGraphics.Input;
@@ -92,7 +92,9 @@ namespace Ship_Game
         //Ingame 
         //UniverseScreen
         public bool PauseGame            => KeyPressed(Keys.Space) && !IsShiftKeyDown;
-        public bool QuickSave            => KeyPressed(Keys.F9) && !IsShiftKeyDown; // Ludoal fork: moved from F5, gravity wells overlay took it
+        // Ludoal fork (wishlist): the named game hotkeys below read the KeyBindings table
+        // instead of hard Keys - the table loads player overrides from Hotkeys.yaml
+        public bool QuickSave            => KeyPressed(KeyBindings.QuickSave) && !IsShiftKeyDown; // Ludoal fork: moved from F5, gravity wells overlay took it
         public bool UseRealLights        => IsShiftKeyDown && KeyPressed(Keys.F5);
         public bool ShowExceptionTracker => KeyPressed(Keys.F12); // Ludoal fork: F6 went to Weapons Range; debug lives at the far end
         public bool SpeedReset           => KeyPressed(Keys.Space) && IsShiftKeyDown;
@@ -101,24 +103,24 @@ namespace Ship_Game
         public bool ScrapShip            => KeyPressed(Keys.Back) || KeyPressed(Keys.Delete);
         public bool ZoomToShip           => KeyPressed(Keys.PageUp);
         public bool ZoomOut              => KeyPressed(Keys.PageDown);
-        public bool DeepSpaceBuildWindow => KeyPressed(Keys.B);
-        public bool PlanetListScreen     => KeyPressed(Keys.L);
-        public bool ExoticListScreen     => KeyPressed(Keys.G);
-        public bool ExoticBonusesWindow  => KeyPressed(Keys.M);
-        public bool FreighterUtilWindow  => KeyPressed(Keys.N);
-        public bool EmpirePatrolsScreen  => KeyPressed(Keys.P);
-        public bool ImportantEventsScreen => KeyPressed(Keys.F7); // Ludoal fork: the 46 Important Events log (minimap row 4, beside Range F6)
-        public bool InfluenceOverlay     => KeyPressed(Keys.F2); // Ludoal fork: colored influence zones
-        public bool RangeOverlay         => KeyPressed(Keys.F6); // Ludoal fork: F3 went to the Vision overlay
-        public bool FTLOverlay           => KeyPressed(Keys.F4); // Ludoal fork: subspace projection (coverage + projectors), ex-F2
-        public bool GravityWellOverlay   => KeyPressed(Keys.F5) && !IsShiftKeyDown; // Ludoal fork (Shift+F5 stays real lights)
-        public bool VisionOverlay        => KeyPressed(Keys.F3); // Ludoal fork: sensor/vision coverage, spies included
-        public bool ShipListScreen       => KeyPressed(Keys.K);
-        public bool TroopListScreen      => KeyPressed(Keys.C); // Ludoal fork: Troops Array (C was debug-spawn only)
-        public bool ColonyOverviewScreen => KeyPressed(Keys.F8); // Ludoal fork: the Empire group's permanent Colony tab (O is the game menu, hardwired in the top bar)
-        public bool FleetDesignScreen    => KeyPressed(Keys.J);
-        public bool AutomationWindow     => KeyPressed(Keys.H);
-        public bool BlueprintsSceen      => KeyPressed(Keys.F);
+        public bool DeepSpaceBuildWindow => KeyPressed(KeyBindings.DeepSpaceBuildWindow);
+        public bool PlanetListScreen     => KeyPressed(KeyBindings.PlanetListScreen);
+        public bool ExoticListScreen     => KeyPressed(KeyBindings.ExoticListScreen);
+        public bool ExoticBonusesWindow  => KeyPressed(KeyBindings.ExoticBonusesWindow);
+        public bool FreighterUtilWindow  => KeyPressed(KeyBindings.FreighterUtilWindow);
+        public bool EmpirePatrolsScreen  => KeyPressed(KeyBindings.EmpirePatrolsScreen);
+        public bool ImportantEventsScreen => KeyPressed(KeyBindings.ImportantEventsScreen); // Ludoal fork: the 46 Important Events log (minimap row 4, beside Range F6)
+        public bool InfluenceOverlay     => KeyPressed(KeyBindings.InfluenceOverlay); // Ludoal fork: colored influence zones
+        public bool RangeOverlay         => KeyPressed(KeyBindings.RangeOverlay); // Ludoal fork: F3 went to the Vision overlay
+        public bool FTLOverlay           => KeyPressed(KeyBindings.FTLOverlay); // Ludoal fork: subspace projection (coverage + projectors), ex-F2
+        public bool GravityWellOverlay   => KeyPressed(KeyBindings.GravityWellOverlay) && !IsShiftKeyDown; // Ludoal fork (Shift+F5 stays real lights)
+        public bool VisionOverlay        => KeyPressed(KeyBindings.VisionOverlay); // Ludoal fork: sensor/vision coverage, spies included
+        public bool ShipListScreen       => KeyPressed(KeyBindings.ShipListScreen);
+        public bool TroopListScreen      => KeyPressed(KeyBindings.TroopListScreen); // Ludoal fork: Troops Array (C was debug-spawn only)
+        public bool ColonyOverviewScreen => KeyPressed(KeyBindings.ColonyOverviewScreen); // Ludoal fork: the Empire group's permanent Colony tab (O is the game menu, hardwired in the top bar)
+        public bool FleetDesignScreen    => KeyPressed(KeyBindings.FleetDesignScreen);
+        public bool AutomationWindow     => KeyPressed(KeyBindings.AutomationWindow);
+        public bool BlueprintsSceen      => KeyPressed(KeyBindings.BlueprintsScreen);
         public bool Fleet1               => KeyPressed(Keys.D1) && !IsAltKeyDown;
         public bool Fleet2               => KeyPressed(Keys.D2) && !IsAltKeyDown;
         public bool Fleet3               => KeyPressed(Keys.D3) && !IsAltKeyDown;
@@ -142,7 +144,7 @@ namespace Ship_Game
         public bool AddToFleet           => IsCtrlKeyDown && IsShiftKeyDown;
         public bool ReplaceFleet         => IsCtrlKeyDown && !IsShiftKeyDown;
         public bool QueueAction          => IsShiftKeyDown;
-        public bool ShipPieMenu          => KeyPressed(Keys.Q);
+        public bool ShipPieMenu          => KeyPressed(KeyBindings.ShipPieMenu);
         
         // CodexScreen — close binding (Back) and deep-link open (F1 via tooltip hook).
         // CodexHelp gates !Ctrl so it doesn't double-fire with the Ctrl+F1 debug
@@ -172,7 +174,7 @@ namespace Ship_Game
         // Ingame controls
         public bool PreviousTarget  => BackMouseClick;
         public bool TacticalIcons   => IsKeyDown(Keys.LeftAlt);
-        public bool CinematicMode   => KeyPressed(Keys.F11);
+        public bool CinematicMode   => KeyPressed(KeyBindings.CinematicMode);
 
         public bool IsAltKeyDown    => IsKeyDown(Keys.LeftAlt)     || IsKeyDown(Keys.RightAlt);
         public bool IsCtrlKeyDown   => IsKeyDown(Keys.LeftControl) || IsKeyDown(Keys.RightControl);

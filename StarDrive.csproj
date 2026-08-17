@@ -832,6 +832,7 @@
     <Compile Include="Ship_Game\GameScreens\Program.cs" />
     <Compile Include="Ship_Game\Camera2d.cs" />
     <Compile Include="Ship_Game\Input\InputState.cs" />
+    <Compile Include="Ship_Game\Input\KeyBindings.cs" />
     <Compile Include="Ship_Game\GameScreens\Universe\ResearchScreenNew.cs" />
     <Compile Include="Ship_Game\VariableUIElement.cs" />
     <Compile Include="Ship_Game\SpaceStation.cs" />
