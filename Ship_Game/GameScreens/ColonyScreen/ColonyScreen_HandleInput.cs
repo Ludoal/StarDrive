@@ -302,6 +302,20 @@ namespace Ship_Game
                     P.PS = Planet.GoodState.STORE;
                 return true;
             }
+
+            // Ludoal fork (wishlist): the colonist flow cycles Auto -> Store -> Import -> Export
+            if (ColonistsDropDown.r.HitTest(input.CursorPosition) && input.LeftMouseClick)
+            {
+                ColonistsDropDown.Toggle();
+                GameAudio.AcceptClick();
+                int next = (P.ColonistsManual ? 1 + (int)P.CS : 0) + 1;
+                if (next > 3)
+                    next = 0;
+                P.ColonistsManual = next > 0;
+                if (next > 0)
+                    P.CS = (Planet.GoodState)(next - 1);
+                return true;
+            }
             return false;
         }
     }

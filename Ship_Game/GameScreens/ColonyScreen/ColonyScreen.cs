@@ -86,6 +86,8 @@ namespace Ship_Game
         readonly ScrollList<BuiltBuildingListItem> BuiltList; // COLONY tab, LIST view: built instances
         readonly DropDownMenu FoodDropDown;
         readonly DropDownMenu ProdDropDown;
+        readonly DropDownMenu ColonistsDropDown; // Ludoal fork (wishlist): migration control
+        Rectangle ColonistsIcon;
         readonly ProgressBar FoodStorage;
         readonly ProgressBar ProdStorage;
         readonly Rectangle FoodStorageIcon;
@@ -301,6 +303,20 @@ namespace Ship_Game
             ProdDropDown.AddOption(Localizer.Token(GameText.Import));
             ProdDropDown.AddOption(Localizer.Token(GameText.Export));
             ProdDropDown.ActiveIndex = (int)p.PS;
+
+            // Ludoal fork (wishlist): the colonist flow on a third storage row, same seat
+            // grammar as Food and Production. Auto = the migration formula keeps deciding;
+            // the three manual states pin the direction. Colonists have no storage bar -
+            // the dropdown sits wider where the bar would start.
+            const float storeRow3 = 138;
+            var iconPop = ResourceManager.Texture("UI/icon_pop_22");
+            ColonistsIcon = new Rectangle((int)PStorage.X + 20, (int)(PStorage.Y + storeRow3 + 9 - iconPop.Height / 2f), iconPop.Width, iconPop.Height);
+            ColonistsDropDown = new DropDownMenu(PStorage.X + 100, PStorage.Y + storeRow3, 0.3f * PStorage.Width, 18);
+            ColonistsDropDown.AddOption("Auto");
+            ColonistsDropDown.AddOption(Localizer.Token(GameText.Store));
+            ColonistsDropDown.AddOption(Localizer.Token(GameText.Import));
+            ColonistsDropDown.AddOption(Localizer.Token(GameText.Export));
+            ColonistsDropDown.ActiveIndex = p.ColonistsManual ? 1 + (int)p.CS : 0;
 
             // Centre column: the colony grid keeps its height, STATISTICS below takes the rest -
             // it is the variable block of this column, and it closes on the grid's foot.

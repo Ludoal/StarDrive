@@ -335,13 +335,21 @@ namespace Ship_Game
             else if (P.PS == Planet.GoodState.EXPORT) ProdDropDown.ActiveIndex = 2;
             ProdDropDown.Draw(batch);
             DrawProdSlots(batch);
+            // Ludoal fork (wishlist): the colonist flow row - Auto tracks the formula,
+            // a manual state pins the direction
+            ColonistsDropDown.ActiveIndex = P.ColonistsManual ? 1 + (int)P.CS : 0;
+            ColonistsDropDown.Draw(batch);
+
             batch.Draw(ResourceManager.Texture("NewUI/icon_storage_food"), FoodStorageIcon, Color.White);
             batch.Draw(ResourceManager.Texture("NewUI/icon_storage_production"), ProfStorageIcon, Color.White);
+            batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), ColonistsIcon, Color.White);
 
             if (FoodStorageIcon.HitTest(Input.CursorPosition) && P.Universe.Screen.IsActive)
                 ToolTip.CreateTooltip(GameText.IndicatesTheAmountOfFood);
             if (ProfStorageIcon.HitTest(Input.CursorPosition) && P.Universe.Screen.IsActive)
                 ToolTip.CreateTooltip(GameText.IndicatesTheAmountOfProduction);
+            if (ColonistsIcon.HitTest(Input.CursorPosition) && P.Universe.Screen.IsActive)
+                ToolTip.CreateTooltip("Colonist migration: Auto follows the colony's own import/export rules; Store, Import or Export pin the direction");
         }
 
         void DrawFoodSlots(SpriteBatch batch)

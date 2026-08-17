@@ -71,6 +71,11 @@ namespace Ship_Game
 
         [StarData] public GoodState FS = GoodState.STORE;      // I dont like these names, but changing them will affect a lot of files
         [StarData] public GoodState PS = GoodState.STORE;
+        // Ludoal fork (wishlist): the colonist flow gets a player override. With the flag
+        // off the migration formula below stays in charge (the AI default every colony
+        // has always run on); on, CS pins the direction like FS and PS pin theirs.
+        [StarData] public bool ColonistsManual;
+        [StarData] public GoodState CS = GoodState.STORE;
         public bool ImportFood => FS == GoodState.IMPORT;
         public bool ImportProd => PS == GoodState.IMPORT;
         public bool ExportFood => FS == GoodState.EXPORT;
@@ -119,7 +124,7 @@ namespace Ship_Game
             {
                 case Goods.Food:       return FS;
                 case Goods.Production: return PS;
-                case Goods.Colonists:  return ColonistsTradeState();
+                case Goods.Colonists:  return ColonistsManual ? CS : ColonistsTradeState();
                 default:               return 0;
             }
         }
