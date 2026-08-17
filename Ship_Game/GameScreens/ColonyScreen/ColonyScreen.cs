@@ -83,6 +83,7 @@ namespace Ship_Game
         readonly SubmenuScrollList<BuildableListItem> BuildableTabs;
         readonly ScrollList<BuildableListItem> BuildableList;
         readonly ScrollList<ConstructionQueueScrollListItem> ConstructionQueue;
+        readonly ScrollList<BuiltBuildingListItem> BuiltList; // COLONY tab, LIST view: built instances
         readonly DropDownMenu FoodDropDown;
         readonly DropDownMenu ProdDropDown;
         readonly ProgressBar FoodStorage;
@@ -95,6 +96,7 @@ namespace Ship_Game
         readonly GovernorDetailsComponent GovernorDetails;
 
         object DetailInfo;
+        object LastBuiltHover; // LIST view: leaving a row keeps the last description shown
         Building ToScrap;
         PlanetGridSquare BioToScrap;
 
@@ -165,8 +167,9 @@ namespace Ship_Game
         ProgressBar DysonSwarmProgress;
         ProgressBar DysonSwarmProductionBoost;
 
-        public ColonyScreen(GameScreen parent, Planet p, EmpireUIOverlay empUI, 
-            int governorTabSelected = 0, int facilitiesTabSelected = -1) // Ludoal fork: -1 = fresh open, defaults to Stats+
+        public ColonyScreen(GameScreen parent, Planet p, EmpireUIOverlay empUI,
+            int governorTabSelected = 0, int facilitiesTabSelected = -1, // Ludoal fork: -1 = fresh open, defaults to Stats+
+            int colonyViewTabSelected = 0) // Ludoal fork: COLONY sub-tab (0=Map, 1=List), carried across the colony walk
             : base(parent, p, p.Universe.Screen) // auto-pause gated by its own opt-in sub-option
         {
             Eui = empUI;
@@ -321,7 +324,28 @@ namespace Ship_Game
             subColonyH = Math.Min(subColonyH, gridBottom - gridTop - Pad - 260); // stats floor, safety
 
             RectF subColonyR = new(colCentreX, gridTop, colCentreW, subColonyH);
-            SubColonyGrid = new(subColonyR, GameText.Colony);
+            // Ludoal fork: the COLONY frame carries two views of the same content - MAP (the
+            // 7x5 grid) and LIST (built instances). Not Add()ed: drawn by hand like before,
+            // its tab row served explicitly in HandleInput.
+            SubColonyGrid = new(subColonyR, GameText.Map);
+            SubColonyGrid.AddTab(GameText.List);
+
+            // the LIST view: same client area the frame gives its content (chrome: 10 each
+            // side, 30 above, 5 below - the constants documented on the frame math above)
+            RectF builtR = new(subColonyR.X + 10, subColonyR.Y + 30, subColonyR.W - 20, subColonyR.H - 35);
+            BuiltList = base.Add(new ScrollList<BuiltBuildingListItem>(builtR));
+            BuiltList.EnableItemHighlight = true;
+            BuiltList.OnHovered = OnBuiltHoverChange;
+            BuiltList.Visible = colonyViewTabSelected == 1;
+
+            // wired only once the list exists - a tab callback firing during setup must
+            // never touch a not-yet-created child
+            SubColonyGrid.OnTabChange = OnColonyViewTabChanged;
+            if (colonyViewTabSelected == 1)
+            {
+                SubColonyGrid.SelectedIndex = 1;
+                ResetBuiltList();
+            }
 
             RectF pFacilitiesR = new(colCentreX, SubColonyGrid.Bottom + Pad, colCentreW,
                                      gridBottom - (SubColonyGrid.Bottom + Pad));
@@ -816,6 +840,69 @@ namespace Ship_Game
                 P.ScrapBuilding(ToScrap);
                 P.RefreshBuildingsWeCanBuildHere();
                 ToScrap = null;
+                if (BuiltList.Visible)
+                    ResetBuiltList(); // the LIST view reflects the scrap immediately
+            }
+        }
+
+        // ONE scrap path for both gestures: MAP's right-click on a tile and LIST's row delete
+        // button. The guard is the building's own Scrappable flag - the list and the grid can
+        // never disagree on what is removable.
+        public void PromptScrapBuilding(PlanetGridSquare pgs)
+        {
+            if (pgs?.Building is not { Scrappable: true })
+            {
+                GameAudio.NegativeClick();
+                return;
+            }
+            ToScrap = pgs.Building;
+            string message = $"Do you wish to scrap {pgs.Building.TranslatedName.Text}? "
+                           + "Half of the building's construction cost will be recovered to your storage.";
+            var messageBox = new MessageBoxScreen(P.Universe.Screen, message);
+            messageBox.Accepted = ScrapAccepted;
+            ScreenManager.AddScreen(messageBox);
+        }
+
+        void OnColonyViewTabChanged(int tabIndex)
+        {
+            BuiltList.Visible = tabIndex == 1;
+            LastBuiltHover = null;
+            if (tabIndex == 1)
+                ResetBuiltList();
+        }
+
+        void OnBuiltHoverChange(BuiltBuildingListItem item)
+        {
+            if (item?.Tile != null)
+                LastBuiltHover = item.Tile; // sticky: losing hover keeps the last description
+        }
+
+        // LIST view content: the capital first and out of any group, then one header per
+        // building category, instances sorted by name inside each. One row per INSTANCE -
+        // deletion targets a tile, not a type.
+        void ResetBuiltList()
+        {
+            BuiltList.Reset();
+            var built = P.TilesList.Filter(t => t.Building != null);
+
+            foreach (PlanetGridSquare t in built)
+                if (t.Building.IsCapitalOrOutpost)
+                    BuiltList.AddItem(new BuiltBuildingListItem(this, t));
+
+            var regular = built.Filter(t => !t.Building.IsCapitalOrOutpost);
+            var categories = new Array<BuildingCategory>();
+            foreach (PlanetGridSquare t in regular)
+                categories.AddUnique(t.Building.Category);
+            categories.Sort((a, b) => (int)a - (int)b);
+
+            foreach (BuildingCategory category in categories)
+            {
+                var group = regular.Filter(t => t.Building.Category == category);
+                group.Sort(t => t.Building.TranslatedName.Text);
+                BuiltBuildingListItem header = BuiltList.AddItem(new BuiltBuildingListItem(this, category.ToString()));
+                foreach (PlanetGridSquare t in group)
+                    header.AddSubItem(new BuiltBuildingListItem(this, t));
+                header.Expand(true); // an inventory opens legible, not folded
             }
         }
 

@@ -512,6 +512,7 @@
     <Compile Include="Ship_Game\Gameplay\ImpactPredictor.cs" />
     <Compile Include="Ship_Game\GameScreens\ColonyScreen\AssignLaborComponent.cs" />
     <Compile Include="Ship_Game\GameScreens\ColonyScreen\BuildableListItem.cs" />
+    <Compile Include="Ship_Game\GameScreens\ColonyScreen\BuiltBuildingListItem.cs" />
     <Compile Include="Ship_Game\GameScreens\ColonyScreen\ColonyScreen_Build.cs" />
     <Compile Include="Ship_Game\GameScreens\ColonyScreen\ColonyScreen_Draw.cs" />
     <Compile Include="Ship_Game\GameScreens\ColonyScreen\ColonyScreen_HandleInput.cs" />

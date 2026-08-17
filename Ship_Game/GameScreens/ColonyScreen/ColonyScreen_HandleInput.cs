@@ -39,19 +39,28 @@ namespace Ship_Game
                 }
             }
 
-            foreach (PlanetGridSquare pgs in P.TilesList)
+            if (SubColonyGrid.SelectedIndex == 0) // tiles are only visible in the MAP view
             {
-                if (pgs.TroopsAreOnTile)
+                foreach (PlanetGridSquare pgs in P.TilesList)
                 {
-                    for (int i = 0; i < pgs.TroopsHere.Count; ++i)
-                        if (pgs.TroopsHere[i].ClickRect.HitTest(input.CursorPosition))
-                            return pgs.TroopsHere[i];
+                    if (pgs.TroopsAreOnTile)
+                    {
+                        for (int i = 0; i < pgs.TroopsHere.Count; ++i)
+                            if (pgs.TroopsHere[i].ClickRect.HitTest(input.CursorPosition))
+                                return pgs.TroopsHere[i];
+                    }
                 }
-            }
 
-            foreach (PlanetGridSquare pgs in P.TilesList)
-                if (pgs.ClickRect.HitTest(input.CursorPosition))
-                    return pgs;
+                foreach (PlanetGridSquare pgs in P.TilesList)
+                    if (pgs.ClickRect.HitTest(input.CursorPosition))
+                        return pgs;
+            }
+            else if (LastBuiltHover != null)
+            {
+                // LIST view: rows push their tile through OnHovered, and leaving a row
+                // keeps the last description shown instead of flickering back
+                return LastBuiltHover;
+            }
 
             return null; // default: use planet description text
         }
@@ -69,7 +78,11 @@ namespace Ship_Game
             // Ludoal fork: Esc, right-click and the close cross all close the colony's tab
             // WITH the seat routing - intercepted before the base popup dismiss and the
             // child pass, which would exit bare.
-            if ((CanEscapeFromScreen && (input.Escaped || (input.RightMouseClick && !ClickedTroop)))
+            // A right-click landing on the COLONY frame belongs to its content - the tile
+            // scrap prompt, the list rows - never to "close the page". The close intercept
+            // ran before the tiles ever saw the click and ate the scrap gesture (bench 419).
+            bool rightClickOnColonyFrame = input.RightMouseClick && SubColonyGrid.Rect.HitTest(input.CursorPosition);
+            if ((CanEscapeFromScreen && (input.Escaped || (input.RightMouseClick && !ClickedTroop && !rightClickOnColonyFrame)))
                 || (input.LeftMouseClick && CloseBtn.Rect.HitTest(input.CursorPosition)))
             {
                 GameAudio.EchoAffirmative();
@@ -80,6 +93,11 @@ namespace Ship_Game
             // Ludoal fork: the live top bar and the visible band, like every page - the
             // universe's own input does not run under a stacked colony.
             if (Eui.HandleInput(input, caller: this))
+                return true;
+
+            // the COLONY frame's own tab row (MAP | LIST) - the frame is drawn by hand,
+            // so its input is served by hand too
+            if (SubColonyGrid.HandleInput(input))
                 return true;
 
             // always get the currently hovered item
@@ -107,7 +125,9 @@ namespace Ship_Game
                 return false;
             }
 
-            if (HandleTroopSelect(input))
+            // tiles only exist on screen in the MAP view - the LIST view's rows are
+            // Add()ed children, served by the base pass below
+            if (SubColonyGrid.SelectedIndex == 0 && HandleTroopSelect(input))
                 return true;
 
             // update all Added UI elements
@@ -177,14 +197,7 @@ namespace Ship_Game
                         if (pgs.BuildingOnTile && bRect.HitTest(input.CursorPosition) && Input.RightMouseClick)
                         {
                             if (pgs.Building.Scrappable)
-                            {
-                                ToScrap = pgs.Building;
-                                string message = $"Do you wish to scrap {pgs.Building.TranslatedName.Text}? "
-                                               + "Half of the building's construction cost will be recovered to your storage.";
-                                var messageBox = new MessageBoxScreen(P.Universe.Screen, message);
-                                messageBox.Accepted = ScrapAccepted;
-                                ScreenManager.AddScreen(messageBox);
-                            }
+                                PromptScrapBuilding(pgs); // shared with the LIST view's delete button
 
                             ClickedTroop = true;
                             return true;
@@ -228,7 +241,8 @@ namespace Ship_Game
                 u.PanToPlanetKeepZoom(nextOrPrevPlanet); // the walk pans, no zoom
                 ExitScreen();
                 ScreenManager.AddScreen(new ColonyScreen(u, nextOrPrevPlanet, Eui,
-                    GovernorDetails.CurrentTabIndex, PFacilitiesPlayerTabSelected));
+                    GovernorDetails.CurrentTabIndex, PFacilitiesPlayerTabSelected,
+                    SubColonyGrid.SelectedIndex)); // the walk keeps the MAP/LIST choice
             }
         }
 

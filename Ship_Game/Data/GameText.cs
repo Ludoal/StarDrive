@@ -5298,6 +5298,10 @@ namespace Ship_Game
         ImportingPlanetsTip = 4542,
         /// <summary>Exporting planets column tooltip (freighter window)</summary>
         ExportingPlanetsTip = 4543,
+        /// <summary>Map</summary>
+        Map = 4544,
+        /// <summary>List</summary>
+        List = 4545,
         /// <summary>FCS Bonus</summary>
         FcsBonus = 6186,
         /// <summary>FCS Accuracy</summary>

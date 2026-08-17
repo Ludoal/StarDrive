@@ -207,7 +207,20 @@ namespace Ship_Game
             PStorage.Draw(batch, elapsed);
             SubColonyGrid.Draw(batch, elapsed);
 
-            DrawPlanetSurfaceGrid(batch);
+            if (SubColonyGrid.SelectedIndex == 0)
+            {
+                DrawPlanetSurfaceGrid(batch);
+            }
+            else if (BuiltList.AllEntries.Count == 0)
+            {
+                // LIST view on a colony with nothing built yet: a sober central mention.
+                // The rows themselves are Add()ed children, drawn by base.Draw.
+                var r = SubColonyGrid.Rect;
+                string none = "No buildings constructed";
+                var textSize = Font12.MeasureString(none);
+                batch.DrawString(Font12, none,
+                    new Vector2(r.X + (r.Width - textSize.X) / 2f, r.Y + (r.Height - textSize.Y) / 2f), Color.Gray);
+            }
             batch.Draw(P.PlanetTexture, PlanetIcon, Color.White);
 
             DrawDetailInfo(batch, new Vector2(PFacilities.Rect.X + 15, PFacilities.Rect.Y + 35));

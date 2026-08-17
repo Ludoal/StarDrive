@@ -17739,6 +17739,12 @@ ExportingPlanetsTip:
  Id: 4543
  ENG: "Number of PLANETS with open export slots for this good - not freighters."
  PTB: "Número de PLANETAS com vagas de exportação abertas para este bem - não cargueiros."
+Map:
+ Id: 4544
+ ENG: "Map"
+List:
+ Id: 4545
+ ENG: "List"
 FcsBonus:
  Id: 6186
  ENG: "FCS Bonus"
