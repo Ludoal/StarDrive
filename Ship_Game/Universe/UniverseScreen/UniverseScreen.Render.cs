@@ -246,6 +246,31 @@ namespace Ship_Game
 
             DrawSolarSystemName(batch, sys, sysPos);
             DrawSolarSystemAnomalyAndDangerIcons(batch, sys, sysPos);
+            DrawSolarSystemColonizationFlag(batch, sys, solarSysPos.ToVec2f(), radiusOnScreen);
+        }
+
+        // ONE source for every "colonizing" indicator: the same player-goal predicate the
+        // system exploded view has always drawn its flag from.
+        public bool IsMarkedForColonization(Planet p) => Player.AI.HasGoal(g => g.IsColonizationGoal(p));
+
+        // Galaxy view: one flag per star aggregates the system's colonizations - the
+        // per-planet detail lives at closer zoom (DrawPlanetInfo). A multiplicity badge
+        // rides the flag's bottom-right corner from x2 up, Features-style; a bare flag
+        // means exactly one.
+        void DrawSolarSystemColonizationFlag(SpriteBatch batch, SolarSystem sys, Vector2 starPos, float radiusOnScreen)
+        {
+            if (Player.Universe.IsSectorViewOrCloser)
+                return;
+            int n = sys.PlanetList.Count(p => IsMarkedForColonization(p));
+            if (n == 0)
+                return;
+
+            RectF flag = new(starPos.X - 6, starPos.Y - radiusOnScreen - 20, 13, 17);
+            batch.Draw(ResourceManager.Texture("UI/flagicon"), flag, Player.EmpireColor);
+            if (n > 1)
+                batch.DrawString(Fonts.Arial8Bold, "x" + n, new Vector2(flag.Right - 2, flag.Bottom - 6), Color.White);
+            if (flag.HitTest(Input.CursorPosition))
+                ToolTip.CreateTooltip(GameText.IndicatesThatYourEmpireHas);
         }
 
         void DrawSolarSystemName(SpriteBatch batch, SolarSystem sys, Vector2 sysPos)

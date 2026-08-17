@@ -145,6 +145,12 @@ namespace Ship_Game
 						continue;
 					Color nameColor = p.Owner?.EmpireColor ?? Colors.Cream;
 					string pn = UITable.FitText(Font12, p.Name, classCol - 6 - listX);
+					// the colonizing flag lives in the fixed 20px gap left of the name
+					// column - no row ever shifts, flagged or not (same source predicate
+					// as the universe views)
+					if (Screen.IsMarkedForColonization(p))
+						batch.Draw(ResourceManager.Texture("UI/flagicon"),
+						           new RectF(listX - 15, y + 1, 10, 13), Player.EmpireColor);
 					batch.DrawString(Font12, pn, new Vector2(listX, y), nameColor);
 					if (pn != p.Name)
 						RollTips.Add(new RollTip { Rect = new Rectangle(listX, (int)y, classCol - 6 - listX, RowH), Text = p.Name });

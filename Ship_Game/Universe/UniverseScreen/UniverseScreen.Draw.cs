@@ -1307,6 +1307,16 @@ namespace Ship_Game
 
                     DrawPointerWithText(screenPosPlanet, planetNamePointer, textColor, planet.Name, textColor);
 
+                    // close view: the colonization flag stands above the planet itself -
+                    // the galaxy view's star aggregate hands over to per-planet detail here
+                    if (IsMarkedForColonization(planet))
+                    {
+                        var colFlag = new RectF(screenPosPlanet.X - 6, screenPosPlanet.Y - 45, 13, 17);
+                        batch.Draw(ResourceManager.Texture("UI/flagicon"), colFlag, Player.EmpireColor);
+                        if (colFlag.HitTest(mousePos))
+                            ToolTip.CreateTooltip(GameText.IndicatesThatYourEmpireHas);
+                    }
+
                     posOffSet = new Vector2(screenPosPlanet.X + 10f, screenPosPlanet.Y + 60f);
 
                     if (planet.RecentCombat)
