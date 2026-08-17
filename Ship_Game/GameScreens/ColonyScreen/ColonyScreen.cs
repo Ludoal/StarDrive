@@ -338,14 +338,14 @@ namespace Ship_Game
             BuiltList.OnHovered = OnBuiltHoverChange;
             BuiltList.Visible = colonyViewTabSelected == 1;
 
-            // wired only once the list exists - a tab callback firing during setup must
-            // never touch a not-yet-created child
-            SubColonyGrid.OnTabChange = OnColonyViewTabChanged;
+            // ALWAYS resolve the initial tab - a fresh Submenu sits at -1 (nothing selected)
+            // and the draw gate would show neither view until the first click (bench 420).
+            // Set before OnTabChange is wired: a tab callback firing during setup must
+            // never touch a not-yet-created child.
+            SubColonyGrid.SelectedIndex = colonyViewTabSelected;
             if (colonyViewTabSelected == 1)
-            {
-                SubColonyGrid.SelectedIndex = 1;
                 ResetBuiltList();
-            }
+            SubColonyGrid.OnTabChange = OnColonyViewTabChanged;
 
             RectF pFacilitiesR = new(colCentreX, SubColonyGrid.Bottom + Pad, colCentreW,
                                      gridBottom - (SubColonyGrid.Bottom + Pad));
@@ -859,6 +859,9 @@ namespace Ship_Game
             string message = $"Do you wish to scrap {pgs.Building.TranslatedName.Text}? "
                            + "Half of the building's construction cost will be recovered to your storage.";
             var messageBox = new MessageBoxScreen(P.Universe.Screen, message);
+            // centre the confirm on the COLONY frame, not the display (bench 420)
+            messageBox.CenterOn = new Vector2(SubColonyGrid.Rect.X + SubColonyGrid.Rect.Width / 2f,
+                                              SubColonyGrid.Rect.Y + SubColonyGrid.Rect.Height / 2f);
             messageBox.Accepted = ScrapAccepted;
             ScreenManager.AddScreen(messageBox);
         }
@@ -894,6 +897,16 @@ namespace Ship_Game
             foreach (PlanetGridSquare t in regular)
                 categories.AddUnique(t.Building.Category);
             categories.Sort((a, b) => (int)a - (int)b);
+
+            // a single category informs nobody - its header would only take a row. The
+            // grouping returns by itself the day the data grows a second one (bench 420).
+            if (categories.Count == 1)
+            {
+                regular.Sort(t => t.Building.TranslatedName.Text);
+                foreach (PlanetGridSquare t in regular)
+                    BuiltList.AddItem(new BuiltBuildingListItem(this, t));
+                return;
+            }
 
             foreach (BuildingCategory category in categories)
             {

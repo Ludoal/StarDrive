@@ -618,8 +618,13 @@ namespace Ship_Game
             if (pgs.Building == null)
                 return;
 
-            var bRect = new Rectangle(pgs.ClickRect.X + pgs.ClickRect.Width / 2 - 32, pgs.ClickRect.Y + pgs.ClickRect.Height / 2 - 32, 64, 64);
-            batch.Draw(ResourceManager.Texture("Ground_UI/GC_Square Selection"), bRect, Color.White);
+            if (SubColonyGrid.SelectedIndex == 0)
+            {
+                // the tile selection square belongs to the MAP view - the description panel
+                // below is shared with LIST, whose rows feed the same pgs (bench 420)
+                var bRect = new Rectangle(pgs.ClickRect.X + pgs.ClickRect.Width / 2 - 32, pgs.ClickRect.Y + pgs.ClickRect.Height / 2 - 32, 64, 64);
+                batch.Draw(ResourceManager.Texture("Ground_UI/GC_Square Selection"), bRect, Color.White);
+            }
             batch.DrawString(Font20, pgs.Building.TranslatedName, bCursor, color);
             bCursor.Y += Font20.LineSpacing + 5;
             string buildingDescription = MultiLineFormat(pgs.Building.DescriptionText);

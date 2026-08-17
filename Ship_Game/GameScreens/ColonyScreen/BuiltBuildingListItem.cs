@@ -17,10 +17,11 @@ namespace Ship_Game
         readonly SubTexture FoodIcon = ResourceManager.Texture("NewUI/icon_food");
         readonly SubTexture ProdIcon = ResourceManager.Texture("NewUI/icon_production");
         readonly SubTexture MoneyIcon = ResourceManager.Texture("UI/icon_money_22");
+        readonly SubTexture ScienceIcon = ResourceManager.Texture("NewUI/icon_science");
         readonly Font Font12 = Fonts.Arial12Bold;
 
         // fixed column steps from the right edge; the delete icon owns the last 20px
-        const float ValueColumnStep = 70f;
+        const float ValueColumnStep = 48f;
         const float FirstValueColumnFromRight = 60f;
         const int IconSize = 24;
 
@@ -34,7 +35,7 @@ namespace Ship_Game
             Screen = screen;
             Tile = tile;
             if (tile.Building is { Scrappable: true })
-                AddDelete(new Vector2(-20, 0), GameText.DoYouWishToScrap, OnDeleteClicked);
+                AddCancel(new Vector2(-20, 0), GameText.DoYouWishToScrap, OnDeleteClicked); // the queue's own delete icon (bench 420)
         }
 
         void OnDeleteClicked()
@@ -58,10 +59,12 @@ namespace Ship_Game
             float food = b.PlusFlatFoodAmount + b.PlusFoodPerColonist * pop;
             float prod = b.PlusFlatProductionAmount + b.PlusProdPerColonist * pop;
             float credits = b.Income + b.CreditsPerColonist * pop - b.Maintenance;
+            float research = b.PlusFlatResearchAmount + b.PlusResearchPerColonist * pop;
 
-            DrawValueColumn(batch, FoodIcon, food, 2);
-            DrawValueColumn(batch, ProdIcon, prod, 1);
-            DrawValueColumn(batch, MoneyIcon, credits, 0);
+            DrawValueColumn(batch, FoodIcon, food, 3);
+            DrawValueColumn(batch, ProdIcon, prod, 2);
+            DrawValueColumn(batch, MoneyIcon, credits, 1);
+            DrawValueColumn(batch, ScienceIcon, research, 0);
         }
 
         // columnFromRight: 0 = rightmost value column
