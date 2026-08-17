@@ -130,6 +130,14 @@ namespace Ship_Game
             if (SubColonyGrid.SelectedIndex == 0 && HandleTroopSelect(input))
                 return true;
 
+            // The COLONY frame consumes EVERY right-click in its perimeter, whatever the
+            // outcome - scrap prompt, or a no-op on an empty/non-scrappable tile. Without
+            // this the unconsumed click flowed down to the base popup dismiss and closed
+            // the page bare; the same gesture at the same spot must never close-or-not
+            // depending on the tile's state (bench 420).
+            if (rightClickOnColonyFrame)
+                return true;
+
             // update all Added UI elements
             if (base.HandleInput(input))
                 return true;
