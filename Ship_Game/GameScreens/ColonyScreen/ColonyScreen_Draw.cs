@@ -130,30 +130,7 @@ namespace Ship_Game
             float numProd = 0f;
             float numRes = 0f;
             if (pgs.Building != null)
-            {
-                if (pgs.Building.PlusFlatFoodAmount > 0f || pgs.Building.PlusFoodPerColonist > 0f)
-                {
-                    numFood += pgs.Building.PlusFoodPerColonist * P.PopulationBillion * P.Food.Percent * P.Fertility;
-                    numFood += pgs.Building.PlusFlatFoodAmount;
-                }
-
-                if (pgs.Building.PlusFlatProductionAmount > 0f || pgs.Building.PlusProdPerColonist > 0f)
-                {
-                    numProd += pgs.Building.PlusFlatProductionAmount;
-                    numProd += pgs.Building.PlusProdPerColonist * P.PopulationBillion * P.Prod.Percent * P.MineralRichness;
-                }
-
-                if (pgs.Building.PlusProdPerRichness > 0f)
-                {
-                    numProd += pgs.Building.PlusProdPerRichness * P.MineralRichness;
-                }
-
-                if (pgs.Building.PlusResearchPerColonist > 0f || pgs.Building.PlusFlatResearchAmount > 0f)
-                {
-                    numRes += pgs.Building.PlusResearchPerColonist * P.PopulationBillion * P.Res.Percent;
-                    numRes += pgs.Building.PlusFlatResearchAmount;
-                }
-            }
+                BuildingActualYields(pgs.Building, out numFood, out numProd, out numRes);
 
             float total = numFood + numProd + numRes;
             float totalSpace = pgs.ClickRect.Width - 30;

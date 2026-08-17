@@ -880,6 +880,35 @@ namespace Ship_Game
                 LastBuiltHover = item.Tile; // sticky: losing hover keeps the last description
         }
 
+        // ONE arithmetic for a building's actual yields on this colony - the MAP tiles'
+        // icon rows and the LIST view's value columns both read it. It follows what the
+        // colony actually collects: labor share (sliders), fertility and richness weigh
+        // the per-colonist parts; flat amounts land whole.
+        public void BuildingActualYields(Building b, out float food, out float prod, out float res)
+        {
+            food = 0f; prod = 0f; res = 0f;
+            if (b.PlusFlatFoodAmount > 0f || b.PlusFoodPerColonist > 0f)
+            {
+                food += b.PlusFoodPerColonist * P.PopulationBillion * P.Food.Percent * P.Fertility;
+                food += b.PlusFlatFoodAmount;
+            }
+
+            if (b.PlusFlatProductionAmount > 0f || b.PlusProdPerColonist > 0f)
+            {
+                prod += b.PlusFlatProductionAmount;
+                prod += b.PlusProdPerColonist * P.PopulationBillion * P.Prod.Percent * P.MineralRichness;
+            }
+
+            if (b.PlusProdPerRichness > 0f)
+                prod += b.PlusProdPerRichness * P.MineralRichness;
+
+            if (b.PlusResearchPerColonist > 0f || b.PlusFlatResearchAmount > 0f)
+            {
+                res += b.PlusResearchPerColonist * P.PopulationBillion * P.Res.Percent;
+                res += b.PlusFlatResearchAmount;
+            }
+        }
+
         // LIST view content: the capital first and out of any group, then one header per
         // building category, instances sorted by name inside each. One row per INSTANCE -
         // deletion targets a tile, not a type.

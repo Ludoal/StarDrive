@@ -160,7 +160,12 @@ namespace Ship_Game
             public void Draw(SpriteBatch batch)
             {
                 GetHoverable().Draw(batch, AbsRect, Parent.Hovered, IsHovered);
-                if (IsHovered && Tooltip.IsValid)
+                // IsHovered is written by HandleInput, which stops running the moment a
+                // popup captures input above this list - the flag freezes true and the
+                // tooltip re-spawned every frame wherever the mouse went (bench 420).
+                // The tooltip trusts only the LIVE cursor.
+                if (IsHovered && Tooltip.IsValid
+                    && AbsRect.HitTest(GameBase.ScreenManager.input.CursorPosition))
                     ToolTip.CreateTooltip(Tooltip);
             }
         }
