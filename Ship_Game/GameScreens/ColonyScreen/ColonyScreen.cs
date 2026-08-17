@@ -915,7 +915,11 @@ namespace Ship_Game
         void ResetBuiltList()
         {
             BuiltList.Reset();
-            var built = P.TilesList.Filter(t => t.Building != null);
+            // CONSTRUCTED buildings only (bench 422): terrain accidents and event tiles
+            // (Mountain, Unidentified signature...) are Building objects too, but they
+            // carry no build cost and/or an event trigger - the player's works all cost
+            var built = P.TilesList.Filter(t => t.Building is { } b && !b.EventHere
+                                                && (b.Cost > 0 || b.IsCapitalOrOutpost));
 
             foreach (PlanetGridSquare t in built)
                 if (t.Building.IsCapitalOrOutpost)

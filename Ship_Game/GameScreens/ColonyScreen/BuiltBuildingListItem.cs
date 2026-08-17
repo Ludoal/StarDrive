@@ -20,9 +20,10 @@ namespace Ship_Game
         readonly SubTexture ScienceIcon = ResourceManager.Texture("NewUI/icon_science");
         readonly Font Font12 = Fonts.Arial12Bold;
 
-        // fixed column steps from the right edge; the delete icon owns the last 20px
-        const float ValueColumnStep = 48f;
-        const float FirstValueColumnFromRight = 60f;
+        // fixed column steps from the right edge; the delete icon owns the last 20px,
+        // with a 10px breath before it (bench 422); the step widened leftward
+        const float ValueColumnStep = 53f;
+        const float FirstValueColumnFromRight = 70f;
         const int IconSize = 24;
 
         public BuiltBuildingListItem(ColonyScreen screen, string headerText) : base(headerText)
@@ -50,9 +51,10 @@ namespace Ship_Game
             if (b == null)
                 return;
 
+            // everything centres vertically on the selection rectangle (bench 422)
             Color titleColor = Hovered ? Color.White : Colors.Cream;
-            batch.Draw(b.IconTex, new Vector2(X, Y - 2), new Vector2(IconSize), Color.White);
-            batch.DrawString(Font12, b.TranslatedName.Text, X + IconSize + 6, Y + 2, titleColor);
+            batch.Draw(b.IconTex, new Vector2(X, Y + (Height - IconSize) / 2f), new Vector2(IconSize), Color.White);
+            batch.DrawString(Font12, b.TranslatedName.Text, X + IconSize + 6, Y + (Height - Font12.LineSpacing) / 2f, titleColor);
 
             // the building's actual yields on THIS colony - the same arithmetic the MAP
             // tiles' icon rows use (labor share, fertility, richness), one shared source
@@ -70,9 +72,9 @@ namespace Ship_Game
         {
             float x = Right - FirstValueColumnFromRight - ValueColumnStep * columnFromRight;
             var iconSize = new Vector2(Font12.LineSpacing + 2);
-            batch.Draw(icon, new Vector2(x, Y + 2), iconSize);
+            batch.Draw(icon, new Vector2(x, Y + (Height - iconSize.Y) / 2f), iconSize);
             Color c = value > 0f ? Colors.Cream : value < 0f ? Color.Salmon : Color.Gray;
-            batch.DrawString(Font12, value.String(1), x + iconSize.X + 2, Y + 4, c);
+            batch.DrawString(Font12, value.String(1), x + iconSize.X + 2, Y + (Height - Font12.LineSpacing) / 2f + 1, c);
         }
     }
 }
