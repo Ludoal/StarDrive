@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
+using System.Collections.Generic;
 using Ship_Game.AI;
 using Ship_Game.Gameplay;
 using Ship_Game.Ships;
@@ -637,6 +638,7 @@ namespace Ship_Game
             DrawTacticalPlanetIcons(batch);
             DrawFTLInhibitionNodes();
             DrawShipRangeOverlay();
+            DrawRouteOverlays();
             DrawFleetIcons(batch);
             DrawIcons.Stop();
         }
@@ -681,6 +683,44 @@ namespace Ship_Game
             }
 
             // (maintainer feedback) the idle-research alarm lives in the top bar's topic slot
+        }
+
+        // Ludoal fork (wishlist): the route overlays. Trade links each planet pair with a
+        // live freighter run (one line per PAIR, not per ship); Colonization links the
+        // planet building/sending a colonizer to its target. Both read the same UI-safe
+        // sources the ship list and the exploded view already consume.
+        void DrawRouteOverlays()
+        {
+            if (ShowingTradeRoutesOverlay)
+            {
+                var seen = new HashSet<(Planet, Planet)>();
+                var freighters = Player.OwnedShips.Filter(s => s.IsFreighter && s.AI.State == AIState.SystemTrader);
+                Color tradeLine = new Color(new Color(0, 180, 180), (byte)90).Premultiplied();
+                foreach (Ship f in freighters)
+                {
+                    if (f.AI.OrderQueue.TryPeekLast(out ShipAI.ShipGoal g)
+                        && g.Trade is { ExportFrom: { } from, ImportTo: { } to }
+                        && seen.Add((from, to)))
+                    {
+                        DrawLineProjected(from.Position, to.Position, tradeLine);
+                    }
+                }
+            }
+
+            if (ShowingColonizationRoutesOverlay)
+            {
+                Color colonyLine = new Color(Player.EmpireColor, (byte)120).Premultiplied();
+                foreach (Goal g in Player.AI.Goals)
+                {
+                    // the virtual pair is only populated on colonization goals; the
+                    // predicate is the same one every colonizing flag draws from
+                    if (g.TargetPlanet is { } target && g.IsColonizationGoal(target)
+                        && g.PlanetBuildingAt is { } from)
+                    {
+                        DrawLineProjected(from.Position, target.Position, colonyLine);
+                    }
+                }
+            }
         }
 
         void DrawShipRangeOverlay()

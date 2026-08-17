@@ -34,6 +34,8 @@ namespace Ship_Game
         // do it, and zoom-to-ship belongs with the ship. Important Events has its own Galaxy tab.
         readonly ToggleButton InfluenceZones;   // Ludoal fork (F4)
         readonly ToggleButton GravityWellsOnly; // Ludoal fork (F5)
+        readonly ToggleButton TradeRoutes;         // Ludoal fork (wishlist)
+        readonly ToggleButton ColonizationRoutes;  // Ludoal fork (wishlist)
         readonly ToggleButton GravityWells;
         readonly ToggleButton DeepSpaceBuild;
         readonly ToggleButton RangeOverley;
@@ -92,6 +94,10 @@ namespace Ship_Game
             GravityWells = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_ftloverlay", GravityWells_OnClick)); // subspace projectors (F4)
             GravityWellsOnly = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/node_inhibit", GravityWellsOnly_OnClick)); // F5
             RangeOverley = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_rangeoverlay", RangeOverly_OnClick)); // F6
+            // Ludoal fork (wishlist): the route overlays join the family - no hotkeys yet,
+            // they will get theirs with the key-customization workstream
+            TradeRoutes = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "NewUI/icon_freighter_util", TradeRoutes_OnClick));
+            ColonizationRoutes = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/ColonizeIcon", ColonizationRoutes_OnClick));
 
             // ⚠ the tabs go to the OPPOSITE end of their band, not beside the overlays
             // (maintainer): top band pushes them RIGHT, left band pushes them DOWN. The empty
@@ -240,6 +246,8 @@ namespace Ship_Game
             RangeOverley.IsToggled         = Universe.ShowingRangeOverlay;
             InfluenceZones.IsToggled       = Universe.ShowingInfluenceOverlay;   // Ludoal fork (F4)
             GravityWellsOnly.IsToggled     = Universe.ShowingGravityWellOverlay; // Ludoal fork (F5)
+            TradeRoutes.IsToggled          = Universe.ShowingTradeRoutesOverlay;        // Ludoal fork (wishlist)
+            ColonizationRoutes.IsToggled   = Universe.ShowingColonizationRoutesOverlay; // Ludoal fork (wishlist)
             // Ludoal fork (maintainer feedback): without this sync, pressing F3 turns the
             // overlay on but leaves the button dark until clicked.
             VisionOverlayBtn.IsToggled     = Universe.ShowingVisionOverlay;      // Ludoal fork (F3)
@@ -444,6 +452,18 @@ namespace Ship_Game
             Universe.ShowingInfluenceOverlay = !Universe.ShowingInfluenceOverlay;
         }
 
+        public void TradeRoutes_OnClick(ToggleButton toggleButton) // Ludoal fork (wishlist)
+        {
+            GameAudio.AcceptClick();
+            Universe.ShowingTradeRoutesOverlay = !Universe.ShowingTradeRoutesOverlay;
+        }
+
+        public void ColonizationRoutes_OnClick(ToggleButton toggleButton) // Ludoal fork (wishlist)
+        {
+            GameAudio.AcceptClick();
+            Universe.ShowingColonizationRoutesOverlay = !Universe.ShowingColonizationRoutesOverlay;
+        }
+
         public void GravityWellsOnly_OnClick(ToggleButton toggleButton) // Ludoal fork (F5)
         {
             GameAudio.AcceptClick();
@@ -491,6 +511,12 @@ namespace Ship_Game
             if (VisionOverlayBtn.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip("Vision overlay: everything your sensors actually see — "
                                     + "ships, planets and the coverage your spies bring in", "F3");
+
+            if (TradeRoutes.Rect.HitTest(input.CursorPosition))
+                ToolTip.CreateTooltip("Trade routes overlay: links each pair of planets with an active freighter run");
+
+            if (ColonizationRoutes.Rect.HitTest(input.CursorPosition))
+                ToolTip.CreateTooltip("Colonization routes overlay: links the planet building or sending a colonizer to its destination");
 
             if (InfluenceZones.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.InfluenceOverlayVisualises, "F2");
