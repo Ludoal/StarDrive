@@ -13764,40 +13764,40 @@ OverrideThisBudgetAndSet:
  PTB: "Substitua este orçamento e defina o seu próprio."
 CivilianBuildingsExpenditurebudgetInByc:
  Id: 4228
- ENG: "Civilian Buildings Expenditure/Budget in bc/turn. If you see over-budget, you might have buildings you have manually built and the Governor cannot scrap them."
+ ENG: "Civilian Buildings Expenditure/Budget in bc/t. If you see over-budget, you might have buildings you have manually built and the Governor cannot scrap them."
  RUS: "Расходы/бюджет на гражданские здания в МГ/K (Миллиард Кредитов/Год). Если вы наблюдаете превышение бюджета, возможно, есть здания, которые вы построили вручную, и губернатор не может их снести."
- UKR: "Витрати/бюджет на цивільні будівлі в bc/turn. Якщо ви бачите перевиконання бюджету, можливо, у вас є будівлі, які ви побудували вручну, і губернатор не може їх здати на металобрухт."
+ UKR: "Витрати/бюджет на цивільні будівлі в bc/t. Якщо ви бачите перевиконання бюджету, можливо, у вас є будівлі, які ви побудували вручну, і губернатор не може їх здати на металобрухт."
  PTB: "Gasto/Orçamento de Construções Civis em bc/ano. Se aparecer acima do orçamento, talvez haja construções feitas manualmente que o Governador não pode sucatear."
 GroundDefenseBuildingsExpenditurebudgetIn:
  Id: 4229
- ENG: "Ground Defense Buildings Expenditure/Budget in bc/turn. If you see over-budget, you might have buildings you have manually built and the Governor cannot scrap them."
+ ENG: "Ground Defense Buildings Expenditure/Budget in bc/t. If you see over-budget, you might have buildings you have manually built and the Governor cannot scrap them."
  RUS: "Расходы/бюджет на здания наземной обороны в МК/Г (Миллиард Кредитов/Год). Если вы видите превышение бюджета, возможно, есть здания, которые вы построили вручную, и губернатор не может их снести."
- UKR: "Витрати/бюджет на наземні оборонні споруди в bc/turn. Якщо ви бачите перевиконання бюджету, можливо, у вас є будівлі, які ви побудували вручну, і губернатор не може їх здати на металобрухт."
- PTB: "Gasto/Orçamento de Construções de Defesa Terrestre em bc/turn. Se aparecer acima do orçamento, talvez haja construções feitas manualmente que o Governador não pode sucatear."
+ UKR: "Витрати/бюджет на наземні оборонні споруди в bc/t. Якщо ви бачите перевиконання бюджету, можливо, у вас є будівлі, які ви побудували вручну, і губернатор не може їх здати на металобрухт."
+ PTB: "Gasto/Orçamento de Construções de Defesa Terrestre em bc/t. Se aparecer acima do orçamento, talvez haja construções feitas manualmente que o Governador não pode sucatear."
 OrbitalsExpenditurebudgetInByc:
  Id: 4230
- ENG: "Orbitals Expenditure/Budget in bc/turn"
+ ENG: "Orbitals Expenditure/Budget in bc/t"
  RUS: "Расходы/бюджет на орбитальные конструкции в МК/Г"
- UKR: "Витрати/бюджет орбіти в bc/turn"
- PTB: "Gasto/Orçamento de Orbitais em bc/turn"
+ UKR: "Витрати/бюджет орбіти в bc/t"
+ PTB: "Gasto/Orçamento de Orbitais em bc/t"
 CivilianBuildingsExpenditureInByc:
  Id: 4231
- ENG: "Civilian Buildings Expenditure in bc/turn"
+ ENG: "Civilian Buildings Expenditure in bc/t"
  RUS: "Расходы на гражданские здания в МК/Г"
  UKR: "Видатки на цивільні будівлі в білоруських рублях"
- PTB: "Gasto de Construções Civis em bc/turn"
+ PTB: "Gasto de Construções Civis em bc/t"
 GroundDefenseBuildingsExpenditureIn:
  Id: 4232
- ENG: "Ground Defense Buildings Expenditure in bc/turn"
+ ENG: "Ground Defense Buildings Expenditure in bc/t"
  RUS: "Расходы на здания наземной обороны в МК/Г"
  UKR: "Витрати на наземні оборонні споруди в британських доларах"
- PTB: "Gasto de Construções de Defesa Terrestre em bc/turn"
+ PTB: "Gasto de Construções de Defesa Terrestre em bc/t"
 OrbitalsExpenditureInByc:
  Id: 4233
- ENG: "Orbitals Expenditure in bc/turn"
+ ENG: "Orbitals Expenditure in bc/t"
  RUS: "Расходы на орбитали в МК/Г"
- UKR: "Витрати на орбіти в bc/turn"
- PTB: "Gasto de Orbitais em bc/turn"
+ UKR: "Витрати на орбіти в bc/t"
+ PTB: "Gasto de Orbitais em bc/t"
 Total3:
  Id: 4234
  ENG: "Total:"
