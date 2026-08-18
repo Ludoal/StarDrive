@@ -135,7 +135,7 @@ Cancel:
  PTB: "Cancelar"
 Seconds:
  Id: 17
- ENG: "seconds"
+ ENG: "Seconds"
  FRA: "secondes"
  RUS: "сек."
  SPA: "segundos"
@@ -549,7 +549,7 @@ Wasteful:
  PTB: "Esbanjadores"
 WastefulRacesLeadLivesOf:
  Id: 69
- ENG: "Wasteful races lead lives of excess and care little for concepts like recycling or austerity. Ship and building maintenance costs 25% more"
+ ENG: "Wasteful races lead lives of excess and care little for concepts like recycling or austerity. Ship and building upkeep costs 25% more"
  FRA: "Les races gaspilleuses mènent des vies d'excès et se soucient peu de recyclage ou d'austérité. L'entretien des vaisseaux et bâtiments coûte 25 % de plus"
  RUS: "Расточительные расы живут в свое удовольствие; такие понятия, как умеренность и переработка отходов, им совершенно чужды. Содержание кораблей и построек обходится на 25% дороже обычного."
  SPA: "Las razas derrochadoras llevan una vida de exceso y se preocupan poco por conceptos como reciclaje o austeridad. El mantenimiento de naves y edificios les cuesta un 25% más"
@@ -565,7 +565,7 @@ Efficient:
  PTB: "Eficientes"
 EfficientRacesEarnAReduction:
  Id: 71
- ENG: "Efficient races earn a 25% reduction on ship and building maintenance costs due to their conservative and intelligent use of resources"
+ ENG: "Efficient races earn a 25% reduction on ship and building upkeep costs due to their conservative and intelligent use of resources"
  FRA: "Les races économes obtiennent une réduction de 25 % des coûts d'entretien des vaisseaux et bâtiments grâce à un usage prudent et intelligent des ressources"
  RUS: "Эффективные расы получают 25% снижение расходов на содержание кораблей и построек благодаря консервативным подходам и разумному использованию ресурсов."
  SPA: "Las razas eficientes ahorran un 25% en gastos de mantenimiento de sus naves y edificios por su uso racional y moderado de los recursos"
@@ -1229,14 +1229,14 @@ Attacking:
  PTB: "Atacando"
 InCombat:
  Id: 155
- ENG: "In combat"
+ ENG: "In Combat"
  RUS: "В бою"
  SPA: "En combate"
  UKR: "В бою"
  PTB: "Em combate"
 SearchingForTargets:
  Id: 156
- ENG: "Searching for targets"
+ ENG: "Searching for Targets"
  RUS: "Идет поиск целей"
  SPA: "Buscando objetivos"
  UKR: "Шукає цілі"
@@ -1264,7 +1264,7 @@ EnRouteTo:
  PTB: "A caminho de"
 PickingUp:
  Id: 160
- ENG: "Picking up"
+ ENG: "Picking Up"
  RUS: "Подбор"
  SPA: "Recogiendo"
  UKR: "Збір"
@@ -1299,14 +1299,14 @@ TradingGoods:
  PTB: "Bens Comerciais"
 SeekingRoute:
  Id: 165
- ENG: "Seeking route"
+ ENG: "Seeking Route"
  RUS: "Поиск маршрута"
  SPA: "Buscando ruta"
  UKR: "Пошук шляху"
  PTB: "Procurando rota"
 PickingUpColonists:
  Id: 166
- ENG: "Picking up Colonists"
+ ENG: "Picking Up Colonists"
  RUS: "Подбор колонистов"
  SPA: "Recogiendo colonos"
  UKR: "Підбір колоністів"
@@ -1327,14 +1327,14 @@ ColonistTransport:
  PTB: "Transporte de Colonos"
 EnRouteToColonize:
  Id: 169
- ENG: "En route to colonize"
+ ENG: "En Route to Colonize"
  RUS: "Колонизирует"
  SPA: "Rumbo a colonizar"
  UKR: "Колонізує"
  PTB: "A caminho para colonizar"
 UnderDirectPlayerControl:
  Id: 171
- ENG: "Under direct player control"
+ ENG: "Under Direct Player Control"
  RUS: "Под непосредственным контролем игрока"
  SPA: "Bajo control directo del jugador"
  UKR: "Під керівництвом гравця"
@@ -1348,14 +1348,14 @@ ResupplyingAt:
  PTB: "Reabastecendo em"
 ReturningToBaseForResupply:
  Id: 173
- ENG: "Returning to base for resupply"
+ ENG: "Returning to Base for Resupply"
  RUS: "Возврат для дозаправки"
  SPA: "Regresando a base para reabastecerse"
  UKR: "Повернення на базу для дозаправки"
  PTB: "Retornando à base para reabastecimento"
 ExploringTheGalaxy:
  Id: 174
- ENG: "Exploring the galaxy"
+ ENG: "Exploring the Galaxy"
  RUS: "Исследование галактики"
  SPA: "Explorando la galaxia"
  UKR: "Досліджує галактику"
@@ -1369,7 +1369,7 @@ Bombarding:
  PTB: "Bombardeando"
 EnRouteToBombard:
  Id: 176
- ENG: "En route to bombard"
+ ENG: "En Route to Bombard"
  RUS: "В пути к бомбометанию"
  SPA: "Rumbo a bombardear"
  UKR: "На шляху до бомбардування"
@@ -1425,7 +1425,7 @@ AwaitingOrders2:
  PTB: "Aguardando Ordens"
 MovingToShipyardForRefit:
  Id: 184
- ENG: "Moving to shipyard for refit"
+ ENG: "Moving to Shipyard for Refit"
  RUS: "Отправить на верфь для модернизации"
  SPA: "Rumbo a astillero para reequiparse"
  UKR: "Рухається на верф для переозброєння"
@@ -1453,7 +1453,7 @@ MovingTo:
  PTB: "Movendo para"
 Deploy:
  Id: 188
- ENG: "deploy"
+ ENG: "Deploy"
  RUS: "Разместить"
  SPA: "desplegarse"
  UKR: "Розгорнути"
@@ -1843,7 +1843,7 @@ AddThisItemToThe:
  PTB: "Adiciona este item à fila de construção da colônia. Segurar Shift o adicionará 5 vezes. Segurar Ctrl o adicionará 10 vezes. O custo em créditos listado é o custo final deste item. O custo será cobrado parcialmente conforme a produção avança."
 EditThisShipInThe:
  Id: 250
- ENG: "Edit this ship in the shipyard"
+ ENG: "Edit This Ship in the Shipyard"
  RUS: "Модифицировать этот корабль на верфи"
  SPA: "Edita esta nave en el astillero"
  UKR: "Відредагуйте цей корабель на верфі"
@@ -1883,7 +1883,7 @@ ZoomsToYourCurrentlySelected:
  PTB: "Aproxima para a nave selecionada no momento"
 ZoomOutToTheGalaxy:
  Id: 256
- ENG: "Zoom out to the galaxy view"
+ ENG: "Zoom Out to the Galaxy View"
  RUS: "Переход к виду галактики"
  SPA: "Aleja la vista de la galaxia"
  UKR: "Віддалити до вигляду галактики"
@@ -1946,7 +1946,7 @@ TaxesAreCollectedFromYour:
  PTB: "Impostos são coletados de seus planetas como uma parte da renda de suas populações. O lado negativo dos impostos é que eles reduzem o moral e a produtividade. Por exemplo, uma taxa de imposto de 25% significa que a pesquisa e a produção industrial serão reduzidas em 25% em todos os planetas."
 LaunchThisTroopIntoOrbit:
  Id: 265
- ENG: "Launch this troop into orbit"
+ ENG: "Launch This Troop Into Orbit"
  RUS: "Отправить этот отряд на орбиту"
  SPA: "Poner esta tropa en órbita"
  UKR: "Запустити цей загін на орбіту"
@@ -2340,21 +2340,21 @@ TheLandscapeHereIsNot:
  PTB: "A paisagem aqui não é adequada para habitação sem a construção de módulos habitacionais avançados. Construir uma biosfera aqui tornará esta área habitável"
 FoodPerTurn:
  Id: 354
- ENG: "Food per turn"
+ ENG: "Food per Turn"
  RUS: "еды в ход"
  SPA: "de alimentos por turno"
  UKR: "Їжа за хід"
  PTB: "Comida por Turno"
 ProductionPerTurn:
  Id: 355
- ENG: "production per turn"
+ ENG: "Production per Turn"
  RUS: "продукции в ход"
  SPA: "de producción por turno"
  UKR: "виробництво за хід"
  PTB: "produção por turno"
 ResearchPerTurn:
  Id: 357
- ENG: "Research per turn"
+ ENG: "Research per Turn"
  RUS: "исследований в ход"
  SPA: "de investigación por turno"
  UKR: "Дослідження за хід"
@@ -2382,7 +2382,7 @@ PlanetaryShieldStrengthAdded:
  PTB: "Força de Escudo Planetário Adicionada"
 CreditsAddedPerColonist:
  Id: 362
- ENG: "BC added per billion Colonists"
+ ENG: "BC Added per Billion Colonists"
  RUS: "кредитов за колониста"
  SPA: "Créditos añadidos por colono"
  UKR: "Кредитів за колоніста"
@@ -2403,7 +2403,7 @@ CombatStrength:
  PTB: "Força de Combate"
 CreditsPerTurnInMaintenance:
  Id: 365
- ENG: "BC per turn in maintenance"
+ ENG: "BC per Turn in Upkeep"
  RUS: "кредитов за ход на содержание"
  SPA: "créditos por turno en mantenimiento"
  UKR: "кредитів/хід на обслуговування"
@@ -2618,7 +2618,7 @@ FromOrbitThisAppearsTo:
  PTB: "Da órbita, isto parece ser uma mina antiga e abandonada. Pode valer a pena explorar mais."
 AnAbandonedMine:
  Id: 402
- ENG: "An abandoned mine"
+ ENG: "An Abandoned Mine"
  RUS: "Заброшенная шахта"
  SPA: "Una mina abandonada"
  UKR: "Закинута шахта"
@@ -2702,7 +2702,7 @@ FromOrbitThisAppearsTo2:
  PTB: "Da órbita, isto parece ser o local de repouso de uma nave espacial acidentada. Tropas terrestres talvez consigam descobrir mais explorando."
 ACrashedVessel:
  Id: 417
- ENG: "A crashed vessel"
+ ENG: "A Crashed Vessel"
  RUS: "Разбившийся корабль"
  SPA: "Una nave estrellada"
  UKR: "Розбите судно"
@@ -3464,7 +3464,7 @@ BB_Tech_FighterTheory_Name:
  PTB: "Construção da Baía de Caças"
 BB_Tech_FighterTheory_Desc:
  Id: 565
- ENG: "As our ability to build larger ships improves, we can begin to build motherships capable of providing berths to smaller ships. Ultimately, we envision large cruisers capable of deploying dozens of fighters or bombers into a combat situation. Note that carrier ship capabilities will increase the carrier's maintenance cost, as the fighters there need to be maintained as well."
+ ENG: "As our ability to build larger ships improves, we can begin to build motherships capable of providing berths to smaller ships. Ultimately, we envision large cruisers capable of deploying dozens of fighters or bombers into a combat situation. Note that carrier ship capabilities will increase the carrier's upkeep cost, as the fighters there need to be maintained as well."
  RUS: "По мере улучшения наших возможностей строительства крупных кораблей мы можем переходить к строительству материнских кораблей, перевозящих маленькие корабли. В конечном счете мы придем к сооружению огромных крейсеров, бросающих в бой десятки малых истребителей и бомбардировщиков."
  SPA: "A medida que aumenta nuestra capacidad para construir naves más grandes, podemos empezar a fabricar naves nodrizas donde puedan atracar aeronaves más pequeñas. En última instancia, contemplamos el uso de grandes cruceros capaces de desplegar docenas de cazas o bombarderos en operaciones de combate."
  UKR: "Коли наша здатність будувати більші кораблі покращиться, ми зможемо почати будувати флагманські кораблі, здатні надавати причали для менших кораблів. Зрештою, ми уявляємо собі великі крейсери, здатні розгортати десятки винищувачів або бомбардувальників у бойовій обстановці. Зауважте, що можливості корабля-носія збільшать витрати на його утримання, оскільки винищувачі на ньому також потребуватимуть обслуговування."
@@ -3982,14 +3982,14 @@ BB_Tech_Privatization_Name:
  PTB: "Privatização"
 BB_Tech_Privatization_Desc:
  Id: 641
- ENG: "Privatization allows private entities to own shares in public operations, therby subsidizing the maintenance costs for freighters and deep space installations (Platforms and Stations)."
+ ENG: "Privatization allows private entities to own shares in public operations, therby subsidizing the upkeep costs for freighters and deep space installations (Platforms and Stations)."
  RUS: "Приватизация позволяет частным лицам владеть долями в государственных и общественных предприятиях, что позволяет снизить расходы на содержание транспортов и объектов в глубоком космосе."
  SPA: "La privatización permite a las entidades privadas comprar acciones de operaciones públicas, sufragando así parte del coste de mantenimiento de cargueros e instalaciones de espacio profundo."
  UKR: "Приватизація дозволяє приватним структурам володіти акціями державних підприємств, тим самим субсидуючи витрати на утримання вантажних кораблів і космічних установок (платформ і станцій)."
  PTB: "A privatização permite que entidades privadas possuam participações em operações públicas, subsidiando assim os custos de manutenção de cargueiros e instalações de espaço profundo, como plataformas e estações."
 BB_Tech_Privatization_Bonus:
  Id: 642
- ENG: "Platform and Freighter maintenance is reduced by 50%"
+ ENG: "Platform and Freighter upkeep is reduced by 50%"
  RUS: "Расходы на содержание платформ и транспортов снижаются на 50%."
  SPA: "El mantenimiento de plataformas y cargueros se reduce en un 50%"
  UKR: "Обслуговування платформ і вантажних суден знижено на 50%"
@@ -7903,7 +7903,7 @@ AsYourTroopsApproachThe:
  PTB: "Ao se aproximarem da entrada da mina, suas tropas veem claramente que esta maquinaria, embora antiga, ainda está em excelente estado. Infelizmente, um ninho de Formigões fez morada aqui, e suas tropas se veem repentinamente cercadas por inimigos."
 ASadWreck:
  Id: 1802
- ENG: "A sad wreck"
+ ENG: "A Sad Wreck"
  RUS: "Печальная находка"
  SPA: "Un triste naufragio"
  UKR: "сумний уламок"
@@ -7917,7 +7917,7 @@ YourForcesExamineTheWreckage:
  PTB: "Suas forças examinam os restos do que é claramente um naufrágio espacial muito, muito antigo. O tempo e a natureza cobraram seu preço dos destroços. Mesmo assim, há algumas curiosidades entre os restos que terão algum valor no mercado aberto."
 AwesomeFind:
  Id: 1804
- ENG: "Awesome find"
+ ENG: "Awesome Find"
  RUS: "Изумительная находка"
  SPA: "Hallazgo asombroso"
  UKR: "Чудова знахідка"
@@ -7931,7 +7931,7 @@ HereYouHaveMadeA:
  PTB: "Aqui você fez uma descoberta realmente incrível: aquilo que parecia, da órbita, ser um destroço espacial na verdade não era destroço algum, mas um cruzador completamente intacto! Além disso, ele parece estar apto ao voo espacial, e suas forças já o estão levando para a órbita."
 ExcellentFind:
  Id: 1806
- ENG: "Excellent find"
+ ENG: "Excellent Find"
  RUS: "Прекрасная находка"
  SPA: "Excelente hallazgo"
  UKR: "Чудова знахідка"
@@ -8284,7 +8284,7 @@ Expansionists:
  PTB: "Expansionistas"
 FixedShipAndBuildingsCost:
  Id: 1861
- ENG: "Fixed ship and building costs"
+ ENG: "Fixed Ship and Building Costs"
  RUS: "Фиксированная стоимость кораблей и построек"
  UKR: "Фіксована вартість судна та будівель"
  PTB: "Custo Fixo de Naves e Edifícios"
@@ -8548,7 +8548,7 @@ ThisIndicatesWhatWouldThe:
  PTB: "Isso indica qual seria a população máxima deste planeta se você construísse biosferas em todos os espaços inabitáveis."
 ThisIndicatesWhatWouldThe2:
  Id: 1907
- ENG: "This indicates what would the maximum population of this planet be, if you fully terraformed this planet (at Terraform Level 3). This number might be the same as Biosphered Planet, but a Terraformed planet does not cost Biosphere maintenance."
+ ENG: "This indicates what would the maximum population of this planet be, if you fully terraformed this planet (at Terraform Level 3). This number might be the same as Biosphered Planet, but a Terraformed planet does not cost Biosphere upkeep."
  UKR: "Це число показує, яким було б максимальне населення цієї планети, якби ви повністю тераформували її (на рівні тераформування 3). Це число може збігатися з числом біосферних планет, але тераформована планета не потребує обслуговування біосфери."
  PTB: "Isso indica qual seria a população máxima deste planeta se você terraformasse completamente este planeta, no Nível de Terraformação 3. Este número pode ser igual ao de um planeta com biosferas, mas um planeta terraformado não tem custo de manutenção de Biosferas."
 Regenerate:
@@ -8829,7 +8829,7 @@ LandingTroopsOn:
  PTB: "Pousando Tropas em"
 Blockade:
  Id: 1964
- ENG: "(blockade)"
+ ENG: "(Blockade)"
  RUS: "(блокада)"
  UKR: "(блокада)"
  PTB: "(bloqueio)"
@@ -9213,7 +9213,7 @@ AColonysPopulationIsA:
  PTB: "A população de uma colônia é um indicador primário de sua força econômica. Quanto maior a população de uma colônia, mais colonos estarão disponíveis para serem divididos entre as tarefas de agricultura, produção e pesquisa. \n \n A população cresce como uma porcentagem de si mesma a cada turno, o que significa que colônias pequenas crescerão muito lentamente em comparação com as maiores. Para aumentar o crescimento populacional em uma colônia, construa alguns cargueiros e atribua a eles a missão \"Transportar Colonos\". Esses cargueiros trarão colonos dos seus mundos de alta população para seus mundos de baixa população."
 OpensColonyOverviewScreen:
  Id: 2024
- ENG: "Opens colony overview screen"
+ ENG: "Opens Colony Overview Screen"
  RUS: "Открывает экран обзора колонии"
  SPA: "Abre la pantalla de la vista de la colonia"
  UKR: "Відкриває екран огляду колонії"
@@ -9346,7 +9346,7 @@ FoodPerTurnPerAssigned:
  PTB: "alimento por turno por colono atribuído"
 ColonistsPerTurn:
  Id: 2043
- ENG: "colonists per turn"
+ ENG: "Colonists per Turn"
  RUS: "колонистов в ход"
  SPA: "colonos por turno"
  UKR: "колоністів за хід"
@@ -9381,7 +9381,7 @@ ThisDevicePerformsAVery:
  PTB: "Este dispositivo realiza uma conversão energia-matéria muito cara, criando 2 de munição por segundo para a nave equipada."
 DeleteThisShipDesign:
  Id: 2048
- ENG: "Delete this ship design"
+ ENG: "Delete This Ship Design"
  RUS: "Удалить этот дизайн корабля"
  SPA: "Eliminar este diseño de nave"
  UKR: "Видалити цей дизайн корабля"
@@ -10158,7 +10158,7 @@ ThisMysteriousBuildingAppearsTo:
  PTB: "Este edifício misterioso parece ser a origem do sinal de Controle Remnant. Precisamos colocar uma equipe em solo para investigá-lo, mas ele é fortemente defendido."
 AnAncientPortalOfSome:
  Id: 2159
- ENG: "An ancient portal of some kind"
+ ENG: "An Ancient Portal of Some Kind"
  RUS: "Какой-то древний портал"
  SPA: "Un portal antiguo de algún tipo"
  UKR: "Якийсь древній портал"
@@ -10288,7 +10288,7 @@ TheNetAmountOfResearch:
  PTB: "A quantidade líquida de pesquisa que este planeta está produzindo"
 TheNetIncomeOfThis:
  Id: 2177
- ENG: "The net income of this planet"
+ ENG: "The Net Income of This Planet"
  RUS: "Чистый доход этой планеты"
  SPA: "Los ingresos netos de este planeta"
  UKR: "Чистий дохід цієї планети"
@@ -10533,7 +10533,7 @@ ProvidesAnAdditionalBonusTo:
  PTB: "Fornece um bônus adicional de 50% aos pontos de vida de todos os módulos da nave"
 TheirBonuses:
  Id: 2212
- ENG: "Their bonuses"
+ ENG: "Their Bonuses"
  RUS: "Их бонусы"
  SPA: "Sus bonificaciones"
  UKR: "Їхні бонуси"
@@ -10928,14 +10928,14 @@ IndicatesThisColonysCurrentPopulation:
  PTB: "Indica a população atual desta colônia"
 ViewNextColony:
  Id: 2279
- ENG: "View next colony"
+ ENG: "View Next Colony"
  RUS: "Осмотреть след. колонию"
  SPA: "Ver colonia siguiente"
  UKR: "Переглянути наступну колонію"
  PTB: "Ver próxima colônia"
 ViewPreviousColony:
  Id: 2280
- ENG: "View previous colony"
+ ENG: "View Previous Colony"
  RUS: "Осмотреть пред. колонию"
  SPA: "Ver colonia anterior"
  UKR: "Переглянути попередню колонію"
@@ -11283,7 +11283,7 @@ AddWarpCapableModulesUsually2:
  PTB: "Adicione módulos capazes de Dobra (geralmente Motores de Dobra) e energize-os para igualar a velocidade média de Dobra de"
 NoSubLightSpeed:
  Id: 2528
- ENG: "No Sub light Speed"
+ ENG: "No Sub Light Speed"
  RUS: "Без субсветовой скорости"
  UKR: "Немає досвітлової швидкості"
  PTB: "Sem velocidade subliminar"
@@ -11451,13 +11451,13 @@ TheShipMightHaveReduced:
  PTB: "A nave pode ter eficácia reduzida ao lutar apenas com armas de energia sob sua ordem direta. No entanto, ela irá reabastecer quando o alvo designado for destruído."
 CivilianShips:
  Id: 2556
- ENG: "Civilian ships"
+ ENG: "Civilian Ships"
  RUS: "Гражданские корабли"
  UKR: "Цивільні кораблі"
  PTB: "Naves civis"
 MilitaryShips:
  Id: 2557
- ENG: "Military ships"
+ ENG: "Military Ships"
  RUS: "Военные корабли"
  UKR: "Військові кораблі"
  PTB: "Naves militares"
@@ -12677,14 +12677,14 @@ ShipMassModifier:
  PTB: "Modificador de Massa da Nave"
 MaintenanceModifier:
  Id: 4037
- ENG: "Buildings Maintenance Modifier"
+ ENG: "Buildings Upkeep Modifier"
  RUS: "Модификатор технического обслуживания зданий"
  SPA: "Modificador de mantenimiento de edificios"
  UKR: "Модифікатор обслуговування будівель"
  PTB: "Modificador de Manutenção de Construções"
 InsystemFtlSpeed:
  Id: 4038
- ENG: "In-system FTL speed"
+ ENG: "In-system FTL Speed"
  RUS: "Скорость FLT в системе"
  SPA: "Velocidad supraluminal dentro del sistema"
  UKR: "Внутрішньосистемна надсвітлова швидкість"
@@ -12789,7 +12789,7 @@ RightClickToExpand:
  PTB: "Clique com o botão direito para expandir"
 Turns2:
  Id: 4053
- ENG: "turns"
+ ENG: "Turns"
  RUS: "Ходов"
  SPA: "turnos"
  UKR: "Ходів"
@@ -13083,7 +13083,7 @@ ThisCrystallineStructureSyncsWith:
  PTB: "Esta estrutura cristalina sincroniza e amplifica as ondas cerebrais de organismos biológicos. Em termos simples, tudo que se aproxima dela fica mais inteligente. +0,5 de pesquisa por turno para o dono deste planeta"
 ResearchPerTurn3:
  Id: 4096
- ENG: "+0.5 research per turn"
+ ENG: "+0.5 Research per Turn"
  RUS: "+0.5 исследование за ход"
  SPA: "+0.5 de investigación por turno"
  UKR: "+0.5 дослідження за хід"
@@ -13261,7 +13261,7 @@ AddToAllStartingEmpire:
  PTB: "Adiciona este valor a todos os Planetas Iniciais dos Impérios."
 MinAcceptableShipWarpRange:
  Id: 4123
- ENG: "Min acceptable ship warp range"
+ ENG: "Min Acceptable Ship Warp Range"
  RUS: "Минимальная дистанция варп-прыжка"
  UKR: "Мінімально допустимий діапазон викривлення корабля"
  PTB: "Alcance mínimo aceitável de dobra da nave"
@@ -13273,7 +13273,7 @@ MinAcceptableWarpRangeAShip:
  PTB: "Alcance mínimo de dobra aceitável que uma nave deve ter antes de precisar recarregar para a IA construí-la."
 SecondsPerTurn:
  Id: 4125
- ENG: "Seconds per turn"
+ ENG: "Seconds per Turn"
  RUS: "Секунд за ход"
  UKR: "Секунди за хід"
  PTB: "Segundos Por Turno"
@@ -13285,13 +13285,13 @@ TimeInSecondsPerTurn:
  PTB: "Tempo em segundos por turno. Cálculos de Produção, Comida, Pesquisa e Tesouro são realizados por turno."
 MaintenanceMultiplier:
  Id: 4127
- ENG: "Maintenance Multiplier"
+ ENG: "Upkeep Multiplier"
  RUS: "Множитель содержания"
  UKR: "Мультиплікатор обслуговування"
  PTB: "Multiplicador de Manutenção"
 MultiplyGlobalMaintenanceCostBy:
  Id: 4128
- ENG: "Multiply Global Maintenance cost by the value specified. Subspace Projectors are not affected."
+ ENG: "Multiply Global Upkeep cost by the value specified. Subspace Projectors are not affected."
  RUS: "Умножает стоимость глобального содержания на указанное значение. Подпространственные проекторы не учитываются."
  UKR: "Помножте глобальну вартість обслуговування на вказане значення. На підпросторові проектори це не впливає."
  PTB: "Multiplica o custo global de manutenção pelo valor especificado. Projetores Subespaciais não são afetados."
@@ -13525,7 +13525,7 @@ WeReturnedTheShipWhich:
  PTB: "Devolvemos a nave que foi atacada por piratas rivais\ndevido ao seu contrato de proteção conosco. De nada."
 OurSpiesReportThat:
  Id: 4167
- ENG: "Our Spies report that"
+ ENG: "Our Spies Report That"
  RUS: "Наши шпионы сообщают, что"
  UKR: "Наші розвідники повідомляють, що"
  PTB: "Nossos espiões relatam que"
@@ -13585,7 +13585,7 @@ AreNowAtPeace:
  PTB: "agora estão em paz"
 PeaceTreatyExpiredWithn:
  Id: 4177
- ENG: "Peace Treaty expired with\n"
+ ENG: "Peace Treaty Expired with\n"
  RUS: "Истек мирный договор с\n"
  UKR: "Мирний договір втратив чинність з"
  PTB: "Tratado de Paz expirou com\n"
@@ -13597,13 +13597,13 @@ OurTroopsStationedOn:
  PTB: "Nossas tropas estacionadas em"
 HadToEvacuateSincen:
  Id: 4180
- ENG: "had to evacuate since\n"
+ ENG: "Had to Evacuate since\n"
  RUS: "должны эвакуироваться потому,что\n"
  UKR: "довелося евакуюватися, оскільки"
  PTB: "tiveram que evacuar porque\n"
 OwnsThePlanetNow:
  Id: 4181
- ENG: "owns the planet now"
+ ENG: "Owns the Planet Now"
  RUS: "теперь владеет планетой"
  UKR: "тепер володіє планетою."
  PTB: "agora possui o planeta"
@@ -14263,7 +14263,7 @@ ThisMeteorCraterContainsFascinating:
  PTB: "Esta Cratera de Meteoro contém materiais fascinantes e raros que podem ajudar nossos esforços de pesquisa. Infelizmente, esse efeito é temporário."
 FlatResearchPerTurn:
  Id: 4291
- ENG: "+1 Flat Research per turn"
+ ENG: "+1 Flat Research per Turn"
  RUS: "+1 к науке за ход"
  UKR: "+1 плоске дослідження за хід"
  PTB: "+1 Pesquisa Fixa por turno"
@@ -14275,7 +14275,7 @@ ThisMeteorCraterContainsPrecious:
  PTB: "Esta Cratera de Meteoro contém metais preciosos que podem ser trocados por créditos. Infelizmente, esse efeito é temporário."
 CreditsPerColonist2:
  Id: 4293
- ENG: "+1 BC per billion Colonists"
+ ENG: "+1 BC per Billion Colonists"
  RUS: "+1 к кредитам за колониста"
  UKR: "+1 кредит за кожного колоніста"
  PTB: "+1 Crédito por Colonista"
@@ -14375,7 +14375,7 @@ BB_Tech_Terraforming3_Bonus:
  PTB: "Terraformação Nível 3. Neste nível, os Terraformadores removerão todos os Vulcões e terrenos ruins do planeta, tornarão habitáveis os quadrantes terraformáveis e também transformarão seu planeta no melhor tipo de planeta adequado para sua raça, aumentando sua fertilidade para 1."
 Terraforming:
  Id: 4311
- ENG: "Terraforming in progress"
+ ENG: "Terraforming in Progress"
  UKR: "Тераформування триває"
  PTB: "Terraformação em Andamento"
 Blockade2:
@@ -14525,7 +14525,7 @@ BB_Tech_SubspatialDynamics_CounterEnemyPlanetInhibitionBonus_Bonus:
  PTB: "Normalmente, planetas hostis anulam os efeitos dos nossos próprios projetores e inibem nossas naves. Esta tecnologia nos permite reduzir o poço gravitacional do planeta inimigo em 25%, se tivermos um projetor ao alcance."
 OurSpiesReport:
  Id: 4341
- ENG: "Our spies detected that"
+ ENG: "Our Spies Detected That"
  UKR: "Наші шпигуни виявили, що"
  PTB: "Nossos espiões detectaram que"
 TheyPreparingForWar:
@@ -14630,7 +14630,7 @@ HasMergedWith:
  PTB: "fundiu-se com"
 DueToLosingWarUS:
  Id: 4362
- ENG: "due to a losing war with us"
+ ENG: "Due to a Losing War with Us"
  UKR: "через програну війну з нами"
  PTB: "devido a uma guerra perdida contra nós"
 DueToLosingWarThem:
@@ -14700,7 +14700,7 @@ ProdPerColonist:
  PTB: "Produção Por Colonista Atribuído"
 ProdPerTurn:
  Id: 4376
- ENG: "Production per turn"
+ ENG: "Production per Turn"
  UKR: "Виробництво за один оборот"
  PTB: "Produção Por Turno"
 MaxStorage:
@@ -14710,7 +14710,7 @@ MaxStorage:
  PTB: "Armazenamento Máximo"
 PlusFlatPop:
  Id: 4378
- ENG: "Flat Population (millions)"
+ ENG: "Flat Population (Millions)"
  UKR: "Рівнинне населення (млн.)"
  PTB: "População Fixa (Milhões)"
 Infrastructure:
@@ -14720,7 +14720,7 @@ Infrastructure:
  PTB: "Infraestrutura"
 PopMax:
  Id: 4380
- ENG: "Max Population (billions)"
+ ENG: "Max Population (Billions)"
  UKR: "Максимальна кількість населення (млрд)"
  PTB: "População Máxima (Bilhões)"
 MineralRichness:
@@ -14786,7 +14786,7 @@ PathfinderTip:
  ENG: "When ON, ships plot a course around hostile and unknown planetary gravity wells when moving across the universe, avoiding warp drops. Turning this OFF makes ships travel in straight lines and drop out of warp as wells are encountered."
 FlatIncomePerTurn:
  Id: 4384
- ENG: "Flat Income per turn"
+ ENG: "Flat Income per Turn"
  UKR: "Фіксований дохід за оборот"
  PTB: "Renda Fixa Por Turno"
 AutoBuildTerraformers:
@@ -14831,7 +14831,7 @@ BB_GoldMountainDescShort:
  PTB: "Fornece 1,5 de produção por colonista, aumenta a riqueza do planeta em 2, valor total de 3000 de produção"
 BB_MoltenGold:
  Id: 4393
- ENG: "Molten gold pit"
+ ENG: "Molten Gold Pit"
  UKR: "Яма з розплавленим золотом"
  PTB: "Poço de ouro fundido"
 BB_MoltenGoldDesc:
@@ -14940,7 +14940,7 @@ ResearchPerTurnStatTip:
  PTB: "Quantidade de Pontos de Pesquisa gerados por turno."
 ResearchStationResearchTimeStat:
  Id: 4415
- ENG: "Research Time (turns)"
+ ENG: "Research Time (Turns)"
  PTB: "Tempo de Pesquisa (turnos)"
 ResearchStationResearchTimeStatTip:
  Id: 4416
@@ -14999,12 +14999,12 @@ ResearchPlanResearching:
  PTB: "Pesquisando"
 ResearchPlanIdle:
  Id: 4427
- ENG: "Offline - no Research topic"
+ ENG: "Offline - No Research Topic"
  UKR: "Офлайн - немає Дослідницької теми"
  PTB: "Offline - nenhum tópico de Pesquisa"
 ExoticPlanNoSupply:
  Id: 4428
- ENG: "Offline - waiting for supplies"
+ ENG: "Offline - Waiting for Supplies"
  UKR: "Офлайн - очікування поставок"
  PTB: "Offline - aguardando suprimentos"
 ResearchStationDeployed:
@@ -15113,7 +15113,7 @@ DesignIssueConstructorCostRemidiation:
  PTB: "Talvez você queira reduzir o custo deste construtor. Custo excedente de produção adicionado a qualquer custo de produção orbital quando este construtor é selecionado:"
 RefinningPerTurnStat:
  Id: 4449
- ENG: "Refining per turn"
+ ENG: "Refining per Turn"
  UKR: "Переробка за один оборот"
  PTB: "Refino Por Turno"
 RefiningPerTurnStatTip:
@@ -15875,7 +15875,7 @@ TraitAquaticDesc:
  PTB: "Esta raça prefere se reproduzir e viver na água. Ela nada bem e respira debaixo d'água. Começa com Mundo Natal Oceânico e tem preferências diferentes para outros tipos de planeta."
 ShipMaintenanceMultiplier:
  Id: 4988
- ENG: "Ship Maintenance Multiplier"
+ ENG: "Ship Upkeep Multiplier"
  RUS: "Модификатор технического обслуживания корабля"
  SPA: "Modificador de mantenimiento de barcos"
  UKR: "Мультиплікатор технічного обслуговування суден"
@@ -15902,19 +15902,19 @@ ResearchArrayDesc:
  PTB: "Este pequeno Laboratório pode melhorar muito nossos esforços de pesquisa no Espaço ao estudar Estrelas e composições planetárias únicas."
 OnSurface:
  Id: 4993
- ENG: "on surface"
+ ENG: "On Surface"
  RUS: "на поверхности"
  UKR: "на поверхні"
  PTB: "na superfície"
 InSpace:
  Id: 4994
- ENG: "in space"
+ ENG: "In Space"
  RUS: "в космосе"
  UKR: "у просторі"
  PTB: "no espaço"
 OnSurfaceAndInSpace:
  Id: 4995
- ENG: "on surface and in space"
+ ENG: "On Surface and in Space"
  RUS: "на поверхности и в космосе"
  UKR: "на поверхні та в космосі"
  PTB: "na superfície e no espaço"
@@ -15932,7 +15932,7 @@ ProductionConsumptionPerTurnFor:
  PTB: "Consumo de produção por turno para Tropas"
 CreditsPerTurnForTroop:
  Id: 4998
- ENG: "BC per turn for Troop maintenance"
+ ENG: "BC per turn for Troop upkeep"
  RUS: "Кредиты за ход на содержание войск"
  UKR: "Кредити за хід на утримання війська"
  PTB: "Créditos por turno para manutenção de Tropas"
@@ -16545,14 +16545,14 @@ TT_FireControl:
  PTB: "Sistemas de Controle de Fogo ou SCF. Isto indica quão poderoso é o controle de fogo das armas na nave. Um SCF mais alto aumenta a precisão das armas e o rastreamento de alvos. A precisão das armas usa o maior SCF de qualquer módulo, exceto onde indicado. Sistemas de rastreamento acumulam SCF."
 SensorRange:
  Id: 6000
- ENG: "sensor range"
+ ENG: "Sensor Range"
  RUS: "дальность сенсоров"
  SPA: "Rango del sensor"
  UKR: "діапазон датчика"
  PTB: "alcance dos sensores"
 SubspaceProjectionArea:
  Id: 6001
- ENG: "subspace projection area"
+ ENG: "Subspace Projection Area"
  RUS: "область проекции подпространства"
  SPA: "Area de proyeccion subespacial"
  UKR: "область проекції підпростору"
@@ -16594,7 +16594,7 @@ BeamDur:
  PTB: "Duração do Feixe"
 PauseOnNotifications:
  Id: 6007
- ENG: "Pause on notifications"
+ ENG: "Pause on Notifications"
  RUS: "Пауза при уведомлениях"
  SPA: "Pausar en notificaiones"
  UKR: "Пауза при сповіщеннях"
@@ -17007,7 +17007,7 @@ CreditsWereMysteriouslyStolenFrom:
  PTB: "créditos foram misteriosamente roubados do nosso tesouro.\nNão temos suspeitos no roubo"
 CouldNotRob:
  Id: 6066
- ENG: "could not rob"
+ ENG: "Could Not Rob"
  RUS: "не смог ограбить"
  SPA: "No pudo robar"
  UKR: "не змогли пограбувати"
@@ -17021,7 +17021,7 @@ NbecauseTheyHaveNoMoney:
  PTB: "\nporque eles não têm dinheiro"
 Stole:
  Id: 6068
- ENG: "stole"
+ ENG: "Stole"
  RUS: "украл"
  SPA: "Robó"
  UKR: "таблиця"
@@ -17231,7 +17231,7 @@ Treasury:
  PTB: "Tesouro:"
 MaintenanceCosts:
  Id: 6098
- ENG: "Maintenance Costs:"
+ ENG: "Upkeep Costs:"
  RUS: "Затраты на тех. обслуж:"
  SPA: "Coste de manteniendo:"
  UKR: "Витрати на утримання:"
@@ -17252,7 +17252,7 @@ Population2:
  PTB: "População:"
 Billion:
  Id: 6101
- ENG: "billion"
+ ENG: "Billion"
  RUS: "миллиард"
  SPA: "Miles de millones"
  UKR: "мільярд"
@@ -17504,7 +17504,7 @@ AutoResearch:
  PTB: "Pesquisa Automática"
 ShipRepair:
  Id: 6137
- ENG: "Ship Repair per second"
+ ENG: "Ship Repair per Second"
  UKR: "Судноремонт за секунду"
  PTB: "Reparo da Nave por Segundo"
 AutoTaxes:
@@ -17971,7 +17971,7 @@ CompletionTip:
  PTB: "Percentual dos projetos concluídos."
 Achievable:
  Id: 6200
- ENG: "achievable"
+ ENG: "Achievable"
  PTB: "atingível"
 AchievableTip:
  Id: 6201
@@ -18095,7 +18095,7 @@ InfiltrationLevel2Desc:
  PTB: "Permite ver na Tela de Diplomacia o total de Naves, tipo de Tecnologia de Pesquisa e estatísticas de classificação Econômica, Científica, Populacional e Militar."
 InfiltrationLevel3Desc:
  Id: 6231
- ENG: "Diplomacy Screen view of their Empire Bonuses, total Funds and Maintenance. Espionage view of their Spy Defense"
+ ENG: "Diplomacy Screen view of their Empire Bonuses, total Funds and Upkeep. Espionage view of their Spy Defense"
  PTB: "Visualização na Tela de Diplomacia dos Bônus do Império, total de Fundos e Manutenção deles. Visualização de espionagem da Defesa contra Espiões deles"
 InfiltrationStatus:
  Id: 6234
@@ -18367,7 +18367,7 @@ InfiltrationCounterEspionageMiserableFailVictim:
  PTB: "Agentes desconhecidos tentaram descobrir nossa rede de espiões. Eles falharam."
 InfiltrationSabotageSuccessMessage:
  Id: 6301
- ENG: "Our Agents saboraged"
+ ENG: "Our Agents Saboraged"
  PTB: "Nossos Agentes sabotaram"
 InfiltrationSabotageSuccessMessageVictim:
  Id: 6302
@@ -18706,7 +18706,7 @@ OrderShipBackToThe:
  PTB: "Sucatear Nave - Ordena que a nave retorne aos estaleiros para ser desmontada. Se essa nave tiver um casco estrangeiro, seus engenheiros talvez consigam fazer engenharia reversa do casco. Se quiser sucatear em massa TODAS as naves desse modelo, use a tela 'Lista de Naves' e ordene o sucateamento com SHIFT + clique."
 OrderShipRefit:
  Id: 7006
- ENG: "Order ship refit"
+ ENG: "Order Ship Refit"
  RUS: "Заказать переоборудование корабля"
  SPA: "Ordena una nave a ser reconstruida"
  UKR: "Замовити переобладнання судна"
@@ -18903,7 +18903,7 @@ ThisWeaponsFireASalvo:
  PTB: "Esta arma dispara uma salva de projéteis."
 TimeBetweenShots:
  Id: 7034
- ENG: "Time between shots"
+ ENG: "Time Between Shots"
  RUS: "Время между выстрелами"
  SPA: "Tiempo entre disparos"
  UKR: "Час між пострілами"
@@ -19409,13 +19409,13 @@ TheWholeStructureOfThis:
  PTB: "Toda a estrutura deste edifício é o cérebro de uma IA senciente. Depois de alguns séculos, ela desenvolveu uma dupla personalidade: uma chamada Ben e a outra Rob."
 ResearchTaxRates:
  Id: 18163
- ENG: "-2 research, +30% tax rates"
+ ENG: "-2 Research, +30% Tax Rates"
  RUS: "-2 к науке, + 30% к налоговым доходам."
  UKR: "-2 дослідження, +30% податкові ставки"
  PTB: "-2 de pesquisa, +30% nas taxas de imposto."
 AncientMegacity:
  Id: 5098
- ENG: "Ancient megacity"
+ ENG: "Ancient Megacity"
  RUS: "Древний мегаполис"
  UKR: "Стародавній мегаполіс"
  PTB: "Megacidade Antiga"
@@ -19463,7 +19463,7 @@ ProvidesFoodPerTurnTotal3:
  PTB: "Fornece 0,6 de comida por turno, valor total de 3100 de comida."
 CaveSystem:
  Id: 18111
- ENG: "Cave system"
+ ENG: "Cave System"
  RUS: "Пещерная система"
  UKR: "Система печер"
  PTB: "Sistema de cavernas"
@@ -19481,7 +19481,7 @@ TheseCavesAreExpansiveEnough:
  PTB: "Estas cavernas são expansivas o bastante para fornecer moradia adicional."
 DropOffPoint:
  Id: 18114
- ENG: "Drop off point"
+ ENG: "Drop Off Point"
  RUS: "Пункт выдачи"
  UKR: "Місце висадки"
  PTB: "Ponto de entrega"
@@ -19499,7 +19499,7 @@ ProvidesFoodProductionCredits:
  PTB: "Fornece +2 de comida, +3 de produção, -1,3 créditos."
 EvaporativeWastePit:
  Id: 18103
- ENG: "Evaporative Waste pit"
+ ENG: "Evaporative Waste Pit"
  RUS: "Геотермальный источник"
  UKR: "Випарна яма для відходів"
  PTB: "Poço de Resíduos Evaporativos"
@@ -19517,7 +19517,7 @@ ToxicFumesFromThisSpring:
  PTB: "Fumaças tóxicas desta nascente afetam negativamente as plantas e o solo, reduzindo a fertilidade planetária em 0,2."
 ExoticMineral:
  Id: 18106
- ENG: "Exotic mineral"
+ ENG: "Exotic Mineral"
  RUS: "Экзотический минерал"
  UKR: "Екзотичний мінерал"
  PTB: "Mineral exótico"
@@ -19553,7 +19553,7 @@ ProvidesFoodPerTurnTotal4:
  PTB: "Fornece 1 de comida por turno, +4 de pesquisa fixa, +8 milhões de população por turno, valor total de 250 de comida."
 WorldSeed:
  Id: 18175
- ENG: "World seed"
+ ENG: "World Seed"
  RUS: "Мировое семя"
  UKR: "Світове насіння"
  PTB: "Semente do mundo"
@@ -19571,7 +19571,7 @@ PlanetFertilityTerraformsAPlanet:
  PTB: "+0,15 de fertilidade planetária, terraforma um planeta."
 MysteriousAltar:
  Id: 18178
- ENG: "Mysterious altar"
+ ENG: "Mysterious Altar"
  RUS: "Таинственный алтарь"
  UKR: "Таємничий вівтар"
  PTB: "Altar misterioso"
@@ -19583,7 +19583,7 @@ ALoneAncientAltarIn:
  PTB: "Um altar antigo e solitário no meio do nada. Ele está emitindo fortes pulsos de energia."
 WorldBubbleEmitter:
  Id: 18180
- ENG: "World bubble emitter"
+ ENG: "World Bubble Emitter"
  RUS: "Планетарный излучатель щита"
  UKR: "Світовий емітент бульбашок"
  PTB: "Emissor de bolha mundial"
@@ -19601,7 +19601,7 @@ PlanetaryShieldStrengthFertilityInjuries:
  PTB: "+1800 de força de escudo planetário, -0,2 de fertilidade, 2 ferimentos em cada tropa invasora."
 ForcefieldEmitter:
  Id: 18183
- ENG: "Forcefield emitter"
+ ENG: "Forcefield Emitter"
  RUS: "Излучатель силового поля"
  UKR: "Випромінювач силового поля"
  PTB: "Emissor de campo de força"
@@ -19661,13 +19661,13 @@ ThisMysteriousObeliskEmitsAn2:
  PTB: "Este misterioso obelisco emite um campo de energia que desestabiliza as vias neurais em organismos sencientes."
 NegativeResearchPerTurn:
  Id: 18193
- ENG: "-1 research per turn"
+ ENG: "-1 Research per Turn"
  RUS: "-1 к науке за ход."
  UKR: "-1 дослідження за хід"
  PTB: "-1 de pesquisa por turno."
 SpaceElevator2:
  Id: 18194
- ENG: "Space elevator"
+ ENG: "Space Elevator"
  RUS: "Космический лифт"
  UKR: "Космічний ліфт"
  PTB: "Elevador espacial"
@@ -19691,7 +19691,7 @@ AMysteriousOrbWhichIs:
  PTB: "Um orbe misterioso que levita por conta própria, mas não gera nenhum tipo de assinatura de energia detectável. É como se ele nem estivesse ali..."
 PirateOutcasts:
  Id: 18198
- ENG: "Pirate outcasts"
+ ENG: "Pirate Outcasts"
  RUS: "Пираты-изгои"
  UKR: "Піратські вигнанці"
  PTB: "Proscritos piratas"
@@ -19709,7 +19709,7 @@ InfrastructureCreditsPerTurn:
  PTB: "+2 de infraestrutura, -1 crédito por turno."
 TeleportRing:
  Id: 18201
- ENG: "Teleport ring"
+ ENG: "Teleport Ring"
  RUS: "Кольцо телепортации"
  UKR: "Перстень телепорту."
  PTB: "Anel de teletransporte"
@@ -19739,7 +19739,7 @@ FoodPerTurn2:
  PTB: "-2 de comida por turno."
 UnidentifiedSignature:
  Id: 18206
- ENG: "Unidentified signature"
+ ENG: "Unidentified Signature"
  RUS: "Неопознанная сигнатура"
  UKR: "Невідомий підпис"
  PTB: "Assinatura não identificada"
@@ -19751,7 +19751,7 @@ OurSensorsCantDetermineThe:
  PTB: "Nossos sensores não conseguem determinar a natureza exata desta assinatura. Precisamos enviar tropas para investigá-la melhor."
 RockField:
  Id: 18149
- ENG: "Rock field"
+ ENG: "Rock Field"
  RUS: "Каменная гряда"
  UKR: "Кам'яне поле"
  PTB: "Campo rochoso"
@@ -19781,7 +19781,7 @@ ThereSeemsToBeSome:
  PTB: "Parece haver algum tipo de fonte de energia nas montanhas que está embaralhando os resultados das varreduras em órbita."
 MassiveMountains:
  Id: 18154
- ENG: "Massive mountains"
+ ENG: "Massive Mountains"
  RUS: "Массивные горы"
  UKR: "Масивні гори"
  PTB: "Montanhas massivas"
@@ -19823,7 +19823,7 @@ AtOneTimeAnAbandoned:
  PTB: "Outrora um armazém abandonado, agora limpo e restaurado, este grande armazém fornece armazenamento para 200 unidades extras de comida e produção."
 MaximumGoodsStorage3:
  Id: 5369
- ENG: "+200 maximum goods storage"
+ ENG: "+200 Maximum Goods Storage"
  RUS: "+200 к месту на складе"
  UKR: "+200 максимальне зберігання товарів"
  PTB: "+200 de armazenamento máximo de bens"
@@ -19883,7 +19883,7 @@ ProvidesProductionPerColonistTotal7:
  PTB: "Fornece 0,8 de produção por colono, valor total de 1500 de produção."
 SpaceElevator:
  Id: 18097
- ENG: "Space elevator"
+ ENG: "Space Elevator"
  RUS: "Космический лифт"
  UKR: "Космічний ліфт"
  PTB: "Elevador espacial"
@@ -19991,7 +19991,7 @@ FromOrbitItAppearsAs:
  PTB: "Da órbita, parece não haver nada fora do comum. Porém, seu comandante de frota insiste que estas são as coordenadas certas, e tropas terrestres devem ser enviadas para investigar."
 UndergroundSuperstructure:
  Id: 5095
- ENG: "Underground superstructure"
+ ENG: "Underground Superstructure"
  RUS: "Подземная суперструктура"
  UKR: "Підземна надбудова"
  PTB: "Superestrutura subterrânea"
@@ -20009,7 +20009,7 @@ ProvidesShelterForALarge:
  PTB: "Fornece abrigo para uma grande quantidade de população."
 UnexploredCave:
  Id: 18109
- ENG: "Unexplored cave"
+ ENG: "Unexplored Cave"
  RUS: "Неизведанная пещера"
  UKR: "Недосліджена печера"
  PTB: "Caverna inexplorada"
@@ -20084,7 +20084,7 @@ Tech_SolarArraysV5_Name:
  PTB: "Matrizes Solares V5"
 UpgradedXenoMines:
  Id: 8073
- ENG: "Advanced Xeno mines"
+ ENG: "Advanced Xeno Mines"
  RUS: "Модернизированные ксено шахты"
  UKR: "Просунуті міни Xeno"
  PTB: "Minas Xeno Avançadas"
@@ -20803,13 +20803,13 @@ LightDarkMatterCannon:
  PTB: "Canhão Leve de Matéria Escura"
 DarkMatterTurret:
  Id: 17948
- ENG: "Dark Matter turret"
+ ENG: "Dark Matter Turret"
  RUS: "Турель Темной Материи"
  UKR: "Вежа темної матерії"
  PTB: "Torreta de Matéria Escura"
 HeavyDarkMatterTurret:
  Id: 17949
- ENG: "Heavy Dark Matter turret"
+ ENG: "Heavy Dark Matter Turret"
  RUS: "Тежалая турель Темной Материи"
  UKR: "Важка башта з темної матерії"
  PTB: "Torreta Pesada de Matéria Escura"
@@ -20877,7 +20877,7 @@ Tech_RemnantShielding_Desc:
  PTB: "Ao estudar assinaturas de energia e partículas emitidas por geradores de escudo Remanescentes recuperados, conseguimos replicar e introduzir esses avanços em nossos próprios geradores de escudo."
 Tech_RemnantShielding_Bonus:
  Id: 18269
- ENG: "Provides a 30% shield power"
+ ENG: "Provides a 30% Shield Power"
  UKR: "Забезпечує 30% потужності щита"
  PTB: "Fornece 30% de poder de escudo."
 Tech_SlipStreams_Name:
@@ -21005,7 +21005,7 @@ Tech_WeatherManipulation_Desc:
  PTB: "Ao manipular o clima de um planeta, podemos reduzir efeitos climáticos devastadores enquanto preservamos as condições ideais para o crescimento das plantas. Na prática, isso aumenta a fertilidade do planeta."
 RemnDisrupt:
  Id: 10073
- ENG: "Remnant disruptor TS"
+ ENG: "Remnant Disruptor TS"
  UKR: "Дезінтегратор Древніх TS"
  PTB: "Disruptor Remanescente TS"
 RemnDisruptdescr:
@@ -21025,7 +21025,7 @@ AdvancedWarpField:
  PTB: "Aumenta a velocidade de dobra em 70% para todas as naves."
 WarpBubbleTech:
  Id: 10077
- ENG: "Warp theory"
+ ENG: "Warp Theory"
  UKR: "Теорія викривлення"
  PTB: "Teoria da Dobra"
 WarpBubbleTechDescr:
@@ -21045,7 +21045,7 @@ GreenhouseDescr:
  PTB: "Edifício projetado para proteger plantas delicadas ou fora de estação contra frio ou calor excessivo."
 Orerefinery:
  Id: 10082
- ENG: "Ore refinery"
+ ENG: "Ore Refinery"
  UKR: "Гірничо-збагачувальний комбінат"
  PTB: "Refinaria de Minério"
 OrerefineryDescr:
@@ -21557,7 +21557,7 @@ Tech_PlanetFortification_Desc:
  PTB: "Guerras em escalada estão levando a cercos planetários prolongados e massivos. Por isso, precisamos tomar as medidas necessárias para fortificar nossos planetas e fazer nossos inimigos pagarem caro por cada planeta que atacarem."
 BB_AeroponicsShortDescr:
  Id: 17585
- ENG: "+1 food per turn"
+ ENG: "+1 Food per Turn"
  RUS: "+1 еды в ход"
  SPA: "+1 comida por turno"
  UKR: "+1 їжа за хід"
@@ -21604,7 +21604,7 @@ PhasorFocusTechDescr:
  PTB: "A evolução das armas de feixe nos levou à descoberta de phasors poderosos. Usando métodos de focalização de feixes já conhecidos, conseguimos aplicar a maior parte dos esquemas antigos com novos componentes avançados."
 LightBeam:
  Id: 17595
- ENG: "Light beam array"
+ ENG: "Light Beam Array"
  UKR: "Масив світлового променя"
  PTB: "Matriz de feixe leve"
 LightBeamDescr:
@@ -21614,7 +21614,7 @@ LightBeamDescr:
  PTB: "Montagem de arma leve e pequena que produz um feixe de energia bastante poderoso. Requer Células de Energia para poder disparar."
 LightEnergycannon:
  Id: 17597
- ENG: "Light energy cannon"
+ ENG: "Light Energy Cannon"
  UKR: "Гармата світлової енергії"
  PTB: "Canhão de energia leve"
 LightEnerycannonDescr:
@@ -21666,7 +21666,7 @@ Tech_Battle_Stations_Desc:
  PTB: "A necessidade de defender nossas colônias contra invasões inimigas cresce constantemente. Nossos engenheiros projetaram uma estação de batalha substancialmente grande, que fortalecerá a capacidade defensiva dos nossos planetas mais importantes. Também aprimoramos nossos lançadores orbitais de mísseis, um passo para anular a ameaça das armas inimigas de longo alcance."
 Module_ArmoredMissile:
  Id: 17607
- ENG: "Armored missile silo"
+ ENG: "Armored Missile Silo"
  UKR: "Броньована ракетна шахта"
  PTB: "Silo de mísseis blindado"
 Module_ArmoredMissile_Desc:
@@ -21880,7 +21880,7 @@ BB_CrystalPlantDescr:
  PTB: "Esta construção maravilhosa é capaz de cultivar cristais muito valiosos, que podem ser vendidos com alto lucro."
 BB_CrystalPlantDescrBonus:
  Id: 17650
- ENG: "Generates +8 BC per turn"
+ ENG: "Generates +8 BC per Turn"
  UKR: "Генерує +8 кредитів за хід"
  PTB: "Gera +8 créditos por turno"
 BB_Hellstorm:
@@ -21905,7 +21905,7 @@ BB_ClusterMissileDescr:
  PTB: "Sistema de mísseis equipado com ogivas cluster."
 BB_SpaceportTech:
  Id: 17655
- ENG: "Space port"
+ ENG: "Space Port"
  UKR: "Космічний порт"
  PTB: "Porto espacial"
 BB_SpaceportTechDescr:
@@ -21925,7 +21925,7 @@ BB_BunkerDescr:
  PTB: "Construção altamente fortificada usada para manter linhas defensivas, capaz de resistir a um período mais longo de bombardeio, mas carente em poder de fogo."
 BB_BunkerDescrShort:
  Id: 17659
- ENG: "Highly defensive building"
+ ENG: "Highly Defensive Building"
  UKR: "Високообороноздатна будівля"
  PTB: "Construção altamente defensiva"
 Tech_AncientArmor_Name:
@@ -22017,7 +22017,7 @@ CodexTitle:
  PTB: "Códice BlackBox"
 CodexPressF1ForDetails:
  Id: 100201
- ENG: "Press F1 for details"
+ ENG: "Press F1 for Details"
  RUS: "Нажмите F1 для подробностей"
  PTB: "Pressione F1 para detalhes"
 CodexBlackbox:
@@ -22030,7 +22030,7 @@ CodexBlackboxWhatIs:
  PTB: "O que é a BlackBox"
 CodexBlackboxWhatIsShort:
  Id: 100002
- ENG: "History and origin"
+ ENG: "History and Origin"
  PTB: "História e origem"
 CodexBlackboxWhatIsText:
  Id: 100003
@@ -22042,7 +22042,7 @@ CodexBlackboxCurrentVersion:
  PTB: "Versão Atual"
 CodexBlackboxCurrentVersionShort:
  Id: 100005
- ENG: "Jupiter 1.60 — 64-bit edition"
+ ENG: "Jupiter 1.60 — 64-Bit Edition"
  PTB: "Jupiter 1.60 — edição de 64 bits"
 CodexBlackboxCurrentVersionText:
  Id: 100006
@@ -22084,7 +22084,7 @@ CodexTutorialsOverview:
  PTB: "Visão Geral"
 CodexTutorialsOverviewShort:
  Id: 100033
- ENG: "An introduction to StarDrive"
+ ENG: "An Introduction to StarDrive"
  RUS: "Первое знакомство со StarDrive"
  PTB: "Uma introdução ao StarDrive"
 CodexTutorialVideos:
@@ -22179,7 +22179,7 @@ CodexEconomyEconomicBasicsShort:
  PTB: "Uma visão geral da economia de StarDrive."
 CodexEconomyEconomicBasicsText:
  Id: 100052
- ENG: "The four economic resources in StarDrive are Food, Production, Research, and Money. These resources are collected and consumed each game \"turn\", which corresponds to five seconds of real time. The game speed can be modified by pressing the + / - keys for faster or slower play. \n \n Food is used to feed your colonists and is consumed at a rate of 1 food per 1 population unit (1 Billion colonists) per turn. Production represents raw and refined goods produced by your empire and is used to produce ships, troops, and planetary improvements. Cybernetic races consume production instead of food. Research is used to unlock new technological advances. Finally, Money (BC) is used to pay maintenance for your ships, troops, planetary improvements, or diplomatic treaties. Money is earned primarily through automatic taxation of your citizens."
+ ENG: "The four economic resources in StarDrive are Food, Production, Research, and Money. These resources are collected and consumed each game \"turn\", which corresponds to five seconds of real time. The game speed can be modified by pressing the + / - keys for faster or slower play. \n \n Food is used to feed your colonists and is consumed at a rate of 1 food per 1 population unit (1 Billion colonists) per turn. Production represents raw and refined goods produced by your empire and is used to produce ships, troops, and planetary improvements. Cybernetic races consume production instead of food. Research is used to unlock new technological advances. Finally, Money (BC) is used to pay upkeep for your ships, troops, planetary improvements, or diplomatic treaties. Money is earned primarily through automatic taxation of your citizens."
  RUS: "В StarDrive имеется 4 типа экономических ресурсов – это еда. производство, наука и деньги. Эти ресурсы собираются и расходуются каждый игровой \"ход\", которому соответствует 5 секунд реального времени. Вы можете изменять скорость игры при помощи клавиш + / - для ускорения или замедления игры. \n \n Еда используется для того, чтобы прокормить ваших колонистов, и потребляется из расчета 1 единица еды на 1 единицу населения (1 млрд. колонистов) в ход. Производство – это товары, произведенные в вашей империи; оно требуется для строительства кораблей, планетарных объектов и формирования боевых отрядов. Кибернетические расы вместо еды потребляют производство. Наука используется для открытия новых технологий. И, наконец, деньги (кредиты) нужны для оплаты расходов по содержанию ваших кораблей, войск, планетарных объектов и для заключения дипломатических соглашений. Деньги в основном зарабатываются за счет налогообложения граждан вашей империи."
  PTB: "Os quatro recursos econômicos em StarDrive são Comida, Produção, Pesquisa e Dinheiro. Esses recursos são coletados e consumidos a cada \"turno\" do jogo, que corresponde a cinco segundos de tempo real. A velocidade do jogo pode ser modificada pressionando as teclas + / - para jogar mais rápido ou mais devagar. \n \n Comida é usada para alimentar seus colonos e é consumida à taxa de 1 comida por 1 unidade de população (1 bilhão de colonos) por turno. Produção representa bens brutos e refinados produzidos pelo seu império e é usada para produzir naves, tropas e melhorias planetárias. Raças cibernéticas consomem produção em vez de comida. Pesquisa é usada para desbloquear novos avanços tecnológicos. Por fim, Dinheiro (Créditos) é usado para pagar manutenção, fazer comércio e financiar atividades diplomáticas."
 CodexEconomyFreightersAndTradeRoutes:
@@ -22219,7 +22219,7 @@ CodexEconomyTradeTreaties:
  PTB: "Tratados Comerciais"
 CodexEconomyTradeTreatiesShort:
  Id: 100060
- ENG: "Diplomatic trade agreements"
+ ENG: "Diplomatic Trade Agreements"
  RUS: "Дипломатические торговые соглашения"
  PTB: "Acordos comerciais diplomáticos"
 CodexEconomyTradeTreatiesText:
@@ -22234,7 +22234,7 @@ CodexEconomyPlanetaryQualities:
  PTB: "Qualidades Planetárias"
 CodexEconomyPlanetaryQualitiesShort:
  Id: 100063
- ENG: "What to look for in a planet"
+ ENG: "What to Look for in a Planet"
  RUS: "Какие показатели планеты интересуют нас в первую очередь"
  PTB: "O que procurar em um planeta"
 CodexEconomyPlanetaryQualitiesText:
@@ -22264,7 +22264,7 @@ CodexEconomyAutomation:
  PTB: "Automação"
 CodexEconomyAutomationShort:
  Id: 100069
- ENG: "How to automate certain tasks"
+ ENG: "How to Automate Certain Tasks"
  RUS: "Как автоматизировать определенные действия"
  PTB: "Como automatizar certas tarefas"
 CodexEconomyAutomationText:
@@ -22314,7 +22314,7 @@ CodexExpansionColonyShips:
  PTB: "Naves-Colônia"
 CodexExpansionColonyShipsShort:
  Id: 100079
- ENG: "How to colonize new planets"
+ ENG: "How to Colonize New Planets"
  RUS: "Как колонизировать новые планеты"
  PTB: "Como colonizar novos planetas"
 CodexExpansionColonyShipsText:
@@ -22424,7 +22424,7 @@ CodexWarfarePointDefenseWeapons:
  PTB: "Armas de Defesa de Ponto"
 CodexWarfarePointDefenseWeaponsShort:
  Id: 100101
- ENG: "An overview of point defense"
+ ENG: "An Overview of Point Defense"
  RUS: "Обзор орудий точечной защиты"
  PTB: "Uma visão geral da defesa de ponto"
 CodexWarfarePointDefenseWeaponsText:
@@ -22469,7 +22469,7 @@ CodexWarfareShipExperience:
  PTB: "Experiência da Nave"
 CodexWarfareShipExperienceShort:
  Id: 100110
- ENG: "The effects of experience"
+ ENG: "The Effects of Experience"
  RUS: "Влияние опыта"
  PTB: "Os efeitos da experiência"
 CodexWarfareShipExperienceText:
@@ -22513,7 +22513,7 @@ CodexDiplomacyDiplomacyOverview:
  PTB: "Visão Geral da Diplomacia"
 CodexDiplomacyDiplomacyOverviewShort:
  Id: 100117
- ENG: "Introduction to diplomacy"
+ ENG: "Introduction to Diplomacy"
  RUS: "Введение в дипломатию"
  PTB: "Introdução à diplomacia"
 CodexDiplomacyDiplomacyOverviewText:
@@ -22528,7 +22528,7 @@ CodexDiplomacyEspionage:
  PTB: "Espionagem"
 CodexDiplomacyEspionageShort:
  Id: 100120
- ENG: "Overview of using Agents"
+ ENG: "Overview of Using Agents"
  RUS: "Использование агентов"
  PTB: "Visão geral do uso de Agentes"
 CodexDiplomacyEspionageText:
@@ -22573,7 +22573,7 @@ CodexDiplomacyFederations:
  PTB: "Federações"
 CodexDiplomacyFederationsShort:
  Id: 100129
- ENG: "Merging two Empires into One"
+ ENG: "Merging Two Empires Into One"
  RUS: "Объединение двух империй в одну"
  PTB: "Unindo dois Impérios em um só"
 CodexDiplomacyFederationsText:
