@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
@@ -36,12 +36,15 @@ namespace Ship_Game
 
         ProgressBar FoodStorage;
         ProgressBar ProdStorage;
+        ProgressBar PopStorage; // bench 427: the population bar joins the Supply column
         Rectangle ApplyProductionRect;
         Rectangle CancelProductionRect;
         DropDownMenu FoodDropDown;
         DropDownMenu ProdDropDown;
+        DropDownMenu PopDropDown;
         Rectangle FoodStorageIcon;
         Rectangle ProdStorageIcon;
+        Rectangle PopStorageIcon;
         int NumShipsInQueue;
         int NumBuildingsInQueue;
         int NumTroopsInQueue;
@@ -103,7 +106,8 @@ namespace Ship_Game
             else
                 AssignLabor.Rect = SliderRect;
 
-            FoodStorage = new ProgressBar(new Rectangle(StorageRect.X + 50, StorageRect.Y + (int)(0.25 * StorageRect.Height), (int)(0.4f * StorageRect.Width), 18))
+            // bench 427: the two elders tighten and rise so the population bar seats third
+            FoodStorage = new ProgressBar(new Rectangle(StorageRect.X + 50, StorageRect.Y + (int)(0.12 * StorageRect.Height), (int)(0.4f * StorageRect.Width), 18))
             {
                 Max = P.Storage.Max,
                 Progress = P.FoodHere,
@@ -118,7 +122,7 @@ namespace Ship_Game
             FoodDropDown.AddOption(Localizer.Token(GameText.Export));
             FoodDropDown.ActiveIndex = (int)P.FS;
             FoodStorageIcon = new Rectangle(StorageRect.X + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - ResourceManager.Texture("NewUI/icon_food").Height / 2, ResourceManager.Texture("NewUI/icon_food").Width, ResourceManager.Texture("NewUI/icon_food").Height);
-            ProdStorage = new ProgressBar(new Rectangle(StorageRect.X + 50, FoodStorage.pBar.Y + FoodStorage.pBar.Height + 10, (int)(0.4f * StorageRect.Width), 18))
+            ProdStorage = new ProgressBar(new Rectangle(StorageRect.X + 50, FoodStorage.pBar.Y + FoodStorage.pBar.Height + 6, (int)(0.4f * StorageRect.Width), 18))
             {
                 Max = P.Storage.Max,
                 Progress = P.ProdHere
@@ -129,6 +133,19 @@ namespace Ship_Game
             ProdDropDown.AddOption(Localizer.Token(GameText.Import));
             ProdDropDown.AddOption(Localizer.Token(GameText.Export));
             ProdDropDown.ActiveIndex = (int)P.PS;
+            PopStorage = new ProgressBar(new Rectangle(StorageRect.X + 50, ProdStorage.pBar.Y + ProdStorage.pBar.Height + 6, (int)(0.4f * StorageRect.Width), 18))
+            {
+                Max = P.MaxPopulationBillionFor(P.Owner),
+                Progress = P.PopulationBillion,
+                color = "blue"
+            };
+            PopDropDown = new DropDownMenu(new Rectangle(StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 20, PopStorage.pBar.Y + PopStorage.pBar.Height / 2 - 9, ddwidth, 18));
+            PopDropDown.AddOption("Auto");
+            PopDropDown.AddOption(Localizer.Token(GameText.Stay));
+            PopDropDown.AddOption(Localizer.Token(GameText.BringIn));
+            PopDropDown.AddOption(Localizer.Token(GameText.Resettle));
+            PopDropDown.ActiveIndex = P.ColonistsManual ? 1 + (int)P.CS : 0;
+            PopStorageIcon = new Rectangle(StorageRect.X + 20, PopStorage.pBar.Y + PopStorage.pBar.Height / 2 - ResourceManager.Texture("UI/icon_pop_22").Height / 2, ResourceManager.Texture("UI/icon_pop_22").Width, ResourceManager.Texture("UI/icon_pop_22").Height);
             // on the PROGRESS BAR's line, not the name's - the item name gets the column's
             // full width. The bar sits one bold line under the name anchor, which itself
             // rides at mid-height - 30 (QueueItem.DrawAt).
@@ -230,6 +247,22 @@ namespace Ship_Game
                         P.PS = (Planet.GoodState)((int)P.PS + (int)Planet.GoodState.IMPORT);
                         if (P.PS > Planet.GoodState.EXPORT)
                             P.PS = Planet.GoodState.STORE;
+                    });
+                    return true;
+                }
+
+                // bench 427: the migration cycle, Auto -> Stay -> Bring in -> Resettle,
+                // mutated on the sim thread like its two elders
+                if (PopDropDown.r.HitTest(input.CursorPosition))
+                {
+                    GameAudio.AcceptClick();
+                    PopDropDown.Toggle();
+                    Universe.RunOnSimThread(() =>
+                    {
+                        int next = (P.ColonistsManual ? 1 + (int)P.CS : 0) + 1;
+                        if (next > 3) next = 0;
+                        P.ColonistsManual = next > 0;
+                        if (next > 0) P.CS = (Planet.GoodState)(next - 1);
                     });
                     return true;
                 }
@@ -405,6 +438,12 @@ namespace Ship_Game
 
             ProdStorage.Draw(batch);
             ProdDropDown.Draw(batch);
+            PopStorage.Max = P.MaxPopulationBillionFor(P.Owner);
+            PopStorage.Progress = P.PopulationBillion;
+            PopStorage.Draw(batch);
+            PopDropDown.ActiveIndex = P.ColonistsManual ? 1 + (int)P.CS : 0;
+            PopDropDown.Draw(batch);
+            batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopStorageIcon, Color.White);
             batch.Draw(ResourceManager.Texture("NewUI/icon_food"), FoodStorageIcon,
                 (P.NonCybernetic ? Color.White : new Color(110, 110, 110, 255)));
             batch.Draw(ResourceManager.Texture("NewUI/icon_production"), ProdStorageIcon, Color.White);

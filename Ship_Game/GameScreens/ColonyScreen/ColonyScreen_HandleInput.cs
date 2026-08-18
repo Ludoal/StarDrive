@@ -61,11 +61,11 @@ namespace Ship_Game
                 // the cursor leaves the row (bench 426)
                 return LastBuiltHover;
             }
-            else if (PinnedBuilt != null)
-            {
-                // no live hover: the click-pinned building holds the panel
+
+            // no live hover in EITHER view: the click-pinned building holds the panel
+            // (bench 427: the pin works from MAP tiles too, so it must serve MAP's misses)
+            if (PinnedBuilt != null)
                 return PinnedBuilt;
-            }
 
             return null; // default: use planet description text
         }
@@ -105,12 +105,16 @@ namespace Ship_Game
             if (SubColonyGrid.HandleInput(input))
                 return true;
 
-            // pinned lore scroll (bench 426): while a pin holds the bottom panel, the
-            // wheel walks it - long Capital City lore included
-            if (PinnedBuilt != null && PFacilities.Rect.HitTest(input.CursorPosition))
+            // pinned lore scroll (bench 427): while a pin holds the bottom panel, the wheel
+            // walks it from ANYWHERE on the page except the list, which keeps its own -
+            // after the pinning click the cursor sits on the row, and that wheel must not
+            // feed the list instead of the description (the bench's dead elevator)
+            if (PinnedBuilt != null && (input.ScrollIn || input.ScrollOut)
+                && !(BuiltList.Visible && BuiltList.HitTest(input.CursorPosition)))
             {
-                if (input.ScrollIn)  { DescriptionScroll = (DescriptionScroll - 48f).LowerBound(0f); return true; }
-                if (input.ScrollOut) { DescriptionScroll = (DescriptionScroll + 48f).UpperBound(800f); return true; }
+                if (input.ScrollIn)  DescriptionScroll = (DescriptionScroll - 48f).LowerBound(0f);
+                else                 DescriptionScroll = (DescriptionScroll + 48f).UpperBound(800f);
+                return true;
             }
 
             // always get the currently hovered item
@@ -224,8 +228,22 @@ namespace Ship_Game
                             return true;
                         }
 
+                        // bench 427: the pin principle reaches MAP - left-click on a building
+                        // tile pins/unpins it like a LIST row click (the bio corner keeps its
+                        // own gesture below)
+                        var bioCorner = new Rectangle(pgs.ClickRect.X, pgs.ClickRect.Y, 20, 20);
+                        if (pgs.BuildingOnTile && bRect.HitTest(input.CursorPosition)
+                            && Input.LeftMouseClick && !bioCorner.HitTest(input.CursorPosition))
+                        {
+                            PinnedBuilt = PinnedBuilt == pgs ? null : pgs;
+                            DescriptionScroll = 0f;
+                            GameAudio.AcceptClick();
+                            ClickedTroop = true;
+                            return true;
+                        }
+
                         var bioRect = new Rectangle(pgs.ClickRect.X,pgs.ClickRect.Y, 20, 20);
-                        if (pgs.Biosphere 
+                        if (pgs.Biosphere
                             && bioRect.HitTest(input.CursorPosition) && (Input.RightMouseClick|| Input.LeftMouseClick))
                         {
                             BioToScrap     = pgs;

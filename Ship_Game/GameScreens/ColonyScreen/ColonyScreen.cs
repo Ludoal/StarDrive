@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using Ship_Game.GameScreens.ShipDesign;
@@ -284,9 +284,9 @@ namespace Ship_Game
             StarvationLabel = Add(new UILabel(starvationPos, starvTxt, Fonts.Pirulen16, Color.Red));
             // ⚠ the two bars sit a FIXED distance below the title bar - content aligned to the
             // TOP, not centred, so they stay put as STORAGE (the column's variable block) grows.
-            // bench 426: three rows now - tightened and raised so the population bar and
-            // its freighter line seat under the two elders
-            const float storeRow1 = 40, storeRow2 = 76;
+            // three rows: the elders keep their historical spacing (bench 427 - the
+            // squeeze belonged to the Colonies table, not here), population seats third
+            const float storeRow1 = 46, storeRow2 = 92;
             FoodStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + storeRow1, 0.4f*PStorage.Width, 18);
             FoodStorage.Max = p.Storage.Max;
             FoodStorage.Progress = p.FoodHere;
@@ -313,7 +313,7 @@ namespace Ship_Game
             // a storage bar (population against its cap) like Food and Production, the
             // migration dropdown beside it. Auto = the formula keeps deciding; the manual
             // states pin the direction. The colonist freighter line seats under the bar.
-            const float storeRow3 = 112;
+            const float storeRow3 = 138;
             PopStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + storeRow3, 0.4f * PStorage.Width, 18);
             PopStorage.Max = p.MaxPopulationBillionFor(p.Owner);
             PopStorage.Progress = p.PopulationBillion;
