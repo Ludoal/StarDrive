@@ -279,15 +279,18 @@ namespace Ship_Game
                                   gridBottom - (labor.Bottom + Pad));
             PStorage = new(pStorageR, GameText.Supply); // bench 426: the panel carries stock AND flow - Supply says both
 
-            Vector2 blockadePos = new Vector2(PStorage.X + 20, PStorage.Y + 35);
-            BlockadeLabel = Add(new UILabel(blockadePos, Localizer.Token(GameText.Blockade2), Fonts.Pirulen16, Color.Red));
-            BlockadeLabel.Tooltip = GameText.IndicatesThatThisPlanetIs;
-            
             // Ludoal fork: STARVATION! rides the title bar's empty right end instead of
             // overlapping the food bar and Import button below it.
             string starvTxt = Localizer.Token(GameText.Starvation);
             Vector2 starvationPos = new Vector2(PStorage.Right - Fonts.Pirulen16.TextWidth(starvTxt) - 15, PStorage.Y + 4);
             StarvationLabel = Add(new UILabel(starvationPos, starvTxt, Fonts.Pirulen16, Color.Red));
+
+            // bench 432: BLOCKADE! joins it on the title bar, seated to its LEFT - its
+            // historical spot overlapped the food row and the Store button
+            string blockTxt = Localizer.Token(GameText.Blockade2);
+            Vector2 blockadePos = new Vector2(starvationPos.X - Fonts.Pirulen16.TextWidth(blockTxt) - 12, PStorage.Y + 4);
+            BlockadeLabel = Add(new UILabel(blockadePos, blockTxt, Fonts.Pirulen16, Color.Red));
+            BlockadeLabel.Tooltip = GameText.IndicatesThatThisPlanetIs;
             // ⚠ the two bars sit a FIXED distance below the title bar - content aligned to the
             // TOP, not centred, so they stay put as STORAGE (the column's variable block) grows.
             // three rows: the elders keep their historical spacing (bench 427 - the
