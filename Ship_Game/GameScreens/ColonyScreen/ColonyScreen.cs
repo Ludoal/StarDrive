@@ -1038,6 +1038,8 @@ namespace Ship_Game
             {
                 tiles.Sort(t => t.Building.TranslatedName.Text);
                 BuiltBuildingListItem header = BuiltList.AddItem(new BuiltBuildingListItem(this, title.Text));
+                // the category bar runs the full row, stopping short of the delete lane (bench 426)
+                header.HeaderMaxWidth = (int)(BuiltList.Width - 50);
                 foreach (PlanetGridSquare t in tiles)
                     header.AddSubItem(new BuiltBuildingListItem(this, t));
                 header.Expand(true); // an inventory opens legible, not folded
