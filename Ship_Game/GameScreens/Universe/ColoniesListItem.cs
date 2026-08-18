@@ -107,7 +107,7 @@ namespace Ship_Game
                 AssignLabor.Rect = SliderRect;
 
             // bench 427: the two elders tighten and rise so the population bar seats third
-            FoodStorage = new ProgressBar(new Rectangle(StorageRect.X + 50, StorageRect.Y + (int)(0.12 * StorageRect.Height), (int)(0.4f * StorageRect.Width), 18))
+            FoodStorage = new ProgressBar(new Rectangle(StorageRect.X + 50, StorageRect.Y + (int)(0.12 * StorageRect.Height) - 2, (int)(0.4f * StorageRect.Width), 18))
             {
                 Max = P.Storage.Max,
                 Progress = P.FoodHere,

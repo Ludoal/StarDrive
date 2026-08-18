@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using Ship_Game.AI;
 using Ship_Game.Debug;
@@ -232,7 +232,9 @@ namespace Ship_Game
         public bool ShowingGravityWellOverlay { get => UState.ShowGravityWellOverlay; set => UState.ShowGravityWellOverlay = value; } // F5
         public bool ShowingVisionOverlay      { get => UState.ShowVisionOverlay;      set => UState.ShowVisionOverlay = value; }      // F3
         public bool ShowingRangeOverlay       { get => UState.ShowRangeOverlay;       set => UState.ShowRangeOverlay = value; }       // F6
-        public bool ShowingTradeRoutesOverlay        { get => UState.ShowTradeRoutesOverlay;        set => UState.ShowTradeRoutesOverlay = value; }        // Ludoal fork (wishlist)
+        public bool ShowingFoodRoutesOverlay         { get => UState.ShowFoodRoutesOverlay;         set => UState.ShowFoodRoutesOverlay = value; }         // Ludoal fork (bench 428)
+        public bool ShowingProdRoutesOverlay         { get => UState.ShowProdRoutesOverlay;         set => UState.ShowProdRoutesOverlay = value; }
+        public bool ShowingPopRoutesOverlay          { get => UState.ShowPopRoutesOverlay;          set => UState.ShowPopRoutesOverlay = value; }
         int ColonyCycleIndex; // Ludoal fork (bench 427): the [ / ] colony walk's cursor
         public bool ShowingColonizationRoutesOverlay { get => UState.ShowColonizationRoutesOverlay; set => UState.ShowColonizationRoutesOverlay = value; } // Ludoal fork (wishlist)
 

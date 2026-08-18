@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
@@ -130,7 +130,7 @@ namespace Ship_Game
                                       new Vector2(14, 20), "")
             {
                 Pos = new Vector2(r.X + 30, Housing.Y + 76),
-                Tooltip = GameText.ViewPreviousColony,
+                Tooltip = Localizer.Token(GameText.ViewPreviousColony) + " (" + KeyBindings.Name(KeyBindings.PrevColony) + ")", // bench 428
                 OnClick = b => OnChangeColony(-1),
                 ClickSfx = "sd_ui_accept_alt3",
             };
@@ -138,7 +138,7 @@ namespace Ship_Game
                                       new Vector2(14, 20), "")
             {
                 Pos = new Vector2(r.X + 206, Housing.Y + 76),
-                Tooltip = GameText.ViewNextColony,
+                Tooltip = Localizer.Token(GameText.ViewNextColony) + " (" + KeyBindings.Name(KeyBindings.NextColony) + ")",
                 OnClick = b => OnChangeColony(+1),
                 ClickSfx = "sd_ui_accept_alt3",
             };

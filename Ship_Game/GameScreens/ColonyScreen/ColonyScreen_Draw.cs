@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
@@ -187,6 +187,11 @@ namespace Ship_Game
             if (SubColonyGrid.SelectedIndex == 0)
             {
                 DrawPlanetSurfaceGrid(batch);
+                // bench 428: the pinned tile wears its gold liseré on MAP too - the pin
+                // worked but was invisible here, which reads as broken
+                foreach (PlanetGridSquare t in P.TilesList)
+                    if (IsPinnedBuilt(t))
+                        batch.DrawRectangle(t.ClickRect, Color.Gold);
             }
             else if (BuiltList.AllEntries.Count == 0)
             {
@@ -200,10 +205,12 @@ namespace Ship_Game
             }
             batch.Draw(P.PlanetTexture, PlanetIcon, Color.White);
 
-            // a pinned building's panel scrolls with the wheel (bench 426): the content
-            // shifts up under a scissor so it cannot bleed over the frame's chrome
+            // the description elevator (bench 428): whatever the panel shows scrolls with
+            // the wheel under a scissor, so long lore can never bleed past the frame. The
+            // offset resets whenever the shown content changes identity.
+            if (DetailInfo != LastDetailDrawn) { DescriptionScroll = 0f; LastDetailDrawn = DetailInfo; }
             var detailPos = new Vector2(PFacilities.Rect.X + 15, PFacilities.Rect.Y + 35);
-            if (DescriptionScroll > 0f && DetailInfo is PlanetGridSquare pinnedTile && IsPinnedBuilt(pinnedTile))
+            if (DescriptionScroll > 0f)
             {
                 batch.SafeEnd();
                 var scissor = new Rectangle(PFacilities.Rect.X, PFacilities.Rect.Y + 30,

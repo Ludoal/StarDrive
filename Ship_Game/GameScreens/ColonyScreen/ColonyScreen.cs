@@ -100,6 +100,7 @@ namespace Ship_Game
 
         object DetailInfo;
         object LastBuiltHover; // LIST view: the live hovered row's tile (cleared on leave)
+        object LastDetailDrawn; // the elevator resets when the panel's content changes
         PlanetGridSquare PinnedBuilt; // LIST view: click-pinned building (bench 426, Lek's design)
         public float DescriptionScroll; // wheel offset while a pinned lore scrolls
         Building ToScrap;
@@ -479,7 +480,7 @@ namespace Ship_Game
                                           new Vector2(arrowW, arrowH), "")
             {
                 Pos = new Vector2(navCentre - NavGap / 2 - arrowW, arrowY),
-                Tooltip = GameText.ViewPreviousColony,
+                Tooltip = Localizer.Token(GameText.ViewPreviousColony) + " (← / " + KeyBindings.Name(KeyBindings.PrevColony) + ")", // bench 428: the keys ride the tooltip
                 OnClick = b => OnChangeColony(-1),
                 ClickSfx = "sd_ui_accept_alt3", // the click every toggle played
             });
@@ -488,7 +489,7 @@ namespace Ship_Game
                                            new Vector2(arrowW, arrowH), "")
             {
                 Pos = new Vector2(navCentre + NavGap / 2, arrowY),
-                Tooltip = GameText.ViewNextColony,
+                Tooltip = Localizer.Token(GameText.ViewNextColony) + " (→ / " + KeyBindings.Name(KeyBindings.NextColony) + ")",
                 OnClick = b => OnChangeColony(+1),
                 ClickSfx = "sd_ui_accept_alt3",
             });

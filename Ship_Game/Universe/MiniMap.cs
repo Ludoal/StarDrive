@@ -34,7 +34,9 @@ namespace Ship_Game
         // do it, and zoom-to-ship belongs with the ship. Important Events has its own Galaxy tab.
         readonly ToggleButton InfluenceZones;   // Ludoal fork (F4)
         readonly ToggleButton GravityWellsOnly; // Ludoal fork (F5)
-        readonly ToggleButton TradeRoutes;         // Ludoal fork (wishlist)
+        readonly ToggleButton FoodRoutes;          // Ludoal fork (bench 428): one toggle per goods
+        readonly ToggleButton ProdRoutes;
+        readonly ToggleButton PopRoutes;
         readonly ToggleButton ColonizationRoutes;  // Ludoal fork (wishlist)
         readonly ToggleButton GravityWells;
         readonly ToggleButton DeepSpaceBuild;
@@ -101,7 +103,10 @@ namespace Ship_Game
             UIList leftOverlays = AddList(new Vector2(Housing.X + Edge, ActualMap.Y));
             leftOverlays.Name = "MiniMapRouteFilters";
             leftOverlays.LayoutStyle = ListLayoutStyle.ResizeList;
-            TradeRoutes = leftOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "NewUI/icon_freighter_util", TradeRoutes_OnClick));
+            // bench 428: one filter per goods, wearing the resource's own icon
+            FoodRoutes = leftOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "NewUI/icon_food", FoodRoutes_OnClick));
+            ProdRoutes = leftOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "NewUI/icon_production", ProdRoutes_OnClick));
+            PopRoutes = leftOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_pop_22", PopRoutes_OnClick));
             ColonizationRoutes = leftOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/ColonizeIcon", ColonizationRoutes_OnClick));
 
             // ⚠ the tabs go to the OPPOSITE end of their band, not beside the overlays
@@ -251,7 +256,9 @@ namespace Ship_Game
             RangeOverley.IsToggled         = Universe.ShowingRangeOverlay;
             InfluenceZones.IsToggled       = Universe.ShowingInfluenceOverlay;   // Ludoal fork (F4)
             GravityWellsOnly.IsToggled     = Universe.ShowingGravityWellOverlay; // Ludoal fork (F5)
-            TradeRoutes.IsToggled          = Universe.ShowingTradeRoutesOverlay;        // Ludoal fork (wishlist)
+            FoodRoutes.IsToggled           = Universe.ShowingFoodRoutesOverlay;         // Ludoal fork (bench 428)
+            ProdRoutes.IsToggled           = Universe.ShowingProdRoutesOverlay;
+            PopRoutes.IsToggled            = Universe.ShowingPopRoutesOverlay;
             ColonizationRoutes.IsToggled   = Universe.ShowingColonizationRoutesOverlay; // Ludoal fork (wishlist)
             // Ludoal fork (maintainer feedback): without this sync, pressing F3 turns the
             // overlay on but leaves the button dark until clicked.
@@ -457,10 +464,22 @@ namespace Ship_Game
             Universe.ShowingInfluenceOverlay = !Universe.ShowingInfluenceOverlay;
         }
 
-        public void TradeRoutes_OnClick(ToggleButton toggleButton) // Ludoal fork (wishlist)
+        public void FoodRoutes_OnClick(ToggleButton toggleButton) // Ludoal fork (bench 428)
         {
             GameAudio.AcceptClick();
-            Universe.ShowingTradeRoutesOverlay = !Universe.ShowingTradeRoutesOverlay;
+            Universe.ShowingFoodRoutesOverlay = !Universe.ShowingFoodRoutesOverlay;
+        }
+
+        public void ProdRoutes_OnClick(ToggleButton toggleButton)
+        {
+            GameAudio.AcceptClick();
+            Universe.ShowingProdRoutesOverlay = !Universe.ShowingProdRoutesOverlay;
+        }
+
+        public void PopRoutes_OnClick(ToggleButton toggleButton)
+        {
+            GameAudio.AcceptClick();
+            Universe.ShowingPopRoutesOverlay = !Universe.ShowingPopRoutesOverlay;
         }
 
         public void ColonizationRoutes_OnClick(ToggleButton toggleButton) // Ludoal fork (wishlist)
@@ -517,8 +536,14 @@ namespace Ship_Game
                 ToolTip.CreateTooltip("Vision overlay: everything your sensors actually see — "
                                     + "ships, planets and the coverage your spies bring in", KeyBindings.Name(KeyBindings.VisionOverlay));
 
-            if (TradeRoutes.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip("Trade routes overlay: links each pair of planets with an active freighter run");
+            if (FoodRoutes.Rect.HitTest(input.CursorPosition))
+                ToolTip.CreateTooltip("Food routes overlay: green lines link planets with an active food freighter run");
+
+            if (ProdRoutes.Rect.HitTest(input.CursorPosition))
+                ToolTip.CreateTooltip("Production routes overlay: orange lines link planets with an active production freighter run");
+
+            if (PopRoutes.Rect.HitTest(input.CursorPosition))
+                ToolTip.CreateTooltip("Colonist routes overlay: white lines link planets with an active colonist transport run");
 
             if (ColonizationRoutes.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip("Colonization routes overlay: links the planet building or sending a colonizer to its destination");

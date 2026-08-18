@@ -335,7 +335,10 @@ namespace Ship_Game.GameScreens
         // too. The housing anchors at screenH-257 (UniverseScreen.LoadContent), visible frame
         // FrameShave=61 lower. The reservation is permanent - it belongs to the zone, not to
         // whether a cartouche is showing at this instant.
-        public const int CartoucheClearance = 257 - 61 + 10 + 108;
+        // bench 428: the specific orders live on ONE row now (the generics moved to the
+        // right column), so the clearance carries a single row (52 + 4 gap) - the pages
+        // reclaim the dead second row and run to 10px of the button strip
+        public const int CartoucheClearance = 257 - 61 + 10 + 56;
 
         // bench 409 (maintainer decision): below 1200 of display height every frame runs to
         // the display foot - at 1080 the tables still read short, so the cartouche

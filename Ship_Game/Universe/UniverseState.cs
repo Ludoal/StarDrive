@@ -78,7 +78,9 @@ namespace Ship_Game.Universe
         [StarData] public bool ShowFTLOverlay;         // F4 subspace projection
         [StarData] public bool ShowGravityWellOverlay; // F5
         [StarData] public bool ShowRangeOverlay;       // F6
-        [StarData] public bool ShowTradeRoutesOverlay;        // Ludoal fork (wishlist): freighter traffic lines
+        [StarData] public bool ShowFoodRoutesOverlay;         // Ludoal fork (bench 428): one toggle per goods
+        [StarData] public bool ShowProdRoutesOverlay;
+        [StarData] public bool ShowPopRoutesOverlay;
         [StarData] public bool ShowColonizationRoutesOverlay; // Ludoal fork (wishlist): colonizer run lines
 
         // Ludoal fork: the minimap's utility windows ride the save too. Polled from

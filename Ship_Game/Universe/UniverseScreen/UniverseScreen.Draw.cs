@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using System.Collections.Generic;
 using Ship_Game.AI;
@@ -690,9 +690,11 @@ namespace Ship_Game
         // with its icon at the line's midpoint (bench 427: Food green, Prod orange, Pop
         // white; Colonization gray). Both read the same UI-safe sources the ship list
         // and the exploded view already consume.
+        // Ludoal fork (bench 428): route lines only - the icons were noise, the colors
+        // carry the reading, and each goods has its own overlay toggle on the minimap.
         void DrawRouteOverlays(SpriteBatch batch)
         {
-            if (ShowingTradeRoutesOverlay)
+            if (ShowingFoodRoutesOverlay || ShowingProdRoutesOverlay || ShowingPopRoutesOverlay)
             {
                 var seen = new HashSet<(Planet, Planet, Goods)>();
                 var freighters = Player.OwnedShips.Filter(s => s.IsFreighter && s.AI.State == AIState.SystemTrader);
@@ -700,11 +702,10 @@ namespace Ship_Game
                 {
                     if (f.AI.OrderQueue.TryPeekLast(out ShipAI.ShipGoal g)
                         && g.Trade is { ExportFrom: { } from, ImportTo: { } to }
+                        && RouteTypeShown(g.Trade.Goods)
                         && seen.Add((from, to, g.Trade.Goods)))
                     {
-                        (Color line, SubTexture icon) = RouteStyle(g.Trade.Goods);
-                        DrawLineProjected(from.Position, to.Position, line);
-                        DrawRouteIcon(batch, icon, from.Position, to.Position);
+                        DrawLineProjected(from.Position, to.Position, RouteColor(g.Trade.Goods));
                     }
                 }
             }
@@ -725,20 +726,19 @@ namespace Ship_Game
             }
         }
 
-        (Color, SubTexture) RouteStyle(Goods goods) => goods switch
+        bool RouteTypeShown(Goods goods) => goods switch
         {
-            Goods.Food       => (new Color(new Color(0, 200, 0), (byte)90).Premultiplied(), ResourceManager.Texture("NewUI/icon_food")),
-            Goods.Production => (new Color(new Color(255, 165, 0), (byte)90).Premultiplied(), ResourceManager.Texture("NewUI/icon_production")),
-            _                => (new Color(new Color(255, 255, 255), (byte)90).Premultiplied(), ResourceManager.Texture("UI/icon_pop_22")),
+            Goods.Food       => ShowingFoodRoutesOverlay,
+            Goods.Production => ShowingProdRoutesOverlay,
+            _                => ShowingPopRoutesOverlay,
         };
 
-        // the goods icon rides the line's midpoint at constant screen size
-        void DrawRouteIcon(SpriteBatch batch, SubTexture icon, Vector2 a, Vector2 b)
+        Color RouteColor(Goods goods) => goods switch
         {
-            Vector2 mid = (a + b) / 2f;
-            Vector2 screen = ProjectToScreenPosition(mid.ToVec3()).ToVec2f();
-            batch.Draw(icon, new RectF(screen.X - 7, screen.Y - 7, 14, 14), Color.White);
-        }
+            Goods.Food       => new Color(new Color(0, 200, 0), (byte)90).Premultiplied(),
+            Goods.Production => new Color(new Color(255, 165, 0), (byte)90).Premultiplied(),
+            _                => new Color(new Color(255, 255, 255), (byte)90).Premultiplied(),
+        };
 
         void DrawShipRangeOverlay()
         {

@@ -36,6 +36,7 @@ namespace Ship_Game
             }),
             ("MAP & CAMERA", new[]
             {
+                new Hotkey("Arrows / WASD", "Pan the camera"),
                 new Hotkey("PageUp", "Zoom to selection"),
                 new Hotkey("PageDown", "Zoom out"),
                 new Hotkey("Alt (hold)", "Tactical icons at close zoom"),
@@ -169,7 +170,7 @@ namespace Ship_Game
                         UILabel keyLabel = Add(new UILabel(new Vector2(x, y), keyText, Fonts.Arial12Bold,
                                                            k.Bind == null ? Color.Gray : Color.Wheat));
                         keyLabel.Tooltip = k.Bind == null ? "Not remappable"
-                                                          : "Click to rebind - right-click resets to default";
+                                                          : "Click to rebind, ESC cancels - right-click resets to default";
                         Add(new UILabel(new Vector2(x + keyW, y), k.Action, Fonts.Arial12, Color.White));
                         if (k.Bind != null)
                             Rows.Add(new BindRow { Bind = k.Bind, KeyLabel = keyLabel,
@@ -180,7 +181,7 @@ namespace Ship_Game
                 }
             }
 
-            string note = "Click a key to rebind it - right-click resets a row.";
+            string note = "Click a key to rebind it - right-click resets a row - ESC cancels listening.";
             var pos = new Vector2(inner.X + (inner.Width - Fonts.Arial12.TextWidth(note)) / 2f,
                                   inner.Bottom - Fonts.Arial12.LineSpacing - 10);
             Footer = Add(new UILabel(pos, note, Fonts.Arial12, Color.Gray));

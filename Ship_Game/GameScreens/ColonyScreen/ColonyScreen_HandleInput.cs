@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using SDUtils;
@@ -105,12 +105,13 @@ namespace Ship_Game
             if (SubColonyGrid.HandleInput(input))
                 return true;
 
-            // pinned lore scroll (bench 427): while a pin holds the bottom panel, the wheel
-            // walks it from ANYWHERE on the page except the list, which keeps its own -
-            // after the pinning click the cursor sits on the row, and that wheel must not
-            // feed the list instead of the description (the bench's dead elevator)
-            if (PinnedBuilt != null && (input.ScrollIn || input.ScrollOut)
-                && !(BuiltList.Visible && BuiltList.HitTest(input.CursorPosition)))
+            // the description elevator (bench 428): the wheel walks the bottom panel's
+            // content - pinned or not - from anywhere on the page except the list, which
+            // keeps its own scroll
+            if ((input.ScrollIn || input.ScrollOut)
+                && !(BuiltList.Visible && BuiltList.HitTest(input.CursorPosition))
+                && !BuildableList.HitTest(input.CursorPosition)
+                && !ConstructionQueue.HitTest(input.CursorPosition))
             {
                 if (input.ScrollIn)  DescriptionScroll = (DescriptionScroll - 48f).LowerBound(0f);
                 else                 DescriptionScroll = (DescriptionScroll + 48f).UpperBound(800f);

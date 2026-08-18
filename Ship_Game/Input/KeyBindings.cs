@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
 using SDGraphics.Input; // the game's own Keys enum - InputState.KeyPressed consumes THIS type
@@ -44,8 +44,8 @@ namespace Ship_Game
         public static Keys OpenEspionage = Keys.E;
 
         // colony navigation (bench 427): leaf through the empire without the mouse
-        public static Keys PrevColony   = Keys.OemOpenBrackets;
-        public static Keys NextColony   = Keys.OemCloseBrackets;
+        public static Keys PrevColony   = Keys.OemComma;  // bench 428: brackets need AltGr on AZERTY - dead keys on the maintainer's layout
+        public static Keys NextColony   = Keys.OemPeriod;
         public static Keys GoToCapital  = Keys.Home;
 
         // game commands

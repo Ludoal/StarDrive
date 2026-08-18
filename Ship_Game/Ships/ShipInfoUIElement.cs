@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
@@ -775,8 +775,10 @@ namespace Ship_Game.Ships
             // margin - muscle memory, the column never moves. The SPECIFIC orders (trade,
             // troops, fighters...) take ONE row docked above the visible frame - they come
             // and go with the ship's type without ever displacing the generics.
+            // bench 428: the column BOTTOM-aligns with the cartouche - it grows upward
+            int generics = Orders.Count(o => o.IsGeneric);
             int colX = ElementRect.X + ElementRect.Width - PlanetInfoUIElement.RightTrim + 4;
-            int colY = ElementRect.Y + FrameShave + 4;
+            int colY = ElementRect.Y + ElementRect.Height - 10 - generics * 52;
             int rowCol = 0;
             foreach (OrdersButton ob in Orders)
             {
