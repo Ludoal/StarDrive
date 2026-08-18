@@ -221,7 +221,9 @@ namespace Ship_Game
             batch.SafeEnd();
             RenderStates.DisableScissorTest(batch.GraphicsDevice);
             batch.SafeBegin();
-            float contentHeight = contentBottom + DescriptionScroll - detailPos.Y;
+            // bench 432: a full line of air after the content, so the last line never
+            // sits at the razor's edge of the scissor at max scroll
+            float contentHeight = contentBottom + DescriptionScroll - detailPos.Y + TextFont.LineSpacing;
             MaxDescriptionScroll = contentHeight - (pane.Height - 10);
             if (MaxDescriptionScroll < 0f) MaxDescriptionScroll = 0f;
             if (DescriptionScroll > MaxDescriptionScroll) DescriptionScroll = MaxDescriptionScroll;
@@ -231,7 +233,8 @@ namespace Ship_Game
                 // the same brown furniture as every list in the game
                 ScrollListStyleTextures s = ScrollListStyleTextures.Get(ListStyle.Default);
                 int barW = s.ScrollBarMid.Normal.Width;
-                var up   = new Rectangle(pane.Right - barW - 6, pane.Y + 6, barW, s.ScrollBarArrowUp.Normal.Height);
+                // bench 432: same inset as the page's other bars - it hugged the border
+                var up   = new Rectangle(pane.Right - barW - 14, pane.Y + 6, barW, s.ScrollBarArrowUp.Normal.Height);
                 var down = new Rectangle(up.X, pane.Y + pane.Height - 6 - s.ScrollBarArrowDown.Normal.Height, barW, s.ScrollBarArrowDown.Normal.Height);
                 int housingY = up.Y + up.Height + 3;
                 int housingH = down.Y - 3 - housingY;

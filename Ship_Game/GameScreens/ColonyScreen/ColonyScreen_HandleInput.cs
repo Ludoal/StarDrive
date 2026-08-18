@@ -266,10 +266,12 @@ namespace Ship_Game
 
         void OnChangeColony(int change)
         {
-            var planets = P.Owner.GetPlanets();
-            int newIndex = planets.IndexOf(P) + change;
-            if (newIndex >= planets.Count) newIndex = 0;
-            else if (newIndex < 0) newIndex = planets.Count - 1;
+            // bench 432: the arrows walk the SHARED spatial order (SpatialColonyOrder),
+            // like the Colonies table and the keyboard tour - never a private list
+            Planet[] planets = P.Owner.SpatialColonyOrder();
+            int newIndex = System.Array.IndexOf(planets, P) + change;
+            if (newIndex >= planets.Length) newIndex = 0;
+            else if (newIndex < 0) newIndex = planets.Length - 1;
 
             Planet nextOrPrevPlanet = planets[newIndex];
             if (nextOrPrevPlanet != P)

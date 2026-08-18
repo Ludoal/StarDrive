@@ -233,15 +233,11 @@ namespace Ship_Game
 
         void OnChangeColony(int change)
         {
-            // Ludoal fork (maintainer feedback): walk the colonies ordered by distance from the
-            // Homeworld, stepping from the currently shown planet's slot in that order. The camera
-            // then glides onto the colony now displayed. Falls back to the native list if the
-            // capital was lost.
-            IReadOnlyList<Planet> owned = P.Owner.GetPlanets();
-            Planet capital = P.Owner.Capital;
-            Planet[] planets = capital != null
-                ? owned.Sorted(p => p.Position.SqDist(capital.Position))
-                : owned.ToArray();
+            // Ludoal fork (bench 432): the arrows walk the SHARED spatial order - the same
+            // SpatialColonyOrder the Colonies table and the keyboard tour read. One
+            // arithmetic, written once; this walk used to keep a private planet-position
+            // key that let an orbit contaminate the distance.
+            Planet[] planets = P.Owner.SpatialColonyOrder();
 
             int idx = System.Array.IndexOf(planets, P);
             if (idx < 0) return;
