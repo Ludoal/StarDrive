@@ -80,7 +80,10 @@ namespace Ship_Game
 
             OrdersButtons = new ShipStanceButtons(screen, ordersBarPos);
 
-            RectF selected = new(RightRect.X-10, Housing.Y + 85, RightRect.Width - 5, 140);
+            // spec v4.5: the ONLY conditional lives in the list's bound - one button-height
+            // taller in hi-res, reclaiming the freed second orders row; nothing rearranges
+            int listExtra = screen.ScreenHeight >= 1200 ? 52 : 0;
+            RectF selected = new(RightRect.X-10, Housing.Y + 85 - listExtra, RightRect.Width - 5, 140 + listExtra);
             SelectedShipsSL = new ScrollList<SelectedShipListItem>(selected, 24);
         }
 
@@ -519,14 +522,26 @@ namespace Ship_Game
             };
             Orders.Add(scrap);
 
-            // one row docked above the cartouche, wrapping past seven - the same strip the
-            // single-ship cartouche wears
-            for (int i = 0; i < Orders.Count; i++)
+            // bench 427, spec v4.5: the same nature-split the single-ship cartouche wears -
+            // generic orders in the fixed right column, specifics on one top row
+            int colX = ElementRect.X + ElementRect.Width - PlanetInfoUIElement.RightTrim + 4;
+            int colY = ElementRect.Y + FrameShave + 4;
+            int rowCol = 0;
+            foreach (OrdersButton ob in Orders)
             {
-                OrdersButton ob = Orders[i];
-                int col = i % 7, row = i / 7;
-                ob.ClickRect.X = ElementRect.X + col * 52;
-                ob.ClickRect.Y = ElementRect.Y + FrameShave - 52 - 4 - row * 52; // docked on the VISIBLE frame top
+                if (ob.IsGeneric)
+                {
+                    ob.ClickRect.X = colX;
+                    ob.ClickRect.Y = colY;
+                    colY += 52;
+                }
+                else
+                {
+                    int col = rowCol % 7, row = rowCol / 7;
+                    ob.ClickRect.X = ElementRect.X + col * 52;
+                    ob.ClickRect.Y = ElementRect.Y + FrameShave - 52 - 4 - row * 52; // docked on the VISIBLE frame top
+                    rowCol++;
+                }
             }
         }
     }

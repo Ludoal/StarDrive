@@ -15,6 +15,10 @@ namespace Ship_Game
     public sealed class OrdersButton // Cleaned Up by Fat Bastard - May, 22 2019
     {
         private readonly OrderType OrderType;
+        // Ludoal fork (bench 427): the layout splits orders by NATURE - generic orders
+        // every ship carries go to the right column, type-specific ones to the top row
+        public OrderType Type => OrderType;
+        public bool IsGeneric => OrderType is OrderType.OrderResupply or OrderType.Refit or OrderType.Scrap;
         private readonly Ship Ship;
         private bool Hovering;
         public Ref<bool> ValueToModify;

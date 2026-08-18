@@ -769,16 +769,30 @@ namespace Ship_Game.Ships
                 Orders.Add(sc);
             }
 
-            // Ludoal fork: the orders strip - one row docked ABOVE the cartouche, growing with
-            // the ship's own set (a freighter shows its trade orders, a carrier its fighter
-            // toggles). Wraps to a second row above the first past seven, which only the
-            // busiest freighters reach.
-            for (int i = 0; i < Orders.Count; i++)
+            // Ludoal fork (bench 427, spec v4.5): position follows the order's NATURE.
+            // The three GENERIC orders (Resupply, Refit, Scrap - every ship carries them)
+            // stack in a fixed column at the cartouche's RIGHT, in the housing's trimmed
+            // margin - muscle memory, the column never moves. The SPECIFIC orders (trade,
+            // troops, fighters...) take ONE row docked above the visible frame - they come
+            // and go with the ship's type without ever displacing the generics.
+            int colX = ElementRect.X + ElementRect.Width - PlanetInfoUIElement.RightTrim + 4;
+            int colY = ElementRect.Y + FrameShave + 4;
+            int rowCol = 0;
+            foreach (OrdersButton ob in Orders)
             {
-                OrdersButton ob = Orders[i];
-                int col = i % 7, row = i / 7;
-                ob.ClickRect.X = ElementRect.X + col * 52;
-                ob.ClickRect.Y = ElementRect.Y + FrameShave - 52 - 4 - row * 52; // docked on the VISIBLE frame top
+                if (ob.IsGeneric)
+                {
+                    ob.ClickRect.X = colX;
+                    ob.ClickRect.Y = colY;
+                    colY += 52;
+                }
+                else
+                {
+                    int col = rowCol % 7, row = rowCol / 7; // wrap safety; no real set reaches it
+                    ob.ClickRect.X = ElementRect.X + col * 52;
+                    ob.ClickRect.Y = ElementRect.Y + FrameShave - 52 - 4 - row * 52; // docked on the VISIBLE frame top
+                    rowCol++;
+                }
             }
         }
     }
