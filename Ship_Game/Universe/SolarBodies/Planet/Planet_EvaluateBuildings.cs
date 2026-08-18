@@ -815,38 +815,39 @@ namespace Ship_Game
             }
 
             Building bio = ResourceManager.GetBuildingTemplate(Building.BiospheresId);
-            if (bio == null || bio.ActualMaintenance(this) > budget)
-                return false; // not within budget or not profitable and more than 5
+            if (bio == null)
+                return false;
 
-            if (!BioSphereProfitable(bio))
+            // issue 321 v2 (maintainer decision): a biosphere is CAPACITY, not an
+            // investment - the tax rate, one slider stroke from changing, plays no part
+            // in this decision. Money speaks only through the governor's budget below.
+            // Build when the colony runs out of room: population pressure against the
+            // cap, or a build list with no free ground. Scrap when the population would
+            // not miss one biosphere's capacity - the wide 60/85 dead band is the
+            // anti-oscillation guarantee.
+            bool popPressure = PopulationRatio >= 0.85f && EstimatedPopGrowthPerTurn > 0f;
+            bool needsGround = FreeHabitableTiles == 0
+                               && GetBuildingsListToChooseFrom(BuildingsCanBuild).Count > 0;
+
+            if (!popPressure && !needsGround)
             {
-                int numBuildingsWeCanBuild = GetBuildingsListToChooseFrom(BuildingsCanBuild).Count;
                 if (NumFreeBiospheres > 0)
                 {
-                    // We do not need more than 1 free biospheres if not profitable.
-                    // We need only 1 free biosphere if we have anything to built at all.
-                    // But a colony budget that covers the upkeep of the free biospheres is an
-                    // explicit 'I am paying, keep them' - the scrap decision never consulted
-                    // the budget, so governors razed player-funded biospheres at budget 99 (issue 313)
+                    // the scrap side of the same criterion: would the population sit at
+                    // ease (under 60% of cap) WITHOUT one biosphere? Then one is dead
+                    // weight. A budget that covers the upkeep remains an explicit
+                    // 'I am paying, keep them' (issue 313) for the LAST one - only a
+                    // surplus beyond it goes regardless.
+                    float capWithoutOne = MaxPopulation - PopPerBiosphere(Owner);
+                    bool excessCapacity = capWithoutOne > 0f && Population / capWithoutOne < 0.60f;
                     bool budgetCoversUpkeep = budget >= NumFreeBiospheres * bio.ActualMaintenance(this);
-                    shouldScrapBioSpheres = !budgetCoversUpkeep
-                        && (NumFreeBiospheres > 1 
-                            || numBuildingsWeCanBuild == 0 && (!HasBlueprints || Blueprints.IsAchievableCompleted));
-                    return false;
+                    shouldScrapBioSpheres = excessCapacity && (!budgetCoversUpkeep || NumFreeBiospheres > 1);
                 }
-                else if (numBuildingsWeCanBuild == 0 || HabiableBuiltCoverage.Less(1))
-                {
-                    // no need to build unprofitable biospheres if we have nothing to build here
-                    return false;
-                }
-            }
-            else if (PopulationRatio < 0.95f 
-                     && (NumFreeBiospheres > 0 || HabiableBuiltCoverage.Less(1)))
-            {
-                // dont build even if profitable, if pop is not big enough.
-                // but ensure there is at least 1 free biospheres if there are no free tiles
                 return false;
             }
+
+            if (bio.ActualMaintenance(this) > budget)
+                return false; // the bankruptcy guard - the only money word in this decision
 
 
             if (IsPlanetExtraDebugTarget())
@@ -875,11 +876,6 @@ namespace Ship_Game
 
                 return preferred;
             }
-        }
-
-        bool BioSphereProfitable(Building bio)
-        {
-            return Money.NetRevenueGain(bio) >= 0;
         }
 
         void TryBuildDysonSwarm()
