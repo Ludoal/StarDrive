@@ -5302,6 +5302,10 @@ namespace Ship_Game
         Map = 4544,
         /// <summary>List</summary>
         List = 4545,
+        /// <summary>Resources</summary>
+        Resources = 4546,
+        /// <summary>Features</summary>
+        Features = 4547,
         /// <summary>FCS Bonus</summary>
         FcsBonus = 6186,
         /// <summary>FCS Accuracy</summary>

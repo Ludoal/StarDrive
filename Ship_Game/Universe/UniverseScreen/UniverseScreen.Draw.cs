@@ -1352,7 +1352,7 @@ namespace Ship_Game
                     if (IsMarkedForColonization(planet))
                         DrawTextureWithToolTip(ResourceManager.Texture("UI/flagicon"), Player.EmpireColor,
                                                GameText.IndicatesThatYourEmpireHas, mousePos,
-                                               (int)screenPosPlanet.X - 6, (int)screenPosPlanet.Y - 45, 13, 17);
+                                               (int)screenPosPlanet.X - 6, (int)screenPosPlanet.Y - 26, 13, 17); // seated like the exploded view's flag (bench 424)
 
                     posOffSet = new Vector2(screenPosPlanet.X + 10f, screenPosPlanet.Y + 60f);
 

@@ -17868,6 +17868,14 @@ List:
  Id: 4545
  ENG: "List"
  FRA: "Liste"
+Resources:
+ Id: 4546
+ ENG: "Resources"
+ FRA: "Ressources"
+Features:
+ Id: 4547
+ ENG: "Features"
+ FRA: "Particularités"
 FcsBonus:
  Id: 6186
  ENG: "FCS Bonus"

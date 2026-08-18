@@ -56,9 +56,9 @@ namespace Ship_Game
             batch.Draw(b.IconTex, new Vector2(X, Y + (Height - IconSize) / 2f), new Vector2(IconSize), Color.White);
             batch.DrawString(Font12, b.TranslatedName.Text, X + IconSize + 6, Y + (Height - Font12.LineSpacing) / 2f, titleColor);
 
-            // the building's actual yields on THIS colony - the same arithmetic the MAP
-            // tiles' icon rows use (labor share, fertility, richness), one shared source
-            Screen.BuildingActualYields(b, out float food, out float prod, out float research);
+            // the building's yields on THIS colony at current population - the shared
+            // arithmetic, without the labor sliders' instant weighting (bench 424)
+            Screen.BuildingActualYields(b, out float food, out float prod, out float research, laborShare: false);
             float credits = b.Income + b.CreditsPerColonist * Screen.P.PopulationBillion - b.Maintenance;
 
             DrawValueColumn(batch, FoodIcon, food, 3);

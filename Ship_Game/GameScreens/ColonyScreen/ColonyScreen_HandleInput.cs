@@ -55,10 +55,11 @@ namespace Ship_Game
                     if (pgs.ClickRect.HitTest(input.CursorPosition))
                         return pgs;
             }
-            else if (LastBuiltHover != null)
+            else if (LastBuiltHover != null && BuiltList.HitTest(input.CursorPosition))
             {
-                // LIST view: rows push their tile through OnHovered, and leaving a row
-                // keeps the last description shown instead of flickering back
+                // LIST view: rows push their tile through OnHovered; between rows the last
+                // description holds (no flicker) - but only while the cursor stays on the
+                // list, so the bottom tabs unlock the moment the player leaves it (bench 424)
                 return LastBuiltHover;
             }
 

@@ -896,23 +896,27 @@ namespace Ship_Game
                 LastBuiltHover = item.Tile; // sticky: losing hover keeps the last description
         }
 
-        // ONE arithmetic for a building's actual yields on this colony - the MAP tiles'
-        // icon rows and the LIST view's value columns both read it. It follows what the
-        // colony actually collects: labor share (sliders), fertility and richness weigh
-        // the per-colonist parts; flat amounts land whole.
-        public void BuildingActualYields(Building b, out float food, out float prod, out float res)
+        // ONE arithmetic for a building's yields on this colony - the MAP tiles' icon rows
+        // and the LIST view's value columns both read it. laborShare=true follows what the
+        // colony collects THIS instant (the sliders weigh the per-colonist parts - the
+        // tiles' historical behaviour); false shows the building's contribution at current
+        // population regardless of today's labor allocation - the LIST's reading, where
+        // Capital City's research must scale with its colonists (bench 424). Fertility and
+        // richness weigh the per-colonist parts either way; flat amounts land whole.
+        public void BuildingActualYields(Building b, out float food, out float prod, out float res, bool laborShare = true)
         {
             food = 0f; prod = 0f; res = 0f;
+            float pop = P.PopulationBillion;
             if (b.PlusFlatFoodAmount > 0f || b.PlusFoodPerColonist > 0f)
             {
-                food += b.PlusFoodPerColonist * P.PopulationBillion * P.Food.Percent * P.Fertility;
+                food += b.PlusFoodPerColonist * pop * (laborShare ? P.Food.Percent : 1f) * P.Fertility;
                 food += b.PlusFlatFoodAmount;
             }
 
             if (b.PlusFlatProductionAmount > 0f || b.PlusProdPerColonist > 0f)
             {
                 prod += b.PlusFlatProductionAmount;
-                prod += b.PlusProdPerColonist * P.PopulationBillion * P.Prod.Percent * P.MineralRichness;
+                prod += b.PlusProdPerColonist * pop * (laborShare ? P.Prod.Percent : 1f) * P.MineralRichness;
             }
 
             if (b.PlusProdPerRichness > 0f)
@@ -920,49 +924,47 @@ namespace Ship_Game
 
             if (b.PlusResearchPerColonist > 0f || b.PlusFlatResearchAmount > 0f)
             {
-                res += b.PlusResearchPerColonist * P.PopulationBillion * P.Res.Percent;
+                res += b.PlusResearchPerColonist * pop * (laborShare ? P.Res.Percent : 1f);
                 res += b.PlusFlatResearchAmount;
             }
         }
 
-        // LIST view content: the capital first and out of any group, then one header per
-        // building category, instances sorted by name inside each. One row per INSTANCE -
-        // deletion targets a tile, not a type.
+        // LIST view content (bench 424 - nothing hides, everything classifies): the
+        // capital first and out of any group, then BUILDINGS (the player's works - they
+        // all carry a build cost), RESOURCES (commodity deposits like exotic minerals),
+        // FEATURES (terrain and event tiles - Mountain, anomalies). One row per INSTANCE.
+        // Headers only when a second family is present - a lone group informs nobody.
         void ResetBuiltList()
         {
             BuiltList.Reset();
-            // CONSTRUCTED buildings only (bench 422): terrain accidents and event tiles
-            // (Mountain, Unidentified signature...) are Building objects too, but they
-            // carry no build cost and/or an event trigger - the player's works all cost
-            var built = P.TilesList.Filter(t => t.Building is { } b && !b.EventHere
-                                                && (b.Cost > 0 || b.IsCapitalOrOutpost));
+            var occupied = P.TilesList.Filter(t => t.Building != null);
 
-            foreach (PlanetGridSquare t in built)
+            foreach (PlanetGridSquare t in occupied)
                 if (t.Building.IsCapitalOrOutpost)
                     BuiltList.AddItem(new BuiltBuildingListItem(this, t));
 
-            var regular = built.Filter(t => !t.Building.IsCapitalOrOutpost);
-            var categories = new Array<BuildingCategory>();
-            foreach (PlanetGridSquare t in regular)
-                categories.AddUnique(t.Building.Category);
-            categories.Sort((a, b) => (int)a - (int)b);
+            var rest      = occupied.Filter(t => !t.Building.IsCapitalOrOutpost);
+            var buildings = rest.Filter(t => t.Building.Cost > 0 && !t.Building.IsCommodity);
+            var resources = rest.Filter(t => t.Building.IsCommodity);
+            var features  = rest.Filter(t => t.Building.Cost <= 0 && !t.Building.IsCommodity);
 
-            // a single category informs nobody - its header would only take a row. The
-            // grouping returns by itself the day the data grows a second one (bench 420).
-            if (categories.Count == 1)
-            {
-                regular.Sort(t => t.Building.TranslatedName.Text);
-                foreach (PlanetGridSquare t in regular)
-                    BuiltList.AddItem(new BuiltBuildingListItem(this, t));
-                return;
-            }
+            var groups = new Array<(LocalizedText Title, PlanetGridSquare[] Tiles)>();
+            if (buildings.Length > 0) groups.Add((GameText.Buildings, buildings));
+            if (resources.Length > 0) groups.Add((GameText.Resources, resources));
+            if (features.Length > 0)  groups.Add((GameText.Features, features));
 
-            foreach (BuildingCategory category in categories)
+            bool headers = groups.Count > 1;
+            foreach ((LocalizedText title, PlanetGridSquare[] tiles) in groups)
             {
-                var group = regular.Filter(t => t.Building.Category == category);
-                group.Sort(t => t.Building.TranslatedName.Text);
-                BuiltBuildingListItem header = BuiltList.AddItem(new BuiltBuildingListItem(this, category.ToString()));
-                foreach (PlanetGridSquare t in group)
+                tiles.Sort(t => t.Building.TranslatedName.Text);
+                if (!headers)
+                {
+                    foreach (PlanetGridSquare t in tiles)
+                        BuiltList.AddItem(new BuiltBuildingListItem(this, t));
+                    continue;
+                }
+                BuiltBuildingListItem header = BuiltList.AddItem(new BuiltBuildingListItem(this, title.Text));
+                foreach (PlanetGridSquare t in tiles)
                     header.AddSubItem(new BuiltBuildingListItem(this, t));
                 header.Expand(true); // an inventory opens legible, not folded
             }
