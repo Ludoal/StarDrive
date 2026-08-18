@@ -18157,6 +18157,99 @@ HkListening:
 HkUnbound:
  Id: 4641
  ENG: "unbound"
+OptAudio:
+ Id: 4642
+ ENG: "Audio"
+OptGraphics:
+ Id: 4643
+ ENG: "Graphics"
+OptGameplay:
+ Id: 4644
+ ENG: "Gameplay"
+OptVisuals:
+ Id: 4645
+ ENG: "Visuals"
+OptInterface:
+ Id: 4646
+ ENG: "Interface"
+OptQualityHigh:
+ Id: 4647
+ ENG: "High"
+OptQualityNormal:
+ Id: 4648
+ ENG: "Normal"
+OptQualityLow:
+ Id: 4649
+ ENG: "Low"
+OptQualityUltraLow:
+ Id: 4650
+ ENG: "Ultra-Low"
+OptQualityNone:
+ Id: 4651
+ ENG: "None"
+OptApplyTooltip:
+ Id: 4652
+ ENG: "For the display settings only: resolution and screen mode.\nYou get 10 seconds to confirm, or they revert.\n\nEverything else applies as you change it,\nand is saved when you leave this screen."
+OptAutosaveEveryXYears:
+ Id: 4653
+ ENG: "Autosave every X years"
+OptFogOfWarMemory:
+ Id: 4654
+ ENG: "Fog Of War Memory"
+OptFogOfWarMemoryTooltip:
+ Id: 4655
+ ENG: "Ships permanently paint their sensor coverage on the fog of war as they travel - the classic map memory. Off: the map stays dark and only live sensor coverage lights it."
+OptAsteroidSize:
+ Id: 4656
+ ENG: "Asteroid Size"
+OptShipIconSizes:
+ Id: 4657
+ ENG: "Ship Icon Sizes"
+OptStationIconSizes:
+ Id: 4658
+ ENG: "Station Icon Sizes"
+OptMinimapSize:
+ Id: 4659
+ ENG: "Minimap Size"
+OptAutoPauseOnPageOpen:
+ Id: 4660
+ ENG: "Auto-pause on page opening"
+OptAutoPauseOnPageOpenTooltip:
+ Id: 4661
+ ENG: "Opening a screen pauses the simulation. Untick to let the universe run behind your pages - manual pause still works. The Shipyard's Full Screen mode always pauses."
+OptAutoPauseColonyPanel:
+ Id: 4662
+ ENG: "Auto-pause Colony panel"
+OptAutoPauseColonyPanelTooltip:
+ Id: 4663
+ ENG: "When Auto-pause on page opening is on, also pause for the Colony panel. Off (default): the colony runs live while you read it."
+OptResetToDefaults:
+ Id: 4664
+ ENG: "Reset to Defaults"
+OptResetTooltip:
+ Id: 4665
+ ENG: "Reset every option except the display settings (Graphics),\nthe language and the sound device to its default value."
+OptAutosaveIntervalTooltip:
+ Id: 4666
+ ENG: "How many star-years between autosaves. A year is 10 turns; the clock does not advance while paused."
+OptAsteroidSizeTooltip:
+ Id: 4667
+ ENG: "Visual size of asteroids. Takes effect immediately, cosmetic only."
+OptMinimapSizeTooltip:
+ Id: 4668
+ ENG: "Size of the minimap widget in the corner of the map."
+OptShipIconSizeTooltip:
+ Id: 4669
+ ENG: "Extra size in pixels for ship tactical icons."
+OptStationIconSizeTooltip:
+ Id: 4670
+ ENG: "Extra size in pixels for station and platform icons."
+OptSoundDeviceDefault:
+ Id: 4671
+ ENG: "Default"
+OptSoundDeviceNotAvailable:
+ Id: 4672
+ ENG: "Not Available"
 FcsBonus:
  Id: 6186
  ENG: "FCS Bonus"

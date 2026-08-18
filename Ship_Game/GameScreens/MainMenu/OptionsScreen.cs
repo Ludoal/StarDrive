@@ -157,7 +157,7 @@ namespace Ship_Game
 
         static string QualityString(int parameter)
         {
-            return (uint)parameter <= 3 ? new[]{ "High", "Normal", "Low", "Ultra-Low" }[parameter] : "None";
+            return (uint)parameter <= 3 ? new[]{ Localizer.Token(GameText.OptQualityHigh), Localizer.Token(GameText.OptQualityNormal), Localizer.Token(GameText.OptQualityLow), Localizer.Token(GameText.OptQualityUltraLow) }[parameter] : Localizer.Token(GameText.OptQualityNone);
         }
 
         static string ShadowQualStr(int parameter)
@@ -253,14 +253,14 @@ namespace Ship_Game
             // of the neighbour, not under it.
 
             // ---- column 1: Graphics (Apply-gated device settings) over Audio
-            UIList audio = NewBox(new RectF(x0, top + GraphicsBoxH + BoxGap, BoxW, AudioBoxH), "Audio");
+            UIList audio = NewBox(new RectF(x0, top + GraphicsBoxH + BoxGap, BoxW, AudioBoxH), GameText.OptAudio);
             SoundDevices = new DropOptions<MMDevice>(190, 18);
             audio.AddSplit(new UILabel(GameText.SoundDevice), SoundDevices).Split = 105; // 15px right of the label (bench 406)
             MusicVolumeSlider   = audio.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, GameText.MusicVolume, 0f, 1f, GlobalStats.MusicVolume));
             EffectsVolumeSlider = audio.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, GameText.EffectsVolume, 0f, 1f, GlobalStats.EffectsVolume));
             audio.ReverseZOrder(); // the device dropdown draws over the sliders below it
 
-            UIList graphics = NewBox(new RectF(x0, top, BoxW, GraphicsBoxH), "Graphics");
+            UIList graphics = NewBox(new RectF(x0, top, BoxW, GraphicsBoxH), GameText.OptGraphics);
             graphics.Padding = new Vector2(2f, 6f);
             ResolutionDropDown = new DropOptions<DisplayMode>(126, 18);
 
@@ -283,61 +283,57 @@ namespace Ship_Game
             // and nothing else - everything else on this screen takes effect the moment you
             // change it and is saved when you leave. A button called "Apply Settings" sitting
             // among settings that apply themselves is a fair way to be misread (maintainer feedback).
-            apply.Tooltip = "For the display settings only: resolution and screen mode.\n"
-                          + "You get 10 seconds to confirm, or they revert.\n\n"
-                          + "Everything else applies as you change it,\n"
-                          + "and is saved when you leave this screen.";
+            apply.Tooltip = GameText.OptApplyTooltip;
 
             // ---- column 2: Visuals over Gameplay
-            UIList gameplay = NewBox(new RectF(x1, top + VisualsBoxH + BoxGap, BoxW, GameplayBoxH), "Gameplay");
+            UIList gameplay = NewBox(new RectF(x1, top + VisualsBoxH + BoxGap, BoxW, GameplayBoxH), GameText.OptGameplay);
             SimulationFps = gameplay.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, GameText.SimulationFps, 10, 120, GlobalStats.SimulationFramesPerSecond));
-            AutoSaveYears = gameplay.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, "Autosave every X years", 1, 20, GlobalStats.AutoSaveYears));
+            AutoSaveYears = gameplay.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, GameText.OptAutosaveEveryXYears, 1, 20, GlobalStats.AutoSaveYears));
             gameplay.AddCheckbox(() => GlobalStats.PauseOnNotification,          title: GameText.PauseOnNotifications, tooltip: GameText.PausesGameOnNotificationsClearing);
             gameplay.AddCheckbox(() => GlobalStats.NotifyEnemyInSystemAfterLoad, title: GameText.AlertEnemyPresenceAfterLoad, tooltip: GameText.AddNotificationsRegardingEnemiesIn);
             gameplay.AddCheckbox(() => GlobalStats.RouteAroundGravityWells,      title: GameText.Pathfinder, tooltip: GameText.PathfinderTip);
             gameplay.AddCheckbox(() => GlobalStats.AutoErrorReport,              title: GameText.AutomaticErrorReport, tooltip: GameText.SendAutomaticErrorReportsTo);
 
-            UIList visuals = NewBox(new RectF(x1, top, BoxW, VisualsBoxH), "Visuals");
+            UIList visuals = NewBox(new RectF(x1, top, BoxW, VisualsBoxH), GameText.OptVisuals);
             // Bloom applies instantly now (lazy component allocation) - it left the Apply pack
             visuals.AddCheckbox(() => GlobalStats.RenderBloom,        title: GameText.Bloom, tooltip: GameText.DisablingBloomEffectWillIncrease);
             visuals.AddCheckbox(() => GlobalStats.EnableEngineTrails, title: GameText.EngineTrails, tooltip: GameText.TT_EngineTrails);
             // Ludoal fork: bring back the explored-system fog discs for those who miss them
-            visuals.AddCheckbox(() => GlobalStats.FogOfWarMemory, title: "Fog Of War Memory",
-                                tooltip: "Ships permanently paint their sensor coverage on the fog of war as they travel - the classic map memory. Off: the map stays dark and only live sensor coverage lights it.");
+            visuals.AddCheckbox(() => GlobalStats.FogOfWarMemory, title: GameText.OptFogOfWarMemory,
+                                tooltip: GameText.OptFogOfWarMemoryTooltip);
             // the asteroid pair rides together: the toggle, then its size (bench 406)
             visuals.AddCheckbox(() => GlobalStats.DisableAsteroids,   title: GameText.DisableAsteroids, tooltip: GameText.ThisWillPreventAsteroidsFrom);
-            AsteroidSize = visuals.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, "Asteroid Size", 0.25f, 1f, GlobalStats.AsteroidSizeMult));
+            AsteroidSize = visuals.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, GameText.OptAsteroidSize, 0.25f, 1f, GlobalStats.AsteroidSizeMult));
             EffectsInfluenceNodeAlpha = visuals.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, GameText.GameOptionsInfluenceAlpha, 0f, 1f, GlobalStats.InfluenceNodeAlpha));
             EffectsInfluenceNodeAlpha.Tip = GameText.GameOptionsInfluenceAlphaTip;
             MaxDynamicLightSources = visuals.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, GameText.MaxDynamicLightSources, 0, 1000, GlobalStats.MaxDynamicLightSources));
 
             // ---- column 3: UI
-            UIList ui = NewBox(new RectF(x2, top, BoxW, UIBoxH), "Interface");
+            UIList ui = NewBox(new RectF(x2, top, BoxW, UIBoxH), GameText.OptInterface);
             CurrentLanguage = new DropOptions<Language>(126, 18);
             ui.AddSplit(new UILabel(GameText.Language), CurrentLanguage).Split = 90; // first row (bench 406)
-            IconSize        = ui.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, "Ship Icon Sizes", 1, 30, GlobalStats.IconSize));
-            StationIconSize = ui.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, "Station Icon Sizes", 1, 30, GlobalStats.StationIconSize));
-            MinimapSize     = ui.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, "Minimap Size", 1f, 2f, GlobalStats.MinimapSizeMult));
+            IconSize        = ui.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, GameText.OptShipIconSizes, 1, 30, GlobalStats.IconSize));
+            StationIconSize = ui.Add(new FloatSlider(SliderStyle.Decimal, 288f, 36f, GameText.OptStationIconSizes, 1, 30, GlobalStats.StationIconSize));
+            MinimapSize     = ui.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, GameText.OptMinimapSize, 1f, 2f, GlobalStats.MinimapSizeMult));
             ui.AddCheckbox(() => GlobalStats.ZoomTracking,         title: GameText.ToggleZoomTracking, tooltip: GameText.ZoomWillCenterOnSelected);
             ui.AddCheckbox(() => GlobalStats.DisableScreenPanning, title: GameText.DisableScreenPanningOption, tooltip: GameText.DisableScreenPanningOptionTip);
             ui.AddCheckbox(() => GlobalStats.AltArcControl,        title: GameText.KeyboardFireArcLocking, tooltip: GameText.WhenActiveArcsInThe);
-            ui.AddCheckbox(() => GlobalStats.PauseOnPageOpen, title: "Auto-pause on page opening",
-                           tooltip: "Opening a screen pauses the simulation. Untick to let the universe run behind your pages - manual pause still works. The Shipyard's Full Screen mode always pauses.");
+            ui.AddCheckbox(() => GlobalStats.PauseOnPageOpen, title: GameText.OptAutoPauseOnPageOpen,
+                           tooltip: GameText.OptAutoPauseOnPageOpenTooltip);
             // bench 392 (maintainer): the Colony panel opts OUT of auto-pause by default (its
             // original behaviour). Subordinate to the option above - the setter refuses and the
             // label greys when auto-pause is off, and it is indented under it.
             AutoPauseColonyBox = ui.AddCheckbox(
                 () => GlobalStats.AutoPauseColonyPanel,
                 b => { if (GlobalStats.PauseOnPageOpen) GlobalStats.AutoPauseColonyPanel = b; },
-                title: "Auto-pause Colony panel",
-                tooltip: "When Auto-pause on page opening is on, also pause for the Colony panel. Off (default): the colony runs live while you read it.");
+                title: GameText.OptAutoPauseColonyPanel,
+                tooltip: GameText.OptAutoPauseColonyPanelTooltip);
             AutoPauseColonyBox.Indent = 20; // indented under its parent option (bench 392)
             ui.ReverseZOrder();
 
             // bottom-left of the main frame (bench 406)
-            var reset = Add(new UIButton(ButtonStyle.Medium, new Vector2(x0 + 16, inner.Bottom - 40), "Reset to Defaults"));
-            reset.Tooltip = "Reset every option except the display settings (Graphics),\n"
-                          + "the language and the sound device to its default value.";
+            var reset = Add(new UIButton(ButtonStyle.Medium, new Vector2(x0 + 16, inner.Bottom - 40), GameText.OptResetToDefaults));
+            reset.Tooltip = GameText.OptResetTooltip;
             reset.OnClick = b => RunOnNextFrame(ResetToDefaults);
 
             MusicVolumeSlider.OnChange = (s) => GlobalStats.MusicVolume = s.AbsoluteValue;
@@ -352,12 +348,12 @@ namespace Ship_Game
             SimulationFps.OnChange = (s) => GlobalStats.SimulationFramesPerSecond = (int)s.AbsoluteValue;
 
             MaxDynamicLightSources.Tip = GameText.TT_MaxDynamicLightSources;
-            AutoSaveYears.Tip = "How many star-years between autosaves. A year is 10 turns; the clock does not advance while paused.";
+            AutoSaveYears.Tip = GameText.OptAutosaveIntervalTooltip;
             SimulationFps.Tip = GameText.ChangesTheSimulationFrequencyLower;
-            AsteroidSize.Tip = "Visual size of asteroids. Takes effect immediately, cosmetic only.";
-            MinimapSize.Tip = "Size of the minimap widget in the corner of the map.";
-            IconSize.Tip = "Extra size in pixels for ship tactical icons.";
-            StationIconSize.Tip = "Extra size in pixels for station and platform icons.";
+            AsteroidSize.Tip = GameText.OptAsteroidSizeTooltip;
+            MinimapSize.Tip = GameText.OptMinimapSizeTooltip;
+            IconSize.Tip = GameText.OptShipIconSizeTooltip;
+            StationIconSize.Tip = GameText.OptStationIconSizeTooltip;
 
             RefreshZOrder();
             PerformLayout();
@@ -432,7 +428,7 @@ namespace Ship_Game
 
             if (devices is {Count: > 0})
             {
-                SoundDevices.AddOption("Default", null/*because it might change*/);
+                SoundDevices.AddOption(Localizer.Token(GameText.OptSoundDeviceDefault), null/*because it might change*/);
                 foreach (MMDevice device in devices)
                 {
                     string isDefault = (device.ID == defaultDevice?.ID) ? "* " : "";
@@ -444,7 +440,7 @@ namespace Ship_Game
             }
             else
             {
-                SoundDevices.AddOption("Not Available", null);
+                SoundDevices.AddOption(Localizer.Token(GameText.OptSoundDeviceNotAvailable), null);
                 SoundDevices.OnValueChange = null;
             }
         }

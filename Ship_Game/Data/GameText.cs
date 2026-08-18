@@ -5494,6 +5494,68 @@ namespace Ship_Game
         HkListening = 4640,
         /// <summary>unbound</summary>
         HkUnbound = 4641,
+        /// <summary>Audio</summary>
+        OptAudio = 4642,
+        /// <summary>Graphics</summary>
+        OptGraphics = 4643,
+        /// <summary>Gameplay</summary>
+        OptGameplay = 4644,
+        /// <summary>Visuals</summary>
+        OptVisuals = 4645,
+        /// <summary>Interface</summary>
+        OptInterface = 4646,
+        /// <summary>High</summary>
+        OptQualityHigh = 4647,
+        /// <summary>Normal</summary>
+        OptQualityNormal = 4648,
+        /// <summary>Low</summary>
+        OptQualityLow = 4649,
+        /// <summary>Ultra-Low</summary>
+        OptQualityUltraLow = 4650,
+        /// <summary>None</summary>
+        OptQualityNone = 4651,
+        /// <summary>For the display settings only: resolution and screen mode.\nYou get 10</summary>
+        OptApplyTooltip = 4652,
+        /// <summary>Autosave every X years</summary>
+        OptAutosaveEveryXYears = 4653,
+        /// <summary>Fog Of War Memory</summary>
+        OptFogOfWarMemory = 4654,
+        /// <summary>Ships permanently paint their sensor coverage on the fog of war as the</summary>
+        OptFogOfWarMemoryTooltip = 4655,
+        /// <summary>Asteroid Size</summary>
+        OptAsteroidSize = 4656,
+        /// <summary>Ship Icon Sizes</summary>
+        OptShipIconSizes = 4657,
+        /// <summary>Station Icon Sizes</summary>
+        OptStationIconSizes = 4658,
+        /// <summary>Minimap Size</summary>
+        OptMinimapSize = 4659,
+        /// <summary>Auto-pause on page opening</summary>
+        OptAutoPauseOnPageOpen = 4660,
+        /// <summary>Opening a screen pauses the simulation. Untick to let the universe run</summary>
+        OptAutoPauseOnPageOpenTooltip = 4661,
+        /// <summary>Auto-pause Colony panel</summary>
+        OptAutoPauseColonyPanel = 4662,
+        /// <summary>When Auto-pause on page opening is on, also pause for the Colony panel</summary>
+        OptAutoPauseColonyPanelTooltip = 4663,
+        /// <summary>Reset to Defaults</summary>
+        OptResetToDefaults = 4664,
+        /// <summary>Reset every option except the display settings (Graphics),\nthe langua</summary>
+        OptResetTooltip = 4665,
+        /// <summary>How many star-years between autosaves. A year is 10 turns; the clock d</summary>
+        OptAutosaveIntervalTooltip = 4666,
+        /// <summary>Visual size of asteroids. Takes effect immediately, cosmetic only.</summary>
+        OptAsteroidSizeTooltip = 4667,
+        /// <summary>Size of the minimap widget in the corner of the map.</summary>
+        OptMinimapSizeTooltip = 4668,
+        /// <summary>Extra size in pixels for ship tactical icons.</summary>
+        OptShipIconSizeTooltip = 4669,
+        /// <summary>Extra size in pixels for station and platform icons.</summary>
+        OptStationIconSizeTooltip = 4670,
+        /// <summary>Default</summary>
+        OptSoundDeviceDefault = 4671,
+        /// <summary>Not Available</summary>
+        OptSoundDeviceNotAvailable = 4672,
         /// <summary>FCS Bonus</summary>
         FcsBonus = 6186,
         /// <summary>FCS Accuracy</summary>
