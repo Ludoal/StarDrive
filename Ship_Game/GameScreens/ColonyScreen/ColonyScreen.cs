@@ -313,9 +313,11 @@ namespace Ship_Game
             ColonistsIcon = new Rectangle((int)PStorage.X + 20, (int)(PStorage.Y + storeRow3 + 9 - iconPop.Height / 2f), iconPop.Width, iconPop.Height);
             ColonistsDropDown = new DropDownMenu(PStorage.X + 100, PStorage.Y + storeRow3, 0.3f * PStorage.Width, 18);
             ColonistsDropDown.AddOption("Auto");
-            ColonistsDropDown.AddOption(Localizer.Token(GameText.Store));
-            ColonistsDropDown.AddOption(Localizer.Token(GameText.Import));
-            ColonistsDropDown.AddOption(Localizer.Token(GameText.Export));
+            // people words, not cargo words (bench 425): Stay / Bring in / Resettle map
+            // onto STORE / IMPORT / EXPORT in the same order
+            ColonistsDropDown.AddOption(Localizer.Token(GameText.Stay));
+            ColonistsDropDown.AddOption(Localizer.Token(GameText.BringIn));
+            ColonistsDropDown.AddOption(Localizer.Token(GameText.Resettle));
             ColonistsDropDown.ActiveIndex = p.ColonistsManual ? 1 + (int)p.CS : 0;
 
             // Centre column: the colony grid keeps its height, STATISTICS below takes the rest -
@@ -985,6 +987,10 @@ namespace Ship_Game
         {
             BuiltList.Reset();
             var occupied = P.TilesList.Filter(t => t.Building != null);
+
+            // the pinned Colonists line (bench 425): the workforce's own share, so the
+            // columns sum to the STATS+ totals for every resource
+            BuiltList.AddItem(new BuiltBuildingListItem(this));
 
             foreach (PlanetGridSquare t in occupied)
                 if (t.Building.IsCapitalOrOutpost)

@@ -31,6 +31,16 @@ namespace Ship_Game
             Screen = screen;
         }
 
+        // the pinned Colonists row (bench 425): the workforce's own share of the colony's
+        // yields - the base every formula grants colonists before any building adds to it.
+        // No tile, no delete: the workforce is not a structure.
+        public readonly bool IsColonistsRow;
+        public BuiltBuildingListItem(ColonyScreen screen)
+        {
+            Screen = screen;
+            IsColonistsRow = true;
+        }
+
         public BuiltBuildingListItem(ColonyScreen screen, PlanetGridSquare tile)
         {
             Screen = screen;
@@ -47,6 +57,27 @@ namespace Ship_Game
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             base.Draw(batch, elapsed);
+
+            if (IsColonistsRow)
+            {
+                var p = Screen.P;
+                float popn = p.PopulationBillion;
+                Color rowColor = Hovered ? Color.White : Colors.Cream;
+                batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), new Vector2(X, Y + (Height - IconSize) / 2f), new Vector2(IconSize), Color.White);
+                batch.DrawString(Font12, Localizer.Token(GameText.Colonists), X + IconSize + 6, Y + (Height - Font12.LineSpacing) / 2f, rowColor);
+
+                float baseFood = p.Food.AfterTax(p.Food.Percent * popn * p.Fertility);
+                float baseProd = p.Prod.AfterTax(p.Prod.Percent * popn * p.MineralRichness
+                                                 * (1f + p.Owner.data.Traits.ProductionMod));
+                float baseMoney = popn * p.Owner.data.TaxRate * (1f + p.Owner.data.Traits.TaxMod)
+                                * p.Owner.ExoticCreditsBonus;
+                DrawValueColumn(batch, FoodIcon, baseFood, 3);
+                DrawValueColumn(batch, ProdIcon, baseProd, 2);
+                DrawValueColumn(batch, MoneyIcon, baseMoney, 1);
+                DrawValueColumn(batch, ScienceIcon, 0f, 0); // colonists research nothing by themselves
+                return;
+            }
+
             Building b = Tile?.Building;
             if (b == null)
                 return;

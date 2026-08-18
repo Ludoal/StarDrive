@@ -17876,6 +17876,18 @@ Features:
  Id: 4547
  ENG: "Features"
  FRA: "Particularités"
+Stay:
+ Id: 4548
+ ENG: "Stay"
+ FRA: "Rester"
+BringIn:
+ Id: 4549
+ ENG: "Bring in"
+ FRA: "Accueillir"
+Resettle:
+ Id: 4550
+ ENG: "Resettle"
+ FRA: "Réinstaller"
 FcsBonus:
  Id: 6186
  ENG: "FCS Bonus"

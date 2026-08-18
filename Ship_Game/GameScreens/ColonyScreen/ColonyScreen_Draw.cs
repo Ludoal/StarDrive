@@ -349,7 +349,7 @@ namespace Ship_Game
             if (ProfStorageIcon.HitTest(Input.CursorPosition) && P.Universe.Screen.IsActive)
                 ToolTip.CreateTooltip(GameText.IndicatesTheAmountOfProduction);
             if (ColonistsIcon.HitTest(Input.CursorPosition) && P.Universe.Screen.IsActive)
-                ToolTip.CreateTooltip("Colonist migration: Auto follows the colony's own import/export rules; Store, Import or Export pin the direction");
+                ToolTip.CreateTooltip("Colonist migration: Auto follows the colony's own rules; Stay, Bring in or Resettle pin the direction");
         }
 
         void DrawFoodSlots(SpriteBatch batch)

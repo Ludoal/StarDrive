@@ -5306,6 +5306,12 @@ namespace Ship_Game
         Resources = 4546,
         /// <summary>Features</summary>
         Features = 4547,
+        /// <summary>Stay</summary>
+        Stay = 4548,
+        /// <summary>Bring in</summary>
+        BringIn = 4549,
+        /// <summary>Resettle</summary>
+        Resettle = 4550,
         /// <summary>FCS Bonus</summary>
         FcsBonus = 6186,
         /// <summary>FCS Accuracy</summary>
