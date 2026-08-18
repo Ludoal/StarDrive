@@ -80,9 +80,13 @@ namespace Ship_Game
 
             OrdersButtons = new ShipStanceButtons(screen, ordersBarPos);
 
-            // bench 427: the specifics' second row is gone at EVERY resolution, so the list
-            // simply grows one button-height into the freed space - no conditional at all
-            RectF selected = new(RightRect.X-10, Housing.Y + 85 - 52, RightRect.Width - 5, 140 + 52);
+            // bench 427, the established bound rule: under 1200px of screen height the list
+            // runs down to the frame's bottom; at 1200+ it ALSO climbs one button-height
+            // into the freed second-row space above. One variable, nothing rearranges.
+            int topExtra = screen.ScreenHeight >= 1200 ? 52 : 0;
+            int listTop = Housing.Y + 85 - topExtra;
+            int listBottom = Housing.Y + Housing.Height - 10;
+            RectF selected = new(RightRect.X-10, listTop, RightRect.Width - 5, listBottom - listTop);
             SelectedShipsSL = new ScrollList<SelectedShipListItem>(selected, 24);
         }
 
