@@ -922,6 +922,27 @@ namespace Ship_Game
             res = P.Res.AfterTax(grossRes);
         }
 
+        // The building's NET money as the treasury books it (bench 425): its taxed direct
+        // income (credits per colonist and flat income only yield their taxed share) plus
+        // its tax-boost share (a PlusTaxPercentage building like the Capital earns its cut
+        // of taxing the base workforce), minus its real maintenance. The boost share is
+        // attributed on the workforce base so it does not double-count building credits.
+        public float BuildingNetMoney(Building b)
+        {
+            float pop = P.PopulationBillion;
+            float exotic = P.Owner.ExoticCreditsBonus;
+            float empireRate = P.Owner.data.TaxRate;
+
+            float taxBoostSum = 0f;
+            foreach (Building o in P.Buildings)
+                taxBoostSum += o.PlusTaxPercentage;
+            float rateEff = empireRate * (1f + P.Owner.data.Traits.TaxMod + taxBoostSum);
+
+            float direct = (b.CreditsPerColonist * pop + b.Income) * rateEff * exotic;
+            float boost  = pop * empireRate * b.PlusTaxPercentage * exotic;
+            return direct + boost - b.ActualMaintenance(P);
+        }
+
         // ONE arithmetic for a building's yields on this colony - the MAP tiles' icon rows
         // and the LIST view's value columns both read it. laborShare=true follows what the
         // colony collects THIS instant (the sliders weigh the per-colonist parts - the
@@ -959,7 +980,7 @@ namespace Ship_Game
         // capital first and out of any group, then BUILDINGS (the player's works - they
         // all carry a build cost), RESOURCES (commodity deposits like exotic minerals),
         // FEATURES (terrain and event tiles - Mountain, anomalies). One row per INSTANCE.
-        // Headers only when a second family is present - a lone group informs nobody.
+        // Headers always show, even for a lone family (bench 425) - the label informs.
         void ResetBuiltList()
         {
             BuiltList.Reset();
@@ -979,16 +1000,10 @@ namespace Ship_Game
             if (resources.Length > 0) groups.Add((GameText.Resources, resources));
             if (features.Length > 0)  groups.Add((GameText.Features, features));
 
-            bool headers = groups.Count > 1;
+            // bench 425: headers stay even for a lone family - the label IS the information
             foreach ((LocalizedText title, PlanetGridSquare[] tiles) in groups)
             {
                 tiles.Sort(t => t.Building.TranslatedName.Text);
-                if (!headers)
-                {
-                    foreach (PlanetGridSquare t in tiles)
-                        BuiltList.AddItem(new BuiltBuildingListItem(this, t));
-                    continue;
-                }
                 BuiltBuildingListItem header = BuiltList.AddItem(new BuiltBuildingListItem(this, title.Text));
                 foreach (PlanetGridSquare t in tiles)
                     header.AddSubItem(new BuiltBuildingListItem(this, t));

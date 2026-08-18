@@ -806,20 +806,34 @@ namespace Ship_Game
 
             DrawFertilityOnBuildWarning(ref bCursor, batch, b);
 
+            // Ludoal fork (bench 425): the cache-depletion notice reads as a WARNING, not a
+            // stat - it comes after the stats, in yellow, and wraps inside the frame
+            // instead of running off its right edge
+            if (b.FoodCache > 0f)
+                DrawCacheNotice(ref bCursor, batch, font, b.FoodCache, GameText.FoodRemainingHereThisBuilding);
+            if (b.ProdCache > 0f)
+                DrawCacheNotice(ref bCursor, batch, font, b.ProdCache, GameText.ProductionRemainingHereThisBuilding);
+
             if (tile?.VolcanoHere == true)
                 DrawVolcanoChance(ref bCursor, batch, tile.Volcano.ActivationChanceText(out Color color), color);
+        }
+
+        void DrawCacheNotice(ref Vector2 cursor, SpriteBatch batch, Font font, float remaining, GameText token)
+        {
+            cursor.Y += font.LineSpacing / 2f;
+            string text = MultiLineFormat($"{remaining.String(0)} {Localizer.Token(token)}");
+            batch.DrawString(font, text, cursor, Color.Yellow);
+            cursor.Y += font.MeasureString(text).Y + 2f;
         }
 
         public static void DrawBuildingStaticInfo(ref Vector2 bCursor, SpriteBatch batch, Font font, Empire owner,
             float fertility, float richness, PlanetCategory category, Building b)
         {
             DrawBuildingInfo(ref bCursor, batch, font, b.PlusFlatFoodAmount, "NewUI/icon_food", GameText.FoodPerTurn);
-            DrawBuildingInfo(ref bCursor, batch, font, b.FoodCache, "NewUI/icon_food", GameText.FoodRemainingHereThisBuilding, signs: false, digits: 0);
             DrawBuildingInfo(ref bCursor, batch, font, ColonyResource.FoodYieldFormula(fertility, b.PlusFoodPerColonist - 1), "NewUI/icon_food", GameText.FoodPerTurnPerAssigned);
             DrawBuildingInfo(ref bCursor, batch, font, b.SensorRange, "NewUI/icon_sensors", GameText.SensorRange, signs: false);
             DrawBuildingInfo(ref bCursor, batch, font, b.PlusFlatProductionAmount, "NewUI/icon_production", GameText.ProductionPerTurn);
             DrawBuildingInfo(ref bCursor, batch, font, ColonyResource.ProdYieldFormula(richness, b.PlusProdPerColonist - 1, owner), "NewUI/icon_production", GameText.ProductionPerTurnPerAssigned);
-            DrawBuildingInfo(ref bCursor, batch, font, b.ProdCache, "NewUI/icon_production", GameText.ProductionRemainingHereThisBuilding, signs: false, digits: 0);
             DrawBuildingInfo(ref bCursor, batch, font, b.PlusFlatPopulation / 1000, "NewUI/icon_population", GameText.ColonistsPerTurn, digits: 3);
             DrawBuildingInfo(ref bCursor, batch, font, b.MaxPopIncrease / 1000, "NewUI/icon_population", GameText.PopMax, digits: 2);
             DrawBuildingInfo(ref bCursor, batch, font, b.PlusFlatResearchAmount, "NewUI/icon_science", GameText.ResearchPerTurn);

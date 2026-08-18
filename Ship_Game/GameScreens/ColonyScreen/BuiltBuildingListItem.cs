@@ -59,7 +59,7 @@ namespace Ship_Game
             // NET, as the colony runs (bench 424 arbitration): the building's marginal
             // contribution through the sim's own pipeline - rows sum to STATS+ totals
             Screen.BuildingNetYields(b, out float food, out float prod, out float research);
-            float credits = b.Income + b.CreditsPerColonist * Screen.P.PopulationBillion - b.Maintenance;
+            float credits = Screen.BuildingNetMoney(b); // taxed share + tax-boost cut - maintenance (bench 425)
 
             DrawValueColumn(batch, FoodIcon, food, 3);
             DrawValueColumn(batch, ProdIcon, prod, 2);
