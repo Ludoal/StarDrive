@@ -125,15 +125,26 @@ namespace Ship_Game
             if (input.EmpirePatrolsScreen)        ScreenManager.AddScreen(new EmpirePatrolsScreen(this, Player));
             if (input.ImportantEventsScreen)      ScreenManager.AddScreen(new ImportantEventsScreen(this)); // Ludoal fork: F7
 
-            // Ludoal fork (bench 427): keyboard colony navigation - [ / ] leaf through the
-            // player's colonies (selection + pan at constant zoom), Home snaps to the capital
+            // Ludoal fork (bench 427): keyboard colony navigation - leaf through the
+            // player's colonies (selection + pan at constant zoom), Home snaps to the capital.
+            // bench 429 (maintainer feedback): the tour is SPATIAL - systems ordered by
+            // distance from the homeworld's system, planets by orbit within each system,
+            // so a system is finished before the tour jumps to the next one. And the tour
+            // resumes from the currently selected colony, wherever the mouse left it.
             if (input.PrevColony || input.NextColony)
             {
                 var colonies = Player.GetPlanets();
                 if (colonies.Count > 0)
                 {
-                    ColonyCycleIndex = (ColonyCycleIndex + (input.NextColony ? 1 : -1) + colonies.Count) % colonies.Count;
-                    Planet cycleTo = colonies[ColonyCycleIndex];
+                    Planet home = Player.Capital ?? colonies[0];
+                    Planet[] tour = colonies.OrderBy(p => p.System.Position.SqDist(home.System.Position))
+                                            .ThenBy(p => p.OrbitalRadius)
+                                            .ToArray();
+                    int current = SelectedPlanet != null ? Array.IndexOf(tour, SelectedPlanet) : -1;
+                    if (current >= 0)
+                        ColonyCycleIndex = current;
+                    ColonyCycleIndex = (ColonyCycleIndex + (input.NextColony ? 1 : -1) + tour.Length) % tour.Length;
+                    Planet cycleTo = tour[ColonyCycleIndex];
                     SetSelectedPlanet(cycleTo);
                     PanToPlanetKeepZoom(cycleTo);
                     GameAudio.AcceptClick();
