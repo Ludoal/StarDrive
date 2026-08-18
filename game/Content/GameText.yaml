@@ -17884,6 +17884,60 @@ Resettle:
  Id: 4550
  ENG: "Resettle"
  FRA: "Réinstaller"
+NoBuildingsConstructed:
+ Id: 4551
+ ENG: "No buildings constructed"
+ScrapBuildingHint:
+ Id: 4552
+ ENG: "You may scrap this building by right clicking it."
+DoYouWishToScrapBuilding:
+ Id: 4553
+ ENG: "Do you wish to scrap "
+ScrapBuildingRecovery:
+ Id: 4554
+ ENG: "? Half of the building's construction cost will be recovered to your storage."
+ViewYourHomeworld:
+ Id: 4555
+ ENG: "View your Homeworld"
+ColonistMigrationTooltip:
+ Id: 4556
+ ENG: "Colonist migration: Auto follows the colony's own rules; Stay, Bring in or Resettle pin the direction"
+TileTerraformableTooltip:
+ Id: 4557
+ ENG: "This tile can be terraformed as part of terraforming operations."
+GovernorAutoBudgetTooltip:
+ Id: 4558
+ ENG: "The governor sets this colony's budget on its own. Untick to fix the total and the split yourself."
+GovernorBudgetTotalTooltip:
+ Id: 4559
+ ENG: "Total the governor may spend on this colony each turn, split by the sliders beside the bars"
+LockShareTooltip:
+ Id: 4560
+ ENG: "Lock this share - adjusting the others leaves it untouched"
+FilterLabel:
+ Id: 4561
+ ENG: "Filter:"
+SpendingLabel:
+ Id: 4562
+ ENG: "Spending:"
+SpaceDefenseUpkeep:
+ Id: 4563
+ ENG: "Space defense upkeep"
+NetGrowthPerTurn:
+ Id: 4564
+ ENG: "Net growth (M / turn)"
+MaxProdToQueue:
+ Id: 4565
+ ENG: "Max prod to queue"
+CloseThisScreen:
+ Id: 4566
+ ENG: "Close this Screen"
+AutoPickTooltip:
+ Id: 4567
+ ENG: "Auto Pick: always use the best design available"
+AutoPick:
+ Id: 4568
+ ENG: "Auto Pick"
 FcsBonus:
  Id: 6186
  ENG: "FCS Bonus"

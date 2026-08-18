@@ -49,7 +49,7 @@ namespace Ship_Game
             var cols = new SPCols();
             // the label/value split of SPLine, floored so the value clears the widest label
             // ("Net growth (M / turn)") at any width (maintainer bench 285)
-            cols.ValueCol      = Math.Max(blockW * 0.543f, font.TextWidth("Net growth (M / turn)") + 10);
+            cols.ValueCol      = Math.Max(blockW * 0.543f, font.TextWidth(Localizer.Token(GameText.NetGrowthPerTurn)) + 10); // the localized label drives the width
             // ⚠ the yield columns are PIVOTS (the decimal point sits on them); they spread over the
             // RIGHT block, which starts at 44% and runs to the edge - wider than the left one
             float rightW       = blockW * 1.30f;

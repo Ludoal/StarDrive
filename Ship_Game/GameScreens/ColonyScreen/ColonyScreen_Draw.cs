@@ -198,7 +198,7 @@ namespace Ship_Game
                 // LIST view on a colony with nothing built yet: a sober central mention.
                 // The rows themselves are Add()ed children, drawn by base.Draw.
                 var r = SubColonyGrid.Rect;
-                string none = "No buildings constructed";
+                string none = Localizer.Token(GameText.NoBuildingsConstructed);
                 var textSize = Font12.MeasureString(none);
                 batch.DrawString(Font12, none,
                     new Vector2(r.X + (r.Width - textSize.X) / 2f, r.Y + (r.Height - textSize.Y) / 2f), Color.Gray);
@@ -406,7 +406,7 @@ namespace Ship_Game
             if (ProfStorageIcon.HitTest(Input.CursorPosition) && P.Universe.Screen.IsActive)
                 ToolTip.CreateTooltip(GameText.IndicatesTheAmountOfProduction);
             if (ColonistsIcon.HitTest(Input.CursorPosition) && P.Universe.Screen.IsActive)
-                ToolTip.CreateTooltip("Colonist migration: Auto follows the colony's own rules; Stay, Bring in or Resettle pin the direction");
+                ToolTip.CreateTooltip(GameText.ColonistMigrationTooltip);
         }
 
         void DrawFoodSlots(SpriteBatch batch)
@@ -704,7 +704,7 @@ namespace Ship_Game
                 return;
 
             bCursor.Y += TextFont.LineSpacing * 2;
-            batch.DrawString(TextFont, "You may scrap this building by right clicking it.", bCursor, Color.White);
+            batch.DrawString(TextFont, Localizer.Token(GameText.ScrapBuildingHint), bCursor, Color.White);
             bCursor.Y += TextFont.LineSpacing; // bench 431: the LAST line counts in the measure, or the elevator eats it
         }
 
@@ -847,7 +847,7 @@ namespace Ship_Game
                 string bioText = Localizer.Token(GameText.MillionColonistsCouldBeLiving);
                 if (BioSpheresResearched && tile.CanTerraform)
                 {
-                    batch.DrawString(TextFont, "This tile can be terraformed as part of terraforming operations.", cursor, Player.EmpireColor);
+                    batch.DrawString(TextFont, Localizer.Token(GameText.TileTerraformableTooltip), cursor, Player.EmpireColor);
                     cursor.Y += Font20.LineSpacing;
                     bioText += " However, building Biospheres here will complicate future terraforming efforts on the tile.";
                 }

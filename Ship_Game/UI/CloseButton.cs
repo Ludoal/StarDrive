@@ -6,7 +6,7 @@ namespace Ship_Game
     {
         public CloseButton(float x, float y) : base(ButtonStyle.Close, new Vector2(x, y), "")
         {
-            Tooltip = "Close this Screen";
+            Tooltip = GameText.CloseThisScreen;
         }
 
         protected override void OnButtonClicked()

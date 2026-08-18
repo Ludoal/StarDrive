@@ -149,7 +149,7 @@ namespace Ship_Game
             ManualOrbitals = Add(new UICheckBox(() => Planet.ManualOrbitals, Font, title: GameText.ManualOrbitalLimit, tooltip: GameText.OverrideGovernorDecisionsRegardingOrbital));
             GovGround      = Add(new UICheckBox(() => Planet.GovGroundDefense, Font, title: "Gov. Manages Ground Defense", tooltip: GameText.TheGovernorWillManageGround));
             AutoBudgetCheck = Add(new UICheckBox(() => PlanetAutoBudget, Font, title: "Auto",
-                tooltip: "The governor sets this colony's budget on its own. Untick to fix the total and the split yourself."));
+                tooltip: GameText.GovernorAutoBudgetTooltip));
             Prioritized    = Add(new UICheckBox(() => Planet.PrioritizedPort, Font, title: GameText.PrioritizedPort, tooltip: GameText.PrioritizedPortTip));
 
             SpecializedTradeHub = Add(new UICheckBox(() => p.SpecializedTradeHub, Font, title: GameText.SpecializedTradeHub, tooltip: GameText.SpecializedTradeHubTip));
@@ -244,10 +244,10 @@ namespace Ship_Game
             PlanetShareLocked[0] = PlanetShareLocked[1] = PlanetShareLocked[2] = false;
             float manualTotal = Planet.ManualCivilianBudget + Planet.ManualGrdDefBudget + Planet.ManualSpcDefBudget;
             float seedTotal   = Math.Max(manualTotal, Planet.Budget.TotalAlloc);
-            SpendingLabel = Add(new UILabel("Spending:", Font, Color.White));
+            SpendingLabel = Add(new UILabel(GameText.SpendingLabel, Font, Color.White));
             GovSpending   = Add(new FloatSlider(SliderStyle.Decimal1, new Vector2(150, 12), "",
                                                 0, (seedTotal * 2f).LowerBound(20f), seedTotal) { DrawValueText = false });
-            GovSpending.Tip = "Total the governor may spend on this colony each turn, split by the sliders beside the bars";
+            GovSpending.Tip = GameText.GovernorBudgetTotalTooltip;
             GovSpending.OnChange = s => { if (!LinkingPlanetShares && !PlanetAutoBudget) CommitPlanetBudget(); };
             SpendValue  = Add(new UILabel(l => GovSpending.AbsoluteValue.String(1), Font));
             SpendValue.Color = Color.White;
@@ -956,7 +956,7 @@ namespace Ship_Game
         {
             var b = new UIButton(new UIButton.StyleTextures("NewUI/icon_lock", "NewUI/icon_lock"), Vector2.Zero, "")
             {
-                Tooltip = "Lock this share - adjusting the others leaves it untouched",
+                Tooltip = GameText.LockShareTooltip,
             };
             b.OnClick = _ =>
             {

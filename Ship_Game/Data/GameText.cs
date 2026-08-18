@@ -5312,6 +5312,42 @@ namespace Ship_Game
         BringIn = 4549,
         /// <summary>Resettle</summary>
         Resettle = 4550,
+        /// <summary>No buildings constructed</summary>
+        NoBuildingsConstructed = 4551,
+        /// <summary>You may scrap this building by right clicking it.</summary>
+        ScrapBuildingHint = 4552,
+        /// <summary>Do you wish to scrap </summary>
+        DoYouWishToScrapBuilding = 4553,
+        /// <summary>? Half of the building's construction cost will be recovered to your storage.</summary>
+        ScrapBuildingRecovery = 4554,
+        /// <summary>View your Homeworld</summary>
+        ViewYourHomeworld = 4555,
+        /// <summary>Colonist migration: Auto follows the colony's own rules...</summary>
+        ColonistMigrationTooltip = 4556,
+        /// <summary>This tile can be terraformed as part of terraforming operations.</summary>
+        TileTerraformableTooltip = 4557,
+        /// <summary>The governor sets this colony's budget on its own...</summary>
+        GovernorAutoBudgetTooltip = 4558,
+        /// <summary>Total the governor may spend on this colony each turn...</summary>
+        GovernorBudgetTotalTooltip = 4559,
+        /// <summary>Lock this share - adjusting the others leaves it untouched</summary>
+        LockShareTooltip = 4560,
+        /// <summary>Filter:</summary>
+        FilterLabel = 4561,
+        /// <summary>Spending:</summary>
+        SpendingLabel = 4562,
+        /// <summary>Space defense upkeep</summary>
+        SpaceDefenseUpkeep = 4563,
+        /// <summary>Net growth (M / turn)</summary>
+        NetGrowthPerTurn = 4564,
+        /// <summary>Max prod to queue</summary>
+        MaxProdToQueue = 4565,
+        /// <summary>Close this Screen</summary>
+        CloseThisScreen = 4566,
+        /// <summary>Auto Pick: always use the best design available</summary>
+        AutoPickTooltip = 4567,
+        /// <summary>Auto Pick</summary>
+        AutoPick = 4568,
         /// <summary>FCS Bonus</summary>
         FcsBonus = 6186,
         /// <summary>FCS Accuracy</summary>

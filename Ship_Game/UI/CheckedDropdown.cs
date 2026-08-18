@@ -32,7 +32,7 @@ namespace Ship_Game
         {
             Check = new UICheckBox(-200f, -200f, binding, Fonts.Arial12Bold, title, tooltip);
             AutoPickBox = new UICheckBox(-200f, -200f, autoPick, Fonts.Arial12Bold, "",
-                                         "Auto Pick: always use the best design available");
+                                         GameText.AutoPickTooltip);
             IsAutoPicked = autoPick.Compile();
             Options = new DropOptions<int>(new Vector2(-200f, -200f), 168, 18);
             return Options;
@@ -75,7 +75,7 @@ namespace Ship_Game
                 AutoPickBox.Draw(batch, elapsed);
                 if (IsAutoPicked())
                 {
-                    batch.DrawString(Fonts.Arial12Bold, "Auto Pick",
+                    batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.AutoPick),
                                      new Vector2(Options.X + 4, Options.Y + 3), Color.White); // white (bench 305)
                     return;
                 }

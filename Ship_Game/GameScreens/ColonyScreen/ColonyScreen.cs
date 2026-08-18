@@ -422,7 +422,7 @@ namespace Ship_Game
             FilterBuildableItems.AutoCaptureOnHover = true;
             FilterBuildableItems.Background = new Submenu(filterBgRect);
             Vector2 filterLabelPos = new Vector2(colRightX, filterRect.Y + 2);
-            FilterBuildableItemsLabel = Add(new UILabel(filterLabelPos, "Filter:", Font12, Color.Gray));
+            FilterBuildableItemsLabel = Add(new UILabel(filterLabelPos, GameText.FilterLabel, Font12, Color.Gray));
             
             var customStyle = new UIButton.StyleTextures("NewUI/icon_clear_filter", "NewUI/icon_clear_filter_hover2");
             Add(new UIButton(customStyle, new Vector2(17, 17), "")
@@ -509,7 +509,7 @@ namespace Ship_Game
                              new Vector2(homeSize, homeSize), "")
             {
                 Pos = new Vector2(navCentre - homeSize / 2, arrowY + (arrowH - homeSize) / 2),
-                Tooltip = "View your Homeworld",
+                Tooltip = GameText.ViewYourHomeworld,
                 OnClick = b => GoToHomeworld(),
                 ClickSfx = "sd_ui_accept_alt3",
             });
@@ -894,8 +894,8 @@ namespace Ship_Game
                 return;
             }
             ToScrap = pgs.Building;
-            string message = $"Do you wish to scrap {pgs.Building.TranslatedName.Text}? "
-                           + "Half of the building's construction cost will be recovered to your storage.";
+            string message = Localizer.Token(GameText.DoYouWishToScrapBuilding) + pgs.Building.TranslatedName.Text
+                           + Localizer.Token(GameText.ScrapBuildingRecovery);
             var messageBox = new MessageBoxScreen(P.Universe.Screen, message);
             // centre the confirm on the COLONY frame, not the display (bench 420)
             messageBox.CenterOn = new Vector2(SubColonyGrid.Rect.X + SubColonyGrid.Rect.Width / 2f,

@@ -491,7 +491,7 @@ namespace Ship_Game.GameScreens
                 LockBtn = base.Add(new UIButton(new UIButton.StyleTextures("NewUI/icon_lock", "NewUI/icon_lock"),
                                                 Vector2.Zero, "")
                 {
-                    Tooltip = "Lock this share - adjusting the others leaves it untouched",
+                    Tooltip = GameText.LockShareTooltip,
                 });
                 LockBtn.OnClick = b =>
                 {

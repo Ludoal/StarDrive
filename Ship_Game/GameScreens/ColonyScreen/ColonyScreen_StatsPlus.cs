@@ -91,7 +91,7 @@ namespace Ship_Game
                    "× tax rate (" + (P.Money.TaxRate * 100f).String(0) + " %)",
                    StatsPlusLayout.SPSigned(taxMill), StatsPlusLayout.SPTone(taxMill));
             if (bldgUp.NotZero())   StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Building upkeep", StatsPlusLayout.SPSigned(-bldgUp), StatsPlusLayout.SPTone(-bldgUp));
-            if (spaceDef.NotZero()) StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Space defense upkeep", StatsPlusLayout.SPSigned(-spaceDef), StatsPlusLayout.SPTone(-spaceDef));
+            if (spaceDef.NotZero()) StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, Localizer.Token(GameText.SpaceDefenseUpkeep), StatsPlusLayout.SPSigned(-spaceDef), StatsPlusLayout.SPTone(-spaceDef));
             if (troops.NotZero())   StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Troop upkeep", StatsPlusLayout.SPSigned(-troops), StatsPlusLayout.SPTone(-troops));
             StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, Localizer.Token(net >= 0 ? GameText.NetIncome : GameText.NetLosses),
                    StatsPlusLayout.SPSigned(net), net >= 0 ? Color.Green : Color.Red);
@@ -100,7 +100,7 @@ namespace Ship_Game
             // ── POPULATION — net growth and saturation (totals live in Planet Info already) ──
             float growth = SPPopGrowthPerTurn(); // raw thousands = millions of colonists
             StatsPlusLayout.SPHeader(ref left, batch, "POPULATION");
-            StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Net growth (M / turn)", StatsPlusLayout.SPSigned(growth, 1),
+            StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, Localizer.Token(GameText.NetGrowthPerTurn), StatsPlusLayout.SPSigned(growth, 1),
                    P.IsStarving ? Color.Red : StatsPlusLayout.SPTone(growth));
             StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Saturation", (P.PopulationRatio * 100f).String(1) + " %",
                    P.PopulationRatio > 1f ? Color.Orange : Color.White);
@@ -117,7 +117,7 @@ namespace Ship_Game
 
             // ── CONSTRUCTION (per turn) — flow to the queue + how long storage holds ──
             StatsPlusLayout.SPHeader(ref right, batch, "CONSTRUCTION (per turn)");
-            StatsPlusLayout.SPLine(ref right, batch, TextFont, cols, "Max prod to queue", P.CurrentProductionToQueue.String(1), Color.White);
+            StatsPlusLayout.SPLine(ref right, batch, TextFont, cols, Localizer.Token(GameText.MaxProdToQueue), P.CurrentProductionToQueue.String(1), Color.White);
             if (P.InfraStructure.NotZero() && P.ProdHere.NotZero())
             {
                 float turnsLeft = P.ProdHere / P.InfraStructure;
