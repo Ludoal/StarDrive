@@ -62,7 +62,7 @@ namespace Ship_Game
 
         // the display name a tooltip announces - ONE source, so a remapped key can
         // never lie on screen (the "F3" literal trap)
-        public static string Name(Keys key) => key == Keys.None ? "unbound" : key.ToString();
+        public static string Name(Keys key) => key == Keys.None ? Localizer.Token(GameText.HkUnbound) : key.ToString();
 
         static string OverrideFile => Path.Combine(Dir.StarDriveAppData, "Hotkeys.yaml");
 

@@ -5348,6 +5348,152 @@ namespace Ship_Game
         AutoPickTooltip = 4567,
         /// <summary>Auto Pick</summary>
         AutoPick = 4568,
+        /// <summary>TIME & SPEED</summary>
+        HkCatTimeSpeed = 4569,
+        /// <summary>MAP & CAMERA</summary>
+        HkCatMapCamera = 4570,
+        /// <summary>OVERLAYS</summary>
+        HkCatOverlays = 4571,
+        /// <summary>SCREENS</summary>
+        HkCatScreens = 4572,
+        /// <summary>FLEETS</summary>
+        HkCatFleets = 4573,
+        /// <summary>SELECTION & ORDERS</summary>
+        HkCatSelectionOrders = 4574,
+        /// <summary>SHIPYARD</summary>
+        HkCatShipyard = 4575,
+        /// <summary>FLEET DESIGN</summary>
+        HkCatFleetDesign = 4576,
+        /// <summary>MISC</summary>
+        HkCatMisc = 4577,
+        /// <summary>Pause</summary>
+        HkPause = 4578,
+        /// <summary>Reset speed to x1</summary>
+        HkResetSpeedToX1 = 4579,
+        /// <summary>Speed up / slow down</summary>
+        HkSpeedUpSlowDown = 4580,
+        /// <summary>Pan the camera</summary>
+        HkPanTheCamera = 4581,
+        /// <summary>Zoom to selection</summary>
+        HkZoomToSelection = 4582,
+        /// <summary>Zoom out</summary>
+        HkZoomOut = 4583,
+        /// <summary>Tactical icons at close zoom</summary>
+        HkTacticalIconsAtCloseZoom = 4584,
+        /// <summary>Chase camera on selected ship</summary>
+        HkChaseCameraOnSelectedShip = 4585,
+        /// <summary>Previous colony</summary>
+        HkPreviousColony = 4586,
+        /// <summary>Next colony</summary>
+        HkNextColony = 4587,
+        /// <summary>Go to capital</summary>
+        HkGoToCapital = 4588,
+        /// <summary>Influence zones</summary>
+        HkInfluenceZones = 4589,
+        /// <summary>Vision / sensor coverage</summary>
+        HkVisionSensorCoverage = 4590,
+        /// <summary>Subspace projection</summary>
+        HkSubspaceProjection = 4591,
+        /// <summary>Gravity wells</summary>
+        HkGravityWells = 4592,
+        /// <summary>Weapons range</summary>
+        HkWeaponsRange = 4593,
+        /// <summary>Cinematic mode</summary>
+        HkCinematicMode = 4594,
+        /// <summary>Realistic lights</summary>
+        HkRealisticLights = 4595,
+        /// <summary>Research</summary>
+        HkResearch = 4596,
+        /// <summary>Shipyard</summary>
+        HkShipyard = 4597,
+        /// <summary>Fleets</summary>
+        HkFleets = 4598,
+        /// <summary>Blueprints</summary>
+        HkBlueprints = 4599,
+        /// <summary>Ships</summary>
+        HkShips = 4600,
+        /// <summary>Espionage</summary>
+        HkEspionage = 4601,
+        /// <summary>Intelligence</summary>
+        HkIntelligence = 4602,
+        /// <summary>Economy</summary>
+        HkEconomy = 4603,
+        /// <summary>Colonies</summary>
+        HkColonies = 4604,
+        /// <summary>Planets</summary>
+        HkPlanets = 4605,
+        /// <summary>Troops</summary>
+        HkTroops = 4606,
+        /// <summary>Patrols</summary>
+        HkPatrols = 4607,
+        /// <summary>Exotic Systems</summary>
+        HkExoticSystems = 4608,
+        /// <summary>Automation</summary>
+        HkAutomation = 4609,
+        /// <summary>Deep Space Build</summary>
+        HkDeepSpaceBuild = 4610,
+        /// <summary>Exotic Bonuses</summary>
+        HkExoticBonuses = 4611,
+        /// <summary>Freighter Utilization</summary>
+        HkFreighterUtilization = 4612,
+        /// <summary>Important Events log</summary>
+        HkImportantEventsLog = 4613,
+        /// <summary>Last viewed colony</summary>
+        HkLastViewedColony = 4614,
+        /// <summary>Help</summary>
+        HkHelp = 4615,
+        /// <summary>Close screen</summary>
+        HkCloseScreen = 4616,
+        /// <summary>Select fleet 1-10</summary>
+        HkSelectFleet110 = 4617,
+        /// <summary>Select fleet 11-20</summary>
+        HkSelectFleet1120 = 4618,
+        /// <summary>Create / replace fleet</summary>
+        HkCreateReplaceFleet = 4619,
+        /// <summary>Add selection to fleet</summary>
+        HkAddSelectionToFleet = 4620,
+        /// <summary>Ship pie menu</summary>
+        HkShipPieMenu = 4621,
+        /// <summary>Scrap ship</summary>
+        HkScrapShip = 4622,
+        /// <summary>Select same hull</summary>
+        HkSelectSameHull = 4623,
+        /// <summary>Select same role and hull</summary>
+        HkSelectSameRoleAndHull = 4624,
+        /// <summary>Select same design</summary>
+        HkSelectSameDesign = 4625,
+        /// <summary>Previous target</summary>
+        HkPreviousTarget = 4626,
+        /// <summary>Rotate module in hand</summary>
+        HkRotateModuleInHand = 4627,
+        /// <summary>Show all firing arcs</summary>
+        HkShowAllFiringArcs = 4628,
+        /// <summary>Design issues</summary>
+        HkDesignIssues = 4629,
+        /// <summary>Undo / redo</summary>
+        HkUndoRedo = 4630,
+        /// <summary>Set firing arc</summary>
+        HkSetFiringArc = 4631,
+        /// <summary>Cancel / remove module; outside: close</summary>
+        HkCancelRemoveModuleOutsideClose = 4632,
+        /// <summary>Remove squad</summary>
+        HkRemoveSquad = 4633,
+        /// <summary>Scroll the grid</summary>
+        HkScrollTheGrid = 4634,
+        /// <summary>Quicksave</summary>
+        HkQuicksave = 4635,
+        /// <summary>Click a key to rebind it - right-click resets a row - ESC cancels listening.</summary>
+        HkFooter = 4636,
+        /// <summary>Reset all to defaults</summary>
+        HkResetAll = 4637,
+        /// <summary>Not remappable</summary>
+        HkNotRemappable = 4638,
+        /// <summary>Click to rebind, ESC cancels - right-click resets to default</summary>
+        HkRebindTooltip = 4639,
+        /// <summary>press a key...</summary>
+        HkListening = 4640,
+        /// <summary>unbound</summary>
+        HkUnbound = 4641,
         /// <summary>FCS Bonus</summary>
         FcsBonus = 6186,
         /// <summary>FCS Accuracy</summary>

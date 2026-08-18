@@ -17938,6 +17938,225 @@ AutoPickTooltip:
 AutoPick:
  Id: 4568
  ENG: "Auto Pick"
+HkCatTimeSpeed:
+ Id: 4569
+ ENG: "TIME & SPEED"
+HkCatMapCamera:
+ Id: 4570
+ ENG: "MAP & CAMERA"
+HkCatOverlays:
+ Id: 4571
+ ENG: "OVERLAYS"
+HkCatScreens:
+ Id: 4572
+ ENG: "SCREENS"
+HkCatFleets:
+ Id: 4573
+ ENG: "FLEETS"
+HkCatSelectionOrders:
+ Id: 4574
+ ENG: "SELECTION & ORDERS"
+HkCatShipyard:
+ Id: 4575
+ ENG: "SHIPYARD"
+HkCatFleetDesign:
+ Id: 4576
+ ENG: "FLEET DESIGN"
+HkCatMisc:
+ Id: 4577
+ ENG: "MISC"
+HkPause:
+ Id: 4578
+ ENG: "Pause"
+HkResetSpeedToX1:
+ Id: 4579
+ ENG: "Reset speed to x1"
+HkSpeedUpSlowDown:
+ Id: 4580
+ ENG: "Speed up / slow down"
+HkPanTheCamera:
+ Id: 4581
+ ENG: "Pan the camera"
+HkZoomToSelection:
+ Id: 4582
+ ENG: "Zoom to selection"
+HkZoomOut:
+ Id: 4583
+ ENG: "Zoom out"
+HkTacticalIconsAtCloseZoom:
+ Id: 4584
+ ENG: "Tactical icons at close zoom"
+HkChaseCameraOnSelectedShip:
+ Id: 4585
+ ENG: "Chase camera on selected ship"
+HkPreviousColony:
+ Id: 4586
+ ENG: "Previous colony"
+HkNextColony:
+ Id: 4587
+ ENG: "Next colony"
+HkGoToCapital:
+ Id: 4588
+ ENG: "Go to capital"
+HkInfluenceZones:
+ Id: 4589
+ ENG: "Influence zones"
+HkVisionSensorCoverage:
+ Id: 4590
+ ENG: "Vision / sensor coverage"
+HkSubspaceProjection:
+ Id: 4591
+ ENG: "Subspace projection"
+HkGravityWells:
+ Id: 4592
+ ENG: "Gravity wells"
+HkWeaponsRange:
+ Id: 4593
+ ENG: "Weapons range"
+HkCinematicMode:
+ Id: 4594
+ ENG: "Cinematic mode"
+HkRealisticLights:
+ Id: 4595
+ ENG: "Realistic lights"
+HkResearch:
+ Id: 4596
+ ENG: "Research"
+HkShipyard:
+ Id: 4597
+ ENG: "Shipyard"
+HkFleets:
+ Id: 4598
+ ENG: "Fleets"
+HkBlueprints:
+ Id: 4599
+ ENG: "Blueprints"
+HkShips:
+ Id: 4600
+ ENG: "Ships"
+HkEspionage:
+ Id: 4601
+ ENG: "Espionage"
+HkIntelligence:
+ Id: 4602
+ ENG: "Intelligence"
+HkEconomy:
+ Id: 4603
+ ENG: "Economy"
+HkColonies:
+ Id: 4604
+ ENG: "Colonies"
+HkPlanets:
+ Id: 4605
+ ENG: "Planets"
+HkTroops:
+ Id: 4606
+ ENG: "Troops"
+HkPatrols:
+ Id: 4607
+ ENG: "Patrols"
+HkExoticSystems:
+ Id: 4608
+ ENG: "Exotic Systems"
+HkAutomation:
+ Id: 4609
+ ENG: "Automation"
+HkDeepSpaceBuild:
+ Id: 4610
+ ENG: "Deep Space Build"
+HkExoticBonuses:
+ Id: 4611
+ ENG: "Exotic Bonuses"
+HkFreighterUtilization:
+ Id: 4612
+ ENG: "Freighter Utilization"
+HkImportantEventsLog:
+ Id: 4613
+ ENG: "Important Events log"
+HkLastViewedColony:
+ Id: 4614
+ ENG: "Last viewed colony"
+HkHelp:
+ Id: 4615
+ ENG: "Help"
+HkCloseScreen:
+ Id: 4616
+ ENG: "Close screen"
+HkSelectFleet110:
+ Id: 4617
+ ENG: "Select fleet 1-10"
+HkSelectFleet1120:
+ Id: 4618
+ ENG: "Select fleet 11-20"
+HkCreateReplaceFleet:
+ Id: 4619
+ ENG: "Create / replace fleet"
+HkAddSelectionToFleet:
+ Id: 4620
+ ENG: "Add selection to fleet"
+HkShipPieMenu:
+ Id: 4621
+ ENG: "Ship pie menu"
+HkScrapShip:
+ Id: 4622
+ ENG: "Scrap ship"
+HkSelectSameHull:
+ Id: 4623
+ ENG: "Select same hull"
+HkSelectSameRoleAndHull:
+ Id: 4624
+ ENG: "Select same role and hull"
+HkSelectSameDesign:
+ Id: 4625
+ ENG: "Select same design"
+HkPreviousTarget:
+ Id: 4626
+ ENG: "Previous target"
+HkRotateModuleInHand:
+ Id: 4627
+ ENG: "Rotate module in hand"
+HkShowAllFiringArcs:
+ Id: 4628
+ ENG: "Show all firing arcs"
+HkDesignIssues:
+ Id: 4629
+ ENG: "Design issues"
+HkUndoRedo:
+ Id: 4630
+ ENG: "Undo / redo"
+HkSetFiringArc:
+ Id: 4631
+ ENG: "Set firing arc"
+HkCancelRemoveModuleOutsideClose:
+ Id: 4632
+ ENG: "Cancel / remove module; outside: close"
+HkRemoveSquad:
+ Id: 4633
+ ENG: "Remove squad"
+HkScrollTheGrid:
+ Id: 4634
+ ENG: "Scroll the grid"
+HkQuicksave:
+ Id: 4635
+ ENG: "Quicksave"
+HkFooter:
+ Id: 4636
+ ENG: "Click a key to rebind it - right-click resets a row - ESC cancels listening."
+HkResetAll:
+ Id: 4637
+ ENG: "Reset all to defaults"
+HkNotRemappable:
+ Id: 4638
+ ENG: "Not remappable"
+HkRebindTooltip:
+ Id: 4639
+ ENG: "Click to rebind, ESC cancels - right-click resets to default"
+HkListening:
+ Id: 4640
+ ENG: "press a key..."
+HkUnbound:
+ Id: 4641
+ ENG: "unbound"
 FcsBonus:
  Id: 6186
  ENG: "FCS Bonus"

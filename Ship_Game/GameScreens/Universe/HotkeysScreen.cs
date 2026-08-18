@@ -28,92 +28,92 @@ namespace Ship_Game
         // rows read the live KeyBindings value and never show a literal.
         static readonly (string Category, Hotkey[] Keys)[] Bindings =
         {
-            ("TIME & SPEED", new[]
+            (Localizer.Token(GameText.HkCatTimeSpeed), new[]
             {
-                new Hotkey("Space", "Pause"),
-                new Hotkey("Shift+Space", "Reset speed to x1"),
-                new Hotkey("+ / -", "Speed up / slow down"),
+                new Hotkey("Space", Localizer.Token(GameText.HkPause)),
+                new Hotkey("Shift+Space", Localizer.Token(GameText.HkResetSpeedToX1)),
+                new Hotkey("+ / -", Localizer.Token(GameText.HkSpeedUpSlowDown)),
             }),
-            ("MAP & CAMERA", new[]
+            (Localizer.Token(GameText.HkCatMapCamera), new[]
             {
-                new Hotkey("Arrows / WASD", "Pan the camera"),
-                new Hotkey(null, "Zoom to selection", nameof(KeyBindings.ZoomToSelection)),
-                new Hotkey(null, "Zoom out", nameof(KeyBindings.ZoomOut)),
-                new Hotkey("Alt (hold)", "Tactical icons at close zoom"),
-                new Hotkey("Ctrl+Middle-click", "Chase camera on selected ship"),
-                new Hotkey(null, "Previous colony", nameof(KeyBindings.PrevColony)),
-                new Hotkey(null, "Next colony", nameof(KeyBindings.NextColony)),
-                new Hotkey(null, "Go to capital", nameof(KeyBindings.GoToCapital)),
+                new Hotkey("Arrows / WASD", Localizer.Token(GameText.HkPanTheCamera)),
+                new Hotkey(null, Localizer.Token(GameText.HkZoomToSelection), nameof(KeyBindings.ZoomToSelection)),
+                new Hotkey(null, Localizer.Token(GameText.HkZoomOut), nameof(KeyBindings.ZoomOut)),
+                new Hotkey("Alt (hold)", Localizer.Token(GameText.HkTacticalIconsAtCloseZoom)),
+                new Hotkey("Ctrl+Middle-click", Localizer.Token(GameText.HkChaseCameraOnSelectedShip)),
+                new Hotkey(null, Localizer.Token(GameText.HkPreviousColony), nameof(KeyBindings.PrevColony)),
+                new Hotkey(null, Localizer.Token(GameText.HkNextColony), nameof(KeyBindings.NextColony)),
+                new Hotkey(null, Localizer.Token(GameText.HkGoToCapital), nameof(KeyBindings.GoToCapital)),
             }),
-            ("OVERLAYS", new[]
+            (Localizer.Token(GameText.HkCatOverlays), new[]
             {
-                new Hotkey(null, "Influence zones", nameof(KeyBindings.InfluenceOverlay)),
-                new Hotkey(null, "Vision / sensor coverage", nameof(KeyBindings.VisionOverlay)),
-                new Hotkey(null, "Subspace projection", nameof(KeyBindings.FTLOverlay)),
-                new Hotkey(null, "Gravity wells", nameof(KeyBindings.GravityWellOverlay)),
-                new Hotkey(null, "Weapons range", nameof(KeyBindings.RangeOverlay)),
+                new Hotkey(null, Localizer.Token(GameText.HkInfluenceZones), nameof(KeyBindings.InfluenceOverlay)),
+                new Hotkey(null, Localizer.Token(GameText.HkVisionSensorCoverage), nameof(KeyBindings.VisionOverlay)),
+                new Hotkey(null, Localizer.Token(GameText.HkSubspaceProjection), nameof(KeyBindings.FTLOverlay)),
+                new Hotkey(null, Localizer.Token(GameText.HkGravityWells), nameof(KeyBindings.GravityWellOverlay)),
+                new Hotkey(null, Localizer.Token(GameText.HkWeaponsRange), nameof(KeyBindings.RangeOverlay)),
                 // bench 434 (maintainer decision): Cinematic changes what you SEE, not
                 // where the camera is - its family is the overlays
-                new Hotkey(null, "Cinematic mode", nameof(KeyBindings.CinematicMode)),
-                new Hotkey(null, "Realistic lights", nameof(KeyBindings.RealisticLights)),
+                new Hotkey(null, Localizer.Token(GameText.HkCinematicMode), nameof(KeyBindings.CinematicMode)),
+                new Hotkey(null, Localizer.Token(GameText.HkRealisticLights), nameof(KeyBindings.RealisticLights)),
             }),
-            ("SCREENS", new[]
+            (Localizer.Token(GameText.HkCatScreens), new[]
             {
-                new Hotkey(null, "Research", nameof(KeyBindings.OpenResearch)),
-                new Hotkey(null, "Shipyard", nameof(KeyBindings.OpenShipyard)),
-                new Hotkey(null, "Fleets", nameof(KeyBindings.FleetDesignScreen)),
-                new Hotkey(null, "Blueprints", nameof(KeyBindings.BlueprintsScreen)),
-                new Hotkey(null, "Ships", nameof(KeyBindings.ShipListScreen)),
-                new Hotkey(null, "Espionage", nameof(KeyBindings.OpenEspionage)),
-                new Hotkey(null, "Intelligence", nameof(KeyBindings.OpenDiplomacy)),
-                new Hotkey(null, "Economy", nameof(KeyBindings.OpenEconomy)),
-                new Hotkey(null, "Colonies", nameof(KeyBindings.OpenEmpire)),
-                new Hotkey(null, "Planets", nameof(KeyBindings.PlanetListScreen)),
-                new Hotkey(null, "Troops", nameof(KeyBindings.TroopListScreen)),
-                new Hotkey(null, "Patrols", nameof(KeyBindings.EmpirePatrolsScreen)),
-                new Hotkey(null, "Exotic Systems", nameof(KeyBindings.ExoticListScreen)),
-                new Hotkey(null, "Automation", nameof(KeyBindings.AutomationWindow)),
-                new Hotkey(null, "Deep Space Build", nameof(KeyBindings.DeepSpaceBuildWindow)),
-                new Hotkey(null, "Exotic Bonuses", nameof(KeyBindings.ExoticBonusesWindow)),
-                new Hotkey(null, "Freighter Utilization", nameof(KeyBindings.FreighterUtilWindow)),
-                new Hotkey(null, "Important Events log", nameof(KeyBindings.ImportantEventsScreen)),
-                new Hotkey(null, "Last viewed colony", nameof(KeyBindings.ColonyOverviewScreen)),
-                new Hotkey("F1", "Help"),
-                new Hotkey("Esc", "Close screen"),
+                new Hotkey(null, Localizer.Token(GameText.HkResearch), nameof(KeyBindings.OpenResearch)),
+                new Hotkey(null, Localizer.Token(GameText.HkShipyard), nameof(KeyBindings.OpenShipyard)),
+                new Hotkey(null, Localizer.Token(GameText.HkFleets), nameof(KeyBindings.FleetDesignScreen)),
+                new Hotkey(null, Localizer.Token(GameText.HkBlueprints), nameof(KeyBindings.BlueprintsScreen)),
+                new Hotkey(null, Localizer.Token(GameText.HkShips), nameof(KeyBindings.ShipListScreen)),
+                new Hotkey(null, Localizer.Token(GameText.HkEspionage), nameof(KeyBindings.OpenEspionage)),
+                new Hotkey(null, Localizer.Token(GameText.HkIntelligence), nameof(KeyBindings.OpenDiplomacy)),
+                new Hotkey(null, Localizer.Token(GameText.HkEconomy), nameof(KeyBindings.OpenEconomy)),
+                new Hotkey(null, Localizer.Token(GameText.HkColonies), nameof(KeyBindings.OpenEmpire)),
+                new Hotkey(null, Localizer.Token(GameText.HkPlanets), nameof(KeyBindings.PlanetListScreen)),
+                new Hotkey(null, Localizer.Token(GameText.HkTroops), nameof(KeyBindings.TroopListScreen)),
+                new Hotkey(null, Localizer.Token(GameText.HkPatrols), nameof(KeyBindings.EmpirePatrolsScreen)),
+                new Hotkey(null, Localizer.Token(GameText.HkExoticSystems), nameof(KeyBindings.ExoticListScreen)),
+                new Hotkey(null, Localizer.Token(GameText.HkAutomation), nameof(KeyBindings.AutomationWindow)),
+                new Hotkey(null, Localizer.Token(GameText.HkDeepSpaceBuild), nameof(KeyBindings.DeepSpaceBuildWindow)),
+                new Hotkey(null, Localizer.Token(GameText.HkExoticBonuses), nameof(KeyBindings.ExoticBonusesWindow)),
+                new Hotkey(null, Localizer.Token(GameText.HkFreighterUtilization), nameof(KeyBindings.FreighterUtilWindow)),
+                new Hotkey(null, Localizer.Token(GameText.HkImportantEventsLog), nameof(KeyBindings.ImportantEventsScreen)),
+                new Hotkey(null, Localizer.Token(GameText.HkLastViewedColony), nameof(KeyBindings.ColonyOverviewScreen)),
+                new Hotkey("F1", Localizer.Token(GameText.HkHelp)),
+                new Hotkey("Esc", Localizer.Token(GameText.HkCloseScreen)),
             }),
-            ("FLEETS", new[]
+            (Localizer.Token(GameText.HkCatFleets), new[]
             {
-                new Hotkey("1-0", "Select fleet 1-10"),
-                new Hotkey("Alt+1-0", "Select fleet 11-20"),
-                new Hotkey("Ctrl+digit", "Create / replace fleet"),
-                new Hotkey("Ctrl+Shift+digit", "Add selection to fleet"),
+                new Hotkey("1-0", Localizer.Token(GameText.HkSelectFleet110)),
+                new Hotkey("Alt+1-0", Localizer.Token(GameText.HkSelectFleet1120)),
+                new Hotkey("Ctrl+digit", Localizer.Token(GameText.HkCreateReplaceFleet)),
+                new Hotkey("Ctrl+Shift+digit", Localizer.Token(GameText.HkAddSelectionToFleet)),
             }),
-            ("SELECTION & ORDERS", new[]
+            (Localizer.Token(GameText.HkCatSelectionOrders), new[]
             {
-                new Hotkey(null, "Ship pie menu", nameof(KeyBindings.ShipPieMenu)),
-                new Hotkey("Del / Backspace", "Scrap ship"),
-                new Hotkey("Alt+Click", "Select same hull"),
-                new Hotkey("Ctrl+Click", "Select same role and hull"),
-                new Hotkey("Ctrl+Alt+Click", "Select same design"),
-                new Hotkey("Mouse Back", "Previous target"),
+                new Hotkey(null, Localizer.Token(GameText.HkShipPieMenu), nameof(KeyBindings.ShipPieMenu)),
+                new Hotkey("Del / Backspace", Localizer.Token(GameText.HkScrapShip)),
+                new Hotkey("Alt+Click", Localizer.Token(GameText.HkSelectSameHull)),
+                new Hotkey("Ctrl+Click", Localizer.Token(GameText.HkSelectSameRoleAndHull)),
+                new Hotkey("Ctrl+Alt+Click", Localizer.Token(GameText.HkSelectSameDesign)),
+                new Hotkey("Mouse Back", Localizer.Token(GameText.HkPreviousTarget)),
             }),
-            ("SHIPYARD", new[]
+            (Localizer.Token(GameText.HkCatShipyard), new[]
             {
-                new Hotkey("Arrows", "Rotate module in hand"),
-                new Hotkey("Tab", "Show all firing arcs"),
-                new Hotkey(null, "Design issues", nameof(KeyBindings.DesignIssues)), // bench 435: the OLD fixed row shadowed the live one
-                new Hotkey("Ctrl+Z / Ctrl+Y", "Undo / redo"),
-                new Hotkey("Hold Left-click", "Set firing arc"),
-                new Hotkey("Right-click", "Cancel / remove module; outside: close"),
+                new Hotkey("Arrows", Localizer.Token(GameText.HkRotateModuleInHand)),
+                new Hotkey("Tab", Localizer.Token(GameText.HkShowAllFiringArcs)),
+                new Hotkey(null, Localizer.Token(GameText.HkDesignIssues), nameof(KeyBindings.DesignIssues)), // bench 435: the OLD fixed row shadowed the live one
+                new Hotkey("Ctrl+Z / Ctrl+Y", Localizer.Token(GameText.HkUndoRedo)),
+                new Hotkey("Hold Left-click", Localizer.Token(GameText.HkSetFiringArc)),
+                new Hotkey("Right-click", Localizer.Token(GameText.HkCancelRemoveModuleOutsideClose)),
             }),
-            ("FLEET DESIGN", new[]
+            (Localizer.Token(GameText.HkCatFleetDesign), new[]
             {
-                new Hotkey("Del / Backspace", "Remove squad"),
-                new Hotkey("WASD / edges", "Scroll the grid"),
+                new Hotkey("Del / Backspace", Localizer.Token(GameText.HkRemoveSquad)),
+                new Hotkey("WASD / edges", Localizer.Token(GameText.HkScrollTheGrid)),
             }),
-            ("MISC", new[]
+            (Localizer.Token(GameText.HkCatMisc), new[]
             {
-                new Hotkey(null, "Quicksave", nameof(KeyBindings.QuickSave)),
+                new Hotkey(null, Localizer.Token(GameText.HkQuicksave), nameof(KeyBindings.QuickSave)),
             }),
         };
 
@@ -171,8 +171,8 @@ namespace Ship_Game
                         string keyText = k.Bind == null ? k.Keys : KeyBindings.Name(KeyBindings.Get(k.Bind));
                         UILabel keyLabel = Add(new UILabel(new Vector2(x, y), keyText, Fonts.Arial12Bold,
                                                            k.Bind == null ? Color.Gray : Color.Wheat));
-                        keyLabel.Tooltip = k.Bind == null ? "Not remappable"
-                                                          : "Click to rebind, ESC cancels - right-click resets to default";
+                        keyLabel.Tooltip = k.Bind == null ? Localizer.Token(GameText.HkNotRemappable)
+                                                          : Localizer.Token(GameText.HkRebindTooltip);
                         Add(new UILabel(new Vector2(x + keyW, y), k.Action, Fonts.Arial12, Color.White));
                         if (k.Bind != null)
                             Rows.Add(new BindRow { Bind = k.Bind, KeyLabel = keyLabel,
@@ -183,12 +183,12 @@ namespace Ship_Game
                 }
             }
 
-            string note = "Click a key to rebind it - right-click resets a row - ESC cancels listening.";
+            string note = Localizer.Token(GameText.HkFooter);
             var pos = new Vector2(inner.X + (inner.Width - Fonts.Arial12.TextWidth(note)) / 2f,
                                   inner.Bottom - Fonts.Arial12.LineSpacing - 10);
             Footer = Add(new UILabel(pos, note, Fonts.Arial12, Color.Gray));
 
-            UIButton resetAll = Button(ButtonStyle.WideHostile, 0f, 0f, "Reset all to defaults", b =>
+            UIButton resetAll = Button(ButtonStyle.WideHostile, 0f, 0f, Localizer.Token(GameText.HkResetAll), b =>
             {
                 KeyBindings.ResetAll();
                 Listening = null;
@@ -257,7 +257,7 @@ namespace Ship_Game
                 if (r.ConflictFlash > 0f) r.ConflictFlash -= fixedDeltaTime;
                 Keys cur = KeyBindings.Get(r.Bind);
                 bool listening = Listening == r.Bind;
-                r.KeyLabel.Text = listening ? "press a key..." : KeyBindings.Name(cur);
+                r.KeyLabel.Text = listening ? Localizer.Token(GameText.HkListening) : KeyBindings.Name(cur);
                 r.KeyLabel.Color = listening ? Color.Gold
                                  : cur == Keys.None || r.ConflictFlash > 0f ? Color.Yellow
                                  : Color.Wheat;
