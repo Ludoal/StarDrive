@@ -232,8 +232,8 @@ namespace Ship_Game
                 int thumbH = (int)(track.Height * (float)pane.Height / contentHeight);
                 if (thumbH < 20) thumbH = 20;
                 int thumbY = track.Y + (int)((track.Height - thumbH) * (DescriptionScroll / MaxDescriptionScroll));
-                batch.FillRectangle(track, new Color(20, 20, 20, 140));
-                batch.FillRectangle(new Rectangle(track.X, thumbY, 4, thumbH), new Color(140, 140, 140, 180));
+                batch.FillRectangle(track, new Color(20, 20, 20, 140).Premultiplied());
+                batch.FillRectangle(new Rectangle(track.X, thumbY, 4, thumbH), new Color(140, 140, 140, 180).Premultiplied());
             }
 
             float num5 = 100;
