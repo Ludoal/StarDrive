@@ -3787,10 +3787,6 @@ BB_Tech_Mercantilism_Desc:
 BB_Tech_Mercantilism_Bonus:
  Id: 612
  ENG: "Every unit of Food or Production moved via freighters within your empire is taxed by current tax rate and this tax is added to our empire money."
- RUS: "Позволяет зарабатывать 1 кредит за каждую единицу еды и продукции, перевезенную транспортами в пределах вашей империи."
- SPA: "Suma 1 crédito por cada unidad de alimentos o producción transportada dentro de los límites de tu imperio"
- UKR: "Кожна одиниця їжі або продукції, що переміщується транспортом у вашій імперії, оподатковується за поточною податковою ставкою, і цей податок додається до наших імперських грошей."
- PTB: "Cada unidade de alimento ou produção movida por transporte dentro do seu império é tributada pela taxa de imposto atual, e esse imposto é adicionado ao dinheiro do nosso império."
 BB_Tech_Military_Name:
  Id: 613
  ENG: "Military Outpost"
@@ -18806,10 +18802,6 @@ IndicatesThePowerUsedBy:
 IndicatesTheDelayBetweenTransports:
  Id: 7020
  ENG: "Indicates the delay between transporter cycles."
- RUS: "Указывает задержку между транспортировками."
- SPA: "Indica la demora entre transportes."
- UKR: "Показує затримку між перевезеннями."
- PTB: "Indica o intervalo entre transportes."
 IndicatesTheAmountOfOrdnance4:
  Id: 7021
  ENG: "Indicates the amount of ordnance that can be transported."
