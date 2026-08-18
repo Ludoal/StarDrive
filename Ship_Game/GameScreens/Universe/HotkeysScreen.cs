@@ -76,7 +76,6 @@ namespace Ship_Game
                 new Hotkey(null, "Deep Space Build", nameof(KeyBindings.DeepSpaceBuildWindow)),
                 new Hotkey(null, "Exotic Bonuses", nameof(KeyBindings.ExoticBonusesWindow)),
                 new Hotkey(null, "Freighter Utilization", nameof(KeyBindings.FreighterUtilWindow)),
-                new Hotkey(null, "Design Issues (in Shipyard)", nameof(KeyBindings.DesignIssues)),
                 new Hotkey(null, "Important Events log", nameof(KeyBindings.ImportantEventsScreen)),
                 new Hotkey(null, "Last viewed colony", nameof(KeyBindings.ColonyOverviewScreen)),
                 new Hotkey("F1", "Help"),
@@ -102,7 +101,7 @@ namespace Ship_Game
             {
                 new Hotkey("Arrows", "Rotate module in hand"),
                 new Hotkey("Tab", "Show all firing arcs"),
-                new Hotkey("T", "Design issues"),
+                new Hotkey(null, "Design issues", nameof(KeyBindings.DesignIssues)), // bench 435: the OLD fixed row shadowed the live one
                 new Hotkey("Ctrl+Z / Ctrl+Y", "Undo / redo"),
                 new Hotkey("Hold Left-click", "Set firing arc"),
                 new Hotkey("Right-click", "Cancel / remove module; outside: close"),
