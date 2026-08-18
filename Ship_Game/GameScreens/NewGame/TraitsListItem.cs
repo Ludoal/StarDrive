@@ -109,7 +109,7 @@ namespace Ship_Game
             }
             else if (Screen.TotalPointsUsed - Trait.Trait.Cost < 0)
             {
-                extraDescription = "(not enough points to spend)";
+                extraDescription = Localizer.Token(GameText.NgNotEnoughPointsToSpend);
             }
 
             return $"{Description} {extraDescription}";

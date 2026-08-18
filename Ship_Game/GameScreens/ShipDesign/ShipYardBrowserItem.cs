@@ -70,18 +70,18 @@ namespace Ship_Game
             if (isWIP)
             {
                 if (onDelete != null)
-                    AddDeleteCross(new(-30, -45), "Delete this WIP Design", onDelete);
+                    AddDeleteCross(new(-30, -45), GameText.SyDeleteWipDesign, onDelete);
                 // the load popup used this very icon for "all versions" - keeping its pairing
                 // means a player who knows that screen reads these two straight away
                 if (onDeleteAllWipVersions != null)
-                    AddDelete(new(-30, 15), "Delete ALL versions of this WIP Design", onDeleteAllWipVersions);
+                    AddDelete(new(-30, 15), GameText.SyDeleteAllWipVersions, onDeleteAllWipVersions);
             }
             else
             {
                 if (onDelete != null && !design.IsReadonlyDesign && !design.IsFromSave)
-                    AddDeleteCross(new(-30, 0), "Delete this Ship Design", onDelete);
+                    AddDeleteCross(new(-30, 0), GameText.SyDeleteShipDesign, onDelete);
                 if (onResearch != null && !CanBeBuilt)
-                    AddResearch(new(-50, 0), "Research This Ship", onResearch);
+                    AddResearch(new(-50, 0), GameText.SyResearchThisShip, onResearch);
             }
         }
 

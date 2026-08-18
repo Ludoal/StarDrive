@@ -18250,6 +18250,648 @@ OptSoundDeviceDefault:
 OptSoundDeviceNotAvailable:
  Id: 4672
  ENG: "Not Available"
+MmCachedPatchMissing:
+ Id: 4673
+ ENG: "Cached patch missing"
+MmCachedPatchMissingDetail:
+ Id: 4674
+ ENG: "Expected pre-downloaded patch at {0} but the folder is gone. Try the update again from the main menu."
+MmDeletingStaleFiles:
+ Id: 4675
+ ENG: "Deleting Stale Files"
+MmAdminRightsRequired:
+ Id: 4676
+ ENG: "Admin rights required"
+MmAdminRightsRequiredDetail:
+ Id: 4677
+ ENG: "The patch is downloaded but needs admin rights to write to your install folder.\nClick the update notification again and accept the UAC prompt, or right-click 'StarDrive.exe' and choose 'Run as administrator'."
+MmCopyingNewFiles:
+ Id: 4678
+ ENG: "Copying New Files"
+MmPatchAppliedSkipped:
+ Id: 4679
+ ENG: "Patch applied ({0} file(s) skipped — see blackbox.log; usually antivirus interference)"
+MmRestartingStardrive:
+ Id: 4680
+ ENG: "Restarting StarDrive ..."
+MmRestartFailedTitle:
+ Id: 4681
+ ENG: "StarDrive — Restart failed"
+MmDownloading:
+ Id: 4682
+ ENG: "Downloading"
+MmUnzipping:
+ Id: 4683
+ ENG: "Unzipping"
+MmDownloadFailed:
+ Id: 4684
+ ENG: "Download failed!"
+MmAutoUpdateConfirm:
+ Id: 4685
+ ENG: "This will automatically update to the latest version. Continue?"
+MmMajorReleaseAvailable:
+ Id: 4686
+ ENG: "Major Release Available!"
+MmNewVersion:
+ Id: 4687
+ ENG: "New Version!"
+MmModFormatVersionMismatch:
+ Id: 4688
+ ENG: "Mod format version mismatch."
+MmUpdateModAndBlackbox:
+ Id: 4689
+ ENG: "Please update Blackbox and this mod to latest versions"
+MmSupportBlackboxIntro:
+ Id: 4690
+ ENG: "StarDrive BlackBox is a community-driven revival of StarDrive, rebuilt and maintained by a small volunteer team in their spare time.\n\nIf you've enjoyed playing and want to support continued development, you can contribute via Ko-fi. Every bit helps keep the lights on."
+MmHelpKeepBlackboxAlive:
+ Id: 4691
+ ENG: "Help keep StarDrive BlackBox alive"
+MmModNotSupportedVersion:
+ Id: 4692
+ ENG: "Not supported on This BlackBox Version, try updating this mod."
+MmMods:
+ Id: 4693
+ ENG: "MODS"
+MmLoadMod:
+ Id: 4694
+ ENG: "LOAD MOD"
+MmUnloadMod:
+ Id: 4695
+ ENG: "Unload Mod"
+MmMod:
+ Id: 4696
+ ENG: "MOD"
+MmLoading:
+ Id: 4697
+ ENG: "Loading"
+MmEnterFileName:
+ Id: 4698
+ ENG: "Please enter file name"
+MmSaveExportedToDesktop:
+ Id: 4699
+ ENG: "The selected save was exported to your desktop as {0}"
+MmDeleteSaveFile:
+ Id: 4700
+ ENG: "Delete Save File"
+MmSavedGameAlreadyExistsOverwrite:
+ Id: 4701
+ ENG: "Saved Game already exists.  Overwrite?"
+MmNewSavedSetup:
+ Id: 4702
+ ENG: "New Saved Setup"
+MmSaveSetup:
+ Id: 4703
+ ENG: "Save Setup"
+MmSavedSetupAlreadyExistsOverwrite:
+ Id: 4704
+ ENG: "Saved Setup already exists.  Overwrite?"
+MmLoadSavedRace:
+ Id: 4705
+ ENG: "Load Saved Race"
+MmLoadSavedSetup:
+ Id: 4706
+ ENG: "Load Saved Setup"
+MmSaveRace:
+ Id: 4707
+ ENG: "Save Race"
+MmSavedRaceAlreadyExistsOverwrite:
+ Id: 4708
+ ENG: "Saved Race already exists.  Overwrite?"
+MmSaveFleetAs:
+ Id: 4709
+ ENG: "Save Fleet As..."
+MmSavedFleetAlreadyExistsOverwrite:
+ Id: 4710
+ ENG: "Saved Fleet already exists.  Overwrite?"
+MmSaveGame:
+ Id: 4711
+ ENG: "Save Game"
+UhTreasuryAndTaxesTooltip:
+ Id: 4721
+ ENG: "Treasury and taxes"
+UhResearchAndTopicTooltip:
+ Id: 4722
+ ENG: "Research and the current topic"
+UhOpenCodexTooltip:
+ Id: 4723
+ ENG: "Open the codex"
+UhOpenMainMenuTooltip:
+ Id: 4724
+ ENG: "Open the main menu"
+UhSpeedUpTooltip:
+ Id: 4725
+ ENG: "Speed up"
+UhPause:
+ Id: 4726
+ ENG: "PAUSE"
+UhPauseResumeTooltip:
+ Id: 4727
+ ENG: "Pause / resume"
+UhSlowDownTooltip:
+ Id: 4728
+ ENG: "Slow down"
+UhPaused:
+ Id: 4729
+ ENG: "PAUSED"
+UhNoResearch:
+ Id: 4730
+ ENG: "NO RESEARCH!"
+UhFlux:
+ Id: 4731
+ ENG: "FLUX"
+UhHyperspaceFlux:
+ Id: 4732
+ ENG: "HYPERSPACE FLUX"
+UhOpensTroopsArrayTooltip:
+ Id: 4733
+ ENG: "Opens the Troops Array"
+UhSlowerGameSpeedTooltip:
+ Id: 4734
+ ENG: "Slower game speed"
+UhFasterGameSpeedTooltip:
+ Id: 4735
+ ENG: "Faster game speed"
+UhSavingEllipsis:
+ Id: 4736
+ ENG: "Saving..."
+UhCancelConstruction:
+ Id: 4737
+ ENG: "Cancel Construction"
+UhCancelConstructionTooltip:
+ Id: 4738
+ ENG: "Cancel this construction"
+UhCinematicModePrefix:
+ Id: 4739
+ ENG: "CINEMATIC MODE - PRESS"
+UhCinematicModeSuffix:
+ Id: 4740
+ ENG: "TO EXIT"
+UhCurrentAoNumber:
+ Id: 4741
+ ENG: "Current Area of Operation Number:"
+UhCurrentTradeRoutePlanets:
+ Id: 4742
+ ENG: "Current list of planets in trade route:"
+UhVisionOverlayTooltip:
+ Id: 4743
+ ENG: "Vision overlay: everything your sensors actually see — ships, planets and the coverage your spies bring in"
+UhFoodRoutesTooltip:
+ Id: 4744
+ ENG: "Food routes overlay: green lines link planets with an active food freighter run"
+UhProdRoutesTooltip:
+ Id: 4745
+ ENG: "Production routes overlay: orange lines link planets with an active production freighter run"
+UhColonistRoutesTooltip:
+ Id: 4746
+ ENG: "Colonist routes overlay: white lines link planets with an active colonist transport run"
+UhColonizationRoutesTooltip:
+ Id: 4747
+ ENG: "Colonization routes overlay: links the planet building or sending a colonizer to its destination"
+UhSendTroops:
+ Id: 4748
+ ENG: "Send Troops"
+UhRecallTroopsCount:
+ Id: 4749
+ ENG: "Recall Troops"
+UhInvadingCount:
+ Id: 4750
+ ENG: "Invading:"
+UhLandingCount:
+ Id: 4751
+ ENG: "Landing:"
+UhCancelInvasion:
+ Id: 4752
+ ENG: "Cancel Invasion"
+UhNotHabitable:
+ Id: 4753
+ ENG: "Not habitable"
+UhResearchStationOperational:
+ Id: 4754
+ ENG: "Research station operational"
+UhZoomToPlanet:
+ Id: 4755
+ ENG: "Zoom to planet"
+UhUnexploredStar:
+ Id: 4756
+ ENG: "Unexplored star"
+UhRandomSystemName:
+ Id: 4757
+ ENG: "Random System"
+UhUndeveloped:
+ Id: 4758
+ ENG: "Undeveloped"
+UhScanTheirShips:
+ Id: 4759
+ ENG: "Scan their ships"
+UhPlanetsWithMoles:
+ Id: 4760
+ ENG: "Planets with Moles:"
+UhFeatures:
+ Id: 4761
+ ENG: "Features"
+UhFill:
+ Id: 4762
+ ENG: "Fill"
+UhActions:
+ Id: 4763
+ ENG: "Actions"
+UhTroopsCol:
+ Id: 4764
+ ENG: "Troops"
+UhHideUninhabitable:
+ Id: 4765
+ ENG: "Hide Uninhabitable"
+UhAllDistances:
+ Id: 4766
+ ENG: "All Distances"
+UhAllOwners:
+ Id: 4767
+ ENG: "All Owners"
+UhUnowned:
+ Id: 4768
+ ENG: "Unowned"
+UhDistanceLocal:
+ Id: 4769
+ ENG: "Local"
+UhDistanceNear:
+ Id: 4770
+ ENG: "Near"
+UhDistanceMidway:
+ Id: 4771
+ ENG: "Midway"
+UhDistanceDistant:
+ Id: 4772
+ ENG: "Distant"
+UhDistanceBeyond:
+ Id: 4773
+ ENG: "Beyond"
+UhExoticStations:
+ Id: 4774
+ ENG: "Stations"
+UhDysonSwarmCount:
+ Id: 4775
+ ENG: "Dyson Swarm"
+SyTestFightUnavailableHullEdit:
+ Id: 4776
+ ENG: "Test Fight is not available in Hull Edit Mode"
+SySaveValidDesignFirst:
+ Id: 4777
+ ENG: "Save a valid design first (command module required)"
+SyBattleSimTooltip:
+ Id: 4778
+ ENG: "Battle simulator: fight a copy of this design in an arena (prototype)"
+SyMyDesignsOnly:
+ Id: 4779
+ ENG: "My designs only"
+SyMyDesignsOnlyTooltip:
+ Id: 4780
+ ENG: "Show only the designs you created"
+SyHideObsoleteTooltip:
+ Id: 4781
+ ENG: "Hide the designs you have marked obsolete"
+SyMarkDesignObsoleteTooltip:
+ Id: 4782
+ ENG: "Mark this design as obsolete"
+SyKeepActiveDesignCartoucheTooltip:
+ Id: 4783
+ ENG: "Keep the Active Design cartouche on screen while you hover the list.\n Off: the hovered design takes its place, and it comes back when you look away."
+SyActiveDesignCompactFormTooltip:
+ Id: 4784
+ ENG: "Show the Active Design cartouche in its compact form:\n the browser's width, the hover overlay's stats."
+SyExpandShipyardTooltip:
+ Id: 4785
+ ENG: "Expand the Shipyard to the whole display instead of the fixed\n 1600x1080 working size. Anchored on the rail either way."
+SyDesignIssues:
+ Id: 4786
+ ENG: "Design Issues"
+SyInformation:
+ Id: 4787
+ ENG: "Information"
+SyDesignIssue:
+ Id: 4788
+ ENG: "Design Issue"
+SyIssueDescription:
+ Id: 4789
+ ENG: "Issue Description"
+SyRemediation:
+ Id: 4790
+ ENG: "Remediation"
+SyHullsLabel:
+ Id: 4791
+ ENG: "Hulls: "
+SyKeepActiveModuleTooltip:
+ Id: 4792
+ ENG: "Keep the Active Module panel on screen while you hover the list.\n Off: the hovered module takes its place, and it comes back when you look away."
+SyCancelComparison:
+ Id: 4793
+ ENG: "Cancel the comparison"
+SyCannotTargetShips:
+ Id: 4794
+ ENG: "Cannot Target Ships"
+SyModulePickTooltip:
+ Id: 4795
+ ENG: "Click to pick this module\nShift-click to pin it for comparison"
+SyMaxWpnRange:
+ Id: 4796
+ ENG: "Max Wpn Range"
+SyEnterNameFor:
+ Id: 4797
+ ENG: "Please enter a name for your {0}"
+SyDeleteWipDesign:
+ Id: 4798
+ ENG: "Delete this WIP Design"
+SyDeleteAllWipVersions:
+ Id: 4799
+ ENG: "Delete ALL versions of this WIP Design"
+SyDeleteShipDesign:
+ Id: 4800
+ ENG: "Delete this Ship Design"
+SyResearchThisShip:
+ Id: 4801
+ ENG: "Research This Ship"
+FdTotalProductionCost:
+ Id: 4802
+ ENG: "Total Production Cost:"
+FdBuildNewShips:
+ Id: 4803
+ ENG: "Build New Ships"
+FdNoRequisitionNeeded:
+ Id: 4804
+ ENG: "No Requisition Needed"
+FdFleetStatistics:
+ Id: 4805
+ ENG: "Fleet Statistics"
+FdOwnedShips:
+ Id: 4806
+ ENG: "Owned Ships"
+FdAssignNow:
+ Id: 4807
+ ENG: "Assign Now"
+FdBuildNow:
+ Id: 4808
+ ENG: "Build Now"
+FdRushNow:
+ Id: 4809
+ ENG: "Rush Now"
+FdRequisitionEllipsis:
+ Id: 4810
+ ENG: "Requisition..."
+FdSaveDesignEllipsis:
+ Id: 4811
+ ENG: "Save Design..."
+FdLoadDesignEllipsis:
+ Id: 4812
+ ENG: "Load Design..."
+FdAutoArrangeEllipsis:
+ Id: 4813
+ ENG: "Auto Arrange..."
+FdDragDropShipTooltip:
+ Id: 4814
+ ENG: "Drag and drop this Ship into the Fleet or double click to auto-add to a squad"
+FdTargetRadiusPreference:
+ Id: 4815
+ ENG: "Target UniverseRadius Preference"
+FdGroupMovementOrders:
+ Id: 4816
+ ENG: "Group Movement Orders"
+FdGroupTargetSelection:
+ Id: 4817
+ ENG: "Group Target Selection"
+FdResupplying:
+ Id: 4818
+ ENG: "Resupplying"
+FdLoadSavedFleet:
+ Id: 4819
+ ENG: "Load Saved Fleet"
+FdCannotBuildFleet:
+ Id: 4820
+ ENG: "We cannot build this fleet"
+BsTimeWillTell:
+ Id: 4823
+ ENG: "Time will tell"
+BsBackToShipyard:
+ Id: 4824
+ ENG: "Back to Shipyard"
+BsPickYourOpponents:
+ Id: 4825
+ ENG: "Pick your opponents"
+BsListAddsRosterRemoves:
+ Id: 4826
+ ENG: "The list adds, the roster removes"
+BsFightGroupCount:
+ Id: 4827
+ ENG: "Fight group ("
+BsGroupRosterHint:
+ Id: 4828
+ ENG: "Group roster - click a line to remove one"
+BsBattleReport:
+ Id: 4829
+ ENG: "BATTLE REPORT"
+BsClear:
+ Id: 4830
+ ENG: "Clear"
+DpSectionTraits:
+ Id: 4831
+ ENG: "TRAITS"
+DpSectionBonuses:
+ Id: 4832
+ ENG: "BONUSES"
+DpSectionDisposition:
+ Id: 4833
+ ENG: "DISPOSITION"
+DpSectionRank:
+ Id: 4834
+ ENG: "RANK"
+DpSectionEmpireData:
+ Id: 4835
+ ENG: "EMPIRE DATA"
+DpSectionTreaties:
+ Id: 4836
+ ENG: "TREATIES"
+DpSectionArtifacts:
+ Id: 4837
+ ENG: "ARTIFACTS"
+DpModMaxPopGrowth:
+ Id: 4838
+ ENG: "Max pop growth"
+DpModMinPopGrowth:
+ Id: 4839
+ ENG: "Min pop growth"
+DpModReproduction:
+ Id: 4840
+ ENG: "Reproduction"
+DpModConsumption:
+ Id: 4841
+ ENG: "Consumption"
+DpModProduction:
+ Id: 4842
+ ENG: "Production"
+DpModResearch:
+ Id: 4843
+ ENG: "Research"
+DpModDiplomacy:
+ Id: 4844
+ ENG: "Diplomacy"
+DpModOngoingDiplomacy:
+ Id: 4845
+ ENG: "Ongoing diplomacy"
+DpModGroundCombat:
+ Id: 4846
+ ENG: "Ground combat"
+DpModShipCost:
+ Id: 4847
+ ENG: "Ship cost"
+DpModModuleHp:
+ Id: 4848
+ ENG: "Module HP"
+DpModRepairRate:
+ Id: 4849
+ ENG: "Repair rate"
+DpModReactorPower:
+ Id: 4850
+ ENG: "Reactor power"
+DpModShieldPower:
+ Id: 4851
+ ENG: "Shield power"
+DpModShipMass:
+ Id: 4852
+ ENG: "Ship mass"
+DpModTaxIncome:
+ Id: 4853
+ ENG: "Tax income"
+DpModMaintenance:
+ Id: 4854
+ ENG: "Maintenance"
+DpModShipMaint:
+ Id: 4855
+ ENG: "Ship Maint"
+DpModInBordersFtl:
+ Id: 4856
+ ENG: "In-borders FTL"
+DpModFtlSpeed:
+ Id: 4857
+ ENG: "FTL speed"
+DpModFtlPowerDrain:
+ Id: 4858
+ ENG: "FTL power drain"
+DpModFuelCells:
+ Id: 4859
+ ENG: "Fuel cells"
+DpModSublightSpeed:
+ Id: 4860
+ ENG: "Sublight speed"
+DpModSensorRange:
+ Id: 4861
+ ENG: "Sensor range"
+DpModShipExperience:
+ Id: 4862
+ ENG: "Ship experience"
+DpModSpyEffectiveness:
+ Id: 4863
+ ENG: "Spy effectiveness"
+DpModArtifactBonus:
+ Id: 4864
+ ENG: "Artifact bonus"
+DpModCannonAccuracy:
+ Id: 4865
+ ENG: "Cannon accuracy"
+DpModDodge:
+ Id: 4866
+ ENG: "Dodge"
+DpModOrdnanceDamage:
+ Id: 4867
+ ENG: "Ordnance damage"
+DpModMissileHp:
+ Id: 4868
+ ENG: "Missile HP"
+DpModMissileDodge:
+ Id: 4869
+ ENG: "Missile dodge"
+DpModExoticStorage:
+ Id: 4870
+ ENG: "Exotic storage"
+DpModMiningSpeed:
+ Id: 4871
+ ENG: "Mining speed"
+DpModRefining:
+ Id: 4872
+ ENG: "Refining"
+DpInfiltrationDepthTheirs:
+ Id: 4873
+ ENG: "How deep THEY have infiltrated YOUR empire.\nYour own infiltration level on them sets the precision:\nlevel 2 says whether their network exists, 3-4 reads it\nShallow or Deep, and 5 gives their exact level."
+DpAtWarWith:
+ Id: 4874
+ ENG: "At war with {0}"
+DpAtPeaceWith:
+ Id: 4875
+ ENG: "At peace with {0}"
+DpOpenBordersWith:
+ Id: 4876
+ ENG: "Open Borders with {0}"
+DpTradeTreatyWith:
+ Id: 4877
+ ENG: "Trade Treaty with {0}"
+DpAtWarWithYourAlly:
+ Id: 4878
+ ENG: "They are at war with your ally, {0}"
+DpAlliedWithEmpire:
+ Id: 4879
+ ENG: "They are allied with {0}"
+DpOfferLeavingsExchange:
+ Id: 4880
+ ENG: "In exchange for our leavings, and to avoid your own certain doom, you must declare war upon: "
+DpOfferFinallyCrushHostile:
+ Id: 4881
+ ENG: "Finally, we will crush you and your pathetic empire unless you declare war upon: "
+DpOfferUnlessCrush:
+ Id: 4882
+ ENG: "Unless you wish for us to crush your pathetic empire, you will declare war upon: "
+DpOfferFurthermoreCrushHostile:
+ Id: 4883
+ ENG: "Furthermore, we will crush you and your pathetic empire unless you declare war upon: "
+DpOfferGiftsJoinWar:
+ Id: 4884
+ ENG: "We offer you these gifts in the hope that you might join us in war against: "
+DpOfferFinallyCrushAllied:
+ Id: 4885
+ ENG: "Finally, we should not have to remind you that we can crush you like a bug. But we can. Therefore, to avoid annihilation, you must declare war on: "
+DpOfferTimeToBid:
+ Id: 4886
+ ENG: "The time to do our bidding has come, ally. You must declare war upon: "
+DpOfferFurthermoreCrushAllied:
+ Id: 4887
+ ENG: "Furthermore, we should not have to remind you that we can crush you like a bug. But we can. Therefore, to avoid annihilation, you must declare war on: "
+NgGalaxyScaleTooltip:
+ Id: 4888
+ ENG: "Sets the scale of the generated galaxy"
+NgSolarSystemsCountTooltip:
+ Id: 4889
+ ENG: "Number of Solar Systems packed into the Universe"
+NgAiOpponentsCountTooltip:
+ Id: 4890
+ ENG: "Sets the number of AI opponents you must face"
+NgDifficultyAggressivenessTooltip:
+ Id: 4891
+ ENG: "Hard and above increase AI Aggressiveness and gives them extra bonuses"
+NgRemnantsIntensityTooltip:
+ Id: 4892
+ ENG: "This sets the intensity of Ancient Remnants presence. If you feel overwhelmed by their advanced technology, reduce this to Rare."
+NgBestPlanetType:
+ Id: 4893
+ ENG: "Best Planet Type"
+NgBestPlanetTypeTooltip:
+ Id: 4894
+ ENG: "This is the best suited environment for this race, Terraforming a planet will transform it to this planet type."
+NgNotEnoughPointsToSpend:
+ Id: 4895
+ ENG: "(not enough points to spend)"
+CycleShipsInCombatTooltip:
+ Id: 4896
+ ENG: "Cycle through ships not in fleet that are in combat"
+CyclePlanetsInCombatTooltip:
+ Id: 4897
+ ENG: "Cycle through planets that are in combat"
 FcsBonus:
  Id: 6186
  ENG: "FCS Bonus"

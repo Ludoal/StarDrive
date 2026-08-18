@@ -85,8 +85,8 @@ namespace Ship_Game
                 // button (168) plus the "N/M Deployed" count beside it.
                 // (maintainer feedback) the deploy buttons are a compact icon lane like
                 // Planets - fixed slots (research left, mining right), shown only with the tech
-                new UITable.Column { Title = "Actions", Width = 2 * UITable.PadX + 2 * 22 + 8, Align = TableAlign.Center },
-                new UITable.Column { Title = "Stations", Width = 175 + 2 * UITable.PadX, Align = TableAlign.Center }, // the widest counter (175, measured) plus the cell padding; the Dyson button (178) still fits
+                new UITable.Column { Title = Localizer.Token(GameText.UhActions), Width = 2 * UITable.PadX + 2 * 22 + 8, Align = TableAlign.Center },
+                new UITable.Column { Title = Localizer.Token(GameText.UhExoticStations), Width = 175 + 2 * UITable.PadX, Align = TableAlign.Center }, // the widest counter (175, measured) plus the cell padding; the Dyson button (178) still fits
             });
             var sys = new Array<string>(); var names = new Array<string>();
             var prox = new Array<string>();
@@ -97,7 +97,7 @@ namespace Ship_Game
                 sys.Add(p?.System.Name ?? (sb as SolarSystem)?.Name ?? "");
                 names.Add(p?.Name ?? (sb as SolarSystem)?.Name ?? "");
                 prox.Add(new DistanceDisplay(GetShortestDistance(sb) / 1000).Text);
-                res.Add(p != null ? (p.Mining?.TranslatedResourceName.Text ?? "Research") : "Dyson Swarm 0");
+                res.Add(p != null ? (p.Mining?.TranslatedResourceName.Text ?? Localizer.Token(GameText.Research)) : Localizer.Token(GameText.UhDysonSwarmCount) + " 0");
                 owners.Add(p?.Mining?.Owner?.data.Traits.Singular ?? "");
             }
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, sys);

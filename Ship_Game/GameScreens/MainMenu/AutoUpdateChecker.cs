@@ -93,7 +93,7 @@ public class AutoUpdateChecker : UIElementContainer
             Info = info;
             IsMod = isMod;
 
-            string text = "New Version!\n" + info.Name;
+            string text = Localizer.Token(GameText.MmNewVersion) + "\n" + info.Name;
             UILabel textLabel = base.Add(new UILabel(text, Fonts.Pirulen16));
             textLabel.TextAlign = TextAlign.HorizontalCenter;
             textLabel.AxisAlign = Align.CenterLeft;
@@ -140,7 +140,7 @@ public class AutoUpdateChecker : UIElementContainer
         {
             //Log.LogEventStats(Log.GameEvent.AutoUpdateClicked);
             Remove();
-            var mb = new MessageBoxScreen(Screen, "This will automatically update to the latest version. Continue?", 10f);
+            var mb = new MessageBoxScreen(Screen, Localizer.Token(GameText.MmAutoUpdateConfirm), 10f);
             mb.Accepted = () => Screen.ScreenManager.AddScreen(new AutoPatcher(Screen, Info, IsMod));
             Screen.ScreenManager.AddScreen(mb);
         }
@@ -184,7 +184,7 @@ public class AutoUpdateChecker : UIElementContainer
         {
             Url = url;
 
-            UILabel headline = base.Add(new UILabel("Major Release Available!", Fonts.Pirulen16, Microsoft.Xna.Framework.Color.Red));
+            UILabel headline = base.Add(new UILabel(GameText.MmMajorReleaseAvailable, Fonts.Pirulen16, Microsoft.Xna.Framework.Color.Red));
             headline.TextAlign = TextAlign.HorizontalCenter;
             headline.AxisAlign = Align.CenterLeft;
             headline.SetLocalPos(20, -20);

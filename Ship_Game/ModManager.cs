@@ -54,13 +54,13 @@ namespace Ship_Game
             // PopupWindow's - base.LoadContent goes FIRST and lays them out
             // Ludoal fork (maintainer feedback): three distinct labels - window is MODS,
             // loader tab LOAD MOD, list MOD.
-            TitleText = "MODS";
+            TitleText = Localizer.Token(GameText.MmMods);
             base.LoadContent();
 
             Rectangle inner = PopupFrame.ContentArea(Rect);
             // Ludoal fork (maintainer feedback): a little air above the LOAD MOD tab
             RectF sub = new(inner.X + 25, inner.Y + 18, inner.Width - 50, 80);
-            Add(new Submenu(sub, "LOAD MOD"));
+            Add(new Submenu(sub, GameText.MmLoadMod));
 
             // Ludoal fork (maintainer feedback): reserve a strip at the foot of the MOD list frame
             // for the Unload Mod button, so it sits inside the frame's bottom-right without
@@ -78,7 +78,7 @@ namespace Ship_Game
             // bottom-right of the MOD list frame and reads as the one hostile action here, so it
             // takes the red (hostile) plate over the Small button's size.
             const int unloadW = 110;   // wider than Small's 68 so "Unload Mod" doesn't clip
-            UnloadMod = ButtonSmall(scrollList.Right - unloadW, scrollList.Bottom + 8, "Unload Mod", click:OnUnloadModClicked);
+            UnloadMod = ButtonSmall(scrollList.Right - unloadW, scrollList.Bottom + 8, GameText.MmUnloadMod, click:OnUnloadModClicked);
             UnloadMod.SetAbsSize(unloadW, 24);
             UnloadMod.DefaultColor = UIButton.PlateHostile;
             UnloadMod.HoverColor   = UITheme.Hover(UIButton.PlateHostile);
@@ -88,7 +88,7 @@ namespace Ship_Game
 
         void LoadMods(RectF scrollList)
         {
-            AllSaves = Add(new SubmenuScrollList<ModsListItem>(scrollList, "MOD", 140));
+            AllSaves = Add(new SubmenuScrollList<ModsListItem>(scrollList, GameText.MmMod, 140));
             ModsList = AllSaves.List;
             ModsList.EnableItemHighlight = true;
             ModsList.OnClick = OnModItemClicked;
@@ -151,7 +151,7 @@ namespace Ship_Game
                 return;
             }
             CurrentButton = b;
-            b.Text = "Loading";
+            b.Text = GameText.MmLoading;
             LoadModTask();
         }
 

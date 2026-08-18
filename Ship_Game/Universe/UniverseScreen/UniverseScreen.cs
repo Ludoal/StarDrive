@@ -749,7 +749,7 @@ namespace Ship_Game
                 ShipsInCombat.Style = Player.EmpireShipCombat > 0 ? ButtonStyle.Medium : ButtonStyle.MediumMuted;
                 return $"Ships: {Player.EmpireShipCombat}";
             };
-            ShipsInCombat.Tooltip = "Cycle through ships not in fleet that are in combat";
+            ShipsInCombat.Tooltip = GameText.CycleShipsInCombatTooltip;
             ShipsInCombat.OnClick = ShipsInCombatClick;
             Add(ShipsInCombat);
 
@@ -761,7 +761,7 @@ namespace Ship_Game
                 return $"Planets: {Player.EmpirePlanetCombat}";
             };
             PlanetsInCombat.OnClick = CyclePlanetsInCombat;
-            PlanetsInCombat.Tooltip = "Cycle through planets that are in combat";
+            PlanetsInCombat.Tooltip = GameText.CyclePlanetsInCombatTooltip;
 
             RectF leftRect = new(25, 60, 200, 500); // 5px margin: the Patrol badge kissed the edge
             Add(new FleetButtonsList(leftRect, this, this,

@@ -536,7 +536,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             Vector2 cursor = new Vector2(Portrait.X + 40,  ThreatRect.Y + 50);
             foreach (Empire empire in AlliedEmpiresAtWar)
             {
-                batch.DrawDropShadowText($"They are at war with your ally, {empire.Name}", cursor, font, empire.EmpireColor, 1);
+                batch.DrawDropShadowText(string.Format(Localizer.Token(GameText.DpAtWarWithYourAlly), empire.Name), cursor, font, empire.EmpireColor, 1);
                 cursor.Y += font.LineSpacing + 2;
             }
 
@@ -545,7 +545,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
 
             foreach (Empire empire in EmpiresTheyAreAlliedWith)
             {
-                batch.DrawDropShadowText($"They are allied with {empire.Name}", cursor, font, empire.EmpireColor, 1);
+                batch.DrawDropShadowText(string.Format(Localizer.Token(GameText.DpAlliedWithEmpire), empire.Name), cursor, font, empire.EmpireColor, 1);
                 cursor.Y += font.LineSpacing + 2;
             }
         }

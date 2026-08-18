@@ -323,7 +323,7 @@ namespace Ship_Game
                     ShipInfoOverlay.ShowToLeftOf(Vector2.Zero, null); // hide it
                     return;
                 }
-                string tooltip = "Drag and drop this Ship into the Fleet our double click to auto-add to a squad";
+                string tooltip = Localizer.Token(GameText.FdDragDropShipTooltip);
                 ToolTip.CreateTooltip(tooltip, "", item.BotLeft, minShowTime:2f);
                 ShipInfoOverlay.ShowToLeftOf(item.Pos, item.Ship?.ShipData ?? item.Design);
             };
@@ -344,10 +344,10 @@ namespace Ship_Game
                        + Fonts.Arial20Bold.LineSpacing + 8 + CartIcon + 8;
             float BtnRow(int i) => btnY + i * (CartBtnH + CartBtnGap);
 
-            RequisitionForces = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(0)), "Requisition..."));
-            SaveDesign  = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(1)), "Save Design..."));
-            LoadDesign  = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(2)), "Load Design..."));
-            AutoArrange = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(3)), "Auto Arrange..."));
+            RequisitionForces = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(0)), GameText.FdRequisitionEllipsis));
+            SaveDesign  = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(1)), GameText.FdSaveDesignEllipsis));
+            LoadDesign  = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(2)), GameText.FdLoadDesignEllipsis));
+            AutoArrange = Add(new UIButton(ButtonStyle.WideActive, new Vector2(btnX, BtnRow(3)), GameText.FdAutoArrangeEllipsis));
 
             foreach (UIButton b in new[] { RequisitionForces, SaveDesign, LoadDesign, AutoArrange })
                 b.SetAbsSize(CartBtnW, CartBtnH);
@@ -390,7 +390,7 @@ namespace Ship_Game
             };
 
             RectF sizerect = new(PrioritiesRect.X + 15, PrioritiesRect.Y + arial12.LineSpacing + 70, 300, 40);
-            SliderSize = new SizeSlider(sizerect, "Target UniverseRadius Preference");
+            SliderSize = new SizeSlider(sizerect, Localizer.Token(GameText.FdTargetRadiusPreference));
             SliderSize.SetAmount(0.5f);
             SliderSize.Tooltip = GameText.DeterminesWhetherAShipPrefers;
 

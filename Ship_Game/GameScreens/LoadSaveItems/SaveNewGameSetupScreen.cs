@@ -13,8 +13,8 @@ public sealed class SaveNewGameSetupScreen : GenericLoadSaveScreen
     readonly SetupSave SavedSetup;
 
     public SaveNewGameSetupScreen(RaceDesignScreen screen, UniverseParams settings) 
-        : base(screen, SLMode.Save, "New Saved Setup", "Save Setup", "Saved Setups", 
-            "Saved Setup already exists.  Overwrite?")
+        : base(screen, SLMode.Save, Localizer.Token(GameText.MmNewSavedSetup), Localizer.Token(GameText.MmSaveSetup), "Saved Setups", 
+            Localizer.Token(GameText.MmSavedSetupAlreadyExistsOverwrite))
     {
         Path = Dir.StarDriveUserData + "/Saved Setups/";
         SavedSetup = new(settings);

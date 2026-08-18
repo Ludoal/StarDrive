@@ -349,15 +349,15 @@ namespace Ship_Game
                 return button;
             }
 
-            string galaxySizeTip = "Sets the scale of the generated galaxy";
+            string galaxySizeTip = Localizer.Token(GameText.NgGalaxyScaleTooltip);
             if (GlobalStats.Defaults.ChangeResearchCostBasedOnSize)
                 galaxySizeTip += ". Scale other than Medium will increase/decrease research cost of technologies.";
             
-            string solarSystemsTip = "Number of Solar Systems packed into the Universe";
+            string solarSystemsTip = Localizer.Token(GameText.NgSolarSystemsCountTooltip);
             if (GlobalStats.Defaults.ChangeResearchCostBasedOnSize)
                 solarSystemsTip += ". Technology research costs will scale up or down as well";
 
-            string opponentsTip = "Sets the number of AI opponents you must face";
+            string opponentsTip = Localizer.Token(GameText.NgAiOpponentsCountTooltip);
             if (GlobalStats.Defaults.ChangeResearchCostBasedOnSize)
                 opponentsTip += ". On a large scale galaxy, this might also affect research cost of technologies.";
 
@@ -367,9 +367,9 @@ namespace Ship_Game
             ModeBtn = AddOption("{GameMode} : ",   OnGameModeClicked, _ => GetModeText().Text, tip:GetModeTip());
             AddOption("{Pacing} : ", OnPacingClicked, _ => (P.Pace == 1f) ? "1x" : $"{P.Pace:0.##}x slower", tip:GameText.TheGamesPaceModifiesThe);
             AddOption("{Difficulty} : ", OnDifficultyClicked, _ => P.Difficulty.ToString(),
-                tip:"Hard and above increase AI Aggressiveness and gives them extra bonuses");
+                tip:GameText.NgDifficultyAggressivenessTooltip);
             AddOption("{RemnantPresence} : ", OnExtraRemnantClicked, _ => P.ExtraRemnant.ToString(),
-                tip:"This sets the intensity of Ancient Remnants presence. If you feel overwhelmed by their advanced technology, reduce this to Rare.");
+                tip:GameText.NgRemnantsIntensityTooltip);
 
             // row 2 RIGHT: two tabs over one area - the points summary, and the race description.
             // Same rect for both; OnTabChange flips which one is visible.

@@ -976,7 +976,7 @@ namespace Ship_Game
         }
 
         public int Level { get; private set; } // Level has a minimum of 1
-        public string DevelopmentStatus { get; private set; } = "Undeveloped";
+        public string DevelopmentStatus { get; private set; } = Localizer.Token(GameText.UhUndeveloped);
 
         public void UpdateDevelopmentLevel() // need to check this with Racial env
         {

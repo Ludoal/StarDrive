@@ -12,7 +12,7 @@ namespace Ship_Game
 
         public SaveGameScreen(UniverseScreen screen) 
             : base(screen, SLMode.Save, screen.PlayerLoyalty + ", Star Date " + screen.StarDateString, 
-                "Save Game", "Saved Games", "Saved Game already exists.  Overwrite?", showSaveExport:true)
+                Localizer.Token(GameText.MmSaveGame), "Saved Games", Localizer.Token(GameText.MmSavedGameAlreadyExistsOverwrite), showSaveExport:true)
         {
             Screen = screen;
             Path = SavedGame.DefaultSaveGameFolder;

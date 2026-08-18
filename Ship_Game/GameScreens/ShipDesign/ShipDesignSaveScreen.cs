@@ -211,7 +211,7 @@ namespace Ship_Game
             if (shipOrHullName.IsEmpty())
             {
                 string what = Hulls ? "hull" : "design";
-                ScreenManager.AddScreen(new MessageBoxScreen(this, $"Please enter a name for your {what}", MessageBoxButtons.Ok) { CenterOn = CenterOn });
+                ScreenManager.AddScreen(new MessageBoxScreen(this, string.Format(Localizer.Token(GameText.SyEnterNameFor), what), MessageBoxButtons.Ok) { CenterOn = CenterOn });
                 GameAudio.NegativeClick();
                 return;
             }

@@ -533,20 +533,19 @@ namespace Ship_Game
                 ToolTip.CreateTooltip(GameText.WeaponsRangeOverlayVisualisesShips, KeyBindings.Name(KeyBindings.RangeOverlay));
 
             if (VisionOverlayBtn.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip("Vision overlay: everything your sensors actually see — "
-                                    + "ships, planets and the coverage your spies bring in", KeyBindings.Name(KeyBindings.VisionOverlay));
+                ToolTip.CreateTooltip(GameText.UhVisionOverlayTooltip, KeyBindings.Name(KeyBindings.VisionOverlay));
 
             if (FoodRoutes.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip("Food routes overlay: green lines link planets with an active food freighter run");
+                ToolTip.CreateTooltip(GameText.UhFoodRoutesTooltip);
 
             if (ProdRoutes.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip("Production routes overlay: orange lines link planets with an active production freighter run");
+                ToolTip.CreateTooltip(GameText.UhProdRoutesTooltip);
 
             if (PopRoutes.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip("Colonist routes overlay: white lines link planets with an active colonist transport run");
+                ToolTip.CreateTooltip(GameText.UhColonistRoutesTooltip);
 
             if (ColonizationRoutes.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip("Colonization routes overlay: links the planet building or sending a colonizer to its destination");
+                ToolTip.CreateTooltip(GameText.UhColonizationRoutesTooltip);
 
             if (InfluenceZones.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.InfluenceOverlayVisualises, KeyBindings.Name(KeyBindings.InfluenceOverlay));

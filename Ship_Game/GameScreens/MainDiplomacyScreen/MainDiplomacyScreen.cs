@@ -326,13 +326,13 @@ namespace Ship_Game
                 // RANK is repeated here - each block belongs to exactly one tab.
                 float bonusMaxY = col.Bottom - 6;
                 y = infoY;
-                SectionBand(batch, col, ref y, "TRAITS");
+                SectionBand(batch, col, ref y, Localizer.Token(GameText.DpSectionTraits));
                 DrawTraitRows(batch, e, col, ref y);
                 // BONUSES sits below the LONGEST trait list of any column, so the two bands stay
                 // level across the row - a per-column offset would stagger them.
                 float bonusesY = infoY + 24 + MaxTraitLines * (Font12.LineSpacing + 2) + 8;
                 y = bonusesY;
-                SectionBand(batch, col, ref y, "BONUSES");
+                SectionBand(batch, col, ref y, Localizer.Token(GameText.DpSectionBonuses));
                 DrawBonusRows(batch, e, col, ref y, bonusMaxY);
                 return;
             }
@@ -347,15 +347,15 @@ namespace Ship_Game
             if (e == Player)
                 y += 24; // no DISPOSITION band on our own column - but the cascade stays level
             else
-                SectionBand(batch, col, ref y, "DISPOSITION");
+                SectionBand(batch, col, ref y, Localizer.Token(GameText.DpSectionDisposition));
             DrawInfoBlock(batch, e, col, ref y);
 
             y += 4;
-            SectionBand(batch, col, ref y, "RANK");
+            SectionBand(batch, col, ref y, Localizer.Token(GameText.DpSectionRank));
             DrawPositionBlock(batch, e, col, ref y);
 
             y += 4;
-            SectionBand(batch, col, ref y, "EMPIRE DATA");
+            SectionBand(batch, col, ref y, Localizer.Token(GameText.DpSectionEmpireData));
             DrawIntelRows(batch, e, col, ref y, col.Bottom - 6);
 
             // Ludoal fork: TREATIES before ARTIFACTS. The treaty matrix is a fixed three rows, the
@@ -364,11 +364,11 @@ namespace Ship_Game
             // costs nothing.
             y += 4;
             float treatyY = y;
-            SectionBand(batch, col, ref treatyY, "TREATIES");
+            SectionBand(batch, col, ref treatyY, Localizer.Token(GameText.DpSectionTreaties));
             DrawTreatyMatrix(batch, e, col, treatyY);
 
             y = treatyY + TreatyBlockH - 24;
-            SectionBand(batch, col, ref y, "ARTIFACTS");
+            SectionBand(batch, col, ref y, Localizer.Token(GameText.DpSectionArtifacts));
             DrawArtifactRows(batch, e, col, ref y, col.Bottom - 6);
 
         }
@@ -615,10 +615,7 @@ namespace Ship_Game
                 float rowY = y;
                 TableRow(batch, col, ref y, maxY, "Spies", espionage.InfiltrationLevelSummary(), Color.White);
                 if (new Rectangle(col.X + 8, (int)rowY, col.Width - 16, Font12.LineSpacing).HitTest(Input.CursorPosition))
-                    ToolTip.CreateTooltip("How deep THEY have infiltrated YOUR empire.\n"
-                                        + "Your own infiltration level on them sets the precision:\n"
-                                        + "level 2 says whether their network exists, 3-4 reads it\n"
-                                        + "Shallow or Deep, and 5 gives their exact level.");
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.DpInfiltrationDepthTheirs));
             }
             else
             {
@@ -786,44 +783,44 @@ namespace Ship_Game
             }
 
             var t = e.data.Traits;
-            if (t.PopGrowthMax > 0f) TableRow(batch, col, ref yy, maxY, "Max pop growth", "+" + t.PopGrowthMax.ToString(".##"), Color.LightPink);
-            if (t.PopGrowthMin > 0f) TableRow(batch, col, ref yy, maxY, "Min pop growth", "+" + t.PopGrowthMin.ToString(".##"), Color.LightGreen);
-            Row("Reproduction", t.ReproductionMod);
-            Row("Consumption", t.ConsumptionModifier, opposite: true);
-            Row("Production", t.ProductionMod);
-            Row("Research", t.ResearchMod);
-            Row("Diplomacy", t.DiplomacyMod);
-            Row("Ongoing diplomacy", e.data.OngoingDiplomaticModifier);
-            Row("Ground combat", t.GroundCombatModifier);
-            Row("Ship cost", t.ShipCostMod, opposite: true);
-            Row("Module HP", t.ModHpModifier);
-            Row("Repair rate", t.RepairMod);
-            Row("Reactor power", e.data.PowerFlowMod);
-            Row("Shield power", e.data.ShieldPowerMod);
-            Row("Ship mass", e.data.MassModifier - 1f, opposite: true);
-            Row("Tax income", t.TaxMod);
-            if (t.MaintMod != 0) Row("Maintenance", t.MaintMod, opposite: true);
+            if (t.PopGrowthMax > 0f) TableRow(batch, col, ref yy, maxY, Localizer.Token(GameText.DpModMaxPopGrowth), "+" + t.PopGrowthMax.ToString(".##"), Color.LightPink);
+            if (t.PopGrowthMin > 0f) TableRow(batch, col, ref yy, maxY, Localizer.Token(GameText.DpModMinPopGrowth), "+" + t.PopGrowthMin.ToString(".##"), Color.LightGreen);
+            Row(Localizer.Token(GameText.DpModReproduction), t.ReproductionMod);
+            Row(Localizer.Token(GameText.DpModConsumption), t.ConsumptionModifier, opposite: true);
+            Row(Localizer.Token(GameText.DpModProduction), t.ProductionMod);
+            Row(Localizer.Token(GameText.DpModResearch), t.ResearchMod);
+            Row(Localizer.Token(GameText.DpModDiplomacy), t.DiplomacyMod);
+            Row(Localizer.Token(GameText.DpModOngoingDiplomacy), e.data.OngoingDiplomaticModifier);
+            Row(Localizer.Token(GameText.DpModGroundCombat), t.GroundCombatModifier);
+            Row(Localizer.Token(GameText.DpModShipCost), t.ShipCostMod, opposite: true);
+            Row(Localizer.Token(GameText.DpModModuleHp), t.ModHpModifier);
+            Row(Localizer.Token(GameText.DpModRepairRate), t.RepairMod);
+            Row(Localizer.Token(GameText.DpModReactorPower), e.data.PowerFlowMod);
+            Row(Localizer.Token(GameText.DpModShieldPower), e.data.ShieldPowerMod);
+            Row(Localizer.Token(GameText.DpModShipMass), e.data.MassModifier - 1f, opposite: true);
+            Row(Localizer.Token(GameText.DpModTaxIncome), t.TaxMod);
+            if (t.MaintMod != 0) Row(Localizer.Token(GameText.DpModMaintenance), t.MaintMod, opposite: true);
             if (t.MaintMod != 0 || t.ShipMaintMultiplier < 1)
-                Row("Ship Maint", (1 + t.MaintMod) * t.ShipMaintMultiplier - 1, opposite: true); // short: the long label folded mid-word
-            Row("In-borders FTL", t.InBordersSpeedBonus);
-            TableRow(batch, col, ref yy, maxY, "FTL speed", e.data.FTLModifier + "x", Color.White);
-            TableRow(batch, col, ref yy, maxY, "FTL power drain", e.data.FTLPowerDrainModifier + "x", Color.White);
-            Row("Fuel cells", e.data.FuelCellModifier);
-            if (e.data.SubLightModifier != 1) Row("Sublight speed", e.data.SubLightModifier - 1f);
-            if (e.data.SensorModifier != 1) Row("Sensor range", e.data.SensorModifier - 1f);
-            Row("Ship experience", e.data.ExperienceMod);
+                Row(Localizer.Token(GameText.DpModShipMaint), (1 + t.MaintMod) * t.ShipMaintMultiplier - 1, opposite: true); // short: the long label folded mid-word
+            Row(Localizer.Token(GameText.DpModInBordersFtl), t.InBordersSpeedBonus);
+            TableRow(batch, col, ref yy, maxY, Localizer.Token(GameText.DpModFtlSpeed), e.data.FTLModifier + "x", Color.White);
+            TableRow(batch, col, ref yy, maxY, Localizer.Token(GameText.DpModFtlPowerDrain), e.data.FTLPowerDrainModifier + "x", Color.White);
+            Row(Localizer.Token(GameText.DpModFuelCells), e.data.FuelCellModifier);
+            if (e.data.SubLightModifier != 1) Row(Localizer.Token(GameText.DpModSublightSpeed), e.data.SubLightModifier - 1f);
+            if (e.data.SensorModifier != 1) Row(Localizer.Token(GameText.DpModSensorRange), e.data.SensorModifier - 1f);
+            Row(Localizer.Token(GameText.DpModShipExperience), e.data.ExperienceMod);
             // ⚠ no hand-prefixed sign on the negative branch: ToString("#") already carries it
-            if (e.data.SpyModifier > 0f) TableRow(batch, col, ref yy, maxY, "Spy effectiveness", "+" + e.data.SpyModifier.ToString("#"), Color.LightGreen);
-            else if (e.data.SpyModifier < 0f) TableRow(batch, col, ref yy, maxY, "Spy effectiveness", e.data.SpyModifier.ToString("#"), Color.LightPink);
-            Row("Artifact bonus", t.Spiritual);
-            Row("Cannon accuracy", t.TargetingModifier);
-            if (t.DodgeMod > 0) Row("Dodge", t.DodgeMod);
-            Row("Ordnance damage", e.data.OrdnanceEffectivenessBonus);
-            if (e.data.MissileHPModifier != 1) Row("Missile HP", e.data.MissileHPModifier - 1f);
-            Row("Missile dodge", e.data.MissileDodgeChance);
-            if (e.data.ExoticStorageMultiplier != 1) Row("Exotic storage", e.data.ExoticStorageMultiplier - 1);
-            if (e.data.MiningSpeedMultiplier != 1) Row("Mining speed", e.data.MiningSpeedMultiplier - 1);
-            if (e.data.RefiningRatioMultiplier != 1) Row("Refining", e.data.RefiningRatioMultiplier - 1);
+            if (e.data.SpyModifier > 0f) TableRow(batch, col, ref yy, maxY, Localizer.Token(GameText.DpModSpyEffectiveness), "+" + e.data.SpyModifier.ToString("#"), Color.LightGreen);
+            else if (e.data.SpyModifier < 0f) TableRow(batch, col, ref yy, maxY, Localizer.Token(GameText.DpModSpyEffectiveness), e.data.SpyModifier.ToString("#"), Color.LightPink);
+            Row(Localizer.Token(GameText.DpModArtifactBonus), t.Spiritual);
+            Row(Localizer.Token(GameText.DpModCannonAccuracy), t.TargetingModifier);
+            if (t.DodgeMod > 0) Row(Localizer.Token(GameText.DpModDodge), t.DodgeMod);
+            Row(Localizer.Token(GameText.DpModOrdnanceDamage), e.data.OrdnanceEffectivenessBonus);
+            if (e.data.MissileHPModifier != 1) Row(Localizer.Token(GameText.DpModMissileHp), e.data.MissileHPModifier - 1f);
+            Row(Localizer.Token(GameText.DpModMissileDodge), e.data.MissileDodgeChance);
+            if (e.data.ExoticStorageMultiplier != 1) Row(Localizer.Token(GameText.DpModExoticStorage), e.data.ExoticStorageMultiplier - 1);
+            if (e.data.MiningSpeedMultiplier != 1) Row(Localizer.Token(GameText.DpModMiningSpeed), e.data.MiningSpeedMultiplier - 1);
+            if (e.data.RefiningRatioMultiplier != 1) Row(Localizer.Token(GameText.DpModRefining), e.data.RefiningRatioMultiplier - 1);
             y = yy;
         }
 
@@ -876,16 +873,16 @@ namespace Ship_Game
                         switch (iy)
                         {
                             case 0: // the state of the relation, strongest bond first
-                                if (rel.AtWar) { icon = ResourceManager.Texture("UI/icon_fighting_small"); tint = Color.Red; tip = $"At war with {them}"; }
+                                if (rel.AtWar) { icon = ResourceManager.Texture("UI/icon_fighting_small"); tint = Color.Red; tip = string.Format(Localizer.Token(GameText.DpAtWarWith), them); }
                                 else if (rel.Treaty_Alliance) { icon = ResourceManager.Texture("UI/flagicon"); tint = Color.Green; tip = $"Allied with {them}"; }
                                 else if (rel.Treaty_NAPact) { icon = ResourceManager.Texture("UI/icon_shield"); tint = Color.DeepSkyBlue; tip = $"Non-Aggression Pact with {them}"; }
-                                else if (rel.Treaty_Peace) { icon = ResourceManager.Texture("UI/icon_peace"); tint = Color.White; tip = $"At peace with {them}"; }
+                                else if (rel.Treaty_Peace) { icon = ResourceManager.Texture("UI/icon_peace"); tint = Color.White; tip = string.Format(Localizer.Token(GameText.DpAtPeaceWith), them); }
                                 break;
                             case 1:
-                                if (rel.Treaty_OpenBorders) { icon = ResourceManager.Texture("NewUI/icon_intertrade"); tint = Color.Violet; tip = $"Open Borders with {them}"; }
+                                if (rel.Treaty_OpenBorders) { icon = ResourceManager.Texture("NewUI/icon_intertrade"); tint = Color.Violet; tip = string.Format(Localizer.Token(GameText.DpOpenBordersWith), them); }
                                 break;
                             case 2:
-                                if (rel.Treaty_Trade) { icon = ResourceManager.Texture("NewUI/icon_money"); tint = Color.Yellow; tip = $"Trade Treaty with {them}"; }
+                                if (rel.Treaty_Trade) { icon = ResourceManager.Texture("NewUI/icon_money"); tint = Color.Yellow; tip = string.Format(Localizer.Token(GameText.DpTradeTreatyWith), them); }
                                 break;
                         }
                     }

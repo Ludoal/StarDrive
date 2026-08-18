@@ -11,7 +11,7 @@ public sealed class LoadFleetDesignScreen : GenericLoadSaveScreen
 {
     readonly FleetDesignScreen Screen;
 
-    public LoadFleetDesignScreen(FleetDesignScreen caller) : base(caller, SLMode.Load, "", "Load Saved Fleet", "Saved Fleets", 40)
+    public LoadFleetDesignScreen(FleetDesignScreen caller) : base(caller, SLMode.Load, "", Localizer.Token(GameText.FdLoadSavedFleet), "Saved Fleets", 40)
     {
         Screen = caller;
         Path = Dir.StarDriveUserData + "/Fleet Designs/";
@@ -46,7 +46,7 @@ public sealed class LoadFleetDesignScreen : GenericLoadSaveScreen
             Enabled = design.CanBuildFleet
         };
         if (!design.CanBuildFleet)
-            data.Info = "We cannot build this fleet";
+            data.Info = Localizer.Token(GameText.FdCannotBuildFleet);
         return data;
     }
 

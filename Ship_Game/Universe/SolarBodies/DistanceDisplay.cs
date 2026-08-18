@@ -15,11 +15,11 @@ namespace Ship_Game.Universe.SolarBodies
             DeterminePlanetDistanceCategory(distance);
             switch (PlanetDistance)
             {
-                case Distances.Local:   Text = "Local";   Color = Color.Green;         break;
-                case Distances.Near:    Text = "Near";    Color = Color.YellowGreen;   break;
-                case Distances.Midway:  Text = "Midway";  Color = Color.DarkGoldenrod; break;
-                case Distances.Distant: Text = "Distant"; Color = Color.DarkRed;       break;
-                default:                Text = "Beyond";  Color = Color.DarkGray;      break;
+                case Distances.Local:   Text = Localizer.Token(GameText.UhDistanceLocal);   Color = Color.Green;         break;
+                case Distances.Near:    Text = Localizer.Token(GameText.UhDistanceNear);    Color = Color.YellowGreen;   break;
+                case Distances.Midway:  Text = Localizer.Token(GameText.UhDistanceMidway);  Color = Color.DarkGoldenrod; break;
+                case Distances.Distant: Text = Localizer.Token(GameText.UhDistanceDistant); Color = Color.DarkRed;       break;
+                default:                Text = Localizer.Token(GameText.UhDistanceBeyond);  Color = Color.DarkGray;      break;
             }
         }
 

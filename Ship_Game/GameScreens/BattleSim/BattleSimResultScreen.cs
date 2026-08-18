@@ -42,7 +42,7 @@ namespace Ship_Game
             Sim = sim;
             Us = us;
             Them = them;
-            TitleText = "BATTLE REPORT";
+            TitleText = Localizer.Token(GameText.BsBattleReport);
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0f;
 
@@ -50,7 +50,7 @@ namespace Ship_Game
             else if (us.Alive && !them.Alive) { Verdict = "Victory";         VerdictColor = Color.LightGreen; }
             else if (!us.Alive && them.Alive) { Verdict = "Defeat";          VerdictColor = Color.Red;   }
             else if (!us.Alive)            { Verdict = "Mutual destruction"; VerdictColor = Color.Orange; }
-            else                           { Verdict = "Time will tell";     VerdictColor = Color.Gray;  }
+            else                           { Verdict = Localizer.Token(GameText.BsTimeWillTell); VerdictColor = Color.Gray;  }
 
             int secs = (int)fightSeconds;
             Duration = (secs / 60) + ":" + (secs % 60).ToString("00");
@@ -65,7 +65,7 @@ namespace Ship_Game
 
             Rectangle rect = Rect;
             // bench 361 (maintainer): the step-back on the LEFT, the action on the RIGHT
-            ButtonMedium(rect.X + 30, rect.Bottom - 55, "Back to Shipyard", b => ToShipyard());
+            ButtonMedium(rect.X + 30, rect.Bottom - 55, GameText.BsBackToShipyard, b => ToShipyard());
             ButtonMedium(rect.Right - 210, rect.Bottom - 55, "Rematch", b =>
             {
                 ExitScreen();

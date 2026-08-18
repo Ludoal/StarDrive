@@ -44,8 +44,8 @@ namespace Ship_Game.GameScreens.ShipDesign
             DesignCompletion = Add(new UI.UIKeyValueLabel(GameText.NoEmptySlots, "100%", valueColor:Color.LightGreen));
             DesignCompletion.Tooltip = GameText.InOrderToCompleteYour;
 
-            BtnDesignIssues = AddTextButton("Design Issues");
-            BtnInformation = AddTextButton("Information");
+            BtnDesignIssues = AddTextButton(Localizer.Token(GameText.SyDesignIssues));
+            BtnInformation = AddTextButton(Localizer.Token(GameText.SyInformation));
             BtnInformation.Visible = BtnDesignIssues.Visible = false;
 
             BtnDesignIssues.Tooltip = GameText.StatesAnyDesignIssuesThe;

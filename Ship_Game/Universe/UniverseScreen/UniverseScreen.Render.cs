@@ -413,10 +413,10 @@ namespace Ship_Game
 
                 DrawZones(Fonts.Pirulen20, title, ref cursorY, Color.Red);
                 if (numAo > 0)
-                    DrawZones(Fonts.Pirulen16, $"Current Area of Operation Number: {numAo}", ref cursorY, Color.Pink);
+                    DrawZones(Fonts.Pirulen16, $"{Localizer.Token(GameText.UhCurrentAoNumber)} {numAo}", ref cursorY, Color.Pink);
 
                 if (numRoutes > 0)
-                    DrawZones(Fonts.Pirulen16, $"Current list of planets in trade route: {numRoutes}", ref cursorY, Color.White);
+                    DrawZones(Fonts.Pirulen16, $"{Localizer.Token(GameText.UhCurrentTradeRoutePlanets)} {numRoutes}", ref cursorY, Color.White);
 
                 foreach (Rectangle ao in SelectedShip.AreaOfOperation)
                     DrawRectangleProjected(new RectF(ao), Color.Red, new Color(Color.Red, 50).Premultiplied());

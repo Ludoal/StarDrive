@@ -98,8 +98,7 @@ namespace Ship_Game
                                       () => PinActiveModule,
                                       (b) => { PinActiveModule = b; },
                                       "Pin Active",
-                                      "Keep the Active Module panel on screen while you hover the list.\n"
-                                    + "Off: the hovered module takes its place, and it comes back when you look away.");
+                                      Localizer.Token(GameText.SyKeepActiveModuleTooltip));
             // the ACTIVE MODULE frame's own right edge, not the container's client area -
             // the two differ by a few px, which reads as "not quite aligned"
             pin.SetAbsPos(ActiveModSubMenu.Right - pin.Width, pin.Y);
@@ -723,7 +722,7 @@ namespace Ship_Game
                                  new Vector2(CancelCompareRect.X + 3f, CancelCompareRect.Y),
                                  hot ? Color.White : Color.Gray);
                 if (hot)
-                    ToolTip.CreateTooltip("Cancel the comparison");
+                    ToolTip.CreateTooltip(GameText.SyCancelComparison);
             }
             else if (panel == ActiveModSubMenu)
             {
@@ -795,7 +794,7 @@ namespace Ship_Game
 
             batch.DrawString(Fonts.Arial8Bold, Localizer.Token(GameText.Restrictions)+": "+rest, modTitlePos, Color.Orange);
             modTitlePos.Y += Fonts.Arial8Bold.LineSpacing;
-            batch.DrawString(Fonts.Arial8Bold, "Hulls: "+shipRest, modTitlePos, Color.LightSteelBlue);
+            batch.DrawString(Fonts.Arial8Bold, Localizer.Token(GameText.SyHullsLabel)+shipRest, modTitlePos, Color.LightSteelBlue);
             modTitlePos.Y += (Fonts.Arial8Bold.LineSpacing + 11);
 
             int startx = (int)modTitlePos.X;
@@ -1209,7 +1208,7 @@ namespace Ship_Game
                 if (wOrMirv.TruePD)
                 {
                     WriteLine(ref cursor);
-                    DrawStringRed(batch, ref cursor, "Cannot Target Ships");
+                    DrawStringRed(batch, ref cursor, Localizer.Token(GameText.SyCannotTargetShips));
                 }
                 else if (wOrMirv.ExcludesFighters || wOrMirv.ExcludesCorvettes || wOrMirv.ExcludesCapitals || wOrMirv.ExcludesStations)
                 {

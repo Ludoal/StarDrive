@@ -11,7 +11,7 @@ public sealed class LoadNewGameSetupScreen : GenericLoadSaveScreen
     readonly RaceDesignScreen Screen;
 
     public LoadNewGameSetupScreen(RaceDesignScreen screen)
-        : base(screen, SLMode.Load, "", "Load Saved Setup", "Saved Setups")
+        : base(screen, SLMode.Load, "", Localizer.Token(GameText.MmLoadSavedSetup), "Saved Setups")
     {
         Screen = screen;
         Path = Dir.StarDriveUserData + "/Saved Setups/";

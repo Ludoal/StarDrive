@@ -16,13 +16,7 @@ namespace Ship_Game.GameScreens.MainMenu
     {
         const string KofiUrl = "https://ko-fi.com/teamstardrive";
 
-        const string BodyText =
-            "StarDrive BlackBox is a community-driven revival of StarDrive, " +
-            "rebuilt and maintained by a small volunteer team in their spare " +
-            "time.\n\n" +
-            "If you've enjoyed playing and want to support continued " +
-            "development, you can contribute via Ko-fi. Every bit helps keep " +
-            "the lights on.";
+        static readonly string BodyText = Localizer.Token(GameText.MmSupportBlackboxIntro);
 
         string WrappedBody;
 
@@ -33,7 +27,7 @@ namespace Ship_Game.GameScreens.MainMenu
             TransitionOffTime = 0.25f;
 
             TitleText  = "Support BlackBox";
-            MiddleText = "Help keep StarDrive BlackBox alive";
+            MiddleText = Localizer.Token(GameText.MmHelpKeepBlackboxAlive);
         }
 
         public override void LoadContent()

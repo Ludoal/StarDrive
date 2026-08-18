@@ -48,33 +48,33 @@ namespace Ship_Game
                 var s = stats.AddSplit(new UILabel(title), new UILabel(getText));
                 s.Split = Background.ClientArea.W / 2;
             }
-            stats.Add(new UILabel("Fleet Statistics", Fonts.Pirulen16));
+            stats.Add(new UILabel(GameText.FdFleetStatistics, Fonts.Pirulen16));
             AddStatLabel("# Ships in Design:", _ => F.DataNodes.Count.ToString());
             AddStatLabel("# Active Ships:", _ => GetNumActiveShips().ToString());
             AddStatLabel("# Building Ships:", _ => GetNumBeingBuilt().ToString());
             AddStatLabel("# Empty Slots:", _ => GetSlotsToFill().ToString());
-            AddStatLabel("Total Production Cost:", _ => GetTotalProductionCost().String(0));
+            AddStatLabel(Localizer.Token(GameText.FdTotalProductionCost), _ => GetTotalProductionCost().String(0));
 
             // OwnedShips: Only visible when we have slots to fill
             OwnedShips = main.Add(new UIList(new(main.Width, 20), ListLayoutStyle.ResizeList));
-            OwnedShips.Add(new UILabel("Owned Ships", Fonts.Pirulen16));
+            OwnedShips.Add(new UILabel(GameText.FdOwnedShips, Fonts.Pirulen16));
             OwnedShips.Add(new UILabel(_ => GetNumThatFitText()));
             // maintainer feedback: the action buttons sit centred on the panel, not at its left edge
             AssignNowRow = OwnedShips.Add(new UIList(new Vector2(main.Width, 29), ListLayoutStyle.Clip) { CenterItems = true });
-            AssignNowRow.Add(new UIButton(ButtonStyle.WideActive, "Assign Now")
+            AssignNowRow.Add(new UIButton(ButtonStyle.WideActive, GameText.FdAssignNow)
             {
                 OnClick = (_) => AssignAvailableShips()
             });
 
             BuildNewShips = main.Add(new UIList(new(main.Width, 20), ListLayoutStyle.ResizeList));
-            BuildNewShips.Add(new UILabel("Build New Ships", Fonts.Pirulen16));
+            BuildNewShips.Add(new UILabel(GameText.FdBuildNewShips, Fonts.Pirulen16));
             BuildNewShips.Add(new UILabel(_ => GetSlotsToFillText()));
             var buildRow = BuildNewShips.Add(new UIList(new Vector2(main.Width, 56), ListLayoutStyle.Clip) { CenterItems = true });
-            buildRow.Add(new UIButton(ButtonStyle.WideActive, "Build Now")
+            buildRow.Add(new UIButton(ButtonStyle.WideActive, GameText.FdBuildNow)
             {
                 OnClick = (_) => CreateFleetRequisitionGoals()
             });
-            buildRow.Add(new UIButton(ButtonStyle.WideActive, "Rush Now")
+            buildRow.Add(new UIButton(ButtonStyle.WideActive, GameText.FdRushNow)
             {
                 Tooltip = GameText.BuildAllShipsNowPrioritize,
                 OnClick = (_) => CreateFleetRequisitionGoals(true)
@@ -82,7 +82,7 @@ namespace Ship_Game
 
             // NoRequisitionNeeded: Only visible when all slots are filled
             NoRequisitionNeeded = main.Add(new UIList(new(main.Width, 20), ListLayoutStyle.ResizeList));
-            NoRequisitionNeeded.Add(new UILabel("No Requisition Needed", Fonts.Pirulen16, Colors.Cream));
+            NoRequisitionNeeded.Add(new UILabel(GameText.FdNoRequisitionNeeded, Fonts.Pirulen16, Colors.Cream));
             NoRequisitionNeeded.Add(new UILabel(_ => GetFullStrengthText()) { Color = Colors.Cream });
 
             main.Add(new UICheckBox(() => F.AutoRequisition, Fonts.Arial12Bold,

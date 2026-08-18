@@ -146,10 +146,10 @@ namespace Ship_Game
             // the colonisable page borrows the Planets page's buttons: same width formula
             // (PlanetListScreen sizes the slot off the widest text either can wear), 24
             // high, centred text - stacked where the colony page keeps its sliders
-            int btnW = 24 + (int)new[] { "Colonize", "Cancel Colonize", "Send Troops",
-                                         "Recall Troops (99)", "Invading: 99" }
+            int btnW = 24 + (int)new[] { Localizer.Token(GameText.Colonize), Localizer.Token(GameText.CancelColonize), Localizer.Token(GameText.UhSendTroops),
+                                         Localizer.Token(GameText.UhRecallTroopsCount) + " (99)", Localizer.Token(GameText.UhInvadingCount) + " 99" }
                                 .Max(t => Fonts.Arial12Bold.TextWidth(t));
-            BtnSendTroops = new UIButton(ButtonStyle.Wide, "Send Troops")
+            BtnSendTroops = new UIButton(ButtonStyle.Wide, GameText.UhSendTroops)
             {
                 Rect = new Rectangle(LaborX + 20, Housing.Y + 130, btnW, 24),
                 Tooltip = GameText.SendAvailableTroopsToThis,
@@ -197,7 +197,7 @@ namespace Ship_Game
                                          : GameText.MarkThisPlanetForColonization;
             BtnColonize.OnClick = OnColonizeClicked;
             int landing = IncomingTroops;
-            BtnSendTroops.Text    = landing > 0 ? $"Landing: {landing}" : "Send Troops";
+            BtnSendTroops.Text    = landing > 0 ? $"{Localizer.Token(GameText.UhLandingCount)} {landing}" : GameText.UhSendTroops;
             BtnSendTroops.Style   = ButtonStyle.Wide;
             BtnSendTroops.Tooltip = GameText.SendAvailableTroopsToThis;
         }
@@ -207,10 +207,10 @@ namespace Ship_Game
         // toggle's own convention: the action in its colour, the cancel in red)
         void UpdateEnemyButtons(int invading)
         {
-            BtnSendTroops.Text    = invading > 0 ? $"Invading: {invading}" : "Invade";
+            BtnSendTroops.Text    = invading > 0 ? $"{Localizer.Token(GameText.UhInvadingCount)} {invading}" : "Invade";
             BtnSendTroops.Style   = ButtonStyle.Wide;
             BtnSendTroops.Tooltip = default;
-            BtnColonize.Text    = "Cancel Invasion";
+            BtnColonize.Text    = GameText.UhCancelInvasion;
             BtnColonize.Style   = ButtonStyle.WideHostile;
             BtnColonize.Tooltip = default;
             BtnColonize.OnClick = OnCancelInvasionClicked;
@@ -332,7 +332,7 @@ namespace Ship_Game
             }
             else if (explored && !P.Habitable)
             {
-                const string notHab = "Not habitable";
+                string notHab = Localizer.Token(GameText.UhNotHabitable);
                 batch.DrawString(Font12, notHab,
                     new Vector2(spriteCX - Font12.TextWidth(notHab) / 2f, mrTextY), Color.Gray);
             }
@@ -499,7 +499,7 @@ namespace Ship_Game
             {
                 // Ludoal fork: show the deployed state (mirrors the star cartouche) instead of nothing
                 var okPos = new Vector2(ExoticRect.X + 13, ExoticRect.Y + 13 - Font12.LineSpacing / 2 - 2);
-                batch.DrawString(Font12, "Research station operational", okPos, Color.LightGreen);
+                batch.DrawString(Font12, Localizer.Token(GameText.UhResearchStationOperational), okPos, Color.LightGreen);
                 return;
             }
 
@@ -643,7 +643,7 @@ namespace Ship_Game
             // the planet's NAME pans and zooms onto it (maintainer feedback)
             if (NameRect.HitTest(input.CursorPosition))
             {
-                ToolTip.CreateTooltip("Zoom to planet");
+                ToolTip.CreateTooltip(GameText.UhZoomToPlanet);
                 if (input.LeftMouseClick)
                 {
                     GameAudio.AcceptClick();

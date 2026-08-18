@@ -22,7 +22,7 @@ namespace Ship_Game
     [StarDataType]
     public sealed class SolarSystem : ExplorableGameObject
     {
-        [StarData] public string Name = "Random System";
+        [StarData] public string Name = Localizer.Token(GameText.UhRandomSystemName);
         [StarData] public UniverseState Universe;
 
         [StarData] public HashSet<Empire> OwnerList = new();

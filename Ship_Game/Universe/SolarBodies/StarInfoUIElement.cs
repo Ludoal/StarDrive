@@ -104,7 +104,7 @@ namespace Ship_Game
 			                 new Vector2(spriteCX - nameFont.TextWidth(name) / 2f,
 			                             topTextY + Font12.LineSpacing - nameFont.LineSpacing),
 			                 Colors.Cream);
-			string cls = explored ? StarClassName(Sys.Sun.Id) : "Unexplored star";
+			string cls = explored ? StarClassName(Sys.Sun.Id) : Localizer.Token(GameText.UhUnexploredStar);
 			batch.DrawString(Font12, cls,
 			                 new Vector2(spriteCX - Font12.TextWidth(cls) / 2f, iconBox.Bottom + 5), tColor);
 			if (!explored)
@@ -213,7 +213,7 @@ namespace Ship_Game
 			if (Sys.IsResearchStationDeployedBy(Player)) // built: no button, and no Abort on an operational station
 			{
 				var okPos = new Vector2(DeployRect.X + 13, DeployRect.Y + 13 - Font12.LineSpacing / 2 - 2);
-				batch.DrawString(Font12, "Research station operational", okPos, Color.LightGreen);
+				batch.DrawString(Font12, Localizer.Token(GameText.UhResearchStationOperational), okPos, Color.LightGreen);
 				return;
 			}
 			bool canBuild = Player.CanBuildResearchStations;

@@ -125,19 +125,19 @@ namespace Ship_Game
                 {
                     if (GetNumberOfDemands(this) > 0 && GetNumberOfDemands(TheirOffer) == 1)
                     {
-                        text.Append("In exchange for our leavings, and to avoid your own certain doom, you must declare war upon: ");
+                        text.Append(Localizer.Token(GameText.DpOfferLeavingsExchange));
                     }
                     else if (GetNumberOfDemands(TheirOffer) + GetNumberOfDemands(this) > 2)
                     {
-                        text.Append("Finally, we will crush you and your pathetic empire unless you declare war upon: ");
+                        text.Append(Localizer.Token(GameText.DpOfferFinallyCrushHostile));
                     }
                     else if (GetNumberOfDemands(TheirOffer) <= 1)
                     {
-                        text.Append("Unless you wish for us to crush your pathetic empire, you will declare war upon: ");
+                        text.Append(Localizer.Token(GameText.DpOfferUnlessCrush));
                     }
                     else
                     {
-                        text.Append("Furthermore, we will crush you and your pathetic empire unless you declare war upon: ");
+                        text.Append(Localizer.Token(GameText.DpOfferFurthermoreCrushHostile));
                     }
                     if (TheirOffer.EmpiresToWarOn.Count == 1)
                     {
@@ -166,19 +166,19 @@ namespace Ship_Game
                 {
                     if (GetNumberOfDemands(this) > 1 && GetNumberOfDemands(TheirOffer) == 1)
                     {
-                        text.Append("We offer you these gifts in the hope that you might join us in war against: ");
+                        text.Append(Localizer.Token(GameText.DpOfferGiftsJoinWar));
                     }
                     else if (GetNumberOfDemands(TheirOffer) + GetNumberOfDemands(this) > 2)
                     {
-                        text.Append("Finally, we should not have to remind you that we can crush you like a bug. But we can. Therefore, to avoid annihilation, you must declare war on: ");
+                        text.Append(Localizer.Token(GameText.DpOfferFinallyCrushAllied));
                     }
                     else if (GetNumberOfDemands(TheirOffer) <= 1)
                     {
-                        text.Append("The time to do our bidding has come, ally. You must declare war upon: ");
+                        text.Append(Localizer.Token(GameText.DpOfferTimeToBid));
                     }
                     else
                     {
-                        text.Append("Furthermore, we should not have to remind you that we can crush you like a bug. But we can. Therefore, to avoid annihilation, you must declare war on: ");
+                        text.Append(Localizer.Token(GameText.DpOfferFurthermoreCrushAllied));
                     }
                     if (TheirOffer.EmpiresToWarOn.Count == 1)
                     {
@@ -521,19 +521,19 @@ namespace Ship_Game
                 {
                     if (GetNumberOfDemands(this) > 0 && GetNumberOfDemands(TheirOffer) == 1)
                     {
-                        text.Append("In exchange for our leavings, and to avoid your own certain doom, you must declare war upon: ");
+                        text.Append(Localizer.Token(GameText.DpOfferLeavingsExchange));
                     }
                     else if (GetNumberOfDemands(TheirOffer) + GetNumberOfDemands(this) > 2)
                     {
-                        text.Append("Finally, we will crush you and your pathetic empire unless you declare war upon: ");
+                        text.Append(Localizer.Token(GameText.DpOfferFinallyCrushHostile));
                     }
                     else if (GetNumberOfDemands(TheirOffer) <= 1)
                     {
-                        text.Append("Unless you wish for us to crush your pathetic empire, you will declare war upon: ");
+                        text.Append(Localizer.Token(GameText.DpOfferUnlessCrush));
                     }
                     else
                     {
-                        text.Append("Furthermore, we will crush you and your pathetic empire unless you declare war upon: ");
+                        text.Append(Localizer.Token(GameText.DpOfferFurthermoreCrushHostile));
                     }
                     if (TheirOffer.EmpiresToWarOn.Count == 1)
                     {
@@ -566,15 +566,15 @@ namespace Ship_Game
                     }
                     else if (GetNumberOfDemands(TheirOffer) + GetNumberOfDemands(this) > 2)
                     {
-                        text.Append("Finally, we should not have to remind you that we can crush you like a bug. But we can. Therefore, to avoid annihilation, you must declare war on: ");
+                        text.Append(Localizer.Token(GameText.DpOfferFinallyCrushAllied));
                     }
                     else if (GetNumberOfDemands(TheirOffer) <= 1)
                     {
-                        text.Append("The time to do our bidding has come, ally. You must declare war upon: ");
+                        text.Append(Localizer.Token(GameText.DpOfferTimeToBid));
                     }
                     else
                     {
-                        text.Append("Furthermore, we should not have to remind you that we can crush you like a bug. But we can. Therefore, to avoid annihilation, you must declare war on: ");
+                        text.Append(Localizer.Token(GameText.DpOfferFurthermoreCrushAllied));
                     }
                     if (TheirOffer.EmpiresToWarOn.Count == 1)
                     {

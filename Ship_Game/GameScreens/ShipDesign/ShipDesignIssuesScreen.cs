@@ -39,9 +39,9 @@ namespace Ship_Game.GameScreens.ShipDesign
             //IssueList.DebugDrawScrollList = true;
             //IssueList.DebugDraw = true;
 
-            UILabel designIssueLabel = Add(new UILabel("Design Issue", LargeFont, Cream));
-            UILabel descriptionLabel = Add(new UILabel("Issue Description", LargeFont, Cream));
-            UILabel remediationLabel = Add(new UILabel("Remediation", LargeFont, Cream));
+            UILabel designIssueLabel = Add(new UILabel(GameText.SyDesignIssue, LargeFont, Cream));
+            UILabel descriptionLabel = Add(new UILabel(GameText.SyIssueDescription, LargeFont, Cream));
+            UILabel remediationLabel = Add(new UILabel(GameText.SyRemediation, LargeFont, Cream));
             designIssueLabel.Size    = new Vector2(230, 20);
             descriptionLabel.Size    = new Vector2(470, 20);
             remediationLabel.Size    = new Vector2(470, 20);

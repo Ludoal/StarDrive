@@ -658,7 +658,7 @@ namespace Ship_Game
 
             if (IsActive && IsSaving)
             {
-                DrawTopCenterStatusText(batch, "Saving...", CurrentFlashColor, 2);
+                DrawTopCenterStatusText(batch, GameText.UhSavingEllipsis, CurrentFlashColor, 2);
             }
             else if (Debug)
             {
@@ -681,7 +681,7 @@ namespace Ship_Game
                 CinematicModeTextTimer -= elapsed.RealTime.Seconds;
                 // the key name comes from the live table - a remapped key must never lie on
                 // screen. ALL CAPS kept: map-overlay statement, not a label (maintainer decision)
-                DrawTopCenterStatusText(batch, $"CINEMATIC MODE - PRESS {KeyBindings.Name(KeyBindings.CinematicMode).ToUpper()} TO EXIT", Color.White, 3);
+                DrawTopCenterStatusText(batch, $"{Localizer.Token(GameText.UhCinematicModePrefix)} {KeyBindings.Name(KeyBindings.CinematicMode).ToUpper()} {Localizer.Token(GameText.UhCinematicModeSuffix)}", Color.White, 3);
             }
 
             // (maintainer feedback) the idle-research alarm lives in the top bar's topic slot
@@ -892,7 +892,7 @@ namespace Ship_Game
                     {
                         bool hover = DsbCancelRect.HitTest(Input.CursorPosition);
                         UIButton.DrawPlate(batch, DsbCancelRect, UIButton.PlateActive);
-                        batch.DrawString(Fonts.Arial12Bold, "Cancel Construction",
+                        batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.UhCancelConstruction),
                             new Vector2(DsbCancelRect.X + 13, DsbCancelRect.Y + 13 - Fonts.Arial12Bold.LineSpacing / 2 - 2),
                             hover ? new Color(174, 202, 255) : new Color(88, 108, 146));
                     }

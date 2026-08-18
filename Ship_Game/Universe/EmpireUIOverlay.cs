@@ -76,7 +76,7 @@ namespace Ship_Game
             Buttons.Add(new Button
             {
                 Rect = MoneyIcon, Flat = true, Icon = ResourceManager.Texture("NewUI/icon_money"),
-                launches = "Budget", Tip = "Treasury and taxes",
+                launches = "Budget", Tip = Localizer.Token(GameText.UhTreasuryAndTaxesTooltip),
             });
             x += 20 + gap;
             MoneyTextX = x;
@@ -88,7 +88,7 @@ namespace Ship_Game
             Buttons.Add(new Button
             {
                 Rect = ResearchIcon, Flat = true, Icon = ResourceManager.Texture("NewUI/icon_science"),
-                launches = "Research", Tip = "Research and the current topic",
+                launches = "Research", Tip = Localizer.Token(GameText.UhResearchAndTopicTooltip),
             });
             ResearchTextX = x + 20 + gap;
 
@@ -101,7 +101,7 @@ namespace Ship_Game
             Buttons.Add(new Button
             {
                 Rect = new Rectangle(rx - helpW, y, helpW, btnH), Flat = true, Bare = true,
-                Text = "?", launches = "?", Tip = "Open the codex",
+                Text = "?", launches = "?", Tip = Localizer.Token(GameText.UhOpenCodexTooltip),
             });
             rx -= helpW + gap;
 
@@ -110,7 +110,7 @@ namespace Ship_Game
             {
                 Rect = new Rectangle(rx - menuW, y, menuW, btnH), Flat = true,
                 Icon = ResourceManager.Texture("NewUI/icon_exotic_Bonuses_big"),
-                launches = "Main Menu", Tip = "Open the main menu",
+                launches = "Main Menu", Tip = Localizer.Token(GameText.UhOpenMainMenuTooltip),
             });
             rx -= menuW + gap * 2;
 
@@ -124,15 +124,15 @@ namespace Ship_Game
             // for the LONGER of the two words - "PAUSED" must not push "<<" when the game stops.
             int speedW = 26;
             SpeedFaster = new Rectangle(rx - speedW, y, speedW, btnH);
-            Buttons.Add(new Button { Rect = SpeedFaster, Flat = true, Bare = true, Text = ">>", launches = "SpeedUp", Tip = "Speed up" });
+            Buttons.Add(new Button { Rect = SpeedFaster, Flat = true, Bare = true, Text = ">>", launches = "SpeedUp", Tip = Localizer.Token(GameText.UhSpeedUpTooltip) });
             rx -= speedW + 2;
 
             PauseRect = new Rectangle(rx - PauseRoom, y, PauseRoom, btnH);
-            Buttons.Add(new Button { Rect = PauseRect, Flat = true, Bare = true, Text = "PAUSE", launches = "Pause", Tip = "Pause / resume" });
+            Buttons.Add(new Button { Rect = PauseRect, Flat = true, Bare = true, Text = Localizer.Token(GameText.UhPause), launches = "Pause", Tip = Localizer.Token(GameText.UhPauseResumeTooltip) });
             rx -= PauseRoom + 2;
 
             SpeedSlower = new Rectangle(rx - speedW, y, speedW, btnH);
-            Buttons.Add(new Button { Rect = SpeedSlower, Flat = true, Bare = true, Text = "<<", launches = "SpeedDown", Tip = "Slow down" });
+            Buttons.Add(new Button { Rect = SpeedSlower, Flat = true, Bare = true, Text = "<<", launches = "SpeedDown", Tip = Localizer.Token(GameText.UhSlowDownTooltip) });
             rx -= speedW + gap;
 
             // the factor sits LEFT of the cluster and is right-aligned on it: growing from "2x"
@@ -265,7 +265,7 @@ namespace Ship_Game
                     // Ludoal fork (maintainer feedback): the COLOR keys on who owns the pause,
                     // not on a scan of the screen stack, which can lag a frame on screen open.
                     bool locked = paused && !Universe.UState.PausedByPlayer;
-                    string label = paused ? "PAUSED" : b.Text;
+                    string label = paused ? Localizer.Token(GameText.UhPaused) : b.Text;
                     // A BARE control is its glyph and nothing else, so the glyph itself has to
                     // answer the cursor - the same orange the icons already use, rather than a
                     // brightened cream that read as nothing at all. A plated button keeps its
@@ -309,7 +309,7 @@ namespace Ship_Game
                 if (!Player.Research.NoResearchLeft && !Player.AutoResearch)
                 {
                     batch.DrawString(font, "\u00b7 ", new Vector2(topicX, textY), TextCream);
-                    batch.DrawString(font, "NO RESEARCH!", new Vector2(topicTextX, textY), Color.Red);
+                    batch.DrawString(font, Localizer.Token(GameText.UhNoResearch), new Vector2(topicTextX, textY), Color.Red);
                 }
             }
             else
@@ -349,7 +349,7 @@ namespace Ship_Game
             {
                 // abbreviated below 1680 of width - the full alert overruns the groups; the
                 // tooltip carries the event's own notification text (bench 410)
-                string flux = Universe.ScreenWidth < 1680 ? "FLUX" : "HYPERSPACE FLUX";
+                string flux = Universe.ScreenWidth < 1680 ? Localizer.Token(GameText.UhFlux) : Localizer.Token(GameText.UhHyperspaceFlux);
                 var fluxPos = new Vector2(SpeedClusterLeft - font.TextWidth(flux), textY);
                 batch.DrawString(font, flux, fluxPos, Color.Yellow);
                 var fluxRect = new Rectangle((int)fluxPos.X, (int)fluxPos.Y, (int)font.TextWidth(flux), font.LineSpacing);
@@ -433,7 +433,7 @@ namespace Ship_Game
                     ToolTip.CreateTooltip(Localizer.Token(GameText.OpensPlanetReconnaissancePanel), "L", tipPos);
                     break;
                 case "Troops":
-                    ToolTip.CreateTooltip("Opens the Troops Array", "C", tipPos);
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.UhOpensTroopsArrayTooltip), "C", tipPos);
                     break;
                 case "Patrols":
                     ToolTip.CreateTooltip(Localizer.Token(GameText.EmpirePatrolsScreenTip), "P", tipPos);
@@ -446,10 +446,10 @@ namespace Ship_Game
                     ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheHelpMenu), "F1", tipPos);
                     break;
                 case "SpeedDown":
-                    ToolTip.CreateTooltip("Slower game speed", "-", tipPos);
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.UhSlowerGameSpeedTooltip), "-", tipPos);
                     break;
                 case "SpeedUp":
-                    ToolTip.CreateTooltip("Faster game speed", "+", tipPos);
+                    ToolTip.CreateTooltip(Localizer.Token(GameText.UhFasterGameSpeedTooltip), "+", tipPos);
                     break;
             }
         }

@@ -38,11 +38,11 @@ namespace Ship_Game.GameScreens.NewGame
             Title.SetLocalPos(35, 15);
             Title.Tooltip = "Some races have modifiers to their Max Population and Fertility based on the planet type.";
 
-            BestType = Add(new UILabel("Best Planet Type", font, Color.BurlyWood));
+            BestType = Add(new UILabel(GameText.NgBestPlanetType, font, Color.BurlyWood));
             // Ludoal fork (maintainer feedback): -78 total to clear the widened value columns; the
             // planet icon reads BestType.LocalPos, so it follows on its own.
             BestType.SetLocalPos(35 + 275 - 78, 15);
-            BestType.Tooltip = "This is the best suited environment for this race, Terraforming a planet will transform it to this planet type.";
+            BestType.Tooltip = GameText.NgBestPlanetTypeTooltip;
             
 
             // Ludoal fork (maintainer feedback): pull the value columns left to fit the tab at 900p

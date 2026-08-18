@@ -48,7 +48,7 @@ namespace Ship_Game
             titlePos.Y += Fonts.Arial20Bold.LineSpacing + 2;
             if (!IsSupported)
             {
-                batch.DrawString(Fonts.Arial12Bold, "Not supported on This BlackBox Version, try updating this mod.", titlePos, Color.Red);
+                batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.MmModNotSupportedVersion), titlePos, Color.Red);
                 titlePos.Y += Fonts.Arial12Bold.LineSpacing + 1;
             }
 

@@ -44,8 +44,8 @@ namespace Ship_Game
             Host = host;
             PlayerDesign = playerDesign;
             // the title names the screen; how it works is the subtitle's job (maintainer feedback)
-            TitleText = "Pick your opponents";
-            MiddleText = "The list adds, the roster removes";
+            TitleText = Localizer.Token(GameText.BsPickYourOpponents);
+            MiddleText = Localizer.Token(GameText.BsListAddsRosterRemoves);
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0f; // the launch path must leave no half-faded frames under the veil
         }
@@ -72,7 +72,7 @@ namespace Ship_Game
 
             // S5: group controls — hidden until the roster has a first opponent.
             // bench 361 (maintainer): the step-back on the LEFT, the action on the RIGHT
-            ClearBtn = Add(new UIButton(ButtonStyle.WideHostile, new Vector2(rect.X + 20, rect.Bottom - 48), "Clear")); // bench 363: red (maintainer)
+            ClearBtn = Add(new UIButton(ButtonStyle.WideHostile, new Vector2(rect.X + 20, rect.Bottom - 48), GameText.BsClear)); // bench 363: red (maintainer)
             ClearBtn.OnClick = b => { GameAudio.AcceptClick(); Roster.Clear(); RefreshRoster(); };
             FightBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(rect.Right - 220, rect.Bottom - 48), "Fight group"));
             FightBtn.OnClick = b => LaunchGroup();
@@ -183,7 +183,7 @@ namespace Ship_Game
             }
             FightBtn.Visible = ClearBtn.Visible = RosterSL.Visible = Roster.NotEmpty; // S5
             if (Roster.NotEmpty)
-                FightBtn.Text = Roster.Count == 1 ? "Fight" : "Fight group (" + Roster.Count + ")";
+                FightBtn.Text = Roster.Count == 1 ? "Fight" : Localizer.Token(GameText.BsFightGroupCount) + Roster.Count + ")";
             base.Update(fixedDeltaTime);
         }
 
@@ -210,7 +210,7 @@ namespace Ship_Game
             if (Roster.NotEmpty)
             {
                 batch.SafeBegin();
-                string grp = "Group roster - click a line to remove one";
+                string grp = Localizer.Token(GameText.BsGroupRosterHint);
                 batch.DrawString(Fonts.Arial12Bold, grp,
                     new Vector2(Rect.X + 20, Rect.Bottom - 206), Color.Wheat);
                 batch.SafeEnd();

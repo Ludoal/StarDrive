@@ -133,7 +133,7 @@ namespace Ship_Game
 
             if (node.Ship?.Resupplying == true)
             {
-                batch.DrawString(Fonts.Arial8Bold, "Resupplying", screenPos + new Vector2(5f, -5f), Color.White);
+                batch.DrawString(Fonts.Arial8Bold, Localizer.Token(GameText.FdResupplying), screenPos + new Vector2(5f, -5f), Color.White);
             }
             else if (node.Goal != null)
             {
@@ -355,12 +355,12 @@ namespace Ship_Game
                 if (ShowTargetingPanels)
                 {
                     cursor.Y = OperationsRect.Y + 10;
-                    batch.DrawString(Fonts.Pirulen12, "Group Movement Orders", cursor, Colors.Cream);
+                    batch.DrawString(Fonts.Pirulen12, Localizer.Token(GameText.FdGroupMovementOrders), cursor, Colors.Cream);
 
                     OperationsSelector = new Selector(OperationsRect, new Color(0, 0, 0, 180));
                     OperationsSelector.Draw(batch, elapsed);
                     cursor = new Vector2(OperationsRect.X + 20, OperationsRect.Y + 10);
-                    batch.DrawString(Fonts.Pirulen12, "Group Target Selection", cursor, Colors.Cream);
+                    batch.DrawString(Fonts.Pirulen12, Localizer.Token(GameText.FdGroupTargetSelection), cursor, Colors.Cream);
                     SliderArmor.Draw(batch);
                     SliderAssist.Draw(batch);
                     SliderDefend.Draw(batch);

@@ -5556,6 +5556,434 @@ namespace Ship_Game
         OptSoundDeviceDefault = 4671,
         /// <summary>Not Available</summary>
         OptSoundDeviceNotAvailable = 4672,
+        /// <summary>Cached patch missing</summary>
+        MmCachedPatchMissing = 4673,
+        /// <summary>Expected pre-downloaded patch at {0} but the folder is gone. Try the u</summary>
+        MmCachedPatchMissingDetail = 4674,
+        /// <summary>Deleting Stale Files</summary>
+        MmDeletingStaleFiles = 4675,
+        /// <summary>Admin rights required</summary>
+        MmAdminRightsRequired = 4676,
+        /// <summary>The patch is downloaded but needs admin rights to write to your instal</summary>
+        MmAdminRightsRequiredDetail = 4677,
+        /// <summary>Copying New Files</summary>
+        MmCopyingNewFiles = 4678,
+        /// <summary>Patch applied ({0} file(s) skipped — see blackbox.log; usually antivir</summary>
+        MmPatchAppliedSkipped = 4679,
+        /// <summary>Restarting StarDrive ...</summary>
+        MmRestartingStardrive = 4680,
+        /// <summary>StarDrive — Restart failed</summary>
+        MmRestartFailedTitle = 4681,
+        /// <summary>Downloading</summary>
+        MmDownloading = 4682,
+        /// <summary>Unzipping</summary>
+        MmUnzipping = 4683,
+        /// <summary>Download failed!</summary>
+        MmDownloadFailed = 4684,
+        /// <summary>This will automatically update to the latest version. Continue?</summary>
+        MmAutoUpdateConfirm = 4685,
+        /// <summary>Major Release Available!</summary>
+        MmMajorReleaseAvailable = 4686,
+        /// <summary>New Version!</summary>
+        MmNewVersion = 4687,
+        /// <summary>Mod format version mismatch.</summary>
+        MmModFormatVersionMismatch = 4688,
+        /// <summary>Please update Blackbox and this mod to latest versions</summary>
+        MmUpdateModAndBlackbox = 4689,
+        /// <summary>StarDrive BlackBox is a community-driven revival of StarDrive, rebuilt</summary>
+        MmSupportBlackboxIntro = 4690,
+        /// <summary>Help keep StarDrive BlackBox alive</summary>
+        MmHelpKeepBlackboxAlive = 4691,
+        /// <summary>Not supported on This BlackBox Version, try updating this mod.</summary>
+        MmModNotSupportedVersion = 4692,
+        /// <summary>MODS</summary>
+        MmMods = 4693,
+        /// <summary>LOAD MOD</summary>
+        MmLoadMod = 4694,
+        /// <summary>Unload Mod</summary>
+        MmUnloadMod = 4695,
+        /// <summary>MOD</summary>
+        MmMod = 4696,
+        /// <summary>Loading</summary>
+        MmLoading = 4697,
+        /// <summary>Please enter file name</summary>
+        MmEnterFileName = 4698,
+        /// <summary>The selected save was exported to your desktop as {0}</summary>
+        MmSaveExportedToDesktop = 4699,
+        /// <summary>Delete Save File</summary>
+        MmDeleteSaveFile = 4700,
+        /// <summary>Saved Game already exists.  Overwrite?</summary>
+        MmSavedGameAlreadyExistsOverwrite = 4701,
+        /// <summary>New Saved Setup</summary>
+        MmNewSavedSetup = 4702,
+        /// <summary>Save Setup</summary>
+        MmSaveSetup = 4703,
+        /// <summary>Saved Setup already exists.  Overwrite?</summary>
+        MmSavedSetupAlreadyExistsOverwrite = 4704,
+        /// <summary>Load Saved Race</summary>
+        MmLoadSavedRace = 4705,
+        /// <summary>Load Saved Setup</summary>
+        MmLoadSavedSetup = 4706,
+        /// <summary>Save Race</summary>
+        MmSaveRace = 4707,
+        /// <summary>Saved Race already exists.  Overwrite?</summary>
+        MmSavedRaceAlreadyExistsOverwrite = 4708,
+        /// <summary>Save Fleet As...</summary>
+        MmSaveFleetAs = 4709,
+        /// <summary>Saved Fleet already exists.  Overwrite?</summary>
+        MmSavedFleetAlreadyExistsOverwrite = 4710,
+        /// <summary>Save Game</summary>
+        MmSaveGame = 4711,
+        /// <summary>Treasury and taxes</summary>
+        UhTreasuryAndTaxesTooltip = 4721,
+        /// <summary>Research and the current topic</summary>
+        UhResearchAndTopicTooltip = 4722,
+        /// <summary>Open the codex</summary>
+        UhOpenCodexTooltip = 4723,
+        /// <summary>Open the main menu</summary>
+        UhOpenMainMenuTooltip = 4724,
+        /// <summary>Speed up</summary>
+        UhSpeedUpTooltip = 4725,
+        /// <summary>PAUSE</summary>
+        UhPause = 4726,
+        /// <summary>Pause / resume</summary>
+        UhPauseResumeTooltip = 4727,
+        /// <summary>Slow down</summary>
+        UhSlowDownTooltip = 4728,
+        /// <summary>PAUSED</summary>
+        UhPaused = 4729,
+        /// <summary>NO RESEARCH!</summary>
+        UhNoResearch = 4730,
+        /// <summary>FLUX</summary>
+        UhFlux = 4731,
+        /// <summary>HYPERSPACE FLUX</summary>
+        UhHyperspaceFlux = 4732,
+        /// <summary>Opens the Troops Array</summary>
+        UhOpensTroopsArrayTooltip = 4733,
+        /// <summary>Slower game speed</summary>
+        UhSlowerGameSpeedTooltip = 4734,
+        /// <summary>Faster game speed</summary>
+        UhFasterGameSpeedTooltip = 4735,
+        /// <summary>Saving...</summary>
+        UhSavingEllipsis = 4736,
+        /// <summary>Cancel Construction</summary>
+        UhCancelConstruction = 4737,
+        /// <summary>Cancel this construction</summary>
+        UhCancelConstructionTooltip = 4738,
+        /// <summary>CINEMATIC MODE - PRESS</summary>
+        UhCinematicModePrefix = 4739,
+        /// <summary>TO EXIT</summary>
+        UhCinematicModeSuffix = 4740,
+        /// <summary>Current Area of Operation Number:</summary>
+        UhCurrentAoNumber = 4741,
+        /// <summary>Current list of planets in trade route:</summary>
+        UhCurrentTradeRoutePlanets = 4742,
+        /// <summary>Vision overlay: everything your sensors actually see — ships, planets </summary>
+        UhVisionOverlayTooltip = 4743,
+        /// <summary>Food routes overlay: green lines link planets with an active food frei</summary>
+        UhFoodRoutesTooltip = 4744,
+        /// <summary>Production routes overlay: orange lines link planets with an active pr</summary>
+        UhProdRoutesTooltip = 4745,
+        /// <summary>Colonist routes overlay: white lines link planets with an active colon</summary>
+        UhColonistRoutesTooltip = 4746,
+        /// <summary>Colonization routes overlay: links the planet building or sending a co</summary>
+        UhColonizationRoutesTooltip = 4747,
+        /// <summary>Send Troops</summary>
+        UhSendTroops = 4748,
+        /// <summary>Recall Troops</summary>
+        UhRecallTroopsCount = 4749,
+        /// <summary>Invading:</summary>
+        UhInvadingCount = 4750,
+        /// <summary>Landing:</summary>
+        UhLandingCount = 4751,
+        /// <summary>Cancel Invasion</summary>
+        UhCancelInvasion = 4752,
+        /// <summary>Not habitable</summary>
+        UhNotHabitable = 4753,
+        /// <summary>Research station operational</summary>
+        UhResearchStationOperational = 4754,
+        /// <summary>Zoom to planet</summary>
+        UhZoomToPlanet = 4755,
+        /// <summary>Unexplored star</summary>
+        UhUnexploredStar = 4756,
+        /// <summary>Random System</summary>
+        UhRandomSystemName = 4757,
+        /// <summary>Undeveloped</summary>
+        UhUndeveloped = 4758,
+        /// <summary>Scan their ships</summary>
+        UhScanTheirShips = 4759,
+        /// <summary>Planets with Moles:</summary>
+        UhPlanetsWithMoles = 4760,
+        /// <summary>Features</summary>
+        UhFeatures = 4761,
+        /// <summary>Fill</summary>
+        UhFill = 4762,
+        /// <summary>Actions</summary>
+        UhActions = 4763,
+        /// <summary>Troops</summary>
+        UhTroopsCol = 4764,
+        /// <summary>Hide Uninhabitable</summary>
+        UhHideUninhabitable = 4765,
+        /// <summary>All Distances</summary>
+        UhAllDistances = 4766,
+        /// <summary>All Owners</summary>
+        UhAllOwners = 4767,
+        /// <summary>Unowned</summary>
+        UhUnowned = 4768,
+        /// <summary>Local</summary>
+        UhDistanceLocal = 4769,
+        /// <summary>Near</summary>
+        UhDistanceNear = 4770,
+        /// <summary>Midway</summary>
+        UhDistanceMidway = 4771,
+        /// <summary>Distant</summary>
+        UhDistanceDistant = 4772,
+        /// <summary>Beyond</summary>
+        UhDistanceBeyond = 4773,
+        /// <summary>Stations</summary>
+        UhExoticStations = 4774,
+        /// <summary>Dyson Swarm</summary>
+        UhDysonSwarmCount = 4775,
+        /// <summary>Test Fight is not available in Hull Edit Mode</summary>
+        SyTestFightUnavailableHullEdit = 4776,
+        /// <summary>Save a valid design first (command module required)</summary>
+        SySaveValidDesignFirst = 4777,
+        /// <summary>Battle simulator: fight a copy of this design in an arena (prototype)</summary>
+        SyBattleSimTooltip = 4778,
+        /// <summary>My designs only</summary>
+        SyMyDesignsOnly = 4779,
+        /// <summary>Show only the designs you created</summary>
+        SyMyDesignsOnlyTooltip = 4780,
+        /// <summary>Hide the designs you have marked obsolete</summary>
+        SyHideObsoleteTooltip = 4781,
+        /// <summary>Mark this design as obsolete</summary>
+        SyMarkDesignObsoleteTooltip = 4782,
+        /// <summary>Keep the Active Design cartouche on screen while you hover the list.  </summary>
+        SyKeepActiveDesignCartoucheTooltip = 4783,
+        /// <summary>Show the Active Design cartouche in its compact form:  the browser's w</summary>
+        SyActiveDesignCompactFormTooltip = 4784,
+        /// <summary>Expand the Shipyard to the whole display instead of the fixed  1600x10</summary>
+        SyExpandShipyardTooltip = 4785,
+        /// <summary>Design Issues</summary>
+        SyDesignIssues = 4786,
+        /// <summary>Information</summary>
+        SyInformation = 4787,
+        /// <summary>Design Issue</summary>
+        SyDesignIssue = 4788,
+        /// <summary>Issue Description</summary>
+        SyIssueDescription = 4789,
+        /// <summary>Remediation</summary>
+        SyRemediation = 4790,
+        /// <summary>Hulls: </summary>
+        SyHullsLabel = 4791,
+        /// <summary>Keep the Active Module panel on screen while you hover the list.  Off:</summary>
+        SyKeepActiveModuleTooltip = 4792,
+        /// <summary>Cancel the comparison</summary>
+        SyCancelComparison = 4793,
+        /// <summary>Cannot Target Ships</summary>
+        SyCannotTargetShips = 4794,
+        /// <summary>Click to pick this module Shift-click to pin it for comparison</summary>
+        SyModulePickTooltip = 4795,
+        /// <summary>Max Wpn Range</summary>
+        SyMaxWpnRange = 4796,
+        /// <summary>Please enter a name for your {0}</summary>
+        SyEnterNameFor = 4797,
+        /// <summary>Delete this WIP Design</summary>
+        SyDeleteWipDesign = 4798,
+        /// <summary>Delete ALL versions of this WIP Design</summary>
+        SyDeleteAllWipVersions = 4799,
+        /// <summary>Delete this Ship Design</summary>
+        SyDeleteShipDesign = 4800,
+        /// <summary>Research This Ship</summary>
+        SyResearchThisShip = 4801,
+        /// <summary>Total Production Cost:</summary>
+        FdTotalProductionCost = 4802,
+        /// <summary>Build New Ships</summary>
+        FdBuildNewShips = 4803,
+        /// <summary>No Requisition Needed</summary>
+        FdNoRequisitionNeeded = 4804,
+        /// <summary>Fleet Statistics</summary>
+        FdFleetStatistics = 4805,
+        /// <summary>Owned Ships</summary>
+        FdOwnedShips = 4806,
+        /// <summary>Assign Now</summary>
+        FdAssignNow = 4807,
+        /// <summary>Build Now</summary>
+        FdBuildNow = 4808,
+        /// <summary>Rush Now</summary>
+        FdRushNow = 4809,
+        /// <summary>Requisition...</summary>
+        FdRequisitionEllipsis = 4810,
+        /// <summary>Save Design...</summary>
+        FdSaveDesignEllipsis = 4811,
+        /// <summary>Load Design...</summary>
+        FdLoadDesignEllipsis = 4812,
+        /// <summary>Auto Arrange...</summary>
+        FdAutoArrangeEllipsis = 4813,
+        /// <summary>Drag and drop this Ship into the Fleet or double click to auto-add to </summary>
+        FdDragDropShipTooltip = 4814,
+        /// <summary>Target UniverseRadius Preference</summary>
+        FdTargetRadiusPreference = 4815,
+        /// <summary>Group Movement Orders</summary>
+        FdGroupMovementOrders = 4816,
+        /// <summary>Group Target Selection</summary>
+        FdGroupTargetSelection = 4817,
+        /// <summary>Resupplying</summary>
+        FdResupplying = 4818,
+        /// <summary>Load Saved Fleet</summary>
+        FdLoadSavedFleet = 4819,
+        /// <summary>We cannot build this fleet</summary>
+        FdCannotBuildFleet = 4820,
+        /// <summary>Time will tell</summary>
+        BsTimeWillTell = 4823,
+        /// <summary>Back to Shipyard</summary>
+        BsBackToShipyard = 4824,
+        /// <summary>Pick your opponents</summary>
+        BsPickYourOpponents = 4825,
+        /// <summary>The list adds, the roster removes</summary>
+        BsListAddsRosterRemoves = 4826,
+        /// <summary>Fight group (</summary>
+        BsFightGroupCount = 4827,
+        /// <summary>Group roster - click a line to remove one</summary>
+        BsGroupRosterHint = 4828,
+        /// <summary>BATTLE REPORT</summary>
+        BsBattleReport = 4829,
+        /// <summary>Clear</summary>
+        BsClear = 4830,
+        /// <summary>TRAITS</summary>
+        DpSectionTraits = 4831,
+        /// <summary>BONUSES</summary>
+        DpSectionBonuses = 4832,
+        /// <summary>DISPOSITION</summary>
+        DpSectionDisposition = 4833,
+        /// <summary>RANK</summary>
+        DpSectionRank = 4834,
+        /// <summary>EMPIRE DATA</summary>
+        DpSectionEmpireData = 4835,
+        /// <summary>TREATIES</summary>
+        DpSectionTreaties = 4836,
+        /// <summary>ARTIFACTS</summary>
+        DpSectionArtifacts = 4837,
+        /// <summary>Max pop growth</summary>
+        DpModMaxPopGrowth = 4838,
+        /// <summary>Min pop growth</summary>
+        DpModMinPopGrowth = 4839,
+        /// <summary>Reproduction</summary>
+        DpModReproduction = 4840,
+        /// <summary>Consumption</summary>
+        DpModConsumption = 4841,
+        /// <summary>Production</summary>
+        DpModProduction = 4842,
+        /// <summary>Research</summary>
+        DpModResearch = 4843,
+        /// <summary>Diplomacy</summary>
+        DpModDiplomacy = 4844,
+        /// <summary>Ongoing diplomacy</summary>
+        DpModOngoingDiplomacy = 4845,
+        /// <summary>Ground combat</summary>
+        DpModGroundCombat = 4846,
+        /// <summary>Ship cost</summary>
+        DpModShipCost = 4847,
+        /// <summary>Module HP</summary>
+        DpModModuleHp = 4848,
+        /// <summary>Repair rate</summary>
+        DpModRepairRate = 4849,
+        /// <summary>Reactor power</summary>
+        DpModReactorPower = 4850,
+        /// <summary>Shield power</summary>
+        DpModShieldPower = 4851,
+        /// <summary>Ship mass</summary>
+        DpModShipMass = 4852,
+        /// <summary>Tax income</summary>
+        DpModTaxIncome = 4853,
+        /// <summary>Maintenance</summary>
+        DpModMaintenance = 4854,
+        /// <summary>Ship Maint</summary>
+        DpModShipMaint = 4855,
+        /// <summary>In-borders FTL</summary>
+        DpModInBordersFtl = 4856,
+        /// <summary>FTL speed</summary>
+        DpModFtlSpeed = 4857,
+        /// <summary>FTL power drain</summary>
+        DpModFtlPowerDrain = 4858,
+        /// <summary>Fuel cells</summary>
+        DpModFuelCells = 4859,
+        /// <summary>Sublight speed</summary>
+        DpModSublightSpeed = 4860,
+        /// <summary>Sensor range</summary>
+        DpModSensorRange = 4861,
+        /// <summary>Ship experience</summary>
+        DpModShipExperience = 4862,
+        /// <summary>Spy effectiveness</summary>
+        DpModSpyEffectiveness = 4863,
+        /// <summary>Artifact bonus</summary>
+        DpModArtifactBonus = 4864,
+        /// <summary>Cannon accuracy</summary>
+        DpModCannonAccuracy = 4865,
+        /// <summary>Dodge</summary>
+        DpModDodge = 4866,
+        /// <summary>Ordnance damage</summary>
+        DpModOrdnanceDamage = 4867,
+        /// <summary>Missile HP</summary>
+        DpModMissileHp = 4868,
+        /// <summary>Missile dodge</summary>
+        DpModMissileDodge = 4869,
+        /// <summary>Exotic storage</summary>
+        DpModExoticStorage = 4870,
+        /// <summary>Mining speed</summary>
+        DpModMiningSpeed = 4871,
+        /// <summary>Refining</summary>
+        DpModRefining = 4872,
+        /// <summary>How deep THEY have infiltrated YOUR empire. Your own infiltration leve</summary>
+        DpInfiltrationDepthTheirs = 4873,
+        /// <summary>At war with {0}</summary>
+        DpAtWarWith = 4874,
+        /// <summary>At peace with {0}</summary>
+        DpAtPeaceWith = 4875,
+        /// <summary>Open Borders with {0}</summary>
+        DpOpenBordersWith = 4876,
+        /// <summary>Trade Treaty with {0}</summary>
+        DpTradeTreatyWith = 4877,
+        /// <summary>They are at war with your ally, {0}</summary>
+        DpAtWarWithYourAlly = 4878,
+        /// <summary>They are allied with {0}</summary>
+        DpAlliedWithEmpire = 4879,
+        /// <summary>In exchange for our leavings, and to avoid your own certain doom, you </summary>
+        DpOfferLeavingsExchange = 4880,
+        /// <summary>Finally, we will crush you and your pathetic empire unless you declare</summary>
+        DpOfferFinallyCrushHostile = 4881,
+        /// <summary>Unless you wish for us to crush your pathetic empire, you will declare</summary>
+        DpOfferUnlessCrush = 4882,
+        /// <summary>Furthermore, we will crush you and your pathetic empire unless you dec</summary>
+        DpOfferFurthermoreCrushHostile = 4883,
+        /// <summary>We offer you these gifts in the hope that you might join us in war aga</summary>
+        DpOfferGiftsJoinWar = 4884,
+        /// <summary>Finally, we should not have to remind you that we can crush you like a</summary>
+        DpOfferFinallyCrushAllied = 4885,
+        /// <summary>The time to do our bidding has come, ally. You must declare war upon: </summary>
+        DpOfferTimeToBid = 4886,
+        /// <summary>Furthermore, we should not have to remind you that we can crush you li</summary>
+        DpOfferFurthermoreCrushAllied = 4887,
+        /// <summary>Sets the scale of the generated galaxy</summary>
+        NgGalaxyScaleTooltip = 4888,
+        /// <summary>Number of Solar Systems packed into the Universe</summary>
+        NgSolarSystemsCountTooltip = 4889,
+        /// <summary>Sets the number of AI opponents you must face</summary>
+        NgAiOpponentsCountTooltip = 4890,
+        /// <summary>Hard and above increase AI Aggressiveness and gives them extra bonuses</summary>
+        NgDifficultyAggressivenessTooltip = 4891,
+        /// <summary>This sets the intensity of Ancient Remnants presence. If you feel over</summary>
+        NgRemnantsIntensityTooltip = 4892,
+        /// <summary>Best Planet Type</summary>
+        NgBestPlanetType = 4893,
+        /// <summary>This is the best suited environment for this race, Terraforming a plan</summary>
+        NgBestPlanetTypeTooltip = 4894,
+        /// <summary>(not enough points to spend)</summary>
+        NgNotEnoughPointsToSpend = 4895,
+        /// <summary>Cycle through ships not in fleet that are in combat</summary>
+        CycleShipsInCombatTooltip = 4896,
+        /// <summary>Cycle through planets that are in combat</summary>
+        CyclePlanetsInCombatTooltip = 4897,
         /// <summary>FCS Bonus</summary>
         FcsBonus = 6186,
         /// <summary>FCS Accuracy</summary>

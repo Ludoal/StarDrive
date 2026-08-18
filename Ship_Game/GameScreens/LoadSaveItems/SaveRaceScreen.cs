@@ -13,7 +13,7 @@ public sealed class SaveRaceScreen : GenericLoadSaveScreen
     readonly RaceSave RaceSave;
 
     public SaveRaceScreen(RaceDesignScreen screen, RacialTrait data) 
-        : base(screen, SLMode.Save, data.Name, "Save Race", "Saved Races", "Saved Race already exists.  Overwrite?")
+        : base(screen, SLMode.Save, data.Name, Localizer.Token(GameText.MmSaveRace), "Saved Races", Localizer.Token(GameText.MmSavedRaceAlreadyExistsOverwrite))
     {
         Screen = screen;
         Path = Dir.StarDriveUserData + "/Saved Races/";

@@ -205,7 +205,7 @@ namespace Ship_Game
             if (EnterNameArea.Text.IsEmpty())
             {
                 GameAudio.NegativeClick();
-                ScreenManager.AddScreen(new MessageBoxScreen(this, "Please enter file name", MessageBoxButtons.Ok));
+                ScreenManager.AddScreen(new MessageBoxScreen(this, Localizer.Token(GameText.MmEnterFileName), MessageBoxButtons.Ok));
             }
             else if (IsSaveOk())
             {
@@ -236,7 +236,7 @@ namespace Ship_Game
 
             string savedFileName = ExportSave(SelectedFile);
 
-            string message = $"The selected save was exported to your desktop as {savedFileName}";
+            string message = string.Format(Localizer.Token(GameText.MmSaveExportedToDesktop), savedFileName);
             int messageWidth = ((int)Fonts.Arial12Bold.MeasureString(savedFileName).X + 20).UpperBound(400);
             ScreenManager.AddScreen(new MessageBoxScreen(this, message, MessageBoxButtons.Ok, messageWidth));
         }
@@ -303,7 +303,7 @@ namespace Ship_Game
                 Screen = screen;
                 Data = data;
                 if (addCencel)
-                    AddCancel(new Vector2(-30, 0), "Delete Save File", OnDeleteClicked);
+                    AddCancel(new Vector2(-30, 0), GameText.MmDeleteSaveFile, OnDeleteClicked);
             }
             void OnDeleteClicked()
             {

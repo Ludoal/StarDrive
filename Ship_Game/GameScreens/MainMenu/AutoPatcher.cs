@@ -100,19 +100,19 @@ internal class AutoPatcher : PopupWindow
             if (!Directory.Exists(outputFolder))
             {
                 AddErrorMessageAndAllowExit(
-                    "Cached patch missing",
-                    $"Expected pre-downloaded patch at {outputFolder} but the folder is gone. Try the update again from the main menu.");
+                    Localizer.Token(GameText.MmCachedPatchMissing),
+                    string.Format(Localizer.Token(GameText.MmCachedPatchMissingDetail), outputFolder));
                 DeletePendingPatchMarker();
                 return;
             }
-            AddProgressBar("Downloading").SetProgress(100);
-            AddProgressBar($"Unzipping {Info.Version}").SetProgress(100);
+            AddProgressBar(Localizer.Token(GameText.MmDownloading)).SetProgress(100);
+            AddProgressBar($"{Localizer.Token(GameText.MmUnzipping)} {Info.Version}").SetProgress(100);
             string patchFilesFolder = GetPatchFilesFolder(outputFolder);
-            AddProgressAndRunTaskOnNextFrame("Deleting Stale Files", nextP => DeleteStaleFiles(patchFilesFolder, nextP));
+            AddProgressAndRunTaskOnNextFrame(Localizer.Token(GameText.MmDeletingStaleFiles), nextP => DeleteStaleFiles(patchFilesFolder, nextP));
             return;
         }
 
-        ProgressBarElement p = AddProgressBar("Downloading");
+        ProgressBarElement p = AddProgressBar(Localizer.Token(GameText.MmDownloading));
         CurrentTask = Parallel.Run(() => Download(p));
     }
 
@@ -281,8 +281,8 @@ internal class AutoPatcher : PopupWindow
             Log.Warning($"AutoPatcher: UAC elevation denied: {ex.Message}");
             DeletePendingPatchMarker();
             AddErrorMessageAndAllowExit(
-                "Admin rights required",
-                "The patch is downloaded but needs admin rights to write to your install folder.\nClick the update notification again and accept the UAC prompt, or right-click 'StarDrive.exe' and choose 'Run as administrator'.");
+                Localizer.Token(GameText.MmAdminRightsRequired),
+                Localizer.Token(GameText.MmAdminRightsRequiredDetail));
         }
     }
 
@@ -373,13 +373,13 @@ internal class AutoPatcher : PopupWindow
             Log.Write($"Download finished: {outputFolder}");
             
             string zipArchive = PostProcessMultipleZipChunks(zipChunks);
-            AddProgressAndRunTaskOnNextFrame($"Unzipping {Info.Version}", nextP => Unzip(zipArchive, outputFolder, nextP));
+            AddProgressAndRunTaskOnNextFrame($"{Localizer.Token(GameText.MmUnzipping)} {Info.Version}", nextP => Unzip(zipArchive, outputFolder, nextP));
         }
         catch (Exception e)
         {
             // this can fail for a lot of reasons, so it's not a critical error
             Log.Warning($"Download {Info.ZipUrls} failed: {e.Message}");
-            AddErrorMessageAndAllowExit("Download failed!", e.Message);
+            AddErrorMessageAndAllowExit(Localizer.Token(GameText.MmDownloadFailed), e.Message);
         }
     }
 
@@ -455,7 +455,7 @@ internal class AutoPatcher : PopupWindow
             }
 
             string patchFilesFolder = GetPatchFilesFolder(outputFolder);
-            AddProgressAndRunTaskOnNextFrame("Deleting Stale Files", nextP => DeleteStaleFiles(patchFilesFolder, nextP));
+            AddProgressAndRunTaskOnNextFrame(Localizer.Token(GameText.MmDeletingStaleFiles), nextP => DeleteStaleFiles(patchFilesFolder, nextP));
         }
         catch (Exception e)
         {
@@ -535,7 +535,7 @@ internal class AutoPatcher : PopupWindow
                 p.SetProgress(ProgressBarElement.GetPercent(++currentAction, filesToDelete.Count));
             }
 
-            AddProgressAndRunTaskOnNextFrame("Copying New Files", nextP => CopyNewFiles(patchFilesFolder, nextP));
+            AddProgressAndRunTaskOnNextFrame(Localizer.Token(GameText.MmCopyingNewFiles), nextP => CopyNewFiles(patchFilesFolder, nextP));
         }
         catch (Exception e)
         {
@@ -640,14 +640,14 @@ internal class AutoPatcher : PopupWindow
                 RunOnNextFrame(() =>
                 {
                     var label = ProgressSteps.AddLabel(
-                        $"Patch applied ({skipped.Count} file(s) skipped — see blackbox.log; usually antivirus interference)");
+                        string.Format(Localizer.Token(GameText.MmPatchAppliedSkipped), skipped.Count));
                     label.Color = Color.Yellow;
                 });
             }
 
             RunOnNextFrame(() =>
             {
-                ProgressSteps.AddLabel("Restarting StarDrive ...")
+                ProgressSteps.AddLabel(GameText.MmRestartingStardrive)
                     .Anim().Alpha(new(0.5f,1.0f)).Loop();
                 CurrentTask = Parallel.Run(RestartAsync);
             });

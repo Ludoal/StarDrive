@@ -93,7 +93,7 @@ namespace Ship_Game
             {
                 new UITable.Column { Title = Localizer.Token(GameText.System), Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.Planet), Sortable = true, MinWidth = 180 },
-                new UITable.Column { Title = "Features" },
+                new UITable.Column { Title = Localizer.Token(GameText.UhFeatures) },
                 new UITable.Column { Title = Localizer.Token(GameText.Proximity), Align = TableAlign.Center, Sortable = true },
                 // biospheres/crystal, not food/production: the INTRINSIC stats wear their
                 // own icons so they never read as the net-income pair - the Planet Info
@@ -104,13 +104,13 @@ namespace Ship_Game
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.Richness) },
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop_22"),
                                      Align = TableAlign.Number, Sortable = true, Tip = Localizer.Token(GameText.MaxPopulation) },
-                new UITable.Column { Title = "Fill", Align = TableAlign.Number, Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.UhFill), Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.Owner), Align = TableAlign.Center, Sortable = true },
                 // a colonize icon (red to cancel) and a troop icon (left/right click as Send Troops
                 // did) - two 22px icons plus gaps and padding, the Ships-list convention
-                new UITable.Column { Title = "Actions", Width = 2 * UITable.PadX + 2 * 22 + 8, Align = TableAlign.Center },
+                new UITable.Column { Title = Localizer.Token(GameText.UhActions), Width = 2 * UITable.PadX + 2 * 22 + 8, Align = TableAlign.Center },
                 // the "En route: N  Deployed: M" counters; header centred, content left (in the item)
-                new UITable.Column { Title = "Troops", Align = TableAlign.Center },
+                new UITable.Column { Title = Localizer.Token(GameText.UhTroopsCol), Align = TableAlign.Center },
             });
             var sys = new Array<string>(); var names = new Array<string>();
             var feats = new Array<string>(); var prox = new Array<string>();
@@ -170,19 +170,22 @@ namespace Ship_Game
             // same predicate; the saved flag stays in UniverseParams, inert
             cb_hideUninhabitable = Add(new UICheckBox(Table.TableRect.X, lineY,
                 () => HideUninhab,
-                x => { HideUninhab = x; ResetList(); }, Fonts.Arial12Bold, "Hide Uninhabitable", ""));
+                x => { HideUninhab = x; ResetList(); }, Fonts.Arial12Bold, Localizer.Token(GameText.UhHideUninhabitable), ""));
 
             // proximity and owner filters on the same line (maintainer feedback)
             // 160/280, not 290/410 (bench 408): the lane the Hide Owned toggle occupied closes up
             ProximityFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 160, (int)lineY, 110, 18)));
-            ProximityFilter.AddOption("All Distances", "");
-            foreach (string cat in new[] { "Local", "Near", "Midway", "Distant", "Beyond" })
+            ProximityFilter.AddOption(Localizer.Token(GameText.UhAllDistances), "");
+            foreach (GameText catKey in new[] { GameText.UhDistanceLocal, GameText.UhDistanceNear, GameText.UhDistanceMidway, GameText.UhDistanceDistant, GameText.UhDistanceBeyond })
+            {
+                string cat = Localizer.Token(catKey);
                 ProximityFilter.AddOption(cat, cat);
+            }
             ProximityFilter.OnValueChange = _ => ResetList();
 
             OwnerFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 280, (int)lineY, 130, 18)));
-            OwnerFilter.AddOption("All Owners", "");
-            OwnerFilter.AddOption("Unowned", "-");
+            OwnerFilter.AddOption(Localizer.Token(GameText.UhAllOwners), "");
+            OwnerFilter.AddOption(Localizer.Token(GameText.UhUnowned), "-");
             var seenOwners = new Array<string>();
             foreach (Planet p in ExploredPlanets)
             {

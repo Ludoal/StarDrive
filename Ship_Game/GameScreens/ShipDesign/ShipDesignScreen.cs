@@ -967,9 +967,9 @@ namespace Ship_Game
             var testFight = topRow.Add(ButtonStyle.Wide, "Test Fight", click: b =>
             {
                 if (HullEditMode)
-                    ScreenManager.AddScreen(new MessageBoxScreen(this, "Test Fight is not available in Hull Edit Mode"));
+                    ScreenManager.AddScreen(new MessageBoxScreen(this, Localizer.Token(GameText.SyTestFightUnavailableHullEdit)));
                 else if (CurrentDesign == null || !ShipSaved || !IsGoodDesign())
-                    ScreenManager.AddScreen(new MessageBoxScreen(this, "Save a valid design first (command module required)"));
+                    ScreenManager.AddScreen(new MessageBoxScreen(this, Localizer.Token(GameText.SySaveValidDesignFirst)));
                 else
                 {
                     // 45.23 field result: the shipyard must CLOSE before the arena opens —
@@ -981,7 +981,7 @@ namespace Ship_Game
                 }
             });
             testFight.ClickSfx = "blip_click";
-            testFight.Tooltip = "Battle simulator: fight a copy of this design in an arena (prototype)";
+            testFight.Tooltip = GameText.SyBattleSimTooltip;
 
             BtnSaveAs.SetAbsSize(idBtnW, idH);
             testFight.SetAbsSize(idBtnW, idH);
@@ -1163,7 +1163,7 @@ namespace Ship_Game
             Checkbox(new Vector2(filterX + row3 + 6, toggleY),
                      () => !Player.Universe.P.ShowAllDesigns,
                      (b) => { Player.Universe.P.ShowAllDesigns = !b; RefreshHullSelectList(); },
-                     "My designs only", "Show only the designs you created");
+                     GameText.SyMyDesignsOnly, GameText.SyMyDesignsOnlyTooltip);
 
             Checkbox(new Vector2(filterX + row3 + 132, toggleY),
                      () => ShowLockedDesigns,
@@ -1173,7 +1173,7 @@ namespace Ship_Game
             Checkbox(new Vector2(filterX + row3 + 246, toggleY),
                      () => HideObsoleteDesigns,
                      (b) => { HideObsoleteDesigns = b; RefreshHullSelectList(); },
-                     "Hide obsolete", "Hide the designs you have marked obsolete");
+                     "Hide obsolete", GameText.SyHideObsoleteTooltip);
 
             // The grouping mode rides the frame's own title bar: Submenu carries tabs
             // natively, so it costs no pixel of the list and no third row of filters -
@@ -1295,7 +1295,7 @@ namespace Ship_Game
                                           "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2"),
                                           new Vector2(obsW, obsH), "")
             {
-                Tooltip = "Mark this design as obsolete",
+                Tooltip = GameText.SyMarkDesignObsoleteTooltip,
                 OnClick = OnObsoleteDesignClicked,
                 ClickSfx = "sd_ui_accept_alt3", // AcceptClick, as this toggle always played
             };
@@ -1328,8 +1328,7 @@ namespace Ship_Game
                                       () => PinActiveDesign,
                                       (b) => { PinActiveDesign = b; },
                                       "Pin Active",
-                                      "Keep the Active Design cartouche on screen while you hover the list.\n"
-                                    + "Off: the hovered design takes its place, and it comes back when you look away.");
+                                      Localizer.Token(GameText.SyKeepActiveDesignCartoucheTooltip));
             // Ludoal fork: right-aligned on the browser's own right edge, the same way the module
             // twin hugs the right edge of its list. UICheckBox sizes itself in its constructor,
             // so the width is exact by the time this runs.
@@ -1344,8 +1343,7 @@ namespace Ship_Game
                                           () => CompactActiveDesign,
                                           (b) => { CompactActiveDesign = b; },
                                           "Compact",
-                                          "Show the Active Design cartouche in its compact form:\n"
-                                        + "the browser's width, the hover overlay's stats.");
+                                          Localizer.Token(GameText.SyActiveDesignCompactFormTooltip));
             // measured off Pin Active rather than a reserved slot, and spaced like the option row
             CompactActiveCheck.SetAbsPos(hullSelectSub.Right - CompactActiveCheck.Width,
                                          CompactActiveCheck.Y);
@@ -1378,8 +1376,7 @@ namespace Ship_Game
                                            }
                                        },
                                        "Full Screen",
-                                       "Expand the Shipyard to the whole display instead of the fixed\n"
-                                     + "1600x1080 working size. Anchored on the rail either way.");
+                                       Localizer.Token(GameText.SyExpandShipyardTooltip));
             // Right beside the role/name block, and centred on the identity row's height rather
             // than hanging from its top.
             FullScreenCheck.SetAbsPos(idLeft - FullScreenCheck.Width - idGap,

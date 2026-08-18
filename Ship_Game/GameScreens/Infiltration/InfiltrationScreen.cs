@@ -331,7 +331,7 @@ namespace Ship_Game.GameScreens
 
         static string PassiveFor(byte level) => level switch
         {
-            1 => "Scan their ships",
+            1 => Localizer.Token(GameText.UhScanTheirShips),
             2 => "Projectors alert",
             3 => "Homeworld mole",
             4 => "Leech technology",
@@ -485,7 +485,7 @@ namespace Ship_Game.GameScreens
                 SectionBand(batch, col, infilY, "INFILTRATION");
                 MoleRows.Clear();
                 float rowY = infilY + 24;
-                batch.DrawString(Font12Bold, "Planets with Moles:", new Vector2(col.X + 8, rowY), Colors.Cream);
+                batch.DrawString(Font12Bold, Localizer.Token(GameText.UhPlanetsWithMoles), new Vector2(col.X + 8, rowY), Colors.Cream);
                 rowY += Font12Bold.LineSpacing + 4;
                 var moles = Player.data.MoleList;
                 if (moles.Count == 0)

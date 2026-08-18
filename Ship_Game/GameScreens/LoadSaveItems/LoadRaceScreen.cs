@@ -9,7 +9,7 @@ public sealed class LoadRaceScreen : GenericLoadSaveScreen
 {
     readonly RaceDesignScreen Screen;
 
-    public LoadRaceScreen(RaceDesignScreen screen) : base(screen, SLMode.Load, "", "Load Saved Race", "Saved Races")
+    public LoadRaceScreen(RaceDesignScreen screen) : base(screen, SLMode.Load, "", Localizer.Token(GameText.MmLoadSavedRace), "Saved Races")
     {
         Screen = screen;
         Path = Dir.StarDriveUserData + "/Saved Races/";

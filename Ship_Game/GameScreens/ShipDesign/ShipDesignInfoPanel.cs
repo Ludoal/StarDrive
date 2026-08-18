@@ -267,7 +267,7 @@ namespace Ship_Game.GameScreens.ShipDesign
         static string[] CompactTitles => CompactTitlesCache ??= new[]
         {
             Localizer.Token(GT.ShipOffense), "DPS", "Weapons", "Hangars", "Bomb Bays",
-            "Max Wpn Range",
+            Localizer.Token(GT.SyMaxWpnRange),
             Localizer.Token(GT.WpnFirePowerTime), Localizer.Token(GT.AmmoTime),
             Localizer.Token(GT.TroopCapacity), Localizer.Token(GT.CargoSpace),
             Localizer.Token(GT.TotalHitpoints), Localizer.Token(GT.ShieldPower),
@@ -427,7 +427,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             // the carrier and bomber armament, right under the guns
             Stat("Hangars", () => S.Carrier.AllFighterHangars.Length, GT.TT_ShipOffense, nonZero: true);
             Stat("Bomb Bays", () => S.BombBays.Count, GT.TT_ShipOffense, nonZero: true);
-            Stat("Max Wpn Range", () => S.WeaponsMaxRange, GT.TT_ShipOffense, nonZero: true);
+            Stat(GT.SyMaxWpnRange, () => S.WeaponsMaxRange, GT.TT_ShipOffense, nonZero: true);
             Stat(GT.WpnFirePowerTime, () => Ds.HasBeams() ? Ds.BurstEnergyDuration : Ds.EnergyDuration, GT.TT_WpnFirePowerTime, energy,
                  vis: () => Ds.HasEnergyWeapons && (Ds.HasBeams() ? Ds.HasBeamDurationNegative() : Ds.HasEnergyWepsPositive()),
                  icon: "UI/lightningBolt", iconColor: Color.LightGoldenrodYellow);
@@ -585,7 +585,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             // with a long-range cannon that pair describes neither of them.
             Head("COMBAT");
             Stat("Weapons", () => S.Weapons.Count, GT.TT_ShipOffense, nonZero: true);
-            Stat("Max Wpn Range", () => S.WeaponsMaxRange, GT.TT_ShipOffense, nonZero: true);
+            Stat(GT.SyMaxWpnRange, () => S.WeaponsMaxRange, GT.TT_ShipOffense, nonZero: true);
             Stat("DPS", () => S.TotalDps, GT.TT_ShipOffense, nonZero: true, icon: "UI/icon_offense", iconColor: Color.OrangeRed);
             Stat(GT.ShipOffense, () => Ds.Strength, GT.TT_ShipOffense, nonZero: true);
             Stat(GT.RelativeStrength, () => Ds.RelativeStrength, GT.TT_RelativeStrength, nonZero: true);
@@ -701,7 +701,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                                      new Vector2(CancelCompareRect.X + 3f, CancelCompareRect.Y),
                                      hot ? Color.White : Color.Gray);
                     if (hot)
-                        ToolTip.CreateTooltip("Cancel the comparison");
+                        ToolTip.CreateTooltip(GameText.SyCancelComparison);
                 }
                 else
                 {
