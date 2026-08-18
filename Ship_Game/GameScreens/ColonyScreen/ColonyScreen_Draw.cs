@@ -200,7 +200,25 @@ namespace Ship_Game
             }
             batch.Draw(P.PlanetTexture, PlanetIcon, Color.White);
 
-            DrawDetailInfo(batch, new Vector2(PFacilities.Rect.X + 15, PFacilities.Rect.Y + 35));
+            // a pinned building's panel scrolls with the wheel (bench 426): the content
+            // shifts up under a scissor so it cannot bleed over the frame's chrome
+            var detailPos = new Vector2(PFacilities.Rect.X + 15, PFacilities.Rect.Y + 35);
+            if (DescriptionScroll > 0f && DetailInfo is PlanetGridSquare pinnedTile && IsPinnedBuilt(pinnedTile))
+            {
+                batch.SafeEnd();
+                var scissor = new Rectangle(PFacilities.Rect.X, PFacilities.Rect.Y + 30,
+                                            PFacilities.Rect.Width, PFacilities.Rect.Height - 35);
+                RenderStates.EnableScissorTest(batch.GraphicsDevice, scissor);
+                batch.SafeBegin(SpriteBlendMode.AlphaBlend, RenderStates.ScissorEnabled);
+                DrawDetailInfo(batch, detailPos - new Vector2(0f, DescriptionScroll));
+                batch.SafeEnd();
+                RenderStates.DisableScissorTest(batch.GraphicsDevice);
+                batch.SafeBegin();
+            }
+            else
+            {
+                DrawDetailInfo(batch, detailPos);
+            }
 
             float num5 = 100;
             var cursor = new Vector2(PlanetInfo.X + 20, PlanetInfo.Y + 45);

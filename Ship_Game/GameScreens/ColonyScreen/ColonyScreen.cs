@@ -98,7 +98,9 @@ namespace Ship_Game
         readonly GovernorDetailsComponent GovernorDetails;
 
         object DetailInfo;
-        object LastBuiltHover; // LIST view: leaving a row keeps the last description shown
+        object LastBuiltHover; // LIST view: the live hovered row's tile (cleared on leave)
+        PlanetGridSquare PinnedBuilt; // LIST view: click-pinned building (bench 426, Lek's design)
+        public float DescriptionScroll; // wheel offset while a pinned lore scrolls
         Building ToScrap;
         PlanetGridSquare BioToScrap;
 
@@ -354,6 +356,7 @@ namespace Ship_Game
             BuiltList = base.Add(new ScrollList<BuiltBuildingListItem>(builtR));
             BuiltList.EnableItemHighlight = true;
             BuiltList.OnHovered = OnBuiltHoverChange;
+            BuiltList.OnClick = OnBuiltRowClicked;
             BuiltList.Visible = colonyViewTabSelected == 1;
 
             // ALWAYS resolve the initial tab - a fresh Submenu sits at -1 (nothing selected)
@@ -858,6 +861,7 @@ namespace Ship_Game
                 P.ScrapBuilding(ToScrap);
                 P.RefreshBuildingsWeCanBuildHere();
                 ToScrap = null;
+                PinnedBuilt = null; // a scrapped pin must not haunt the panel
                 if (BuiltList.Visible)
                     ResetBuiltList(); // the LIST view reflects the scrap immediately
             }
@@ -888,6 +892,8 @@ namespace Ship_Game
         {
             BuiltList.Visible = tabIndex == 1;
             LastBuiltHover = null;
+            PinnedBuilt = null;
+            DescriptionScroll = 0f;
             if (tabIndex == 1)
                 ResetBuiltList();
         }
@@ -895,9 +901,22 @@ namespace Ship_Game
         void OnBuiltHoverChange(BuiltBuildingListItem item)
         {
             // live hover only (bench 426): leaving a row - even into the list's own empty
-            // space - returns the bottom panel to the player's default tab
+            // space - returns the bottom panel to the pinned row, or the default tab
             LastBuiltHover = item?.Tile;
         }
+
+        // hover previews, CLICK pins (bench 426, Lek's design): the bottom panel holds on
+        // the pinned building, the wheel scrolls its long lore, re-click unpins
+        void OnBuiltRowClicked(BuiltBuildingListItem item)
+        {
+            if (item?.Tile == null)
+                return;
+            PinnedBuilt = PinnedBuilt == item.Tile ? null : item.Tile;
+            DescriptionScroll = 0f;
+            GameAudio.AcceptClick();
+        }
+
+        public bool IsPinnedBuilt(PlanetGridSquare t) => PinnedBuilt != null && PinnedBuilt == t;
 
         // The LIST rows' reading (bench 424 arbitration: NET, as the colony runs): the
         // building's MARGINAL contribution through the sim's own pipeline - labor share,

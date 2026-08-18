@@ -58,8 +58,13 @@ namespace Ship_Game
             else if (LastBuiltHover != null)
             {
                 // LIST view: the hovered row's tile, live - OnHovered clears it the moment
-                // the cursor leaves the row, so the default tab returns at once (bench 426)
+                // the cursor leaves the row (bench 426)
                 return LastBuiltHover;
+            }
+            else if (PinnedBuilt != null)
+            {
+                // no live hover: the click-pinned building holds the panel
+                return PinnedBuilt;
             }
 
             return null; // default: use planet description text
@@ -99,6 +104,14 @@ namespace Ship_Game
             // so its input is served by hand too
             if (SubColonyGrid.HandleInput(input))
                 return true;
+
+            // pinned lore scroll (bench 426): while a pin holds the bottom panel, the
+            // wheel walks it - long Capital City lore included
+            if (PinnedBuilt != null && PFacilities.Rect.HitTest(input.CursorPosition))
+            {
+                if (input.ScrollIn)  { DescriptionScroll = (DescriptionScroll - 48f).LowerBound(0f); return true; }
+                if (input.ScrollOut) { DescriptionScroll = (DescriptionScroll + 48f).UpperBound(800f); return true; }
+            }
 
             // always get the currently hovered item
             DetailInfo = GetHoveredDetailItem(input);

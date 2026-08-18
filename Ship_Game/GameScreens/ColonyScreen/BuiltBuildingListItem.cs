@@ -87,6 +87,10 @@ namespace Ship_Game
             batch.Draw(b.IconTex, new Vector2(X, Y + (Height - IconSize) / 2f), new Vector2(IconSize), Color.White);
             batch.DrawString(Font12, b.TranslatedName.Text, X + IconSize + 6, Y + (Height - Font12.LineSpacing) / 2f, titleColor);
 
+            // the click-pinned row wears its gold liseré (bench 426)
+            if (Screen.IsPinnedBuilt(Tile))
+                batch.DrawRectangle(Rect, Color.Gold);
+
             // NET, as the colony runs (bench 424 arbitration): the building's marginal
             // contribution through the sim's own pipeline - rows sum to STATS+ totals
             Screen.BuildingNetYields(b, out float food, out float prod, out float research);
