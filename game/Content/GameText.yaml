@@ -3786,7 +3786,7 @@ BB_Tech_Mercantilism_Desc:
  PTB: "O comércio é um componente vital em qualquer economia. Ao investir em nossa economia privada, podemos lucrar tributando o comércio dentro do nosso império."
 BB_Tech_Mercantilism_Bonus:
  Id: 612
- ENG: "Every unit of Food or Production moved via transport within your empire is taxed by current tax rate and this tax is added to our empire money."
+ ENG: "Every unit of Food or Production moved via freighters within your empire is taxed by current tax rate and this tax is added to our empire money."
  RUS: "Позволяет зарабатывать 1 кредит за каждую единицу еды и продукции, перевезенную транспортами в пределах вашей империи."
  SPA: "Suma 1 crédito por cada unidad de alimentos o producción transportada dentro de los límites de tu imperio"
  UKR: "Кожна одиниця їжі або продукції, що переміщується транспортом у вашій імперії, оподатковується за поточною податковою ставкою, і цей податок додається до наших імперських грошей."
@@ -18805,7 +18805,7 @@ IndicatesThePowerUsedBy:
  PTB: "Indica a energia usada por isto ao transportar."
 IndicatesTheDelayBetweenTransports:
  Id: 7020
- ENG: "Indicates the delay between transports."
+ ENG: "Indicates the delay between transporter cycles."
  RUS: "Указывает задержку между транспортировками."
  SPA: "Indica la demora entre transportes."
  UKR: "Показує затримку між перевезеннями."
