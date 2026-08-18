@@ -392,18 +392,18 @@ namespace Ship_Game.AI.Tasks
         {
             switch (Type)
             {
-                default:                            return "General Fleet";
-                case TaskType.StrikeForce:          return "Strike Fleet";
-                case TaskType.AssaultPlanet:        return "Invasion Fleet";
-                case TaskType.GlassPlanet:          return "Doom Fleet";
-                case TaskType.Exploration:          return $"Exploration Force - {TargetPlanet.Name}";
-                case TaskType.DefendVsRemnants:     return "Defense Task Force";
-                case TaskType.AssaultPirateBase:    return "Assault Fleet";
-                case TaskType.GuardBeforeColonize:  return "Pre-Colonization Force";
-                case TaskType.DefendClaim:          return "Scout Fleet";
-                case TaskType.ClearAreaOfEnemies:   return "Defensive Fleet";
-                case TaskType.InhibitorInvestigate: return "Investigation Fleet";
-                case TaskType.StageFleet when TargetEmpire.isPlayer && Owner.Universe.P.Difficulty > GameDifficulty.Normal: return "Investigation Fleet";
+                default:                            return Localizer.Token(GameText.DvGeneralFleet);
+                case TaskType.StrikeForce:          return Localizer.Token(GameText.DvStrikeFleet);
+                case TaskType.AssaultPlanet:        return Localizer.Token(GameText.DvInvasionFleet);
+                case TaskType.GlassPlanet:          return Localizer.Token(GameText.DvDoomFleet);
+                case TaskType.Exploration:          return string.Format(Localizer.Token(GameText.DvExplorationForceName), TargetPlanet.Name);
+                case TaskType.DefendVsRemnants:     return Localizer.Token(GameText.DvDefenseTaskForce);
+                case TaskType.AssaultPirateBase:    return Localizer.Token(GameText.DvAssaultFleet);
+                case TaskType.GuardBeforeColonize:  return Localizer.Token(GameText.DvPreColonizationForce);
+                case TaskType.DefendClaim:          return Localizer.Token(GameText.DvScoutFleet);
+                case TaskType.ClearAreaOfEnemies:   return Localizer.Token(GameText.DvDefensiveFleet);
+                case TaskType.InhibitorInvestigate: return Localizer.Token(GameText.DvInvestigationFleet);
+                case TaskType.StageFleet when TargetEmpire.isPlayer && Owner.Universe.P.Difficulty > GameDifficulty.Normal: return Localizer.Token(GameText.DvInvestigationFleet);
                 case TaskType.StageFleet:           return "Stage Fleet";
             }
         }

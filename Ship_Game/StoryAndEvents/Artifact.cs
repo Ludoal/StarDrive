@@ -58,7 +58,7 @@ namespace Ship_Game
                 // FB - todo, move text to GameText.cs for translation as well.
                 float bonus = 0;
                 if (TrySetArtifactEffect(ref bonus, FertilityMod,
-                    triggerer.data.Traits, "Fertility Bonus to all Owned Colonies: ",popup))
+                    triggerer.data.Traits, Localizer.Token(GameText.NtFertilityBonusAllColonies),popup))
                 {
                     triggerer.data.EmpireFertilityBonus += bonus;
                     foreach (Planet planet in triggerer.GetPlanets())

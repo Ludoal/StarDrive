@@ -51,7 +51,7 @@ namespace Ship_Game.Commands.Goals
                 {
                     var task = MilitaryTask.CreateRemnantDefendPortal(Owner, Portal);
                     Owner.AI.AddPendingTask(task);
-                    task.CreateRemnantFleet(Owner, ship, $"Ancient Defense Fleet", out Fleet);
+                    task.CreateRemnantFleet(Owner, ship, Localizer.Token(GameText.DvAncientDefenseFleet), out Fleet);
                     continue;
                 }
 

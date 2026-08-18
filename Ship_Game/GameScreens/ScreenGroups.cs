@@ -66,10 +66,10 @@ namespace Ship_Game.GameScreens
         // the tab does not keep.
         public static readonly string[] GroupTabTips =
         {
-            "Race, rank and empire data, artifacts and treaties.",
-            "Racial traits and the bonuses they grant.",
-            "Treaty diagram between every empire you know of.",
-            "Infiltration: budget, defense and operations by level.",
+            Localizer.Token(GameText.DvGroupTabTipDiplomacy),
+            Localizer.Token(GameText.DvGroupTabTipTraits),
+            Localizer.Token(GameText.DvGroupTabTipTreaties),
+            Localizer.Token(GameText.DvGroupTabTipInfiltration),
         };
 
         public static readonly string[] GroupTabKeys = { "I", "", "", "E" };
@@ -84,10 +84,10 @@ namespace Ship_Game.GameScreens
 
         public static readonly string[] GalaxyTabTips =
         {
-            "Every planet you know of, sortable, with the troops you can land.",
-            "Systems holding exotic resources, and what they grant.",
-            "Standing patrol routes and the fleets flying them.",
-            "The log of what happened to your empire, newest first.",
+            Localizer.Token(GameText.DvGalaxyTabTipPlanets),
+            Localizer.Token(GameText.DvGalaxyTabTipExoticSystems),
+            Localizer.Token(GameText.DvGalaxyTabTipPatrols),
+            Localizer.Token(GameText.DvGalaxyTabTipEvents),
         };
 
         // the keys those screens already close on, in tab order
@@ -158,12 +158,12 @@ namespace Ship_Game.GameScreens
 
         public static readonly string[] EmpireTabTips =
         {
-            "Every colony you hold, its labor, storage and construction.",
-            "Every ship you own, sortable, with its orders and upkeep.",
-            "Your troops: where they are, their strength and status.",
-            "Treasury and taxes, with the budget of each colony.",
-            "The technology tree and the research queue.",
-            "What runs itself: taxes, exploration, construction, trade - and which alerts stay quiet.",
+            Localizer.Token(GameText.DvEmpireTabTipColonies),
+            Localizer.Token(GameText.DvEmpireTabTipShips),
+            Localizer.Token(GameText.DvEmpireTabTipTroops),
+            Localizer.Token(GameText.DvEmpireTabTipEconomy),
+            Localizer.Token(GameText.DvEmpireTabTipResearch),
+            Localizer.Token(GameText.DvEmpireTabTipAutomation),
         };
 
         // read off the top bar's own tooltips and each screen's closing key, not guessed
@@ -207,9 +207,9 @@ namespace Ship_Game.GameScreens
 
         public static readonly string[] DesignTabTips =
         {
-            "Arrange your fleets and save their formations.",
-            "Design a ship: place modules, set its stance and role.",
-            "Colony blueprints: the build order a governor follows.",
+            Localizer.Token(GameText.DvDesignTabTipFleets),
+            Localizer.Token(GameText.DvDesignTabTipShipyard),
+            Localizer.Token(GameText.DvDesignTabTipBlueprints),
         };
 
         // read off the top bar's own tooltips, not guessed

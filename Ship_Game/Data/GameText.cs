@@ -6060,6 +6060,164 @@ namespace Ship_Game
         EmPopGrowthTip = 5206,
         /// <summary>Sort colonies by distance from the Homeworld (Homeworld first)</summary>
         EmSortByDistanceTip = 5207,
+        /// <summary>Locked - requires {0}</summary>
+        TcLockedRequiresTech = 5101,
+        /// <summary>Research Bonus Granted: {0}%</summary>
+        TcResearchBonusGranted = 5102,
+        /// <summary>We found some {0}, but we already possessed this knowledge.</summary>
+        TcTechAlreadyPossessed = 5103,
+        /// <summary>New Technology Acquired: {0}</summary>
+        TcNewTechnologyAcquired = 5104,
+        /// <summary>Empire Defeated</summary>
+        NtEmpireDefeated = 5105,
+        /// <summary>Empire Merged or Surrendered</summary>
+        NtEmpireMergedOrSurrendered = 5106,
+        /// <summary>Remnant Story</summary>
+        NtRemnantStory = 5107,
+        /// <summary>Peaceful Merger</summary>
+        NtPeacefulMerger = 5108,
+        /// <summary>Empire Joined Us</summary>
+        NtEmpireJoinedUs = 5109,
+        /// <summary>Empire Surrendered</summary>
+        NtEmpireSurrendered = 5110,
+        /// <summary>{0} at {1}</summary>
+        NtEventTitleAtPlanet = 5111,
+        /// <summary>{0} in Deep Space</summary>
+        NtEventTitleInDeepSpace = 5112,
+        /// <summary>Great!</summary>
+        NtGreat = 5113,
+        /// <summary>System</summary>
+        NtSystemFallback = 5114,
+        /// <summary>Fertility Bonus to all Owned Colonies: </summary>
+        NtFertilityBonusAllColonies = 5115,
+        /// <summary>Our crashed ship ({0}) on {1} was recovered by {2}. </summary>
+        NtCrashedShipRecovered = 5116,
+        /// <summary>Recover efforts of a crashed ship on {0} were futile. </summary>
+        NtCrashRecoveryFutile = 5117,
+        /// <summary>It was completely wrecked.</summary>
+        NtShipCompletelyWrecked = 5118,
+        /// <summary>We were able to recover {0} production from a crashed ship on {1}. </summary>
+        NtRecoveredProduction = 5119,
+        /// <summary>We were able to recover {0} BC from a crashed ship on {1}. </summary>
+        NtRecoveredBC = 5120,
+        /// <summary>The Crew was perished.</summary>
+        NtCrewPerished = 5121,
+        /// <summary>Friendly Troops have Survived.</summary>
+        NtFriendlyTroopsSurvived = 5122,
+        /// <summary>Our Troops are in combat there!.</summary>
+        NtTroopsInCombatThere = 5123,
+        /// <summary>Hostile troops survived and are attacking!</summary>
+        NtHostileTroopsAttacking = 5124,
+        /// <summary>Our Troops and are heading home.</summary>
+        NtTroopsHeadingHome = 5125,
+        /// <summary>Neutral troops survived and are heading home.</summary>
+        NtNeutralTroopsHeadingHome = 5126,
+        /// <summary>Remnant Fleet is targeting {0} ETA - Stardate {1}</summary>
+        NtRemnantFleetTargeting = 5127,
+        /// <summary>Deep Space Build</summary>
+        DvDeepSpaceBuild = 5128,
+        /// <summary> BC/turn</summary>
+        DvBcPerTurn = 5129,
+        /// <summary>Will Orbit {0}</summary>
+        DvWillOrbit = 5130,
+        /// <summary>Cannot Orbit {0}</summary>
+        DvCannotOrbit = 5131,
+        /// <summary>Ship Count</summary>
+        DvShipCount = 5132,
+        /// <summary>Military Strength</summary>
+        DvMilitaryStrength = 5133,
+        /// <summary>Population</summary>
+        DvPopulation = 5134,
+        /// <summary>StarDate: </summary>
+        DvStarDateLabel = 5135,
+        /// <summary>Press [Space] to Pause / Unpause</summary>
+        DvPressSpaceToPauseUnpause = 5136,
+        /// <summary>Left/Right Arrows</summary>
+        DvLeftRightArrows = 5137,
+        /// <summary>Exploration Force - {0}</summary>
+        DvExplorationForceName = 5138,
+        /// <summary>Defense Task Force</summary>
+        DvDefenseTaskForce = 5139,
+        /// <summary>General Fleet</summary>
+        DvGeneralFleet = 5140,
+        /// <summary>Strike Fleet</summary>
+        DvStrikeFleet = 5141,
+        /// <summary>Invasion Fleet</summary>
+        DvInvasionFleet = 5142,
+        /// <summary>Doom Fleet</summary>
+        DvDoomFleet = 5143,
+        /// <summary>Assault Fleet</summary>
+        DvAssaultFleet = 5144,
+        /// <summary>Pre-Colonization Force</summary>
+        DvPreColonizationForce = 5145,
+        /// <summary>Scout Fleet</summary>
+        DvScoutFleet = 5146,
+        /// <summary>Defensive Fleet</summary>
+        DvDefensiveFleet = 5147,
+        /// <summary>Investigation Fleet</summary>
+        DvInvestigationFleet = 5148,
+        /// <summary>Ancient Fleet - {0}</summary>
+        DvAncientFleetName = 5149,
+        /// <summary>Ancient Defense Fleet</summary>
+        DvAncientDefenseFleet = 5150,
+        /// <summary>Ancient Extermination Fleet</summary>
+        DvAncientExterminationFleet = 5151,
+        /// <summary>Post Invasion Defense</summary>
+        DvPostInvasionDefense = 5152,
+        /// <summary>Ship Role was Changed to {0}</summary>
+        DvShipRoleChanged = 5153,
+        /// <summary>Ship will be Scuttled in {0} seconds</summary>
+        DvShipScuttleCountdown = 5154,
+        /// <summary>Repairing Ship by Resupply ({0}%)</summary>
+        DvRepairingByResupply = 5155,
+        /// <summary>Self Repairing Ship ({0}%)</summary>
+        DvSelfRepairingShip = 5156,
+        /// <summary>Ammo Reserves Critical</summary>
+        DvAmmoReservesCritical = 5157,
+        /// <summary>No Command, Cannot Attack</summary>
+        DvNoCommandCannotAttack = 5158,
+        /// <summary>Structural Integrity Compromised</summary>
+        DvStructuralIntegrityCompromised = 5159,
+        /// <summary>Ship is taking radiation damage from a nearby star!</summary>
+        DvShipTakingRadiationDamage = 5160,
+        /// <summary>Camera follows this ship (Ctrl+Middle-click)</summary>
+        DvCameraFollowsShipTooltip = 5161,
+        /// <summary>Linking to these Blueprints will result in cyclic link chain</summary>
+        DvCyclicBlueprintLinkWarning = 5162,
+        /// <summary>Race, rank and empire data, artifacts and treaties.</summary>
+        DvGroupTabTipDiplomacy = 5163,
+        /// <summary>Racial traits and the bonuses they grant.</summary>
+        DvGroupTabTipTraits = 5164,
+        /// <summary>Treaty diagram between every empire you know of.</summary>
+        DvGroupTabTipTreaties = 5165,
+        /// <summary>Infiltration: budget, defense and operations by level.</summary>
+        DvGroupTabTipInfiltration = 5166,
+        /// <summary>Every planet you know of, sortable, with the troops you can land.</summary>
+        DvGalaxyTabTipPlanets = 5167,
+        /// <summary>Systems holding exotic resources, and what they grant.</summary>
+        DvGalaxyTabTipExoticSystems = 5168,
+        /// <summary>Standing patrol routes and the fleets flying them.</summary>
+        DvGalaxyTabTipPatrols = 5169,
+        /// <summary>The log of what happened to your empire, newest first.</summary>
+        DvGalaxyTabTipEvents = 5170,
+        /// <summary>Every colony you hold, its labor, storage and construction.</summary>
+        DvEmpireTabTipColonies = 5171,
+        /// <summary>Every ship you own, sortable, with its orders and upkeep.</summary>
+        DvEmpireTabTipShips = 5172,
+        /// <summary>Your troops: where they are, their strength and status.</summary>
+        DvEmpireTabTipTroops = 5173,
+        /// <summary>Treasury and taxes, with the budget of each colony.</summary>
+        DvEmpireTabTipEconomy = 5174,
+        /// <summary>The technology tree and the research queue.</summary>
+        DvEmpireTabTipResearch = 5175,
+        /// <summary>What runs itself: taxes, exploration, construction, trade - and which </summary>
+        DvEmpireTabTipAutomation = 5176,
+        /// <summary>Arrange your fleets and save their formations.</summary>
+        DvDesignTabTipFleets = 5177,
+        /// <summary>Design a ship: place modules, set its stance and role.</summary>
+        DvDesignTabTipShipyard = 5178,
+        /// <summary>Colony blueprints: the build order a governor follows.</summary>
+        DvDesignTabTipBlueprints = 5179,
         /// <summary>FCS Bonus</summary>
         FcsBonus = 6186,
         /// <summary>FCS Accuracy</summary>

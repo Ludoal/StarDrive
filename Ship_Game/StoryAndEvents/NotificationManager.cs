@@ -291,7 +291,7 @@ namespace Ship_Game
                 ClickRect       = DefaultClickRect,
                 DestinationRect = DefaultNotificationRect,
                 Important       = true,
-                Title           = "Empire Defeated"
+                Title           = Localizer.Token(GameText.NtEmpireDefeated)
             }, "sd_troop_march_01");
         }
 
@@ -302,7 +302,7 @@ namespace Ship_Game
                 RelevantEmpire = empire,
                 Message = msg,
                 Important = true,
-                Title = "Empire Merged or Surrendered"
+                Title = Localizer.Token(GameText.NtEmpireMergedOrSurrendered)
             }, "sd_troop_march_01");
         }
 
@@ -352,7 +352,7 @@ namespace Ship_Game
                 DestinationRect = DefaultNotificationRect,
                 Message         = Localizer.Token(GameText.OurScientistsReportThatThey2),
                 Important       = true,
-                Title           = "Remnant Story"
+                Title           = Localizer.Token(GameText.NtRemnantStory)
             }, "sd_ui_notification_warning");
         }
 
@@ -365,7 +365,7 @@ namespace Ship_Game
                 DestinationRect = DefaultNotificationRect,
                 Message         = Localizer.Token(GameText.YourScientistsReportMassiveRadiation),
                 Important       = true,
-                Title           = "Remnant Story"
+                Title           = Localizer.Token(GameText.NtRemnantStory)
             }, "sd_ui_notification_encounter");
         }
 
@@ -488,7 +488,7 @@ namespace Ship_Game
                 ReferencedItem1 = expEvent,
                 Action          = "LoadEvent",
                 Important       = true,
-                Title           = "Remnant Story"
+                Title           = Localizer.Token(GameText.NtRemnantStory)
             }, "sd_ui_notification_encounter");
         }
         
@@ -644,7 +644,7 @@ namespace Ship_Game
                 Message        = absorber.data.Traits.Name + " " + Localizer.Token(GameText.HasPeacefullyMergedIntoA) + target.data.Traits.Name,
                 IconPath       = "NewUI/icon_planet_terran_01_mid",
                 Important      = true,
-                Title          = "Peaceful Merger"
+                Title          = Localizer.Token(GameText.NtPeacefulMerger)
             }, "sd_troop_march_01");
         }
 
@@ -656,7 +656,7 @@ namespace Ship_Game
                 Message = $"{target.data.Traits.Name} {Localizer.Token(GameText.AcceptedIntoOurEmpire)}",
                 IconPath = "NewUI/icon_planet_terran_01_mid",
                 Important = true,
-                Title = "Empire Joined Us"
+                Title = Localizer.Token(GameText.NtEmpireJoinedUs)
             }, "sd_troop_march_01");
         }
 
@@ -937,7 +937,7 @@ namespace Ship_Game
                 Message        = target.data.Traits.Name + " " + Localizer.Token(GameText.HasSurrenderedTo) + absorber.data.Traits.Name,
                 IconPath       = "NewUI/icon_planet_terran_01_mid",
                 Important      = true,
-                Title          = "Empire Surrendered"
+                Title          = Localizer.Token(GameText.NtEmpireSurrendered)
             }, "sd_troop_march_01");
         }
 

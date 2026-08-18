@@ -41,7 +41,7 @@ namespace Ship_Game
             // the tab row, so it lines up with the Diplomacy/Economy/etc. window bodies, not their tabs.
             RectF = new(Screen.ScreenWidth - 10 - windowWidth, GameScreens.ScreenGroups.GroupFrameTop, windowWidth, 300);
 
-            var sl = Add(new SubmenuScrollList<ConstructionListItem>(RectF, "Deep Space Build"));
+            var sl = Add(new SubmenuScrollList<ConstructionListItem>(RectF, GameText.DvDeepSpaceBuild));
             sl.SetBackground(Colors.TransparentBlackFill);
             SL = sl.List;
             SL.OnClick = (item) => { ShipToBuild = item.Template; };
@@ -97,7 +97,7 @@ namespace Ship_Game
                 batch.DrawString(Fonts.Arial8Bold, Template.GetRole(), X+iconSize+2, Y+18, Color.Orange);
 
                 float prodX = Right - 120;
-                batch.DrawString(Fonts.Arial8Bold, Template.GetMaintenanceCost(Universe.Player).String(2)+" BC/turn", prodX, Y+4, Color.Salmon); // Maintenance Cost
+                batch.DrawString(Fonts.Arial8Bold, Template.GetMaintenanceCost(Universe.Player).String(2)+Localizer.Token(GameText.DvBcPerTurn), prodX, Y+4, Color.Salmon); // Maintenance Cost
                 batch.Draw(iconProd, new Vector2(prodX+50, Y+4), iconProd.SizeF); // Production Icon
                 batch.DrawString(Fonts.Arial12Bold, Template.GetCost(Universe.Player).String(1), prodX+50+iconProd.Width+2, Y+4); // Build Production Cost
             }
@@ -326,7 +326,7 @@ namespace Ship_Game
                                 ? new Color(255, 165, 0, 150).Premultiplied()
                                 : new Color(255, 0, 0, 150).Premultiplied(), 3f);
                             batch.DrawString(Fonts.Arial20Bold,
-                                             okToTether ? "Will Orbit " + planet.Name : "Cannot Orbit " + planet.Name,
+                                             okToTether ? string.Format(Localizer.Token(GameText.DvWillOrbit), planet.Name) : string.Format(Localizer.Token(GameText.DvCannotOrbit), planet.Name),
                                              cursorPos + new Vector2(0, 34f),
                                              okToTether ? Color.White : Color.Red);
                             break;

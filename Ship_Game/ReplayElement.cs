@@ -71,9 +71,9 @@ namespace Ship_Game
                 return button;
             }
             
-            ShipCount = AddButton(ElementRect.X - 10, ElementRect.Y + 40, "Ship Count");
-            MilStrength = AddButton(ElementRect.X - 10, ShipCount.Y + Fonts.Pirulen16.LineSpacing + 4, "Military Strength");
-            Population = AddButton(ElementRect.X - 10, MilStrength.Y + Fonts.Pirulen16.LineSpacing + 4, "Population");
+            ShipCount = AddButton(ElementRect.X - 10, ElementRect.Y + 40, Localizer.Token(GameText.DvShipCount));
+            MilStrength = AddButton(ElementRect.X - 10, ShipCount.Y + Fonts.Pirulen16.LineSpacing + 4, Localizer.Token(GameText.DvMilitaryStrength));
+            Population = AddButton(ElementRect.X - 10, MilStrength.Y + Fonts.Pirulen16.LineSpacing + 4, Localizer.Token(GameText.DvPopulation));
             
             if (UState.Stats == null)
             {
@@ -195,13 +195,13 @@ namespace Ship_Game
                 batch.DrawDropShadowText(TextMessages[i], TextPos, Fonts.Arial20Bold);
             }
             var StarDatePos = new Vector2(ElementRect.X + 10, ElementRect.Y + ElementRect.Height - Fonts.Tahoma11.LineSpacing - 5);
-            batch.DrawString(Fonts.Tahoma11, "StarDate: ", StarDatePos, Color.White);
-            StarDatePos.X += Fonts.Tahoma11.MeasureString("StarDate: ").X;
+            batch.DrawString(Fonts.Tahoma11, Localizer.Token(GameText.DvStarDateLabel), StarDatePos, Color.White);
+            StarDatePos.X += Fonts.Tahoma11.MeasureString(Localizer.Token(GameText.DvStarDateLabel)).X;
             batch.DrawString(Fonts.Tahoma11, starDateStr, StarDatePos, Color.White);
-            var ControlsPos = new Vector2(ElementRect.X + ElementRect.Width / 2 - Fonts.Tahoma11.MeasureString("Press [Space] to Pause / Unpause").X / 2f, StarDatePos.Y);
-            batch.DrawString(Fonts.Tahoma11, "Press [Space] to Pause / Unpause", ControlsPos, Color.White);
-            var PlusMinus = new Vector2(ElementRect.X + ElementRect.Width - 10 - Fonts.Tahoma11.MeasureString("Left/Right Arrows").X, StarDatePos.Y);
-            batch.DrawString(Fonts.Tahoma11, "Left/Right Arrows", PlusMinus, Color.White);
+            var ControlsPos = new Vector2(ElementRect.X + ElementRect.Width / 2 - Fonts.Tahoma11.MeasureString(Localizer.Token(GameText.DvPressSpaceToPauseUnpause)).X / 2f, StarDatePos.Y);
+            batch.DrawString(Fonts.Tahoma11, Localizer.Token(GameText.DvPressSpaceToPauseUnpause), ControlsPos, Color.White);
+            var PlusMinus = new Vector2(ElementRect.X + ElementRect.Width - 10 - Fonts.Tahoma11.MeasureString(Localizer.Token(GameText.DvLeftRightArrows)).X, StarDatePos.Y);
+            batch.DrawString(Fonts.Tahoma11, Localizer.Token(GameText.DvLeftRightArrows), PlusMinus, Color.White);
             foreach (GenericButton button in Buttons)
             {
                 button.Draw(batch, elapsed);

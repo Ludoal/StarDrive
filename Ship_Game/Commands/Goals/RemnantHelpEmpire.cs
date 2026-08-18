@@ -76,7 +76,7 @@ namespace Ship_Game.Commands.Goals
                 {
                     Task = MilitaryTask.CreateRemnantHelp(TargetPlanet, Owner);
                     Owner.AI.AddPendingTask(Task);
-                    Task.CreateRemnantFleet(Owner, ship, $"Ancient Fleet - {TargetPlanet.Name}", out Fleet);
+                    Task.CreateRemnantFleet(Owner, ship, string.Format(Localizer.Token(GameText.DvAncientFleetName), TargetPlanet.Name), out Fleet);
                     Task.TargetEmpire = TargetEmpire;
                     continue;
                 }

@@ -843,7 +843,7 @@ namespace Ship_Game.Fleets
             task.FlagFleetNeededForAnotherTask();
             fleet.TaskStep = 1;
             var remnantEngagement = MilitaryTask.CreateRemnantEngagement(task.TargetPlanet, owner);
-            fleet.Name = $"Ancient Extermination Fleet";
+            fleet.Name = Localizer.Token(GameText.DvAncientExterminationFleet);
             fleet.FleetTask = remnantEngagement;
             owner.AI.QueueForRemoval(task);
             owner.AI.AddPendingTask(remnantEngagement);
@@ -1050,7 +1050,7 @@ namespace Ship_Game.Fleets
                     }
                     else
                     {
-                        CreatePostInvasionFromCurrentTask(this, task, Owner, "Post Invasion Defense");
+                        CreatePostInvasionFromCurrentTask(this, task, Owner, Localizer.Token(GameText.DvPostInvasionDefense));
                     }
 
                     return;
@@ -1355,7 +1355,7 @@ namespace Ship_Game.Fleets
                     if (Owner.Remnants.NoPortals)
                     {
                         // Fight till death
-                        Name = $"Ancient Extermination Fleet";
+                        Name = Localizer.Token(GameText.DvAncientExterminationFleet);
                         task.SetTargetPlanet(Owner.Remnants.GetTargetPlanetForFleetTaskWhenNoPortals(AveragePos));
                         task.ChangeAO(task.TargetPlanet.Position);
                         TaskStep = 1;
@@ -1409,7 +1409,7 @@ namespace Ship_Game.Fleets
                     // Fight till death
                     if (Owner.Remnants.NoPortals)
                     {
-                        Name = $"Ancient Extermination Fleet";
+                        Name = Localizer.Token(GameText.DvAncientExterminationFleet);
                         task.SetTargetPlanet(Owner.Remnants.GetTargetPlanetForFleetTaskWhenNoPortals(AveragePos));
                         task.ChangeAO(task.TargetPlanet.Position);
                         TaskStep = 1;
@@ -1502,7 +1502,7 @@ namespace Ship_Game.Fleets
             {
                 if (Owner.Remnants.NoPortals)
                 {
-                    Name = $"Ancient Extermination Fleet";
+                    Name = Localizer.Token(GameText.DvAncientExterminationFleet);
                     task.SetTargetPlanet(Owner.Remnants.GetTargetPlanetForFleetTaskWhenNoPortals(AveragePos));
                     task.ChangeAO(task.TargetPlanet.Position);
                     CreateRemnantEngagementFromPortalDefenseFleet(this, task, Owner);
@@ -1731,7 +1731,7 @@ namespace Ship_Game.Fleets
                     }
                     else
                     {
-                        CreatePostInvasionFromCurrentTask(this, task, Owner, "Post Invasion Defense");
+                        CreatePostInvasionFromCurrentTask(this, task, Owner, Localizer.Token(GameText.DvPostInvasionDefense));
                     }
 
                     return;

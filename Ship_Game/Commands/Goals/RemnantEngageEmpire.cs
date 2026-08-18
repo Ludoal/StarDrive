@@ -122,7 +122,7 @@ namespace Ship_Game.Commands.Goals
                     Task = MilitaryTask.CreateRemnantEngagement(TargetPlanet, Owner);
                     Task.TargetEmpire = TargetEmpire;
                     Owner.AI.AddPendingTask(Task);
-                    Task.CreateRemnantFleet(Owner, ship, $"Ancient Fleet - {TargetPlanet.Name}", out Fleet);
+                    Task.CreateRemnantFleet(Owner, ship, string.Format(Localizer.Token(GameText.DvAncientFleetName), TargetPlanet.Name), out Fleet);
                     continue;
                 }
 
@@ -256,7 +256,7 @@ namespace Ship_Game.Commands.Goals
             Fleet.ClearOrders();
             int changeToStep = TargetPlanet.System == nextPlanet.System ? 5 : 1;
             TargetPlanet     = nextPlanet;
-            Fleet.Name       = $"Ancient Fleet - {TargetPlanet.Name}";
+            Fleet.Name       = string.Format(Localizer.Token(GameText.DvAncientFleetName), TargetPlanet.Name);
             Fleet.TaskStep   = changeToStep;
             Task.ChangeTargetPlanet(TargetPlanet);
             return GoalStep.TryAgain;

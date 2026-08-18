@@ -288,7 +288,7 @@ namespace Ship_Game
                 {
                     TechEntry pre = Entry.GetPreReq(Screen.Player);
                     if (pre != null && pre.Discovered && !pre.Unlocked)
-                        status = $"Locked - requires {pre.Tech.Name.Text}";
+                        status = string.Format(Localizer.Token(GameText.TcLockedRequiresTech), pre.Tech.Name.Text);
                 }
                 if (Entry.MaxLevel > 1)
                 {

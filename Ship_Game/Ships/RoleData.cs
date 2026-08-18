@@ -150,7 +150,7 @@ namespace Ship_Game.Ships
         public static void CreateDesignRoleToolTip(RoleName role, Rectangle designRoleRect, bool floatingText, Vector2 pos)
         {
             Graphics.Font roleFont = Fonts.Arial12;
-            string text = $"Ship Role was Changed to {RoleDesignString(role)}";
+            string text = string.Format(Localizer.Token(GameText.DvShipRoleChanged), RoleDesignString(role));
             float floatTime = floatingText ? text.Length / 10 : 0;
             Vector2 spacing = roleFont.MeasureString(text);
 

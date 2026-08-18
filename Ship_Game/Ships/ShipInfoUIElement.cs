@@ -403,18 +403,18 @@ namespace Ship_Game.Ships
             string text = "";
             Color color = Color.Red;
             if (ship.ScuttleTimer > 0)
-                text = $"Ship will be Scuttled in {(int)ship.ScuttleTimer} seconds";
+                text = string.Format(Localizer.Token(GameText.DvShipScuttleCountdown), (int)ship.ScuttleTimer);
             else
                 switch (ship.Supply.Resupply())
                 {
                     case ResupplyReason.NotNeeded:
                         if (ship.HealthPercent < ShipResupply.RepairDoneThreshold && (ship.AI.State == AIState.Resupply || ship.AI.State == AIState.ResupplyEscort))
                         {
-                            text = $"Repairing Ship by Resupply ({(int)(ship.HealthPercent * 100)}%)";
+                            text = string.Format(Localizer.Token(GameText.DvRepairingByResupply), (int)(ship.HealthPercent * 100));
                         }
                         else if (ship.CanRepair && ship.HealthPercent < 1f)
                         {
-                            text = $"Self Repairing Ship ({(int)(ship.HealthPercent * 100)}%)";
+                            text = string.Format(Localizer.Token(GameText.DvSelfRepairingShip), (int)(ship.HealthPercent * 100));
                             color = Color.Yellow;
                         }
                         else
@@ -423,10 +423,10 @@ namespace Ship_Game.Ships
                         }
                         break;
                     case ResupplyReason.LowOrdnanceNonCombat:
-                    case ResupplyReason.LowOrdnanceCombatOrDepleted: text = "Ammo Reserves Critical";           break;
-                    case ResupplyReason.NoCommand:                   text = "No Command, Cannot Attack";        break;
+                    case ResupplyReason.LowOrdnanceCombatOrDepleted: text = Localizer.Token(GameText.DvAmmoReservesCritical);           break;
+                    case ResupplyReason.NoCommand:                   text = Localizer.Token(GameText.DvNoCommandCannotAttack);        break;
                     case ResupplyReason.FighterReactorsDamaged:      text = "Reactors Damaged";                 break;
-                    case ResupplyReason.LowHealth:                   text = "Structural Integrity Compromised"; break;
+                    case ResupplyReason.LowHealth:                   text = Localizer.Token(GameText.DvStructuralIntegrityCompromised); break;
                     case ResupplyReason.LowTroops:
                         text = "Need Troops";
                         int numTroopRebasing = ship.NumTroopsRebasingHere;
@@ -447,7 +447,7 @@ namespace Ship_Game.Ships
                 return;
 
             var radiationTextPos = new Vector2(Housing.X + 50, Housing.Y - Fonts.Arial12.LineSpacing);
-            string text = "Ship is taking radiation damage from a nearby star!";
+            string text = Localizer.Token(GameText.DvShipTakingRadiationDamage);
             ScreenManager.SpriteBatch.DrawString(Fonts.Arial12Bold, text, radiationTextPos, Color.Red);
         }
 
@@ -548,7 +548,7 @@ namespace Ship_Game.Ships
                 return true;
 
             if (FollowButton.Rect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip("Camera follows this ship (Ctrl+Middle-click)");
+                ToolTip.CreateTooltip(GameText.DvCameraFollowsShipTooltip);
 
             if (FollowButton.HandleInput(input))
             {

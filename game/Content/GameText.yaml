@@ -19006,6 +19006,243 @@ EmPopGrowthTip:
 EmSortByDistanceTip:
  Id: 5207
  ENG: "Sort colonies by distance from the Homeworld (Homeworld first)"
+TcLockedRequiresTech:
+ Id: 5101
+ ENG: "Locked - requires {0}"
+TcResearchBonusGranted:
+ Id: 5102
+ ENG: "Research Bonus Granted: {0}%"
+TcTechAlreadyPossessed:
+ Id: 5103
+ ENG: "We found some {0}, but we already possessed this knowledge."
+TcNewTechnologyAcquired:
+ Id: 5104
+ ENG: "New Technology Acquired: {0}"
+NtEmpireDefeated:
+ Id: 5105
+ ENG: "Empire Defeated"
+NtEmpireMergedOrSurrendered:
+ Id: 5106
+ ENG: "Empire Merged or Surrendered"
+NtRemnantStory:
+ Id: 5107
+ ENG: "Remnant Story"
+NtPeacefulMerger:
+ Id: 5108
+ ENG: "Peaceful Merger"
+NtEmpireJoinedUs:
+ Id: 5109
+ ENG: "Empire Joined Us"
+NtEmpireSurrendered:
+ Id: 5110
+ ENG: "Empire Surrendered"
+NtEventTitleAtPlanet:
+ Id: 5111
+ ENG: "{0} at {1}"
+NtEventTitleInDeepSpace:
+ Id: 5112
+ ENG: "{0} in Deep Space"
+NtGreat:
+ Id: 5113
+ ENG: "Great!"
+NtSystemFallback:
+ Id: 5114
+ ENG: "System"
+NtFertilityBonusAllColonies:
+ Id: 5115
+ ENG: "Fertility Bonus to all Owned Colonies: "
+NtCrashedShipRecovered:
+ Id: 5116
+ ENG: "Our crashed ship ({0}) on {1} was\nrecovered by {2}.\n"
+NtCrashRecoveryFutile:
+ Id: 5117
+ ENG: "Recover efforts of a crashed ship on {0} were futile.\n"
+NtShipCompletelyWrecked:
+ Id: 5118
+ ENG: "It was completely wrecked."
+NtRecoveredProduction:
+ Id: 5119
+ ENG: "We were able to recover {0} production\nfrom a crashed ship on {1}.\n"
+NtRecoveredBC:
+ Id: 5120
+ ENG: "We were able to recover {0} BC\nfrom a crashed ship on {1}.\n"
+NtCrewPerished:
+ Id: 5121
+ ENG: "The Crew was perished."
+NtFriendlyTroopsSurvived:
+ Id: 5122
+ ENG: "Friendly Troops have Survived."
+NtTroopsInCombatThere:
+ Id: 5123
+ ENG: "Our Troops are in combat there!."
+NtHostileTroopsAttacking:
+ Id: 5124
+ ENG: "Hostile troops survived and are attacking!"
+NtTroopsHeadingHome:
+ Id: 5125
+ ENG: "Our Troops and are heading home."
+NtNeutralTroopsHeadingHome:
+ Id: 5126
+ ENG: "Neutral troops survived and are\nheading home."
+NtRemnantFleetTargeting:
+ Id: 5127
+ ENG: "Remnant Fleet is targeting {0}\nETA - Stardate {1}"
+DvDeepSpaceBuild:
+ Id: 5128
+ ENG: "Deep Space Build"
+DvBcPerTurn:
+ Id: 5129
+ ENG: " BC/turn"
+DvWillOrbit:
+ Id: 5130
+ ENG: "Will Orbit {0}"
+DvCannotOrbit:
+ Id: 5131
+ ENG: "Cannot Orbit {0}"
+DvShipCount:
+ Id: 5132
+ ENG: "Ship Count"
+DvMilitaryStrength:
+ Id: 5133
+ ENG: "Military Strength"
+DvPopulation:
+ Id: 5134
+ ENG: "Population"
+DvStarDateLabel:
+ Id: 5135
+ ENG: "StarDate: "
+DvPressSpaceToPauseUnpause:
+ Id: 5136
+ ENG: "Press [Space] to Pause / Unpause"
+DvLeftRightArrows:
+ Id: 5137
+ ENG: "Left/Right Arrows"
+DvExplorationForceName:
+ Id: 5138
+ ENG: "Exploration Force - {0}"
+DvDefenseTaskForce:
+ Id: 5139
+ ENG: "Defense Task Force"
+DvGeneralFleet:
+ Id: 5140
+ ENG: "General Fleet"
+DvStrikeFleet:
+ Id: 5141
+ ENG: "Strike Fleet"
+DvInvasionFleet:
+ Id: 5142
+ ENG: "Invasion Fleet"
+DvDoomFleet:
+ Id: 5143
+ ENG: "Doom Fleet"
+DvAssaultFleet:
+ Id: 5144
+ ENG: "Assault Fleet"
+DvPreColonizationForce:
+ Id: 5145
+ ENG: "Pre-Colonization Force"
+DvScoutFleet:
+ Id: 5146
+ ENG: "Scout Fleet"
+DvDefensiveFleet:
+ Id: 5147
+ ENG: "Defensive Fleet"
+DvInvestigationFleet:
+ Id: 5148
+ ENG: "Investigation Fleet"
+DvAncientFleetName:
+ Id: 5149
+ ENG: "Ancient Fleet - {0}"
+DvAncientDefenseFleet:
+ Id: 5150
+ ENG: "Ancient Defense Fleet"
+DvAncientExterminationFleet:
+ Id: 5151
+ ENG: "Ancient Extermination Fleet"
+DvPostInvasionDefense:
+ Id: 5152
+ ENG: "Post Invasion Defense"
+DvShipRoleChanged:
+ Id: 5153
+ ENG: "Ship Role was Changed to {0}"
+DvShipScuttleCountdown:
+ Id: 5154
+ ENG: "Ship will be Scuttled in {0} seconds"
+DvRepairingByResupply:
+ Id: 5155
+ ENG: "Repairing Ship by Resupply ({0}%)"
+DvSelfRepairingShip:
+ Id: 5156
+ ENG: "Self Repairing Ship ({0}%)"
+DvAmmoReservesCritical:
+ Id: 5157
+ ENG: "Ammo Reserves Critical"
+DvNoCommandCannotAttack:
+ Id: 5158
+ ENG: "No Command, Cannot Attack"
+DvStructuralIntegrityCompromised:
+ Id: 5159
+ ENG: "Structural Integrity Compromised"
+DvShipTakingRadiationDamage:
+ Id: 5160
+ ENG: "Ship is taking radiation damage from a nearby star!"
+DvCameraFollowsShipTooltip:
+ Id: 5161
+ ENG: "Camera follows this ship (Ctrl+Middle-click)"
+DvCyclicBlueprintLinkWarning:
+ Id: 5162
+ ENG: "Linking to these Blueprints will result in cyclic link chain"
+DvGroupTabTipDiplomacy:
+ Id: 5163
+ ENG: "Race, rank and empire data, artifacts and treaties."
+DvGroupTabTipTraits:
+ Id: 5164
+ ENG: "Racial traits and the bonuses they grant."
+DvGroupTabTipTreaties:
+ Id: 5165
+ ENG: "Treaty diagram between every empire you know of."
+DvGroupTabTipInfiltration:
+ Id: 5166
+ ENG: "Infiltration: budget, defense and operations by level."
+DvGalaxyTabTipPlanets:
+ Id: 5167
+ ENG: "Every planet you know of, sortable, with the troops you can land."
+DvGalaxyTabTipExoticSystems:
+ Id: 5168
+ ENG: "Systems holding exotic resources, and what they grant."
+DvGalaxyTabTipPatrols:
+ Id: 5169
+ ENG: "Standing patrol routes and the fleets flying them."
+DvGalaxyTabTipEvents:
+ Id: 5170
+ ENG: "The log of what happened to your empire, newest first."
+DvEmpireTabTipColonies:
+ Id: 5171
+ ENG: "Every colony you hold, its labor, storage and construction."
+DvEmpireTabTipShips:
+ Id: 5172
+ ENG: "Every ship you own, sortable, with its orders and upkeep."
+DvEmpireTabTipTroops:
+ Id: 5173
+ ENG: "Your troops: where they are, their strength and status."
+DvEmpireTabTipEconomy:
+ Id: 5174
+ ENG: "Treasury and taxes, with the budget of each colony."
+DvEmpireTabTipResearch:
+ Id: 5175
+ ENG: "The technology tree and the research queue."
+DvEmpireTabTipAutomation:
+ Id: 5176
+ ENG: "What runs itself: taxes, exploration, construction, trade - and which alerts stay quiet."
+DvDesignTabTipFleets:
+ Id: 5177
+ ENG: "Arrange your fleets and save their formations."
+DvDesignTabTipShipyard:
+ Id: 5178
+ ENG: "Design a ship: place modules, set its stance and role."
+DvDesignTabTipBlueprints:
+ Id: 5179
+ ENG: "Colony blueprints: the build order a governor follows."
 FcsBonus:
  Id: 6186
  ENG: "FCS Bonus"

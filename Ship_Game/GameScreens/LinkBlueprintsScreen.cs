@@ -49,7 +49,7 @@ public sealed class LinkBlueprintsScreen : SaveLoadBlueprintsScreen
         }
         else
         {
-            title2 = "Linking to these Blueprints will result in cyclic link chain";
+            title2 = Localizer.Token(GameText.DvCyclicBlueprintLinkWarning);
             infoColor = Color.Red;
         }
 

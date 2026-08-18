@@ -45,9 +45,9 @@ namespace Ship_Game
         public override void LoadContent()
         {
             if (Planet != null)
-                TitleText = $"{Outcome.LocalizedTitle} at {Planet.Name}";
+                TitleText = string.Format(Localizer.Token(GameText.NtEventTitleAtPlanet), Outcome.LocalizedTitle, Planet.Name);
             else
-                TitleText = $"{Outcome.LocalizedTitle} in Deep Space";
+                TitleText = string.Format(Localizer.Token(GameText.NtEventTitleInDeepSpace), Outcome.LocalizedTitle);
 
             base.LoadContent();
 
@@ -72,7 +72,7 @@ namespace Ship_Game
 
             Close.Visible = false; // the X just confuses people, a big OK button is better
 
-            string confirm = Outcome.ConfirmText.NotEmpty() ? Outcome.ConfirmText : "Great!";
+            string confirm = Outcome.ConfirmText.NotEmpty() ? Outcome.ConfirmText : Localizer.Token(GameText.NtGreat);
             var btn = Button(ButtonStyle.EventConfirm, Vector2.Zero, confirm, OnDismissClicked);
             btn.SetPosToCenterOf(this).SetDistanceFromBottomOf(this, 24);
             
@@ -99,13 +99,13 @@ namespace Ship_Game
             if (Outcome.ScienceBonus > 0f)
             {
                 int scienceBonus = (int)(Outcome.ScienceBonus * 100f);
-                textBox.AddLine($"Research Bonus Granted: {scienceBonus}%", Fonts.Arial12Bold, Color.Blue);
+                textBox.AddLine(string.Format(Localizer.Token(GameText.TcResearchBonusGranted), scienceBonus), Fonts.Arial12Bold, Color.Blue);
             }
 
             if (Outcome.IndustryBonus > 0f)
             {
                 int industryBonus = (int)(Outcome.IndustryBonus * 100f);
-                textBox.AddLine($"Research Bonus Granted: {industryBonus}%", Fonts.Arial12Bold, Color.SandyBrown);
+                textBox.AddLine(string.Format(Localizer.Token(GameText.TcResearchBonusGranted), industryBonus), Fonts.Arial12Bold, Color.SandyBrown);
             }
 
             if (Outcome.UnlockTech != null)
@@ -209,12 +209,12 @@ namespace Ship_Game
 
             if (Outcome.WeHadIt)
             {
-                textBox.AddLine($"We found some {tech.Name.Text}, but we already possessed this knowledge.",
+                textBox.AddLine(string.Format(Localizer.Token(GameText.TcTechAlreadyPossessed), tech.Name.Text),
                                 Fonts.Arial12Bold, Color.LightYellow);
                 return;
             }
 
-            textBox.AddLine($"New Technology Acquired: {tech.Name.Text}", Fonts.Arial12Bold, Color.AliceBlue);
+            textBox.AddLine(string.Format(Localizer.Token(GameText.TcNewTechnologyAcquired), tech.Name.Text), Fonts.Arial12Bold, Color.AliceBlue);
 
             if (tech.ModulesUnlocked.Count > 0)
             {
