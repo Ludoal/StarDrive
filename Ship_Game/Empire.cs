@@ -614,6 +614,22 @@ namespace Ship_Game
         /// </summary>
         public IReadOnlyList<SolarSystem> GetOwnedSystems() => OwnedSolarSystems;
         public IReadOnlyList<Planet> GetPlanets()           => OwnedPlanets;
+
+        // Ludoal fork (bench 431): the spatial colony order - the capital first, systems
+        // by distance from the capital's SYSTEM (never the planet: an orbit must not
+        // contaminate the distance), planets by orbit within each system. ONE arithmetic
+        // shared by the Colonies table's default sort and the keyboard colony tour -
+        // a system is finished before the order jumps to the next.
+        public Planet[] SpatialColonyOrder()
+        {
+            IReadOnlyList<Planet> planets = GetPlanets();
+            if (planets.Count == 0)
+                return SDUtils.Empty<Planet>.Array;
+            Planet home = Capital ?? planets[0];
+            return planets.OrderBy(p => p == home ? -1f : 1f + p.System.Position.SqDist(home.System.Position))
+                          .ThenBy(p => p.OrbitalRadius)
+                          .ToArray();
+        }
         public int NumPlanets                               => OwnedPlanets.Count;
         public int NumSystems                               => OwnedSolarSystems.Count;
         public int GetTotalPlanetsWarValue() => (int)OwnedPlanets.Sum(p => p.ColonyWarValueTo(this));

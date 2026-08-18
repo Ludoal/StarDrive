@@ -227,13 +227,28 @@ namespace Ship_Game
             if (DescriptionScroll > MaxDescriptionScroll) DescriptionScroll = MaxDescriptionScroll;
             if (MaxDescriptionScroll > 0f && DescriptionPaneUp)
             {
-                // the elevator's visible bar, painted on the pane's right edge
-                var track = new Rectangle(pane.Right - 8, pane.Y + 2, 4, pane.Height - 8);
-                int thumbH = (int)(track.Height * (float)pane.Height / contentHeight);
-                if (thumbH < 20) thumbH = 20;
-                int thumbY = track.Y + (int)((track.Height - thumbH) * (DescriptionScroll / MaxDescriptionScroll));
-                batch.FillRectangle(track, new Color(20, 20, 20, 140).Premultiplied());
-                batch.FillRectangle(new Rectangle(track.X, thumbY, 4, thumbH), new Color(140, 140, 140, 180).Premultiplied());
+                // bench 431: the elevator wears the theme - the NewUI scrollbar family,
+                // the same brown furniture as every list in the game
+                ScrollListStyleTextures s = ScrollListStyleTextures.Get(ListStyle.Default);
+                int barW = s.ScrollBarMid.Normal.Width;
+                var up   = new Rectangle(pane.Right - barW - 6, pane.Y + 6, barW, s.ScrollBarArrowUp.Normal.Height);
+                var down = new Rectangle(up.X, pane.Y + pane.Height - 6 - s.ScrollBarArrowDown.Normal.Height, barW, s.ScrollBarArrowDown.Normal.Height);
+                int housingY = up.Y + up.Height + 3;
+                int housingH = down.Y - 3 - housingY;
+                int thumbH = (int)(housingH * (pane.Height - 10f) / contentHeight);
+                if (thumbH < 24) thumbH = 24;
+                if (thumbH > housingH) thumbH = housingH;
+                int thumbY = housingY + (int)((housingH - thumbH) * (DescriptionScroll / MaxDescriptionScroll));
+                int capH = (thumbH - s.ScrollBarMid.Normal.Height) / 2;
+                if (capH < 0) capH = 0;
+                var capTop = new Rectangle(up.X, thumbY, barW, capH);
+                var midR   = new Rectangle(up.X, thumbY + capH, barW, thumbH - 2 * capH);
+                var capBot = new Rectangle(up.X, thumbY + thumbH - capH, barW, capH);
+                s.ScrollBarUpDown.Draw(batch, capTop, false, false);
+                s.ScrollBarMid.Draw(batch, midR, false, false);
+                s.ScrollBarUpDown.Draw(batch, capBot, false, false);
+                s.ScrollBarArrowUp.Draw(batch, up, false, false);
+                s.ScrollBarArrowDown.Draw(batch, down, false, false);
             }
 
             float num5 = 100;
@@ -552,7 +567,9 @@ namespace Ship_Game
             string t = text.Text.Replace("\n\n", "\n");
             while (t.Contains("\n\n"))
                 t = t.Replace("\n\n", "\n");
-            return TextFont.ParseText(t, PFacilities.Rect.Width - 40);
+            // bench 431: the reserve carries the themed scrollbar (16) plus real air on both
+            // sides - the old 40 ran the text into the pane's edge
+            return TextFont.ParseText(t, PFacilities.Rect.Width - 64);
         }
 
         void DrawMultiLine(ref Vector2 cursor, LocalizedText text, Color color)
@@ -685,6 +702,7 @@ namespace Ship_Game
 
             bCursor.Y += TextFont.LineSpacing * 2;
             batch.DrawString(TextFont, "You may scrap this building by right clicking it", bCursor, Color.White);
+            bCursor.Y += TextFont.LineSpacing; // bench 431: the LAST line counts in the measure, or the elevator eats it
         }
 
         // TODO: extracted method, needs refactor/clean

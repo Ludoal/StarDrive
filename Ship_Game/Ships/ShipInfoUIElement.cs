@@ -779,8 +779,8 @@ namespace Ship_Game.Ships
             // such - the visible frame is 186 tall for a 148 column, so any polite margin
             // looks centered. The last button's bottom sits 2px off the frame's bottom.
             int generics = Orders.Count(o => o.IsGeneric);
-            int colX = ElementRect.X + ElementRect.Width - PlanetInfoUIElement.RightTrim + 4;
-            int colY = ElementRect.Y + ElementRect.Height - 2 - (generics * 52 - 4);
+            int colX = ElementRect.X + ElementRect.Width - PlanetInfoUIElement.RightTrim + 8; // bench 431: +4 right
+            int colY = ElementRect.Y + ElementRect.Height - 1 - (generics * 52 - 4);         // bench 431: +1 down
             int rowCol = 0;
             foreach (OrdersButton ob in Orders)
             {

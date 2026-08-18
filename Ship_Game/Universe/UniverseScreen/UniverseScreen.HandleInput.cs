@@ -133,13 +133,9 @@ namespace Ship_Game
             // resumes from the currently selected colony, wherever the mouse left it.
             if (input.PrevColony || input.NextColony)
             {
-                var colonies = Player.GetPlanets();
-                if (colonies.Count > 0)
+                Planet[] tour = Player.SpatialColonyOrder(); // bench 431: ONE arithmetic with the Colonies table
+                if (tour.Length > 0)
                 {
-                    Planet home = Player.Capital ?? colonies[0];
-                    Planet[] tour = colonies.OrderBy(p => p.System.Position.SqDist(home.System.Position))
-                                            .ThenBy(p => p.OrbitalRadius)
-                                            .ToArray();
                     int current = SelectedPlanet != null ? Array.IndexOf(tour, SelectedPlanet) : -1;
                     if (current >= 0)
                         ColonyCycleIndex = current;

@@ -465,12 +465,11 @@ namespace Ship_Game
         // one arithmetic for the ctor and the header clicks - the pair that must agree
         static IEnumerable<Planet> SortedPlanets(IReadOnlyList<Planet> planets, int col, bool asc, bool wide)
         {
-            if (col < 0) // the Homeworld sort: the capital first, then the rest by distance from it
-            {
-                Planet capital = planets.Count > 0 ? planets[0].Universe.Player.Capital : null;
-                if (capital == null)
-                    return planets; // capital lost - leave the native order
-                return planets.Sorted(p => p == capital ? -1f : p.Position.SqDist(capital.Position));
+            if (col < 0) // the Homeworld sort: the shared spatial order (bench 431) - the old
+            {            // planet-position key let an orbit contaminate the distance and split systems
+                if (planets.Count == 0)
+                    return planets;
+                return planets[0].Universe.Player.SpatialColonyOrder();
             }
             if (col <= 1) // the two name columns sort as text
             {
