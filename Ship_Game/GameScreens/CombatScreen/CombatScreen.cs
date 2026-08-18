@@ -64,8 +64,8 @@ namespace Ship_Game
             
             int assetsX = AssetsRect.X + 20;
 
-            LandAll   = Button(ButtonStyle.WideActive, assetsX, AssetsRect.Y + 80, "Land All", OnLandAllClicked);
-            LaunchAll = Button(ButtonStyle.WideActive, assetsX, AssetsRect.Y + 110, "Launch All", OnLaunchAllClicked);
+            LandAll   = Button(ButtonStyle.WideActive, assetsX, AssetsRect.Y + 80, GameText.CbLandAll, OnLandAllClicked);
+            LaunchAll = Button(ButtonStyle.WideActive, assetsX, AssetsRect.Y + 110, GameText.CbLaunchAll, OnLaunchAllClicked);
             Bombard   = Button(ButtonStyle.WideActive, assetsX, AssetsRect.Y + 140, BombardDefaultText, OnBombardClicked);
             LandAll.Tooltip   = GameText.LandAllTroopsListedIn;
             LaunchAll.Tooltip = GameText.LaunchToSpaceAllTroops;
@@ -834,12 +834,12 @@ namespace Ship_Game
             if (numTroops > 0)
             {
                 LandAll.Enabled = true;
-                LandAll.Text    = $"Land All ({Math.Min(OrbitSL.NumEntries, P.GetFreeTiles(Player))})";
+                LandAll.Text    = $"{Localizer.Token(GameText.CbLandAll)} ({Math.Min(OrbitSL.NumEntries, P.GetFreeTiles(Player))})";
             }
             else
             {
                 LandAll.Enabled = false;
-                LandAll.Text     = "Land All";
+                LandAll.Text     = Localizer.Token(GameText.CbLandAll);
             }
 
         }
@@ -849,12 +849,12 @@ namespace Ship_Game
             if (numTroopsCanLaunch > 0)
             {
                 LaunchAll.Enabled = true;
-                LaunchAll.Text    = $"Launch All ({numTroopsCanLaunch})";
+                LaunchAll.Text    = $"{Localizer.Token(GameText.CbLaunchAll)} ({numTroopsCanLaunch})";
             }
             else
             {
                 LaunchAll.Enabled = false;
-                LaunchAll.Text    = "Launch All";
+                LaunchAll.Text    = Localizer.Token(GameText.CbLaunchAll);
             }
         }
 

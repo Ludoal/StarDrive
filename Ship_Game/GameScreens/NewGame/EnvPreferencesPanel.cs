@@ -34,9 +34,9 @@ namespace Ship_Game.GameScreens.NewGame
             Data = Screen.SelectedData;
 
             var font = Fonts.Arial12Bold;
-            Title = Add(new UILabel("Environment Preferences", font, Color.BurlyWood));
+            Title = Add(new UILabel(GameText.NgEnvironmentPreferences, font, Color.BurlyWood));
             Title.SetLocalPos(35, 15);
-            Title.Tooltip = "Some races have modifiers to their Max Population and Fertility based on the planet type.";
+            Title.Tooltip = GameText.NgEnvPreferencesTooltip;
 
             BestType = Add(new UILabel(GameText.NgBestPlanetType, font, Color.BurlyWood));
             // Ludoal fork (maintainer feedback): -78 total to clear the widened value columns; the

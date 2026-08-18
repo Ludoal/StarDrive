@@ -102,7 +102,7 @@ namespace Ship_Game
             if (Rush)
             {
                 var rushCursor = new Vector2(at.X + 200f, at.Y + 22);
-                batch.DrawString(font, "Continuous Rush", rushCursor, Color.IndianRed);
+                batch.DrawString(font, Localizer.Token(GameText.BpContinuousRush), rushCursor, Color.IndianRed);
             }
         }
 

@@ -18892,6 +18892,120 @@ CycleShipsInCombatTooltip:
 CyclePlanetsInCombatTooltip:
  Id: 4897
  ENG: "Cycle through planets that are in combat"
+EspInfilUnknown:
+ Id: 4898
+ ENG: "Unknown"
+EspInfilExist:
+ Id: 4899
+ ENG: "Exist"
+EspInfilProbablyNone:
+ Id: 4900
+ ENG: "Probably None"
+EspInfilNone:
+ Id: 4901
+ ENG: "None"
+EspInfilDeep:
+ Id: 4902
+ ENG: "Deep"
+EspInfilShallow:
+ Id: 4903
+ ENG: "Shallow"
+NgEnvironmentPreferences:
+ Id: 4904
+ ENG: "Environment Preferences"
+NgEnvPreferencesTooltip:
+ Id: 4905
+ ENG: "Some races have modifiers to their Max Population and Fertility based on the planet type."
+NgExcludedBy:
+ Id: 4906
+ ENG: "(excluded by {0})"
+BpSaveBlueprintsAs:
+ Id: 4907
+ ENG: "Save Blueprints As..."
+BpSavedBlueprintsOverwrite:
+ Id: 4908
+ ENG: "Saved Blueprints exists. If you choose to overwrite, planets with these Blueprints will be reloaded with the new version. Overwrite?"
+BpLoadBlueprints:
+ Id: 5181
+ ENG: "Load Blueprints"
+BpLoadBlueprintsTo:
+ Id: 5182
+ ENG: "Load Blueprints To {0}"
+BpLinkBlueprintsTo:
+ Id: 5183
+ ENG: "Link Blueprints To {0}"
+BpMissingBuildings:
+ Id: 5184
+ ENG: "These Blueprints have some missing buildings and cannot be loaded."
+BpUnlink:
+ Id: 5185
+ ENG: "Unlink"
+BpLink:
+ Id: 5186
+ ENG: "Link"
+BpContinuousRush:
+ Id: 5187
+ ENG: "Continuous Rush"
+IfLevelMax:
+ Id: 5188
+ ENG: "Level Max"
+IfProjectorsAlert:
+ Id: 5189
+ ENG: "Projectors alert"
+IfHomeworldMole:
+ Id: 5190
+ ENG: "Homeworld mole"
+IfLeechTechnology:
+ Id: 5191
+ ENG: "Leech technology"
+IfLeechIncome:
+ Id: 5192
+ ENG: "Leech income"
+IfDefeated:
+ Id: 5193
+ ENG: "Defeated"
+IfBudget:
+ Id: 5194
+ ENG: "BUDGET"
+IfDefense:
+ Id: 5195
+ ENG: "DEFENSE"
+IfInfiltration:
+ Id: 5196
+ ENG: "INFILTRATION"
+IfNoneYet:
+ Id: 5197
+ ENG: "None yet"
+IfPointsPerTurn:
+ Id: 5198
+ ENG: "Points/turn: "
+IfInfiltratingLevel:
+ Id: 5199
+ ENG: "Infiltrating level {0}"
+IfFullyInfiltrated:
+ Id: 5200
+ ENG: "Fully infiltrated"
+IfLvl3:
+ Id: 5201
+ ENG: "lvl 3"
+IfBcPerTurn:
+ Id: 5202
+ ENG: "BC/turn"
+CbLandAll:
+ Id: 5203
+ ENG: "Land All"
+CbLaunchAll:
+ Id: 5204
+ ENG: "Launch All"
+FdAvailablePatrolPlans:
+ Id: 5205
+ ENG: "Available Patrol Plans"
+EmPopGrowthTip:
+ Id: 5206
+ ENG: "Population growth per turn (millions)"
+EmSortByDistanceTip:
+ Id: 5207
+ ENG: "Sort colonies by distance from the Homeworld (Homeworld first)"
 FcsBonus:
  Id: 6186
  ENG: "FCS Bonus"

@@ -18,15 +18,14 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
     const int ListItemHeight = 60;
 
     public SaveLoadBlueprintsScreen(BlueprintsScreen parent, BlueprintsTemplate blueprintsToSave) 
-        : base(parent, SLMode.Save, blueprintsToSave.Name, "Save Blueprints As...", "Colony Blueprints", "Saved Blueprints exists. " +
-            "If you choose to overwrite, planets with these Blueprints will be reloaded with the new version. Overwrite?", ListItemHeight)
+        : base(parent, SLMode.Save, blueprintsToSave.Name, Localizer.Token(GameText.BpSaveBlueprintsAs), "Colony Blueprints", Localizer.Token(GameText.BpSavedBlueprintsOverwrite), ListItemHeight)
     {
         BlueprintsScreen = parent;
         BlueprintsToSave = blueprintsToSave;
         InitPath();
     }
 
-    public SaveLoadBlueprintsScreen(BlueprintsScreen parent) : base(parent, SLMode.Load, "", "Load Blueprints", "Saved Blueprints", ListItemHeight)
+    public SaveLoadBlueprintsScreen(BlueprintsScreen parent) : base(parent, SLMode.Load, "", Localizer.Token(GameText.BpLoadBlueprints), "Saved Blueprints", ListItemHeight)
     {
         BlueprintsScreen = parent;
         InitPath();
@@ -34,14 +33,14 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
 
     // Load blueprints to a colony from the colonyscreen.
     public SaveLoadBlueprintsScreen(GameScreen parent, string planetName)
-        : base(parent, SLMode.Load, "", $"Load Blueprints To {planetName}", "Saved Blueprints", ListItemHeight)
+        : base(parent, SLMode.Load, "", string.Format(Localizer.Token(GameText.BpLoadBlueprintsTo), planetName), "Saved Blueprints", ListItemHeight)
     {
         InitPath();
     }
 
     // Link blueprints to other Blueprints.
     public SaveLoadBlueprintsScreen(string blueprintsName, BlueprintsScreen parent)
-        : base(parent, SLMode.Load, "", $"Link Blueprints To {blueprintsName}", "Saved Blueprints", ListItemHeight)
+        : base(parent, SLMode.Load, "", string.Format(Localizer.Token(GameText.BpLinkBlueprintsTo), blueprintsName), "Saved Blueprints", ListItemHeight)
     {
         BlueprintsScreen = parent;
         InitPath();
@@ -141,7 +140,7 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
         }
         else
         {
-            title1 = "These Blueprints have some missing buildings and cannot be loaded.";
+            title1 = Localizer.Token(GameText.BpMissingBuildings);
             infoColor = Color.Red;
         }
 

@@ -103,7 +103,7 @@ namespace Ship_Game
             {
                 var cols = new Array<UITable.Column>(Table.Columns);
                 cols.Insert(5, new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_poppertile"), Align = TableAlign.Number,
-                                                    Sortable = true, Tip = "Population growth per turn (millions)", SepColor = MutedSep });
+                                                    Sortable = true, Tip = GameText.EmPopGrowthTip, SepColor = MutedSep });
                 // one bold letter per type (bench 407); gold rule on its left (default),
                 // muted on its right - the muted one is Labor's, set below
                 cols.Insert(10, new UITable.Column { Title = "Gov.", Width = 40, Align = TableAlign.Center, Sortable = true });
@@ -345,7 +345,7 @@ namespace Ship_Game
             SubTexture homeIcon = ResourceManager.Texture("UI/icon_home");
             batch.Draw(homeIcon, HomeSortButton, HomeworldSort ? Color.Orange : new Color(150, 150, 150));
             if (HomeSortButton.HitTest(Input.CursorPosition))
-                ToolTip.CreateTooltip("Sort colonies by distance from the Homeworld (Homeworld first)");
+                ToolTip.CreateTooltip(GameText.EmSortByDistanceTip);
 
             ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
             eui.Draw(batch); // Ludoal fork: live top bar on every full-screen panel

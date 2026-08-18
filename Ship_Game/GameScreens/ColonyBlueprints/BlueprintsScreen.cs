@@ -194,10 +194,10 @@ namespace Ship_Game
             float buttonsY = optRow0 + 6 * OptionsRow + 8;
             SaveBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX, buttonsY), GameText.Save));
             SaveBlueprints.OnClick = (b) => OnSaveBlueprintsClick();
-            UnlinkBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX + 80, buttonsY), "Unlink"));
+            UnlinkBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX + 80, buttonsY), GameText.BpUnlink));
             UnlinkBlueprints.OnClick = (b) => OnUnlinkBlueprintsClick();
             UnlinkBlueprints.Enabled = false;
-            LinkBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX + 160, buttonsY), "Link"));
+            LinkBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX + 160, buttonsY), GameText.BpLink));
             LinkBlueprints.OnClick = (b) => OnLinkBlueprintsClick();
             LinkBlueprints.Enabled = false;
             LoadBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX + 240, buttonsY), GameText.Load));

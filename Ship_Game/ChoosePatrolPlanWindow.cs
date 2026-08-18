@@ -91,7 +91,7 @@ namespace Ship_Game
         public override void LoadContent()
         {
             RectF shipDesignsRect = new(ScreenWidth / 2 - 200, 200, 400, 500);
-            SubAvailablePatrols = Add(new SubmenuScrollList<ChoosePatrolListItem>(shipDesignsRect, "Available Patrol Plans"));
+            SubAvailablePatrols = Add(new SubmenuScrollList<ChoosePatrolListItem>(shipDesignsRect, GameText.FdAvailablePatrolPlans));
             SubAvailablePatrols.SetBackground(Colors.TransparentBlackFill);
             
             AvailablePatrols = SubAvailablePatrols.List;

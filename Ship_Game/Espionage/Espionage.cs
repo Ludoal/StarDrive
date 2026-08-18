@@ -309,16 +309,16 @@ namespace Ship_Game
         public string InfiltrationLevelSummary()
         {
             if (Level <= 1)
-                return "Unknown";
+                return Localizer.Token(GameText.EspInfilUnknown);
 
             int theirInfiltrationLevel = Them.GetRelations(Owner).Espionage.EffectiveLevel;
             if (Level <= 2)
                 // "Exist" not "Exists": the label reads "Spies" (plural) now (maintainer bench 336)
-                return theirInfiltrationLevel > 0 ? "Exist" : "Probably None";
+                return theirInfiltrationLevel > 0 ? Localizer.Token(GameText.EspInfilExist) : Localizer.Token(GameText.EspInfilProbablyNone);
 
             if (Level <= 4)
-                return theirInfiltrationLevel == 0 ? "None" 
-                                                   : theirInfiltrationLevel > 3 ? "Deep" : "Shallow";
+                return theirInfiltrationLevel == 0 ? Localizer.Token(GameText.EspInfilNone)
+                                                   : theirInfiltrationLevel > 3 ? Localizer.Token(GameText.EspInfilDeep) : Localizer.Token(GameText.EspInfilShallow);
 
             return $"{theirInfiltrationLevel}";
         }

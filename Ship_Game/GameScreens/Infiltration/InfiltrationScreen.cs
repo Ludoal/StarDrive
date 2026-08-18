@@ -263,7 +263,7 @@ namespace Ship_Game.GameScreens
                 // one, and the button showed no value - it stretches to the width it is given, so
                 // the figure drawn beside it fell underneath.
                 var limitRect = new Rectangle(col.X + 8, (int)budgetY + RowButton, col.Width - 60, 40);
-                c.Limit = new FloatSlider(SliderStyle.Decimal, limitRect, "Level Max",
+                c.Limit = new FloatSlider(SliderStyle.Decimal, limitRect, GameText.IfLevelMax,
                                           1f, Ship_Game.Espionage.MaxLevel, value: esp.LimitLevel);
                 c.Limit.Tip = GameText.EspionageLimitLevelTip;
                 c.Limit.OnChange = s => esp.SetLimitLevel((byte)s.AbsoluteValue.RoundUpTo(1));
@@ -332,10 +332,10 @@ namespace Ship_Game.GameScreens
         static string PassiveFor(byte level) => level switch
         {
             1 => Localizer.Token(GameText.UhScanTheirShips),
-            2 => "Projectors alert",
-            3 => "Homeworld mole",
-            4 => "Leech technology",
-            _ => "Leech income",
+            2 => Localizer.Token(GameText.IfProjectorsAlert),
+            3 => Localizer.Token(GameText.IfHomeworldMole),
+            4 => Localizer.Token(GameText.IfLeechTechnology),
+            _ => Localizer.Token(GameText.IfLeechIncome),
         };
 
         public override void Update(float fixedDeltaTime)
@@ -430,7 +430,8 @@ namespace Ship_Game.GameScreens
             if (!known)
             {
                 batch.Draw(ResourceManager.Texture("Portraits/unknown"), portrait, Color.White);
-                batch.DrawString(Font12Bold, "Unknown", new Vector2(col.X + (col.Width - Font12Bold.TextWidth("Unknown")) / 2f, portrait.Bottom + 4), Color.Gray);
+                string unknown = Localizer.Token(GameText.EspInfilUnknown);
+                batch.DrawString(Font12Bold, unknown, new Vector2(col.X + (col.Width - Font12Bold.TextWidth(unknown)) / 2f, portrait.Bottom + 4), Color.Gray);
                 return;
             }
 
@@ -458,22 +459,22 @@ namespace Ship_Game.GameScreens
             if (e.IsDefeated)
             {
                 batch.Draw(ResourceManager.ErrorTexture, portrait, Color.White);
-                batch.DrawString(Font12, "Defeated", new Vector2(col.X + 8, col.Y + HeaderH + 4), Color.Gray);
+                batch.DrawString(Font12, Localizer.Token(GameText.IfDefeated), new Vector2(col.X + 8, col.Y + HeaderH + 4), Color.Gray);
                 return;
             }
 
             float budgetY = col.Y + HeaderH;
-            SectionBand(batch, col, budgetY, "BUDGET");
+            SectionBand(batch, col, budgetY, Localizer.Token(GameText.IfBudget));
             // 30 higher; the INFILTRATION block below is keyed
             // on BudgetH + DefenseH and does not follow
             float defenseY = col.Y + HeaderH + BudgetH - 6;
-            SectionBand(batch, col, defenseY, "DEFENSE");
+            SectionBand(batch, col, defenseY, Localizer.Token(GameText.IfDefense));
 
             if (e == Player)
             {
                 // budget cost line under the slider (legacy formula)
                 float espionageCost = Player.GetEspionageCost();
-                string cost = $"{(espionageCost > 0 ? -espionageCost : espionageCost).String(1)} BC/turn";
+                string cost = $"{(espionageCost > 0 ? -espionageCost : espionageCost).String(1)} " + Localizer.Token(GameText.IfBcPerTurn);
                 batch.DrawString(Font12, cost, new Vector2(col.X + 8, budgetY + 70), espionageCost > 0 ? Color.Pink : Color.LightGreen);
                 // Ludoal fork: the SETTINGS band that lived here (Disable Messages) moved to the
                 // Automation tab of the Empire group, with the other notification switches.
@@ -482,7 +483,7 @@ namespace Ship_Game.GameScreens
                 // (opens that colony in mole vision, like a map double-click). Rects harvested
                 // here, hit-tested in HandleInput like the portraits.
                 float infilY = col.Y + HeaderH + BudgetH + DefenseH + 14;
-                SectionBand(batch, col, infilY, "INFILTRATION");
+                SectionBand(batch, col, infilY, Localizer.Token(GameText.IfInfiltration));
                 MoleRows.Clear();
                 float rowY = infilY + 24;
                 batch.DrawString(Font12Bold, Localizer.Token(GameText.UhPlanetsWithMoles), new Vector2(col.X + 8, rowY), Colors.Cream);
@@ -490,7 +491,7 @@ namespace Ship_Game.GameScreens
                 var moles = Player.data.MoleList;
                 if (moles.Count == 0)
                 {
-                    batch.DrawString(Font12, "None yet", new Vector2(col.X + 8, rowY), Color.Gray);
+                    batch.DrawString(Font12, Localizer.Token(GameText.IfNoneYet), new Vector2(col.X + 8, rowY), Color.Gray);
                 }
                 else
                 {
@@ -517,13 +518,13 @@ namespace Ship_Game.GameScreens
             // BUDGET section extras: points/turn, target + progress. The level ceiling needs no
             // label of its own - its slider shows the figure.
             float ppt = esp.GetProgressToIncrease(Player.EspionagePointsPerTurn, Player.CalcTotalEspionageWeight());
-            string pptTxt = "Points/turn: " + ppt.String(3);
+            string pptTxt = Localizer.Token(GameText.IfPointsPerTurn) + ppt.String(3);
             batch.DrawString(Font12, pptTxt, new Vector2(col.X + 8, budgetY + RowPoints), Color.Wheat);
 
             if (esp.Level < Ship_Game.Espionage.MaxLevel)
             {
                 byte target = (byte)(esp.Level + 1);
-                batch.DrawString(Font12Bold, $"Infiltrating level {target}", new Vector2(col.X + 8, budgetY + RowLevel), Color.Wheat);
+                batch.DrawString(Font12Bold, string.Format(Localizer.Token(GameText.IfInfiltratingLevel), target), new Vector2(col.X + 8, budgetY + RowLevel), Color.Wheat);
                 float max = esp.LevelCost(target);
                 float cur = esp.LevelProgress.UpperBound(max);
                 var barRect = new Rectangle(col.X + 8, (int)budgetY + RowBar, col.Width - 16, 12);
@@ -536,7 +537,7 @@ namespace Ship_Game.GameScreens
             }
             else
             {
-                batch.DrawString(Font12, "Fully infiltrated", new Vector2(col.X + 8, budgetY + RowLevel), Color.LightGreen);
+                batch.DrawString(Font12, Localizer.Token(GameText.IfFullyInfiltrated), new Vector2(col.X + 8, budgetY + RowLevel), Color.LightGreen);
             }
 
             // DEFENSE: their shield ratio (gated like the legacy header icon)
@@ -555,13 +556,13 @@ namespace Ship_Game.GameScreens
                 int h = Font12.LineSpacing;
                 var spyR = new Rectangle(defenseIcon.Right + 6, defenseIcon.Y + 4, spyIcon.Width * h / spyIcon.Height, h);
                 batch.Draw(spyIcon, spyR, new Color(105, 105, 105));
-                batch.DrawString(Font12Bold, "lvl 3", new Vector2(spyR.Right + 4, spyR.Y), new Color(105, 105, 105));
+                batch.DrawString(Font12Bold, Localizer.Token(GameText.IfLvl3), new Vector2(spyR.Right + 4, spyR.Y), new Color(105, 105, 105));
             }
 
             // Ludoal fork: one INFILTRATION band, then each level as a bold text line - cream once
             // the level is uncovered, grey while it is not. Five bands for one subject read as five
             // separate sections.
-            SectionBand(batch, col, col.Y + HeaderH + BudgetH + DefenseH + 14, "INFILTRATION");
+            SectionBand(batch, col, col.Y + HeaderH + BudgetH + DefenseH + 14, Localizer.Token(GameText.IfInfiltration));
             ForEachInfiltrationRow(col, (level, rowY, isTitle) =>
             {
                 bool reached = esp.Level >= level;

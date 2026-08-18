@@ -5984,6 +5984,82 @@ namespace Ship_Game
         CycleShipsInCombatTooltip = 4896,
         /// <summary>Cycle through planets that are in combat</summary>
         CyclePlanetsInCombatTooltip = 4897,
+        /// <summary>Unknown</summary>
+        EspInfilUnknown = 4898,
+        /// <summary>Exist</summary>
+        EspInfilExist = 4899,
+        /// <summary>Probably None</summary>
+        EspInfilProbablyNone = 4900,
+        /// <summary>None</summary>
+        EspInfilNone = 4901,
+        /// <summary>Deep</summary>
+        EspInfilDeep = 4902,
+        /// <summary>Shallow</summary>
+        EspInfilShallow = 4903,
+        /// <summary>Environment Preferences</summary>
+        NgEnvironmentPreferences = 4904,
+        /// <summary>Some races have modifiers to their Max Population and Fertility based </summary>
+        NgEnvPreferencesTooltip = 4905,
+        /// <summary>(excluded by {0})</summary>
+        NgExcludedBy = 4906,
+        /// <summary>Save Blueprints As...</summary>
+        BpSaveBlueprintsAs = 4907,
+        /// <summary>Saved Blueprints exists. If you choose to overwrite, planets with thes</summary>
+        BpSavedBlueprintsOverwrite = 4908,
+        /// <summary>Load Blueprints</summary>
+        BpLoadBlueprints = 5181,
+        /// <summary>Load Blueprints To {0}</summary>
+        BpLoadBlueprintsTo = 5182,
+        /// <summary>Link Blueprints To {0}</summary>
+        BpLinkBlueprintsTo = 5183,
+        /// <summary>These Blueprints have some missing buildings and cannot be loaded.</summary>
+        BpMissingBuildings = 5184,
+        /// <summary>Unlink</summary>
+        BpUnlink = 5185,
+        /// <summary>Link</summary>
+        BpLink = 5186,
+        /// <summary>Continuous Rush</summary>
+        BpContinuousRush = 5187,
+        /// <summary>Level Max</summary>
+        IfLevelMax = 5188,
+        /// <summary>Projectors alert</summary>
+        IfProjectorsAlert = 5189,
+        /// <summary>Homeworld mole</summary>
+        IfHomeworldMole = 5190,
+        /// <summary>Leech technology</summary>
+        IfLeechTechnology = 5191,
+        /// <summary>Leech income</summary>
+        IfLeechIncome = 5192,
+        /// <summary>Defeated</summary>
+        IfDefeated = 5193,
+        /// <summary>BUDGET</summary>
+        IfBudget = 5194,
+        /// <summary>DEFENSE</summary>
+        IfDefense = 5195,
+        /// <summary>INFILTRATION</summary>
+        IfInfiltration = 5196,
+        /// <summary>None yet</summary>
+        IfNoneYet = 5197,
+        /// <summary>Points/turn: </summary>
+        IfPointsPerTurn = 5198,
+        /// <summary>Infiltrating level {0}</summary>
+        IfInfiltratingLevel = 5199,
+        /// <summary>Fully infiltrated</summary>
+        IfFullyInfiltrated = 5200,
+        /// <summary>lvl 3</summary>
+        IfLvl3 = 5201,
+        /// <summary>BC/turn</summary>
+        IfBcPerTurn = 5202,
+        /// <summary>Land All</summary>
+        CbLandAll = 5203,
+        /// <summary>Launch All</summary>
+        CbLaunchAll = 5204,
+        /// <summary>Available Patrol Plans</summary>
+        FdAvailablePatrolPlans = 5205,
+        /// <summary>Population growth per turn (millions)</summary>
+        EmPopGrowthTip = 5206,
+        /// <summary>Sort colonies by distance from the Homeworld (Homeworld first)</summary>
+        EmSortByDistanceTip = 5207,
         /// <summary>FCS Bonus</summary>
         FcsBonus = 6186,
         /// <summary>FCS Accuracy</summary>
