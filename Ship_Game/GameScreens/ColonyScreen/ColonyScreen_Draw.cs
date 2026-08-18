@@ -810,25 +810,14 @@ namespace Ship_Game
                 DrawVolcanoChance(ref bCursor, batch, tile.Volcano.ActivationChanceText(out Color color), color);
         }
 
-        // Ludoal fork (bench 425): the building's name line and its lore. A lore that
-        // would flood the frame (Capital City, Outpost...) folds into an (i) after the
-        // name - hover it for the full text - so the stats keep their room. The measure
-        // decides, not a name list.
+        // the building's name line and its lore, inline. The long-lore treatment is being
+        // arbitrated (bench 426 killed the (i): reading its tooltip lost the panel) -
+        // candidates are stats-first with a clipped lore, or click-to-pin with a wheel.
         void DrawBuildingNameAndLore(ref Vector2 bCursor, SpriteBatch batch, Building b, Color nameColor)
         {
             batch.DrawString(Font20, b.TranslatedName, bCursor, nameColor);
-            string lore = MultiLineFormat(b.DescriptionText);
-            if (TextFont.MeasureString(lore).Y > TextFont.LineSpacing * 3.5f)
-            {
-                var info = new Rectangle((int)(bCursor.X + Font20.MeasureString(b.TranslatedName.Text).X + 10),
-                                         (int)bCursor.Y + 6, 18, 16);
-                batch.DrawString(Fonts.Arial12Bold, "(i)", new Vector2(info.X, info.Y), Color.SkyBlue);
-                if (info.HitTest(Input.CursorPosition) && P.Universe.Screen.IsActive)
-                    ToolTip.CreateTooltip(b.DescriptionText);
-                bCursor.Y += Font20.LineSpacing + 8;
-                return;
-            }
             bCursor.Y += Font20.LineSpacing + 5;
+            string lore = MultiLineFormat(b.DescriptionText);
             batch.DrawString(TextFont, lore, bCursor, Color.White); // white body, matching the build-list panel
             bCursor.Y += TextFont.MeasureString(lore).Y + Font20.LineSpacing;
         }

@@ -894,8 +894,9 @@ namespace Ship_Game
 
         void OnBuiltHoverChange(BuiltBuildingListItem item)
         {
-            if (item?.Tile != null)
-                LastBuiltHover = item.Tile; // sticky: losing hover keeps the last description
+            // live hover only (bench 426): leaving a row - even into the list's own empty
+            // space - returns the bottom panel to the player's default tab
+            LastBuiltHover = item?.Tile;
         }
 
         // The LIST rows' reading (bench 424 arbitration: NET, as the colony runs): the

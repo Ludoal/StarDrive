@@ -55,11 +55,10 @@ namespace Ship_Game
                     if (pgs.ClickRect.HitTest(input.CursorPosition))
                         return pgs;
             }
-            else if (LastBuiltHover != null && BuiltList.HitTest(input.CursorPosition))
+            else if (LastBuiltHover != null)
             {
-                // LIST view: rows push their tile through OnHovered; between rows the last
-                // description holds (no flicker) - but only while the cursor stays on the
-                // list, so the bottom tabs unlock the moment the player leaves it (bench 424)
+                // LIST view: the hovered row's tile, live - OnHovered clears it the moment
+                // the cursor leaves the row, so the default tab returns at once (bench 426)
                 return LastBuiltHover;
             }
 

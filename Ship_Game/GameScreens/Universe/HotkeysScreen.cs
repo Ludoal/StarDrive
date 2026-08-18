@@ -160,8 +160,13 @@ namespace Ship_Game
                     y += Fonts.Arial14Bold.LineSpacing + 6;
                     foreach (Hotkey k in keys)
                     {
+                        // bindable keys read wheat and answer the mouse; fixed ones are
+                        // dimmed gray - the color IS the affordance (bench 426)
                         string keyText = k.Bind == null ? k.Keys : KeyBindings.Name(KeyBindings.Get(k.Bind));
-                        UILabel keyLabel = Add(new UILabel(new Vector2(x, y), keyText, Fonts.Arial12Bold, Color.Wheat));
+                        UILabel keyLabel = Add(new UILabel(new Vector2(x, y), keyText, Fonts.Arial12Bold,
+                                                           k.Bind == null ? Color.Gray : Color.Wheat));
+                        keyLabel.Tooltip = k.Bind == null ? "Not remappable"
+                                                          : "Click to rebind - right-click resets to default";
                         Add(new UILabel(new Vector2(x + keyW, y), k.Action, Fonts.Arial12, Color.White));
                         if (k.Bind != null)
                             Rows.Add(new BindRow { Bind = k.Bind, KeyLabel = keyLabel,
@@ -184,7 +189,7 @@ namespace Ship_Game
                 GameAudio.AcceptClick();
             });
             resetAll.SetAbsSize(170, 24);
-            resetAll.SetAbsPos(inner.Right - 186, inner.Bottom - 34);
+            resetAll.SetAbsPos(inner.X + 16, inner.Bottom - 34); // bottom-left (bench 426)
         }
 
         public override bool HandleInput(InputState input)
