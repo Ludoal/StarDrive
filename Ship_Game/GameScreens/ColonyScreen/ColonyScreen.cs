@@ -896,6 +896,32 @@ namespace Ship_Game
                 LastBuiltHover = item.Tile; // sticky: losing hover keeps the last description
         }
 
+        // The LIST rows' reading (bench 424 arbitration: NET, as the colony runs): the
+        // building's MARGINAL contribution through the sim's own pipeline - labor share,
+        // fertility/richness, racial modifiers, then the resource tax via the sim's own
+        // AfterTax. The yield formulas are linear in each building's share, so these
+        // marginals sum exactly to the colony totals STATS+ shows (consumption excluded -
+        // it belongs to the colony, not to a building).
+        public void BuildingNetYields(Building b, out float food, out float prod, out float res)
+        {
+            float workers = P.PopulationBillion;
+            var traits = P.Owner.data.Traits;
+
+            float grossFood = b.PlusFlatFoodAmount
+                            + P.Food.Percent * workers * P.Fertility * b.PlusFoodPerColonist;
+            food = P.Food.AfterTax(grossFood);
+
+            float grossProd = b.PlusFlatProductionAmount
+                            + b.PlusProdPerRichness * P.MineralRichness
+                            + P.Prod.Percent * workers * P.MineralRichness * (1f + traits.ProductionMod) * b.PlusProdPerColonist;
+            grossProd *= P.Owner.GetStaticExoticBonusMuliplier(ExoticBonusType.Production); // the sim applies it to flat AND yield
+            prod = P.Prod.AfterTax(grossProd);
+
+            float grossRes = (b.PlusFlatResearchAmount
+                            + P.Res.Percent * workers * b.PlusResearchPerColonist) * (1f + traits.ResearchMod);
+            res = P.Res.AfterTax(grossRes);
+        }
+
         // ONE arithmetic for a building's yields on this colony - the MAP tiles' icon rows
         // and the LIST view's value columns both read it. laborShare=true follows what the
         // colony collects THIS instant (the sliders weigh the per-colonist parts - the

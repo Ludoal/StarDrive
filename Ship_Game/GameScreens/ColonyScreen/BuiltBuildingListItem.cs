@@ -56,9 +56,9 @@ namespace Ship_Game
             batch.Draw(b.IconTex, new Vector2(X, Y + (Height - IconSize) / 2f), new Vector2(IconSize), Color.White);
             batch.DrawString(Font12, b.TranslatedName.Text, X + IconSize + 6, Y + (Height - Font12.LineSpacing) / 2f, titleColor);
 
-            // the building's yields on THIS colony at current population - the shared
-            // arithmetic, without the labor sliders' instant weighting (bench 424)
-            Screen.BuildingActualYields(b, out float food, out float prod, out float research, laborShare: false);
+            // NET, as the colony runs (bench 424 arbitration): the building's marginal
+            // contribution through the sim's own pipeline - rows sum to STATS+ totals
+            Screen.BuildingNetYields(b, out float food, out float prod, out float research);
             float credits = b.Income + b.CreditsPerColonist * Screen.P.PopulationBillion - b.Maintenance;
 
             DrawValueColumn(batch, FoodIcon, food, 3);
