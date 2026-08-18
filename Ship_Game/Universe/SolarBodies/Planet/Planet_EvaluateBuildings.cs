@@ -812,33 +812,41 @@ namespace Ship_Game
             }
 
             Building bio = ResourceManager.GetBuildingTemplate(Building.BiospheresId);
-            if (bio == null || bio.ActualMaintenance(this) > budget)
-                return false; // not within budget or not profitable and more than 5
+            if (bio == null)
+                return false;
 
-            if (!BioSphereProfitable(bio))
+            // Biospheres are CAPACITY, not an investment (issue 321 follow-up): gating
+            // them on tax revenue misvalues them - the added population also works
+            // production, science and farming with its untaxed share - and it ties a
+            // long-term infrastructure choice to the tax rate, which the player (or
+            // auto-balancing) can move at any moment. The tax rate leaves this decision
+            // entirely. Build when the colony runs out of room: population pressure
+            // against the cap, or a build list with no free habitable tile. Scrap a
+            // free biosphere only when the population would sit at ease without it -
+            // the wide 60/85 dead band makes build/scrap oscillation impossible by
+            // construction.
+            bool popPressure = PopulationRatio >= 0.85f;
+            bool needsGround = FreeHabitableTiles == 0
+                               && GetBuildingsListToChooseFrom(BuildingsCanBuild).Count > 0;
+
+            if (!popPressure && !needsGround)
             {
-                int numBuildingsWeCanBuild = GetBuildingsListToChooseFrom(BuildingsCanBuild).Count;
                 if (NumFreeBiospheres > 0)
                 {
-                    // We do not need more than 1 free biospheres if not profitable.
-                    // We need only 1 free biosphere if we have anything to built at all
-                    shouldScrapBioSpheres = NumFreeBiospheres > 1 
-                        || numBuildingsWeCanBuild == 0 && (!HasBlueprints || Blueprints.IsAchievableCompleted);
-                    return false;
+                    // would the population sit under 60% of the cap WITHOUT one
+                    // biosphere? Then one is dead weight. A colony budget that covers
+                    // the upkeep is an explicit 'I am paying, keep them' for the last
+                    // one - only a surplus beyond it goes regardless.
+                    float capWithoutOne = MaxPopulation - PopPerBiosphere(Owner);
+                    bool excessCapacity = capWithoutOne > 0f && Population / capWithoutOne < 0.60f;
+                    bool budgetCoversUpkeep = budget >= NumFreeBiospheres * bio.ActualMaintenance(this);
+                    shouldScrapBioSpheres = excessCapacity && (!budgetCoversUpkeep || NumFreeBiospheres > 1);
                 }
-                else if (numBuildingsWeCanBuild == 0 || HabiableBuiltCoverage.Less(1))
-                {
-                    // no need to build unprofitable biospheres if we have nothing to build here
-                    return false;
-                }
-            }
-            else if (PopulationRatio < 0.95f 
-                     && (NumFreeBiospheres > 0 || HabiableBuiltCoverage.Less(1)))
-            {
-                // dont build even if profitable, if pop is not big enough.
-                // but ensure there is at least 1 free biospheres if there are no free tiles
                 return false;
             }
+
+            if (bio.ActualMaintenance(this) > budget)
+                return false; // the budget is the only place money keeps a say
 
 
             if (IsPlanetExtraDebugTarget())
@@ -864,11 +872,6 @@ namespace Ship_Game
 
                 return preferred;
             }
-        }
-
-        bool BioSphereProfitable(Building bio)
-        {
-            return Money.NetRevenueGain(bio) >= 0;
         }
 
         void TryBuildDysonSwarm()
