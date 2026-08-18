@@ -224,6 +224,11 @@ Elements:
           AbsSize: [200, 0] # aspect fill width
           ClickSfx: sd_ui_tactical_pause
       - Button:
+          Name: hotkeys
+          Title: "Hotkeys"
+          AbsSize: [200, 0] # aspect fill width
+          ClickSfx: sd_ui_tactical_pause
+      - Button:
           Name: mods
           Title: "Mods"
           AbsSize: [200, 0] # aspect fill width

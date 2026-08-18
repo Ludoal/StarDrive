@@ -41,13 +41,56 @@ namespace Ship_Game
 
         // the display name a tooltip announces - ONE source, so a remapped key can
         // never lie on screen (the "F3" literal trap)
-        public static string Name(Keys key) => key.ToString();
+        public static string Name(Keys key) => key == Keys.None ? "unbound" : key.ToString();
 
         static string OverrideFile => Path.Combine(Dir.StarDriveAppData, "Hotkeys.yaml");
 
         static FieldInfo[] BindingFields() => typeof(KeyBindings)
             .GetFields(BindingFlags.Public | BindingFlags.Static)
             .Filter(f => f.FieldType == typeof(Keys));
+
+        // the shipped layout, captured before Load applies the player's overrides -
+        // the per-row and reset-all restores read from here
+        static readonly System.Collections.Generic.Dictionary<string, Keys> Defaults = new();
+        static KeyBindings()
+        {
+            foreach (FieldInfo f in BindingFields())
+                Defaults[f.Name] = (Keys)f.GetValue(null);
+        }
+
+        public static Keys Get(string bind) => (Keys)(BindingFields().Find(f => f.Name == bind)?.GetValue(null) ?? Keys.None);
+        public static Keys DefaultOf(string bind) => Defaults.TryGetValue(bind, out Keys k) ? k : Keys.None;
+
+        public static void Set(string bind, Keys key)
+        {
+            FieldInfo f = BindingFields().Find(x => x.Name == bind);
+            if (f == null) return;
+            f.SetValue(null, key);
+            Save();
+        }
+
+        // rebinding is the save - no save button anywhere (the themes' own doctrine)
+        public static void Save()
+        {
+            try { WriteTemplate(OverrideFile); }
+            catch (Exception e) { Log.Warning($"Hotkeys.yaml save failed: {e.Message}"); }
+        }
+
+        // the field currently holding this key, if any - the editor's conflict/swap check
+        public static string HolderOf(Keys key, string except = null)
+        {
+            if (key == Keys.None) return null;
+            FieldInfo f = BindingFields().Find(x => x.Name != except && (Keys)x.GetValue(null) == key);
+            return f?.Name;
+        }
+
+        public static void ResetAll()
+        {
+            foreach (FieldInfo f in BindingFields())
+                if (Defaults.TryGetValue(f.Name, out Keys k))
+                    f.SetValue(null, k);
+            Save();
+        }
 
         public static void Load()
         {

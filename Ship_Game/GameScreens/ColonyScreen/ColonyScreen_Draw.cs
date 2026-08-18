@@ -610,11 +610,7 @@ namespace Ship_Game
                 var bRect = new Rectangle(pgs.ClickRect.X + pgs.ClickRect.Width / 2 - 32, pgs.ClickRect.Y + pgs.ClickRect.Height / 2 - 32, 64, 64);
                 batch.Draw(ResourceManager.Texture("Ground_UI/GC_Square Selection"), bRect, Color.White);
             }
-            batch.DrawString(Font20, pgs.Building.TranslatedName, bCursor, color);
-            bCursor.Y += Font20.LineSpacing + 5;
-            string buildingDescription = MultiLineFormat(pgs.Building.DescriptionText);
-            batch.DrawString(TextFont, buildingDescription, bCursor, Color.White); // white body, matching the build-list panel
-            bCursor.Y += TextFont.MeasureString(buildingDescription).Y + Font20.LineSpacing;
+            DrawBuildingNameAndLore(ref bCursor, batch, pgs.Building, color);
             DrawSelectedBuildingInfo(ref bCursor, batch, TextFont, P.Owner, P.Fertility, P.MineralRichness, P.Category, P.Level, pgs.Building, pgs);
             DrawTilePopInfo(ref bCursor, batch, pgs, 1); // single gap before the colonists-per-tile line, not double
             if (!pgs.Building.Scrappable)
@@ -629,11 +625,7 @@ namespace Ship_Game
         {
             Color color = Color.Wheat;
 
-            batch.DrawString(Font20, selectedBuilding.TranslatedName, bCursor, color);
-            bCursor.Y += Font20.LineSpacing + 5;
-            string selectionText = MultiLineFormat(selectedBuilding.DescriptionText);
-            batch.DrawString(TextFont, selectionText, bCursor, Color.White); // white body
-            bCursor.Y += TextFont.MeasureString(selectionText).Y + Font20.LineSpacing;
+            DrawBuildingNameAndLore(ref bCursor, batch, selectedBuilding, color);
             if (selectedBuilding.IsWeapon)
                 selectedBuilding.CalcMilitaryStrength(P); // So the building will have TheWeapon for stats
 
@@ -816,6 +808,29 @@ namespace Ship_Game
 
             if (tile?.VolcanoHere == true)
                 DrawVolcanoChance(ref bCursor, batch, tile.Volcano.ActivationChanceText(out Color color), color);
+        }
+
+        // Ludoal fork (bench 425): the building's name line and its lore. A lore that
+        // would flood the frame (Capital City, Outpost...) folds into an (i) after the
+        // name - hover it for the full text - so the stats keep their room. The measure
+        // decides, not a name list.
+        void DrawBuildingNameAndLore(ref Vector2 bCursor, SpriteBatch batch, Building b, Color nameColor)
+        {
+            batch.DrawString(Font20, b.TranslatedName, bCursor, nameColor);
+            string lore = MultiLineFormat(b.DescriptionText);
+            if (TextFont.MeasureString(lore).Y > TextFont.LineSpacing * 3.5f)
+            {
+                var info = new Rectangle((int)(bCursor.X + Font20.MeasureString(b.TranslatedName.Text).X + 10),
+                                         (int)bCursor.Y + 6, 18, 16);
+                batch.DrawString(Fonts.Arial12Bold, "(i)", new Vector2(info.X, info.Y), Color.SkyBlue);
+                if (info.HitTest(Input.CursorPosition) && P.Universe.Screen.IsActive)
+                    ToolTip.CreateTooltip(b.DescriptionText);
+                bCursor.Y += Font20.LineSpacing + 8;
+                return;
+            }
+            bCursor.Y += Font20.LineSpacing + 5;
+            batch.DrawString(TextFont, lore, bCursor, Color.White); // white body, matching the build-list panel
+            bCursor.Y += TextFont.MeasureString(lore).Y + Font20.LineSpacing;
         }
 
         void DrawCacheNotice(ref Vector2 cursor, SpriteBatch batch, Font font, float remaining, GameText token)

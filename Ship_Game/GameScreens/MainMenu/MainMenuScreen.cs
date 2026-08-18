@@ -80,6 +80,7 @@ namespace Ship_Game.GameScreens.MainMenu
             if (list.Find("tutorials", out UIButton tutorials)) tutorials.OnClick = Tutorials_Clicked;
             if (list.Find("load_game", out UIButton loadGame))  loadGame.OnClick  = LoadGame_Clicked;
             if (list.Find("options",   out UIButton options))   options.OnClick   = Options_Clicked;
+            if (list.Find("hotkeys",   out UIButton hotkeys))   hotkeys.OnClick   = Hotkeys_Clicked; // Ludoal fork (wishlist)
             if (list.Find("mods",      out UIButton mods))      mods.OnClick      = Mods_Clicked;
             if (list.Find("sandbox",   out UIButton sandbox))   sandbox.OnClick   = DevSandbox_Clicked;
             if (list.Find("info",      out UIButton info))      info.OnClick      = Info_Clicked;
@@ -173,6 +174,7 @@ namespace Ship_Game.GameScreens.MainMenu
             ScreenManager.AddScreen(new LoadSaveScreen(this));
         }
         void Options_Clicked(UIButton button)   => ScreenManager.AddScreen(new OptionsScreen(this));
+        void Hotkeys_Clicked(UIButton button)   => ScreenManager.AddScreen(new HotkeysScreen(this)); // Ludoal fork (wishlist)
         void Mods_Clicked(UIButton button)      => ScreenManager.AddScreen(new ModManager(this));
         void Info_Clicked(UIButton button)      => ScreenManager.AddScreen(new Codex.CodexScreen(this));
         void Support_Clicked(UIButton button) => ScreenManager.AddScreen(new SupportBlackbox(this));
