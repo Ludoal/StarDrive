@@ -638,7 +638,7 @@ namespace Ship_Game
             DrawTacticalPlanetIcons(batch);
             DrawFTLInhibitionNodes();
             DrawShipRangeOverlay();
-            DrawRouteOverlays();
+            DrawRouteOverlays(batch);
             DrawFleetIcons(batch);
             DrawIcons.Stop();
         }
@@ -686,30 +686,32 @@ namespace Ship_Game
         }
 
         // Ludoal fork (wishlist): the route overlays. Trade links each planet pair with a
-        // live freighter run (one line per PAIR, not per ship); Colonization links the
-        // planet building/sending a colonizer to its target. Both read the same UI-safe
-        // sources the ship list and the exploded view already consume.
-        void DrawRouteOverlays()
+        // live freighter run - one line per (pair, goods), each goods in its own color
+        // with its icon at the line's midpoint (bench 427: Food green, Prod orange, Pop
+        // white; Colonization gray). Both read the same UI-safe sources the ship list
+        // and the exploded view already consume.
+        void DrawRouteOverlays(SpriteBatch batch)
         {
             if (ShowingTradeRoutesOverlay)
             {
-                var seen = new HashSet<(Planet, Planet)>();
+                var seen = new HashSet<(Planet, Planet, Goods)>();
                 var freighters = Player.OwnedShips.Filter(s => s.IsFreighter && s.AI.State == AIState.SystemTrader);
-                Color tradeLine = new Color(new Color(0, 180, 180), (byte)90).Premultiplied();
                 foreach (Ship f in freighters)
                 {
                     if (f.AI.OrderQueue.TryPeekLast(out ShipAI.ShipGoal g)
                         && g.Trade is { ExportFrom: { } from, ImportTo: { } to }
-                        && seen.Add((from, to)))
+                        && seen.Add((from, to, g.Trade.Goods)))
                     {
-                        DrawLineProjected(from.Position, to.Position, tradeLine);
+                        (Color line, SubTexture icon) = RouteStyle(g.Trade.Goods);
+                        DrawLineProjected(from.Position, to.Position, line);
+                        DrawRouteIcon(batch, icon, from.Position, to.Position);
                     }
                 }
             }
 
             if (ShowingColonizationRoutesOverlay)
             {
-                Color colonyLine = new Color(Player.EmpireColor, (byte)120).Premultiplied();
+                Color colonyLine = new Color(new Color(128, 128, 128), (byte)120).Premultiplied();
                 foreach (Goal g in Player.AI.Goals)
                 {
                     // the virtual pair is only populated on colonization goals; the
@@ -721,6 +723,21 @@ namespace Ship_Game
                     }
                 }
             }
+        }
+
+        (Color, SubTexture) RouteStyle(Goods goods) => goods switch
+        {
+            Goods.Food       => (new Color(new Color(0, 200, 0), (byte)90).Premultiplied(), ResourceManager.Texture("NewUI/icon_food")),
+            Goods.Production => (new Color(new Color(255, 165, 0), (byte)90).Premultiplied(), ResourceManager.Texture("NewUI/icon_production")),
+            _                => (new Color(new Color(255, 255, 255), (byte)90).Premultiplied(), ResourceManager.Texture("UI/icon_pop_22")),
+        };
+
+        // the goods icon rides the line's midpoint at constant screen size
+        void DrawRouteIcon(SpriteBatch batch, SubTexture icon, Vector2 a, Vector2 b)
+        {
+            Vector2 mid = (a + b) / 2f;
+            Vector2 screen = ProjectToScreenPosition(mid.ToVec3()).ToVec2f();
+            batch.Draw(icon, new RectF(screen.X - 7, screen.Y - 7, 14, 14), Color.White);
         }
 
         void DrawShipRangeOverlay()
