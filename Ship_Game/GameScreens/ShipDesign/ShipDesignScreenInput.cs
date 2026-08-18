@@ -174,6 +174,13 @@ namespace Ship_Game
                 return true;
             }
 
+            // the design issues screen by key (bench 434) - same gate as its buttons
+            if (input.DesignIssues && !GlobalStats.TakingInput && IssuesPanel.OpenIssuesByKey())
+            {
+                GameAudio.AcceptClick();
+                return true;
+            }
+
             // Ludoal fork: the ENTIRE right-click is resolved here, before anything else can see
             // it - because GameScreen.HandleInput closes any IsPopup screen on an unconsumed
             // right-click (GameScreen.cs:354), and this screen is IsPopup to show the universe

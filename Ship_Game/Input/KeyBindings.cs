@@ -43,14 +43,22 @@ namespace Ship_Game
         public static Keys OpenDiplomacy = Keys.I;
         public static Keys OpenEspionage = Keys.E;
 
+        // map & camera (bench 434): deliberate zooming joins the table
+        public static Keys ZoomToSelection = Keys.PageUp;
+        public static Keys ZoomOut         = Keys.PageDown;
+
+        // Shipyard: open/close the design issues screen (T was its historical close key)
+        public static Keys DesignIssues    = Keys.T;
+
         // colony navigation (bench 427): leaf through the empire without the mouse
         public static Keys PrevColony   = Keys.OemComma;  // bench 428: brackets need AltGr on AZERTY - dead keys on the maintainer's layout
         public static Keys NextColony   = Keys.OemPeriod;
         public static Keys GoToCapital  = Keys.Home;
 
         // game commands
-        public static Keys QuickSave     = Keys.F9;
-        public static Keys CinematicMode = Keys.F11;
+        public static Keys QuickSave       = Keys.F9;
+        public static Keys CinematicMode   = Keys.F11;
+        public static Keys RealisticLights = Keys.F10; // bench 434: was Shift+F5, single-key until combos land
 
         // the display name a tooltip announces - ONE source, so a remapped key can
         // never lie on screen (the "F3" literal trap)

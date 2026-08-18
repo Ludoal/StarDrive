@@ -87,6 +87,16 @@ namespace Ship_Game.GameScreens.ShipDesign
             Screen.ScreenManager.AddScreen(issues);
         }
 
+        // the DesignIssues hotkey's entrance (bench 434): opens only when there is
+        // something to show - the same gate as the buttons' visibility
+        public bool OpenIssuesByKey()
+        {
+            if (!BtnDesignIssues.Visible && !BtnInformation.Visible)
+                return false;
+            AddDesignIssuesScreen();
+            return true;
+        }
+
         public override void Update(float fixedDeltaTime)
         {
             BtnInformation.Visible = BtnDesignIssues.Visible = false;

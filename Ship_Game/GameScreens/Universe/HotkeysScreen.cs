@@ -37,10 +37,9 @@ namespace Ship_Game
             ("MAP & CAMERA", new[]
             {
                 new Hotkey("Arrows / WASD", "Pan the camera"),
-                new Hotkey("PageUp", "Zoom to selection"),
-                new Hotkey("PageDown", "Zoom out"),
+                new Hotkey(null, "Zoom to selection", nameof(KeyBindings.ZoomToSelection)),
+                new Hotkey(null, "Zoom out", nameof(KeyBindings.ZoomOut)),
                 new Hotkey("Alt (hold)", "Tactical icons at close zoom"),
-                new Hotkey(null, "Cinematic mode", nameof(KeyBindings.CinematicMode)),
                 new Hotkey("Ctrl+Middle-click", "Chase camera on selected ship"),
                 new Hotkey(null, "Previous colony", nameof(KeyBindings.PrevColony)),
                 new Hotkey(null, "Next colony", nameof(KeyBindings.NextColony)),
@@ -53,7 +52,10 @@ namespace Ship_Game
                 new Hotkey(null, "Subspace projection", nameof(KeyBindings.FTLOverlay)),
                 new Hotkey(null, "Gravity wells", nameof(KeyBindings.GravityWellOverlay)),
                 new Hotkey(null, "Weapons range", nameof(KeyBindings.RangeOverlay)),
-                new Hotkey("Shift+F5", "Realistic lights"),
+                // bench 434 (maintainer decision): Cinematic changes what you SEE, not
+                // where the camera is - its family is the overlays
+                new Hotkey(null, "Cinematic mode", nameof(KeyBindings.CinematicMode)),
+                new Hotkey(null, "Realistic lights", nameof(KeyBindings.RealisticLights)),
             }),
             ("SCREENS", new[]
             {
@@ -74,6 +76,7 @@ namespace Ship_Game
                 new Hotkey(null, "Deep Space Build", nameof(KeyBindings.DeepSpaceBuildWindow)),
                 new Hotkey(null, "Exotic Bonuses", nameof(KeyBindings.ExoticBonusesWindow)),
                 new Hotkey(null, "Freighter Utilization", nameof(KeyBindings.FreighterUtilWindow)),
+                new Hotkey(null, "Design Issues (in Shipyard)", nameof(KeyBindings.DesignIssues)),
                 new Hotkey(null, "Important Events log", nameof(KeyBindings.ImportantEventsScreen)),
                 new Hotkey(null, "Last viewed colony", nameof(KeyBindings.ColonyOverviewScreen)),
                 new Hotkey("F1", "Help"),

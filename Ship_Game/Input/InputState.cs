@@ -94,15 +94,16 @@ namespace Ship_Game
         public bool PauseGame            => KeyPressed(Keys.Space) && !IsShiftKeyDown;
         // Ludoal fork (wishlist): the named game hotkeys below read the KeyBindings table
         // instead of hard Keys - the table loads player overrides from Hotkeys.yaml
-        public bool QuickSave            => KeyPressed(KeyBindings.QuickSave) && !IsShiftKeyDown; // Ludoal fork: moved from F5, gravity wells overlay took it
-        public bool UseRealLights        => IsShiftKeyDown && KeyPressed(Keys.F5);
+        public bool QuickSave            => KeyPressed(KeyBindings.QuickSave);
+        public bool UseRealLights        => KeyPressed(KeyBindings.RealisticLights); // bench 434: single key, rebindable
         public bool ShowExceptionTracker => KeyPressed(Keys.F12); // Ludoal fork: F6 went to Weapons Range; debug lives at the far end
         public bool SpeedReset           => KeyPressed(Keys.Space) && IsShiftKeyDown;
         public bool SpeedUp              => KeyPressed(Keys.OemPlus) || KeyPressed(Keys.Add);
         public bool SpeedDown            => KeyPressed(Keys.OemMinus) || KeyPressed(Keys.Subtract);
         public bool ScrapShip            => KeyPressed(Keys.Back) || KeyPressed(Keys.Delete);
-        public bool ZoomToShip           => KeyPressed(Keys.PageUp);
-        public bool ZoomOut              => KeyPressed(Keys.PageDown);
+        public bool ZoomToShip           => KeyPressed(KeyBindings.ZoomToSelection);
+        public bool ZoomOut              => KeyPressed(KeyBindings.ZoomOut);
+        public bool DesignIssues         => KeyPressed(KeyBindings.DesignIssues);
         public bool DeepSpaceBuildWindow => KeyPressed(KeyBindings.DeepSpaceBuildWindow);
         public bool PlanetListScreen     => KeyPressed(KeyBindings.PlanetListScreen);
         public bool ExoticListScreen     => KeyPressed(KeyBindings.ExoticListScreen);
@@ -117,7 +118,7 @@ namespace Ship_Game
         public bool InfluenceOverlay     => KeyPressed(KeyBindings.InfluenceOverlay); // Ludoal fork: colored influence zones
         public bool RangeOverlay         => KeyPressed(KeyBindings.RangeOverlay); // Ludoal fork: F3 went to the Vision overlay
         public bool FTLOverlay           => KeyPressed(KeyBindings.FTLOverlay); // Ludoal fork: subspace projection (coverage + projectors), ex-F2
-        public bool GravityWellOverlay   => KeyPressed(KeyBindings.GravityWellOverlay) && !IsShiftKeyDown; // Ludoal fork (Shift+F5 stays real lights)
+        public bool GravityWellOverlay   => KeyPressed(KeyBindings.GravityWellOverlay); // bench 434: real lights left Shift+F5, guard retired
         public bool VisionOverlay        => KeyPressed(KeyBindings.VisionOverlay); // Ludoal fork: sensor/vision coverage, spies included
         public bool ShipListScreen       => KeyPressed(KeyBindings.ShipListScreen);
         public bool TroopListScreen      => KeyPressed(KeyBindings.TroopListScreen); // Ludoal fork: Troops Array (C was debug-spawn only)

@@ -92,7 +92,7 @@ namespace Ship_Game.GameScreens.ShipDesign
 
         public override bool HandleInput(InputState input)
         {
-            if (input.KeyPressed(Keys.T) && !GlobalStats.TakingInput)
+            if (input.DesignIssues && !GlobalStats.TakingInput) // rebindable (bench 434)
             {
                 GameAudio.EchoAffirmative();
                 ExitScreen();
