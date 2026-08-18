@@ -704,7 +704,7 @@ namespace Ship_Game
                 return;
 
             bCursor.Y += TextFont.LineSpacing * 2;
-            batch.DrawString(TextFont, "You may scrap this building by right clicking it", bCursor, Color.White);
+            batch.DrawString(TextFont, "You may scrap this building by right clicking it.", bCursor, Color.White);
             bCursor.Y += TextFont.LineSpacing; // bench 431: the LAST line counts in the measure, or the elevator eats it
         }
 

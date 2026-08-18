@@ -5780,319 +5780,319 @@ TheyHave:
  PTB: "Eles Têm"
 IsAnEmpireComprisedOf:
  Id: 1300
- ENG: " is an empire comprised of"
- RUS: " - империя"
- SPA: " es un imperio compuesto por"
+ ENG: " is an empire comprised of "
+ RUS: " - империя "
+ SPA: " es un imperio compuesto por "
  UKR: " це імперія, що складається з"
- PTB: " é um império composto por"
+ PTB: " é um império composto por "
 AreACyberneticRaceOf:
  Id: 1301
- ENG: " are a cybernetic race of"
- RUS: " - кибернетическая раса"
- SPA: " son una raza cibernética de"
+ ENG: " are a cybernetic race of "
+ RUS: " - кибернетическая раса "
+ SPA: " son una raza cibernética de "
  UKR: " є кібернетичною расою"
- PTB: " são uma raça cibernética de"
+ PTB: " são uma raça cibernética de "
 AreARaceOf:
  Id: 1302
- ENG: " are a race of"
- RUS: " - раса"
- SPA: " son una raza de"
+ ENG: " are a race of "
+ RUS: " - раса "
+ SPA: " son una raza de "
  UKR: " це раса"
- PTB: " são uma raça de"
+ PTB: " são uma raça de "
 AquaticBeingsWith:
  Id: 1303
- ENG: "aquatic beings with"
- RUS: "водных созданий с"
- SPA: "seres acuáticos con"
+ ENG: "aquatic beings with "
+ RUS: "водных созданий с "
+ SPA: "seres acuáticos con "
  UKR: "водні істоти з"
- PTB: "seres aquáticos com"
+ PTB: "seres aquáticos com "
 TerrestrialBeingsWith:
  Id: 1304
- ENG: "terrestrial beings with"
- RUS: "земных созданий с"
- SPA: "seres terrestres con"
+ ENG: "terrestrial beings with "
+ RUS: "земных созданий с "
+ SPA: "seres terrestres con "
  UKR: "земні істоти з"
- PTB: "seres terrestres com"
+ PTB: "seres terrestres com "
 AHighReproductiveRateAnd:
  Id: 1305
- ENG: "a high reproductive rate and"
- RUS: "высокими темпами воспроизводства,"
- SPA: "una alta tasa de reproducción y"
+ ENG: "a high reproductive rate and "
+ RUS: "высокими темпами воспроизводства, "
+ SPA: "una alta tasa de reproducción y "
  UKR: "високий коефіцієнт відтворення та"
- PTB: "alta taxa reprodutiva e"
+ PTB: "alta taxa reprodutiva e "
 ALowReproductiveRateAnd:
  Id: 1306
- ENG: "a low reproductive rate and"
- RUS: "низкими темпами воспроизводства,"
- SPA: "una baja tasa de reproducción y"
+ ENG: "a low reproductive rate and "
+ RUS: "низкими темпами воспроизводства, "
+ SPA: "una baja tasa de reproducción y "
  UKR: "низький коефіцієнт відтворення та"
- PTB: "baixa taxa reprodutiva e"
+ PTB: "baixa taxa reprodutiva e "
 AnAverageReproductiveRateAnd:
  Id: 1307
- ENG: "an average reproductive rate and"
- RUS: "средними темпами воспроизводства,"
- SPA: "una tasa de reproducción normal y"
+ ENG: "an average reproductive rate and "
+ RUS: "средними темпами воспроизводства, "
+ SPA: "una tasa de reproducción normal y "
  UKR: "середній коефіцієнт відтворення та"
- PTB: "taxa reprodutiva média e"
+ PTB: "taxa reprodutiva média e "
 SwiftManufacturingSpeedsAnd:
  Id: 1308
- ENG: "swift manufacturing speeds and"
- RUS: "быстрым промышленным процессом и"
- SPA: "altas velocidades de fabricación y"
+ ENG: "swift manufacturing speeds and "
+ RUS: "быстрым промышленным процессом и "
+ SPA: "altas velocidades de fabricación y "
  UKR: "швидкі темпи виробництва та"
- PTB: "velocidades de fabricação rápidas e"
+ PTB: "velocidades de fabricação rápidas e "
 LengthyManufacturingTimesAnd:
  Id: 1309
- ENG: "lengthy manufacturing times and"
- RUS: "долгим промышленным процессом и"
- SPA: "tiempos de fabricación largos y"
+ ENG: "lengthy manufacturing times and "
+ RUS: "долгим промышленным процессом и "
+ SPA: "tiempos de fabricación largos y "
  UKR: "тривалі терміни виробництва та"
- PTB: "tempos de fabricação longos e"
+ PTB: "tempos de fabricação longos e "
 AverageManufacturingTimesAnd:
  Id: 1310
- ENG: "average manufacturing times and"
- RUS: "обычным промышленным процессом и"
- SPA: "tiempos de fabricación normales y"
+ ENG: "average manufacturing times and "
+ RUS: "обычным промышленным процессом и "
+ SPA: "tiempos de fabricación normales y "
  UKR: "середній час виробництва та"
- PTB: "tempos de fabricação médios e"
+ PTB: "tempos de fabricação médios e "
 AGluttonousApproachToLife:
  Id: 1311
- ENG: "a gluttonous approach to life."
- RUS: "высоким потреблением еды."
- SPA: "un planteamiento glotón de la vida."
+ ENG: "a gluttonous approach to life. "
+ RUS: "высоким потреблением еды. "
+ SPA: "un planteamiento glotón de la vida. "
  UKR: "ненажерливий підхід до життя."
- PTB: "uma abordagem glutona da vida."
+ PTB: "uma abordagem glutona da vida. "
 ARatherEfficientMetabolism:
  Id: 1312
- ENG: "a rather efficient metabolism."
- RUS: "весьма эффективным метаболизмом."
- SPA: "un metabolismo bastante eficaz."
+ ENG: "a rather efficient metabolism. "
+ RUS: "весьма эффективным метаболизмом. "
+ SPA: "un metabolismo bastante eficaz. "
  UKR: "досить ефективний метаболізм."
- PTB: "um metabolismo bastante eficiente."
+ PTB: "um metabolismo bastante eficiente. "
 UnremarkableDietaryNeeds:
  Id: 1313
- ENG: "unremarkable dietary needs."
- RUS: "непримечательной диетой."
- SPA: "necesidades alimenticias normales y corrientes."
+ ENG: "unremarkable dietary needs. "
+ RUS: "непримечательной диетой. "
+ SPA: "necesidades alimenticias normales y corrientes. "
  UKR: "незначні дієтичні потреби."
- PTB: "necessidades alimentares comuns."
+ PTB: "necessidades alimentares comuns. "
 ARavenousAppetiteForParts:
  Id: 1314
- ENG: "a ravenous appetite for parts, components, and raw materials."
- RUS: "ненасытным аппетитом в отношении запчастей, компонентов и сырья."
- SPA: "un apetito voraz por piezas, componentes y materias primas."
+ ENG: "a ravenous appetite for parts, components, and raw materials. "
+ RUS: "ненасытным аппетитом в отношении запчастей, компонентов и сырья. "
+ SPA: "un apetito voraz por piezas, componentes y materias primas. "
  UKR: "ненажерливий апетит до деталей, компонентів і сировини."
- PTB: "um apetite voraz por peças, componentes e matérias-primas."
+ PTB: "um apetite voraz por peças, componentes e matérias-primas. "
 MinimalMaterialAndComponentRequirements:
  Id: 1315
- ENG: "minimal material and component requirements."
- RUS: "минимальным потреблением материалов и компонентов."
- SPA: "necesidades mínimas de materiales y componentes."
+ ENG: "minimal material and component requirements. "
+ RUS: "минимальным потреблением материалов и компонентов. "
+ SPA: "necesidades mínimas de materiales y componentes. "
  UKR: "мінімальні вимоги до матеріалів і компонентів."
- PTB: "requisitos mínimos de materiais e componentes."
+ PTB: "requisitos mínimos de materiais e componentes. "
 ModerateMaterialRequirements:
  Id: 1316
- ENG: "moderate material requirements."
- RUS: "средним материальным потреблением."
- SPA: "necesidades moderadas de materiales."
+ ENG: "moderate material requirements. "
+ RUS: "средним материальным потреблением. "
+ SPA: "necesidades moderadas de materiales. "
  UKR: "помірна потреба в матеріалах."
- PTB: "requisitos moderados de materiais."
+ PTB: "requisitos moderados de materiais. "
 Physically:
  Id: 1317
- ENG: "Physically,"
- RUS: "Физиологически,"
- SPA: "Físicamente,"
+ ENG: "Physically, "
+ RUS: "Физиологически, "
+ SPA: "Físicamente, "
  UKR: "Фізично,"
- PTB: "Fisicamente,"
+ PTB: "Fisicamente, "
 AreBothBeautifulAndTerrifying:
  Id: 1318
- ENG: " are both beautiful and terrifying, with an enigmatic sort of lethal majesty that serves them well in contests of diplomacy or strength."
- RUS: " и красивы, и ужасающи; они создают вокруг себя атмосферу грозного величия, что играет им на руку в дипломатических переговорах."
- SPA: " son a la vez hermosos y aterradores, con una especie de majestuosidad enigmática y letal que aprovechan bien en pugnas diplomáticas o bélicas."
+ ENG: " are both beautiful and terrifying, with an enigmatic sort of lethal majesty that serves them well in contests of diplomacy or strength. "
+ RUS: " и красивы, и ужасающи; они создают вокруг себя атмосферу грозного величия, что играет им на руку в дипломатических переговорах. "
+ SPA: " son a la vez hermosos y aterradores, con una especie de majestuosidad enigmática y letal que aprovechan bien en pugnas diplomáticas o bélicas. "
  UKR: " одночасно прекрасні і жахливі, із загадковою смертоносною величчю, яка добре служить їм у змаганнях дипломатії чи сили."
- PTB: " são ao mesmo tempo belos e aterrorizantes, com uma espécie de majestade letal e enigmática que lhes serve bem em disputas de diplomacia ou força."
+ PTB: " são ao mesmo tempo belos e aterrorizantes, com uma espécie de majestade letal e enigmática que lhes serve bem em disputas de diplomacia ou força. "
 AppearBothLethalAndGrotesque:
  Id: 1319
- ENG: " appear both lethal and grotesque, as they tend to project a sense of instinctive, terrifying revulsion upon species who are unfortunate enough to meet them in diplomacy or combat."
- RUS: " выглядят одновременно грозно и отвратительно. У особей, имевших несчастье повстречаться с ними на переговорах или в сражении, они вызывают инстинктивный страх и отвращение."
- SPA: " su aspecto es tan letal como grotesco, ya que tienden a proyectar una sensación de repulsión instintiva y terrorífica sobre especies que tienen la desgracia de lidiar con ellos en la batalla o en la diplomacia."
+ ENG: " appear both lethal and grotesque, as they tend to project a sense of instinctive, terrifying revulsion upon species who are unfortunate enough to meet them in diplomacy or combat. "
+ RUS: " выглядят одновременно грозно и отвратительно. У особей, имевших несчастье повстречаться с ними на переговорах или в сражении, они вызывают инстинктивный страх и отвращение. "
+ SPA: " su aspecto es tan letal como grotesco, ya que tienden a proyectar una sensación de repulsión instintiva y terrorífica sobre especies que tienen la desgracia de lidiar con ellos en la batalla o en la diplomacia. "
  UKR: " виглядають одночасно смертоносними і гротескними, оскільки вони, як правило, проектують почуття інстинктивної, жахливої відрази на види, яким не пощастило зустрітися з ними в дипломатії або в бою."
- PTB: " parecem ao mesmo tempo letais e grotescos, pois tendem a projetar uma sensação instintiva e aterrorizante de repulsa nas espécies infelizes o bastante para encontrá-los em diplomacia ou combate."
+ PTB: " parecem ao mesmo tempo letais e grotescos, pois tendem a projetar uma sensação instintiva e aterrorizante de repulsa nas espécies infelizes o bastante para encontrá-los em diplomacia ou combate. "
 AppearSomewhatBestialWithObvious:
  Id: 1320
- ENG: " appear somewhat bestial, with obvious signs of their great strength, speed, and lethality apparent in their physique."
- RUS: " выглядят немного по-звериному; по их облику однозначно можно сказать, что они сильны, ловки и смертоносны."
- SPA: " parecen algo brutales y tienen indicios físicos manifiestos de gran fuerza, velocidad y capacidad mortífera."
+ ENG: " appear somewhat bestial, with obvious signs of their great strength, speed, and lethality apparent in their physique. "
+ RUS: " выглядят немного по-звериному; по их облику однозначно можно сказать, что они сильны, ловки и смертоносны. "
+ SPA: " parecen algo brutales y tienen indicios físicos manifiestos de gran fuerza, velocidad y capacidad mortífera. "
  UKR: " виглядають дещо звірячими, з очевидними ознаками їхньої величезної сили, швидкості та смертоносності, що проявляються в їхній статурі."
- PTB: " parecem um tanto bestiais, com sinais óbvios de sua grande força, velocidade e letalidade aparentes em seu físico."
+ PTB: " parecem um tanto bestiais, com sinais óbvios de sua grande força, velocidade e letalidade aparentes em seu físico. "
 AreCreaturesOfFragileBeauty:
  Id: 1321
- ENG: " are creatures of fragile beauty, with a delicate and ephemeral stature that many species find majestic and alluring."
- RUS: " являются красивыми и хрупкими созданиями, что является привлекательным в глазах представителей многих других рас."
- SPA: " son criaturas de una belleza frágil, de imagen delicada y efímera que muchas especies encuentran augusta y seductora."
+ ENG: " are creatures of fragile beauty, with a delicate and ephemeral stature that many species find majestic and alluring. "
+ RUS: " являются красивыми и хрупкими созданиями, что является привлекательным в глазах представителей многих других рас. "
+ SPA: " son criaturas de una belleza frágil, de imagen delicada y efímera que muchas especies encuentran augusta y seductora. "
  UKR: " це створіння тендітної краси, з витонченою і ефемерною статурою, яку багато видів вважають величною і привабливою."
- PTB: " são criaturas de beleza frágil, com uma estatura delicada e efêmera que muitas espécies consideram majestosa e atraente."
+ PTB: " são criaturas de beleza frágil, com uma estatura delicada e efêmera que muitas espécies consideram majestosa e atraente. "
 AppearGnarledAndWeakWith:
  Id: 1322
- ENG: " appear gnarled and weak, with a countenance both hideous and scrawny."
- RUS: " выглядят скрюченными и слабыми; их вид никак нельзя назвать привлекательным."
- SPA: " parecen retorcidos y débiles, con un semblante igual escuálido y abominable a partes iguales."
+ ENG: " appear gnarled and weak, with a countenance both hideous and scrawny. "
+ RUS: " выглядят скрюченными и слабыми; их вид никак нельзя назвать привлекательным. "
+ SPA: " parecen retorcidos y débiles, con un semblante igual escuálido y abominable a partes iguales. "
  UKR: " виглядають кострубатими і слабкими, з огидним і кістлявим обличчям."
- PTB: " parecem retorcidos e fracos, com uma aparência ao mesmo tempo horrenda e mirrada."
+ PTB: " parecem retorcidos e fracos, com uma aparência ao mesmo tempo horrenda e mirrada. "
 SeemToHaveEvolvedWithout:
  Id: 1323
- ENG: " seem to have evolved without much need for speed or strength and as a result are somewhat frail compared to peer species."
- RUS: " смогли эволюционировать, не развивая в себе ни физическую силу, ни ловкость, поэтому на фоне других особей они выглядят хрупко."
- SPA: " aparentemente han evolucionado sin mucha necesidad de velocidad o fuerza y, en consecuencia, son algo frágiles en comparación con especies semejantes."
+ ENG: " seem to have evolved without much need for speed or strength and as a result are somewhat frail compared to peer species. "
+ RUS: " смогли эволюционировать, не развивая в себе ни физическую силу, ни ловкость, поэтому на фоне других особей они выглядят хрупко. "
+ SPA: " aparentemente han evolucionado sin mucha necesidad de velocidad o fuerza y, en consecuencia, son algo frágiles en comparación con especies semejantes. "
  UKR: " схоже, еволюціонували без особливої потреби у швидкості чи силі, і тому є дещо кволими порівняно з іншими видами."
- PTB: " parecem ter evoluído sem muita necessidade de velocidade ou força e, como resultado, são um tanto frágeis em comparação com espécies equivalentes."
+ PTB: " parecem ter evoluído sem muita necessidade de velocidade ou força e, como resultado, são um tanto frágeis em comparação com espécies equivalentes. "
 PossessANonthreateningCountenanceThat:
  Id: 1324
- ENG: " possess a non-threatening countenance that projects neither an overabundance of strength or weakness. However, they are exceedingly charismatic and naturally draw others towards them."
- RUS: " обладают обычной внешностью, которая не предполагает какой-то особенной силы или слабости. Тем не менее, они очень обаятельны, и другие особи инстинктивно тянутся к ним."
- SPA: " poseen un semblante poco amenazador que no refleja exceso de puntos fuertes o débiles. Sin embargo, por naturaleza sobresalen por su carisma y saben ganarse a los demás."
+ ENG: " possess a non-threatening countenance that projects neither an overabundance of strength or weakness. However, they are exceedingly charismatic and naturally draw others towards them. "
+ RUS: " обладают обычной внешностью, которая не предполагает какой-то особенной силы или слабости. Тем не менее, они очень обаятельны, и другие особи инстинктивно тянутся к ним. "
+ SPA: " poseen un semblante poco amenazador que no refleja exceso de puntos fuertes o débiles. Sin embargo, por naturaleza sobresalen por su carisma y saben ganarse a los demás. "
  UKR: " мають не загрозливий вигляд, який не демонструє ані надмірної сили, ані слабкості. Однак вони надзвичайно харизматичні і природно притягують до себе інших."
- PTB: " possuem uma aparência não ameaçadora que não projeta excesso de força nem fraqueza. Contudo, são extremamente carismáticos e naturalmente atraem os outros para perto deles."
+ PTB: " possuem uma aparência não ameaçadora que não projeta excesso de força nem fraqueza. Contudo, são extremamente carismáticos e naturalmente atraem os outros para perto deles. "
 PossessANonthreateningCountenanceThat2:
  Id: 1325
- ENG: " possess a non-threatening countenance that projects neither an overabundance of strength or weakness. However, they are offensively mannered with many odiferous bodily functions that tend to drive others away from them."
- RUS: " обладают обычной внешностью, которая не предполагает какой-то особенной силы или слабости. Тем не менее, они обладают неприятными манерами и отталкивающими функциями организма, поэтому другие стараются сторониться их."
- SPA: " poseen un semblante poco amenazador que no refleja exceso de puntos fuertes o débiles. Sin embargo, son de modales bruscos, con muchas funciones corporales malolientes que tienden a repeler a los demás."
+ ENG: " possess a non-threatening countenance that projects neither an overabundance of strength or weakness. However, they are offensively mannered with many odiferous bodily functions that tend to drive others away from them. "
+ RUS: " обладают обычной внешностью, которая не предполагает какой-то особенной силы или слабости. Тем не менее, они обладают неприятными манерами и отталкивающими функциями организма, поэтому другие стараются сторониться их. "
+ SPA: " poseen un semblante poco amenazador que no refleja exceso de puntos fuertes o débiles. Sin embargo, son de modales bruscos, con muchas funciones corporales malolientes que tienden a repeler a los demás. "
  UKR: " мають не загрозливий вигляд, який не виказує ані надмірної сили, ані слабкості. Однак, вони мають агресивну манеру поведінки з багатьма пахучими тілесними функціями, які, як правило, відштовхують від них інших."
- PTB: " possuem uma aparência não ameaçadora que não projeta excesso de força nem fraqueza. Contudo, têm modos ofensivos e muitas funções corporais odoríferas que tendem a afastar os outros."
+ PTB: " possuem uma aparência não ameaçadora que não projeta excesso de força nem fraqueza. Contudo, têm modos ofensivos e muitas funções corporais odoríferas que tendem a afastar os outros. "
 HaveNoParticularStrengthsOr:
  Id: 1326
- ENG: " have no particular strengths or weaknesses."
- RUS: " не обладают ярко выраженными сильными или слабыми сторонами."
- SPA: " no tienen puntos fuertes ni débiles destacables."
+ ENG: " have no particular strengths or weaknesses. "
+ RUS: " не обладают ярко выраженными сильными или слабыми сторонами. "
+ SPA: " no tienen puntos fuertes ni débiles destacables. "
  UKR: " не мають особливих сильних чи слабких сторін."
- PTB: " não possuem forças ou fraquezas particulares."
+ PTB: " não possuem forças ou fraquezas particulares. "
 InRejectingTheirOrganicForms:
  Id: 1327
- ENG: "In rejecting their organic forms,"
- RUS: "Отказавшись от своих органических тел,"
- SPA: "Al rechazar sus formas orgánicas,"
+ ENG: "In rejecting their organic forms, "
+ RUS: "Отказавшись от своих органических тел, "
+ SPA: "Al rechazar sus formas orgánicas, "
  UKR: "У відмові від їхніх органічних форм,"
- PTB: "Ao rejeitarem suas formas orgânicas,"
+ PTB: "Ao rejeitarem suas formas orgânicas, "
 HaveBecomeIncredibleMachinesOf:
  Id: 1328
- ENG: " have become incredible machines of grace and lethality, with a sleek, deadly, and beautiful appearance."
- RUS: " превратились в удивительные машины, смертоносные, красивые, утонченные и элегантные."
- SPA: " se han convertido en máquinas increíbles, gráciles y letales con una belleza exterior atractiva y fatal."
+ ENG: " have become incredible machines of grace and lethality, with a sleek, deadly, and beautiful appearance. "
+ RUS: " превратились в удивительные машины, смертоносные, красивые, утонченные и элегантные. "
+ SPA: " se han convertido en máquinas increíbles, gráciles y letales con una belleza exterior atractiva y fatal. "
  UKR: " стали неймовірними машинами витонченості та смертоносності, з витонченим, смертоносним і красивим зовнішнім виглядом."
- PTB: " tornaram-se máquinas incríveis de graça e letalidade, com uma aparência elegante, mortal e bela."
+ PTB: " tornaram-se máquinas incríveis de graça e letalidade, com uma aparência elegante, mortal e bela. "
 HaveBecomeConfusingTechnologicalMonstrosities:
  Id: 1329
- ENG: " have become confusing technological monstrosities with deadly-looking appendages and a decidedly hostile appearance."
- RUS: " превратились в технологических монстров, одним своим видом способных напугать кого угодно."
- SPA: " se han convertido en desconcertantes monstruosidades tecnológicas con apéndices de apariencia letal y un aspecto claramente hostil."
+ ENG: " have become confusing technological monstrosities with deadly-looking appendages and a decidedly hostile appearance. "
+ RUS: " превратились в технологических монстров, одним своим видом способных напугать кого угодно. "
+ SPA: " se han convertido en desconcertantes monstruosidades tecnológicas con apéndices de apariencia letal y un aspecto claramente hostil. "
  UKR: " перетворилися на заплутані технологічні потвори зі смертоносними придатками та виразно ворожим виглядом."
- PTB: " tornaram-se monstruosidades tecnológicas confusas, com apêndices de aparência mortal e uma aparência decididamente hostil."
+ PTB: " tornaram-se monstruosidades tecnológicas confusas, com apêndices de aparência mortal e uma aparência decididamente hostil. "
 LookLikeMachinesDesignedFor:
  Id: 1330
- ENG: " look like machines designed for war without any particular focus put on appearance."
- RUS: " превратились в боевые машины, для которых их внешний вид значит очень мало."
- SPA: " parecen máquinas diseñadas para la guerra que no se preocupan lo más mínimo por su aspecto."
+ ENG: " look like machines designed for war without any particular focus put on appearance. "
+ RUS: " превратились в боевые машины, для которых их внешний вид значит очень мало. "
+ SPA: " parecen máquinas diseñadas para la guerra que no se preocupan lo más mínimo por su aspecto. "
  UKR: " виглядають як машини, призначені для війни, без особливої уваги до зовнішнього вигляду."
- PTB: " parecem máquinas projetadas para a guerra, sem qualquer foco especial na aparência."
+ PTB: " parecem máquinas projetadas para a guerra, sem qualquer foco especial na aparência. "
 ComeOffAsFriendlyLittle:
  Id: 1331
- ENG: " come off as friendly little robots that could only be described as cute, but fragile."
- RUS: " превратились в маленьких роботов, которые выглядят очень мило, но кажутся хрупкими."
- SPA: " dan la impresión de ser pequeños y simpáticos robots que solo podrían describirse como adorables y frágiles."
+ ENG: " come off as friendly little robots that could only be described as cute, but fragile. "
+ RUS: " превратились в маленьких роботов, которые выглядят очень мило, но кажутся хрупкими. "
+ SPA: " dan la impresión de ser pequeños y simpáticos robots que solo podrían describirse como adorables y frágiles. "
  UKR: " виглядають як привітні маленькі роботи, яких можна описати лише як милих, але тендітних."
- PTB: " passam a impressão de pequenos robôs amigáveis que só poderiam ser descritos como fofos, porém frágeis."
+ PTB: " passam a impressão de pequenos robôs amigáveis que só poderiam ser descritos como fofos, porém frágeis. "
 AreSpindlyInsectlikeMachinesThat:
  Id: 1332
- ENG: " are spindly, insect-like machines that click and hiss in menacing ways. They look like they could be crunched under a boot."
- RUS: " превратились в насекомоподобные механизмы, которые постоянно шипят и щелкают, причем довольно угрожающе. Первое желание при встрече с ними - немедленно раздавить."
- SPA: " son máquinas larguiruchas con pinta de insectos cuyo siseo y ruiditos suenan amenazadores. Da la sensación de que se les pudiera aplastar con el pie."
+ ENG: " are spindly, insect-like machines that click and hiss in menacing ways. They look like they could be crunched under a boot. "
+ RUS: " превратились в насекомоподобные механизмы, которые постоянно шипят и щелкают, причем довольно угрожающе. Первое желание при встрече с ними - немедленно раздавить. "
+ SPA: " son máquinas larguiruchas con pinta de insectos cuyo siseo y ruiditos suenan amenazadores. Da la sensación de que se les pudiera aplastar con el pie. "
  UKR: " це веретеноподібні, схожі на комах машини, які загрозливо клацають і шиплять. Вони виглядають так, ніби можуть хруснути під чобітьми."
- PTB: " são máquinas delgadas e insetoides que estalam e sibilam de maneiras ameaçadoras. Parecem capazes de serem esmagadas sob uma bota."
+ PTB: " são máquinas delgadas e insetoides que estalam e sibilam de maneiras ameaçadoras. Parecem capazes de serem esmagadas sob uma bota. "
 LookLikeComputersWithWheels:
  Id: 1333
- ENG: " look like computers with wheels and treads attached, and do not seem armed or armored in any way."
- RUS: " выглядят, как компьютеры с прицепленными колесами и ногами, и непохоже, чтобы они были вооружены и как-то защищены."
- SPA: " parecen ordenadores con ruedas y bandas de rodadura; no se percibe si van armados o no."
+ ENG: " look like computers with wheels and treads attached, and do not seem armed or armored in any way. "
+ RUS: " выглядят, как компьютеры с прицепленными колесами и ногами, и непохоже, чтобы они были вооружены и как-то защищены. "
+ SPA: " parecen ordenadores con ruedas y bandas de rodadura; no se percibe si van armados o no. "
  UKR: " виглядають як комп'ютери з прикріпленими до них колесами та протекторами, і не здаються озброєними чи броньованими жодним чином."
- PTB: " parecem computadores com rodas e esteiras acopladas, e não parecem armados ou blindados de nenhuma forma."
+ PTB: " parecem computadores com rodas e esteiras acopladas, e não parecem armados ou blindados de nenhuma forma. "
 SeemToHaveMadeGreat:
  Id: 1334
- ENG: " seem to have made great efforts to mechanically improve upon the grace and beauty of their bodies."
- RUS: " приложили значительные усилия к механическому улучшению своих тел и приданию им красоты."
- SPA: " parecen haber hecho grandes esfuerzos para mejorar mecánicamente la gracilidad y belleza de sus cuerpos."
+ ENG: " seem to have made great efforts to mechanically improve upon the grace and beauty of their bodies. "
+ RUS: " приложили значительные усилия к механическому улучшению своих тел и приданию им красоты. "
+ SPA: " parecen haber hecho grandes esfuerzos para mejorar mecánicamente la gracilidad y belleza de sus cuerpos. "
  UKR: " здається, доклали чимало зусиль, щоб механічно вдосконалити витонченість і красу своїх тіл."
- PTB: " parecem ter feito grandes esforços para melhorar mecanicamente a graça e a beleza de seus corpos."
+ PTB: " parecem ter feito grandes esforços para melhorar mecanicamente a graça e a beleza de seus corpos. "
 HaveDevelopedAColdDisdain:
  Id: 1335
- ENG: " have developed a cold disdain for organic life forms and are particularly uncharismatic."
- RUS: " выработали в себе презрение ко всем органическим формам жизни, вследствие чего удивительно неприятны в общении."
- SPA: " han desarrollado un frío desdén por las formas de vida orgánicas y destacan por su falta de carisma."
+ ENG: " have developed a cold disdain for organic life forms and are particularly uncharismatic. "
+ RUS: " выработали в себе презрение ко всем органическим формам жизни, вследствие чего удивительно неприятны в общении. "
+ SPA: " han desarrollado un frío desdén por las formas de vida orgánicas y destacan por su falta de carisma. "
  UKR: " відчувають холодну зневагу до органічних форм життя і є особливо нехаризматичними."
- PTB: " desenvolveram um desprezo frio por formas de vida orgânicas e são particularmente pouco carismáticos."
+ PTB: " desenvolveram um desprezo frio por formas de vida orgânicas e são particularmente pouco carismáticos. "
 AlthoughTheyHaveReplacedTheir:
  Id: 1336
- ENG: "Although they have replaced their organic bodies with cybernetics,"
- RUS: "Хоть они и заменили свои органические тела кибернетическими механизмами,"
- SPA: "Aunque han sustituido sus cuerpos orgánicos con componentes cibernéticos,"
+ ENG: "Although they have replaced their organic bodies with cybernetics, "
+ RUS: "Хоть они и заменили свои органические тела кибернетическими механизмами, "
+ SPA: "Aunque han sustituido sus cuerpos orgánicos con componentes cibernéticos, "
  UKR: "Хоча вони замінили свої органічні тіла кібернетикою,"
- PTB: "Embora tenham substituído seus corpos orgânicos por cibernética,"
+ PTB: "Embora tenham substituído seus corpos orgânicos por cibernética, "
 HaveNotExtensivelyImprovedOn:
  Id: 1337
- ENG: " have not extensively improved on their original organic structure."
- RUS: " не слишком улучшились по сравнению со своим первоначальным обликом."
- SPA: " no han mejorado en mucho su estructura orgánica original."
+ ENG: " have not extensively improved on their original organic structure. "
+ RUS: " не слишком улучшились по сравнению со своим первоначальным обликом. "
+ SPA: " no han mejorado en mucho su estructura orgánica original. "
  UKR: " не зазнали значних змін у своїй початковій органічній структурі."
- PTB: " não melhoraram extensivamente sua estrutura orgânica original."
+ PTB: " não melhoraram extensivamente sua estrutura orgânica original. "
 However:
  Id: 1338
- ENG: "However,"
- RUS: "Однако,"
- SPA: "No obstante,"
+ ENG: "However, "
+ RUS: "Однако, "
+ SPA: "No obstante, "
  UKR: "Однак,"
- PTB: "No entanto,"
+ PTB: "No entanto, "
 AreExtremelyIntelligentForA:
  Id: 1339
- ENG: " are extremely intelligent for a starfaring race and have a natural curiosity about the universe."
- RUS: " являются исключительно интеллектуальными для расы космических путешественников и обладают огромной любознательностью."
- SPA: " son una raza sumamente inteligente que domina los viajes estelares y siente una curiosidad natural por el universo."
+ ENG: " are extremely intelligent for a starfaring race and have a natural curiosity about the universe. "
+ RUS: " являются исключительно интеллектуальными для расы космических путешественников и обладают огромной любознательностью. "
+ SPA: " son una raza sumamente inteligente que domina los viajes estelares y siente una curiosidad natural por el universo. "
  UKR: " надзвичайно розумні для зоряної раси і мають природну цікавість до всесвіту."
- PTB: " são extremamente inteligentes para uma raça capaz de viajar entre as estrelas e possuem uma curiosidade natural sobre o universo."
+ PTB: " são extremamente inteligentes para uma raça capaz de viajar entre as estrelas e possuem uma curiosidade natural sobre o universo. "
 ToMakeMattersWorse:
  Id: 1340
- ENG: "To make matters worse,"
- RUS: "Хуже того,"
- SPA: "Por si fuera poco,"
+ ENG: "To make matters worse, "
+ RUS: "Хуже того, "
+ SPA: "Por si fuera poco, "
  UKR: "Що ще гірше,"
- PTB: "Para piorar,"
+ PTB: "Para piorar, "
 AreSomewhatDumbForA:
  Id: 1341
- ENG: " are somewhat dumb for a starfaring race and have difficulty being creative."
- RUS: " недостаточно интеллектуальны для расы космических путешественников, и креативность - явно не их конек."
- SPA: " son algo simplones para ser una raza que domina los viajes interestelares y les cuesta ser creativos."
+ ENG: " are somewhat dumb for a starfaring race and have difficulty being creative. "
+ RUS: " недостаточно интеллектуальны для расы космических путешественников, и креативность - явно не их конек. "
+ SPA: " son algo simplones para ser una raza que domina los viajes interestelares y les cuesta ser creativos. "
  UKR: " дещо недалекі, як для зоряної раси, і їм важко бути креативними."
- PTB: " são um tanto burros para uma raça capaz de viajar entre as estrelas e têm dificuldade em ser criativos."
+ PTB: " são um tanto burros para uma raça capaz de viajar entre as estrelas e têm dificuldade em ser criativos. "
 PossessAnAverageIntelligenceFor:
  Id: 1342
- ENG: " possess an average intelligence for a starfaring race."
- RUS: " обладают средним интеллектом для расы космических путешественников."
- SPA: " poseen una inteligencia normal para ser una raza que domina los viajes interestelares."
+ ENG: " possess an average intelligence for a starfaring race. "
+ RUS: " обладают средним интеллектом для расы космических путешественников. "
+ SPA: " poseen una inteligencia normal para ser una raza que domina los viajes interestelares. "
  UKR: " володіють середнім інтелектом для зоряної раси."
- PTB: " possuem inteligência média para uma raça capaz de viajar entre as estrelas."
+ PTB: " possuem inteligência média para uma raça capaz de viajar entre as estrelas. "
 Furthermore:
  Id: 1343
- ENG: "Furthermore,"
- RUS: "Более того,"
- SPA: "Además,"
+ ENG: "Furthermore, "
+ RUS: "Более того, "
+ SPA: "Además, "
  UKR: "Більше того,"
- PTB: "Além disso,"
+ PTB: "Além disso, "
 AreExtremelyIntelligentForA2:
  Id: 1344
- ENG: " are extremely intelligent for a starfaring race and have a natural curiosity about the universe."
- RUS: " являются исключительно интеллектуальными для расы космических путешественников и обладают огромной любознательностью."
- SPA: " son una raza sumamente inteligente que domina los viajes estelares y siente una curiosidad natural por el universo."
+ ENG: " are extremely intelligent for a starfaring race and have a natural curiosity about the universe. "
+ RUS: " являются исключительно интеллектуальными для расы космических путешественников и обладают огромной любознательностью. "
+ SPA: " son una raza sumamente inteligente que domina los viajes estelares y siente una curiosidad natural por el universo. "
  UKR: " надзвичайно розумні для зоряної раси і мають природну цікавість до всесвіту."
- PTB: " são extremamente inteligentes para uma raça capaz de viajar entre as estrelas e possuem uma curiosidade natural sobre o universo."
+ PTB: " são extremamente inteligentes para uma raça capaz de viajar entre as estrelas e possuem uma curiosidade natural sobre o universo. "
 GovernmentIsEfficientAndEffective:
  Id: 1345
  ENG: " government is efficient and effective"
@@ -6102,32 +6102,32 @@ GovernmentIsEfficientAndEffective:
  PTB: " possui um governo eficiente e eficaz"
 WhichReflectsTheMethodicalAnd:
  Id: 1346
- ENG: ", which reflects the methodical and practical nature of"
- RUS: ", отражающие методичность и практичность расы"
- SPA: ", lo que refleja el carácter práctico y metódico de"
+ ENG: ", which reflects the methodical and practical nature of "
+ RUS: ", отражающие методичность и практичность расы  "
+ SPA: ", lo que refleja el carácter práctico y metódico de "
  UKR: ", яка відображає методичний та практичний характер"
- PTB: ", o que reflete a natureza metódica e prática de"
+ PTB: ", o que reflete a natureza metódica e prática de "
 ButThisIsCounterbalancedBy:
  Id: 1347
- ENG: " but this is counterbalanced by a wasteful, consumer-oriented society."
- RUS: ", но это уравновешивается неэкономичным обществом, нацеленным в основном на потребительство."
- SPA: " pero esto lo contrarrestan con una sociedad derrochadora que solo piensa en consumir."
+ ENG: " but this is counterbalanced by a wasteful, consumer-oriented society. "
+ RUS: ", но это уравновешивается неэкономичным обществом, нацеленным в основном на потребительство.  "
+ SPA: " pero esto lo contrarrestan con una sociedad derrochadora que solo piensa en consumir. "
  UKR: " але це врівноважується марнотратним, орієнтованим на споживача суспільством."
- PTB: ", mas isso é contrabalançado por uma sociedade consumista e desperdiçadora."
+ PTB: ", mas isso é contrabalançado por uma sociedade consumista e desperdiçadora. "
 AndItsCitizensAreRelatively:
  Id: 1348
- ENG: " and its citizens are relatively intelligent about resource allocation."
- RUS: ", и его граждане достаточно рационально используют свои ресурсы."
- SPA: " y sus ciudadanos son relativamente inteligentes en lo que concierne al aprovechamiento de los recursos."
+ ENG: " and its citizens are relatively intelligent about resource allocation. "
+ RUS: ", и его граждане достаточно рационально используют свои ресурсы. "
+ SPA: " y sus ciudadanos son relativamente inteligentes en lo que concierne al aprovechamiento de los recursos. "
  UKR: ", а її громадяни відносно розумно ставляться до розподілу ресурсів."
- PTB: " e seus cidadãos são relativamente inteligentes quanto à alocação de recursos."
+ PTB: " e seus cidadãos são relativamente inteligentes quanto à alocação de recursos. "
 While:
  Id: 1349
- ENG: "While"
- RUS: "В то время как"
- SPA: "Aunque"
+ ENG: "While "
+ RUS: "В то время как "
+ SPA: "Aunque "
  UKR: "У той час як"
- PTB: "Enquanto"
+ PTB: "Enquanto "
 GovernmentCanBeSomewhatCorrupt:
  Id: 1350
  ENG: " government can be somewhat corrupt"
@@ -6137,151 +6137,151 @@ GovernmentCanBeSomewhatCorrupt:
  PTB: " pode ter um governo um tanto corrupto"
 ItsPrivateSectorMakesUp:
  Id: 1351
- ENG: ", its private sector makes up for the government's wastefulness with its efficiency."
- RUS: ", частный сектор очень работает очень эффективно, компенсируя эффекты коррупции."
- SPA: ", su sector privado compensa con su eficiencia el despilfarro del gobierno."
+ ENG: ", its private sector makes up for the government's wastefulness with its efficiency. "
+ RUS: ", частный сектор очень работает очень эффективно, компенсируя эффекты коррупции. "
+ SPA: ", su sector privado compensa con su eficiencia el despilfarro del gobierno. "
  UKR: ", її приватний сектор компенсує марнотратство уряду своєю ефективністю."
- PTB: ", seu setor privado compensa o desperdício do governo com sua eficiência."
+ PTB: ", seu setor privado compensa o desperdício do governo com sua eficiência. "
 ThisCorruptionPalesInComparison:
  Id: 1352
- ENG: ", this corruption pales in comparison to recklessness of such a wasteful, consumer-oriented society."
- RUS: ", даже эта коррупция меркнет в сравнении с нерачительностью общества, в котором потребление возведено в культ."
- SPA: ", esta corrupción es insignificante en comparación con la imprudencia de una sociedad derrochadora que solo piensa en consumir."
+ ENG: ", this corruption pales in comparison to recklessness of such a wasteful, consumer-oriented society. "
+ RUS: ", даже эта коррупция меркнет в сравнении с нерачительностью общества, в котором потребление возведено в культ. "
+ SPA: ", esta corrupción es insignificante en comparación con la imprudencia de una sociedad derrochadora que solo piensa en consumir. "
  UKR: ", ця корупція блідне в порівнянні з нерозсудливістю такого марнотратного, орієнтованого на споживача суспільства."
- PTB: ", essa corrupção empalidece em comparação com a imprudência de uma sociedade consumista e desperdiçadora."
+ PTB: ", essa corrupção empalidece em comparação com a imprudência de uma sociedade consumista e desperdiçadora. "
 AreNeverthelessAPracticalRace:
  Id: 1353
- ENG: " are nevertheless a practical race when it comes to resource allocation."
- RUS: " являются достаточно практичной расой в плане использования ресурсов."
- SPA: " son, sin embargo, una raza práctica en lo que respecta a la asignación de recursos."
+ ENG: " are nevertheless a practical race when it comes to resource allocation. "
+ RUS: " являются достаточно практичной расой в плане использования ресурсов. "
+ SPA: " son, sin embargo, una raza práctica en lo que respecta a la asignación de recursos. "
  UKR: " тим не менш, є практичним змаганням, коли справа доходить до розподілу ресурсів."
- PTB: " são, ainda assim, uma raça prática quando se trata de alocação de recursos."
+ PTB: " são, ainda assim, uma raça prática quando se trata de alocação de recursos. "
 GovernmentIsFunctionalAndStable:
  Id: 1354
- ENG: " government is functional and stable."
- RUS: " имеют стабильное и нормально функционирующее правительство."
- SPA: " cuentan con un gobierno funcional y estable."
+ ENG: " government is functional and stable. "
+ RUS: " имеют стабильное и нормально функционирующее правительство. "
+ SPA: " cuentan con un gobierno funcional y estable. "
  UKR: " уряд є функціональним та стабільним."
- PTB: " possui um governo funcional e estável."
+ PTB: " possui um governo funcional e estável. "
 EvenSo:
  Id: 1355
- ENG: "Even so,"
- RUS: "Но даже при этом,"
- SPA: "Aun así,"
+ ENG: "Even so, "
+ RUS: "Но даже при этом, "
+ SPA: "Aun así, "
  UKR: "Навіть якщо так,"
- PTB: "Mesmo assim,"
+ PTB: "Mesmo assim, "
 SocietyAtLargeIsVery:
  Id: 1356
- ENG: " society at large is very environmentally concious and practical about resource allocation."
- RUS: " с большим трепетом относятся к охране окружающей среды и практичному использованию ресурсов."
- SPA: " tienen una sociedad en general muy concienciada sobre el medio ambiente y usan los recursos de forma racional."
+ ENG: " society at large is very environmentally concious and practical about resource allocation. "
+ RUS: " с большим трепетом относятся к охране окружающей среды и практичному использованию ресурсов. "
+ SPA: " tienen una sociedad en general muy concienciada sobre el medio ambiente y usan los recursos de forma racional. "
  UKR: " суспільство в цілому є дуже екологічно свідомим і практичним щодо розподілу ресурсів."
- PTB: " a sociedade em geral é muito consciente ambientalmente e prática quanto à alocação de recursos."
+ PTB: " a sociedade em geral é muito consciente ambientalmente e prática quanto à alocação de recursos. "
 AlsoTendToBeA:
  Id: 1357
- ENG: " also tend to be a wasteful people who are neglectful of their investments."
- RUS: " в целом не отличаются бережливостью и расчетливостью в инвестициях."
- SPA: " tienden a ser un pueblo derrochador y descuidado con sus inversiones."
+ ENG: " also tend to be a wasteful people who are neglectful of their investments. "
+ RUS: " в целом не отличаются бережливостью и расчетливостью в инвестициях. "
+ SPA: " tienden a ser un pueblo derrochador y descuidado con sus inversiones. "
  UKR: " також схильні до марнотратства і недбало ставляться до своїх інвестицій."
- PTB: " também tende a ser um povo desperdiçador que negligencia seus investimentos."
+ PTB: " também tende a ser um povo desperdiçador que negligencia seus investimentos. "
 WorkEthicIsStrong:
  Id: 1358
- ENG: " work ethic is strong"
- RUS: " выработали устойчивую трудовую этику,"
- SPA: " tienen una gran ética del trabajo"
+ ENG: " work ethic is strong "
+ RUS: " выработали устойчивую трудовую этику, "
+ SPA: " tienen una gran ética del trabajo "
  UKR: " сильна трудова етика"
- PTB: " a ética de trabalho é forte"
+ PTB: " a ética de trabalho é forte "
 AndTheirEngineersAndShipwrights:
  Id: 1359
- ENG: "and their engineers and shipwrights produce components of superior quality."
- RUS: "и их инженеры и кораблестроители изготавливают продукцию высшего качества."
- SPA: "y sus ingenieros y constructores navales producen componentes de calidad superior."
+ ENG: "and their engineers and shipwrights produce components of superior quality. "
+ RUS: "и их инженеры и кораблестроители изготавливают продукцию высшего качества. "
+ SPA: "y sus ingenieros y constructores navales producen componentes de calidad superior. "
  UKR: "а їхні інженери та суднобудівники виробляють компоненти найвищої якості."
- PTB: "e seus engenheiros e construtores navais produzem componentes de qualidade superior."
+ PTB: "e seus engenheiros e construtores navais produzem componentes de qualidade superior. "
 YetTheirEngineeringSkillsAre:
  Id: 1360
- ENG: "yet their engineering skills are poor, producing goods and ships of somewhat inferior quality."
- RUS: "но они не обладают склонностью к инженерному делу, вследствие чего их товары и корабли отличаются в целом низким качеством."
- SPA: "aunque su ingeniería es poco sofisticada, por lo que producen bienes y naves de calidad algo inferior."
+ ENG: "yet their engineering skills are poor, producing goods and ships of somewhat inferior quality. "
+ RUS: "но они не обладают склонностью к инженерному делу, вследствие чего их товары и корабли отличаются в целом низким качеством. "
+ SPA: "aunque su ingeniería es poco sofisticada, por lo que producen bienes y naves de calidad algo inferior. "
  UKR: "Проте їхні інженерні навички є низькими, і вони виробляють товари та кораблі дещо нижчої якості."
- PTB: "mas suas habilidades de engenharia são fracas, produzindo bens e naves de qualidade um pouco inferior."
+ PTB: "mas suas habilidades de engenharia são fracas, produzindo bens e naves de qualidade um pouco inferior. "
 AndTheirEngineersAndShipwrights2:
  Id: 1361
- ENG: "and their engineers and shipwrights are generally competent."
- RUS: "и их инженеры и кораблестроители в целом достаточно компетентны."
- SPA: " y sus ingenieros y constructores navales son bastante competentes en general."
+ ENG: "and their engineers and shipwrights are generally competent. "
+ RUS: "и их инженеры и кораблестроители в целом достаточно компетентны. "
+ SPA: " y sus ingenieros y constructores navales son bastante competentes en general. "
  UKR: "а їхні інженери та судноводії, як правило, компетентні."
- PTB: "e seus engenheiros e construtores navais são geralmente competentes."
+ PTB: "e seus engenheiros e construtores navais são geralmente competentes. "
 WorkersAreGenerallyQuiteLazy:
  Id: 1362
- ENG: " workers are generally quite lazy"
- RUS: " не отличаются особым трудолюбием,"
- SPA: " sus trabajadores son, por lo general, vagos"
+ ENG: " workers are generally quite lazy "
+ RUS: " не отличаются особым трудолюбием, "
+ SPA: " sus trabajadores son, por lo general, vagos "
  UKR: " працівники, як правило, досить ліниві"
- PTB: " os trabalhadores geralmente são bastante preguiçosos"
+ PTB: " os trabalhadores geralmente são bastante preguiçosos "
 YetTheirEngineersAndShipwrights:
  Id: 1363
- ENG: "yet their engineers and shipwrights are highly skilled, producing components of superior quality."
- RUS: "но их инженеры и кораблестроители изготавливают продукцию высшего качества."
- SPA: "pero sus ingenieros y constructores navales están muy cualificados, por lo que producen componentes de calidad superior."
+ ENG: "yet their engineers and shipwrights are highly skilled, producing components of superior quality. "
+ RUS: "но их инженеры и кораблестроители изготавливают продукцию высшего качества. "
+ SPA: "pero sus ingenieros y constructores navales están muy cualificados, por lo que producen componentes de calidad superior. "
  UKR: "але їхні інженери та суднобудівники мають високу кваліфікацію, виготовляючи компоненти найвищої якості."
- PTB: "mas seus engenheiros e construtores navais são altamente qualificados, produzindo componentes de qualidade superior."
+ PTB: "mas seus engenheiros e construtores navais são altamente qualificados, produzindo componentes de qualidade superior. "
 AndTheirEngineeringSkillsAre:
  Id: 1364
- ENG: "and their engineering skills are poor, producing goods and ships of somewhat inferior quality."
- RUS: "а также не обладают склонностью к инженерному делу, вследствие чего их товары и корабли отличаются в целом низким качеством."
- SPA: "y su ingeniería es poco sofisticada, por lo que producen bienes y naves de calidad algo inferior."
+ ENG: "and their engineering skills are poor, producing goods and ships of somewhat inferior quality. "
+ RUS: "а также не обладают склонностью к инженерному делу, вследствие чего их товары и корабли отличаются в целом низким качеством. "
+ SPA: "y su ingeniería es poco sofisticada, por lo que producen bienes y naves de calidad algo inferior. "
  UKR: "а їхні інженерні навички є низькими, що призводить до виробництва товарів і кораблів дещо нижчої якості."
- PTB: "e suas habilidades de engenharia são fracas, produzindo bens e naves de qualidade um pouco inferior."
+ PTB: "e suas habilidades de engenharia são fracas, produzindo bens e naves de qualidade um pouco inferior. "
 ButTheirEngineersAndShipwrights:
  Id: 1365
- ENG: "but their engineers and shipwrights are generally competent."
- RUS: "и их инженеры и кораблестроители в целом достаточно компетентны."
- SPA: "pero sus ingenieros y constructores navales son bastante competentes en general."
+ ENG: "but their engineers and shipwrights are generally competent. "
+ RUS: "и их инженеры и кораблестроители в целом достаточно компетентны. "
+ SPA: "pero sus ingenieros y constructores navales son bastante competentes en general. "
  UKR: "але їхні інженери та суднобудівники, як правило, компетентні."
- PTB: "mas seus engenheiros e construtores navais são geralmente competentes."
+ PTB: "mas seus engenheiros e construtores navais são geralmente competentes. "
 AreNeitherParticularlyIndustriousNor:
  Id: 1366
  ENG: " are neither particularly industrious nor particularly lazy"
- RUS: " не отличаются ни особым трудолюбием, ни ленью,"
+ RUS: " не отличаются ни особым трудолюбием, ни ленью, "
  SPA: " no destacan por ser ni especialmente industriosos ni especialmente vagos"
  UKR: " не є ні особливо працьовитими, ні особливо ледачими"
  PTB: " não são particularmente industriosos nem particularmente preguiçosos"
 ButTheirEngineersAndShipwrights2:
  Id: 1367
- ENG: " but their engineers and shipwrights are highly skilled and produce components of superior quality."
- RUS: "но их инженеры и кораблестроители изготавливают продукцию высшего качества."
- SPA: " pero sus ingenieros y constructores navales están muy cualificados y producen componentes de calidad superior."
+ ENG: " but their engineers and shipwrights are highly skilled and produce components of superior quality. "
+ RUS: "но их инженеры и кораблестроители изготавливают продукцию высшего качества. "
+ SPA: " pero sus ingenieros y constructores navales están muy cualificados y producen componentes de calidad superior. "
  UKR: " але їхні інженери та суднобудівники мають високу кваліфікацію і виробляють компоненти найвищої якості."
- PTB: " mas seus engenheiros e construtores navais são altamente qualificados e produzem componentes de qualidade superior."
+ PTB: " mas seus engenheiros e construtores navais são altamente qualificados e produzem componentes de qualidade superior. "
 OverallTheirEngineeringSkillsAre:
  Id: 1368
- ENG: ". Overall, their engineering skills are somwhat poor compared to peer races and tend to produce ships of inferior quality."
- RUS: " но в целом их инженерные навыки оставляют желать лучшего, вследствие чего их товары и корабли отличаются в целом низким качеством."
- SPA: ". En general, su ingeniería está algo atrasada respecto a razas semejantes y tienden a construir naves de inferior calidad."
+ ENG: ". Overall, their engineering skills are somwhat poor compared to peer races and tend to produce ships of inferior quality. "
+ RUS: " но в целом их инженерные навыки оставляют желать лучшего, вследствие чего их товары и корабли отличаются в целом низким качеством. "
+ SPA: ". En general, su ingeniería está algo atrasada respecto a razas semejantes y tienden a construir naves de inferior calidad. "
  UKR: ". Загалом, їхні інженерні навички дещо нижчі, ніж у інших рас, і вони, як правило, створюють кораблі нижчої якості."
- PTB: ". No geral, suas habilidades de engenharia são um tanto fracas em comparação com raças equivalentes e tendem a produzir naves de qualidade inferior."
+ PTB: ". No geral, suas habilidades de engenharia são um tanto fracas em comparação com raças equivalentes e tendem a produzir naves de qualidade inferior. "
 AndTheirEngineersAndShipwrights3:
  Id: 1369
- ENG: " and their engineers and shipwrights are generally competent."
- RUS: "и их инженеры и кораблестроители в целом достаточно компетентны."
- SPA: " y sus ingenieros y constructores navales son bastante competentes en general."
+ ENG: " and their engineers and shipwrights are generally competent. "
+ RUS: "и их инженеры и кораблестроители в целом достаточно компетентны. "
+ SPA: " y sus ingenieros y constructores navales son bastante competentes en general. "
  UKR: " а їхні інженери та судноводії, як правило, компетентні."
- PTB: " e seus engenheiros e construtores navais são geralmente competentes."
+ PTB: " e seus engenheiros e construtores navais são geralmente competentes. "
 The:
  Id: 1370
- ENG: "The"
- RUS: "Планета"
- SPA: "El"
- UKR: "Планета"
- PTB: "O"
+ ENG: "The "
+ RUS: "Планета "
+ SPA: "El "
+ UKR: "Планета "
+ PTB: "O "
 HomeworldOf:
  Id: 1371
- ENG: " homeworld of"
- RUS: ", родной мир расы"
- SPA: " mundo natal de"
+ ENG: " homeworld of "
+ RUS: ", родной мир расы "
+ SPA: " mundo natal de "
  UKR: " Батьківщина"
- PTB: " mundo natal de"
+ PTB: " mundo natal de "
 IsVeryLargeForA:
  Id: 1372
  ENG: " is very large for a terran planet."
@@ -6918,17 +6918,17 @@ SinceTheShipsMaximumWeapon:
 ForcesSpottedIn:
  Id: 1500
  ENG: " forces spotted in"
- RUS: " - войска обнаружены"
+ RUS: " - войска обнаружены "
  SPA: " fuerzas detectadas en"
  UKR: " сили, помічені в"
  PTB: " forças avistadas em"
 The2:
  Id: 1501
- ENG: "the"
- RUS: "в"
- SPA: "el"
- UKR: "у"
- PTB: "o"
+ ENG: "the "
+ RUS: "в "
+ SPA: "el "
+ UKR: "у "
+ PTB: "o "
 System2:
  Id: 1502
  ENG: " system!"
@@ -6938,18 +6938,18 @@ System2:
  PTB: " sistema!"
 Captured:
  Id: 1503
- ENG: " captured"
- RUS: " захватили"
- SPA: " le ha arrebatado"
+ ENG: " captured "
+ RUS: " захватили "
+ SPA: " le ha arrebatado "
  UKR: " Захоплено"
- PTB: " capturou"
+ PTB: " capturou "
 From:
  Id: 1504
- ENG: "from"
- RUS: "у"
- SPA: "a"
+ ENG: "from "
+ RUS: "у "
+ SPA: "a "
  UKR: "від"
- PTB: "de"
+ PTB: "de "
 ScansOf:
  Id: 1505
  ENG: "Scans of"
@@ -6966,11 +6966,11 @@ RevealedAnAnomaly:
  PTB: " revelaram uma anomalia."
 TroopsAreLandingOn:
  Id: 1507
- ENG: " troops are landing on"
- RUS: " высаживают войска на планете"
- SPA: " están desembarcando tropas en"
+ ENG: " troops are landing on "
+ RUS: " высаживают войска на планете "
+ SPA: " están desembarcando tropas en "
  UKR: " війська висаджуються на"
- PTB: " tropas estão pousando em"
+ PTB: " tropas estão pousando em "
 No:
  Id: 1508
  ENG: "No"
@@ -6987,18 +6987,18 @@ AgentsAreInOurEmpirennrefunding:
  PTB: " agentes em nosso império!\n\nReembolsando 10 de Penetração de Inteligência"
 SuccessfullyPlacedAgentOn:
  Id: 1510
- ENG: "Successfully placed agent on"
- RUS: "Успешное размещение агента на"
- SPA: "Agente desplegado con éxito en"
+ ENG: "Successfully placed agent on "
+ RUS: "Успешное размещение агента на "
+ SPA: "Agente desplegado con éxito en "
  UKR: "Успішно розмістили агента на"
- PTB: "Agente colocado com sucesso em"
+ PTB: "Agente colocado com sucesso em "
 TheLastColonistOn:
  Id: 1511
- ENG: "The last colonist on"
+ ENG: "The last colonist on "
  RUS: "Последний колонист на планете"
- SPA: "El último colono de"
+ SPA: "El último colono de "
  UKR: "Останній колоніст на"
- PTB: "O último colono em"
+ PTB: "O último colono em "
 HasBeenKilled:
  Id: 1512
  ENG: " has been killed"
@@ -10851,11 +10851,11 @@ HasPeacefullyMergedIntoA:
  PTB: "se fundiu pacificamente em uma Federação com"
 HasSurrenderedTo:
  Id: 2259
- ENG: "has surrendered to"
- RUS: "сдались империи"
- SPA: "se ha rendido ante"
+ ENG: "has surrendered to "
+ RUS: "сдались империи "
+ SPA: "se ha rendido ante "
  UKR: "здався на поталу"
- PTB: "se rendeu a"
+ PTB: "se rendeu a "
 Turn:
  Id: 2260
  ENG: "Turn"
@@ -11641,11 +11641,11 @@ WeOfferYouTheFollowing:
  PTB: "Oferecemos a vocês os seguintes Artefatos:"
 And:
  Id: 3011
- ENG: " and"
- RUS: " и"
- SPA: " y"
+ ENG: " and "
+ RUS: " и "
+ SPA: " y "
  UKR: " і"
- PTB: " e"
+ PTB: " e "
 YouWouldProvideUsWith:
  Id: 3012
  ENG: "You would provide us with the following Artifacts:"
@@ -11655,11 +11655,11 @@ YouWouldProvideUsWith:
  PTB: "Vocês nos forneceriam os seguintes Artefatos:"
 And2:
  Id: 3013
- ENG: "and"
- RUS: "и"
- SPA: "y"
+ ENG: "and "
+ RUS: "и "
+ SPA: "y "
  UKR: "і"
- PTB: "e"
+ PTB: "e "
 WeWouldProvideYouKnowledge:
  Id: 3014
  ENG: "We would provide you knowledge of"
@@ -11935,11 +11935,11 @@ YouMustOpenYourPlanets:
  PTB: "Vocês devem abrir seus planetas para nossas naves comerciais ou enfrentar as consequências."
 YouWillAcceptTheseGifts:
  Id: 3053
- ENG: "You will accept these gifts:"
- RUS: "Вы примете эти дары:"
- SPA: "Aceptaréis estos regalos:"
+ ENG: "You will accept these gifts: "
+ RUS: "Вы примете эти дары: "
+ SPA: "Aceptaréis estos regalos: "
  UKR: "Ви приймете ці дари:"
- PTB: "Vocês aceitarão estes presentes:"
+ PTB: "Vocês aceitarão estes presentes: "
 YouAreRequiredToProvide:
  Id: 3054
  ENG: "You are required to provide us with the following Artifacts:"
@@ -12712,11 +12712,11 @@ MaximumPopulationGrowth:
  PTB: "Crescimento Populacional Máximo"
 UnlocksANewHullType:
  Id: 4042
- ENG: "Unlocks a new Hull type:"
- RUS: "Открывает новый тип корпуса:"
- SPA: "Desbloquea un nuevo tipo de casco:"
+ ENG: "Unlocks a new Hull type: "
+ RUS: "Открывает новый тип корпуса: "
+ SPA: "Desbloquea un nuevo tipo de casco: "
  UKR: "Відкриває новий тип корпусу:"
- PTB: "Desbloqueia um novo tipo de casco:"
+ PTB: "Desbloqueia um novo tipo de casco: "
 AddShipDesignsToThis:
  Id: 4043
  ENG: "Add ship designs to this fleet from the panel on the right. Use 'Shift' key to place multiple ships of the same type. When you are done, you can press the 'Requisition' button, which will search your empire for ships that can fill your fleet. If you do not have the ships, it will order that they are built at a suitable planet.\n\nReturn here at any time to requisition replacements for any ships that are lost in combat."
