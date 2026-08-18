@@ -353,10 +353,15 @@ namespace Ship_Game
             else if (P.PS == Planet.GoodState.EXPORT) ProdDropDown.ActiveIndex = 2;
             ProdDropDown.Draw(batch);
             DrawProdSlots(batch);
-            // Ludoal fork (wishlist): the colonist flow row - Auto tracks the formula,
-            // a manual state pins the direction
+            // Ludoal fork (wishlist + bench 426): the population row - the bar carries pop
+            // against its cap, the dropdown the migration state (Auto tracks the formula),
+            // and the colonist freighter line seats under the bar like its two elders'
+            PopStorage.Max = P.MaxPopulationBillionFor(P.Owner);
+            PopStorage.Progress = P.PopulationBillion;
+            PopStorage.Draw(batch);
             ColonistsDropDown.ActiveIndex = P.ColonistsManual ? 1 + (int)P.CS : 0;
             ColonistsDropDown.Draw(batch);
+            DrawPopSlots(batch);
 
             batch.Draw(ResourceManager.Texture("NewUI/icon_storage_food"), FoodStorageIcon, Color.White);
             batch.Draw(ResourceManager.Texture("NewUI/icon_storage_production"), ProfStorageIcon, Color.White);
@@ -389,6 +394,31 @@ namespace Ship_Game
             }
 
             DrawTradeSlots(batch, textPos, text, Color.LightGreen, enroute, maxSlots, amount);
+        }
+
+        // bench 426: the colonist freighter line, the same family as food's and prod's -
+        // gated on the EFFECTIVE migration state, so Auto shows its live direction too
+        void DrawPopSlots(SpriteBatch batch)
+        {
+            Planet.GoodState state = P.GetGoodState(Goods.Colonists);
+            if (state == Planet.GoodState.STORE)
+                return;
+
+            Vector2 textPos = new(PopStorage.pBar.X + 2, PopStorage.pBar.Y + 20);
+            LocalizedText text = new(GameText.IncomingFreighters);
+            int enroute = IncomingColoFreighters;
+            int maxSlots = P.ColonistsImportSlots;
+            string amount = IncomingPop > 0 ? $"({IncomingPop.String()})" : "";
+
+            if (state == Planet.GoodState.EXPORT)
+            {
+                text = GameText.OutgoingFreighters;
+                enroute = OutgoingColoFreighters;
+                maxSlots = P.ColonistsExportSlots;
+                amount = "";
+            }
+
+            DrawTradeSlots(batch, textPos, text, Color.LightBlue, enroute, maxSlots, amount);
         }
 
         void DrawProdSlots(SpriteBatch batch)

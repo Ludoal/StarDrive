@@ -90,6 +90,7 @@ namespace Ship_Game
         Rectangle ColonistsIcon;
         readonly ProgressBar FoodStorage;
         readonly ProgressBar ProdStorage;
+        readonly ProgressBar PopStorage; // bench 426: the population bar joins the Supply panel
         readonly Rectangle FoodStorageIcon;
         readonly Rectangle ProfStorageIcon;
 
@@ -270,7 +271,7 @@ namespace Ship_Game
 
             RectF pStorageR = new(gridLeft, labor.Bottom + Pad, colLeftW,
                                   gridBottom - (labor.Bottom + Pad));
-            PStorage = new(pStorageR, GameText.Storage);
+            PStorage = new(pStorageR, GameText.Supply); // bench 426: the panel carries stock AND flow - Supply says both
 
             Vector2 blockadePos = new Vector2(PStorage.X + 20, PStorage.Y + 35);
             BlockadeLabel = Add(new UILabel(blockadePos, Localizer.Token(GameText.Blockade2), Fonts.Pirulen16, Color.Red));
@@ -283,7 +284,9 @@ namespace Ship_Game
             StarvationLabel = Add(new UILabel(starvationPos, starvTxt, Fonts.Pirulen16, Color.Red));
             // ⚠ the two bars sit a FIXED distance below the title bar - content aligned to the
             // TOP, not centred, so they stay put as STORAGE (the column's variable block) grows.
-            const float storeRow1 = 46, storeRow2 = 92;
+            // bench 426: three rows now - tightened and raised so the population bar and
+            // its freighter line seat under the two elders
+            const float storeRow1 = 40, storeRow2 = 76;
             FoodStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + storeRow1, 0.4f*PStorage.Width, 18);
             FoodStorage.Max = p.Storage.Max;
             FoodStorage.Progress = p.FoodHere;
@@ -306,14 +309,18 @@ namespace Ship_Game
             ProdDropDown.AddOption(Localizer.Token(GameText.Export));
             ProdDropDown.ActiveIndex = (int)p.PS;
 
-            // Ludoal fork (wishlist): the colonist flow on a third storage row, same seat
-            // grammar as Food and Production. Auto = the migration formula keeps deciding;
-            // the three manual states pin the direction. Colonists have no storage bar -
-            // the dropdown sits wider where the bar would start.
-            const float storeRow3 = 138;
+            // Ludoal fork (wishlist + bench 426): the population row, full seat grammar -
+            // a storage bar (population against its cap) like Food and Production, the
+            // migration dropdown beside it. Auto = the formula keeps deciding; the manual
+            // states pin the direction. The colonist freighter line seats under the bar.
+            const float storeRow3 = 112;
+            PopStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + storeRow3, 0.4f * PStorage.Width, 18);
+            PopStorage.Max = p.MaxPopulationBillionFor(p.Owner);
+            PopStorage.Progress = p.PopulationBillion;
+            PopStorage.color = "blue";
             var iconPop = ResourceManager.Texture("UI/icon_pop_22");
             ColonistsIcon = new Rectangle((int)PStorage.X + 20, (int)(PStorage.Y + storeRow3 + 9 - iconPop.Height / 2f), iconPop.Width, iconPop.Height);
-            ColonistsDropDown = new DropDownMenu(PStorage.X + 100, PStorage.Y + storeRow3, 0.3f * PStorage.Width, 18);
+            ColonistsDropDown = new DropDownMenu(PStorage.X + 100 + 0.4f * PStorage.Width + 20, PStorage.Y + storeRow3, 0.2f * PStorage.Width, 18);
             ColonistsDropDown.AddOption("Auto");
             // people words, not cargo words (bench 425): Stay / Bring in / Resettle map
             // onto STORE / IMPORT / EXPORT in the same order
