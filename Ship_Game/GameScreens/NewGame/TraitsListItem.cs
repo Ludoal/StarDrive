@@ -105,11 +105,11 @@ namespace Ship_Game
                 for (int i = 1; i < Trait.ExcludedBy.Count; i++)
                     excludedText = $"{excludedText}, {Trait.ExcludedBy[i]}";
 
-                extraDescription = $"(excluded by {excludedText}).";
+                extraDescription = $"(excluded by {excludedText})"; // C4ter: a parenthetical is not a sentence, no period
             }
             else if (Screen.TotalPointsUsed - Trait.Trait.Cost < 0)
             {
-                extraDescription = "(not enough points to spend).";
+                extraDescription = "(not enough points to spend)";
             }
 
             return $"{Description} {extraDescription}";

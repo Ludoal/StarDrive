@@ -263,7 +263,7 @@ EfficientMetabolism:
  PTB: "Metabolismo Eficiente"
 RacesWithHighlyEfficientMetabolisms:
  Id: 33
- ENG: "Races with highly efficient metabolisms require 15% less food each turn"
+ ENG: "Races with highly efficient metabolisms require 15% less food each turn."
  FRA: "Les races au métabolisme très efficace consomment 15 % de nourriture en moins chaque tour"
  RUS: "Расы с высокоэффективным метаболизмом каждый ход потребляют на 15% меньше еды."
  SPA: "Las razas con metabolismos muy eficientes necesitan un 15% menos de comida por turno"
@@ -279,7 +279,7 @@ Gluttonous:
  PTB: "Gulosos"
 GluttonousRacesWillGorgeThemselves:
  Id: 35
- ENG: "Gluttonous races will gorge themselves at every opportunity, eating 10% more food every turn"
+ ENG: "Gluttonous races will gorge themselves at every opportunity, eating 10% more food every turn."
  FRA: "Les races gloutonnes se gavent à la moindre occasion et mangent 10 % de nourriture en plus chaque tour"
  RUS: "Прожорливые расы едят очень много, потребляя на 10% больше еды каждый ход."
  SPA: "Las razas glotonas se ceban en cuanto pueden y comen un 10% más de comida en cada turno"
@@ -6623,7 +6623,7 @@ Duplicitous:
  PTB: "Dúplice"
 DuplicitousRacesAreNaturalDeceivers:
  Id: 1437
- ENG: "Duplicitous races are natural deceivers and gain a +10 bonus to all Agent rolls"
+ ENG: "Duplicitous races are natural deceivers and gain a +10 bonus to all Agent rolls."
  RUS: "Двуличные расы - прирожденные обманщики. Их агенты получают бонус +10 ко всем проверкам действий."
  SPA: "Las razas embaucadoras son embusteros natos y sus agentes tienen +10 de probabilidades de éxito"
  UKR: "Дволикі раси є природженими брехунами і отримують бонус +10 до всіх кидків агентів"
@@ -6637,7 +6637,7 @@ Honest:
  PTB: "Honesta"
 HonestRacesDoNotUnderstand:
  Id: 1439
- ENG: "Honest races do not understand the concept of secrets and as such have a -10 penalty to all Agent rolls"
+ ENG: "Honest races do not understand the concept of secrets and as such have a -10 penalty to all Agent rolls."
  RUS: "Честные расы - вообще не понимают концепции шпионажа и охраны секретов. Их агенты получают штраф -10 ко всем проверкам действий."
  SPA: "Las razas honestas no entienden bien el concepto de secreto y todos sus agentes sufren una penalización de -10"
  UKR: "Чесні раси не розуміють поняття таємниці і тому мають штраф -10 до всіх кидків агентів"
@@ -7319,14 +7319,14 @@ Contact:
  PTB: "Contato"
 LooksLikeAJewelFrom:
  Id: 1700
- ENG: "looks like a jewel from space, but upon closer examination is an extremely inhospitable landscape"
+ ENG: "looks like a jewel from space, but upon closer examination is an extremely inhospitable landscape. "
  RUS: "из космоса выглядела настоящей жемчужиной, однако при ближайшем рассмотрении оказалась исключительно негостеприимной"
  SPA: "parece una joya desde el espacio, pero tras un examen más detenido resulta que es un paisaje de lo más inhóspito"
  UKR: "виглядає як коштовність з космосу, але при ближчому розгляді виявляється вкрай негостинним ландшафтом"
  PTB: "parece uma joia vista do espaço, mas em uma análise mais próxima é uma paisagem extremamente inóspita"
 IsComposedLargelyOfHydrogen:
  Id: 1701
- ENG: "is composed largely of hydrogen Gas"
+ ENG: "is composed largely of hydrogen Gas. "
  RUS: "в основном состоит из газообразного водорода"
  SPA: "está compuesto en su mayor parte de gas hidrógeno"
  UKR: "складається здебільшого з газоподібного водню"
@@ -7340,28 +7340,28 @@ IsABarrenRockyWorld:
  PTB: "é um mundo rochoso e estéril"
 BoastsABarrenLandscapeCovered:
  Id: 1703
- ENG: "boasts a barren landscape covered in a reddish-brown dust"
+ ENG: "boasts a barren landscape covered in a reddish-brown dust. "
  RUS: "представляет собой бесплодную землю, покрытую слоем бурой пыли"
  SPA: "presenta un paisaje yermo cubierto de polvo de color marrón rojizo"
  UKR: "може похвалитися безплідним ландшафтом, вкритим червонувато-коричневим пилом"
  PTB: "exibe uma paisagem estéril coberta por poeira marrom-avermelhada"
 IsAScarredAndHostile:
  Id: 1704
- ENG: "is a scarred and hostile hell world with few redeeming qualities"
+ ENG: "is a scarred and hostile hell world with few redeeming qualities. "
  RUS: "представляет собой настоящий ад с минимумом привлекательных особенностей"
  SPA: "es un mundo infernal, escabroso y hostil con pocas cualidades que lo compensen"
  UKR: "це пошрамований і ворожий пекельний світ з небагатьма позитивними якостями"
  PTB: "é um mundo infernal marcado e hostil, com poucas qualidades redentoras"
 IsAHighlyActiveVolcanic:
  Id: 1705
- ENG: "is a highly active volcanic world"
+ ENG: "is a highly active volcanic world. "
  RUS: "представляет собой активную вулканическую планету"
  SPA: "es un mundo volcánico muy activo"
  UKR: "це високоактивний вулканічний світ"
  PTB: "é um mundo vulcânico altamente ativo"
 IsComposedOfMixedHot:
  Id: 1706
- ENG: "is composed of mixed hot gasses"
+ ENG: "is composed of mixed hot gasses. "
  RUS: "состоит из смеси нагретых газов"
  SPA: "está compuesto por una mezcla de gases calientes"
  UKR: "складається зі змішаних гарячих газів"
@@ -7375,21 +7375,21 @@ IsAHarshTundraWorld:
  PTB: "é um mundo de tundra severa"
 IsASwirlingGlobeOf:
  Id: 1708
- ENG: "is a swirling globe of low-density gasses"
+ ENG: "is a swirling globe of low-density gasses. "
  RUS: "представляет собой бурлящую сферу из разреженных газов"
  SPA: "es un orbe de torbellinos de gases de baja densidad"
  UKR: "це закручена куля газів низької густини"
  PTB: "é um globo rodopiante de gases de baixa densidade"
 IsAContinentalPlanetWith:
  Id: 1709
- ENG: "is a continental planet with a nitrogen-oxygen atmosphere and several large oceans"
+ ENG: "is a continental planet with a nitrogen-oxygen atmosphere and several large oceans. "
  RUS: "представляет собой континентальную планету с атмосферой из азота и кислорода и несколькими большими океанами"
  SPA: "es un planeta continental con grandes océanos y una atmósfera de oxígeno y nitrógeno"
  UKR: "континентальна планета з азотно-кисневою атмосферою та кількома великими океанами"
  PTB: "é um planeta continental com uma atmosfera de nitrogênio e oxigênio e vários grandes oceanos"
 IsAnAridWorldCovered:
  Id: 1710
- ENG: "is an arid world covered in desert"
+ ENG: "is an arid world covered in desert. "
  RUS: "представляет собой засушливый пустынный мир"
  SPA: "es un mundo seco cubierto de desiertos"
  UKR: "це посушливий світ, вкритий пустелею"
@@ -7403,63 +7403,63 @@ IsAColdGasIce:
  PTB: "é um gigante gelado de gás frio"
 PossessesABarrenAndRocky:
  Id: 1712
- ENG: "possesses a barren and rocky landscape"
+ ENG: "possesses a barren and rocky landscape. "
  RUS: "представляет собой пустынный бесплодный мир"
  SPA: "posee un paisaje rocoso y árido"
  UKR: "має безплідний і скелястий ландшафт"
  PTB: "possui uma paisagem rochosa e estéril"
 IsEntirelyCoveredInIce:
  Id: 1713
- ENG: "is entirely covered in ice"
+ ENG: "is entirely covered in ice. "
  RUS: "полностью скована льдом"
  SPA: "está cubierto de hielo en su totalidad"
  UKR: "повністю вкритий льодом"
  PTB: "está inteiramente coberto de gelo"
 IsACraggyPlanetOf:
  Id: 1714
- ENG: "is a craggy planet of desert and steppe"
+ ENG: "is a craggy planet of desert and steppe. "
  RUS: "представляет собой каменистую планету пустынно-степного типа"
  SPA: "es un planeta escarpado de desiertos y estepas"
  UKR: "це скеляста планета пустелі та степу"
  PTB: "é um planeta escarpado de deserto e estepe"
 IsCoveredInSwampyMarshes:
  Id: 1715
- ENG: "is covered in swampy marshes and forest"
+ ENG: "is covered in swampy marshes and forest. "
  RUS: "покрыта лесами и болотами"
  SPA: "está plagado de ciénagas y bosques pantanosos"
  UKR: "вкрита заболоченими болотами та лісом"
  PTB: "está coberto por pântanos, brejos e florestas"
 IsMostlyAnOceanWorld:
  Id: 1716
- ENG: "is mostly an ocean world, with small continents popping up along the equator"
+ ENG: "is mostly an ocean world, with small continents popping up along the equator. "
  RUS: "представляет собой огромный океан с небольшими континентами вдоль экватора"
  SPA: "es prácticamente un mundo oceánico, con pequeños continentes que emergen a lo largo del ecuador"
  UKR: "це переважно океанський світ, з невеликими континентами, що з'являються вздовж екватора"
  PTB: "é majoritariamente um mundo oceânico, com pequenos continentes surgindo ao longo do equador"
 IsATerranPlanetBoasting:
  Id: 1717
- ENG: "is a terran planet boasting several large continents and a nitrogen-oxygen atmosphere  "
+ ENG: "is a terran planet boasting several large continents and a nitrogen-oxygen atmosphere. "
  RUS: "представляет собой планету земного типа с атмосферой из азота и кислорода и несколькими большими континентами"
  SPA: "es un planeta terrícola con varios continentes grandes y una atmósfera de oxígeno y nitrógeno  "
  UKR: "це планета земного типу, яка має кілька великих континентів і азотно-кисневу атмосферу."
  PTB: "é um planeta terreno com vários grandes continentes e uma atmosfera de nitrogênio e oxigênio  "
 IsVolcanicAndHighlyActive:
  Id: 1718
- ENG: "is volcanic and highly active"
+ ENG: "is volcanic and highly active. "
  RUS: "представляет собой активную вулканическую планету"
  SPA: "es volcánico y con mucha actividad"
  UKR: "є вулканічним і високоактивним"
  PTB: "é vulcânico e altamente ativo"
 IsAFeaturelssHunkOf:
  Id: 1719
- ENG: "is a featurelss hunk of barren rock"
+ ENG: "is a featurelss hunk of barren rock. "
  RUS: "представляет собой безжизненную каменистую пустыню"
  SPA: "es un pedazo de roca yerma sin cualidades"
  UKR: "це особливий шматок безплідної скелі"
  PTB: "é um pedaço amorfo de rocha estéril"
 IsALargeTerranWorld:
  Id: 1720
- ENG: "is a large terran world with multiple continents and oceans"
+ ENG: "is a large terran world with multiple continents and oceans. "
  RUS: "представляет собой планету земного типа с несколькими большими континентами и океанами"
  SPA: "es un gran mundo terrícola con múltiples continentes y océanos"
  UKR: "це великий земний світ з безліччю континентів і океанів"
@@ -7473,14 +7473,14 @@ IsATerranPlanetWith:
  PTB: "é um planeta terreno com várias massas de terra grandes e diversificadas"
 IsATerranPlanetWith2:
  Id: 1722
- ENG: "is a terran planet with several large continents and oceans"
+ ENG: "is a terran planet with several large continents and oceans. "
  RUS: "представляет собой планету земного типа с несколькими большими континентами и океанами"
  SPA: "es un planeta terrícola con océanos y continentes grandes\""
  UKR: "це планета земного типу з кількома великими континентами та океанами"
  PTB: "é um planeta terreno com vários grandes continentes e oceanos"
 HasBeenTerraformedToPossess:
  Id: 1723
- ENG: "has been terraformed to possess a nitrogen-oxygen atmosphere suitable for plant and animal life of many varieties"
+ ENG: "has been terraformed to possess a nitrogen-oxygen atmosphere suitable for plant and animal life of many varieties. "
  RUS: "была терраформирована и теперь обладает кислородно-азотной атмосферой, пригодной для большинства растений и животных"
  SPA: "se ha terraformado para dotarlo de una atmósfera de oxígeno y nitrógeno apta para albergar vida vegetal y animal diversa"
  UKR: "був тераформований для створення азотно-кисневої атмосфери, придатної для життя багатьох видів рослин і тварин"
@@ -7494,28 +7494,28 @@ HasBeenTerraformedIntoA:
  PTB: "foi terraformado em um mundo de tundra com diversidade biológica crescente"
 HasBeenTerraformedIntoAn:
  Id: 1725
- ENG: "has been terraformed into an arid world covered in desert with the beginnings of life taking hold"
+ ENG: "has been terraformed into an arid world covered in desert with the beginnings of life taking hold. "
  RUS: "была терраформирована в засушливый пустынный мир, в котором начала зарождаться жизнь"
  SPA: "se ha terraformado en un mundo árido cubierto de desiertos en los que la vida empieza a dar sus primeros pasos"
  UKR: "був тераформований на сухий світ, вкритий пустелею, в якій зароджувалося життя"
  PTB: "foi terraformado em um mundo árido coberto por deserto, onde os primeiros sinais de vida começam a se firmar"
 HasBeenTerraformedIntoA2:
  Id: 1726
- ENG: "has been terraformed into a craggy planet of desert and steppe, with fresh signs of plant life emerging"
+ ENG: "has been terraformed into a craggy planet of desert and steppe, with fresh signs of plant life emerging. "
  RUS: "была терраформирована в каменистую планету пустынно-степного типа, в которой наблюдаются признаки появления растительной жизни"
  SPA: "se ha terraformado en un planeta escarpado de desiertos y estepas que muestra los primeros signos de vida vegetal"
  UKR: "була тераформована на скелясту планету пустелі та степу, де з'являються свіжі ознаки рослинного життя"
  PTB: "foi terraformado em um planeta escarpado de deserto e estepe, com sinais recentes de vida vegetal emergindo"
 IsCoveredInSwampyMarshes2:
  Id: 1727
- ENG: "is covered in swampy marshes and forest as a result of extensive terraforming"
+ ENG: "is covered in swampy marshes and forest as a result of extensive terraforming. "
  RUS: "в результате интенсивного терраформинга превратилась в болотисто-лесистую планету"
  SPA: "está cubierto de ciénagas y bosques pantanosos como consecuencia de una amplia terraformación"
  UKR: "вкрита заболоченими болотами та лісом внаслідок інтенсивного тераформування"
  PTB: "está coberto por pântanos, brejos e florestas como resultado de extensa terraformação"
 IsOceanicWithSmallContinents:
  Id: 1728
- ENG: "is oceanic with small continents and a nitrogen-oxygen atmosphere. Terraforming this planet has injected increased biological diversity into the oceans"
+ ENG: "is oceanic with small continents and a nitrogen-oxygen atmosphere. Terraforming this planet has injected increased biological diversity into the oceans. "
  RUS: "представляет собой океаническую планету с небольшими континентами и кислородно-азотной атмосферой. Терраформирование планеты привело к увеличению биологического разнообразия подводного мира"
  SPA: "es oceánico con pequeños continentes y una atmósfera de oxígeno y nitrógeno. La terraformación de este planeta ha aumentado la diversidad biológica de sus océanos"
  UKR: "є океанічною з невеликими континентами та азотно-кисневою атмосферою. Тераформування цієї планети призвело до збільшення біологічного різноманіття в океанах"
@@ -16493,7 +16493,7 @@ IndustrializedHomeworld:
  PTB: "Mundo Natal Industrializado"
 TreesWhoNeedsTreesWhat:
  Id: 5082
- ENG: "Trees? Who needs trees. What your people needed was room for more factories. +1 homeworld richness, -1 homeworld fertility"
+ ENG: "Trees? Who needs trees. What your people needed was room for more factories. +1 homeworld richness, -1 homeworld fertility."
  RUS: "Деревья? Кому нужны деревья. Вашим людям нужно было место для новых заводов. +1 богатство родного мира, -1 плодородие родного мира"
  SPA: "¿Árboles? ¿Quien nesesita arboles?. Lo que tu gente nesesita es mas espacio para fabricas. +1 a la riqueza del planeta natal, -1 a la fertilidad del planeta natal."
  UKR: "Дерева? Кому потрібні дерева. Що потрібно вашому народу, так це місце для нових фабрик. +1 багатство рідної планети, -1 родючість рідної планети"
