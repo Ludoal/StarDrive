@@ -103,6 +103,11 @@ namespace Ship_Game
         object LastDetailDrawn; // the elevator resets when the panel's content changes
         PlanetGridSquare PinnedBuilt; // LIST view: click-pinned building (bench 426, Lek's design)
         public float DescriptionScroll; // wheel offset while a pinned lore scrolls
+        float MaxDescriptionScroll; // measured each frame from the drawn content (bench 429)
+        // the description pane is up when none of the bar/stat tabs owns the panel -
+        // only then may the wheel offset apply (bars must never ride the elevator)
+        bool DescriptionPaneUp => !IsDysonSwarmTabSelected && !IsStatTabSelected
+                                  && !IsStatsPlusTabSelected && !IsTradeTabSelected;
         Building ToScrap;
         PlanetGridSquare BioToScrap;
 

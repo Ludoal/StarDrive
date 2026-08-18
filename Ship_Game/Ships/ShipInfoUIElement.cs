@@ -775,10 +775,12 @@ namespace Ship_Game.Ships
             // margin - muscle memory, the column never moves. The SPECIFIC orders (trade,
             // troops, fighters...) take ONE row docked above the visible frame - they come
             // and go with the ship's type without ever displacing the generics.
-            // bench 428: the column BOTTOM-aligns with the cartouche - it grows upward
+            // bench 429: the column BOTTOM-aligns with the cartouche and it must READ as
+            // such - the visible frame is 186 tall for a 148 column, so any polite margin
+            // looks centered. The last button's bottom sits 2px off the frame's bottom.
             int generics = Orders.Count(o => o.IsGeneric);
             int colX = ElementRect.X + ElementRect.Width - PlanetInfoUIElement.RightTrim + 4;
-            int colY = ElementRect.Y + ElementRect.Height - 10 - generics * 52;
+            int colY = ElementRect.Y + ElementRect.Height - 2 - (generics * 52 - 4);
             int rowCol = 0;
             foreach (OrdersButton ob in Orders)
             {

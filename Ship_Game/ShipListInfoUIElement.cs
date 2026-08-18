@@ -527,10 +527,11 @@ namespace Ship_Game
 
             // bench 427, spec v4.5: the same nature-split the single-ship cartouche wears -
             // generic orders in the fixed right column, specifics on one top row
-            // bench 428: the column BOTTOM-aligns with the cartouche - it grows upward
+            // bench 429: BOTTOM-aligned for real - the last button's bottom sits 2px off
+            // the frame's bottom, so the alignment reads (see ShipInfoUIElement)
             int generics = Orders.Count(o => o.IsGeneric);
             int colX = ElementRect.X + ElementRect.Width - PlanetInfoUIElement.RightTrim + 4;
-            int colY = ElementRect.Y + ElementRect.Height - 10 - generics * 52;
+            int colY = ElementRect.Y + ElementRect.Height - 2 - (generics * 52 - 4);
             int rowCol = 0;
             foreach (OrdersButton ob in Orders)
             {

@@ -205,26 +205,35 @@ namespace Ship_Game
             }
             batch.Draw(P.PlanetTexture, PlanetIcon, Color.White);
 
-            // the description elevator (bench 428): whatever the panel shows scrolls with
-            // the wheel under a scissor, so long lore can never bleed past the frame. The
-            // offset resets whenever the shown content changes identity.
+            // the description elevator (bench 429, third pass - a REAL one now): the pane
+            // is ALWAYS scissored so long lore can never bleed past the frame, the wheel
+            // offset is clamped to the measured content, and a visible bar says where you
+            // are. The offset resets whenever the shown content changes identity.
             if (DetailInfo != LastDetailDrawn) { DescriptionScroll = 0f; LastDetailDrawn = DetailInfo; }
+            if (!DescriptionPaneUp) DescriptionScroll = 0f; // bars and stat tabs never scroll
             var detailPos = new Vector2(PFacilities.Rect.X + 15, PFacilities.Rect.Y + 35);
-            if (DescriptionScroll > 0f)
+            var pane = new Rectangle(PFacilities.Rect.X, PFacilities.Rect.Y + 30,
+                                     PFacilities.Rect.Width, PFacilities.Rect.Height - 35);
+            batch.SafeEnd();
+            RenderStates.EnableScissorTest(batch.GraphicsDevice, pane);
+            batch.SafeBegin(SpriteBlendMode.AlphaBlend, RenderStates.ScissorEnabled);
+            float contentBottom = DrawDetailInfo(batch, detailPos - new Vector2(0f, DescriptionScroll));
+            batch.SafeEnd();
+            RenderStates.DisableScissorTest(batch.GraphicsDevice);
+            batch.SafeBegin();
+            float contentHeight = contentBottom + DescriptionScroll - detailPos.Y;
+            MaxDescriptionScroll = contentHeight - (pane.Height - 10);
+            if (MaxDescriptionScroll < 0f) MaxDescriptionScroll = 0f;
+            if (DescriptionScroll > MaxDescriptionScroll) DescriptionScroll = MaxDescriptionScroll;
+            if (MaxDescriptionScroll > 0f && DescriptionPaneUp)
             {
-                batch.SafeEnd();
-                var scissor = new Rectangle(PFacilities.Rect.X, PFacilities.Rect.Y + 30,
-                                            PFacilities.Rect.Width, PFacilities.Rect.Height - 35);
-                RenderStates.EnableScissorTest(batch.GraphicsDevice, scissor);
-                batch.SafeBegin(SpriteBlendMode.AlphaBlend, RenderStates.ScissorEnabled);
-                DrawDetailInfo(batch, detailPos - new Vector2(0f, DescriptionScroll));
-                batch.SafeEnd();
-                RenderStates.DisableScissorTest(batch.GraphicsDevice);
-                batch.SafeBegin();
-            }
-            else
-            {
-                DrawDetailInfo(batch, detailPos);
+                // the elevator's visible bar, painted on the pane's right edge
+                var track = new Rectangle(pane.Right - 8, pane.Y + 2, 4, pane.Height - 8);
+                int thumbH = (int)(track.Height * (float)pane.Height / contentHeight);
+                if (thumbH < 20) thumbH = 20;
+                int thumbY = track.Y + (int)((track.Height - thumbH) * (DescriptionScroll / MaxDescriptionScroll));
+                batch.FillRectangle(track, new Color(20, 20, 20, 140));
+                batch.FillRectangle(new Rectangle(track.X, thumbY, 4, thumbH), new Color(140, 140, 140, 180));
             }
 
             float num5 = 100;
@@ -554,14 +563,16 @@ namespace Ship_Game
             cursor.Y += (TextFont.MeasureString(multiline).Y + TextFont.LineSpacing);
         }
 
-        void DrawDetailInfo(SpriteBatch batch, Vector2 bCursor)
+        // bench 429: returns the content's bottom Y so the elevator can size itself;
+        // the bar/tab branches return the pane top - they are not scrollable content
+        float DrawDetailInfo(SpriteBatch batch, Vector2 bCursor)
         {
             if (IsDysonSwarmTabSelected)
             {
                 DysonSwarmControllerProgress.Draw(batch);
                 DysonSwarmProgress.Draw(batch);
                 DysonSwarmProductionBoost.Draw(batch);
-                return;
+                return bCursor.Y;
             }
 
             // Terraform lives on the ASSIGN LABOR block: its bars draw whenever ITS tab is up,
@@ -578,13 +589,13 @@ namespace Ship_Game
             {
                 DrawMoney(ref bCursor, batch);
                 DrawPlanetStat(ref bCursor, batch, TextFont);
-                return;
+                return bCursor.Y;
             }
 
             if (IsStatsPlusTabSelected) // Ludoal fork: Stats+ add-on tab
             {
                 DrawStatsPlusTab(batch, bCursor);
-                return;
+                return bCursor.Y;
             }
 
             if (IsTradeTabSelected)
@@ -595,29 +606,30 @@ namespace Ship_Game
                 OutgoingFoodBar.Draw(batch);
                 OutgoingProdBar.Draw(batch);
                 OutgoingColoBar.Draw(batch);
-                return;
+                return bCursor.Y;
             }
 
             switch (DetailInfo)
             {
                 case Building buildableBuilding: // BuildList building
-                    DrawHoveredBuildListBuildingInfo(batch, bCursor, buildableBuilding);
+                    DrawHoveredBuildListBuildingInfo(batch, ref bCursor, buildableBuilding);
                     break;
                 case Troop buildableTroop: // BuildList troop
-                    DrawHoveredBuildListTroopInfo(batch, bCursor, buildableTroop);
+                    DrawHoveredBuildListTroopInfo(batch, ref bCursor, buildableTroop);
                     break;
                 // for null or string case, we always draw entire colony descr
                 case null: case string _:
-                    DrawColonyDescription(bCursor);
+                    DrawColonyDescription(ref bCursor);
                     break;
                 case PlanetGridSquare pgs: // hovering over a PlanetGridSquare
-                    DrawHoveredPGSInfo(batch, bCursor, pgs);
+                    DrawHoveredPGSInfo(batch, ref bCursor, pgs);
                     break;
             }
+            return bCursor.Y;
         }
 
         // TODO: extracted method, needs refactor/clean
-        void DrawHoveredPGSInfo(SpriteBatch batch, Vector2 bCursor, PlanetGridSquare pgs)
+        void DrawHoveredPGSInfo(SpriteBatch batch, ref Vector2 bCursor, PlanetGridSquare pgs)
         {
             Color color = Color.Wheat;
 
@@ -676,7 +688,7 @@ namespace Ship_Game
         }
 
         // TODO: extracted method, needs refactor/clean
-        void DrawHoveredBuildListBuildingInfo(SpriteBatch batch, Vector2 bCursor, Building selectedBuilding)
+        void DrawHoveredBuildListBuildingInfo(SpriteBatch batch, ref Vector2 bCursor, Building selectedBuilding)
         {
             Color color = Color.Wheat;
 
@@ -688,7 +700,7 @@ namespace Ship_Game
         }
 
         // TODO: extracted method, needs refactor/clean
-        void DrawHoveredBuildListTroopInfo(SpriteBatch batch, Vector2 bCursor, Troop t)
+        void DrawHoveredBuildListTroopInfo(SpriteBatch batch, ref Vector2 bCursor, Troop t)
         {
             batch.DrawString(Font20, t.DisplayNameEmpire(P.Owner), bCursor, TextColor);
             bCursor.Y += Font20.LineSpacing + 2;
@@ -706,7 +718,7 @@ namespace Ship_Game
         }
 
         // TODO: extracted method, needs refactor/clean
-        void DrawColonyDescription(Vector2 bCursor)
+        void DrawColonyDescription(ref Vector2 bCursor)
         {
             // White - the default TextColor reads too dim on this page.
             DrawMultiLine(ref bCursor, P.Description, Color.White);

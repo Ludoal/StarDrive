@@ -115,7 +115,17 @@ namespace Ship_Game
                     WriteTemplate(file);
                     return;
                 }
-                foreach (string rawLine in File.ReadAllLines(file))
+                string[] lines = File.ReadAllLines(file);
+                // bench 429: a v1 file listed EVERY binding as an explicit override, which
+                // froze the layout of the build that wrote it - new defaults never landed.
+                // v2 files list only the player's actual overrides; a legacy file is
+                // regenerated (its lines were the old template, not player choices).
+                if (!Array.Exists(lines, l => l.Contains(FileMarker)))
+                {
+                    WriteTemplate(file);
+                    return;
+                }
+                foreach (string rawLine in lines)
                 {
                     string line = rawLine.Trim();
                     if (line.Length == 0 || line.StartsWith("#"))
@@ -145,17 +155,24 @@ namespace Ship_Game
             }
         }
 
-        // first run: write the full current layout, commented, so the file documents itself
+        const string FileMarker = "hotkeys-v2"; // overrides-only format, see Load()
+
+        // the file carries ONLY the bindings that differ from the shipped defaults;
+        // everything else is documented as a comment, so future default changes land
         static void WriteTemplate(string file)
         {
             try
             {
                 var sb = new System.Text.StringBuilder();
-                sb.AppendLine("# StarDrive hotkey overrides - edit a line and restart the game.");
+                sb.AppendLine($"# StarDrive hotkey overrides ({FileMarker}) - uncomment/edit a line and restart the game.");
                 sb.AppendLine("# Format: ActionName: KeyName (XNA key names: A..Z, F1..F12, OemTilde...)");
-                sb.AppendLine("# A line starting with # is a comment; unknown names are reported and skipped.");
+                sb.AppendLine("# Only uncommented lines override; the commented ones document the defaults.");
                 foreach (FieldInfo f in BindingFields())
-                    sb.AppendLine($"{f.Name}: {(Keys)f.GetValue(null)}");
+                {
+                    var current = (Keys)f.GetValue(null);
+                    string prefix = current != DefaultOf(f.Name) ? "" : "# ";
+                    sb.AppendLine($"{prefix}{f.Name}: {current}");
+                }
                 File.WriteAllText(file, sb.ToString());
             }
             catch (Exception e)

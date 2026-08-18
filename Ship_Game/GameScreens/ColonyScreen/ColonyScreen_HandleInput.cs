@@ -39,7 +39,9 @@ namespace Ship_Game
                 }
             }
 
-            if (SubColonyGrid.SelectedIndex == 0) // tiles are only visible in the MAP view
+            // bench 429: a pin FREEZES the panel - while one is set, wandering over other
+            // tiles must not steal the description (that is the pin's whole point)
+            if (SubColonyGrid.SelectedIndex == 0 && PinnedBuilt == null) // tiles are only visible in the MAP view
             {
                 foreach (PlanetGridSquare pgs in P.TilesList)
                 {
@@ -105,16 +107,16 @@ namespace Ship_Game
             if (SubColonyGrid.HandleInput(input))
                 return true;
 
-            // the description elevator (bench 428): the wheel walks the bottom panel's
-            // content - pinned or not - from anywhere on the page except the list, which
-            // keeps its own scroll
-            if ((input.ScrollIn || input.ScrollOut)
+            // the description elevator (bench 429): the wheel walks the bottom panel's
+            // content - pinned or not - from anywhere on the page except the lists, which
+            // keep their own scroll. Clamped to the content measured at the last draw.
+            if ((input.ScrollIn || input.ScrollOut) && DescriptionPaneUp
                 && !(BuiltList.Visible && BuiltList.HitTest(input.CursorPosition))
                 && !BuildableList.HitTest(input.CursorPosition)
                 && !ConstructionQueue.HitTest(input.CursorPosition))
             {
                 if (input.ScrollIn)  DescriptionScroll = (DescriptionScroll - 48f).LowerBound(0f);
-                else                 DescriptionScroll = (DescriptionScroll + 48f).UpperBound(800f);
+                else                 DescriptionScroll = (DescriptionScroll + 48f).UpperBound(MaxDescriptionScroll);
                 return true;
             }
 
