@@ -679,8 +679,9 @@ namespace Ship_Game
             if (IsCinematicModeEnabled && CinematicModeTextTimer > 0f)
             {
                 CinematicModeTextTimer -= elapsed.RealTime.Seconds;
-                // the key name comes from the live table - a remapped key must never lie on screen
-                DrawTopCenterStatusText(batch, $"Cinematic mode - press {KeyBindings.Name(KeyBindings.CinematicMode)} to exit", Color.White, 3);
+                // the key name comes from the live table - a remapped key must never lie on
+                // screen. ALL CAPS kept: map-overlay statement, not a label (maintainer decision)
+                DrawTopCenterStatusText(batch, $"CINEMATIC MODE - PRESS {KeyBindings.Name(KeyBindings.CinematicMode).ToUpper()} TO EXIT", Color.White, 3);
             }
 
             // (maintainer feedback) the idle-research alarm lives in the top bar's topic slot
