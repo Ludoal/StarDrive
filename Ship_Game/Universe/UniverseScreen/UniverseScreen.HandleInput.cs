@@ -124,6 +124,27 @@ namespace Ship_Game
             if (input.BlueprintsSceen)            ScreenManager.AddScreen(new BlueprintsScreen(this, Player));
             if (input.EmpirePatrolsScreen)        ScreenManager.AddScreen(new EmpirePatrolsScreen(this, Player));
             if (input.ImportantEventsScreen)      ScreenManager.AddScreen(new ImportantEventsScreen(this)); // Ludoal fork: F7
+
+            // Ludoal fork (bench 427): keyboard colony navigation - [ / ] leaf through the
+            // player's colonies (selection + pan at constant zoom), Home snaps to the capital
+            if (input.PrevColony || input.NextColony)
+            {
+                var colonies = Player.GetPlanets();
+                if (colonies.Count > 0)
+                {
+                    ColonyCycleIndex = (ColonyCycleIndex + (input.NextColony ? 1 : -1) + colonies.Count) % colonies.Count;
+                    Planet cycleTo = colonies[ColonyCycleIndex];
+                    SetSelectedPlanet(cycleTo);
+                    PanToPlanetKeepZoom(cycleTo);
+                    GameAudio.AcceptClick();
+                }
+            }
+            if (input.GoToCapital && Player.Capital != null)
+            {
+                SetSelectedPlanet(Player.Capital);
+                PanToPlanetKeepZoom(Player.Capital);
+                GameAudio.AcceptClick();
+            }
             // Ludoal fork (maintainer feedback): H opens the Automation tab of the Empire
             // group. The screen closes on H or right-click.
             if (input.AutomationWindow && !Debug)

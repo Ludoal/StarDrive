@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using SDGraphics.Input;
@@ -460,31 +460,31 @@ namespace Ship_Game
             {
                 // Ludoal fork: not while Ctrl is held — a modified R is not the Research key,
                 // and a key consumed earlier in the frame is still visible to the screens.
-                if (input.KeyPressed(Keys.R) && !input.IsCtrlKeyDown)
+                if (input.KeyPressed(KeyBindings.OpenResearch) && !input.IsCtrlKeyDown)
                 {
                     GameAudio.EchoAffirmative();
                     Universe.ScreenManager.AddScreen(new ResearchScreenNew(Universe, Universe, this));
                     return true;
                 }
-                if (input.KeyPressed(Keys.T))
+                if (input.KeyPressed(KeyBindings.OpenEconomy))
                 {
                     GameAudio.EchoAffirmative();
                     Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Economy(Universe));
                     return true;
                 }
-                if (input.KeyPressed(Keys.Y))
+                if (input.KeyPressed(KeyBindings.OpenShipyard))
                 {
                     GameAudio.EchoAffirmative();
                     Universe.ScreenManager.AddScreen(new ShipDesignScreen(Universe, this));
                     return true;
                 }
-                if (input.KeyPressed(Keys.U))
+                if (input.KeyPressed(KeyBindings.OpenEmpire))
                 {
                     GameAudio.EchoAffirmative();
                     Universe.ScreenManager.AddScreen(new EmpireManagementScreen(Universe, this));
                     return true;
                 }
-                if (input.KeyPressed(Keys.I))
+                if (input.KeyPressed(KeyBindings.OpenDiplomacy))
                 {
                     GameAudio.EchoAffirmative();
                     Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Diplomacy(Universe));
@@ -496,7 +496,7 @@ namespace Ship_Game
                     Universe.ScreenManager.AddScreen(new GamePlayMenuScreen(Universe));
                     return true;
                 }
-                if (input.KeyPressed(Keys.E))
+                if (input.KeyPressed(KeyBindings.OpenEspionage))
                 {
                     GameAudio.EchoAffirmative();
                     Universe.ScreenManager.AddScreen(GameScreens.ScreenGroups.Espionage(Universe));
@@ -663,12 +663,12 @@ namespace Ship_Game
             : input.ImportantEventsScreen ? "Events"
             // the bar's own keys: reachable from the universe through the other overload,
             // dead from inside a screen until they came through here too
-            : input.KeyPressed(Keys.R) && !input.IsCtrlKeyDown ? "Research"  // Ctrl+Alt+R is the resolution tool
-            : input.KeyPressed(Keys.T) ? "Budget"
-            : input.KeyPressed(Keys.Y) ? "Shipyard"
-            : input.KeyPressed(Keys.U) ? "Empire"
-            : input.KeyPressed(Keys.I) ? "Diplomacy"
-            : input.KeyPressed(Keys.E) ? "Espionage"
+            : input.KeyPressed(KeyBindings.OpenResearch) && !input.IsCtrlKeyDown ? "Research"  // Ctrl+Alt+R is the resolution tool
+            : input.KeyPressed(KeyBindings.OpenEconomy) ? "Budget"
+            : input.KeyPressed(KeyBindings.OpenShipyard) ? "Shipyard"
+            : input.KeyPressed(KeyBindings.OpenEmpire) ? "Empire"
+            : input.KeyPressed(KeyBindings.OpenDiplomacy) ? "Diplomacy"
+            : input.KeyPressed(KeyBindings.OpenEspionage) ? "Espionage"
             : null;
 
         // TODO: This is utterly retarded, needs a complete rewrite

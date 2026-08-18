@@ -233,6 +233,7 @@ namespace Ship_Game
         public bool ShowingVisionOverlay      { get => UState.ShowVisionOverlay;      set => UState.ShowVisionOverlay = value; }      // F3
         public bool ShowingRangeOverlay       { get => UState.ShowRangeOverlay;       set => UState.ShowRangeOverlay = value; }       // F6
         public bool ShowingTradeRoutesOverlay        { get => UState.ShowTradeRoutesOverlay;        set => UState.ShowTradeRoutesOverlay = value; }        // Ludoal fork (wishlist)
+        int ColonyCycleIndex; // Ludoal fork (bench 427): the [ / ] colony walk's cursor
         public bool ShowingColonizationRoutesOverlay { get => UState.ShowColonizationRoutesOverlay; set => UState.ShowColonizationRoutesOverlay = value; } // Ludoal fork (wishlist)
 
         /// <summary>

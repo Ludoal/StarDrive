@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using SDGraphics.Input;
@@ -41,6 +41,9 @@ namespace Ship_Game
                 new Hotkey("Alt (hold)", "Tactical icons at close zoom"),
                 new Hotkey(null, "Cinematic mode", nameof(KeyBindings.CinematicMode)),
                 new Hotkey("Ctrl+Middle-click", "Chase camera on selected ship"),
+                new Hotkey(null, "Previous colony", nameof(KeyBindings.PrevColony)),
+                new Hotkey(null, "Next colony", nameof(KeyBindings.NextColony)),
+                new Hotkey(null, "Go to capital", nameof(KeyBindings.GoToCapital)),
             }),
             ("OVERLAYS", new[]
             {
@@ -53,15 +56,15 @@ namespace Ship_Game
             }),
             ("SCREENS", new[]
             {
-                new Hotkey("R", "Research"),
-                new Hotkey("Y", "Shipyard"),
+                new Hotkey(null, "Research", nameof(KeyBindings.OpenResearch)),
+                new Hotkey(null, "Shipyard", nameof(KeyBindings.OpenShipyard)),
                 new Hotkey(null, "Fleets", nameof(KeyBindings.FleetDesignScreen)),
                 new Hotkey(null, "Blueprints", nameof(KeyBindings.BlueprintsScreen)),
                 new Hotkey(null, "Ships", nameof(KeyBindings.ShipListScreen)),
-                new Hotkey("E", "Espionage"),
-                new Hotkey("I", "Intelligence"),
-                new Hotkey("T", "Economy"),
-                new Hotkey("U", "Colonies"),
+                new Hotkey(null, "Espionage", nameof(KeyBindings.OpenEspionage)),
+                new Hotkey(null, "Intelligence", nameof(KeyBindings.OpenDiplomacy)),
+                new Hotkey(null, "Economy", nameof(KeyBindings.OpenEconomy)),
+                new Hotkey(null, "Colonies", nameof(KeyBindings.OpenEmpire)),
                 new Hotkey(null, "Planets", nameof(KeyBindings.PlanetListScreen)),
                 new Hotkey(null, "Troops", nameof(KeyBindings.TroopListScreen)),
                 new Hotkey(null, "Patrols", nameof(KeyBindings.EmpirePatrolsScreen)),

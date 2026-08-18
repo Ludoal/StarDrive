@@ -110,6 +110,10 @@ namespace Ship_Game
         public bool FreighterUtilWindow  => KeyPressed(KeyBindings.FreighterUtilWindow);
         public bool EmpirePatrolsScreen  => KeyPressed(KeyBindings.EmpirePatrolsScreen);
         public bool ImportantEventsScreen => KeyPressed(KeyBindings.ImportantEventsScreen); // Ludoal fork: the 46 Important Events log (minimap row 4, beside Range F6)
+        // Ludoal fork (bench 427): keyboard colony navigation - leaf through the empire
+        public bool PrevColony  => KeyPressed(KeyBindings.PrevColony);
+        public bool NextColony  => KeyPressed(KeyBindings.NextColony);
+        public bool GoToCapital => KeyPressed(KeyBindings.GoToCapital);
         public bool InfluenceOverlay     => KeyPressed(KeyBindings.InfluenceOverlay); // Ludoal fork: colored influence zones
         public bool RangeOverlay         => KeyPressed(KeyBindings.RangeOverlay); // Ludoal fork: F3 went to the Vision overlay
         public bool FTLOverlay           => KeyPressed(KeyBindings.FTLOverlay); // Ludoal fork: subspace projection (coverage + projectors), ex-F2

@@ -35,6 +35,19 @@ namespace Ship_Game
         public static Keys EmpirePatrolsScreen   = Keys.P;
         public static Keys ShipPieMenu           = Keys.Q;
 
+        // the main pages (bench 427: they join the table like everyone else)
+        public static Keys OpenResearch  = Keys.R;
+        public static Keys OpenEconomy   = Keys.T;
+        public static Keys OpenShipyard  = Keys.Y;
+        public static Keys OpenEmpire    = Keys.U;
+        public static Keys OpenDiplomacy = Keys.I;
+        public static Keys OpenEspionage = Keys.E;
+
+        // colony navigation (bench 427): leaf through the empire without the mouse
+        public static Keys PrevColony   = Keys.OemOpenBrackets;
+        public static Keys NextColony   = Keys.OemCloseBrackets;
+        public static Keys GoToCapital  = Keys.Home;
+
         // game commands
         public static Keys QuickSave     = Keys.F9;
         public static Keys CinematicMode = Keys.F11;
