@@ -403,7 +403,7 @@ namespace Ship_Game
         static string GalSizeText(GalSize g) => g switch { GalSize.Tiny => Localizer.Token(GameText.GsTiny), GalSize.Small => Localizer.Token(GameText.GsSmall), GalSize.Medium => Localizer.Token(GameText.GsMedium), GalSize.Large => Localizer.Token(GameText.GsLarge), GalSize.Huge => Localizer.Token(GameText.GsHuge), GalSize.Epic => Localizer.Token(GameText.GsEpic), GalSize.TrulyEpic => Localizer.Token(GameText.GsTrulyEpic), _ => g.ToString() };
         static string DifficultyText(GameDifficulty d) => d switch { GameDifficulty.Normal => Localizer.Token(GameText.DfNormal), GameDifficulty.Hard => Localizer.Token(GameText.DfHard), GameDifficulty.Brutal => Localizer.Token(GameText.DfBrutal), GameDifficulty.Insane => Localizer.Token(GameText.DfInsane), _ => d.ToString() };
         static string RemnantText(ExtraRemnantPresence r) => r switch { ExtraRemnantPresence.VeryRare => Localizer.Token(GameText.RmVeryRare), ExtraRemnantPresence.Rare => Localizer.Token(GameText.RmRare), ExtraRemnantPresence.Normal => Localizer.Token(GameText.RmNormal), ExtraRemnantPresence.More => Localizer.Token(GameText.RmMore), ExtraRemnantPresence.MuchMore => Localizer.Token(GameText.RmMuchMore), ExtraRemnantPresence.Everywhere => Localizer.Token(GameText.RmEverywhere), _ => r.ToString() };
-            UIButton Foot(string text, Action<UIButton> click, ButtonStyle style = ButtonStyle.Medium)
+            UIButton Foot(in LocalizedText text, Action<UIButton> click, ButtonStyle style = ButtonStyle.Medium)
             {
                 UIButton b = Button(style, bx, footY, text, click: click);
                 bx += BtnW + BtnGap;
