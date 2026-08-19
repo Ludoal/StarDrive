@@ -20605,7 +20605,7 @@ HkTacticalIconsAtCloseZoom:
 HkChaseCameraOnSelectedShip:
  Id: 4585
  ENG: "Chase camera on selected ship"
- FRA: "Caméra suiveuse sur le vaisseau sélectionné"
+ FRA: "Suivre le vaisseau sélectionné"
 HkPreviousColony:
  Id: 4586
  ENG: "Previous colony"
@@ -20793,7 +20793,7 @@ HkSetFiringArc:
 HkCancelRemoveModuleOutsideClose:
  Id: 4632
  ENG: "Cancel / remove module; outside: close"
- FRA: "Annuler / retirer le module ; à l'extérieur : fermer"
+ FRA: "Retirer le module (dehors : fermer)"
 HkRemoveSquad:
  Id: 4633
  ENG: "Remove squad"
