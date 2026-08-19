@@ -871,6 +871,25 @@ namespace Ship_Game
         ButtonStyle SymmetricDesignBtnStyle  => IsSymmetricDesignMode ? ButtonStyle.WideHostile : ButtonStyle.WideActive;
         ButtonStyle ArcsBtnStyle             => ShowAllArcs ? ButtonStyle.WideHostile : ButtonStyle.WideActive;
 
+        // the enum names, spoken through the localization system (their display only)
+        static string ShipCategoryText(ShipCategory c) => c switch
+        {
+            ShipCategory.Unclassified => Localizer.Token(GameText.ShipCatUnclassified),
+            ShipCategory.Civilian     => Localizer.Token(GameText.ShipCatCivilian),
+            ShipCategory.Recon        => Localizer.Token(GameText.ShipCatRecon),
+            ShipCategory.Conservative => Localizer.Token(GameText.ShipCatConservative),
+            ShipCategory.Neutral      => Localizer.Token(GameText.ShipCatNeutral),
+            ShipCategory.Reckless     => Localizer.Token(GameText.ShipCatReckless),
+            ShipCategory.Kamikaze     => Localizer.Token(GameText.ShipCatKamikaze),
+            _ => c.ToString()
+        };
+        static string HangarOptionText(HangarOptions h) => h switch
+        {
+            HangarOptions.General     => Localizer.Token(GameText.HangarGeneral),
+            HangarOptions.AntiShip    => Localizer.Token(GameText.HangarAntiShip),
+            HangarOptions.Interceptor => Localizer.Token(GameText.HangarInterceptor),
+            _ => h.ToString()
+        };
         void CreateGUI()
         {
             RemoveAll();
@@ -1242,7 +1261,7 @@ namespace Ship_Game
                                              optY, ddW, ddH);
             CategoryList = new CategoryDropDown(dropdownRect);
             foreach (ShipCategory item in Enum.GetValues(typeof(ShipCategory)).Cast<ShipCategory>())
-                CategoryList.AddOption(item.ToString(), item);
+                CategoryList.AddOption(ShipCategoryText(item), item);
 
             // Ludoal fork: Stance before Hangar Type. Stance is a block of icons rather than a
             // labelled dropdown, so it breaks the row's rhythm less in the middle than at the
@@ -1255,7 +1274,7 @@ namespace Ship_Game
                                            optY, ddHangarW, ddH);
             HangarOptionsList = new HangarDesignationDropDown(hangarRect);
             foreach (HangarOptions item in Enum.GetValues(typeof(HangarOptions)).Cast<HangarOptions>())
-                HangarOptionsList.AddOption(item.ToString(), item);
+                HangarOptionsList.AddOption(HangarOptionText(item), item);
 
             // DESIGN ISSUES sits UNDER the cartouche instead of in a narrow 200px column to its
             // left, so its text gets the full width. Both boxes use the bottom-up
@@ -1556,11 +1575,11 @@ namespace Ship_Game
                 return string.Join("\n", names);
             }
 
-            string queued = alreadyQueued.Length > 0 ? $"Already in Queue:\n{ToNames(alreadyQueued)}\n\n" : "";
+            string queued = alreadyQueued.Length > 0 ? string.Format(Localizer.Token(GameText.SyAlreadyInQueue), ToNames(alreadyQueued)) : "";
             string toAdd = ToNames(missingTechs.Filter(t => !alreadyQueued.Contains(t)));
 
             ScreenManager.AddScreen(new MessageBoxScreen(this,
-                $"Confirm Research Missing Techs ({missingTechs.Length}) for {designName}:\n\n{queued} Will be added to Queue:\n{toAdd}")
+                string.Format(Localizer.Token(GameText.SyConfirmResearchMissing), missingTechs.Length, designName, queued, toAdd))
             {
                 Accepted = () =>
                 {

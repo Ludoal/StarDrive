@@ -6060,6 +6060,64 @@ namespace Ship_Game
         EmPopGrowthTip = 5206,
         /// <summary>Sort colonies by distance from the Homeworld (Homeworld first)</summary>
         EmSortByDistanceTip = 5207,
+        /// <summary>DPS</summary>
+        SyStatDps = 5208,
+        /// <summary>Weapons</summary>
+        SyStatWeapons = 5209,
+        /// <summary>Hangars</summary>
+        SyStatHangars = 5210,
+        /// <summary>Bomb Bays</summary>
+        SyStatBombBays = 5211,
+        /// <summary>Unclassified</summary>
+        ShipCatUnclassified = 5212,
+        /// <summary>Civilian</summary>
+        ShipCatCivilian = 5213,
+        /// <summary>Recon</summary>
+        ShipCatRecon = 5214,
+        /// <summary>Conservative</summary>
+        ShipCatConservative = 5215,
+        /// <summary>Neutral</summary>
+        ShipCatNeutral = 5216,
+        /// <summary>Reckless</summary>
+        ShipCatReckless = 5217,
+        /// <summary>Kamikaze</summary>
+        ShipCatKamikaze = 5218,
+        /// <summary>General</summary>
+        HangarGeneral = 5219,
+        /// <summary>AntiShip</summary>
+        HangarAntiShip = 5220,
+        /// <summary>Interceptor</summary>
+        HangarInterceptor = 5221,
+        /// <summary>Of the {0} ships in your empire that are not assigned to fleets, {1} o</summary>
+        FdShipsFitText = 5222,
+        /// <summary>There are no ships in your empire that are not already assigned to a f</summary>
+        FdNoShipsFitText = 5223,
+        /// <summary>Order {0} new ships to be built at your best available shipyards</summary>
+        FdOrderNewShips = 5224,
+        /// <summary>This fleet is at full strength, or has build orders in place to bring </summary>
+        FdFleetAtFullStrength = 5225,
+        /// <summary>Already in Queue: {0}  </summary>
+        SyAlreadyInQueue = 5226,
+        /// <summary>Confirm Research Missing Techs ({0}) for {1}:  {2} Will be added to Qu</summary>
+        SyConfirmResearchMissing = 5227,
+        /// <summary>CONSTRUCTION</summary>
+        SyHeadConstruction = 5228,
+        /// <summary>ENERGY</summary>
+        SyHeadEnergy = 5229,
+        /// <summary>MOBILITY</summary>
+        SyHeadMobility = 5230,
+        /// <summary>STATION</summary>
+        SyHeadStation = 5231,
+        /// <summary>PAYLOAD</summary>
+        SyHeadPayload = 5232,
+        /// <summary>DEFENCE</summary>
+        SyHeadDefence = 5233,
+        /// <summary>ORDNANCE</summary>
+        SyHeadOrdnance = 5234,
+        /// <summary>FCS</summary>
+        SyHeadFcs = 5235,
+        /// <summary>COMBAT</summary>
+        SyHeadCombat = 5236,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 5101,
         /// <summary>Research Bonus Granted: {0}%</summary>

@@ -95,24 +95,22 @@ namespace Ship_Game
             Ship[] available = GetAvailableShips();
             int numThatFit = GetNumThatFit(available);
 
-            // TODO: implement dynamic text in GameText.yaml
             string s = numThatFit > 0
-                ? $"Of the {available.Length} ships in your empire that are not assigned to fleets, {numThatFit} of them can be assigned to fill in this fleet"
-                : "There are no ships in your empire that are not already assigned to a fleet that can fit any of the roles required by this fleet's design.";
+                ? string.Format(Localizer.Token(GameText.FdShipsFitText), available.Length, numThatFit)
+                : Localizer.Token(GameText.FdNoShipsFitText);
 
             return Fonts.Arial12Bold.ParseText(s, Background.ClientArea.W - 40);
         }
 
         string GetSlotsToFillText()
         {
-            string s = $"Order {GetSlotsToFill()} new ships to be built at your best available shipyards";
+            string s = string.Format(Localizer.Token(GameText.FdOrderNewShips), GetSlotsToFill());
             return Fonts.Arial12Bold.ParseText(s, Background.ClientArea.W - 40);
         }
 
         string GetFullStrengthText()
         {
-            // TODO: Add auto-parse support for Labels
-            string s = "This fleet is at full strength, or has build orders in place to bring it to full strength, and does not require further requisitions";
+            string s = Localizer.Token(GameText.FdFleetAtFullStrength);
             return Fonts.Arial12Bold.ParseText(s, Background.ClientArea.W - 40);
         }
 

@@ -153,7 +153,8 @@ namespace Ship_Game.GameScreens.ShipDesign
         // every label BuildRows can put in the title column. A row added without its key here
         // simply is not measured, and a too-long one would overhang - so keep the two in step.
         // titles with no GameText key, spelled out in BuildRows
-        static readonly string[] RawRowTitles = { "Weapons", "Max Wpn Range", "DPS" };
+        static string[] RawRowTitlesCache; // localized lazily, same pattern as CompactTitles
+        static string[] RawRowTitles => RawRowTitlesCache ??= new[] { Localizer.Token(GT.SyStatWeapons), Localizer.Token(GT.SyMaxWpnRange), Localizer.Token(GT.SyStatDps) };
 
         static readonly GT[] RowTitleKeys =
         {
@@ -266,7 +267,7 @@ namespace Ship_Game.GameScreens.ShipDesign
         static string[] CompactTitlesCache;
         static string[] CompactTitles => CompactTitlesCache ??= new[]
         {
-            Localizer.Token(GT.ShipOffense), "DPS", "Weapons", "Hangars", "Bomb Bays",
+            Localizer.Token(GT.ShipOffense), Localizer.Token(GT.SyStatDps), Localizer.Token(GT.SyStatWeapons), Localizer.Token(GT.SyStatHangars), Localizer.Token(GT.SyStatBombBays),
             Localizer.Token(GT.SyMaxWpnRange),
             Localizer.Token(GT.WpnFirePowerTime), Localizer.Token(GT.AmmoTime),
             Localizer.Token(GT.TroopCapacity), Localizer.Token(GT.CargoSpace),
@@ -422,11 +423,11 @@ namespace Ship_Game.GameScreens.ShipDesign
             // One merged fire-power line: a beam boat reads its burst duration (the old
             // compact's own rule), under the full row's label.
             Stat(GT.ShipOffense, () => Ds.Strength, GT.TT_ShipOffense, nonZero: true);
-            Stat("DPS", () => S.TotalDps, GT.TT_ShipOffense, nonZero: true, icon: "UI/icon_offense", iconColor: Color.OrangeRed);
-            Stat("Weapons", () => S.Weapons.Count, GT.TT_ShipOffense, nonZero: true);
+            Stat(GT.SyStatDps, () => S.TotalDps, GT.TT_ShipOffense, nonZero: true, icon: "UI/icon_offense", iconColor: Color.OrangeRed);
+            Stat(GT.SyStatWeapons, () => S.Weapons.Count, GT.TT_ShipOffense, nonZero: true);
             // the carrier and bomber armament, right under the guns
-            Stat("Hangars", () => S.Carrier.AllFighterHangars.Length, GT.TT_ShipOffense, nonZero: true);
-            Stat("Bomb Bays", () => S.BombBays.Count, GT.TT_ShipOffense, nonZero: true);
+            Stat(GT.SyStatHangars, () => S.Carrier.AllFighterHangars.Length, GT.TT_ShipOffense, nonZero: true);
+            Stat(GT.SyStatBombBays, () => S.BombBays.Count, GT.TT_ShipOffense, nonZero: true);
             Stat(GT.SyMaxWpnRange, () => S.WeaponsMaxRange, GT.TT_ShipOffense, nonZero: true);
             Stat(GT.WpnFirePowerTime, () => Ds.HasBeams() ? Ds.BurstEnergyDuration : Ds.EnergyDuration, GT.TT_WpnFirePowerTime, energy,
                  vis: () => Ds.HasEnergyWeapons && (Ds.HasBeams() ? Ds.HasBeamDurationNegative() : Ds.HasEnergyWepsPositive()),
@@ -489,13 +490,13 @@ namespace Ship_Game.GameScreens.ShipDesign
             Color engines = Color.DarkSeaGreen;
             Color ordnance = Color.IndianRed;
 
-            Head("CONSTRUCTION");
+            Head(Localizer.Token(GT.SyHeadConstruction));
             Stat(GT.ProductionCost, () => S.GetCost(), GT.TT_ProductionCost);
             Stat(GT.UpkeepCost, () => S.GetMaintCost(), GT.TT_UpkeepCost);
             Stat(GT.TotalModuleSlots, () => S.SurfaceArea, GT.TT_TotalModuleSlots);
             Stat(GT.Mass, () => S.Mass, GT.TT_Mass);
 
-            Head("ENERGY");
+            Head(Localizer.Token(GT.SyHeadEnergy));
             Stat(GT.PowerCapacity, () => Ds.PowerCapacity, GT.TT_PowerCapacity, energy, tint: Above(() => Ds.PowerConsumed));
             Stat(GT.PowerRecharge, () => Ds.PowerRecharge, GT.TT_PowerRecharge, energy, tint: Positive);
             Stat(GT.RechargeAtWarp, () => Ds.ChargeAtWarp, GT.TT_RechargeAtWarp, energy, tint: Positive, vis: Ds.IsWarpCapable);
@@ -512,7 +513,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             // Ludoal fork: MOBILITY before DEFENCE. Reading order follows the columns — the left
             // one runs CONSTRUCTION, ENERGY, MOBILITY, which is what the ship IS, while the
             // right one carries what it does in a fight.
-            Head("MOBILITY");
+            Head(Localizer.Token(GT.SyHeadMobility));
             Stat(GT.FtlSpeed, () => S.MaxFTLSpeed, GT.TT_FtlSpeed, engines, tint: Above(20_000f), vis: Ds.IsWarpCapable);
             // FTL time right under the speed it belongs to
             if (!S.IsPlatformOrStation)
@@ -536,7 +537,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             // ⚠ these two blocks show on PRODUCTION, not on the station role: nothing stops a
             // research lab going on a mobile hull, so they are not proof the ship is a station.
             // The right column loses its two rarest blocks and stops overflowing as a bonus.
-            Head("STATION");
+            Head(Localizer.Token(GT.SyHeadStation));
             Stat(GT.ResearchPerTurn, () => S.ResearchPerTurn, GT.ResearchPerTurnStatTip, nonZero: true);
             Stat(GT.ResearchStationResearchTimeStat, () => Ds.ResearchTime(), GT.ResearchStationResearchTimeStatTip,
                  tint: Above(ShipResupply.NumTurnsForGoodResearchSupply), vis: Ds.ProducesResearch);
@@ -544,11 +545,11 @@ namespace Ship_Game.GameScreens.ShipDesign
             Stat(GT.MiningStationRefiningTimeStat, () => Ds.RefiningTime(), GT.MiningStationRefiningTimeStatTip,
                  tint: Above(ShipResupply.NumTurnsForGoodRefiningSupply - 0.01f), vis: Ds.RefinesResources);
 
-            Head("PAYLOAD");
+            Head(Localizer.Token(GT.SyHeadPayload));
             Stat(GT.TroopCapacity, () => S.TroopCapacity, GT.TT_TroopCapacity, ordnance, nonZero: true);
             Stat(GT.CargoSpace, () => S.CargoSpaceMax, GT.TT_CargoSpace, nonZero: true);
 
-            Head("DEFENCE");
+            Head(Localizer.Token(GT.SyHeadDefence));
             Stat(GT.TotalHitpoints, () => S.Health, GT.TT_HitPoints, protect, tint: Positive, icon: "UI/icon_shield", iconColor: Color.CadetBlue);
             Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, protect, tint: Positive, vis: Ds.HasRegularShields, icon: "Modules/Shield_1KW", iconColor: Color.AliceBlue);
             Stat(GT.ShieldPower, () => S.ShieldMax, GT.TT_ShieldPower, Color.Gold, tint: Positive, vis: Ds.HasAmplifiedMains, icon: "Modules/Shield_1KW", iconColor: Color.AliceBlue);
@@ -566,13 +567,13 @@ namespace Ship_Game.GameScreens.ShipDesign
             // them as one list made neither obvious. Sensor Range sits with FCS rather than
             // earning a third heading: it is detection, not fire control, but a block of its own
             // would cost a line and the air around it for a single row.
-            Head("ORDNANCE");
+            Head(Localizer.Token(GT.SyHeadOrdnance));
             Stat(GT.OrdnanceCreated, () => S.OrdAddedPerSecond, GT.TT_OrdnanceCreated, ordnance, nonZero: true);
             Stat(GT.OrdnanceCapacity, () => S.OrdinanceMax, GT.TT_OrdnanceCap, ordnance, vis: Ds.HasOrdnance);
             Stat(GT.AmmoTime, () => Ds.AmmoTime, GT.TT_AmmoTime, ordnance, tint: Above(30f), vis: Ds.HasOrdFinite, icon: "Modules/Ordnance", iconColor: Color.Khaki);
             Word(GT.AmmoTime, "INF", GT.TT_AmmoTime, ordnance, good, vis: Ds.HasOrdInfinite, icon: "Modules/Ordnance", iconColor: Color.Khaki);
 
-            Head("FCS");
+            Head(Localizer.Token(GT.SyHeadFcs));
             Stat(GT.FireControl, () => S.TargetingAccuracy, GT.TT_FireControl, nonZero: true);
             Stat(GT.FcsPower, () => S.TrackingPower, GT.TT_FcsPower, nonZero: true);
             Stat(GT.SensorRange3, () => S.SensorRange, GT.TT_SensorRange3, nonZero: true);
@@ -583,10 +584,10 @@ namespace Ship_Game.GameScreens.ShipDesign
             // Raw strings: these three have no GameText key, exactly as the load overlay wrote
             // them. Max range only, not the avg..max pair - on a ship mixing a short-range laser
             // with a long-range cannon that pair describes neither of them.
-            Head("COMBAT");
-            Stat("Weapons", () => S.Weapons.Count, GT.TT_ShipOffense, nonZero: true);
+            Head(Localizer.Token(GT.SyHeadCombat));
+            Stat(GT.SyStatWeapons, () => S.Weapons.Count, GT.TT_ShipOffense, nonZero: true);
             Stat(GT.SyMaxWpnRange, () => S.WeaponsMaxRange, GT.TT_ShipOffense, nonZero: true);
-            Stat("DPS", () => S.TotalDps, GT.TT_ShipOffense, nonZero: true, icon: "UI/icon_offense", iconColor: Color.OrangeRed);
+            Stat(GT.SyStatDps, () => S.TotalDps, GT.TT_ShipOffense, nonZero: true, icon: "UI/icon_offense", iconColor: Color.OrangeRed);
             Stat(GT.ShipOffense, () => Ds.Strength, GT.TT_ShipOffense, nonZero: true);
             Stat(GT.RelativeStrength, () => Ds.RelativeStrength, GT.TT_RelativeStrength, nonZero: true);
         }

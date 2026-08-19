@@ -19006,6 +19006,93 @@ EmPopGrowthTip:
 EmSortByDistanceTip:
  Id: 5207
  ENG: "Sort colonies by distance from the Homeworld (Homeworld first)"
+SyStatDps:
+ Id: 5208
+ ENG: "DPS"
+SyStatWeapons:
+ Id: 5209
+ ENG: "Weapons"
+SyStatHangars:
+ Id: 5210
+ ENG: "Hangars"
+SyStatBombBays:
+ Id: 5211
+ ENG: "Bomb Bays"
+ShipCatUnclassified:
+ Id: 5212
+ ENG: "Unclassified"
+ShipCatCivilian:
+ Id: 5213
+ ENG: "Civilian"
+ShipCatRecon:
+ Id: 5214
+ ENG: "Recon"
+ShipCatConservative:
+ Id: 5215
+ ENG: "Conservative"
+ShipCatNeutral:
+ Id: 5216
+ ENG: "Neutral"
+ShipCatReckless:
+ Id: 5217
+ ENG: "Reckless"
+ShipCatKamikaze:
+ Id: 5218
+ ENG: "Kamikaze"
+HangarGeneral:
+ Id: 5219
+ ENG: "General"
+HangarAntiShip:
+ Id: 5220
+ ENG: "AntiShip"
+HangarInterceptor:
+ Id: 5221
+ ENG: "Interceptor"
+FdShipsFitText:
+ Id: 5222
+ ENG: "Of the {0} ships in your empire that are not assigned to fleets, {1} of them can be assigned to fill in this fleet"
+FdNoShipsFitText:
+ Id: 5223
+ ENG: "There are no ships in your empire that are not already assigned to a fleet that can fit any of the roles required by this fleet's design."
+FdOrderNewShips:
+ Id: 5224
+ ENG: "Order {0} new ships to be built at your best available shipyards"
+FdFleetAtFullStrength:
+ Id: 5225
+ ENG: "This fleet is at full strength, or has build orders in place to bring it to full strength, and does not require further requisitions"
+SyAlreadyInQueue:
+ Id: 5226
+ ENG: "Already in Queue:\n{0}\n\n"
+SyConfirmResearchMissing:
+ Id: 5227
+ ENG: "Confirm Research Missing Techs ({0}) for {1}:\n\n{2} Will be added to Queue:\n{3}"
+SyHeadConstruction:
+ Id: 5228
+ ENG: "CONSTRUCTION"
+SyHeadEnergy:
+ Id: 5229
+ ENG: "ENERGY"
+SyHeadMobility:
+ Id: 5230
+ ENG: "MOBILITY"
+SyHeadStation:
+ Id: 5231
+ ENG: "STATION"
+SyHeadPayload:
+ Id: 5232
+ ENG: "PAYLOAD"
+SyHeadDefence:
+ Id: 5233
+ ENG: "DEFENCE"
+SyHeadOrdnance:
+ Id: 5234
+ ENG: "ORDNANCE"
+SyHeadFcs:
+ Id: 5235
+ ENG: "FCS"
+SyHeadCombat:
+ Id: 5236
+ ENG: "COMBAT"
 TcLockedRequiresTech:
  Id: 5101
  ENG: "Locked - requires {0}"
