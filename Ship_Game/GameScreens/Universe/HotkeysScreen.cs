@@ -30,17 +30,17 @@ namespace Ship_Game
         {
             (Localizer.Token(GameText.HkCatTimeSpeed), new[]
             {
-                new Hotkey("Space", Localizer.Token(GameText.HkPause)),
-                new Hotkey("Shift+Space", Localizer.Token(GameText.HkResetSpeedToX1)),
+                new Hotkey(Localizer.Token(GameText.HkKeySpace), Localizer.Token(GameText.HkPause)),
+                new Hotkey(Localizer.Token(GameText.HkKeyShiftSpace), Localizer.Token(GameText.HkResetSpeedToX1)),
                 new Hotkey("+ / -", Localizer.Token(GameText.HkSpeedUpSlowDown)),
             }),
             (Localizer.Token(GameText.HkCatMapCamera), new[]
             {
-                new Hotkey("Arrows / WASD", Localizer.Token(GameText.HkPanTheCamera)),
+                new Hotkey(Localizer.Token(GameText.HkKeyArrowsWasd), Localizer.Token(GameText.HkPanTheCamera)),
                 new Hotkey(null, Localizer.Token(GameText.HkZoomToSelection), nameof(KeyBindings.ZoomToSelection)),
                 new Hotkey(null, Localizer.Token(GameText.HkZoomOut), nameof(KeyBindings.ZoomOut)),
-                new Hotkey("Alt (hold)", Localizer.Token(GameText.HkTacticalIconsAtCloseZoom)),
-                new Hotkey("Ctrl+Middle-click", Localizer.Token(GameText.HkChaseCameraOnSelectedShip)),
+                new Hotkey(Localizer.Token(GameText.HkKeyAltHold), Localizer.Token(GameText.HkTacticalIconsAtCloseZoom)),
+                new Hotkey(Localizer.Token(GameText.HkKeyCtrlMiddle), Localizer.Token(GameText.HkChaseCameraOnSelectedShip)),
                 new Hotkey(null, Localizer.Token(GameText.HkPreviousColony), nameof(KeyBindings.PrevColony)),
                 new Hotkey(null, Localizer.Token(GameText.HkNextColony), nameof(KeyBindings.NextColony)),
                 new Hotkey(null, Localizer.Token(GameText.HkGoToCapital), nameof(KeyBindings.GoToCapital)),
@@ -79,37 +79,37 @@ namespace Ship_Game
                 new Hotkey(null, Localizer.Token(GameText.HkImportantEventsLog), nameof(KeyBindings.ImportantEventsScreen)),
                 new Hotkey(null, Localizer.Token(GameText.HkLastViewedColony), nameof(KeyBindings.ColonyOverviewScreen)),
                 new Hotkey("F1", Localizer.Token(GameText.HkHelp)),
-                new Hotkey("Esc", Localizer.Token(GameText.HkCloseScreen)),
+                new Hotkey(Localizer.Token(GameText.HkKeyEsc), Localizer.Token(GameText.HkCloseScreen)),
             }),
             (Localizer.Token(GameText.HkCatFleets), new[]
             {
                 new Hotkey("1-0", Localizer.Token(GameText.HkSelectFleet110)),
                 new Hotkey("Alt+1-0", Localizer.Token(GameText.HkSelectFleet1120)),
-                new Hotkey("Ctrl+digit", Localizer.Token(GameText.HkCreateReplaceFleet)),
-                new Hotkey("Ctrl+Shift+digit", Localizer.Token(GameText.HkAddSelectionToFleet)),
+                new Hotkey(Localizer.Token(GameText.HkKeyCtrlDigit), Localizer.Token(GameText.HkCreateReplaceFleet)),
+                new Hotkey(Localizer.Token(GameText.HkKeyCtrlShiftDigit), Localizer.Token(GameText.HkAddSelectionToFleet)),
             }),
             (Localizer.Token(GameText.HkCatSelectionOrders), new[]
             {
                 new Hotkey(null, Localizer.Token(GameText.HkShipPieMenu), nameof(KeyBindings.ShipPieMenu)),
-                new Hotkey("Del / Backspace", Localizer.Token(GameText.HkScrapShip)),
-                new Hotkey("Alt+Click", Localizer.Token(GameText.HkSelectSameHull)),
-                new Hotkey("Ctrl+Click", Localizer.Token(GameText.HkSelectSameRoleAndHull)),
-                new Hotkey("Ctrl+Alt+Click", Localizer.Token(GameText.HkSelectSameDesign)),
-                new Hotkey("Mouse Back", Localizer.Token(GameText.HkPreviousTarget)),
+                new Hotkey(Localizer.Token(GameText.HkKeyDelBackspace), Localizer.Token(GameText.HkScrapShip)),
+                new Hotkey(Localizer.Token(GameText.HkKeyAltClick), Localizer.Token(GameText.HkSelectSameHull)),
+                new Hotkey(Localizer.Token(GameText.HkKeyCtrlClick), Localizer.Token(GameText.HkSelectSameRoleAndHull)),
+                new Hotkey(Localizer.Token(GameText.HkKeyCtrlAltClick), Localizer.Token(GameText.HkSelectSameDesign)),
+                new Hotkey(Localizer.Token(GameText.HkKeyMouseBack), Localizer.Token(GameText.HkPreviousTarget)),
             }),
             (Localizer.Token(GameText.HkCatShipyard), new[]
             {
-                new Hotkey("Arrows", Localizer.Token(GameText.HkRotateModuleInHand)),
+                new Hotkey(Localizer.Token(GameText.HkKeyArrows), Localizer.Token(GameText.HkRotateModuleInHand)),
                 new Hotkey("Tab", Localizer.Token(GameText.HkShowAllFiringArcs)),
                 new Hotkey(null, Localizer.Token(GameText.HkDesignIssues), nameof(KeyBindings.DesignIssues)), // bench 435: the OLD fixed row shadowed the live one
                 new Hotkey("Ctrl+Z / Ctrl+Y", Localizer.Token(GameText.HkUndoRedo)),
-                new Hotkey("Hold Left-click", Localizer.Token(GameText.HkSetFiringArc)),
-                new Hotkey("Right-click", Localizer.Token(GameText.HkCancelRemoveModuleOutsideClose)),
+                new Hotkey(Localizer.Token(GameText.HkKeyHoldLeft), Localizer.Token(GameText.HkSetFiringArc)),
+                new Hotkey(Localizer.Token(GameText.HkKeyRightClick), Localizer.Token(GameText.HkCancelRemoveModuleOutsideClose)),
             }),
             (Localizer.Token(GameText.HkCatFleetDesign), new[]
             {
-                new Hotkey("Del / Backspace", Localizer.Token(GameText.HkRemoveSquad)),
-                new Hotkey("WASD / edges", Localizer.Token(GameText.HkScrollTheGrid)),
+                new Hotkey(Localizer.Token(GameText.HkKeyDelBackspace), Localizer.Token(GameText.HkRemoveSquad)),
+                new Hotkey(Localizer.Token(GameText.HkKeyWasdEdges), Localizer.Token(GameText.HkScrollTheGrid)),
             }),
             (Localizer.Token(GameText.HkCatMisc), new[]
             {
@@ -147,7 +147,7 @@ namespace Ship_Game
         public override void LoadContent()
         {
             // the window names itself in its own title bar; frame and close cross are PopupWindow's
-            TitleText = "Hotkeys";
+            TitleText = Localizer.Token(GameText.MmHotkeysBtn);
             base.LoadContent();
 
             Rectangle inner = PopupFrame.ContentArea(Rect);

@@ -6190,6 +6190,40 @@ namespace Ship_Game
         RmEverywhere = 5271,
         /// <summary>{0}x slower</summary>
         NgPaceSlower = 5272,
+        /// <summary>Space</summary>
+        HkKeySpace = 5273,
+        /// <summary>Shift+Space</summary>
+        HkKeyShiftSpace = 5274,
+        /// <summary>Arrows / WASD</summary>
+        HkKeyArrowsWasd = 5275,
+        /// <summary>Alt (hold)</summary>
+        HkKeyAltHold = 5276,
+        /// <summary>Ctrl+Middle-click</summary>
+        HkKeyCtrlMiddle = 5277,
+        /// <summary>Ctrl+digit</summary>
+        HkKeyCtrlDigit = 5278,
+        /// <summary>Ctrl+Shift+digit</summary>
+        HkKeyCtrlShiftDigit = 5279,
+        /// <summary>Del / Backspace</summary>
+        HkKeyDelBackspace = 5280,
+        /// <summary>Alt+Click</summary>
+        HkKeyAltClick = 5281,
+        /// <summary>Ctrl+Click</summary>
+        HkKeyCtrlClick = 5282,
+        /// <summary>Ctrl+Alt+Click</summary>
+        HkKeyCtrlAltClick = 5283,
+        /// <summary>Mouse Back</summary>
+        HkKeyMouseBack = 5284,
+        /// <summary>Arrows</summary>
+        HkKeyArrows = 5285,
+        /// <summary>Hold Left-click</summary>
+        HkKeyHoldLeft = 5286,
+        /// <summary>Right-click</summary>
+        HkKeyRightClick = 5287,
+        /// <summary>WASD / edges</summary>
+        HkKeyWasdEdges = 5288,
+        /// <summary>Esc</summary>
+        HkKeyEsc = 5289,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 5101,
         /// <summary>Research Bonus Granted: {0}%</summary>

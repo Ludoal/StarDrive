@@ -20813,7 +20813,7 @@ HkFooter:
 HkResetAll:
  Id: 4637
  ENG: "Reset all to defaults"
- FRA: "Réinitialiser tout aux valeurs par défaut"
+ FRA: "Tout réinitialiser"
 HkNotRemappable:
  Id: 4638
  ENG: "Not remappable"
@@ -22222,6 +22222,74 @@ NgPaceSlower:
  Id: 5272
  ENG: "{0}x slower"
  FRA: "{0}x plus lent"
+HkKeySpace:
+ Id: 5273
+ ENG: "Space"
+ FRA: "Espace"
+HkKeyShiftSpace:
+ Id: 5274
+ ENG: "Shift+Space"
+ FRA: "Maj+Espace"
+HkKeyArrowsWasd:
+ Id: 5275
+ ENG: "Arrows / WASD"
+ FRA: "Flèches / WASD"
+HkKeyAltHold:
+ Id: 5276
+ ENG: "Alt (hold)"
+ FRA: "Alt (maintenu)"
+HkKeyCtrlMiddle:
+ Id: 5277
+ ENG: "Ctrl+Middle-click"
+ FRA: "Ctrl+clic milieu"
+HkKeyCtrlDigit:
+ Id: 5278
+ ENG: "Ctrl+digit"
+ FRA: "Ctrl+chiffre"
+HkKeyCtrlShiftDigit:
+ Id: 5279
+ ENG: "Ctrl+Shift+digit"
+ FRA: "Ctrl+Maj+chiffre"
+HkKeyDelBackspace:
+ Id: 5280
+ ENG: "Del / Backspace"
+ FRA: "Suppr / Retour arrière"
+HkKeyAltClick:
+ Id: 5281
+ ENG: "Alt+Click"
+ FRA: "Alt+clic"
+HkKeyCtrlClick:
+ Id: 5282
+ ENG: "Ctrl+Click"
+ FRA: "Ctrl+clic"
+HkKeyCtrlAltClick:
+ Id: 5283
+ ENG: "Ctrl+Alt+Click"
+ FRA: "Ctrl+Alt+clic"
+HkKeyMouseBack:
+ Id: 5284
+ ENG: "Mouse Back"
+ FRA: "Souris Retour"
+HkKeyArrows:
+ Id: 5285
+ ENG: "Arrows"
+ FRA: "Flèches"
+HkKeyHoldLeft:
+ Id: 5286
+ ENG: "Hold Left-click"
+ FRA: "Clic gauche maintenu"
+HkKeyRightClick:
+ Id: 5287
+ ENG: "Right-click"
+ FRA: "Clic droit"
+HkKeyWasdEdges:
+ Id: 5288
+ ENG: "WASD / edges"
+ FRA: "WASD / bords"
+HkKeyEsc:
+ Id: 5289
+ ENG: "Esc"
+ FRA: "Échap"
 TcLockedRequiresTech:
  Id: 5101
  ENG: "Locked - requires {0}"
