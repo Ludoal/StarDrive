@@ -22852,14 +22852,14 @@ UsingAdvancedComputersAndA:
  UKR: "Використовуючи сучасні комп'ютери та мережу спеціалізованих супутників, ця будівля відстежує глобальну погоду і спрямовує заходи з маніпулювання нею для покращення росту рослин. Це підвищує середню родючість планети."
  PTB: "Usando computadores avançados e uma rede de satélites especializados, este edifício monitora o clima global e direciona medidas para manipulá-lo a fim de melhorar o crescimento das plantas. Isso aumenta a fertilidade média do planeta."
 Tech_SubspaceArtillery_II_Name:
- Id: 17567
+ Id: 17660
  ENG: "Subspace Artillery"
  FRA: "Les entrepôts sont conçus pour stocker et déplacer davantage de production et de nourriture, facilitant l'expansion d'un empire naissant."
  RUS: "Космическая артиллерия"
  UKR: "Підпросторова артилерія"
  PTB: "Artilharia Subespacial"
 Tech_SubspaceArtillery_II_Desc:
- Id: 17568
+ Id: 17661
  ENG: "Using conventional physics, extremely large cannons proved too unwieldy for applications in space. However, advancements in subspace field theory have allowed for the creation of a second set of larger, extremely powerful cannons, along with a tactical one for our more cramped vessels. These weapons will shred through enemy armor, and offer a small to decent chance of penetrating shields."
  FRA: "Réserve Planétaire II"
  RUS: "Используя традиционную физику, чрезвычайно большие пушки оказались слишком громоздкими для применения в космосе. Однако достижения в теории поля подпространства позволили создать второй набор более крупных и чрезвычайно мощных пушек, для наших кораблей. Это оружие пробивает броню врага и дает небольшой или приличный шанс пробить щиты."
