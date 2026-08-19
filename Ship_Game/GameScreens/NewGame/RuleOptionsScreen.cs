@@ -182,7 +182,7 @@ public sealed class RuleOptionsScreen : PopupWindow
         // screen is what moves the sliders: they read their value at construction.
         // Ludoal fork (maintainer feedback): Reset is a destructive action, so the red plate.
         UIButton resetBtn = Button(ButtonStyle.WideHostile, leftRect.X + 40, leftRect.Y + leftRect.Height - 60,
-               "Reset", b =>
+               GameText.NgReset, b =>
         {
             var stock = new UniverseParams();
             P.FTLModifier = stock.FTLModifier;

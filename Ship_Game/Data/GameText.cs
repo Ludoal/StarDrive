@@ -6118,6 +6118,78 @@ namespace Ship_Game
         SyHeadFcs = 5235,
         /// <summary>COMBAT</summary>
         SyHeadCombat = 5236,
+        /// <summary>Hotkeys</summary>
+        MmHotkeysBtn = 5237,
+        /// <summary>Mods</summary>
+        MmModsBtn = 5238,
+        /// <summary>Dev Sandbox</summary>
+        MmDevSandbox = 5239,
+        /// <summary>BlackBox Codex</summary>
+        MmCodexBtn = 5240,
+        /// <summary>Support BlackBox</summary>
+        MmSupportBtn = 5241,
+        /// <summary>Load Race</summary>
+        NgLoadRace = 5242,
+        /// <summary>Load Setup</summary>
+        NgLoadSetup = 5243,
+        /// <summary>Start Game</summary>
+        NgStartGame = 5244,
+        /// <summary>Clear Traits</summary>
+        NgClearTraits = 5245,
+        /// <summary>Race</summary>
+        NgTabRace = 5246,
+        /// <summary>Opponents</summary>
+        NgTabOpponents = 5247,
+        /// <summary>Points</summary>
+        NgTabPoints = 5248,
+        /// <summary>Description</summary>
+        NgTabDescription = 5249,
+        /// <summary>Environment</summary>
+        NgTabEnvironment = 5250,
+        /// <summary>Reset</summary>
+        NgReset = 5251,
+        /// <summary>Fullscreen</summary>
+        WmFullscreen = 5252,
+        /// <summary>Windowed</summary>
+        WmWindowed = 5253,
+        /// <summary>Borderless</summary>
+        WmBorderless = 5254,
+        /// <summary>Tiny</summary>
+        GsTiny = 5255,
+        /// <summary>Small</summary>
+        GsSmall = 5256,
+        /// <summary>Medium</summary>
+        GsMedium = 5257,
+        /// <summary>Large</summary>
+        GsLarge = 5258,
+        /// <summary>Huge</summary>
+        GsHuge = 5259,
+        /// <summary>Epic</summary>
+        GsEpic = 5260,
+        /// <summary>TrulyEpic</summary>
+        GsTrulyEpic = 5261,
+        /// <summary>Normal</summary>
+        DfNormal = 5262,
+        /// <summary>Hard</summary>
+        DfHard = 5263,
+        /// <summary>Brutal</summary>
+        DfBrutal = 5264,
+        /// <summary>Insane</summary>
+        DfInsane = 5265,
+        /// <summary>Very Rare</summary>
+        RmVeryRare = 5266,
+        /// <summary>Rare</summary>
+        RmRare = 5267,
+        /// <summary>Normal</summary>
+        RmNormal = 5268,
+        /// <summary>More</summary>
+        RmMore = 5269,
+        /// <summary>Much More</summary>
+        RmMuchMore = 5270,
+        /// <summary>Everywhere</summary>
+        RmEverywhere = 5271,
+        /// <summary>{0}x slower</summary>
+        NgPaceSlower = 5272,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 5101,
         /// <summary>Research Bonus Granted: {0}%</summary>

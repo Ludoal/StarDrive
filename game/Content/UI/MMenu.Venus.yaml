@@ -225,27 +225,27 @@ Elements:
           ClickSfx: sd_ui_tactical_pause
       - Button:
           Name: hotkeys
-          Title: "Hotkeys"
+          Title: "{5237}"
           AbsSize: [200, 0] # aspect fill width
           ClickSfx: sd_ui_tactical_pause
       - Button:
           Name: mods
-          Title: "Mods"
+          Title: "{5238}"
           AbsSize: [200, 0] # aspect fill width
           ClickSfx: sd_ui_tactical_pause
       - Button:
           Name: sandbox
-          Title: "Dev Sandbox"
+          Title: "{5239}"
           AbsSize: [200, 0] # aspect fill width
           ClickSfx: sd_ui_tactical_pause
       - Button:
           Name: info
-          Title: "BlackBox Codex"
+          Title: "{5240}"
           AbsSize: [200, 0] # aspect fill width
           ClickSfx: sd_ui_tactical_pause
       - Button:
           Name: support
-          Title: "Support BlackBox"
+          Title: "{5241}"
           AbsSize: [200, 0] # aspect fill width
           ButtonStyle: Military
           ClickSfx: sd_ui_tactical_pause

@@ -197,7 +197,7 @@ namespace Ship_Game
             // columns below depend on. Empire keeps its width; Galaxy gives the 30.
             const int EnvExtra = 30;
             int envW = SideW + EnvExtra;
-            EnvTab = Add(new Submenu(new RectF(gridLeft, gridTop, envW, Row1H), "Environment"));
+            EnvTab = Add(new Submenu(new RectF(gridLeft, gridTop, envW, Row1H), GameText.NgTabEnvironment));
             int halfW = (gridRight - gridLeft - SideW - 2 * Pad) / 2;   // Empire keeps this
             int galaxyW = halfW - EnvExtra;                            // Galaxy yields the 30
             EmpireTab = Add(new Submenu(new RectF(gridLeft + envW + Pad, gridTop, halfW, Row1H), "Empire"));
@@ -250,7 +250,7 @@ namespace Ship_Game
             RectF traitsList = new(gridLeft + envW + Pad, row2Top,
                                    gridRight - gridLeft - envW - SideW - 2 * Pad, row2H);
 
-            LocalizedText[] traitNames = { GameText.Physical, GameText.Sociological, GameText.HistoryAndTradition, "Environment" };
+            LocalizedText[] traitNames = { GameText.Physical, GameText.Sociological, GameText.HistoryAndTradition, GameText.NgTabEnvironment };
             // ⚠ No Bevel and no Menu1 background - Menu1 paints a second popup frame INSIDE the
             // tab's own, producing a double border; with it goes the SetAbsPos pin it needed.
             Traits = Add(new SubmenuScrollList<TraitsListItem>(traitsList, traitNames));
@@ -264,7 +264,7 @@ namespace Ship_Game
             // Opponents is a second tab here (same pattern as Points|Description on the right),
             // not a separate window - no foot button. The tab is envW wide, aligned with
             // Environment above.
-            LocalizedText[] leftTabs = { "Race", "Opponents" };
+            LocalizedText[] leftTabs = { GameText.NgTabRace, GameText.NgTabOpponents };
             RaceTab = Add(new Submenu(new RectF(gridLeft, row2Top, envW, row2H), leftTabs));
             RaceTab.OnTabChange = OnLeftTabChanged;
             RectF chooseRace = RaceTab.ClientArea;
@@ -314,7 +314,7 @@ namespace Ship_Game
             const int optListX = 10, optSplit = 180, optPad = 3;
             float labelX = galaxyArea.X + optListX + optSplit + 70;
             float labelY = galaxyArea.Y + 6 + optPad;
-            NumSystemsLabel = Add(new UILabel(labelX, labelY, $"Solar Systems: {GetSystemsNum()}"));
+            NumSystemsLabel = Add(new UILabel(labelX, labelY, $"{Localizer.Token(GameText.SolarSystems)}: {GetSystemsNum()}"));
             NumSystemsLabel.Font  = font;
             NumSystemsLabel.Color = Color.SteelBlue;
 
@@ -361,21 +361,21 @@ namespace Ship_Game
             if (GlobalStats.Defaults.ChangeResearchCostBasedOnSize)
                 opponentsTip += ". On a large scale galaxy, this might also affect research cost of technologies.";
 
-            AddOption("{GalaxySize} : ",   OnGalaxySizeClicked,  _ => P.GalaxySize.ToString(), tip:galaxySizeTip);
+            AddOption("{GalaxySize} : ",   OnGalaxySizeClicked,  _ => GalSizeText(P.GalaxySize), tip:galaxySizeTip);
             AddOption("{SolarSystems} : ", OnNumberStarsClicked, _ => P.StarsCount.ToString(), tip:solarSystemsTip);
             AddOption("{Opponents} : ",  OnNumOpponentsClicked,  _ => P.NumOpponents.ToString(), tip:opponentsTip);
             ModeBtn = AddOption("{GameMode} : ",   OnGameModeClicked, _ => GetModeText().Text, tip:GetModeTip());
-            AddOption("{Pacing} : ", OnPacingClicked, _ => (P.Pace == 1f) ? "1x" : $"{P.Pace:0.##}x slower", tip:GameText.TheGamesPaceModifiesThe);
-            AddOption("{Difficulty} : ", OnDifficultyClicked, _ => P.Difficulty.ToString(),
+            AddOption("{Pacing} : ", OnPacingClicked, _ => (P.Pace == 1f) ? "1x" : string.Format(Localizer.Token(GameText.NgPaceSlower), $"{P.Pace:0.##}"), tip:GameText.TheGamesPaceModifiesThe);
+            AddOption("{Difficulty} : ", OnDifficultyClicked, _ => DifficultyText(P.Difficulty),
                 tip:GameText.NgDifficultyAggressivenessTooltip);
-            AddOption("{RemnantPresence} : ", OnExtraRemnantClicked, _ => P.ExtraRemnant.ToString(),
+            AddOption("{RemnantPresence} : ", OnExtraRemnantClicked, _ => RemnantText(P.ExtraRemnant),
                 tip:GameText.NgRemnantsIntensityTooltip);
 
             // row 2 RIGHT: two tabs over one area - the points summary, and the race description.
             // Same rect for both; OnTabChange flips which one is visible.
             // ⚠ the tab list is an IEnumerable - there is no variadic overload
             // "Points", not the full token: the two tabs have to share ONE row
-            LocalizedText[] infoTabs = { "Points", "Description" };
+            LocalizedText[] infoTabs = { GameText.NgTabPoints, GameText.NgTabDescription };
             InfoTab = Add(new Submenu(new RectF(gridRight - SideW, row2Top, SideW, row2H), infoTabs));
             InfoTab.OnTabChange = OnInfoTabChanged;
             RectF description = InfoTab.ClientArea;
@@ -395,6 +395,10 @@ namespace Ship_Game
             // Default button is 168 wide and a row would overlap itself by 36 per button.
             const int BtnW = 132, BtnGap = 6;
             int bx = gridLeft;
+        // enum display names, spoken through the localization system
+        static string GalSizeText(GalSize g) => g switch { GalSize.Tiny => Localizer.Token(GameText.GsTiny), GalSize.Small => Localizer.Token(GameText.GsSmall), GalSize.Medium => Localizer.Token(GameText.GsMedium), GalSize.Large => Localizer.Token(GameText.GsLarge), GalSize.Huge => Localizer.Token(GameText.GsHuge), GalSize.Epic => Localizer.Token(GameText.GsEpic), GalSize.TrulyEpic => Localizer.Token(GameText.GsTrulyEpic), _ => g.ToString() };
+        static string DifficultyText(GameDifficulty d) => d switch { GameDifficulty.Normal => Localizer.Token(GameText.DfNormal), GameDifficulty.Hard => Localizer.Token(GameText.DfHard), GameDifficulty.Brutal => Localizer.Token(GameText.DfBrutal), GameDifficulty.Insane => Localizer.Token(GameText.DfInsane), _ => d.ToString() };
+        static string RemnantText(ExtraRemnantPresence r) => r switch { ExtraRemnantPresence.VeryRare => Localizer.Token(GameText.RmVeryRare), ExtraRemnantPresence.Rare => Localizer.Token(GameText.RmRare), ExtraRemnantPresence.Normal => Localizer.Token(GameText.RmNormal), ExtraRemnantPresence.More => Localizer.Token(GameText.RmMore), ExtraRemnantPresence.MuchMore => Localizer.Token(GameText.RmMuchMore), ExtraRemnantPresence.Everywhere => Localizer.Token(GameText.RmEverywhere), _ => r.ToString() };
             UIButton Foot(string text, Action<UIButton> click, ButtonStyle style = ButtonStyle.Medium)
             {
                 UIButton b = Button(style, bx, footY, text, click: click);
@@ -407,8 +411,8 @@ namespace Ship_Game
             // the SAME width the column declares.
             const int TwoBtnW = 2 * BtnW + BtnGap;
             bx = gridLeft + (envW - TwoBtnW) / 2;
-            Foot("Load Race", OnLoadRaceClicked);
-            Foot("Save Race", OnSaveRaceClicked);
+            Foot(GameText.NgLoadRace, OnLoadRaceClicked);
+            Foot(GameText.MmSaveRace, OnSaveRaceClicked);
 
             // centred under the TRAITS block: the whole-setup Load/Save pair. Ludoal fork:
             // opponents are a tab in the left column, so the pair centres on the middle block on
@@ -418,14 +422,14 @@ namespace Ship_Game
             int midW    = gridRight - SideW - Pad - midLeft;
             int midRowW = 2 * BtnW + BtnGap;                      // Load + Save
             bx = midLeft + (midW - midRowW) / 2;
-            Foot("Load Setup", OnLoadSetupClicked);
-            Foot("Save Setup", OnSaveSetupClicked);
+            Foot(GameText.NgLoadSetup, OnLoadSetupClicked);
+            Foot(GameText.MmSaveSetup, OnSaveSetupClicked);
 
             // right column: Engage commits (active blue), centred on the right column. Ludoal
             // fork: the frame's close cross top-right does the cancel (it calls ExitScreen on
             // its own), so Exit is not in the foot.
             // ⚠ the Wide styles are PAINTED, so their width is whatever we set.
-            UIButton engage = Button(ButtonStyle.WideActive, gridRight - SideW + (SideW - BtnW) / 2, footY, "Start Game", click: OnEngageClicked);
+            UIButton engage = Button(ButtonStyle.WideActive, gridRight - SideW + (SideW - BtnW) / 2, footY, GameText.NgStartGame, click: OnEngageClicked);
             engage.SetAbsSize(BtnW, 24);
 
             Vector2 closePos = PopupFrame.ClosePos(ScreenFrame);
@@ -440,7 +444,7 @@ namespace Ship_Game
             // Clear Traits lives on the Points page and follows its tab; red (hostile) plate.
             // ⚠ WideHostile is painted, so pin its width to the Medium footprint.
             ClearTraitsBtn = Button(ButtonStyle.WideHostile, (int)(description.X + 10), (int)(description.Bottom - 28),
-                                    "Clear Traits", click: OnClearClicked);
+                                    GameText.NgClearTraits, click: OnClearClicked);
             ClearTraitsBtn.SetAbsSize(132, 24);
 
             DoRaceDescription();
@@ -798,7 +802,7 @@ namespace Ship_Game
             // hides its own button column while we sit on top.
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             int numSystems = GetSystemsNum();
-            NumSystemsLabel.Text = $"Solar Systems: {numSystems}";
+            NumSystemsLabel.Text = $"{Localizer.Token(GameText.SolarSystems)}: {numSystems}";
             ShowPerformanceWarning(numSystems);
             ShowExtraPlanetsNum(P.ExtraPlanets);
 
@@ -809,7 +813,7 @@ namespace Ship_Game
             Frame.DrawFill(batch, ScreenFrame);
             Frame.Draw(batch);
             // the window title font, the one Colony and every popup uses - not Laserian
-            string screenTitle = "New Game";
+            string screenTitle = Localizer.Token(GameText.NewGame);
             batch.DrawString(UITheme.WindowTitle, screenTitle,
                 new Vector2(ScreenFrame.X + ScreenFrame.Width / 2 - UITheme.WindowTitle.TextWidth(screenTitle) / 2f,
                             Frame.TitleRect.CenterY() - UITheme.WindowTitle.LineSpacing / 2f), UITheme.TextPrimary);

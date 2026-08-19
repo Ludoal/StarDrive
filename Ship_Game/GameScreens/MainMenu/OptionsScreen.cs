@@ -198,6 +198,7 @@ namespace Ship_Game
             New.ShadowDetail = New.ShadowDetail >= 3 ? 0 : New.ShadowDetail + 1;
         }
 
+        static string WindowModeText(WindowMode m) => m switch { WindowMode.Fullscreen => Localizer.Token(GameText.WmFullscreen), WindowMode.Windowed => Localizer.Token(GameText.WmWindowed), WindowMode.Borderless => Localizer.Token(GameText.WmBorderless), _ => m.ToString() };
         void Fullscreen_OnClick(UILabel label)
         {
             ++New.Mode;
@@ -266,7 +267,7 @@ namespace Ship_Game
 
             // graphics rows get +30px between the setting name and its option
             Add(graphics, GameText.Resolution, ResolutionDropDown, 30);
-            Add(graphics, GameText.ScreenMode,   l => New.Mode.ToString(),               Fullscreen_OnClick, 30);
+            Add(graphics, GameText.ScreenMode,   l => WindowModeText(New.Mode),          Fullscreen_OnClick, 30);
             Add(graphics, GameText.AntiAliasing, l => AntiAliasString(),                 AntiAliasing_OnClick, 30);
             Add(graphics, GameText.TextureQuality, l => QualityString(New.TextureQuality), TextureQuality_OnClick, 30);
             Add(graphics, GameText.TextureFiltering, l => TextureFilterString(),             TextureFiltering_OnClick, 30);
