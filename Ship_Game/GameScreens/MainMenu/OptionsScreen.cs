@@ -162,7 +162,7 @@ namespace Ship_Game
 
         static string ShadowQualStr(int parameter)
         {
-            return ((DetailPreference)parameter).ToString();
+            return (DetailPreference)parameter switch { DetailPreference.High => Localizer.Token(GameText.OptQualityHigh), DetailPreference.Medium => Localizer.Token(GameText.OptQualityNormal), DetailPreference.Low => Localizer.Token(GameText.OptQualityLow), _ => Localizer.Token(GameText.OptQualityNone) };
         }
 
         void AntiAliasing_OnClick(UILabel label)
@@ -198,6 +198,8 @@ namespace Ship_Game
             New.ShadowDetail = New.ShadowDetail >= 3 ? 0 : New.ShadowDetail + 1;
         }
 
+        static string LanguageName(Language l) => l switch { Language.English => "English", Language.Russian => "Русский", Language.Spanish => "Español", Language.Ukrainian => "Українська", Language.German => "Deutsch", Language.Portuguese => "Português", Language.Polish => "Polski", Language.French => "Français", _ => l.ToString() };
+
         static string WindowModeText(WindowMode m) => m switch { WindowMode.Fullscreen => Localizer.Token(GameText.WmFullscreen), WindowMode.Windowed => Localizer.Token(GameText.WmWindowed), WindowMode.Borderless => Localizer.Token(GameText.WmBorderless), _ => m.ToString() };
         void Fullscreen_OnClick(UILabel label)
         {
@@ -213,13 +215,13 @@ namespace Ship_Game
 
         void Add(UIList graphics, LocalizedText title, Func<UILabel, string> getText, Action<UILabel> onClick, float splitOffset = 0)
         {
-            graphics.AddSplit(new UILabel($"{title.Text}:"), new UILabel(getText, onClick))
+            graphics.AddSplit(new UILabel(title) { Color = UITheme.TextPrimary }, new UILabel(getText, onClick))
                 .Split = graphics.Width*0.4f + splitOffset;
         }
 
         void Add(UIList graphics, LocalizedText title, UIElementV2 second, float splitOffset = 0)
         {
-            graphics.AddSplit(new UILabel($"{title.Text}:"), second)
+            graphics.AddSplit(new UILabel(title) { Color = UITheme.TextPrimary }, second)
                 .Split = graphics.Width*0.4f + splitOffset;
         }
 
@@ -245,7 +247,7 @@ namespace Ship_Game
             const float BoxW = 340f, BoxGap = 10f;
             // bench 406: taller Visuals/Gameplay/UI so every row clears the frame with a
             // bottom padding
-            const float GraphicsBoxH = 260, AudioBoxH = 160, VisualsBoxH = 292, GameplayBoxH = 240, UIBoxH = 344;
+            const float GraphicsBoxH = 260, AudioBoxH = 190, VisualsBoxH = 292, GameplayBoxH = 240, UIBoxH = 344;
             float x0 = inner.X + 16, x1 = x0 + BoxW + BoxGap, x2 = x1 + BoxW + BoxGap;
             float top = inner.Y + 10;
 
@@ -258,7 +260,7 @@ namespace Ship_Game
             // the dropdown sits on its OWN row under the label - the French label
             // outgrew the 105px split and the box covered it (French sweep)
             SoundDevices = new DropOptions<MMDevice>(260, 18);
-            audio.Add(new UILabel(GameText.SoundDevice));
+            audio.Add(new UILabel(GameText.SoundDevice) { Color = UITheme.TextPrimary });
             audio.Add(SoundDevices);
             MusicVolumeSlider   = audio.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, GameText.MusicVolume, 0f, 1f, GlobalStats.MusicVolume));
             EffectsVolumeSlider = audio.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, GameText.EffectsVolume, 0f, 1f, GlobalStats.EffectsVolume));
@@ -453,7 +455,7 @@ namespace Ship_Game
         {
             foreach (Language language in (Language[]) Enum.GetValues(typeof(Language)))
             {
-                CurrentLanguage.AddOption(language.ToString(), language);
+                CurrentLanguage.AddOption(LanguageName(language), language);
             }
             CurrentLanguage.ActiveValue = GlobalStats.Language;
             CurrentLanguage.OnValueChange = OnLanguageDropDownChange;

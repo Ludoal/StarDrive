@@ -15192,8 +15192,8 @@ AutosaveFrequency:
  PTB: "Frequência do AutoSave"
 SoundDevice:
  Id: 4142
- ENG: "Sound Device:  "
- FRA: "Périphérique audio :  "
+ ENG: "Sound Device"
+ FRA: "Périphérique audio"
  RUS: "Вывод звука:"
  UKR: "Звуковий пристрій:"
  PTB: "Dispositivo de Som:  "
