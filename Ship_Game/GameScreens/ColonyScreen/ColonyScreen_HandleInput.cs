@@ -319,7 +319,8 @@ namespace Ship_Game
 
         bool HandleExportImportButtons(InputState input)
         {
-            if (FoodDropDown.r.HitTest(input.CursorPosition) && input.LeftMouseClick)
+            // auto-supplies: a greyed list is read-only - the Auto checkbox owns QUI decides
+            if (P.FoodManual && FoodDropDown.r.HitTest(input.CursorPosition) && input.LeftMouseClick)
             {
                 FoodDropDown.Toggle();
                 GameAudio.AcceptClick();
@@ -329,7 +330,7 @@ namespace Ship_Game
                 return true;
             }
 
-            if (ProdDropDown.r.HitTest(input.CursorPosition) && input.LeftMouseClick)
+            if (P.ProdManual && ProdDropDown.r.HitTest(input.CursorPosition) && input.LeftMouseClick)
             {
                 ProdDropDown.Toggle();
                 GameAudio.AcceptClick();
@@ -339,17 +340,12 @@ namespace Ship_Game
                 return true;
             }
 
-            // Ludoal fork (wishlist): the colonist flow cycles Auto -> Store -> Import -> Export
-            if (ColonistsDropDown.r.HitTest(input.CursorPosition) && input.LeftMouseClick)
+            // Ludoal fork (wishlist): the colonist flow cycles Stay -> Bring in -> Resettle
+            if (P.ColonistsManual && ColonistsDropDown.r.HitTest(input.CursorPosition) && input.LeftMouseClick)
             {
                 ColonistsDropDown.Toggle();
                 GameAudio.AcceptClick();
-                int next = (P.ColonistsManual ? 1 + (int)P.CS : 0) + 1;
-                if (next > 3)
-                    next = 0;
-                P.ColonistsManual = next > 0;
-                if (next > 0)
-                    P.CS = (Planet.GoodState)(next - 1);
+                P.CS = P.CS >= Planet.GoodState.EXPORT ? Planet.GoodState.STORE : (Planet.GoodState)((int)P.CS + 1);
                 return true;
             }
             return false;

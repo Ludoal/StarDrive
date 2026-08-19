@@ -296,47 +296,58 @@ namespace Ship_Game
             // three rows: the elders keep their historical spacing (bench 427 - the
             // squeeze belonged to the Colonies table, not here), population seats third
             const float storeRow1 = 46, storeRow2 = 92;
-            FoodStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + storeRow1, 0.4f*PStorage.Width, 18);
+            // auto-supplies (maintainer spec): the food/prod icons shrink to the pop icon's
+            // 22px gabarit - the width bought pays for the Auto column on the right edge
+            const int SupplyIconSize = 22, SupplyBarX = 52;
+            float supplyAutoX = PStorage.Right - 62; // the Auto column, far right, one X for the three rows
+            FoodStorage = new ProgressBar(PStorage.X + SupplyBarX, PStorage.Y + storeRow1, 0.4f*PStorage.Width, 18);
             FoodStorage.Max = p.Storage.Max;
             FoodStorage.Progress = p.FoodHere;
             FoodStorage.color = "green";
-            FoodDropDown = new DropDownMenu(PStorage.X + 100 + 0.4f * PStorage.Width + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, 0.2f*PStorage.Width, 18);
+            FoodDropDown = new DropDownMenu(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 16, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, 0.2f*PStorage.Width, 18);
             FoodDropDown.AddOption(Localizer.Token(GameText.Store));
             FoodDropDown.AddOption(Localizer.Token(GameText.Import));
             FoodDropDown.AddOption(Localizer.Token(GameText.Export));
             FoodDropDown.ActiveIndex = (int)p.FS;
-            var iconStorageFood = ResourceManager.Texture("NewUI/icon_storage_food");
-            FoodStorageIcon = new Rectangle((int)PStorage.X + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - iconStorageFood.Height / 2, iconStorageFood.Width, iconStorageFood.Height);
-            ProdStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + storeRow2, 0.4f*PStorage.Width, 18);
+            FoodStorageIcon = new Rectangle((int)PStorage.X + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - SupplyIconSize / 2, SupplyIconSize, SupplyIconSize);
+            ProdStorage = new ProgressBar(PStorage.X + SupplyBarX, PStorage.Y + storeRow2, 0.4f*PStorage.Width, 18);
             ProdStorage.Max = p.Storage.Max;
             ProdStorage.Progress = p.ProdHere;
-            var iconStorageProd = ResourceManager.Texture("NewUI/icon_storage_production");
-            ProfStorageIcon = new Rectangle((int)PStorage.X + 20, ProdStorage.pBar.Y + ProdStorage.pBar.Height / 2 - iconStorageFood.Height / 2, iconStorageProd.Width, iconStorageFood.Height);
-            ProdDropDown = new DropDownMenu(PStorage.X + 100 + 0.4f*PStorage.Width + 20, ProdStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, 0.2f*PStorage.Width, 18);
+            ProfStorageIcon = new Rectangle((int)PStorage.X + 20, ProdStorage.pBar.Y + ProdStorage.pBar.Height / 2 - SupplyIconSize / 2, SupplyIconSize, SupplyIconSize);
+            ProdDropDown = new DropDownMenu(PStorage.X + SupplyBarX + 0.4f*PStorage.Width + 16, ProdStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, 0.2f*PStorage.Width, 18);
             ProdDropDown.AddOption(Localizer.Token(GameText.Store));
             ProdDropDown.AddOption(Localizer.Token(GameText.Import));
             ProdDropDown.AddOption(Localizer.Token(GameText.Export));
             ProdDropDown.ActiveIndex = (int)p.PS;
+            // the Auto toggles: QUI decide - the dropdowns keep the vocabulary, greyed
+            // read-only while their automatics hold the pen (maintainer design, Wishlist)
+            if (p.NonCybernetic)
+                Add(new UICheckBox(supplyAutoX, FoodStorage.pBar.Y + 1, () => P.AutoFood, v => P.AutoFood = v,
+                                   Fonts.Arial12Bold, "Auto", GameText.AutoSupplyTip));
+            Add(new UICheckBox(supplyAutoX, ProdStorage.pBar.Y + 1, () => P.AutoProd, v => P.AutoProd = v,
+                               Fonts.Arial12Bold, "Auto", GameText.AutoSupplyTip));
 
             // Ludoal fork (wishlist + bench 426): the population row, full seat grammar -
             // a storage bar (population against its cap) like Food and Production, the
             // migration dropdown beside it. Auto = the formula keeps deciding; the manual
             // states pin the direction. The colonist freighter line seats under the bar.
             const float storeRow3 = 138;
-            PopStorage = new ProgressBar(PStorage.X + 100, PStorage.Y + storeRow3, 0.4f * PStorage.Width, 18);
+            PopStorage = new ProgressBar(PStorage.X + SupplyBarX, PStorage.Y + storeRow3, 0.4f * PStorage.Width, 18);
             PopStorage.Max = p.MaxPopulationBillionFor(p.Owner);
             PopStorage.Progress = p.PopulationBillion;
             PopStorage.color = "blue";
             var iconPop = ResourceManager.Texture("UI/icon_pop_22");
             ColonistsIcon = new Rectangle((int)PStorage.X + 20, (int)(PStorage.Y + storeRow3 + 9 - iconPop.Height / 2f), iconPop.Width, iconPop.Height);
-            ColonistsDropDown = new DropDownMenu(PStorage.X + 100 + 0.4f * PStorage.Width + 20, PStorage.Y + storeRow3, 0.2f * PStorage.Width, 18);
-            ColonistsDropDown.AddOption("Auto");
+            ColonistsDropDown = new DropDownMenu(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 16, PStorage.Y + storeRow3, 0.2f * PStorage.Width, 18);
             // people words, not cargo words (bench 425): Stay / Bring in / Resettle map
-            // onto STORE / IMPORT / EXPORT in the same order
+            // onto STORE / IMPORT / EXPORT in the same order. QUI decides moved to the
+            // Auto checkbox (auto-supplies) - in Auto the list shows the formula's live pick
             ColonistsDropDown.AddOption(Localizer.Token(GameText.Stay));
             ColonistsDropDown.AddOption(Localizer.Token(GameText.BringIn));
             ColonistsDropDown.AddOption(Localizer.Token(GameText.Resettle));
-            ColonistsDropDown.ActiveIndex = p.ColonistsManual ? 1 + (int)p.CS : 0;
+            ColonistsDropDown.ActiveIndex = (int)(p.ColonistsManual ? p.CS : p.GetGoodState(Goods.Colonists));
+            Add(new UICheckBox(supplyAutoX, PopStorage.pBar.Y + 1, () => P.AutoColonists, v => P.AutoColonists = v,
+                               Fonts.Arial12Bold, "Auto", GameText.AutoSupplyTip));
 
             // Centre column: the colony grid keeps its height, STATISTICS below takes the rest -
             // it is the variable block of this column, and it closes on the grid's foot.

@@ -6224,6 +6224,7 @@ namespace Ship_Game
         HkKeyWasdEdges = 5288,
         /// <summary>Esc</summary>
         HkKeyEsc = 5289,
+        AutoSupplyTip = 5290,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 5101,
         /// <summary>Research Bonus Granted: {0}%</summary>

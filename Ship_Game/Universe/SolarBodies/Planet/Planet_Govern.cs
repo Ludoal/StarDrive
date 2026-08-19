@@ -44,8 +44,17 @@ namespace Ship_Game
             // If there is no Outpost or Capital, build it. This is done for non governor planets as well
             BuildOutpostOrCapitalIfAble();
 
+            // Ludoal fork (wishlist, auto-supplies): the Trade Hub role is retired - its
+            // flux duty is exactly what the Auto toggles do on a governorless colony.
+            // Old saves land there with identical behaviour (toggles default to Auto).
+            if (CType == ColonyType.TradeHub)
+                CType = ColonyType.Colony;
+
             if (CType == ColonyType.Colony)
-                return; // No Governor? Never mind!
+            {
+                ManageSupplyStates(); // flux is decoupled from governance: it runs here too
+                return; // No Governor? Only construction minds.
+            }
 
             // Switch to Core for AI if there is nothing in the research queue (Does not actually change assigned Governor)
             if ((!OwnerIsPlayer || Owner.AutoResearch) && CType == ColonyType.Research && Owner.Research.NoTopic)
@@ -65,49 +74,70 @@ namespace Ship_Game
             CreateAndOrUpdateBudget();
             switch (CType) // New resource management by Gretman
             {
-                case ColonyType.TradeHub:
-                    DetermineFoodState(0.2f, 0.8f);
-                    DetermineProdState(0.2f, 0.8f);
-                    break;
+                // case ColonyType.TradeHub: retired role (auto-supplies) - flux-only
+                //     governance is now the Auto toggles on a governorless colony. Kept
+                //     here in case the role returns with another function some day.
                 case ColonyType.Core:
                     BuildAndScrapBuildings(Budget);
                     AssignCoreWorldWorkers();
-                    DetermineFoodState(0.2f, 0.5f);
-                    DetermineProdState(0.2f, 0.5f);
                     break;
                 case ColonyType.Industrial:
                     BuildAndScrapBuildings(Budget);
                     // Farm to 30% storage, then devote the rest to Work, then to research when that starts to fill up
                     AssignOtherWorldsWorkers(0.33f, 1, 0, 2);
-                    DetermineFoodState(0.75f, 0.99f);
-                    if (NonCybernetic)
-                        DetermineProdState(0f, 0.5f);
-                    else
-                        DetermineProdState(0.2f, 0.66f);
-
                     break;
                 case ColonyType.Research:
                     //This governor will rely on imports, focusing on research as long as no one is starving
                     BuildAndScrapBuildings(Budget);
                     AssignOtherWorldsWorkers(0.15f, 0.15f, 0, 0);
-                    DetermineFoodState(0.75f, 0.95f);
-                    DetermineProdState(0.25f, 0.95f);
                     break;
                 case ColonyType.Agricultural:
                     BuildAndScrapBuildings(Budget);
                     AssignOtherWorldsWorkers(1, 0.333f, Storage.Max - Storage.Food , 0);
-                    DetermineFoodState(0.1f, 0.2f);
-                    DetermineProdState(0.25f, 0.95f);
                     break;
                 case ColonyType.Military:
                     BuildAndScrapBuildings(Budget);
                     AssignOtherWorldsWorkers(0.3f, 0.7f, 0, 1.5f);
-                    DetermineFoodState(0.75f, 1f); // Import if either drops below 75%, and stop importing once stores reach 95%.
-                    DetermineProdState(0.75f, 0.95f); // This planet will only export Food or Prod due to excess FlatFood or FlatProd
                     break;
             }
 
+            ManageSupplyStates(); // after the switch: an AI type reassignment above must use its final thresholds
             BuildPlatformsAndStations(Budget);
+        }
+
+        // Ludoal fork (wishlist, auto-supplies): the flux states, decoupled from governance.
+        // Runs for EVERY colony each governing tick; each resource is gated by its Auto
+        // toggle - a manual resource is never overwritten, the player's override HOLDS.
+        // Governor types keep their tuned thresholds (unchanged numbers, extracted from the
+        // old switch); a governorless colony uses the retired Trade Hub's neutral pair.
+        void ManageSupplyStates()
+        {
+            if (!FoodManual)
+            {
+                (float imp, float exp) = CType switch
+                {
+                    ColonyType.Core         => (0.2f, 0.5f),
+                    ColonyType.Industrial   => (0.75f, 0.99f),
+                    ColonyType.Research     => (0.75f, 0.95f),
+                    ColonyType.Agricultural => (0.1f, 0.2f),
+                    ColonyType.Military     => (0.75f, 1f), // Import if it drops below 75%; only exports excess FlatFood
+                    _                       => (0.2f, 0.8f),
+                };
+                DetermineFoodState(imp, exp);
+            }
+            if (!ProdManual)
+            {
+                (float imp, float exp) = CType switch
+                {
+                    ColonyType.Core         => (0.2f, 0.5f),
+                    ColonyType.Industrial   => NonCybernetic ? (0f, 0.5f) : (0.2f, 0.66f),
+                    ColonyType.Research     => (0.25f, 0.95f),
+                    ColonyType.Agricultural => (0.25f, 0.95f),
+                    ColonyType.Military     => (0.75f, 0.95f),
+                    _                       => (0.2f, 0.8f),
+                };
+                DetermineProdState(imp, exp);
+            }
         }
 
         void UpdateBiospheresBeingBuilt()

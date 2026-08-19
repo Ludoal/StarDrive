@@ -180,7 +180,7 @@ namespace Ship_Game
             ColonyTypeList.AddOption(option:GameText.Agricultural, Planet.ColonyType.Agricultural);
             ColonyTypeList.AddOption(option:GameText.Research, Planet.ColonyType.Research);
             ColonyTypeList.AddOption(option:GameText.Military, Planet.ColonyType.Military);
-            ColonyTypeList.AddOption(option:GameText.TradeHub, Planet.ColonyType.TradeHub);
+            // ColonyTypeList.AddOption(option:GameText.TradeHub, Planet.ColonyType.TradeHub); // retired (auto-supplies) - kept in case the role returns with another function
             ColonyTypeList.ActiveValue = Planet.CType;
             ColonyTypeList.OnValueChange = OnColonyTypeChanged;
 
@@ -530,6 +530,9 @@ namespace Ship_Game
         void OnColonyTypeChanged(Planet.ColonyType type)
         {
             Planet.CType = type;
+            // auto-supplies: placing or changing a governor hands the three flows back to
+            // Auto; the player can still uncheck each toggle after (the governor no longer forces)
+            Planet.AutoFood = Planet.AutoProd = Planet.AutoColonists = true;
             WorldType.Text = Planet.WorldType;
             WorldDescription.Text = GetParsedDescription();
             if (type is Planet.ColonyType.Colony or Planet.ColonyType.TradeHub)

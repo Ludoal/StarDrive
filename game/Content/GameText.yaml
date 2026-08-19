@@ -22290,6 +22290,10 @@ HkKeyEsc:
  Id: 5289
  ENG: "Esc"
  FRA: "Échap"
+AutoSupplyTip:
+ Id: 5290
+ ENG: "The colony manages this flow itself (import / export / store). Uncheck to pin it manually - your choice then holds."
+ FRA: "La colonie gère ce flux elle-même (importation / exportation / stockage). Décochez pour le fixer manuellement - votre choix tient alors."
 TcLockedRequiresTech:
  Id: 5101
  ENG: "Locked - requires {0}"

@@ -76,6 +76,16 @@ namespace Ship_Game
         // has always run on); on, CS pins the direction like FS and PS pin theirs.
         [StarData] public bool ColonistsManual;
         [StarData] public GoodState CS = GoodState.STORE;
+        // Ludoal fork (wishlist, auto-supplies): the same override for the two cargo flows.
+        // The MANUAL flag is what serializes, so an old save's default (false) reads as
+        // Auto ON - the design's default. Auto: the governing tick keeps writing FS/PS
+        // (governor thresholds, or the neutral pair without one); Manual: the player's
+        // choice HOLDS and is never overwritten again.
+        [StarData] public bool FoodManual;
+        [StarData] public bool ProdManual;
+        public bool AutoFood      { get => !FoodManual;      set => FoodManual      = !value; }
+        public bool AutoProd      { get => !ProdManual;      set => ProdManual      = !value; }
+        public bool AutoColonists { get => !ColonistsManual; set => ColonistsManual = !value; }
         public bool ImportFood => FS == GoodState.IMPORT;
         public bool ImportProd => PS == GoodState.IMPORT;
         public bool ExportFood => FS == GoodState.EXPORT;
