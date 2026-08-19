@@ -91,6 +91,17 @@ namespace Ship_Game
 			spriteBatch.DrawString(Fonts.Arial12Bold, "-", new Vector2(this.r.X + 8, this.r.Y + this.r.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2), Color.DarkGray);
 		}
 
+		// auto-supplies: greyed READ-ONLY draw - the frame dims like DrawGrayed's, but
+		// the active option stays legible (the list is the automate's instrument panel)
+		public void DrawReadOnly(SpriteBatch spriteBatch)
+		{
+			foreach (RecTexPair r in container)
+			{
+				spriteBatch.Draw(ResourceManager.Texture(r.tex), r.r, Color.DarkGray);
+			}
+			spriteBatch.DrawString(Fonts.Arial12Bold, Options[ActiveIndex], new Vector2(this.r.X + 8, this.r.Y + this.r.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2), Color.Gray);
+		}
+
 		public void Toggle()
 		{
 			DropDownMenu activeIndex = this;

@@ -431,18 +431,18 @@ namespace Ship_Game
             else
             {
                 FoodStorage.Draw(batch);
-                if (P.AutoFood) FoodDropDown.DrawGrayed(batch);
+                if (P.AutoFood) FoodDropDown.DrawReadOnly(batch);
                 else            FoodDropDown.Draw(batch);
             }
 
             ProdStorage.Draw(batch);
-            if (P.AutoProd) ProdDropDown.DrawGrayed(batch);
+            if (P.AutoProd) ProdDropDown.DrawReadOnly(batch);
             else            ProdDropDown.Draw(batch);
             PopStorage.Max = P.MaxPopulationBillionFor(P.Owner);
             PopStorage.Progress = P.PopulationBillion;
             PopStorage.Draw(batch);
             PopDropDown.ActiveIndex = (int)(P.ColonistsManual ? P.CS : P.GetGoodState(Goods.Colonists));
-            if (P.AutoColonists) PopDropDown.DrawGrayed(batch);
+            if (P.AutoColonists) PopDropDown.DrawReadOnly(batch);
             else                 PopDropDown.Draw(batch);
             batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopStorageIcon, Color.White);
             batch.Draw(ResourceManager.Texture("NewUI/icon_food"), FoodStorageIcon,

@@ -374,7 +374,7 @@ namespace Ship_Game
                 FoodStorage.Draw(batch);
                 // auto-supplies: in Auto the list is the automate's instrument panel -
                 // it shows the live pick, greyed read-only
-                if (P.AutoFood) FoodDropDown.DrawGrayed(batch);
+                if (P.AutoFood) FoodDropDown.DrawReadOnly(batch);
                 else            FoodDropDown.Draw(batch);
                 DrawFoodSlots(batch);
             }
@@ -388,7 +388,7 @@ namespace Ship_Game
             if (P.PS == Planet.GoodState.STORE) ProdDropDown.ActiveIndex = 0;
             else if (P.PS == Planet.GoodState.IMPORT) ProdDropDown.ActiveIndex = 1;
             else if (P.PS == Planet.GoodState.EXPORT) ProdDropDown.ActiveIndex = 2;
-            if (P.AutoProd) ProdDropDown.DrawGrayed(batch);
+            if (P.AutoProd) ProdDropDown.DrawReadOnly(batch);
             else            ProdDropDown.Draw(batch);
             DrawProdSlots(batch);
             // Ludoal fork (wishlist + bench 426): the population row - the bar carries pop
@@ -398,7 +398,7 @@ namespace Ship_Game
             PopStorage.Progress = P.PopulationBillion;
             PopStorage.Draw(batch);
             ColonistsDropDown.ActiveIndex = (int)(P.ColonistsManual ? P.CS : P.GetGoodState(Goods.Colonists));
-            if (P.AutoColonists) ColonistsDropDown.DrawGrayed(batch);
+            if (P.AutoColonists) ColonistsDropDown.DrawReadOnly(batch);
             else                 ColonistsDropDown.Draw(batch);
             DrawPopSlots(batch);
 

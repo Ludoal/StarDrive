@@ -300,21 +300,21 @@ namespace Ship_Game
             // 22px gabarit - the width bought pays for the Auto column on the right edge
             const int SupplyIconSize = 22, SupplyBarX = 52;
             float supplyAutoX = PStorage.Right - 62; // the Auto column, far right, one X for the three rows
-            FoodStorage = new ProgressBar(PStorage.X + SupplyBarX, PStorage.Y + storeRow1, 0.4f*PStorage.Width, 18);
+            FoodStorage = new ProgressBar(PStorage.X + SupplyBarX, PStorage.Y + storeRow1, 0.4f*PStorage.Width + 20, 18);
             FoodStorage.Max = p.Storage.Max;
             FoodStorage.Progress = p.FoodHere;
             FoodStorage.color = "green";
-            FoodDropDown = new DropDownMenu(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 16, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, 0.2f*PStorage.Width, 18);
+            FoodDropDown = new DropDownMenu(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 36, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, 0.2f*PStorage.Width, 18);
             FoodDropDown.AddOption(Localizer.Token(GameText.Store));
             FoodDropDown.AddOption(Localizer.Token(GameText.Import));
             FoodDropDown.AddOption(Localizer.Token(GameText.Export));
             FoodDropDown.ActiveIndex = (int)p.FS;
             FoodStorageIcon = new Rectangle((int)PStorage.X + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - SupplyIconSize / 2, SupplyIconSize, SupplyIconSize);
-            ProdStorage = new ProgressBar(PStorage.X + SupplyBarX, PStorage.Y + storeRow2, 0.4f*PStorage.Width, 18);
+            ProdStorage = new ProgressBar(PStorage.X + SupplyBarX, PStorage.Y + storeRow2, 0.4f*PStorage.Width + 20, 18);
             ProdStorage.Max = p.Storage.Max;
             ProdStorage.Progress = p.ProdHere;
             ProfStorageIcon = new Rectangle((int)PStorage.X + 20, ProdStorage.pBar.Y + ProdStorage.pBar.Height / 2 - SupplyIconSize / 2, SupplyIconSize, SupplyIconSize);
-            ProdDropDown = new DropDownMenu(PStorage.X + SupplyBarX + 0.4f*PStorage.Width + 16, ProdStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, 0.2f*PStorage.Width, 18);
+            ProdDropDown = new DropDownMenu(PStorage.X + SupplyBarX + 0.4f*PStorage.Width + 36, ProdStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, 0.2f*PStorage.Width, 18);
             ProdDropDown.AddOption(Localizer.Token(GameText.Store));
             ProdDropDown.AddOption(Localizer.Token(GameText.Import));
             ProdDropDown.AddOption(Localizer.Token(GameText.Export));
@@ -332,13 +332,13 @@ namespace Ship_Game
             // migration dropdown beside it. Auto = the formula keeps deciding; the manual
             // states pin the direction. The colonist freighter line seats under the bar.
             const float storeRow3 = 138;
-            PopStorage = new ProgressBar(PStorage.X + SupplyBarX, PStorage.Y + storeRow3, 0.4f * PStorage.Width, 18);
+            PopStorage = new ProgressBar(PStorage.X + SupplyBarX, PStorage.Y + storeRow3, 0.4f * PStorage.Width + 20, 18);
             PopStorage.Max = p.MaxPopulationBillionFor(p.Owner);
             PopStorage.Progress = p.PopulationBillion;
             PopStorage.color = "blue";
             var iconPop = ResourceManager.Texture("UI/icon_pop_22");
             ColonistsIcon = new Rectangle((int)PStorage.X + 20, (int)(PStorage.Y + storeRow3 + 9 - iconPop.Height / 2f), iconPop.Width, iconPop.Height);
-            ColonistsDropDown = new DropDownMenu(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 16, PStorage.Y + storeRow3, 0.2f * PStorage.Width, 18);
+            ColonistsDropDown = new DropDownMenu(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 36, PStorage.Y + storeRow3, 0.2f * PStorage.Width, 18);
             // people words, not cargo words (bench 425): Stay / Bring in / Resettle map
             // onto STORE / IMPORT / EXPORT in the same order. QUI decides moved to the
             // Auto checkbox (auto-supplies) - in Auto the list shows the formula's live pick
