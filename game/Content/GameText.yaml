@@ -7716,8 +7716,7 @@ ThisShipIsADedicated:
 CurrentSelectedFighterLaunchRange:
  Id: 1475
  ENG: "Current Selected Fighter Launch Range is: \n "
- FRA: "La portée de lancement des chasseurs sélectionnée est : 
- "
+ FRA: "La portée de lancement des chasseurs sélectionnée est : \n "
  RUS: "Текущая дальность запуска истребителей: \n "
  UKR: "Поточний вибраний діапазон запуску винищувача: \n"
  PTB: "O Alcance de Lançamento de Caças selecionado atualmente é: \n "
