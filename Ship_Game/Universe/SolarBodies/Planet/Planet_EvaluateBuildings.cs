@@ -818,16 +818,27 @@ namespace Ship_Game
             if (bio == null)
                 return false;
 
-            // issue 321 v2 (maintainer decision): a biosphere is CAPACITY, not an
-            // investment - the tax rate, one slider stroke from changing, plays no part
-            // in this decision. Money speaks only through the governor's budget below.
-            // Build when the colony runs out of room: population pressure against the
-            // cap, or a build list with no free ground. Scrap when the population would
-            // not miss one biosphere's capacity - the wide 60/85 dead band is the
-            // anti-oscillation guarantee.
-            bool popPressure = PopulationRatio >= 0.85f && EstimatedPopGrowthPerTurn > 0f;
-            bool needsGround = FreeHabitableTiles == 0
-                               && GetBuildingsListToChooseFrom(BuildingsCanBuild).Count > 0;
+            // issue 321 v3 (community review, two classes of biosphere):
+            // - FACILITATION: a building we WANT has no free tile (desire-based - Enqueue
+            //   cannot even queue without a tile, so "queued" can never be the trigger).
+            //   Judged against the budget on the COMBINED upkeep: biosphere + the building
+            //   it unlocks.
+            // - POPULATION: population pressure against the cap, filtered by the reviewer's
+            //   economics: the added population must pay its own roof at a REASONABLE rate,
+            //   not at 100% - upkeep <= k x the pop's full-rate marginal revenue on THIS
+            //   planet. k is a named constant, mid of the suggested 50-75% band.
+            // The tax SLIDER still plays no part; the 60/85 dead band still guarantees
+            // no oscillation.
+            const float BiospherePaybackShare = 0.6f;
+            float bioUpkeep = bio.ActualMaintenance(this);
+            // (NetRevenueGain + upkeep) / nominal = the added pop's income at rate 1.0,
+            // through the same pipe (fertility/richness/racial modifiers included)
+            float fullRateIncome = (Money.NetRevenueGain(bio) + bioUpkeep) / 0.25f;
+            bool popPressure = PopulationRatio >= 0.85f && EstimatedPopGrowthPerTurn > 0f
+                               && bioUpkeep <= BiospherePaybackShare * fullRateIncome;
+            var wanted = GetBuildingsListToChooseFrom(BuildingsCanBuild);
+            bool needsGround = FreeHabitableTiles == 0 && wanted.Count > 0
+                               && budget >= bioUpkeep + wanted.Min(b2 => b2.ActualMaintenance(this));
 
             if (!popPressure && !needsGround)
             {
