@@ -67,6 +67,17 @@ namespace Ship_Game
                 return true;
             if (HandleMinimapNavigation(input))
                 return true;
+            // (maintainer feedback, bench 442) the two minimap-seated windows stay LIVE
+            // beside an open page, like the minimap they dock to. Their handlers run first
+            // (buttons, tooltips); an open window's rect then owns the cursor either way,
+            // so a click on the window body cannot fall through to box-select or the map
+            // click resolver below.
+            if (ExoticBonusesWindow.AcceptsBandInput &&
+                (ExoticBonusesWindow.HandleInput(input) || ExoticBonusesWindow.HitTest(input.CursorPosition)))
+                return true;
+            if (FreighterUtilizationWindow.AcceptsBandInput &&
+                (FreighterUtilizationWindow.HandleInput(input) || FreighterUtilizationWindow.HitTest(input.CursorPosition)))
+                return true;
             // (maintainer feedback) the band carries the map's OWN input suite, in the
             // main flow's order - the exploded system view, then box-select, then the click
             // resolver. The double-click colony-open is allowed: the map door works here too.

@@ -148,6 +148,8 @@ namespace Ship_Game
 
         // bench 406: the overlay steps aside during ground combat and returns with the view
         bool HiddenByGroundCombat => Screen.LookingAtPlanet && Screen.workersPanel is CombatScreen;
+        // the visible-band pass (open page) asks this before handing the window the cursor
+        public bool AcceptsBandInput => IsOpen && !HiddenByGroundCombat;
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
