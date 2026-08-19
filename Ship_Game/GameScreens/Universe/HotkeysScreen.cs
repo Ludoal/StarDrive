@@ -26,7 +26,9 @@ namespace Ship_Game
 
         // display order = table order. Fixed rows keep their literal key text; bound
         // rows read the live KeyBindings value and never show a literal.
-        static readonly (string Category, Hotkey[] Keys)[] Bindings =
+        // Built per LoadContent, NOT held static: the tokens must resolve in the
+        // CURRENT language, and a static table freezes the first one it saw (bench 442).
+        static (string Category, Hotkey[] Keys)[] BuildBindings() => new (string, Hotkey[])[]
         {
             (Localizer.Token(GameText.HkCatTimeSpeed), new[]
             {
@@ -154,6 +156,7 @@ namespace Ship_Game
             int colW = (inner.Width - 32) / Columns.Length;
             int keyW = 150; // the fixed keys lane inside a column
             int lineH = Fonts.Arial12Bold.LineSpacing + 4;
+            (string, Hotkey[])[] bindings = BuildBindings();
 
             for (int c = 0; c < Columns.Length; ++c)
             {
@@ -161,7 +164,7 @@ namespace Ship_Game
                 float y = inner.Y + 12;
                 foreach (int cat in Columns[c])
                 {
-                    (string title, Hotkey[] keys) = Bindings[cat];
+                    (string title, Hotkey[] keys) = bindings[cat];
                     Add(new UILabel(new Vector2(x, y), title, Fonts.Arial14Bold, Colors.Cream));
                     y += Fonts.Arial14Bold.LineSpacing + 6;
                     foreach (Hotkey k in keys)
