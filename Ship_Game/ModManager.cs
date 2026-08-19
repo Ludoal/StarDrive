@@ -77,7 +77,8 @@ namespace Ship_Game
             // the "Load Mods (Web)" button did nothing, so it is gone. Unload Mod sits at the
             // bottom-right of the MOD list frame and reads as the one hostile action here, so it
             // takes the red (hostile) plate over the Small button's size.
-            const int unloadW = 110;   // wider than Small's 68 so "Unload Mod" doesn't clip
+            // width follows the LOCALIZED caption (French runs longer), floored at 110
+            int unloadW = Math.Max(110, (int)Fonts.Arial12Bold.TextWidth(Localizer.Token(GameText.MmUnloadMod)) + 26);
             UnloadMod = ButtonSmall(scrollList.Right - unloadW, scrollList.Bottom + 8, GameText.MmUnloadMod, click:OnUnloadModClicked);
             UnloadMod.SetAbsSize(unloadW, 24);
             UnloadMod.DefaultColor = UIButton.PlateHostile;

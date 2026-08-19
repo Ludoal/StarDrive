@@ -14151,7 +14151,7 @@ RuleOptions:
 InsystemFtlSpeedModifier:
  Id: 4007
  ENG: "In-System FTL Speed Modifier"
- FRA: "Modificateur de vitesse FTL intra-système"
+ FRA: "Vitesse FTL intra-système"
  RUS: "Модификатор скорости FLT в системе"
  SPA: "Modificador de la velocidad supraluminal en el sistema"
  UKR: "Внутрішньосистемний модифікатор швидкості FTL"
@@ -20043,7 +20043,7 @@ AutoTaxes:
 InsystemEnemyFtlSpeedModifier:
  Id: 6139
  ENG: "In-System Enemy FTL Speed Modifier"
- FRA: "Modificateur de vitesse FTL ennemie intra-système"
+ FRA: "Vitesse FTL ennemie (système)"
  RUS: "Внутрисис.модификатор скорости FLT врага"
  SPA: "Modificador de la velocidad supraluminal en territorio enemigo "
  UKR: "Внутрішньосистемний модифікатор швидкості надзвуку противника"

@@ -255,8 +255,11 @@ namespace Ship_Game
 
             // ---- column 1: Graphics (Apply-gated device settings) over Audio
             UIList audio = NewBox(new RectF(x0, top + GraphicsBoxH + BoxGap, BoxW, AudioBoxH), GameText.OptAudio);
-            SoundDevices = new DropOptions<MMDevice>(190, 18);
-            audio.AddSplit(new UILabel(GameText.SoundDevice), SoundDevices).Split = 105; // 15px right of the label (bench 406)
+            // the dropdown sits on its OWN row under the label - the French label
+            // outgrew the 105px split and the box covered it (French sweep)
+            SoundDevices = new DropOptions<MMDevice>(260, 18);
+            audio.Add(new UILabel(GameText.SoundDevice));
+            audio.Add(SoundDevices);
             MusicVolumeSlider   = audio.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, GameText.MusicVolume, 0f, 1f, GlobalStats.MusicVolume));
             EffectsVolumeSlider = audio.Add(new FloatSlider(SliderStyle.Percent, 288f, 36f, GameText.EffectsVolume, 0f, 1f, GlobalStats.EffectsVolume));
             audio.ReverseZOrder(); // the device dropdown draws over the sliders below it

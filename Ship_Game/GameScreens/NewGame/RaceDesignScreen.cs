@@ -220,7 +220,11 @@ namespace Ship_Game
             const float SplitPull    = 30f;     // values recede 30 from stock
             const float FlagColW     = 120f;    // the flag picker column, arrows included
             const float FlagNudgeX   = 10f;     // push the whole flag block 10px right
-            const float FormSplit    = 205f - SplitPull;
+            // the split derives from the longest LOCALIZED label (French runs longer),
+            // floored at the historical stock value
+            float FormSplit = Math.Max(205f - SplitPull,
+                12f + new[] { GameText.EmpireName, GameText.RaceNameSingular, GameText.RaceNamePlural, GameText.HomeSystemName }
+                      .Max(t2 => Fonts.Arial14Bold.TextWidth(Localizer.Token(t2) + ": ")));
 
             SelectedData = GetDefaultRace(); //SelectedData is used to populate the UI
 

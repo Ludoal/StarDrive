@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using SDUtils;
+using Ship_Game.UI;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 
@@ -15,6 +16,7 @@ namespace Ship_Game.GameScreens.NewGame
         readonly UILabel BestType;
         UIPanel PlanetIcon;
 
+        readonly Array<(SplitElement, UILabel)> EnvSplits = new();
         public PlanetCategory PreferredEnv = PlanetCategory.Terran;
         public float EnvTerran = 1;
         public float EnvOceanic = 1;
@@ -41,7 +43,8 @@ namespace Ship_Game.GameScreens.NewGame
             BestType = Add(new UILabel(GameText.NgBestPlanetType, font, Color.BurlyWood));
             // Ludoal fork (maintainer feedback): -78 total to clear the widened value columns; the
             // planet icon reads BestType.LocalPos, so it follows on its own.
-            BestType.SetLocalPos(35 + 275 - 78, 15);
+            // clears the MEASURED title (the French title outgrew the stock offset)
+            BestType.SetLocalPos(Math.Max(35 + 275 - 78, 35 + (int)font.TextWidth(Localizer.Token(GameText.NgEnvironmentPreferences)) + 16), 15);
             BestType.Tooltip = GameText.NgBestPlanetTypeTooltip;
             
 
@@ -65,10 +68,13 @@ namespace Ship_Game.GameScreens.NewGame
                     if (value < 1) return Color.Red;
                     return Color.White;
                 };
-                list.AddSplit(key, val).Split = 75; // maintainer: values -5 in each column
+                var se = list.AddSplit(key, val);
+                se.Split = 75; // maintainer: values -5 in each column
+                EnvSplits.Add((se, key));
                 return val;
             }
 
+            EnvSplits.Clear();
             AddEnvSplitter(column1, "{Terran}: ", () => EnvTerran);
             AddEnvSplitter(column1, "{Steppe}: ", () => EnvSteppe);
             AddEnvSplitter(column1, "{Oceanic}: ",() => EnvOceanic);
@@ -79,6 +85,12 @@ namespace Ship_Game.GameScreens.NewGame
             AddEnvSplitter(column2, "{Ice}: ",    () => EnvIce);
             AddEnvSplitter(column2, "{Desert}: ", () => EnvDesert);
             AddEnvSplitter(column2, "{Barren}: ", () => EnvBarren);
+
+            // the split clears the widest LOCALIZED category label (French sweep:
+            // 'Marécageuse' overran the stock 75)
+            float maxKeyW = 75f;
+            foreach (var (_, k) in EnvSplits) maxKeyW = Math.Max(maxKeyW, k.Size.X + 8f);
+            foreach (var (se2, _) in EnvSplits) se2.Split = maxKeyW;
             UpdatePreferences(raceSummary);
         }
 
