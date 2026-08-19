@@ -478,6 +478,13 @@ namespace Ship_Game
                 ResourceManager.LoadLanguage(newLanguage);
                 Fonts.LoadFonts(ResourceManager.RootContent, newLanguage);
                 LoadContent(); // reload the options screen to update the text
+                // French sweep: the screens BENEATH keep their old-language button sizes -
+                // their tokens re-resolve lazily but the creation-time measure does not,
+                // which off-centres the widest labels (the first two main-menu buttons).
+                // Send every other screen through the same full measure pass as a boot.
+                foreach (GameScreen s in ScreenManager.Screens)
+                    if (s != this)
+                        s.ReloadContent();
             }
         }
 
