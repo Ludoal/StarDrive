@@ -6462,6 +6462,7 @@ TheyHave:
 IsAnEmpireComprisedOf:
  Id: 1300
  ENG: " is an empire comprised of "
+ FRA: " est un empire composé de "
  RUS: " - империя "
  SPA: " es un imperio compuesto por "
  UKR: " це імперія, що складається з"
@@ -6469,6 +6470,7 @@ IsAnEmpireComprisedOf:
 AreACyberneticRaceOf:
  Id: 1301
  ENG: " are a cybernetic race of "
+ FRA: " sont une race cybernétique d'"
  RUS: " - кибернетическая раса "
  SPA: " son una raza cibernética de "
  UKR: " є кібернетичною расою"
@@ -6476,6 +6478,7 @@ AreACyberneticRaceOf:
 AreARaceOf:
  Id: 1302
  ENG: " are a race of "
+ FRA: " sont une race d'"
  RUS: " - раса "
  SPA: " son una raza de "
  UKR: " це раса"
@@ -6483,6 +6486,7 @@ AreARaceOf:
 AquaticBeingsWith:
  Id: 1303
  ENG: "aquatic beings with "
+ FRA: "êtres aquatiques dotés "
  RUS: "водных созданий с "
  SPA: "seres acuáticos con "
  UKR: "водні істоти з"
@@ -6490,6 +6494,7 @@ AquaticBeingsWith:
 TerrestrialBeingsWith:
  Id: 1304
  ENG: "terrestrial beings with "
+ FRA: "êtres terrestres dotés "
  RUS: "земных созданий с "
  SPA: "seres terrestres con "
  UKR: "земні істоти з"
@@ -6497,6 +6502,7 @@ TerrestrialBeingsWith:
 AHighReproductiveRateAnd:
  Id: 1305
  ENG: "a high reproductive rate and "
+ FRA: "d'un taux de reproduction élevé et "
  RUS: "высокими темпами воспроизводства, "
  SPA: "una alta tasa de reproducción y "
  UKR: "високий коефіцієнт відтворення та"
@@ -6504,6 +6510,7 @@ AHighReproductiveRateAnd:
 ALowReproductiveRateAnd:
  Id: 1306
  ENG: "a low reproductive rate and "
+ FRA: "d'un faible taux de reproduction et "
  RUS: "низкими темпами воспроизводства, "
  SPA: "una baja tasa de reproducción y "
  UKR: "низький коефіцієнт відтворення та"
@@ -6511,6 +6518,7 @@ ALowReproductiveRateAnd:
 AnAverageReproductiveRateAnd:
  Id: 1307
  ENG: "an average reproductive rate and "
+ FRA: "d'un taux de reproduction moyen et "
  RUS: "средними темпами воспроизводства, "
  SPA: "una tasa de reproducción normal y "
  UKR: "середній коефіцієнт відтворення та"
@@ -6518,6 +6526,7 @@ AnAverageReproductiveRateAnd:
 SwiftManufacturingSpeedsAnd:
  Id: 1308
  ENG: "swift manufacturing speeds and "
+ FRA: "de vitesses de fabrication rapides et "
  RUS: "быстрым промышленным процессом и "
  SPA: "altas velocidades de fabricación y "
  UKR: "швидкі темпи виробництва та"
@@ -6525,6 +6534,7 @@ SwiftManufacturingSpeedsAnd:
 LengthyManufacturingTimesAnd:
  Id: 1309
  ENG: "lengthy manufacturing times and "
+ FRA: "de temps de fabrication longs et "
  RUS: "долгим промышленным процессом и "
  SPA: "tiempos de fabricación largos y "
  UKR: "тривалі терміни виробництва та"
@@ -6532,6 +6542,7 @@ LengthyManufacturingTimesAnd:
 AverageManufacturingTimesAnd:
  Id: 1310
  ENG: "average manufacturing times and "
+ FRA: "de temps de fabrication moyens et "
  RUS: "обычным промышленным процессом и "
  SPA: "tiempos de fabricación normales y "
  UKR: "середній час виробництва та"
@@ -6539,6 +6550,7 @@ AverageManufacturingTimesAnd:
 AGluttonousApproachToLife:
  Id: 1311
  ENG: "a gluttonous approach to life. "
+ FRA: "d'une approche gloutonne de la vie. "
  RUS: "высоким потреблением еды. "
  SPA: "un planteamiento glotón de la vida. "
  UKR: "ненажерливий підхід до життя."
@@ -6546,6 +6558,7 @@ AGluttonousApproachToLife:
 ARatherEfficientMetabolism:
  Id: 1312
  ENG: "a rather efficient metabolism. "
+ FRA: "d'un métabolisme plutôt efficace. "
  RUS: "весьма эффективным метаболизмом. "
  SPA: "un metabolismo bastante eficaz. "
  UKR: "досить ефективний метаболізм."
@@ -6553,6 +6566,7 @@ ARatherEfficientMetabolism:
 UnremarkableDietaryNeeds:
  Id: 1313
  ENG: "unremarkable dietary needs. "
+ FRA: "de besoins alimentaires ordinaires. "
  RUS: "непримечательной диетой. "
  SPA: "necesidades alimenticias normales y corrientes. "
  UKR: "незначні дієтичні потреби."
@@ -6560,6 +6574,7 @@ UnremarkableDietaryNeeds:
 ARavenousAppetiteForParts:
  Id: 1314
  ENG: "a ravenous appetite for parts, components, and raw materials. "
+ FRA: "d'un appétit vorace en pièces, composants et matières premières. "
  RUS: "ненасытным аппетитом в отношении запчастей, компонентов и сырья. "
  SPA: "un apetito voraz por piezas, componentes y materias primas. "
  UKR: "ненажерливий апетит до деталей, компонентів і сировини."
@@ -6567,6 +6582,7 @@ ARavenousAppetiteForParts:
 MinimalMaterialAndComponentRequirements:
  Id: 1315
  ENG: "minimal material and component requirements. "
+ FRA: "de besoins minimes en matériaux et composants. "
  RUS: "минимальным потреблением материалов и компонентов. "
  SPA: "necesidades mínimas de materiales y componentes. "
  UKR: "мінімальні вимоги до матеріалів і компонентів."
@@ -6574,6 +6590,7 @@ MinimalMaterialAndComponentRequirements:
 ModerateMaterialRequirements:
  Id: 1316
  ENG: "moderate material requirements. "
+ FRA: "de besoins matériels modérés. "
  RUS: "средним материальным потреблением. "
  SPA: "necesidades moderadas de materiales. "
  UKR: "помірна потреба в матеріалах."
@@ -6581,6 +6598,7 @@ ModerateMaterialRequirements:
 Physically:
  Id: 1317
  ENG: "Physically, "
+ FRA: "Physiquement, "
  RUS: "Физиологически, "
  SPA: "Físicamente, "
  UKR: "Фізично,"
@@ -6588,6 +6606,7 @@ Physically:
 AreBothBeautifulAndTerrifying:
  Id: 1318
  ENG: " are both beautiful and terrifying, with an enigmatic sort of lethal majesty that serves them well in contests of diplomacy or strength. "
+ FRA: " sont à la fois beaux et terrifiants, d'une majesté létale et énigmatique qui les sert aussi bien en diplomatie qu'au combat. "
  RUS: " и красивы, и ужасающи; они создают вокруг себя атмосферу грозного величия, что играет им на руку в дипломатических переговорах. "
  SPA: " son a la vez hermosos y aterradores, con una especie de majestuosidad enigmática y letal que aprovechan bien en pugnas diplomáticas o bélicas. "
  UKR: " одночасно прекрасні і жахливі, із загадковою смертоносною величчю, яка добре служить їм у змаганнях дипломатії чи сили."
@@ -6595,6 +6614,7 @@ AreBothBeautifulAndTerrifying:
 AppearBothLethalAndGrotesque:
  Id: 1319
  ENG: " appear both lethal and grotesque, as they tend to project a sense of instinctive, terrifying revulsion upon species who are unfortunate enough to meet them in diplomacy or combat. "
+ FRA: " paraissent à la fois létaux et grotesques, inspirant d'instinct une répulsion terrifiante aux espèces qui ont le malheur de les rencontrer en diplomatie ou au combat. "
  RUS: " выглядят одновременно грозно и отвратительно. У особей, имевших несчастье повстречаться с ними на переговорах или в сражении, они вызывают инстинктивный страх и отвращение. "
  SPA: " su aspecto es tan letal como grotesco, ya que tienden a proyectar una sensación de repulsión instintiva y terrorífica sobre especies que tienen la desgracia de lidiar con ellos en la batalla o en la diplomacia. "
  UKR: " виглядають одночасно смертоносними і гротескними, оскільки вони, як правило, проектують почуття інстинктивної, жахливої відрази на види, яким не пощастило зустрітися з ними в дипломатії або в бою."
@@ -6602,6 +6622,7 @@ AppearBothLethalAndGrotesque:
 AppearSomewhatBestialWithObvious:
  Id: 1320
  ENG: " appear somewhat bestial, with obvious signs of their great strength, speed, and lethality apparent in their physique. "
+ FRA: " ont une apparence bestiale, leur physique trahissant force, vitesse et létalité. "
  RUS: " выглядят немного по-звериному; по их облику однозначно можно сказать, что они сильны, ловки и смертоносны. "
  SPA: " parecen algo brutales y tienen indicios físicos manifiestos de gran fuerza, velocidad y capacidad mortífera. "
  UKR: " виглядають дещо звірячими, з очевидними ознаками їхньої величезної сили, швидкості та смертоносності, що проявляються в їхній статурі."
@@ -6609,6 +6630,7 @@ AppearSomewhatBestialWithObvious:
 AreCreaturesOfFragileBeauty:
  Id: 1321
  ENG: " are creatures of fragile beauty, with a delicate and ephemeral stature that many species find majestic and alluring. "
+ FRA: " sont des créatures d'une beauté fragile, à la stature délicate et éphémère que bien des espèces trouvent majestueuse et envoûtante. "
  RUS: " являются красивыми и хрупкими созданиями, что является привлекательным в глазах представителей многих других рас. "
  SPA: " son criaturas de una belleza frágil, de imagen delicada y efímera que muchas especies encuentran augusta y seductora. "
  UKR: " це створіння тендітної краси, з витонченою і ефемерною статурою, яку багато видів вважають величною і привабливою."
@@ -6616,6 +6638,7 @@ AreCreaturesOfFragileBeauty:
 AppearGnarledAndWeakWith:
  Id: 1322
  ENG: " appear gnarled and weak, with a countenance both hideous and scrawny. "
+ FRA: " paraissent noueux et chétifs, la mine à la fois hideuse et malingre. "
  RUS: " выглядят скрюченными и слабыми; их вид никак нельзя назвать привлекательным. "
  SPA: " parecen retorcidos y débiles, con un semblante igual escuálido y abominable a partes iguales. "
  UKR: " виглядають кострубатими і слабкими, з огидним і кістлявим обличчям."
@@ -6623,6 +6646,7 @@ AppearGnarledAndWeakWith:
 SeemToHaveEvolvedWithout:
  Id: 1323
  ENG: " seem to have evolved without much need for speed or strength and as a result are somewhat frail compared to peer species. "
+ FRA: " semblent avoir évolué sans grand besoin de vitesse ni de force, et sont de ce fait plutôt frêles comparés à leurs pairs. "
  RUS: " смогли эволюционировать, не развивая в себе ни физическую силу, ни ловкость, поэтому на фоне других особей они выглядят хрупко. "
  SPA: " aparentemente han evolucionado sin mucha necesidad de velocidad o fuerza y, en consecuencia, son algo frágiles en comparación con especies semejantes. "
  UKR: " схоже, еволюціонували без особливої потреби у швидкості чи силі, і тому є дещо кволими порівняно з іншими видами."
@@ -6630,6 +6654,7 @@ SeemToHaveEvolvedWithout:
 PossessANonthreateningCountenanceThat:
  Id: 1324
  ENG: " possess a non-threatening countenance that projects neither an overabundance of strength or weakness. However, they are exceedingly charismatic and naturally draw others towards them. "
+ FRA: " présentent une apparence inoffensive, sans excès de force ni de faiblesse. Ils n'en sont pas moins extraordinairement charismatiques et attirent naturellement les autres à eux. "
  RUS: " обладают обычной внешностью, которая не предполагает какой-то особенной силы или слабости. Тем не менее, они очень обаятельны, и другие особи инстинктивно тянутся к ним. "
  SPA: " poseen un semblante poco amenazador que no refleja exceso de puntos fuertes o débiles. Sin embargo, por naturaleza sobresalen por su carisma y saben ganarse a los demás. "
  UKR: " мають не загрозливий вигляд, який не демонструє ані надмірної сили, ані слабкості. Однак вони надзвичайно харизматичні і природно притягують до себе інших."
@@ -6637,6 +6662,7 @@ PossessANonthreateningCountenanceThat:
 PossessANonthreateningCountenanceThat2:
  Id: 1325
  ENG: " possess a non-threatening countenance that projects neither an overabundance of strength or weakness. However, they are offensively mannered with many odiferous bodily functions that tend to drive others away from them. "
+ FRA: " présentent une apparence inoffensive, sans excès de force ni de faiblesse. Leurs manières offensantes et leurs fonctions corporelles odorantes tendent cependant à faire fuir les autres. "
  RUS: " обладают обычной внешностью, которая не предполагает какой-то особенной силы или слабости. Тем не менее, они обладают неприятными манерами и отталкивающими функциями организма, поэтому другие стараются сторониться их. "
  SPA: " poseen un semblante poco amenazador que no refleja exceso de puntos fuertes o débiles. Sin embargo, son de modales bruscos, con muchas funciones corporales malolientes que tienden a repeler a los demás. "
  UKR: " мають не загрозливий вигляд, який не виказує ані надмірної сили, ані слабкості. Однак, вони мають агресивну манеру поведінки з багатьма пахучими тілесними функціями, які, як правило, відштовхують від них інших."
@@ -6644,6 +6670,7 @@ PossessANonthreateningCountenanceThat2:
 HaveNoParticularStrengthsOr:
  Id: 1326
  ENG: " have no particular strengths or weaknesses. "
+ FRA: " n'ont ni forces ni faiblesses particulières. "
  RUS: " не обладают ярко выраженными сильными или слабыми сторонами. "
  SPA: " no tienen puntos fuertes ni débiles destacables. "
  UKR: " не мають особливих сильних чи слабких сторін."
@@ -6651,6 +6678,7 @@ HaveNoParticularStrengthsOr:
 InRejectingTheirOrganicForms:
  Id: 1327
  ENG: "In rejecting their organic forms, "
+ FRA: "En rejetant leurs formes organiques, "
  RUS: "Отказавшись от своих органических тел, "
  SPA: "Al rechazar sus formas orgánicas, "
  UKR: "У відмові від їхніх органічних форм,"
@@ -6658,6 +6686,7 @@ InRejectingTheirOrganicForms:
 HaveBecomeIncredibleMachinesOf:
  Id: 1328
  ENG: " have become incredible machines of grace and lethality, with a sleek, deadly, and beautiful appearance. "
+ FRA: " sont devenus d'incroyables machines de grâce et de létalité, à l'allure épurée, mortelle et magnifique. "
  RUS: " превратились в удивительные машины, смертоносные, красивые, утонченные и элегантные. "
  SPA: " se han convertido en máquinas increíbles, gráciles y letales con una belleza exterior atractiva y fatal. "
  UKR: " стали неймовірними машинами витонченості та смертоносності, з витонченим, смертоносним і красивим зовнішнім виглядом."
@@ -6665,6 +6694,7 @@ HaveBecomeIncredibleMachinesOf:
 HaveBecomeConfusingTechnologicalMonstrosities:
  Id: 1329
  ENG: " have become confusing technological monstrosities with deadly-looking appendages and a decidedly hostile appearance. "
+ FRA: " sont devenus de déroutantes monstruosités technologiques, hérissées d'appendices menaçants, à l'allure résolument hostile. "
  RUS: " превратились в технологических монстров, одним своим видом способных напугать кого угодно. "
  SPA: " se han convertido en desconcertantes monstruosidades tecnológicas con apéndices de apariencia letal y un aspecto claramente hostil. "
  UKR: " перетворилися на заплутані технологічні потвори зі смертоносними придатками та виразно ворожим виглядом."
@@ -6672,6 +6702,7 @@ HaveBecomeConfusingTechnologicalMonstrosities:
 LookLikeMachinesDesignedFor:
  Id: 1330
  ENG: " look like machines designed for war without any particular focus put on appearance. "
+ FRA: " ressemblent à des machines conçues pour la guerre, sans le moindre souci d'apparence. "
  RUS: " превратились в боевые машины, для которых их внешний вид значит очень мало. "
  SPA: " parecen máquinas diseñadas para la guerra que no se preocupan lo más mínimo por su aspecto. "
  UKR: " виглядають як машини, призначені для війни, без особливої уваги до зовнішнього вигляду."
@@ -6679,6 +6710,7 @@ LookLikeMachinesDesignedFor:
 ComeOffAsFriendlyLittle:
  Id: 1331
  ENG: " come off as friendly little robots that could only be described as cute, but fragile. "
+ FRA: " passent pour d'amicaux petits robots qu'on ne saurait décrire autrement que mignons, mais fragiles. "
  RUS: " превратились в маленьких роботов, которые выглядят очень мило, но кажутся хрупкими. "
  SPA: " dan la impresión de ser pequeños y simpáticos robots que solo podrían describirse como adorables y frágiles. "
  UKR: " виглядають як привітні маленькі роботи, яких можна описати лише як милих, але тендітних."
@@ -6686,6 +6718,7 @@ ComeOffAsFriendlyLittle:
 AreSpindlyInsectlikeMachinesThat:
  Id: 1332
  ENG: " are spindly, insect-like machines that click and hiss in menacing ways. They look like they could be crunched under a boot. "
+ FRA: " sont des machines grêles et insectoïdes qui cliquettent et sifflent de façon menaçante. On les dirait bonnes à écraser sous une botte. "
  RUS: " превратились в насекомоподобные механизмы, которые постоянно шипят и щелкают, причем довольно угрожающе. Первое желание при встрече с ними - немедленно раздавить. "
  SPA: " son máquinas larguiruchas con pinta de insectos cuyo siseo y ruiditos suenan amenazadores. Da la sensación de que se les pudiera aplastar con el pie. "
  UKR: " це веретеноподібні, схожі на комах машини, які загрозливо клацають і шиплять. Вони виглядають так, ніби можуть хруснути під чобітьми."
@@ -6693,6 +6726,7 @@ AreSpindlyInsectlikeMachinesThat:
 LookLikeComputersWithWheels:
  Id: 1333
  ENG: " look like computers with wheels and treads attached, and do not seem armed or armored in any way. "
+ FRA: " ressemblent à des ordinateurs montés sur roues et chenilles, sans arme ni blindage apparents. "
  RUS: " выглядят, как компьютеры с прицепленными колесами и ногами, и непохоже, чтобы они были вооружены и как-то защищены. "
  SPA: " parecen ordenadores con ruedas y bandas de rodadura; no se percibe si van armados o no. "
  UKR: " виглядають як комп'ютери з прикріпленими до них колесами та протекторами, і не здаються озброєними чи броньованими жодним чином."
@@ -6700,6 +6734,7 @@ LookLikeComputersWithWheels:
 SeemToHaveMadeGreat:
  Id: 1334
  ENG: " seem to have made great efforts to mechanically improve upon the grace and beauty of their bodies. "
+ FRA: " semblent avoir fait de grands efforts pour améliorer mécaniquement la grâce et la beauté de leurs corps. "
  RUS: " приложили значительные усилия к механическому улучшению своих тел и приданию им красоты. "
  SPA: " parecen haber hecho grandes esfuerzos para mejorar mecánicamente la gracilidad y belleza de sus cuerpos. "
  UKR: " здається, доклали чимало зусиль, щоб механічно вдосконалити витонченість і красу своїх тіл."
@@ -6707,6 +6742,7 @@ SeemToHaveMadeGreat:
 HaveDevelopedAColdDisdain:
  Id: 1335
  ENG: " have developed a cold disdain for organic life forms and are particularly uncharismatic. "
+ FRA: " ont développé un froid dédain pour les formes de vie organiques et sont singulièrement dépourvus de charisme. "
  RUS: " выработали в себе презрение ко всем органическим формам жизни, вследствие чего удивительно неприятны в общении. "
  SPA: " han desarrollado un frío desdén por las formas de vida orgánicas y destacan por su falta de carisma. "
  UKR: " відчувають холодну зневагу до органічних форм життя і є особливо нехаризматичними."
@@ -6714,6 +6750,7 @@ HaveDevelopedAColdDisdain:
 AlthoughTheyHaveReplacedTheir:
  Id: 1336
  ENG: "Although they have replaced their organic bodies with cybernetics, "
+ FRA: "Bien qu'ils aient remplacé leurs corps organiques par la cybernétique, "
  RUS: "Хоть они и заменили свои органические тела кибернетическими механизмами, "
  SPA: "Aunque han sustituido sus cuerpos orgánicos con componentes cibernéticos, "
  UKR: "Хоча вони замінили свої органічні тіла кібернетикою,"
@@ -6721,6 +6758,7 @@ AlthoughTheyHaveReplacedTheir:
 HaveNotExtensivelyImprovedOn:
  Id: 1337
  ENG: " have not extensively improved on their original organic structure. "
+ FRA: " n'ont guère amélioré leur structure organique d'origine. "
  RUS: " не слишком улучшились по сравнению со своим первоначальным обликом. "
  SPA: " no han mejorado en mucho su estructura orgánica original. "
  UKR: " не зазнали значних змін у своїй початковій органічній структурі."
@@ -6728,6 +6766,7 @@ HaveNotExtensivelyImprovedOn:
 However:
  Id: 1338
  ENG: "However, "
+ FRA: "Cependant, "
  RUS: "Однако, "
  SPA: "No obstante, "
  UKR: "Однак,"
@@ -6735,6 +6774,7 @@ However:
 AreExtremelyIntelligentForA:
  Id: 1339
  ENG: " are extremely intelligent for a starfaring race and have a natural curiosity about the universe. "
+ FRA: " sont extrêmement intelligents pour une race stellaire et portent une curiosité naturelle à l'univers. "
  RUS: " являются исключительно интеллектуальными для расы космических путешественников и обладают огромной любознательностью. "
  SPA: " son una raza sumamente inteligente que domina los viajes estelares y siente una curiosidad natural por el universo. "
  UKR: " надзвичайно розумні для зоряної раси і мають природну цікавість до всесвіту."
@@ -6742,6 +6782,7 @@ AreExtremelyIntelligentForA:
 ToMakeMattersWorse:
  Id: 1340
  ENG: "To make matters worse, "
+ FRA: "Pour ne rien arranger, "
  RUS: "Хуже того, "
  SPA: "Por si fuera poco, "
  UKR: "Що ще гірше,"
@@ -6749,6 +6790,7 @@ ToMakeMattersWorse:
 AreSomewhatDumbForA:
  Id: 1341
  ENG: " are somewhat dumb for a starfaring race and have difficulty being creative. "
+ FRA: " sont assez obtus pour une race stellaire et peinent à faire preuve de créativité. "
  RUS: " недостаточно интеллектуальны для расы космических путешественников, и креативность - явно не их конек. "
  SPA: " son algo simplones para ser una raza que domina los viajes interestelares y les cuesta ser creativos. "
  UKR: " дещо недалекі, як для зоряної раси, і їм важко бути креативними."
@@ -6756,6 +6798,7 @@ AreSomewhatDumbForA:
 PossessAnAverageIntelligenceFor:
  Id: 1342
  ENG: " possess an average intelligence for a starfaring race. "
+ FRA: " possèdent une intelligence moyenne pour une race stellaire. "
  RUS: " обладают средним интеллектом для расы космических путешественников. "
  SPA: " poseen una inteligencia normal para ser una raza que domina los viajes interestelares. "
  UKR: " володіють середнім інтелектом для зоряної раси."
@@ -6763,6 +6806,7 @@ PossessAnAverageIntelligenceFor:
 Furthermore:
  Id: 1343
  ENG: "Furthermore, "
+ FRA: "De plus, "
  RUS: "Более того, "
  SPA: "Además, "
  UKR: "Більше того,"
@@ -6770,6 +6814,7 @@ Furthermore:
 AreExtremelyIntelligentForA2:
  Id: 1344
  ENG: " are extremely intelligent for a starfaring race and have a natural curiosity about the universe. "
+ FRA: " sont extrêmement intelligents pour une race stellaire et portent une curiosité naturelle à l'univers. "
  RUS: " являются исключительно интеллектуальными для расы космических путешественников и обладают огромной любознательностью. "
  SPA: " son una raza sumamente inteligente que domina los viajes estelares y siente una curiosidad natural por el universo. "
  UKR: " надзвичайно розумні для зоряної раси і мають природну цікавість до всесвіту."
@@ -6777,6 +6822,7 @@ AreExtremelyIntelligentForA2:
 GovernmentIsEfficientAndEffective:
  Id: 1345
  ENG: " government is efficient and effective"
+ FRA: " — gouvernement efficace et performant"
  RUS: " имеют эффективное правительство"
  SPA: " tienen un gobierno eficaz y eficiente"
  UKR: " уряд є ефективним та дієвим"
@@ -6784,6 +6830,7 @@ GovernmentIsEfficientAndEffective:
 WhichReflectsTheMethodicalAnd:
  Id: 1346
  ENG: ", which reflects the methodical and practical nature of "
+ FRA: ", reflet de la nature méthodique et pragmatique des "
  RUS: ", отражающие методичность и практичность расы  "
  SPA: ", lo que refleja el carácter práctico y metódico de "
  UKR: ", яка відображає методичний та практичний характер"
@@ -6791,6 +6838,7 @@ WhichReflectsTheMethodicalAnd:
 ButThisIsCounterbalancedBy:
  Id: 1347
  ENG: " but this is counterbalanced by a wasteful, consumer-oriented society. "
+ FRA: ", quoique contrebalancé par une société consumériste et dispendieuse. "
  RUS: ", но это уравновешивается неэкономичным обществом, нацеленным в основном на потребительство.  "
  SPA: " pero esto lo contrarrestan con una sociedad derrochadora que solo piensa en consumir. "
  UKR: " але це врівноважується марнотратним, орієнтованим на споживача суспільством."
@@ -6798,6 +6846,7 @@ ButThisIsCounterbalancedBy:
 AndItsCitizensAreRelatively:
  Id: 1348
  ENG: " and its citizens are relatively intelligent about resource allocation. "
+ FRA: ", et ses citoyens gèrent leurs ressources avec une relative intelligence. "
  RUS: ", и его граждане достаточно рационально используют свои ресурсы. "
  SPA: " y sus ciudadanos son relativamente inteligentes en lo que concierne al aprovechamiento de los recursos. "
  UKR: ", а її громадяни відносно розумно ставляться до розподілу ресурсів."
@@ -6805,6 +6854,7 @@ AndItsCitizensAreRelatively:
 While:
  Id: 1349
  ENG: "While "
+ FRA: "Si le gouvernement "
  RUS: "В то время как "
  SPA: "Aunque "
  UKR: "У той час як"
@@ -6812,6 +6862,7 @@ While:
 GovernmentCanBeSomewhatCorrupt:
  Id: 1350
  ENG: " government can be somewhat corrupt"
+ FRA: " peut sembler un peu corrompu"
  RUS: " имеют в значительной степени коррумпированное правительство"
  SPA: " tienen un gobierno algo corrupto"
  UKR: " уряд може бути дещо корумпованим"
@@ -6819,6 +6870,7 @@ GovernmentCanBeSomewhatCorrupt:
 ItsPrivateSectorMakesUp:
  Id: 1351
  ENG: ", its private sector makes up for the government's wastefulness with its efficiency. "
+ FRA: ", son secteur privé compense le gaspillage de l'État par son efficacité. "
  RUS: ", частный сектор очень работает очень эффективно, компенсируя эффекты коррупции. "
  SPA: ", su sector privado compensa con su eficiencia el despilfarro del gobierno. "
  UKR: ", її приватний сектор компенсує марнотратство уряду своєю ефективністю."
@@ -6826,6 +6878,7 @@ ItsPrivateSectorMakesUp:
 ThisCorruptionPalesInComparison:
  Id: 1352
  ENG: ", this corruption pales in comparison to recklessness of such a wasteful, consumer-oriented society. "
+ FRA: ", cette corruption n'est rien comparée à l'insouciance d'une société aussi consumériste et dispendieuse. "
  RUS: ", даже эта коррупция меркнет в сравнении с нерачительностью общества, в котором потребление возведено в культ. "
  SPA: ", esta corrupción es insignificante en comparación con la imprudencia de una sociedad derrochadora que solo piensa en consumir. "
  UKR: ", ця корупція блідне в порівнянні з нерозсудливістю такого марнотратного, орієнтованого на споживача суспільства."
@@ -6833,6 +6886,7 @@ ThisCorruptionPalesInComparison:
 AreNeverthelessAPracticalRace:
  Id: 1353
  ENG: " are nevertheless a practical race when it comes to resource allocation. "
+ FRA: " n'en restent pas moins pragmatiques dans la gestion de leurs ressources. "
  RUS: " являются достаточно практичной расой в плане использования ресурсов. "
  SPA: " son, sin embargo, una raza práctica en lo que respecta a la asignación de recursos. "
  UKR: " тим не менш, є практичним змаганням, коли справа доходить до розподілу ресурсів."
@@ -6840,6 +6894,7 @@ AreNeverthelessAPracticalRace:
 GovernmentIsFunctionalAndStable:
  Id: 1354
  ENG: " government is functional and stable. "
+ FRA: " — gouvernement fonctionnel et stable. "
  RUS: " имеют стабильное и нормально функционирующее правительство. "
  SPA: " cuentan con un gobierno funcional y estable. "
  UKR: " уряд є функціональним та стабільним."
@@ -6847,6 +6902,7 @@ GovernmentIsFunctionalAndStable:
 EvenSo:
  Id: 1355
  ENG: "Even so, "
+ FRA: "Malgré cela, "
  RUS: "Но даже при этом, "
  SPA: "Aun así, "
  UKR: "Навіть якщо так,"
@@ -6854,6 +6910,7 @@ EvenSo:
 SocietyAtLargeIsVery:
  Id: 1356
  ENG: " society at large is very environmentally concious and practical about resource allocation. "
+ FRA: " — société largement écoresponsable et pragmatique dans la gestion des ressources. "
  RUS: " с большим трепетом относятся к охране окружающей среды и практичному использованию ресурсов. "
  SPA: " tienen una sociedad en general muy concienciada sobre el medio ambiente y usan los recursos de forma racional. "
  UKR: " суспільство в цілому є дуже екологічно свідомим і практичним щодо розподілу ресурсів."
@@ -6861,6 +6918,7 @@ SocietyAtLargeIsVery:
 AlsoTendToBeA:
  Id: 1357
  ENG: " also tend to be a wasteful people who are neglectful of their investments. "
+ FRA: " tendent par ailleurs au gaspillage et négligent leurs investissements. "
  RUS: " в целом не отличаются бережливостью и расчетливостью в инвестициях. "
  SPA: " tienden a ser un pueblo derrochador y descuidado con sus inversiones. "
  UKR: " також схильні до марнотратства і недбало ставляться до своїх інвестицій."
@@ -6868,6 +6926,7 @@ AlsoTendToBeA:
 WorkEthicIsStrong:
  Id: 1358
  ENG: " work ethic is strong "
+ FRA: " — éthique de travail solide "
  RUS: " выработали устойчивую трудовую этику, "
  SPA: " tienen una gran ética del trabajo "
  UKR: " сильна трудова етика"
@@ -6875,6 +6934,7 @@ WorkEthicIsStrong:
 AndTheirEngineersAndShipwrights:
  Id: 1359
  ENG: "and their engineers and shipwrights produce components of superior quality. "
+ FRA: "et leurs ingénieurs et charpentiers navals produisent des composants de qualité supérieure. "
  RUS: "и их инженеры и кораблестроители изготавливают продукцию высшего качества. "
  SPA: "y sus ingenieros y constructores navales producen componentes de calidad superior. "
  UKR: "а їхні інженери та суднобудівники виробляють компоненти найвищої якості."
@@ -6882,6 +6942,7 @@ AndTheirEngineersAndShipwrights:
 YetTheirEngineeringSkillsAre:
  Id: 1360
  ENG: "yet their engineering skills are poor, producing goods and ships of somewhat inferior quality. "
+ FRA: "mais leurs compétences d'ingénierie sont médiocres, produisant biens et vaisseaux de qualité plutôt inférieure. "
  RUS: "но они не обладают склонностью к инженерному делу, вследствие чего их товары и корабли отличаются в целом низким качеством. "
  SPA: "aunque su ingeniería es poco sofisticada, por lo que producen bienes y naves de calidad algo inferior. "
  UKR: "Проте їхні інженерні навички є низькими, і вони виробляють товари та кораблі дещо нижчої якості."
@@ -6889,6 +6950,7 @@ YetTheirEngineeringSkillsAre:
 AndTheirEngineersAndShipwrights2:
  Id: 1361
  ENG: "and their engineers and shipwrights are generally competent. "
+ FRA: "et leurs ingénieurs et charpentiers navals sont globalement compétents. "
  RUS: "и их инженеры и кораблестроители в целом достаточно компетентны. "
  SPA: " y sus ingenieros y constructores navales son bastante competentes en general. "
  UKR: "а їхні інженери та судноводії, як правило, компетентні."
@@ -6896,6 +6958,7 @@ AndTheirEngineersAndShipwrights2:
 WorkersAreGenerallyQuiteLazy:
  Id: 1362
  ENG: " workers are generally quite lazy "
+ FRA: " — main-d'œuvre plutôt indolente "
  RUS: " не отличаются особым трудолюбием, "
  SPA: " sus trabajadores son, por lo general, vagos "
  UKR: " працівники, як правило, досить ліниві"
@@ -6903,6 +6966,7 @@ WorkersAreGenerallyQuiteLazy:
 YetTheirEngineersAndShipwrights:
  Id: 1363
  ENG: "yet their engineers and shipwrights are highly skilled, producing components of superior quality. "
+ FRA: "mais leurs ingénieurs et charpentiers navals, hautement qualifiés, produisent des composants de qualité supérieure. "
  RUS: "но их инженеры и кораблестроители изготавливают продукцию высшего качества. "
  SPA: "pero sus ingenieros y constructores navales están muy cualificados, por lo que producen componentes de calidad superior. "
  UKR: "але їхні інженери та суднобудівники мають високу кваліфікацію, виготовляючи компоненти найвищої якості."
@@ -6910,6 +6974,7 @@ YetTheirEngineersAndShipwrights:
 AndTheirEngineeringSkillsAre:
  Id: 1364
  ENG: "and their engineering skills are poor, producing goods and ships of somewhat inferior quality. "
+ FRA: "et leurs compétences d'ingénierie sont médiocres, produisant biens et vaisseaux de qualité plutôt inférieure. "
  RUS: "а также не обладают склонностью к инженерному делу, вследствие чего их товары и корабли отличаются в целом низким качеством. "
  SPA: "y su ingeniería es poco sofisticada, por lo que producen bienes y naves de calidad algo inferior. "
  UKR: "а їхні інженерні навички є низькими, що призводить до виробництва товарів і кораблів дещо нижчої якості."
@@ -6917,6 +6982,7 @@ AndTheirEngineeringSkillsAre:
 ButTheirEngineersAndShipwrights:
  Id: 1365
  ENG: "but their engineers and shipwrights are generally competent. "
+ FRA: "mais leurs ingénieurs et charpentiers navals sont globalement compétents. "
  RUS: "и их инженеры и кораблестроители в целом достаточно компетентны. "
  SPA: "pero sus ingenieros y constructores navales son bastante competentes en general. "
  UKR: "але їхні інженери та суднобудівники, як правило, компетентні."
@@ -6924,6 +6990,7 @@ ButTheirEngineersAndShipwrights:
 AreNeitherParticularlyIndustriousNor:
  Id: 1366
  ENG: " are neither particularly industrious nor particularly lazy"
+ FRA: " ne sont ni spécialement industrieux ni spécialement indolents"
  RUS: " не отличаются ни особым трудолюбием, ни ленью, "
  SPA: " no destacan por ser ni especialmente industriosos ni especialmente vagos"
  UKR: " не є ні особливо працьовитими, ні особливо ледачими"
@@ -6931,6 +6998,7 @@ AreNeitherParticularlyIndustriousNor:
 ButTheirEngineersAndShipwrights2:
  Id: 1367
  ENG: " but their engineers and shipwrights are highly skilled and produce components of superior quality. "
+ FRA: ", mais leurs ingénieurs et charpentiers navals, hautement qualifiés, produisent des composants de qualité supérieure. "
  RUS: "но их инженеры и кораблестроители изготавливают продукцию высшего качества. "
  SPA: " pero sus ingenieros y constructores navales están muy cualificados y producen componentes de calidad superior. "
  UKR: " але їхні інженери та суднобудівники мають високу кваліфікацію і виробляють компоненти найвищої якості."
@@ -6938,6 +7006,7 @@ ButTheirEngineersAndShipwrights2:
 OverallTheirEngineeringSkillsAre:
  Id: 1368
  ENG: ". Overall, their engineering skills are somwhat poor compared to peer races and tend to produce ships of inferior quality. "
+ FRA: ". Dans l'ensemble, leurs compétences d'ingénierie sont médiocres comparées aux races voisines et tendent à produire des vaisseaux de qualité inférieure. "
  RUS: " но в целом их инженерные навыки оставляют желать лучшего, вследствие чего их товары и корабли отличаются в целом низким качеством. "
  SPA: ". En general, su ingeniería está algo atrasada respecto a razas semejantes y tienden a construir naves de inferior calidad. "
  UKR: ". Загалом, їхні інженерні навички дещо нижчі, ніж у інших рас, і вони, як правило, створюють кораблі нижчої якості."
@@ -6945,6 +7014,7 @@ OverallTheirEngineeringSkillsAre:
 AndTheirEngineersAndShipwrights3:
  Id: 1369
  ENG: " and their engineers and shipwrights are generally competent. "
+ FRA: " et leurs ingénieurs et charpentiers navals sont globalement compétents. "
  RUS: "и их инженеры и кораблестроители в целом достаточно компетентны. "
  SPA: " y sus ingenieros y constructores navales son bastante competentes en general. "
  UKR: " а їхні інженери та судноводії, як правило, компетентні."
@@ -6952,6 +7022,7 @@ AndTheirEngineersAndShipwrights3:
 The:
  Id: 1370
  ENG: "The "
+ FRA: "Le monde natal du peuple "
  RUS: "Планета "
  SPA: "El "
  UKR: "Планета "
@@ -6959,6 +7030,7 @@ The:
 HomeworldOf:
  Id: 1371
  ENG: " Homeworld of "
+ FRA: ", "
  RUS: ", родной мир расы "
  SPA: " mundo natal de "
  UKR: " Батьківщина"
@@ -6966,6 +7038,7 @@ HomeworldOf:
 IsVeryLargeForA:
  Id: 1372
  ENG: " is very large for a terran planet. "
+ FRA: " est très vaste pour une planète tellurique. "
  RUS: ", для планеты земного типа слишком велика. "
  SPA: " es muy grande para tratarse de un planeta terrícola. "
  UKR: " дуже велика для земної планети."
@@ -6973,6 +7046,7 @@ IsVeryLargeForA:
 ThePlanetIsExtremelyPolluted:
  Id: 1373
  ENG: "The planet is extremely polluted from centuries of environmental abuses. "
+ FRA: "La planète est extrêmement polluée par des siècles d'abus environnementaux. "
  RUS: "За столетия непродуманной индустриализации планета стала исключительно загрязненной. "
  SPA: "El planeta está sumamente contaminado a causa de siglos de abusos medioambientales. "
  UKR: "Планета надзвичайно забруднена через багатовікове забруднення навколишнього середовища."
@@ -6980,6 +7054,7 @@ ThePlanetIsExtremelyPolluted:
 IsVerySmallForA:
  Id: 1374
  ENG: " is very small for a terran planet. "
+ FRA: " est très exiguë pour une planète tellurique. "
  RUS: ", для планеты земного типа слишком мала. "
  SPA: " es muy pequeño para tratarse de un planeta terrícola. "
  UKR: " дуже мала для земної планети."
@@ -6987,6 +7062,7 @@ IsVerySmallForA:
 IsOfAnAverageSize:
  Id: 1375
  ENG: " is of an average size for a terran planet. "
+ FRA: " est de taille moyenne pour une planète tellurique. "
  RUS: ", имеет типичный для планеты земного типа размер. "
  SPA: " tiene un tamaño normal para tratarse de un planeta terrícola. "
  UKR: " має середній розмір для земної планети."
@@ -6994,6 +7070,7 @@ IsOfAnAverageSize:
 HistoricallyThisRaceHasLooked:
  Id: 1376
  ENG: "Historically, this race has looked to the stars for many centuries. "
+ FRA: "De longue date, cette race a les yeux tournés vers les étoiles. "
  RUS: "Исторически сложилось так, что эта раса уже много столетий назад обратила свой взор к звездам. "
  SPA: "Históricamente, esta raza lleva estudiando las estrellas muchos siglos. "
  UKR: "Історично склалося так, що ця раса протягом багатьох століть дивилася на зірки."
@@ -7001,6 +7078,7 @@ HistoricallyThisRaceHasLooked:
 AStrongHistoryOfMilitary:
  Id: 1377
  ENG: "A strong history of military conflict has made the military a central part of this race's culture. "
+ FRA: "Une longue histoire de conflits a placé l'armée au cœur de la culture de cette race. "
  RUS: "Многочисленные военные конфликты привели к тому, что военные традиции теперь составляют основу культуры этой расы. "
  SPA: "Una historia plagada de conflictos militares ha hecho que el eje de la cultura de esta raza sea el ejército. "
  UKR: "Багата історія військових конфліктів зробила армію центральною частиною культури цієї раси."
@@ -7008,6 +7086,7 @@ AStrongHistoryOfMilitary:
 Furthermore2:
  Id: 1378
  ENG: "Furthermore, "
+ FRA: "De plus, "
  RUS: "Кроме того, "
  SPA: "Además, "
  UKR: "Більше того,"
@@ -7015,6 +7094,7 @@ Furthermore2:
 NavalTraditionIsVeryStrong:
  Id: 1379
  ENG: " naval tradition is very strong, and it can be expected that this race will have a strong fleet presence throughout the galaxy. "
+ FRA: " — tradition navale très forte : on peut s'attendre à une présence soutenue de ses flottes à travers la galaxie. "
  RUS: " известны своими сильными флотскими традициями, поэтому можно предположить, что эта раса будет наращивать в галактике свое военное присутствие. "
  SPA: " tienen una gran tradición naval, por lo que cabe esperar que sus tropas tengan una amplia presencia en toda la galaxia. "
  UKR: " військово-морські традиції дуже сильні, і можна очікувати, що ця раса матиме потужний флот по всій галактиці."
@@ -7022,6 +7102,7 @@ NavalTraditionIsVeryStrong:
 AreNaturalSailorsAndShipwrights:
  Id: 1380
  ENG: " are natural sailors and shipwrights, having a long and colorful history of exploring their Homeworld's oceans. "
+ FRA: " sont des marins et charpentiers navals nés, riches d'une longue histoire d'exploration des océans de leur monde natal. "
  RUS: " прирожденные моряки и кораблестроители, на протяжении многих столетий бороздившие просторы океанов своего родного мира. "
  SPA: " son constructores navales y marinos natos y tienen una rica historia en exploración oceánica de su mundo natal. "
  UKR: " є природженими моряками та корабельниками, які мають довгу та яскраву історію дослідження океанів рідної планети."
@@ -7029,6 +7110,7 @@ AreNaturalSailorsAndShipwrights:
 PossessASomewhatDuplicitousNature:
  Id: 1381
  ENG: " possess a somewhat duplicitous nature and as a result make excellent spies. "
+ FRA: " sont d'un naturel fourbe et font par conséquent d'excellents espions. "
  RUS: " отличаются исключительной двуличностью, вследствие чего из них выходят отличные шпионы. "
  SPA: " poseen una naturaleza algo embaucadora, por lo que son excelentes espías. "
  UKR: " мають дещо двоїстий характер і, як наслідок, є чудовими шпигунами."
@@ -7036,6 +7118,7 @@ PossessASomewhatDuplicitousNature:
 LiveVeryOpenAndHonest:
  Id: 1382
  ENG: " live very open and honest lives, and as a result have a poor understanding of the concept of espionage. "
+ FRA: " mènent des vies très ouvertes et honnêtes, et n'ont de ce fait qu'une piètre compréhension de l'espionnage. "
  RUS: " стараются жить честно и открыта, поэтому сама концепция шпионажа является для них совершенно чуждой. "
  SPA: " llevan vidas muy abiertas y honestas y, como resultado, no tienen bien asimilado el concepto de espionaje. "
  UKR: " живуть дуже відкритим і чесним життям і, як наслідок, погано розуміють поняття шпигунства."
@@ -7043,6 +7126,7 @@ LiveVeryOpenAndHonest:
 FinallyTheyAreADeeply:
  Id: 1383
  ENG: "Finally, they are a deeply spiritual people, leading ritualistic lives devoted to their religion.  "
+ FRA: "Enfin, c'est un peuple profondément spirituel, menant une vie ritualisée toute dévouée à sa religion.  "
  RUS: "И, наконец, это глубоко духовная раса, и ее представители очень религиозны. "
  SPA: "Por último, son un pueblo profundamente espiritual: son devotos de su religión y basan sus vidas en los rituales.  "
  UKR: "Нарешті, це глибоко духовний народ, який веде ритуальне життя, присвячене своїй релігії.  "
@@ -7050,6 +7134,7 @@ FinallyTheyAreADeeply:
 SelectATopicOnThe:
  Id: 1400
  ENG: "Select a topic on the left to learn more about the various game systems employed in StarDrive."
+ FRA: "Sélectionner un sujet à gauche pour en savoir plus sur les systèmes de jeu de StarDrive."
  RUS: "Выберите слева раздел игрового процесса StarDrive, о котором вы хотите узнать больше."
  SPA: "Selecciona un tema para saber más sobre los distintos sistemas de juego usados en StarDrive."
  UKR: "Виберіть тему зліва, щоб дізнатися більше про різні ігрові системи, що використовуються в StarDrive."
@@ -7057,6 +7142,7 @@ SelectATopicOnThe:
 StardriveHelp:
  Id: 1401
  ENG: "StarDrive Help"
+ FRA: "Aide StarDrive"
  RUS: "Справка StarDrive"
  SPA: "Ayuda de StarDrive"
  UKR: "Довідка StarDrive"
@@ -7064,6 +7150,7 @@ StardriveHelp:
 PlanetArray:
  Id: 1402
  ENG: "Planet Array"
+ FRA: "Tableau des planètes"
  RUS: "Список планет"
  SPA: "Lista de planetas"
  UKR: "Список Планет"
@@ -7071,6 +7158,7 @@ PlanetArray:
 MaxPopulation:
  Id: 1403
  ENG: "Max Population"
+ FRA: "Population max"
  RUS: "Макс. население"
  SPA: "Población máxima"
  UKR: "Макс. населення"
@@ -7078,6 +7166,7 @@ MaxPopulation:
 ResearchQueue:
  Id: 1404
  ENG: "Research Queue"
+ FRA: "File de recherche"
  RUS: "Очередь исследований"
  SPA: "Cola de investigación"
  UKR: "Черга досліджень"
@@ -7085,6 +7174,7 @@ ResearchQueue:
 CurrentResearch:
  Id: 1405
  ENG: "Current Research"
+ FRA: "Recherche en cours"
  RUS: "Текущее исследование"
  SPA: "Investigación actual"
  UKR: "Поточнє дослідження"
@@ -7092,6 +7182,7 @@ CurrentResearch:
 Technologies:
  Id: 1406
  ENG: "Technologies"
+ FRA: "Technologies"
  RUS: "Технологии"
  SPA: "Tecnologías"
  UKR: "Технології"
@@ -7099,6 +7190,7 @@ Technologies:
 HideFreighters:
  Id: 1407
  ENG: "Hide Freighters"
+ FRA: "Masquer les cargos"
  RUS: "Скрыть транспорты"
  SPA: "Ocultar cargueros"
  UKR: "Приховати транспорти"
@@ -7106,6 +7198,7 @@ HideFreighters:
 UnexploredPlanet:
  Id: 1408
  ENG: "Unexplored Planet"
+ FRA: "Planète inexplorée"
  RUS: "Неисследованная планета"
  SPA: "Planeta sin explorar"
  UKR: "Недосліджена планета"
@@ -7113,6 +7206,7 @@ UnexploredPlanet:
 UnderConstruction:
  Id: 1409
  ENG: " - Under Construction"
+ FRA: " - En construction"
  RUS: " - В процессе постройки"
  SPA: " - En construcción"
  UKR: " - На стадії будівництва"
@@ -7120,6 +7214,7 @@ UnderConstruction:
 UnderConstructionAt:
  Id: 1410
  ENG: "Under Construction at "
+ FRA: "En construction à "
  RUS: "В процессе постройки на:"
  SPA: "En construcción en "
  UKR: "Будується на"
@@ -7127,6 +7222,7 @@ UnderConstructionAt:
 AssignAreaOfOperation:
  Id: 1411
  ENG: "Assign Area of Operation"
+ FRA: "Assigner une zone d'opération"
  RUS: "Задать область операций"
  SPA: "Asignar zona de operaciones"
  UKR: "Призначити зону діяльності"
@@ -7134,6 +7230,7 @@ AssignAreaOfOperation:
 AssumeControl:
  Id: 1412
  ENG: "Assume Control"
+ FRA: "Prendre le contrôle"
  RUS: "Принять управление"
  SPA: "Tomar el control"
  UKR: "Візьміть контроль на себе"
@@ -7141,6 +7238,7 @@ AssumeControl:
 Orders2:
  Id: 1413
  ENG: "Orders"
+ FRA: "Ordres"
  RUS: "Приказы"
  SPA: "Órdenes"
  UKR: "Накази"
@@ -7148,6 +7246,7 @@ Orders2:
 ColonistTransport2:
  Id: 1414
  ENG: "Colonist Transport"
+ FRA: "Transport de colons"
  RUS: "Перевезти колонистов"
  SPA: "Transporte de colonos"
  UKR: "Транспорт колоністів"
@@ -7155,6 +7254,7 @@ ColonistTransport2:
 TransportGoods:
  Id: 1415
  ENG: "Transport Goods"
+ FRA: "Transporter des marchandises"
  RUS: "Перевозить товары"
  SPA: "Transportar mercancías"
  UKR: "Транспортувати товари"
@@ -7162,6 +7262,7 @@ TransportGoods:
 GoExploring:
  Id: 1416
  ENG: "Go Exploring"
+ FRA: "Partir en exploration"
  RUS: "Отправиться исследовать"
  SPA: "Ir a explorar"
  UKR: "Вирушай досліджувати"
@@ -7169,6 +7270,7 @@ GoExploring:
 Other:
  Id: 1417
  ENG: "Other..."
+ FRA: "Autre..."
  RUS: "Другое..."
  SPA: "Otra..."
  UKR: "Інше..."
@@ -7176,6 +7278,7 @@ Other:
 RefitTo:
  Id: 1418
  ENG: "Refit To..."
+ FRA: "Réarmer en..."
  RUS: "Переоборудовать в..."
  SPA: "Reequipar con..."
  UKR: "Переобладнати до..."
@@ -7183,6 +7286,7 @@ RefitTo:
 OrderScrap:
  Id: 1419
  ENG: "Order Scrap"
+ FRA: "Ordonner le démantèlement"
  RUS: "Утилизировать"
  SPA: "Ordenar desguace"
  UKR: "Утилізувати"
@@ -7190,6 +7294,7 @@ OrderScrap:
 ContactLeader:
  Id: 1420
  ENG: "Contact Leader"
+ FRA: "Contacter le dirigeant"
  RUS: "Связаться с лидером"
  SPA: "Contactar con líder"
  UKR: "Зв'язатись з лідером"
@@ -7197,6 +7302,7 @@ ContactLeader:
 ViewPlanet:
  Id: 1421
  ENG: "View Planet"
+ FRA: "Voir la planète"
  RUS: "Осмотреть планету"
  SPA: "Ver planeta"
  UKR: "Переглянути планету"
@@ -7204,6 +7310,7 @@ ViewPlanet:
 MarkForColonization:
  Id: 1422
  ENG: "Mark for Colonization"
+ FRA: "Marquer pour colonisation"
  RUS: "Отметить для колонизации"
  SPA: "Marcar para colonización"
  UKR: "Позначити для колонізації"
@@ -7211,6 +7318,7 @@ MarkForColonization:
 TacticalView:
  Id: 1423
  ENG: "Tactical View"
+ FRA: "Vue tactique"
  RUS: "Тактический вид"
  SPA: "Vista táctica"
  UKR: "Тактичний вид"
@@ -7218,6 +7326,7 @@ TacticalView:
 PopulationMax:
  Id: 1424
  ENG: "Population Max: "
+ FRA: "Population max : "
  RUS: "Макс. население: "
  SPA: "Población máxima: "
  UKR: "Макс. населення: "
@@ -7225,6 +7334,7 @@ PopulationMax:
 Colonize:
  Id: 1425
  ENG: "Colonize"
+ FRA: "Coloniser"
  RUS: "Колонизировать"
  SPA: "Colonizar"
  UKR: "Колонізувати"
@@ -7232,6 +7342,7 @@ Colonize:
 CancelColonize:
  Id: 1426
  ENG: "Cancel Colonize"
+ FRA: "Annuler la colonisation"
  RUS: "Отмена"
  SPA: "Cancelar"
  UKR: "Скасувати колонізацію"
@@ -7239,6 +7350,7 @@ CancelColonize:
 ThisPlanetIsNotHabitable:
  Id: 1427
  ENG: "This planet is not habitable by your species"
+ FRA: "Cette planète n'est pas habitable pour votre espèce"
  RUS: "Эта планета не пригодна для жизни вашей расы."
  SPA: "Este planeta no es habitable para tu especie"
  UKR: "Ця планета не придатна для життя вашого виду"
@@ -7246,6 +7358,7 @@ ThisPlanetIsNotHabitable:
 Uninhabitable:
  Id: 1428
  ENG: "Uninhabitable "
+ FRA: "Inhabitable "
  RUS: "Непригодная для жизни"
  SPA: "Inhabitable "
  UKR: "Непридатна для життя"
@@ -7253,6 +7366,7 @@ Uninhabitable:
 Unexplored:
  Id: 1429
  ENG: "Unexplored "
+ FRA: "Inexplorée "
  RUS: "Неисследованная"
  SPA: "Sin explorar "
  UKR: "Недосліджена "
@@ -7260,6 +7374,7 @@ Unexplored:
 SendAShipToThis:
  Id: 1430
  ENG: "Send a ship to this planet to reveal its properties"
+ FRA: "Envoyer un vaisseau vers cette planète pour révéler ses propriétés"
  RUS: "Подлетите к этой планете ближе,чтобы узнать больше."
  SPA: "Enviar una nave a este planeta para revelar sus propiedades"
  UKR: "Відправте корабель на цю планету, щоб розкрити її властивості"
@@ -7267,6 +7382,7 @@ SendAShipToThis:
 Bombard:
  Id: 1431
  ENG: "Bombard"
+ FRA: "Bombarder"
  RUS: "Бомбить"
  SPA: "Bombardear"
  UKR: "Бомбардувати"
@@ -7274,6 +7390,7 @@ Bombard:
 Troops2:
  Id: 1432
  ENG: "Troops..."
+ FRA: "Troupes..."
  RUS: "Войска..."
  SPA: "Tropas..."
  UKR: "Війська..."
@@ -7281,6 +7398,7 @@ Troops2:
 Close:
  Id: 1433
  ENG: "Close"
+ FRA: "Fermer"
  RUS: "Закрыть"
  SPA: "Cerrar"
  UKR: "Закрити"
@@ -7288,6 +7406,7 @@ Close:
 UnexploredSystem:
  Id: 1434
  ENG: "Unexplored System"
+ FRA: "Système inexploré"
  RUS: "Неисследованная система"
  SPA: "Sistema sin explorar"
  UKR: "Недосліджена система"
@@ -7295,6 +7414,7 @@ UnexploredSystem:
 Launch:
  Id: 1435
  ENG: "Launch"
+ FRA: "Lancer"
  RUS: "Запуск"
  SPA: "Lanzamiento"
  UKR: "Запуск"
@@ -7302,6 +7422,7 @@ Launch:
 Duplicitous:
  Id: 1436
  ENG: "Duplicitous"
+ FRA: "Fourbe"
  RUS: "Двуличные"
  SPA: "Embaucadora"
  UKR: "Дволикі"
@@ -7309,6 +7430,7 @@ Duplicitous:
 DuplicitousRacesAreNaturalDeceivers:
  Id: 1437
  ENG: "Duplicitous races are natural deceivers and gain a +10 bonus to all Agent rolls."
+ FRA: "Les races fourbes sont des trompeuses nées et gagnent un bonus de +10 à tous les jets d'Agent."
  RUS: "Двуличные расы - прирожденные обманщики. Их агенты получают бонус +10 ко всем проверкам действий."
  SPA: "Las razas embaucadoras son embusteros natos y sus agentes tienen +10 de probabilidades de éxito"
  UKR: "Дволикі раси є природженими брехунами і отримують бонус +10 до всіх кидків агентів"
@@ -7316,6 +7438,7 @@ DuplicitousRacesAreNaturalDeceivers:
 Honest:
  Id: 1438
  ENG: "Honest"
+ FRA: "Honnête"
  RUS: "Честные"
  SPA: "Honesta"
  UKR: "Чесні"
@@ -7323,6 +7446,7 @@ Honest:
 HonestRacesDoNotUnderstand:
  Id: 1439
  ENG: "Honest races do not understand the concept of secrets and as such have a -10 penalty to all Agent rolls."
+ FRA: "Les races honnêtes ignorent le concept même de secret et subissent un malus de -10 à tous les jets d'Agent."
  RUS: "Честные расы - вообще не понимают концепции шпионажа и охраны секретов. Их агенты получают штраф -10 ко всем проверкам действий."
  SPA: "Las razas honestas no entienden bien el concepto de secreto y todos sus agentes sufren una penalización de -10"
  UKR: "Чесні раси не розуміють поняття таємниці і тому мають штраф -10 до всіх кидків агентів"
@@ -7330,6 +7454,7 @@ HonestRacesDoNotUnderstand:
 Spiritual:
  Id: 1440
  ENG: "Spiritual"
+ FRA: "Spirituel"
  RUS: "Духовные"
  SPA: "Espiritual"
  UKR: "Духовна"
@@ -7337,6 +7462,7 @@ Spiritual:
 SpiritualRacesAreRitualisticAnd:
  Id: 1441
  ENG: "Spiritual races are ritualistic and religious. They gain a 50% bonus to all effects received from artifacts. "
+ FRA: "Les races spirituelles sont ritualistes et religieuses. Elles gagnent un bonus de 50% à tous les effets des artefacts. "
  RUS: "Духовные расы очень религиозны. Они поучают 50% бонус ко всем эффектам от артефактов."
  SPA: "Las razas espirituales son religiosas y ritualistas. Gozan de una bonificación del 50% sobre los efectos recibidos de artefactos. "
  UKR: "Духовні раси - ритуальні та релігійні. Вони отримують 50% бонус до всіх ефектів, отриманих від артефактів."
@@ -7344,6 +7470,7 @@ SpiritualRacesAreRitualisticAnd:
 UltraRich:
  Id: 1442
  ENG: "Ultra Rich"
+ FRA: "Ultra-riche"
  RUS: "Очень богатая"
  SPA: "Riquísimo"
  UKR: "Надзвичайно багата"
@@ -7351,6 +7478,7 @@ UltraRich:
 Rich:
  Id: 1443
  ENG: "Rich"
+ FRA: "Riche"
  RUS: "Богатая"
  SPA: "Rico"
  UKR: "Багата"
@@ -7358,6 +7486,7 @@ Rich:
 Average:
  Id: 1444
  ENG: "Average"
+ FRA: "Moyenne"
  RUS: "Средняя"
  SPA: "Normal"
  UKR: "Середня"
@@ -7365,6 +7494,7 @@ Average:
 Poor:
  Id: 1445
  ENG: "Poor"
+ FRA: "Pauvre"
  RUS: "Бедная"
  SPA: "Pobre"
  UKR: "Бідна"
@@ -7372,6 +7502,7 @@ Poor:
 UltraPoor:
  Id: 1446
  ENG: "Ultra Poor"
+ FRA: "Ultra-pauvre"
  RUS: "Очень бедная"
  SPA: "Paupérrimo"
  UKR: "Надзвичайно бідна"
@@ -7379,6 +7510,7 @@ UltraPoor:
 Terran:
  Id: 1447
  ENG: "Terran"
+ FRA: "Tellurique"
  RUS: "Земная"
  SPA: "Terrícola"
  UKR: "Земна"
@@ -7386,6 +7518,7 @@ Terran:
 Barren:
  Id: 1448
  ENG: "Barren"
+ FRA: "Stérile"
  RUS: "Бесплод."
  SPA: "Árido"
  UKR: "Безплідна"
@@ -7393,6 +7526,7 @@ Barren:
 GasGiant:
  Id: 1449
  ENG: "Gas Giant"
+ FRA: "Géante gazeuse"
  RUS: "Газовый гигант"
  SPA: "Gigante gaseoso"
  UKR: "Газовий гігант"
@@ -7400,6 +7534,7 @@ GasGiant:
 Volcanic:
  Id: 1450
  ENG: "Volcanic"
+ FRA: "Volcanique"
  RUS: "Вулканическая"
  SPA: "Volcánico"
  UKR: "Вулканічна"
@@ -7407,6 +7542,7 @@ Volcanic:
 Tundra:
  Id: 1451
  ENG: "Tundra"
+ FRA: "Toundra"
  RUS: "Тундра"
  SPA: "Tundra"
  UKR: "Тундра"
@@ -7414,6 +7550,7 @@ Tundra:
 Desert:
  Id: 1452
  ENG: "Desert"
+ FRA: "Désertique"
  RUS: "Пустыня"
  SPA: "Desértico"
  UKR: "Пустеля"
@@ -7421,6 +7558,7 @@ Desert:
 Steppe:
  Id: 1453
  ENG: "Steppe"
+ FRA: "Steppe"
  RUS: "Степь"
  SPA: "Estepario"
  UKR: "Степ"
@@ -7428,6 +7566,7 @@ Steppe:
 Swamp:
  Id: 1454
  ENG: "Swamp"
+ FRA: "Marécageuse"
  RUS: "Болота"
  SPA: "Pantanoso"
  UKR: "Болото"
@@ -7435,6 +7574,7 @@ Swamp:
 Ice:
  Id: 1455
  ENG: "Ice"
+ FRA: "Glacée"
  RUS: "Мерзлота"
  SPA: "Helado"
  UKR: "Лід"
@@ -7442,6 +7582,7 @@ Ice:
 Oceanic:
  Id: 1456
  ENG: "Oceanic"
+ FRA: "Océanique"
  RUS: "Океан"
  SPA: "Oceánico"
  UKR: "Oceanic"
@@ -7449,150 +7590,176 @@ Oceanic:
 Tracking:
  Id: 1457
  ENG: "FCS Tracking"
+ FRA: "Poursuite FCS"
  RUS: "Сис.Наведения огня"
  UKR: "Система керування вогнем"
  PTB: "Rastreamento FCS"
 LowTracking:
  Id: 1458
  ENG: "Low Target Tracking"
+ FRA: "Poursuite de cibles limitée"
  RUS: "Низкий поиск целей"
  UKR: "низька СКВ"
  PTB: "Rastreamento de Alvo Baixo"
 TrackingTargets:
  Id: 1459
  ENG: "FCS Target Tracking: having less tracking than weapon facings can leave the ship unable to fire simultaneously on targets in multiple directions."
+ FRA: "Poursuite de cibles FCS : avec moins de poursuite que d'orientations d'armes, le vaisseau peut se retrouver incapable de tirer simultanément sur des cibles dans plusieurs directions."
  RUS: "Система наведения огнем по целям:наличие меньшей дистанцией, чем прицеливание орудий,может привести к тому, что корабль не сможет одновременно вести огонь по целям в нескольких направлениях."
  UKR: "Відстеження цілі СКВ: менший рівень відстеження, ніж наведення зброї, може призвести до того, що корабель не зможе одночасно вести вогонь по цілям у декількох напрямках."
  PTB: "Rastreamento de Alvo FCS: ter menos rastreamento do que orientações de armas pode deixar a nave incapaz de disparar simultaneamente contra alvos em múltiplas direções."
 ImproveTracking:
  Id: 1460
  ENG: "Improve target tracking by adding more systems with FCS Target Tracking power such as control systems, or try to group your weapons to face similar directions."
+ FRA: "Améliorer la poursuite en ajoutant des systèmes dotés de puissance de poursuite FCS (systèmes de contrôle), ou regrouper les armes vers des directions similaires."
  RUS: "Улучшеное отслеживание целей, добавляет больше Сис.Наведения огня, таких как системы управления огнем.Групирует оружие так что оно сосредоточено в одном направлении."
  UKR: "Покращіть відстеження цілей, додавши більше систем з функцією відстеження цілей СКВ, наприклад, системи керування, або спробуйте згрупувати зброю так, щоб вона була спрямована у схожих напрямках."
  PTB: "Melhore o rastreamento de alvo adicionando mais sistemas com poder de Rastreamento de Alvo FCS, como sistemas de controle, ou tente agrupar suas armas para ficarem voltadas em direções semelhantes."
 OrbitalTracking:
  Id: 1461
  ENG: "Bases placed in orbit also use planet FCS."
+ FRA: "Les bases placées en orbite utilisent aussi le FCS planétaire."
  RUS: "Базы, выведенные на орбиту, также используют планетарную Сис.наведения огня."
  UKR: "Бази, розміщені на орбіті використовують планетарну Систему Керування Вогню."
  PTB: "Bases colocadas em órbita também usam o FCS do planeta."
 LongRechargeTime:
  Id: 1462
  ENG: "Long Recharge Time"
+ FRA: "Temps de recharge long"
  RUS: "Длительное время перезарядки"
  UKR: "Тривалий час перезарядки"
  PTB: "Tempo de Recarga Longo"
 TheShipTakesLongTime:
  Id: 1463
  ENG: "The ship takes long time to fully recharge its batteries. This can make it ineffective during a continuous battle."
+ FRA: "Le vaisseau met longtemps à recharger entièrement ses batteries, ce qui peut le rendre inefficace lors d'une bataille prolongée."
  RUS: "Кораблю требуется много времени, чтобы полностью зарядить свои энергетические батареи. Это может сделать его неэффективным во время непрерывного боя."
  UKR: "Кораблю потрібно багато часу, щоб повністю перезарядити акумулятори. Це може зробити його неефективним під час безперервного бою."
  PTB: "A nave leva muito tempo para recarregar totalmente suas baterias. Isso pode torná-la ineficaz durante uma batalha contínua."
 AddReactorsWhichWillIncrease:
  Id: 1464
  ENG: "Add Reactors, which will increase the power recharge of the ship."
+ FRA: "Ajouter des réacteurs pour accroître la recharge d'énergie du vaisseau."
  RUS: "Добавлены реакторы, которые увеличивают зарядку энергии на корабле."
  UKR: "Додайте реактори, які збільшать потужність перезарядки корабля."
  PTB: "Adicione reatores, que aumentarão a recarga de energia da nave."
 LowPowerCapacity:
  Id: 1465
  ENG: "Low Power Capacity"
+ FRA: "Capacité énergétique faible"
  RUS: "Низкий уровень энергии"
  UKR: "Низька енергоємність"
  PTB: "Baixa Capacidade de Energia"
 TheShipsPowerCapacityIt:
  Id: 1466
  ENG: "The ship's Power Capacity is too low to support all of it's installed energy weaponry. The ship might have enough power output, but it must also have sufficient capacity to store it."
+ FRA: "La capacité énergétique du vaisseau est trop faible pour alimenter tout son armement à énergie. La production peut suffire, mais il faut aussi une capacité de stockage suffisante."
  RUS: "Уровень энергии корабля слишком мал,чтобы поддерживать все установленное на нем энергетическое вооружение. Корабль может иметь достаточную производительность реактора, но он также должен иметь достаточно энергетических ячеек для хранения энергии."
  UKR: "Потужність корабля занадто низька, щоб підтримувати всю встановлену на ньому енергетичну зброю. Корабель може мати достатню потужність, але він також повинен мати достатню енергоємність для її зберігання."
  PTB: "A Capacidade de Energia da nave é baixa demais para sustentar todo o armamento de energia instalado. A nave pode ter geração de energia suficiente, mas também precisa ter capacidade suficiente para armazená-la."
 AddPowerCellsToThe:
  Id: 1467
  ENG: "Add Power Cells to the ship."
+ FRA: "Ajouter des cellules d'énergie au vaisseau."
  RUS: "Добавляет энерг.ячейки корабль."
  UKR: "Додайте на корабель елементи живлення."
  PTB: "Adicione Células de Energia à nave."
 OfTheShipssEnergyWeapons:
  Id: 1468
  ENG: "of the ships's energy weapons cannot fire a single shot."
+ FRA: "des armes à énergie du vaisseau ne peuvent pas tirer un seul coup."
  RUS: "Энергетическое оружия корабля не может произвести ни одного выстрела."
  UKR: "енергетичної зброї кораблів не може зробити жодного пострілу."
  PTB: "das armas de energia da nave não consegue disparar um único tiro."
 TheEfficiencyOfTheShipss:
  Id: 1469
  ENG: "The efficiency of the ships's energy weapon with it's current Power Capacity is"
+ FRA: "L'efficacité des armes à énergie du vaisseau avec sa capacité actuelle est de"
  RUS: "Эффективность энергетического оружия корабля с его текущим запасом энергии составляет"
  UKR: "Ефективність енергетичної зброї кораблів з поточною потужністю становить"
  PTB: "A eficiência da arma de energia da nave com sua Capacidade de Energia atual é"
 ExcessPowerCells:
  Id: 1470
  ENG: "Excess Power Cells"
+ FRA: "Cellules d'énergie excédentaires"
  RUS: "Избыточные элементы питания"
  UKR: "Надлишкові елементи живлення"
  PTB: "Células de Energia em Excesso"
 TheShipHasExcessiveNumber:
  Id: 1471
  ENG: "The ship has excessive number of power cells, compared to it's weapon load out."
+ FRA: "Le vaisseau possède un nombre excessif de cellules d'énergie par rapport à son armement."
  RUS: "Корабль имеет чрезмерное количество энергоячеек по сравнению с потребностью вооружения."
  UKR: "Корабель має надмірну кількість енергетичних елементів, порівняно з його озброєнням."
  PTB: "A nave possui um número excessivo de células de energia em comparação com sua carga de armas."
 ReplaceSomeOfYourPower:
  Id: 1472
  ENG: "Replace some of your Power Cells with modules which might benefit the ship."
+ FRA: "Remplacer une partie des cellules d'énergie par des modules plus utiles au vaisseau."
  RUS: "Замените некоторые из ваших енергоячеек модулями, которые могут принести пользу кораблю."
  UKR: "Замініть деякі з ваших елементів живлення на модулі, які можуть принести користь кораблю."
  PTB: "Substitua algumas das suas Células de Energia por módulos que possam beneficiar a nave."
 DedicatedCarrier:
  Id: 1473
  ENG: "Dedicated Carrier"
+ FRA: "Porte-vaisseaux dédié"
  RUS: "Выделенный Носитель"
  UKR: "Спеціалізований носій"
  PTB: "Porta-Naves Dedicado"
 ThisShipIsADedicated:
  Id: 1474
  ENG: "This ship is a dedicated Carrier. The fighter launch range will be determined by the Combat Stance you select for it. Short Range or Attack Runs Stances will set fighters to launch from Max Weapon Range (minimum 7500). Anything else - Sensor Range."
+ FRA: "Ce vaisseau est un porte-vaisseaux dédié. La portée de lancement des chasseurs dépend de la Posture de combat choisie : Courte portée ou Passes d'attaque = lancement à la portée d'arme maximale (minimum 7500) ; sinon, à la portée des capteurs."
  RUS: "Этот корабль является специализированным Носителем. Дальность пуска истребителей будет определяться выбранной вами боевой стойкой.Стойки для коротких дистанций или атак позволяют истребителям стартовать с максимальной дальности стрельбы (минимум 7500).Дальность сенсоров можно увеличить."
  UKR: "Цей корабель є спеціалізованим носієм. Дальність запуску винищувача буде визначатися бойовою позицією, яку ви для нього виберете. Бойові позиції \"Ближній бій\" або \"Атакуючий запуск\" дозволять винищувачам запускатися з максимальної дальності зброї (мінімум 7500). Все інше - з дальності сенсора."
  PTB: "Esta nave é um Porta-Naves dedicado. O alcance de lançamento dos caças será determinado pela Postura de Combate que você selecionar para ela. Posturas de Curto Alcance ou Passadas de Ataque farão os caças serem lançados do Alcance Máximo das Armas (mínimo de 7500). Qualquer outra postura: Alcance dos Sensores."
 CurrentSelectedFighterLaunchRange:
  Id: 1475
  ENG: "Current Selected Fighter Launch Range is: \n "
+ FRA: "La portée de lancement des chasseurs sélectionnée est : 
+ "
  RUS: "Текущая дальность запуска истребителей: \n "
  UKR: "Поточний вибраний діапазон запуску винищувача: \n"
  PTB: "O Alcance de Lançamento de Caças selecionado atualmente é: \n "
 SensorRangeOf:
  Id: 1476
  ENG: "Sensor Range of"
+ FRA: "Portée capteurs de"
  RUS: "Диапазон сенсоров"
  UKR: "Діапазон сенсорів"
  PTB: "Alcance dos Sensores de"
 MaximumWeaponRangeOf:
  Id: 1477
  ENG: "Maximum Weapon Range of "
+ FRA: "Portée d'arme maximale de "
  RUS: "Максимальная дальность орудий"
  UKR: "Максимальна дальність дії зброї"
  PTB: "Alcance Máximo das Armas de "
 SecondaryCarrier:
  Id: 1478
  ENG: "Secondary Carrier"
+ FRA: "Porte-vaisseaux secondaire"
  RUS: "Вторичный Носитель"
  UKR: "Вторинний носій"
  PTB: "Porta-Naves Secundário"
 ThisShipHasSomeFighter:
  Id: 1479
  ENG: "This ship has some Fighter Hangars. However, it is not a Dedicated Carrier. The fighter launch range will be the Maximum weapon range of this ship (minimum of 7500)."
+ FRA: "Ce vaisseau possède des hangars à chasseurs sans être un porte-vaisseaux dédié. La portée de lancement des chasseurs sera sa portée d'arme maximale (minimum 7500)."
  RUS: "На этом корабле есть несколько ангаров для истребителей. Однако,это не выделенный Носитель. Дальность пуска истребителей будет соответствовать максимальной дальности вооружения этого корабля (минимум 7500)."
  UKR: "На цьому кораблі є кілька ангарів для винищувачів. Однак, він не є спеціалізованим носієм. Дальність запуску винищувача буде дорівнювати максимальній дальності озброєння цього корабля (мінімум 7500)."
  PTB: "Esta nave possui alguns Hangares de Caças. No entanto, ela não é um Porta-Naves dedicado. O alcance de lançamento dos caças será o alcance máximo das armas desta nave (mínimo de 7500)."
 MinimumLaunchRangeOf:
  Id: 1480
  ENG: "Minimum Launch Range of "
+ FRA: "Portée de lancement minimale de "
  RUS: "Минимальный диапазон запуска "
  UKR: "Мінімальна дальність запуску"
  PTB: "Alcance Mínimo de Lançamento de "
 SinceTheShipsMaximumWeapon:
  Id: 1481
  ENG: ", since the ship's Maximum Weapon Range is only"
+ FRA: ", la portée d'arme maximale du vaisseau n'étant que de"
  RUS: "так как максимальная дальнобойность вооружения корабля составляет всего"
  UKR: "оскільки максимальна дальність дії зброї корабля лише"
  PTB: ", já que o Alcance Máximo das Armas da nave é apenas"
@@ -8063,6 +8230,7 @@ Contact:
 LooksLikeAJewelFrom:
  Id: 1700
  ENG: "looks like a jewel from space, but upon closer examination is an extremely inhospitable landscape. "
+ FRA: "ressemble à un joyau depuis l'espace, mais se révèle de près un paysage des plus inhospitaliers. "
  RUS: "из космоса выглядела настоящей жемчужиной, однако при ближайшем рассмотрении оказалась исключительно негостеприимной"
  SPA: "parece una joya desde el espacio, pero tras un examen más detenido resulta que es un paisaje de lo más inhóspito"
  UKR: "виглядає як коштовність з космосу, але при ближчому розгляді виявляється вкрай негостинним ландшафтом"
@@ -8070,6 +8238,7 @@ LooksLikeAJewelFrom:
 IsComposedLargelyOfHydrogen:
  Id: 1701
  ENG: "is composed largely of hydrogen Gas. "
+ FRA: "est composée en grande partie d'hydrogène gazeux. "
  RUS: "в основном состоит из газообразного водорода"
  SPA: "está compuesto en su mayor parte de gas hidrógeno"
  UKR: "складається здебільшого з газоподібного водню"
@@ -8077,6 +8246,7 @@ IsComposedLargelyOfHydrogen:
 IsABarrenRockyWorld:
  Id: 1702
  ENG: "is a barren, rocky world"
+ FRA: "est un monde stérile et rocheux"
  RUS: "представляет собой пустынный бесплодный мир"
  SPA: "es un mundo rocoso y árido"
  UKR: "це безплідний, кам'янистий світ"
@@ -8084,6 +8254,7 @@ IsABarrenRockyWorld:
 BoastsABarrenLandscapeCovered:
  Id: 1703
  ENG: "boasts a barren landscape covered in a reddish-brown dust. "
+ FRA: "arbore un paysage stérile couvert d'une poussière brun-rouge. "
  RUS: "представляет собой бесплодную землю, покрытую слоем бурой пыли"
  SPA: "presenta un paisaje yermo cubierto de polvo de color marrón rojizo"
  UKR: "може похвалитися безплідним ландшафтом, вкритим червонувато-коричневим пилом"
@@ -8091,6 +8262,7 @@ BoastsABarrenLandscapeCovered:
 IsAScarredAndHostile:
  Id: 1704
  ENG: "is a scarred and hostile hell world with few redeeming qualities. "
+ FRA: "est un monde infernal, balafré et hostile, aux rares qualités. "
  RUS: "представляет собой настоящий ад с минимумом привлекательных особенностей"
  SPA: "es un mundo infernal, escabroso y hostil con pocas cualidades que lo compensen"
  UKR: "це пошрамований і ворожий пекельний світ з небагатьма позитивними якостями"
@@ -8098,6 +8270,7 @@ IsAScarredAndHostile:
 IsAHighlyActiveVolcanic:
  Id: 1705
  ENG: "is a highly active volcanic world. "
+ FRA: "est un monde volcanique en pleine activité. "
  RUS: "представляет собой активную вулканическую планету"
  SPA: "es un mundo volcánico muy activo"
  UKR: "це високоактивний вулканічний світ"
@@ -8105,6 +8278,7 @@ IsAHighlyActiveVolcanic:
 IsComposedOfMixedHot:
  Id: 1706
  ENG: "is composed of mixed hot gasses. "
+ FRA: "est composée de gaz chauds mêlés. "
  RUS: "состоит из смеси нагретых газов"
  SPA: "está compuesto por una mezcla de gases calientes"
  UKR: "складається зі змішаних гарячих газів"
@@ -8112,6 +8286,7 @@ IsComposedOfMixedHot:
 IsAHarshTundraWorld:
  Id: 1707
  ENG: "is a harsh Tundra world"
+ FRA: "est un rude monde de toundra"
  RUS: "представляет собой суровую бескрайнюю тундру"
  SPA: "es un mundo de tundra hostil"
  UKR: "це суворий світ тундри"
@@ -8119,6 +8294,7 @@ IsAHarshTundraWorld:
 IsASwirlingGlobeOf:
  Id: 1708
  ENG: "is a swirling globe of low-density gasses. "
+ FRA: "est un globe tourbillonnant de gaz de faible densité. "
  RUS: "представляет собой бурлящую сферу из разреженных газов"
  SPA: "es un orbe de torbellinos de gases de baja densidad"
  UKR: "це закручена куля газів низької густини"
@@ -8126,6 +8302,7 @@ IsASwirlingGlobeOf:
 IsAContinentalPlanetWith:
  Id: 1709
  ENG: "is a continental planet with a nitrogen-oxygen atmosphere and several large oceans. "
+ FRA: "est une planète continentale dotée d'une atmosphère azote-oxygène et de plusieurs vastes océans. "
  RUS: "представляет собой континентальную планету с атмосферой из азота и кислорода и несколькими большими океанами"
  SPA: "es un planeta continental con grandes océanos y una atmósfera de oxígeno y nitrógeno"
  UKR: "континентальна планета з азотно-кисневою атмосферою та кількома великими океанами"
@@ -8133,6 +8310,7 @@ IsAContinentalPlanetWith:
 IsAnAridWorldCovered:
  Id: 1710
  ENG: "is an arid world covered in desert. "
+ FRA: "est un monde aride couvert de désert. "
  RUS: "представляет собой засушливый пустынный мир"
  SPA: "es un mundo seco cubierto de desiertos"
  UKR: "це посушливий світ, вкритий пустелею"
@@ -8140,6 +8318,7 @@ IsAnAridWorldCovered:
 IsAColdGasIce:
  Id: 1711
  ENG: "is a cold gas ice Giant"
+ FRA: "est une géante gazeuse glacée"
  RUS: "представляет собой газовый гигант из замерзших газов"
  SPA: "es un gigante de hielo y gas"
  UKR: "це холодний газовий крижаний гігант"
@@ -8147,6 +8326,7 @@ IsAColdGasIce:
 PossessesABarrenAndRocky:
  Id: 1712
  ENG: "possesses a barren and rocky landscape. "
+ FRA: "possède un paysage stérile et rocheux. "
  RUS: "представляет собой пустынный бесплодный мир"
  SPA: "posee un paisaje rocoso y árido"
  UKR: "має безплідний і скелястий ландшафт"
@@ -8154,6 +8334,7 @@ PossessesABarrenAndRocky:
 IsEntirelyCoveredInIce:
  Id: 1713
  ENG: "is entirely covered in ice. "
+ FRA: "est entièrement couverte de glace. "
  RUS: "полностью скована льдом"
  SPA: "está cubierto de hielo en su totalidad"
  UKR: "повністю вкритий льодом"
@@ -8161,6 +8342,7 @@ IsEntirelyCoveredInIce:
 IsACraggyPlanetOf:
  Id: 1714
  ENG: "is a craggy planet of desert and steppe. "
+ FRA: "est une planète escarpée de désert et de steppe. "
  RUS: "представляет собой каменистую планету пустынно-степного типа"
  SPA: "es un planeta escarpado de desiertos y estepas"
  UKR: "це скеляста планета пустелі та степу"
@@ -8168,6 +8350,7 @@ IsACraggyPlanetOf:
 IsCoveredInSwampyMarshes:
  Id: 1715
  ENG: "is covered in swampy marshes and forest. "
+ FRA: "est couverte de marécages et de forêts. "
  RUS: "покрыта лесами и болотами"
  SPA: "está plagado de ciénagas y bosques pantanosos"
  UKR: "вкрита заболоченими болотами та лісом"
@@ -8175,6 +8358,7 @@ IsCoveredInSwampyMarshes:
 IsMostlyAnOceanWorld:
  Id: 1716
  ENG: "is mostly an ocean world, with small continents popping up along the equator. "
+ FRA: "est essentiellement un monde océanique, ponctué de petits continents le long de l'équateur. "
  RUS: "представляет собой огромный океан с небольшими континентами вдоль экватора"
  SPA: "es prácticamente un mundo oceánico, con pequeños continentes que emergen a lo largo del ecuador"
  UKR: "це переважно океанський світ, з невеликими континентами, що з'являються вздовж екватора"
@@ -8182,6 +8366,7 @@ IsMostlyAnOceanWorld:
 IsATerranPlanetBoasting:
  Id: 1717
  ENG: "is a terran planet boasting several large continents and a nitrogen-oxygen atmosphere. "
+ FRA: "est une planète tellurique dotée de plusieurs grands continents et d'une atmosphère azote-oxygène. "
  RUS: "представляет собой планету земного типа с атмосферой из азота и кислорода и несколькими большими континентами"
  SPA: "es un planeta terrícola con varios continentes grandes y una atmósfera de oxígeno y nitrógeno  "
  UKR: "це планета земного типу, яка має кілька великих континентів і азотно-кисневу атмосферу."
@@ -8189,6 +8374,7 @@ IsATerranPlanetBoasting:
 IsVolcanicAndHighlyActive:
  Id: 1718
  ENG: "is volcanic and highly active. "
+ FRA: "est volcanique et en pleine activité. "
  RUS: "представляет собой активную вулканическую планету"
  SPA: "es volcánico y con mucha actividad"
  UKR: "є вулканічним і високоактивним"
@@ -8196,6 +8382,7 @@ IsVolcanicAndHighlyActive:
 IsAFeaturelssHunkOf:
  Id: 1719
  ENG: "is a featurelss hunk of barren rock. "
+ FRA: "est un bloc de roche stérile sans relief. "
  RUS: "представляет собой безжизненную каменистую пустыню"
  SPA: "es un pedazo de roca yerma sin cualidades"
  UKR: "це особливий шматок безплідної скелі"
@@ -8203,6 +8390,7 @@ IsAFeaturelssHunkOf:
 IsALargeTerranWorld:
  Id: 1720
  ENG: "is a large terran world with multiple continents and oceans. "
+ FRA: "est un vaste monde tellurique aux multiples continents et océans. "
  RUS: "представляет собой планету земного типа с несколькими большими континентами и океанами"
  SPA: "es un gran mundo terrícola con múltiples continentes y océanos"
  UKR: "це великий земний світ з безліччю континентів і океанів"
@@ -8210,6 +8398,7 @@ IsALargeTerranWorld:
 IsATerranPlanetWith:
  Id: 1721
  ENG: "is a terran planet with several lardge and diverse landmasses\""
+ FRA: "est une planète tellurique dotée de plusieurs masses continentales vastes et variées\""
  RUS: "представляет собой планету земного типа с несколькими разнообразными крупными участками суши"
  SPA: "es un planeta terrícola con varias masas de tierra heterogéneas y de gran tamaño\""
  UKR: "це планета земного типу з кількома острівцями та різноманітними сухопутними масивами"
@@ -8217,6 +8406,7 @@ IsATerranPlanetWith:
 IsATerranPlanetWith2:
  Id: 1722
  ENG: "is a terran planet with several large continents and oceans. "
+ FRA: "est une planète tellurique dotée de plusieurs grands continents et océans. "
  RUS: "представляет собой планету земного типа с несколькими большими континентами и океанами"
  SPA: "es un planeta terrícola con océanos y continentes grandes\""
  UKR: "це планета земного типу з кількома великими континентами та океанами"
@@ -8224,6 +8414,7 @@ IsATerranPlanetWith2:
 HasBeenTerraformedToPossess:
  Id: 1723
  ENG: "has been terraformed to possess a nitrogen-oxygen atmosphere suitable for plant and animal life of many varieties. "
+ FRA: "a été terraformée pour posséder une atmosphère azote-oxygène propice à une flore et une faune des plus variées. "
  RUS: "была терраформирована и теперь обладает кислородно-азотной атмосферой, пригодной для большинства растений и животных"
  SPA: "se ha terraformado para dotarlo de una atmósfera de oxígeno y nitrógeno apta para albergar vida vegetal y animal diversa"
  UKR: "був тераформований для створення азотно-кисневої атмосфери, придатної для життя багатьох видів рослин і тварин"
@@ -8231,6 +8422,7 @@ HasBeenTerraformedToPossess:
 HasBeenTerraformedIntoA:
  Id: 1724
  ENG: "has been terraformed into a Tundra world with increasing biological diversity\""
+ FRA: "a été terraformée en monde de toundra à la biodiversité croissante\""
  RUS: "была терраформирована в тундру, и ее биоценоз стал более разнообразным"
  SPA: "se ha terraformado en un mundo de tundra con una diversidad biológica cada vez mayor\""
  UKR: "була тераформована у світ тундри зі зростаючим біологічним різноманіттям"
@@ -8238,6 +8430,7 @@ HasBeenTerraformedIntoA:
 HasBeenTerraformedIntoAn:
  Id: 1725
  ENG: "has been terraformed into an arid world covered in desert with the beginnings of life taking hold. "
+ FRA: "a été terraformée en monde aride couvert de désert où la vie commence à prendre racine. "
  RUS: "была терраформирована в засушливый пустынный мир, в котором начала зарождаться жизнь"
  SPA: "se ha terraformado en un mundo árido cubierto de desiertos en los que la vida empieza a dar sus primeros pasos"
  UKR: "був тераформований на сухий світ, вкритий пустелею, в якій зароджувалося життя"
@@ -8245,6 +8438,7 @@ HasBeenTerraformedIntoAn:
 HasBeenTerraformedIntoA2:
  Id: 1726
  ENG: "has been terraformed into a craggy planet of desert and steppe, with fresh signs of plant life emerging. "
+ FRA: "a été terraformée en planète escarpée de désert et de steppe, où pointent les premiers signes de vie végétale. "
  RUS: "была терраформирована в каменистую планету пустынно-степного типа, в которой наблюдаются признаки появления растительной жизни"
  SPA: "se ha terraformado en un planeta escarpado de desiertos y estepas que muestra los primeros signos de vida vegetal"
  UKR: "була тераформована на скелясту планету пустелі та степу, де з'являються свіжі ознаки рослинного життя"
@@ -8252,6 +8446,7 @@ HasBeenTerraformedIntoA2:
 IsCoveredInSwampyMarshes2:
  Id: 1727
  ENG: "is covered in swampy marshes and forest as a result of extensive terraforming. "
+ FRA: "est couverte de marécages et de forêts issus d'une terraformation extensive. "
  RUS: "в результате интенсивного терраформинга превратилась в болотисто-лесистую планету"
  SPA: "está cubierto de ciénagas y bosques pantanosos como consecuencia de una amplia terraformación"
  UKR: "вкрита заболоченими болотами та лісом внаслідок інтенсивного тераформування"
@@ -8259,6 +8454,7 @@ IsCoveredInSwampyMarshes2:
 IsOceanicWithSmallContinents:
  Id: 1728
  ENG: "is oceanic with small continents and a nitrogen-oxygen atmosphere. Terraforming this planet has injected increased biological diversity into the oceans. "
+ FRA: "est océanique, ponctuée de petits continents, avec une atmosphère azote-oxygène. La terraformation y a injecté une biodiversité accrue dans les océans. "
  RUS: "представляет собой океаническую планету с небольшими континентами и кислородно-азотной атмосферой. Терраформирование планеты привело к увеличению биологического разнообразия подводного мира"
  SPA: "es oceánico con pequeños continentes y una atmósfera de oxígeno y nitrógeno. La terraformación de este planeta ha aumentado la diversidad biológica de sus océanos"
  UKR: "є океанічною з невеликими континентами та азотно-кисневою атмосферою. Тераформування цієї планети призвело до збільшення біологічного різноманіття в океанах"
@@ -8266,6 +8462,7 @@ IsOceanicWithSmallContinents:
 TheLushVibranceOfThis:
  Id: 1729
  ENG: "The lush vibrance of this oceanic paradise is evident even from orbit. Scans reveal incredible biodiversity in the oceans and on the few large islands poking up from the depths. "
+ FRA: "L'éclat luxuriant de ce paradis océanique se voit depuis l'orbite. Les scans révèlent une biodiversité incroyable dans les océans et sur les quelques grandes îles émergées. "
  RUS: "Этот цветущий океанический рай радует глаз даже с орбиты. Сканирование выявило необычайное разнообразие форм жизни как в океане, так и на немногочисленных островах. "
  SPA: "La exuberancia de este paraíso oceánico se aprecia ya desde la órbita. El escáner muestra una increíble biodiversidad en los océanos y en las pocas islas de gran tamaño que emergen de las profundidades. "
  UKR: "Буйне життя цього океанського раю видно навіть з орбіти. Сканування показує неймовірне біорізноманіття в океанах і на кількох великих островах, що виринають з глибин."
@@ -8273,6 +8470,7 @@ TheLushVibranceOfThis:
 ItIsAnExtremelyFertile:
  Id: 1730
  ENG: "It is an extremely fertile world with a wide range of habitates and climates. From orbit you can see majestic mountains soaring above the clouds. Turquoise oceans glimmer in the sunlight, and scans reveal that the planet's many forests are teeiming with life. This planet is a rare gem."
+ FRA: "C'est un monde extrêmement fertile, aux habitats et climats variés. Depuis l'orbite se dessinent des montagnes majestueuses au-dessus des nuages. Des océans turquoise scintillent au soleil, et les scans révèlent des forêts grouillantes de vie. Cette planète est un joyau rare."
  RUS: "Это необычайно плодородный мир с большим разнообразием климатов и биоценозов. С орбиты видны упирающиеся в облака горы; бирюзовые океаны переливаются в лучах солнца; сканирование показало, что в пышных лесах планеты буквально кипит жизнь. Эта планета - настоящая жемчужина."
  SPA: "Se trata de un mundo sumamente fértil con una amplia variedad de hábitats y climas. Desde la órbita se pueden ver sus majestuosas montañas, que se elevan por encima de las nubes. Los océanos de color turquesa brillan bajo la luz solar y el escáner revela que sus numerosos bosques rebosan de vida. Este planeta es una joya poco común."
  UKR: "Це надзвичайно родючий світ з широким спектром середовищ існування та клімату. З орбіти можна побачити величні гори, що здіймаються над хмарами. Бірюзові океани мерехтять у сонячному світлі, а сканування показує, що численні ліси планети кишать життям. Ця планета - рідкісна перлина."
@@ -8280,6 +8478,7 @@ ItIsAnExtremelyFertile:
 ItIsAnExtremelyFertile2:
  Id: 1731
  ENG: "It is an extremely fertile world. Its oceans and forests teem with life, its soil is rich with nutrients, and the climate is perfectly suited to agriculture. "
+ FRA: "C'est un monde extrêmement fertile. Ses océans et ses forêts débordent de vie, son sol est riche en nutriments, et le climat se prête parfaitement à l'agriculture. "
  RUS: "Это очень плодородный мир. В океанах и лесах кипит жизнь; почва богата питательными веществами, а климат идеально подходит для развития земледелия. "
  SPA: "Es un mundo sumamente fértil. Sus océanos y bosques rebosan de vida, su suelo es rico en nutrientes y el clima es perfecto para la agricultura. "
  UKR: "Це надзвичайно родючий світ. Його океани та ліси кишать життям, ґрунти багаті на поживні речовини, а клімат ідеально підходить для сільського господарства."
@@ -8287,6 +8486,7 @@ ItIsAnExtremelyFertile2:
 TheCombinationOfExtremeHeat:
  Id: 1732
  ENG: "The combination of extreme heat and extreme humidity have turned this planet into a sauna world. Scans reveal a dizzying amount of life on this planet and a colony could thrive here if the colonists could adapt to the heat and the mud. "
+ FRA: "La combinaison de chaleur et d'humidité extrêmes a fait de cette planète un monde-étuve. Les scans révèlent une vie foisonnante, et une colonie pourrait y prospérer si les colons s'adaptaient à la chaleur et à la boue. "
  RUS: "Сочетание высокой температуры и высокой влажности превратили этот мир в самую настоящую сауну. Сканирование выявило огромное разнообразие форм жизни на этой планете, так что колония здесь также сможет процветать, если колонисты привыкнут жить в этой парилке."
  SPA: "La combinación de un calor y una humedad extremas han vuelto este planeta en un mundo sauna. El escáner revela una cantidad asombrosa de vida y podría florecer una colonia si sus habitantes se adaptaran al calor y al barro. "
  UKR: "Поєднання екстремальної спеки та надзвичайної вологості перетворило цю планету на світ саун. Сканування показує запаморочливу кількість життя на цій планеті, і тут могла б процвітати колонія, якби колоністи змогли пристосуватися до спеки та бруду."
@@ -8294,6 +8494,7 @@ TheCombinationOfExtremeHeat:
 WhileThisIsUnquestionablyA:
  Id: 1733
  ENG: "While this is unquestionably a fertile and vibrant planet, it is just a little too cool to be called a garden world. Scans show that the oceans are cold and rough but filled with life and the landmasses are suitable for agriculture. Life could be good here. "
+ FRA: "Planète incontestablement fertile et vivante, mais un peu trop fraîche pour mériter le nom de monde-jardin. Les scans montrent des océans froids et agités mais pleins de vie, et des terres propices à l'agriculture. La vie pourrait être douce ici. "
  RUS: "Эта планета, безусловно, плодородна, но все же климат на ней слишком холодный, так что райским садом ее не назвать. Океаны холодны и неприветливы, но его обитатели многочисленны и разнообразны, а земля вполне подходит для возделывания. Вполне можно жить. "
  SPA: "Aunque es un planeta indudablemente fértil y lleno de vida, hace demasiado frío para considerarse un jardín planetario. El escáner muestra que los océanos son fríos y encrespados, pero están plagados de vida, y las masas de tierra son aptas para la agricultura. La vida podría estar bien aquí. "
  UKR: "Хоча це, безсумнівно, родюча і яскрава планета, вона трохи занадто прохолодна, щоб називатися світом для садівництва. Сканування показує, що океани холодні і бурхливі, але наповнені життям, а суша придатна для сільського господарства. Життя тут може бути гарним."
@@ -8301,6 +8502,7 @@ WhileThisIsUnquestionablyA:
 MountainsDesertsTundrasForestsOceans:
  Id: 1734
  ENG: "Mountains, deserts, tundras, forests, oceans, and many other environments drift past your viewports. Life has found many different ways to survive and thrive on this planet and there is no question that it would make an extraordinary home for colonists."
+ FRA: "Montagnes, déserts, toundras, forêts, océans : mille environnements défilent derrière les hublots. La vie a trouvé ici bien des manières de survivre et de prospérer — un foyer extraordinaire pour des colons."
  RUS: "Мимо ваших иллюминаторов последовательно проплывают горы, пустыни, тундра, леса, океаны... Жизнь на этой планете очень разнообразна, и нет никаких сомнений в том, что она станет прекрасным новым домом для колонистов, которые прибудут на нее."
  SPA: "Se pueden observar montañas, desiertos, tundras, bosques y muchos otros entornos. La vida ha encontrado numerosas formas de abrirse paso y prosperar en este planeta; no cabe duda de que sería un hogar extraordinario para los colonos."
  UKR: "Гори, пустелі, тундри, ліси, океани та багато інших середовищ пропливають повз ваш оглядовий екран. Життя знайшло багато різних способів вижити і процвітати на цій планеті, і немає сумнівів, що вона стала б чудовим домом для колоністів."
@@ -8308,6 +8510,7 @@ MountainsDesertsTundrasForestsOceans:
 ItHasAmpleNaturalResources:
  Id: 1735
  ENG: "It has ample natural resources and can easily sustain a large population. Its soil is adequate for agricultural purposes and the climate allows a suitable growing season. "
+ FRA: "Elle offre d'amples ressources naturelles et peut aisément nourrir une grande population. Son sol convient à l'agriculture et le climat autorise une vraie saison de culture. "
  RUS: "На этой планете достаточно природных ресурсов; кроме того, она вполне способна вместить и прокормить большое население. Почвы вполне пригодны для земледелия, и климат ему также вполне благоприятствует. "
  SPA: "Dispone de cuantiosos recursos naturales y puede mantener fácilmente a una población grande. El suelo es apto para fines agrícolas y el clima permite periodos de cultivo fructífero. "
  UKR: "Планета має достатньо природних ресурсів і може легко утримувати велику кількість населення. Ґрунти придатні для сільськогосподарських цілей, а клімат забезпечує відповідний вегетаційний період."
@@ -8315,6 +8518,7 @@ ItHasAmpleNaturalResources:
 DunesOfSunscorchedSandRise:
  Id: 1736
  ENG: "Dunes of sun-scorched sand rise and fall over the landscape like ocean waves. From orbit, you can see dozens of frenzied storms whirling the sands around at lethal speeds. There are no sources of liquid water exposed to the sky. Life on this planet would be possible, but it would be harsh. "
+ FRA: "Des dunes de sable brûlé par le soleil ondulent sur le paysage comme des vagues. Depuis l'orbite se distinguent des dizaines de tempêtes frénétiques brassant le sable à des vitesses mortelles. Aucune eau liquide à ciel ouvert. La vie y serait possible, mais rude. "
  RUS: "Залитые солнцем дюны повсюду, насколько хватает глаза. С орбиты вы видите песчаные бури, гоняющие по поверхности планеты смертоносные вихри. Воды нигде не видно. Жизнь на этой планете, вероятно, возможна, но она точно будет несладкой."
  SPA: "Las dunas de arena abrasadas por el sol surcan el paisaje como las olas de un mar infinito. Desde la órbita se aprecian decenas de furibundas tormentas que arremolinan las arenas a velocidades letales. No hay fuentes de agua líquida en contacto con la atmósfera. La vida en este planeta sería posible, pero en unas condiciones terribles. "
  UKR: "Дюни випаленого сонцем піску здіймаються і опускаються над ландшафтом, наче океанські хвилі. З орбіти можна побачити десятки шалених буревіїв, що закручують піски на смертельних швидкостях. У відкритому небі немає джерел рідкої води. Життя на цій планеті було б можливим, але воно було б суворим."
@@ -8322,6 +8526,7 @@ DunesOfSunscorchedSandRise:
 ScansRevealThatThisPlanet:
  Id: 1737
  ENG: "Scans reveal that this planet is a shadow of what it may once have been, or perhaps could have been. The oceans are surprisingly infertile, perhaps due to a thinner atmosphere than what would be optimal. The land-masses are mostly coral atolls or volcanic protrusions. It is not an inhospitable world but neither is it a vibrant one. "
+ FRA: "Les scans révèlent une planète qui n'est que l'ombre de ce qu'elle fut — ou aurait pu être. Les océans sont étonnamment infertiles, sans doute à cause d'une atmosphère trop mince. Les terres se réduisent à des atolls coralliens et des pointements volcaniques. Un monde ni inhospitalier ni vibrant. "
  RUS: "Сканирование показало, что сейчас эта планета представляет собой лишь тень былого великолепия. Океаны на удивление пустынны - вероятно, это следствие сильно разреженной атмосферы. Участки суши по большей части представлены коралловыми атоллами и вулканическими образованиями. Этот мир пригоден для жизни, но далеко не идеален."
  SPA: "El escáner muestra que este planeta es una sombra de lo que fue antaño o de lo que pudo haber sido. Los océanos son sorprendentemente estériles, quizá por lo fina que es su atmósfera, que dista mucho de ser óptima. Las masas de tierra son atolones de coral o protuberancias volcánicas. No es un mundo inhóspito, pero tampoco tiene mucha vida. "
  UKR: "Сканування показує, що ця планета є тінню того, чим вона колись була, або, можливо, могла б бути. Океани напрочуд безплідні, можливо, через розріджену атмосферу, яка була б оптимальною. Суша - це здебільшого коралові атоли або вулканічні виступи. Це не є непривітним світом, але й не є яскравим світом."
@@ -8329,6 +8534,7 @@ ScansRevealThatThisPlanet:
 HoweverScansRevealGeothermalActivity:
  Id: 1738
  ENG: "However, scans reveal geothermal activity beneath the surface and surprising biodiversity in the waters beneath the ice. With a thin but functional atmosphere, it would be possible for colonists to eek out a living on this planet. Whether or why they would want to is another question entirely. "
+ FRA: "Cependant, les scans révèlent une activité géothermique sous la surface et une biodiversité surprenante dans les eaux sous la glace. Avec une atmosphère mince mais fonctionnelle, des colons pourraient y subsister. Resterait à savoir pourquoi ils le voudraient. "
  RUS: "Однако сканирование выявило геотермальную активность и значительное биоразнообразие в водах подо льдом. Атмосфера здесь разреженная, но все же пригодная для жизни, и колонисты, скорее всего, смогли бы здесь выжить. Другое дело, зачем им это - но это уже другой вопрос. "
  SPA: "En todo caso, el escáner revela actividad geotérmica debajo de la superficie y una sorprendente biodiversidad en las aguas que hay bajo el hielo. Su atmósfera es delgada pero funcional, por lo que los colonos podrían tratar de vivir en este planeta. Si estarían dispuestos a ello y por qué, es otra cuestión. "
  UKR: "Однак сканування виявило геотермальну активність під поверхнею і дивовижне біорізноманіття у водах під льодом. З розрідженою, але функціональною атмосферою колоністи могли б заробляти собі на життя на цій планеті. Чи захочуть вони цього і чому - це вже інше питання."
@@ -8336,6 +8542,7 @@ HoweverScansRevealGeothermalActivity:
 ThisPlanetAppearsLushAnd:
  Id: 1739
  ENG: "This planet appears lush and green from orbit, but upon closer inspection, scans reveal that it is in fact entirely covered in an aggressive and resilient strain of algae. Claiming land to farm here would be an uphill battle. "
+ FRA: "Cette planète paraît verte et luxuriante depuis l'orbite, mais les scans révèlent qu'elle est en réalité entièrement couverte d'une algue agressive et résistante. Y gagner des terres cultivables serait un combat de chaque instant. "
  RUS: "С орбиты эта планета выглядит зеленой и цветущей, но при ближайшем рассмотрении выясняется, что вся ее поверхность покрыта агрессивными и устойчивыми морскими водорослями. Заниматься здесь земледелием - значит, вести с ними постоянную борьбу. "
  SPA: "Este planeta parece verde y exuberante desde la órbita, pero al examinarlo más de cerca, el escáner revela que en realidad está cubierto de una variedad de alga muy agresiva y resistente. Tratar de cultivar la tierra aquí sería una tarea ardua. "
  UKR: "З орбіти ця планета виглядає пишною і зеленою, але при ближчому розгляді сканування показує, що насправді вона повністю вкрита агресивним і стійким штамом водоростей. Отримати тут землю для ведення сільського господарства буде нелегкою справою."
@@ -8343,6 +8550,7 @@ ThisPlanetAppearsLushAnd:
 ThisPlanetsEcosystemIsDivided:
  Id: 1740
  ENG: "This planet's eco-system is divided between the steppe-dwelling creatures that reside on the planet surface and the canyon-dwelling creatures that live in the deep fissures carved through the landscape. "
+ FRA: "L'écosystème de cette planète se partage entre les créatures des steppes de la surface et celles des canyons qui peuplent les profondes fissures entaillant le paysage. "
  RUS: "Экосистема этой планеты состоит из двух основных частей - обитатели степей на поверхности планеты и существа, живущие в глубоких расселинах, разрезающих ландшафт. "
  SPA: "El ecosistema de este planeta se divide entre criaturas que habitan en las estepas de la superficie y las que moran en las profundas grietas y cañones que esculpen el paisaje. "
  UKR: "Екосистема цієї планети розділена між степовими мешканцями, які живуть на поверхні планети, та мешканцями каньйонів, які живуть у глибоких тріщинах, прорізаних у ландшафті."
@@ -8350,6 +8558,7 @@ ThisPlanetsEcosystemIsDivided:
 ACoolPlanetaryTemperatureAnd:
  Id: 1741
  ENG: "A cool planetary temperature and a layer of permanently frozen subsoil prevents this planet from developing a truely thriving ecosystem. Even so, life has found a way here. Fish swim in the frigid seas and herd animals roam the landscape in search of food. Living here is possible, but not for the faint of heart."
+ FRA: "Une température planétaire fraîche et une couche de sous-sol gelé en permanence empêchent cette planète de développer un écosystème vraiment florissant. La vie s'y est pourtant frayé un chemin : des poissons nagent dans les mers glacées, des troupeaux parcourent le paysage en quête de nourriture. Vivre ici est possible, mais pas pour les timorés."
  RUS: "Холодный климат и слой вечной мерзлоты не позволили этой планете обзавестись обширной процветающей экосистемой. Но даже тут есть жизнь. В холодных морях водится рыба, а по тундре бродят стадные травоядные животные в поисках пищи. Жить тут можно, но это испытание точно не для слабых духом."
  SPA: "La temperatura del planeta es fría y hay un estrato permanente de subsuelo helado que impide el desarrollo de un ecosistema floreciente. Aun así, la vida ha logrado abrirse paso. Los peces abundan en los gélidos mares y manadas de animales deambulan por la superficie en busca de alimento. La vida aquí es posible, pero no para los pusilánimes."
  UKR: "Прохолодна планетарна температура і шар постійно замерзлих надр не дають цій планеті розвинути по-справжньому процвітаючу екосистему. Попри це, життя знайшло сюди шлях. У холодних морях плаває риба, а стада тварин блукають ландшафтом у пошуках їжі. Життя тут можливе, але не для людей зі слабкими нервами."
@@ -8357,6 +8566,7 @@ ACoolPlanetaryTemperatureAnd:
 ItAppearsThatSomeEcological:
  Id: 1742
  ENG: "It appears that some ecological disaster has rendered this planet less habitable that it could potentially have been. Thick cloud cover has cooled this planet and dampened the development of life. It is possible to live off of the land here, but it would be difficult."
+ FRA: "Une catastrophe écologique semble avoir rendu cette planète moins habitable qu'elle n'aurait pu l'être. Une épaisse couverture nuageuse l'a refroidie et a freiné le développement de la vie. Vivre de la terre y est possible, mais difficile."
  RUS: "Похоже, что в результате какой-то экологической катастрофы условия жизни на этой планете стали гораздо хуже, чем могли бы быть. Густой облачный покров вызвал падение температуры и затормозил развитие жизни. Земля здесь сможет прокормить колонистов - но это будет борьба за выживание. "
  SPA: "Parece que algún desastre ecológico ha vuelto este planeta menos habitable de lo que podría haber sido. La espesura de las nubes ha enfriado el planeta y afectado al desarrollo de la vida. Se podría vivir aquí, pero no sería fácil."
  UKR: "Схоже, якась екологічна катастрофа зробила цю планету менш придатною для життя, ніж вона могла б бути потенційно. Густий хмарний покрив охолодив цю планету і призупинив розвиток життя. Жити за рахунок землі тут можна, але це буде важко."
@@ -8364,6 +8574,7 @@ ItAppearsThatSomeEcological:
 ItHasADifficultBut:
  Id: 1743
  ENG: "It has a difficult but habitable environment, and while it is perfectly capable of supporting basic agriculture, population growth would be somewhat stymied here. "
+ FRA: "Son environnement est rude mais habitable : l'agriculture de base y est possible, mais la croissance démographique s'y trouverait quelque peu bridée. "
  RUS: "Эта планета пригодна для заселения и годится для земледелия, но жить тут будет трудно, а население будет прирастать достаточно медленно. "
  SPA: "Cuenta con un entorno habitable y, si bien es perfectamente apto para mantener una agricultura básica, el crecimiento demográfico sería más bien escaso. "
  UKR: "Вона має складні, але придатні для життя умови, і хоча вона цілком здатна підтримувати базове сільське господарство, зростання населення тут буде дещо стримуватися."
@@ -8371,6 +8582,7 @@ ItHasADifficultBut:
 ToxicGasesPermeateTheAtmosphere:
  Id: 1744
  ENG: "Toxic gases permeate the atmosphere and magma flows across the landscape in great rivers. Enormous volcanos spew ash and fire into the sky on every horizon. "
+ FRA: "Des gaz toxiques saturent l'atmosphère et le magma coule en grands fleuves sur le paysage. À chaque horizon, d'énormes volcans crachent cendres et feu vers le ciel. "
  RUS: "Атмосфера этой планеты насыщена ядовитыми газами; повсюду текут реки раскаленной магмы. Огромные вулканы выбрасывают в атмосферу облака пепла. Это настоящий ад. "
  SPA: "Los gases tóxicos impregnan la atmósfera y el magma fluye por la superficie en grandes ríos. En el horizonte no se ven más que enormes volcanes escupiendo ceniza y fuego al cielo. "
  UKR: "Токсичні гази пронизують атмосферу, а магма розтікається по ландшафту великими ріками. Величезні вулкани вивергають попіл і вогонь у небо на кожному горизонті."
@@ -8378,6 +8590,7 @@ ToxicGasesPermeateTheAtmosphere:
 ItsAtmosphereIsComprisedLargely:
  Id: 1745
  ENG: "Its atmosphere is comprised largely of hydrogen and helium, with trace amounts of methane. This planet's superheated liquid mantle make it unsuitable for colonization."
+ FRA: "Son atmosphère se compose essentiellement d'hydrogène et d'hélium, avec des traces de méthane. Son manteau liquide surchauffé la rend impropre à la colonisation."
  RUS: "Ее атмосфера по большей части состоит из водорода и гелия со следовыми количествами метана. Перегретая жидкая мантия планеты - еще одна причина ее непригодности для колонизации. "
  SPA: "Su atmósfera está compuesta en gran parte por hidrógeno y helio con cantidades residuales de metano. El manto líquido supercaliente de este planeta hace que no sea apto para la colonización."
  UKR: "Її атмосфера складається здебільшого з водню та гелію, з незначними домішками метану. Перегріта рідка мантія цієї планети робить її непридатною для колонізації."
@@ -8385,6 +8598,7 @@ ItsAtmosphereIsComprisedLargely:
 WithNoAtmosphereToSpeak:
  Id: 1746
  ENG: "With no atmosphere to speak of and a temperature only a few degrees above absolute zero, this planet is extraordinarily treacherous to advanced life-forms. Pools of liquid helium and massive boulders of frozen hydrogren mark the landscape. Surface agriculture would be totally impossible here."
+ FRA: "Sans atmosphère digne de ce nom et à quelques degrés à peine du zéro absolu, cette planète est extraordinairement périlleuse pour toute forme de vie avancée. Des mares d'hélium liquide et d'énormes blocs d'hydrogène gelé marquent le paysage. Toute agriculture de surface y serait impossible."
  RUS: "Здесь практически нет атмосферы как таковой, а температура превышает абсолютный ноль всего на несколько градусов. Высокоорганизованные формы жизни здесь просто не выживут. Ландшафт состоит из луж жидкого гелия и глыб замерзшего водорода. Естественное земледелие здесь невозможно в принципе. "
  SPA: "Sin una atmósfera propiamente dicha y temperaturas apenas unos grados por encima del cero absoluto, este planeta es tremendamente traicionero para las formas de vida avanzadas. El paisaje está caracterizado por bolsas de helio líquido y enormes rocas de hidrógeno. La agricultura en la superficie sería totalmente imposible."
  UKR: "Не маючи атмосфери, про яку можна говорити, і температурою лише на кілька градусів вище абсолютного нуля, ця планета є надзвичайно підступною для розвинутих форм життя. Калюжі рідкого гелію та масивні валуни замерзлого гідрогену позначають ландшафт. Наземне сільське господарство тут було б абсолютно неможливим."
@@ -8392,6 +8606,7 @@ WithNoAtmosphereToSpeak:
 ThisPlanetsRoughTerrainAnd:
  Id: 1747
  ENG: "This planet's rough terrain and harsh climate would provide great difficulties to the unprepared settler. There are few plots of arable land and water is only found deep in the fissures that are cut through the planet's surface."
+ FRA: "Le terrain accidenté et le climat rude de cette planète mettraient en grande difficulté le colon mal préparé. Les parcelles arables sont rares et l'eau ne se trouve qu'au fond des fissures qui entaillent la surface."
  RUS: "Суровый климат и каменистая поверхность этой планеты создадут немало трудностей для неподготовленных поселенцев. Здесь очень мало участков пахотной земли, а вода встречается только на дне самых глубоких расселин. "
  SPA: "El escarpado terreno de este planeta y las inclemencias del clima pondrían en serias dificultades a los pobladores sin preparación. Hay pocas parcelas de tierra cultivable y el agua solo se encuentra a grandes profundidades, en las fisuras que recorren el planeta."
  UKR: "Нерівний рельєф і суворий клімат планети створили б великі труднощі для непідготовленого поселенця. Тут мало орних земель, а вода є лише глибоко в тріщинах, що прорізають поверхню планети."
@@ -8399,6 +8614,7 @@ ThisPlanetsRoughTerrainAnd:
 LargeLifelessPlainsDominateThe:
  Id: 1748
  ENG: "Large, lifeless plains dominate the landmasses. Terrible winds and storms rage all over the globe. What little water there is remains frozen except near the equator. Life here would be difficult."
+ FRA: "De grandes plaines sans vie dominent les terres. Des vents et tempêtes terribles font rage sur tout le globe. Le peu d'eau reste gelé hors de l'équateur. La vie y serait difficile."
  RUS: "Земля здесь по большей части представляет собой безжизненную равнину, над которой воют ветра и бушуют ураганы. Воды здесь мало и она давно замерзла везде, кроме самого экватора. Выжить здесь будет очень непросто."
  SPA: "Grandes llanuras sin vida dominan las masas de tierra y terribles vientos y tormentas azotan todo el planeta. La escasa agua que hay está congelada salvo en el ecuador. Sería difícil vivir aquí."
  UKR: "Великі, мляві рівнини домінують над суходолом. Страшні вітри та шторми вирують по всій земній кулі. Та невелика кількість води, що є, залишається замерзлою лише поблизу екватора. Життя тут було б важким."
@@ -8406,6 +8622,7 @@ LargeLifelessPlainsDominateThe:
 DunesOfSunscorchedSandTower:
  Id: 1749
  ENG: "Dunes of sun-scorched sand tower over the landscape like tidal waves frozen in time. The entire globe seems covered in sand-storms. Orbital scanners can find no traces of water or plant life. This is a cursed world, and only the bravest, or the stupidest, would colonize here."
+ FRA: "Des dunes de sable brûlé dominent le paysage comme des raz-de-marée figés. Le globe entier semble pris dans les tempêtes de sable. Les scanners orbitaux ne trouvent aucune trace d'eau ni de vie végétale. Un monde maudit — seuls les plus braves, ou les plus sots, viendraient s'y installer."
  RUS: "Песчаные дюны, простирающиеся до горизонта, похожи на застывшие во времени океанские волны. Повсюду бушуют песчаные бури. Орбитальные сканеры не выявили ни наличия источников воды, ни признаков растительной жизни. Это проклятый мир, и решиться заселить его могут только безрассудные смельчаки или глупцы. "
  SPA: "Las dunas de arena abrasadas por el sol sobresalen como olas congeladas en el tiempo. El planeta entero parece cubierto de tormentas de arena. Los escáneres orbitales no hallan rastros de agua ni de vida vegetal. Este es un mundo maldito y solo los más valientes, o los más estúpidos, intentarían colonizarlo."
  UKR: "Дюни випаленого сонцем піску височіють над ландшафтом, наче застиглі в часі приливні хвилі. Здається, що вся земна куля вкрита піщаними бурями. Орбітальні сканери не можуть знайти жодних слідів води чи рослинного життя. Це проклятий світ, і лише найсміливіші або найдурніші могли б колонізувати його."
@@ -8413,6 +8630,7 @@ DunesOfSunscorchedSandTower:
 GasGiantsLikeThisPlanet:
  Id: 1750
  ENG: "Gas giants like this planet typically serve as excellent sources of the various gases needed for science and industry. Their atmospheres, however, tend to be extremely hostile. Only the most specialized equipment can survive inside the planet's atmosphere."
+ FRA: "Les géantes gazeuses de ce type sont d'excellentes sources des gaz nécessaires à la science et à l'industrie. Leur atmosphère est en revanche extrêmement hostile : seul l'équipement le plus spécialisé y survit."
  RUS: "Газовые гиганты вроде этой планеты обычно служат отличными источниками различных газов, необходимых для науки и промышленности. Их атмосфера при этом обычно бывает очень агрессивной, и без специализированного оборудования в ней просто не выжить."
  SPA: "Los gigantes gaseosos como este planeta suelen ser excelentes fuentes de recursos y ofrecen los distintos gases que precisan la ciencia y la industria. Sus atmósferas, sin embargo, tienden a ser sumamente hostiles. Solo con el equipo más especializado se puede sobrevivir en estas condiciones atmosféricas."
  UKR: "Газові гіганти, як наша планета, зазвичай слугують чудовими джерелами різноманітних газів, необхідних для науки та промисловості. Однак їхня атмосфера, як правило, надзвичайно ворожа. Лише найспеціалізованіше обладнання може вижити в атмосфері планети."
@@ -8420,6 +8638,7 @@ GasGiantsLikeThisPlanet:
 TheAtmosphereHereIsVery:
  Id: 1751
  ENG: "The atmosphere here is very thin and as a result, radiation levels are somewhat high. The soil is composed of inorganic dust and sand that is not suitable for agriculture."
+ FRA: "L'atmosphère est ici très mince et les niveaux de radiation en conséquence assez élevés. Le sol, fait de poussières et de sables inorganiques, ne convient pas à l'agriculture."
  RUS: "Атмосфера здесь очень разреженная, и, как следствие, уровень радиации достаточно высок. Почва состоит из неорганической пыли и песка и для земледелия совершенно непригодна. "
  SPA: "Aquí la atmósfera es muy fina y por eso los niveles de radiación son algo altos. El suelo está compuesto de polvo inorgánico y arena no aptos para la agricultura."
  UKR: "Атмосфера тут дуже розріджена і, як наслідок, рівень радіації дещо високий. Ґрунт складається з неорганічного пилу і піску, який не придатний для сільського господарства."
@@ -8427,6 +8646,7 @@ TheAtmosphereHereIsVery:
 TheLifeCycleOnThis:
  Id: 1752
  ENG: "The life cycle on this planet has adapted in response to the regular, high-intensity electrical storms which wrack this planet. While farming here in the traditional manner is not possible, cultivation of native species would be moderately viable. "
+ FRA: "Le cycle de la vie s'est adapté aux orages électriques réguliers et d'une rare intensité qui balaient cette planète. L'agriculture traditionnelle y est impossible, mais la culture d'espèces indigènes resterait modérément viable. "
  RUS: "Жизненный цикл на этой планете со временем адаптировался к регулярным интенсивным грозам. Традиционное земледелие здесь невозможно, но культивация местных видов может дать приемлемые результаты. "
  SPA: "El ciclo de vida de este planeta se ha adaptado a las tormentas eléctricas de alta intensidad, que lo asolan periódicamente. Aunque la agricultura tradicional no es posible, el cultivo de especies nativas podría ser moderadamente viable. "
  UKR: "Життєвий цикл на цій планеті адаптувався у відповідь на регулярні високоінтенсивні електричні бурі, які руйнують її. Хоча сільське господарство тут неможливе у традиційний спосіб, вирощування місцевих видів було б помірно життєздатним."
@@ -8434,6 +8654,7 @@ TheLifeCycleOnThis:
 ColonizationOfThisPlanetIs:
  Id: 1753
  ENG: "Colonization of this planet is simply not possible given its geological disposition. "
+ FRA: "La colonisation de cette planète est tout simplement impossible au vu de sa disposition géologique. "
  RUS: "Колонизация этой планеты, учитывая ее геологические особенности, невозможна. "
  SPA: "La colonización de este planeta no es posible debido a su disposición geográfica. "
  UKR: "Колонізація цієї планети просто неможлива з огляду на її геологічну будову."
@@ -8441,6 +8662,7 @@ ColonizationOfThisPlanetIs:
 However2:
  Id: 1754
  ENG: "However, "
+ FRA: "Cependant, "
  RUS: "Однако "
  SPA: "No obstante, "
  UKR: "Однак, "
@@ -8448,6 +8670,7 @@ However2:
 ScansRevealThatThisIs:
  Id: 1755
  ENG: "scans reveal that this is an extremely mineral rich planet, with many valuable ore veins located very close to the planet's surface. Mining would be easy here. "
+ FRA: "les scans révèlent une planète extrêmement riche en minéraux, aux filons précieux affleurant près de la surface. L'extraction y serait aisée. "
  RUS: "сканирование показало, что планета чрезвычайно богата минералами, причем многие залежи ценной руды находятся очень близко к поверхности планеты. Она просто создана для горной промышленности. "
  SPA: "El escáner revela que se trata de un planeta riquísimo en minerales, con muchas y valiosas vetas situadas muy cerca de la superficie. La explotación minera sería fácil. "
  UKR: "Сканування показує, що це надзвичайно багата на мінерали планета, з багатьма цінними рудними жилами, розташованими дуже близько до поверхні планети. Видобуток корисних копалин тут буде простим."
@@ -8455,6 +8678,7 @@ ScansRevealThatThisIs:
 ScansRevealThatThisPlanet2:
  Id: 1756
  ENG: "scans reveal that this planet is relatively mineral rich and mining here will produce excellent results. "
+ FRA: "les scans révèlent une planète relativement riche en minéraux : l'extraction y donnera d'excellents résultats. "
  RUS: "сканирование показало, что планета весьма богата минералами, так что горнодобывающая промышленность будет здесь процветать. "
  SPA: "El escáner revela que este planeta es relativamente rico en minerales y que aquí las minas darían unos resultados excelentes. "
  UKR: "Сканування показує, що ця планета відносно багата на корисні копалини, і видобуток корисних копалин тут дасть чудові результати."
@@ -8462,6 +8686,7 @@ ScansRevealThatThisPlanet2:
 ScansRevealThatThisPlanet3:
  Id: 1757
  ENG: "scans reveal that this planet has an average abundance of mineral wealth and mining here will produce good results. "
+ FRA: "les scans révèlent une abondance minérale moyenne : l'extraction y donnera de bons résultats. "
  RUS: "сканирование показало, что на планете присутствуют ценные минералы, и их добыча может оказаться выгодной. "
  SPA: "El escáner revela que este planeta tiene una abundancia normal de minerales y que la minería produciría buenos resultados. "
  UKR: "Сканування показує, що ця планета має середню кількість мінеральних багатств, і видобуток корисних копалин тут дасть хороші результати."
@@ -8469,6 +8694,7 @@ ScansRevealThatThisPlanet3:
 ScansRevealThatThisIs2:
  Id: 1758
  ENG: "Scans reveal that this is an extremely mineral rich planet, with many valuable ore veins located very close to the planet's surface. Mining would be easy here. "
+ FRA: "Les scans révèlent une planète extrêmement riche en minéraux, aux filons précieux affleurant près de la surface. L'extraction y serait aisée. "
  RUS: "Сканирование показало, что планета чрезвычайно богата минералами, причем многие залежи ценной руды находятся очень близко к поверхности планеты. Она просто создана для горной промышленности. "
  SPA: "El escáner revela que se trata de un planeta riquísimo en minerales, con muchas y valiosas vetas situadas muy cerca de la superficie. La explotación minera sería fácil. "
  UKR: "Сканування показує, що це надзвичайно багата на мінерали планета, з багатьма цінними рудними жилами, розташованими дуже близько до поверхні планети. Видобуток корисних копалин тут був би простим."
@@ -8476,6 +8702,7 @@ ScansRevealThatThisIs2:
 IsRelativelyMineralRichAnd:
  Id: 1759
  ENG: " is relatively mineral rich and mining here will produce good results. "
+ FRA: " est relativement riche en minéraux : l'extraction y donnera de bons résultats. "
  RUS: " весьма богата минералами, так что горнодобывающая промышленность будет здесь процветать. "
  SPA: " es relativamente rico en minerales y aquí las minas obtendrían unos buenos resultados. "
  UKR: " є відносно багатим на корисні копалини, і видобуток корисних копалин тут дасть хороші результати."
@@ -8483,6 +8710,7 @@ IsRelativelyMineralRichAnd:
 HasAnAverageAbundanceOf:
  Id: 1760
  ENG: " has an average abundance of mineral wealth and mining here will produce decent results. "
+ FRA: " présente une abondance minérale moyenne : l'extraction y donnera des résultats corrects. "
  RUS: " имеет месторождения ценных минералов, и их добыча может оказаться выгодной. "
  SPA: " tiene una abundancia normal de minerales y la minería aquí produciría resultados razonables. "
  UKR: " має середні запаси корисних копалин, і видобуток корисних копалин тут дасть пристойні результати."
@@ -8490,6 +8718,7 @@ HasAnAverageAbundanceOf:
 SuffersFromALackOf:
  Id: 1761
  ENG: " suffers from a lack of useful minerals that are easily accessible. Mining is possible here but it will be hard work to extract valuable ores. "
+ FRA: " souffre d'un manque de minéraux utiles facilement accessibles. L'extraction y est possible, mais arracher des minerais de valeur sera un dur labeur. "
  RUS: " не имеет легкодоступных месторождений минералов. Добывать их здесь можно, но извлечение руды из недр планеты будет очень трудоемким процессом."
  SPA: " carece de minerales útiles que sean fácilmente extraíbles. La explotación minera es posible, pero costará mucho trabajo conseguir minerales valiosos. "
  UKR: " страждає від нестачі корисних копалин, які є легкодоступними. Видобуток корисних копалин тут можливий, але видобуток цінних руд буде важкою працею."
@@ -8497,6 +8726,7 @@ SuffersFromALackOf:
 LacksSignificantVeinsOfValuable:
  Id: 1762
  ENG: " lacks significant veins of valuable minerals and would make a poor planet for a mining operation. "
+ FRA: " manque de filons significatifs de minéraux précieux et ferait une piètre planète minière. "
  RUS: " не имеет значимых месторождений минералов и поэтому не подходит для добычи руды."
  SPA: " carece de vetas importantes de minerales valiosos y sería un mal planeta para abrir minas. "
  UKR: " не має значних запасів цінних мінералів, що робить її поганою планетою для видобутку корисних копалин."
@@ -8504,6 +8734,7 @@ LacksSignificantVeinsOfValuable:
 ASolitaryOutpostHasTaken:
  Id: 1763
  ENG: "A solitary outpost has taken root here. "
+ FRA: "Un avant-poste solitaire a pris racine ici. "
  RUS: "Здесь обосновался одинокий аванпост. "
  SPA: "Aquí ha echado raíces un solitario puesto avanzado. "
  UKR: "Тут прижився самотній форпост."
@@ -8511,6 +8742,7 @@ ASolitaryOutpostHasTaken:
 WhileAllOfTheEconomic:
  Id: 1764
  ENG: "While all of the economic activity on the planet is centered in and around the outpost, even now the more intrepid colonists are staking their claims to the vast amount of unsettled land outside its perimeter. "
+ FRA: "Toute l'activité économique de la planète se concentre autour de l'avant-poste, mais les colons les plus intrépides revendiquent déjà les vastes terres vierges au-delà de son périmètre. "
  RUS: "В то время как вся экономическая активность на планете сосредоточена на самом аванпосту и в непосредственной близости от него, наиболее отважные и предприимчивые колонисты уже пытаются застолбить за собой участки неосвоенной земли за его пределами. "
  SPA: "Si bien toda la actividad económica del planeta gira en torno al puesto avanzado, los colonos más intrépidos están empezando a reclamar las vastas tierras sin colonizar que se extienden más allá de su perímetro. "
  UKR: "Хоча вся економічна діяльність на планеті зосереджена в аванпості та навколо нього, навіть зараз більш відважні колоністи претендують на величезну кількість незаселених земель за його периметром."
@@ -8518,6 +8750,7 @@ WhileAllOfTheEconomic:
 VastBiodomeComplexesStandReady:
  Id: 1765
  ENG: "Vast biodome complexes stand ready for an influx of new colonists and new economic activity. This barren world may yet thrive. "
+ FRA: "De vastes complexes de biodômes attendent l'afflux de nouveaux colons et d'activité. Ce monde stérile pourrait bien prospérer. "
  RUS: "Огромные биокупола ждут притока новых колонистов и всплеска экономической активности. Этот бесплодный мир, возможно, скоро оживет. "
  SPA: "Las complejas y vastas biosferas están listas para recibir nuevos colonos y actividades económicas. Este mundo árido puede llegar a florecer. "
  UKR: "Величезні комплекси біокуполів готові до припливу нових колоністів і нової економічної діяльності. Цей безплідний світ ще може процвітати."
@@ -8525,6 +8758,7 @@ VastBiodomeComplexesStandReady:
 TheHarshnessOfThisPlanets:
  Id: 1766
  ENG: "The harshness of this planet's climate has restricted growth beyond the outpost's perimeter for the time being, but plans are already underway to expand the outpost with extensive biodome complexes. "
+ FRA: "La rudesse du climat a pour l'heure confiné la croissance au périmètre de l'avant-poste, mais des plans d'extension par de vastes complexes de biodômes sont déjà à l'œuvre. "
  RUS: "Суровость климата этой планеты ограничивает развитие аванпоста, но колонисты планируют расширить его при помощи громадных биокуполов. "
  SPA: "Las duras condiciones climáticas de este planeta han limitado el crecimiento más allá del perímetro del puesto avanzado, pero hay planes en marcha para ampliarlo con extensos complejos biosféricos. "
  UKR: "Суворість клімату цієї планети поки що обмежує зростання за периметром аванпосту, але вже зараз планується розширення аванпосту за рахунок великих комплексів біокуполів."
@@ -8532,6 +8766,7 @@ TheHarshnessOfThisPlanets:
 TheBarrenLandscapeBeyondThe:
  Id: 1767
  ENG: "The barren landscape beyond the outpost's perimeter is completely incapable of supporting life. Even so, plans are already underway to expand the outpost with extensive biodome complexes. "
+ FRA: "Le paysage stérile au-delà du périmètre de l'avant-poste est parfaitement incapable d'abriter la vie. Des plans d'extension par de vastes complexes de biodômes n'en sont pas moins déjà à l'œuvre. "
  RUS: "Бесплодная земля, на которой стоит аванпост, абсолютно непригодна для поддержания жизни. Однако колонисты планируют расширять аванпост при помощи громадных биокуполов. "
  SPA: "La aridez del paisaje más allá del perímetro del puesto avanzado hace imposible la vida. Aun así, hay planes en marcha para ampliarlo con extensos complejos biosféricos. "
  UKR: "Пустельний ландшафт за периметром форпосту абсолютно не придатний для підтримки життя. Попри це, вже розробляються плани розширення форпосту за рахунок розгалужених комплексів біокуполів."
@@ -8539,6 +8774,7 @@ TheBarrenLandscapeBeyondThe:
 ThisColonyIsWellOn:
  Id: 1768
  ENG: "This colony is well on its way to independence and success. The original outpost is now but one of several important economic centers on the planet. "
+ FRA: "Cette colonie est en bonne voie vers l'indépendance et la réussite. L'avant-poste d'origine n'est plus que l'un de ses pôles économiques majeurs. "
  RUS: "Эта колония находится на пути к независимости и процветанию. Первоначальный аванпост теперь является всего лишь одним из многих экономических центров планеты. "
  SPA: "Esta colonia lleva buen camino hacia la independencia y el éxito. El puesto avanzado original es ahora uno más de los importantes centros económicos del planeta. "
  UKR: "Ця колонія на шляху до незалежності та успіху. Первісний форпост зараз є лише одним з кількох важливих економічних центрів на планеті."
@@ -8546,6 +8782,7 @@ ThisColonyIsWellOn:
 EvenSoThereIsStill:
  Id: 1769
  ENG: "Even so, there is still much more room for this planet to grow, and colonists are eager to mark their claims to the unsettled lands. "
+ FRA: "Il reste cependant bien de la place pour grandir, et les colons sont impatients de revendiquer les terres vierges. "
  RUS: "Но в любом случае на планете еще осталось полно свободного места, и колонисты спешат заявить свои права на еще неосвоенные территории. "
  SPA: "Aun así, queda todavía mucho margen para el crecimiento de este planeta y los colonos están ansiosos de reclamar las tierras sin colonizar. "
  UKR: "Попри це, планеті ще є куди рости, і колоністи прагнуть заявити про свої претензії на незаселені землі."
@@ -8553,6 +8790,7 @@ EvenSoThereIsStill:
 InFactHabitableLandHere:
  Id: 1770
  ENG: "In fact, habitable land here is now running somewhat scarce, and the colonists are clamorouing for habitat expansions. "
+ FRA: "De fait, les terres habitables se font rares, et les colons réclament à grands cris des extensions d'habitat. "
  RUS: "Собственно, планета уже заселена очень густо, и колонистам становится непросто дальше расширять заселенные территории. "
  SPA: "De hecho, la tierra habitable empieza a escasear y los colonos exigen la expansión de los hábitats. "
  UKR: "Насправді, придатних для проживання земель тут зараз дещо бракує, і колоністи вимагають розширення ареалу проживання."
@@ -8560,6 +8798,7 @@ InFactHabitableLandHere:
 ThisIsAVibrantColony:
  Id: 1771
  ENG: "This is a vibrant colony with many billions of inhabitants. Several large cities serve as the commercial and industrial hubs. "
+ FRA: "C'est une colonie vibrante, forte de plusieurs milliards d'habitants. Plusieurs grandes villes en sont les pôles commerciaux et industriels. "
  RUS: "Это процветающая колония с населением в несколько миллиардов. Крупные города выполняют функции торговых и экономических центров. "
  SPA: "Esta es una colonia llena de vida con muchos miles de millones de habitantes. Hay varias ciudades que sirven de enclaves industriales y comerciales. "
  UKR: "Це жвава колонія з багатомільярдним населенням. Кілька великих міст слугують комерційними та промисловими центрами."
@@ -8567,6 +8806,7 @@ ThisIsAVibrantColony:
 EvenSoThereIsStill2:
  Id: 1772
  ENG: "Even so, there is still plenty of room for the colony to grow, and there are massive plans underway to continue expanding this planet's infrastructure. "
+ FRA: "Il reste cependant largement de quoi grandir, et d'immenses plans d'extension des infrastructures sont à l'œuvre. "
  RUS: "Но в любом случае колонии еще есть куда расти, и планируется дальнейшее продолжение расширения планетарной инфраструктуры. "
  SPA: "Aún así, queda todavía mucho espacio para que la colonia crezca y hay en marcha ambiciosos proyectos para seguir ampliando las infraestructuras del planeta. "
  UKR: "Незважаючи на це, колонії ще є куди рости, і існують масштабні плани щодо подальшого розширення інфраструктури цієї планети."
@@ -8574,6 +8814,7 @@ EvenSoThereIsStill2:
 InFactHabitableLandHere2:
  Id: 1773
  ENG: "In fact, habitable land here is now running somewhat scarce, and the colonists are clamorouing for habitat expansions. "
+ FRA: "De fait, les terres habitables se font rares, et les colons réclament à grands cris des extensions d'habitat. "
  RUS: "Собственно, планета уже заселена очень густо, и колонистам становится непросто дальше расширять заселенные территории. "
  SPA: "De hecho, la tierra habitable empieza a escasear y los colonos exigen la expansión de los hábitats. "
  UKR: "Насправді, придатних для проживання земель тут зараз дещо бракує, і колоністи вимагають розширення ареалу проживання."
@@ -8581,6 +8822,7 @@ InFactHabitableLandHere2:
 WithAVibrantEconomyAnd:
  Id: 1774
  ENG: "With a vibrant economy and a huge population, this planet has moved beyond colony status and is now considered a Homeworld of many billions of citizens. "
+ FRA: "Économie florissante, population immense : cette planète a dépassé le statut de colonie et compte désormais comme un monde natal pour ses milliards de citoyens. "
  RUS: "С процветающей экономикой и огромным населением эта планета давно переросла обычную колонию, и многие миллиарды жителей, населяющих ее, считают ее своим родным миром. "
  SPA: "Con una economía dinámica y una población numerosa, este planeta ha dejado de ser una colonia para convertirse en un mundo natal con miles de millones de ciudadanos. "
  UKR: "З динамічною економікою та величезним населенням ця планета вийшла за рамки статусу колонії і тепер вважається рідною домівкою для багатьох мільярдів громадян."
@@ -8588,6 +8830,7 @@ WithAVibrantEconomyAnd:
 ThisDenselyPopulatedPlanetIs:
  Id: 1775
  ENG: "This densely populated planet is covered with megacities and suburbs from one end of the globe to the other. It is a flourishing world of science and industry, though its once-majestic wilderness has all bit disappeared in the wake of development. "
+ FRA: "Cette planète densément peuplée est couverte de mégapoles et de banlieues d'un bout à l'autre du globe. Un monde florissant de science et d'industrie, dont la nature autrefois majestueuse a presque disparu sous le développement. "
  RUS: "Эта густонаселенная планета полностью покрыта целой сетью мегаполисов и более мелких городков. Когда-то дикая и неосвоенная планета - теперь же процветающий мир промышленности и науки."
  SPA: "Este planeta densamente poblado está cubierto de una punta a otra de megaciudades y zonas residenciales. Es un mundo donde florecen la industria y la ciencia, aunque haya perdido parte de su espléndida fauna y flora de antaño en aras del desarrollo. "
  UKR: "Ця густонаселена планета вкрита мегаполісами та передмістями від одного кінця земної кулі до іншого. Це процвітаючий світ науки та промисловості, хоча його колись велична дика природа дещо зникла в результаті розвитку."
@@ -8595,6 +8838,7 @@ ThisDenselyPopulatedPlanetIs:
 ThisPlanetIsParticularlyNotable:
  Id: 1776
  ENG: "This planet is particularly notable for its fine ship-building industry. "
+ FRA: "Cette planète est particulièrement réputée pour sa belle industrie navale. "
  RUS: "Эта планета в первую очередь известна своими судостроительными верфями."
  SPA: "Este planeta destaca especialmente por su sofisticada industria naval. "
  UKR: "Ця планета особливо відома своєю прекрасною суднобудівною промисловістю."
@@ -8602,6 +8846,7 @@ ThisPlanetIsParticularlyNotable:
 ThisPlanetIsWellKnown:
  Id: 1777
  ENG: "This planet is well known for its thriving agricultural industry. "
+ FRA: "Cette planète est renommée pour son industrie agricole florissante. "
  RUS: "Эта планета широко известна своим процветающим сельским хозяйством. "
  SPA: "Este planeta es famoso por su próspera industria agrícola. "
  UKR: "Ця планета добре відома своєю процвітаючою сільськогосподарською галуззю."
@@ -8609,6 +8854,7 @@ ThisPlanetIsWellKnown:
 TheQualityOfTheUniversities:
  Id: 1778
  ENG: "The quality of the universities and research institutions of this planet are well-known throughout the galaxy. "
+ FRA: "La qualité des universités et instituts de recherche de cette planète est connue dans toute la galaxie. "
  RUS: "Высокий уровень университетов и научно-исследовательских институтов этой планеты известен по всей галактике. "
  SPA: "La calidad de las universidades e instituciones investigadoras de este planeta es conocida en la galaxia entera. "
  UKR: "Якість університетів та науково-дослідних інститутів цієї планети відома у всій галактиці."
@@ -8616,6 +8862,7 @@ TheQualityOfTheUniversities:
 ThisPlanetIsHeavilyFortified:
  Id: 1779
  ENG: "This planet is heavily fortified and has a strong military culture. "
+ FRA: "Cette planète est lourdement fortifiée et porte une forte culture militaire. "
  RUS: "Эта планета прекрасно защищена и имеет давние военные традиции. "
  SPA: "Este planeta está muy bien fortificado y hace gala de una fuerte cultura militar. "
  UKR: "Ця планета сильно укріплена і має сильну військову культуру."
@@ -8623,6 +8870,7 @@ ThisPlanetIsHeavilyFortified:
 SearchTechnology:
  Id: 1780
  ENG: "Search Technology"
+ FRA: "Rechercher une technologie"
  RUS: "Исследовать Технологию"
  UKR: "Технологія пошуку"
  PTB: "Pesquisar Tecnologia"
