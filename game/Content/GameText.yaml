@@ -239,7 +239,7 @@ FlagColor:
  PTB: "Bandeira + Cor"
 PointsToSpend:
  Id: 30
- ENG: "Points to Spend"
+ ENG: "Points to spend"
  FRA: "Points à répartir"
  RUS: "Доступные очки"
  SPA: "Puntos para gastar"
@@ -693,7 +693,7 @@ PollutedHomeworld:
  PTB: "Mundo Natal Poluído"
 RacesThatHaveBeenFoolish:
  Id: 87
- ENG: "Races that have been foolish enough to heavily pollute their own homeworld have a -0.35 Fertility penalty on their homeworld, making quick colonization a top priority."
+ ENG: "Races that have been foolish enough to heavily pollute their own Homeworld have a -0.35 Fertility penalty on their Homeworld, making quick colonization a top priority."
  FRA: "Les races assez folles pour avoir lourdement pollué leur monde natal subissent une pénalité de fertilité de -0.35 sur celui-ci — coloniser vite devient une priorité absolue."
  RUS: "Расы, по недомыслию загрязнившие свой родной мир получают -0.35 к плодородию на родной планете, что вынуждает ставить колонизацию на первое место в списке приоритетов развития."
  SPA: "Las razas que han sido tan necias como para contaminar indiscriminadamente sus mundos de origen sufren una penalización de -0.35 en su planeta natal, por lo que la colonización exprés será para ellos una prioridad"
@@ -709,7 +709,7 @@ HugeHomeworld:
  PTB: "Mundo Natal Enorme"
 TheRacialHomeworldIsMuch:
  Id: 89
- ENG: "The racial homeworld is much larger than the average planet, allowing 25% more population maximum."
+ ENG: "The racial Homeworld is much larger than the average planet, allowing 25% more population maximum."
  FRA: "Le monde natal de la race est bien plus grand que la planète moyenne et autorise 25 % de population maximale en plus."
  RUS: "Родной мир расы значительно больше средней планеты по размерам, что позволяет разместить на ней на 25% больше населения."
  SPA: "El planeta de origen de la raza es mucho más grande que un planeta normal, por lo que puede albergar un 25% más de población máxima"
@@ -725,7 +725,7 @@ SmallHomeworld:
  PTB: "Mundo Natal Pequeno"
 TheRacialHomeworldIsMuch2:
  Id: 91
- ENG: "The racial homeworld is much smaller than the average planet, allowing 25% less population maximum."
+ ENG: "The racial Homeworld is much smaller than the average planet, allowing 25% less population maximum."
  FRA: "Le monde natal de la race est bien plus petit que la planète moyenne et autorise 25 % de population maximale en moins."
  RUS: "Родной мир расы значительно меньше средней планеты по размерам, из-за чего она вмещает на 25% меньше населения."
  SPA: "El planeta de origen de la raza es mucho más pequeño que un planeta normal, por lo que puede albergar un 25% menos de población máxima"
@@ -757,7 +757,7 @@ Prewarp:
  PTB: "Pré-Dobra"
 PrewarpRacesDiscoveredAnAncient:
  Id: 95
- ENG: "Pre-Warp races discovered an ancient alien vessel buried in the polar ice of their homeworld. They begin the game with a powerful alien cruiser, but possess no star faring technologies and no starbase for ship construction."
+ ENG: "Pre-Warp races discovered an ancient alien vessel buried in the polar ice of their Homeworld. They begin the game with a powerful alien cruiser, but possess no star faring technologies and no starbase for ship construction."
  FRA: "Les races pré-warp ont découvert un vaisseau alien enfoui dans les glaces polaires de leur monde natal. Elles commencent la partie avec un puissant croiseur alien, mais sans aucune technologie spatiale ni base stellaire pour construire des vaisseaux."
  RUS: "Расы в пре-варпе находят в своем родном мире древний инопланетный корабль. Они начинают игру с мощным инопланетным крейсером, но не имеют технологий путешествия в космосе и звездной базы для строительства кораблей."
  SPA: "Las razas con velocidad presupraluminal descubrieron una antigua nave alienígena sepultada en el hielo polar de su planeta natal. Comienzan el juego con un poderoso crucero alienígena, pero no poseen tecnologías para viajes interestelares ni bases estelares para la construcción de naves"
@@ -6958,7 +6958,7 @@ The:
  PTB: "O "
 HomeworldOf:
  Id: 1371
- ENG: " homeworld of "
+ ENG: " Homeworld of "
  RUS: ", родной мир расы "
  SPA: " mundo natal de "
  UKR: " Батьківщина"
@@ -7021,7 +7021,7 @@ NavalTraditionIsVeryStrong:
  PTB: " a tradição naval é muito forte, e pode-se esperar que esta raça tenha uma forte presença de frota por toda a galáxia. "
 AreNaturalSailorsAndShipwrights:
  Id: 1380
- ENG: " are natural sailors and shipwrights, having a long and colorful history of exploring their homeworld's oceans. "
+ ENG: " are natural sailors and shipwrights, having a long and colorful history of exploring their Homeworld's oceans. "
  RUS: " прирожденные моряки и кораблестроители, на протяжении многих столетий бороздившие просторы океанов своего родного мира. "
  SPA: " son constructores navales y marinos natos y tienen una rica historia en exploración oceánica de su mundo natal. "
  UKR: " є природженими моряками та корабельниками, які мають довгу та яскраву історію дослідження океанів рідної планети."
@@ -8580,7 +8580,7 @@ InFactHabitableLandHere2:
  PTB: "Na verdade, a terra habitável aqui começa a ficar um tanto escassa, e os colonos clamam por expansões habitacionais. "
 WithAVibrantEconomyAnd:
  Id: 1774
- ENG: "With a vibrant economy and a huge population, this planet has moved beyond colony status and is now considered a homeworld of many billions of citizens. "
+ ENG: "With a vibrant economy and a huge population, this planet has moved beyond colony status and is now considered a Homeworld of many billions of citizens. "
  RUS: "С процветающей экономикой и огромным населением эта планета давно переросла обычную колонию, и многие миллиарды жителей, населяющих ее, считают ее своим родным миром. "
  SPA: "Con una economía dinámica y una población numerosa, este planeta ha dejado de ser una colonia para convertirse en un mundo natal con miles de millones de ciudadanos. "
  UKR: "З динамічною економікою та величезним населенням ця планета вийшла за рамки статусу колонії і тепер вважається рідною домівкою для багатьох мільярдів громадян."
@@ -10828,7 +10828,7 @@ InTheSandboxGameMode:
  PTB: "No modo de jogo Sandbox, você pode vencer conquistando todos os seus inimigos ou unindo a galáxia em uma aliança. As posições iniciais são equilibradas para que cada Império tenha algum espaço para se expandir antes de encontrar outros Impérios."
 InTheAscensionGameMode:
  Id: 2107
- ENG: "In the Ascension game mode, the goal is to be the first race to ascend to Godhood by capturing the Remnant homeworld at the center of the galaxy."
+ ENG: "In the Ascension game mode, the goal is to be the first race to ascend to Godhood by capturing the Remnant Homeworld at the center of the galaxy."
  FRA: "En mode de jeu Ascension, l'objectif est d'être la première race à s'élever à la divinité en capturant le monde natal des Vestiges au centre de la galaxie."
  RUS: "В режиме \"Вознесение\" цель игры - стать первой расой, достигшей божественности, для чего необходимо захватить родной мир Выживших в центре галактики."
  SPA: "En el modo Ascensión, la meta es ser la primera raza en ascender y convertirse en una divinidad mediante la captura del mundo Remanente, situado en el centro de la galaxia."
@@ -16303,7 +16303,7 @@ ButtonBuildCapitalName:
  PTB: "Construir Capital"
 ButtonBuildCapitalTip:
  Id: 4344
- ENG: "You can build a new capital here, since you do not have any capitals within your empire. If we retake our origin Homeworld, the capital will be removed from this planet and built back in our homeworld."
+ ENG: "You can build a new capital here, since you do not have any capitals within your empire. If we retake our origin Homeworld, the capital will be removed from this planet and built back in our Homeworld."
  FRA: "Vous pouvez construire une nouvelle capitale ici, faute de capitale dans votre empire. Si nous reprenons notre monde natal d'origine, la capitale sera retirée de cette planète et reconstruite sur notre monde natal."
  UKR: "Ви можете побудувати тут нову столицю, оскільки у вашій імперії немає столиць. Якщо ми повернемо собі рідну планету, столицю буде перенесено з цієї планети і побудовано на нашій рідній планеті."
  PTB: "Você pode construir uma nova capital aqui, pois não possui nenhuma capital dentro do seu império. Se retomarmos nosso Mundo Natal original, a capital será removida deste planeta e reconstruída em nosso mundo natal."
@@ -17729,7 +17729,7 @@ Trait_Research_Collaborators_Name:
  PTB: "Colaboradores de Pesquisa"
 Trait_Research_Collaborators_Desc:
  Id: 4958
- ENG: "Your Scientists are known for their desire to collaborate and share Research. 15% Research Benefit from each Alliance instead of the normal 10%."
+ ENG: "Your Scientists are known for their desire to collaborate and share Research. 15% Research benefit from each Alliance instead of the normal 10%."
  FRA: "Vos scientifiques sont connus pour leur désir de collaborer et de partager la recherche. Bonus de recherche de 15 % par alliance au lieu des 10 % habituels."
  UKR: "Ваші вчені відомі своїм бажанням співпрацювати та ділитися дослідженнями. 15% дослідницької вигоди від кожного Альянсу замість звичайних 10%."
  PTB: "Seus cientistas são conhecidos pelo desejo de colaborar e compartilhar pesquisas. Recebe 15% de benefício de pesquisa de cada Aliança em vez dos 10% normais."
@@ -17741,7 +17741,7 @@ Trait_Research_Adversaries_Name:
  PTB: "Adversários de Pesquisa"
 Trait_Research_Adversaries_Desc:
  Id: 4960
- ENG: "Your Scientists are known for their ego when collaborating with allies, which disrupts alliance research benefits. 5% Research Benefit from each Alliance instead of the normal 10%."
+ ENG: "Your Scientists are known for their ego when collaborating with allies, which disrupts alliance research benefits. 5% Research benefit from each Alliance instead of the normal 10%."
  FRA: "Vos scientifiques sont connus pour leur ego lors des collaborations avec des alliés, ce qui perturbe les bonus de recherche d'alliance. Bonus de recherche de 5 % par alliance au lieu des 10 % habituels."
  UKR: "Ваші вчені відомі своїм егоїзмом під час співпраці з союзниками, що знижує користь від досліджень. 5% дослідницької вигоди від кожного альянсу замість звичайних 10%."
  PTB: "Seus Cientistas são conhecidos pelo ego ao colaborar com aliados, o que prejudica os benefícios de pesquisa da aliança. Benefício de Pesquisa de 5% de cada Aliança em vez dos 10% normais."
@@ -17807,7 +17807,7 @@ TraitTerranHomeworldName:
  PTB: "Mundo Natal Terrano"
 TraitTerranHomeworldDesc:
  Id: 4971
- ENG: "Your empire starts in a Terran homeworld and gets +50% Fertility and Max Population for other Terran worlds."
+ ENG: "Your empire starts in a Terran Homeworld and gets +50% Fertility and Max Population for other Terran worlds."
  FRA: "Votre empire démarre sur un monde natal terrien et obtient +50 % de fertilité et de population max. sur les autres mondes terriens."
  UKR: "Ваша імперія починається на рідній планеті землян і отримує +50% народжуваності і максимального населення для інших світів землян."
  PTB: "Seu império começa em um mundo natal Terrano e recebe +50% de Fertilidade e População Máxima em outros mundos Terranos."
@@ -17819,7 +17819,7 @@ TraitOceanicHomeworldName:
  PTB: "Mundo Natal Oceânico"
 TraitOceanicHomeworldDesc:
  Id: 4973
- ENG: "Your empire starts in an Oceanic homeworld and gets +50% Fertility and Max Population for other Oceanic worlds."
+ ENG: "Your empire starts in an Oceanic Homeworld and gets +50% Fertility and Max Population for other Oceanic worlds."
  FRA: "Votre empire démarre sur un monde natal océanique et obtient +50 % de fertilité et de population max. sur les autres mondes océaniques."
  UKR: "Ваша імперія починається на океанічній батьківщині і отримує +50% народжуваності і максимального населення для інших океанічних світів."
  PTB: "Seu império começa em um mundo natal Oceânico e recebe +50% de Fertilidade e População Máxima em outros mundos Oceânicos."
@@ -17831,7 +17831,7 @@ TraitSteppeHomeworldName:
  PTB: "Mundo Natal de Estepe"
 TraitSteppeHomeworldDesc:
  Id: 4975
- ENG: "Your empire starts in a Steppe homeworld and gets +50% Fertility and Max Population for other Steppe worlds."
+ ENG: "Your empire starts in a Steppe Homeworld and gets +50% Fertility and Max Population for other Steppe worlds."
  FRA: "Votre empire démarre sur un monde natal de steppe et obtient +50 % de fertilité et de population max. sur les autres mondes de steppe."
  UKR: "Ваша імперія починається на степовій батьківщині і отримує +50% народжуваності і максимального населення для інших степових світів."
  PTB: "Seu império começa em um mundo natal de Estepe e recebe +50% de Fertilidade e População Máxima em outros mundos de Estepe."
@@ -17843,7 +17843,7 @@ TraitTundraHomeworldName:
  PTB: "Mundo Natal de Tundra"
 TraitTundraHomeworldDesc:
  Id: 4977
- ENG: "Your empire starts in a Tuntra homeworld and gets +50% Fertility and Max Population for other Tundra worlds."
+ ENG: "Your empire starts in a Tuntra Homeworld and gets +50% Fertility and Max Population for other Tundra worlds."
  FRA: "Votre empire démarre sur un monde natal de toundra et obtient +50 % de fertilité et de population max. sur les autres mondes de toundra."
  UKR: "Ваша імперія починається на рідній планеті Тундри і отримує +50% народжуваності і максимального населення для інших тундрових світів."
  PTB: "Seu império começa em um mundo natal de Tundra e recebe +50% de Fertilidade e População Máxima em outros mundos de Tundra."
@@ -17855,7 +17855,7 @@ TraitSwampHomeworldName:
  PTB: "Mundo Natal Pantanoso"
 TraitSwampHomeworldDesc:
  Id: 4979
- ENG: "Your empire starts in a Swamp homeworld and gets +50% Fertility and Max Population for other Swamp worlds."
+ ENG: "Your empire starts in a Swamp Homeworld and gets +50% Fertility and Max Population for other Swamp worlds."
  FRA: "Votre empire démarre sur un monde natal marécageux et obtient +50 % de fertilité et de population max. sur les autres mondes marécageux."
  UKR: "Ваша імперія починається на рідній планеті боліт і отримує +50% родючості та максимальну кількість населення для інших болотних світів."
  PTB: "Seu império começa em um mundo natal Pantanoso e recebe +50% de Fertilidade e População Máxima em outros mundos Pantanosos."
@@ -17867,7 +17867,7 @@ TraitDesertHomeworldName:
  PTB: "Mundo Natal Desértico"
 TraitDesertHomeworldDesc:
  Id: 4981
- ENG: "Your empire starts in a Desert homeworld and gets +50% Fertility and Max Population for other Desert worlds."
+ ENG: "Your empire starts in a Desert Homeworld and gets +50% Fertility and Max Population for other Desert worlds."
  FRA: "Votre empire démarre sur un monde natal désertique et obtient +50 % de fertilité et de population max. sur les autres mondes désertiques."
  UKR: "Ваша імперія починається на пустельній планеті і отримує +50% народжуваності і максимального населення для інших пустельних світів."
  PTB: "Seu império começa em um mundo natal Desértico e recebe +50% de Fertilidade e População Máxima em outros mundos Desérticos."
@@ -17879,7 +17879,7 @@ TraitIceHomeworldName:
  PTB: "Mundo Natal Glacial"
 TraitIceHomeworldDesc:
  Id: 4983
- ENG: "Your empire starts in an Ice homeworld and gets +50% Fertility and Max Population for other Ice worlds."
+ ENG: "Your empire starts in an Ice Homeworld and gets +50% Fertility and Max Population for other Ice worlds."
  FRA: "Votre empire démarre sur un monde natal glacé et obtient +50 % de fertilité et de population max. sur les autres mondes glacés."
  UKR: "Ваша імперія починається на крижаній батьківщині і отримує +50% народжуваності і максимального населення для інших крижаних світів."
  PTB: "Seu império começa em um mundo natal gelado e recebe +50% de Fertilidade e População Máxima em outros mundos gelados."
@@ -18622,7 +18622,7 @@ IndustrializedHomeworld:
  PTB: "Mundo Natal Industrializado"
 TreesWhoNeedsTreesWhat:
  Id: 5082
- ENG: "Trees? Who needs trees. What your people needed was room for more factories. +1 homeworld richness, -1 homeworld fertility."
+ ENG: "Trees? Who needs trees. What your people needed was room for more factories. +1 Homeworld richness, -1 Homeworld fertility."
  FRA: "Des arbres ? Qui a besoin d'arbres. Votre peuple avait besoin de place pour plus d'usines. +1 richesse du monde natal, -1 fertilité du monde natal."
  RUS: "Деревья? Кому нужны деревья. Вашим людям нужно было место для новых заводов. +1 богатство родного мира, -1 плодородие родного мира"
  SPA: "¿Árboles? ¿Quien nesesita arboles?. Lo que tu gente nesesita es mas espacio para fabricas. +1 a la riqueza del planeta natal, -1 a la fertilidad del planeta natal."
@@ -22895,7 +22895,7 @@ EspioangeHomeworldMole:
  PTB: "Agente Infiltrado no Mundo Natal"
 EspioangeHomeworldMoleTip:
  Id: 6334
- ENG: "Planet a Mole at the target's homeworld, allowing us to see their colony details and sensors. This mole cannot be removed by their counter-espionage."
+ ENG: "Planet a Mole at the target's Homeworld, allowing us to see their colony details and sensors. This mole cannot be removed by their counter-espionage."
  FRA: "Placer une taupe sur le monde natal de la cible, nous permettant de voir les détails de sa colonie et ses capteurs. Cette taupe ne peut pas être retirée par son contre-espionnage."
  PTB: "Plante um Agente Infiltrado no mundo natal do alvo, permitindo que vejamos os detalhes e sensores da colônia deles. Este agente infiltrado não pode ser removido pela contraespionagem deles."
 EspioangeDefenseWeight:
@@ -23222,7 +23222,7 @@ TT_OrdnanceCreated:
  PTB: "Indica a quantidade de munição que esta nave é capaz de fabricar por segundo."
 InTheCapitalEliminationGame:
  Id: 7015
- ENG: "In the Capital Elimination game mode, empires are defeated when they lose their homeworld."
+ ENG: "In the Capital Elimination game mode, empires are defeated when they lose their Homeworld."
  FRA: "Dans le mode de jeu Élimination de la capitale, les empires sont vaincus lorsqu'ils perdent leur monde natal."
  RUS: "В режиме игры 'Уничтожение' империи терпят поражение, когда теряют свой родной мир."
  SPA: "En el modo de elminicación capital, los imperios son derrotados cuando pierden su planteta natal."
@@ -27158,7 +27158,7 @@ CodexOverviewPlayingStarDriveShort:
  PTB: "Como é a experiência de StarDrive?"
 CodexOverviewPlayingStarDriveText:
  Id: 100042
- ENG: "StarDrive places you in the role of a leader of a space-faring race. You will make choices about how to expand your fledgling empire from your homeworld and how to treat the aliens you meet in your journey. Some aliens may be friendly and some hostile. You may decide to befriend them or conquer them. You can trade with them for new technologies or just talk to them to figure out what makes them tick. \n \n At the heart of StarDrive is the ship design system. Using this system, you can create customized space ships that can be used in commerce and war. Gain new technologies to equip to your ships by researching them. Gain the economic and industrial power to research and build ships by expanding your empire to new planets and by increasing your overall population. "
+ ENG: "StarDrive places you in the role of a leader of a space-faring race. You will make choices about how to expand your fledgling empire from your Homeworld and how to treat the aliens you meet in your journey. Some aliens may be friendly and some hostile. You may decide to befriend them or conquer them. You can trade with them for new technologies or just talk to them to figure out what makes them tick. \n \n At the heart of StarDrive is the ship design system. Using this system, you can create customized space ships that can be used in commerce and war. Gain new technologies to equip to your ships by researching them. Gain the economic and industrial power to research and build ships by expanding your empire to new planets and by increasing your overall population. "
  FRA: "StarDrive vous place dans le rôle du dirigeant d'une race spatiale. Vous ferez des choix sur la façon d'étendre votre empire naissant depuis votre monde natal et sur la manière de traiter les extraterrestres que vous rencontrez au cours de votre périple. Certains extraterrestres peuvent être amicaux, d'autres hostiles. Vous pouvez décider de vous lier d'amitié avec eux ou de les conquérir. Vous pouvez échanger avec eux contre de nouvelles technologies, ou simplement leur parler pour comprendre ce qui les anime. \n \n Au cœur de StarDrive se trouve le système de conception de vaisseaux. Grâce à ce système, vous pouvez créer des vaisseaux spatiaux personnalisés utilisables pour le commerce et la guerre. Obtenez de nouvelles technologies à équiper sur vos vaisseaux en les recherchant. Obtenez la puissance économique et industrielle nécessaire pour rechercher et construire des vaisseaux en étendant votre empire vers de nouvelles planètes et en augmentant votre population globale. "
  RUS: "В StarDrive вам отведена роль лидера расы звездных странников. Вам предстоит построить космическую империю, начав игру с одного-единственного родного мира, и контактировать с другими расами, с которыми вы будете встречаться во Вселенной. Некоторые из них могут быть настроены к вам дружелюбно; другие же будут видеть в вас врагов. Вы можете пытаться налаживать с ними дружеские отношения или завоевывать их; также вы можете меняться с ними технологиями или просто общаться, чтобы лучше понять их. \n \n Один из ключевых моментов игрового процесса StarDrive – система дизайна кораблей. С ее помощью вы сами сможете проектировать боевые и торговые корабли. Исследуйте новые передовые технологии и применяйте их на ваших кораблях, развивайте свою экономическую и промышленную мощь, чтобы строить больше кораблей, развивать вашу империю, заселять новые планеты и увеличивать количество вашего населения. "
  PTB: "StarDrive coloca você no papel de líder de uma raça espacial. Você fará escolhas sobre como expandir seu império recém-nascido a partir do seu mundo natal e sobre como tratar os alienígenas que encontrar em sua jornada. Alguns alienígenas podem ser amigáveis, outros hostis. Você pode decidir fazer amizade com eles ou conquistá-los. É possível negociar com eles para obter novas tecnologias ou simplesmente conversar para entender melhor o que os motiva. \n \n No centro de StarDrive está o sistema de criação de naves. Usando esse sistema, você pode criar naves espaciais personalizadas que podem ser usadas no comércio e na guerra. Obtenha novas tecnologias para equipar suas naves pesquisando-as. Ganhe poder econômico e industrial para pesquisar e construir naves expandindo seu império para novos planetas e aumentando sua população geral. "
@@ -27236,7 +27236,7 @@ CodexEconomyFreightersAndTradeRoutesShort:
  PTB: "Aprenda a expandir seu império com cargueiros"
 CodexEconomyFreightersAndTradeRoutesText:
  Id: 100055
- ENG: "Colonization of new worlds is an expensive and laborious process. To move even a few thousand colonists to a new home light years away takes a massive investment of capital and labor, and yet even with the finest planning a new colony is a fragile thing barely capable of self-sustenance. \n \n But colonies need not go it alone. Supply ships can bring food, production, and more citizens to your newly founded colony. Food brought in via freighter can sustain your colonists even if the colony cannot yet produce its own food, as is common when settling a barren world. Production can be imported as well, representing the importation of pre-fabricated goods and materials that can be used to speed the production of basic improvements. Finally, new colonists will provide a larger breeding base which will improve a new colony's growth rate. \n \n You can customize whether you want your colony to Import, Export, or Store food and production. It would be a good idea to set your homeworld to Export these goods and to set your new colonies to import these goods. Then you can assign any ship in your empire the task of \"Transport Goods\", which will cause them to automatically run goods throughout your empire. You can also specifically assign a ship to \"Transport Passengers\", which will bring colonists from your high-population planets to your low-population planets. And of course, a ship's maximum cargo capacity is determined by the number of Cargo Hold modules installed in it."
+ ENG: "Colonization of new worlds is an expensive and laborious process. To move even a few thousand colonists to a new home light years away takes a massive investment of capital and labor, and yet even with the finest planning a new colony is a fragile thing barely capable of self-sustenance. \n \n But colonies need not go it alone. Supply ships can bring food, production, and more citizens to your newly founded colony. Food brought in via freighter can sustain your colonists even if the colony cannot yet produce its own food, as is common when settling a barren world. Production can be imported as well, representing the importation of pre-fabricated goods and materials that can be used to speed the production of basic improvements. Finally, new colonists will provide a larger breeding base which will improve a new colony's growth rate. \n \n You can customize whether you want your colony to Import, Export, or Store food and production. It would be a good idea to set your Homeworld to Export these goods and to set your new colonies to import these goods. Then you can assign any ship in your empire the task of \"Transport Goods\", which will cause them to automatically run goods throughout your empire. You can also specifically assign a ship to \"Transport Passengers\", which will bring colonists from your high-population planets to your low-population planets. And of course, a ship's maximum cargo capacity is determined by the number of Cargo Hold modules installed in it."
  FRA: "Coloniser un nouveau monde est un processus coûteux et laborieux. Déplacer ne serait-ce que quelques milliers de colons vers un nouveau foyer distant de plusieurs années-lumière exige un investissement massif en capital et en main-d'œuvre, et même avec la meilleure planification, une nouvelle colonie reste fragile, à peine capable de subvenir à ses propres besoins. \n \n Mais les colonies n'ont pas à se débrouiller seules. Des vaisseaux de ravitaillement peuvent apporter nourriture, production et davantage de citoyens à une colonie nouvellement fondée. La nourriture livrée par cargo peut nourrir les colons même si la colonie ne produit pas encore la sienne, ce qui est courant lors de la colonisation d'un monde aride. La production peut elle aussi être importée, ce qui représente l'importation de biens et de matériaux préfabriqués permettant d'accélérer la construction d'améliorations de base. Enfin, de nouveaux colons offrent une base de reproduction plus large, ce qui améliore le taux de croissance d'une nouvelle colonie. \n \n Il est possible de choisir si une colonie doit Importer, Exporter ou Stocker sa nourriture et sa production. Il est judicieux de configurer sa capitale pour exporter ces ressources et ses nouvelles colonies pour les importer. Il suffit ensuite d'assigner à n'importe quel vaisseau de son empire la tâche \"Transporter des ressources\", ce qui le fera automatiquement circuler dans tout l'empire. Il est aussi possible d'assigner spécifiquement un vaisseau à \"Transporter des passagers\", ce qui amènera des colons des planètes très peuplées vers les planètes peu peuplées. Et bien sûr, la capacité de cargaison maximale d'un vaisseau dépend du nombre de modules de Soute installés."
  RUS: "Колонизация новых миров – дорогостоящий и трудоемкий процесс. Перемещение всего лишь нескольких тысяч колонистов в другой мир на расстоянии нескольких световых лет требует огромных вложений средств и труда, и даже при тщательном планировании развития колонии она вряд ли сможет быть полностью самодостаточной. \n \n Однако вы можете помогать своим новым колониям расти за счет других, которые уже развились. Транспортные корабли могут доставлять еду, накопленное производство и самих колонистов в только что колонизированные миры. Транспорты могут привозить еду в миры, где ее невозможно выращивать самим – например, на бесплодных планетах. Наколпленная продукция, представленная как уже произведенные товары, может быть также доставлена в недавно колонизированный мир и использоваться для ускорения строительства основных улучшений. И, наконец, в новый мир можно привозить колонистов, чтобы население новой колонии прирастало быстрее. \n \n Вы можете указать для каждой своей колонии, будет ли она экспортировать, импортировать или складировать еду и производство. Хорошая идея – поставить свой родной мир на экспорт этих ресурсов, а новые развивающиеся колонии – на их импорт. После этого вы сможете отдать любому кораблю в вашей империи приказ \"Перевозить товары\", и они автоматически будут перевозить товары в пределах вашей империи. Также вы можете отдать кораблю приказ \"Перевезти колонистов\", и колонисты из миров с большим населением будут отправлены в миры, где ощущается нехватка населения. Имейте в виду, что максимальная грузоподъемность корабля определяется количеством установленных на нем грузовых отсеков."
  PTB: "A colonização de novos mundos é um processo caro e trabalhoso. Levar até mesmo alguns milhares de colonos para um novo lar a anos-luz de distância exige enorme investimento de capital e trabalho; ainda assim, mesmo com o melhor planejamento, uma nova colônia é frágil e precisa de apoio. \n \n Cargueiros são a base da logística imperial. Eles transportam comida, produção e passageiros entre planetas, ajudando colônias novas a crescerem e mantendo mundos especializados abastecidos com o que precisam. Sem cargueiros, colônias isoladas podem passar fome, ficar sem produção ou crescer lentamente por falta de colonos. \n \n Você pode construir cargueiros em seus planetas e atribuí-los a funções de comércio automático. Eles tentarão encontrar rotas úteis dentro do seu império, levando recursos de mundos com excedente para mundos que precisam deles. Cargueiros também podem ser usados manualmente para transportar recursos específicos quando você quiser controlar diretamente o fluxo econômico. "
