@@ -206,22 +206,18 @@ namespace Ship_Game
                 Log.Error(e, $"MiniMap Draw crashed {e.InnerException}");
             }
 
-            Vector2 upperLeftView = Universe.UnprojectToWorldPosition(new Vector2(0f, 0f));
-            upperLeftView = new Vector2(HelperFunctions.RoundTo(upperLeftView.X, 1), HelperFunctions.RoundTo(upperLeftView.Y, 1));
-            
-            var right = Universe.UnprojectToWorldPosition(new Vector2(Universe.ScreenWidth, 0f));
-
-            right = new Vector2(HelperFunctions.RoundTo(right.X, 1), 0f);
-            
-            float xdist = (right.X - upperLeftView.X) * Scale;
-            xdist = HelperFunctions.RoundTo(xdist, 1);
-
-            float ydist = xdist * Universe.ScreenHeight / Universe.ScreenWidth;
-            ydist = HelperFunctions.RoundTo(ydist, 1);
-            // draw and clamp minimap viewing area rectangle.
-            var lookingAt = new Rectangle((int)MiniMapZero.X + (int)(upperLeftView.X * Scale), 
-                                          (int)MiniMapZero.Y + (int)(upperLeftView.Y * Scale),
-                                          (int)xdist, (int)ydist);
+            // bench 434 (bug: viewport frame trembling, amplitude growing with distance from
+            // the centre): the old float Unproject round-trips lose precision as |world coords|
+            // grow, and int TRUNCATION turned that noise into visible jitter while the camera
+            // eases. The DOUBLE-precision frustum the renderer already computes is the
+            // authority - derive the rectangle from it and ROUND, never truncate.
+            var frustum = Universe.VisibleWorldRect;
+            double lookX = MiniMapZero.X + frustum.X1 * Scale;
+            double lookY = MiniMapZero.Y + frustum.Y1 * Scale;
+            double lookW = frustum.Width * Scale;
+            double lookH = lookW * Universe.ScreenHeight / (double)Universe.ScreenWidth;
+            var lookingAt = new Rectangle((int)Math.Round(lookX), (int)Math.Round(lookY),
+                                          (int)Math.Round(lookW), (int)Math.Round(lookH));
             if (lookingAt.Width < 2)
             {
                 lookingAt.Width  = 2;
