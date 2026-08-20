@@ -9,8 +9,9 @@ namespace Ship_Game
 {
 	public sealed class VariableUIElement : UIElement
 	{
-		// Ludoal fork: same shave as its four cartouche siblings - frame starts 26px under the housing
-		const int FrameShave = 26;
+		// bench 454: the REAL siblings' shave (they read PlanetInfoUIElement.FrameShave=61;
+		// the local 26 made this cartouche 35px taller than the family)
+		const int FrameShave = PlanetInfoUIElement.FrameShave;
 
 		private UniverseScreen screen;
 
@@ -54,7 +55,7 @@ namespace Ship_Game
 			frame.Y += FrameShave; frame.Height -= FrameShave;
 			frame.Width -= PlanetInfoUIElement.RightTrim;
 			Submenu.DrawFrameWithGround(batch, new RectF(frame));
-			Vector2 NamePos = new Vector2(Housing.X + 41, Housing.Y + 65);
+			Vector2 NamePos = new Vector2(Housing.X + 41, Housing.Y + 69); // 8px under the (now lower) frame top
 			ScreenManager.SpriteBatch.DrawString(Fonts.Arial20Bold, TitleText, NamePos, tColor);
 			Vector2 BodyPos = new Vector2(NamePos.X, Housing.Y + 115);
 			ScreenManager.SpriteBatch.DrawString(Fonts.Arial12Bold, BodyText, BodyPos, tColor);
