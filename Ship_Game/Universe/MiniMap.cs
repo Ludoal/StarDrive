@@ -25,6 +25,7 @@ namespace Ship_Game
         readonly UniverseScreen Universe;
         readonly Rectangle Housing;
         Rectangle ActualMap;
+        Rectangle LastLookingAt; // bench 444: the deadband's memory
         /// Ludoal fork: the drawn map's real rect, and the projection that plots on it. The click
         /// handler reads all three so the INVERSE of WorldToMiniPos is guaranteed to match it.
         public Rectangle MapRect => ActualMap;
@@ -218,6 +219,20 @@ namespace Ship_Game
             double lookH = lookW * Universe.ScreenHeight / (double)Universe.ScreenWidth;
             var lookingAt = new Rectangle((int)Math.Round(lookX), (int)Math.Round(lookY),
                                           (int)Math.Round(lookW), (int)Math.Round(lookH));
+            // bench 444: free-floating, the frame still danced by one pixel - the eased
+            // camera never quite rests, and Round flips at the half-pixel boundary. A
+            // one-pixel deadband per component: an edge only moves when the world moved
+            // it a FULL pixel (the clamped-at-the-border case was stable for exactly
+            // this reason - it was pinned).
+            if (LastLookingAt.Width > 0)
+            {
+                static int Settle(int fresh, int last) => Math.Abs(fresh - last) <= 1 ? last : fresh;
+                lookingAt = new Rectangle(Settle(lookingAt.X, LastLookingAt.X),
+                                          Settle(lookingAt.Y, LastLookingAt.Y),
+                                          Settle(lookingAt.Width,  LastLookingAt.Width),
+                                          Settle(lookingAt.Height, LastLookingAt.Height));
+            }
+            LastLookingAt = lookingAt;
             if (lookingAt.Width < 2)
             {
                 lookingAt.Width  = 2;

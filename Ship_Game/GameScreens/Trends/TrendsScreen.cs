@@ -257,8 +257,18 @@ namespace Ship_Game.GameScreens
                         : Colors.Cream;
                 batch.DrawString(Font12Bold, name, new Vector2(row.X + 16, row.Y), c);
                 if (!visible)
-                    batch.DrawString(Font12Bold, "---",
-                        new Vector2(row.Right - Font12Bold.TextWidth("---"), row.Y), new Color(105, 105, 105));
+                {
+                    // maintainer call: name the price, not a dash - the infiltration level
+                    // this domain unlocks at
+                    string req = "Lvl " + Domain switch
+                    {
+                        Espionage.IntelDomain.Population => 1,
+                        Espionage.IntelDomain.Military   => 2,
+                        _                                => 3,
+                    };
+                    batch.DrawString(Font12Bold, req,
+                        new Vector2(row.Right - Font12Bold.TextWidth(req), row.Y), new Color(105, 105, 105));
+                }
                 LegendRows.Add((row, s));
                 ly += row.Height + 2;
             }

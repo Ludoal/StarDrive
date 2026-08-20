@@ -33,7 +33,9 @@ namespace Ship_Game
         {
             RemoveAll();
 
-            const int windowWidth = 320;
+            // bench 444: the window wears the minimap's width - the two share the right
+            // edge, so the alignment reads as one piece of furniture
+            int windowWidth = Screen.mmHousing.Width > 0 ? Screen.mmHousing.Width : 320;
             // Ludoal fork: right-anchored on the same edge as the Automation window - the two
             // windows are mutually exclusive (opening one closes the other, like Exotic/Freighter),
             // so they can share the anchor. 10px off the right edge, the margin the minimap and
@@ -93,13 +95,15 @@ namespace Ship_Game
                 float iconSize = Height;
                 batch.Draw(icon, new Vector2(X, Y), new Vector2(iconSize));
           
-                batch.DrawString(Fonts.Arial10, Template.Name, X+iconSize+2, Y+4);
+                // bench 444: the name in a readable size, and the costs in ONE column -
+                // production on top, upkeep under it (they were colliding with the name)
+                batch.DrawString(Fonts.Arial12Bold, Template.Name, X+iconSize+2, Y+2);
                 batch.DrawString(Fonts.Arial8Bold, Template.GetRole(), X+iconSize+2, Y+18, Color.Orange);
 
-                float prodX = Right - 120;
-                batch.DrawString(Fonts.Arial8Bold, Template.GetMaintenanceCost(Universe.Player).String(2)+Localizer.Token(GameText.DvBcPerTurn), prodX, Y+4, Color.Salmon); // Maintenance Cost
-                batch.Draw(iconProd, new Vector2(prodX+50, Y+4), iconProd.SizeF); // Production Icon
-                batch.DrawString(Fonts.Arial12Bold, Template.GetCost(Universe.Player).String(1), prodX+50+iconProd.Width+2, Y+4); // Build Production Cost
+                float prodX = Right - 70;
+                batch.Draw(iconProd, new Vector2(prodX, Y+2), iconProd.SizeF); // Production Icon
+                batch.DrawString(Fonts.Arial12Bold, Template.GetCost(Universe.Player).String(1), prodX+iconProd.Width+2, Y+2); // Build Production Cost
+                batch.DrawString(Fonts.Arial8Bold, Template.GetMaintenanceCost(Universe.Player).String(2)+Localizer.Token(GameText.DvBcPerTurn), prodX, Y+18, Color.Salmon); // Upkeep, under it
             }
         }
 

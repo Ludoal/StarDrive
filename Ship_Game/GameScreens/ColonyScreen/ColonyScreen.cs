@@ -452,6 +452,7 @@ namespace Ship_Game
 
             BuildableList = BuildableTabs.List;
             BuildableList.EnableItemHighlight = true;
+            BuildableList.OnClick = OnBuildableRowClicked; // bench 444: click pins the description (gold liseré, LIST pattern)
             BuildableList.OnDoubleClick = OnBuildableItemDoubleClicked;
             BuildableList.OnHovered = OnBuildableHoverChange;
 
@@ -471,6 +472,7 @@ namespace Ship_Game
 
             ConstructionQueue = queue.List;
             ConstructionQueue.EnableItemHighlight = true;
+            ConstructionQueue.OnClick = OnQueueRowClicked; // bench 444: same pin as the buildable list
             ConstructionQueue.OnHovered = OnConstructionItemHovered;
             if (p.OwnerIsPlayer || p.Universe.Debug)
                 ConstructionQueue.OnDragReorder = OnConstructionItemReorder;
@@ -934,6 +936,40 @@ namespace Ship_Game
 
         // hover previews, CLICK pins (bench 426, Lek's design): the bottom panel holds on
         // the pinned building, the wheel scrolls its long lore, re-click unpins
+        // bench 444: the LIST tab's pin pattern, extended to the two right-column lists.
+        // One pin at a time across both; a click on the pinned row releases it.
+        void OnBuildableRowClicked(BuildableListItem item)
+        {
+            if (item == null || (item.Building == null && item.Troop == null))
+                return; // headers and ships have no description to hold
+            bool wasPinned = item == PinnedBuildable;
+            ClearListPins();
+            PinnedBuildable = wasPinned ? null : item;
+            item.DescriptionPinned = !wasPinned;
+            DescriptionScroll = 0f;
+            GameAudio.AcceptClick();
+        }
+
+        void OnQueueRowClicked(ConstructionQueueScrollListItem item)
+        {
+            if (item == null || (item.Item.Building == null && item.Item.TroopType == null))
+                return;
+            bool wasPinned = item == PinnedQueue;
+            ClearListPins();
+            PinnedQueue = wasPinned ? null : item;
+            item.DescriptionPinned = !wasPinned;
+            DescriptionScroll = 0f;
+            GameAudio.AcceptClick();
+        }
+
+        void ClearListPins()
+        {
+            if (PinnedBuildable != null) PinnedBuildable.DescriptionPinned = false;
+            if (PinnedQueue != null) PinnedQueue.DescriptionPinned = false;
+            PinnedBuildable = null;
+            PinnedQueue = null;
+        }
+
         void OnBuiltRowClicked(BuiltBuildingListItem item)
         {
             if (item?.Tile == null)

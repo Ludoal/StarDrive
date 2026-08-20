@@ -6,6 +6,7 @@ using SDUtils;
 using Ship_Game.Audio;
 using Ship_Game.Utils;
 using Vector2 = SDGraphics.Vector2;
+using Color = Microsoft.Xna.Framework.Color;
 
 namespace Ship_Game
 {
@@ -13,6 +14,7 @@ namespace Ship_Game
     {
         readonly Planet Planet;
         UniverseScreen Universe => Planet.Universe.Screen;
+        public bool DescriptionPinned; // bench 444: set by the screen, worn as a gold liseré
         public readonly QueueItem Item;
 
         public ConstructionQueueScrollListItem(QueueItem item)
@@ -162,6 +164,10 @@ namespace Ship_Game
         {
             Item.DrawAt(Planet.Universe, batch, Pos);
             base.Draw(batch, elapsed);
+
+            // the click-pinned row wears its gold liseré (bench 444, LIST pattern)
+            if (DescriptionPinned)
+                batch.DrawRectangle(Rect, Color.Gold);
         }
     }
 }

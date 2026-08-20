@@ -12,6 +12,7 @@ namespace Ship_Game
     public class BuildableListItem : ScrollListItem<BuildableListItem>
     {
         public readonly ColonyScreen Screen;
+        public bool DescriptionPinned; // bench 444: set by the screen, worn as a gold liseré
         public Building Building;
         public IShipDesign Ship;
         public Troop Troop;
@@ -100,6 +101,10 @@ namespace Ship_Game
             if   (Building != null)  DrawBuilding(batch, Building);
             else if (Troop != null)  DrawTroop(batch, Troop);
             else if (Ship != null)   DrawShip(batch, Ship);
+
+            // the click-pinned row wears its gold liseré (bench 444, LIST pattern)
+            if (DescriptionPinned)
+                batch.DrawRectangle(Rect, Color.Gold);
         }
 
         void DrawProductionInfo(SpriteBatch batch, float maintenance, float prod, int cost = 0)

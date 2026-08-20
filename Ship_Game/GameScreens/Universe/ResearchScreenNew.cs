@@ -384,6 +384,22 @@ namespace Ship_Game
                 camera.MoveClamped(input.CursorVelocity, ScreenCenter, ScreenCenter + overrun);
             }
 
+            // maintainer bench 444: the wheel scrolls the tree vertically when it overruns
+            // the frame - the same clamped camera move as the middle-drag, vertical axis only
+            if (PageFrame.HitTest(input.CursorPosition) && (input.ScrollIn || input.ScrollOut))
+            {
+                float wheelMaxY = 0;
+                foreach (TreeNode n in SubNodes.Values)
+                    wheelMaxY = Math.Max(wheelMaxY, n.BaseRect.Bottom);
+                float overrunY = Math.Max(0, wheelMaxY + 10 - MainArea.Bottom);
+                if (overrunY > 0)
+                {
+                    camera.MoveClamped(new Vector2(0, input.ScrollIn ? -70 : 70),
+                                       ScreenCenter, ScreenCenter + new Vector2(0, overrunY));
+                    return true;
+                }
+            }
+
             foreach (RootNode root in RootNodes.Values)
             {
                 if (root.HandleInput(input,camera))

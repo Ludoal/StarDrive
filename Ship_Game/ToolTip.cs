@@ -85,6 +85,15 @@ namespace Ship_Game
                         tipItem.Rect = PlaceTip(cur, tipItem.MeasuredSize);
                     }
                 }
+                // bench 444: the SAME re-seat for hint-anchored tips - several callers pass
+                // the live cursor AS the hint (Espionage rows, the map's planet icons), and
+                // the cache kept the first frame's position for as long as the text lived.
+                // A genuinely fixed hint re-seats to itself: no-op.
+                else if (position != null && position.Value.Distance(tipItem.Anchor) > 5f)
+                {
+                    tipItem.Anchor = position.Value;
+                    tipItem.Rect = PlaceTip(position.Value, tipItem.MeasuredSize);
+                }
                 return;
             }
 

@@ -228,11 +228,11 @@ namespace Ship_Game.GameScreens
                 new UITable.Column { Title = "Pop Inc",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Tax income from the colonists" },
                 new UITable.Column { Title = "Bldg Inc",  Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Tax income from the buildings" },
                 new UITable.Column { Title = "Gross",     Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Gross tax revenue (colonists + buildings)" },
-                new UITable.Column { Title = "Bldg Mnt",  Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Building maintenance paid by the colony" },
-                new UITable.Column { Title = "Troop Mnt", Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Troop maintenance paid by the colony" },
+                new UITable.Column { Title = "Bldg Upk",  Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Building upkeep paid by the colony" },
+                new UITable.Column { Title = "Troop Upk", Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Troop upkeep paid by the colony" },
                 new UITable.Column { Title = "Net",       Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Signed, Bold = true, Tip = "Net income of the colony" },
                 new UITable.Column { Title = "Budget",    Align = TableAlign.Number, Sortable = true, Tip = "Budget allocated by the governor" },
-                new UITable.Column { Title = "Gov Exp",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "What the governor actually spends: building maintenance plus SPACE defense - the delta against Bldg Mnt is the orbital defense bill" },
+                new UITable.Column { Title = "Gov Exp",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "What the governor actually spends: building upkeep plus SPACE defense - the delta against Bldg Mnt is the orbital defense bill" },
                 new UITable.Column { Title = "Left",      Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Signed, Tip = "Budget left after the governor's spending" },
             });
             // widths from the data: the planet names size the Colony column (plus its icon
@@ -593,14 +593,14 @@ namespace Ship_Game.GameScreens
                                         + Player.TroopCostOnPlanets
                                         + Player.MoneySpendOnProductionThisTurn + Player.MoneySpendOnProductionNow);
             costs.Spacer();
-            costs.AddItem("Building Maintenance", () => -(Player.GrossPlanetIncome - Player.NetPlanetIncomes));
-            costs.AddItem("Troop Maintenance", () => -Player.TroopCostOnPlanets);
+            costs.AddItem("Building Upkeep", () => -(Player.GrossPlanetIncome - Player.NetPlanetIncomes));
+            costs.AddItem("Troop Upkeep", () => -Player.TroopCostOnPlanets);
             costs.AddItem(GameText.ProductionFees, () => -(Player.MoneySpendOnProductionThisTurn+Player.MoneySpendOnProductionNow)); // "production costs."
             costs.Spacer();
             costs.AddSplit(new UILabel("Planets subtotal", Color.Wheat),
                            new UILabel(DynamicText(PlanetsExpense, f => f.MoneyString())));
             costs.Spacer();
-            costs.AddItem("Ship Maintenance", () => -Player.TotalShipMaintenance);
+            costs.AddItem("Ship Upkeep", () => -Player.TotalShipMaintenance);
             costs.AddItem("Espionage", () => -Player.EspionageCostLastTurn);
             costs.Spacer();
 

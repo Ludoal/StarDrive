@@ -52,9 +52,13 @@ namespace Ship_Game
             // slider moves the floor with the widget (maintainer feedback); before the first
             // SeatMinimap the housing is empty - use the default-size footprint until
             // LoadGraphics reseats us.
+            // maintainer bench 444: an 8-line explored-system notification spills past its
+            // icon row onto the band buttons below - 50px of reserve keeps the tallest
+            // text above them (the reserve belongs to the COLUMN, not to the moment)
+            const int TallTextReserve = 50;
             int floor = Screen.mmHousing.Height > 0
-                      ? Screen.mmHousing.Y - 30 - 8
-                      : GameBase.ScreenHeight - (256 + 10 + 30 + 8);
+                      ? Screen.mmHousing.Y - 30 - 8 - TallTextReserve
+                      : GameBase.ScreenHeight - (256 + 10 + 30 + 8 + TallTextReserve);
             NotificationArea = new Rectangle(GameBase.ScreenWidth - 70, 70, 70, floor - 70);
             MaxEntriesToDisplay = NotificationArea.Height / 70;
         }

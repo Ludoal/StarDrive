@@ -11,10 +11,34 @@ namespace Ship_Game
     public partial class ColonyScreen
     {
         int PFacilitiesPlayerTabSelected;
+        // bench 444: the description pins of the two right-column lists (LIST tab pattern)
+        BuildableListItem PinnedBuildable;
+        ConstructionQueueScrollListItem PinnedQueue;
 
         // Gets the item which we want to use for detail info text
         object GetHoveredDetailItem(InputState input)
         {
+            // bench 444: a clicked row PINS the description - while a pin is set, hover
+            // must not steal the panel (the pin's whole point, bench 429). A pin whose
+            // row left its list (filter, tab switch, item built) dies with it.
+            if (PinnedBuildable != null)
+            {
+                bool alive = false;
+                foreach (BuildableListItem e in BuildableList.AllEntries)
+                    if (e == PinnedBuildable) { alive = true; break; }
+                if (!alive) ClearListPins();
+                else return (object)PinnedBuildable.Building ?? PinnedBuildable.Troop;
+            }
+            if (PinnedQueue != null)
+            {
+                bool alive = false;
+                foreach (ConstructionQueueScrollListItem e in ConstructionQueue.AllEntries)
+                    if (e == PinnedQueue) { alive = true; break; }
+                if (!alive) ClearListPins();
+                else if (PinnedQueue.Item.Building != null) return PinnedQueue.Item.Building;
+                else if (PinnedQueue.Item.TroopType != null) return ResourceManager.GetTroopTemplate(PinnedQueue.Item.TroopType);
+            }
+
             // TODO: replace with a popup window
             if (BuildableList.HitTest(input.CursorPosition))
             {
@@ -88,7 +112,40 @@ namespace Ship_Game
             // A right-click landing on the COLONY frame belongs to its content - the tile
             // scrap prompt, the list rows - never to "close the page". The close intercept
             // ran before the tiles ever saw the click and ate the scrap gesture (bench 419).
+            // bench 444: Ctrl+click on a queue ROW sends it to the TOP - the Up arrow's
+            // ctrl gesture, promoted to the row. A Mac Ctrl+click reaches the VM as a
+            // RIGHT-click, which fell into the page dismiss - so both buttons count here.
+            if (input.IsCtrlKeyDown && (input.LeftMouseClick || input.RightMouseClick)
+                && ConstructionQueue.HitTest(input.CursorPosition))
+            {
+                foreach (ConstructionQueueScrollListItem e in ConstructionQueue.AllEntries)
+                {
+                    if (e.Hovered)
+                    {
+                        QueueItem toTop = e.Item;
+                        GameAudio.AcceptClick();
+                        P.Universe.RunOnSimThread(() =>
+                        {
+                            int index = P.ConstructionQueue.IndexOf(toTop);
+                            if (index > 0)
+                                P.Construction.MoveTo(0, index);
+                        });
+                        break;
+                    }
+                }
+                return true; // over the queue, the gesture is the list's - never the dismiss
+            }
+
             bool rightClickOnColonyFrame = input.RightMouseClick && SubColonyGrid.Rect.HitTest(input.CursorPosition);
+            // bench 444: a right-click landing on the two LISTS belongs to them too - it
+            // RELEASES a pin instead of closing the page
+            bool rightClickOnLists = input.RightMouseClick
+                && (BuildableList.HitTest(input.CursorPosition) || ConstructionQueue.HitTest(input.CursorPosition));
+            if (rightClickOnLists)
+            {
+                ClearListPins();
+                return true;
+            }
             if ((CanEscapeFromScreen && (input.Escaped || (input.RightMouseClick && !ClickedTroop && !rightClickOnColonyFrame)))
                 || (input.LeftMouseClick && CloseBtn.Rect.HitTest(input.CursorPosition)))
             {
