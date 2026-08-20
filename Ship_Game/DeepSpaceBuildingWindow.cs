@@ -96,7 +96,7 @@ namespace Ship_Game
                 batch.DrawString(Fonts.Arial12Bold, Template.Name, X+iconSize+2, Y+2);
                 batch.DrawString(Fonts.Arial8Bold, Template.GetRole(), X+iconSize+2, Y+18, Color.Orange);
 
-                float rightEdge = Right - 4;
+                float rightEdge = Right + 17; // bench 448: Right sits a scrollbar lane inside the window - reclaim 21px, 15 remain
                 string cost = Template.GetCost(Universe.Player).String(1);
                 float costW = Fonts.Arial12Bold.TextWidth(cost);
                 batch.DrawString(Fonts.Arial12Bold, cost, rightEdge - costW, Y+2); // Build Production Cost

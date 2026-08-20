@@ -65,10 +65,16 @@ namespace Ship_Game.GameScreens
         public override void LoadContent()
         {
             Empire[] majors = Universe.UState.ActiveMajorEmpires;
-            // bench 447: the Research gabarit (the etalon group frame), not the race-columns
-            // sprawl - a chart page has no reason to span the whole screen
-            GroupTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Diplomacy, Universe),
-                                                  (int)MainDiplomacyScreen.Tab.Trends, OnGroupTabChanged, out Rectangle frame);
+            // bench 448 (rature): the RELATIONSHIPS gabarit - the 900-class window, built
+            // by hand exactly like that sibling
+            Rectangle frame = ScreenGroups.GroupFrame900(ScreenWidth, ScreenHeight);
+            GroupTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
+                                        ScreenGroups.LiveTitles(ScreenGroups.Group.Diplomacy, Universe)));
+            GroupTabs.OnTabChange = OnGroupTabChanged;
+            GroupTabs.PerformLayout();
+            GroupTabs.SelectedIndex = (int)MainDiplomacyScreen.Tab.Trends;
+            Vector2 closePos = ScreenGroups.GroupClosePos(GroupTabs.ClientArea);
+            CloseButton(closePos.X, closePos.Y);
             LeftRect = frame;
 
             // harvest the snapshots once: (date, one value per domain) per empire
@@ -190,6 +196,8 @@ namespace Ship_Game.GameScreens
                 {
                     if (date < clipFrom)
                         continue;
+                    if (values[di] <= 0f)
+                        continue; // bench 448: a missing sample is a HOLE to skip, never a zero to draw
                     pts.Add((date, values[di]));
                     if (date < minDate) minDate = date;
                     if (values[di] > maxVal) maxVal = values[di];
@@ -255,7 +263,7 @@ namespace Ship_Game.GameScreens
                 string name = known ? s.E.data.Traits.Name : "?";
                 float nameRoom = row.Width - 16 - (req.Length > 0 ? Font12Bold.TextWidth(req) + 6 : 0);
                 while (name.Length > 2 && Font12Bold.TextWidth(name) > nameRoom)
-                    name = name.Substring(0, name.Length - 2) + "\u2026";
+                    name = name.Substring(0, name.Length - 1); // plain cut: the font draws the ellipsis glyph as "?" 
                 Color c = !visible ? new Color(105, 105, 105)
                         : s.Hidden ? Color.Gray
                         : Colors.Cream;
@@ -272,6 +280,8 @@ namespace Ship_Game.GameScreens
 
         public override bool HandleInput(InputState input)
         {
+            if (Universe.EmpireUI.HandleInput(input, caller: this)) // live top bar, like every sibling
+                return true;
             if (input.LeftMouseClick)
             {
                 foreach ((Rectangle r, Espionage.IntelDomain d) in DomainTabs)

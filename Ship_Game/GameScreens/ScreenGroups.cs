@@ -746,6 +746,7 @@ namespace Ship_Game.GameScreens
         static bool IsDiplomacyGroup(GameScreen s)
             => s is MainDiplomacyScreen
                  or InfiltrationScreen
+                 or TrendsScreen
                  or DiplomacyScreen.RelationshipsDiagramScreen;
     }
 }

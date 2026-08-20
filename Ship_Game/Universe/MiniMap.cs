@@ -25,7 +25,8 @@ namespace Ship_Game
         readonly UniverseScreen Universe;
         readonly Rectangle Housing;
         Rectangle ActualMap;
-        Rectangle LastLookingAt; // bench 444: the deadband's memory
+        Rectangle LastLookingAt; // bench 444: the deadband's memory (applied values)
+        Rectangle LastRawLook;   // bench 448: last frame's RAW values - the confirmation window
         /// Ludoal fork: the drawn map's real rect, and the projection that plots on it. The click
         /// handler reads all three so the INVERSE of WorldToMiniPos is guaranteed to match it.
         public Rectangle MapRect => ActualMap;
@@ -224,17 +225,24 @@ namespace Ship_Game
             // one-pixel deadband per component: an edge only moves when the world moved
             // it a FULL pixel (the clamped-at-the-border case was stable for exactly
             // this reason - it was pinned).
-            // bench 447: the deadband quantized the ease-out into 2px steps - it now only
-            // holds a camera AT REST (destination reached); a moving one stays raw and smooth
-            bool camResting = Universe.CamDestination.ToVec2f().Distance(Universe.CamPos.ToVec2f()) < 50f; // 50f = the camera code's own arrival idiom
-            if (camResting && LastLookingAt.Width > 0)
+            // bench 448 (third pass): the rest-gate never armed after a drag (the camera's
+            // destination goes stale there), so the wiggle survived. New rule, no gate:
+            // a 1px move only passes once the SAME value shows up two frames running -
+            // real slow pans confirm themselves one frame later (smooth), a ±1px shimmer
+            // never repeats the same value twice and stays held. Bigger moves pass raw.
+            Rectangle raw = lookingAt;
+            if (LastLookingAt.Width > 0)
             {
-                static int Settle(int fresh, int last) => Math.Abs(fresh - last) <= 1 ? last : fresh;
-                lookingAt = new Rectangle(Settle(lookingAt.X, LastLookingAt.X),
-                                          Settle(lookingAt.Y, LastLookingAt.Y),
-                                          Settle(lookingAt.Width,  LastLookingAt.Width),
-                                          Settle(lookingAt.Height, LastLookingAt.Height));
+                static int Settle(int fresh, int applied, int prevRaw)
+                    => Math.Abs(fresh - applied) > 1 ? fresh   // real movement: raw and smooth
+                     : fresh == prevRaw ? fresh                // 1px step confirmed twice: take it
+                     : applied;                                // first frame of a wiggle: hold
+                lookingAt = new Rectangle(Settle(lookingAt.X, LastLookingAt.X, LastRawLook.X),
+                                          Settle(lookingAt.Y, LastLookingAt.Y, LastRawLook.Y),
+                                          Settle(lookingAt.Width,  LastLookingAt.Width,  LastRawLook.Width),
+                                          Settle(lookingAt.Height, LastLookingAt.Height, LastRawLook.Height));
             }
+            LastRawLook = raw;
             LastLookingAt = lookingAt;
             if (lookingAt.Width < 2)
             {
