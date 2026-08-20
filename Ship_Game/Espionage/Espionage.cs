@@ -24,6 +24,24 @@ namespace Ship_Game
         [StarData] public float TotalMoneyLeeched { get; private set; }
         [StarData] float MoneyLeechedThisTurn;
         [StarData] public int NumPlantedMoles { get; private set; }
+        // Ludoal fork (Trends, Wishlist): the StarDate each intel domain was FIRST unlocked
+        // at - the curves clip there (espionage does not invent the past). Never cleared: a
+        // level that falls back does not close history already taken. 0 = not yet stamped
+        // (legacy save or never reached); the Trends screen stamps on open as a fallback.
+        [StarData] float[] DomainUnlockDates = new float[4];
+        public enum IntelDomain { Population = 0, Military = 1, Economy = 2, Science = 3 }
+        public float DomainUnlockDate(IntelDomain d)
+            => DomainUnlockDates == null ? 0f : DomainUnlockDates[(int)d];
+        public void StampDomainUnlocks()
+        {
+            DomainUnlockDates ??= new float[4]; // a legacy save deserializes the field null
+            float now = Owner?.Universe?.StarDate ?? 0f;
+            if (now <= 0f) return;
+            if (CanViewPopRank      && DomainUnlockDates[0] == 0f) DomainUnlockDates[0] = now;
+            if (CanViewMilitaryRank && DomainUnlockDates[1] == 0f) DomainUnlockDates[1] = now;
+            if (CanViewEconomyRank  && DomainUnlockDates[2] == 0f) DomainUnlockDates[2] = now;
+            if (CanViewScienceRank  && DomainUnlockDates[3] == 0f) DomainUnlockDates[3] = now;
+        }
 
         [StarDataConstructor]
         public Espionage() { }
@@ -49,6 +67,7 @@ namespace Ship_Game
 
             Level++;
             LevelProgress = 0;
+            StampDomainUnlocks(); // Trends: a fresh unlock opens its curves from today
 
             if (!Them.IsFaction && withMessage)
             {
@@ -79,6 +98,7 @@ namespace Ship_Game
         {
             Level = value.LowerBound(0);
             LevelProgress = 0;
+            StampDomainUnlocks(); // stamps only NEW unlocks; a drop never closes history
             RemoveOperations();
             EnablePassiveEffects();
             if (!Owner.isPlayer)
@@ -285,6 +305,14 @@ namespace Ship_Game
         public bool CanViewTechType     => Level >= 2;
         public bool CanViewArtifacts    => Level >= 2;
         public bool CanViewRanks        => Level >= 2;
+        // a rank unlocks with the DATUM that founds it (maintainer design, Wishlist):
+        // the flat CanViewRanks gate leaked one floor up (an economy rank at level 2
+        // derives from a treasury that is a level-3 secret) and one floor down (the
+        // population rank hid at 2 while the raw count shows at 1).
+        public bool CanViewPopRank      => CanViewPop;
+        public bool CanViewMilitaryRank => CanViewNumShips;
+        public bool CanViewScienceRank  => CanViewResearchTopic; // spec: science strength is a research secret, level 3
+        public bool CanViewEconomyRank  => CanViewMoneyAndMaint;
         public bool ProjectorsCanAlert  => EffectiveLevel >= 2;
 
         public bool CanViewDefenseRatio   => Level >= 3;

@@ -22290,6 +22290,10 @@ HkKeyEsc:
  Id: 5289
  ENG: "Esc"
  FRA: "Échap"
+DvGroupTabTipTrends:
+ Id: 5291
+ ENG: "Progression curves per race - each domain unlocks with the intel that founds it."
+ FRA: "Courbes de progression par race - chaque domaine se débloque avec le renseignement qui le fonde."
 AutoSupplyTip:
  Id: 5290
  ENG: "The colony manages this flow itself (import / export / store). Uncheck to pin it manually - your choice then holds."

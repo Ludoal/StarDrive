@@ -6225,6 +6225,7 @@ namespace Ship_Game
         /// <summary>Esc</summary>
         HkKeyEsc = 5289,
         AutoSupplyTip = 5290,
+        DvGroupTabTipTrends = 5291,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 5101,
         /// <summary>Research Bonus Granted: {0}%</summary>

@@ -236,6 +236,7 @@
     <Compile Include="Ship_Game\GameScreens\ImportantEvents\ImportantEventListItem.cs" />
     <Compile Include="Ship_Game\Espionage\InfiltrationOperation.cs" />
     <Compile Include="Ship_Game\GameScreens\Infiltration\InfiltrationScreen.cs" />
+    <Compile Include="Ship_Game\GameScreens\Trends\TrendsScreen.cs" />
     <Compile Include="Ship_Game\GameScreens\FleetDesign\FleetButton.cs" />
     <Compile Include="Ship_Game\GameScreens\FleetDesign\FleetButtonsList.cs" />
     <Compile Include="Ship_Game\GameScreens\GameCursors.cs" />

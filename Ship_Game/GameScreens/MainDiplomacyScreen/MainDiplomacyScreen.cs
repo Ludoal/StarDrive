@@ -36,7 +36,7 @@ namespace Ship_Game
         // the band excludes exactly what the page occupies, dynamic size included
         public override Rectangle PageFrame => GroupTabs?.Rect ?? base.PageFrame;
         readonly Tab OpenOn;
-        public enum Tab { Intelligence = 0, Bonuses = 1, Relationships = 2, Espionage = 3 }
+        public enum Tab { Intelligence = 0, Bonuses = 1, Trends = 2, Relationships = 3, Espionage = 4 }
         bool ShowBonuses;
         int MaxTraitLines = 1; // longest trait list of the row, so BONUSES stays level
 
@@ -227,6 +227,10 @@ namespace Ship_Game
             {
                 case Tab.Intelligence: ShowBonuses = false; break;
                 case Tab.Bonuses:      ShowBonuses = true;  break;
+                case Tab.Trends:
+                    ExitScreen();
+                    ScreenManager.AddScreen(new TrendsScreen(Universe));
+                    break;
                 // These two live in their own screen, which carries the same tab row - so this one
                 // steps aside rather than stacking on top.
                 case Tab.Relationships:
@@ -548,26 +552,32 @@ namespace Ship_Game
 
         // POSITION: the empire's rank in each domain — same visibility rules as the
         // legacy screen
+        // a rank unlocks with the DATUM that founds it (maintainer design, Wishlist):
+        // one gate PER ROW, and each row ranks within its OWN pool - the empires whose
+        // matching datum the player can see. The legacy path keeps its single IsKnown gate.
         void DrawPositionBlock(SpriteBatch batch, Empire e, Rectangle col, ref float y)
         {
             float maxY = float.MaxValue;
-            Espionage espionage = e.isPlayer || !UsingNewEspioange ? null : Player.GetEspionage(e);
-            if (e.isPlayer || !UsingNewEspioange || espionage.CanViewRanks)
+            RankRow(batch, e, col, ref y, maxY, "Economy",    x => x.GrossIncome,            es => es.CanViewEconomyRank,  3);
+            RankRow(batch, e, col, ref y, maxY, "Science",    GetScientificStr,              es => es.CanViewScienceRank,  3);
+            RankRow(batch, e, col, ref y, maxY, "Military",   x => x.CurrentMilitaryStrength, es => es.CanViewMilitaryRank, 2);
+            RankRow(batch, e, col, ref y, maxY, "Population", GetPop,                        es => es.CanViewPopRank,      1);
+        }
+
+        void RankRow(SpriteBatch batch, Empire e, Rectangle col, ref float y, float maxY,
+                     string label, Func<Empire, float> metric, Func<Espionage, bool> gate, byte lvl)
+        {
+            bool CanSee(Empire x) => x.isPlayer || (UsingNewEspioange
+                                   ? gate(Player.GetRelations(x).Espionage)
+                                   : Player.IsKnown(x));
+            if (CanSee(e))
             {
-                Empire[] pool = UsingNewEspioange
-                    ? Universe.UState.ActiveMajorEmpires.Filter(x => x.isPlayer || Player.GetRelations(x).Espionage.CanViewRanks)
-                    : Universe.UState.ActiveMajorEmpires.Filter(x => x.isPlayer || Player.IsKnown(x));
-                TableRow(batch, col, ref y, maxY, "Economy", "#" + RankOf(e, pool.OrderByDescending(x => x.GrossIncome)), Color.White);
-                TableRow(batch, col, ref y, maxY, "Science", "#" + RankOf(e, pool.OrderByDescending(GetScientificStr)), Color.White);
-                TableRow(batch, col, ref y, maxY, "Military", "#" + RankOf(e, pool.OrderByDescending(x => x.CurrentMilitaryStrength)), Color.White);
-                TableRow(batch, col, ref y, maxY, "Population", "#" + RankOf(e, pool.OrderByDescending(GetPop)), Color.White);
+                Empire[] pool = Universe.UState.ActiveMajorEmpires.Filter(CanSee);
+                TableRow(batch, col, ref y, maxY, label, "#" + RankOf(e, pool.OrderByDescending(metric)), Color.White);
             }
             else
             {
-                HiddenRow(batch, col, ref y, maxY, "Economy", 2);
-                HiddenRow(batch, col, ref y, maxY, "Science", 2);
-                HiddenRow(batch, col, ref y, maxY, "Military", 2);
-                HiddenRow(batch, col, ref y, maxY, "Population", 2);
+                HiddenRow(batch, col, ref y, maxY, label, lvl);
             }
         }
 
@@ -977,7 +987,7 @@ namespace Ship_Game
 
         float GetScientificStr(Empire e)
         {
-            if (UsingNewEspioange && (e.isPlayer || Player.GetRelations(e).Espionage.CanViewRanks))
+            if (UsingNewEspioange && (e.isPlayer || Player.GetRelations(e).Espionage.CanViewScienceRank))
             {
                 var techs = e.UnlockedTechs;
                 return techs.Length == 0 ? 0 : techs.Sum(t => t.Tech.Cost);

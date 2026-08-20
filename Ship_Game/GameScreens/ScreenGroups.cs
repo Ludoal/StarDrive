@@ -56,7 +56,7 @@ namespace Ship_Game.GameScreens
 
         public static readonly LocalizedText[] GroupTabTitles =
         {
-            "Intelligence", "Bonuses", "Relationships", "Espionage"
+            "Intelligence", "Bonuses", "Trends", "Relationships", "Espionage"
         };
 
         // Ludoal fork: what each tab holds, for the hover tip. Submenu.Tab has no tooltip field and
@@ -68,11 +68,12 @@ namespace Ship_Game.GameScreens
         {
             Localizer.Token(GameText.DvGroupTabTipDiplomacy),
             Localizer.Token(GameText.DvGroupTabTipTraits),
+            Localizer.Token(GameText.DvGroupTabTipTrends),
             Localizer.Token(GameText.DvGroupTabTipTreaties),
             Localizer.Token(GameText.DvGroupTabTipInfiltration),
         };
 
-        public static readonly string[] GroupTabKeys = { "I", "", "", "E" };
+        public static readonly string[] GroupTabKeys = { "I", "", "", "", "E" };
 
         // ── Galaxy group ──────────────────────────────────────────────────────────────────────
         // Ludoal fork: the second group of the unified top bar. Same frame, same tab row as the
@@ -309,6 +310,8 @@ namespace Ship_Game.GameScreens
         public static GameScreen DiploTab(int index, UniverseScreen u)
             => (MainDiplomacyScreen.Tab)index == MainDiplomacyScreen.Tab.Espionage
                 ? new InfiltrationScreen(u)
+             : (MainDiplomacyScreen.Tab)index == MainDiplomacyScreen.Tab.Trends
+                ? new TrendsScreen(u)
                 : new MainDiplomacyScreen(u, (MainDiplomacyScreen.Tab)index);
 
         /// the factory of a HOSTING group

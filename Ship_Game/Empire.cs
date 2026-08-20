@@ -1879,6 +1879,10 @@ namespace Ship_Game
                     snapshot.MilitaryStrength = CurrentMilitaryStrength;
                     snapshot.TaxRate = data.TaxRate;
                     snapshot.Population = OwnedPlanets.Sum(p => p.Population);
+                    // Ludoal fork (Trends): the economy and science series, same metrics
+                    // the intelligence RANK rows sort by
+                    snapshot.GrossIncome = GrossIncome;
+                    snapshot.ScientificStrength = UnlockedTechs.Sum(t => t.Tech.Cost);
                 }
             }
 

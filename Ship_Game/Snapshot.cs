@@ -32,6 +32,10 @@ namespace Ship_Game
         [StarData] public int TotalGroundTroopsKilled;
         [StarData] public int TotalGroundTroopsLost;
         [StarData] public int TotalMoney;
+        // Ludoal fork (Trends, Wishlist): the two series the intelligence curves need and
+        // the tracker never recorded - additive, old saves read 0 until their first turn.
+        [StarData] public float GrossIncome;
+        [StarData] public float ScientificStrength;
         [StarData] public int TotalMaintenance;
         [StarData] public int TotalPopulation;
 
