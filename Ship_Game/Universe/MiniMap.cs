@@ -25,8 +25,10 @@ namespace Ship_Game
         readonly UniverseScreen Universe;
         readonly Rectangle Housing;
         Rectangle ActualMap;
-        Rectangle LastLookingAt; // bench 444: the deadband's memory (applied values)
-        Rectangle LastRawLook;   // bench 448: last frame's RAW values - the confirmation window
+        // bench 449: one-shot calibration of the frustum geometry against the real
+        // projection - linear in camera height, so three constants say it all
+        bool FrustumCalibrated;
+        double FrustumWidthPerHeight, FrustumOffsetXPerHeight, FrustumOffsetYPerHeight;
         /// Ludoal fork: the drawn map's real rect, and the projection that plots on it. The click
         /// handler reads all three so the INVERSE of WorldToMiniPos is guaranteed to match it.
         public Rectangle MapRect => ActualMap;
@@ -208,42 +210,32 @@ namespace Ship_Game
                 Log.Error(e, $"MiniMap Draw crashed {e.InnerException}");
             }
 
-            // bench 434 (bug: viewport frame trembling, amplitude growing with distance from
-            // the centre): the old float Unproject round-trips lose precision as |world coords|
-            // grow, and int TRUNCATION turned that noise into visible jitter while the camera
-            // eases. The DOUBLE-precision frustum the renderer already computes is the
-            // authority - derive the rectangle from it and ROUND, never truncate.
+            // bench 449 (the FORMULA, not another filter - maintainer call): the noise was
+            // in the SOURCE. Unprojecting through the float view matrix every frame loses
+            // precision as |world coords| grow - no display-side filter can fix a noisy
+            // input. The rect now derives from CAMERA STATE (CamPos, a smooth double):
+            // frustum geometry is linear in camera height, so ONE calibration against the
+            // real projection gives width-per-height and centre-offset-per-height, and
+            // every later frame is pure arithmetic on clean numbers.
+            double camH = Universe.CamPos.Z;
             var frustum = Universe.VisibleWorldRect;
-            double lookX = MiniMapZero.X + frustum.X1 * Scale;
-            double lookY = MiniMapZero.Y + frustum.Y1 * Scale;
-            double lookW = frustum.Width * Scale;
-            double lookH = lookW * Universe.ScreenHeight / (double)Universe.ScreenWidth;
+            if (!FrustumCalibrated && camH > 0 && frustum.Width > 0)
+            {
+                FrustumWidthPerHeight   = frustum.Width / camH;
+                FrustumOffsetXPerHeight = (frustum.X1 + frustum.Width  / 2 - Universe.CamPos.X) / camH;
+                FrustumOffsetYPerHeight = (frustum.Y1 + frustum.Height / 2 - Universe.CamPos.Y) / camH;
+                FrustumCalibrated = true;
+            }
+            double vw = FrustumWidthPerHeight * camH;
+            double vh = vw * Universe.ScreenHeight / (double)Universe.ScreenWidth;
+            double cx = Universe.CamPos.X + FrustumOffsetXPerHeight * camH;
+            double cy = Universe.CamPos.Y + FrustumOffsetYPerHeight * camH;
+            double lookX = MiniMapZero.X + (cx - vw / 2) * Scale;
+            double lookY = MiniMapZero.Y + (cy - vh / 2) * Scale;
+            double lookW = vw * Scale;
+            double lookH = vh * Scale;
             var lookingAt = new Rectangle((int)Math.Round(lookX), (int)Math.Round(lookY),
                                           (int)Math.Round(lookW), (int)Math.Round(lookH));
-            // bench 444: free-floating, the frame still danced by one pixel - the eased
-            // camera never quite rests, and Round flips at the half-pixel boundary. A
-            // one-pixel deadband per component: an edge only moves when the world moved
-            // it a FULL pixel (the clamped-at-the-border case was stable for exactly
-            // this reason - it was pinned).
-            // bench 448 (third pass): the rest-gate never armed after a drag (the camera's
-            // destination goes stale there), so the wiggle survived. New rule, no gate:
-            // a 1px move only passes once the SAME value shows up two frames running -
-            // real slow pans confirm themselves one frame later (smooth), a ±1px shimmer
-            // never repeats the same value twice and stays held. Bigger moves pass raw.
-            Rectangle raw = lookingAt;
-            if (LastLookingAt.Width > 0)
-            {
-                static int Settle(int fresh, int applied, int prevRaw)
-                    => Math.Abs(fresh - applied) > 1 ? fresh   // real movement: raw and smooth
-                     : fresh == prevRaw ? fresh                // 1px step confirmed twice: take it
-                     : applied;                                // first frame of a wiggle: hold
-                lookingAt = new Rectangle(Settle(lookingAt.X, LastLookingAt.X, LastRawLook.X),
-                                          Settle(lookingAt.Y, LastLookingAt.Y, LastRawLook.Y),
-                                          Settle(lookingAt.Width,  LastLookingAt.Width,  LastRawLook.Width),
-                                          Settle(lookingAt.Height, LastLookingAt.Height, LastRawLook.Height));
-            }
-            LastRawLook = raw;
-            LastLookingAt = lookingAt;
             if (lookingAt.Width < 2)
             {
                 lookingAt.Width  = 2;
