@@ -785,7 +785,10 @@ namespace Ship_Game
         // this is called quite rarely, only when the FTL (F2) or gravity wells (F5) overlay is enabled
         void DrawFTLInhibitionNodes()
         {
-            if (ShowingFTLOverlay || ShowingGravityWellOverlay)
+            // bench 452: the DSB overlay brings the projector coverage with it - placing
+            // projectors is exactly when you need to SEE the lattice - without arming F4
+            bool showProjectorCoverage = ShowingFTLOverlay || DeepSpaceBuildWindow.Visible;
+            if (showProjectorCoverage || ShowingGravityWellOverlay)
             {
                 var inhibit = ResourceManager.Texture("UI/node_inhibit");
 
@@ -813,7 +816,7 @@ namespace Ship_Game
                 }
 
                 // F4: subspace projection coverage (blue positive nodes from bordernodes)
-                if (ShowingFTLOverlay && viewState >= UnivScreenState.SectorView)
+                if (showProjectorCoverage && viewState >= UnivScreenState.SectorView)
                 {
                     var transparentBlue = new Color(30, 30, 150, 150).Premultiplied();
                     var transparentGreen = new Color(0, 200, 0, 20).Premultiplied();
