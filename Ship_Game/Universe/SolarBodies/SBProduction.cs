@@ -280,7 +280,7 @@ namespace Ship_Game.Universe.SolarBodies
                 return;
 
             QueueItem item = ConstructionQueue[0];
-            if (item.Rush || Owner.RushAllConstruction)
+            if (item.Rush || Owner.RushAllConstruction || P.RushConstruction)
             {
                 float prodToRush = item.ProductionNeeded.UpperBound(P.ProdHere);
                 if (prodToRush * GlobalStats.Defaults.RushCostPercentage + 1000 < P.Universe.Player.Money)

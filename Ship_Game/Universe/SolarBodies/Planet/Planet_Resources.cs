@@ -83,6 +83,12 @@ namespace Ship_Game
         // choice HOLDS and is never overwritten again.
         [StarData] public bool FoodManual;
         [StarData] public bool ProdManual;
+        // Ludoal fork (wishlist, 20 Aug): per-planet Continuous Rush - same behaviour as
+        // the Automation global, scoped to this colony. The global stays the master: while
+        // it is on, the local toggle shows checked read-only and this flag is untouched, so
+        // a global round-trip never lies about the local choice (spec's trap, avoided by
+        // reading the two flags live instead of sweeping item states).
+        [StarData] public bool RushConstruction;
         public bool AutoFood      { get => !FoodManual;      set => FoodManual      = !value; }
         public bool AutoProd      { get => !ProdManual;      set => ProdManual      = !value; }
         public bool AutoColonists { get => !ColonistsManual; set => ColonistsManual = !value; }

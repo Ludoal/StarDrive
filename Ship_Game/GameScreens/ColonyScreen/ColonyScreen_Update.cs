@@ -20,6 +20,11 @@ namespace Ship_Game
 
             P.UpdateIncomes();
             UpdateBuildAndConstructLists(elapsedTime);
+
+            // wishlist 20 Aug: while the Automation global rushes everything, the local
+            // toggle is a read-only indicator (checked, greyed, inert)
+            if (RushToggle != null)
+                RushToggle.Greyed = P.Owner.RushAllConstruction;
             UpdateTradeTab();
             UpdateTerraformTab();
             UpdateDysonSwarmTab();

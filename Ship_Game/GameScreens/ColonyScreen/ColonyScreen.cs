@@ -171,6 +171,7 @@ namespace Ship_Game
         UIButton DysonSwarmStartButton;
         UIButton DysonSwarmKillButton;
         UICheckBox DysonSwarmOverclock;
+        UICheckBox RushToggle; // wishlist 20 Aug: per-planet Continuous Rush, global-mastered
         UIPanel DysonSwarmControllerPanel;
         UIPanel DysonSwarmPanel;
         UIPanel DysonSwarmProdBoost;
@@ -469,6 +470,18 @@ namespace Ship_Game
             float queueTop = BuildableTabs.Bottom + Pad;
             RectF queueR = new(colRightX, queueTop, colRightW, gridBottom - queueTop);
             var queue = base.Add(new SubmenuScrollList<ConstructionQueueScrollListItem>(queueR, GameText.ConstructionQueue));
+
+            // wishlist 20 Aug: the per-planet Continuous Rush toggle, seated beside the
+            // CONSTRUCTION QUEUE tab OUTSIDE the frame. While the Automation global holds
+            // the pen it shows checked read-only (Update grays it); unchecked global hands
+            // the colony back its own flag, off by default.
+            if (p.OwnerIsPlayer)
+            {
+                RushToggle = base.Add(new UICheckBox(queueR.Right - 150, queueTop + 4,
+                    () => P.Owner.RushAllConstruction || P.RushConstruction,
+                    v => { if (!P.Owner.RushAllConstruction) P.RushConstruction = v; },
+                    Fonts.Arial12Bold, GameText.RushAllConstruction, GameText.RushAllConstructionTip));
+            }
 
             ConstructionQueue = queue.List;
             ConstructionQueue.EnableItemHighlight = true;
