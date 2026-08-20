@@ -362,23 +362,38 @@ namespace Ship_Game
             // screen uses, so the two agree; it also counts colonists in transit aboard ships, which
             // summing the planets would miss. Growth has no such aggregate, so it is summed per planet.
             float totalPop = Universe.Player.TotalPopBillion;
-            float totalGrowth = 0f;
+            float totalGrowth = 0f, stock = 0f, stockNet = 0f;
+            // bench 452 (maintainer): the empire's larder - every colony's store summed,
+            // with the per-turn surplus/deficit beside it. A cybernetic empire EATS
+            // production, so its survival line is the prod stock - same slot, same logic.
+            bool cyber = Universe.Player.IsCybernetic;
             for (int i = 0; i < planets.Count; ++i)
-                totalGrowth += planets[i].EstimatedPopGrowthPerTurn / 1000f; // per-turn, in billions
+            {
+                Planet p = planets[i];
+                totalGrowth += p.EstimatedPopGrowthPerTurn / 1000f; // per-turn, in billions
+                stock    += cyber ? p.ProdHere : p.FoodHere;
+                stockNet += cyber ? p.Prod.NetIncome : p.Food.NetIncome;
+            }
 
             RectF client = EmpireSummaryTab.ClientArea;
             float labelX = client.X + 14;
             float valueX = client.X + 120;
             float y      = client.Y + 14;
-            void Row(string label, string value)
+            void Row(string label, string value, string suffix = null, Color suffixColor = default)
             {
                 batch.DrawString(Fonts.Arial12Bold, label, new Vector2(labelX, y), Color.Orange);
                 batch.DrawString(Fonts.Arial12Bold, value, new Vector2(valueX, y), Cream);
+                if (suffix != null)
+                    batch.DrawString(Fonts.Arial12Bold, suffix,
+                        new Vector2(valueX + Fonts.Arial12Bold.TextWidth(value) + 8, y), suffixColor);
                 y += Fonts.Arial12Bold.LineSpacing + 8;
             }
             Row("Colonies:",   planets.Count.ToString());
             Row("Population:", totalPop.String(1) + "B");
             Row("Growth:",     "+" + totalGrowth.String(2) + "B/turn");
+            Row(cyber ? "Prod stock:" : "Food stock:", stock.String(0),
+                (stockNet >= 0f ? "+" : "") + stockNet.String(1) + "/turn",
+                stockNet >= 0f ? Color.LightGreen : Color.Red);
         }
 
         void DrawTileIcons(PlanetGridSquare pgs, Rectangle rect)
