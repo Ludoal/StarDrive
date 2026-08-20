@@ -362,17 +362,19 @@ namespace Ship_Game
             // screen uses, so the two agree; it also counts colonists in transit aboard ships, which
             // summing the planets would miss. Growth has no such aggregate, so it is summed per planet.
             float totalPop = Universe.Player.TotalPopBillion;
-            float totalGrowth = 0f, stock = 0f, stockNet = 0f;
-            // bench 452 (maintainer): the empire's larder - every colony's store summed,
-            // with the per-turn surplus/deficit beside it. A cybernetic empire EATS
-            // production, so its survival line is the prod stock - same slot, same logic.
+            float totalGrowth = 0f, food = 0f, foodNet = 0f, prod = 0f, prodNet = 0f;
+            // bench 452 (maintainer): the empire's larder AND its yard - both stores summed
+            // with the per-turn surplus/deficit beside them. Both travel by freighter, and a
+            // prod pile is what production rushes spend when a fleet has to exist quickly.
+            // A cybernetic empire eats production, so its food line would be noise: it only
+            // shows the prod line.
             bool cyber = Universe.Player.IsCybernetic;
             for (int i = 0; i < planets.Count; ++i)
             {
                 Planet p = planets[i];
                 totalGrowth += p.EstimatedPopGrowthPerTurn / 1000f; // per-turn, in billions
-                stock    += cyber ? p.ProdHere : p.FoodHere;
-                stockNet += cyber ? p.Prod.NetIncome : p.Food.NetIncome;
+                food += p.FoodHere; foodNet += p.Food.NetIncome;
+                prod += p.ProdHere; prodNet += p.Prod.NetIncome;
             }
 
             RectF client = EmpireSummaryTab.ClientArea;
@@ -391,9 +393,13 @@ namespace Ship_Game
             Row("Colonies:",   planets.Count.ToString());
             Row("Population:", totalPop.String(1) + "B");
             Row("Growth:",     "+" + totalGrowth.String(2) + "B/turn");
-            Row(cyber ? "Prod stock:" : "Food stock:", stock.String(0),
-                (stockNet >= 0f ? "+" : "") + stockNet.String(1) + "/turn",
-                stockNet >= 0f ? Color.LightGreen : Color.Red);
+            if (!cyber)
+                Row("Food stock:", food.String(0),
+                    (foodNet >= 0f ? "+" : "") + foodNet.String(1) + "/turn",
+                    foodNet >= 0f ? Color.LightGreen : Color.Red);
+            Row("Prod stock:", prod.String(0),
+                (prodNet >= 0f ? "+" : "") + prodNet.String(1) + "/turn",
+                prodNet >= 0f ? Color.LightGreen : Color.Red);
         }
 
         void DrawTileIcons(PlanetGridSquare pgs, Rectangle rect)
