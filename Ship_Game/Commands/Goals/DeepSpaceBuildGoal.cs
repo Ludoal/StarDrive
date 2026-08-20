@@ -22,6 +22,22 @@ namespace Ship_Game.Commands.Goals
         [StarData] public int DetourIndex;
 
         public override IShipDesign ToBuild => Build.Template;
+
+        // Ludoal fork (wishlist): drag-move of an in-progress deep space build. Rebases
+        // the position, drops the stale detour chain, and re-dispatches the constructor
+        // if it is already flying (OrderDeepSpaceBuild rebuilds the detours itself). A
+        // deployment already begun is not movable - the caller gates on that.
+        public void MoveBuildPos(Vector2 newPos)
+        {
+            StaticBuildPos = newPos;
+            if (TetherPlanet != null)
+                TetherOffset = newPos - TetherPlanet.Position;
+            Detours = null;
+            DetourIndex = 0;
+            Ships.Ship ship = FinishedShip;
+            if (ship != null) // en route or deploying: the re-order re-routes and resets deploy progress
+                ship.AI.OrderDeepSpaceBuild(this, ToBuild.GetCost(Owner), ToBuild.Grid.Radius);
+        }
         public override bool IsBuildingOrbitalFor(Planet planet) => TetherPlanet != null && TetherPlanet == planet;
         public override bool IsBuildingOrbitalFor(SolarSystem system) => TargetSystem == system;
 

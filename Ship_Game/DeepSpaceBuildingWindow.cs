@@ -368,7 +368,10 @@ namespace Ship_Game
 
                 if (ResourceManager.Ships.Get(item.UID, out Ship buildTemplate))
                 {
-                    Screen.ProjectToScreenCoords(item.BuildPos, platform.Width, out Vector2d posOnScreen, out double size);
+                    // wishlist: a marker held by the drag draws at the cursor's world pos
+                    Vector2 markerWorld = Screen.DraggingBuildGoal == item.AssociatedGoal
+                                        ? Screen.DraggingBuildGoalWorldPos : item.BuildPos;
+                    Screen.ProjectToScreenCoords(markerWorld, platform.Width, out Vector2d posOnScreen, out double size);
 
                     // FIX #347: ScaleIconSize adds the integer IconSize setting, which is meant for
                     // pixel sizes — here the result is used as a texture scale multiplier, blowing the

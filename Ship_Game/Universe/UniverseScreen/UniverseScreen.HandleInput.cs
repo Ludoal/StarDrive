@@ -21,6 +21,10 @@ namespace Ship_Game
     {
 
         public ClickableSpaceBuildGoal[] ClickableBuildGoals = Empty<ClickableSpaceBuildGoal>.Array;
+        // Ludoal fork (wishlist): drag-move of an in-progress deep space build - the
+        // held marker and the ghost position the draw follows
+        public Commands.Goals.DeepSpaceBuildGoal DraggingBuildGoal;
+        public Vector2 DraggingBuildGoalWorldPos;
         readonly Array<ClickableFleet> ClickableFleetsList = new();
 
         RectF SelectionBox = new(-1, -1, 0, 0);
@@ -125,6 +129,8 @@ namespace Ship_Game
 
         bool HandleInputNotLookingAtPlanet(InputState input)
         {
+            if (HandleBuildGoalDrag(input))
+                return true;
             if (input.DeepSpaceBuildWindow)       InputOpenDeepSpaceBuildWindow();
             if (input.FTLOverlay)                 ShowingFTLOverlay         = ToggleUIComponent("sd_ui_accept_alt3", ShowingFTLOverlay);
             if (input.RangeOverlay)               ShowingRangeOverlay       = ToggleUIComponent("sd_ui_accept_alt3", ShowingRangeOverlay);
@@ -805,6 +811,47 @@ namespace Ship_Game
                     return s;
             }
             return null;
+        }
+
+        // Ludoal fork (wishlist): grab a build marker with a held left button, slide it,
+        // release to commit - Escape cancels. The gesture lives with the markers: only
+        // while the DSB window shows them.
+        bool HandleBuildGoalDrag(InputState input)
+        {
+            if (DraggingBuildGoal == null)
+            {
+                if (!DeepSpaceBuildWindow.Visible || !input.LeftMouseHeldDown || !input.LeftMouseHeld(0.15f))
+                    return false;
+                ClickableSpaceBuildGoal[] goals = ClickableBuildGoals;
+                for (int i = 0; i < goals.Length; ++i)
+                {
+                    ClickableSpaceBuildGoal c = goals[i];
+                    if (c.HitTest(input.StartLeftHold)
+                        && c.AssociatedGoal is Commands.Goals.DeepSpaceBuildGoal bg
+                        && bg.Owner == Player)
+                    {
+                        DraggingBuildGoal = bg;
+                        GameAudio.BuildItemClicked();
+                        break;
+                    }
+                }
+                if (DraggingBuildGoal == null)
+                    return false;
+            }
+            if (input.Escaped) // cancel: the site stays where it was
+            {
+                DraggingBuildGoal = null;
+                return true;
+            }
+            DraggingBuildGoalWorldPos = UnprojectToWorldPosition(input.CursorPosition);
+            if (input.LeftMouseUp)
+            {
+                DraggingBuildGoal.MoveBuildPos(DraggingBuildGoalWorldPos);
+                UpdateClickableItems(); // the marker follows without waiting a tick
+                GameAudio.AffirmativeClick();
+                DraggingBuildGoal = null;
+            }
+            return true; // while dragging, the gesture owns the cursor
         }
 
         ClickableSpaceBuildGoal GetSpaceBuildGoalUnderCursor()
