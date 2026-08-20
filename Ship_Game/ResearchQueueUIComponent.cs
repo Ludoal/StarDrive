@@ -99,11 +99,12 @@ namespace Ship_Game
             }
 
             ResearchQueueList.Visible = visible;
-            ResearchQueueList.Parent.Visible = visible;
-            // bench 451: with no active research the component sat as an empty black hole
-            // over the map - a hidden queue hides its own ground as well
-            Color = visible ? Color.Black : Color.TransparentBlack;
-            CurrentResearchPanel.Visible = visible;
+            // bench 451 (maintainer rature): empty FRAMES beat a black hole and beat a
+            // vanished column both - the current and queue frames always stand, only
+            // their content hides, and Draw stamps a red NO RESEARCH! alert in the
+            // empty current frame (the STARVATION grammar).
+            ResearchQueueList.Parent.Visible = true;
+            CurrentResearchPanel.Visible = true;
             if (!visible)
             {
                 SpyDisruption.Visible = false;
@@ -132,6 +133,18 @@ namespace Ship_Game
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             base.Draw(batch, elapsed);
+
+            // bench 451 (maintainer): no active topic - say it in the alert grammar,
+            // centred in the empty Current Research frame
+            if (!Screen.Player.Research.HasTopic)
+            {
+                string alert = Localizer.Token(GameText.NoResearchAlert);
+                var f = Fonts.Pirulen16;
+                var r = CurrentResearchPanel.Rect;
+                batch.DrawString(f, alert,
+                    new Vector2(r.X + (r.Width - f.TextWidth(alert)) / 2f,
+                                r.Y + (r.Height - f.LineSpacing) / 2f), Color.Red);
+            }
 
             if (ResearchQueueList.Visible && CurrentResearch != null)
             {

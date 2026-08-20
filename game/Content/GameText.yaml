@@ -22290,6 +22290,10 @@ HkKeyEsc:
  Id: 5289
  ENG: "Esc"
  FRA: "Échap"
+NoResearchAlert:
+ Id: 5293
+ ENG: "NO RESEARCH!"
+ FRA: "AUCUNE RECHERCHE !"
 GoToResearch:
  Id: 5292
  ENG: "Go to Research"
