@@ -143,7 +143,7 @@ namespace Ship_Game
                 var r = CurrentResearchPanel.Rect;
                 batch.DrawString(f, alert,
                     new Vector2(r.X + (r.Width - f.TextWidth(alert)) / 2f,
-                                r.Y + (r.Height - f.LineSpacing) / 2f), Color.Red);
+                                r.Y + 10 + (r.Height - f.LineSpacing) / 2f), Color.Red); // bench 452: the tab header skews the optical centre
             }
 
             if (ResearchQueueList.Visible && CurrentResearch != null)
