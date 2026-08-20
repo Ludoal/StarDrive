@@ -53,6 +53,15 @@ public sealed class ResearchPopup : PopupWindow
 
         Array<UnlockItem> unlocks = UnlockItem.CreateUnlocksList(Technology, Universe.Player);
         UnlockSL.SetItems(unlocks.Select(u => new UnlockListItem(u, Universe.Player)));
+
+        // bench 450 (wishlist): straight to the tree from the unlock popup
+        var goBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(0, Rect.Bottom - 40), GameText.GoToResearch));
+        goBtn.Pos = new Vector2(Rect.X + (Rect.Width - goBtn.Width) / 2f, goBtn.Pos.Y); // bottom centre
+        goBtn.OnClick = b =>
+        {
+            ExitScreen();
+            ScreenManager.AddScreen(new ResearchScreenNew(Universe, Universe, Universe.EmpireUI));
+        };
     }
 
     class UnlockListItem : ScrollListItem<UnlockListItem>

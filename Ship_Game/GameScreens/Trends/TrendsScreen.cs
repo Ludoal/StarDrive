@@ -64,7 +64,6 @@ namespace Ship_Game.GameScreens
 
         public override void LoadContent()
         {
-            Empire[] majors = Universe.UState.ActiveMajorEmpires;
             // bench 448 (rature): the RELATIONSHIPS gabarit - the 900-class window, built
             // by hand exactly like that sibling
             Rectangle frame = ScreenGroups.GroupFrame900(ScreenWidth, ScreenHeight);
@@ -77,7 +76,29 @@ namespace Ship_Game.GameScreens
             CloseButton(closePos.X, closePos.Y);
             LeftRect = frame;
 
-            // harvest the snapshots once: (date, one value per domain) per empire
+            HarvestSeries();
+        }
+
+        int HarvestedTurns = -1;
+
+        // bench 450: the sim keeps running under the open page - re-harvest whenever the
+        // tracker grows a turn (the UI asks the sim, it never caches it)
+        public override void Update(float fixedDeltaTime)
+        {
+            if (Universe.UState.Stats.NumRecordedTurns != HarvestedTurns)
+                HarvestSeries();
+            base.Update(fixedDeltaTime);
+        }
+
+        void HarvestSeries()
+        {
+            HarvestedTurns = Universe.UState.Stats.NumRecordedTurns;
+            Empire[] majors = Universe.UState.ActiveMajorEmpires;
+            var hidden = new Map<Empire, bool>();
+            foreach (EmpireSeries old in Series)
+                hidden[old.E] = old.Hidden; // the legend toggles survive the refresh
+            Series.Clear();
+            // harvest the snapshots: (date, one value per domain) per empire
             var byEmpire = new Map<Empire, EmpireSeries>();
             foreach (var perDate in Universe.UState.Stats.SnapshotsMap.Values)
             {
@@ -105,6 +126,8 @@ namespace Ship_Game.GameScreens
                 if (byEmpire.TryGetValue(e, out EmpireSeries s))
                 {
                     s.Points.Sort((a, b) => a.Date.CompareTo(b.Date));
+                    if (hidden.TryGetValue(e, out bool h))
+                        s.Hidden = h;
                     Series.Add(s);
                 }
             }

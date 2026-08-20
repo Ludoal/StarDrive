@@ -6226,6 +6226,7 @@ namespace Ship_Game
         HkKeyEsc = 5289,
         AutoSupplyTip = 5290,
         DvGroupTabTipTrends = 5291,
+        GoToResearch = 5292,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 5101,
         /// <summary>Research Bonus Granted: {0}%</summary>

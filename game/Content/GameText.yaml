@@ -22290,6 +22290,10 @@ HkKeyEsc:
  Id: 5289
  ENG: "Esc"
  FRA: "Échap"
+GoToResearch:
+ Id: 5292
+ ENG: "Go to Research"
+ FRA: "Aller à la recherche"
 DvGroupTabTipTrends:
  Id: 5291
  ENG: "Progression curves per race - each domain unlocks with the intel that founds it."
