@@ -374,7 +374,11 @@ namespace Ship_Game
                 Planet p = planets[i];
                 totalGrowth += p.EstimatedPopGrowthPerTurn / 1000f; // per-turn, in billions
                 food += p.FoodHere; foodNet += p.Food.NetIncome;
-                prod += p.ProdHere; prodNet += p.Prod.NetIncome;
+                // bench 453 (maintainer question): the prod delta must say whether the WAR
+                // CHEST grows - so the queues' planned spend for the turn comes off the
+                // inflow (NetIncome ignores construction, which eats surplus and stock apart)
+                prod += p.ProdHere;
+                prodNet += p.Prod.NetIncome - p.LimitedProductionExpenditure(p.CurrentProductionToQueue);
             }
 
             RectF client = EmpireSummaryTab.ClientArea;
