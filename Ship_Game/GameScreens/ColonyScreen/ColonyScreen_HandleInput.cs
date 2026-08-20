@@ -124,7 +124,7 @@ namespace Ship_Game
                     {
                         QueueItem toTop = e.Item;
                         GameAudio.AcceptClick();
-                        P.Universe.RunOnSimThread(() =>
+                        P.Universe.Screen.RunOnSimThread(() =>
                         {
                             int index = P.ConstructionQueue.IndexOf(toTop);
                             if (index > 0)
