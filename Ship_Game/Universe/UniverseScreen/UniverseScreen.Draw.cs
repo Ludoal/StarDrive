@@ -516,9 +516,10 @@ namespace Ship_Game
                 EmpireUI.Draw(batch);
                 // Ludoal fork (maintainer feedback): NOTHING about the map changes when a
                 // panel opens - the map UI draws identically, the panel simply lands on top.
+                // bench 451: notifications pass UNDER the DSB overlay - draw order swapped
+                NotificationManager.Draw(batch);
                 DeepSpaceBuildWindow.Draw(batch, elapsed);
                 pieMenu.DrawAt(batch, GetPieMenuPosition(), Fonts.Arial12Bold);
-                NotificationManager.Draw(batch);
                 if (LookingAtPlanet)
                 {
                     // Ludoal fork (maintainer feedback): opened FROM a list tab, the group's

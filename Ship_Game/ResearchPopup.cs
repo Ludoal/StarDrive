@@ -55,7 +55,7 @@ public sealed class ResearchPopup : PopupWindow
         UnlockSL.SetItems(unlocks.Select(u => new UnlockListItem(u, Universe.Player)));
 
         // bench 450 (wishlist): straight to the tree from the unlock popup
-        var goBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(0, Rect.Bottom - 40), GameText.GoToResearch));
+        var goBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(0, Rect.Bottom - 51), GameText.GoToResearch)); // bench 451: +11px off the floor
         goBtn.Pos = new Vector2(Rect.X + (Rect.Width - goBtn.Width) / 2f, goBtn.Pos.Y); // bottom centre
         goBtn.OnClick = b =>
         {

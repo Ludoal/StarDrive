@@ -229,6 +229,11 @@ namespace Ship_Game
                 SelectedNodeList.Clear();
             }
 
+            // bench 451: a removal invalidates every selection that pointed at it, in the
+            // SAME gesture - the stance bar kept drawing a dead selection until the next
+            // click re-ran ResetButtons
+            OrdersButtons.ResetButtons(SelectedNodeList);
+
             // need to reset the list if any active ships were removed and return to global pool
             if (SubShips.SelectedIndex == 1)
                 ResetLists();

@@ -37,6 +37,9 @@ namespace Ship_Game.GameScreens
         // StandGround Stance Cursor
         public static GameCursor StandGround;
         public static GameCursor StandGroundNav;
+        // bench 451: the OS hand for grabbable things (no hand asset ships with the game,
+        // and the system one is exactly the affordance the player already knows)
+        public static GameCursor Hand;
 
         static GameCursor CurrentCursor;
         static Cursor CurrentOSCursor;
@@ -57,6 +60,7 @@ namespace Ship_Game.GameScreens
 
             StandGround    = LoadCursor(game, software, "Cursors/StandGround.png");
             StandGroundNav = LoadCursor(game, software, "Cursors/StandGroundNav.png");
+            Hand           = new GameCursor { OSCursor = Cursors.Hand }; // system hand; software mode falls back to OS
 
             TargetForm = game.Form;
             CurrentCursor = Regular;

@@ -100,6 +100,9 @@ namespace Ship_Game
 
             ResearchQueueList.Visible = visible;
             ResearchQueueList.Parent.Visible = visible;
+            // bench 451: with no active research the component sat as an empty black hole
+            // over the map - a hidden queue hides its own ground as well
+            Color = visible ? Color.Black : Color.TransparentBlack;
             CurrentResearchPanel.Visible = visible;
             if (!visible)
             {

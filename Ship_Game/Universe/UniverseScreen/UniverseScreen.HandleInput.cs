@@ -540,6 +540,11 @@ namespace Ship_Game
             if (IsCinematicModeEnabled)
                 return GameCursors.Cinematic;
 
+            // bench 451: a grabbable build marker (or one in hand) wears the hand cursor
+            if (DraggingBuildGoal != null
+                || (DeepSpaceBuildWindow.Visible && GetSpaceBuildGoalUnderCursor() != null))
+                return GameCursors.Hand;
+
             if (SelectedFleet != null || SelectedShip != null || SelectedShipList.NotEmpty)
             {
                 MoveOrder mo = ShipCommands.GetMoveOrderType();
