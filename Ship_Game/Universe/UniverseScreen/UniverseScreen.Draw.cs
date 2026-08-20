@@ -1391,19 +1391,17 @@ namespace Ship_Game
 
                     if (planet.IsMineable)
                     {
-                        if (!planet.Mining.AreMiningOpsPresent())
-                        {
-                            DrawTextureWithToolTip(Mineable.Icon, Color.White, GameText.MiningStationsCanBePlaced, mousePos,
-                                (int)posOffSet.X + 18*drawLocationOffset, (int)posOffSet.Y, 17, 14);
-                        }
-                        else
+                        // bench 444: the crossed-hammers "can be placed" badge is gone from
+                        // the exploded and close views too - the exotic resource icon already
+                        // says everything (which resource, and its tooltip). Ops present
+                        // keep their owner's flag.
+                        if (planet.Mining.AreMiningOpsPresent())
                         {
                             var flag = planet.Mining.Owner.data.Traits.FlagIndex;
                             DrawTextureWithToolTip(ResourceManager.Flag(flag), planet.Mining.Owner.EmpireColor, 
                                 GameText.MiningStationsOpsOwned, mousePos, (int)posOffSet.X + 18 * drawLocationOffset, (int)posOffSet.Y, 14, 14);
+                            ++drawLocationOffset;
                         }
-
-                        ++drawLocationOffset;
 
                         DrawTextureWithToolTip(planet.Mining.ExoticResourceIcon, Color.White, planet.Mining.ResourceDescription, mousePos,
                                                (int)posOffSet.X + 18*drawLocationOffset, (int)posOffSet.Y, 14, 14);
