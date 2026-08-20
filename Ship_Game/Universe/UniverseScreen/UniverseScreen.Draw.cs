@@ -896,8 +896,10 @@ namespace Ship_Game
                     {
                         bool hover = DsbCancelRect.HitTest(Input.CursorPosition);
                         UIButton.DrawPlate(batch, DsbCancelRect, UIButton.PlateActive);
-                        batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.UhCancelConstruction),
-                            new Vector2(DsbCancelRect.X + 13, DsbCancelRect.Y + 13 - Fonts.Arial12Bold.LineSpacing / 2 - 2),
+                        string cancelText = Localizer.Token(GameText.UhCancelConstruction);
+                        batch.DrawString(Fonts.Arial12Bold, cancelText, // bench 453: centred in its plate
+                            new Vector2(DsbCancelRect.X + (DsbCancelRect.Width - Fonts.Arial12Bold.TextWidth(cancelText)) / 2f,
+                                        DsbCancelRect.Y + (DsbCancelRect.Height - Fonts.Arial12Bold.LineSpacing) / 2f),
                             hover ? new Color(174, 202, 255) : new Color(88, 108, 146));
                     }
                 }

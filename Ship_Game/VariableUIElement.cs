@@ -47,15 +47,13 @@ namespace Ship_Game
 			0f.SmoothStep(1f, TransitionPosition);
 			// Ludoal fork: the minimap's recipe instead of the sculpted unitselmenu texture -
 			// a near-opaque flat ground and a rounded grey rule, frame shaved like its siblings
+			// bench 453: the SAME frame as the four cartouche siblings, to the pixel -
+			// same shave, same right trim, same Submenu furniture (copy the one that works)
 			SpriteBatch batch = ScreenManager.SpriteBatch;
 			Rectangle frame = Housing;
 			frame.Y += FrameShave; frame.Height -= FrameShave;
-			Rectangle plate = frame;
-			plate.Inflate(-2, -2);
-			batch.FillRectangle(plate, new Color(8, 10, 14).Alpha(0.94f));
-			UITheme.DrawPlate(batch, frame, Color.Transparent,
-			                  new Color(150, 150, 150).Alpha(0.85f), radiusOverride: 8,
-			                  ruleWidthOverride: 3);
+			frame.Width -= PlanetInfoUIElement.RightTrim;
+			Submenu.DrawFrameWithGround(batch, new RectF(frame));
 			Vector2 NamePos = new Vector2(Housing.X + 41, Housing.Y + 65);
 			ScreenManager.SpriteBatch.DrawString(Fonts.Arial20Bold, TitleText, NamePos, tColor);
 			Vector2 BodyPos = new Vector2(NamePos.X, Housing.Y + 115);

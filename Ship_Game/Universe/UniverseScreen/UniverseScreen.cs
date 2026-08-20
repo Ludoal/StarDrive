@@ -676,7 +676,7 @@ namespace Ship_Game
             // interface keeps - every info cartouche (ship, system, planet, star, fleet list)
             // derives from this one rect, so they all move together.
             SelectedStuffRect = new Rectangle(10, height - 257, 407, 247); // visible frame = 247-26 shave = 221, the minimap frame's height
-            DsbCancelRect = new Rectangle(SelectedStuffRect.X + 25, SelectedStuffRect.Y + 150, 182, 25); // Ludoal fork
+            DsbCancelRect = new Rectangle(SelectedStuffRect.X + 41, SelectedStuffRect.Y + 150, 182, 25); // Ludoal fork - bench 453: aligned on the cartouche text column
             ShipInfoUIElement = new ShipInfoUIElement(SelectedStuffRect, ScreenManager, this);
             SystemInfoOverlay = new SolarsystemOverlay(SelectedStuffRect, ScreenManager, this);
             pInfoUI           = new PlanetInfoUIElement(SelectedStuffRect, ScreenManager, this);
