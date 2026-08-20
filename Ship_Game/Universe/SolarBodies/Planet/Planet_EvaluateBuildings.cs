@@ -828,9 +828,12 @@ namespace Ship_Game
             // no oscillation.
             const float BiospherePaybackShare = 0.6f;
             float bioUpkeep = bio.ActualMaintenance(this);
-            // (NetRevenueGain + upkeep) / nominal = the added pop's income at rate 1.0,
-            // through the same pipe (fertility/richness/racial modifiers included)
-            float fullRateIncome = (Money.NetRevenueGain(bio) + bioUpkeep) / 0.25f;
+            // the added pop's marginal income at tax rate 1.0, computed directly: pop the
+            // biosphere adds x credits per colonist x the STRUCTURAL tax modifiers (racial
+            // bonus/penalty plus building tax percentages - review). Deliberately not the
+            // live TaxRate - the player's slider plays no part in this decision (issue 321).
+            float newPop = (bio.MaxPopIncrease + PopPerBiosphere(Owner)) * 0.001f;
+            float fullRateIncome = newPop * Money.IncomePerColonist * Money.TaxRateMultiplier;
             bool popPressure = PopulationRatio >= 0.85f && EstimatedPopGrowthPerTurn > 0f
                                && bioUpkeep <= BiospherePaybackShare * fullRateIncome;
             var wanted = GetBuildingsListToChooseFrom(BuildingsCanBuild);
