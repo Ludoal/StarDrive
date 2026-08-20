@@ -224,7 +224,10 @@ namespace Ship_Game
             // one-pixel deadband per component: an edge only moves when the world moved
             // it a FULL pixel (the clamped-at-the-border case was stable for exactly
             // this reason - it was pinned).
-            if (LastLookingAt.Width > 0)
+            // bench 447: the deadband quantized the ease-out into 2px steps - it now only
+            // holds a camera AT REST (destination reached); a moving one stays raw and smooth
+            bool camResting = Universe.CamDestination.ToVec2f().Distance(Universe.CamPos.ToVec2f()) < 50f; // 50f = the camera code's own arrival idiom
+            if (camResting && LastLookingAt.Width > 0)
             {
                 static int Settle(int fresh, int last) => Math.Abs(fresh - last) <= 1 ? last : fresh;
                 lookingAt = new Rectangle(Settle(lookingAt.X, LastLookingAt.X),

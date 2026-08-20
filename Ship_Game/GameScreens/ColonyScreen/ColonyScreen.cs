@@ -953,26 +953,35 @@ namespace Ship_Game
         // One pin at a time across both; a click on the pinned row releases it.
         void OnBuildableRowClicked(BuildableListItem item)
         {
-            if (item == null || (item.Building == null && item.Troop == null))
-                return; // headers and ships have no description to hold
+            if (item == null || (item.Building == null && item.Troop == null && item.Ship == null))
+                return; // headers have nothing to hold
             bool wasPinned = item == PinnedBuildable;
             ClearListPins();
             PinnedBuildable = wasPinned ? null : item;
             item.DescriptionPinned = !wasPinned;
             DescriptionScroll = 0f;
-            GameAudio.AcceptClick();
+            // no click sound here: the list item base already played it (bench 447 double-buzz)
+            if (item.Ship != null)
+            {
+                if (item.DescriptionPinned) ShipInfoOverlay.ShowInRect(DescriptionPane, item.Ship);
+                else                        ShipInfoOverlay.Hide();
+            }
         }
 
         void OnQueueRowClicked(ConstructionQueueScrollListItem item)
         {
-            if (item == null || (item.Item.Building == null && item.Item.TroopType == null))
+            if (item == null || (item.Item.Building == null && item.Item.TroopType == null && !item.Item.isShip))
                 return;
             bool wasPinned = item == PinnedQueue;
             ClearListPins();
             PinnedQueue = wasPinned ? null : item;
             item.DescriptionPinned = !wasPinned;
             DescriptionScroll = 0f;
-            GameAudio.AcceptClick();
+            if (item.Item.isShip)
+            {
+                if (item.DescriptionPinned) ShipInfoOverlay.ShowInRect(DescriptionPane, item.Item.ShipData);
+                else                        ShipInfoOverlay.Hide();
+            }
         }
 
         void ClearListPins()

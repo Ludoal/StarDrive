@@ -386,7 +386,8 @@ namespace Ship_Game
 
             // maintainer bench 444: the wheel scrolls the tree vertically when it overruns
             // the frame - the same clamped camera move as the middle-drag, vertical axis only
-            if (PageFrame.HitTest(input.CursorPosition) && (input.ScrollIn || input.ScrollOut))
+            if (PageFrame.HitTest(input.CursorPosition) && !Queue.HitTest(input.CursorPosition)
+                && (input.ScrollIn || input.ScrollOut))
             {
                 float wheelMaxY = 0;
                 foreach (TreeNode n in SubNodes.Values)

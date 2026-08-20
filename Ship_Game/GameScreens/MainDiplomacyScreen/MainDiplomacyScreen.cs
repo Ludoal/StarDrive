@@ -559,10 +559,11 @@ namespace Ship_Game
         void DrawPositionBlock(SpriteBatch batch, Empire e, Rectangle col, ref float y)
         {
             float maxY = float.MaxValue;
+            // bench 447: unlock order - the rows reveal top-down as the level climbs
+            RankRow(batch, e, col, ref y, maxY, "Population", GetPop,                        es => es.CanViewPopRank,      1);
+            RankRow(batch, e, col, ref y, maxY, "Military",   x => x.CurrentMilitaryStrength, es => es.CanViewMilitaryRank, 2);
             RankRow(batch, e, col, ref y, maxY, "Economy",    x => x.GrossIncome,            es => es.CanViewEconomyRank,  3);
             RankRow(batch, e, col, ref y, maxY, "Science",    GetScientificStr,              es => es.CanViewScienceRank,  3);
-            RankRow(batch, e, col, ref y, maxY, "Military",   x => x.CurrentMilitaryStrength, es => es.CanViewMilitaryRank, 2);
-            RankRow(batch, e, col, ref y, maxY, "Population", GetPop,                        es => es.CanViewPopRank,      1);
         }
 
         void RankRow(SpriteBatch batch, Empire e, Rectangle col, ref float y, float maxY,

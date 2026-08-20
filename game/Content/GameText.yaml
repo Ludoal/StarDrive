@@ -2060,20 +2060,20 @@ OpenTheGroundAssaultView:
  PTB: "Abre a Visão de Assalto Terrestre deste planeta, onde você pode pousar tropas e ordenar bombardeios"
 ClickToMoveUpIn:
  Id: 261
- ENG: "Click to move up in the queue. Control-Click to move to the top"
- FRA: "Cliquez pour monter dans la file. Ctrl-clic pour monter tout en haut"
- RUS: "Щелкните для перемещения на одну позицию вверх в очереди. Ctrl+ЛКМ - перемещение в начало очереди"
- SPA: "Haz clic para subir en la cola. Pulsa Ctrl+clic para ponerlo en el primer puesto"
- UKR: "Натисніть, щоб перемістити вгору в черзі. Control-Клікніть, щоб перемістити на початок черги"
- PTB: "Clique para subir na fila. Ctrl-clique para mover para o topo"
+ ENG: "Click to move up in the queue. Alt-Click to move to the top"
+ FRA: "Cliquez pour monter dans la file. Alt-clic pour monter tout en haut"
+ RUS: ""
+ SPA: ""
+ UKR: ""
+ PTB: ""
 ClickToMoveDownIn:
  Id: 262
- ENG: "Click to move down in the queue. Control-Click to move to the bottom"
- FRA: "Cliquez pour descendre dans la file. Ctrl-clic pour descendre tout en bas"
- RUS: "Щелкните для перемещения на одну позицию вниз в очереди. Ctrl+ЛКМ - перемещение в конец очереди"
- SPA: "Haz clic para bajar en la cola. Pulsa Ctrl+clic para ponerlo en el último puesto"
- UKR: "Клацніть, щоб перемістити вниз у черзі. Control-Клікніть, щоб перемістити до кінця черги"
- PTB: "Clique para descer na fila. Ctrl-clique para mover para o final"
+ ENG: "Click to move down in the queue. Alt-Click to move to the bottom"
+ FRA: "Cliquez pour descendre dans la file. Alt-clic pour descendre tout en bas"
+ RUS: ""
+ SPA: ""
+ UKR: ""
+ PTB: ""
 ShipWillAttemptToHold:
  Id: 263
  ENG: "Ship will attempt to hold position and will not move to engage enemies"

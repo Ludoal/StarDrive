@@ -240,21 +240,19 @@ namespace Ship_Game
                         {
                             sideSpacing += 4;
                             RectF flashRect = new(planetR.X + planetR.W + sideSpacing, planetR.Y + planetR.H / 2 - 7, 17, 14);
-                            if (!p.Mining.AreMiningOpsPresent()) 
-                            {
-                                batch.Draw(Mineable.Icon, flashRect, Universe.CurrentFlashColor);
-                                if (flashRect.HitTest(Universe.Input.CursorPosition))
-                                    ToolTip.CreateTooltip(GameText.MiningStationsCanBePlaced);
-                            }
-                            else
+                            // bench 447: the crossed-hammers badge leaves the EXPLODED overlay
+                            // too (the batch's second site) - the exotic resource icon says it
+                            // all; ops present keep their owner's flag
+                            if (p.Mining.AreMiningOpsPresent())
                             {
                                 var flag = p.Mining.Owner.data.Traits.FlagIndex;
                                 batch.Draw(ResourceManager.Flag(flag), flashRect, p.Mining.Owner.EmpireColor);
                                 if (flashRect.HitTest(Universe.Input.CursorPosition))
                                     ToolTip.CreateTooltip(GameText.MiningStationsOpsOwned);
+                                sideSpacing += flashRect.W + 4;
                             }
-
-                            sideSpacing += flashRect.W + 4;
+                            else
+                                sideSpacing -= 4; // no badge drawn: give the inset back
                             RectF resourceRect = new(planetR.X + planetR.W + sideSpacing, planetR.Y + planetR.H / 2 - 7, 14, 14);
                             batch.Draw(p.Mining.ExoticResourceIcon, resourceRect, Universe.CurrentFlashColor);
                             if (resourceRect.HitTest(Universe.Input.CursorPosition))

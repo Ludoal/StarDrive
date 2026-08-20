@@ -210,16 +210,18 @@ namespace Ship_Game
             item.BuildIt(1);
         }
 
+        // bench 447: ship info lives in the Description pane now, not a floating box -
+        // and a PINNED ship holds the pane against hover changes
+        bool PinnedShipHeld => PinnedBuildable?.Ship != null || PinnedQueue?.Item.isShip == true;
+        Rectangle DescriptionPane => new(PFacilities.Rect.X, PFacilities.Rect.Y + 30,
+                                         PFacilities.Rect.Width, PFacilities.Rect.Height - 35);
+
         void OnBuildableHoverChange(BuildableListItem item)
         {
-            if (item == null) // lost hover
-            {
+            if (item?.Ship != null && !PinnedShipHeld)
+                ShipInfoOverlay.ShowInRect(DescriptionPane, item.Ship);
+            else if (!PinnedShipHeld && item?.Ship == null)
                 ShipInfoOverlay.Hide();
-            }
-            else
-            {
-                ShipInfoOverlay.ShowToLeftOf(new Vector2(BuildableList.X, item.Y), item.Ship);
-            }
         }
 
         void OnBuildableListDrag(BuildableListItem item, DragEvent evt, bool outside)
@@ -248,14 +250,10 @@ namespace Ship_Game
 
         void OnConstructionItemHovered(ConstructionQueueScrollListItem item)
         {
-            if (item == null) // lost hover
-            {
+            if (item != null && item.Item.isShip && !PinnedShipHeld)
+                ShipInfoOverlay.ShowInRect(DescriptionPane, item.Item.ShipData);
+            else if (!PinnedShipHeld && item?.Item.isShip != true)
                 ShipInfoOverlay.Hide();
-            }
-            else if (item.Item.isShip)
-            {
-                ShipInfoOverlay.ShowToLeftOf(item.Pos, item.Item.ShipData);
-            }
         }
 
         public bool Build(Building b, PlanetGridSquare where = null)

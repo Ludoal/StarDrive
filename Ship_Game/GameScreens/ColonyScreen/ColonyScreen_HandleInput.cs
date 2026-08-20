@@ -27,7 +27,7 @@ namespace Ship_Game
                 foreach (BuildableListItem e in BuildableList.AllEntries)
                     if (e == PinnedBuildable) { alive = true; break; }
                 if (!alive) ClearListPins();
-                else return (object)PinnedBuildable.Building ?? PinnedBuildable.Troop;
+                else return (object)PinnedBuildable.Building ?? (object)PinnedBuildable.Troop ?? PinnedBuildable.Ship;
             }
             if (PinnedQueue != null)
             {
@@ -37,6 +37,7 @@ namespace Ship_Game
                 if (!alive) ClearListPins();
                 else if (PinnedQueue.Item.Building != null) return PinnedQueue.Item.Building;
                 else if (PinnedQueue.Item.TroopType != null) return ResourceManager.GetTroopTemplate(PinnedQueue.Item.TroopType);
+                else if (PinnedQueue.Item.isShip) return PinnedQueue.Item.ShipData;
             }
 
             // TODO: replace with a popup window
@@ -48,6 +49,7 @@ namespace Ship_Game
                     {
                         if (e.Building != null) return e.Building;
                         if (e.Troop != null) return e.Troop;
+                        if (e.Ship != null) return e.Ship; // ship: blank text, the overlay seats in the pane
                     }
                 }
             }
@@ -59,6 +61,7 @@ namespace Ship_Game
                     {
                         if (e.Item.Building != null) return e.Item.Building;
                         if (e.Item.TroopType != null) return ResourceManager.GetTroopTemplate(e.Item.TroopType);
+                        if (e.Item.isShip) return e.Item.ShipData;
                     }
                 }
             }
@@ -112,10 +115,10 @@ namespace Ship_Game
             // A right-click landing on the COLONY frame belongs to its content - the tile
             // scrap prompt, the list rows - never to "close the page". The close intercept
             // ran before the tiles ever saw the click and ate the scrap gesture (bench 419).
-            // bench 444: Ctrl+click on a queue ROW sends it to the TOP - the Up arrow's
-            // ctrl gesture, promoted to the row. A Mac Ctrl+click reaches the VM as a
-            // RIGHT-click, which fell into the page dismiss - so both buttons count here.
-            if (input.IsCtrlKeyDown && (input.LeftMouseClick || input.RightMouseClick)
+            // bench 447: ALT+click on a queue ROW sends it to the TOP - Ctrl never reaches
+            // the game intact from the maintainer's Mac (the VM turns Ctrl+click into a
+            // right-click), so the gesture moves to Alt and right-click keeps its dismiss.
+            if (input.IsAltKeyDown && input.LeftMouseClick
                 && ConstructionQueue.HitTest(input.CursorPosition))
             {
                 foreach (ConstructionQueueScrollListItem e in ConstructionQueue.AllEntries)
@@ -137,15 +140,6 @@ namespace Ship_Game
             }
 
             bool rightClickOnColonyFrame = input.RightMouseClick && SubColonyGrid.Rect.HitTest(input.CursorPosition);
-            // bench 444: a right-click landing on the two LISTS belongs to them too - it
-            // RELEASES a pin instead of closing the page
-            bool rightClickOnLists = input.RightMouseClick
-                && (BuildableList.HitTest(input.CursorPosition) || ConstructionQueue.HitTest(input.CursorPosition));
-            if (rightClickOnLists)
-            {
-                ClearListPins();
-                return true;
-            }
             if ((CanEscapeFromScreen && (input.Escaped || (input.RightMouseClick && !ClickedTroop && !rightClickOnColonyFrame)))
                 || (input.LeftMouseClick && CloseBtn.Rect.HitTest(input.CursorPosition)))
             {

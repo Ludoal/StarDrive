@@ -53,6 +53,18 @@ namespace Ship_Game.GameScreens.ShipDesign
             }
         }
 
+        // bench 447: seat the overlay INSIDE a host rect (the colony Description pane) -
+        // the box footprint is (size * 1.5, size), fitted to the host
+        public void ShowInRect(in Rectangle host, IShipDesign design)
+        {
+            Visible = design != null;
+            if (Visible)
+            {
+                float size = Math.Min(host.Height - 10, (host.Width - 20) / 1.5f);
+                ShowShip(design, new(host.X + 10, host.Y + 5), size);
+            }
+        }
+
         public void ShowToTopOf(Vector2 topOf, IShipDesign design)
         {
             Visible = design != null;

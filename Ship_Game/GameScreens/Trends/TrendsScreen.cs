@@ -65,21 +65,11 @@ namespace Ship_Game.GameScreens
         public override void LoadContent()
         {
             Empire[] majors = Universe.UState.ActiveMajorEmpires;
-            LeftRect = ScreenGroups.RaceColumnsFrame(ScreenWidth, ScreenHeight, majors.Length);
-            GroupTabs = Add(new Submenu(new RectF(LeftRect.X, LeftRect.Y, LeftRect.Width, LeftRect.Height),
-                                        ScreenGroups.LiveTitles(ScreenGroups.Group.Diplomacy, Universe)));
-            GroupTabs.OnTabChange = OnGroupTabChanged;
-            GroupTabs.PerformLayout();
-            GroupTabs.SelectedIndex = (int)MainDiplomacyScreen.Tab.Trends;
-
-            Vector2 closePos = ScreenGroups.GroupClosePos(GroupTabs.ClientArea);
-            CloseButton(closePos.X, closePos.Y);
-
-            // legacy saves carry no unlock dates: stamp already-reached domains NOW, so
-            // their curves honestly start the day the player first looked
-            foreach (Empire e in majors)
-                if (!e.isPlayer)
-                    Player.GetRelations(e).Espionage?.StampDomainUnlocks();
+            // bench 447: the Research gabarit (the etalon group frame), not the race-columns
+            // sprawl - a chart page has no reason to span the whole screen
+            GroupTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Diplomacy, Universe),
+                                                  (int)MainDiplomacyScreen.Tab.Trends, OnGroupTabChanged, out Rectangle frame);
+            LeftRect = frame;
 
             // harvest the snapshots once: (date, one value per domain) per empire
             var byEmpire = new Map<Empire, EmpireSeries>();
@@ -139,6 +129,8 @@ namespace Ship_Game.GameScreens
             clipFrom = 0f;
             if (e.isPlayer)
                 return true;
+            if (!Player.IsKnown(e))
+                return false; // bench 447: an unmet race has no curve and no name
             Espionage esp = Player.GetRelations(e).Espionage;
             if (esp == null)
                 return false;
@@ -237,7 +229,7 @@ namespace Ship_Game.GameScreens
                 batch.DrawString(Font12Bold, end,
                                  new Vector2(ChartRect.Right - Font12Bold.TextWidth(end) - 4, ChartRect.Bottom + 4), Color.Gray);
                 batch.DrawString(Font12Bold, maxVal.GetNumberString(),
-                                 new Vector2(ChartRect.X + 4, ChartRect.Y - Font12Bold.LineSpacing - 2), Color.Gray);
+                                 new Vector2(ChartRect.X + 4, ChartRect.Y + 2), Color.Gray); // inside: above, it sat on the buttons
             }
 
             // legend: every major, its curve's colour; hidden or locked ones grayed.
@@ -247,28 +239,30 @@ namespace Ship_Game.GameScreens
             float lx = ChartRect.Right + 14;
             foreach (EmpireSeries s in Series)
             {
+                bool known = s.E.isPlayer || Player.IsKnown(s.E);
                 bool visible = SeriesVisible(s.E, out _);
                 var row = new Rectangle((int)lx, (int)ly, legendW - 4, Font12Bold.LineSpacing + 4);
                 var swatch = new Rectangle(row.X, row.Y + 3, 10, 10);
                 batch.FillRectangle(swatch, visible && !s.Hidden ? s.E.EmpireColor : new Color(70, 70, 70));
-                string name = s.E.data.Traits.Name;
+                // bench 447: an unmet race shows "?", nothing else; a locked one names its
+                // price, and the name truncates so the tag never collides
+                string req = !known ? "" : visible ? "" : "Lvl " + Domain switch
+                {
+                    Espionage.IntelDomain.Population => 1,
+                    Espionage.IntelDomain.Military   => 2,
+                    _                                => 3,
+                };
+                string name = known ? s.E.data.Traits.Name : "?";
+                float nameRoom = row.Width - 16 - (req.Length > 0 ? Font12Bold.TextWidth(req) + 6 : 0);
+                while (name.Length > 2 && Font12Bold.TextWidth(name) > nameRoom)
+                    name = name.Substring(0, name.Length - 2) + "\u2026";
                 Color c = !visible ? new Color(105, 105, 105)
                         : s.Hidden ? Color.Gray
                         : Colors.Cream;
                 batch.DrawString(Font12Bold, name, new Vector2(row.X + 16, row.Y), c);
-                if (!visible)
-                {
-                    // maintainer call: name the price, not a dash - the infiltration level
-                    // this domain unlocks at
-                    string req = "Lvl " + Domain switch
-                    {
-                        Espionage.IntelDomain.Population => 1,
-                        Espionage.IntelDomain.Military   => 2,
-                        _                                => 3,
-                    };
+                if (req.Length > 0)
                     batch.DrawString(Font12Bold, req,
                         new Vector2(row.Right - Font12Bold.TextWidth(req), row.Y), new Color(105, 105, 105));
-                }
                 LegendRows.Add((row, s));
                 ly += row.Height + 2;
             }

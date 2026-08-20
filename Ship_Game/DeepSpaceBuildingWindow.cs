@@ -33,15 +33,11 @@ namespace Ship_Game
         {
             RemoveAll();
 
-            // bench 444: the window wears the minimap's width - the two share the right
-            // edge, so the alignment reads as one piece of furniture
-            int windowWidth = Screen.mmHousing.Width > 0 ? Screen.mmHousing.Width : 320;
-            // Ludoal fork: right-anchored on the same edge as the Automation window - the two
-            // windows are mutually exclusive (opening one closes the other, like Exotic/Freighter),
-            // so they can share the anchor. 10px off the right edge, the margin the minimap and
-            // every reworked frame keep; top aligned with the group FRAMES, one tab strip below
-            // the tab row, so it lines up with the Diplomacy/Economy/etc. window bodies, not their tabs.
-            RectF = new(Screen.ScreenWidth - 10 - windowWidth, GameScreens.ScreenGroups.GroupFrameTop, windowWidth, 300);
+            // bench 447: anchored EXACTLY on the minimap housing - same X, same width -
+            // so the two read as one piece of furniture whatever the options size slider says
+            RectF = Screen.mmHousing.Width > 0
+                ? new(Screen.mmHousing.X, GameScreens.ScreenGroups.GroupFrameTop, Screen.mmHousing.Width, 300)
+                : new(Screen.ScreenWidth - 10 - 320, GameScreens.ScreenGroups.GroupFrameTop, 320, 300);
 
             var sl = Add(new SubmenuScrollList<ConstructionListItem>(RectF, GameText.DvDeepSpaceBuild));
             sl.SetBackground(Colors.TransparentBlackFill);
@@ -95,15 +91,18 @@ namespace Ship_Game
                 float iconSize = Height;
                 batch.Draw(icon, new Vector2(X, Y), new Vector2(iconSize));
           
-                // bench 444: the name in a readable size, and the costs in ONE column -
-                // production on top, upkeep under it (they were colliding with the name)
+                // bench 444/447: readable name, costs in ONE column stuck to the RIGHT edge
+                // with the same margin the icon keeps on the left
                 batch.DrawString(Fonts.Arial12Bold, Template.Name, X+iconSize+2, Y+2);
                 batch.DrawString(Fonts.Arial8Bold, Template.GetRole(), X+iconSize+2, Y+18, Color.Orange);
 
-                float prodX = Right - 70;
-                batch.Draw(iconProd, new Vector2(prodX, Y+2), iconProd.SizeF); // Production Icon
-                batch.DrawString(Fonts.Arial12Bold, Template.GetCost(Universe.Player).String(1), prodX+iconProd.Width+2, Y+2); // Build Production Cost
-                batch.DrawString(Fonts.Arial8Bold, Template.GetMaintenanceCost(Universe.Player).String(2)+Localizer.Token(GameText.DvBcPerTurn), prodX, Y+18, Color.Salmon); // Upkeep, under it
+                float rightEdge = Right - 4;
+                string cost = Template.GetCost(Universe.Player).String(1);
+                float costW = Fonts.Arial12Bold.TextWidth(cost);
+                batch.DrawString(Fonts.Arial12Bold, cost, rightEdge - costW, Y+2); // Build Production Cost
+                batch.Draw(iconProd, new Vector2(rightEdge - costW - iconProd.Width - 2, Y+2), iconProd.SizeF);
+                string upkeep = Template.GetMaintenanceCost(Universe.Player).String(2)+Localizer.Token(GameText.DvBcPerTurn);
+                batch.DrawString(Fonts.Arial8Bold, upkeep, rightEdge - Fonts.Arial8Bold.TextWidth(upkeep), Y+18, Color.Salmon);
             }
         }
 
