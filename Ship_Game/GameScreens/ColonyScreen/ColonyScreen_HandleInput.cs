@@ -197,6 +197,11 @@ namespace Ship_Game
                 // explicitly before handing the rest of the input back.
                 if (CloseBtn.HandleInput(input))
                     return true;
+                // bench 460 (same disease as the cross, same cure): the group tab row is an
+                // Add()ed child too - without this a mole-host colony seated on the
+                // Diplomacy row had a deaf tab row, while everything else worked
+                if (GroupRow != null && GroupRow.HandleInput(input))
+                    return true;
                 // Input not captured, let Universe Screen manager what happens
                 return false;
             }
