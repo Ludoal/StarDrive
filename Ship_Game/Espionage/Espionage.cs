@@ -52,6 +52,21 @@ namespace Ship_Game
             Stamp(3, 3); // Science
         }
 
+        // maintainer option B (bench 454): NO retroactive history, ever - a domain whose
+        // level predates the feature gets its date at the first look, so its curve starts
+        // there instead of inheriting a past the empire never recorded. Runs once per
+        // hole: a set date never moves again.
+        public void StampLegacyHoles()
+        {
+            DomainUnlockDates ??= new float[4];
+            float now = Owner?.Universe?.StarDate ?? 0f;
+            if (now <= 0f) return;
+            if (CanViewPopRank      && DomainUnlockDates[0] == 0f) DomainUnlockDates[0] = now;
+            if (CanViewMilitaryRank && DomainUnlockDates[1] == 0f) DomainUnlockDates[1] = now;
+            if (CanViewEconomyRank  && DomainUnlockDates[2] == 0f) DomainUnlockDates[2] = now;
+            if (CanViewScienceRank  && DomainUnlockDates[3] == 0f) DomainUnlockDates[3] = now;
+        }
+
         [StarDataConstructor]
         public Espionage() { }
 

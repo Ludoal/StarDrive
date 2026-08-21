@@ -76,6 +76,12 @@ namespace Ship_Game.GameScreens
             CloseButton(closePos.X, closePos.Y);
             LeftRect = frame;
 
+            // maintainer option B: level acquired before the feature = the curve starts
+            // at the FIRST LOOK, never in a past the empire did not record
+            foreach (Empire e in Universe.UState.ActiveMajorEmpires)
+                if (!e.isPlayer)
+                    Player.GetRelations(e).Espionage?.StampLegacyHoles();
+
             HarvestSeries();
         }
 
@@ -152,7 +158,8 @@ namespace Ship_Game.GameScreens
         }
 
         // a third party's curve exists from its unlock date; the player's always, in full.
-        // A date of 0 with the gate open = legacy stamp fallback (full history).
+        // Legacy holes are stamped at screen open (option B), so an open gate always has
+        // a date - no full-history fallback remains.
         bool SeriesVisible(Empire e, out float clipFrom)
         {
             clipFrom = 0f;
