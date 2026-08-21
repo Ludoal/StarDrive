@@ -6260,6 +6260,9 @@ namespace Ship_Game
         SpMaxProdToQueueTip = 5323,
         SpFromStorageTip = 5324,
         SpShipRepairTip = 5325,
+        AutoGovernorTip = 5326,
+        EspionageMessagesTip = 5327,
+        PrioritizationHeaderTip = 5328,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 5101,
         /// <summary>Research Bonus Granted: {0}%</summary>

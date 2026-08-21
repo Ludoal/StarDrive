@@ -82,7 +82,7 @@ namespace Ship_Game
             notifications.AddCheckbox(() => !P.DisableStarvationWarning, v => P.DisableStarvationWarning = !v,
                                       title: "Starvation Warnings", tooltip: GameText.EnableStarvationWarningTip);
             notifications.AddCheckbox(() => !player.data.SpyMute, v => player.data.SpyMute = !v,
-                                      title: "Espionage Messages", tooltip: "All Espionage notifications.");
+                                      title: "Espionage Messages", tooltip: GameText.EspionageMessagesTip); // Policies phase 0: token, not a bare string
 
             UIList empire = NewBox(new RectF(x0, top, BoxW, EmpireBoxH), "Empire");
             empire.AddCheckbox(() => player.AutoTaxes, title: GameText.AutoTaxes, tooltip: GameText.YourEmpireWillAutomaticallyManage3);
@@ -119,7 +119,7 @@ namespace Ship_Game
             // ⚠ "Auto Governor" decides whether a new colony gets an ASSESSED governor -
             // see Planet_Colonize.SetupColonyType.
             colonization.AddCheckbox(() => player.AutoCoreGovernor, title: "Auto Governor",
-                                     tooltip: "New colonies are assigned a governor suited to the planet. Unchecked, they start unmanaged.");
+                                     tooltip: GameText.AutoGovernorTip); // Policies phase 0: token, not a bare string
 
             // ── third column: the construction Prioritization list ──
             // Upper block = the prioritized categories, their ORDER is the hierarchy; arrows
@@ -128,6 +128,8 @@ namespace Ship_Game
             // queues already filled.
             float x2 = x1 + BoxW2 + BoxGap;
             NewBox(new RectF(x2, top, BoxW3, PriorityBoxH), "Prioritization");
+            // Policies phase 0: the block's ONE header tooltip (per-row tips would repeat it)
+            PriorityHeaderRect = new RectF(x2, top, BoxW3, 25);
             PriorityHost = Add(new UIPanel(new Rectangle((int)x2 + 6, (int)top + 30,
                                                          (int)BoxW3 - 12, (int)PriorityBoxH - 36),
                                            new Color(0, 0, 0, 0)));
@@ -344,8 +346,13 @@ namespace Ship_Game
             batch.SafeEnd();
         }
 
+        RectF PriorityHeaderRect; // Policies phase 0: the Prioritization header's tooltip seat
+
         public override bool HandleInput(InputState input)
         {
+            if (PriorityHeaderRect.HitTest(input.CursorPosition))
+                ToolTip.CreateTooltip(GameText.PrioritizationHeaderTip);
+
             // H closes what H opened; right-click closes like every table screen of the group
             if ((input.AutomationWindow && !GlobalStats.TakingInput) || input.RightMouseClick)
             {

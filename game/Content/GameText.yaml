@@ -9075,7 +9075,7 @@ RushAllConstruction:
  PTB: "Aceleração Contínua"
 RushAllConstructionTip:
  Id: 1825
- ENG: "Signals Continuous Construction rush of all items in your empire, including existing and future items.\n \nWARNING: This will quickly spend your treasury and may cause high tax rates if Auto Tax is enabled."
+ ENG: "Signals Continuous Construction rush of all items in your empire, including existing and future items.\n \nWARNING: This will quickly spend your treasury and may cause high tax rates if Auto Tax is enabled.\n \nPer-item and per-planet Rush toggles remain available for finer control; while this global switch is on, they show as checked and locked."
  FRA: "Signale une précipitation continue de la construction de tous les éléments de votre empire, y compris les éléments existants et futurs.\n \nATTENTION : ceci videra rapidement votre trésorerie et peut entraîner des taux d'imposition élevés si la Fiscalité auto est activée."
  RUS: "Строительства всех предметов в вашей империи,можно ускорить,включая существующие и те которые в очереди .\n \nПРЕДУПРЕЖДЕНИЕ:это быстро потратит вашу казну и может привести к высоким налоговым ставкам, если включен автоматический налог."
  UKR: "Сигналізує про безперервне будівництво всіх об'єктів у вашій імперії, включаючи існуючі та майбутні об'єкти.\n \nПОПЕРЕДЖЕННЯ: Це швидко витратить вашу скарбницю і може призвести до високих податкових ставок, якщо увімкнено автоподаток."
@@ -12039,13 +12039,13 @@ ToggleToDisplayOnlyPlayerdesigned:
  PTB: "Alterna para exibir apenas naves projetadas pelo jogador"
 YourEmpireWillAutomaticallyManage:
  Id: 2226
- ENG: "Your empire will automatically manage ANY scouts ships that you own. If you do not own enough, it will create more scout ships (matching the name selected below) so long as the galaxy has unexplored systems. If you assign a scout ship to a fleet or give it orders, it will stay under your manual command, until the order is complete or it is not assigned to a fleet anymore."
+ ENG: "Your empire will automatically manage ANY scouts ships that you own. If you do not own enough, it will create more scout ships (matching the name selected below) so long as the galaxy has unexplored systems. If you assign a scout ship to a fleet or give it orders, it will stay under your manual command, until the order is complete or it is not assigned to a fleet anymore. The number of scouts maintained scales with the count of still-unexplored systems, weighted by your race's expansion strategy: a big unexplored galaxy means many scouts, and the fleet shrinks as the map fills in. Idle scouts are scrapped once everything is explored."
  FRA: "Votre empire gérera automatiquement TOUT vaisseau éclaireur que vous possédez. Si vous n'en possédez pas assez, il créera davantage d'éclaireurs (correspondant au nom sélectionné ci-dessous) tant que la galaxie compte des systèmes inexplorés. Si vous assignez un éclaireur à une flotte ou lui donnez des ordres, il restera sous votre commandement manuel jusqu'à ce que l'ordre soit achevé ou qu'il ne soit plus assigné à une flotte."
  UKR: "Ваша імперія автоматично керуватиме всіма кораблями-розвідниками, якими ви володієте. Якщо у вас недостатньо кораблів-розвідників, вона створить більше кораблів-розвідників (з відповідною назвою, вибраною нижче) до тих пір, поки в галактиці є недосліджені системи. Якщо ви призначите корабель-розвідник до флоту або віддасте йому наказ, він залишатиметься під вашим ручним командуванням доти, доки наказ не буде виконано або поки його не буде призначено до флоту."
  PTB: "Seu império gerenciará automaticamente QUALQUER nave exploradora que você possuir. Se você não possuir o suficiente, ele criará mais naves exploradoras (correspondendo ao nome selecionado abaixo) enquanto a galáxia tiver sistemas inexplorados. Se você atribuir uma nave exploradora a uma frota ou der ordens a ela, ela permanecerá sob seu comando manual até que a ordem seja concluída ou ela não esteja mais atribuída a uma frota."
 YourEmpireWillAutomaticallyCreate:
  Id: 2227
- ENG: "Your empire will automatically create and deploy colony ships to desirable planets. Colony ships will not be dispatched to planets with a known nearby enemy presence"
+ ENG: "Your empire will automatically create and deploy colony ships to desirable planets. Colony ships will not be dispatched to planets with a known nearby enemy presence. Candidate planets are ranked by overall value (quality, richness, distance from your empire); the best one is claimed first. The pace speeds up if your empire falls behind rivals in colonies."
  FRA: "Votre empire créera et déploiera automatiquement des vaisseaux coloniaux vers les planètes désirables. Les vaisseaux coloniaux ne seront pas dépêchés vers des planètes avec une présence ennemie connue à proximité"
  RUS: "Ваша империя будет автоматически создавать корабли-колонисты и отправлять их к планетам, которые желательно колонизировать. Колонисты не будут отправляться к планетам, где присутствуют силы противника"
  SPA: "Tu imperio creará y desplegará automáticamente naves coloniales en los planetas convenientes. Las naves coloniales no se enviarán a planetas con presencia enemiga cercana"
@@ -12059,7 +12059,7 @@ YourEmpireWillAutomaticallyCreate2:
  PTB: "Seu império criará e implantará automaticamente projetores subespaciais para a criação de rotas estelares entre seus sistemas. Observe que isso depende do tráfego das suas rotas de cargueiros. Quanto mais tráfego passar entre 2 sistemas, maior a chance de uma rota ser criada."
 YourEmpireWillAutomaticallyManage2:
  Id: 2229
- ENG: "Your empire will automatically manage your freighter needs, creating freighters to transport food and passengers where needed. You will still need to designate which planets import and export various goods or select a Governor for them. You may select here a specific Freighter name you wish your Empire will use."
+ ENG: "Your empire will automatically manage your freighter needs, creating freighters to transport food and passengers where needed. You will still need to designate which planets import and export various goods or select a Governor for them. You may select here a specific Freighter name you wish your Empire will use. Your freighter fleet is capped in proportion to your storage needs (average planet storage divided by freighter cargo capacity, times your number of colonies). At most 2 to 5 freighters are queued at once (one slot per 5 colonies), and none while your credit rating is poor."
  FRA: "Votre empire gérera automatiquement vos besoins en cargos, créant des cargos pour transporter nourriture et passagers là où nécessaire. Vous devrez toujours désigner quelles planètes importent et exportent les divers biens, ou leur sélectionner un Gouverneur. Vous pouvez sélectionner ici un nom de Cargo spécifique que vous souhaitez que votre Empire utilise."
  RUS: "Ваша империя будет автоматически контролировать вашу транспортную сеть, строя транспорты для перевозки еды и пассажиров в случае необходимости. Вам по-прежнему придется указывать вручную, какие планеты будут экспортировать и импортировать различные товары."
  SPA: "Tu imperio gestionará automáticamente tus necesidades de transporte, creando cargueros para llevar comida y pasajeros donde haga falta. Seguirás teniendo que decidir qué planetas importarán y exportarán los distintos bienes"
@@ -22403,6 +22403,15 @@ SpFromStorageTip:
 SpShipRepairTip:
  Id: 5325
  ENG: "Hull repair provided to friendly ships in orbit. Reduced while a space battle rages nearby."
+AutoGovernorTip:
+ Id: 5326
+ ENG: "New colonies are assigned a governor type suited to the planet (fertile worlds lean Agricultural, rich ones Industrial). Unchecked, new colonies start unmanaged."
+EspionageMessagesTip:
+ Id: 5327
+ ENG: "Toggle all Espionage notifications (mission results, detected enemy operations)."
+PrioritizationHeaderTip:
+ Id: 5328
+ ENG: "Categories in the upper block are prioritized in their display order; arrows reorder, the inhibit glyph demotes to the lower block. Priorities apply when an item ENTERS a build queue; existing queues are never reshuffled."
 NoResearchAlert:
  Id: 5293
  ENG: "NO RESEARCH!"
@@ -24008,7 +24017,7 @@ IndicatesTheNumberOfTroops4:
  PTB: "Indica o número de tropas que podem ser transportadas para naves inimigas com os escudos desativados."
 YourEmpireWillAutomaticallySelect:
  Id: 7039
- ENG: "Your Empire will automatically select technologies to research."
+ ENG: "Your Empire will automatically select technologies to research, following your race's research strategy."
  FRA: "Votre empire sélectionnera automatiquement les technologies à rechercher."
  RUS: "Ваша Империя автоматически выберет технологии для исследования."
  SPA: "Tu Imperio va a selecionar automaticamente que tecnologias investigar."
@@ -24016,7 +24025,7 @@ YourEmpireWillAutomaticallySelect:
  PTB: "Seu Império selecionará automaticamente tecnologias para pesquisar."
 YourEmpireWillAutomaticallyManage3:
  Id: 7040
- ENG: "Your Empire will automatically manage taxes and treasury."
+ ENG: "Sets the tax rate every turn to cover all current spending plus a treasury goal. An empty treasury forces 100% tax; a treasury above the goal drops the rate to 0%. The gap is refilled progressively (about 10 to 20 years), so the rate stays smooth rather than jumping."
  FRA: "Votre empire gérera automatiquement les impôts et le trésor."
  RUS: "Ваша Империя будет автоматически управлять налогами и казной."
  SPA: "Tu Imperio va a manejar los impuestos y el tesoro de forma automática."
