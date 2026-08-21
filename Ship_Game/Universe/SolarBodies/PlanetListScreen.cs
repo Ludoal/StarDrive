@@ -325,6 +325,14 @@ namespace Ship_Game
             if (EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
                 return true;
 
+            // bench 460: an OPEN filter hears the input before the sort headers - its
+            // expanded FIRST entry overlaps the header band, which was stealing the click
+            // (same law as the Colonies supply lists: the open list always goes first)
+            if (ProximityFilter.Open && ProximityFilter.HandleInput(input))
+                return true;
+            if (OwnerFilter.Open && OwnerFilter.HandleInput(input))
+                return true;
+
             if (PlanetSL.NumEntries == 0)
                 ResetList();
 
