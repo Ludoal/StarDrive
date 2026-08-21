@@ -17,7 +17,7 @@ namespace Ship_Game
         [StarData] public readonly Empire Them;
         [StarData] public float LevelProgress { get; private set; }
         [StarData] public byte LimitLevel { get; private set; } = MaxLevel;
-        [StarData] int Weight;
+        [StarData] int Weight = 1; // maintainer: a fresh relation starts weighted, not mute (saves keep their value)
         [StarData] Array<InfiltrationOperation> Operations = new();
         [StarData] Mole StickyMole;
         [StarData] public int SlowResearchChance { get; private set; }

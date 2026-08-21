@@ -298,7 +298,7 @@ namespace Ship_Game
             int frameRight = Housing.Right - RightTrim;
             // the faction flag keeps its own right anchor; the pop block anchors LEFT, 20px
             // right of the arrow, so its variable width stops moving every icon column keyed on it
-            var flagRect = new Rectangle(frameRight - 40, Housing.Y + TopLineIconY, 26, 26);
+            var flagRect = new Rectangle(frameRight - 32, Housing.Y + TopLineIconY, 26, 26); // maintainer: +8px right, holding until the cartouche rework
             Empire flagOwner = !explored ? null : P.Owner ?? (P.IsMineable ? P.Mining.Owner : null);
             if (flagOwner != null)
                 batch.Draw(ResourceManager.Flag(flagOwner), flagRect, flagOwner.EmpireColor);

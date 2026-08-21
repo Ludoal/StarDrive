@@ -78,7 +78,7 @@ namespace Ship_Game.Ships
             ToolTipItems.Add(new TippedItem(Power, GameText.IndicatesThisShipsCurrentPower));
             // the faction flag's right edge rides the bars' end (maintainer feedback); 24px,
             // grown left and down from that top-right anchor
-            FlagRect = new Rectangle(PBar.pBar.X + PBar.pBar.Width - 24, r.Y + 71, 24, 24);
+            FlagRect = new Rectangle(PBar.pBar.X + PBar.pBar.Width - 16, r.Y + 71, 24, 24); // maintainer: +8px right, holding until the cartouche rework
 
             Shields = new Rectangle(Housing.X + 197, Housing.Y + 118 + 20 + spacing, 20, 20);
             SBar = new ProgressBar(Shields.X + Shields.Width + 15, Shields.Y, 150, 18) { color = "blue" };

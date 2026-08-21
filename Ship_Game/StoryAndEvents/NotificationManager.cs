@@ -1084,6 +1084,11 @@ namespace Ship_Game
         public void SnapToPlanet(Planet p)
         {
             GameAudio.SubBassWhoosh();
+            // maintainer (bench 454): a notification about YOUR colony hosts it on the
+            // EMPIRE row - its natural home - instead of the map default (Galaxy). The
+            // pre-armed seat wins inside the snap (the documented list-screen pattern).
+            if (p != null && p.Owner == Screen.Player && Screen.HostedTabTitle != p.Name)
+                Screen.HostColonyTab(p, GameScreens.ScreenGroups.Group.Empire, -1);
             Screen.SnapViewColony(p, combatView: false);
         }
 
