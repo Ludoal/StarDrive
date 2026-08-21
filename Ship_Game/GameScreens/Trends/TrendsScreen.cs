@@ -146,12 +146,12 @@ namespace Ship_Game.GameScreens
             }
         }
 
-        // Three passes. (1) Burst clamp: a WIDE rolling median (window 15) is a baseline
-        // no sale-burst can drag, and anything above 2.5x of it is capped - bench 464:
-        // the Ralyeh spikes are 5 to 15 samples wide, a narrow median passes them whole.
-        // (2) A rolling median (window 5) kills single-sample teeth. (3) A 3-point
-        // average rounds what remains. Holes (v<=0, the unmet-intel gaps) are preserved
-        // and never smeared across - only positive neighbours enter any window.
+        // One WIDE centred average (window 15, maintainer call at bench 464): the
+        // sale-burst income is REAL revenue, so instead of clamping it away the average
+        // redistributes each burst over its neighbourhood - the curve reads as the true
+        // mean income. Lone spikes are absorbed the same way. Holes (v<=0, the
+        // unmet-intel gaps) are preserved and never smeared - only positive neighbours
+        // enter the window.
         static void SmoothDomain(Array<(float Date, float[] Values)> pts, int d)
         {
             int n = pts.Count;
@@ -161,33 +161,14 @@ namespace Ship_Game.GameScreens
             for (int i = 0; i < n; ++i)
                 src[i] = pts[i].Values[d];
 
-            var win = new Array<float>();
-            float MedianAround(float[] a, int i, int half)
-            {
-                win.Clear();
-                for (int j = Math.Max(0, i - half); j <= Math.Min(n - 1, i + half); ++j)
-                    if (a[j] > 0f)
-                        win.Add(a[j]);
-                win.Sort();
-                return win[win.Count / 2];
-            }
-
-            float[] clamped = new float[n];
-            for (int i = 0; i < n; ++i)
-                clamped[i] = src[i] <= 0f ? src[i]
-                           : Math.Min(src[i], MedianAround(src, i, 7) * 2.5f);
-
-            float[] med = new float[n];
-            for (int i = 0; i < n; ++i)
-                med[i] = clamped[i] <= 0f ? clamped[i] : MedianAround(clamped, i, 2);
-
+            const int Half = 7; // window 15
             for (int i = 0; i < n; ++i)
             {
-                if (med[i] <= 0f)
-                    continue;
+                if (src[i] <= 0f)
+                    continue; // a hole stays a hole
                 float sum = 0f; int cnt = 0;
-                for (int j = Math.Max(0, i - 1); j <= Math.Min(n - 1, i + 1); ++j)
-                    if (med[j] > 0f) { sum += med[j]; ++cnt; }
+                for (int j = Math.Max(0, i - Half); j <= Math.Min(n - 1, i + Half); ++j)
+                    if (src[j] > 0f) { sum += src[j]; ++cnt; }
                 pts[i].Values[d] = sum / cnt; // Values is a shared array - the write lands
             }
         }
