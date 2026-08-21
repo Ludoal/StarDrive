@@ -134,11 +134,14 @@ namespace Ship_Game.GameScreens
                 if (byEmpire.TryGetValue(e, out EmpireSeries s))
                 {
                     s.Points.Sort((a, b) => a.Date.CompareTo(b.Date));
-                    // bench 461 (maintainer): smooth every domain but Science - Economy
-                    // especially carries one-turn windfalls (excess-goods sales) that spike
-                    // 10x over the baseline. Science stays raw: its level steps ARE the point.
-                    for (int d = 0; d < 3; ++d)
-                        SmoothDomain(s.Points, d);
+                    // bench 464 (design review, maintainer): smooth the noise, never the
+                    // event. Economy is a FLOW - wide average (15), the sale bursts
+                    // redistribute into a true mean. Population and Military are STOCKS -
+                    // narrow average (3): the sampling jitter dies, a bombardment or a
+                    // lost fleet stays a sharp step. Science stays raw: it works in steps.
+                    SmoothDomain(s.Points, 0, half: 1);
+                    SmoothDomain(s.Points, 1, half: 1);
+                    SmoothDomain(s.Points, 2, half: 7);
                     if (hidden.TryGetValue(e, out bool h))
                         s.Hidden = h;
                     Series.Add(s);
@@ -152,7 +155,7 @@ namespace Ship_Game.GameScreens
         // mean income. Lone spikes are absorbed the same way. Holes (v<=0, the
         // unmet-intel gaps) are preserved and never smeared - only positive neighbours
         // enter the window.
-        static void SmoothDomain(Array<(float Date, float[] Values)> pts, int d)
+        static void SmoothDomain(Array<(float Date, float[] Values)> pts, int d, int half)
         {
             int n = pts.Count;
             if (n < 5)
@@ -161,13 +164,12 @@ namespace Ship_Game.GameScreens
             for (int i = 0; i < n; ++i)
                 src[i] = pts[i].Values[d];
 
-            const int Half = 7; // window 15
             for (int i = 0; i < n; ++i)
             {
                 if (src[i] <= 0f)
                     continue; // a hole stays a hole
                 float sum = 0f; int cnt = 0;
-                for (int j = Math.Max(0, i - Half); j <= Math.Min(n - 1, i + Half); ++j)
+                for (int j = Math.Max(0, i - half); j <= Math.Min(n - 1, i + half); ++j)
                     if (src[j] > 0f) { sum += src[j]; ++cnt; }
                 pts[i].Values[d] = sum / cnt; // Values is a shared array - the write lands
             }
