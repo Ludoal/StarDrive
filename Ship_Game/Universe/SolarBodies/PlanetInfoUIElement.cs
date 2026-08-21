@@ -272,8 +272,10 @@ namespace Ship_Game
             ToolTipItems.Clear();
             ToolTipItems.Add(new TippedItem(PopRect, GameText.PopulationInBillionsVsMax));
             // Wishlist: the retired Planet Info screen's prose rides the planet image -
-            // flavor text on wild planets, development status on owned ones (same field)
-            if (P.IsExploredBy(Player) && P.Description.NotEmpty())
+            // flavor text on wild planets, development status on owned ones (same field).
+            // bench 460: the colony and ground-combat buttons sit ON the image - while
+            // one of them is hovered, the prose yields (their Hover is fed by HandleInput)
+            if (P.IsExploredBy(Player) && P.Description.NotEmpty() && !Inspect.Hover && !Invade.Hover)
                 ToolTipItems.Add(new TippedItem(PlanetIconRect, P.Description));
 
             // Ludoal fork (maintainer feedback): the minimap's recipe instead of the sculpted
