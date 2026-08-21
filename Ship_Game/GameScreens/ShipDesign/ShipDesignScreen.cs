@@ -1105,6 +1105,9 @@ namespace Ship_Game
                 ToggleOverlay = !ToggleOverlay;
             });
             BtnToggleOverlay.ClickSfx = "blip_click";
+            // bench 459 (maintainer): the only tooltip-less button in the row let the module
+            // list's tooltip bleed through - it gets its own (existing token 2204)
+            BtnToggleOverlay.Tooltip = Localizer.Token(GameText.ToggleTheModuleGridOverlay);
 
             // a third of a column each, so a trio spans exactly the list above it
             foreach (UIButton b in new[] { BtnStripShip, BtnStripDefence, BtnSymmetricDesign,
