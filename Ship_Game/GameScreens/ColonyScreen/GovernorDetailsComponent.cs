@@ -514,7 +514,12 @@ namespace Ship_Game
         string GetParsedDescription()
         {
             float maxWidth = Right - 10 - ColumnX;
-            return Font.ParseText(Planet.ColonyTypeInfoText, maxWidth);
+            // Policies phase 0 (Lek's portraits): the shared note rides once at the head -
+            // budget-bound governance, manual Supply settings always win. Manual colonies
+            // keep their own line without the note.
+            if (Planet.CType == Planet.ColonyType.Colony)
+                return Font.ParseText(Planet.ColonyTypeInfoText, maxWidth);
+            return Font.ParseText(Planet.ColonyTypeInfoText.Text + "\n\n" + Localizer.Token(GameText.GovCommonNote), maxWidth);
         }
 
         string GetParsedBlueprintsOverview()

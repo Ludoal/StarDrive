@@ -6228,6 +6228,7 @@ namespace Ship_Game
         DvGroupTabTipTrends = 5291,
         GoToResearch = 5292,
         NoResearchAlert = 5293,
+        GovCommonNote = 5294,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 5101,
         /// <summary>Research Bonus Granted: {0}%</summary>
