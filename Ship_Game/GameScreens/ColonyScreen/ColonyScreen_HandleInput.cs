@@ -23,6 +23,12 @@ namespace Ship_Game
             if (GovernorDetails != null && GovernorDetails.TryGetHoveredColonyType(out Planet.ColonyType hoverType))
                 return hoverType;
 
+            // Policies phase 0, SUPPLY notices: hovering a supply dropdown shows the
+            // mode's notice in Description - per entry when open, the ACTIVE mode (Auto
+            // when the toggle holds the pen) on the collapsed title
+            if (TryGetHoveredSupplyNotice(input, out SupplyNoticeKind supplyKind))
+                return supplyKind;
+
             // bench 444: a clicked row PINS the description - while a pin is set, hover
             // must not steal the panel (the pin's whole point, bench 429). A pin whose
             // row left its list (filter, tab switch, item built) dies with it.
@@ -325,6 +331,45 @@ namespace Ship_Game
                 }
             }
 
+            return false;
+        }
+
+        // Policies phase 0: which SUPPLY notice the Description tab should show
+        internal enum SupplyNoticeKind { FpAuto, FpImport, FpExport, FpStore, ColAuto, ColBringIn, ColResettle, ColStay }
+
+        static SupplyNoticeKind FpKind(Planet.GoodState gs) => gs switch
+        {
+            Planet.GoodState.IMPORT => SupplyNoticeKind.FpImport,
+            Planet.GoodState.EXPORT => SupplyNoticeKind.FpExport,
+            _                       => SupplyNoticeKind.FpStore,
+        };
+        static SupplyNoticeKind ColKind(Planet.GoodState gs) => gs switch
+        {
+            Planet.GoodState.IMPORT => SupplyNoticeKind.ColBringIn,
+            Planet.GoodState.EXPORT => SupplyNoticeKind.ColResettle,
+            _                       => SupplyNoticeKind.ColStay,
+        };
+
+        bool TryGetHoveredSupplyNotice(InputState input, out SupplyNoticeKind kind)
+        {
+            kind = default;
+            if (FoodDropDown == null) // the SUPPLY panel only exists on the player's colonies
+                return false;
+            // an OPEN list speaks per hovered entry
+            if (FoodDropDown.Open && FoodDropDown.TryGetHoveredEntry(out Planet.GoodState fs))
+                { kind = FpKind(fs); return true; }
+            if (ProdDropDown.Open && ProdDropDown.TryGetHoveredEntry(out Planet.GoodState ps))
+                { kind = FpKind(ps); return true; }
+            if (ColonistsDropDown.Open && ColonistsDropDown.TryGetHoveredEntry(out Planet.GoodState cs))
+                { kind = ColKind(cs); return true; }
+            // collapsed title: the mode actually in charge
+            Vector2 cursor = input.CursorPosition;
+            if (FoodDropDown.Rect.HitTest(cursor))
+                { kind = P.AutoFood ? SupplyNoticeKind.FpAuto : FpKind(P.FS); return true; }
+            if (ProdDropDown.Rect.HitTest(cursor))
+                { kind = P.AutoProd ? SupplyNoticeKind.FpAuto : FpKind(P.PS); return true; }
+            if (ColonistsDropDown.Rect.HitTest(cursor))
+                { kind = P.AutoColonists ? SupplyNoticeKind.ColAuto : ColKind(P.CS); return true; }
             return false;
         }
 

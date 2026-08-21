@@ -449,6 +449,28 @@ namespace Ship_Game
             cursor.Y += Fonts.Arial12Bold.MeasureString(parsed).Y + 8;
         }
 
+        // Policies phase 0: the SUPPLY mode notices, same furniture as the governor
+        // portraits - a title in the entry's own vocabulary, the body from Lek's texts
+        void DrawSupplyNoticeInfo(SpriteBatch batch, ref Vector2 cursor, SupplyNoticeKind kind)
+        {
+            (string title, GameText body) = kind switch
+            {
+                SupplyNoticeKind.FpAuto      => ("Auto", GameText.SupplyFpAutoNotice),
+                SupplyNoticeKind.FpImport    => (Localizer.Token(GameText.Import), GameText.SupplyFpImportNotice),
+                SupplyNoticeKind.FpExport    => (Localizer.Token(GameText.Export), GameText.SupplyFpExportNotice),
+                SupplyNoticeKind.FpStore     => (Localizer.Token(GameText.Store), GameText.SupplyFpStoreNotice),
+                SupplyNoticeKind.ColAuto     => ("Auto", GameText.SupplyColAutoNotice),
+                SupplyNoticeKind.ColBringIn  => (Localizer.Token(GameText.BringIn), GameText.SupplyColBringInNotice),
+                SupplyNoticeKind.ColResettle => (Localizer.Token(GameText.Resettle), GameText.SupplyColResettleNotice),
+                _                            => (Localizer.Token(GameText.Stay), GameText.SupplyColStayNotice),
+            };
+            batch.DrawString(Fonts.Arial20Bold, title, cursor, Colors.Cream);
+            cursor.Y += Fonts.Arial20Bold.LineSpacing + 8;
+            string parsed = Fonts.Arial12Bold.ParseText(Localizer.Token(body), PFacilities.Rect.Width - 40);
+            batch.DrawString(Fonts.Arial12Bold, parsed, cursor, Color.White);
+            cursor.Y += Fonts.Arial12Bold.MeasureString(parsed).Y + 8;
+        }
+
         void DrawFoodSlots(SpriteBatch batch)
         {
             if (P.FS == Planet.GoodState.STORE)
@@ -673,6 +695,9 @@ namespace Ship_Game
             {
                 case Planet.ColonyType govType: // Policies phase 0: the governor portrait
                     DrawGovernorTypeInfo(batch, ref bCursor, govType);
+                    break;
+                case SupplyNoticeKind supplyKind: // Policies phase 0: the SUPPLY mode notice
+                    DrawSupplyNoticeInfo(batch, ref bCursor, supplyKind);
                     break;
                 case Building buildableBuilding: // BuildList building
                     DrawHoveredBuildListBuildingInfo(batch, ref bCursor, buildableBuilding);

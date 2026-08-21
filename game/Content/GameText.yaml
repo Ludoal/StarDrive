@@ -22326,6 +22326,38 @@ ViewNextInfiltrated:
  Id: 5302
  ENG: "View next infiltrated planet"
  FRA: "Planète infiltrée suivante"
+SupplyFpAutoNotice:
+ Id: 5303
+ ENG: "The colony steers this flow itself and re-decides the direction every governing tick, following the governor's thresholds (a neutral setting without one). Switching to a manual direction pins it: the colony never overrides your choice."
+ FRA: "La colonie pilote ce flux elle-même et redécide sa direction à chaque tick de gouvernance, selon les seuils du gouverneur (réglage neutre sans gouverneur). Passer en direction manuelle l'épingle : la colonie n'écrase jamais votre choix."
+SupplyFpImportNotice:
+ Id: 5304
+ ENG: "Freighters bring this resource in from exporting colonies. The flow only moves if an exporter has a surplus and a freighter is available: an import order is a request, not a guarantee."
+ FRA: "Les cargos apportent cette ressource depuis les colonies exportatrices. Le flux ne circule que si un exportateur a un surplus et qu'un cargo est disponible : un ordre d'import est une demande, pas une garantie."
+SupplyFpExportNotice:
+ Id: 5305
+ ENG: "This colony offers its surplus to the freighter network, and importers are served by need. Exported goods leave local storage."
+ FRA: "Cette colonie offre son surplus au réseau de cargos, et les importateurs sont servis selon leur besoin. Les biens exportés quittent le stock local."
+SupplyFpStoreNotice:
+ Id: 5306
+ ENG: "Neutral: this colony neither offers nor requests the resource. Storage simply fills or drains with local production and consumption, and the trade network passes it by."
+ FRA: "Neutre : cette colonie n'offre ni ne demande la ressource. Le stock se remplit ou se vide au rythme de la production et de la consommation locales, et le réseau commercial passe son chemin."
+SupplyColAutoNotice:
+ Id: 5307
+ ENG: "The colony manages its own migration, re-deciding every governing tick: it sends people away when starving (population above 0.5 billion), takes settlers in while under 80% capacity and well fed (90% if a biosphere is under construction), and resettles the overflow of large worlds (capacity above 2 billion) once past 90%. A manual choice pins the direction and is never overridden."
+ FRA: "La colonie gère sa propre migration et redécide à chaque tick de gouvernance : elle évacue des habitants en famine (population au-dessus de 0,5 milliard), accueille des colons tant qu'elle est sous 80% de capacité et bien nourrie (90% si une biosphère est en construction), et déplace le trop-plein des grands mondes (capacité au-delà de 2 milliards) passé 90%. Un choix manuel épingle la direction et n'est jamais écrasé."
+SupplyColBringInNotice:
+ Id: 5308
+ ENG: "Freighters bring settlers to this world; each delivery adds population. The flow needs another colony set to resettle its people, and a free freighter."
+ FRA: "Les cargos amènent des colons vers ce monde ; chaque livraison ajoute de la population. Le flux exige une autre colonie qui déplace ses habitants, et un cargo disponible."
+SupplyColResettleNotice:
+ Id: 5309
+ ENG: "This colony sends its people away, one shipload at a time; its population drops as other worlds take them in."
+ FRA: "Cette colonie fait partir ses habitants, cargaison par cargaison ; sa population baisse à mesure que d'autres mondes les accueillent."
+SupplyColStayNotice:
+ Id: 5310
+ ENG: "Nobody moves: this colony neither requests settlers nor offers any. Population changes only through natural growth."
+ FRA: "Personne ne bouge : cette colonie ne demande ni n'offre de colons. La population n'évolue que par la croissance naturelle."
 NoResearchAlert:
  Id: 5293
  ENG: "NO RESEARCH!"

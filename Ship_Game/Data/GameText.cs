@@ -6237,6 +6237,14 @@ namespace Ship_Game
         HomeworldMoleNotification = 5300,
         ViewPrevInfiltrated = 5301,
         ViewNextInfiltrated = 5302,
+        SupplyFpAutoNotice = 5303,
+        SupplyFpImportNotice = 5304,
+        SupplyFpExportNotice = 5305,
+        SupplyFpStoreNotice = 5306,
+        SupplyColAutoNotice = 5307,
+        SupplyColBringInNotice = 5308,
+        SupplyColResettleNotice = 5309,
+        SupplyColStayNotice = 5310,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 5101,
         /// <summary>Research Bonus Granted: {0}%</summary>
