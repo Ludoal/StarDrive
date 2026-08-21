@@ -128,8 +128,6 @@ namespace Ship_Game
             // queues already filled.
             float x2 = x1 + BoxW2 + BoxGap;
             NewBox(new RectF(x2, top, BoxW3, PriorityBoxH), "Prioritization");
-            // Policies phase 0: the block's ONE header tooltip (per-row tips would repeat it)
-            PriorityHeaderRect = new RectF(x2, top, BoxW3, 25);
             PriorityHost = Add(new UIPanel(new Rectangle((int)x2 + 6, (int)top + 30,
                                                          (int)BoxW3 - 12, (int)PriorityBoxH - 36),
                                            new Color(0, 0, 0, 0)));
@@ -181,9 +179,12 @@ namespace Ship_Game
             int y = (int)PriorityHost.Y;
             const int RowH = 26, Icon = 20;
 
-            void Section(string title)
+            void Section(string title, GameText tip = 0)
             {
-                PriorityHost.Add(new UILabel(new Vector2(x, y + 3), title, Fonts.Arial12Bold, Colors.Cream));
+                // bench 462: the explainer rides the section label, not the tab title
+                PriorityHost.Add(tip != 0
+                    ? new UILabel(new Vector2(x, y + 3), title, Fonts.Arial12Bold, Colors.Cream, tip)
+                    : new UILabel(new Vector2(x, y + 3), title, Fonts.Arial12Bold, Colors.Cream));
                 y += RowH - 2;
             }
             UILabel Row(string key)
@@ -194,7 +195,7 @@ namespace Ship_Game
             }
             Rectangle Slot(int fromRight) => new(x + w - fromRight, y + (RowH - Icon) / 2, Icon, Icon);
 
-            Section("Prioritize");
+            Section("Prioritize", GameText.PrioritizationHeaderTip);
             for (int i = 0; i < prio.Count; i++)
             {
                 string key = prio[i];
@@ -346,13 +347,8 @@ namespace Ship_Game
             batch.SafeEnd();
         }
 
-        RectF PriorityHeaderRect; // Policies phase 0: the Prioritization header's tooltip seat
-
         public override bool HandleInput(InputState input)
         {
-            if (PriorityHeaderRect.HitTest(input.CursorPosition))
-                ToolTip.CreateTooltip(GameText.PrioritizationHeaderTip);
-
             // H closes what H opened; right-click closes like every table screen of the group
             if ((input.AutomationWindow && !GlobalStats.TakingInput) || input.RightMouseClick)
             {

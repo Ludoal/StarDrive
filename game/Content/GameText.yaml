@@ -22328,8 +22328,8 @@ ViewNextInfiltrated:
  FRA: "Planète infiltrée suivante"
 SupplyFpAutoNotice:
  Id: 5303
- ENG: "The colony steers this flow itself and re-decides the direction every governing tick, following the governor's thresholds (a neutral setting without one). Switching to a manual direction pins it: the colony never overrides your choice."
- FRA: "La colonie pilote ce flux elle-même et redécide sa direction à chaque tick de gouvernance, selon les seuils du gouverneur (réglage neutre sans gouverneur). Passer en direction manuelle l'épingle : la colonie n'écrase jamais votre choix."
+ ENG: "The colony steers this flow from its storage level, re-deciding every governing tick: below the import threshold it imports, above the export threshold it exports, in between it stores. A starving colony always imports food.\n \nThresholds by governor (import/export, % of storage):\nCore: 20/50 both flows\nIndustrial: food 75/99, production 0/50 (20/66 for cybernetics)\nResearch: food 75/95, production 25/95\nAgricultural: food 10/20, production 25/95\nMilitary: food 75/100, production 75/95\nNo governor: 20/80 both flows.\n \nSwitching to a manual direction pins it: the colony never overrides your choice."
+ FRA: "La colonie pilote ce flux d'après son niveau de stock, et redécide à chaque tick de gouvernance : sous le seuil d'import elle importe, au-dessus du seuil d'export elle exporte, entre les deux elle stocke. Une colonie affamée importe toujours de la nourriture.\n \nSeuils par gouverneur (import/export, % du stock) :\nCore : 20/50 les deux flux\nIndustrial : nourriture 75/99, production 0/50 (20/66 en cybernétique)\nResearch : nourriture 75/95, production 25/95\nAgricultural : nourriture 10/20, production 25/95\nMilitary : nourriture 75/100, production 75/95\nSans gouverneur : 20/80 les deux flux.\n \nPasser en direction manuelle épingle le flux : la colonie n'écrase jamais votre choix."
 SupplyFpImportNotice:
  Id: 5304
  ENG: "Freighters bring this resource in from exporting colonies. The flow only moves if an exporter has a surplus and a freighter is available: an import order is a request, not a guarantee."
