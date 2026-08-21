@@ -1880,8 +1880,10 @@ namespace Ship_Game
                     snapshot.TaxRate = data.TaxRate;
                     snapshot.Population = OwnedPlanets.Sum(p => p.Population);
                     // Ludoal fork (Trends): the economy and science series, same metrics
-                    // the intelligence RANK rows sort by
-                    snapshot.GrossIncome = GrossIncome;
+                    // the intelligence RANK rows sort by. bench 464 (maintainer + design
+                    // review): the excess-goods windfall is real cash but not structural
+                    // economy - the curve tracks the REGULAR income, the one-off stays out
+                    snapshot.GrossIncome = GrossIncome - ExcessGoodsMoneyAddedThisTurn;
                     snapshot.ScientificStrength = UnlockedTechs.Sum(t => t.Tech.Cost);
                 }
             }
