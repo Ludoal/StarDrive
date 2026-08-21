@@ -195,7 +195,9 @@ namespace Ship_Game
                 // it otherwise, mid-height either way.
                 const float Sz = 340f, W = Sz * 1.6f;
                 float anchorX = Rect.X - 16 - W >= 100 ? Rect.X - 16 : Rect.Right + 16 + W; // 100 = ShowShip's own X clamp
-                ShipInfoOverlay.ShowToLeftOf(new Vector2(anchorX, Rect.CenterY() - Sz / 4), item?.Design);
+                // vertically centred on the hovered ROW (maintainer), not on the frame
+                float rowMidY = item != null ? item.Pos.Y + RowH / 2f : Rect.CenterY();
+                ShipInfoOverlay.ShowToLeftOf(new Vector2(anchorX, rowMidY - Sz / 4), item?.Design);
             };
         }
 
