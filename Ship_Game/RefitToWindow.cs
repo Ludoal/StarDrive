@@ -187,9 +187,15 @@ namespace Ship_Game
             ShipInfoOverlay = Add(new ShipInfoOverlayComponent(this, ShipToRefit.Universe));
             RefitShipList.OnHovered = (item) =>
             {
-                // bench 465: anchored on the POPUP's left flank, mid-height - anchoring on
-                // the row pushed the tall overlay off the top of the screen
-                ShipInfoOverlay.ShowToLeftOf(new Vector2(Rect.X, Rect.CenterY()), item?.Design);
+                // bench 466: ShowToLeftOf PLACES the overlay 1.6x its size LEFT of the
+                // anchor, and ShowShip clamps X to 100 - anchored on this narrow popup's
+                // flank the seat went negative and the overlay stuck to the corner. The
+                // overlay size is its 340 floor here (our width x 0.16 is far below), so
+                // the seat is computed: left of the frame when the room exists, right of
+                // it otherwise, mid-height either way.
+                const float Sz = 340f, W = Sz * 1.6f;
+                float anchorX = Rect.X - 16 - W >= 100 ? Rect.X - 16 : Rect.Right + 16 + W; // 100 = ShowShip's own X clamp
+                ShipInfoOverlay.ShowToLeftOf(new Vector2(anchorX, Rect.CenterY() - Sz / 4), item?.Design);
             };
         }
 
