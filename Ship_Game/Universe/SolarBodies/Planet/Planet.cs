@@ -1067,17 +1067,24 @@ namespace Ship_Game
         {
             get
             {
-                switch (CType)
-                {
-                    default:
-                    case ColonyType.Core:         return GameText.GovernorWillBuildABalanced;
-                    case ColonyType.Colony:       return GameText.YouAreManagingThisColony;
-                    case ColonyType.Industrial:   return GameText.GovernorWillFocusEntirelyOn;
-                    case ColonyType.Research:     return GameText.GovernorWillBuildADedicated;
-                    case ColonyType.Agricultural: return GameText.GovernorWillBuildAgriculturalBuildings;
-                    case ColonyType.Military:     return GameText.GovernorWillBuildALimited;
-                    case ColonyType.TradeHub:     return GameText.GovernorWillControlProductionLevels;
-                }
+                return ColonyTypeInfoTextFor(CType);
+            }
+        }
+
+        // Policies phase 0: the portraits are queried per TYPE (the Description tab shows
+        // them on hover of the governor list), not only for the current one
+        public static LocalizedText ColonyTypeInfoTextFor(ColonyType type)
+        {
+            switch (type)
+            {
+                default:
+                case ColonyType.Core:         return GameText.GovernorWillBuildABalanced;
+                case ColonyType.Colony:       return GameText.YouAreManagingThisColony;
+                case ColonyType.Industrial:   return GameText.GovernorWillFocusEntirelyOn;
+                case ColonyType.Research:     return GameText.GovernorWillBuildADedicated;
+                case ColonyType.Agricultural: return GameText.GovernorWillBuildAgriculturalBuildings;
+                case ColonyType.Military:     return GameText.GovernorWillBuildALimited;
+                case ColonyType.TradeHub:     return GameText.GovernorWillControlProductionLevels;
             }
         }
 

@@ -748,12 +748,14 @@ namespace Ship_Game
             double len = a.Distance(b);
             if (len < 1.0)
                 return;
-            const double Dash = 14.0, Period = Dash * 3;
+            // bench 455: a 3px breath between dashes so neighbouring slots never touch,
+            // and a thinner stroke
+            const double Slot = 14.0, Dash = 11.0, Period = Slot * 3;
             Vector2d dir = (b - a) / len;
-            for (double t = slot * Dash; t < len; t += Period)
+            for (double t = slot * Slot; t < len; t += Period)
             {
                 double t2 = Math.Min(t + Dash, len);
-                DrawLine(a + dir * t, a + dir * t2, color, 3f);
+                DrawLine(a + dir * t, a + dir * t2, color, 2f);
             }
         }
 

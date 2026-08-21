@@ -157,19 +157,26 @@ namespace Ship_Game
             return rect.HitTest(GameBase.ScreenManager.input.CursorPosition);
         }
 
+        string WrappedCacheKey; string WrappedCacheValue; float WrappedCacheWidth;
         string WrappedString(string text)
         {
             float maxWidth = Width - 22;
-            if (Fonts.Arial12Bold.MeasureString(text).X <= maxWidth)
-                return text;
-
-            var sb = new StringBuilder(text, text.Length + 2);
-            do {
-                sb.Remove(sb.Length-1, 1);
-            } while (Fonts.Arial12Bold.MeasureString(sb).X > maxWidth);
-
-            sb.Append("...");
-            return sb.ToString();
+            // bench 455: this ran the MeasureString truncation loop EVERY FRAME for every
+            // truncated cell - the Colonies page slowdown. Cache per (text, width), and
+            // guard the loop: an over-narrow box must never Remove() past empty.
+            if (text == WrappedCacheKey && maxWidth == WrappedCacheWidth)
+                return WrappedCacheValue;
+            string result = text;
+            if (Fonts.Arial12Bold.MeasureString(text).X > maxWidth)
+            {
+                var sb = new StringBuilder(text, text.Length + 2);
+                while (sb.Length > 1 && Fonts.Arial12Bold.MeasureString(sb).X > maxWidth)
+                    sb.Remove(sb.Length-1, 1);
+                sb.Append("...");
+                result = sb.ToString();
+            }
+            WrappedCacheKey = text; WrappedCacheWidth = maxWidth; WrappedCacheValue = result;
+            return result;
         }
 
         static Vector2 TextPosition(Rectangle rect)
@@ -291,6 +298,34 @@ namespace Ship_Game
                 Reset();
             }
             return overTitle || overExpanded; // input was captured?
+        }
+
+        // Policies phase 0: the hovered entry (open list) or the active value under the
+        // cursor (closed title) - lets a host surface per-entry documentation elsewhere
+        public bool TryGetHoveredEntry(out T value)
+        {
+            Vector2 cursor = GameBase.ScreenManager.input.CursorPosition;
+            if (Open)
+            {
+                for (int i = 0; i < Options.Count; ++i)
+                {
+                    if (i == ActiveIndex)
+                        continue;
+                    Entry e = Options[i];
+                    if (e.Rect.HitTest(cursor))
+                    {
+                        value = e.Value;
+                        return true;
+                    }
+                }
+            }
+            if (NotEmpty && !ReadOnly && HitTest(cursor))
+            {
+                value = ActiveValue;
+                return true;
+            }
+            value = default;
+            return false;
         }
 
         public void Reset()

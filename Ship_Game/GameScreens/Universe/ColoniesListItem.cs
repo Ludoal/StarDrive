@@ -115,8 +115,9 @@ namespace Ship_Game
                 color = "green"
             };
 
-            // a quarter, not a fifth: Import and Export overflow the fifth
-            int ddwidth = (int)(0.25f * StorageRect.Width);
+            // bench 455: .30 - the real dropdown's 10px text indent plus the arrow made
+            // Export truncate at a quarter
+            int ddwidth = (int)(0.30f * StorageRect.Width);
             FoodDropDown = new DropOptions<Planet.GoodState>(new Rectangle(StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, ddwidth, 18));
             FoodDropDown.AddOption(GameText.Store, Planet.GoodState.STORE);
             FoodDropDown.AddOption(GameText.Import, Planet.GoodState.IMPORT);

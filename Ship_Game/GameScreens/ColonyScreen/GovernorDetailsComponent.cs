@@ -130,6 +130,11 @@ namespace Ship_Game
             // Ludoal fork: Font, not Font12 - GetParsedDescription wraps with Font; a wider
             // font here overruns the frame below 1920.
             WorldDescription = Add(new UILabel(Font));
+            // Policies phase 0 (maintainer): on the COLONY screen the portraits live in the
+            // Description sub-tab (shown on hover of the type list) - the inline block
+            // frees its space for future policy levers. Other hosts keep the inline text.
+            if (screen is ColonyScreen)
+                WorldDescription.Visible = false;
             ColonyBlueprints = Add(new UILabel(GameText.ColonyBlueprintsTitle, FontBig, Color.Wheat));
             BlueprintsName   = Add(new UILabel("", FontBig, Color.Gold));
             BlueprintsCompletionLbl = Add(new UILabel(GameText.Completion, Font, Color.Wheat));
@@ -531,6 +536,11 @@ namespace Ship_Game
             float maxWidth = Width - 40;
             return Font.ParseText(Localizer.Token(GameText.BluePrintsOverView), maxWidth);
         }
+
+        // Policies phase 0: the hovered type of the governor dropdown, for the host's
+        // Description tab
+        public bool TryGetHoveredColonyType(out Planet.ColonyType type)
+            => ColonyTypeList.TryGetHoveredEntry(out type);
 
         void OnColonyTypeChanged(Planet.ColonyType type)
         {

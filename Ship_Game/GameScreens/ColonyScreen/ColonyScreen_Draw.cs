@@ -396,9 +396,14 @@ namespace Ship_Game
             PopStorage.Draw(batch);
             DrawPopSlots(batch);
 
-            FoodDropDown.Draw(batch, elapsed);
-            ProdDropDown.Draw(batch, elapsed);
-            ColonistsDropDown.Draw(batch, elapsed);
+            // bench 455: closed boxes first, the OPEN one very last - a closed sibling
+            // below was painting its frame across the expanded list
+            if (!FoodDropDown.Open)      FoodDropDown.Draw(batch, elapsed);
+            if (!ProdDropDown.Open)      ProdDropDown.Draw(batch, elapsed);
+            if (!ColonistsDropDown.Open) ColonistsDropDown.Draw(batch, elapsed);
+            if (FoodDropDown.Open)       FoodDropDown.Draw(batch, elapsed);
+            if (ProdDropDown.Open)       ProdDropDown.Draw(batch, elapsed);
+            if (ColonistsDropDown.Open)  ColonistsDropDown.Draw(batch, elapsed);
 
             batch.Draw(ResourceManager.Texture("NewUI/icon_storage_food"), FoodStorageIcon, Color.White);
             batch.Draw(ResourceManager.Texture("NewUI/icon_storage_production"), ProfStorageIcon, Color.White);
@@ -410,6 +415,29 @@ namespace Ship_Game
                 ToolTip.CreateTooltip(GameText.IndicatesTheAmountOfProduction);
             if (ColonistsIcon.HitTest(Input.CursorPosition) && P.Universe.Screen.IsActive)
                 ToolTip.CreateTooltip(GameText.ColonistMigrationTooltip);
+        }
+
+        // Policies phase 0: a governor type's portrait in the Description pane - title in
+        // the tab grammar, then the portrait plus the shared budget note
+        void DrawGovernorTypeInfo(SpriteBatch batch, ref Vector2 cursor, Planet.ColonyType t)
+        {
+            string title = t switch
+            {
+                Planet.ColonyType.Industrial   => Localizer.Token(GameText.Industrial),
+                Planet.ColonyType.Research     => Localizer.Token(GameText.Research),
+                Planet.ColonyType.Agricultural => Localizer.Token(GameText.Agricultural),
+                Planet.ColonyType.Military     => Localizer.Token(GameText.Military),
+                Planet.ColonyType.Colony       => "--", // the list's own label for manual
+                _                              => Localizer.Token(GameText.Core),
+            };
+            batch.DrawString(Fonts.Arial20Bold, title, cursor, Colors.Cream);
+            cursor.Y += Fonts.Arial20Bold.LineSpacing + 8;
+            string body = Planet.ColonyTypeInfoTextFor(t).Text;
+            if (t != Planet.ColonyType.Colony)
+                body += "\n\n" + Localizer.Token(GameText.GovCommonNote);
+            string parsed = Fonts.Arial12Bold.ParseText(body, PFacilities.Rect.Width - 40);
+            batch.DrawString(Fonts.Arial12Bold, parsed, cursor, Color.White);
+            cursor.Y += Fonts.Arial12Bold.MeasureString(parsed).Y + 8;
         }
 
         void DrawFoodSlots(SpriteBatch batch)
@@ -634,6 +662,9 @@ namespace Ship_Game
 
             switch (DetailInfo)
             {
+                case Planet.ColonyType govType: // Policies phase 0: the governor portrait
+                    DrawGovernorTypeInfo(batch, ref bCursor, govType);
+                    break;
                 case Building buildableBuilding: // BuildList building
                     DrawHoveredBuildListBuildingInfo(batch, ref bCursor, buildableBuilding);
                     break;

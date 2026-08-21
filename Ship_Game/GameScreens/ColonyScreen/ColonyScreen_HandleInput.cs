@@ -18,6 +18,11 @@ namespace Ship_Game
         // Gets the item which we want to use for detail info text
         object GetHoveredDetailItem(InputState input)
         {
+            // Policies phase 0 (maintainer): hovering the governor type list shows that
+            // type's portrait in the Description sub-tab - the inline block is gone
+            if (GovernorDetails != null && GovernorDetails.TryGetHoveredColonyType(out Planet.ColonyType hoverType))
+                return hoverType;
+
             // bench 444: a clicked row PINS the description - while a pin is set, hover
             // must not steal the panel (the pin's whole point, bench 429). A pin whose
             // row left its list (filter, tab switch, item built) dies with it.
