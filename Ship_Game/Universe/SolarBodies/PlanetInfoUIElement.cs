@@ -271,6 +271,10 @@ namespace Ship_Game
             0f.SmoothStep(1f, TransitionPosition);
             ToolTipItems.Clear();
             ToolTipItems.Add(new TippedItem(PopRect, GameText.PopulationInBillionsVsMax));
+            // Wishlist: the retired Planet Info screen's prose rides the planet image -
+            // flavor text on wild planets, development status on owned ones (same field)
+            if (P.IsExploredBy(Player) && P.Description.NotEmpty())
+                ToolTipItems.Add(new TippedItem(PlanetIconRect, P.Description));
 
             // Ludoal fork (maintainer feedback): the minimap's recipe instead of the sculpted
             // unitselmenu texture - a near-opaque flat ground and a rounded grey rule. The
