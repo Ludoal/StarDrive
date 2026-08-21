@@ -18,7 +18,7 @@
       <Asteroids>Yes</Asteroids>
     </Ring>
     <Ring>
-      <Planet>Opteris IV</Planet>
+      <Planet>Zero</Planet>
       <WhichPlanet>3</WhichPlanet>
       <HomePlanet>true</HomePlanet>
       <Station>Yes</Station>  
