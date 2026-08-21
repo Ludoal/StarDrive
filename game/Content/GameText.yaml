@@ -22314,6 +22314,10 @@ ContinuousRushColonyTip:
  Id: 5299
  ENG: "Continuously rush every item in THIS colony's construction queue, existing and future.\n \nWARNING: Rushing spends credits every turn. Greyed while the empire-wide Continuous Rush (Automation) is on: that switch commands all colonies."
  FRA: "Précipite en continu tous les éléments de la file de construction de CETTE colonie, existants et futurs.\n \nATTENTION : le rush dépense des crédits chaque tour. Grisé quand la Précipitation continue globale (Automation) est active : c'est elle qui commande toutes les colonies."
+HomeworldMoleNotification:
+ Id: 5300
+ ENG: "Infiltration level 3 perk (Homeworld Mole): a permanent agent is now embedded on:"
+ FRA: "Palier d'infiltration 3 (Homeworld Mole) : un agent permanent est désormais implanté sur :"
 NoResearchAlert:
  Id: 5293
  ENG: "NO RESEARCH!"

@@ -259,7 +259,9 @@ namespace Ship_Game
                 StickyMole = Mole.PlantStickyMoleAtHomeworld(Owner, Them, out Planet targetPlanet);
                 if (StickyMole != null)
                 {
-                    string message = $"{Localizer.Token(GameText.NewSuccessfullyInfiltratedAColony)} {targetPlanet.Name}";
+                    // maintainer feedback: the level-3 perk speaks in its own voice - the ops
+                    // message here read as a Plant Agent the player never launched
+                    string message = $"{Localizer.Token(GameText.HomeworldMoleNotification)} {targetPlanet.Name}";
                     Owner.Universe.Notifications.AddAgentResult(true, message, Owner, targetPlanet);
                 }
             }
