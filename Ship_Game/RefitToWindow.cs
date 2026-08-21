@@ -195,8 +195,11 @@ namespace Ship_Game
                 // it otherwise, mid-height either way.
                 const float Sz = 340f, W = Sz * 1.6f;
                 float anchorX = Rect.X - 16 - W >= 100 ? Rect.X - 16 : Rect.Right + 16 + W; // 100 = ShowShip's own X clamp
-                // vertically centred on the hovered ROW (maintainer), not on the frame
+                // vertically centred on the hovered ROW (maintainer) - and CLAMPED into the
+                // frame's own span: bench 468 landed top-right, so whatever the row's Pos
+                // reports, the seat never leaves the popup's flank
                 float rowMidY = item != null ? item.Pos.Y + RowH / 2f : Rect.CenterY();
+                rowMidY = Math.Clamp(rowMidY, Rect.Y + 80, Rect.Bottom - 80);
                 ShipInfoOverlay.ShowToLeftOf(new Vector2(anchorX, rowMidY - Sz / 4), item?.Design);
             };
         }
