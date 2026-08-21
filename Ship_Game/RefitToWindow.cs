@@ -36,7 +36,8 @@ namespace Ship_Game
 
         const int PopupW = 420;
         const int RowH = 40, MaxRows = 8;
-        const int ListPad = 30; // ScrollList's own housing insets (PaddingTop 15 + PaddingBot 15)
+        const int RowPitch = RowH + 4;  // the list advances by EntryHeight + ItemPadding.Y(4)
+        const int ListPad = 34;         // housing insets (15 top + 15 bot) + slack so one row never scrolls
         const int FootToggleH = 26, FootButtonsH = 36; // two stable foot rows: toggle line, then buttons
 
         public RefitToWindow(ShipListScreen screen, ShipListScreenItem item) : this((GameScreen)screen, item.Ship)
@@ -81,7 +82,7 @@ namespace Ship_Game
         {
             int rows = Math.Max(1, Math.Min(CandidatesFor(ship).Count, MaxRows));
             return PopupFrame.TitleBarTop + PopupFrame.TitleBarHeight
-                 + rows * RowH + ListPad // bench 464: the list's own housing eats 30px - size WITH it or rows clip
+                 + rows * RowPitch + ListPad // bench 465: the ROW PITCH is 44 (item padding), the housing eats 30 more
                  + FootToggleH + FootButtonsH
                  + PopupFrame.BorderBottom;
         }
@@ -124,14 +125,16 @@ namespace Ship_Game
             TitleText = $"Refit {ShipToRefit.Name}";
             base.LoadContent(); // seats the frame - centred on the summoner's page frame
 
-            // bench 464: the frame texture is see-through by design - the old window's
-            // list carried its own dark fill, this one seats it explicitly UNDER the rows
-            // (added first = drawn first) or the summoner's page bleeds through the body
-            Add(new UIPanel(PopupFrame.ContentArea(Rect), new Color(0, 0, 0, 230)));
+            // bench 465: the charte's own FillerLower is translucent - the dark body panel
+            // spans the WHOLE fill zone, title band to the bottom rule, or the summoner's
+            // page bleeds through around the foot (added first = drawn under the rows)
+            var body = new Rectangle(BottomBigFill.X, BottomBigFill.Y, BottomBigFill.Width,
+                                     Rect.Bottom - PopupFrame.BottomLine - BottomBigFill.Y);
+            Add(new UIPanel(body, new Color(0, 0, 0, 235)));
 
             Array<IShipDesign> designs = CandidatesFor(ShipToRefit);
             int rows = Math.Max(1, Math.Min(designs.Count, MaxRows));
-            var listRect = new RectF(Rect.X + 12, BodyTop, Rect.Width - 24, rows * RowH + ListPad);
+            var listRect = new RectF(Rect.X + 12, BodyTop, Rect.Width - 24, rows * RowPitch + ListPad);
             RefitShipList = Add(new ScrollList<RefitShipListItem>(listRect, RowH));
             RefitShipList.EnableItemHighlight = true;
             RefitShipList.OnClick = OnRefitShipItemClicked;
@@ -184,7 +187,9 @@ namespace Ship_Game
             ShipInfoOverlay = Add(new ShipInfoOverlayComponent(this, ShipToRefit.Universe));
             RefitShipList.OnHovered = (item) =>
             {
-                ShipInfoOverlay.ShowToLeftOf(item?.Pos ?? Vector2.Zero, item?.Design);
+                // bench 465: anchored on the POPUP's left flank, mid-height - anchoring on
+                // the row pushed the tall overlay off the top of the screen
+                ShipInfoOverlay.ShowToLeftOf(new Vector2(Rect.X, Rect.CenterY()), item?.Design);
             };
         }
 
