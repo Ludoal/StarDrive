@@ -708,7 +708,10 @@ namespace Ship_Game
                         && RouteTypeShown(g.Trade.Goods)
                         && seen.Add((from, to, g.Trade.Goods)))
                     {
-                        DrawLineProjected(from.Position, to.Position, RouteColor(g.Trade.Goods));
+                        // bench 454: WIDE DASHES on a shared 3-slot cycle - each goods owns
+                        // one dash in three, so overlapping routes interleave instead of
+                        // blending their colors
+                        DrawDashedRouteProjected(from.Position, to.Position, RouteColor(g.Trade.Goods), RouteSlot(g.Trade.Goods));
                     }
                 }
             }
@@ -729,6 +732,31 @@ namespace Ship_Game
             }
         }
 
+        static int RouteSlot(Goods goods) => goods switch
+        {
+            Goods.Food       => 0,
+            Goods.Production => 1,
+            _                => 2,
+        };
+
+        // bench 454: a projected line drawn as wide dashes; `slot` phases the dash inside
+        // a three-slot period so different goods never paint the same pixels
+        void DrawDashedRouteProjected(Vector2 startWorld, Vector2 endWorld, Color color, int slot)
+        {
+            Vector2d a = ProjectToScreenPosition(startWorld);
+            Vector2d b = ProjectToScreenPosition(endWorld);
+            double len = a.Distance(b);
+            if (len < 1.0)
+                return;
+            const double Dash = 14.0, Period = Dash * 3;
+            Vector2d dir = (b - a) / len;
+            for (double t = slot * Dash; t < len; t += Period)
+            {
+                double t2 = Math.Min(t + Dash, len);
+                DrawLine(a + dir * t, a + dir * t2, color, 3f);
+            }
+        }
+
         bool RouteTypeShown(Goods goods) => goods switch
         {
             Goods.Food       => ShowingFoodRoutesOverlay,
@@ -740,7 +768,7 @@ namespace Ship_Game
         {
             Goods.Food       => new Color(new Color(0, 200, 0), (byte)90).Premultiplied(),
             Goods.Production => new Color(new Color(255, 165, 0), (byte)90).Premultiplied(),
-            _                => new Color(new Color(255, 255, 255), (byte)90).Premultiplied(),
+            _                => new Color(new Color(70, 140, 255), (byte)110).Premultiplied(), // bench 454: Pop reads BLUE, not white
         };
 
         void DrawShipRangeOverlay()
