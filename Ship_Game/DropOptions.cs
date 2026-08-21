@@ -263,6 +263,15 @@ namespace Ship_Game
             bool overTitle = HitTest(input.CursorPosition);
             bool overExpanded = Open && ClickAbleOpenRect.HitTest(input.CursorPosition);
 
+            // bench 457 (maintainer): a click ANYWHERE ELSE closes the list without
+            // changing the selection - the click keeps its normal meaning elsewhere
+            if (Open && input.LeftMouseClick && !overTitle && !overExpanded)
+            {
+                Open = false;
+                Reset();
+                return false;
+            }
+
             if (overTitle && input.InGameSelect)
             {
                 Open = !Open;

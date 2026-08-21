@@ -130,11 +130,10 @@ namespace Ship_Game
             // Ludoal fork: Font, not Font12 - GetParsedDescription wraps with Font; a wider
             // font here overruns the frame below 1920.
             WorldDescription = Add(new UILabel(Font));
-            // Policies phase 0 (maintainer): on the COLONY screen the portraits live in the
-            // Description sub-tab (shown on hover of the type list) - the inline block
-            // frees its space for future policy levers. Other hosts keep the inline text.
-            if (Screen is ColonyScreen)
-                WorldDescription.Visible = false;
+            // bench 457 (maintainer): the inline description leaves the GOVERNOR tab
+            // entirely - the Description sub-tab owns the portraits now, and the freed
+            // space is reserved for future policy levers
+            WorldDescription.Visible = false;
             ColonyBlueprints = Add(new UILabel(GameText.ColonyBlueprintsTitle, FontBig, Color.Wheat));
             BlueprintsName   = Add(new UILabel("", FontBig, Color.Gold));
             BlueprintsCompletionLbl = Add(new UILabel(GameText.Completion, Font, Color.Wheat));

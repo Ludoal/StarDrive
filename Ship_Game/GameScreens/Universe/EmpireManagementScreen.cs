@@ -235,9 +235,15 @@ namespace Ship_Game
 
             base.Draw(batch, elapsed);
             // Policies phase 0: any OPEN supply dropdown re-paints after the whole table,
-            // so its expanded list is never covered by the rows below it
-            foreach (ColoniesListItem it in ColoniesList.AllEntries)
-                it.DrawOpenLists(batch, elapsed);
+            // so its expanded list is never covered by the rows below it.
+            // bench 457 probe: whatever kills the chrome and the bottom band logs its
+            // trace here instead of dying silently every frame
+            try
+            {
+                foreach (ColoniesListItem it in ColoniesList.AllEntries)
+                    it.DrawOpenLists(batch, elapsed);
+            }
+            catch (Exception ex) { Log.Error(ex, "Colonies: open-list overdraw"); }
             
             // Ludoal fork: the bottom band, LEFT to RIGHT - the EMPIRE totals box, the planet
             // cartouche, the ground map, then the fixed governor frame; all anchored left, extra
@@ -249,7 +255,8 @@ namespace Ship_Game
             float mapH     = blockH - 10;
 
             // the EMPIRE box: colony count, total population, total per-turn growth, at the far left
-            DrawEmpireSummary(batch, BandEmpireX, blockTop, blockH);
+            try { DrawEmpireSummary(batch, BandEmpireX, blockTop, blockH); }
+            catch (Exception ex) { Log.Error(ex, "Colonies: EMPIRE summary"); } // bench 457 probe
 
             // the planet block: icon + name + the four stat lines, pushed right of the EMPIRE box
             int iconSize = (int)(blockH * 0.6f);
