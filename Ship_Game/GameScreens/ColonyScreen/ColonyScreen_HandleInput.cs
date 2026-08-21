@@ -202,6 +202,9 @@ namespace Ship_Game
                 // Diplomacy row had a deaf tab row, while everything else worked
                 if (GroupRow != null && GroupRow.HandleInput(input))
                     return true;
+                // the nav arrows too: on a mole page they walk the mole network
+                if (LeftColony.HandleInput(input) || RightColony.HandleInput(input))
+                    return true;
                 // Input not captured, let Universe Screen manager what happens
                 return false;
             }
@@ -325,11 +328,31 @@ namespace Ship_Game
             return false;
         }
 
+        // bench 460: a mole-host page is an espionage window, not an empire page
+        bool IsMoleHostPage => !P.OwnerIsPlayer && Player.data.MoleList.Any(m => m.PlanetId == P.Id);
+
+        Planet[] MoleNetworkOrder()
+        {
+            // the mole network, all targets combined, in the list's stable order
+            var hosts = new Array<Planet>();
+            foreach (Mole m in Player.data.MoleList)
+            {
+                Planet host = P.Universe.GetPlanet(m.PlanetId);
+                if (host?.Owner != null && !host.OwnerIsPlayer)
+                    hosts.Add(host);
+            }
+            return hosts.ToArray();
+        }
+
         void OnChangeColony(int change)
         {
             // bench 432: the arrows walk the SHARED spatial order (SpatialColonyOrder),
-            // like the Colonies table and the keyboard tour - never a private list
-            Planet[] planets = P.Owner.SpatialColonyOrder();
+            // like the Colonies table and the keyboard tour - never a private list.
+            // bench 460 (maintainer + Lek): on a mole-host page they walk the MOLE
+            // NETWORK instead - every infiltrated planet, all targets combined.
+            Planet[] planets = IsMoleHostPage ? MoleNetworkOrder() : P.Owner.SpatialColonyOrder();
+            if (planets.Length == 0)
+                return;
             int newIndex = System.Array.IndexOf(planets, P) + change;
             if (newIndex >= planets.Length) newIndex = 0;
             else if (newIndex < 0) newIndex = planets.Length - 1;
@@ -367,7 +390,7 @@ namespace Ship_Game
 
         bool HandleCycleColoniesLeftRight(InputState input)
         {
-            bool canView = (P.Universe.Debug || P.OwnerIsPlayer);
+            bool canView = (P.Universe.Debug || P.OwnerIsPlayer || IsMoleHostPage);
             if (canView && (input.Left || input.Right))
             {
                 int change = input.Left ? -1 : +1;

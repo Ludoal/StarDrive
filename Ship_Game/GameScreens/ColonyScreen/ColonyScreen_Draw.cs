@@ -260,9 +260,18 @@ namespace Ship_Game
             PlanetName.Draw(batch, elapsed);
 
             EditNameButton = new Rectangle((int)(cursor.X + (double)Font20.MeasureString(P.Name).X + 12.0), (int)(cursor.Y + (double)(Font20.LineSpacing / 2) - ResourceManager.Texture("NewUI/icon_build_edit").Height / 2) - 2, ResourceManager.Texture("NewUI/icon_build_edit").Width, ResourceManager.Texture("NewUI/icon_build_edit").Height);
-            // Dimmed a step at rest so the hover state still stands out.
-            batch.Draw(ResourceManager.Texture("NewUI/icon_build_edit_hover1"), EditNameButton,
-                       PlanetName.HandlingInput ? Color.White : Color.White.Alpha(0.75f));
+            if (P.OwnerIsPlayer)
+            {
+                // Dimmed a step at rest so the hover state still stands out.
+                batch.Draw(ResourceManager.Texture("NewUI/icon_build_edit_hover1"), EditNameButton,
+                           PlanetName.HandlingInput ? Color.White : Color.White.Alpha(0.75f));
+            }
+            else if (P.Owner != null)
+            {
+                // bench 460 (maintainer): you do not rename a foreign world - the pencil's
+                // seat carries the owner faction's crest instead, in its color
+                batch.Draw(ResourceManager.Flag(P.Owner), EditNameButton, P.Owner.EmpireColor);
+            }
 
             cursor.Y += Font20.LineSpacing * 2;
             batch.DrawString(TextFont, Localizer.Token(GameText.Class) + ":", cursor, Color.Orange);

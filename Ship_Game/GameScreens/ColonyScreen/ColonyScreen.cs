@@ -520,7 +520,10 @@ namespace Ship_Game
                                           new Vector2(arrowW, arrowH), "")
             {
                 Pos = new Vector2(navCentre - NavGap / 2 - arrowW, arrowY),
-                Tooltip = Localizer.Token(GameText.ViewPreviousColony) + " (← / " + KeyBindings.Name(KeyBindings.PrevColony) + ")", // bench 428: the keys ride the tooltip
+                // bench 460: on a mole-host page the arrows walk the mole network
+                Tooltip = (p.OwnerIsPlayer ? Localizer.Token(GameText.ViewPreviousColony)
+                                           : Localizer.Token(GameText.ViewPrevInfiltrated))
+                          + " (← / " + KeyBindings.Name(KeyBindings.PrevColony) + ")", // bench 428: the keys ride the tooltip
                 OnClick = b => OnChangeColony(-1),
                 ClickSfx = "sd_ui_accept_alt3", // the click every toggle played
             });
@@ -529,7 +532,9 @@ namespace Ship_Game
                                            new Vector2(arrowW, arrowH), "")
             {
                 Pos = new Vector2(navCentre + NavGap / 2, arrowY),
-                Tooltip = Localizer.Token(GameText.ViewNextColony) + " (→ / " + KeyBindings.Name(KeyBindings.NextColony) + ")",
+                Tooltip = (p.OwnerIsPlayer ? Localizer.Token(GameText.ViewNextColony)
+                                           : Localizer.Token(GameText.ViewNextInfiltrated))
+                          + " (→ / " + KeyBindings.Name(KeyBindings.NextColony) + ")",
                 OnClick = b => OnChangeColony(+1),
                 ClickSfx = "sd_ui_accept_alt3",
             });
@@ -537,14 +542,17 @@ namespace Ship_Game
             // the HOME button between the arrows - straight back to the capital. Panel
             // navigation pans without zooming; the zoomed route is the cartouche's.
             const int homeSize = 16; // a notch under the arrows
-            Add(new UIButton(new UIButton.StyleTextures("UI/icon_home", "UI/icon_home"),
-                             new Vector2(homeSize, homeSize), "")
+            if (p.OwnerIsPlayer) // bench 460: YOUR capital has no seat on a mole-host page
             {
-                Pos = new Vector2(navCentre - homeSize / 2, arrowY + (arrowH - homeSize) / 2),
-                Tooltip = GameText.ViewYourHomeworld,
-                OnClick = b => GoToHomeworld(),
-                ClickSfx = "sd_ui_accept_alt3",
-            });
+                Add(new UIButton(new UIButton.StyleTextures("UI/icon_home", "UI/icon_home"),
+                                 new Vector2(homeSize, homeSize), "")
+                {
+                    Pos = new Vector2(navCentre - homeSize / 2, arrowY + (arrowH - homeSize) / 2),
+                    Tooltip = GameText.ViewYourHomeworld,
+                    OnClick = b => GoToHomeworld(),
+                    ClickSfx = "sd_ui_accept_alt3",
+                });
+            }
 
             Rectangle planetShieldBarRect = new Rectangle(PlanetIcon.X, PlanetInfo.Rect.Y + 4, PlanetIcon.Width, 20);
             PlanetShieldBar = new ProgressBar(planetShieldBarRect)
@@ -568,7 +576,9 @@ namespace Ship_Game
                 planetGridSquare.ClickRect = new Rectangle(GridPos.X + planetGridSquare.X * width, GridPos.Y + planetGridSquare.Y * height, width, height);
             
             PlanetName = Add(new UITextEntry(p.Name));
-            PlanetName.Color = Colors.Cream;
+            // bench 460 (maintainer): a mole-host page wears the target's colors - the
+            // name in the faction's color, the crest where the rename pencil sits
+            PlanetName.Color = p.OwnerIsPlayer || p.Owner == null ? Colors.Cream : p.Owner.EmpireColor;
             PlanetName.MaxCharacters = 20;
             PlanetName.OnTextChanged = OnPlanetNameChanged;
             PlanetName.OnTextSubmit = OnPlanetNameSubmit;

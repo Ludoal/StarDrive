@@ -22318,6 +22318,14 @@ HomeworldMoleNotification:
  Id: 5300
  ENG: "Infiltration level 3 perk (Homeworld Mole): a permanent agent is now embedded on:"
  FRA: "Palier d'infiltration 3 (Homeworld Mole) : un agent permanent est désormais implanté sur :"
+ViewPrevInfiltrated:
+ Id: 5301
+ ENG: "View previous infiltrated planet"
+ FRA: "Planète infiltrée précédente"
+ViewNextInfiltrated:
+ Id: 5302
+ ENG: "View next infiltrated planet"
+ FRA: "Planète infiltrée suivante"
 NoResearchAlert:
  Id: 5293
  ENG: "NO RESEARCH!"
