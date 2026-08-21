@@ -238,9 +238,12 @@ namespace Ship_Game
                     if (tile != null && Build(b, tile))
                         return;
                 }
+                // a genuine drop attempt outside the list that found no valid tile
+                GameAudio.NegativeClick();
             }
-
-            GameAudio.NegativeClick();
+            // released INSIDE the list: not a build attempt - the 75ms DragBeginDelay arms
+            // a "drag" on any ordinary click, and this fall-through was buzzing every row
+            // click on top of the click sound (bench 459 double-buzz, reported twice)
         }
 
         void OnConstructionItemReorder(ConstructionQueueScrollListItem item, int relativeChange)
