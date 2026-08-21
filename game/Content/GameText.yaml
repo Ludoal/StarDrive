@@ -2707,40 +2707,40 @@ CustomColony:
  PTB: "Colônia Personalizada"
 GovernorWillBuildAgriculturalBuildings:
  Id: 377
- ENG: "The breadbasket. Pushes farming to the limit to fill its granaries and feed the rest of your empire through exports. Favors fertility and food buildings, keeps a third of hands in production and allows up to 40% research. Also your best nursery: abundant food means fast population growth."
- FRA: "Le grenier. Pousse l'agriculture à fond pour remplir ses silos et nourrir le reste de l'empire par l'export. Favorise la fertilité et les bâtiments de nourriture, garde un tiers des bras à la production et tolère jusqu'à 40 % de recherche. Aussi votre meilleure pouponnière : l'abondance de nourriture accélère la croissance démographique."
+ ENG: "The breadbasket. Pushes farming until its granaries are full, keeps a third of hands in production (net 0), and allows research up to 40% of leftover labor. Favors fertility and food buildings. Feeds the rest of your empire through exports, and doubles as your best nursery: abundant food means fast population growth."
+ FRA: "Le grenier. Pousse l'agriculture jusqu'à remplir ses silos, garde un tiers des bras à la production (net 0), et tolère la recherche jusqu'à 40% du travail restant. Favorise la fertilité et les bâtiments de nourriture. Nourrit le reste de l'empire par l'export, et sert aussi de pouponnière : l'abondance de nourriture accélère la croissance démographique."
  RUS: "Губернатор будет строить с/х-объекты, импортировать производство и экспортировать еду. Весь труд будет сосредоточен в с/х-секторе."
  SPA: "El gobernador construirá edificios agrícolas que importarán producción y exportarán comida. El trabajo se centra por entero en la agricultura."
  UKR: "Губернатор будуватиме сільськогосподарські будівлі, імпортуватиме продукцію та експортуватиме їжу. Праця повністю зосереджена на сільському господарстві."
  PTB: "O governador construirá edifícios agrícolas, importando produção e exportando comida. Trabalho focado inteiramente na agricultura."
 GovernorWillBuildABalanced:
  Id: 378
- ENG: "The all-rounder for your developed worlds. Keeps food and production stocks healthy on its own, then pours every spare hand into research (40 to 90% of the remaining labor). Favors infrastructure, population growth and income buildings. Fully self-sufficient: a Core world asks nothing from your freighters."
- FRA: "Le généraliste de vos mondes développés. Maintient seul des stocks sains de nourriture et de production, puis verse chaque bras disponible dans la recherche (40 à 90 % de la main-d'œuvre restante). Favorise l'infrastructure, la croissance démographique et les bâtiments de revenu. Autosuffisant : un monde Core ne demande rien à vos cargos."
+ ENG: "The all-rounder for your developed worlds. Manages food and production stocks adaptively: any shortage is rebuilt over roughly 20 turns, then every spare hand goes to research (40 to 90% of remaining labor). Favors infrastructure, population growth and income buildings. Fully self-sufficient: a Core world asks nothing from your freighters."
+ FRA: "Le généraliste de vos mondes développés. Gère ses stocks de nourriture et de production de façon adaptative : un déficit se rattrape en 20 tours environ, puis chaque bras disponible part en recherche (40 à 90% du travail restant). Favorise l'infrastructure, la croissance démographique et les bâtiments de revenu. Autosuffisant : un monde Core ne demande rien à vos cargos."
  RUS: "Губернатор будет строит сбалансированную колонию, которая станет центром вашей империи."
  SPA: "El gobernador construirá un mundo equilibrado que se erija en el centro de tu imperio."
  UKR: "Губернатор побудує збалансований світ, який стане основою вашої імперії."
  PTB: "O governador construirá um mundo equilibrado para servir como núcleo do seu império."
 GovernorWillFocusEntirelyOn:
  Id: 379
- ENG: "The forge world. Farms only enough to keep a third of its food storage, then commits everything to production. Prioritizes factories and infrastructure; research is capped at 25% of labor. Expect maximum output, and a colony that lives for its shipyards and construction queues."
- FRA: "Le monde-forge. Cultive juste assez pour maintenir un tiers de ses réserves de nourriture, puis engage tout dans la production. Priorité aux usines et à l'infrastructure ; la recherche est plafonnée à 25 % des bras. Rendement maximal, et une colonie qui vit pour ses chantiers et ses files de construction."
+ ENG: "The forge world. Farms only until its food stock reaches 30%, then commits everything to production, aiming for a net output of +2. Research is capped at 25% of leftover labor. Prioritizes factories and infrastructure. Expect maximum output: a colony that lives for its shipyards and construction queues."
+ FRA: "Le monde-forge. Cultive seulement jusqu'à 30% de stock de nourriture, puis engage tout dans la production, en visant un rendement net de +2. La recherche est plafonnée à 25% du travail restant. Priorité aux usines et à l'infrastructure. Rendement maximal : une colonie qui vit pour ses chantiers et ses files de construction."
  RUS: "Губернатор будет строить промышленные объекты, импортировать еду и экспортировать производство. Весь труд будет сосредоточен в промышленном секторе."
  SPA: "El gobernador tratará por todos los medios de aumentar la producción al máximo, importando comida y exportando producción. El trabajo se centra por entero en la industria."
  UKR: "Губернатор повністю зосередиться на максимізації виробництва, імпорті продовольства та експорті продукції. Працівники повністю зосереджені на промисловості."
  PTB: "O governador se concentrará inteiramente em maximizar a produção, importando comida e exportando produção. Trabalho focado inteiramente na indústria."
 GovernorWillBuildALimited:
  Id: 380
- ENG: "The garrison world. Balances a solid food base with a strong industrial effort, roughly 30/70 between farms and factories, geared toward defense: space ports, military buildings, troops. Research is capped at 25%. Place it on your borders: it turns production into protection."
- FRA: "La garnison. Équilibre une base vivrière solide et un gros effort industriel, environ 30/70 entre champs et usines, tourné vers la défense : ports spatiaux, bâtiments militaires, troupes. La recherche est plafonnée à 25 %. Placez-le aux frontières : il convertit la production en protection."
+ ENG: "The garrison world. Assigns 30% of labor to food and 70% to production, aiming for a net industrial output of +1.5. Research is capped at 25%. Builds space ports, military buildings and troops first. Place it on your borders: it turns production into protection."
+ FRA: "La garnison. Assigne 30% du travail à la nourriture et 70% à la production, en visant un rendement industriel net de +1.5. La recherche est plafonnée à 25%. Construit d'abord ports spatiaux, bâtiments militaires et troupes. Placez-le aux frontières : il convertit la production en protection."
  RUS: "Губернатор построит ограниченную инфраструктуру и сосредоточится на военном производстве."
  SPA: "El gobernador construirá infraestructuras limitadas y se centrará en la producción militar."
  UKR: "Губернатор побудує обмежену інфраструктуру і зосередиться на військовому виробництві."
  PTB: "O governador construirá uma infraestrutura limitada e se concentrará em produção militar."
 GovernorWillBuildADedicated:
  Id: 381
- ENG: "The laboratory. Keeps farming and industry near 15% each and devotes 75 to 100% of the population to science. Relies on food imports: pair it with agricultural worlds and working trade routes, or it will starve. The most fragile governor, and the one that wins the tech race."
- FRA: "Le laboratoire. Maintient champs et usines autour de 15 % chacun et consacre 75 à 100 % de la population à la science. Dépend des imports de nourriture : associez-le à des mondes agricoles et des routes commerciales actives, sinon il meurt de faim. Le gouverneur le plus fragile, et celui qui gagne la course technologique."
+ ENG: "The laboratory. Keeps only 15% of the population farming and 15% in industry, and devotes everything else to science (75 to 100% of remaining labor). Relies on food imports: pair it with agricultural worlds and working trade routes, or it will starve. The most fragile governor, and the one that wins the tech race."
+ FRA: "Le laboratoire. Ne garde que 15% de la population aux champs et 15% à l'industrie, et consacre tout le reste à la science (75 à 100% du travail restant). Dépend des imports de nourriture : associez-le à des mondes agricoles et des routes commerciales actives, sinon il meurt de faim. Le gouverneur le plus fragile, et celui qui gagne la course technologique."
  RUS: "Губернатор построит научную колонию, импортируя производство и еду."
  SPA: "El gobernador construirá una colonia dedicada a la investigación, importando comida y producción."
  UKR: "Губернатор побудує спеціальну дослідницьку колонію, покладаючись на імпорт продуктів харчування та виробництва."
