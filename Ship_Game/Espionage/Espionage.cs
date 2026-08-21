@@ -32,15 +32,24 @@ namespace Ship_Game
         public enum IntelDomain { Population = 0, Military = 1, Economy = 2, Science = 3 }
         public float DomainUnlockDate(IntelDomain d)
             => DomainUnlockDates == null ? 0f : DomainUnlockDates[(int)d];
-        public void StampDomainUnlocks()
+        // bench 454: stamp ONLY the domains THIS level change just opened. A date of 0 on
+        // an already-open domain means "unlocked before the feature existed" and keeps its
+        // full history (the maintainer's ruling) - blanket-stamping them dated every open
+        // curve "today" at each level change and made them all restart.
+        public void StampDomainUnlocks(byte previousLevel)
         {
             DomainUnlockDates ??= new float[4]; // a legacy save deserializes the field null
             float now = Owner?.Universe?.StarDate ?? 0f;
             if (now <= 0f) return;
-            if (CanViewPopRank      && DomainUnlockDates[0] == 0f) DomainUnlockDates[0] = now;
-            if (CanViewMilitaryRank && DomainUnlockDates[1] == 0f) DomainUnlockDates[1] = now;
-            if (CanViewEconomyRank  && DomainUnlockDates[2] == 0f) DomainUnlockDates[2] = now;
-            if (CanViewScienceRank  && DomainUnlockDates[3] == 0f) DomainUnlockDates[3] = now;
+            void Stamp(int domain, byte requiredLevel)
+            {
+                if (Level >= requiredLevel && previousLevel < requiredLevel && DomainUnlockDates[domain] == 0f)
+                    DomainUnlockDates[domain] = now;
+            }
+            Stamp(0, 1); // Population
+            Stamp(1, 2); // Military
+            Stamp(2, 3); // Economy
+            Stamp(3, 3); // Science
         }
 
         [StarDataConstructor]
@@ -65,9 +74,10 @@ namespace Ship_Game
             if (Level == MaxLevel) 
                 return;
 
+            byte prevLevel = Level; // captured before the raise
             Level++;
             LevelProgress = 0;
-            StampDomainUnlocks(); // Trends: a fresh unlock opens its curves from today
+            StampDomainUnlocks(prevLevel); // Trends: a fresh unlock opens its curves from today
 
             if (!Them.IsFaction && withMessage)
             {
@@ -96,9 +106,10 @@ namespace Ship_Game
 
         public void SetInfiltrationLevelTo(byte value)
         {
+            byte prevLevel = Level;
             Level = value.LowerBound(0);
             LevelProgress = 0;
-            StampDomainUnlocks(); // stamps only NEW unlocks; a drop never closes history
+            StampDomainUnlocks(prevLevel); // stamps only NEW unlocks; a drop never closes history
             RemoveOperations();
             EnablePassiveEffects();
             if (!Owner.isPlayer)
