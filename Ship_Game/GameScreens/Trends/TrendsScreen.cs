@@ -134,10 +134,50 @@ namespace Ship_Game.GameScreens
                 if (byEmpire.TryGetValue(e, out EmpireSeries s))
                 {
                     s.Points.Sort((a, b) => a.Date.CompareTo(b.Date));
+                    // bench 461 (maintainer): smooth every domain but Science - Economy
+                    // especially carries one-turn windfalls (excess-goods sales) that spike
+                    // 10x over the baseline. Science stays raw: its level steps ARE the point.
+                    for (int d = 0; d < 3; ++d)
+                        SmoothDomain(s.Points, d);
                     if (hidden.TryGetValue(e, out bool h))
                         s.Hidden = h;
                     Series.Add(s);
                 }
+            }
+        }
+
+        // A rolling median (window 5) kills single-sample spikes dead, then a 3-point
+        // average rounds what remains. Holes (v<=0, the unmet-intel gaps) are preserved
+        // and never smeared across - only positive neighbours enter a window.
+        static void SmoothDomain(Array<(float Date, float[] Values)> pts, int d)
+        {
+            int n = pts.Count;
+            if (n < 5)
+                return;
+            float[] src = new float[n];
+            for (int i = 0; i < n; ++i)
+                src[i] = pts[i].Values[d];
+
+            float[] med = new float[n];
+            var win = new Array<float>();
+            for (int i = 0; i < n; ++i)
+            {
+                if (src[i] <= 0f) { med[i] = src[i]; continue; } // a hole stays a hole
+                win.Clear();
+                for (int j = Math.Max(0, i - 2); j <= Math.Min(n - 1, i + 2); ++j)
+                    if (src[j] > 0f)
+                        win.Add(src[j]);
+                win.Sort();
+                med[i] = win[win.Count / 2];
+            }
+            for (int i = 0; i < n; ++i)
+            {
+                if (med[i] <= 0f)
+                    continue;
+                float sum = 0f; int cnt = 0;
+                for (int j = Math.Max(0, i - 1); j <= Math.Min(n - 1, i + 1); ++j)
+                    if (med[j] > 0f) { sum += med[j]; ++cnt; }
+                pts[i].Values[d] = sum / cnt; // Values is a shared array - the write lands
             }
         }
 
