@@ -36,6 +36,7 @@ namespace Ship_Game
 
         const int PopupW = 420;
         const int RowH = 40, MaxRows = 8;
+        const int ListPad = 30; // ScrollList's own housing insets (PaddingTop 15 + PaddingBot 15)
         const int FootToggleH = 26, FootButtonsH = 36; // two stable foot rows: toggle line, then buttons
 
         public RefitToWindow(ShipListScreen screen, ShipListScreenItem item) : this((GameScreen)screen, item.Ship)
@@ -80,7 +81,7 @@ namespace Ship_Game
         {
             int rows = Math.Max(1, Math.Min(CandidatesFor(ship).Count, MaxRows));
             return PopupFrame.TitleBarTop + PopupFrame.TitleBarHeight
-                 + rows * RowH + 12
+                 + rows * RowH + ListPad // bench 464: the list's own housing eats 30px - size WITH it or rows clip
                  + FootToggleH + FootButtonsH
                  + PopupFrame.BorderBottom;
         }
@@ -130,7 +131,7 @@ namespace Ship_Game
 
             Array<IShipDesign> designs = CandidatesFor(ShipToRefit);
             int rows = Math.Max(1, Math.Min(designs.Count, MaxRows));
-            var listRect = new RectF(Rect.X + 12, BodyTop, Rect.Width - 24, rows * RowH + 8);
+            var listRect = new RectF(Rect.X + 12, BodyTop, Rect.Width - 24, rows * RowH + ListPad);
             RefitShipList = Add(new ScrollList<RefitShipListItem>(listRect, RowH));
             RefitShipList.EnableItemHighlight = true;
             RefitShipList.OnClick = OnRefitShipItemClicked;
@@ -147,30 +148,38 @@ namespace Ship_Game
             RushRefit.CheckedTextColor = Color.Red;
             RushRefit.Pos = new Vector2(Rect.X + 16, toggleY);
 
-            // right-aligned trio; Refit In Fleet only exists for a fleet ship. All greyed
-            // until the sticky selection arms them - the selection is the transaction's WHAT.
+            // the button trio, CENTRED on the frame (bench 464); Refit In Fleet only
+            // exists for a fleet ship. All greyed until the sticky selection arms them.
             int shipsOfDesign = 0;
             foreach (Ship s in Player.OwnedShips)
                 if (s.Name == ShipToRefit.Name)
                     ++shipsOfDesign;
 
-            float x = Rect.Right - 11;
-            x -= 128;
-            RefitAll = ButtonMedium(x, buttonsY, text: Localizer.Token(GameText.RefitAll) + $" ({shipsOfDesign})", click: OnRefitAllClicked);
-            RefitAll.Tooltip = GameText.RefitAllShipsOfThis;
+            var btns = new Array<UIButton>();
+            RefitOne = ButtonMedium(0, buttonsY, text: GameText.RefitOne, click: OnRefitOneClicked);
+            RefitOne.Tooltip = GameText.RefitOnlyThisShipTo;
+            btns.Add(RefitOne);
             if (ShipToRefit.Fleet != null)
             {
-                x -= 130;
-                RefitInFleet = ButtonMedium(x, buttonsY, text: GameText.RefitInFleet, click: OnRefitFleetClicked);
+                RefitInFleet = ButtonMedium(0, buttonsY, text: GameText.RefitInFleet, click: OnRefitFleetClicked);
                 RefitInFleet.Tooltip = GameText.RefitInFleetTip;
+                btns.Add(RefitInFleet);
             }
-            x -= 130;
-            RefitOne = ButtonMedium(x, buttonsY, text: GameText.RefitOne, click: OnRefitOneClicked);
-            RefitOne.Tooltip = GameText.RefitOnlyThisShipTo;
+            RefitAll = ButtonMedium(0, buttonsY, text: Localizer.Token(GameText.RefitAll) + $" ({shipsOfDesign})", click: OnRefitAllClicked);
+            RefitAll.Tooltip = GameText.RefitAllShipsOfThis;
+            btns.Add(RefitAll);
 
-            RefitOne.Enabled = RefitAll.Enabled = false;
-            if (RefitInFleet != null)
-                RefitInFleet.Enabled = false;
+            const int BtnGap = 10;
+            float total = BtnGap * (btns.Count - 1);
+            foreach (UIButton b in btns)
+                total += b.Rect.Width;
+            float bx = Rect.X + (Rect.Width - total) / 2f;
+            foreach (UIButton b in btns)
+            {
+                b.Pos = new Vector2(bx, buttonsY);
+                bx += b.Rect.Width + BtnGap;
+                b.Enabled = false;
+            }
 
             ShipInfoOverlay = Add(new ShipInfoOverlayComponent(this, ShipToRefit.Universe));
             RefitShipList.OnHovered = (item) =>
