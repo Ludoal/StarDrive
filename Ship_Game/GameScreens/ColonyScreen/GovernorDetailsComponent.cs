@@ -584,7 +584,9 @@ namespace Ship_Game
         {
             if (Planet.Owner != null)
             {
-                WorldDescription.Visible   = GovernorTabView && Planet.OwnerIsPlayer;
+                // bench 458: the DESCRIPTION tab is the only home for governor prose -
+                // this per-frame refresh was resurrecting the label the ctor hides
+                WorldDescription.Visible   = false;
                 ColonyTypeList.Visible     = GovernorTabView && Planet.OwnerIsPlayer;
                 Portrait.Visible           = GovernorTabView;
                 BluePrintsIcon.Visible     = Portrait.Visible && Planet.HasBlueprints;

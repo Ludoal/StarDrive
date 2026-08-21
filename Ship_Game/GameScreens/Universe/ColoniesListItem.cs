@@ -116,9 +116,12 @@ namespace Ship_Game
             };
 
             // bench 455: .30 - the real dropdown's 10px text indent plus the arrow made
-            // Export truncate at a quarter
-            int ddwidth = (int)(0.30f * StorageRect.Width);
-            FoodDropDown = new DropOptions<Planet.GoodState>(new Rectangle(StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, ddwidth, 18));
+            // Export truncate at a quarter. bench 458: Resettle still clipped - the box
+            // eats 14px of its LEFT margin (the bar-to-box gap shrinks 20 to 6), the
+            // right edge does not move so the column layout holds.
+            int ddwidth = (int)(0.30f * StorageRect.Width) + 14;
+            int ddX = StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 6;
+            FoodDropDown = new DropOptions<Planet.GoodState>(new Rectangle(ddX, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, ddwidth, 18));
             FoodDropDown.AddOption(GameText.Store, Planet.GoodState.STORE);
             FoodDropDown.AddOption(GameText.Import, Planet.GoodState.IMPORT);
             FoodDropDown.AddOption(GameText.Export, Planet.GoodState.EXPORT);
@@ -131,7 +134,7 @@ namespace Ship_Game
                 Progress = P.ProdHere
             };
             ProdStorageIcon = new Rectangle(StorageRect.X + 20, ProdStorage.pBar.Y + ProdStorage.pBar.Height / 2 - ResourceManager.Texture("NewUI/icon_production").Height / 2, ResourceManager.Texture("NewUI/icon_production").Width, ResourceManager.Texture("NewUI/icon_production").Height);
-            ProdDropDown = new DropOptions<Planet.GoodState>(new Rectangle(StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 20, ProdStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, ddwidth, 18));
+            ProdDropDown = new DropOptions<Planet.GoodState>(new Rectangle(ddX, ProdStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, ddwidth, 18));
             ProdDropDown.AddOption(GameText.Store, Planet.GoodState.STORE);
             ProdDropDown.AddOption(GameText.Import, Planet.GoodState.IMPORT);
             ProdDropDown.AddOption(GameText.Export, Planet.GoodState.EXPORT);
@@ -143,7 +146,7 @@ namespace Ship_Game
                 Progress = P.PopulationBillion,
                 color = "blue"
             };
-            PopDropDown = new DropOptions<Planet.GoodState>(new Rectangle(StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 20, PopStorage.pBar.Y + PopStorage.pBar.Height / 2 - 9, ddwidth, 18));
+            PopDropDown = new DropOptions<Planet.GoodState>(new Rectangle(ddX, PopStorage.pBar.Y + PopStorage.pBar.Height / 2 - 9, ddwidth, 18));
             // auto-supplies: QUI decides lives on the colony screen's Auto checkbox; here
             // the list mirrors it - three people-words, greyed live pick while Auto holds
             PopDropDown.AddOption(GameText.Stay, Planet.GoodState.STORE);
@@ -233,15 +236,30 @@ namespace Ship_Game
 
                 // Policies phase 0: the real dropdowns answer for themselves - ReadOnly
                 // (set at draw from the Auto flags) refuses their input, OnValueChange
-                // mutates on the sim thread
-                if (FoodDropDown.HandleInput(input))
+                // mutates on the sim thread. bench 458: only CLOSED lists open from here -
+                // an OPEN list is fed by the screen (HandleOpenLists) before the table,
+                // so it hears clicks landing outside this row; handling it twice in one
+                // frame would close-then-reopen on a title click.
+                if (!FoodDropDown.Open && FoodDropDown.HandleInput(input))
                     return true;
-                if (ProdDropDown.HandleInput(input))
+                if (!ProdDropDown.Open && ProdDropDown.HandleInput(input))
                     return true;
-                if (PopDropDown.HandleInput(input))
+                if (!PopDropDown.Open && PopDropDown.HandleInput(input))
                     return true;
             }
             return base.HandleInput(input);
+        }
+
+        // bench 458: the scroll list only routes input to rows under the cursor - the
+        // screen calls this FIRST every frame so an open supply list behaves like the
+        // Colony governor list (a real child there): entry hover tracks the mouse, a
+        // click elsewhere folds it without changing the value (DropOptions handles both).
+        public bool HandleOpenLists(InputState input)
+        {
+            if (FoodDropDown.Open) return FoodDropDown.HandleInput(input);
+            if (ProdDropDown.Open) return ProdDropDown.HandleInput(input);
+            if (PopDropDown.Open)  return PopDropDown.HandleInput(input);
+            return false;
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)

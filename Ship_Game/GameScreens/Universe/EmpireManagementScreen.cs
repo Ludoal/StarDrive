@@ -463,6 +463,13 @@ namespace Ship_Game
             if (eui.HandleInput(input, caller: this)) // Ludoal fork: live top bar
                 return true;
 
+            // bench 458: an OPEN supply dropdown hears the input before the table - the
+            // scroll list only feeds rows under the cursor, so without this a click
+            // landing elsewhere never reached the list and it stayed open forever.
+            foreach (ColoniesListItem it in ColoniesList.AllEntries)
+                if (it.HandleOpenLists(input))
+                    return true;
+
             if (input.KeyPressed(Keys.U) && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();
