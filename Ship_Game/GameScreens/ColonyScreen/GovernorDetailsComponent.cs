@@ -133,7 +133,7 @@ namespace Ship_Game
             // Policies phase 0 (maintainer): on the COLONY screen the portraits live in the
             // Description sub-tab (shown on hover of the type list) - the inline block
             // frees its space for future policy levers. Other hosts keep the inline text.
-            if (screen is ColonyScreen)
+            if (Screen is ColonyScreen)
                 WorldDescription.Visible = false;
             ColonyBlueprints = Add(new UILabel(GameText.ColonyBlueprintsTitle, FontBig, Color.Wheat));
             BlueprintsName   = Add(new UILabel("", FontBig, Color.Gold));
