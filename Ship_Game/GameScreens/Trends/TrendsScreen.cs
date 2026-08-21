@@ -146,9 +146,12 @@ namespace Ship_Game.GameScreens
             }
         }
 
-        // A rolling median (window 5) kills single-sample spikes dead, then a 3-point
+        // Three passes. (1) Burst clamp: a WIDE rolling median (window 15) is a baseline
+        // no sale-burst can drag, and anything above 2.5x of it is capped - bench 464:
+        // the Ralyeh spikes are 5 to 15 samples wide, a narrow median passes them whole.
+        // (2) A rolling median (window 5) kills single-sample teeth. (3) A 3-point
         // average rounds what remains. Holes (v<=0, the unmet-intel gaps) are preserved
-        // and never smeared across - only positive neighbours enter a window.
+        // and never smeared across - only positive neighbours enter any window.
         static void SmoothDomain(Array<(float Date, float[] Values)> pts, int d)
         {
             int n = pts.Count;
@@ -158,18 +161,26 @@ namespace Ship_Game.GameScreens
             for (int i = 0; i < n; ++i)
                 src[i] = pts[i].Values[d];
 
-            float[] med = new float[n];
             var win = new Array<float>();
-            for (int i = 0; i < n; ++i)
+            float MedianAround(float[] a, int i, int half)
             {
-                if (src[i] <= 0f) { med[i] = src[i]; continue; } // a hole stays a hole
                 win.Clear();
-                for (int j = Math.Max(0, i - 2); j <= Math.Min(n - 1, i + 2); ++j)
-                    if (src[j] > 0f)
-                        win.Add(src[j]);
+                for (int j = Math.Max(0, i - half); j <= Math.Min(n - 1, i + half); ++j)
+                    if (a[j] > 0f)
+                        win.Add(a[j]);
                 win.Sort();
-                med[i] = win[win.Count / 2];
+                return win[win.Count / 2];
             }
+
+            float[] clamped = new float[n];
+            for (int i = 0; i < n; ++i)
+                clamped[i] = src[i] <= 0f ? src[i]
+                           : Math.Min(src[i], MedianAround(src, i, 7) * 2.5f);
+
+            float[] med = new float[n];
+            for (int i = 0; i < n; ++i)
+                med[i] = clamped[i] <= 0f ? clamped[i] : MedianAround(clamped, i, 2);
+
             for (int i = 0; i < n; ++i)
             {
                 if (med[i] <= 0f)

@@ -123,6 +123,11 @@ namespace Ship_Game
             TitleText = $"Refit {ShipToRefit.Name}";
             base.LoadContent(); // seats the frame - centred on the summoner's page frame
 
+            // bench 464: the frame texture is see-through by design - the old window's
+            // list carried its own dark fill, this one seats it explicitly UNDER the rows
+            // (added first = drawn first) or the summoner's page bleeds through the body
+            Add(new UIPanel(PopupFrame.ContentArea(Rect), new Color(0, 0, 0, 230)));
+
             Array<IShipDesign> designs = CandidatesFor(ShipToRefit);
             int rows = Math.Max(1, Math.Min(designs.Count, MaxRows));
             var listRect = new RectF(Rect.X + 12, BodyTop, Rect.Width - 24, rows * RowH + 8);
