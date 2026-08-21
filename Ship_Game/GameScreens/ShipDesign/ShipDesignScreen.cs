@@ -71,8 +71,10 @@ namespace Ship_Game
         readonly Array<ShipHull> AvailableHulls = new Array<ShipHull>();
         UIButton BtnSaveAs;
         UIButton BtnSymmetricDesign; // Symmetric Module Placement Feature by Fat Bastard
-        UIButton BtnStripShip;       // Removes all modules but armor, shields and command modules
+        UIButton BtnStripShip;       // Strip Offense: removes all modules but armor, shields, engines, power and command
+        UIButton BtnStripDefence;    // Wishlist: removes armor and shield modules, nothing else
         UIButton BtnToggleOverlay;
+        UIButton BtnShields;         // Wishlist: every shield's coverage circle, cumulative with Arcs
         Submenu DesignTabs;   // Ludoal fork: the Design group's tab row, this screen being one tab
         // Ludoal fork: this page's real frame is its tab row's rect - the band excludes
         // exactly what the page occupies, dynamic size included
@@ -171,6 +173,7 @@ namespace Ship_Game
         HangarDesignationDropDown HangarOptionsList;
 
         bool ShowAllArcs;
+        bool ShowAllShields;
         public bool ToggleOverlay = true;
         bool ShipSaved = true;
         public bool HullEditMode;
@@ -485,6 +488,26 @@ namespace Ship_Game
                     !module.Is(ShipModuleType.Armor) && !module.Is(ShipModuleType.Engine) &&
                     !module.Is(ShipModuleType.Shield) && !module.Is(ShipModuleType.Command) &&
                     !module.Is(ShipModuleType.PowerPlant) && !module.Is(ShipModuleType.PowerConduit))
+                {
+                    ModuleGrid.ClearSlots(slot.Root, slot.Root.Module);
+                    ShipSaved = false;
+                }
+            }
+
+            OnDesignChanged();
+        }
+
+        // Wishlist: Strip Offense's mirror - removes exactly the defensive set its brother
+        // keeps (armor, anything with deflection, shields); command, engines and power stay
+        void StripDefenceModules()
+        {
+            ModuleGrid.StartUndoableAction();
+            for (int i = 0; i < ModuleGrid.SlotsList.Count; i++)
+            {
+                SlotStruct slot = ModuleGrid.SlotsList[i];
+                ShipModule module = slot.Module;
+                if (module != null && (module.Deflection > 0 ||
+                    module.Is(ShipModuleType.Armor) || module.Is(ShipModuleType.Shield)))
                 {
                     ModuleGrid.ClearSlots(slot.Root, slot.Root.Module);
                     ShipSaved = false;
@@ -870,6 +893,7 @@ namespace Ship_Game
         // the two view toggles that carry a state read red while ON, blue while OFF
         ButtonStyle SymmetricDesignBtnStyle  => IsSymmetricDesignMode ? ButtonStyle.WideHostile : ButtonStyle.WideActive;
         ButtonStyle ArcsBtnStyle             => ShowAllArcs ? ButtonStyle.WideHostile : ButtonStyle.WideActive;
+        ButtonStyle ShieldsBtnStyle          => ShowAllShields ? ButtonStyle.WideHostile : ButtonStyle.WideActive;
 
         // the enum names, spoken through the localization system (their display only)
         static string ShipCategoryText(ShipCategory c) => c switch
@@ -1014,11 +1038,11 @@ namespace Ship_Game
             float footY = ModuleSelection.ToggleRowY(ScreenHeight);
             float colW = ModuleSelection.ListWidth;
             // Measured off UIList rather than guessed: it starts at Pos + Padding and then
-            // advances by (item size + Padding), so a pair spends the gap TWICE - once before
-            // the first button, once between the two. Nothing after the second. With the row's
-            // origin pulled back by one gap, two buttons of (colW - gap)/2 span the column
-            // exactly.
-            float footBtnW = (colW - footGap) * 0.5f;
+            // advances by (item size + Padding), so a trio spends the gap THREE times - once
+            // before the first button, once between each pair. Nothing after the third. With
+            // the row's origin pulled back by one gap, three buttons of (colW - 2*gap)/3 span
+            // the column exactly (Wishlist: the row grew from two to three per side).
+            float footBtnW = (colW - 2 * footGap) / 3f;
             float footBtnH = ModuleSelection.ToggleRowH;
 
             // ⚠ UIList lays its first item at Pos + Padding, so an origin set to the column's edge
@@ -1041,6 +1065,13 @@ namespace Ship_Game
             BtnStripShip.ClickSfx = "blip_click";
             BtnStripShip.Tooltip = Localizer.Token(GameText.StripsTheShipOfAny);
 
+            BtnStripDefence = leftFoot.Add(ButtonStyle.WideActive, Localizer.Token(GameText.StripDefence), click: b =>
+            {
+                StripDefenceModules();
+            });
+            BtnStripDefence.ClickSfx = "blip_click";
+            BtnStripDefence.Tooltip = Localizer.Token(GameText.StripDefenceTip);
+
             BtnSymmetricDesign = leftFoot.Add(ButtonStyle.WideActive, Localizer.Token(GameText.SymmetricDesign), click: b =>
             {
                 OnSymmetricDesignToggle();
@@ -1060,14 +1091,24 @@ namespace Ship_Game
             BtnArcs.Hotkey   = InputBindings.FromString("Tab");
             BtnArcs.Style    = ArcsBtnStyle;
 
+            BtnShields = rightFoot.Add(ButtonStyle.WideActive, Localizer.Token(GameText.ShieldsOverlay), click: b =>
+            {
+                ShowAllShields = !ShowAllShields;
+                BtnShields.Style = ShieldsBtnStyle;
+            });
+            BtnShields.ClickSfx = "blip_click";
+            BtnShields.Tooltip  = Localizer.Token(GameText.ShieldsOverlayTip);
+            BtnShields.Style    = ShieldsBtnStyle;
+
             BtnToggleOverlay = rightFoot.Add(ButtonStyle.WideActive, GameText.ToggleOverlay, click: b =>
             {
                 ToggleOverlay = !ToggleOverlay;
             });
             BtnToggleOverlay.ClickSfx = "blip_click";
 
-            // half a column each, so a pair spans exactly the list above it
-            foreach (UIButton b in new[] { BtnStripShip, BtnSymmetricDesign, BtnArcs, BtnToggleOverlay })
+            // a third of a column each, so a trio spans exactly the list above it
+            foreach (UIButton b in new[] { BtnStripShip, BtnStripDefence, BtnSymmetricDesign,
+                                           BtnArcs, BtnShields, BtnToggleOverlay })
                 b.SetAbsSize(footBtnW, footBtnH);
             leftFoot.PerformLayout();
             rightFoot.PerformLayout();

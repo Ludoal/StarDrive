@@ -850,8 +850,8 @@ Saving:
  PTB: "Salvando..."
 ToggleOverlay:
  Id: 106
- ENG: "Toggle Overlay"
- FRA: "Afficher/Masquer l'incrustation"
+ ENG: "Modules"
+ FRA: "Modules"
  RUS: "Переключить"
  SPA: "Alternar sobreimpresión"
  UKR: "Перемкнути накладання"
@@ -10121,15 +10121,15 @@ YouCanSwitchFromNormal:
  PTB: "Você pode alternar do modo de Projeto Normal para o modo de Projeto Simétrico, no qual os módulos serão instalados simetricamente, esquerda e direita, na nave, se possível. Eles também serão removidos juntos, e seus arcos de fogo serão ajustados para a direção oposta se você os alterar"
 SymmetricDesign:
  Id: 1985
- ENG: "Toggle Symmetry"
- FRA: "Basculer la symétrie"
+ ENG: "Symmetric"
+ FRA: "Symétrie"
  RUS: "Симметрия"
  UKR: "Симетрія"
  PTB: "Alternar Simetria"
 NormalDesign:
  Id: 1986
- ENG: "Strip Ship"
- FRA: "Dépouiller le vaisseau"
+ ENG: "Strip Offense"
+ FRA: "Ôter armes"
  RUS: "Демонтаж"
  UKR: "Розібрати"
  PTB: "Desmontar Nave"
@@ -22294,6 +22294,22 @@ GovCommonNote:
  Id: 5294
  ENG: "Governors build and scrap within their own budget. Your manual Supply settings always take precedence."
  FRA: "Le gouverneur construit et démolit dans son budget. Vos réglages Supply manuels priment toujours."
+StripDefence:
+ Id: 5295
+ ENG: "Strip Defence"
+ FRA: "Ôter défense"
+StripDefenceTip:
+ Id: 5296
+ ENG: "Strips the ship of armor and shield modules, and anything with deflection. Command, engines and power stay."
+ FRA: "Retire du vaisseau les modules d'armure et de bouclier, et tout ce qui offre de la déflexion. Le commandement, les moteurs et l'énergie restent."
+ShieldsOverlay:
+ Id: 5297
+ ENG: "Shields"
+ FRA: "Boucliers"
+ShieldsOverlayTip:
+ Id: 5298
+ ENG: "Shows the coverage circle of every shield on the design. Can be combined with Arcs."
+ FRA: "Affiche le cercle de couverture de chaque bouclier du design. Cumulable avec Arcs."
 NoResearchAlert:
  Id: 5293
  ENG: "NO RESEARCH!"

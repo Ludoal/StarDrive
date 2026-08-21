@@ -327,6 +327,20 @@ namespace Ship_Game
                 foreach (SlotStruct s in ModuleGrid.SlotsList)
                     DrawTacticalOverlays(s);
             }
+
+            // Wishlist: the Shields toggle draws every shield's coverage circle WITHOUT the
+            // rest of the tactical overlay - cumulative with Arcs, whose pass already drew
+            // its circles through DrawTacticalOverlays (alreadyDrawn skips those here)
+            if (ShowAllShields)
+            {
+                foreach (SlotStruct s in ModuleGrid.SlotsList)
+                {
+                    if (s.ModuleUID == null || s.Tex == null || alreadyDrawn.Contains(s))
+                        continue;
+                    if (s.Module.ShieldPowerMax > 0f)
+                        DrawCircleProjected(s.Center, s.Module.ShieldHitRadius, Color.LightGreen);
+                }
+            }
         }
 
         void DrawUnpoweredTex(SpriteBatch batch)

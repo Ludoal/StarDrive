@@ -6229,6 +6229,10 @@ namespace Ship_Game
         GoToResearch = 5292,
         NoResearchAlert = 5293,
         GovCommonNote = 5294,
+        StripDefence = 5295,
+        StripDefenceTip = 5296,
+        ShieldsOverlay = 5297,
+        ShieldsOverlayTip = 5298,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 5101,
         /// <summary>Research Bonus Granted: {0}%</summary>
