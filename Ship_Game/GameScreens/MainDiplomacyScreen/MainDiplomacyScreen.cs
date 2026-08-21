@@ -456,7 +456,11 @@ namespace Ship_Game
                 BlankRow(ref y); // (personality slot)
                 BlankRow(ref y); // (trust slot)
                 BlankRow(ref y); // (anger slot)
-                BlankRow(ref y); // (threat slot)
+                // bench 459 (maintainer): the threat slot carries the ranks' yardstick
+                // instead of staying blank - how many factions (the player included) the
+                // RANK rows below are ranked against, level with the neighbours' Threat
+                Empire[] known = Universe.UState.ActiveMajorEmpires.Filter(x => x.isPlayer || Player.IsKnown(x));
+                FoldingRow(batch, col, ref y, "Known Factions", "Known", known.Length.ToString(), Color.White);
                 return;
             }
             if (UsingNewEspioange ? espionage.CanViewPersonality : IntelligenceLevel(e) > 0)

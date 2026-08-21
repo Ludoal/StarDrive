@@ -27,7 +27,9 @@ namespace Ship_Game.GameScreens
         public override Rectangle PageFrame => GroupTabs?.Rect ?? base.PageFrame;
         Rectangle LeftRect;
 
-        Espionage.IntelDomain Domain = Espionage.IntelDomain.Military;
+        // bench 459 (maintainer): Population by default, and the screen re-opens on the
+        // domain it last showed - a static carries it across openings for the session
+        static Espionage.IntelDomain Domain = Espionage.IntelDomain.Population;
         static readonly (Espionage.IntelDomain D, string Label)[] Domains =
         {
             (Espionage.IntelDomain.Population, "Population"),

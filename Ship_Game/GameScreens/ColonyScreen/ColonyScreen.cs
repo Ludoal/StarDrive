@@ -485,7 +485,8 @@ namespace Ship_Game
                 RushToggle = base.Add(new UICheckBox(queueR.Right - 150, queueTop + 4,
                     () => P.Owner.RushAllConstruction || P.RushConstruction,
                     v => { if (!P.Owner.RushAllConstruction) P.RushConstruction = v; },
-                    Fonts.Arial12Bold, GameText.RushAllConstruction, GameText.RushAllConstructionTip));
+                    // bench 459: its OWN tooltip - the empire-wide tip was speaking here
+                    Fonts.Arial12Bold, GameText.RushAllConstruction, GameText.ContinuousRushColonyTip));
             }
 
             ConstructionQueue = queue.List;

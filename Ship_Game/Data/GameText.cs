@@ -6233,6 +6233,7 @@ namespace Ship_Game
         StripDefenceTip = 5296,
         ShieldsOverlay = 5297,
         ShieldsOverlayTip = 5298,
+        ContinuousRushColonyTip = 5299,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 5101,
         /// <summary>Research Bonus Granted: {0}%</summary>

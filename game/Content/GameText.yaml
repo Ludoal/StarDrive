@@ -22310,6 +22310,10 @@ ShieldsOverlayTip:
  Id: 5298
  ENG: "Shows the coverage circle of every shield on the design. Can be combined with Arcs."
  FRA: "Affiche le cercle de couverture de chaque bouclier du design. Cumulable avec Arcs."
+ContinuousRushColonyTip:
+ Id: 5299
+ ENG: "Continuously rush every item in THIS colony's construction queue, existing and future.\n \nWARNING: Rushing spends credits every turn. Greyed while the empire-wide Continuous Rush (Automation) is on: that switch commands all colonies."
+ FRA: "Précipite en continu tous les éléments de la file de construction de CETTE colonie, existants et futurs.\n \nATTENTION : le rush dépense des crédits chaque tour. Grisé quand la Précipitation continue globale (Automation) est active : c'est elle qui commande toutes les colonies."
 NoResearchAlert:
  Id: 5293
  ENG: "NO RESEARCH!"
