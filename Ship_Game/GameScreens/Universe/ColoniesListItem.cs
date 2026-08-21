@@ -256,6 +256,8 @@ namespace Ship_Game
         // click elsewhere folds it without changing the value (DropOptions handles both).
         public bool HandleOpenLists(InputState input)
         {
+            if (FoodDropDown == null) // row never laid out - see DrawOpenLists
+                return false;
             if (FoodDropDown.Open) return FoodDropDown.HandleInput(input);
             if (ProdDropDown.Open) return ProdDropDown.HandleInput(input);
             if (PopDropDown.Open)  return PopDropDown.HandleInput(input);
@@ -419,6 +421,11 @@ namespace Ship_Game
         // calls this after the whole table has drawn
         public void DrawOpenLists(SpriteBatch batch, DrawTimes elapsed)
         {
+            // bench 458 log: the dropdowns are born in PerformLayout, which only ever
+            // runs for rows that reached the screen - on a 400+ colony save the whole-
+            // table sweep hit a never-laid-out row's null dropdown and died every frame
+            if (FoodDropDown == null)
+                return;
             if (FoodDropDown.Open) FoodDropDown.Draw(batch, elapsed);
             if (ProdDropDown.Open) ProdDropDown.Draw(batch, elapsed);
             if (PopDropDown.Open)  PopDropDown.Draw(batch, elapsed);
