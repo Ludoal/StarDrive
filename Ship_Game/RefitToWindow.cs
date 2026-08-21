@@ -52,6 +52,7 @@ namespace Ship_Game
             ShipToRefit = ship;
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
+            Rush = false; // the checkbox writes it via its expression; this appeases CS0649
         }
 
         // the same filter the list uses - counted at construction so the frame's
