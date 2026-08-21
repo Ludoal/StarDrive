@@ -85,44 +85,44 @@ namespace Ship_Game
             float net      = P.Money.GrossRevenue - bldgUp - spaceDef - troops;
 
             StatsPlusLayout.SPHeader(ref left, batch, "BUDGET (BC / turn)");
-            if (colInc.NotZero())   StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Colonist income", StatsPlusLayout.SPSigned(colInc), StatsPlusLayout.SPTone(colInc));
-            if (bldgInc.NotZero())  StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Building income", StatsPlusLayout.SPSigned(bldgInc), StatsPlusLayout.SPTone(bldgInc));
-            if (sources.NotZero())  StatsPlusLayout.SPLine(ref left, batch, TextFont, cols,
+            if (colInc.NotZero())   SPLineTip(ref left, batch, cols, blockW, "Colonist income", StatsPlusLayout.SPSigned(colInc), StatsPlusLayout.SPTone(colInc), GameText.SpColonistIncomeTip);
+            if (bldgInc.NotZero())  SPLineTip(ref left, batch, cols, blockW, "Building income", StatsPlusLayout.SPSigned(bldgInc), StatsPlusLayout.SPTone(bldgInc), GameText.SpBuildingIncomeTip);
+            if (sources.NotZero())  SPLineTip(ref left, batch, cols, blockW,
                    "× tax rate (" + (P.Money.TaxRate * 100f).String(0) + " %)",
-                   StatsPlusLayout.SPSigned(taxMill), StatsPlusLayout.SPTone(taxMill));
-            if (bldgUp.NotZero())   StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Building upkeep", StatsPlusLayout.SPSigned(-bldgUp), StatsPlusLayout.SPTone(-bldgUp));
-            if (spaceDef.NotZero()) StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, Localizer.Token(GameText.SpaceDefenseUpkeep), StatsPlusLayout.SPSigned(-spaceDef), StatsPlusLayout.SPTone(-spaceDef));
-            if (troops.NotZero())   StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Troop upkeep", StatsPlusLayout.SPSigned(-troops), StatsPlusLayout.SPTone(-troops));
-            StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, Localizer.Token(net >= 0 ? GameText.NetIncome : GameText.NetLosses),
-                   StatsPlusLayout.SPSigned(net), net >= 0 ? Color.Green : Color.Red);
+                   StatsPlusLayout.SPSigned(taxMill), StatsPlusLayout.SPTone(taxMill), GameText.SpTaxRateTip);
+            if (bldgUp.NotZero())   SPLineTip(ref left, batch, cols, blockW, "Building upkeep", StatsPlusLayout.SPSigned(-bldgUp), StatsPlusLayout.SPTone(-bldgUp), GameText.SpBuildingUpkeepTip);
+            if (spaceDef.NotZero()) SPLineTip(ref left, batch, cols, blockW, Localizer.Token(GameText.SpaceDefenseUpkeep), StatsPlusLayout.SPSigned(-spaceDef), StatsPlusLayout.SPTone(-spaceDef), GameText.SpSpaceDefUpkeepTip);
+            if (troops.NotZero())   SPLineTip(ref left, batch, cols, blockW, "Troop upkeep", StatsPlusLayout.SPSigned(-troops), StatsPlusLayout.SPTone(-troops), GameText.SpTroopUpkeepTip);
+            SPLineTip(ref left, batch, cols, blockW, Localizer.Token(net >= 0 ? GameText.NetIncome : GameText.NetLosses),
+                   StatsPlusLayout.SPSigned(net), net >= 0 ? Color.Green : Color.Red, GameText.SpNetIncomeTip);
             StatsPlusLayout.SPGap(ref left, TextFont);
 
             // ── POPULATION — net growth and saturation (totals live in Planet Info already) ──
             float growth = SPPopGrowthPerTurn(); // raw thousands = millions of colonists
             StatsPlusLayout.SPHeader(ref left, batch, "POPULATION");
-            StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, Localizer.Token(GameText.NetGrowthPerTurn), StatsPlusLayout.SPSigned(growth, 1),
-                   P.IsStarving ? Color.Red : StatsPlusLayout.SPTone(growth));
-            StatsPlusLayout.SPLine(ref left, batch, TextFont, cols, "Saturation", (P.PopulationRatio * 100f).String(1) + " %",
-                   P.PopulationRatio > 1f ? Color.Orange : Color.White);
+            SPLineTip(ref left, batch, cols, blockW, Localizer.Token(GameText.NetGrowthPerTurn), StatsPlusLayout.SPSigned(growth, 1),
+                   P.IsStarving ? Color.Red : StatsPlusLayout.SPTone(growth), GameText.SpNetGrowthTip);
+            SPLineTip(ref left, batch, cols, blockW, "Saturation", (P.PopulationRatio * 100f).String(1) + " %",
+                   P.PopulationRatio > 1f ? Color.Orange : Color.White, GameText.SpSaturationTip);
 
             // ── YIELDS (per turn) — per-source sums, same principle as the Budget ──
             StatsPlusLayout.SPHeader(ref right, batch, "YIELDS (per turn)");
             StatsPlusLayout.SPYieldHeader(ref right, batch, TextFont, cols);
-            SPDrawYield(ref right, batch, TextFont, cols, Localizer.Token(GameText.Food), P.Food,
-                    P.NonCybernetic ? P.Consumption : 0f);
-            SPDrawYield(ref right, batch, TextFont, cols, Localizer.Token(GameText.Production), P.Prod,
-                    P.IsCybernetic ? P.Consumption : 0f);
-            SPDrawYield(ref right, batch, TextFont, cols, Localizer.Token(GameText.Research), P.Res, 0f);
+            SPDrawYield(ref right, batch, TextFont, cols, blockW, Localizer.Token(GameText.Food), P.Food,
+                    P.NonCybernetic ? P.Consumption : 0f, GameText.SpYieldFoodTip);
+            SPDrawYield(ref right, batch, TextFont, cols, blockW, Localizer.Token(GameText.Production), P.Prod,
+                    P.IsCybernetic ? P.Consumption : 0f, GameText.SpYieldProdTip);
+            SPDrawYield(ref right, batch, TextFont, cols, blockW, Localizer.Token(GameText.Research), P.Res, 0f, GameText.SpYieldResearchTip);
             StatsPlusLayout.SPGap(ref right, TextFont);
 
             // ── CONSTRUCTION (per turn) — flow to the queue + how long storage holds ──
             StatsPlusLayout.SPHeader(ref right, batch, "CONSTRUCTION (per turn)");
-            StatsPlusLayout.SPLine(ref right, batch, TextFont, cols, Localizer.Token(GameText.MaxProdToQueue), P.CurrentProductionToQueue.String(1), Color.White);
+            SPLineTip(ref right, batch, cols, blockW, Localizer.Token(GameText.MaxProdToQueue), P.CurrentProductionToQueue.String(1), Color.White, GameText.SpMaxProdToQueueTip);
             if (P.InfraStructure.NotZero() && P.ProdHere.NotZero())
             {
                 float turnsLeft = P.ProdHere / P.InfraStructure;
-                StatsPlusLayout.SPLine(ref right, batch, TextFont, cols, "  from storage",
-                       P.InfraStructure.String(1) + "  (~" + turnsLeft.String(0) + " turns)", Color.LightGray);
+                SPLineTip(ref right, batch, cols, blockW, "  from storage",
+                       P.InfraStructure.String(1) + "  (~" + turnsLeft.String(0) + " turns)", Color.LightGray, GameText.SpFromStorageTip);
             }
             StatsPlusLayout.SPGap(ref right, TextFont);
 
@@ -131,17 +131,32 @@ namespace Ship_Game
             if (repairPerTurn.NotZero())
             {
                 StatsPlusLayout.SPHeader(ref right, batch, "DEFENSE (per turn)");
-                StatsPlusLayout.SPLine(ref right, batch, TextFont, cols, "Ship repair" + (P.SpaceCombatNearPlanet ? " (space combat)" : ""),
-                       repairPerTurn.String(0), Color.White);
+                SPLineTip(ref right, batch, cols, blockW, "Ship repair" + (P.SpaceCombatNearPlanet ? " (space combat)" : ""),
+                       repairPerTurn.String(0), Color.White, GameText.SpShipRepairTip);
             }
+        }
+
+        // Policies phase 0 (design review texts): every STATS+ line says where its figure
+        // comes from - the hover rect spans the block's width for the line just drawn
+        void SPLineTip(ref Vector2 c, SpriteBatch batch, in SPCols cols, float blockW,
+                       string label, string value, Color valueColor, GameText tip)
+        {
+            float top = c.Y;
+            StatsPlusLayout.SPLine(ref c, batch, TextFont, cols, label, value, valueColor);
+            if (new RectF(c.X, top, blockW, c.Y - top).HitTest(Input.CursorPosition))
+                ToolTip.CreateTooltip(Localizer.Token(tip));
         }
 
         // Colony's yield row pulls the three numbers off the live ColonyResource, then hands them to
         // the shared layout (which no longer knows about ColonyResource - Blueprints has no such thing)
-        void SPDrawYield(ref Vector2 c, SpriteBatch batch, Font font, in SPCols cols, string label, ColonyResource res, float eaten)
+        void SPDrawYield(ref Vector2 c, SpriteBatch batch, Font font, in SPCols cols, float blockW,
+                         string label, ColonyResource res, float eaten, GameText tip)
         {
+            float top = c.Y;
             StatsPlusLayout.SPYield(ref c, batch, font, cols, label,
                 res.ColonistIncome(res.NetYieldPerColonist), res.NetFlatBonus, res.NetIncome, eaten);
+            if (new RectF(c.X, top, blockW, c.Y - top).HitTest(Input.CursorPosition))
+                ToolTip.CreateTooltip(Localizer.Token(tip));
         }
     }
 }
