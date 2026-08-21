@@ -39,9 +39,10 @@ namespace Ship_Game
         ProgressBar PopStorage; // bench 427: the population bar joins the Supply column
         Rectangle ApplyProductionRect;
         Rectangle CancelProductionRect;
-        DropDownMenu FoodDropDown;
-        DropDownMenu ProdDropDown;
-        DropDownMenu PopDropDown;
+        // Policies phase 0: real dropdowns replace the click-rotation relics
+        DropOptions<Planet.GoodState> FoodDropDown;
+        DropOptions<Planet.GoodState> ProdDropDown;
+        DropOptions<Planet.GoodState> PopDropDown;
         Rectangle FoodStorageIcon;
         Rectangle ProdStorageIcon;
         Rectangle PopStorageIcon;
@@ -116,11 +117,12 @@ namespace Ship_Game
 
             // a quarter, not a fifth: Import and Export overflow the fifth
             int ddwidth = (int)(0.25f * StorageRect.Width);
-            FoodDropDown = new DropDownMenu(new Rectangle(StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, ddwidth, 18));
-            FoodDropDown.AddOption(Localizer.Token(GameText.Store));
-            FoodDropDown.AddOption(Localizer.Token(GameText.Import));
-            FoodDropDown.AddOption(Localizer.Token(GameText.Export));
+            FoodDropDown = new DropOptions<Planet.GoodState>(new Rectangle(StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, ddwidth, 18));
+            FoodDropDown.AddOption(GameText.Store, Planet.GoodState.STORE);
+            FoodDropDown.AddOption(GameText.Import, Planet.GoodState.IMPORT);
+            FoodDropDown.AddOption(GameText.Export, Planet.GoodState.EXPORT);
             FoodDropDown.ActiveIndex = (int)P.FS;
+            FoodDropDown.OnValueChange = v => Universe.RunOnSimThread(() => P.FS = v); // mutated on the sim thread like before
             FoodStorageIcon = new Rectangle(StorageRect.X + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - ResourceManager.Texture("NewUI/icon_food").Height / 2, ResourceManager.Texture("NewUI/icon_food").Width, ResourceManager.Texture("NewUI/icon_food").Height);
             ProdStorage = new ProgressBar(new Rectangle(StorageRect.X + 50, FoodStorage.pBar.Y + FoodStorage.pBar.Height + 6, (int)(0.4f * StorageRect.Width), 18))
             {
@@ -128,24 +130,26 @@ namespace Ship_Game
                 Progress = P.ProdHere
             };
             ProdStorageIcon = new Rectangle(StorageRect.X + 20, ProdStorage.pBar.Y + ProdStorage.pBar.Height / 2 - ResourceManager.Texture("NewUI/icon_production").Height / 2, ResourceManager.Texture("NewUI/icon_production").Width, ResourceManager.Texture("NewUI/icon_production").Height);
-            ProdDropDown = new DropDownMenu(new Rectangle(StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 20, ProdStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, ddwidth, 18));
-            ProdDropDown.AddOption(Localizer.Token(GameText.Store));
-            ProdDropDown.AddOption(Localizer.Token(GameText.Import));
-            ProdDropDown.AddOption(Localizer.Token(GameText.Export));
+            ProdDropDown = new DropOptions<Planet.GoodState>(new Rectangle(StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 20, ProdStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, ddwidth, 18));
+            ProdDropDown.AddOption(GameText.Store, Planet.GoodState.STORE);
+            ProdDropDown.AddOption(GameText.Import, Planet.GoodState.IMPORT);
+            ProdDropDown.AddOption(GameText.Export, Planet.GoodState.EXPORT);
             ProdDropDown.ActiveIndex = (int)P.PS;
+            ProdDropDown.OnValueChange = v => Universe.RunOnSimThread(() => P.PS = v);
             PopStorage = new ProgressBar(new Rectangle(StorageRect.X + 50, ProdStorage.pBar.Y + ProdStorage.pBar.Height + 6, (int)(0.4f * StorageRect.Width), 18))
             {
                 Max = P.MaxPopulationBillionFor(P.Owner),
                 Progress = P.PopulationBillion,
                 color = "blue"
             };
-            PopDropDown = new DropDownMenu(new Rectangle(StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 20, PopStorage.pBar.Y + PopStorage.pBar.Height / 2 - 9, ddwidth, 18));
+            PopDropDown = new DropOptions<Planet.GoodState>(new Rectangle(StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 20, PopStorage.pBar.Y + PopStorage.pBar.Height / 2 - 9, ddwidth, 18));
             // auto-supplies: QUI decides lives on the colony screen's Auto checkbox; here
             // the list mirrors it - three people-words, greyed live pick while Auto holds
-            PopDropDown.AddOption(Localizer.Token(GameText.Stay));
-            PopDropDown.AddOption(Localizer.Token(GameText.BringIn));
-            PopDropDown.AddOption(Localizer.Token(GameText.Resettle));
+            PopDropDown.AddOption(GameText.Stay, Planet.GoodState.STORE);
+            PopDropDown.AddOption(GameText.BringIn, Planet.GoodState.IMPORT);
+            PopDropDown.AddOption(GameText.Resettle, Planet.GoodState.EXPORT);
             PopDropDown.ActiveIndex = (int)(P.ColonistsManual ? P.CS : P.GetGoodState(Goods.Colonists));
+            PopDropDown.OnValueChange = v => Universe.RunOnSimThread(() => P.CS = v);
             PopStorageIcon = new Rectangle(StorageRect.X + 20, PopStorage.pBar.Y + PopStorage.pBar.Height / 2 - ResourceManager.Texture("UI/icon_pop_22").Height / 2, ResourceManager.Texture("UI/icon_pop_22").Width, ResourceManager.Texture("UI/icon_pop_22").Height);
             // on the PROGRESS BAR's line, not the name's - the item name gets the column's
             // full width. The bar sits one bold line under the name anchor, which itself
@@ -226,44 +230,15 @@ namespace Ship_Game
                     return true;
                 }
 
-                if (P.NonCybernetic && P.FoodManual && FoodDropDown.r.HitTest(input.CursorPosition))
-                {
-                    GameAudio.AcceptClick();
-                    FoodDropDown.Toggle();
-                    Universe.RunOnSimThread(() =>
-                    {
-                        P.FS = (Planet.GoodState)((int)P.FS + (int)Planet.GoodState.IMPORT);
-                        if (P.FS > Planet.GoodState.EXPORT)
-                            P.FS = Planet.GoodState.STORE;
-                    });
+                // Policies phase 0: the real dropdowns answer for themselves - ReadOnly
+                // (set at draw from the Auto flags) refuses their input, OnValueChange
+                // mutates on the sim thread
+                if (FoodDropDown.HandleInput(input))
                     return true;
-                }
-
-                if (P.ProdManual && ProdDropDown.r.HitTest(input.CursorPosition))
-                {
-                    GameAudio.AcceptClick();
-                    ProdDropDown.Toggle();
-                    Universe.RunOnSimThread(() =>
-                    {
-                        P.PS = (Planet.GoodState)((int)P.PS + (int)Planet.GoodState.IMPORT);
-                        if (P.PS > Planet.GoodState.EXPORT)
-                            P.PS = Planet.GoodState.STORE;
-                    });
+                if (ProdDropDown.HandleInput(input))
                     return true;
-                }
-
-                // bench 427 + auto-supplies: the migration cycle, Stay -> Bring in ->
-                // Resettle, mutated on the sim thread like its two elders; read-only in Auto
-                if (P.ColonistsManual && PopDropDown.r.HitTest(input.CursorPosition))
-                {
-                    GameAudio.AcceptClick();
-                    PopDropDown.Toggle();
-                    Universe.RunOnSimThread(() =>
-                    {
-                        P.CS = P.CS >= Planet.GoodState.EXPORT ? Planet.GoodState.STORE : (Planet.GoodState)((int)P.CS + 1);
-                    });
+                if (PopDropDown.HandleInput(input))
                     return true;
-                }
             }
             return base.HandleInput(input);
         }
@@ -384,7 +359,7 @@ namespace Ship_Game
 
             base.Draw(batch, elapsed);
 
-            DrawStorage(batch);
+            DrawStorage(batch, elapsed);
 
             // Snapshot under lock: the sim thread mutates the live queue while we draw.
             QueueItem[] queue = P.ConstructionQueueSnapshot;
@@ -421,29 +396,35 @@ namespace Ship_Game
             batch.DrawString(font, stats, pos, Color.Gray);
         }
 
-        void DrawStorage(SpriteBatch batch)
+        // Policies phase 0: an OPEN list must paint over the rows below - the screen
+        // calls this after the whole table has drawn
+        public void DrawOpenLists(SpriteBatch batch, DrawTimes elapsed)
         {
-            if (P.IsCybernetic)
-            {
-                FoodStorage.DrawGrayed(batch);
-                FoodDropDown.DrawGrayed(batch);
-            }
-            else
-            {
-                FoodStorage.Draw(batch);
-                if (P.AutoFood) FoodDropDown.DrawReadOnly(batch);
-                else            FoodDropDown.Draw(batch);
-            }
+            if (FoodDropDown.Open) FoodDropDown.Draw(batch, elapsed);
+            if (ProdDropDown.Open) ProdDropDown.Draw(batch, elapsed);
+            if (PopDropDown.Open)  PopDropDown.Draw(batch, elapsed);
+        }
+
+        void DrawStorage(SpriteBatch batch, DrawTimes elapsed)
+        {
+            FoodDropDown.ActiveIndex = (int)P.FS;
+            ProdDropDown.ActiveIndex = (int)P.PS;
+            PopDropDown.ActiveIndex  = (int)(P.ColonistsManual ? P.CS : P.GetGoodState(Goods.Colonists));
+            FoodDropDown.ReadOnly = P.AutoFood || P.IsCybernetic;
+            ProdDropDown.ReadOnly = P.AutoProd;
+            PopDropDown.ReadOnly  = P.AutoColonists;
+
+            if (P.IsCybernetic) FoodStorage.DrawGrayed(batch);
+            else                FoodStorage.Draw(batch);
 
             ProdStorage.Draw(batch);
-            if (P.AutoProd) ProdDropDown.DrawReadOnly(batch);
-            else            ProdDropDown.Draw(batch);
             PopStorage.Max = P.MaxPopulationBillionFor(P.Owner);
             PopStorage.Progress = P.PopulationBillion;
             PopStorage.Draw(batch);
-            PopDropDown.ActiveIndex = (int)(P.ColonistsManual ? P.CS : P.GetGoodState(Goods.Colonists));
-            if (P.AutoColonists) PopDropDown.DrawReadOnly(batch);
-            else                 PopDropDown.Draw(batch);
+
+            FoodDropDown.Draw(batch, elapsed);
+            ProdDropDown.Draw(batch, elapsed);
+            PopDropDown.Draw(batch, elapsed);
             batch.Draw(ResourceManager.Texture("UI/icon_pop_22"), PopStorageIcon, Color.White);
             batch.Draw(ResourceManager.Texture("NewUI/icon_food"), FoodStorageIcon,
                 (P.NonCybernetic ? Color.White : new Color(110, 110, 110, 255)));

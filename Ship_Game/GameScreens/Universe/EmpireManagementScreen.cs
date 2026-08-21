@@ -234,6 +234,10 @@ namespace Ship_Game
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
 
             base.Draw(batch, elapsed);
+            // Policies phase 0: any OPEN supply dropdown re-paints after the whole table,
+            // so its expanded list is never covered by the rows below it
+            foreach (ColoniesListItem it in ColoniesList.AllEntries)
+                it.DrawOpenLists(batch, elapsed);
             
             // Ludoal fork: the bottom band, LEFT to RIGHT - the EMPIRE totals box, the planet
             // cartouche, the ground map, then the fixed governor frame; all anchored left, extra

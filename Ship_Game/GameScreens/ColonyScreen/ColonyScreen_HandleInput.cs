@@ -370,35 +370,14 @@ namespace Ship_Game
 
         bool HandleExportImportButtons(InputState input)
         {
-            // auto-supplies: a greyed list is read-only - the Auto checkbox owns QUI decides
-            if (P.FoodManual && FoodDropDown.r.HitTest(input.CursorPosition) && input.LeftMouseClick)
-            {
-                FoodDropDown.Toggle();
-                GameAudio.AcceptClick();
-                P.FS = (Planet.GoodState) ((int) P.FS + (int) Planet.GoodState.IMPORT);
-                if (P.FS > Planet.GoodState.EXPORT)
-                    P.FS = Planet.GoodState.STORE;
+            // Policies phase 0: real dropdowns answer for themselves - ReadOnly (the Auto
+            // case, set at draw) already refuses their input, OnValueChange writes the state
+            if (FoodDropDown.HandleInput(input))
                 return true;
-            }
-
-            if (P.ProdManual && ProdDropDown.r.HitTest(input.CursorPosition) && input.LeftMouseClick)
-            {
-                ProdDropDown.Toggle();
-                GameAudio.AcceptClick();
-                P.PS = (Planet.GoodState) ((int) P.PS + (int) Planet.GoodState.IMPORT);
-                if (P.PS > Planet.GoodState.EXPORT)
-                    P.PS = Planet.GoodState.STORE;
+            if (ProdDropDown.HandleInput(input))
                 return true;
-            }
-
-            // Ludoal fork (wishlist): the colonist flow cycles Stay -> Bring in -> Resettle
-            if (P.ColonistsManual && ColonistsDropDown.r.HitTest(input.CursorPosition) && input.LeftMouseClick)
-            {
-                ColonistsDropDown.Toggle();
-                GameAudio.AcceptClick();
-                P.CS = P.CS >= Planet.GoodState.EXPORT ? Planet.GoodState.STORE : (Planet.GoodState)((int)P.CS + 1);
+            if (ColonistsDropDown.HandleInput(input))
                 return true;
-            }
             return false;
         }
     }

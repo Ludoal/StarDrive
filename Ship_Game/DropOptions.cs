@@ -23,6 +23,10 @@ namespace Ship_Game
         Rectangle ClickAbleOpenRect;
         readonly Array<Entry> Options = new Array<Entry>();
         public bool Open;
+        // Ludoal fork (dropdown unification): a READ-ONLY dropdown shows its value greyed
+        // and answers nothing - the instrument-panel convention (a command in read-only
+        // mode shows its state, it never hides it)
+        public bool ReadOnly;
 
         public int ActiveIndex;
         public int Count         => Options.Count;
@@ -178,16 +182,16 @@ namespace Ship_Game
             if (!Visible)
                 return;
 
-            bool hover = IsMouseHoveringOver(Rect);
+            bool hover = !ReadOnly && IsMouseHoveringOver(Rect);
             if (hover) // draw border if mouse is hovering
                 UITheme.DrawControlHoverFill(batch, Rect);
 
             for (int i = 0; i < BorderCount; ++i) // draw borders
-                Border[i].Draw(batch, Color.White);
+                Border[i].Draw(batch, ReadOnly ? Color.DarkGray : Color.White);
 
             if (Count > 0) // draw active item
             {
-                Color color = hover ? Color.White : Colors.Cream;
+                Color color = ReadOnly ? Color.Gray : hover ? Color.White : Colors.Cream;
                 batch.DrawString(Fonts.Arial12Bold, WrappedString(ActiveName), TextPosition(Rect), color);
             }
 
@@ -246,7 +250,7 @@ namespace Ship_Game
             // ActiveName / Active later would index Options[0] and throw IOOB. The
             // existing Count==1 auto-close at the title-toggle below doesn't catch
             // Count==0 because we never reach it.
-            if (Options.Count == 0)
+            if (Options.Count == 0 || ReadOnly)
                 return false;
 
             bool overTitle = HitTest(input.CursorPosition);

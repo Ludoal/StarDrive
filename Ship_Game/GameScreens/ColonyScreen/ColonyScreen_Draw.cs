@@ -334,7 +334,7 @@ namespace Ship_Game
                 batch.DrawString(TextFont, terraformText, cursor, ApplyCurrentAlphaToColor(terraformColor));
             }
 
-            DrawFoodAndStorage(batch);
+            DrawFoodAndStorage(batch, elapsed);
             DrawShields(batch);
             BlockadeLabel.Visible   = Blockade;
             BlockadeLabel.Color     = ApplyCurrentAlphaToColor(Color.Red);
@@ -360,36 +360,33 @@ namespace Ship_Game
                 batch.Draw(P.PlanetTexture, PlanetIcon, ApplyCurrentAlphaToColor(Color.LightSkyBlue));
         }
 
-        void DrawFoodAndStorage(SpriteBatch batch)
+        void DrawFoodAndStorage(SpriteBatch batch, DrawTimes elapsed)
         {
             FoodStorage.Max = P.Storage.Max;
             ProdStorage.Max = P.Storage.Max;
             FoodStorage.Progress = P.FoodHere.RoundUpTo(1);
             ProdStorage.Progress = P.ProdHere.RoundUpTo(1);
-            if (P.FS == Planet.GoodState.STORE) FoodDropDown.ActiveIndex = 0;
-            else if (P.FS == Planet.GoodState.IMPORT) FoodDropDown.ActiveIndex = 1;
-            else if (P.FS == Planet.GoodState.EXPORT) FoodDropDown.ActiveIndex = 2;
+            // Policies phase 0: real dropdowns. The lists sync to the live state, wear
+            // ReadOnly when their automate holds the pen, and draw LAST in this panel so
+            // an open list paints over the rows below it.
+            FoodDropDown.ActiveIndex = (int)P.FS;
+            ProdDropDown.ActiveIndex = (int)P.PS;
+            ColonistsDropDown.ActiveIndex = (int)(P.ColonistsManual ? P.CS : P.GetGoodState(Goods.Colonists));
+            FoodDropDown.ReadOnly = P.AutoFood || !P.NonCybernetic;
+            ProdDropDown.ReadOnly = P.AutoProd;
+            ColonistsDropDown.ReadOnly = P.AutoColonists;
+
             if (P.NonCybernetic)
             {
                 FoodStorage.Draw(batch);
-                // auto-supplies: in Auto the list is the automate's instrument panel -
-                // it shows the live pick, greyed read-only
-                if (P.AutoFood) FoodDropDown.DrawReadOnly(batch);
-                else            FoodDropDown.Draw(batch);
                 DrawFoodSlots(batch);
             }
             else
             {
                 FoodStorage.DrawGrayed(batch);
-                FoodDropDown.DrawGrayed(batch);
             }
 
             ProdStorage.Draw(batch);
-            if (P.PS == Planet.GoodState.STORE) ProdDropDown.ActiveIndex = 0;
-            else if (P.PS == Planet.GoodState.IMPORT) ProdDropDown.ActiveIndex = 1;
-            else if (P.PS == Planet.GoodState.EXPORT) ProdDropDown.ActiveIndex = 2;
-            if (P.AutoProd) ProdDropDown.DrawReadOnly(batch);
-            else            ProdDropDown.Draw(batch);
             DrawProdSlots(batch);
             // Ludoal fork (wishlist + bench 426): the population row - the bar carries pop
             // against its cap, the dropdown the migration state (Auto tracks the formula),
@@ -397,10 +394,11 @@ namespace Ship_Game
             PopStorage.Max = P.MaxPopulationBillionFor(P.Owner);
             PopStorage.Progress = P.PopulationBillion;
             PopStorage.Draw(batch);
-            ColonistsDropDown.ActiveIndex = (int)(P.ColonistsManual ? P.CS : P.GetGoodState(Goods.Colonists));
-            if (P.AutoColonists) ColonistsDropDown.DrawReadOnly(batch);
-            else                 ColonistsDropDown.Draw(batch);
             DrawPopSlots(batch);
+
+            FoodDropDown.Draw(batch, elapsed);
+            ProdDropDown.Draw(batch, elapsed);
+            ColonistsDropDown.Draw(batch, elapsed);
 
             batch.Draw(ResourceManager.Texture("NewUI/icon_storage_food"), FoodStorageIcon, Color.White);
             batch.Draw(ResourceManager.Texture("NewUI/icon_storage_production"), ProfStorageIcon, Color.White);

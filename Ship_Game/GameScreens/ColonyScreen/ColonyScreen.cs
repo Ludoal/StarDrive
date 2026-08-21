@@ -84,9 +84,11 @@ namespace Ship_Game
         readonly ScrollList<BuildableListItem> BuildableList;
         readonly ScrollList<ConstructionQueueScrollListItem> ConstructionQueue;
         readonly ScrollList<BuiltBuildingListItem> BuiltList; // COLONY tab, LIST view: built instances
-        readonly DropDownMenu FoodDropDown;
-        readonly DropDownMenu ProdDropDown;
-        readonly DropDownMenu ColonistsDropDown; // Ludoal fork (wishlist): migration control
+        // Policies phase 0 (maintainer): REAL dropdowns instead of the click-rotation
+        // relics - open a list, hover an entry, pick. One grammar for every list.
+        readonly DropOptions<Planet.GoodState> FoodDropDown;
+        readonly DropOptions<Planet.GoodState> ProdDropDown;
+        readonly DropOptions<Planet.GoodState> ColonistsDropDown; // Ludoal fork (wishlist): migration control
         Rectangle ColonistsIcon;
         readonly ProgressBar FoodStorage;
         readonly ProgressBar ProdStorage;
@@ -305,21 +307,23 @@ namespace Ship_Game
             FoodStorage.Max = p.Storage.Max;
             FoodStorage.Progress = p.FoodHere;
             FoodStorage.color = "green";
-            FoodDropDown = new DropDownMenu(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 36, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, 0.2f*PStorage.Width, 18);
-            FoodDropDown.AddOption(Localizer.Token(GameText.Store));
-            FoodDropDown.AddOption(Localizer.Token(GameText.Import));
-            FoodDropDown.AddOption(Localizer.Token(GameText.Export));
+            FoodDropDown = new DropOptions<Planet.GoodState>(new Vector2(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 36, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9), (int)(0.2f*PStorage.Width), 18);
+            FoodDropDown.AddOption(GameText.Store, Planet.GoodState.STORE);
+            FoodDropDown.AddOption(GameText.Import, Planet.GoodState.IMPORT);
+            FoodDropDown.AddOption(GameText.Export, Planet.GoodState.EXPORT);
             FoodDropDown.ActiveIndex = (int)p.FS;
+            FoodDropDown.OnValueChange = v => P.FS = v;
             FoodStorageIcon = new Rectangle((int)PStorage.X + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - SupplyIconSize / 2, SupplyIconSize, SupplyIconSize);
             ProdStorage = new ProgressBar(PStorage.X + SupplyBarX, PStorage.Y + storeRow2, 0.4f*PStorage.Width + 20, 18);
             ProdStorage.Max = p.Storage.Max;
             ProdStorage.Progress = p.ProdHere;
             ProfStorageIcon = new Rectangle((int)PStorage.X + 20, ProdStorage.pBar.Y + ProdStorage.pBar.Height / 2 - SupplyIconSize / 2, SupplyIconSize, SupplyIconSize);
-            ProdDropDown = new DropDownMenu(PStorage.X + SupplyBarX + 0.4f*PStorage.Width + 36, ProdStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, 0.2f*PStorage.Width, 18);
-            ProdDropDown.AddOption(Localizer.Token(GameText.Store));
-            ProdDropDown.AddOption(Localizer.Token(GameText.Import));
-            ProdDropDown.AddOption(Localizer.Token(GameText.Export));
+            ProdDropDown = new DropOptions<Planet.GoodState>(new Vector2(PStorage.X + SupplyBarX + 0.4f*PStorage.Width + 36, ProdStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9), (int)(0.2f*PStorage.Width), 18);
+            ProdDropDown.AddOption(GameText.Store, Planet.GoodState.STORE);
+            ProdDropDown.AddOption(GameText.Import, Planet.GoodState.IMPORT);
+            ProdDropDown.AddOption(GameText.Export, Planet.GoodState.EXPORT);
             ProdDropDown.ActiveIndex = (int)p.PS;
+            ProdDropDown.OnValueChange = v => P.PS = v;
             // the Auto toggles: QUI decide - the dropdowns keep the vocabulary, greyed
             // read-only while their automatics hold the pen (maintainer design, Wishlist)
             if (p.NonCybernetic)
@@ -339,14 +343,15 @@ namespace Ship_Game
             PopStorage.color = "blue";
             var iconPop = ResourceManager.Texture("UI/icon_pop_22");
             ColonistsIcon = new Rectangle((int)PStorage.X + 20, (int)(PStorage.Y + storeRow3 + 9 - iconPop.Height / 2f), iconPop.Width, iconPop.Height);
-            ColonistsDropDown = new DropDownMenu(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 36, PStorage.Y + storeRow3, 0.2f * PStorage.Width, 18);
+            ColonistsDropDown = new DropOptions<Planet.GoodState>(new Vector2(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 36, PStorage.Y + storeRow3), (int)(0.2f * PStorage.Width), 18);
             // people words, not cargo words (bench 425): Stay / Bring in / Resettle map
             // onto STORE / IMPORT / EXPORT in the same order. QUI decides moved to the
             // Auto checkbox (auto-supplies) - in Auto the list shows the formula's live pick
-            ColonistsDropDown.AddOption(Localizer.Token(GameText.Stay));
-            ColonistsDropDown.AddOption(Localizer.Token(GameText.BringIn));
-            ColonistsDropDown.AddOption(Localizer.Token(GameText.Resettle));
+            ColonistsDropDown.AddOption(GameText.Stay, Planet.GoodState.STORE);
+            ColonistsDropDown.AddOption(GameText.BringIn, Planet.GoodState.IMPORT);
+            ColonistsDropDown.AddOption(GameText.Resettle, Planet.GoodState.EXPORT);
             ColonistsDropDown.ActiveIndex = (int)(p.ColonistsManual ? p.CS : p.GetGoodState(Goods.Colonists));
+            ColonistsDropDown.OnValueChange = v => P.CS = v;
             Add(new UICheckBox(supplyAutoX, PopStorage.pBar.Y + 1, () => P.AutoColonists, v => P.AutoColonists = v,
                                Fonts.Arial12Bold, "Auto", GameText.AutoSupplyTip));
 
