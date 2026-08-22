@@ -184,23 +184,22 @@ namespace Ship_Game
                 b.Enabled = false;
             }
 
-            ShipInfoOverlay = Add(new ShipInfoOverlayComponent(this, ShipToRefit.Universe));
+            // bench 469 (Lek's referential hunch, confirmed in ShowShip): the component
+            // fits itself against ITS screen's Height - handed this 200px popup, every
+            // seat "overflowed" and got pushed off the top of the display. It measures
+            // against the fullscreen universe, and only DRAWS as this popup's child.
+            ShipInfoOverlay = Add(new ShipInfoOverlayComponent(ShipToRefit.Universe.Screen, ShipToRefit.Universe));
             RefitShipList.OnHovered = (item) =>
             {
-                // bench 466: ShowToLeftOf PLACES the overlay 1.6x its size LEFT of the
-                // anchor, and ShowShip clamps X to 100 - anchored on this narrow popup's
-                // flank the seat went negative and the overlay stuck to the corner. The
-                // overlay size is its 340 floor here (our width x 0.16 is far below), so
-                // the seat is computed: left of the frame when the room exists, right of
-                // it otherwise, mid-height either way.
-                const float Sz = 340f, W = Sz * 1.6f;
-                float anchorX = Rect.X - 16 - W >= 100 ? Rect.X - 16 : Rect.Right + 16 + W; // 100 = ShowShip's own X clamp
-                // vertically centred on the hovered ROW (maintainer) - and CLAMPED into the
-                // frame's own span: bench 468 landed top-right, so whatever the row's Pos
-                // reports, the seat never leaves the popup's flank
+                // bench 466-469: ShowToLeftOf places the overlay 1.6x its size LEFT of
+                // the anchor - the seat is computed against the overlay's REAL size
+                // (GetSize's formula on the fullscreen width): left of the frame when the
+                // room exists, right of it otherwise, centred on the hovered row.
+                float sz = Math.Max(340f, ShipToRefit.Universe.Screen.Width * 0.16f);
+                float w = sz * 1.6f;
+                float anchorX = Rect.X - 16 - w >= 100 ? Rect.X - 16 : Rect.Right + 16 + w; // 100 = ShowShip's own X clamp
                 float rowMidY = item != null ? item.Pos.Y + RowH / 2f : Rect.CenterY();
-                rowMidY = Math.Clamp(rowMidY, Rect.Y + 80, Rect.Bottom - 80);
-                ShipInfoOverlay.ShowToLeftOf(new Vector2(anchorX, rowMidY - Sz / 4), item?.Design);
+                ShipInfoOverlay.ShowToLeftOf(new Vector2(anchorX, rowMidY - sz / 4), item?.Design);
             };
         }
 
