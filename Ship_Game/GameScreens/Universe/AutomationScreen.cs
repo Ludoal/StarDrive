@@ -34,7 +34,7 @@ namespace Ship_Game
         // BoxW2: the dropdown boxes are WIDER instead of taller - label room + picker.
         const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
         const float EmpireBoxH = 160f, ColonizationBoxH = 130f, ConstructionBoxH = 139f,
-                    TradeBoxH = 126f, NotificationsBoxH = 230f, PriorityBoxH = 330f;
+                    TradeBoxH = 152f, NotificationsBoxH = 230f, PriorityBoxH = 330f;
 
         public AutomationScreen(UniverseScreen u) : base(u, toPause: u)
         {
@@ -95,6 +95,8 @@ namespace Ship_Game
             FreighterDropDown = trade.Add(new CheckedDropdown())
                 .Create(() => player.AutoFreighters, title: GameText.AutomaticTrade, tooltip: GameText.YourEmpireWillAutomaticallyManage2,
                         autoPick: () => player.AutoPickBestFreighter);
+            // Decoupled from Automatic Trade: routing without forced modernisation.
+            trade.AddCheckbox(() => player.AutoUpgradeFreighters, title: GameText.AutoUpgradeFreighters, tooltip: GameText.AutoUpgradeFreightersTip);
             trade.AddCheckbox(() => Universe.UState.P.AllowPlayerInterTrade, title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.AllowPlayerInterTradeTip);
 
             // Freighter priority under a shortage - the label rides the dropdown to its right,

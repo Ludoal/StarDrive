@@ -24,6 +24,10 @@ namespace Ship_Game
     {
         [StarData] public bool AutoFreighters;
         [StarData] public bool AutoPickBestFreighter;
+        // Auto-trade upgrades idle freighters to better models on its own. Decoupled so the
+        // player can keep the routing without the fleet being modernised behind their back.
+        // Defaults true (initializer preserved on old saves) to keep existing behaviour.
+        [StarData] public bool AutoUpgradeFreighters = true;
         [StarData] public CargoPriority CargoPriority;
         [StarData] public float FastVsBigFreighterRatio { get; private set; } = 0.5f;
         public float TradeMoneyAddedThisTurn { get; private set; }
@@ -494,7 +498,7 @@ namespace Ship_Game
         // FB - Refit some idle freighters to better ones, if unlocked
         public void TriggerFreightersRefit()
         {
-            if (ManualTrade || TotalFreighters / (float)FreighterCap <= 0.75f)
+            if (ManualTrade || !AutoUpgradeFreighters || TotalFreighters / (float)FreighterCap <= 0.75f)
                 return;
 
             IShipDesign betterFreighter = ShipBuilder.PickFreighter(this);
@@ -512,7 +516,7 @@ namespace Ship_Game
         // Percentage to check if there is better suited freighter model available
         public void CheckForRefitFreighter(Ship freighter, int percentage, IShipDesign betterFreighter = null)
         {
-            if (!ManualTrade && Random.RollDice(percentage) && TotalFreighters / (float)FreighterCap > 0.5f)
+            if (!ManualTrade && AutoUpgradeFreighters && Random.RollDice(percentage) && TotalFreighters / (float)FreighterCap > 0.5f)
             {
                 if (betterFreighter == null)
                     betterFreighter = ShipBuilder.PickFreighter(this);

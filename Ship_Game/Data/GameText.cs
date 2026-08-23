@@ -7017,6 +7017,10 @@ namespace Ship_Game
         FreighterPriorityColonistsFirst = 7096,
         /// <summary>When freighters run short, which cargo is served first. Only affects a shortage; abundant freighters serve everything.</summary>
         FreighterPriorityTip = 7097,
+        /// <summary>Auto-upgrade Freighters</summary>
+        AutoUpgradeFreighters = 7098,
+        /// <summary>Automatically replaces your freighters with the best available model, independently of trade routing.</summary>
+        AutoUpgradeFreightersTip = 7099,
         /// <summary>Dearest SING friends, We are delighted to see your empire's</summary>
         EncCorsairs000_Msg0 = -11,
         /// <summary>Agree to pay this upstanding gentleman.</summary>

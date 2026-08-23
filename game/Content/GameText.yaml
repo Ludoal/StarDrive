@@ -16554,6 +16554,14 @@ FreighterPriorityTip:
  Id: 7097
  ENG: "When freighters run short, which cargo is served first. Only affects a shortage; abundant freighters serve everything."
  FRA: "En pénurie de cargos, quelle marchandise est servie en premier. N'agit qu'en pénurie ; en abondance, tout est servi."
+AutoUpgradeFreighters:
+ Id: 7098
+ ENG: "Auto-upgrade Freighters"
+ FRA: "Moderniser les cargos"
+AutoUpgradeFreightersTip:
+ Id: 7099
+ ENG: "Automatically replaces your freighters with the best available model, independently of trade routing."
+ FRA: "Remplace automatiquement vos cargos par le meilleur modèle disponible, indépendamment du routage du commerce."
  UKR: "Ліміт цивільного бюджету досягнуто!"
  PTB: "Limite do Orçamento Civil Atingido!"
 BB_Tech_SubspatialDynamics_CounterEnemyPlanetInhibitionBonus_Bonus:
