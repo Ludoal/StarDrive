@@ -498,9 +498,9 @@ namespace Ship_Game
         // FB - Refit some idle freighters to better ones, if unlocked
         public void TriggerFreightersRefit()
         {
-            // Auto-upgrade is orthogonal to Automatic Trade: it modernises the fleet whether the
-            // player routes manually or not, so it gates on AutoUpgradeFreighters, not ManualTrade.
-            if (!AutoUpgradeFreighters || TotalFreighters / (float)FreighterCap <= 0.75f)
+            // Auto-upgrade follows Automatic Trade: modernising a manually-routed freighter would
+            // clear the player's own orders, so it only runs when the auto-trade owns the fleet.
+            if (ManualTrade || !AutoUpgradeFreighters || TotalFreighters / (float)FreighterCap <= 0.75f)
                 return;
 
             IShipDesign betterFreighter = ShipBuilder.PickFreighter(this);
@@ -518,7 +518,7 @@ namespace Ship_Game
         // Percentage to check if there is better suited freighter model available
         public void CheckForRefitFreighter(Ship freighter, int percentage, IShipDesign betterFreighter = null)
         {
-            if (AutoUpgradeFreighters && Random.RollDice(percentage) && TotalFreighters / (float)FreighterCap > 0.5f)
+            if (!ManualTrade && AutoUpgradeFreighters && Random.RollDice(percentage) && TotalFreighters / (float)FreighterCap > 0.5f)
             {
                 if (betterFreighter == null)
                     betterFreighter = ShipBuilder.PickFreighter(this);

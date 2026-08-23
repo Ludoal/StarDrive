@@ -34,7 +34,7 @@ namespace Ship_Game
         // BoxW2: the dropdown boxes are WIDER instead of taller - label room + picker.
         const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
         const float EmpireBoxH = 160f, ColonizationBoxH = 130f, ConstructionBoxH = 139f,
-                    TradeBoxH = 152f, NotificationsBoxH = 230f, PriorityBoxH = 330f;
+                    TradeBoxH = 152f, NotificationsBoxH = 262f, PriorityBoxH = 330f;
 
         public AutomationScreen(UniverseScreen u) : base(u, toPause: u)
         {
@@ -85,9 +85,12 @@ namespace Ship_Game
             notifications.AddCheckbox(() => !player.data.SpyMute, v => player.data.SpyMute = !v,
                                       title: "Espionage Messages", tooltip: GameText.EspionageMessagesTip); // Policies phase 0: token, not a bare string
 
-            // Auto-clear: 0 = off, 1-10 s before a settled non-pausing notification drops on its own.
+            // Auto-clear: 0 = off, 1-60 s before a settled non-pausing notification drops on its own.
+            // The label rides its own row (like the governor's Spending slider) so it doesn't
+            // overlap the track; the slider itself carries no built-in caption.
+            notifications.Add(new UILabel(GameText.NotificationAutoClear, Fonts.Arial12Bold, Color.White)).Tooltip = GameText.NotificationAutoClearTip;
             var autoClear = notifications.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW - 40, 12),
-                                                              GameText.NotificationAutoClear, 0, 10, GlobalStats.NotificationAutoClearSeconds)
+                                                              "", 0, 60, GlobalStats.NotificationAutoClearSeconds)
             {
                 Step = 1,
                 Tip = GameText.NotificationAutoClearTip
