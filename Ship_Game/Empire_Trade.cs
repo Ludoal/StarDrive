@@ -22,12 +22,19 @@ namespace Ship_Game
 
     public partial class Empire
     {
+        // LEGACY: the old single "Automatic Trade" toggle. Kept for save compatibility - a save
+        // written before the dissection deserializes this, and OnDeserialized seeds the three
+        // split toggles below from it (see MigrateFreighterAutomation). Not shown in the UI anymore.
         [StarData] public bool AutoFreighters;
         [StarData] public bool AutoPickBestFreighter;
-        // Auto-trade upgrades idle freighters to better models on its own. Decoupled so the
-        // player can keep the routing without the fleet being modernised behind their back.
-        // Defaults true (initializer preserved on old saves) to keep existing behaviour.
-        [StarData] public bool AutoUpgradeFreighters = true;
+        // The three empire-level freighter automations, split out of the old AutoFreighters.
+        // New games start decoupled (all false); migrated saves inherit AutoFreighters (see below).
+        [StarData] public bool AutoBuildFreighters;    // build new freighters (model = the pick)
+        [StarData] public bool AutoUpgradeFreighters;  // modernise existing freighters to the pick
+        [StarData] public bool AutoScrapIdleFreighters;// scrap freighters left idle too long
+        // Set once the split toggles have been seeded; distinguishes a pre-dissection save (seed
+        // from AutoFreighters) from a fresh/new-format one (leave the toggles as the player set them).
+        [StarData] public bool FreighterAutomationSplit;
         [StarData] public CargoPriority CargoPriority;
         [StarData] public float FastVsBigFreighterRatio { get; private set; } = 0.5f;
         public float TradeMoneyAddedThisTurn { get; private set; }
@@ -39,12 +46,33 @@ namespace Ship_Game
 
         public int  TotalProdExportSlots { get; private set; }
 
+        // Save migration: a game saved before "Automatic Trade" was split into three toggles
+        // inherits its old on/off state into all three, so an ongoing game keeps its conduct.
+        // A fresh game (or an already-split save) leaves the toggles as they are.
+        public void MigrateFreighterAutomation()
+        {
+            if (FreighterAutomationSplit)
+                return;
+
+            AutoBuildFreighters    = AutoFreighters;
+            AutoUpgradeFreighters  = AutoFreighters;
+            AutoScrapIdleFreighters= AutoFreighters;
+            FreighterAutomationSplit = true;
+        }
+
         public int FreighterCap => (int)(AveragePlanetStorage / AverageFreighterCargoCap * OwnedPlanets.Count).Clamped(1, OwnedPlanets.Count*10);
         public int FreightersBeingBuilt  => AI.CountGoals(goal => goal is IncreaseFreighters);
         public int MaxFreightersInQueue  => (int)Math.Ceiling((OwnedPlanets.Count / 5f)).Clamped(2, 5);
         public int TotalFreighters       => OwnedShips.Count(s => s?.IsFreighter == true);
         public int AverageTradeIncome    => AllTimeTradeIncome / TurnCount;
+        // ManualTrade now governs only the ROUTING side (per-cargo restrictions / trade routes):
+        // the AI always auto-routes, the player auto-routes unless it drives its freighters by hand.
         public bool ManualTrade          => isPlayer && !AutoFreighters;
+        // The three split automations. The AI always runs them; the player runs each only when its
+        // own toggle is on. Freighter model pick (CurrentAutoFreighter) is shared by build & upgrade.
+        bool BuildFreightersActive  => !isPlayer || AutoBuildFreighters;
+        bool UpgradeFreightersActive=> !isPlayer || AutoUpgradeFreighters;
+        bool ScrapIdleFreightersActive => !isPlayer || AutoScrapIdleFreighters;
         public float TotalAvgTradeIncome => TotalTradeTreatiesIncome() + AverageTradeIncome;
         public bool EconomicSafeToBuildFreighter => AI.CreditRating >= 0.4;
         public int TotalLevelsOfPirateFactionsAtWar => Universe.PirateFactions.Sum(e => IsAtWarWith(e) ? e.Pirates.Level : 0);
@@ -280,7 +308,7 @@ namespace Ship_Game
 
         void UpdateFreighterTimersAndScrap()
         {
-            if (ManualTrade)
+            if (!ScrapIdleFreightersActive)
                 return;
 
             Ship[] ownedFreighters = OwnedShips.Filter(s => s.IsFreighter);
@@ -433,7 +461,7 @@ namespace Ship_Game
 
         void BuildFreighter()
         {
-            if (ManualTrade || !EconomicSafeToBuildFreighter)
+            if (!BuildFreightersActive || !EconomicSafeToBuildFreighter)
                 return;
 
             int beingBuilt = FreightersBeingBuilt;
@@ -498,9 +526,10 @@ namespace Ship_Game
         // FB - Refit some idle freighters to better ones, if unlocked
         public void TriggerFreightersRefit()
         {
-            // Auto-upgrade follows Automatic Trade: modernising a manually-routed freighter would
-            // clear the player's own orders, so it only runs when the auto-trade owns the fleet.
-            if (ManualTrade || !AutoUpgradeFreighters || TotalFreighters / (float)FreighterCap <= 0.75f)
+            // Auto-upgrade modernises idle freighters. It runs on its own toggle (the AI always,
+            // the player when Auto-upgrade is on) - a freighter is only ever auto-routed, so this
+            // touches cargos that are idle or have just finished a rotation, never a live order.
+            if (!UpgradeFreightersActive || TotalFreighters / (float)FreighterCap <= 0.75f)
                 return;
 
             IShipDesign betterFreighter = ShipBuilder.PickFreighter(this);
@@ -518,7 +547,7 @@ namespace Ship_Game
         // Percentage to check if there is better suited freighter model available
         public void CheckForRefitFreighter(Ship freighter, int percentage, IShipDesign betterFreighter = null)
         {
-            if (!ManualTrade && AutoUpgradeFreighters && Random.RollDice(percentage) && TotalFreighters / (float)FreighterCap > 0.5f)
+            if (UpgradeFreightersActive && Random.RollDice(percentage) && TotalFreighters / (float)FreighterCap > 0.5f)
             {
                 if (betterFreighter == null)
                     betterFreighter = ShipBuilder.PickFreighter(this);

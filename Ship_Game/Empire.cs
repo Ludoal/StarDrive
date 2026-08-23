@@ -312,6 +312,7 @@ namespace Ship_Game
             // the constructor does not run on load. Without this, the first obsolete-design click
             // in an ongoing game throws.
             ObsoletePlayerDesigns ??= new();
+            MigrateFreighterAutomation(); // split the old single Automatic Trade toggle into three
             CommonInitialize();
         }
 
