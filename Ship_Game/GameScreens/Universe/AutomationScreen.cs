@@ -86,10 +86,10 @@ namespace Ship_Game
                                       title: "Espionage Messages", tooltip: GameText.EspionageMessagesTip); // Policies phase 0: token, not a bare string
 
             // Auto-clear: 0 = off, 1-60 s before a settled non-pausing notification drops on its own.
-            // The label rides its own row; the slider row is tall enough that its track sits below
-            // the label instead of riding up onto it.
+            // The label rides its own row; the slider's track is drawn at height/2 + 3, so its
+            // height (7) is what tucks the track up close under the label (bench: -3px from 13).
             notifications.Add(new UILabel(GameText.NotificationAutoClear, Fonts.Arial12Bold, Colors.Cream)).Tooltip = GameText.NotificationAutoClearTip;
-            var autoClear = notifications.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW - 40, 13),
+            var autoClear = notifications.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW - 40, 7),
                                                               "", 0, 60, GlobalStats.NotificationAutoClearSeconds)
             {
                 Step = 1,
