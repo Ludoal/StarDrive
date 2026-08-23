@@ -1146,10 +1146,12 @@ namespace Ship_Game
                     Screen.UState.Paused = true;
 
                 // Auto-clear: age a notification only once it has settled in place, and drop it
-                // after the configured seconds. Pausing notifications wait for the player and a
-                // LoadEvent needs a decision, so both are left alone; their trace stays in the
-                // ImportantEventsList regardless.
-                if (autoClear > 0f && inPlace && !n.Pause && n.Action != "LoadEvent")
+                // after the configured seconds. Only a notification that ACTUALLY pauses the game
+                // is spared (PauseOnNotification && Pause) - n.Pause alone is true by default on
+                // almost every notification, which would spare nearly all of them. A LoadEvent
+                // needs a decision, so it is left alone too. Traces stay in the ImportantEventsList.
+                bool pausesTheGame = GlobalStats.PauseOnNotification && n.Pause;
+                if (autoClear > 0f && inPlace && !pausesTheGame && n.Action != "LoadEvent")
                 {
                     n.SecondsAlive += elapsedRealTime;
                     if (n.SecondsAlive >= autoClear)
