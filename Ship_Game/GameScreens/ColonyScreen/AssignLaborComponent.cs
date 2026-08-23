@@ -55,7 +55,7 @@ namespace Ship_Game
                 int sliderY = (int)Y + 25;
                 // one value column needs ~45% width; showing the max adds a second decimal
                 // column, so the slider yields more room when ShowMaxValue is on.
-                int sliderW = (Width * (ShowMaxValue ? 0.42f : 0.55f)).RoundTo10();
+                int sliderW = (Width * (ShowMaxValue ? 0.50f : 0.55f)).RoundTo10();
                 int sliderH = (int)Height - 25;
                 return new Rectangle(sliderX, sliderY, sliderW, sliderH);
             }

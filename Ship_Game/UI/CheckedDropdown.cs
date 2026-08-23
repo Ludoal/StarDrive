@@ -83,4 +83,38 @@ namespace Ship_Game
             Options.Draw(batch, elapsed);
         }
     }
+
+    /// A plain label riding a multi-option dropdown to its right, so a picker with no
+    /// on/off toggle lines up the same way as the CheckedDropdown rows beside it.
+    public class LabeledDropdown<T> : UIElementV2
+    {
+        UILabel Label;
+        public DropOptions<T> Options { get; private set; }
+
+        public DropOptions<T> Create(LocalizedText title, LocalizedText tooltip)
+        {
+            Label = new UILabel(new Vector2(-200f, -200f), title, Fonts.Arial12Bold, Color.White) { Tooltip = tooltip };
+            Options = new DropOptions<T>(new Vector2(-200f, -200f), 190, 18);
+            return Options;
+        }
+
+        const float LabelRoom = 215f; // same column start as CheckedDropdown so the pickers align
+
+        public override void PerformLayout()
+        {
+            Label.Pos = new Vector2(Pos.X, Pos.Y + 2f);
+            Label.PerformLayout();
+            Options.Pos = new Vector2(Pos.X + LabelRoom, Pos.Y - 1f);
+            Options.PerformLayout();
+            Height = Math.Max(Label.Height, Options.Bottom - Pos.Y);
+        }
+
+        public override bool HandleInput(InputState input) => Options.HandleInput(input);
+
+        public override void Draw(SpriteBatch batch, DrawTimes elapsed)
+        {
+            Label.Draw(batch, elapsed);
+            Options.Draw(batch, elapsed);
+        }
+    }
 }

@@ -97,10 +97,11 @@ namespace Ship_Game
                         autoPick: () => player.AutoPickBestFreighter);
             trade.AddCheckbox(() => Universe.UState.P.AllowPlayerInterTrade, title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.AllowPlayerInterTradeTip);
 
-            // Freighter priority under a shortage. The notice rides the label (Policies phase 0),
-            // spelling out that it only bites when cargos are scarce.
-            trade.Add(new UILabel(GameText.FreighterPriority, Fonts.Arial12Bold, Color.White)).Tooltip = GameText.FreighterPriorityTip;
-            FreighterPriorityDropDown = trade.Add(new DropOptions<CargoPriority>((int)(BoxW2 - 32), 18));
+            // Freighter priority under a shortage - the label rides the dropdown to its right,
+            // lined up with the CheckedDropdown rows above. The notice (Policies phase 0) spells
+            // out that it only bites when cargos are scarce.
+            FreighterPriorityDropDown = trade.Add(new LabeledDropdown<CargoPriority>())
+                .Create(GameText.FreighterPriority, GameText.FreighterPriorityTip);
             FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityAuto, CargoPriority.Auto);
             FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityProductionFirst, CargoPriority.ProductionFirst);
             FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityColonistsFirst, CargoPriority.ColonistsFirst);
