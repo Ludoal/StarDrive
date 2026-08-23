@@ -16562,6 +16562,14 @@ AutoUpgradeFreightersTip:
  Id: 7099
  ENG: "Automatically replaces your freighters with the best available model, independently of trade routing."
  FRA: "Remplace automatiquement vos cargos par le meilleur modèle disponible, indépendamment du routage du commerce."
+NotificationAutoClear:
+ Id: 7100
+ ENG: "Auto-clear (s)"
+ FRA: "Effacement auto (s)"
+NotificationAutoClearTip:
+ Id: 7101
+ ENG: "Automatically clears a notification after this many seconds. 0 = off. Pausing and event notifications are always kept."
+ FRA: "Efface automatiquement une notification après ce nombre de secondes. 0 = désactivé. Les notifications qui mettent en pause ou demandent une décision sont toujours conservées."
  UKR: "Ліміт цивільного бюджету досягнуто!"
  PTB: "Limite do Orçamento Civil Atingido!"
 BB_Tech_SubspatialDynamics_CounterEnemyPlanetInhibitionBonus_Bonus:

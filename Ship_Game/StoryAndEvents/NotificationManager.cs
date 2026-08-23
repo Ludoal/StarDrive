@@ -1133,15 +1133,34 @@ namespace Ship_Game
         public void Update(float elapsedRealTime)
         {
             Notification[] notifications = GetNotificationsAtomic();
+            float autoClear = GlobalStats.NotificationAutoClearSeconds;
             foreach (Notification n in notifications)
             {
                 n.transitionElapsedTime += elapsedRealTime;
                 float amount = (float) Math.Pow(n.transitionElapsedTime / n.transDuration, 2);
                 n.ClickRect.Y = (int) Math.Ceiling(n.ClickRect.Y.SmoothStep(n.DestinationRect.Y, amount));
+                bool inPlace = n.ClickRect.Y >= n.DestinationRect.Y;
                 // ADDED BY SHAHMATT (pause game when there are any notifications)
                 //fbedard : Add filter to pause
-                if (GlobalStats.PauseOnNotification && n.ClickRect.Y >= n.DestinationRect.Y && n.Pause)
+                if (GlobalStats.PauseOnNotification && inPlace && n.Pause)
                     Screen.UState.Paused = true;
+
+                // Auto-clear: age a notification only once it has settled in place, and drop it
+                // after the configured seconds. Pausing notifications wait for the player and a
+                // LoadEvent needs a decision, so both are left alone; their trace stays in the
+                // ImportantEventsList regardless.
+                if (autoClear > 0f && inPlace && !n.Pause && n.Action != "LoadEvent")
+                {
+                    n.SecondsAlive += elapsedRealTime;
+                    if (n.SecondsAlive >= autoClear)
+                    {
+                        lock (NotificationList)
+                        {
+                            NotificationList.Remove(n);
+                            UpdateAllPositions();
+                        }
+                    }
+                }
             }
 
             // fbedard: remove excess notifications

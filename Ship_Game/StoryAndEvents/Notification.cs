@@ -18,6 +18,8 @@ public sealed class Notification
 
     public float transitionElapsedTime;
     public float transDuration = 1f;
+    // Real seconds this notification has been in place (past its entry animation), for auto-clear.
+    public float SecondsAlive;
         
     public string Message;
     public string Action; // @TODO - this needs an enum!

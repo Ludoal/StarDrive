@@ -7021,6 +7021,10 @@ namespace Ship_Game
         AutoUpgradeFreighters = 7098,
         /// <summary>Automatically replaces your freighters with the best available model, independently of trade routing.</summary>
         AutoUpgradeFreightersTip = 7099,
+        /// <summary>Auto-clear (s)</summary>
+        NotificationAutoClear = 7100,
+        /// <summary>Automatically clears a notification after this many seconds. 0 = off. Pausing and event notifications are always kept.</summary>
+        NotificationAutoClearTip = 7101,
         /// <summary>Dearest SING friends, We are delighted to see your empire's</summary>
         EncCorsairs000_Msg0 = -11,
         /// <summary>Agree to pay this upstanding gentleman.</summary>

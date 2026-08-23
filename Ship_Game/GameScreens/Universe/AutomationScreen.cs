@@ -85,6 +85,15 @@ namespace Ship_Game
             notifications.AddCheckbox(() => !player.data.SpyMute, v => player.data.SpyMute = !v,
                                       title: "Espionage Messages", tooltip: GameText.EspionageMessagesTip); // Policies phase 0: token, not a bare string
 
+            // Auto-clear: 0 = off, 1-10 s before a settled non-pausing notification drops on its own.
+            var autoClear = notifications.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW - 40, 12),
+                                                              GameText.NotificationAutoClear, 0, 10, GlobalStats.NotificationAutoClearSeconds)
+            {
+                Step = 1,
+                Tip = GameText.NotificationAutoClearTip
+            });
+            autoClear.OnChange = s => GlobalStats.NotificationAutoClearSeconds = s.AbsoluteValue;
+
             UIList empire = NewBox(new RectF(x0, top, BoxW, EmpireBoxH), "Empire");
             empire.AddCheckbox(() => player.AutoTaxes, title: GameText.AutoTaxes, tooltip: GameText.YourEmpireWillAutomaticallyManage3);
             empire.AddCheckbox(() => player.AutoResearch, title: GameText.AutoResearch, tooltip: GameText.YourEmpireWillAutomaticallySelect);

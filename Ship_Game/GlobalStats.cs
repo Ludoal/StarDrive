@@ -153,6 +153,8 @@ public static class GlobalStats
     // USER_EXPERIENCE
     // global option for pausing on notifications, default should be OFF
     public static bool PauseOnNotification;
+    // Seconds before a settled, non-pausing notification auto-clears. 0 = off (default).
+    public static float NotificationAutoClearSeconds;
 
     // USER_EXPERIENCE
     // Ludoal fork: whether opening a page (group screens, colony) auto-pauses the
@@ -465,6 +467,7 @@ public static class GlobalStats
 
         GetSetting(config, "NotifyEmptyPlanetQueue", ref NotifyEmptyPlanetQueue);
         GetSetting(config, "PauseOnNotification", ref PauseOnNotification);
+        GetSetting(config, "NotificationAutoClearSeconds", ref NotificationAutoClearSeconds);
         GetSetting(config, "PauseOnPageOpen", ref PauseOnPageOpen);
         GetSetting(config, "AutoPauseColonyPanel", ref AutoPauseColonyPanel);
         GetSetting(config, "IconSize", ref IconSize);
@@ -688,6 +691,7 @@ public static class GlobalStats
 
         WriteSetting(config, "NotifyEmptyPlanetQueue", NotifyEmptyPlanetQueue);
         WriteSetting(config, "PauseOnNotification", PauseOnNotification);
+        WriteSetting(config, "NotificationAutoClearSeconds", NotificationAutoClearSeconds);
         WriteSetting(config, "PauseOnPageOpen", PauseOnPageOpen);
         WriteSetting(config, "AutoPauseColonyPanel", AutoPauseColonyPanel);
         WriteSetting(config, "IconSize", IconSize);
