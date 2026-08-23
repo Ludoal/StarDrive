@@ -66,11 +66,7 @@ namespace Ship_Game
                 return designs;
             foreach (IShipDesign design in ship.Loyalty.ShipsWeCanBuildSnapshot)
             {
-                // Same hull normally, but freighters may refit across hull sizes (S/M/L) - the
-                // auto-trade already replaces them cross-hull and RefitCost prices it, so the
-                // manual list should offer it too.
-                if ((design.Hull == ship.ShipData.Hull || ship.IsResearchStation || ship.IsMiningStation
-                     || ship.IsFreighter && design.IsFreighter)
+                if ((design.Hull == ship.ShipData.Hull || ship.IsResearchStation || ship.IsMiningStation)
                     && design != ship.ShipData
                     && !design.ShipRole.Protected
                     && ship.IsResearchStation == design.IsResearchStation
