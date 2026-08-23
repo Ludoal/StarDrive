@@ -22064,7 +22064,7 @@ SyHeadPayload:
  FRA: "CHARGE UTILE"
 SyHeadDefence:
  Id: 5233
- ENG: "DEFENCE"
+ ENG: "DEFENSE"
  FRA: "DÉFENSE"
 SyHeadOrdnance:
  Id: 5234
@@ -22296,7 +22296,7 @@ GovCommonNote:
  FRA: "Le gouverneur construit et démolit dans son budget. Vos réglages Supply manuels priment toujours."
 StripDefence:
  Id: 5295
- ENG: "Strip Defence"
+ ENG: "Strip Defense"
  FRA: "Ôter défense"
 StripDefenceTip:
  Id: 5296
@@ -25640,7 +25640,7 @@ ADVAplifierDescr:
  PTB: "Este módulo amplificador avançado aumenta consideravelmente a força de todos os escudos primários enquanto mantém o consumo de energia relativamente baixo. A amplificação é dividida pelo número de escudos principais instalados na nave."
 StarshipDefences:
  Id: 1100
- ENG: "Ship Defences"
+ ENG: "Ship Defenses"
  FRA: "Défenses du vaisseau"
  UKR: "Захист кораблів"
  PTB: "Defesas"
@@ -26532,7 +26532,7 @@ AdvancedWarpDescr:
  PTB: "Novas pesquisas em mecânica quântica descobriram partículas esotéricas exóticas que podem melhorar nossos motores de dobra, tornando-os ainda mais rápidos que antes."
 CorvetteDefencetech:
  Id: 10093
- ENG: "Corvette Defence"
+ ENG: "Corvette Defense"
  FRA: "Défense par corvettes"
  UKR: "Захист корветів"
  PTB: "Defesa de Corvetas"
@@ -26544,7 +26544,7 @@ CorvetteDefencetechDescr:
  PTB: "Força estacionária de várias naves da classe Corveta, pronta para ser mobilizada da superfície do planeta quando os scanners planetários detectarem assinaturas hostis. As naves lançadas sempre usarão os melhores designs com as tecnologias mais recentes já pesquisadas."
 FrigateDefencetech:
  Id: 10095
- ENG: "Frigate Defence"
+ ENG: "Frigate Defense"
  FRA: "Défense par frégates"
  UKR: "Захист фрегатів"
  PTB: "Defesa de Fragatas"
