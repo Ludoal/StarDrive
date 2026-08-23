@@ -93,8 +93,11 @@ namespace Ship_Game
         {
             if (planet.Owner == null)
             {
+                // An owned neighbour in the system or a scout passing through sensor range is
+                // not the same as having explored this world: "not known = no notification".
                 var ships = planet.Universe.Player.OwnedShips;
-                if (!planet.System.HasPlanetsOwnedBy(planet.Universe.Player)
+                if (!planet.IsExploredBy(planet.Universe.Player)
+                    || !planet.System.HasPlanetsOwnedBy(planet.Universe.Player)
                     && !ships.Any(s => planet.Position.InRadius(s.Position, s.SensorRange)))
                 {
                     return;
