@@ -31,7 +31,7 @@ namespace Ship_Game
         // Auto Pick box switches between best-model and the manual list.
         public DropOptions<int> CreateTitled(LocalizedText title, LocalizedText tooltip, Expression<Func<bool>> autoPick)
         {
-            TitleOnly = new UILabel(new Vector2(-200f, -200f), title, Fonts.Arial12Bold, Color.White) { Tooltip = tooltip };
+            TitleOnly = new UILabel(new Vector2(-200f, -200f), title, Fonts.Arial12Bold, Colors.Cream) { Tooltip = tooltip };
             AutoPickBox = new UICheckBox(-200f, -200f, autoPick, Fonts.Arial12Bold, "", GameText.AutoPickTooltip);
             IsAutoPicked = autoPick.Compile();
             Options = new DropOptions<int>(new Vector2(-200f, -200f), 168, 18);
@@ -108,7 +108,7 @@ namespace Ship_Game
 
         public DropOptions<T> Create(LocalizedText title, LocalizedText tooltip)
         {
-            Label = new UILabel(new Vector2(-200f, -200f), title, Fonts.Arial12Bold, Color.White) { Tooltip = tooltip };
+            Label = new UILabel(new Vector2(-200f, -200f), title, Fonts.Arial12Bold, Colors.Cream) { Tooltip = tooltip };
             Options = new DropOptions<T>(new Vector2(-200f, -200f), 190, 18);
             return Options;
         }

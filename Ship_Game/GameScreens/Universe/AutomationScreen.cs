@@ -34,7 +34,7 @@ namespace Ship_Game
         // BoxW2: the dropdown boxes are WIDER instead of taller - label room + picker.
         const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
         const float EmpireBoxH = 160f, ColonizationBoxH = 130f, ConstructionBoxH = 139f,
-                    TradeBoxH = 178f, NotificationsBoxH = 262f, PriorityBoxH = 330f;
+                    TradeBoxH = 204f, NotificationsBoxH = 262f, PriorityBoxH = 330f;
 
         public AutomationScreen(UniverseScreen u) : base(u, toPause: u)
         {
@@ -88,8 +88,8 @@ namespace Ship_Game
             // Auto-clear: 0 = off, 1-60 s before a settled non-pausing notification drops on its own.
             // The label rides its own row; the slider row is tall enough that its track sits below
             // the label instead of riding up onto it.
-            notifications.Add(new UILabel(GameText.NotificationAutoClear, Fonts.Arial12Bold, Color.White)).Tooltip = GameText.NotificationAutoClearTip;
-            var autoClear = notifications.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW - 40, 22),
+            notifications.Add(new UILabel(GameText.NotificationAutoClear, Fonts.Arial12Bold, Colors.Cream)).Tooltip = GameText.NotificationAutoClearTip;
+            var autoClear = notifications.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW - 40, 13),
                                                               "", 0, 60, GlobalStats.NotificationAutoClearSeconds)
             {
                 Step = 1,
@@ -104,6 +104,16 @@ namespace Ship_Game
             empire.AddCheckbox(() => RushConstruction, title: GameText.RushAllConstruction, tooltip: GameText.RushAllConstructionTip);
 
             UIList trade = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap, BoxW2, TradeBoxH), "Trade");
+            // Freighter Priority first (Ludo's call): which cargo is served first under a shortage.
+            // The notice (Policies phase 0) spells out that it only bites when cargos are scarce.
+            FreighterPriorityDropDown = trade.Add(new LabeledDropdown<CargoPriority>())
+                .Create(GameText.FreighterPriority, GameText.FreighterPriorityTip);
+            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityAuto, CargoPriority.Auto);
+            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityProductionFirst, CargoPriority.ProductionFirst);
+            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityColonistsFirst, CargoPriority.ColonistsFirst);
+            FreighterPriorityDropDown.ActiveValue = player.CargoPriority;
+            FreighterPriorityDropDown.OnValueChange = v => player.CargoPriority = v;
+
             // The old single "Automatic Trade" toggle is dissected into three checkboxes below.
             // The picker (kept from that control, minus its lead toggle) names the shared Freighter
             // Model that Auto-build and Auto-upgrade both use; its Auto Pick box picks the best
@@ -114,17 +124,6 @@ namespace Ship_Game
             trade.AddCheckbox(() => player.AutoUpgradeFreighters, title: GameText.AutoUpgradeFreighters, tooltip: GameText.AutoUpgradeFreightersTip);
             trade.AddCheckbox(() => player.AutoScrapIdleFreighters, title: GameText.AutoScrapIdleFreighters, tooltip: GameText.AutoScrapIdleFreightersTip);
             trade.AddCheckbox(() => Universe.UState.P.AllowPlayerInterTrade, title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.AllowPlayerInterTradeTip);
-
-            // Freighter priority under a shortage - the label rides the dropdown to its right,
-            // lined up with the CheckedDropdown rows above. The notice (Policies phase 0) spells
-            // out that it only bites when cargos are scarce.
-            FreighterPriorityDropDown = trade.Add(new LabeledDropdown<CargoPriority>())
-                .Create(GameText.FreighterPriority, GameText.FreighterPriorityTip);
-            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityAuto, CargoPriority.Auto);
-            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityProductionFirst, CargoPriority.ProductionFirst);
-            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityColonistsFirst, CargoPriority.ColonistsFirst);
-            FreighterPriorityDropDown.ActiveValue = player.CargoPriority;
-            FreighterPriorityDropDown.OnValueChange = v => player.CargoPriority = v;
 
             UIList construction = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap, BoxW2, ConstructionBoxH), "Construction");
             ConstructorDropDown = construction.Add(new CheckedDropdown())
