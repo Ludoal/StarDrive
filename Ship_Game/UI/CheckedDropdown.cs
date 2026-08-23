@@ -13,7 +13,8 @@ namespace Ship_Game
     /// map overlay it belonged to.
     public class CheckedDropdown : UIElementV2
     {
-        UICheckBox Check;
+        UICheckBox Check;           // null when the row leads with a fixed title instead of a toggle
+        UILabel TitleOnly;          // the fixed-title lead, used in place of Check
         UICheckBox AutoPickBox;     // Ludoal fork (design Ludo): auto-pick lives ON its row
         Func<bool> IsAutoPicked;
         DropOptions<int> Options;
@@ -22,6 +23,18 @@ namespace Ship_Game
         {
             Check = new UICheckBox(-200f, -200f, binding, Fonts.Arial12Bold, title, tooltip);
             Options = new DropOptions<int>(new Vector2(-200f, -200f), 190, 18);
+            return Options;
+        }
+
+        // Fixed-title variant: no lead toggle, just a label + an Auto Pick box + the dropdown.
+        // The model is a choice, not an on/off - so the row names it ("Freighter Model") and the
+        // Auto Pick box switches between best-model and the manual list.
+        public DropOptions<int> CreateTitled(LocalizedText title, LocalizedText tooltip, Expression<Func<bool>> autoPick)
+        {
+            TitleOnly = new UILabel(new Vector2(-200f, -200f), title, Fonts.Arial12Bold, Color.White) { Tooltip = tooltip };
+            AutoPickBox = new UICheckBox(-200f, -200f, autoPick, Fonts.Arial12Bold, "", GameText.AutoPickTooltip);
+            IsAutoPicked = autoPick.Compile();
+            Options = new DropOptions<int>(new Vector2(-200f, -200f), 168, 18);
             return Options;
         }
 
@@ -44,10 +57,11 @@ namespace Ship_Game
 
         public override void PerformLayout()
         {
-            // The picker rides the toggle's own row, to its right - the row stays as tall as a
-            // plain checkbox and the boxes widen instead
-            Check.Pos = Pos;
-            Check.PerformLayout();
+            // The picker rides the lead's own row, to its right - the row stays as tall as a
+            // plain checkbox and the boxes widen instead. The lead is the toggle, or a fixed title.
+            UIElementV2 lead = (UIElementV2)Check ?? TitleOnly;
+            lead.Pos = new Vector2(Pos.X, Pos.Y + (Check == null ? 2f : 0f));
+            lead.PerformLayout();
             float optionsX = Pos.X + LabelRoom;
             if (AutoPickBox != null)
             {
@@ -57,19 +71,20 @@ namespace Ship_Game
             }
             Options.Pos = new Vector2(optionsX, Pos.Y - 1f);
             Options.PerformLayout();
-            Height = Math.Max(Check.Height, Options.Bottom - Pos.Y);
+            Height = Math.Max(lead.Height, Options.Bottom - Pos.Y);
         }
 
         public override bool HandleInput(InputState input)
         {
-            return Check.HandleInput(input)
+            return (Check?.HandleInput(input) ?? false)
                 || (AutoPickBox?.HandleInput(input) ?? false)
                 || Options.HandleInput(input);
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            Check.Draw(batch, elapsed);
+            if (Check != null) Check.Draw(batch, elapsed);
+            else               TitleOnly.Draw(batch, elapsed);
             if (AutoPickBox != null)
             {
                 AutoPickBox.Draw(batch, elapsed);

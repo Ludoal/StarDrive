@@ -7025,6 +7025,18 @@ namespace Ship_Game
         NotificationAutoClear = 7100,
         /// <summary>Automatically clears a notification after this many seconds. 0 = off. Pausing and event notifications are always kept.</summary>
         NotificationAutoClearTip = 7101,
+        /// <summary>Auto-build Freighters</summary>
+        AutoBuildFreighters = 7102,
+        /// <summary>Automatically builds new freighters as trade demands, using the model picked here.</summary>
+        AutoBuildFreightersTip = 7103,
+        /// <summary>Auto-scrap Idle Freighters</summary>
+        AutoScrapIdleFreighters = 7104,
+        /// <summary>Automatically scraps freighters that stay idle for too long, to trim an oversized fleet.</summary>
+        AutoScrapIdleFreightersTip = 7105,
+        /// <summary>Freighter Model</summary>
+        FreighterModel = 7106,
+        /// <summary>The freighter model Auto-build and Auto-upgrade use. Checked = Auto Pick (the best available); uncheck to choose a specific model.</summary>
+        FreighterModelTip = 7107,
         /// <summary>Dearest SING friends, We are delighted to see your empire's</summary>
         EncCorsairs000_Msg0 = -11,
         /// <summary>Agree to pay this upstanding gentleman.</summary>

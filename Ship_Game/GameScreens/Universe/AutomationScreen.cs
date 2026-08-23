@@ -34,7 +34,7 @@ namespace Ship_Game
         // BoxW2: the dropdown boxes are WIDER instead of taller - label room + picker.
         const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
         const float EmpireBoxH = 160f, ColonizationBoxH = 130f, ConstructionBoxH = 139f,
-                    TradeBoxH = 152f, NotificationsBoxH = 262f, PriorityBoxH = 330f;
+                    TradeBoxH = 178f, NotificationsBoxH = 262f, PriorityBoxH = 330f;
 
         public AutomationScreen(UniverseScreen u) : base(u, toPause: u)
         {
@@ -104,11 +104,15 @@ namespace Ship_Game
             empire.AddCheckbox(() => RushConstruction, title: GameText.RushAllConstruction, tooltip: GameText.RushAllConstructionTip);
 
             UIList trade = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap, BoxW2, TradeBoxH), "Trade");
+            // The old single "Automatic Trade" toggle is dissected into three checkboxes below.
+            // The picker (kept from that control, minus its lead toggle) names the shared Freighter
+            // Model that Auto-build and Auto-upgrade both use; its Auto Pick box picks the best
+            // model when checked, or reveals the manual list when unchecked.
             FreighterDropDown = trade.Add(new CheckedDropdown())
-                .Create(() => player.AutoFreighters, title: GameText.AutomaticTrade, tooltip: GameText.YourEmpireWillAutomaticallyManage2,
-                        autoPick: () => player.AutoPickBestFreighter);
-            // Decoupled from Automatic Trade: routing without forced modernisation.
+                .CreateTitled(GameText.FreighterModel, GameText.FreighterModelTip, autoPick: () => player.AutoPickBestFreighter);
+            trade.AddCheckbox(() => player.AutoBuildFreighters, title: GameText.AutoBuildFreighters, tooltip: GameText.AutoBuildFreightersTip);
             trade.AddCheckbox(() => player.AutoUpgradeFreighters, title: GameText.AutoUpgradeFreighters, tooltip: GameText.AutoUpgradeFreightersTip);
+            trade.AddCheckbox(() => player.AutoScrapIdleFreighters, title: GameText.AutoScrapIdleFreighters, tooltip: GameText.AutoScrapIdleFreightersTip);
             trade.AddCheckbox(() => Universe.UState.P.AllowPlayerInterTrade, title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.AllowPlayerInterTradeTip);
 
             // Freighter priority under a shortage - the label rides the dropdown to its right,

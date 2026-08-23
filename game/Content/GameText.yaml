@@ -16570,6 +16570,30 @@ NotificationAutoClearTip:
  Id: 7101
  ENG: "Automatically clears a notification after this many seconds. 0 = off. Pausing and event notifications are always kept."
  FRA: "Efface automatiquement une notification après ce nombre de secondes. 0 = désactivé. Les notifications qui mettent en pause ou demandent une décision sont toujours conservées."
+AutoBuildFreighters:
+ Id: 7102
+ ENG: "Auto-build Freighters"
+ FRA: "Construction auto des cargos"
+AutoBuildFreightersTip:
+ Id: 7103
+ ENG: "Automatically builds new freighters as trade demands, using the model picked here."
+ FRA: "Construit automatiquement de nouveaux cargos selon les besoins du commerce, avec le modèle choisi ici."
+AutoScrapIdleFreighters:
+ Id: 7104
+ ENG: "Auto-scrap Idle Freighters"
+ FRA: "Mise à la casse des cargos oisifs"
+AutoScrapIdleFreightersTip:
+ Id: 7105
+ ENG: "Automatically scraps freighters that stay idle for too long, to trim an oversized fleet."
+ FRA: "Met automatiquement à la casse les cargos restés inactifs trop longtemps, pour dégonfler une flotte surdimensionnée."
+FreighterModel:
+ Id: 7106
+ ENG: "Freighter Model"
+ FRA: "Modèle de cargo"
+FreighterModelTip:
+ Id: 7107
+ ENG: "The freighter model Auto-build and Auto-upgrade use. Checked = Auto Pick (the best available); uncheck to choose a specific model."
+ FRA: "Le modèle de cargo qu'utilisent Construction auto et Upgrade auto. Coché = Choix auto (le meilleur disponible) ; décochez pour choisir un modèle précis."
  UKR: "Ліміт цивільного бюджету досягнуто!"
  PTB: "Limite do Orçamento Civil Atingido!"
 BB_Tech_SubspatialDynamics_CounterEnemyPlanetInhibitionBonus_Bonus:
