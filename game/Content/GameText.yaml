@@ -9841,8 +9841,8 @@ ChooseAListOfPlanets:
  PTB: "Escolha uma lista de planetas que os cargueiros selecionados visitarão exclusivamente. São necessários pelo menos 2 planetas, e a lista pode conter planetas aliados para exportação. Clique com o botão esquerdo em um planeta para adicioná-lo; clique com o botão direito para removê-lo. Clique no botão novamente ou pressione ESC para voltar ao jogo"
 ManualTradeAllowSelectedFreighters:
  Id: 1945
- ENG: "Allow inter-empire trade (this cargo): let the selected freighters serve trade routes to other empires. Right click to turn it off. Needs 'Allow Empire Inter Trade' on in Automation. Note: Colonists cannot be traded between empires."
- FRA: "Autoriser le commerce inter-empires (ce cargo) : laisse les cargos sélectionnés desservir les routes vers d'autres empires. Clic droit pour désactiver. Nécessite « Allow Empire Inter Trade » activé dans Automation. Note : les Colons ne peuvent pas être échangés entre empires."
+ ENG: "Allow inter-empire trade (this cargo): let the selected freighters serve trade routes to other empires. Needs 'Allow Empire Inter Trade' on in Automation. Note: Colonists cannot be traded between empires."
+ FRA: "Autoriser le commerce inter-empires (ce cargo) : laisse les cargos sélectionnés desservir les routes vers d'autres empires. Nécessite « Allow Empire Inter Trade » activé dans Automation. Note : les Colons ne peuvent pas être échangés entre empires."
  RUS: "Ручная торговля: разрешите выбранным грузовым судам торговать с другими империями. Щелкните правой кнопкой мыши, чтобы выключить это. Примечание: Колонистов нельзя обменивать между империями."
  UKR: "Ручна торгівля: Дозволити вибраним вантажним кораблям торгувати з іншими імперіями. Клацніть правою кнопкою миші, щоб вимкнути цю опцію. Примітка: Колоністами не можна торгувати між імперіями."
  PTB: "Comércio Manual: permite que os cargueiros selecionados comercializem com outros impérios. Clique com o botão direito para desativar. Observação: colonos não podem ser negociados entre impérios."

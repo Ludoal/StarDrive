@@ -84,7 +84,7 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.Role),   Width = 80,  Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Title = "Fleet",  Width = 110, Sortable = true },
                 new UITable.Column { Title = "Patrol", Sortable = true }, // the fleet's patrol plan, if any
-                new UITable.Column { Title = Localizer.Token(GameText.Orders), Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.Orders), Width = 300, Sortable = true },
                 new UITable.Column { Title = "Actions", Width = 110, Align = TableAlign.Center }, // the order/refit/scrap icon lane
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_fighting_small"), Width = 60,
                                      Align = TableAlign.Number, Sortable = true, Tip = "Indicates Ship Strength; sortable" },
@@ -122,10 +122,10 @@ namespace Ship_Game
                 if (i != 7) // the icon lane keeps its fixed width
                     UITable.AutoSize(Table.Columns[i], i <= 5 ? Fonts.Arial12Bold : Fonts.Arial12, vals[i]);
             Table.Columns[2].Width += 34; // the ship icon rides ahead of the name
-            // capped: a fleet's longest name would size the lane for everyone, and every
-            // pixel it hoards is a pixel Orders has to fold away
+            // capped: a fleet's longest name would size the lane for everyone
             Table.Columns[2].Width = Math.Min(Table.Columns[2].Width, 210);
-            Table.Columns[6].Foldable = true;
+            // Orders keeps a fixed 300px width (not foldable): a live order that outgrows it is
+            // truncated with an ellipsis and its full text goes to the hover tooltip (see the row).
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
 
             // Proximity ascending is the factory default; the standing sort survives the

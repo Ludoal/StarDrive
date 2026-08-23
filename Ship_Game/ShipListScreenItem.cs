@@ -415,9 +415,10 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // a folded Orders cell explains itself: full sentence on hover when it was cut
+            // the Orders cell explains itself: full sentence on hover whenever a live order
+            // outgrows the fixed 300px column and gets truncated with an ellipsis
             UITable.Column orders = Screen.Table.Columns[6];
-            if (orders.Folded && StatusText.NotEmpty()
+            if (StatusText.NotEmpty()
                 && new Rectangle(orders.Rect.X, (int)Y, orders.Rect.Width, (int)Height).HitTest(input.CursorPosition)
                 && Fonts.Arial12.TextWidth(StatusText) > orders.Rect.Width - 2 * UITable.PadX)
             {
