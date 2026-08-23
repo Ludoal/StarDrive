@@ -2147,7 +2147,7 @@ Automation:
  PTB: "Automação"
 Autoexplore:
  Id: 305
- ENG: "Autoexplore"
+ ENG: "Auto-explore"
  FRA: "Auto-exploration"
  RUS: "Автоисследование"
  SPA: "Exploración automática"
@@ -2155,7 +2155,7 @@ Autoexplore:
  PTB: "Autoexplorar"
 Autocolonize:
  Id: 306
- ENG: "Autocolonize"
+ ENG: "Auto-colonize"
  FRA: "Auto-colonisation"
  RUS: "Автоколонизация"
  SPA: "Colonización automática"
@@ -2163,7 +2163,7 @@ Autocolonize:
  PTB: "Autocolonizar"
 Autobuild:
  Id: 307
- ENG: "Autobuild"
+ ENG: "Auto-build"
  FRA: "Auto-construction"
  RUS: "Автопостройка"
  SPA: "Construcción automática"
@@ -16926,7 +16926,7 @@ FlatIncomePerTurn:
  PTB: "Renda Fixa Por Turno"
 AutoBuildTerraformers:
  Id: 4385
- ENG: "Auto Terraform"
+ ENG: "Auto-terraform"
  FRA: "Terraformation auto"
  UKR: "Авто Терраформ"
  PTB: "Auto Terraformar"
@@ -17069,7 +17069,7 @@ CancelDeployResearchStationTip:
  PTB: "Cancela a missão de implantação em andamento da estação de pesquisa na órbita deste planeta."
 AutoBuildResearchStation:
  Id: 4409
- ENG: "Auto Build Research Stations"
+ ENG: "Auto-build Research Stations"
  FRA: "Construction auto des stations de recherche"
  UKR: "Автоматичні дослідн. станції"
  PTB: "Construir Estações de Pesquisa Automaticamente"
@@ -17412,7 +17412,7 @@ DesignIssueLowRefiningTimeNotGood:
  PTB: "Observe que, se você escolheu automatizar a seleção de Estações de Mineração, esta Estação não seria usada. Ela é ineficiente demais."
 AutoBuildMiningStation:
  Id: 4466
- ENG: "Auto Build Mining Stations"
+ ENG: "Auto-build Mining Stations"
  FRA: "Construction auto. des stations minières"
  UKR: "Автоматичне будівництво видобувних станцій"
  PTB: "Construir Estações de Mineração Automaticamente"
@@ -20084,7 +20084,7 @@ Assault:
  PTB: "Assalto"
 AutoResearch:
  Id: 6136
- ENG: "Auto Research"
+ ENG: "Auto-research"
  FRA: "Recherche automatique"
  RUS: "Авто наука"
  SPA: "Investigación automática"
@@ -20098,7 +20098,7 @@ ShipRepair:
  PTB: "Reparo da Nave por Segundo"
 AutoTaxes:
  Id: 6138
- ENG: "Auto Taxes"
+ ENG: "Auto-taxes"
  FRA: "Impôts automatiques"
  RUS: "Авто налоги"
  SPA: "Impuestos automáticos"
