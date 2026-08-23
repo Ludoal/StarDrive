@@ -477,10 +477,15 @@ namespace Ship_Game
                 {
                     // take over at the current auto allocation
                     var b = Planet.Budget;
-                    float total = b.TotalAlloc.LowerBound(0.1f);
-                    PlanetShares[0] = b.CivilianAlloc.LowerBound(0f) / total;
-                    PlanetShares[1] = b.GrdDefAlloc.LowerBound(0f) / total;
-                    PlanetShares[2] = b.SpcDefAlloc.LowerBound(0f) / total;
+                    // take the manual slider to the governor's current total spend; a fresh colony
+                    // with no allocation lands at 0 (the request). The share split needs a non-zero
+                    // divisor, so derive the ratios off a floored copy while the slider itself shows total.
+                    float total = b.TotalAlloc.LowerBound(0f);
+                    float shareBasis = b.TotalAlloc.LowerBound(0.1f);
+
+                    PlanetShares[0] = b.CivilianAlloc.LowerBound(0f) / shareBasis;
+                    PlanetShares[1] = b.GrdDefAlloc.LowerBound(0f) / shareBasis;
+                    PlanetShares[2] = b.SpcDefAlloc.LowerBound(0f) / shareBasis;
                     LinkingPlanetShares = true;
                     GovSpending.AbsoluteValue = total;
                     ShareCiv.RelativeValue = PlanetShares[0];
