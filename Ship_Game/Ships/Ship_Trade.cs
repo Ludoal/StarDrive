@@ -47,9 +47,8 @@ namespace Ship_Game.Ships
 
         public bool CanTransportGoodsType(Goods goods)
         {
-            if (!Loyalty.ManualTrade)
-                return true;
-
+            // Per-cargo restrictions always hold, auto-routed or not - a freighter is built with
+            // all three on (SBProduction), so this never blocks trade unless the player narrows it.
             switch (goods)
             {
                 default:

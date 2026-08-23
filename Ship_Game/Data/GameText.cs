@@ -7037,6 +7037,8 @@ namespace Ship_Game
         FreighterModel = 7106,
         /// <summary>The freighter model Auto-build and Auto-upgrade use. Checked = Auto Pick (the best available); uncheck to choose a specific model.</summary>
         FreighterModelTip = 7107,
+        /// <summary>Inhibited when Inter Empire Trade is not allowed (enable it in Automation).</summary>
+        InterTradeInhibited = 7108,
         /// <summary>Dearest SING friends, We are delighted to see your empire's</summary>
         EncCorsairs000_Msg0 = -11,
         /// <summary>Agree to pay this upstanding gentleman.</summary>

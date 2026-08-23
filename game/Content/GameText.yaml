@@ -9834,15 +9834,15 @@ AssignPlanetsToTradeRoute:
  PTB: "Atribuir Planetas à rota Comercial (Esc para sair)"
 ChooseAListOfPlanets:
  Id: 1944
- ENG: "Choose a list of planets that selected freighters will visit exclusively. At least 2 planets are needed, and may contain allied planets for exporting to. Left click a planet to add it, Right click to remove it. Click the button again or press ESC to return to play"
- FRA: "Choisissez une liste de planètes que les cargos sélectionnés visiteront exclusivement. Au moins 2 planètes sont nécessaires, et peuvent inclure des planètes alliées pour l'exportation. Clic gauche sur une planète pour l'ajouter, clic droit pour la retirer. Cliquez à nouveau sur le bouton ou appuyez sur Échap pour revenir au jeu"
+ ENG: "Trade routes (this cargo): choose a list of planets that selected freighters will visit exclusively. At least 2 planets are needed, and may contain allied planets for exporting to. Left click a planet to add it, Right click to remove it. Click the button again or press ESC to return to play"
+ FRA: "Routes commerciales (ce cargo) : choisissez une liste de planètes que les cargos sélectionnés visiteront exclusivement. Au moins 2 planètes sont nécessaires, et peuvent inclure des planètes alliées pour l'exportation. Clic gauche sur une planète pour l'ajouter, clic droit pour la retirer. Cliquez à nouveau sur le bouton ou appuyez sur Échap pour revenir au jeu"
  RUS: "Выберите список планет, которые будут посещать только выбранные грузовые корабли. Требуются как минимум 2 планеты,также и они могут экспортировать планетам-союзников . Щелкните левой кнопкой мыши на планету, чтобы добавить ее, щелкните правой кнопкой мыши, чтобы удалить ее. Нажмите кнопку еще раз или нажмите ESC, чтобы вернуться в игру."
  UKR: "Виберіть список планет, які будуть відвідувати виключно вибрані вантажні кораблі. Потрібно щонайменше 2 планети, і вони можуть містити планети-союзники для експорту. Клацніть лівою кнопкою миші на планеті, щоб додати її, правою - щоб видалити. Натисніть кнопку ще раз або натисніть ESC, щоб повернутися до гри"
  PTB: "Escolha uma lista de planetas que os cargueiros selecionados visitarão exclusivamente. São necessários pelo menos 2 planetas, e a lista pode conter planetas aliados para exportação. Clique com o botão esquerdo em um planeta para adicioná-lo; clique com o botão direito para removê-lo. Clique no botão novamente ou pressione ESC para voltar ao jogo"
 ManualTradeAllowSelectedFreighters:
  Id: 1945
- ENG: "Manual Trade: Allow selected freighters to trade with other empires. Right Click to turn it off. Note: Colonists cannot be traded between empires."
- FRA: "Commerce manuel : autorise les cargos sélectionnés à commercer avec d'autres empires. Clic droit pour désactiver. Note : les Colons ne peuvent pas être échangés entre empires."
+ ENG: "Allow inter-empire trade (this cargo): let the selected freighters serve trade routes to other empires. Right click to turn it off. Needs 'Allow Empire Inter Trade' on in Automation. Note: Colonists cannot be traded between empires."
+ FRA: "Autoriser le commerce inter-empires (ce cargo) : laisse les cargos sélectionnés desservir les routes vers d'autres empires. Clic droit pour désactiver. Nécessite « Allow Empire Inter Trade » activé dans Automation. Note : les Colons ne peuvent pas être échangés entre empires."
  RUS: "Ручная торговля: разрешите выбранным грузовым судам торговать с другими империями. Щелкните правой кнопкой мыши, чтобы выключить это. Примечание: Колонистов нельзя обменивать между империями."
  UKR: "Ручна торгівля: Дозволити вибраним вантажним кораблям торгувати з іншими імперіями. Клацніть правою кнопкою миші, щоб вимкнути цю опцію. Примітка: Колоністами не можна торгувати між імперіями."
  PTB: "Comércio Manual: permite que os cargueiros selecionados comercializem com outros impérios. Clique com o botão direito para desativar. Observação: colonos não podem ser negociados entre impérios."
@@ -16594,6 +16594,10 @@ FreighterModelTip:
  Id: 7107
  ENG: "The freighter model Auto-build and Auto-upgrade use. Checked = Auto Pick (the best available); uncheck to choose a specific model."
  FRA: "Le modèle de cargo qu'utilisent Construction auto et Upgrade auto. Coché = Choix auto (le meilleur disponible) ; décochez pour choisir un modèle précis."
+InterTradeInhibited:
+ Id: 7108
+ ENG: "Inhibited when Inter Empire Trade is not allowed (enable it in Automation)."
+ FRA: "Inhibé quand le commerce inter-empires n'est pas autorisé (activez-le dans Automation)."
  UKR: "Ліміт цивільного бюджету досягнуто!"
  PTB: "Limite do Orçamento Civil Atingido!"
 BB_Tech_SubspatialDynamics_CounterEnemyPlanetInhibitionBonus_Bonus:

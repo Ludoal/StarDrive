@@ -26,6 +26,7 @@ namespace Ship_Game
         public Rectangle ClickRect;
         public bool SimpleToggle;
         public LocalizedText Tooltip;
+        public Func<LocalizedText> DynamicTooltip; // when set, overrides Tooltip (e.g. a state-dependent reason)
         public Array<Ship> ShipList = new Array<Ship>();
         public bool Active;
         readonly Fleet Fleet;
@@ -148,7 +149,7 @@ namespace Ship_Game
                 return Hovering;
             }
 
-            ToolTip.CreateTooltip(Tooltip);
+            ToolTip.CreateTooltip(DynamicTooltip != null ? DynamicTooltip() : Tooltip);
             if (SimpleToggle && (input.InGameSelect || input.RightMouseClick))
             {
                 GameAudio.AcceptClick();

@@ -502,7 +502,11 @@ namespace Ship_Game
                 Orders.Add(transportColonists);
                 OrdersButton allowInterEmpireTrade = new(ShipList, OrderType.AllowInterTrade, GameText.ManualTradeAllowSelectedFreighters)
                 {
-                    SimpleToggle = true
+                    SimpleToggle = true,
+                    // The tooltip explains the inhibition while the empire option is off.
+                    DynamicTooltip = () => Screen.UState.P.AllowPlayerInterTrade
+                                           ? GameText.ManualTradeAllowSelectedFreighters
+                                           : GameText.InterTradeInhibited
                 };
                 Orders.Add(allowInterEmpireTrade);
             }

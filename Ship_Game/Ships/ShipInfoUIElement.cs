@@ -687,7 +687,13 @@ namespace Ship_Game.Ships
                 Orders.Add(transportColonists);
                 var allowInterEmpireTrade = new OrdersButton(s, OrderType.AllowInterTrade, GameText.ManualTradeAllowSelectedFreighters)
                 {
-                    ValueToModify = new(() => s.AllowInterEmpireTrade)
+                    // Shows OFF while the empire option is off (the per-cargo value is kept and
+                    // resumes when it is re-enabled); the tooltip then explains why.
+                    ValueToModify = new(() => s.AllowInterEmpireTrade && Universe.UState.P.AllowPlayerInterTrade,
+                                        v => s.AllowInterEmpireTrade = v),
+                    DynamicTooltip = () => Universe.UState.P.AllowPlayerInterTrade
+                                           ? GameText.ManualTradeAllowSelectedFreighters
+                                           : GameText.InterTradeInhibited
                 };
                 Orders.Add(allowInterEmpireTrade);
                 var tradeRoutes = new OrdersButton(s, OrderType.DefineTradeRoutes, GameText.ChooseAListOfPlanets)
