@@ -16530,6 +16530,10 @@ BudgetLimitReached:
  Id: 4339
  ENG: "Civilian Budget Limit Reached!"
  FRA: "Limite du budget civil atteinte !"
+SpendingOverManualBudget:
+ Id: 7092
+ ENG: "Spending Over Manual Budget"
+ FRA: "Dépense au-dessus du budget manuel"
  UKR: "Ліміт цивільного бюджету досягнуто!"
  PTB: "Limite do Orçamento Civil Atingido!"
 BB_Tech_SubspatialDynamics_CounterEnemyPlanetInhibitionBonus_Bonus:

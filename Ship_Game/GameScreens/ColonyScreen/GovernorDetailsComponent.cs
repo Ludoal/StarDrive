@@ -599,7 +599,11 @@ namespace Ship_Game
                 Quarantine.Visible         = GovernorTabView && Planet.OwnerIsPlayer;
                 Prioritized.Visible        = Quarantine.Visible && Planet.HasSpacePort;
                 BudgetLimitReached.Visible = ColonyTypeList.Visible && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub && BudgetLimitWarningVisible;
-                BudgetLimitReached.Color   = Screen.CurrentFlashColorRed;
+                // Manual budget: overspending is the player's own choice, so caution it in yellow
+                // rather than the red "limit reached" alarm the auto governor raises.
+                bool manualBudget          = Planet.ManualCivilianBudget > 0;
+                BudgetLimitReached.Text    = manualBudget ? GameText.SpendingOverManualBudget : GameText.BudgetLimitReached;
+                BudgetLimitReached.Color   = manualBudget ? Screen.ApplyCurrentAlphaToColor(Color.Yellow) : Screen.CurrentFlashColorRed;
                 BuildCapital.Visible = true;
                 BuildCapital.Visible       = GovernorTabView 
                                              && Planet.OwnerIsPlayer 
