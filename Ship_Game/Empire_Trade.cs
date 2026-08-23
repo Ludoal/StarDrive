@@ -16,13 +16,15 @@ namespace Ship_Game
     // When freighters run short, the dispatch order decides who is served first.
     // Auto keeps the vanilla population-weighted dice; the other two let the player
     // pin the order. Auto MUST stay value 0 so existing saves load as Auto.
-    public enum FreighterPriority { Auto, ProductionFirst, ColonistsFirst }
+    // (Named CargoPriority to avoid Ship_Game.AI.FreighterPriority, an unrelated
+    // freighter-sizing status enum.)
+    public enum CargoPriority { Auto, ProductionFirst, ColonistsFirst }
 
     public partial class Empire
     {
         [StarData] public bool AutoFreighters;
         [StarData] public bool AutoPickBestFreighter;
-        [StarData] public FreighterPriority FreighterPriority;
+        [StarData] public CargoPriority CargoPriority;
         [StarData] public float FastVsBigFreighterRatio { get; private set; } = 0.5f;
         public float TradeMoneyAddedThisTurn { get; private set; }
         public float TotalTradeMoneyAddedThisTurn { get; private set; }
@@ -101,8 +103,8 @@ namespace Ship_Game
                 // can pin it (Automation > Trade); Auto — and every AI empire — keeps the
                 // vanilla population-weighted dice (colonists win more often early game).
                 bool productionFirst;
-                if (isPlayer && FreighterPriority != FreighterPriority.Auto)
-                    productionFirst = FreighterPriority == FreighterPriority.ProductionFirst;
+                if (isPlayer && CargoPriority != CargoPriority.Auto)
+                    productionFirst = CargoPriority == CargoPriority.ProductionFirst;
                 else
                 {
                     float popRatio = TotalPopBillion / MaxPopBillion;

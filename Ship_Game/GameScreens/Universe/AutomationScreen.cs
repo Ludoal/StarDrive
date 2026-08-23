@@ -25,7 +25,7 @@ namespace Ship_Game
 
         DropOptions<int> FreighterDropDown, ColonyShipDropDown, ScoutDropDown,
                          ConstructorDropDown, ResearchStationDropDown, MiningStationDropDown;
-        DropOptions<FreighterPriority> FreighterPriorityDropDown;
+        DropOptions<CargoPriority> FreighterPriorityDropDown;
         bool ResearchStationsEnabled, MiningOpsEnabled;
 
         // fixed box geometry - the boxes own their sizes, the columns just stack them.
@@ -100,12 +100,12 @@ namespace Ship_Game
             // Freighter priority under a shortage. The notice rides the label (Policies phase 0),
             // spelling out that it only bites when cargos are scarce.
             trade.Add(new UILabel(GameText.FreighterPriority, Fonts.Arial12Bold, Color.White)).Tooltip = GameText.FreighterPriorityTip;
-            FreighterPriorityDropDown = trade.Add(new DropOptions<FreighterPriority>((int)(BoxW2 - 32), 18));
-            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityAuto, FreighterPriority.Auto);
-            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityProductionFirst, FreighterPriority.ProductionFirst);
-            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityColonistsFirst, FreighterPriority.ColonistsFirst);
-            FreighterPriorityDropDown.ActiveValue = player.FreighterPriority;
-            FreighterPriorityDropDown.OnValueChange = v => player.FreighterPriority = v;
+            FreighterPriorityDropDown = trade.Add(new DropOptions<CargoPriority>((int)(BoxW2 - 32), 18));
+            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityAuto, CargoPriority.Auto);
+            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityProductionFirst, CargoPriority.ProductionFirst);
+            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityColonistsFirst, CargoPriority.ColonistsFirst);
+            FreighterPriorityDropDown.ActiveValue = player.CargoPriority;
+            FreighterPriorityDropDown.OnValueChange = v => player.CargoPriority = v;
 
             UIList construction = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap, BoxW2, ConstructionBoxH), "Construction");
             ConstructorDropDown = construction.Add(new CheckedDropdown())
