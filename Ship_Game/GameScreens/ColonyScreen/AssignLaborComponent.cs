@@ -15,6 +15,7 @@ namespace Ship_Game
         Submenu Title;
         bool UseTitle;
         bool ShowMaxValue; // show the 100%-labor potential beside each current value
+        float MaxSliderRatio; // slider width when ShowMaxValue is on (Colony and Colonies differ)
 
         // Ludoal fork (maintainer bench 299): the title row can carry EXTRA TABS - the
         // Terraforming tab migrated here from the facilities block, whose row was folding
@@ -23,11 +24,13 @@ namespace Ship_Game
         public bool SlidersVisible { get => Sliders.Visible; set => Sliders.Visible = value; }
 
         public AssignLaborComponent(Planet p, RectF rect, bool useTitleFrame,
-                                    LocalizedText[] titleTabs = null, bool showMaxValue = false) : base(rect)
+                                    LocalizedText[] titleTabs = null, bool showMaxValue = false,
+                                    float maxSliderRatio = 0.50f) : base(rect)
         {
             Planet = p;
             UseTitle = useTitleFrame;
             ShowMaxValue = showMaxValue;
+            MaxSliderRatio = maxSliderRatio;
 
             Sliders = Add(new ColonySliderGroup(p, SlidersHousing, drawIcons: useTitleFrame, showMaxValue: showMaxValue)
             {
@@ -54,8 +57,9 @@ namespace Ship_Game
                 int sliderX = (int)X + (UseTitle ? 60 : 10);
                 int sliderY = (int)Y + 25;
                 // one value column needs ~45% width; showing the max adds a second decimal
-                // column, so the slider yields more room when ShowMaxValue is on.
-                int sliderW = (Width * (ShowMaxValue ? 0.50f : 0.55f)).RoundTo10();
+                // column, so the slider yields more room when ShowMaxValue is on. Colony and
+                // Colonies pass different ratios - Colonies is tighter so its Supply column fits.
+                int sliderW = (Width * (ShowMaxValue ? MaxSliderRatio : 0.55f)).RoundTo10();
                 int sliderH = (int)Height - 25;
                 return new Rectangle(sliderX, sliderY, sliderW, sliderH);
             }
