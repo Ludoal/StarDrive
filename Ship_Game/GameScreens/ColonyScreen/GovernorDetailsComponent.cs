@@ -94,8 +94,8 @@ namespace Ship_Game
         bool GovernorOn      => Planet.GovernorOn;
         bool GovernorOff     => Planet.GovernorOff;
         bool GovernorTabView => Tabs.SelectedIndex == 0;
-        bool DefenseTabView  => Tabs.SelectedIndex == 1;
-        bool BudgetTabView   => Tabs.SelectedIndex == 2;
+        bool BudgetTabView   => Tabs.SelectedIndex == 1;
+        bool DefenseTabView  => Tabs.SelectedIndex == 2;
         bool BlueprintsTabView => Tabs.SelectedIndex == 3;
 
         public int CurrentTabIndex => Tabs.SelectedIndex;
@@ -276,7 +276,7 @@ namespace Ship_Game
             {
                 // "BP": BLUEPRINT in full cannot fit at the width the 900p centre column
                 // allows - the short label carries a hover tooltip instead (see HandleInput).
-                GameText.Governor, GameText.Defense2, GameText.Budget, "BP"
+                GameText.Governor, GameText.Budget, GameText.Defense2, "BP"
             }));
 
             if (selectedIndex < Tabs.NumTabs)
@@ -714,8 +714,8 @@ namespace Ship_Game
             switch (Tabs.SelectedIndex)
             {
                 case 0: DrawGovernorTab(batch);   break;
-                case 1: DrawTroopsTab(batch);     break;
-                case 2: DrawBudgetsTab(batch);    break;
+                case 1: DrawBudgetsTab(batch);    break;
+                case 2: DrawTroopsTab(batch);     break;
                 case 3: DrawBlueprintsTab(batch); break;
             }
         }
