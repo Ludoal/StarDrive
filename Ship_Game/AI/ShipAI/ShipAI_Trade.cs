@@ -96,7 +96,7 @@ namespace Ship_Game.AI
             Owner.Loyalty.IncreaseFastVsBigFreighterRatio(freighterPriority);
             Planet toOrbit = Owner.Loyalty.FindNearestRallyPoint(Owner.Position);
             CancelTradePlan(toOrbit);
-            Owner.Loyalty.CheckForRefitFreighter(Owner, 10);
+            Owner.Loyalty.CheckForRefitFreighter(Owner, 20);
         }
     }
 }

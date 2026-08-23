@@ -526,10 +526,11 @@ namespace Ship_Game
         // FB - Refit some idle freighters to better ones, if unlocked
         public void TriggerFreightersRefit()
         {
-            // Auto-upgrade modernises idle freighters. It runs on its own toggle (the AI always,
-            // the player when Auto-upgrade is on) - a freighter is only ever auto-routed, so this
-            // touches cargos that are idle or have just finished a rotation, never a live order.
-            if (!UpgradeFreightersActive || TotalFreighters / (float)FreighterCap <= 0.75f)
+            // Auto-upgrade modernises idle freighters. The AI keeps its original fleet-fill cap
+            // (it manages its own war economy); the player, who ticked Auto-upgrade on purpose,
+            // has no cap - a chosen upgrade happens whenever a better model exists, just spread out
+            // by the 20% dice per idle freighter so the whole fleet isn't refitted at once.
+            if (!UpgradeFreightersActive || !isPlayer && TotalFreighters / (float)FreighterCap <= 0.75f)
                 return;
 
             IShipDesign betterFreighter = ShipBuilder.PickFreighter(this);
@@ -540,14 +541,15 @@ namespace Ship_Game
             for (int i = 0; i < ships.Length; i++)
             {
                 Ship idleFreighter = ships[i];
-                CheckForRefitFreighter(idleFreighter, 25, betterFreighter);
+                CheckForRefitFreighter(idleFreighter, 20, betterFreighter);
             }
         }
 
         // Percentage to check if there is better suited freighter model available
         public void CheckForRefitFreighter(Ship freighter, int percentage, IShipDesign betterFreighter = null)
         {
-            if (UpgradeFreightersActive && Random.RollDice(percentage) && TotalFreighters / (float)FreighterCap > 0.5f)
+            if (UpgradeFreightersActive && Random.RollDice(percentage)
+                && (isPlayer || TotalFreighters / (float)FreighterCap > 0.5f)) // AI keeps its fleet-fill cap
             {
                 if (betterFreighter == null)
                     betterFreighter = ShipBuilder.PickFreighter(this);
