@@ -25,6 +25,7 @@ namespace Ship_Game
 
         DropOptions<int> FreighterDropDown, ColonyShipDropDown, ScoutDropDown,
                          ConstructorDropDown, ResearchStationDropDown, MiningStationDropDown;
+        DropOptions<FreighterPriority> FreighterPriorityDropDown;
         bool ResearchStationsEnabled, MiningOpsEnabled;
 
         // fixed box geometry - the boxes own their sizes, the columns just stack them.
@@ -33,7 +34,7 @@ namespace Ship_Game
         // BoxW2: the dropdown boxes are WIDER instead of taller - label room + picker.
         const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
         const float EmpireBoxH = 160f, ColonizationBoxH = 130f, ConstructionBoxH = 139f,
-                    TradeBoxH = 100f, NotificationsBoxH = 230f, PriorityBoxH = 330f;
+                    TradeBoxH = 126f, NotificationsBoxH = 230f, PriorityBoxH = 330f;
 
         public AutomationScreen(UniverseScreen u) : base(u, toPause: u)
         {
@@ -95,6 +96,16 @@ namespace Ship_Game
                 .Create(() => player.AutoFreighters, title: GameText.AutomaticTrade, tooltip: GameText.YourEmpireWillAutomaticallyManage2,
                         autoPick: () => player.AutoPickBestFreighter);
             trade.AddCheckbox(() => Universe.UState.P.AllowPlayerInterTrade, title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.AllowPlayerInterTradeTip);
+
+            // Freighter priority under a shortage. The notice rides the label (Policies phase 0),
+            // spelling out that it only bites when cargos are scarce.
+            trade.Add(new UILabel(GameText.FreighterPriority, Fonts.Arial12Bold, Color.White)).Tooltip = GameText.FreighterPriorityTip;
+            FreighterPriorityDropDown = trade.Add(new DropOptions<FreighterPriority>((int)(BoxW2 - 32), 18));
+            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityAuto, FreighterPriority.Auto);
+            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityProductionFirst, FreighterPriority.ProductionFirst);
+            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityColonistsFirst, FreighterPriority.ColonistsFirst);
+            FreighterPriorityDropDown.ActiveValue = player.FreighterPriority;
+            FreighterPriorityDropDown.OnValueChange = v => player.FreighterPriority = v;
 
             UIList construction = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap, BoxW2, ConstructionBoxH), "Construction");
             ConstructorDropDown = construction.Add(new CheckedDropdown())

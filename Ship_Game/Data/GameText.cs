@@ -7007,6 +7007,16 @@ namespace Ship_Game
         TT_RepairRate = 7091,
         /// <summary>Spending Over Manual Budget</summary>
         SpendingOverManualBudget = 7092,
+        /// <summary>Freighter Priority</summary>
+        FreighterPriority = 7093,
+        /// <summary>Auto</summary>
+        FreighterPriorityAuto = 7094,
+        /// <summary>Production First</summary>
+        FreighterPriorityProductionFirst = 7095,
+        /// <summary>Colonists First</summary>
+        FreighterPriorityColonistsFirst = 7096,
+        /// <summary>When freighters run short, which cargo is served first. Only affects a shortage; abundant freighters serve everything.</summary>
+        FreighterPriorityTip = 7097,
         /// <summary>Dearest SING friends, We are delighted to see your empire's</summary>
         EncCorsairs000_Msg0 = -11,
         /// <summary>Agree to pay this upstanding gentleman.</summary>

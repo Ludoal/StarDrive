@@ -12,10 +12,17 @@ using Ship_Game.Data.Serialization;
 namespace Ship_Game
 {
     using static HelperFunctions;
+
+    // When freighters run short, the dispatch order decides who is served first.
+    // Auto keeps the vanilla population-weighted dice; the other two let the player
+    // pin the order. Auto MUST stay value 0 so existing saves load as Auto.
+    public enum FreighterPriority { Auto, ProductionFirst, ColonistsFirst }
+
     public partial class Empire
     {
         [StarData] public bool AutoFreighters;
         [StarData] public bool AutoPickBestFreighter;
+        [StarData] public FreighterPriority FreighterPriority;
         [StarData] public float FastVsBigFreighterRatio { get; private set; } = 0.5f;
         public float TradeMoneyAddedThisTurn { get; private set; }
         public float TotalTradeMoneyAddedThisTurn { get; private set; }
@@ -90,9 +97,20 @@ namespace Ship_Game
                 if (NonCybernetic)
                     DispatchOrBuildFreighters(Goods.Food, OwnedPlanets, false, ref tradeState);
 
-                float popRatio = TotalPopBillion / MaxPopBillion;
-                float productionFirstChance = popRatio * (NonCybernetic ? 200 : 300);
-                if (Random.RollDice(productionFirstChance))
+                // Under a freighter shortage the dispatch order is the priority. The player
+                // can pin it (Automation > Trade); Auto — and every AI empire — keeps the
+                // vanilla population-weighted dice (colonists win more often early game).
+                bool productionFirst;
+                if (isPlayer && FreighterPriority != FreighterPriority.Auto)
+                    productionFirst = FreighterPriority == FreighterPriority.ProductionFirst;
+                else
+                {
+                    float popRatio = TotalPopBillion / MaxPopBillion;
+                    float productionFirstChance = popRatio * (NonCybernetic ? 200 : 300);
+                    productionFirst = Random.RollDice(productionFirstChance);
+                }
+
+                if (productionFirst)
                 {
                     DispatchOrBuildFreighters(Goods.Production, OwnedPlanets, false, ref tradeState);
                     DispatchOrBuildFreighters(Goods.Colonists, OwnedPlanets, false, ref tradeState);

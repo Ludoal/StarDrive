@@ -16534,6 +16534,26 @@ SpendingOverManualBudget:
  Id: 7092
  ENG: "Spending Over Manual Budget"
  FRA: "Dépense au-dessus du budget manuel"
+FreighterPriority:
+ Id: 7093
+ ENG: "Freighter Priority"
+ FRA: "Priorité des cargos"
+FreighterPriorityAuto:
+ Id: 7094
+ ENG: "Auto"
+ FRA: "Auto"
+FreighterPriorityProductionFirst:
+ Id: 7095
+ ENG: "Production First"
+ FRA: "Production d'abord"
+FreighterPriorityColonistsFirst:
+ Id: 7096
+ ENG: "Colonists First"
+ FRA: "Colons d'abord"
+FreighterPriorityTip:
+ Id: 7097
+ ENG: "When freighters run short, which cargo is served first. Only affects a shortage; abundant freighters serve everything."
+ FRA: "En pénurie de cargos, quelle marchandise est servie en premier. N'agit qu'en pénurie ; en abondance, tout est servi."
  UKR: "Ліміт цивільного бюджету досягнуто!"
  PTB: "Limite do Orçamento Civil Atingido!"
 BB_Tech_SubspatialDynamics_CounterEnemyPlanetInhibitionBonus_Bonus:
