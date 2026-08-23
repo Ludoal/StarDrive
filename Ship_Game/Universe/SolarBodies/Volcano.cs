@@ -248,8 +248,12 @@ namespace Ship_Game.Universe.SolarBodies
                     // Lava solidifies into a special building 
                     Building b = ResourceManager.CreateBuilding(planet, planet.Random.Item(potentials));
                     tile.PlaceBuilding(b, planet);
-                    if (planet.System.HasPlanetsOwnedBy(planet.Universe.Player) || planet.System.ShipList.
-                            Any(s => s.Loyalty.isPlayer && s.Position.InRadius(planet.Position, s.SensorRange)))
+                    // Only notify about a planet the player has actually explored: presence
+                    // elsewhere in the system (an owned neighbour, a passing scout) is not the
+                    // same as having seen this world. "Not known = no notification."
+                    if (planet.IsExploredBy(planet.Universe.Player)
+                        && (planet.System.HasPlanetsOwnedBy(planet.Universe.Player) || planet.System.ShipList.
+                            Any(s => s.Loyalty.isPlayer && s.Position.InRadius(planet.Position, s.SensorRange))))
                     {
                         string message = $"{Localizer.Token(GameText.ALavaPoolHasSolidified)}" +
                                          $"\n{Localizer.Token(GameText.BuildingCreatedFromLava)}" +
