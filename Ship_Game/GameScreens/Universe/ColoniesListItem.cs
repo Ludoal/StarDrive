@@ -46,10 +46,6 @@ namespace Ship_Game
         Rectangle FoodStorageIcon;
         Rectangle ProdStorageIcon;
         Rectangle PopStorageIcon;
-        int NumShipsInQueue;
-        int NumBuildingsInQueue;
-        int NumTroopsInQueue;
-        int TotalProdNeeded;
 
         bool ApplyProdHover;
         bool CancelProdHover;
@@ -161,7 +157,6 @@ namespace Ship_Game
             int iconY = QueueRect.Y + QueueRect.Height / 2 - 30 + Fonts.Arial12Bold.LineSpacing + 3;
             ApplyProductionRect = new Rectangle(QueueRect.X + QueueRect.Width - 50, iconY, ResourceManager.Texture("NewUI/icon_queue_rushconstruction").Width, ResourceManager.Texture("NewUI/icon_queue_rushconstruction").Height);
             CancelProductionRect = new Rectangle(QueueRect.X + QueueRect.Width - 20, iconY, ResourceManager.Texture("NewUI/icon_queue_delete").Width, ResourceManager.Texture("NewUI/icon_queue_delete").Height);
-            UpdateQueueItemsList();
 
             base.PerformLayout();
         }
@@ -221,7 +216,6 @@ namespace Ship_Game
                         if (hasValidConstruction && P.Construction.RushProduction(0, maxAmount, rushButton: true))
                         {
                             GameAudio.AcceptClick();
-                            UpdateQueueItemsList();
                         }
                         else
                         {
@@ -390,27 +384,34 @@ namespace Ship_Game
                 qi.DrawAt(P.Universe, batch, new Vector2(QueueRect.X + 10, QueueRect.Y + QueueRect.Height / 2 - 30));
                 batch.Draw((ApplyProdHover ? ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover1") : ResourceManager.Texture("NewUI/icon_queue_rushconstruction")), ApplyProductionRect, Color.White);
                 batch.Draw((CancelProdHover ? ResourceManager.Texture("NewUI/icon_queue_delete_hover1") : ResourceManager.Texture("NewUI/icon_queue_delete")), CancelProductionRect, Color.Red); // destruction reads red
-                DrawQueueStats(batch, queue.Length);
+                DrawQueueStats(batch, queue);
             }
         }
 
-        void DrawQueueStats(SpriteBatch batch, int queueCount)
+        void DrawQueueStats(SpriteBatch batch, QueueItem[] queue)
         {
-            if (queueCount < 2)
+            if (queue.Length < 2)
                 return;
 
-            string stats = $"Queue ({queueCount}):";
-            if (NumShipsInQueue > 0)
-                stats = $"{stats} ships ({NumShipsInQueue}),";
+            // Live: read the queue each frame so the summary shrinks as items build, instead of
+            // freezing at the last tab-rebuild or rush-click.
+            int ships     = queue.Count(q => q.isShip);
+            int buildings = queue.Count(q => q.isBuilding);
+            int troops    = queue.Count(q => q.isTroop);
+            int totalProd = (int)queue.Sum(q => q.ProductionNeeded);
 
-            if (NumBuildingsInQueue > 0)
-                stats = $"{stats} buildings ({NumBuildingsInQueue}),";
+            string stats = $"Queue ({queue.Length}):";
+            if (ships > 0)
+                stats = $"{stats} ships ({ships}),";
 
-            if (NumTroopsInQueue > 0)
-                stats = $"{stats} Troops ({NumTroopsInQueue}),";
+            if (buildings > 0)
+                stats = $"{stats} buildings ({buildings}),";
+
+            if (troops > 0)
+                stats = $"{stats} Troops ({troops}),";
 
             stats   = stats.TrimEnd(',');
-            stats   = $"{stats}. Total: {TotalProdNeeded}";
+            stats   = $"{stats}. Total: {totalProd}";
             var pos = new Vector2(QueueRect.X + 10, QueueRect.Y + QueueRect.Height / 2 + 15);
 
             Graphics.Font font = Fonts.Arial12;
@@ -468,17 +469,5 @@ namespace Ship_Game
             }
         }
 
-        void UpdateQueueItemsList()
-        {
-            // Snapshot once under lock; the live queue is mutated on the sim thread.
-            QueueItem[] queue = P.ConstructionQueueSnapshot;
-            if (queue.Length < 2)
-                return;
-
-            NumShipsInQueue     = queue.Count(q => q.isShip);
-            NumBuildingsInQueue = queue.Count(q => q.isBuilding);
-            NumTroopsInQueue    = queue.Count(q => q.isTroop);
-            TotalProdNeeded     = (int)queue.Sum(q => q.ProductionNeeded);
-        }
     }
 }

@@ -82,6 +82,7 @@ namespace Ship_Game
             UITable.Column[] cols = table.Columns;
             int y = (int)Y, h = (int)Height;
             PositionWidgets(cols, y, h);
+            StatusText = GetStatusText(Ship); // live: the order changes without a tab rebuild
 
             if (Selected)
                 batch.FillRectangle(new Rectangle(table.TableRect.X, y, table.TableRect.Width, h), Color.DarkGreen);
