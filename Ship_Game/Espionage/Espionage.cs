@@ -1,6 +1,7 @@
 ﻿using SDGraphics;
 using SDUtils;
 using Ship_Game.Data.Serialization;
+using Ship_Game.Gameplay;
 using System;
 
 namespace Ship_Game
@@ -169,7 +170,7 @@ namespace Ship_Game
 
         int CalcRemainingTurnsForOps(InfiltrationOpsType type)
         {
-            if (Weight == 0 || GetOpsLevel(type) > LimitLevel)
+            if (EffectiveWeight == 0 || GetOpsLevel(type) > LimitLevel)
                 return -1;
 
             float progressPerTurn = 0;
@@ -278,7 +279,7 @@ namespace Ship_Game
                 return 0;
 
             return espionagePoints
-                   * (Weight / totalWeight.LowerBound(1))
+                   * (EffectiveWeight / totalWeight.LowerBound(1))
                    * (Them.TotalPopBillion / Owner.TotalPopBillion.LowerBound(0.1f))
                    * (1 - Them.EspionageDefenseRatio*0.75f)
                    * activeMissionRatio;
@@ -294,7 +295,7 @@ namespace Ship_Game
             LimitLevel = value;
         }
 
-        public int ActualWeight => AtLimitLevel && !HasOperations ? 0 : Weight;
+        public int ActualWeight => AtLimitLevel && !HasOperations ? 0 : EffectiveWeight;
 
         public int LevelCost(byte level)
         {
@@ -321,7 +322,13 @@ namespace Ship_Game
             return monetLeeched;
         }
 
-        public int GrossWeight => Weight;
+        // An un-met faction is worth zero espionage: the stored weight (1 by default) only
+        // takes effect once the relation is Known, i.e. on first contact. This keeps infiltration
+        // from progressing — and thus from notifying — about a faction the player hasn't met.
+        bool KnownToUs => Owner.GetRelations(Them, out Relationship rel) && rel.Known;
+        int EffectiveWeight => KnownToUs ? Weight : 0;
+
+        public int GrossWeight => EffectiveWeight;
         public int NextLevelCost => LevelCost((byte)(Level+1));
 
         public bool CanViewPersonality   => Level >= 1;

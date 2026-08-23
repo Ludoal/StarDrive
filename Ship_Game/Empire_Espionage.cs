@@ -56,11 +56,11 @@ namespace Ship_Game
 
         public int CalcTotalEspionageWeight(bool grossWeight = false)
         {
-            // Match the progression gate: an un-met relation allocates no espionage, so
-            // its default weight must not inflate the shared total either.
-            return !grossWeight ? Universe.ActiveMajorEmpires.Filter(e => e != this && GetRelations(e).Known)
+            // An un-met relation weighs 0 (Espionage.EffectiveWeight), so it drops out of the
+            // total on its own — no Known filter needed here.
+            return !grossWeight ? Universe.ActiveMajorEmpires.Filter(e => e != this)
                                     .Sum(e => GetRelations(e).Espionage.ActualWeight) + EspionageDefenseWeight
-                                : Universe.ActiveMajorEmpires.Filter(e => e != this && GetRelations(e).Known)
+                                : Universe.ActiveMajorEmpires.Filter(e => e != this)
                                     .Sum(e => GetRelations(e).Espionage.GrossWeight) + EspionageDefenseWeight;
         }
 
@@ -77,9 +77,9 @@ namespace Ship_Game
         public void UpdateEspionage()
         {
             int totalWeight = CalcTotalEspionageWeight();
-            // Only empires we have actually met accrue infiltration. An un-met relation
-            // carries the default weight, so without this gate it would progress and
-            // eventually notify — revealing a faction the player has not yet discovered.
+            // Skip un-met empires entirely: EffectiveWeight already zeroes their progression,
+            // but Update also toggles passive effects and operations, which must not run for a
+            // faction the player hasn't met.
             foreach (Empire empire in Universe.ActiveMajorEmpires.Filter(e => e != this && GetRelations(e).Known))
                 GetEspionage(empire).Update(totalWeight);
 
