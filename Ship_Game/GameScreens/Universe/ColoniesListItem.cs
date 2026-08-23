@@ -102,7 +102,7 @@ namespace Ship_Game
 
             if (AssignLabor == null)
             {
-                AssignLabor = Add(new AssignLaborComponent(P, new RectF(SliderRect), useTitleFrame: false));
+                AssignLabor = Add(new AssignLaborComponent(P, new RectF(SliderRect), useTitleFrame: false, showMaxValue: wideCols));
             }
             else
                 AssignLabor.Rect = SliderRect;

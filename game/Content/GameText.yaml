@@ -2323,8 +2323,8 @@ PlanetInfo:
  PTB: "Informações do Planeta"
 AssignLabor:
  Id: 327
- ENG: "Assign Labor"
- FRA: "Affecter la main-d'œuvre"
+ ENG: "Labor"
+ FRA: "Main-d'œuvre"
  RUS: "Распределение труда"
  SPA: "Asignar trabajo"
  UKR: "Призначення робочих"

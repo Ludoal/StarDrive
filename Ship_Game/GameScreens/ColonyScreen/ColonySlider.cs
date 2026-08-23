@@ -88,6 +88,9 @@ namespace Ship_Game
         }
 
         public float NetValue => Resource.NetIncome;
+        // The yield at 100% labor, from the same sim pass as NetValue (no UI recompute).
+        public float MaxValue => Resource.NetMaxPotential;
+        public bool ShowMaxValue; // draw the max beside the current value (gated by the host)
 
         public bool LockedByUser
         {
@@ -220,12 +223,30 @@ namespace Ship_Game
             // Align the numbers on the decimal point. The integer part is RIGHT-aligned on a
             // fixed comma column (room for 3 digits + a sign), the fraction runs to its right -
             // so "7", "100.2" and "-3.2" all line their point/units up instead of floating.
+            // The current value and the max (100%-labor) value are two INDEPENDENT decimal
+            // columns, each aligned on its own comma, with a fixed "/" between them - so a wide
+            // max like "12.4" never shoves the current value out of line.
+            float unitsW = font.TextWidth("-100"); // room for 3 digits + a sign in each column
+            float curComma = left + unitsW;
             Color color = value < 0f ? Color.LightPink : Colors.Cream;
-            string text = value.String(); // "0.#": integer, or integer + one decimal
+            DrawAlignedNumber(batch, font, value.String(), curComma, y, color);
+
+            if (ShowMaxValue)
+            {
+                float slashX   = curComma + font.TextWidth(".0") + 4; // fraction room + gap
+                float maxComma = slashX + font.TextWidth("/ ") + unitsW;
+                batch.DrawString(font, "/", new Vector2(slashX, y), Colors.Cream.Alpha(0.5f));
+                // The max is a potential, not a state: grey so it informs without rivalling the real value.
+                DrawAlignedNumber(batch, font, MaxValue.String(), maxComma, y, Color.Gray);
+            }
+        }
+
+        // Right-aligns the integer part on commaX and runs the fraction to its right.
+        static void DrawAlignedNumber(SpriteBatch batch, Graphics.Font font, string text, float commaX, float y, Color color)
+        {
             int dot = text.IndexOf('.');
-            string intPart = dot < 0 ? text : text.Substring(0, dot);
+            string intPart  = dot < 0 ? text : text.Substring(0, dot);
             string fracPart = dot < 0 ? "" : text.Substring(dot);
-            float commaX = left + font.TextWidth("-100"); // the fixed units/point column
             batch.DrawString(font, intPart, new Vector2(commaX - font.TextWidth(intPart), y), color);
             if (fracPart.Length > 0)
                 batch.DrawString(font, fracPart, new Vector2(commaX, y), color);

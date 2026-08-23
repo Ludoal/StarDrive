@@ -14,6 +14,7 @@ namespace Ship_Game
         ColonySliderGroup Sliders;
         Submenu Title;
         bool UseTitle;
+        bool ShowMaxValue; // show the 100%-labor potential beside each current value
 
         // Ludoal fork (maintainer bench 299): the title row can carry EXTRA TABS - the
         // Terraforming tab migrated here from the facilities block, whose row was folding
@@ -22,12 +23,13 @@ namespace Ship_Game
         public bool SlidersVisible { get => Sliders.Visible; set => Sliders.Visible = value; }
 
         public AssignLaborComponent(Planet p, RectF rect, bool useTitleFrame,
-                                    LocalizedText[] titleTabs = null) : base(rect)
+                                    LocalizedText[] titleTabs = null, bool showMaxValue = false) : base(rect)
         {
             Planet = p;
             UseTitle = useTitleFrame;
+            ShowMaxValue = showMaxValue;
 
-            Sliders = Add(new ColonySliderGroup(p, SlidersHousing, drawIcons: useTitleFrame)
+            Sliders = Add(new ColonySliderGroup(p, SlidersHousing, drawIcons: useTitleFrame, showMaxValue: showMaxValue)
             {
                 OnSlidersChanged = OnSlidersChanged
             });
@@ -51,7 +53,9 @@ namespace Ship_Game
             {
                 int sliderX = (int)X + (UseTitle ? 60 : 10);
                 int sliderY = (int)Y + 25;
-                int sliderW = (Width * 0.55f).RoundTo10(); // bench 345: -5% off the slider so a 3-digit value (100.2) fits to its right
+                // one value column needs ~45% width; showing the max adds a second decimal
+                // column, so the slider yields more room when ShowMaxValue is on.
+                int sliderW = (Width * (ShowMaxValue ? 0.42f : 0.55f)).RoundTo10();
                 int sliderH = (int)Height - 25;
                 return new Rectangle(sliderX, sliderY, sliderW, sliderH);
             }

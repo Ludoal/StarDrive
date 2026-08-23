@@ -271,7 +271,8 @@ namespace Ship_Game
             // light enough to live here.
             bool terraTab = Player.data.Traits.TerraformingLevel > 0 || P.Terraformable;
             AssignLabor = Add(new AssignLaborComponent(P, labor, useTitleFrame: true,
-                terraTab ? new LocalizedText[] { GameText.AssignLabor, GameText.BB_Tech_Terraforming_Name } : null));
+                terraTab ? new LocalizedText[] { GameText.AssignLabor, GameText.BB_Tech_Terraforming_Name } : null,
+                showMaxValue: true));
             if (terraTab)
             {
                 AssignLabor.TitleMenu.SelectedIndex = LaborTabSticky.Clamped(0, 1);

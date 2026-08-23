@@ -91,14 +91,15 @@ namespace Ship_Game
                                      Sortable = true, Tip = Localizer.Token(GameText.TheNetIncomeOfThis), SepColor = MutedSep },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_science"), Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfResearch), SepColor = MutedSep },
-                new UITable.Column { Title = Localizer.Token(GameText.Labor), Width = 225, Align = TableAlign.Center },
+                new UITable.Column { Title = Localizer.Token(GameText.Labor), Width = 290, Align = TableAlign.Center }, // wider: the sliders now show current / max
+
                 new UITable.Column { Title = Localizer.Token(GameText.Supply), Width = 240, Align = TableAlign.Center }, // bench 426: stock AND flow
                 new UITable.Column { Title = Localizer.Token(GameText.Construction2), Width = 282, Align = TableAlign.Center },
             });
             // Pop Growth and Governor ride wide displays only (bench 408): at 1440 the base
             // twelve columns already fill the cap. The row items and the sorter tell the two
             // regimes apart by the column count (12 vs 14).
-            bool wideCols = ScreenWidth >= 1680;
+            bool wideCols = ScreenWidth >= 1600; // the table's max width; below it there's no room for the extra columns
             if (wideCols)
             {
                 var cols = new Array<UITable.Column>(Table.Columns);

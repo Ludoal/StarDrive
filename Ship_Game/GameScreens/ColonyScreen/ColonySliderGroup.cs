@@ -13,13 +13,15 @@ namespace Ship_Game
         Planet P;
 
         public bool DrawIcons; // draw resource icons or not?
+        bool ShowMaxValue;     // show the 100%-labor potential beside each current value
         public Action OnSlidersChanged;
 
-        public ColonySliderGroup(Planet p, in Rectangle housing, bool drawIcons)
+        public ColonySliderGroup(Planet p, in Rectangle housing, bool drawIcons, bool showMaxValue = false)
             : base(housing)
         {
             P = p;
             DrawIcons = drawIcons;
+            ShowMaxValue = showMaxValue;
             PerformLayout();
         }
 
@@ -31,7 +33,8 @@ namespace Ship_Game
                 {
                     Sliders[i] = Add(new ColonySlider((ColonyResType)i, P, DrawIcons)
                     {
-                        OnSliderChange = OnSliderChanged
+                        OnSliderChange = OnSliderChanged,
+                        ShowMaxValue = ShowMaxValue
                     });
                 }
                 Food = Sliders[(int)ColonyResType.Food];

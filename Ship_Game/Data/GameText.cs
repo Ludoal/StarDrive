@@ -594,7 +594,7 @@ namespace Ship_Game
         NetLoss = 325,
         /// <summary>Planet Info</summary>
         PlanetInfo = 326,
-        /// <summary>Assign Labor</summary>
+        /// <summary>Labor</summary>
         AssignLabor = 327,
         /// <summary>Storage</summary>
         Storage = 328,
