@@ -1148,7 +1148,11 @@ namespace Ship_Game
                 bool inPlace = n.ClickRect.Y >= n.DestinationRect.Y;
                 // ADDED BY SHAHMATT (pause game when there are any notifications)
                 //fbedard : Add filter to pause
-                if (GlobalStats.PauseOnNotification && inPlace && n.Pause)
+                // Ludoal fork: a LoadEvent popup greys out the universe - the player can't act while
+                // it's up - so it MUST pause regardless of the PauseOnNotification setting; otherwise
+                // the sim keeps running behind a wall the player can't touch. Other notifications
+                // still honour the setting.
+                if (inPlace && (GlobalStats.PauseOnNotification && n.Pause || n.Action == "LoadEvent"))
                     Screen.UState.Paused = true;
 
                 // Auto-clear: age a notification only once it has settled in place, and drop it
