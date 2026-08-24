@@ -34,6 +34,9 @@ namespace Ship_Game
             Espionage espionage = Owner.GetEspionage(Them);
             var potentials = Them.GetPlanets().Sorted(p => p.PopulationBillion).TakeItems(5);
             Planet targetPlanet = Them.Random.Item(potentials);
+            // Ludoal fork: the rebellion happens on THIS planet, so its notification points here -
+            // clicking opens the planet, not the Espionage panel (a notification points its object).
+            aftermath.Planet = targetPlanet;
             int numRebels = (targetPlanet.GetDefendingTroopCount() + targetPlanet.NumMilitaryBuildings - 2).LowerBound(2);
             float takeoverOrbitalChance = 50;
 
