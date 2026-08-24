@@ -821,6 +821,13 @@ namespace Ship_Game
             if (showProjectorCoverage || ShowingGravityWellOverlay)
             {
                 var inhibit = ResourceManager.Texture("UI/node_inhibit");
+                // Ludoal fork (bench): gravity wells are permanent info, not an alarm - so the
+                // planet well drops the red hatched "inhibit" look for a quiet solid disc:
+                // desaturated blue-grey, thin outline, a very light fill (node_stencil = a plain
+                // filled circle, no stripes). The mobile ship inhibitors below keep the red alarm.
+                var wellFill = ResourceManager.Texture("UI/node_stencil");
+                var wellEdge = new Color(120, 160, 185, 130).Premultiplied();
+                var wellBody = new Color(120, 160, 185, 35).Premultiplied();
 
                 // F5: gravity wells + inhibitor fields. Only legible up to sector view.
                 if (ShowingGravityWellOverlay && UState.P.GravityWellRange > 0f && viewState <= UnivScreenState.SectorView)
@@ -831,7 +838,7 @@ namespace Ship_Game
                         if (planet.System.IsExploredBy(Player))
                         {
                             DrawCircleProjected(planet.Position, planet.GravityWellRadius,
-                                                new Color(255, 50, 0, 150).Premultiplied(), 1f, inhibit, new Color(200, 0, 0, 50).Premultiplied());
+                                                wellEdge, 1f, wellFill, wellBody);
                         }
                     }
 
