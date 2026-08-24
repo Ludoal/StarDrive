@@ -75,6 +75,10 @@ namespace Ship_Game
             {
                 Planet[] potentials = potentials = Them.GetPlanets().SortedDescending(p => p.ProdHere + p.FoodHere).TakeItems(planetsToTake);
                 Planet targetPlanet = Them.Random.Item(potentials);
+                // Ludoal fork: the damage lands on THIS planet, so the notification points here -
+                // clicking it opens the planet, not the Espionage panel (a notification points its
+                // object, not its emitter). Same as Sabotage does with aftermath.Planet.
+                aftermath.Planet = targetPlanet;
                 UpriseBuildingType typeToDestroy = UpriseBuildingType.None;
                 bool removeProd = true;
                 bool removeFood = false;
