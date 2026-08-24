@@ -16670,6 +16670,10 @@ NotAvailable:
  Id: 7126
  ENG: "Not available"
  FRA: "Non disponible"
+InheritedBudgetShareTip:
+ Id: 7127
+ ENG: "Default split inherited from the empire budget (no budget allocated to this colony yet)."
+ FRA: "Répartition par défaut héritée du budget d'empire (aucun budget alloué à cette colonie pour l'instant)."
  UKR: "Ліміт цивільного бюджету досягнуто!"
  PTB: "Limite do Orçamento Civil Atingido!"
 BB_Tech_SubspatialDynamics_CounterEnemyPlanetInhibitionBonus_Bonus:

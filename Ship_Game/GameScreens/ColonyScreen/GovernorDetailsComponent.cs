@@ -475,17 +475,13 @@ namespace Ship_Game
                 }
                 else
                 {
-                    // take over at the current auto allocation
+                    // take over at the current auto allocation. Capture the shares the SAME way the
+                    // Auto view computes them (sum-of-three, or the derived empire split when the
+                    // colony has none) - the old TotalAlloc.LowerBound(0.1f) basis made the three
+                    // shares snap to 10% on a colony with no allocation.
                     var b = Planet.Budget;
-                    // take the manual slider to the governor's current total spend; a fresh colony
-                    // with no allocation lands at 0 (the request). The share split needs a non-zero
-                    // divisor, so derive the ratios off a floored copy while the slider itself shows total.
                     float total = b.TotalAlloc.LowerBound(0f);
-                    float shareBasis = b.TotalAlloc.LowerBound(0.1f);
-
-                    PlanetShares[0] = b.CivilianAlloc.LowerBound(0f) / shareBasis;
-                    PlanetShares[1] = b.GrdDefAlloc.LowerBound(0f) / shareBasis;
-                    PlanetShares[2] = b.SpcDefAlloc.LowerBound(0f) / shareBasis;
+                    ComputeAutoShares(b, out PlanetShares[0], out PlanetShares[1], out PlanetShares[2]);
                     LinkingPlanetShares = true;
                     GovSpending.AbsoluteValue = total;
                     ShareCiv.RelativeValue = PlanetShares[0];
@@ -1046,6 +1042,33 @@ namespace Ship_Game
             CommitPlanetBudget();
         }
 
+        // The three budget shares for this colony, always summing to 1. When the colony has real
+        // allocations, shares are of the SUM OF THE THREE (same-source denominator, never TotalAlloc
+        // which can desync). When it has none, the shares are UNDEFINED, so we show what the colony
+        // WOULD receive: the empire split (Economy sliders) renormalized over the two posts a colony
+        // can spend on - Space Roads is empire-only - with Defense cut Ground/Space by this colony's
+        // ground ratio. Derived from the empire settings so it never lies if the player changes them.
+        void ComputeAutoShares(PlanetBudget b, out float civ, out float grd, out float spc)
+        {
+            float localTotal = b.CivilianAlloc.LowerBound(0f) + b.GrdDefAlloc.LowerBound(0f) + b.SpcDefAlloc.LowerBound(0f);
+            if (localTotal > 0.01f)
+            {
+                civ = b.CivilianAlloc.LowerBound(0f) / localTotal;
+                grd = b.GrdDefAlloc.LowerBound(0f) / localTotal;
+                spc = b.SpcDefAlloc.LowerBound(0f) / localTotal;
+            }
+            else
+            {
+                var up = Universe.UState.P;
+                float twoPot  = (up.ColonyBudgetShare + up.DefenseBudgetShare).LowerBound(0.0001f);
+                float defFrac = up.DefenseBudgetShare / twoPot;
+                float ground  = b.MilitaryBuildingsBudgetRatio().Clamped(0f, 1f);
+                civ = up.ColonyBudgetShare / twoPot;
+                grd = defFrac * ground;
+                spc = defFrac * (1f - ground);
+            }
+        }
+
         void UpdateBudgets()
         {
             var budget = Planet.Budget;
@@ -1059,15 +1082,20 @@ namespace Ship_Game
             SpcBudgetBar.Max      = budget.SpcDefAlloc;
             SpcBudgetBar.Progress = Planet.SpaceDefMaintenance;
 
-            // on Auto the sliders mirror the governor's own allocation (read-only)
+            // on Auto the sliders mirror the governor's own allocation (read-only).
             if (PlanetAutoBudget && GovSpending != null)
             {
-                float total = budget.TotalAlloc.LowerBound(0.01f);
+                ComputeAutoShares(budget, out float civ, out float grd, out float spc);
+                float localTotal = budget.CivilianAlloc.LowerBound(0f) + budget.GrdDefAlloc.LowerBound(0f) + budget.SpcDefAlloc.LowerBound(0f);
+                // when the shares are the inherited empire default (no budget yet), say so on hover -
+                // they are a prediction of what the colony will receive, not an active split
+                LocalizedText shareTip = localTotal > 0.01f ? default : GameText.InheritedBudgetShareTip;
+                ShareCiv.Tip = shareTip; ShareGrd.Tip = shareTip; ShareSpc.Tip = shareTip;
                 LinkingPlanetShares = true;
-                GovSpending.AbsoluteValue = total;
-                ShareCiv.RelativeValue = budget.CivilianAlloc.LowerBound(0f) / total;
-                ShareGrd.RelativeValue = budget.GrdDefAlloc.LowerBound(0f) / total;
-                ShareSpc.RelativeValue = budget.SpcDefAlloc.LowerBound(0f) / total;
+                GovSpending.AbsoluteValue = localTotal > 0.01f ? localTotal : 0f;
+                ShareCiv.RelativeValue = civ;
+                ShareGrd.RelativeValue = grd;
+                ShareSpc.RelativeValue = spc;
                 LinkingPlanetShares = false;
             }
 

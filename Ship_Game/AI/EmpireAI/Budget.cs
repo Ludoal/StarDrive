@@ -108,7 +108,9 @@ namespace Ship_Game.AI.Budget
         /// <summary>
         /// This is Orbitals vs. Military Buildings ratio of budget, since Building maintenance is much less than Orbitals.
         /// </summary>
-        float MilitaryBuildingsBudgetRatio()
+        // public so the Budget tab can derive the Ground/Space split for a colony that has no
+        // allocation yet (it shows what this colony WOULD receive from the empire split)
+        public float MilitaryBuildingsBudgetRatio()
         {
             float preference;
             switch (P.CType)
