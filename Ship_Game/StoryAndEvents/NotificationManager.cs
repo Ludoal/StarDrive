@@ -75,6 +75,11 @@ namespace Ship_Game
         public void AddNotification(Notification notify, NotificationCategory category, params string[] soundCueStrings)
         {
             notify.Category = category;
+            // Per-category show/hide: a category the player has hidden never enters the queue.
+            // This is the one place the old scattered Disable*/Suppress* checks are unified.
+            if (GlobalStats.IsHiddenCategory(category))
+                return;
+
             notify.ClickRect = DefaultClickRect;
             notify.DestinationRect = DefaultNotificationRect;
 
@@ -1151,8 +1156,11 @@ namespace Ship_Game
                 // is spared (PauseOnNotification && Pause) - n.Pause alone is true by default on
                 // almost every notification, which would spare nearly all of them. A LoadEvent
                 // needs a decision, so it is left alone too. Traces stay in the ImportantEventsList.
+                // Per-category opt-in: a notification auto-clears only if its category was ticked
+                // in the Automation settings. No category ticked (default) = nothing auto-clears.
                 bool pausesTheGame = GlobalStats.PauseOnNotification && n.Pause;
-                if (autoClear > 0f && inPlace && !pausesTheGame && n.Action != "LoadEvent")
+                if (autoClear > 0f && inPlace && !pausesTheGame && n.Action != "LoadEvent"
+                    && GlobalStats.IsAutoClearCategory(n.Category))
                 {
                     n.SecondsAlive += elapsedRealTime;
                     if (n.SecondsAlive >= autoClear)

@@ -155,6 +155,29 @@ public static class GlobalStats
     public static bool PauseOnNotification;
     // Seconds before a settled, non-pausing notification auto-clears. 0 = off (default).
     public static float NotificationAutoClearSeconds;
+    // Ludoal fork (wishlist): which notification categories are subject to auto-clear, as a
+    // bitmask keyed by (int)NotificationCategory. 0 = no category auto-clears (default), so every
+    // notification persists exactly as it did before - the player opts each category in.
+    public static int NotificationAutoClearCategories;
+    public static bool IsAutoClearCategory(NotificationCategory c) => (NotificationAutoClearCategories & (1 << (int)c)) != 0;
+    public static void SetAutoClearCategory(NotificationCategory c, bool on)
+    {
+        int bit = 1 << (int)c;
+        if (on) NotificationAutoClearCategories |= bit;
+        else    NotificationAutoClearCategories &= ~bit;
+    }
+    // Ludoal fork (wishlist): which notification categories the player has HIDDEN (won't be shown),
+    // as a bitmask keyed by (int)NotificationCategory. 0 = nothing hidden (default) = every category
+    // shows, exactly as before. This unifies the old scattered Disable*/Suppress* toggles into the
+    // one per-category axis. AddNotification drops a hidden category before it is ever queued.
+    public static int NotificationHiddenCategories;
+    public static bool IsHiddenCategory(NotificationCategory c) => (NotificationHiddenCategories & (1 << (int)c)) != 0;
+    public static void SetHiddenCategory(NotificationCategory c, bool hidden)
+    {
+        int bit = 1 << (int)c;
+        if (hidden) NotificationHiddenCategories |= bit;
+        else        NotificationHiddenCategories &= ~bit;
+    }
 
     // USER_EXPERIENCE
     // Ludoal fork: whether opening a page (group screens, colony) auto-pauses the
@@ -468,6 +491,8 @@ public static class GlobalStats
         GetSetting(config, "NotifyEmptyPlanetQueue", ref NotifyEmptyPlanetQueue);
         GetSetting(config, "PauseOnNotification", ref PauseOnNotification);
         GetSetting(config, "NotificationAutoClearSeconds", ref NotificationAutoClearSeconds);
+        GetSetting(config, "NotificationAutoClearCategories", ref NotificationAutoClearCategories);
+        GetSetting(config, "NotificationHiddenCategories", ref NotificationHiddenCategories);
         GetSetting(config, "PauseOnPageOpen", ref PauseOnPageOpen);
         GetSetting(config, "AutoPauseColonyPanel", ref AutoPauseColonyPanel);
         GetSetting(config, "IconSize", ref IconSize);
@@ -692,6 +717,8 @@ public static class GlobalStats
         WriteSetting(config, "NotifyEmptyPlanetQueue", NotifyEmptyPlanetQueue);
         WriteSetting(config, "PauseOnNotification", PauseOnNotification);
         WriteSetting(config, "NotificationAutoClearSeconds", NotificationAutoClearSeconds);
+        WriteSetting(config, "NotificationAutoClearCategories", NotificationAutoClearCategories);
+        WriteSetting(config, "NotificationHiddenCategories", NotificationHiddenCategories);
         WriteSetting(config, "PauseOnPageOpen", PauseOnPageOpen);
         WriteSetting(config, "AutoPauseColonyPanel", AutoPauseColonyPanel);
         WriteSetting(config, "IconSize", IconSize);

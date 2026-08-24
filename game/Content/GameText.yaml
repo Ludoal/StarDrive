@@ -16564,8 +16564,8 @@ AutoUpgradeFreightersTip:
  FRA: "Remplace automatiquement vos cargos par le meilleur modèle disponible, indépendamment du routage du commerce."
 NotificationAutoClear:
  Id: 7100
- ENG: "Auto-clear (s)"
- FRA: "Effacement auto (s)"
+ ENG: "Auto-clear Timer (s)"
+ FRA: "Minuterie d'effacement auto (s)"
 NotificationAutoClearTip:
  Id: 7101
  ENG: "Automatically clears a notification after this many seconds. 0 = off. Pausing and event notifications are always kept."
@@ -16618,6 +16618,42 @@ KnownInfiltrationLevel:
  Id: 7113
  ENG: "Known Infiltration Level"
  FRA: "Niveau d'infiltration connu"
+NotifCatExplorationTip:
+ Id: 7114
+ ENG: "Anomalies, planets and stars to survey or mine, fully-explored systems, lost scouts."
+ FRA: "Anomalies, planètes et étoiles à sonder ou miner, systèmes explorés, éclaireurs perdus."
+NotifCatColonyTip:
+ Id: 7115
+ ENG: "New colonies, capital transfers, colonies lost, volcanoes, meteors, starvation, troop evacuations."
+ FRA: "Nouvelles colonies, transferts de capitale, colonies perdues, volcans, météores, famine, évacuations de troupes."
+NotifCatConstructionTip:
+ Id: 7116
+ ENG: "Buildings finished or destroyed, research and mining stations, orbital limits, empty build queue."
+ FRA: "Bâtiments terminés ou détruits, stations de recherche et de minage, limites d'orbitaux, file de production vide."
+NotifCatCombatTip:
+ Id: 7117
+ ENG: "Invasions, enemy troops landing, planets conquered, rebellions, crash sites, boardings."
+ FRA: "Invasions, débarquements de troupes ennemies, planètes conquises, rébellions, épaves, abordages."
+NotifCatDiplomacyTip:
+ Id: 7118
+ ENG: "Treaties broken, signed or expired, war declarations, peace, empires merged or defeated."
+ FRA: "Traités rompus, signés ou expirés, déclarations de guerre, paix, empires fusionnés ou vaincus."
+NotifCatEspionageTip:
+ Id: 7119
+ ENG: "Espionage operation results, moles and counter-espionage."
+ FRA: "Résultats d'opérations d'espionnage, taupes et contre-espionnage."
+NotifCatEconomyTip:
+ Id: 7120
+ ENG: "Treasury running low and other economy warnings."
+ FRA: "Trésorerie basse et autres alertes économiques."
+NotifCatEventsTip:
+ Id: 7121
+ ENG: "Random, story and technology event popups, scrap unlocks, research completed."
+ FRA: "Événements aléatoires, narratifs et technologiques, déblocages de recyclage, recherche terminée."
+NotifCatThreatsTip:
+ Id: 7122
+ ENG: "Remnants and Pirates: raids, growing strength, portals, flagships."
+ FRA: "Remnants et Pirates : raids, montée en puissance, portails, vaisseaux amiraux."
  UKR: "Ліміт цивільного бюджету досягнуто!"
  PTB: "Limite do Orçamento Civil Atingido!"
 BB_Tech_SubspatialDynamics_CounterEnemyPlanetInhibitionBonus_Bonus:

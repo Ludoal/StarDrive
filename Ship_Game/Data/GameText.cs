@@ -7049,6 +7049,24 @@ namespace Ship_Game
         SendNewExplorersToExploreTip = 7112,
         /// <summary>Known Infiltration Level</summary>
         KnownInfiltrationLevel = 7113,
+        /// <summary>Anomalies, planets and stars to survey or mine, fully-explored systems, lost scouts.</summary>
+        NotifCatExplorationTip = 7114,
+        /// <summary>New colonies, capital transfers, colonies lost, volcanoes, meteors, starvation, troop evacuations.</summary>
+        NotifCatColonyTip = 7115,
+        /// <summary>Buildings finished or destroyed, research and mining stations, orbital limits, empty build queue.</summary>
+        NotifCatConstructionTip = 7116,
+        /// <summary>Invasions, enemy troops landing, planets conquered, rebellions, crash sites, boardings.</summary>
+        NotifCatCombatTip = 7117,
+        /// <summary>Treaties broken, signed or expired, war declarations, peace, empires merged or defeated.</summary>
+        NotifCatDiplomacyTip = 7118,
+        /// <summary>Espionage operation results, moles and counter-espionage.</summary>
+        NotifCatEspionageTip = 7119,
+        /// <summary>Treasury running low and other economy warnings.</summary>
+        NotifCatEconomyTip = 7120,
+        /// <summary>Random, story and technology event popups, scrap unlocks, research completed.</summary>
+        NotifCatEventsTip = 7121,
+        /// <summary>Remnants and Pirates: raids, growing strength, portals, flagships.</summary>
+        NotifCatThreatsTip = 7122,
         /// <summary>Dearest SING friends, We are delighted to see your empire's</summary>
         EncCorsairs000_Msg0 = -11,
         /// <summary>Agree to pay this upstanding gentleman.</summary>
