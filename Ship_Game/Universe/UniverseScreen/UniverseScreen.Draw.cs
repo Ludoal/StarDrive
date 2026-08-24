@@ -333,15 +333,21 @@ namespace Ship_Game
             device.Clear(Color.White); // clear the lights RT to White
             batch.SafeBegin(SpriteBlendMode.AlphaBlend);
 
-            // Ludoal fork (maintainer decision): the fog veil is now the VISION OVERLAY's job only.
-            // At rest (F3 off) the residual 56/255 veil informed nothing (too faint to tell explored
-            // from unexplored) but was strong enough to dirty the image AND show its bounded edge as
-            // a rectangle when panning to the play-zone border. So the veil is drawn ONLY under the
-            // Vision overlay now; at rest, nothing - the Vision overlay carries the whole statement.
-            if (!Debug && ShowingVisionOverlay)
+            // Ludoal fork (maintainer decision): the veil stays ON at rest - it isn't
+            // informative but it IS aesthetic, darkening the backdrop so objects stand out
+            // ("n'informe pas" != "ne sert a rien"). The old "square" artefact was the FogMap
+            // tint's bounded edge (drawn only over [-Size,+Size]) showing when panning to the
+            // world border, sitting against the full-screen black of the FillRectangle. Fix:
+            // extend fogRect well beyond the world bounds so that edge is always off-screen -
+            // a veil that covers everything can't betray its limit. The FogMap texture is
+            // stretched by the larger dest rect, so the memory tint shifts slightly, but it's
+            // a diffuse 56/255 wash, not a sharp mark - no visible misalignment.
+            if (!Debug)
             {
                 // fill screen with transparent black and draw FogMap darker light on top of it
-                Rectangle fogRect = ProjectToScreenCoords(new Vector2(-UState.Size), UState.Size*2f);
+                // fogRect extended 1x the world half-size on every side (3x total span) so its
+                // edge sits far outside any viewport position, killing the square at the border.
+                Rectangle fogRect = ProjectToScreenCoords(new Vector2(-UState.Size * 2f), UState.Size*4f);
                 // fillrect alpha ~33% unexplored scene visibility (1 - 170/255) when painting
                 // (FogOfWarMemory on). With the dark map (memory off) everything sits under
                 // the veil and the starfield washes out, so alpha 150 gives a lighter veil there.
