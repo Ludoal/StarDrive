@@ -16614,10 +16614,10 @@ SendNewExplorersToExploreTip:
  Id: 7112
  ENG: "Idle scouts are automatically sent out to explore unknown systems."
  FRA: "Les éclaireurs inactifs sont automatiquement envoyés explorer les systèmes inconnus."
-KnownInfiltrationLevel:
+CounterEspionageNetworkWipedToZero:
  Id: 7113
- ENG: "Known Infiltration Level"
- FRA: "Niveau d'infiltration connu"
+ ENG: "Their spy network is dismantled: their infiltration is now reduced to zero."
+ FRA: "Leur réseau d'espions est démantelé : leur infiltration est maintenant réduite à zéro."
 NotifCatExplorationTip:
  Id: 7114
  ENG: "Anomalies, planets and stars to survey or mine, fully-explored systems, lost scouts."

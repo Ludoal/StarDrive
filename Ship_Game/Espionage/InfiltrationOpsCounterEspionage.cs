@@ -40,13 +40,9 @@ namespace Ship_Game
                     if (theirEspionage.Level > 0)
                     {
                         aftermath.CustomMessage = $"{Them.data.Traits.Name}: {Localizer.Token(GameText.CounterEspioangeOpsExposedWeWipedOut)}\n" +
-                                                  $"{Localizer.Token(GameText.TheirInfiltrationLevelWas)} {theirEspionage.Level}";
+                                                  $"{Localizer.Token(GameText.TheirInfiltrationLevelWas)} {theirEspionage.Level}\n" +
+                                                  $"{Localizer.Token(GameText.CounterEspionageNetworkWipedToZero)}";
                         aftermath.MessageToVictim = $"{Owner.data.Traits.Name}: {Localizer.Token(GameText.CounterEspioangeOpsExposedAndWipedOut)}";
-                        // Ludoal fork (wishlist): record what the player just learned (the true level)
-                        // and when, before wiping it - this is the only branch that reveals a number.
-                        var rel = Owner.GetRelations(Them);
-                        rel.KnownInfiltrationLevel    = theirEspionage.Level;
-                        rel.KnownInfiltrationStarDate = Owner.Universe.StarDate;
                         theirEspionage.WipeoutInfiltration();
                     }
                     else if (potentialMoles.Length > 0)

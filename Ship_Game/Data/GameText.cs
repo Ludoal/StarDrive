@@ -7047,8 +7047,9 @@ namespace Ship_Game
         SendNewExplorersToExplore = 7111,
         /// <summary>Idle scouts are automatically sent out to explore unknown systems.</summary>
         SendNewExplorersToExploreTip = 7112,
+        /// <summary>Their spy network is dismantled: their infiltration is now reduced to zero.</summary>
+        CounterEspionageNetworkWipedToZero = 7113,
         /// <summary>Known Infiltration Level</summary>
-        KnownInfiltrationLevel = 7113,
         /// <summary>Anomalies, planets and stars to survey or mine, fully-explored systems, lost scouts.</summary>
         NotifCatExplorationTip = 7114,
         /// <summary>New colonies, capital transfers, colonies lost, volcanoes, meteors, starvation, troop evacuations.</summary>

@@ -559,18 +559,11 @@ namespace Ship_Game.GameScreens
                 batch.DrawString(Font12Bold, Localizer.Token(GameText.IfLvl3), new Vector2(spyR.Right + 4, spyR.Y), new Color(105, 105, 105));
             }
 
-            // Ludoal fork (wishlist): what the player LEARNED of THIS faction's infiltration by
-            // catching one of its spies - a snapshot with its StarDate, not the live value. No line
-            // until the first catch reveals a number (unknown = nothing shown).
-            if (e != Player)
-            {
-                var rel = Player.GetRelations(e);
-                if (rel.KnownInfiltrationStarDate > 0f)
-                {
-                    string infTxt = $"{Localizer.Token(GameText.KnownInfiltrationLevel)}: {rel.KnownInfiltrationLevel} (SD {rel.KnownInfiltrationStarDate.String(1)})";
-                    batch.DrawString(Font12, infTxt, new Vector2(col.X + 8, defenseIcon.Bottom + 4), Color.White);
-                }
-            }
+            // Ludoal fork: a line's worth of reserve is kept under the Defense row (DefenseH holds
+            // it) even though nothing is drawn here now - the "Known Infiltration Level" readout was
+            // removed (its only source, a Counter-Espionage Phenomenal, wipes the level it reveals,
+            // so the value was caduc on arrival). The reserve keeps the Infiltration band from
+            // riding up if a defensive readout is added here later.
 
             // Ludoal fork: one INFILTRATION band, then each level as a bold text line - cream once
             // the level is uncovered, grey while it is not. Five bands for one subject read as five

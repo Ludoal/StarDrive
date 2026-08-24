@@ -66,12 +66,6 @@ namespace Ship_Game.Gameplay
         [StarData] public int SpiesDetected;
         [StarData] public int TimesSpiedOnAlly;
         [StarData] public int SpiesKilled;
-        // Ludoal fork (wishlist): the enemy infiltration level the player LEARNED by catching a spy
-        // (Counter-Espionage "Phenomenal" exposes the true number, then wipes it). Snapshot + its
-        // StarDate - it does not track the live value, it records what was known and when.
-        // 0 date = never learned, so no line is shown (unknown = no notification).
-        [StarData] public byte KnownInfiltrationLevel;
-        [StarData] public float KnownInfiltrationStarDate;
         [StarData] public float TotalAnger;
         [StarData] public bool Treaty_OpenBorders; // FB - check Empire_Relationship to see how to set it. Do not access directly!
         [StarData] public bool Treaty_NAPact; // FB - check Empire_Relationship to see how to set it. Do not access directly!
