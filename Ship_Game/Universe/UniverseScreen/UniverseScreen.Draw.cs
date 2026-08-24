@@ -351,7 +351,12 @@ namespace Ship_Game
                 // fillrect alpha ~33% unexplored scene visibility (1 - 170/255) when painting
                 // (FogOfWarMemory on). With the dark map (memory off) everything sits under
                 // the veil and the starfield washes out, so alpha 150 gives a lighter veil there.
+                // Ludoal fork (maintainer feedback): the Vision overlay (F3) makes its statement at
+                // full strength (170/150); at rest the veil only hints, so it's LIGHTER (90) - dark
+                // enough to lift objects off the backdrop, not as heavy as the overlay itself.
                 int fogAlpha = GlobalStats.FogOfWarMemory ? 170 : 150;
+                if (!ShowingVisionOverlay)
+                    fogAlpha = 90;
                 batch.FillRectangle(new Rectangle(0, 0, ScreenWidth, ScreenHeight), new Color(0, 0, 0, fogAlpha));
                 // Phase 3.7 step 3: persistent "I've been here" tint, premul-correct
                 // (rgb == alpha so FogMap composites correctly under premul AlphaBlend).
