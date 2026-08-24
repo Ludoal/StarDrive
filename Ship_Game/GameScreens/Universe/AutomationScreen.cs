@@ -35,7 +35,7 @@ namespace Ship_Game
         // BoxW2: the dropdown boxes are WIDER instead of taller - label room + picker.
         const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
         const float EmpireBoxH = 160f, ColonizationBoxH = 156f, ConstructionBoxH = 139f, // +26: Auto-explore split adds a row (Send New Explorers)
-                    TradeBoxH = 204f, NotificationsBoxH = 400f, PriorityBoxH = 330f; // Notifications: timer + 9 categories + 3 sub-options + Inhibition (bench-tunable)
+                    TradeBoxH = 204f, NotificationsBoxH = 438f, PriorityBoxH = 330f; // Notifications: timer +13px + 9 categories + 3 sub-options + Inhibition (bench-tunable)
 
         public AutomationScreen(UniverseScreen u) : base(u, toPause: u)
         {
@@ -81,6 +81,8 @@ namespace Ship_Game
                 Tip = GameText.NotificationAutoClearTip
             });
             autoClear.OnChange = s => GlobalStats.NotificationAutoClearSeconds = s.AbsoluteValue;
+            // breathing room between the timer's ticks row and the first category (bench: +13px)
+            notifications.Add(new UIPanel(new Rectangle(0, 0, 1, 13), new Color(0, 0, 0, 0)));
 
             // One row per notification category (the old scattered Disable*/Suppress* toggles are
             // folded into these nine). POSITIVE voice: the left box checked = you SEE this category

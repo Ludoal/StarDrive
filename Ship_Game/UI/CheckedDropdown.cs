@@ -94,21 +94,20 @@ namespace Ship_Game
             bool greyed = ParentOff;
             if (Check != null) Check.Draw(batch, elapsed);
             else               TitleOnly.Draw(batch, elapsed);
+            // lead off: the model choice is moot, so NEITHER the Auto Pick box NOR the dropdown is
+            // drawn - the row collapses to just its toggle instead of showing an empty picker.
+            if (greyed)
+                return;
             if (AutoPickBox != null)
             {
-                AutoPickBox.Greyed = greyed;
                 AutoPickBox.Draw(batch, elapsed);
-                if (IsAutoPicked() && !greyed)
+                if (IsAutoPicked())
                 {
                     batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.AutoPick),
                                      new Vector2(Options.X + 4, Options.Y + 3), Color.White); // white (bench 305)
                     return;
                 }
             }
-            // lead off: the model choice is moot, so the dropdown is not drawn at all - the greyed
-            // Auto Pick box carries the "disabled" signal without a dead-but-coloured dropdown.
-            if (greyed)
-                return;
             Options.Draw(batch, elapsed);
         }
     }

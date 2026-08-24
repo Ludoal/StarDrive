@@ -16656,12 +16656,12 @@ NotifCatThreatsTip:
  FRA: "Remnants et Pirates : raids, montée en puissance, portails, vaisseaux amiraux."
 ColonyCanBuildShipsTip:
  Id: 7123
- ENG: "Can build ships (has a Space Port)."
- FRA: "Peut construire des vaisseaux (dispose d'un Space Port)."
+ ENG: "Can build ships. Requires a Space Port or a Capital."
+ FRA: "Peut construire des vaisseaux. Nécessite un Space Port ou une Capitale."
 ColonyCanBuildTroopsTip:
  Id: 7124
- ENG: "Can build troops (has a Military Outpost)."
- FRA: "Peut construire des troupes (dispose d'un Military Outpost)."
+ ENG: "Can build troops. Requires a Military Outpost or a Capital."
+ FRA: "Peut construire des troupes. Nécessite un Military Outpost ou une Capitale."
 AutoClearShort:
  Id: 7125
  ENG: "Auto-clear"
