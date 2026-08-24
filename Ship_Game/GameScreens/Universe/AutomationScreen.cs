@@ -35,7 +35,7 @@ namespace Ship_Game
         // BoxW2: the dropdown boxes are WIDER instead of taller - label room + picker.
         const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
         const float EmpireBoxH = 160f, ColonizationBoxH = 156f, ConstructionBoxH = 139f, // +26: Auto-explore split adds a row (Send New Explorers)
-                    TradeBoxH = 204f, NotificationsBoxH = 438f, PriorityBoxH = 330f; // Notifications: timer +13px + 9 categories + 3 sub-options + Inhibition (bench-tunable)
+                    TradeBoxH = 204f, NotificationsBoxH = 456f, PriorityBoxH = 330f; // Notifications: timer + 9 categories + 3 sub-options + Inhibition (bench 486: +18 so Inhibition clears the frame)
 
         public AutomationScreen(UniverseScreen u) : base(u, toPause: u)
         {
@@ -92,7 +92,7 @@ namespace Ship_Game
             {
                 Step = 1,
                 Tip = GameText.NotificationAutoClearTip,
-                TrackYOffset = -1, // tuck the rail up 4px under its title; the box still holds the knob
+                TrackYOffset = -5, // tuck the rail up close under its title; the box still holds the knob (bench 486)
             });
             autoClear.OnChange = s => { GlobalStats.NotificationAutoClearSeconds = s.AbsoluteValue; RefreshAutoClearGrey(); };
 
