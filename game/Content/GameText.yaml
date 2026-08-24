@@ -16614,6 +16614,10 @@ SendNewExplorersToExploreTip:
  Id: 7112
  ENG: "Idle scouts are automatically sent out to explore unknown systems."
  FRA: "Les éclaireurs inactifs sont automatiquement envoyés explorer les systèmes inconnus."
+KnownInfiltrationLevel:
+ Id: 7113
+ ENG: "Known Infiltration Level"
+ FRA: "Niveau d'infiltration connu"
  UKR: "Ліміт цивільного бюджету досягнуто!"
  PTB: "Limite do Orçamento Civil Atingido!"
 BB_Tech_SubspatialDynamics_CounterEnemyPlanetInhibitionBonus_Bonus:

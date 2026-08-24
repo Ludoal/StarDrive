@@ -58,7 +58,7 @@ namespace Ship_Game.GameScreens
         const int RowLevel    = 142;
         const int RowBar      = 163;
         const int RowBarNums  = 179;
-        const int DefenseH = 52;
+        const int DefenseH = 74; // +22: a Known Infiltration Level line sits under the shield ratio
 
         class EmpireColumn
         {
@@ -557,6 +557,19 @@ namespace Ship_Game.GameScreens
                 var spyR = new Rectangle(defenseIcon.Right + 6, defenseIcon.Y + 4, spyIcon.Width * h / spyIcon.Height, h);
                 batch.Draw(spyIcon, spyR, new Color(105, 105, 105));
                 batch.DrawString(Font12Bold, Localizer.Token(GameText.IfLvl3), new Vector2(spyR.Right + 4, spyR.Y), new Color(105, 105, 105));
+            }
+
+            // Ludoal fork (wishlist): what the player LEARNED of THIS faction's infiltration by
+            // catching one of its spies - a snapshot with its StarDate, not the live value. No line
+            // until the first catch reveals a number (unknown = nothing shown).
+            if (e != Player)
+            {
+                var rel = Player.GetRelations(e);
+                if (rel.KnownInfiltrationStarDate > 0f)
+                {
+                    string infTxt = $"{Localizer.Token(GameText.KnownInfiltrationLevel)}: {rel.KnownInfiltrationLevel} (SD {rel.KnownInfiltrationStarDate.String(1)})";
+                    batch.DrawString(Font12, infTxt, new Vector2(col.X + 8, defenseIcon.Bottom + 4), Color.White);
+                }
             }
 
             // Ludoal fork: one INFILTRATION band, then each level as a bold text line - cream once

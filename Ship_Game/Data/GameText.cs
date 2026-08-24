@@ -7047,6 +7047,8 @@ namespace Ship_Game
         SendNewExplorersToExplore = 7111,
         /// <summary>Idle scouts are automatically sent out to explore unknown systems.</summary>
         SendNewExplorersToExploreTip = 7112,
+        /// <summary>Known Infiltration Level</summary>
+        KnownInfiltrationLevel = 7113,
         /// <summary>Dearest SING friends, We are delighted to see your empire's</summary>
         EncCorsairs000_Msg0 = -11,
         /// <summary>Agree to pay this upstanding gentleman.</summary>
