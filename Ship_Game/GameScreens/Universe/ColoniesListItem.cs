@@ -361,6 +361,24 @@ namespace Ship_Game
             var namePos = new Vector2(planetIconRect.X + planetIconRect.Width + 10,
                                       SysNameRect.Y + SysNameRect.Height / 2 - (Fonts.Arial14Bold.LineSpacing + Fonts.Arial12.LineSpacing + 2) / 2);
             batch.DrawString(Fonts.Arial14Bold, P.Name, namePos, TextColor);
+            // wide displays only: right of the name, show what this colony can build - Space Port
+            // (ships) then Military Outpost (troops), always that order so the eye scans the column
+            // straight down. Absent capability = no icon (nothing, not a greyed ghost).
+            if (Screen.Table.Columns.Length >= 14)
+            {
+                const int iconSize = 18;
+                float ix = namePos.X + Fonts.Arial14Bold.TextWidth(P.Name) + 8;
+                int iy = (int)namePos.Y + (Fonts.Arial14Bold.LineSpacing - iconSize) / 2;
+                if (P.HasSpacePort)
+                {
+                    batch.Draw(ResourceManager.Texture("Buildings/icon_spaceport_48x48"),
+                               new Rectangle((int)ix, iy, iconSize, iconSize), TextColor);
+                    ix += iconSize + 4;
+                }
+                if (P.CanBuildInfantry)
+                    batch.Draw(ResourceManager.Texture("Buildings/icon_military_outpost_48x48"),
+                               new Rectangle((int)ix, iy, iconSize, iconSize), TextColor);
+            }
             namePos.Y += Fonts.Arial14Bold.LineSpacing + 2;
             string cls = P.LocalizedRichness;
             int clsPar = cls.IndexOf(" (");

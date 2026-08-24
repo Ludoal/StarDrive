@@ -103,6 +103,9 @@ namespace Ship_Game
             if (wideCols)
             {
                 var cols = new Array<UITable.Column>(Table.Columns);
+                // wide displays only: the Planet cell also carries the Space Port / troops icons
+                // to the right of the name (see ColoniesListItem), so its floor grows by 30px
+                cols[1].MinWidth += 30;
                 cols.Insert(5, new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_poppertile"), Align = TableAlign.Number,
                                                     Sortable = true, Tip = GameText.EmPopGrowthTip, SepColor = MutedSep });
                 // one bold letter per type (bench 407); gold rule on its left (default),
