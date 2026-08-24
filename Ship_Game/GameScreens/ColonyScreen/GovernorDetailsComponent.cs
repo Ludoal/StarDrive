@@ -1075,12 +1075,22 @@ namespace Ship_Game
             float spent = Planet.CivilianBuildingsMaintenance + Planet.GroundDefMaintenance + Planet.SpaceDefMaintenance;
             if (GovernorOn)
             {
-                float percentSpent  = spent / budget.TotalAlloc.LowerBound(0.01f) * 100;
                 BudgetSum.Text      = $"{Localizer.Token(GameText.Total3)} {spent.String(1)}" +
                                       $" {Localizer.Token(GameText.Of)} {budget.TotalAlloc.String(1)} BC/turn";
-                BudgetPercent.Text  = $" ({percentSpent.String(1)}%)";
-                BudgetPercent.Pos   = new Vector2(BudgetSum.Pos.X + FontBig.TextWidth(BudgetSum.Text) + 4, BudgetSum.Pos.Y); // follow the total text (BC/turn is wider than the old label)
-                BudgetPercent.Color = GetColor();
+                // A budget below 0.5 has no meaningful denominator - the old 0.01 floor turned a
+                // near-zero alloc into absurd percentages (3.5 / 0.01 = 11666.7%). Below the floor
+                // we draw no ratio at all: the total reads plainly, no parenthesis.
+                if (budget.TotalAlloc >= 0.5f)
+                {
+                    float percentSpent  = spent / budget.TotalAlloc * 100;
+                    BudgetPercent.Text  = $" ({percentSpent.String(1)}%)";
+                    BudgetPercent.Pos   = new Vector2(BudgetSum.Pos.X + FontBig.TextWidth(BudgetSum.Text) + 4, BudgetSum.Pos.Y); // follow the total text (BC/turn is wider than the old label)
+                    BudgetPercent.Color = GetColor();
+                }
+                else
+                {
+                    BudgetPercent.Text = "";
+                }
             }
             else
             {
