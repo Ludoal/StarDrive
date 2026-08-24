@@ -33,7 +33,7 @@ namespace Ship_Game
         // its toggle's row now, so it costs the same 26 as a plain checkbox) + 12 bottom pad.
         // BoxW2: the dropdown boxes are WIDER instead of taller - label room + picker.
         const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
-        const float EmpireBoxH = 160f, ColonizationBoxH = 130f, ConstructionBoxH = 139f,
+        const float EmpireBoxH = 160f, ColonizationBoxH = 156f, ConstructionBoxH = 139f, // +26: Auto-explore split adds a row (Send New Explorers)
                     TradeBoxH = 204f, NotificationsBoxH = 262f, PriorityBoxH = 330f;
 
         public AutomationScreen(UniverseScreen u) : base(u, toPause: u)
@@ -139,9 +139,13 @@ namespace Ship_Game
                             autoPick: () => player.AutoPickBestMiningStation);
 
             UIList colonization = NewBox(new RectF(x1, top, BoxW2, ColonizationBoxH), "Colonization");
+            // Auto-explore split into two jobs: build new scouts (keeps the model picker), and
+            // send idle scouts out to explore (a plain toggle, checked by default in a new game).
             ScoutDropDown = colonization.Add(new CheckedDropdown())
-                .Create(() => player.AutoExplore, title: GameText.Autoexplore, tooltip: GameText.YourEmpireWillAutomaticallyManage,
+                .Create(() => player.AutoBuildExplorers, title: GameText.AutoBuildExplorers, tooltip: GameText.AutoBuildExplorersTip,
                         autoPick: () => player.AutoPickBestScout);
+            colonization.AddCheckbox(() => player.SendNewExplorersToExplore, title: GameText.SendNewExplorersToExplore,
+                                     tooltip: GameText.SendNewExplorersToExploreTip);
             ColonyShipDropDown = colonization.Add(new CheckedDropdown())
                 .Create(() => player.AutoColonize, title: GameText.Autocolonize, tooltip: GameText.YourEmpireWillAutomaticallyCreate,
                         autoPick: () => player.AutoPickBestColonizer);

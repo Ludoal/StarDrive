@@ -7039,6 +7039,14 @@ namespace Ship_Game
         FreighterModelTip = 7107,
         /// <summary>Inhibited when Inter Empire Trade is not allowed (enable it in Automation).</summary>
         InterTradeInhibited = 7108,
+        /// <summary>Auto-build Explorers</summary>
+        AutoBuildExplorers = 7109,
+        /// <summary>Your empire will automatically build new scout ships while systems remain unexplored.</summary>
+        AutoBuildExplorersTip = 7110,
+        /// <summary>Send New Explorers to Explore</summary>
+        SendNewExplorersToExplore = 7111,
+        /// <summary>Idle scouts are automatically sent out to explore unknown systems.</summary>
+        SendNewExplorersToExploreTip = 7112,
         /// <summary>Dearest SING friends, We are delighted to see your empire's</summary>
         EncCorsairs000_Msg0 = -11,
         /// <summary>Agree to pay this upstanding gentleman.</summary>

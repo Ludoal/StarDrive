@@ -16598,6 +16598,22 @@ InterTradeInhibited:
  Id: 7108
  ENG: "Inhibited when Inter Empire Trade is not allowed (enable it in Automation)."
  FRA: "Inhibé quand le commerce inter-empires n'est pas autorisé (activez-le dans Automation)."
+AutoBuildExplorers:
+ Id: 7109
+ ENG: "Auto-build Explorers"
+ FRA: "Construction auto d'explorateurs"
+AutoBuildExplorersTip:
+ Id: 7110
+ ENG: "Your empire automatically builds new scout ships while systems remain unexplored."
+ FRA: "Votre empire construit automatiquement de nouveaux éclaireurs tant que des systèmes restent inexplorés."
+SendNewExplorersToExplore:
+ Id: 7111
+ ENG: "Send New Explorers to Explore"
+ FRA: "Envoyer les nouveaux explorateurs explorer"
+SendNewExplorersToExploreTip:
+ Id: 7112
+ ENG: "Idle scouts are automatically sent out to explore unknown systems."
+ FRA: "Les éclaireurs inactifs sont automatiquement envoyés explorer les systèmes inconnus."
  UKR: "Ліміт цивільного бюджету досягнуто!"
  PTB: "Limite do Orçamento Civil Atingido!"
 BB_Tech_SubspatialDynamics_CounterEnemyPlanetInhibitionBonus_Bonus:

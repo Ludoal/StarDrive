@@ -109,8 +109,21 @@ namespace Ship_Game
         public float MoneyLastTurn;
         public int AllTimeTradeIncome;
         [StarData] public bool AutoBuildSpaceRoads;
+        // LEGACY: the old single "Auto-explore" toggle. Kept for save compatibility - a save
+        // written before this split deserializes it, and OnDeserialized seeds the two split
+        // toggles below from it (see MigrateExplorerAutomation). Not shown in the UI anymore.
         [StarData] public bool AutoExplore;
         [StarData] public bool AutoPickBestScout; // Ludoal fork (wishlist): Auto Pick Explorer
+        // The two empire-level explorer automations, split out of the old AutoExplore.
+        // New games start decoupled; migrated saves inherit AutoExplore into both (see below).
+        [StarData] public bool AutoBuildExplorers;                // build new scouts when more are needed
+        [StarData] public bool SendNewExplorersToExplore = true;  // send idle scouts out (checked by default)
+        // Set once the split toggles have been seeded; distinguishes a pre-split save (seed from
+        // AutoExplore) from a fresh/new-format one (leave the toggles as the player set them).
+        [StarData] public bool ExplorerAutomationSplit;
+        // The AI always runs both; the player runs each only when its own toggle is on.
+        bool BuildExplorersActive => !isPlayer || AutoBuildExplorers;
+        bool SendExplorersActive  => !isPlayer || SendNewExplorersToExplore;
         [StarData] public bool AutoColonize;
         [StarData] public bool AutoCoreGovernor; // Ludoal fork: Auto Governor - new colonies get a fitting governor (name kept for save compat)
         [StarData] public bool AutoResearch;
@@ -313,7 +326,21 @@ namespace Ship_Game
             // in an ongoing game throws.
             ObsoletePlayerDesigns ??= new();
             MigrateFreighterAutomation(); // split the old single Automatic Trade toggle into three
+            MigrateExplorerAutomation();  // split the old single Auto-explore toggle into two
             CommonInitialize();
+        }
+
+        // Save migration: a game saved before "Auto-explore" was split into build + send inherits
+        // its old on/off state into both, so an ongoing game keeps its conduct. A fresh game (or an
+        // already-split save) leaves the toggles as they are.
+        public void MigrateExplorerAutomation()
+        {
+            if (ExplorerAutomationSplit)
+                return;
+
+            AutoBuildExplorers        = AutoExplore;
+            SendNewExplorersToExplore = AutoExplore;
+            ExplorerAutomationSplit   = true;
         }
 
         public float GetProjectorRadius()
@@ -2462,18 +2489,19 @@ namespace Ship_Game
 
         void AssignExplorationTasks()
         {
-            if (isPlayer && !AutoExplore)
+            // The two jobs are now separate toggles: build new scouts, and send idle scouts out.
+            // The player runs each only when its own toggle is on; the AI always runs both.
+            if (isPlayer && !BuildExplorersActive && !SendExplorersActive)
                 return;
 
             int unexplored = Universe.Systems.Count(s => !s.IsFullyExploredBy(this)).UpperBound(12);
             var ships = OwnedShips;
             if (unexplored == 0 && isPlayer)
             {
-                // FB: Done exploring, flag can be removed. Maybe add a notification for the player?
-                // We also might be able to turn off AutoExplore for the AI and save the system count
-                // for unexplored (but dont scrap the scouts for the AI, they are needed for sniffing
-                // remnant systems
-                AutoExplore = false; 
+                // FB: Done exploring, flags can be removed. Maybe add a notification for the player?
+                // (We don't scrap the AI's scouts - they are needed for sniffing remnant systems.)
+                AutoBuildExplorers        = false;
+                SendNewExplorersToExplore = false;
                 for (int i = 0; i < ships.Count; i++)
                 {
                     Ship ship = ships[i];
@@ -2497,14 +2525,14 @@ namespace Ship_Game
                     // FB: log the num for determining is should build more scouts
                     // If the player built excess scouts, assign them too, that is why
                     // we are not exiting the loop when desired scouts num was reached
-                    numScouts += 1; 
-                    if (ship.IsIdleScout())
-                        ship.DoExplore(); 
+                    numScouts += 1;
+                    if (ship.IsIdleScout() && SendExplorersActive)
+                        ship.DoExplore();
                 }
             }
 
             // Build a scout if needed
-            if (numScouts < desiredScouts  && !AI.HasGoal(GoalType.BuildScout))
+            if (BuildExplorersActive && numScouts < desiredScouts && !AI.HasGoal(GoalType.BuildScout))
                 AI.AddGoal(new BuildScout(this));
         }
 
