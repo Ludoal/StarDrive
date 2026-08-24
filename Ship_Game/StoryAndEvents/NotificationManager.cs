@@ -72,8 +72,9 @@ namespace Ship_Game
         Rectangle DefaultNotificationRect => GetNotificationRect(NotificationList.Count);
         Rectangle DefaultClickRect => new Rectangle(NotificationArea.X, NotificationArea.Y, 64, 64);
 
-        public void AddNotification(Notification notify, params string[] soundCueStrings)
+        public void AddNotification(Notification notify, NotificationCategory category, params string[] soundCueStrings)
         {
+            notify.Category = category;
             notify.ClickRect = DefaultClickRect;
             notify.DestinationRect = DefaultNotificationRect;
 
@@ -101,7 +102,7 @@ namespace Ship_Game
                 // Ludoal fork: an espionage event about a PLANET opens that planet
                 // (colony view if ours, selection otherwise); otherwise the espionage panel
                 Action          = planet != null ? "SnapToPlanet" : "EspionageScreen",
-            }, good ? "sd_ui_spy_win_02" : "sd_ui_spy_fail_02"); 
+            }, NotificationCategory.Espionage, good ? "sd_ui_spy_win_02" : "sd_ui_spy_fail_02");
         }
 
         public void AddBeingInvadedNotification(SolarSystem beingInvaded, Empire invader, float strRatio)
@@ -127,7 +128,7 @@ namespace Ship_Game
                 ReferencedItem1 = beingInvaded,
                 IconPath        = "NewUI/icon_planet_terran_01_mid",
                 Action          = "SnapToSystem"
-            }, "sd_notify_alert");
+            }, NotificationCategory.Combat, "sd_notify_alert");
         }
 
         public void AddColonizedNotification(Planet wasColonized, Empire emp)
@@ -139,7 +140,7 @@ namespace Ship_Game
                 ReferencedItem1 = wasColonized,
                 IconPath        = wasColonized.IconPath,
                 Action          = "SnapToPlanet"
-            }, "sd_ui_notification_colonized_01");
+            }, NotificationCategory.Colony, "sd_ui_notification_colonized_01");
         }
 
         public void AddCapitalTransfer(Planet from, Planet to)
@@ -150,7 +151,7 @@ namespace Ship_Game
                 ReferencedItem1 = to,
                 IconPath        = to.IconPath,
                 Action          = "SnapToPlanet"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Colony, "sd_ui_notification_encounter");
         }
 
         public void AddTreatyBreak(Empire empire, TreatyType type)
@@ -175,7 +176,7 @@ namespace Ship_Game
                 RelevantEmpire = empire,
                 Message        = $"{our} {treaty} {with} {empire.Name} {wasRevoked}",
                 Action   = "Diplomacy"
-            }, "sd_ui_notification_warning");
+            }, NotificationCategory.Diplomacy, "sd_ui_notification_warning");
         }
 
         public void NotifyPreparingForWar(Empire e)
@@ -184,7 +185,7 @@ namespace Ship_Game
             {
                 RelevantEmpire = e,
                 Message        = $"{Localizer.Token(GameText.OurSpiesReport)} {e.Name} {Localizer.Token(GameText.TheyPreparingForWar)}"
-            }, "sd_ui_notification_warning");
+            }, NotificationCategory.Diplomacy, "sd_ui_notification_warning");
         }
 
         public void AddAnomalyInvestigated(Planet p, string message)
@@ -195,7 +196,7 @@ namespace Ship_Game
                 ReferencedItem1 = p,
                 IconPath        = p.IconPath,
                 Action          = "CombatScreen"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Exploration, "sd_ui_notification_encounter");
         }
 
         public void AddConqueredNotification(Planet p, Empire conqueror, Empire loser)
@@ -215,7 +216,7 @@ namespace Ship_Game
                 ReferencedItem1 = item,
                 IconPath        = p.IconPath,
                 Action          = action
-            }, "sd_troop_march_01");
+            }, NotificationCategory.Combat, "sd_troop_march_01");
         }
 
         public void AddIncomingRemnants(Planet p, string message)
@@ -227,7 +228,7 @@ namespace Ship_Game
                 ReferencedItem1 = p.System,
                 IconPath        = p.IconPath,
                 Action          = "SnapToSystem"
-            }, "sd_troop_march_01");
+            }, NotificationCategory.Threats, "sd_troop_march_01");
         }
 
         public void AddOrbitalOverLimit(Planet p, int cost, string path)
@@ -238,7 +239,7 @@ namespace Ship_Game
                 ReferencedItem1 = p,
                 IconPath        = path,
                 Action          = "SnapToPlanet"
-            }, "sd_ui_notification_warning");
+            }, NotificationCategory.Construction, "sd_ui_notification_warning");
         }
 
         public void AddBuildingConstructed(Planet p, Building b)
@@ -251,7 +252,7 @@ namespace Ship_Game
                 ReferencedItem1 = p,
                 IconPath        = $"Buildings/icon_{b.Icon}_64x64",
                 Action          = "SnapToPlanet"
-            }, "smallservo");
+            }, NotificationCategory.Construction, "smallservo");
         }
 
         public void AddEnemyLaunchedTroopsVsFleet(Planet p, Empire enemy)
@@ -263,7 +264,7 @@ namespace Ship_Game
                 ReferencedItem1 = p,
                 IconPath        = p.IconPath,
                 Action          = "SnapToPlanet"
-            }, "sd_notify_alert");
+            }, NotificationCategory.Combat, "sd_notify_alert");
         }
 
 
@@ -278,7 +279,7 @@ namespace Ship_Game
                 ReferencedItem1 = p,
                 IconPath        = $"Buildings/icon_{b.Icon}_64x64",
                 Action          = "SnapToPlanet"
-            }, "sd_ui_notification_warning");
+            }, NotificationCategory.Construction, "sd_ui_notification_warning");
         }
 
         public void AddEmpireDiedNotification(Empire thatDied, bool IsRemnant = false)
@@ -296,7 +297,7 @@ namespace Ship_Game
                 DestinationRect = DefaultNotificationRect,
                 Important       = true,
                 Title           = Localizer.Token(GameText.NtEmpireDefeated)
-            }, "sd_troop_march_01");
+            }, NotificationCategory.Diplomacy, "sd_troop_march_01");
         }
 
         public void AddEmpireMergedOrSurrendered(Empire empire, string msg)
@@ -307,7 +308,7 @@ namespace Ship_Game
                 Message = msg,
                 Important = true,
                 Title = Localizer.Token(GameText.NtEmpireMergedOrSurrendered)
-            }, "sd_troop_march_01");
+            }, NotificationCategory.Diplomacy, "sd_troop_march_01");
         }
 
         public void AddWeProtectedYou(Empire pirates)
@@ -319,7 +320,7 @@ namespace Ship_Game
                 Action          = "SnapToShip",
                 ClickRect       = DefaultClickRect,
                 DestinationRect = DefaultNotificationRect
-            }, "sd_troop_march_01");
+            }, NotificationCategory.Threats, "sd_troop_march_01");
         }
 
         public void AddPiratesAreGettingStronger(Empire pirates, int numBases)
@@ -333,7 +334,7 @@ namespace Ship_Game
                 Message         = $"{yourSpiesReportThat} {pirates.Name} {areGettingStronger} {numBases} {bases}",
                 ClickRect       = DefaultClickRect,
                 DestinationRect = DefaultNotificationRect
-            }, "sd_troop_march_01");
+            }, NotificationCategory.Threats, "sd_troop_march_01");
         }
 
         public void AddRemnantsAreGettingStronger(Empire remnants)
@@ -344,7 +345,7 @@ namespace Ship_Game
                 ClickRect       = DefaultClickRect,
                 DestinationRect = DefaultNotificationRect,
                 Message         = Localizer.Token(GameText.OurScientistsReportThatThey)
-            }, "sd_ui_notification_warning");
+            }, NotificationCategory.Threats, "sd_ui_notification_warning");
         }
 
         public void AddRemnantsStoryActivation(Empire remnants)
@@ -357,7 +358,7 @@ namespace Ship_Game
                 Message         = Localizer.Token(GameText.OurScientistsReportThatThey2),
                 Important       = true,
                 Title           = Localizer.Token(GameText.NtRemnantStory)
-            }, "sd_ui_notification_warning");
+            }, NotificationCategory.Threats, "sd_ui_notification_warning");
         }
 
         public void AddRemnantsNewPortal(Empire remnants)
@@ -370,7 +371,7 @@ namespace Ship_Game
                 Message         = Localizer.Token(GameText.YourScientistsReportMassiveRadiation),
                 Important       = true,
                 Title           = Localizer.Token(GameText.NtRemnantStory)
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Threats, "sd_ui_notification_encounter");
         }
 
         public void AddPiratesAreGettingWeaker(Empire pirates, int numBases)
@@ -381,7 +382,7 @@ namespace Ship_Game
                 Message         = $"{Localizer.Token(GameText.OurSpiesReportThat)} {pirates.Name} {Localizer.Token(GameText.NumberOfBasesWasReducednto)} {numBases}.",
                 ClickRect       = DefaultClickRect,
                 DestinationRect = DefaultNotificationRect
-            }, "sd_troop_march_01");
+            }, NotificationCategory.Threats, "sd_troop_march_01");
         }
 
         public void AddPiratesFlagshipSighted(Empire pirates)
@@ -392,7 +393,7 @@ namespace Ship_Game
                 Message         = $"{Localizer.Token(GameText.OurSpiesReportThat)} {pirates.Name} {Localizer.Token(GameText.HaveAFlagshipnlurkingSomewhereIn)}",
                 ClickRect       = DefaultClickRect,
                 DestinationRect = DefaultNotificationRect
-            }, "sd_troop_march_01");
+            }, NotificationCategory.Threats, "sd_troop_march_01");
         }
 
         public void AddEnemyTroopsLandedNotification(Planet where, Empire invader)
@@ -404,7 +405,7 @@ namespace Ship_Game
                 ReferencedItem1 = where,
                 IconPath        = where.IconPath,
                 Action          = "CombatScreen"
-            }, "sd_notify_alert", "sd_troop_march_01");
+            }, NotificationCategory.Combat, "sd_notify_alert", "sd_troop_march_01");
         }
 
         public void AddForeignTroopsRemovedNotification(Planet where)
@@ -415,7 +416,7 @@ namespace Ship_Game
                 ReferencedItem1 = where,
                 IconPath        = where.IconPath,
                 Action          = "SnapToPlanet"
-            }, "sd_troop_march_01");
+            }, NotificationCategory.Colony, "sd_troop_march_01");
         }
 
         public void AddTroopsRemovedNotification(Planet where)
@@ -429,7 +430,7 @@ namespace Ship_Game
                 ReferencedItem1 = where,
                 IconPath        = where.IconPath,
                 Action          = "SnapToPlanet"
-            }, "sd_troop_march_01");
+            }, NotificationCategory.Colony, "sd_troop_march_01");
         }
 
         public void AddMeteorRelated(Planet planet, string text, string texPath = "") => AddVolcanoRelated(planet, text, texPath);
@@ -442,7 +443,7 @@ namespace Ship_Game
                 IconPath = texturePath.IsEmpty() ?  planet.IconPath : texturePath,
                 Action = planet.Owner == Screen.Player ? "SnapToPlanet" : "CombatScreen",
                 Message = $"{planet.Name}: {text}"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Colony, "sd_ui_notification_encounter");
         }
 
         public void AddStarvation(Planet planet)
@@ -453,7 +454,7 @@ namespace Ship_Game
                 IconPath = planet.IconPath,
                 Action = "SnapToPlanet",
                 Message = $"{Localizer.Token(GameText.StarvationOnPlanet)} {planet.Name}!"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Colony, "sd_ui_notification_encounter");
         }
 
         public void AddNotify(ExplorationEvent expEvent)
@@ -465,7 +466,7 @@ namespace Ship_Game
                 ReferencedItem1 = expEvent,
                 IconPath        = "ResearchMenu/icon_event_science",
                 Action          = "LoadEvent"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Events, "sd_ui_notification_encounter");
         }
 
         public void AddNotify(ExplorationEvent expEvent, string cMessage)
@@ -477,7 +478,7 @@ namespace Ship_Game
                 ReferencedItem1 = expEvent,
                 IconPath        = "ResearchMenu/icon_event_science",
                 Action          = "LoadEvent"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Events, "sd_ui_notification_encounter");
         }
 
         public void AddRemnantUpdateNotify(ExplorationEvent expEvent, Empire remnants)
@@ -493,7 +494,7 @@ namespace Ship_Game
                 Action          = "LoadEvent",
                 Important       = true,
                 Title           = Localizer.Token(GameText.NtRemnantStory)
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Threats, "sd_ui_notification_encounter");
         }
         
         public void AddRemnantAbleToScanOrWarn(Empire remnants, GameText gameText)
@@ -503,7 +504,7 @@ namespace Ship_Game
                 RelevantEmpire = remnants,
                 Pause = false,
                 Message = Localizer.Token(gameText)
-            }, "sd_ui_notification_encounter"); ;
+            }, NotificationCategory.Threats, "sd_ui_notification_encounter"); ;
         }
 
         public void AddPiratesAbleToScan(Empire pirates)
@@ -513,7 +514,7 @@ namespace Ship_Game
                 RelevantEmpire = pirates,
                 Pause = false,
                 Message = $"{Localizer.Token(GameText.CanScanPiratesEvent)}"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Threats, "sd_ui_notification_encounter");
         }
 
         public void AddNotify(Technology.TriggeredEvent techEvent, string message) => 
@@ -532,7 +533,7 @@ namespace Ship_Game
                 ReferencedItem2 = p,
                 IconPath        = p.IconPath,
                 Action          = "SnapToExpandSystem"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Exploration, "sd_ui_notification_encounter");
         }
 
         public void AddMineablePlanet(Planet p)
@@ -544,7 +545,7 @@ namespace Ship_Game
                 ReferencedItem1 = p,
                 IconPath        = p.IconPath,
                 Action          = "SnapToPlanet"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Exploration, "sd_ui_notification_encounter");
         }
 
         public void AddReseachablePlanet(Planet p)
@@ -564,7 +565,7 @@ namespace Ship_Game
                 ReferencedItem1 = p,
                 IconPath        = p.IconPath,
                 Action          = "SnapToPlanet"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Exploration, "sd_ui_notification_encounter");
         }
 
         public void AddReseachableStar(SolarSystem s)
@@ -576,7 +577,7 @@ namespace Ship_Game
                 ReferencedItem1 = s,
                 IconPath        = s.Sun.IconPath,
                 Action          = "SnapToSystem"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Exploration, "sd_ui_notification_encounter");
         }
 
         public void AddShipCrashed(Planet p, string message)
@@ -591,7 +592,7 @@ namespace Ship_Game
                 ReferencedItem1 = p,
                 IconPath        = p.IconPath,
                 Action          = "SnapToPlanet"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Combat, "sd_ui_notification_encounter");
         }
 
         /// <summary>
@@ -622,7 +623,7 @@ namespace Ship_Game
                 recover.Action          = "SnapToPlanet";
             }
 
-            AddNotification(recover, "sd_ui_notification_encounter");
+            AddNotification(recover, NotificationCategory.Combat, "sd_ui_notification_encounter");
         }
 
         public void AddMoneyWarning()
@@ -637,7 +638,7 @@ namespace Ship_Game
                 Message  = message,
                 IconPath = "UI/icon_warning_money",
                 Action   = "Economy"  // Ludoal fork (maintainer feedback): click opens the economy panel
-            }, "sd_ui_notification_warning", "sd_trade_01");
+            }, NotificationCategory.Economy, "sd_ui_notification_warning", "sd_trade_01");
         }
 
         public void AddPeacefulMergerNotification(Empire absorber, Empire target)
@@ -649,7 +650,7 @@ namespace Ship_Game
                 IconPath       = "NewUI/icon_planet_terran_01_mid",
                 Important      = true,
                 Title          = Localizer.Token(GameText.NtPeacefulMerger)
-            }, "sd_troop_march_01");
+            }, NotificationCategory.Diplomacy, "sd_troop_march_01");
         }
 
         public void AddMergeWithPlayer(Empire target)
@@ -661,7 +662,7 @@ namespace Ship_Game
                 IconPath = "NewUI/icon_planet_terran_01_mid",
                 Important = true,
                 Title = Localizer.Token(GameText.NtEmpireJoinedUs)
-            }, "sd_troop_march_01");
+            }, NotificationCategory.Diplomacy, "sd_troop_march_01");
         }
 
         public void AddPeaceTreatyEnteredNotification(Empire first, Empire second)
@@ -672,7 +673,7 @@ namespace Ship_Game
                 Message  = $"{first.data.Traits.Name} {Localizer.Token(GameText.And3)} {second.data.Traits.Name}\n{Localizer.Token(GameText.AreNowAtPeace)}",
                 Action   = "Diplomacy",
                 IconPath = "UI/icon_peace"
-            }, "sd_ui_notification_conquer_01");
+            }, NotificationCategory.Diplomacy, "sd_ui_notification_conquer_01");
         }
 
         public void AddPeaceTreatyExpiredNotification(Empire otherEmpire)
@@ -683,7 +684,7 @@ namespace Ship_Game
                 Message  = $"{Localizer.Token(GameText.PeaceTreatyExpiredWithn)} {otherEmpire.data.Traits.Name}",
                 Action   = "Diplomacy",
                 IconPath = "UI/icon_peace_cancel"
-            }, "sd_ui_notification_warning");
+            }, NotificationCategory.Diplomacy, "sd_ui_notification_warning");
         }
 
         public void AddPlanetDiedNotification(Planet p)
@@ -694,7 +695,7 @@ namespace Ship_Game
                 ReferencedItem1 = p.System,
                 IconPath        = p.IconPath,
                 Action          = "SnapToSystem"
-            }, "sd_ui_notification_warning");
+            }, NotificationCategory.Colony, "sd_ui_notification_warning");
         }
 
         public void AddMeteorShowerInSystem(Planet p)
@@ -705,7 +706,7 @@ namespace Ship_Game
                 ReferencedItem1 = p.System,
                 IconPath        = p.IconPath,
                 Action          = "SnapToSystem"
-            }, "sd_ui_notification_warning");
+            }, NotificationCategory.Colony, "sd_ui_notification_warning");
         }
 
         public void AddMeteorShowerTargetingOurPlanet(Planet p)
@@ -716,7 +717,7 @@ namespace Ship_Game
                 ReferencedItem1 = p.System,
                 IconPath        = p.IconPath,
                 Action          = "SnapToSystem"
-            }, "sd_notify_alert");
+            }, NotificationCategory.Colony, "sd_notify_alert");
         }
 
         public void AddRandomEventNotification(string message, string iconPath, string action, Planet p)
@@ -727,7 +728,7 @@ namespace Ship_Game
                 Action          = action,
                 ReferencedItem1 = p,
                 IconPath        = iconPath ?? "ResearchMenu/icon_event_science_bad"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Events, "sd_ui_notification_encounter");
         }
 
         public void AddExplorerDestroyedNotification(Ship ship)
@@ -750,7 +751,7 @@ namespace Ship_Game
             }
 
             explorerDestroyed.Message = message;
-            AddNotification(explorerDestroyed, "sd_ui_notification_encounter");
+            AddNotification(explorerDestroyed, NotificationCategory.Exploration, "sd_ui_notification_encounter");
         }
 
         public void AddExcessResearchStationRemoved(Ship station)
@@ -761,7 +762,7 @@ namespace Ship_Game
                 Action = "SnapToStation",
                 ReferencedItem1 = station,
                 IconPath = station.BaseHull.IconPath ?? "ResearchMenu/icon_event_science_bad"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Construction, "sd_ui_notification_encounter");
         }
 
         public void AddResearchStationRemoved(Planet planet)
@@ -772,7 +773,7 @@ namespace Ship_Game
                 Action = "SnapToPlanet",
                 ReferencedItem1 = planet,
                 IconPath = planet.IconPath
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Construction, "sd_ui_notification_encounter");
         }
 
         public void AddScrapUnlockNotification(string message, string iconPath)
@@ -782,7 +783,7 @@ namespace Ship_Game
                 Message  = message,
                 Action   = "ShipDesign",
                 IconPath = iconPath ?? "ResearchMenu/icon_event_science_bad"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Events, "sd_ui_notification_encounter");
         }
 
         public void AddBoardNotification(string message, string iconPath, string action, Ship s, Empire boarder)
@@ -794,7 +795,7 @@ namespace Ship_Game
                 Action          = action,
                 ReferencedItem1 = s,
                 IconPath        = iconPath ?? "ResearchMenu/icon_event_science_bad"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Combat, "sd_ui_notification_encounter");
         }
 
         public void AddResearchStationBuiltNotification(Ship s, ExplorableGameObject solarBody)
@@ -817,7 +818,7 @@ namespace Ship_Game
                 Action          = "SnapToStation",
                 ReferencedItem1 = s,
                 IconPath        = s.ShipData.IconPath
-            }, "smallservo");
+            }, NotificationCategory.Construction, "smallservo");
         }
 
         public void AddMiningStationBuiltNotification(Ship s, Planet planet)
@@ -828,7 +829,7 @@ namespace Ship_Game
                 Action = "SnapToStation",
                 ReferencedItem1 = s,
                 IconPath = s.ShipData.IconPath
-            }, "smallservo");
+            }, NotificationCategory.Construction, "smallservo");
         }
 
         public void AddAbortLandNotification(Planet planet, Ship s)
@@ -841,7 +842,7 @@ namespace Ship_Game
                 Action          = "SnapToShip",
                 ReferencedItem1 = s,
                 IconPath        = s.BaseHull.IconPath
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Colony, "sd_ui_notification_encounter");
         }
 
         public void AddAbortLandNotification(Planet planet, Fleet fleet)
@@ -856,7 +857,7 @@ namespace Ship_Game
                 Action          = "SnapToShip",
                 ReferencedItem1 = planet,
                 IconPath        = planet.IconPath
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Colony, "sd_ui_notification_encounter");
         }
 
         public void AddDestroyedPirateBase(Ship s, float reward)
@@ -868,7 +869,7 @@ namespace Ship_Game
                 Message         = message,
                 ReferencedItem1 = s,
                 DestinationRect = DefaultNotificationRect
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Threats, "sd_ui_notification_encounter");
         }
 
         public void AddScrapProgressNotification(string message, string iconPath, string techName)
@@ -879,7 +880,7 @@ namespace Ship_Game
                 Action = "ResearchScreen",
                 ReferencedItem1 = techName,
                 IconPath = iconPath ?? "ResearchMenu/icon_event_science_bad"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Events, "sd_ui_notification_encounter");
         }
 
         public void AddRebellionNotification(Planet beingInvaded)
@@ -893,7 +894,7 @@ namespace Ship_Game
                 ReferencedItem1 = beingInvaded.System,
                 IconPath        = "UI/icon_rebellion",
                 Action          = "SnapToSystem"
-            }, "sd_troop_march_01", "sd_notify_alert");
+            }, NotificationCategory.Combat, "sd_troop_march_01", "sd_notify_alert");
         }
 
         public void AddRemnantHelpersGiftMessage(int storyStep, SolarSystem system, Empire remnants)
@@ -908,7 +909,7 @@ namespace Ship_Game
                 Message         = Localizer.Token(messageIndex),
                 ReferencedItem1 = system,
                 Action          = "SnapToSystem"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Threats, "sd_ui_notification_encounter");
         }
 
         public void AddResearchComplete(string unlocked, Empire emp)
@@ -930,7 +931,7 @@ namespace Ship_Game
                 ReferencedItem1 = unlocked,
                 IconPath        = hasTechIcon ? techIcon : "TechIcons/" + unlocked,
                 Action          = "ResearchScreen"
-            }, "sd_ui_notification_research_01");
+            }, NotificationCategory.Events, "sd_ui_notification_research_01");
         }
 
         public void AddSurrendered(Empire absorber, Empire target)
@@ -942,7 +943,7 @@ namespace Ship_Game
                 IconPath       = "NewUI/icon_planet_terran_01_mid",
                 Important      = true,
                 Title          = Localizer.Token(GameText.NtEmpireSurrendered)
-            }, "sd_troop_march_01");
+            }, NotificationCategory.Diplomacy, "sd_troop_march_01");
         }
 
         public void AddWarDeclaredNotification(Empire attacker, Empire victim)
@@ -953,7 +954,7 @@ namespace Ship_Game
                 IconPath = "ResearchMenu/icons_techroot_infantry_hover",
                 Pause    = attacker.isPlayer || victim.isPlayer,
                 Action = "Diplomacy"
-            }, "sd_troop_march_01", "sd_notify_alert");
+            }, NotificationCategory.Diplomacy, "sd_troop_march_01", "sd_notify_alert");
         }
 
         public void AddDeclareWarViaAllyCall(Empire enemy, Empire requestingEmpire)
@@ -963,7 +964,7 @@ namespace Ship_Game
                 RelevantEmpire = enemy,
                 Message        = $"{enemy.Name} {Localizer.Token(GameText.DeclaredWarOnUsBecause)} {requestingEmpire.Name}",
                 Action = "Diplomacy"
-            }, "sd_ui_notification_encounter");
+            }, NotificationCategory.Diplomacy, "sd_ui_notification_encounter");
         }
 
         public void AddEmptyQueueNotification(Planet planet)
@@ -980,7 +981,7 @@ namespace Ship_Game
                 ReferencedItem1 = this, //this.system,
                 IconPath        = planet.IconPath, //"UI/icon_warning_money",
                 Action          = "SnapToPlanet" //"SnapToSystem",
-            }, "sd_ui_notification_warning");
+            }, NotificationCategory.Economy, "sd_ui_notification_warning");
         }
 
         void UpdateAllPositions()

@@ -23,6 +23,10 @@ public sealed class Notification
         
     public string Message;
     public string Action; // @TODO - this needs an enum!
+    // Ludoal fork (wishlist): which player-triage category this notification belongs to, set by
+    // AddNotification from its required argument. Drives per-category auto-clear. No default value:
+    // a notification cannot exist without a category (the compiler enforces it at AddNotification).
+    public NotificationCategory Category;
 
     public SubTexture Icon;
     public string IconPath;

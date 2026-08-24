@@ -943,6 +943,7 @@
     <Compile Include="Ship_Game\GameScreens\DiplomacyScreen\DiplomacyScreen.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\NotificationManager.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\Notification.cs" />
+    <Compile Include="Ship_Game\StoryAndEvents\NotificationCategory.cs" />
     <Compile Include="Ship_Game\StoryAndEvents\ImportantNotification.cs" />
     <Compile Include="Ship_Game\PieMenuNode.cs" />
     <Compile Include="Ship_Game\FleetDesign.cs" />

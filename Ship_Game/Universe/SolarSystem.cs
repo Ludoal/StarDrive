@@ -680,7 +680,7 @@ namespace Ship_Game
                 ReferencedItem1 = this,
                 Icon            = Sun.Icon,
                 Action          = "SnapToExpandSystem"
-            }, "sd_ui_notification_warning");
+            }, NotificationCategory.Exploration, "sd_ui_notification_warning");
         }
 
         public Vector2 SelectStarResearchStationPos(float minimumDistanceFromObjects = 20000)
