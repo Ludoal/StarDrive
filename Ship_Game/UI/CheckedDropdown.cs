@@ -74,27 +74,41 @@ namespace Ship_Game
             Height = Math.Max(lead.Height, Options.Bottom - Pos.Y);
         }
 
+        // Ludoal fork (bench): the picker greys out when its lead toggle is OFF - a model choice
+        // is meaningless while the automation it feeds is disabled. Only the lead stays live (to
+        // switch it back on); the Auto Pick box and the dropdown go read-only, click-refused, grey.
+        bool ParentOff => Check != null && !Check.Checked;
+
         public override bool HandleInput(InputState input)
         {
-            return (Check?.HandleInput(input) ?? false)
-                || (AutoPickBox?.HandleInput(input) ?? false)
+            if (Check != null && Check.HandleInput(input))
+                return true;
+            if (ParentOff) // lead off: swallow nothing else, the sub-controls are inert
+                return false;
+            return (AutoPickBox?.HandleInput(input) ?? false)
                 || Options.HandleInput(input);
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
+            bool greyed = ParentOff;
             if (Check != null) Check.Draw(batch, elapsed);
             else               TitleOnly.Draw(batch, elapsed);
             if (AutoPickBox != null)
             {
+                AutoPickBox.Greyed = greyed;
                 AutoPickBox.Draw(batch, elapsed);
-                if (IsAutoPicked())
+                if (IsAutoPicked() && !greyed)
                 {
                     batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.AutoPick),
                                      new Vector2(Options.X + 4, Options.Y + 3), Color.White); // white (bench 305)
                     return;
                 }
             }
+            // lead off: the model choice is moot, so the dropdown is not drawn at all - the greyed
+            // Auto Pick box carries the "disabled" signal without a dead-but-coloured dropdown.
+            if (greyed)
+                return;
             Options.Draw(batch, elapsed);
         }
     }

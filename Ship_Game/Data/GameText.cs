@@ -7073,6 +7073,8 @@ namespace Ship_Game
         ColonyCanBuildTroopsTip = 7124,
         /// <summary>Auto-clear</summary>
         AutoClearShort = 7125,
+        /// <summary>Not available</summary>
+        NotAvailable = 7126,
         /// <summary>Dearest SING friends, We are delighted to see your empire's</summary>
         EncCorsairs000_Msg0 = -11,
         /// <summary>Agree to pay this upstanding gentleman.</summary>

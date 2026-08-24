@@ -365,6 +365,19 @@ namespace Ship_Game
             }
         }
 
+        // Checked but nothing buildable yet: give the picker a single "Not available" entry so it
+        // never shows as an empty (broken-looking) list. Cleared again once a model is unlocked.
+        void ShowNotAvailableIfEmpty(DropOptions<int> options, bool canBuild)
+        {
+            if (options == null)
+                return;
+            if (!canBuild || options.Count == 0)
+            {
+                options.Clear();
+                options.AddOption(Localizer.Token(GameText.NotAvailable), 0);
+            }
+        }
+
         void UpdateDropDowns()
         {
             Empire player = Universe.Player;
@@ -411,14 +424,18 @@ namespace Ship_Game
                 bool canBuild = player.CanBuildResearchStations;
                 if (canBuild && ResearchStationDropDown.Count == 0)
                     UpdateDropDowns(); // tech completed while the tab is open - populate late
-                ResearchStationDropDown.Visible = !player.AutoPickBestResearchStation && canBuild;
+                // Checked but nothing to pick yet (tech not unlocked): show a "Not available"
+                // entry rather than an empty list (an empty list reads as a load bug).
+                ShowNotAvailableIfEmpty(ResearchStationDropDown, canBuild);
+                ResearchStationDropDown.Visible = !player.AutoPickBestResearchStation;
             }
             if (MiningStationDropDown != null)
             {
                 bool canBuild = player.CanBuildMiningStations;
                 if (canBuild && MiningStationDropDown.Count == 0)
                     UpdateDropDowns();
-                MiningStationDropDown.Visible = !player.AutoPickBestMiningStation && canBuild;
+                ShowNotAvailableIfEmpty(MiningStationDropDown, canBuild);
+                MiningStationDropDown.Visible = !player.AutoPickBestMiningStation;
             }
 
             base.Draw(batch, elapsed);
