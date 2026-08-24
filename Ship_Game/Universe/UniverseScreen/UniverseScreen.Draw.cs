@@ -333,19 +333,19 @@ namespace Ship_Game
             device.Clear(Color.White); // clear the lights RT to White
             batch.SafeBegin(SpriteBlendMode.AlphaBlend);
 
-            if (!Debug) // draw fog of war if we're not in debug
+            // Ludoal fork (maintainer decision): the fog veil is now the VISION OVERLAY's job only.
+            // At rest (F3 off) the residual 56/255 veil informed nothing (too faint to tell explored
+            // from unexplored) but was strong enough to dirty the image AND show its bounded edge as
+            // a rectangle when panning to the play-zone border. So the veil is drawn ONLY under the
+            // Vision overlay now; at rest, nothing - the Vision overlay carries the whole statement.
+            if (!Debug && ShowingVisionOverlay)
             {
                 // fill screen with transparent black and draw FogMap darker light on top of it
                 Rectangle fogRect = ProjectToScreenCoords(new Vector2(-UState.Size), UState.Size*2f);
                 // fillrect alpha ~33% unexplored scene visibility (1 - 170/255) when painting
                 // (FogOfWarMemory on). With the dark map (memory off) everything sits under
                 // the veil and the starfield washes out, so alpha 150 gives a lighter veil there.
-                // Ludoal fork (maintainer feedback): the veil is the VISION OVERLAY's statement,
-                // so at rest it only hints - F3 off keeps a light veil rather than none, to
-                // preserve the explored/unexplored distinction.
                 int fogAlpha = GlobalStats.FogOfWarMemory ? 170 : 150;
-                if (!ShowingVisionOverlay)
-                    fogAlpha = 90;
                 batch.FillRectangle(new Rectangle(0, 0, ScreenWidth, ScreenHeight), new Color(0, 0, 0, fogAlpha));
                 // Phase 3.7 step 3: persistent "I've been here" tint, premul-correct
                 // (rgb == alpha so FogMap composites correctly under premul AlphaBlend).
