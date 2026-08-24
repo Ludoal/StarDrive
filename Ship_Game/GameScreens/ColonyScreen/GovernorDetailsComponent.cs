@@ -1088,8 +1088,10 @@ namespace Ship_Game
                 ComputeAutoShares(budget, out float civ, out float grd, out float spc);
                 float localTotal = budget.CivilianAlloc.LowerBound(0f) + budget.GrdDefAlloc.LowerBound(0f) + budget.SpcDefAlloc.LowerBound(0f);
                 // when the shares are the inherited empire default (no budget yet), say so on hover -
-                // they are a prediction of what the colony will receive, not an active split
-                LocalizedText shareTip = localTotal > 0.01f ? default : GameText.InheritedBudgetShareTip;
+                // they are a prediction of what the colony will receive, not an active split. NB an
+                // EMPTY tooltip must be an empty STRING, not default(LocalizedText): the latter holds
+                // GameText token 0, which throws in GetTokenId when the tooltip is resolved.
+                LocalizedText shareTip = localTotal > 0.01f ? LocalizedText.None : GameText.InheritedBudgetShareTip;
                 ShareCiv.Tip = shareTip; ShareGrd.Tip = shareTip; ShareSpc.Tip = shareTip;
                 LinkingPlanetShares = true;
                 GovSpending.AbsoluteValue = localTotal > 0.01f ? localTotal : 0f;
