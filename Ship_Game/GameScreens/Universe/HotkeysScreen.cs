@@ -215,7 +215,9 @@ namespace Ship_Game
                 {
                     if (!input.KeyPressed(k) || k == Keys.Escape)
                         continue;
-                    string holder = KeyBindings.HolderOf(k, except: Listening);
+                    // a scoped bind (Design Issues, Shipyard-only) coexists with the same key in the
+                    // general namespace, so it never displaces a holder - skip the swap for it.
+                    string holder = KeyBindings.IsScoped(Listening) ? null : KeyBindings.HolderOf(k, except: Listening);
                     if (holder != null)
                     {
                         // the swap: the key moves here, the previous holder goes unbound
@@ -244,7 +246,18 @@ namespace Ship_Game
                 }
                 if (input.RightMouseClick)
                 {
-                    KeyBindings.Set(r.Bind, KeyBindings.DefaultOf(r.Bind));
+                    // reset to default - but through the SAME conflict check as a manual bind, so
+                    // restoring a default that another entry already holds unbinds that one (yellow)
+                    // instead of silently duplicating. Scoped binds skip the check, as when binding.
+                    Keys def = KeyBindings.DefaultOf(r.Bind);
+                    string holder = KeyBindings.IsScoped(r.Bind) ? null : KeyBindings.HolderOf(def, except: r.Bind);
+                    if (holder != null)
+                    {
+                        KeyBindings.Set(holder, Keys.None);
+                        BindRow other = Rows.Find(x => x.Bind == holder);
+                        if (other != null) other.ConflictFlash = 2.5f;
+                    }
+                    KeyBindings.Set(r.Bind, def);
                     GameAudio.AcceptClick();
                     return true;
                 }

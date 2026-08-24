@@ -106,11 +106,19 @@ namespace Ship_Game
             catch (Exception e) { Log.Warning($"Hotkeys.yaml save failed: {e.Message}"); }
         }
 
-        // the field currently holding this key, if any - the editor's conflict/swap check
+        // Ludoal fork: a few bindings live in their OWN input context (the frame captures the
+        // mouse/keys independently), so their key never collides with the general namespace - e.g.
+        // Design Issues (T) inside the Shipyard coexists with T in Economy. These are excluded from
+        // conflict detection: they neither hold a general key nor bump a general holder.
+        // extend the condition if another scoped binding is added later
+        public static bool IsScoped(string bind) => bind == nameof(DesignIssues);
+
+        // the field currently holding this key, if any - the editor's conflict/swap check. Scoped
+        // binds are skipped: assigning their key elsewhere must not unbind them, and vice versa.
         public static string HolderOf(Keys key, string except = null)
         {
             if (key == Keys.None) return null;
-            FieldInfo f = BindingFields().Find(x => x.Name != except && (Keys)x.GetValue(null) == key);
+            FieldInfo f = BindingFields().Find(x => x.Name != except && !IsScoped(x.Name) && (Keys)x.GetValue(null) == key);
             return f?.Name;
         }
 
