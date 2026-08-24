@@ -16662,6 +16662,10 @@ ColonyCanBuildTroopsTip:
  Id: 7124
  ENG: "Can build troops (has a Military Outpost)."
  FRA: "Peut construire des troupes (dispose d'un Military Outpost)."
+AutoClearShort:
+ Id: 7125
+ ENG: "Auto-clear"
+ FRA: "Effacement auto"
  UKR: "Ліміт цивільного бюджету досягнуто!"
  PTB: "Limite do Orçamento Civil Atingido!"
 BB_Tech_SubspatialDynamics_CounterEnemyPlanetInhibitionBonus_Bonus:

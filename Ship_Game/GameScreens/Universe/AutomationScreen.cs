@@ -35,7 +35,7 @@ namespace Ship_Game
         // BoxW2: the dropdown boxes are WIDER instead of taller - label room + picker.
         const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
         const float EmpireBoxH = 160f, ColonizationBoxH = 156f, ConstructionBoxH = 139f, // +26: Auto-explore split adds a row (Send New Explorers)
-                    TradeBoxH = 204f, NotificationsBoxH = 360f, PriorityBoxH = 330f; // Notifications: 9 category rows + Inhibition + timer (bench-tunable)
+                    TradeBoxH = 204f, NotificationsBoxH = 400f, PriorityBoxH = 330f; // Notifications: timer + 9 categories + 3 sub-options + Inhibition (bench-tunable)
 
         public AutomationScreen(UniverseScreen u) : base(u, toPause: u)
         {
@@ -70,11 +70,25 @@ namespace Ship_Game
 
             UIList notifications = NewBox(new RectF(x0, top + EmpireBoxH + BoxGap, BoxW, NotificationsBoxH), "Notifications");
             var P = Universe.UState.P;
+
+            // FIRST: the auto-clear timer. Its label titles the whole block - read the duration,
+            // then tick which categories it applies to below. 0 = off (nothing auto-clears).
+            notifications.Add(new UILabel(GameText.NotificationAutoClear, Fonts.Arial12Bold, Colors.Cream)).Tooltip = GameText.NotificationAutoClearTip;
+            var autoClear = notifications.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW - 40, 7),
+                                                              "", 0, 60, GlobalStats.NotificationAutoClearSeconds)
+            {
+                Step = 1,
+                Tip = GameText.NotificationAutoClearTip
+            });
+            autoClear.OnChange = s => GlobalStats.NotificationAutoClearSeconds = s.AbsoluteValue;
+
             // One row per notification category (the old scattered Disable*/Suppress* toggles are
             // folded into these nine). POSITIVE voice: the left box checked = you SEE this category
             // (bitmask NotificationHiddenCategories, all shown by default). The right box is the
-            // per-category Auto-clear opt-in; it GREYS OUT (read-only, click-refused, state kept)
-            // when its category is hidden - a hidden category has nothing to auto-clear.
+            // per-category Auto-clear opt-in ("Auto-clear"); it GREYS OUT (read-only, click-refused,
+            // state kept) when its category is hidden - a hidden category has nothing to auto-clear.
+            // A few categories carry indented SHOW sub-options (the old noisy alerts, kept as fine
+            // filters); they grey with their parent category too.
             (NotificationCategory cat, string title, LocalizedText tip)[] cats =
             {
                 (NotificationCategory.Exploration,  "Exploration",  GameText.NotifCatExplorationTip),
@@ -90,31 +104,45 @@ namespace Ship_Game
             foreach ((NotificationCategory cat, string title, LocalizedText tip) in cats)
             {
                 NotificationCategory c = cat; // capture per iteration
+                var subBoxes = new Array<UICheckBox>(); // indented Show sub-options that grey with the parent
                 var autoClearBox = new UICheckBox(0f, 0f, () => GlobalStats.IsAutoClearCategory(c),
                                                   on => GlobalStats.SetAutoClearCategory(c, on),
-                                                  Fonts.Arial12Bold, GameText.NotificationAutoClear, GameText.NotificationAutoClearTip)
+                                                  Fonts.Arial12Bold, GameText.AutoClearShort, GameText.NotificationAutoClearTip)
                 { Greyed = GlobalStats.IsHiddenCategory(c) };
                 var showBox = new UICheckBox(0f, 0f, () => !GlobalStats.IsHiddenCategory(c),
-                                             show => { GlobalStats.SetHiddenCategory(c, !show); autoClearBox.Greyed = !show; },
+                                             show =>
+                                             {
+                                                 GlobalStats.SetHiddenCategory(c, !show);
+                                                 autoClearBox.Greyed = !show;
+                                                 foreach (UICheckBox sub in subBoxes) sub.Greyed = !show;
+                                             },
                                              Fonts.Arial12Bold, title, tip);
                 notifications.Add(new SplitElement(showBox, autoClearBox) { Split = 150f, Tooltip = tip });
+
+                // indented Show sub-options, checked by default (positive voice on the old flags),
+                // greyed when the parent category is hidden - they filter WITHIN the category.
+                void AddSub(Func<bool> get, Action<bool> set, string subTitle, LocalizedText subTip)
+                {
+                    var sub = new UICheckBox(0f, 0f, get, set, Fonts.Arial12Bold, subTitle, subTip)
+                        { Indent = 18, Greyed = GlobalStats.IsHiddenCategory(c) };
+                    subBoxes.Add(sub);
+                    notifications.Add(sub);
+                }
+                if (c == NotificationCategory.Colony)
+                {
+                    AddSub(() => !P.DisableVolcanoWarning,    v => P.DisableVolcanoWarning = !v,    "Volcano",    GameText.DisableVolcanoActivationOrDeactivation);
+                    AddSub(() => !P.DisableStarvationWarning, v => P.DisableStarvationWarning = !v, "Starvation", GameText.EnableStarvationWarningTip);
+                }
+                else if (c == NotificationCategory.Combat)
+                {
+                    AddSub(() => !P.DisableCrashSiteWarning, v => P.DisableCrashSiteWarning = !v, "Crash Sites", GameText.DisableCrashSiteAlertsTip);
+                }
             }
             // Inhibition Alerts stays here (Ludo) but out of the auto-clear group: it is a map
-            // OVERLAY toggle, not a notification, so it has nothing to auto-clear - a plain box.
+            // OVERLAY toggle, not a notification, so it has nothing to auto-clear. The tooltip says so
+            // it doesn't read as a forgotten row missing its right-hand box.
             notifications.AddCheckbox(() => !P.DisableInhibitionWarning, v => P.DisableInhibitionWarning = !v,
-                                      title: "Inhibition Alerts", tooltip: GameText.InhibitionAlertsAreDisplayedWhen);
-
-            // Auto-clear: 0 = off, 1-60 s before a settled non-pausing notification drops on its own.
-            // The label rides its own row; the slider's track is drawn at height/2 + 3, so its
-            // height (7) is what tucks the track up close under the label (bench: -3px from 13).
-            notifications.Add(new UILabel(GameText.NotificationAutoClear, Fonts.Arial12Bold, Colors.Cream)).Tooltip = GameText.NotificationAutoClearTip;
-            var autoClear = notifications.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW - 40, 7),
-                                                              "", 0, 60, GlobalStats.NotificationAutoClearSeconds)
-            {
-                Step = 1,
-                Tip = GameText.NotificationAutoClearTip
-            });
-            autoClear.OnChange = s => GlobalStats.NotificationAutoClearSeconds = s.AbsoluteValue;
+                                      title: "Inhibition Alerts (map overlay)", tooltip: GameText.InhibitionAlertsAreDisplayedWhen);
 
             UIList empire = NewBox(new RectF(x0, top, BoxW, EmpireBoxH), "Empire");
             empire.AddCheckbox(() => player.AutoTaxes, title: GameText.AutoTaxes, tooltip: GameText.YourEmpireWillAutomaticallyManage3);
