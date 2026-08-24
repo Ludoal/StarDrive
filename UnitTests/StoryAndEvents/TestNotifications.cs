@@ -87,7 +87,7 @@ namespace UnitTests.NotificationTests
                 Title      = "Test Title",
                 Message    = "Log worthy text\nClick for more info",
                 LogMessage = "Log worthy text"
-            });
+            }, NotificationCategory.Events);
 
             ImportantNotification[] events = UState.GetImportantEvents();
             AssertEqual(1, events.Length);
