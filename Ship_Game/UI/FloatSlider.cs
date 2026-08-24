@@ -159,9 +159,14 @@ namespace Ship_Game
             Step = style == SliderStyle.Percent ? 0.01f : 0f;
         }
 
+        // Ludoal fork: track offset below the vertical centre. Default 3 keeps every existing
+        // slider unchanged; lower it to tuck the track up under a title when the box is tall enough
+        // to contain the knob but the centred track sits too low.
+        public int TrackYOffset = 3;
+
         void UpdateSliderRect()
         {
-            SliderRect = new Rectangle((int)Pos.X, (int)Pos.Y + (int)Height/2 + 3, (int)Width - 32, 6);
+            SliderRect = new Rectangle((int)Pos.X, (int)Pos.Y + (int)Height/2 + TrackYOffset, (int)Width - 32, 6);
             KnobRect = new Rectangle(SliderRect.X + (int)(SliderRect.Width * Value), 
                                      SliderRect.Y + SliderRect.Height / 2 - SliderKnob.Height / 2, 
                                      SliderKnob.Width, SliderKnob.Height);

@@ -91,7 +91,8 @@ namespace Ship_Game
                                                               "", 0, 60, GlobalStats.NotificationAutoClearSeconds)
             {
                 Step = 1,
-                Tip = GameText.NotificationAutoClearTip
+                Tip = GameText.NotificationAutoClearTip,
+                TrackYOffset = -1, // tuck the rail up 4px under its title; the box still holds the knob
             });
             autoClear.OnChange = s => { GlobalStats.NotificationAutoClearSeconds = s.AbsoluteValue; RefreshAutoClearGrey(); };
 
