@@ -71,18 +71,29 @@ namespace Ship_Game
             UIList notifications = NewBox(new RectF(x0, top + EmpireBoxH + BoxGap, BoxW, NotificationsBoxH), "Notifications");
             var P = Universe.UState.P;
 
+            // Each category's Auto-clear box greys out when EITHER its category is hidden OR the
+            // timer is 0 (a 0 timer means nothing auto-clears, so every box would be a no-op - the
+            // global setting mustn't leave live-looking boxes that do nothing).
+            var autoClearBoxes = new Array<(NotificationCategory cat, UICheckBox box)>();
+            void RefreshAutoClearGrey()
+            {
+                bool timerOff = GlobalStats.NotificationAutoClearSeconds <= 0f;
+                foreach ((NotificationCategory cat, UICheckBox box) in autoClearBoxes)
+                    box.Greyed = timerOff || GlobalStats.IsHiddenCategory(cat);
+            }
+
             // FIRST: the auto-clear timer. Its label titles the whole block - read the duration,
             // then tick which categories it applies to below. 0 = off (nothing auto-clears).
             notifications.Add(new UILabel(GameText.NotificationAutoClear, Fonts.Arial12Bold, Colors.Cream)).Tooltip = GameText.NotificationAutoClearTip;
-            var autoClear = notifications.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW - 40, 7),
+            // Height must contain the 26px crosshair knob, or it overflows below its declared box
+            // and the next row overlaps the handle (bench 485: the 7px height did exactly that).
+            var autoClear = notifications.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW - 40, 28),
                                                               "", 0, 60, GlobalStats.NotificationAutoClearSeconds)
             {
                 Step = 1,
                 Tip = GameText.NotificationAutoClearTip
             });
-            autoClear.OnChange = s => GlobalStats.NotificationAutoClearSeconds = s.AbsoluteValue;
-            // breathing room between the timer's ticks row and the first category (bench: +13px)
-            notifications.Add(new UIPanel(new Rectangle(0, 0, 1, 13), new Color(0, 0, 0, 0)));
+            autoClear.OnChange = s => { GlobalStats.NotificationAutoClearSeconds = s.AbsoluteValue; RefreshAutoClearGrey(); };
 
             // One row per notification category (the old scattered Disable*/Suppress* toggles are
             // folded into these nine). POSITIVE voice: the left box checked = you SEE this category
@@ -110,12 +121,13 @@ namespace Ship_Game
                 var autoClearBox = new UICheckBox(0f, 0f, () => GlobalStats.IsAutoClearCategory(c),
                                                   on => GlobalStats.SetAutoClearCategory(c, on),
                                                   Fonts.Arial12Bold, GameText.AutoClearShort, GameText.NotificationAutoClearTip)
-                { Greyed = GlobalStats.IsHiddenCategory(c) };
+                { Greyed = GlobalStats.NotificationAutoClearSeconds <= 0f || GlobalStats.IsHiddenCategory(c) };
+                autoClearBoxes.Add((c, autoClearBox));
                 var showBox = new UICheckBox(0f, 0f, () => !GlobalStats.IsHiddenCategory(c),
                                              show =>
                                              {
                                                  GlobalStats.SetHiddenCategory(c, !show);
-                                                 autoClearBox.Greyed = !show;
+                                                 RefreshAutoClearGrey(); // timer + category together
                                                  foreach (UICheckBox sub in subBoxes) sub.Greyed = !show;
                                              },
                                              Fonts.Arial12Bold, title, tip);
