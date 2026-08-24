@@ -7067,6 +7067,10 @@ namespace Ship_Game
         NotifCatEventsTip = 7121,
         /// <summary>Remnants and Pirates: raids, growing strength, portals, flagships.</summary>
         NotifCatThreatsTip = 7122,
+        /// <summary>Can build ships (has a Space Port).</summary>
+        ColonyCanBuildShipsTip = 7123,
+        /// <summary>Can build troops (has a Military Outpost).</summary>
+        ColonyCanBuildTroopsTip = 7124,
         /// <summary>Dearest SING friends, We are delighted to see your empire's</summary>
         EncCorsairs000_Msg0 = -11,
         /// <summary>Agree to pay this upstanding gentleman.</summary>

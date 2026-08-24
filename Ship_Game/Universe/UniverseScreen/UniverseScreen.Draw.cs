@@ -827,7 +827,7 @@ namespace Ship_Game
                 // filled circle, no stripes). The mobile ship inhibitors below keep the red alarm.
                 var wellFill = ResourceManager.Texture("UI/node_stencil");
                 var wellEdge = new Color(120, 160, 185, 130).Premultiplied();
-                var wellBody = new Color(120, 160, 185, 35).Premultiplied();
+                var wellBody = new Color(120, 160, 185, 22).Premultiplied();
 
                 // F5: gravity wells + inhibitor fields. Only legible up to sector view.
                 if (ShowingGravityWellOverlay && UState.P.GravityWellRange > 0f && viewState <= UnivScreenState.SectorView)

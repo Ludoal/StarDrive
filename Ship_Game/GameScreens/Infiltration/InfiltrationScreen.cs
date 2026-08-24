@@ -58,7 +58,7 @@ namespace Ship_Game.GameScreens
         const int RowLevel    = 142;
         const int RowBar      = 163;
         const int RowBarNums  = 179;
-        const int DefenseH = 74; // +22: a Known Infiltration Level line sits under the shield ratio
+        const int DefenseH = 52; // the Known Infiltration line fits in the existing row reserve; no extra height (bench: keep the bottom slider's room)
 
         class EmpireColumn
         {

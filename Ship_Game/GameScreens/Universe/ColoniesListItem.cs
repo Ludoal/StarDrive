@@ -46,6 +46,8 @@ namespace Ship_Game
         Rectangle FoodStorageIcon;
         Rectangle ProdStorageIcon;
         Rectangle PopStorageIcon;
+        Rectangle SpacePortIconRect; // wide displays: capability icons right-aligned in the Planet cell
+        Rectangle TroopIconRect;
 
         bool ApplyProdHover;
         bool CancelProdHover;
@@ -180,6 +182,12 @@ namespace Ship_Game
 
             if (CancelProductionRect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.CancelProductionAndRemoveThis);
+
+            // capability icons name the building that unlocks them (empty rects never hit)
+            if (SpacePortIconRect.HitTest(input.CursorPosition))
+                ToolTip.CreateTooltip(GameText.ColonyCanBuildShipsTip);
+            if (TroopIconRect.HitTest(input.CursorPosition))
+                ToolTip.CreateTooltip(GameText.ColonyCanBuildTroopsTip);
 
             if (input.LeftMouseClick)
             {
@@ -361,23 +369,27 @@ namespace Ship_Game
             var namePos = new Vector2(planetIconRect.X + planetIconRect.Width + 10,
                                       SysNameRect.Y + SysNameRect.Height / 2 - (Fonts.Arial14Bold.LineSpacing + Fonts.Arial12.LineSpacing + 2) / 2);
             batch.DrawString(Fonts.Arial14Bold, P.Name, namePos, TextColor);
-            // wide displays only: right of the name, show what this colony can build - Space Port
-            // (ships) then Military Outpost (troops), always that order so the eye scans the column
-            // straight down. Absent capability = no icon (nothing, not a greyed ghost).
+            // wide displays only: what this colony can build - Space Port (ships) then Military
+            // Outpost (troops). RIGHT-ALIGNED in the Planet cell at FIXED slots, so the icons form
+            // one clean vertical column that scans at a glance even when a colony has only one of
+            // the two. Absent capability = empty slot (nothing, not a greyed ghost).
+            SpacePortIconRect = TroopIconRect = Rectangle.Empty;
             if (Screen.Table.Columns.Length >= 14)
             {
-                const int iconSize = 18;
-                float ix = namePos.X + Fonts.Arial14Bold.TextWidth(P.Name) + 8;
+                const int iconSize = 18, gap = 4, edge = 6;
                 int iy = (int)namePos.Y + (Fonts.Arial14Bold.LineSpacing - iconSize) / 2;
+                int troopX = PlanetNameRect.Right - edge - iconSize;          // rightmost slot: troops
+                int portX  = troopX - gap - iconSize;                         // left slot: space port
                 if (P.HasSpacePort)
                 {
-                    batch.Draw(ResourceManager.Texture("Buildings/icon_spaceport_48x48"),
-                               new Rectangle((int)ix, iy, iconSize, iconSize), TextColor);
-                    ix += iconSize + 4;
+                    SpacePortIconRect = new Rectangle(portX, iy, iconSize, iconSize);
+                    batch.Draw(ResourceManager.Texture("Buildings/icon_spaceport_48x48"), SpacePortIconRect, TextColor);
                 }
                 if (P.CanBuildInfantry)
-                    batch.Draw(ResourceManager.Texture("Buildings/icon_military_outpost_48x48"),
-                               new Rectangle((int)ix, iy, iconSize, iconSize), TextColor);
+                {
+                    TroopIconRect = new Rectangle(troopX, iy, iconSize, iconSize);
+                    batch.Draw(ResourceManager.Texture("Buildings/icon_military_outpost_48x48"), TroopIconRect, TextColor);
+                }
             }
             namePos.Y += Fonts.Arial14Bold.LineSpacing + 2;
             string cls = P.LocalizedRichness;
