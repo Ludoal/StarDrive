@@ -29,6 +29,15 @@ namespace Ship_Game
             if (!ManualGrdBudgetOn && ManualGrdDefBudget   > 0) SetManualGrdBudgetOn(true);
             if (!ManualSpcBudgetOn && ManualSpcDefBudget   > 0) SetManualSpcBudgetOn(true);
 
+            // Ludoal fork: the two mandates replace GovGroundDefense and the no-scrap toggle.
+            // The old flags carry over so no colony changes conduct: ground defense ON meant
+            // the governor handled military too, and it never demolished military otherwise.
+            if (GovGroundDefense)
+                GovBuildMandate = BuildMandate.All;
+
+            if (!DontScrapBuildings)
+                GovScrapMandate = GovGroundDefense ? BuildMandate.All : BuildMandate.EconomicOnly;
+
             UpdatePositionOnly();
             InitPlanetType(PType, Scale, fromSave: true);
 

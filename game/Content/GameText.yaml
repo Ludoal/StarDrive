@@ -16674,6 +16674,38 @@ InheritedBudgetShareTip:
  Id: 7127
  ENG: "Default split inherited from the empire budget (no budget allocated to this colony yet)."
  FRA: "Répartition par défaut héritée du budget d'empire (aucun budget alloué à cette colonie pour l'instant)."
+BuildMandate:
+ Id: 7128
+ ENG: "Build Mandate"
+ FRA: "Mandat de construction"
+ScrapMandate:
+ Id: 7129
+ ENG: "Scrap Mandate"
+ FRA: "Mandat de démolition"
+MandateAll:
+ Id: 7130
+ ENG: "All"
+ FRA: "Tout"
+MandateEconomicOnly:
+ Id: 7131
+ ENG: "Economic only"
+ FRA: "Économique seulement"
+MandateDefenseOnly:
+ Id: 7132
+ ENG: "Defense only"
+ FRA: "Défense seulement"
+MandateNone:
+ Id: 7133
+ ENG: "None"
+ FRA: "Aucun"
+BuildMandateTip:
+ Id: 7134
+ ENG: "Which buildings this governor may construct. Blueprints override it: an explicit plan is an explicit order."
+ FRA: "Quels bâtiments ce gouverneur peut construire. Les schémas directeurs priment : un plan explicite est un ordre explicite."
+ScrapMandateTip:
+ Id: 7135
+ ENG: "Which buildings this governor may demolish. A family it may not build is not one it may tear down."
+ FRA: "Quels bâtiments ce gouverneur peut démolir. Une famille qu'il ne peut pas construire n'est pas une famille qu'il peut abattre."
  UKR: "Ліміт цивільного бюджету досягнуто!"
  PTB: "Limite do Orçamento Civil Atingido!"
 BB_Tech_SubspatialDynamics_CounterEnemyPlanetInhibitionBonus_Bonus:

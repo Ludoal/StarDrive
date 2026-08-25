@@ -51,28 +51,44 @@ namespace Ship_Game
         void BuildAndScrapCivilianBuildings(float budget, float tolerance)
         {
             UpdateGovernorPriorities();
+            // Ludoal fork (maintainer feedback): blueprints are an explicit plan, so they
+            // override the mandates the same way they always overrode the toggles.
+            bool mayBuild = MayBuildCivilian || HasBlueprints;
+            bool mayScrap = MayScrapCivilian || HasBlueprints;
+
+            // Cancel what is merely QUEUED before anything else: dropping a plan costs the
+            // player nothing, tearing a standing building down costs what it took to
+            // raise. This lived in BuildOrReplaceBuilding, which an over-budget colony
+            // never reached - the tighter the budget, the less the governor cleared its
+            // own queue. It answers to no mandate either: cancelling is not building, and
+            // a governor barred from construction should clear its queue all the more.
+            if (TryCancelOverBudgetCivilianBuilding(budget + tolerance))
+                return;
+
             bool overBudget = budget < (-tolerance);
             if (overBudget || Blueprints?.ShouldScrapNonRequiredBuilding() == true)
             {
-                // We must scrap something to bring us above of our debt tolerance
-                // or we can try scrap buildings not in blueprints
-                TryScrapBuilding(overBudget);
-                if (!overBudget) // we can try to build something if we have blueprints
+                if (mayScrap)
+                    TryScrapBuilding(overBudget);
+
+                if (!overBudget && mayBuild) // we can try to build something if we have blueprints
                     BuildOrReplaceBuilding(budget, tolerance, overBudget);
             }
             else
             {
-                BuildOrReplaceBuilding(budget, tolerance, overBudget);
+                if (mayBuild)
+                    BuildOrReplaceBuilding(budget, tolerance, overBudget);
+
+                // Biospheres are capacity, not a building choice: the mandates do not gate
+                // them. TryBuildBiospheres already answers to the budget, and the surplus it
+                // reports is a fact about population, not a construction right.
                 if (!TryBuildBiospheres(budget, out bool shouldScrapBiospheres) && shouldScrapBiospheres)
-                    TryScrapBiospheres(); // Build or scrap Biospheres if needed
+                    TryScrapBiospheres();
             }
         }
 
         void BuildOrReplaceBuilding(float budget, float tolerance, bool overBudget)
         {
-            if (TryCancelOverBudgetCivilianBuilding(budget + tolerance))
-                return;
-
             if (FreeHabitableTiles > 0)
                 SimpleBuild(budget); // Let's try to build something within our budget
             else

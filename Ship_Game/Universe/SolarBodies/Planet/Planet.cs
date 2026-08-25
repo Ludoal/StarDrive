@@ -34,6 +34,17 @@ namespace Ship_Game
             TradeHub = 6,
         }
 
+        // Ludoal fork (maintainer feedback): what the governor is allowed to touch, as its own
+        // command. Build and scrap carry one each, so a family the governor may not build is
+        // not a family it may demolish. Explicit values: these are serialized.
+        public enum BuildMandate
+        {
+            All = 0,
+            EconomicOnly = 1,
+            DefenseOnly = 2,
+            None = 3,
+        }
+
         public override string ToString() =>
             $"{Name} ({Owner?.Name ?? "No Owner"}) T:{CType} NET(FD:{Food.NetIncome.String()} PR:{Prod.NetIncome.String()}) {ImportsDescr()}";
 

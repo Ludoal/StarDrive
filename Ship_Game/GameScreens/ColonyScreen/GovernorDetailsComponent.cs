@@ -27,7 +27,11 @@ namespace Ship_Game
         UIPanel BluePrintsIcon;
         private UILabel WorldType, WorldDescription;
         DropOptions<Planet.ColonyType> ColonyTypeList;
-        private UICheckBox GovOrbitals, AutoTroops, GovNoScrap, Quarantine, ManualOrbitals, GovGround, SpecializedTradeHub, Prioritized;
+        // Ludoal fork: what the governor may build, and what it may demolish - two
+        // mirrored lists so a family it cannot build is not one it can tear down.
+        DropOptions<Planet.BuildMandate> BuildMandateList, ScrapMandateList;
+        UILabel BuildMandateLabel, ScrapMandateLabel;
+        private UICheckBox GovOrbitals, AutoTroops, GovNoScrap, Quarantine, ManualOrbitals, SpecializedTradeHub, Prioritized;
         private FloatSlider Garrison;
         private FloatSlider ManualPlatforms;
         private FloatSlider ManualShipyards;
@@ -144,7 +148,6 @@ namespace Ship_Game
             GovNoScrap     = Add(new UICheckBox(() => Planet.DontScrapBuildings, Font, title:GameText.GovernorWillNotScrapBuildings, tooltip:GameText.NormallyGovernorsOperateWithinA));
             Quarantine     = Add(new UICheckBox(() => Planet.Quarantine, Font, title: GameText.QuarantinePlanet, tooltip: GameText.PreventGoodsTransportationInAnd));
             ManualOrbitals = Add(new UICheckBox(() => Planet.ManualOrbitals, Font, title: GameText.ManualOrbitalLimit, tooltip: GameText.OverrideGovernorDecisionsRegardingOrbital));
-            GovGround      = Add(new UICheckBox(() => Planet.GovGroundDefense, Font, title: "Gov. Manages Ground Defense", tooltip: GameText.TheGovernorWillManageGround));
             Prioritized    = Add(new UICheckBox(() => Planet.PrioritizedPort, Font, title: GameText.PrioritizedPort, tooltip: GameText.PrioritizedPortTip));
 
             SpecializedTradeHub = Add(new UICheckBox(() => p.SpecializedTradeHub, Font, title: GameText.SpecializedTradeHub, tooltip: GameText.SpecializedTradeHubTip));
@@ -178,6 +181,11 @@ namespace Ship_Game
             // ColonyTypeList.AddOption(option:GameText.TradeHub, Planet.ColonyType.TradeHub); // retired (auto-supplies) - kept in case the role returns with another function
             ColonyTypeList.ActiveValue = Planet.CType;
             ColonyTypeList.OnValueChange = OnColonyTypeChanged;
+
+            BuildMandateList = Add(MakeMandateList(Planet.GovBuildMandate, m => Planet.SetBuildMandate(m)));
+            ScrapMandateList = Add(MakeMandateList(Planet.GovScrapMandate, m => Planet.SetScrapMandate(m)));
+            BuildMandateLabel = Add(new UILabel(GameText.BuildMandate, Font, Color.White) { Tooltip = GameText.BuildMandateTip });
+            ScrapMandateLabel = Add(new UILabel(GameText.ScrapMandate, Font, Color.White) { Tooltip = GameText.ScrapMandateTip });
 
             CreateBlueprints = Button(ButtonStyle.Medium, GameText.BlueprintsSnapshot, OnCreateBlueprintsClicked);
             EditBlueprints   = Button(ButtonStyle.Small, GameText.Edit, OnEditblueprintsClicked);
@@ -346,6 +354,15 @@ namespace Ship_Game
             // one row higher: the Build Mandate dropdown takes the line it leaves behind
             SpecializedTradeHub.Pos = new Vector2(ColumnX + 25, Quarantine.Pos.Y - GovRowPitch); // +25: clear of the left labels at 1080 fonts
             GovNoScrap.Pos          = new Vector2(ColumnX + 25, Prioritized.Pos.Y);
+
+            // the two mandates take the line the trade hub left, label then list, one per row
+            const int MandateLabelW = 118;
+            float mandateX = ColumnX + 25;
+            float mandateRow = Quarantine.Pos.Y;
+            BuildMandateLabel.Pos = new Vector2(mandateX, mandateRow + 2);
+            BuildMandateList.Pos  = new Vector2(mandateX + MandateLabelW, mandateRow);
+            ScrapMandateLabel.Pos = new Vector2(mandateX, mandateRow + GovRowPitch + 2);
+            ScrapMandateList.Pos  = new Vector2(mandateX + MandateLabelW, mandateRow + GovRowPitch);
             BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, Quarantine.Pos.Y - 35);
 
             // Defense tab. These six buttons follow their own column, so the panel's height
@@ -359,7 +376,6 @@ namespace Ship_Game
             CallTroops.Pos        = new Vector2(TopLeft.X + 10, defRow + 68);
             ColonyRank.Pos        = new Vector2(TopLeft.X + 200, Y + 30 + shift);
             NoGovernor.Pos        = ColonyRank.Pos;
-            GovGround.Pos         = new Vector2(TopLeft.X + 200, Y + 50 + shift);
             GovOrbitals.Pos       = new Vector2(TopLeft.X + 200, Y + 70 + shift);
             ManualOrbitals.Pos    = new Vector2(TopLeft.X + 200, Y + 90 + shift);
             BuildPlatform.Pos     = new Vector2(TopLeft.X + 200, defRow);
@@ -535,6 +551,11 @@ namespace Ship_Game
                                              && Planet.OwnerIsPlayer 
                                              && !Planet.Owner.GetPlanets().Any(p => p.IsHomeworld);
                 SpecializedTradeHub.Visible = Quarantine.Visible && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub && !Planet.HasBlueprints;
+                // blueprints are an explicit plan and override both mandates, so the lists
+                // would lie about what the governor is going to do
+                bool mandates = GovernorTabView && GovernorOn && Planet.OwnerIsPlayer && !Planet.HasBlueprints;
+                BuildMandateList.Visible = ScrapMandateList.Visible = mandates;
+                BuildMandateLabel.Visible = ScrapMandateLabel.Visible = mandates;
                 SpecializedTradeHub.CheckedTextColor = Portrait.Border;
 
                 // Not for trade hubs, which do not build structures anyway
@@ -553,7 +574,6 @@ namespace Ship_Game
                 Garrison.Visible          = DefenseTabView && Planet.OwnerIsPlayer;
                 AutoTroops.Visible        = Garrison.Visible;
                 GovOrbitals.Visible       = Garrison.Visible && GovernorOn;
-                GovGround.Visible         = GovOrbitals.Visible;
                 BuildPlatform.Visible     = DefenseTabView && Planet.OwnerIsPlayer && (!Planet.GovOrbitals || GovernorOff);
                 BuildShipyard.Visible     = BuildPlatform.Visible;
                 BuildStation.Visible      = BuildPlatform.Visible;
@@ -567,7 +587,6 @@ namespace Ship_Game
                 ManualShipyards.Visible   = ManualPlatforms.Visible;
                 ManualStations.Visible    = ManualPlatforms.Visible;
                 GovOrbitals.TextColor     = Planet.GovOrbitals        ? Color.White : Color.Gray;
-                GovGround.TextColor       = Planet.GovGroundDefense   ? Color.White : Color.Gray;
                 ManualOrbitals.TextColor  = Planet.ManualOrbitals     ? Color.White : Color.Gray;
                 AutoTroops.TextColor      = Planet.AutoBuildTroops    ? Color.White : Color.Gray;
                 GovNoScrap.TextColor      = Planet.DontScrapBuildings ? Color.White : Color.Gray;
@@ -980,6 +999,19 @@ namespace Ship_Game
         void SeatBudgetSlider(FloatSlider slider, BudgetArea area, float storedAmount)
         {
             slider.AbsoluteValue = IsAreaManual(area) ? storedAmount : AutoTargetFor(area);
+        }
+
+        DropOptions<Planet.BuildMandate> MakeMandateList(Planet.BuildMandate active,
+                                                        Action<Planet.BuildMandate> apply)
+        {
+            var list = new DropOptions<Planet.BuildMandate>(110, 18);
+            list.AddOption(option: GameText.MandateAll, Planet.BuildMandate.All);
+            list.AddOption(option: GameText.MandateEconomicOnly, Planet.BuildMandate.EconomicOnly);
+            list.AddOption(option: GameText.MandateDefenseOnly, Planet.BuildMandate.DefenseOnly);
+            list.AddOption(option: GameText.MandateNone, Planet.BuildMandate.None);
+            list.ActiveValue = active;
+            list.OnValueChange = m => Universe.RunOnSimThread(() => apply(m));
+            return list;
         }
 
         void SyncBudgetEnables()

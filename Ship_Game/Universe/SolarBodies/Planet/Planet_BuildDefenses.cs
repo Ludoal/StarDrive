@@ -16,7 +16,16 @@ namespace Ship_Game
         [StarData] public byte WantedStations  { get; private set; }
         [StarData] public byte WantedShipyards { get; private set; }
         [StarData] public bool GovOrbitals      = false;
+        // superseded by GovBuildMandate - kept so old saves load and migrate, nothing reads it
         [StarData] public bool GovGroundDefense = false;
+
+        // Ludoal fork (maintainer feedback): the governor's building rights, split from its
+        // means (the per-area budgets). Blocking a family by zeroing its budget destroys the
+        // player's figures; a mandate suspends the right and leaves them stored.
+        // Defaults reproduce vanilla conduct: it built civilian only, and never demolished
+        // military at all.
+        [StarData] public BuildMandate GovBuildMandate = BuildMandate.EconomicOnly;
+        [StarData] public BuildMandate GovScrapMandate = BuildMandate.None;
         [StarData] public bool AutoBuildTroops  = false;
         [StarData] public bool ManualOrbitals   = false;
         [StarData] public int GarrisonSize;
@@ -67,6 +76,26 @@ namespace Ship_Game
             => BuildOrScrapOrbitals(orbitals, wanted, RoleName.platform, budget, tolerance);
 
         bool GovernorShouldNotScrapBuilding => OwnerIsPlayer && DontScrapBuildings;
+
+        // The mandates bind the player's governors only: an AI runs its own empire.
+        bool MayBuild(BuildMandate mandate, bool military)
+        {
+            if (!OwnerIsPlayer)
+                return true;
+
+            switch (mandate)
+            {
+                case BuildMandate.All:          return true;
+                case BuildMandate.EconomicOnly: return !military;
+                case BuildMandate.DefenseOnly:  return military;
+                default:                        return false;
+            }
+        }
+
+        public bool MayBuildMilitary  => MayBuild(GovBuildMandate, military: true);
+        public bool MayBuildCivilian  => MayBuild(GovBuildMandate, military: false);
+        public bool MayScrapMilitary  => MayBuild(GovScrapMandate, military: true);
+        public bool MayScrapCivilian  => MayBuild(GovScrapMandate, military: false);
 
         private Array<Ship> FilterOrbitals(RoleName role)
         {
@@ -435,13 +464,17 @@ namespace Ship_Game
 
         void BuildAndScrapMilitaryBuildings(float budget, float tolerance)
         {
-            if (OwnerIsPlayer && !GovGroundDefense && !HasBlueprints
-                || MilitaryBuildingInTheWorks)
-            {
-                return;
-            }
+            // Ludoal fork (maintainer feedback): the single GovGroundDefense gate used to bar
+            // building AND scrapping at once. The two rights are separate commands now, so the
+            // gate is split: a family the governor may not build is not one it may demolish.
+            // Blueprints keep overriding both - an explicit plan is an explicit order.
+            bool mayBuild = MayBuildMilitary || HasBlueprints;
+            bool mayScrap = MayScrapMilitary || HasBlueprints;
 
-            if (budget < tolerance && (HasBlueprints || GovGroundDefense || !OwnerIsPlayer))
+            if (MilitaryBuildingInTheWorks || !mayBuild && !mayScrap)
+                return;
+
+            if (budget < tolerance && mayScrap)
             {
                 TryScrapMilitaryBuilding();
                 return;
@@ -450,9 +483,10 @@ namespace Ship_Game
             if ((HasExclusiveBlueprints || HasBlueprints && !Blueprints.Exclusive && FreeHabitableTiles == 0 && !Blueprints.IsAchievableCompleted)
                 && BuildingList.Any(b => b.IsMilitary && !RequiredInBlueprints(b)))
             {
-                TryScrapMilitaryBuilding();
+                if (mayScrap)
+                    TryScrapMilitaryBuilding();
             }
-            else if (GovGroundDefense || !OwnerIsPlayer || HasBlueprints)
+            else if (mayBuild)
             {
                 TryBuildMilitaryBuilding(budget);
             }
@@ -472,7 +506,7 @@ namespace Ship_Game
 
             if (best == null)
             {
-                if (!HasExclusiveBlueprints && (!OwnerIsPlayer || GovGroundDefense))
+                if (!HasExclusiveBlueprints && MayBuildMilitary)
                     best = BuildingsCanBuild.FindMaxFiltered(b => b.IsMilitary && b.ActualMaintenance(this) <= budget,
                                                              b => b.CostEffectiveness);
             }
@@ -555,6 +589,9 @@ namespace Ship_Game
             WantedStations = num;
         }
 
+
+        public void SetBuildMandate(BuildMandate mandate) => GovBuildMandate = mandate;
+        public void SetScrapMandate(BuildMandate mandate) => GovScrapMandate = mandate;
 
         public void SetManualCivBudgetOn(bool manual) => ManualCivBudgetOn = manual;
         public void SetManualGrdBudgetOn(bool manual) => ManualGrdBudgetOn = manual;

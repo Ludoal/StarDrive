@@ -7078,6 +7078,22 @@ namespace Ship_Game
         NotAvailable = 7126,
         /// <summary>Default split inherited from the empire budget (no budget allocated to this colony yet).</summary>
         InheritedBudgetShareTip = 7127,
+        /// <summary>Build Mandate</summary>
+        BuildMandate = 7128,
+        /// <summary>Scrap Mandate</summary>
+        ScrapMandate = 7129,
+        /// <summary>All</summary>
+        MandateAll = 7130,
+        /// <summary>Economic only</summary>
+        MandateEconomicOnly = 7131,
+        /// <summary>Defense only</summary>
+        MandateDefenseOnly = 7132,
+        /// <summary>None</summary>
+        MandateNone = 7133,
+        /// <summary>Which buildings this governor may construct.</summary>
+        BuildMandateTip = 7134,
+        /// <summary>Which buildings this governor may demolish.</summary>
+        ScrapMandateTip = 7135,
         /// <summary>Dearest SING friends, We are delighted to see your empire's</summary>
         EncCorsairs000_Msg0 = -11,
         /// <summary>Agree to pay this upstanding gentleman.</summary>

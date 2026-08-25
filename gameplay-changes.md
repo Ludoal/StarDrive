@@ -43,6 +43,22 @@ are removed for the player** — a refit now fires whenever a better model exist
 by the existing 20% dice roll per idle freighter. AI empires keep both caps, since they manage
 their own war economy.
 
+### Governor no longer demolishes civilian buildings on its own
+`Planet_BuildDefenses.cs`, `Planet_EvaluateBuildings.cs` (Build and Scrap Mandates)
+
+**Source: maintainer.**
+
+What the governor may build, and what it may demolish, are now two commands of their own
+rather than a side effect of the budget. The scrap mandate ships as **None**: left alone, a
+governor builds but never tears anything down.
+
+Vanilla demolished civilian buildings when a colony ran over budget, so a returning player
+will see over-budget colonies stay as they are until they intervene. Military buildings are
+unaffected: vanilla never demolished those either unless Gov. Manages Ground Defense was
+ticked, which was off by default.
+
+Old saves keep their conduct: the former toggles map onto the mandates on load.
+
 ---
 
 ## New levers
