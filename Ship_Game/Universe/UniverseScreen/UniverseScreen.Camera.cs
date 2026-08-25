@@ -205,6 +205,11 @@ namespace Ship_Game
                 UState.CamPos.Z = UState.CamPos.Z.SmoothStep(CamDestination.Z, 0.2);
                 if (UState.CamPos.Z < minCamHeight)
                     UState.CamPos.Z = minCamHeight;
+
+                // track the chase, so ending it (ship died, toggled off, panned away)
+                // continues from here instead of gliding back to where it started
+                CamDestination.X = UState.CamPos.X;
+                CamDestination.Y = UState.CamPos.Y;
             }
 
             if (AdjustCamTimer > 0.0)

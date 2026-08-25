@@ -85,7 +85,9 @@ namespace Ship_Game
             return GoodState.STORE;
         }
 
-        bool ShouldImportColonists(float popRatio) => popRatio < 0.8f || BiosphereInTheWorks && PopPerBiosphere(Owner) > 100 && popRatio < 0.99f;
+        // bounded at the export ratio: any higher and a queued biosphere alone would
+        // decide the traffic direction, flipping it as the build queue changes
+        bool ShouldImportColonists(float popRatio) => popRatio < 0.8f || BiosphereInTheWorks && PopPerBiosphere(Owner) > 100 && popRatio < 0.9f;
 
         public bool ShortOnFood()
         {

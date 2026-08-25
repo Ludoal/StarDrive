@@ -214,6 +214,8 @@ namespace Ship_Game
             {
                 if (SelectedShip == ship)
                     SelectedShip = null;
+                if (ShipToView == ship)
+                    ShipToView = null; // AdjustCamera drops ViewingShip, so the camera is free again
                 SelectedShipList.RemoveRef(ship);
             }
             RunOnNextFrame(RemoveShip);
