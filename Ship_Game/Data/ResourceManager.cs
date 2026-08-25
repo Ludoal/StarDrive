@@ -295,6 +295,8 @@ namespace Ship_Game
             Profiled(LoadJunk);
             Profiled(LoadAsteroids);
             Profiled(LoadStationModels); // after LoadEmpires: needs each empire's SpacePortModel
+            Profiled(LoadShipHullModels);  // after LoadHulls
+            Profiled(LoadWeaponAnimations); // after LoadWeapons
             Profiled(LoadProjectileTextures);
             Profiled(LoadProjectileMeshes);
             // Hotspot #3 174.8ms  7.91%
@@ -1408,6 +1410,56 @@ namespace Ship_Game
             LoadNumberedModels(AsteroidModels, "Model/Asteroids/", "asteroid");
         }
 
+        // Ludoal fork (maintainer bench): an animated weapon's sprite atlas was loaded on its
+        // first visible shot, on the projectile hot path - so the hitch landed mid-combat.
+        // The set is small and known from the weapon list, so warm it here.
+        static void LoadWeaponAnimations()
+        {
+            var loaded = new HashSet<string>();
+            foreach (IWeaponTemplate w in WeaponsDict.Values)
+            {
+                if (w.Animated != 1 || w.AnimationPath.IsEmpty())
+                    continue;
+
+                string animFolder = "Textures/" + Path.GetDirectoryName(w.AnimationPath);
+                if (!loaded.Add(animFolder))
+                    continue;
+                try
+                {
+                    RootContent.LoadTextureAtlas(animFolder);
+                }
+                catch (Exception e)
+                {
+                    // a missing atlas must not abort startup - the on-demand path still runs
+                    Log.Warning($"Failed to preload weapon animation {animFolder}: {e.Message}");
+                }
+            }
+        }
+
+        // Ludoal fork (maintainer bench): a hull mesh was parsed off disk the first time a ship
+        // using it became visible, on the UI thread (ShipHull.LoadModel via Ship.CreateSceneObject),
+        // stuttering whatever the camera was doing. Warm them here instead.
+        // extractVertexPositions must match the on-demand call: a mesh cached without the
+        // per-vertex copy would be loaded a second time by the real one.
+        static void LoadShipHullModels()
+        {
+            var loaded = new HashSet<string>();
+            foreach (ShipHull hull in Hulls)
+            {
+                if (hull.ModelPath.IsEmpty() || !loaded.Add(hull.ModelPath))
+                    continue;
+                try
+                {
+                    StaticMesh.LoadMesh(RootContent, hull.ModelPath, hull.Animated, extractVertexPositions: true);
+                }
+                catch (Exception e)
+                {
+                    // a broken hull model must not abort startup - the on-demand path still runs
+                    Log.Warning($"Failed to preload hull model {hull.ModelPath}: {e.Message}");
+                }
+            }
+        }
+
         // Ludoal fork (maintainer bench): space station meshes were the only world models still
         // loaded on demand - the first time a colonized planet with a space port entered the
         // frustum, SpaceStation.CreateSceneObject parsed the mesh off disk ON THE UI THREAD,
@@ -1419,6 +1471,9 @@ namespace Ship_Game
             {
                 "Model/Stations/spacestation01_inner",
                 "Model/Stations/spacestation01_outer",
+                "Model/Stations/spacestation01_fx",
+                "Model/Stations/shipyard",
+                "Model/Stations/Station_Small",
             };
 
             // every empire that ships its own space port model pays the same cost on first sight
