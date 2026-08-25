@@ -20684,8 +20684,8 @@ GovernorAutoBudgetTooltip:
  FRA: "Le gouverneur fixe seul le budget de cette colonie. Décocher pour fixer vous-même le total et la répartition."
 GovernorBudgetTotalTooltip:
  Id: 4559
- ENG: "Total the governor may spend on this colony each turn, split by the sliders beside the bars"
- FRA: "Total que le gouverneur peut dépenser sur cette colonie chaque tour, réparti par les curseurs à côté des barres"
+ ENG: "Colony budget, per area. Each row is one spending area: civilian, ground defense, space defense. Auto: the governor sets this area's allocation. Manual: you set the amount yourself, zero included. Range: up to twice the automatic target, minimum 20. The treasury keeps whatever is not allocated."
+ FRA: "Budget de colonie, par poste. Chaque ligne est un poste de dépense : civil, défense au sol, défense spatiale. Auto : le gouverneur fixe l'allocation de ce poste. Manuel : vous fixez le montant vous-même, zéro compris. Plage : jusqu'au double de la cible automatique, minimum 20. Le trésor garde ce qui n'est pas alloué."
 LockShareTooltip:
  Id: 4560
  ENG: "Lock this share - adjusting the others leaves it untouched"

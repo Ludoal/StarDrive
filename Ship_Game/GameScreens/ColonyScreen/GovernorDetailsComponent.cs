@@ -32,6 +32,7 @@ namespace Ship_Game
         DropOptions<Planet.BuildMandate> BuildMandateList, ScrapMandateList;
         UILabel BuildMandateLabel, ScrapMandateLabel;
         UILabel GroundTroopsHeader, SpaceDefenseHeader; // Defense tab column headers
+        bool BuildListWasOpen, ScrapListWasOpen; // raise a list once, on its opening
         private UICheckBox GovOrbitals, AutoTroops, Quarantine, ManualOrbitals, SpecializedTradeHub, Prioritized;
         private FloatSlider Garrison;
         private FloatSlider ManualPlatforms;
@@ -181,12 +182,14 @@ namespace Ship_Game
             ColonyTypeList.ActiveValue = Planet.CType;
             ColonyTypeList.OnValueChange = OnColonyTypeChanged;
 
-            BuildMandateList = Add(MakeMandateList(Planet.GovBuildMandate, m => Planet.SetBuildMandate(m)));
-            ScrapMandateList = Add(MakeMandateList(Planet.GovScrapMandate, m => Planet.SetScrapMandate(m)));
             GroundTroopsHeader = Add(new UILabel(GameText.GroundTroopsHeader, Font, Color.Wheat));
             SpaceDefenseHeader = Add(new UILabel(GameText.SpaceDefenseHeader, Font, Color.Wheat));
             BuildMandateLabel = Add(new UILabel(GameText.BuildMandate, Font, Color.White) { Tooltip = GameText.BuildMandateTip });
             ScrapMandateLabel = Add(new UILabel(GameText.ScrapMandate, Font, Color.White) { Tooltip = GameText.ScrapMandateTip });
+            // added AFTER their labels: children draw in the order they were added, and an
+            // open list has to cover what sits below it
+            BuildMandateList = Add(MakeMandateList(Planet.GovBuildMandate, m => Planet.SetBuildMandate(m)));
+            ScrapMandateList = Add(MakeMandateList(Planet.GovScrapMandate, m => Planet.SetScrapMandate(m)));
 
             CreateBlueprints = Button(ButtonStyle.Medium, GameText.BlueprintsSnapshot, OnCreateBlueprintsClicked);
             EditBlueprints   = Button(ButtonStyle.Small, GameText.Edit, OnEditblueprintsClicked);
@@ -407,7 +410,9 @@ namespace Ship_Game
             // ones first, the slider absorbing what is left.
             // 4: the Submenu frame is inset ~9px; the maintainer bench took the margin down
             // to what the paint really needs, and the slider absorbs what the lanes give up.
-            const int AutoW = 52, AmountW = 44, LaneGap = 6, ValueGap = 2;
+            // AmountW covers the WIDEST value: UILabel.SetText grows Size to fit its text, and a grown Size shifts the right-align anchor - "12.0" in a 44px lane drifted off the
+            // column that "8.4" sat on. 999.9 is the practical ceiling for a colony budget.
+            const int AutoW = 52, AmountW = 56, LaneGap = 6, ValueGap = 2;
             float budgetRight = X + Width - 4;
             float autoX       = budgetRight - AutoW;
             float amountX     = autoX - LaneGap - AmountW;
@@ -570,6 +575,19 @@ namespace Ship_Game
                 // blueprints are an explicit plan and override both mandates, so the lists
                 // would lie about what the governor is going to do
                 bool mandates = GovernorTabView && GovernorOn && Planet.OwnerIsPlayer && !Planet.HasBlueprints;
+                // an open list has to cover everything, and add-order only settles the
+                // siblings added before it. Raise it ON THE OPENING, not every frame:
+                // BringToFrontZOrder removes and re-inserts the child.
+                if (BuildMandateList.Open != BuildListWasOpen)
+                {
+                    BuildListWasOpen = BuildMandateList.Open;
+                    if (BuildListWasOpen) BringToFrontZOrder(BuildMandateList);
+                }
+                if (ScrapMandateList.Open != ScrapListWasOpen)
+                {
+                    ScrapListWasOpen = ScrapMandateList.Open;
+                    if (ScrapListWasOpen) BringToFrontZOrder(ScrapMandateList);
+                }
                 BuildMandateList.Visible = ScrapMandateList.Visible = mandates;
                 BuildMandateLabel.Visible = ScrapMandateLabel.Visible = mandates;
                 SpecializedTradeHub.CheckedTextColor = Portrait.Border;
