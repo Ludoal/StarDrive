@@ -1162,8 +1162,13 @@ namespace Ship_Game
                 // needs a decision, so it is left alone too. Traces stay in the ImportantEventsList.
                 // Per-category opt-in: a notification auto-clears only if its category was ticked
                 // in the Automation settings. No category ticked (default) = nothing auto-clears.
+                // Ludoal fork (maintainer bench): the age is real time, so it kept running while
+                // the game was paused - a notification could expire unseen behind a pause menu.
+                // The entry animation above still plays, so one arriving during a pause settles
+                // in place instead of freezing mid-slide; only the ageing waits for the sim.
                 bool pausesTheGame = GlobalStats.PauseOnNotification && n.Pause;
                 if (autoClear > 0f && inPlace && !pausesTheGame && n.Action != "LoadEvent"
+                    && !Screen.UState.Paused
                     && GlobalStats.IsAutoClearCategory(n.Category))
                 {
                     n.SecondsAlive += elapsedRealTime;
