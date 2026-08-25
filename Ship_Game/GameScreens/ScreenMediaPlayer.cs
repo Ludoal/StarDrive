@@ -157,7 +157,7 @@ namespace Ship_Game.GameScreens
 
             try
             {
-                Video = ResourceManager.LoadVideo(Content, videoPath);
+                Video = ResourceManager.LoadVideo(videoPath);
                 Name = videoPath;
                 Rect = new Rectangle(0, 0, Video.Width, Video.Height);
 

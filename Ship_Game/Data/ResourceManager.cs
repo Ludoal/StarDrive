@@ -2196,8 +2196,25 @@ namespace Ship_Game
             TryDeserialize("ShipNames/ShipNames.xml", ref ShipNames);
         }
 
-        public static Video LoadVideo(GameContentManager content, string videoPath)
+        // Ludoal fork (maintainer feedback): videos are loaded through each screen's transient
+        // content, which is destroyed when the screen closes - so the same racial video was
+        // read off disk again on every single diplomacy opening. Screens keep their transient
+        // policy; videos alone are held here, on the root content, and loaded once.
+        static readonly Map<string, Video> VideoCache = new();
+
+        public static Video LoadVideo(string videoPath)
         {
+            if (VideoCache.TryGetValue(videoPath, out Video cached))
+                return cached;
+
+            Video loaded = LoadVideoNoCache(videoPath);
+            VideoCache[videoPath] = loaded;
+            return loaded;
+        }
+
+        static Video LoadVideoNoCache(string videoPath)
+        {
+            GameContentManager content = RootContent; // outlives any single screen
             string path = "Video/" + videoPath;
             if (GlobalStats.HasMod)
             {
