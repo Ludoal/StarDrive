@@ -185,7 +185,7 @@ so moving the tax slider no longer rewrites what governors think is worth buildi
 *(Biospheres no longer consult this estimator at all — see the capacity entry above.)*
 
 ### Budget allocation tail snapped to zero
-`AI/EmpireAI/Budget.cs` (`SnapSpentTail`)
+`e826cb9d` — `AI/EmpireAI/Budget.cs` (`SnapSpentTail`)
 
 **Source: maintainer.**
 
