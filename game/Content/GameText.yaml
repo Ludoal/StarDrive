@@ -16704,8 +16704,8 @@ BuildMandateTip:
  FRA: "Ce que le gouverneur peut construire sur cette colonie. Tout : tous les types de bâtiments, défense au sol comprise. Économique seulement : les bâtiments civils. Défense seulement : les bâtiments de défense au sol. Aucun : le gouverneur ne construit rien. Les biosphères ne sont pas concernées, et les schémas directeurs priment : un plan explicite est un ordre explicite."
 ScrapMandateTip:
  Id: 7135
- ENG: "What the governor may demolish when over budget. Same families as the Build Mandate. None: the governor never demolishes anything. Buildings you ordered yourself and Biospheres are not affected."
- FRA: "Ce que le gouverneur peut démolir en cas de dépassement de budget. Mêmes familles que le mandat de construction. Aucun : le gouverneur ne démolit jamais rien. Les bâtiments que vous avez commandés vous-même et les biosphères ne sont pas concernés."
+ ENG: "What the governor may demolish when over budget. Same families as the Build Mandate. None: the governor never demolishes anything, Biospheres included. Buildings you ordered yourself are never touched."
+ FRA: "Ce que le gouverneur peut démolir en cas de dépassement de budget. Mêmes familles que le mandat de construction. Aucun : le gouverneur ne démolit jamais rien, biosphères comprises. Les bâtiments que vous avez commandés vous-même ne sont jamais touchés."
 GroundTroopsHeader:
  Id: 7136
  ENG: "GROUND TROOPS"

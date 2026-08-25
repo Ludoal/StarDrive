@@ -382,8 +382,8 @@ namespace Ship_Game
 
         public bool TryCancelOverBudgetCivilianBuilding(float budget)
         {
-            if (GovernorShouldNotScrapBuilding)
-                return false;
+            // no scrap guard here: cancelling a queued plan is not demolishing anything,
+            // and a governor barred from tearing down should still clear its own queue
 
             for (int i = 0; i < ConstructionQueue.Count; i++)
             {

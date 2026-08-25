@@ -32,7 +32,7 @@ namespace Ship_Game
         DropOptions<Planet.BuildMandate> BuildMandateList, ScrapMandateList;
         UILabel BuildMandateLabel, ScrapMandateLabel;
         UILabel GroundTroopsHeader, SpaceDefenseHeader; // Defense tab column headers
-        private UICheckBox GovOrbitals, AutoTroops, GovNoScrap, Quarantine, ManualOrbitals, SpecializedTradeHub, Prioritized;
+        private UICheckBox GovOrbitals, AutoTroops, Quarantine, ManualOrbitals, SpecializedTradeHub, Prioritized;
         private FloatSlider Garrison;
         private FloatSlider ManualPlatforms;
         private FloatSlider ManualShipyards;
@@ -82,7 +82,6 @@ namespace Ship_Game
         FloatSlider CivBudgetSlider, GrdBudgetSlider, SpcBudgetSlider;
         UICheckBox AutoCiv, AutoGrd, AutoSpc;
         UILabel CivBudgetValue, GrdBudgetValue, SpcBudgetValue;
-        UILabel BudgetTotalLabel; // the sum, read-only now that it is not an input
 
         UILabel ColonyBlueprints, BlueprintsCompletionLbl, BlueprintsAchiveable, BlueprintsName,
             BlueprintsExclusive, BlueprintsLink, BlueprintsGovChange, Blueprintsoverview, BlueprintsEnableGov;
@@ -146,7 +145,6 @@ namespace Ship_Game
             // "Gov.": the full word ran past the Defense column.
             GovOrbitals    = Add(new UICheckBox(() => Planet.GovOrbitals, Font, title:"Gov. Manages Space Defense", tooltip:GameText.TheGovernorWillBuildStations));
             AutoTroops     = Add(new UICheckBox(() => Planet.AutoBuildTroops, Font, title:GameText.GovernorBuildsMilitia, tooltip:GameText.TheGovernorWillCreateA));
-            GovNoScrap     = Add(new UICheckBox(() => Planet.DontScrapBuildings, Font, title:GameText.GovernorWillNotScrapBuildings, tooltip:GameText.NormallyGovernorsOperateWithinA));
             Quarantine     = Add(new UICheckBox(() => Planet.Quarantine, Font, title: GameText.QuarantinePlanet, tooltip: GameText.PreventGoodsTransportationInAnd));
             ManualOrbitals = Add(new UICheckBox(() => Planet.ManualOrbitals, Font, title: GameText.ManualOrbitalLimit, tooltip: GameText.OverrideGovernorDecisionsRegardingOrbital));
             Prioritized    = Add(new UICheckBox(() => Planet.PrioritizedPort, Font, title: GameText.PrioritizedPort, tooltip: GameText.PrioritizedPortTip));
@@ -256,7 +254,6 @@ namespace Ship_Game
             CivBudgetValue = Add(MakeBudgetValue(() => Planet.Budget.CivilianAlloc));
             GrdBudgetValue = Add(MakeBudgetValue(() => Planet.Budget.GrdDefAlloc));
             SpcBudgetValue = Add(MakeBudgetValue(() => Planet.Budget.SpcDefAlloc));
-            BudgetTotalLabel = Add(MakeBudgetValue(() => Planet.Budget.TotalAlloc));
 
             BudgetSum     = Add(new UILabel(" ", FontBig, Color.White));
             BudgetPercent = Add(new UILabel(" ", FontBig, Color.White));
@@ -356,7 +353,6 @@ namespace Ship_Game
             Prioritized.Pos         = new Vector2(X + 10, Portrait.Bottom + 34);
             // one row higher: the Build Mandate dropdown takes the line it leaves behind
             SpecializedTradeHub.Pos = new Vector2(ColumnX + 25, Quarantine.Pos.Y - GovRowPitch); // +25: clear of the left labels at 1080 fonts
-            GovNoScrap.Pos          = new Vector2(ColumnX + 25, Prioritized.Pos.Y);
 
             // the two mandates take the line the trade hub left, label then list, one per row
             const int MandateLabelW = 118;
@@ -376,8 +372,12 @@ namespace Ship_Game
             const int DefColLeft = 10, DefColRight = 200, DefRowPitch = 20;
             float defHeaderRow    = Y + 30 + shift;
             float defFirstRow     = defHeaderRow + DefRowPitch;
-            GroundTroopsHeader.Pos = new Vector2(TopLeft.X + DefColLeft, defHeaderRow);
-            SpaceDefenseHeader.Pos = new Vector2(TopLeft.X + DefColRight, defHeaderRow);
+            // each header is centred on the column it names; the right edge is written once
+            float defRight   = X + Width - 20;
+            float leftMid    = TopLeft.X + DefColLeft + (DefColRight - DefColLeft) * 0.5f;
+            float rightMid   = (TopLeft.X + DefColRight + defRight) * 0.5f;
+            GroundTroopsHeader.Pos = new Vector2(leftMid - Font.TextWidth(GroundTroopsHeader.Text) * 0.5f, defHeaderRow);
+            SpaceDefenseHeader.Pos = new Vector2(rightMid - Font.TextWidth(SpaceDefenseHeader.Text) * 0.5f, defHeaderRow);
 
             AutoTroops.Pos        = new Vector2(TopLeft.X + DefColLeft, defFirstRow);
             Garrison.Pos          = new Vector2(TopLeft.X + DefColLeft + 10, defFirstRow + DefRowPitch);
@@ -391,10 +391,13 @@ namespace Ship_Game
             // the ground-defense checkbox left this column: the orbital pair closes the gap
             GovOrbitals.Pos       = new Vector2(TopLeft.X + DefColRight, defFirstRow + DefRowPitch);
             ManualOrbitals.Pos    = new Vector2(TopLeft.X + DefColRight, defFirstRow + 2*DefRowPitch);
-            BuildPlatform.Pos     = new Vector2(TopLeft.X + 200, defRow);
-            BuildShipyard.Pos     = new Vector2(TopLeft.X + 200, defRow + 34);
-            BuildStation.Pos      = new Vector2(TopLeft.X + 200, defRow + 68);
+            // the pair is button + its value 125px further: centre the pair, not the button
             Vector2 manualOffset  = new Vector2(125, -15);
+            float pairWidth       = manualOffset.X + 24; // the value lane past the button
+            float buildX          = rightMid - pairWidth * 0.5f;
+            BuildPlatform.Pos     = new Vector2(buildX, defRow);
+            BuildShipyard.Pos     = new Vector2(buildX, defRow + 34);
+            BuildStation.Pos      = new Vector2(buildX, defRow + 68);
             ManualPlatforms.Pos   = BuildPlatform.Pos + manualOffset;
             ManualShipyards.Pos   = BuildShipyard.Pos + manualOffset;
             ManualStations.Pos    = BuildStation.Pos + manualOffset;
@@ -402,19 +405,20 @@ namespace Ship_Game
             // One row per area, all three identical: bar | slider | amount | Auto.
             // The right edge is written ONCE and the lanes cascade back from it - the fixed
             // ones first, the slider absorbing what is left.
-            // 20, not 10: the Submenu frame is inset ~9px, a tighter margin kisses the paint.
-            const int AutoW = 52, AmountW = 44, LaneGap = 6;
-            float budgetRight = X + Width - 20;
+            // 4: the Submenu frame is inset ~9px; the maintainer bench took the margin down
+            // to what the paint really needs, and the slider absorbs what the lanes give up.
+            const int AutoW = 52, AmountW = 44, LaneGap = 6, ValueGap = 2;
+            float budgetRight = X + Width - 4;
             float autoX       = budgetRight - AutoW;
             float amountX     = autoX - LaneGap - AmountW;
             float sliderX     = CivBudgetRect.X + CivBudgetRect.Width + 12;
             // +32: the slider track is Width-32; the unused value reserve folds back in
-            var sliderSize = new Vector2(amountX - LaneGap - sliderX + 32, 12);
+            var sliderSize = new Vector2(amountX - ValueGap - sliderX + 32, 12);
             var amountSize = new Vector2(AmountW, Font.LineSpacing);
 
             void SeatBudgetRow(FloatSlider slider, UILabel amount, UICheckBox auto, in Rectangle barRect)
             {
-                slider.Pos = new Vector2(sliderX, barRect.Y + 1); slider.Size = sliderSize;
+                slider.Pos = new Vector2(sliderX, barRect.Y - 3); slider.Size = sliderSize;
                 amount.Pos = new Vector2(amountX, barRect.Y + 5); amount.Size = amountSize;
                 auto.Pos   = new Vector2(autoX,   barRect.Y + 4);
             }
@@ -425,9 +429,6 @@ namespace Ship_Game
 
             // the row under the bars: the all-areas shortcut on the left, the total at the end
             float spendRow = Y + 130 + shift;
-            BudgetTotalLabel.TextAlign = TextAlign.Right;
-            BudgetTotalLabel.Size      = new Vector2(AmountW, Font.LineSpacing);
-            BudgetTotalLabel.Pos       = new Vector2(amountX, spendRow + 3);
 
             BudgetSum.Pos         = new Vector2(TopLeft.X + 8, Y + 160 + shift);
             BudgetPercent.Pos     = new Vector2(TopLeft.X + CivBudgetRect.Width + 15, Y + 160 + shift);
@@ -518,7 +519,9 @@ namespace Ship_Game
 
         public void OnBlueprintsChanged(BlueprintsTemplate template)
         {
-            Planet.DontScrapBuildings = false;
+            // a blueprint is an explicit plan: it takes the mandates back to full rights
+            Planet.SetBuildMandate(Planet.BuildMandate.All);
+            Planet.SetScrapMandate(Planet.BuildMandate.All);
             Planet.SetSpecializedTradeHub(false);
             Planet.AddBlueprints(template, Player);
             ColonyTypeList.ActiveValue = Planet.CType;
@@ -571,14 +574,6 @@ namespace Ship_Game
                 BuildMandateLabel.Visible = ScrapMandateLabel.Visible = mandates;
                 SpecializedTradeHub.CheckedTextColor = Portrait.Border;
 
-                // Not for trade hubs, which do not build structures anyway
-                GovNoScrap.Visible = GovernorTabView 
-                    && Planet.CType != Planet.ColonyType.TradeHub 
-                    && GovernorOn 
-                    && Planet.OwnerIsPlayer 
-                    && !Planet.SpecializedTradeHub
-                    && !Planet.HasBlueprints;
-
                 int numTroopsCanLaunch    = DefenseTabView ? Planet.NumTroopsCanLaunchFor(Planet.Universe.Player) : 0;
                 Planet.GarrisonSize       = (int)Math.Round(Garrison.AbsoluteValue);
                 CallTroops.Visible        = DefenseTabView && Planet.OwnerIsPlayer;
@@ -603,7 +598,6 @@ namespace Ship_Game
                 GovOrbitals.TextColor     = Planet.GovOrbitals        ? Color.White : Color.Gray;
                 ManualOrbitals.TextColor  = Planet.ManualOrbitals     ? Color.White : Color.Gray;
                 AutoTroops.TextColor      = Planet.AutoBuildTroops    ? Color.White : Color.Gray;
-                GovNoScrap.TextColor      = Planet.DontScrapBuildings ? Color.White : Color.Gray;
 
                 if (ManualOrbitals.Visible && Planet.ManualOrbitals)
                 {
@@ -624,7 +618,6 @@ namespace Ship_Game
                 CivBudgetSlider.Visible = GrdBudgetSlider.Visible = SpcBudgetSlider.Visible = budgetRows;
                 CivBudgetValue.Visible  = GrdBudgetValue.Visible  = SpcBudgetValue.Visible  = budgetRows;
                 AutoCiv.Visible = AutoGrd.Visible = AutoSpc.Visible = budgetRows;
-                BudgetTotalLabel.Visible = budgetRows;
                 // an automatic row reads grey: the number is the governor's, not the player's
                 CivBudgetValue.Color = Planet.ManualCivBudgetOn ? Color.White : Color.Gray;
                 GrdBudgetValue.Color = Planet.ManualGrdBudgetOn ? Color.White : Color.Gray;
@@ -1019,7 +1012,8 @@ namespace Ship_Game
         DropOptions<Planet.BuildMandate> MakeMandateList(Planet.BuildMandate active,
                                                         Action<Planet.BuildMandate> apply)
         {
-            var list = new DropOptions<Planet.BuildMandate>(110, 18);
+            // 120, not 110: "Economic only" was clipped to "Economic onl..."
+            var list = new DropOptions<Planet.BuildMandate>(120, 18);
             list.AddOption(option: GameText.MandateAll, Planet.BuildMandate.All);
             list.AddOption(option: GameText.MandateEconomicOnly, Planet.BuildMandate.EconomicOnly);
             list.AddOption(option: GameText.MandateDefenseOnly, Planet.BuildMandate.DefenseOnly);

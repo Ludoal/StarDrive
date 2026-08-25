@@ -75,7 +75,10 @@ namespace Ship_Game
         void BuildOrScrapPlatforms(Array<Ship> orbitals, byte wanted, float budget, float tolerance)
             => BuildOrScrapOrbitals(orbitals, wanted, RoleName.platform, budget, tolerance);
 
-        bool GovernorShouldNotScrapBuilding => OwnerIsPlayer && DontScrapBuildings;
+        // Ludoal fork (maintainer feedback): the Scrap Mandate absorbed the old
+        // "Governor Will Not Scrap Buildings" toggle - None says the same thing, and one
+        // control per decision beats two that must agree.
+        bool GovernorShouldNotScrapBuilding => !MayScrapCivilian;
 
         // The mandates bind the player's governors only: an AI runs its own empire.
         bool MayBuild(BuildMandate mandate, bool military)
