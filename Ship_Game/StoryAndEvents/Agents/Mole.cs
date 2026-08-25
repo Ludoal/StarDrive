@@ -39,11 +39,11 @@ namespace Ship_Game
             targetPlanet = null;
             // falls back to their biggest explored colony; with nothing explored the
             // level perk simply retries on the next espionage tick
-            var planets = target.GetPlanets().Filter(p => (p.IsHomeworld || p.HasCapital) && p.IsExploredBy(owner));
+            Planet[] explored = target.GetPlanets().Filter(p => p.IsExploredBy(owner));
+            Planet[] seats = explored.Filter(p => p.IsHomeworld || p.HasCapital);
 
-            targetPlanet = planets.Length == 0 ? target.GetPlanets().Filter(p => p.IsExploredBy(owner))
-                                                                    .FindMax(p => p.PopulationBillion)
-                                                : target.Random.Item(planets);
+            targetPlanet = seats.Length == 0 ? explored.FindMax(p => p.PopulationBillion)
+                                             : target.Random.Item(seats);
 
             if (targetPlanet == null)
                 return null;

@@ -367,8 +367,10 @@ namespace Ship_Game
 
                 IEmpireData empire = ResourceManager.AllRaces.FirstOrDefault(e => e.Name == header.PlayerName)
                                   ?? ResourceManager.AllRaces[0];
+                // only the icon was missing, so keep the header's own colour when it has one
+                Color tint = header.FlagIndex >= 0 ? header.EmpireColor : empire.Traits.Color;
                 return new(file, header, header.SaveName, info, extraInfo, tooltip,
-                           empire.Traits.FlagIcon, empire.Traits.Color);
+                           empire.Traits.FlagIcon, tint);
             }
         }
     }

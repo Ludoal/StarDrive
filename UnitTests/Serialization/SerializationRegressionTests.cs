@@ -40,8 +40,9 @@ public class SerializationRegressionTests : StarDriveTest
 
     // The save list draws the player's flag straight from the header, using FlagIndex == -1
     // to mean "written before the field existed, fall back to the race-name lookup".
-    // Flag 0 is a real, pickable flag, so it must survive the round trip as 0 and never
-    // collapse into the sentinel - the writer skips fields equal to their declared default.
+    // Flag 0 is a real, pickable flag and must survive as 0, never as the sentinel.
+    // Note this passes with or without the DefaultValue attribute, because HeaderData
+    // always serializes under full layout; it guards the round trip, not the attribute.
     [TestMethod]
     public void SaveHeader_FlagIndexZero_SurvivesRoundTrip()
     {
@@ -65,6 +66,8 @@ public class SerializationRegressionTests : StarDriveTest
                 Ship_Game.Data.Binary.BinarySerializer.SerializeMultiType(w, new object[] { header }, false);
 
             HeaderData load = Ship_Game.GameScreens.LoadGame.LoadGame.PeekHeader(new(path));
+            // PeekHeader swallows every exception and returns null, so assert before deref
+            Assert.IsNotNull(load, $"PeekHeader returned null for FlagIndex {flagIndex}");
             AssertEqual(flagIndex, load.FlagIndex, $"FlagIndex {flagIndex} must round-trip exactly");
             AssertEqual(header.EmpireColor, load.EmpireColor, "EmpireColor must round-trip exactly");
         }
