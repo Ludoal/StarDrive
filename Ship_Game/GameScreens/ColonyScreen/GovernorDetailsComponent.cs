@@ -982,23 +982,24 @@ namespace Ship_Game
         // allocation it has right now, so the amount never jumps when the player takes control.
         UICheckBox MakeAutoToggle(BudgetArea area)
         {
-            var cb = new UICheckBox(() => !IsAreaManual(area), Font,
-                                    title: "Auto", tooltip: GameText.OverrideThisBudgetAndSet);
-            cb.OnChange = c =>
+            // A getter/setter Ref, not an expression binding: Ref picks a field or property
+            // apart from the expression tree, and this state is computed - a negated method
+            // call is a UnaryExpression and throws when the box is built.
+            var binding = new Ref<bool>(() => !IsAreaManual(area), auto =>
             {
-                bool manual = !c.Checked;
-                if (manual)
-                    SetAreaAmount(area, AutoTargetFor(area));
-
+                bool manual = !auto;
+                // taking over: start from what the governor allocates right now, so the amount
+                // never jumps at the moment the player takes control
+                SetAreaAmount(area, manual ? AutoTargetFor(area) : 0f);
                 SetAreaManual(area, manual);
                 if (!manual)
-                {
-                    SetAreaAmount(area, 0f);
                     Planet.Budget?.SnapToTarget(); // the EMA would crawl back from the manual value
-                }
+
                 SyncBudgetEnables();
-            };
-            return cb;
+            });
+
+            return new UICheckBox(0, 0, binding, Font,
+                                  title: "Auto", tooltip: GameText.OverrideThisBudgetAndSet);
         }
 
         UILabel MakeBudgetValue(Func<float> getValue)
