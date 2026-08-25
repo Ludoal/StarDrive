@@ -242,7 +242,9 @@ namespace Ship_Game
         }
 
         // Right-aligns the integer part on commaX and runs the fraction to its right.
-        static void DrawAlignedNumber(SpriteBatch batch, Graphics.Font font, string text, float commaX, float y, Color color)
+        // Public: the Governor budget rows align their figures the same way, and a second
+        // implementation would drift from this one.
+        public static void DrawAlignedNumber(SpriteBatch batch, Graphics.Font font, string text, float commaX, float y, Color color)
         {
             int dot = text.IndexOf('.');
             string intPart  = dot < 0 ? text : text.Substring(0, dot);

@@ -33,7 +33,7 @@ namespace Ship_Game
         UILabel BuildMandateLabel, ScrapMandateLabel;
         UILabel GroundTroopsHeader, SpaceDefenseHeader; // Defense tab column headers
         bool BuildListWasOpen, ScrapListWasOpen; // raise a list once, on its opening
-        const int BudgetValueW = 56; // wide enough for the longest budget figure
+        float BudgetCommaX; // the decimal column the three budget figures align on
         private UICheckBox GovOrbitals, AutoTroops, Quarantine, ManualOrbitals, SpecializedTradeHub, Prioritized;
         private FloatSlider Garrison;
         private FloatSlider ManualPlatforms;
@@ -83,7 +83,6 @@ namespace Ship_Game
         // point of it.
         FloatSlider CivBudgetSlider, GrdBudgetSlider, SpcBudgetSlider;
         UICheckBox AutoCiv, AutoGrd, AutoSpc;
-        UILabel CivBudgetValue, GrdBudgetValue, SpcBudgetValue;
 
         UILabel ColonyBlueprints, BlueprintsCompletionLbl, BlueprintsAchiveable, BlueprintsName,
             BlueprintsExclusive, BlueprintsLink, BlueprintsGovChange, Blueprintsoverview, BlueprintsEnableGov;
@@ -255,9 +254,6 @@ namespace Ship_Game
             AutoCiv = Add(MakeAutoToggle(BudgetArea.Civilian));
             AutoGrd = Add(MakeAutoToggle(BudgetArea.GroundDef));
             AutoSpc = Add(MakeAutoToggle(BudgetArea.SpaceDef));
-            CivBudgetValue = Add(MakeBudgetValue(() => Planet.Budget.CivilianAlloc));
-            GrdBudgetValue = Add(MakeBudgetValue(() => Planet.Budget.GrdDefAlloc));
-            SpcBudgetValue = Add(MakeBudgetValue(() => Planet.Budget.SpcDefAlloc));
 
             BudgetSum     = Add(new UILabel(" ", FontBig, Color.White));
             BudgetPercent = Add(new UILabel(" ", FontBig, Color.White));
@@ -411,29 +407,33 @@ namespace Ship_Game
             // ones first, the slider absorbing what is left.
             // 4: the Submenu frame is inset ~9px; the maintainer bench took the margin down
             // to what the paint really needs, and the slider absorbs what the lanes give up.
-            // AmountW covers the WIDEST value: UILabel.SetText grows Size to fit its text, and a grown Size shifts the right-align anchor - "12.0" in a 44px lane drifted off the
-            // column that "8.4" sat on. 999.9 is the practical ceiling for a colony budget.
-            const int AutoW = 52, AmountW = BudgetValueW, LaneGap = 6, ValueGap = 2;
+            // The figures are drawn by hand, aligned on their decimal point like the Labor
+            // sliders: a proportional font makes right-alignment land the point in a
+            // different place for "8.4" and "14.8". The lane is the integer room left of
+            // the comma plus the fraction right of it.
+            const int AutoW = 52, LaneGap = 6;
+            float unitsW  = Font.TextWidth("100");
+            float fracW   = Font.TextWidth(".0");
             float budgetRight = X + Width - 4;
             float autoX       = budgetRight - AutoW;
-            float amountX     = autoX - LaneGap - AmountW;
-            // 12 - 15: the slider starts closer to its bar, growing leftward. The right
-            // margin and the value/Auto lanes keep their seats (maintainer bench).
-            float sliderX     = CivBudgetRect.X + CivBudgetRect.Width - 3;
+            BudgetCommaX      = autoX - LaneGap - fracW;
+            float amountX     = BudgetCommaX - unitsW;
+            // back to +12: pulling the slider left made it overlap the bar it belongs to.
+            // Its extra room comes from the value lane instead, which is measured now
+            // rather than reserved at a guessed width.
+            float sliderX     = CivBudgetRect.X + CivBudgetRect.Width + 12;
             // +32: the slider track is Width-32; the unused value reserve folds back in
-            var sliderSize = new Vector2(amountX - ValueGap - sliderX + 32, 12);
-            var amountSize = new Vector2(AmountW, Font.LineSpacing);
+            var sliderSize = new Vector2(amountX - 4 - sliderX + 32, 12);
 
-            void SeatBudgetRow(FloatSlider slider, UILabel amount, UICheckBox auto, in Rectangle barRect)
+            void SeatBudgetRow(FloatSlider slider, UICheckBox auto, in Rectangle barRect)
             {
                 slider.Pos = new Vector2(sliderX, barRect.Y - 3); slider.Size = sliderSize;
-                amount.Pos = new Vector2(amountX, barRect.Y + 5); amount.Size = amountSize;
                 auto.Pos   = new Vector2(autoX,   barRect.Y + 4);
             }
 
-            SeatBudgetRow(CivBudgetSlider, CivBudgetValue, AutoCiv, CivBudgetRect);
-            SeatBudgetRow(GrdBudgetSlider, GrdBudgetValue, AutoGrd, GrdBudgetRect);
-            SeatBudgetRow(SpcBudgetSlider, SpcBudgetValue, AutoSpc, SpcBudgetRect);
+            SeatBudgetRow(CivBudgetSlider, AutoCiv, CivBudgetRect);
+            SeatBudgetRow(GrdBudgetSlider, AutoGrd, GrdBudgetRect);
+            SeatBudgetRow(SpcBudgetSlider, AutoSpc, SpcBudgetRect);
 
             // the row under the bars: the all-areas shortcut on the left, the total at the end
             float spendRow = Y + 130 + shift;
@@ -637,12 +637,8 @@ namespace Ship_Game
                 BudgetPercent.Visible   = BudgetTabView && GovernorOn;
                 bool budgetRows = BudgetTabView && GovernorOn && Planet.OwnerIsPlayer && Planet.CType is not Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub;
                 CivBudgetSlider.Visible = GrdBudgetSlider.Visible = SpcBudgetSlider.Visible = budgetRows;
-                CivBudgetValue.Visible  = GrdBudgetValue.Visible  = SpcBudgetValue.Visible  = budgetRows;
                 AutoCiv.Visible = AutoGrd.Visible = AutoSpc.Visible = budgetRows;
                 // an automatic row reads grey: the number is the governor's, not the player's
-                CivBudgetValue.Color = Planet.ManualCivBudgetOn ? Color.White : Color.Gray;
-                GrdBudgetValue.Color = Planet.ManualGrdBudgetOn ? Color.White : Color.Gray;
-                SpcBudgetValue.Color = Planet.ManualSpcBudgetOn ? Color.White : Color.Gray;
 
 
                 CreateBlueprints.Visible = BlueprintsTabView && Planet.OwnerIsPlayer;
@@ -749,6 +745,24 @@ namespace Ship_Game
             batch.Draw(ResourceManager.Texture("NewUI/BudgetCiv"), CivBudgetIconRect);
             batch.Draw(ResourceManager.Texture("NewUI/BudgetGround"), GrdBudgetIconRect);
             batch.Draw(ResourceManager.Texture("NewUI/BudgetSpace"), SpcBudgetIconRect);
+
+            // The allocations, aligned on their decimal point - the same treatment the Labor
+            // sliders give their figures, and for the same reason: the font is proportional,
+            // so right-aligning "8.4" and "14.8" puts their points in different places.
+            // An automatic row reads grey: that number is the governor's, not the player's.
+            if (CivBudgetSlider?.Visible == true)
+            {
+                PlanetBudget b = Planet.Budget;
+                DrawBudgetValue(batch, b.CivilianAlloc, CivBudgetRect, Planet.ManualCivBudgetOn);
+                DrawBudgetValue(batch, b.GrdDefAlloc,   GrdBudgetRect, Planet.ManualGrdBudgetOn);
+                DrawBudgetValue(batch, b.SpcDefAlloc,   SpcBudgetRect, Planet.ManualSpcBudgetOn);
+            }
+        }
+
+        void DrawBudgetValue(SpriteBatch batch, float value, in Rectangle barRect, bool manual)
+        {
+            ColonySlider.DrawAlignedNumber(batch, Font, value.StringFixed1(), BudgetCommaX,
+                                           barRect.Y + 5, manual ? Color.White : Color.Gray);
         }
 
         void DrawBlueprintsTab(SpriteBatch batch)
@@ -1014,41 +1028,6 @@ namespace Ship_Game
 
             return new UICheckBox(0, 0, binding, Font,
                                   title: "Auto", tooltip: GameText.OverrideThisBudgetAndSet);
-        }
-
-        UILabel MakeBudgetValue(Func<float> getValue)
-        {
-            // StringFixed1, not String(1): the latter drops the decimal on a whole number,
-            // so 8 and 2.2 stopped lining up on the point.
-            var l = new UILabel(_ => getValue().StringFixed1(), Font) { TextAlign = TextAlign.Right };
-            l.Color = Color.White;
-            // ⚠ the constructor already measured the FIRST value and set Size from it, and
-            // UpdateSizeFromText only ever grows it. Right-align reads pos.X + Size.X, so a
-            // row whose value got longer drew further right than its neighbours - and pushed
-            // its Auto box along. Seat the widest case here, before any text is measured.
-            l.Size = new Vector2(BudgetValueW, Font.LineSpacing);
-            return l;
-        }
-
-        // The range is seated at construction from the area's own auto target (FloatSlider owns
-        // its bounds privately), so it follows the colony between two openings of the panel.
-        void SeatBudgetSlider(FloatSlider slider, BudgetArea area, float storedAmount)
-        {
-            slider.AbsoluteValue = IsAreaManual(area) ? storedAmount : AutoTargetFor(area);
-        }
-
-        DropOptions<Planet.BuildMandate> MakeMandateList(Planet.BuildMandate active,
-                                                        Action<Planet.BuildMandate> apply)
-        {
-            // 120, not 110: "Economic only" was clipped to "Economic onl..."
-            var list = new DropOptions<Planet.BuildMandate>(120, 18);
-            list.AddOption(option: GameText.MandateAll, Planet.BuildMandate.All);
-            list.AddOption(option: GameText.MandateEconomicOnly, Planet.BuildMandate.EconomicOnly);
-            list.AddOption(option: GameText.MandateDefenseOnly, Planet.BuildMandate.DefenseOnly);
-            list.AddOption(option: GameText.MandateNone, Planet.BuildMandate.None);
-            list.ActiveValue = active;
-            list.OnValueChange = m => Universe.RunOnSimThread(() => apply(m));
-            return list;
         }
 
         void SyncBudgetEnables()
