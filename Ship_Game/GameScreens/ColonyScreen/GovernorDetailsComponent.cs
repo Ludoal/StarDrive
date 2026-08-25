@@ -238,9 +238,9 @@ namespace Ship_Game
             BlueprintsCompletion = new ProgressBar(completionRect, 0, 0)
             { DrawPercentage = true, color = "green" };
 
-            CivBudgetBar.Fraction10Values = true;
-            GrdBudgetBar.Fraction10Values = true;
-            SpcBudgetBar.Fraction10Values = true;
+            CivBudgetBar.Fraction10Values = CivBudgetBar.FixedDecimal = true;
+            GrdBudgetBar.Fraction10Values = GrdBudgetBar.FixedDecimal = true;
+            SpcBudgetBar.Fraction10Values = SpcBudgetBar.FixedDecimal = true;
             CivBudgetBar.color = "green";
             SpcBudgetBar.color = "blue";
 

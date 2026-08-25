@@ -18,6 +18,10 @@ public sealed class ProgressBar
     public bool DrawProgressText = true; // draw "50%" or "50/100"
     public bool DrawPercentage = false;
     public bool Fraction10Values = false;
+    // Ludoal fork (maintainer feedback): always write the decimal, so a column of bars
+    // lines up on the point - String(1) drops it on a whole number. Opt-in: the exotic
+    // bonuses window reads better without the trailing zero.
+    public bool FixedDecimal = false;
     private Rectangle Left;
     private Rectangle Right;
     private Rectangle Middle;
@@ -145,7 +149,9 @@ public sealed class ProgressBar
         batch.DrawString(Fonts.TahomaBold9, Fraction10Values ? Values10 : Values, textPos, Color.DarkGray);
     }
 
-    string Values10 => DrawPercentage ? $"{Progress.String(1)}%" : $"{Progress.String(1)}/{Max.String(1)}";
+    string Values10 => FixedDecimal
+        ? (DrawPercentage ? $"{Progress.StringFixed1()}%" : $"{Progress.StringFixed1()}/{Max.StringFixed1()}")
+        : (DrawPercentage ? $"{Progress.String(1)}%" : $"{Progress.String(1)}/{Max.String(1)}");
     string Values    => DrawPercentage ? $"{(int)Progress}%" : $"{(int)Progress}/{(int)Max}";
 }
 
