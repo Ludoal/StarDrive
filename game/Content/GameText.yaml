@@ -16700,12 +16700,20 @@ MandateNone:
  FRA: "Aucun"
 BuildMandateTip:
  Id: 7134
- ENG: "Which buildings this governor may construct. Blueprints override it: an explicit plan is an explicit order."
- FRA: "Quels bâtiments ce gouverneur peut construire. Les schémas directeurs priment : un plan explicite est un ordre explicite."
+ ENG: "What the governor may build on this colony. All: every building type, including ground defense. Economic only: civilian buildings. Defense only: ground defense buildings. None: the governor builds nothing. Biospheres are not affected, and Blueprints override this: an explicit plan is an explicit order."
+ FRA: "Ce que le gouverneur peut construire sur cette colonie. Tout : tous les types de bâtiments, défense au sol comprise. Économique seulement : les bâtiments civils. Défense seulement : les bâtiments de défense au sol. Aucun : le gouverneur ne construit rien. Les biosphères ne sont pas concernées, et les schémas directeurs priment : un plan explicite est un ordre explicite."
 ScrapMandateTip:
  Id: 7135
- ENG: "Which buildings this governor may demolish. A family it may not build is not one it may tear down."
- FRA: "Quels bâtiments ce gouverneur peut démolir. Une famille qu'il ne peut pas construire n'est pas une famille qu'il peut abattre."
+ ENG: "What the governor may demolish when over budget. Same families as the Build Mandate. None: the governor never demolishes anything. Buildings you ordered yourself and Biospheres are not affected."
+ FRA: "Ce que le gouverneur peut démolir en cas de dépassement de budget. Mêmes familles que le mandat de construction. Aucun : le gouverneur ne démolit jamais rien. Les bâtiments que vous avez commandés vous-même et les biosphères ne sont pas concernés."
+GroundTroopsHeader:
+ Id: 7136
+ ENG: "GROUND TROOPS"
+ FRA: "TROUPES AU SOL"
+SpaceDefenseHeader:
+ Id: 7137
+ ENG: "SPACE DEFENSE"
+ FRA: "DÉFENSE SPATIALE"
  UKR: "Ліміт цивільного бюджету досягнуто!"
  PTB: "Limite do Orçamento Civil Atingido!"
 BB_Tech_SubspatialDynamics_CounterEnemyPlanetInhibitionBonus_Bonus:

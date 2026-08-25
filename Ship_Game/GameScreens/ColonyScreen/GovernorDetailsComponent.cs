@@ -31,6 +31,7 @@ namespace Ship_Game
         // mirrored lists so a family it cannot build is not one it can tear down.
         DropOptions<Planet.BuildMandate> BuildMandateList, ScrapMandateList;
         UILabel BuildMandateLabel, ScrapMandateLabel;
+        UILabel GroundTroopsHeader, SpaceDefenseHeader; // Defense tab column headers
         private UICheckBox GovOrbitals, AutoTroops, GovNoScrap, Quarantine, ManualOrbitals, SpecializedTradeHub, Prioritized;
         private FloatSlider Garrison;
         private FloatSlider ManualPlatforms;
@@ -184,6 +185,8 @@ namespace Ship_Game
 
             BuildMandateList = Add(MakeMandateList(Planet.GovBuildMandate, m => Planet.SetBuildMandate(m)));
             ScrapMandateList = Add(MakeMandateList(Planet.GovScrapMandate, m => Planet.SetScrapMandate(m)));
+            GroundTroopsHeader = Add(new UILabel(GameText.GroundTroopsHeader, Font, Color.Wheat));
+            SpaceDefenseHeader = Add(new UILabel(GameText.SpaceDefenseHeader, Font, Color.Wheat));
             BuildMandateLabel = Add(new UILabel(GameText.BuildMandate, Font, Color.White) { Tooltip = GameText.BuildMandateTip });
             ScrapMandateLabel = Add(new UILabel(GameText.ScrapMandate, Font, Color.White) { Tooltip = GameText.ScrapMandateTip });
 
@@ -367,17 +370,27 @@ namespace Ship_Game
 
             // Defense tab. These six buttons follow their own column, so the panel's height
             // can be its content's.
-            AutoTroops.Pos        = new Vector2(TopLeft.X + 10, Y + 30 + shift);
-            Garrison.Pos          = new Vector2(TopLeft.X + 20, Y + 50 + shift);
-            float defRow          = Y + 100 + shift;  // a breath under the garrison slider
+            // Ludoal fork (maintainer feedback): each column says what it owns - troops on the
+            // ground at left, everything in orbit at right. The headers take the first row and
+            // the content steps down one.
+            const int DefColLeft = 10, DefColRight = 200, DefRowPitch = 20;
+            float defHeaderRow    = Y + 30 + shift;
+            float defFirstRow     = defHeaderRow + DefRowPitch;
+            GroundTroopsHeader.Pos = new Vector2(TopLeft.X + DefColLeft, defHeaderRow);
+            SpaceDefenseHeader.Pos = new Vector2(TopLeft.X + DefColRight, defHeaderRow);
+
+            AutoTroops.Pos        = new Vector2(TopLeft.X + DefColLeft, defFirstRow);
+            Garrison.Pos          = new Vector2(TopLeft.X + DefColLeft + 10, defFirstRow + DefRowPitch);
+            float defRow          = Y + 120 + shift;  // a breath under the garrison slider
             // 34 per row, not 26: the buttons breathe vertically
-            LaunchAllTroops.Pos   = new Vector2(TopLeft.X + 10, defRow);
-            LaunchSingleTroop.Pos = new Vector2(TopLeft.X + 10, defRow + 34);
-            CallTroops.Pos        = new Vector2(TopLeft.X + 10, defRow + 68);
-            ColonyRank.Pos        = new Vector2(TopLeft.X + 200, Y + 30 + shift);
+            LaunchAllTroops.Pos   = new Vector2(TopLeft.X + DefColLeft, defRow);
+            LaunchSingleTroop.Pos = new Vector2(TopLeft.X + DefColLeft, defRow + 34);
+            CallTroops.Pos        = new Vector2(TopLeft.X + DefColLeft, defRow + 68);
+            ColonyRank.Pos        = new Vector2(TopLeft.X + DefColRight, defFirstRow);
             NoGovernor.Pos        = ColonyRank.Pos;
-            GovOrbitals.Pos       = new Vector2(TopLeft.X + 200, Y + 70 + shift);
-            ManualOrbitals.Pos    = new Vector2(TopLeft.X + 200, Y + 90 + shift);
+            // the ground-defense checkbox left this column: the orbital pair closes the gap
+            GovOrbitals.Pos       = new Vector2(TopLeft.X + DefColRight, defFirstRow + DefRowPitch);
+            ManualOrbitals.Pos    = new Vector2(TopLeft.X + DefColRight, defFirstRow + 2*DefRowPitch);
             BuildPlatform.Pos     = new Vector2(TopLeft.X + 200, defRow);
             BuildShipyard.Pos     = new Vector2(TopLeft.X + 200, defRow + 34);
             BuildStation.Pos      = new Vector2(TopLeft.X + 200, defRow + 68);
@@ -583,6 +596,7 @@ namespace Ship_Game
                 NoGovernor.Visible        = DefenseTabView && GovernorOff;
                 ManualOrbitals.Visible    = DefenseTabView && Planet.GovOrbitals && GovernorOn;
                 ColonyRank.Visible        = DefenseTabView && GovernorOn;
+                GroundTroopsHeader.Visible = SpaceDefenseHeader.Visible = DefenseTabView;
                 ManualPlatforms.Visible   = DefenseTabView && Planet.ManualOrbitals && Planet.GovOrbitals && GovernorOn;
                 ManualShipyards.Visible   = ManualPlatforms.Visible;
                 ManualStations.Visible    = ManualPlatforms.Visible;

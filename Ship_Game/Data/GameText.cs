@@ -7094,6 +7094,10 @@ namespace Ship_Game
         BuildMandateTip = 7134,
         /// <summary>Which buildings this governor may demolish.</summary>
         ScrapMandateTip = 7135,
+        /// <summary>GROUND TROOPS</summary>
+        GroundTroopsHeader = 7136,
+        /// <summary>SPACE DEFENSE</summary>
+        SpaceDefenseHeader = 7137,
         /// <summary>Dearest SING friends, We are delighted to see your empire's</summary>
         EncCorsairs000_Msg0 = -11,
         /// <summary>Agree to pay this upstanding gentleman.</summary>
