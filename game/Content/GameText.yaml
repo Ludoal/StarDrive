@@ -17909,8 +17909,8 @@ SpecializedTradeHub:
  PTB: "Centro Comercial Especializado"
 SpecializedTradeHubTip:
  Id: 4921
- ENG: "Specialized Trade-hub will enable the Governor management for Import/Export preferences based on the Governor Type and for the automation of Labor sliders, again, based on the Governor type. It will not build or scrap buildings."
- FRA: "La plaque tournante commerciale spécialisée active la gestion du gouverneur pour les préférences d'import/export selon le type de gouverneur, et l'automatisation des curseurs de main-d'œuvre, là aussi selon le type de gouverneur. Elle ne construira ni ne démantèlera de bâtiments."
+ ENG: "This colony trades like a hub. Import and export thresholds follow trade-hub rules instead of the governor's own, and freighter load planning treats it as a dedicated trading post. The governor stays in place and keeps assigning labor. Building construction is not affected."
+ FRA: "Cette colonie commerce comme une plaque tournante. Les seuils d'import et d'export suivent les règles des plaques tournantes plutôt que celles de son gouverneur, et la planification de charge des cargos la traite comme un comptoir dédié. Le gouverneur reste en place et continue d'assigner la main-d'œuvre. La construction de bâtiments n'est pas affectée."
  PTB: "O Centro Comercial Especializado habilitará o gerenciamento do Governador para preferências de Importação/Exportação com base no Tipo de Governador e para a automação dos controles de Trabalho, novamente com base no Tipo de Governador. Ele não construirá nem sucateará construções."
 PrioritizeProjector:
  Id: 4922

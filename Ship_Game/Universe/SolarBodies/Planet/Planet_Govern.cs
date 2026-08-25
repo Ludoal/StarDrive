@@ -170,9 +170,9 @@ namespace Ship_Game
 
         void BuildAndScrapBuildings(PlanetBudget colonyBudget)
         {
-            if (OwnerIsPlayer && SpecializedTradeHub)
-                return;
-
+            // Ludoal fork (maintainer feedback): Specialized Trade Hub used to silently stop
+            // all construction here. What the governor may build is its own command now, so
+            // the hub carries the trade regime alone.
             BuildAndScrapCivilianBuildings(colonyBudget.RemainingCivilian, colonyBudget.CivilianTolerance);
             BuildAndScrapMilitaryBuildings(colonyBudget.RemainingGroundDef, colonyBudget.GroundDefTolerance);
         }

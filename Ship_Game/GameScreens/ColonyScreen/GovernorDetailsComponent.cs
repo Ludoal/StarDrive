@@ -268,6 +268,7 @@ namespace Ship_Game
 
         public override void PerformLayout()
         {
+            const int GovRowPitch = 20; // the Governor tab row step, written once
             float aspect  = PortraitSprite.Size.X / PortraitSprite.Size.Y;
             // 0.55: the toggles ride under the portrait.
             float height  = (float)Math.Round(Height * 0.55f);
@@ -317,8 +318,10 @@ namespace Ship_Game
             // The warning's BOTTOM lines up with the portrait's bottom - a fixed anchor,
             // whatever the description length. A label draws from its top, so seat its top one
             // line-height above the portrait foot. X stays in the description column beside it.
+            // Ludoal fork (maintainer feedback): one row higher than the portrait foot - the
+            // freed line below carries the Build Mandate dropdown.
             BudgetLimitReached.Pos = new Vector2(WorldDescription.X,
-                Portrait.Pos.Y + Portrait.Size.Y - FontBig.LineSpacing);
+                Portrait.Pos.Y + Portrait.Size.Y - FontBig.LineSpacing - GovRowPitch);
 
             // Ludoal fork: seated here rather than in the constructor, which runs before Tabs
             // exists and so cannot know how many rows the tab bar takes.
@@ -340,7 +343,8 @@ namespace Ship_Game
             // lines at ColumnX.
             Quarantine.Pos          = new Vector2(X + 10, Portrait.Bottom + 14); // a step lower - there is room below
             Prioritized.Pos         = new Vector2(X + 10, Portrait.Bottom + 34);
-            SpecializedTradeHub.Pos = new Vector2(ColumnX + 25, Quarantine.Pos.Y); // +25: clear of the left labels at 1080 fonts
+            // one row higher: the Build Mandate dropdown takes the line it leaves behind
+            SpecializedTradeHub.Pos = new Vector2(ColumnX + 25, Quarantine.Pos.Y - GovRowPitch); // +25: clear of the left labels at 1080 fonts
             GovNoScrap.Pos          = new Vector2(ColumnX + 25, Prioritized.Pos.Y);
             BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, Quarantine.Pos.Y - 35);
 

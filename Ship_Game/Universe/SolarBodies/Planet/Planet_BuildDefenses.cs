@@ -34,8 +34,10 @@ namespace Ship_Game
 
         private void BuildPlatformsAndStations(PlanetBudget budget) // Rewritten by Fat Bastard
         {
-            if (CType == ColonyType.Colony 
-                || OwnerIsPlayer && (!GovOrbitals || SpecializedTradeHub)
+            // Ludoal fork (maintainer feedback): the trade hub no longer stops orbital
+            // construction either - that is the Gov. Manages Space Defense toggle's job.
+            if (CType == ColonyType.Colony
+                || OwnerIsPlayer && !GovOrbitals
                 || SpaceCombatNearPlanet
                 || !HasSpacePort)
             {
