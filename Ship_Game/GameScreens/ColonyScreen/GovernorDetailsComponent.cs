@@ -28,7 +28,6 @@ namespace Ship_Game
         private UILabel WorldType, WorldDescription;
         DropOptions<Planet.ColonyType> ColonyTypeList;
         private UICheckBox GovOrbitals, AutoTroops, GovNoScrap, Quarantine, ManualOrbitals, GovGround, SpecializedTradeHub, Prioritized;
-        private UICheckBox AutoBudgetCheck;
         private FloatSlider Garrison;
         private FloatSlider ManualPlatforms;
         private FloatSlider ManualShipyards;
@@ -146,8 +145,6 @@ namespace Ship_Game
             Quarantine     = Add(new UICheckBox(() => Planet.Quarantine, Font, title: GameText.QuarantinePlanet, tooltip: GameText.PreventGoodsTransportationInAnd));
             ManualOrbitals = Add(new UICheckBox(() => Planet.ManualOrbitals, Font, title: GameText.ManualOrbitalLimit, tooltip: GameText.OverrideGovernorDecisionsRegardingOrbital));
             GovGround      = Add(new UICheckBox(() => Planet.GovGroundDefense, Font, title: "Gov. Manages Ground Defense", tooltip: GameText.TheGovernorWillManageGround));
-            AutoBudgetCheck = Add(new UICheckBox(() => !AnyAreaManual, Font, title: "Auto",
-                tooltip: GameText.GovernorAutoBudgetTooltip));
             Prioritized    = Add(new UICheckBox(() => Planet.PrioritizedPort, Font, title: GameText.PrioritizedPort, tooltip: GameText.PrioritizedPortTip));
 
             SpecializedTradeHub = Add(new UICheckBox(() => p.SpecializedTradeHub, Font, title: GameText.SpecializedTradeHub, tooltip: GameText.SpecializedTradeHubTip));
@@ -395,7 +392,6 @@ namespace Ship_Game
 
             // the row under the bars: the all-areas shortcut on the left, the total at the end
             float spendRow = Y + 130 + shift;
-            AutoBudgetCheck.Pos = new Vector2(TopLeft.X + 10, spendRow + 2);
             BudgetTotalLabel.TextAlign = TextAlign.Right;
             BudgetTotalLabel.Size      = new Vector2(AmountW, Font.LineSpacing);
             BudgetTotalLabel.Pos       = new Vector2(amountX, spendRow + 3);
@@ -423,26 +419,6 @@ namespace Ship_Game
             // Kept as a shortcut over the three per-area toggles: it flips all of them at once
             // rather than carrying a state of its own - a second source of truth beside the
             // rows would drift from them.
-            AutoBudgetCheck.OnChange = cb =>
-            {
-                bool manual = !cb.Checked;
-                foreach (BudgetArea area in new[] { BudgetArea.Civilian, BudgetArea.GroundDef, BudgetArea.SpaceDef })
-                {
-                    // taking over: start from what the governor allocates right now, so the
-                    // amount never jumps at the moment the player takes control
-                    SetAreaAmount(area, manual ? AutoTargetFor(area) : 0f);
-                    SetAreaManual(area, manual);
-                }
-
-                if (!manual)
-                    Planet.Budget?.SnapToTarget(); // the EMA would crawl back from the manual values
-
-                SeatBudgetSlider(CivBudgetSlider, BudgetArea.Civilian, Planet.ManualCivilianBudget);
-                SeatBudgetSlider(GrdBudgetSlider, BudgetArea.GroundDef, Planet.ManualGrdDefBudget);
-                SeatBudgetSlider(SpcBudgetSlider, BudgetArea.SpaceDef, Planet.ManualSpcDefBudget);
-                SyncBudgetEnables();
-            };
-
             Prioritized.OnChange = cb =>
             {
                 Universe.RunOnSimThread(() =>
@@ -591,7 +567,6 @@ namespace Ship_Game
                 ManualOrbitals.TextColor  = Planet.ManualOrbitals     ? Color.White : Color.Gray;
                 AutoTroops.TextColor      = Planet.AutoBuildTroops    ? Color.White : Color.Gray;
                 GovNoScrap.TextColor      = Planet.DontScrapBuildings ? Color.White : Color.Gray;
-                AutoBudgetCheck.TextColor = AnyAreaManual ? Color.Gray : Color.White;
 
                 if (ManualOrbitals.Visible && Planet.ManualOrbitals)
                 {
@@ -608,8 +583,7 @@ namespace Ship_Game
 
                 BudgetSum.Visible       = BudgetTabView;
                 BudgetPercent.Visible   = BudgetTabView && GovernorOn;
-                AutoBudgetCheck.Visible = BudgetTabView && GovernorOn && Planet.OwnerIsPlayer && Planet.CType is not Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub;
-                bool budgetRows = AutoBudgetCheck.Visible;
+                bool budgetRows = BudgetTabView && GovernorOn && Planet.OwnerIsPlayer && Planet.CType is not Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub;
                 CivBudgetSlider.Visible = GrdBudgetSlider.Visible = SpcBudgetSlider.Visible = budgetRows;
                 CivBudgetValue.Visible  = GrdBudgetValue.Visible  = SpcBudgetValue.Visible  = budgetRows;
                 AutoCiv.Visible = AutoGrd.Visible = AutoSpc.Visible = budgetRows;
