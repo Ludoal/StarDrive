@@ -1030,6 +1030,27 @@ namespace Ship_Game
                                   title: "Auto", tooltip: GameText.OverrideThisBudgetAndSet);
         }
 
+        DropOptions<Planet.BuildMandate> MakeMandateList(Planet.BuildMandate active,
+                                                        Action<Planet.BuildMandate> apply)
+        {
+            // 120, not 110: "Economic only" was clipped to "Economic onl..."
+            var list = new DropOptions<Planet.BuildMandate>(120, 18);
+            list.AddOption(option: GameText.MandateAll, Planet.BuildMandate.All);
+            list.AddOption(option: GameText.MandateEconomicOnly, Planet.BuildMandate.EconomicOnly);
+            list.AddOption(option: GameText.MandateDefenseOnly, Planet.BuildMandate.DefenseOnly);
+            list.AddOption(option: GameText.MandateNone, Planet.BuildMandate.None);
+            list.ActiveValue = active;
+            list.OnValueChange = m => Universe.RunOnSimThread(() => apply(m));
+            return list;
+        }
+
+        // The range is seated at construction from the area's own auto target (FloatSlider owns
+        // its bounds privately), so it follows the colony between two openings of the panel.
+        void SeatBudgetSlider(FloatSlider slider, BudgetArea area, float storedAmount)
+        {
+            slider.AbsoluteValue = IsAreaManual(area) ? storedAmount : AutoTargetFor(area);
+        }
+
         void SyncBudgetEnables()
         {
             CivBudgetSlider.Enabled = IsAreaManual(BudgetArea.Civilian);
