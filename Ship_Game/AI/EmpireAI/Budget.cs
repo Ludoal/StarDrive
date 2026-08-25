@@ -81,20 +81,27 @@ namespace Ship_Game.AI.Budget
                 CivilianAlloc = civBudget;
             }
 
-            GrdDefAlloc = P.ManualGrdDefBudget <= 0 ? ExponentialMovingAverage(GrdDefAlloc, grdBudget) : P.ManualGrdDefBudget;
-            SpcDefAlloc = P.ManualSpcDefBudget <= 0 ? ExponentialMovingAverage(SpcDefAlloc, defenseBudget * orbitalRatio) : P.ManualSpcDefBudget;
-            CivilianAlloc = P.ManualCivilianBudget <= 0 ? ExponentialMovingAverage(CivilianAlloc, civBudget) : P.ManualCivilianBudget + P.TerraformBudget;
+            // Ludoal fork (maintainer feedback): manual/auto is the planet's own flag, never
+            // inferred from the amounts - a manual budget of zero is a legitimate order.
+            if (P.ManualBudget)
+            {
+                GrdDefAlloc   = P.ManualGrdDefBudget;
+                SpcDefAlloc   = P.ManualSpcDefBudget;
+                CivilianAlloc = P.ManualCivilianBudget + P.TerraformBudget;
+            }
+            else
+            {
+                GrdDefAlloc   = ExponentialMovingAverage(GrdDefAlloc, grdBudget);
+                SpcDefAlloc   = ExponentialMovingAverage(SpcDefAlloc, defenseBudget * orbitalRatio);
+                CivilianAlloc = ExponentialMovingAverage(CivilianAlloc, civBudget);
 
-            // Ludoal fork (maintainer feedback): the EMA converges on a zero target
-            // geometrically and never lands - a colony set to spend nothing kept showing a
-            // 0.03 allocation for dozens of turns (the display rounds to hundredths, so the
-            // tail looked frozen rather than shrinking). Snap the last crumb to zero so the
-            // Economy panel states what the treasury actually reserves.
-            // Only the automatic side decays: an explicit manual budget is the player's
-            // number and stands, however small.
-            if (P.ManualGrdDefBudget   <= 0) GrdDefAlloc   = SnapSpentTail(GrdDefAlloc);
-            if (P.ManualSpcDefBudget   <= 0) SpcDefAlloc   = SnapSpentTail(SpcDefAlloc);
-            if (P.ManualCivilianBudget <= 0) CivilianAlloc = SnapSpentTail(CivilianAlloc);
+                // the EMA converges on a zero target geometrically and never lands, leaving a
+                // crumb the panels round to a misleading figure. Snap the tail to zero so the
+                // Economy panel states what the treasury actually reserves.
+                GrdDefAlloc   = SnapSpentTail(GrdDefAlloc);
+                SpcDefAlloc   = SnapSpentTail(SpcDefAlloc);
+                CivilianAlloc = SnapSpentTail(CivilianAlloc);
+            }
 
             RemainingGroundDef = (GrdDefAlloc - P.GroundDefMaintenance).RoundToFractionOf10();
             RemainingSpaceDef  = (SpcDefAlloc - P.SpaceDefMaintenance).RoundToFractionOf10();
@@ -117,9 +124,12 @@ namespace Ship_Game.AI.Budget
 
         public void UpdateManualUI()
         {
-            GrdDefAlloc = P.ManualGrdDefBudget > 0 ? P.ManualGrdDefBudget : GrdDefAlloc;
-            SpcDefAlloc = P.ManualSpcDefBudget > 0 ? P.ManualSpcDefBudget : SpcDefAlloc;
-            CivilianAlloc = P.ManualCivilianBudget > 0 ? P.ManualCivilianBudget + P.TerraformBudget : CivilianAlloc;
+            if (!P.ManualBudget)
+                return;
+
+            GrdDefAlloc   = P.ManualGrdDefBudget;
+            SpcDefAlloc   = P.ManualSpcDefBudget;
+            CivilianAlloc = P.ManualCivilianBudget + P.TerraformBudget;
         }
 
         /// <summary>

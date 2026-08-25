@@ -20,9 +20,14 @@ namespace Ship_Game
         [StarData] public bool AutoBuildTroops  = false;
         [StarData] public bool ManualOrbitals   = false;
         [StarData] public int GarrisonSize;
-        [StarData] public float ManualCivilianBudget { get; private set; } = 0; // 0 is Auto Budget
-        [StarData] public float ManualGrdDefBudget   { get; private set; } = 0; // 0 is Auto Budget
-        [StarData] public float ManualSpcDefBudget   { get; private set; } = 0; // 0 is Auto Budget
+        // Ludoal fork (maintainer feedback): the manual/auto state is its own flag, so the three
+        // amounts are just amounts - zero included. It used to be inferred from the values
+        // (0 meant auto), which made "spend nothing here" impossible to express and forced a
+        // 0.01 floor in the UI. Old saves carry no flag: any stored amount means manual.
+        [StarData] public bool ManualBudget { get; private set; }
+        [StarData] public float ManualCivilianBudget { get; private set; }
+        [StarData] public float ManualGrdDefBudget   { get; private set; }
+        [StarData] public float ManualSpcDefBudget   { get; private set; }
 
         private void BuildPlatformsAndStations(PlanetBudget budget) // Rewritten by Fat Bastard
         {
@@ -545,6 +550,11 @@ namespace Ship_Game
             WantedStations = num;
         }
 
+
+        public void SetManualBudget(bool manual)
+        {
+            ManualBudget = manual;
+        }
 
         public void SetManualCivBudget(float num)
         {

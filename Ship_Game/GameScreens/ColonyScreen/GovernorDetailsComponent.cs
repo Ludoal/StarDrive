@@ -434,15 +434,23 @@ namespace Ship_Game
             BudgetPercent.Pos     = new Vector2(TopLeft.X + CivBudgetRect.Width + 15, Y + 160 + shift);
 
 
-            PlanetAutoBudget = !(Planet.ManualCivilianBudget.Greater(0) || Planet.ManualGrdDefBudget.Greater(0)
-                                 || Planet.ManualSpcDefBudget.Greater(0));
+            PlanetAutoBudget = !Planet.ManualBudget;
             if (!PlanetAutoBudget)
             {
-                // manual planet: the sliders re-read the stored budgets (total * share each)
+                // manual planet: the sliders re-read the stored budgets (total * share each).
+                // A manual budget of zero is legitimate now, so the shares fall back to the
+                // governor's own split rather than dividing by nothing.
                 float mTotal = Planet.ManualCivilianBudget + Planet.ManualGrdDefBudget + Planet.ManualSpcDefBudget;
-                PlanetShares[0] = Planet.ManualCivilianBudget / mTotal;
-                PlanetShares[1] = Planet.ManualGrdDefBudget / mTotal;
-                PlanetShares[2] = Planet.ManualSpcDefBudget / mTotal;
+                if (mTotal > 0f)
+                {
+                    PlanetShares[0] = Planet.ManualCivilianBudget / mTotal;
+                    PlanetShares[1] = Planet.ManualGrdDefBudget / mTotal;
+                    PlanetShares[2] = Planet.ManualSpcDefBudget / mTotal;
+                }
+                else if (Planet.Budget != null)
+                {
+                    ComputeAutoShares(Planet.Budget, out PlanetShares[0], out PlanetShares[1], out PlanetShares[2]);
+                }
                 LinkingPlanetShares = true;
                 GovSpending.AbsoluteValue = mTotal;
                 ShareCiv.RelativeValue = PlanetShares[0];
@@ -467,6 +475,7 @@ namespace Ship_Game
                 {
                     // Back to the governor's own allocation; the padlocks release too -
                     // a pin held across the mode switch would otherwise stick.
+                    Planet.SetManualBudget(false);
                     Planet.SetManualCivBudget(0);
                     Planet.SetManualGroundDefBudget(0);
                     Planet.SetManualSpaceDefBudget(0);
@@ -482,6 +491,7 @@ namespace Ship_Game
                     var b = Planet.Budget;
                     float total = b.TotalAlloc.LowerBound(0f);
                     ComputeAutoShares(b, out PlanetShares[0], out PlanetShares[1], out PlanetShares[2]);
+                    Planet.SetManualBudget(true); // before the commit: the amounts no longer carry the state
                     LinkingPlanetShares = true;
                     GovSpending.AbsoluteValue = total;
                     ShareCiv.RelativeValue = PlanetShares[0];
@@ -597,7 +607,7 @@ namespace Ship_Game
                 BudgetLimitReached.Visible = ColonyTypeList.Visible && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub && BudgetLimitWarningVisible;
                 // Manual budget: overspending is the player's own choice, so caution it in yellow
                 // rather than the red "limit reached" alarm the auto governor raises.
-                bool manualBudget          = Planet.ManualCivilianBudget > 0;
+                bool manualBudget          = Planet.ManualBudget;
                 BudgetLimitReached.Text    = manualBudget ? GameText.SpendingOverManualBudget : GameText.BudgetLimitReached;
                 BudgetLimitReached.Color   = manualBudget ? Screen.ApplyCurrentAlphaToColor(Color.Yellow) : Screen.CurrentFlashColorRed;
                 BuildCapital.Visible = true;
@@ -1003,10 +1013,9 @@ namespace Ship_Game
         void CommitPlanetBudget()
         {
             float total = GovSpending.AbsoluteValue;
-            // the floor keeps the planet on manual: a stored zero would read as "auto"
-            Planet.SetManualCivBudget((total * PlanetShares[0]).LowerBound(0.01f));
-            Planet.SetManualGroundDefBudget((total * PlanetShares[1]).LowerBound(0.01f));
-            Planet.SetManualSpaceDefBudget((total * PlanetShares[2]).LowerBound(0.01f));
+            Planet.SetManualCivBudget(total * PlanetShares[0]);
+            Planet.SetManualGroundDefBudget(total * PlanetShares[1]);
+            Planet.SetManualSpaceDefBudget(total * PlanetShares[2]);
         }
 
         void OnPlanetShareChanged(int which)
