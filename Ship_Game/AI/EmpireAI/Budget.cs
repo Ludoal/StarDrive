@@ -85,12 +85,29 @@ namespace Ship_Game.AI.Budget
             SpcDefAlloc = P.ManualSpcDefBudget <= 0 ? ExponentialMovingAverage(SpcDefAlloc, defenseBudget * orbitalRatio) : P.ManualSpcDefBudget;
             CivilianAlloc = P.ManualCivilianBudget <= 0 ? ExponentialMovingAverage(CivilianAlloc, civBudget) : P.ManualCivilianBudget + P.TerraformBudget;
 
+            // Ludoal fork (maintainer feedback): the EMA converges on a zero target
+            // geometrically and never lands - a colony set to spend nothing kept showing a
+            // 0.03 allocation for dozens of turns (the display rounds to hundredths, so the
+            // tail looked frozen rather than shrinking). Snap the last crumb to zero so the
+            // Economy panel states what the treasury actually reserves.
+            // Only the automatic side decays: an explicit manual budget is the player's
+            // number and stands, however small.
+            if (P.ManualGrdDefBudget   <= 0) GrdDefAlloc   = SnapSpentTail(GrdDefAlloc);
+            if (P.ManualSpcDefBudget   <= 0) SpcDefAlloc   = SnapSpentTail(SpcDefAlloc);
+            if (P.ManualCivilianBudget <= 0) CivilianAlloc = SnapSpentTail(CivilianAlloc);
+
             RemainingGroundDef = (GrdDefAlloc - P.GroundDefMaintenance).RoundToFractionOf10();
             RemainingSpaceDef  = (SpcDefAlloc - P.SpaceDefMaintenance).RoundToFractionOf10();
             RemainingCivilian  = (CivilianAlloc - P.CivilianBuildingsMaintenance).RoundToFractionOf10();
             TotalRemaining = RemainingSpaceDef + RemainingGroundDef + RemainingCivilian; // total remaining budget for this planet
             TotalAlloc     = GrdDefAlloc + SpcDefAlloc + CivilianAlloc;
         }
+
+        // Below this the allocation is a rounding tail of a decaying EMA, not a budget:
+        // 0.05 BC/turn buys nothing and the panels round it to a misleading 0.03.
+        const float MinMeaningfulAlloc = 0.05f;
+
+        static float SnapSpentTail(float alloc) => alloc < MinMeaningfulAlloc ? 0f : alloc;
 
         public float CivilianTolerance => (CivilianAlloc * 0.1f).RoundToFractionOf10().LowerBound(0.1f);
 
