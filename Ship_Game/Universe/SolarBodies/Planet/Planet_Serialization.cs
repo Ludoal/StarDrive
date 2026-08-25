@@ -22,11 +22,12 @@ namespace Ship_Game
             // TODO: just for save compatibility, remove later
             Troops ??= new(this);
 
-            // Ludoal fork: saves written before ManualBudget existed encode the state in the
-            // amounts themselves - any stored amount meant manual. Carry that over verbatim so
-            // a loaded colony keeps behaving exactly as it did.
-            if (!ManualBudget && (ManualCivilianBudget > 0 || ManualGrdDefBudget > 0 || ManualSpcDefBudget > 0))
-                SetManualBudget(true);
+            // Ludoal fork: saves written before the per-area flags encode the state in the
+            // amounts themselves - a stored amount meant that area was manual. Carry it over
+            // verbatim so a loaded colony keeps behaving exactly as it did.
+            if (!ManualCivBudgetOn && ManualCivilianBudget > 0) SetManualCivBudgetOn(true);
+            if (!ManualGrdBudgetOn && ManualGrdDefBudget   > 0) SetManualGrdBudgetOn(true);
+            if (!ManualSpcBudgetOn && ManualSpcDefBudget   > 0) SetManualSpcBudgetOn(true);
 
             UpdatePositionOnly();
             InitPlanetType(PType, Scale, fromSave: true);

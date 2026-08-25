@@ -20,11 +20,14 @@ namespace Ship_Game
         [StarData] public bool AutoBuildTroops  = false;
         [StarData] public bool ManualOrbitals   = false;
         [StarData] public int GarrisonSize;
-        // Ludoal fork (maintainer feedback): the manual/auto state is its own flag, so the three
-        // amounts are just amounts - zero included. It used to be inferred from the values
-        // (0 meant auto), which made "spend nothing here" impossible to express and forced a
-        // 0.01 floor in the UI. Old saves carry no flag: any stored amount means manual.
-        [StarData] public bool ManualBudget { get; private set; }
+        // Ludoal fork (maintainer feedback): manual/auto is a flag PER AREA, so the three
+        // amounts are just amounts - zero included - and one area can be manual while the
+        // others stay automatic. The state used to be inferred from the values (0 meant auto),
+        // which made "spend nothing here" impossible to express and forced a 0.01 floor in
+        // the UI. Old saves carry no flag: any stored amount means that area was manual.
+        [StarData] public bool ManualCivBudgetOn { get; private set; }
+        [StarData] public bool ManualGrdBudgetOn { get; private set; }
+        [StarData] public bool ManualSpcBudgetOn { get; private set; }
         [StarData] public float ManualCivilianBudget { get; private set; }
         [StarData] public float ManualGrdDefBudget   { get; private set; }
         [StarData] public float ManualSpcDefBudget   { get; private set; }
@@ -551,10 +554,9 @@ namespace Ship_Game
         }
 
 
-        public void SetManualBudget(bool manual)
-        {
-            ManualBudget = manual;
-        }
+        public void SetManualCivBudgetOn(bool manual) => ManualCivBudgetOn = manual;
+        public void SetManualGrdBudgetOn(bool manual) => ManualGrdBudgetOn = manual;
+        public void SetManualSpcBudgetOn(bool manual) => ManualSpcBudgetOn = manual;
 
         public void SetManualCivBudget(float num)
         {

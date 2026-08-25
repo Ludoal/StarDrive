@@ -81,27 +81,19 @@ namespace Ship_Game.AI.Budget
                 CivilianAlloc = civBudget;
             }
 
-            // Ludoal fork (maintainer feedback): manual/auto is the planet's own flag, never
-            // inferred from the amounts - a manual budget of zero is a legitimate order.
-            if (P.ManualBudget)
-            {
-                GrdDefAlloc   = P.ManualGrdDefBudget;
-                SpcDefAlloc   = P.ManualSpcDefBudget;
-                CivilianAlloc = P.ManualCivilianBudget + P.TerraformBudget;
-            }
-            else
-            {
-                GrdDefAlloc   = ExponentialMovingAverage(GrdDefAlloc, grdBudget);
-                SpcDefAlloc   = ExponentialMovingAverage(SpcDefAlloc, defenseBudget * orbitalRatio);
-                CivilianAlloc = ExponentialMovingAverage(CivilianAlloc, civBudget);
+            // Ludoal fork (maintainer feedback): manual/auto is a flag per area, never inferred
+            // from the amounts - a manual budget of zero is a legitimate order, and one area
+            // can be manual while the others keep tracking the governor.
+            // The EMA converges on a zero target geometrically and never lands, so the auto
+            // side snaps its last crumb: otherwise the panels round it to a misleading figure.
+            GrdDefAlloc = P.ManualGrdBudgetOn ? P.ManualGrdDefBudget
+                        : SnapSpentTail(ExponentialMovingAverage(GrdDefAlloc, grdBudget));
 
-                // the EMA converges on a zero target geometrically and never lands, leaving a
-                // crumb the panels round to a misleading figure. Snap the tail to zero so the
-                // Economy panel states what the treasury actually reserves.
-                GrdDefAlloc   = SnapSpentTail(GrdDefAlloc);
-                SpcDefAlloc   = SnapSpentTail(SpcDefAlloc);
-                CivilianAlloc = SnapSpentTail(CivilianAlloc);
-            }
+            SpcDefAlloc = P.ManualSpcBudgetOn ? P.ManualSpcDefBudget
+                        : SnapSpentTail(ExponentialMovingAverage(SpcDefAlloc, defenseBudget * orbitalRatio));
+
+            CivilianAlloc = P.ManualCivBudgetOn ? P.ManualCivilianBudget + P.TerraformBudget
+                          : SnapSpentTail(ExponentialMovingAverage(CivilianAlloc, civBudget));
 
             RemainingGroundDef = (GrdDefAlloc - P.GroundDefMaintenance).RoundToFractionOf10();
             RemainingSpaceDef  = (SpcDefAlloc - P.SpaceDefMaintenance).RoundToFractionOf10();

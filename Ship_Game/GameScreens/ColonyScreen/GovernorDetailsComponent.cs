@@ -58,10 +58,6 @@ namespace Ship_Game
         private readonly Graphics.Font Font12 = Fonts.Arial12Bold;
         private Graphics.Font Font;
         private Graphics.Font FontBig;
-        private bool PlanetAutoBudget;
-        private bool LinkingPlanetShares; // guard: renormalizing the others re-fires their OnChange
-        private readonly float[] PlanetShares = new float[3];
-        private readonly bool[] PlanetShareLocked = new bool[3];
         private bool BudgetLimitWarningVisible;
 
         Rectangle CivBudgetRect;
@@ -73,18 +69,16 @@ namespace Ship_Game
         ProgressBar CivBudgetBar;
         ProgressBar GrdBudgetBar;
         ProgressBar SpcBudgetBar;
-        // Ludoal fork: one Auto toggle + a monetary Governor Spending
-        // slider, and the split as linked % sliders with padlocks beside the bars - the same
-        // grammar as the empire Budget screen. Storage is unchanged: the three manual budgets
-        // carry total*share; all zero = the governor allocates on its own.
-        FloatSlider GovSpending;
-        UILabel SpendingLabel;
-        UILabel SpendValue;   // current spending, white
-        UILabel SpendTarget;  // on Auto: the raw pre-smoothing target, grey, in parentheses
-        FloatSlider ShareCiv, ShareGrd, ShareSpc;
-        UILabel PctCiv, PctGrd, PctSpc; // own % labels, right-aligned so 100% cannot shove the padlock
-        UIButton LockCiv, LockGrd, LockSpc;
-        float SpendValueXWithTarget, SpendValueXAtEdge; // the white value's two seats, laid out once
+        // Ludoal fork (maintainer feedback): one line per area - an Auto toggle and a monetary
+        // slider each. A single pot split by linked shares meant setting one area MOVED the
+        // other two, which the padlocks then tried to compensate; three independent amounts
+        // remove the coupling instead of managing it. Each slider runs 0 to max(2x its own
+        // auto target, 20) - manual is mostly used to boost, so the room above target is the
+        // point of it.
+        FloatSlider CivBudgetSlider, GrdBudgetSlider, SpcBudgetSlider;
+        UICheckBox AutoCiv, AutoGrd, AutoSpc;
+        UILabel CivBudgetValue, GrdBudgetValue, SpcBudgetValue;
+        UILabel BudgetTotalLabel; // the sum, read-only now that it is not an input
 
         UILabel ColonyBlueprints, BlueprintsCompletionLbl, BlueprintsAchiveable, BlueprintsName,
             BlueprintsExclusive, BlueprintsLink, BlueprintsGovChange, Blueprintsoverview, BlueprintsEnableGov;
@@ -152,7 +146,7 @@ namespace Ship_Game
             Quarantine     = Add(new UICheckBox(() => Planet.Quarantine, Font, title: GameText.QuarantinePlanet, tooltip: GameText.PreventGoodsTransportationInAnd));
             ManualOrbitals = Add(new UICheckBox(() => Planet.ManualOrbitals, Font, title: GameText.ManualOrbitalLimit, tooltip: GameText.OverrideGovernorDecisionsRegardingOrbital));
             GovGround      = Add(new UICheckBox(() => Planet.GovGroundDefense, Font, title: "Gov. Manages Ground Defense", tooltip: GameText.TheGovernorWillManageGround));
-            AutoBudgetCheck = Add(new UICheckBox(() => PlanetAutoBudget, Font, title: "Auto",
+            AutoBudgetCheck = Add(new UICheckBox(() => !AnyAreaManual, Font, title: "Auto",
                 tooltip: GameText.GovernorAutoBudgetTooltip));
             Prioritized    = Add(new UICheckBox(() => Planet.PrioritizedPort, Font, title: GameText.PrioritizedPort, tooltip: GameText.PrioritizedPortTip));
 
@@ -244,29 +238,17 @@ namespace Ship_Game
             CivBudgetBar.color = "green";
             SpcBudgetBar.color = "blue";
 
-            // the spending range is seated per planet: twice its current envelope, floor 20
-            PlanetShareLocked[0] = PlanetShareLocked[1] = PlanetShareLocked[2] = false;
-            float manualTotal = Planet.ManualCivilianBudget + Planet.ManualGrdDefBudget + Planet.ManualSpcDefBudget;
-            float seedTotal   = Math.Max(manualTotal, Planet.Budget.TotalAlloc);
-            SpendingLabel = Add(new UILabel(GameText.SpendingLabel, Font, Color.White));
-            GovSpending   = Add(new FloatSlider(SliderStyle.Decimal1, new Vector2(150, 12), "",
-                                                0, (seedTotal * 2f).LowerBound(20f), seedTotal) { DrawValueText = false });
-            GovSpending.Tip = GameText.GovernorBudgetTotalTooltip;
-            GovSpending.OnChange = s => { if (!LinkingPlanetShares && !PlanetAutoBudget) CommitPlanetBudget(); };
-            SpendValue  = Add(new UILabel(l => GovSpending.AbsoluteValue.String(1), Font));
-            SpendValue.Color = Color.White;
-            SpendTarget = Add(new UILabel(l => $"({Planet.Budget.TargetAlloc.String(1)})", Font));
-            SpendTarget.Color = Color.Gray;
-
-            ShareCiv = Add(MakeShareSlider(0));
-            ShareGrd = Add(MakeShareSlider(1));
-            ShareSpc = Add(MakeShareSlider(2));
-            PctCiv = Add(MakeShareLabel(() => ShareCiv));
-            PctGrd = Add(MakeShareLabel(() => ShareGrd));
-            PctSpc = Add(MakeShareLabel(() => ShareSpc));
-            LockCiv  = Add(MakeShareLock(0));
-            LockGrd  = Add(MakeShareLock(1));
-            LockSpc  = Add(MakeShareLock(2));
+            // One line per area: Auto toggle, then a monetary slider for the manual amount.
+            CivBudgetSlider = Add(MakeBudgetSlider(BudgetArea.Civilian));
+            GrdBudgetSlider = Add(MakeBudgetSlider(BudgetArea.GroundDef));
+            SpcBudgetSlider = Add(MakeBudgetSlider(BudgetArea.SpaceDef));
+            AutoCiv = Add(MakeAutoToggle(BudgetArea.Civilian));
+            AutoGrd = Add(MakeAutoToggle(BudgetArea.GroundDef));
+            AutoSpc = Add(MakeAutoToggle(BudgetArea.SpaceDef));
+            CivBudgetValue = Add(MakeBudgetValue(() => Planet.Budget.CivilianAlloc));
+            GrdBudgetValue = Add(MakeBudgetValue(() => Planet.Budget.GrdDefAlloc));
+            SpcBudgetValue = Add(MakeBudgetValue(() => Planet.Budget.SpcDefAlloc));
+            BudgetTotalLabel = Add(new UILabel(l => Planet.Budget.TotalAlloc.String(1), Font, Color.White));
 
             BudgetSum     = Add(new UILabel(" ", FontBig, Color.White));
             BudgetPercent = Add(new UILabel(" ", FontBig, Color.White));
@@ -387,77 +369,46 @@ namespace Ship_Game
             ManualShipyards.Pos   = BuildShipyard.Pos + manualOffset;
             ManualStations.Pos    = BuildStation.Pos + manualOffset;
 
-            // the share sliders ride their bars: from the bar's right edge to their own %
-            // label (right-aligned, so 100% grows leftward), then the padlock at the margin
-            // ⚠ lane widths must cover the WIDEST text: UILabel.SetText GROWS Size to fit,
-            // and a grown Size shifts the right-align anchor - "100%" in a 34px lane drifted
-            const int LockSide = 16, LockGap = 6, RightMargin = 10, PctW = 40, PctGap = 4;
-            float lockX  = X + Width - RightMargin - LockSide;
-            float pctX   = lockX - LockGap - PctW;
-            float shareX = CivBudgetRect.X + CivBudgetRect.Width + 12;
+            // One row per area, all three identical: bar | slider | amount | Auto.
+            // The right edge is written ONCE and the lanes cascade back from it - the fixed
+            // ones first, the slider absorbing what is left.
+            // 20, not 10: the Submenu frame is inset ~9px, a tighter margin kisses the paint.
+            const int AutoW = 52, AmountW = 44, LaneGap = 6;
+            float budgetRight = X + Width - 20;
+            float autoX       = budgetRight - AutoW;
+            float amountX     = autoX - LaneGap - AmountW;
+            float sliderX     = CivBudgetRect.X + CivBudgetRect.Width + 12;
             // +32: the slider track is Width-32; the unused value reserve folds back in
-            var shareSize = new Vector2(pctX - PctGap - shareX + 32, 12);
-            ShareCiv.Pos = new Vector2(shareX, CivBudgetRect.Y + 1); ShareCiv.Size = shareSize;
-            ShareGrd.Pos = new Vector2(shareX, GrdBudgetRect.Y + 1); ShareGrd.Size = shareSize;
-            ShareSpc.Pos = new Vector2(shareX, SpcBudgetRect.Y + 1); ShareSpc.Size = shareSize;
-            var pctSize = new Vector2(PctW, Font.LineSpacing);
-            PctCiv.Pos = new Vector2(pctX, CivBudgetRect.Y + 5); PctCiv.Size = pctSize;
-            PctGrd.Pos = new Vector2(pctX, GrdBudgetRect.Y + 5); PctGrd.Size = pctSize;
-            PctSpc.Pos = new Vector2(pctX, SpcBudgetRect.Y + 5); PctSpc.Size = pctSize;
-            LockCiv.Rect = new Rectangle((int)lockX, CivBudgetRect.Y + 3, LockSide, LockSide);
-            LockGrd.Rect = new Rectangle((int)lockX, GrdBudgetRect.Y + 3, LockSide, LockSide);
-            LockSpc.Rect = new Rectangle((int)lockX, SpcBudgetRect.Y + 3, LockSide, LockSide);
+            var sliderSize = new Vector2(amountX - LaneGap - sliderX + 32, 12);
+            var amountSize = new Vector2(AmountW, Font.LineSpacing);
 
-            // the Auto/Spending row under the bars; the total drops one line below it.
-            // Value lanes at the line's end: current spending (white), and on Auto the raw
-            // target in parentheses (grey) - UpdateBudgets slides the value to the edge
-            // when the target lane is hidden.
-            // 20, not RightMargin: the Submenu frame is inset ~9px; RightMargin would let the
-            // grey target kiss the painted edge.
-            const int TargetW = 50, SpendValueW = 40;
+            void SeatBudgetRow(FloatSlider slider, UILabel amount, UICheckBox auto, in Rectangle barRect)
+            {
+                slider.Pos = new Vector2(sliderX, barRect.Y + 1); slider.Size = sliderSize;
+                amount.Pos = new Vector2(amountX, barRect.Y + 5); amount.Size = amountSize;
+                auto.Pos   = new Vector2(autoX,   barRect.Y + 4);
+            }
+
+            SeatBudgetRow(CivBudgetSlider, CivBudgetValue, AutoCiv, CivBudgetRect);
+            SeatBudgetRow(GrdBudgetSlider, GrdBudgetValue, AutoGrd, GrdBudgetRect);
+            SeatBudgetRow(SpcBudgetSlider, SpcBudgetValue, AutoSpc, SpcBudgetRect);
+
+            // the row under the bars: the all-areas shortcut on the left, the total at the end
             float spendRow = Y + 130 + shift;
-            float rowRight = X + Width - 20;
             AutoBudgetCheck.Pos = new Vector2(TopLeft.X + 10, spendRow + 2);
-            SpendingLabel.Pos   = new Vector2(TopLeft.X + 70, spendRow + 3);
-            GovSpending.Pos     = new Vector2(TopLeft.X + 70 + Font.TextWidth(SpendingLabel.Text) + 8, spendRow - 6);
-            GovSpending.Size    = new Vector2(rowRight - TargetW - SpendValueW - 6 - GovSpending.Pos.X + 32, 12);
-            SpendValueXWithTarget = rowRight - TargetW - 4 - SpendValueW;
-            SpendValueXAtEdge     = rowRight - SpendValueW;
-            SpendValue.TextAlign = TextAlign.Right;
-            SpendValue.Size      = new Vector2(SpendValueW, Font.LineSpacing);
-            SpendValue.Pos       = new Vector2(SpendValueXWithTarget, spendRow + 3);
-            SpendTarget.TextAlign = TextAlign.Right;
-            SpendTarget.Size      = new Vector2(TargetW, Font.LineSpacing);
-            SpendTarget.Pos       = new Vector2(rowRight - TargetW, spendRow + 3);
+            BudgetTotalLabel.TextAlign = TextAlign.Right;
+            BudgetTotalLabel.Size      = new Vector2(AmountW, Font.LineSpacing);
+            BudgetTotalLabel.Pos       = new Vector2(amountX, spendRow + 3);
 
             BudgetSum.Pos         = new Vector2(TopLeft.X + 8, Y + 160 + shift);
             BudgetPercent.Pos     = new Vector2(TopLeft.X + CivBudgetRect.Width + 15, Y + 160 + shift);
 
 
-            PlanetAutoBudget = !Planet.ManualBudget;
-            if (!PlanetAutoBudget)
-            {
-                // manual planet: the sliders re-read the stored budgets (total * share each).
-                // A manual budget of zero is legitimate now, so the shares fall back to the
-                // governor's own split rather than dividing by nothing.
-                float mTotal = Planet.ManualCivilianBudget + Planet.ManualGrdDefBudget + Planet.ManualSpcDefBudget;
-                if (mTotal > 0f)
-                {
-                    PlanetShares[0] = Planet.ManualCivilianBudget / mTotal;
-                    PlanetShares[1] = Planet.ManualGrdDefBudget / mTotal;
-                    PlanetShares[2] = Planet.ManualSpcDefBudget / mTotal;
-                }
-                else if (Planet.Budget != null)
-                {
-                    ComputeAutoShares(Planet.Budget, out PlanetShares[0], out PlanetShares[1], out PlanetShares[2]);
-                }
-                LinkingPlanetShares = true;
-                GovSpending.AbsoluteValue = mTotal;
-                ShareCiv.RelativeValue = PlanetShares[0];
-                ShareGrd.RelativeValue = PlanetShares[1];
-                ShareSpc.RelativeValue = PlanetShares[2];
-                LinkingPlanetShares = false;
-            }
+            // each row re-reads its own amount: a manual area shows what is stored, an
+            // automatic one shows what the governor currently allocates it
+            SeatBudgetSlider(CivBudgetSlider, BudgetArea.Civilian, Planet.ManualCivilianBudget);
+            SeatBudgetSlider(GrdBudgetSlider, BudgetArea.GroundDef, Planet.ManualGrdDefBudget);
+            SeatBudgetSlider(SpcBudgetSlider, BudgetArea.SpaceDef, Planet.ManualSpcDefBudget);
             SyncBudgetEnables();
 
             GovOrbitals.OnChange = cb =>
@@ -469,37 +420,26 @@ namespace Ship_Game
                 }
             };
 
+            // Kept as a shortcut over the three per-area toggles: it flips all of them at once
+            // rather than carrying a state of its own - a second source of truth beside the
+            // rows would drift from them.
             AutoBudgetCheck.OnChange = cb =>
             {
-                if (cb.Checked)
+                bool manual = !cb.Checked;
+                foreach (BudgetArea area in new[] { BudgetArea.Civilian, BudgetArea.GroundDef, BudgetArea.SpaceDef })
                 {
-                    // Back to the governor's own allocation; the padlocks release too -
-                    // a pin held across the mode switch would otherwise stick.
-                    Planet.SetManualBudget(false);
-                    Planet.SetManualCivBudget(0);
-                    Planet.SetManualGroundDefBudget(0);
-                    Planet.SetManualSpaceDefBudget(0);
-                    PlanetShareLocked[0] = PlanetShareLocked[1] = PlanetShareLocked[2] = false;
-                    Planet.Budget.SnapToTarget(); // the EMA would crawl back from the manual values otherwise
+                    // taking over: start from what the governor allocates right now, so the
+                    // amount never jumps at the moment the player takes control
+                    SetAreaAmount(area, manual ? AutoTargetFor(area) : 0f);
+                    SetAreaManual(area, manual);
                 }
-                else
-                {
-                    // take over at the current auto allocation. Capture the shares the SAME way the
-                    // Auto view computes them (sum-of-three, or the derived empire split when the
-                    // colony has none) - the old TotalAlloc.LowerBound(0.1f) basis made the three
-                    // shares snap to 10% on a colony with no allocation.
-                    var b = Planet.Budget;
-                    float total = b.TotalAlloc.LowerBound(0f);
-                    ComputeAutoShares(b, out PlanetShares[0], out PlanetShares[1], out PlanetShares[2]);
-                    Planet.SetManualBudget(true); // before the commit: the amounts no longer carry the state
-                    LinkingPlanetShares = true;
-                    GovSpending.AbsoluteValue = total;
-                    ShareCiv.RelativeValue = PlanetShares[0];
-                    ShareGrd.RelativeValue = PlanetShares[1];
-                    ShareSpc.RelativeValue = PlanetShares[2];
-                    LinkingPlanetShares = false;
-                    CommitPlanetBudget();
-                }
+
+                if (!manual)
+                    Planet.Budget?.SnapToTarget(); // the EMA would crawl back from the manual values
+
+                SeatBudgetSlider(CivBudgetSlider, BudgetArea.Civilian, Planet.ManualCivilianBudget);
+                SeatBudgetSlider(GrdBudgetSlider, BudgetArea.GroundDef, Planet.ManualGrdDefBudget);
+                SeatBudgetSlider(SpcBudgetSlider, BudgetArea.SpaceDef, Planet.ManualSpcDefBudget);
                 SyncBudgetEnables();
             };
 
@@ -607,7 +547,7 @@ namespace Ship_Game
                 BudgetLimitReached.Visible = ColonyTypeList.Visible && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub && BudgetLimitWarningVisible;
                 // Manual budget: overspending is the player's own choice, so caution it in yellow
                 // rather than the red "limit reached" alarm the auto governor raises.
-                bool manualBudget          = Planet.ManualBudget;
+                bool manualBudget          = AnyAreaManual;
                 BudgetLimitReached.Text    = manualBudget ? GameText.SpendingOverManualBudget : GameText.BudgetLimitReached;
                 BudgetLimitReached.Color   = manualBudget ? Screen.ApplyCurrentAlphaToColor(Color.Yellow) : Screen.CurrentFlashColorRed;
                 BuildCapital.Visible = true;
@@ -651,7 +591,7 @@ namespace Ship_Game
                 ManualOrbitals.TextColor  = Planet.ManualOrbitals     ? Color.White : Color.Gray;
                 AutoTroops.TextColor      = Planet.AutoBuildTroops    ? Color.White : Color.Gray;
                 GovNoScrap.TextColor      = Planet.DontScrapBuildings ? Color.White : Color.Gray;
-                AutoBudgetCheck.TextColor = PlanetAutoBudget ? Color.White : Color.Gray;
+                AutoBudgetCheck.TextColor = AnyAreaManual ? Color.Gray : Color.White;
 
                 if (ManualOrbitals.Visible && Planet.ManualOrbitals)
                 {
@@ -669,21 +609,15 @@ namespace Ship_Game
                 BudgetSum.Visible       = BudgetTabView;
                 BudgetPercent.Visible   = BudgetTabView && GovernorOn;
                 AutoBudgetCheck.Visible = BudgetTabView && GovernorOn && Planet.OwnerIsPlayer && Planet.CType is not Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub;
-                SpendingLabel.Visible   = AutoBudgetCheck.Visible;
-                GovSpending.Visible     = AutoBudgetCheck.Visible;
-                SpendValue.Visible      = AutoBudgetCheck.Visible;
-                SpendTarget.Visible     = AutoBudgetCheck.Visible && PlanetAutoBudget;
-                // the white value slides to the edge when the grey target lane is hidden
-                SpendValue.Pos = new Vector2(SpendTarget.Visible ? SpendValueXWithTarget : SpendValueXAtEdge,
-                                             SpendValue.Pos.Y);
-                ShareCiv.Visible = ShareGrd.Visible = ShareSpc.Visible = AutoBudgetCheck.Visible;
-                PctCiv.Visible   = PctGrd.Visible   = PctSpc.Visible   = AutoBudgetCheck.Visible;
-                LockCiv.Visible  = LockGrd.Visible  = LockSpc.Visible  = AutoBudgetCheck.Visible;
-                // On Auto the whole row is read-only, every padlock reads solid white;
-                // manual keeps solid = locked, faint = free.
-                LockCiv.IconTint = PlanetAutoBudget || PlanetShareLocked[0] ? Color.White : Color.White.Alpha(0.35f);
-                LockGrd.IconTint = PlanetAutoBudget || PlanetShareLocked[1] ? Color.White : Color.White.Alpha(0.35f);
-                LockSpc.IconTint = PlanetAutoBudget || PlanetShareLocked[2] ? Color.White : Color.White.Alpha(0.35f);
+                bool budgetRows = AutoBudgetCheck.Visible;
+                CivBudgetSlider.Visible = GrdBudgetSlider.Visible = SpcBudgetSlider.Visible = budgetRows;
+                CivBudgetValue.Visible  = GrdBudgetValue.Visible  = SpcBudgetValue.Visible  = budgetRows;
+                AutoCiv.Visible = AutoGrd.Visible = AutoSpc.Visible = budgetRows;
+                BudgetTotalLabel.Visible = budgetRows;
+                // an automatic row reads grey: the number is the governor's, not the player's
+                CivBudgetValue.Color = Planet.ManualCivBudgetOn ? Color.White : Color.Gray;
+                GrdBudgetValue.Color = Planet.ManualGrdBudgetOn ? Color.White : Color.Gray;
+                SpcBudgetValue.Color = Planet.ManualSpcBudgetOn ? Color.White : Color.Gray;
 
 
                 CreateBlueprints.Visible = BlueprintsTabView && Planet.OwnerIsPlayer;
@@ -970,112 +904,111 @@ namespace Ship_Game
                 UpdateBlueprintsChanged();
         }
 
-        FloatSlider MakeShareSlider(int which)
+        enum BudgetArea { Civilian, GroundDef, SpaceDef }
+
+        bool AnyAreaManual => Planet.ManualCivBudgetOn || Planet.ManualGrdBudgetOn || Planet.ManualSpcBudgetOn;
+
+        float AutoTargetFor(BudgetArea area)
         {
-            var s = new FloatSlider(SliderStyle.Percent, new Vector2(150, 12), "", 0f, 1f, 0.34f)
-            { DrawValueText = false }; // the row draws its own %, right-aligned before the padlock
-            s.OnChange = _ => OnPlanetShareChanged(which);
+            PlanetBudget b = Planet.Budget;
+            if (b == null)
+                return 0f;
+
+            switch (area)
+            {
+                default:
+                case BudgetArea.Civilian:  return b.CivilianAlloc;
+                case BudgetArea.GroundDef: return b.GrdDefAlloc;
+                case BudgetArea.SpaceDef:  return b.SpcDefAlloc;
+            }
+        }
+
+        bool IsAreaManual(BudgetArea area)
+        {
+            switch (area)
+            {
+                default:
+                case BudgetArea.Civilian:  return Planet.ManualCivBudgetOn;
+                case BudgetArea.GroundDef: return Planet.ManualGrdBudgetOn;
+                case BudgetArea.SpaceDef:  return Planet.ManualSpcBudgetOn;
+            }
+        }
+
+        void SetAreaAmount(BudgetArea area, float amount)
+        {
+            switch (area)
+            {
+                case BudgetArea.Civilian:  Planet.SetManualCivBudget(amount);      break;
+                case BudgetArea.GroundDef: Planet.SetManualGroundDefBudget(amount); break;
+                case BudgetArea.SpaceDef:  Planet.SetManualSpaceDefBudget(amount);  break;
+            }
+        }
+
+        void SetAreaManual(BudgetArea area, bool manual)
+        {
+            switch (area)
+            {
+                case BudgetArea.Civilian:  Planet.SetManualCivBudgetOn(manual);  break;
+                case BudgetArea.GroundDef: Planet.SetManualGrdBudgetOn(manual);  break;
+                case BudgetArea.SpaceDef:  Planet.SetManualSpcBudgetOn(manual);  break;
+            }
+        }
+
+        // Manual is mostly used to BOOST an area, so the room above the auto target is the
+        // point of the slider - not headroom to waste. Floor 20 so a small colony still has
+        // usable travel (maintainer decision).
+        FloatSlider MakeBudgetSlider(BudgetArea area)
+        {
+            float seed = AutoTargetFor(area);
+            var s = new FloatSlider(SliderStyle.Decimal1, new Vector2(150, 12), "",
+                                    0f, (seed * 2f).LowerBound(20f), seed) { DrawValueText = false };
+            s.Tip = GameText.GovernorBudgetTotalTooltip;
+            s.OnChange = sl => { if (IsAreaManual(area)) SetAreaAmount(area, sl.AbsoluteValue); };
             return s;
         }
 
-        UILabel MakeShareLabel(Func<FloatSlider> slider)
+        // Ticking Auto hands the area back to the governor; unticking takes it over at the
+        // allocation it has right now, so the amount never jumps when the player takes control.
+        UICheckBox MakeAutoToggle(BudgetArea area)
         {
-            var l = new UILabel(_ => ((int)Math.Round(slider().RelativeValue * 100f)) + "%", Font);
+            var cb = new UICheckBox(() => !IsAreaManual(area), Font,
+                                    title: "Auto", tooltip: GameText.OverrideThisBudgetAndSet);
+            cb.OnChange = c =>
+            {
+                bool manual = !c.Checked;
+                if (manual)
+                    SetAreaAmount(area, AutoTargetFor(area));
+
+                SetAreaManual(area, manual);
+                if (!manual)
+                {
+                    SetAreaAmount(area, 0f);
+                    Planet.Budget?.SnapToTarget(); // the EMA would crawl back from the manual value
+                }
+                SyncBudgetEnables();
+            };
+            return cb;
+        }
+
+        UILabel MakeBudgetValue(Func<float> getValue)
+        {
+            var l = new UILabel(_ => getValue().String(1), Font) { TextAlign = TextAlign.Right };
             l.Color = Color.White;
-            l.TextAlign = TextAlign.Right;
             return l;
         }
 
-        UIButton MakeShareLock(int which)
+        // The range is seated at construction from the area's own auto target (FloatSlider owns
+        // its bounds privately), so it follows the colony between two openings of the panel.
+        void SeatBudgetSlider(FloatSlider slider, BudgetArea area, float storedAmount)
         {
-            var b = new UIButton(new UIButton.StyleTextures("NewUI/icon_lock", "NewUI/icon_lock"), Vector2.Zero, "")
-            {
-                Tooltip = GameText.LockShareTooltip,
-            };
-            b.OnClick = _ =>
-            {
-                PlanetShareLocked[which] = !PlanetShareLocked[which];
-                SyncBudgetEnables();
-            };
-            return b;
+            slider.AbsoluteValue = IsAreaManual(area) ? storedAmount : AutoTargetFor(area);
         }
 
         void SyncBudgetEnables()
         {
-            bool manual = !PlanetAutoBudget;
-            GovSpending.Enabled = manual;
-            ShareCiv.Enabled = manual && !PlanetShareLocked[0];
-            ShareGrd.Enabled = manual && !PlanetShareLocked[1];
-            ShareSpc.Enabled = manual && !PlanetShareLocked[2];
-            LockCiv.Enabled = LockGrd.Enabled = LockSpc.Enabled = manual;
-        }
-
-        void CommitPlanetBudget()
-        {
-            float total = GovSpending.AbsoluteValue;
-            Planet.SetManualCivBudget(total * PlanetShares[0]);
-            Planet.SetManualGroundDefBudget(total * PlanetShares[1]);
-            Planet.SetManualSpaceDefBudget(total * PlanetShares[2]);
-        }
-
-        void OnPlanetShareChanged(int which)
-        {
-            if (LinkingPlanetShares || PlanetAutoBudget)
-                return;
-            LinkingPlanetShares = true;
-            float[] v = { ShareCiv.RelativeValue, ShareGrd.RelativeValue, ShareSpc.RelativeValue };
-            // locked shares hold their value: the mover is clamped to what the locks leave,
-            // and the remainder spreads over the UNLOCKED others by their mutual ratio
-            float lockedSum = 0f;
-            float unlockedSum = 0f;
-            for (int i = 0; i < 3; i++)
-            {
-                if (i == which) continue;
-                if (PlanetShareLocked[i]) lockedSum += v[i];
-                else unlockedSum += v[i];
-            }
-            v[which] = v[which].Clamped(0f, (1f - lockedSum).LowerBound(0f));
-            float rest = 1f - lockedSum - v[which];
-            for (int i = 0; i < 3; i++)
-            {
-                if (i == which || PlanetShareLocked[i]) continue;
-                v[i] = unlockedSum > 0.0001f ? rest * v[i] / unlockedSum : rest; // one unlocked: it takes it all
-            }
-            PlanetShares[0] = v[0];
-            PlanetShares[1] = v[1];
-            PlanetShares[2] = v[2];
-            ShareCiv.RelativeValue = v[0];
-            ShareGrd.RelativeValue = v[1];
-            ShareSpc.RelativeValue = v[2];
-            LinkingPlanetShares = false;
-            CommitPlanetBudget();
-        }
-
-        // The three budget shares for this colony, always summing to 1. When the colony has real
-        // allocations, shares are of the SUM OF THE THREE (same-source denominator, never TotalAlloc
-        // which can desync). When it has none, the shares are UNDEFINED, so we show what the colony
-        // WOULD receive: the empire split (Economy sliders) renormalized over the two posts a colony
-        // can spend on - Space Roads is empire-only - with Defense cut Ground/Space by this colony's
-        // ground ratio. Derived from the empire settings so it never lies if the player changes them.
-        void ComputeAutoShares(PlanetBudget b, out float civ, out float grd, out float spc)
-        {
-            float localTotal = b.CivilianAlloc.LowerBound(0f) + b.GrdDefAlloc.LowerBound(0f) + b.SpcDefAlloc.LowerBound(0f);
-            if (localTotal > 0.01f)
-            {
-                civ = b.CivilianAlloc.LowerBound(0f) / localTotal;
-                grd = b.GrdDefAlloc.LowerBound(0f) / localTotal;
-                spc = b.SpcDefAlloc.LowerBound(0f) / localTotal;
-            }
-            else
-            {
-                var up = Universe.UState.P;
-                float twoPot  = (up.ColonyBudgetShare + up.DefenseBudgetShare).LowerBound(0.0001f);
-                float defFrac = up.DefenseBudgetShare / twoPot;
-                float ground  = b.MilitaryBuildingsBudgetRatio().Clamped(0f, 1f);
-                civ = up.ColonyBudgetShare / twoPot;
-                grd = defFrac * ground;
-                spc = defFrac * (1f - ground);
-            }
+            CivBudgetSlider.Enabled = IsAreaManual(BudgetArea.Civilian);
+            GrdBudgetSlider.Enabled = IsAreaManual(BudgetArea.GroundDef);
+            SpcBudgetSlider.Enabled = IsAreaManual(BudgetArea.SpaceDef);
         }
 
         void UpdateBudgets()
@@ -1091,23 +1024,13 @@ namespace Ship_Game
             SpcBudgetBar.Max      = budget.SpcDefAlloc;
             SpcBudgetBar.Progress = Planet.SpaceDefMaintenance;
 
-            // on Auto the sliders mirror the governor's own allocation (read-only).
-            if (PlanetAutoBudget && GovSpending != null)
+            // an automatic row mirrors the governor's own allocation, read-only; a manual one
+            // holds the player's number and is left alone
+            if (CivBudgetSlider != null)
             {
-                ComputeAutoShares(budget, out float civ, out float grd, out float spc);
-                float localTotal = budget.CivilianAlloc.LowerBound(0f) + budget.GrdDefAlloc.LowerBound(0f) + budget.SpcDefAlloc.LowerBound(0f);
-                // when the shares are the inherited empire default (no budget yet), say so on hover -
-                // they are a prediction of what the colony will receive, not an active split. NB an
-                // EMPTY tooltip must be an empty STRING, not default(LocalizedText): the latter holds
-                // GameText token 0, which throws in GetTokenId when the tooltip is resolved.
-                LocalizedText shareTip = localTotal > 0.01f ? LocalizedText.None : GameText.InheritedBudgetShareTip;
-                ShareCiv.Tip = shareTip; ShareGrd.Tip = shareTip; ShareSpc.Tip = shareTip;
-                LinkingPlanetShares = true;
-                GovSpending.AbsoluteValue = localTotal > 0.01f ? localTotal : 0f;
-                ShareCiv.RelativeValue = civ;
-                ShareGrd.RelativeValue = grd;
-                ShareSpc.RelativeValue = spc;
-                LinkingPlanetShares = false;
+                if (!Planet.ManualCivBudgetOn) CivBudgetSlider.AbsoluteValue = budget.CivilianAlloc;
+                if (!Planet.ManualGrdBudgetOn) GrdBudgetSlider.AbsoluteValue = budget.GrdDefAlloc;
+                if (!Planet.ManualSpcBudgetOn) SpcBudgetSlider.AbsoluteValue = budget.SpcDefAlloc;
             }
 
             BudgetLimitWarningVisible = CivBudgetBar.Progress >= CivBudgetBar.Max && Planet.GetBuildingsCanBuild().Any(b => !b.IsMilitary);
