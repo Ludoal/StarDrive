@@ -294,6 +294,7 @@ namespace Ship_Game
 
             Profiled(LoadJunk);
             Profiled(LoadAsteroids);
+            Profiled(LoadStationModels); // after LoadEmpires: needs each empire's SpacePortModel
             Profiled(LoadProjectileTextures);
             Profiled(LoadProjectileMeshes);
             // Hotspot #3 174.8ms  7.91%
@@ -1405,6 +1406,43 @@ namespace Ship_Game
         static void LoadAsteroids()
         {
             LoadNumberedModels(AsteroidModels, "Model/Asteroids/", "asteroid");
+        }
+
+        // Ludoal fork (maintainer bench): space station meshes were the only world models still
+        // loaded on demand - the first time a colonized planet with a space port entered the
+        // frustum, SpaceStation.CreateSceneObject parsed the mesh off disk ON THE UI THREAD,
+        // stuttering the camera transition. Cached forever afterwards, hence a hitch that never
+        // repeated on the same system. Warm them here with the other world models instead.
+        static void LoadStationModels()
+        {
+            var paths = new Array<string>
+            {
+                "Model/Stations/spacestation01_inner",
+                "Model/Stations/spacestation01_outer",
+            };
+
+            // every empire that ships its own space port model pays the same cost on first sight
+            foreach (IEmpireData race in Empires)
+            {
+                // SpacePortModel is not on the read-only interface, only on the concrete data
+                if (race is EmpireData data && data.SpacePortModel.NotEmpty()
+                                            && !paths.Contains(data.SpacePortModel))
+                    paths.Add(data.SpacePortModel);
+            }
+
+            foreach (string path in paths)
+            {
+                try
+                {
+                    StaticMesh.LoadMesh(RootContent, path);
+                }
+                catch (Exception e)
+                {
+                    // a missing station model must not abort startup - the on-demand path
+                    // still runs and will report the failure where it matters
+                    Log.Warning($"Failed to preload station model {path}: {e.Message}");
+                }
+            }
         }
         
         // Refactored by RedFox
