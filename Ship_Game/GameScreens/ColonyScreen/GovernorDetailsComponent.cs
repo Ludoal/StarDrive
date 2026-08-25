@@ -997,7 +997,9 @@ namespace Ship_Game
 
         UILabel MakeBudgetValue(Func<float> getValue)
         {
-            var l = new UILabel(_ => getValue().String(1), Font) { TextAlign = TextAlign.Right };
+            // StringFixed1, not String(1): the latter drops the decimal on a whole number,
+            // so 8 and 2.2 stopped lining up on the point.
+            var l = new UILabel(_ => getValue().StringFixed1(), Font) { TextAlign = TextAlign.Right };
             l.Color = Color.White;
             return l;
         }

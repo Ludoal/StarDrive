@@ -43,6 +43,14 @@ namespace SDUtils
             }
         }
 
+        // Ludoal fork (maintainer feedback): String(1) uses "0.#", which DROPS the decimal
+        // on a whole number - a column of 8 and 2.2 stops lining up on the point. This one
+        // always writes it, so right-aligned figures align on the decimal point.
+        public static string StringFixed1(this float number)
+        {
+            return number.ToString("0.0", CultureInfo.InvariantCulture);
+        }
+
         public static string String(this double number, int numDecimals)
         {
             switch (numDecimals)
