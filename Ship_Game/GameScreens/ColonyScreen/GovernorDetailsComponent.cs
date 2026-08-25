@@ -256,7 +256,7 @@ namespace Ship_Game
             CivBudgetValue = Add(MakeBudgetValue(() => Planet.Budget.CivilianAlloc));
             GrdBudgetValue = Add(MakeBudgetValue(() => Planet.Budget.GrdDefAlloc));
             SpcBudgetValue = Add(MakeBudgetValue(() => Planet.Budget.SpcDefAlloc));
-            BudgetTotalLabel = Add(new UILabel(l => Planet.Budget.TotalAlloc.String(1), Font, Color.White));
+            BudgetTotalLabel = Add(MakeBudgetValue(() => Planet.Budget.TotalAlloc));
 
             BudgetSum     = Add(new UILabel(" ", FontBig, Color.White));
             BudgetPercent = Add(new UILabel(" ", FontBig, Color.White));

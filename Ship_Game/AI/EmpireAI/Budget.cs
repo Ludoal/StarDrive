@@ -116,12 +116,11 @@ namespace Ship_Game.AI.Budget
 
         public void UpdateManualUI()
         {
-            if (!P.ManualBudget)
-                return;
-
-            GrdDefAlloc   = P.ManualGrdDefBudget;
-            SpcDefAlloc   = P.ManualSpcDefBudget;
-            CivilianAlloc = P.ManualCivilianBudget + P.TerraformBudget;
+            // per area: a manual one shows the player's figure, an automatic one keeps
+            // whatever the governor last allocated it
+            if (P.ManualGrdBudgetOn) GrdDefAlloc   = P.ManualGrdDefBudget;
+            if (P.ManualSpcBudgetOn) SpcDefAlloc   = P.ManualSpcDefBudget;
+            if (P.ManualCivBudgetOn) CivilianAlloc = P.ManualCivilianBudget + P.TerraformBudget;
         }
 
         /// <summary>
