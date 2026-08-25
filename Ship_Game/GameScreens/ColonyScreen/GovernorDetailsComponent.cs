@@ -33,6 +33,7 @@ namespace Ship_Game
         UILabel BuildMandateLabel, ScrapMandateLabel;
         UILabel GroundTroopsHeader, SpaceDefenseHeader; // Defense tab column headers
         bool BuildListWasOpen, ScrapListWasOpen; // raise a list once, on its opening
+        const int BudgetValueW = 56; // wide enough for the longest budget figure
         private UICheckBox GovOrbitals, AutoTroops, Quarantine, ManualOrbitals, SpecializedTradeHub, Prioritized;
         private FloatSlider Garrison;
         private FloatSlider ManualPlatforms;
@@ -412,11 +413,13 @@ namespace Ship_Game
             // to what the paint really needs, and the slider absorbs what the lanes give up.
             // AmountW covers the WIDEST value: UILabel.SetText grows Size to fit its text, and a grown Size shifts the right-align anchor - "12.0" in a 44px lane drifted off the
             // column that "8.4" sat on. 999.9 is the practical ceiling for a colony budget.
-            const int AutoW = 52, AmountW = 56, LaneGap = 6, ValueGap = 2;
+            const int AutoW = 52, AmountW = BudgetValueW, LaneGap = 6, ValueGap = 2;
             float budgetRight = X + Width - 4;
             float autoX       = budgetRight - AutoW;
             float amountX     = autoX - LaneGap - AmountW;
-            float sliderX     = CivBudgetRect.X + CivBudgetRect.Width + 12;
+            // 12 - 15: the slider starts closer to its bar, growing leftward. The right
+            // margin and the value/Auto lanes keep their seats (maintainer bench).
+            float sliderX     = CivBudgetRect.X + CivBudgetRect.Width - 3;
             // +32: the slider track is Width-32; the unused value reserve folds back in
             var sliderSize = new Vector2(amountX - ValueGap - sliderX + 32, 12);
             var amountSize = new Vector2(AmountW, Font.LineSpacing);
@@ -1019,6 +1022,11 @@ namespace Ship_Game
             // so 8 and 2.2 stopped lining up on the point.
             var l = new UILabel(_ => getValue().StringFixed1(), Font) { TextAlign = TextAlign.Right };
             l.Color = Color.White;
+            // ⚠ the constructor already measured the FIRST value and set Size from it, and
+            // UpdateSizeFromText only ever grows it. Right-align reads pos.X + Size.X, so a
+            // row whose value got longer drew further right than its neighbours - and pushed
+            // its Auto box along. Seat the widest case here, before any text is measured.
+            l.Size = new Vector2(BudgetValueW, Font.LineSpacing);
             return l;
         }
 
