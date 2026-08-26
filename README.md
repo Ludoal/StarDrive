@@ -4,13 +4,12 @@
 
 # About this fork (Ludoal)
 
-Quality-of-life patches on top of the official **Jupiter 1.60.00048** release, made by a new player still learning the game, with an AI assistant doing the heavy lifting on code archaeology. **No gameplay changes**: UI fixes and comfort only. The point of publishing is simple: the BlackBox team is welcome to take whatever they find worth keeping, and patches 46 to 48 already integrated a number of them. Thanks!
+Quality-of-life patches on top of the official **Jupiter 1.60.00047** release, made by a new player still learning the game, with an AI assistant doing the heavy lifting on code archaeology. **No gameplay changes**: UI fixes and comfort only. The point of publishing is simple: the BlackBox team is welcome to take whatever they find worth keeping, and patches 46 and 47 already integrated a number of them. Thanks!
 
-- **Install**: grab the latest `BlackBox_Jupiter_Patch_*.exe` from [Releases](https://github.com/Ludoal/StarDrive/releases) and run it over an official Jupiter 1.60.00048 install, game closed. Cumulative, saves unaffected. **Legacy espionage saves are unusable** (they load, but espionage reads INF everywhere).
-- **Revert**: the patch only touches files the official patch also ships, so re-applying the official 48 patch is a complete revert. No kit needed.
-- **Versioning**: public releases are lettered (`48-a`, `48-b`, ...); the embedded build version stays numeric, so the in-game updater will still offer the next official patch (49+) normally.
-- **Branch**: [`ui-rework`](https://github.com/Ludoal/StarDrive/tree/ui-rework), the official 48 merged into this fork's line of work. Not based on upstream `main`/`develop`, so it stays save-compatible with the official 48.
-- [ ] **Saves both ways**: a game saved with this patch opens in a stock build, verified on a real campaign. The fork keeps its own settings out of the save's type table, so a stock build reads the file normally; only the fork's own choices (the governor mandates and the freighter cargo priority) fall back to their defaults over there.
+- **Install**: grab the latest `BlackBox_Jupiter_Patch_*.exe` from [Releases](https://github.com/Ludoal/StarDrive/releases) and run it over an official Jupiter 1.60.00047 install, game closed. Cumulative, saves unaffected. **Legacy espionage saves are unusable** (they load, but espionage reads INF everywhere).
+- **Revert**: the patch only touches files the official patch also ships, so re-applying the official 47 patch is a complete revert. No kit needed.
+- **Versioning**: public releases are lettered (`47-a`, `47-b`, ...); the embedded build version stays numeric, so the in-game updater will still offer the next official patch (48+) normally.
+- **Branch**: [`qol-47`](https://github.com/Ludoal/StarDrive/tree/qol-47), the official 47 tag plus these changes. Not based on upstream `main`/`develop`, so it stays save-compatible with the official 47.
 
 ## What's in it
 
@@ -32,10 +31,6 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00048** release, m
 **Texts & units** *(work in progress)*
 - Money flows labeled `BC/turn` everywhere (they are all per-turn), population rates per billion colonists; a game-term capitalization pass is ongoing.
 
-**Languages**
-- [ ] The interface is fully translatable and **French ships complete**: every screen, every tooltip, every hotkey label - around 3700 entries. Switching language re-measures every screen, so a longer word never breaks a layout.
-- [ ] Text hygiene pass across the board: no trailing or double spaces, Title Case realigned, "maintenance" reads *upkeep*, US spelling for *Defense*.
-
 ### Top bar & navigation
 - Live top bar on every panel, game speed − / + buttons matching the hotkeys.
 - The **PAUSED** indicator tells an automatic pause (orange) from a manual one (red).
@@ -56,11 +51,6 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00048** release, m
 - Deep-space builds: selectable while paused, real Cancel Construction button.
 - Minimap reskinned; overlay and navigation buttons regrouped into two bands, redundant page/zoom buttons dropped; click-to-jump is exact; colonized systems boxed with race colour, contested systems in grey.
 - **One icon per minable planet**: the resource icon alone (it also says which resource), going out once a mining station is deployed - the generic pickaxe doubled it.
-- [ ] **Route overlays**, typed by goods: freighter traffic and colonization runs drawn per pair and per cargo, each with its colour and icon. Food, Production and Population each own one dash slot in three, so overlapping routes interleave instead of blending; colonization stays a continuous line.
-- [ ] Gravity wells (**F5**) quieted down to a solid, desaturated disc instead of a bright wash.
-- [ ] The fog veil is light again at rest and reaches past the world bounds, so no border square shows at the map edge.
-- [ ] The crossed-hammers mining badge leaves the exploded and close views; the resource icon already says everything, and ops keep their owner flag.
-- [ ] Deep-space builds can be dragged to a new spot while under construction, and the minimap viewport frame no longer trembles as the camera moves.
 
 ### Empire group
 
@@ -68,15 +58,10 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00048** release, m
 - Renamed from Empire. Fertility / Richness / Max Population columns added.
 - On wide displays (1680px+), two more columns: Pop Growth, and a sortable **Governor** column.
 - A new EMPIRE totals tab in the bottom band: colony count, total population, total per-turn growth. The planet flavour text moved into the planet-icon tooltip.
-- [ ] The EMPIRE box also reads the empire's larder: food stock with its green/red per-turn net (a cybernetic empire reads its production stock in the same slot), and a production delta that nets out what the queues have already planned to spend - so the figure says whether the war chest is growing.
-- [ ] Space Port and Military Outpost icons sit right of the colony name on wide displays.
-- [ ] The supply columns are three-position lists like the Colony ones: in Auto the live pick shows greyed, and clicks only bite in manual.
 
 **Ships**
 - Military Ships filter (every combat-capable role in one view).
 - A Proximity column (sorts closest-first) and a live Patrol column.
-- [ ] The Orders column holds a fixed width instead of collapsing, and both Orders and Queue redraw live.
-- [ ] The refit popup rebuilt on the shared window charter: true row pitch, full body, and it seats itself beside the frame - left or right, vertically centred on the hovered row.
 
 **Troops**
 - **NEW** Troops Array: every ground troop you own in one screen: system, location, status (garrison, deployed, in transport, stationed), type, count and strength. Rows group by location and troop type; double-click jumps to the ship or opens the colony.
@@ -94,11 +79,6 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00048** release, m
 - Automation moved off the map into its own Empire-group tab, five categories all visible at once; notification toggles in positive phrasing (checked = you get the alert); Auto Governor decoupled from Autocolonize.
 - Auto Pick per design dropdown (Explorer, Colony Ship, Constructors, Freighter, Research/Mining Station): one checkbox each, manual pick or auto.
 - A **Prioritization** column replaces the scattered Prioritize toggles: an ordered list of build categories (arrows to reorder); a prioritized item enters a colony's queue above anything of a lower or unranked category. Saved with the game.
-- [ ] The Trade box is dissected: one shared **Freighter Model** picker, then three plain toggles - auto-build, auto-upgrade, auto-scrap idle - each doing one thing. Auto-upgrade no longer depends on Automatic Trade being on.
-- [ ] **Freighter Priority**: which cargo is served first when cargo is scarce (Auto, Production first, Colonists first). It only bites under a shortage, and the notice says so.
-- [ ] Auto-explore split in two as well: build new scouts, and send idle scouts out to explore.
-- [ ] Every switch carries a tooltip stating the actual values behind it. A picker greys out when its lead toggle is off, and reads *Not available* when no model is unlocked yet.
-- [ ] **Notifications, per category**: every notification now belongs to one of nine families, and each family carries its own *show* and *auto-clear after N seconds* settings, folding away the old scattered toggles. Story and event popups always pause, whatever the auto-pause setting says, and auto-clear never ages a paused game.
 
 ### Galaxy group
 
@@ -119,7 +99,6 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00048** release, m
 
 **Intelligence**
 - Trust / Anger / Threat bars are displayed; the treaty-matrix icons carry hover tooltips naming the treaty and the empire.
-- [ ] A **Trends** tab: one curve per domain, with ranks unlocking per domain. No retroactive history is ever invented - a curve starts the day its domain opens, and the smoothing works per domain so noise is flattened without flattening a real event.
 
 **Bonuses**
 - You can hover a trait to read its description.
@@ -130,9 +109,6 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00048** release, m
 **Espionage**
 - Infiltration laid out by level, so you can see what an operation costs before you commit to it.
 - The "Limit Level" is a slider; your own column carries an INFILTRATION block - the planets your moles sit on, clickable, opening that colony in mole vision and coming back to Espionage on close.
-- [ ] Infiltration only accrues against empires you have actually met, and an un-met faction weighs zero until first contact.
-- [ ] Moles cannot be sent to a planet their owner has never explored - the operation reports its own failure instead of picking a world at random.
-- [ ] Uprise and Rebellion notifications point at the planet they targeted, not at the Espionage panel.
 
 ### Design group
 
@@ -166,13 +142,6 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00048** release, m
 - Panels aligned with the bar; Stats+ tab (the default) with the full production accounting.
 - The full live universe map (and minimap) shows behind the colony panel; opening a Colony from a list keeps the list dimmed behind it, telegraphing where right-click sends you back.
 - The **Budget** tab reworked: one Auto toggle, a monetary Governor Spending slider, and per-area % share sliders with padlocks beside the progress bars. On Auto everything mirrors the governor's live allocation (raw target in parentheses); re-ticking Auto snaps to it. Without a governor the tab shows the same bars.
-- [ ] **The Budget tab reworked again, and simpler for it**: one independent line per area - civilian, ground defence, space defence - each with its own amount and its own Auto flag. Mixed modes are fine (civilian by hand, defence on automatic), the whole linked-percentage machinery is gone, and the figures line up on the decimal point rather than on their last digit.
-- [ ] **Build Mandate and Scrap Mandate**: two mirror lists saying what the governor may raise, and what it may raze (All / Economic only / Defense only / None). They replace *Gov. Manages Ground Defense* and *Governor Will Not Scrap Buildings*, and they say it better - blocking a family by zeroing its budget destroyed your figures, a mandate suspends the right and leaves them stored. Defaults reproduce stock conduct.
-- [ ] **MAP / LIST sub-tabs** on the Colony frame, and a **Supply** panel: population bar, colonist freighter line, one word for stock and one for flow, with BLOCKADE! and STARVATION! on its title bar.
-- [ ] Colonist migration is under your control, and every colony carries its own **Continuous Rush** toggle, mastered by the global one.
-- [ ] Each labor value shows the potential it would reach at 100% labor beside it, and the STATS+ and SUPPLY tabs say where every figure comes from.
-- [ ] The five governor portraits describe what each type actually does, with the real numbers rather than dashes.
-- [ ] The Specialized Trade Hub only carries the trade regime now: it no longer silently halted construction as a side effect, and its tooltip states its thresholds.
 
 **Options**
 - Autosave measured in game years (slider, 0 = legacy wall-clock).
@@ -182,18 +151,11 @@ Quality-of-life patches on top of the official **Jupiter 1.60.00048** release, m
 
 **Misc**
 - A Hotkeys reference popup in the in-game menu, every binding by category (remapping is planned).
-- [ ] **Hotkeys are rebindable**: the reference screen became the editor, reachable from the main menu too, with conflicts flagged as you bind. The main pages and the colony walk joined the table, and it is fully localized.
-
-### Performance
-- [ ] Hull meshes, weapon animations and space-station meshes preload with the rest of the world models instead of stuttering in on first sight.
-- [ ] Racial diplomacy videos are cached rather than re-read from disk every time the screen opens.
 
 ### Bug fixes not yet upstream
-
 - Fixes for **reported issues**, still waiting in open PRs on the official repo, ride in this patch in the meantime: carrier settings lost on save/reload, governor biosphere and no-scrap behaviour, space-road projector gaps, box-select swallowing troop transports, crash sites resolving before the conquest, DSB platforms too close to a sun, colonist import/export overlap, starving planets exporting food, fleet requisition and scrap-order refreshes, Dedicated Carrier hangar requirement, diplomatic demands and open-borders trust, and more; details in the release notes.
 - Fixes for bugs **we ran into ourselves**: research-tree branch packing, per-entry scroll-wheel steps, camera chase cleared every frame, a UI draw failure starving the simulation thread, the diplomacy subtitle hardcoded to 1920, money units labelled per turn, a click threshold 50ms shorter than the input layer's, WIP designs stacking `_v1_WIP` onto their own name.
 - Newer ones in this range: ship-design deletion silently a no-op after a save migration; the Shipyard's music restarting every frame until the mixer drowned; the main-menu planet leaving a bare band on displays wider than 16:9; shared tooltips parked at the first hover position (and covering the cursor near the display foot); open filter lists drawn under the table chrome; a Hide Owned toggle duplicating the Owner filter's Unowned option.
-- [ ] From this range: the governor cancelling its own queued work less the tighter its budget got (the check sat on the branch that never runs when over budget); a decaying automatic allocation creeping towards zero forever instead of snapping to it; the budget-share tooltip crashing on an empty text token; an open dropdown list drawing under the rows beneath it; and, upstream's own fix riding along, flashing colours that washed out to white instead of fading.
 
 *Everything below is the original BlackBox README.*
 
