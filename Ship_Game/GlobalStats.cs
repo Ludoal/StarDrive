@@ -158,6 +158,9 @@ public static class GlobalStats
     // Ludoal fork (wishlist): the notification at the HEAD of the queue - the oldest, the one
     // auto-clear takes next - keeps its text on screen instead of waiting for a hover.
     public static bool ShowFirstNotificationText;
+    // Ludoal fork (wishlist): auto-clear drains the queue IN ORDER - only the head ages, so
+    // nothing behind it can leave before it does. A head that never clears holds the queue.
+    public static bool AutoClearFirstOnly;
     // Ludoal fork (wishlist): which notification categories are subject to auto-clear, as a
     // bitmask keyed by (int)NotificationCategory. 0 = no category auto-clears (default), so every
     // notification persists exactly as it did before - the player opts each category in.
@@ -495,6 +498,7 @@ public static class GlobalStats
         GetSetting(config, "PauseOnNotification", ref PauseOnNotification);
         GetSetting(config, "NotificationAutoClearSeconds", ref NotificationAutoClearSeconds);
         GetSetting(config, "ShowFirstNotificationText", ref ShowFirstNotificationText);
+        GetSetting(config, "AutoClearFirstOnly", ref AutoClearFirstOnly);
         GetSetting(config, "NotificationAutoClearCategories", ref NotificationAutoClearCategories);
         GetSetting(config, "NotificationHiddenCategories", ref NotificationHiddenCategories);
         GetSetting(config, "PauseOnPageOpen", ref PauseOnPageOpen);
@@ -722,6 +726,7 @@ public static class GlobalStats
         WriteSetting(config, "PauseOnNotification", PauseOnNotification);
         WriteSetting(config, "NotificationAutoClearSeconds", NotificationAutoClearSeconds);
         WriteSetting(config, "ShowFirstNotificationText", ShowFirstNotificationText);
+        WriteSetting(config, "AutoClearFirstOnly", AutoClearFirstOnly);
         WriteSetting(config, "NotificationAutoClearCategories", NotificationAutoClearCategories);
         WriteSetting(config, "NotificationHiddenCategories", NotificationHiddenCategories);
         WriteSetting(config, "PauseOnPageOpen", PauseOnPageOpen);

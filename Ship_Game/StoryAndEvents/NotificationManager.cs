@@ -1170,8 +1170,12 @@ namespace Ship_Game
                 // The entry animation above still plays, so one arriving during a pause settles
                 // in place instead of freezing mid-slide; only the ageing waits for the sim.
                 bool pausesTheGame = GlobalStats.PauseOnNotification && n.Pause;
+                // Ludoal fork (wishlist): with AutoClearFirstOnly the queue drains in order -
+                // only the head ages, so the second cannot leave before the first. The trade is
+                // stated in the option's tooltip: a head that never clears holds the rest.
+                bool queueHead = !GlobalStats.AutoClearFirstOnly || n == notifications[0];
                 if (autoClear > 0f && inPlace && !pausesTheGame && n.Action != "LoadEvent"
-                    && !Screen.UState.Paused
+                    && !Screen.UState.Paused && queueHead
                     && GlobalStats.IsAutoClearCategory(n.Category))
                 {
                     n.SecondsAlive += elapsedRealTime;

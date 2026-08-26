@@ -88,6 +88,9 @@ namespace Ship_Game
             notifications.AddCheckbox(() => GlobalStats.ShowFirstNotificationText,
                                       title: "Show first Notification text",
                                       tooltip: "The oldest notification, the one auto-clear takes next, keeps its text on screen");
+            notifications.AddCheckbox(() => GlobalStats.AutoClearFirstOnly,
+                                      title: "Auto-clear oldest first",
+                                      tooltip: "Only the oldest notification ages out; the ones behind it wait their turn. A family with no auto-clear holds the queue until dismissed");
 
             // FIRST: the auto-clear timer. Its label titles the whole block - read the duration,
             // then tick which categories it applies to below. 0 = off (nothing auto-clears).
