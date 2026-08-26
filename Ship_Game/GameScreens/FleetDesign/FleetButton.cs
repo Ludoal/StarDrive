@@ -80,7 +80,9 @@ public class FleetButton : UIPanel
 
     void DrawRequisitionIcon(SpriteBatch batch, Fleet f, in RectF r)
     {
-        if (f.AutoRequisition)
+        // Ludoal fork: an EMPTY slot draws too now (that is how a fleet is created), so the
+        // badges must survive the absence the icon and the ship row already guarded against.
+        if (f?.AutoRequisition == true)
         {
             RectF autoReq = new(r.X - 18, r.Y + 5, 15, 20);
             Color colorReq = Screen.ApplyCurrentAlphaToColor(Player.EmpireColor);
@@ -90,7 +92,7 @@ public class FleetButton : UIPanel
 
     void DrawPatrolIcon(SpriteBatch batch, Fleet f, in RectF r)
     {
-        if (f.HasPatrolPlan)
+        if (f?.HasPatrolPlan == true)
         {
             RectF patrolRect = new(r.X - 20, r.Y + 25, 20, 20);
             Color patrolColor = Screen.ApplyCurrentAlphaToColor(Player.EmpireColor);
