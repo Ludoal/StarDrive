@@ -231,6 +231,18 @@ jobs:
         shell: pwsh
         run: |
           $codename = $env:CODENAME.ToLower()
+          # Ludoal fork (maintainer): a PUBLIC release gets hand-written notes, so the
+          # commit list stays out of its body. Between 47-c and 48-a that list ran to 275
+          # lines; the house format is a short Highlights block and a pointer to the README.
+          # Internal numbered builds keep the log - it is how we read what a build carries.
+          if ('${{ github.event.inputs.public_suffix }}'.Trim()) {
+            Write-Host "Public release: leaving the body empty for hand-written notes"
+            $delim = "EOF_$([guid]::NewGuid().ToString('N'))"
+            "summary<<$delim" >> $env:GITHUB_OUTPUT
+            ""                >> $env:GITHUB_OUTPUT
+            $delim            >> $env:GITHUB_OUTPUT
+            exit 0
+          }
           $prev = git tag --list "$codename-patch-*" --sort=-v:refname | Select-Object -First 1
           # `--format='- %s'` drops the commit SHA and prefixes each subject with
           # a hyphen, which GitHub renders as a markdown bullet in the release body.
