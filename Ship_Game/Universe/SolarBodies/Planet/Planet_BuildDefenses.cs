@@ -30,9 +30,16 @@ namespace Ship_Game
         // initializers carry the defaults for a save written before this layout.
         // Set once the mandates have been seeded from the old flags; distinguishes a save
         // written before they existed from one where the player has already set them.
-        [StarData] public bool MandatesSeeded;
-        [StarData] int GovBuildMandateValue = (int)BuildMandate.EconomicOnly;
-        [StarData] int GovScrapMandateValue = (int)BuildMandate.None;
+        // Initialized TRUE and left without a DefaultValue on purpose: a colony born in a new
+        // game never passes through deserialization, so the initializer is what marks it done,
+        // while a save written before this field reads the serializer's own false and seeds.
+        [StarData] public bool MandatesSeeded = true;
+        // DefaultValue states each mandate's default explicitly. A field equal to the writer's
+        // default is never stored, and the reader assigns that same default back over the field
+        // initializer - so without it a save that predates these fields would read All (0)
+        // instead of the intended default, and hand the governor rights it never had.
+        [StarData(DefaultValue = 1)] int GovBuildMandateValue = (int)BuildMandate.EconomicOnly;
+        [StarData(DefaultValue = 3)] int GovScrapMandateValue = (int)BuildMandate.None;
         public BuildMandate GovBuildMandate
         {
             get => (BuildMandate)GovBuildMandateValue;
