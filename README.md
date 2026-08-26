@@ -10,7 +10,7 @@ Visually, the whole interface has been rebuilt: a flat, themable "painted plate"
 
 - **Branch & versioning**: [`qol-48`](https://github.com/Ludoal/StarDrive/tree/qol-48), the official 48 tag plus these changes; not based on upstream `main`, so it stays save-compatible with the official 48. Public releases are lettered (`48-a`, `48-b`, ...); the embedded build version stays numeric, so the in-game updater still offers the next official patch normally.
 - **Install**: grab the latest `BlackBox_Jupiter_Patch_*.exe` from [Releases](https://github.com/Ludoal/StarDrive/releases) and run it over an official Jupiter 1.60.00048 install, game closed. Cumulative; re-applying the official 48 patch is a complete revert.
-- **Saves**: unaffected, both ways: a game saved with this patch opens in a stock build; only the fork's own settings fall back to their defaults there. **Legacy espionage saves are unusable** (they load, but espionage reads INF everywhere).
+- **Saves**: unaffected. **Legacy espionage saves are unusable** (they load, but espionage reads INF everywhere).
 
 ## What's in it
 
