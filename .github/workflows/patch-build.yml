@@ -45,6 +45,10 @@ env:
   # Ludoal fork: the playable line rebased on the official patch 47. Same rule as above — the
   # base carries the provenance, the counter is repo-wide and simply keeps running.
   QOL_47_BASE: "1.60.00047"
+  # Ludoal fork: the playable line rebased on the official patch 48, once upstream 48 was
+  # merged in. Without this entry a build off qol-48 falls back to MAJOR_MINOR and ships
+  # as 1.60.00046.N, announcing a patch that is two officials behind what it contains.
+  QOL_48_BASE: "1.60.00048"
 
 jobs:
   build:
@@ -74,6 +78,9 @@ jobs:
           }
           elseif ('${{ github.ref_name }}' -eq 'qol-47') {
             $base = "${env:QOL_47_BASE}"
+          }
+          elseif ('${{ github.ref_name }}' -eq 'qol-48') {
+            $base = "${env:QOL_48_BASE}"
           }
           $version = "$base.$build"
           # Ludoal fork: optional public letter (45-a, 45-b…) for community releases.
