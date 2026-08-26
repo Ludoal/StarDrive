@@ -24,8 +24,22 @@ namespace Ship_Game
         // player's figures; a mandate suspends the right and leaves them stored.
         // Defaults reproduce vanilla conduct: it built civilian only, and never demolished
         // military at all.
-        [StarData] public BuildMandate GovBuildMandate = BuildMandate.EconomicOnly;
-        [StarData] public BuildMandate GovScrapMandate = BuildMandate.None;
+        // Stored as ints, not as the enum: BuildMandate does not exist in vanilla, and a build
+        // without the deleted-enum skip cannot read past a type it has never heard of. An int is
+        // a fundamental type every build reads, so the save stays loadable downstream. The
+        // initializers carry the defaults for a save written before this layout.
+        [StarData] int GovBuildMandateValue = (int)BuildMandate.EconomicOnly;
+        [StarData] int GovScrapMandateValue = (int)BuildMandate.None;
+        public BuildMandate GovBuildMandate
+        {
+            get => (BuildMandate)GovBuildMandateValue;
+            set => GovBuildMandateValue = (int)value;
+        }
+        public BuildMandate GovScrapMandate
+        {
+            get => (BuildMandate)GovScrapMandateValue;
+            set => GovScrapMandateValue = (int)value;
+        }
         [StarData] public bool AutoBuildTroops  = false;
         [StarData] public bool ManualOrbitals   = false;
         [StarData] public int GarrisonSize;

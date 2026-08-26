@@ -35,7 +35,15 @@ namespace Ship_Game
         // Set once the split toggles have been seeded; distinguishes a pre-dissection save (seed
         // from AutoFreighters) from a fresh/new-format one (leave the toggles as the player set them).
         [StarData] public bool FreighterAutomationSplit;
-        [StarData] public CargoPriority CargoPriority;
+        // Stored as an int, not as the enum: CargoPriority does not exist in vanilla, and a
+        // build without the deleted-enum skip cannot read past a type it has never heard of.
+        // An int is a fundamental type every build reads, so the save stays loadable downstream.
+        [StarData] int CargoPriorityValue;
+        public CargoPriority CargoPriority
+        {
+            get => (CargoPriority)CargoPriorityValue;
+            set => CargoPriorityValue = (int)value;
+        }
         [StarData] public float FastVsBigFreighterRatio { get; private set; } = 0.5f;
         public float TradeMoneyAddedThisTurn { get; private set; }
         public float TotalTradeMoneyAddedThisTurn { get; private set; }

@@ -111,6 +111,7 @@
     <Compile Include="Serialization\BinaryReadWriteTests.cs" />
     <Compile Include="Serialization\ObjectScannerTests.cs" />
     <Compile Include="Serialization\SerializationRegressionTests.cs" />
+    <Compile Include="Serialization\ForkSaveCompatTests.cs" />
     <Compile Include="Serialization\StringViewTests.cs" />
     <Compile Include="Serialization\TypeSerializerTests.cs" />
     <Compile Include="Serialization\YamlSerializerTests.cs" />
