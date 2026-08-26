@@ -28,6 +28,9 @@ namespace Ship_Game
         // without the deleted-enum skip cannot read past a type it has never heard of. An int is
         // a fundamental type every build reads, so the save stays loadable downstream. The
         // initializers carry the defaults for a save written before this layout.
+        // Set once the mandates have been seeded from the old flags; distinguishes a save
+        // written before they existed from one where the player has already set them.
+        [StarData] public bool MandatesSeeded;
         [StarData] int GovBuildMandateValue = (int)BuildMandate.EconomicOnly;
         [StarData] int GovScrapMandateValue = (int)BuildMandate.None;
         public BuildMandate GovBuildMandate

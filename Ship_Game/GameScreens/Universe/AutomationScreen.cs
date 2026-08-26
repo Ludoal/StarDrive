@@ -187,6 +187,8 @@ namespace Ship_Game
             trade.AddCheckbox(() => player.AutoScrapIdleFreighters, title: GameText.AutoScrapIdleFreighters, tooltip: GameText.AutoScrapIdleFreightersTip);
             trade.AddCheckbox(() => Universe.UState.P.AllowPlayerInterTrade, title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.AllowPlayerInterTradeTip);
 
+            trade.ReverseZOrder(); // an open list draws over the rows beneath it
+
             UIList construction = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap, BoxW2, ConstructionBoxH), "Construction");
             ConstructorDropDown = construction.Add(new CheckedDropdown())
                 .Create(() => player.AutoBuildSpaceRoads, Localizer.Token(GameText.Autobuild) + " Projectors", GameText.YourEmpireWillAutomaticallyCreate2,
@@ -199,6 +201,8 @@ namespace Ship_Game
                 MiningStationDropDown = construction.Add(new CheckedDropdown())
                     .Create(() => player.AutoBuildMiningStations, title: GameText.AutoBuildMiningStation, tooltip: GameText.AutoBuildMiningStationTip,
                             autoPick: () => player.AutoPickBestMiningStation);
+
+            construction.ReverseZOrder(); // an open list draws over the rows beneath it
 
             UIList colonization = NewBox(new RectF(x1, top, BoxW2, ColonizationBoxH), "Colonization");
             // Auto-explore split into two jobs: build new scouts (keeps the model picker), and
@@ -215,6 +219,8 @@ namespace Ship_Game
             // see Planet_Colonize.SetupColonyType.
             colonization.AddCheckbox(() => player.AutoCoreGovernor, title: "Auto Governor",
                                      tooltip: GameText.AutoGovernorTip); // Policies phase 0: token, not a bare string
+
+            colonization.ReverseZOrder(); // an open list draws over the rows beneath it
 
             // ── third column: the construction Prioritization list ──
             // Upper block = the prioritized categories, their ORDER is the hierarchy; arrows
@@ -353,7 +359,8 @@ namespace Ship_Game
             box.PerformLayout();
             UIList list = AddList(new Vector2(box.ClientArea.X + 12, box.ClientArea.Y + 12));
             list.Padding = new Vector2(2f, 10f);
-            list.ReverseZOrder(); // dropdowns must draw over the rows below them
+            // NOTE: ReverseZOrder is a one-shot gesture on the rows a list already holds, so a
+            // list carrying a dropdown calls it itself once its rows are in - here it is a no-op.
             return list;
         }
 
