@@ -35,7 +35,7 @@ namespace Ship_Game
         // BoxW2: the dropdown boxes are WIDER instead of taller - label room + picker.
         const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
         const float EmpireBoxH = 160f, ColonizationBoxH = 156f, ConstructionBoxH = 139f, // +26: Auto-explore split adds a row (Send New Explorers)
-                    TradeBoxH = 204f, NotificationsBoxH = 476f, PriorityBoxH = 330f; // frame just tall enough for its content: at 456 Inhibition spilled, at 500 it left empty space that stretched the window (bench 487)
+                    TradeBoxH = 204f, NotificationsBoxH = 498f, PriorityBoxH = 330f; // frame just tall enough for its content: at 456 Inhibition spilled, at 500 it left empty space that stretched the window (bench 487)
 
         public AutomationScreen(UniverseScreen u) : base(u, toPause: u)
         {
@@ -81,6 +81,13 @@ namespace Ship_Game
                 foreach ((NotificationCategory cat, UICheckBox box) in autoClearBoxes)
                     box.Greyed = timerOff || GlobalStats.IsHiddenCategory(cat);
             }
+
+            // Ludoal fork (wishlist): a global switch, above the nine families - it is not a
+            // tenth family. The head of the queue keeps its text on screen; the others still
+            // show theirs on hover. Off by default: stock conduct unchanged.
+            notifications.AddCheckbox(() => GlobalStats.ShowFirstNotificationText,
+                                      title: "Show first Notification text",
+                                      tooltip: "The oldest notification, the one auto-clear takes next, keeps its text on screen");
 
             // FIRST: the auto-clear timer. Its label titles the whole block - read the duration,
             // then tick which categories it applies to below. 0 = off (nothing auto-clears).

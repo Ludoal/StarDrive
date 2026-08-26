@@ -1046,7 +1046,10 @@ namespace Ship_Game
                     batch.Draw(ResourceManager.Texture(n.SymbolPath), n.ClickRect, Color.White);
                 }
 
-                if (n.ShowMessage)
+                // Ludoal fork (wishlist): index 0 is the HEAD of the queue - the oldest, and the
+                // one auto-clear takes next. Its text stands without a hover when the option is
+                // on, so the reading scrolls by itself as the queue drains.
+                if (n.ShowMessage || (i == 0 && GlobalStats.ShowFirstNotificationText))
                 {
                     Vector2 msgSize = Fonts.Arial12Bold.MeasureString(n.Message);
                     Vector2 cursor = new(n.ClickRect.X - msgSize.X - 3f, n.ClickRect.Y + 32 - msgSize.Y / 2f);

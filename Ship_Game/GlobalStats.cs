@@ -155,6 +155,9 @@ public static class GlobalStats
     public static bool PauseOnNotification;
     // Seconds before a settled, non-pausing notification auto-clears. 0 = off (default).
     public static float NotificationAutoClearSeconds;
+    // Ludoal fork (wishlist): the notification at the HEAD of the queue - the oldest, the one
+    // auto-clear takes next - keeps its text on screen instead of waiting for a hover.
+    public static bool ShowFirstNotificationText;
     // Ludoal fork (wishlist): which notification categories are subject to auto-clear, as a
     // bitmask keyed by (int)NotificationCategory. 0 = no category auto-clears (default), so every
     // notification persists exactly as it did before - the player opts each category in.
@@ -491,6 +494,7 @@ public static class GlobalStats
         GetSetting(config, "NotifyEmptyPlanetQueue", ref NotifyEmptyPlanetQueue);
         GetSetting(config, "PauseOnNotification", ref PauseOnNotification);
         GetSetting(config, "NotificationAutoClearSeconds", ref NotificationAutoClearSeconds);
+        GetSetting(config, "ShowFirstNotificationText", ref ShowFirstNotificationText);
         GetSetting(config, "NotificationAutoClearCategories", ref NotificationAutoClearCategories);
         GetSetting(config, "NotificationHiddenCategories", ref NotificationHiddenCategories);
         GetSetting(config, "PauseOnPageOpen", ref PauseOnPageOpen);
@@ -717,6 +721,7 @@ public static class GlobalStats
         WriteSetting(config, "NotifyEmptyPlanetQueue", NotifyEmptyPlanetQueue);
         WriteSetting(config, "PauseOnNotification", PauseOnNotification);
         WriteSetting(config, "NotificationAutoClearSeconds", NotificationAutoClearSeconds);
+        WriteSetting(config, "ShowFirstNotificationText", ShowFirstNotificationText);
         WriteSetting(config, "NotificationAutoClearCategories", NotificationAutoClearCategories);
         WriteSetting(config, "NotificationHiddenCategories", NotificationHiddenCategories);
         WriteSetting(config, "PauseOnPageOpen", PauseOnPageOpen);
