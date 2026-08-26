@@ -253,7 +253,9 @@ namespace Ship_Game
             float infoLinesH  = 45 + Fonts.Arial20Bold.LineSpacing * 2
                               + 5 * (TextFont.LineSpacing + 2);
             float planetInfoH = Math.Max(26 + portraitH + 14, infoLinesH + 10);
-            const float governorH   = 222;   // one line back down - STORAGE breathes
+            // 208: the same height the Colonies band gives the very same component, so the
+            // governor block reads identically on both screens (maintainer feedback).
+            const float governorH   = 208;
             const float laborH      = 150;   // three sliders, their locks and the title bar
 
             RectF planetInfoR = new(gridLeft, gridTop, colLeftW, planetInfoH);
