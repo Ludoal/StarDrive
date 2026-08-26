@@ -282,10 +282,9 @@ namespace Ship_Game
             // both lists gain its height and the left one fits one more fleet
             float listTop = client.Y + 10;
 
-            // Ludoal fork: the column is as tall as the bank it must show - ten slots below
-            // 1080, all twenty above. 5 right: clears the Patrol badge from the edge.
-            RectF leftRect = new(client.X + ListPad + 5, listTop, leftW,
-                                 FleetButtonsList.BarHeight(ScreenHeight));
+            // Ludoal fork: the column is as tall as the ten slots it shows. 5 right: clears the
+            // Patrol badge from the edge.
+            RectF leftRect = new(client.X + ListPad + 5, listTop, leftW, FleetButtonsList.BarHeight);
             LeftMenu = leftRect;
             
             Add(new FleetButtonsList(leftRect, this, Universe,

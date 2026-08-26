@@ -19,18 +19,14 @@ public class FleetButtonsList : UIList
     readonly Empire Player;
     readonly Array<FleetButton> Buttons = new();
 
-    // Ludoal fork (maintainer design): the twenty slots stand together from 1080 up. Below
-    // that only ten fit, so the column shows one bank at a time and a button in its head
-    // swaps them - Alt is that button's shortcut, never its only door.
+    // Ludoal fork (maintainer design): the column shows TEN slots, at every resolution - the
+    // window does not run to the display foot by design, so twenty never fit, not even at 1200.
+    // A button in the column's head swaps the banks, and Alt is its shortcut.
     const int BankSize = 10;
     const int SlotPitch = 50;   // one button plus the padding the list adds
-    public static bool ShowsBothBanks(int screenHeight) => screenHeight >= 1080;
-    public static float BarHeight(int screenHeight)
-        => (ShowsBothBanks(screenHeight) ? 2 * BankSize : BankSize) * SlotPitch;
+    public static float BarHeight => BankSize * SlotPitch;
     bool SecondBank;            // false: slots 1-10, true: 11-20
-    bool InCurrentBank(int key)
-        => ShowsBothBanks(Us.ScreenHeight)
-        || (SecondBank ? key > BankSize : key <= BankSize);
+    bool InCurrentBank(int key) => SecondBank ? key > BankSize : key <= BankSize;
     UIButton BankSwap;
 
     public FleetButtonsList(RectF rect, GameScreen parent, UniverseScreen us,
@@ -58,7 +54,7 @@ public class FleetButtonsList : UIList
             base.Add(b);
         }
 
-        if (IsFleetDesigner && !ShowsBothBanks(us.ScreenHeight))
+        if (IsFleetDesigner)
         {
             // the list's Header sits above the items, which is exactly where a bank switch
             // belongs. DynamicText so the label follows the bank without a second source.
