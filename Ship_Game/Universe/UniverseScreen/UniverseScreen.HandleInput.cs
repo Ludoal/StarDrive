@@ -58,6 +58,11 @@ namespace Ship_Game
         // Ludoal fork: a page draws controls OUTSIDE the frame it declares - the bottom-right
         // buttons that sit over the minimap's corner. The map answers only where it is really
         // visible, so a pixel the player sees a control on belongs to the page, frame or not.
+        // Ludoal fork: everything the page owns at this pixel - its declared frame, and the
+        // controls it draws outside that frame (the bottom-right buttons over the minimap).
+        static bool PageOwnsPixel(GameScreen caller, Vector2 pos)
+            => caller.PageFrame.HitTest(pos) || CallerDrawsHere(caller, pos);
+
         static bool CallerDrawsHere(GameScreen caller, Vector2 pos)
         {
             var elements = caller.GetElements();
@@ -78,12 +83,10 @@ namespace Ship_Game
             // page's own rect) - gated by the frame, that top row's clicks and tooltips would
             // be eaten by the table. HandleGUIClicks also arms the tooltips, so it has to run
             // regardless of where the cursor sits over the cartouche stack.
-            if (HandleGUIClicks(input))
+            if (HandleGUIClicks(input, caller))
                 return true;
-            if (caller.PageFrame.HitTest(input.CursorPosition))
-                return false; // inside the page: its own input owns the cursor
-            if (CallerDrawsHere(caller, input.CursorPosition))
-                return false; // outside the frame, but the page drew a control here
+            if (PageOwnsPixel(caller, input.CursorPosition))
+                return false; // the page owns this pixel: frame, or a control it drew
             if (Minimap != null && Minimap.HandleInput(input))
                 return true;
             if (HandleMinimapNavigation(input))
@@ -111,10 +114,14 @@ namespace Ship_Game
             return false;
         }
 
-        bool HandleGUIClicks(InputState input)
+        // caller: the page this pass runs under, null on the map's own path. The cartouches
+        // must answer BEFORE the page gate (they draw on top of it), but the minimap must
+        // NOT - it lives UNDER the page, so a pixel the page owns is never its business.
+        bool HandleGUIClicks(InputState input, GameScreen caller = null)
         {
             bool captured = DeepSpaceBuildWindow.HandleInput(input);
-            captured |= HandleMinimapNavigation(input);
+            if (caller == null || !PageOwnsPixel(caller, input.CursorPosition))
+                captured |= HandleMinimapNavigation(input);
 
             // @note Make sure HandleInputs are called here
             if (!LookingAtPlanet)
