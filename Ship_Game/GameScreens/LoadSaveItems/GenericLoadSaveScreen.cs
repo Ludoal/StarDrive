@@ -369,17 +369,22 @@ namespace Ship_Game
                 string extraInfo = header.RealDate;
                 string tooltip = file.Name;
 
-                // the header carries the player's flag since the 47-c hotfix; older headers read -1
-                // and fall back to the race-name lookup (wrong for custom races, which is
-                // why the flag is stored now - maintainer feedback)
-                if (header.FlagIndex >= 0)
+                // headers that carry the player's flag draw it directly; older headers read
+                // -1 and fall back to the race-name lookup below, which shows the default
+                // flag for custom and renamed races. Flag() is null if the index is not in
+                // the loaded atlas (a modded save listed in the unfiltered Save dialog), and
+                // the lookup is a better guess than the ctor's generic icon fallback
+                SubTexture flag = header.FlagIndex >= 0 ? ResourceManager.Flag(header.FlagIndex) : null;
+                if (flag != null)
                     return new(file, header, header.SaveName, info, extraInfo, tooltip,
-                               ResourceManager.Flag(header.FlagIndex), header.EmpireColor);
+                               flag, header.EmpireColor);
 
                 IEmpireData empire = ResourceManager.AllRaces.FirstOrDefault(e => e.Name == header.PlayerName)
                                   ?? ResourceManager.AllRaces[0];
+                // only the icon was missing, so keep the header's own colour when it has one
+                Color tint = header.FlagIndex >= 0 ? header.EmpireColor : empire.Traits.Color;
                 return new(file, header, header.SaveName, info, extraInfo, tooltip,
-                           empire.Traits.FlagIcon, empire.Traits.Color);
+                           empire.Traits.FlagIcon, tint);
             }
         }
     }

@@ -58,7 +58,7 @@ public partial class UniverseScreen
         int num = SelectedShipList.Count();
         SelectedShipList.RemoveInActiveObjects();
         if (SelectedShip != null)
-            SetSelectedShip(SelectedShip, SelectedFleet, clearFlags: false); // Ludoal fork: same ship, UI refresh only
+            SetSelectedShip(SelectedShip, SelectedFleet, clearFlags: false); // same ship, UI refresh only
         else if (num != SelectedShipList.Count())
             SetSelectedShipList(SelectedShipList, SelectedFleet);
     }
@@ -89,9 +89,7 @@ public partial class UniverseScreen
     /// <summary>
     /// Sets the currently selected ship and clears selected ships list
     /// </summary>
-    // Ludoal fork: clearFlags=false lets the per-frame UI refresh in UpdateSelectedShips
-    // keep the chase camera alive — an unconditional clear would switch ViewingShip off
-    // every frame while a ship is selected.
+    /// <param name="clearFlags">FALSE keeps the camera chase flags, for refreshing the same ship</param>
     public void SetSelectedShip(Ship selectedShip, Fleet fleet = null, bool clearFlags = true)
     {
         SelectedSomethingTimer = 3f;

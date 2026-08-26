@@ -195,8 +195,7 @@ namespace Ship_Game
             if ((input.ScrollIn || input.ScrollOut) && Rect.HitTest(input.CursorPosition))
             {
                 float amount = input.ScrollOut ? ScrollWheelAmount : -ScrollWheelAmount;
-                if (amount != 0)
-                    ScrollByScrollBar(amount);
+                ScrollByScrollBar(amount); // no-ops when the bar is already at the target
                 // capture the wheel even when the list is too short to scroll,
                 // otherwise it falls through to the universe camera zoom
                 return true;

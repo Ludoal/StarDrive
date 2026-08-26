@@ -22,8 +22,15 @@ namespace Ship_Game
         // the player's flag, so the save list can show it without a race-name lookup
         // (a renamed or custom race matches nothing and fell back to the default icon).
         // -1 = header written before the field existed; the reader falls back to the lookup.
-        [StarData] public int FlagIndex = -1;
-        [StarData] public Color EmpireColor;
+        // DefaultValue states the sentinel explicitly. Without it the writer's skip value
+        // would be 0 - a real, pickable flag. Today that still round-trips, because
+        // HeaderData never has enough default fields to leave full layout and the reader
+        // re-derives 0 from the serializer's own default. Under partial layout a skipped
+        // field is never written at all and would surface as the -1 sentinel instead.
+        [StarData(DefaultValue = -1)] public int FlagIndex = -1;
+        // initializers only survive for fields absent from the stream, i.e. old headers;
+        // White keeps those from tinting an icon fully transparent if ever read unguarded
+        [StarData] public Color EmpireColor = Color.White;
     }
 
     public sealed class SavedGame
