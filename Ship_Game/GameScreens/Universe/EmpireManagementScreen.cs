@@ -153,14 +153,23 @@ namespace Ship_Game
             // cartouche, which keeps the Colony screen's own fixed height (222) - cutting the band
             // as a fraction of the screen would stretch everything in it with the resolution
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight);
-            const float GovernorH = 222;
-            float bandH = GovernorH + 7; // the 7px the rect derivation below eats back
+            // Ludoal fork (maintainer bench): the band is FIXED and the LIST absorbs the
+            // resolution, not the reverse. Deriving the band from the list's own bottom let it
+            // drift, because a scroll list rounds itself down to a whole number of rows.
+            const float GovernorH  = 208;  // the band's real height, measured at the bench
+            const float BandGapTop = 20;   // between the list's foot and the band
+            const float BandGapBot = 15;   // between the band and the frame's foot
+            float bandH = GovernorH + BandGapTop + BandGapBot; // the reserve the table leaves
             float contentH = UITable.ContentHeightFor(102 + bandH, Math.Max(3, planets.Count), 84, fullAvail);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 0,
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
             RectF client = EmpireTabs.ClientArea;
+            // the band's own span, settled BEFORE the table so the table stops where it starts
+            float bandBottom = client.Bottom - BandGapBot;
+            float bandTop    = bandBottom - GovernorH;
+            float govBandH   = GovernorH;
             Table.RowPitch = 84;
-            Table.Layout(client, client.Y + 10, client.Bottom - bandH - 8);
+            Table.Layout(client, client.Y + 10, bandTop - BandGapTop);
             ERect = new(Table.TableRect.X, Table.TableRect.Y, Table.TableRect.Width, Table.TableRect.Height);
 
             ColoniesList = Add(new ScrollList<ColoniesListItem>(Table.ListRect, 80));
@@ -183,9 +192,6 @@ namespace Ship_Game
             // map's width (7:5) is known here and the whole cascade resolves at the ctor; Draw reads
             // the same X values. GovernorRect keeps its fixed width, only its X changes from a right
             // anchor to the end of the cascade.
-            float bandTop    = ColoniesList.Bottom + 20;
-            float bandBottom = client.Bottom - 15;
-            float govBandH   = bandBottom - bandTop; // real band height (bandH above is the layout reserve)
             BandMapW    = (govBandH - 10) * (700f / 500f) + 20f;
             BandEmpireX = ERect.X + 7;
             BandPlanetX = BandEmpireX + EmpireBoxW + BandGap;
@@ -248,8 +254,11 @@ namespace Ship_Game
             // width spilling right. The block X's are fixed in the ctor (BandLayout) so the ctor's
             // GovernorRect and this row share one arithmetic. The planet DESCRIPTION rides the
             // planet icon's tooltip, not the band.
-            float blockTop = ERect.Y + ERect.H + 10;
-            float blockH   = GovernorRect.Bottom - blockTop;
+            // the band's span comes from the governor rect, the one place it is settled -
+            // re-deriving it from the table's foot made two sites that had to agree, and
+            // they only agreed by accident of the list's row rounding.
+            float blockTop = GovernorRect.Y;
+            float blockH   = GovernorRect.H;
             float mapH     = blockH - 10;
 
             // the EMPIRE box: colony count, total population, total per-turn growth, at the far left
