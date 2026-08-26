@@ -262,11 +262,18 @@ namespace Ship_Game
             }
 
             AddFeatures(cols[2].Rect);
-            // Distance is measured from the nearest player colony, so a colony of your own
-            // sits at zero - a real distance, not a missing one. Guarding on > 0 read the
-            // first as the second and left the cell blank on every colonized planet.
-            DistanceDisplay dd = new DistanceDisplay(Distance);
-            Cell(3, dd.Text, dd.Color);
+            // Distance is measured from the nearest player colony, so a colony of your own is
+            // its own reference point: the scale has nothing to say about it. A dash reads as
+            // "not applicable", where a blank cell read as a bug (maintainer feedback).
+            if (Planet.Owner == Player)
+            {
+                Cell(3, "---", Color.Gray);
+            }
+            else
+            {
+                DistanceDisplay dd = new DistanceDisplay(Distance);
+                Cell(3, dd.Text, dd.Color);
+            }
             // fixed one decimal: right-aligned + constant fraction = aligned on the point
             DynCell(4, l => Planet.FertilityFor(Player).ToString("0.0", CultureInfo.InvariantCulture));
             DynCell(5, l => Planet.MineralRichness.ToString("0.0", CultureInfo.InvariantCulture));
