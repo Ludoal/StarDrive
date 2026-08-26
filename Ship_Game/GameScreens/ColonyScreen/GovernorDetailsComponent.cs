@@ -277,6 +277,9 @@ namespace Ship_Game
         public override void PerformLayout()
         {
             const int GovRowPitch = 20; // the Governor tab row step, written once
+            // Defense tab button step, written once so the troop column and the orbital
+            // column cannot drift apart (bench 506: the block sat 5px low and 34 was airy).
+            const int DefButtonPitch = 29;
             float aspect  = PortraitSprite.Size.X / PortraitSprite.Size.Y;
             // 0.55: the toggles ride under the portrait.
             float height  = (float)Math.Round(Height * 0.55f);
@@ -381,11 +384,10 @@ namespace Ship_Game
 
             AutoTroops.Pos        = new Vector2(TopLeft.X + DefColLeft, defFirstRow);
             Garrison.Pos          = new Vector2(TopLeft.X + DefColLeft + 10, defFirstRow + DefRowPitch);
-            float defRow          = Y + 120 + shift;  // a breath under the garrison slider
-            // 34 per row, not 26: the buttons breathe vertically
+            float defRow          = Y + 115 + shift;  // a breath under the garrison slider
             LaunchAllTroops.Pos   = new Vector2(TopLeft.X + DefColLeft, defRow);
-            LaunchSingleTroop.Pos = new Vector2(TopLeft.X + DefColLeft, defRow + 34);
-            CallTroops.Pos        = new Vector2(TopLeft.X + DefColLeft, defRow + 68);
+            LaunchSingleTroop.Pos = new Vector2(TopLeft.X + DefColLeft, defRow + DefButtonPitch);
+            CallTroops.Pos        = new Vector2(TopLeft.X + DefColLeft, defRow + 2*DefButtonPitch);
             ColonyRank.Pos        = new Vector2(TopLeft.X + DefColRight, defFirstRow);
             NoGovernor.Pos        = ColonyRank.Pos;
             // the ground-defense checkbox left this column: the orbital pair closes the gap
@@ -396,8 +398,8 @@ namespace Ship_Game
             float pairWidth       = manualOffset.X + 24; // the value lane past the button
             float buildX          = rightMid - pairWidth * 0.5f;
             BuildPlatform.Pos     = new Vector2(buildX, defRow);
-            BuildShipyard.Pos     = new Vector2(buildX, defRow + 34);
-            BuildStation.Pos      = new Vector2(buildX, defRow + 68);
+            BuildShipyard.Pos     = new Vector2(buildX, defRow + DefButtonPitch);
+            BuildStation.Pos      = new Vector2(buildX, defRow + 2*DefButtonPitch);
             ManualPlatforms.Pos   = BuildPlatform.Pos + manualOffset;
             ManualShipyards.Pos   = BuildShipyard.Pos + manualOffset;
             ManualStations.Pos    = BuildStation.Pos + manualOffset;
