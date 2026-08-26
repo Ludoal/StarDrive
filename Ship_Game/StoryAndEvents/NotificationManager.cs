@@ -1049,7 +1049,7 @@ namespace Ship_Game
                 // Ludoal fork (wishlist): index 0 is the HEAD of the queue - the oldest, and the
                 // one that ages out next. Its text stands without a hover, so the reading scrolls
                 // by itself as the queue drains. One switch drives both halves.
-                if (n.ShowMessage || (i == 0 && GlobalStats.ShowAndClearFirstNotification))
+                if (n.ShowMessage || (i == 0 && GlobalStats.ShowOldestNotificationText))
                 {
                     Vector2 msgSize = Fonts.Arial12Bold.MeasureString(n.Message);
                     Vector2 cursor = new(n.ClickRect.X - msgSize.X - 3f, n.ClickRect.Y + 32 - msgSize.Y / 2f);
@@ -1175,7 +1175,7 @@ namespace Ship_Game
                 // the text below always names the one that is leaving. A notification that pauses
                 // the game, or a story popup, is spared as before and holds the queue until the
                 // player answers it - which is what a notification worth pausing for deserves.
-                if (GlobalStats.ShowAndClearFirstNotification && autoClear > 0f && inPlace
+                if (GlobalStats.AutoClearOldest && autoClear > 0f && inPlace
                     && !pausesTheGame && n.Action != "LoadEvent"
                     && !Screen.UState.Paused && n == notifications[0])
                 {

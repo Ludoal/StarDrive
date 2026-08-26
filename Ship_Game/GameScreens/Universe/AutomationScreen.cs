@@ -71,13 +71,17 @@ namespace Ship_Game
             UIList notifications = NewBox(new RectF(x0, top + EmpireBoxH + BoxGap, BoxW, NotificationsBoxH), "Notifications");
             var P = Universe.UState.P;
 
-            // Ludoal fork (wishlist, maintainer design): ONE switch above the families, because
-            // it is one intent - read without clicking. Whether you WANT a family at all is the
-            // per-family box below; splitting the clearing family by family answered a question
-            // nobody asks. Off by default: nothing clears by itself, the stock conduct.
-            notifications.AddCheckbox(() => GlobalStats.ShowAndClearFirstNotification,
-                                      title: "Show text and auto-clear",
-                                      tooltip: "The oldest notification shows its text, ages out after the delay below, and the next one takes its place");
+            // Ludoal fork (wishlist): two switches above the families, both about the OLDEST
+            // notification - the head of the queue. Whether you want a family on screen at all is
+            // the per-family box below; that is the only question those rows answer now.
+            // Both off by default: the stock conduct, nothing shown without a hover, nothing
+            // clearing by itself.
+            notifications.AddCheckbox(() => GlobalStats.ShowOldestNotificationText,
+                                      title: "Show oldest Notification text",
+                                      tooltip: "The oldest notification keeps its text on screen instead of waiting for a hover");
+            notifications.AddCheckbox(() => GlobalStats.AutoClearOldest,
+                                      title: "Auto-clear oldest",
+                                      tooltip: "Only the oldest ages out, after the delay below, so the pile empties in the order it filled");
 
             // How long the head of the queue stands before it ages out. 0 = off, nothing clears.
             notifications.Add(new UILabel(GameText.NotificationAutoClear, Fonts.Arial12Bold, Colors.Cream)).Tooltip = GameText.NotificationAutoClearTip;

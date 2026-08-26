@@ -155,10 +155,12 @@ public static class GlobalStats
     public static bool PauseOnNotification;
     // Seconds before a settled, non-pausing notification auto-clears. 0 = off (default).
     public static float NotificationAutoClearSeconds;
-    // Ludoal fork (wishlist, maintainer design): ONE switch for one intent - read without
-    // clicking. The notification at the head of the queue shows its text, ages out after the
-    // delay below, and the next one takes its place. A ticker. Off: nothing clears by itself.
-    public static bool ShowAndClearFirstNotification;
+    // Ludoal fork (wishlist): the OLDEST notification - the head of the queue - keeps its text
+    // on screen instead of waiting for a hover. Read without touching.
+    public static bool ShowOldestNotificationText;
+    // Ludoal fork (wishlist): only the OLDEST ages out, after the delay below, so the pile
+    // empties in the order it filled. Independent of the text above; either stands alone.
+    public static bool AutoClearOldest;
     // Ludoal fork (wishlist): which notification categories the player has HIDDEN (won't be shown),
     // as a bitmask keyed by (int)NotificationCategory. 0 = nothing hidden (default) = every category
     // shows, exactly as before. This unifies the old scattered Disable*/Suppress* toggles into the
@@ -484,7 +486,8 @@ public static class GlobalStats
         GetSetting(config, "NotifyEmptyPlanetQueue", ref NotifyEmptyPlanetQueue);
         GetSetting(config, "PauseOnNotification", ref PauseOnNotification);
         GetSetting(config, "NotificationAutoClearSeconds", ref NotificationAutoClearSeconds);
-        GetSetting(config, "ShowAndClearFirstNotification", ref ShowAndClearFirstNotification);
+        GetSetting(config, "ShowOldestNotificationText", ref ShowOldestNotificationText);
+        GetSetting(config, "AutoClearOldest", ref AutoClearOldest);
         GetSetting(config, "NotificationHiddenCategories", ref NotificationHiddenCategories);
         GetSetting(config, "PauseOnPageOpen", ref PauseOnPageOpen);
         GetSetting(config, "AutoPauseColonyPanel", ref AutoPauseColonyPanel);
@@ -710,7 +713,8 @@ public static class GlobalStats
         WriteSetting(config, "NotifyEmptyPlanetQueue", NotifyEmptyPlanetQueue);
         WriteSetting(config, "PauseOnNotification", PauseOnNotification);
         WriteSetting(config, "NotificationAutoClearSeconds", NotificationAutoClearSeconds);
-        WriteSetting(config, "ShowAndClearFirstNotification", ShowAndClearFirstNotification);
+        WriteSetting(config, "ShowOldestNotificationText", ShowOldestNotificationText);
+        WriteSetting(config, "AutoClearOldest", AutoClearOldest);
         WriteSetting(config, "NotificationHiddenCategories", NotificationHiddenCategories);
         WriteSetting(config, "PauseOnPageOpen", PauseOnPageOpen);
         WriteSetting(config, "AutoPauseColonyPanel", AutoPauseColonyPanel);
