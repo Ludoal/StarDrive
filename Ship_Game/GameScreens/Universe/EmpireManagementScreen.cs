@@ -192,16 +192,8 @@ namespace Ship_Game
             // map's width (7:5) is known here and the whole cascade resolves at the ctor; Draw reads
             // the same X values. GovernorRect keeps its fixed width, only its X changes from a right
             // anchor to the end of the cascade.
-            // Ludoal fork: the MAP is the block that absorbs the display width. The three
-            // others keep their fixed widths; the map takes its natural 7:5 on the band
-            // height when there is room, and gives it up when there is not. It has to give:
-            // pushed past the frame, the governor's right-hand tabs fall outside the page's
-            // own rect and the live map behind swallows the clicks meant for them.
+            BandMapW    = (govBandH - 10) * (700f / 500f) + 20f;
             BandEmpireX = ERect.X + 7;
-            float mapNatural = (govBandH - 10) * (700f / 500f) + 20f;
-            float mapRoom    = (client.Right - 7) - BandEmpireX
-                             - (EmpireBoxW + PlanetBoxW + sidePanelWidths + 3 * BandGap);
-            BandMapW    = Math.Min(mapNatural, Math.Max(0f, mapRoom));
             BandPlanetX = BandEmpireX + EmpireBoxW + BandGap;
             BandMapX    = BandPlanetX + PlanetBoxW + BandGap;
             BandGovX    = BandMapX + BandMapW + BandGap;
