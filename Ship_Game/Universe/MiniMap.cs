@@ -534,6 +534,12 @@ namespace Ship_Game
             if (!Housing.HitTest(input.CursorPosition))
                 return false;
 
+            // The map stays alive BESIDE an open page, not underneath it: where a page is drawn
+            // over the housing, that page owns the click. Without this the minimap answered for
+            // pixels it could not be seen at, and swallowed the controls sitting on top of it.
+            if (Universe.IsCoveredByPage(input.CursorPosition))
+                return false;
+
             // (the two zoom buttons are gone - Page Up and Page Down still do the job, and the
             // wheel does it better; zoom-to-ship belongs with the ship, not with the map)
             if (DeepSpaceBuild.Rect.HitTest(input.CursorPosition))

@@ -273,6 +273,24 @@ namespace Ship_Game
         bool IsUniverseInitialized;
 
         public bool IsViewingCombatScreen(Planet p) => LookingAtPlanet && workersPanel is CombatScreen cs && cs.P == p;
+        // Ludoal fork: true when a screen stacked ABOVE the universe draws over this point.
+        // A pixel has one door: what the player sees on top is what owns the click. Screens
+        // that host a page declare their PageFrame; the rest answer with the whole display,
+        // which is right for anything modal.
+        public bool IsCoveredByPage(Vector2 screenPos)
+        {
+            var stack = ScreenManager.Screens;
+            for (int i = stack.Count - 1; i >= 0; --i)
+            {
+                GameScreen s = stack[i];
+                if (s == this)
+                    return false; // reached ourselves, nothing above covers this point
+                if (!s.IsExiting && s.PageFrame.HitTest(screenPos))
+                    return true;
+            }
+            return false;
+        }
+
         // Ludoal fork: the colony is a stacked page - ask the stack
         public bool IsViewingColonyScreen(Planet p)
         {
