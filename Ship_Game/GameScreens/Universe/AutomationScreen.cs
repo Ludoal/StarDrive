@@ -125,7 +125,6 @@ namespace Ship_Game
                                                  foreach (UICheckBox sub in subBoxes) sub.Greyed = !show;
                                              },
                                              Fonts.Arial12Bold, title, tip);
-                showBox.Tooltip = tip;
                 notifications.Add(showBox);
 
                 // indented Show sub-options, checked by default (positive voice on the old flags),
