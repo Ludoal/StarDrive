@@ -4,6 +4,7 @@ using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using SDUtils;
 using Ship_Game.Fleets;
+using Keys = SDGraphics.Input.Keys;
 
 namespace Ship_Game.GameScreens.FleetDesign;
 
@@ -17,6 +18,20 @@ public class FleetButtonsList : UIList
     readonly UniverseScreen Us;
     readonly Empire Player;
     readonly Array<FleetButton> Buttons = new();
+
+    // Ludoal fork (maintainer design): the twenty slots stand together from 1080 up. Below
+    // that only ten fit, so the column shows one bank at a time and a button in its head
+    // swaps them - Alt is that button's shortcut, never its only door.
+    const int BankSize = 10;
+    const int SlotPitch = 50;   // one button plus the padding the list adds
+    public static bool ShowsBothBanks(int screenHeight) => screenHeight >= 1080;
+    public static float BarHeight(int screenHeight)
+        => (ShowsBothBanks(screenHeight) ? 2 * BankSize : BankSize) * SlotPitch;
+    bool SecondBank;            // false: slots 1-10, true: 11-20
+    bool InCurrentBank(int key)
+        => ShowsBothBanks(Us.ScreenHeight)
+        || (SecondBank ? key > BankSize : key <= BankSize);
+    UIButton BankSwap;
 
     public FleetButtonsList(RectF rect, GameScreen parent, UniverseScreen us,
                             Action<FleetButton> onClick,
@@ -43,6 +58,19 @@ public class FleetButtonsList : UIList
             base.Add(b);
         }
 
+        if (IsFleetDesigner && !ShowsBothBanks(us.ScreenHeight))
+        {
+            // the list's Header sits above the items, which is exactly where a bank switch
+            // belongs. DynamicText so the label follows the bank without a second source.
+            BankSwap = new UIButton(ButtonStyle.Small, "1-10")
+            {
+                DynamicText = () => BankLabel,
+                Tooltip = "Switch between fleets 1-10 and 11-20 (Alt)",
+                OnClick = _ => ToggleBank()
+            };
+            Header = BankSwap;
+        }
+
         base.PerformLayout();
         // Ludoal fork: no slide-in/slide-out on the fleet buttons. They appear where the layout puts them.
     }
@@ -55,7 +83,18 @@ public class FleetButtonsList : UIList
 
     bool IsInputDisabled => (IsUniverse && Us.pieMenu.Visible);
 
-    static int InputFleetSelection(InputState input, int screenHeight)
+    string BankLabel => SecondBank ? "11-20" : "1-10";
+
+    void ToggleBank()
+    {
+        SecondBank = !SecondBank;
+        RequiresLayout = true;
+    }
+
+    // Ludoal fork: no display gate here any more (maintainer decision). Every key answers;
+    // what the resolution decides is how many slots the column SHOWS at once, not how many
+    // fleets the player may command.
+    static int InputFleetSelection(InputState input)
     {
         if (input.Fleet1)  return 1;
         if (input.Fleet2)  return 2;
@@ -67,7 +106,6 @@ public class FleetButtonsList : UIList
         if (input.Fleet8)  return 8;
         if (input.Fleet9)  return 9;
 
-        if (screenHeight >= 1024)
         {
             if (input.Fleet10) return 10;
             if (input.Fleet11) return 11;
@@ -75,15 +113,11 @@ public class FleetButtonsList : UIList
             if (input.Fleet13) return 13;
             if (input.Fleet14) return 14;
             if (input.Fleet15) return 15;
-
-            if (screenHeight >= 1440)
-            {
-                if (input.Fleet16) return 16;
-                if (input.Fleet17) return 17;
-                if (input.Fleet18) return 18;
-                if (input.Fleet19) return 19;
-                if (input.Fleet20) return 20;
-            }
+            if (input.Fleet16) return 16;
+            if (input.Fleet17) return 17;
+            if (input.Fleet18) return 18;
+            if (input.Fleet19) return 19;
+            if (input.Fleet20) return 20;
         }
 
         return -1;
@@ -94,10 +128,15 @@ public class FleetButtonsList : UIList
         if (ShouldHide || IsInputDisabled)
             return false;
 
+        // Ludoal fork: Alt swaps the bank - the key the 11-20 hotkeys already carry, so the
+        // column shows what those keys reach. The header button does the same for the mouse.
+        if (BankSwap != null && (input.KeyPressed(Keys.LeftAlt) || input.KeyPressed(Keys.RightAlt)))
+            ToggleBank();
+
         foreach (FleetButton b in Buttons)
         {
             // always handle hotkeys, since they can be used to create new fleets
-            if (InputFleetSelection(input, Us.ScreenHeight) == b.FleetKey)
+            if (InputFleetSelection(input) == b.FleetKey)
             {
                 b.OnHotKey?.Invoke(b);
                 return true;
@@ -115,9 +154,11 @@ public class FleetButtonsList : UIList
         foreach (FleetButton b in Buttons)
         {
             Fleet f = Player.GetFleetOrNull(b.FleetKey);
-            bool visible = f != null;
-            if (IsUniverse)
-                visible = visible && f.CountShips > 0;
+            // Ludoal fork: the workshop shows the SLOTS, empty ones included - an empty slot
+            // is how a fleet is created, and one that draws nothing is a door with no handle.
+            // The map keeps showing only fleets that exist, and that carry ships.
+            bool visible = IsFleetDesigner ? InCurrentBank(b.FleetKey)
+                                           : f != null && f.CountShips > 0;
 
             // make sure to do layout if any visibility changes
             RequiresLayout |= (visible != b.Visible);
