@@ -737,7 +737,7 @@ namespace Ship_Game
             // Ludoal fork: past the bar and the hotkeys, the visible map band answers - the live
             // top bar's pattern, one storey down. Each page exposes its OWN frame (dynamic);
             // the default is the whole display, i.e. no band until a page opts in.
-            if (Universe.HandleVisibleBandInput(input, caller.PageFrame))
+            if (Universe.HandleVisibleBandInput(input, caller))
                 return true;
 
             return false;

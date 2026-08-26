@@ -55,7 +55,22 @@ namespace Ship_Game
         // Reached through the live top bar's shared path - never via the main HandleInput,
         // whose hosted-seat bookkeeping assumes no input arrives under stacked pages.
         // v1 gestures: the minimap (overlay buttons and navigation) and the wheel zoom.
-        public bool HandleVisibleBandInput(InputState input, in Rectangle pageFrame)
+        // Ludoal fork: a page draws controls OUTSIDE the frame it declares - the bottom-right
+        // buttons that sit over the minimap's corner. The map answers only where it is really
+        // visible, so a pixel the player sees a control on belongs to the page, frame or not.
+        static bool CallerDrawsHere(GameScreen caller, Vector2 pos)
+        {
+            var elements = caller.GetElements();
+            for (int i = 0; i < elements.Count; ++i)
+            {
+                UIElementV2 e = elements[i];
+                if (e.Visible && e.HitTest(pos))
+                    return true;
+            }
+            return false;
+        }
+
+        public bool HandleVisibleBandInput(InputState input, GameScreen caller)
         {
             // (maintainer feedback) the cartouches and their order buttons answer BEFORE the
             // page-frame gate. They draw ON TOP of the open page and reach into the reserved
@@ -65,8 +80,10 @@ namespace Ship_Game
             // regardless of where the cursor sits over the cartouche stack.
             if (HandleGUIClicks(input))
                 return true;
-            if (pageFrame.HitTest(input.CursorPosition))
+            if (caller.PageFrame.HitTest(input.CursorPosition))
                 return false; // inside the page: its own input owns the cursor
+            if (CallerDrawsHere(caller, input.CursorPosition))
+                return false; // outside the frame, but the page drew a control here
             if (Minimap != null && Minimap.HandleInput(input))
                 return true;
             if (HandleMinimapNavigation(input))
