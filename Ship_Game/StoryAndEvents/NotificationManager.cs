@@ -1047,9 +1047,9 @@ namespace Ship_Game
                 }
 
                 // Ludoal fork (wishlist): index 0 is the HEAD of the queue - the oldest, and the
-                // one auto-clear takes next. Its text stands without a hover when the option is
-                // on, so the reading scrolls by itself as the queue drains.
-                if (n.ShowMessage || (i == 0 && GlobalStats.ShowFirstNotificationText))
+                // one that ages out next. Its text stands without a hover, so the reading scrolls
+                // by itself as the queue drains. One switch drives both halves.
+                if (n.ShowMessage || (i == 0 && GlobalStats.ShowAndClearFirstNotification))
                 {
                     Vector2 msgSize = Fonts.Arial12Bold.MeasureString(n.Message);
                     Vector2 cursor = new(n.ClickRect.X - msgSize.X - 3f, n.ClickRect.Y + 32 - msgSize.Y / 2f);
@@ -1170,13 +1170,14 @@ namespace Ship_Game
                 // The entry animation above still plays, so one arriving during a pause settles
                 // in place instead of freezing mid-slide; only the ageing waits for the sim.
                 bool pausesTheGame = GlobalStats.PauseOnNotification && n.Pause;
-                // Ludoal fork (wishlist): with AutoClearFirstOnly the queue drains in order -
-                // only the head ages, so the second cannot leave before the first. The trade is
-                // stated in the option's tooltip: a head that never clears holds the rest.
-                bool queueHead = !GlobalStats.AutoClearFirstOnly || n == notifications[0];
-                if (autoClear > 0f && inPlace && !pausesTheGame && n.Action != "LoadEvent"
-                    && !Screen.UState.Paused && queueHead
-                    && GlobalStats.IsAutoClearCategory(n.Category))
+                // Ludoal fork (wishlist, maintainer design): one intent, read without clicking.
+                // ONLY the head of the queue ages, so the pile empties in the order it filled and
+                // the text below always names the one that is leaving. A notification that pauses
+                // the game, or a story popup, is spared as before and holds the queue until the
+                // player answers it - which is what a notification worth pausing for deserves.
+                if (GlobalStats.ShowAndClearFirstNotification && autoClear > 0f && inPlace
+                    && !pausesTheGame && n.Action != "LoadEvent"
+                    && !Screen.UState.Paused && n == notifications[0])
                 {
                     n.SecondsAlive += elapsedRealTime;
                     if (n.SecondsAlive >= autoClear)

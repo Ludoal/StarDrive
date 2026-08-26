@@ -71,29 +71,15 @@ namespace Ship_Game
             UIList notifications = NewBox(new RectF(x0, top + EmpireBoxH + BoxGap, BoxW, NotificationsBoxH), "Notifications");
             var P = Universe.UState.P;
 
-            // Each category's Auto-clear box greys out when EITHER its category is hidden OR the
-            // timer is 0 (a 0 timer means nothing auto-clears, so every box would be a no-op - the
-            // global setting mustn't leave live-looking boxes that do nothing).
-            var autoClearBoxes = new Array<(NotificationCategory cat, UICheckBox box)>();
-            void RefreshAutoClearGrey()
-            {
-                bool timerOff = GlobalStats.NotificationAutoClearSeconds <= 0f;
-                foreach ((NotificationCategory cat, UICheckBox box) in autoClearBoxes)
-                    box.Greyed = timerOff || GlobalStats.IsHiddenCategory(cat);
-            }
+            // Ludoal fork (wishlist, maintainer design): ONE switch above the families, because
+            // it is one intent - read without clicking. Whether you WANT a family at all is the
+            // per-family box below; splitting the clearing family by family answered a question
+            // nobody asks. Off by default: nothing clears by itself, the stock conduct.
+            notifications.AddCheckbox(() => GlobalStats.ShowAndClearFirstNotification,
+                                      title: "Show text and auto-clear",
+                                      tooltip: "The oldest notification shows its text, ages out after the delay below, and the next one takes its place");
 
-            // Ludoal fork (wishlist): a global switch, above the nine families - it is not a
-            // tenth family. The head of the queue keeps its text on screen; the others still
-            // show theirs on hover. Off by default: stock conduct unchanged.
-            notifications.AddCheckbox(() => GlobalStats.ShowFirstNotificationText,
-                                      title: "Show first Notification text",
-                                      tooltip: "The oldest notification, the one auto-clear takes next, keeps its text on screen");
-            notifications.AddCheckbox(() => GlobalStats.AutoClearFirstOnly,
-                                      title: "Auto-clear oldest first",
-                                      tooltip: "Only the oldest notification ages out; the ones behind it wait their turn. A family with no auto-clear holds the queue until dismissed");
-
-            // FIRST: the auto-clear timer. Its label titles the whole block - read the duration,
-            // then tick which categories it applies to below. 0 = off (nothing auto-clears).
+            // How long the head of the queue stands before it ages out. 0 = off, nothing clears.
             notifications.Add(new UILabel(GameText.NotificationAutoClear, Fonts.Arial12Bold, Colors.Cream)).Tooltip = GameText.NotificationAutoClearTip;
             // Height must contain the 26px crosshair knob, or it overflows below its declared box
             // and the next row overlaps the handle (bench 485: the 7px height did exactly that).
@@ -104,15 +90,14 @@ namespace Ship_Game
                 Tip = GameText.NotificationAutoClearTip,
                 TrackYOffset = -5, // tuck the rail up close under its title; the box still holds the knob (bench 486)
             });
-            autoClear.OnChange = s => { GlobalStats.NotificationAutoClearSeconds = s.AbsoluteValue; RefreshAutoClearGrey(); };
+            autoClear.OnChange = s => GlobalStats.NotificationAutoClearSeconds = s.AbsoluteValue;
 
             // One row per notification category (the old scattered Disable*/Suppress* toggles are
-            // folded into these nine). POSITIVE voice: the left box checked = you SEE this category
-            // (bitmask NotificationHiddenCategories, all shown by default). The right box is the
-            // per-category Auto-clear opt-in ("Auto-clear"); it GREYS OUT (read-only, click-refused,
-            // state kept) when its category is hidden - a hidden category has nothing to auto-clear.
+            // folded into these nine). POSITIVE voice: checked = you SEE this category (bitmask
+            // NotificationHiddenCategories, all shown by default). Whether you want a family at
+            // all is the only question here; how it leaves the screen is the one switch above.
             // A few categories carry indented SHOW sub-options (the old noisy alerts, kept as fine
-            // filters); they grey with their parent category too.
+            // filters); they grey with their parent category.
             (NotificationCategory cat, string title, LocalizedText tip)[] cats =
             {
                 (NotificationCategory.Exploration,  "Exploration",  GameText.NotifCatExplorationTip),
@@ -129,20 +114,15 @@ namespace Ship_Game
             {
                 NotificationCategory c = cat; // capture per iteration
                 var subBoxes = new Array<UICheckBox>(); // indented Show sub-options that grey with the parent
-                var autoClearBox = new UICheckBox(0f, 0f, () => GlobalStats.IsAutoClearCategory(c),
-                                                  on => GlobalStats.SetAutoClearCategory(c, on),
-                                                  Fonts.Arial12Bold, GameText.AutoClearShort, GameText.NotificationAutoClearTip)
-                { Greyed = GlobalStats.NotificationAutoClearSeconds <= 0f || GlobalStats.IsHiddenCategory(c) };
-                autoClearBoxes.Add((c, autoClearBox));
                 var showBox = new UICheckBox(0f, 0f, () => !GlobalStats.IsHiddenCategory(c),
                                              show =>
                                              {
                                                  GlobalStats.SetHiddenCategory(c, !show);
-                                                 RefreshAutoClearGrey(); // timer + category together
                                                  foreach (UICheckBox sub in subBoxes) sub.Greyed = !show;
                                              },
                                              Fonts.Arial12Bold, title, tip);
-                notifications.Add(new SplitElement(showBox, autoClearBox) { Split = 150f, Tooltip = tip });
+                showBox.Tooltip = tip;
+                notifications.Add(showBox);
 
                 // indented Show sub-options, checked by default (positive voice on the old flags),
                 // greyed when the parent category is hidden - they filter WITHIN the category.

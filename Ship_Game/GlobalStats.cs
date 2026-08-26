@@ -155,23 +155,10 @@ public static class GlobalStats
     public static bool PauseOnNotification;
     // Seconds before a settled, non-pausing notification auto-clears. 0 = off (default).
     public static float NotificationAutoClearSeconds;
-    // Ludoal fork (wishlist): the notification at the HEAD of the queue - the oldest, the one
-    // auto-clear takes next - keeps its text on screen instead of waiting for a hover.
-    public static bool ShowFirstNotificationText;
-    // Ludoal fork (wishlist): auto-clear drains the queue IN ORDER - only the head ages, so
-    // nothing behind it can leave before it does. A head that never clears holds the queue.
-    public static bool AutoClearFirstOnly;
-    // Ludoal fork (wishlist): which notification categories are subject to auto-clear, as a
-    // bitmask keyed by (int)NotificationCategory. 0 = no category auto-clears (default), so every
-    // notification persists exactly as it did before - the player opts each category in.
-    public static int NotificationAutoClearCategories;
-    public static bool IsAutoClearCategory(NotificationCategory c) => (NotificationAutoClearCategories & (1 << (int)c)) != 0;
-    public static void SetAutoClearCategory(NotificationCategory c, bool on)
-    {
-        int bit = 1 << (int)c;
-        if (on) NotificationAutoClearCategories |= bit;
-        else    NotificationAutoClearCategories &= ~bit;
-    }
+    // Ludoal fork (wishlist, maintainer design): ONE switch for one intent - read without
+    // clicking. The notification at the head of the queue shows its text, ages out after the
+    // delay below, and the next one takes its place. A ticker. Off: nothing clears by itself.
+    public static bool ShowAndClearFirstNotification;
     // Ludoal fork (wishlist): which notification categories the player has HIDDEN (won't be shown),
     // as a bitmask keyed by (int)NotificationCategory. 0 = nothing hidden (default) = every category
     // shows, exactly as before. This unifies the old scattered Disable*/Suppress* toggles into the
@@ -497,9 +484,7 @@ public static class GlobalStats
         GetSetting(config, "NotifyEmptyPlanetQueue", ref NotifyEmptyPlanetQueue);
         GetSetting(config, "PauseOnNotification", ref PauseOnNotification);
         GetSetting(config, "NotificationAutoClearSeconds", ref NotificationAutoClearSeconds);
-        GetSetting(config, "ShowFirstNotificationText", ref ShowFirstNotificationText);
-        GetSetting(config, "AutoClearFirstOnly", ref AutoClearFirstOnly);
-        GetSetting(config, "NotificationAutoClearCategories", ref NotificationAutoClearCategories);
+        GetSetting(config, "ShowAndClearFirstNotification", ref ShowAndClearFirstNotification);
         GetSetting(config, "NotificationHiddenCategories", ref NotificationHiddenCategories);
         GetSetting(config, "PauseOnPageOpen", ref PauseOnPageOpen);
         GetSetting(config, "AutoPauseColonyPanel", ref AutoPauseColonyPanel);
@@ -725,9 +710,7 @@ public static class GlobalStats
         WriteSetting(config, "NotifyEmptyPlanetQueue", NotifyEmptyPlanetQueue);
         WriteSetting(config, "PauseOnNotification", PauseOnNotification);
         WriteSetting(config, "NotificationAutoClearSeconds", NotificationAutoClearSeconds);
-        WriteSetting(config, "ShowFirstNotificationText", ShowFirstNotificationText);
-        WriteSetting(config, "AutoClearFirstOnly", AutoClearFirstOnly);
-        WriteSetting(config, "NotificationAutoClearCategories", NotificationAutoClearCategories);
+        WriteSetting(config, "ShowAndClearFirstNotification", ShowAndClearFirstNotification);
         WriteSetting(config, "NotificationHiddenCategories", NotificationHiddenCategories);
         WriteSetting(config, "PauseOnPageOpen", PauseOnPageOpen);
         WriteSetting(config, "AutoPauseColonyPanel", AutoPauseColonyPanel);
