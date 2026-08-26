@@ -4,7 +4,6 @@ using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using SDUtils;
 using Ship_Game.Fleets;
-using Keys = SDGraphics.Input.Keys;
 
 namespace Ship_Game.GameScreens.FleetDesign;
 
@@ -21,7 +20,8 @@ public class FleetButtonsList : UIList
 
     // Ludoal fork (maintainer design): the column shows TEN slots, at every resolution - the
     // window does not run to the display foot by design, so twenty never fit, not even at 1200.
-    // A button in the column's head swaps the banks, and Alt is its shortcut.
+    // A button in the column's head swaps the banks. No keyboard shortcut for now: Alt is taken
+    // by the 11-20 fleet keys, and a hotkey the tooltip cannot name is a door with no handle.
     const int BankSize = 10;
     const int SlotPitch = 50;   // one button plus the padding the list adds
     public static float BarHeight => BankSize * SlotPitch;
@@ -61,7 +61,7 @@ public class FleetButtonsList : UIList
             BankSwap = new UIButton(ButtonStyle.Small, "1-10")
             {
                 DynamicText = () => BankLabel,
-                Tooltip = "Switch between fleets 1-10 and 11-20 (Alt)",
+                Tooltip = "Switch between fleets 1-10 and 11-20",
                 OnClick = _ => ToggleBank()
             };
             Header = BankSwap;
@@ -123,11 +123,6 @@ public class FleetButtonsList : UIList
     {
         if (ShouldHide || IsInputDisabled)
             return false;
-
-        // Ludoal fork: Alt swaps the bank - the key the 11-20 hotkeys already carry, so the
-        // column shows what those keys reach. The header button does the same for the mouse.
-        if (BankSwap != null && (input.KeyPressed(Keys.LeftAlt) || input.KeyPressed(Keys.RightAlt)))
-            ToggleBank();
 
         foreach (FleetButton b in Buttons)
         {
