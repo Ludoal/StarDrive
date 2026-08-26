@@ -86,7 +86,8 @@ Visually, the whole interface has been rebuilt: a flat, themable "painted plate"
 - *Freighter Priority*: which cargo is served first when cargo is scarce (Auto, Production first, Colonists first). It only bites under a shortage.
 - Auto-explore is split in two as well: build new scouts, and send idle scouts out to explore.
 - Notifications by category: every notification belongs to one of nine families, each with its own *show* switch.
-- Each family also carries its own *auto-clear after N seconds*, folding away the old scattered toggles.
+- *Show oldest Notification text*: the notification at the head of the queue displays its text in the clear; the others keep their hover tooltip.
+- *Auto-clear oldest*: the head of the queue ages out after an adjustable delay, and the next one takes its place; the pile drains in order.
 - Story and event popups always pause the game, whatever the auto-pause setting says, and auto-clear never ages a paused game.
 
 ### Galaxy group
@@ -124,8 +125,9 @@ Visually, the whole interface has been rebuilt: a flat, themable "painted plate"
 ### Design group
 
 **Fleets**
+- Fleet slots show even when empty: the first ten always visible, a 1-10 / 11-20 switch reaches the rest, and every fleet key works at any resolution.
 - Wider magnetic grid steps.
-- A box-selected fleet group gets a working stance bar; mouse zoom and pan belong to the frame, like the Shipyard.
+- A box-selected fleet group gets a working stance bar.
 
 **Shipyard**
 - **NEW** Designs load straight from the Shipyard: the hull list and the load popup are one browser. Filter by name or hull, show only your designs or include locked ones, group *By Hull* (a carcass and what you built on it) or *By Role* (every carrier you own, wherever it is built). Double-click loads.

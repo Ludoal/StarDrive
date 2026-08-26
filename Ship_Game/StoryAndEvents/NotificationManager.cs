@@ -1048,8 +1048,11 @@ namespace Ship_Game
 
                 // Ludoal fork (wishlist): index 0 is the HEAD of the queue - the oldest, and the
                 // one that ages out next. Its text stands without a hover, so the reading scrolls
-                // by itself as the queue drains. One switch drives both halves.
-                if (n.ShowMessage || (i == 0 && GlobalStats.ShowOldestNotificationText))
+                // by itself as the queue drains. It waits for the slide to END (maintainer bench):
+                // text riding a moving icon reads as a glitch, and the row it lands on is the one
+                // the player is looking at.
+                bool settled = n.ClickRect.Y >= n.DestinationRect.Y;
+                if (n.ShowMessage || (i == 0 && settled && GlobalStats.ShowOldestNotificationText))
                 {
                     Vector2 msgSize = Fonts.Arial12Bold.MeasureString(n.Message);
                     Vector2 cursor = new(n.ClickRect.X - msgSize.X - 3f, n.ClickRect.Y + 32 - msgSize.Y / 2f);
