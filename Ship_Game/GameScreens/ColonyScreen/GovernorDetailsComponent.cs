@@ -92,7 +92,8 @@ namespace Ship_Game
         UICheckBox AutoCiv, AutoGrd, AutoSpc;
 
         UILabel ColonyBlueprints, BlueprintsCompletionLbl, BlueprintsAchiveable, BlueprintsName,
-            BlueprintsLink, BlueprintsGovChange, BlueprintsEnableGov;
+            BlueprintsLink, BlueprintsLinkName, BlueprintsEnableGov;
+        UIPanel BlueprintsLinkIcon;
         // Ludoal fork (maintainer feedback): the exclusive flag as a padlock rather than a
         // line of text - it arms demolitions, so it stays in the façade, but it costs a row
         // in a column that no longer has rows to spare.
@@ -154,10 +155,13 @@ namespace Ship_Game
             BlueprintsCompletionLbl = Add(new UILabel(GameText.CompletionNoColon, Font, Color.Wheat));
             BlueprintsAchiveable    = Add(new UILabel(GameText.Achievable, Font, Color.Gray));
             // White body text - the semantic colours (green/gold) stay.
-            BlueprintsGovChange     = Add(new UILabel(GameText.GovernorChangedTo, Font, Color.White));
             BlueprintsExclusiveIcon = Add(new UIPanel(ResourceManager.Texture("NewUI/icon_lock")));
             BlueprintsExclusiveIcon.Tooltip = GameText.ExclusiveBlueprints;
-            BlueprintsLink          = Add(new UILabel("", Font, Color.White));
+            // Ludoal fork (maintainer feedback): the link reads like the name row above it -
+            // a cream label, then the plan itself wearing its own category's colour and cog.
+            BlueprintsLink          = Add(new UILabel(GameText.BlueprintNextLabel, Font, Color.Wheat));
+            BlueprintsLinkName      = Add(new UILabel("", Font, Color.White));
+            BlueprintsLinkIcon      = Add(new UIPanel(ResourceManager.Texture("NewUI/blueprints")));
             BlueprintsEnableGov     = Add(new UILabel("", Font, Color.Gold));
 
             // "Gov.": the full word ran past the Defense column.
@@ -342,10 +346,9 @@ namespace Ship_Game
             // one constant per row rather than a uniform step: a bar row is not as tall as a text
             // row, and these are the heights the bench gave back. Read off the 520 shot.
             float bpRow0 = Portrait.Y + 20;          // the plan's mode
-            float bpRow1 = Portrait.Y + 40;          // the name row: label, icon, name, padlock, gestures
-            float bpRow2 = Portrait.Y + 55;          // completion, before the link (maintainer's order)
-            float bpRow3 = Portrait.Y + 70;          // the blueprint this one links to
-            float bpRow4 = Portrait.Y + 85;          // the governor-change notice
+            float bpRow1 = Portrait.Y + 44;          // the name row: label, icon, name, padlock, gestures
+            float bpRow2 = Portrait.Y + 63;          // completion, before the link (maintainer's order)
+            float bpRow3 = Portrait.Y + 88;          // the plan this one hands over to
             // one value column for the whole block: labels at bpX, what they name at bpValueX.
             // The category icon heads the NAME, since it describes the plan and not the row.
             float bpValueX = bpX + BpLabelW;
@@ -362,8 +365,10 @@ namespace Ship_Game
             // to it drifts the moment a longer name is loaded.
             BlueprintsExclusiveIcon.Size = new Vector2(16, 16);
             BlueprintsExclusiveIcon.Pos  = new Vector2(X + Width - 30 - 2*BpGestureStep, bpRow1 + 2);
-            BlueprintsGovChange.Pos = new Vector2(bpX, bpRow4);
             BlueprintsLink.Pos      = new Vector2(bpX, bpRow3);
+            BlueprintsLinkIcon.Size = new Vector2(BpIconSize, BpIconSize);
+            BlueprintsLinkIcon.Pos  = new Vector2(bpValueX, bpRow3);
+            BlueprintsLinkName.Pos  = new Vector2(bpValueX + BpIconSize + 5, bpRow3);
             BlueprintsEnableGov.Pos  = new Vector2(X + 10, Bottom - 60);
             BlueprintsEnableGov.Text = GameText.BluePrintsEnableGovernorToLoad;
 
@@ -581,12 +586,16 @@ namespace Ship_Game
         {
             BlueprintsName.Color = BluePrintsIcon.Color = BlueprintsColor;
             BlueprintsName.Text = Planet.HasBlueprints ? Planet.Blueprints.Name : "";
-            BlueprintsGovChange.Text = Planet.HasBlueprints && Planet.Blueprints.ColonyType != Planet.ColonyType.Colony
-                ? BlueprintsGovChange.Text = $"{Localizer.Token(GameText.GovernorChangedTo)} {Planet.Blueprints.ColonyType}"
-                : BlueprintsGovChange.Text = "";
 
 
-            BlueprintsLink.Text = Planet.HasBlueprints ? $"{Localizer.Token(GameText.LinkedBlueprints)} {Planet.Blueprints.LinkedBlueprintsName}" : "";
+            // the linked plan wears ITS OWN category colour, not this colony's - it says what the
+            // colony is about to become, and the name is looked up to find out.
+            string linkName = Planet.HasBlueprints ? Planet.Blueprints.LinkedBlueprintsName : "";
+            BlueprintsLinkName.Text = linkName;
+            Color linkColor = Color.White;
+            if (linkName.NotEmpty() && ResourceManager.TryGetBlueprints(linkName, out BlueprintsTemplate linked))
+                linkColor = BlueprintsScreen.GetBlueprintsIconColor(linked.ColonyType);
+            BlueprintsLinkName.Color = BlueprintsLinkIcon.Color = linkColor;
         }
 
         public override void Update(float fixedDeltaTime)
@@ -701,9 +710,9 @@ namespace Ship_Game
                 ColonyBlueprints.Visible = LoadBlueprints.Visible && Planet.HasBlueprints;
                 BlueprintsCompletionLbl.Visible = EditBlueprints.Visible;
                 BlueprintsAchiveable.Visible    = EditBlueprints.Visible && Planet.Blueprints.PercentAchievable < 100;
-                BlueprintsGovChange.Visible = EditBlueprints.Visible && BlueprintsGovChange.Text != "";
                 BlueprintsExclusiveIcon.Visible = EditBlueprints.Visible && Planet.Blueprints.Exclusive;
-                BlueprintsLink.Visible      = EditBlueprints.Visible && Planet.Blueprints.LinkedBlueprintsName != "";
+                BlueprintsLink.Visible = BlueprintsLinkName.Visible = BlueprintsLinkIcon.Visible =
+                    EditBlueprints.Visible && Planet.Blueprints.LinkedBlueprintsName != "";
                 BlueprintsEnableGov.Visible = bpBlock && !Planet.HasBlueprints && GovernorOff;
             }
 
@@ -815,9 +824,15 @@ namespace Ship_Game
                                            barRect.Y + 5, manual ? Color.White : Color.Gray);
         }
 
+        // ⚠ any list of this tab, while it is OPEN. The completion bar is painted by hand, and
+        // manual painting happens AFTER base.Draw has drawn the children - so the bar covered an
+        // open list. It steps aside instead; the list is what the player is looking at.
+        bool AnyGovernorListOpen => ColonyTypeList.Open || BlueprintModeList.Open
+                                 || BuildMandateList.Open || ScrapMandateList.Open;
+
         void DrawBlueprintsTab(SpriteBatch batch)
         {
-            if (Planet.HasBlueprints) 
+            if (Planet.HasBlueprints && !AnyGovernorListOpen)
                 BlueprintsCompletion.Draw(batch);
         }
 

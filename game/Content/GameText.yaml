@@ -28590,3 +28590,7 @@ BlueprintModeTip:
  Id: 7155
  ENG: "Custom means this colony follows a plan of its own. None clears it and hands the colony back to its mandates. Load or edit a plan with the icons on the right; doing so sets this to Custom."
  FRA: "Personnalisé signifie que cette colonie suit un plan qui lui est propre. Aucun le retire et rend la colonie à ses mandats. Chargez ou modifiez un plan avec les icônes de droite ; ce faisant, ce réglage passe à Personnalisé."
+BlueprintNextLabel:
+ Id: 7156
+ ENG: "Next"
+ FRA: "Suivant"

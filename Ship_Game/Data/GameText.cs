@@ -7021,6 +7021,8 @@ namespace Ship_Game
         DvEmpireTabTipPolicies = 7139,
         /// <summary>Policies</summary>
         HkPolicies = 7146,
+        /// <summary>Next</summary>
+        BlueprintNextLabel = 7156,
         /// <summary>Blueprint</summary>
         BlueprintModeLabel = 7153,
         /// <summary>Custom</summary>
