@@ -7021,6 +7021,10 @@ namespace Ship_Game
         DvEmpireTabTipPolicies = 7139,
         /// <summary>Policies</summary>
         HkPolicies = 7146,
+        /// <summary>Blueprint name</summary>
+        BlueprintNameLabel = 7150,
+        /// <summary>Completion</summary>
+        CompletionNoColon = 7151,
         /// <summary>Auto</summary>
         MandateAuto = 7148,
         /// <summary>Follow the empire's own mandate, set in Policies &gt; Colony.</summary>

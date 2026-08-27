@@ -32,7 +32,7 @@ namespace Ship_Game
         DropOptions<Planet.BuildMandate> BuildMandateList, ScrapMandateList;
         UILabel BuildMandateLabel, ScrapMandateLabel;
         UILabel GroundTroopsHeader, SpaceDefenseHeader; // Defense tab column headers
-        bool BuildListWasOpen, ScrapListWasOpen; // raise a list once, on its opening
+        bool BuildListWasOpen, ScrapListWasOpen, TypeListWasOpen; // raise a list once, on its opening
         float BudgetCommaX; // the decimal column the three budget figures align on
         private UICheckBox GovOrbitals, AutoTroops, Quarantine, ManualOrbitals, SpecializedTradeHub, Prioritized;
         private FloatSlider Garrison;
@@ -131,7 +131,7 @@ namespace Ship_Game
             // the governor's own name - the picker beside it already says which type it is.
             // A static label also settles the picker's X: a UILabel only ever grows, so a title
             // that changed with the type pushed the picker right and never brought it back.
-            WorldType        = Add(new UILabel(GameText.GovernorTypeLabel, Font14));
+            WorldType        = Add(new UILabel(GameText.GovernorTypeLabel, Font, Color.Wheat));
             // Ludoal fork: Font, not Font12 - GetParsedDescription wraps with Font; a wider
             // font here overruns the frame below 1920.
             WorldDescription = Add(new UILabel(Font));
@@ -139,9 +139,12 @@ namespace Ship_Game
             // entirely - the Description sub-tab owns the portraits now, and the freed
             // space is reserved for future policy levers
             WorldDescription.Visible = false;
-            ColonyBlueprints = Add(new UILabel(GameText.ColonyBlueprintsTitle, FontBig, Color.Wheat));
-            BlueprintsName   = Add(new UILabel("", FontBig, Color.Gold));
-            BlueprintsCompletionLbl = Add(new UILabel(GameText.Completion, Font, Color.Wheat));
+            // Ludoal fork (maintainer feedback): every row of this block names a control, so it
+            // wears the standard font and the same label colour. No colon before a list or a bar -
+            // the control that follows already says what the label is for.
+            ColonyBlueprints = Add(new UILabel(GameText.BlueprintNameLabel, Font, Color.Wheat));
+            BlueprintsName   = Add(new UILabel("", Font, Color.Gold));
+            BlueprintsCompletionLbl = Add(new UILabel(GameText.CompletionNoColon, Font, Color.Wheat));
             BlueprintsAchiveable    = Add(new UILabel(GameText.Achievable, Font, Color.Gray));
             // White body text - the semantic colours (green/gold) stay.
             BlueprintsGovChange     = Add(new UILabel(GameText.GovernorChangedTo, Font, Color.White));
@@ -321,27 +324,31 @@ namespace Ship_Game
             // They ride the right-hand column, under the world title row. Fixed steps, and every
             // element is placed FROM them - never from a share of the space that happens to be
             // left, which moves the whole block the day a row is added above it.
-            const int BpLabelW = 92, BpBarW = 150, BpIconSize = 20;
+            const int BpLabelW = 92, BpBarW = 150, BpIconSize = 20, BpGestureStep = 26;
             float bpX    = ColumnX;
-            float bpRow1 = Portrait.Y + 26;      // category icon, "Blueprints:", its name, the padlock
+            float bpRow1 = Portrait.Y + 26;      // the name row: label, category icon, name, padlock, gestures
             float bpRow2 = bpRow1 + 24;          // completion, before the link (maintainer's order)
             float bpRow3 = bpRow2 + 26;          // the blueprint this one links to
             float bpRow4 = bpRow3 + GovRowPitch; // the governor-change notice
-            ColonyBlueprints.Pos    = new Vector2(bpX + BpIconSize + 4, bpRow1);
-            ColonyBlueprints.Text   = ColonyBlueprints.Text.Text + ":";
-            BlueprintsName.Pos      = new Vector2(bpX + BpIconSize + 9 + FontBig.MeasureString(ColonyBlueprints.Text).X, bpRow1);
-            // ⚠ the padlock takes a FIXED column, not the name's right edge: a UILabel measures
-            // its first text and only ever grows, so anchoring to it drifts as names change.
+            // one value column for the whole block: labels at bpX, what they name at bpValueX.
+            // The category icon heads the NAME, since it describes the plan and not the row.
+            float bpValueX = bpX + BpLabelW;
+            ColonyBlueprints.Pos    = new Vector2(bpX, bpRow1);
+            BluePrintsIcon.Size     = new Vector2(BpIconSize, BpIconSize);
+            BluePrintsIcon.Pos      = new Vector2(bpValueX, bpRow1);
+            BlueprintsName.Pos      = new Vector2(bpValueX + BpIconSize + 5, bpRow1);
+            // ⚠ the padlock and the three gestures take FIXED columns off the right edge, never the
+            // name's own edge: a UILabel measures its first text and only ever grows, so anchoring
+            // to it drifts the moment a longer name is loaded.
             BlueprintsExclusiveIcon.Size = new Vector2(16, 16);
-            BlueprintsExclusiveIcon.Pos  = new Vector2(X + Width - 34, bpRow1 + 2);
+            BlueprintsExclusiveIcon.Pos  = new Vector2(X + Width - 34 - 3*BpGestureStep - 22, bpRow1 + 2);
             BlueprintsGovChange.Pos = new Vector2(bpX, bpRow4);
             BlueprintsLink.Pos      = new Vector2(bpX, bpRow3);
             BlueprintsEnableGov.Pos  = new Vector2(X + 10, Bottom - 60);
             BlueprintsEnableGov.Text = GameText.BluePrintsEnableGovernorToLoad;
 
-            // the three gestures ride the name's row, right to left in fixed columns - the padlock
-            // sits further right still, and none of them is anchored to the name's own width.
-            const int BpGestureStep = 26;
+            // the three gestures ride the name's row, right to left in fixed columns, vertically
+            // centred on it - and none of them is anchored to the name's own width.
             EditBlueprints.Size  = LoadBlueprints.Size = ClearBlueprints.Size = new Vector2(20, 20);
             EditBlueprints.Pos   = new Vector2(X + Width - 34 - 3*BpGestureStep, bpRow1 + 1);
             LoadBlueprints.Pos   = new Vector2(X + Width - 34 - 2*BpGestureStep, bpRow1 + 1);
@@ -371,7 +378,7 @@ namespace Ship_Game
             CivBudgetBar.SetRect(CivBudgetRect);
             GrdBudgetBar.SetRect(GrdBudgetRect);
             SpcBudgetBar.SetRect(SpcBudgetRect);
-            BlueprintsCompletion.SetRect(new Rectangle((int)(bpX + BpLabelW), (int)bpRow2, BpBarW, 20));
+            BlueprintsCompletion.SetRect(new Rectangle((int)(bpX + BpLabelW), (int)bpRow2, BpBarW, 18));
 
             // Ludoal fork: a checkbox is drawn CENTRED on its Y, so the margin comes from the
             // row's own height rather than a guessed constant. The column sits to the RIGHT of
@@ -597,6 +604,11 @@ namespace Ship_Game
                 // an open list has to cover everything, and add-order only settles the
                 // siblings added before it. Raise it ON THE OPENING, not every frame:
                 // BringToFrontZOrder removes and re-inserts the child.
+                if (ColonyTypeList.Open != TypeListWasOpen)
+                {
+                    TypeListWasOpen = ColonyTypeList.Open;
+                    if (TypeListWasOpen) BringToFrontZOrder(ColonyTypeList);
+                }
                 if (BuildMandateList.Open != BuildListWasOpen)
                 {
                     BuildListWasOpen = BuildMandateList.Open;

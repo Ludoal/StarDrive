@@ -5,6 +5,7 @@ using SDGraphics;
 using SDUtils;
 using Ship_Game.Audio;
 using Ship_Game.GameScreens;
+using Ship_Game.UI; // SplitElement (a label and its control sharing one row)
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 
@@ -37,7 +38,7 @@ namespace Ship_Game
         // fixed box geometry - the boxes own their sizes, the columns just stack them.
         // Heights: one-tab strip (~24) + 12 top pad + 20 notice + 26 per row + 12 bottom pad.
         const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
-        const float EconomyBoxH = 94f, ResearchBoxH = 94f, ColonyBoxH = 172f, TradeBoxH = 146f;
+        const float EconomyBoxH = 94f, ResearchBoxH = 94f, ColonyBoxH = 190f, TradeBoxH = 146f;
 
         // The Prioritization rows live INSIDE the Construction frame, under its notice and its
         // Rush row. Both numbers are CONSTANTS and the frame is sized FROM them - never the
@@ -80,12 +81,16 @@ namespace Ship_Game
             colony.AddCheckbox(() => player.AutoCoreGovernor, title: "Auto Governor", tooltip: GameText.AutoGovernorTip);
             // the empire's own mandates: what a colony left on Auto follows. Same picker as the
             // colony's, minus the Auto position - a policy has nowhere to defer to.
-            colony.Add(new UILabel(GameText.BuildMandate, Fonts.Arial12Bold, Color.White) { Tooltip = GameText.BuildMandateTip });
-            EmpireBuildMandateList = colony.Add(MandateDropdown.Make(player.EmpireBuildMandate,
-                m => Universe.RunOnSimThread(() => player.EmpireBuildMandate = m), withAuto: false));
-            colony.Add(new UILabel(GameText.ScrapMandate, Fonts.Arial12Bold, Color.White) { Tooltip = GameText.ScrapMandateTip });
-            EmpireScrapMandateList = colony.Add(MandateDropdown.Make(player.EmpireScrapMandate,
-                m => Universe.RunOnSimThread(() => player.EmpireScrapMandate = m), withAuto: false));
+            // label and picker share a row: a label on its own line reads as a heading, and this
+            // is a setting. Cream like every other label on the page.
+            EmpireBuildMandateList = MandateDropdown.Make(player.EmpireBuildMandate,
+                m => Universe.RunOnSimThread(() => player.EmpireBuildMandate = m), withAuto: false);
+            EmpireScrapMandateList = MandateDropdown.Make(player.EmpireScrapMandate,
+                m => Universe.RunOnSimThread(() => player.EmpireScrapMandate = m), withAuto: false);
+            colony.Add(new SplitElement(new UILabel(GameText.BuildMandate, Fonts.Arial12Bold, Colors.Cream)
+                { Tooltip = GameText.BuildMandateTip }, EmpireBuildMandateList));
+            colony.Add(new SplitElement(new UILabel(GameText.ScrapMandate, Fonts.Arial12Bold, Colors.Cream)
+                { Tooltip = GameText.ScrapMandateTip }, EmpireScrapMandateList));
             colony.ReverseZOrder(); // an open list draws over the rows beneath it
 
             UIList research = NewBox(new RectF(x0, top + EconomyBoxH + BoxGap, BoxW, ResearchBoxH), "Research");
