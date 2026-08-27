@@ -28546,3 +28546,19 @@ HkPolicies:
  Id: 7146
  ENG: "Policies"
  FRA: "Directives"
+CodexEconomyBlueprints:
+ Id: 100205
+ ENG: "Colony Blueprints"
+ FRA: "Schémas de colonie"
+CodexEconomyBlueprintsShort:
+ Id: 100206
+ ENG: "Handing a Colony a Building Plan"
+ FRA: "Confier un plan de construction à une colonie"
+CodexEconomyBlueprintsText:
+ Id: 100207
+ ENG: "Colony Blueprints are lists of buildings a colony's governor is asked to follow. The governor builds them first whenever it can, and if the blueprints are Exclusive it builds nothing else - which also means it may scrap military buildings the plan does not name, if its Scrap Mandate allows it. \n \n Blueprints can link to one another: when a plan completes, the one it links to is uploaded in its place, so a colony can walk through several stages on its own. \n \n Load or edit a colony's plan from the GOVERNOR tab of the Colony screen. Snapshot, at the head of the colony's LIST view, turns what is already built into a new plan you can reuse elsewhere."
+ FRA: "Les schémas de colonie sont des listes de bâtiments que le gouverneur d'une colonie est chargé de suivre. Il les construit en priorité dès qu'il le peut, et si les schémas sont exclusifs, il ne construit rien d'autre — ce qui signifie aussi qu'il peut démolir les bâtiments militaires absents du plan, si son mandat de démolition l'y autorise. \n \n Les schémas peuvent se lier entre eux : à l'achèvement d'un plan, celui auquel il renvoie prend sa place, et une colonie peut ainsi parcourir plusieurs étapes toute seule. \n \n Chargez ou modifiez le plan d'une colonie depuis l'onglet GOUVERNEUR de l'écran de colonie. Snapshot, en tête de la vue LIST de la colonie, transforme ce qui est déjà bâti en un nouveau plan réutilisable ailleurs."
+GovernorTypeLabel:
+ Id: 7147
+ ENG: "Governor Type"
+ FRA: "Type de gouverneur"

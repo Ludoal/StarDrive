@@ -7021,6 +7021,8 @@ namespace Ship_Game
         DvEmpireTabTipPolicies = 7139,
         /// <summary>Policies</summary>
         HkPolicies = 7146,
+        /// <summary>Governor Type</summary>
+        GovernorTypeLabel = 7147,
         /// <summary>How your treasury is managed.</summary>
         PolEconomyNotice = 7140,
         /// <summary>Who your freighters serve, and whether you trade abroad.</summary>

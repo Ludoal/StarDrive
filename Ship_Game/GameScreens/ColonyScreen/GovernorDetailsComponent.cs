@@ -85,7 +85,7 @@ namespace Ship_Game
         UICheckBox AutoCiv, AutoGrd, AutoSpc;
 
         UILabel ColonyBlueprints, BlueprintsCompletionLbl, BlueprintsAchiveable, BlueprintsName,
-            BlueprintsLink, BlueprintsGovChange, Blueprintsoverview, BlueprintsEnableGov;
+            BlueprintsLink, BlueprintsGovChange, BlueprintsEnableGov;
         // Ludoal fork (maintainer feedback): the exclusive flag as a padlock rather than a
         // line of text - it arms demolitions, so it stays in the façade, but it costs a row
         // in a column that no longer has rows to spare.
@@ -127,7 +127,11 @@ namespace Ship_Game
 
             Portrait         = Add(new UIPanel(PortraitSprite));
             BluePrintsIcon   = Add(new UIPanel(ResourceManager.Texture("NewUI/blueprints")));
-            WorldType        = Add(new UILabel(Planet.WorldType, Font14)); // full size at every width: the title does not fold
+            // Ludoal fork (maintainer feedback): the row names its control instead of repeating
+            // the governor's own name - the picker beside it already says which type it is.
+            // A static label also settles the picker's X: a UILabel only ever grows, so a title
+            // that changed with the type pushed the picker right and never brought it back.
+            WorldType        = Add(new UILabel(GameText.GovernorTypeLabel, Font14));
             // Ludoal fork: Font, not Font12 - GetParsedDescription wraps with Font; a wider
             // font here overruns the frame below 1920.
             WorldDescription = Add(new UILabel(Font));
@@ -144,7 +148,6 @@ namespace Ship_Game
             BlueprintsExclusiveIcon = Add(new UIPanel(ResourceManager.Texture("NewUI/icon_lock")));
             BlueprintsExclusiveIcon.Tooltip = GameText.ExclusiveBlueprints;
             BlueprintsLink          = Add(new UILabel("", Font, Color.White));
-            Blueprintsoverview    = Add(new UILabel("", Font, Color.White));
             BlueprintsEnableGov     = Add(new UILabel("", Font, Color.Gold));
 
             // "Gov.": the full word ran past the Defense column.
@@ -328,8 +331,6 @@ namespace Ship_Game
             BlueprintsExclusiveIcon.Pos  = new Vector2(X + Width - 34, bpRow1 + 2);
             BlueprintsGovChange.Pos = new Vector2(bpX, bpRow4);
             BlueprintsLink.Pos      = new Vector2(bpX, bpRow3);
-            Blueprintsoverview.Pos  = new Vector2(bpX, bpRow1);
-            Blueprintsoverview.Text = GetParsedBlueprintsOverview();
             BlueprintsEnableGov.Pos  = new Vector2(X + 10, Bottom - 60);
             BlueprintsEnableGov.Text = GameText.BluePrintsEnableGovernorToLoad;
 
@@ -517,18 +518,6 @@ namespace Ship_Game
             return Font.ParseText(Planet.ColonyTypeInfoText.Text + "\n\n" + Localizer.Token(GameText.GovCommonNote), maxWidth);
         }
 
-        string GetParsedBlueprintsOverview()
-        {
-            // Ludoal fork: Right is an absolute coordinate, not a width - wrapping on it gave
-            // the text far more room than the frame has, so it ran to the right edge with no
-            // margin at all. The text starts at X + 10, so the room it really has is the
-            // frame's width less that indent and a matching margin on the right.
-            // the overview now lives in the right-hand column, so it wraps on THAT width -
-            // the frame's width would run it off the panel.
-            float maxWidth = X + Width - ColumnX - 20;
-            return Font.ParseText(Localizer.Token(GameText.BluePrintsOverView), maxWidth);
-        }
-
         // Policies phase 0: the hovered type of the governor dropdown, for the host's
         // Description tab
         public bool TryGetHoveredColonyType(out Planet.ColonyType type)
@@ -540,7 +529,6 @@ namespace Ship_Game
             // auto-supplies: placing or changing a governor hands the three flows back to
             // Auto; the player can still uncheck each toggle after (the governor no longer forces)
             Planet.AutoFood = Planet.AutoProd = Planet.AutoColonists = true;
-            WorldType.Text = Planet.WorldType;
             WorldDescription.Text = GetParsedDescription();
             if (type is Planet.ColonyType.Colony or Planet.ColonyType.TradeHub)
             {
@@ -676,8 +664,7 @@ namespace Ship_Game
                 BlueprintsGovChange.Visible = EditBlueprints.Visible && BlueprintsGovChange.Text != "";
                 BlueprintsExclusiveIcon.Visible = EditBlueprints.Visible && Planet.Blueprints.Exclusive;
                 BlueprintsLink.Visible      = EditBlueprints.Visible && Planet.Blueprints.LinkedBlueprintsName != "";
-                Blueprintsoverview.Visible  = bpBlock && !Planet.HasBlueprints;
-                BlueprintsEnableGov.Visible = Blueprintsoverview.Visible && GovernorOff;
+                BlueprintsEnableGov.Visible = bpBlock && !Planet.HasBlueprints && GovernorOff;
             }
 
             UpdateButtonTimer(fixedDeltaTime);
