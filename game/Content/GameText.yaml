@@ -28578,10 +28578,6 @@ CompletionNoColon:
  Id: 7151
  ENG: "Completion"
  FRA: "Achèvement"
-SuspendedByBlueprintsTip:
- Id: 7152
- ENG: "Suspended while this colony follows a blueprint. The plan says what to build, so it overrides this setting - your own value is kept and comes back when the blueprint is cleared."
- FRA: "Suspendu tant que cette colonie suit un schéma. Le plan dit quoi construire, il prime donc sur ce réglage — votre valeur est conservée et revient dès que le schéma est retiré."
 BlueprintModeLabel:
  Id: 7153
  ENG: "Blueprint"

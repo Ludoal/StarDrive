@@ -7027,8 +7027,6 @@ namespace Ship_Game
         BlueprintModeCustom = 7154,
         /// <summary>Custom means this colony follows a plan of its own.</summary>
         BlueprintModeTip = 7155,
-        /// <summary>Suspended while this colony follows a blueprint.</summary>
-        SuspendedByBlueprintsTip = 7152,
         /// <summary>Blueprint name</summary>
         BlueprintNameLabel = 7150,
         /// <summary>Completion</summary>

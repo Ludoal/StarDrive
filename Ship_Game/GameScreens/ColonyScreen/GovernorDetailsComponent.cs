@@ -615,16 +615,10 @@ namespace Ship_Game
                 BuildCapital.Visible       = GovernorTabView 
                                              && Planet.OwnerIsPlayer 
                                              && !Planet.Owner.GetPlanets().Any(p => p.IsHomeworld);
-                // Ludoal fork (maintainer feedback): SUSPENDED, not erased. A blueprint is an
-                // explicit plan that overrides both mandates and the hub, so neither may lie about
-                // what the governor will do - but hiding them made them look lost, now that the
-                // plan sits on this same tab. Same shape as the colony's Rush toggle under an
-                // empire policy: greyed, still there, and saying why on hover.
-                bool planRules             = Planet.HasBlueprints;
+                // Ludoal fork (maintainer feedback): live under a blueprint too. A plan no longer
+                // buys past them, so they are a real restriction a player can lay on a colony that
+                // already has one - which is how you say "follow this plan, but demolish nothing".
                 SpecializedTradeHub.Visible = Quarantine.Visible && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub;
-                SpecializedTradeHub.Greyed  = planRules;
-                // ⚠ UICheckBox.Tooltip is readonly - the box can only grey. The two mandate labels
-                // beside it carry the reason on hover, which is where a player will look anyway.
                 // blueprints are an explicit plan and override both mandates, so the lists
                 // would lie about what the governor is going to do
                 bool mandates = GovernorTabView && GovernorOn && Planet.OwnerIsPlayer;
@@ -648,12 +642,6 @@ namespace Ship_Game
                 }
                 BuildMandateList.Visible = ScrapMandateList.Visible = mandates;
                 BuildMandateLabel.Visible = ScrapMandateLabel.Visible = mandates;
-                // ⚠ a DropOptions has no greyed state of its own - Enabled stops the input and the
-                // label carries the message, which is the whole reason the tooltip is on the label.
-                BuildMandateList.Enabled = ScrapMandateList.Enabled = !planRules;
-                BuildMandateLabel.Color  = ScrapMandateLabel.Color  = planRules ? Color.Gray : Color.White;
-                BuildMandateLabel.Tooltip = planRules ? GameText.SuspendedByBlueprintsTip : GameText.BuildMandateTip;
-                ScrapMandateLabel.Tooltip = planRules ? GameText.SuspendedByBlueprintsTip : GameText.ScrapMandateTip;
                 SpecializedTradeHub.CheckedTextColor = Portrait.Border;
 
                 int numTroopsCanLaunch    = DefenseTabView ? Planet.NumTroopsCanLaunchFor(Planet.Universe.Player) : 0;

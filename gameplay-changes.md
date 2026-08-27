@@ -59,6 +59,24 @@ ticked, which was off by default.
 
 Old saves keep their conduct: the former toggles map onto the mandates on load.
 
+### A blueprint no longer overrides the build and scrap mandates
+`Planet_BuildDefenses.cs`, `Planet_EvaluateBuildings.cs`
+
+**Source: maintainer.**
+
+A colony following a blueprint used to build and demolish regardless of its mandates: the
+plan granted the right on its own. The mandate is the right now, and the plan only directs
+what gets built inside it.
+
+A player who wants a colony to follow its plan but tear nothing down sets its Scrap Mandate
+to None and it holds - before, that setting did nothing on a colony that had a plan.
+
+Returning players will feel it where a colony has both a plan and a restrictive mandate: it
+now obeys the mandate. The shipped defaults are unchanged, so a colony whose mandates were
+never touched behaves as it did.
+
+---
+
 ---
 
 ## New levers

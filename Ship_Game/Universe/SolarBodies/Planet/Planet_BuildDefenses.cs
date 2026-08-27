@@ -508,9 +508,12 @@ namespace Ship_Game
             // Ludoal fork (maintainer feedback): the single GovGroundDefense gate used to bar
             // building AND scrapping at once. The two rights are separate commands now, so the
             // gate is split: a family the governor may not build is not one it may demolish.
-            // Blueprints keep overriding both - an explicit plan is an explicit order.
-            bool mayBuild = MayBuildMilitary || HasBlueprints;
-            bool mayScrap = MayScrapMilitary || HasBlueprints;
+            // Ludoal fork (maintainer feedback): a blueprint no longer buys past the mandates.
+            // The mandate is the RIGHT, the blueprint is the PLAN - two thresholds, never the same
+            // storey. Blueprints used to OR their way through, which made a Scrap Mandate of None
+            // do nothing at all on a colony that had a plan.
+            bool mayBuild = MayBuildMilitary;
+            bool mayScrap = MayScrapMilitary;
 
             if (MilitaryBuildingInTheWorks || !mayBuild && !mayScrap)
                 return;
