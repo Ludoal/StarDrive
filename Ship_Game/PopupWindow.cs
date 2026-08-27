@@ -46,6 +46,12 @@ namespace Ship_Game
         // Ludoal fork (bench 407): kept so a popup can centre on its summoner's page frame
         readonly GameScreen Summoner;
 
+        // Ludoal fork (maintainer feedback): a popup IS a page, so a dialog it summons centres
+        // on IT. Without this the popup reported the whole display as its frame, the centring
+        // helper answered "not frame-bound", and a confirmation landed on the display centre
+        // while the box asking the question sat wherever its own page had put it.
+        public override Rectangle PageFrame => Rect;
+
         protected PopupWindow(GameScreen parent, int width, int height)
             : base(parent, CenterScreen(width, height),
                    toPause: parent as UniverseScreen/*only pause if popup on top of universe*/)
