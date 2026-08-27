@@ -101,7 +101,7 @@ namespace Ship_Game
                               title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.PolInterTradeGameRuleTip);
             trade.ReverseZOrder(); // an open list draws over the rows beneath it
 
-            UIList construction = NewBox(new RectF(x2, top, BoxW3, ConstructionBoxH), "Construction");
+            UIList construction = NewBox(new RectF(x2, top, BoxW3, ConstructionBoxH), "Construction", out Submenu constructionBox);
             Notice(construction, GameText.PolConstructionNotice);
             // ⚠ NOT a plain checkbox: its setter marshals onto the SIMULATION thread. Copying it
             // as a bare boolean would look right and propagate nothing.
@@ -111,8 +111,14 @@ namespace Ship_Game
             // inhibit glyph demotes, the plus promotes. Acts at queue INSERTION only
             // (SBProduction) - reordering never reshuffles queues already filled, and the
             // section's tooltip says so.
-            PriorityHost = Add(new UIPanel(new Rectangle((int)x2 + 6, (int)(top + PrioTopInset),
-                                                         (int)BoxW3 - 12, (int)PrioRowsH),
+            // The host takes its geometry from the frame's own client area, the same source the
+            // list rows use (+12) - never from a second sum over x2 and BoxW3. ClientArea is
+            // already inset by 9 (the corner textures' size), so two arithmetics that have to
+            // agree end up disagreeing: this one was 15px left of the rows above it.
+            PriorityHost = Add(new UIPanel(new Rectangle((int)(constructionBox.ClientArea.X + 12),
+                                                         (int)(top + PrioTopInset),
+                                                         (int)(constructionBox.ClientArea.W - 24),
+                                                         (int)PrioRowsH),
                                            new Color(0, 0, 0, 0)));
             RebuildPriorityRows();
 
@@ -235,9 +241,11 @@ namespace Ship_Game
         }
 
         // one category box: a one-tab frame bearing the category's name, with its rows inside
-        UIList NewBox(in RectF r, LocalizedText title)
+        UIList NewBox(in RectF r, LocalizedText title) => NewBox(r, title, out _);
+
+        UIList NewBox(in RectF r, LocalizedText title, out Submenu box)
         {
-            var box = Add(new Submenu(r, new[] { title }));
+            box = Add(new Submenu(r, new[] { title }));
             box.PerformLayout();
             UIList list = AddList(new Vector2(box.ClientArea.X + 12, box.ClientArea.Y + 12));
             list.Padding = new Vector2(2f, 10f);
