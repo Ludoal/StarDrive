@@ -48,7 +48,7 @@ namespace Ship_Game
         UIButton BuildPlatform;
         UIButton BuildStation;
         UIButton BuildShipyard;
-        UIButton EditBlueprints, ClearBlueprints, CreateBlueprints, LoadBlueprints;
+        UIButton EditBlueprints, ClearBlueprints, LoadBlueprints;
         private float ButtonUpdateTimer;   // updates buttons once per second
         UILabel PlatformsText;
         UILabel StationsText;
@@ -195,14 +195,13 @@ namespace Ship_Game
             BuildMandateList = Add(MakeMandateList(Planet.GovBuildMandate, m => Planet.SetBuildMandate(m)));
             ScrapMandateList = Add(MakeMandateList(Planet.GovScrapMandate, m => Planet.SetScrapMandate(m)));
 
-            CreateBlueprints = Button(ButtonStyle.Medium, GameText.BlueprintsSnapshot, OnCreateBlueprintsClicked);
-            EditBlueprints   = Button(ButtonStyle.Small, GameText.Edit, OnEditblueprintsClicked);
-            ClearBlueprints  = Button(ButtonStyle.Small, GameText.Clear, OnClearBlueprintsClicked);
-            LoadBlueprints   = Button(ButtonStyle.Small, GameText.Load, OnLoadBlueprintsClicked);
-            CreateBlueprints.Tooltip = GameText.BlueprintsSnapshotTip;
-            EditBlueprints.Tooltip   = GameText.EditBluprintsTip;
-            ClearBlueprints.Tooltip  = GameText.ClearBluprintsTip;
-            LoadBlueprints.Tooltip   = GameText.UploadBluprintsTip;
+            // Ludoal fork (maintainer feedback): the three blueprint gestures wear the icons the
+            // construction list already uses for the same verbs - pencil to edit, plus to bring one
+            // in, cross to drop it. Three labelled buttons no longer fit beside the portrait, and a
+            // vocabulary the player has already learned costs nothing to read.
+            EditBlueprints   = BpIconButton("NewUI/icon_build_edit", GameText.EditBluprintsTip, OnEditblueprintsClicked);
+            LoadBlueprints   = BpIconButton("NewUI/icon_build_add", GameText.UploadBluprintsTip, OnLoadBlueprintsClicked);
+            ClearBlueprints  = BpIconButton("NewUI/icon_queue_delete", GameText.ClearBluprintsTip, OnClearBlueprintsClicked);
 
             ButtonUpdateTimer    = 1;
             BuildCapital         = Button(ButtonStyle.DefaultActive, GameText.ButtonBuildCapitalName, OnBuildCapitalClicked);
@@ -334,10 +333,13 @@ namespace Ship_Game
             BlueprintsEnableGov.Pos  = new Vector2(X + 10, Bottom - 60);
             BlueprintsEnableGov.Text = GameText.BluePrintsEnableGovernorToLoad;
 
-            CreateBlueprints.Pos   = new Vector2(X+ 10,  Y+ Height - 38); // 8px up
-            EditBlueprints.Pos     = new Vector2(X + Width - 240, CreateBlueprints.Y);
-            ClearBlueprints.Pos    = new Vector2(X + Width - 160, CreateBlueprints.Y);
-            LoadBlueprints.Pos     = new Vector2(X + Width - 80, CreateBlueprints.Y); 
+            // the three gestures ride the name's row, right to left in fixed columns - the padlock
+            // sits further right still, and none of them is anchored to the name's own width.
+            const int BpGestureStep = 26;
+            EditBlueprints.Size  = LoadBlueprints.Size = ClearBlueprints.Size = new Vector2(20, 20);
+            EditBlueprints.Pos   = new Vector2(X + Width - 34 - 3*BpGestureStep, bpRow1 + 1);
+            LoadBlueprints.Pos   = new Vector2(X + Width - 34 - 2*BpGestureStep, bpRow1 + 1);
+            ClearBlueprints.Pos  = new Vector2(X + Width - 34 - BpGestureStep,   bpRow1 + 1);
 
             BlueprintsCompletionLbl.Pos     = new Vector2(bpX, bpRow2 + 3);
             BlueprintsCompletionLbl.Tooltip = GameText.CompletionTip;
@@ -663,9 +665,9 @@ namespace Ship_Game
 
 
                 // folded into the Governor tab: the blueprint block shows with the portrait
-                CreateBlueprints.Visible = GovernorTabView && Planet.OwnerIsPlayer;
-                LoadBlueprints.Visible   = CreateBlueprints.Visible && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub;
-                EditBlueprints.Visible   = CreateBlueprints.Visible && Planet.HasBlueprints;
+                bool bpBlock             = GovernorTabView && Planet.OwnerIsPlayer;
+                LoadBlueprints.Visible   = bpBlock && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub;
+                EditBlueprints.Visible   = bpBlock && Planet.HasBlueprints;
                 ClearBlueprints.Visible  = EditBlueprints.Visible;
                 BlueprintsName.Visible   = EditBlueprints.Visible;
                 ColonyBlueprints.Visible = LoadBlueprints.Visible && Planet.HasBlueprints;
@@ -674,7 +676,7 @@ namespace Ship_Game
                 BlueprintsGovChange.Visible = EditBlueprints.Visible && BlueprintsGovChange.Text != "";
                 BlueprintsExclusiveIcon.Visible = EditBlueprints.Visible && Planet.Blueprints.Exclusive;
                 BlueprintsLink.Visible      = EditBlueprints.Visible && Planet.Blueprints.LinkedBlueprintsName != "";
-                Blueprintsoverview.Visible  = CreateBlueprints.Visible && !Planet.HasBlueprints;
+                Blueprintsoverview.Visible  = bpBlock && !Planet.HasBlueprints;
                 BlueprintsEnableGov.Visible = Blueprintsoverview.Visible && GovernorOff;
             }
 
@@ -821,6 +823,24 @@ namespace Ship_Game
             Planet.RemoveBlueprints();
             BlueprintsName.Text = "";
         }
+
+        // one blueprint gesture as an icon: normal, and the same texture's hover for both
+        // hovered and pressed - the shape the repo uses everywhere else for these three.
+        UIButton BpIconButton(string tex, LocalizedText tip, Action<UIButton> onClick)
+        {
+            var b = new UIButton(new UIButton.StyleTextures(tex, tex + "_hover1", tex + "_hover1"), Vector2.Zero, "")
+            {
+                Tooltip = tip,
+                ClickSfx = "sd_ui_accept_alt3",
+            };
+            b.OnClick += onClick;
+            return Add(b);
+        }
+
+        // Ludoal fork (maintainer feedback): Snapshot photographs what is BUILT, so it belongs
+        // at the head of the frame that lists the built buildings rather than beside the portrait.
+        // The colony screen owns the button; the gesture stays here, with the plan it makes.
+        public void TakeBlueprintsSnapshot() => OnCreateBlueprintsClicked(null);
 
         void OnCreateBlueprintsClicked(UIButton b)
         {

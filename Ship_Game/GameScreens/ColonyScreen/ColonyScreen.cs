@@ -99,6 +99,7 @@ namespace Ship_Game
         AssignLaborComponent AssignLabor;
         readonly ShipInfoOverlayComponent ShipInfoOverlay;
         readonly GovernorDetailsComponent GovernorDetails;
+        UIButton SnapshotBlueprints; // wishlist: the LIST frame's own gesture, see PerformLayout
 
         object DetailInfo;
         object LastBuiltHover; // LIST view: the live hovered row's tile (cleared on leave)
@@ -389,6 +390,19 @@ namespace Ship_Game
             // the LIST view: same client area the frame gives its content (chrome: 10 each
             // side, 30 above, 5 below - the constants documented on the frame math above)
             RectF builtR = new(subColonyR.X + 10, subColonyR.Y + 30, subColonyR.W - 20, subColonyR.H - 35);
+            // Ludoal fork (maintainer feedback): Snapshot at the HEAD of this frame - it
+            // photographs what is built, and this is where what is built is listed. Pinned above
+            // the rows rather than seated in them: a gesture that scrolls away is a gesture lost.
+            SnapshotBlueprints = base.Add(new UIButton(ButtonStyle.Small, GameText.BlueprintsSnapshot)
+            {
+                Tooltip = GameText.BlueprintsSnapshotTip,
+                ClickSfx = "sd_ui_accept_alt3",
+            });
+            SnapshotBlueprints.Rect = new Rectangle((int)(subColonyR.X + subColonyR.W - 150),
+                                                    (int)(subColonyR.Y + 4), 140, 22);
+            SnapshotBlueprints.OnClick += _ => GovernorDetails?.TakeBlueprintsSnapshot();
+            SnapshotBlueprints.Visible = colonyViewTabSelected == 1 && p.OwnerIsPlayer;
+
             BuiltList = base.Add(new ScrollList<BuiltBuildingListItem>(builtR));
             BuiltList.EnableItemHighlight = true;
             BuiltList.OnHovered = OnBuiltHoverChange;
@@ -952,6 +966,10 @@ namespace Ship_Game
         void OnColonyViewTabChanged(int tabIndex)
         {
             BuiltList.Visible = tabIndex == 1;
+            // the LIST frame's own gesture follows its list - wired HERE as well as in the
+            // layout, or it would stay on screen over the MAP view
+            if (SnapshotBlueprints != null)
+                SnapshotBlueprints.Visible = BuiltList.Visible && P.OwnerIsPlayer;
             LastBuiltHover = null;
             PinnedBuilt = null;
             DescriptionScroll = 0f;
