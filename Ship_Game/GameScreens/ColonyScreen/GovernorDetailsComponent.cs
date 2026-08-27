@@ -30,7 +30,7 @@ namespace Ship_Game
         // Ludoal fork: what the governor may build, and what it may demolish - two
         // mirrored lists so a family it cannot build is not one it can tear down.
         DropOptions<Planet.BuildMandate> BuildMandateList, ScrapMandateList;
-        UILabel BuildMandateLabel, ScrapMandateLabel;
+        UILabel BuildMandateLabel, ScrapMandateLabel, BlueprintModeLabel;
         UILabel GroundTroopsHeader, SpaceDefenseHeader; // Defense tab column headers
         bool BuildListWasOpen, ScrapListWasOpen, TypeListWasOpen; // raise a list once, on its opening
         float BudgetCommaX; // the decimal column the three budget figures align on
@@ -48,7 +48,14 @@ namespace Ship_Game
         UIButton BuildPlatform;
         UIButton BuildStation;
         UIButton BuildShipyard;
-        UIButton EditBlueprints, ClearBlueprints, LoadBlueprints;
+        UIButton EditBlueprints, LoadBlueprints;
+        // Ludoal fork (maintainer feedback): the plan's mode. DERIVED, never stored - a colony
+        // either has a plan of its own or it does not. Auto, which will defer to the empire's
+        // plan for this governor type, waits for that table: an option that points at nothing
+        // is an option that lies.
+        public enum BlueprintMode { None, Custom }
+        DropOptions<BlueprintMode> BlueprintModeList;
+        bool ModeListWasOpen;
         private float ButtonUpdateTimer;   // updates buttons once per second
         UILabel PlatformsText;
         UILabel StationsText;
@@ -212,7 +219,15 @@ namespace Ship_Game
             // vocabulary the player has already learned costs nothing to read.
             EditBlueprints   = BpIconButton("NewUI/icon_build_edit", GameText.EditBluprintsTip, OnEditblueprintsClicked);
             LoadBlueprints   = BpIconButton("NewUI/icon_build_add", GameText.UploadBluprintsTip, OnLoadBlueprintsClicked);
-            ClearBlueprints  = BpIconButton("NewUI/icon_queue_delete", GameText.ClearBluprintsTip, OnClearBlueprintsClicked);
+            // None replaces the cross: clearing a plan is one of the two states of this list,
+            // not a gesture of its own.
+            BlueprintModeList = Add(new DropOptions<BlueprintMode>(100, 18));
+            BlueprintModeList.AddOption(option: GameText.MandateNone, BlueprintMode.None);
+            BlueprintModeList.AddOption(option: GameText.BlueprintModeCustom, BlueprintMode.Custom);
+            BlueprintModeList.ActiveValue = Planet.HasBlueprints ? BlueprintMode.Custom : BlueprintMode.None;
+            BlueprintModeList.OnValueChange = OnBlueprintModeChanged;
+            BlueprintModeLabel = Add(new UILabel(GameText.BlueprintModeLabel, Font, Color.Wheat)
+                { Tooltip = GameText.BlueprintModeTip });
 
             ButtonUpdateTimer    = 1;
             BuildCapital         = Button(ButtonStyle.DefaultActive, GameText.ButtonBuildCapitalName, OnBuildCapitalClicked);
@@ -326,13 +341,17 @@ namespace Ship_Game
             // left, which moves the whole block the day a row is added above it.
             const int BpLabelW = 92, BpBarW = 150, BpIconSize = 20, BpGestureStep = 26;
             float bpX    = ColumnX;
-            float bpRow1 = Portrait.Y + 26;      // the name row: label, category icon, name, padlock, gestures
-            float bpRow2 = bpRow1 + 24;          // completion, before the link (maintainer's order)
-            float bpRow3 = bpRow2 + 26;          // the blueprint this one links to
-            float bpRow4 = bpRow3 + GovRowPitch; // the governor-change notice
+            const int BpRowStep = 22;
+            float bpRow0 = Portrait.Y + 24;          // the plan's mode
+            float bpRow1 = bpRow0 + BpRowStep;       // the name row: label, icon, name, padlock, gestures
+            float bpRow2 = bpRow1 + BpRowStep;       // completion, before the link (maintainer's order)
+            float bpRow3 = bpRow2 + BpRowStep;       // the blueprint this one links to
+            float bpRow4 = bpRow3 + BpRowStep;       // the governor-change notice
             // one value column for the whole block: labels at bpX, what they name at bpValueX.
             // The category icon heads the NAME, since it describes the plan and not the row.
             float bpValueX = bpX + BpLabelW;
+            BlueprintModeLabel.Pos  = new Vector2(bpX, bpRow0 + 2);
+            BlueprintModeList.Pos   = new Vector2(bpValueX, bpRow0);
             ColonyBlueprints.Pos    = new Vector2(bpX, bpRow1);
             BluePrintsIcon.Size     = new Vector2(BpIconSize, BpIconSize);
             BluePrintsIcon.Pos      = new Vector2(bpValueX, bpRow1);
@@ -341,7 +360,7 @@ namespace Ship_Game
             // name's own edge: a UILabel measures its first text and only ever grows, so anchoring
             // to it drifts the moment a longer name is loaded.
             BlueprintsExclusiveIcon.Size = new Vector2(16, 16);
-            BlueprintsExclusiveIcon.Pos  = new Vector2(X + Width - 34 - 3*BpGestureStep - 22, bpRow1 + 2);
+            BlueprintsExclusiveIcon.Pos  = new Vector2(X + Width - 34 - 2*BpGestureStep - 22, bpRow1 + 2);
             BlueprintsGovChange.Pos = new Vector2(bpX, bpRow4);
             BlueprintsLink.Pos      = new Vector2(bpX, bpRow3);
             BlueprintsEnableGov.Pos  = new Vector2(X + 10, Bottom - 60);
@@ -349,10 +368,9 @@ namespace Ship_Game
 
             // the three gestures ride the name's row, right to left in fixed columns, vertically
             // centred on it - and none of them is anchored to the name's own width.
-            EditBlueprints.Size  = LoadBlueprints.Size = ClearBlueprints.Size = new Vector2(20, 20);
-            EditBlueprints.Pos   = new Vector2(X + Width - 34 - 3*BpGestureStep, bpRow1 + 1);
-            LoadBlueprints.Pos   = new Vector2(X + Width - 34 - 2*BpGestureStep, bpRow1 + 1);
-            ClearBlueprints.Pos  = new Vector2(X + Width - 34 - BpGestureStep,   bpRow1 + 1);
+            EditBlueprints.Size  = LoadBlueprints.Size = new Vector2(20, 20);
+            EditBlueprints.Pos   = new Vector2(X + Width - 34 - 2*BpGestureStep, bpRow1 + 1);
+            LoadBlueprints.Pos   = new Vector2(X + Width - 34 - BpGestureStep,   bpRow1 + 1);
 
             BlueprintsCompletionLbl.Pos     = new Vector2(bpX, bpRow2 + 3);
             BlueprintsCompletionLbl.Tooltip = GameText.CompletionTip;
@@ -688,7 +706,17 @@ namespace Ship_Game
                 bool bpBlock             = GovernorTabView && Planet.OwnerIsPlayer;
                 LoadBlueprints.Visible   = bpBlock && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub;
                 EditBlueprints.Visible   = bpBlock && Planet.HasBlueprints;
-                ClearBlueprints.Visible  = EditBlueprints.Visible;
+                BlueprintModeLabel.Visible = BlueprintModeList.Visible = LoadBlueprints.Visible;
+                // the list mirrors the colony's real state; setting it only when it differs keeps
+                // a per-frame write from fighting the player's own click.
+                BlueprintMode mode = Planet.HasBlueprints ? BlueprintMode.Custom : BlueprintMode.None;
+                if (BlueprintModeList.ActiveValue != mode)
+                    BlueprintModeList.ActiveValue = mode;
+                if (BlueprintModeList.Open != ModeListWasOpen)
+                {
+                    ModeListWasOpen = BlueprintModeList.Open;
+                    if (ModeListWasOpen) BringToFrontZOrder(BlueprintModeList);
+                }
                 BlueprintsName.Visible   = EditBlueprints.Visible;
                 ColonyBlueprints.Visible = LoadBlueprints.Visible && Planet.HasBlueprints;
                 BlueprintsCompletionLbl.Visible = EditBlueprints.Visible;
@@ -837,10 +865,15 @@ namespace Ship_Game
             Screen.ScreenManager.AddScreen(new LoadBlueprintsToColonyScreen(Screen, this, Planet.Name));
         }
 
-        void OnClearBlueprintsClicked(UIButton b)
+        void OnBlueprintModeChanged(BlueprintMode mode)
         {
-            Planet.RemoveBlueprints();
-            BlueprintsName.Text = "";
+            // Custom is not a thing you pick - it is what loading or editing a plan makes true.
+            // Only None acts, and only when there is something to clear.
+            if (mode == BlueprintMode.None && Planet.HasBlueprints)
+            {
+                Planet.RemoveBlueprints();
+                BlueprintsName.Text = "";
+            }
         }
 
         // one blueprint gesture as an icon: normal, and the same texture's hover for both

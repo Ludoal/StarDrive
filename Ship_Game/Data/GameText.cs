@@ -7021,6 +7021,12 @@ namespace Ship_Game
         DvEmpireTabTipPolicies = 7139,
         /// <summary>Policies</summary>
         HkPolicies = 7146,
+        /// <summary>Blueprint</summary>
+        BlueprintModeLabel = 7153,
+        /// <summary>Custom</summary>
+        BlueprintModeCustom = 7154,
+        /// <summary>Custom means this colony follows a plan of its own.</summary>
+        BlueprintModeTip = 7155,
         /// <summary>Suspended while this colony follows a blueprint.</summary>
         SuspendedByBlueprintsTip = 7152,
         /// <summary>Blueprint name</summary>
