@@ -7021,6 +7021,8 @@ namespace Ship_Game
         DvEmpireTabTipPolicies = 7139,
         /// <summary>Policies</summary>
         HkPolicies = 7146,
+        /// <summary>Suspended while this colony follows a blueprint.</summary>
+        SuspendedByBlueprintsTip = 7152,
         /// <summary>Blueprint name</summary>
         BlueprintNameLabel = 7150,
         /// <summary>Completion</summary>
