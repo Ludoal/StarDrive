@@ -341,17 +341,20 @@ namespace Ship_Game
             // left, which moves the whole block the day a row is added above it.
             const int BpLabelW = 92, BpBarW = 150, BpIconSize = 20, BpGestureStep = 26;
             float bpX    = ColumnX;
-            const int BpRowStep = 22;
-            float bpRow0 = Portrait.Y + 24;          // the plan's mode
-            float bpRow1 = bpRow0 + BpRowStep;       // the name row: label, icon, name, padlock, gestures
-            float bpRow2 = bpRow1 + BpRowStep;       // completion, before the link (maintainer's order)
-            float bpRow3 = bpRow2 + BpRowStep;       // the blueprint this one links to
-            float bpRow4 = bpRow3 + BpRowStep;       // the governor-change notice
+            // one constant per row rather than a uniform step: a bar row is not as tall as a text
+            // row, and these are the heights the bench gave back. Read off the 520 shot.
+            float bpRow0 = Portrait.Y + 20;          // the plan's mode
+            float bpRow1 = Portrait.Y + 40;          // the name row: label, icon, name, padlock, gestures
+            float bpRow2 = Portrait.Y + 55;          // completion, before the link (maintainer's order)
+            float bpRow3 = Portrait.Y + 70;          // the blueprint this one links to
+            float bpRow4 = Portrait.Y + 85;          // the governor-change notice
             // one value column for the whole block: labels at bpX, what they name at bpValueX.
             // The category icon heads the NAME, since it describes the plan and not the row.
             float bpValueX = bpX + BpLabelW;
             BlueprintModeLabel.Pos  = new Vector2(bpX, bpRow0 + 2);
-            BlueprintModeList.Pos   = new Vector2(bpValueX, bpRow0);
+            // aligned on the picker above it, taken FROM that picker - computing the same X twice
+            // is how two lists that must agree end up one pixel apart.
+            BlueprintModeList.Pos   = new Vector2(ColonyTypeList.Pos.X, bpRow0);
             ColonyBlueprints.Pos    = new Vector2(bpX, bpRow1);
             BluePrintsIcon.Size     = new Vector2(BpIconSize, BpIconSize);
             BluePrintsIcon.Pos      = new Vector2(bpValueX, bpRow1);
@@ -360,7 +363,7 @@ namespace Ship_Game
             // name's own edge: a UILabel measures its first text and only ever grows, so anchoring
             // to it drifts the moment a longer name is loaded.
             BlueprintsExclusiveIcon.Size = new Vector2(16, 16);
-            BlueprintsExclusiveIcon.Pos  = new Vector2(X + Width - 34 - 2*BpGestureStep - 22, bpRow1 + 2);
+            BlueprintsExclusiveIcon.Pos  = new Vector2(X + Width - 30 - 2*BpGestureStep, bpRow1 + 2);
             BlueprintsGovChange.Pos = new Vector2(bpX, bpRow4);
             BlueprintsLink.Pos      = new Vector2(bpX, bpRow3);
             BlueprintsEnableGov.Pos  = new Vector2(X + 10, Bottom - 60);
@@ -369,8 +372,8 @@ namespace Ship_Game
             // the three gestures ride the name's row, right to left in fixed columns, vertically
             // centred on it - and none of them is anchored to the name's own width.
             EditBlueprints.Size  = LoadBlueprints.Size = new Vector2(20, 20);
-            EditBlueprints.Pos   = new Vector2(X + Width - 34 - 2*BpGestureStep, bpRow1 + 1);
-            LoadBlueprints.Pos   = new Vector2(X + Width - 34 - BpGestureStep,   bpRow1 + 1);
+            EditBlueprints.Pos   = new Vector2(X + Width - 30 - BpGestureStep, bpRow1 + 1);
+            LoadBlueprints.Pos   = new Vector2(X + Width - 30,                 bpRow1 + 1);
 
             BlueprintsCompletionLbl.Pos     = new Vector2(bpX, bpRow2 + 3);
             BlueprintsCompletionLbl.Tooltip = GameText.CompletionTip;

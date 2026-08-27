@@ -87,10 +87,13 @@ namespace Ship_Game
                 m => Universe.RunOnSimThread(() => player.EmpireBuildMandate = m), withAuto: false);
             EmpireScrapMandateList = MandateDropdown.Make(player.EmpireScrapMandate,
                 m => Universe.RunOnSimThread(() => player.EmpireScrapMandate = m), withAuto: false);
+            // Split names the picker's X outright, so the two rows cannot land a pixel apart the
+            // way they would if each hugged the right edge of a label of its own width.
+            const float MandateSplit = 118f;
             colony.Add(new SplitElement(new UILabel(GameText.BuildMandate, Fonts.Arial12Bold, Colors.Cream)
-                { Tooltip = GameText.BuildMandateTip }, EmpireBuildMandateList));
+                { Tooltip = GameText.BuildMandateTip }, EmpireBuildMandateList) { Split = MandateSplit });
             colony.Add(new SplitElement(new UILabel(GameText.ScrapMandate, Fonts.Arial12Bold, Colors.Cream)
-                { Tooltip = GameText.ScrapMandateTip }, EmpireScrapMandateList));
+                { Tooltip = GameText.ScrapMandateTip }, EmpireScrapMandateList) { Split = MandateSplit });
             colony.ReverseZOrder(); // an open list draws over the rows beneath it
 
             UIList research = NewBox(new RectF(x0, top + EconomyBoxH + BoxGap, BoxW, ResearchBoxH), "Research");

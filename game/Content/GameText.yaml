@@ -28572,8 +28572,8 @@ MandateAutoTip:
  FRA: "Suit le mandat de l'empire, réglé dans Policies > Colony. Changez-le là-bas et toutes les colonies en Auto suivent ; une colonie réglée autrement garde sa propre réponse."
 BlueprintNameLabel:
  Id: 7150
- ENG: "Blueprint name"
- FRA: "Nom du schéma"
+ ENG: "Name"
+ FRA: "Nom"
 CompletionNoColon:
  Id: 7151
  ENG: "Completion"
