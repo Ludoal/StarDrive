@@ -195,8 +195,13 @@ namespace Ship_Game
             ScrapMandateLabel = Add(new UILabel(GameText.ScrapMandate, Font, Color.White) { Tooltip = GameText.ScrapMandateTip });
             // added AFTER their labels: children draw in the order they were added, and an
             // open list has to cover what sits below it
-            BuildMandateList = Add(MakeMandateList(Planet.GovBuildMandate, m => Planet.SetBuildMandate(m)));
-            ScrapMandateList = Add(MakeMandateList(Planet.GovScrapMandate, m => Planet.SetScrapMandate(m)));
+            // one factory for both ends: the colony's picker carries Auto, the empire's - on
+            // Policies > Colony - does not. Two copies of a list of options is how the two ends
+            // come to disagree about what a mandate means.
+            BuildMandateList = Add(MandateDropdown.Make(Planet.GovBuildMandate,
+                m => Universe.RunOnSimThread(() => Planet.SetBuildMandate(m)), withAuto: true));
+            ScrapMandateList = Add(MandateDropdown.Make(Planet.GovScrapMandate,
+                m => Universe.RunOnSimThread(() => Planet.SetScrapMandate(m)), withAuto: true));
 
             // Ludoal fork (maintainer feedback): the three blueprint gestures wear the icons the
             // construction list already uses for the same verbs - pencil to edit, plus to bring one
@@ -1056,20 +1061,6 @@ namespace Ship_Game
 
             return new UICheckBox(0, 0, binding, Font,
                                   title: "Auto", tooltip: GameText.OverrideThisBudgetAndSet);
-        }
-
-        DropOptions<Planet.BuildMandate> MakeMandateList(Planet.BuildMandate active,
-                                                        Action<Planet.BuildMandate> apply)
-        {
-            // 120, not 110: "Economic only" was clipped to "Economic onl..."
-            var list = new DropOptions<Planet.BuildMandate>(120, 18);
-            list.AddOption(option: GameText.MandateAll, Planet.BuildMandate.All);
-            list.AddOption(option: GameText.MandateEconomicOnly, Planet.BuildMandate.EconomicOnly);
-            list.AddOption(option: GameText.MandateDefenseOnly, Planet.BuildMandate.DefenseOnly);
-            list.AddOption(option: GameText.MandateNone, Planet.BuildMandate.None);
-            list.ActiveValue = active;
-            list.OnValueChange = m => Universe.RunOnSimThread(() => apply(m));
-            return list;
         }
 
         // The range is seated at construction from the area's own auto target (FloatSlider owns

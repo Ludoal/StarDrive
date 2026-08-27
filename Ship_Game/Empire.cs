@@ -126,6 +126,23 @@ namespace Ship_Game
         bool SendExplorersActive  => !isPlayer || SendNewExplorersToExplore;
         [StarData] public bool AutoColonize;
         [StarData] public bool AutoCoreGovernor; // Ludoal fork: Auto Governor - new colonies get a fitting governor (name kept for save compat)
+        // Ludoal fork: the empire's own building mandates (Policies > Colony) - what a colony set
+        // to Auto follows. Stored as ints, not as the enum: BuildMandate does not exist in vanilla,
+        // and a build without the deleted-enum skip cannot read past a type it has never heard of.
+        // The DefaultValues reproduce the conduct colonies had before the policy existed, so an
+        // older save comes back to exactly what it was doing.
+        [StarData(DefaultValue = 1)] int EmpireBuildMandateValue = (int)Planet.BuildMandate.EconomicOnly;
+        [StarData(DefaultValue = 3)] int EmpireScrapMandateValue = (int)Planet.BuildMandate.None;
+        public Planet.BuildMandate EmpireBuildMandate
+        {
+            get => (Planet.BuildMandate)EmpireBuildMandateValue;
+            set => EmpireBuildMandateValue = (int)value;
+        }
+        public Planet.BuildMandate EmpireScrapMandate
+        {
+            get => (Planet.BuildMandate)EmpireScrapMandateValue;
+            set => EmpireScrapMandateValue = (int)value;
+        }
         [StarData] public bool AutoResearch;
         [StarData] public bool AutoBuildResearchStations;
         [StarData] public bool AutoBuildMiningStations;

@@ -43,6 +43,10 @@ namespace Ship_Game
             EconomicOnly = 1,
             DefenseOnly = 2,
             None = 3,
+            // Ludoal fork: defer to the empire's own mandate (Policies > Colony). A colony born
+            // in a new game starts here; an existing one keeps whatever it was set to, so no
+            // save changes conduct on its own.
+            Auto = 4,
         }
 
         public override string ToString() =>

@@ -38,8 +38,13 @@ namespace Ship_Game
         // default is never stored, and the reader assigns that same default back over the field
         // initializer - so without it a save that predates these fields would read All (0)
         // instead of the intended default, and hand the governor rights it never had.
-        [StarData(DefaultValue = 1)] int GovBuildMandateValue = (int)BuildMandate.EconomicOnly;
-        [StarData(DefaultValue = 3)] int GovScrapMandateValue = (int)BuildMandate.None;
+        // ⚠ The INITIALIZERS now say Auto - a colony founded from here on defers to the empire -
+        // but the DefaultValues stay at 1 and 3 on purpose. They are what a save that predates
+        // these fields reads back, and moving them to Auto would put every existing game under
+        // an empire policy its player never set, in silence. Initializer = the new colony;
+        // DefaultValue = the old save. They are allowed to disagree, and here they must.
+        [StarData(DefaultValue = 1)] int GovBuildMandateValue = (int)BuildMandate.Auto;
+        [StarData(DefaultValue = 3)] int GovScrapMandateValue = (int)BuildMandate.Auto;
         public BuildMandate GovBuildMandate
         {
             get => (BuildMandate)GovBuildMandateValue;
@@ -119,10 +124,19 @@ namespace Ship_Game
             }
         }
 
-        public bool MayBuildMilitary  => MayBuild(GovBuildMandate, military: true);
-        public bool MayBuildCivilian  => MayBuild(GovBuildMandate, military: false);
-        public bool MayScrapMilitary  => MayBuild(GovScrapMandate, military: true);
-        public bool MayScrapCivilian  => MayBuild(GovScrapMandate, military: false);
+        // Ludoal fork: Auto defers to the empire's mandate. Resolved HERE, at the single place
+        // the four rights are read, so an unresolved Auto can never reach MayBuild - whose
+        // default case would quietly answer "nothing allowed".
+        public BuildMandate EffectiveBuildMandate => Resolve(GovBuildMandate, Owner?.EmpireBuildMandate);
+        public BuildMandate EffectiveScrapMandate => Resolve(GovScrapMandate, Owner?.EmpireScrapMandate);
+
+        static BuildMandate Resolve(BuildMandate local, BuildMandate? empire)
+            => local == BuildMandate.Auto ? empire ?? BuildMandate.None : local;
+
+        public bool MayBuildMilitary  => MayBuild(EffectiveBuildMandate, military: true);
+        public bool MayBuildCivilian  => MayBuild(EffectiveBuildMandate, military: false);
+        public bool MayScrapMilitary  => MayBuild(EffectiveScrapMandate, military: true);
+        public bool MayScrapCivilian  => MayBuild(EffectiveScrapMandate, military: false);
 
         private Array<Ship> FilterOrbitals(RoleName role)
         {

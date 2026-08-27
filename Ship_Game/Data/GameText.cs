@@ -7021,6 +7021,10 @@ namespace Ship_Game
         DvEmpireTabTipPolicies = 7139,
         /// <summary>Policies</summary>
         HkPolicies = 7146,
+        /// <summary>Auto</summary>
+        MandateAuto = 7148,
+        /// <summary>Follow the empire's own mandate, set in Policies &gt; Colony.</summary>
+        MandateAutoTip = 7149,
         /// <summary>Governor Type</summary>
         GovernorTypeLabel = 7147,
         /// <summary>How your treasury is managed.</summary>
