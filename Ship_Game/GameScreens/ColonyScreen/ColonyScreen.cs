@@ -227,13 +227,13 @@ namespace Ship_Game
             // ── what is FIXED and what STRETCHES (Ludoal fork) ────────────────────
             // Left column: FIXED width. Planet Info, Governor and Assign Labor keep fixed
             // heights; STORAGE is the one that stretches, taking what is left to the foot.
-            // The left column's width comes from the Governor tab row with its settled "BP"
-            // label - BLUEPRINT in full starves the 900p centre, so the short tab carries a
-            // tooltip instead. Submenu's REAL per-tab arithmetic, read in UpdateTabRect:
-            // TextWidth + 2 + the header_right texture (33px), +8 wrap slack.
+            // The left column's width comes from the Governor tab row. Submenu's REAL per-tab
+            // arithmetic, read in UpdateTabRect: TextWidth + 2 + the header_right texture
+            // (33px), +8 wrap slack. Three tabs since BP folded into GOVERNOR - the sum sits
+            // under the 380 floor either way, so the fold does not narrow the column.
             float govTabsW = Fonts.Arial12Bold.TextWidth("GOVERNOR") + Fonts.Arial12Bold.TextWidth("DEFENSE")
-                           + Fonts.Arial12Bold.TextWidth("BUDGET") + Fonts.Arial12Bold.TextWidth("BP")
-                           + 4 * (2 + 33) + 8;
+                           + Fonts.Arial12Bold.TextWidth("BUDGET")
+                           + 3 * (2 + 33) + 8;
             float colLeftW = Math.Max(govTabsW, 380) + 40;
 
             // ── the three fixed heights, each derived from what it HOLDS ─────────────────────

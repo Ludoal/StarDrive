@@ -85,7 +85,11 @@ namespace Ship_Game
         UICheckBox AutoCiv, AutoGrd, AutoSpc;
 
         UILabel ColonyBlueprints, BlueprintsCompletionLbl, BlueprintsAchiveable, BlueprintsName,
-            BlueprintsExclusive, BlueprintsLink, BlueprintsGovChange, Blueprintsoverview, BlueprintsEnableGov;
+            BlueprintsLink, BlueprintsGovChange, Blueprintsoverview, BlueprintsEnableGov;
+        // Ludoal fork (maintainer feedback): the exclusive flag as a padlock rather than a
+        // line of text - it arms demolitions, so it stays in the façade, but it costs a row
+        // in a column that no longer has rows to spare.
+        UIPanel BlueprintsExclusiveIcon;
         ProgressBar BlueprintsCompletion;
 
 
@@ -94,7 +98,6 @@ namespace Ship_Game
         bool GovernorTabView => Tabs.SelectedIndex == 0;
         bool BudgetTabView   => Tabs.SelectedIndex == 1;
         bool DefenseTabView  => Tabs.SelectedIndex == 2;
-        bool BlueprintsTabView => Tabs.SelectedIndex == 3;
 
         public int CurrentTabIndex => Tabs.SelectedIndex;
 
@@ -138,7 +141,8 @@ namespace Ship_Game
             BlueprintsAchiveable    = Add(new UILabel(GameText.Achievable, Font, Color.Gray));
             // White body text - the semantic colours (green/gold) stay.
             BlueprintsGovChange     = Add(new UILabel(GameText.GovernorChangedTo, Font, Color.White));
-            BlueprintsExclusive     = Add(new UILabel("", Font, Color.LightGreen));
+            BlueprintsExclusiveIcon = Add(new UIPanel(ResourceManager.Texture("NewUI/icon_lock")));
+            BlueprintsExclusiveIcon.Tooltip = GameText.ExclusiveBlueprints;
             BlueprintsLink          = Add(new UILabel("", Font, Color.White));
             Blueprintsoverview    = Add(new UILabel("", Font, Color.White));
             BlueprintsEnableGov     = Add(new UILabel("", Font, Color.Gold));
@@ -261,9 +265,10 @@ namespace Ship_Game
 
             Tabs = Add(new Submenu(rect, new LocalizedText[]
             {
-                // "BP": BLUEPRINT in full cannot fit at the width the 900p centre column
-                // allows - the short label carries a hover tooltip instead (see HandleInput).
-                GameText.Governor, GameText.Budget, GameText.Defense2, "BP"
+                // Ludoal fork (maintainer feedback): the BP tab folded into GOVERNOR. A colony's
+                // plan is part of how it is governed, and the right-hand column had the room -
+                // the description label that used to sit there is hidden (bench 458).
+                GameText.Governor, GameText.Budget, GameText.Defense2
             }));
 
             if (selectedIndex < Tabs.NumTabs)
@@ -305,13 +310,26 @@ namespace Ship_Game
             ColonyTypeList.Pos      = new Vector2(Math.Max(WorldType.Right + 12, ColumnX + 130) + 20, Portrait.Y);
             WorldDescription.Pos    = new Vector2(ColumnX, Portrait.Y + 21);
             WorldDescription.Text   = GetParsedDescription();
-            ColonyBlueprints.Pos    = new Vector2(X + 10, Y + 40 + shift);
+            // ── Blueprints, folded into this tab (maintainer feedback) ─────────────────────
+            // They ride the right-hand column, under the world title row. Fixed steps, and every
+            // element is placed FROM them - never from a share of the space that happens to be
+            // left, which moves the whole block the day a row is added above it.
+            const int BpLabelW = 92, BpBarW = 150, BpIconSize = 20;
+            float bpX    = ColumnX;
+            float bpRow1 = Portrait.Y + 26;      // category icon, "Blueprints:", its name, the padlock
+            float bpRow2 = bpRow1 + 24;          // completion, before the link (maintainer's order)
+            float bpRow3 = bpRow2 + 26;          // the blueprint this one links to
+            float bpRow4 = bpRow3 + GovRowPitch; // the governor-change notice
+            ColonyBlueprints.Pos    = new Vector2(bpX + BpIconSize + 4, bpRow1);
             ColonyBlueprints.Text   = ColonyBlueprints.Text.Text + ":";
-            BlueprintsName.Pos      = new Vector2(X + 15 + FontBig.MeasureString(ColonyBlueprints.Text).X, Y + 40 + shift);
-            BlueprintsGovChange.Pos = new Vector2(X + 10, Y + 100 + shift);
-            BlueprintsExclusive.Pos = new Vector2(X + 10, Y + 130 + shift);
-            BlueprintsLink.Pos      = new Vector2(X + 10, Y + 160 + shift);
-            Blueprintsoverview.Pos  = ColonyBlueprints.Pos;
+            BlueprintsName.Pos      = new Vector2(bpX + BpIconSize + 9 + FontBig.MeasureString(ColonyBlueprints.Text).X, bpRow1);
+            // ⚠ the padlock takes a FIXED column, not the name's right edge: a UILabel measures
+            // its first text and only ever grows, so anchoring to it drifts as names change.
+            BlueprintsExclusiveIcon.Size = new Vector2(16, 16);
+            BlueprintsExclusiveIcon.Pos  = new Vector2(X + Width - 34, bpRow1 + 2);
+            BlueprintsGovChange.Pos = new Vector2(bpX, bpRow4);
+            BlueprintsLink.Pos      = new Vector2(bpX, bpRow3);
+            Blueprintsoverview.Pos  = new Vector2(bpX, bpRow1);
             Blueprintsoverview.Text = GetParsedBlueprintsOverview();
             BlueprintsEnableGov.Pos  = new Vector2(X + 10, Bottom - 60);
             BlueprintsEnableGov.Text = GameText.BluePrintsEnableGovernorToLoad;
@@ -321,10 +339,10 @@ namespace Ship_Game
             ClearBlueprints.Pos    = new Vector2(X + Width - 160, CreateBlueprints.Y);
             LoadBlueprints.Pos     = new Vector2(X + Width - 80, CreateBlueprints.Y); 
 
-            BlueprintsAchiveable.Pos        = new Vector2(X+110 + Width*0.5f, Y + 70 + shift);
-            BlueprintsAchiveable.Tooltip    = GameText.AchievableTip;
-            BlueprintsCompletionLbl.Pos     = new Vector2(X + 10, Y + 70 + shift);
+            BlueprintsCompletionLbl.Pos     = new Vector2(bpX, bpRow2 + 3);
             BlueprintsCompletionLbl.Tooltip = GameText.CompletionTip;
+            BlueprintsAchiveable.Pos        = new Vector2(bpX + BpLabelW + BpBarW + 8, bpRow2 + 3);
+            BlueprintsAchiveable.Tooltip    = GameText.AchievableTip;
 
             // The warning's BOTTOM lines up with the portrait's bottom - a fixed anchor,
             // whatever the description length. A label draws from its top, so seat its top one
@@ -345,7 +363,7 @@ namespace Ship_Game
             CivBudgetBar.SetRect(CivBudgetRect);
             GrdBudgetBar.SetRect(GrdBudgetRect);
             SpcBudgetBar.SetRect(SpcBudgetRect);
-            BlueprintsCompletion.SetRect(new Rectangle((int)X + 100, (int)(Y + 70 + shift), (int)(Width * 0.5f), 30));
+            BlueprintsCompletion.SetRect(new Rectangle((int)(bpX + BpLabelW), (int)bpRow2, BpBarW, 20));
 
             // Ludoal fork: a checkbox is drawn CENTRED on its Y, so the margin comes from the
             // row's own height rather than a guessed constant. The column sits to the RIGHT of
@@ -503,7 +521,9 @@ namespace Ship_Game
             // the text far more room than the frame has, so it ran to the right edge with no
             // margin at all. The text starts at X + 10, so the room it really has is the
             // frame's width less that indent and a matching margin on the right.
-            float maxWidth = Width - 40;
+            // the overview now lives in the right-hand column, so it wraps on THAT width -
+            // the frame's width would run it off the panel.
+            float maxWidth = X + Width - ColumnX - 20;
             return Font.ParseText(Localizer.Token(GameText.BluePrintsOverView), maxWidth);
         }
 
@@ -549,7 +569,6 @@ namespace Ship_Game
                 : BlueprintsGovChange.Text = "";
 
 
-            BlueprintsExclusive.Text = Planet.HasBlueprints && Planet.Blueprints.Exclusive ? GameText.ExclusiveBlueprints : "";
             BlueprintsLink.Text = Planet.HasBlueprints ? $"{Localizer.Token(GameText.LinkedBlueprints)} {Planet.Blueprints.LinkedBlueprintsName}" : "";
         }
 
@@ -643,7 +662,8 @@ namespace Ship_Game
                 // an automatic row reads grey: the number is the governor's, not the player's
 
 
-                CreateBlueprints.Visible = BlueprintsTabView && Planet.OwnerIsPlayer;
+                // folded into the Governor tab: the blueprint block shows with the portrait
+                CreateBlueprints.Visible = GovernorTabView && Planet.OwnerIsPlayer;
                 LoadBlueprints.Visible   = CreateBlueprints.Visible && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub;
                 EditBlueprints.Visible   = CreateBlueprints.Visible && Planet.HasBlueprints;
                 ClearBlueprints.Visible  = EditBlueprints.Visible;
@@ -652,7 +672,7 @@ namespace Ship_Game
                 BlueprintsCompletionLbl.Visible = EditBlueprints.Visible;
                 BlueprintsAchiveable.Visible    = EditBlueprints.Visible && Planet.Blueprints.PercentAchievable < 100;
                 BlueprintsGovChange.Visible = EditBlueprints.Visible && BlueprintsGovChange.Text != "";
-                BlueprintsExclusive.Visible = EditBlueprints.Visible && Planet.Blueprints.Exclusive;
+                BlueprintsExclusiveIcon.Visible = EditBlueprints.Visible && Planet.Blueprints.Exclusive;
                 BlueprintsLink.Visible      = EditBlueprints.Visible && Planet.Blueprints.LinkedBlueprintsName != "";
                 Blueprintsoverview.Visible  = CreateBlueprints.Visible && !Planet.HasBlueprints;
                 BlueprintsEnableGov.Visible = Blueprintsoverview.Visible && GovernorOff;
@@ -680,10 +700,9 @@ namespace Ship_Game
             base.Draw(batch, elapsed);
             switch (Tabs.SelectedIndex)
             {
-                case 0: DrawGovernorTab(batch);   break;
+                case 0: DrawGovernorTab(batch); DrawBlueprintsTab(batch); break;
                 case 1: DrawBudgetsTab(batch);    break;
                 case 2: DrawTroopsTab(batch);     break;
-                case 3: DrawBlueprintsTab(batch); break;
             }
         }
 
