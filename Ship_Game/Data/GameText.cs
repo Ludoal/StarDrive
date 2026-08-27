@@ -7017,6 +7017,20 @@ namespace Ship_Game
         FreighterPriorityColonistsFirst = 7096,
         /// <summary>When freighters run short, which cargo is served first. Only affects a shortage; abundant freighters serve everything.</summary>
         FreighterPriorityTip = 7097,
+        /// <summary>Standing orders your colonies and fleets follow by default</summary>
+        DvEmpireTabTipPolicies = 7139,
+        /// <summary>How your treasury is managed.</summary>
+        PolEconomyNotice = 7140,
+        /// <summary>Who your freighters serve, and whether you trade abroad.</summary>
+        PolTradeNotice = 7141,
+        /// <summary>How research topics are chosen.</summary>
+        PolResearchNotice = 7142,
+        /// <summary>How a new colony is run from its first day.</summary>
+        PolColonyNotice = 7143,
+        /// <summary>The order your colonies build in, and how fast.</summary>
+        PolConstructionNotice = 7144,
+        /// <summary>Whether your freighters may serve empires you have a trade treaty with. This one is a game rule rather than an empire order: it is stored with the game setup, not with your empire.</summary>
+        PolInterTradeGameRuleTip = 7145,
         /// <summary>Auto-upgrade Freighters</summary>
         AutoUpgradeFreighters = 7098,
         /// <summary>Automatically replaces your freighters with the best available model, independently of trade routing.</summary>

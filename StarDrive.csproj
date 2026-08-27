@@ -860,6 +860,7 @@
     <Compile Include="Ship_Game\UI\UITheme.cs" />
     <Compile Include="Ship_Game\UI\CheckedDropdown.cs" />
     <Compile Include="Ship_Game\GameScreens\Universe\AutomationScreen.cs" />
+    <Compile Include="Ship_Game\GameScreens\Universe\PoliciesScreen.cs" />
     <Compile Include="Ship_Game\UI\PopupFrame.cs" />
     <Compile Include="Ship_Game\GameScreens\FleetDesign\RequisitionScreen.cs" />
     <Compile Include="Ship_Game\Primitives2D.cs" />

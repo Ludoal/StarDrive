@@ -9841,8 +9841,8 @@ ChooseAListOfPlanets:
  PTB: "Escolha uma lista de planetas que os cargueiros selecionados visitarão exclusivamente. São necessários pelo menos 2 planetas, e a lista pode conter planetas aliados para exportação. Clique com o botão esquerdo em um planeta para adicioná-lo; clique com o botão direito para removê-lo. Clique no botão novamente ou pressione ESC para voltar ao jogo"
 ManualTradeAllowSelectedFreighters:
  Id: 1945
- ENG: "Allow inter-empire trade (this cargo): let the selected freighters serve trade routes to other empires. Needs 'Allow Empire Inter Trade' on in Automation. Note: Colonists cannot be traded between empires."
- FRA: "Autoriser le commerce inter-empires (ce cargo) : laisse les cargos sélectionnés desservir les routes vers d'autres empires. Nécessite « Allow Empire Inter Trade » activé dans Automation. Note : les Colons ne peuvent pas être échangés entre empires."
+ ENG: "Allow inter-empire trade (this cargo): let the selected freighters serve trade routes to other empires. Needs 'Allow Empire Inter Trade' on in Policies > Trade. Note: Colonists cannot be traded between empires."
+ FRA: "Autoriser le commerce inter-empires (ce cargo) : laisse les cargos sélectionnés desservir les routes vers d'autres empires. Nécessite « Allow Empire Inter Trade » activé dans Policies > Trade. Note : les Colons ne peuvent pas être échangés entre empires."
  RUS: "Ручная торговля: разрешите выбранным грузовым судам торговать с другими империями. Щелкните правой кнопкой мыши, чтобы выключить это. Примечание: Колонистов нельзя обменивать между империями."
  UKR: "Ручна торгівля: Дозволити вибраним вантажним кораблям торгувати з іншими імперіями. Клацніть правою кнопкою миші, щоб вимкнути цю опцію. Примітка: Колоністами не можна торгувати між імперіями."
  PTB: "Comércio Manual: permite que os cargueiros selecionados comercializem com outros impérios. Clique com o botão direito para desativar. Observação: colonos não podem ser negociados entre impérios."
@@ -16596,8 +16596,8 @@ FreighterModelTip:
  FRA: "Le modèle de cargo qu'utilisent Construction auto et Upgrade auto. Coché = Choix auto (le meilleur disponible) ; décochez pour choisir un modèle précis."
 InterTradeInhibited:
  Id: 7108
- ENG: "Inhibited when Inter Empire Trade is not allowed (enable it in Automation)."
- FRA: "Inhibé quand le commerce inter-empires n'est pas autorisé (activez-le dans Automation)."
+ ENG: "Inhibited when Inter Empire Trade is not allowed (enable it in Policies > Trade)."
+ FRA: "Inhibé quand le commerce inter-empires n'est pas autorisé (activez-le dans Policies > Trade)."
 AutoBuildExplorers:
  Id: 7109
  ENG: "Auto-build Explorers"
@@ -22496,8 +22496,8 @@ ShieldsOverlayTip:
  FRA: "Affiche le cercle de couverture de chaque bouclier du design. Cumulable avec Arcs."
 ContinuousRushColonyTip:
  Id: 5299
- ENG: "Continuously rush every item in THIS colony's construction queue, existing and future.\n \nWARNING: Rushing spends credits every turn. Greyed while the empire-wide Continuous Rush (Automation) is on: that switch commands all colonies."
- FRA: "Précipite en continu tous les éléments de la file de construction de CETTE colonie, existants et futurs.\n \nATTENTION : le rush dépense des crédits chaque tour. Grisé quand la Précipitation continue globale (Automation) est active : c'est elle qui commande toutes les colonies."
+ ENG: "Continuously rush every item in THIS colony's construction queue, existing and future.\n \nWARNING: Rushing spends credits every turn. Greyed while the empire-wide Continuous Rush (Policies > Construction) is on: that switch commands all colonies. This colony's own setting is suspended, not erased - it returns when the empire order is lifted."
+ FRA: "Précipite en continu tous les éléments de la file de construction de CETTE colonie, existants et futurs.\n \nATTENTION : le rush dépense des crédits chaque tour. Grisé quand la Précipitation continue globale (Policies > Construction) est active : c'est elle qui commande toutes les colonies. Le réglage propre à cette colonie est suspendu, pas effacé : il revient dès que l'ordre d'empire est levé."
 HomeworldMoleNotification:
  Id: 5300
  ENG: "Infiltration level 3 perk (Homeworld Mole): a permanent agent is now embedded on:"
@@ -28512,3 +28512,33 @@ CodexDiplomacyFederationsText:
  FRA: "Il est possible de gagner à StarDrive en unissant tous les Empires de la partie au sein d'une Fédération unique. Lorsqu'un empire rejoint un autre empire dans une Fédération, l'empire absorbé est \"vaincu\" aux fins de la partie. La Fédération a alors accès à toutes les troupes, technologies, coques de vaisseau et artefacts de l'empire absorbé. Si le joueur parvient à absorber ou vaincre tous les empires de la partie, la Victoire est atteinte."
  RUS: "В StarDrive можно одержать победу, объединив все империи в игре в единую Федерацию. Когда империя вступает в состав Федерации, присоединяясь к другой империи, поглощенная империя с технической точки зрения считается \"побежденной\". С этого момента Федерация получает доступ ко всем войскам, технологиям, кораблям и артефактам поглощенной империи. Если игрок сумеет поглотить или победить все остальные империи в игре, он побеждает."
  PTB: "É possível vencer em StarDrive unindo todos os Impérios do jogo em uma única Federação. Quando um império se junta a outro império em uma Federação, o império absorvido é considerado \"derrotado\" para fins de jogo. A Federação passará a ter acesso a todas as tropas, tecnologias, cascos de naves e artefatos dos impérios absorvidos. Se o jogador conseguir absorver ou derrotar todos os impérios do jogo, a Vitória será alcançada."
+
+# Ludoal fork: the Policies tab of the Empire group - empire-wide standing orders.
+DvEmpireTabTipPolicies:
+ Id: 7139
+ ENG: "Standing orders your colonies and fleets follow by default"
+ FRA: "Les consignes permanentes que suivent vos colonies et vos flottes"
+PolEconomyNotice:
+ Id: 7140
+ ENG: "How your treasury is managed."
+ FRA: "Comment votre trésorerie est gérée."
+PolTradeNotice:
+ Id: 7141
+ ENG: "Who your freighters serve, and whether you trade abroad."
+ FRA: "Qui vos cargos servent, et si vous commercez avec l'étranger."
+PolResearchNotice:
+ Id: 7142
+ ENG: "How research topics are chosen."
+ FRA: "Comment les sujets de recherche sont choisis."
+PolColonyNotice:
+ Id: 7143
+ ENG: "How a new colony is run from its first day."
+ FRA: "Comment une colonie neuve est gérée dès son premier jour."
+PolConstructionNotice:
+ Id: 7144
+ ENG: "The order your colonies build in, and how fast."
+ FRA: "L'ordre dans lequel vos colonies bâtissent, et à quelle vitesse."
+PolInterTradeGameRuleTip:
+ Id: 7145
+ ENG: "Whether your freighters may serve empires you have a trade treaty with. This one is a game rule rather than an empire order: it is stored with the game setup, not with your empire."
+ FRA: "Si vos cargos peuvent servir les empires avec lesquels vous avez un traité commercial. Celle-ci est une règle de la partie plutôt qu'un ordre d'empire : elle est rangée avec les paramètres du jeu, pas avec votre empire."

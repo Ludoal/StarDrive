@@ -154,7 +154,7 @@ namespace Ship_Game.GameScreens
         // Ludoal fork: the third group of the unified top bar. Same frame and tab row again.
         public static readonly LocalizedText[] EmpireTabTitles =
         {
-            "Colonies", "Ships", "Troops", "Economy", "Research", "Automation"
+            "Colonies", "Ships", "Troops", "Economy", "Research", "Automation", "Policies"
         };
 
         public static readonly string[] EmpireTabTips =
@@ -165,10 +165,14 @@ namespace Ship_Game.GameScreens
             Localizer.Token(GameText.DvEmpireTabTipEconomy),
             Localizer.Token(GameText.DvEmpireTabTipResearch),
             Localizer.Token(GameText.DvEmpireTabTipAutomation),
+            Localizer.Token(GameText.DvEmpireTabTipPolicies),
         };
 
         // read off the top bar's own tooltips and each screen's closing key, not guessed
-        public static readonly string[] EmpireTabKeys = { "U", "K", "C", "T", "R", "H" };
+        // Policies has no letter of its own: every letter is already bound elsewhere, so its
+        // shortcut is a decision rather than a free pick. An empty entry is the established
+        // way to say "no key" here (the group row does it too).
+        public static readonly string[] EmpireTabKeys = { "U", "K", "C", "T", "R", "H", "" };
 
         // Ludoal fork: ONE factory and ONE switch for the Empire group - each of its screens
         // used to carry its own copy of this switch with a default case, and two of those
@@ -182,7 +186,11 @@ namespace Ship_Game.GameScreens
             2 => new TroopListScreen(u, u.EmpireUI),
             3 => Economy(u),
             4 => new ResearchScreenNew(u, u, u.EmpireUI),
-            _ => new AutomationScreen(u),
+            // Ludoal fork: Automation takes its OWN case now. It used to ride the default, and a
+            // default that swallows every unknown index is how a seventh tab silently opens the
+            // sixth screen - no error, no clue, a long hunt.
+            5 => new AutomationScreen(u),
+            _ => new PoliciesScreen(u),
         };
 
         public static void SwitchEmpireTab(int index, int self, UniverseScreen u, GameScreen caller)
