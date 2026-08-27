@@ -26,7 +26,11 @@ namespace Ship_Game
         public static Keys TroopListScreen       = Keys.C;
         public static Keys BlueprintsScreen      = Keys.F;
         public static Keys ExoticListScreen      = Keys.G;
-        public static Keys AutomationWindow      = Keys.H;
+        // Ludoal fork (maintainer feedback): H moved to Policies - the standing orders are
+        // opened far more often than the automation preferences, and every letter was taken.
+        // Automation ships UNBOUND rather than displacing another screen; it is a mouse page.
+        public static Keys AutomationWindow      = Keys.None;
+        public static Keys PoliciesWindow        = Keys.H;
         public static Keys FleetDesignScreen     = Keys.J;
         public static Keys ShipListScreen        = Keys.K;
         public static Keys PlanetListScreen      = Keys.L;

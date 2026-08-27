@@ -7019,6 +7019,8 @@ namespace Ship_Game
         FreighterPriorityTip = 7097,
         /// <summary>Standing orders your colonies and fleets follow by default</summary>
         DvEmpireTabTipPolicies = 7139,
+        /// <summary>Policies</summary>
+        HkPolicies = 7146,
         /// <summary>How your treasury is managed.</summary>
         PolEconomyNotice = 7140,
         /// <summary>Who your freighters serve, and whether you trade abroad.</summary>

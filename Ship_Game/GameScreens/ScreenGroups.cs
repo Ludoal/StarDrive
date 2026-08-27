@@ -169,10 +169,10 @@ namespace Ship_Game.GameScreens
         };
 
         // read off the top bar's own tooltips and each screen's closing key, not guessed
-        // Policies has no letter of its own: every letter is already bound elsewhere, so its
-        // shortcut is a decision rather than a free pick. An empty entry is the established
-        // way to say "no key" here (the group row does it too).
-        public static readonly string[] EmpireTabKeys = { "U", "K", "C", "T", "R", "H", "" };
+        // Automation ships unbound and Policies took H (maintainer feedback): the standing
+        // orders are opened far more often. An empty entry is the established way to say
+        // "no key" here (the group row does it too).
+        public static readonly string[] EmpireTabKeys = { "U", "K", "C", "T", "R", "", "H" };
 
         // Ludoal fork: ONE factory and ONE switch for the Empire group - each of its screens
         // used to carry its own copy of this switch with a default case, and two of those

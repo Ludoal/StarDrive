@@ -125,6 +125,7 @@ namespace Ship_Game
         public bool ColonyOverviewScreen => KeyPressed(KeyBindings.ColonyOverviewScreen); // Ludoal fork: the Empire group's permanent Colony tab (O is the game menu, hardwired in the top bar)
         public bool FleetDesignScreen    => KeyPressed(KeyBindings.FleetDesignScreen);
         public bool AutomationWindow     => KeyPressed(KeyBindings.AutomationWindow);
+        public bool PoliciesWindow       => KeyPressed(KeyBindings.PoliciesWindow);
         public bool BlueprintsSceen      => KeyPressed(KeyBindings.BlueprintsScreen);
         public bool Fleet1               => KeyPressed(Keys.D1) && !IsAltKeyDown;
         public bool Fleet2               => KeyPressed(Keys.D2) && !IsAltKeyDown;

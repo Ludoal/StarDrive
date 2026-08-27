@@ -12,7 +12,9 @@ using Ship_Game.UI; // SplitElement (two controls sharing one row)
 
 namespace Ship_Game
 {
-    // Ludoal fork: the Automation tab of the Empire group. The H shortcut opens this tab.
+    // Ludoal fork: the Automation tab of the Empire group. It ships UNBOUND (H went to
+    // Policies, which is opened far more often) and is reached from the tab row; a player
+    // who binds it a key gets the close-on-key behaviour below back.
     //
     // Categories: COLONIZATION, CONSTRUCTION, TRADE, NOTIFICATIONS. Each wears its own one-tab
     // frame and they are ALL visible at once.
@@ -322,7 +324,8 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // H closes what H opened; right-click closes like every table screen of the group
+            // its own key closes what its own key opened - unbound by default, so in practice
+            // right-click, like every table screen of the group
             if ((input.AutomationWindow && !GlobalStats.TakingInput) || input.RightMouseClick)
             {
                 GameAudio.EchoAffirmative();

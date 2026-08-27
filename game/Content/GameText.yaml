@@ -28542,3 +28542,7 @@ PolInterTradeGameRuleTip:
  Id: 7145
  ENG: "Whether your freighters may serve empires you have a trade treaty with. This one is a game rule rather than an empire order: it is stored with the game setup, not with your empire."
  FRA: "Si vos cargos peuvent servir les empires avec lesquels vous avez un traité commercial. Celle-ci est une règle de la partie plutôt qu'un ordre d'empire : elle est rangée avec les paramètres du jeu, pas avec votre empire."
+HkPolicies:
+ Id: 7146
+ ENG: "Policies"
+ FRA: "Directives"

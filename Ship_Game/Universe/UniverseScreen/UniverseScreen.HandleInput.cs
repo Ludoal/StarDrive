@@ -193,8 +193,11 @@ namespace Ship_Game
                 PanToPlanetKeepZoom(Player.Capital);
                 GameAudio.AcceptClick();
             }
-            // Ludoal fork (maintainer feedback): H opens the Automation tab of the Empire
-            // group. The screen closes on H or right-click.
+            // Ludoal fork (maintainer feedback): H opens the Policies tab of the Empire group.
+            // The screen closes on H or right-click. Automation keeps its own binding row but
+            // ships unbound - it is opened from the tab row.
+            if (input.PoliciesWindow && !Debug)
+                ScreenManager.AddScreen(new PoliciesScreen(this));
             if (input.AutomationWindow && !Debug)
                 ScreenManager.AddScreen(new AutomationScreen(this));
             if (input.ExoticBonusesWindow) ExoticBonusesWindow.ToggleVisibility();

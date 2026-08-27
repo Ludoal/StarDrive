@@ -74,6 +74,7 @@ namespace Ship_Game
                 new Hotkey(null, Localizer.Token(GameText.HkTroops), nameof(KeyBindings.TroopListScreen)),
                 new Hotkey(null, Localizer.Token(GameText.HkPatrols), nameof(KeyBindings.EmpirePatrolsScreen)),
                 new Hotkey(null, Localizer.Token(GameText.HkExoticSystems), nameof(KeyBindings.ExoticListScreen)),
+                new Hotkey(null, Localizer.Token(GameText.HkPolicies), nameof(KeyBindings.PoliciesWindow)),
                 new Hotkey(null, Localizer.Token(GameText.HkAutomation), nameof(KeyBindings.AutomationWindow)),
                 new Hotkey(null, Localizer.Token(GameText.HkDeepSpaceBuild), nameof(KeyBindings.DeepSpaceBuildWindow)),
                 new Hotkey(null, Localizer.Token(GameText.HkExoticBonuses), nameof(KeyBindings.ExoticBonusesWindow)),

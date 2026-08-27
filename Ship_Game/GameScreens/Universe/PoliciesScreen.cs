@@ -259,10 +259,8 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // no hotkey of its own yet: every letter of the alphabet is already bound, so the
-            // key is a decision rather than a free pick. Right-click closes, like every table
-            // screen of the group.
-            if (input.RightMouseClick)
+            // H closes what H opened; right-click closes like every table screen of the group
+            if ((input.PoliciesWindow && !GlobalStats.TakingInput) || input.RightMouseClick)
             {
                 GameAudio.EchoAffirmative();
                 ExitScreen();
