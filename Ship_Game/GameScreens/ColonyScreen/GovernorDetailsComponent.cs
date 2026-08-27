@@ -34,7 +34,7 @@ namespace Ship_Game
         UILabel GroundTroopsHeader, SpaceDefenseHeader; // Defense tab column headers
         bool BuildListWasOpen, ScrapListWasOpen, TypeListWasOpen; // raise a list once, on its opening
         float BudgetCommaX; // the decimal column the three budget figures align on
-        private UICheckBox GovOrbitals, AutoTroops, Quarantine, ManualOrbitals, SpecializedTradeHub, Prioritized;
+        private UICheckBox GovOrbitals, AutoTroops, Quarantine, ManualOrbitals, Prioritized;
         private FloatSlider Garrison;
         private FloatSlider ManualPlatforms;
         private FloatSlider ManualShipyards;
@@ -167,9 +167,7 @@ namespace Ship_Game
             ManualOrbitals = Add(new UICheckBox(() => Planet.ManualOrbitals, Font, title: GameText.ManualOrbitalLimit, tooltip: GameText.OverrideGovernorDecisionsRegardingOrbital));
             Prioritized    = Add(new UICheckBox(() => Planet.PrioritizedPort, Font, title: GameText.PrioritizedPort, tooltip: GameText.PrioritizedPortTip));
 
-            SpecializedTradeHub = Add(new UICheckBox(() => p.SpecializedTradeHub, Font, title: GameText.SpecializedTradeHub, tooltip: GameText.SpecializedTradeHubTip));
-            SpecializedTradeHub.OnChange = cb => { Planet.SetSpecializedTradeHub(cb.Checked); };
-            SpecializedTradeHub.TextColor = Quarantine.TextColor = Prioritized.TextColor = Color.Gray;
+            Quarantine.TextColor = Prioritized.TextColor = Color.Gray;
             Quarantine.CheckedTextColor = Color.Red;
             Prioritized.CheckedTextColor = Color.Purple;
 
@@ -409,7 +407,6 @@ namespace Ship_Game
             Quarantine.Pos          = new Vector2(X + 10, Portrait.Bottom + 14); // a step lower - there is room below
             Prioritized.Pos         = new Vector2(X + 10, Portrait.Bottom + 34);
             // one row higher: the Build Mandate dropdown takes the line it leaves behind
-            SpecializedTradeHub.Pos = new Vector2(ColumnX + 25, Quarantine.Pos.Y - GovRowPitch); // +25: clear of the left labels at 1080 fonts
 
             // the two mandates take the line the trade hub left, label then list, one per row
             const int MandateLabelW = 118;
@@ -564,18 +561,15 @@ namespace Ship_Game
             Planet.AutoFood = Planet.AutoProd = Planet.AutoColonists = true;
             WorldDescription.Text = GetParsedDescription();
             if (type is Planet.ColonyType.Colony or Planet.ColonyType.TradeHub)
-            {
                 Planet.RemoveBlueprints();
-                Planet.SetSpecializedTradeHub(false);
-            }
         }
 
         public void OnBlueprintsChanged(BlueprintsTemplate template)
         {
-            // a blueprint is an explicit plan: it takes the mandates back to full rights
-            Planet.SetBuildMandate(Planet.BuildMandate.All);
-            Planet.SetScrapMandate(Planet.BuildMandate.All);
-            Planet.SetSpecializedTradeHub(false);
+            // ⚠ loading a plan no longer rewrites the mandates. It used to set both to All,
+            // because a blueprint bought past them anyway - now that it does not, that line would
+            // quietly undo the very gesture the player came for: follow this plan, demolish
+            // nothing. The plan is the PLAN; the mandates stay the player's.
             Planet.AddBlueprints(template, Player);
             ColonyTypeList.ActiveValue = Planet.CType;
             OnColonyTypeChanged(Planet.CType);
@@ -608,7 +602,7 @@ namespace Ship_Game
                 WorldType.Visible          = GovernorTabView;
                 Quarantine.Visible         = GovernorTabView && Planet.OwnerIsPlayer;
                 Prioritized.Visible        = Quarantine.Visible && Planet.HasSpacePort;
-                BudgetLimitReached.Visible = ColonyTypeList.Visible && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub && BudgetLimitWarningVisible;
+                BudgetLimitReached.Visible = ColonyTypeList.Visible && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub && BudgetLimitWarningVisible;
                 // Manual budget: overspending is the player's own choice, so caution it in yellow
                 // rather than the red "limit reached" alarm the auto governor raises.
                 bool manualBudget          = AnyAreaManual;
@@ -618,10 +612,6 @@ namespace Ship_Game
                 BuildCapital.Visible       = GovernorTabView 
                                              && Planet.OwnerIsPlayer 
                                              && !Planet.Owner.GetPlanets().Any(p => p.IsHomeworld);
-                // Ludoal fork (maintainer feedback): live under a blueprint too. A plan no longer
-                // buys past them, so they are a real restriction a player can lay on a colony that
-                // already has one - which is how you say "follow this plan, but demolish nothing".
-                SpecializedTradeHub.Visible = Quarantine.Visible && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub;
                 // blueprints are an explicit plan and override both mandates, so the lists
                 // would lie about what the governor is going to do
                 bool mandates = GovernorTabView && GovernorOn && Planet.OwnerIsPlayer;
@@ -645,7 +635,6 @@ namespace Ship_Game
                 }
                 BuildMandateList.Visible = ScrapMandateList.Visible = mandates;
                 BuildMandateLabel.Visible = ScrapMandateLabel.Visible = mandates;
-                SpecializedTradeHub.CheckedTextColor = Portrait.Border;
 
                 int numTroopsCanLaunch    = DefenseTabView ? Planet.NumTroopsCanLaunchFor(Planet.Universe.Player) : 0;
                 Planet.GarrisonSize       = (int)Math.Round(Garrison.AbsoluteValue);
@@ -687,7 +676,7 @@ namespace Ship_Game
 
                 BudgetSum.Visible       = BudgetTabView;
                 BudgetPercent.Visible   = BudgetTabView && GovernorOn;
-                bool budgetRows = BudgetTabView && GovernorOn && Planet.OwnerIsPlayer && Planet.CType is not Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub;
+                bool budgetRows = BudgetTabView && GovernorOn && Planet.OwnerIsPlayer && Planet.CType is not Planet.ColonyType.TradeHub;
                 CivBudgetSlider.Visible = GrdBudgetSlider.Visible = SpcBudgetSlider.Visible = budgetRows;
                 AutoCiv.Visible = AutoGrd.Visible = AutoSpc.Visible = budgetRows;
                 // an automatic row reads grey: the number is the governor's, not the player's
@@ -796,7 +785,7 @@ namespace Ship_Game
         {
             // The bars draw with or without a governor - same presentation, the spent/allocation
             // reading holds either way; only the CONTROLS need a governor.
-            if (Planet.CType is not Planet.ColonyType.TradeHub && !Planet.SpecializedTradeHub)
+            if (Planet.CType is not Planet.ColonyType.TradeHub)
             {
                 CivBudgetBar.Draw(batch);
                 GrdBudgetBar.Draw(batch);

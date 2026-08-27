@@ -77,6 +77,29 @@ never touched behaves as it did.
 
 ---
 
+### Colonies stop ordering food into a nearly full store, and Specialized Trade-Hub is gone
+`Planet_Trade.cs`, `Planet_Govern.cs`, `Planet_ConstructionQueue.cs`
+
+**Source: maintainer.**
+
+A colony without a governor already refused food deliveries once its store passed 90%. A
+governed one did not, unless the Specialized Trade-Hub box was ticked. That rule is now
+every colony's, and the box is gone.
+
+The box had nothing else left to do. Its advertised job - trading on hub thresholds instead
+of its governor's - stopped happening when supply states were decoupled from governor type,
+and its two other effects had already been handed back to the controls they belonged to.
+
+A governed colony near its storage cap now imports about ten percent less margin than it
+did, and the freighters it frees go elsewhere. Stores drain as they are eaten, so slots
+reopen on their own, and a starving colony still outranks every other in the dispatch order.
+
+Loading a blueprint no longer resets a colony's build and scrap mandates to All. That line
+existed because a blueprint used to buy past the mandates; it no longer does, and the reset
+would have undone the player's own restriction the moment they loaded a plan.
+
+---
+
 ---
 
 ## New levers

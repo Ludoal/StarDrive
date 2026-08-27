@@ -130,7 +130,6 @@ namespace Ship_Game
         public bool WeAreInvadingHere(Empire empire)    => Troops.WeAreInvadingHere(empire);
         public bool MightBeAWarZone(Empire empire)      => Troops.MightBeAWarZone(empire);
         public bool ForeignTroopHere(Empire empire)     => Troops.ForeignTroopHere(empire);
-        public bool NoGovernorAndNotTradeHub            => CType == ColonyType.Colony || SpecializedTradeHub;
         public int SpecialCommodities                   => CountBuildings(b => b.IsCommodity);
         public bool HasCommodities => HasBuilding(b => b.IsCommodity || b.IsVolcano || b.IsCrater);
         public bool Governor => CType != ColonyType.Colony;

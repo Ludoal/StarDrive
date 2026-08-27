@@ -139,7 +139,7 @@ public partial class Planet
         // This is to consider food production flactuations
         float ModifiedTotalTurnsToComplete()
         {
-            if (IsCybernetic || SpecializedTradeHub)   
+            if (IsCybernetic)
                 return 1;
 
             switch (CType)

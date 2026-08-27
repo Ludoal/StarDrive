@@ -170,12 +170,13 @@ namespace Ship_Game
             if (TradeBlocked || !ImportFood)
                 return 0;
 
-            if (NoGovernorAndNotTradeHub)
-            {
-                // for players with no governor or trade hub - only 90% storage or less will open slots
-                if (Storage.FoodRatio > 0.9f)
-                    return 0;  
-            }
+            // Ludoal fork (maintainer feedback): every colony now stops ordering food once its
+            // store is over 90% full, governed or not. Freighters were never welcome in a full
+            // warehouse; the rule was simply fenced off behind a setting nobody could name.
+            // A store drains as it is eaten, so the slots reopen on their own - and a starving
+            // colony still outranks everyone in the dispatch order, so prudence cannot starve one.
+            if (Storage.FoodRatio > 0.9f)
+                return 0;
 
             if (ManualFoodImportSlots > 0 && Owner == Universe.Player)
                 return ManualFoodImportSlots;

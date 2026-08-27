@@ -695,7 +695,6 @@ namespace Ship_Game
         {
             planet.SetPrioritizedPort(false);
             OwnedPlanets.Remove(planet);
-            planet.SetSpecializedTradeHub(false);
             if (!planet.System.HasPlanetsOwnedBy(this)) // system no more in owned planets?
                 OwnedSolarSystems.Remove(planet.System);
 

@@ -18,16 +18,10 @@ namespace Ship_Game
         float EstimatedAverageFood => (Food.NetMaxPotential / 3).LowerBound(0.1f);
 
         [StarData] public ColonyBlueprints Blueprints {get; private set;}
-        [StarData] public bool SpecializedTradeHub { get; private set; }
 
         public bool HasBlueprints => Blueprints != null;
         public bool HasExclusiveBlueprints => Blueprints?.Exclusive == true;
         bool RequiredInBlueprints(Building b) => Blueprints?.IsRequired(b) == true;
-
-        public void SetSpecializedTradeHub(bool value)
-        {
-            SpecializedTradeHub = value;
-        }
 
         public void DoGoverning()
         {
