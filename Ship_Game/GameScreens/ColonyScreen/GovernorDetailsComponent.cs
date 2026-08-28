@@ -977,9 +977,13 @@ namespace Ship_Game
 
         void OnCreateBlueprintsClicked(UIButton b)
         {
-            HashSet<string> potentialBuildings = Planet.TilesList.FilterSelect(t => t.BuildingOnTile 
-                && t.Building.IsSuitableForBlueprints 
-                && Player.IsBuildingUnlocked(t.Building.Name), t => t.Building.Name).ToHashSet();
+            // an Array, not a set: the plan carries an order now. A snapshot has no chronology of
+            // its own - it photographs what stands - so the tiles' own order is the starting point
+            // and the player rearranges it in the design screen.
+            var potentialBuildings = new Array<string>(
+                Planet.TilesList.FilterSelect(t => t.BuildingOnTile
+                    && t.Building.IsSuitableForBlueprints
+                    && Player.IsBuildingUnlocked(t.Building.Name), t => t.Building.Name));
 
             if (potentialBuildings.Count > 0)
             {

@@ -715,7 +715,11 @@ namespace Ship_Game
 
         BlueprintsTemplate CreateBlueprintsTemplate()
         {
-            HashSet<string> plannedBuildings = TilesList.FilterSelect(t => t.HasBuilding && !t.Building.IsOutpost, t => t.Building.Name).ToHashSet();
+            // ⚠ an Array, not a set: the plan carries an ORDER now, and this is where it is
+            // written down. The tiles' own sequence is that order until the design screen lets
+            // the player rearrange it (bench 531).
+            var plannedBuildings = new Array<string>(
+                TilesList.FilterSelect(t => t.HasBuilding && !t.Building.IsOutpost, t => t.Building.Name));
             return new BlueprintsTemplate(BlueprintsName.Text.Text, Exclusive, LinkedTo, plannedBuildings, SwitchColonyType.ActiveValue);
         }
 

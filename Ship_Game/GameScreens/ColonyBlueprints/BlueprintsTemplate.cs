@@ -17,12 +17,22 @@ public sealed class BlueprintsTemplate
     [StarData] public string ModName;
     [StarData] public bool Exclusive;
     [StarData] public string LinkTo;
-    [StarData] public HashSet<string> PlannedBuildings;
+    // ⚠ ORDERED, and that is the whole point (maintainer, bench 531). It was a set - no order
+    // at all, not even an accidental one - so the plan could not say what to raise first, and
+    // neither of the two questions the maintainer kept asking had an answer.
+    //
+    // The list reads as a CHRONOLOGY: the order a colony grows in, which is the order the
+    // buildings unlock in. Built from the top, replaced from the top (the primitive makes way),
+    // rebuilt from the bottom (the precious first). One list, three gestures.
+    //
+    // Uniqueness is no longer the collection's job: the design screen never offers a building
+    // already on the plan's tiles, which is what kept it unique before.
+    [StarData] public Array<string> PlannedBuildings;
     [StarData] public ColonyType ColonyType;
     public static string CurrentModName =>  GlobalStats.HasMod ? GlobalStats.ModName : "BBplus";
 
     [StarDataConstructor] public BlueprintsTemplate() { }
-    public BlueprintsTemplate(string name, bool exclusive, string linkTo, HashSet<string>plannedBuildings, ColonyType cType) 
+    public BlueprintsTemplate(string name, bool exclusive, string linkTo, Array<string> plannedBuildings, ColonyType cType) 
     {
         Name = name;
         ModName = CurrentModName;

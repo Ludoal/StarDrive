@@ -22,7 +22,7 @@ namespace Ship_Game.Universe.SolarBodies
         public string Name => Template.Name;
         public string LinkedBlueprintsName => Template.LinkTo ?? "";
         public bool Exclusive => Template.Exclusive; // Build only these buildings and remove the rest
-        HashSet<string> PlannedBuildings => Template.PlannedBuildings;
+        Array<string> PlannedBuildings => Template.PlannedBuildings;
         public ColonyType ColonyType => Template.ColonyType;
         bool Completed => PercentCompleted == 100;
 
@@ -122,11 +122,20 @@ namespace Ship_Game.Universe.SolarBodies
             if (!P.HasOutpost && !P.HasCapital)
                 return;
 
-            for (int i = 0; i < buildingCanBuild.Count; i++)
+            // ⚠ walked in the PLAN's order, not the colony's. The plan is a chronology now and
+            // this list is what the governor picks from, so its order IS the build order. Walking
+            // the colony's own buildable list would hand back the same buildings arranged by
+            // whatever that list happens to hold - which is how the plan had no say before.
+            foreach (string planned in PlannedBuildings)
             {
-                Building building = buildingCanBuild[i];
-                if (IsRequired(building))
-                    PlannedBuildingsWeCanBuild.Add(building);
+                for (int i = 0; i < buildingCanBuild.Count; i++)
+                {
+                    if (buildingCanBuild[i].Name == planned)
+                    {
+                        PlannedBuildingsWeCanBuild.Add(buildingCanBuild[i]);
+                        break;
+                    }
+                }
             }
         }
 
