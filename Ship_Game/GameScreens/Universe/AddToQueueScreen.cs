@@ -27,6 +27,12 @@ namespace Ship_Game
         readonly UniverseScreen Universe;
         Empire Player => Universe.Player;
 
+        // ⚠ this popup IS a frame, and the report it summons has to centre on it. Without this
+        // the base returns the whole display, PageFrameCentre reads that as "no frame at all"
+        // and hands back null, so the message box lands in the middle of the screen instead of
+        // in the middle of the window that asked for it (bench 528).
+        public override Rectangle PageFrame => Rect;
+
         // What the picker is aiming at. The two negatives are the targets that are not a
         // governor type: every colony, and the ones that have no governor at all - the young
         // ones, which is the case this button was asked for.
