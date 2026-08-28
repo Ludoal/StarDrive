@@ -13,16 +13,20 @@ namespace Ship_Game
     {
         public readonly BlueprintsScreen Screen;
         public Building Building;
+        // ⚠ a plan stores names, so an unresearched building is a legitimate entry - it is
+        // OFFERED, and drawn as locked so the offer never lies about what you can raise today.
+        public readonly bool Unlocked;
         string BuildingDescr;
         readonly SubTexture ProdIcon = ResourceManager.Texture("NewUI/icon_production");
         readonly SubTexture CostIcon = ResourceManager.Texture("UI/icon_money_22");
         readonly Font Font8 = Fonts.Arial8Bold;
         readonly Font Font12 = Fonts.Arial12Bold;
 
-        public BlueprintsBuildableListItem(BlueprintsScreen screen, Building b)
+        public BlueprintsBuildableListItem(BlueprintsScreen screen, Building b, bool unlocked = true)
         {
             Building = b;
             Screen   = screen;
+            Unlocked = unlocked;
         }
 
         public override bool HandleInput(InputState input)
@@ -82,8 +86,13 @@ namespace Ship_Game
             if (BuildingDescr == null)
                 BuildingDescr = Font8.ParseText(b.GetShortDescrText(), TextWidth);
 
-            batch.Draw(b.IconTex, new Vector2(X, Y - 2), new Vector2(IconSize), Screen.PlanAreaHovered && Hovered ? Color.Green : Color.White); // Icon
-            batch.DrawString(Font12, b.TranslatedName.Text, TextX + 2, Y + 2, Color.White); // Title
+            // locked reads as dimmed rather than absent: it is on the list because a plan may
+            // legitimately name it, and dimmed says "not yet" without taking the offer away
+            Color iconTint = Screen.PlanAreaHovered && Hovered ? Color.Green
+                           : Unlocked                         ? Color.White
+                                                              : Color.Gray;
+            batch.Draw(b.IconTex, new Vector2(X, Y - 2), new Vector2(IconSize), iconTint); // Icon
+            batch.DrawString(Font12, b.TranslatedName.Text, TextX + 2, Y + 2, Unlocked ? Color.White : Color.DarkGray); // Title
             batch.DrawString(Font8, BuildingDescr, TextX + 4, Y + 16, Screen.PlanAreaHovered && Hovered ? Color.Green : buildColor); // Description
             int creditCost = b.IsMilitary ? GetCreditCharge((int)b.ActualCost(Screen.Player)) : 0;
             DrawProductionInfo(batch, GetMaintenance(b), b.ActualCost(Screen.Player), creditCost);

@@ -24,6 +24,10 @@ namespace Ship_Game
         readonly UILabel CannotBuildTroopsWarning, CannotBuildShipsWarning;
         readonly UICheckBox ExclusiveCheckbox;
         public bool Exclusive;
+        // Ludoal fork (Blueprints chantier): the catalogue offers the whole game, not only what
+        // research has opened. A design-time view, so it is deliberately NOT saved with the plan.
+        readonly UICheckBox ShowAllToggle;
+        bool ShowAllBuildings;
         readonly Submenu SubPlanArea;
         readonly FloatSlider InitPopulationSlider;
         readonly FloatSlider InitFertilitySlider;
@@ -126,6 +130,14 @@ namespace Ship_Game
                 foreach (UIElementV2 e in GetElements())
                     if (e is CloseButton cross)
                         cross.OnClick = b => ReopenParentColony();
+            // ⚠ Ludo's placement: OUTSIDE the bordered content, up on the tab title line and
+            // right-aligned. It steers the catalogue, not the plan, so it must not sit inside
+            // a frame that would make it look like one block's setting.
+            ShowAllToggle = base.Add(new UICheckBox(DesignTabs.Right - 130, DesignTabs.Y + 4,
+                () => ShowAllBuildings, Font12, GameText.BpShowAll, GameText.BpShowAllTip));
+            ShowAllToggle.TextColor = Color.Wheat;
+            ShowAllToggle.OnChange = _ => RefreshBuildableList();
+
             const int Pad = 10;
             RectF client = DesignTabs.ClientArea;
             // ⚠ measured off the FRAME's borders, not the client area: the client is
@@ -149,15 +161,22 @@ namespace Ship_Game
             RectF blueprintsStatsR = new(leftX, topY, OptionsW, optionsH);
             SubBlueprintsOptions = base.Add(new Submenu(blueprintsStatsR, GameText.BlueprintsOptions));
 
-            // COLONY SIMULATION: exactly the four sliders (50px pitch each, 35px lead-in)
+            // ⚠ the two blocks are SWAPPED against the original order (Ludo, Blueprints
+            // chantier): the chain is consulted while designing, the simulation is read once
+            // the plan stands - so the chain sits under the options it belongs to, and the
+            // sliders take the foot of the column.
+            //
+            // COLONY SIMULATION: exactly the four sliders (50px pitch each, 35px lead-in),
+            // posed at the column's FOOT as a fixed block - the chain then fills what is
+            // between, which is the only measurement allowed to be a remainder here.
             float simH = 35 + 4 * 50 + 10;
-            RectF experimentalR = new(leftX, blueprintsStatsR.Bottom + Pad, OptionsW, simH);
-            base.Add(new Submenu(experimentalR, GameText.BlueprintsSimulation));
+            RectF experimentalR = new(leftX, botY - simH, OptionsW, simH);
 
-            // FORWARD LINK CHAIN: whatever the column has left
-            RectF chainR = new(leftX, experimentalR.Bottom + Pad, OptionsW,
-                               botY - (experimentalR.Bottom + Pad));
+            // FORWARD LINK CHAIN: between the options above and the simulation below
+            RectF chainR = new(leftX, blueprintsStatsR.Bottom + Pad, OptionsW,
+                               experimentalR.Y - Pad - (blueprintsStatsR.Bottom + Pad));
             base.Add(new Submenu(chainR, GameText.LinksChain));
+            base.Add(new Submenu(experimentalR, GameText.BlueprintsSimulation));
 
             // centre column: the plan grid on top, the tabbed stats block under it
             float centreX = leftX + OptionsW + Pad;
@@ -192,16 +211,19 @@ namespace Ship_Game
                 GameText.BlueprintsCannotBuildTroops, Font12, Color.Pink));
 
             float buttonsY = optRow0 + 6 * OptionsRow + 8;
-            SaveBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX, buttonsY), GameText.Save));
-            SaveBlueprints.OnClick = (b) => OnSaveBlueprintsClick();
-            UnlinkBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX + 80, buttonsY), GameText.BpUnlink));
-            UnlinkBlueprints.OnClick = (b) => OnUnlinkBlueprintsClick();
-            UnlinkBlueprints.Enabled = false;
-            LinkBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX + 160, buttonsY), GameText.BpLink));
+            // Load / Link / Unlink / Save (Ludo, Blueprints chantier): the row now reads in the
+            // order the gestures happen - you fetch a plan, chain it, unchain it, and only then
+            // commit. Save last, where a commit belongs.
+            LoadBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX, buttonsY), GameText.Load));
+            LoadBlueprints.OnClick = (b) => OnLoadBlueprintsClick();
+            LinkBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX + 80, buttonsY), GameText.BpLink));
             LinkBlueprints.OnClick = (b) => OnLinkBlueprintsClick();
             LinkBlueprints.Enabled = false;
-            LoadBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX + 240, buttonsY), GameText.Load));
-            LoadBlueprints.OnClick = (b) => OnLoadBlueprintsClick();
+            UnlinkBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX + 160, buttonsY), GameText.BpUnlink));
+            UnlinkBlueprints.OnClick = (b) => OnUnlinkBlueprintsClick();
+            UnlinkBlueprints.Enabled = false;
+            SaveBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX + 240, buttonsY), GameText.Save));
+            SaveBlueprints.OnClick = (b) => OnSaveBlueprintsClick();
 
             RectF initPopR = new(blueprintsOptionsX, experimentalR.Y + 40, SubBlueprintsOptions.Width*0.6, 50);
             InitPopulationSlider = SliderDecimal1(initPopR, GameText.Population, 0.1f, 20, InitPopulationBillion);
@@ -283,7 +305,7 @@ namespace Ship_Game
 
         void OnBuildableItemDoubleClicked(BlueprintsBuildableListItem item)
         {
-            if (!TryAddBuilding(item.Building, true))
+            if (!TryAddBuilding(item.Building, item.Unlocked))
                 GameAudio.NegativeClick();
         }
 
@@ -304,12 +326,24 @@ namespace Ship_Game
         {
             BuildableList.Reset();
             AddOutpost();
-            foreach (Building b in Player.GetUnlockedBuildings().Sorted(b => b.Name))
+
+            // ⚠ a plan stores NAMES, not unlocked buildings - which is exactly what the
+            // achievable percentage measures - so the catalogue can offer the whole game and a
+            // plan can be designed ahead of the research that unlocks it. What is not researched
+            // yet is listed all the same and drawn as locked, so the offer never lies.
+            var unlocked = new HashSet<string>();
+            foreach (Building u in Player.GetUnlockedBuildings())
+                unlocked.Add(u.Name);
+
+            IEnumerable<Building> catalogue = ShowAllBuildings
+                                            ? ResourceManager.BuildingsDict.Values.Sorted(b => b.Name)
+                                            : Player.GetUnlockedBuildings().Sorted(b => b.Name);
+            foreach (Building b in catalogue)
             {
                 if (b.IsSuitableForBlueprints && !TilesList.Any(t => t.BuildingNameHereIS(b.Name)))
                 {
                     b.UpdateOffense(PlanetLevel, Player.Universe);
-                    BuildableList.AddItem(new BlueprintsBuildableListItem(this, b));
+                    BuildableList.AddItem(new BlueprintsBuildableListItem(this, b, unlocked.Contains(b.Name)));
                 }
             }
 

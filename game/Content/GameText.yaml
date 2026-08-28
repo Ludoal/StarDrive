@@ -28698,6 +28698,14 @@ FreighterPriorityTipCyber:
  Id: 7185
  ENG: "Sets how your freighters choose their assignments."
  FRA: "Definit la facon dont vos cargos choisissent leurs missions."
+BpShowAll:
+ Id: 7186
+ ENG: "Show All"
+ FRA: "Tout afficher"
+BpShowAllTip:
+ Id: 7187
+ ENG: "Lists every building in the game, not only the ones you have researched. A plan stores names, so it can be designed ahead of the research that unlocks them - locked buildings are greyed. The colony simulation counts the whole plan, not what your colony could build today."
+ FRA: "Liste tous les batiments du jeu, pas seulement ceux que vous avez recherches. Un plan stocke des noms : il peut donc etre concu en avance sur la recherche qui les debloque - les batiments verrouilles sont grises. La simulation de colonie compte le plan complet, pas ce que votre colonie pourrait batir aujourd'hui."
 MandateByBlueprint:
  Id: 7181
  ENG: "By Blueprint"
