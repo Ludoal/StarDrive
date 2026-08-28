@@ -264,11 +264,14 @@ namespace Ship_Game
 
             public Entry Make() => new() { Building = Building, TroopType = TroopType, Ship = Ship };
 
-            string Label => Building?.Name ?? TroopType ?? Ship?.Name ?? "";
+            // ⚠ not "Label": UIElementContainer already has Label(...) further up the chain, and
+            // this repo compiles CS0108 as an error. A name in a derived class is checked against
+            // the whole base chain, not just against its own file.
+            string RowText => Building?.Name ?? TroopType ?? Ship?.Name ?? "";
 
             public override void Draw(SpriteBatch batch, DrawTimes elapsed)
             {
-                batch.DrawString(Fonts.Arial12, Label, new Vector2(X + 4, Y + 2), Colors.Cream);
+                batch.DrawString(Fonts.Arial12, RowText, new Vector2(X + 4, Y + 2), Colors.Cream);
             }
         }
 
