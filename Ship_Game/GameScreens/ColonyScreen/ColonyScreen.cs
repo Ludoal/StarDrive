@@ -580,7 +580,12 @@ namespace Ship_Game
                 });
             }
 
-            Rectangle planetShieldBarRect = new Rectangle(PlanetIcon.X, PlanetInfo.Rect.Y + 4, PlanetIcon.Width, 20);
+            // ⚠ it sat ON the colony arrows, and not by accident: both were built from
+            // PlanetIcon - the bar spanning its width, the arrows centred on its middle - so
+            // they overlapped by construction, on the same title bar (maintainer, bench 535).
+            const int ShieldBarClearance = 100; // moved clear of the arrows (maintainer's call)
+            Rectangle planetShieldBarRect = new Rectangle(PlanetIcon.X - ShieldBarClearance,
+                                                          PlanetInfo.Rect.Y + 4, PlanetIcon.Width, 20);
             PlanetShieldBar = new ProgressBar(planetShieldBarRect)
             {
                 color = "blue"
