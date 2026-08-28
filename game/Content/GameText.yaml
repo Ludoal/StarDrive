@@ -28670,3 +28670,11 @@ AddToQueueBlocked:
  Id: 7175
  ENG: "These could not be queued - no free tile on the colony:"
  FRA: "Ceux-ci n'ont pas pu etre mis en file - pas de case libre sur la colonie :"
+PolRushProduction:
+ Id: 7176
+ ENG: "Rush Production"
+ FRA: "Production acceleree"
+PolManualConstruction:
+ Id: 7177
+ ENG: "Manual Construction"
+ FRA: "Construction manuelle"

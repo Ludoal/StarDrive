@@ -51,8 +51,10 @@ namespace Ship_Game
         // Rush row. Both numbers are CONSTANTS and the frame is sized FROM them - never the
         // reverse: a host placed at a share of the space left moves every time a row is added
         // above it.
-        const float PrioTopInset = 92f, PrioRowsH = 300f;
-        const float ConstructionBoxH = PrioTopInset + PrioRowsH + 12f;
+        const float PrioTopInset = 118f, PrioRowsH = 300f; // +26: the Rush row gained a heading
+        // and below the rows, a heading of its own plus the button it names
+        const float ManualRowH = 26f, ManualButtonH = 26f;
+        const float ConstructionBoxH = PrioTopInset + PrioRowsH + ManualRowH + ManualButtonH + 18f;
 
         public PoliciesScreen(UniverseScreen u) : base(u, toPause: u)
         {
@@ -144,6 +146,9 @@ namespace Ship_Game
             Notice(construction, GameText.PolConstructionNotice);
             // ⚠ NOT a plain checkbox: its setter marshals onto the SIMULATION thread. Copying it
             // as a bare boolean would look right and propagate nothing.
+            // (maintainer, bench 528) the two things this frame does, each said out loud: what it
+            // rushes, and what you post by hand. A timed rush is expected to join the first.
+            construction.Add(new UILabel(GameText.PolRushProduction, Fonts.Arial12Bold, Colors.Cream));
             construction.AddCheckbox(() => RushConstruction, title: GameText.RushAllConstruction, tooltip: GameText.RushAllConstructionTip);
 
             // the prioritized categories, their ORDER is the hierarchy; arrows reorder, the
@@ -154,20 +159,29 @@ namespace Ship_Game
             // list rows use (+12) - never from a second sum over x2 and BoxW3. ClientArea is
             // already inset by 9 (the corner textures' size), so two arithmetics that have to
             // agree end up disagreeing: this one was 15px left of the rows above it.
-            // Ludoal fork (maintainer, bench 526): the empire-wide build order. It sits under the
-            // Construction frame rather than inside it - the frame's height is derived from the
-            // rows it carries, and a button in there would have moved the priority host with it.
-            var addToQueue = Button(ButtonStyle.Default, x2, top + ConstructionBoxH + BoxGap,
-                                    GameText.AddToQueueTitle,
-                                    click: _ => ScreenManager.AddScreen(new AddToQueueScreen(Universe)));
-            addToQueue.Tooltip = GameText.AddToQueueApplyTip;
-
             PriorityHost = Add(new UIPanel(new Rectangle((int)(constructionBox.ClientArea.X + 12),
                                                          (int)(top + PrioTopInset),
                                                          (int)(constructionBox.ClientArea.W - 24),
                                                          (int)PrioRowsH),
                                            new Color(0, 0, 0, 0)));
             RebuildPriorityRows();
+
+            // Ludoal fork (maintainer, bench 528): the empire-wide build order, INSIDE the frame
+            // under its own heading, seated below the priority rows. Placed from the constants
+            // above rather than from what happens to be left, so it cannot drift when a row is
+            // added higher up.
+            float manualY = top + PrioTopInset + PrioRowsH + 4;
+            Add(new UILabel(GameText.PolManualConstruction, Fonts.Arial12Bold, Colors.Cream))
+                .Pos = new Vector2(constructionBox.ClientArea.X + 12, manualY);
+
+            var addToQueue = Button(ButtonStyle.Default,
+                                    constructionBox.ClientArea.X + 12, manualY + ManualRowH,
+                                    GameText.AddToQueueTitle,
+                                    click: _ => ScreenManager.AddScreen(new AddToQueueScreen(this, Universe)));
+            // its natural width plus the 10px the bench asked for
+            addToQueue.SetAbsSize((int)Fonts.Arial12Bold.TextWidth(Localizer.Token(GameText.AddToQueueTitle)) + 34,
+                                  (int)ManualButtonH);
+            addToQueue.Tooltip = GameText.AddToQueueApplyTip;
 
             base.LoadContent();
         }

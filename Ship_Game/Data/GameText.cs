@@ -7067,6 +7067,10 @@ namespace Ship_Game
         AddToQueueAllPassed = 7174,
         /// <summary>These could not be queued - no free tile on the colony:</summary>
         AddToQueueBlocked = 7175,
+        /// <summary>Rush Production</summary>
+        PolRushProduction = 7176,
+        /// <summary>Manual Construction</summary>
+        PolManualConstruction = 7177,
         /// <summary>Blueprint name</summary>
         BlueprintNameLabel = 7150,
         /// <summary>Completion</summary>

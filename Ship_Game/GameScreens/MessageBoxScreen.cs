@@ -89,7 +89,10 @@ namespace Ship_Game
 
             var textPosition = new Vector2(r.X + r.Width / 2 - Fonts.Arial12Bold.MeasureString(Message).X / 2f, r.Y + 10);
 
-            Ok.SetAbsPos(     r.X + r.Width / 2 + 6,   r.Y + r.Height - 38);
+            // the pair straddles the centre; ALONE, Ok takes the centre itself - it was sitting
+            // where its half of a couple would be, beside a Cancel that is not there (bench 528)
+            Ok.SetAbsPos(Cancel != null ? r.X + r.Width / 2 + 6
+                                        : r.X + r.Width / 2 - 48, r.Y + r.Height - 38);
             Cancel?.SetAbsPos(r.X + r.Width / 2 - 102, r.Y + r.Height - 38);
 
             batch.SafeBegin();
