@@ -177,8 +177,17 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
+            // ⚠ bench 532: a row that refuses the CLICK still has something to say. Bailing out
+            // here made the subsistence gauge's own tooltip unreachable by construction - the
+            // gauge exists only on a cybernetic colony, and that is exactly the colony where
+            // this row is disabled. Hover is not input the row acts on; it is the row
+            // explaining itself.
             if (IsDisabled)
+            {
+                if (DrawIcons && IconRect().HitTest(input.CursorPosition) && P.Universe.Screen.IsActive)
+                    ToolTip.CreateTooltip(Tooltip());
                 return false;
+            }
 
             Vector2 mousePos = input.CursorPosition;
             bool mouseOverSlider = !LockedByUser && !LaborIsManaged && Rect.Bevel(5).HitTest(mousePos);
