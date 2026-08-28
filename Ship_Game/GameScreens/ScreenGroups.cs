@@ -727,6 +727,10 @@ namespace Ship_Game.GameScreens
 
             EmpireManagementScreen or ShipListScreen or TroopListScreen
                 or ResearchScreenNew or BudgetScreen
+                // the two newest Empire tabs were missing here, so nothing that asks "which
+                // group is open" could see them: no viewport shift, no lit group button, and
+                // they did not close a page from another group on the way in.
+                or AutomationScreen or PoliciesScreen
                 => Group.Empire,
 
             InfiltrationScreen

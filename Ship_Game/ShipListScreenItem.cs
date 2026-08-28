@@ -134,7 +134,14 @@ namespace Ship_Game
             if (Ship.Fleet != null)
                 PatrolButton.Draw(batch, elapsed);
             if (!Ship.IsSubspaceProjector)
+            {
+                // (maintainer, bench 523) lit while a refit order stands. UIButton.State is a
+                // press state - it says what the mouse is doing, never what the ship is doing -
+                // so the standing order is carried by the icon's tint, the same device the scrap
+                // icon uses for its own meaning.
+                RefitButton.IconTint = Ship.AI.State == AIState.Refit ? Color.Gold : Color.White;
                 RefitButton.Draw(batch, elapsed);
+            }
             ScrapButton.Draw(batch, elapsed);
         }
 
@@ -192,6 +199,19 @@ namespace Ship_Game
 
         void OnRefitClicked(UIButton b)
         {
+            // a standing order is cancelled by its own button, like scrap next door: the goal is
+            // what actually drives the refit, so dropping the ship's orders alone would leave it
+            // behind to re-issue them.
+            if (Ship.AI.State == AIState.Refit)
+            {
+                Screen.Universe.RunOnSimThread(() =>
+                {
+                    Ship.Loyalty.AI.FindAndRemoveGoal(GoalType.Refit, g => g.OldShip == Ship);
+                    Ship.AI.ClearOrders();
+                });
+                Screen.Universe.RunOnSimThread(() => Screen.ResetStatus());
+                return;
+            }
             Screen.ScreenManager.AddScreen(new RefitToWindow(Screen, this));
         }
 

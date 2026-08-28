@@ -104,6 +104,16 @@ would have undone the player's own restriction the moment they loaded a plan.
 
 ## New levers
 
+### A standing refit order can be cancelled from the ship list
+`PENDING` — `ShipListScreenItem.cs` (`OnRefitClicked`)
+
+**Source: maintainer.**
+
+Ordering a refit was one-way: the button reopened the chooser and there was no way back short of
+scrapping the ship. It now toggles like the scrap icon beside it — a second click drops the refit
+goal and clears the ship's orders — and the icon stays lit in gold while the order stands, so the
+list says which ships are on their way to a yard.
+
 ### A default colony plan per governor type
 `c5f1f9a5` — `Empire.cs`, `PoliciesScreen.cs`, `GovernorDetailsComponent.cs`
 

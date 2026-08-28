@@ -42,7 +42,13 @@ namespace Ship_Game
         // Trade loses the Freighter Priority row and Inter-Empire Trade (-52). All three left
         // for Policies.
         const float ColonizationBoxH = 130f, ConstructionBoxH = 165f,
-                    TradeBoxH = 152f, NotificationsBoxH = 498f; // frame just tall enough for its content: at 456 Inhibition spilled, at 500 it left empty space that stretched the window (bench 487)
+                    TradeBoxH = 152f,
+                    // two switches + slider label + slider + the column title + seven paired
+                    // category rows + Inhibition, at the 26 per row this frame has always used.
+                    NotificationsBoxH = 394f;
+        // the second column's X inside the Notifications frame, a constant the rows are placed
+        // FROM - never a share of the width left over (bench 523)
+        const float CatColumnSplit = 148f;
 
         public AutomationScreen(UniverseScreen u) : base(u, toPause: u)
         {
@@ -109,48 +115,75 @@ namespace Ship_Game
             // all is the only question here; how it leaves the screen is the one switch above.
             // A few categories carry indented SHOW sub-options (the old noisy alerts, kept as fine
             // filters); they grey with their parent category.
-            (NotificationCategory cat, string title, LocalizedText tip)[] cats =
+            //
+            // (maintainer, bench 523) The families sit in TWO columns, titled, so the ladder stops
+            // growing downward as sub-options are added. The split is by WHOLE family: a category
+            // and its indented sub-options always stay in the same column, never astride the two.
+            notifications.Add(new UILabel("Categories Shown", Fonts.Arial12Bold, Colors.Cream));
+
+            (NotificationCategory cat, string title, LocalizedText tip)[] leftCats =
             {
                 (NotificationCategory.Exploration,  "Exploration",  GameText.NotifCatExplorationTip),
                 (NotificationCategory.Colony,       "Colony",       GameText.NotifCatColonyTip),
                 (NotificationCategory.Construction, "Construction", GameText.NotifCatConstructionTip),
                 (NotificationCategory.Combat,       "Combat",       GameText.NotifCatCombatTip),
+            };
+            (NotificationCategory cat, string title, LocalizedText tip)[] rightCats =
+            {
                 (NotificationCategory.Diplomacy,    "Diplomacy",    GameText.NotifCatDiplomacyTip),
                 (NotificationCategory.Espionage,    "Espionage",    GameText.NotifCatEspionageTip),
                 (NotificationCategory.Economy,      "Economy",      GameText.NotifCatEconomyTip),
                 (NotificationCategory.Events,       "Events",       GameText.NotifCatEventsTip),
                 (NotificationCategory.Threats,      "Threats",      GameText.NotifCatThreatsTip),
             };
-            foreach ((NotificationCategory cat, string title, LocalizedText tip) in cats)
-            {
-                NotificationCategory c = cat; // capture per iteration
-                var subBoxes = new Array<UICheckBox>(); // indented Show sub-options that grey with the parent
-                var showBox = new UICheckBox(0f, 0f, () => !GlobalStats.IsHiddenCategory(c),
-                                             show =>
-                                             {
-                                                 GlobalStats.SetHiddenCategory(c, !show);
-                                                 foreach (UICheckBox sub in subBoxes) sub.Greyed = !show;
-                                             },
-                                             Fonts.Arial12Bold, title, tip);
-                notifications.Add(showBox);
 
-                // indented Show sub-options, checked by default (positive voice on the old flags),
-                // greyed when the parent category is hidden - they filter WITHIN the category.
-                void AddSub(Func<bool> get, Action<bool> set, string subTitle, LocalizedText subTip)
+            var left = new Array<UIElementV2>();
+            var right = new Array<UIElementV2>();
+            BuildColumn(leftCats, left);
+            BuildColumn(rightCats, right);
+
+            for (int i = 0; i < Math.Max(left.Count, right.Count); ++i)
+            {
+                if (i < left.Count && i < right.Count)
+                    notifications.Add(new SplitElement(left[i], right[i]) { Split = CatColumnSplit });
+                else
+                    notifications.Add(i < left.Count ? left[i] : right[i]);
+            }
+
+            void BuildColumn((NotificationCategory cat, string title, LocalizedText tip)[] cats,
+                             Array<UIElementV2> column)
+            {
+                foreach ((NotificationCategory cat, string title, LocalizedText tip) in cats)
                 {
-                    var sub = new UICheckBox(0f, 0f, get, set, Fonts.Arial12Bold, subTitle, subTip)
-                        { Indent = 18, Greyed = GlobalStats.IsHiddenCategory(c) };
-                    subBoxes.Add(sub);
-                    notifications.Add(sub);
-                }
-                if (c == NotificationCategory.Colony)
-                {
-                    AddSub(() => !P.DisableVolcanoWarning,    v => P.DisableVolcanoWarning = !v,    "Volcano",    GameText.DisableVolcanoActivationOrDeactivation);
-                    AddSub(() => !P.DisableStarvationWarning, v => P.DisableStarvationWarning = !v, "Starvation", GameText.EnableStarvationWarningTip);
-                }
-                else if (c == NotificationCategory.Combat)
-                {
-                    AddSub(() => !P.DisableCrashSiteWarning, v => P.DisableCrashSiteWarning = !v, "Crash Sites", GameText.DisableCrashSiteAlertsTip);
+                    NotificationCategory c = cat; // capture per iteration
+                    var subBoxes = new Array<UICheckBox>(); // indented Show sub-options that grey with the parent
+                    var showBox = new UICheckBox(0f, 0f, () => !GlobalStats.IsHiddenCategory(c),
+                                                 show =>
+                                                 {
+                                                     GlobalStats.SetHiddenCategory(c, !show);
+                                                     foreach (UICheckBox sub in subBoxes) sub.Greyed = !show;
+                                                 },
+                                                 Fonts.Arial12Bold, title, tip);
+                    column.Add(showBox);
+
+                    // indented Show sub-options, checked by default (positive voice on the old flags),
+                    // greyed when the parent category is hidden - they filter WITHIN the category.
+                    void AddSub(Func<bool> get, Action<bool> set, string subTitle, LocalizedText subTip)
+                    {
+                        var sub = new UICheckBox(0f, 0f, get, set, Fonts.Arial12Bold, subTitle, subTip)
+                            { Indent = 18, Greyed = GlobalStats.IsHiddenCategory(c) };
+                        subBoxes.Add(sub);
+                        column.Add(sub);
+                    }
+                    if (c == NotificationCategory.Colony)
+                    {
+                        AddSub(() => !P.DisableVolcanoWarning,    v => P.DisableVolcanoWarning = !v,    "Volcano",    GameText.DisableVolcanoActivationOrDeactivation);
+                        AddSub(() => !P.DisableStarvationWarning, v => P.DisableStarvationWarning = !v, "Starvation", GameText.EnableStarvationWarningTip);
+                    }
+                    else if (c == NotificationCategory.Combat)
+                    {
+                        AddSub(() => !P.DisableCrashSiteWarning, v => P.DisableCrashSiteWarning = !v, "Crash Sites", GameText.DisableCrashSiteAlertsTip);
+                    }
                 }
             }
             // Inhibition Alerts stays here (Ludo) but out of the auto-clear group: it is a map

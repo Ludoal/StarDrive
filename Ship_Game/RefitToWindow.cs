@@ -34,7 +34,10 @@ namespace Ship_Game
         ShipInfoOverlayComponent ShipInfoOverlay;
         bool Rush;
 
-        const int PopupW = 420;
+        // 460, not 420 (maintainer, bench 523): with a fleet ship the foot carries THREE
+        // buttons, and the centred trio ran wider than the frame - the outer two crossed the
+        // border, which is what made the corners read as badly drawn.
+        const int PopupW = 460;
         const int RowH = 40, MaxRows = 8;
         const int RowPitch = RowH + 4;  // the list advances by EntryHeight + ItemPadding.Y(4)
         const int ListPad = 34;         // housing insets (15 top + 15 bot) + slack so one row never scrolls
