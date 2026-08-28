@@ -19,6 +19,17 @@ namespace Ship_Game
 
         [StarData] public ColonyBlueprints Blueprints {get; private set;}
 
+        // Ludoal fork: this colony defers its plan to the empire's default for its governor type
+        // (Policies > Colony). A plain bool, and NEW - so an older save has no value for it, every
+        // existing colony reads false, and nothing can quietly slip under a policy the player never
+        // set. Custom is still what having a plan without this flag means; None is neither.
+        //
+        // It survives the plan itself on purpose: changing the governor type to one that cannot
+        // carry a plan wipes the blueprints, and that wipe is MECHANICAL, not a choice the player
+        // made. The flag stays, the colony resolves to no plan, and it follows its row again the
+        // day it goes back to a type that can carry one.
+        [StarData] public bool GovBlueprintAuto;
+
         public bool HasBlueprints => Blueprints != null;
         public bool HasExclusiveBlueprints => Blueprints?.Exclusive == true;
         bool RequiredInBlueprints(Building b) => Blueprints?.IsRequired(b) == true;

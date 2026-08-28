@@ -143,6 +143,68 @@ namespace Ship_Game
             get => (Planet.BuildMandate)EmpireScrapMandateValue;
             set => EmpireScrapMandateValue = (int)value;
         }
+
+        // Ludoal fork: the empire's default colony plan, one per governor type (Policies > Colony).
+        // A colony whose Blueprint is set to Auto follows the row of its own governor type; Custom
+        // and None are never touched.
+        //
+        // Stored as a flat Array<string> indexed by (int)ColonyType - a collection of strings, the
+        // one shape the vanilla reader is certain to carry, and no new type enters the save graph.
+        // The plan is named, never indexed: a name is the same contract the player's blueprint
+        // files already use, so a renamed or deleted file is DETECTED rather than silently pointing
+        // at whatever now sits at that position. The KEY is positional, which is safe because the
+        // ColonyType members carry explicit values and cannot be reordered without breaking older
+        // saves anyway.
+        //
+        // Absent from an older save, the array simply stays empty: every row reads as "no default",
+        // and no colony changes its conduct. There is nothing to seed and no migration to guard.
+        [StarData] Array<string> BlueprintPolicyValue = new();
+
+        const int BlueprintPolicySlots = 7; // ColonyType members
+
+        public string GetBlueprintPolicy(Planet.ColonyType type)
+        {
+            int i = (int)type;
+            return i >= 0 && i < BlueprintPolicyValue.Count ? BlueprintPolicyValue[i] ?? "" : "";
+        }
+
+        public void SetBlueprintPolicy(Planet.ColonyType type, string blueprintName)
+        {
+            while (BlueprintPolicyValue.Count < BlueprintPolicySlots)
+                BlueprintPolicyValue.Add("");
+
+            BlueprintPolicyValue[(int)type] = blueprintName ?? "";
+            ResolveBlueprintPolicy(type);
+        }
+
+        // Re-resolves every colony of this governor type that is left on Auto. Called when the row
+        // changes, and when a colony's governor type changes under it.
+        public void ResolveBlueprintPolicy(Planet.ColonyType type)
+        {
+            foreach (Planet planet in OwnedPlanets)
+                if (planet.GovBlueprintAuto && planet.CType == type)
+                    ApplyBlueprintPolicy(planet);
+        }
+
+        // Hands one Auto colony the plan its row names - or clears it, which is what an unset row,
+        // a plan whose file is gone, and a governor type that cannot carry a plan all mean.
+        public void ApplyBlueprintPolicy(Planet planet)
+        {
+            if (!planet.GovBlueprintAuto)
+                return;
+
+            string name = GetBlueprintPolicy(planet.CType);
+            if (name.NotEmpty() && ResourceManager.TryGetBlueprints(name, out BlueprintsTemplate template))
+            {
+                if (!planet.HasBlueprints || planet.Blueprints.Name != name)
+                    planet.AddBlueprints(template, this);
+            }
+            else if (planet.HasBlueprints)
+            {
+                planet.RemoveBlueprints();
+            }
+        }
+
         [StarData] public bool AutoResearch;
         [StarData] public bool AutoBuildResearchStations;
         [StarData] public bool AutoBuildMiningStations;
@@ -744,6 +806,10 @@ namespace Ship_Game
             OwnedPlanets.Add(planet);
             OwnedSolarSystems.AddUniqueRef(planet.System);
             planet.RemoveBlueprints();
+            // Ludoal fork: the plan goes, and so does the standing order to fetch another one.
+            // A world that changes hands arrives with someone else's buildings; it waits for its
+            // new owner's word rather than falling under a doctrine on arrival.
+            planet.GovBlueprintAuto = false;
             Universe.OnPlanetOwnerAdded(this, planet);
             if (planet.System.GetPotentialOpsOwner(out Empire potentialMiningOpsOwner))
             {

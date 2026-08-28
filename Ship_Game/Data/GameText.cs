@@ -7029,6 +7029,18 @@ namespace Ship_Game
         BlueprintModeCustom = 7154,
         /// <summary>Custom means this colony follows a plan of its own.</summary>
         BlueprintModeTip = 7155,
+        /// <summary>Auto</summary>
+        BlueprintModeAuto = 7157,
+        /// <summary>Follow the empire's default plan for this governor type, set in Policies &gt; Colony. If no default is set there, this colony simply has no plan.</summary>
+        BlueprintModeAutoTip = 7158,
+        /// <summary>Default plan by governor</summary>
+        PolBlueprintsHeading = 7159,
+        /// <summary>The plan a colony follows when its Blueprint is set to Auto.</summary>
+        PolBlueprintsTip = 7160,
+        /// <summary>not found</summary>
+        BlueprintNotFound = 7161,
+        /// <summary>This plan is Exclusive. Set it as the default?</summary>
+        BlueprintExclusiveWarn = 7162,
         /// <summary>Blueprint name</summary>
         BlueprintNameLabel = 7150,
         /// <summary>Completion</summary>

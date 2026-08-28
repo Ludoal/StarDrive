@@ -28594,3 +28594,27 @@ BlueprintNextLabel:
  Id: 7156
  ENG: "Next"
  FRA: "Suivant"
+BlueprintModeAuto:
+ Id: 7157
+ ENG: "Auto"
+ FRA: "Auto"
+BlueprintModeAutoTip:
+ Id: 7158
+ ENG: "Follow the empire's default plan for this governor type, set in Policies > Colony. If no default is set there, this colony simply has no plan."
+ FRA: "Suivre le plan par défaut de l'empire pour ce type de gouverneur, posé dans Directives > Colonie. Si aucun défaut n'y est posé, cette colonie n'a simplement pas de plan."
+PolBlueprintsHeading:
+ Id: 7159
+ ENG: "Default plan by governor"
+ FRA: "Plan par défaut selon le gouverneur"
+PolBlueprintsTip:
+ Id: 7160
+ ENG: "The plan a colony follows when its Blueprint is set to Auto. Colonies on Custom or None are never touched. What a plan may build or scrap is still bounded by that colony's mandates, and a queue you filled by hand is left alone."
+ FRA: "Le plan que suit une colonie dont le Schéma est réglé sur Auto. Les colonies en Custom ou None ne sont jamais touchées. Ce qu'un plan peut bâtir ou démolir reste borné par les mandats de la colonie, et une file remplie à la main n'est pas touchée."
+BlueprintNotFound:
+ Id: 7161
+ ENG: "not found"
+ FRA: "introuvable"
+BlueprintExclusiveWarn:
+ Id: 7162
+ ENG: "This plan is Exclusive. Colonies of this governor type left on Auto will build nothing outside it, and may scrap military buildings the plan does not name if their Scrap Mandate allows it. Set it as the default?"
+ FRA: "Ce plan est exclusif. Les colonies de ce type de gouverneur laissées sur Auto ne construiront rien en dehors de lui, et pourront démolir les bâtiments militaires absents du plan si leur Mandat de démolition l'autorise. Le poser comme défaut ?"

@@ -82,8 +82,17 @@ namespace Ship_Game
                   ? ColonyType.Colony
                   : Owner.AssessColonyNeeds(this);
 
+            // Ludoal fork: a colony the player FOUNDS is born on the empire's doctrine - it starts
+            // empty, so a default plan costs it nothing. A planet TAKEN keeps none of this: it
+            // arrives with the enemy's buildings, and a plan let loose on it would start scrapping
+            // the spoils the turn they were won. Empire.AddPlanet clears the flag for that reason;
+            // this runs after it, and only on the colonization path.
             if (OwnerIsPlayer)
+            {
+                GovBlueprintAuto = true;
+                Owner.ApplyBlueprintPolicy(this);
                 Universe.Notifications?.AddColonizedNotification(this, Universe.Player);
+            }
         }
 
         void NewColonyAffectRelations()

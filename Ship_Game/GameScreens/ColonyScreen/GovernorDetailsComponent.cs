@@ -50,10 +50,13 @@ namespace Ship_Game
         UIButton BuildShipyard;
         UIButton EditBlueprints, LoadBlueprints;
         // Ludoal fork (maintainer feedback): the plan's mode. DERIVED, never stored - a colony
-        // either has a plan of its own or it does not. Auto, which will defer to the empire's
-        // plan for this governor type, waits for that table: an option that points at nothing
-        // is an option that lies.
-        public enum BlueprintMode { None, Custom }
+        // either has a plan of its own or it does not - and Auto, which defers to the empire's
+        // table of default plans per governor type (Policies > Colony). Auto shipped only once
+        // that table existed: an option that points at nothing is an option that lies.
+        // Auto is a POSITION, not a stored value: this enum only ever describes what the list
+        // shows. The colony's truth is Planet.GovBlueprintAuto plus whether it carries a plan,
+        // which is why adding a member here touches no save.
+        public enum BlueprintMode { None, Custom, Auto }
         DropOptions<BlueprintMode> BlueprintModeList;
         bool ModeListWasOpen;
         private float ButtonUpdateTimer;   // updates buttons once per second
@@ -221,12 +224,13 @@ namespace Ship_Game
             // vocabulary the player has already learned costs nothing to read.
             EditBlueprints   = BpIconButton("NewUI/icon_build_edit", GameText.EditBluprintsTip, OnEditblueprintsClicked);
             LoadBlueprints   = BpIconButton("NewUI/icon_build_add", GameText.UploadBluprintsTip, OnLoadBlueprintsClicked);
-            // None replaces the cross: clearing a plan is one of the two states of this list,
-            // not a gesture of its own.
+            // None replaces the cross: clearing a plan is one of this list's states, not a
+            // gesture of its own. Auto leads, as it does on the mandate pickers.
             BlueprintModeList = Add(new DropOptions<BlueprintMode>(100, 18));
+            BlueprintModeList.AddOption(option: GameText.BlueprintModeAuto, BlueprintMode.Auto);
             BlueprintModeList.AddOption(option: GameText.MandateNone, BlueprintMode.None);
             BlueprintModeList.AddOption(option: GameText.BlueprintModeCustom, BlueprintMode.Custom);
-            BlueprintModeList.ActiveValue = Planet.HasBlueprints ? BlueprintMode.Custom : BlueprintMode.None;
+            BlueprintModeList.ActiveValue = CurrentBlueprintMode;
             BlueprintModeList.OnValueChange = OnBlueprintModeChanged;
             BlueprintModeLabel = Add(new UILabel(GameText.BlueprintModeLabel, Font, Color.Wheat)
                 { Tooltip = GameText.BlueprintModeTip });
@@ -565,8 +569,15 @@ namespace Ship_Game
             // Auto; the player can still uncheck each toggle after (the governor no longer forces)
             Planet.AutoFood = Planet.AutoProd = Planet.AutoColonists = true;
             WorldDescription.Text = GetParsedDescription();
+            // ⚠ this wipe is MECHANICAL - these two types carry no plan at all (no blueprint can
+            // even be saved as TradeHub: the template constructor folds it into Colony). It must
+            // not be read as the player choosing None, so GovBlueprintAuto is left alone: an Auto
+            // colony parked on Colony simply has no plan, and picks its row up again if it goes
+            // back to a type that can carry one.
             if (type is Planet.ColonyType.Colony or Planet.ColonyType.TradeHub)
                 Planet.RemoveBlueprints();
+            else
+                Planet.Owner.ApplyBlueprintPolicy(Planet);
         }
 
         public void OnBlueprintsChanged(BlueprintsTemplate template)
@@ -575,6 +586,10 @@ namespace Ship_Game
             // because a blueprint bought past them anyway - now that it does not, that line would
             // quietly undo the very gesture the player came for: follow this plan, demolish
             // nothing. The plan is the PLAN; the mandates stay the player's.
+
+            // an explicit gesture sorts the colony out of the doctrine: the player picked THIS
+            // plan, so the empire's row must not overwrite it on its next change.
+            Planet.GovBlueprintAuto = false;
             Planet.AddBlueprints(template, Player);
             ColonyTypeList.ActiveValue = Planet.CType;
             OnColonyTypeChanged(Planet.CType);
@@ -698,7 +713,7 @@ namespace Ship_Game
                 BlueprintModeLabel.Visible = BlueprintModeList.Visible = LoadBlueprints.Visible;
                 // the list mirrors the colony's real state; setting it only when it differs keeps
                 // a per-frame write from fighting the player's own click.
-                BlueprintMode mode = Planet.HasBlueprints ? BlueprintMode.Custom : BlueprintMode.None;
+                BlueprintMode mode = CurrentBlueprintMode;
                 if (BlueprintModeList.ActiveValue != mode)
                     BlueprintModeList.ActiveValue = mode;
                 if (BlueprintModeList.Open != ModeListWasOpen)
@@ -860,14 +875,34 @@ namespace Ship_Game
             Screen.ScreenManager.AddScreen(new LoadBlueprintsToColonyScreen(Screen, this, Planet.Name));
         }
 
+        // The colony's real state, read in ONE place: Auto is a standing order, Custom is a plan
+        // the player put there himself, None is neither. Auto outranks the plan it produced -
+        // a colony following its policy still reads Auto once the policy has handed it a plan.
+        BlueprintMode CurrentBlueprintMode => Planet.GovBlueprintAuto ? BlueprintMode.Auto
+                                            : Planet.HasBlueprints   ? BlueprintMode.Custom
+                                                                     : BlueprintMode.None;
+
         void OnBlueprintModeChanged(BlueprintMode mode)
         {
             // Custom is not a thing you pick - it is what loading or editing a plan makes true.
-            // Only None acts, and only when there is something to clear.
-            if (mode == BlueprintMode.None && Planet.HasBlueprints)
+            // Auto and None are the two gestures this list carries.
+            switch (mode)
             {
-                Planet.RemoveBlueprints();
-                BlueprintsName.Text = "";
+                case BlueprintMode.Auto:
+                    Planet.GovBlueprintAuto = true;
+                    Planet.Owner.ApplyBlueprintPolicy(Planet);
+                    BlueprintsName.Text = Planet.HasBlueprints ? Planet.Blueprints.Name : "";
+                    break;
+                case BlueprintMode.None:
+                    // leaving Auto is a gesture too: the standing order goes with the plan,
+                    // otherwise the next policy change would quietly hand the colony another one.
+                    Planet.GovBlueprintAuto = false;
+                    if (Planet.HasBlueprints)
+                    {
+                        Planet.RemoveBlueprints();
+                        BlueprintsName.Text = "";
+                    }
+                    break;
             }
         }
 

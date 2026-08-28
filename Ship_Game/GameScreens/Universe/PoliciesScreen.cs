@@ -33,12 +33,19 @@ namespace Ship_Game
 
         DropOptions<CargoPriority> FreighterPriorityDropDown;
         DropOptions<Planet.BuildMandate> EmpireBuildMandateList, EmpireScrapMandateList;
+        DropOptions<string>[] BlueprintPolicyLists;
         UIPanel PriorityHost;
 
         // fixed box geometry - the boxes own their sizes, the columns just stack them.
         // Heights: one-tab strip (~24) + 12 top pad + 20 notice + 26 per row + 12 bottom pad.
         const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
-        const float EconomyBoxH = 94f, ResearchBoxH = 94f, ColonyBoxH = 190f, TradeBoxH = 146f;
+        // Colony carries the two mandates AND the default-plan table: a heading plus one row per
+        // governor type that can hold a plan. Written as a count times a row height, so adding a
+        // governor type later moves the box by itself instead of needing a new magic number.
+        const float PolicyRowH = 26f;
+        const float BlueprintRows = 6f;                       // heading + 5 governor types
+        const float ColonyBoxH = 190f + BlueprintRows * PolicyRowH;
+        const float EconomyBoxH = 94f, ResearchBoxH = 94f, TradeBoxH = 146f;
 
         // The Prioritization rows live INSIDE the Construction frame, under its notice and its
         // Rush row. Both numbers are CONSTANTS and the frame is sized FROM them - never the
@@ -94,6 +101,20 @@ namespace Ship_Game
                 { Tooltip = GameText.BuildMandateTip }, EmpireBuildMandateList) { Split = MandateSplit });
             colony.Add(new SplitElement(new UILabel(GameText.ScrapMandate, Fonts.Arial12Bold, Colors.Cream)
                 { Tooltip = GameText.ScrapMandateTip }, EmpireScrapMandateList) { Split = MandateSplit });
+
+            // the default plan per governor type. Only a colony whose Blueprint is set to Auto
+            // follows its row; Custom and None are never touched from here.
+            colony.Add(new UILabel(GameText.PolBlueprintsHeading, Fonts.Arial12Bold, Colors.Cream)
+                { Tooltip = GameText.PolBlueprintsTip });
+            BlueprintPolicyLists = new DropOptions<string>[BlueprintGovernors.Length];
+            for (int i = 0; i < BlueprintGovernors.Length; ++i)
+            {
+                (Planet.ColonyType type, GameText label) = BlueprintGovernors[i];
+                DropOptions<string> list = MakeBlueprintPolicyList(player, type);
+                BlueprintPolicyLists[i] = list;
+                colony.Add(new SplitElement(new UILabel(label, Fonts.Arial12, Colors.Cream), list)
+                    { Split = MandateSplit });
+            }
             colony.ReverseZOrder(); // an open list draws over the rows beneath it
 
             UIList research = NewBox(new RectF(x0, top + EconomyBoxH + BoxGap, BoxW, ResearchBoxH), "Research");
@@ -141,6 +162,66 @@ namespace Ship_Game
             RebuildPriorityRows();
 
             base.LoadContent();
+        }
+
+        // ⚠ FIVE rows, not seven. ColonyType has seven members, but Colony and TradeHub can hold
+        // no plan at all: switching a colony to either WIPES its blueprints (GovernorDetails-
+        // Component.OnColonyTypeChanged), and no template can even be saved as TradeHub - the
+        // BlueprintsTemplate constructor folds TradeHub into Colony. Rows for those two would be
+        // permanently empty. This note is here so the omission reads as a decision, not an oversight.
+        static readonly (Planet.ColonyType Type, GameText Label)[] BlueprintGovernors =
+        {
+            (Planet.ColonyType.Core,         GameText.Core),
+            (Planet.ColonyType.Industrial,   GameText.Industrial),
+            (Planet.ColonyType.Agricultural, GameText.Agricultural),
+            (Planet.ColonyType.Research,     GameText.Research),
+            (Planet.ColonyType.Military,     GameText.Military),
+        };
+
+        // One picker: the plans of THIS category, plus the empty position. The empty position is a
+        // real value - a row left unset means an Auto colony of that type simply has no plan, which
+        // is why the table can ship blank and change nothing.
+        DropOptions<string> MakeBlueprintPolicyList(Empire player, Planet.ColonyType type)
+        {
+            var list = new DropOptions<string>(170, 18);
+            list.AddOption(option: "--", "");
+            foreach (BlueprintsTemplate t in ResourceManager.GetAllBlueprints())
+                if (t.ColonyType == type)
+                    list.AddOption(option: t.Name, t.Name);
+
+            string current = player.GetBlueprintPolicy(type);
+            // a plan whose file was deleted or renamed outside the game: say so on the row rather
+            // than snapping the picker back to blank, which would look like the player never set it.
+            if (current.NotEmpty() && !ResourceManager.TryGetBlueprints(current, out _))
+                list.AddOption(option: $"{current} ({Localizer.Token(GameText.BlueprintNotFound)})", current);
+
+            list.ActiveValue = current;
+            list.OnValueChange = name => OnBlueprintPolicyChanged(player, type, list, name);
+            return list;
+        }
+
+        // Assigning an EXCLUSIVE plan is confirmed: it is the one value here that can make a
+        // governor scrap what the plan does not name, and a table is exactly where that gets
+        // clicked past without reading.
+        void OnBlueprintPolicyChanged(Empire player, Planet.ColonyType type,
+                                      DropOptions<string> list, string name)
+        {
+            string previous = player.GetBlueprintPolicy(type);
+            if (name == previous)
+                return;
+
+            if (name.NotEmpty()
+                && ResourceManager.TryGetBlueprints(name, out BlueprintsTemplate template)
+                && template.Exclusive)
+            {
+                var confirm = new MessageBoxScreen(this, Localizer.Token(GameText.BlueprintExclusiveWarn));
+                confirm.Accepted  = () => Universe.RunOnSimThread(() => player.SetBlueprintPolicy(type, name));
+                confirm.Cancelled = () => list.ActiveValue = previous;
+                ScreenManager.AddScreen(confirm);
+                return;
+            }
+
+            Universe.RunOnSimThread(() => player.SetBlueprintPolicy(type, name));
         }
 
         // the one-line doctrine that heads a category - what this box governs, in the clear
