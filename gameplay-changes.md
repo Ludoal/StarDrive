@@ -105,7 +105,7 @@ would have undone the player's own restriction the moment they loaded a plan.
 ## New levers
 
 ### A new colony can rush its first turns
-`PENDING` — `SBProduction.cs`, `Planet_Colonize.cs`, `PoliciesScreen.cs`
+`3b2a73f2` — `SBProduction.cs`, `Planet_Colonize.cs`, `PoliciesScreen.cs`
 
 **Source: maintainer.**
 
