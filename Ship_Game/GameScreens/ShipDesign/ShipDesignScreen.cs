@@ -1813,14 +1813,13 @@ namespace Ship_Game
                 rows.Add(row);
             }
 
-            foreach (ShipHull hull in AvailableHulls.Sorted(h => h.VisibleName))
-            {
-                if (HullMatchesFilter(hull))
-                    Bucket(Localizer.GetRole(hull.Role, Player), new ShipYardBrowserItem(Player, hull));
-            }
+            // ⚠ no bare hull rows here (maintainer, bench 529): this view answers "what have I
+            // designed, sorted by what it does", and a hull with no modules does nothing yet.
+            // Every hull already has its own row in the by-class view, which is the view you go
+            // to in order to start a design - listing them twice only lengthened this one.
 
-            // designsByHull is already filtered by CanShowDesign, so the same rows appear in
-            // both modes - only their grouping changes
+            // designsByHull is already filtered by CanShowDesign, so the designs appear in both
+            // modes - only their grouping changes
             foreach (Array<IShipDesign> designs in designsByHull.Values)
             {
                 foreach (IShipDesign design in designs)
@@ -1841,11 +1840,9 @@ namespace Ship_Game
                 var group = new ShipYardBrowserItem(Player, null, role);
                 HullSelectList.AddItem(group);
 
-                // ours first, then the strongest, then alphabetical - the load popup's order,
-                // with the bare hulls leading since they are where a new design starts
+                // ours first, then the strongest, then alphabetical - the load popup's order
                 foreach (ShipYardBrowserItem row in byRole[role]
-                             .OrderBy(r => !r.IsBareHull)
-                             .ThenBy(r => r.Design == null ? "" : (r.Design.IsPlayerDesign ? "0" : "1"))
+                             .OrderBy(r => r.Design == null ? "" : (r.Design.IsPlayerDesign ? "0" : "1"))
                              .ThenByDescending(r => r.Design?.BaseStrength ?? 0f)
                              .ThenBy(r => r.Design?.Name ?? r.Hull.VisibleName))
                 {
