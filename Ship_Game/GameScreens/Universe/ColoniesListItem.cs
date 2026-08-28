@@ -142,7 +142,8 @@ namespace Ship_Game
             {
                 Max = P.MaxPopulationBillionFor(P.Owner),
                 Progress = P.PopulationBillion,
-                color = "blue"
+                color = "blue",
+                FillTint = ColonyScreen.PopBarTint, // one tint, both screens
             };
             PopDropDown = new DropOptions<Planet.GoodState>(new Rectangle(ddX, PopStorage.pBar.Y + PopStorage.pBar.Height / 2 - 9, ddwidth, 18));
             // auto-supplies: QUI decides lives on the colony screen's Auto checkbox; here

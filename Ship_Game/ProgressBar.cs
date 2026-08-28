@@ -15,6 +15,10 @@ public sealed class ProgressBar
     public float Progress;
     public float Max;
     public string color = "brown";
+    // Ludoal fork (maintainer, bench 524): the FILL's tint. White leaves the gradient as the
+    // artist drew it; a muted tint pulls its saturation down, which is how two bars that share
+    // a colour stop reading as the same quantity. Only the fill - the housing keeps its own.
+    public Color FillTint = Color.White;
     public bool DrawProgressText = true; // draw "50%" or "50/100"
     public bool DrawPercentage = false;
     public bool Fraction10Values = false;
@@ -84,9 +88,9 @@ public sealed class ProgressBar
         }
         if (Max >= 0f)
         {
-            batch.Draw(ResourceManager.Texture($"NewUI/progressbar_grd_{color}_left"), gLeft, Color.White);
-            batch.Draw(ResourceManager.Texture($"NewUI/progressbar_grd_{color}_mid"), gMiddle, Color.White);
-            batch.Draw(ResourceManager.Texture($"NewUI/progressbar_grd_{color}_right"), gRight, Color.White);
+            batch.Draw(ResourceManager.Texture($"NewUI/progressbar_grd_{color}_left"), gLeft, FillTint);
+            batch.Draw(ResourceManager.Texture($"NewUI/progressbar_grd_{color}_mid"), gMiddle, FillTint);
+            batch.Draw(ResourceManager.Texture($"NewUI/progressbar_grd_{color}_right"), gRight, FillTint);
             float percent = PercentForFill;
             int maskX = (int)(percent * pBar.Width + pBar.X);
             int maskW = pBar.Width - (int)(percent * pBar.Width);

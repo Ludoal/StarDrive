@@ -93,6 +93,13 @@ namespace Ship_Game
         readonly ProgressBar FoodStorage;
         readonly ProgressBar ProdStorage;
         readonly ProgressBar PopStorage; // bench 426: the population bar joins the Supply panel
+
+        // Ludoal fork (maintainer, bench 524): population wears the same blue as research, and
+        // the two bars sat close enough to be read as one another. A GREY rather than a paler
+        // blue, and a dark one: the value is printed in white over the fill, so a light tint
+        // would cost the reading it was meant to help. Kept here rather than at each site so
+        // both screens desaturate by exactly the same amount.
+        public static readonly Color PopBarTint = new(110, 115, 122);
         readonly Rectangle FoodStorageIcon;
         readonly Rectangle ProfStorageIcon;
 
@@ -345,6 +352,8 @@ namespace Ship_Game
             PopStorage.Max = p.MaxPopulationBillionFor(p.Owner);
             PopStorage.Progress = p.PopulationBillion;
             PopStorage.color = "blue";
+            // muted: at full blue it read as another research bar (maintainer, bench 524)
+            PopStorage.FillTint = ColonyScreen.PopBarTint;
             var iconPop = ResourceManager.Texture("UI/icon_pop_22");
             ColonistsIcon = new Rectangle((int)PStorage.X + 20, (int)(PStorage.Y + storeRow3 + 9 - iconPop.Height / 2f), iconPop.Width, iconPop.Height);
             ColonistsDropDown = new DropOptions<Planet.GoodState>(new Vector2(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 36, PStorage.Y + storeRow3), (int)(0.2f * PStorage.Width), 18);
