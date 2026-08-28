@@ -372,3 +372,10 @@ accepts terraformables.
 The alert fired every turn whenever `Money / AllSpending < 2`, regardless of whether the empire
 was actually losing money. Now requires `NetIncome < 0` as well, and fires at most once per
 StarDate year.
+
+### Blueprint completion counts plan entries, not buildings
+
+Completion counted building instances, so a colony holding two of the same planned building
+reported one plan entry twice and could reach 100% with a planned building never built. It now
+counts distinct plan entries, like the achievable figure it sits beside. A linked blueprint
+therefore hands over when the plan is genuinely complete, which may be later than before.

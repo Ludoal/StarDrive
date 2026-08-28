@@ -79,9 +79,20 @@ namespace Ship_Game.Universe.SolarBodies
                 return;
             }
 
-            int totalRequiredBuilt = P.Buildings.ToArray().Count(IsRequired);
-            float completion = (float)totalRequiredBuilt / totalPlanned;
-            PercentCompleted = (int)(completion * 100);
+            // ⚠ counted by NAME, like the achievable figure beside it (maintainer, bench 535).
+            // It counted building INSTANCES: a colony holding two of the same planned building -
+            // biospheres, terraformers, anything the governor raises more than once - reported
+            // one entry twice and hid a planned building that was never built. A plan showing
+            // 100% completed next to 75% achievable was the achievable one telling the truth.
+            //
+            // The two figures share a denominator, so they must share a unit, or comparing them
+            // means nothing - and completion is what makes a linked plan hand over.
+            var built = new HashSet<string>();
+            foreach (Building b in P.Buildings)
+                if (IsRequired(b))
+                    built.Add(b.Name);
+
+            PercentCompleted = (int)(100f * built.Count / totalPlanned);
 
             if (Completed)
                 ChangeTemplateIfLinked();
