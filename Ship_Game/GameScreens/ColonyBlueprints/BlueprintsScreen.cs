@@ -148,10 +148,13 @@ namespace Ship_Game
             float topY   = client.Y + Pad;
             float botY   = frameR.Bottom - Pad;
 
-            // BUILDINGS: the Colony screen's own list width at the 900p floor (470)
-            const float BuildingsW = 470f;
-            RectF buildableMenuR = new(frameR.Right - Pad - BuildingsW, topY, BuildingsW, botY - topY);
-            base.Add(new Submenu(buildableMenuR, GameText.Buildings));
+            // ⚠ Ludo, Blueprints chantier: the plan and the catalogue are SWAPPED. The plan is
+            // what you compose, so it takes the full-height right column; the catalogue is what
+            // you pick from, and moves to the centre. The drag that adds a building now runs
+            // left to right, the way the gesture reads.
+            const float PlanW = 470f; // the Colony screen's own list width at the 900p floor
+            RectF planAreaR = new(frameR.Right - Pad - PlanW, topY, PlanW, botY - topY);
+            SubPlanArea = base.Add(new Submenu(planAreaR, GameText.CurrentBlueprintsSubMenu));
 
             // BLUEPRINT OPTIONS: six lines plus the button row - width sized on its widest
             // row (label 150 + dropdown 100 + margins vs four small buttons at 80 pitch)
@@ -178,16 +181,16 @@ namespace Ship_Game
             base.Add(new Submenu(chainR, GameText.LinksChain));
             base.Add(new Submenu(experimentalR, GameText.BlueprintsSimulation));
 
-            // centre column: the plan grid on top, the tabbed stats block under it
+            // centre column: the buildings catalogue on top, the tabbed stats block under it
             float centreX = leftX + OptionsW + Pad;
-            float centreW = buildableMenuR.X - Pad - centreX;
-            RectF planAreaR = new(centreX, topY, centreW, (botY - topY) * 0.5f);
-            SubPlanArea = base.Add(new Submenu(planAreaR, GameText.CurrentBlueprintsSubMenu));
+            float centreW = planAreaR.X - Pad - centreX;
+            RectF buildableMenuR = new(centreX, topY, centreW, (botY - topY) * 0.5f);
+            base.Add(new Submenu(buildableMenuR, GameText.Buildings));
 
             // STATISTICS | DESCRIPTION - hovering a building raises Description on its own
             // (maintainer bench 301, the Colony screen's behavior)
-            RectF blueprintsStatsRect = new(centreX, planAreaR.Bottom + Pad, centreW,
-                                            botY - (planAreaR.Bottom + Pad));
+            RectF blueprintsStatsRect = new(centreX, buildableMenuR.Bottom + Pad, centreW,
+                                            botY - (buildableMenuR.Bottom + Pad));
             // bench 353: STATS | STATS+ | DESCRIPTION. Stats+ (index 1) is the default view; hovering a
             // building raises Description (2). A literal for Stats+, matching the Colony tab title.
             PlanStats = base.Add(new Submenu(blueprintsStatsRect,
@@ -292,13 +295,18 @@ namespace Ship_Game
 
         void CreateBlueprintsTiles(Rectangle gridPos)
         {
-            int width = gridPos.Width / SolarSystemBody.TileMaxX;
-            int height = gridPos.Height / SolarSystemBody.TileMaxY;
+            // ⚠ SQUARE cells, centred in whatever box the column gives (Blueprints chantier):
+            // dividing each side by its own count stretched the tiles to the shape of the
+            // frame, and the frame is now a tall narrow column - the building icons came out
+            // twice as high as wide. One cell size, taken from the tighter of the two.
+            int cell = System.Math.Min(gridPos.Width / SolarSystemBody.TileMaxX,
+                                       gridPos.Height / SolarSystemBody.TileMaxY);
+            int originX = gridPos.X + (gridPos.Width - cell * SolarSystemBody.TileMaxX) / 2;
 
             for (int y = 0; y < SolarSystemBody.TileMaxY; y++)
                 for (int x = 0; x < SolarSystemBody.TileMaxX; x++)
                 {
-                    UIPanel panel = base.Add(new UIPanel(new Rectangle(gridPos.X + x * width, gridPos.Y + y * height, width, height), Color.White));
+                    UIPanel panel = base.Add(new UIPanel(new Rectangle(originX + x * cell, gridPos.Y + y * cell, cell, cell), Color.White));
                     TilesList.Add(new BlueprintsTile(panel));
                 }
         }
