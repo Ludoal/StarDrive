@@ -104,6 +104,20 @@ would have undone the player's own restriction the moment they loaded a plan.
 
 ## New levers
 
+### A default colony plan per governor type
+`c5f1f9a5` — `Empire.cs`, `PoliciesScreen.cs`, `GovernorDetailsComponent.cs`
+
+**Source: maintainer.**
+
+Policies > Colony gains one row per governor type naming the blueprint a colony of that type
+follows when its Blueprint picker is set to Auto; Custom and None are never touched from here.
+The table ships empty and an unset row means no plan, so nothing changes until the player sets
+a row. Auto is new on the colony's own picker, and loading or editing a plan by hand leaves it —
+the explicit gesture outranks the doctrine. A colony the player founds is born on Auto; a
+conquered world is not, since a plan let loose on it would scrap the spoils the turn they were
+won. Assigning an Exclusive plan to a row is confirmed first. Older saves read the flag as false
+everywhere: no existing colony changes conduct.
+
 *Neutral at default: leave these alone and the game plays as vanilla.*
 
 ### Colony budget: pooled shares + Governor Spending tap
