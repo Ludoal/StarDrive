@@ -85,7 +85,9 @@ namespace Ship_Game
             if (c.Pinned) // only one is pinned, eaaasy and perfect accuracy
             {
                 a.Value += difference.Clamped(-a.Value, b.Value);
-                b.Resource.AutoBalanceWorkers(a.Value + c.Value);
+                // LaborShare, not Value: the pinned row here may be the subsistence gauge,
+                // whose display is a waterline and whose labour is zero
+                b.Resource.AutoBalanceWorkers(a.Value + c.LaborShare);
             }
             else // all 3 unlocked
             {
@@ -106,9 +108,9 @@ namespace Ship_Game
                 c.Resource.AutoBalanceWorkers(a.Value + b.Value);
             }
 
-            float sum = Sliders.Sum(s => s.Value);
+            float sum = Sliders.Sum(s => s.LaborShare);
             if (!sum.AlmostEqual(1f))
-                Log.Warning($"ColonySlider bad sum {sum} ==> F:{Food.Value} P:{Prod.Value} R:{Res.Value}");
+                Log.Warning($"ColonySlider bad sum {sum} ==> F:{Food.LaborShare} P:{Prod.LaborShare} R:{Res.LaborShare}");
 
             OnSlidersChanged?.Invoke();
         }

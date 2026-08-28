@@ -137,6 +137,14 @@ namespace Ship_Game
             set => Resource.Percent = value.NaNChecked(0f, "ColonySlider.Value");
         }
 
+        // ⚠ bench 533: what this row ALLOCATES, which is not what it always SHOWS. The
+        // subsistence gauge reads a waterline - a share nobody is working on - while the labour
+        // actually put on that row is zero, because these people never farm. The solver splits
+        // LABOUR, so it has to ask this and not the display: reading the gauge as an allocation
+        // quietly reserved a third of the colony's workforce for nothing, and the production
+        // cursor could never reach its own maximum.
+        public float LaborShare => IsCyberneticFoodRow ? P.Food.Percent : Value;
+
         public float NetValue => Resource.NetIncome;
         // The yield at 100% labor, from the same sim pass as NetValue (no UI recompute).
         public float MaxValue => Resource.NetMaxPotential;
