@@ -114,6 +114,18 @@ namespace Ship_Game
         // bar's end and the production cursor below, which says more than the old bar did.
         float SubsistenceShare => P.Prod.EstPercentForNetIncome(0);
 
+        // ⚠ bench 532: on a cybernetic colony these two rows are read against ONE scale, and it
+        // runs from 0 to what the colony makes at full labour. They used to print NET income
+        // against a NET maximum: the figure swung through negative numbers, the maximum stood
+        // for an output the cursor could never produce, and what the population ate was named
+        // rather than counted. Now production says what it MAKES, the gauge says what is EATEN,
+        // and the difference between them is the net the player used to read - visibly.
+        bool IsCyberneticProdRow => Type == ColonyResType.Prod && P.IsCybernetic;
+        float GrossOutput    => Resource.AfterTax(Resource.GrossIncome);
+        float GrossMaxOutput => Resource.AfterTax(Resource.GrossMaxPotential + Resource.FlatBonus);
+        // the waterline, in the same terms as the two figures beside it
+        bool UnderWater => P.IsCybernetic && P.Prod.AfterTax(P.Prod.GrossIncome) < P.Consumption;
+
         // ⚠ bench 530: the production row shows the WHOLE share, bar and numbers alike. It used
         // to draw the surplus while its figures reported the total - one row speaking two scales,
         // which is what made the bar leap when Auto was switched off: nothing had changed in the
@@ -234,9 +246,9 @@ namespace Ship_Game
         {
             // the waterline turns red when the colony is under it: the net income already
             // accounts for what these people eat, so there is nothing to compute (bench 529)
-            Color sliderTint = IsSubsistenceGauge && P.Prod.NetIncome < 0f ? Color.Red
-                             : IsDisabled                                  ? Color.DarkGray
-                                                                           : Color.White;
+            Color sliderTint = IsSubsistenceGauge && UnderWater ? Color.Red
+                             : IsDisabled                      ? Color.DarkGray
+                                                               : Color.White;
 
             // the track is the socle's drawing now - one arithmetic for every slider
             FloatSlider.DrawTrack(batch, Rect, Slider, Value, SliderHover, sliderTint);
@@ -276,7 +288,11 @@ namespace Ship_Game
             var font = Fonts.Arial12Bold;
             float left = LockRect.Right + 10;
             float y    = Rect.CenterY() - font.LineSpacing / 2;
-            float value = NetValue;
+            // the decimal column is shared by every numeric row, the gauge included, so the
+            // consumption lines up under the output it is subtracted from
+            float unitsW   = font.TextWidth("-100"); // room for 3 digits + a sign in each column
+            float curComma = left + unitsW;
+            float value = IsCyberneticProdRow ? GrossOutput : NetValue;
             if (value > -0.05f && value < 0.05f)
                 value = 0f; // what rounds to zero neither shows a minus nor wears pink
 
@@ -287,7 +303,8 @@ namespace Ship_Game
             // them; "Consumption" says what the bar is - the share of their output they eat.
             if (IsCyberneticFoodRow)
             {
-                batch.DrawString(font, Localizer.Token(GameText.ConsumptionRow), new Vector2(left, y), Colors.Cream);
+                // grey: it is a demand, not something the player is producing or steering
+                DrawAlignedNumber(batch, font, P.Consumption.String(), curComma, y, Color.Gray);
                 return;
             }
 
@@ -307,9 +324,11 @@ namespace Ship_Game
             // The current value and the max (100%-labor) value are two INDEPENDENT decimal
             // columns, each aligned on its own comma, with a fixed "/" between them - so a wide
             // max like "12.4" never shoves the current value out of line.
-            float unitsW = font.TextWidth("-100"); // room for 3 digits + a sign in each column
-            float curComma = left + unitsW;
-            Color color = value < 0f ? Color.LightPink : Colors.Cream;
+            // red rather than the usual pink for a negative: it answers to the same test as the
+            // gauge bar above it, and the two must read as one alarm
+            Color color = IsCyberneticProdRow ? (UnderWater ? Color.Red : Colors.Cream)
+                        : value < 0f         ? Color.LightPink
+                                             : Colors.Cream;
             DrawAlignedNumber(batch, font, value.String(), curComma, y, color);
 
             if (ShowMaxValue)
@@ -318,7 +337,8 @@ namespace Ship_Game
                 float maxComma = slashX + font.TextWidth("/ ") + unitsW;
                 batch.DrawString(font, "/", new Vector2(slashX, y), Colors.Cream.Alpha(0.5f));
                 // The max is a potential, not a state: grey so it informs without rivalling the real value.
-                DrawAlignedNumber(batch, font, MaxValue.String(), maxComma, y, Color.Gray);
+                DrawAlignedNumber(batch, font, (IsCyberneticProdRow ? GrossMaxOutput : MaxValue).String(),
+                                  maxComma, y, Color.Gray);
             }
         }
 
