@@ -221,6 +221,19 @@ role. *(Lives in a GameScreens file, but the change is to real queue ordering, n
 
 ## Formula corrections
 
+### Refit sends a ship to the nearest prioritized port, not the emptiest
+`aa4af6be` — `Empire_RallyPlanets.cs` (`FindPlanetToRefitAt`)
+
+**Source: Roland-Johansen.**
+
+Refit normally minimises `TurnsUntilQueueComplete + travel time` (travel counted twice when the
+ship flies back). A player with at least one prioritized port fell through to the *construction*
+path instead, which minimises queue time alone: the travel term disappeared and refits were
+dispatched to whichever prioritized yard was idle, however far. Restricting candidates to the
+prioritized ports was the intended half and stays; the selector is restored. The same shortcut
+also relaxed port quality from 1 to 0.5, widening the candidate list, and that goes with it.
+Players who have marked prioritized ports will see refit traffic regroup around nearby yards.
+
 ### Lighter-materials research no longer weakens mass-reduction devices
 `19c5f666` — `Ships/ShipStats.cs` (`InitializeMass`)
 
