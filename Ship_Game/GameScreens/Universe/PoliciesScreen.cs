@@ -131,7 +131,12 @@ namespace Ship_Game
             UIList trade = NewBox(new RectF(x1, top, BoxW2, TradeBoxH), "Trade");
             Notice(trade, GameText.PolTradeNotice);
             FreighterPriorityDropDown = trade.Add(new LabeledDropdown<CargoPriority>())
-                .Create(GameText.FreighterPriority, GameText.FreighterPriorityTip);
+                // ⚠ two texts, one condition: a cybernetic empire trades no food at all, so the
+                // food guarantee is not false for it - it is empty. Omitted rather than qualified,
+                // because an aside about a people you are not playing is noise on every other
+                // player's screen (bench 531).
+                .Create(GameText.FreighterPriority, player.NonCybernetic ? GameText.FreighterPriorityTip
+                                                                         : GameText.FreighterPriorityTipCyber);
             FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityAuto, CargoPriority.Auto);
             FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityProductionFirst, CargoPriority.ProductionFirst);
             FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityColonistsFirst, CargoPriority.ColonistsFirst);

@@ -7079,6 +7079,8 @@ namespace Ship_Game
         PolRushTurns = 7180,
         /// <summary>Rushes</summary>
         PolRushTicks = 7184,
+        /// <summary>Sets how your freighters choose their assignments.</summary>
+        FreighterPriorityTipCyber = 7185,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

@@ -28694,6 +28694,10 @@ PolRushTicks:
  Id: 7184
  ENG: "Rushes"
  FRA: "Accelerations"
+FreighterPriorityTipCyber:
+ Id: 7185
+ ENG: "Sets how your freighters choose their assignments."
+ FRA: "Definit la facon dont vos cargos choisissent leurs missions."
 MandateByBlueprint:
  Id: 7181
  ENG: "By Blueprint"
