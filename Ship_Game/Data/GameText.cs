@@ -7085,6 +7085,10 @@ namespace Ship_Game
         BpShowAll = 7186,
         /// <summary>Lists every building in the game, not only the ones you have researched.</summary>
         BpShowAllTip = 7187,
+        /// <summary>Move earlier in the plan.</summary>
+        BpMoveUp = 7188,
+        /// <summary>Move later in the plan.</summary>
+        BpMoveDown = 7189,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

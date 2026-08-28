@@ -28706,6 +28706,14 @@ BpShowAllTip:
  Id: 7187
  ENG: "Lists every building in the game, not only the ones you have researched. A plan stores names, so it can be designed ahead of the research that unlocks them - locked buildings are greyed. The colony simulation counts the whole plan, not what your colony could build today."
  FRA: "Liste tous les batiments du jeu, pas seulement ceux que vous avez recherches. Un plan stocke des noms : il peut donc etre concu en avance sur la recherche qui les debloque - les batiments verrouilles sont grises. La simulation de colonie compte le plan complet, pas ce que votre colonie pourrait batir aujourd'hui."
+BpMoveUp:
+ Id: 7188
+ ENG: "Move earlier in the plan. The plan reads as a chronology: it is built and replaced from the top, and rebuilt from the bottom."
+ FRA: "Deplacer plus tot dans le plan. Le plan se lit comme une chronologie : il est bati et remplace par le haut, et reconstruit par le bas."
+BpMoveDown:
+ Id: 7189
+ ENG: "Move later in the plan. The plan reads as a chronology: it is built and replaced from the top, and rebuilt from the bottom."
+ FRA: "Deplacer plus tard dans le plan. Le plan se lit comme une chronologie : il est bati et remplace par le haut, et reconstruit par le bas."
 MandateByBlueprint:
  Id: 7181
  ENG: "By Blueprint"

@@ -43,6 +43,10 @@ namespace Ship_Game
         float InitTax = 0.25f;
 
         readonly ScrollList<BlueprintsBuildableListItem> BuildableList;
+        // Ludoal fork (Blueprints chantier): the plan, as an ordered QUEUE. It is a VIEW over
+        // the tiles that still hold the buildings - so save, load and the colony simulation
+        // never learn that this screen changed.
+        readonly ScrollList<BlueprintsPlanListItem> PlanList;
         readonly ScrollList<BlueprintsChainListItem> BlueprintsChainList;
         readonly DropOptions<Planet.ColonyType> SwitchColonyType;
         readonly UILabel LinkBlueprintsName;
@@ -253,6 +257,9 @@ namespace Ship_Game
             BuildableList.OnDoubleClick = OnBuildableItemDoubleClicked;
             BuildableList.EnableDragOutEvents = true;
             BuildableList.OnDragOut = OnBuildableListDrag;
+            RectF planListR = new(planAreaR.X, planAreaR.Y + 20, planAreaR.W, planAreaR.H - 20);
+            PlanList = base.Add(new ScrollList<BlueprintsPlanListItem>(planListR, 32));
+            PlanList.EnableItemHighlight = true;
             RectF chainlistR = new(chainR.X, chainR.Y + 20, chainR.W, chainR.H - 20);
             BlueprintsChainList = base.Add(new ScrollList<BlueprintsChainListItem>(chainlistR, 40));
             BlueprintsChainList.EnableItemHighlight = true;
@@ -293,6 +300,10 @@ namespace Ship_Game
             base.PerformLayout();
         }
 
+        // ⚠ the tiles are the plan's STORAGE and nothing else now: their panels are built but
+        // never added to the screen, so no grid is drawn and none of them answers the mouse.
+        // Keeping them means the template, the simulation and the save path are untouched by a
+        // change that is only about how the plan is SHOWN.
         void CreateBlueprintsTiles(Rectangle gridPos)
         {
             // ⚠ SQUARE cells, centred in whatever box the column gives (Blueprints chantier):
@@ -306,7 +317,7 @@ namespace Ship_Game
             for (int y = 0; y < SolarSystemBody.TileMaxY; y++)
                 for (int x = 0; x < SolarSystemBody.TileMaxX; x++)
                 {
-                    UIPanel panel = base.Add(new UIPanel(new Rectangle(originX + x * cell, gridPos.Y + y * cell, cell, cell), Color.White));
+                    var panel = new UIPanel(new Rectangle(originX + x * cell, gridPos.Y + y * cell, cell, cell), Color.White);
                     TilesList.Add(new BlueprintsTile(panel));
                 }
         }
@@ -355,7 +366,55 @@ namespace Ship_Game
                 }
             }
 
+            RefreshPlanList();
             RecalculateGeneralStats();
+        }
+
+        // rebuilt whole rather than patched: the plan is short, and a queue that is rebuilt
+        // from its storage can never drift from it
+        void RefreshPlanList()
+        {
+            PlanList.Reset();
+            foreach (BlueprintsTile tile in TilesList)
+                if (tile.HasBuilding)
+                    PlanList.AddItem(new BlueprintsPlanListItem(this, tile));
+        }
+
+        // ⚠ moving an entry SWAPS what two tiles carry - the tiles stay where they are and keep
+        // the plan compact, so the tile order and the queue order remain the same thing.
+        public void MovePlanEntry(BlueprintsPlanListItem item, int delta)
+        {
+            int i = TilesList.IndexOf(item.Tile);
+            int j = i + delta;
+            if (i < 1 || j < 1 || j >= TilesList.Count || !TilesList[j].HasBuilding)
+            {
+                GameAudio.NegativeClick(); // tile 0 is the outpost: the plan's foundation never moves
+                return;
+            }
+
+            BlueprintsTile a = TilesList[i], b = TilesList[j];
+            Building ab = a.Building, bb = b.Building;
+            bool aUnlocked = a.Unlocked, bUnlocked = b.Unlocked;
+            a.RemoveBuilding();
+            b.RemoveBuilding();
+            a.AddBuilding(bb, bUnlocked);
+            b.AddBuilding(ab, aUnlocked);
+            RefreshBuildableList();
+            GameAudio.AcceptClick();
+        }
+
+        public void RemovePlanEntry(BlueprintsPlanListItem item)
+        {
+            if (item.Building == null || item.Building.IsCapitalOrOutpost)
+            {
+                GameAudio.NegativeClick();
+                return;
+            }
+
+            item.Tile.RemoveBuilding();
+            LoadBlueprintsTemplate(CreateBlueprintsTemplate()); // re-packs the plan, as the grid did
+            RefreshBuildableList();
+            GameAudio.AffirmativeClick();
         }
 
         void RefreshChainList()
@@ -697,37 +756,20 @@ namespace Ship_Game
 
             PlanAreaHovered = BuildableList.IsDragging && SubPlanArea.HitTest(Input.CursorPosition);
             HoveredBuilding = GetHoveredBuildingFromBuildableList(input);
-            foreach (BlueprintsTile tile in TilesList)
+            // ⚠ the plan is a queue now, so what the pointer is over comes from its rows. The
+            // ROW does the removing and consumes its own right-click (bench 347: an unconsumed
+            // one falls through to the popup's generic close and shuts the screen) - all this
+            // has to do is report the hover, because the close test below reads it as "the
+            // pointer is busy".
+            if (!BuildableList.IsDragging && PlanList.HitTest(input.CursorPosition))
             {
-                if (tile.HasBuilding && tile.Panel.HitTest(input.CursorPosition))
+                foreach (BlueprintsPlanListItem e in PlanList.AllEntries)
                 {
-                    HoveredBuilding = BuildableList.IsDragging ? null : tile.Building;
-                    if (HoveredBuilding != null)
-                        tile.UpdatePanelColor(true);
-
-                    if (Input.RightMouseClick)
+                    if (e.Building != null && e.HitTest(input.CursorPosition))
                     {
-                        if (!tile.Building.IsCapitalOrOutpost)
-                        {
-                            tile.RemoveBuilding();
-                            BlueprintsTemplate AfterRemove = CreateBlueprintsTemplate(); // rearrange building list in UI
-                            LoadBlueprintsTemplate(AfterRemove);
-                            RefreshBuildableList();
-                            GameAudio.AffirmativeClick();
-                        }
-                        else
-                        {
-                            GameAudio.NegativeClick();
-                        }
-                        // bench 347: CONSUME the click - since the screen became a popup, an
-                        // unconsumed right-click falls through to base.HandleInput's generic
-                        // popup-close and shut the screen instead of just removing the building.
-                        return true;
+                        HoveredBuilding = e.Building;
+                        break;
                     }
-                }
-                else
-                {
-                    tile.UpdatePanelColor(false);
                 }
             }
 
