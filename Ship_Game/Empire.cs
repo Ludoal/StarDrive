@@ -252,6 +252,12 @@ namespace Ship_Game
         [StarData] public Vector2 WeightedCenter;
         [StarData] public bool RushAllConstruction;
 
+        // Ludoal fork (maintainer, bench 529): rush a colony's queue for its first turns, so a
+        // fresh world stands up instead of crawling. Both fields are NEW, so an older save reads
+        // them off and unset - nothing changes until the player asks for it.
+        [StarData] public bool RushNewColonies;
+        [StarData(DefaultValue = 10)] public int RushNewColonyTurns = 10;
+
         [StarDataType]
         public class DiplomacyQueueItem
         {

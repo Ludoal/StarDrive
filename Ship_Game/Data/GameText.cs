@@ -7071,6 +7071,12 @@ namespace Ship_Game
         PolRushProduction = 7176,
         /// <summary>Manual Construction</summary>
         PolManualConstruction = 7177,
+        /// <summary>Rush at Colony Creation</summary>
+        PolRushNewColony = 7178,
+        /// <summary>A newly founded colony rushes its construction queue for this many turns.</summary>
+        PolRushNewColonyTip = 7179,
+        /// <summary>Turns</summary>
+        PolRushTurns = 7180,
         /// <summary>Blueprint name</summary>
         BlueprintNameLabel = 7150,
         /// <summary>Completion</summary>

@@ -104,6 +104,19 @@ would have undone the player's own restriction the moment they loaded a plan.
 
 ## New levers
 
+### A new colony can rush its first turns
+`PENDING` — `SBProduction.cs`, `Planet_Colonize.cs`, `PoliciesScreen.cs`
+
+**Source: maintainer.**
+
+Policies > Construction gains "Rush at Colony Creation" and a turn count. A colony you found
+rushes its construction queue for that many turns and then stops on its own, so a fresh world
+stands up instead of crawling. It spends money exactly as a manual rush does and skips the rush
+when the treasury cannot afford it, which is the existing guard. Off by default, and greyed while
+Continuous Rush is on — that one already rushes everything. The countdown is the colony's own: it
+never touches the per-colony rush toggle, so a colony you set to rush by hand keeps that setting
+when the timer runs out.
+
 ### An empire-wide build order
 `2c4c00b4` — `AddToQueueScreen.cs`, `PoliciesScreen.cs`
 

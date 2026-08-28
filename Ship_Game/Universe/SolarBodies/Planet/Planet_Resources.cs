@@ -89,6 +89,12 @@ namespace Ship_Game
         // a global round-trip never lies about the local choice (spec's trap, avoided by
         // reading the two flags live instead of sweeping item states).
         [StarData] public bool RushConstruction;
+
+        // Ludoal fork: turns of automatic rush left to a NEW colony. It is its own countdown and
+        // not a use of RushConstruction above: that toggle is the player's gesture on this colony,
+        // and an automatic behaviour that switched it off when it expired would quietly erase a
+        // choice he made by hand.
+        [StarData] public int RushTurnsLeft;
         public bool AutoFood      { get => !FoodManual;      set => FoodManual      = !value; }
         public bool AutoProd      { get => !ProdManual;      set => ProdManual      = !value; }
         public bool AutoColonists { get => !ColonistsManual; set => ColonistsManual = !value; }

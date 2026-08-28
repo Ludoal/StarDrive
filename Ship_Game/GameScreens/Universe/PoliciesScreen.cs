@@ -34,6 +34,8 @@ namespace Ship_Game
         DropOptions<CargoPriority> FreighterPriorityDropDown;
         DropOptions<Planet.BuildMandate> EmpireBuildMandateList, EmpireScrapMandateList;
         DropOptions<string>[] BlueprintPolicyLists;
+        UICheckBox RushNewColonies;
+        FloatSlider RushTurns;
         UIPanel PriorityHost;
 
         // fixed box geometry - the boxes own their sizes, the columns just stack them.
@@ -51,7 +53,7 @@ namespace Ship_Game
         // Rush row. Both numbers are CONSTANTS and the frame is sized FROM them - never the
         // reverse: a host placed at a share of the space left moves every time a row is added
         // above it.
-        const float PrioTopInset = 118f, PrioRowsH = 300f; // +26: the Rush row gained a heading
+        const float PrioTopInset = 172f, PrioRowsH = 300f; // heading + Continuous Rush + the timed rush and its slider
         // and below the rows, a heading of its own plus the button it names
         const float ManualRowH = 26f, ManualButtonH = 26f;
         const float ConstructionBoxH = PrioTopInset + PrioRowsH + ManualRowH + ManualButtonH + 18f;
@@ -150,6 +152,22 @@ namespace Ship_Game
             // rushes, and what you post by hand. A timed rush is expected to join the first.
             construction.Add(new UILabel(GameText.PolRushProduction, Fonts.Arial12Bold, Colors.Cream));
             construction.AddCheckbox(() => RushConstruction, title: GameText.RushAllConstruction, tooltip: GameText.RushAllConstructionTip);
+
+            // (maintainer, bench 529) a young colony rushed for its first turns. Greyed while the
+            // continuous rush is on - that one already rushes everything, everywhere, so this one
+            // would have nothing left to say.
+            RushNewColonies = construction.AddCheckbox(() => player.RushNewColonies,
+                                                       v => player.RushNewColonies = v,
+                                                       title: GameText.PolRushNewColony,
+                                                       tooltip: GameText.PolRushNewColonyTip);
+            RushTurns = construction.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW3 - 40, 28),
+                                                         GameText.PolRushTurns, 1, 100, player.RushNewColonyTurns)
+            {
+                Step = 1,
+                Tip = GameText.PolRushNewColonyTip,
+                TrackYOffset = -5,
+            });
+            RushTurns.OnChange = s => player.RushNewColonyTurns = (int)s.AbsoluteValue;
 
             // the prioritized categories, their ORDER is the hierarchy; arrows reorder, the
             // inhibit glyph demotes, the plus promotes. Acts at queue INSERTION only
@@ -371,6 +389,17 @@ namespace Ship_Game
             UIList list = AddList(new Vector2(box.ClientArea.X + 12, box.ClientArea.Y + 12));
             list.Padding = new Vector2(2f, 10f);
             return list;
+        }
+
+        public override void Update(float fixedDeltaTime)
+        {
+            if (RushNewColonies != null)
+            {
+                // greyed AND inert: Enabled refuses the input, Greyed says so on screen
+                RushNewColonies.Greyed = RushTurns.Greyed = RushConstruction;
+                RushNewColonies.Enabled = RushTurns.Enabled = !RushConstruction;
+            }
+            base.Update(fixedDeltaTime);
         }
 
         void OnEmpireTabChanged(int index)

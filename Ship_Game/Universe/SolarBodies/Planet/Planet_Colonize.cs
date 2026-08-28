@@ -91,6 +91,8 @@ namespace Ship_Game
             {
                 GovBlueprintAuto = true;
                 Owner.ApplyBlueprintPolicy(this);
+                if (Owner.RushNewColonies)
+                    RushTurnsLeft = Owner.RushNewColonyTurns;
                 Universe.Notifications?.AddColonizedNotification(this, Universe.Player);
             }
         }

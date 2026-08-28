@@ -33,6 +33,11 @@ namespace Ship_Game
         public float Step = 0;
         // Ludoal fork: an inline row draws its own value label - silence the built-in one
         public bool DrawValueText = true;
+
+        // Ludoal fork (maintainer, bench 529): the greyed LOOK. UIElementV2.Enabled already
+        // refuses the drag, but a slider that refuses it while looking live is exactly the dead
+        // control the bench keeps catching. Set both together; this one only paints.
+        public bool Greyed;
         public float Range => Max-Min;
 
         float GetAbsValue(float relValue)
@@ -206,13 +211,14 @@ namespace Ship_Game
             if (!Visible)
                 return;
 
-            batch.DrawString(Fonts.Arial12Bold, Text, Pos, UITheme.TextPrimary);
+            Color tint = Greyed ? Color.DarkGray : Color.White;
+            batch.DrawString(Fonts.Arial12Bold, Text, Pos, Greyed ? Color.Gray : UITheme.TextPrimary);
 
-            DrawTrack(batch, SliderRect, SliderGradient, RelativeValue, Hover, Color.White);
+            DrawTrack(batch, SliderRect, SliderGradient, RelativeValue, Hover && !Greyed, tint);
 
             Rectangle knobRect = KnobRect;
             knobRect.X -= knobRect.Width / 2;
-            batch.Draw(Hover ? SliderKnobHover : SliderKnob, knobRect, Color.White);
+            batch.Draw(Hover && !Greyed ? SliderKnobHover : SliderKnob, knobRect, tint);
 
             if (DrawValueText)
             {

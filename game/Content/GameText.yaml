@@ -28678,3 +28678,15 @@ PolManualConstruction:
  Id: 7177
  ENG: "Manual Construction"
  FRA: "Construction manuelle"
+PolRushNewColony:
+ Id: 7178
+ ENG: "Rush at Colony Creation"
+ FRA: "Accelerer a la fondation"
+PolRushNewColonyTip:
+ Id: 7179
+ ENG: "A newly founded colony rushes its construction queue for this many turns, then stops on its own. Money is spent the same way a manual rush spends it, and nothing is rushed when the treasury cannot afford it. Greyed while Continuous Rush is on, which already rushes everything."
+ FRA: "Une colonie nouvellement fondee accelere sa file de construction pendant ce nombre de tours, puis s'arrete d'elle-meme. L'argent est depense comme pour une acceleration manuelle, et rien n'est accelere si le tresor ne suit pas. Grise tant que Continuous Rush est actif, qui accelere deja tout."
+PolRushTurns:
+ Id: 7180
+ ENG: "Turns"
+ FRA: "Tours"
