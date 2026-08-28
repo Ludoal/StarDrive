@@ -212,10 +212,10 @@ namespace Ship_Game
             // one factory for both ends: the colony's picker carries Auto, the empire's - on
             // Policies > Colony - does not. Two copies of a list of options is how the two ends
             // come to disagree about what a mandate means.
-            BuildMandateList = Add(MandateDropdown.Make(Planet.GovBuildMandate,
-                m => Universe.RunOnSimThread(() => Planet.SetBuildMandate(m)), withAuto: true));
-            ScrapMandateList = Add(MandateDropdown.Make(Planet.GovScrapMandate,
-                m => Universe.RunOnSimThread(() => Planet.SetScrapMandate(m)), withAuto: true));
+            BuildMandateList = Add(MandateDropdown.Make(Planet.DisplayedBuildMandate,
+                m => Universe.RunOnSimThread(() => Planet.SetBuildMandate(m)), withAuto: true, withByBlueprint: true));
+            ScrapMandateList = Add(MandateDropdown.Make(Planet.DisplayedScrapMandate,
+                m => Universe.RunOnSimThread(() => Planet.SetScrapMandate(m)), withAuto: true, withByBlueprint: true));
 
             // Ludoal fork (maintainer feedback): the three blueprint gestures wear the icons the
             // construction list already uses for the same verbs - pencil to edit, plus to bring one
@@ -583,12 +583,29 @@ namespace Ship_Game
                 Planet.Owner.ApplyBlueprintPolicy(Planet);
         }
 
+        // ⚠ an EXCLUSIVE plan is confirmed before it lands: it does more than fill a queue - it
+        // takes the colony's two mandates with it. The whole design rests on that crossing being
+        // a deliberate gesture, so the gesture has to be informed (bench 529).
         public void OnBlueprintsChanged(BlueprintsTemplate template)
         {
-            // ⚠ loading a plan no longer rewrites the mandates. It used to set both to All,
-            // because a blueprint bought past them anyway - now that it does not, that line would
-            // quietly undo the very gesture the player came for: follow this plan, demolish
-            // nothing. The plan is the PLAN; the mandates stay the player's.
+            if (template.Exclusive)
+            {
+                var confirm = new MessageBoxScreen(Screen, Localizer.Token(GameText.ExclusiveBlueprintWarn));
+                confirm.Accepted = () => ApplyBlueprints(template);
+                Screen.ScreenManager.AddScreen(confirm);
+                return;
+            }
+
+            ApplyBlueprints(template);
+        }
+
+        void ApplyBlueprints(BlueprintsTemplate template)
+        {
+            // ⚠ loading a plan never REWRITES the mandates, and that is what lets them come back
+            // whole. An exclusive plan takes command of them while it lasts - the pickers say so
+            // and answer nothing - but the colony's own settings sit untouched underneath, so
+            // removing the plan hands them back exactly as they were. A non-exclusive plan does
+            // not take them at all: it directs what is built inside the right the mandate grants.
 
             // an explicit gesture sorts the colony out of the doctrine: the player picked THIS
             // plan, so the empire's row must not overwrite it on its next change.
@@ -650,6 +667,19 @@ namespace Ship_Game
                     TypeListWasOpen = ColonyTypeList.Open;
                     if (TypeListWasOpen) BringToFrontZOrder(ColonyTypeList);
                 }
+                // ⚠ an exclusive plan commands this colony: the pickers show the delegation and
+                // answer nothing, while the colony's own settings sit untouched underneath and
+                // come back whole the day the plan goes. Read-only rather than hidden - a command
+                // in read-only shows its state, it never hides it.
+                bool delegated = Planet.MandatesDelegated;
+                BuildMandateList.ReadOnly = ScrapMandateList.ReadOnly = delegated;
+                BuildMandateList.ActiveValue = Planet.DisplayedBuildMandate;
+                ScrapMandateList.ActiveValue = Planet.DisplayedScrapMandate;
+                // the way out has to be written where the player looks for it, and the tooltip
+                // lives on the LABEL, not on the list
+                BuildMandateLabel.Tooltip = delegated ? GameText.MandateDelegatedTip : GameText.BuildMandateTip;
+                ScrapMandateLabel.Tooltip = delegated ? GameText.MandateDelegatedTip : GameText.ScrapMandateTip;
+
                 if (BuildMandateList.Open != BuildListWasOpen)
                 {
                     BuildListWasOpen = BuildMandateList.Open;

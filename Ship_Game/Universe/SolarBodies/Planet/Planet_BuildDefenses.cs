@@ -130,8 +130,23 @@ namespace Ship_Game
         public BuildMandate EffectiveBuildMandate => Resolve(GovBuildMandate, Owner?.EmpireBuildMandate);
         public BuildMandate EffectiveScrapMandate => Resolve(GovScrapMandate, Owner?.EmpireScrapMandate);
 
-        static BuildMandate Resolve(BuildMandate local, BuildMandate? empire)
-            => local == BuildMandate.Auto ? empire ?? BuildMandate.None : local;
+        // Ludoal fork: an EXCLUSIVE blueprint takes formal command of this colony, so both rights
+        // are handed to it - the plan then decides what is raised and what makes way. The colony's
+        // own mandates are not written, only unread, which is what makes them come back whole the
+        // moment the plan is removed or hands over to a non-exclusive one.
+        //
+        // ⚠ This is the crossing that was cut on 27 Aug, put back DELIBERATELY and, this time,
+        // said out loud: the pickers grey and read "By Blueprint". What was wrong before was not
+        // the crossing, it was that nothing on screen admitted to it.
+        BuildMandate Resolve(BuildMandate local, BuildMandate? empire)
+            => HasExclusiveBlueprints ? BuildMandate.All
+             : local == BuildMandate.Auto ? empire ?? BuildMandate.None
+                                          : local;
+
+        // what the pickers SHOW: the delegation while it lasts, the colony's own setting otherwise
+        public BuildMandate DisplayedBuildMandate => HasExclusiveBlueprints ? BuildMandate.ByBlueprint : GovBuildMandate;
+        public BuildMandate DisplayedScrapMandate => HasExclusiveBlueprints ? BuildMandate.ByBlueprint : GovScrapMandate;
+        public bool MandatesDelegated => HasExclusiveBlueprints;
 
         public bool MayBuildMilitary  => MayBuild(EffectiveBuildMandate, military: true);
         public bool MayBuildCivilian  => MayBuild(EffectiveBuildMandate, military: false);
@@ -550,7 +565,9 @@ namespace Ship_Game
 
             if (best == null)
             {
-                if (!HasExclusiveBlueprints && MayBuildMilitary)
+                // the exclusivity no longer stands beside the right: it IS the right now, resolved
+                // into the mandate, so asking twice would be the homonym we just removed
+                if (MayBuildMilitary)
                     best = BuildingsCanBuild.FindMaxFiltered(b => b.IsMilitary && b.ActualMaintenance(this) <= budget,
                                                              b => b.CostEffectiveness);
             }
@@ -634,8 +651,19 @@ namespace Ship_Game
         }
 
 
-        public void SetBuildMandate(BuildMandate mandate) => GovBuildMandate = mandate;
-        public void SetScrapMandate(BuildMandate mandate) => GovScrapMandate = mandate;
+        // ⚠ ByBlueprint is a word for the screen, never a value for the save: it is refused here
+        // rather than merely documented, because a rule with no gesture attached does not fire.
+        public void SetBuildMandate(BuildMandate mandate)
+        {
+            if (mandate != BuildMandate.ByBlueprint)
+                GovBuildMandate = mandate;
+        }
+
+        public void SetScrapMandate(BuildMandate mandate)
+        {
+            if (mandate != BuildMandate.ByBlueprint)
+                GovScrapMandate = mandate;
+        }
 
         public void SetManualCivBudgetOn(bool manual) => ManualCivBudgetOn = manual;
         public void SetManualGrdBudgetOn(bool manual) => ManualGrdBudgetOn = manual;

@@ -28690,3 +28690,15 @@ PolRushTurns:
  Id: 7180
  ENG: "Turns"
  FRA: "Tours"
+MandateByBlueprint:
+ Id: 7181
+ ENG: "By Blueprint"
+ FRA: "Par schema"
+MandateDelegatedTip:
+ Id: 7182
+ ENG: "Delegated to the exclusive blueprint that commands this colony. Remove the blueprint, or hand over to a non exclusive one, to take the mandates back - your own settings are kept and return untouched."
+ FRA: "Delegue au schema exclusif qui commande cette colonie. Retirez le schema, ou passez a un schema non exclusif, pour reprendre la main : vos reglages sont conserves et reviennent intacts."
+ExclusiveBlueprintWarn:
+ Id: 7183
+ ENG: "Exclusive Blueprint. This blueprint takes formal command of the colony: only its buildings will be built, structures outside the plan may be demolished, and the Build and Scrap Mandates are delegated to it (shown as \"By Blueprint\") until the blueprint is removed or handed over to a non exclusive one. Proceed?"
+ FRA: "Schema exclusif. Ce schema prend le commandement de la colonie : seuls ses batiments seront construits, les structures hors plan pourront etre demolies, et les mandats de construction et de demolition lui sont delegues (affiches Par schema) jusqu a son retrait ou sa passation a un schema non exclusif. Continuer ?"

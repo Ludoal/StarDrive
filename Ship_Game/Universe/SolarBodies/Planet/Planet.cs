@@ -47,6 +47,13 @@ namespace Ship_Game
             // in a new game starts here; an existing one keeps whatever it was set to, so no
             // save changes conduct on its own.
             Auto = 4,
+            // Ludoal fork: DISPLAY ONLY. An exclusive blueprint takes formal command of a colony
+            // and its two mandates are delegated to it; the pickers show this position while that
+            // lasts, and the colony's own setting is left untouched underneath so it comes back
+            // when the plan goes. ⚠ The model NEVER writes it - SetBuildMandate/SetScrapMandate
+            // refuse it outright, because the mandate is stored as an int and a stray write would
+            // put a screen word into a save file.
+            ByBlueprint = 5,
         }
 
         public override string ToString() =>
