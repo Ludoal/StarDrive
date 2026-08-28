@@ -32,6 +32,30 @@ public sealed class BlueprintsTemplate
     public static string CurrentModName =>  GlobalStats.HasMod ? GlobalStats.ModName : "BBplus";
 
     [StarDataConstructor] public BlueprintsTemplate() { }
+
+    // ⚠ SAVE COMPATIBILITY (bench 532). PlannedBuildings was a HashSet<string> until build
+    // 532. The binary reader resolves the stored collection type fine, then fails to put a
+    // HashSet into an Array field - and it LOGS that failure and carries on rather than
+    // throwing, so the field simply arrives NULL. Every save written before 532 therefore
+    // loads a template with no plan at all, and the first colony to ask whether a building is
+    // required dies on it, in the middle of deserialization.
+    //
+    // The plan itself is not lost, which is why this recovers instead of resetting: a template
+    // lives in its own yaml under Colony Blueprints/<mod>/, already parsed into the
+    // ResourceManager by the time any save is read. We take the plan back from there, by name.
+    // An empty list only when there is genuinely nothing to take back - never a crash.
+    [StarDataDeserialized]
+    void OnDeserialized()
+    {
+        if (PlannedBuildings != null)
+            return;
+
+        PlannedBuildings = Name != null
+                        && ResourceManager.TryGetBlueprints(Name, out BlueprintsTemplate onDisk)
+                        && !ReferenceEquals(onDisk, this) && onDisk.PlannedBuildings != null
+                         ? new Array<string>(onDisk.PlannedBuildings)
+                         : new Array<string>();
+    }
     public BlueprintsTemplate(string name, bool exclusive, string linkTo, Array<string> plannedBuildings, ColonyType cType) 
     {
         Name = name;

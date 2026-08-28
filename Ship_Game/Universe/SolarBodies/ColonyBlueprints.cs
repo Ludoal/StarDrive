@@ -22,7 +22,12 @@ namespace Ship_Game.Universe.SolarBodies
         public string Name => Template.Name;
         public string LinkedBlueprintsName => Template.LinkTo ?? "";
         public bool Exclusive => Template.Exclusive; // Build only these buildings and remove the rest
-        Array<string> PlannedBuildings => Template.PlannedBuildings;
+        // ⚠ never dereferenced blind: a template restored from a pre-532 save arrives with no
+        // plan until its own deserialization hook has run, and the hooks fire in an order this
+        // side does not get to choose. An empty plan is a colony with nothing planned - which
+        // is a state the whole class already handles - where a null was a crash mid-load.
+        static readonly Array<string> NoPlan = new();
+        Array<string> PlannedBuildings => Template?.PlannedBuildings ?? NoPlan;
         public ColonyType ColonyType => Template.ColonyType;
         bool Completed => PercentCompleted == 100;
 
@@ -67,8 +72,15 @@ namespace Ship_Game.Universe.SolarBodies
 
         public void UpdateCompletion()
         {
+            int totalPlanned = PlannedBuildings.Count;
+            if (totalPlanned == 0) // nothing planned is nothing completed, not a division by zero
+            {
+                PercentCompleted = 0;
+                return;
+            }
+
             int totalRequiredBuilt = P.Buildings.ToArray().Count(IsRequired);
-            float completion = (float)totalRequiredBuilt / PlannedBuildings.Count;
+            float completion = (float)totalRequiredBuilt / totalPlanned;
             PercentCompleted = (int)(completion * 100);
 
             if (Completed)
