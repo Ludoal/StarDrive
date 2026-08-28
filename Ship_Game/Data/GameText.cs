@@ -7025,9 +7025,9 @@ namespace Ship_Game
         BlueprintNextLabel = 7156,
         /// <summary>Blueprint</summary>
         BlueprintModeLabel = 7153,
-        /// <summary>Custom</summary>
+        /// <summary>Custom...</summary>
         BlueprintModeCustom = 7154,
-        /// <summary>Custom means this colony follows a plan of its own.</summary>
+        /// <summary>Auto follows the empire's default plan; Custom opens the plan chooser; None clears it.</summary>
         BlueprintModeTip = 7155,
         /// <summary>Auto</summary>
         BlueprintModeAuto = 7157,

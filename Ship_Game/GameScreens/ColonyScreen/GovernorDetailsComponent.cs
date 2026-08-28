@@ -48,7 +48,7 @@ namespace Ship_Game
         UIButton BuildPlatform;
         UIButton BuildStation;
         UIButton BuildShipyard;
-        UIButton EditBlueprints, LoadBlueprints;
+        UIButton EditBlueprints;
         // Ludoal fork (maintainer feedback): the plan's mode. DERIVED, never stored - a colony
         // either has a plan of its own or it does not - and Auto, which defers to the empire's
         // table of default plans per governor type (Policies > Colony). Auto shipped only once
@@ -223,9 +223,9 @@ namespace Ship_Game
             // in, cross to drop it. Three labelled buttons no longer fit beside the portrait, and a
             // vocabulary the player has already learned costs nothing to read.
             EditBlueprints   = BpIconButton("NewUI/icon_build_edit", GameText.EditBluprintsTip, OnEditblueprintsClicked);
-            LoadBlueprints   = BpIconButton("NewUI/icon_build_add", GameText.UploadBluprintsTip, OnLoadBlueprintsClicked);
-            // None replaces the cross: clearing a plan is one of this list's states, not a
-            // gesture of its own. Auto leads, as it does on the mandate pickers.
+            // The list carries all three gestures now: Auto delegates, Custom opens the plan
+            // chooser, None clears. The add icon is gone - one door per state, and the picker is
+            // that door. Only the pencil remains beside the name, and only when there is a plan.
             BlueprintModeList = Add(new DropOptions<BlueprintMode>(100, 18));
             BlueprintModeList.AddOption(option: GameText.BlueprintModeAuto, BlueprintMode.Auto);
             BlueprintModeList.AddOption(option: GameText.MandateNone, BlueprintMode.None);
@@ -364,11 +364,12 @@ namespace Ship_Game
             BluePrintsIcon.Size     = new Vector2(BpIconSize, BpIconSize);
             BluePrintsIcon.Pos      = new Vector2(bpValueX, bpRow1);
             BlueprintsName.Pos      = new Vector2(bpValueX + BpIconSize + 5, bpRow1);
-            // ⚠ the padlock and the three gestures take FIXED columns off the right edge, never the
-            // name's own edge: a UILabel measures its first text and only ever grows, so anchoring
-            // to it drifts the moment a longer name is loaded.
+            // ⚠ the padlock and the pencil take FIXED columns off the right edge, never the name's
+            // own edge: a UILabel measures its first text and only ever grows, so anchoring to it
+            // drifts the moment a longer name is loaded. Two columns, not three - the add icon's
+            // place was closed rather than left as a hole when the picker took over its gesture.
             BlueprintsExclusiveIcon.Size = new Vector2(16, 16);
-            BlueprintsExclusiveIcon.Pos  = new Vector2(X + Width - 30 - 2*BpGestureStep, bpRow1 + 2);
+            BlueprintsExclusiveIcon.Pos  = new Vector2(X + Width - 30 - BpGestureStep, bpRow1 + 2);
             BlueprintsLink.Pos      = new Vector2(bpX, bpRow3);
             BlueprintsLinkIcon.Size = new Vector2(BpIconSize, BpIconSize);
             BlueprintsLinkIcon.Pos  = new Vector2(bpValueX, bpRow3);
@@ -376,11 +377,9 @@ namespace Ship_Game
             BlueprintsEnableGov.Pos  = new Vector2(X + 10, Bottom - 60);
             BlueprintsEnableGov.Text = GameText.BluePrintsEnableGovernorToLoad;
 
-            // the three gestures ride the name's row, right to left in fixed columns, vertically
-            // centred on it - and none of them is anchored to the name's own width.
-            EditBlueprints.Size  = LoadBlueprints.Size = new Vector2(20, 20);
-            EditBlueprints.Pos   = new Vector2(X + Width - 30 - BpGestureStep, bpRow1 + 1);
-            LoadBlueprints.Pos   = new Vector2(X + Width - 30,                 bpRow1 + 1);
+            // the pencil holds the outermost column, the padlock the one before it
+            EditBlueprints.Size  = new Vector2(20, 20);
+            EditBlueprints.Pos   = new Vector2(X + Width - 30, bpRow1 + 1);
 
             BlueprintsCompletionLbl.Pos     = new Vector2(bpX, bpRow2 + 3);
             BlueprintsCompletionLbl.Tooltip = GameText.CompletionTip;
@@ -708,9 +707,11 @@ namespace Ship_Game
 
                 // folded into the Governor tab: the blueprint block shows with the portrait
                 bool bpBlock             = GovernorTabView && Planet.OwnerIsPlayer;
-                LoadBlueprints.Visible   = bpBlock && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub;
+                // ⚠ this condition used to live on the add button, and three other elements read
+                // their own visibility off it. The button is gone; the condition is not.
+                bool bpRow = bpBlock && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub;
                 EditBlueprints.Visible   = bpBlock && Planet.HasBlueprints;
-                BlueprintModeLabel.Visible = BlueprintModeList.Visible = LoadBlueprints.Visible;
+                BlueprintModeLabel.Visible = BlueprintModeList.Visible = bpRow;
                 // the list mirrors the colony's real state; setting it only when it differs keeps
                 // a per-frame write from fighting the player's own click.
                 BlueprintMode mode = CurrentBlueprintMode;
@@ -722,7 +723,7 @@ namespace Ship_Game
                     if (ModeListWasOpen) BringToFrontZOrder(BlueprintModeList);
                 }
                 BlueprintsName.Visible   = EditBlueprints.Visible;
-                ColonyBlueprints.Visible = LoadBlueprints.Visible && Planet.HasBlueprints;
+                ColonyBlueprints.Visible = bpRow && Planet.HasBlueprints;
                 BlueprintsCompletionLbl.Visible = EditBlueprints.Visible;
                 BlueprintsAchiveable.Visible    = EditBlueprints.Visible && Planet.Blueprints.PercentAchievable < 100;
                 BlueprintsExclusiveIcon.Visible = EditBlueprints.Visible && Planet.Blueprints.Exclusive;
@@ -870,7 +871,7 @@ namespace Ship_Game
             Planet.BuildCapitalHere();
         }
 
-        void OnLoadBlueprintsClicked(UIButton b)
+        void OpenBlueprintChooser()
         {
             Screen.ScreenManager.AddScreen(new LoadBlueprintsToColonyScreen(Screen, this, Planet.Name));
         }
@@ -884,14 +885,20 @@ namespace Ship_Game
 
         void OnBlueprintModeChanged(BlueprintMode mode)
         {
-            // Custom is not a thing you pick - it is what loading or editing a plan makes true.
-            // Auto and None are the two gestures this list carries.
+            // All three positions act. Custom opens the plan chooser - it is a command the player
+            // re-gives, first plan or fifth, and DropOptions fires on every click on an entry, so
+            // re-picking Custom while already on Custom reopens it. Nothing is cleared here: the
+            // load replaces the plan when one is actually chosen, and cancelling leaves the colony
+            // exactly as it was (Update then snaps the picker back to the colony's real state).
             switch (mode)
             {
                 case BlueprintMode.Auto:
                     Planet.GovBlueprintAuto = true;
                     Planet.Owner.ApplyBlueprintPolicy(Planet);
                     BlueprintsName.Text = Planet.HasBlueprints ? Planet.Blueprints.Name : "";
+                    break;
+                case BlueprintMode.Custom:
+                    OpenBlueprintChooser();
                     break;
                 case BlueprintMode.None:
                     // leaving Auto is a gesture too: the standing order goes with the plan,

@@ -28584,12 +28584,12 @@ BlueprintModeLabel:
  FRA: "Schéma"
 BlueprintModeCustom:
  Id: 7154
- ENG: "Custom"
- FRA: "Personnalisé"
+ ENG: "Custom..."
+ FRA: "Personnalisé..."
 BlueprintModeTip:
  Id: 7155
- ENG: "Custom means this colony follows a plan of its own. None clears it and hands the colony back to its mandates. Load or edit a plan with the icons on the right; doing so sets this to Custom."
- FRA: "Personnalisé signifie que cette colonie suit un plan qui lui est propre. Aucun le retire et rend la colonie à ses mandats. Chargez ou modifiez un plan avec les icônes de droite ; ce faisant, ce réglage passe à Personnalisé."
+ ENG: "Auto follows the empire's default plan for this governor type, set in Policies > Colony. Custom opens the plan chooser - pick it again at any time to choose another. None clears the plan and hands the colony back to its mandates. Editing a plan sets this to Custom."
+ FRA: "Auto suit le plan par défaut de l'empire pour ce type de gouverneur, posé dans Directives > Colonie. Personnalisé ouvre le choix des plans - re-sélectionnez-le à tout moment pour en choisir un autre. Aucun retire le plan et rend la colonie à ses mandats. Modifier un plan bascule ce réglage sur Personnalisé."
 BlueprintNextLabel:
  Id: 7156
  ENG: "Next"
