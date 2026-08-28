@@ -70,6 +70,18 @@ namespace Ship_Game.Universe.SolarBodies
                 P.CType = ColonyType;
         }
 
+        // ⚠ the two figures are shown side by side and share a denominator, so they are
+        // refreshed TOGETHER (maintainer, bench 535). They used to answer to different events -
+        // completion to a building rising or falling, achievability only to a TECH UNLOCK - so a
+        // colony that finished its plan read 100% completed next to a stale 75% achievable, and
+        // the pair stayed wrong until the next technology landed. Two numbers a player compares
+        // cannot be computed at two different moments.
+        public void Refresh()
+        {
+            UpdateCompletion();
+            UpdatePercentAchievable();
+        }
+
         public void UpdateCompletion()
         {
             int totalPlanned = PlannedBuildings.Count;
