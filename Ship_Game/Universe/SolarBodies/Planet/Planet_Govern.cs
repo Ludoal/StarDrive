@@ -72,10 +72,6 @@ namespace Ship_Game
         public void DoGoverning()
         {
             RefreshBuildingsWeCanBuildHere();
-            // the new-colony rush burns down here: this runs once per governing tick for EVERY
-            // colony, governed or not, which is the only clock every colony shares
-            if (RushTurnsLeft > 0)
-                --RushTurnsLeft;
             UpdateBiospheresBeingBuilt();
             if (RecentCombat)
                 return; // Cant Build stuff when there is combat on the planet

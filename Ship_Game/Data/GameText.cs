@@ -7077,6 +7077,8 @@ namespace Ship_Game
         PolRushNewColonyTip = 7179,
         /// <summary>Turns</summary>
         PolRushTurns = 7180,
+        /// <summary>Rushes</summary>
+        PolRushTicks = 7184,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

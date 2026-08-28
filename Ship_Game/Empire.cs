@@ -256,7 +256,11 @@ namespace Ship_Game
         // fresh world stands up instead of crawling. Both fields are NEW, so an older save reads
         // them off and unset - nothing changes until the player asks for it.
         [StarData] public bool RushNewColonies;
-        [StarData(DefaultValue = 10)] public int RushNewColonyTurns = 10;
+        // ⚠ RUSHES, not turns (maintainer, bench 530): a colony with nothing in its queue, or an
+        // empire that cannot pay, would have burned its turns without a single rush happening.
+        // Counting the rushes that actually FIRE means the number the player sets is the number
+        // he gets. The field keeps its old name so no save is disturbed.
+        [StarData(DefaultValue = 10)] public int RushNewColonyTurns = 100;
 
         [StarDataType]
         public class DiplomacyQueueItem

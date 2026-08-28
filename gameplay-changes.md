@@ -109,9 +109,10 @@ would have undone the player's own restriction the moment they loaded a plan.
 
 **Source: maintainer.**
 
-Policies > Construction gains "Rush at Colony Creation" and a turn count. A colony you found
-rushes its construction queue for that many turns and then stops on its own, so a fresh world
-stands up instead of crawling. It spends money exactly as a manual rush does and skips the rush
+Policies > Construction gains "Rush at Colony Creation" and a count. A colony you found rushes its
+construction queue that many times and then stops on its own, so a fresh world stands up instead
+of crawling. Rushes are counted as they happen, not as turns pass: a colony with nothing to build,
+or an empire that cannot pay, spends none of its allowance. It spends money exactly as a manual rush does and skips the rush
 when the treasury cannot afford it, which is the existing guard. Off by default, and greyed while
 Continuous Rush is on — that one already rushes everything. The countdown is the colony's own: it
 never touches the per-colony rush toggle, so a colony you set to rush by hand keeps that setting

@@ -28684,12 +28684,16 @@ PolRushNewColony:
  FRA: "Accelerer a la fondation"
 PolRushNewColonyTip:
  Id: 7179
- ENG: "A newly founded colony rushes its construction queue for this many turns, then stops on its own. Money is spent the same way a manual rush spends it, and nothing is rushed when the treasury cannot afford it. Greyed while Continuous Rush is on, which already rushes everything."
- FRA: "Une colonie nouvellement fondee accelere sa file de construction pendant ce nombre de tours, puis s'arrete d'elle-meme. L'argent est depense comme pour une acceleration manuelle, et rien n'est accelere si le tresor ne suit pas. Grise tant que Continuous Rush est actif, qui accelere deja tout."
+ ENG: "A newly founded colony rushes its construction queue this many times, then stops on its own. Rushes are counted as they happen, so a colony with nothing to build spends none of them. Money is spent the same way a manual rush spends it, and nothing is rushed when the treasury cannot afford it. Greyed while Continuous Rush is on, which already rushes everything."
+ FRA: "Une colonie nouvellement fondee accelere sa file de construction ce nombre de fois, puis s'arrete d'elle-meme. Les accelerations sont comptees quand elles ont lieu : une colonie sans rien a batir n'en depense aucune. L'argent est depense comme pour une acceleration manuelle, et rien n'est accelere si le tresor ne suit pas. Grise tant que Continuous Rush est actif, qui accelere deja tout."
 PolRushTurns:
  Id: 7180
  ENG: "Turns"
  FRA: "Tours"
+PolRushTicks:
+ Id: 7184
+ ENG: "Rushes"
+ FRA: "Accelerations"
 MandateByBlueprint:
  Id: 7181
  ENG: "By Blueprint"

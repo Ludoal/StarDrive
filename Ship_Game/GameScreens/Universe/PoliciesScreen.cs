@@ -164,11 +164,11 @@ namespace Ship_Game
             // ⚠ the caption is its OWN row: a FloatSlider draws its text at its own origin, so a
             // titled slider puts the word and the rail on one line and they fight (bench 530).
             // Every other slider in this codebase is captioned by a label above it.
-            RushTurnsLabel = construction.Add(new UILabel(GameText.PolRushTurns, Fonts.Arial12Bold, Colors.Cream));
+            RushTurnsLabel = construction.Add(new UILabel(GameText.PolRushTicks, Fonts.Arial12Bold, Colors.Cream));
             RushTurns = construction.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW3 - 40, 28),
-                                                         "", 1, 100, player.RushNewColonyTurns)
+                                                         "", 10, 1000, player.RushNewColonyTurns)
             {
-                Step = 1,
+                Step = 10,
                 Tip = GameText.PolRushNewColonyTip,
                 TrackYOffset = -5,
             });

@@ -284,7 +284,16 @@ namespace Ship_Game.Universe.SolarBodies
             {
                 float prodToRush = item.ProductionNeeded.UpperBound(P.ProdHere);
                 if (prodToRush * GlobalStats.Defaults.RushCostPercentage + 1000 < P.Universe.Player.Money)
+                {
                     RushProduction(0, prodToRush);
+                    // A new colony's allowance is spent HERE, where a rush actually happened -
+                    // not on the turn clock, which would run it down on turns that rushed nothing.
+                    // ⚠ and only when the allowance is what PAID for it: under the empire switch
+                    // or the colony's own toggle the rush would have happened anyway, and burning
+                    // the allowance for it would quietly empty a young colony's credit.
+                    if (P.RushTurnsLeft > 0 && !Owner.RushAllConstruction && !P.RushConstruction && !item.Rush)
+                        --P.RushTurnsLeft;
+                }
             }
         }
 
