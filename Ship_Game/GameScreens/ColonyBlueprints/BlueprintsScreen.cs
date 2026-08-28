@@ -27,7 +27,10 @@ namespace Ship_Game
         // Ludoal fork (Blueprints chantier): the catalogue offers the whole game, not only what
         // research has opened. A design-time view, so it is deliberately NOT saved with the plan.
         readonly UICheckBox ShowAllToggle;
-        bool ShowAllBuildings;
+        // ⚠ public like Exclusive right above, and for the same reason: the checkbox binds
+        // it through an expression tree, which the compiler does not count as an assignment -
+        // a private field bound that way trips CS0649, which this build treats as an error.
+        public bool ShowAllBuildings;
         readonly Submenu SubPlanArea;
         readonly FloatSlider InitPopulationSlider;
         readonly FloatSlider InitFertilitySlider;
