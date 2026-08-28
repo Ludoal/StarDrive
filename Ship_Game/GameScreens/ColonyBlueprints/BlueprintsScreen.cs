@@ -306,7 +306,11 @@ namespace Ship_Game
             if (template != null)
             {
                 LoadBlueprintsTemplate(template);
-                LoadBlueprints.Visible = false;
+                // ⚠ Load STAYS (maintainer, bench 535). It was hidden when the screen opened on
+                // an existing plan, which was invisible while it sat last in the row - the
+                // reorder moved it to the front and turned the hiding into a hole. And the
+                // button has a real use here: swapping a colony already on Custom to another
+                // plan is exactly what the old + did.
                 BlueprintsName.Text = template.Name;
             }
         }
