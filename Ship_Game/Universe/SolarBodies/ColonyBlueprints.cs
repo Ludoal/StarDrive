@@ -75,12 +75,36 @@ namespace Ship_Game.Universe.SolarBodies
                 ChangeTemplateIfLinked();
         }
 
+        // How much of this plan this COLONY can actually end up with.
+        //
+        // ⚠ It used to count the empire's unlocked buildings and nothing else (maintainer, bench
+        // 529), so it read the same on every world and promised a completion the colony could
+        // never reach: the ground it stands on was not consulted, and neither were the mandates.
+        // A plan holding military buildings on a colony whose Build Mandate is Economic Only
+        // reported 100% achievable and then stalled for ever, with nothing on screen to say why.
+        //
+        // A planned building is reachable when it already STANDS here, or when this colony can
+        // raise it and its mandate allows it. Counted by name, since a building can be both
+        // standing and still offered.
         public void UpdatePercentAchievable()
         {
-            var unlockedBuildings = Owner.GetUnlockedBuildings();
             int totalPlannedBuildings = PlannedBuildings.Count;
-            int totalCanBuild = unlockedBuildings.Count(IsRequired);
-            PercentAchievable = (int)(100 * (float)totalCanBuild / totalPlannedBuildings);
+            if (totalPlannedBuildings == 0 || Owner == null)
+            {
+                PercentAchievable = 0;
+                return;
+            }
+
+            var reachable = new HashSet<string>();
+            foreach (Building b in P.Buildings)
+                if (IsRequired(b))
+                    reachable.Add(b.Name);
+
+            foreach (Building b in P.GetBuildingsCanBuild())
+                if (IsRequired(b) && (b.IsMilitary ? P.MayBuildMilitary : P.MayBuildCivilian))
+                    reachable.Add(b.Name);
+
+            PercentAchievable = (int)(100 * (float)reachable.Count / totalPlannedBuildings);
         }
 
         void ChangeTemplateIfLinked()
