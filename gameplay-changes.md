@@ -263,6 +263,17 @@ role. *(Lives in a GameScreens file, but the change is to real queue ordering, n
 
 ## Formula corrections
 
+### Cybernetic colonies stop losing workers into a sterile row
+`PENDING` — `ColonySlider.cs` (`Pinned`)
+
+**Source: maintainer.**
+
+The food row of a cybernetic colony refuses the click - those people eat production and farm
+nothing - but the labour solver still reached for it first when it needed somewhere to put the
+difference. Dragging production by hand therefore parked workers in a row that yields nothing at
+all, and the bar showed it filling. A row that cannot be dragged is now off limits to the solver
+as well, so the difference goes to research, which can use it.
+
 ### Refit sends a ship to the nearest prioritized port, not the emptiest
 `aa4af6be` — `Empire_RallyPlanets.cs` (`FindPlanetToRefitAt`)
 

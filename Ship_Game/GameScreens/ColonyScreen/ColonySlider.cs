@@ -125,7 +125,11 @@ namespace Ship_Game
         // because the pilot is holding it. The 3-way solver and the drag gate ask THIS: a managed
         // row that answered as "free" was being pushed around by its neighbours, which is exactly
         // what Auto promised it would not do.
-        public bool Pinned => LockedByUser || LaborIsManaged;
+        // ⚠ IsDisabled belongs here too, and its absence was a real leak: a cybernetic colony's
+        // FOOD row refuses the click but was still the first row the solver reached for when it
+        // needed somewhere to put the difference. Labour landed there, where those people yield
+        // nothing at all - and the row showed it.
+        public bool Pinned => LockedByUser || LaborIsManaged || IsDisabled;
 
         public bool LockedByUser
         {
