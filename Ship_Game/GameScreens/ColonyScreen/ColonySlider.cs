@@ -72,7 +72,6 @@ namespace Ship_Game
         // ⚠ bench 529: it shows in BOTH states now. The row exists either way and the space was
         // sitting empty; what changes is only WHICH quantity it reads - see Value.
         public bool IsSubsistenceGauge => IsCyberneticFoodRow;
-        bool ShowsProdSurplus => Type == ColonyResType.Prod && P.IsCybernetic && P.AutoLabor;
 
         LocalizedText Tooltip()
         {
@@ -111,14 +110,15 @@ namespace Ship_Game
         float SubsistenceShare => P.AutoLabor ? P.SubsistenceFloor
                                               : P.Prod.EstPercentForNetIncome(0);
 
+        // ⚠ bench 530: the production row shows the WHOLE share, bar and numbers alike. It used
+        // to draw the surplus while its figures reported the total - one row speaking two scales,
+        // which is what made the bar leap when Auto was switched off: nothing had changed in the
+        // colony, only what the bar was measuring. The gauge above says what that production owes
+        // before anything else; the difference between the two bars is what is left.
         public float Value
         {
-            get => IsSubsistenceGauge ? SubsistenceShare
-                 : ShowsProdSurplus   ? (P.Prod.Percent - P.SubsistenceFloor).LowerBound(0f)
-                                      : Resource.Percent;
-            // the player drags the SURPLUS; the floor rides underneath it untouched
-            set => Resource.Percent = (ShowsProdSurplus ? P.SubsistenceFloor + value : value)
-                                      .NaNChecked(0f, "ColonySlider.Value");
+            get => IsSubsistenceGauge ? SubsistenceShare : Resource.Percent;
+            set => Resource.Percent = value.NaNChecked(0f, "ColonySlider.Value");
         }
 
         public float NetValue => Resource.NetIncome;
