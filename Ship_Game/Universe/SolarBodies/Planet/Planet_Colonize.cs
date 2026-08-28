@@ -91,8 +91,10 @@ namespace Ship_Game
             {
                 GovBlueprintAuto = true;
                 Owner.ApplyBlueprintPolicy(this);
+                // born rushing if the empire says so - its OWN toggle, which the player may
+                // switch off on this colony whenever he likes
                 if (Owner.RushNewColonies)
-                    RushTurnsLeft = Owner.RushNewColonyTurns;
+                    RushConstruction = true;
                 Universe.Notifications?.AddColonizedNotification(this, Universe.Player);
             }
         }

@@ -90,15 +90,7 @@ namespace Ship_Game
         // reading the two flags live instead of sweeping item states).
         [StarData] public bool RushConstruction;
 
-        // Ludoal fork: automatic RUSHES left to a new colony. It is its own countdown and not a
-        // use of RushConstruction above: that toggle is the player's gesture on this colony, and
-        // an automatic behaviour that switched it off when it expired would quietly erase a choice
-        // he made by hand.
-        //
-        // ⚠ it counts rushes that HAPPEN, not turns that pass (bench 530): a young colony with an
-        // empty queue, or an empire too poor to pay, would otherwise spend its allowance on turns
-        // where nothing was rushed at all.
-        [StarData] public int RushTurnsLeft;
+
         public bool AutoFood      { get => !FoodManual;      set => FoodManual      = !value; }
         public bool AutoProd      { get => !ProdManual;      set => ProdManual      = !value; }
         public bool AutoColonists { get => !ColonistsManual; set => ColonistsManual = !value; }

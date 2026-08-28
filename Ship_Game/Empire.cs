@@ -255,12 +255,10 @@ namespace Ship_Game
         // Ludoal fork (maintainer, bench 529): rush a colony's queue for its first turns, so a
         // fresh world stands up instead of crawling. Both fields are NEW, so an older save reads
         // them off and unset - nothing changes until the player asks for it.
+        // Ludoal fork (maintainer, bench 531): a colony you found is born with its own Continuous
+        // Rush already on. No allowance, no countdown - the toggle is the colony's from the first
+        // turn and the player switches it off when he judges it has stood up.
         [StarData] public bool RushNewColonies;
-        // ⚠ RUSHES, not turns (maintainer, bench 530): a colony with nothing in its queue, or an
-        // empire that cannot pay, would have burned its turns without a single rush happening.
-        // Counting the rushes that actually FIRE means the number the player sets is the number
-        // he gets. The field keeps its old name so no save is disturbed.
-        [StarData(DefaultValue = 10)] public int RushNewColonyTurns = 100;
 
         [StarDataType]
         public class DiplomacyQueueItem

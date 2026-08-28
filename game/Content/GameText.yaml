@@ -28684,8 +28684,8 @@ PolRushNewColony:
  FRA: "Accelerer a la fondation"
 PolRushNewColonyTip:
  Id: 7179
- ENG: "A newly founded colony rushes its construction queue this many times, then stops on its own. Rushes are counted as they happen, so a colony with nothing to build spends none of them. Money is spent the same way a manual rush spends it, and nothing is rushed when the treasury cannot afford it. Greyed while Continuous Rush is on, which already rushes everything."
- FRA: "Une colonie nouvellement fondee accelere sa file de construction ce nombre de fois, puis s'arrete d'elle-meme. Les accelerations sont comptees quand elles ont lieu : une colonie sans rien a batir n'en depense aucune. L'argent est depense comme pour une acceleration manuelle, et rien n'est accelere si le tresor ne suit pas. Grise tant que Continuous Rush est actif, qui accelere deja tout."
+ ENG: "A colony you found is born with its own Continuous Rush already on, so a fresh world stands up instead of crawling. It is that colony's toggle from the first turn - switch it off there when you judge it has found its feet. Greyed while the empire-wide Continuous Rush is on, which already rushes everything."
+ FRA: "Une colonie que vous fondez nait avec son propre Continuous Rush deja actif, pour qu'un monde neuf se leve au lieu de ramper. C'est le reglage de cette colonie des le premier tour : desactivez-le la-bas quand vous jugez qu'elle tient debout. Grise tant que le Continuous Rush d'empire est actif, qui accelere deja tout."
 PolRushTurns:
  Id: 7180
  ENG: "Turns"

@@ -24,9 +24,7 @@ namespace Ship_Game
             // wishlist 20 Aug: while the Automation global rushes everything, the local
             // toggle is a read-only indicator (checked, greyed, inert)
             if (RushToggle != null)
-                // greyed by whatever is rushing this colony instead of the player: the empire's
-                // switch, or the countdown a young colony still carries
-                RushToggle.Greyed = P.Owner.RushAllConstruction || P.RushTurnsLeft > 0;
+                RushToggle.Greyed = P.Owner.RushAllConstruction;
             UpdateTradeTab();
             UpdateTerraformTab();
             UpdateDysonSwarmTab();
