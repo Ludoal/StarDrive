@@ -137,12 +137,7 @@ namespace Ship_Game
             else if (P.Owner != null)
             {
                 buildableShips = P.Owner.ShipsWeCanBuildSnapshot
-                    .Filter(ship => (ship.IsBuildableByPlayer(Universe.Player) && Universe.Screen.Player.WeCanBuildThis(ship) || Universe.Debug)
-                                    && !ship.IsResearchStation
-                                    && !ship.IsMiningStation
-                                    && !ship.IsConstructor
-                                    && !ship.IsSubspaceProjector
-                                    && !ship.IsDysonSwarmController);
+                    .Filter(ship => Empire.IsPlayerQueueableShip(ship, Universe.Player) || Universe.Debug);
             }
 
             string filter = FilterBuildableItems.Text.ToLower();

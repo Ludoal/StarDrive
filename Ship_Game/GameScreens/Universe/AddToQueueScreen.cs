@@ -107,9 +107,16 @@ namespace Ship_Game
         {
             base.LoadContent();
 
-            var body = new Rectangle(BottomBigFill.X, BottomBigFill.Y, BottomBigFill.Width,
-                                     Rect.Bottom - PopupFrame.BottomLine - BottomBigFill.Y);
-            Add(new UIPanel(body, ScreenGroups.GroupFrameFill));
+            // ⚠ in TWO pieces, and the foot is inset past the corner blocks. A single panel
+            // carried down to the bottom rule paints over the outer 28px columns where the
+            // hand-drawn corner arcs live, and they read as unfinished. This is the exact shape
+            // fixed in the refit popup this morning, rewritten here from memory of the OLD one.
+            const int CornerW = 28;
+            Color fill = ScreenGroups.GroupFrameFill;
+            Add(new UIPanel(BottomBigFill, fill));
+            Add(new UIPanel(new Rectangle(Rect.X + CornerW, BottomBigFill.Bottom,
+                                          Rect.Width - 2 * CornerW,
+                                          Rect.Bottom - PopupFrame.BottomLine - BottomBigFill.Bottom), fill));
 
             float pickerY = BodyTop + 8;
             Add(new UILabel(GameText.AddToQueueTargetLabel, Fonts.Arial12Bold, Colors.Cream))
@@ -170,7 +177,27 @@ namespace Ship_Game
             RefreshSource();
         }
 
+        // ⚠ a colony's buildable list is a CACHE. It is refreshed when the colony is governed or
+        // when its screen is opened - so on a save just loaded and left paused, colonies that
+        // have not ticked yet report NOTHING, and this union came out shorter or longer depending
+        // on where the player had been. Refreshed on the simulation thread first; the rows are
+        // rebuilt on the next update, which costs one frame and nothing else (bench 529).
         void RefreshSource()
+        {
+            if (CurrentTab == Tab.Buildings)
+            {
+                Planet[] targets = Targets();
+                Universe.RunOnSimThread(() =>
+                {
+                    foreach (Planet p in targets)
+                        p.RefreshBuildingsWeCanBuildHere();
+                    PendingSourceRefresh = true;
+                });
+            }
+            BuildSourceItems();
+        }
+
+        void BuildSourceItems()
         {
             var items = new Array<SourceItem>();
             switch (CurrentTab)
@@ -184,10 +211,12 @@ namespace Ship_Game
                         items.Add(new SourceItem { TroopType = t });
                     break;
                 case Tab.Ships:
-                    // platforms and stations are raised from the deep-space build window, not from
-                    // a colony's queue - they have no business in this list (bench 528)
+                    // the same rule the colony screen uses, plus the one this screen owns:
+                    // platforms and stations are raised from the deep-space build window, never
+                    // from a colony queue, so they have no place here (bench 528/529)
                     foreach (IShipDesign s in Player.ShipsWeCanBuildSnapshot
-                                                    .Where(s => !s.IsPlatformOrStation)
+                                                    .Where(s => Empire.IsPlayerQueueableShip(s, Player)
+                                                             && !s.IsPlatformOrStation)
                                                     .OrderBy(s => s.Name))
                         items.Add(new SourceItem { Ship = s });
                     break;
@@ -260,11 +289,18 @@ namespace Ship_Game
             });
         }
 
-        // the sim thread writes it, the UI picks it up on its own beat
+        // the sim thread writes these, the UI picks them up on its own beat
         volatile string PendingReport;
+        volatile bool PendingSourceRefresh;
 
         public override void Update(float fixedDeltaTime)
         {
+            if (PendingSourceRefresh)
+            {
+                PendingSourceRefresh = false;
+                BuildSourceItems();
+            }
+
             string report = PendingReport;
             if (report != null)
             {

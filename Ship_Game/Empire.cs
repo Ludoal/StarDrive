@@ -277,6 +277,27 @@ namespace Ship_Game
         // the design's UID everywhere else in the codebase.
         public bool IsDesignObsolete(string designName) => ObsoletePlayerDesigns.Contains(designName);
 
+        // Ludoal fork (maintainer, bench 529): what a PLAYER may put in a colony's build queue.
+        // The colony screen and the empire-wide picker each carried their own version of this
+        // list, which is how one of them ended up offering subspace projectors while the other
+        // did not. One rule, both callers.
+        //
+        // OBSOLETE designs leave both lists with it: a design the player has retired by hand has
+        // no business in a list he is choosing from - it was showing in every one of them.
+        //
+        // ⚠ platforms and stations are NOT excluded here. A colony screen may legitimately raise
+        // them (its click handler routes them to AddOrbital); the empire-wide picker may not, and
+        // says so itself rather than making this rule lie for one of its two callers.
+        public static bool IsPlayerQueueableShip(IShipDesign ship, Empire player)
+            => ship.IsBuildableByPlayer(player)
+            && player.WeCanBuildThis(ship)
+            && !player.IsDesignObsolete(ship.Name)
+            && !ship.IsResearchStation
+            && !ship.IsMiningStation
+            && !ship.IsConstructor
+            && !ship.IsSubspaceProjector
+            && !ship.IsDysonSwarmController;
+
         public void ToggleDesignObsolete(string designName)
         {
             if (!ObsoletePlayerDesigns.Remove(designName))
