@@ -20,6 +20,7 @@ namespace Ship_Game
         public readonly BlueprintsScreen Screen;
         public readonly BlueprintsTile Tile;
         public Building Building => Tile.Building;
+        public bool DescriptionPinned; // bench 535: set by the screen, worn as a gold liseré
 
         readonly Font Font12 = Fonts.Arial12Bold;
         readonly Font Font8 = Fonts.Arial8Bold;
@@ -76,6 +77,9 @@ namespace Ship_Game
             batch.Draw(b.IconTex, new Vector2(X + 18, Y + 2), new Vector2(IconSize), tint);
             batch.DrawString(Font12, b.TranslatedName.Text, X + 18 + IconSize + 6, Y + 8,
                              Tile.Unlocked ? Color.White : Color.DarkGray);
+
+            if (DescriptionPinned)
+                batch.DrawRectangle(Rect, Color.Gold);
         }
     }
 }

@@ -16,6 +16,7 @@ namespace Ship_Game
         // ⚠ a plan stores names, so an unresearched building is a legitimate entry - it is
         // OFFERED, and drawn as locked so the offer never lies about what you can raise today.
         public readonly bool Unlocked;
+        public bool DescriptionPinned; // bench 535: set by the screen, worn as a gold liseré
         string BuildingDescr;
         readonly SubTexture ProdIcon = ResourceManager.Texture("NewUI/icon_production");
         readonly SubTexture CostIcon = ResourceManager.Texture("UI/icon_money_22");
@@ -51,6 +52,10 @@ namespace Ship_Game
         {
             base.Draw(batch, elapsed);
             DrawBuilding(batch, Building);
+
+            // the click-pinned row wears its gold liseré - the Colony LIST pattern, unchanged
+            if (DescriptionPinned)
+                batch.DrawRectangle(Rect, Color.Gold);
         }
 
         void DrawProductionInfo(SpriteBatch batch, float maintenance, float prod, int cost = 0)

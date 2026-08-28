@@ -50,6 +50,17 @@ namespace Ship_Game
         // the tiles that still hold the buildings - so save, load and the colony simulation
         // never learn that this screen changed.
         readonly ScrollList<BlueprintsPlanListItem> PlanList;
+
+        // ⚠ ONE pin across BOTH lists (the Colony LIST pattern, bench 535): a click holds a
+        // building's description in the panel below, a click on the held row releases it. Hover
+        // still previews - the pin is what survives the cursor leaving.
+        BlueprintsBuildableListItem PinnedBuildable;
+        BlueprintsPlanListItem PinnedPlan;
+        Building PinnedBuilding => PinnedBuildable?.Building ?? PinnedPlan?.Building;
+        // what the Description tab actually shows: the cursor wins while it is on a row, the
+        // pin holds the panel the rest of the time. One owner, so the tab and the content
+        // cannot disagree.
+        Building DescriptionBuilding => HoveredBuilding ?? PinnedBuilding;
         readonly ScrollList<BlueprintsChainListItem> BlueprintsChainList;
         readonly DropOptions<Planet.ColonyType> SwitchColonyType;
         readonly UILabel LinkBlueprintsName;
@@ -259,12 +270,14 @@ namespace Ship_Game
             RectF buildableR = new(buildableMenuR.X, buildableMenuR.Y+20, buildableMenuR.W, buildableMenuR.H -20);
             BuildableList = base.Add(new ScrollList<BlueprintsBuildableListItem>(buildableR, 40));
             BuildableList.EnableItemHighlight = true;
+            BuildableList.OnClick = OnBuildableRowClicked; // single click pins, double click plans it
             BuildableList.OnDoubleClick = OnBuildableItemDoubleClicked;
             BuildableList.EnableDragOutEvents = true;
             BuildableList.OnDragOut = OnBuildableListDrag;
             RectF planListR = new(planAreaR.X, planAreaR.Y + 20, planAreaR.W, planAreaR.H - 20);
             PlanList = base.Add(new ScrollList<BlueprintsPlanListItem>(planListR, 32));
             PlanList.EnableItemHighlight = true;
+            PlanList.OnClick = OnPlanRowClicked;
             RectF chainlistR = new(chainR.X, chainR.Y + 20, chainR.W, chainR.H - 20);
             BlueprintsChainList = base.Add(new ScrollList<BlueprintsChainListItem>(chainlistR, 40));
             BlueprintsChainList.EnableItemHighlight = true;
@@ -422,6 +435,38 @@ namespace Ship_Game
             GameAudio.AffirmativeClick();
         }
 
+        void OnBuildableRowClicked(BlueprintsBuildableListItem item)
+        {
+            if (item?.Building == null)
+                return;
+
+            bool wasPinned = item == PinnedBuildable;
+            ClearListPins();
+            PinnedBuildable = wasPinned ? null : item;
+            item.DescriptionPinned = !wasPinned;
+        }
+
+        void OnPlanRowClicked(BlueprintsPlanListItem item)
+        {
+            if (item?.Building == null)
+                return;
+
+            bool wasPinned = item == PinnedPlan;
+            ClearListPins();
+            PinnedPlan = wasPinned ? null : item;
+            item.DescriptionPinned = !wasPinned;
+        }
+
+        // ⚠ both lists are cleared whichever was clicked: two pins would mean two descriptions
+        // for one panel, and the panel can only hold one.
+        void ClearListPins()
+        {
+            if (PinnedBuildable != null) PinnedBuildable.DescriptionPinned = false;
+            if (PinnedPlan != null) PinnedPlan.DescriptionPinned = false;
+            PinnedBuildable = null;
+            PinnedPlan = null;
+        }
+
         void RefreshChainList()
         {
             BlueprintsChainList.Reset();
@@ -487,7 +532,7 @@ namespace Ship_Game
             // DESCRIPTION (2) on its own; the cursor leaving falls back to the player's own choice
             // (default STATS+). Detach OnTabChange around the automatic write so the auto-switch never
             // records itself as a player choice (setting SelectedIndex fires OnTabChange, Submenu.cs).
-            int wantTab = HoveredBuilding != null ? 2 : StatsTabPlayerChoice;
+            int wantTab = DescriptionBuilding != null ? 2 : StatsTabPlayerChoice;
             if (PlanStats.SelectedIndex != wantTab)
             {
                 var savedHandler = PlanStats.OnTabChange;
@@ -513,7 +558,7 @@ namespace Ship_Game
             // then falls back to Statistics - so it draws the CURRENTLY hovered building, and the
             // single HoveredBuilding drives both the tab switch (Draw) and the content (here). No
             // second "described" variable to keep in sync: one owner, they can't disagree.
-            Building b = HoveredBuilding;
+            Building b = DescriptionBuilding;
             if (b == null)
                 return;
 
