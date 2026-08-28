@@ -66,7 +66,12 @@ namespace Ship_Game
         // ⚠ This is a reading of the model, never a second copy of it: Food.Percent stays at
         // zero for these people - labour put there would yield nothing at all - and the split
         // lives only on screen.
-        public bool IsSubsistenceGauge => Type == ColonyResType.Food && P.IsCybernetic && P.AutoLabor;
+        // the FOOD row on a cybernetic colony, in EITHER state - what it wears and what it is
+        // called answer to this, so the row cannot be named one thing and drawn as another
+        bool IsCyberneticFoodRow => Type == ColonyResType.Food && P.IsCybernetic;
+        // ...and the same row while the pilot is actually holding it: only then does it carry a
+        // value to show
+        public bool IsSubsistenceGauge => IsCyberneticFoodRow && P.AutoLabor;
         bool ShowsProdSurplus => Type == ColonyResType.Prod && P.IsCybernetic && P.AutoLabor;
 
         LocalizedText Tooltip()
@@ -210,9 +215,9 @@ namespace Ship_Game
 
             if (DrawIcons)
             {
-                // the gauge measures production, so it wears production's icon rather than the
-                // food icon of the row it borrows
-                SubTexture icon = IsSubsistenceGauge ? ResourceManager.Texture("NewUI/icon_production") : Icon;
+                // the row measures production, so it wears production's icon rather than the
+                // food icon it inherited - in both states (maintainer, bench 525)
+                SubTexture icon = IsCyberneticFoodRow ? ResourceManager.Texture("NewUI/icon_production") : Icon;
                 batch.Draw(icon, IconRect(), sliderTint);
             }
 
@@ -252,7 +257,7 @@ namespace Ship_Game
             // production's, which the row right below already prints, and the same number beside
             // a different bar reads as a contradiction. "n/a" said only that the row was not for
             // them; "Consumption" says what the bar is - the share of their output they eat.
-            if (P.IsCybernetic && Type == ColonyResType.Food)
+            if (IsCyberneticFoodRow)
             {
                 batch.DrawString(font, Localizer.Token(GameText.ConsumptionRow), new Vector2(left, y), Colors.Cream);
                 return;
