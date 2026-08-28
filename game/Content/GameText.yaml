@@ -16552,8 +16552,8 @@ FreighterPriorityColonistsFirst:
  FRA: "Colons d'abord"
 FreighterPriorityTip:
  Id: 7097
- ENG: "When freighters run short, which cargo is served first. Only affects a shortage; abundant freighters serve everything."
- FRA: "En pénurie de cargos, quelle marchandise est servie en premier. N'agit qu'en pénurie ; en abondance, tout est servi."
+ ENG: "Sets how your freighters choose their assignments. Food deliveries always come first, regardless of this setting."
+ FRA: "Définit la façon dont vos cargos choisissent leurs missions. Le transport de nourriture reste toujours prioritaire, quel que soit ce réglage."
 AutoUpgradeFreighters:
  Id: 7098
  ENG: "Auto-upgrade Freighters"
