@@ -28630,3 +28630,7 @@ SubsistenceGaugeTip:
  Id: 7165
  ENG: "Your people eat production, so this row shows the share of it held back to keep them alive. The row below is what is left for you to spend. It is the pilot that holds this, not a lock of yours."
  FRA: "Votre peuple se nourrit de production : cette ligne montre la part qui est retenue pour le maintenir en vie. La ligne du dessous est ce qui vous reste a repartir. C'est le pilote qui la tient, pas un verrou de votre fait."
+ConsumptionRow:
+ Id: 7166
+ ENG: "Consumption"
+ FRA: "Consommation"

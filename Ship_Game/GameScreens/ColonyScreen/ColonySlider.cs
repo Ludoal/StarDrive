@@ -247,11 +247,16 @@ namespace Ship_Game
             if (value > -0.05f && value < 0.05f)
                 value = 0f; // what rounds to zero neither shows a minus nor wears pink
 
-            // ⚠ the subsistence gauge shows NO number. Its income figures would be production's,
-            // which the row right below it already prints - a second copy of the same number
-            // beside a different bar reads as a contradiction. The bar is what it has to say.
-            if (IsSubsistenceGauge)
+            // ⚠ on a cybernetic colony the FOOD row is named rather than numbered, in both
+            // states (maintainer, bench 525). No number: its income figures would be
+            // production's, which the row right below already prints, and the same number beside
+            // a different bar reads as a contradiction. "n/a" said only that the row was not for
+            // them; "Consumption" says what the bar is - the share of their output they eat.
+            if (P.IsCybernetic && Type == ColonyResType.Food)
+            {
+                batch.DrawString(font, Localizer.Token(GameText.ConsumptionRow), new Vector2(left, y), Colors.Cream);
                 return;
+            }
 
             // non-numeric states keep the plain left-aligned label
             if (IsDisabled || IsCrippled || IsInvasion)

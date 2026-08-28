@@ -7047,6 +7047,8 @@ namespace Ship_Game
         LaborAutoTip = 7164,
         /// <summary>The share of production held back to keep a cybernetic colony alive.</summary>
         SubsistenceGaugeTip = 7165,
+        /// <summary>Consumption</summary>
+        ConsumptionRow = 7166,
         /// <summary>Blueprint name</summary>
         BlueprintNameLabel = 7150,
         /// <summary>Completion</summary>
