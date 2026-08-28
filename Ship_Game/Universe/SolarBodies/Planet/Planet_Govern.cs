@@ -50,13 +50,17 @@ namespace Ship_Game
         // without knowing where it used to be.
         [StarData] public float SubsistenceFloor { get; private set; }
 
+        // A colony with a governor has its whole labour split managed; one without has only its
+        // sustenance held. The two types that carry no governor are the two that carry no plan.
+        public bool HasLaborGovernor => CType is not (ColonyType.Colony or ColonyType.TradeHub);
+
         public bool AutoLabor
         {
             get => LaborAutoValue switch
             {
                 1 => true,
                 2 => false,
-                _ => CType is not (ColonyType.Colony or ColonyType.TradeHub),
+                _ => HasLaborGovernor,
             };
             set => LaborAutoValue = value ? 1 : 2;
         }

@@ -26,7 +26,7 @@ namespace Ship_Game
         public Planet P;
         readonly SubTexture Slider, Icon;
         readonly SubTexture Lock = ResourceManager.Texture("NewUI/icon_lock");
-        Rectangle LockRect;
+        public Rectangle LockRect; // the padlock's own column - the Auto toggle above it seats on this
 
         bool SliderHover;
         bool LockHover;
@@ -122,10 +122,17 @@ namespace Ship_Game
             set => Resource.PercentLock = value;
         }
 
-        // Ludoal fork: one source for "the labour is managed for you" - it used to be deduced
-        // from the colony type HERE and again in ColonySliderGroup, two readings of the same
-        // rule that could disagree the day the rule gained a toggle. It has one now.
-        bool LaborIsManaged => P.AutoLabor;
+        // Ludoal fork: one source for "is THIS row managed for you". It used to be deduced from
+        // the colony type here and again in ColonySliderGroup, two readings of one rule.
+        //
+        // ⚠ bench 525: it is per ROW, not per colony. A governor manages the whole split, so all
+        // three stop answering. The sustenance pilot holds ONE row and leaves the others to the
+        // player - blocking all three there took away exactly what Auto promised to leave.
+        public bool LaborIsManaged => P.AutoLabor && (P.HasLaborGovernor || IsSustenanceRow);
+
+        // the row the pilot holds when there is no governor: food for most, production for the
+        // cybernetic, who eat it
+        bool IsSustenanceRow => Type == (P.IsCybernetic ? ColonyResType.Prod : ColonyResType.Food);
 
         public override bool HandleInput(InputState input)
         {

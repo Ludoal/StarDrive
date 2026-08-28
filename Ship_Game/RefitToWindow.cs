@@ -7,6 +7,7 @@ using Ship_Game.AI;
 using Ship_Game.Commands.Goals;
 using Ship_Game.Audio;
 using Ship_Game.Fleets;
+using Ship_Game.GameScreens; // ScreenGroups.GroupFrameFill - the page background
 using Ship_Game.GameScreens.ShipDesign;
 using Ship_Game.Ships;
 using Vector2 = SDGraphics.Vector2;
@@ -137,12 +138,15 @@ namespace Ship_Game
             // paints over the outer 28px columns where the hand-drawn corner arcs live - the
             // corners read as squared-off. The foot strip stops short of both corner blocks;
             // it covers exactly the span the frame fills translucently, and nothing else.
+            // ⚠ bench 525: the page's own background, not a blacker black. At (0,0,0,235) the
+            // two panels read as two dark SQUARES laid on the frame rather than as its inside.
             const int CornerW = 28;
-            Add(new UIPanel(BottomBigFill, new Color(0, 0, 0, 235)));
+            Color fill = ScreenGroups.GroupFrameFill;
+            Add(new UIPanel(BottomBigFill, fill));
             var foot = new Rectangle(Rect.X + CornerW, BottomBigFill.Bottom,
                                      Rect.Width - 2 * CornerW,
                                      Rect.Bottom - PopupFrame.BottomLine - BottomBigFill.Bottom);
-            Add(new UIPanel(foot, new Color(0, 0, 0, 235)));
+            Add(new UIPanel(foot, fill));
 
             Array<IShipDesign> designs = CandidatesFor(ShipToRefit);
             int rows = Math.Max(1, Math.Min(designs.Count, MaxRows));

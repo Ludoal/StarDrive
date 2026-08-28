@@ -12,6 +12,12 @@ namespace Ship_Game
         ColonySlider Food, Prod, Res;
         Planet P;
 
+        // Ludoal fork (bench 525): the padlock column and the first row, handed to whoever seats
+        // a control above them. The group already owns this geometry; a host that re-derived it
+        // would be the second arithmetic that has to agree with the first.
+        public float LockColumnCenterX => Food?.LockRect.CenterX() ?? Rect.Right;
+        public float FirstRowTop => Food?.Y ?? Y;
+
         public bool DrawIcons; // draw resource icons or not?
         bool ShowMaxValue;     // show the 100%-labor potential beside each current value
         public Action OnSlidersChanged;
@@ -118,7 +124,7 @@ namespace Ship_Game
             int numLocked = Sliders.Count(s => s.LockedByUser);
             foreach (ColonySlider s in Sliders)
             {
-                s.CanDrag = !s.LockedByUser && numLocked <= 1 && !P.AutoLabor;
+                s.CanDrag = !s.LockedByUser && numLocked <= 1 && !s.LaborIsManaged;
             }
 
             Prod.IsCrippled = P.IsSabotaged;

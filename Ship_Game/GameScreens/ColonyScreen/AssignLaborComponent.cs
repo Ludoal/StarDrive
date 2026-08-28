@@ -82,10 +82,16 @@ namespace Ship_Game
         public override void PerformLayout()
         {
             if (Title != null) Title.Rect = Rect;
-            Rectangle housing = SlidersHousing;
-            Sliders.Rect = housing;
-            AutoToggle.Pos = new Vector2(housing.X, Y + 25);
+            Sliders.Rect = SlidersHousing;
             base.PerformLayout();
+            // ⚠ seated AFTER the sliders have laid themselves out: the toggle sits on the PADLOCK
+            // column, centred on it, one row above the first slider - and both of those numbers
+            // belong to the group, which is why they are asked of it rather than rebuilt here
+            // (bench 525: built from the block's own corner it landed high and far to the left).
+            AutoToggle.PerformLayout();
+            AutoToggle.Pos = new Vector2(Sliders.LockColumnCenterX - AutoToggle.Width / 2,
+                                         Sliders.FirstRowTop - AutoRowH);
+            AutoToggle.PerformLayout();
         }
     }
 }
