@@ -104,6 +104,21 @@ would have undone the player's own restriction the moment they loaded a plan.
 
 ## New levers
 
+### Labor gets an Auto toggle
+`PENDING` — `Planet_Govern.cs`, `Planet_WorkDistribution.cs`, `AssignLaborComponent.cs`
+
+**Source: maintainer.**
+
+Whether a colony's labour split was yours to set was deduced from its governor type and said
+nowhere: a governed colony's sliders simply did not answer. That rule is now a toggle above the
+three locks. Auto means the split is managed for you — by the governor if there is one, by the
+sustenance pilot if there is not; the pilot holds only what keeps the colony fed and rescales
+what you own to fill the rest, keeping the ratio you set between production and research. Off,
+the sliders and their locks are yours even under a governor, which keeps its build queues either
+way. The setting is stored as three states, the third being "never set", so a colony from an
+older save follows exactly the rule it followed before, and a choice you make outlives a change
+of governor.
+
 ### A standing refit order can be cancelled from the ship list
 `4b8cccc2` — `ShipListScreenItem.cs` (`OnRefitClicked`)
 

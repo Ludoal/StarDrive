@@ -7041,6 +7041,10 @@ namespace Ship_Game
         BlueprintNotFound = 7161,
         /// <summary>This plan is Exclusive. Set it as the default?</summary>
         BlueprintExclusiveWarn = 7162,
+        /// <summary>Auto</summary>
+        LaborAuto = 7163,
+        /// <summary>The labour split is managed for you - by the governor, or by the sustenance pilot.</summary>
+        LaborAutoTip = 7164,
         /// <summary>Blueprint name</summary>
         BlueprintNameLabel = 7150,
         /// <summary>Completion</summary>

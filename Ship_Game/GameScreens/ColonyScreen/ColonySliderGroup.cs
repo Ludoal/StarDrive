@@ -116,8 +116,7 @@ namespace Ship_Game
             int numLocked = Sliders.Count(s => s.LockedByUser);
             foreach (ColonySlider s in Sliders)
             {
-                s.CanDrag = !s.LockedByUser && numLocked <= 1 
-                    && (P.CType is Planet.ColonyType.Colony or Planet.ColonyType.TradeHub);
+                s.CanDrag = !s.LockedByUser && numLocked <= 1 && !P.AutoLabor;
             }
 
             Prod.IsCrippled = P.IsSabotaged;

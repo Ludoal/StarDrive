@@ -61,6 +61,43 @@ namespace Ship_Game
         }
 
 
+        // Ludoal fork: the sustenance pilot - what Auto means on a colony with NO governor.
+        // It holds the one resource that keeps the colony alive and leaves the rest of the
+        // labour to the player.
+        //
+        // WHICH resource follows the governor's own rule rather than the word "food": flesh
+        // eats food, Opteris eat production. One answer to "what sustains this colony", not two
+        // that can drift.
+        //
+        // The three shares must sum to 1, so what the player still owns is RESCALED to fill
+        // what is left, KEEPING ITS RATIO - the player expressed a balance between production
+        // and research, not two absolute values, and the balance is what survives. A cybernetic
+        // colony has only research left to own, so there is no ratio to keep there.
+        internal void AutoAssignSustenance()
+        {
+            if (IsCybernetic)
+            {
+                AssignCoreWorldProduction(1f);
+                Food.Percent = 0f; // Opteris never farm
+                Res.Percent  = (1f - Prod.Percent).LowerBound(0f);
+                return;
+            }
+
+            AssignCoreWorldFarmers(1f);
+            float rest   = (1f - Food.Percent).LowerBound(0f);
+            float others = Prod.Percent + Res.Percent;
+            if (others > 0.001f)
+            {
+                Prod.Percent = rest * (Prod.Percent / others);
+                Res.Percent  = rest * (Res.Percent / others);
+            }
+            else // nothing to preserve: split what is left down the middle
+            {
+                Prod.Percent = rest * 0.5f;
+                Res.Percent  = rest * 0.5f;
+            }
+        }
+
         // Core world aims to balance everything, without maximizing food/prod/res
         internal void AssignCoreWorldWorkers()
         {

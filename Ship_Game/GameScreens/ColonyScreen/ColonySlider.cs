@@ -98,7 +98,10 @@ namespace Ship_Game
             set => Resource.PercentLock = value;
         }
 
-        bool IsAIGovernor => P.CType != Planet.ColonyType.Colony && P.CType != Planet.ColonyType.TradeHub;
+        // Ludoal fork: one source for "the labour is managed for you" - it used to be deduced
+        // from the colony type HERE and again in ColonySliderGroup, two readings of the same
+        // rule that could disagree the day the rule gained a toggle. It has one now.
+        bool LaborIsManaged => P.AutoLabor;
 
         public override bool HandleInput(InputState input)
         {
@@ -106,7 +109,7 @@ namespace Ship_Game
                 return false;
 
             Vector2 mousePos = input.CursorPosition;
-            bool mouseOverSlider = !LockedByUser && !IsAIGovernor && Rect.Bevel(5).HitTest(mousePos);
+            bool mouseOverSlider = !LockedByUser && !LaborIsManaged && Rect.Bevel(5).HitTest(mousePos);
 
             // slider drag is stateful to give user more convenient slide experience
             if (IsDragging)
@@ -131,7 +134,7 @@ namespace Ship_Game
             SliderHover = mouseOverSlider;
 
             LockHover = false;
-            if (!IsAIGovernor)
+            if (!LaborIsManaged) // Auto off: the padlocks answer again, and they kept their state
             {
                 LockHover = LockRect.HitTest(mousePos);
                 if (LockHover) // hovering over lock?
@@ -190,7 +193,7 @@ namespace Ship_Game
         {
             if (IsDisabled) return;
 
-            if (!LockedByUser && !IsAIGovernor)
+            if (!LockedByUser && !LaborIsManaged)
             {
                 Color color = (LockHover ? new Color(255, 255, 255, 150) : new Color(255, 255, 255, 50)).Premultiplied();
                 batch.Draw(Lock, LockRect, color);

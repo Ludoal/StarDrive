@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SDGraphics;
 using Rectangle = SDGraphics.Rectangle;
+using Vector2 = SDGraphics.Vector2;
 
 namespace Ship_Game
 {
@@ -23,6 +24,13 @@ namespace Ship_Game
         public Submenu TitleMenu => Title;
         public bool SlidersVisible { get => Sliders.Visible; set => Sliders.Visible = value; }
 
+        // Ludoal fork (maintainer bench 524): Labor's own lever, above the three padlocks. The
+        // row it needs is a CONSTANT reserved off the top of the block, and the three sliders
+        // are seated in what is left - the reserve belongs to the block, not to the moment, so
+        // the rows do not shift about depending on what else is on screen.
+        const int AutoRowH = 22;
+        UICheckBox AutoToggle;
+
         public AssignLaborComponent(Planet p, RectF rect, bool useTitleFrame,
                                     LocalizedText[] titleTabs = null, bool showMaxValue = false,
                                     float maxSliderRatio = 0.50f) : base(rect)
@@ -36,6 +44,12 @@ namespace Ship_Game
             {
                 OnSlidersChanged = OnSlidersChanged
             });
+
+            // ⚠ the getter/setter form, NOT the expression-tree one: AutoLabor resolves a
+            // three-state field, and Ref<T>(Expression<Func<T>>) only ever accepts a direct
+            // member access - a computed property there throws when the screen opens.
+            AutoToggle = Add(new UICheckBox(0f, 0f, () => Planet.AutoLabor, v => Planet.AutoLabor = v,
+                                           Fonts.Arial12Bold, GameText.LaborAuto, GameText.LaborAutoTip));
 
             if (useTitleFrame)
             {
@@ -55,12 +69,12 @@ namespace Ship_Game
             get
             {
                 int sliderX = (int)X + (UseTitle ? 60 : 10);
-                int sliderY = (int)Y + 25;
+                int sliderY = (int)Y + 25 + AutoRowH; // the reserved Auto row sits above
                 // one value column needs ~45% width; showing the max adds a second decimal
                 // column, so the slider yields more room when ShowMaxValue is on. Colony and
                 // Colonies pass different ratios - Colonies is tighter so its Supply column fits.
                 int sliderW = (Width * (ShowMaxValue ? MaxSliderRatio : 0.55f)).RoundTo10();
-                int sliderH = (int)Height - 25;
+                int sliderH = (int)Height - 25 - AutoRowH;
                 return new Rectangle(sliderX, sliderY, sliderW, sliderH);
             }
         }
@@ -68,7 +82,9 @@ namespace Ship_Game
         public override void PerformLayout()
         {
             if (Title != null) Title.Rect = Rect;
-            Sliders.Rect = SlidersHousing;
+            Rectangle housing = SlidersHousing;
+            Sliders.Rect = housing;
+            AutoToggle.Pos = new Vector2(housing.X, Y + 25);
             base.PerformLayout();
         }
     }

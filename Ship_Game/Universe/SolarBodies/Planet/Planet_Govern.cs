@@ -30,6 +30,30 @@ namespace Ship_Game
         // day it goes back to a type that can carry one.
         [StarData] public bool GovBlueprintAuto;
 
+        // Ludoal fork: is this colony's LABOUR managed for it? Auto means yes - by the governor
+        // if it has one, by the sustenance pilot if it does not.
+        //
+        // THREE states in one int, and the third is the point. The default differs by status
+        // (governed colonies are managed today, free ones are not), so no single bool default
+        // can reproduce both from a save that predates the field: every governed colony would
+        // load with its labour handed back to the player. 0 means "never set - follow the
+        // status", so an older save behaves exactly as it did. 0 never reaches the screen: the
+        // toggle shows ON or OFF, and the player's first click leaves the undecided state for
+        // good. A stored choice then OUTLIVES a change of status - assigning a governor to a
+        // colony the player set to OFF gives it the build queues, not the labour.
+        [StarData] int LaborAutoValue; // 0 = never set, 1 = on, 2 = off
+
+        public bool AutoLabor
+        {
+            get => LaborAutoValue switch
+            {
+                1 => true,
+                2 => false,
+                _ => CType is not (ColonyType.Colony or ColonyType.TradeHub),
+            };
+            set => LaborAutoValue = value ? 1 : 2;
+        }
+
         public bool HasBlueprints => Blueprints != null;
         public bool HasExclusiveBlueprints => Blueprints?.Exclusive == true;
         bool RequiredInBlueprints(Building b) => Blueprints?.IsRequired(b) == true;
@@ -57,6 +81,8 @@ namespace Ship_Game
 
             if (CType == ColonyType.Colony)
             {
+                if (AutoLabor)
+                    AutoAssignSustenance(); // no governor, but the labour is still managed
                 ManageSupplyStates(); // flux is decoupled from governance: it runs here too
                 return; // No Governor? Only construction minds.
             }
@@ -69,7 +95,12 @@ namespace Ship_Game
             if (!OwnerIsPlayer && Owner.GetPlanets().Count == 1)
                 CType = ColonyType.Core;
 
-            if (CType != ColonyType.TradeHub)
+            // Ludoal fork: read ONCE, here - the reset below and every assignment in the switch
+            // answer to the same value, or a colony could be wiped by one and left unassigned by
+            // the other. With Auto off, the governor still builds and scraps; the labour split
+            // stays exactly where the player put it, which means NOT zeroing it each turn.
+            bool governsLabor = AutoLabor;
+            if (CType != ColonyType.TradeHub && governsLabor)
             {
                 Food.Percent = 0;
                 Prod.Percent = 0;
@@ -84,25 +115,25 @@ namespace Ship_Game
                 //     here in case the role returns with another function some day.
                 case ColonyType.Core:
                     BuildAndScrapBuildings(Budget);
-                    AssignCoreWorldWorkers();
+                    if (governsLabor) AssignCoreWorldWorkers();
                     break;
                 case ColonyType.Industrial:
                     BuildAndScrapBuildings(Budget);
                     // Farm to 30% storage, then devote the rest to Work, then to research when that starts to fill up
-                    AssignOtherWorldsWorkers(0.33f, 1, 0, 2);
+                    if (governsLabor) AssignOtherWorldsWorkers(0.33f, 1, 0, 2);
                     break;
                 case ColonyType.Research:
                     //This governor will rely on imports, focusing on research as long as no one is starving
                     BuildAndScrapBuildings(Budget);
-                    AssignOtherWorldsWorkers(0.15f, 0.15f, 0, 0);
+                    if (governsLabor) AssignOtherWorldsWorkers(0.15f, 0.15f, 0, 0);
                     break;
                 case ColonyType.Agricultural:
                     BuildAndScrapBuildings(Budget);
-                    AssignOtherWorldsWorkers(1, 0.333f, Storage.Max - Storage.Food , 0);
+                    if (governsLabor) AssignOtherWorldsWorkers(1, 0.333f, Storage.Max - Storage.Food , 0);
                     break;
                 case ColonyType.Military:
                     BuildAndScrapBuildings(Budget);
-                    AssignOtherWorldsWorkers(0.3f, 0.7f, 0, 1.5f);
+                    if (governsLabor) AssignOtherWorldsWorkers(0.3f, 0.7f, 0, 1.5f);
                     break;
             }
 

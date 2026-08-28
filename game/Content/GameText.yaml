@@ -28618,3 +28618,11 @@ BlueprintExclusiveWarn:
  Id: 7162
  ENG: "This plan is Exclusive. Colonies of this governor type left on Auto will build nothing outside it, and may scrap military buildings the plan does not name if their Scrap Mandate allows it. Set it as the default?"
  FRA: "Ce plan est exclusif. Les colonies de ce type de gouverneur laissées sur Auto ne construiront rien en dehors de lui, et pourront démolir les bâtiments militaires absents du plan si leur Mandat de démolition l'autorise. Le poser comme défaut ?"
+LaborAuto:
+ Id: 7163
+ ENG: "Auto"
+ FRA: "Auto"
+LaborAutoTip:
+ Id: 7164
+ ENG: "The labour split is managed for you: by this colony's governor if it has one, by the sustenance pilot if it does not - the pilot holds only what keeps the colony fed and leaves the rest of the split as you set it. Off, the three sliders and their locks are yours."
+ FRA: "La répartition de la main-d'oeuvre est gérée pour vous : par le gouverneur de cette colonie s'il y en a un, par le pilote de subsistance sinon - le pilote ne tient que de quoi nourrir la colonie et laisse le reste de la répartition telle que vous l'avez posée. Désactivé, les trois curseurs et leurs cadenas sont à vous."
