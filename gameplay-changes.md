@@ -264,7 +264,7 @@ role. *(Lives in a GameScreens file, but the change is to real queue ordering, n
 ## Formula corrections
 
 ### Cybernetic colonies stop losing workers into a sterile row
-`PENDING` — `ColonySlider.cs` (`Pinned`)
+`dc26300d` — `ColonySlider.cs` (`Pinned`)
 
 **Source: maintainer.**
 
