@@ -83,6 +83,11 @@ namespace Ship_Game
         {
             if (Check != null && Check.HandleInput(input))
                 return true;
+            // ⚠ bench 533: the fixed-title lead carries this row's tooltip and was never asked
+            // for it - input went straight past it to the picker. A checkbox lead answers for
+            // itself, a label lead cannot, so a row that leads with a title had a tooltip no
+            // player could ever reach.
+            TitleOnly?.HandleInput(input);
             if (ParentOff) // lead off: swallow nothing else, the sub-controls are inert
                 return false;
             return (AutoPickBox?.HandleInput(input) ?? false)
@@ -137,7 +142,15 @@ namespace Ship_Game
             Height = Math.Max(Label.Height, Options.Bottom - Pos.Y);
         }
 
-        public override bool HandleInput(InputState input) => Options.HandleInput(input);
+        public override bool HandleInput(InputState input)
+        {
+            if (Options.HandleInput(input)) // an open list wins over anything behind it
+                return true;
+
+            // the label is the only part of this row a player can hover, so it must be given
+            // the chance to answer - see the twin in CheckedDropdown (bench 533)
+            return Label.HandleInput(input);
+        }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
