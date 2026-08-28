@@ -105,7 +105,7 @@ would have undone the player's own restriction the moment they loaded a plan.
 ## New levers
 
 ### Labor gets an Auto toggle
-`PENDING` — `Planet_Govern.cs`, `Planet_WorkDistribution.cs`, `AssignLaborComponent.cs`
+`36a3bba6` — `Planet_Govern.cs`, `Planet_WorkDistribution.cs`, `AssignLaborComponent.cs`
 
 **Source: maintainer.**
 
