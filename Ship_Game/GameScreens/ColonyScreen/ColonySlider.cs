@@ -69,9 +69,9 @@ namespace Ship_Game
         // the FOOD row on a cybernetic colony, in EITHER state - what it wears and what it is
         // called answer to this, so the row cannot be named one thing and drawn as another
         bool IsCyberneticFoodRow => Type == ColonyResType.Food && P.IsCybernetic;
-        // ...and the same row while the pilot is actually holding it: only then does it carry a
-        // value to show
-        public bool IsSubsistenceGauge => IsCyberneticFoodRow && P.AutoLabor;
+        // ⚠ bench 529: it shows in BOTH states now. The row exists either way and the space was
+        // sitting empty; what changes is only WHICH quantity it reads - see Value.
+        public bool IsSubsistenceGauge => IsCyberneticFoodRow;
         bool ShowsProdSurplus => Type == ColonyResType.Prod && P.IsCybernetic && P.AutoLabor;
 
         LocalizedText Tooltip()
@@ -101,9 +101,19 @@ namespace Ship_Game
             }
         }
 
+        // ⚠ the gauge reads two RELATED but distinct quantities, and the seam is deliberate:
+        //   Auto   - what the pilot is actually holding, so it tiles with the surplus below it.
+        //   manual - the BREAK-EVEN share: where production exactly meets consumption. Nobody is
+        //            holding anything, so the honest thing to show is what it would take. Its end
+        //            marks the waterline - left of it the colony does not feed itself.
+        // The pilot's floor is that same figure plus its margin, which is why the bar barely
+        // moves when Auto is switched on or off.
+        float SubsistenceShare => P.AutoLabor ? P.SubsistenceFloor
+                                              : P.Prod.EstPercentForNetIncome(0);
+
         public float Value
         {
-            get => IsSubsistenceGauge ? P.SubsistenceFloor
+            get => IsSubsistenceGauge ? SubsistenceShare
                  : ShowsProdSurplus   ? (P.Prod.Percent - P.SubsistenceFloor).LowerBound(0f)
                                       : Resource.Percent;
             // the player drags the SURPLUS; the floor rides underneath it untouched
@@ -218,7 +228,11 @@ namespace Ship_Game
         
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            Color sliderTint = IsDisabled ? Color.DarkGray : Color.White;
+            // the waterline turns red when the colony is under it: the net income already
+            // accounts for what these people eat, so there is nothing to compute (bench 529)
+            Color sliderTint = IsSubsistenceGauge && P.Prod.NetIncome < 0f ? Color.Red
+                             : IsDisabled                                  ? Color.DarkGray
+                                                                           : Color.White;
 
             // the track is the socle's drawing now - one arithmetic for every slider
             FloatSlider.DrawTrack(batch, Rect, Slider, Value, SliderHover, sliderTint);
