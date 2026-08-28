@@ -585,7 +585,7 @@ namespace Ship_Game
             // they overlapped by construction, on the same title bar (maintainer, bench 535).
             const int ShieldBarClearance = 100; // moved clear of the arrows (maintainer's call)
             Rectangle planetShieldBarRect = new Rectangle(PlanetIcon.X - ShieldBarClearance,
-                                                          PlanetInfo.Rect.Y + 4, PlanetIcon.Width, 20);
+                                                          PlanetInfo.Rect.Y + 2, PlanetIcon.Width, 20);
             PlanetShieldBar = new ProgressBar(planetShieldBarRect)
             {
                 color = "blue"
