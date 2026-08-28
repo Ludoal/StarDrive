@@ -105,7 +105,7 @@ would have undone the player's own restriction the moment they loaded a plan.
 ## New levers
 
 ### A standing refit order can be cancelled from the ship list
-`PENDING` — `ShipListScreenItem.cs` (`OnRefitClicked`)
+`4b8cccc2` — `ShipListScreenItem.cs` (`OnRefitClicked`)
 
 **Source: maintainer.**
 
