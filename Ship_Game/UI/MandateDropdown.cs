@@ -11,13 +11,9 @@ namespace Ship_Game
     // empire's does not: a policy that could defer to itself has nowhere to defer to.
     public static class MandateDropdown
     {
-        // withByBlueprint: the colony's pickers carry the delegated position so they can DISPLAY
-        // it while an exclusive plan commands. It is never reachable by a click - the picker is
-        // read-only exactly while it shows this - and the model refuses to store it either way.
         public static DropOptions<Planet.BuildMandate> Make(Planet.BuildMandate active,
                                                            Action<Planet.BuildMandate> apply,
-                                                           bool withAuto,
-                                                           bool withByBlueprint = false)
+                                                           bool withAuto)
         {
             // 120, not 110: "Economic only" was clipped to "Economic onl..."
             var list = new DropOptions<Planet.BuildMandate>(120, 18);
@@ -27,11 +23,35 @@ namespace Ship_Game
             list.AddOption(option: GameText.MandateEconomicOnly, Planet.BuildMandate.EconomicOnly);
             list.AddOption(option: GameText.MandateDefenseOnly, Planet.BuildMandate.DefenseOnly);
             list.AddOption(option: GameText.MandateNone, Planet.BuildMandate.None);
-            if (withByBlueprint)
-                list.AddOption(option: GameText.MandateByBlueprint, Planet.BuildMandate.ByBlueprint);
             list.ActiveValue = active;
             list.OnValueChange = apply;
             return list;
+        }
+
+        // ⚠ bench 530: while an exclusive blueprint commands the colony, the picker holds ONE
+        // entry - the word it displays. It used to carry that word permanently, which put a
+        // choice in the list that did nothing when picked: the option that lies, in the very
+        // feature built to remove one. The delegated picker is read-only, so a list of one is
+        // never opened; the ordinary options come back with the colony's own right.
+        public static void SetDelegated(DropOptions<Planet.BuildMandate> list, bool delegated,
+                                        Planet.BuildMandate own, bool withAuto)
+        {
+            list.Clear();
+            if (delegated)
+            {
+                list.AddOption(option: GameText.MandateByBlueprint, Planet.BuildMandate.ByBlueprint);
+                list.ActiveValue = Planet.BuildMandate.ByBlueprint;
+            }
+            else
+            {
+                if (withAuto)
+                    list.AddOption(option: GameText.MandateAuto, Planet.BuildMandate.Auto);
+                list.AddOption(option: GameText.MandateAll, Planet.BuildMandate.All);
+                list.AddOption(option: GameText.MandateEconomicOnly, Planet.BuildMandate.EconomicOnly);
+                list.AddOption(option: GameText.MandateDefenseOnly, Planet.BuildMandate.DefenseOnly);
+                list.AddOption(option: GameText.MandateNone, Planet.BuildMandate.None);
+                list.ActiveValue = own;
+            }
         }
     }
 }

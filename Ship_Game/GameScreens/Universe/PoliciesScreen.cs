@@ -35,6 +35,7 @@ namespace Ship_Game
         DropOptions<Planet.BuildMandate> EmpireBuildMandateList, EmpireScrapMandateList;
         DropOptions<string>[] BlueprintPolicyLists;
         UICheckBox RushNewColonies;
+        UILabel RushTurnsLabel;
         FloatSlider RushTurns;
         UIPanel PriorityHost;
 
@@ -53,7 +54,7 @@ namespace Ship_Game
         // Rush row. Both numbers are CONSTANTS and the frame is sized FROM them - never the
         // reverse: a host placed at a share of the space left moves every time a row is added
         // above it.
-        const float PrioTopInset = 172f, PrioRowsH = 300f; // heading + Continuous Rush + the timed rush and its slider
+        const float PrioTopInset = 198f, PrioRowsH = 300f; // heading + Continuous Rush + the timed rush, its caption and its slider
         // and below the rows, a heading of its own plus the button it names
         const float ManualRowH = 26f, ManualButtonH = 26f;
         const float ConstructionBoxH = PrioTopInset + PrioRowsH + ManualRowH + ManualButtonH + 18f;
@@ -160,8 +161,12 @@ namespace Ship_Game
                                                        v => player.RushNewColonies = v,
                                                        title: GameText.PolRushNewColony,
                                                        tooltip: GameText.PolRushNewColonyTip);
+            // ⚠ the caption is its OWN row: a FloatSlider draws its text at its own origin, so a
+            // titled slider puts the word and the rail on one line and they fight (bench 530).
+            // Every other slider in this codebase is captioned by a label above it.
+            RushTurnsLabel = construction.Add(new UILabel(GameText.PolRushTurns, Fonts.Arial12Bold, Colors.Cream));
             RushTurns = construction.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW3 - 40, 28),
-                                                         GameText.PolRushTurns, 1, 100, player.RushNewColonyTurns)
+                                                         "", 1, 100, player.RushNewColonyTurns)
             {
                 Step = 1,
                 Tip = GameText.PolRushNewColonyTip,
@@ -398,6 +403,7 @@ namespace Ship_Game
                 // greyed AND inert: Enabled refuses the input, Greyed says so on screen
                 RushNewColonies.Greyed = RushTurns.Greyed = RushConstruction;
                 RushNewColonies.Enabled = RushTurns.Enabled = !RushConstruction;
+                RushTurnsLabel.Color = RushConstruction ? Color.Gray : Colors.Cream;
             }
             base.Update(fixedDeltaTime);
         }

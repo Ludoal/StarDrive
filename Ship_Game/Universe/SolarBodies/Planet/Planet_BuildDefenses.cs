@@ -143,9 +143,8 @@ namespace Ship_Game
              : local == BuildMandate.Auto ? empire ?? BuildMandate.None
                                           : local;
 
-        // what the pickers SHOW: the delegation while it lasts, the colony's own setting otherwise
-        public BuildMandate DisplayedBuildMandate => HasExclusiveBlueprints ? BuildMandate.ByBlueprint : GovBuildMandate;
-        public BuildMandate DisplayedScrapMandate => HasExclusiveBlueprints ? BuildMandate.ByBlueprint : GovScrapMandate;
+        // an exclusive plan commands this colony, so its pickers show the delegation and answer
+        // nothing while it lasts
         public bool MandatesDelegated => HasExclusiveBlueprints;
 
         public bool MayBuildMilitary  => MayBuild(EffectiveBuildMandate, military: true);

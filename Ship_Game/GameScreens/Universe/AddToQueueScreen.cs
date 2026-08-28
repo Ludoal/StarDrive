@@ -211,12 +211,12 @@ namespace Ship_Game
                         items.Add(new SourceItem { TroopType = t });
                     break;
                 case Tab.Ships:
-                    // the same rule the colony screen uses, plus the one this screen owns:
-                    // platforms and stations are raised from the deep-space build window, never
-                    // from a colony queue, so they have no place here (bench 528/529)
+                    // ⚠ bench 530: platforms and stations come BACK. They are raised from a colony
+                    // like anything else - the colony screen offers them - and excluding them was
+                    // reading "no deep-space structures" too widely. Subspace projectors and the
+                    // rest of the deep-space set are already out via the shared rule.
                     foreach (IShipDesign s in Player.ShipsWeCanBuildSnapshot
-                                                    .Where(s => Empire.IsPlayerQueueableShip(s, Player)
-                                                             && !s.IsPlatformOrStation)
+                                                    .Where(s => Empire.IsPlayerQueueableShip(s, Player))
                                                     .OrderBy(s => s.Name))
                         items.Add(new SourceItem { Ship = s });
                     break;
@@ -270,9 +270,13 @@ namespace Ship_Game
                         }
                         else if (e.Ship != null && p.HasSpacePort)
                         {
-                            // the queue type comes from the one classifier the colony screen uses,
-                            // so the same ship is filed the same way from either end
-                            p.Construction.Enqueue(e.Ship, QueueItem.PlayerQueueTypeFor(e.Ship));
+                            // orbitals take the platform road, everything else the queue - the same
+                            // fork the colony screen makes, and the queue type comes from the one
+                            // classifier both ends share
+                            if (e.Ship.IsPlatformOrStation)
+                                p.AddOrbital(e.Ship);
+                            else
+                                p.Construction.Enqueue(e.Ship, QueueItem.PlayerQueueTypeFor(e.Ship));
                         }
                     }
                 }

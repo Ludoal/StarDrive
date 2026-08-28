@@ -509,8 +509,11 @@ namespace Ship_Game
             if (p.OwnerIsPlayer)
             {
                 RushToggle = base.Add(new UICheckBox(queueR.Right - 150, queueTop + 4,
-                    () => P.Owner.RushAllConstruction || P.RushConstruction,
-                    v => { if (!P.Owner.RushAllConstruction) P.RushConstruction = v; },
+                    // reads the three ways this colony can be rushing - the empire's switch, the
+                    // player's own, and the countdown a new colony carries - and writes only the
+                    // one that is his (bench 530)
+                    () => P.Owner.RushAllConstruction || P.RushConstruction || P.RushTurnsLeft > 0,
+                    v => { if (!P.Owner.RushAllConstruction && P.RushTurnsLeft == 0) P.RushConstruction = v; },
                     // bench 459: its OWN tooltip - the empire-wide tip was speaking here
                     Fonts.Arial12Bold, GameText.RushAllConstruction, GameText.ContinuousRushColonyTip));
             }

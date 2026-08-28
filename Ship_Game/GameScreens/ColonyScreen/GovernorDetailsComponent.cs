@@ -59,6 +59,7 @@ namespace Ship_Game
         public enum BlueprintMode { None, Custom, Auto }
         DropOptions<BlueprintMode> BlueprintModeList;
         bool ModeListWasOpen;
+        bool MandatesWereDelegated;
         private float ButtonUpdateTimer;   // updates buttons once per second
         UILabel PlatformsText;
         UILabel StationsText;
@@ -212,10 +213,10 @@ namespace Ship_Game
             // one factory for both ends: the colony's picker carries Auto, the empire's - on
             // Policies > Colony - does not. Two copies of a list of options is how the two ends
             // come to disagree about what a mandate means.
-            BuildMandateList = Add(MandateDropdown.Make(Planet.DisplayedBuildMandate,
-                m => Universe.RunOnSimThread(() => Planet.SetBuildMandate(m)), withAuto: true, withByBlueprint: true));
-            ScrapMandateList = Add(MandateDropdown.Make(Planet.DisplayedScrapMandate,
-                m => Universe.RunOnSimThread(() => Planet.SetScrapMandate(m)), withAuto: true, withByBlueprint: true));
+            BuildMandateList = Add(MandateDropdown.Make(Planet.GovBuildMandate,
+                m => Universe.RunOnSimThread(() => Planet.SetBuildMandate(m)), withAuto: true));
+            ScrapMandateList = Add(MandateDropdown.Make(Planet.GovScrapMandate,
+                m => Universe.RunOnSimThread(() => Planet.SetScrapMandate(m)), withAuto: true));
 
             // Ludoal fork (maintainer feedback): the three blueprint gestures wear the icons the
             // construction list already uses for the same verbs - pencil to edit, plus to bring one
@@ -656,8 +657,8 @@ namespace Ship_Game
                 BuildCapital.Visible       = GovernorTabView 
                                              && Planet.OwnerIsPlayer 
                                              && !Planet.Owner.GetPlanets().Any(p => p.IsHomeworld);
-                // blueprints are an explicit plan and override both mandates, so the lists
-                // would lie about what the governor is going to do
+                // the mandates show for a governed colony of the player's. An exclusive plan does
+                // not hide them - it takes them over and says so; see the delegation below.
                 bool mandates = GovernorTabView && GovernorOn && Planet.OwnerIsPlayer;
                 // an open list has to cover everything, and add-order only settles the
                 // siblings added before it. Raise it ON THE OPENING, not every frame:
@@ -671,10 +672,16 @@ namespace Ship_Game
                 // answer nothing, while the colony's own settings sit untouched underneath and
                 // come back whole the day the plan goes. Read-only rather than hidden - a command
                 // in read-only shows its state, it never hides it.
+                // rebuilt only on the TRANSITION: refilling a list every frame would fight the
+                // player's own click on the frame he makes it
                 bool delegated = Planet.MandatesDelegated;
+                if (delegated != MandatesWereDelegated)
+                {
+                    MandatesWereDelegated = delegated;
+                    MandateDropdown.SetDelegated(BuildMandateList, delegated, Planet.GovBuildMandate, withAuto: true);
+                    MandateDropdown.SetDelegated(ScrapMandateList, delegated, Planet.GovScrapMandate, withAuto: true);
+                }
                 BuildMandateList.ReadOnly = ScrapMandateList.ReadOnly = delegated;
-                BuildMandateList.ActiveValue = Planet.DisplayedBuildMandate;
-                ScrapMandateList.ActiveValue = Planet.DisplayedScrapMandate;
                 // the way out has to be written where the player looks for it, and the tooltip
                 // lives on the LABEL, not on the list
                 BuildMandateLabel.Tooltip = delegated ? GameText.MandateDelegatedTip : GameText.BuildMandateTip;
