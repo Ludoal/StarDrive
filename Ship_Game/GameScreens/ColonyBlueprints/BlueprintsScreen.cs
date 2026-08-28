@@ -6,6 +6,7 @@ using SDUtils;
 using Color = Microsoft.Xna.Framework.Color;
 using Ship_Game.Audio;
 using Font = Ship_Game.Graphics.Font;
+using RenderStates = Ship_Game.Graphics.RenderStates; // the description pane is scissored
 using Ship_Game.Universe.SolarBodies;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,6 +62,14 @@ namespace Ship_Game
         // pin holds the panel the rest of the time. One owner, so the tab and the content
         // cannot disagree.
         Building DescriptionBuilding => HoveredBuilding ?? PinnedBuilding;
+
+        // the description elevator, the Colony pane's own (bench 535): the pane is ALWAYS
+        // scissored so long lore cannot bleed past the frame, the wheel offset is clamped to the
+        // content measured at the last draw, and the offset resets when the shown building
+        // changes identity. It is what lets the Outpost keep its description again.
+        float DescriptionScroll;
+        float MaxDescriptionScroll;
+        Building LastDescribed;
         readonly ScrollList<BlueprintsChainListItem> BlueprintsChainList;
         readonly DropOptions<Planet.ColonyType> SwitchColonyType;
         readonly UILabel LinkBlueprintsName;
@@ -546,7 +555,7 @@ namespace Ship_Game
             }
             base.Draw(batch, elapsed);
             if (PlanStats.SelectedIndex == 2)
-                DrawHoveredBuildListBuildingInfo(batch);
+                DrawDescriptionPane(batch);
             else if (PlanStats.SelectedIndex == 1)
                 DrawStatsPlus(batch);
             else
@@ -556,39 +565,60 @@ namespace Ship_Game
             batch.SafeEnd();
         }
 
-        void DrawHoveredBuildListBuildingInfo(SpriteBatch batch)
+        void DrawDescriptionPane(SpriteBatch batch)
         {
-            // Ludoal fork (47-b): the Description tab lives only while the cursor is over a building,
-            // then falls back to Statistics - so it draws the CURRENTLY hovered building, and the
-            // single HoveredBuilding drives both the tab switch (Draw) and the content (here). No
-            // second "described" variable to keep in sync: one owner, they can't disagree.
             Building b = DescriptionBuilding;
+            if (b != LastDescribed) // a new subject starts at its first line
+            {
+                DescriptionScroll = 0f;
+                LastDescribed = b;
+            }
             if (b == null)
                 return;
 
-            Vector2 bCursor = new Vector2(PlanStats.X + 15, PlanStats.Y + 35);
+            var detailPos = new Vector2(PlanStats.X + 15, PlanStats.Y + 35);
+            var pane = new Rectangle((int)PlanStats.X, (int)PlanStats.Y + 30,
+                                     (int)PlanStats.Width, (int)PlanStats.Height - 35);
+
+            batch.SafeEnd();
+            RenderStates.EnableScissorTest(batch.GraphicsDevice, pane);
+            batch.SafeBegin(SpriteBlendMode.AlphaBlend, RenderStates.ScissorEnabled);
+            float contentBottom = DrawBuildingDescription(batch, b, detailPos - new Vector2(0f, DescriptionScroll));
+            batch.SafeEnd();
+            RenderStates.DisableScissorTest(batch.GraphicsDevice);
+            batch.SafeBegin();
+
+            // a full line of air after the content, so the last line never sits at the razor's
+            // edge of the scissor at max scroll
+            float contentHeight = contentBottom + DescriptionScroll - detailPos.Y + TextFont.LineSpacing;
+            MaxDescriptionScroll = (contentHeight - (pane.Height - 10)).LowerBound(0f);
+            if (DescriptionScroll > MaxDescriptionScroll)
+                DescriptionScroll = MaxDescriptionScroll;
+
+            if (MaxDescriptionScroll > 0f)
+                ColonyScreen.DrawScrollElevator(batch, pane, DescriptionScroll, MaxDescriptionScroll, contentHeight);
+        }
+
+        // returns the bottom of what it drew, which is what the elevator measures
+        float DrawBuildingDescription(SpriteBatch batch, Building b, Vector2 origin)
+        {
+            Vector2 bCursor = origin;
             Color color = Color.Wheat;
             batch.DrawString(Font20, b.TranslatedName, bCursor, color);
             bCursor.Y += Font20.LineSpacing + 5;
-            // bench 354 (maintainer): the Outpost is the one building whose stat blocks overflow this
-            // panel (repair/sensor/storage/defense/infra all at once). Replace its description with a
-            // single blank line - keep the air between the name and the stats, drop the text that
-            // pushed the blocks off the bottom. Colony keeps the full description (separate draw path).
-            if (b.IsOutpost)
-            {
-                bCursor.Y += Font20.LineSpacing;
-            }
-            else
-            {
-                string selectionText = TextFont.ParseText(b.DescriptionText.Text, PlanStats.Width - 40);
-                batch.DrawString(TextFont, selectionText, bCursor, Color.White);
-                bCursor.Y += TextFont.MeasureString(selectionText).Y + Font20.LineSpacing;
-            }
+            // ⚠ the Outpost gets its description BACK (maintainer, bench 535). It was cut at
+            // bench 354 because its stat blocks - repair, sensor, storage, defense, infra, all
+            // at once - pushed past the bottom of the panel. The panel scrolls now, so nothing
+            // is pushed off anything: the reason for the cut is gone.
+            string selectionText = TextFont.ParseText(b.DescriptionText.Text, PlanStats.Width - 40);
+            batch.DrawString(TextFont, selectionText, bCursor, Color.White);
+            bCursor.Y += TextFont.MeasureString(selectionText).Y + Font20.LineSpacing;
             ColonyScreen.DrawBuildingStaticInfo(ref bCursor, batch, TextFont, Player, PlannedFertility,
                 InitRichness, Player.data.Traits.PreferredEnv, b);
             ColonyScreen.DrawBuildingInfo(ref bCursor, batch, TextFont, b.ActualShipRepair(PlanetLevel),
                 "NewUI/icon_queue_rushconstruction", GameText.ShipRepair);
             ColonyScreen.DrawBuildingWeaponStats(ref bCursor, batch, TextFont, b, PlanetLevel);
+            return bCursor.Y;
         }
 
         void DrawPlanStatistics(SpriteBatch batch)
@@ -836,6 +866,18 @@ namespace Ship_Game
                 GameAudio.EchoAffirmative();
                 ExitScreen();
                 ReopenParentColony();
+                return true;
+            }
+
+            // the description pane keeps its own wheel; the two lists keep theirs, and the
+            // pane only answers when it is the tab on show and it holds something (bench 535)
+            if ((input.ScrollIn || input.ScrollOut) && PlanStats.SelectedIndex == 2
+                && DescriptionBuilding != null
+                && !BuildableList.HitTest(input.CursorPosition)
+                && !PlanList.HitTest(input.CursorPosition))
+            {
+                if (input.ScrollIn) DescriptionScroll = (DescriptionScroll - 48f).LowerBound(0f);
+                else                DescriptionScroll = (DescriptionScroll + 48f).UpperBound(MaxDescriptionScroll);
                 return true;
             }
 

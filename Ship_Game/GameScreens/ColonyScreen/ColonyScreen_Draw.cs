@@ -228,31 +228,7 @@ namespace Ship_Game
             if (MaxDescriptionScroll < 0f) MaxDescriptionScroll = 0f;
             if (DescriptionScroll > MaxDescriptionScroll) DescriptionScroll = MaxDescriptionScroll;
             if (MaxDescriptionScroll > 0f && DescriptionPaneUp)
-            {
-                // bench 431: the elevator wears the theme - the NewUI scrollbar family,
-                // the same brown furniture as every list in the game
-                ScrollListStyleTextures s = ScrollListStyleTextures.Get(ListStyle.Default);
-                int barW = s.ScrollBarMid.Normal.Width;
-                // bench 432: same inset as the page's other bars - it hugged the border
-                var up   = new Rectangle(pane.Right - barW - 14, pane.Y + 6, barW, s.ScrollBarArrowUp.Normal.Height);
-                var down = new Rectangle(up.X, pane.Y + pane.Height - 6 - s.ScrollBarArrowDown.Normal.Height, barW, s.ScrollBarArrowDown.Normal.Height);
-                int housingY = up.Y + up.Height + 3;
-                int housingH = down.Y - 3 - housingY;
-                int thumbH = (int)(housingH * (pane.Height - 10f) / contentHeight);
-                if (thumbH < 24) thumbH = 24;
-                if (thumbH > housingH) thumbH = housingH;
-                int thumbY = housingY + (int)((housingH - thumbH) * (DescriptionScroll / MaxDescriptionScroll));
-                int capH = (thumbH - s.ScrollBarMid.Normal.Height) / 2;
-                if (capH < 0) capH = 0;
-                var capTop = new Rectangle(up.X, thumbY, barW, capH);
-                var midR   = new Rectangle(up.X, thumbY + capH, barW, thumbH - 2 * capH);
-                var capBot = new Rectangle(up.X, thumbY + thumbH - capH, barW, capH);
-                s.ScrollBarUpDown.Draw(batch, capTop, false, false);
-                s.ScrollBarMid.Draw(batch, midR, false, false);
-                s.ScrollBarUpDown.Draw(batch, capBot, false, false);
-                s.ScrollBarArrowUp.Draw(batch, up, false, false);
-                s.ScrollBarArrowDown.Draw(batch, down, false, false);
-            }
+                DrawScrollElevator(batch, pane, DescriptionScroll, MaxDescriptionScroll, contentHeight);
 
             float num5 = 100;
             var cursor = new Vector2(PlanetInfo.X + 20, PlanetInfo.Y + 45);
@@ -352,6 +328,35 @@ namespace Ship_Game
 
             base.Draw(batch, elapsed);
             batch.SafeEnd();
+        }
+
+        // The description elevator, shared (bench 535): Blueprints has the same pane and the
+        // same wheel, and a second implementation of a scrollbar would drift from this one.
+        // bench 431: it wears the theme - the NewUI scrollbar family, the same brown furniture
+        // as every list in the game. bench 432: same inset as the page's other bars.
+        public static void DrawScrollElevator(SpriteBatch batch, in Rectangle pane,
+                                              float scroll, float maxScroll, float contentHeight)
+        {
+            ScrollListStyleTextures s = ScrollListStyleTextures.Get(ListStyle.Default);
+            int barW = s.ScrollBarMid.Normal.Width;
+            var up   = new Rectangle(pane.Right - barW - 14, pane.Y + 6, barW, s.ScrollBarArrowUp.Normal.Height);
+            var down = new Rectangle(up.X, pane.Y + pane.Height - 6 - s.ScrollBarArrowDown.Normal.Height, barW, s.ScrollBarArrowDown.Normal.Height);
+            int housingY = up.Y + up.Height + 3;
+            int housingH = down.Y - 3 - housingY;
+            int thumbH = (int)(housingH * (pane.Height - 10f) / contentHeight);
+            if (thumbH < 24) thumbH = 24;
+            if (thumbH > housingH) thumbH = housingH;
+            int thumbY = housingY + (int)((housingH - thumbH) * (scroll / maxScroll));
+            int capH = (thumbH - s.ScrollBarMid.Normal.Height) / 2;
+            if (capH < 0) capH = 0;
+            var capTop = new Rectangle(up.X, thumbY, barW, capH);
+            var midR   = new Rectangle(up.X, thumbY + capH, barW, thumbH - 2 * capH);
+            var capBot = new Rectangle(up.X, thumbY + thumbH - capH, barW, capH);
+            s.ScrollBarUpDown.Draw(batch, capTop, false, false);
+            s.ScrollBarMid.Draw(batch, midR, false, false);
+            s.ScrollBarUpDown.Draw(batch, capBot, false, false);
+            s.ScrollBarArrowUp.Draw(batch, up, false, false);
+            s.ScrollBarArrowDown.Draw(batch, down, false, false);
         }
 
         string IncomingPopString => IncomingPop.LessOrEqual(1) ? $"{(IncomingPop * 1000).String(2)}m" : $"{IncomingPop.String()}b";
