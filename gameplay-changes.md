@@ -105,7 +105,7 @@ would have undone the player's own restriction the moment they loaded a plan.
 ## New levers
 
 ### An empire-wide build order
-`PENDING` — `AddToQueueScreen.cs`, `PoliciesScreen.cs`
+`2c4c00b4` — `AddToQueueScreen.cs`, `PoliciesScreen.cs`
 
 **Source: maintainer.**
 
