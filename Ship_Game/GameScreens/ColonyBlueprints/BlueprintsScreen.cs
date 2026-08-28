@@ -137,14 +137,6 @@ namespace Ship_Game
                 foreach (UIElementV2 e in GetElements())
                     if (e is CloseButton cross)
                         cross.OnClick = b => ReopenParentColony();
-            // ⚠ Ludo's placement: OUTSIDE the bordered content, up on the tab title line and
-            // right-aligned. It steers the catalogue, not the plan, so it must not sit inside
-            // a frame that would make it look like one block's setting.
-            ShowAllToggle = base.Add(new UICheckBox(DesignTabs.Right - 130, DesignTabs.Y + 4,
-                () => ShowAllBuildings, Font12, GameText.BpShowAll, GameText.BpShowAllTip));
-            ShowAllToggle.TextColor = Color.Wheat;
-            ShowAllToggle.OnChange = _ => RefreshBuildableList();
-
             const int Pad = 10;
             RectF client = DesignTabs.ClientArea;
             // ⚠ measured off the FRAME's borders, not the client area: the client is
@@ -193,6 +185,16 @@ namespace Ship_Game
             float centreW = planAreaR.X - Pad - centreX;
             RectF buildableMenuR = new(centreX, topY, centreW, (botY - topY) * 0.5f);
             base.Add(new Submenu(buildableMenuR, GameText.Buildings));
+
+            // ⚠ it rides the CATALOGUE's own title bar, at its right end (maintainer, bench
+            // 535): it steers what that list offers and nothing else, so it belongs to that
+            // block. Up on the group's tab row it was floating next to nothing. Its left edge
+            // is measured from the LOCALISED label, or the French one runs off the frame.
+            float toggleW = Font12.TextWidth(Localizer.Token(GameText.BpShowAll)) + 26;
+            ShowAllToggle = base.Add(new UICheckBox(buildableMenuR.Right - toggleW - 8, buildableMenuR.Y + 3,
+                () => ShowAllBuildings, Font12, GameText.BpShowAll, GameText.BpShowAllTip));
+            ShowAllToggle.TextColor = Color.Wheat;
+            ShowAllToggle.OnChange = _ => RefreshBuildableList();
 
             // STATISTICS | DESCRIPTION - hovering a building raises Description on its own
             // (maintainer bench 301, the Colony screen's behavior)

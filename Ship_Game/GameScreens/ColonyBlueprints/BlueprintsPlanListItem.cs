@@ -4,7 +4,6 @@ using SDGraphics;
 using Ship_Game.Audio;
 using Ship_Game.Graphics;
 using Vector2 = SDGraphics.Vector2;
-using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game
 {
@@ -24,56 +23,40 @@ namespace Ship_Game
 
         readonly Font Font12 = Fonts.Arial12Bold;
         readonly Font Font8 = Fonts.Arial8Bold;
-
-        // the three gestures of a queue, in the order a hand reaches for them
-        const float ButtonW = 22f;
         const float IconSize = 28f;
+
+        // the outpost is the plan's foundation: it is neither moved nor removed
+        bool Fixed => Building == null || Building.IsCapitalOrOutpost;
 
         public BlueprintsPlanListItem(BlueprintsScreen screen, BlueprintsTile tile)
         {
             Screen = screen;
             Tile = tile;
+            if (Building != null && !Building.IsCapitalOrOutpost)
+            {
+                // ⚠ the Colony construction queue's OWN controls, not glyphs of my own
+                // (maintainer, bench 535): the plan is a queue, so it wears the queue's icons -
+                // a player who has moved a build order already knows this row by heart.
+                AddUp(new Vector2(-90, 6), GameText.BpMoveUp, OnUpClicked);
+                AddDown(new Vector2(-60, 6), GameText.BpMoveDown, OnDownClicked);
+                AddCancel(new Vector2(-30, 6), GameText.RightClickToRemove, OnRemoveClicked);
+            }
         }
+
+        void OnUpClicked() => Screen.MovePlanEntry(this, -1);
+        void OnDownClicked() => Screen.MovePlanEntry(this, +1);
+        void OnRemoveClicked() => Screen.RemovePlanEntry(this);
 
         public override int ItemHeight => 32;
 
-        // the outpost is the plan's foundation: it is neither moved nor removed
-        bool Fixed => Building == null || Building.IsCapitalOrOutpost;
-
-        Rectangle RemoveRect => new((int)(Right - ButtonW - 4), (int)Y + 6, (int)ButtonW, 20);
-        Rectangle DownRect   => new((int)(Right - 2*ButtonW - 6), (int)Y + 6, (int)ButtonW, 20);
-        Rectangle UpRect     => new((int)(Right - 3*ButtonW - 8), (int)Y + 6, (int)ButtonW, 20);
-
         public override bool HandleInput(InputState input)
         {
-            if (!Fixed && Hovered)
+            // the gesture the grid had, kept - and CONSUMED either way, because an unconsumed
+            // right-click falls through to the popup's generic close (bench 347)
+            if (Hovered && input.RightMouseClick && HitTest(input.CursorPosition))
             {
-                if (UpRect.HitTest(input.CursorPosition))
-                {
-                    ToolTip.CreateTooltip(GameText.BpMoveUp);
-                    if (input.LeftMouseClick) { Screen.MovePlanEntry(this, -1); return true; }
-                }
-                else if (DownRect.HitTest(input.CursorPosition))
-                {
-                    ToolTip.CreateTooltip(GameText.BpMoveDown);
-                    if (input.LeftMouseClick) { Screen.MovePlanEntry(this, +1); return true; }
-                }
-                else if (RemoveRect.HitTest(input.CursorPosition))
-                {
-                    ToolTip.CreateTooltip(GameText.RightClickToRemove);
-                    if (input.LeftMouseClick) { Screen.RemovePlanEntry(this); return true; }
-                }
-                else if (input.RightMouseClick && HitTest(input.CursorPosition))
-                {
-                    Screen.RemovePlanEntry(this); // the gesture the grid had, kept
-                    return true;
-                }
-            }
-            else if (Fixed && Hovered && input.RightMouseClick && HitTest(input.CursorPosition))
-            {
-                // the outpost refuses, out loud - and the click is still CONSUMED, or the popup
-                // reads it as "close me" (bench 347)
-                GameAudio.NegativeClick();
+                if (Fixed) GameAudio.NegativeClick();
+                else       Screen.RemovePlanEntry(this);
                 return true;
             }
             return base.HandleInput(input);
@@ -93,24 +76,6 @@ namespace Ship_Game
             batch.Draw(b.IconTex, new Vector2(X + 18, Y + 2), new Vector2(IconSize), tint);
             batch.DrawString(Font12, b.TranslatedName.Text, X + 18 + IconSize + 6, Y + 8,
                              Tile.Unlocked ? Color.White : Color.DarkGray);
-
-            if (Fixed)
-                return;
-
-            // the controls only appear under the hand: a queue of thirty rows wearing three
-            // glyphs each reads as noise until you are actually pointing at one
-            if (!Hovered)
-                return;
-
-            DrawGlyph(batch, UpRect, "^");
-            DrawGlyph(batch, DownRect, "v");
-            DrawGlyph(batch, RemoveRect, "x");
-        }
-
-        void DrawGlyph(SpriteBatch batch, in Rectangle r, string glyph)
-        {
-            bool over = r.HitTest(Screen.Input.CursorPosition);
-            batch.DrawString(Font12, glyph, r.X + 8, r.Y + 3, over ? Color.Gold : Color.Gray);
         }
     }
 }

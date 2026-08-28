@@ -320,8 +320,9 @@ namespace Ship_Game
             // them; "Consumption" says what the bar is - the share of their output they eat.
             if (IsCyberneticFoodRow)
             {
-                // grey: it is a demand, not something the player is producing or steering
-                DrawAlignedNumber(batch, font, P.Consumption.String(), curComma, y, Color.Gray);
+                // grey and SIGNED: it is a demand, not something the player is producing - and
+                // the minus says out loud that it comes off the production above it (bench 535)
+                DrawAlignedNumber(batch, font, "-" + P.Consumption.String(), curComma, y, Color.Gray);
                 return;
             }
 
