@@ -100,15 +100,19 @@ namespace Ship_Game
             }
         }
 
-        // ⚠ the gauge reads two RELATED but distinct quantities, and the seam is deliberate:
-        //   Auto   - what the pilot is actually holding, so it tiles with the surplus below it.
-        //   manual - the BREAK-EVEN share: where production exactly meets consumption. Nobody is
-        //            holding anything, so the honest thing to show is what it would take. Its end
-        //            marks the waterline - left of it the colony does not feed itself.
-        // The pilot's floor is that same figure plus its margin, which is why the bar barely
-        // moves when Auto is switched on or off.
-        float SubsistenceShare => P.AutoLabor ? P.SubsistenceFloor
-                                              : P.Prod.EstPercentForNetIncome(0);
+        // ⚠ bench 531: ONE quantity, in both states - the WATERLINE. The share of labour at
+        // which production exactly meets consumption; its end is where the colony stops feeding
+        // itself. It does not depend on who is driving, so the bar means the same thing whether
+        // Auto is on or off, and the two states can be read against each other.
+        //
+        // It used to show the pilot's FLOOR under Auto, which was a different quantity wearing
+        // the same bar: the floor is the waterline plus a margin that SWINGS WITH STORAGE (the
+        // pilot's own correction, -35%..+50%), so it neither added up against the max nor held
+        // still. Two references, one gauge - the maintainer read it straight off the screen.
+        //
+        // Nothing is lost with it: under Auto the pilot's margin is now the GAP between this
+        // bar's end and the production cursor below, which says more than the old bar did.
+        float SubsistenceShare => P.Prod.EstPercentForNetIncome(0);
 
         // ⚠ bench 530: the production row shows the WHOLE share, bar and numbers alike. It used
         // to draw the surplus while its figures reported the total - one row speaking two scales,
