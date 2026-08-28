@@ -98,6 +98,14 @@ namespace Ship_Game.Fleets
             UpdateSpeedLimit();
         }
 
+        // Ludoal fork (maintainer, bench 525): the ONE order the interface shows a fleet's
+        // ships in - by role, the big ones first, then by name, so it reads the same from one
+        // fleet to the next. It lived twice inside the fleet buttons and nowhere in the fleet
+        // cartouche, which showed the raw order ships were added in; the two displays disagreed
+        // about the same fleet. Written once here, called by all three.
+        public static Ship[] InDisplayOrder(IReadOnlyList<Ship> ships)
+            => ships.Sorted(s => (-(int)s.DesignRole, s.Name));
+
         public void AddShips(IReadOnlyList<Ship> ships)
         {
             for (int i = 0; i < ships.Count; i++)

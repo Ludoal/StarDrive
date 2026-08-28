@@ -7,6 +7,7 @@ using SDUtils;
 using Ship_Game.AI;
 using Ship_Game.AI.CombatTactics.UI;
 using Ship_Game.Audio;
+using Ship_Game.Fleets; // Fleet.InDisplayOrder - the one order a fleet's ships are shown in
 using Ship_Game.Ships;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
@@ -375,7 +376,10 @@ namespace Ship_Game
         {
             Orders.Clear();
             IsFleet  = isFleet;
-            ShipList = new(shipList); // always copy!
+            // ⚠ a FLEET is shown in the same order as its button, or the two disagree about the
+            // same fleet. A loose multi-selection is left as it came: ships you have just drawn a
+            // box around have the order you picked them in, and no sort improves on that.
+            ShipList = new(isFleet ? Fleet.InDisplayOrder(shipList) : shipList); // always copy!
             SelectedShipsSL.Reset();
             AllShipsMine        = true;
             bool allResupply    = true;
