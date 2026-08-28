@@ -23005,8 +23005,8 @@ BlueprintsOptions:
  PTB: "Opções de Projetos"
 ExclusiveBlueprints:
  Id: 6196
- ENG: "Exclusive Blueprints"
- FRA: "Schémas exclusifs"
+ ENG: "Exclusive Blueprint"
+ FRA: "Schéma exclusif"
  PTB: "Projetos Exclusivos"
 ExclusiveBlueprintsTip:
  Id: 6197

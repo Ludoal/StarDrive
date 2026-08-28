@@ -390,9 +390,11 @@ namespace Ship_Game
             // whatever the description length. A label draws from its top, so seat its top one
             // line-height above the portrait foot. X stays in the description column beside it.
             // Ludoal fork (maintainer feedback): one row higher than the portrait foot - the
-            // freed line below carries the Build Mandate dropdown.
+            // freed line below carries the Build Mandate dropdown - then dropped clear of the
+            // rows the Governor tab gained, which had crowded the warning against them.
+            const int BudgetWarningDrop = 40;
             BudgetLimitReached.Pos = new Vector2(WorldDescription.X,
-                Portrait.Pos.Y + Portrait.Size.Y - FontBig.LineSpacing - GovRowPitch);
+                Portrait.Pos.Y + Portrait.Size.Y - FontBig.LineSpacing - GovRowPitch + BudgetWarningDrop);
 
             // Ludoal fork: seated here rather than in the constructor, which runs before Tabs
             // exists and so cannot know how many rows the tab bar takes.

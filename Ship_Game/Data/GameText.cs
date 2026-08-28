@@ -6441,7 +6441,7 @@ namespace Ship_Game
         CurrentBlueprintsSubMenu = 6194,
         /// <summary>Blueprints Options</summary>
         BlueprintsOptions = 6195,
-        /// <summary>Exclusive Bluprints</summary>
+        /// <summary>Exclusive Blueprint</summary>
         ExclusiveBlueprints = 6196,
         /// <summary>When an exclusive Blueprints are loaded, the governor will only build the exact buildings of the Blueprints</summary>
         ExclusiveBlueprintsTip = 6197,
