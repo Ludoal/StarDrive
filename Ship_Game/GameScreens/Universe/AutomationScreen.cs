@@ -44,8 +44,9 @@ namespace Ship_Game
         const float ColonizationBoxH = 130f, ConstructionBoxH = 165f,
                     TradeBoxH = 152f,
                     // two switches + slider label + slider + the column title + seven paired
-                    // category rows + Inhibition, at the 26 per row this frame has always used.
-                    NotificationsBoxH = 394f;
+                    // category rows + the Miscellaneous heading + Inhibition, at the 26 per row
+                    // this frame has always used.
+                    NotificationsBoxH = 420f;
         // the second column's X inside the Notifications frame, a constant the rows are placed
         // FROM - never a share of the width left over (bench 523)
         const float CatColumnSplit = 148f;
@@ -186,9 +187,10 @@ namespace Ship_Game
                     }
                 }
             }
-            // Inhibition Alerts stays here (Ludo) but out of the auto-clear group: it is a map
-            // OVERLAY toggle, not a notification, so it has nothing to auto-clear. The tooltip says so
-            // it doesn't read as a forgotten row missing its right-hand box.
+            // Inhibition Alerts stays here (maintainer) but out of the auto-clear group: it is a
+            // map OVERLAY toggle, not a notification, so it has nothing to auto-clear. Its own
+            // heading says as much, so it does not read as a tenth category that lost its column.
+            notifications.Add(new UILabel("Miscellaneous", Fonts.Arial12Bold, Colors.Cream));
             notifications.AddCheckbox(() => !P.DisableInhibitionWarning, v => P.DisableInhibitionWarning = !v,
                                       title: "Inhibition Alerts (map overlay)", tooltip: GameText.InhibitionAlertsAreDisplayedWhen);
 

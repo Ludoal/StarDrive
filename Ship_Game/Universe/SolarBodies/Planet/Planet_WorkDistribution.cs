@@ -77,24 +77,49 @@ namespace Ship_Game
         {
             if (IsCybernetic)
             {
+                // Opteris eat production, so the floor is CARVED OUT of the production share
+                // rather than standing beside it. The player's own part is what sits above the
+                // old floor - which is why the floor is remembered from turn to turn: without
+                // it, the moment the floor moves there is no way to tell the player's surplus
+                // from the machine's ration inside a single number.
+                float surplus = (Prod.Percent - SubsistenceFloor).LowerBound(0f);
+                float keptRes = Res.Percent;
+
                 AssignCoreWorldProduction(1f);
-                Food.Percent = 0f; // Opteris never farm
-                Res.Percent  = (1f - Prod.Percent).LowerBound(0f);
+                SubsistenceFloor = Prod.Percent;
+
+                float restC = (1f - SubsistenceFloor).LowerBound(0f);
+                Split(restC, ref surplus, ref keptRes);
+                Prod.Percent = SubsistenceFloor + surplus;
+                Res.Percent  = keptRes;
+                Food.Percent = 0f; // they never farm: labour put here would yield nothing at all
                 return;
             }
 
             AssignCoreWorldFarmers(1f);
-            float rest   = (1f - Food.Percent).LowerBound(0f);
-            float others = Prod.Percent + Res.Percent;
-            if (others > 0.001f)
+            SubsistenceFloor = Food.Percent;
+
+            float rest = (1f - SubsistenceFloor).LowerBound(0f);
+            float prod = Prod.Percent, res = Res.Percent;
+            Split(rest, ref prod, ref res);
+            Prod.Percent = prod;
+            Res.Percent  = res;
+
+            // What is left over is shared between the two the player owns, KEEPING THE RATIO
+            // between them: a balance was expressed, not two numbers.
+            static void Split(float rest, ref float a, ref float b)
             {
-                Prod.Percent = rest * (Prod.Percent / others);
-                Res.Percent  = rest * (Res.Percent / others);
-            }
-            else // nothing to preserve: split what is left down the middle
-            {
-                Prod.Percent = rest * 0.5f;
-                Res.Percent  = rest * 0.5f;
+                float sum = a + b;
+                if (sum > 0.001f)
+                {
+                    a = rest * (a / sum);
+                    b = rest * (b / sum);
+                }
+                else // nothing to preserve: down the middle
+                {
+                    a = rest * 0.5f;
+                    b = rest * 0.5f;
+                }
             }
         }
 

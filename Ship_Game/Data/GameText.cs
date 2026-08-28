@@ -7045,6 +7045,8 @@ namespace Ship_Game
         LaborAuto = 7163,
         /// <summary>The labour split is managed for you - by the governor, or by the sustenance pilot.</summary>
         LaborAutoTip = 7164,
+        /// <summary>The share of production held back to keep a cybernetic colony alive.</summary>
+        SubsistenceGaugeTip = 7165,
         /// <summary>Blueprint name</summary>
         BlueprintNameLabel = 7150,
         /// <summary>Completion</summary>

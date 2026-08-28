@@ -61,10 +61,12 @@ namespace Ship_Game
                 s.P = p;
             if (p != null)
             {
+                // ⚠ the forced lock that used to live here is gone: it wrote PercentLock, a
+                // SAVED field, so every cybernetic colony carried a padlock its player never
+                // set. IsDisabled already refuses the click; the lock added nothing but a lie
+                // in the save file. LockedByUser now ignores a lock on a disabled row, which
+                // also neutralises the ghosts already written.
                 Food.IsDisabled = p.IsCybernetic;
-                // Force lock if cybernetic, otherwise keep the lock the same as user setting
-                if (p.IsCybernetic)
-                    Food.LockedByUser = true;
             }
         }
 

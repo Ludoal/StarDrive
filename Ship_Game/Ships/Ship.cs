@@ -696,7 +696,26 @@ namespace Ship_Game.Ships
         public bool DoingRefit
         {
             get => AI.State == AIState.Refit;
-            set => Universe.Screen.ScreenManager.AddScreen(new RefitToWindow(Universe.Screen, this));
+            // Ludoal fork: the button that ordered the refit cancels it. Ship Info binds this
+            // setter, the ship list calls CancelRefit directly - one gesture, one implementation.
+            set
+            {
+                if (DoingRefit)
+                    CancelRefit();
+                else
+                    Universe.Screen.ScreenManager.AddScreen(new RefitToWindow(Universe.Screen, this));
+            }
+        }
+
+        // The GOAL is what drives a refit: clearing the ship's orders alone leaves it behind to
+        // re-issue them on the next turn.
+        public void CancelRefit()
+        {
+            Universe.Screen.RunOnSimThread(() =>
+            {
+                Loyalty.AI.FindAndRemoveGoal(GoalType.Refit, g => g.OldShip == this);
+                AI.ClearOrders();
+            });
         }
 
         public bool DoingScuttle => AI.State == AIState.Scuttle;

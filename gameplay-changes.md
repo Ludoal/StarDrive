@@ -112,8 +112,11 @@ would have undone the player's own restriction the moment they loaded a plan.
 Whether a colony's labour split was yours to set was deduced from its governor type and said
 nowhere: a governed colony's sliders simply did not answer. That rule is now a toggle above the
 three locks. Auto means the split is managed for you — by the governor if there is one, by the
-sustenance pilot if there is not; the pilot holds only what keeps the colony fed and rescales
-what you own to fill the rest, keeping the ratio you set between production and research. Off,
+sustenance pilot if there is not. The pilot holds only what keeps the colony alive and rescales
+what you own to fill the rest, keeping the ratio you set between production and research. What
+counts as sustenance follows the species: food for most, production for the cybernetic, whose
+Food row — inert for them until now — becomes the gauge of the production held back, with the
+row below showing what is left for you. Off,
 the sliders and their locks are yours even under a governor, which keeps its build queues either
 way. The setting is stored as three states, the third being "never set", so a colony from an
 older save follows exactly the rule it followed before, and a choice you make outlives a change

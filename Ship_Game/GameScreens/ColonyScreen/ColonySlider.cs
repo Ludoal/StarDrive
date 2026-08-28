@@ -58,8 +58,21 @@ namespace Ship_Game
                                      Rect.Center.Y + 2 - Lock.Height / 2, Lock.Width, Lock.Height);
         }
 
+        // Ludoal fork: on a cybernetic colony the FOOD row has no food to show - those people
+        // eat production. Under Auto it stops being a dead row and becomes the SUBSISTENCE
+        // GAUGE: the share of production the pilot holds to keep the colony alive. The row below
+        // then shows what is left for the player, so the three rows still read as a whole.
+        //
+        // ⚠ This is a reading of the model, never a second copy of it: Food.Percent stays at
+        // zero for these people - labour put there would yield nothing at all - and the split
+        // lives only on screen.
+        public bool IsSubsistenceGauge => Type == ColonyResType.Food && P.IsCybernetic && P.AutoLabor;
+        bool ShowsProdSurplus => Type == ColonyResType.Prod && P.IsCybernetic && P.AutoLabor;
+
         LocalizedText Tooltip()
         {
+            if (IsSubsistenceGauge)
+                return GameText.SubsistenceGaugeTip;
             switch (Type)
             {
                 default: return P.IsCybernetic ? GameText.YourPeopleAreCyberneticAnd : GameText.FoodIsEatenByYour;
@@ -72,6 +85,8 @@ namespace Ship_Game
         {
             get
             {
+                if (IsSubsistenceGauge)
+                    return P.Prod; // what it measures, so its income figures come from there
                 switch (Type)
                 {
                     default:                 return P.Food;
@@ -83,8 +98,12 @@ namespace Ship_Game
 
         public float Value
         {
-            get => Resource.Percent;
-            set => Resource.Percent = value.NaNChecked(0f, "ColonySlider.Value");
+            get => IsSubsistenceGauge ? P.SubsistenceFloor
+                 : ShowsProdSurplus   ? (P.Prod.Percent - P.SubsistenceFloor).LowerBound(0f)
+                                      : Resource.Percent;
+            // the player drags the SURPLUS; the floor rides underneath it untouched
+            set => Resource.Percent = (ShowsProdSurplus ? P.SubsistenceFloor + value : value)
+                                      .NaNChecked(0f, "ColonySlider.Value");
         }
 
         public float NetValue => Resource.NetIncome;
@@ -92,9 +111,14 @@ namespace Ship_Game
         public float MaxValue => Resource.NetMaxPotential;
         public bool ShowMaxValue; // draw the max beside the current value (gated by the host)
 
+        // ⚠ A row that refuses the click cannot have been locked BY THE USER, so a lock found
+        // on one is a ghost - and there are ghosts in old saves, where the screen used to force
+        // this flag on for cybernetics. Ignored at the one point everything reads through (the
+        // count that gates dragging, the draw, the click), so no save is rewritten and no
+        // migration is needed: what cannot be true is simply not reported.
         public bool LockedByUser
         {
-            get => Resource.PercentLock;
+            get => !IsDisabled && Resource.PercentLock;
             set => Resource.PercentLock = value;
         }
 
@@ -179,7 +203,10 @@ namespace Ship_Game
 
             if (DrawIcons)
             {
-                batch.Draw(Icon, IconRect(), sliderTint);
+                // the gauge measures production, so it wears production's icon rather than the
+                // food icon of the row it borrows
+                SubTexture icon = IsSubsistenceGauge ? ResourceManager.Texture("NewUI/icon_production") : Icon;
+                batch.Draw(icon, IconRect(), sliderTint);
             }
 
             if (!IsDisabled)
@@ -212,6 +239,12 @@ namespace Ship_Game
             float value = NetValue;
             if (value > -0.05f && value < 0.05f)
                 value = 0f; // what rounds to zero neither shows a minus nor wears pink
+
+            // ⚠ the subsistence gauge shows NO number. Its income figures would be production's,
+            // which the row right below it already prints - a second copy of the same number
+            // beside a different bar reads as a contradiction. The bar is what it has to say.
+            if (IsSubsistenceGauge)
+                return;
 
             // non-numeric states keep the plain left-aligned label
             if (IsDisabled || IsCrippled || IsInvasion)

@@ -48,7 +48,7 @@ namespace Ship_Game
         UIButton BuildPlatform;
         UIButton BuildStation;
         UIButton BuildShipyard;
-        UIButton EditBlueprints;
+        UIButton EditBlueprints, LoadBlueprints;
         // Ludoal fork (maintainer feedback): the plan's mode. DERIVED, never stored - a colony
         // either has a plan of its own or it does not - and Auto, which defers to the empire's
         // table of default plans per governor type (Policies > Colony). Auto shipped only once
@@ -223,9 +223,12 @@ namespace Ship_Game
             // in, cross to drop it. Three labelled buttons no longer fit beside the portrait, and a
             // vocabulary the player has already learned costs nothing to read.
             EditBlueprints   = BpIconButton("NewUI/icon_build_edit", GameText.EditBluprintsTip, OnEditblueprintsClicked);
-            // The list carries all three gestures now: Auto delegates, Custom opens the plan
-            // chooser, None clears. The add icon is gone - one door per state, and the picker is
-            // that door. Only the pencil remains beside the name, and only when there is a plan.
+            // ⚠ bench 524: an OPEN dropdown does not draw the entry that is already active - its
+            // rect is zeroed - so Custom cannot be re-picked while the colony is already on
+            // Custom, and there is no event to fire. The picker is the door out of Auto or None;
+            // once inside Custom the add icon is the door, and it shows only there. One door per
+            // state, still, but the state decides which one.
+            LoadBlueprints = BpIconButton("NewUI/icon_build_add", GameText.UploadBluprintsTip, OnLoadBlueprintsClicked);
             BlueprintModeList = Add(new DropOptions<BlueprintMode>(100, 18));
             BlueprintModeList.AddOption(option: GameText.BlueprintModeAuto, BlueprintMode.Auto);
             BlueprintModeList.AddOption(option: GameText.MandateNone, BlueprintMode.None);
@@ -377,9 +380,11 @@ namespace Ship_Game
             BlueprintsEnableGov.Pos  = new Vector2(X + 10, Bottom - 60);
             BlueprintsEnableGov.Text = GameText.BluePrintsEnableGovernorToLoad;
 
-            // the pencil holds the outermost column, the padlock the one before it
-            EditBlueprints.Size  = new Vector2(20, 20);
+            // the pencil holds the outermost column, the padlock the one before it; the add icon
+            // sits one row up, in the pencil's column, right of the picker it completes
+            EditBlueprints.Size  = LoadBlueprints.Size = new Vector2(20, 20);
             EditBlueprints.Pos   = new Vector2(X + Width - 30, bpRow1 + 1);
+            LoadBlueprints.Pos   = new Vector2(X + Width - 30, bpRow0);
 
             BlueprintsCompletionLbl.Pos     = new Vector2(bpX, bpRow2 + 3);
             BlueprintsCompletionLbl.Tooltip = GameText.CompletionTip;
@@ -392,7 +397,7 @@ namespace Ship_Game
             // Ludoal fork (maintainer feedback): one row higher than the portrait foot - the
             // freed line below carries the Build Mandate dropdown - then dropped clear of the
             // rows the Governor tab gained, which had crowded the warning against them.
-            const int BudgetWarningDrop = 40;
+            const int BudgetWarningDrop = 33; // bench 524: 40 overshot by 7
             BudgetLimitReached.Pos = new Vector2(WorldDescription.X,
                 Portrait.Pos.Y + Portrait.Size.Y - FontBig.LineSpacing - GovRowPitch + BudgetWarningDrop);
 
@@ -712,6 +717,8 @@ namespace Ship_Game
                 // ⚠ this condition used to live on the add button, and three other elements read
                 // their own visibility off it. The button is gone; the condition is not.
                 bool bpRow = bpBlock && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub;
+                // only under Custom: everywhere else the picker's own Custom entry is the door
+                LoadBlueprints.Visible   = bpRow && CurrentBlueprintMode == BlueprintMode.Custom;
                 EditBlueprints.Visible   = bpBlock && Planet.HasBlueprints;
                 BlueprintModeLabel.Visible = BlueprintModeList.Visible = bpRow;
                 // the list mirrors the colony's real state; setting it only when it differs keeps
@@ -872,6 +879,8 @@ namespace Ship_Game
         {
             Planet.BuildCapitalHere();
         }
+
+        void OnLoadBlueprintsClicked(UIButton b) => OpenBlueprintChooser();
 
         void OpenBlueprintChooser()
         {

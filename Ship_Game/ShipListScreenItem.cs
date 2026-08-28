@@ -204,11 +204,7 @@ namespace Ship_Game
             // behind to re-issue them.
             if (Ship.AI.State == AIState.Refit)
             {
-                Screen.Universe.RunOnSimThread(() =>
-                {
-                    Ship.Loyalty.AI.FindAndRemoveGoal(GoalType.Refit, g => g.OldShip == Ship);
-                    Ship.AI.ClearOrders();
-                });
+                Ship.CancelRefit();
                 Screen.Universe.RunOnSimThread(() => Screen.ResetStatus());
                 return;
             }

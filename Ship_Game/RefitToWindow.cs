@@ -131,9 +131,18 @@ namespace Ship_Game
             // bench 465: the charte's own FillerLower is translucent - the dark body panel
             // spans the WHOLE fill zone, title band to the bottom rule, or the summoner's
             // page bleeds through around the foot (added first = drawn under the rows)
-            var body = new Rectangle(BottomBigFill.X, BottomBigFill.Y, BottomBigFill.Width,
-                                     Rect.Bottom - PopupFrame.BottomLine - BottomBigFill.Y);
-            Add(new UIPanel(body, new Color(0, 0, 0, 235)));
+            //
+            // ⚠ bench 524: in TWO pieces, and the second is why. BottomBigFill runs from
+            // rect.X+3 to rect.Right-11, so a single panel carried down to the bottom rule
+            // paints over the outer 28px columns where the hand-drawn corner arcs live - the
+            // corners read as squared-off. The foot strip stops short of both corner blocks;
+            // it covers exactly the span the frame fills translucently, and nothing else.
+            const int CornerW = 28;
+            Add(new UIPanel(BottomBigFill, new Color(0, 0, 0, 235)));
+            var foot = new Rectangle(Rect.X + CornerW, BottomBigFill.Bottom,
+                                     Rect.Width - 2 * CornerW,
+                                     Rect.Bottom - PopupFrame.BottomLine - BottomBigFill.Bottom);
+            Add(new UIPanel(foot, new Color(0, 0, 0, 235)));
 
             Array<IShipDesign> designs = CandidatesFor(ShipToRefit);
             int rows = Math.Max(1, Math.Min(designs.Count, MaxRows));

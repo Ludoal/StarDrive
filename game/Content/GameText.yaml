@@ -28626,3 +28626,7 @@ LaborAutoTip:
  Id: 7164
  ENG: "The labour split is managed for you: by this colony's governor if it has one, by the sustenance pilot if it does not - the pilot holds only what keeps the colony fed and leaves the rest of the split as you set it. Off, the three sliders and their locks are yours."
  FRA: "La répartition de la main-d'oeuvre est gérée pour vous : par le gouverneur de cette colonie s'il y en a un, par le pilote de subsistance sinon - le pilote ne tient que de quoi nourrir la colonie et laisse le reste de la répartition telle que vous l'avez posée. Désactivé, les trois curseurs et leurs cadenas sont à vous."
+SubsistenceGaugeTip:
+ Id: 7165
+ ENG: "Your people eat production, so this row shows the share of it held back to keep them alive. The row below is what is left for you to spend. It is the pilot that holds this, not a lock of yours."
+ FRA: "Votre peuple se nourrit de production : cette ligne montre la part qui est retenue pour le maintenir en vie. La ligne du dessous est ce qui vous reste a repartir. C'est le pilote qui la tient, pas un verrou de votre fait."

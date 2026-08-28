@@ -43,6 +43,13 @@ namespace Ship_Game
         // colony the player set to OFF gives it the build queues, not the labour.
         [StarData] int LaborAutoValue; // 0 = never set, 1 = on, 2 = off
 
+        // The labour share the sustenance pilot holds to keep this colony alive - food for
+        // flesh, production for Opteris. Saved because the player's own share is measured FROM
+        // it: on a cybernetic colony the floor and the player's surplus live inside the same
+        // production number, and once the floor moves there is no way to tell them apart
+        // without knowing where it used to be.
+        [StarData] public float SubsistenceFloor { get; private set; }
+
         public bool AutoLabor
         {
             get => LaborAutoValue switch
