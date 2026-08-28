@@ -24,11 +24,12 @@ namespace Ship_Game
         public Submenu TitleMenu => Title;
         public bool SlidersVisible { get => Sliders.Visible; set => Sliders.Visible = value; }
 
-        // Ludoal fork (maintainer bench 524): Labor's own lever, above the three padlocks. The
-        // row it needs is a CONSTANT reserved off the top of the block, and the three sliders
-        // are seated in what is left - the reserve belongs to the block, not to the moment, so
-        // the rows do not shift about depending on what else is on screen.
-        const int AutoRowH = 22;
+        // Ludoal fork (maintainer bench 524): Labor's own lever, above the three padlocks.
+        // ⚠ bench 526: it needs no reserve carved off the block. The first slider already sits a
+        // quarter of the way down, and the toggle fits in that gap - reserving a row on top of it
+        // took 22px from the sliders twice over, which showed up as three rows squeezed into the
+        // bottom of the frame here and, worse, on the Colonies list where the block is shorter.
+        const int AutoRowH = 22; // the toggle's own height, used to seat it - NOT taken off the block
         UICheckBox AutoToggle;
 
         public AssignLaborComponent(Planet p, RectF rect, bool useTitleFrame,
@@ -69,12 +70,12 @@ namespace Ship_Game
             get
             {
                 int sliderX = (int)X + (UseTitle ? 60 : 10);
-                int sliderY = (int)Y + 25 + AutoRowH; // the reserved Auto row sits above
+                int sliderY = (int)Y + 25;
                 // one value column needs ~45% width; showing the max adds a second decimal
                 // column, so the slider yields more room when ShowMaxValue is on. Colony and
                 // Colonies pass different ratios - Colonies is tighter so its Supply column fits.
                 int sliderW = (Width * (ShowMaxValue ? MaxSliderRatio : 0.55f)).RoundTo10();
-                int sliderH = (int)Height - 25 - AutoRowH;
+                int sliderH = (int)Height - 25;
                 return new Rectangle(sliderX, sliderY, sliderW, sliderH);
             }
         }
@@ -89,8 +90,10 @@ namespace Ship_Game
             // belong to the group, which is why they are asked of it rather than rebuilt here
             // (bench 525: built from the block's own corner it landed high and far to the left).
             AutoToggle.PerformLayout();
+            // clamped: on the Colonies list the block is short enough that a quarter of it can be
+            // less than the toggle's own height, and the toggle would climb out of the top
             AutoToggle.Pos = new Vector2(Sliders.LockColumnCenterX - AutoToggle.Width / 2,
-                                         Sliders.FirstRowTop - AutoRowH);
+                                         Math.Max(Sliders.FirstRowTop - AutoRowH, Y + 2));
             AutoToggle.PerformLayout();
         }
     }

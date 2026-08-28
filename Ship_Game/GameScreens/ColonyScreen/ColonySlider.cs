@@ -121,6 +121,12 @@ namespace Ship_Game
         // this flag on for cybernetics. Ignored at the one point everything reads through (the
         // count that gates dragging, the draw, the click), so no save is rewritten and no
         // migration is needed: what cannot be true is simply not reported.
+        // Ludoal fork (bench 526): this row does not move - because the player pinned it, or
+        // because the pilot is holding it. The 3-way solver and the drag gate ask THIS: a managed
+        // row that answered as "free" was being pushed around by its neighbours, which is exactly
+        // what Auto promised it would not do.
+        public bool Pinned => LockedByUser || LaborIsManaged;
+
         public bool LockedByUser
         {
             get => !IsDisabled && Resource.PercentLock;

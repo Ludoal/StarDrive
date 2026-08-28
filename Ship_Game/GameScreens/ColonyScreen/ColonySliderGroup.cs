@@ -79,10 +79,10 @@ namespace Ship_Game
         // solve 3-way slider change
         void OnSliderChanged(ColonySlider a, float difference)
         {
-            ColonySlider b = Sliders.Find(s => s != a && !s.LockedByUser); // always unlocked
-            ColonySlider c = Sliders.Find(s => s != a && s != b);    // maybe locked
+            ColonySlider b = Sliders.Find(s => s != a && !s.Pinned); // always free to absorb
+            ColonySlider c = Sliders.Find(s => s != a && s != b);    // maybe pinned
 
-            if (c.LockedByUser) // only one is locked, eaaasy and perfect accuracy
+            if (c.Pinned) // only one is pinned, eaaasy and perfect accuracy
             {
                 a.Value += difference.Clamped(-a.Value, b.Value);
                 b.Resource.AutoBalanceWorkers(a.Value + c.Value);
@@ -121,10 +121,14 @@ namespace Ship_Game
                 return false;
             }
 
-            int numLocked = Sliders.Count(s => s.LockedByUser);
+            // ⚠ PINNED, not locked: a row the pilot holds is as immovable as one the player
+            // pinned, and it must count here too. With two of three fixed the third has only one
+            // possible value, so nothing may be dragged - and the solver would have no free
+            // partner to absorb the change.
+            int pinned = Sliders.Count(s => s.Pinned);
             foreach (ColonySlider s in Sliders)
             {
-                s.CanDrag = !s.LockedByUser && numLocked <= 1 && !s.LaborIsManaged;
+                s.CanDrag = !s.Pinned && pinned <= 1;
             }
 
             Prod.IsCrippled = P.IsSabotaged;

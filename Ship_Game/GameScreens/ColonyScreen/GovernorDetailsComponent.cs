@@ -95,7 +95,7 @@ namespace Ship_Game
         UICheckBox AutoCiv, AutoGrd, AutoSpc;
 
         UILabel ColonyBlueprints, BlueprintsCompletionLbl, BlueprintsAchiveable, BlueprintsName,
-            BlueprintsLink, BlueprintsLinkName, BlueprintsEnableGov;
+            BlueprintsLink, BlueprintsLinkName;
         UIPanel BlueprintsLinkIcon;
         // Ludoal fork (maintainer feedback): the exclusive flag as a padlock rather than a
         // line of text - it arms demolitions, so it stays in the façade, but it costs a row
@@ -165,7 +165,6 @@ namespace Ship_Game
             BlueprintsLink          = Add(new UILabel(GameText.BlueprintNextLabel, Font, Color.Wheat));
             BlueprintsLinkName      = Add(new UILabel("", Font, Color.White));
             BlueprintsLinkIcon      = Add(new UIPanel(ResourceManager.Texture("NewUI/blueprints")));
-            BlueprintsEnableGov     = Add(new UILabel("", Font, Color.Gold));
 
             // "Gov.": the full word ran past the Defense column.
             GovOrbitals    = Add(new UICheckBox(() => Planet.GovOrbitals, Font, title:"Gov. Manages Space Defense", tooltip:GameText.TheGovernorWillBuildStations));
@@ -377,8 +376,6 @@ namespace Ship_Game
             BlueprintsLinkIcon.Size = new Vector2(BpIconSize, BpIconSize);
             BlueprintsLinkIcon.Pos  = new Vector2(bpValueX, bpRow3);
             BlueprintsLinkName.Pos  = new Vector2(bpValueX + BpIconSize + 5, bpRow3);
-            BlueprintsEnableGov.Pos  = new Vector2(X + 10, Bottom - 60);
-            BlueprintsEnableGov.Text = GameText.BluePrintsEnableGovernorToLoad;
 
             // the pencil holds the outermost column, the padlock the one before it; the add icon
             // sits one row up, in the pencil's column, right of the picker it completes
@@ -738,7 +735,6 @@ namespace Ship_Game
                 BlueprintsExclusiveIcon.Visible = EditBlueprints.Visible && Planet.Blueprints.Exclusive;
                 BlueprintsLink.Visible = BlueprintsLinkName.Visible = BlueprintsLinkIcon.Visible =
                     EditBlueprints.Visible && Planet.Blueprints.LinkedBlueprintsName != "";
-                BlueprintsEnableGov.Visible = bpBlock && !Planet.HasBlueprints && GovernorOff;
             }
 
             UpdateButtonTimer(fixedDeltaTime);

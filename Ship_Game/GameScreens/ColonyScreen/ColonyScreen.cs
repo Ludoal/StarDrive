@@ -408,7 +408,7 @@ namespace Ship_Game
                 ClickSfx = "sd_ui_accept_alt3",
             });
             SnapshotBlueprints.Rect = new Rectangle((int)(subColonyR.X + subColonyR.W - 150),
-                                                    (int)(subColonyR.Y + 4), 140, 22);
+                                                    (int)(subColonyR.Y + 1), 140, 22); // bench 526: 3px up
             SnapshotBlueprints.OnClick += _ => GovernorDetails?.TakeBlueprintsSnapshot();
             SnapshotBlueprints.Visible = colonyViewTabSelected == 1 && p.OwnerIsPlayer;
 
