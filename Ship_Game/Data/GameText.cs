@@ -7049,6 +7049,24 @@ namespace Ship_Game
         SubsistenceGaugeTip = 7165,
         /// <summary>Consumption</summary>
         ConsumptionRow = 7166,
+        /// <summary>Add to Construction Queue</summary>
+        AddToQueueTitle = 7167,
+        /// <summary>Send to</summary>
+        AddToQueueTargetLabel = 7168,
+        /// <summary>All Colonies</summary>
+        AddToQueueAllColonies = 7169,
+        /// <summary>No Governor</summary>
+        AddToQueueNoGovernor = 7170,
+        /// <summary>To be queued</summary>
+        AddToQueueBasket = 7171,
+        /// <summary>Apply</summary>
+        AddToQueueApply = 7172,
+        /// <summary>Posts this list to every targeted colony.</summary>
+        AddToQueueApplyTip = 7173,
+        /// <summary>Everything went through.</summary>
+        AddToQueueAllPassed = 7174,
+        /// <summary>These could not be queued - no free tile on the colony:</summary>
+        AddToQueueBlocked = 7175,
         /// <summary>Blueprint name</summary>
         BlueprintNameLabel = 7150,
         /// <summary>Completion</summary>

@@ -154,6 +154,14 @@ namespace Ship_Game
             // list rows use (+12) - never from a second sum over x2 and BoxW3. ClientArea is
             // already inset by 9 (the corner textures' size), so two arithmetics that have to
             // agree end up disagreeing: this one was 15px left of the rows above it.
+            // Ludoal fork (maintainer, bench 526): the empire-wide build order. It sits under the
+            // Construction frame rather than inside it - the frame's height is derived from the
+            // rows it carries, and a button in there would have moved the priority host with it.
+            var addToQueue = Button(ButtonStyle.Default, x2, top + ConstructionBoxH + BoxGap,
+                                    GameText.AddToQueueTitle,
+                                    click: _ => ScreenManager.AddScreen(new AddToQueueScreen(Universe)));
+            addToQueue.Tooltip = GameText.AddToQueueApplyTip;
+
             PriorityHost = Add(new UIPanel(new Rectangle((int)(constructionBox.ClientArea.X + 12),
                                                          (int)(top + PrioTopInset),
                                                          (int)(constructionBox.ClientArea.W - 24),

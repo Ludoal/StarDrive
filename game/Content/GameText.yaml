@@ -28634,3 +28634,39 @@ ConsumptionRow:
  Id: 7166
  ENG: "Consumption"
  FRA: "Consommation"
+AddToQueueTitle:
+ Id: 7167
+ ENG: "Add to Construction Queue"
+ FRA: "Ajouter a la file de construction"
+AddToQueueTargetLabel:
+ Id: 7168
+ ENG: "Send to"
+ FRA: "Envoyer vers"
+AddToQueueAllColonies:
+ Id: 7169
+ ENG: "All Colonies"
+ FRA: "Toutes les colonies"
+AddToQueueNoGovernor:
+ Id: 7170
+ ENG: "No Governor"
+ FRA: "Sans gouverneur"
+AddToQueueBasket:
+ Id: 7171
+ ENG: "To be queued"
+ FRA: "A mettre en file"
+AddToQueueApply:
+ Id: 7172
+ ENG: "Apply"
+ FRA: "Appliquer"
+AddToQueueApplyTip:
+ Id: 7173
+ ENG: "Posts this list to every targeted colony. A building already standing or already queued there is skipped; troops and ships go only where they can be built at all."
+ FRA: "Envoie cette liste a chaque colonie ciblee. Un batiment deja construit ou deja en file y est ignore ; les troupes et les vaisseaux ne vont que la ou leur construction est possible."
+AddToQueueAllPassed:
+ Id: 7174
+ ENG: "Everything went through."
+ FRA: "Tout est passe."
+AddToQueueBlocked:
+ Id: 7175
+ ENG: "These could not be queued - no free tile on the colony:"
+ FRA: "Ceux-ci n'ont pas pu etre mis en file - pas de case libre sur la colonie :"

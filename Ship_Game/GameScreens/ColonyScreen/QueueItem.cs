@@ -17,6 +17,17 @@ namespace Ship_Game
     [StarDataType]
     public class QueueItem
     {
+        // Ludoal fork (bench 526): the queue type a PLAYER-CHOSEN ship is filed under.
+        // ConstructionPriorityRank sorts by it, so the ship must carry its real role - the old
+        // freighter/combat binary filed scouts and colony ships as military and the priority list
+        // then sorted auto-built ships above them. Written once: the colony screen and the
+        // empire-wide picker have to file the same ship identically or the two disagree.
+        public static QueueItemType PlayerQueueTypeFor(IShipDesign ship)
+            => ship.IsColonyShip           ? QueueItemType.ColonyShip
+             : ship.Role == RoleName.scout ? QueueItemType.Scout
+             : ship.IsFreighter            ? QueueItemType.Freighter
+             :                               QueueItemType.CombatShip;
+
         [StarData] public Planet Planet;
         [StarData] public bool isBuilding;
         [StarData] public bool IsMilitary; // Military building

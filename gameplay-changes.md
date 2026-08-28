@@ -104,6 +104,18 @@ would have undone the player's own restriction the moment they loaded a plan.
 
 ## New levers
 
+### An empire-wide build order
+`PENDING` — `AddToQueueScreen.cs`, `PoliciesScreen.cs`
+
+**Source: maintainer.**
+
+Policies gains "Add to Construction Queue": a list built once — buildings, troops, ships — and
+posted to every colony you aim it at. The target is all colonies, those without a governor, or
+one governor type. A building already standing or already queued on a colony is skipped there; a
+colony with no free tile is named in the report. Troops and ships go only where they can be built
+at all, and a line added twice is queued twice. Everything it posts is marked as yours, so the
+governor treats it the way it treats anything you queued by hand.
+
 ### Labor gets an Auto toggle
 `36a3bba6` — `Planet_Govern.cs`, `Planet_WorkDistribution.cs`, `AssignLaborComponent.cs`
 
