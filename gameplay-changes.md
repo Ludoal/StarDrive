@@ -32,16 +32,6 @@ can be read rather than trusted.
 
 ## Balance changes
 
-### Auto-upgrade fires on any idle freighter for the player
-`bbb60d6d` — `Empire_Trade.cs` (`TriggerFreightersRefit`, `CheckForRefitFreighter`)
-
-**Source: maintainer.**
-
-Vanilla gated freighter refits behind fleet-fill thresholds: no refit at all until the freighter
-fleet was over 75% of its cap, and each individual refit needed the fleet over 50%. **Both gates
-are removed for the player** — a refit now fires whenever a better model exists, spread out only
-by the existing 20% dice roll per idle freighter. AI empires keep both caps, since they manage
-their own war economy.
 
 ### Governor no longer demolishes civilian buildings on its own
 `Planet_BuildDefenses.cs`, `Planet_EvaluateBuildings.cs` (Build and Scrap Mandates)
@@ -103,6 +93,27 @@ would have undone the player's own restriction the moment they loaded a plan.
 ---
 
 ## New levers
+
+### Freighter quantity: a reserve, a refit ceiling, an idle delay
+`Empire_Trade.cs`, `PoliciesScreen.cs` (Policies > Trade)
+
+**Source: maintainer.**
+
+Three rails in Policies > Trade, each neutral where it ships.
+
+**Freighter Reserve** (0) keeps that many freighters free: the empire builds up to the reserve
+and never scraps into it, so a quiet spell no longer costs a fleet that must then be rebuilt.
+Freighters returning from a refit count as present. At 0 the game builds only once none are
+left, as before, and the reserve buys its own headroom rather than eating the freighter cap.
+
+**Simultaneous Refits** (Automatic) caps how many freighters modernise at once — a refitting
+freighter carries nothing. Its left stop is not a quantity: at **Automatic** the game's own
+formula runs, the fleet-fill thresholds included (no refit under 75% of the freighter cap, no
+individual refit under 50%) and the original dice with them. An earlier version of this fork
+lifted those thresholds for the player; they are back at the default, and setting a ceiling is
+what lifts them, bounding the wave by a number instead of by the fleet's fill.
+
+**Idle Turns before Scrapping** (20) exposes what was a hardcoded twenty.
 
 ### A new colony can rush its first turns
 `3b2a73f2` — `SBProduction.cs`, `Planet_Colonize.cs`, `PoliciesScreen.cs`

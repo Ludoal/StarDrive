@@ -156,7 +156,7 @@ namespace Ship_Game.AI
                 toOrbit = Owner.Loyalty.FindNearestRallyPoint(Owner.Position); // get out of here!
 
             AI.CancelTradePlan(toOrbit);
-            Owner.Loyalty.CheckForRefitFreighter(Owner, 20);
+            Owner.Loyalty.CheckForRefitFreighter(Owner, Owner.Loyalty.FreighterRefitDice);
         }
     }
 

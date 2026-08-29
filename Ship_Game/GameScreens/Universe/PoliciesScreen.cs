@@ -47,8 +47,11 @@ namespace Ship_Game
         const float PolicyRowH = 26f;
         const float BlueprintRows = 6f;                       // heading + 5 governor types
         const float ColonyBoxH = 170f + BlueprintRows * PolicyRowH;
-        // Trade carries the priority picker, the three quantity numbers and the game rule.
-        const float EconomyBoxH = 74f, ResearchBoxH = 74f, TradeBoxH = 126f + 3f * PolicyRowH;
+        // A number on a rail costs two rows: its own title, then the rail itself, whose 28px
+        // must hold a 26px knob (bench 485).
+        const float SliderRowH = 64f;
+        // Trade carries the priority picker, the three quantity rails and the game rule.
+        const float EconomyBoxH = 74f, ResearchBoxH = 74f, TradeBoxH = 126f + 3f * SliderRowH;
 
         // The Prioritization rows live INSIDE the Construction frame, under its Rush row.
         // Both numbers are CONSTANTS and the frame is sized FROM them - never the
@@ -144,17 +147,19 @@ namespace Ship_Game
             // checkboxes stay the RIGHT to build, upgrade and scrap; these three say HOW,
             // which is what puts them on this page. Every one of them is neutral at its
             // default, so a page never touched changes nothing.
-            NumberList(trade, GameText.PolFreighterReserve, GameText.PolFreighterReserveTip,
-                       ReserveSteps, player.FreighterReserve, "0",
-                       v => player.FreighterReserve = v);
-            NumberList(trade, GameText.PolFreighterRefitCap, GameText.PolFreighterRefitCapTip,
-                       RefitCapSteps, player.MaxFreighterRefits, "--",
-                       v => player.MaxFreighterRefits = v);
+            SliderRow(trade, GameText.PolFreighterReserve, GameText.PolFreighterReserveTip,
+                      0, 20, player.FreighterReserve, default,
+                      v => player.FreighterReserve = v);
+            // the rail's left stop is not a quantity: it hands the refits back to the game's
+            // own formula, so it reads Automatic rather than nought.
+            SliderRow(trade, GameText.PolFreighterRefitCap, GameText.PolFreighterRefitCapTip,
+                      0, 20, player.MaxFreighterRefits, GameText.Automatic,
+                      v => player.MaxFreighterRefits = v);
             // reads through the property, so a save that never stored the field shows the 20
             // the game has always used instead of a bare zero.
-            NumberList(trade, GameText.PolFreighterIdleTurns, GameText.PolFreighterIdleTurnsTip,
-                       IdleTurnSteps, player.IdleTurnsBeforeScrap, "",
-                       v => player.FreighterIdleTurns = v);
+            SliderRow(trade, GameText.PolFreighterIdleTurns, GameText.PolFreighterIdleTurnsTip,
+                      5, 100, player.IdleTurnsBeforeScrap, default,
+                      v => player.FreighterIdleTurns = v);
 
             // its own tooltip says out loud that this one is a GAME rule, not an empire order -
             // it is stored with the game setup, so it does not travel with the empire.
@@ -214,24 +219,23 @@ namespace Ship_Game
             base.LoadContent();
         }
 
-        // Coarse steps on purpose: these are doctrines a player sets once, not calibrations.
-        static readonly int[] ReserveSteps  = { 0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20 };
-        static readonly int[] RefitCapSteps = { 0, 1, 2, 3, 4, 5, 8, 10, 15, 20 };
-        static readonly int[] IdleTurnSteps = { 5, 10, 15, 20, 30, 40, 50, 75, 100 };
-
-        // A number picked from a list - the dialect the rest of the page already speaks, so a
-        // setting does not arrive with a text field nothing else on the screen uses.
-        // zeroLabel names what 0 MEANS on that row (none kept, no ceiling), since a bare 0
-        // reads as a limit of zero rather than as the absence of one.
-        void NumberList(UIList box, GameText title, GameText tooltip,
-                        int[] steps, int current, string zeroLabel, Action<int> onChange)
+        // A number set on a rail, the way the tax rate and the notification delay already work.
+        // The title takes its own row: the slider prints its value at the rail's right end, so
+        // a label inside would crowd it. zeroText names what the left stop MEANS when nought
+        // is not a quantity; left empty the rail simply shows the number.
+        void SliderRow(UIList box, GameText title, GameText tooltip, float min, float max,
+                       int current, LocalizedText zeroText, Action<int> onChange)
         {
-            DropOptions<int> list = box.Add(new LabeledDropdown<int>()).Create(title, tooltip);
-            foreach (int step in steps)
-                list.AddOption(option: step == 0 ? zeroLabel : step.ToString(), step);
-
-            list.ActiveValue = current;
-            list.OnValueChange = onChange;
+            box.Add(new UILabel(title, Fonts.Arial12Bold, Colors.Cream)).Tooltip = tooltip;
+            var rail = box.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW2 - 40, 28),
+                                               "", min, max, current)
+            {
+                Step = 1,
+                Tip = tooltip,
+                TrackYOffset = -5, // tuck the rail up under its own title
+                ZeroString = zeroText,
+            });
+            rail.OnChange = s => onChange((int)s.AbsoluteValue);
         }
 
         // ⚠ FIVE rows, not seven. ColonyType has seven members, but Colony and TradeHub can hold

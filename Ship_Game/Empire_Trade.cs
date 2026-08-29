@@ -84,6 +84,11 @@ namespace Ship_Game
         // RefitShip is also the warship refit goal and the player's manual refit - only ours counts.
         public int FreightersInRefit => AI.CountGoals(g => g is RefitShip r && r.OldShip?.IsFreighter == true);
         public int IdleTurnsBeforeScrap => FreighterIdleTurns > 0 ? FreighterIdleTurns : 20;
+        // No ceiling set: freighter refits run on the game's own formula - the fleet-fill
+        // thresholds and the original dice. That position is the comparison baseline, which
+        // is why it reads "Automatic" rather than zero.
+        public bool RefitAuto => MaxFreighterRefits <= 0;
+        public int FreighterRefitDice => RefitAuto ? 10 : 20;
         public int AverageTradeIncome    => AllTimeTradeIncome / TurnCount;
         // ManualTrade now governs only the ROUTING side (per-cargo restrictions / trade routes):
         // the AI always auto-routes, the player auto-routes unless it drives its freighters by hand.
@@ -564,11 +569,10 @@ namespace Ship_Game
         // FB - Refit some idle freighters to better ones, if unlocked
         public void TriggerFreightersRefit()
         {
-            // Auto-upgrade modernises idle freighters. The AI keeps its original fleet-fill cap
-            // (it manages its own war economy); the player, who ticked Auto-upgrade on purpose,
-            // has no cap - a chosen upgrade happens whenever a better model exists, just spread out
-            // by the 20% dice per idle freighter so the whole fleet isn't refitted at once.
-            if (!UpgradeFreightersActive || !isPlayer && TotalFreighters / (float)FreighterCap <= 0.75f)
+            // Auto-upgrade modernises idle freighters. The fleet-fill threshold is the game's own:
+            // it holds for the AI always, and for a player who has not set a refit ceiling. Setting
+            // one is what lifts it - the ceiling then bounds the wave instead of the fleet's fill.
+            if (!UpgradeFreightersActive || (!isPlayer || RefitAuto) && TotalFreighters / (float)FreighterCap <= 0.75f)
                 return;
 
             IShipDesign betterFreighter = ShipBuilder.PickFreighter(this);
@@ -579,7 +583,7 @@ namespace Ship_Game
             for (int i = 0; i < ships.Length; i++)
             {
                 Ship idleFreighter = ships[i];
-                CheckForRefitFreighter(idleFreighter, 20, betterFreighter);
+                CheckForRefitFreighter(idleFreighter, RefitAuto ? 25 : 20, betterFreighter);
             }
         }
 
@@ -587,12 +591,13 @@ namespace Ship_Game
         public void CheckForRefitFreighter(Ship freighter, int percentage, IShipDesign betterFreighter = null)
         {
             // ceiling on simultaneous freighter refits, so a modernisation wave never parks
-            // the whole trade fleet at a shipyard. Only counted when the player asked for one.
-            if (MaxFreighterRefits > 0 && FreightersInRefit >= MaxFreighterRefits)
+            // the whole trade fleet at a shipyard. Only counted once a ceiling is set.
+            if (!RefitAuto && FreightersInRefit >= MaxFreighterRefits)
                 return;
 
             if (UpgradeFreightersActive && Random.RollDice(percentage)
-                && (isPlayer || TotalFreighters / (float)FreighterCap > 0.5f)) // AI keeps its fleet-fill cap
+                // the per-ship fleet-fill threshold, lifted only for a player who set a ceiling
+                && ((isPlayer && !RefitAuto) || TotalFreighters / (float)FreighterCap > 0.5f))
             {
                 if (betterFreighter == null)
                     betterFreighter = ShipBuilder.PickFreighter(this);
