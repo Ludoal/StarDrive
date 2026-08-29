@@ -80,19 +80,20 @@ namespace Ship_Game.GameScreens
         // Diplomacy group - one geometry for the whole bar.
         public static readonly LocalizedText[] GalaxyTabTitles =
         {
-            "Planets", "Exotic Systems", "Patrols", "Events"
+            "Planets", "Exotic Systems", "Trade", "Patrols", "Events"
         };
 
         public static readonly string[] GalaxyTabTips =
         {
             Localizer.Token(GameText.DvGalaxyTabTipPlanets),
             Localizer.Token(GameText.DvGalaxyTabTipExoticSystems),
+            Localizer.Token(GameText.DvGalaxyTabTipTrade),
             Localizer.Token(GameText.DvGalaxyTabTipPatrols),
             Localizer.Token(GameText.DvGalaxyTabTipEvents),
         };
 
         // the keys those screens already close on, in tab order
-        public static readonly string[] GalaxyTabKeys = { "L", "G", "P", "F7" };
+        public static readonly string[] GalaxyTabKeys = { "L", "G", "", "P", "F7" };
 
         // Ludoal fork: ONE place that knows which screen a Galaxy tab opens. Each screen used to
         // carry its own switch over the other three, so a fourth tab meant editing all of them -
@@ -101,7 +102,8 @@ namespace Ship_Game.GameScreens
         {
             0 => new PlanetListScreen(u, u.EmpireUI),
             1 => new ExoticSystemsListScreen(u, u.EmpireUI),
-            2 => new EmpirePatrolsScreen(u, u.Player),
+            2 => new TradeZonesScreen(u, u.Player),
+            3 => new EmpirePatrolsScreen(u, u.Player),
             _ => new ImportantEventsScreen(u),
         };
 
@@ -721,7 +723,7 @@ namespace Ship_Game.GameScreens
             // group its hosted seat names - the one membership that is dynamic
             ColonyScreen c => c.P.Universe.Screen.HostedTabGroup,
 
-            PlanetListScreen or ExoticSystemsListScreen or EmpirePatrolsScreen
+            PlanetListScreen or ExoticSystemsListScreen or TradeZonesScreen or EmpirePatrolsScreen
                 or ImportantEventsScreen
                 => Group.Galaxy,
 

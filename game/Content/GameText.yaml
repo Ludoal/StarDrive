@@ -28746,6 +28746,62 @@ PolFreighterTradeFirst:
  Id: 7197
  ENG: "Trade First"
  FRA: "Commerce d'abord"
+TzZoneName:
+ Id: 7198
+ ENG: "Zone"
+ FRA: "Zone"
+TzNumColonies:
+ Id: 7199
+ ENG: "Colonies"
+ FRA: "Colonies"
+TzServedColonies:
+ Id: 7200
+ ENG: "Served"
+ FRA: "Desservies"
+TzQuota:
+ Id: 7201
+ ENG: "Freighters"
+ FRA: "Cargos"
+TzNewZone:
+ Id: 7202
+ ENG: "New Trade Zone"
+ FRA: "Nouvelle zone commerciale"
+TzNewZoneTip:
+ Id: 7203
+ ENG: "Create a trade zone by choosing the colonies it serves. Its freighters carry goods between those colonies."
+ FRA: "Creer une zone commerciale en choisissant les colonies qu'elle dessert. Ses cargos transportent les marchandises entre ces colonies."
+TzEditColonies:
+ Id: 7204
+ ENG: "Edit Colonies"
+ FRA: "Modifier les colonies"
+TzEditColoniesTip:
+ Id: 7205
+ ENG: "Choose which colonies this zone serves."
+ FRA: "Choisir les colonies desservies par cette zone."
+TzDeleteZoneTip:
+ Id: 7206
+ ENG: "Delete this trade zone."
+ FRA: "Supprimer cette zone commerciale."
+TzDeleteZoneConfirm:
+ Id: 7207
+ ENG: "This will remove the trade zone from your empire. The colonies and their freighters are not affected."
+ FRA: "Cela retire la zone commerciale de votre empire. Les colonies et leurs cargos ne sont pas affectes."
+TzEmptyHint:
+ Id: 7208
+ ENG: "Create a trade zone from your colonies."
+ FRA: "Creer une zone commerciale a partir de vos colonies."
+TzApply:
+ Id: 7209
+ ENG: "Apply"
+ FRA: "Appliquer"
+TzColonyPickTip:
+ Id: 7210
+ ENG: "Serve this colony from this zone."
+ FRA: "Desservir cette colonie depuis cette zone."
+DvGalaxyTabTipTrade:
+ Id: 7211
+ ENG: "Trade zones: named groups of colonies served together by your freighters."
+ FRA: "Zones commerciales : des groupes de colonies nommes, desservis ensemble par vos cargos."
 MandateByBlueprint:
  Id: 7181
  ENG: "By Blueprint"

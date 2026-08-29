@@ -7105,6 +7105,34 @@ namespace Ship_Game
         PolFreighterRefitAuto = 7196,
         /// <summary>Trade First</summary>
         PolFreighterTradeFirst = 7197,
+        /// <summary>Zone</summary>
+        TzZoneName = 7198,
+        /// <summary>Colonies</summary>
+        TzNumColonies = 7199,
+        /// <summary>Served</summary>
+        TzServedColonies = 7200,
+        /// <summary>Freighters</summary>
+        TzQuota = 7201,
+        /// <summary>New Trade Zone</summary>
+        TzNewZone = 7202,
+        /// <summary>Create a trade zone by choosing the colonies it serves</summary>
+        TzNewZoneTip = 7203,
+        /// <summary>Edit Colonies</summary>
+        TzEditColonies = 7204,
+        /// <summary>Choose which colonies this zone serves</summary>
+        TzEditColoniesTip = 7205,
+        /// <summary>Delete this trade zone</summary>
+        TzDeleteZoneTip = 7206,
+        /// <summary>This will remove the trade zone from your empire</summary>
+        TzDeleteZoneConfirm = 7207,
+        /// <summary>Create a trade zone from your colonies</summary>
+        TzEmptyHint = 7208,
+        /// <summary>Apply</summary>
+        TzApply = 7209,
+        /// <summary>Serve this colony from this zone</summary>
+        TzColonyPickTip = 7210,
+        /// <summary>Trade zones: named groups of colonies served together by your freighte</summary>
+        DvGalaxyTabTipTrade = 7211,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

@@ -130,7 +130,7 @@ namespace Ship_Game
         // Ludoal fork: the other two tabs live in their own screen, so leaving Patrols hands over to
         // it. This tab is a no-op: we are already here.
         void OnGalaxyTabChanged(int index)
-            => ScreenGroups.SwitchGalaxyTab(index, self: 2, Universe, this);
+            => ScreenGroups.SwitchGalaxyTab(index, self: 3, Universe, this);
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {

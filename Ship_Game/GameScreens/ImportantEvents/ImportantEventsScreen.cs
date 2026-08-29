@@ -23,7 +23,7 @@ namespace Ship_Game
         public override Rectangle PageFrame => GalaxyTabs?.Rect ?? base.PageFrame;
 
         void OnGalaxyTabChanged(int index)
-            => GameScreens.ScreenGroups.SwitchGalaxyTab(index, self: 3, Universe, this);
+            => GameScreens.ScreenGroups.SwitchGalaxyTab(index, self: 4, Universe, this);
 
         ImportantNotification[] Events; // refreshed live - an event landing while the page is open joins the log
         readonly ScrollList<ImportantEventListItem> EventList;
