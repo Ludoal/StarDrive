@@ -61,8 +61,9 @@ namespace Ship_Game
             RectF nameArea = nameBox.ClientArea;
             NameEntry = Add(new UITextEntry(nameArea.X + 10, nameArea.Y + 6, nameArea.W - 20,
                                             Fonts.Arial12Bold, Zone?.Name ?? ""));
-            NameEntry.AutoCaptureOnHover = true;
-            NameEntry.AutoCaptureOnKeys = true;
+            // no auto-capture: this dialog has a list and a rail besides the name, so a field
+            // that grabs the keyboard on hover or on the first keypress steals every other
+            // control's input. It takes focus on a CLICK, like every other field in the game.
             NameEntry.MaxCharacters = 40;
             NameEntry.OnTextChanged = OnNameChanged;
             NameTakenLabel = Add(new UILabel(new Vector2(nameArea.X + 10, nameArea.Y + 28),
