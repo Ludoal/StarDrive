@@ -7103,6 +7103,8 @@ namespace Ship_Game
         PolFreighterIdleTurnsTip = 7195,
         /// <summary>Auto</summary>
         PolFreighterRefitAuto = 7196,
+        /// <summary>Trade First</summary>
+        PolFreighterTradeFirst = 7197,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

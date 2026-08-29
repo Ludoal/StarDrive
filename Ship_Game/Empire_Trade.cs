@@ -18,7 +18,7 @@ namespace Ship_Game
     // pin the order. Auto MUST stay value 0 so existing saves load as Auto.
     // (Named CargoPriority to avoid Ship_Game.AI.FreighterPriority, an unrelated
     // freighter-sizing status enum.)
-    public enum CargoPriority { Auto, ProductionFirst, ColonistsFirst }
+    public enum CargoPriority { Auto, ProductionFirst, ColonistsFirst, TradeFirst }
 
     public partial class Empire
     {
@@ -148,6 +148,10 @@ namespace Ship_Game
         {
             UpdateTradeTreaties();
             TradeState tradeState = new(this, false);
+            // Trade First lifts the foreign runs above production and colonists - once in the
+            // turn, and never above food, which stays the first call below.
+            bool tradeFirst = isPlayer && CargoPriority == CargoPriority.TradeFirst;
+            bool servedAbroad = false;
             for (int i = 1; i <= 3; i++)
             {
                 if (tradeState.NoFreeFreighters)
@@ -156,11 +160,27 @@ namespace Ship_Game
                 if (NonCybernetic)
                     DispatchOrBuildFreighters(Goods.Food, OwnedPlanets, false, ref tradeState);
 
+                if (tradeFirst && !servedAbroad)
+                {
+                    // the domestic state must have fetched before the foreign runs take their
+                    // pick: it is the only one allowed to BUILD, and a cybernetic empire runs
+                    // no food pass to trigger that fetch. Under this priority a run abroad is
+                    // therefore reason enough to lay down a freighter, which is its point.
+                    tradeState.FetchIdleFreightersOrBuild();
+                    DispatchInterEmpireTrade(ref tradeState);
+                    servedAbroad = true;
+                    if (tradeState.NoFreeFreighters)
+                        break;
+                }
+
                 // Under a freighter shortage the dispatch order is the priority. The player
-                // can pin it (Automation > Trade); Auto — and every AI empire — keeps the
+                // can pin it (Policies > Trade); Auto — and every AI empire — keeps the
                 // vanilla population-weighted dice (colonists win more often early game).
                 bool productionFirst;
-                if (isPlayer && CargoPriority != CargoPriority.Auto)
+                // only the two pinned orders answer here; Trade First reorders the PASSES and
+                // leaves production against colonists to the dice, exactly as Auto does.
+                if (isPlayer && (CargoPriority == CargoPriority.ProductionFirst
+                                 || CargoPriority == CargoPriority.ColonistsFirst))
                     productionFirst = CargoPriority == CargoPriority.ProductionFirst;
                 else
                 {
@@ -183,24 +203,33 @@ namespace Ship_Game
                 tradeState.UpdatePlanetsTradeGoods();
             }
 
-            // Cybernetic factions never touch Food trade. Filthy Opteris are disgusted by protein-bugs. Ironic.
-            if (tradeState.HasFreeFreighters && (!isPlayer || Universe.P.AllowPlayerInterTrade))
-            {
-                Ship[] idleFreighters = tradeState.IdleFreighters.ToArr();
-                tradeState = new(this, true);
-                tradeState.SetIdleFreighters(idleFreighters);
-                var interTradePlanets = TradingEmpiresPlanetList();
-                if (interTradePlanets.Count > 0)
-                {
-                    // export stuff to Empires which have trade treaties with us
-                    if (NonCybernetic)
-                        DispatchOrBuildFreighters(Goods.Food, interTradePlanets, true, ref tradeState);
-
-                    DispatchOrBuildFreighters(Goods.Production, interTradePlanets, true, ref tradeState);
-                }
-            }
+            if (!servedAbroad)
+                DispatchInterEmpireTrade(ref tradeState);
 
             UpdateFreighterTimersAndScrap();
+        }
+
+        // Export to empires we hold trade treaties with. These runs get their own state: a
+        // different planet list, a different ship filter, and no construction at all - an
+        // interTrade state never builds. It therefore borrows the domestic state's free
+        // freighters and hands back what it did not send, rather than replacing it.
+        // Cybernetic factions never touch Food trade. Filthy Opteris are disgusted by protein-bugs. Ironic.
+        void DispatchInterEmpireTrade(ref TradeState domestic)
+        {
+            if (!domestic.HasFreeFreighters || isPlayer && !Universe.P.AllowPlayerInterTrade)
+                return;
+
+            var interTradePlanets = TradingEmpiresPlanetList();
+            if (interTradePlanets.Count == 0)
+                return;
+
+            TradeState abroad = new(this, true);
+            abroad.SetIdleFreighters(domestic.IdleFreighters.ToArr());
+            if (NonCybernetic)
+                DispatchOrBuildFreighters(Goods.Food, interTradePlanets, true, ref abroad);
+
+            DispatchOrBuildFreighters(Goods.Production, interTradePlanets, true, ref abroad);
+            domestic.SetIdleFreighters(abroad.IdleFreighters);
         }
 
         struct TradeState

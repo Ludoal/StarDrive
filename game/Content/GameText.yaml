@@ -28742,6 +28742,10 @@ PolFreighterRefitAuto:
  Id: 7196
  ENG: "Auto"
  FRA: "Auto"
+PolFreighterTradeFirst:
+ Id: 7197
+ ENG: "Trade First"
+ FRA: "Commerce d'abord"
 MandateByBlueprint:
  Id: 7181
  ENG: "By Blueprint"

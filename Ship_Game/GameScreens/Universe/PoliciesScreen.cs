@@ -134,6 +134,12 @@ namespace Ship_Game
             economy.AddCheckbox(() => player.AutoTaxes, title: GameText.AutoTaxes, tooltip: GameText.YourEmpireWillAutomaticallyManage3);
 
             UIList trade = NewBox(new RectF(x2, top, BoxW2, TradeBoxH), "Trade", GameText.PolTradeNotice);
+            // the RIGHT is read before the doctrine that uses it (bench 538), so the permission
+            // to trade abroad heads the frame. Its own tooltip says out loud that this one is a
+            // GAME rule, not an empire order - it is stored with the game setup, so it does not
+            // travel with the empire.
+            trade.AddCheckbox(() => Universe.UState.P.AllowPlayerInterTrade,
+                              title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.PolInterTradeGameRuleTip);
             FreighterPriorityDropDown = trade.Add(new LabeledDropdown<CargoPriority>())
                 // ⚠ two texts, one condition: a cybernetic empire trades no food at all, so the
                 // food guarantee is not false for it - it is empty. Omitted rather than qualified,
@@ -141,10 +147,7 @@ namespace Ship_Game
                 // player's screen (bench 531).
                 .Create(GameText.FreighterPriority, player.NonCybernetic ? GameText.FreighterPriorityTip
                                                                          : GameText.FreighterPriorityTipCyber);
-            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityAuto, CargoPriority.Auto);
-            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityProductionFirst, CargoPriority.ProductionFirst);
-            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityColonistsFirst, CargoPriority.ColonistsFirst);
-            FreighterPriorityDropDown.ActiveValue = player.CargoPriority;
+            RebuildFreighterPriorityOptions(player);
             FreighterPriorityDropDown.OnValueChange = v => player.CargoPriority = v;
             // Ludoal fork (maintainer feedback): the three quantity numbers. Automation's
             // checkboxes stay the RIGHT to build, upgrade and scrap; these three say HOW,
@@ -164,10 +167,6 @@ namespace Ship_Game
                       5, 100, player.IdleTurnsBeforeScrap, default,
                       v => player.FreighterIdleTurns = v);
 
-            // its own tooltip says out loud that this one is a GAME rule, not an empire order -
-            // it is stored with the game setup, so it does not travel with the empire.
-            trade.AddCheckbox(() => Universe.UState.P.AllowPlayerInterTrade,
-                              title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.PolInterTradeGameRuleTip);
             trade.ReverseZOrder(); // an open list draws over the rows beneath it
 
             UIList construction = NewBox(new RectF(x1, top, BoxW3, ConstructionBoxH), "Construction", GameText.PolConstructionNotice, out Submenu constructionBox);
@@ -428,8 +427,38 @@ namespace Ship_Game
             return list;
         }
 
+        // Trade First is offered only while the empire may trade abroad: a priority that points
+        // at a forbidden pass is an option that lies. The list is built once, so a right toggled
+        // with the screen open is caught in Update - the same watch the new-colony rush already
+        // keeps on the empire-wide rush. Rebuilding is what the widget supports; a greyed entry
+        // is not a thing DropOptions has.
+        void RebuildFreighterPriorityOptions(Empire player)
+        {
+            bool mayTradeAbroad = Universe.UState.P.AllowPlayerInterTrade;
+            FreighterPriorityDropDown.Clear();
+            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityAuto, CargoPriority.Auto);
+            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityProductionFirst, CargoPriority.ProductionFirst);
+            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityColonistsFirst, CargoPriority.ColonistsFirst);
+            if (mayTradeAbroad)
+                FreighterPriorityDropDown.AddOption(GameText.PolFreighterTradeFirst, CargoPriority.TradeFirst);
+
+            // a suspended choice is never overwritten: while the right is off the closed list
+            // shows Auto, which is also what the dispatch does, and granting the right again
+            // brings the pick back untouched.
+            if (mayTradeAbroad || player.CargoPriority != CargoPriority.TradeFirst)
+                FreighterPriorityDropDown.ActiveValue = player.CargoPriority;
+
+            PriorityListMayTradeAbroad = mayTradeAbroad;
+        }
+
+        bool PriorityListMayTradeAbroad;
+
         public override void Update(float fixedDeltaTime)
         {
+            if (FreighterPriorityDropDown != null
+                && PriorityListMayTradeAbroad != Universe.UState.P.AllowPlayerInterTrade)
+                RebuildFreighterPriorityOptions(Universe.Player);
+
             if (RushNewColonies != null)
             {
                 // greyed AND inert while the empire-wide rush is on: it already rushes everything
