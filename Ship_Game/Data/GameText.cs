@@ -7089,6 +7089,18 @@ namespace Ship_Game
         BpMoveUp = 7188,
         /// <summary>Move later in the plan.</summary>
         BpMoveDown = 7189,
+        /// <summary>Freighter Reserve</summary>
+        PolFreighterReserve = 7190,
+        /// <summary>Freighters kept free instead of being scrapped.</summary>
+        PolFreighterReserveTip = 7191,
+        /// <summary>Simultaneous Refits</summary>
+        PolFreighterRefitCap = 7192,
+        /// <summary>How many freighters may be at a shipyard at once.</summary>
+        PolFreighterRefitCapTip = 7193,
+        /// <summary>Idle Turns before Scrapping</summary>
+        PolFreighterIdleTurns = 7194,
+        /// <summary>How long a freighter may sit idle before it is scrapped.</summary>
+        PolFreighterIdleTurnsTip = 7195,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

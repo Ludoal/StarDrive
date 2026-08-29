@@ -28714,6 +28714,30 @@ BpMoveDown:
  Id: 7189
  ENG: "Move later in the plan. The plan reads as a chronology: it is built and replaced from the top, and rebuilt from the bottom."
  FRA: "Deplacer plus tard dans le plan. Le plan se lit comme une chronologie : il est bati et remplace par le haut, et reconstruit par le bas."
+PolFreighterReserve:
+ Id: 7190
+ ENG: "Freighter Reserve"
+ FRA: "Reserve de cargos"
+PolFreighterReserveTip:
+ Id: 7191
+ ENG: "Keeps this many freighters free at all times. The empire builds up to the reserve and never scraps into it, so a quiet spell no longer costs the whole trade fleet. Freighters returning from a refit count as present. At zero, ships are built only when none are left, as before."
+ FRA: "Maintient ce nombre de cargos libres en permanence. L'empire construit jusqu'a la reserve et ne la ferraille jamais, si bien qu'une accalmie ne coute plus la flotte marchande. Les cargos revenant de refit comptent comme presents. A zero, on ne construit qu'une fois a sec, comme avant."
+PolFreighterRefitCap:
+ Id: 7192
+ ENG: "Simultaneous Refits"
+ FRA: "Refits simultanes"
+PolFreighterRefitCapTip:
+ Id: 7193
+ ENG: "Caps how many freighters can be modernised at once. A refitting freighter carries nothing; without a cap, the whole trade fleet can end up in the yards at the same time. Warship refits and manual refits are not counted."
+ FRA: "Limite le nombre de cargos modernises en meme temps. Un cargo en refit ne transporte rien : sans plafond, toute la flotte marchande peut se retrouver au chantier d'un coup. Les refits militaires et manuels ne sont pas comptes."
+PolFreighterIdleTurns:
+ Id: 7194
+ ENG: "Idle Turns before Scrapping"
+ FRA: "Tours d'inactivite avant ferraillage"
+PolFreighterIdleTurnsTip:
+ Id: 7195
+ ENG: "How many turns a freighter may sit idle before being scrapped. Any assignment resets the count. Applies only while Auto-scrap Idle Freighters is on."
+ FRA: "Nombre de tours qu'un cargo peut passer sans mission avant d'etre ferraille. Toute affectation remet le compteur a zero. Ne s'applique que si le ferraillage automatique est actif."
 MandateByBlueprint:
  Id: 7181
  ENG: "By Blueprint"

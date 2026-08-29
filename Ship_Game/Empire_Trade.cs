@@ -35,6 +35,13 @@ namespace Ship_Game
         // Set once the split toggles have been seeded; distinguishes a pre-dissection save (seed
         // from AutoFreighters) from a fresh/new-format one (leave the toggles as the player set them).
         [StarData] public bool FreighterAutomationSplit;
+        // Ludoal fork (maintainer feedback): the three quantity levers. All are ints so an
+        // old save that lacks them reads 0, which every reader below treats as vanilla conduct.
+        // The reserve is counted in FREE freighters - the same unit the build gate and the
+        // scrap floor work in, so the two cannot pull against each other.
+        [StarData] public int FreighterReserve;   // 0 = build only when the pool runs dry
+        [StarData] public int MaxFreighterRefits; // 0 = no ceiling on simultaneous refits
+        [StarData] public int FreighterIdleTurns; // 0 = the vanilla 20 idle turns before scrapping
         // Stored as an int, not as the enum: CargoPriority does not exist in vanilla, and a
         // build without the deleted-enum skip cannot read past a type it has never heard of.
         // An int is a fundamental type every build reads, so the save stays loadable downstream.
@@ -72,6 +79,11 @@ namespace Ship_Game
         public int FreightersBeingBuilt  => AI.CountGoals(goal => goal is IncreaseFreighters);
         public int MaxFreightersInQueue  => (int)Math.Ceiling((OwnedPlanets.Count / 5f)).Clamped(2, 5);
         public int TotalFreighters       => OwnedShips.Count(s => s?.IsFreighter == true);
+        // A freighter under refit is neither lost nor free: IsIdleFreighter excludes AIState.Refit,
+        // so without this term a refit would empty the reserve and the build gate would replace it.
+        // RefitShip is also the warship refit goal and the player's manual refit - only ours counts.
+        public int FreightersInRefit => AI.CountGoals(g => g is RefitShip r && r.OldShip?.IsFreighter == true);
+        public int IdleTurnsBeforeScrap => FreighterIdleTurns > 0 ? FreighterIdleTurns : 20;
         public int AverageTradeIncome    => AllTimeTradeIncome / TurnCount;
         // ManualTrade now governs only the ROUTING side (per-cargo restrictions / trade routes):
         // the AI always auto-routes, the player auto-routes unless it drives its freighters by hand.
@@ -215,7 +227,11 @@ namespace Ship_Game
                 {
                     IdleFreighters = Owner.GetIdleFreighters(InterTrade);
                     SetIdleFreightesState();
-                    if (IdleFreighters.Length == 0)
+                    // the vanilla socle stays in the condition: at reserve 0 this is the old test.
+                    // A reserve only adds a second reason to build, and counts the freighters on
+                    // their way back from a refit as present.
+                    if (IdleFreighters.Length == 0
+                        || IdleFreighters.Length + Owner.FreightersInRefit < Owner.FreighterReserve)
                         BuildFreighter();
                 }
 
@@ -320,6 +336,11 @@ namespace Ship_Game
                 return;
 
             Ship[] ownedFreighters = OwnedShips.Filter(s => s.IsFreighter);
+            // The floor is a POPULATION test, never a pick of individuals: the order of this
+            // array is an artefact of the filter, so sparing "the first N" would spare a
+            // different set every turn and reset their timers at random. Counted once.
+            int reserve = FreighterReserve;
+            int freeOrReturning = reserve > 0 ? GetIdleFreighters(false).Length + FreightersInRefit : 0;
             for (int i = 0; i < ownedFreighters.Length; ++i)
             {
                 Ship freighter = ownedFreighters[i];
@@ -328,7 +349,14 @@ namespace Ship_Game
                     freighter.TradeTimer -= Universe.P.TurnTimer;
                     if (freighter.TradeTimer < 0)
                     {
+                        if (reserve > 0 && freeOrReturning <= reserve)
+                        {
+                            ResetTradeTimer(freighter); // kept: the empire is down to its reserve
+                            continue;
+                        }
+
                         freighter.AI.OrderScrapShip();
+                        --freeOrReturning; // AIState.Scrap drops it out of the free pool at once
                         ResetTradeTimer(freighter);
                     }
                 }
@@ -340,7 +368,7 @@ namespace Ship_Game
 
             void ResetTradeTimer(Ship freighter)
             {
-                freighter.TradeTimer = Universe.P.TurnTimer * 20;
+                freighter.TradeTimer = Universe.P.TurnTimer * IdleTurnsBeforeScrap;
             }
         }
 
@@ -473,7 +501,9 @@ namespace Ship_Game
                 return;
 
             int beingBuilt = FreightersBeingBuilt;
-            if (beingBuilt < MaxFreightersInQueue && (TotalFreighters + beingBuilt) < FreighterCap)
+            // the reserve widens THIS gate only. FreighterCap has five readers - two AI refit
+            // gates and the colony queue priority - and inflating the property would move them too.
+            if (beingBuilt < MaxFreightersInQueue && (TotalFreighters + beingBuilt) < FreighterCap + FreighterReserve)
                 AI.AddGoalAndEvaluate(new IncreaseFreighters(this));
         }
 
@@ -556,6 +586,11 @@ namespace Ship_Game
         // Percentage to check if there is better suited freighter model available
         public void CheckForRefitFreighter(Ship freighter, int percentage, IShipDesign betterFreighter = null)
         {
+            // ceiling on simultaneous freighter refits, so a modernisation wave never parks
+            // the whole trade fleet at a shipyard. Only counted when the player asked for one.
+            if (MaxFreighterRefits > 0 && FreightersInRefit >= MaxFreighterRefits)
+                return;
+
             if (UpgradeFreightersActive && Random.RollDice(percentage)
                 && (isPlayer || TotalFreighters / (float)FreighterCap > 0.5f)) // AI keeps its fleet-fill cap
             {

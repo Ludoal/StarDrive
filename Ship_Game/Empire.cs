@@ -1483,6 +1483,21 @@ namespace Ship_Game
             debug.AddLine($"Freighters in Queue / Max: {FreightersBeingBuilt}/{MaxFreightersInQueue}");
             debug.AddLine($"Idle Freighters: {GetIdleFreighters(false).Length}");
             debug.AddLine($"Fast or Big Ratio: {FastVsBigFreighterRatio}");
+
+            // Ludoal fork (maintainer feedback): three readings taken before the trade routing
+            // is reworked, so the reform starts from measurement instead of intuition.
+            // 1. does the cap BIND, or does the fleet float below it;
+            // 2. how many trade slots stand unserved next to that cap - the cap is a stock
+            //    figure while the slots carry a flux term, so the two drift as an empire matures;
+            // 3. what colonisation costs: colonist slots are counted in HEADS, never converted
+            //    into cargo loads, so migration demand appears in no sizing arithmetic at all.
+            int freeImportSlots = OwnedPlanets.Sum(p => p.FreeFoodImportSlots + p.FreeProdImportSlots + p.FreeColonistImportSlots);
+            int freeExportSlots = OwnedPlanets.Sum(p => p.FreeFoodExportSlots + p.FreeProdExportSlots + p.FreeColonistExportSlots);
+            int coloSlots = OwnedPlanets.Sum(p => p.ColonistsImportSlots + p.ColonistsExportSlots);
+            bool capBinds = TotalFreighters + FreightersBeingBuilt >= FreighterCap;
+            debug.AddLine($"Cap Binding: {(capBinds ? "YES" : "no")}   Reserve: {FreighterReserve}  In Refit: {FreightersInRefit}");
+            debug.AddLine($"Free Slots vs Cap: import {freeImportSlots} + export {freeExportSlots} / cap {FreighterCap}");
+            debug.AddLine($"Colonist Slots / Missions: {coloSlots}/{colonistsShips}");
             debug.AddLine("");
             debug.AddLine("Planet Trade:");
             debug.AddLine($"Importing Planets: F: {foodImportPlanets}  P: {prodImportPlanets}  C: {coloImportPlanets}");

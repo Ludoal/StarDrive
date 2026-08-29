@@ -46,7 +46,9 @@ namespace Ship_Game
         const float PolicyRowH = 26f;
         const float BlueprintRows = 6f;                       // heading + 5 governor types
         const float ColonyBoxH = 190f + BlueprintRows * PolicyRowH;
-        const float EconomyBoxH = 94f, ResearchBoxH = 94f, TradeBoxH = 146f;
+        // Trade carries the priority picker, the three quantity numbers and the game rule:
+        // 146 as before plus three rows of PolicyRowH.
+        const float EconomyBoxH = 94f, ResearchBoxH = 94f, TradeBoxH = 146f + 3f * PolicyRowH;
 
         // The Prioritization rows live INSIDE the Construction frame, under its notice and its
         // Rush row. Both numbers are CONSTANTS and the frame is sized FROM them - never the
@@ -142,6 +144,22 @@ namespace Ship_Game
             FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityColonistsFirst, CargoPriority.ColonistsFirst);
             FreighterPriorityDropDown.ActiveValue = player.CargoPriority;
             FreighterPriorityDropDown.OnValueChange = v => player.CargoPriority = v;
+            // Ludoal fork (maintainer feedback): the three quantity numbers. Automation's
+            // checkboxes stay the RIGHT to build, upgrade and scrap; these three say HOW,
+            // which is what puts them on this page. Every one of them is neutral at its
+            // default, so a page never touched changes nothing.
+            NumberList(trade, GameText.PolFreighterReserve, GameText.PolFreighterReserveTip,
+                       ReserveSteps, player.FreighterReserve, "0",
+                       v => player.FreighterReserve = v);
+            NumberList(trade, GameText.PolFreighterRefitCap, GameText.PolFreighterRefitCapTip,
+                       RefitCapSteps, player.MaxFreighterRefits, "--",
+                       v => player.MaxFreighterRefits = v);
+            // reads through the property, so a save that never stored the field shows the 20
+            // the game has always used instead of a bare zero.
+            NumberList(trade, GameText.PolFreighterIdleTurns, GameText.PolFreighterIdleTurnsTip,
+                       IdleTurnSteps, player.IdleTurnsBeforeScrap, "",
+                       v => player.FreighterIdleTurns = v);
+
             // its own tooltip says out loud that this one is a GAME rule, not an empire order -
             // it is stored with the game setup, so it does not travel with the empire.
             trade.AddCheckbox(() => Universe.UState.P.AllowPlayerInterTrade,
@@ -199,6 +217,26 @@ namespace Ship_Game
             addToQueue.Tooltip = GameText.AddToQueueApplyTip;
 
             base.LoadContent();
+        }
+
+        // Coarse steps on purpose: these are doctrines a player sets once, not calibrations.
+        static readonly int[] ReserveSteps  = { 0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20 };
+        static readonly int[] RefitCapSteps = { 0, 1, 2, 3, 4, 5, 8, 10, 15, 20 };
+        static readonly int[] IdleTurnSteps = { 5, 10, 15, 20, 30, 40, 50, 75, 100 };
+
+        // A number picked from a list - the dialect the rest of the page already speaks, so a
+        // setting does not arrive with a text field nothing else on the screen uses.
+        // zeroLabel names what 0 MEANS on that row (none kept, no ceiling), since a bare 0
+        // reads as a limit of zero rather than as the absence of one.
+        void NumberList(UIList box, GameText title, GameText tooltip,
+                        int[] steps, int current, string zeroLabel, Action<int> onChange)
+        {
+            DropOptions<int> list = box.Add(new LabeledDropdown<int>()).Create(title, tooltip);
+            foreach (int step in steps)
+                list.AddOption(option: step == 0 ? zeroLabel : step.ToString(), step);
+
+            list.ActiveValue = current;
+            list.OnValueChange = onChange;
         }
 
         // ⚠ FIVE rows, not seven. ColonyType has seven members, but Colony and TradeHub can hold
