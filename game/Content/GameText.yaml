@@ -28838,6 +28838,10 @@ TzNameTaken:
  Id: 7220
  ENG: "A zone already carries this name."
  FRA: "Une zone porte déjà ce nom."
+TzAssignedFreighters:
+ Id: 7221
+ ENG: "Assigned Freighters"
+ FRA: "Cargos affectés"
 MandateByBlueprint:
  Id: 7181
  ENG: "By Blueprint"

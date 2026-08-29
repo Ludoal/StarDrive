@@ -36,9 +36,14 @@ namespace Ship_Game
         public bool IsEmpty => Colonies.IsEmpty;
         public int NumColonies => Colonies.Count;
 
-        // What the zone could put to work RIGHT NOW, in the game's own unit: a trade slot is a
-        // freighter berth. Bounded by BOTH ends, because a zone's freighters only carry between
-        // its own colonies - imports it cannot supply from inside ask for nothing.
+        // What the zone can put to work, in the game's own unit: a trade slot is a freighter
+        // berth. Bounded by BOTH ends, because a zone's freighters only carry between its own
+        // colonies - imports it cannot supply from inside ask for nothing.
+        //
+        // Counted on the TOTAL slots rather than the free ones (bench 544): read on what is
+        // left, the figure fell to nought exactly when the zone was being served, so it said
+        // zero next to an Active of four. Beside Active it must be the demand, not the
+        // remainder - the pair is only readable if one is the need and the other the answer.
         //
         // Deliberately WITHOUT a rotation term. Turning a backlog into a fleet size is the
         // queueing law, and it needs a measured arrival rate; inventing one here would produce a
@@ -56,8 +61,8 @@ namespace Ship_Game
                 if (p == null || p.Owner != owner)
                     continue;
 
-                imports += p.FreeFoodImportSlots + p.FreeProdImportSlots;
-                exports += p.FreeFoodExportSlots + p.FreeProdExportSlots;
+                imports += p.FoodImportSlots + p.ProdImportSlots;
+                exports += p.FoodExportSlots + p.ProdExportSlots;
             }
             return imports < exports ? imports : exports;
         }

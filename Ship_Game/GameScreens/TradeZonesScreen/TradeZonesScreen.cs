@@ -58,6 +58,17 @@ namespace Ship_Game
                 new UITable.Column { Title = "", Width = 60, Align = TableAlign.Center },
             });
 
+            Build();
+        }
+
+        // Ludoal fork (bench 544): the whole page is rebuilt when its content changes, frame
+        // included. Measuring the columns again was not enough: the tab frame is sized from the
+        // table's width at build time, so a wider table spilled past a frame that never grew -
+        // only reopening the page fixed it. This page MAKES its own rows, so it must be able to
+        // rebuild itself the way reopening does.
+        void Build()
+        {
+            RemoveAll();
             MeasureColumns();
 
             if (LastSortCol < 0) { LastSortCol = 0; LastSortAsc = true; }
@@ -65,7 +76,7 @@ namespace Ship_Game
             Table.Columns[LastSortCol].Ascending = LastSortAsc;
 
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight);
-            float contentH = UITable.ContentHeightFor(99, Math.Max(3, player.TradeZones.Count), 38, fullAvail) + ActionsLineH;
+            float contentH = UITable.ContentHeightFor(99, Math.Max(3, Player.TradeZones.Count), 38, fullAvail) + ActionsLineH;
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Galaxy, Universe), 2,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             Client = GalaxyTabs.ClientArea;
@@ -83,7 +94,7 @@ namespace Ship_Game
             newZone.SetAbsSize((int)Fonts.Arial12Bold.TextWidth(Localizer.Token(GameText.TzNewZone)) + 34, 26);
             newZone.Tooltip = GameText.TzNewZoneTip;
 
-            ResetList();
+            FillList();
         }
 
         public string ColonyNames(TradeZone zone)
@@ -238,15 +249,25 @@ namespace Ship_Game
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
         }
 
-        public void ResetList()
+        bool NeedsRebuild;
+
+        // asked for from a button's own click handler, so the rebuild waits for the next update:
+        // tearing the tree down while an item is still handling its press is how a click ends in
+        // a null reference.
+        public void ResetList() => NeedsRebuild = true;
+
+        public override void Update(float fixedDeltaTime)
         {
-            if (Client.W > 0) // not during construction: the frame does not exist yet
+            if (NeedsRebuild)
             {
-                MeasureColumns();
-                Table.Layout(Client, Client.Y + 10, Client.Bottom - 5 - ActionsLineH);
-                // the rows read their cell rects from the columns, so re-measuring is enough:
-                // the list keeps the geometry it was built with.
+                NeedsRebuild = false;
+                Build();
             }
+            base.Update(fixedDeltaTime);
+        }
+
+        void FillList()
+        {
             if (LastSortCol < 0)
             {
                 ZonesSL.Reset();

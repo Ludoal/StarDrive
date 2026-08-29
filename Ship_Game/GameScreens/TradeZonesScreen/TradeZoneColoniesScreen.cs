@@ -81,7 +81,7 @@ namespace Ship_Game
             // the measure, so the rail reads Auto at its left stop.
             var setBox = Add(new Submenu(new RectF(x, setY, w, SettingsSecH), GameText.TzSettings));
             RectF setArea = setBox.ClientArea;
-            Add(new UILabel(new Vector2(setArea.X + 10, setArea.Y + 6), GameText.TzAssigned,
+            Add(new UILabel(new Vector2(setArea.X + 10, setArea.Y + 6), GameText.TzAssignedFreighters,
                             Fonts.Arial12Bold, Colors.Cream)).Tooltip = GameText.TzAssignedTip;
             var rail = Add(new FloatSlider(SliderStyle.Decimal, new Vector2(setArea.W - 40, 28),
                                            "", 0, 20, Quota)

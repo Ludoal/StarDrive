@@ -7151,6 +7151,8 @@ namespace Ship_Game
         TzSettings = 7219,
         /// <summary>A zone already carries this name.</summary>
         TzNameTaken = 7220,
+        /// <summary>Assigned Freighters</summary>
+        TzAssignedFreighters = 7221,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>
