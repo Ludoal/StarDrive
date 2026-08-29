@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework.Graphics;
+using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using SDGraphics.Input;
 using SDUtils;
@@ -16,11 +17,16 @@ namespace Ship_Game
         readonly TradeZone Zone; // null while creating
         readonly Array<Planet> Chosen = new();
         int Quota; // held locally: while creating, there is no zone yet to write it on
+        UITextEntry NameEntry;
+        UILabel NameTakenLabel;
+        // the dialog's three sections own their heights; the colony list takes what is left,
+        // which is the ONE thing that should stretch when the window does
+        const float SecGap = 8f, NameSecH = 62f, SettingsSecH = 84f, ApplyLineH = 40f;
         ScrollList<ColonyPickItem> ColoniesSL;
         UIButton ApplyButton;
 
         public TradeZoneColoniesScreen(TradeZonesScreen screen, TradeZone zone)
-            : base(screen, 520, 560)
+            : base(screen, 520, 640)
         {
             Screen = screen;
             Zone = zone;
@@ -43,19 +49,41 @@ namespace Ship_Game
             base.LoadContent();
 
             Rectangle inner = PopupFrame.ContentArea(Rect);
-            // the list stops short of the lever and the button: both lines are reserved from
-            // the frame, never taken out of what happens to be left
+            // three sections, each a one-tab frame - the same furniture the Policies page uses.
+            // Their heights are constants and the list is sized FROM them, never the reverse.
+            float x = inner.X + 12, w = inner.Width - 24;
+            float listH = inner.Height - NameSecH - SettingsSecH - ApplyLineH - 4 * SecGap;
+            float nameY = inner.Y + SecGap;
+            float listY = nameY + NameSecH + SecGap;
+            float setY  = listY + listH + SecGap;
+
+            var nameBox = Add(new Submenu(new RectF(x, nameY, w, NameSecH), GameText.TzName));
+            RectF nameArea = nameBox.ClientArea;
+            NameEntry = Add(new UITextEntry(nameArea.X + 10, nameArea.Y + 6, nameArea.W - 20,
+                                            Fonts.Arial12Bold, Zone?.Name ?? ""));
+            NameEntry.AutoCaptureOnHover = true;
+            NameEntry.AutoCaptureOnKeys = true;
+            NameEntry.MaxCharacters = 40;
+            NameEntry.OnTextChanged = OnNameChanged;
+            NameTakenLabel = Add(new UILabel(new Vector2(nameArea.X + 10, nameArea.Y + 28),
+                                             GameText.TzNameTaken, Fonts.Arial12, Color.Red));
+            NameTakenLabel.Visible = false;
+
+            var colBox = Add(new Submenu(new RectF(x, listY, w, listH), GameText.TzNumColonies));
+            RectF colArea = colBox.ClientArea;
             ColoniesSL = Add(new ScrollList<ColonyPickItem>(
-                new RectF(inner.X + 20, inner.Y + 20, inner.Width - 40, inner.Height - 150), 28));
+                new RectF(colArea.X + 8, colArea.Y + 6, colArea.W - 16, colArea.H - 12), 28));
 
             foreach (Planet p in Screen.Player.GetPlanets().Sorted(true, p => p.Name))
                 ColoniesSL.AddItem(new ColonyPickItem(this, p));
 
-            // the zone's own lever, under the colonies it serves. Nought is not a quantity here:
-            // it hands the number back to the measure, so the rail reads Auto at its left stop.
-            Add(new UILabel(new Vector2(inner.X + 20, inner.Bottom - 104), GameText.TzAssigned,
+            // the zone's own lever. Nought is not a quantity here: it hands the number back to
+            // the measure, so the rail reads Auto at its left stop.
+            var setBox = Add(new Submenu(new RectF(x, setY, w, SettingsSecH), GameText.TzSettings));
+            RectF setArea = setBox.ClientArea;
+            Add(new UILabel(new Vector2(setArea.X + 10, setArea.Y + 6), GameText.TzAssigned,
                             Fonts.Arial12Bold, Colors.Cream)).Tooltip = GameText.TzAssignedTip;
-            var rail = Add(new FloatSlider(SliderStyle.Decimal, new Vector2(inner.Width - 80, 28),
+            var rail = Add(new FloatSlider(SliderStyle.Decimal, new Vector2(setArea.W - 40, 28),
                                            "", 0, 20, Quota)
             {
                 Step = 1,
@@ -63,10 +91,10 @@ namespace Ship_Game
                 TrackYOffset = -5,
                 ZeroString = GameText.PolFreighterRefitAuto,
             });
-            rail.Pos = new Vector2(inner.X + 20, inner.Bottom - 82);
+            rail.Pos = new Vector2(setArea.X + 10, setArea.Y + 28);
             rail.OnChange = s => Quota = (int)s.AbsoluteValue;
 
-            ApplyButton = ButtonMedium(inner.X + 20, inner.Bottom - 40, GameText.TzApply, OnApplyClicked);
+            ApplyButton = ButtonMedium(x, inner.Bottom - ApplyLineH, GameText.TzApply, OnApplyClicked);
             ApplyButton.Text = Localizer.Token(GameText.TzApply);
         }
 
@@ -78,11 +106,25 @@ namespace Ship_Game
             else    Chosen.Remove(p);
         }
 
+        // a name already worn by another zone is refused while it is typed, not silently
+        // corrected at Apply: the player keeps the last word on their own text.
+        void OnNameChanged(string newName)
+        {
+            bool taken = false;
+            foreach (TradeZone z in Screen.Player.TradeZones)
+                if (z != Zone && z.Name == newName)
+                    taken = true;
+
+            NameTakenLabel.Visible = taken;
+            if (ApplyButton != null) // the handler is wired before the button exists
+                ApplyButton.Enabled = !taken;
+        }
+
         void OnApplyClicked(UIButton b)
         {
             // an empty pick on an existing zone dissolves it: a zone with no colony would read as
             // "everywhere" downstream, so it is never a state we keep
-            Screen.ApplyColonies(Zone, Chosen, Quota);
+            Screen.ApplyColonies(Zone, Chosen, Quota, NameEntry.Text);
             GameAudio.AcceptClick();
             ExitScreen();
         }

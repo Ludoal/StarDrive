@@ -28826,6 +28826,18 @@ TzActiveTip:
  Id: 7217
  ENG: "Freighters currently on their way to a colony of this zone."
  FRA: "Cargos actuellement en route vers une colonie de cette zone."
+TzName:
+ Id: 7218
+ ENG: "Name"
+ FRA: "Nom"
+TzSettings:
+ Id: 7219
+ ENG: "Settings"
+ FRA: "Réglages"
+TzNameTaken:
+ Id: 7220
+ ENG: "A zone already carries this name."
+ FRA: "Une zone porte déjà ce nom."
 MandateByBlueprint:
  Id: 7181
  ENG: "By Blueprint"

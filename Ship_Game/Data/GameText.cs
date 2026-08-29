@@ -7145,6 +7145,12 @@ namespace Ship_Game
         TzActive = 7216,
         /// <summary>Freighters on their way to this zone.</summary>
         TzActiveTip = 7217,
+        /// <summary>Name</summary>
+        TzName = 7218,
+        /// <summary>Settings</summary>
+        TzSettings = 7219,
+        /// <summary>A zone already carries this name.</summary>
+        TzNameTaken = 7220,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>
