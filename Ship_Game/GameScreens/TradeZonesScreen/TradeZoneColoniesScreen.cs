@@ -42,7 +42,7 @@ namespace Ship_Game
 
             Rectangle inner = PopupFrame.ContentArea(Rect);
             ColoniesSL = Add(new ScrollList<ColonyPickItem>(
-                new Rectangle(inner.X + 20, inner.Y + 20, inner.Width - 40, inner.Height - 90), 28));
+                new RectF(inner.X + 20, inner.Y + 20, inner.Width - 40, inner.Height - 90), 28));
 
             foreach (Planet p in Screen.Player.GetPlanets().Sorted(true, p => p.Name))
                 ColoniesSL.AddItem(new ColonyPickItem(this, p));
