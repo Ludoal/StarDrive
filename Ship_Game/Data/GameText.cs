@@ -7117,8 +7117,8 @@ namespace Ship_Game
         TzNewZone = 7202,
         /// <summary>Create a trade zone by choosing the colonies it serves</summary>
         TzNewZoneTip = 7203,
-        /// <summary>Edit Colonies</summary>
-        TzEditColonies = 7204,
+        /// <summary>Edit Zone</summary>
+        TzEditZone = 7204,
         /// <summary>Choose which colonies this zone serves</summary>
         TzEditColoniesTip = 7205,
         /// <summary>Delete this trade zone</summary>

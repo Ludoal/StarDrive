@@ -28770,10 +28770,10 @@ TzNewZoneTip:
  Id: 7203
  ENG: "Create a trade zone by choosing the colonies it serves. Its freighters carry goods between those colonies."
  FRA: "Creer une zone commerciale en choisissant les colonies qu'elle dessert. Ses cargos transportent les marchandises entre ces colonies."
-TzEditColonies:
+TzEditZone:
  Id: 7204
- ENG: "Edit Colonies"
- FRA: "Modifier les colonies"
+ ENG: "Edit Zone"
+ FRA: "Modifier la zone"
 TzEditColoniesTip:
  Id: 7205
  ENG: "Choose which colonies this zone serves."

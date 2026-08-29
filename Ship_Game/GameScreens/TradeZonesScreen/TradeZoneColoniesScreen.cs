@@ -37,7 +37,7 @@ namespace Ship_Game
 
         public override void LoadContent()
         {
-            TitleText = Localizer.Token(Zone == null ? GameText.TzNewZone : GameText.TzEditColonies);
+            TitleText = Localizer.Token(Zone == null ? GameText.TzNewZone : GameText.TzEditZone);
             base.LoadContent();
 
             Rectangle inner = PopupFrame.ContentArea(Rect);

@@ -155,6 +155,9 @@ namespace Ship_Game
         void DispatchBuildAndScrapFreighters()
         {
             UpdateTradeTreaties();
+            // a colony that stops being ours leaves the zones that named it, and a zone left
+            // without one is dissolved - the housekeeping has to RUN, not merely exist
+            RefreshTradeZones();
             TradeState tradeState = new(this, false);
             // Trade First lifts the foreign runs above production and colonists - once in the
             // turn, and never above food, which stays the first call below.
