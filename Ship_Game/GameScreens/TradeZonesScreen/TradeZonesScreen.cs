@@ -101,6 +101,14 @@ namespace Ship_Game
             ScreenManager.AddScreen(new TradeZoneColoniesScreen(this, null));
         }
 
+        // centring the map on a colony without leaving the page: the same single-click pan the
+        // patrol list uses, at the zoom the player already chose.
+        public void PanTo(Planet colony)
+        {
+            GameAudio.AcceptClick();
+            Universe.PanToKeepZoom(colony.Position);
+        }
+
         public void EditColonies(TradeZone zone)
         {
             GameAudio.AcceptClick();

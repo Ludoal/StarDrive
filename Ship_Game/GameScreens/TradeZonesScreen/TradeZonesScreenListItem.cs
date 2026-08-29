@@ -38,12 +38,10 @@ namespace Ship_Game
             Cell(cols[0], Zone.Name, color);
             Cell(cols[1], Zone.NumColonies.ToString(), color);
 
-            // foldable: cut to the column, the tooltip carries the full list
-            string joined = Screen.ColonyNames(Zone);
-            string shown = UITable.FitText(Fonts.Arial12Bold, joined, cols[2].Rect.Width - 2 * UITable.PadX);
-            var served = Cell(cols[2], shown, color);
-            if (shown != joined)
-                served.Tooltip = joined;
+            // one label PER colony rather than one joined string: each name is a target the
+            // player can click to centre the map on it, the way every other name in the game
+            // behaves. What does not fit is elided, and the ellipsis carries the whole list.
+            LayOutColonyNames(cols[2].Rect, color);
 
             // a quota of nought is not a quantity: the zone's need is measured instead of ordered
             Cell(cols[3], Zone.Quota <= 0 ? Localizer.Token(GameText.PolFreighterRefitAuto)
@@ -73,6 +71,39 @@ namespace Ship_Game
             base.PerformLayout();
         }
 
+        // the clickable name lanes, rebuilt with the row
+        readonly Array<(Rectangle Rect, Planet Colony)> NameHits = new();
+
+        void LayOutColonyNames(Rectangle cell, Color color)
+        {
+            NameHits.Clear();
+            Graphics.Font font = Fonts.Arial12Bold;
+            int x = cell.X + UITable.PadX;
+            int right = cell.X + cell.Width - UITable.PadX;
+            int y = (int)(Y + Height / 2 - font.LineSpacing / 2f);
+            string all = Screen.ColonyNames(Zone);
+
+            for (int i = 0; i < Zone.Colonies.Count; ++i)
+            {
+                Planet colony = Screen.UState.GetPlanet(Zone.Colonies[i]);
+                if (colony == null)
+                    continue;
+
+                string text = i == 0 ? colony.Name : ", " + colony.Name;
+                int w = (int)font.TextWidth(text);
+                if (x + w > right) // no room left: say so once and stop
+                {
+                    Label(new Vector2(x, y), "...", font, color).Tooltip = all;
+                    return;
+                }
+
+                UILabel label = Label(new Vector2(x, y), text, font, color);
+                label.Tooltip = GameText.TzPanToColonyTip;
+                NameHits.Add((new Rectangle(x, y, w, font.LineSpacing), colony));
+                x += w;
+            }
+        }
+
         UILabel Cell(UITable.Column c, string text, Color color)
         {
             return Label(UITable.CellPos(Fonts.Arial12Bold, c.Rect, Y, Height, text, c.Align),
@@ -90,6 +121,17 @@ namespace Ship_Game
         {
             if (EditColonies.HandleInput(input))
                 return true;
+            if (input.LeftMouseClick)
+            {
+                foreach ((Rectangle rect, Planet colony) in NameHits)
+                {
+                    if (rect.HitTest(input.CursorPosition))
+                    {
+                        Screen.PanTo(colony);
+                        return true;
+                    }
+                }
+            }
             if (DeleteZone.HandleInput(input))
                 return true;
             return base.HandleInput(input);

@@ -28805,7 +28805,11 @@ DvGalaxyTabTipTrade:
 TzAssignedTip:
  Id: 7212
  ENG: "How many freighters serve this zone. At Auto the number is measured from what the zone's colonies actually ask for."
- FRA: "Nombre de cargos qui desservent cette zone. Sur Auto, le nombre est mesure a partir de ce que les colonies de la zone demandent reellement."
+ FRA: "Nombre de cargos qui desservent cette zone. Sur Auto, le nombre est mesuré à partir de ce que les colonies de la zone demandent réellement."
+TzPanToColonyTip:
+ Id: 7213
+ ENG: "Centre the map on this colony."
+ FRA: "Centrer la carte sur cette colonie."
 MandateByBlueprint:
  Id: 7181
  ENG: "By Blueprint"

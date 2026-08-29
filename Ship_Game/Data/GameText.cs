@@ -7135,6 +7135,8 @@ namespace Ship_Game
         DvGalaxyTabTipTrade = 7211,
         /// <summary>How many freighters serve this zone.</summary>
         TzAssignedTip = 7212,
+        /// <summary>Centre the map on this colony.</summary>
+        TzPanToColonyTip = 7213,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>
