@@ -20,9 +20,9 @@ namespace Ship_Game
     // Categories: ECONOMY, RESEARCH, COLONY, TRADE, CONSTRUCTION. Each wears its own one-tab
     // frame and they are ALL visible at once - the same façade as Automation, on purpose.
     //
-    // No mute control: every order carries a notice saying what it governs. This is the page
-    // where the player must understand what they are ordering, so the doctrine is on screen
-    // rather than hidden behind a hover.
+    // No mute control: every frame says what it governs, in the tooltip of its own tab. The
+    // sentence is there for the first visit and out of the way afterwards, which is how a
+    // standing-orders page is read - once to learn it, then to change one line.
     public sealed class PoliciesScreen : GameScreen
     {
         readonly UniverseScreen Universe;
@@ -38,23 +38,23 @@ namespace Ship_Game
         UIPanel PriorityHost;
 
         // fixed box geometry - the boxes own their sizes, the columns just stack them.
-        // Heights: one-tab strip (~24) + 12 top pad + 20 notice + 26 per row + 12 bottom pad.
+        // Heights: one-tab strip (~24) + 12 top pad + 26 per row + 12 bottom pad. The notice
+        // line each frame used to carry now lives in its tab's tooltip, hence 20px less.
         const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
         // Colony carries the two mandates AND the default-plan table: a heading plus one row per
         // governor type that can hold a plan. Written as a count times a row height, so adding a
         // governor type later moves the box by itself instead of needing a new magic number.
         const float PolicyRowH = 26f;
         const float BlueprintRows = 6f;                       // heading + 5 governor types
-        const float ColonyBoxH = 190f + BlueprintRows * PolicyRowH;
-        // Trade carries the priority picker, the three quantity numbers and the game rule:
-        // 146 as before plus three rows of PolicyRowH.
-        const float EconomyBoxH = 94f, ResearchBoxH = 94f, TradeBoxH = 146f + 3f * PolicyRowH;
+        const float ColonyBoxH = 170f + BlueprintRows * PolicyRowH;
+        // Trade carries the priority picker, the three quantity numbers and the game rule.
+        const float EconomyBoxH = 74f, ResearchBoxH = 74f, TradeBoxH = 126f + 3f * PolicyRowH;
 
-        // The Prioritization rows live INSIDE the Construction frame, under its notice and its
-        // Rush row. Both numbers are CONSTANTS and the frame is sized FROM them - never the
+        // The Prioritization rows live INSIDE the Construction frame, under its Rush row.
+        // Both numbers are CONSTANTS and the frame is sized FROM them - never the
         // reverse: a host placed at a share of the space left moves every time a row is added
         // above it.
-        const float PrioTopInset = 144f, PrioRowsH = 300f; // heading + Continuous Rush + the new-colony toggle
+        const float PrioTopInset = 124f, PrioRowsH = 300f; // heading + Continuous Rush + the new-colony toggle
         // and below the rows, a heading of its own plus the button it names
         const float ManualRowH = 26f, ManualButtonH = 26f;
         const float ConstructionBoxH = PrioTopInset + PrioRowsH + ManualRowH + ManualButtonH + 18f;
@@ -86,8 +86,7 @@ namespace Ship_Game
             // below its own row, and add order is draw order - the spill must land on top
             // of the neighbour, not under it.
 
-            UIList colony = NewBox(new RectF(x0, top + EconomyBoxH + BoxGap + ResearchBoxH + BoxGap, BoxW, ColonyBoxH), "Colony");
-            Notice(colony, GameText.PolColonyNotice);
+            UIList colony = NewBox(new RectF(x0, top + EconomyBoxH + BoxGap + ResearchBoxH + BoxGap, BoxW, ColonyBoxH), "Colony", GameText.PolColonyNotice);
             // ⚠ "Auto Governor" decides whether a new colony gets an ASSESSED governor -
             // see Planet_Colonize.SetupColonyType.
             colony.AddCheckbox(() => player.AutoCoreGovernor, title: "Auto Governor", tooltip: GameText.AutoGovernorTip);
@@ -122,16 +121,13 @@ namespace Ship_Game
             }
             colony.ReverseZOrder(); // an open list draws over the rows beneath it
 
-            UIList research = NewBox(new RectF(x0, top + EconomyBoxH + BoxGap, BoxW, ResearchBoxH), "Research");
-            Notice(research, GameText.PolResearchNotice);
+            UIList research = NewBox(new RectF(x0, top + EconomyBoxH + BoxGap, BoxW, ResearchBoxH), "Research", GameText.PolResearchNotice);
             research.AddCheckbox(() => player.AutoResearch, title: GameText.AutoResearch, tooltip: GameText.YourEmpireWillAutomaticallySelect);
 
-            UIList economy = NewBox(new RectF(x0, top, BoxW, EconomyBoxH), "Economy");
-            Notice(economy, GameText.PolEconomyNotice);
+            UIList economy = NewBox(new RectF(x0, top, BoxW, EconomyBoxH), "Economy", GameText.PolEconomyNotice);
             economy.AddCheckbox(() => player.AutoTaxes, title: GameText.AutoTaxes, tooltip: GameText.YourEmpireWillAutomaticallyManage3);
 
-            UIList trade = NewBox(new RectF(x1, top, BoxW2, TradeBoxH), "Trade");
-            Notice(trade, GameText.PolTradeNotice);
+            UIList trade = NewBox(new RectF(x1, top, BoxW2, TradeBoxH), "Trade", GameText.PolTradeNotice);
             FreighterPriorityDropDown = trade.Add(new LabeledDropdown<CargoPriority>())
                 // ⚠ two texts, one condition: a cybernetic empire trades no food at all, so the
                 // food guarantee is not false for it - it is empty. Omitted rather than qualified,
@@ -166,8 +162,7 @@ namespace Ship_Game
                               title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.PolInterTradeGameRuleTip);
             trade.ReverseZOrder(); // an open list draws over the rows beneath it
 
-            UIList construction = NewBox(new RectF(x2, top, BoxW3, ConstructionBoxH), "Construction", out Submenu constructionBox);
-            Notice(construction, GameText.PolConstructionNotice);
+            UIList construction = NewBox(new RectF(x2, top, BoxW3, ConstructionBoxH), "Construction", GameText.PolConstructionNotice, out Submenu constructionBox);
             // ⚠ NOT a plain checkbox: its setter marshals onto the SIMULATION thread. Copying it
             // as a bare boolean would look right and propagate nothing.
             // (maintainer, bench 528) the two things this frame does, each said out loud: what it
@@ -299,9 +294,6 @@ namespace Ship_Game
             Universe.RunOnSimThread(() => player.SetBlueprintPolicy(type, name));
         }
 
-        // the one-line doctrine that heads a category - what this box governs, in the clear
-        void Notice(UIList box, LocalizedText text) => box.Add(new UILabel(text, Fonts.Arial12, Colors.Cream));
-
         // the categories the queue insertion knows, in display order (keys match SBProduction)
         static readonly (string Key, string Label)[] PriorityCategories =
         {
@@ -415,11 +407,14 @@ namespace Ship_Game
         }
 
         // one category box: a one-tab frame bearing the category's name, with its rows inside
-        UIList NewBox(in RectF r, LocalizedText title) => NewBox(r, title, out _);
+        UIList NewBox(in RectF r, LocalizedText title, LocalizedText tooltip) => NewBox(r, title, tooltip, out _);
 
-        UIList NewBox(in RectF r, LocalizedText title, out Submenu box)
+        UIList NewBox(in RectF r, LocalizedText title, LocalizedText tooltip, out Submenu box)
         {
             box = Add(new Submenu(r, new[] { title }));
+            // what the frame governs, carried by the tab itself: these boxes wear a single
+            // tab, so the tab IS the frame's title and the only part of it left to hover.
+            box.Tabs[0].Tooltip = tooltip;
             box.PerformLayout();
             UIList list = AddList(new Vector2(box.ClientArea.X + 12, box.ClientArea.Y + 12));
             list.Padding = new Vector2(2f, 10f);

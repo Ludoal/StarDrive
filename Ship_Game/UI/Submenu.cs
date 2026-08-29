@@ -26,6 +26,10 @@ public class Submenu : UIPanel
         public RectF Rect;
         public bool Selected;
         public bool Hover;
+        // Ludoal fork (maintainer feedback): a tab may explain what its page governs on
+        // hover. Left empty a tab behaves exactly as before - nothing is drawn and nothing
+        // is queried, so every existing submenu in the game is untouched.
+        public LocalizedText Tooltip;
 
         internal bool RowStart; // this tab is the first in this row
         internal bool RowEnd; // this tab is the last in this row
@@ -317,6 +321,9 @@ public class Submenu : UIPanel
         {
             Tab tab = Tabs[i];
             tab.Hover = tab.Rect.HitTest(mousePos);
+            if (tab.Hover && tab.Tooltip.NotEmpty)
+                ToolTip.CreateTooltip(tab.Tooltip);
+
             if (tab.Hover && input.LeftMouseClick)
             {
                 GameAudio.AcceptClick();
