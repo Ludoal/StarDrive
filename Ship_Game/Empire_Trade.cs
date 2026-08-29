@@ -37,11 +37,11 @@ namespace Ship_Game
         [StarData] public bool FreighterAutomationSplit;
         // Ludoal fork (maintainer feedback): the three quantity levers. All are ints so an
         // old save that lacks them reads 0, which every reader below treats as vanilla conduct.
-        // The reserve is counted in FREE freighters - the same unit the build gate and the
-        // scrap floor work in, so the two cannot pull against each other.
-        [StarData] public int FreighterReserve;   // 0 = build only when the pool runs dry
-        [StarData] public int MaxFreighterRefits; // 0 = no ceiling on simultaneous refits
-        [StarData] public int FreighterIdleTurns; // 0 = the vanilla 20 idle turns before scrapping
+        // The first two are SHARES of the freighter fleet, so they hold as the empire grows
+        // instead of needing a new number after every expansion.
+        [StarData] public int FreighterReservePct;   // 0 = build only when the pool runs dry
+        [StarData] public int MaxFreighterRefitsPct; // 0 = refits run on the game's own formula
+        [StarData] public int FreighterIdleTurns;    // 0 = the vanilla 20 idle turns before scrapping
         // Stored as an int, not as the enum: CargoPriority does not exist in vanilla, and a
         // build without the deleted-enum skip cannot read past a type it has never heard of.
         // An int is a fundamental type every build reads, so the save stays loadable downstream.
@@ -79,6 +79,14 @@ namespace Ship_Game
         public int FreightersBeingBuilt  => AI.CountGoals(goal => goal is IncreaseFreighters);
         public int MaxFreightersInQueue  => (int)Math.Ceiling((OwnedPlanets.Count / 5f)).Clamped(2, 5);
         public int TotalFreighters       => OwnedShips.Count(s => s?.IsFreighter == true);
+        // A share of the fleet, rounded UP: a tenth of five freighters would otherwise round to
+        // nothing exactly where the reserve matters most. Zero stays zero.
+        static int ShareOfFleet(int fleet, int percent) => percent <= 0 ? 0 : (fleet * percent + 99) / 100;
+        // Counted in FREE freighters - the same unit the build gate and the scrap floor work in,
+        // so the two cannot pull against each other. The share is of the WHOLE fleet, runs
+        // included: taking it off the free ones only would chase its own tail.
+        public int FreighterReserve => ShareOfFleet(TotalFreighters, FreighterReservePct);
+        public int MaxFreighterRefits => ShareOfFleet(TotalFreighters, MaxFreighterRefitsPct);
         // A freighter under refit is neither lost nor free: IsIdleFreighter excludes AIState.Refit,
         // so without this term a refit would empty the reserve and the build gate would replace it.
         // RefitShip is also the warship refit goal and the player's manual refit - only ours counts.
@@ -86,8 +94,8 @@ namespace Ship_Game
         public int IdleTurnsBeforeScrap => FreighterIdleTurns > 0 ? FreighterIdleTurns : 20;
         // No ceiling set: freighter refits run on the game's own formula - the fleet-fill
         // thresholds and the original dice. That position is the comparison baseline, which
-        // is why it reads "Automatic" rather than zero.
-        public bool RefitAuto => MaxFreighterRefits <= 0;
+        // is why it reads "Auto" rather than zero.
+        public bool RefitAuto => MaxFreighterRefitsPct <= 0;
         public int FreighterRefitDice => RefitAuto ? 10 : 20;
         public int AverageTradeIncome    => AllTimeTradeIncome / TurnCount;
         // ManualTrade now governs only the ROUTING side (per-cargo restrictions / trade routes):

@@ -31,6 +31,9 @@ namespace Ship_Game
 
         // If Step != 0, then AbsoluteValue can only change in increments of this value
         public float Step = 0;
+        // Ludoal fork: printed right after the value, for a rail whose number carries a unit.
+        // Kept out of the zero test below, so a ZeroString still speaks for the left stop.
+        public string ValueSuffix = "";
         // Ludoal fork: an inline row draws its own value label - silence the built-in one
         public bool DrawValueText = true;
 
@@ -198,6 +201,9 @@ namespace Ship_Game
                     case SliderStyle.Percent:  value = (AbsoluteValue * 100f).ToString("00") + "%"; break;
                     default:                   value = RelativeValue.String(2); break;
                 }
+
+                if (ValueSuffix.NotEmpty())
+                    value += ValueSuffix;
 
                 if (ZeroString.IsValid && AbsoluteValue < 1)
                     value = ZeroString.Text;

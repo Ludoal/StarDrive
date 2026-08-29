@@ -153,14 +153,16 @@ namespace Ship_Game
             // checkboxes stay the RIGHT to build, upgrade and scrap; these three say HOW,
             // which is what puts them on this page. Every one of them is neutral at its
             // default, so a page never touched changes nothing.
+            // shares of the freighter fleet rather than counts: a number set once holds as the
+            // empire grows. The rail prints its own unit.
             SliderRow(trade, GameText.PolFreighterReserve, GameText.PolFreighterReserveTip,
-                      0, 20, player.FreighterReserve, default,
-                      v => player.FreighterReserve = v);
+                      0, 100, player.FreighterReservePct, default,
+                      v => player.FreighterReservePct = v, "%");
             // the rail's left stop is not a quantity: it hands the refits back to the game's
-            // own formula, so it reads Automatic rather than nought.
+            // own formula, so it reads Auto rather than nought.
             SliderRow(trade, GameText.PolFreighterRefitCap, GameText.PolFreighterRefitCapTip,
-                      0, 20, player.MaxFreighterRefits, GameText.PolFreighterRefitAuto,
-                      v => player.MaxFreighterRefits = v);
+                      0, 100, player.MaxFreighterRefitsPct, GameText.PolFreighterRefitAuto,
+                      v => player.MaxFreighterRefitsPct = v, "%");
             // reads through the property, so a save that never stored the field shows the 20
             // the game has always used instead of a bare zero.
             SliderRow(trade, GameText.PolFreighterIdleTurns, GameText.PolFreighterIdleTurnsTip,
@@ -226,7 +228,7 @@ namespace Ship_Game
         // a label inside would crowd it. zeroText names what the left stop MEANS when nought
         // is not a quantity; left empty the rail simply shows the number.
         void SliderRow(UIList box, GameText title, GameText tooltip, float min, float max,
-                       int current, LocalizedText zeroText, Action<int> onChange)
+                       int current, LocalizedText zeroText, Action<int> onChange, string suffix = "")
         {
             box.Add(new UILabel(title, Fonts.Arial12Bold, Colors.Cream)).Tooltip = tooltip;
             var rail = box.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(SliderRailW, 28),
@@ -236,6 +238,7 @@ namespace Ship_Game
                 Tip = tooltip,
                 TrackYOffset = -5, // tuck the rail up under its own title
                 ZeroString = zeroText,
+                ValueSuffix = suffix,
             });
             rail.OnChange = s => onChange((int)s.AbsoluteValue);
         }

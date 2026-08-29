@@ -28720,16 +28720,16 @@ PolFreighterReserve:
  FRA: "Reserve de cargos"
 PolFreighterReserveTip:
  Id: 7191
- ENG: "Keeps this many freighters free at all times. The empire builds up to the reserve and never scraps into it, so a quiet spell no longer costs the whole trade fleet. Freighters returning from a refit count as present. At zero, ships are built only when none are left, as before."
- FRA: "Maintient ce nombre de cargos libres en permanence. L'empire construit jusqu'a la reserve et ne la ferraille jamais, si bien qu'une accalmie ne coute plus la flotte marchande. Les cargos revenant de refit comptent comme presents. A zero, on ne construit qu'une fois a sec, comme avant."
+ ENG: "Keeps a share of the freighter fleet free at all times, as a percentage of all your freighters. The empire builds up to the reserve and never scraps into it. Any setting above zero always keeps at least one ship. Freighters returning from a refit count as present. At zero, ships are built only when none are left, as before."
+ FRA: "Garde en permanence une part de la flotte de cargos libre, en pourcentage de tous vos cargos. L'empire construit jusqu'a la reserve et ne la ferraille jamais. Tout reglage au-dessus de zero garde au moins un cargo. Les cargos revenant de refit comptent comme presents. A zero, on ne construit qu'une fois a sec, comme avant."
 PolFreighterRefitCap:
  Id: 7192
  ENG: "Simultaneous Refits"
  FRA: "Refits simultanes"
 PolFreighterRefitCapTip:
  Id: 7193
- ENG: "Caps how many freighters can be modernised at once. A refitting freighter carries nothing; without a cap, the whole trade fleet can end up in the yards at the same time. Warship refits and manual refits are not counted."
- FRA: "Limite le nombre de cargos modernises en meme temps. Un cargo en refit ne transporte rien : sans plafond, toute la flotte marchande peut se retrouver au chantier d'un coup. Les refits militaires et manuels ne sont pas comptes."
+ ENG: "Caps refits to a share of the freighter fleet. A refitting freighter carries nothing; without a cap, the whole trade fleet can end up in the yards at once. Any setting above zero allows at least one refit. At Auto, the game's own formula applies. Warship refits and manual refits are not counted."
+ FRA: "Limite les refits a une part de la flotte de cargos. Un cargo en refit ne transporte rien : sans plafond, toute la flotte marchande peut se retrouver au chantier d'un coup. Tout reglage au-dessus de zero permet au moins un refit. Sur Auto, la formule du jeu s'applique. Les refits militaires et manuels ne sont pas comptes."
 PolFreighterIdleTurns:
  Id: 7194
  ENG: "Idle Turns before Scrapping"
