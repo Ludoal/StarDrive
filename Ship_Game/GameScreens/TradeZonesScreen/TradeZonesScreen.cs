@@ -31,6 +31,7 @@ namespace Ship_Game
 
         static int LastSortCol = -1;   // session-persistent, like the other Galaxy tables
         static bool LastSortAsc = true;
+        RectF Client; // the tab frame's content area, kept so the table can be laid out again
 
         // the New button sits under the table: a page that lists things must be able to make one
         const float ActionsLineH = 34f;
@@ -53,20 +54,7 @@ namespace Ship_Game
                 new UITable.Column { Title = "", Width = 60, Align = TableAlign.Center },
             });
 
-            var names = new Array<string>(); var counts = new Array<string>();
-            var served = new Array<string>(); var quotas = new Array<string>();
-            foreach (TradeZone z in player.TradeZones)
-            {
-                names.Add(z.Name);
-                counts.Add(z.NumColonies.ToString());
-                served.Add(ColonyNames(z));
-                quotas.Add(z.Quota <= 0 ? Localizer.Token(GameText.PolFreighterRefitAuto) : z.Quota.ToString());
-            }
-            UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, names);
-            UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, counts);
-            UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, served);
-            UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, quotas);
-            Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
+            MeasureColumns();
 
             if (LastSortCol < 0) { LastSortCol = 0; LastSortAsc = true; }
             Table.Columns[LastSortCol].Sorted = true;
@@ -76,17 +64,17 @@ namespace Ship_Game
             float contentH = UITable.ContentHeightFor(99, Math.Max(3, player.TradeZones.Count), 38, fullAvail) + ActionsLineH;
             GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Galaxy, Universe), 2,
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
-            RectF client = GalaxyTabs.ClientArea;
+            Client = GalaxyTabs.ClientArea;
             Table.RowPitch = 38;
             // the table stops one line short: that line belongs to the New button, and it is
             // reserved from the frame rather than taken out of what happens to be left
-            Table.Layout(client, client.Y + 10, client.Bottom - 5 - ActionsLineH);
+            Table.Layout(Client, Client.Y + 10, Client.Bottom - 5 - ActionsLineH);
 
             ZonesSL = Add(new ScrollList<TradeZonesScreenListItem>(Table.ListRect, 34));
             ZonesSL.EnableItemHighlight = true;
             Table.ApplyHighlightTo(ZonesSL);
 
-            var newZone = Button(ButtonStyle.Default, Table.TableRect.X, client.Bottom - ActionsLineH,
+            var newZone = Button(ButtonStyle.Default, Table.TableRect.X, Client.Bottom - ActionsLineH,
                                  GameText.TzNewZone, click: _ => NewZone());
             newZone.SetAbsSize((int)Fonts.Arial12Bold.TextWidth(Localizer.Token(GameText.TzNewZone)) + 34, 26);
             newZone.Tooltip = GameText.TzNewZoneTip;
@@ -204,8 +192,37 @@ namespace Ship_Game
                 ZonesSL.AddItem(new TradeZonesScreenListItem(this, zone, Player));
         }
 
+        // Ludoal fork (bench 542): unlike the other Galaxy tables, this page CREATES its own
+        // rows - so the columns, measured on an empty list at construction, have to be
+        // measured again when a zone appears. Without this the first zone lands in columns
+        // sized for nothing, and only reopening the page fixed it.
+        void MeasureColumns()
+        {
+            var names = new Array<string>(); var counts = new Array<string>();
+            var served = new Array<string>(); var quotas = new Array<string>();
+            foreach (TradeZone z in Player.TradeZones)
+            {
+                names.Add(z.Name);
+                counts.Add(z.NumColonies.ToString());
+                served.Add(ColonyNames(z));
+                quotas.Add(z.Quota <= 0 ? Localizer.Token(GameText.PolFreighterRefitAuto) : z.Quota.ToString());
+            }
+            UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, names);
+            UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, counts);
+            UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, served);
+            UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, quotas);
+            Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
+        }
+
         public void ResetList()
         {
+            if (Client.W > 0) // not during construction: the frame does not exist yet
+            {
+                MeasureColumns();
+                Table.Layout(Client, Client.Y + 10, Client.Bottom - 5 - ActionsLineH);
+                // the rows read their cell rects from the columns, so re-measuring is enough:
+                // the list keeps the geometry it was built with.
+            }
             if (LastSortCol < 0)
             {
                 ZonesSL.Reset();

@@ -97,8 +97,25 @@ namespace Ship_Game
 
             Rect = CenterScreen(Rect.Width, Rect.Height);
             if (CenterOn != null)
+            {
                 Rect = new Rectangle((int)(CenterOn.Value.X - Rect.Width / 2f),
                                      (int)(CenterOn.Value.Y - Rect.Height / 2f), Rect.Width, Rect.Height);
+                // Ludoal fork (bench 542): the centre is a wish, the display is the constraint.
+                // A short frame - an empty table, a one-row band - would push a tall dialog off
+                // the top of the screen, title bar and close cross first. The dialog slides back
+                // inside, and never rises above the frame that summoned it: a popup covering the
+                // tab row it came from has lost the page it belongs to.
+                int top = Summoner?.PageFrame.Y ?? 0;
+                if (top < 0) top = 0;
+                int maxX = ScreenWidth - Rect.Width;
+                int maxY = ScreenHeight - Rect.Height;
+                int x = Rect.X, y = Rect.Y;
+                if (x > maxX) x = maxX;
+                if (x < 0) x = 0;
+                if (y > maxY) y = maxY;
+                if (y < top) y = top; // the floor wins over the ceiling: never above the page
+                Rect = new Rectangle(x, y, Rect.Width, Rect.Height);
+            }
             Frame = new PopupFrame(Rect);
             // the title band is the frame's, but this class places text and a flag on it
             TitleRect  = Frame.TitleRect;
