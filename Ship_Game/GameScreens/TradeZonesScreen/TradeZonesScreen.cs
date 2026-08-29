@@ -26,7 +26,7 @@ namespace Ship_Game
         public UniverseState UState => Universe.UState;
         public readonly Empire Player;
 
-        readonly ScrollList<TradeZonesScreenListItem> ZonesSL;
+        ScrollList<TradeZonesScreenListItem> ZonesSL; // rebuilt with the page, so not readonly
         public readonly UITable Table;
 
         static int LastSortCol = -1;   // session-persistent, like the other Galaxy tables
