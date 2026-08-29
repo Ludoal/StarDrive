@@ -63,12 +63,20 @@ namespace Ship_Game
 
             SubTexture editTex = ResourceManager.Texture("NewUI/icon_build_edit_hover1");
             SubTexture delTex = ResourceManager.Texture("NewUI/icon_queue_delete_hover1");
+            // four slots of equal width, centred in the Actions lane: two arrows that order the
+            // zones, then the pencil and the bin. The slot is a constant; the icons centre in it.
             Rectangle actions = cols[cols.Length - 1].Rect;
-            int pairW = editTex.Width + 8 + delTex.Width;
-            int editX = actions.X + (actions.Width - pairW) / 2;
-            int delX = editX + editTex.Width + 8;
-            EditColonies.Rect = new Rectangle(editX, y + h / 2 - editTex.Height / 2, editTex.Width, editTex.Height);
-            DeleteZone.Rect = new Rectangle(delX, y + h / 2 - delTex.Height / 2, delTex.Width, delTex.Height);
+            const int Slot = 24, Slots = 4;
+            int lane = actions.X + (actions.Width - Slot * Slots) / 2;
+            int centreY = y + h / 2;
+            AddUp(new Vector2(lane + 4 - X, centreY - 8 - Y), GameText.TzMoveUpTip,
+                  () => Screen.MoveZone(Zone, up: true));
+            AddDown(new Vector2(lane + Slot + 4 - X, centreY - 8 - Y), GameText.TzMoveDownTip,
+                    () => Screen.MoveZone(Zone, up: false));
+            int editX = lane + 2 * Slot + (Slot - editTex.Width) / 2;
+            int delX = lane + 3 * Slot + (Slot - delTex.Width) / 2;
+            EditColonies.Rect = new Rectangle(editX, centreY - editTex.Height / 2, editTex.Width, editTex.Height);
+            DeleteZone.Rect = new Rectangle(delX, centreY - delTex.Height / 2, delTex.Width, delTex.Height);
 
             base.PerformLayout();
         }

@@ -36,6 +36,19 @@ namespace Ship_Game
         public bool IsEmpty => Colonies.IsEmpty;
         public int NumColonies => Colonies.Count;
 
+        // the colonies as planets, for the dispatch which works on planet lists
+        public Array<Planet> ColonyPlanets(Empire owner)
+        {
+            var planets = new Array<Planet>();
+            foreach (int id in Colonies)
+            {
+                Planet p = owner.Universe.GetPlanet(id);
+                if (p != null && p.Owner == owner)
+                    planets.Add(p);
+            }
+            return planets;
+        }
+
         // What the zone can put to work, in the game's own unit: a trade slot is a freighter
         // berth. Bounded by BOTH ends, because a zone's freighters only carry between its own
         // colonies - imports it cannot supply from inside ask for nothing.

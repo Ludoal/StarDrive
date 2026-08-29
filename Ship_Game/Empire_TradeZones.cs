@@ -22,6 +22,20 @@ namespace Ship_Game
 
         public void RemoveTradeZone(TradeZone zone) => TradeZones.Remove(zone);
 
+        // The list order IS the priority: when two zones want more freighters than the pool
+        // holds, the one placed first is served first. Moving a zone is therefore a game
+        // decision, not a display preference - which is why it lives here and not in the screen.
+        public void MoveTradeZone(TradeZone zone, bool up)
+        {
+            int i = TradeZones.IndexOf(zone);
+            int j = up ? i - 1 : i + 1;
+            if (i < 0 || j < 0 || j >= TradeZones.Count)
+                return;
+
+            TradeZones[i] = TradeZones[j];
+            TradeZones[j] = zone;
+        }
+
         string GetNewTradeZoneName(string basis)
         {
             string baseName = $"{basis} Trade";

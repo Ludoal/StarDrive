@@ -7153,6 +7153,10 @@ namespace Ship_Game
         TzNameTaken = 7220,
         /// <summary>Assigned Freighters</summary>
         TzAssignedFreighters = 7221,
+        /// <summary>Serve this zone earlier.</summary>
+        TzMoveUpTip = 7222,
+        /// <summary>Serve this zone later.</summary>
+        TzMoveDownTip = 7223,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

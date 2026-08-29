@@ -163,6 +163,7 @@ namespace Ship_Game
             // turn, and never above food, which stays the first call below.
             bool tradeFirst = isPlayer && CargoPriority == CargoPriority.TradeFirst;
             bool servedAbroad = false;
+            bool servedZones = false;
             for (int i = 1; i <= 3; i++)
             {
                 if (tradeState.NoFreeFreighters)
@@ -170,6 +171,14 @@ namespace Ship_Game
 
                 if (NonCybernetic)
                     DispatchOrBuildFreighters(Goods.Food, OwnedPlanets, false, ref tradeState);
+
+                if (!servedZones)
+                {
+                    DispatchTradeZones(ref tradeState);
+                    servedZones = true;
+                    if (tradeState.NoFreeFreighters)
+                        break;
+                }
 
                 if (tradeFirst && !servedAbroad)
                 {
@@ -218,6 +227,69 @@ namespace Ship_Game
                 DispatchInterEmpireTrade(ref tradeState);
 
             UpdateFreighterTimersAndScrap();
+        }
+
+        // Ludoal fork (maintainer feedback): the trade zones take their share before the general
+        // dispatch. A zone is a named list of colonies with a quota of freighters; it OWNS no
+        // ship, it borrows from the common pool and hands back what it did not send - so nothing
+        // here needs a member, a mask or a migration.
+        //
+        // The zones are served in LIST order, and that is the whole point: when two zones want
+        // more than the pool holds, the one the player put first is served first. An order taken
+        // from the array's own arrangement would be no order at all.
+        //
+        // Called once a turn, after food and before the domestic passes. Food is never displaced.
+        void DispatchTradeZones(ref TradeState domestic)
+        {
+            if (!isPlayer || TradeZones.IsEmpty)
+                return;
+
+            // the domestic state is the only one allowed to BUILD, so it fetches first - a
+            // cybernetic empire runs no food pass to have triggered that fetch.
+            domestic.FetchIdleFreightersOrBuild();
+            if (domestic.NoFreeFreighters)
+                return;
+
+            foreach (TradeZone zone in TradeZones)
+            {
+                // a quota of nought means the number is measured rather than ordered
+                int quota = zone.Quota > 0 ? zone.Quota : zone.RequiredFreighters(this);
+                if (quota <= 0)
+                    continue;
+
+                Array<Planet> colonies = zone.ColonyPlanets(this);
+                if (colonies.Count == 0)
+                    continue;
+
+                var lent = new Array<Ship>();
+                var kept = new Array<Ship>();
+                Ship[] pool = domestic.IdleFreighters;
+                for (int i = 0; i < pool.Length; ++i)
+                {
+                    if (i < quota) lent.Add(pool[i]);
+                    else           kept.Add(pool[i]);
+                }
+
+                if (lent.Count == 0)
+                    return; // nothing left to share out; the zones below get nothing either
+
+                TradeState zoneState = new(this, false);
+                zoneState.SetIdleFreighters(lent.ToArray());
+                if (NonCybernetic)
+                    DispatchOrBuildFreighters(Goods.Food, colonies, false, ref zoneState);
+
+                DispatchOrBuildFreighters(Goods.Production, colonies, false, ref zoneState);
+                DispatchOrBuildFreighters(Goods.Colonists, colonies, false, ref zoneState);
+
+                // what the zone did not send goes back to the common pool, with the ships it was
+                // never lent: a quota is a share of a turn, not a possession.
+                foreach (Ship unsent in zoneState.IdleFreighters)
+                    kept.Add(unsent);
+
+                domestic.SetIdleFreighters(kept.ToArray());
+                if (domestic.NoFreeFreighters)
+                    return;
+            }
         }
 
         // Export to empires we hold trade treaties with. These runs get their own state: a

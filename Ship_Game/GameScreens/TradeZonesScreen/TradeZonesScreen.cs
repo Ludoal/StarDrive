@@ -55,7 +55,8 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.TzRequired), Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.TzAssigned), Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.TzActive), Align = TableAlign.Number, Sortable = true },
-                new UITable.Column { Title = "", Width = 60, Align = TableAlign.Center },
+                // four icons now: the two arrows that order the zones, then edit and delete
+                new UITable.Column { Title = "", Width = 110, Align = TableAlign.Center },
             });
 
             Build();
@@ -71,9 +72,14 @@ namespace Ship_Game
             RemoveAll();
             MeasureColumns();
 
-            if (LastSortCol < 0) { LastSortCol = 0; LastSortAsc = true; }
-            Table.Columns[LastSortCol].Sorted = true;
-            Table.Columns[LastSortCol].Ascending = LastSortAsc;
+            // no column is sorted by default here, unlike the other tables: the LIST order is
+            // the priority the player arranged, so it is the meaningful default. Sorting a
+            // column is a way to LOOK at the zones; it drops the moment one is moved by hand.
+            if (LastSortCol >= 0)
+            {
+                Table.Columns[LastSortCol].Sorted = true;
+                Table.Columns[LastSortCol].Ascending = LastSortAsc;
+            }
 
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight);
             float contentH = UITable.ContentHeightFor(99, Math.Max(3, Player.TradeZones.Count), 38, fullAvail) + ActionsLineH;
@@ -122,6 +128,16 @@ namespace Ship_Game
         {
             GameAudio.AcceptClick();
             Universe.PanToKeepZoom(colony.Position);
+        }
+
+        // the order is the priority, so moving a zone is a game decision - it goes through
+        // the empire, and the page rebuilds to show the new order
+        public void MoveZone(TradeZone zone, bool up)
+        {
+            GameAudio.AcceptClick();
+            Player.MoveTradeZone(zone, up);
+            LastSortCol = -1; // a hand-made order outranks a sorted column
+            ResetList();
         }
 
         public void EditColonies(TradeZone zone)

@@ -28842,6 +28842,14 @@ TzAssignedFreighters:
  Id: 7221
  ENG: "Assigned Freighters"
  FRA: "Cargos affectés"
+TzMoveUpTip:
+ Id: 7222
+ ENG: "Serve this zone earlier. When freighters are short, the zones higher in the list are served first."
+ FRA: "Desservir cette zone plus tôt. Quand les cargos manquent, les zones les plus hautes dans la liste sont servies les premières."
+TzMoveDownTip:
+ Id: 7223
+ ENG: "Serve this zone later."
+ FRA: "Desservir cette zone plus tard."
 MandateByBlueprint:
  Id: 7181
  ENG: "By Blueprint"
