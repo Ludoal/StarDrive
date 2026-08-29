@@ -7137,6 +7137,14 @@ namespace Ship_Game
         TzAssignedTip = 7212,
         /// <summary>Centre the map on this colony.</summary>
         TzPanToColonyTip = 7213,
+        /// <summary>Required</summary>
+        TzRequired = 7214,
+        /// <summary>What the zone could put to work now.</summary>
+        TzRequiredTip = 7215,
+        /// <summary>Active</summary>
+        TzActive = 7216,
+        /// <summary>Freighters on their way to this zone.</summary>
+        TzActiveTip = 7217,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

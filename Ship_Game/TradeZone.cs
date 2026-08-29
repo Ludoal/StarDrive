@@ -36,6 +36,49 @@ namespace Ship_Game
         public bool IsEmpty => Colonies.IsEmpty;
         public int NumColonies => Colonies.Count;
 
+        // What the zone could put to work RIGHT NOW, in the game's own unit: a trade slot is a
+        // freighter berth. Bounded by BOTH ends, because a zone's freighters only carry between
+        // its own colonies - imports it cannot supply from inside ask for nothing.
+        //
+        // Deliberately WITHOUT a rotation term. Turning a backlog into a fleet size is the
+        // queueing law, and it needs a measured arrival rate; inventing one here would produce a
+        // plausible number that is wrong. The free slots are the game's own answer to how many
+        // freighters fit, and they already carry a flux term of their own.
+        //
+        // Colonists are left out: their slots are counted in HEADS and never converted into
+        // cargo loads, so adding them would mix two units in one total.
+        public int RequiredFreighters(Empire owner)
+        {
+            int imports = 0, exports = 0;
+            foreach (int id in Colonies)
+            {
+                Planet p = owner.Universe.GetPlanet(id);
+                if (p == null || p.Owner != owner)
+                    continue;
+
+                imports += p.FreeFoodImportSlots + p.FreeProdImportSlots;
+                exports += p.FreeFoodExportSlots + p.FreeProdExportSlots;
+            }
+            return imports < exports ? imports : exports;
+        }
+
+        // The freighters already converging on this zone. The colonies count what is inbound for
+        // their own slot arithmetic, so this is a sum rather than a new count.
+        public int ActiveFreighters(Empire owner)
+        {
+            int active = 0;
+            foreach (int id in Colonies)
+            {
+                Planet p = owner.Universe.GetPlanet(id);
+                if (p == null || p.Owner != owner)
+                    continue;
+
+                active += p.IncomingFoodFreighters + p.IncomingProdFreighters
+                        + p.IncomingColonistsFreighters;
+            }
+            return active;
+        }
+
         public override string ToString() => $"TradeZone {Name} ({Colonies.Count} colonies)";
     }
 }

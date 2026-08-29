@@ -28761,7 +28761,7 @@ TzServedColonies:
 TzAssigned:
  Id: 7201
  ENG: "Assigned"
- FRA: "Affectes"
+ FRA: "Affectés"
 TzNewZone:
  Id: 7202
  ENG: "New Trade Zone"
@@ -28810,6 +28810,22 @@ TzPanToColonyTip:
  Id: 7213
  ENG: "Centre the map on this colony."
  FRA: "Centrer la carte sur cette colonie."
+TzRequired:
+ Id: 7214
+ ENG: "Required"
+ FRA: "Requis"
+TzRequiredTip:
+ Id: 7215
+ ENG: "How many freighters the zone could put to work right now, counted in trade slots and bounded by both ends: what its colonies ask to import, limited by what they can export to each other. Colonists are not counted."
+ FRA: "Nombre de cargos que la zone pourrait employer maintenant, compté en créneaux de commerce et borné aux deux bouts : ce que ses colonies demandent à importer, limité par ce qu'elles peuvent s'exporter entre elles. Les colons ne sont pas comptés."
+TzActive:
+ Id: 7216
+ ENG: "Active"
+ FRA: "Actifs"
+TzActiveTip:
+ Id: 7217
+ ENG: "Freighters currently on their way to a colony of this zone."
+ FRA: "Cargos actuellement en route vers une colonie de cette zone."
 MandateByBlueprint:
  Id: 7181
  ENG: "By Blueprint"
