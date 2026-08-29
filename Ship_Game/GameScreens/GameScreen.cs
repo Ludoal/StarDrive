@@ -132,6 +132,14 @@ namespace Ship_Game
         // Default: the whole display, i.e. NO band - a page opts in by exposing its frame.
         public virtual Rectangle PageFrame => new(0, 0, ScreenWidth, ScreenHeight);
 
+        // Ludoal fork (maintainer feedback): the universe a dialog should pause. A dialog greys
+        // the simulation wherever it was summoned from, but the universe is only its PARENT when
+        // it was opened from the map itself: summoned by a page, the parent is that page, the
+        // cast returned null, and nothing ever claimed the pause. The page-pause option still
+        // gates the claim, and a universe already paused by hand keeps its own resume.
+        protected static UniverseScreen UniverseToPause(GameScreen parent)
+            => parent as UniverseScreen ?? parent?.ScreenManager?.FindScreen<UniverseScreen>();
+
         // Ludoal fork (bench 407): the centre a dialog summoned by this screen should sit on -
         // the page frame's centre when the screen is frame-bound, null when it spans the display
         public Vector2? PageFrameCentre()

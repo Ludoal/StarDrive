@@ -53,7 +53,7 @@ namespace Ship_Game
 
         public MessageBoxScreen(GameScreen parent, string message, string okText, string cancelText,
                                 MessageBoxButtons buttons = MessageBoxButtons.Default, int width = 320)
-            : base(parent, toPause: parent as UniverseScreen /*only pause if message box is shown on top of universe*/)
+            : base(parent, toPause: UniverseToPause(parent))
         {
             Summoner = parent;
             Original = message;
