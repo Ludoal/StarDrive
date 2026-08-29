@@ -28540,8 +28540,8 @@ PolConstructionNotice:
  FRA: "L'ordre dans lequel vos colonies bâtissent, et à quelle vitesse."
 PolInterTradeGameRuleTip:
  Id: 7145
- ENG: "Whether your freighters may serve empires you have a trade treaty with. This one is a game rule rather than an empire order: it is stored with the game setup, not with your empire."
- FRA: "Si vos cargos peuvent servir les empires avec lesquels vous avez un traité commercial. Celle-ci est une règle de la partie plutôt qu'un ordre d'empire : elle est rangée avec les paramètres du jeu, pas avec votre empire."
+ ENG: "Whether your freighters may serve empires you have a trade treaty with. This one is a game rule rather than an empire order: it is stored with the game setup, not with your empire. It also unlocks the Trade First freighter priority."
+ FRA: "Si vos cargos peuvent servir les empires avec lesquels vous avez un traité commercial. Celle-ci est une règle de la partie plutôt qu'un ordre d'empire : elle est rangée avec les paramètres du jeu, pas avec votre empire. Débloque aussi la priorité de cargos Commerce d'abord."
 HkPolicies:
  Id: 7146
  ENG: "Policies"
@@ -28717,27 +28717,27 @@ BpMoveDown:
 PolFreighterReserve:
  Id: 7190
  ENG: "Freighter Reserve"
- FRA: "Reserve de cargos"
+ FRA: "Réserve de cargos"
 PolFreighterReserveTip:
  Id: 7191
  ENG: "Keeps a share of the freighter fleet free at all times, as a percentage of all your freighters. The empire builds up to the reserve and never scraps into it. Any setting above zero always keeps at least one ship. Freighters returning from a refit count as present. At zero, ships are built only when none are left, as before."
- FRA: "Garde en permanence une part de la flotte de cargos libre, en pourcentage de tous vos cargos. L'empire construit jusqu'a la reserve et ne la ferraille jamais. Tout reglage au-dessus de zero garde au moins un cargo. Les cargos revenant de refit comptent comme presents. A zero, on ne construit qu'une fois a sec, comme avant."
+ FRA: "Garde en permanence une part de la flotte de cargos libre, en pourcentage de tous vos cargos. L'empire construit jusqu'à la réserve et ne la ferraille jamais. Tout réglage au-dessus de zéro garde au moins un cargo. Les cargos revenant de refit comptent comme présents. À zéro, on ne construit qu'une fois à sec, comme avant."
 PolFreighterRefitCap:
  Id: 7192
  ENG: "Simultaneous Refits"
- FRA: "Refits simultanes"
+ FRA: "Refits simultanés"
 PolFreighterRefitCapTip:
  Id: 7193
  ENG: "Caps refits to a share of the freighter fleet. A refitting freighter carries nothing; without a cap, the whole trade fleet can end up in the yards at once. Any setting above zero allows at least one refit. At Auto, the game's own formula applies. Warship refits and manual refits are not counted."
- FRA: "Limite les refits a une part de la flotte de cargos. Un cargo en refit ne transporte rien : sans plafond, toute la flotte marchande peut se retrouver au chantier d'un coup. Tout reglage au-dessus de zero permet au moins un refit. Sur Auto, la formule du jeu s'applique. Les refits militaires et manuels ne sont pas comptes."
+ FRA: "Limite les refits à une part de la flotte de cargos. Un cargo en refit ne transporte rien : sans plafond, toute la flotte marchande peut se retrouver au chantier d'un coup. Tout réglage au-dessus de zéro permet au moins un refit. Sur Auto, la formule du jeu s'applique. Les refits militaires et manuels ne sont pas comptés."
 PolFreighterIdleTurns:
  Id: 7194
  ENG: "Idle Turns before Scrapping"
- FRA: "Tours d'inactivite avant ferraillage"
+ FRA: "Tours d'inactivité avant ferraillage"
 PolFreighterIdleTurnsTip:
  Id: 7195
  ENG: "How many turns a freighter may sit idle before being scrapped. Any assignment resets the count. Applies only while Auto-scrap Idle Freighters is on."
- FRA: "Nombre de tours qu'un cargo peut passer sans mission avant d'etre ferraille. Toute affectation remet le compteur a zero. Ne s'applique que si le ferraillage automatique est actif."
+ FRA: "Nombre de tours qu'un cargo peut passer sans mission avant d'être ferraillé. Toute affectation remet le compteur à zéro. Ne s'applique que si le ferraillage automatique est actif."
 PolFreighterRefitAuto:
  Id: 7196
  ENG: "Auto"
@@ -28758,10 +28758,10 @@ TzServedColonies:
  Id: 7200
  ENG: "Served"
  FRA: "Desservies"
-TzQuota:
+TzAssigned:
  Id: 7201
- ENG: "Freighters"
- FRA: "Cargos"
+ ENG: "Assigned"
+ FRA: "Affectes"
 TzNewZone:
  Id: 7202
  ENG: "New Trade Zone"
@@ -28769,7 +28769,7 @@ TzNewZone:
 TzNewZoneTip:
  Id: 7203
  ENG: "Create a trade zone by choosing the colonies it serves. Its freighters carry goods between those colonies."
- FRA: "Creer une zone commerciale en choisissant les colonies qu'elle dessert. Ses cargos transportent les marchandises entre ces colonies."
+ FRA: "Créer une zone commerciale en choisissant les colonies qu'elle dessert. Ses cargos transportent les marchandises entre ces colonies."
 TzEditZone:
  Id: 7204
  ENG: "Edit Zone"
@@ -28785,11 +28785,11 @@ TzDeleteZoneTip:
 TzDeleteZoneConfirm:
  Id: 7207
  ENG: "This will remove the trade zone from your empire. The colonies and their freighters are not affected."
- FRA: "Cela retire la zone commerciale de votre empire. Les colonies et leurs cargos ne sont pas affectes."
+ FRA: "Cela retire la zone commerciale de votre empire. Les colonies et leurs cargos ne sont pas affectés."
 TzEmptyHint:
  Id: 7208
  ENG: "Create a trade zone from your colonies."
- FRA: "Creer une zone commerciale a partir de vos colonies."
+ FRA: "Créer une zone commerciale à partir de vos colonies."
 TzApply:
  Id: 7209
  ENG: "Apply"
@@ -28801,7 +28801,11 @@ TzColonyPickTip:
 DvGalaxyTabTipTrade:
  Id: 7211
  ENG: "Trade zones: named groups of colonies served together by your freighters."
- FRA: "Zones commerciales : des groupes de colonies nommes, desservis ensemble par vos cargos."
+ FRA: "Zones commerciales : des groupes de colonies nommés, desservis ensemble par vos cargos."
+TzAssignedTip:
+ Id: 7212
+ ENG: "How many freighters serve this zone. At Auto the number is measured from what the zone's colonies actually ask for."
+ FRA: "Nombre de cargos qui desservent cette zone. Sur Auto, le nombre est mesure a partir de ce que les colonies de la zone demandent reellement."
 MandateByBlueprint:
  Id: 7181
  ENG: "By Blueprint"

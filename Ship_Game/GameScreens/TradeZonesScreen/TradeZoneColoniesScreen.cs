@@ -15,6 +15,7 @@ namespace Ship_Game
         readonly TradeZonesScreen Screen;
         readonly TradeZone Zone; // null while creating
         readonly Array<Planet> Chosen = new();
+        int Quota; // held locally: while creating, there is no zone yet to write it on
         ScrollList<ColonyPickItem> ColoniesSL;
         UIButton ApplyButton;
 
@@ -23,6 +24,7 @@ namespace Ship_Game
         {
             Screen = screen;
             Zone = zone;
+            Quota = zone?.Quota ?? 0;
             TransitionOnTime = 0.25f;
             if (zone != null)
             {
@@ -41,11 +43,28 @@ namespace Ship_Game
             base.LoadContent();
 
             Rectangle inner = PopupFrame.ContentArea(Rect);
+            // the list stops short of the lever and the button: both lines are reserved from
+            // the frame, never taken out of what happens to be left
             ColoniesSL = Add(new ScrollList<ColonyPickItem>(
-                new RectF(inner.X + 20, inner.Y + 20, inner.Width - 40, inner.Height - 90), 28));
+                new RectF(inner.X + 20, inner.Y + 20, inner.Width - 40, inner.Height - 150), 28));
 
             foreach (Planet p in Screen.Player.GetPlanets().Sorted(true, p => p.Name))
                 ColoniesSL.AddItem(new ColonyPickItem(this, p));
+
+            // the zone's own lever, under the colonies it serves. Nought is not a quantity here:
+            // it hands the number back to the measure, so the rail reads Auto at its left stop.
+            Add(new UILabel(new Vector2(inner.X + 20, inner.Bottom - 104), GameText.TzAssigned,
+                            Fonts.Arial12Bold, Colors.Cream)).Tooltip = GameText.TzAssignedTip;
+            var rail = Add(new FloatSlider(SliderStyle.Decimal, new Vector2(inner.Width - 80, 28),
+                                           "", 0, 20, Quota)
+            {
+                Step = 1,
+                Tip = GameText.TzAssignedTip,
+                TrackYOffset = -5,
+                ZeroString = GameText.PolFreighterRefitAuto,
+            });
+            rail.Pos = new Vector2(inner.X + 20, inner.Bottom - 82);
+            rail.OnChange = s => Quota = (int)s.AbsoluteValue;
 
             ApplyButton = ButtonMedium(inner.X + 20, inner.Bottom - 40, GameText.TzApply, OnApplyClicked);
             ApplyButton.Text = Localizer.Token(GameText.TzApply);
@@ -63,7 +82,7 @@ namespace Ship_Game
         {
             // an empty pick on an existing zone dissolves it: a zone with no colony would read as
             // "everywhere" downstream, so it is never a state we keep
-            Screen.ApplyColonies(Zone, Chosen);
+            Screen.ApplyColonies(Zone, Chosen, Quota);
             GameAudio.AcceptClick();
             ExitScreen();
         }

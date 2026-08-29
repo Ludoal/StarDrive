@@ -7111,8 +7111,8 @@ namespace Ship_Game
         TzNumColonies = 7199,
         /// <summary>Served</summary>
         TzServedColonies = 7200,
-        /// <summary>Freighters</summary>
-        TzQuota = 7201,
+        /// <summary>Assigned</summary>
+        TzAssigned = 7201,
         /// <summary>New Trade Zone</summary>
         TzNewZone = 7202,
         /// <summary>Create a trade zone by choosing the colonies it serves</summary>
@@ -7133,6 +7133,8 @@ namespace Ship_Game
         TzColonyPickTip = 7210,
         /// <summary>Trade zones: named groups of colonies served together by your freighte</summary>
         DvGalaxyTabTipTrade = 7211,
+        /// <summary>How many freighters serve this zone.</summary>
+        TzAssignedTip = 7212,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

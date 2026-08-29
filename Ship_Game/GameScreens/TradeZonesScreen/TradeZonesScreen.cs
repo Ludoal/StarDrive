@@ -50,7 +50,7 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.TzZoneName), Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.TzNumColonies), Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.TzServedColonies), Foldable = true },
-                new UITable.Column { Title = Localizer.Token(GameText.TzQuota), Align = TableAlign.Number, Sortable = true },
+                new UITable.Column { Title = Localizer.Token(GameText.TzAssigned), Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = "", Width = 60, Align = TableAlign.Center },
             });
 
@@ -108,7 +108,7 @@ namespace Ship_Game
         }
 
         // Called back by the picker. A zone with no colony is never kept.
-        public void ApplyColonies(TradeZone zone, Array<Planet> chosen)
+        public void ApplyColonies(TradeZone zone, Array<Planet> chosen, int quota)
         {
             if (chosen.IsEmpty)
             {
@@ -123,6 +123,8 @@ namespace Ship_Game
             zone.Colonies.Clear();
             foreach (Planet p in chosen)
                 zone.Add(p);
+
+            zone.Quota = quota;
 
             GameAudio.EchoAffirmative();
             ResetList();
