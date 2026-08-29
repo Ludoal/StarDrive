@@ -58,7 +58,7 @@ namespace Ship_Game
 
             float fullAvail = GameScreens.ScreenGroups.FullTableHeight(ScreenHeight); // floor = the info cartouche
             float contentH = UITable.ContentHeightFor(99, Math.Max(3, Events.Length), 84, fullAvail);
-            GalaxyTabs = GameScreens.ScreenGroups.AddGroupTabs(this, GameScreens.ScreenGroups.LiveTitles(GameScreens.ScreenGroups.Group.Galaxy, Universe), 3,
+            GalaxyTabs = GameScreens.ScreenGroups.AddGroupTabs(this, GameScreens.ScreenGroups.LiveTitles(GameScreens.ScreenGroups.Group.Galaxy, Universe), 4,
                                                                OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
             Table.RowPitch = 84;
