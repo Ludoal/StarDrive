@@ -662,14 +662,6 @@ namespace Ship_Game.Ships
 
             if (s.IsFreighter)
             {
-                var ao = new OrdersButton(s, OrderType.DefineAO, GameText.AllowsYouToCustomizeAn)
-                {
-                    ValueToModify = new(() => Universe.DefiningAO, x => {
-                        Universe.DefiningAO = x;
-                        Universe.AORect = Rectangle.Empty;
-                    })
-                };
-                Orders.Add(ao);
                 var tradeFood = new OrdersButton(s, OrderType.TradeFood, GameText.ManualTradeOrdersThisFreighter2)
                 {
                     ValueToModify = new(() => s.TransportingFood),
@@ -696,6 +688,16 @@ namespace Ship_Game.Ships
                                            : GameText.InterTradeInhibited
                 };
                 Orders.Add(allowInterEmpireTrade);
+                // the area of operation sits with the other two circulation controls rather than
+                // at the head of the row: what a freighter CARRIES, then where it may go.
+                var ao = new OrdersButton(s, OrderType.DefineAO, GameText.AllowsYouToCustomizeAn)
+                {
+                    ValueToModify = new(() => Universe.DefiningAO, x => {
+                        Universe.DefiningAO = x;
+                        Universe.AORect = Rectangle.Empty;
+                    })
+                };
+                Orders.Add(ao);
                 var tradeRoutes = new OrdersButton(s, OrderType.DefineTradeRoutes, GameText.ChooseAListOfPlanets)
                 {
                     ValueToModify = new(() => Universe.DefiningTradeRoutes, x => { Universe.DefiningTradeRoutes = x; })
