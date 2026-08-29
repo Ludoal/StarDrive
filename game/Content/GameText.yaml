@@ -28738,6 +28738,10 @@ PolFreighterIdleTurnsTip:
  Id: 7195
  ENG: "How many turns a freighter may sit idle before being scrapped. Any assignment resets the count. Applies only while Auto-scrap Idle Freighters is on."
  FRA: "Nombre de tours qu'un cargo peut passer sans mission avant d'etre ferraille. Toute affectation remet le compteur a zero. Ne s'applique que si le ferraillage automatique est actif."
+PolFreighterRefitAuto:
+ Id: 7196
+ ENG: "Auto"
+ FRA: "Auto"
 MandateByBlueprint:
  Id: 7181
  ENG: "By Blueprint"

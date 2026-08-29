@@ -7101,6 +7101,8 @@ namespace Ship_Game
         PolFreighterIdleTurns = 7194,
         /// <summary>How long a freighter may sit idle before it is scrapped.</summary>
         PolFreighterIdleTurnsTip = 7195,
+        /// <summary>Auto</summary>
+        PolFreighterRefitAuto = 7196,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

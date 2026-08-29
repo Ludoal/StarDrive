@@ -48,8 +48,9 @@ namespace Ship_Game
         const float BlueprintRows = 6f;                       // heading + 5 governor types
         const float ColonyBoxH = 170f + BlueprintRows * PolicyRowH;
         // A number on a rail costs two rows: its own title, then the rail itself, whose 28px
-        // must hold a 26px knob (bench 485).
-        const float SliderRowH = 64f;
+        // must hold a 26px knob (bench 485). The rail is narrower than its frame: these are
+        // short ranges, and the value prints past the rail's right end (bench 538).
+        const float SliderRowH = 64f, SliderRailW = 300f;
         // Trade carries the priority picker, the three quantity rails and the game rule.
         const float EconomyBoxH = 74f, ResearchBoxH = 74f, TradeBoxH = 126f + 3f * SliderRowH;
 
@@ -82,7 +83,9 @@ namespace Ship_Game
 
             RectF client = EmpireTabs.ClientArea;
             float top = ScreenGroups.GroupContentTop(client);
-            float x0 = client.X + 10, x1 = x0 + BoxW + BoxGap, x2 = x1 + BoxW2 + BoxGap;
+            // middle column is Construction, right column is Trade (bench 538): each x is
+            // derived from the width of the box actually seated to its left.
+            float x0 = client.X + 10, x1 = x0 + BoxW + BoxGap, x2 = x1 + BoxW3 + BoxGap;
             Empire player = Universe.Player;
 
             // ⚠ within a column the LOWER box is added FIRST: an open dropdown's list spills
@@ -130,7 +133,7 @@ namespace Ship_Game
             UIList economy = NewBox(new RectF(x0, top, BoxW, EconomyBoxH), "Economy", GameText.PolEconomyNotice);
             economy.AddCheckbox(() => player.AutoTaxes, title: GameText.AutoTaxes, tooltip: GameText.YourEmpireWillAutomaticallyManage3);
 
-            UIList trade = NewBox(new RectF(x1, top, BoxW2, TradeBoxH), "Trade", GameText.PolTradeNotice);
+            UIList trade = NewBox(new RectF(x2, top, BoxW2, TradeBoxH), "Trade", GameText.PolTradeNotice);
             FreighterPriorityDropDown = trade.Add(new LabeledDropdown<CargoPriority>())
                 // ⚠ two texts, one condition: a cybernetic empire trades no food at all, so the
                 // food guarantee is not false for it - it is empty. Omitted rather than qualified,
@@ -153,7 +156,7 @@ namespace Ship_Game
             // the rail's left stop is not a quantity: it hands the refits back to the game's
             // own formula, so it reads Automatic rather than nought.
             SliderRow(trade, GameText.PolFreighterRefitCap, GameText.PolFreighterRefitCapTip,
-                      0, 20, player.MaxFreighterRefits, GameText.Automatic,
+                      0, 20, player.MaxFreighterRefits, GameText.PolFreighterRefitAuto,
                       v => player.MaxFreighterRefits = v);
             // reads through the property, so a save that never stored the field shows the 20
             // the game has always used instead of a bare zero.
@@ -167,7 +170,7 @@ namespace Ship_Game
                               title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.PolInterTradeGameRuleTip);
             trade.ReverseZOrder(); // an open list draws over the rows beneath it
 
-            UIList construction = NewBox(new RectF(x2, top, BoxW3, ConstructionBoxH), "Construction", GameText.PolConstructionNotice, out Submenu constructionBox);
+            UIList construction = NewBox(new RectF(x1, top, BoxW3, ConstructionBoxH), "Construction", GameText.PolConstructionNotice, out Submenu constructionBox);
             // ⚠ NOT a plain checkbox: its setter marshals onto the SIMULATION thread. Copying it
             // as a bare boolean would look right and propagate nothing.
             // (maintainer, bench 528) the two things this frame does, each said out loud: what it
@@ -227,7 +230,7 @@ namespace Ship_Game
                        int current, LocalizedText zeroText, Action<int> onChange)
         {
             box.Add(new UILabel(title, Fonts.Arial12Bold, Colors.Cream)).Tooltip = tooltip;
-            var rail = box.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW2 - 40, 28),
+            var rail = box.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(SliderRailW, 28),
                                                "", min, max, current)
             {
                 Step = 1,
