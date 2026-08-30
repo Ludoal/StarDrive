@@ -561,8 +561,26 @@ namespace Ship_Game
             Building best = null;
             if (HasBlueprints)
             {
-                best = BuildingsCanBuild.FindMaxFiltered(b => b.IsMilitary && RequiredInBlueprints(b) && b.ActualMaintenance(this) <= budget,
-                                                         b => b.CostEffectiveness);
+                // Ludoal fork (maintainer feedback): the plan is an ORDER for this builder too.
+                // It takes its own ranks in the list's order rather than by cost effectiveness,
+                // and waits - as the civil builder does - when the budget is the only obstacle.
+                Array<Building> plan = Blueprints.PlannedBuildingsWeCanBuild;
+                for (int i = 0; i < plan.Count; i++)
+                {
+                    if (!plan[i].IsMilitary)
+                        continue;
+
+                    if (plan[i].ActualMaintenance(this) > budget)
+                        return;
+
+                    best = plan[i];
+                    break;
+                }
+
+                // An exclusive plan raises nothing it did not list, defences included. Falling
+                // back to the general catalogue would raise a turret the scrap pass then clears.
+                if (best == null && Blueprints.Exclusive)
+                    return;
             }
 
             if (best == null)
