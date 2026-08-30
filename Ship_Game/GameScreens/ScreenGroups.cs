@@ -80,7 +80,7 @@ namespace Ship_Game.GameScreens
         // Diplomacy group - one geometry for the whole bar.
         public static readonly LocalizedText[] GalaxyTabTitles =
         {
-            "Planets", "Exotic Systems", "Trade", "Patrols", "Events"
+            "Planets", "Exotic Systems", "Trade", "Patrols", "Events", "Ships", "Troops"
         };
 
         public static readonly string[] GalaxyTabTips =
@@ -90,10 +90,12 @@ namespace Ship_Game.GameScreens
             Localizer.Token(GameText.DvGalaxyTabTipTrade),
             Localizer.Token(GameText.DvGalaxyTabTipPatrols),
             Localizer.Token(GameText.DvGalaxyTabTipEvents),
+            Localizer.Token(GameText.DvEmpireTabTipShips),
+            Localizer.Token(GameText.DvEmpireTabTipTroops),
         };
 
         // the keys those screens already close on, in tab order
-        public static readonly string[] GalaxyTabKeys = { "L", "G", "", "P", "F7" };
+        public static readonly string[] GalaxyTabKeys = { "L", "G", "", "P", "F7", "K", "C" };
 
         // Ludoal fork: ONE place that knows which screen a Galaxy tab opens. Each screen used to
         // carry its own switch over the other three, so a fourth tab meant editing all of them -
@@ -104,7 +106,9 @@ namespace Ship_Game.GameScreens
             1 => new ExoticSystemsListScreen(u, u.EmpireUI),
             2 => new TradeZonesScreen(u, u.Player),
             3 => new EmpirePatrolsScreen(u, u.Player),
-            _ => new ImportantEventsScreen(u),
+            4 => new ImportantEventsScreen(u),
+            5 => new ShipListScreen(u, u.EmpireUI),
+            _ => new TroopListScreen(u, u.EmpireUI),
         };
 
         // Ludoal fork: the switch every Galaxy screen runs when another of its tabs is clicked.
@@ -156,14 +160,12 @@ namespace Ship_Game.GameScreens
         // Ludoal fork: the third group of the unified top bar. Same frame and tab row again.
         public static readonly LocalizedText[] EmpireTabTitles =
         {
-            "Colonies", "Ships", "Troops", "Economy", "Research", "Automation", "Policies"
+            "Colonies", "Economy", "Research", "Automation", "Policies"
         };
 
         public static readonly string[] EmpireTabTips =
         {
             Localizer.Token(GameText.DvEmpireTabTipColonies),
-            Localizer.Token(GameText.DvEmpireTabTipShips),
-            Localizer.Token(GameText.DvEmpireTabTipTroops),
             Localizer.Token(GameText.DvEmpireTabTipEconomy),
             Localizer.Token(GameText.DvEmpireTabTipResearch),
             Localizer.Token(GameText.DvEmpireTabTipAutomation),
@@ -174,7 +176,7 @@ namespace Ship_Game.GameScreens
         // Automation ships unbound and Policies took H (maintainer feedback): the standing
         // orders are opened far more often. An empty entry is the established way to say
         // "no key" here (the group row does it too).
-        public static readonly string[] EmpireTabKeys = { "U", "K", "C", "T", "R", "", "H" };
+        public static readonly string[] EmpireTabKeys = { "U", "T", "R", "", "H" };
 
         // Ludoal fork: ONE factory and ONE switch for the Empire group - each of its screens
         // used to carry its own copy of this switch with a default case, and two of those
@@ -184,14 +186,12 @@ namespace Ship_Game.GameScreens
         public static GameScreen EmpireTab(int index, UniverseScreen u) => index switch
         {
             0 => new EmpireManagementScreen(u, u.EmpireUI),
-            1 => new ShipListScreen(u, u.EmpireUI),
-            2 => new TroopListScreen(u, u.EmpireUI),
-            3 => Economy(u),
-            4 => new ResearchScreenNew(u, u, u.EmpireUI),
+            1 => Economy(u),
+            2 => new ResearchScreenNew(u, u, u.EmpireUI),
             // Ludoal fork: Automation takes its OWN case now. It used to ride the default, and a
             // default that swallows every unknown index is how a seventh tab silently opens the
             // sixth screen - no error, no clue, a long hunt.
-            5 => new AutomationScreen(u),
+            3 => new AutomationScreen(u),
             _ => new PoliciesScreen(u),
         };
 
@@ -725,13 +725,13 @@ namespace Ship_Game.GameScreens
         {
             typeof(PlanetListScreen), typeof(ExoticSystemsListScreen), typeof(TradeZonesScreen),
             typeof(EmpirePatrolsScreen), typeof(ImportantEventsScreen),
+            typeof(ShipListScreen), typeof(TroopListScreen),
         };
 
         static readonly Type[] EmpireTabScreens =
         {
-            typeof(EmpireManagementScreen), typeof(ShipListScreen), typeof(TroopListScreen),
-            typeof(BudgetScreen), typeof(ResearchScreenNew), typeof(AutomationScreen),
-            typeof(PoliciesScreen),
+            typeof(EmpireManagementScreen), typeof(BudgetScreen), typeof(ResearchScreenNew),
+            typeof(AutomationScreen), typeof(PoliciesScreen),
         };
 
         // -1 for a screen that is not one of the tabs: never equal to a real index, so a
@@ -768,11 +768,10 @@ namespace Ship_Game.GameScreens
             ColonyScreen c => c.P.Universe.Screen.HostedTabGroup,
 
             PlanetListScreen or ExoticSystemsListScreen or TradeZonesScreen or EmpirePatrolsScreen
-                or ImportantEventsScreen
+                or ImportantEventsScreen or ShipListScreen or TroopListScreen
                 => Group.Galaxy,
 
-            EmpireManagementScreen or ShipListScreen or TroopListScreen
-                or ResearchScreenNew or BudgetScreen
+            EmpireManagementScreen or ResearchScreenNew or BudgetScreen
                 // the two newest Empire tabs were missing here, so nothing that asks "which
                 // group is open" could see them: no viewport shift, no lit group button, and
                 // they did not close a page from another group on the way in.
