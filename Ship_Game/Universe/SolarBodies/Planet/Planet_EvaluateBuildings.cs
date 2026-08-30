@@ -331,8 +331,47 @@ namespace Ship_Game
             if (CivilianBuildingInTheWorks)
                 return false;
 
+            if (HasBlueprints)
+            {
+                if (TryBuildNextPlannedBuilding(budget, out bool waitingForBudget))
+                    return true;
+
+                if (waitingForBudget)
+                    return false; // the colony owes a rank it cannot pay yet: it saves instead
+            }
+
             ChooseBestBuilding(GetBuildingsListToChooseFrom(BuildingsCanBuild), budget, replacing: false, out Building bestBuilding);
             return bestBuilding != null && Construction.Enqueue(bestBuilding);
+        }
+
+        // Ludoal fork (maintainer feedback): a plan is an ORDER, not a catalogue. The list is
+        // walked from the top on every decision - no cursor, no memory of what once stood - so
+        // an entry lost to a volcano is picked up again exactly where its rank puts it, and
+        // rebuilding needs no rule of its own.
+        //
+        // Entries this builder cannot raise at all (military, and anything a starving colony
+        // must not spend on) are stepped over; the budget is the one obstacle that makes the
+        // colony WAIT instead, saving its production for the rank it owes.
+        bool TryBuildNextPlannedBuilding(float budget, out bool waiting)
+        {
+            waiting = false;
+            IReadOnlyList<Building> plan = Blueprints.PlannedBuildingsWeCanBuild;
+            for (int i = 0; i < plan.Count; i++)
+            {
+                Building b = plan[i];
+                if (!SuitableForBuild(b, float.MaxValue, plan))
+                    continue;
+
+                if (!SuitableForBuild(b, budget, plan))
+                {
+                    waiting = true;
+                    return false;
+                }
+
+                return Construction.Enqueue(b);
+            }
+
+            return false;
         }
 
         bool TryScrapBuilding(bool overBudget,  bool scrapZeroMaintenance = false, bool terraformerOverride = false)
