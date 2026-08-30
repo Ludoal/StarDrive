@@ -23,7 +23,7 @@ namespace Ship_Game
         public override Rectangle PageFrame => GalaxyTabs?.Rect ?? base.PageFrame;
 
         void OnGalaxyTabChanged(int index)
-            => GameScreens.ScreenGroups.SwitchGalaxyTab(index, self: 4, Universe, this);
+            => GameScreens.ScreenGroups.SwitchGalaxyTab(index, self: GameScreens.ScreenGroups.TabIndexOf(this), Universe, this);
 
         ImportantNotification[] Events; // refreshed live - an event landing while the page is open joins the log
         readonly ScrollList<ImportantEventListItem> EventList;
@@ -58,7 +58,7 @@ namespace Ship_Game
 
             float fullAvail = GameScreens.ScreenGroups.FullTableHeight(ScreenHeight); // floor = the info cartouche
             float contentH = UITable.ContentHeightFor(99, Math.Max(3, Events.Length), 84, fullAvail);
-            GalaxyTabs = GameScreens.ScreenGroups.AddGroupTabs(this, GameScreens.ScreenGroups.LiveTitles(GameScreens.ScreenGroups.Group.Galaxy, Universe), 4,
+            GalaxyTabs = GameScreens.ScreenGroups.AddGroupTabs(this, GameScreens.ScreenGroups.LiveTitles(GameScreens.ScreenGroups.Group.Galaxy, Universe), GameScreens.ScreenGroups.TabIndexOf(this),
                                                                OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
             Table.RowPitch = 84;

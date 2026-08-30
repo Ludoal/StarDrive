@@ -154,7 +154,7 @@ namespace Ship_Game
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // floor = the info cartouche
             // 48 = the 44px row plus the list's 4px item padding
             float contentH = UITable.ContentHeightFor(119, Math.Max(3, ExploredPlanets.Count), 48, fullAvail);
-            GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Galaxy, Universe), 0,
+            GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Galaxy, Universe), ScreenGroups.TabIndexOf(this),
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
             // the filter lane, then the table
@@ -433,6 +433,6 @@ namespace Ship_Game
         // Ludoal fork: the other two tabs live in their own screen, so leaving Planets hands over
         // to it. Planets itself is a no-op: we are already here.
         void OnGalaxyTabChanged(int index)
-            => ScreenGroups.SwitchGalaxyTab(index, self: 0, Universe, this);
+            => ScreenGroups.SwitchGalaxyTab(index, self: ScreenGroups.TabIndexOf(this), Universe, this);
     }
 }

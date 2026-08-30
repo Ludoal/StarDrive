@@ -216,7 +216,7 @@ namespace Ship_Game.GameScreens
             float rowsNeed = 60 + Player.GetPlanets().Count * 24 + 90; // header lane + rows + footer/margins
             float contentH = fullAvail <= h900 ? fullAvail
                            : Math.Min(fullAvail, Math.Max(h900, rowsNeed));
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 3,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), ScreenGroups.TabIndexOf(this),
                                                     OnEmpireTabChanged, contentW, contentH);
             RectF client = EmpireTabs.ClientArea;
 
@@ -669,7 +669,7 @@ namespace Ship_Game.GameScreens
         void OnEmpireTabChanged(int index)
         {
             // one factory for the whole group (ScreenGroups) - this screen only says which tab it is
-            ScreenGroups.SwitchEmpireTab(index, self: 3, Universe, this);
+            ScreenGroups.SwitchEmpireTab(index, self: ScreenGroups.TabIndexOf(this), Universe, this);
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)

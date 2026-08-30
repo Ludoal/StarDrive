@@ -68,7 +68,7 @@ namespace Ship_Game
             float col2H = ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap + TradeBoxH;
             float contentW = 9 + 10 + BoxW + BoxGap + BoxW2 + 10 + 9;  // ClientArea insets + gutters
             float contentH = 60 + Math.Max(col1H, col2H) + 22;  // tab strip + cross clearance + pads
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 5,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), ScreenGroups.TabIndexOf(this),
                                                     OnEmpireTabChanged, contentW, contentH);
             ResearchStationsEnabled = !Universe.Player.Universe.P.DisableResearchStations;
             MiningOpsEnabled       = !Universe.Player.Universe.P.DisableMiningOps;
@@ -256,7 +256,7 @@ namespace Ship_Game
         }
 
         void OnEmpireTabChanged(int index)
-            => ScreenGroups.SwitchEmpireTab(index, self: 5, Universe, this);
+            => ScreenGroups.SwitchEmpireTab(index, self: ScreenGroups.TabIndexOf(this), Universe, this);
 
         void InitDropOptions(DropOptions<int> options, ref string automationShip, string defaultShip, Func<IShipDesign, bool> predicate)
         {

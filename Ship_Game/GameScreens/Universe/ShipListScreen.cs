@@ -138,7 +138,7 @@ namespace Ship_Game
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // the one floor (cartouche + order rows)
             // 119, measured: frame->client 41, filter line + headers 43, foot 5, paddings 30
             float contentH = UITable.ContentHeightFor(119, Math.Max(5, shipRows), 34, fullAvail);
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 1,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), ScreenGroups.TabIndexOf(this),
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
 
             // Ludoal fork: the reserved first line carries the three filters and the role
@@ -201,7 +201,7 @@ namespace Ship_Game
         void OnEmpireTabChanged(int index)
         {
             // one factory for the whole group (ScreenGroups) - this screen only says which tab it is
-            ScreenGroups.SwitchEmpireTab(index, self: 1, Universe, this);
+            ScreenGroups.SwitchEmpireTab(index, self: ScreenGroups.TabIndexOf(this), Universe, this);
         }
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {

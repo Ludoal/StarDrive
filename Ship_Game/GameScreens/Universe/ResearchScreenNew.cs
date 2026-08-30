@@ -69,7 +69,7 @@ namespace Ship_Game
             camera = new Camera2D { Pos = new Vector2(Viewport.Width, Viewport.Height) / 2f };
             // Ludoal fork: the Research tab of the Empire group. The node grids derive from
             // MainArea.Height, so they compress on their own down to the 900px floor.
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 4,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), ScreenGroups.TabIndexOf(this),
                                                     OnEmpireTabChanged, out Rectangle frame);
             RectF client = EmpireTabs.ClientArea;
             var main = new Rectangle((int)client.X, (int)client.Y, (int)client.W, (int)client.H);
@@ -154,7 +154,7 @@ namespace Ship_Game
         void OnEmpireTabChanged(int index)
         {
             // one factory for the whole group (ScreenGroups) - this screen only says which tab it is
-            ScreenGroups.SwitchEmpireTab(index, self: 4, Universe, this);
+            ScreenGroups.SwitchEmpireTab(index, self: ScreenGroups.TabIndexOf(this), Universe, this);
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)

@@ -84,7 +84,7 @@ namespace Ship_Game
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // the one floor (cartouche + order rows)
             // 118 = tab strip + the filter/info lane + headers + a line at the bottom
             float contentH = UITable.ContentHeightFor(119, Math.Max(3, rows), 28, fullAvail);
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 2,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), ScreenGroups.TabIndexOf(this),
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
             RectF client = EmpireTabs.ClientArea;
             // one lane: the filter, then the two figures on the same line
@@ -279,7 +279,7 @@ namespace Ship_Game
         void OnEmpireTabChanged(int index)
         {
             // one factory for the whole group (ScreenGroups) - this screen only says which tab it is
-            ScreenGroups.SwitchEmpireTab(index, self: 2, Universe, this);
+            ScreenGroups.SwitchEmpireTab(index, self: ScreenGroups.TabIndexOf(this), Universe, this);
         }
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {

@@ -710,6 +710,50 @@ namespace Ship_Game.GameScreens
         // place knows the pairing, and no call site has to remember there are two of each.
         public static bool IsEconomy(GameScreen s) => s is BudgetScreen;
 
+        // ── Where a screen SITS in its group ──────────────────────────────────────────────────
+        // Ludoal fork (maintainer feedback): a screen used to state its own tab index TWICE -
+        // once to the switch, so it leaves itself alone, and once to the tab row, so the right
+        // tab is drawn as current. The two drifted the moment a tab was inserted: after Trade
+        // took the third place of the Galaxy row, Patrols and Events told the row they were
+        // still where Trade now sat, and clicking their own name asked the switch to move to
+        // the tab it thought it was already on - so nothing happened, on two screens, silently.
+        //
+        // A screen now ASKS where it sits instead of remembering. These two lists are the
+        // single source of that order, and they are the same order as the factories above -
+        // adding a tab, moving one, or transferring one between groups is an edit of ONE list.
+        static readonly Type[] GalaxyTabScreens =
+        {
+            typeof(PlanetListScreen), typeof(ExoticSystemsListScreen), typeof(TradeZonesScreen),
+            typeof(EmpirePatrolsScreen), typeof(ImportantEventsScreen),
+        };
+
+        static readonly Type[] EmpireTabScreens =
+        {
+            typeof(EmpireManagementScreen), typeof(ShipListScreen), typeof(TroopListScreen),
+            typeof(BudgetScreen), typeof(ResearchScreenNew), typeof(AutomationScreen),
+            typeof(PoliciesScreen),
+        };
+
+        // -1 for a screen that is not one of the tabs: never equal to a real index, so a
+        // switch comparing against it simply never treats it as 'already here'.
+        public static int TabIndexOf(GameScreen screen)
+        {
+            if (screen == null)
+                return -1;
+
+            Type t = screen.GetType();
+            int i = IndexOfScreen(GalaxyTabScreens, t);
+            return i >= 0 ? i : IndexOfScreen(EmpireTabScreens, t);
+        }
+
+        static int IndexOfScreen(Type[] screens, Type t)
+        {
+            for (int i = 0; i < screens.Length; ++i)
+                if (screens[i] == t)
+                    return i;
+            return -1;
+        }
+
         // ── Which group a screen belongs to ───────────────────────────────────────────────────
         // Ludoal fork: the top bar tints the button of the group you are inside. One place knows
         // the membership - a test spread over the bar's draw would drift the moment a tab moves.

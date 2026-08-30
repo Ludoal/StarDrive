@@ -83,7 +83,7 @@ namespace Ship_Game
 
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight);
             float contentH = UITable.ContentHeightFor(99, Math.Max(3, Player.TradeZones.Count), 38, fullAvail) + ActionsLineH;
-            GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Galaxy, Universe), 2,
+            GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Galaxy, Universe), ScreenGroups.TabIndexOf(this),
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             Client = GalaxyTabs.ClientArea;
             Table.RowPitch = 38;
@@ -180,7 +180,7 @@ namespace Ship_Game
         }
 
         void OnGalaxyTabChanged(int index)
-            => ScreenGroups.SwitchGalaxyTab(index, self: 2, Universe, this);
+            => ScreenGroups.SwitchGalaxyTab(index, self: ScreenGroups.TabIndexOf(this), Universe, this);
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {

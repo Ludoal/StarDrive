@@ -78,7 +78,7 @@ namespace Ship_Game
             float col2H = TradeBoxH;
             float contentW = 9 + 10 + BoxW + BoxGap + BoxW2 + BoxGap + BoxW3 + 10 + 9;  // ClientArea insets + gutters
             float contentH = 60 + Math.Max(Math.Max(col1H, col2H), ConstructionBoxH) + 22; // tab strip + cross clearance + pads
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 6,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), ScreenGroups.TabIndexOf(this),
                                                     OnEmpireTabChanged, contentW, contentH);
 
             RectF client = EmpireTabs.ClientArea;
@@ -472,7 +472,7 @@ namespace Ship_Game
         }
 
         void OnEmpireTabChanged(int index)
-            => ScreenGroups.SwitchEmpireTab(index, self: 6, Universe, this);
+            => ScreenGroups.SwitchEmpireTab(index, self: ScreenGroups.TabIndexOf(this), Universe, this);
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {

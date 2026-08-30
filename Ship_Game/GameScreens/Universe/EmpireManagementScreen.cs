@@ -161,7 +161,7 @@ namespace Ship_Game
             const float BandGapBot = 15;   // between the band and the frame's foot
             float bandH = GovernorH + BandGapTop + BandGapBot; // the reserve the table leaves
             float contentH = UITable.ContentHeightFor(102 + bandH, Math.Max(3, planets.Count), 84, fullAvail);
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), 0,
+            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), ScreenGroups.TabIndexOf(this),
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
             RectF client = EmpireTabs.ClientArea;
             // the band's own span, settled BEFORE the table so the table stops where it starts
@@ -232,7 +232,7 @@ namespace Ship_Game
         void OnEmpireTabChanged(int index)
         {
             // one factory for the whole group (ScreenGroups) - this screen only says which tab it is
-            ScreenGroups.SwitchEmpireTab(index, self: 0, Universe, this);
+            ScreenGroups.SwitchEmpireTab(index, self: ScreenGroups.TabIndexOf(this), Universe, this);
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)

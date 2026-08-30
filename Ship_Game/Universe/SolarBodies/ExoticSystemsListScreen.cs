@@ -119,7 +119,7 @@ namespace Ship_Game
             // 48 = the 44px row plus the list's 4px item padding - counting 44 alone keeps
             // a scrollbar alive with room to spare
             float contentH = UITable.ContentHeightFor(99, Math.Max(3, ExploredSolarBodies.Count), 48, fullAvail);
-            GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Galaxy, Universe), 1,
+            GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Galaxy, Universe), ScreenGroups.TabIndexOf(this),
                                                    OnGalaxyTabChanged, Table.ContentWidth, contentH);
             RectF client = GalaxyTabs.ClientArea;
             Table.RowPitch = 48;
@@ -133,7 +133,7 @@ namespace Ship_Game
         // Ludoal fork: the other two tabs live in their own screen, so leaving Exotic Systems hands
         // over to it. This tab is a no-op: we are already here.
         void OnGalaxyTabChanged(int index)
-            => ScreenGroups.SwitchGalaxyTab(index, self: 1, Universe, this);
+            => ScreenGroups.SwitchGalaxyTab(index, self: ScreenGroups.TabIndexOf(this), Universe, this);
 
         void CalcPlanetsDistances()
         {
