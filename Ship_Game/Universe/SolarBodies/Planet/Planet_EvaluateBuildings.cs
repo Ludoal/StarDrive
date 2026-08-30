@@ -503,7 +503,9 @@ namespace Ship_Game
             if (b.IsBiospheres
                 || b.IsMilitary
                 || !b.Scrappable
-                || b.IsPlayerAdded && OwnerIsPlayer // player-built is never the governor's to scrap — the guard below sat after the no-blueprint early return and was unreachable (upstream issue 303)
+                // player-built is never the governor's to scrap (upstream issue 303) - except under
+                // an exclusive plan, where the colony has been handed over to the list itself
+                || b.IsPlayerAdded && OwnerIsPlayer && !HasExclusiveBlueprints
                 || b.IsSpacePort && Owner.GetPlanets().Count == 1 // Dont scrap our last spaceport
                 || b.BuildOnlyOnce
                 || b.PlusTerraformPoints > 0) // using this instead of IsTerraformer since some event building might also terraform without the terraformer building ID
