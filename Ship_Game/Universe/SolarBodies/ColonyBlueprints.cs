@@ -174,12 +174,15 @@ namespace Ship_Game.Universe.SolarBodies
             }
         }
 
+        // Ludoal fork (maintainer feedback): a plan directs what gets RAISED. Only an exclusive
+        // one also directs what makes way, and only when the ground is actually needed - an
+        // ordinary plan gives a colony no reason to demolish that a colony without one lacks.
         public bool ShouldScrapNonRequiredBuilding()
         {
-            return Exclusive ? ContainsNotRequiredBuildings() 
-                             : P.FreeHabitableTiles == 0 
-                                && P.GetBuildingsCanBuild().Any(IsRequired) 
-                                && ContainsNotRequiredBuildings();
+            return Exclusive
+                && P.FreeHabitableTiles == 0
+                && P.GetBuildingsCanBuild().Any(IsRequired)
+                && ContainsNotRequiredBuildings();
 
             bool ContainsNotRequiredBuildings()
             {
