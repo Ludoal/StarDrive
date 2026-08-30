@@ -538,7 +538,10 @@ namespace Ship_Game
                 return;
             }
 
-            if ((HasExclusiveBlueprints || HasBlueprints && !Blueprints.Exclusive && FreeHabitableTiles == 0 && !Blueprints.IsAchievableCompleted)
+            // Ludoal fork (maintainer feedback): military answers to the same rule as the rest -
+            // only an exclusive plan clears what it did not list, and only for the ground. The
+            // shared predicate keeps the two sites from drifting apart.
+            if (Blueprints?.ShouldScrapNonRequiredBuilding() == true
                 && BuildingList.Any(b => b.IsMilitary && !RequiredInBlueprints(b)))
             {
                 if (mayScrap)
