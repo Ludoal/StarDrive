@@ -248,6 +248,20 @@ namespace Ship_Game
             StatusText = GetStatusText(Ship);
         }
 
+        // Ludoal fork (maintainer feedback): the trade zone THIS RUN serves, appended to the line
+        // that describes the run. In this regime a zone owns no ship - it is where the current
+        // voyage goes - so the mention belongs to the voyage and empties with it, rather than to
+        // a column that would read as belonging. Written here rather than in a screen because
+        // this helper feeds both the ship cartouche and the Ships list: one line, two screens.
+        static string ZoneServing(Ship ship, Planet importTo)
+        {
+            if (importTo == null || ship.Loyalty == null)
+                return "";
+
+            TradeZone zone = ship.Loyalty.GetTradeZone(importTo);
+            return zone != null ? $" - serving {zone.Name}" : "";
+        }
+
         public static string GetStatusText(Ship ship)
         {
             if (ship.AI == null)  //fbedard: prevent crash ?
@@ -310,7 +324,8 @@ namespace Ship_Game
                         // status is empty outside Pickup/DropOff - build without the stray
                         // leading space it used to leave ahead of "Production from ..."
                         string head = status.IsEmpty() ? goodsType : $"{status} {goodsType}";
-                        return $"{head} from {last2.Trade?.ExportFrom.Name} to {last2.Trade?.ImportTo?.Name ?? last2.Trade?.TargetStation.Name} {blockade}".TrimEnd();
+                        string zone = ZoneServing(ship, last2.Trade?.ImportTo);
+                        return $"{head} from {last2.Trade?.ExportFrom.Name} to {last2.Trade?.ImportTo?.Name ?? last2.Trade?.TargetStation.Name} {blockade}{zone}".TrimEnd();
                     }
                     return $"{Localizer.Token(GameText.TradingGoods)} \n {Localizer.Token(GameText.SeekingRoute)}";
                 case AIState.Research:
