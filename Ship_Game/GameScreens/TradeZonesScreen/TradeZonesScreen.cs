@@ -272,6 +272,9 @@ namespace Ship_Game
         // a null reference.
         public void ResetList() => NeedsRebuild = true;
 
+        float LiveTimer;
+        int LiveHash = -1;
+
         public override void Update(float fixedDeltaTime)
         {
             if (NeedsRebuild)
@@ -279,7 +282,50 @@ namespace Ship_Game
                 NeedsRebuild = false;
                 Build();
             }
+            else
+            {
+                // Required and Active move with the turn, so the page reads them again on a
+                // throttled beat - free while nothing changes. The rows are refilled in place;
+                // only a change of measured width costs a full rebuild, since the frame is
+                // sized from the table and has to follow it.
+                LiveTimer -= fixedDeltaTime;
+                if (LiveTimer <= 0f)
+                {
+                    LiveTimer = 1f;
+                    int h = ComputeLiveHash();
+                    if (LiveHash != -1 && h != LiveHash)
+                    {
+                        float wasWidth = Table.ContentWidth;
+                        MeasureColumns();
+                        if (Table.ContentWidth != wasWidth)
+                        {
+                            Build();
+                        }
+                        else
+                        {
+                            Table.Layout(Client, Client.Y + 10, Client.Bottom - 5 - ActionsLineH);
+                            FillList();
+                        }
+                    }
+                    LiveHash = h;
+                }
+            }
             base.Update(fixedDeltaTime);
+        }
+
+        // the identity of what the table shows: a change here means the rows are stale
+        int ComputeLiveHash()
+        {
+            int h = 17;
+            foreach (TradeZone zone in Player.TradeZones)
+            {
+                h = h * 31 + (zone.Name?.GetHashCode() ?? 0);
+                h = h * 31 + zone.NumColonies;
+                h = h * 31 + zone.Quota;
+                h = h * 31 + zone.RequiredFreighters(Player);
+                h = h * 31 + zone.ActiveFreighters(Player);
+            }
+            return h;
         }
 
         void FillList()

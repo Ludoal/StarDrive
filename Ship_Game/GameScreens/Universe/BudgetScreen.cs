@@ -391,7 +391,7 @@ namespace Ship_Game.GameScreens
             GameAudio.AcceptClick();
             // Ludoal fork: armed before the panel - the colony wears the EMPIRE row,
             // Economy (3) as the Esc origin.
-            Universe.HostColonyTab(item.Planet, ScreenGroups.Group.Empire, 3);
+            Universe.HostColonyTab(item.Planet, ScreenGroups.Group.Empire, ScreenGroups.TabIndexOf(this));
             // a stacked page like every tab: exit + open in the same frame, the fresh ctor
             // claims the pause before any tick can run
             ExitScreen();

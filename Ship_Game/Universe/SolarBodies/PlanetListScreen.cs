@@ -372,7 +372,7 @@ namespace Ship_Game
             if (item.Planet.Owner == Player)
             {
                 GameAudio.AcceptClick();
-                Universe.HostColonyTab(item.Planet, ScreenGroups.Group.Galaxy, 0);
+                Universe.HostColonyTab(item.Planet, ScreenGroups.Group.Galaxy, ScreenGroups.TabIndexOf(this));
                 Universe.SnapViewColony(item.Planet, combatView: false);
                 ExitScreen();
                 return;

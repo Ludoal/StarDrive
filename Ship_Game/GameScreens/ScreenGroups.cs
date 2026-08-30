@@ -80,7 +80,7 @@ namespace Ship_Game.GameScreens
         // Diplomacy group - one geometry for the whole bar.
         public static readonly LocalizedText[] GalaxyTabTitles =
         {
-            "Planets", "Exotic Systems", "Trade", "Patrols", "Events", "Ships", "Troops"
+            "Planets", "Exotic", "Trade", "Patrols", "Events", "Ships", "Troops"
         };
 
         public static readonly string[] GalaxyTabTips =

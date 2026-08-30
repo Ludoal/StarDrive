@@ -22,10 +22,10 @@ namespace Ship_Game
     // colony view (own) or the planet view (not ours) via SnapViewColony.
     public sealed class TroopListScreen : GameScreen
     {
-        Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
+        Submenu GalaxyTabs; // Ludoal fork: the Galaxy group's tab row, this screen being one tab
         // Ludoal fork: this page's real frame is its tab row's rect -
         // the band excludes exactly what the page occupies, dynamic size included
-        public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
+        public override Rectangle PageFrame => GalaxyTabs?.Rect ?? base.PageFrame;
 
         public UniverseScreen Universe;
         Empire Player => Universe.Player;
@@ -53,7 +53,7 @@ namespace Ship_Game
             TransitionOffTime = 0.25f;
             IsPopup = true;
 
-            // Ludoal fork: the Troops tab of the Empire group, content-sized on the shared
+            // Ludoal fork: the Troops tab of the Galaxy group, content-sized on the shared
             // table charte (UITable): the text columns SIZE THEMSELVES on the data they are
             // about to show, the troop-group count sets the height - this page is allowed
             // UNDER the 900p floor when the roster is short.
@@ -84,9 +84,9 @@ namespace Ship_Game
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // the one floor (cartouche + order rows)
             // 118 = tab strip + the filter/info lane + headers + a line at the bottom
             float contentH = UITable.ContentHeightFor(119, Math.Max(3, rows), 28, fullAvail);
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), ScreenGroups.TabIndexOf(this),
+            GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Galaxy, Universe), ScreenGroups.TabIndexOf(this),
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
-            RectF client = EmpireTabs.ClientArea;
+            RectF client = GalaxyTabs.ClientArea;
             // one lane: the filter, then the two figures on the same line
             Table.RowPitch = 28;
             Table.Layout(client, client.Y + 30, client.Bottom - 5);
@@ -154,7 +154,7 @@ namespace Ship_Game
                 // the Ground Assault view, which hosts no tab. Armed BEFORE the snap so the
                 // colony's ctor wears the EMPIRE row, Troops (2) as the Esc origin.
                 if (!deployed)
-                    Universe.HostColonyTab(item.Planet, ScreenGroups.Group.Empire, 2);
+                    Universe.HostColonyTab(item.Planet, ScreenGroups.Group.Galaxy, ScreenGroups.TabIndexOf(this));
                 Universe.SnapViewColony(item.Planet, deployed);
                 if (!deployed)
                 {
@@ -279,7 +279,7 @@ namespace Ship_Game
         void OnEmpireTabChanged(int index)
         {
             // one factory for the whole group (ScreenGroups) - this screen only says which tab it is
-            ScreenGroups.SwitchEmpireTab(index, self: ScreenGroups.TabIndexOf(this), Universe, this);
+            ScreenGroups.SwitchGalaxyTab(index, self: ScreenGroups.TabIndexOf(this), Universe, this);
         }
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
@@ -288,13 +288,13 @@ namespace Ship_Game
             // drawn among the children, after everything below it.
             // the canonical fill rect - ClientArea stops short of the frame border and lets the
             // map bleed through the rim
-            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(GalaxyTabs), ScreenGroups.GroupFrameFill);
             base.Draw(batch, elapsed);
 
             // the two figures ride the FILTER line: labels vanilla,
             // the count white, the food bill in pink - troops eat Troop.Consumption each
             Graphics.Font font = Fonts.Arial12Bold;
-            RectF client = EmpireTabs.ClientArea;
+            RectF client = GalaxyTabs.ClientArea;
             float infoX = client.X + 190; // right of the filter dropdown
             float infoY = client.Y + 8;
             string totalLbl = "Total Troops: ";
@@ -328,7 +328,7 @@ namespace Ship_Game
             // and would sit on top of it (bench 408)
             if (ShowStatus.Open)
                 ShowStatus.Draw(batch, elapsed);
-            ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
+            ScreenGroups.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             EmpireUI.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }

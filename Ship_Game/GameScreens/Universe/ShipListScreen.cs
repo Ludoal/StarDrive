@@ -20,10 +20,10 @@ namespace Ship_Game
     {
         public readonly UniverseScreen Universe;
         public UniverseState UState => Universe.UState;
-        Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
+        Submenu GalaxyTabs; // Ludoal fork: the Galaxy group's tab row, this screen being one tab
         // Ludoal fork: this page's real frame is its tab row's rect -
         // the band excludes exactly what the page occupies, dynamic size included
-        public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
+        public override Rectangle PageFrame => GalaxyTabs?.Rect ?? base.PageFrame;
         private Ship SelectedShip;
         private readonly ScrollList<ShipListScreenItem> ShipSL;
         public EmpireUIOverlay EmpireUi;
@@ -71,7 +71,7 @@ namespace Ship_Game
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
             IsPopup = true;
-            // Ludoal fork: the Ships tab of the Empire group on the shared table charte
+            // Ludoal fork: the Ships tab of the Galaxy group on the shared table charte
             // (UITable): fixed columns except Orders, which takes what the screen offers
             // within bounds - the frame hugs the table and stops after the slider lane.
             // Height follows the unfiltered fleet count.
@@ -138,12 +138,12 @@ namespace Ship_Game
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // the one floor (cartouche + order rows)
             // 119, measured: frame->client 41, filter line + headers 43, foot 5, paddings 30
             float contentH = UITable.ContentHeightFor(119, Math.Max(5, shipRows), 34, fullAvail);
-            EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), ScreenGroups.TabIndexOf(this),
+            GalaxyTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Galaxy, Universe), ScreenGroups.TabIndexOf(this),
                                                     OnEmpireTabChanged, Table.ContentWidth, contentH);
 
             // Ludoal fork: the reserved first line carries the three filters and the role
             // dropdown, side by side. The table takes the rest.
-            RectF client = EmpireTabs.ClientArea;
+            RectF client = GalaxyTabs.ClientArea;
             Table.RowPitch = 34;
             Table.Layout(client, client.Y + 30, client.Bottom - 5);
 
@@ -201,21 +201,21 @@ namespace Ship_Game
         void OnEmpireTabChanged(int index)
         {
             // one factory for the whole group (ScreenGroups) - this screen only says which tab it is
-            ScreenGroups.SwitchEmpireTab(index, self: ScreenGroups.TabIndexOf(this), Universe, this);
+            ScreenGroups.SwitchGalaxyTab(index, self: ScreenGroups.TabIndexOf(this), Universe, this);
         }
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             batch.SafeBegin();
             // Ludoal fork: the frame fill is drawn by hand, first - as a Submenu background
             // it would be drawn among the children, after everything below it.
-            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
+            batch.FillRectangle(ScreenGroups.GroupFrameFillRect(GalaxyTabs), ScreenGroups.GroupFrameFill);
 
             base.Draw(batch, elapsed);
 
             // the shared charte draws the headers, the rule and the column separators
             Table.DrawChrome(batch);
             ShowRoles.Draw(batch, elapsed);
-            ScreenGroups.DrawEmpireTabTip(EmpireTabs, Input.CursorPosition);
+            ScreenGroups.DrawGalaxyTabTip(GalaxyTabs, Input.CursorPosition);
             EmpireUi.Draw(batch); // Ludoal fork: live top bar on every full-screen panel
             batch.SafeEnd();
         }

@@ -454,7 +454,7 @@ namespace Ship_Game
             // Ludoal fork: armed BEFORE the snap - the colony's ctor reads the seat to wear the
             // EMPIRE row, planet tab appended, Colonies (0) as the Esc origin. The snap's map-open
             // path sees this planet's seat standing and leaves it be.
-            Universe.HostColonyTab(item.P, ScreenGroups.Group.Empire, 0);
+            Universe.HostColonyTab(item.P, ScreenGroups.Group.Empire, ScreenGroups.TabIndexOf(this));
             Universe.SnapViewColony(item.P, combatView: false);
             // Ludoal fork: the colony inherits this list's automatic pause - consulting a colony
             // from a paused list must not restart the simulation. Before ExitScreen, which would
