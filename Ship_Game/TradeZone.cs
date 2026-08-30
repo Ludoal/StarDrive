@@ -50,24 +50,27 @@ namespace Ship_Game
         }
 
         // What the zone can put to work, in the game's own unit: a trade slot is a freighter
-        // berth. Bounded by BOTH ends, because a zone's freighters only carry between its own
-        // colonies - imports it cannot supply from inside ask for nothing.
+        // berth. Counted on its IMPORT side, on the TOTAL slots.
         //
-        // Counted on the TOTAL slots rather than the free ones (bench 544): read on what is
-        // left, the figure fell to nought exactly when the zone was being served, so it said
-        // zero next to an Active of four. Beside Active it must be the demand, not the
-        // remainder - the pair is only readable if one is the need and the other the answer.
+        // Two corrections, both from bench 546 where Active read higher than Required:
+        //  - it was bounded by both ends, min(import, export). That bound belongs to an
+        //    ENCLOSED zone, whose freighters only carry between its own colonies. A zone of
+        //    this regime borrows from the common pool and imports from the whole empire, so
+        //    what it can employ is its import capacity - the export side never limited it.
+        //  - the free slots were read first (bench 544), which fell to nought exactly when the
+        //    zone was being served. Beside Active the figure must be the demand, not the
+        //    remainder: the pair only reads if one is the need and the other the answer.
         //
         // Deliberately WITHOUT a rotation term. Turning a backlog into a fleet size is the
         // queueing law, and it needs a measured arrival rate; inventing one here would produce a
-        // plausible number that is wrong. The free slots are the game's own answer to how many
-        // freighters fit, and they already carry a flux term of their own.
+        // plausible number that is wrong.
         //
-        // Colonists are left out: their slots are counted in HEADS and never converted into
-        // cargo loads, so adding them would mix two units in one total.
+        // Colonists are left out of BOTH figures: their slots are counted in HEADS and never
+        // converted into cargo loads, so counting them on one side only made Active outrun
+        // Required on its own.
         public int RequiredFreighters(Empire owner)
         {
-            int imports = 0, exports = 0;
+            int imports = 0;
             foreach (int id in Colonies)
             {
                 Planet p = owner.Universe.GetPlanet(id);
@@ -75,9 +78,8 @@ namespace Ship_Game
                     continue;
 
                 imports += p.FoodImportSlots + p.ProdImportSlots;
-                exports += p.FoodExportSlots + p.ProdExportSlots;
             }
-            return imports < exports ? imports : exports;
+            return imports;
         }
 
         // The freighters already converging on this zone. The colonies count what is inbound for
@@ -91,8 +93,9 @@ namespace Ship_Game
                 if (p == null || p.Owner != owner)
                     continue;
 
-                active += p.IncomingFoodFreighters + p.IncomingProdFreighters
-                        + p.IncomingColonistsFreighters;
+                // food and production only, the same two the demand counts: a colonist run has
+                // no counterpart in Required, and counting it here alone made the pair lie
+                active += p.IncomingFoodFreighters + p.IncomingProdFreighters;
             }
             return active;
         }
