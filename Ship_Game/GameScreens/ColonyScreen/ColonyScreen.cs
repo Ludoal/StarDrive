@@ -52,10 +52,12 @@ namespace Ship_Game
             u.ClearHostedTab();
             ExitScreen();
             u.SetSelectedPlanet(P); // land on the planet, selected - as closing always did
-            // The Empire colony tab is PERMANENT: closing the colony closes the whole group,
-            // wherever it was opened from - no origin routing there.
-            if (group == GameScreens.ScreenGroups.Group.Empire)
-                return;
+            // Ludoal fork (maintainer, bench 548): closing a colony returns to the table it was
+            // opened from, in EVERY group. The Empire group used to be excepted - its colony tab
+            // is permanent, so closing the colony closed the whole group instead. The exception
+            // cost more than it bought: one gesture behaved two ways depending on where you
+            // stood. The permanence is untouched by this - the Empire row keeps showing the last
+            // colony viewed, which is where that tab comes from, not from this routing.
             if (origin >= 0)
                 ScreenManager.AddScreen(GameScreens.ScreenGroups.TabOf(group, origin, u));
         }
