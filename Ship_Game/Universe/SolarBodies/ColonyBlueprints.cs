@@ -106,8 +106,6 @@ namespace Ship_Game.Universe.SolarBodies
 
             PercentCompleted = (int)(100f * built.Count / totalPlanned);
 
-            if (Completed)
-                ChangeTemplateIfLinked();
         }
 
         // How much of this plan this COLONY can actually end up with.
@@ -142,13 +140,22 @@ namespace Ship_Game.Universe.SolarBodies
             PercentAchievable = (int)(100 * (float)reachable.Count / totalPlannedBuildings);
         }
 
-        void ChangeTemplateIfLinked()
+        // Ludoal fork (maintainer feedback): a plan ends when the colony IS the list - the whole
+        // list, never the reachable part of it, since a plan longer than the ground or holding a
+        // technology not yet taken would otherwise hand over in the middle of an era.
+        //
+        // Checked once per governing turn rather than the moment a building lands: swapping or
+        // removing a plan is a decision about the colony, and a save being read is not the place
+        // to take it.
+        public void EndIfCompleted()
         {
-            if (LinkedBlueprintsName != null
-                && ResourceManager.TryGetBlueprints(LinkedBlueprintsName, out BlueprintsTemplate template))
-            {
+            if (!Completed)
+                return;
+
+            if (ResourceManager.TryGetBlueprints(LinkedBlueprintsName, out BlueprintsTemplate template))
                 ChangeTemplate(template);
-            }
+            else if (Exclusive)
+                P.RemoveBlueprints(); // the contract is honoured: the colony goes back to its own mandates
         }
 
         public void RefreshPlannedBuildingsWeCanBuild(IReadOnlyList<Building> buildingCanBuild)

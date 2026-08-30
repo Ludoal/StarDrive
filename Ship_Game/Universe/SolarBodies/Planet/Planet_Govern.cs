@@ -73,6 +73,7 @@ namespace Ship_Game
         {
             RefreshBuildingsWeCanBuildHere();
             UpdateBiospheresBeingBuilt();
+            Blueprints?.EndIfCompleted();
             if (RecentCombat)
                 return; // Cant Build stuff when there is combat on the planet
 
