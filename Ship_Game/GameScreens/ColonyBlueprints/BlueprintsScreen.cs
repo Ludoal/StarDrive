@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using SDGraphics;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
@@ -374,6 +374,16 @@ namespace Ship_Game
 
         void RefreshBuildableList()
         {
+            // Ludoal fork (maintainer feedback): the rows are rebuilt here, so a pin taken on one
+            // of them would point at an item the list no longer holds - and the description would
+            // stay on that building until another row was clicked. Adding a building to the plan
+            // goes through this refresh, which is where a player meets it.
+            if (PinnedBuildable != null)
+            {
+                PinnedBuildable.DescriptionPinned = false;
+                PinnedBuildable = null;
+            }
+
             BuildableList.Reset();
             AddOutpost();
 
