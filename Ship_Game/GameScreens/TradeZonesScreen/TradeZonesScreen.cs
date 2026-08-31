@@ -55,7 +55,7 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.TzRequired), Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.TzAssigned), Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.TzActive), Align = TableAlign.Number, Sortable = true },
-                // and what it OWNS, which only a strict zone does - the requisition made visible
+                // and what it OWNS, which only an exclusive zone does - the requisition made visible
                 new UITable.Column { Title = Localizer.Token(GameText.Freighters), Align = TableAlign.Number, Sortable = true },
                 // four icons now: the two arrows that order the zones, then edit and delete
                 new UITable.Column { Title = "", Width = 110, Align = TableAlign.Center },
@@ -150,7 +150,7 @@ namespace Ship_Game
 
         // Called back by the picker. A zone with no colony is never kept.
         public void ApplyColonies(TradeZone zone, Array<Planet> chosen, int quota, string name,
-                                  bool strict, CargoPriority priority)
+                                  bool exclusive, CargoPriority priority)
         {
             if (chosen.IsEmpty)
             {
@@ -167,7 +167,7 @@ namespace Ship_Game
                 zone.Add(p);
 
             zone.Quota = quota;
-            zone.Strict = strict;
+            zone.Exclusive = exclusive;
             zone.Priority = priority;
             // an empty box keeps the name the zone already had, rather than leaving it nameless
             if (name.NotEmpty() && name != zone.Name)

@@ -17,7 +17,7 @@ namespace Ship_Game
         readonly TradeZone Zone; // null while creating
         readonly Array<Planet> Chosen = new();
         int Quota; // held locally: while creating, there is no zone yet to write it on
-        bool Strict;
+        bool Exclusive;
         CargoPriority Priority;
         UITextEntry NameEntry;
         UILabel NameTakenLabel;
@@ -36,7 +36,7 @@ namespace Ship_Game
             Screen = screen;
             Zone = zone;
             Quota = zone?.Quota ?? 0;
-            Strict = zone?.Strict ?? false;
+            Exclusive = zone?.Exclusive ?? false;
             Priority = zone?.Priority ?? CargoPriority.Auto;
             TransitionOnTime = 0.25f;
             if (zone != null)
@@ -116,8 +116,8 @@ namespace Ship_Game
 
             // the REGIME, then its one lever. Fixed rows off the box's own top, the same grammar
             // the rail above them uses.
-            Add(new UICheckBox(setArea.X + 10, setArea.Y + 58, () => Strict, v => Strict = v,
-                               Fonts.Arial12Bold, GameText.TzStrict, GameText.TzStrictTip));
+            Add(new UICheckBox(setArea.X + 10, setArea.Y + 58, () => Exclusive, v => Exclusive = v,
+                               Fonts.Arial12Bold, GameText.TzExclusive, GameText.TzExclusiveTip));
             Add(new UILabel(new Vector2(setArea.X + 10, setArea.Y + 90), GameText.FreighterPriority,
                             Fonts.Arial12Bold, Colors.Cream, GameText.FreighterPriorityTip));
             PriorityList = new DropOptions<CargoPriority>(
@@ -163,7 +163,7 @@ namespace Ship_Game
         {
             // an empty pick on an existing zone dissolves it: a zone with no colony would read as
             // "everywhere" downstream, so it is never a state we keep
-            Screen.ApplyColonies(Zone, Chosen, Quota, NameEntry.Text, Strict, Priority);
+            Screen.ApplyColonies(Zone, Chosen, Quota, NameEntry.Text, Exclusive, Priority);
             GameAudio.AcceptClick();
             ExitScreen();
         }

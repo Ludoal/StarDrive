@@ -21,9 +21,9 @@ namespace Ship_Game
         // predates them is numbered by the housekeeping on its first turn, and no hull can point
         // at 0 since 0 means "no zone" on the other side too.
         [StarData] public int Id { get; private set; }
-        // STRICT: the zone owns its hulls instead of borrowing a share of the turn. The empire
-        // keeps the fleet (build, scrap, refit) - a strict zone requisitions, it does not breed.
-        [StarData] public bool Strict;
+        // EXCLUSIVE: the zone owns its hulls instead of borrowing a share of the turn. The empire
+        // keeps the fleet (build, scrap, refit) - an exclusive zone requisitions, it does not breed.
+        [StarData] public bool Exclusive;
         // CargoPriority as an int: one of our own enumerations never enters the save graph.
         [StarData] public int PriorityValue;
         [StarData] public string Name { get; private set; }
@@ -62,12 +62,12 @@ namespace Ship_Game
             set => PriorityValue = value == CargoPriority.TradeFirst ? 0 : (int)value;
         }
 
-        // The hulls that belong to this zone. Strict only: a soft zone borrows a share of the
+        // The hulls that belong to this zone. Exclusive only: a soft zone borrows a share of the
         // turn and owns nothing, which is the whole difference between the two regimes.
         public Array<Ship> MemberFreighters(Empire owner)
         {
             var members = new Array<Ship>();
-            if (!Strict || Id == 0)
+            if (!Exclusive || Id == 0)
                 return members;
 
             foreach (Ship s in owner.OwnedShips)
