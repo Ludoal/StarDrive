@@ -990,16 +990,19 @@ namespace Ship_Game
             if (evt != DragEvent.End)
                 return;
 
-            if (outside && item != null) // TODO: somehow `item` can be null, not sure how it happens
+            // released INSIDE the list: not a drop attempt - the 75ms DragBeginDelay arms a
+            // "drag" on any ordinary click, and buzzing here lands on top of the click's own
+            // sound (bench 459 double-buzz, fixed the same way on the colony's build list)
+            if (!outside)
+                return;
+
+            if (item != null && PlanAreaHovered) // TODO: somehow `item` can be null, not sure how it happens
             {
-                if (PlanAreaHovered)
-                {
-                    OnBuildableItemDoubleClicked(item);
-                    return;
-                }
+                OnBuildableItemDoubleClicked(item);
+                return;
             }
 
-            GameAudio.NegativeClick();
+            GameAudio.NegativeClick(); // a genuine drop outside the list that found no home
         }
 
         Building GetHoveredBuildingFromBuildableList(InputState input)
