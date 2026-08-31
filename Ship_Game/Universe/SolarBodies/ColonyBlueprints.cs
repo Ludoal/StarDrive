@@ -32,7 +32,9 @@ namespace Ship_Game.Universe.SolarBodies
         // opened its screen, which is what refreshed the counts. Nothing is diagnosed from them
         // until they have been computed at least once. A FLAG rather than a test on the values:
         // a plan whose every entry waits on a technology shows the very same zeroes, and it is a
-        // true stall - only the flag tells the two apart (Lek's catch).
+        // true stall - only the flag tells the two apart (Lek's catch). ⚠ Set by the ONE path
+        // that rebuilds the offer first, never by a bare Refresh() - see RefreshPlannedBuildings-
+        // WeCanBuild for why an empty offer cannot be told from an exhausted one.
         public bool Measured { get; private set; }
         [StarData] BlueprintsTemplate Template;
 
@@ -123,7 +125,6 @@ namespace Ship_Game.Universe.SolarBodies
         {
             UpdateCompletion();
             UpdatePercentAchievable();
-            Measured = true;
         }
 
         public void UpdateCompletion()
@@ -245,6 +246,15 @@ namespace Ship_Game.Universe.SolarBodies
             // them here left the other at its load-time nought - which is the very rule written
             // above Refresh(), and which this line broke the day it was added.
             Refresh();
+            // ⚠ MEASURED is claimed HERE and nowhere else (bench 555): this is the one path that
+            // knows the offer was rebuilt immediately before. Refresh() alone cannot say so - the
+            // buildable cache starts EMPTY and stays empty until somebody fills it, and an empty
+            // offer cannot be told from an exhausted one. Measuring against a cache nobody has
+            // filled yet puts every planned entry out of reach, and since the built count is
+            // exactly the standing set, Blocked comes out true on the spot: the pink of a colony
+            // that is merely waiting for its first governing turn, and which the Colony screen
+            // never showed because opening it rebuilt the offer first.
+            Measured = true;
         }
 
         // Ludoal fork (maintainer feedback): a plan directs what gets RAISED. Only an exclusive
