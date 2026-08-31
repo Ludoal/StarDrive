@@ -75,10 +75,36 @@ namespace Ship_Game
             FreighterAutomationSplit = true;
         }
 
-        public int FreighterCap => (int)(AveragePlanetStorage / AverageFreighterCargoCap * OwnedPlanets.Count).Clamped(1, OwnedPlanets.Count*10);
+        // ⚠ THE PERIMETER (maintainer feedback): these two count PLANETS, not hulls. A strict zone
+        // takes its colonies out of the empire's care, so leaving them in the numerator has the
+        // empire budget a fleet for worlds it no longer serves - a double count of NEED, hidden
+        // inside an average. The colonies of a strict zone leave with its ships.
+        public int PlanetsOutsideStrictZones
+        {
+            get
+            {
+                int count = 0;
+                for (int i = 0; i < OwnedPlanets.Count; ++i)
+                    if (GetTradeZone(OwnedPlanets[i])?.Strict != true)
+                        ++count;
+
+                return count;
+            }
+        }
+
+        public int FreighterCap
+        {
+            get
+            {
+                int planets = PlanetsOutsideStrictZones;
+                return (int)(AveragePlanetStorage / AverageFreighterCargoCap * planets).Clamped(1, planets * 10);
+            }
+        }
         public int FreightersBeingBuilt  => AI.CountGoals(goal => goal is IncreaseFreighters);
-        public int MaxFreightersInQueue  => (int)Math.Ceiling((OwnedPlanets.Count / 5f)).Clamped(2, 5);
-        public int TotalFreighters       => OwnedShips.Count(s => s?.IsFreighter == true);
+        public int MaxFreightersInQueue  => (int)Math.Ceiling((PlanetsOutsideStrictZones / 5f)).Clamped(2, 5);
+        // the hulls a strict zone owns are out of the empire's fleet for every purpose that
+        // budgets it - the reserve and the refit ceiling derive from this figure, so they follow
+        public int TotalFreighters       => OwnedShips.Count(s => s?.IsFreighter == true && !s.InTradeZone);
         // A share of the fleet, rounded UP: a tenth of five freighters would otherwise round to
         // nothing exactly where the reserve matters most. Zero stays zero.
         static int ShareOfFleet(int fleet, int percent) => percent <= 0 ? 0 : (fleet * percent + 99) / 100;
@@ -250,6 +276,8 @@ namespace Ship_Game
             if (domestic.NoFreeFreighters)
                 return;
 
+            RequisitionForStrictZones();
+
             // a zone whose pass does not run this turn holds nothing back: last turn's hulls
             // went elsewhere long ago, and a stale hold would starve the common pool for nobody
             foreach (TradeZone z in TradeZones)
@@ -257,6 +285,13 @@ namespace Ship_Game
 
             foreach (TradeZone zone in TradeZones)
             {
+                // a STRICT zone serves itself, from hulls it owns, and takes nothing here
+                if (zone.Strict)
+                {
+                    DispatchStrictZone(zone);
+                    continue;
+                }
+
                 // a quota of nought means the number is measured rather than ordered
                 int quota = zone.Quota > 0 ? zone.Quota : zone.RequiredFreighters(this);
                 if (quota <= 0)
@@ -367,7 +402,7 @@ namespace Ship_Game
             {
                 if (State == EmpireIdleFreighters.Fetch)
                 {
-                    IdleFreighters = Owner.GetIdleFreighters(InterTrade);
+                    IdleFreighters = Owner.GetIdleFreightersOutsideZones(InterTrade);
                     SetIdleFreightesState();
                     // the vanilla socle stays in the condition: at reserve 0 this is the old test.
                     // A reserve only adds a second reason to build, and counts the freighters on
@@ -482,7 +517,7 @@ namespace Ship_Game
             // array is an artefact of the filter, so sparing "the first N" would spare a
             // different set every turn and reset their timers at random. Counted once.
             int reserve = FreighterReserve;
-            int freeOrReturning = reserve > 0 ? GetIdleFreighters(false).Length + FreightersInRefit : 0;
+            int freeOrReturning = reserve > 0 ? GetIdleFreightersOutsideZones(false).Length + FreightersInRefit : 0;
             for (int i = 0; i < ownedFreighters.Length; ++i)
             {
                 Ship freighter = ownedFreighters[i];
@@ -538,7 +573,7 @@ namespace Ship_Game
             // zone that received nothing this turn simply makes its stations wait a turn.
             TradeZone stationZone = TradeZoneOfStation(targetStation);
             Ship[] idleFreighters = stationZone == null
-                                  ? GetIdleFreighters(interTrade: false)
+                                  ? GetIdleFreightersOutsideZones(interTrade: false)
                                   : stationZone.LentThisTurn.Filter(s => s.IsIdleFreighter && s.Loyalty == this);
 
             if (idleFreighters.Length == 0) // Need trade for auto trade but no freighters found
@@ -560,6 +595,81 @@ namespace Ship_Game
                         return true;
             }
             return false;
+        }
+
+        // A strict zone serves its own colonies with its own hulls and touches nothing else. Note
+        // what it CANNOT do, and that this falls out of the machinery rather than being forbidden
+        // here: a TradeState handed its ships never builds - only the fetch path does - so a
+        // strict zone requisitions and never breeds. The empire keeps the fleet, as decided.
+        void DispatchStrictZone(TradeZone zone)
+        {
+            Array<Planet> colonies = zone.ColonyPlanets(this);
+            if (colonies.Count == 0)
+                return;
+
+            Ship[] idle = zone.MemberFreighters(this).Filter(s => s.IsIdleFreighter);
+            if (idle.Length == 0)
+                return;
+
+            TradeState state = new(this, false);
+            state.SetIdleFreighters(idle);
+            if (NonCybernetic)
+                DispatchOrBuildFreighters(Goods.Food, colonies, false, ref state);
+
+            // the zone's one lever. Pinned, it answers; on Auto it keeps the empire's own
+            // population-weighted dice, so a zone left alone behaves like the empire around it.
+            bool productionFirst;
+            if (zone.Priority == CargoPriority.ProductionFirst || zone.Priority == CargoPriority.ColonistsFirst)
+                productionFirst = zone.Priority == CargoPriority.ProductionFirst;
+            else
+                productionFirst = Random.RollDice(TotalPopBillion / MaxPopBillion * (NonCybernetic ? 200 : 300));
+
+            if (productionFirst)
+            {
+                DispatchOrBuildFreighters(Goods.Production, colonies, false, ref state);
+                DispatchOrBuildFreighters(Goods.Colonists, colonies, false, ref state);
+            }
+            else
+            {
+                DispatchOrBuildFreighters(Goods.Colonists, colonies, false, ref state);
+                DispatchOrBuildFreighters(Goods.Production, colonies, false, ref state);
+            }
+
+            state.UpdatePlanetsTradeGoods();
+        }
+
+        // ★ THE REQUISITION, and it is the regime's only automatic gesture: a strict zone short of
+        // hulls takes free ones, up to its measured need. It takes only what is FREE - idle and
+        // owned by no zone - so a run in flight is never interrupted and no zone is ever poached.
+        // The empire's RESERVE is the brake: the requisition stops rather than draw the common
+        // pool below it, which is the whole reason that lever stayed at the empire (Ludo, 31 Aug).
+        void RequisitionForStrictZones()
+        {
+            if (!isPlayer || TradeZones.IsEmpty)
+                return;
+
+            for (int i = 0; i < TradeZones.Count; ++i)
+            {
+                TradeZone zone = TradeZones[i];
+                if (!zone.Strict || zone.Id == 0)
+                    continue;
+
+                int need = zone.Quota > 0 ? zone.Quota : zone.RequiredFreighters(this);
+                int have = zone.MemberFreighters(this).Count;
+                if (have >= need)
+                    continue;
+
+                Ship[] free = GetIdleFreightersOutsideZones(false);
+                int reserve = FreighterReserve;
+                for (int j = 0; j < free.Length && have < need; ++j)
+                {
+                    if (free.Length - (j + 1) < reserve)
+                        break; // the empire keeps its reserve: a zone may not requisition it away
+
+                    free[j].TradeZoneId = zone.Id;
+                    ++have;
+                }
+            }
         }
 
         // The zone a station belongs to, by the BODY it orbits - the same id a zone holds. Only
@@ -643,6 +753,18 @@ namespace Ship_Game
         {
             return interTrade ? OwnedShips.Filter(s => s.IsIdleFreighter && s.AllowInterEmpireTrade)
                               : OwnedShips.Filter(s => s.IsIdleFreighter); 
+        }
+
+        // ★ THE ENCLOSURE, and its named exemptions. A hull owned by a strict zone is not part of
+        // the empire's free pool - but "idle" must go on meaning idle, so the filter lives at the
+        // CONSUMERS rather than in GetIdleFreighters itself. The consumers that step over a zone's
+        // hulls are: the empire's own dispatch, the scrap arm, and station supply outside a zone.
+        // The REFIT sweep is deliberately not one of them: it sees the whole fleet, as agreed - a
+        // zone that keeps its ships out of modernisation is an enclosure that rots.
+        Ship[] GetIdleFreightersOutsideZones(bool interTrade)
+        {
+            return interTrade ? OwnedShips.Filter(s => s.IsIdleFreighter && s.AllowInterEmpireTrade && !s.InTradeZone)
+                              : OwnedShips.Filter(s => s.IsIdleFreighter && !s.InTradeZone);
         }
 
         bool GetTradeParameters(Goods goods, Ship[] freighterList, GameObject target, 

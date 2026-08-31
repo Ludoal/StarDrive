@@ -15,6 +15,17 @@ namespace Ship_Game
     [StarDataType]
     public class TradeZone
     {
+        // Ludoal fork (maintainer feedback): a STABLE number the hulls can name. Not the zone's
+        // position in the list - that order is the dispatch priority and the player reorders it.
+        // Zero means "not numbered yet": ids start at 1, so a zone restored from a save that
+        // predates them is numbered by the housekeeping on its first turn, and no hull can point
+        // at 0 since 0 means "no zone" on the other side too.
+        [StarData] public int Id { get; private set; }
+        // STRICT: the zone owns its hulls instead of borrowing a share of the turn. The empire
+        // keeps the fleet (build, scrap, refit) - a strict zone requisitions, it does not breed.
+        [StarData] public bool Strict;
+        // CargoPriority as an int: one of our own enumerations never enters the save graph.
+        [StarData] public int PriorityValue;
         [StarData] public string Name { get; private set; }
         [StarData] public Array<int> Colonies { get; private set; } = new();
         [StarData] public int Quota;
@@ -35,6 +46,36 @@ namespace Ship_Game
         }
 
         public void ChangeName(string newName) => Name = newName;
+        public void SetId(int id) => Id = id;
+
+        // ⚠ TradeFirst is refused here, not merely left out of the picker: it lifts the FOREIGN
+        // pass above production and colonists at the scale of the empire, and a zone serves no
+        // foreign planet. A save carrying it - hand-edited, or written by a later change of mind -
+        // reads as Auto rather than as a lever with nothing at the end of it.
+        public CargoPriority Priority
+        {
+            get
+            {
+                var p = (CargoPriority)PriorityValue;
+                return p == CargoPriority.TradeFirst ? CargoPriority.Auto : p;
+            }
+            set => PriorityValue = value == CargoPriority.TradeFirst ? 0 : (int)value;
+        }
+
+        // The hulls that belong to this zone. Strict only: a soft zone borrows a share of the
+        // turn and owns nothing, which is the whole difference between the two regimes.
+        public Array<Ship> MemberFreighters(Empire owner)
+        {
+            var members = new Array<Ship>();
+            if (!Strict || Id == 0)
+                return members;
+
+            foreach (Ship s in owner.OwnedShips)
+                if (s.IsFreighter && s.TradeZoneId == Id)
+                    members.Add(s);
+
+            return members;
+        }
 
         public bool Serves(Planet planet) => Colonies.Contains(planet.Id);
 

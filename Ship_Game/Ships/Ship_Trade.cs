@@ -16,6 +16,12 @@ namespace Ship_Game.Ships
         [StarData] public bool TransportingProduction { get; set; }
         [StarData] public bool AllowInterEmpireTrade  { get; set; }
         [StarData] public Array<int> TradeRoutes      { get; private set; } = new();
+        // Ludoal fork (maintainer feedback): the zone this freighter BELONGS to, 0 for none.
+        // Written on the hull rather than listed by the zone, so a ship cannot be in two zones
+        // at once - the fact is indeniable by construction instead of policed. And a field
+        // absent from an old save reads as 0, which is exactly "no zone": no migration.
+        [StarData] public int TradeZoneId { get; set; }
+        public bool InTradeZone => TradeZoneId != 0;
 
         public bool IsCandidateForTradingBuild => ShipData.IsCandidateForTradingBuild;
         public bool IsFreighter => ShipData.IsFreighter && !IsMiningShip;

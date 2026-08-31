@@ -14,6 +14,7 @@ namespace Ship_Game
         public TradeZone AddTradeZone(Planet seed)
         {
             var zone = new TradeZone(GetNewTradeZoneName(seed?.Name ?? Name));
+            zone.SetId(NextTradeZoneId());
             if (seed != null)
                 zone.Add(seed);
 
@@ -21,7 +22,45 @@ namespace Ship_Game
             return zone;
         }
 
-        public void RemoveTradeZone(TradeZone zone) => TradeZones.Remove(zone);
+        // ⚠ a dissolved zone RELEASES its hulls. A freighter pointing at a zone that no longer
+        // exists would be enclosed by nothing and served by no one - the one state this design
+        // must never leave behind.
+        public void RemoveTradeZone(TradeZone zone)
+        {
+            if (zone.Id != 0)
+                foreach (Ship s in OwnedShips)
+                    if (s.TradeZoneId == zone.Id)
+                        s.TradeZoneId = 0;
+
+            TradeZones.Remove(zone);
+        }
+
+        // Ids are handed out above the highest one in use, never reused: a number freed by a
+        // dissolved zone must not come back and adopt the hulls of its predecessor.
+        int NextTradeZoneId()
+        {
+            int max = 0;
+            foreach (TradeZone z in TradeZones)
+                if (z.Id > max)
+                    max = z.Id;
+
+            return max + 1;
+        }
+
+        public TradeZone GetTradeZoneById(int id)
+            => id == 0 ? null : TradeZones.Find(z => z.Id == id);
+
+        // ★ THE ONE WRITER of a freighter's membership. Three doors lead here - the Ships page,
+        // the Trade page and the cargo's own Zone button - and a rule applied at one of them must
+        // be applied at all three, which only holds if there is a single place to apply it.
+        // Passing null releases the hull.
+        public void AssignFreighterToZone(Ship freighter, TradeZone zone)
+        {
+            if (freighter == null || !freighter.IsFreighter)
+                return;
+
+            freighter.TradeZoneId = zone?.Id ?? 0;
+        }
 
         // The list order IS the priority: when two zones want more freighters than the pool
         // holds, the one placed first is served first. Moving a zone is therefore a game
@@ -93,6 +132,10 @@ namespace Ship_Game
             for (int i = TradeZones.Count - 1; i >= 0; --i)
             {
                 TradeZone zone = TradeZones[i];
+                // a zone restored from a save older than the numbering has none: it gets one here,
+                // on the first turn, before anything can point at it
+                if (zone.Id == 0)
+                    zone.SetId(NextTradeZoneId());
                 for (int j = zone.Colonies.Count - 1; j >= 0; --j)
                 {
                     Planet planet = Universe.GetPlanet(zone.Colonies[j]);
@@ -105,7 +148,7 @@ namespace Ship_Game
                 }
 
                 if (zone.IsEmpty)
-                    TradeZones.RemoveAt(i);
+                    RemoveTradeZone(zone);
             }
         }
     }
