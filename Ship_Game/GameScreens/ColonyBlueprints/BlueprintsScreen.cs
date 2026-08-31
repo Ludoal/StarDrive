@@ -932,7 +932,7 @@ namespace Ship_Game
         {
             BlueprintsName.Text = template.Name;
             Player.Universe.RefreshEmpiresPlanetsBlueprints(template, delete: false);
-            GovernorTab?.OnBlueprintsChanged(template);
+            GovernorTab?.OnBlueprintsSaved(template);
             LinkBlueprints.Enabled = true;
             RefreshChainList();
         }

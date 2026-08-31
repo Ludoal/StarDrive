@@ -101,7 +101,7 @@ namespace Ship_Game
         // Ludoal fork (maintainer feedback): the exclusive flag as a padlock rather than a
         // line of text - it arms demolitions, so it stays in the façade, but it costs a row
         // in a column that no longer has rows to spare.
-        UIPanel BlueprintsExclusiveIcon;
+        UIPanel BlueprintsExclusiveIcon, BlueprintsLinkExclusiveIcon;
         ProgressBar BlueprintsCompletion;
 
 
@@ -167,6 +167,11 @@ namespace Ship_Game
             BlueprintsLinkName      = Add(new UILabel("", Font, Color.White));
             BlueprintsLinkName.Tooltip = GameText.BpOpenOnDoubleClickTip;
             BlueprintsLinkIcon      = Add(new UIPanel(ResourceManager.Texture("NewUI/blueprints")));
+            // the successor wears the padlock too when IT is exclusive (maintainer bench 555):
+            // the plan that comes next takes the same command, and the player decides to chain
+            // to it long before it arrives
+            BlueprintsLinkExclusiveIcon = Add(new UIPanel(ResourceManager.Texture("NewUI/icon_lock")));
+            BlueprintsLinkExclusiveIcon.Tooltip = GameText.ExclusiveBlueprints;
 
             // "Gov.": the full word ran past the Defense column.
             GovOrbitals    = Add(new UICheckBox(() => Planet.GovOrbitals, Font, title:"Gov. Manages Space Defense", tooltip:GameText.TheGovernorWillBuildStations));
@@ -388,13 +393,16 @@ namespace Ship_Game
             // closing the add icon got when the picker took over its gesture.
             BlueprintsExclusiveIcon.Size = new Vector2(16, 16);
             BlueprintsExclusiveIcon.Pos  = new Vector2(X + Width - 30, bpRow1 + 2);
+            BlueprintsLinkExclusiveIcon.Size = new Vector2(16, 16);
+            BlueprintsLinkExclusiveIcon.Pos  = new Vector2(X + Width - 30, bpRow3 + 2);
             BlueprintsLink.Pos      = new Vector2(bpX, bpRow3);
             BlueprintsLinkIcon.Size = new Vector2(BpIconSize, BpIconSize);
             BlueprintsLinkIcon.Pos  = new Vector2(bpValueX, bpRow3);
             BlueprintsLinkName.Pos  = new Vector2(bpValueX + BpIconSize + 5, bpRow3);
 
-            // one column off the right edge, one gesture per row: the add icon on the picker's
-            // row, the padlock on the name's, the hand-over arrow on the bar's
+            // one column off the right edge, one mark per row: the add icon on the picker's row,
+            // the padlock on the name's, the hand-over arrow on the bar's, and the successor's own
+            // padlock on the link row
             LoadBlueprints.Size = MoveOnBlueprints.Size = new Vector2(20, 20);
             LoadBlueprints.Pos   = new Vector2(X + Width - 30, bpRow0);
 
@@ -597,6 +605,20 @@ namespace Ship_Game
             return name.NotEmpty() && ResourceManager.TryGetBlueprints(name, out template);
         }
 
+        // Is the plan this colony hands over to an exclusive one? Read from the template store
+        // rather than remembered: the successor may be edited, renamed or unlinked between two
+        // draws, and a remembered answer would outlive the plan it described.
+        bool LinkedPlanIsExclusive
+        {
+            get
+            {
+                string next = Planet.HasBlueprints ? Planet.Blueprints.LinkedBlueprintsName : "";
+                return next.NotEmpty()
+                       && ResourceManager.TryGetBlueprints(next, out BlueprintsTemplate t)
+                       && t.Exclusive;
+            }
+        }
+
         void OnColonyTypeChanged(Planet.ColonyType type)
         {
             Planet.CType = type;
@@ -630,6 +652,12 @@ namespace Ship_Game
 
             ApplyBlueprints(template);
         }
+
+        // Ludoal fork (maintainer bench 555): saving from the EDITOR is not a crossing. The plan
+        // is already this colony's, and whoever just ticked Exclusive in the editor did so with
+        // their own hand - warning them about a step they are taking deliberately, on a screen
+        // that shows them the very checkbox, is noise. The prompt belongs to CHOOSING a plan.
+        public void OnBlueprintsSaved(BlueprintsTemplate template) => ApplyBlueprints(template);
 
         void ApplyBlueprints(BlueprintsTemplate template)
         {
@@ -810,6 +838,7 @@ namespace Ship_Game
                 MoveOnBlueprints.Visible        = bpPlan
                                                   && Planet.Blueprints.LinkedBlueprintsName != "";
                 BlueprintsExclusiveIcon.Visible = bpPlan && Planet.Blueprints.Exclusive;
+                BlueprintsLinkExclusiveIcon.Visible = bpPlan && LinkedPlanIsExclusive;
                 BlueprintsLink.Visible = BlueprintsLinkName.Visible = BlueprintsLinkIcon.Visible =
                     bpPlan && Planet.Blueprints.LinkedBlueprintsName != "";
             }
