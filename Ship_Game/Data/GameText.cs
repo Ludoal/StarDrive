@@ -7177,6 +7177,10 @@ namespace Ship_Game
         BpMoveOnTip = 7232,
         /// <summary>Double-click to open this blueprint</summary>
         BpOpenOnDoubleClickTip = 7233,
+        /// <summary>Mining Station</summary>
+        TzMiningStation = 7234,
+        /// <summary>Research Station</summary>
+        TzResearchStation = 7235,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

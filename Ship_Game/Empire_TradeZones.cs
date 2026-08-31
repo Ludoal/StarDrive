@@ -54,6 +54,22 @@ namespace Ship_Game
         // A mining rig or a research post orbits a body that is nobody's colony, so it never
         // shows up in GetPlanets() - and a zone may name it all the same, because a zone names
         // BODIES and what stands on them is the fleet's business.
+        // What stands on a body, when anything of ours does. A picker that lists colonies and
+        // station bodies side by side must say which is which: they are named the same way and
+        // behave nothing alike.
+        public string StationKindOn(Planet body)
+        {
+            foreach (Ship s in OwnedShips)
+            {
+                if (!s.IsTethered || s.GetTether() != body)
+                    continue;
+
+                if (s.IsMiningStation)   return Localizer.Token(GameText.TzMiningStation);
+                if (s.IsResearchStation) return Localizer.Token(GameText.TzResearchStation);
+            }
+            return "";
+        }
+
         public Array<Planet> StationBodies()
         {
             var bodies = new Array<Planet>();

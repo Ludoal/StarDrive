@@ -82,7 +82,13 @@ namespace Ship_Game
             // are offered after the colonies. They are not colonies and never will be, so they sit
             // in their own run rather than pretending to a sort they do not share.
             foreach (Planet body in Screen.Player.StationBodies().Sorted(true, b => b.Name))
-                ColoniesSL.AddItem(new ColonyPickItem(this, body));
+            {
+                // named for what STANDS there (maintainer bench 556): a body carrying a rig reads
+                // exactly like a colony in a list of colonies, and it is not one
+                string kind = Screen.Player.StationKindOn(body);
+                ColoniesSL.AddItem(new ColonyPickItem(this, body,
+                    kind.NotEmpty() ? $"{body.Name}  ({kind})" : body.Name));
+            }
 
             // the zone's own lever. Nought is not a quantity here: it hands the number back to
             // the measure, so the rail reads Auto at its left stop.
@@ -143,10 +149,13 @@ namespace Ship_Game
             readonly Planet Colony;
             UICheckBox Box;
 
-            public ColonyPickItem(TradeZoneColoniesScreen picker, Planet colony)
+            readonly string Label;
+
+            public ColonyPickItem(TradeZoneColoniesScreen picker, Planet colony, string label = null)
             {
                 Picker = picker;
                 Colony = colony;
+                Label = label ?? colony.Name;
             }
 
             public override void PerformLayout()
@@ -155,7 +164,7 @@ namespace Ship_Game
                 Box = Add(new UICheckBox(X + 4, Y + 2,
                                          () => Picker.IsChosen(Colony),
                                          on => Picker.SetChosen(Colony, on),
-                                         Fonts.Arial12Bold, Colony.Name, GameText.TzColonyPickTip));
+                                         Fonts.Arial12Bold, Label, GameText.TzColonyPickTip));
                 base.PerformLayout();
             }
 
