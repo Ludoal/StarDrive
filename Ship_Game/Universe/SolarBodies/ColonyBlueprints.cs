@@ -225,6 +225,12 @@ namespace Ship_Game.Universe.SolarBodies
                     }
                 }
             }
+
+            // Ludoal fork (maintainer feedback): what this colony can REACH is read off the very
+            // list rebuilt above, so it is recomputed here rather than waiting for a building to
+            // rise or fall. A save being read arrives with that list still empty: every planned
+            // entry then counted as out of reach, and the screen said the plan was stuck.
+            UpdatePercentAchievable();
         }
 
         // Ludoal fork (maintainer feedback): a plan directs what gets RAISED. Only an exclusive
