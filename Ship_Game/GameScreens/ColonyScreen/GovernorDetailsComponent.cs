@@ -48,7 +48,7 @@ namespace Ship_Game
         UIButton BuildPlatform;
         UIButton BuildStation;
         UIButton BuildShipyard;
-        UIButton EditBlueprints, LoadBlueprints, MoveOnBlueprints;
+        UIButton LoadBlueprints, MoveOnBlueprints;
         // Ludoal fork (maintainer feedback): the plan's mode. DERIVED, never stored - a colony
         // either has a plan of its own or it does not - and Auto, which defers to the empire's
         // table of default plans per governor type (Policies > Colony). Auto shipped only once
@@ -156,6 +156,7 @@ namespace Ship_Game
             // the control that follows already says what the label is for.
             ColonyBlueprints = Add(new UILabel(GameText.BlueprintNameLabel, Font, Color.Wheat));
             BlueprintsName   = Add(new UILabel("", Font, Color.Gold));
+            BlueprintsName.Tooltip = GameText.BpOpenOnDoubleClickTip;
             BlueprintsCompletionLbl = Add(new UILabel(GameText.CompletionNoColon, Font, Color.Wheat));
             // White body text - the semantic colours (green/gold) stay.
             BlueprintsExclusiveIcon = Add(new UIPanel(ResourceManager.Texture("NewUI/icon_lock")));
@@ -164,6 +165,7 @@ namespace Ship_Game
             // a cream label, then the plan itself wearing its own category's colour and cog.
             BlueprintsLink          = Add(new UILabel(GameText.BlueprintNextLabel, Font, Color.Wheat));
             BlueprintsLinkName      = Add(new UILabel("", Font, Color.White));
+            BlueprintsLinkName.Tooltip = GameText.BpOpenOnDoubleClickTip;
             BlueprintsLinkIcon      = Add(new UIPanel(ResourceManager.Texture("NewUI/blueprints")));
 
             // "Gov.": the full word ran past the Defense column.
@@ -217,11 +219,10 @@ namespace Ship_Game
             ScrapMandateList = Add(MandateDropdown.Make(Planet.GovScrapMandate,
                 m => Universe.RunOnSimThread(() => Planet.SetScrapMandate(m)), withAuto: true));
 
-            // Ludoal fork (maintainer feedback): the three blueprint gestures wear the icons the
-            // construction list already uses for the same verbs - pencil to edit, plus to bring one
-            // in, cross to drop it. Three labelled buttons no longer fit beside the portrait, and a
-            // vocabulary the player has already learned costs nothing to read.
-            EditBlueprints   = BpIconButton("NewUI/icon_build_edit", GameText.EditBluprintsTip, OnEditblueprintsClicked);
+            // Ludoal fork (maintainer feedback): the blueprint gestures wear the icons the
+            // construction list already uses for the same verbs - plus to bring one in, cross to
+            // drop it. The PENCIL is gone (bench 554): the plan names open themselves on a double
+            // click, so an icon whose only job was "open this" said twice what one gesture says.
             // ⚠ bench 524: an OPEN dropdown does not draw the entry that is already active - its
             // rect is zeroed - so Custom cannot be re-picked while the colony is already on
             // Custom, and there is no event to fire. The picker is the door out of Auto or None;
@@ -363,7 +364,7 @@ namespace Ship_Game
             // They ride the right-hand column, under the world title row. Fixed steps, and every
             // element is placed FROM them - never from a share of the space that happens to be
             // left, which moves the whole block the day a row is added above it.
-            const int BpLabelW = 92, BpBarW = 120, BpIconSize = 20, BpGestureStep = 26;
+            const int BpLabelW = 92, BpBarW = 120, BpIconSize = 20;
             float bpX    = ColumnX;
             // one constant per row rather than a uniform step: a bar row is not as tall as a text
             // row, and these are the heights the bench gave back. Read off the 520 shot.
@@ -382,21 +383,21 @@ namespace Ship_Game
             BluePrintsIcon.Size     = new Vector2(BpIconSize, BpIconSize);
             BluePrintsIcon.Pos      = new Vector2(bpValueX, bpRow1);
             BlueprintsName.Pos      = new Vector2(bpValueX + BpIconSize + 5, bpRow1);
-            // ⚠ the padlock and the pencil take FIXED columns off the right edge, never the name's
-            // own edge: a UILabel measures its first text and only ever grows, so anchoring to it
-            // drifts the moment a longer name is loaded. Two columns, not three - the add icon's
-            // place was closed rather than left as a hole when the picker took over its gesture.
+            // ⚠ the padlock takes a FIXED column off the right edge, never the name's own edge:
+            // a UILabel measures its first text and only ever grows, so anchoring to it drifts the
+            // moment a longer name is loaded. ONE column now, not two - the padlock moves out to
+            // the pencil's place rather than sitting a step in from a hole (bench 554), the same
+            // closing the add icon got when the picker took over its gesture.
             BlueprintsExclusiveIcon.Size = new Vector2(16, 16);
-            BlueprintsExclusiveIcon.Pos  = new Vector2(X + Width - 30 - BpGestureStep, bpRow1 + 2);
+            BlueprintsExclusiveIcon.Pos  = new Vector2(X + Width - 30, bpRow1 + 2);
             BlueprintsLink.Pos      = new Vector2(bpX, bpRow3);
             BlueprintsLinkIcon.Size = new Vector2(BpIconSize, BpIconSize);
             BlueprintsLinkIcon.Pos  = new Vector2(bpValueX, bpRow3);
             BlueprintsLinkName.Pos  = new Vector2(bpValueX + BpIconSize + 5, bpRow3);
 
-            // the pencil holds the outermost column, the padlock the one before it; the add icon
-            // sits one row up, in the pencil's column, right of the picker it completes
-            EditBlueprints.Size  = LoadBlueprints.Size = MoveOnBlueprints.Size = new Vector2(20, 20);
-            EditBlueprints.Pos   = new Vector2(X + Width - 30, bpRow1 + 1);
+            // one column off the right edge, one gesture per row: the add icon on the picker's
+            // row, the padlock on the name's, the hand-over arrow on the bar's
+            LoadBlueprints.Size = MoveOnBlueprints.Size = new Vector2(20, 20);
             LoadBlueprints.Pos   = new Vector2(X + Width - 30, bpRow0);
 
             BlueprintsCompletionLbl.Pos     = new Vector2(bpX, bpRow2 + 3);
@@ -789,7 +790,10 @@ namespace Ship_Game
                 bool bpRow = bpBlock && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub;
                 // only under Custom: everywhere else the picker's own Custom entry is the door
                 LoadBlueprints.Visible   = bpRow && CurrentBlueprintMode == BlueprintMode.Custom;
-                EditBlueprints.Visible   = bpBlock && Planet.HasBlueprints;
+                // the pencil carried this condition and five elements read their visibility off
+                // it. The button is gone; the condition is named, which is what should have
+                // happened the first time this very comment was written, one button ago.
+                bool bpPlan = bpBlock && Planet.HasBlueprints;
                 BlueprintModeLabel.Visible = BlueprintModeList.Visible = bpRow;
                 // the list mirrors the colony's real state; setting it only when it differs keeps
                 // a per-frame write from fighting the player's own click.
@@ -801,15 +805,15 @@ namespace Ship_Game
                     ModeListWasOpen = BlueprintModeList.Open;
                     if (ModeListWasOpen) BringToFrontZOrder(BlueprintModeList);
                 }
-                BlueprintsName.Visible   = EditBlueprints.Visible;
+                BlueprintsName.Visible   = bpPlan;
                 ColonyBlueprints.Visible = bpRow && Planet.HasBlueprints;
-                BlueprintsCompletionLbl.Visible = EditBlueprints.Visible;
+                BlueprintsCompletionLbl.Visible = bpPlan;
                 // at its post whatever the progress: only the absence of a successor hides it
-                MoveOnBlueprints.Visible        = EditBlueprints.Visible
+                MoveOnBlueprints.Visible        = bpPlan
                                                   && Planet.Blueprints.LinkedBlueprintsName != "";
-                BlueprintsExclusiveIcon.Visible = EditBlueprints.Visible && Planet.Blueprints.Exclusive;
+                BlueprintsExclusiveIcon.Visible = bpPlan && Planet.Blueprints.Exclusive;
                 BlueprintsLink.Visible = BlueprintsLinkName.Visible = BlueprintsLinkIcon.Visible =
-                    EditBlueprints.Visible && Planet.Blueprints.LinkedBlueprintsName != "";
+                    bpPlan && Planet.Blueprints.LinkedBlueprintsName != "";
             }
 
             UpdateButtonTimer(fixedDeltaTime);
@@ -1040,15 +1044,13 @@ namespace Ship_Game
             }
         }
 
-        void OnEditblueprintsClicked(UIButton b)
+        // Ludoal fork (maintainer bench 554): the one road into the Blueprints page from here.
+        // Same round trip as Snapshot - the colony screen steps aside and is handed back after.
+        void OpenBlueprints(BlueprintsTemplate template)
         {
-            if (Planet.HasBlueprints && ResourceManager.TryGetBlueprints(Planet.Blueprints.Name, out BlueprintsTemplate template))
-            {
-                // Same round trip as Snapshot.
-                Screen.ExitScreen();
-                Screen.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Player, template, this,
-                                                                    returnToColony: Planet));
-            }
+            Screen.ExitScreen();
+            Screen.ScreenManager.AddScreen(new BlueprintsScreen(Universe, Player, template, this,
+                                                                returnToColony: Planet));
         }
 
         void OnLaunchTroopsClicked(UIButton b)
@@ -1387,6 +1389,18 @@ namespace Ship_Game
             // The folded BP tab says its full name on hover.
             if (Tabs != null && Tabs.Tabs.Count > 3 && Tabs.Tabs[3].Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip("Blueprint");
+
+            // Ludoal fork (maintainer bench 554): double-clicking either plan name - the one in
+            // force or the one it hands over to - opens that plan. Consultation or edit, by the
+            // gesture the rest of the game already uses to open what it is pointing at. The
+            // hovered-plan helper answers WHICH name, so there is no second hit test to keep true.
+            if (input.LeftMouseDoubleClick
+                && TryGetHoveredBlueprints(input.CursorPosition, out BlueprintsTemplate hovered))
+            {
+                GameAudio.AcceptClick();
+                OpenBlueprints(hovered);
+                return true;
+            }
 
             if (GovOrbitals.HitTest(input.CursorPosition))
                 UpdateGovOrbitalStats();

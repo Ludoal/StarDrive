@@ -28898,3 +28898,7 @@ BpMoveOnTip:
  Id: 7232
  ENG: "Activate linked Blueprint"
  FRA: "Activer le schéma lié"
+BpOpenOnDoubleClickTip:
+ Id: 7233
+ ENG: "Double-click to open this blueprint in the Blueprints page - to read it or to change it."
+ FRA: "Double-cliquez pour ouvrir ce schéma dans la page Blueprints — pour le consulter ou le modifier."
