@@ -28892,5 +28892,5 @@ TzAllZones:
  FRA: "Toutes les zones"
 TzWindowZoneTip:
  Id: 7231
- ENG: "Show Food and Production for one trade zone only. Colonists stay out: their slots are counted in heads, never converted into cargo loads."
- FRA: "N'afficher que la Nourriture et la Production d'une seule zone. Les colons restent hors du compte : leurs créneaux se comptent en têtes, jamais convertis en chargements."
+ ENG: "Show the numbers for one trade zone only. A colony belongs to a zone by the list it is on, a freighter by the run it is delivering into it."
+ FRA: "N'afficher que les chiffres d'une seule zone. Une colonie en fait partie par la liste où elle est inscrite, un cargo par la course qu'il y livre."

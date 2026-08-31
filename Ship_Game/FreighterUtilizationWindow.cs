@@ -41,9 +41,9 @@ namespace Ship_Game
 
         // Ludoal fork (maintainer feedback): the ZONE FILTER. A null selection is the whole
         // empire, which is what this window has always shown - so "All zones" is not a new mode,
-        // it is the old one given a name. Only Food and Production narrow to a zone: colonist
-        // slots are counted in HEADS and never converted into cargo loads, so a per-zone colonist
-        // figure would be a number in the wrong unit.
+        // it is the old one given a name. All three goods narrow: what the zone measure leaves
+        // colonists out of is its QUOTA, where heads and cargo loads cannot be added; counting
+        // the colonies of a zone and the runs delivering into it is honest in any unit.
         DropOptions<TradeZone> ZoneFilter;
         TradeZone SelectedZone;
 
@@ -236,10 +236,6 @@ namespace Ship_Game
                     goodsUtilization.Reset();
 
 
-                // under a zone, the colonist row states that it is not counted rather than
-                // showing an empire figure inside a narrowed view - one scope per window
-                GoodsUtilizationMap[Goods.Colonists].NotCounted = SelectedZone != null;
-
                 foreach (Planet planet in Player.GetPlanets())
                 {
                     if (SelectedZone != null && !SelectedZone.Serves(planet))
@@ -253,9 +249,6 @@ namespace Ship_Game
 
                     if (planet.ProdImportSlots > 0)      GoodsUtilizationMap[Goods.Production].IncreaseNumImportingPlanets();
                     if (planet.ProdExportSlots > 0)      GoodsUtilizationMap[Goods.Production].IncreaseNumExportingPlanets();
-                    if (SelectedZone != null)
-                        continue;
-
                     if (planet.ColonistsImportSlots > 0) GoodsUtilizationMap[Goods.Colonists].IncreaseNumImportingPlanets();
                     if (planet.ColonistsExportSlots > 0) GoodsUtilizationMap[Goods.Colonists].IncreaseNumExportingPlanets();
                 }
@@ -270,7 +263,7 @@ namespace Ship_Game
                     if (ServesSelectedZone(freighter, Goods.Production))
                         GoodsUtilizationMap[Goods.Production].AddGoodsTransported(freighter, ref totalUtilizedCargo);
 
-                    if (SelectedZone == null)
+                    if (ServesSelectedZone(freighter, Goods.Colonists))
                         GoodsUtilizationMap[Goods.Colonists].AddGoodsTransported(freighter, ref totalUtilizedCargo);
                 }
 
@@ -286,11 +279,12 @@ namespace Ship_Game
                 int importingFreighters = 0, exportingFreighters = 0, zoneFreighters = 0;
                 foreach (Ship freighter in allUtilizedFreightesr)
                 {
-                    // under a zone the totals count the runs the view shows - food and production
-                    // landing inside it - so the row stays in the same scope as the rows above it
+                    // under a zone the totals count the runs the view shows - any of the three
+                    // goods landing inside it - so the row stays in the rows' own scope
                     if (SelectedZone != null
                         && !ServesSelectedZone(freighter, Goods.Food)
-                        && !ServesSelectedZone(freighter, Goods.Production))
+                        && !ServesSelectedZone(freighter, Goods.Production)
+                        && !ServesSelectedZone(freighter, Goods.Colonists))
                         continue;
 
                     ++zoneFreighters;
@@ -331,9 +325,6 @@ namespace Ship_Game
             readonly UIPanel IconPanel;
             readonly FreighterUtilizationWindow Window;
             readonly Goods Goods;
-            // set by the window when a zone narrows the view and this goods is out of scope -
-            // the row then says so instead of showing an empire number in a narrowed window
-            public bool NotCounted;
             public int NumImportingPlanets { get; private set; }
             public int NumExportingPlanets { get; private set; }
             public int NumFreighters { get; private set; }
@@ -399,14 +390,6 @@ namespace Ship_Game
                 NumFreightersLabel.Draw(batch, elapsed);
                 NumImportingLabel.Draw(batch, elapsed);
                 NumExportingLabel.Draw(batch, elapsed);
-                if (NotCounted)
-                {
-                    // no colour code on a dash: the warning colours read demand against supply,
-                    // and there is no demand stated here to warn about
-                    NumFreightersLabel.Color = NumImportingLabel.Color = NumExportingLabel.Color = Color.Wheat;
-                    return;
-                }
-
                 NumExportingLabel.Color = Color.White;
                 NumImportingLabel.Color = Color.White;
                 if (NumExportingPlanets == 0 && NumImportingPlanets > 0 && GoodsTransported <= 0)
@@ -430,14 +413,6 @@ namespace Ship_Game
             {
                 TotalEmpireUtilizedCargo = Window.TotalUtilizedCargo;
                 UtilizationBar.Progress  = TotalEmpireUtilizedCargo == 0 ? 0 : GoodsTransported/TotalEmpireUtilizedCargo *100;
-                if (NotCounted)
-                {
-                    UtilizationBar.Progress = 0;
-                    NumFreightersLabel.Text = NumImportingLabel.Text = NumExportingLabel.Text = "-";
-                    base.Update(fixedDeltaTime);
-                    return;
-                }
-
                 NumFreightersLabel.Text  = NumFreighters.String();
                 NumImportingLabel.Text   = NumImportingPlanets.String();
                 NumExportingLabel.Text   = NumExportingPlanets.String();

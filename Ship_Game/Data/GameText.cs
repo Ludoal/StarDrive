@@ -7171,7 +7171,7 @@ namespace Ship_Game
         TzNoZonesHint = 7229,
         /// <summary>All zones</summary>
         TzAllZones = 7230,
-        /// <summary>Show Food and Production for one trade zone only.</summary>
+        /// <summary>Show the numbers for one trade zone only.</summary>
         TzWindowZoneTip = 7231,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
