@@ -240,8 +240,18 @@ namespace Ship_Game
             ButtonUpdateTimer    = 1;
             // offered only when the plan has built everything this colony can reach and a linked
             // plan is waiting - the chain itself needs the WHOLE list, which will never come here
-            MoveOnBlueprints = Button(ButtonStyle.Small, "Move on", OnMoveOnBlueprintsClicked);
-            MoveOnBlueprints.Tooltip = "Hand this colony over to the linked blueprint now: everything this plan can still reach here is built.";
+            // Ludoal fork (maintainer bench 554): the ARROW, and permanently at its post. It used
+            // to appear only once the plan had stalled - but handing a colony over is a decision
+            // the player may take at any point, not only when the game says they may. It still
+            // needs somewhere to go, so it keeps its one condition: a linked plan.
+            const string moveOnTex = "SelectionBox/button_arrow_right";
+            MoveOnBlueprints = Add(new UIButton(new UIButton.StyleTextures(moveOnTex, moveOnTex + "_hover"),
+                                                Vector2.Zero, "")
+            {
+                Tooltip = GameText.BpMoveOnTip,
+                OnClick = OnMoveOnBlueprintsClicked,
+                ClickSfx = "sd_ui_accept_alt3",
+            });
 
             BuildCapital         = Button(ButtonStyle.DefaultActive, GameText.ButtonBuildCapitalName, OnBuildCapitalClicked);
             BuildCapital.Tooltip = GameText.ButtonBuildCapitalTip;
@@ -385,7 +395,7 @@ namespace Ship_Game
 
             // the pencil holds the outermost column, the padlock the one before it; the add icon
             // sits one row up, in the pencil's column, right of the picker it completes
-            EditBlueprints.Size  = LoadBlueprints.Size = new Vector2(20, 20);
+            EditBlueprints.Size  = LoadBlueprints.Size = MoveOnBlueprints.Size = new Vector2(20, 20);
             EditBlueprints.Pos   = new Vector2(X + Width - 30, bpRow1 + 1);
             LoadBlueprints.Pos   = new Vector2(X + Width - 30, bpRow0);
 
@@ -794,7 +804,9 @@ namespace Ship_Game
                 BlueprintsName.Visible   = EditBlueprints.Visible;
                 ColonyBlueprints.Visible = bpRow && Planet.HasBlueprints;
                 BlueprintsCompletionLbl.Visible = EditBlueprints.Visible;
-                MoveOnBlueprints.Visible        = EditBlueprints.Visible && Planet.Blueprints.CanMoveOn;
+                // at its post whatever the progress: only the absence of a successor hides it
+                MoveOnBlueprints.Visible        = EditBlueprints.Visible
+                                                  && Planet.Blueprints.LinkedBlueprintsName != "";
                 BlueprintsExclusiveIcon.Visible = EditBlueprints.Visible && Planet.Blueprints.Exclusive;
                 BlueprintsLink.Visible = BlueprintsLinkName.Visible = BlueprintsLinkIcon.Visible =
                     EditBlueprints.Visible && Planet.Blueprints.LinkedBlueprintsName != "";

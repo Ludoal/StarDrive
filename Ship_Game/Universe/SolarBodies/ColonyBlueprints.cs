@@ -62,7 +62,6 @@ namespace Ship_Game.Universe.SolarBodies
                                && BuiltCount == PlannedCount - NotAchievableCount
                                && BuiltCount < PlannedCount;
 
-        public bool CanMoveOn => Blocked && LinkedBlueprintsName.NotEmpty();
 
         // An exclusive plan with the whole list up and nowhere to hand over to: not a stall, the
         // colony it was written to produce. It keeps watch from here on.

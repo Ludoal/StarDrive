@@ -7173,6 +7173,8 @@ namespace Ship_Game
         TzAllZones = 7230,
         /// <summary>Show the numbers for one trade zone only.</summary>
         TzWindowZoneTip = 7231,
+        /// <summary>Activate linked Blueprint</summary>
+        BpMoveOnTip = 7232,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>
