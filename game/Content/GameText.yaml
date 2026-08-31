@@ -3,6 +3,12 @@
 # Token ID allocation:
 #   1-99,999         general game text
 #   100,000-199,999  codex content (see docs/codex-plan.md, Appendix A)
+# ⚠ TOKEN IDS ARE A SHARED SPACE. This fork writes its OWN tokens in a declared, reserved
+# range: 30000 and above. Never take an id merely because it is free upstream - free
+# upstream does not mean free in the ecosystem. CombinedArms had claimed 109 of the ids
+# this fork had picked one at a time in the 5000s, and a mod loads over the base: our
+# Shipyard headers came out reading "Gauss Sniper Cannon" (31 Aug 2026).
+# The same contract as a serialized field name, applied to numbers.
 NewGame:
  Id: 1
  ENG: "New Game"
@@ -22207,67 +22213,67 @@ FdShipsFitText:
  ENG: "Of the {0} ships in your empire that are not assigned to fleets, {1} of them can be assigned to fill in this fleet"
  FRA: "Sur les {0} vaisseaux de votre empire non assignés à des flottes, {1} peuvent être assignés pour compléter cette flotte"
 FdNoShipsFitText:
- Id: 5223
+ Id: 30003
  ENG: "There are no ships in your empire that are not already assigned to a fleet that can fit any of the roles required by this fleet's design."
  FRA: "Il n'y a aucun vaisseau non déjà assigné à une flotte dans votre empire pouvant remplir les rôles requis par la conception de cette flotte."
 FdOrderNewShips:
- Id: 5224
+ Id: 30004
  ENG: "Order {0} new ships to be built at your best available shipyards"
  FRA: "Commander {0} nouveaux vaisseaux à construire dans vos meilleurs chantiers navals disponibles"
 FdFleetAtFullStrength:
- Id: 5225
+ Id: 30005
  ENG: "This fleet is at full strength, or has build orders in place to bring it to full strength, and does not require further requisitions"
  FRA: "Cette flotte est à pleine puissance, ou dispose d'ordres de construction en cours pour l'atteindre, et ne nécessite pas de réquisitions supplémentaires"
 SyAlreadyInQueue:
- Id: 5226
+ Id: 30006
  ENG: "Already in Queue:\n{0}\n\n"
  FRA: "Déjà en file :\n{0}\n\n"
 SyConfirmResearchMissing:
- Id: 5227
+ Id: 30007
  ENG: "Confirm Research Missing Techs ({0}) for {1}:\n\n{2} Will be added to Queue:\n{3}"
  FRA: "Confirmer la recherche des technologies manquantes ({0}) pour {1} :\n\n{2} seront ajoutées à la file :\n{3}"
 SyHeadConstruction:
- Id: 5228
+ Id: 30008
  ENG: "CONSTRUCTION"
  FRA: "CONSTRUCTION"
 SyHeadEnergy:
- Id: 5229
+ Id: 30009
  ENG: "ENERGY"
  FRA: "ÉNERGIE"
 SyHeadMobility:
- Id: 5230
+ Id: 30010
  ENG: "MOBILITY"
  FRA: "MOBILITÉ"
 SyHeadStation:
- Id: 5231
+ Id: 30011
  ENG: "STATION"
  FRA: "STATION"
 SyHeadPayload:
- Id: 5232
+ Id: 30012
  ENG: "PAYLOAD"
  FRA: "CHARGE UTILE"
 SyHeadDefence:
- Id: 5233
+ Id: 30013
  ENG: "DEFENSE"
  FRA: "DÉFENSE"
 SyHeadOrdnance:
- Id: 5234
+ Id: 30014
  ENG: "ORDNANCE"
  FRA: "MUNITIONS"
 SyHeadFcs:
- Id: 5235
+ Id: 30015
  ENG: "FCS"
  FRA: "FCS"
 SyHeadCombat:
- Id: 5236
+ Id: 30016
  ENG: "COMBAT"
  FRA: "COMBAT"
 MmHotkeysBtn:
- Id: 5237
+ Id: 30017
  ENG: "Hotkeys"
  FRA: "Raccourcis"
 MmModsBtn:
- Id: 5238
+ Id: 30018
  ENG: "Mods"
  FRA: "Mods"
 MmDevSandbox:
@@ -22279,349 +22285,349 @@ MmCodexBtn:
  ENG: "BlackBox Codex"
  FRA: "Codex BlackBox"
 MmSupportBtn:
- Id: 5241
+ Id: 30019
  ENG: "Support BlackBox"
  FRA: "Soutenir BlackBox"
 NgLoadRace:
- Id: 5242
+ Id: 30020
  ENG: "Load Race"
  FRA: "Charger une race"
 NgLoadSetup:
- Id: 5243
+ Id: 30021
  ENG: "Load Setup"
  FRA: "Charger une configuration"
 NgStartGame:
- Id: 5244
+ Id: 30022
  ENG: "Start Game"
  FRA: "Lancer la partie"
 NgClearTraits:
- Id: 5245
+ Id: 30023
  ENG: "Clear Traits"
  FRA: "Effacer les traits"
 NgTabRace:
- Id: 5246
+ Id: 30024
  ENG: "Race"
  FRA: "Race"
 NgTabOpponents:
- Id: 5247
+ Id: 30025
  ENG: "Opponents"
  FRA: "Adversaires"
 NgTabPoints:
- Id: 5248
+ Id: 30026
  ENG: "Points"
  FRA: "Points"
 NgTabDescription:
- Id: 5249
+ Id: 30027
  ENG: "Description"
  FRA: "Description"
 NgTabEnvironment:
- Id: 5250
+ Id: 30028
  ENG: "Environment"
  FRA: "Environnement"
 NgReset:
- Id: 5251
+ Id: 30029
  ENG: "Reset"
  FRA: "Réinitialiser"
 WmFullscreen:
- Id: 5252
+ Id: 30030
  ENG: "Fullscreen"
  FRA: "Plein écran"
 WmWindowed:
- Id: 5253
+ Id: 30031
  ENG: "Windowed"
  FRA: "Fenêtré"
 WmBorderless:
- Id: 5254
+ Id: 30032
  ENG: "Borderless"
  FRA: "Sans bordure"
 GsTiny:
- Id: 5255
+ Id: 30033
  ENG: "Tiny"
  FRA: "Minuscule"
 GsSmall:
- Id: 5256
+ Id: 30034
  ENG: "Small"
  FRA: "Petite"
 GsMedium:
- Id: 5257
+ Id: 30035
  ENG: "Medium"
  FRA: "Moyenne"
 GsLarge:
- Id: 5258
+ Id: 30036
  ENG: "Large"
  FRA: "Grande"
 GsHuge:
- Id: 5259
+ Id: 30037
  ENG: "Huge"
  FRA: "Immense"
 GsEpic:
- Id: 5260
+ Id: 30038
  ENG: "Epic"
  FRA: "Épique"
 GsTrulyEpic:
- Id: 5261
+ Id: 30039
  ENG: "TrulyEpic"
  FRA: "Vraiment épique"
 DfNormal:
- Id: 5262
+ Id: 30040
  ENG: "Normal"
  FRA: "Normale"
 DfHard:
- Id: 5263
+ Id: 30041
  ENG: "Hard"
  FRA: "Difficile"
 DfBrutal:
- Id: 5264
+ Id: 30042
  ENG: "Brutal"
  FRA: "Brutale"
 DfInsane:
- Id: 5265
+ Id: 30043
  ENG: "Insane"
  FRA: "Démente"
 RmVeryRare:
- Id: 5266
+ Id: 30044
  ENG: "Very Rare"
  FRA: "Très rare"
 RmRare:
- Id: 5267
+ Id: 30045
  ENG: "Rare"
  FRA: "Rare"
 RmNormal:
- Id: 5268
+ Id: 30046
  ENG: "Normal"
  FRA: "Normale"
 RmMore:
- Id: 5269
+ Id: 30047
  ENG: "More"
  FRA: "Accrue"
 RmMuchMore:
- Id: 5270
+ Id: 30048
  ENG: "Much More"
  FRA: "Très accrue"
 RmEverywhere:
- Id: 5271
+ Id: 30049
  ENG: "Everywhere"
  FRA: "Omniprésente"
 NgPaceSlower:
- Id: 5272
+ Id: 30050
  ENG: "{0}x slower"
  FRA: "{0}x plus lent"
 HkKeySpace:
- Id: 5273
+ Id: 30051
  ENG: "Space"
  FRA: "Espace"
 HkKeyShiftSpace:
- Id: 5274
+ Id: 30052
  ENG: "Shift+Space"
  FRA: "Maj+Espace"
 HkKeyArrowsWasd:
- Id: 5275
+ Id: 30053
  ENG: "Arrows / WASD"
  FRA: "Flèches / WASD"
 HkKeyAltHold:
- Id: 5276
+ Id: 30054
  ENG: "Alt (hold)"
  FRA: "Alt (maintenu)"
 HkKeyCtrlMiddle:
- Id: 5277
+ Id: 30055
  ENG: "Ctrl+Middle-click"
  FRA: "Ctrl+clic milieu"
 HkKeyCtrlDigit:
- Id: 5278
+ Id: 30056
  ENG: "Ctrl+digit"
  FRA: "Ctrl+chiffre"
 HkKeyCtrlShiftDigit:
- Id: 5279
+ Id: 30057
  ENG: "Ctrl+Shift+digit"
  FRA: "Ctrl+Maj+chiffre"
 HkKeyDelBackspace:
- Id: 5280
+ Id: 30058
  ENG: "Del / Backspace"
  FRA: "Suppr / Retour arrière"
 HkKeyAltClick:
- Id: 5281
+ Id: 30059
  ENG: "Alt+Click"
  FRA: "Alt+clic"
 HkKeyCtrlClick:
- Id: 5282
+ Id: 30060
  ENG: "Ctrl+Click"
  FRA: "Ctrl+clic"
 HkKeyCtrlAltClick:
- Id: 5283
+ Id: 30061
  ENG: "Ctrl+Alt+Click"
  FRA: "Ctrl+Alt+clic"
 HkKeyMouseBack:
- Id: 5284
+ Id: 30062
  ENG: "Mouse Back"
  FRA: "Souris Retour"
 HkKeyArrows:
- Id: 5285
+ Id: 30063
  ENG: "Arrows"
  FRA: "Flèches"
 HkKeyHoldLeft:
- Id: 5286
+ Id: 30064
  ENG: "Hold Left-click"
  FRA: "Clic gauche maintenu"
 HkKeyRightClick:
- Id: 5287
+ Id: 30065
  ENG: "Right-click"
  FRA: "Clic droit"
 HkKeyWasdEdges:
- Id: 5288
+ Id: 30066
  ENG: "WASD / edges"
  FRA: "WASD / bords"
 HkKeyEsc:
- Id: 5289
+ Id: 30067
  ENG: "Esc"
  FRA: "Échap"
 GovCommonNote:
- Id: 5294
+ Id: 30072
  ENG: "Governors build and scrap within their own budget. Your manual Supply settings always take precedence."
  FRA: "Le gouverneur construit et démolit dans son budget. Vos réglages Supply manuels priment toujours."
 StripDefence:
- Id: 5295
+ Id: 30073
  ENG: "Strip Defense"
  FRA: "Ôter défense"
 StripDefenceTip:
- Id: 5296
+ Id: 30074
  ENG: "Strips the ship of armor and shield modules, and anything with deflection. Command, engines and power stay."
  FRA: "Retire du vaisseau les modules d'armure et de bouclier, et tout ce qui offre de la déflexion. Le commandement, les moteurs et l'énergie restent."
 ShieldsOverlay:
- Id: 5297
+ Id: 30075
  ENG: "Shields"
  FRA: "Boucliers"
 ShieldsOverlayTip:
- Id: 5298
+ Id: 30076
  ENG: "Shows the coverage circle of every shield on the design. Can be combined with Arcs."
  FRA: "Affiche le cercle de couverture de chaque bouclier du design. Cumulable avec Arcs."
 ContinuousRushColonyTip:
- Id: 5299
+ Id: 30077
  ENG: "Continuously rush every item in THIS colony's construction queue, existing and future.\n \nWARNING: Rushing spends credits every turn. Greyed while the empire-wide Continuous Rush (Policies > Construction) is on: that switch commands all colonies. This colony's own setting is suspended, not erased - it returns when the empire order is lifted."
  FRA: "Précipite en continu tous les éléments de la file de construction de CETTE colonie, existants et futurs.\n \nATTENTION : le rush dépense des crédits chaque tour. Grisé quand la Précipitation continue globale (Policies > Construction) est active : c'est elle qui commande toutes les colonies. Le réglage propre à cette colonie est suspendu, pas effacé : il revient dès que l'ordre d'empire est levé."
 HomeworldMoleNotification:
- Id: 5300
+ Id: 30078
  ENG: "Infiltration level 3 perk (Homeworld Mole): a permanent agent is now embedded on:"
  FRA: "Palier d'infiltration 3 (Homeworld Mole) : un agent permanent est désormais implanté sur :"
 ViewPrevInfiltrated:
- Id: 5301
+ Id: 30079
  ENG: "View previous infiltrated planet"
  FRA: "Planète infiltrée précédente"
 ViewNextInfiltrated:
- Id: 5302
+ Id: 30080
  ENG: "View next infiltrated planet"
  FRA: "Planète infiltrée suivante"
 SupplyFpAutoNotice:
- Id: 5303
+ Id: 30081
  ENG: "The colony steers this flow from its storage level, re-deciding every governing tick: below the import threshold it imports, above the export threshold it exports, in between it stores. A starving colony always imports food.\n \nThresholds by governor (import/export, % of storage):\nCore: 20/50 both flows\nIndustrial: food 75/99, production 0/50 (20/66 for cybernetics)\nResearch: food 75/95, production 25/95\nAgricultural: food 10/20, production 25/95\nMilitary: food 75/100, production 75/95\nNo governor: 20/80 both flows.\n \nSwitching to a manual direction pins it: the colony never overrides your choice."
  FRA: "La colonie pilote ce flux d'après son niveau de stock, et redécide à chaque tick de gouvernance : sous le seuil d'import elle importe, au-dessus du seuil d'export elle exporte, entre les deux elle stocke. Une colonie affamée importe toujours de la nourriture.\n \nSeuils par gouverneur (import/export, % du stock) :\nCore : 20/50 les deux flux\nIndustrial : nourriture 75/99, production 0/50 (20/66 en cybernétique)\nResearch : nourriture 75/95, production 25/95\nAgricultural : nourriture 10/20, production 25/95\nMilitary : nourriture 75/100, production 75/95\nSans gouverneur : 20/80 les deux flux.\n \nPasser en direction manuelle épingle le flux : la colonie n'écrase jamais votre choix."
 SupplyFpImportNotice:
- Id: 5304
+ Id: 30082
  ENG: "Freighters bring this resource in from exporting colonies. The flow only moves if an exporter has a surplus and a freighter is available: an import order is a request, not a guarantee."
  FRA: "Les cargos apportent cette ressource depuis les colonies exportatrices. Le flux ne circule que si un exportateur a un surplus et qu'un cargo est disponible : un ordre d'import est une demande, pas une garantie."
 SupplyFpExportNotice:
- Id: 5305
+ Id: 30083
  ENG: "This colony offers its surplus to the freighter network, and importers are served by need. Exported goods leave local storage."
  FRA: "Cette colonie offre son surplus au réseau de cargos, et les importateurs sont servis selon leur besoin. Les biens exportés quittent le stock local."
 SupplyFpStoreNotice:
- Id: 5306
+ Id: 30084
  ENG: "Neutral: this colony neither offers nor requests the resource. Storage simply fills or drains with local production and consumption, and the trade network passes it by."
  FRA: "Neutre : cette colonie n'offre ni ne demande la ressource. Le stock se remplit ou se vide au rythme de la production et de la consommation locales, et le réseau commercial passe son chemin."
 SupplyColAutoNotice:
- Id: 5307
+ Id: 30085
  ENG: "The colony manages its own migration, re-deciding every governing tick: it sends people away when starving (population above 0.5 billion), takes settlers in while under 80% capacity and well fed (90% if a biosphere is under construction), and resettles the overflow of large worlds (capacity above 2 billion) once past 90%. A manual choice pins the direction and is never overridden."
  FRA: "La colonie gère sa propre migration et redécide à chaque tick de gouvernance : elle évacue des habitants en famine (population au-dessus de 0,5 milliard), accueille des colons tant qu'elle est sous 80% de capacité et bien nourrie (90% si une biosphère est en construction), et déplace le trop-plein des grands mondes (capacité au-delà de 2 milliards) passé 90%. Un choix manuel épingle la direction et n'est jamais écrasé."
 SupplyColBringInNotice:
- Id: 5308
+ Id: 30086
  ENG: "Freighters bring settlers to this world; each delivery adds population. The flow needs another colony set to resettle its people, and a free freighter."
  FRA: "Les cargos amènent des colons vers ce monde ; chaque livraison ajoute de la population. Le flux exige une autre colonie qui déplace ses habitants, et un cargo disponible."
 SupplyColResettleNotice:
- Id: 5309
+ Id: 30087
  ENG: "This colony sends its people away, one shipload at a time; its population drops as other worlds take them in."
  FRA: "Cette colonie fait partir ses habitants, cargaison par cargaison ; sa population baisse à mesure que d'autres mondes les accueillent."
 SupplyColStayNotice:
- Id: 5310
+ Id: 30088
  ENG: "Nobody moves: this colony neither requests settlers nor offers any. Population changes only through natural growth."
  FRA: "Personne ne bouge : cette colonie ne demande ni n'offre de colons. La population n'évolue que par la croissance naturelle."
 SpColonistIncomeTip:
- Id: 5311
+ Id: 30089
  ENG: "Credits generated by your colonists this turn, before tax (building bonuses per colonist included)."
 SpBuildingIncomeTip:
- Id: 5312
+ Id: 30090
  ENG: "Flat credit income produced by buildings on this colony, before tax."
 SpTaxRateTip:
- Id: 5313
+ Id: 30091
  ENG: "Only the taxed share of colony income reaches your treasury. The rate is set empire-wide (or by Auto Taxes)."
 SpBuildingUpkeepTip:
- Id: 5314
+ Id: 30092
  ENG: "Total maintenance cost of all buildings on this colony, paid every turn regardless of tax."
 SpSpaceDefUpkeepTip:
- Id: 5315
+ Id: 30093
  ENG: "Maintenance of orbital defenses assigned to this colony."
 SpTroopUpkeepTip:
- Id: 5316
+ Id: 30094
  ENG: "Maintenance of troops stationed on this colony."
 SpNetIncomeTip:
- Id: 5317
+ Id: 30095
  ENG: "What this colony actually adds to (or takes from) your treasury each turn: taxed income minus all upkeep."
 SpNetGrowthTip:
- Id: 5318
+ Id: 30096
  ENG: "Population change expected this turn. Growth scales with current population, slows as the planet fills up, and collapses to 10% when food storage runs low. Starvation or overpopulation turn it negative."
 SpSaturationTip:
- Id: 5319
+ Id: 30097
  ENG: "Current population as a share of this planet's maximum. Growth slows near 100% and reverses above it."
 SpYieldFoodTip:
- Id: 5320
+ Id: 30098
  ENG: "Gross farm output, and net after feeding colonists and stationed troops. Negative net drains storage, then starves."
 SpYieldProdTip:
- Id: 5321
+ Id: 30099
  ENG: "Gross industrial output, and net after construction draws its share. The net is what actually accumulates."
 SpYieldResearchTip:
- Id: 5322
+ Id: 30100
  ENG: "Science output of this colony, added to your empire's research each turn."
 SpMaxProdToQueueTip:
- Id: 5323
+ Id: 30101
  ENG: "Production flowing into the build queue this turn."
 SpFromStorageTip:
- Id: 5324
+ Id: 30102
  ENG: "Extra production drawn from this colony's stored reserves to speed construction, with the turns left at this rate."
 SpShipRepairTip:
- Id: 5325
+ Id: 30103
  ENG: "Hull repair provided to friendly ships in orbit. Reduced while a space battle rages nearby."
 AutoGovernorTip:
- Id: 5326
+ Id: 30104
  ENG: "New colonies are assigned a governor type suited to the planet (fertile worlds lean Agricultural, rich ones Industrial). Unchecked, new colonies start unmanaged."
 EspionageMessagesTip:
- Id: 5327
+ Id: 30105
  ENG: "Toggle all Espionage notifications (mission results, detected enemy operations)."
 PrioritizationHeaderTip:
- Id: 5328
+ Id: 30106
  ENG: "Categories in the upper block are prioritized in their display order; arrows reorder, the inhibit glyph demotes to the lower block. Priorities apply when an item ENTERS a build queue; existing queues are never reshuffled."
 NoResearchAlert:
- Id: 5293
+ Id: 30071
  ENG: "NO RESEARCH!"
  FRA: "AUCUNE RECHERCHE !"
 GoToResearch:
- Id: 5292
+ Id: 30070
  ENG: "Go to Research"
  FRA: "Aller à la recherche"
 DvGroupTabTipTrends:
- Id: 5291
+ Id: 30069
  ENG: "Progression curves per race. Each domain unlocks with the intel that founds it."
  FRA: "Courbes de progression par race. Chaque domaine se débloque avec le renseignement qui le fonde."
 AutoSupplyTip:
- Id: 5290
+ Id: 30068
  ENG: "The colony manages this flow itself (import / export / store). Uncheck to pin it manually: your choice then holds."
  FRA: "La colonie gère ce flux elle-même (importation / exportation / stockage). Décochez pour le fixer manuellement : votre choix tient alors."
 TcLockedRequiresTech:
- Id: 5101
+ Id: 30000
  ENG: "Locked - requires {0}"
  FRA: "Verrouillé - nécessite {0}"
 TcResearchBonusGranted:
- Id: 5102
+ Id: 30001
  ENG: "Research Bonus Granted: {0}%"
  FRA: "Bonus de recherche accordé : {0}%"
 TcTechAlreadyPossessed:
- Id: 5103
+ Id: 30002
  ENG: "We found some {0}, but we already possessed this knowledge."
  FRA: "Nous avons trouvé du {0}, mais nous possédions déjà cette connaissance."
 TcNewTechnologyAcquired:
@@ -25633,14 +25639,14 @@ UsingAdvancedComputersAndA:
  UKR: "Використовуючи сучасні комп'ютери та мережу спеціалізованих супутників, ця будівля відстежує глобальну погоду і спрямовує заходи з маніпулювання нею для покращення росту рослин. Це підвищує середню родючість планети."
  PTB: "Usando computadores avançados e uma rede de satélites especializados, este edifício monitora o clima global e direciona medidas para manipulá-lo a fim de melhorar o crescimento das plantas. Isso aumenta a fertilidade média do planeta."
 Tech_SubspaceArtillery_II_Name:
- Id: 17660
+ Id: 30107
  ENG: "Subspace Artillery"
  FRA: "Les entrepôts sont conçus pour stocker et déplacer davantage de production et de nourriture, facilitant l'expansion d'un empire naissant."
  RUS: "Космическая артиллерия"
  UKR: "Підпросторова артилерія"
  PTB: "Artilharia Subespacial"
 Tech_SubspaceArtillery_II_Desc:
- Id: 17661
+ Id: 30108
  ENG: "Using conventional physics, extremely large cannons proved too unwieldy for applications in space. However, advancements in subspace field theory have allowed for the creation of a second set of larger, extremely powerful cannons, along with a tactical one for our more cramped vessels. These weapons will shred through enemy armor, and offer a small to decent chance of penetrating shields."
  FRA: "Réserve Planétaire II"
  RUS: "Используя традиционную физику, чрезвычайно большие пушки оказались слишком громоздкими для применения в космосе. Однако достижения в теории поля подпространства позволили создать второй набор более крупных и чрезвычайно мощных пушек, для наших кораблей. Это оружие пробивает броню врага и дает небольшой или приличный шанс пробить щиты."

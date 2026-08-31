@@ -6091,184 +6091,184 @@ namespace Ship_Game
         /// <summary>Of the {0} ships in your empire that are not assigned to fleets, {1} o</summary>
         FdShipsFitText = 5222,
         /// <summary>There are no ships in your empire that are not already assigned to a f</summary>
-        FdNoShipsFitText = 5223,
+        FdNoShipsFitText = 30003,
         /// <summary>Order {0} new ships to be built at your best available shipyards</summary>
-        FdOrderNewShips = 5224,
+        FdOrderNewShips = 30004,
         /// <summary>This fleet is at full strength, or has build orders in place to bring </summary>
-        FdFleetAtFullStrength = 5225,
+        FdFleetAtFullStrength = 30005,
         /// <summary>Already in Queue: {0}  </summary>
-        SyAlreadyInQueue = 5226,
+        SyAlreadyInQueue = 30006,
         /// <summary>Confirm Research Missing Techs ({0}) for {1}:  {2} Will be added to Qu</summary>
-        SyConfirmResearchMissing = 5227,
+        SyConfirmResearchMissing = 30007,
         /// <summary>CONSTRUCTION</summary>
-        SyHeadConstruction = 5228,
+        SyHeadConstruction = 30008,
         /// <summary>ENERGY</summary>
-        SyHeadEnergy = 5229,
+        SyHeadEnergy = 30009,
         /// <summary>MOBILITY</summary>
-        SyHeadMobility = 5230,
+        SyHeadMobility = 30010,
         /// <summary>STATION</summary>
-        SyHeadStation = 5231,
+        SyHeadStation = 30011,
         /// <summary>PAYLOAD</summary>
-        SyHeadPayload = 5232,
+        SyHeadPayload = 30012,
         /// <summary>DEFENCE</summary>
-        SyHeadDefence = 5233,
+        SyHeadDefence = 30013,
         /// <summary>ORDNANCE</summary>
-        SyHeadOrdnance = 5234,
+        SyHeadOrdnance = 30014,
         /// <summary>FCS</summary>
-        SyHeadFcs = 5235,
+        SyHeadFcs = 30015,
         /// <summary>COMBAT</summary>
-        SyHeadCombat = 5236,
+        SyHeadCombat = 30016,
         /// <summary>Hotkeys</summary>
-        MmHotkeysBtn = 5237,
+        MmHotkeysBtn = 30017,
         /// <summary>Mods</summary>
-        MmModsBtn = 5238,
+        MmModsBtn = 30018,
         /// <summary>Dev Sandbox</summary>
         MmDevSandbox = 5239,
         /// <summary>BlackBox Codex</summary>
         MmCodexBtn = 5240,
         /// <summary>Support BlackBox</summary>
-        MmSupportBtn = 5241,
+        MmSupportBtn = 30019,
         /// <summary>Load Race</summary>
-        NgLoadRace = 5242,
+        NgLoadRace = 30020,
         /// <summary>Load Setup</summary>
-        NgLoadSetup = 5243,
+        NgLoadSetup = 30021,
         /// <summary>Start Game</summary>
-        NgStartGame = 5244,
+        NgStartGame = 30022,
         /// <summary>Clear Traits</summary>
-        NgClearTraits = 5245,
+        NgClearTraits = 30023,
         /// <summary>Race</summary>
-        NgTabRace = 5246,
+        NgTabRace = 30024,
         /// <summary>Opponents</summary>
-        NgTabOpponents = 5247,
+        NgTabOpponents = 30025,
         /// <summary>Points</summary>
-        NgTabPoints = 5248,
+        NgTabPoints = 30026,
         /// <summary>Description</summary>
-        NgTabDescription = 5249,
+        NgTabDescription = 30027,
         /// <summary>Environment</summary>
-        NgTabEnvironment = 5250,
+        NgTabEnvironment = 30028,
         /// <summary>Reset</summary>
-        NgReset = 5251,
+        NgReset = 30029,
         /// <summary>Fullscreen</summary>
-        WmFullscreen = 5252,
+        WmFullscreen = 30030,
         /// <summary>Windowed</summary>
-        WmWindowed = 5253,
+        WmWindowed = 30031,
         /// <summary>Borderless</summary>
-        WmBorderless = 5254,
+        WmBorderless = 30032,
         /// <summary>Tiny</summary>
-        GsTiny = 5255,
+        GsTiny = 30033,
         /// <summary>Small</summary>
-        GsSmall = 5256,
+        GsSmall = 30034,
         /// <summary>Medium</summary>
-        GsMedium = 5257,
+        GsMedium = 30035,
         /// <summary>Large</summary>
-        GsLarge = 5258,
+        GsLarge = 30036,
         /// <summary>Huge</summary>
-        GsHuge = 5259,
+        GsHuge = 30037,
         /// <summary>Epic</summary>
-        GsEpic = 5260,
+        GsEpic = 30038,
         /// <summary>TrulyEpic</summary>
-        GsTrulyEpic = 5261,
+        GsTrulyEpic = 30039,
         /// <summary>Normal</summary>
-        DfNormal = 5262,
+        DfNormal = 30040,
         /// <summary>Hard</summary>
-        DfHard = 5263,
+        DfHard = 30041,
         /// <summary>Brutal</summary>
-        DfBrutal = 5264,
+        DfBrutal = 30042,
         /// <summary>Insane</summary>
-        DfInsane = 5265,
+        DfInsane = 30043,
         /// <summary>Very Rare</summary>
-        RmVeryRare = 5266,
+        RmVeryRare = 30044,
         /// <summary>Rare</summary>
-        RmRare = 5267,
+        RmRare = 30045,
         /// <summary>Normal</summary>
-        RmNormal = 5268,
+        RmNormal = 30046,
         /// <summary>More</summary>
-        RmMore = 5269,
+        RmMore = 30047,
         /// <summary>Much More</summary>
-        RmMuchMore = 5270,
+        RmMuchMore = 30048,
         /// <summary>Everywhere</summary>
-        RmEverywhere = 5271,
+        RmEverywhere = 30049,
         /// <summary>{0}x slower</summary>
-        NgPaceSlower = 5272,
+        NgPaceSlower = 30050,
         /// <summary>Space</summary>
-        HkKeySpace = 5273,
+        HkKeySpace = 30051,
         /// <summary>Shift+Space</summary>
-        HkKeyShiftSpace = 5274,
+        HkKeyShiftSpace = 30052,
         /// <summary>Arrows / WASD</summary>
-        HkKeyArrowsWasd = 5275,
+        HkKeyArrowsWasd = 30053,
         /// <summary>Alt (hold)</summary>
-        HkKeyAltHold = 5276,
+        HkKeyAltHold = 30054,
         /// <summary>Ctrl+Middle-click</summary>
-        HkKeyCtrlMiddle = 5277,
+        HkKeyCtrlMiddle = 30055,
         /// <summary>Ctrl+digit</summary>
-        HkKeyCtrlDigit = 5278,
+        HkKeyCtrlDigit = 30056,
         /// <summary>Ctrl+Shift+digit</summary>
-        HkKeyCtrlShiftDigit = 5279,
+        HkKeyCtrlShiftDigit = 30057,
         /// <summary>Del / Backspace</summary>
-        HkKeyDelBackspace = 5280,
+        HkKeyDelBackspace = 30058,
         /// <summary>Alt+Click</summary>
-        HkKeyAltClick = 5281,
+        HkKeyAltClick = 30059,
         /// <summary>Ctrl+Click</summary>
-        HkKeyCtrlClick = 5282,
+        HkKeyCtrlClick = 30060,
         /// <summary>Ctrl+Alt+Click</summary>
-        HkKeyCtrlAltClick = 5283,
+        HkKeyCtrlAltClick = 30061,
         /// <summary>Mouse Back</summary>
-        HkKeyMouseBack = 5284,
+        HkKeyMouseBack = 30062,
         /// <summary>Arrows</summary>
-        HkKeyArrows = 5285,
+        HkKeyArrows = 30063,
         /// <summary>Hold Left-click</summary>
-        HkKeyHoldLeft = 5286,
+        HkKeyHoldLeft = 30064,
         /// <summary>Right-click</summary>
-        HkKeyRightClick = 5287,
+        HkKeyRightClick = 30065,
         /// <summary>WASD / edges</summary>
-        HkKeyWasdEdges = 5288,
+        HkKeyWasdEdges = 30066,
         /// <summary>Esc</summary>
-        HkKeyEsc = 5289,
-        AutoSupplyTip = 5290,
-        DvGroupTabTipTrends = 5291,
-        GoToResearch = 5292,
-        NoResearchAlert = 5293,
-        GovCommonNote = 5294,
-        StripDefence = 5295,
-        StripDefenceTip = 5296,
-        ShieldsOverlay = 5297,
-        ShieldsOverlayTip = 5298,
-        ContinuousRushColonyTip = 5299,
-        HomeworldMoleNotification = 5300,
-        ViewPrevInfiltrated = 5301,
-        ViewNextInfiltrated = 5302,
-        SupplyFpAutoNotice = 5303,
-        SupplyFpImportNotice = 5304,
-        SupplyFpExportNotice = 5305,
-        SupplyFpStoreNotice = 5306,
-        SupplyColAutoNotice = 5307,
-        SupplyColBringInNotice = 5308,
-        SupplyColResettleNotice = 5309,
-        SupplyColStayNotice = 5310,
-        SpColonistIncomeTip = 5311,
-        SpBuildingIncomeTip = 5312,
-        SpTaxRateTip = 5313,
-        SpBuildingUpkeepTip = 5314,
-        SpSpaceDefUpkeepTip = 5315,
-        SpTroopUpkeepTip = 5316,
-        SpNetIncomeTip = 5317,
-        SpNetGrowthTip = 5318,
-        SpSaturationTip = 5319,
-        SpYieldFoodTip = 5320,
-        SpYieldProdTip = 5321,
-        SpYieldResearchTip = 5322,
-        SpMaxProdToQueueTip = 5323,
-        SpFromStorageTip = 5324,
-        SpShipRepairTip = 5325,
-        AutoGovernorTip = 5326,
-        EspionageMessagesTip = 5327,
-        PrioritizationHeaderTip = 5328,
+        HkKeyEsc = 30067,
+        AutoSupplyTip = 30068,
+        DvGroupTabTipTrends = 30069,
+        GoToResearch = 30070,
+        NoResearchAlert = 30071,
+        GovCommonNote = 30072,
+        StripDefence = 30073,
+        StripDefenceTip = 30074,
+        ShieldsOverlay = 30075,
+        ShieldsOverlayTip = 30076,
+        ContinuousRushColonyTip = 30077,
+        HomeworldMoleNotification = 30078,
+        ViewPrevInfiltrated = 30079,
+        ViewNextInfiltrated = 30080,
+        SupplyFpAutoNotice = 30081,
+        SupplyFpImportNotice = 30082,
+        SupplyFpExportNotice = 30083,
+        SupplyFpStoreNotice = 30084,
+        SupplyColAutoNotice = 30085,
+        SupplyColBringInNotice = 30086,
+        SupplyColResettleNotice = 30087,
+        SupplyColStayNotice = 30088,
+        SpColonistIncomeTip = 30089,
+        SpBuildingIncomeTip = 30090,
+        SpTaxRateTip = 30091,
+        SpBuildingUpkeepTip = 30092,
+        SpSpaceDefUpkeepTip = 30093,
+        SpTroopUpkeepTip = 30094,
+        SpNetIncomeTip = 30095,
+        SpNetGrowthTip = 30096,
+        SpSaturationTip = 30097,
+        SpYieldFoodTip = 30098,
+        SpYieldProdTip = 30099,
+        SpYieldResearchTip = 30100,
+        SpMaxProdToQueueTip = 30101,
+        SpFromStorageTip = 30102,
+        SpShipRepairTip = 30103,
+        AutoGovernorTip = 30104,
+        EspionageMessagesTip = 30105,
+        PrioritizationHeaderTip = 30106,
         /// <summary>Locked - requires {0}</summary>
-        TcLockedRequiresTech = 5101,
+        TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>
-        TcResearchBonusGranted = 5102,
+        TcResearchBonusGranted = 30001,
         /// <summary>We found some {0}, but we already possessed this knowledge.</summary>
-        TcTechAlreadyPossessed = 5103,
+        TcTechAlreadyPossessed = 30002,
         /// <summary>New Technology Acquired: {0}</summary>
         TcNewTechnologyAcquired = 5104,
         /// <summary>Empire Defeated</summary>
