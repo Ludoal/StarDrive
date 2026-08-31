@@ -354,6 +354,14 @@ namespace Ship_Game
         // colony WAIT instead, saving its production for the rank it owes.
         bool TryBuildNextPlannedBuilding(float budget, out bool waiting)
         {
+            Building next = NextPlannedTarget(budget, out waiting);
+            return next != null && Construction.Enqueue(next);
+        }
+
+        // The entry the plan owes next: the first one this builder can raise at all, refused
+        // only by the budget - in which case the colony waits rather than moving down the list.
+        Building NextPlannedTarget(float budget, out bool waiting)
+        {
             waiting = false;
             IReadOnlyList<Building> plan = Blueprints.PlannedBuildingsWeCanBuild;
             for (int i = 0; i < plan.Count; i++)
@@ -365,19 +373,66 @@ namespace Ship_Game
                 if (!SuitableForBuild(b, budget, plan))
                 {
                     waiting = true;
-                    return false;
+                    return null;
                 }
 
-                return Construction.Enqueue(b);
+                return b;
+            }
+
+            return null;
+        }
+
+        // Ludoal fork (maintainer feedback): a list can be longer than the ground it stands on.
+        // Once nothing outside the plan is left to clear, an exclusive plan makes way for its own
+        // higher ranks - the entry the player put last steps aside for the one he put first. Only
+        // under an exclusive plan: an ordinary one is a suggestion and keeps the governor's score.
+        // A standing building the plan does not name and the governor is free to pull down.
+        bool AnyScrappableOutsider()
+        {
+            foreach (Building b in Buildings)
+            {
+                if (!RequiredInBlueprints(b) && !HardProtectedFromScrap(b))
+                    return true;
             }
 
             return false;
+        }
+
+        bool TryReplaceLowestRank(float budget)
+        {
+            if (AnyScrappableOutsider()) // clear what the plan never named before touching what it did
+                return false;
+
+            Building wanted = NextPlannedTarget(budget, out _);
+            if (wanted == null)
+                return false;
+
+            Building victim = Blueprints.LowestRankedStanding(b => !HardProtectedFromScrap(b));
+            if (victim == null || Blueprints.RankOf(victim) <= Blueprints.RankOf(wanted))
+                return false;
+
+            ScrapBuilding(victim);
+            Construction.Enqueue(wanted);
+            return true;
         }
 
         bool TryScrapBuilding(bool overBudget,  bool scrapZeroMaintenance = false, bool terraformerOverride = false)
         {
             if (GovernorShouldNotScrapBuilding && !terraformerOverride)
                 return false;  // Player decided not to allow governors to scrap buildings and not terraform related
+
+            // Ludoal fork (maintainer feedback): a terraformer clearing ground on a planned colony
+            // takes the entry ranked LAST, not the one that scores worst - the player's order is
+            // the answer to "who steps aside", and only once nothing unplanned is left to take.
+            if (terraformerOverride && HasBlueprints && !AnyScrappableOutsider())
+            {
+                Building lastRanked = Blueprints.LowestRankedStanding(b => !HardProtectedFromScrap(b));
+                if (lastRanked != null)
+                {
+                    ScrapBuilding(lastRanked);
+                    return true;
+                }
+            }
 
             ChooseWorstBuilding(overBudget, scrapZeroMaintenance, false, out Building toScrap);
 
@@ -396,6 +451,9 @@ namespace Ship_Game
 
             // a replace is a scrap with a gift behind it: the no-scrap setting covers it too (upstream issue 303)
             if (GovernorShouldNotScrapBuilding)
+                return;
+
+            if (HasExclusiveBlueprints && TryReplaceLowestRank(budget))
                 return;
 
             float worstBuildingScore = ChooseWorstBuilding(overBudget, scrapZeroMaintenance: true, true, out Building worstBuilding);
@@ -537,9 +595,12 @@ namespace Ship_Game
             return budget > 0 && b.ActualMaintenance(this) <= budget;
         }
 
-        bool SuitableForScrap(Building b, bool overBudget, float storageInUse, bool scrapZeroMaintenance, bool replacing)
+        // Ludoal fork (maintainer feedback): what the governor may never pull down, whatever the
+        // reason for pulling. Shared with the rank duel below, which crosses the plan's own
+        // protection but not these.
+        bool HardProtectedFromScrap(Building b)
         {
-            if (b.IsBiospheres
+            return b.IsBiospheres
                 || b.IsMilitary
                 || !b.Scrappable
                 // player-built is never the governor's to scrap (upstream issue 303) - except under
@@ -547,10 +608,13 @@ namespace Ship_Game
                 || b.IsPlayerAdded && OwnerIsPlayer && !HasExclusiveBlueprints
                 || b.IsSpacePort && Owner.GetPlanets().Count == 1 // Dont scrap our last spaceport
                 || b.BuildOnlyOnce
-                || b.PlusTerraformPoints > 0) // using this instead of IsTerraformer since some event building might also terraform without the terraformer building ID
-            {
+                || b.PlusTerraformPoints > 0; // using this instead of IsTerraformer since some event building might also terraform without the terraformer building ID
+        }
+
+        bool SuitableForScrap(Building b, bool overBudget, float storageInUse, bool scrapZeroMaintenance, bool replacing)
+        {
+            if (HardProtectedFromScrap(b))
                 return false;
-            }
 
             if (!RequiredInBlueprints(b))
                 return true;

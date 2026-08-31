@@ -105,7 +105,6 @@ namespace Ship_Game.Universe.SolarBodies
                     built.Add(b.Name);
 
             PercentCompleted = (int)(100f * built.Count / totalPlanned);
-
         }
 
         // How much of this plan this COLONY can actually end up with.
@@ -140,22 +139,21 @@ namespace Ship_Game.Universe.SolarBodies
             PercentAchievable = (int)(100 * (float)reachable.Count / totalPlannedBuildings);
         }
 
-        // Ludoal fork (maintainer feedback): a plan ends when the colony IS the list - the whole
-        // list, never the reachable part of it, since a plan longer than the ground or holding a
-        // technology not yet taken would otherwise hand over in the middle of an era.
+        // Ludoal fork (maintainer feedback): a completed plan hands over to its link, on the
+        // WHOLE list and never the reachable part of it - a plan longer than the ground, or
+        // holding a technology not yet taken, would otherwise hand over in the middle of an era.
         //
-        // Checked once per governing turn rather than the moment a building lands: swapping or
-        // removing a plan is a decision about the colony, and a save being read is not the place
-        // to take it.
+        // A plan with no link STAYS. It costs nothing to keep (the list is read from the top
+        // every turn, there is no state to carry) and it is what rebuilds the colony after a
+        // volcano; standing down would hand a colony back to mandates that may forbid building
+        // anything, which is precisely the guarantee the plan was there to give.
+        //
+        // Checked once per governing turn rather than the moment a building lands: swapping a
+        // plan is a decision about the colony, and a save being read is not the place to take it.
         public void EndIfCompleted()
         {
-            if (!Completed)
-                return;
-
-            if (ResourceManager.TryGetBlueprints(LinkedBlueprintsName, out BlueprintsTemplate template))
+            if (Completed && ResourceManager.TryGetBlueprints(LinkedBlueprintsName, out BlueprintsTemplate template))
                 ChangeTemplate(template);
-            else if (Exclusive)
-                P.RemoveBlueprints(); // the contract is honoured: the colony goes back to its own mandates
         }
 
         public void RefreshPlannedBuildingsWeCanBuild(IReadOnlyList<Building> buildingCanBuild)
@@ -184,6 +182,28 @@ namespace Ship_Game.Universe.SolarBodies
         // Ludoal fork (maintainer feedback): a plan directs what gets RAISED. Only an exclusive
         // one also directs what makes way, and only when the ground is actually needed - an
         // ordinary plan gives a colony no reason to demolish that a colony without one lacks.
+        // Ludoal fork (maintainer feedback): the plan's order, exposed for the one case where a
+        // list is longer than the ground it stands on. Rank 0 is the top; a building the plan
+        // does not name has no rank at all, which is what makes it the first to go.
+        public int RankOf(Building b) => PlannedBuildings.IndexOf(b.Name);
+
+        // The standing plan member the player ranked lowest, skipping anything the caller
+        // refuses to touch. Walked from the bottom of the list, so the first hit is the answer.
+        public Building LowestRankedStanding(Func<Building, bool> mayScrap)
+        {
+            for (int i = PlannedBuildings.Count - 1; i >= 0; i--)
+            {
+                string planned = PlannedBuildings[i];
+                foreach (Building b in P.Buildings)
+                {
+                    if (b.Name == planned && mayScrap(b))
+                        return b;
+                }
+            }
+
+            return null;
+        }
+
         public bool ShouldScrapNonRequiredBuilding()
         {
             return Exclusive
