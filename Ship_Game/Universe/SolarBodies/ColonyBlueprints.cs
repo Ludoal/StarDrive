@@ -17,6 +17,14 @@ namespace Ship_Game.Universe.SolarBodies
         [StarData] public Array<Building> PlannedBuildingsWeCanBuild { get; private set; }
         [StarData] public int PercentCompleted { get; private set; }
         [StarData] public int PercentAchievable { get; private set; }
+
+        // Counts behind the two percentages, for a screen that needs "3/12" rather than "25%".
+        // Not serialized: they are written by the same passes, and a plan that has not refreshed
+        // yet shows the same staleness its percentages already show.
+        public int PlannedCount { get; private set; }
+        public int BuiltCount { get; private set; }
+        public int ReachableCount { get; private set; }
+        public int NotAchievableCount => (PlannedCount - ReachableCount).LowerBound(0);
         [StarData] BlueprintsTemplate Template;
 
         public string Name => Template.Name;
@@ -35,6 +43,31 @@ namespace Ship_Game.Universe.SolarBodies
         // a standing building counts as reachable too, so achievable is never below completed:
         // the gate asks whether half of what this colony CAN reach is already up.
         bool IsHalfAchievableCompleted => PercentAchievable == 0 || PercentCompleted >= PercentAchievable/2;
+
+        // Ludoal fork (maintainer feedback): everything this colony can reach is up, and the list
+        // still is not finished - entries wait on a technology, the ground or a mandate. The chain
+        // does not fire on its own here (that needs the WHOLE list), so the player is offered the
+        // hand-over instead. A plan with no link has nothing to move on to: this is its end state.
+        public bool Blocked => PlannedCount > 0
+                               && BuiltCount == PlannedCount - NotAchievableCount
+                               && BuiltCount < PlannedCount;
+
+        public bool CanMoveOn => Blocked && LinkedBlueprintsName.NotEmpty();
+
+        // An exclusive plan with the whole list up and nowhere to hand over to: not a stall, the
+        // colony it was written to produce. It keeps watch from here on.
+        public bool FinalState => Exclusive && PlannedCount > 0
+                                  && BuiltCount == PlannedCount
+                                  && LinkedBlueprintsName.Length == 0;
+
+        public bool MoveOnToLink()
+        {
+            if (!ResourceManager.TryGetBlueprints(LinkedBlueprintsName, out BlueprintsTemplate template))
+                return false;
+
+            ChangeTemplate(template);
+            return true;
+        }
 
         public bool IsRequired(Building b) => PlannedBuildings.Contains(b.Name);
         public bool IsNotRequired(Building b) => !IsRequired(b);
@@ -106,6 +139,8 @@ namespace Ship_Game.Universe.SolarBodies
                 if (IsRequired(b))
                     built.Add(b.Name);
 
+            PlannedCount = totalPlanned;
+            BuiltCount = built.Count;
             PercentCompleted = (int)(100f * built.Count / totalPlanned);
         }
 
@@ -126,6 +161,7 @@ namespace Ship_Game.Universe.SolarBodies
             if (totalPlannedBuildings == 0 || Owner == null)
             {
                 PercentAchievable = 0;
+                ReachableCount = 0;
                 return;
             }
 
@@ -138,6 +174,8 @@ namespace Ship_Game.Universe.SolarBodies
                 if (IsRequired(b) && (b.IsMilitary ? P.MayBuildMilitary : P.MayBuildCivilian))
                     reachable.Add(b.Name);
 
+            PlannedCount = totalPlannedBuildings;
+            ReachableCount = reachable.Count;
             PercentAchievable = (int)(100 * (float)reachable.Count / totalPlannedBuildings);
         }
 

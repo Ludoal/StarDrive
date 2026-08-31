@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDUtils;
@@ -20,6 +20,9 @@ public sealed class ProgressBar
     // a colour stop reading as the same quantity. Only the fill - the housing keeps its own.
     public Color FillTint = Color.White;
     public bool DrawProgressText = true; // draw "50%" or "50/100"
+    // When set, this is drawn instead of the value pair - for a bar whose reading needs more
+    // than its two numbers ("3/12 - 2 not achievable").
+    public string OverrideText = "";
     public bool DrawPercentage = false;
     public bool Fraction10Values = false;
     // Ludoal fork (maintainer feedback): always write the decimal, so a column of bars
@@ -150,7 +153,8 @@ public sealed class ProgressBar
             batch.Draw(ResourceManager.Texture("NewUI/progressbar_container_right"), Right, Color.DarkGray);
         }
         var textPos = new Vector2(Left.X + 7, Left.Y + Left.Height / 2 - Fonts.TahomaBold9.LineSpacing / 2);
-        batch.DrawString(Fonts.TahomaBold9, Fraction10Values ? Values10 : Values, textPos, Color.DarkGray);
+        string text = OverrideText.NotEmpty() ? OverrideText : Fraction10Values ? Values10 : Values;
+        batch.DrawString(Fonts.TahomaBold9, text, textPos, Color.DarkGray);
     }
 
     string Values10 => FixedDecimal

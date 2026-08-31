@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
@@ -48,7 +48,7 @@ namespace Ship_Game
         UIButton BuildPlatform;
         UIButton BuildStation;
         UIButton BuildShipyard;
-        UIButton EditBlueprints, LoadBlueprints;
+        UIButton EditBlueprints, LoadBlueprints, MoveOnBlueprints;
         // Ludoal fork (maintainer feedback): the plan's mode. DERIVED, never stored - a colony
         // either has a plan of its own or it does not - and Auto, which defers to the empire's
         // table of default plans per governor type (Policies > Colony). Auto shipped only once
@@ -95,7 +95,7 @@ namespace Ship_Game
         FloatSlider CivBudgetSlider, GrdBudgetSlider, SpcBudgetSlider;
         UICheckBox AutoCiv, AutoGrd, AutoSpc;
 
-        UILabel ColonyBlueprints, BlueprintsCompletionLbl, BlueprintsAchiveable, BlueprintsName,
+        UILabel ColonyBlueprints, BlueprintsCompletionLbl, BlueprintsName,
             BlueprintsLink, BlueprintsLinkName;
         UIPanel BlueprintsLinkIcon;
         // Ludoal fork (maintainer feedback): the exclusive flag as a padlock rather than a
@@ -157,7 +157,6 @@ namespace Ship_Game
             ColonyBlueprints = Add(new UILabel(GameText.BlueprintNameLabel, Font, Color.Wheat));
             BlueprintsName   = Add(new UILabel("", Font, Color.Gold));
             BlueprintsCompletionLbl = Add(new UILabel(GameText.CompletionNoColon, Font, Color.Wheat));
-            BlueprintsAchiveable    = Add(new UILabel(GameText.Achievable, Font, Color.Gray));
             // White body text - the semantic colours (green/gold) stay.
             BlueprintsExclusiveIcon = Add(new UIPanel(ResourceManager.Texture("NewUI/icon_lock")));
             BlueprintsExclusiveIcon.Tooltip = GameText.ExclusiveBlueprints;
@@ -239,6 +238,11 @@ namespace Ship_Game
                 { Tooltip = GameText.BlueprintModeTip });
 
             ButtonUpdateTimer    = 1;
+            // offered only when the plan has built everything this colony can reach and a linked
+            // plan is waiting - the chain itself needs the WHOLE list, which will never come here
+            MoveOnBlueprints = Button(ButtonStyle.Small, "Move on", OnMoveOnBlueprintsClicked);
+            MoveOnBlueprints.Tooltip = "Hand this colony over to the linked blueprint now: everything this plan can still reach here is built.";
+
             BuildCapital         = Button(ButtonStyle.DefaultActive, GameText.ButtonBuildCapitalName, OnBuildCapitalClicked);
             BuildCapital.Tooltip = GameText.ButtonBuildCapitalTip;
 
@@ -277,7 +281,7 @@ namespace Ship_Game
 
             Rectangle completionRect = new((int)X + 100, (int)Y + 70, (int)(Width * 0.5f), 30);
             BlueprintsCompletion = new ProgressBar(completionRect, 0, 0)
-            { DrawPercentage = true, color = "green" };
+            { DrawPercentage = false, color = "green" };
 
             CivBudgetBar.Fraction10Values = CivBudgetBar.FixedDecimal = true;
             GrdBudgetBar.Fraction10Values = GrdBudgetBar.FixedDecimal = true;
@@ -386,8 +390,7 @@ namespace Ship_Game
 
             BlueprintsCompletionLbl.Pos     = new Vector2(bpX, bpRow2 + 3);
             BlueprintsCompletionLbl.Tooltip = GameText.CompletionTip;
-            BlueprintsAchiveable.Pos        = new Vector2(bpX + BpLabelW + BpBarW + 8, bpRow2 + 3);
-            BlueprintsAchiveable.Tooltip    = GameText.AchievableTip;
+            MoveOnBlueprints.Pos            = new Vector2(bpX + BpLabelW + BpBarW + 8, bpRow2);
 
             // The warning's BOTTOM lines up with the portrait's bottom - a fixed anchor,
             // whatever the description length. A label draws from its top, so seat its top one
@@ -768,7 +771,7 @@ namespace Ship_Game
                 BlueprintsName.Visible   = EditBlueprints.Visible;
                 ColonyBlueprints.Visible = bpRow && Planet.HasBlueprints;
                 BlueprintsCompletionLbl.Visible = EditBlueprints.Visible;
-                BlueprintsAchiveable.Visible    = EditBlueprints.Visible && Planet.Blueprints.PercentAchievable < 100;
+                MoveOnBlueprints.Visible        = EditBlueprints.Visible && Planet.Blueprints.CanMoveOn;
                 BlueprintsExclusiveIcon.Visible = EditBlueprints.Visible && Planet.Blueprints.Exclusive;
                 BlueprintsLink.Visible = BlueprintsLinkName.Visible = BlueprintsLinkIcon.Visible =
                     EditBlueprints.Visible && Planet.Blueprints.LinkedBlueprintsName != "";
@@ -906,6 +909,12 @@ namespace Ship_Game
             {
                 GameAudio.NegativeClick();
             }
+        }
+
+        void OnMoveOnBlueprintsClicked(UIButton b)
+        {
+            if (Planet.HasBlueprints && Planet.Blueprints.MoveOnToLink())
+                UpdateBlueprintsChanged();
         }
 
         void OnBuildCapitalClicked(UIButton b)
@@ -1115,8 +1124,13 @@ namespace Ship_Game
             if (!Planet.HasBlueprints || !Planet.OwnerIsPlayer)
                 return;
 
-            BlueprintsCompletion.Progress = Planet.Blueprints.PercentCompleted;
-            BlueprintsAchiveable.Text = $"({Planet.Blueprints.PercentAchievable.String()}% {Localizer.Token(GameText.Achievable)})";
+            var plan = Planet.Blueprints;
+            BlueprintsCompletion.Max = plan.PlannedCount.LowerBound(1);
+            BlueprintsCompletion.Progress = plan.BuiltCount;
+            int notAchievable = plan.NotAchievableCount;
+            BlueprintsCompletion.OverrideText = notAchievable > 0
+                ? $"{plan.BuiltCount}/{plan.PlannedCount} - {notAchievable} not achievable"
+                : $"{plan.BuiltCount}/{plan.PlannedCount}";
             if (Planet.HasBlueprints && Planet.Blueprints.Name != BlueprintsName.Text)
                 UpdateBlueprintsChanged();
         }
