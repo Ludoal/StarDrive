@@ -46,6 +46,10 @@ namespace Ship_Game
         // the colonies of a zone and the runs delivering into it is honest in any unit.
         DropOptions<TradeZone> ZoneFilter;
         TradeZone SelectedZone;
+        // what the picker currently SHOWS - the player edits the empire's zones on another page,
+        // so the two are compared each tick and the picker rebuilt when they part company. Built
+        // once at open, it went on offering the list as it stood the moment the window came up.
+        readonly Array<TradeZone> ZonesShown = new();
 
         // the right edge that centres a NumberColW-wide column under a header at headerX
         static float ColumnRightUnder(float headerX, GameText header)
@@ -139,18 +143,8 @@ namespace Ship_Game
                             GameText.TzColonyZones, Fonts.Arial12Bold, Color.Wheat, GameText.TzWindowZoneTip));
             ZoneFilter = Add(new DropOptions<TradeZone>(
                 new Vector2(zoneBoxX, win.Y + 4), (int)ZoneBoxW, 18));
-            ZoneFilter.AddOption(GameText.TzAllZones, null);
-            foreach (TradeZone zone in Player.TradeZones)
-                ZoneFilter.AddOption(zone.Name, zone);
-
-            // a zone the player dissolved while the window was shut must not come back as a
-            // selection: the list is rebuilt here, so the held zone is re-checked against it
-            if (SelectedZone != null && !Player.TradeZones.Contains(SelectedZone))
-                SelectedZone = null;
-
-            ZoneFilter.ActiveIndex = SelectedZone == null
-                                   ? 0 : Player.TradeZones.IndexOf(SelectedZone) + 1;
             ZoneFilter.OnValueChange = z => SelectedZone = z;
+            RebuildZoneOptions();
         }
 
         public override void PerformLayout()
@@ -230,6 +224,9 @@ namespace Ship_Game
             if (UpdateTimer <= 0)
             {
                 UpdateTimer = 1;
+                if (ZoneFilter != null && ZoneOptionsStale())
+                    RebuildZoneOptions();
+
                 TotalFreighters = Player.TotalFreighters;
                 float totalUtilizedCargo = 0;
                 foreach (GoodsUtilization goodsUtilization in GoodsUtilizationMap.Values)
@@ -297,6 +294,40 @@ namespace Ship_Game
             }
 
             base.Update(fixedDeltaTime);
+        }
+
+        // The picker's entries, rebuilt from the empire's own list. A zone dissolved elsewhere
+        // must not survive as a selection, so the held zone is re-checked against the list it
+        // came from - and the entry order follows the list, which IS the dispatch priority.
+        void RebuildZoneOptions()
+        {
+            ZoneFilter.Clear();
+            ZoneFilter.AddOption(GameText.TzAllZones, null);
+            ZonesShown.Clear();
+            foreach (TradeZone zone in Player.TradeZones)
+            {
+                ZoneFilter.AddOption(zone.Name, zone);
+                ZonesShown.Add(zone);
+            }
+
+            if (SelectedZone != null && !ZonesShown.Contains(SelectedZone))
+                SelectedZone = null;
+
+            ZoneFilter.ActiveIndex = SelectedZone == null ? 0 : ZonesShown.IndexOf(SelectedZone) + 1;
+        }
+
+        // the picker shows a list the player edits on another page: it is stale the moment that
+        // list has a zone more, a zone less, or the same zones in another order
+        bool ZoneOptionsStale()
+        {
+            if (ZonesShown.Count != Player.TradeZones.Count)
+                return true;
+
+            for (int i = 0; i < ZonesShown.Count; ++i)
+                if (ZonesShown[i] != Player.TradeZones[i])
+                    return true;
+
+            return false;
         }
 
         // a run belongs to a zone by the end it DELIVERS to - the same end the zone's own dispatch
