@@ -65,9 +65,12 @@ namespace Ship_Game
         // queueing law, and it needs a measured arrival rate; inventing one here would produce a
         // plausible number that is wrong.
         //
-        // Colonists are left out of BOTH figures: their slots are counted in HEADS and never
-        // converted into cargo loads, so counting them on one side only made Active outrun
-        // Required on its own.
+        // ⚠ colonists were left out of both figures on the reading that their slots count HEADS.
+        // That is true of the EXPORT side alone (GetColonistsExportSlots returns the population
+        // itself); the IMPORT side returns 1 to 5 BERTHS, the very unit food and production use.
+        // Since only import slots are counted here, there was never a unit to reconcile - the
+        // generalisation was mine, and it stood in this comment as a reason not to do a thing
+        // that had no obstacle.
         public int RequiredFreighters(Empire owner)
         {
             int imports = 0;
@@ -77,7 +80,7 @@ namespace Ship_Game
                 if (p == null || p.Owner != owner)
                     continue;
 
-                imports += p.FoodImportSlots + p.ProdImportSlots;
+                imports += p.FoodImportSlots + p.ProdImportSlots + p.ColonistsImportSlots;
             }
             return imports;
         }
@@ -93,9 +96,10 @@ namespace Ship_Game
                 if (p == null || p.Owner != owner)
                     continue;
 
-                // food and production only, the same two the demand counts: a colonist run has
-                // no counterpart in Required, and counting it here alone made the pair lie
-                active += p.IncomingFoodFreighters + p.IncomingProdFreighters;
+                // the same three the demand counts - a pair only reads if both sides hold the
+                // same goods, and all three are counted in berths on the import side
+                active += p.IncomingFoodFreighters + p.IncomingProdFreighters
+                        + p.IncomingColonistsFreighters;
             }
             return active;
         }
