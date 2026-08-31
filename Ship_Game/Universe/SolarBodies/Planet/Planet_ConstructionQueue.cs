@@ -52,6 +52,11 @@ public partial class Planet
     {
         BuildingsCanBuild = GetBuildingsWeCanBuildHere();
         Blueprints?.RefreshPlannedBuildingsWeCanBuild(BuildingsCanBuild);
+        // ★ the offer was just BUILT, one line up - so this is the one place in the game
+        // entitled to say the plan has been measured against a real one (bench 558). The
+        // method above is handed a list rather than building one, and the load path hands it
+        // the cache while that cache is still empty.
+        Blueprints?.MarkMeasured();
     }
 
     public bool IsBuiltOrQueuedWithinEmpire(Building b)

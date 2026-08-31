@@ -121,6 +121,12 @@ namespace Ship_Game.Universe.SolarBodies
         // colony that finished its plan read 100% completed next to a stale 75% achievable, and
         // the pair stayed wrong until the next technology landed. Two numbers a player compares
         // cannot be computed at two different moments.
+        // ⚠ claimed by the ONE site that has just REBUILT the offer - which is not this class.
+        // RefreshPlannedBuildingsWeCanBuild is handed a list rather than building one, and the
+        // load path hands it the cache while that cache is still empty: the flag set there was
+        // set on nothing, which is how a paused, freshly loaded game still showed pink.
+        public void MarkMeasured() => Measured = true;
+
         public void Refresh()
         {
             UpdateCompletion();
@@ -246,15 +252,6 @@ namespace Ship_Game.Universe.SolarBodies
             // them here left the other at its load-time nought - which is the very rule written
             // above Refresh(), and which this line broke the day it was added.
             Refresh();
-            // ⚠ MEASURED is claimed HERE and nowhere else (bench 555): this is the one path that
-            // knows the offer was rebuilt immediately before. Refresh() alone cannot say so - the
-            // buildable cache starts EMPTY and stays empty until somebody fills it, and an empty
-            // offer cannot be told from an exhausted one. Measuring against a cache nobody has
-            // filled yet puts every planned entry out of reach, and since the built count is
-            // exactly the standing set, Blocked comes out true on the spot: the pink of a colony
-            // that is merely waiting for its first governing turn, and which the Colony screen
-            // never showed because opening it rebuilt the offer first.
-            Measured = true;
         }
 
         // Ludoal fork (maintainer feedback): a plan directs what gets RAISED. Only an exclusive
