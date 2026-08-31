@@ -142,6 +142,24 @@ namespace Ship_Game
                 active += p.IncomingFoodFreighters + p.IncomingProdFreighters
                         + p.IncomingColonistsFreighters;
             }
+
+            // ⚠ a run to a STATION lands on no colony's counter, so it would never show up above -
+            // and the demand beside this figure DOES count stations. Two numbers a player reads
+            // side by side must count the same set, or the pair says nothing (bench 556).
+            Array<Ship> stations = Stations(owner);
+            if (stations.NotEmpty)
+            {
+                foreach (Ship s in owner.OwnedShips)
+                {
+                    if (!s.IsFreighter || s.AI == null)
+                        continue;
+
+                    Ship target = s.AI.TradeTargetStation;
+                    if (target != null && stations.Contains(target))
+                        ++active;
+                }
+            }
+
             return active;
         }
 

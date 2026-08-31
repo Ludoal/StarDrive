@@ -656,6 +656,21 @@ namespace Ship_Game.AI
         // window's zone filter reads it - a run belongs to the zone holding its IMPORT planet,
         // which is the very end a zone's own dispatch serves. Null when the leg feeds a station
         // or carries nothing of that goods.
+        // Ludoal fork (maintainer bench 556): the STATION this run delivers to, when it delivers
+        // to one. A station run lands on no planet's incoming counter, so anything counting
+        // freighters by their destination has to ask here as well or it counts half the traffic.
+        public Ship TradeTargetStation
+        {
+            get
+            {
+                foreach (ShipGoal g in OrderQueue.ToArray())
+                    if (g?.Trade?.TargetStation != null)
+                        return g.Trade.TargetStation;
+
+                return null;
+            }
+        }
+
         public Planet TradeImportFor(Goods goods)
         {
             foreach (ShipGoal g in OrderQueue.ToArray())

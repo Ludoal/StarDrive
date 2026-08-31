@@ -714,8 +714,13 @@ namespace Ship_Game
                 var freighters = Player.OwnedShips.Filter(s => s.IsFreighter && s.AI.State == AIState.SystemTrader);
                 foreach (Ship f in freighters)
                 {
+                    // Ludoal fork (maintainer bench 556): a run to a STATION has no import
+                    // PLANET, so it drew no route at all - the overlay showed a freighter with
+                    // nothing to show for it. It is drawn to the BODY the station orbits, which
+                    // is where the hull is going and how a trade zone names it anyway.
                     if (f.AI.OrderQueue.TryPeekLast(out ShipAI.ShipGoal g)
-                        && g.Trade is { ExportFrom: { } from, ImportTo: { } to }
+                        && g.Trade is { ExportFrom: { } from }
+                        && (g.Trade.ImportTo ?? g.Trade.TargetStation?.GetTether()) is { } to
                         && RouteTypeShown(g.Trade.Goods)
                         && seen.Add((from, to, g.Trade.Goods)))
                     {
