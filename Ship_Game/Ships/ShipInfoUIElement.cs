@@ -688,21 +688,24 @@ namespace Ship_Game.Ships
                                            : GameText.InterTradeInhibited
                 };
                 Orders.Add(allowInterEmpireTrade);
-                // the area of operation sits with the other two circulation controls rather than
-                // at the head of the row: what a freighter CARRIES, then where it may go.
-                var ao = new OrdersButton(s, OrderType.DefineAO, GameText.AllowsYouToCustomizeAn)
+                // Ludoal fork (maintainer, 31 Aug '26): ONE control where there were two. The
+                // area of operation and the manual route list were per-ship filters, each with its
+                // own editor; they are trade ZONES now, and a zone is composed in one place. This
+                // button keeps the routes button's seat and icon - it is the same idea, grown up -
+                // and opens the picker rather than putting the map into a drawing mode.
+                //
+                // It is an ACTION wearing a toggle's clothes: the getter always reads false, so the
+                // button never latches, and the setter opens the window on the press. The AO
+                // editor's own setter had side effects too; this one has nothing else.
+                var zone = new OrdersButton(s, OrderType.DefineTradeRoutes, GameText.TzShipZoneTip)
                 {
-                    ValueToModify = new(() => Universe.DefiningAO, x => {
-                        Universe.DefiningAO = x;
-                        Universe.AORect = Rectangle.Empty;
+                    ValueToModify = new(() => false, x =>
+                    {
+                        if (x)
+                            Universe.ScreenManager.AddScreen(new ShipTradeZoneScreen(Universe, s));
                     })
                 };
-                Orders.Add(ao);
-                var tradeRoutes = new OrdersButton(s, OrderType.DefineTradeRoutes, GameText.ChooseAListOfPlanets)
-                {
-                    ValueToModify = new(() => Universe.DefiningTradeRoutes, x => { Universe.DefiningTradeRoutes = x; })
-                };
-                Orders.Add(tradeRoutes);
+                Orders.Add(zone);
             }
             if (s.Carrier.HasTroopBays)
             {
