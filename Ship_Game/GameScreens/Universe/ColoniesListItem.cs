@@ -293,8 +293,8 @@ namespace Ship_Game
             if (P.HasBlueprints) 
             {
                 var color = BlueprintsScreen.GetBlueprintsIconColor(P.Blueprints.ColonyType);
-                var namePos = new Vector2(planetIconRect.X + planetIconRect.Width+10, planetIconRect.Bottom+5);
-                batch.DrawString(Fonts.Arial12, P.Blueprints.Name, namePos, color);
+                var planPos = new Vector2(planetIconRect.X + planetIconRect.Width+10, planetIconRect.Bottom+5);
+                batch.DrawString(Fonts.Arial12, P.Blueprints.Name, planPos, color);
 
                 // Ludoal fork (maintainer feedback): how far the plan got, in buildings rather than
                 // percent. Pink when everything reachable here is up and the list still is not -
@@ -304,7 +304,7 @@ namespace Ship_Game
                 Color ratioColor = P.Blueprints.FinalState ? Color.LightGreen
                                  : P.Blueprints.Blocked ? Color.HotPink
                                  : Color.White;
-                var ratioPos = new Vector2(namePos.X + Fonts.Arial12.MeasureString(P.Blueprints.Name).X, namePos.Y);
+                var ratioPos = new Vector2(planPos.X + Fonts.Arial12.MeasureString(P.Blueprints.Name).X, planPos.Y);
                 batch.DrawString(Fonts.Arial12, ratio, ratioPos, ratioColor);
                 batch.Draw(ResourceManager.Texture("NewUI/blueprints"), 
                     new Vector2(planetIconRect.X+2, planetIconRect.Bottom), new Vector2(25, 25), color);
