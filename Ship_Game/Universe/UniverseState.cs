@@ -710,6 +710,18 @@ namespace Ship_Game.Universe
             RemnantPaceModifier = CalcRemnantPace();
         }
 
+        // Ludoal fork (maintainer, 31 Aug '26): the remnant design strength the game should USE.
+        // A mod may raise it - CombinedArms doubles it, 2 to 4 - and a player who asked for the
+        // base game's remnants gets the base game's number here, wherever it is read.
+        //
+        // ⚠ it pulls in two directions and BOTH of them favour the player when lowered: it scales
+        // the strength of the fleets they field, and it sits at the DENOMINATOR of the superiority
+        // they demand before attacking. At 2 they hit softer and wait longer.
+        public const float VanillaRemnantDesignStr = 2f;
+        public float RemnantDesignStr => P.VanillaRemnantStrength
+                                       ? VanillaRemnantDesignStr
+                                       : GlobalStats.Defaults.RemnantDesignStrMultiplier;
+
         float CalcRemnantPace()
         {
             float stars = P.StarsModifier * 4; // 1-8
@@ -719,7 +731,16 @@ namespace Ship_Game.Universe
             int numEmpires = numMajorEmpires / 2; // 1-4
 
             float pace = 20 - stars - size - extra - numEmpires;
-            return pace.LowerBound(1);
+            // the player's own say, and the only one of these terms they can see. A HIGHER pace is
+            // a SLOWER climb: it is added per level as extra turns of effort, so multiplying it
+            // stretches the ladder rather than shortening it.
+            float chosen = P.RemnantPace switch
+            {
+                RaceDesignScreen.RemnantPaceSetting.VerySlow => 2f,
+                RaceDesignScreen.RemnantPaceSetting.Slow     => 1.5f,
+                _                           => 1f,
+            };
+            return (pace * chosen).LowerBound(1);
         }
 
         float GetResearchMultiplier()

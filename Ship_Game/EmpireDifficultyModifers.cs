@@ -64,9 +64,13 @@
 
         public DifficultyModifiers(Empire empire, GameDifficulty difficulty)
         {
+            // Ludoal fork: the EFFECTIVE strength - the mod's, or the base game's when the player
+            // ticked Vanilla Remnant Strength at setup. Read from one place so the two sites that
+            // consume it can never disagree (the other is RequiredAttackFleetStr).
             float remnantGeneralStr = 2; // Vanilla will be 2
-            if (GlobalStats.Defaults.RemnantDesignStrMultiplier > 0.01f)
-                remnantGeneralStr = GlobalStats.Defaults.RemnantDesignStrMultiplier;
+            float designStr = empire.Universe?.RemnantDesignStr ?? GlobalStats.Defaults.RemnantDesignStrMultiplier;
+            if (designStr > 0.01f)
+                remnantGeneralStr = designStr;
 
             DataVisibleToPlayer    = false;
             FlatMoneyBonus         = 0;

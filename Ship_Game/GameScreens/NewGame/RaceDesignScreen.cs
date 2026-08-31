@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
@@ -374,6 +374,19 @@ namespace Ship_Game
                 tip:GameText.NgDifficultyAggressivenessTooltip);
             AddOption("{RemnantPresence} : ", OnExtraRemnantClicked, _ => RemnantText(P.ExtraRemnant),
                 tip:GameText.NgRemnantsIntensityTooltip);
+            // Ludoal fork (maintainer, 31 Aug '26): the setup offered their NUMBER and nothing
+            // else. The complaint from new players is not how many there are - it is how quickly
+            // they become dangerous, which is this.
+            AddOption(Localizer.Token(GameText.RmPaceLabel) + " : ", OnRemnantPaceClicked,
+                _ => RemnantPaceText(P.RemnantPace), tip:GameText.RmPaceTip);
+            // ...and a way back to the base game's remnant strength, offered ONLY when the loaded
+            // mod actually raised it. The test is the VALUE, never the mod's name: it then works
+            // for any mod that touches this, and never appears in vanilla where it would mean
+            // nothing.
+            if (GlobalStats.Defaults.RemnantDesignStrMultiplier != UniverseState.VanillaRemnantDesignStr)
+                AddOption(Localizer.Token(GameText.RmVanillaStrength) + " : ", OnVanillaRemnantStrengthClicked,
+                    _ => Localizer.Token(P.VanillaRemnantStrength ? GameText.Yes : GameText.No),
+                    tip:GameText.RmVanillaStrengthTip);
 
             // row 2 RIGHT: two tabs over one area - the points summary, and the race description.
             // Same rect for both; OnTabChange flips which one is visible.
@@ -669,6 +682,23 @@ namespace Ship_Game
             P.ExtraRemnant = P.ExtraRemnant.IncrementWithWrap(OptionIncrement);
         }
 
+        void OnRemnantPaceClicked(UIButton b)
+        {
+            P.RemnantPace = P.RemnantPace.IncrementWithWrap(OptionIncrement);
+        }
+
+        void OnVanillaRemnantStrengthClicked(UIButton b)
+        {
+            P.VanillaRemnantStrength = !P.VanillaRemnantStrength;
+        }
+
+        static string RemnantPaceText(RemnantPaceSetting p) => p switch
+        {
+            RemnantPaceSetting.VerySlow => Localizer.Token(GameText.RmPaceVerySlow),
+            RemnantPaceSetting.Slow     => Localizer.Token(GameText.RmPaceSlow),
+            _                           => Localizer.Token(GameText.RmPaceNormal),
+        };
+
         public override bool HandleInput(InputState input)
         {
             if (Picker.Visible)
@@ -920,6 +950,15 @@ namespace Ship_Game
     public enum GalSize
     {
         Tiny, Small, Medium, Large, Huge, Epic, TrulyEpic
+    }
+
+    // Ludoal fork: named in SPEED because that is what it changes - "Very Low" on a rhythm reads
+    // as a quantity. Capped at Normal on purpose: this exists to make them gentler, never harder.
+    public enum RemnantPaceSetting
+    {
+        VerySlow,
+        Slow,
+        Normal,
     }
 
     public enum ExtraRemnantPresence

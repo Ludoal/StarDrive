@@ -7195,6 +7195,20 @@ namespace Ship_Game
         TzShipZoneTip = 7241,
         /// <summary>No zone</summary>
         TzNoZone = 7242,
+        /// <summary>Remnant Pace</summary>
+        RmPaceLabel = 7243,
+        /// <summary>How fast the Remnants gain power over time.</summary>
+        RmPaceTip = 7244,
+        /// <summary>Very Slow</summary>
+        RmPaceVerySlow = 7245,
+        /// <summary>Slow</summary>
+        RmPaceSlow = 7246,
+        /// <summary>Normal</summary>
+        RmPaceNormal = 7247,
+        /// <summary>Vanilla Remnant Strength</summary>
+        RmVanillaStrength = 7248,
+        /// <summary>The loaded mod strengthens Remnant ship designs.</summary>
+        RmVanillaStrengthTip = 7249,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

@@ -632,7 +632,7 @@ namespace Ship_Game
         public float RequiredAttackFleetStr(Empire targetEmpire)
         {
             float str = targetEmpire.OffensiveStrength
-                * Owner.GetFleetStrEmpireMultiplier(targetEmpire) / GlobalStats.Defaults.RemnantDesignStrMultiplier.LowerBound(0.1f);
+                * Owner.GetFleetStrEmpireMultiplier(targetEmpire) / Universe.RemnantDesignStr.LowerBound(0.1f);
             // Cap at the level-fraction ceiling, then floor at the level-appropriate
             // minimum. Ordered this way because the floor can exceed the ceiling for
             // non-huge targets; a min-first Clamp would dip the requirement below the floor.

@@ -24,6 +24,16 @@ public class UniverseParams
     [StarData(DefaultValue=ExtraRemnantPresence.Normal)]
     public ExtraRemnantPresence ExtraRemnant = ExtraRemnantPresence.Normal;
 
+    // Ludoal fork (maintainer, 31 Aug '26): how fast the Remnants gain power. The setup screen
+    // offered their NUMBER and nothing else, and the complaint from new players was never about
+    // how many there are - it is that they grow dangerous too quickly.
+    [StarData(DefaultValue=RemnantPaceSetting.Normal)]
+    public RemnantPaceSetting RemnantPace = RemnantPaceSetting.Normal;
+
+    // ...and a way back to the base game's remnant strength when a mod has raised it. Shown only
+    // when the loaded mod actually changed the value, so it never appears in vanilla.
+    [StarData] public bool VanillaRemnantStrength;
+
     public Array<IEmpireData> SelectedOpponents = new();
 
     [StarData] public int NumSystems;

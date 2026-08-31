@@ -113,6 +113,29 @@ would have undone the player's own restriction the moment they loaded a plan.
 
 ## New levers
 
+
+### Remnant pace, and a way back to the base game's remnant strength
+`UniverseParams.cs`, `UniverseState.cs`, `RaceDesignScreen.cs` (new game setup)
+
+**Source: maintainer**, relaying new players on the Discord: the Remnants gain power too fast,
+and the setup screen offers their NUMBER and nothing else.
+
+**Remnant Pace** - Very Slow, Slow, Normal - stretches the interval between their level-ups.
+Level IS their power in this design (production scales on level squared, ship level on a third
+of it, portals on a count of levels), so the honest knob is the climb rather than a new strength
+multiplier. Normal is today's behaviour, and the setting never makes them harder.
+
+**Vanilla Remnant Strength**, unticked by default, restores the base game's design strength when
+a loaded mod has raised it - CombinedArms doubles it, 2 to 4. The option appears only when the
+loaded mod actually changed the value, so it is absent in vanilla where it would mean nothing,
+and the test is the VALUE rather than the mod's name so it works for any mod.
+
+⚠ that number pulls in two directions and both favour the player when lowered: it scales the
+fleets they field, and it sits at the denominator of the superiority they demand before
+attacking. At 2 they hit softer and wait longer.
+
+Both apply to new games only, like every universe parameter.
+
 ### Freighter quantity: a reserve, a refit ceiling, an idle delay
 `Empire_Trade.cs`, `PoliciesScreen.cs` (Policies > Trade)
 

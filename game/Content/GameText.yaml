@@ -28938,3 +28938,31 @@ TzNoZone:
  Id: 7242
  ENG: "No zone"
  FRA: "Aucune zone"
+RmPaceLabel:
+ Id: 7243
+ ENG: "Remnant Pace"
+ FRA: "Rythme des Remnants"
+RmPaceTip:
+ Id: 7244
+ ENG: "How fast the Remnants gain power over time. Lower settings slow their level progression. Applies to new games only."
+ FRA: "Vitesse à laquelle les Remnants gagnent en puissance. Un réglage plus bas ralentit leur progression. Nouvelles parties uniquement."
+RmPaceVerySlow:
+ Id: 7245
+ ENG: "Very Slow"
+ FRA: "Très lent"
+RmPaceSlow:
+ Id: 7246
+ ENG: "Slow"
+ FRA: "Lent"
+RmPaceNormal:
+ Id: 7247
+ ENG: "Normal"
+ FRA: "Normal"
+RmVanillaStrength:
+ Id: 7248
+ ENG: "Vanilla Remnant Strength"
+ FRA: "Force des Remnants d'origine"
+RmVanillaStrengthTip:
+ Id: 7249
+ ENG: "The loaded mod strengthens Remnant ship designs. Check this to restore the base game value."
+ FRA: "Le mod chargé renforce les vaisseaux Remnants. Cocher pour rétablir la valeur du jeu de base."
