@@ -572,6 +572,22 @@ namespace Ship_Game
         public bool TryGetHoveredColonyType(out Planet.ColonyType type)
             => ColonyTypeList.TryGetHoveredEntry(out type);
 
+        // Ludoal fork (maintainer feedback): hovering either plan name, the one in force or the
+        // one it hands over to, shows that plan's list in the Description tab. Same road as the
+        // governor type above: this side says what is hovered, the host draws it.
+        public bool TryGetHoveredBlueprints(Vector2 cursor, out BlueprintsTemplate template)
+        {
+            template = null;
+            if (!Planet.HasBlueprints)
+                return false;
+
+            string name = BlueprintsName.Visible && BlueprintsName.HitTest(cursor) ? Planet.Blueprints.Name
+                        : BlueprintsLinkName.Visible && BlueprintsLinkName.HitTest(cursor) ? Planet.Blueprints.LinkedBlueprintsName
+                        : null;
+
+            return name.NotEmpty() && ResourceManager.TryGetBlueprints(name, out template);
+        }
+
         void OnColonyTypeChanged(Planet.ColonyType type)
         {
             Planet.CType = type;

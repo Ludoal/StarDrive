@@ -433,6 +433,39 @@ namespace Ship_Game
 
         // Policies phase 0: a governor type's portrait in the Description pane - title in
         // the tab grammar, then the portrait plus the shared budget note
+        // Ludoal fork (maintainer feedback): the hovered plan's list, in the plan's own order,
+        // which is the order it will be built in. A building already standing here is dimmed, so
+        // the list reads as what is left to do. Long plans stop at the panel's foot and say how
+        // many they left out rather than drawing past it.
+        void DrawBlueprintsPlanInfo(SpriteBatch batch, ref Vector2 cursor, BlueprintsTemplate plan)
+        {
+            batch.DrawString(Fonts.Arial20Bold, plan.Name, cursor, Colors.Cream);
+            cursor.Y += Fonts.Arial20Bold.LineSpacing + 8;
+
+            int step = Fonts.Arial12Bold.LineSpacing + 2;
+            float foot = PFacilities.Rect.Bottom - step * 2;
+            for (int i = 0; i < plan.PlannedBuildings.Count; i++)
+            {
+                if (cursor.Y > foot)
+                {
+                    batch.DrawString(Fonts.Arial12Bold, $"... +{plan.PlannedBuildings.Count - i}",
+                                     cursor, Color.Gray);
+                    cursor.Y += step;
+                    break;
+                }
+
+                string name = plan.PlannedBuildings[i];
+                bool standing = Planet.HasBuilding(b => b.Name == name);
+                string shown = ResourceManager.BuildingsDict.TryGetValue(name, out Building template)
+                             ? template.TranslatedName.Text : name;
+                batch.DrawString(Fonts.Arial12Bold, $"{i + 1}. {shown}", cursor,
+                                 standing ? Color.Gray : Color.White);
+                cursor.Y += step;
+            }
+
+            cursor.Y += 8;
+        }
+
         void DrawGovernorTypeInfo(SpriteBatch batch, ref Vector2 cursor, Planet.ColonyType t)
         {
             string title = t switch
@@ -703,6 +736,9 @@ namespace Ship_Game
                     break;
                 case SupplyNoticeKind supplyKind: // Policies phase 0: the SUPPLY mode notice
                     DrawSupplyNoticeInfo(batch, ref bCursor, supplyKind);
+                    break;
+                case BlueprintsTemplate hoveredPlan: // the hovered plan's own list
+                    DrawBlueprintsPlanInfo(batch, ref bCursor, hoveredPlan);
                     break;
                 case Building buildableBuilding: // BuildList building
                     DrawHoveredBuildListBuildingInfo(batch, ref bCursor, buildableBuilding);

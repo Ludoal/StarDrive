@@ -23,6 +23,11 @@ namespace Ship_Game
             if (GovernorDetails != null && GovernorDetails.TryGetHoveredColonyType(out Planet.ColonyType hoverType))
                 return hoverType;
 
+            // Ludoal fork (maintainer feedback): hovering a plan name shows that plan's list here
+            if (GovernorDetails != null
+                && GovernorDetails.TryGetHoveredBlueprints(input.CursorPosition, out BlueprintsTemplate hoverPlan))
+                return hoverPlan;
+
             // Policies phase 0, SUPPLY notices: hovering a supply dropdown shows the
             // mode's notice in Description - per entry when open, the ACTIVE mode (Auto
             // when the toggle holds the pen) on the collapsed title
