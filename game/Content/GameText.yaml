@@ -23010,8 +23010,8 @@ ExclusiveBlueprints:
  PTB: "Projetos Exclusivos"
 ExclusiveBlueprintsTip:
  Id: 6197
- ENG: "When Exclusive Blueprints are loaded, the Governor will only build the exact buildings of these Blueprints and will scrap all other buildings, including player built ones. In non exclusive Blueprints, the governor will fill the rest of the planet with buildings according to its logic and also used its build logic if it cannot yet complete the Blueprints loaded."
- FRA: "Lorsque des schémas exclusifs sont chargés, le gouverneur ne construira que les bâtiments exacts de ces schémas et démantèlera tous les autres bâtiments, y compris ceux construits par le joueur. Avec des schémas non exclusifs, le gouverneur complète le reste de la planète avec des bâtiments selon sa propre logique, et l'utilise également s'il ne peut pas encore achever les schémas chargés."
+ ENG: "An exclusive blueprint takes command of the colony: the governor raises only what the plan names, and demolishes what it does not, including buildings you placed yourself and military ones, but only when it needs the ground for the plan. A non exclusive blueprint simply restricts the governor to the plan's buildings and leaves the rest of its behaviour alone."
+ FRA: "Un schéma exclusif prend le commandement de la colonie : le gouverneur ne construit que ce que le plan nomme, et démolit ce qu'il ne nomme pas, y compris vos propres constructions et les bâtiments militaires, mais seulement quand il a besoin de la place pour le plan. Un schéma non exclusif se contente de restreindre le gouverneur aux bâtiments du plan et laisse le reste de sa conduite inchangé."
  PTB: "Quando Projetos Exclusivos são carregados, o Governador construirá apenas os edifícios exatos desses Projetos e desmontará todos os outros edifícios, incluindo os construídos pelo jogador. Em Projetos não exclusivos, o governador preencherá o restante do planeta com edifícios conforme sua lógica e também usará sua lógica de construção se ainda não puder concluir os Projetos carregados."
 Completion:
  Id: 6198
@@ -28616,8 +28616,8 @@ BlueprintNotFound:
  FRA: "introuvable"
 BlueprintExclusiveWarn:
  Id: 7162
- ENG: "This plan is Exclusive. Colonies of this governor type left on Auto will build nothing outside it, and may scrap military buildings the plan does not name if their Scrap Mandate allows it. Set it as the default?"
- FRA: "Ce plan est exclusif. Les colonies de ce type de gouverneur laissées sur Auto ne construiront rien en dehors de lui, et pourront démolir les bâtiments militaires absents du plan si leur Mandat de démolition l'autorise. Le poser comme défaut ?"
+ ENG: "This plan is Exclusive. Colonies of this governor type left on Auto will build nothing outside it, and it takes over their Build and Scrap Mandates. Buildings the plan does not name, yours and military ones included, may be demolished, but only when it needs the ground for the plan. Set it as the default?"
+ FRA: "Ce plan est exclusif. Les colonies de ce type de gouverneur laissées sur Auto ne construiront rien en dehors de lui, et il prend la main sur leurs mandats de construction et de démolition. Les bâtiments qu'il ne nomme pas, les vôtres et les militaires compris, pourront être démolis, mais seulement quand il aura besoin de la place. Le poser comme défaut ?"
 LaborAuto:
  Id: 7163
  ENG: "Auto"
@@ -28860,5 +28860,5 @@ MandateDelegatedTip:
  FRA: "Delegue au schema exclusif qui commande cette colonie. Retirez le schema, ou passez a un schema non exclusif, pour reprendre la main : vos reglages sont conserves et reviennent intacts."
 ExclusiveBlueprintWarn:
  Id: 7183
- ENG: "Exclusive Blueprint. This blueprint takes formal command of the colony: only its buildings will be built, structures outside the plan may be demolished, and the Build and Scrap Mandates are delegated to it (shown as \"By Blueprint\") until the blueprint is removed or handed over to a non exclusive one. Proceed?"
- FRA: "Schema exclusif. Ce schema prend le commandement de la colonie : seuls ses batiments seront construits, les structures hors plan pourront etre demolies, et les mandats de construction et de demolition lui sont delegues (affiches Par schema) jusqu a son retrait ou sa passation a un schema non exclusif. Continuer ?"
+ ENG: "This exclusive plan takes full control of the colony. Buildings not on its list, including hand-placed and military ones, may be demolished when space is needed. Mandates are overridden while the plan is active. Proceed?"
+ FRA: "Ce plan exclusif prend le contrôle total de la colonie. Les bâtiments hors liste, y compris posés à la main et militaires, pourront être démolis si la place vient à manquer. Les mandats sont suspendus tant que le plan est actif. Continuer ?"
