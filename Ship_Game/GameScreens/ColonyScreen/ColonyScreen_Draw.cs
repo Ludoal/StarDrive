@@ -439,7 +439,15 @@ namespace Ship_Game
         // many they left out rather than drawing past it.
         void DrawBlueprintsPlanInfo(SpriteBatch batch, ref Vector2 cursor, BlueprintsTemplate plan)
         {
-            batch.DrawString(Fonts.Arial20Bold, plan.Name, cursor, Colors.Cream);
+            // Ludoal fork (maintainer bench 554): the plan's COG, in its category's colour - the
+            // same badge the Colonies page and the governor row wear. The title is what the eye
+            // lands on first, so the badge belongs beside it rather than nowhere.
+            const int CogSize = 22;
+            batch.Draw(ResourceManager.Texture("NewUI/blueprints"),
+                       new Vector2(cursor.X, cursor.Y + 2), new Vector2(CogSize, CogSize),
+                       BlueprintsScreen.GetBlueprintsIconColor(plan.ColonyType));
+            batch.DrawString(Fonts.Arial20Bold, plan.Name,
+                             new Vector2(cursor.X + CogSize + 6, cursor.Y), Colors.Cream);
             cursor.Y += Fonts.Arial20Bold.LineSpacing + 8;
 
             int step = Fonts.Arial12Bold.LineSpacing + 2;
