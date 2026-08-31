@@ -379,14 +379,6 @@ namespace Ship_Game
             // they become dangerous, which is this.
             AddOption(Localizer.Token(GameText.RmPaceLabel) + " : ", OnRemnantPaceClicked,
                 _ => RemnantPaceText(P.RemnantPace), tip:GameText.RmPaceTip);
-            // ...and a way back to the base game's remnant strength, offered ONLY when the loaded
-            // mod actually raised it. The test is the VALUE, never the mod's name: it then works
-            // for any mod that touches this, and never appears in vanilla where it would mean
-            // nothing.
-            if (GlobalStats.Defaults.RemnantDesignStrMultiplier != UniverseState.VanillaRemnantDesignStr)
-                AddOption(Localizer.Token(GameText.RmVanillaStrength) + " : ", OnVanillaRemnantStrengthClicked,
-                    _ => Localizer.Token(P.VanillaRemnantStrength ? GameText.Yes : GameText.No),
-                    tip:GameText.RmVanillaStrengthTip);
 
             // row 2 RIGHT: two tabs over one area - the points summary, and the race description.
             // Same rect for both; OnTabChange flips which one is visible.
@@ -685,11 +677,6 @@ namespace Ship_Game
         void OnRemnantPaceClicked(UIButton b)
         {
             P.RemnantPace = P.RemnantPace.IncrementWithWrap(OptionIncrement);
-        }
-
-        void OnVanillaRemnantStrengthClicked(UIButton b)
-        {
-            P.VanillaRemnantStrength = !P.VanillaRemnantStrength;
         }
 
         static string RemnantPaceText(RemnantPaceSetting p) => p switch

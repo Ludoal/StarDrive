@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using SDGraphics;
 using Ship_Game.Universe;
 using Rectangle = SDGraphics.Rectangle;
@@ -129,6 +129,13 @@ public sealed class RuleOptionsScreen : PopupWindow
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*6, () => P.DisableResearchStations, title: GameText.DisableResearchStationsName, tooltip: GameText.DisableResearchStationsTip);
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*7, () => P.DisableMiningOps, title: GameText.DisableMiningOpsName, tooltip: GameText.DisableMiningOpsTip);
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*8, () => P.UseUpkeepByHullSize, title: GameText.RuleOptionsUseHullUpkeepName, tooltip: GameText.RuleOptionsUseHullUpkeepTip);
+        // Ludoal fork (maintainer bench 561): a RULE of the game rather than a shape of the
+        // galaxy, so it belongs here. Offered only when the loaded mod actually raised remnant
+        // design strength - the test is the VALUE, never the mod's name, so it serves any mod and
+        // stays absent in vanilla where it would mean nothing. Row 9 clears the slider at +250.
+        if (GlobalStats.Defaults.RemnantDesignStrMultiplier != UniverseState.VanillaRemnantDesignStr)
+            Checkbox(ftlRect.X + indent, ftlRect.Y + 25*9, () => P.VanillaRemnantStrength,
+                     title: GameText.RmVanillaStrength, tooltip: GameText.RmVanillaStrengthTip);
 
         var mdRect = new Rectangle(ftlRect.X + indent+2, ftlRect.Y + 250, 270, 50);
         CustomMineralDecay = SliderDecimal1(mdRect, GameText.MineralDecayRate, 0.2f, 3, P.CustomMineralDecay);
