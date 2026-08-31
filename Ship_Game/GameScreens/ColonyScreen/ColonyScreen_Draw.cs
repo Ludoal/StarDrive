@@ -455,7 +455,7 @@ namespace Ship_Game
                 }
 
                 string name = plan.PlannedBuildings[i];
-                bool standing = Planet.HasBuilding(b => b.Name == name);
+                bool standing = P.HasBuilding(b => b.Name == name);
                 string shown = ResourceManager.BuildingsDict.TryGetValue(name, out Building template)
                              ? template.TranslatedName.Text : name;
                 batch.DrawString(Fonts.Arial12Bold, $"{i + 1}. {shown}", cursor,
