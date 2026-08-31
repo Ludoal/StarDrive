@@ -418,7 +418,7 @@ namespace Ship_Game
             // Ludoal fork (maintainer feedback): one row higher than the portrait foot - the
             // freed line below carries the Build Mandate dropdown - then dropped clear of the
             // rows the Governor tab gained, which had crowded the warning against them.
-            const int BudgetWarningDrop = 33; // bench 524: 40 overshot by 7
+            const int BudgetWarningDrop = 44; // bench 524: 40 overshot by 7. +11, bench 558
             BudgetLimitReached.Pos = new Vector2(WorldDescription.X,
                 Portrait.Pos.Y + Portrait.Size.Y - FontBig.LineSpacing - GovRowPitch + BudgetWarningDrop);
 
@@ -440,8 +440,12 @@ namespace Ship_Game
             // the portrait, on the same left edge as the world title above it. Quarantine and
             // Prioritized sit UNDER the portrait; the two contextual toggles share their exact
             // lines at ColumnX.
-            Quarantine.Pos          = new Vector2(X + 10, Portrait.Bottom + 14); // a step lower - there is room below
-            Prioritized.Pos         = new Vector2(X + 10, Portrait.Bottom + 34);
+            // bench 558: the whole block drops 11px - the two toggles, and with them the two
+            // mandates that take their line. Written as ONE offset so the block moves together
+            // the next time it moves at all.
+            const int GovBlockDrop = 11;
+            Quarantine.Pos          = new Vector2(X + 10, Portrait.Bottom + 14 + GovBlockDrop);
+            Prioritized.Pos         = new Vector2(X + 10, Portrait.Bottom + 34 + GovBlockDrop);
             // one row higher: the Build Mandate dropdown takes the line it leaves behind
 
             // the two mandates take the line the trade hub left, label then list, one per row
@@ -452,7 +456,9 @@ namespace Ship_Game
             BuildMandateList.Pos  = new Vector2(mandateX + MandateLabelW, mandateRow);
             ScrapMandateLabel.Pos = new Vector2(mandateX, mandateRow + GovRowPitch + 2);
             ScrapMandateList.Pos  = new Vector2(mandateX + MandateLabelW, mandateRow + GovRowPitch);
-            BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, Quarantine.Pos.Y - 35);
+            // ⚠ anchored to where Quarantine USED to sit: the button keeps its seat while the
+            // block below it drops, which is what was asked for and what the eye expects
+            BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, Quarantine.Pos.Y - 35 - GovBlockDrop);
 
             // Defense tab. These six buttons follow their own column, so the panel's height
             // can be its content's.
