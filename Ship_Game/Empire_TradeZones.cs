@@ -1,6 +1,7 @@
 using System.Linq;
 using SDUtils;
 using Ship_Game.Data.Serialization;
+using Ship_Game.Ships;
 
 namespace Ship_Game
 {
@@ -49,6 +50,25 @@ namespace Ship_Game
 
         public TradeZone GetTradeZone(Planet planet) => TradeZones.Find(z => z.Serves(planet));
 
+        // Ludoal fork (maintainer feedback, Roland Johansen): the bodies our STATIONS stand on.
+        // A mining rig or a research post orbits a body that is nobody's colony, so it never
+        // shows up in GetPlanets() - and a zone may name it all the same, because a zone names
+        // BODIES and what stands on them is the fleet's business.
+        public Array<Planet> StationBodies()
+        {
+            var bodies = new Array<Planet>();
+            foreach (Ship s in OwnedShips)
+            {
+                if (!s.IsMiningStation && !s.IsResearchStation || !s.IsTethered)
+                    continue;
+
+                Planet body = s.GetTether();
+                if (body != null && body.Owner != this)
+                    bodies.AddUnique(body);
+            }
+            return bodies;
+        }
+
         // Housekeeping, the twin of RefreshTradeRoutes on a ship: a colony that stops being ours
         // leaves the zones that named it, and a zone left without a single colony is dissolved -
         // an empty list reads as "everywhere" downstream, so it must not survive.
@@ -60,7 +80,11 @@ namespace Ship_Game
                 for (int j = zone.Colonies.Count - 1; j >= 0; --j)
                 {
                     Planet planet = Universe.GetPlanet(zone.Colonies[j]);
-                    if (planet == null || planet.Owner != this)
+                    // ⚠ a member is not always a colony: a mineable or researchable body carries a
+                    // STATION and owns nothing, so the ownership test would evict it the turn it
+                    // was named. Only a world that stopped being ours leaves (Roland's ask).
+                    if (planet == null
+                        || !planet.IsMineable && !planet.IsResearchable && planet.Owner != this)
                         zone.Colonies.RemoveAt(j);
                 }
 

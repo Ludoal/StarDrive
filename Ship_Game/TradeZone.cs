@@ -1,5 +1,7 @@
+using System;
 using SDUtils;
 using Ship_Game.Data.Serialization;
+using Ship_Game.Ships;
 
 namespace Ship_Game
 {
@@ -17,6 +19,14 @@ namespace Ship_Game
         [StarData] public Array<int> Colonies { get; private set; } = new();
         [StarData] public int Quota;
 
+        // Ludoal fork (maintainer feedback, Roland Johansen): the hulls this zone HOLDS BACK for
+        // its stations - lent to it, unspent, and kept out of the rest of the turn. The stations
+        // standing on its member bodies draw here rather than on the common pool, which is what
+        // putting one in a zone buys: it is served on the zone's budget instead of taking the
+        // first idle hull the moment it is hungry.
+        // Never serialized - a fact about this turn, and a save reloads into a fresh pass.
+        public Ship[] LentThisTurn = Array.Empty<Ship>();
+
         [StarDataConstructor] TradeZone() { }
 
         public TradeZone(string name)
@@ -27,6 +37,24 @@ namespace Ship_Game
         public void ChangeName(string newName) => Name = newName;
 
         public bool Serves(Planet planet) => Colonies.Contains(planet.Id);
+
+        // The stations standing on this zone's member bodies. A station is a SHIP tethered to a
+        // body, so the zone names the body and the fleet answers with what stands on it - which
+        // is also why a mineable or researchable body may be a member while owning nothing.
+        public Array<Ship> Stations(Empire owner)
+        {
+            var stations = new Array<Ship>();
+            foreach (Ship s in owner.OwnedShips)
+            {
+                if (!s.IsMiningStation && !s.IsResearchStation || !s.IsTethered)
+                    continue;
+
+                Planet body = s.GetTether();
+                if (body != null && Colonies.Contains(body.Id))
+                    stations.Add(s);
+            }
+            return stations;
+        }
         public void Add(Planet planet) => Colonies.AddUnique(planet.Id);
         public void Remove(Planet planet) => Colonies.Remove(planet.Id);
 
@@ -82,7 +110,20 @@ namespace Ship_Game
 
                 imports += p.FoodImportSlots + p.ProdImportSlots + p.ColonistsImportSlots;
             }
-            return imports;
+
+            return imports + StationDemand(owner);
+        }
+
+        // What this zone's stations are asking for, in berths. A station's hunger is already
+        // expressed by its open supply goal, so the zone COUNTS those goals rather than testing
+        // the hunger again - the goal stays the one signal, the zone only pays for it.
+        public int StationDemand(Empire owner)
+        {
+            int berths = 0;
+            foreach (Ship station in Stations(owner))
+                berths += owner.AI.CountGoals(g => g.IsSupplyingGoodsToStationStationGoal(station));
+
+            return berths;
         }
 
         // The freighters already converging on this zone. The colonies count what is inbound for

@@ -250,6 +250,11 @@ namespace Ship_Game
             if (domestic.NoFreeFreighters)
                 return;
 
+            // a zone whose pass does not run this turn holds nothing back: last turn's hulls
+            // went elsewhere long ago, and a stale hold would starve the common pool for nobody
+            foreach (TradeZone z in TradeZones)
+                z.LentThisTurn = Array.Empty<Ship>();
+
             foreach (TradeZone zone in TradeZones)
             {
                 // a quota of nought means the number is measured rather than ordered
@@ -258,7 +263,9 @@ namespace Ship_Game
                     continue;
 
                 Array<Planet> colonies = zone.ColonyPlanets(this);
-                if (colonies.Count == 0)
+                // a zone may hold nothing but station bodies. It still takes its share: the
+                // stations standing on them draw on what this pass holds back for them.
+                if (colonies.Count == 0 && zone.Stations(this).Count == 0)
                     continue;
 
                 var lent = new Array<Ship>();
@@ -281,10 +288,28 @@ namespace Ship_Game
                 DispatchOrBuildFreighters(Goods.Production, colonies, false, ref zoneState);
                 DispatchOrBuildFreighters(Goods.Colonists, colonies, false, ref zoneState);
 
-                // what the zone did not send goes back to the common pool, with the ships it was
-                // never lent: a quota is a share of a turn, not a possession.
-                foreach (Ship unsent in zoneState.IdleFreighters)
-                    kept.Add(unsent);
+                // What the zone did not send goes back to the common pool - a quota is a share of
+                // a turn, not a possession - EXCEPT the berths its stations are waiting on.
+                //
+                // ⚠ those are WITHHELD, not merely preferred (Lek's reading of the turn order): the
+                // goals that feed stations are evaluated at the TOP of the next turn, while the
+                // legs that follow this one - foreign trade, production, colonists - and the scrap
+                // arm all eat free hulls before then. A preference that everyone may overrule is
+                // no preference at all. The withheld hulls sit out the rest of this turn and are
+                // still idle when their station's goal looks for them.
+                //
+                // The price, and it is the price of budgeting a station rather than letting it
+                // grab: a station in a zone is served with ONE TURN of latency.
+                Ship[] unsent = zoneState.IdleFreighters;
+                int held = zone.StationDemand(this).UpperBound(unsent.Length);
+                var withheld = new Array<Ship>();
+                for (int k = 0; k < unsent.Length; ++k)
+                {
+                    if (k < held) withheld.Add(unsent[k]);
+                    else          kept.Add(unsent[k]);
+                }
+
+                zone.LentThisTurn = withheld.ToArray();
 
                 domestic.SetIdleFreighters(kept.ToArray());
                 if (domestic.NoFreeFreighters)
@@ -466,6 +491,15 @@ namespace Ship_Game
                     freighter.TradeTimer -= Universe.P.TurnTimer;
                     if (freighter.TradeTimer < 0)
                     {
+                        // a hull withheld for a zone's station is idle ON PURPOSE - it waits for a
+                        // goal that runs at the top of the next turn. The enclosure law: a set
+                        // aside names the consumers that step over it, and this is one of them.
+                        if (IsHeldForZone(freighter))
+                        {
+                            ResetTradeTimer(freighter);
+                            continue;
+                        }
+
                         if (reserve > 0 && freeOrReturning <= reserve)
                         {
                             ResetTradeTimer(freighter); // kept: the empire is down to its reserve
@@ -497,11 +531,46 @@ namespace Ship_Game
             if (exportingPlanets.Length == 0)
                 return false;
 
-            Ship[] idleFreighters = GetIdleFreighters(interTrade: false);
+            // Ludoal fork (maintainer feedback, Roland Johansen): a station standing on a body
+            // that belongs to a trade zone is served BY that zone - it draws on what the zone was
+            // lent this turn and did not spend, rather than taking the first idle hull the moment
+            // it is hungry. A station outside every zone keeps the old behaviour untouched, and a
+            // zone that received nothing this turn simply makes its stations wait a turn.
+            TradeZone stationZone = TradeZoneOfStation(targetStation);
+            Ship[] idleFreighters = stationZone == null
+                                  ? GetIdleFreighters(interTrade: false)
+                                  : stationZone.LentThisTurn.Filter(s => s.IsIdleFreighter && s.Loyalty == this);
+
             if (idleFreighters.Length == 0) // Need trade for auto trade but no freighters found
                 return false;
 
             return GetTradeParameters(goods, idleFreighters, targetStation, exportingPlanets, out exportAndFreighter);
+        }
+
+        // Is this hull one a zone is holding for its stations? Walked rather than asked of a set:
+        // there are a handful of zones and a handful of held hulls, and a second index would be
+        // one more thing to keep true.
+        bool IsHeldForZone(Ship freighter)
+        {
+            for (int i = 0; i < TradeZones.Count; ++i)
+            {
+                Ship[] held = TradeZones[i].LentThisTurn;
+                for (int j = 0; j < held.Length; ++j)
+                    if (held[j] == freighter)
+                        return true;
+            }
+            return false;
+        }
+
+        // The zone a station belongs to, by the BODY it orbits - the same id a zone holds. Only
+        // the player composes zones, so no other empire pays for this lookup.
+        TradeZone TradeZoneOfStation(Ship station)
+        {
+            if (!isPlayer || TradeZones.IsEmpty || station == null || !station.IsTethered)
+                return null;
+
+            Planet body = station.GetTether();
+            return body == null ? null : GetTradeZone(body);
         }
 
         void DispatchOrBuildFreighters(Goods goods, Array<Planet> importPlanetList, bool interTrade, ref TradeState state)

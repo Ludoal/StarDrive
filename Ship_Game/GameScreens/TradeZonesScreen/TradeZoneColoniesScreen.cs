@@ -78,6 +78,12 @@ namespace Ship_Game
             foreach (Planet p in Screen.Player.GetPlanets().Sorted(true, p => p.Name))
                 ColoniesSL.AddItem(new ColonyPickItem(this, p));
 
+            // Ludoal fork (maintainer feedback, Roland Johansen): the bodies our stations stand on
+            // are offered after the colonies. They are not colonies and never will be, so they sit
+            // in their own run rather than pretending to a sort they do not share.
+            foreach (Planet body in Screen.Player.StationBodies().Sorted(true, b => b.Name))
+                ColoniesSL.AddItem(new ColonyPickItem(this, body));
+
             // the zone's own lever. Nought is not a quantity here: it hands the number back to
             // the measure, so the rail reads Auto at its left stop.
             var setBox = Add(new Submenu(new RectF(x, setY, w, SettingsSecH), GameText.TzSettings));
