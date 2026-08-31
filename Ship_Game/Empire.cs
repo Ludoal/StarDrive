@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using Ship_Game.AI;
 using Ship_Game.Commands.Goals;
@@ -1181,7 +1181,11 @@ namespace Ship_Game
             for (int i = 0; i < OwnedPlanets.Count; i++)
             {
                 Planet p = OwnedPlanets[i];
-                p.Blueprints?.UpdatePercentAchievable();
+                // ⚠ the WHOLE pair (bench 555): a technology changes what a colony can REACH, and
+                // the figure beside it shares its denominator. Recomputing one of them alone is
+                // how the two came to disagree - the third time this same half-call is corrected,
+                // and the reason Refresh() exists at all.
+                p.Blueprints?.Refresh();
             }
         }
 
