@@ -40,12 +40,11 @@ namespace Ship_Game
             // is shown here; it is still CHANGED in the zone's own dialog, one door per gesture.
             if (Zone.Exclusive)
             {
-                const int LockSize = 16, LockGap = 6;
                 int lockX = cols[0].Rect.X + UITable.PadX;
                 Add(new UIPanel(new Rectangle(lockX, (int)(Y + Height / 2 - LockSize / 2), LockSize, LockSize),
                                 ResourceManager.Texture("NewUI/icon_lock")))
                     .Tooltip = GameText.TzExclusiveTip;
-                Label(new Vector2(lockX + LockSize + LockGap,
+                Label(new Vector2(lockX + LockLane,
                                   Y + Height / 2 - Fonts.Arial12Bold.LineSpacing / 2f),
                       Zone.Name, Fonts.Arial12Bold, color);
             }
@@ -100,6 +99,11 @@ namespace Ship_Game
 
             base.PerformLayout();
         }
+
+        // ⚠ ONE source for the padlock's footprint: the row draws from it and the page WIDENS the
+        // name column by it. Measured on the names alone, the column was too narrow by exactly
+        // this much and long names ran under their neighbour (bench 561).
+        public const int LockSize = 16, LockGap = 6, LockLane = LockSize + LockGap;
 
         // the clickable name lanes, rebuilt with the row
         readonly Array<(Rectangle Rect, Planet Colony)> NameHits = new();

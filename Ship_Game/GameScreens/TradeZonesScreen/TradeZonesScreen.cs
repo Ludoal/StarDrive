@@ -268,6 +268,14 @@ namespace Ship_Game
                 owned.Add(z.MemberFreighters(Player).Count.ToString());
             }
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, names);
+            // an exclusive zone wears a padlock BEFORE its name, and AutoSize only ever saw the
+            // names: the lane is added here, from the row's own constant (bench 561)
+            foreach (TradeZone z in Player.TradeZones)
+                if (z.Exclusive)
+                {
+                    Table.Columns[0].Width += TradeZonesScreenListItem.LockLane;
+                    break;
+                }
             UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, counts);
             UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, served);
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, required);

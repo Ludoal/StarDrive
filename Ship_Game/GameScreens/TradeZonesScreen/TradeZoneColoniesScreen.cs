@@ -28,6 +28,7 @@ namespace Ship_Game
         const float SecGap = 8f, NameSecH = 62f, SettingsSecH = 142f, ApplyLineH = 40f;
         ScrollList<ColonyPickItem> ColoniesSL;
         DropOptions<CargoPriority> PriorityList;
+        UILabel PriorityLabel;
         UIButton ApplyButton;
 
         public TradeZoneColoniesScreen(TradeZonesScreen screen, TradeZone zone)
@@ -118,7 +119,13 @@ namespace Ship_Game
             // the rail above them uses.
             Add(new UICheckBox(setArea.X + 10, setArea.Y + 58, () => Exclusive, v => Exclusive = v,
                                Fonts.Arial12Bold, GameText.TzExclusive, GameText.TzExclusiveTip));
-            Add(new UILabel(new Vector2(setArea.X + 10, setArea.Y + 90), GameText.FreighterPriority,
+            // ⚠ the lever belongs to the EXCLUSIVE regime alone: a soft zone borrows from the
+            // common pool and its goods follow the empire's own order, so the picker would be a
+            // control with nothing at the end of it (bench 561). It appears with the regime.
+            //
+            // Hidden rather than greyed, and the reason is honest: DropOptions has no greyed
+            // state, and giving it one touches every screen in the game that uses a picker.
+            PriorityLabel = Add(new UILabel(new Vector2(setArea.X + 10, setArea.Y + 90), GameText.FreighterPriority,
                             Fonts.Arial12Bold, Colors.Cream, GameText.FreighterPriorityTip));
             PriorityList = new DropOptions<CargoPriority>(
                 new Vector2(setArea.X + setArea.W - 170, setArea.Y + 88), 160, 18);
@@ -131,10 +138,24 @@ namespace Ship_Game
             PriorityList.ActiveValue = Priority;
             PriorityList.OnValueChange = v => Priority = v;
 
+            UpdatePriorityVisible();
             ApplyButton = ButtonMedium(x, inner.Bottom - ApplyLineH, GameText.TzApply, OnApplyClicked);
             ApplyButton.Text = Localizer.Token(GameText.TzApply);
             // added LAST so an open list draws over what sits under it, Apply included
             Add(PriorityList);
+        }
+
+        // the lever shows with the regime it belongs to, and follows the tick live
+        void UpdatePriorityVisible()
+        {
+            if (PriorityLabel != null) PriorityLabel.Visible = Exclusive;
+            if (PriorityList != null)  PriorityList.Visible  = Exclusive;
+        }
+
+        public override void Update(float fixedDeltaTime)
+        {
+            UpdatePriorityVisible();
+            base.Update(fixedDeltaTime);
         }
 
         public bool IsChosen(Planet p) => Chosen.Contains(p);
