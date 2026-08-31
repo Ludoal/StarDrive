@@ -85,7 +85,7 @@ namespace Ship_Game
             {
                 int count = 0;
                 for (int i = 0; i < OwnedPlanets.Count; ++i)
-                    if (GetTradeZone(OwnedPlanets[i])?.Exclusive != true)
+                    if (GetExclusiveZone(OwnedPlanets[i]) == null)
                         ++count;
 
                 return count;

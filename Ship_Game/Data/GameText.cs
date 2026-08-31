@@ -7187,6 +7187,8 @@ namespace Ship_Game
         TzExclusiveTip = 7237,
         /// <summary>Freighters this zone owns.</summary>
         TzOwnedTip = 7238,
+        /// <summary>Your manual freighter filters have become exclusive trade zones.</summary>
+        TzConvertedNotice = 7239,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

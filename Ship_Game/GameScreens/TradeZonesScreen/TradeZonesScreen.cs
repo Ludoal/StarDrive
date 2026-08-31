@@ -168,6 +168,8 @@ namespace Ship_Game
 
             zone.Quota = quota;
             zone.Exclusive = exclusive;
+            // an exclusive zone takes its colonies from any other exclusive zone: one owner
+            Player.ClaimColoniesExclusively(zone);
             zone.Priority = priority;
             // an empty box keeps the name the zone already had, rather than leaving it nameless
             if (name.NotEmpty() && name != zone.Name)
