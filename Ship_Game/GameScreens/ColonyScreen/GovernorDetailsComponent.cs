@@ -324,8 +324,9 @@ namespace Ship_Game
             // column cannot drift apart (bench 506: the block sat 5px low and 34 was airy).
             const int DefButtonPitch = 29;
             float aspect  = PortraitSprite.Size.X / PortraitSprite.Size.Y;
-            // 0.55: the toggles ride under the portrait.
-            float height  = (float)Math.Round(Height * 0.55f);
+            // the toggles ride under the portrait, which is why its height is taken from the
+            // panel: they follow its bottom, and the blueprint row needs the width it leaves.
+            float height  = (float)Math.Round(Height * 0.50f);
             Portrait.Size = new Vector2((float)Math.Round(aspect*height), height);
             // Ludoal fork: all four tabs lay their content out from this one value, so they
             // cannot disagree. It follows the tab bar's real bottom, which matters because
@@ -337,7 +338,7 @@ namespace Ship_Game
             Portrait.Pos  = new Vector2(X + 10, Y + contentTop);
             BluePrintsIcon.Size = new Vector2(40, 40);
             BluePrintsIcon.Pos  = Portrait.Pos;
-            BluePrintsIcon.Color = BlueprintsName.Color = BlueprintsColor;
+            BluePrintsIcon.Color = BlueprintsColor;
 
             // Ludoal fork: the right-hand column follows the portrait, whose width is a fraction
             // of the panel height. It keeps a floor (see ColumnX), and the description wraps on
@@ -352,7 +353,7 @@ namespace Ship_Game
             // They ride the right-hand column, under the world title row. Fixed steps, and every
             // element is placed FROM them - never from a share of the space that happens to be
             // left, which moves the whole block the day a row is added above it.
-            const int BpLabelW = 92, BpBarW = 150, BpIconSize = 20, BpGestureStep = 26;
+            const int BpLabelW = 92, BpBarW = 120, BpIconSize = 20, BpGestureStep = 26;
             float bpX    = ColumnX;
             // one constant per row rather than a uniform step: a bar row is not as tall as a text
             // row, and these are the heights the bench gave back. Read off the 520 shot.
@@ -390,7 +391,9 @@ namespace Ship_Game
 
             BlueprintsCompletionLbl.Pos     = new Vector2(bpX, bpRow2 + 3);
             BlueprintsCompletionLbl.Tooltip = GameText.CompletionTip;
-            MoveOnBlueprints.Pos            = new Vector2(bpX + BpLabelW + BpBarW + 8, bpRow2);
+            // anchored to the panel's right edge: seated at the end of the label-plus-bar run it
+            // overflowed, since that run starts at a column with a floor of its own
+            MoveOnBlueprints.Pos            = new Vector2(Right - 10 - MoveOnBlueprints.Width, bpRow2);
 
             // The warning's BOTTOM lines up with the portrait's bottom - a fixed anchor,
             // whatever the description length. A label draws from its top, so seat its top one
@@ -623,7 +626,10 @@ namespace Ship_Game
 
         void UpdateBlueprintsChanged()
         {
-            BlueprintsName.Color = BluePrintsIcon.Color = BlueprintsColor;
+            // Ludoal fork (maintainer feedback): the category colour rides the COG, never the name.
+            // A plan called Test 2 written in its category red is a name the eye fights to read.
+            BluePrintsIcon.Color = BlueprintsColor;
+            BlueprintsName.Color = Color.White;
             BlueprintsName.Text = Planet.HasBlueprints ? Planet.Blueprints.Name : "";
 
 
@@ -634,7 +640,8 @@ namespace Ship_Game
             Color linkColor = Color.White;
             if (linkName.NotEmpty() && ResourceManager.TryGetBlueprints(linkName, out BlueprintsTemplate linked))
                 linkColor = BlueprintsScreen.GetBlueprintsIconColor(linked.ColonyType);
-            BlueprintsLinkName.Color = BlueprintsLinkIcon.Color = linkColor;
+            BlueprintsLinkIcon.Color = linkColor;
+            BlueprintsLinkName.Color = Color.White;
         }
 
         public override void Update(float fixedDeltaTime)

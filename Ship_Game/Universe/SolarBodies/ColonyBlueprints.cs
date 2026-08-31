@@ -174,6 +174,14 @@ namespace Ship_Game.Universe.SolarBodies
                 if (IsRequired(b) && (b.IsMilitary ? P.MayBuildMilitary : P.MayBuildCivilian))
                     reachable.Add(b.Name);
 
+            // a planned building already under construction is reachable by definition, and the
+            // offer it came from no longer lists it: a unique leaves the buildable set the moment
+            // it is queued, so counting only the two sets above calls it unreachable while it is
+            // being raised.
+            foreach (QueueItem q in P.ConstructionQueue)
+                if (q.isBuilding && IsRequired(q.Building))
+                    reachable.Add(q.Building.Name);
+
             PlannedCount = totalPlannedBuildings;
             ReachableCount = reachable.Count;
             PercentAchievable = (int)(100 * (float)reachable.Count / totalPlannedBuildings);

@@ -294,7 +294,7 @@ namespace Ship_Game
             {
                 var color = BlueprintsScreen.GetBlueprintsIconColor(P.Blueprints.ColonyType);
                 var planPos = new Vector2(planetIconRect.X + planetIconRect.Width+10, planetIconRect.Bottom+5);
-                batch.DrawString(Fonts.Arial12, P.Blueprints.Name, planPos, color);
+                batch.DrawString(Fonts.Arial12, P.Blueprints.Name, planPos, Color.White);
 
                 // Ludoal fork (maintainer feedback): how far the plan got, in buildings rather than
                 // percent. Pink when everything reachable here is up and the list still is not -
