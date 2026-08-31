@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
@@ -83,7 +83,9 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.Ship),   Width = 240, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.Role),   Width = 80,  Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Title = "Fleet",  Width = 110, Sortable = true },
-                new UITable.Column { Title = "Patrol", Sortable = true }, // the fleet's patrol plan, if any
+                // one lane, two facts that never coincide: a fleet's patrol plan, or a freighter's
+                // trade zone (maintainer bench 558 - the patrol column was nearly always empty)
+                new UITable.Column { Title = "Patrol / Trade", Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.Orders), Width = 300, MinWidth = 300, Sortable = true },
                 new UITable.Column { Title = "Actions", Width = 110, Align = TableAlign.Center }, // the order/refit/scrap icon lane
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_fighting_small"), Width = 60,
@@ -108,7 +110,7 @@ namespace Ship_Game
                 vals[2].Add(s.ShipName);
                 vals[3].Add(Localizer.GetRole(s.ShipData.Role, s.Loyalty));
                 vals[4].Add(s.Fleet?.Name ?? "");
-                vals[5].Add(s.Fleet?.Patrol?.Name ?? "");
+                vals[5].Add(s.PatrolOrZoneName);
                 vals[6].Add(ShipListScreenItem.GetStatusText(s));
                 vals[8].Add(s.GetStrength().ToString("0"));
                 vals[9].Add(s.GetMaintCost().ToString("F2"));
@@ -320,7 +322,7 @@ namespace Ship_Game
                 case 2:  Sort(sl => sl.Ship.VanityName); break;
                 case 3:  Sort(sl => sl.Ship.ShipData.Role); break;
                 case 4:  Sort(sl => sl.Ship.Fleet?.Name ?? "None"); break;
-                case 5:  Sort(sl => sl.Ship.Fleet?.Patrol?.Name ?? ""); break;
+                case 5:  Sort(sl => sl.Ship.PatrolOrZoneName); break;
                 case 6:  Sort(sl => ShipListScreenItem.GetStatusText(sl.Ship)); break;
                 case 8:  Sort(sl => sl.Ship.GetStrength()); break;
                 case 9:  Sort(sl => sl.Ship.GetMaintCost()); break;

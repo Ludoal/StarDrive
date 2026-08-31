@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
@@ -111,7 +111,7 @@ namespace Ship_Game
             Graphics.Font fleetFont = Fonts.Arial12Bold.TextWidth(fleetName) > cols[4].Width - 2 * UITable.PadX
                                     ? Fonts.Arial8Bold : Fonts.Arial12Bold;
             Cell(4, fleetName, Colors.Cream, fleetFont);
-            Cell(5, Ship.Fleet?.Patrol?.Name ?? "", Colors.Cream, Fonts.Arial12Bold);
+            Cell(5, Ship.PatrolOrZoneName, Colors.Cream, Fonts.Arial12Bold);
             // Orders is foldable: cut to the column with an ellipsis, the tooltip (in
             // HandleInput) carries the whole sentence
             Cell(6, UITable.FitText(Fonts.Arial12, StatusText, cols[6].Width - 2 * UITable.PadX),
