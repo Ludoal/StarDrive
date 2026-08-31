@@ -55,6 +55,8 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.TzRequired), Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.TzAssigned), Align = TableAlign.Number, Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.TzActive), Align = TableAlign.Number, Sortable = true },
+                // and what it OWNS, which only a strict zone does - the requisition made visible
+                new UITable.Column { Title = Localizer.Token(GameText.Freighters), Align = TableAlign.Number, Sortable = true },
                 // four icons now: the two arrows that order the zones, then edit and delete
                 new UITable.Column { Title = "", Width = 110, Align = TableAlign.Center },
             });
@@ -235,6 +237,7 @@ namespace Ship_Game
                 case 3:  zones = Player.TradeZones.Sorted(ascending, z => z.RequiredFreighters(Player)); break;
                 case 4:  zones = Player.TradeZones.Sorted(ascending, z => z.Quota); break;
                 case 5:  zones = Player.TradeZones.Sorted(ascending, z => z.ActiveFreighters(Player)); break;
+                case 6:  zones = Player.TradeZones.Sorted(ascending, z => z.MemberFreighters(Player).Count); break;
                 default: zones = Player.TradeZones.Sorted(ascending, z => z.Name); break;
             }
             foreach (TradeZone zone in zones)
@@ -250,6 +253,7 @@ namespace Ship_Game
             var names = new Array<string>(); var counts = new Array<string>();
             var served = new Array<string>(); var quotas = new Array<string>();
             var required = new Array<string>(); var active = new Array<string>();
+            var owned = new Array<string>();
             foreach (TradeZone z in Player.TradeZones)
             {
                 names.Add(z.Name);
@@ -258,6 +262,7 @@ namespace Ship_Game
                 required.Add(z.RequiredFreighters(Player).ToString());
                 quotas.Add(z.Quota <= 0 ? Localizer.Token(GameText.PolFreighterRefitAuto) : z.Quota.ToString());
                 active.Add(z.ActiveFreighters(Player).ToString());
+                owned.Add(z.MemberFreighters(Player).Count.ToString());
             }
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, names);
             UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, counts);
@@ -265,6 +270,7 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, required);
             UITable.AutoSize(Table.Columns[4], Fonts.Arial12Bold, quotas);
             UITable.AutoSize(Table.Columns[5], Fonts.Arial12Bold, active);
+            UITable.AutoSize(Table.Columns[6], Fonts.Arial12Bold, owned);
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
         }
 

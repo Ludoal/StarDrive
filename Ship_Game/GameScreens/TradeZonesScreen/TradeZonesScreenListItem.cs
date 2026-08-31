@@ -48,6 +48,9 @@ namespace Ship_Game
             Cell(cols[4], Zone.Quota <= 0 ? Localizer.Token(GameText.PolFreighterRefitAuto)
                                           : Zone.Quota.ToString(), color).Tooltip = GameText.TzAssignedTip;
             Cell(cols[5], Zone.ActiveFreighters(Player).ToString(), color).Tooltip = GameText.TzActiveTip;
+            // owned hulls: a real count, and nought is the truth for a soft zone rather than a
+            // hole - it owns none because it borrows, which is the whole difference
+            Cell(cols[6], Zone.MemberFreighters(Player).Count.ToString(), color).Tooltip = GameText.TzOwnedTip;
 
             EditColonies ??= new UIButton(new UIButton.StyleTextures("NewUI/icon_build_edit_hover1", "NewUI/icon_build_edit_hover2", "NewUI/icon_build_edit_hover2"), Vector2.Zero, "")
             {

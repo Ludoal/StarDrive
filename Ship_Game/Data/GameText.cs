@@ -7185,6 +7185,8 @@ namespace Ship_Game
         TzStrict = 7236,
         /// <summary>A strict zone owns its freighters.</summary>
         TzStrictTip = 7237,
+        /// <summary>Freighters this zone owns.</summary>
+        TzOwnedTip = 7238,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

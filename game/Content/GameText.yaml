@@ -28918,3 +28918,7 @@ TzStrictTip:
  Id: 7237
  ENG: "A strict zone OWNS its freighters instead of borrowing a share of the turn. It requisitions free hulls up to its need, one at a time, and never below the empire's reserve. The empire still builds, scraps and modernises the fleet."
  FRA: "Une zone stricte POSSÈDE ses cargos au lieu d'emprunter une part du tour. Elle réquisitionne les coques libres jusqu'à son besoin, une à une, et jamais en dessous de la réserve de l'empire. L'empire continue de construire, ferrailler et moderniser la flotte."
+TzOwnedTip:
+ Id: 7238
+ ENG: "Freighters this zone OWNS. Only a strict zone owns any: a soft zone borrows a share of the turn and gives it back."
+ FRA: "Cargos que cette zone POSSÈDE. Seule une zone stricte en possède : une zone souple emprunte une part du tour et la rend."
