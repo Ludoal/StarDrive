@@ -81,7 +81,7 @@ namespace Ship_Game
 
             public override bool HandleInput(InputState input)
             {
-                if (input.InGameSelect && Rect.HitTest(input.CursorPosition))
+                if (input.InGameSelect && HitTest(input.CursorPosition))
                 {
                     Picker.Choose(Zone);
                     return true;
