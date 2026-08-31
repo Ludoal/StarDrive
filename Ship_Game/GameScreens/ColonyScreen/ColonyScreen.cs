@@ -96,6 +96,12 @@ namespace Ship_Game
         readonly ProgressBar ProdStorage;
         readonly ProgressBar PopStorage; // bench 426: the population bar joins the Supply panel
 
+        // Ludoal fork (maintainer feedback): the colony's trade zones, a fourth row of the Supply
+        // panel. Membership is an EMPIRE fact read from the colony's end, so the line is rebuilt
+        // every update rather than cached - the Trade page can change it while this screen is up.
+        UILabel TradeZonesLabel;
+        float TradeZonesWidth; // what the caption may occupy before the Edit button
+
         // Ludoal fork (maintainer, bench 524): population wears the same blue as research, and
         // the two bars sat close enough to be read as one another. A GREY rather than a paler
         // blue, and a dark one: the value is printed in white over the fill, so a light tint
@@ -369,6 +375,23 @@ namespace Ship_Game
             ColonistsDropDown.OnValueChange = v => P.CS = v;
             Add(new UICheckBox(supplyAutoX, PopStorage.pBar.Y + 1, () => P.AutoColonists, v => P.AutoColonists = v,
                                Fonts.Arial12Bold, "Auto", GameText.AutoSupplyTip));
+
+            // Ludoal fork (maintainer feedback): TRADE ZONES, the fourth row. Its Y follows the
+            // elders' own pitch (46 apart, like 46/92/138) so it lands under population rather
+            // than at a fraction of whatever the stretching panel happens to have left. Only the
+            // owner edits them, and only zones of THIS empire are ever named here.
+            const float storeRow4 = 184;
+            const float SupplyEditW = 68; // ButtonStyle.Small - empiretopbar_btn_68px
+            if (P.Owner == Player)
+            {
+                float editX = PStorage.Right - 12 - SupplyEditW;
+                TradeZonesLabel = Add(new UILabel(new Vector2(PStorage.X + 20, PStorage.Y + storeRow4),
+                                                  "", Fonts.Arial12Bold, Colors.Cream));
+                TradeZonesLabel.Tooltip = GameText.TzColonyZonesTip;
+                TradeZonesWidth = editX - 12 - (PStorage.X + 20);
+                UIButton editZones = ButtonSmall(editX, PStorage.Y + storeRow4 - 4, GameText.Edit, OnEditTradeZonesClicked);
+                editZones.Tooltip = GameText.TzColonyZonesEditTip;
+            }
 
             // Centre column: the colony grid keeps its height, STATISTICS below takes the rest -
             // it is the variable block of this column, and it closes on the grid's foot.

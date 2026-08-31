@@ -7157,6 +7157,22 @@ namespace Ship_Game
         TzMoveUpTip = 7222,
         /// <summary>Serve this zone later.</summary>
         TzMoveDownTip = 7223,
+        /// <summary>Trade Zones</summary>
+        TzColonyZones = 7224,
+        /// <summary>None</summary>
+        TzColonyZonesNone = 7225,
+        /// <summary>The trade zones that serve this colony.</summary>
+        TzColonyZonesTip = 7226,
+        /// <summary>Choose which zones serve this colony.</summary>
+        TzColonyZonesEditTip = 7227,
+        /// <summary>Zones Serving This Colony</summary>
+        TzColonyZonesTitle = 7228,
+        /// <summary>No trade zone yet.</summary>
+        TzNoZonesHint = 7229,
+        /// <summary>All zones</summary>
+        TzAllZones = 7230,
+        /// <summary>Show Food and Production for one trade zone only.</summary>
+        TzWindowZoneTip = 7231,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

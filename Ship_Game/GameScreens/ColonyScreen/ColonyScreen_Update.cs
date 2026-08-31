@@ -26,9 +26,58 @@ namespace Ship_Game
             if (RushToggle != null)
                 RushToggle.Greyed = P.Owner.RushAllConstruction;
             UpdateTradeTab();
+            UpdateTradeZonesLine();
             UpdateTerraformTab();
             UpdateDysonSwarmTab();
             base.Update(elapsedTime);
+        }
+
+        // Ludoal fork (maintainer feedback): the Supply panel's fourth row. Membership lives on
+        // the EMPIRE, so it is read fresh every frame - the Trade page can add or dissolve a zone
+        // while this screen is open, and a cached line would go on naming a zone that is gone.
+        void UpdateTradeZonesLine()
+        {
+            if (TradeZonesLabel == null)
+                return;
+
+            string caption = Localizer.Token(GameText.TzColonyZones) + ": ";
+            var names = new Array<string>();
+            foreach (TradeZone zone in Player.TradeZones)
+                if (zone.Serves(P))
+                    names.Add(zone.Name);
+
+            if (names.IsEmpty)
+            {
+                TradeZonesLabel.Text = caption + Localizer.Token(GameText.TzColonyZonesNone);
+                TradeZonesLabel.Tooltip = GameText.TzColonyZonesTip;
+                return;
+            }
+
+            // the row is TRUNCATED, never wrapped: its height belongs to the panel's grammar and a
+            // second line would push the panel's foot. The same rule the Trade page's colony cell
+            // follows - fit what fits, say "..." once, and hand the whole list to the tooltip.
+            string all = string.Join(", ", names.ToArray());
+            string shown = "";
+            bool truncated = false;
+            for (int i = 0; i < names.Count; ++i)
+            {
+                string next = i == 0 ? names[i] : ", " + names[i];
+                if (Font12.TextWidth(caption + shown + next + ", ...") > TradeZonesWidth && i > 0)
+                {
+                    truncated = true;
+                    break;
+                }
+
+                shown += next;
+            }
+
+            TradeZonesLabel.Text = truncated ? caption + shown + ", ..." : caption + shown;
+            TradeZonesLabel.Tooltip = truncated ? all : new LocalizedText(GameText.TzColonyZonesTip);
+        }
+
+        void OnEditTradeZonesClicked(UIButton b)
+        {
+            ScreenManager.AddScreen(new ColonyTradeZonesScreen(this, P));
         }
 
         void UpdateTradeTab()

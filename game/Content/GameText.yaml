@@ -28862,3 +28862,35 @@ ExclusiveBlueprintWarn:
  Id: 7183
  ENG: "This exclusive plan takes full control of the colony. Buildings not on its list, including hand-placed and military ones, may be demolished when space is needed. Mandates are overridden while the plan is active. Proceed?"
  FRA: "Ce plan exclusif prend le contrôle total de la colonie. Les bâtiments hors liste, y compris posés à la main et militaires, pourront être démolis si la place vient à manquer. Les mandats sont suspendus tant que le plan est actif. Continuer ?"
+TzColonyZones:
+ Id: 7224
+ ENG: "Trade Zones"
+ FRA: "Zones commerciales"
+TzColonyZonesNone:
+ Id: 7225
+ ENG: "None"
+ FRA: "Aucune"
+TzColonyZonesTip:
+ Id: 7226
+ ENG: "The trade zones that serve this colony. A zone borrows freighters before the general dispatch, so a colony inside one is served earlier."
+ FRA: "Les zones commerciales qui desservent cette colonie. Une zone emprunte des cargos avant la dépêche générale : une colonie qui en fait partie est donc servie plus tôt."
+TzColonyZonesEditTip:
+ Id: 7227
+ ENG: "Choose which zones serve this colony."
+ FRA: "Choisir les zones qui desservent cette colonie."
+TzColonyZonesTitle:
+ Id: 7228
+ ENG: "Zones Serving This Colony"
+ FRA: "Zones desservant cette colonie"
+TzNoZonesHint:
+ Id: 7229
+ ENG: "No trade zone yet. Create one from the Trade tab of the galaxy screens."
+ FRA: "Aucune zone commerciale. Créez-en une depuis l'onglet Trade des écrans galactiques."
+TzAllZones:
+ Id: 7230
+ ENG: "All zones"
+ FRA: "Toutes les zones"
+TzWindowZoneTip:
+ Id: 7231
+ ENG: "Show Food and Production for one trade zone only. Colonists stay out: their slots are counted in heads, never converted into cargo loads."
+ FRA: "N'afficher que la Nourriture et la Production d'une seule zone. Les colons restent hors du compte : leurs créneaux se comptent en têtes, jamais convertis en chargements."
