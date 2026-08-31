@@ -239,8 +239,6 @@ namespace Ship_Game
                 { Tooltip = GameText.BlueprintModeTip });
 
             ButtonUpdateTimer    = 1;
-            // offered only when the plan has built everything this colony can reach and a linked
-            // plan is waiting - the chain itself needs the WHOLE list, which will never come here
             // Ludoal fork (maintainer bench 554): the ARROW, and permanently at its post. It used
             // to appear only once the plan had stalled - but handing a colony over is a decision
             // the player may take at any point, not only when the game says they may. It still
