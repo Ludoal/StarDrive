@@ -300,12 +300,18 @@ namespace Ship_Game
                 // percent. Pink when everything reachable here is up and the list still is not -
                 // the colony is waiting on something it cannot fix; green when an exclusive plan
                 // has the whole list up and no successor, which is its finished state.
-                string ratio = $" ({P.Blueprints.BuiltCount}/{P.Blueprints.PlannedCount})";
-                Color ratioColor = P.Blueprints.FinalState ? Color.LightGreen
-                                 : P.Blueprints.Blocked ? Color.HotPink
-                                 : Color.White;
-                var ratioPos = new Vector2(planPos.X + Fonts.Arial12.MeasureString(P.Blueprints.Name).X, planPos.Y);
-                batch.DrawString(Fonts.Arial12, ratio, ratioPos, ratioColor);
+                // ⚠ the counts are not serialized: a plan restored from a save has none until it
+                // has been governed once, and "(0/0)" is a figure, not a blank. The name stands
+                // alone until the plan has been measured (bench 554).
+                if (P.Blueprints.Measured)
+                {
+                    string ratio = $" ({P.Blueprints.BuiltCount}/{P.Blueprints.PlannedCount})";
+                    Color ratioColor = P.Blueprints.FinalState ? Color.LightGreen
+                                     : P.Blueprints.Blocked ? Color.HotPink
+                                     : Color.White;
+                    var ratioPos = new Vector2(planPos.X + Fonts.Arial12.MeasureString(P.Blueprints.Name).X, planPos.Y);
+                    batch.DrawString(Fonts.Arial12, ratio, ratioPos, ratioColor);
+                }
                 batch.Draw(ResourceManager.Texture("NewUI/blueprints"), 
                     new Vector2(planetIconRect.X+2, planetIconRect.Bottom), new Vector2(25, 25), color);
             }

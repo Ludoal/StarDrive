@@ -25,6 +25,15 @@ namespace Ship_Game.Universe.SolarBodies
         public int BuiltCount { get; private set; }
         public int ReachableCount { get; private set; }
         public int NotAchievableCount => (PlannedCount - ReachableCount).LowerBound(0);
+        // Ludoal fork (maintainer bench 554): the three counts above are NOT serialized, so a plan
+        // restored from a save arrives at nought across the board - and nought everywhere satisfies
+        // Blocked's arithmetic by accident (nothing reachable, nothing built, so "everything
+        // reachable is up"). A colony doing its work was announced as stalled until the player
+        // opened its screen, which is what refreshed the counts. Nothing is diagnosed from them
+        // until they have been computed at least once. A FLAG rather than a test on the values:
+        // a plan whose every entry waits on a technology shows the very same zeroes, and it is a
+        // true stall - only the flag tells the two apart (Lek's catch).
+        public bool Measured { get; private set; }
         [StarData] BlueprintsTemplate Template;
 
         public string Name => Template.Name;
@@ -48,7 +57,8 @@ namespace Ship_Game.Universe.SolarBodies
         // still is not finished - entries wait on a technology, the ground or a mandate. The chain
         // does not fire on its own here (that needs the WHOLE list), so the player is offered the
         // hand-over instead. A plan with no link has nothing to move on to: this is its end state.
-        public bool Blocked => PlannedCount > 0
+        public bool Blocked => Measured
+                               && PlannedCount > 0
                                && BuiltCount == PlannedCount - NotAchievableCount
                                && BuiltCount < PlannedCount;
 
@@ -56,7 +66,7 @@ namespace Ship_Game.Universe.SolarBodies
 
         // An exclusive plan with the whole list up and nowhere to hand over to: not a stall, the
         // colony it was written to produce. It keeps watch from here on.
-        public bool FinalState => Exclusive && PlannedCount > 0
+        public bool FinalState => Measured && Exclusive && PlannedCount > 0
                                   && BuiltCount == PlannedCount
                                   && LinkedBlueprintsName.Length == 0;
 
@@ -94,9 +104,8 @@ namespace Ship_Game.Universe.SolarBodies
         void OnTemplateChanged()
         {
             ChangeColonyType();
+            // refreshes the pair on its way out, so the two calls that stood here are gone
             RefreshPlannedBuildingsWeCanBuild(P.GetBuildingsCanBuild());
-            UpdateCompletion();
-            UpdatePercentAchievable();
         }
 
         void ChangeColonyType()
@@ -115,6 +124,7 @@ namespace Ship_Game.Universe.SolarBodies
         {
             UpdateCompletion();
             UpdatePercentAchievable();
+            Measured = true;
         }
 
         public void UpdateCompletion()
@@ -230,7 +240,12 @@ namespace Ship_Game.Universe.SolarBodies
             // list rebuilt above, so it is recomputed here rather than waiting for a building to
             // rise or fall. A save being read arrives with that list still empty: every planned
             // entry then counted as out of reach, and the screen said the plan was stuck.
-            UpdatePercentAchievable();
+            //
+            // ⚠ the WHOLE pair, not the achievable half of it (bench 554): the two figures share a
+            // denominator and the counts behind them are read side by side, so refreshing one of
+            // them here left the other at its load-time nought - which is the very rule written
+            // above Refresh(), and which this line broke the day it was added.
+            Refresh();
         }
 
         // Ludoal fork (maintainer feedback): a plan directs what gets RAISED. Only an exclusive
