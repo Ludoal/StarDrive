@@ -149,13 +149,15 @@ namespace Ship_Game
             readonly Planet Colony;
             UICheckBox Box;
 
-            readonly string Label;
+            // ⚠ NOT "Label": UIElementContainer up the chain has a Label() of its own, and
+            // CS0108 is an error in this repo (bench 556, the sweep I owed my own rule)
+            readonly string Caption;
 
-            public ColonyPickItem(TradeZoneColoniesScreen picker, Planet colony, string label = null)
+            public ColonyPickItem(TradeZoneColoniesScreen picker, Planet colony, string caption = null)
             {
                 Picker = picker;
                 Colony = colony;
-                Label = label ?? colony.Name;
+                Caption = caption ?? colony.Name;
             }
 
             public override void PerformLayout()
@@ -164,7 +166,7 @@ namespace Ship_Game
                 Box = Add(new UICheckBox(X + 4, Y + 2,
                                          () => Picker.IsChosen(Colony),
                                          on => Picker.SetChosen(Colony, on),
-                                         Fonts.Arial12Bold, Label, GameText.TzColonyPickTip));
+                                         Fonts.Arial12Bold, Caption, GameText.TzColonyPickTip));
                 base.PerformLayout();
             }
 
