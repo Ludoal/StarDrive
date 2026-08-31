@@ -661,6 +661,9 @@ namespace Ship_Game
             : input.FleetDesignScreen   ? "Fleets"
             : input.BlueprintsSceen     ? "Blueprints"
             : input.ImportantEventsScreen ? "Events"
+            // the Empire group's permanent colony tab: it has no screen class of its own, so it
+            // was the one hotkey this table never carried and the only one dead inside a screen
+            : input.ColonyOverviewScreen ? "ColonyOverview"
             // the bar's own keys: reachable from the universe through the other overload,
             // dead from inside a screen until they came through here too
             : input.KeyPressed(KeyBindings.OpenResearch) && !input.IsCtrlKeyDown ? "Research"  // Ctrl+Alt+R is the resolution tool
@@ -806,6 +809,13 @@ namespace Ship_Game
             // the dispatch below opens the target. Clicking a screen's own
             // button just closes it (toggle) via the per-branch self-guards.
             caller.ExitScreen();
+
+            if (launches == "ColonyOverview")
+            {
+                GameAudio.EchoAffirmative();
+                Universe.OpenEmpireColonyTab();
+                return true;
+            }
 
             if (launches == "Research")
             {
