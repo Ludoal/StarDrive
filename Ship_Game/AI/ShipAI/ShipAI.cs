@@ -652,6 +652,19 @@ namespace Ship_Game.AI
             return OrderQueue.Any(g => g.Trade?.Goods == goods);
         }
 
+        // Ludoal fork (maintainer feedback): where the run for THIS goods delivers. The Freighters
+        // window's zone filter reads it - a run belongs to the zone holding its IMPORT planet,
+        // which is the very end a zone's own dispatch serves. Null when the leg feeds a station
+        // or carries nothing of that goods.
+        public Planet TradeImportFor(Goods goods)
+        {
+            foreach (ShipGoal g in OrderQueue.ToArray())
+                if (g?.Trade != null && g.Trade.Goods == goods)
+                    return g.Trade.ImportTo;
+
+            return null;
+        }
+
         // Ludoal fork (maintainer bench 339): a freighter counts once, by its CURRENT phase - it is
         // IMPORTING while delivering (a drop-off leg queued) and EXPORTING otherwise (picking up or
         // hauling). So importing + exporting sums to the freighter count, no double-count.

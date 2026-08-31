@@ -39,6 +39,14 @@ namespace Ship_Game
         const float NumberColW = 24f; // room for three digits in Arial12Bold
         float FreightersRightX, ImportingRightX, ExportingRightX;
 
+        // Ludoal fork (maintainer feedback): the ZONE FILTER. A null selection is the whole
+        // empire, which is what this window has always shown - so "All zones" is not a new mode,
+        // it is the old one given a name. Only Food and Production narrow to a zone: colonist
+        // slots are counted in HEADS and never converted into cargo loads, so a per-zone colonist
+        // figure would be a number in the wrong unit.
+        DropOptions<TradeZone> ZoneFilter;
+        TradeZone SelectedZone;
+
         // the right edge that centres a NumberColW-wide column under a header at headerX
         static float ColumnRightUnder(float headerX, GameText header)
             => headerX + Fonts.Arial12Bold.TextWidth(new LocalizedText(header).Text) * 0.5f + NumberColW * 0.5f;
@@ -116,6 +124,33 @@ namespace Ship_Game
             TotalFreightersValue = Add(RightAlignedValue(FreightersRightX, totalsY));
             TotalImportingValue  = Add(RightAlignedValue(ImportingRightX, totalsY));
             TotalExportingValue  = Add(RightAlignedValue(ExportingRightX, totalsY));
+
+            // the zone picker rides the title bar's right end, the way STARVATION rides Supply's -
+            // the window's four rows are spoken for. Added LAST on purpose: an open list draws
+            // over the rows only if it is the last child, and a dropdown seated earlier would
+            // unfold UNDER them (bench 505, the same trap on three lists).
+            const float ZoneBoxW = 170;
+            float zoneBoxX = win.Right - ZoneBoxW - 12;
+            // the tooltip rides the CAPTION, not the list: a DropOptions carries none of its own
+            // (it is a bare UIElementV2), which is why every picker in the game is labelled. The
+            // caption's X is MEASURED off its own text rather than guessed at a round number.
+            string zoneCap = Localizer.Token(GameText.TzColonyZones);
+            Add(new UILabel(new Vector2(zoneBoxX - Fonts.Arial12Bold.TextWidth(zoneCap) - 8, win.Y + 6),
+                            GameText.TzColonyZones, Fonts.Arial12Bold, Color.Wheat, GameText.TzWindowZoneTip));
+            ZoneFilter = Add(new DropOptions<TradeZone>(
+                new Vector2(zoneBoxX, win.Y + 4), (int)ZoneBoxW, 18));
+            ZoneFilter.AddOption(GameText.TzAllZones, null);
+            foreach (TradeZone zone in Player.TradeZones)
+                ZoneFilter.AddOption(zone.Name, zone);
+
+            // a zone the player dissolved while the window was shut must not come back as a
+            // selection: the list is rebuilt here, so the held zone is re-checked against it
+            if (SelectedZone != null && !Player.TradeZones.Contains(SelectedZone))
+                SelectedZone = null;
+
+            ZoneFilter.ActiveIndex = SelectedZone == null
+                                   ? 0 : Player.TradeZones.IndexOf(SelectedZone) + 1;
+            ZoneFilter.OnValueChange = z => SelectedZone = z;
         }
 
         public override void PerformLayout()
@@ -175,6 +210,10 @@ namespace Ship_Game
             if (!IsOpen || HiddenByGroundCombat)
                 return false;
 
+            // the open list overlays every other control, so it is offered the cursor first
+            if (ZoneFilter != null && ZoneFilter.HandleInput(input))
+                return true;
+
             if (BuildFreighter.HandleInput(input))
                 return true;
 
@@ -197,8 +236,15 @@ namespace Ship_Game
                     goodsUtilization.Reset();
 
 
+                // under a zone, the colonist row states that it is not counted rather than
+                // showing an empire figure inside a narrowed view - one scope per window
+                GoodsUtilizationMap[Goods.Colonists].NotCounted = SelectedZone != null;
+
                 foreach (Planet planet in Player.GetPlanets())
                 {
+                    if (SelectedZone != null && !SelectedZone.Serves(planet))
+                        continue;
+
                     if (Player.NonCybernetic)
                     {
                         if (planet.FoodImportSlots > 0) GoodsUtilizationMap[Goods.Food].IncreaseNumImportingPlanets();
@@ -207,6 +253,9 @@ namespace Ship_Game
 
                     if (planet.ProdImportSlots > 0)      GoodsUtilizationMap[Goods.Production].IncreaseNumImportingPlanets();
                     if (planet.ProdExportSlots > 0)      GoodsUtilizationMap[Goods.Production].IncreaseNumExportingPlanets();
+                    if (SelectedZone != null)
+                        continue;
+
                     if (planet.ColonistsImportSlots > 0) GoodsUtilizationMap[Goods.Colonists].IncreaseNumImportingPlanets();
                     if (planet.ColonistsExportSlots > 0) GoodsUtilizationMap[Goods.Colonists].IncreaseNumExportingPlanets();
                 }
@@ -215,11 +264,14 @@ namespace Ship_Game
                 NumUtilizedFreighters = allUtilizedFreightesr.Length;
                 foreach (Ship freighter in allUtilizedFreightesr)
                 {
-                    if (Player.NonCybernetic)
+                    if (Player.NonCybernetic && ServesSelectedZone(freighter, Goods.Food))
                         GoodsUtilizationMap[Goods.Food].AddGoodsTransported(freighter, ref totalUtilizedCargo);
 
-                    GoodsUtilizationMap[Goods.Production].AddGoodsTransported(freighter, ref totalUtilizedCargo);
-                    GoodsUtilizationMap[Goods.Colonists].AddGoodsTransported(freighter, ref totalUtilizedCargo);
+                    if (ServesSelectedZone(freighter, Goods.Production))
+                        GoodsUtilizationMap[Goods.Production].AddGoodsTransported(freighter, ref totalUtilizedCargo);
+
+                    if (SelectedZone == null)
+                        GoodsUtilizationMap[Goods.Colonists].AddGoodsTransported(freighter, ref totalUtilizedCargo);
                 }
 
                 TotalUtilizedCargo = totalUtilizedCargo;
@@ -231,18 +283,37 @@ namespace Ship_Game
                 // CURRENT phase so importing + exporting == the total. A freighter delivering counts
                 // as importing; picking up or hauling, as exporting. (The per-goods Importing/
                 // Exporting columns count PLANET slots, unrelated to the freighter count.)
-                int importingFreighters = 0, exportingFreighters = 0;
+                int importingFreighters = 0, exportingFreighters = 0, zoneFreighters = 0;
                 foreach (Ship freighter in allUtilizedFreightesr)
                 {
+                    // under a zone the totals count the runs the view shows - food and production
+                    // landing inside it - so the row stays in the same scope as the rows above it
+                    if (SelectedZone != null
+                        && !ServesSelectedZone(freighter, Goods.Food)
+                        && !ServesSelectedZone(freighter, Goods.Production))
+                        continue;
+
+                    ++zoneFreighters;
                     if (freighter.AI.IsDeliveringTrade) importingFreighters++;
                     else                                exportingFreighters++;
                 }
-                TotalFreightersValue.Text = NumUtilizedFreighters.String();
+                TotalFreightersValue.Text = (SelectedZone == null ? NumUtilizedFreighters : zoneFreighters).String();
                 TotalImportingValue.Text  = importingFreighters.String();
                 TotalExportingValue.Text  = exportingFreighters.String();
             }
 
             base.Update(fixedDeltaTime);
+        }
+
+        // a run belongs to a zone by the end it DELIVERS to - the same end the zone's own dispatch
+        // serves. No selection means the whole empire, so everything belongs.
+        bool ServesSelectedZone(Ship freighter, Goods goods)
+        {
+            if (SelectedZone == null)
+                return true;
+
+            Planet importTo = freighter.AI.TradeImportFor(goods);
+            return importTo != null && SelectedZone.Serves(importTo);
         }
 
         void OnBuildFreighterClick(UIButton b)
@@ -260,6 +331,9 @@ namespace Ship_Game
             readonly UIPanel IconPanel;
             readonly FreighterUtilizationWindow Window;
             readonly Goods Goods;
+            // set by the window when a zone narrows the view and this goods is out of scope -
+            // the row then says so instead of showing an empire number in a narrowed window
+            public bool NotCounted;
             public int NumImportingPlanets { get; private set; }
             public int NumExportingPlanets { get; private set; }
             public int NumFreighters { get; private set; }
@@ -325,6 +399,14 @@ namespace Ship_Game
                 NumFreightersLabel.Draw(batch, elapsed);
                 NumImportingLabel.Draw(batch, elapsed);
                 NumExportingLabel.Draw(batch, elapsed);
+                if (NotCounted)
+                {
+                    // no colour code on a dash: the warning colours read demand against supply,
+                    // and there is no demand stated here to warn about
+                    NumFreightersLabel.Color = NumImportingLabel.Color = NumExportingLabel.Color = Color.Wheat;
+                    return;
+                }
+
                 NumExportingLabel.Color = Color.White;
                 NumImportingLabel.Color = Color.White;
                 if (NumExportingPlanets == 0 && NumImportingPlanets > 0 && GoodsTransported <= 0)
@@ -348,6 +430,14 @@ namespace Ship_Game
             {
                 TotalEmpireUtilizedCargo = Window.TotalUtilizedCargo;
                 UtilizationBar.Progress  = TotalEmpireUtilizedCargo == 0 ? 0 : GoodsTransported/TotalEmpireUtilizedCargo *100;
+                if (NotCounted)
+                {
+                    UtilizationBar.Progress = 0;
+                    NumFreightersLabel.Text = NumImportingLabel.Text = NumExportingLabel.Text = "-";
+                    base.Update(fixedDeltaTime);
+                    return;
+                }
+
                 NumFreightersLabel.Text  = NumFreighters.String();
                 NumImportingLabel.Text   = NumImportingPlanets.String();
                 NumExportingLabel.Text   = NumExportingPlanets.String();
