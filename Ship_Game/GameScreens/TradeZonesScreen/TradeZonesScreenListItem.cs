@@ -35,7 +35,24 @@ namespace Ship_Game
             UITable.Column[] cols = Screen.Table.Columns;
             Color color = Color.White;
 
-            Cell(cols[0], Zone.Name, color);
+            // an EXCLUSIVE zone wears the padlock, exactly as an exclusive blueprint does on the
+            // governor row - one mark for one idea across the two systems (bench 559). The state
+            // is shown here; it is still CHANGED in the zone's own dialog, one door per gesture.
+            if (Zone.Exclusive)
+            {
+                const int LockSize = 16, LockGap = 6;
+                int lockX = cols[0].Rect.X + UITable.PadX;
+                Add(new UIPanel(new Rectangle(lockX, (int)(Y + Height / 2 - LockSize / 2), LockSize, LockSize),
+                                ResourceManager.Texture("NewUI/icon_lock")))
+                    .Tooltip = GameText.TzExclusiveTip;
+                Label(new Vector2(lockX + LockSize + LockGap,
+                                  Y + Height / 2 - Fonts.Arial12Bold.LineSpacing / 2f),
+                      Zone.Name, Fonts.Arial12Bold, color);
+            }
+            else
+            {
+                Cell(cols[0], Zone.Name, color);
+            }
             Cell(cols[1], Zone.NumColonies.ToString(), color);
 
             // one label PER colony rather than one joined string: each name is a target the

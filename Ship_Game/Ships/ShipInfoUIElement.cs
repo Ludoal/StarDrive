@@ -694,16 +694,14 @@ namespace Ship_Game.Ships
                 // button keeps the routes button's seat and icon - it is the same idea, grown up -
                 // and opens the picker rather than putting the map into a drawing mode.
                 //
-                // It is an ACTION wearing a toggle's clothes: the getter always reads false, so the
-                // button never latches, and the setter opens the window on the press. The AO
-                // editor's own setter had side effects too; this one has nothing else.
+                // The lamp reports MEMBERSHIP - lit when this hull belongs to a zone (bench 559,
+                // it read unlit whatever the answer) - while the press always opens the picker,
+                // whichever way the toggle thought it was going. The picker is the only writer, so
+                // the lamp cannot disagree with it.
                 var zone = new OrdersButton(s, OrderType.DefineTradeRoutes, GameText.TzShipZoneTip)
                 {
-                    ValueToModify = new(() => false, x =>
-                    {
-                        if (x)
-                            Universe.ScreenManager.AddScreen(new ShipTradeZoneScreen(Universe, s));
-                    })
+                    ValueToModify = new(() => s.InTradeZone,
+                                        _ => Universe.ScreenManager.AddScreen(new ShipTradeZoneScreen(Universe, s)))
                 };
                 Orders.Add(zone);
             }
