@@ -83,27 +83,6 @@ namespace Ship_Game
                 else                zone.Remove(Colony);
             }
 
-            // One owner per thing: naming this colony in an exclusive zone takes it out of any
-            // other exclusive zone, the same gesture as switching a colony's plan. Soft zones may
-            // still share it - they own nothing and requisition nothing against it.
-            //
-            // ⚠ if the player ticked two exclusive zones at once, the one HIGHEST IN THE LIST
-            // keeps the colony. That is not an arbitrary first: the list order is the dispatch
-            // priority the player arranged, so the zone they placed first wins - which is the
-            // only tie-break on this screen that means something.
-            foreach (TradeZone zone in Owner.TradeZones)
-                if (zone.Exclusive && zone.Serves(Colony))
-                {
-                    Owner.ClaimColoniesExclusively(zone);
-                    break;
-                }
-
-            // a zone this edit emptied is dissolved, the same rule the Trade page applies: an
-            // empty colony list reads as "everywhere" downstream, never as "nowhere"
-            for (int i = Owner.TradeZones.Count - 1; i >= 0; --i)
-                if (Owner.TradeZones[i].IsEmpty)
-                    Owner.RemoveTradeZone(Owner.TradeZones[i]);
-
             GameAudio.EchoAffirmative();
             ExitScreen();
         }

@@ -136,6 +136,7 @@
     <Compile Include="Ship_Game\GameScreens\TradeZonesScreen\TradeZonesScreenListItem.cs" />
     <Compile Include="Ship_Game\GameScreens\TradeZonesScreen\TradeZoneColoniesScreen.cs" />
     <Compile Include="Ship_Game\GameScreens\TradeZonesScreen\ColonyTradeZonesScreen.cs" />
+    <Compile Include="Ship_Game\GameScreens\TradeZonesScreen\ShipTradeZoneScreen.cs" />
     <Compile Include="Ship_Game\Espionage\Espionage.cs" />
     <Compile Include="Ship_Game\Espionage\InfiltrationOpsCounterEspionage.cs" />
     <Compile Include="Ship_Game\Espionage\InfiltrationOpsDisruptProjection.cs" />

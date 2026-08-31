@@ -276,6 +276,7 @@ namespace Ship_Game
             if (domestic.NoFreeFreighters)
                 return;
 
+            MeasureZoneNeeds(); // one book of need, read in priority order, before anyone asks
             RequisitionForExclusiveZones();
 
             // a zone whose pass does not run this turn holds nothing back: last turn's hulls
@@ -293,7 +294,7 @@ namespace Ship_Game
                 }
 
                 // a quota of nought means the number is measured rather than ordered
-                int quota = zone.Quota > 0 ? zone.Quota : zone.RequiredFreighters(this);
+                int quota = zone.Quota > 0 ? zone.Quota : zone.MeasuredNeed;
                 if (quota <= 0)
                     continue;
 
@@ -654,7 +655,7 @@ namespace Ship_Game
                 if (!zone.Exclusive || zone.Id == 0)
                     continue;
 
-                int need = zone.Quota > 0 ? zone.Quota : zone.RequiredFreighters(this);
+                int need = zone.Quota > 0 ? zone.Quota : zone.MeasuredNeed;
                 int have = zone.MemberFreighters(this).Count;
                 if (have >= need)
                     continue;

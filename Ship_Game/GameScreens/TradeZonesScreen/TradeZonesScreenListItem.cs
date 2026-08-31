@@ -43,7 +43,7 @@ namespace Ship_Game
             // behaves. What does not fit is elided, and the ellipsis carries the whole list.
             LayOutColonyNames(cols[2].Rect, color);
 
-            Cell(cols[3], Zone.RequiredFreighters(Player).ToString(), color).Tooltip = GameText.TzRequiredTip;
+            Cell(cols[3], Zone.MeasuredNeed.ToString(), color).Tooltip = GameText.TzRequiredTip;
             // a quota of nought is not a quantity: the zone's need is measured instead of ordered
             Cell(cols[4], Zone.Quota <= 0 ? Localizer.Token(GameText.PolFreighterRefitAuto)
                                           : Zone.Quota.ToString(), color).Tooltip = GameText.TzAssignedTip;

@@ -38,6 +38,14 @@ namespace Ship_Game
         // Never serialized - a fact about this turn, and a save reloads into a fresh pass.
         public Ship[] LentThisTurn = Array.Empty<Ship>();
 
+        // ★ WHAT THIS ZONE MAY ASK FOR, once the zones above it in the list have taken their share
+        // of any colony they hold in common. The need keeps ONE book (Lek, 31 Aug): the delivery
+        // side already worked that way - a planet's free slots close on whatever is inbound,
+        // whoever sent it - and this is the same law applied to the READING of the need. Without
+        // it a world named by two zones is counted twice and requisitioned for twice, while only
+        // one of the two can ever deliver. Not serialized: a fact of the turn.
+        public int MeasuredNeed;
+
         [StarDataConstructor] TradeZone() { }
 
         public TradeZone(string name)
@@ -118,42 +126,13 @@ namespace Ship_Game
             return planets;
         }
 
-        // What the zone can put to work, in the game's own unit: a trade slot is a freighter
-        // berth. Counted on its IMPORT side, on the TOTAL slots.
-        //
-        // Two corrections, both from bench 546 where Active read higher than Required:
-        //  - it was bounded by both ends, min(import, export). That bound belongs to an
-        //    ENCLOSED zone, whose freighters only carry between its own colonies. A zone of
-        //    this regime borrows from the common pool and imports from the whole empire, so
-        //    what it can employ is its import capacity - the export side never limited it.
-        //  - the free slots were read first (bench 544), which fell to nought exactly when the
-        //    zone was being served. Beside Active the figure must be the demand, not the
-        //    remainder: the pair only reads if one is the need and the other the answer.
-        //
-        // Deliberately WITHOUT a rotation term. Turning a backlog into a fleet size is the
-        // queueing law, and it needs a measured arrival rate; inventing one here would produce a
-        // plausible number that is wrong.
-        //
-        // ⚠ colonists were left out of both figures on the reading that their slots count HEADS.
-        // That is true of the EXPORT side alone (GetColonistsExportSlots returns the population
-        // itself); the IMPORT side returns 1 to 5 BERTHS, the very unit food and production use.
-        // Since only import slots are counted here, there was never a unit to reconcile - the
-        // generalisation was mine, and it stood in this comment as a reason not to do a thing
-        // that had no obstacle.
-        public int RequiredFreighters(Empire owner)
-        {
-            int imports = 0;
-            foreach (int id in Colonies)
-            {
-                Planet p = owner.Universe.GetPlanet(id);
-                if (p == null || p.Owner != owner)
-                    continue;
-
-                imports += p.FoodImportSlots + p.ProdImportSlots + p.ColonistsImportSlots;
-            }
-
-            return imports + StationDemand(owner);
-        }
+        // ⚠ the lessons the old per-zone measure carried, and they now govern MeasureZoneNeeds
+        // on the empire: the unit is the freighter BERTH, counted on the IMPORT side and on the
+        // TOTAL slots - never the free ones, which fall to nought exactly when a zone is being
+        // served (bench 544), and never bounded by the export side, which belongs to an enclosed
+        // zone and never limited this one (bench 546). No rotation term: turning a backlog into a
+        // fleet size needs a measured arrival rate, and inventing one produces a plausible number
+        // that is wrong.
 
         // What this zone's stations are asking for, in berths. A station's hunger is already
         // expressed by its open supply goal, so the zone COUNTS those goals rather than testing

@@ -168,8 +168,6 @@ namespace Ship_Game
 
             zone.Quota = quota;
             zone.Exclusive = exclusive;
-            // an exclusive zone takes its colonies from any other exclusive zone: one owner
-            Player.ClaimColoniesExclusively(zone);
             zone.Priority = priority;
             // an empty box keeps the name the zone already had, rather than leaving it nameless
             if (name.NotEmpty() && name != zone.Name)
@@ -236,7 +234,7 @@ namespace Ship_Game
             switch (col)
             {
                 case 1:  zones = Player.TradeZones.Sorted(ascending, z => z.NumColonies); break;
-                case 3:  zones = Player.TradeZones.Sorted(ascending, z => z.RequiredFreighters(Player)); break;
+                case 3:  zones = Player.TradeZones.Sorted(ascending, z => z.MeasuredNeed); break;
                 case 4:  zones = Player.TradeZones.Sorted(ascending, z => z.Quota); break;
                 case 5:  zones = Player.TradeZones.Sorted(ascending, z => z.ActiveFreighters(Player)); break;
                 case 6:  zones = Player.TradeZones.Sorted(ascending, z => z.MemberFreighters(Player).Count); break;
@@ -252,6 +250,9 @@ namespace Ship_Game
         // sized for nothing, and only reopening the page fixed it.
         void MeasureColumns()
         {
+            // the figure is order-dependent, so it is measured before it is read: a page opened
+            // before the first turn would otherwise show a nought it cannot tell from a real one
+            Player.MeasureZoneNeeds();
             var names = new Array<string>(); var counts = new Array<string>();
             var served = new Array<string>(); var quotas = new Array<string>();
             var required = new Array<string>(); var active = new Array<string>();
@@ -261,7 +262,7 @@ namespace Ship_Game
                 names.Add(z.Name);
                 counts.Add(z.NumColonies.ToString());
                 served.Add(ColonyNames(z));
-                required.Add(z.RequiredFreighters(Player).ToString());
+                required.Add(z.MeasuredNeed.ToString());
                 quotas.Add(z.Quota <= 0 ? Localizer.Token(GameText.PolFreighterRefitAuto) : z.Quota.ToString());
                 active.Add(z.ActiveFreighters(Player).ToString());
                 owned.Add(z.MemberFreighters(Player).Count.ToString());
@@ -333,7 +334,7 @@ namespace Ship_Game
                 h = h * 31 + (zone.Name?.GetHashCode() ?? 0);
                 h = h * 31 + zone.NumColonies;
                 h = h * 31 + zone.Quota;
-                h = h * 31 + zone.RequiredFreighters(Player);
+                h = h * 31 + zone.MeasuredNeed;
                 h = h * 31 + zone.ActiveFreighters(Player);
             }
             return h;

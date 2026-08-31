@@ -28926,3 +28926,15 @@ TzConvertedNotice:
  Id: 7239
  ENG: "The areas of operation and manual trade routes you had drawn on individual freighters have become EXCLUSIVE TRADE ZONES, and their editors are gone: what a zone holds is now edited in one place, on the Trade page.\n\nOne thing has changed and cannot be undone: an area of operation was a SHAPE, and it welcomed colonies founded inside it later. A zone is a LIST, taken as your areas stood at this moment. A colony founded inside an old rectangle from now on will not join its zone on its own - add it yourself from the Trade page or from the colony's own screen."
  FRA: "Les zones d'opération et les routes commerciales manuelles que vous aviez dessinées sur des cargos isolés sont devenues des ZONES COMMERCIALES EXCLUSIVES, et leurs éditeurs ont disparu : ce qu'une zone contient s'édite désormais en un seul endroit, sur la page Trade.\n\nUne chose a changé et ne peut être défaite : une zone d'opération était une FORME, et elle accueillait les colonies fondées dedans par la suite. Une zone est une LISTE, prise telle que vos rectangles se présentaient à cet instant. Une colonie fondée désormais dans un ancien rectangle n'y entrera plus d'elle-même — ajoutez-la depuis la page Trade ou depuis l'écran de la colonie."
+TzShipZoneTitle:
+ Id: 7240
+ ENG: "Trade Zone of this Freighter"
+ FRA: "Zone commerciale de ce cargo"
+TzShipZoneTip:
+ Id: 7241
+ ENG: "Choose the trade zone this freighter belongs to. A freighter belongs to one zone at a time, and only an exclusive zone owns any."
+ FRA: "Choisir la zone commerciale à laquelle ce cargo appartient. Un cargo n'appartient qu'à une zone à la fois, et seule une zone exclusive en possède."
+TzNoZone:
+ Id: 7242
+ ENG: "No zone"
+ FRA: "Aucune zone"

@@ -57,6 +57,51 @@ namespace Ship_Game
             return max + 1;
         }
 
+        // ★ THE ONE BOOK OF NEED. Zones are read IN LIST ORDER, which is the dispatch priority the
+        // player arranged, against a ledger of what each colony has already promised this turn. A
+        // world shared by two zones is therefore counted once - by the zone ranked first - and the
+        // next zone sees what is left, nought if everything was taken. Overlap stays legal (rings
+        // of zones around a shared homeworld are a real design); what stops is counting the same
+        // berth twice and requisitioning a hull for each count.
+        //
+        // Idempotent and cheap, so a screen that needs the figure before the turn has run may call
+        // it rather than read a nought it cannot tell from a measured zero.
+        public void MeasureZoneNeeds()
+        {
+            var claimed = new Map<int, int>();
+            foreach (TradeZone zone in TradeZones)
+            {
+                int need = 0;
+                foreach (int id in zone.Colonies)
+                {
+                    Planet p = Universe.GetPlanet(id);
+                    if (p == null || p.Owner != this)
+                        continue;
+
+                    int berths = p.FoodImportSlots + p.ProdImportSlots + p.ColonistsImportSlots;
+                    claimed.TryGetValue(id, out int taken);
+                    int left = (berths - taken).LowerBound(0);
+                    need += left;
+                    claimed[id] = taken + left;
+                }
+
+                // a station's hunger is its own - two zones naming the same body would ask for the
+                // same run, so it goes through the ledger like a colony's berths
+                foreach (Ship station in zone.Stations(this))
+                {
+                    Planet body = station.GetTether();
+                    int key = body?.Id ?? 0;
+                    int open = AI.CountGoals(g => g.IsSupplyingGoodsToStationStationGoal(station));
+                    claimed.TryGetValue(key, out int taken);
+                    int left = (open - taken).LowerBound(0);
+                    need += left;
+                    claimed[key] = taken + left;
+                }
+
+                zone.MeasuredNeed = need;
+            }
+        }
+
         public TradeZone GetTradeZoneById(int id)
             => id == 0 ? null : TradeZones.Find(z => z.Id == id);
 
@@ -99,31 +144,14 @@ namespace Ship_Game
 
         public TradeZone GetTradeZone(Planet planet) => TradeZones.Find(z => z.Serves(planet));
 
-        // ★ A colony belongs to AT MOST ONE exclusive zone (maintainer, 31 Aug). Exclusivity means
-        // a single owner: a hull has one zone, a colony has one plan, and a colony has one
-        // exclusive zone. Two owners would have both dispatching to the same world while the
-        // perimeter counted it once, following whichever zone the lookup happened to meet first.
-        // SOFT zones may still overlap freely - they own nothing, they borrow a share of the turn,
-        // and two priorities serving one colony is a thing a player can mean.
+        // ⚠ "is this world inside ANY exclusive zone?" - a question about the SET, never about
+        // an owner. A colony may sit in several zones of either regime: the maintainer wants rings
+        // of exclusive zones sharing a homeworld hub, and the dispatch does not mind - a planet's
+        // free slots close on whatever is already inbound, whoever sent it, so two zones serving
+        // one world never deliver twice. What must not be counted twice is the NEED, and that is
+        // settled by the shared ledger below, not by forbidding the overlap.
         public TradeZone GetExclusiveZone(Planet planet)
             => TradeZones.Find(z => z.Exclusive && z.Serves(planet));
-
-        // Called when a zone takes a colony, or becomes exclusive with colonies already on it.
-        public void ClaimColoniesExclusively(TradeZone owner)
-        {
-            if (!owner.Exclusive)
-                return;
-
-            foreach (TradeZone other in TradeZones)
-            {
-                if (other == owner || !other.Exclusive)
-                    continue;
-
-                for (int i = other.Colonies.Count - 1; i >= 0; --i)
-                    if (owner.Colonies.Contains(other.Colonies[i]))
-                        other.Colonies.RemoveAt(i);
-            }
-        }
 
         // Ludoal fork (maintainer feedback, Roland Johansen): the bodies our STATIONS stand on.
         // A mining rig or a research post orbits a body that is nobody's colony, so it never
