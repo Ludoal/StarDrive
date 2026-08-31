@@ -1191,16 +1191,16 @@ namespace Ship_Game
             var plan = Planet.Blueprints;
             BlueprintsCompletion.Max = plan.PlannedCount.LowerBound(1);
             BlueprintsCompletion.Progress = plan.BuiltCount;
-            int notAchievable = plan.NotAchievableCount;
             // Ludoal fork (maintainer bench 554): the bar says what the Colonies ratio says - a
             // plan whose reachable part is all up and whose list is not finished is waiting on
             // something the colony cannot fix. The bar's fill is a TEXTURE SET, not a colour, and
             // the five that exist are blue/brown/green/red/yellow: red is the warning of that
             // palette. Nothing is coloured before the plan has been measured.
             BlueprintsCompletion.color = plan.Blocked ? "red" : "green";
-            BlueprintsCompletion.OverrideText = notAchievable > 0
-                ? $"{plan.BuiltCount}/{plan.PlannedCount} - {notAchievable} not achievable"
-                : $"{plan.BuiltCount}/{plan.PlannedCount}";
+            // the two numbers and nothing else (maintainer bench 555): the colour already says
+            // the plan is waiting, and the Description tab names the entries that hold it up -
+            // a third statement of the same fact only crowds the bar.
+            BlueprintsCompletion.OverrideText = $"{plan.BuiltCount}/{plan.PlannedCount}";
             if (Planet.HasBlueprints && Planet.Blueprints.Name != BlueprintsName.Text)
                 UpdateBlueprintsChanged();
         }

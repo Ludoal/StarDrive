@@ -20,8 +20,8 @@ public sealed class ProgressBar
     // a colour stop reading as the same quantity. Only the fill - the housing keeps its own.
     public Color FillTint = Color.White;
     public bool DrawProgressText = true; // draw "50%" or "50/100"
-    // When set, this is drawn instead of the value pair - for a bar whose reading needs more
-    // than its two numbers ("3/12 - 2 not achievable").
+    // When set, this is drawn instead of the value pair - for a bar that counts something the
+    // pair alone would not name (buildings rather than a percentage, say).
     public string OverrideText = "";
     public bool DrawPercentage = false;
     public bool Fraction10Values = false;
