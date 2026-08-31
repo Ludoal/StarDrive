@@ -33,6 +33,25 @@ can be read rather than trusted.
 ## Balance changes
 
 
+### A station inside a trade zone is served on that zone's budget
+`Empire_Trade.cs`, `TradeZone.cs` (Trade page)
+
+**Source: Roland Johansen**, who asked for research and gas stations in the trade zones.
+
+Supplying a station has always run outside the trade pass: its goal takes any idle freighter
+the moment the station is hungry, competing with nothing. A station named by a zone now draws
+instead on the hulls that zone held back for it - as many as it has open supply goals - and
+those hulls sit out the rest of the turn so they are still free when the goal looks.
+
+The consequence a player will feel: a station **inside a zone** is served with one turn of
+latency, because the goals that feed stations are evaluated at the top of a turn and the zone
+sets its hulls aside during it. In exchange, a zone's stations no longer lose their supply to
+whatever else wanted a freighter that turn.
+
+A station left outside every zone behaves exactly as before, and an empire that never creates
+a zone sees no change at all.
+
+
 ### Governor no longer demolishes civilian buildings on its own
 `Planet_BuildDefenses.cs`, `Planet_EvaluateBuildings.cs` (Build and Scrap Mandates)
 
