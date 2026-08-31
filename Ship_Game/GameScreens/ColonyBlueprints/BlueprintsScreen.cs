@@ -152,11 +152,6 @@ namespace Ship_Game
             Rectangle frame900 = ScreenGroups.GroupFrame900(ScreenWidth, ScreenHeight);
             DesignTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.DesignTabTitles, 2,
                                                     OnDesignTabChanged, frame900.Width, frame900.Height);
-            // the close cross fires ExitScreen itself, then its OnClick - hook the return there
-            if (ReturnToColony != null)
-                foreach (UIElementV2 e in GetElements())
-                    if (e is CloseButton cross)
-                        cross.OnClick = b => ReopenParentColony();
             const int Pad = 10;
             RectF client = DesignTabs.ClientArea;
             // ⚠ measured off the FRAME's borders, not the client area: the client is
@@ -527,6 +522,7 @@ namespace Ship_Game
                 return; // already here
 
             GameAudio.EchoAffirmative();
+            ReturnSuppressed = true; // a tab switch lands on a sibling, not back on the colony
             ExitScreen();
             if (tab == 0)
                 ScreenManager.AddScreen(new FleetDesignScreen(Universe, Universe.EmpireUI));
@@ -844,7 +840,6 @@ namespace Ship_Game
             {
                 GameAudio.EchoAffirmative();
                 ExitScreen();
-                ReopenParentColony();
                 return true;
             }
 
@@ -875,7 +870,6 @@ namespace Ship_Game
             {
                 GameAudio.EchoAffirmative();
                 ExitScreen();
-                ReopenParentColony();
                 return true;
             }
 
@@ -1035,10 +1029,27 @@ namespace Ship_Game
             }
         }
 
+        // Ludoal fork (maintainer feedback): the return to the colony hangs on the EXIT, not on
+        // the four gestures that reach it. Hooking each one left the doors nobody listed - the
+        // right-click a child element consumes on its way to the base dismiss among them - and a
+        // player who came from a colony landed on the map instead.
+        //
+        // Two exits are not a return: switching to another Design tab (the sibling opens behind
+        // this call), and jumping to another group, which clears the colony's hosted seat on its
+        // way out. Both are the player asking for somewhere else.
         public override void ExitScreen()
         {
             TilesList.Clear();
             base.ExitScreen();
+
+            if (ReturnToColony != null && !ReturnSuppressed && Universe.HostedTabTitle != null)
+                ReopenParentColony();
         }
+
+        // the Ship designer carries the same flag for the same reason (ShipDesignScreen:212). A
+        // group jump has no flag to set from here, so it is read from the state it leaves behind:
+        // it clears the colony's hosted seat on its way out, and a seat that is gone is a player
+        // who asked for somewhere else.
+        bool ReturnSuppressed;
     }
 }
