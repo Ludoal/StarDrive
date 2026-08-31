@@ -100,7 +100,7 @@ namespace Ship_Game
         // panel. Membership is an EMPIRE fact read from the colony's end, so the line is rebuilt
         // every update rather than cached - the Trade page can change it while this screen is up.
         UILabel TradeZonesLabel;
-        float TradeZonesWidth; // what the caption may occupy before the Edit button
+        float TradeZonesWidth; // what the VALUE may occupy between the caption and the pencil
 
         // Ludoal fork (maintainer, bench 524): population wears the same blue as research, and
         // the two bars sat close enough to be read as one another. A GREY rather than a paler
@@ -381,16 +381,34 @@ namespace Ship_Game
             // than at a fraction of whatever the stretching panel happens to have left. Only the
             // owner edits them, and only zones of THIS empire are ever named here.
             const float storeRow4 = 184;
-            const float SupplyEditW = 68; // ButtonStyle.Small - empiretopbar_btn_68px
+            // the PENCIL, not a worded button (maintainer bench 554): the same icon and the same
+            // verb the governor tab already uses two panels up, at its own 20px gabarit - a word
+            // took a column the row would rather give to the zone names.
+            const float SupplyEditW = 20;
             if (P.Owner == Player)
             {
-                float editX = PStorage.Right - 12 - SupplyEditW;
-                TradeZonesLabel = Add(new UILabel(new Vector2(PStorage.X + 20, PStorage.Y + storeRow4),
-                                                  "", Fonts.Arial12Bold, Colors.Cream));
+                float editX = PStorage.Right - 14 - SupplyEditW;
+                // ⚠ caption and VALUE are two labels, not one string (maintainer bench 554): the
+                // screen's convention is a cream caption and a white value, and one label cannot
+                // wear two colours. The value's X is measured off the caption it follows.
+                string zonesCap = Localizer.Token(GameText.TzColonyZones) + ":";
+                float capX = PStorage.X + 20;
+                Add(new UILabel(new Vector2(capX, PStorage.Y + storeRow4), zonesCap,
+                                Fonts.Arial12Bold, Colors.Cream, GameText.TzColonyZonesTip));
+                float valueX = capX + Fonts.Arial12Bold.TextWidth(zonesCap) + 6;
+                TradeZonesLabel = Add(new UILabel(new Vector2(valueX, PStorage.Y + storeRow4),
+                                                  "", Fonts.Arial12Bold, Color.White));
                 TradeZonesLabel.Tooltip = GameText.TzColonyZonesTip;
-                TradeZonesWidth = editX - 12 - (PStorage.X + 20);
-                UIButton editZones = ButtonSmall(editX, PStorage.Y + storeRow4 - 4, GameText.Edit, OnEditTradeZonesClicked);
-                editZones.Tooltip = GameText.TzColonyZonesEditTip;
+                TradeZonesWidth = editX - 12 - valueX;
+                const string editTex = "NewUI/icon_build_edit";
+                Add(new UIButton(new UIButton.StyleTextures(editTex, editTex + "_hover1"),
+                                 new Vector2(SupplyEditW, SupplyEditW), "")
+                {
+                    Pos = new Vector2(editX, PStorage.Y + storeRow4 - 1),
+                    Tooltip = GameText.TzColonyZonesEditTip,
+                    OnClick = OnEditTradeZonesClicked,
+                    ClickSfx = "sd_ui_accept_alt3",
+                });
             }
 
             // Centre column: the colony grid keeps its height, STATISTICS below takes the rest -

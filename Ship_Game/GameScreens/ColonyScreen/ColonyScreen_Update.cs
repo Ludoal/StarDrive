@@ -40,7 +40,6 @@ namespace Ship_Game
             if (TradeZonesLabel == null)
                 return;
 
-            string caption = Localizer.Token(GameText.TzColonyZones) + ": ";
             var names = new Array<string>();
             foreach (TradeZone zone in Player.TradeZones)
                 if (zone.Serves(P))
@@ -48,10 +47,14 @@ namespace Ship_Game
 
             if (names.IsEmpty)
             {
-                TradeZonesLabel.Text = caption + Localizer.Token(GameText.TzColonyZonesNone);
+                // an absence is greyed, a value is white - the screen's own convention
+                TradeZonesLabel.Text = Localizer.Token(GameText.TzColonyZonesNone);
+                TradeZonesLabel.Color = Color.Gray;
                 TradeZonesLabel.Tooltip = GameText.TzColonyZonesTip;
                 return;
             }
+
+            TradeZonesLabel.Color = Color.White;
 
             // the row is TRUNCATED, never wrapped: its height belongs to the panel's grammar and a
             // second line would push the panel's foot. The same rule the Trade page's colony cell
@@ -62,7 +65,7 @@ namespace Ship_Game
             for (int i = 0; i < names.Count; ++i)
             {
                 string next = i == 0 ? names[i] : ", " + names[i];
-                if (Font12.TextWidth(caption + shown + next + ", ...") > TradeZonesWidth && i > 0)
+                if (Font12.TextWidth(shown + next + ", ...") > TradeZonesWidth && i > 0)
                 {
                     truncated = true;
                     break;
@@ -71,7 +74,7 @@ namespace Ship_Game
                 shown += next;
             }
 
-            TradeZonesLabel.Text = truncated ? caption + shown + ", ..." : caption + shown;
+            TradeZonesLabel.Text = truncated ? shown + ", ..." : shown;
             TradeZonesLabel.Tooltip = truncated ? all : new LocalizedText(GameText.TzColonyZonesTip);
         }
 

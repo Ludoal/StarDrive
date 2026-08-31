@@ -56,8 +56,13 @@ namespace Ship_Game
             // an empire with no zone yet gets a sentence instead of an empty frame: the control
             // exists, and a blank list would read as a fault rather than as a starting point
             if (Owner.TradeZones.IsEmpty)
-                Add(new UILabel(new Vector2(zoneArea.X + 12, zoneArea.Y + 12),
-                                GameText.TzNoZonesHint, Fonts.Arial12, Color.Gray));
+            {
+                // WRAPPED to the frame it sits in (maintainer bench 554): a sentence handed to a
+                // label is drawn on one line and runs straight out of the box - the font folds it,
+                // and it folds against the frame's own width rather than a number typed here.
+                string hint = Fonts.Arial12.ParseText(Localizer.Token(GameText.TzNoZonesHint), zoneArea.W - 24);
+                Add(new UILabel(new Vector2(zoneArea.X + 12, zoneArea.Y + 12), hint, Fonts.Arial12, Color.Gray));
+            }
 
             ButtonMedium(x, inner.Bottom - ApplyLineH, GameText.TzApply, OnApplyClicked);
         }
