@@ -869,6 +869,16 @@ namespace Ship_Game
             if (LookingAtPlanet)
                 workersPanel?.Update(fixedDeltaTime);
 
+            // Ludoal fork (maintainer, 31 Aug '26): the trade-filter conversion runs on the
+            // SIMULATION thread and cannot summon a modal from there. It raises a flag; this is
+            // where the flag becomes a window, once, on the thread that owns the screens.
+            if (Player.TradeZoneNoticePending)
+            {
+                Player.TradeZoneNoticePending = false;
+                ScreenManager.AddScreen(new MessageBoxScreen(this,
+                    Localizer.Token(GameText.TzConvertedNotice), MessageBoxButtons.Ok, width: 520));
+            }
+
             // Ludoal fork: the utility windows ride the save like the overlays - their open
             // state is polled so no toggle site is ever missed.
             UState.ShowDeepSpaceBuildWindow = DeepSpaceBuildWindow.Visible;
