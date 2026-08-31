@@ -147,7 +147,8 @@ namespace Ship_Game
         }
 
         // Called back by the picker. A zone with no colony is never kept.
-        public void ApplyColonies(TradeZone zone, Array<Planet> chosen, int quota, string name)
+        public void ApplyColonies(TradeZone zone, Array<Planet> chosen, int quota, string name,
+                                  bool strict, CargoPriority priority)
         {
             if (chosen.IsEmpty)
             {
@@ -164,6 +165,8 @@ namespace Ship_Game
                 zone.Add(p);
 
             zone.Quota = quota;
+            zone.Strict = strict;
+            zone.Priority = priority;
             // an empty box keeps the name the zone already had, rather than leaving it nameless
             if (name.NotEmpty() && name != zone.Name)
                 zone.ChangeName(name);

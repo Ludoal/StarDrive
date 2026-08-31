@@ -7181,6 +7181,10 @@ namespace Ship_Game
         TzMiningStation = 7234,
         /// <summary>Research Station</summary>
         TzResearchStation = 7235,
+        /// <summary>Strict zone</summary>
+        TzStrict = 7236,
+        /// <summary>A strict zone owns its freighters.</summary>
+        TzStrictTip = 7237,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

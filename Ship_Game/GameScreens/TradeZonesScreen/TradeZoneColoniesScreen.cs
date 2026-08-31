@@ -17,12 +17,17 @@ namespace Ship_Game
         readonly TradeZone Zone; // null while creating
         readonly Array<Planet> Chosen = new();
         int Quota; // held locally: while creating, there is no zone yet to write it on
+        bool Strict;
+        CargoPriority Priority;
         UITextEntry NameEntry;
         UILabel NameTakenLabel;
         // the dialog's three sections own their heights; the colony list takes what is left,
         // which is the ONE thing that should stretch when the window does
-        const float SecGap = 8f, NameSecH = 62f, SettingsSecH = 84f, ApplyLineH = 40f;
+        // the settings box grew by two rows - the regime and its one lever - so its height says
+        // so here rather than being discovered by the list that closes on it
+        const float SecGap = 8f, NameSecH = 62f, SettingsSecH = 142f, ApplyLineH = 40f;
         ScrollList<ColonyPickItem> ColoniesSL;
+        DropOptions<CargoPriority> PriorityList;
         UIButton ApplyButton;
 
         public TradeZoneColoniesScreen(TradeZonesScreen screen, TradeZone zone)
@@ -31,6 +36,8 @@ namespace Ship_Game
             Screen = screen;
             Zone = zone;
             Quota = zone?.Quota ?? 0;
+            Strict = zone?.Strict ?? false;
+            Priority = zone?.Priority ?? CargoPriority.Auto;
             TransitionOnTime = 0.25f;
             if (zone != null)
             {
@@ -107,8 +114,27 @@ namespace Ship_Game
             rail.Pos = new Vector2(setArea.X + 10, setArea.Y + 28);
             rail.OnChange = s => Quota = (int)s.AbsoluteValue;
 
+            // the REGIME, then its one lever. Fixed rows off the box's own top, the same grammar
+            // the rail above them uses.
+            Add(new UICheckBox(setArea.X + 10, setArea.Y + 58, () => Strict, v => Strict = v,
+                               Fonts.Arial12Bold, GameText.TzStrict, GameText.TzStrictTip));
+            Add(new UILabel(new Vector2(setArea.X + 10, setArea.Y + 90), GameText.FreighterPriority,
+                            Fonts.Arial12Bold, Colors.Cream, GameText.FreighterPriorityTip));
+            PriorityList = new DropOptions<CargoPriority>(
+                new Vector2(setArea.X + setArea.W - 170, setArea.Y + 88), 160, 18);
+            PriorityList.AddOption(GameText.FreighterPriorityAuto, CargoPriority.Auto);
+            PriorityList.AddOption(GameText.FreighterPriorityProductionFirst, CargoPriority.ProductionFirst);
+            PriorityList.AddOption(GameText.FreighterPriorityColonistsFirst, CargoPriority.ColonistsFirst);
+            // ⚠ Trade First is absent BY DESIGN: it lifts the foreign pass at the scale of the
+            // empire, and a zone serves no foreign planet. The zone object refuses it too, so the
+            // omission here is a reminder rather than the guard itself.
+            PriorityList.ActiveValue = Priority;
+            PriorityList.OnValueChange = v => Priority = v;
+
             ApplyButton = ButtonMedium(x, inner.Bottom - ApplyLineH, GameText.TzApply, OnApplyClicked);
             ApplyButton.Text = Localizer.Token(GameText.TzApply);
+            // added LAST so an open list draws over what sits under it, Apply included
+            Add(PriorityList);
         }
 
         public bool IsChosen(Planet p) => Chosen.Contains(p);
@@ -137,7 +163,7 @@ namespace Ship_Game
         {
             // an empty pick on an existing zone dissolves it: a zone with no colony would read as
             // "everywhere" downstream, so it is never a state we keep
-            Screen.ApplyColonies(Zone, Chosen, Quota, NameEntry.Text);
+            Screen.ApplyColonies(Zone, Chosen, Quota, NameEntry.Text, Strict, Priority);
             GameAudio.AcceptClick();
             ExitScreen();
         }
