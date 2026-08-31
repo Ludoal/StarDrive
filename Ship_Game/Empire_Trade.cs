@@ -277,7 +277,6 @@ namespace Ship_Game
                 return;
 
             MeasureZoneNeeds(); // one book of need, read in priority order, before anyone asks
-            RequisitionForExclusiveZones();
 
             // a zone whose pass does not run this turn holds nothing back: last turn's hulls
             // went elsewhere long ago, and a stale hold would starve the common pool for nobody
@@ -286,9 +285,20 @@ namespace Ship_Game
 
             foreach (TradeZone zone in TradeZones)
             {
-                // an EXCLUSIVE zone serves itself, from hulls it owns, and takes nothing here
+                // ★ ONE QUEUE at the window of free hulls (Lek's catch, 31 Aug): a soft zone
+                // BORROWS its quota there and an exclusive zone REQUISITIONS there, so both must
+                // be served in the list's own order. Requisitioning every exclusive zone first, as
+                // a pass of its own, gave a zone ranked last the hulls a zone ranked first was
+                // about to borrow - a priority the player could not see anywhere.
                 if (zone.Exclusive)
                 {
+                    if (RequisitionFor(zone))
+                    {
+                        // hulls that just joined a zone are no longer the empire's to lend, and
+                        // the domestic state is holding a list fetched before they left
+                        domestic.SetIdleFreighters(domestic.IdleFreighters.Filter(s => !s.InTradeZone));
+                    }
+
                     DispatchExclusiveZone(zone);
                     continue;
                 }
@@ -644,33 +654,40 @@ namespace Ship_Game
         // owned by no zone - so a run in flight is never interrupted and no zone is ever poached.
         // The empire's RESERVE is the brake: the requisition stops rather than draw the common
         // pool below it, which is the whole reason that lever stayed at the empire (Ludo, 31 Aug).
-        void RequisitionForExclusiveZones()
+        // ★ THE REQUISITION, the regime's only automatic gesture: an exclusive zone short of hulls
+        // takes free ones - idle and owned by no zone - up to its measured need. Called at the
+        // zone's OWN RANK in the list, so it competes with the quotas on one queue rather than
+        // from a pass of its own.
+        //
+        // It takes only what is FREE, so a run in flight is never interrupted and no zone is ever
+        // poached. The empire's RESERVE is the brake: it stops rather than draw the common pool
+        // below it, which is the whole reason that lever stayed at the empire.
+        //
+        // @return true when at least one hull changed hands, so the caller can refresh the pool.
+        bool RequisitionFor(TradeZone zone)
         {
-            if (!isPlayer || TradeZones.IsEmpty)
-                return;
+            if (!isPlayer || zone.Id == 0)
+                return false;
 
-            for (int i = 0; i < TradeZones.Count; ++i)
+            int need = zone.Quota > 0 ? zone.Quota : zone.MeasuredNeed;
+            int have = zone.MemberFreighters(this).Count;
+            if (have >= need)
+                return false;
+
+            Ship[] free = GetIdleFreightersOutsideZones(false);
+            int reserve = FreighterReserve;
+            bool took = false;
+            for (int j = 0; j < free.Length && have < need; ++j)
             {
-                TradeZone zone = TradeZones[i];
-                if (!zone.Exclusive || zone.Id == 0)
-                    continue;
+                if (free.Length - (j + 1) < reserve)
+                    break; // the empire keeps its reserve: a zone may not requisition it away
 
-                int need = zone.Quota > 0 ? zone.Quota : zone.MeasuredNeed;
-                int have = zone.MemberFreighters(this).Count;
-                if (have >= need)
-                    continue;
-
-                Ship[] free = GetIdleFreightersOutsideZones(false);
-                int reserve = FreighterReserve;
-                for (int j = 0; j < free.Length && have < need; ++j)
-                {
-                    if (free.Length - (j + 1) < reserve)
-                        break; // the empire keeps its reserve: a zone may not requisition it away
-
-                    free[j].TradeZoneId = zone.Id;
-                    ++have;
-                }
+                free[j].TradeZoneId = zone.Id;
+                ++have;
+                took = true;
             }
+
+            return took;
         }
 
         // The zone a station belongs to, by the BODY it orbits - the same id a zone holds. Only

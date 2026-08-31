@@ -736,8 +736,8 @@ namespace Ship_Game.Universe
             // stretches the ladder rather than shortening it.
             float chosen = P.RemnantPace switch
             {
-                RaceDesignScreen.RemnantPaceSetting.VerySlow => 2f,
-                RaceDesignScreen.RemnantPaceSetting.Slow     => 1.5f,
+                RemnantPaceSetting.VerySlow => 2f,
+                RemnantPaceSetting.Slow     => 1.5f,
                 _                           => 1f,
             };
             return (pace * chosen).LowerBound(1);
