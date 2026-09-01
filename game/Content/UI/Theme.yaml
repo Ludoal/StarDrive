@@ -27,6 +27,16 @@ Theme:
   # Brown style follows this; the Blue research style keeps its own look.
   SubmenuSkin: LudoalTheme
 
+  # ── Tab panels: the two paddings ─────────────────────────────────────────────
+  # Outer: how far a panel's content area sits inside the panel's own edges.
+  # ⚠ 9 is a floor, not a default - the corner is a 9x9 drawing, and below that the
+  # content runs underneath it. Raise it freely; lowering it does nothing.
+  TabPadOuter: 9
+  # Inner: how far a screen's content then sits inside that area. This is the one that
+  # makes two panels in the same window line up - before it, every screen carried its
+  # own number. Change it and relaunch; no rebuild.
+  TabPadInner: 10
+
   # ── Buttons ──────────────────────────────────────────────────────────────────
   # One tint per MEANING. Hover and Pressed are derived from the tint rather than
   # being colours of their own: a hovered button is a lighter version of itself,

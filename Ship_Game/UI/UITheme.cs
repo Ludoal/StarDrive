@@ -38,6 +38,16 @@ namespace Ship_Game
         // style is its own deliberate look and stays put.
         [StarData] public string SubmenuSkin = "NewUI";
 
+        // ── tab panels: the two paddings ──────────────────────────────────────────────
+        // OUTER is how far a tab panel's content area sits inside the panel's own edges.
+        // ⚠ floored per edge at the corner texture's size (9): below that the content runs
+        // under the drawn corner. Above it, anything goes.
+        [StarData] public int TabPadOuter = 9;
+        // INNER is how far a SCREEN's content then sits inside that area. It did not exist
+        // as a notion before: every screen wrote its own number, which is why two panels in
+        // the same window did not line up. Screens consume Submenu.ContentArea to get it.
+        [StarData] public int TabPadInner = 10;
+
         // buttons - hover and press are DERIVED from the tint, never separate colours
         [StarData] public Color PlateNeutral = new(193, 113, 26);
         [StarData] public Color PlateActive  = new(108, 152, 214);
@@ -136,6 +146,8 @@ namespace Ship_Game
         public static int   TitleBarH     => Theme.TitleBarHeight;
         public static string PopupSkin    => Theme.PopupSkin;
         public static string SubmenuSkin  => Theme.SubmenuSkin;
+        public static int   TabPadOuter   => Theme.TabPadOuter;
+        public static int   TabPadInner   => Theme.TabPadInner;
 
         // ── buttons ──────────────────────────────────────────────────────────────────────────
         public static Color PlateNeutral => Theme.PlateNeutral;

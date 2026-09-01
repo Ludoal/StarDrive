@@ -47,6 +47,22 @@ public class Submenu : UIPanel
     // Client area where child objects should be inserted
     public override RectF ClientArea { get; set; }
 
+    /// Ludoal fork: where a SCREEN's content goes inside this panel - the client area pulled
+    /// in by the theme's TabPadInner on all four sides. Before this, every screen wrote its
+    /// own inset by hand: New Game alone carried 0, 10, 12 and 20 across its five panels,
+    /// which is exactly why two panels in one window did not line up (maintainer, 1 Sep).
+    /// A screen that needs the raw edge - a panel that draws to its own border rather than
+    /// laying out text - keeps using ClientArea and says so.
+    public RectF ContentArea
+    {
+        get
+        {
+            float p = UITheme.TabPadInner;
+            RectF c = ClientArea;
+            return new(c.X + p, c.Y + p, c.W - 2 * p, c.H - 2 * p);
+        }
+    }
+
     // nine-slice helper for the submenu border
     NineSliceSprite N;
 
@@ -589,9 +605,15 @@ public class Submenu : UIPanel
     public static RectF CalcGroupClientArea(in RectF rect, SubmenuStyle style, int tabRows = 1)
     {
         StyleTextures s = GetStyle(style);
-        float menuW = rect.W - (s.CornerTL.Width + s.CornerTR.Width);
+        // Ludoal fork: the inset is a theme value now (Theme.yaml, TabPadOuter) instead of
+        // being the corner texture's size full stop. ⚠ Floored PER EDGE at that texture: the
+        // corner is drawn, so anything less runs the content under it. The three shipped
+        // styles all carry 9x9 tops and 8x9 feet, so the floor is 9 everywhere today.
+        float padL = Math.Max(UITheme.TabPadOuter, s.CornerTL.Width);
+        float padR = Math.Max(UITheme.TabPadOuter, s.CornerTR.Width);
+        float padB = Math.Max(UITheme.TabPadOuter, s.CornerBL.Height);
         float menuH = tabRows * TabHeight;
-        return new(rect.X + s.CornerTL.Width, rect.Y + menuH, menuW, rect.H - (menuH + s.CornerBL.Height));
+        return new(rect.X + padL, rect.Y + menuH, rect.W - (padL + padR), rect.H - (menuH + padB));
     }
 
 }
