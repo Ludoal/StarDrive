@@ -37,23 +37,30 @@ namespace Ship_Game.GameScreens.NewGame
 
             var font = Fonts.Arial12Bold;
             Title = Add(new UILabel(GameText.NgEnvironmentPreferences, font, Color.BurlyWood));
-            Title.SetLocalPos(35, 15);
+            // Ludoal fork: the 15 that used to sit here was this panel's own padding, and it
+            // is the theme's TabPadInner now (maintainer measured ~15 on this panel while the
+            // table said 0 - the inset was one level down, in these children). What is left is
+            // the title's own indent over the two value columns, and the row it sits on.
+            Title.SetLocalPos(25, 0);
             Title.Tooltip = GameText.NgEnvPreferencesTooltip;
 
             BestType = Add(new UILabel(GameText.NgBestPlanetType, font, Color.BurlyWood));
             // Ludoal fork (maintainer feedback): -78 total to clear the widened value columns; the
             // planet icon reads BestType.LocalPos, so it follows on its own.
             // clears the MEASURED title (the French title outgrew the stock offset)
-            BestType.SetLocalPos(Math.Max(35 + 275 - 78, 35 + (int)font.TextWidth(Localizer.Token(GameText.NgEnvironmentPreferences)) + 16), 15);
+            BestType.SetLocalPos(Math.Max(25 + 275 - 78, 25 + (int)font.TextWidth(Localizer.Token(GameText.NgEnvironmentPreferences)) + 16), 0);
             BestType.Tooltip = GameText.NgBestPlanetTypeTooltip;
             
 
-            // Ludoal fork (maintainer feedback): pull the value columns left to fit the tab at 900p
-            // - column1 at 5, column2 pulled a further 15 (135 -> 120).
+            // Ludoal fork (maintainer feedback): the value columns are pulled left to fit the tab
+            // at 900p - column2 lands at 120 from the padded edge.
             UIList column1 = Add(new UIList(ListLayoutStyle.ResizeList));
             UIList column2 = Add(new UIList(ListLayoutStyle.ResizeList));
-            column1.SetLocalPos(5, 35);
-            column2.SetLocalPos(15 + 140 - 20 - 15, 35);
+            // the value rows: 20 under the title row, and flush with the padded edge - the 5
+            // they carried was less than the padding, so they sat closer to the frame than
+            // everything else in the window.
+            column1.SetLocalPos(0, 20);
+            column2.SetLocalPos(15 + 140 - 20 - 15 - 10, 20);
             column1.Padding = column2.Padding = new Vector2(4, 4);
 
             UILabel AddEnvSplitter(UIList list, string title, Func<float> getValue)

@@ -209,14 +209,14 @@ namespace Ship_Game
 
             // the name form lives inside the Empire tab - the tab IS its frame, so there is no
             // separate panel drawn behind it
-            RectF nameArea = EmpireTab.ClientArea;
+            RectF nameArea = EmpireTab.ContentArea;
 
             // ── the EMPIRE tab is three columns, for 900p headroom ────────────────────────────
             // 1: the labels, 2: the value fields, 3: the flag picker on the right. The flag has
-            // its own fixed column, with the two text columns pulled left, so the picker doesn't
-            // overlap the value fields at 900p. Constants, not a divide of the leftover, so
-            // nothing shifts when the tab resizes.
-            const float FormLeftPull = 10f;     // labels start 10px further left
+            // its own fixed column, so the picker doesn't overlap the value fields at 900p.
+            // Constants, not a divide of the leftover, so nothing shifts when the tab resizes.
+            // ⚠ the left pull that used to live here is gone: the inset is the theme's
+            // TabPadInner, which the form reads through ContentArea.
             const float SplitPull    = 30f;     // values recede 30 from stock
             const float FlagColW     = 120f;    // the flag picker column, arrows included
             const float FlagNudgeX   = 10f;     // push the whole flag block 10px right
@@ -228,12 +228,12 @@ namespace Ship_Game
 
             SelectedData = GetDefaultRace(); //SelectedData is used to populate the UI
 
-            UIList raceCustomizatioForm = AddList(new Vector2(nameArea.X + 20 - FormLeftPull, nameArea.Y + 10));
+            UIList raceCustomizatioForm = AddList(new Vector2(nameArea.X, nameArea.Y));
             raceCustomizatioForm.Padding = new Vector2(4,4);
 
             // the text block stops where the flag column starts, so the value underline never
             // runs under the flag - the ONE width all four rows share
-            float formWidth = nameArea.W - FlagColW - (20 - FormLeftPull);
+            float formWidth = nameArea.W - FlagColW;
             NameEntry = AddSplitter(raceCustomizatioForm, "{EmpireName}: ", SelectedData.Name, formWidth, FormSplit);
             SingEntry = AddSplitter(raceCustomizatioForm, "{RaceNameSingular}: ", SelectedData.Singular, formWidth, FormSplit);
             PlurEntry = AddSplitter(raceCustomizatioForm, "{RaceNamePlural}: ", SelectedData.Plural, formWidth, FormSplit);
@@ -242,7 +242,7 @@ namespace Ship_Game
 
             // column 3: the flag picker, its "Flag Color" caption aligned on the Empire Name row.
             // +6 on Y for the form list's internal padding, which pushed row 1 below this caption.
-            var flagPos = new Vector2(nameArea.Right - FlagColW + 6 + FlagNudgeX, nameArea.Y + 10 + 6);
+            var flagPos = new Vector2(nameArea.Right - FlagColW + 6 + FlagNudgeX, nameArea.Y + 6);
             Add(new UILabel(flagPos, GameText.FlagColor, Fonts.Arial14Bold, Color.BurlyWood));
             FlagRect = new Rectangle((int)flagPos.X, (int)flagPos.Y + 26, 80, 80);
 
@@ -271,10 +271,11 @@ namespace Ship_Game
             LocalizedText[] leftTabs = { GameText.NgTabRace, GameText.NgTabOpponents };
             RaceTab = Add(new Submenu(new RectF(gridLeft, row2Top, envW, row2H), leftTabs));
             RaceTab.OnTabChange = OnLeftTabChanged;
-            RectF chooseRace = RaceTab.ClientArea;
-            // Both lists 10px narrower - the tab frame stays aligned with Environment above, only
-            // the list area (and so the 0.8-width portraits) shrinks.
-            RectF raceListArea = new(chooseRace.X, chooseRace.Y, chooseRace.W - 10, chooseRace.H);
+            RectF chooseRace = RaceTab.ContentArea;
+            // Ludoal fork: both lists used to be pulled 10px narrower by hand so the frame stayed
+            // aligned with Environment above. That margin is the theme's TabPadInner now, so the
+            // list simply fills the padded area.
+            RectF raceListArea = new(chooseRace.X, chooseRace.Y, chooseRace.W, chooseRace.H);
             ChooseRaceList = Add(new ScrollList<RaceArchetypeListItem>(raceListArea, 135));
             ChooseRaceList.OnClick = OnRaceArchetypeItemClicked;
 
@@ -284,18 +285,17 @@ namespace Ship_Game
             // the Opponents tab: a count caption plus the opponent list, the same content the
             // SelectOpponentsScreen popup carried. Both share chooseRace; OnLeftTabChanged flips
             // which one shows. The count strip sits at the top, the list below it.
-            // The caption gets air above it, aligned on the list items' own left edge (the
-            // 0.8-width portraits are centred, so their left is inset).
+            // The caption sits at the head of the padded area, like every other panel's first
+            // line in this window - the air above it was a local 14 and is TabPadInner now.
             const int OppCountStrip = 42;
-            const int OppCountTop = 14;   // air above the caption
             OpponentsCountLabel = Add(new UILabel(
-                new Vector2(chooseRace.X + 12, chooseRace.Y + OppCountTop),
+                new Vector2(chooseRace.X, chooseRace.Y),
                 "Random Opponents: ", Fonts.Arial14Bold, Colors.Cream));
             OpponentsCountValue = Add(new UILabel(
-                new Vector2(chooseRace.X + 12 + Fonts.Arial14Bold.TextWidth("Random Opponents: "), chooseRace.Y + OppCountTop),
+                new Vector2(chooseRace.X + Fonts.Arial14Bold.TextWidth("Random Opponents: "), chooseRace.Y),
                 "", Fonts.Arial14Bold, Color.White));
             RectF oppListArea = new(chooseRace.X, chooseRace.Y + OppCountStrip,
-                                    chooseRace.W - 10, chooseRace.H - OppCountStrip);
+                                    chooseRace.W, chooseRace.H - OppCountStrip);
             ChooseOpponentsList = Add(new ScrollList<SelectOpponentListItem>(oppListArea, 135));
             ChooseOpponentsList.OnClick = OnOpponentItemSelected;
             ChooseOpponentsList.OnDoubleClick = OnOpponentItemSelected;
@@ -309,15 +309,15 @@ namespace Ship_Game
 
             Graphics.Font font = Fonts.Arial12Bold;
             // the galaxy readouts live in the Galaxy tab now, not off the right of a name panel
-            RectF galaxyArea = GalaxyTab.ClientArea;
+            RectF galaxyArea = GalaxyTab.ContentArea;
             // ⚠ the readouts sit on the FIRST option row (Galaxy Size), to its right. 190 clears
             // the 180-wide split of the option buttons below.
             // ⚠ derived from the option list below, not from the panel: that list starts at X+10
             // and its splitter is 180 wide, so its VALUES sit at X+190 - a label at X+200 landed
             // on top of them. Its first row is one padding down from the list's own Y.
-            const int optListX = 10, optSplit = 180, optPad = 3;
-            float labelX = galaxyArea.X + optListX + optSplit + 70;
-            float labelY = galaxyArea.Y + 6 + optPad;
+            const int optSplit = 180, optPad = 3;
+            float labelX = galaxyArea.X + optSplit + 70;
+            float labelY = galaxyArea.Y + optPad;
             NumSystemsLabel = Add(new UILabel(labelX, labelY, $"{Localizer.Token(GameText.SolarSystems)}: {GetSystemsNum()}"));
             NumSystemsLabel.Font  = font;
             NumSystemsLabel.Color = Color.SteelBlue;
@@ -331,9 +331,9 @@ namespace Ship_Game
             PerformanceWarning.Font = font;
             // Ludoal fork: the warning wraps to the tab's right edge instead of running off it -
             // the width from the label's X to the frame edge, less a margin.
-            PerfWarnWrapW = galaxyArea.Right - labelX - 12;
+            PerfWarnWrapW = galaxyArea.Right - labelX;
 
-            UIList optionButtons = AddList(galaxyArea.X + 10, galaxyArea.Y + 6);
+            UIList optionButtons = AddList(galaxyArea.X, galaxyArea.Y);
             optionButtons.CaptureInput = true;
             optionButtons.Padding      = new Vector2(2,3);
             optionButtons.Color        = Color.Black.Alpha(0.5f);
@@ -387,7 +387,7 @@ namespace Ship_Game
             LocalizedText[] infoTabs = { GameText.NgTabPoints, GameText.NgTabDescription };
             InfoTab = Add(new Submenu(new RectF(gridRight - SideW, row2Top, SideW, row2H), infoTabs));
             InfoTab.OnTabChange = OnInfoTabChanged;
-            RectF description = InfoTab.ClientArea;
+            RectF description = InfoTab.ContentArea;
             DescriptionTextList = Add(new UITextBox(description, useBorder:false, DescriptionTextFont));
             DescriptionTextList.ItemsList.ItemPadding = new Vector2(10, 0);
             DescriptionTextList.Visible = false; // tab 0 (Points) is the one that opens
@@ -446,13 +446,13 @@ namespace Ship_Game
 
             // Rule Options lives in the Galaxy tab it configures; blue (active) plate.
             // ⚠ WideActive is painted, so pin its width to the Medium footprint it replaces.
-            UIButton ruleOptions = Button(ButtonStyle.WideActive, (int)(galaxyArea.Right - BtnW - 10), (int)(galaxyArea.Bottom - 28),
+            UIButton ruleOptions = Button(ButtonStyle.WideActive, (int)(galaxyArea.Right - BtnW), (int)(galaxyArea.Bottom - 28),
                    Localizer.Token(GameText.RuleOptions), click: OnRuleOptionsClicked);
             ruleOptions.SetAbsSize(BtnW, 24);
 
             // Clear Traits lives on the Points page and follows its tab; red (hostile) plate.
             // ⚠ WideHostile is painted, so pin its width to the Medium footprint.
-            ClearTraitsBtn = Button(ButtonStyle.WideHostile, (int)(description.X + 10), (int)(description.Bottom - 28),
+            ClearTraitsBtn = Button(ButtonStyle.WideHostile, (int)description.X, (int)(description.Bottom - 28),
                                     GameText.NgClearTraits, click: OnClearClicked);
             ClearTraitsBtn.SetAbsSize(132, 24);
 
@@ -461,7 +461,7 @@ namespace Ship_Game
 
             // the environment preferences hold their standing tab at the head of row 1;
             // the tab frame is the delimiter, the panel draws no background of its own
-            RectF envArea = EnvTab.ClientArea;
+            RectF envArea = EnvTab.ContentArea;
             var envRect = new Rectangle((int)envArea.X, (int)envArea.Y, (int)envArea.W, (int)envArea.H);
             EnvMenu = Add(new EnvPreferencesPanel(this, RaceSummary, envRect));
 
@@ -900,8 +900,8 @@ namespace Ship_Game
 
                 // Ludoal fork: the summary and the description are two tabs over one area, so the
                 // summary starts at the top of that area.
-                RectF area = Screen.InfoTab.ClientArea;
-                var r = new Vector2(area.X + 20, area.Y + 12);
+                RectF area = Screen.InfoTab.ContentArea;
+                var r = new Vector2(area.X, area.Y);
                 string title = Localizer.Token(GameText.PointsToSpend);
                 batch.DrawString(Font, $"{title}: {Screen.TotalPointsUsed}", r, Color.White);
                 r.Y += (Font.LineSpacing + 8);
