@@ -266,11 +266,12 @@ namespace Ship_Game
             LocalizedText[] leftTabs = { GameText.NgTabRace, GameText.NgTabOpponents };
             RaceTab = Add(new Submenu(new RectF(gridLeft, row2Top, SideW, row2H), leftTabs));
             RaceTab.OnTabChange = OnLeftTabChanged;
-            RectF chooseRace = RaceTab.ContentArea;
-            // Ludoal fork: both lists used to be pulled 10px narrower by hand so the frame stayed
-            // aligned with Environment above. That margin is the theme's TabPadInner now, so the
-            // list simply fills the padded area.
-            RectF raceListArea = new(chooseRace.X, chooseRace.Y, chooseRace.W, chooseRace.H);
+            RectF chooseRace = RaceTab.ContentArea;      // the captions: padded like every other text
+            // ⚠ a scroll LIST sits on the CLIENT area, not the padded one: it already insets its own
+            // items (PaddingLeft, and the theme's ScrollbarLane on the right). Handing it the padded
+            // rect stacked two margins and left its bar further in than its neighbours' (bench 566).
+            RectF raceClient = RaceTab.ClientArea;
+            RectF raceListArea = raceClient;
             ChooseRaceList = Add(new ScrollList<RaceArchetypeListItem>(raceListArea, 135));
             ChooseRaceList.OnClick = OnRaceArchetypeItemClicked;
 
@@ -289,8 +290,8 @@ namespace Ship_Game
             OpponentsCountValue = Add(new UILabel(
                 new Vector2(chooseRace.X + Fonts.Arial14Bold.TextWidth("Random Opponents: "), chooseRace.Y),
                 "", Fonts.Arial14Bold, Color.White));
-            RectF oppListArea = new(chooseRace.X, chooseRace.Y + OppCountStrip,
-                                    chooseRace.W, chooseRace.H - OppCountStrip);
+            RectF oppListArea = new(raceClient.X, raceClient.Y + OppCountStrip,
+                                    raceClient.W, raceClient.H - OppCountStrip);
             ChooseOpponentsList = Add(new ScrollList<SelectOpponentListItem>(oppListArea, 135));
             ChooseOpponentsList.OnClick = OnOpponentItemSelected;
             ChooseOpponentsList.OnDoubleClick = OnOpponentItemSelected;
@@ -377,7 +378,7 @@ namespace Ship_Game
             // in the bite taken here (maintainer's 35 = the plate's 25 plus one TabPadInner).
             InfoTab = Add(new Submenu(new RectF(gridRight - SideW, row2Top, SideW, row2H - notchH), infoTabs));
             InfoTab.OnTabChange = OnInfoTabChanged;
-            RectF description = InfoTab.ContentArea;
+            RectF description = InfoTab.ClientArea;   // the text box insets its own lines, same rule as a list
             DescriptionTextList = Add(new UITextBox(description, useBorder:false, DescriptionTextFont));
             DescriptionTextList.ItemsList.ItemPadding = new Vector2(10, 0);
             DescriptionTextList.Visible = false; // tab 0 (Points) is the one that opens
@@ -397,35 +398,39 @@ namespace Ship_Game
         static string GalSizeText(GalSize g) => g switch { GalSize.Tiny => Localizer.Token(GameText.GsTiny), GalSize.Small => Localizer.Token(GameText.GsSmall), GalSize.Medium => Localizer.Token(GameText.GsMedium), GalSize.Large => Localizer.Token(GameText.GsLarge), GalSize.Huge => Localizer.Token(GameText.GsHuge), GalSize.Epic => Localizer.Token(GameText.GsEpic), GalSize.TrulyEpic => Localizer.Token(GameText.GsTrulyEpic), _ => g.ToString() };
         static string DifficultyText(GameDifficulty d) => d switch { GameDifficulty.Normal => Localizer.Token(GameText.DfNormal), GameDifficulty.Hard => Localizer.Token(GameText.DfHard), GameDifficulty.Brutal => Localizer.Token(GameText.DfBrutal), GameDifficulty.Insane => Localizer.Token(GameText.DfInsane), _ => d.ToString() };
         static string RemnantText(ExtraRemnantPresence r) => r switch { ExtraRemnantPresence.VeryRare => Localizer.Token(GameText.RmVeryRare), ExtraRemnantPresence.Rare => Localizer.Token(GameText.RmRare), ExtraRemnantPresence.Normal => Localizer.Token(GameText.RmNormal), ExtraRemnantPresence.More => Localizer.Token(GameText.RmMore), ExtraRemnantPresence.MuchMore => Localizer.Token(GameText.RmMuchMore), ExtraRemnantPresence.Everywhere => Localizer.Token(GameText.RmEverywhere), _ => r.ToString() };
-            // Ludoal fork: a row of buttons centred at the foot of a panel's padded area. The
-            // plate is PAINTED, so N buttons share whatever the column can hold instead of each
-            // insisting on the Medium footprint - three of them do not fit a 390 column at 132.
-            int FootRowStart(in RectF area, int count, out int w)
+            // Ludoal fork: ONE width for every foot button on this screen - what a side column can
+            // hold for three of them. Empire's two use it too, so a button reads the same wherever
+            // it sits (maintainer, bench 566). The plate is PAINTED, so any width draws.
+            int footW = (SideW - 2 * UITheme.TabPadOuter - 2 * BtnGap) / 3;
+            // ⚠ a foot row sits on the CLIENT area, not the padded one: the maintainer measures its
+            // clearance from the frame's own line, and the inner padding would double that gap.
+            int FootRowStart(in RectF client, int count)
             {
-                w = Math.Min(BtnW, ((int)area.W - (count - 1) * BtnGap) / count);
-                int rowW = count * w + (count - 1) * BtnGap;
-                return (int)area.X + ((int)area.W - rowW) / 2;
+                int rowW = count * footW + (count - 1) * BtnGap;
+                return (int)client.X + ((int)client.W - rowW) / 2;
             }
 
             // EMPIRE's foot: the race's own load/save, in the tab that holds the race's name.
-            int rx = FootRowStart(nameArea, 2, out int rw);
-            int ry = (int)nameArea.Bottom - btnH;
+            RectF empireClient = EmpireTab.ClientArea;
+            int rx = FootRowStart(empireClient, 2);
+            int ry = (int)empireClient.Bottom - btnH;
             UIButton loadRace = Button(ButtonStyle.Medium, rx, ry, GameText.NgLoadRace, click: OnLoadRaceClicked);
-            loadRace.SetAbsSize(rw, btnH);
-            UIButton saveRace = Button(ButtonStyle.Medium, rx + rw + BtnGap, ry, GameText.MmSaveRace, click: OnSaveRaceClicked);
-            saveRace.SetAbsSize(rw, btnH);
+            loadRace.SetAbsSize(footW, btnH);
+            UIButton saveRace = Button(ButtonStyle.Medium, rx + footW + BtnGap, ry, GameText.MmSaveRace, click: OnSaveRaceClicked);
+            saveRace.SetAbsSize(footW, btnH);
 
             // GALAXY's foot: the whole-setup load/save, with Rule Options between them - it
             // configures this tab, so it belongs in this row rather than floating above it.
-            int gx = FootRowStart(galaxyArea, 3, out int gw);
-            int gy = (int)galaxyArea.Bottom - btnH;
+            RectF galaxyClient = GalaxyTab.ClientArea;
+            int gx = FootRowStart(galaxyClient, 3);
+            int gy = (int)galaxyClient.Bottom - btnH;
             UIButton loadSetup = Button(ButtonStyle.Medium, gx, gy, GameText.NgLoadSetup, click: OnLoadSetupClicked);
-            loadSetup.SetAbsSize(gw, btnH);
-            UIButton ruleOptions = Button(ButtonStyle.WideActive, gx + gw + BtnGap, gy,
+            loadSetup.SetAbsSize(footW, btnH);
+            UIButton ruleOptions = Button(ButtonStyle.WideActive, gx + footW + BtnGap, gy,
                    Localizer.Token(GameText.RuleOptions), click: OnRuleOptionsClicked);
-            ruleOptions.SetAbsSize(gw, btnH);
-            UIButton saveSetup = Button(ButtonStyle.Medium, gx + 2 * (gw + BtnGap), gy, GameText.MmSaveSetup, click: OnSaveSetupClicked);
-            saveSetup.SetAbsSize(gw, btnH);
+            ruleOptions.SetAbsSize(footW, btnH);
+            UIButton saveSetup = Button(ButtonStyle.Medium, gx + 2 * (footW + BtnGap), gy, GameText.MmSaveSetup, click: OnSaveSetupClicked);
+            saveSetup.SetAbsSize(footW, btnH);
 
             // Start Game is the ONE button left outside a tab: it sits in the notch cut at the foot
             // of the right column, centred on it, one TabPadInner under the panel. Ludoal fork: the

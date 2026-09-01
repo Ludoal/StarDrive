@@ -5,6 +5,10 @@
 #   100,000-199,999  codex content (see docs/codex-plan.md, Appendix A)
 # ⚠ TOKEN IDS ARE A SHARED SPACE. This fork writes its OWN tokens in a declared, reserved
 # range: 30000 and above. Never take an id merely because it is free upstream - free
+# ⚠⚠ AND THE NEXT FREE ID IS COMPUTED ON *THIS FILE*, NOT ON THE C# ENUM. Tokens reached by
+# NAME have a yaml entry and no enum member, so the enum's highest value is not the range's
+# highest id - Tech_SubspaceArtillery_II_Name sits at 30107 with no enum entry, and taking
+# 30107 from the enum's tail served ITS text under a new name (bench 566).
 # upstream does not mean free in the ecosystem. CombinedArms had claimed 109 of the ids
 # this fork had picked one at a time in the 5000s, and a mod loads over the base: our
 # Shipyard headers came out reading "Gauss Sniper Cannon" (31 Aug 2026).
@@ -22603,13 +22607,13 @@ PrioritizationHeaderTip:
  Id: 30106
  ENG: "Categories in the upper block are prioritized in their display order; arrows reorder, the inhibit glyph demotes to the lower block. Priorities apply when an item ENTERS a build queue; existing queues are never reshuffled."
 NgTabEnvironmental:
- Id: 30107
+ Id: 30109
  ENG: "Environmental"
 NgSystemsPerfWarn:
- Id: 30108
+ Id: 30110
  ENG: "Caution, you might experience performance issues late game."
 NgSystemsPerfWarnHeavy:
- Id: 30109
+ Id: 30111
  ENG: "Caution, performance issues are expected mid to late game."
 NoResearchAlert:
  Id: 30071
