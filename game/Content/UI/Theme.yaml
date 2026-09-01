@@ -43,6 +43,10 @@ Theme:
   # the bar is 11, the arrows 13 - so 25 leaves 12 clear to their left, and the bar closes on
   # the list's own edge: the tab's padding is the margin, not a second gap here.
   ScrollbarLane: 25
+  # What a scroll list keeps on its LEFT, inside its own rect - the row's selection frame is
+  # drawn in it. It belongs to the LIST, not to the panel: a list sits on the frame's edge and
+  # adds this, rather than taking the panel's inner padding and stacking two margins.
+  ListPadLeft: 5
 
   # ── Buttons ──────────────────────────────────────────────────────────────────
   # One tint per MEANING. Hover and Pressed are derived from the tint rather than

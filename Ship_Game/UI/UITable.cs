@@ -200,7 +200,7 @@ namespace Ship_Game.UI
             // distance too
             RuleY = HeaderY + HeaderH + 6;
             TableRect = new Rectangle(x0, HeaderY, x - x0, (int)bottom - HeaderY);
-            // ScrollList insets its ItemsHousing by PaddingLeft 8 / PaddingTop 15 / and the
+            // ScrollList insets its ItemsHousing by the theme's ListPadLeft / PaddingTop 15 / and the
             // theme's ScrollbarLane on the right: this rect makes the item lane start at the
             // first column,
             // pulls the TOP padding back so the first row sits 6px under the rule (a

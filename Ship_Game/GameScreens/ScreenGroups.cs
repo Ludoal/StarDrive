@@ -238,13 +238,13 @@ namespace Ship_Game.GameScreens
             // ⚠ THREE things inset this table, and I only knew about one for three builds:
             //   1. NineSliceSprite cuts the CORNER textures off the frame to get ClientArea, and
             //      submenu_corner_TL is 9x9 - so it already sits 9px in, 18 off the height;
-            //   2. ScrollList then insets ItemsHousing by PaddingLeft 8 / PaddingTop 15 /
+            //   2. ScrollList then insets ItemsHousing by the theme's ListPadLeft / PaddingTop 15 /
             //      PaddingBot 15 - which is what is actually DRAWN, not the rect we hand it;
             //   3. whatever we add here.
             // Hence the 15px at the foot: that is PaddingBot, nothing of ours. We hand the list a
             // rect that pulls its own padding back out, so the visible margin is the 5px asked for.
             // ⚠ and the four paddings are NOT equal: the right one is the theme's ScrollbarLane
-            // (25) against PaddingLeft's 8,
+            // against its much smaller ListPadLeft,
             // because it reserves the scrollbar lane. Pulling back symmetrically would leave 21px
             // on the right - each edge is compensated by its own padding.
             // ⚠ HORIZONTALLY only. PaddingTop/PaddingBot inset the LIST, but the column titles are

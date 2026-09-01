@@ -56,6 +56,10 @@ namespace Ship_Game
         // widest part - room for a selection frame - and the bar closes on the list's own edge,
         // the tab's padding being the margin (maintainer's rule, 1 Sep).
         [StarData] public int ScrollbarLane = 25;
+        // What a scroll list keeps on its LEFT, inside its own rect. It is the list's own margin,
+        // not the panel's: the row's selection frame is drawn in it. A list therefore sits on the
+        // CLIENT area and adds this, instead of taking TabPadInner and stacking two margins.
+        [StarData] public int ListPadLeft = 5;
 
         // buttons - hover and press are DERIVED from the tint, never separate colours
         [StarData] public Color PlateNeutral = new(193, 113, 26);
@@ -159,6 +163,7 @@ namespace Ship_Game
         public static int   TabPadInner   => Theme.TabPadInner;
         public static int   ButtonHeight  => Theme.ButtonHeight;
         public static int   ScrollbarLane => Theme.ScrollbarLane;
+        public static int   ListPadLeft   => Theme.ListPadLeft;
 
         // ── buttons ──────────────────────────────────────────────────────────────────────────
         public static Color PlateNeutral => Theme.PlateNeutral;
