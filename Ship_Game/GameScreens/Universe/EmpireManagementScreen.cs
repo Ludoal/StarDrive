@@ -117,7 +117,7 @@ namespace Ship_Game
                 // maintainer: the Auto switches ride here, so Supply gets their lane - 240 held the
                 // icon, the bar and the picker with 2px to spare. Construction is always last, so
                 // Supply is the one before it whatever the Governor column did to the indices.
-                cols[cols.Count - 2].Width += 34;
+                cols[cols.Count - 2].Width += ColoniesListItem.AutoLane;
                 Table = new UITable(cols.ToArray());
             }
             var sys = new Array<string>(); var names = new Array<string>();

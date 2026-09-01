@@ -47,6 +47,10 @@ namespace Ship_Game
         Rectangle ProdStorageIcon;
         Rectangle PopStorageIcon;
         UICheckBox AutoFoodBox, AutoProdBox, AutoPopBox;   // wide displays only: hand a good to the governor from the list
+        // The lane Supply gains on wide displays for its Auto switches: the gap, the 12px box and
+        // a hair of right margin. ⚠ ONE constant - the column that grows by it and the row that
+        // reserves it are in two different files, and two copies of a width is how they drift.
+        public const int AutoLane = 23;
         Rectangle SpacePortIconRect; // wide displays: capability icons right-aligned in the Planet cell
         Rectangle TroopIconRect;
 
@@ -102,7 +106,7 @@ namespace Ship_Game
             // maintainer: on wide displays the column carries an Auto switch per row. The lane is
             // RESERVED here rather than taken from what is left, so the bars and the pickers keep
             // the proportions they had at 240 and nothing below shifts when the switches appear.
-            int autoLane = wideCols ? 34 : 0;
+            int autoLane = wideCols ? AutoLane : 0;
             int supplyW  = StorageRect.Width - autoLane;
             QueueRect   = Band(11 + g2);
 
