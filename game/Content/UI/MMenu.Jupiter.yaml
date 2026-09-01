@@ -208,12 +208,12 @@ Elements:
           ClickSfx: sd_ui_tactical_pause
       - Button:
           Name: hotkeys
-          Title: "{5237}"
+          Title: "{30017}"
           AbsSize: [200, 0] # aspect fill width
           ClickSfx: sd_ui_tactical_pause
       - Button:
           Name: mods
-          Title: "{5238}"
+          Title: "{30018}"
           AbsSize: [200, 0] # aspect fill width
           ClickSfx: sd_ui_tactical_pause
       - Button:
@@ -228,7 +228,7 @@ Elements:
           ClickSfx: sd_ui_tactical_pause
       - Button:
           Name: support
-          Title: "{5241}"
+          Title: "{30019}"
           AbsSize: [200, 0] # aspect fill width
           ButtonStyle: Military
           ClickSfx: sd_ui_tactical_pause
