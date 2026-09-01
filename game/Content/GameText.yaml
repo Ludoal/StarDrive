@@ -22302,8 +22302,8 @@ NgLoadSetup:
  FRA: "Charger une configuration"
 NgStartGame:
  Id: 30022
- ENG: "Start Game"
- FRA: "Lancer la partie"
+ ENG: "START GAME!"
+ FRA: "LANCER LA PARTIE !"
 NgClearTraits:
  Id: 30023
  ENG: "Clear Traits"

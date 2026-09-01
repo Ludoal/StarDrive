@@ -48,7 +48,7 @@ public class Submenu : UIPanel
     public override RectF ClientArea { get; set; }
 
     /// Ludoal fork: where a panel's TEXT goes - the client area pulled in by the theme's
-    /// TextPad. Before this, every screen wrote its own inset by hand: New Game alone carried
+    /// TextPadX/TextPadY. Before this, every screen wrote its own inset by hand: New Game alone carried
     /// 0, 10, 12 and 20 across its five panels, which is why two panels in one window did not
     /// line up (maintainer, 1 Sep).
     /// ⚠ Each KIND of element carries its own default and an instance may overrule it: text
@@ -58,9 +58,9 @@ public class Submenu : UIPanel
     {
         get
         {
-            float p = UITheme.TextPad;
+            float x = UITheme.TextPadX, y = UITheme.TextPadY;
             RectF c = ClientArea;
-            return new(c.X + p, c.Y + p, c.W - 2 * p, c.H - 2 * p);
+            return new(c.X + x, c.Y + y, c.W - 2 * x, c.H - 2 * y);
         }
     }
 

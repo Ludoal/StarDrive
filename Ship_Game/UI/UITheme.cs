@@ -60,10 +60,12 @@ namespace Ship_Game
         // not the panel's: the row's selection frame is drawn in it. A list therefore sits on the
         // CLIENT area and adds this, instead of taking TabPadInner and stacking two margins.
         [StarData] public int ListPadLeft = 5;
-        // What TEXT keeps inside a panel's client area. The maintainer's model: every kind of
-        // element carries its own default, and an instance may overrule it. Text's default is 0 -
-        // the frame's own clearance is already its margin, and anything more is a choice.
-        [StarData] public int TextPad = 0;
+        // What TEXT keeps inside a panel's client area, per AXIS. The maintainer's model: every
+        // kind of element carries its own default and an instance may overrule it. Sideways, 0 -
+        // the frame's own clearance is margin enough. Down, a little air: a caption pinned to the
+        // tab strip reads as a mistake, and 7 puts the Galaxy option rows on their 10.
+        [StarData] public int TextPadX = 0;
+        [StarData] public int TextPadY = 7;
 
         // buttons - hover and press are DERIVED from the tint, never separate colours
         [StarData] public Color PlateNeutral = new(193, 113, 26);
@@ -168,7 +170,8 @@ namespace Ship_Game
         public static int   ButtonHeight  => Theme.ButtonHeight;
         public static int   ScrollbarLane => Theme.ScrollbarLane;
         public static int   ListPadLeft   => Theme.ListPadLeft;
-        public static int   TextPad      => Theme.TextPad;
+        public static int   TextPadX     => Theme.TextPadX;
+        public static int   TextPadY     => Theme.TextPadY;
 
         // ── buttons ──────────────────────────────────────────────────────────────────────────
         public static Color PlateNeutral => Theme.PlateNeutral;

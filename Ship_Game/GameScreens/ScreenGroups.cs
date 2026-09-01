@@ -226,42 +226,6 @@ namespace Ship_Game.GameScreens
         // read off the top bar's own tooltips, not guessed
         public static readonly string[] DesignTabKeys = { "J", "Y", "F" };
 
-        // Ludoal fork: the reserved first line some tabs carry for their filters and counts - one
-        // row of controls, tight. It held 30 for a 20px row.
-        public const int GalaxyHeaderH = 26;
-
-        // Ludoal fork: a table fills its frame, 5px clear all round - the 20px inset these screens
-        // used to carry belonged to the brass surround they no longer have. `headerH` is the band
-        // above the table for column titles, plus any reserved first line.
-        public static RectF GalaxyTable(in RectF client, float reservedLine = 0)
-        {
-            // ⚠ THREE things inset this table, and I only knew about one for three builds:
-            //   1. NineSliceSprite cuts the CORNER textures off the frame to get ClientArea, and
-            //      submenu_corner_TL is 9x9 - so it already sits 9px in, 18 off the height;
-            //   2. ScrollList then insets ItemsHousing by the theme's ListPadLeft / PaddingTop 15 /
-            //      PaddingBot 15 - which is what is actually DRAWN, not the rect we hand it;
-            //   3. whatever we add here.
-            // Hence the 15px at the foot: that is PaddingBot, nothing of ours. We hand the list a
-            // rect that pulls its own padding back out, so the visible margin is the 5px asked for.
-            // ⚠ and the four paddings are NOT equal: the right one is the theme's ScrollbarLane
-            // against its much smaller ListPadLeft,
-            // because it reserves the scrollbar lane. Pulling back symmetrically would leave 21px
-            // on the right - each edge is compensated by its own padding.
-            // ⚠ HORIZONTALLY only. PaddingTop/PaddingBot inset the LIST, but the column titles are
-            // drawn ABOVE the list rect and never saw that padding - pulling back vertically as
-            // well lifted them 19px into the tab row. The top keeps the client area as it is.
-            const float corner = 9, want = 5;
-            const float padL = 8, padR = 24, padB = 15;
-            float backL = corner + padL - want;
-            float backR = corner + padR - want;
-            float backB = corner + padB - want;
-            float top = client.Y + reservedLine;
-            // one line of Arial20Bold plus its breathing room; 40 left an obvious gap
-            const float columnTitles = 28;
-            return new(client.X - backL, top + columnTitles, client.W + backL + backR,
-                       client.Bottom + backB - (top + columnTitles));
-        }
-
         // The tab the cursor is over, or -1. Ludoal fork: Tab.Hover is only set while the Submenu
         // handles input, so the rect is hit-tested directly - a draw pass can run between two
         // input passes.

@@ -446,7 +446,7 @@ namespace Ship_Game
             // ⚠ WideHostile is painted, so pin its width to the Medium footprint.
             ClearTraitsBtn = Button(ButtonStyle.WideHostile, (int)description.X, (int)description.Bottom - btnH,
                                     GameText.NgClearTraits, click: OnClearClicked);
-            ClearTraitsBtn.SetAbsSize(BtnW, btnH);
+            ClearTraitsBtn.SetAbsSize(footW, btnH);   // the common foot width; only Start Game runs wider
 
             DoRaceDescription();
             SetRacialTraits(SelectedData.Traits);

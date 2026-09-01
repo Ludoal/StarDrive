@@ -48,7 +48,9 @@ namespace Ship_Game.GameScreens.NewGame
             // Ludoal fork (maintainer feedback): -78 total to clear the widened value columns; the
             // planet icon reads BestType.LocalPos, so it follows on its own.
             // clears the MEASURED title (the French title outgrew the stock offset)
-            BestType.SetLocalPos(Math.Max(25 + 275 - 78, 25 + (int)font.TextWidth(Localizer.Token(GameText.NgEnvironmentPreferences)) + 16), 0);
+            // maintainer: 25 further right than the caption's own clearance, so the icon below it
+            // clears the widened value columns.
+            BestType.SetLocalPos(Math.Max(50 + 275 - 78, 50 + (int)font.TextWidth(Localizer.Token(GameText.NgEnvironmentPreferences)) + 16), 0);
             BestType.Tooltip = GameText.NgBestPlanetTypeTooltip;
             
 

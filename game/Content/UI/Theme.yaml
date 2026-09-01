@@ -47,10 +47,11 @@ Theme:
   # drawn in it. It belongs to the LIST, not to the panel: a list sits on the frame's edge and
   # adds this, rather than taking the panel's inner padding and stacking two margins.
   ListPadLeft: 5
-  # What TEXT keeps inside a panel's client area. Every kind of element carries its own
-  # default and an instance may overrule it; text's is 0, the frame's own clearance being
-  # margin enough. Raise it and every panel's prose steps in together.
-  TextPad: 0
+  # What TEXT keeps inside a panel's client area, per axis. Sideways: 0, the frame's own
+  # clearance is margin enough. Down: a little air, because a caption pinned to the tab strip
+  # reads as a mistake. Raise either and every panel's prose steps in together.
+  TextPadX: 0
+  TextPadY: 7
 
   # ── Buttons ──────────────────────────────────────────────────────────────────
   # One tint per MEANING. Hover and Pressed are derived from the tint rather than
