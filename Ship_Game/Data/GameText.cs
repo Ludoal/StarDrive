@@ -6263,6 +6263,11 @@ namespace Ship_Game
         AutoGovernorTip = 30104,
         EspionageMessagesTip = 30105,
         PrioritizationHeaderTip = 30106,
+        /// <summary>Environmental</summary>
+        /// Ludoal fork: the traits group's fourth tab. It cannot share NgTabEnvironment with
+        /// the standing Environment panel above it - one token, two tabs, and renaming one
+        /// renamed the other (maintainer asked for the middle group's only).
+        NgTabEnvironmental = 30107,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>

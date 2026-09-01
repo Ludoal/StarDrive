@@ -47,6 +47,10 @@ namespace Ship_Game
         // as a notion before: every screen wrote its own number, which is why two panels in
         // the same window did not line up. Screens consume Submenu.ContentArea to get it.
         [StarData] public int TabPadInner = 10;
+        // The painted plate's height. ⚠ The Wide styles' size reference (UI/dan_button) is
+        // 182x25, so 25 is the plate's own height rather than a number picked for a screen -
+        // maintainer settled on it as the universal one (multiples of 5 reckon easier).
+        [StarData] public int ButtonHeight = 25;
 
         // buttons - hover and press are DERIVED from the tint, never separate colours
         [StarData] public Color PlateNeutral = new(193, 113, 26);
@@ -148,6 +152,7 @@ namespace Ship_Game
         public static string SubmenuSkin  => Theme.SubmenuSkin;
         public static int   TabPadOuter   => Theme.TabPadOuter;
         public static int   TabPadInner   => Theme.TabPadInner;
+        public static int   ButtonHeight  => Theme.ButtonHeight;
 
         // ── buttons ──────────────────────────────────────────────────────────────────────────
         public static Color PlateNeutral => Theme.PlateNeutral;

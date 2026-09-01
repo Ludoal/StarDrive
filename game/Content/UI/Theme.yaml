@@ -36,6 +36,9 @@ Theme:
   # makes two panels in the same window line up - before it, every screen carried its
   # own number. Change it and relaunch; no rebuild.
   TabPadInner: 10
+  # Every painted button's height. 25 is the plate asset's own height, so it is the value
+  # the buttons were always closest to - and it reckons in fives with the paddings.
+  ButtonHeight: 25
 
   # ── Buttons ──────────────────────────────────────────────────────────────────
   # One tint per MEANING. Hover and Pressed are derived from the tint rather than

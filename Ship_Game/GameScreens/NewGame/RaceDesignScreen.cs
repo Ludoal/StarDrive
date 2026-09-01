@@ -181,29 +181,30 @@ namespace Ship_Game
             // ⚠ Measure from the FRAME's foot: ContentArea already holds back 30px for the bottom
             // band, so measuring from it leaves the content short of the frame.
             // ⚠ The frame's VISIBLE bottom line - the rect runs BottomLine past it, those rows
-            // being the band's drop shadow. The foot buttons close 10px above that line, and the
-            // grid closes one pad above the buttons.
+            // being the band's drop shadow. The grid closes 10px above that line.
             int visibleBottom = ScreenFrame.Bottom - PopupFrame.BottomLine;
-            int footY = visibleBottom - 10 - 24;   // 24 = the painted buttons' height
-            int gridBottom = footY - Pad;
+            // Ludoal fork (maintainer, 1 Sep): there is no foot ROW any more - every button sits
+            // in the tab it serves, and Start Game lives in the notch cut at the foot of the right
+            // column. The grid takes back the band the row held, closing 10 above the visible line.
+            int gridBottom = visibleBottom - 10;
+            int btnH = UITheme.ButtonHeight;          // 25, the theme's universal plate height
+            int notchH = btnH + UITheme.TabPadInner;  // the bite taken out of the right column
 
             // ── ROW 1: Environment | Empire | Galaxy, FIXED height ──────────────────────────
             // The standing Environment tab heads the row, column-aligned with the Race tab below
-            // it; Empire and Galaxy share the remaining width.
-            const int Row1H = 192;
-            const int SideW = 330;   // the fixed side-column width, shared with row 2
-            // Ludoal fork: the Environment tab needs 30px more for its two columns at 900p; it
-            // takes them from Galaxy (the last tab), NOT from SideW, which the Race and Points
-            // columns below depend on. Empire keeps its width; Galaxy gives the 30.
-            const int EnvExtra = 30;
-            int envW = SideW + EnvExtra;
-            EnvTab = Add(new Submenu(new RectF(gridLeft, gridTop, envW, Row1H), GameText.NgTabEnvironment));
-            int halfW = (gridRight - gridLeft - SideW - 2 * Pad) / 2;   // Empire keeps this
-            int galaxyW = halfW - EnvExtra;                            // Galaxy yields the 30
-            EmpireTab = Add(new Submenu(new RectF(gridLeft + envW + Pad, gridTop, halfW, Row1H), "Empire"));
-            GalaxyTab = Add(new Submenu(new RectF(gridLeft + envW + 2 * Pad + halfW, gridTop, galaxyW, Row1H), "Galaxy"));
+            // it; Empire takes the middle, Galaxy closes on the right column's width.
+            // Ludoal fork (maintainer, 1 Sep): 220 of CONTENT under the tab strip, so the panel
+            // carries the strip on top of that. The two side columns are 390 and the middle one
+            // takes what is left - one arithmetic, both rows, no column yielding to another.
+            const int Row1H = 220 + Submenu.TabHeight;
+            const int SideW = 390;   // the fixed side-column width, shared with row 2
+            int midLeft = gridLeft + SideW + Pad;
+            int midW    = gridRight - SideW - Pad - midLeft;
+            EnvTab = Add(new Submenu(new RectF(gridLeft, gridTop, SideW, Row1H), GameText.NgTabEnvironment));
+            EmpireTab = Add(new Submenu(new RectF(midLeft, gridTop, midW, Row1H), "Empire"));
+            GalaxyTab = Add(new Submenu(new RectF(gridRight - SideW, gridTop, SideW, Row1H), "Galaxy"));
 
-            // row 2 takes what row 1 and the foot leave - the dynamic block
+            // row 2 takes what row 1 leaves - the dynamic block, now that the foot row is gone
             int row2Top = gridTop + Row1H + Pad;
             int row2H   = gridBottom - row2Top;
 
@@ -247,14 +248,11 @@ namespace Ship_Game
             FlagRect = new Rectangle((int)flagPos.X, (int)flagPos.Y + 26, 80, 80);
 
             // ── ROW 2: Race|Opponents | Traits | Points+Description, sharing row2Top and row2H ──
-            // Ludoal fork: the LEFT column widens to match Environment above it (envW), so the two
-            // column heads line up; the extra 30 comes off the middle Traits block (the right
-            // Points column keeps its fixed SideW). The Traits block is the one that absorbs - one
-            // arithmetic for the three.
-            RectF traitsList = new(gridLeft + envW + Pad, row2Top,
-                                   gridRight - gridLeft - envW - SideW - 2 * Pad, row2H);
+            // Both rows share ONE arithmetic: the two side columns are SideW, the middle block takes
+            // what is left. No column yields width to another any more (maintainer, 1 Sep).
+            RectF traitsList = new(midLeft, row2Top, midW, row2H);
 
-            LocalizedText[] traitNames = { GameText.Physical, GameText.Sociological, GameText.HistoryAndTradition, GameText.NgTabEnvironment };
+            LocalizedText[] traitNames = { GameText.Physical, GameText.Sociological, GameText.HistoryAndTradition, GameText.NgTabEnvironmental };
             // ⚠ No Bevel and no Menu1 background - Menu1 paints a second popup frame INSIDE the
             // tab's own, producing a double border; with it goes the SetAbsPos pin it needed.
             Traits = Add(new SubmenuScrollList<TraitsListItem>(traitsList, traitNames));
@@ -266,10 +264,9 @@ namespace Ship_Game
 
             // row 2 LEFT: two tabs sharing one area, Race and Opponents. Ludoal fork: Select
             // Opponents is a second tab here (same pattern as Points|Description on the right),
-            // not a separate window - no foot button. The tab is envW wide, aligned with
-            // Environment above.
+            // not a separate window. The tab is SideW wide, aligned with Environment above.
             LocalizedText[] leftTabs = { GameText.NgTabRace, GameText.NgTabOpponents };
-            RaceTab = Add(new Submenu(new RectF(gridLeft, row2Top, envW, row2H), leftTabs));
+            RaceTab = Add(new Submenu(new RectF(gridLeft, row2Top, SideW, row2H), leftTabs));
             RaceTab.OnTabChange = OnLeftTabChanged;
             RectF chooseRace = RaceTab.ContentArea;
             // Ludoal fork: both lists used to be pulled 10px narrower by hand so the frame stayed
@@ -385,7 +382,9 @@ namespace Ship_Game
             // ⚠ the tab list is an IEnumerable - there is no variadic overload
             // "Points", not the full token: the two tabs have to share ONE row
             LocalizedText[] infoTabs = { GameText.NgTabPoints, GameText.NgTabDescription };
-            InfoTab = Add(new Submenu(new RectF(gridRight - SideW, row2Top, SideW, row2H), infoTabs));
+            // ⚠ shorter by the notch: Start Game is the one button left outside a tab, and it sits
+            // in the bite taken here (maintainer's 35 = the plate's 25 plus one TabPadInner).
+            InfoTab = Add(new Submenu(new RectF(gridRight - SideW, row2Top, SideW, row2H - notchH), infoTabs));
             InfoTab.OnTabChange = OnInfoTabChanged;
             RectF description = InfoTab.ContentArea;
             DescriptionTextList = Add(new UITextBox(description, useBorder:false, DescriptionTextFont));
@@ -403,58 +402,55 @@ namespace Ship_Game
             // ⚠ Medium, not Default: BtnW is 132 and that IS the Medium plate's width. A
             // Default button is 168 wide and a row would overlap itself by 36 per button.
             const int BtnW = 132, BtnGap = 6;
-            int bx = gridLeft;
         // enum display names, spoken through the localization system
         static string GalSizeText(GalSize g) => g switch { GalSize.Tiny => Localizer.Token(GameText.GsTiny), GalSize.Small => Localizer.Token(GameText.GsSmall), GalSize.Medium => Localizer.Token(GameText.GsMedium), GalSize.Large => Localizer.Token(GameText.GsLarge), GalSize.Huge => Localizer.Token(GameText.GsHuge), GalSize.Epic => Localizer.Token(GameText.GsEpic), GalSize.TrulyEpic => Localizer.Token(GameText.GsTrulyEpic), _ => g.ToString() };
         static string DifficultyText(GameDifficulty d) => d switch { GameDifficulty.Normal => Localizer.Token(GameText.DfNormal), GameDifficulty.Hard => Localizer.Token(GameText.DfHard), GameDifficulty.Brutal => Localizer.Token(GameText.DfBrutal), GameDifficulty.Insane => Localizer.Token(GameText.DfInsane), _ => d.ToString() };
         static string RemnantText(ExtraRemnantPresence r) => r switch { ExtraRemnantPresence.VeryRare => Localizer.Token(GameText.RmVeryRare), ExtraRemnantPresence.Rare => Localizer.Token(GameText.RmRare), ExtraRemnantPresence.Normal => Localizer.Token(GameText.RmNormal), ExtraRemnantPresence.More => Localizer.Token(GameText.RmMore), ExtraRemnantPresence.MuchMore => Localizer.Token(GameText.RmMuchMore), ExtraRemnantPresence.Everywhere => Localizer.Token(GameText.RmEverywhere), _ => r.ToString() };
-            UIButton Foot(in LocalizedText text, Action<UIButton> click, ButtonStyle style = ButtonStyle.Medium)
+            // Ludoal fork: a row of buttons centred at the foot of a panel's padded area. The
+            // plate is PAINTED, so N buttons share whatever the column can hold instead of each
+            // insisting on the Medium footprint - three of them do not fit a 390 column at 132.
+            int FootRowStart(in RectF area, int count, out int w)
             {
-                UIButton b = Button(style, bx, footY, text, click: click);
-                bx += BtnW + BtnGap;
-                return b;
+                w = Math.Min(BtnW, ((int)area.W - (count - 1) * BtnGap) / count);
+                int rowW = count * w + (count - 1) * BtnGap;
+                return (int)area.X + ((int)area.W - rowW) / 2;
             }
 
-            // under RACE: its own load/save, centred on the left column. Two Medium buttons span
-            // 2*BtnW+BtnGap; the column is envW wide, so inset by half the slack against envW -
-            // the SAME width the column declares.
-            const int TwoBtnW = 2 * BtnW + BtnGap;
-            bx = gridLeft + (envW - TwoBtnW) / 2;
-            Foot(GameText.NgLoadRace, OnLoadRaceClicked);
-            Foot(GameText.MmSaveRace, OnSaveRaceClicked);
+            // EMPIRE's foot: the race's own load/save, in the tab that holds the race's name.
+            int rx = FootRowStart(nameArea, 2, out int rw);
+            int ry = (int)nameArea.Bottom - btnH;
+            UIButton loadRace = Button(ButtonStyle.Medium, rx, ry, GameText.NgLoadRace, click: OnLoadRaceClicked);
+            loadRace.SetAbsSize(rw, btnH);
+            UIButton saveRace = Button(ButtonStyle.Medium, rx + rw + BtnGap, ry, GameText.MmSaveRace, click: OnSaveRaceClicked);
+            saveRace.SetAbsSize(rw, btnH);
 
-            // centred under the TRAITS block: the whole-setup Load/Save pair. Ludoal fork:
-            // opponents are a tab in the left column, so the pair centres on the middle block on
-            // its own. The row's width is the ONE arithmetic both buttons share.
-            // the middle block starts at envW (the widened left column), not SideW
-            int midLeft = gridLeft + envW + Pad;
-            int midW    = gridRight - SideW - Pad - midLeft;
-            int midRowW = 2 * BtnW + BtnGap;                      // Load + Save
-            bx = midLeft + (midW - midRowW) / 2;
-            Foot(GameText.NgLoadSetup, OnLoadSetupClicked);
-            Foot(GameText.MmSaveSetup, OnSaveSetupClicked);
+            // GALAXY's foot: the whole-setup load/save, with Rule Options between them - it
+            // configures this tab, so it belongs in this row rather than floating above it.
+            int gx = FootRowStart(galaxyArea, 3, out int gw);
+            int gy = (int)galaxyArea.Bottom - btnH;
+            UIButton loadSetup = Button(ButtonStyle.Medium, gx, gy, GameText.NgLoadSetup, click: OnLoadSetupClicked);
+            loadSetup.SetAbsSize(gw, btnH);
+            UIButton ruleOptions = Button(ButtonStyle.WideActive, gx + gw + BtnGap, gy,
+                   Localizer.Token(GameText.RuleOptions), click: OnRuleOptionsClicked);
+            ruleOptions.SetAbsSize(gw, btnH);
+            UIButton saveSetup = Button(ButtonStyle.Medium, gx + 2 * (gw + BtnGap), gy, GameText.MmSaveSetup, click: OnSaveSetupClicked);
+            saveSetup.SetAbsSize(gw, btnH);
 
-            // right column: Engage commits (active blue), centred on the right column. Ludoal
-            // fork: the frame's close cross top-right does the cancel (it calls ExitScreen on
-            // its own), so Exit is not in the foot.
-            // ⚠ the Wide styles are PAINTED, so their width is whatever we set.
-            UIButton engage = Button(ButtonStyle.WideActive, gridRight - SideW + (SideW - BtnW) / 2, footY, GameText.NgStartGame, click: OnEngageClicked);
-            engage.SetAbsSize(BtnW, 24);
+            // Start Game is the ONE button left outside a tab: it sits in the notch cut at the foot
+            // of the right column, centred on it, one TabPadInner under the panel. Ludoal fork: the
+            // frame's close cross top-right does the cancel, so Exit has no button.
+            UIButton engage = Button(ButtonStyle.WideActive, gridRight - SideW + (SideW - BtnW) / 2,
+                   row2Top + row2H - notchH + UITheme.TabPadInner, GameText.NgStartGame, click: OnEngageClicked);
+            engage.SetAbsSize(BtnW, btnH);
 
             Vector2 closePos = PopupFrame.ClosePos(ScreenFrame);
             CloseButton(closePos.X, closePos.Y);
 
-            // Rule Options lives in the Galaxy tab it configures; blue (active) plate.
-            // ⚠ WideActive is painted, so pin its width to the Medium footprint it replaces.
-            UIButton ruleOptions = Button(ButtonStyle.WideActive, (int)(galaxyArea.Right - BtnW), (int)(galaxyArea.Bottom - 28),
-                   Localizer.Token(GameText.RuleOptions), click: OnRuleOptionsClicked);
-            ruleOptions.SetAbsSize(BtnW, 24);
-
             // Clear Traits lives on the Points page and follows its tab; red (hostile) plate.
             // ⚠ WideHostile is painted, so pin its width to the Medium footprint.
-            ClearTraitsBtn = Button(ButtonStyle.WideHostile, (int)description.X, (int)(description.Bottom - 28),
+            ClearTraitsBtn = Button(ButtonStyle.WideHostile, (int)description.X, (int)description.Bottom - btnH,
                                     GameText.NgClearTraits, click: OnClearClicked);
-            ClearTraitsBtn.SetAbsSize(132, 24);
+            ClearTraitsBtn.SetAbsSize(BtnW, btnH);
 
             DoRaceDescription();
             SetRacialTraits(SelectedData.Traits);

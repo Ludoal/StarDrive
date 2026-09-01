@@ -173,7 +173,7 @@ Sociological:
  PTB: "Sociológico"
 HistoryAndTradition:
  Id: 21
- ENG: "History and Tradition"
+ ENG: "Historical"
  FRA: "Histoire et tradition"
  RUS: "История и традиции"
  SPA: "Historia y tradición"
@@ -22602,6 +22602,9 @@ EspionageMessagesTip:
 PrioritizationHeaderTip:
  Id: 30106
  ENG: "Categories in the upper block are prioritized in their display order; arrows reorder, the inhibit glyph demotes to the lower block. Priorities apply when an item ENTERS a build queue; existing queues are never reshuffled."
+NgTabEnvironmental:
+ Id: 30107
+ ENG: "Environmental"
 NoResearchAlert:
  Id: 30071
  ENG: "NO RESEARCH!"
