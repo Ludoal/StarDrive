@@ -56,11 +56,11 @@ namespace Ship_Game.GameScreens.NewGame
             // at 900p - column2 lands at 120 from the padded edge.
             UIList column1 = Add(new UIList(ListLayoutStyle.ResizeList));
             UIList column2 = Add(new UIList(ListLayoutStyle.ResizeList));
-            // the value rows: 20 under the title row, and flush with the padded edge - the 5
-            // they carried was less than the padding, so they sat closer to the frame than
-            // everything else in the window.
-            column1.SetLocalPos(0, 20);
-            column2.SetLocalPos(15 + 140 - 20 - 15 - 10, 20);
+            // the value rows: 20 under the title row, flush with the panel's own edge. Their two
+            // left edges are named because the caption above centres on them.
+            const int Col1X = 0, Col2X = 110;
+            column1.SetLocalPos(Col1X, 20);
+            column2.SetLocalPos(Col2X, 20);
             column1.Padding = column2.Padding = new Vector2(4, 4);
 
             UILabel AddEnvSplitter(UIList list, string title, Func<float> getValue)
@@ -98,6 +98,14 @@ namespace Ship_Game.GameScreens.NewGame
             float maxKeyW = 75f;
             foreach (var (_, k) in EnvSplits) maxKeyW = Math.Max(maxKeyW, k.Size.X + 8f);
             foreach (var (se2, _) in EnvSplits) se2.Split = maxKeyW;
+
+            // Ludoal fork (maintainer): the caption heads the FOUR columns under it - two labels
+            // and their two values - so it CENTRES on them rather than sitting at a fixed indent.
+            // It can only do so here, once the split above has settled on the widest localized
+            // label. Their span runs from the first label's left to the last value's right, the
+            // split being where a value starts and "0.00" the widest one these rows print.
+            float colsRight = Col2X + maxKeyW + font.TextWidth("0.00");
+            Title.SetLocalPos((int)((Col1X + colsRight - Title.Size.X) / 2), 0);
             UpdatePreferences(raceSummary);
         }
 
