@@ -39,6 +39,10 @@ Theme:
   # Every painted button's height. 25 is the plate asset's own height, so it is the value
   # the buttons were always closest to - and it reckons in fives with the paddings.
   ButtonHeight: 25
+  # The lane a scroll list keeps on its right for the scrollbar. The drawing is two widths -
+  # the bar is 11, the arrows 13 - so 25 leaves 12 clear to their left, and the bar closes on
+  # the list's own edge: the tab's padding is the margin, not a second gap here.
+  ScrollbarLane: 25
 
   # ── Buttons ──────────────────────────────────────────────────────────────────
   # One tint per MEANING. Hover and Pressed are derived from the tint rather than

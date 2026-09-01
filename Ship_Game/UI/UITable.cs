@@ -83,7 +83,11 @@ namespace Ship_Game.UI
 
         public const int SideMargin = 15; // off the frame border; the selection box needs the room on the left
         public const int PadX = 8;        // one character of cell padding
-        public const int SliderLane = 26; // reserved after the last column
+        // Ludoal fork: the lane after the last column IS the scrollbar's lane, and it was
+        // declared here at 26 while ScrollListBase reserved 24 - two numbers for one margin,
+        // which is why three lists on one screen showed three different gaps. One theme
+        // value now (Theme.yaml, ScrollbarLane).
+        public static int SliderLane => UITheme.ScrollbarLane;
         public const int HeaderH = 16;
         public static readonly Color Vanilla = Colors.Cream;
         public static readonly Color RuleColor = new Color(118, 102, 67, 255);
@@ -196,8 +200,9 @@ namespace Ship_Game.UI
             // distance too
             RuleY = HeaderY + HeaderH + 6;
             TableRect = new Rectangle(x0, HeaderY, x - x0, (int)bottom - HeaderY);
-            // ScrollList insets its ItemsHousing by PaddingLeft 8 / PaddingTop 15 /
-            // PaddingRight 24: this rect makes the item lane start at the first column,
+            // ScrollList insets its ItemsHousing by PaddingLeft 8 / PaddingTop 15 / and the
+            // theme's ScrollbarLane on the right: this rect makes the item lane start at the
+            // first column,
             // pulls the TOP padding back so the first row sits 6px under the rule (a
             // padding, not an empty line - maintainer bench 289), and leaves the slider
             // its reserved lane right of the last column

@@ -51,6 +51,11 @@ namespace Ship_Game
         // 182x25, so 25 is the plate's own height rather than a number picked for a screen -
         // maintainer settled on it as the universal one (multiples of 5 reckon easier).
         [StarData] public int ButtonHeight = 25;
+        // The lane a scroll list reserves on its right for the scrollbar. ⚠ The drawing is not
+        // one width: the BAR is 11 wide, the ARROWS 13. 25 leaves 12 clear to the left of the
+        // widest part - room for a selection frame - and the bar closes on the list's own edge,
+        // the tab's padding being the margin (maintainer's rule, 1 Sep).
+        [StarData] public int ScrollbarLane = 25;
 
         // buttons - hover and press are DERIVED from the tint, never separate colours
         [StarData] public Color PlateNeutral = new(193, 113, 26);
@@ -153,6 +158,7 @@ namespace Ship_Game
         public static int   TabPadOuter   => Theme.TabPadOuter;
         public static int   TabPadInner   => Theme.TabPadInner;
         public static int   ButtonHeight  => Theme.ButtonHeight;
+        public static int   ScrollbarLane => Theme.ScrollbarLane;
 
         // ── buttons ──────────────────────────────────────────────────────────────────────────
         public static Color PlateNeutral => Theme.PlateNeutral;

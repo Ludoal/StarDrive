@@ -29,7 +29,11 @@ namespace Ship_Game
         const int PaddingTop   = 15;
         const int PaddingBot   = 15;
         const int PaddingLeft  = 8;
-        const int PaddingRight = 24; // leave extra room for scrollbar
+        // Ludoal fork: the scrollbar's lane is a theme value now (Theme.yaml, ScrollbarLane).
+        // It was 24 here and the three lists on one screen still showed three different gaps,
+        // because the bar was ALSO pushed 5 off the right edge below - two numbers for one
+        // margin (maintainer measured it, 1 Sep).
+        static int PaddingRight => UITheme.ScrollbarLane;
 
         // inner housing rect for scroll list items
         // available for reading, BUT it will be recalculated in every PerformLayout()
@@ -412,8 +416,10 @@ namespace Ship_Game
             ScrollListStyleTextures s = GetStyle();
             SubTexture up = s.ScrollBarArrowUp.Normal;
             SubTexture dn = s.ScrollBarArrowDown.Normal;
-            ScrollUp   = new(Right - (up.Width + 5), Y + PaddingTop, up.Width, up.Height);
-            ScrollDown = new(Right - (dn.Width + 5), Bottom - PaddingBot - dn.Height, dn.Width, dn.Height);
+            // ⚠ flush with the list's right edge, no second gap: the panel's padding IS the
+            // margin. The housing's +1 below centres the 11-wide bar under the 13-wide arrow.
+            ScrollUp   = new(Right - up.Width, Y + PaddingTop, up.Width, up.Height);
+            ScrollDown = new(Right - dn.Width, Bottom - PaddingBot - dn.Height, dn.Width, dn.Height);
             ScrollHousing = new(ScrollUp.X + 1, ScrollUp.Bottom + 3, s.ScrollBarMid.Normal.Width, ScrollDown.Y - ScrollUp.Bottom - 6);
             ScrollBar.X = ScrollHousing.X;
             ScrollUpClickArea   = ScrollUp.Bevel(5);

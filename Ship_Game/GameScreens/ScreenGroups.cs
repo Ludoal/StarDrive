@@ -243,7 +243,8 @@ namespace Ship_Game.GameScreens
             //   3. whatever we add here.
             // Hence the 15px at the foot: that is PaddingBot, nothing of ours. We hand the list a
             // rect that pulls its own padding back out, so the visible margin is the 5px asked for.
-            // ⚠ and the four paddings are NOT equal: PaddingRight is 24 against PaddingLeft's 8,
+            // ⚠ and the four paddings are NOT equal: the right one is the theme's ScrollbarLane
+            // (25) against PaddingLeft's 8,
             // because it reserves the scrollbar lane. Pulling back symmetrically would leave 21px
             // on the right - each edge is compensated by its own padding.
             // ⚠ HORIZONTALLY only. PaddingTop/PaddingBot inset the LIST, but the column titles are
