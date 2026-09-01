@@ -33,6 +33,24 @@ can be read rather than trusted.
 ## Balance changes
 
 
+### A colony's remaining plan counts when the empire picks a shipyard
+`Planet_ConstructionQueue.cs` (ship and troop placement)
+
+**Source: Roland Johansen**, who noticed fleet orders landing on colonies that were about to
+start a long blueprint.
+
+The picker ranks candidate ports by how long their construction queue takes to clear. A plan
+feeds that queue one building at a time, so a colony holding a seven-building plan reads as
+idle as one holding nothing, and takes the order.
+
+Its remaining reachable plan entries now weigh in that estimate, beside the refit goals already
+counted there. The queue itself is untouched and nothing is pre-queued, so the plan stays budget
+aware and biospheres stay outside it.
+
+The consequence a player will feel: a colony early in a long plan is passed over for ship
+construction in favour of a free one, until its plan is far enough along.
+
+
 ### A station inside a trade zone is served on that zone's budget
 `Empire_Trade.cs`, `TradeZone.cs` (Trade page)
 

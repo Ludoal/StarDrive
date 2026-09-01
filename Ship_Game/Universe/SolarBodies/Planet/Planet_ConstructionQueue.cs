@@ -199,6 +199,13 @@ public partial class Planet
         if (TryGetQueueItemsFromRefitGoals(out Array<QueueItem> refitItems))
             items.AddRange(refitItems);
 
+        // Ludoal fork (maintainer feedback): a plan hands the queue one building at a time, so the
+        // queue alone understates a colony early in a long plan. Its remaining reachable entries
+        // weigh here like the refit goals above: phantom items on the estimate's own copy, so
+        // nothing is pre-queued and the plan stays budget aware.
+        if (TryGetQueueItemsFromBlueprints(out Array<QueueItem> plannedItems))
+            items.AddRange(plannedItems);
+
         items.Add(newItem);
         return items;
 
@@ -229,6 +236,32 @@ public partial class Planet
             }
 
             return refitQueue.Count > 0;
+        }
+
+        // Ludoal fork (maintainer feedback): reachable plan entries that are neither standing nor
+        // already queued - a queued one is counted by the real queue this list is appended to.
+        bool TryGetQueueItemsFromBlueprints(out Array<QueueItem> plannedQueue)
+        {
+            plannedQueue = new();
+            Array<Building> planned = Blueprints?.PlannedBuildingsWeCanBuild;
+            if (planned == null)
+                return false;
+
+            for (int i = 0; i < planned.Count; i++)
+            {
+                Building b = planned[i];
+                if (BuildingBuiltOrQueued(b))
+                    continue;
+
+                plannedQueue.Add(new QueueItem(this)
+                {
+                    isBuilding = true,
+                    Building   = b,
+                    Cost       = b.ActualCost(Owner),
+                });
+            }
+
+            return plannedQueue.Count > 0;
         }
     }
 
