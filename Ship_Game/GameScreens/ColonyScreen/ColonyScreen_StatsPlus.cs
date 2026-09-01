@@ -78,18 +78,25 @@ namespace Ship_Game
             float colInc   = P.PopulationBillion * P.Money.IncomePerColonist;
             float bldgInc  = P.Money.IncomeFromBuildings;
             float sources  = colInc + bldgInc;
-            float taxMill  = P.Money.GrossRevenue - sources; // × tax rate (and exotic credits bonus)
+            // Ludoal fork (maintainer): each source is shown ALREADY TAXED rather than gross with
+            // the multiplier on a line of its own - a player budgets with what actually arrives.
+            // ⚠ The factor is the whole mill, tax AND the exotic credits bonus, so splitting it
+            // between the two sources is a share, not a provenance. The block still sums to Net.
+            float mill     = sources.NotZero() ? P.Money.GrossRevenue / sources : 1f;
             float bldgUp   = P.Money.Maintenance;
             float spaceDef = P.SpaceDefMaintenance;
             float troops   = P.Money.TroopMaint;
             float net      = P.Money.GrossRevenue - bldgUp - spaceDef - troops;
 
             StatsPlusLayout.SPHeader(ref left, batch, "BUDGET (BC / turn)");
-            if (colInc.NotZero())   SPLineTip(ref left, batch, cols, blockW, "Colonist income", StatsPlusLayout.SPSigned(colInc), StatsPlusLayout.SPTone(colInc), GameText.SpColonistIncomeTip);
-            if (bldgInc.NotZero())  SPLineTip(ref left, batch, cols, blockW, "Building income", StatsPlusLayout.SPSigned(bldgInc), StatsPlusLayout.SPTone(bldgInc), GameText.SpBuildingIncomeTip);
-            if (sources.NotZero())  SPLineTip(ref left, batch, cols, blockW,
-                   "× tax rate (" + (P.Money.TaxRate * 100f).String(0) + " %)",
-                   StatsPlusLayout.SPSigned(taxMill), StatsPlusLayout.SPTone(taxMill), GameText.SpTaxRateTip);
+            float taxInc   = colInc * mill;
+            float bldgNet  = bldgInc * mill;
+            // the rate rides the label rather than a line of its own: it is a lever the player
+            // sets, and a number with no visible cause is worse than one line too many.
+            if (taxInc.NotZero())   SPLineTip(ref left, batch, cols, blockW,
+                   "Tax income (" + (P.Money.TaxRate * 100f).String(0) + " %)",
+                   StatsPlusLayout.SPSigned(taxInc), StatsPlusLayout.SPTone(taxInc), GameText.SpColonistIncomeTip);
+            if (bldgNet.NotZero())  SPLineTip(ref left, batch, cols, blockW, "Building income", StatsPlusLayout.SPSigned(bldgNet), StatsPlusLayout.SPTone(bldgNet), GameText.SpBuildingIncomeTip);
             if (bldgUp.NotZero())   SPLineTip(ref left, batch, cols, blockW, "Building upkeep", StatsPlusLayout.SPSigned(-bldgUp), StatsPlusLayout.SPTone(-bldgUp), GameText.SpBuildingUpkeepTip);
             if (spaceDef.NotZero()) SPLineTip(ref left, batch, cols, blockW, Localizer.Token(GameText.SpaceDefenseUpkeep), StatsPlusLayout.SPSigned(-spaceDef), StatsPlusLayout.SPTone(-spaceDef), GameText.SpSpaceDefUpkeepTip);
             if (troops.NotZero())   SPLineTip(ref left, batch, cols, blockW, "Troop upkeep", StatsPlusLayout.SPSigned(-troops), StatsPlusLayout.SPTone(-troops), GameText.SpTroopUpkeepTip);

@@ -22622,6 +22622,22 @@ AutoManageTip:
  Id: 30112
  ENG: "Let the governor manage this automatically."
  FRA: "Laisser le gouverneur gérer automatiquement."
+MandateShortAll:
+ Id: 30113
+ ENG: "All"
+ FRA: "Tout"
+MandateShortEconomic:
+ Id: 30114
+ ENG: "Eco."
+ FRA: "Éco."
+MandateShortDefense:
+ Id: 30115
+ ENG: "Def."
+ FRA: "Déf."
+MandateShortNone:
+ Id: 30116
+ ENG: "None"
+ FRA: "Aucun"
 NoResearchAlert:
  Id: 30071
  ENG: "NO RESEARCH!"

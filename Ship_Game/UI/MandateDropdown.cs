@@ -11,14 +11,32 @@ namespace Ship_Game
     // empire's does not: a policy that could defer to itself has nowhere to defer to.
     public static class MandateDropdown
     {
+        // Ludoal fork (maintainer): `deferredTo` is what the EMPIRE currently mandates. The Auto
+        // position names it in brackets - Auto alone says a decision is made elsewhere without
+        // saying which, and the player would have to open Policies to find out.
+        public static LocalizedText AutoOption(Planet.BuildMandate? deferredTo)
+        {
+            if (deferredTo == null)
+                return GameText.MandateAuto;
+            GameText s = deferredTo switch
+            {
+                Planet.BuildMandate.EconomicOnly => GameText.MandateShortEconomic,
+                Planet.BuildMandate.DefenseOnly  => GameText.MandateShortDefense,
+                Planet.BuildMandate.None         => GameText.MandateShortNone,
+                _                                => GameText.MandateShortAll,
+            };
+            return $"{Localizer.Token(GameText.MandateAuto)} ({Localizer.Token(s)})";
+        }
+
         public static DropOptions<Planet.BuildMandate> Make(Planet.BuildMandate active,
                                                            Action<Planet.BuildMandate> apply,
-                                                           bool withAuto)
+                                                           bool withAuto,
+                                                           Planet.BuildMandate? deferredTo = null)
         {
             // 120, not 110: "Economic only" was clipped to "Economic onl..."
             var list = new DropOptions<Planet.BuildMandate>(120, 18);
             if (withAuto)
-                list.AddOption(option: GameText.MandateAuto, Planet.BuildMandate.Auto);
+                list.AddOption(option: AutoOption(deferredTo), Planet.BuildMandate.Auto);
             list.AddOption(option: GameText.MandateAll, Planet.BuildMandate.All);
             list.AddOption(option: GameText.MandateEconomicOnly, Planet.BuildMandate.EconomicOnly);
             list.AddOption(option: GameText.MandateDefenseOnly, Planet.BuildMandate.DefenseOnly);
@@ -34,7 +52,8 @@ namespace Ship_Game
         // feature built to remove one. The delegated picker is read-only, so a list of one is
         // never opened; the ordinary options come back with the colony's own right.
         public static void SetDelegated(DropOptions<Planet.BuildMandate> list, bool delegated,
-                                        Planet.BuildMandate own, bool withAuto)
+                                        Planet.BuildMandate own, bool withAuto,
+                                        Planet.BuildMandate? deferredTo = null)
         {
             list.Clear();
             if (delegated)
@@ -45,7 +64,7 @@ namespace Ship_Game
             else
             {
                 if (withAuto)
-                    list.AddOption(option: GameText.MandateAuto, Planet.BuildMandate.Auto);
+                    list.AddOption(option: AutoOption(deferredTo), Planet.BuildMandate.Auto);
                 list.AddOption(option: GameText.MandateAll, Planet.BuildMandate.All);
                 list.AddOption(option: GameText.MandateEconomicOnly, Planet.BuildMandate.EconomicOnly);
                 list.AddOption(option: GameText.MandateDefenseOnly, Planet.BuildMandate.DefenseOnly);

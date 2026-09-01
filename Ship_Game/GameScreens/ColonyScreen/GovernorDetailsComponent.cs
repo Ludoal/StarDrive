@@ -220,9 +220,11 @@ namespace Ship_Game
             // Policies > Colony - does not. Two copies of a list of options is how the two ends
             // come to disagree about what a mandate means.
             BuildMandateList = Add(MandateDropdown.Make(Planet.GovBuildMandate,
-                m => Universe.RunOnSimThread(() => Planet.SetBuildMandate(m)), withAuto: true));
+                m => Universe.RunOnSimThread(() => Planet.SetBuildMandate(m)), withAuto: true,
+                deferredTo: Planet.Owner?.EmpireBuildMandate));
             ScrapMandateList = Add(MandateDropdown.Make(Planet.GovScrapMandate,
-                m => Universe.RunOnSimThread(() => Planet.SetScrapMandate(m)), withAuto: true));
+                m => Universe.RunOnSimThread(() => Planet.SetScrapMandate(m)), withAuto: true,
+                deferredTo: Planet.Owner?.EmpireScrapMandate));
 
             // Ludoal fork (maintainer feedback): the blueprint gestures wear the icons the
             // construction list already uses for the same verbs - plus to bring one in, cross to
@@ -747,8 +749,10 @@ namespace Ship_Game
                 if (delegated != MandatesWereDelegated)
                 {
                     MandatesWereDelegated = delegated;
-                    MandateDropdown.SetDelegated(BuildMandateList, delegated, Planet.GovBuildMandate, withAuto: true);
-                    MandateDropdown.SetDelegated(ScrapMandateList, delegated, Planet.GovScrapMandate, withAuto: true);
+                    MandateDropdown.SetDelegated(BuildMandateList, delegated, Planet.GovBuildMandate, withAuto: true,
+                                                 deferredTo: Planet.Owner?.EmpireBuildMandate);
+                    MandateDropdown.SetDelegated(ScrapMandateList, delegated, Planet.GovScrapMandate, withAuto: true,
+                                                 deferredTo: Planet.Owner?.EmpireScrapMandate);
                 }
                 BuildMandateList.ReadOnly = ScrapMandateList.ReadOnly = delegated;
                 // the way out has to be written where the player looks for it, and the tooltip

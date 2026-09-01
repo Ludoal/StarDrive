@@ -6274,6 +6274,16 @@ namespace Ship_Game
         NgSystemsPerfWarnHeavy = 30111,
         /// <summary>Let the governor manage this automatically.</summary>
         AutoManageTip = 30112,
+        // Ludoal fork: the SHORT mandate words, for the colony picker's Auto position - it names
+        // what the empire currently mandates in brackets, and the long words do not fit there.
+        /// <summary>All</summary>
+        MandateShortAll = 30113,
+        /// <summary>Eco.</summary>
+        MandateShortEconomic = 30114,
+        /// <summary>Def.</summary>
+        MandateShortDefense = 30115,
+        /// <summary>None</summary>
+        MandateShortNone = 30116,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>
