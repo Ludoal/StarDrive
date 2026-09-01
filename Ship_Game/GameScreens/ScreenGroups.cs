@@ -80,22 +80,22 @@ namespace Ship_Game.GameScreens
         // Diplomacy group - one geometry for the whole bar.
         public static readonly LocalizedText[] GalaxyTabTitles =
         {
-            "Planets", "Exotic", "Trade", "Patrols", "Events", "Ships", "Troops"
+            "Planets", "Troops", "Ships", "Patrols", "Trade", "Exotic", "Events"
         };
 
         public static readonly string[] GalaxyTabTips =
         {
             Localizer.Token(GameText.DvGalaxyTabTipPlanets),
-            Localizer.Token(GameText.DvGalaxyTabTipExoticSystems),
-            Localizer.Token(GameText.DvGalaxyTabTipTrade),
-            Localizer.Token(GameText.DvGalaxyTabTipPatrols),
-            Localizer.Token(GameText.DvGalaxyTabTipEvents),
-            Localizer.Token(GameText.DvEmpireTabTipShips),
             Localizer.Token(GameText.DvEmpireTabTipTroops),
+            Localizer.Token(GameText.DvEmpireTabTipShips),
+            Localizer.Token(GameText.DvGalaxyTabTipPatrols),
+            Localizer.Token(GameText.DvGalaxyTabTipTrade),
+            Localizer.Token(GameText.DvGalaxyTabTipExoticSystems),
+            Localizer.Token(GameText.DvGalaxyTabTipEvents),
         };
 
         // the keys those screens already close on, in tab order
-        public static readonly string[] GalaxyTabKeys = { "L", "G", "", "P", "F7", "K", "C" };
+        public static readonly string[] GalaxyTabKeys = { "L", "C", "K", "P", "", "G", "F7" };
 
         // Ludoal fork: ONE place that knows which screen a Galaxy tab opens. Each screen used to
         // carry its own switch over the other three, so a fourth tab meant editing all of them -
@@ -103,12 +103,12 @@ namespace Ship_Game.GameScreens
         public static GameScreen GalaxyTab(int index, UniverseScreen u) => index switch
         {
             0 => new PlanetListScreen(u, u.EmpireUI),
-            1 => new ExoticSystemsListScreen(u, u.EmpireUI),
-            2 => new TradeZonesScreen(u, u.Player),
+            1 => new TroopListScreen(u, u.EmpireUI),
+            2 => new ShipListScreen(u, u.EmpireUI),
             3 => new EmpirePatrolsScreen(u, u.Player),
-            4 => new ImportantEventsScreen(u),
-            5 => new ShipListScreen(u, u.EmpireUI),
-            _ => new TroopListScreen(u, u.EmpireUI),
+            4 => new TradeZonesScreen(u, u.Player),
+            5 => new ExoticSystemsListScreen(u, u.EmpireUI),
+            _ => new ImportantEventsScreen(u),
         };
 
         // Ludoal fork: the switch every Galaxy screen runs when another of its tabs is clicked.
@@ -688,9 +688,9 @@ namespace Ship_Game.GameScreens
         // adding a tab, moving one, or transferring one between groups is an edit of ONE list.
         static readonly Type[] GalaxyTabScreens =
         {
-            typeof(PlanetListScreen), typeof(ExoticSystemsListScreen), typeof(TradeZonesScreen),
-            typeof(EmpirePatrolsScreen), typeof(ImportantEventsScreen),
-            typeof(ShipListScreen), typeof(TroopListScreen),
+            typeof(PlanetListScreen), typeof(TroopListScreen), typeof(ShipListScreen),
+            typeof(EmpirePatrolsScreen), typeof(TradeZonesScreen),
+            typeof(ExoticSystemsListScreen), typeof(ImportantEventsScreen),
         };
 
         static readonly Type[] EmpireTabScreens =
