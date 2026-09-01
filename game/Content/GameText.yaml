@@ -22618,6 +22618,10 @@ NgSystemsPerfWarnHeavy:
  Id: 30111
  ENG: "Caution, performance issues are expected mid to late game."
  FRA: "Attention, des ralentissements sont à prévoir du milieu à la fin de partie."
+AutoManageTip:
+ Id: 30112
+ ENG: "Let the governor manage this automatically."
+ FRA: "Laisser le gouverneur gérer automatiquement."
 NoResearchAlert:
  Id: 30071
  ENG: "NO RESEARCH!"

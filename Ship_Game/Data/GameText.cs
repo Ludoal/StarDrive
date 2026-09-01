@@ -6272,6 +6272,8 @@ namespace Ship_Game
         NgSystemsPerfWarn = 30110,
         /// <summary>Caution, performance issues are expected mid to late game.</summary>
         NgSystemsPerfWarnHeavy = 30111,
+        /// <summary>Let the governor manage this automatically.</summary>
+        AutoManageTip = 30112,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>

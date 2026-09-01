@@ -164,7 +164,8 @@ namespace Ship_Game
 
             // The Auto switches: what already greys the pickers gets its own switch here, so a good
             // can be handed to the governor without leaving the list. Bare boxes - the column has
-            // no room for a word, and the picker greying out beside each says what it did.
+            // no room for a word, so the tooltip carries the handle: the picker greying out beside
+            // each explains the effect AFTER the click, which is too late to invite it.
             // ⚠ ADDED ONCE, then only moved: PerformLayout runs again on every scroll and sort,
             // and a second Add would stack a duplicate under the first (the same guard the labor
             // block carries above).
@@ -176,9 +177,9 @@ namespace Ship_Game
                     UICheckBox Switch(int cbY, Func<bool> get, Action<bool> set, LocalizedText tip)
                         => Add(new UICheckBox(cbX, cbY, get, v => Universe.RunOnSimThread(() => set(v)),
                                               Fonts.Arial12Bold, "", tip));
-                    AutoFoodBox = Switch(FoodStorage.pBar.Y - 2, () => P.AutoFood, v => P.AutoFood = v, GameText.TheNetAmountOfFood);
-                    AutoProdBox = Switch(ProdStorage.pBar.Y - 2, () => P.AutoProd, v => P.AutoProd = v, GameText.TheNetAmountOfProduction);
-                    AutoPopBox  = Switch(PopStorage.pBar.Y  - 2, () => P.AutoColonists, v => P.AutoColonists = v, GameText.IndicatesThisColonysCurrentPopulation);
+                    AutoFoodBox = Switch(FoodStorage.pBar.Y - 2, () => P.AutoFood, v => P.AutoFood = v, GameText.AutoManageTip);
+                    AutoProdBox = Switch(ProdStorage.pBar.Y - 2, () => P.AutoProd, v => P.AutoProd = v, GameText.AutoManageTip);
+                    AutoPopBox  = Switch(PopStorage.pBar.Y  - 2, () => P.AutoColonists, v => P.AutoColonists = v, GameText.AutoManageTip);
                 }
                 else
                 {
