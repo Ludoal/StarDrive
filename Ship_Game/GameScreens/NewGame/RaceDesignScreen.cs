@@ -881,9 +881,23 @@ namespace Ship_Game
                 Font = Fonts.Arial14Bold;
             }
 
+            // Ludoal fork (maintainer): the rows this summary drew last frame, with the token that
+            // describes each. The list is drawn by hand rather than built from elements, so there is
+            // nothing here to carry a tooltip of its own: Draw records what it put where, and
+            // HandleInput reads that back to find the trait under the cursor.
+            readonly Array<(RectF Row, int Desc)> Rows = new();
+
             public override bool HandleInput(InputState input)
             {
-                return false;
+                foreach ((RectF row, int desc) in Rows)
+                {
+                    if (desc > 0 && row.HitTest(input.CursorPosition))
+                    {
+                        ToolTip.CreateTooltip(new LocalizedText(desc));
+                        break;
+                    }
+                }
+                return false;   // a hover, never a click: the picking is done in the traits list
             }
 
             public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -902,15 +916,17 @@ namespace Ship_Game
 
                 // ⚠ ONE column: the tab has a whole column to itself, so the list simply runs
                 // down it.
-                int line = 0;
+                Rows.Clear();
                 foreach (TraitEntry t in Screen.AllTraits.OrderByDescending(t => t.Trait.Cost))
                 {
                     if (t.Selected)
                     {
                         batch.DrawString(Font, $"({t.Trait.Cost}) {t.Trait.LocalizedName.Text}", cursor,
                                                (t.Trait.Cost > 0 ? Color.ForestGreen: Color.Red));
+                        // the whole row is the target, not just the glyphs: a name is a small thing
+                        // to aim at, and the column is this tab's alone.
+                        Rows.Add((new RectF(area.X, cursor.Y, area.W, Font.LineSpacing), t.Trait.Description));
                         cursor.Y += (Font.LineSpacing + 2);
-                        line++;
                     }
                 }
             }
