@@ -178,7 +178,7 @@ Sociological:
 HistoryAndTradition:
  Id: 21
  ENG: "Historical"
- FRA: "Histoire et tradition"
+ FRA: "Historique"
  RUS: "История и традиции"
  SPA: "Historia y tradición"
  UKR: "Історії та традиції"
@@ -22609,12 +22609,15 @@ PrioritizationHeaderTip:
 NgTabEnvironmental:
  Id: 30109
  ENG: "Environmental"
+ FRA: "Environnement"
 NgSystemsPerfWarn:
  Id: 30110
  ENG: "Caution, you might experience performance issues late game."
+ FRA: "Attention, des ralentissements sont possibles en fin de partie."
 NgSystemsPerfWarnHeavy:
  Id: 30111
  ENG: "Caution, performance issues are expected mid to late game."
+ FRA: "Attention, des ralentissements sont à prévoir du milieu à la fin de partie."
 NoResearchAlert:
  Id: 30071
  ENG: "NO RESEARCH!"
