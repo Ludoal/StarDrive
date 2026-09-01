@@ -214,8 +214,8 @@ namespace Ship_Game
             // 1: the labels, 2: the value fields, 3: the flag picker on the right. The flag has
             // its own fixed column, so the picker doesn't overlap the value fields at 900p.
             // Constants, not a divide of the leftover, so nothing shifts when the tab resizes.
-            // ⚠ the left pull that used to live here is gone: the inset is the theme's
-            // TabPadInner, which the form reads through ContentArea.
+            // ⚠ the left pull that used to live here is gone: the inset is the theme's TextPad,
+            // which the form reads through ContentArea.
             const float SplitPull    = 30f;     // values recede 30 from stock
             const float FlagColW     = 120f;    // the flag picker column, arrows included
             const float FlagNudgeX   = 10f;     // push the whole flag block 10px right
@@ -282,7 +282,7 @@ namespace Ship_Game
             // SelectOpponentsScreen popup carried. Both share chooseRace; OnLeftTabChanged flips
             // which one shows. The count strip sits at the top, the list below it.
             // The caption sits at the head of the padded area, like every other panel's first
-            // line in this window - the air above it was a local 14 and is TabPadInner now.
+            // line in this window - the air above it was a local 14 and is the theme's TextPad now.
             const int OppCountStrip = 42;
             OpponentsCountLabel = Add(new UILabel(
                 new Vector2(chooseRace.X, chooseRace.Y),

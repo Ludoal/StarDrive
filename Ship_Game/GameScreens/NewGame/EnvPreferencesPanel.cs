@@ -38,7 +38,7 @@ namespace Ship_Game.GameScreens.NewGame
             var font = Fonts.Arial12Bold;
             Title = Add(new UILabel(GameText.NgEnvironmentPreferences, font, Color.BurlyWood));
             // Ludoal fork: the 15 that used to sit here was this panel's own padding, and it
-            // is the theme's TabPadInner now (maintainer measured ~15 on this panel while the
+            // is the theme's TextPad now (maintainer measured ~15 on this panel while the
             // table said 0 - the inset was one level down, in these children). What is left is
             // the title's own indent over the two value columns, and the row it sits on.
             Title.SetLocalPos(25, 0);

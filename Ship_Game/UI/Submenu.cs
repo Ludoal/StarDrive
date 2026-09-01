@@ -47,17 +47,18 @@ public class Submenu : UIPanel
     // Client area where child objects should be inserted
     public override RectF ClientArea { get; set; }
 
-    /// Ludoal fork: where a SCREEN's content goes inside this panel - the client area pulled
-    /// in by the theme's TabPadInner on all four sides. Before this, every screen wrote its
-    /// own inset by hand: New Game alone carried 0, 10, 12 and 20 across its five panels,
-    /// which is exactly why two panels in one window did not line up (maintainer, 1 Sep).
-    /// A screen that needs the raw edge - a panel that draws to its own border rather than
-    /// laying out text - keeps using ClientArea and says so.
+    /// Ludoal fork: where a panel's TEXT goes - the client area pulled in by the theme's
+    /// TextPad. Before this, every screen wrote its own inset by hand: New Game alone carried
+    /// 0, 10, 12 and 20 across its five panels, which is why two panels in one window did not
+    /// line up (maintainer, 1 Sep).
+    /// ⚠ Each KIND of element carries its own default and an instance may overrule it: text
+    /// takes this one, a scroll list takes ListPadLeft and sits on ClientArea instead, a foot
+    /// row takes none. Stacking two of them is what left three scrollbars unaligned.
     public RectF ContentArea
     {
         get
         {
-            float p = UITheme.TabPadInner;
+            float p = UITheme.TextPad;
             RectF c = ClientArea;
             return new(c.X + p, c.Y + p, c.W - 2 * p, c.H - 2 * p);
         }

@@ -32,9 +32,9 @@ Theme:
   # ⚠ 9 is a floor, not a default - the corner is a 9x9 drawing, and below that the
   # content runs underneath it. Raise it freely; lowering it does nothing.
   TabPadOuter: 10
-  # Inner: how far a screen's content then sits inside that area. This is the one that
-  # makes two panels in the same window line up - before it, every screen carried its
-  # own number. Change it and relaunch; no rebuild.
+  # Inner: the layout STEP inside a panel - the air between a panel and what sits under it,
+  # and the gap a foot notch reckons with (a notch is one button plus one of these).
+  # ⚠ Not the text's inset: each kind of element carries its own default (TextPad below).
   TabPadInner: 10
   # Every painted button's height. 25 is the plate asset's own height, so it is the value
   # the buttons were always closest to - and it reckons in fives with the paddings.
@@ -47,6 +47,10 @@ Theme:
   # drawn in it. It belongs to the LIST, not to the panel: a list sits on the frame's edge and
   # adds this, rather than taking the panel's inner padding and stacking two margins.
   ListPadLeft: 5
+  # What TEXT keeps inside a panel's client area. Every kind of element carries its own
+  # default and an instance may overrule it; text's is 0, the frame's own clearance being
+  # margin enough. Raise it and every panel's prose steps in together.
+  TextPad: 0
 
   # ── Buttons ──────────────────────────────────────────────────────────────────
   # One tint per MEANING. Hover and Pressed are derived from the tint rather than

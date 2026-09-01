@@ -43,9 +43,9 @@ namespace Ship_Game
         // ⚠ floored per edge at the corner texture's size (9): below that the content runs
         // under the drawn corner. Above it, anything goes.
         [StarData] public int TabPadOuter = 9;
-        // INNER is how far a SCREEN's content then sits inside that area. It did not exist
-        // as a notion before: every screen wrote its own number, which is why two panels in
-        // the same window did not line up. Screens consume Submenu.ContentArea to get it.
+        // INNER is the layout STEP inside a panel: the air between a panel and what sits under
+        // it, and the gap a foot notch reckons with. ⚠ It is no longer the text's inset - each
+        // kind of element carries its own default now (TextPad, ListPadLeft).
         [StarData] public int TabPadInner = 10;
         // The painted plate's height. ⚠ The Wide styles' size reference (UI/dan_button) is
         // 182x25, so 25 is the plate's own height rather than a number picked for a screen -
@@ -60,6 +60,10 @@ namespace Ship_Game
         // not the panel's: the row's selection frame is drawn in it. A list therefore sits on the
         // CLIENT area and adds this, instead of taking TabPadInner and stacking two margins.
         [StarData] public int ListPadLeft = 5;
+        // What TEXT keeps inside a panel's client area. The maintainer's model: every kind of
+        // element carries its own default, and an instance may overrule it. Text's default is 0 -
+        // the frame's own clearance is already its margin, and anything more is a choice.
+        [StarData] public int TextPad = 0;
 
         // buttons - hover and press are DERIVED from the tint, never separate colours
         [StarData] public Color PlateNeutral = new(193, 113, 26);
@@ -164,6 +168,7 @@ namespace Ship_Game
         public static int   ButtonHeight  => Theme.ButtonHeight;
         public static int   ScrollbarLane => Theme.ScrollbarLane;
         public static int   ListPadLeft   => Theme.ListPadLeft;
+        public static int   TextPad      => Theme.TextPad;
 
         // ── buttons ──────────────────────────────────────────────────────────────────────────
         public static Color PlateNeutral => Theme.PlateNeutral;
