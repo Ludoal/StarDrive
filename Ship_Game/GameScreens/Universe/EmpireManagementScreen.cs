@@ -93,7 +93,9 @@ namespace Ship_Game
                                      Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfResearch), SepColor = MutedSep },
                 new UITable.Column { Title = Localizer.Token(GameText.Labor), Width = 269, Align = TableAlign.Center }, // wider: the sliders now show current / max
 
-                new UITable.Column { Title = Localizer.Token(GameText.Supply), Width = 240, Align = TableAlign.Center }, // bench 426: stock AND flow
+                // bench 426: stock AND flow. ⚠ 240 is FULL - the icon, the bar and the picker
+                // leave 2px of it; the wide regime below gives this column the Auto switches' lane.
+                new UITable.Column { Title = Localizer.Token(GameText.Supply), Width = 240, Align = TableAlign.Center },
                 new UITable.Column { Title = Localizer.Token(GameText.Construction2), Width = 282, Align = TableAlign.Center },
             });
             // Pop Growth and Governor ride wide displays only (bench 408): at 1440 the base
@@ -112,6 +114,10 @@ namespace Ship_Game
                 // muted on its right - the muted one is Labor's, set below
                 cols.Insert(10, new UITable.Column { Title = "Gov.", Width = 40, Align = TableAlign.Center, Sortable = true });
                 cols[11].SepColor = MutedSep; // Labor
+                // maintainer: the Auto switches ride here, so Supply gets their lane - 240 held the
+                // icon, the bar and the picker with 2px to spare. Construction is always last, so
+                // Supply is the one before it whatever the Governor column did to the indices.
+                cols[cols.Count - 2].Width += 34;
                 Table = new UITable(cols.ToArray());
             }
             var sys = new Array<string>(); var names = new Array<string>();

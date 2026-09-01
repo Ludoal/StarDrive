@@ -46,6 +46,7 @@ namespace Ship_Game
         Rectangle FoodStorageIcon;
         Rectangle ProdStorageIcon;
         Rectangle PopStorageIcon;
+        UICheckBox AutoFoodBox, AutoProdBox, AutoPopBox;   // wide displays only: hand a good to the governor from the list
         Rectangle SpacePortIconRect; // wide displays: capability icons right-aligned in the Planet cell
         Rectangle TroopIconRect;
 
@@ -98,6 +99,11 @@ namespace Ship_Game
             // is placed off StorageRect.X, so shifting the rect shifts all of it at once)
             StorageRect = Band(10 + g2);
             StorageRect.X -= 5;
+            // maintainer: on wide displays the column carries an Auto switch per row. The lane is
+            // RESERVED here rather than taken from what is left, so the bars and the pickers keep
+            // the proportions they had at 240 and nothing below shifts when the switches appear.
+            int autoLane = wideCols ? 34 : 0;
+            int supplyW  = StorageRect.Width - autoLane;
             QueueRect   = Band(11 + g2);
 
             if (AssignLabor == null)
@@ -108,7 +114,7 @@ namespace Ship_Game
                 AssignLabor.Rect = SliderRect;
 
             // bench 427: the two elders tighten and rise so the population bar seats third
-            FoodStorage = new ProgressBar(new Rectangle(StorageRect.X + 50, StorageRect.Y + (int)(0.12 * StorageRect.Height) - 2, (int)(0.4f * StorageRect.Width), 18))
+            FoodStorage = new ProgressBar(new Rectangle(StorageRect.X + 50, StorageRect.Y + (int)(0.12 * StorageRect.Height) - 2, (int)(0.4f * supplyW), 18))
             {
                 Max = P.Storage.Max,
                 Progress = P.FoodHere,
@@ -119,8 +125,8 @@ namespace Ship_Game
             // Export truncate at a quarter. bench 458: Resettle still clipped - the box
             // eats 14px of its LEFT margin (the bar-to-box gap shrinks 20 to 6), the
             // right edge does not move so the column layout holds.
-            int ddwidth = (int)(0.30f * StorageRect.Width) + 14;
-            int ddX = StorageRect.X + 50 + (int)(0.4f * StorageRect.Width) + 6;
+            int ddwidth = (int)(0.30f * supplyW) + 14;
+            int ddX = StorageRect.X + 50 + (int)(0.4f * supplyW) + 6;
             FoodDropDown = new DropOptions<Planet.GoodState>(new Rectangle(ddX, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, ddwidth, 18));
             FoodDropDown.AddOption(GameText.Store, Planet.GoodState.STORE);
             FoodDropDown.AddOption(GameText.Import, Planet.GoodState.IMPORT);
@@ -128,7 +134,7 @@ namespace Ship_Game
             FoodDropDown.ActiveIndex = (int)P.FS;
             FoodDropDown.OnValueChange = v => Universe.RunOnSimThread(() => P.FS = v); // mutated on the sim thread like before
             FoodStorageIcon = new Rectangle(StorageRect.X + 20, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - ResourceManager.Texture("NewUI/icon_food").Height / 2, ResourceManager.Texture("NewUI/icon_food").Width, ResourceManager.Texture("NewUI/icon_food").Height);
-            ProdStorage = new ProgressBar(new Rectangle(StorageRect.X + 50, FoodStorage.pBar.Y + FoodStorage.pBar.Height + 6, (int)(0.4f * StorageRect.Width), 18))
+            ProdStorage = new ProgressBar(new Rectangle(StorageRect.X + 50, FoodStorage.pBar.Y + FoodStorage.pBar.Height + 6, (int)(0.4f * supplyW), 18))
             {
                 Max = P.Storage.Max,
                 Progress = P.ProdHere
@@ -140,7 +146,7 @@ namespace Ship_Game
             ProdDropDown.AddOption(GameText.Export, Planet.GoodState.EXPORT);
             ProdDropDown.ActiveIndex = (int)P.PS;
             ProdDropDown.OnValueChange = v => Universe.RunOnSimThread(() => P.PS = v);
-            PopStorage = new ProgressBar(new Rectangle(StorageRect.X + 50, ProdStorage.pBar.Y + ProdStorage.pBar.Height + 6, (int)(0.4f * StorageRect.Width), 18))
+            PopStorage = new ProgressBar(new Rectangle(StorageRect.X + 50, ProdStorage.pBar.Y + ProdStorage.pBar.Height + 6, (int)(0.4f * supplyW), 18))
             {
                 Max = P.MaxPopulationBillionFor(P.Owner),
                 Progress = P.PopulationBillion,
@@ -155,6 +161,32 @@ namespace Ship_Game
             PopDropDown.AddOption(GameText.Resettle, Planet.GoodState.EXPORT);
             PopDropDown.ActiveIndex = (int)(P.ColonistsManual ? P.CS : P.GetGoodState(Goods.Colonists));
             PopDropDown.OnValueChange = v => Universe.RunOnSimThread(() => P.CS = v);
+
+            // The Auto switches: what already greys the pickers gets its own switch here, so a good
+            // can be handed to the governor without leaving the list. Bare boxes - the column has
+            // no room for a word, and the picker greying out beside each says what it did.
+            // ⚠ ADDED ONCE, then only moved: PerformLayout runs again on every scroll and sort,
+            // and a second Add would stack a duplicate under the first (the same guard the labor
+            // block carries above).
+            if (wideCols)
+            {
+                int cbX = ddX + ddwidth + 8;
+                if (AutoFoodBox == null)
+                {
+                    UICheckBox Switch(int cbY, Func<bool> get, Action<bool> set, LocalizedText tip)
+                        => Add(new UICheckBox(cbX, cbY, get, v => Universe.RunOnSimThread(() => set(v)),
+                                              Fonts.Arial12Bold, "", tip));
+                    AutoFoodBox = Switch(FoodStorage.pBar.Y - 2, () => P.AutoFood, v => P.AutoFood = v, GameText.TheNetAmountOfFood);
+                    AutoProdBox = Switch(ProdStorage.pBar.Y - 2, () => P.AutoProd, v => P.AutoProd = v, GameText.TheNetAmountOfProduction);
+                    AutoPopBox  = Switch(PopStorage.pBar.Y  - 2, () => P.AutoColonists, v => P.AutoColonists = v, GameText.IndicatesThisColonysCurrentPopulation);
+                }
+                else
+                {
+                    AutoFoodBox.SetAbsPos(cbX, FoodStorage.pBar.Y - 2);
+                    AutoProdBox.SetAbsPos(cbX, ProdStorage.pBar.Y - 2);
+                    AutoPopBox.SetAbsPos(cbX, PopStorage.pBar.Y - 2);
+                }
+            }
             PopStorageIcon = new Rectangle(StorageRect.X + 20, PopStorage.pBar.Y + PopStorage.pBar.Height / 2 - ResourceManager.Texture("UI/icon_pop_22").Height / 2, ResourceManager.Texture("UI/icon_pop_22").Width, ResourceManager.Texture("UI/icon_pop_22").Height);
             // on the PROGRESS BAR's line, not the name's - the item name gets the column's
             // full width. The bar sits one bold line under the name anchor, which itself
