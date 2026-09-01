@@ -22605,6 +22605,12 @@ PrioritizationHeaderTip:
 NgTabEnvironmental:
  Id: 30107
  ENG: "Environmental"
+NgSystemsPerfWarn:
+ Id: 30108
+ ENG: "Caution, you might experience performance issues late game."
+NgSystemsPerfWarnHeavy:
+ Id: 30109
+ ENG: "Caution, performance issues are expected mid to late game."
 NoResearchAlert:
  Id: 30071
  ENG: "NO RESEARCH!"

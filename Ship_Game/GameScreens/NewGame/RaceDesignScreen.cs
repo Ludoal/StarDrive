@@ -99,8 +99,6 @@ namespace Ship_Game
 
         UILabel NumSystemsLabel;
         UILabel ExtraPlanetsLabel;
-        UILabel PerformanceWarning;
-        float PerfWarnWrapW;   // wrap width for the performance warning, from its X to the tab edge
         int FlagIndex;
         public int TotalPointsUsed { get; private set; }
 
@@ -322,13 +320,6 @@ namespace Ship_Game
             ExtraPlanetsLabel = Add(new UILabel(NumSystemsLabel.X, NumSystemsLabel.Y + font.LineSpacing + 3, ""));
             ExtraPlanetsLabel.Font  = font;
             ExtraPlanetsLabel.Color = Color.Green;
-
-            // under the two readouts it comments, in the same column
-            PerformanceWarning = Add(new UILabel(labelX, labelY + 2 * (font.LineSpacing + 3), ""));
-            PerformanceWarning.Font = font;
-            // Ludoal fork: the warning wraps to the tab's right edge instead of running off it -
-            // the width from the label's X to the frame edge, less a margin.
-            PerfWarnWrapW = galaxyArea.Right - labelX;
 
             UIList optionButtons = AddList(galaxyArea.X, galaxyArea.Y);
             optionButtons.CaptureInput = true;
@@ -851,25 +842,26 @@ namespace Ship_Game
             ExtraPlanetsLabel.Text = $"Extra Planets: {extraPlanets}";
         }
 
+        // Ludoal fork (maintainer, 1 Sep): the warning was a third line under the two readouts,
+        // and the Galaxy column no longer has the room for it. It hangs off the count itself now.
+        // ⚠ The COLOUR stays on the number: a warning that only exists under the cursor is a door
+        // with no handle - the amber says look, the tooltip says why (Lek's reserve, same day).
         void ShowPerformanceWarning(int numSystems)
         {
-            PerformanceWarning.Visible = numSystems >= 100;
             if (numSystems >= 200)
             {
-                PerformanceWarning.Color = NumSystemsLabel.Color = Color.Orange;
-                PerformanceWarning.Text = PerformanceWarning.Font.ParseText(
-                    "Caution, performance issues are expected mid to late game.", PerfWarnWrapW);
+                NumSystemsLabel.Color = Color.Orange;
+                NumSystemsLabel.Tooltip = GameText.NgSystemsPerfWarnHeavy;
             }
             else if (numSystems >= 100)
             {
-                PerformanceWarning.Color = NumSystemsLabel.Color = Color.Yellow;
-                PerformanceWarning.Text = PerformanceWarning.Font.ParseText(
-                    "Caution, you might experience performance issues late game.", PerfWarnWrapW);
-
+                NumSystemsLabel.Color = Color.Yellow;
+                NumSystemsLabel.Tooltip = GameText.NgSystemsPerfWarn;
             }
             else
             {
                 NumSystemsLabel.Color = Color.SteelBlue;
+                NumSystemsLabel.Tooltip = default;   // Id 0 and no string: IsValid is false, no tooltip
             }
         }
 
