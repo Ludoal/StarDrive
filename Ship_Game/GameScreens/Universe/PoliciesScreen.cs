@@ -246,8 +246,9 @@ namespace Ship_Game
         // ⚠ FIVE rows, not seven. ColonyType has seven members, but Colony and TradeHub can hold
         // no plan at all: switching a colony to either WIPES its blueprints (GovernorDetails-
         // Component.OnColonyTypeChanged), and no template can even be saved as TradeHub - the
-        // BlueprintsTemplate constructor folds TradeHub into Colony. Rows for those two would be
-        // permanently empty. This note is here so the omission reads as a decision, not an oversight.
+        // The five governor rows. Colony and TradeHub have none: the constructor folds TradeHub
+        // into Colony, and Colony is what the editor writes for a plan with NO governor - such a
+        // plan belongs in every list rather than in one of its own (see MakeBlueprintPolicyList).
         static readonly (Planet.ColonyType Type, GameText Label)[] BlueprintGovernors =
         {
             (Planet.ColonyType.Core,         GameText.Core),
@@ -264,8 +265,14 @@ namespace Ship_Game
         {
             var list = new DropOptions<string>(170, 18);
             list.AddOption(option: "--", "");
+            // Ludoal fork (maintainer): a plan of THIS governor's type, or a GENERIC one. The
+            // blueprint editor maps its "--" position to ColonyType.Colony, which is how a plan
+            // says it has no governor - so matching on the type alone hid every generic plan from
+            // every list at once. A plan without a governor is the universal candidate, not the
+            // candidate for nothing, and hand-laid plans from before the governors are exactly
+            // the ones a player wants to assign.
             foreach (BlueprintsTemplate t in ResourceManager.GetAllBlueprints())
-                if (t.ColonyType == type)
+                if (t.ColonyType == type || t.ColonyType == Planet.ColonyType.Colony)
                     list.AddOption(option: t.Name, t.Name);
 
             string current = player.GetBlueprintPolicy(type);
