@@ -38,9 +38,18 @@ namespace Ship_Game
         /// the top of the foot band: where a caller's own filler must stop
         public readonly int BottomFillTop => BottomFill.Y;
 
-        /// The title bar's height, as PopupWindow has always built it: the band is 46 tall and
-        /// starts 7 below the frame's top edge. Content begins under the sum.
-        public const int TitleBarHeight = 46;
+        /// The title bar's height, as PopupWindow has always built it: the band is 46 tall by
+        /// default and starts 7 below the frame's top edge. Content begins under the sum.
+        /// Ludoal fork (maintainer question, 1 Sep): the height comes from the theme now
+        /// (Theme.yaml -> TitleBarHeight) instead of being frozen here. The YAML knob already
+        /// existed and drove NOTHING - UITheme.TitleBarH had no consumer at all, and every screen
+        /// read this const instead. A value exposed in a settings file is not a value that is wired.
+        /// WARNING there is a technical floor: TitleLeft/TitleRight - the two stubs that carry the
+        /// band out to the frame's edges - are laid out at TitleRect.Y + 23, so a band shorter than
+        /// that draws a negative rect. The theme is clamped up to it rather than trusted blind.
+        public const int TitleBarMin = 24;
+        public static int TitleBarHeight
+            => UITheme.TitleBarH < TitleBarMin ? TitleBarMin : UITheme.TitleBarH;
         public const int TitleBarTop = 7;
 
         /// Where a caller's content may start, measured from the frame's own top.
