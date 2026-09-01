@@ -91,7 +91,9 @@ namespace Ship_Game
             ResRect     = Band(8 + g);
             GovernorRect = wideCols ? Band(10) : default;
             int g2 = wideCols ? 2 : 0;
-            SliderRect  = new Rectangle(cols[9 + g2].Rect.X + 4, y - 30, cols[9 + g2].Rect.Width - 8, Rect.Height + 25);
+            // maintainer: 25 above the row, not 30 - the Auto checkbox rides at the block's top
+            // and the last 5 put it outside the frame.
+            SliderRect  = new Rectangle(cols[9 + g2].Rect.X + 4, y - 25, cols[9 + g2].Rect.Width - 8, Rect.Height + 25);
             // the Storage content starts 5px further left (its whole content
             // is placed off StorageRect.X, so shifting the rect shifts all of it at once)
             StorageRect = Band(10 + g2);
@@ -162,6 +164,25 @@ namespace Ship_Game
             CancelProductionRect = new Rectangle(QueueRect.X + QueueRect.Width - 20, iconY, ResourceManager.Texture("NewUI/icon_queue_delete").Width, ResourceManager.Texture("NewUI/icon_queue_delete").Height);
 
             base.PerformLayout();
+        }
+
+        // Give each number of an "a / b" string one decimal place (12 -> 12.0), leaving text
+        // as-is. ⚠ PUBLIC because the column that shows it must be MEASURED on the same
+        // string it will DRAW: it was a local here, the screen sized the column on the raw
+        // "14 / 14" and the row drew "14.0 / 14.0", so the value overran its column by the
+        // width of two decimals (maintainer, bench 567).
+        public static string OneDecimalEachSide(string s)
+        {
+            string[] parts = s.Split('/');
+            for (int i = 0; i < parts.Length; ++i)
+            {
+                string t = parts[i].Trim();
+                if (float.TryParse(t, System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture, out float f))
+                    parts[i] = f.ToString("0.0", CultureInfo.InvariantCulture);
+                else
+                    parts[i] = t;
+            }
+            return string.Join(" / ", parts);
         }
 
         void DrawStatValue(SpriteBatch batch, Rectangle rect, string value, Color color)
@@ -324,20 +345,6 @@ namespace Ship_Game
             string F1(float v) => R1(v).ToString("0.0", CultureInfo.InvariantCulture);
             // Ludoal fork: Pop Growth reads in millions with one decimal
             string F2(float v) => (Math.Abs(v) < 0.05f ? 0f : v).ToString("0.0", CultureInfo.InvariantCulture);
-            // give each number of an "a / b" string one decimal place (12 -> 12.0), leaving text as-is
-            string OneDecimalEachSide(string s)
-            {
-                string[] parts = s.Split('/');
-                for (int i = 0; i < parts.Length; ++i)
-                {
-                    string t = parts[i].Trim();
-                    if (float.TryParse(t, System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture, out float f))
-                        parts[i] = f.ToString("0.0", CultureInfo.InvariantCulture);
-                    else
-                        parts[i] = t;
-                }
-                return string.Join(" / ", parts);
-            }
             string popString = P.PopulationStringForPlayer;
             int popParen = popString.IndexOf(" (");
             if (popParen >= 0) popString = popString.Substring(0, popParen);

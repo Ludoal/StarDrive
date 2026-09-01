@@ -219,12 +219,13 @@ namespace Ship_Game
             ResetColoniesList(SortedPlanets(planets, StandingSort, StandingAsc, wideCols));
         }
 
-        // "current / max", the Planets tab's population shape
+        // "current / max", the Planets tab's population shape. ⚠ Through the SAME formatter the
+        // row draws with: the column is sized on what it will actually show, not on the raw value.
         string PopCombined(Planet p)
         {
             string ps = p.PopulationStringForPlayer;
             int paren = ps.IndexOf(" (");
-            return paren < 0 ? ps : ps.Substring(0, paren);
+            return ColoniesListItem.OneDecimalEachSide(paren < 0 ? ps : ps.Substring(0, paren));
         }
 
         // Ludoal fork: the other tabs live in their own screen, so leaving Colonies hands over to
