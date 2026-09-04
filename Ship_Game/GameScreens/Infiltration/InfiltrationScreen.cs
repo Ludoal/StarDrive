@@ -48,17 +48,20 @@ namespace Ship_Game.GameScreens
 
         // fixed vertical anatomy (aligned across columns)
         const int HeaderH = 110;
-        const int BudgetH = 212; // sliders overflow their rect (title above, ticks below): breathe
+        const int BudgetH = 231; // maintainer measured: three 69px blocks plus the 24px inset
 
-        // Ludoal fork: the BUDGET block's rows, off its own top. Named because the placement
-        // (LoadContent) and the labels (DrawColumn) both read them from here.
-        const int RowSlider   = 4;
-        const int RowButton   = 53;
-        const int RowPoints   = 117;  // clear of the Level Max slider's ticks above it
-        const int RowLevel    = 142;
-        const int RowBar      = 163;
-        const int RowBarNums  = 179;
-        const int DefenseH = 52; // the Known Infiltration line fits in the existing row reserve; no extra height (bench: keep the bottom slider's room)
+        // maintainer feedback: the BUDGET block is a grid of NINE rows - three blocks of three,
+        // one text line apart. A block is a label, its slider and the figure the slider produces;
+        // the same row carries the same KIND of thing in every column, so the player's spending
+        // control lines up with a rival's. Placement (LoadContent) and labels (DrawColumn) both
+        // read these, off ONE origin - they used to sit 24px apart and the numbers looked
+        // comparable when they were not.
+        const int RowH   = 23;                 // one text line - the grid's unit
+        const int Block1 = 4;                  // rows 1-3
+        const int Block2 = Block1 + 3 * RowH;  // rows 4-6  (73)
+        const int Block3 = Block2 + 3 * RowH;  // rows 7-9  (142)
+        const int RowValue = 2 * RowH;         // third row of a block: the figure, under the slider
+        const int DefenseH = 33; // the 19px the budget grid took: a shield and its figure, no more
 
         class EmpireColumn
         {
@@ -222,7 +225,7 @@ namespace Ship_Game.GameScreens
                 if (e == Player)
                 {
                     // BUDGET: multiplier (+ cost label drawn live); DEFENSE: weight
-                    var budgetRect = new Rectangle(col.X + 8, (int)budgetY + RowSlider, col.Width - 60, 40);
+                    var budgetRect = new Rectangle(col.X + 8, (int)budgetY + Block1, col.Width - 60, 40);
                     c.Budget = new FloatSlider(SliderStyle.Decimal1, budgetRect, GameText.EspioangeBudgetMuliplier, 1f, 5f, value: Player.EspionageBudgetMultiplier);
                     c.Budget.Tip = GameText.EspioangeBudgetMuliplierTip;
                     c.Budget.OnChange = s =>
@@ -235,7 +238,7 @@ namespace Ship_Game.GameScreens
                     // maintainer feedback: Defense Weight is a spending decision, so it belongs
                     // with the budget - on the same row the rival columns give Level Max, which
                     // keeps every column's second slider on one line.
-                    var defRect = new Rectangle(col.X + 8, (int)budgetY + RowButton, col.Width - 60, 40);
+                    var defRect = new Rectangle(col.X + 8, (int)budgetY + Block2, col.Width - 60, 40);
                     c.Weight = new FloatSlider(defRect, GameText.EspioangeDefenseWeight, min: 0,
                                                max: Empire.MaxEspionageDefenseWeight, value: Player.EspionageDefenseWeight);
                     c.Weight.Tip = GameText.EspioangeDefenseWeightTip;
@@ -251,7 +254,7 @@ namespace Ship_Game.GameScreens
                 Ship_Game.Espionage esp = Player.GetEspionage(e);
                 c.Esp = esp;
 
-                var weightRect = new Rectangle(col.X + 8, (int)budgetY + RowSlider, col.Width - 60, 40);
+                var weightRect = new Rectangle(col.X + 8, (int)budgetY + Block2, col.Width - 60, 40);
                 c.Weight = new FloatSlider(weightRect, GameText.EspioangeInfiltrationWeight, min: 0, max: 10, value: esp.GrossWeight);
                 c.Weight.Tip = GameText.EspioangeInfiltrationWeightTip;
                 c.Weight.OnChange = s =>
@@ -265,7 +268,7 @@ namespace Ship_Game.GameScreens
                 // is what a slider says plainly, the two other settings of this column already are
                 // one, and the button showed no value - it stretches to the width it is given, so
                 // the figure drawn beside it fell underneath.
-                var limitRect = new Rectangle(col.X + 8, (int)budgetY + RowButton, col.Width - 60, 40);
+                var limitRect = new Rectangle(col.X + 8, (int)budgetY + Block1, col.Width - 60, 40);
                 c.Limit = new FloatSlider(SliderStyle.Decimal, limitRect, GameText.IfLevelMax,
                                           1f, Ship_Game.Espionage.MaxLevel, value: esp.LimitLevel);
                 c.Limit.Tip = GameText.EspionageLimitLevelTip;
@@ -466,8 +469,8 @@ namespace Ship_Game.GameScreens
                 return;
             }
 
-            float budgetY = col.Y + HeaderH;
-            SectionBand(batch, col, budgetY, Localizer.Token(GameText.IfBudget));
+            SectionBand(batch, col, col.Y + HeaderH, Localizer.Token(GameText.IfBudget));
+            float budgetY = col.Y + HeaderH + 24; // the SAME origin the sliders are placed on
             // 30 higher; the INFILTRATION block below is keyed
             // on BudgetH + DefenseH and does not follow
             float defenseY = col.Y + HeaderH + BudgetH - 6;
@@ -478,17 +481,20 @@ namespace Ship_Game.GameScreens
                 // budget cost line under the slider (legacy formula)
                 float espionageCost = Player.GetEspionageCost();
                 string cost = $"{(espionageCost > 0 ? -espionageCost : espionageCost).String(1)} " + Localizer.Token(GameText.IfBcPerTurn);
-                batch.DrawString(Font12, cost, new Vector2(col.X + 8, budgetY + 70), espionageCost > 0 ? Color.Pink : Color.LightGreen);
+                batch.DrawString(Font12, cost, new Vector2(col.X + 8, budgetY + Block1 + RowValue), espionageCost > 0 ? Color.Pink : Color.LightGreen);
 
-                // maintainer feedback: the player's own share of the espionage budget, drawn in
-                // the DEFENSE band the slider just left. Defense sits in the same denominator as
-                // the infiltration weights, so raising those lowers this - previously the points
-                // per target climbed with nothing on screen going down. Same shield glyph and
-                // placement as a rival column's ratio, so the two read alike.
+                // maintainer feedback: defence shares the denominator with every infiltration
+                // weight, so raising those shrinks its slice - and nothing said so. Two figures
+                // now do: the points defence absorbs, on row 6 under its own slider like a
+                // rival's yield, and the share it takes, in the DEFENSE band below.
+                int ownTotal = Player.CalcTotalEspionageWeight();
+                float ownPpt = ownTotal > 0 ? Player.EspionagePointsPerTurn * Player.EspionageDefenseWeight / ownTotal : 0;
+                batch.DrawString(Font12, Localizer.Token(GameText.IfPointsPerTurn) + ownPpt.String(3),
+                                 new Vector2(col.X + 8, budgetY + Block2 + RowValue), Color.Wheat);
+
                 SubTexture ownShield = ResourceManager.Texture("UI/icon_shield");
                 var ownShieldRect = new Rectangle(col.X + 8, (int)defenseY + 24, ownShield.Width, ownShield.Height);
                 batch.Draw(ownShield, ownShieldRect, Color.White);
-                int ownTotal = Player.CalcTotalEspionageWeight();
                 int ownShare = ownTotal > 0 ? (int)(Player.EspionageDefenseWeight * 100f / ownTotal) : 100;
                 batch.DrawString(Font12Bold, $"{ownShare.String()}%",
                                  new Vector2(ownShieldRect.Right + 6, ownShieldRect.Y + 4), Color.White);
@@ -535,25 +541,25 @@ namespace Ship_Game.GameScreens
             // label of its own - its slider shows the figure.
             float ppt = esp.GetProgressToIncrease(Player.EspionagePointsPerTurn, Player.CalcTotalEspionageWeight());
             string pptTxt = Localizer.Token(GameText.IfPointsPerTurn) + ppt.String(3);
-            batch.DrawString(Font12, pptTxt, new Vector2(col.X + 8, budgetY + RowPoints), Color.Wheat);
+            batch.DrawString(Font12, pptTxt, new Vector2(col.X + 8, budgetY + Block2 + RowValue), Color.Wheat);
 
             if (esp.Level < Ship_Game.Espionage.MaxLevel)
             {
                 byte target = (byte)(esp.Level + 1);
-                batch.DrawString(Font12Bold, string.Format(Localizer.Token(GameText.IfInfiltratingLevel), target), new Vector2(col.X + 8, budgetY + RowLevel), Color.Wheat);
+                batch.DrawString(Font12Bold, string.Format(Localizer.Token(GameText.IfInfiltratingLevel), target), new Vector2(col.X + 8, budgetY + Block3), Color.Wheat);
                 float max = esp.LevelCost(target);
                 float cur = esp.LevelProgress.UpperBound(max);
-                var barRect = new Rectangle(col.X + 8, (int)budgetY + RowBar, col.Width - 16, 12);
+                var barRect = new Rectangle(col.X + 8, (int)budgetY + Block3 + RowH, col.Width - 16, 12);
                 batch.FillRectangle(barRect, new Color(10, 10, 10));
                 if (max > 0f && cur > 0f)
                     batch.FillRectangle(new Rectangle(barRect.X + 1, barRect.Y + 1, (int)((barRect.Width - 2) * (cur / max)), 10), new Color(30, 120, 30));
                 batch.DrawRectangle(barRect, new Color(60, 54, 40));
                 string nums = $"{(int)cur}/{(int)max}";
-                batch.DrawString(Font12, nums, new Vector2(col.Right - 8 - Font12.TextWidth(nums), budgetY + RowBarNums), Color.Wheat);
+                batch.DrawString(Font12, nums, new Vector2(col.Right - 8 - Font12.TextWidth(nums), budgetY + Block3 + RowValue), Color.Wheat);
             }
             else
             {
-                batch.DrawString(Font12, Localizer.Token(GameText.IfFullyInfiltrated), new Vector2(col.X + 8, budgetY + RowLevel), Color.LightGreen);
+                batch.DrawString(Font12, Localizer.Token(GameText.IfFullyInfiltrated), new Vector2(col.X + 8, budgetY + Block3), Color.LightGreen);
             }
 
             // DEFENSE: their shield ratio (gated like the legacy header icon)
