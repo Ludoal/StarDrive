@@ -172,9 +172,9 @@ namespace Ship_Game
         }
 
         string WrappedCacheKey; string WrappedCacheValue; float WrappedCacheWidth;
-        string WrappedString(string text)
+        string WrappedString(string text, int iconRoom = 0)
         {
-            float maxWidth = Width - 22;
+            float maxWidth = Width - 22 - iconRoom;
             // bench 455: this ran the MeasureString truncation loop EVERY FRAME for every
             // truncated cell - the Colonies page slowdown. Cache per (text, width), and
             // guard the loop: an over-narrow box must never Remove() past empty.
@@ -198,6 +198,13 @@ namespace Ship_Game
             return new Vector2(rect.X + 10, rect.Y + rect.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2);
         }
 
+        // the room an entry's glyph takes ahead of its text, gap included - 0 without one.
+        // Read by the DRAWING and by the TRUNCATION, which is the whole point: bench 570 had
+        // labels cut too late because the width the lock ate was known to one and not the other.
+        static int IconRoom(Entry e)
+            => e?.Icon == null ? 0
+             : e.Icon.Width * (Fonts.Arial12Bold.LineSpacing - 3) / e.Icon.Height + 4;
+
         // draws an entry's glyph when it has one, and answers where its text starts. Sized to
         // the line so it rides the text rather than the row, and squared off its own ratio.
         static Vector2 DrawIcon(SpriteBatch batch, Entry e, Rectangle rect, Color color)
@@ -209,7 +216,7 @@ namespace Ship_Game
             var r = new Rectangle((int)pos.X, rect.Y + rect.Height / 2 - h / 2,
                                   e.Icon.Width * h / e.Icon.Height, h);
             batch.Draw(e.Icon, r, color);
-            return new Vector2(r.Right + 4, pos.Y);
+            return new Vector2(pos.X + IconRoom(e), pos.Y);
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
@@ -227,7 +234,7 @@ namespace Ship_Game
             if (Count > 0) // draw active item
             {
                 Color color = ReadOnly ? Color.Gray : hover ? Color.White : Colors.Cream;
-                batch.DrawString(Fonts.Arial12Bold, WrappedString(ActiveName),
+                batch.DrawString(Fonts.Arial12Bold, WrappedString(ActiveName, IconRoom(Options[ActiveIndex])),
                                  DrawIcon(batch, Options[ActiveIndex], Rect, color), color);
             }
 
@@ -258,7 +265,7 @@ namespace Ship_Game
                     batch.Draw(ResourceManager.Texture("NewUI/dropdown_menuitem_hover_middle"), hoverMiddle, Color.White);
                     batch.Draw(ResourceManager.Texture("NewUI/dropdown_menuitem_hover_right"), hoverRight, Color.White);
                 }
-                batch.DrawString(Fonts.Arial12Bold, WrappedString(e.Name.Text),
+                batch.DrawString(Fonts.Arial12Bold, WrappedString(e.Name.Text, IconRoom(e)),
                                  DrawIcon(batch, e, e.Rect, Color.White), Color.White);
                 ++drawOffset;
             }
