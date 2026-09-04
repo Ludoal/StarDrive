@@ -287,6 +287,9 @@ namespace Ship_Game
             Reset();
         }
 
+        // an open list covers whatever is under it: drawn last, asked first
+        public override bool DrawsAboveSiblings => Open;
+
         public override bool HandleInput(InputState input)
         {
             // An empty dropdown is inert — don't capture input or toggle Open. Reading
@@ -299,13 +302,14 @@ namespace Ship_Game
             bool overTitle = HitTest(input.CursorPosition);
             bool overExpanded = Open && ClickAbleOpenRect.HitTest(input.CursorPosition);
 
-            // bench 457 (maintainer): a click ANYWHERE ELSE closes the list without
-            // changing the selection - the click keeps its normal meaning elsewhere
+            // maintainer: a click anywhere else closes the list without changing the
+            // selection, and is CONSUMED - closing is the whole gesture. Letting it through
+            // meant a list dismissed by accident also fired whatever sat behind it.
             if (Open && input.LeftMouseClick && !overTitle && !overExpanded)
             {
                 Open = false;
                 Reset();
-                return false;
+                return true;
             }
 
             if (overTitle && input.InGameSelect)

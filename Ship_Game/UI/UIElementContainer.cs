@@ -98,10 +98,18 @@ namespace Ship_Game
             {
                 if (!NewMultiLayeredDrawMode) // DON'T DRAW CHILD ELEMENTS IN MULTI-LAYER MODE
                 {
+                    // ordinary children first, those standing above them second - an open
+                    // dropdown's options must land on top of whatever they cover. Two passes
+                    // rather than a sort: no allocation, and the order is otherwise untouched.
                     for (int i = 0; i < Elements.Count; ++i)
                     {
                         UIElementV2 child = Elements[i];
-                        if (child.Visible) child.Draw(batch, elapsed);
+                        if (child.Visible && !child.DrawsAboveSiblings) child.Draw(batch, elapsed);
+                    }
+                    for (int i = 0; i < Elements.Count; ++i)
+                    {
+                        UIElementV2 child = Elements[i];
+                        if (child.Visible && child.DrawsAboveSiblings) child.Draw(batch, elapsed);
                     }
                 }
             }
@@ -153,6 +161,19 @@ namespace Ship_Game
             Log.Warning(ConsoleColor.DarkRed, text);
         }
 
+        // the priority RISES: a panel holding an open list stands above its own siblings too,
+        // which is what carries the guarantee ACROSS panels instead of within one.
+        public override bool DrawsAboveSiblings
+        {
+            get
+            {
+                for (int i = 0; i < Elements.Count; ++i)
+                    if (Elements[i].Visible && Elements[i].DrawsAboveSiblings)
+                        return true;
+                return false;
+            }
+        }
+
         public override bool HandleInput(InputState input)
         {
             if (Visible && Enabled)
@@ -162,11 +183,21 @@ namespace Ship_Game
                 else
                     DebugDoubleUpdate("UIElement.HandleInput", ref LastInput);
 
+                // whatever stands above its siblings is asked FIRST, whatever its rank - else
+                // a click on an open list's options goes to the panel those options cover
+                for (int i = Elements.Count - 1; i >= 0; --i)
+                {
+                    UIElementV2 above = Elements[i];
+                    if (above.Visible && above.Enabled && above.DrawsAboveSiblings && above.HandleInput(input))
+                        return true;
+                }
+
                 // iterate input in reverse, so we handle topmost objects before;
                 // also Elements can be removed during the HandleInput, so this ensures no elements are skipped
                 for (int i = Elements.Count - 1; i >= 0; --i)
                 {
                     UIElementV2 child = Elements[i];
+                    if (child.DrawsAboveSiblings) continue; // asked in the pass above
                     if (child.Visible && child.Enabled && child.HandleInput(input))
                     {
                         if (DebugInputCapture)

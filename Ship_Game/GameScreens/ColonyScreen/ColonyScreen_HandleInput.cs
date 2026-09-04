@@ -237,8 +237,6 @@ namespace Ship_Game
             if (base.HandleInput(input))
                 return true;
 
-            if (HandleExportImportButtons(input))
-                return true;
 
             return false;
         }
@@ -451,17 +449,9 @@ namespace Ship_Game
             return false;
         }
 
-        bool HandleExportImportButtons(InputState input)
-        {
-            // Policies phase 0: real dropdowns answer for themselves - ReadOnly (the Auto
-            // case, set at draw) already refuses their input, OnValueChange writes the state
-            if (FoodDropDown.HandleInput(input))
-                return true;
-            if (ProdDropDown.HandleInput(input))
-                return true;
-            if (ColonistsDropDown.HandleInput(input))
-                return true;
-            return false;
-        }
+        // bench 570: the three Supply lists used to be handled HERE, after base.HandleInput -
+        // so anything the open options covered took the click first and the list never saw it.
+        // They are registered on the screen now, like every other list in the game, and the
+        // container asks them in draw order. This pass-through has nothing left to do.
     }
 }

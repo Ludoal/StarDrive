@@ -436,6 +436,13 @@ namespace Ship_Game
             }
         }
 
+        // maintainer feedback (bench 570): an element momentarily ABOVE its siblings - an open
+        // dropdown is the case. Drawn LAST so its options land on top of what they cover, and
+        // asked FIRST so the clicks on those options are not eaten by whatever is underneath.
+        // Screens used to arrange this by hand, panel by panel, and it broke the moment a list
+        // overlapped a panel its own screen knew nothing about.
+        public virtual bool DrawsAboveSiblings => false;
+
         // 1. we handle input
         public abstract bool HandleInput(InputState input);
 

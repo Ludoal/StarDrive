@@ -326,7 +326,7 @@ namespace Ship_Game
             FoodStorage.Max = p.Storage.Max;
             FoodStorage.Progress = p.FoodHere;
             FoodStorage.color = "green";
-            FoodDropDown = new DropOptions<Planet.GoodState>(new Vector2(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 36, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9), (int)(0.2f*PStorage.Width), 18);
+            FoodDropDown = Add(new DropOptions<Planet.GoodState>(new Vector2(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 36, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9), (int)(0.2f*PStorage.Width), 18));
             FoodDropDown.AddOption(GameText.Store, Planet.GoodState.STORE);
             FoodDropDown.AddOption(GameText.Import, Planet.GoodState.IMPORT);
             FoodDropDown.AddOption(GameText.Export, Planet.GoodState.EXPORT);
@@ -337,7 +337,7 @@ namespace Ship_Game
             ProdStorage.Max = p.Storage.Max;
             ProdStorage.Progress = p.ProdHere;
             ProfStorageIcon = new Rectangle((int)PStorage.X + 20, ProdStorage.pBar.Y + ProdStorage.pBar.Height / 2 - SupplyIconSize / 2, SupplyIconSize, SupplyIconSize);
-            ProdDropDown = new DropOptions<Planet.GoodState>(new Vector2(PStorage.X + SupplyBarX + 0.4f*PStorage.Width + 36, ProdStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9), (int)(0.2f*PStorage.Width), 18);
+            ProdDropDown = Add(new DropOptions<Planet.GoodState>(new Vector2(PStorage.X + SupplyBarX + 0.4f*PStorage.Width + 36, ProdStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9), (int)(0.2f*PStorage.Width), 18));
             ProdDropDown.AddOption(GameText.Store, Planet.GoodState.STORE);
             ProdDropDown.AddOption(GameText.Import, Planet.GoodState.IMPORT);
             ProdDropDown.AddOption(GameText.Export, Planet.GoodState.EXPORT);
@@ -364,7 +364,7 @@ namespace Ship_Game
             PopStorage.FillTint = ColonyScreen.PopBarTint;
             var iconPop = ResourceManager.Texture("UI/icon_pop_22");
             ColonistsIcon = new Rectangle((int)PStorage.X + 20, (int)(PStorage.Y + storeRow3 + 9 - iconPop.Height / 2f), iconPop.Width, iconPop.Height);
-            ColonistsDropDown = new DropOptions<Planet.GoodState>(new Vector2(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 36, PStorage.Y + storeRow3), (int)(0.2f * PStorage.Width), 18);
+            ColonistsDropDown = Add(new DropOptions<Planet.GoodState>(new Vector2(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 36, PStorage.Y + storeRow3), (int)(0.2f * PStorage.Width), 18));
             // people words, not cargo words (bench 425): Stay / Bring in / Resettle map
             // onto STORE / IMPORT / EXPORT in the same order. QUI decides moved to the
             // Auto checkbox (auto-supplies) - in Auto the list shows the formula's live pick

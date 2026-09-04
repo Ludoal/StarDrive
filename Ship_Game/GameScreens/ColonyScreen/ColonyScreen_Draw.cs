@@ -412,12 +412,9 @@ namespace Ship_Game
 
             // bench 455: closed boxes first, the OPEN one very last - a closed sibling
             // below was painting its frame across the expanded list
-            if (!FoodDropDown.Open)      FoodDropDown.Draw(batch, elapsed);
-            if (!ProdDropDown.Open)      ProdDropDown.Draw(batch, elapsed);
-            if (!ColonistsDropDown.Open) ColonistsDropDown.Draw(batch, elapsed);
-            if (FoodDropDown.Open)       FoodDropDown.Draw(batch, elapsed);
-            if (ProdDropDown.Open)       ProdDropDown.Draw(batch, elapsed);
-            if (ColonistsDropDown.Open)  ColonistsDropDown.Draw(batch, elapsed);
+            // the three Supply lists are registered on the screen now: the container draws
+            // them, and draws an open one last so its options land on top. This screen used to
+            // order that by hand, which only ever worked against its own panels.
 
             batch.Draw(ResourceManager.Texture("NewUI/icon_storage_food"), FoodStorageIcon, Color.White);
             batch.Draw(ResourceManager.Texture("NewUI/icon_storage_production"), ProfStorageIcon, Color.White);
