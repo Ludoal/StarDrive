@@ -36,6 +36,13 @@ namespace Ship_Game
 
         public readonly UITable Table; // the shared table charte owns geometry, headers and rules
         static int LastSortCol = -1;   // session-persistent (bench 307)
+        // maintainer feedback: the sort was remembered and the two filters were not - the
+        // page came back sorted but wide open every time. Same session-persistence, same
+        // shape. Stored by VALUE: a remembered owner that no longer appears (a race met
+        // since, an empire wiped out) simply fails to match and the picker stays on All,
+        // which is the right fallback rather than a stale filter hiding half the list.
+        static string LastProximity = "";
+        static string LastOwner = "";
         static bool LastSortAsc = true;
 
         private UICheckBox cb_hideUninhabitable;
@@ -181,7 +188,8 @@ namespace Ship_Game
                 string cat = Localizer.Token(catKey);
                 ProximityFilter.AddOption(cat, cat);
             }
-            ProximityFilter.OnValueChange = _ => ResetList();
+            ProximityFilter.SetActiveValue(LastProximity); // tolerant: a value no longer offered just fails
+            ProximityFilter.OnValueChange = v => { LastProximity = v; ResetList(); };
 
             OwnerFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 280, (int)lineY, 130, 18)));
             OwnerFilter.AddOption(Localizer.Token(GameText.UhAllOwners), "");
@@ -196,7 +204,8 @@ namespace Ship_Game
                     OwnerFilter.AddOption(o, o);
                 }
             }
-            OwnerFilter.OnValueChange = _ => ResetList();
+            OwnerFilter.SetActiveValue(LastOwner); // ...rather than logging an error, which the setter does
+            OwnerFilter.OnValueChange = v => { LastOwner = v; ResetList(); };
         }
 
         void CalcPlanetsDistances()
