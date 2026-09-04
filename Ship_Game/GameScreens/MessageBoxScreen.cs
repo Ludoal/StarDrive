@@ -51,6 +51,10 @@ namespace Ship_Game
             Timer = timer;
         }
 
+        // maintainer feedback: same rule as PopupWindow - a dialog is modal, so it pauses
+        // whatever the page-pause option says. The player cannot pause by hand under it.
+        protected override bool PageAlwaysPauses => true;
+
         public MessageBoxScreen(GameScreen parent, string message, string okText, string cancelText,
                                 MessageBoxButtons buttons = MessageBoxButtons.Default, int width = 320)
             : base(parent, toPause: UniverseToPause(parent))

@@ -52,6 +52,11 @@ namespace Ship_Game
         // while the box asking the question sat wherever its own page had put it.
         public override Rectangle PageFrame => Rect;
 
+        // maintainer feedback: a popup is modal - it holds the input, so the player cannot even
+        // pause by hand while it is up. The page-pause option governs PAGES; a dialog box always
+        // stops the simulation, whatever that option says.
+        protected override bool PageAlwaysPauses => true;
+
         protected PopupWindow(GameScreen parent, int width, int height)
             : base(parent, CenterScreen(width, height),
                    toPause: UniverseToPause(parent))
