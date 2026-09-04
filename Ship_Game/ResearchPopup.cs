@@ -54,14 +54,19 @@ public sealed class ResearchPopup : PopupWindow
         Array<UnlockItem> unlocks = UnlockItem.CreateUnlocksList(Technology, Universe.Player);
         UnlockSL.SetItems(unlocks.Select(u => new UnlockListItem(u, Universe.Player)));
 
-        // bench 450 (wishlist): straight to the tree from the unlock popup
-        var goBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(0, Rect.Bottom - 51), GameText.GoToResearch)); // bench 451: +11px off the floor
-        goBtn.Pos = new Vector2(Rect.X + (Rect.Width - goBtn.Width) / 2f, goBtn.Pos.Y); // bottom centre
-        goBtn.OnClick = b =>
+        // bench 450 (wishlist): straight to the tree from the unlock popup - but only when you
+        // are not already standing in it (bench 570). The popup opens from two places, the tree
+        // itself and a notification, and it does not know which; the tree answers for itself.
+        if (ScreenManager.FindScreen<ResearchScreenNew>() == null)
         {
-            ExitScreen();
-            ScreenManager.AddScreen(new ResearchScreenNew(Universe, Universe, Universe.EmpireUI));
-        };
+            var goBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(0, Rect.Bottom - 51), GameText.GoToResearch)); // bench 451: +11px off the floor
+            goBtn.Pos = new Vector2(Rect.X + (Rect.Width - goBtn.Width) / 2f, goBtn.Pos.Y); // bottom centre
+            goBtn.OnClick = b =>
+            {
+                ExitScreen();
+                ScreenManager.AddScreen(new ResearchScreenNew(Universe, Universe, Universe.EmpireUI));
+            };
+        }
     }
 
     class UnlockListItem : ScrollListItem<UnlockListItem>
