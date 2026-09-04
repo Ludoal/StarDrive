@@ -232,7 +232,10 @@ namespace Ship_Game.GameScreens
                     };
                     Add(c.Budget);
 
-                    var defRect = new Rectangle(col.X + 8, col.Y + HeaderH + BudgetH + 22, col.Width - 60, 40); // below the DEFENSE band
+                    // maintainer feedback: Defense Weight is a spending decision, so it belongs
+                    // with the budget - on the same row the rival columns give Level Max, which
+                    // keeps every column's second slider on one line.
+                    var defRect = new Rectangle(col.X + 8, (int)budgetY + RowButton, col.Width - 60, 40);
                     c.Weight = new FloatSlider(defRect, GameText.EspioangeDefenseWeight, min: 0,
                                                max: Empire.MaxEspionageDefenseWeight, value: Player.EspionageDefenseWeight);
                     c.Weight.Tip = GameText.EspioangeDefenseWeightTip;
@@ -476,6 +479,19 @@ namespace Ship_Game.GameScreens
                 float espionageCost = Player.GetEspionageCost();
                 string cost = $"{(espionageCost > 0 ? -espionageCost : espionageCost).String(1)} " + Localizer.Token(GameText.IfBcPerTurn);
                 batch.DrawString(Font12, cost, new Vector2(col.X + 8, budgetY + 70), espionageCost > 0 ? Color.Pink : Color.LightGreen);
+
+                // maintainer feedback: the player's own share of the espionage budget, drawn in
+                // the DEFENSE band the slider just left. Defense sits in the same denominator as
+                // the infiltration weights, so raising those lowers this - previously the points
+                // per target climbed with nothing on screen going down. Same shield glyph and
+                // placement as a rival column's ratio, so the two read alike.
+                SubTexture ownShield = ResourceManager.Texture("UI/icon_shield");
+                var ownShieldRect = new Rectangle(col.X + 8, (int)defenseY + 24, ownShield.Width, ownShield.Height);
+                batch.Draw(ownShield, ownShieldRect, Color.White);
+                int ownTotal = Player.CalcTotalEspionageWeight();
+                int ownShare = ownTotal > 0 ? (int)(Player.EspionageDefenseWeight * 100f / ownTotal) : 100;
+                batch.DrawString(Font12Bold, $"{ownShare.String()}%",
+                                 new Vector2(ownShieldRect.Right + 6, ownShieldRect.Y + 4), Color.White);
                 // Ludoal fork: the SETTINGS band that lived here (Disable Messages) moved to the
                 // Automation tab of the Empire group, with the other notification switches.
 
