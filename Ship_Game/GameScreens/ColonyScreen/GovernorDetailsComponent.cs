@@ -202,8 +202,8 @@ namespace Ship_Game
             ColonyTypeList = Add(new DropOptions<Planet.ColonyType>(100, 18));
             ColonyTypeList.AddOption(option:"--", Planet.ColonyType.Colony);
             ColonyTypeList.AddOption(option:GameText.Core, Planet.ColonyType.Core);
-            ColonyTypeList.AddOption(option:GameText.Industrial, Planet.ColonyType.Industrial);
             ColonyTypeList.AddOption(option:GameText.Agricultural, Planet.ColonyType.Agricultural);
+            ColonyTypeList.AddOption(option:GameText.Industrial, Planet.ColonyType.Industrial);
             ColonyTypeList.AddOption(option:GameText.Research, Planet.ColonyType.Research);
             ColonyTypeList.AddOption(option:GameText.Military, Planet.ColonyType.Military);
             // ColonyTypeList.AddOption(option:GameText.TradeHub, Planet.ColonyType.TradeHub); // retired (auto-supplies) - kept in case the role returns with another function

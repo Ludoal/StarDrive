@@ -297,8 +297,8 @@ namespace Ship_Game
             SwitchColonyType = base.Add(Add(new DropOptions<Planet.ColonyType>(blueprintsOptionsX + 150, optRow0 + 2 * OptionsRow, 100, 18)));
             SwitchColonyType.AddOption(option: "--", Planet.ColonyType.Colony);
             SwitchColonyType.AddOption(option: GameText.Core, Planet.ColonyType.Core);
-            SwitchColonyType.AddOption(option: GameText.Industrial, Planet.ColonyType.Industrial);
             SwitchColonyType.AddOption(option: GameText.Agricultural, Planet.ColonyType.Agricultural);
+            SwitchColonyType.AddOption(option: GameText.Industrial, Planet.ColonyType.Industrial);
             SwitchColonyType.AddOption(option: GameText.Research, Planet.ColonyType.Research);
             SwitchColonyType.AddOption(option: GameText.Military, Planet.ColonyType.Military);
             SwitchColonyType.ActiveValue = Planet.ColonyType.Colony;
