@@ -60,7 +60,10 @@ namespace Ship_Game.GameScreens
         const int Block1 = 4;                  // rows 1-3
         const int Block2 = Block1 + 3 * RowH;  // rows 4-6  (73)
         const int Block3 = Block2 + 3 * RowH;  // rows 7-9  (142)
-        const int RowValue = 2 * RowH;         // third row of a block: the figure, under the slider
+        // third row of a block: the figure, under the slider. 4px above the bare grid line -
+        // the maintainer measured it: a slider's ticks hang below its rect and the figure sat
+        // too low against them. One constant, so all three blocks and every column move as one.
+        const int RowValue = 2 * RowH - 4;
         const int DefenseH = 33; // the 19px the budget grid took: a shield and its figure, no more
 
         class EmpireColumn
