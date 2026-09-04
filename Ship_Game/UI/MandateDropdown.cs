@@ -40,6 +40,7 @@ namespace Ship_Game
             list.AddOption(option: GameText.MandateAll, Planet.BuildMandate.All);
             list.AddOption(option: GameText.MandateEconomicOnly, Planet.BuildMandate.EconomicOnly);
             list.AddOption(option: GameText.MandateDefenseOnly, Planet.BuildMandate.DefenseOnly);
+            list.AddOption(option: GameText.MandateBlueprintOnly, Planet.BuildMandate.BlueprintOnly);
             list.AddOption(option: GameText.MandateNone, Planet.BuildMandate.None);
             list.ActiveValue = active;
             list.OnValueChange = apply;
@@ -68,6 +69,7 @@ namespace Ship_Game
                 list.AddOption(option: GameText.MandateAll, Planet.BuildMandate.All);
                 list.AddOption(option: GameText.MandateEconomicOnly, Planet.BuildMandate.EconomicOnly);
                 list.AddOption(option: GameText.MandateDefenseOnly, Planet.BuildMandate.DefenseOnly);
+                list.AddOption(option: GameText.MandateBlueprintOnly, Planet.BuildMandate.BlueprintOnly);
                 list.AddOption(option: GameText.MandateNone, Planet.BuildMandate.None);
                 list.ActiveValue = own;
             }

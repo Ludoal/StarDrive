@@ -22638,6 +22638,10 @@ MandateShortNone:
  Id: 30116
  ENG: "None"
  FRA: "Aucun"
+MandateBlueprintOnly:
+ Id: 30117
+ ENG: "Blueprint only"
+ FRA: "Schema seul"
 NoResearchAlert:
  Id: 30071
  ENG: "NO RESEARCH!"

@@ -54,6 +54,11 @@ namespace Ship_Game
             // refuse it outright, because the mandate is stored as an int and a stray write would
             // put a screen word into a save file.
             ByBlueprint = 5,
+            // Ludoal fork (maintainer feedback): build ONLY what the assigned plan lists, in
+            // its order, and stop when the list is done - no exclusivity, so the player keeps
+            // his queue and nothing outside the plan is torn down. Appended: the mandate is
+            // stored as an int, so 0..5 keep their meaning in existing saves.
+            BlueprintOnly = 6,
         }
 
         public override string ToString() =>

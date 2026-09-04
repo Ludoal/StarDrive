@@ -54,7 +54,7 @@ namespace Ship_Game
             // Ludoal fork (maintainer feedback): the mandate is the RIGHT, the blueprint is the
             // PLAN. A plan directs what gets built inside the right the mandate grants; it does not
             // grant a right of its own.
-            bool mayBuild = MayBuildCivilian;
+            bool mayBuild = MayBuildCivilian && !BuildsOnlyTheBlueprint;
             bool mayScrap = MayScrapCivilian;
 
             // Cancel what is merely QUEUED before anything else: dropping a plan costs the

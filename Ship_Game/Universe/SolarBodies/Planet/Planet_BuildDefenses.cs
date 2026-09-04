@@ -120,6 +120,10 @@ namespace Ship_Game
                 case BuildMandate.All:          return true;
                 case BuildMandate.EconomicOnly: return !military;
                 case BuildMandate.DefenseOnly:  return military;
+                // the plan must be able to raise its own entries, so the RIGHT is full here
+                // and the free path is closed instead - see BuildsOnlyTheBlueprint. Without
+                // this case the default would answer 'nothing allowed' and gag the plan too.
+                case BuildMandate.BlueprintOnly: return true;
                 default:                        return false;
             }
         }
@@ -146,6 +150,12 @@ namespace Ship_Game
         // an exclusive plan commands this colony, so its pickers show the delegation and answer
         // nothing while it lasts
         public bool MandatesDelegated => HasExclusiveBlueprints;
+
+        // Ludoal fork (maintainer feedback): the plan is the whole programme. The governor
+        // raises its entries, in order, and stops when the list is done instead of carrying on
+        // with whatever it fancies. Read by the two FREE paths only - the plan's own path is
+        // untouched, which is what lets the list still be built.
+        public bool BuildsOnlyTheBlueprint => EffectiveBuildMandate == BuildMandate.BlueprintOnly;
 
         public bool MayBuildMilitary  => MayBuild(EffectiveBuildMandate, military: true);
         public bool MayBuildCivilian  => MayBuild(EffectiveBuildMandate, military: false);
@@ -526,7 +536,7 @@ namespace Ship_Game
             // The mandate is the RIGHT, the blueprint is the PLAN - two thresholds, never the same
             // storey. Blueprints used to OR their way through, which made a Scrap Mandate of None
             // do nothing at all on a colony that had a plan.
-            bool mayBuild = MayBuildMilitary;
+            bool mayBuild = MayBuildMilitary && !BuildsOnlyTheBlueprint;
             bool mayScrap = MayScrapMilitary;
 
             if (MilitaryBuildingInTheWorks || !mayBuild && !mayScrap)
@@ -587,7 +597,7 @@ namespace Ship_Game
             {
                 // the exclusivity no longer stands beside the right: it IS the right now, resolved
                 // into the mandate, so asking twice would be the homonym we just removed
-                if (MayBuildMilitary)
+                if (MayBuildMilitary && !BuildsOnlyTheBlueprint)
                     best = BuildingsCanBuild.FindMaxFiltered(b => b.IsMilitary && b.ActualMaintenance(this) <= budget,
                                                              b => b.CostEffectiveness);
             }

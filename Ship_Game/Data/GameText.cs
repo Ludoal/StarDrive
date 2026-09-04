@@ -6284,6 +6284,7 @@ namespace Ship_Game
         MandateShortDefense = 30115,
         /// <summary>None</summary>
         MandateShortNone = 30116,
+        MandateBlueprintOnly = 30117,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>
