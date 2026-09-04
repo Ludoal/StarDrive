@@ -62,6 +62,11 @@ namespace Ship_Game
             public Rectangle Rect;
             public T Value;
 
+            // maintainer feedback: an entry may carry a glyph to its left - the lock the game
+            // already draws elsewhere for an exclusive blueprint. Optional: an entry without
+            // one lays out exactly as before, so every other caller is untouched.
+            public SubTexture Icon;
+
             public Entry(in LocalizedText name, T value)
             {
                 Name  = name;
@@ -144,6 +149,15 @@ namespace Ship_Game
             Options.Add(e);
         }
 
+        // same, with a glyph drawn ahead of the text - both on the closed title and in the
+        // open list, so the mark does not vanish once the choice is made.
+        public void AddOption(in LocalizedText option, T value, SubTexture icon)
+        {
+            var e = new Entry(option, value) { Icon = icon };
+            e.UpdateRect(this, Options.Count);
+            Options.Add(e);
+        }
+
         public bool Contains(Func<T, bool> selector)
         {
             for (int i = 0; i < Options.Count; ++i)
@@ -184,6 +198,20 @@ namespace Ship_Game
             return new Vector2(rect.X + 10, rect.Y + rect.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2);
         }
 
+        // draws an entry's glyph when it has one, and answers where its text starts. Sized to
+        // the line so it rides the text rather than the row, and squared off its own ratio.
+        static Vector2 DrawIcon(SpriteBatch batch, Entry e, Rectangle rect, Color color)
+        {
+            Vector2 pos = TextPosition(rect);
+            if (e?.Icon == null)
+                return pos;
+            int h = Fonts.Arial12Bold.LineSpacing - 3;
+            var r = new Rectangle((int)pos.X, rect.Y + rect.Height / 2 - h / 2,
+                                  e.Icon.Width * h / e.Icon.Height, h);
+            batch.Draw(e.Icon, r, color);
+            return new Vector2(r.Right + 4, pos.Y);
+        }
+
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             if (!Visible)
@@ -199,7 +227,8 @@ namespace Ship_Game
             if (Count > 0) // draw active item
             {
                 Color color = ReadOnly ? Color.Gray : hover ? Color.White : Colors.Cream;
-                batch.DrawString(Fonts.Arial12Bold, WrappedString(ActiveName), TextPosition(Rect), color);
+                batch.DrawString(Fonts.Arial12Bold, WrappedString(ActiveName),
+                                 DrawIcon(batch, Options[ActiveIndex], Rect, color), color);
             }
 
             if (Open) // draw drop options
@@ -230,7 +259,7 @@ namespace Ship_Game
                     batch.Draw(ResourceManager.Texture("NewUI/dropdown_menuitem_hover_right"), hoverRight, Color.White);
                 }
                 batch.DrawString(Fonts.Arial12Bold, WrappedString(e.Name.Text),
-                                                    TextPosition(e.Rect), Color.White);
+                                 DrawIcon(batch, e, e.Rect, Color.White), Color.White);
                 ++drawOffset;
             }
         }

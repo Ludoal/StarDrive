@@ -271,9 +271,13 @@ namespace Ship_Game
             // every list at once. A plan without a governor is the universal candidate, not the
             // candidate for nothing, and hand-laid plans from before the governors are exactly
             // the ones a player wants to assign.
+            // maintainer feedback: an exclusive plan is marked with the lock the game already
+            // uses for it - the picker says which plans forbid anything outside their list,
+            // without the player opening each one to find out.
+            SubTexture lockIcon = ResourceManager.Texture("NewUI/icon_lock");
             foreach (BlueprintsTemplate t in ResourceManager.GetAllBlueprints())
                 if (t.ColonyType == type || t.ColonyType == Planet.ColonyType.Colony)
-                    list.AddOption(option: t.Name, t.Name);
+                    list.AddOption(option: t.Name, t.Name, t.Exclusive ? lockIcon : null);
 
             string current = player.GetBlueprintPolicy(type);
             // a plan whose file was deleted or renamed outside the game: say so on the row rather
