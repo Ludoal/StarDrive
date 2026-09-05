@@ -740,7 +740,11 @@ namespace Ship_Game.Universe
                 RemnantPaceSetting.Slow     => 1.5f,
                 _                           => 1f,
             };
-            return (pace * chosen).LowerBound(1);
+            // Ludoal fork (maintainer, 5 Sep '26): the floor goes on the BASE, before the
+            // multiplication. Applied to the product, it swallows the player's choice exactly
+            // where the base is smallest - a large, dense galaxy, where every term above bites -
+            // so the setting reads as dead in the games that need it most.
+            return pace.LowerBound(1) * chosen;
         }
 
         float GetResearchMultiplier()
