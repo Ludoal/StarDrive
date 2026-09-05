@@ -942,9 +942,19 @@ namespace Ship_Game
             RefreshChainList();
         }
 
+        // the colonies and the governor defaults both name the plan; the second was swept
+        // by nothing until now, so a deleted plan left its row pointing at a name gone
+        public void AfterBlueprintsRename(string oldName, BlueprintsTemplate renamed)
+        {
+            Player.Universe.RenameEmpiresBlueprints(oldName, renamed);
+            BlueprintsName.Text = renamed.Name;
+            RefreshChainList();
+        }
+
         public void AfterBluprintsDelete(BlueprintsTemplate template)
         {
             Player.Universe.RefreshEmpiresPlanetsBlueprints(template, delete: true);
+            Player.Universe.ClearEmpiresBlueprintPolicy(template.Name);
             LinkBlueprints.Enabled = BlueprintsName.Text != template.Name;
             ResourceManager.BlueprintsTemplatesDict.Remove(template.Name);
         } 

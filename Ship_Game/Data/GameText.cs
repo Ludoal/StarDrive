@@ -6323,6 +6323,18 @@ namespace Ship_Game
         BgtProjectorsTip = 30135,
         /// <summary>BC/turn</summary>
         BgtPerTurn = 30136,
+        /// <summary>Rename</summary>
+        BpRename = 30137,
+        /// <summary>Rename this plan. The colonies that adopted it, the governor defaults that name it and the chains that point at it all follow. The plan remembers its former name, so older saves find it again on their own.</summary>
+        BpRenameTip = 30138,
+        /// <summary>Rename '{0}' to '{1}'? {2} colonies, {3} governor defaults and {4} chains will follow the new name.</summary>
+        BpRenameConfirm = 30139,
+        /// <summary>That is already the name of this plan.</summary>
+        BpRenameSameName = 30140,
+        /// <summary>That name cannot be used for a file, or holds a character the game cannot draw.</summary>
+        BpRenameBadChars = 30141,
+        /// <summary>'{0}' is already carried by another plan, now or in the past.</summary>
+        BpRenameTaken = 30142,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>

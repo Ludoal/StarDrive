@@ -143,7 +143,7 @@ namespace Ship_Game
             EnterNameArea = Add(new UITextEntry(TitlePosition, Fonts.Arial20Bold, InitText));
             EnterNameArea.Enabled = (Mode == SLMode.Save); // Only enable name field change when saving
 
-            string title = Mode == SLMode.Save ? "Save" : "Load";
+            string title = Mode == SLMode.Save ? SaveButtonTitle : "Load";
             DoBtn = ButtonSmall(sub.X + sub.W - 88, EnterNameArea.Y - 2, title, b =>
             {
                 if (Mode == SLMode.Save)
@@ -151,6 +151,10 @@ namespace Ship_Game
                 else if (Mode == SLMode.Load)
                     Load();
             });
+
+            // a screen that offers a second gesture on the same name adds it here, on the
+            // same row and left of the main button - the geometry stays in one place
+            AddExtraButtons(sub.X + sub.W - 176, EnterNameArea.Y - 2);
 
             if (ShowSaveExport)
             {
@@ -164,6 +168,9 @@ namespace Ship_Game
             // (no base.LoadContent() here: it ran at the top, and calling it again would
             // RemoveAll() everything this method just built)
         }
+
+        protected virtual string SaveButtonTitle => "Save";
+        protected virtual void AddExtraButtons(float x, float y) { }
 
         protected virtual void OnSaveLoadItemClicked(SaveLoadListItem item)
         {

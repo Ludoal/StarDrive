@@ -1069,8 +1069,30 @@ namespace Ship_Game
             else { b = BuildingsById[buildingId]; return true; }
         }
 
-        public static bool TryGetBlueprints(string BlueprintsName, out BlueprintsTemplate blueprintsTemplate) 
-            => BlueprintsTemplatesDict.TryGetValue(BlueprintsName, out blueprintsTemplate);
+        // The catalogue keeps ONE key per plan - its current name - because its values feed
+        // every list of plans in the game, and a second key would show the same plan twice.
+        // A name that does not resolve is looked up among the names the plans used to carry:
+        // that is how a save, a chain or a governor's default written before a rename finds
+        // its plan again. The scan runs only on the miss, over a handful of plans.
+        public static bool TryGetBlueprints(string BlueprintsName, out BlueprintsTemplate blueprintsTemplate)
+        {
+            if (BlueprintsTemplatesDict.TryGetValue(BlueprintsName, out blueprintsTemplate))
+                return true;
+
+            if (BlueprintsName.NotEmpty())
+            {
+                foreach (BlueprintsTemplate t in BlueprintsTemplatesDict.Values)
+                {
+                    if (t.FormerNames?.Contains(BlueprintsName) == true)
+                    {
+                        Log.Write($"Blueprints '{BlueprintsName}' was renamed to '{t.Name}' - reattached");
+                        blueprintsTemplate = t;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
 
         static void LoadBlueprintsTemplates()
         {

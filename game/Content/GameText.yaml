@@ -22714,6 +22714,30 @@ BgtPerTurn:
  Id: 30136
  ENG: "BC/turn"
  FRA: "BC/tour"
+BpRename:
+ Id: 30137
+ ENG: "Rename"
+ FRA: "Renommer"
+BpRenameTip:
+ Id: 30138
+ ENG: "Rename this plan. The colonies that adopted it, the governor defaults that name it and the chains that point at it all follow. The plan remembers its former name, so older saves find it again on their own."
+ FRA: "Renommer ce plan. Les colonies qui l'ont adopté, les plans par défaut des gouverneurs qui le désignent et les chaînes qui pointent dessus suivent tous. Le plan garde son ancien nom, si bien que les anciennes sauvegardes le retrouvent d'elles-mêmes."
+BpRenameConfirm:
+ Id: 30139
+ ENG: "Rename '{0}' to '{1}'?\n{2} colonies, {3} governor defaults and {4} chains will follow the new name."
+ FRA: "Renommer « {0} » en « {1} » ?\n{2} colonies, {3} plans par défaut de gouverneur et {4} chaînes suivront le nouveau nom."
+BpRenameSameName:
+ Id: 30140
+ ENG: "That is already the name of this plan."
+ FRA: "C'est déjà le nom de ce plan."
+BpRenameBadChars:
+ Id: 30141
+ ENG: "That name cannot be used for a file, or holds a character the game cannot draw."
+ FRA: "Ce nom ne peut pas servir de nom de fichier, ou contient un caractère que le jeu ne sait pas dessiner."
+BpRenameTaken:
+ Id: 30142
+ ENG: "'{0}' is already carried by another plan, now or in the past."
+ FRA: "« {0} » est déjà porté par un autre plan, aujourd'hui ou par le passé."
 BlueprintsCannotBuildTroopsTip:
  Id: 30119
  ENG: "No planned building in this blueprint can train infantry. Add a building that trains troops to the plan."

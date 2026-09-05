@@ -29,6 +29,23 @@ public sealed class BlueprintsTemplate
     // already on the plan's tiles, which is what kept it unique before.
     [StarData] public Array<string> PlannedBuildings;
     [StarData] public ColonyType ColonyType;
+    // Every name this plan has answered to. A rename rewrites the references of the game in
+    // hand, but a save written before it still holds the old name - and so does a chain, or a
+    // governor's default. Those find the plan again through this list rather than losing it.
+    // Added, never replacing anything: absent from an older save, it simply arrives null.
+    [StarData] public Array<string> FormerNames;
+
+    // the plan answers to its name and to every name it has carried
+    public bool KnownAs(string name) => Name == name || FormerNames?.Contains(name) == true;
+
+    public void RecordFormerName(string previous)
+    {
+        if (previous.IsEmpty() || previous == Name)
+            return;
+        FormerNames ??= new Array<string>();
+        if (!FormerNames.Contains(previous))
+            FormerNames.Add(previous);
+    }
     public static string CurrentModName =>  GlobalStats.HasMod ? GlobalStats.ModName : "BBplus";
 
     [StarDataConstructor] public BlueprintsTemplate() { }
@@ -47,6 +64,8 @@ public sealed class BlueprintsTemplate
     [StarDataDeserialized]
     void OnDeserialized()
     {
+        FormerNames ??= new Array<string>();
+
         if (PlannedBuildings != null)
             return;
 
@@ -63,6 +82,7 @@ public sealed class BlueprintsTemplate
         Exclusive = exclusive;
         LinkTo = linkTo;
         PlannedBuildings = plannedBuildings;
+        FormerNames = new Array<string>();
         ColonyType = cType == ColonyType.TradeHub ? ColonyType.Colony : cType;
     }
 

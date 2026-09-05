@@ -177,6 +177,29 @@ namespace Ship_Game
             ResolveBlueprintPolicy(type);
         }
 
+        // Nothing else sweeps this array: a deleted plan left its row pointing at a name the
+        // catalogue no longer knows, and said nothing. A rename retargets the rows, a deletion
+        // clears them - pass an empty new name for that.
+        public int CountBlueprintPolicyRows(string blueprintName)
+        {
+            int n = 0;
+            for (int i = 0; i < BlueprintPolicyValue.Count; ++i)
+                if (BlueprintPolicyValue[i] == blueprintName)
+                    ++n;
+            return n;
+        }
+
+        public void RetargetBlueprintPolicy(string oldName, string newName)
+        {
+            for (int i = 0; i < BlueprintPolicyValue.Count; ++i)
+            {
+                if (BlueprintPolicyValue[i] != oldName)
+                    continue;
+                BlueprintPolicyValue[i] = newName ?? "";
+                ResolveBlueprintPolicy((Planet.ColonyType)i);
+            }
+        }
+
         // Re-resolves every colony of this governor type that is left on Auto. Called when the row
         // changes, and when a colony's governor type changes under it.
         public void ResolveBlueprintPolicy(Planet.ColonyType type)
@@ -2844,6 +2867,24 @@ namespace Ship_Game
                         planet.Blueprints.ChangeTemplate(template);
                 }
             }
+        }
+
+        // the colonies still hold the OLD name when a rename runs, so the match cannot be made
+        // against the renamed template's own name - it has to be told which name to look for
+        public int CountPlanetsWithBlueprints(string blueprintName)
+        {
+            int n = 0;
+            foreach (Planet planet in OwnedPlanets)
+                if (planet.HasBlueprints && planet.Blueprints.Name == blueprintName)
+                    ++n;
+            return n;
+        }
+
+        public void RenamePlanetsBlueprints(string oldName, BlueprintsTemplate renamed)
+        {
+            foreach (Planet planet in OwnedPlanets)
+                if (planet.HasBlueprints && planet.Blueprints.Name == oldName)
+                    planet.Blueprints.ChangeTemplate(renamed);
         }
 
         public void ValidateAndReloadPlanetsBlueprints()

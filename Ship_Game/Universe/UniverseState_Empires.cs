@@ -378,6 +378,23 @@ public partial class UniverseState
             empire.RefreshPlanetsBlueprints(template, delete);
     }
 
+    // a rename touches two kinds of reference the empires hold: the colonies that adopted the
+    // plan, and the per-governor default, which stores a name
+    public void RenameEmpiresBlueprints(string oldName, BlueprintsTemplate renamed)
+    {
+        foreach (Empire empire in MajorEmpires)
+        {
+            empire.RenamePlanetsBlueprints(oldName, renamed);
+            empire.RetargetBlueprintPolicy(oldName, renamed.Name);
+        }
+    }
+
+    public void ClearEmpiresBlueprintPolicy(string deletedName)
+    {
+        foreach (Empire empire in MajorEmpires)
+            empire.RetargetBlueprintPolicy(deletedName, "");
+    }
+
     public void ValidateAndReloadEmpiresPlanetsBlueprints()
     {
         foreach (Empire empire in MajorEmpires)
