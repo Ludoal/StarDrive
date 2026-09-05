@@ -61,7 +61,8 @@ namespace Ship_Game
         // Ludoal fork: everything the page owns at this pixel - its declared frame, and the
         // controls it draws outside that frame (the bottom-right buttons over the minimap).
         static bool PageOwnsPixel(GameScreen caller, Vector2 pos)
-            => caller.PageFrame.HitTest(pos) || CallerDrawsHere(caller, pos);
+            => caller.PageFrame.HitTest(pos) || CallerDrawsHere(caller, pos)
+            || caller.AboveHitTest(pos); // an open list stands over this pixel: the page owns it
 
         static bool CallerDrawsHere(GameScreen caller, Vector2 pos)
         {
