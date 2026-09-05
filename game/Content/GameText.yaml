@@ -22605,7 +22605,8 @@ EspionageMessagesTip:
  ENG: "Toggle all Espionage notifications (mission results, detected enemy operations)."
 PrioritizationHeaderTip:
  Id: 30106
- ENG: "Categories in the upper block are prioritized in their display order; arrows reorder, the inhibit glyph demotes to the lower block. Priorities apply when an item ENTERS a build queue; existing queues are never reshuffled."
+ ENG: "Categories in the upper block are prioritized in their display order; arrows reorder, the inhibit glyph demotes to the lower block. Priorities apply when an item ENTERS a build queue; existing queues are never reshuffled. Ship and orbital refits always jump to the front of every queue: that is the base game's behavior and this list does not affect it. The only exception: if the item at the front is due within 5 turns, the refit waits behind it."
+ FRA: "Les categories du bloc du haut sont prioritaires dans leur ordre d'affichage ; les fleches les reordonnent, le glyphe d'inhibition les renvoie au bloc du bas. Une priorite s'applique quand un element ENTRE dans une file ; les files deja constituees ne sont jamais reordonnees. Les refits de vaisseaux et d'orbitaux passent toujours en tete de chaque file : c'est le comportement du jeu de base, et cette liste n'y change rien. Seule exception : si l'element de tete se termine dans moins de 5 tours, le refit attend derriere lui."
 NgTabEnvironmental:
  Id: 30109
  ENG: "Environmental"
