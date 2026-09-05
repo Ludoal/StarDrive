@@ -80,7 +80,12 @@ namespace Ship_Game.GameScreens
                          new UILabel(NeutralText(getValue, f => f.MoneyString())) );
             }
 
-            public void Spacer() => Add(new UILabel(" ", Fonts.Arial8Bold)); // half-height breath
+            // a line break inside a block is a fixed SEPARATION, not a blank line whose height
+            // happens to be a font's. The gap between the two rows it parts measures
+            // LineBreakH whatever the row font is, so one number governs every block.
+            const float LineBreakH = 20f;
+            public void Spacer()
+                => Add(new UISpacer(0f, Math.Max(0f, LineBreakH - (Fonts.Arial12Bold.LineSpacing + Padding.Y))));
 
             // totals are regular rows, not the UIList Footer — the Footer pins to the
             // rect bottom and breaks the even row pitch
