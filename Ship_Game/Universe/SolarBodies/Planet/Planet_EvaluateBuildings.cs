@@ -889,7 +889,9 @@ namespace Ship_Game
             }
         }
 
-        bool AreTerraformersNeeded
+        // public: the construction queue asks it too, to know whether a terraformer may be
+        // sent to the back of the line
+        public bool AreTerraformersNeeded
         {
             get
             {

@@ -491,7 +491,16 @@ namespace Ship_Game.Universe.SolarBodies
                 }
                 else
                 {
-                    if (P.Owner.AutoBuildTerraformers && P.Owner.data.Traits.TerraformingLevel > 0 && !item.IsPlayerAdded)
+                    // (maintainer decision) The base game sends the terraformer to the BACK of the
+                    // queue on every governor add, so a colony following a plan raises the whole
+                    // plan first and the terraformer last. The two delays do not cost the same: a
+                    // terraformer is a decades-long investment that removes itself once the work is
+                    // done - it borrows a tile rather than taking one - while a plan's building
+                    // pushed back costs a few turns of yield. So while the colony is still short of
+                    // the terraformers the game asked for, it keeps its place. The count is already
+                    // bounded and only one is ever built at a time, so this cannot run away.
+                    if (P.Owner.AutoBuildTerraformers && P.Owner.data.Traits.TerraformingLevel > 0
+                        && !item.IsPlayerAdded && !P.AreTerraformersNeeded)
                         DePrioritizeTerraformer();
 
                     if (item.Rush && item.QType == QueueItemType.OrbitalUrgent)
