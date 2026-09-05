@@ -167,7 +167,7 @@ namespace Ship_Game
                 zone.Add(p);
 
             zone.Quota = quota;
-            zone.Exclusive = exclusive;
+            Player.SetZoneExclusive(zone, exclusive);
             zone.Priority = priority;
             // an empty box keeps the name the zone already had, rather than leaving it nameless
             if (name.NotEmpty() && name != zone.Name)

@@ -38,12 +38,32 @@ namespace Ship_Game
         // must never leave behind.
         public void RemoveTradeZone(TradeZone zone)
         {
-            if (zone.Id != 0)
-                foreach (Ship s in OwnedShips)
-                    if (s.TradeZoneId == zone.Id)
-                        s.TradeZoneId = 0;
-
+            ReleaseZoneFreighters(zone);
             TradeZones.Remove(zone);
+        }
+
+        // ★ Clearing Exclusive RELEASES the hulls, the same way dissolving the zone does. Their
+        // zone mark keeps them out of TotalFreighters and out of the idle pool, and a zone that no
+        // longer claims them - MemberFreighters returns nothing once Exclusive is off - would
+        // strand them: counted by nobody, and quietly shrinking the empire freighter reserve,
+        // which is a share of TotalFreighters. Setting it costs nothing, so only the clearing
+        // branch does any work.
+        public void SetZoneExclusive(TradeZone zone, bool exclusive)
+        {
+            if (zone.Exclusive && !exclusive)
+                ReleaseZoneFreighters(zone);
+
+            zone.Exclusive = exclusive;
+        }
+
+        void ReleaseZoneFreighters(TradeZone zone)
+        {
+            if (zone.Id == 0)
+                return;
+
+            foreach (Ship s in OwnedShips)
+                if (s.TradeZoneId == zone.Id)
+                    AssignFreighterToZone(s, null);
         }
 
         // Ids are handed out above the highest one in use, never reused: a number freed by a
