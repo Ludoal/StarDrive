@@ -52,8 +52,16 @@ namespace Ship_Game.AI.Budget
 
         public void Update()
         {
-            EmpireRatio = P.ColonyPotentialValue(Owner, useBaseMaxFertility: true) / Owner.TotalColonyPotentialValues;
-            float defenseRatio = P.ColonyBaseValue(Owner) / Owner.TotalColonyValues;
+            // ⚠ these are the ONLY two divisions in this method, so an infinity in a colony's
+            // allocation can only be born here. Both denominators are empire-wide sums written by
+            // the turn - UpdateMaxColonyValues zeroes them before refilling them - and the
+            // allocations are exponential averages, so a single infinity is kept for good: it
+            // never decays back. Guarding costs nothing and closes the whole class.
+            float totalPotential = Owner.TotalColonyPotentialValues;
+            float totalValues    = Owner.TotalColonyValues;
+            EmpireRatio = totalPotential > 0
+                        ? P.ColonyPotentialValue(Owner, useBaseMaxFertility: true) / totalPotential : 0;
+            float defenseRatio = totalValues > 0 ? P.ColonyBaseValue(Owner) / totalValues : 0;
 
             float defenseBudget = EmpireDefenseBudget * defenseRatio;
             float groundRatio   = MilitaryBuildingsBudgetRatio();
