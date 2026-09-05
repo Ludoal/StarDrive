@@ -29121,15 +29121,27 @@ RmPaceNormal:
  Id: 7247
  ENG: "Normal"
  FRA: "Normal"
-RmVanillaStrength:
+RmStrengthLabel:
  Id: 7248
- ENG: "Vanilla Remnant Strength"
- FRA: "Force des Remnants d'origine"
-RmVanillaStrengthTip:
+ ENG: "Remnant Strength"
+ FRA: "Force des Remnants"
+RmStrengthTip:
  Id: 7249
- ENG: "The loaded mod strengthens Remnant ship designs. Check this to restore the base game value."
- FRA: "Le mod chargé renforce les vaisseaux Remnants. Cocher pour rétablir la valeur du jeu de base."
+ ENG: "How hard Remnant fleets hit, and how much of a lead they demand before they attack. Mod: the value the loaded mod declares. Vanilla: the base game value. Shown only when a mod raises it."
+ FRA: "Puissance des flottes Remnants et avance qu'elles exigent avant d'attaquer. Mod : valeur déclarée par le mod chargé. Vanilla : valeur du jeu de base. Affiché seulement si un mod l'augmente."
 NgTabFactions:
  Id: 7250
  ENG: "Factions"
  FRA: "Factions"
+RmStrengthVanilla:
+ Id: 7251
+ ENG: "Vanilla"
+ FRA: "Origine"
+RmStrengthReduced:
+ Id: 7252
+ ENG: "Reduced"
+ FRA: "Réduite"
+RmStrengthMod:
+ Id: 7253
+ ENG: "Mod"
+ FRA: "Mod"

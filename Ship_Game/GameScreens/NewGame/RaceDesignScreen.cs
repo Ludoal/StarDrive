@@ -402,6 +402,15 @@ namespace Ship_Game
             // they become dangerous, which is this.
             AddOption(FactionsOptions, Localizer.Token(GameText.RmPaceLabel) + " : ", OnRemnantPaceClicked,
                 _ => RemnantPaceText(P.RemnantPace), tip:GameText.RmPaceTip);
+            // Offered only when the loaded mod actually raises Remnant design strength - the
+            // test is the VALUE, never the mod's name, so it serves any mod and stays absent in
+            // vanilla, where three notches would be one and the control would lie. LAST of the
+            // Remnant block on purpose: absent, the block simply gets shorter instead of
+            // leaving a hole in the middle of it.
+            if (GlobalStats.Defaults.RemnantDesignStrMultiplier != UniverseState.VanillaRemnantDesignStr)
+                AddOption(FactionsOptions, Localizer.Token(GameText.RmStrengthLabel) + " : ",
+                    OnRemnantStrengthClicked, _ => RemnantStrengthText(P.RemnantStrength),
+                    tip:GameText.RmStrengthTip);
 
             // row 2 RIGHT: two tabs over one area - the points summary, and the race description.
             // Same rect for both; OnTabChange flips which one is visible.
@@ -705,6 +714,18 @@ namespace Ship_Game
             P.RemnantPace = P.RemnantPace.IncrementWithWrap(OptionIncrement);
         }
 
+        void OnRemnantStrengthClicked(UIButton b)
+        {
+            P.RemnantStrength = P.RemnantStrength.IncrementWithWrap(OptionIncrement);
+        }
+
+        static string RemnantStrengthText(RemnantStrengthSetting s) => s switch
+        {
+            RemnantStrengthSetting.Vanilla => Localizer.Token(GameText.RmStrengthVanilla),
+            RemnantStrengthSetting.Reduced => Localizer.Token(GameText.RmStrengthReduced),
+            _                              => Localizer.Token(GameText.RmStrengthMod),
+        };
+
         static string RemnantPaceText(RemnantPaceSetting p) => p switch
         {
             RemnantPaceSetting.VerySlow => Localizer.Token(GameText.RmPaceVerySlow),
@@ -984,6 +1005,16 @@ namespace Ship_Game
     public enum GalSize
     {
         Tiny, Small, Medium, Large, Huge, Epic, TrulyEpic
+    }
+
+    // Ludoal fork (maintainer, 5 Sep '26): the three positions of Remnant design strength. The
+    // ends are READ, never written: Vanilla is the base game's constant and Mod is whatever the
+    // loaded mod declares, so a mod that raises it to 6 gets 6 here, not a hard-coded 4.
+    public enum RemnantStrengthSetting
+    {
+        Vanilla,
+        Reduced,
+        Mod,
     }
 
     // Ludoal fork: named in SPEED because that is what it changes - "Very Low" on a rhythm reads

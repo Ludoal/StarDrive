@@ -32,7 +32,12 @@ public class UniverseParams
 
     // ...and a way back to the base game's remnant strength when a mod has raised it. Shown only
     // when the loaded mod actually changed the value, so it never appears in vanilla.
+    // ⚠ OBSOLETE, kept READABLE for saves written before 5 Sep '26 - the setting became the three
+    // positions below. Never written any more; OnDeserialized translates a true into Vanilla.
     [StarData] public bool VanillaRemnantStrength;
+
+    [StarData(DefaultValue=RemnantStrengthSetting.Mod)]
+    public RemnantStrengthSetting RemnantStrength = RemnantStrengthSetting.Mod;
 
     public Array<IEmpireData> SelectedOpponents = new();
 
@@ -180,5 +185,11 @@ public class UniverseParams
         //         because if they are 0, the game would break
         if (FTLModifier == 0f) FTLModifier = DefaultInSystemFTLModifier;
         if (EnemyFTLModifier == 0f) EnemyFTLModifier = DefaultEnemyFTLModifier;
+
+        // A save from before the notches carries the old checkbox. Only TRUE says anything: the
+        // box was the one way to ask for the base game value, and nothing writes it now, so it
+        // can only have come from such a save. False is the default either way.
+        if (VanillaRemnantStrength)
+            RemnantStrength = RemnantStrengthSetting.Vanilla;
     }
 }

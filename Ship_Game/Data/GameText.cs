@@ -7285,12 +7285,18 @@ namespace Ship_Game
         RmPaceSlow = 7246,
         /// <summary>Normal</summary>
         RmPaceNormal = 7247,
-        /// <summary>Vanilla Remnant Strength</summary>
-        RmVanillaStrength = 7248,
-        /// <summary>The loaded mod strengthens Remnant ship designs.</summary>
-        RmVanillaStrengthTip = 7249,
+        /// <summary>Remnant Strength</summary>
+        RmStrengthLabel = 7248,
+        /// <summary>How hard Remnant fleets hit and how much they demand before attacking.</summary>
+        RmStrengthTip = 7249,
         /// <summary>Factions</summary>
         NgTabFactions = 7250,
+        /// <summary>Vanilla</summary>
+        RmStrengthVanilla = 7251,
+        /// <summary>Reduced</summary>
+        RmStrengthReduced = 7252,
+        /// <summary>Mod</summary>
+        RmStrengthMod = 7253,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>
