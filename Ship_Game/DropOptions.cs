@@ -304,20 +304,6 @@ namespace Ship_Game
             bool overTitle = HitTest(input.CursorPosition);
             bool overExpanded = Open && ClickAbleOpenRect.HitTest(input.CursorPosition);
 
-            // [TRACE bench 576] ONE build only, out at the next commit. The band was cleared
-            // by the previous trace: the click reaches the page, so the miss is in here.
-            // Says the clickable rect, whether the cursor is inside it, and which option
-            // rect - if any - actually holds the pixel.
-            if (Open && input.LeftMouseClick)
-            {
-                int hit = -1;
-                for (int i = 0; i < Options.Count; ++i)
-                    if (Options[i].Rect.HitTest(input.CursorPosition)) { hit = i; break; }
-                Log.Write($"[drop] pos={input.CursorPosition.X:0},{input.CursorPosition.Y:0} "
-                        + $"rect={ClickAbleOpenRect} overExp={overExpanded} overTitle={overTitle} "
-                        + $"n={Options.Count} active={ActiveIndex} hit={hit} "
-                        + $"first={Options[0].Rect} last={Options[Options.Count - 1].Rect}");
-            }
 
             // maintainer: a click anywhere else closes the list without changing the
             // selection, and is CONSUMED - closing is the whole gesture. Letting it through
@@ -423,9 +409,11 @@ namespace Ship_Game
                 // the open frame is measured from it too - one owner for the step, not two.
                 int height = (Options.Count - 1) * h;
                 OpenRect = new Rectangle(x + 6, y + h + 3 + 6, w - 12, height - 12);
-                // the clickable area is the frame, whole: the bottom edge of the last option
-                // is inside it, so no part of a drawn row falls through to what it covers.
-                ClickAbleOpenRect = new Rectangle(x + 6, y + h + 3, w - 12, height);
+                // the clickable area covers the OPTIONS, not the frame drawn around them: a row
+                // is laid out on the control's full width (Entry.UpdateRect), so an area inset by
+                // the frame's border leaves the first and last six pixels of every row deaf -
+                // and the label starts at that left edge, which is where a player aims.
+                ClickAbleOpenRect = new Rectangle(x, y + h + 3, w, height);
 
                 tl = Border[8]  = new RecTexPair(x, y+h+3, ttl);
                 tr = Border[9]  = new RecTexPair(x+w-ttr.Width, tl.Y, ttr);
