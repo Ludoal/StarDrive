@@ -6341,6 +6341,8 @@ namespace Ship_Game
         MandateShortBlueprint = 30144,
         /// <summary>What your governors may commit this turn, summed from the colonies.</summary>
         BgtMaySpendTip = 30145,
+        /// <summary>How many of this plan's entries are up, out of how many it lists.</summary>
+        BpCompletionTip = 30146,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>

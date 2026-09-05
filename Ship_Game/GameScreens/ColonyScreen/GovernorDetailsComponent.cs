@@ -409,7 +409,9 @@ namespace Ship_Game
             LoadBlueprints.Pos   = new Vector2(X + Width - 30, bpRow0);
 
             BlueprintsCompletionLbl.Pos     = new Vector2(bpX, bpRow2 + 3);
-            BlueprintsCompletionLbl.Tooltip = GameText.CompletionTip;
+            // the bar shows a RATIO of entries, and the base token still promised a percentage
+            // of completion - a fork token says what the two numbers actually count
+            BlueprintsCompletionLbl.Tooltip = GameText.BpCompletionTip;
             // anchored to the panel's right edge: seated at the end of the label-plus-bar run it
             // overflowed, since that run starts at a column with a floor of its own
             MoveOnBlueprints.Pos            = new Vector2(Right - 10 - MoveOnBlueprints.Width, bpRow2);

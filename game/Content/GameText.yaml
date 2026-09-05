@@ -22750,6 +22750,10 @@ BgtMaySpendTip:
  Id: 30145
  ENG: "What your governors may commit this turn, summed from the colonies. It includes terraforming and the new-colony tolerance, which are funded outside the three shares above, and the colonies you set to manual, which are not limited - so it is not a share of those lines."
  FRA: "Ce que vos gouverneurs peuvent engager ce tour, sommé depuis les colonies. Il comprend le terraformage et la tolérance des colonies neuves, financés hors des trois parts ci-dessus, ainsi que les colonies que vous avez passées en manuel, qui ne sont pas limitées — ce n'est donc pas une part de ces lignes."
+BpCompletionTip:
+ Id: 30146
+ ENG: "How many of this plan's entries are up, out of how many it lists. It counts ENTRIES this colony can reach - already standing, buildable today, or already queued. It does not weigh their upkeep, the tiles left, or the cost of terraformers, so it does not say whether the colony can afford to finish."
+ FRA: "Combien d'entrées de ce plan sont debout, sur le nombre qu'il liste. Il compte des ENTRÉES que cette colonie peut atteindre — déjà debout, constructibles aujourd'hui, ou déjà en file. Il ne pèse ni leur entretien, ni les tuiles restantes, ni le coût des terraformeurs : il ne dit donc pas si la colonie a les moyens de finir."
 BlueprintsCannotBuildTroopsTip:
  Id: 30119
  ENG: "No planned building in this blueprint can train infantry. Add a building that trains troops to the plan."
