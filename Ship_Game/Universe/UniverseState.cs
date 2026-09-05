@@ -210,6 +210,19 @@ namespace Ship_Game.Universe
 
         public readonly RandomBase Random = new ThreadSafeRandom();
 
+        // ★ Which pirate faction lives when the setting allows only one. Drawn ONCE, by whichever
+        // faction asks first, and read by the others: a draw per faction would leave two alive or
+        // none. Not serialised - the question is asked at galaxy creation only, and the answer is
+        // already carried by each faction's own defeated flag.
+        int SurvivingPirateRank = -1;
+        public int GetSurvivingPirateRank(int numPirateFactions)
+        {
+            if (SurvivingPirateRank < 0)
+                SurvivingPirateRank = Random.InRange(numPirateFactions);
+
+            return SurvivingPirateRank;
+        }
+
         [StarDataConstructor] UniverseState() {}
 
         public UniverseState(UniverseScreen screen, UniverseParams settings, float universeRadius)

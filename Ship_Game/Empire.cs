@@ -495,9 +495,10 @@ namespace Ship_Game
         }
 
         // Ludoal fork (maintainer, 5 Sep '26): how many pirate factions start alive is a setting
-        // now, where it used to be all or nothing. WHICH of them survives has to be the same on
-        // every machine and every reload, so the rank comes from the race NAMES - the order the
-        // data files happened to load in is not something to lean on.
+        // now, where it used to be all or nothing. At One the survivor is DRAWN, once for the
+        // galaxy, and each faction compares its own rank to that draw. Ranking by NAME rather
+        // than by load order keeps both sides of the comparison talking about the same list -
+        // file enumeration order is not a promise any platform makes.
         bool StartsDefeatedByPirateSetting()
         {
             switch (Universe.P.PirateFactions)
@@ -506,14 +507,17 @@ namespace Ship_Game
                 case PirateFactionsSetting.All:  return false;
             }
 
-            int allowed = 1;   // One
-            int rank = 0;      // how many pirate factions sort before this one
+            int rank = 0;    // how many pirate factions sort before this one
+            int total = 0;
             foreach (IEmpireData d in ResourceManager.AllRaces)
-                if (d is EmpireData ed && ed.IsPirateFaction
-                    && string.CompareOrdinal(d.Name, data.Name) < 0)
-                    ++rank;
+                if (d is EmpireData ed && ed.IsPirateFaction)
+                {
+                    ++total;
+                    if (string.CompareOrdinal(d.Name, data.Name) < 0)
+                        ++rank;
+                }
 
-            return rank >= allowed;
+            return total > 1 && rank != Universe.GetSurvivingPirateRank(total);
         }
 
         public void SetAsRemnants(EmpireAI ai)

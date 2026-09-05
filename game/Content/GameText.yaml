@@ -29159,8 +29159,8 @@ PirateFactionsLabel:
  FRA: "Factions pirates"
 PirateFactionsTip:
  Id: 7257
- ENG: "How many pirate factions start alive. None disables piracy entirely. The surviving faction is always the same one for a given setting."
- FRA: "Nombre de factions pirates vivantes au départ. Aucune : la piraterie est désactivée. Pour un réglage donné, la faction qui survit est toujours la même."
+ ENG: "How many pirate factions start alive. None disables piracy entirely. One keeps a single faction, picked at random for this galaxy."
+ FRA: "Nombre de factions pirates vivantes au départ. Aucune : la piraterie est désactivée. Une : une seule faction, tirée au sort pour cette galaxie."
 PirateFactionsNone:
  Id: 7258
  ENG: "None"
