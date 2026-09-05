@@ -123,8 +123,16 @@ namespace Ship_Game
             if (caller == null || !PageOwnsPixel(caller, input.CursorPosition))
                 captured |= HandleMinimapNavigation(input);
 
+            // a control the page draws ABOVE this pixel answers before the cartouches - the
+            // rule the containers already use inside a screen, one storey up. This gate gets
+            // the tooltips too: HandleGUIClicks arms them, so a list covering a cartouche
+            // would otherwise be clickable with the cartouche's tip still showing through.
+            // Everywhere the page has nothing standing above, the cartouches keep their
+            // priority - an order row climbing into the page's rect still answers.
+            bool pageStandsAbove = caller != null && caller.AboveHitTest(input.CursorPosition);
+
             // @note Make sure HandleInputs are called here
-            if (!LookingAtPlanet)
+            if (!LookingAtPlanet && !pageStandsAbove)
             {
                 captured |= SelectedShip != null && ShipInfoUIElement.HandleInput(input);
                 captured |= SelectedPlanet != null && pInfoUI.HandleInput(input);

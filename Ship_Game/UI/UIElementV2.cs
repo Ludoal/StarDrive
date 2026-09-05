@@ -443,6 +443,11 @@ namespace Ship_Game
         // overlapped a panel its own screen knew nothing about.
         public virtual bool DrawsAboveSiblings => false;
 
+        // Where it stands while it does: DrawsAboveSiblings says WHO is on top, this says
+        // WHERE. Asked by anything drawn UNDER a screen - the map's cartouches sit below an
+        // open page, and a page control drawn over them must not be clicked through.
+        public virtual bool AboveHitTest(Vector2 pos) => false;
+
         // 1. we handle input
         public abstract bool HandleInput(InputState input);
 

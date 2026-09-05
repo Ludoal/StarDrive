@@ -174,6 +174,19 @@ namespace Ship_Game
             }
         }
 
+        // the rect rises with the flag: a container answers for whichever of its children
+        // stands above right now, at any depth.
+        public override bool AboveHitTest(Vector2 pos)
+        {
+            for (int i = 0; i < Elements.Count; ++i)
+            {
+                UIElementV2 e = Elements[i];
+                if (e.Visible && e.AboveHitTest(pos))
+                    return true;
+            }
+            return false;
+        }
+
         public override bool HandleInput(InputState input)
         {
             if (Visible && Enabled)

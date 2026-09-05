@@ -290,6 +290,8 @@ namespace Ship_Game
         // an open list covers whatever is under it: drawn last, asked first
         public override bool DrawsAboveSiblings => Open;
 
+        public override bool AboveHitTest(Vector2 pos) => Open && ClickAbleOpenRect.HitTest(pos);
+
         public override bool HandleInput(InputState input)
         {
             // An empty dropdown is inert — don't capture input or toggle Open. Reading
