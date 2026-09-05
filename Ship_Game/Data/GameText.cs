@@ -6285,6 +6285,10 @@ namespace Ship_Game
         /// <summary>None</summary>
         MandateShortNone = 30116,
         MandateBlueprintOnly = 30117,
+        /// <summary>No planned building in this blueprint allows ship construction. Add a shipyard or a space port to the plan.</summary>
+        BlueprintsCannotBuildShipsTip = 30118,
+        /// <summary>No planned building in this blueprint can train infantry. Add a building that trains troops to the plan.</summary>
+        BlueprintsCannotBuildTroopsTip = 30119,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>

@@ -232,10 +232,15 @@ namespace Ship_Game
             ExclusiveCheckbox = base.Add(new UICheckBox(blueprintsOptionsX, optRow0 + OptionsRow,
                 () => Exclusive, TextFont, GameText.ExclusiveBlueprints, GameText.ExclusiveBlueprintsTip));
             ExclusiveCheckbox.TextColor = Color.Wheat;
+            // the warnings judge the PLAN, not the colony: no planned building carries the flag.
+            // Their tips name the missing capability and what to add, since the label alone says
+            // neither which building nor where.
             CannotBuildShipsWarning = base.Add(new UILabel(new Vector2(blueprintsOptionsX, optRow0 + 4 * OptionsRow),
-                GameText.BlueprintsCannotBuildShips, Font12, Color.Pink));
+                GameText.BlueprintsCannotBuildShips, Font12, Color.Pink)
+                { Tooltip = GameText.BlueprintsCannotBuildShipsTip });
             CannotBuildTroopsWarning = base.Add(new UILabel(new Vector2(blueprintsOptionsX, optRow0 + 5 * OptionsRow),
-                GameText.BlueprintsCannotBuildTroops, Font12, Color.Pink));
+                GameText.BlueprintsCannotBuildTroops, Font12, Color.Pink)
+                { Tooltip = GameText.BlueprintsCannotBuildTroopsTip });
 
             float buttonsY = optRow0 + 6 * OptionsRow + 8;
             // Load / Link / Unlink / Save (Ludo, Blueprints chantier): the row now reads in the
