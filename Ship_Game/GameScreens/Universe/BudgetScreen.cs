@@ -84,16 +84,15 @@ namespace Ship_Game.GameScreens
             // happens to be a font's. The gap between the two rows it parts measures
             // LineBreakH whatever the row font is, so one number governs every block.
             const float LineBreakH = 20f;
-            public void Spacer()
-                => Add(new UISpacer(0f, Math.Max(0f, LineBreakH - (Fonts.Arial12Bold.LineSpacing + Padding.Y))));
+            public void Spacer(float extra = 0f)
+                => Add(new UISpacer(0f, Math.Max(0f, LineBreakH + extra - (Fonts.Arial12Bold.LineSpacing + Padding.Y))));
 
             // totals are regular rows, not the UIList Footer — the Footer pins to the
             // rect bottom and breaks the even row pitch
-            public void AddTotal(Func<float> getValue, bool withUnit = false)
+            public void AddTotal(Func<float> getValue)
             {
-                string unit = withUnit ? " " + Localizer.Token(GameText.BgtPerTurn) : "";
                 AddSplit(new UILabel(Localizer.Token(GameText.Total2), Colors.Cream),
-                         new UILabel(DynamicText(getValue, f => f.MoneyString() + unit)) );
+                         new UILabel(DynamicText(getValue, f => f.MoneyString())) );
             }
 
             public FloatSlider AddSlider(LocalizedText title, float value)
@@ -330,6 +329,10 @@ namespace Ship_Game.GameScreens
             TreasuryGoal          = tax.AddSlider(GameText.BgtTargetName, Player.data.treasuryGoal);
             TreasuryGoal.Tip      = GameText.BgtTargetTip;
             TreasuryGoal.OnChange = TreasurySliderOnChange;
+            // the amount rides its own line under the rail: a slider title carrying a figure
+            // and a duration reads as a sentence, not as a setting
+            TreasuryGoalValue = tax.Add(new UILabel(l => BudgetTargetLine(), Fonts.Arial12Bold));
+            TreasuryGoalValue.Color = Colors.Cream;
 
             TreasuryGoal.RelativeValue = Player.data.treasuryGoal; // trigger updates
             TaxSlider.RelativeValue    = Player.data.TaxRate;
@@ -436,22 +439,6 @@ namespace Ship_Game.GameScreens
             // Ludoal fork: the governors' tap leads the panel - what share of
             // their AUTO allocations the governors may spend; the treasury keeps the rest.
             // Manual per-colony overrides bypass it.
-            GovSpendingSlider = budget.AddSlider(GameText.BgtGovAllowance, up.GovernorSpendingRatio);
-            GovSpendingSlider.Tip = GameText.BgtGovAllowanceTip;
-            // the allowance bites one step below this panel, on each colony's share - so the
-            // two figures come from the colonies themselves. Snapping on change is what makes
-            // the move visible: the allocations are smoothed and would drift there over turns.
-            GovSpendingSlider.OnChange = sl =>
-            {
-                up.GovernorSpendingRatio = sl.RelativeValue;
-                var budgets = Player.AI.PlanetBudgets;
-                if (budgets != null)
-                    for (int i = 0; i < budgets.Count; ++i)
-                        budgets[i].SnapToTarget();
-            };
-            budget.AddItem(GameText.BgtMaySpend, GovernorsMaySpend);
-            budget.AddItem(GameText.BgtWithheld, WithheldByAllowance);
-            budget.Spacer();
             // the three LINKED shares as one-line rows [name][slider][lock][value] -
             // no percent text, the money value rides the right edge.
             // A LOCK pins a share: renormalization spreads over the unlocked ones only.
@@ -481,34 +468,61 @@ namespace Ship_Game.GameScreens
             SSPPotSlider     = ShareRows[2].ShareSlider;
             autoShares.OnChange = cb => ApplyAutoShares(cb.Checked);
             ApplyAutoShares(up.AutoBudgetShares); // initial lock state
-            budget.Spacer();
-            budget.AddTotal(Pots, withUnit: true);
+            budget.Spacer(extra: 2f); // the total stands off its group by a hair more
+            budget.AddTotal(Pots);
+            AllowanceBlock(budget, up);
             return budget;
         }
 
         readonly ShareRow[] ShareRows = new ShareRow[3];
+        UILabel TreasuryGoalValue;
+
+        // the allowance closes the block: it governs what the three shares above become in
+        // the colonies' hands, so it reads after them rather than before.
+        void AllowanceBlock(SummaryPanel budget, Ship_Game.Universe.UniverseParams up)
+        {
+            budget.Spacer();
+            GovSpendingSlider = budget.AddSlider(GameText.BgtGovAllowance, up.GovernorSpendingRatio);
+            GovSpendingSlider.Tip = GameText.BgtGovAllowanceTip;
+            // the allowance bites one step below this panel, on each colony's share - so the
+            // two figures come from the colonies themselves. Snapping on change is what makes
+            // the move visible: the allocations are smoothed and would drift there over turns.
+            GovSpendingSlider.OnChange = sl =>
+            {
+                up.GovernorSpendingRatio = sl.RelativeValue;
+                foreach (Planet p in Player.GetPlanets())
+                    p.Budget?.SnapToTarget();
+            };
+            budget.AddItem(GameText.BgtMaySpend, GovernorsMaySpend);
+            budget.AddItem(GameText.BgtWithheld, WithheldByAllowance);
+        }
+
+        // the figure under the goal rail: the amount first, the duration that set it after
+        string BudgetTargetLine()
+        {
+            int turns = (int)(Player.data.treasuryGoal * Ship_Game.AI.EmpireAI.TreasuryGoalTurns);
+            return $"{Player.AI.ProjectedMoney:0} BC ({turns} {Localizer.Token(GameText.BgtTurnsOfRevenue)})";
+        }
 
         // the allowance acts one step below this panel: it trims each colony's own share.
         // Summing the colonies is therefore the only figure that matches what happens -
         // a product taken from the rows above would miss terraforming, the new-colony
         // tolerance and the colonies set to manual, which are not throttled at all.
+        // read the colonies, not EmpireAI.PlanetBudgets: that list is filled only under
+        // the debug flag, so off the debug build it is empty and both figures read zero.
         float GovernorsMaySpend()
         {
-            var budgets = Player.AI.PlanetBudgets;
             float total = 0;
-            if (budgets != null)
-                for (int i = 0; i < budgets.Count; ++i)
-                    total += budgets[i].TotalAlloc;
+            foreach (Planet p in Player.GetPlanets())
+                if (p.Budget != null) total += p.Budget.TotalAlloc;
             return total;
         }
 
         float WithheldByAllowance()
         {
-            var budgets = Player.AI.PlanetBudgets;
             float total = 0;
-            if (budgets != null)
-                for (int i = 0; i < budgets.Count; ++i)
-                    total += budgets[i].WithheldByAllowance;
+            foreach (Planet p in Player.GetPlanets())
+                if (p.Budget != null) total += p.Budget.WithheldByAllowance;
             return total;
         }
 
@@ -805,14 +819,11 @@ namespace Ship_Game.GameScreens
 
         public override void Update(float fixedDeltaTime)
         {
-            int goalTurns = (int)(Player.data.treasuryGoal * Ship_Game.AI.EmpireAI.TreasuryGoalTurns);
-            TreasuryGoal.Text = $"{Localizer.Token(GameText.BgtTargetName)}: {goalTurns} "
-                              + $"{Localizer.Token(GameText.BgtTurnsOfRevenue)} ({Player.AI.ProjectedMoney:0.00} BC)";
-            // the tax rate says what it brings, or what the game is doing with it
+            TreasuryGoal.Text = Localizer.Token(GameText.BgtTargetName);
+            // in auto the rate is not the player's to read as a setting, so the line says so
             TaxSlider.Text = Player.AutoTaxes
                 ? Localizer.Token(GameText.BgtAutoTaxLine)
-                : $"{Localizer.Token(GameText.TaxRate)}: {Player.data.TaxRate * 100:0} % "
-                + $"\u2192 +{Player.GrossPlanetIncome:0.0} {Localizer.Token(GameText.BgtPerTurn)}";
+                : Localizer.Token(GameText.TaxRate);
             // the cells are LIVE but the ORDER is a snapshot of the click - re-apply the
             // standing sort each new star date, or values drift out of sorted order
             if (Player.Universe.StarDate != LastSortedDate)

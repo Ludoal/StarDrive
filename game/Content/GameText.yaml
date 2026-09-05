@@ -22680,12 +22680,12 @@ BgtGovAllowanceTip:
  FRA: "Limite ce que les gouverneurs peuvent engager d'eux-mêmes sur les parts Civil et Défense. Ordres automatiques seulement ; les colonies en manuel ne sont pas limitées."
 BgtMaySpend:
  Id: 30128
- ENG: "governors may spend"
- FRA: "les gouverneurs peuvent engager"
+ ENG: "Governors may spend"
+ FRA: "Les gouverneurs peuvent engager"
 BgtWithheld:
  Id: 30129
- ENG: "withheld by this setting"
- FRA: "retenu par ce réglage"
+ ENG: "Withheld by this setting"
+ FRA: "Retenu par ce réglage"
 BgtCivilBuildings:
  Id: 30130
  ENG: "Civil Buildings (Governors)"
