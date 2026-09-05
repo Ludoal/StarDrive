@@ -56,6 +56,17 @@ namespace Ship_Game.UI
             Size.Y = Math.Max(First.Size.Y, Second.Size.Y);
         }
 
+        // a wrapper holds children without being a container, so the pair that says an element
+        // stands above has to be forwarded by hand - the rise stops at whoever does not answer,
+        // and an open list inside becomes invisible to every screen above it.
+        public override bool DrawsAboveSiblings =>
+            (First != null && First.Visible && First.DrawsAboveSiblings) ||
+            (Second != null && Second.Visible && Second.DrawsAboveSiblings);
+
+        public override bool AboveHitTest(Vector2 pos) =>
+            (First != null && First.Visible && First.AboveHitTest(pos)) ||
+            (Second != null && Second.Visible && Second.AboveHitTest(pos));
+
         public override bool HandleInput(InputState input)
         {
             if (First.HandleInput(input) || Second.HandleInput(input))

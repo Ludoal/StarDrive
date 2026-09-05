@@ -19,6 +19,10 @@ namespace Ship_Game
         Func<bool> IsAutoPicked;
         DropOptions<int> Options;
 
+        // forwarded by hand: this row is not a container, and its list is what stands above.
+        public override bool DrawsAboveSiblings => Options != null && Options.DrawsAboveSiblings;
+        public override bool AboveHitTest(Vector2 pos) => Options != null && Options.AboveHitTest(pos);
+
         public DropOptions<int> Create(Expression<Func<bool>> binding, LocalizedText title, LocalizedText tooltip)
         {
             Check = new UICheckBox(-200f, -200f, binding, Fonts.Arial12Bold, title, tooltip);
@@ -123,6 +127,10 @@ namespace Ship_Game
     {
         UILabel Label;
         public DropOptions<T> Options { get; private set; }
+
+        // forwarded by hand: this row is not a container, and its list is what stands above.
+        public override bool DrawsAboveSiblings => Options != null && Options.DrawsAboveSiblings;
+        public override bool AboveHitTest(Vector2 pos) => Options != null && Options.AboveHitTest(pos);
 
         public DropOptions<T> Create(LocalizedText title, LocalizedText tooltip)
         {
