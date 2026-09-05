@@ -162,7 +162,7 @@ namespace Ship_Game
             float topY   = client.Y + Pad;
             float botY   = frameR.Bottom - Pad;
 
-            // ⚠ Ludo, Blueprints chantier: the plan and the catalogue are SWAPPED. The plan is
+            // ⚠ maintainer feedback: the plan and the catalogue are SWAPPED. The plan is
             // what you compose, so it takes the full-height right column; the catalogue is what
             // you pick from, and moves to the centre. The drag that adds a building now runs
             // left to right, the way the gesture reads.
@@ -178,8 +178,8 @@ namespace Ship_Game
             RectF blueprintsStatsR = new(leftX, topY, OptionsW, optionsH);
             SubBlueprintsOptions = base.Add(new Submenu(blueprintsStatsR, GameText.BlueprintsOptions));
 
-            // ⚠ the two blocks are SWAPPED against the original order (Ludo, Blueprints
-            // chantier): the chain is consulted while designing, the simulation is read once
+            // ⚠ the two blocks are SWAPPED against the original order (maintainer
+            // feedback): the chain is consulted while designing, the simulation is read once
             // the plan stands - so the chain sits under the options it belongs to, and the
             // sliders take the foot of the column.
             //
@@ -243,7 +243,7 @@ namespace Ship_Game
                 { Tooltip = GameText.BlueprintsCannotBuildTroopsTip });
 
             float buttonsY = optRow0 + 6 * OptionsRow + 8;
-            // Load / Link / Unlink / Save (Ludo, Blueprints chantier): the row now reads in the
+            // Load / Link / Unlink / Save (maintainer feedback): the row now reads in the
             // order the gestures happen - you fetch a plan, chain it, unchain it, and only then
             // commit. Save last, where a commit belongs.
             LoadBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX, buttonsY), GameText.Load));

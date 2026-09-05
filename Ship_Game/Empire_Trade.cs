@@ -653,7 +653,7 @@ namespace Ship_Game
         // hulls takes free ones, up to its measured need. It takes only what is FREE - idle and
         // owned by no zone - so a run in flight is never interrupted and no zone is ever poached.
         // The empire's RESERVE is the brake: the requisition stops rather than draw the common
-        // pool below it, which is the whole reason that lever stayed at the empire (Ludo, 31 Aug).
+        // pool below it, which is the whole reason that lever stayed at the empire (maintainer feedback).
         // ★ THE REQUISITION, the regime's only automatic gesture: an exclusive zone short of hulls
         // takes free ones - idle and owned by no zone - up to its measured need. Called at the
         // zone's OWN RANK in the list, so it competes with the quotas on one queue rather than
