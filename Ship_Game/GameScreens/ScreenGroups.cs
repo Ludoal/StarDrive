@@ -271,6 +271,7 @@ namespace Ship_Game.GameScreens
             tabs.OnTabChange = onChange;
             tabs.PerformLayout();
             tabs.SelectedIndex = selected;
+            screen.PageContentY = tabs.ClientArea.Y; // a dialog stops below this row
             if (withClose) // the hosted colony keeps its own popup close cross instead
             {
                 Vector2 closePos = GroupClosePos(tabs.ClientArea);
@@ -541,6 +542,7 @@ namespace Ship_Game.GameScreens
             tabs.OnTabChange = onChange;
             tabs.PerformLayout();
             tabs.SelectedIndex = selected;
+            screen.PageContentY = tabs.ClientArea.Y; // a dialog stops below this row
             Vector2 closePos = GroupClosePos(tabs.ClientArea);
             screen.Add(new CloseButton(closePos.X, closePos.Y));
             return tabs;

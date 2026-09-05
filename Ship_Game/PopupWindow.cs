@@ -110,7 +110,7 @@ namespace Ship_Game
                 // the top of the screen, title bar and close cross first. The dialog slides back
                 // inside, and never rises above the frame that summoned it: a popup covering the
                 // tab row it came from has lost the page it belongs to.
-                int top = Summoner?.PageFrame.Y ?? 0;
+                int top = Summoner?.PageContentTop ?? 0;
                 if (top < 0) top = 0;
                 int maxX = ScreenWidth - Rect.Width;
                 int maxY = ScreenHeight - Rect.Height;

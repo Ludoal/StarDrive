@@ -20,10 +20,11 @@ namespace Ship_Game
                 return GameText.MandateAuto;
             GameText s = deferredTo switch
             {
-                Planet.BuildMandate.EconomicOnly => GameText.MandateShortEconomic,
-                Planet.BuildMandate.DefenseOnly  => GameText.MandateShortDefense,
-                Planet.BuildMandate.None         => GameText.MandateShortNone,
-                _                                => GameText.MandateShortAll,
+                Planet.BuildMandate.EconomicOnly  => GameText.MandateShortEconomic,
+                Planet.BuildMandate.DefenseOnly   => GameText.MandateShortDefense,
+                Planet.BuildMandate.None          => GameText.MandateShortNone,
+                Planet.BuildMandate.BlueprintOnly => GameText.MandateShortBlueprint,
+                _                                 => GameText.MandateShortAll,
             };
             return $"{Localizer.Token(GameText.MandateAuto)} ({Localizer.Token(s)})";
         }

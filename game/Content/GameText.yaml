@@ -22742,6 +22742,10 @@ BgtDistributionTip:
  Id: 30143
  ENG: "Each domain draws its own share from the Budget Target every turn; the three shares are pooled, and the split below divides that per-turn total."
  FRA: "Chaque domaine puise sa part dans l'objectif budgétaire à chaque tour ; les trois parts sont mises en commun, et la répartition ci-dessous partage ce total par tour."
+MandateShortBlueprint:
+ Id: 30144
+ ENG: "BP"
+ FRA: "BP"
 BlueprintsCannotBuildTroopsTip:
  Id: 30119
  ENG: "No planned building in this blueprint can train infantry. Add a building that trains troops to the plan."

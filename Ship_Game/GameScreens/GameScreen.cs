@@ -132,6 +132,12 @@ namespace Ship_Game
         // Default: the whole display, i.e. NO band - a page opts in by exposing its frame.
         public virtual Rectangle PageFrame => new(0, 0, ScreenWidth, ScreenHeight);
 
+        // The frame a page declares starts at its TAB ROW, so a dialog pinned to that top
+        // covers the tabs it was summoned from. This is where the page's own content
+        // begins - set once by the group-tabs factory, empty for a screen without tabs.
+        public float PageContentY;
+        public int PageContentTop => PageContentY > 0 ? (int)PageContentY : PageFrame.Y;
+
         // Ludoal fork (maintainer feedback): the universe a dialog should pause. A dialog greys
         // the simulation wherever it was summoned from, but the universe is only its PARENT when
         // it was opened from the map itself: summoned by a page, the parent is that page, the
