@@ -1087,7 +1087,7 @@ namespace Ship_Game
                 BtnArcs.Style = ArcsBtnStyle;
             });
             BtnArcs.ClickSfx = "blip_click";
-            BtnArcs.Tooltip  = Localizer.Token(GameText.TogglesTheWeaponFireArc);
+            BtnArcs.Tooltip  = Localizer.Token(GameText.ShipyardArcsTip);
             BtnArcs.Hotkey   = InputBindings.FromString("Tab");
             BtnArcs.Style    = ArcsBtnStyle;
 

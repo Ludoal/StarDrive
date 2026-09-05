@@ -287,19 +287,27 @@ namespace Ship_Game
 
         void DrawTacticalOverlays(SpriteBatch batch)
         {
-            // if ShowAllArcs is enabled, then we can accidentally render
-            // tactical overlays twice. This helps avoid that
-            var alreadyDrawn = new HashSet<SlotStruct>();
+            // one guard per LAYER, not per module: a module can take its arcs from one pass
+            // and its shield circle from another, so what is already drawn has to say WHAT.
+            var arcsDrawn = new HashSet<SlotStruct>();
+            var shieldsDrawn = new HashSet<SlotStruct>();
 
-            void DrawTacticalOverlays(SlotStruct s)
+            void DrawShieldCircle(SlotStruct s)
             {
-                if (s.ModuleUID == null || s.Tex == null || alreadyDrawn.Contains(s))
+                if (s.ModuleUID == null || s.Tex == null || !shieldsDrawn.Add(s))
                     return;
-
-                alreadyDrawn.Add(s);
 
                 if (s.Module.ShieldPowerMax > 0f)
                     DrawCircleProjected(s.Center, s.Module.ShieldHitRadius, Color.LightGreen);
+
+                if (IsSymmetricDesignMode && GetMirrorSlotStruct(s, out SlotStruct mirrored))
+                    DrawShieldCircle(mirrored);
+            }
+
+            void DrawArcsOverlay(SlotStruct s)
+            {
+                if (s.ModuleUID == null || s.Tex == null || !arcsDrawn.Add(s))
+                    return;
 
                 if (s.Module.ModuleType == ShipModuleType.Turret && Input.LeftMouseHeld())
                 {
@@ -312,34 +320,31 @@ namespace Ship_Game
                 DrawWeaponArcs(batch, s);
 
                 if (IsSymmetricDesignMode && GetMirrorSlotStruct(s, out SlotStruct mirrored))
+                    DrawArcsOverlay(mirrored);
+            }
+
+            // the highlighted module first, to get the focus colour right. It is a hover
+            // readout and shows both layers, whatever the two toggles are set to.
+            foreach (SlotStruct s in ModuleGrid.SlotsList)
+            {
+                if (s.Module == HighlightedModule)
                 {
-                    DrawTacticalOverlays(mirrored);
+                    DrawShieldCircle(s);
+                    DrawArcsOverlay(s);
                 }
             }
 
-            // we need to draw highlighted module first to get correct focus color
-            foreach (SlotStruct s in ModuleGrid.SlotsList)
-                if (s.Module == HighlightedModule)
-                    DrawTacticalOverlays(s);
-
-            if (ShowAllArcs) // draw all the rest
+            // each button owns its own layer: both on draws the sum, neither steps on the other.
+            if (ShowAllArcs)
             {
                 foreach (SlotStruct s in ModuleGrid.SlotsList)
-                    DrawTacticalOverlays(s);
+                    DrawArcsOverlay(s);
             }
 
-            // Wishlist: the Shields toggle draws every shield's coverage circle WITHOUT the
-            // rest of the tactical overlay - cumulative with Arcs, whose pass already drew
-            // its circles through DrawTacticalOverlays (alreadyDrawn skips those here)
             if (ShowAllShields)
             {
                 foreach (SlotStruct s in ModuleGrid.SlotsList)
-                {
-                    if (s.ModuleUID == null || s.Tex == null || alreadyDrawn.Contains(s))
-                        continue;
-                    if (s.Module.ShieldPowerMax > 0f)
-                        DrawCircleProjected(s.Center, s.Module.ShieldHitRadius, Color.LightGreen);
-                }
+                    DrawShieldCircle(s);
             }
         }
 

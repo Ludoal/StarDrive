@@ -6289,6 +6289,8 @@ namespace Ship_Game
         BlueprintsCannotBuildShipsTip = 30118,
         /// <summary>No planned building in this blueprint can train infantry. Add a building that trains troops to the plan.</summary>
         BlueprintsCannotBuildTroopsTip = 30119,
+        /// <summary>Show weapon firing arcs.</summary>
+        ShipyardArcsTip = 30120,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>

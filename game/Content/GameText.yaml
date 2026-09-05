@@ -22646,6 +22646,10 @@ BlueprintsCannotBuildShipsTip:
  Id: 30118
  ENG: "No planned building in this blueprint allows ship construction. Add a shipyard or a space port to the plan."
  FRA: "Aucun bâtiment planifié dans ce schéma ne permet la construction de vaisseaux. Ajouter un chantier naval ou un port spatial au plan."
+ShipyardArcsTip:
+ Id: 30120
+ ENG: "Show weapon firing arcs."
+ FRA: "Afficher les arcs de tir des armes."
 BlueprintsCannotBuildTroopsTip:
  Id: 30119
  ENG: "No planned building in this blueprint can train infantry. Add a building that trains troops to the plan."
