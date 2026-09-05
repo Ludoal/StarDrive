@@ -224,6 +224,17 @@ namespace Ship_Game
             return victim.IsDefeated;
         }
 
+        // Ludoal fork (maintainer, 5 Sep '26): the player's say on how fast piracy escalates.
+        // A BIGGER die is a rarer hit, so multiplying it stretches the climb - and since a level
+        // is also a base, a slower climb is fewer bases as well. Capped at Normal: this exists to
+        // make them gentler, never harder, same as the Remnant pace.
+        float PaceModifier => Universe.P.PiratePace switch
+        {
+            PiratePaceSetting.VerySlow => 2f,
+            PiratePaceSetting.Slow     => 1.5f,
+            _                          => 1f,
+        };
+
         public void LevelDown()
         {
             var empires = Universe.MajorEmpires;
@@ -253,6 +264,7 @@ namespace Ship_Game
                 return;
 
             int dieRoll = (int)(Level * Universe.P.Pace + Universe.ActiveMajorEmpires.Length / 2f);
+            dieRoll = ((int)(dieRoll * PaceModifier)).LowerBound(1);
             if (alwaysLevelUp || Random.RollDie(dieRoll) == 1)
             {
                 int newLevel = Level + 1;

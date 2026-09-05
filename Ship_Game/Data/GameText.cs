@@ -7311,6 +7311,10 @@ namespace Ship_Game
         PirateFactionsOne = 7259,
         /// <summary>All</summary>
         PirateFactionsAll = 7260,
+        /// <summary>Pirate Pace</summary>
+        PiratePaceLabel = 7261,
+        /// <summary>How quickly pirates gain levels.</summary>
+        PiratePaceTip = 7262,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

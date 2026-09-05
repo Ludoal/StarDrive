@@ -415,6 +415,9 @@ namespace Ship_Game
             AddOption(FactionsOptions, Localizer.Token(GameText.PirateFactionsLabel) + " : ",
                 OnPirateFactionsClicked, _ => PirateFactionsText(P.PirateFactions),
                 tip:GameText.PirateFactionsTip);
+            AddOption(FactionsOptions, Localizer.Token(GameText.PiratePaceLabel) + " : ",
+                OnPiratePaceClicked, _ => PiratePaceText(P.PiratePace),
+                tip:GameText.PiratePaceTip);
 
             // row 2 RIGHT: two tabs over one area - the points summary, and the race description.
             // Same rect for both; OnTabChange flips which one is visible.
@@ -723,6 +726,20 @@ namespace Ship_Game
             P.RemnantStrength = P.RemnantStrength.IncrementWithWrap(OptionIncrement);
         }
 
+        void OnPiratePaceClicked(UIButton b)
+        {
+            P.PiratePace = P.PiratePace.IncrementWithWrap(OptionIncrement);
+        }
+
+        // the notch names are shared with the Remnant pace: they are plain words, and a second
+        // set of tokens saying Slow and Normal would be a dialect, not a translation
+        static string PiratePaceText(PiratePaceSetting p) => p switch
+        {
+            PiratePaceSetting.VerySlow => Localizer.Token(GameText.RmPaceVerySlow),
+            PiratePaceSetting.Slow     => Localizer.Token(GameText.RmPaceSlow),
+            _                          => Localizer.Token(GameText.RmPaceNormal),
+        };
+
         void OnPirateFactionsClicked(UIButton b)
         {
             P.PirateFactions = P.PirateFactions.IncrementWithWrap(OptionIncrement);
@@ -1022,6 +1039,15 @@ namespace Ship_Game
     public enum GalSize
     {
         Tiny, Small, Medium, Large, Huge, Epic, TrulyEpic
+    }
+
+    // Ludoal fork (maintainer, 5 Sep '26): how fast piracy escalates. No Off notch here: the
+    // pirates have no story to switch off, and None on the factions row already empties them.
+    public enum PiratePaceSetting
+    {
+        VerySlow,
+        Slow,
+        Normal,
     }
 
     // Ludoal fork (maintainer, 5 Sep '26): how many pirate factions start alive. What used to

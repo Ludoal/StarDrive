@@ -29173,3 +29173,11 @@ PirateFactionsAll:
  Id: 7260
  ENG: "All"
  FRA: "Toutes"
+PiratePaceLabel:
+ Id: 7261
+ ENG: "Pirate Pace"
+ FRA: "Rythme des pirates"
+PiratePaceTip:
+ Id: 7262
+ ENG: "How quickly pirates gain levels. Each level adds a base and stronger raids. Slower stretches the climb. Applies to new games only."
+ FRA: "Vitesse à laquelle les pirates gagnent des niveaux. Chaque niveau ajoute une base et des raids plus forts. Plus lent : l'escalade s'étire. Nouvelles parties uniquement."
