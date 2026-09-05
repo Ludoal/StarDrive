@@ -78,18 +78,6 @@ namespace Ship_Game
 
         public bool HandleVisibleBandInput(InputState input, GameScreen caller)
         {
-            // [TRACE bench 575] ONE build only, out at the next commit: a click on the last
-            // rows of an open list over a cartouche has survived three fixes read at the code.
-            // This says what the band was asked and what it answered, so the next report
-            // arrives with its cause in it rather than another reading.
-            if (input.LeftMouseClick && caller != null)
-            {
-                Vector2 p = input.CursorPosition;
-                Log.Write($"[band] cursor={p.X:0},{p.Y:0} caller={caller.GetType().Name} "
-                        + $"frame={caller.PageFrame.HitTest(p)} draws={CallerDrawsHere(caller, p)} "
-                        + $"above={caller.AboveHitTest(p)} owns={PageOwnsPixel(caller, p)}");
-            }
-
             // (maintainer feedback) the cartouches and their order buttons answer BEFORE the
             // page-frame gate. They draw ON TOP of the open page and reach into the reserved
             // corner (a ship cartouche's SECOND order row climbs above the first, into the

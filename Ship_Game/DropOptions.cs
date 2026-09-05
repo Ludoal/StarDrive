@@ -304,6 +304,21 @@ namespace Ship_Game
             bool overTitle = HitTest(input.CursorPosition);
             bool overExpanded = Open && ClickAbleOpenRect.HitTest(input.CursorPosition);
 
+            // [TRACE bench 576] ONE build only, out at the next commit. The band was cleared
+            // by the previous trace: the click reaches the page, so the miss is in here.
+            // Says the clickable rect, whether the cursor is inside it, and which option
+            // rect - if any - actually holds the pixel.
+            if (Open && input.LeftMouseClick)
+            {
+                int hit = -1;
+                for (int i = 0; i < Options.Count; ++i)
+                    if (Options[i].Rect.HitTest(input.CursorPosition)) { hit = i; break; }
+                Log.Write($"[drop] pos={input.CursorPosition.X:0},{input.CursorPosition.Y:0} "
+                        + $"rect={ClickAbleOpenRect} overExp={overExpanded} overTitle={overTitle} "
+                        + $"n={Options.Count} active={ActiveIndex} hit={hit} "
+                        + $"first={Options[0].Rect} last={Options[Options.Count - 1].Rect}");
+            }
+
             // maintainer: a click anywhere else closes the list without changing the
             // selection, and is CONSUMED - closing is the whole gesture. Letting it through
             // meant a list dismissed by accident also fired whatever sat behind it.
