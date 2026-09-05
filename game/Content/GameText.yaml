@@ -29129,3 +29129,7 @@ RmVanillaStrengthTip:
  Id: 7249
  ENG: "The loaded mod strengthens Remnant ship designs. Check this to restore the base game value."
  FRA: "Le mod chargé renforce les vaisseaux Remnants. Cocher pour rétablir la valeur du jeu de base."
+NgTabFactions:
+ Id: 7250
+ ENG: "Factions"
+ FRA: "Factions"

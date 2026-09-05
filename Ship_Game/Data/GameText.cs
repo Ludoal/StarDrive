@@ -7289,6 +7289,8 @@ namespace Ship_Game
         RmVanillaStrength = 7248,
         /// <summary>The loaded mod strengthens Remnant ship designs.</summary>
         RmVanillaStrengthTip = 7249,
+        /// <summary>Factions</summary>
+        NgTabFactions = 7250,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

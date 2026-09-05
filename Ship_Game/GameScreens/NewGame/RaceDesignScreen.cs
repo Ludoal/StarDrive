@@ -46,6 +46,12 @@ namespace Ship_Game
         UIButton ClearTraitsBtn;   // lives on the Points page, follows its tab
         Submenu EmpireTab;
         Submenu GalaxyTab;
+        // GALAXY | FACTIONS share the one panel: the galaxy rows on page 0, everything about
+        // the NPC factions on page 1. The three foot buttons are anchored to the PANEL, so they
+        // stay under both pages - only these two lists swap.
+        UIList GalaxyOptions;
+        UIList FactionsOptions;
+        bool GalaxyPageShowing = true;
         Submenu RaceTab;   // row 2 left: the race list
         Submenu InfoTab;   // row 2 right: Points to Spend | Description
         SelectedTraitsSummary PointsSummary;
@@ -58,6 +64,18 @@ namespace Ship_Game
             DescriptionTextList.Visible = tab == 1;
             if (ClearTraitsBtn != null)
                 ClearTraitsBtn.Visible = tab == 0;
+        }
+
+        // Galaxy (0) or Factions (1). Same pattern as the two above.
+        // ⚠ the two readouts are NOT switched here: Draw() re-applies their visibility every
+        // frame, so the page test has to live where they are set - see ShowExtraPlanetsNum.
+        void OnGalaxyTabChanged(int tab)
+        {
+            GalaxyPageShowing = tab == 0;
+            if (GalaxyOptions != null)
+                GalaxyOptions.Visible = GalaxyPageShowing;
+            if (FactionsOptions != null)
+                FactionsOptions.Visible = !GalaxyPageShowing;
         }
 
         // the two tabs of the left column share one area - Race (0) or Opponents (1) shows
@@ -200,7 +218,9 @@ namespace Ship_Game
             int midW    = gridRight - SideW - Pad - midLeft;
             EnvTab = Add(new Submenu(new RectF(gridLeft, gridTop, SideW, Row1H), GameText.NgTabEnvironment));
             EmpireTab = Add(new Submenu(new RectF(midLeft, gridTop, midW, Row1H), "Empire"));
-            GalaxyTab = Add(new Submenu(new RectF(gridRight - SideW, gridTop, SideW, Row1H), "Galaxy"));
+            LocalizedText[] galaxyTabs = { "Galaxy", GameText.NgTabFactions };
+            GalaxyTab = Add(new Submenu(new RectF(gridRight - SideW, gridTop, SideW, Row1H), galaxyTabs));
+            GalaxyTab.OnTabChange = OnGalaxyTabChanged;
 
             // row 2 takes what row 1 leaves - the dynamic block, now that the foot row is gone
             int row2Top = gridTop + Row1H + Pad;
@@ -322,14 +342,24 @@ namespace Ship_Game
             ExtraPlanetsLabel.Font  = font;
             ExtraPlanetsLabel.Color = Color.Green;
 
-            UIList optionButtons = AddList(galaxyArea.X, galaxyArea.Y);
-            optionButtons.CaptureInput = true;
-            optionButtons.Padding      = new Vector2(2,3);
-            optionButtons.Color        = Color.Black.Alpha(0.5f);
+            // both pages start at the same origin; only one is visible, and an invisible list
+            // takes no input either - HandleInput gates on Visible.
+            GalaxyOptions   = NewOptionList();
+            FactionsOptions = NewOptionList();
+            FactionsOptions.Visible = false;
+
+            UIList NewOptionList()
+            {
+                UIList list = AddList(galaxyArea.X, galaxyArea.Y);
+                list.CaptureInput = true;
+                list.Padding      = new Vector2(2,3);
+                list.Color        = Color.Black.Alpha(0.5f);
+                return list;
+            }
 
             var customStyle = new UIButton.StyleTextures();
             // [ btn_title : ]  lbl_text
-            UIButton AddOption(string title, Action<UIButton> onClick,
+            UIButton AddOption(UIList list, string title, Action<UIButton> onClick,
                                Func<UILabel, string> getText, LocalizedText tip = default)
             {
                 var button = new UIButton(customStyle, new Vector2(160, 18), LocalizedText.Parse(title))
@@ -338,7 +368,7 @@ namespace Ship_Game
                     Tooltip           = tip, TextAlign = ButtonTextAlign.Right,
                     AcceptRightClicks = true, TextShadows = true,
                 };
-                optionButtons.AddSplit(button, new UILabel(getText, Fonts.Arial11Bold)).Split = 180;
+                list.AddSplit(button, new UILabel(getText, Fonts.Arial11Bold)).Split = 180;
                 return button;
             }
 
@@ -354,19 +384,23 @@ namespace Ship_Game
             if (GlobalStats.Defaults.ChangeResearchCostBasedOnSize)
                 opponentsTip += ". On a large scale galaxy, this might also affect research cost of technologies.";
 
-            AddOption("{GalaxySize} : ",   OnGalaxySizeClicked,  _ => GalSizeText(P.GalaxySize), tip:galaxySizeTip);
-            AddOption("{SolarSystems} : ", OnNumberStarsClicked, _ => P.StarsCount.ToString(), tip:solarSystemsTip);
-            AddOption("{Opponents} : ",  OnNumOpponentsClicked,  _ => P.NumOpponents.ToString(), tip:opponentsTip);
-            ModeBtn = AddOption("{GameMode} : ",   OnGameModeClicked, _ => GetModeText().Text, tip:GetModeTip());
-            AddOption("{Pacing} : ", OnPacingClicked, _ => (P.Pace == 1f) ? "1x" : string.Format(Localizer.Token(GameText.NgPaceSlower), $"{P.Pace:0.##}"), tip:GameText.TheGamesPaceModifiesThe);
-            AddOption("{Difficulty} : ", OnDifficultyClicked, _ => DifficultyText(P.Difficulty),
+            AddOption(GalaxyOptions, "{GalaxySize} : ",   OnGalaxySizeClicked,  _ => GalSizeText(P.GalaxySize), tip:galaxySizeTip);
+            AddOption(GalaxyOptions, "{SolarSystems} : ", OnNumberStarsClicked, _ => P.StarsCount.ToString(), tip:solarSystemsTip);
+            AddOption(GalaxyOptions, "{Opponents} : ",  OnNumOpponentsClicked,  _ => P.NumOpponents.ToString(), tip:opponentsTip);
+            ModeBtn = AddOption(GalaxyOptions, "{GameMode} : ",   OnGameModeClicked, _ => GetModeText().Text, tip:GetModeTip());
+            AddOption(GalaxyOptions, "{Pacing} : ", OnPacingClicked, _ => (P.Pace == 1f) ? "1x" : string.Format(Localizer.Token(GameText.NgPaceSlower), $"{P.Pace:0.##}"), tip:GameText.TheGamesPaceModifiesThe);
+            AddOption(GalaxyOptions, "{Difficulty} : ", OnDifficultyClicked, _ => DifficultyText(P.Difficulty),
                 tip:GameText.NgDifficultyAggressivenessTooltip);
-            AddOption("{RemnantPresence} : ", OnExtraRemnantClicked, _ => RemnantText(P.ExtraRemnant),
+
+            // FACTIONS page: what the galaxy is populated with that is not an empire. Remnant
+            // Presence and Pace moved off Galaxy - the panel was full, and every NPC control
+            // reads better next to its siblings than wedged under the galaxy shape.
+            AddOption(FactionsOptions, "{RemnantPresence} : ", OnExtraRemnantClicked, _ => RemnantText(P.ExtraRemnant),
                 tip:GameText.NgRemnantsIntensityTooltip);
             // Ludoal fork (maintainer, 31 Aug '26): the setup offered their NUMBER and nothing
             // else. The complaint from new players is not how many there are - it is how quickly
             // they become dangerous, which is this.
-            AddOption(Localizer.Token(GameText.RmPaceLabel) + " : ", OnRemnantPaceClicked,
+            AddOption(FactionsOptions, Localizer.Token(GameText.RmPaceLabel) + " : ", OnRemnantPaceClicked,
                 _ => RemnantPaceText(P.RemnantPace), tip:GameText.RmPaceTip);
 
             // row 2 RIGHT: two tabs over one area - the points summary, and the race description.
@@ -843,7 +877,11 @@ namespace Ship_Game
 
         void ShowExtraPlanetsNum(int extraPlanets)
         {
-            ExtraPlanetsLabel.Visible = extraPlanets > 0;
+            // ⚠ Draw() calls this every frame, so the page test HAS to be here: these two
+            // readouts belong to the Galaxy page, and a visibility set in the tab handler would
+            // be overwritten before it was ever seen.
+            NumSystemsLabel.Visible   = GalaxyPageShowing;
+            ExtraPlanetsLabel.Visible = GalaxyPageShowing && extraPlanets > 0;
             ExtraPlanetsLabel.Text = $"Extra Planets: {extraPlanets}";
         }
 
