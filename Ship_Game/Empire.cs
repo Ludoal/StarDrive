@@ -2626,7 +2626,7 @@ namespace Ship_Game
             if (!WeAreRemnants)
                 return false;
 
-            if (Universe.P.DisableRemnantStory)
+            if (Universe.P.NoRemnantStory)
                 return false;
 
             ShipRole.Race killedExpSettings = ShipRole.GetExpSettings(killedShip);

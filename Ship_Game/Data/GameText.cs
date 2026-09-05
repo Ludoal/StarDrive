@@ -7297,6 +7297,10 @@ namespace Ship_Game
         RmStrengthReduced = 7252,
         /// <summary>Mod</summary>
         RmStrengthMod = 7253,
+        /// <summary>Off</summary>
+        RmPaceOff = 7254,
+        /// <summary>How many Remnant guard fleets the galaxy starts with.</summary>
+        RmPresenceTip = 7255,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>

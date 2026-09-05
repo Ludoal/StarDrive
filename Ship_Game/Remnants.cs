@@ -1312,7 +1312,7 @@ namespace Ship_Game
         RemnantStory InitAndPickStory(EmpireAI ai)
         {
             ai.AddGoal(new RemnantInit(Owner));
-            if (Universe.P.DisableRemnantStory)
+            if (Universe.P.NoRemnantStory)
                 return RemnantStory.None;
 
             float roll = Random.RollDie(100);

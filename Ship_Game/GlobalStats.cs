@@ -237,7 +237,6 @@ public static class GlobalStats
     public static bool RuleFixedPlayerCreditCharge;
     public static bool RuleAIUsesPlayerDesigns;
     public static bool RuleDisablePirates;
-    public static bool RuleDisableRemnantStory;
     public static bool RuleDisableAlternateAITraits;
     public static bool RuleDisableResearchStations;
     public static bool RuleDisableMiningOps;
@@ -465,7 +464,6 @@ public static class GlobalStats
         GetSetting(config, "RuleFixedPlayerCreditCharge", ref RuleFixedPlayerCreditCharge);
         GetSetting(config, "RuleAIUsesPlayerDesigns", ref RuleAIUsesPlayerDesigns);
         GetSetting(config, "RuleDisablePirates", ref RuleDisablePirates);
-        GetSetting(config, "RuleDisableRemnantStory", ref RuleDisableRemnantStory);
         GetSetting(config, "RuleDisableAlternateAITraits", ref RuleDisableAlternateAITraits);
         GetSetting(config, "RuleDisableResearchStations", ref RuleDisableResearchStations);
         GetSetting(config, "RuleDisableMiningOps", ref RuleDisableMiningOps);
@@ -692,7 +690,6 @@ public static class GlobalStats
         WriteSetting(config, "RuleFixedPlayerCreditCharge", RuleFixedPlayerCreditCharge);
         WriteSetting(config, "RuleAIUsesPlayerDesigns", RuleAIUsesPlayerDesigns);
         WriteSetting(config, "RuleDisablePirates", RuleDisablePirates);
-        WriteSetting(config, "RuleDisableRemnantStory", RuleDisableRemnantStory);
         WriteSetting(config, "RuleDisableAlternateAITraits", RuleDisableAlternateAITraits);
         WriteSetting(config, "RuleDisableResearchStations", RuleDisableResearchStations);
         WriteSetting(config, "RuleDisableMiningOps", RuleDisableMiningOps);

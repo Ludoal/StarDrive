@@ -396,7 +396,7 @@ namespace Ship_Game
             // Presence and Pace moved off Galaxy - the panel was full, and every NPC control
             // reads better next to its siblings than wedged under the galaxy shape.
             AddOption(FactionsOptions, "{RemnantPresence} : ", OnExtraRemnantClicked, _ => RemnantText(P.ExtraRemnant),
-                tip:GameText.NgRemnantsIntensityTooltip);
+                tip:GameText.RmPresenceTip);
             // Ludoal fork (maintainer, 31 Aug '26): the setup offered their NUMBER and nothing
             // else. The complaint from new players is not how many there are - it is how quickly
             // they become dangerous, which is this.
@@ -728,6 +728,7 @@ namespace Ship_Game
 
         static string RemnantPaceText(RemnantPaceSetting p) => p switch
         {
+            RemnantPaceSetting.Off      => Localizer.Token(GameText.RmPaceOff),
             RemnantPaceSetting.VerySlow => Localizer.Token(GameText.RmPaceVerySlow),
             RemnantPaceSetting.Slow     => Localizer.Token(GameText.RmPaceSlow),
             _                           => Localizer.Token(GameText.RmPaceNormal),
@@ -1024,6 +1025,11 @@ namespace Ship_Game
         VerySlow,
         Slow,
         Normal,
+        // Ludoal fork (maintainer, 5 Sep '26): the zero of this axis, absorbing what used to be
+        // the Disable Remnant Story checkbox - with no story the Remnant never activate, so
+        // nothing ever climbs. APPENDED, never inserted: the notch is serialised by its ordinal,
+        // so putting Off first would shift every existing save's setting by one, in silence.
+        Off,
     }
 
     public enum ExtraRemnantPresence

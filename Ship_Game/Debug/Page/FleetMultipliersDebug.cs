@@ -24,7 +24,7 @@ public class FleetMultipliersDebug : DebugPage
                 ++column;
             }
         }
-        if (!Universe.P.DisableRemnantStory)
+        if (!Universe.P.NoRemnantStory)
             DrawMultipliers(Universe.Remnants, column);
 
         base.Draw(batch, elapsed);

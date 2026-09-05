@@ -117,7 +117,12 @@ public class UniverseParams
     // (Rework screen toggles live in GlobalStats, not here: which interface a player prefers
     // is a player preference, not a property of one game.)
 
+    // ⚠ OBSOLETE, kept READABLE for saves written before 5 Sep '26 - the checkbox became the Off
+    // notch of RemnantPace. Never written any more; OnDeserialized translates a true into Off.
     [StarData] public bool DisableRemnantStory;
+
+    // the one place that knows Off means "no story", so the three readers do not each carry it
+    public bool NoRemnantStory => RemnantPace == RemnantPaceSetting.Off;
     [StarData] public bool EnableRandomizedAIFleetSizes;
     [StarData] public bool DisableAlternateAITraits;
     [StarData] public bool DisablePirates;
@@ -142,7 +147,9 @@ public class UniverseParams
         UseUpkeepByHullSize = s.UseUpkeepByHullSize;
         StartingPlanetRichnessBonus = s.StartingPlanetRichnessBonus;
         GravityWellRange = s.GravityWellRange;
-        DisableRemnantStory = s.DisableRemnantStory;
+        // a mod may declare the story off by default - that is the Off notch now
+        if (s.DisableRemnantStory)
+            RemnantPace = RemnantPaceSetting.Off;
         DisablePirates = s.DisablePirates;
         EnableRandomizedAIFleetSizes = s.EnableRandomizedAIFleetSizes;
     }
@@ -170,7 +177,6 @@ public class UniverseParams
             FixedPlayerCreditCharge = GlobalStats.RuleFixedPlayerCreditCharge;
             AIUsesPlayerDesigns = GlobalStats.RuleAIUsesPlayerDesigns;
             DisablePirates = GlobalStats.RuleDisablePirates;
-            DisableRemnantStory = GlobalStats.RuleDisableRemnantStory;
             DisableAlternateAITraits = GlobalStats.RuleDisableAlternateAITraits;
             DisableResearchStations = GlobalStats.RuleDisableResearchStations;
             DisableMiningOps = GlobalStats.RuleDisableMiningOps;
@@ -191,5 +197,8 @@ public class UniverseParams
         // can only have come from such a save. False is the default either way.
         if (VanillaRemnantStrength)
             RemnantStrength = RemnantStrengthSetting.Vanilla;
+
+        if (DisableRemnantStory)
+            RemnantPace = RemnantPaceSetting.Off;
     }
 }
