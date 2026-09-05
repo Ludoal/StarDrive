@@ -116,13 +116,15 @@ public sealed class RuleOptionsScreen : PopupWindow
         // ScreenWidth/4.5 gave 320, which started before the 270-wide sliders at X+60 had ended,
         // and it moved with the display while the panel no longer does. 280 clears them.
         const int indent = 300; // 20 more (bench 408): air between the sliders and the checkbox column
+        // (maintainer feedback) grouped by what they do: the three that change how the game is
+        // played first, then the switches that remove a system, which all read "Disable ..."
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*0, () => P.PreventFederations, title: GameText.PreventAiFederations, tooltip: GameText.PreventsAiEmpiresFromMerging);
-        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*1, () => P.FixedPlayerCreditCharge, title: GameText.FixedShipAndBuildingsCost, tooltip: GameText.KeepFixedCreditCostOf);
-        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*2, () => P.AIUsesPlayerDesigns, title: GameText.UsePlayerDesignsTitle, tooltip: GameText.UsePlayerDesignsTip);
-        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*3, () => P.DisableAlternateAITraits, title: GameText.DisableAlternateTraits, tooltip: GameText.DisableAlternateTraitsTip);
-        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*4, () => P.DisableResearchStations, title: GameText.DisableResearchStationsName, tooltip: GameText.DisableResearchStationsTip);
-        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*5, () => P.DisableMiningOps, title: GameText.DisableMiningOpsName, tooltip: GameText.DisableMiningOpsTip);
-        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*6, () => P.UseUpkeepByHullSize, title: GameText.RuleOptionsUseHullUpkeepName, tooltip: GameText.RuleOptionsUseHullUpkeepTip);
+        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*1, () => P.AIUsesPlayerDesigns, title: GameText.UsePlayerDesignsTitle, tooltip: GameText.UsePlayerDesignsTip);
+        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*2, () => P.FixedPlayerCreditCharge, title: GameText.FixedShipAndBuildingsCost, tooltip: GameText.KeepFixedCreditCostOf);
+        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*3, () => P.UseUpkeepByHullSize, title: GameText.RuleOptionsUseHullUpkeepName, tooltip: GameText.RuleOptionsUseHullUpkeepTip);
+        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*4, () => P.DisableAlternateAITraits, title: GameText.DisableAlternateTraits, tooltip: GameText.DisableAlternateTraitsTip);
+        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*5, () => P.DisableResearchStations, title: GameText.DisableResearchStationsName, tooltip: GameText.DisableResearchStationsTip);
+        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*6, () => P.DisableMiningOps, title: GameText.DisableMiningOpsName, tooltip: GameText.DisableMiningOpsTip);
         var mdRect = new Rectangle(ftlRect.X + indent+2, ftlRect.Y + 250, 270, 50);
         CustomMineralDecay = SliderDecimal1(mdRect, GameText.MineralDecayRate, 0.2f, 3, P.CustomMineralDecay);
         CustomMineralDecay.OnChange = (s) => P.CustomMineralDecay = (s.AbsoluteValue).RoundToFractionOf10();
