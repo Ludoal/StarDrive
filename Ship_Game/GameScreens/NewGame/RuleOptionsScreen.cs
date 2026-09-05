@@ -51,7 +51,6 @@ public sealed class RuleOptionsScreen : PopupWindow
             && P.PreventFederations == stock.PreventFederations
             && P.FixedPlayerCreditCharge == stock.FixedPlayerCreditCharge
             && P.AIUsesPlayerDesigns == stock.AIUsesPlayerDesigns
-            && P.DisablePirates == stock.DisablePirates
             && P.DisableAlternateAITraits == stock.DisableAlternateAITraits
             && P.DisableResearchStations == stock.DisableResearchStations
             && P.DisableMiningOps == stock.DisableMiningOps
@@ -75,7 +74,6 @@ public sealed class RuleOptionsScreen : PopupWindow
         GlobalStats.RulePreventFederations = P.PreventFederations;
         GlobalStats.RuleFixedPlayerCreditCharge = P.FixedPlayerCreditCharge;
         GlobalStats.RuleAIUsesPlayerDesigns = P.AIUsesPlayerDesigns;
-        GlobalStats.RuleDisablePirates = P.DisablePirates;
         GlobalStats.RuleDisableAlternateAITraits = P.DisableAlternateAITraits;
         GlobalStats.RuleDisableResearchStations = P.DisableResearchStations;
         GlobalStats.RuleDisableMiningOps = P.DisableMiningOps;
@@ -121,11 +119,10 @@ public sealed class RuleOptionsScreen : PopupWindow
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*0, () => P.PreventFederations, title: GameText.PreventAiFederations, tooltip: GameText.PreventsAiEmpiresFromMerging);
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*1, () => P.FixedPlayerCreditCharge, title: GameText.FixedShipAndBuildingsCost, tooltip: GameText.KeepFixedCreditCostOf);
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*2, () => P.AIUsesPlayerDesigns, title: GameText.UsePlayerDesignsTitle, tooltip: GameText.UsePlayerDesignsTip);
-        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*3, () => P.DisablePirates, title: GameText.DisablePirates, tooltip: GameText.DisablesAllPirateFactionsFor);
-        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*4, () => P.DisableAlternateAITraits, title: GameText.DisableAlternateTraits, tooltip: GameText.DisableAlternateTraitsTip);
-        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*5, () => P.DisableResearchStations, title: GameText.DisableResearchStationsName, tooltip: GameText.DisableResearchStationsTip);
-        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*6, () => P.DisableMiningOps, title: GameText.DisableMiningOpsName, tooltip: GameText.DisableMiningOpsTip);
-        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*7, () => P.UseUpkeepByHullSize, title: GameText.RuleOptionsUseHullUpkeepName, tooltip: GameText.RuleOptionsUseHullUpkeepTip);
+        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*3, () => P.DisableAlternateAITraits, title: GameText.DisableAlternateTraits, tooltip: GameText.DisableAlternateTraitsTip);
+        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*4, () => P.DisableResearchStations, title: GameText.DisableResearchStationsName, tooltip: GameText.DisableResearchStationsTip);
+        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*5, () => P.DisableMiningOps, title: GameText.DisableMiningOpsName, tooltip: GameText.DisableMiningOpsTip);
+        Checkbox(ftlRect.X + indent, ftlRect.Y + 25*6, () => P.UseUpkeepByHullSize, title: GameText.RuleOptionsUseHullUpkeepName, tooltip: GameText.RuleOptionsUseHullUpkeepTip);
         var mdRect = new Rectangle(ftlRect.X + indent+2, ftlRect.Y + 250, 270, 50);
         CustomMineralDecay = SliderDecimal1(mdRect, GameText.MineralDecayRate, 0.2f, 3, P.CustomMineralDecay);
         CustomMineralDecay.OnChange = (s) => P.CustomMineralDecay = (s.AbsoluteValue).RoundToFractionOf10();
@@ -193,7 +190,6 @@ public sealed class RuleOptionsScreen : PopupWindow
             P.PreventFederations = stock.PreventFederations;
             P.FixedPlayerCreditCharge = stock.FixedPlayerCreditCharge;
             P.AIUsesPlayerDesigns = stock.AIUsesPlayerDesigns;
-            P.DisablePirates = stock.DisablePirates;
             P.DisableAlternateAITraits = stock.DisableAlternateAITraits;
             P.DisableResearchStations = stock.DisableResearchStations;
             P.DisableMiningOps = stock.DisableMiningOps;

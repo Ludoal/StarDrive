@@ -29153,3 +29153,23 @@ RmPresenceTip:
  Id: 7255
  ENG: "How many Remnant guard fleets the galaxy starts with. Fewer guards also make the Remnant climb levels faster once their story begins."
  FRA: "Nombre de flottes gardiennes Remnant au départ. Moins de gardiens : les Remnants montent aussi de niveau plus vite une fois leur histoire lancée."
+PirateFactionsLabel:
+ Id: 7256
+ ENG: "Pirate Factions"
+ FRA: "Factions pirates"
+PirateFactionsTip:
+ Id: 7257
+ ENG: "How many pirate factions start alive. None disables piracy entirely. The surviving faction is always the same one for a given setting."
+ FRA: "Nombre de factions pirates vivantes au départ. Aucune : la piraterie est désactivée. Pour un réglage donné, la faction qui survit est toujours la même."
+PirateFactionsNone:
+ Id: 7258
+ ENG: "None"
+ FRA: "Aucune"
+PirateFactionsOne:
+ Id: 7259
+ ENG: "One"
+ FRA: "Une"
+PirateFactionsAll:
+ Id: 7260
+ ENG: "All"
+ FRA: "Toutes"

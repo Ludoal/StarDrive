@@ -484,7 +484,7 @@ namespace Ship_Game
             if (IsDefeated)
                 return;
 
-            if (Universe.P.DisablePirates)
+            if (StartsDefeatedByPirateSetting())
             {
                 IsDefeated = true;
             }
@@ -492,6 +492,28 @@ namespace Ship_Game
             {
                 Pirates = new Pirates(this, ai);
             }
+        }
+
+        // Ludoal fork (maintainer, 5 Sep '26): how many pirate factions start alive is a setting
+        // now, where it used to be all or nothing. WHICH of them survives has to be the same on
+        // every machine and every reload, so the rank comes from the race NAMES - the order the
+        // data files happened to load in is not something to lean on.
+        bool StartsDefeatedByPirateSetting()
+        {
+            switch (Universe.P.PirateFactions)
+            {
+                case PirateFactionsSetting.None: return true;
+                case PirateFactionsSetting.All:  return false;
+            }
+
+            int allowed = 1;   // One
+            int rank = 0;      // how many pirate factions sort before this one
+            foreach (IEmpireData d in ResourceManager.AllRaces)
+                if (d is EmpireData ed && ed.IsPirateFaction
+                    && string.CompareOrdinal(d.Name, data.Name) < 0)
+                    ++rank;
+
+            return rank >= allowed;
         }
 
         public void SetAsRemnants(EmpireAI ai)

@@ -125,7 +125,12 @@ public class UniverseParams
     public bool NoRemnantStory => RemnantPace == RemnantPaceSetting.Off;
     [StarData] public bool EnableRandomizedAIFleetSizes;
     [StarData] public bool DisableAlternateAITraits;
+    // ⚠ OBSOLETE, kept READABLE for saves written before 5 Sep '26 - the checkbox became the
+    // notches below. Never written any more; OnDeserialized translates a true into None.
     [StarData] public bool DisablePirates;
+
+    [StarData(DefaultValue=PirateFactionsSetting.All)]
+    public PirateFactionsSetting PirateFactions = PirateFactionsSetting.All;
     [StarData] public bool FixedPlayerCreditCharge;
     [StarData] public bool DisableResearchStations;
     [StarData] public bool DisableMiningOps;
@@ -150,7 +155,9 @@ public class UniverseParams
         // a mod may declare the story off by default - that is the Off notch now
         if (s.DisableRemnantStory)
             RemnantPace = RemnantPaceSetting.Off;
-        DisablePirates = s.DisablePirates;
+        // a mod may declare piracy off by default - that is the None notch now
+        if (s.DisablePirates)
+            PirateFactions = PirateFactionsSetting.None;
         EnableRandomizedAIFleetSizes = s.EnableRandomizedAIFleetSizes;
     }
 
@@ -176,7 +183,6 @@ public class UniverseParams
             PreventFederations = GlobalStats.RulePreventFederations;
             FixedPlayerCreditCharge = GlobalStats.RuleFixedPlayerCreditCharge;
             AIUsesPlayerDesigns = GlobalStats.RuleAIUsesPlayerDesigns;
-            DisablePirates = GlobalStats.RuleDisablePirates;
             DisableAlternateAITraits = GlobalStats.RuleDisableAlternateAITraits;
             DisableResearchStations = GlobalStats.RuleDisableResearchStations;
             DisableMiningOps = GlobalStats.RuleDisableMiningOps;
@@ -200,5 +206,8 @@ public class UniverseParams
 
         if (DisableRemnantStory)
             RemnantPace = RemnantPaceSetting.Off;
+
+        if (DisablePirates)
+            PirateFactions = PirateFactionsSetting.None;
     }
 }

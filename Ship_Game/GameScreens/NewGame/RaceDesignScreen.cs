@@ -412,6 +412,10 @@ namespace Ship_Game
                     OnRemnantStrengthClicked, _ => RemnantStrengthText(P.RemnantStrength),
                     tip:GameText.RmStrengthTip);
 
+            AddOption(FactionsOptions, Localizer.Token(GameText.PirateFactionsLabel) + " : ",
+                OnPirateFactionsClicked, _ => PirateFactionsText(P.PirateFactions),
+                tip:GameText.PirateFactionsTip);
+
             // row 2 RIGHT: two tabs over one area - the points summary, and the race description.
             // Same rect for both; OnTabChange flips which one is visible.
             // ⚠ the tab list is an IEnumerable - there is no variadic overload
@@ -719,6 +723,18 @@ namespace Ship_Game
             P.RemnantStrength = P.RemnantStrength.IncrementWithWrap(OptionIncrement);
         }
 
+        void OnPirateFactionsClicked(UIButton b)
+        {
+            P.PirateFactions = P.PirateFactions.IncrementWithWrap(OptionIncrement);
+        }
+
+        static string PirateFactionsText(PirateFactionsSetting f) => f switch
+        {
+            PirateFactionsSetting.None => Localizer.Token(GameText.PirateFactionsNone),
+            PirateFactionsSetting.One  => Localizer.Token(GameText.PirateFactionsOne),
+            _                          => Localizer.Token(GameText.PirateFactionsAll),
+        };
+
         static string RemnantStrengthText(RemnantStrengthSetting s) => s switch
         {
             RemnantStrengthSetting.Vanilla => Localizer.Token(GameText.RmStrengthVanilla),
@@ -1006,6 +1022,16 @@ namespace Ship_Game
     public enum GalSize
     {
         Tiny, Small, Medium, Large, Huge, Epic, TrulyEpic
+    }
+
+    // Ludoal fork (maintainer, 5 Sep '26): how many pirate factions start alive. What used to
+    // be a checkbox: None is the old ticked box. Pirate factions are whatever the data declares
+    // - the code never fixes their count - so All is the only honest name for the top notch.
+    public enum PirateFactionsSetting
+    {
+        None,
+        One,
+        All,
     }
 
     // Ludoal fork (maintainer, 5 Sep '26): the three positions of Remnant design strength. The
