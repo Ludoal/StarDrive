@@ -58,13 +58,15 @@ namespace Ship_Game.GameScreens
 
         class SummaryPanel : UIList
         {
-            public SummaryPanel(LocalizedText title, in Rectangle rect, Color c) : base(rect, c)
+            public SummaryPanel(LocalizedText title, in Rectangle rect, Color c, LocalizedText titleTip = default)
+                : base(rect, c)
             {
                 if (title.NotEmpty)
                 {
                     Header = new UILabel(title, Fonts.Arial14Bold, Color.Wheat)
                     {
-                        DropShadow = true
+                        DropShadow = true,
+                        Tooltip = titleTip
                     };
                 }
                 Padding     = new Vector2(4f, 1f); // tighter rows
@@ -318,7 +320,7 @@ namespace Ship_Game.GameScreens
             // goal) → vertical arithmetic Income − Expenditure = Net Gain
             int rx = (int)RightMenu.X + 12; // tighter margins
             int rw = (int)RightMenu.Width - 24;
-            var taxRect    = new Rectangle(rx, (int)RightMenu.Y + 42, rw, 90); // top rhythm = the left table's headerY, checkbox first; the height is trimmed under the goal slider so Net Gain breathes at the foot, and the three blocks below hang off this bottom
+            var taxRect    = new Rectangle(rx, (int)RightMenu.Y + 42, rw, 96); // top rhythm = the left table's headerY, checkbox first; the height is trimmed under the goal slider so Net Gain breathes at the foot, and the three blocks below hang off this bottom
 
             SummaryPanel tax = Add(new SummaryPanel("", taxRect, new Color(17, 21, 28)));
 
@@ -332,7 +334,7 @@ namespace Ship_Game.GameScreens
             // the amount rides its own line under the rail: a slider title carrying a figure
             // and a duration reads as a sentence, not as a setting
             TreasuryGoalValue = tax.Add(new UILabel(l => BudgetTargetLine(), Fonts.Arial12Bold));
-            TreasuryGoalValue.Color = Colors.Cream;
+            TreasuryGoalValue.Color = Color.White;
 
             TreasuryGoal.RelativeValue = Player.data.treasuryGoal; // trigger updates
             TaxSlider.RelativeValue    = Player.data.TaxRate;
@@ -432,7 +434,8 @@ namespace Ship_Game.GameScreens
         private SummaryPanel BudgetTab(Rectangle budgetRect)
         {
             // the note rides the title line
-            SummaryPanel budget = Add(new SummaryPanel(Localizer.Token(GameText.BgtDistribution), budgetRect, new Color(30, 26, 19)));
+            SummaryPanel budget = Add(new SummaryPanel(Localizer.Token(GameText.BgtDistribution), budgetRect,
+                                                       new Color(30, 26, 19), GameText.BgtDistributionTip));
             budget.Spacer();
             float Pots() => Player.AI.ColonyBudget + Player.AI.SSPBudget + Player.AI.DefenseBudget;
             var up = Universe.UState.P;
@@ -490,8 +493,16 @@ namespace Ship_Game.GameScreens
             GovSpendingSlider.OnChange = sl =>
             {
                 up.GovernorSpendingRatio = sl.RelativeValue;
-                foreach (Planet p in Player.GetPlanets())
-                    p.Budget?.SnapToTarget();
+                // this screen pauses the universe, so no turn will consume a snap flag:
+                // the colonies are recomputed here and now, on the thread that owns them
+                Universe.RunOnSimThread(() =>
+                {
+                    foreach (Planet p in Player.GetPlanets())
+                    {
+                        p.Budget?.SnapToTarget();
+                        p.Budget?.Update();
+                    }
+                });
             };
             budget.AddItem(GameText.BgtMaySpend, GovernorsMaySpend);
             budget.AddItem(GameText.BgtWithheld, WithheldByAllowance);

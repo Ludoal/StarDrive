@@ -22652,8 +22652,8 @@ ShipyardArcsTip:
  FRA: "Afficher les arcs de tir des armes."
 BgtTargetName:
  Id: 30121
- ENG: "Budget Target"
- FRA: "Objectif budgétaire"
+ ENG: "Budget Target (reserve)"
+ FRA: "Objectif budgétaire (réserve)"
 BgtTurnsOfRevenue:
  Id: 30122
  ENG: "turns of revenue"
@@ -22668,8 +22668,8 @@ BgtAutoTaxLine:
  FRA: "Impôts auto : le taux est ajusté pour atteindre l'objectif budgétaire"
 BgtDistribution:
  Id: 30125
- ENG: "Budget Distribution"
- FRA: "Répartition du budget"
+ ENG: "Budget Distribution (per turn)"
+ FRA: "Répartition du budget (par tour)"
 BgtGovAllowance:
  Id: 30126
  ENG: "Governor Allowance"
@@ -22738,6 +22738,10 @@ BpRenameTaken:
  Id: 30142
  ENG: "'{0}' is already carried by another plan, now or in the past."
  FRA: "« {0} » est déjà porté par un autre plan, aujourd'hui ou par le passé."
+BgtDistributionTip:
+ Id: 30143
+ ENG: "Each domain draws its own share from the Budget Target every turn; the three shares are pooled, and the split below divides that per-turn total."
+ FRA: "Chaque domaine puise sa part dans l'objectif budgétaire à chaque tour ; les trois parts sont mises en commun, et la répartition ci-dessous partage ce total par tour."
 BlueprintsCannotBuildTroopsTip:
  Id: 30119
  ENG: "No planned building in this blueprint can train infantry. Add a building that trains troops to the plan."

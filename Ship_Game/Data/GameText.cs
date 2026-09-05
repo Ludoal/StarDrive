@@ -6335,6 +6335,8 @@ namespace Ship_Game
         BpRenameBadChars = 30141,
         /// <summary>'{0}' is already carried by another plan, now or in the past.</summary>
         BpRenameTaken = 30142,
+        /// <summary>Each domain draws its own share from the Budget Target every turn; the three shares are pooled, and the split below divides that per-turn total.</summary>
+        BgtDistributionTip = 30143,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>
