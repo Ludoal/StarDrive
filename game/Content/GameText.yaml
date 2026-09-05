@@ -29107,8 +29107,8 @@ RmPaceLabel:
  FRA: "Rythme des Remnants"
 RmPaceTip:
  Id: 7244
- ENG: "How quickly the Remnant story escalates. Off: no story, the Remnant never activate and stay at level 1, but slightly more guard fleets are placed at start. Slower stretches the climb. Applies to new games only."
- FRA: "Vitesse d'escalade de l'histoire Remnant. Off : pas d'histoire, les Remnants ne s'activent jamais et restent au niveau 1, mais un peu plus de flottes gardiennes sont posées au départ. Plus lent : l'escalade s'étire. Nouvelles parties uniquement."
+ ENG: "How quickly the Remnant story escalates. Off: no story, the Remnant never activate and stay at level 1, but slightly more guard fleets are placed at start. Slower stretches the climb."
+ FRA: "Vitesse d'escalade de l'histoire Remnant. Off : pas d'histoire, les Remnants ne s'activent jamais et restent au niveau 1, mais un peu plus de flottes gardiennes sont posées au départ. Plus lent : l'escalade s'étire."
 RmPaceVerySlow:
  Id: 7245
  ENG: "Very Slow"
@@ -29127,24 +29127,24 @@ RmStrengthLabel:
  FRA: "Force des Remnants"
 RmStrengthTip:
  Id: 7249
- ENG: "How hard Remnant fleets hit, and how much of a lead they demand before they attack. Mod: the value the loaded mod declares. Vanilla: the base game value. Shown only when a mod raises it."
- FRA: "Puissance des flottes Remnants et avance qu'elles exigent avant d'attaquer. Mod : valeur déclarée par le mod chargé. Vanilla : valeur du jeu de base. Affiché seulement si un mod l'augmente."
+ ENG: "How hard Remnant fleets hit, and how much of a lead they demand before they attack. Default is what the rules ask for: the value the loaded mod declares, or the base game's where no mod raises it. The other notches are fractions of that."
+ FRA: "Puissance des flottes Remnants et avance qu'elles exigent avant d'attaquer. Défaut : la valeur prévue par les règles, celle du mod chargé ou celle du jeu de base si aucun mod ne l'augmente. Les autres crans en sont des fractions."
 NgTabFactions:
  Id: 7250
  ENG: "Factions"
  FRA: "Factions"
-RmStrengthVanilla:
+RmStrengthQuarter:
  Id: 7251
- ENG: "Vanilla"
- FRA: "Origine"
-RmStrengthReduced:
+ ENG: "1/4"
+ FRA: "1/4"
+RmStrengthHalf:
  Id: 7252
- ENG: "Reduced"
- FRA: "Réduite"
-RmStrengthMod:
+ ENG: "1/2"
+ FRA: "1/2"
+RmStrengthThreeQ:
  Id: 7253
- ENG: "Mod"
- FRA: "Mod"
+ ENG: "3/4"
+ FRA: "3/4"
 RmPaceOff:
  Id: 7254
  ENG: "Off"
@@ -29179,5 +29179,9 @@ PiratePaceLabel:
  FRA: "Rythme des pirates"
 PiratePaceTip:
  Id: 7262
- ENG: "How quickly pirates gain levels. Each level adds a base and stronger raids. Slower stretches the climb. Applies to new games only."
- FRA: "Vitesse à laquelle les pirates gagnent des niveaux. Chaque niveau ajoute une base et des raids plus forts. Plus lent : l'escalade s'étire. Nouvelles parties uniquement."
+ ENG: "How quickly pirates gain levels. Each level adds a base and stronger raids. Slower stretches the climb."
+ FRA: "Vitesse à laquelle les pirates gagnent des niveaux. Chaque niveau ajoute une base et des raids plus forts. Plus lent : l'escalade s'étire."
+RmStrengthDefault:
+ Id: 7263
+ ENG: "Default"
+ FRA: "Défaut"

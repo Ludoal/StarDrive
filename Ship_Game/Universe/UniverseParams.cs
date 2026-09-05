@@ -36,8 +36,8 @@ public class UniverseParams
     // positions below. Never written any more; OnDeserialized translates a true into Vanilla.
     [StarData] public bool VanillaRemnantStrength;
 
-    [StarData(DefaultValue=RemnantStrengthSetting.Mod)]
-    public RemnantStrengthSetting RemnantStrength = RemnantStrengthSetting.Mod;
+    [StarData(DefaultValue=RemnantStrengthSetting.Default)]
+    public RemnantStrengthSetting RemnantStrength = RemnantStrengthSetting.Default;
 
     public Array<IEmpireData> SelectedOpponents = new();
 
@@ -204,8 +204,18 @@ public class UniverseParams
         // A save from before the notches carries the old checkbox. Only TRUE says anything: the
         // box was the one way to ask for the base game value, and nothing writes it now, so it
         // can only have come from such a save. False is the default either way.
+        // the old box asked for the base game's strength: express that as the closest notch of
+        // the scale that replaced it. Under a mod that doubles the value it lands on Half; under
+        // one that raises nothing, on Default.
         if (VanillaRemnantStrength)
-            RemnantStrength = RemnantStrengthSetting.Vanilla;
+        {
+            float mod = GlobalStats.Defaults.RemnantDesignStrMultiplier;
+            float ratio = mod > 0 ? UniverseState.VanillaRemnantDesignStr / mod : 1f;
+            RemnantStrength = ratio <= 0.375f ? RemnantStrengthSetting.Quarter
+                            : ratio <= 0.625f ? RemnantStrengthSetting.Half
+                            : ratio <= 0.875f ? RemnantStrengthSetting.ThreeQuarters
+                            : RemnantStrengthSetting.Default;
+        }
 
         if (DisableRemnantStory)
             RemnantPace = RemnantPaceSetting.Off;

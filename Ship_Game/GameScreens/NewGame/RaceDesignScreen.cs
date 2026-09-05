@@ -402,15 +402,11 @@ namespace Ship_Game
             // they become dangerous, which is this.
             AddOption(FactionsOptions, Localizer.Token(GameText.RmPaceLabel) + " : ", OnRemnantPaceClicked,
                 _ => RemnantPaceText(P.RemnantPace), tip:GameText.RmPaceTip);
-            // Offered only when the loaded mod actually raises Remnant design strength - the
-            // test is the VALUE, never the mod's name, so it serves any mod and stays absent in
-            // vanilla, where three notches would be one and the control would lie. LAST of the
-            // Remnant block on purpose: absent, the block simply gets shorter instead of
-            // leaving a hole in the middle of it.
-            if (GlobalStats.Defaults.RemnantDesignStrMultiplier != UniverseState.VanillaRemnantDesignStr)
-                AddOption(FactionsOptions, Localizer.Token(GameText.RmStrengthLabel) + " : ",
-                    OnRemnantStrengthClicked, _ => RemnantStrengthText(P.RemnantStrength),
-                    tip:GameText.RmStrengthTip);
+            // A fraction of whatever the rules ask for, so the row is worth having in vanilla
+            // as well - it no longer appears and disappears with the loaded mod.
+            AddOption(FactionsOptions, Localizer.Token(GameText.RmStrengthLabel) + " : ",
+                OnRemnantStrengthClicked, _ => RemnantStrengthText(P.RemnantStrength),
+                tip:GameText.RmStrengthTip);
 
             AddOption(FactionsOptions, Localizer.Token(GameText.PirateFactionsLabel) + " : ",
                 OnPirateFactionsClicked, _ => PirateFactionsText(P.PirateFactions),
@@ -754,9 +750,10 @@ namespace Ship_Game
 
         static string RemnantStrengthText(RemnantStrengthSetting s) => s switch
         {
-            RemnantStrengthSetting.Vanilla => Localizer.Token(GameText.RmStrengthVanilla),
-            RemnantStrengthSetting.Reduced => Localizer.Token(GameText.RmStrengthReduced),
-            _                              => Localizer.Token(GameText.RmStrengthMod),
+            RemnantStrengthSetting.Quarter       => Localizer.Token(GameText.RmStrengthQuarter),
+            RemnantStrengthSetting.Half          => Localizer.Token(GameText.RmStrengthHalf),
+            RemnantStrengthSetting.ThreeQuarters => Localizer.Token(GameText.RmStrengthThreeQ),
+            _                                    => Localizer.Token(GameText.RmStrengthDefault),
         };
 
         static string RemnantPaceText(RemnantPaceSetting p) => p switch
@@ -1060,14 +1057,17 @@ namespace Ship_Game
         All,
     }
 
-    // Ludoal fork (maintainer, 5 Sep '26): the three positions of Remnant design strength. The
-    // ends are READ, never written: Vanilla is the base game's constant and Mod is whatever the
-    // loaded mod declares, so a mod that raises it to 6 gets 6 here, not a hard-coded 4.
+    // Ludoal fork (maintainer, 5 Sep '26): Remnant design strength as a FRACTION of whatever
+    // the rules ask for - the mod's declared value, or the base game's where no mod raises it.
+    // Relative rather than absolute so the row reads without knowing either number, and so it
+    // means something in vanilla too. Default LAST for the same reason as the pace's Off: the
+    // notch is serialised by its rank, and a rank added at the front shifts existing saves.
     public enum RemnantStrengthSetting
     {
-        Vanilla,
-        Reduced,
-        Mod,
+        Quarter,
+        Half,
+        ThreeQuarters,
+        Default,
     }
 
     // Ludoal fork: named in SPEED because that is what it changes - "Very Low" on a rhythm reads

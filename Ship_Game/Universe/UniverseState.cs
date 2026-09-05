@@ -718,16 +718,17 @@ namespace Ship_Game.Universe
         // the strength of the fleets they field, and it sits at the DENOMINATOR of the superiority
         // they demand before attacking. At 2 they hit softer and wait longer.
         public const float VanillaRemnantDesignStr = 2f;
-        // ⚠ both ends are READ, never written: a mod that declares 6 gets 6 at the Mod notch, and
-        // Reduced is the midpoint of whatever the two ends turn out to be. Hard-coding 4 here
-        // would serve CombinedArms and lie to every other mod.
-        public float RemnantDesignStr => P.RemnantStrength switch
-        {
-            RemnantStrengthSetting.Vanilla => VanillaRemnantDesignStr,
-            RemnantStrengthSetting.Reduced => (VanillaRemnantDesignStr
-                                             + GlobalStats.Defaults.RemnantDesignStrMultiplier) * 0.5f,
-            _                              => GlobalStats.Defaults.RemnantDesignStrMultiplier,
-        };
+        // ⚠ the full value is READ, never written: a mod that declares 6 gets 6 at Default, and
+        // every notch is a fraction of that. Hard-coding a number here would serve one mod and lie
+        // to the rest.
+        public float RemnantDesignStr => GlobalStats.Defaults.RemnantDesignStrMultiplier
+                                       * (P.RemnantStrength switch
+                                       {
+                                           RemnantStrengthSetting.Quarter       => 0.25f,
+                                           RemnantStrengthSetting.Half          => 0.50f,
+                                           RemnantStrengthSetting.ThreeQuarters => 0.75f,
+                                           _                                    => 1f,
+                                       });
 
         float CalcRemnantPace()
         {

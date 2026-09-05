@@ -7291,12 +7291,12 @@ namespace Ship_Game
         RmStrengthTip = 7249,
         /// <summary>Factions</summary>
         NgTabFactions = 7250,
-        /// <summary>Vanilla</summary>
-        RmStrengthVanilla = 7251,
-        /// <summary>Reduced</summary>
-        RmStrengthReduced = 7252,
-        /// <summary>Mod</summary>
-        RmStrengthMod = 7253,
+        /// <summary>1/4</summary>
+        RmStrengthQuarter = 7251,
+        /// <summary>1/2</summary>
+        RmStrengthHalf = 7252,
+        /// <summary>3/4</summary>
+        RmStrengthThreeQ = 7253,
         /// <summary>Off</summary>
         RmPaceOff = 7254,
         /// <summary>How many Remnant guard fleets the galaxy starts with.</summary>
@@ -7315,6 +7315,8 @@ namespace Ship_Game
         PiratePaceLabel = 7261,
         /// <summary>How quickly pirates gain levels.</summary>
         PiratePaceTip = 7262,
+        /// <summary>Default</summary>
+        RmStrengthDefault = 7263,
         /// <summary>By Blueprint</summary>
         MandateByBlueprint = 7181,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>
