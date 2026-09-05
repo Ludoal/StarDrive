@@ -404,9 +404,13 @@ namespace Ship_Game
             BorderCount = 8;
             if (Open)
             {
-                int height = (Options.Count - 1) * 18;
+                // the options are stepped on the control's own height (Entry.UpdateRect), so
+                // the open frame is measured from it too - one owner for the step, not two.
+                int height = (Options.Count - 1) * h;
                 OpenRect = new Rectangle(x + 6, y + h + 3 + 6, w - 12, height - 12);
-                ClickAbleOpenRect = new Rectangle(x + 6, y + h + 3, w - 12, height - 6);
+                // the clickable area is the frame, whole: the bottom edge of the last option
+                // is inside it, so no part of a drawn row falls through to what it covers.
+                ClickAbleOpenRect = new Rectangle(x + 6, y + h + 3, w - 12, height);
 
                 tl = Border[8]  = new RecTexPair(x, y+h+3, ttl);
                 tr = Border[9]  = new RecTexPair(x+w-ttr.Width, tl.Y, ttr);
