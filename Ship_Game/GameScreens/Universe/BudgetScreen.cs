@@ -74,6 +74,12 @@ namespace Ship_Game.GameScreens
             }
 
             public void AddItem(LocalizedText text, Func<float> getValue) => AddItem(text, getValue, Color.White);
+            // a line whose figure is not a share of the lines above needs to say so
+            public void AddItem(LocalizedText text, Func<float> getValue, LocalizedText tip)
+            {
+                AddSplit(new UILabel(text.Text, Color.White) { Tooltip = tip },
+                         new UILabel(NeutralText(getValue, f => f.MoneyString())) );
+            }
             public void AddItem(LocalizedText text, Func<float> getValue, Color keyColor)
             {
                 // charte (Lek, étape 3): line items are pure nature - neutral; the TOTALS
@@ -320,7 +326,7 @@ namespace Ship_Game.GameScreens
             // goal) → vertical arithmetic Income − Expenditure = Net Gain
             int rx = (int)RightMenu.X + 12; // tighter margins
             int rw = (int)RightMenu.Width - 24;
-            var taxRect    = new Rectangle(rx, (int)RightMenu.Y + 42, rw, 96); // top rhythm = the left table's headerY, checkbox first; the height is trimmed under the goal slider so Net Gain breathes at the foot, and the three blocks below hang off this bottom
+            var taxRect    = new Rectangle(rx, (int)RightMenu.Y + 42, rw, 114); // top rhythm = the left table's headerY, checkbox first; the height is trimmed under the goal slider so Net Gain breathes at the foot, and the three blocks below hang off this bottom
 
             SummaryPanel tax = Add(new SummaryPanel("", taxRect, new Color(17, 21, 28)));
 
@@ -371,8 +377,12 @@ namespace Ship_Game.GameScreens
             // the two bottom rows read as one. Never up (a stretched table's TOTAL belongs to
             // its own lane); the two-lane bound is sanity against a degenerate layout, not a
             // tuning knob.
+            // The bound is sanity against a degenerate layout, not a tuning knob - so it is the
+            // table's own floor rather than a row count: the synthesis on the right has grown
+            // past two rows since this was written, and a fixed count silently stopped nudging.
             int footerNudge = netY - totalY;
-            if (footerNudge > 0 && footerNudge <= 2 * Table.RowPitch)
+            float footerFloor = Table.TableRect.Bottom - Fonts.Arial12Bold.LineSpacing;
+            if (footerNudge > 0 && totalY + footerNudge <= footerFloor)
                 foreach (UILabel l in footerLabels)
                     l.Pos = new Vector2(l.Pos.X, l.Pos.Y + footerNudge);
 
@@ -504,7 +514,7 @@ namespace Ship_Game.GameScreens
                     }
                 });
             };
-            budget.AddItem(GameText.BgtMaySpend, GovernorsMaySpend);
+            budget.AddItem(GameText.BgtMaySpend, GovernorsMaySpend, GameText.BgtMaySpendTip);
             budget.AddItem(GameText.BgtWithheld, WithheldByAllowance);
         }
 
