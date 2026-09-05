@@ -22650,6 +22650,70 @@ ShipyardArcsTip:
  Id: 30120
  ENG: "Show weapon firing arcs."
  FRA: "Afficher les arcs de tir des armes."
+BgtTargetName:
+ Id: 30121
+ ENG: "Budget Target"
+ FRA: "Objectif budgétaire"
+BgtTurnsOfRevenue:
+ Id: 30122
+ ENG: "turns of revenue"
+ FRA: "tours de revenu"
+BgtTargetTip:
+ Id: 30123
+ ENG: "The reserve the empire aims for, expressed in turns of income at full taxation. It is the base your governors' budgets are drawn from. Does not affect Net Gain."
+ FRA: "La réserve visée par l'empire, en tours de revenu à imposition maximale. C'est l'assiette des budgets de vos gouverneurs. N'affecte pas le gain net."
+BgtAutoTaxLine:
+ Id: 30124
+ ENG: "Auto-taxes: adjusting the rate to reach the Budget Target"
+ FRA: "Impôts auto : le taux est ajusté pour atteindre l'objectif budgétaire"
+BgtDistribution:
+ Id: 30125
+ ENG: "Budget Distribution"
+ FRA: "Répartition du budget"
+BgtGovAllowance:
+ Id: 30126
+ ENG: "Governor Allowance"
+ FRA: "Allocation des gouverneurs"
+BgtGovAllowanceTip:
+ Id: 30127
+ ENG: "Limits what governors may spend on their own out of the Civil and Defense shares. Applies to automatic orders only; colonies set to manual are not limited."
+ FRA: "Limite ce que les gouverneurs peuvent engager d'eux-mêmes sur les parts Civil et Défense. Ordres automatiques seulement ; les colonies en manuel ne sont pas limitées."
+BgtMaySpend:
+ Id: 30128
+ ENG: "governors may spend"
+ FRA: "les gouverneurs peuvent engager"
+BgtWithheld:
+ Id: 30129
+ ENG: "withheld by this setting"
+ FRA: "retenu par ce réglage"
+BgtCivilBuildings:
+ Id: 30130
+ ENG: "Civil Buildings (Governors)"
+ FRA: "Bâtiments civils (gouverneurs)"
+BgtCivilBuildingsTip:
+ Id: 30131
+ ENG: "Share spent by governors on civil buildings: food, population, production, research. Terraforming is funded separately."
+ FRA: "Part dépensée par les gouverneurs en bâtiments civils : nourriture, population, production, recherche. Le terraformage est financé à part."
+BgtDefenseStations:
+ Id: 30132
+ ENG: "Defense Buildings and Stations (Governors)"
+ FRA: "Bâtiments de défense et stations (gouverneurs)"
+BgtDefenseStationsTip:
+ Id: 30133
+ ENG: "Share spent by governors on ground defenses and on the shipyard, stations and platforms orbiting their planet. Fleets are funded elsewhere."
+ FRA: "Part dépensée par les gouverneurs en défenses au sol et en chantier, stations et plateformes en orbite de leur planète. Les flottes sont financées ailleurs."
+BgtProjectors:
+ Id: 30134
+ ENG: "Subspace Projectors (Empire)"
+ FRA: "Projecteurs subspatiaux (empire)"
+BgtProjectorsTip:
+ Id: 30135
+ ENG: "Share spent by the empire on building and maintaining the projector network. Not limited by Governor Allowance."
+ FRA: "Part dépensée par l'empire pour construire et entretenir le réseau de projecteurs. Non limitée par l'allocation des gouverneurs."
+BgtPerTurn:
+ Id: 30136
+ ENG: "BC/turn"
+ FRA: "BC/tour"
 BlueprintsCannotBuildTroopsTip:
  Id: 30119
  ENG: "No planned building in this blueprint can train infantry. Add a building that trains troops to the plan."

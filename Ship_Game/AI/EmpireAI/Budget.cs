@@ -23,6 +23,10 @@ namespace Ship_Game.AI.Budget
         [StarData] public float GrdDefAlloc { get; private set; }
         [StarData] public float SpcDefAlloc { get; private set; }
         [StarData] public float TotalAlloc { get; private set; }
+        // what the Governor Allowance holds back on this colony. Not serialized: it is
+        // recomputed every Update, and the Budget screen reads it rather than redoing the
+        // rule at the other end.
+        public float WithheldByAllowance { get; private set; }
         // not serialized: recomputed every Update from the live empire budgets
         public float TargetAlloc { get; private set; }
         bool SnapNextUpdate;
@@ -62,6 +66,7 @@ namespace Ship_Game.AI.Budget
             if (Owner.isPlayer)
             {
                 float tap = Owner.Universe.P.GovernorSpendingRatio;
+                WithheldByAllowance = (civBudget + grdBudget + defenseBudget * orbitalRatio) * (1f - tap);
                 civBudget     *= tap;
                 grdBudget     *= tap;
                 defenseBudget *= tap;

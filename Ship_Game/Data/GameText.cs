@@ -6291,6 +6291,38 @@ namespace Ship_Game
         BlueprintsCannotBuildTroopsTip = 30119,
         /// <summary>Show weapon firing arcs.</summary>
         ShipyardArcsTip = 30120,
+        /// <summary>Budget Target</summary>
+        BgtTargetName = 30121,
+        /// <summary>turns of revenue</summary>
+        BgtTurnsOfRevenue = 30122,
+        /// <summary>The reserve the empire aims for, expressed in turns of income at full taxation. It is the base your governors' budgets are drawn from. Does not affect Net Gain.</summary>
+        BgtTargetTip = 30123,
+        /// <summary>Auto-taxes: adjusting the rate to reach the Budget Target</summary>
+        BgtAutoTaxLine = 30124,
+        /// <summary>Budget Distribution</summary>
+        BgtDistribution = 30125,
+        /// <summary>Governor Allowance</summary>
+        BgtGovAllowance = 30126,
+        /// <summary>Limits what governors may spend on their own out of the Civil and Defense shares. Applies to automatic orders only; colonies set to manual are not limited.</summary>
+        BgtGovAllowanceTip = 30127,
+        /// <summary>governors may spend</summary>
+        BgtMaySpend = 30128,
+        /// <summary>withheld by this setting</summary>
+        BgtWithheld = 30129,
+        /// <summary>Civil Buildings (Governors)</summary>
+        BgtCivilBuildings = 30130,
+        /// <summary>Share spent by governors on civil buildings: food, population, production, research. Terraforming is funded separately.</summary>
+        BgtCivilBuildingsTip = 30131,
+        /// <summary>Defense Buildings and Stations (Governors)</summary>
+        BgtDefenseStations = 30132,
+        /// <summary>Share spent by governors on ground defenses and on the shipyard, stations and platforms orbiting their planet. Fleets are funded elsewhere.</summary>
+        BgtDefenseStationsTip = 30133,
+        /// <summary>Subspace Projectors (Empire)</summary>
+        BgtProjectors = 30134,
+        /// <summary>Share spent by the empire on building and maintaining the projector network. Not limited by Governor Allowance.</summary>
+        BgtProjectorsTip = 30135,
+        /// <summary>BC/turn</summary>
+        BgtPerTurn = 30136,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>

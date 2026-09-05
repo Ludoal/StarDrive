@@ -193,6 +193,10 @@ namespace Ship_Game.AI
         /// <summary>
         /// set a target budget of 20 years of growth.
         /// </summary>
+        // the reserve the goal slider expresses: the slider is a fraction of this many turns
+        // of income. One owner, so the Budget screen can print the duration it sets.
+        public const int TreasuryGoalTurns = 200;
+
         public float TreasuryGoal(float normalizedMoney)
         {
             // calculate income using income at a 100% tax rate - untracked expenditures.
@@ -200,8 +204,7 @@ namespace Ship_Game.AI
                           OwnerEmpire.TroopCostOnPlanets - OwnerEmpire.TotalTroopShipMaintenance;
 
             float treasuryGoal = gross * OwnerEmpire.data.treasuryGoal / GoalEqualizer;
-            float timeSpan     = 200;
-            treasuryGoal      *= timeSpan;
+            treasuryGoal      *= TreasuryGoalTurns;
             return treasuryGoal.LowerBound(0);
         }
 
