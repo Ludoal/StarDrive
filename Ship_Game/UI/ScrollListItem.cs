@@ -23,8 +23,11 @@ namespace Ship_Game
 
         public void AddPlus(Vector2 relPos, in LocalizedText tooltip, Action onClick = null)  => AddElement(relPos, tooltip, onClick, () => List.GetStyle().BuildAdd);
         public void AddEdit(Vector2 relPos, in LocalizedText tooltip, Action onClick = null)  => AddElement(relPos, tooltip, onClick, () => List.GetStyle().BuildEdit);
-        public void AddUp(Vector2 relPos, in LocalizedText tooltip, Action onClick = null)    => AddElement(relPos, tooltip, onClick, () => List.GetStyle().QueueArrowUp);
-        public void AddDown(Vector2 relPos, in LocalizedText tooltip, Action onClick = null)  => AddElement(relPos, tooltip, onClick, () => List.GetStyle().QueueArrowDown);
+        // Ludoal fork: the arrows accept a size like the cross below, for a row whose other
+        // icons are smaller than the arrow textures. Default 0 keeps every existing caller as it
+        // was - the texture's own size.
+        public void AddUp(Vector2 relPos, in LocalizedText tooltip, Action onClick = null, int iconSize = 0)    => AddElement(relPos, tooltip, onClick, () => List.GetStyle().QueueArrowUp, iconSize);
+        public void AddDown(Vector2 relPos, in LocalizedText tooltip, Action onClick = null, int iconSize = 0)  => AddElement(relPos, tooltip, onClick, () => List.GetStyle().QueueArrowDown, iconSize);
         public void AddApply(Vector2 relPos, in LocalizedText tooltip, Action onClick = null) => AddElement(relPos, tooltip, onClick, () => List.GetStyle().QueueRush);
         public void AddCancel(Vector2 relPos, in LocalizedText tooltip, Action onClick)       => AddElement(relPos, tooltip, onClick, () => List.GetStyle().QueueDelete);
         public void AddDelete(Vector2 relPos, in LocalizedText tooltip, Action onClick)       => AddElement(relPos, tooltip, onClick, () => List.GetStyle().Delete);

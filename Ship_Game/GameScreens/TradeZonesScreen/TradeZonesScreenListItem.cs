@@ -83,10 +83,15 @@ namespace Ship_Game
             const int Slot = 24, Slots = 4;
             int lane = actions.X + (actions.Width - Slot * Slots) / 2;
             int centreY = y + h / 2;
-            AddUp(new Vector2(lane + 4 - X, centreY - 8 - Y), GameText.TzMoveUpTip,
-                  () => Screen.MoveZone(Zone, up: true));
-            AddDown(new Vector2(lane + Slot + 4 - X, centreY - 8 - Y), GameText.TzMoveDownTip,
-                    () => Screen.MoveZone(Zone, up: false));
+            // ⚠ the arrows are drawn at the row's icon size, not at their texture's own: left to
+            // themselves they come out taller than the pencil and the bin beside them, sit off
+            // centre, and stretch the row to fit. The offset below is half of THAT size, so the
+            // two travel together (bench 577).
+            const int ArrowIcon = 17;
+            AddUp(new Vector2(lane + 4 - X, centreY - ArrowIcon / 2 - Y), GameText.TzMoveUpTip,
+                  () => Screen.MoveZone(Zone, up: true), ArrowIcon);
+            AddDown(new Vector2(lane + Slot + 4 - X, centreY - ArrowIcon / 2 - Y), GameText.TzMoveDownTip,
+                    () => Screen.MoveZone(Zone, up: false), ArrowIcon);
             int editX = lane + 2 * Slot + (Slot - editTex.Width) / 2;
             int delX = lane + 3 * Slot + (Slot - delTex.Width) / 2;
             EditColonies.Rect = new Rectangle(editX, centreY - editTex.Height / 2, editTex.Width, editTex.Height);
