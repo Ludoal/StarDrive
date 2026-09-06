@@ -152,7 +152,15 @@ namespace Ship_Game
             // a soft zone owns nothing, so it shows the setting alone rather than a bracket
             // holding a nought that would read as a target it failed to reach - and it has no
             // gap to show, since it borrows by the turn instead of holding
-            return zone.Exclusive ? $"{target} ({zone.MemberFreighters(player).Count})" : target;
+            if (!zone.Exclusive)
+                return target;
+
+            // ⚠ a hull ON ORDER shows here: without it a zone below target that is already
+            // building reads as one doing nothing, for as many turns as the yard takes
+            // (maintainer feedback).
+            int owned    = zone.MemberFreighters(player).Count;
+            int building = player.FreightersBeingBuiltFor(zone);
+            return building > 0 ? $"{target} ({owned}, +{building})" : $"{target} ({owned})";
         }
 
         public static string PriorityText(TradeZone zone) => zone.Priority switch

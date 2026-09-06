@@ -718,8 +718,37 @@ namespace Ship_Game
                 took = true;
             }
 
+            // ★ AND IF THERE WERE NONE, IT ORDERS ONE. Taking idle hulls was all a zone could do,
+            // so an enclave below its target stayed there for good once the empire had none idle:
+            // nobody builds for a zone.
+            if (have < need)
+                TryOrderFreighterFor(zone);
+
             return took;
         }
+
+        // ⚠ ONE at a time: a need of thirteen would empty the yard in a single turn. The zone
+        // orders, waits for the hull, counts again.
+        // ⚠ the empire's freighter cap stays master - a zone commands under it, never past it.
+        // A target set BY HAND is an order and builds whatever the auto-build box says; a target
+        // left on Auto is the game deciding the number, so it obeys that box like the rest.
+        void TryOrderFreighterFor(TradeZone zone)
+        {
+            if (AI.CountGoals(g => g is IncreaseFreighters f && f.ForZoneId == zone.Id) > 0)
+                return;
+
+            if (zone.Quota <= 0 && !BuildFreightersActive)
+                return;
+
+            if (TotalFreighters + FreightersBeingBuilt >= FreighterCap)
+                return;
+
+            AI.AddGoalAndEvaluate(new IncreaseFreighters(this, zone));
+        }
+
+        // Hulls on order for this zone, so the screen can say a zone below target is not idle.
+        public int FreightersBeingBuiltFor(TradeZone zone)
+            => AI.CountGoals(g => g is IncreaseFreighters f && f.ForZoneId == zone.Id);
 
         // ★ The requisition knew how to take and not how to give back: lowering a zone's target,
         // or a measured need that falls, left its hulls with it for good. Idle hulls go first,

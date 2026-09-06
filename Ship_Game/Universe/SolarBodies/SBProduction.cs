@@ -380,7 +380,9 @@ namespace Ship_Game.Universe.SolarBodies
             AddToQueueAndPrioritize(qi);
         }
 
-        public void Enqueue(IShipDesign ship, QueueItemType type, Goal goal = null, bool notifyOnEmpty = true, string displayName = "")
+        // tradeZoneId marks the hull for a trade zone before it exists: the yard carries the mark
+        // and stamps it on the ship, the same path a refit already takes to come home to its zone.
+        public void Enqueue(IShipDesign ship, QueueItemType type, Goal goal = null, bool notifyOnEmpty = true, string displayName = "", int tradeZoneId = 0)
         {
             if (goal != null && goal.PlanetBuildingAt == null)
                 throw new InvalidOperationException($"CQ.Enqueue not allowed if Goal.PlanetBuildingAt is null!");
@@ -394,6 +396,7 @@ namespace Ship_Game.Universe.SolarBodies
                 Cost          = GetShipCost(),
                 NotifyOnEmpty = notifyOnEmpty,
                 Rush          = P.Owner.RushAllConstruction,
+                TradeZoneId   = tradeZoneId,
                 QType         = type
             };  
 

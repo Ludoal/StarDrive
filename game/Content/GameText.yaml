@@ -16586,8 +16586,8 @@ AutoBuildFreighters:
  FRA: "Construction auto des cargos"
 AutoBuildFreightersTip:
  Id: 7103
- ENG: "Automatically builds new freighters as trade demands, using the model picked here."
- FRA: "Construit automatiquement de nouveaux cargos selon les besoins du commerce, avec le modèle choisi ici."
+ ENG: "Automatically builds new freighters as trade demands, using the model picked here. Exclusive zones with a target you set build their own freighters regardless of this setting."
+ FRA: "Construit automatiquement de nouveaux cargos selon les besoins du commerce, avec le modèle choisi ici. Les zones exclusives dont la cible est posée à la main construisent leurs propres cargos indépendamment de ce réglage."
 AutoScrapIdleFreighters:
  Id: 7104
  ENG: "Auto-scrap Idle Freighters"
@@ -29183,8 +29183,8 @@ TzOwnedTip:
  FRA: "Cargos que cette zone POSSÈDE. Seule une zone exclusive en possède : une zone souple emprunte une part du tour et la rend."
 TzOwnedTargetTip:
  Id: 7264
- ENG: "Hulls this zone keeps for itself, and how many it owns today. Auto follows Need."
- FRA: "Coques que cette zone garde pour elle, et combien elle en possède aujourd'hui. Auto suit le besoin."
+ ENG: "Hulls this zone keeps for itself, and how many it owns today. A number you set is an order: the zone takes idle freighters first, then builds one at a time until it reaches it, even with Auto-build Freighters off. Auto follows Need and only builds when Auto-build Freighters is on. A hull under construction shows as +1."
+ FRA: "Coques que cette zone garde pour elle, et combien elle en possède aujourd'hui. Un nombre que vous posez est un ordre : la zone prend d'abord les cargos oisifs, puis en construit un à la fois jusqu'à l'atteindre, même si Auto-build Freighters est décoché. En Auto elle suit le besoin et ne construit que si Auto-build Freighters est coché. Une coque en chantier s'affiche en +1."
 TzConvertedNotice:
  Id: 7239
  ENG: "The areas of operation and manual trade routes you had drawn on individual freighters have become EXCLUSIVE TRADE ZONES, and their editors are gone: what a zone holds is now edited in one place, on the Trade page.\n\nOne thing has changed and cannot be undone: an area of operation was a SHAPE, and it welcomed colonies founded inside it later. A zone is a LIST, taken as your areas stood at this moment. A colony founded inside an old rectangle from now on will not join its zone on its own - add it yourself from the Trade page or from the colony's own screen."
