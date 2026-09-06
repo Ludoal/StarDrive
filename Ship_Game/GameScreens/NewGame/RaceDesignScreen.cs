@@ -1086,14 +1086,17 @@ namespace Ship_Game
     // Ludoal fork (maintainer, 5 Sep '26): Remnant design strength as a FRACTION of whatever
     // the rules ask for - the mod's declared value, or the base game's where no mod raises it.
     // Relative rather than absolute so the row reads without knowing either number, and so it
-    // means something in vanilla too. Default LAST for the same reason as the pace's Off: the
-    // notch is serialised by its rank, and a rank added at the front shifts existing saves.
+    // means something in vanilla too.
+    // Default FIRST: the row reads down from the full value, and the rank also decides the
+    // reader's fallback when it meets a number it does not know - which should land on the
+    // rules' own value, never on the weakest one. Free to order this way because the notch was
+    // born in this same batch: no save carries the old ranks.
     public enum RemnantStrengthSetting
     {
-        Quarter,
-        Half,
-        ThreeQuarters,
         Default,
+        ThreeQuarters,
+        Half,
+        Quarter,
     }
 
     // Ludoal fork: named in SPEED because that is what it changes - "Very Low" on a rhythm reads
