@@ -29225,3 +29225,80 @@ RmStrengthDefault:
  Id: 7263
  ENG: "Default"
  FRA: "Défaut"
+CodexLudoal:
+ Id: 100210
+ ENG: "Ludoal fork"
+ FRA: "Fork Ludoal"
+CodexLudoalShort:
+ Id: 100211
+ ENG: "What this fork changes"
+ FRA: "Ce que ce fork change"
+CodexLudoalText:
+ Id: 100212
+ ENG: "This build is a fork of BlackBox. It keeps the base game's rules and adds control: more levers for your colonies, a blueprint model that follows your ordering, a freighter fleet you can size and assign, an economy panel that shows where the money goes, and a Factions page at game setup.\n\nEach page below describes one of these changes as the game plays it today. Nothing changes for a player who touches none of the new settings: the defaults reproduce the base game."
+ FRA: "Ce build est un fork de BlackBox. Il garde les règles du jeu de base et ajoute du contrôle : plus de leviers pour vos colonies, un modèle de schémas qui suit votre classement, une flotte de cargos que vous dimensionnez et affectez, un panneau économique qui montre où va l'argent, et une page Factions à la création de partie.\n\nChaque page ci-dessous décrit un de ces changements tel que le jeu le joue aujourd'hui. Rien ne change pour un joueur qui ne touche à aucun nouveau réglage : les défauts reproduisent le jeu de base."
+
+CodexLudoalColonyLevers:
+ Id: 100213
+ ENG: "Colony levers"
+ FRA: "Leviers d'une colonie"
+CodexLudoalColonyLeversShort:
+ Id: 100214
+ ENG: "Governors, mandates, budgets"
+ FRA: "Gouverneurs, mandats, budgets"
+CodexLudoalColonyLeversText:
+ Id: 100215
+ ENG: "A governor is a set of rights, not a black box. On the Automation tab you choose, per governor type, what it may do on its own: build, scrap, refit, trade, and so on. What you do not grant, it does not do.\n\n<b>Manual and auto per area.</b> Each colony budget (civilian, ground defense, space defense) is either tracked by the governor or fixed by you. A manual budget of zero is a valid order.\n\n<b>Mandates.</b> A colony can carry a mandate that forces a direction (for example food first). A mandate is a right, not a plan: the governor decides how, within the budget.\n\n<b>Prioritize.</b> On the Policies tab, an ordered list of building categories. A category in the list is built ahead of everything else, in the order you set. Ship and orbital refits always jump to the front of every queue: this is base game behavior and the list does not change it.\n\n<b>Your orders stay.</b> Anything you queue by hand is never removed by a governor. It waits, visibly, until it can be built."
+ FRA: "Un gouverneur est un ensemble de droits, pas une boîte noire. Dans l'onglet Automation, vous choisissez, par type de gouverneur, ce qu'il peut faire seul : construire, démolir, moderniser, commercer, etc. Ce que vous n'accordez pas, il ne le fait pas.\n\n<b>Manuel et auto par domaine.</b> Chaque budget de colonie (civil, défense au sol, défense spatiale) est soit suivi par le gouverneur, soit fixé par vous. Un budget manuel à zéro est un ordre valide.\n\n<b>Mandats.</b> Une colonie peut porter un mandat qui impose une direction (par exemple la nourriture d'abord). Un mandat est un droit, pas un plan : le gouverneur décide comment, dans le budget.\n\n<b>Prioritize.</b> Dans l'onglet Policies, une liste ordonnée de catégories de bâtiments. Une catégorie dans la liste est construite avant tout le reste, dans l'ordre que vous fixez. Les refontes de vaisseaux et d'orbitaux passent toujours en tête de file : c'est le comportement du jeu de base, la liste ne le change pas.\n\n<b>Vos ordres restent.</b> Ce que vous mettez en file à la main n'est jamais retiré par un gouverneur. Il attend, visiblement, jusqu'à pouvoir être construit."
+
+CodexLudoalBlueprints:
+ Id: 100216
+ ENG: "Blueprints"
+ FRA: "Schémas"
+CodexLudoalBlueprintsShort:
+ Id: 100217
+ ENG: "Your order decides, the score fills in"
+ FRA: "Votre ordre décide, le score complète"
+CodexLudoalBlueprintsText:
+ Id: 100218
+ ENG: "A blueprint is a list of buildings a colony should reach. The rule is simple: <b>where you ranked, the order decides; where you said nothing, the score decides.</b> Buildings you placed at the top are queued first; the rest is picked by value.\n\n<b>Achievable.</b> The screen shows how many entries the colony can reach today (a technology, the ground or a mandate may block the others). Standing buildings count as reached.\n\n<b>Chain.</b> A blueprint can name a next one; when the whole list is complete, the colony moves on. If everything reachable is built and the list is still not finished, the colony marks itself as blocked on its screen.\n\n<b>Terraformers.</b> With automatic terraformers on, a blueprint that uses less than half of the planet's tiles (whole grid counted) must be complete before the first terraformer; one that uses half or more only needs to be half done. While the planet still lacks tiles, the terraformer keeps its place in the queue instead of being pushed behind every new building.\n\n<b>Renaming.</b> A blueprint keeps its former names, so colonies and governors that used the old name follow it."
+ FRA: "Un schéma est une liste de bâtiments qu'une colonie doit atteindre. La règle est simple : <b>là où vous avez classé, l'ordre décide ; là où vous n'avez rien dit, le score décide.</b> Les bâtiments placés en tête sont mis en file d'abord ; le reste est choisi à la valeur.\n\n<b>Atteignable.</b> L'écran montre combien d'entrées la colonie peut atteindre aujourd'hui (une technologie, le terrain ou un mandat peut bloquer les autres). Les bâtiments déjà debout comptent comme atteints.\n\n<b>Chaîne.</b> Un schéma peut nommer le suivant ; quand toute la liste est complète, la colonie passe à la suite. Si tout l'atteignable est construit et que la liste n'est pas finie, la colonie se marque comme bloquée dans son écran.\n\n<b>Terraformeurs.</b> Avec les terraformeurs automatiques, un schéma qui occupe moins de la moitié des cases de la planète (grille entière comptée) doit être complet avant le premier terraformeur ; un schéma qui en occupe la moitié ou plus n'a besoin que d'être à moitié fait. Tant que la planète manque de cases, le terraformeur garde sa place dans la file au lieu d'être repoussé derrière chaque nouveau bâtiment.\n\n<b>Renommage.</b> Un schéma garde ses anciens noms : les colonies et gouverneurs qui utilisaient l'ancien nom le suivent."
+
+CodexLudoalFreighters:
+ Id: 100219
+ ENG: "Freighters and trade zones"
+ FRA: "Cargos et zones de commerce"
+CodexLudoalFreightersShort:
+ Id: 100220
+ ENG: "How many, where, in what order"
+ FRA: "Combien, où, dans quel ordre"
+CodexLudoalFreightersText:
+ Id: 100221
+ ENG: "<b>How many.</b> On the Policies tab, the freighter fleet is sized as a share of what your colonies need, with a reserve kept idle for surprises. Auto-build and scrap follow that setting.\n\n<b>Trade zones</b> (Trade tab) are named groups of colonies. A normal zone borrows freighters from the common pool every turn, up to its Max freighters, and holds nothing between turns. An <b>Exclusive</b> zone owns its freighters: they are taken from the pool up to its Target and stay with the zone; lower the target and the surplus returns to the pool.\n\nZones are served in the order of the list. Order decides who is served first; the number decides how many it may take.\n\n<b>Reading the table.</b> Required counts the import berths of the zone's colonies and stations. Freighters counts the freighters currently heading to the zone. Target (Owned) shows the setting and, for an exclusive zone, what it actually holds.\n\n<b>The Freighters overlay</b> shows the same numbers per resource as fractions: served over needed. Select a zone to read it for that zone only.\n\nFood, production and colonists have separate switches on each colony, so a governor can run two of them while you keep the third manual. The AI does not use zones."
+ FRA: "<b>Combien.</b> Dans l'onglet Policies, la flotte de cargos se dimensionne comme une part de ce que vos colonies demandent, avec une réserve gardée libre pour les imprévus. La construction automatique et la démolition suivent ce réglage.\n\n<b>Les zones de commerce</b> (onglet Trade) sont des groupes de colonies nommés. Une zone normale emprunte des cargos au pool commun à chaque tour, jusqu'à son Max freighters, et ne retient rien entre deux tours. Une zone <b>Exclusive</b> possède ses cargos : ils sont pris au pool jusqu'à sa cible et restent dans la zone ; baissez la cible et le surplus revient au pool.\n\nLes zones sont servies dans l'ordre de la liste. L'ordre décide qui est servi en premier ; le nombre décide combien elle peut prendre.\n\n<b>Lire le tableau.</b> Required compte les créneaux d'import des colonies et stations de la zone. Freighters compte les cargos actuellement en route vers la zone. Target (Owned) montre le réglage et, pour une zone exclusive, ce qu'elle possède réellement.\n\n<b>L'overlay Freighters</b> montre les mêmes nombres par ressource, en fractions : servi sur demandé. Sélectionnez une zone pour le lire pour cette zone seule.\n\nNourriture, production et colons ont chacun leur interrupteur sur chaque colonie : un gouverneur peut en gérer deux pendant que vous gardez le troisième en manuel. L'IA n'utilise pas les zones."
+
+CodexLudoalEconomy:
+ Id: 100222
+ ENG: "The Economy panel"
+ FRA: "Le panneau Economy"
+CodexLudoalEconomyShort:
+ Id: 100223
+ ENG: "Where the money goes"
+ FRA: "Où va l'argent"
+CodexLudoalEconomyText:
+ Id: 100224
+ ENG: "The right side of the Economy tab reads top to bottom in the order the money moves.\n\n<b>Tax Rate</b> sets income. <b>Budget Target (reserve)</b> is the treasury you want to keep, shown in turns of revenue and in credits: a stock, not a flow.\n\n<b>Budget Distribution (per turn)</b> splits what the empire may spend each turn between Civil Buildings (governors), Defense Buildings and Stations (governors) and Subspace Projectors (empire). Auto split keeps the default ratio; lock a line to hold it.\n\n<b>Governor Allowance</b> is a brake applied on each colony's share after the split: it says what governors may spend of their automatic allocations. The two lines under it show what they may spend and what this setting withholds. Manual budgets are not throttled: an explicit order is not a suggestion.\n\nThe colony table on the left is the same money seen per colony. Net is highlighted after the upkeep columns because that is the order of the calculation."
+ FRA: "La partie droite de l'onglet Economy se lit de haut en bas, dans l'ordre où l'argent circule.\n\n<b>Tax Rate</b> fixe le revenu. <b>Budget Target (reserve)</b> est le trésor que vous voulez garder, en tours de revenu et en crédits : un stock, pas un flux.\n\n<b>Budget Distribution (per turn)</b> partage ce que l'empire peut dépenser chaque tour entre Civil Buildings (gouverneurs), Defense Buildings and Stations (gouverneurs) et Subspace Projectors (empire). Auto split garde le ratio par défaut ; verrouillez une ligne pour la tenir.\n\n<b>Governor Allowance</b> est un frein appliqué à la part de chaque colonie après le partage : il dit ce que les gouverneurs peuvent dépenser de leurs allocations automatiques. Les deux lignes en dessous montrent ce qu'ils peuvent dépenser et ce que ce réglage retient. Les budgets manuels ne sont pas freinés : un ordre explicite n'est pas une suggestion.\n\nLe tableau des colonies à gauche est le même argent vu par colonie. Net est mis en avant après les colonnes d'entretien parce que c'est l'ordre du calcul."
+
+CodexLudoalFactions:
+ Id: 100225
+ ENG: "Factions at game setup"
+ FRA: "Factions à la création de partie"
+CodexLudoalFactionsShort:
+ Id: 100226
+ ENG: "Remnant and pirates, six dials"
+ FRA: "Remnant et pirates, six commandes"
+CodexLudoalFactionsText:
+ Id: 100227
+ ENG: "The Galaxy panel of the New Game screen has a second tab, <b>Factions</b>, for the two environmental threats.\n\n<b>Remnant Presence</b>: how many guard fleets start in the galaxy. Fewer guards also make the Remnant climb levels faster once their story begins.\n\n<b>Remnant Pace</b>: how quickly their story escalates. Off means no story at all: they never activate and stay at level 1, but slightly more guard fleets are placed at start.\n\n<b>Remnant Strength</b>: how hard their fleets hit, as a fraction of the value the rules ask for. Default keeps that value: the loaded mod's, or the base game's where no mod raises it.\n\n<b>Pirate Factions</b>: how many pirate factions start alive. One picks a single faction at random for this galaxy. None disables piracy.\n\n<b>Pirate Pace</b>: how quickly pirates gain levels. Each level adds a base and stronger raids.\n\n<b>Pirate Tribute</b>: how much they demand when you buy peace instead of fighting. It stacks with difficulty and with their level.\n\nAll six apply to new games only, like everything on this screen."
+ FRA: "Le panneau Galaxy de l'écran Nouvelle partie a un second onglet, <b>Factions</b>, pour les deux menaces d'environnement.\n\n<b>Remnant Presence</b> : nombre de flottes gardiennes au départ. Moins de gardiens : les Remnant montent aussi de niveau plus vite une fois leur histoire lancée.\n\n<b>Remnant Pace</b> : vitesse d'escalade de leur histoire. Off : pas d'histoire du tout, ils ne s'activent jamais et restent au niveau 1, mais un peu plus de flottes gardiennes sont posées au départ.\n\n<b>Remnant Strength</b> : puissance de leurs flottes, en fraction de la valeur prévue par les règles. Default garde cette valeur : celle du mod chargé, ou celle du jeu de base si aucun mod ne l'augmente.\n\n<b>Pirate Factions</b> : nombre de factions pirates vivantes au départ. One tire une seule faction au sort pour cette galaxie. None désactive la piraterie.\n\n<b>Pirate Pace</b> : vitesse à laquelle les pirates gagnent des niveaux. Chaque niveau ajoute une base et des raids plus forts.\n\n<b>Pirate Tribute</b> : montant réclamé quand vous achetez la paix au lieu de combattre. Se cumule avec la difficulté et avec leur niveau.\n\nLes six s'appliquent aux nouvelles parties seulement, comme tout cet écran."

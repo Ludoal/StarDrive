@@ -114,3 +114,16 @@
       UID: diplomacy_agent_missions
     -
       UID: diplomacy_federations
+-
+  UID: ludoal
+  Children:
+    -
+      UID: ludoal_colony_levers
+    -
+      UID: ludoal_blueprints
+    -
+      UID: ludoal_freighters
+    -
+      UID: ludoal_economy
+    -
+      UID: ludoal_factions
