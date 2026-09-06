@@ -29025,6 +29025,38 @@ TzInbound:
  Id: 30147
  ENG: "Inbound"
  FRA: "En route"
+RmStrengthOneAndHalf:
+ Id: 30148
+ ENG: "1 1/2"
+ FRA: "1 1/2"
+RmStrengthTwice:
+ Id: 30149
+ ENG: "2x"
+ FRA: "2x"
+RmPaceFast:
+ Id: 30150
+ ENG: "Fast"
+ FRA: "Rapide"
+PirateStrengthLabel:
+ Id: 30151
+ ENG: "Pirate Strength"
+ FRA: "Force des pirates"
+PirateStrengthTip:
+ Id: 30152
+ ENG: "What the pirates are, not only what they charge. Sets the level they start at (a level is a base, one more raid running at once and more ships per raid), how big a raid dares to be against the defence already on site, and the tribute they demand. Difficulty still applies on top."
+ FRA: "Ce que sont les pirates, pas seulement ce qu'ils réclament. Fixe leur niveau de départ (un niveau vaut une base, un raid simultané de plus et davantage de vaisseaux par raid), l'ampleur d'un raid face à la défense déjà sur place, et le tribut exigé. La difficulté s'y ajoute."
+PirateStrengthWeak:
+ Id: 30153
+ ENG: "Weak"
+ FRA: "Faible"
+PirateStrengthStrong:
+ Id: 30154
+ ENG: "Strong"
+ FRA: "Forte"
+PirateStrengthBrutal:
+ Id: 30155
+ ENG: "Brutal"
+ FRA: "Brutale"
 TzActiveTip:
  Id: 7217
  ENG: "Freighters on their way to a colony of this zone, WHOEVER owns them - a zone's own hulls are counted in Owned, next door. The two are different sets, and either can stand while the other is nought."
@@ -29304,5 +29336,5 @@ CodexLudoalFactionsShort:
  FRA: "Remnant et pirates, six commandes"
 CodexLudoalFactionsText:
  Id: 100227
- ENG: "The Galaxy panel of the New Game screen has a second tab, <b>Factions</b>, for the two environmental threats.\n\n<b>Remnant Presence</b>: how many guard fleets start in the galaxy. Fewer guards also make the Remnant climb levels faster once their story begins.\n\n<b>Remnant Pace</b>: how quickly their story escalates. Off means no story at all: they never activate and stay at level 1, but slightly more guard fleets are placed at start.\n\n<b>Remnant Strength</b>: how hard their fleets hit, as a fraction of the value the rules ask for. Default keeps that value: the loaded mod's, or the base game's where no mod raises it.\n\n<b>Pirate Factions</b>: how many pirate factions start alive. One picks a single faction at random for this galaxy. None disables piracy.\n\n<b>Pirate Pace</b>: how quickly pirates gain levels. Each level adds a base and stronger raids.\n\n<b>Pirate Tribute</b>: how much they demand when you buy peace instead of fighting. It stacks with difficulty and with their level.\n\nAll six apply to new games only, like everything on this screen."
- FRA: "Le panneau Galaxy de l'écran Nouvelle partie a un second onglet, <b>Factions</b>, pour les deux menaces d'environnement.\n\n<b>Remnant Presence</b> : nombre de flottes gardiennes au départ. Moins de gardiens : les Remnant montent aussi de niveau plus vite une fois leur histoire lancée.\n\n<b>Remnant Pace</b> : vitesse d'escalade de leur histoire. Off : pas d'histoire du tout, ils ne s'activent jamais et restent au niveau 1, mais un peu plus de flottes gardiennes sont posées au départ.\n\n<b>Remnant Strength</b> : puissance de leurs flottes, en fraction de la valeur prévue par les règles. Default garde cette valeur : celle du mod chargé, ou celle du jeu de base si aucun mod ne l'augmente.\n\n<b>Pirate Factions</b> : nombre de factions pirates vivantes au départ. One tire une seule faction au sort pour cette galaxie. None désactive la piraterie.\n\n<b>Pirate Pace</b> : vitesse à laquelle les pirates gagnent des niveaux. Chaque niveau ajoute une base et des raids plus forts.\n\n<b>Pirate Tribute</b> : montant réclamé quand vous achetez la paix au lieu de combattre. Se cumule avec la difficulté et avec leur niveau.\n\nLes six s'appliquent aux nouvelles parties seulement, comme tout cet écran."
+ ENG: "The Galaxy panel of the New Game screen has a second tab, <b>Factions</b>, for the two environmental threats.\n\n<b>Remnant Presence</b>: how many guard fleets start in the galaxy. Fewer guards also make the Remnant climb levels faster once their story begins.\n\n<b>Remnant Pace</b>: how quickly their story escalates. Off means no story at all: they never activate and stay at level 1, but slightly more guard fleets are placed at start.\n\n<b>Remnant Strength</b>: how hard their fleets hit, as a fraction of the value the rules ask for. Default keeps that value: the loaded mod's, or the base game's where no mod raises it. The notches below it are fractions; the two above, 1 1/2 and 2x, are for players who want to fight the galaxy rather than tone it down.\n\n<b>Pirate Factions</b>: how many pirate factions start alive. One picks a single faction at random for this galaxy. None disables piracy.\n\n<b>Pirate Pace</b>: how quickly pirates gain levels. Each level adds a base and stronger raids.\n\n<b>Pirate Strength</b>: what the pirates are, not only what they charge. It sets the level they start at, how big a raid dares to be against the defence already on site, and the tribute they demand.\n\nAll six apply to new games only, like everything on this screen."
+ FRA: "Le panneau Galaxy de l'écran Nouvelle partie a un second onglet, <b>Factions</b>, pour les deux menaces d'environnement.\n\n<b>Remnant Presence</b> : nombre de flottes gardiennes au départ. Moins de gardiens : les Remnant montent aussi de niveau plus vite une fois leur histoire lancée.\n\n<b>Remnant Pace</b> : vitesse d'escalade de leur histoire. Off : pas d'histoire du tout, ils ne s'activent jamais et restent au niveau 1, mais un peu plus de flottes gardiennes sont posées au départ.\n\n<b>Remnant Strength</b> : puissance de leurs flottes, en fraction de la valeur prévue par les règles. Default garde cette valeur : celle du mod chargé, ou celle du jeu de base si aucun mod ne l'augmente. Les crans en dessous en sont des fractions ; les deux au-dessus, 1 1/2 et 2x, sont pour qui veut affronter la galaxie plutôt que l'adoucir.\n\n<b>Pirate Factions</b> : nombre de factions pirates vivantes au départ. One tire une seule faction au sort pour cette galaxie. None désactive la piraterie.\n\n<b>Pirate Pace</b> : vitesse à laquelle les pirates gagnent des niveaux. Chaque niveau ajoute une base et des raids plus forts.\n\n<b>Pirate Strength</b> : ce que sont les pirates, pas seulement ce qu'ils réclament. Fixe leur niveau de départ, l'ampleur d'un raid face à la défense déjà sur place, et le tribut exigé.\n\nLes six s'appliquent aux nouvelles parties seulement, comme tout cet écran."

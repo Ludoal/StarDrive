@@ -224,12 +224,37 @@ namespace Ship_Game
             return (payment * multiplier * TributeModifier).LowerBound(minimumPayment).RoundTo10();
         }
 
-        float TributeModifier => Universe.P.PirateTribute switch
+        // Ludoal fork (maintainer, 6 Sep '26): the tribute rides on the strength notch now -
+        // what they charge is one face of what they are, not a dial of its own.
+        float TributeModifier => Universe.P.PirateStrength switch
         {
-            PirateTributeSetting.Low      => 0.5f,
-            PirateTributeSetting.High     => 1.5f,
-            PirateTributeSetting.VeryHigh => 2f,
-            _                             => 1f,
+            PirateStrengthSetting.Weak   => 0.5f,
+            PirateStrengthSetting.Strong => 1.5f,
+            PirateStrengthSetting.Brutal => 2f,
+            _                            => 1f,
+        };
+
+        // How hard a raid hits. ⚠ read what GaugeNeededStrForForce does before touching this:
+        // the force aimed for is a FRACTION OF WHAT IS ALREADY ON SITE, so pirates can never be
+        // overwhelming by construction - that is the "pirates stay meek even at Brutal" report,
+        // and this notch is the answer to it.
+        float BiteModifier => Universe.P.PirateStrength switch
+        {
+            PirateStrengthSetting.Weak   => 0.75f,
+            PirateStrengthSetting.Strong => 1.25f,
+            PirateStrengthSetting.Brutal => 1.5f,
+            _                            => 1f,
+        };
+
+        // How many levels they are handed at galaxy creation. ⚠ a level is NEVER a number one
+        // sets: it is CLIMBED, through NewLevelOperations, which builds the base, the tech and
+        // the station that belong to it. Posting a bare number here would leave them baseless
+        // and their AI would disable itself on the next line of PirateAI.
+        public int StartingLevel => Universe.P.PirateStrength switch
+        {
+            PirateStrengthSetting.Strong => 3,
+            PirateStrengthSetting.Brutal => 5,
+            _                            => 1,
         };
 
         public bool VictimIsDefeated(Empire victim)
@@ -245,6 +270,7 @@ namespace Ship_Game
         {
             PiratePaceSetting.VerySlow => 2f,
             PiratePaceSetting.Slow     => 1.5f,
+            PiratePaceSetting.Fast     => 0.75f,
             _                          => 1f,
         };
 
@@ -277,7 +303,10 @@ namespace Ship_Game
                 return;
 
             int dieRoll = (int)(Level * Universe.P.Pace + Universe.ActiveMajorEmpires.Length / 2f);
-            dieRoll = ((int)(dieRoll * PaceModifier)).LowerBound(1);
+            // ⚠ the die is floored, and it is rolled on every SUCCESSFUL ACT OF PIRACY rather
+            // than on a clock - so a modifier below 1 flattens it to 1 in the early game and
+            // hands out a level per raid. Anything faster than Normal floors at 2 instead.
+            dieRoll = ((int)(dieRoll * PaceModifier)).LowerBound(PaceModifier < 1f ? 2 : 1);
             if (alwaysLevelUp || Random.RollDie(dieRoll) == 1)
             {
                 int newLevel = Level + 1;
@@ -782,7 +811,10 @@ namespace Ship_Game
             float maxStrModifier       = ((int)Universe.P.Difficulty + 1) * 0.25f; // easy will be 25%
             float availableStrModifier = (float)Level / MaxLevel;
 
-            return (enemyStr * maxStrModifier * availableStrModifier).LowerBound(Level * 1000);
+            // the bite scales the FLOOR as well: against a lightly held target the floor is what
+            // decides, so a notch that skipped it would be inert exactly where raids are easiest.
+            return (enemyStr * maxStrModifier * availableStrModifier * BiteModifier)
+                   .LowerBound(Level * 1000 * BiteModifier);
         }
 
         public bool SpawnForce(Ship targetShip, Vector2 pos, float radius, out Array<Ship> force)

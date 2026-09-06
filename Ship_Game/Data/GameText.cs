@@ -6344,6 +6344,22 @@ namespace Ship_Game
         /// <summary>How many of this plan's entries are up, out of how many it lists.</summary>
         BpCompletionTip = 30146,
         TzInbound = 30147,
+        /// <summary>1 1/2</summary>
+        RmStrengthOneAndHalf = 30148,
+        /// <summary>2x</summary>
+        RmStrengthTwice = 30149,
+        /// <summary>Fast</summary>
+        RmPaceFast = 30150,
+        /// <summary>Pirate Strength</summary>
+        PirateStrengthLabel = 30151,
+        /// <summary>What the pirates are, not only what they charge.</summary>
+        PirateStrengthTip = 30152,
+        /// <summary>Weak</summary>
+        PirateStrengthWeak = 30153,
+        /// <summary>Strong</summary>
+        PirateStrengthStrong = 30154,
+        /// <summary>Brutal</summary>
+        PirateStrengthBrutal = 30155,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>

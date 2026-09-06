@@ -135,8 +135,16 @@ public class UniverseParams
     [StarData(DefaultValue=PiratePaceSetting.Normal)]
     public PiratePaceSetting PiratePace = PiratePaceSetting.Normal;
 
+    // ⚠ OBSOLETE, kept READABLE for saves written before 6 Sep '26 - the notch became
+    // PirateStrength below. Never written any more; OnDeserialized folds it into the new scale.
     [StarData(DefaultValue=PirateTributeSetting.Normal)]
     public PirateTributeSetting PirateTribute = PirateTributeSetting.Normal;
+
+    // Ludoal fork (maintainer, 6 Sep '26): one notch for what the pirates ARE. It carries the
+    // old tribute plus the two things the base game never let a player touch - the level they
+    // start at, and the fraction of the local defence a raid aims for.
+    [StarData(DefaultValue=PirateStrengthSetting.Default)]
+    public PirateStrengthSetting PirateStrength = PirateStrengthSetting.Default;
     [StarData] public bool FixedPlayerCreditCharge;
     [StarData] public bool DisableResearchStations;
     [StarData] public bool DisableMiningOps;
@@ -225,6 +233,23 @@ public class UniverseParams
 
         if (DisablePirates)
             PirateFactions = PirateFactionsSetting.None;
+
+        // The old tribute notch folds into the strength scale that replaced it, onto the notch
+        // asking for the same money. Only a value OTHER than Normal says anything: nothing
+        // writes this field any more, so on a new save it sits at its default and must not
+        // speak - an unconditional fold would overwrite the notch the player just chose.
+        // ⚠ a loaded game gains the new bite along with the tribute it asked for; the starting
+        // level does not apply, it is spent at galaxy creation and never re-runs.
+        if (PirateTribute != PirateTributeSetting.Normal)
+        {
+            PirateStrength = PirateTribute switch
+            {
+                PirateTributeSetting.Low      => PirateStrengthSetting.Weak,
+                PirateTributeSetting.High     => PirateStrengthSetting.Strong,
+                PirateTributeSetting.VeryHigh => PirateStrengthSetting.Brutal,
+                _                             => PirateStrengthSetting.Default,
+            };
+        }
     }
 
     // Ludoal fork (maintainer feedback): the setup as one block of text, written into the save
@@ -237,7 +262,7 @@ public class UniverseParams
     {
         string s = $"Galaxy: {GalaxySize}, {NumSystems} systems, {NumOpponents} opponents, {Mode}, {Pace:0.##}x, {Difficulty}";
         s += $"\nRemnant: Presence {ExtraRemnant}, Pace {RemnantPace}, Strength {RemnantStrength}";
-        s += $"\nPirates: {PirateFactions}, Pace {PiratePace}, Tribute {PirateTribute}";
+        s += $"\nPirates: {PirateFactions}, Pace {PiratePace}, Strength {PirateStrength}";
 
         string rules = "";
         void Rule(string r) { rules += rules.Length > 0 ? ", " + r : r; }

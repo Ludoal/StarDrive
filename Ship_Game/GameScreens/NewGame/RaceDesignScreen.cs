@@ -414,9 +414,9 @@ namespace Ship_Game
             AddOption(FactionsOptions, Localizer.Token(GameText.PiratePaceLabel) + " : ",
                 OnPiratePaceClicked, _ => PiratePaceText(P.PiratePace),
                 tip:GameText.PiratePaceTip);
-            AddOption(FactionsOptions, Localizer.Token(GameText.PirateTributeLabel) + " : ",
-                OnPirateTributeClicked, _ => PirateTributeText(P.PirateTribute),
-                tip:GameText.PirateTributeTip);
+            AddOption(FactionsOptions, Localizer.Token(GameText.PirateStrengthLabel) + " : ",
+                OnPirateStrengthClicked, _ => PirateStrengthText(P.PirateStrength),
+                tip:GameText.PirateStrengthTip);
 
             // row 2 RIGHT: two tabs over one area - the points summary, and the race description.
             // Same rect for both; OnTabChange flips which one is visible.
@@ -725,17 +725,19 @@ namespace Ship_Game
             P.RemnantStrength = P.RemnantStrength.IncrementWithWrap(OptionIncrement);
         }
 
-        void OnPirateTributeClicked(UIButton b)
+        void OnPirateStrengthClicked(UIButton b)
         {
-            P.PirateTribute = P.PirateTribute.IncrementWithWrap(OptionIncrement);
+            P.PirateStrength = P.PirateStrength.IncrementWithWrap(OptionIncrement);
         }
 
-        static string PirateTributeText(PirateTributeSetting t) => t switch
+        // Default shares the Remnant strength's word: it is a plain "Default", and a second
+        // token saying the same thing would be a dialect, not a translation.
+        static string PirateStrengthText(PirateStrengthSetting s) => s switch
         {
-            PirateTributeSetting.Low      => Localizer.Token(GameText.TributeLow),
-            PirateTributeSetting.High     => Localizer.Token(GameText.TributeHigh),
-            PirateTributeSetting.VeryHigh => Localizer.Token(GameText.TributeVeryHigh),
-            _                             => Localizer.Token(GameText.RmPaceNormal),
+            PirateStrengthSetting.Weak   => Localizer.Token(GameText.PirateStrengthWeak),
+            PirateStrengthSetting.Strong => Localizer.Token(GameText.PirateStrengthStrong),
+            PirateStrengthSetting.Brutal => Localizer.Token(GameText.PirateStrengthBrutal),
+            _                            => Localizer.Token(GameText.RmStrengthDefault),
         };
 
         void OnPiratePaceClicked(UIButton b)
@@ -749,6 +751,7 @@ namespace Ship_Game
         {
             PiratePaceSetting.VerySlow => Localizer.Token(GameText.RmPaceVerySlow),
             PiratePaceSetting.Slow     => Localizer.Token(GameText.RmPaceSlow),
+            PiratePaceSetting.Fast     => Localizer.Token(GameText.RmPaceFast),
             _                          => Localizer.Token(GameText.RmPaceNormal),
         };
 
@@ -769,6 +772,8 @@ namespace Ship_Game
             RemnantStrengthSetting.Quarter       => Localizer.Token(GameText.RmStrengthQuarter),
             RemnantStrengthSetting.Half          => Localizer.Token(GameText.RmStrengthHalf),
             RemnantStrengthSetting.ThreeQuarters => Localizer.Token(GameText.RmStrengthThreeQ),
+            RemnantStrengthSetting.OneAndHalf    => Localizer.Token(GameText.RmStrengthOneAndHalf),
+            RemnantStrengthSetting.Twice         => Localizer.Token(GameText.RmStrengthTwice),
             _                                    => Localizer.Token(GameText.RmStrengthDefault),
         };
 
@@ -1056,12 +1061,29 @@ namespace Ship_Game
 
     // Ludoal fork (maintainer, 5 Sep '26): what a pirate demand costs. Named for what it moves
     // - the money - rather than "pressure", which would promise a say over how often they come.
+    // ⚠ OBSOLETE, kept for saves written before 6 Sep '26 - the notch became PirateStrength
+    // below, which carries the tribute along with the two things that make pirates dangerous.
     public enum PirateTributeSetting
     {
         Low,
         Normal,
         High,
         VeryHigh,
+    }
+
+    // Ludoal fork (maintainer, 6 Sep '26): what the pirates ARE, not only what they charge.
+    // They have no strength modifier of their own in the base game - their strength IS their
+    // level - so one notch drives three things at once: the level they START at (bases, how
+    // many raids run at once, how many hulls a raid fields), the BITE (the fraction of the
+    // local defence a raid aims for, until now fixed by difficulty alone), and the tribute.
+    // Default is member 0 so the serialiser's default and the field's agree; the hard notches
+    // are reversed so the right click hardens in order - Strong, then Brutal.
+    public enum PirateStrengthSetting
+    {
+        Default,
+        Weak,
+        Brutal,
+        Strong,
     }
 
     // Ludoal fork (maintainer, 5 Sep '26): how fast piracy escalates. No Off notch here: the
@@ -1071,6 +1093,10 @@ namespace Ship_Game
         VerySlow,
         Slow,
         Normal,
+        // Ludoal fork (maintainer, 6 Sep '26): the notch ABOVE Normal. This scale is monotonic -
+        // slowest first - so the notch goes at the END and the clicks read the right way round
+        // on their own. APPENDED for the ordinal, same reason as the Remnant scales.
+        Fast,
     }
 
     // Ludoal fork (maintainer, 5 Sep '26): how many pirate factions start alive. What used to
@@ -1097,6 +1123,14 @@ namespace Ship_Game
         ThreeQuarters,
         Half,
         Quarter,
+        // Ludoal fork (maintainer, 6 Sep '26): the two notches ABOVE Default, on player feedback
+        // that some want to play AGAINST the environment rather than tone it down.
+        // ⚠ APPENDED, never inserted: the binary serialiser writes the ORDINAL, so a notch placed
+        // before Default would shift every existing save by one, in silence.
+        // Twice sits before OneAndHalf ON PURPOSE: the right click walks the enum BACKWARDS, so
+        // from Default it hardens in order - 1 1/2, then 2x - while the left click softens.
+        Twice,
+        OneAndHalf,
     }
 
     // Ludoal fork: named in SPEED because that is what it changes - "Very Low" on a rhythm reads

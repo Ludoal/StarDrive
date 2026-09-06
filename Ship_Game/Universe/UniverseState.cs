@@ -740,6 +740,8 @@ namespace Ship_Game.Universe
                                            RemnantStrengthSetting.Quarter       => 0.25f,
                                            RemnantStrengthSetting.Half          => 0.50f,
                                            RemnantStrengthSetting.ThreeQuarters => 0.75f,
+                                           RemnantStrengthSetting.OneAndHalf    => 1.5f,
+                                           RemnantStrengthSetting.Twice         => 2f,
                                            _                                    => 1f,
                                        });
 
