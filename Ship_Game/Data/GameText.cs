@@ -7192,7 +7192,7 @@ namespace Ship_Game
         /// <summary>Served</summary>
         TzServedColonies = 7200,
         /// <summary>Assigned</summary>
-        TzAssigned = 7201,
+        TzOwnedTarget = 7201,
         /// <summary>New Trade Zone</summary>
         TzNewZone = 7202,
         /// <summary>Create a trade zone by choosing the colonies it serves</summary>
@@ -7222,7 +7222,6 @@ namespace Ship_Game
         /// <summary>What the zone could put to work now.</summary>
         TzRequiredTip = 7215,
         /// <summary>Active</summary>
-        TzActive = 7216,
         /// <summary>Freighters on their way to this zone.</summary>
         TzActiveTip = 7217,
         /// <summary>Name</summary>
@@ -7267,6 +7266,7 @@ namespace Ship_Game
         TzExclusiveTip = 7237,
         /// <summary>Freighters this zone owns.</summary>
         TzOwnedTip = 7238,
+        TzOwnedTargetTip = 7264,
         /// <summary>Your manual freighter filters have become exclusive trade zones.</summary>
         TzConvertedNotice = 7239,
         /// <summary>Trade Zone of this Freighter</summary>

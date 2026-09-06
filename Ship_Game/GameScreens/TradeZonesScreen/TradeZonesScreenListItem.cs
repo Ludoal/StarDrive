@@ -60,13 +60,8 @@ namespace Ship_Game
             LayOutColonyNames(cols[2].Rect, color);
 
             Cell(cols[3], Zone.MeasuredNeed.ToString(), color).Tooltip = GameText.TzRequiredTip;
-            // a quota of nought is not a quantity: the zone's need is measured instead of ordered
-            Cell(cols[4], Zone.Quota <= 0 ? Localizer.Token(GameText.PolFreighterRefitAuto)
-                                          : Zone.Quota.ToString(), color).Tooltip = GameText.TzAssignedTip;
-            Cell(cols[5], Zone.ActiveFreighters(Player).ToString(), color).Tooltip = GameText.TzActiveTip;
-            // owned hulls: a real count, and nought is the truth for a soft zone rather than a
-            // hole - it owns none because it borrows, which is the whole difference
-            Cell(cols[6], Zone.MemberFreighters(Player).Count.ToString(), color).Tooltip = GameText.TzOwnedTip;
+            Cell(cols[4], Zone.ActiveFreighters(Player).ToString(), color).Tooltip = GameText.TzActiveTip;
+            Cell(cols[5], OwnedOverTarget(Zone, Player), color).Tooltip = GameText.TzOwnedTargetTip;
 
             EditColonies ??= new UIButton(new UIButton.StyleTextures("NewUI/icon_build_edit_hover1", "NewUI/icon_build_edit_hover2", "NewUI/icon_build_edit_hover2"), Vector2.Zero, "")
             {
@@ -104,6 +99,19 @@ namespace Ship_Game
         // name column by it. Measured on the names alone, the column was too narrow by exactly
         // this much and long names ran under their neighbour (bench 561).
         public const int LockSize = 16, LockGap = 6, LockLane = LockSize + LockGap;
+
+        // Owned over target, in one cell. A soft zone owns nothing by construction, so it shows
+        // NOTHING rather than a "0 / 5" that would read as a failure to reach a target it never
+        // had. ⚠ public and static: the column measurer has to size on the very string the row
+        // draws, not on a bare count.
+        public static string OwnedOverTarget(TradeZone zone, Empire player)
+        {
+            if (!zone.Exclusive)
+                return "";
+
+            int target = zone.Quota > 0 ? zone.Quota : zone.MeasuredNeed;
+            return $"{zone.MemberFreighters(player).Count} / {target}";
+        }
 
         // the clickable name lanes, rebuilt with the row
         readonly Array<(Rectangle Rect, Planet Colony)> NameHits = new();

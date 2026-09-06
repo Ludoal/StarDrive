@@ -53,10 +53,11 @@ namespace Ship_Game
                 // the instrument, in reading order: what it could use, what you granted, what is
                 // actually on its way - a zone asking more than it receives shows at a glance
                 new UITable.Column { Title = Localizer.Token(GameText.TzRequired), Align = TableAlign.Number, Sortable = true },
-                new UITable.Column { Title = Localizer.Token(GameText.TzAssigned), Align = TableAlign.Number, Sortable = true },
-                new UITable.Column { Title = Localizer.Token(GameText.TzActive), Align = TableAlign.Number, Sortable = true },
-                // and what it OWNS, which only an exclusive zone does - the requisition made visible
+                // the same word and the same number as the overlay: freighters on their way here
                 new UITable.Column { Title = Localizer.Token(GameText.Freighters), Align = TableAlign.Number, Sortable = true },
+                // owned over target in ONE cell: the gap is read without subtracting, and a soft
+                // zone shows nothing rather than a nought that would read as a failure
+                new UITable.Column { Title = Localizer.Token(GameText.TzOwnedTarget), Align = TableAlign.Number, Sortable = true },
                 // four icons now: the two arrows that order the zones, then edit and delete
                 new UITable.Column { Title = "", Width = 110, Align = TableAlign.Center },
             });
@@ -235,9 +236,8 @@ namespace Ship_Game
             {
                 case 1:  zones = Player.TradeZones.Sorted(ascending, z => z.NumColonies); break;
                 case 3:  zones = Player.TradeZones.Sorted(ascending, z => z.MeasuredNeed); break;
-                case 4:  zones = Player.TradeZones.Sorted(ascending, z => z.Quota); break;
-                case 5:  zones = Player.TradeZones.Sorted(ascending, z => z.ActiveFreighters(Player)); break;
-                case 6:  zones = Player.TradeZones.Sorted(ascending, z => z.MemberFreighters(Player).Count); break;
+                case 4:  zones = Player.TradeZones.Sorted(ascending, z => z.ActiveFreighters(Player)); break;
+                case 5:  zones = Player.TradeZones.Sorted(ascending, z => z.MemberFreighters(Player).Count); break;
                 default: zones = Player.TradeZones.Sorted(ascending, z => z.Name); break;
             }
             foreach (TradeZone zone in zones)
@@ -254,7 +254,7 @@ namespace Ship_Game
             // before the first turn would otherwise show a nought it cannot tell from a real one
             Player.MeasureZoneNeeds();
             var names = new Array<string>(); var counts = new Array<string>();
-            var served = new Array<string>(); var quotas = new Array<string>();
+            var served = new Array<string>();
             var required = new Array<string>(); var active = new Array<string>();
             var owned = new Array<string>();
             foreach (TradeZone z in Player.TradeZones)
@@ -263,9 +263,9 @@ namespace Ship_Game
                 counts.Add(z.NumColonies.ToString());
                 served.Add(ColonyNames(z));
                 required.Add(z.MeasuredNeed.ToString());
-                quotas.Add(z.Quota <= 0 ? Localizer.Token(GameText.PolFreighterRefitAuto) : z.Quota.ToString());
                 active.Add(z.ActiveFreighters(Player).ToString());
-                owned.Add(z.MemberFreighters(Player).Count.ToString());
+                // measured with the SAME formatter the row draws with, never a bare count
+                owned.Add(TradeZonesScreenListItem.OwnedOverTarget(z, Player));
             }
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, names);
             // an exclusive zone wears a padlock BEFORE its name, and AutoSize only ever saw the
@@ -279,9 +279,8 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, counts);
             UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, served);
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, required);
-            UITable.AutoSize(Table.Columns[4], Fonts.Arial12Bold, quotas);
-            UITable.AutoSize(Table.Columns[5], Fonts.Arial12Bold, active);
-            UITable.AutoSize(Table.Columns[6], Fonts.Arial12Bold, owned);
+            UITable.AutoSize(Table.Columns[4], Fonts.Arial12Bold, active);
+            UITable.AutoSize(Table.Columns[5], Fonts.Arial12Bold, owned);
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
         }
 

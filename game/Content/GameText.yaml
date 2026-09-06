@@ -28921,10 +28921,10 @@ TzServedColonies:
  Id: 7200
  ENG: "Served"
  FRA: "Desservies"
-TzAssigned:
+TzOwnedTarget:
  Id: 7201
- ENG: "Assigned"
- FRA: "Affectés"
+ ENG: "Owned / Target"
+ FRA: "Possédés / Cible"
 TzNewZone:
  Id: 7202
  ENG: "New Trade Zone"
@@ -28981,10 +28981,6 @@ TzRequiredTip:
  Id: 7215
  ENG: "How many freighters the zone could put to work right now, counted in trade slots and bounded by both ends: what its colonies ask to import, limited by what they can export to each other. Colonists are not counted."
  FRA: "Nombre de cargos que la zone pourrait employer maintenant, compté en créneaux de commerce et borné aux deux bouts : ce que ses colonies demandent à importer, limité par ce qu'elles peuvent s'exporter entre elles. Les colons ne sont pas comptés."
-TzActive:
- Id: 7216
- ENG: "Active"
- FRA: "Actifs"
 TzActiveTip:
  Id: 7217
  ENG: "Freighters currently on their way to a colony of this zone."
@@ -29085,6 +29081,10 @@ TzOwnedTip:
  Id: 7238
  ENG: "Freighters this zone OWNS. Only an exclusive zone owns any: a soft zone borrows a share of the turn and gives it back."
  FRA: "Cargos que cette zone POSSÈDE. Seule une zone exclusive en possède : une zone souple emprunte une part du tour et la rend."
+TzOwnedTargetTip:
+ Id: 7264
+ ENG: "Freighters this zone owns, over the number it is aiming for. At Auto the target is its Required count. Empty for a soft zone: it owns none, it borrows. The requisition stops at the empire freighter reserve, and at what is idle right now."
+ FRA: "Cargos que la zone possède, sur le nombre qu'elle vise. Sur Auto, la cible est son besoin (Required). Vide pour une zone souple : elle ne possède rien, elle emprunte. La réquisition s'arrête à la réserve de cargos de l'empire, et à ce qui est disponible sur l'instant."
 TzConvertedNotice:
  Id: 7239
  ENG: "The areas of operation and manual trade routes you had drawn on individual freighters have become EXCLUSIVE TRADE ZONES, and their editors are gone: what a zone holds is now edited in one place, on the Trade page.\n\nOne thing has changed and cannot be undone: an area of operation was a SHAPE, and it welcomed colonies founded inside it later. A zone is a LIST, taken as your areas stood at this moment. A colony founded inside an old rectangle from now on will not join its zone on its own - add it yourself from the Trade page or from the colony's own screen."
