@@ -126,10 +126,11 @@ namespace Ship_Game
              : goods == Goods.Production ? p.ProdExportSlots
              : p.ColonistsExportSlots;
 
-        // The need of a PERIMETER, in whole hulls: what its importers burn, bounded by what its
-        // permitted exporters can actually send. A run needs a berth at both ends, and the far end
-        // follows the regime - an exclusive zone trades among its own colonies, a soft one and the
-        // empire are served from anywhere. Rounded UP: half a run still takes a hull.
+        // The need of a PERIMETER, in whole hulls: what its importers burn, bounded by what the
+        // given exporters can actually send. A run needs a berth at both ends. ⚠ The caller owns
+        // the choice of far end, and owes it one rule: the set passed here must be the set the
+        // DISPATCH searches, or the ceiling refuses runs the game will make anyway. Rounded UP:
+        // half a run still takes a hull.
         public int PerimeterNeed(Array<Planet> importers, Array<Planet> exporters, Goods goods)
         {
             float need = 0;
@@ -164,31 +165,29 @@ namespace Ship_Game
             // arranged, which is why the book is kept while walking it.
             var servedColonies = new HashSet<int>();
             var stationLedger = new Map<int, int>();
-            // a soft zone and the empire are served from anywhere OUTSIDE the exclusive enclaves:
-            // read once, it is the far end of their runs
-            Array<Planet> commonExporters = ColoniesOutsideExclusiveZones();
+            // ⚠ THE CEILING IS TAKEN ON THE SET THE DISPATCH ACTUALLY SEARCHES, and today that is
+            // the whole realm for BOTH regimes: DispatchOrBuildFreighters picks its exporters from
+            // OwnedPlanets whoever asked, an exclusive zone's own pass included. Narrowing the
+            // ceiling before narrowing the dispatch made a zone read a need of nought while ten
+            // hulls were serving it (maintainer bench 585). The two narrow together at the step
+            // that closes the loading leg - not one step ahead of it.
 
             foreach (TradeZone zone in TradeZones)
             {
                 var importers = new Array<Planet>();
-                var colonies  = new Array<Planet>();
                 foreach (int id in zone.Colonies)
                 {
                     Planet p = Universe.GetPlanet(id);
                     if (p == null || p.Owner != this)
                         continue;
 
-                    colonies.Add(p);          // the zone's own worlds, whoever feeds them
                     if (servedColonies.Add(id))
-                        importers.Add(p);     // ...but only the first zone to name one may ask for it
+                        importers.Add(p); // only the first zone to name a world may ask for it
                 }
 
-                // the far end follows the regime: an exclusive zone trades among its own colonies,
-                // a soft one is served from the common ground
-                Array<Planet> exporters = zone.Exclusive ? colonies : commonExporters;
-                zone.NeedFood      = PerimeterNeed(importers, exporters, Goods.Food);
-                zone.NeedProd      = PerimeterNeed(importers, exporters, Goods.Production);
-                zone.NeedColonists = PerimeterNeed(importers, exporters, Goods.Colonists);
+                zone.NeedFood      = PerimeterNeed(importers, OwnedPlanets, Goods.Food);
+                zone.NeedProd      = PerimeterNeed(importers, OwnedPlanets, Goods.Production);
+                zone.NeedColonists = PerimeterNeed(importers, OwnedPlanets, Goods.Colonists);
                 int need = zone.NeedFood + zone.NeedProd + zone.NeedColonists;
 
                 // a station's hunger is its own - two zones naming the same body would ask for the
