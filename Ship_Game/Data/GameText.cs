@@ -7269,6 +7269,16 @@ namespace Ship_Game
         TzOwnedTargetTip = 7264,
         TzTargetFreighters = 7265,
         TzInZones = 7266,
+        /// <summary>Tribute</summary>
+        PirateTributeLabel = 7267,
+        /// <summary>What pirates ask for when they demand payment.</summary>
+        PirateTributeTip = 7268,
+        /// <summary>Low</summary>
+        TributeLow = 7269,
+        /// <summary>High</summary>
+        TributeHigh = 7270,
+        /// <summary>Very High</summary>
+        TributeVeryHigh = 7271,
         /// <summary>Your manual freighter filters have become exclusive trade zones.</summary>
         TzConvertedNotice = 7239,
         /// <summary>Trade Zone of this Freighter</summary>

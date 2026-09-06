@@ -414,6 +414,9 @@ namespace Ship_Game
             AddOption(FactionsOptions, Localizer.Token(GameText.PiratePaceLabel) + " : ",
                 OnPiratePaceClicked, _ => PiratePaceText(P.PiratePace),
                 tip:GameText.PiratePaceTip);
+            AddOption(FactionsOptions, Localizer.Token(GameText.PirateTributeLabel) + " : ",
+                OnPirateTributeClicked, _ => PirateTributeText(P.PirateTribute),
+                tip:GameText.PirateTributeTip);
 
             // row 2 RIGHT: two tabs over one area - the points summary, and the race description.
             // Same rect for both; OnTabChange flips which one is visible.
@@ -721,6 +724,19 @@ namespace Ship_Game
         {
             P.RemnantStrength = P.RemnantStrength.IncrementWithWrap(OptionIncrement);
         }
+
+        void OnPirateTributeClicked(UIButton b)
+        {
+            P.PirateTribute = P.PirateTribute.IncrementWithWrap(OptionIncrement);
+        }
+
+        static string PirateTributeText(PirateTributeSetting t) => t switch
+        {
+            PirateTributeSetting.Low      => Localizer.Token(GameText.TributeLow),
+            PirateTributeSetting.High     => Localizer.Token(GameText.TributeHigh),
+            PirateTributeSetting.VeryHigh => Localizer.Token(GameText.TributeVeryHigh),
+            _                             => Localizer.Token(GameText.RmPaceNormal),
+        };
 
         void OnPiratePaceClicked(UIButton b)
         {
@@ -1036,6 +1052,16 @@ namespace Ship_Game
     public enum GalSize
     {
         Tiny, Small, Medium, Large, Huge, Epic, TrulyEpic
+    }
+
+    // Ludoal fork (maintainer, 5 Sep '26): what a pirate demand costs. Named for what it moves
+    // - the money - rather than "pressure", which would promise a say over how often they come.
+    public enum PirateTributeSetting
+    {
+        Low,
+        Normal,
+        High,
+        VeryHigh,
     }
 
     // Ludoal fork (maintainer, 5 Sep '26): how fast piracy escalates. No Off notch here: the

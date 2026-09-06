@@ -134,6 +134,9 @@ public class UniverseParams
 
     [StarData(DefaultValue=PiratePaceSetting.Normal)]
     public PiratePaceSetting PiratePace = PiratePaceSetting.Normal;
+
+    [StarData(DefaultValue=PirateTributeSetting.Normal)]
+    public PirateTributeSetting PirateTribute = PirateTributeSetting.Normal;
     [StarData] public bool FixedPlayerCreditCharge;
     [StarData] public bool DisableResearchStations;
     [StarData] public bool DisableMiningOps;

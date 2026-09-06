@@ -216,8 +216,21 @@ namespace Ship_Game
             float payment            = (victimNetPotential*PaymentPeriodTurns) * basePercentage/100;
             payment                 *= (Level / 2).LowerBound(1);
 
-            return (payment * multiplier).LowerBound(minimumPayment).RoundTo10();
+            // Ludoal fork (maintainer, 5 Sep '26): the player's say on what a demand costs, applied
+            // ONCE and at the end, on the amount that was actually retained. ⚠ the difficulty
+            // modifier above is not: it multiplies the floor, the victim's net, and then the total,
+            // so Brutal already asks over twice what Normal does. That is base game arithmetic and
+            // it is left alone here - this notch is not the place to quietly fix it.
+            return (payment * multiplier * TributeModifier).LowerBound(minimumPayment).RoundTo10();
         }
+
+        float TributeModifier => Universe.P.PirateTribute switch
+        {
+            PirateTributeSetting.Low      => 0.5f,
+            PirateTributeSetting.High     => 1.5f,
+            PirateTributeSetting.VeryHigh => 2f,
+            _                             => 1f,
+        };
 
         public bool VictimIsDefeated(Empire victim)
         {

@@ -28977,6 +28977,26 @@ TzInZones:
  Id: 7266
  ENG: "In zones:"
  FRA: "En zones :"
+PirateTributeLabel:
+ Id: 7267
+ ENG: "Pirate Tribute"
+ FRA: "Tribut pirate"
+PirateTributeTip:
+ Id: 7268
+ ENG: "How much pirates demand when you buy peace instead of fighting. Applies to every empire. Stacks with difficulty and with the pirates' level: at higher difficulties the demand already grows faster than the minimum, so a high setting makes paying costly early."
+ FRA: "Montant réclamé par les pirates quand vous achetez la paix au lieu de combattre. S'applique à tous les empires. Se cumule avec la difficulté et avec le niveau des pirates : aux difficultés élevées, la demande croît déjà plus vite que le plancher, un réglage haut rend le tribut coûteux dès le début."
+TributeLow:
+ Id: 7269
+ ENG: "Low"
+ FRA: "Faible"
+TributeHigh:
+ Id: 7270
+ ENG: "High"
+ FRA: "Élevé"
+TributeVeryHigh:
+ Id: 7271
+ ENG: "Very High"
+ FRA: "Très élevé"
 TzPanToColonyTip:
  Id: 7213
  ENG: "Centre the map on this colony."
