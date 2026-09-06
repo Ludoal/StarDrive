@@ -18,6 +18,9 @@ namespace Ship_Game
     public sealed class FloatSlider : UIElementV2
     {
         Rectangle SliderRect; // colored slider
+        // room kept at the right end for the value text, wide enough for the longest a percent
+        // can be ("100%") plus the eight pixels the drawing puts between the two
+        const int ValueLane = 44;
         Rectangle KnobRect;   // knob area used to move the slider value
         public LocalizedText Text;
         public LocalizedText Tip;
@@ -174,7 +177,12 @@ namespace Ship_Game
 
         void UpdateSliderRect()
         {
-            SliderRect = new Rectangle((int)Pos.X, (int)Pos.Y + (int)Height/2 + TrackYOffset, (int)Width - 32, 6);
+            // Ludoal fork (maintainer, bench 580): the value is drawn AFTER the track, so the track
+            // must stand back by the WIDEST the value can be, not by the widest seen so far. The old
+            // 32 fitted "44%" and not "100%", which ran out of its panel at the top of the range.
+            // A fixed lane rather than one measured on the current text: a track that changes length
+            // as the number gains a digit makes the knob jump under the cursor.
+            SliderRect = new Rectangle((int)Pos.X, (int)Pos.Y + (int)Height/2 + TrackYOffset, (int)Width - ValueLane, 6);
             KnobRect = new Rectangle(SliderRect.X + (int)(SliderRect.Width * Value), 
                                      SliderRect.Y + SliderRect.Height / 2 - SliderKnob.Height / 2, 
                                      SliderKnob.Width, SliderKnob.Height);

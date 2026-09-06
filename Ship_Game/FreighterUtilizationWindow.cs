@@ -201,8 +201,12 @@ namespace Ship_Game
             const int utilColX = 10, utilColW = 150, buildBtnW = 130;
             UtilizationBar.SetRect(new Rectangle((int)Pos.X + utilColX, (int)Pos.Y+65, utilColW, 18));
             // Ludoal fork (maintainer feedback): the Build Freighter button centred on the util column
-            BuildFreighter.Pos = new Vector2(Pos.X + utilColX + (utilColW - buildBtnW) / 2, Pos.Y + 135);
+            // ⚠ anchored to the FOOT, not to a constant off the top: it sat at a fixed 135 and the
+            // window has since gained a row, so it landed on the line that row was added for
+            // (bench 580). Off the bottom it follows whatever height the window takes.
             BuildFreighter.SetAbsSize(buildBtnW, 24);
+            BuildFreighter.Pos = new Vector2(Pos.X + utilColX + (utilColW - buildBtnW) / 2,
+                                             Pos.Y + Height - 24 - 8);
             base.PerformLayout();
         }
 
