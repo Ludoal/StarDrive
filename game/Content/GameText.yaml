@@ -29001,6 +29001,10 @@ TzPriority:
  Id: 7272
  ENG: "Priority"
  FRA: "Priorité"
+TzZoneFilter:
+ Id: 7274
+ ENG: "Trade Zone"
+ FRA: "Zone commerciale"
 TzPriorityTip:
  Id: 7273
  ENG: "Which goods this zone's freighters carry first. Auto follows the empire's own order. Only an exclusive zone sets its own: a soft zone borrows hulls that follow the empire."

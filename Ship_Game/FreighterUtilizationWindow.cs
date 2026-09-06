@@ -80,7 +80,10 @@ namespace Ship_Game
         public void SeatByMinimap()
         {
             const int windowWidth = 650;
-            int windowHeight = 4 * (Fonts.Arial12Bold.LineSpacing + 25);
+            // Ludoal fork (maintainer, bench 578): FIVE rows, not four - the left column gained
+            // the freighters-in-zones line and it landed on the Build Freighter button. The height
+            // is counted in rows on purpose, so a row added here needs no second number changed.
+            int windowHeight = 5 * (Fonts.Arial12Bold.LineSpacing + 25);
             Rect = new Rectangle((int)Screen.Minimap.X - 5 - windowWidth, (int)Screen.Minimap.Y +
                 (int)Screen.Minimap.Height - windowHeight, windowWidth, windowHeight); // foot flush with the minimap frame
             if (HasContent)
@@ -145,9 +148,12 @@ namespace Ship_Game
             // the tooltip rides the CAPTION, not the list: a DropOptions carries none of its own
             // (it is a bare UIElementV2), which is why every picker in the game is labelled. The
             // caption's X is MEASURED off its own text rather than guessed at a round number.
-            string zoneCap = Localizer.Token(GameText.TzColonyZones);
+            // singular here: the picker chooses ONE zone to look through, where the shared token
+            // names the feature. Its own token rather than an edit to that one, which titles two
+            // other screens (maintainer feedback).
+            string zoneCap = Localizer.Token(GameText.TzZoneFilter);
             Add(new UILabel(new Vector2(zoneBoxX - Fonts.Arial12Bold.TextWidth(zoneCap) - 8, win.Y + 6),
-                            GameText.TzColonyZones, Fonts.Arial12Bold, Color.Wheat, GameText.TzWindowZoneTip));
+                            GameText.TzZoneFilter, Fonts.Arial12Bold, Color.Wheat, GameText.TzWindowZoneTip));
             ZoneFilter = Add(new DropOptions<TradeZone>(
                 new Vector2(zoneBoxX, win.Y + 4), (int)ZoneBoxW, 18));
             ZoneFilter.OnValueChange = z => SelectedZone = z;
