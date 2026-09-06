@@ -62,7 +62,11 @@ namespace Ship_Game
             Cell(cols[3], Zone.MeasuredNeed.ToString(), color).Tooltip = GameText.TzRequiredTip;
             Cell(cols[4], Zone.ActiveFreighters(Player).ToString(), color).Tooltip = GameText.TzActiveTip;
             Cell(cols[5], TargetAndOwned(Zone, Player), color).Tooltip = GameText.TzOwnedTargetTip;
-            Cell(cols[6], PriorityText(Zone), color).Tooltip = GameText.TzPriorityTip;
+            // greyed on a soft zone: the priority belongs to the exclusive regime, and a soft
+            // zone's hulls follow the empire's own order - the word is shown rather than hidden so
+            // the column keeps its shape, but it is not a setting there (maintainer feedback)
+            Cell(cols[6], PriorityText(Zone), Zone.Exclusive ? color : Color.Gray)
+                .Tooltip = GameText.TzPriorityTip;
 
             EditColonies ??= new UIButton(new UIButton.StyleTextures("NewUI/icon_build_edit_hover1", "NewUI/icon_build_edit_hover2", "NewUI/icon_build_edit_hover2"), Vector2.Zero, "")
             {
