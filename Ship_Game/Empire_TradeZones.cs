@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SDGraphics;
 using SDUtils;
@@ -136,17 +136,16 @@ namespace Ship_Game
             return supply;
         }
 
-        // The need of a PERIMETER, in whole hulls: what its importers burn, bounded by the supply
-        // STILL AVAILABLE to it. A run needs a berth at both ends. Rounded UP - half a run still
-        // takes a hull.
+        // What a PERIMETER wants, in whole hulls: what its importers burn, and nothing else.
+        // Rounded UP - half a run still takes a hull.
         //
-        // ⚠ THE SUPPLY IS A STOCK, NOT A PROPERTY. The caller passes what is LEFT and takes the
-        // answer out of it before asking for the next perimeter: an exporter promised to one zone
-        // is not there for the next. Computed fresh each time, two zones read the same single food
-        // berth and the table promised it twice - ten hulls of colonists over the empire's whole
-        // capacity, on the bench of 6 Sep. The caller also owes the set one rule: it must be the
-        // set the DISPATCH searches, or the ceiling refuses runs the game will make anyway.
-        public int PerimeterNeed(Array<Planet> importers, int supplyLeft, Goods goods)
+        // ⚠ NO CEILING HERE ANY MORE. Bounding the need by the available supply inside this
+        // function made one number do two jobs, and the display job lost: a zone with no source
+        // left showed "Required 0", which reads as "I want nothing". The ceiling now lives at the
+        // one place that needs it - the dispatch quota in MeasureZoneNeeds - where the supply is
+        // a STOCK walked in list order: an exporter promised to one zone is not there for the
+        // next, and the set it is taken on must be the set the DISPATCH searches.
+        public int PerimeterNeed(Array<Planet> importers, Goods goods)
         {
             float need = 0;
             for (int i = 0; i < importers.Count; ++i)
@@ -156,7 +155,7 @@ namespace Ship_Game
             if (need > whole)
                 ++whole;
 
-            return whole.UpperBound(supplyLeft);
+            return whole;
         }
 
         // ★ THE ONE BOOK OF NEED. Zones are read IN LIST ORDER, which is the dispatch priority the
@@ -176,21 +175,16 @@ namespace Ship_Game
             // arranged, which is why the book is kept while walking it.
             var servedColonies = new HashSet<int>();
             var stationLedger = new Map<int, int>();
-            // ⚠ THE CEILING IS TAKEN ON THE SET THE DISPATCH SEARCHES, and since the loading leg
-            // was closed the two regimes no longer search the same ground: an EXCLUSIVE zone loads
-            // among its own colonies, a SOFT one on the common ground. So there are two kinds of
-            // supply, and only one of them is shared.
-            //
-            // The COMMON ground is a stock walked in the list's own order - what one soft zone has
-            // been promised, the next cannot be. An enclave's own capacity is not shared with
-            // anyone by construction, so it is read fresh and taken whole.
-            Array<Planet> commonExporters = ColoniesOutsideExclusiveZones();
-            int foodLeft = ExportSupply(commonExporters, Goods.Food);
-            int prodLeft = ExportSupply(commonExporters, Goods.Production);
-            int colLeft  = ExportSupply(commonExporters, Goods.Colonists);
+            // ★★ TWO PASSES, AND THE ORDER IS THE POINT. The common loading ground is now
+            // defined by which enclaves are already served, so every zone's RAW need has to be
+            // written before any ceiling is taken - otherwise the ground would be drawn from
+            // last turn's book, or from nothing at all on the first turn.
+            var zoneColonies = new Array<Planet>[TradeZones.Count];
 
-            foreach (TradeZone zone in TradeZones)
+            // PASS ONE - what each zone WANTS. Depends on nothing but its own importers.
+            for (int zi = 0; zi < TradeZones.Count; ++zi)
             {
+                TradeZone zone = TradeZones[zi];
                 var importers = new Array<Planet>();
                 var colonies  = new Array<Planet>();
                 foreach (int id in zone.Colonies)
@@ -204,26 +198,58 @@ namespace Ship_Game
                         importers.Add(p); // only the first zone to name a world may ask for it
                 }
 
+                zoneColonies[zi] = colonies;
+
+                // ★ TWO FIGURES, TWO TRADES, and they were one number until the bench of 6 Sep.
+                // The RAW need is what the importers burn - what the screens show, and what any
+                // rule asking "is this zone served" must read. The CAPPED one, below, is the
+                // dispatch quota, bounded by what the ground it searches can send.
+                zone.NeedFood      = PerimeterNeed(importers, Goods.Food);
+                zone.NeedProd      = PerimeterNeed(importers, Goods.Production);
+                zone.NeedColonists = PerimeterNeed(importers, Goods.Colonists);
+            }
+
+            // ⚠ THE CEILING IS TAKEN ON THE SET THE DISPATCH SEARCHES, and the two regimes do not
+            // search the same ground: an EXCLUSIVE zone loads among its own colonies, a SOFT one
+            // on the common ground - which now includes the enclaves whose own imports of that
+            // good are covered, since an enclave owns its hulls and not its harvests.
+            //
+            // The COMMON ground is a stock walked in the list's own order - what one soft zone has
+            // been promised, the next cannot be. An enclave's own capacity is not shared with
+            // anyone by construction, so it is read fresh and taken whole.
+            int foodLeft = ExportSupply(CommonExportGround(Goods.Food), Goods.Food);
+            int prodLeft = ExportSupply(CommonExportGround(Goods.Production), Goods.Production);
+            int colLeft  = ExportSupply(CommonExportGround(Goods.Colonists), Goods.Colonists);
+
+            // PASS TWO - the dispatch quota, and the stock it is taken out of.
+            for (int zi = 0; zi < TradeZones.Count; ++zi)
+            {
+                TradeZone zone = TradeZones[zi];
+                Array<Planet> colonies = zoneColonies[zi];
+
+                int capFood, capProd, capCol;
                 if (zone.Exclusive)
                 {
-                    // its own ground, shared with nobody
-                    zone.NeedFood      = PerimeterNeed(importers, ExportSupply(colonies, Goods.Food), Goods.Food);
-                    zone.NeedProd      = PerimeterNeed(importers, ExportSupply(colonies, Goods.Production), Goods.Production);
-                    zone.NeedColonists = PerimeterNeed(importers, ExportSupply(colonies, Goods.Colonists), Goods.Colonists);
+                    // its own ground, shared with nobody, so read fresh and taken whole
+                    capFood = zone.NeedFood.UpperBound(ExportSupply(colonies, Goods.Food));
+                    capProd = zone.NeedProd.UpperBound(ExportSupply(colonies, Goods.Production));
+                    capCol  = zone.NeedColonists.UpperBound(ExportSupply(colonies, Goods.Colonists));
                 }
                 else
                 {
-                    zone.NeedFood      = PerimeterNeed(importers, foodLeft, Goods.Food);
-                    zone.NeedProd      = PerimeterNeed(importers, prodLeft, Goods.Production);
-                    zone.NeedColonists = PerimeterNeed(importers, colLeft,  Goods.Colonists);
-                    // taken out of the common stock: what this zone has been promised is not there
-                    // for the next one that asks
-                    foodLeft -= zone.NeedFood;
-                    prodLeft -= zone.NeedProd;
-                    colLeft  -= zone.NeedColonists;
+                    capFood = zone.NeedFood.UpperBound(foodLeft);
+                    capProd = zone.NeedProd.UpperBound(prodLeft);
+                    capCol  = zone.NeedColonists.UpperBound(colLeft);
+                    // taken out of the common stock: what this zone has been PROMISED is not there
+                    // for the next one that asks - and the promise is the CAPPED figure, never the
+                    // raw one, or a need nobody can serve would empty the stock on paper
+                    foodLeft -= capFood;
+                    prodLeft -= capProd;
+                    colLeft  -= capCol;
                 }
 
-                int need = zone.NeedFood + zone.NeedProd + zone.NeedColonists;
+                int need = capFood + capProd + capCol;
+                int raw  = zone.NeedFood + zone.NeedProd + zone.NeedColonists;
 
                 // a station's hunger is its own - two zones naming the same body would ask for the
                 // same run, so it keeps a book of its own
@@ -235,10 +261,12 @@ namespace Ship_Game
                     stationLedger.TryGetValue(key, out int taken);
                     int left = (open - taken).LowerBound(0);
                     need += left;
+                    raw  += left;   // a station's hunger is real in both books
                     stationLedger[key] = taken + left;
                 }
 
                 zone.MeasuredNeed = need;
+                zone.RawNeed = raw;
             }
         }
 
@@ -297,6 +325,30 @@ namespace Ship_Game
         // exclusive zone is served by the hulls it requisitioned and by nothing else, so its
         // worlds leave the empire's own dispatch - a world served by both keeps its berths
         // closed against the very freighters the zone took for it (maintainer feedback).
+        // ★ THE COMMON LOADING GROUND, AND IT IS PER GOOD. An exclusive zone owns its HULLS,
+        // not its harvests (maintainer, bench 589): once its own imports of a good are covered,
+        // its colonies lend that good's surplus to the realm, which comes to fetch it with its
+        // OWN hulls. A surplus rotting in an enclave's store serves nobody, and the old rule
+        // dried the rest of the empire out on a small map - three colonies enclosed, three left
+        // with no source at all.
+        //
+        // ⚠ IT READS THE RAW NEED, NEVER MeasuredNeed. A zone whose ground has run dry has a
+        // quota of nought, and reading that would call a starving enclave "served" and take its
+        // food away. This is the whole reason the two figures were split.
+        // ⚠ and it is the LOADING end only: nothing here opens an enclave to deliveries.
+        public Array<Planet> CommonExportGround(Goods goods)
+        {
+            var colonies = new Array<Planet>();
+            for (int i = 0; i < OwnedPlanets.Count; ++i)
+            {
+                TradeZone zone = GetExclusiveZone(OwnedPlanets[i]);
+                if (zone == null || zone.RawNeedOf(goods) == 0)
+                    colonies.Add(OwnedPlanets[i]);
+            }
+
+            return colonies;
+        }
+
         public Array<Planet> ColoniesOutsideExclusiveZones()
         {
             var colonies = new Array<Planet>();

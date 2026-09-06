@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using Ship_Game.Audio;
@@ -311,15 +311,13 @@ namespace Ship_Game
                 }
                 else
                 {
-                    // no zone picked: the perimeter is the whole realm, both ends, and it is asked
-                    // for the WHOLE supply - there is no other claimant to leave anything to
+                    // no zone picked: the perimeter is the whole realm. The figure is what the
+                    // realm WANTS - the same book the zone lines above read, uncapped, so the
+                    // overlay never writes "nobody can serve me" as a nought
                     if (Player.NonCybernetic)
-                        GoodsUtilizationMap[Goods.Food].SetNeed(Player.PerimeterNeed(perimeter,
-                            Player.ExportSupply(perimeter, Goods.Food), Goods.Food));
-                    GoodsUtilizationMap[Goods.Production].SetNeed(Player.PerimeterNeed(perimeter,
-                        Player.ExportSupply(perimeter, Goods.Production), Goods.Production));
-                    GoodsUtilizationMap[Goods.Colonists].SetNeed(Player.PerimeterNeed(perimeter,
-                        Player.ExportSupply(perimeter, Goods.Colonists), Goods.Colonists));
+                        GoodsUtilizationMap[Goods.Food].SetNeed(Player.PerimeterNeed(perimeter, Goods.Food));
+                    GoodsUtilizationMap[Goods.Production].SetNeed(Player.PerimeterNeed(perimeter, Goods.Production));
+                    GoodsUtilizationMap[Goods.Colonists].SetNeed(Player.PerimeterNeed(perimeter, Goods.Colonists));
                 }
 
                 // ⚠ A WORLD WITH A CARGO IN THE AIR COUNTS, even if its store filled while that

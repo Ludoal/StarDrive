@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
@@ -239,7 +239,7 @@ namespace Ship_Game
             switch (col)
             {
                 case 1:  zones = Player.TradeZones.Sorted(ascending, z => z.NumColonies); break;
-                case 3:  zones = Player.TradeZones.Sorted(ascending, z => z.MeasuredNeed); break;
+                case 3:  zones = Player.TradeZones.Sorted(ascending, z => z.RawNeed); break;
                 case 4:  zones = Player.TradeZones.Sorted(ascending, z => z.ActiveFreighters(Player)); break;
                 case 5:  zones = Player.TradeZones.Sorted(ascending, z => z.MemberFreighters(Player).Count); break;
                 case 6:  zones = Player.TradeZones.Sorted(ascending, z => (int)z.Priority); break;
@@ -267,7 +267,7 @@ namespace Ship_Game
                 names.Add(z.Name);
                 counts.Add(z.NumColonies.ToString());
                 served.Add(ColonyNames(z));
-                required.Add(z.MeasuredNeed.ToString());
+                required.Add(z.RawNeed.ToString());
                 active.Add(z.ActiveFreighters(Player).ToString());
                 // measured with the SAME formatter the row draws with, never a bare count
                 owned.Add(TradeZonesScreenListItem.TargetAndOwned(z, Player));
@@ -349,6 +349,7 @@ namespace Ship_Game
                 h = h * 31 + zone.NumColonies;
                 h = h * 31 + zone.Quota;
                 h = h * 31 + zone.MeasuredNeed;
+                h = h * 31 + zone.RawNeed;   // the drawn figure: without it the cell goes stale
                 h = h * 31 + zone.ActiveFreighters(Player);
             }
             return h;

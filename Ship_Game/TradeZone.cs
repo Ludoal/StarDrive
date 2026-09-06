@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using SDUtils;
 using Ship_Game.Data.Serialization;
 using Ship_Game.Ships;
@@ -50,6 +50,20 @@ namespace Ship_Game
         // one need: two screens that compute cannot agree, two screens that read cannot differ.
         // Never serialized either: a fact of the turn.
         public int NeedFood, NeedProd, NeedColonists;
+        // ★ THE SAME BOOK, UNCAPPED. MeasuredNeed above is the dispatch QUOTA: it is bounded by
+        // what the ground the dispatch searches can actually send, because a run needs a berth at
+        // both ends. This one is what the importers burn, whatever anyone can do about it.
+        // ⚠ they were one number until the bench of 6 Sep, and a zone whose supply had run dry
+        // read "Required 0" - "I need nothing" written exactly like "nobody can serve me", which
+        // are the two most different states a zone can be in. Any rule asking "is this zone
+        // served" must read THIS one; the capped figure would call a starving zone satisfied.
+        // Not serialized either: a fact of the turn.
+        public int RawNeed;
+
+        public int RawNeedOf(Goods goods)
+            => goods == Goods.Food       ? NeedFood
+             : goods == Goods.Production ? NeedProd
+             : NeedColonists;
 
         [StarDataConstructor] TradeZone() { }
 

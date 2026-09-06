@@ -201,7 +201,7 @@ namespace Ship_Game
                     break;
 
                 if (NonCybernetic)
-                    DispatchOrBuildFreighters(Goods.Food, commonColonies, commonColonies, false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Food, commonColonies, CommonExportGround(Goods.Food), false, ref tradeState);
 
                 if (!servedZones)
                 {
@@ -242,13 +242,13 @@ namespace Ship_Game
 
                 if (productionFirst)
                 {
-                    DispatchOrBuildFreighters(Goods.Production, commonColonies, commonColonies, false, ref tradeState);
-                    DispatchOrBuildFreighters(Goods.Colonists, commonColonies, commonColonies, false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Production, commonColonies, CommonExportGround(Goods.Production), false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Colonists, commonColonies, CommonExportGround(Goods.Colonists), false, ref tradeState);
                 }
                 else
                 {
-                    DispatchOrBuildFreighters(Goods.Colonists, commonColonies, commonColonies, false, ref tradeState);
-                    DispatchOrBuildFreighters(Goods.Production, commonColonies, commonColonies, false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Colonists, commonColonies, CommonExportGround(Goods.Colonists), false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Production, commonColonies, CommonExportGround(Goods.Production), false, ref tradeState);
                 }
 
                 tradeState.UpdatePlanetsTradeGoods();
@@ -286,9 +286,15 @@ namespace Ship_Game
 
             MeasureZoneNeeds(); // one book of need, read in priority order, before anyone asks
 
-            // a SOFT zone borrows from the common pool and is served from the common ground:
-            // the enclaves are no more open to it than they are to the empire's own pass.
-            Array<Planet> softExporters = ColoniesOutsideExclusiveZones();
+            // ★ a SOFT zone borrows from the common pool and loads on the common ground - which
+            // since bench 589 includes the enclaves whose OWN imports of that good are covered.
+            // An exclusive zone owns its hulls, not its harvests (maintainer): a surplus rotting
+            // in an enclave's store served nobody, and on a small map it left the rest of the
+            // realm with no source at all. The DELIVERY end is untouched: nothing here lets a
+            // hull unload inside an enclave.
+            Array<Planet> softFoodGround = CommonExportGround(Goods.Food);
+            Array<Planet> softProdGround = CommonExportGround(Goods.Production);
+            Array<Planet> softColGround  = CommonExportGround(Goods.Colonists);
 
             // a zone whose pass does not run this turn holds nothing back: last turn's hulls
             // went elsewhere long ago, and a stale hold would starve the common pool for nobody
@@ -343,10 +349,10 @@ namespace Ship_Game
                 TradeState zoneState = new(this, false);
                 zoneState.SetIdleFreighters(lent.ToArray());
                 if (NonCybernetic)
-                    DispatchOrBuildFreighters(Goods.Food, colonies, softExporters, false, ref zoneState);
+                    DispatchOrBuildFreighters(Goods.Food, colonies, softFoodGround, false, ref zoneState);
 
-                DispatchOrBuildFreighters(Goods.Production, colonies, softExporters, false, ref zoneState);
-                DispatchOrBuildFreighters(Goods.Colonists, colonies, softExporters, false, ref zoneState);
+                DispatchOrBuildFreighters(Goods.Production, colonies, softProdGround, false, ref zoneState);
+                DispatchOrBuildFreighters(Goods.Colonists, colonies, softColGround, false, ref zoneState);
 
                 // What the zone did not send goes back to the common pool - a quota is a share of
                 // a turn, not a possession - EXCEPT the berths its stations are waiting on.
@@ -395,9 +401,9 @@ namespace Ship_Game
             TradeState abroad = new(this, true);
             abroad.SetIdleFreighters(domestic.IdleFreighters.ToArr());
             if (NonCybernetic)
-                DispatchOrBuildFreighters(Goods.Food, interTradePlanets, ColoniesOutsideExclusiveZones(), true, ref abroad);
+                DispatchOrBuildFreighters(Goods.Food, interTradePlanets, CommonExportGround(Goods.Food), true, ref abroad);
 
-            DispatchOrBuildFreighters(Goods.Production, interTradePlanets, ColoniesOutsideExclusiveZones(), true, ref abroad);
+            DispatchOrBuildFreighters(Goods.Production, interTradePlanets, CommonExportGround(Goods.Production), true, ref abroad);
             domestic.SetIdleFreighters(abroad.IdleFreighters);
         }
 
@@ -595,7 +601,7 @@ namespace Ship_Game
             // open into an exclusive zone (maintainer feedback, bench 588).
             TradeZone stationZone = TradeZoneOfStation(targetStation);
             Array<Planet> allowed = stationZone is { Exclusive: true } ? stationZone.ColonyPlanets(this)
-                                                                       : ColoniesOutsideExclusiveZones();
+                                                                       : CommonExportGround(goods);
             Planet[] exportingPlanets = allowed.Filter(p => p.FreeGoodsExportSlots(goods) > 0);
             if (exportingPlanets.Length == 0)
                 return false;

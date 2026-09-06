@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using SDGraphics.Input; // InputState
@@ -65,7 +65,13 @@ namespace Ship_Game
             // behaves. What does not fit is elided, and the ellipsis carries the whole list.
             LayOutColonyNames(cols[2].Rect, color);
 
-            Cell(cols[3], Zone.MeasuredNeed.ToString(), color).Tooltip = GameText.TzRequiredTip;
+            // ★ the RAW need, never the dispatch quota. A zone whose ground has run dry has a
+            // quota of nought, and "I want nothing" must not be written like "nobody can serve
+            // me". Red is exactly the gap between the two, and it is the same red the Owned
+            // column uses for an enclave nobody serves (maintainer feedback, bench 589).
+            bool unservedNeed = Zone.RawNeed > Zone.MeasuredNeed;
+            Cell(cols[3], Zone.RawNeed.ToString(), unservedNeed ? Color.Red : color)
+                .Tooltip = GameText.TzRequiredTip;
             Cell(cols[4], Zone.ActiveFreighters(Player).ToString(), color).Tooltip = GameText.TzActiveTip;
             // an exclusive zone holding no hull of its own is served by NOBODY - the common pass
             // has let its worlds go, and it has nothing to send in their place. The figure reads

@@ -29019,8 +29019,8 @@ TzRequired:
  FRA: "Requis"
 TzRequiredTip:
  Id: 7215
- ENG: "How many freighters the zone could put to work right now, counted in trade slots and bounded by both ends: what its colonies ask to import, limited by what they can export to each other. Colonists are not counted."
- FRA: "Nombre de cargos que la zone pourrait employer maintenant, compté en créneaux de commerce et borné aux deux bouts : ce que ses colonies demandent à importer, limité par ce qu'elles peuvent s'exporter entre elles. Les colons ne sont pas comptés."
+ ENG: "What this zone's colonies want, counted in freighter runs: everything they ask to import, food, production and colonists alike. Shown in RED when no exporter can supply part of it, which is a different state from wanting nothing - the figure stays what is wanted either way."
+ FRA: "Ce que les colonies de cette zone demandent, compté en courses de cargo : tous leurs imports, nourriture, production et colons compris. En ROUGE quand aucun exportateur ne peut en servir une partie, ce qui n'est pas la même chose que ne rien demander : le nombre reste celui du besoin."
 TzInbound:
  Id: 30147
  ENG: "Inbound"
