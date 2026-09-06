@@ -124,6 +124,7 @@ namespace Ship_Game.Commands.Goals  // Created by Fat Bastard
                 Rush            = Rush || OldShip.Loyalty.RushAllConstruction,
                 TradeRoutes     = OldShip.TradeRoutes,
                 AreaOfOperation = OldShip.AreaOfOperation,
+                TradeZoneId     = OldShip.TradeZoneId,
                 QType           = OldShip.IsFreighter ? QueueItemType.Freighter : QueueItemType.CombatShip,
                 TransportingColonists  = OldShip.TransportingColonists,
                 TransportingFood       = OldShip.TransportingFood,

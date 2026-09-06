@@ -249,6 +249,13 @@ namespace Ship_Game.Universe.SolarBodies
                 shipAt.TransportingFood       &= q.TransportingFood;
                 shipAt.TransportingProduction &= q.TransportingProduction;
                 shipAt.AllowInterEmpireTrade  &= q.AllowInterEmpireTrade;
+                // the zone that ordered the refit gets its hull back marked. The id is looked
+                // up rather than trusted - a zone can be dissolved while the yard works, and a
+                // mark pointing at nothing would hide the hull from the empire and from every
+                // zone at once. Assigned through the one writer, never by touching the field.
+                TradeZone zone = shipAt.Loyalty?.GetTradeZoneById(q.TradeZoneId);
+                if (zone != null)
+                    shipAt.Loyalty.AssignFreighterToZone(shipAt, zone);
             }
 
             if (shipAt.ShipData.IsColonyShip)

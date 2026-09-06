@@ -40,6 +40,10 @@ namespace Ship_Game
         [StarData] public string TroopType;
         [StarData] public Array<int> TradeRoutes = new();
         [StarData] public Array<Rectangle> AreaOfOperation = new();
+        // Ludoal fork (maintainer bench 583): a refit keeps the hull inside the trade zone that
+        // paid for it. Without this the yard handed back an unmarked freighter and the zone
+        // quietly lost a hull every time one of its own was upgraded.
+        [StarData] public int TradeZoneId;
         [StarData] public PlanetGridSquare pgs;
         [StarData] public string DisplayName;
         [StarData] public float Cost;
