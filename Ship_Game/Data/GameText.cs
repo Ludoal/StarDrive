@@ -7268,6 +7268,7 @@ namespace Ship_Game
         TzOwnedTip = 7238,
         TzOwnedTargetTip = 7264,
         TzTargetFreighters = 7265,
+        TzInZones = 7266,
         /// <summary>Your manual freighter filters have become exclusive trade zones.</summary>
         TzConvertedNotice = 7239,
         /// <summary>Trade Zone of this Freighter</summary>

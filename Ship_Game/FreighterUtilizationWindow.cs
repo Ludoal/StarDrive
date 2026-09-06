@@ -24,6 +24,7 @@ namespace Ship_Game
         int TotalFreighters;
         int NumUtilizedFreighters;
         UILabel FreighterConstructingLabel;
+        UILabel FreightersInZonesLabel;
         UILabel NumIdleFreightersLabel;
         // Ludoal fork (maintainer bench 336): a "Total freighters:" row under the goods rows.
         // The freighters value is the OPERATIONAL count (NumUtilizedFreighters), not a sum of the
@@ -111,9 +112,15 @@ namespace Ship_Game
             ExportingRightX  = ColumnRightUnder(win.X + 570, GameText.ExportingPlanets);
             Add(new UILabel(new Vector2(win.X + 15, titleOffset + 50), GameText.IdleFrieghters, Fonts.Arial12Bold, Color.Wheat));
             Add(new UILabel(new Vector2(win.X + 15, titleOffset + 70), GameText.FreightersUnderConstruction, Fonts.Arial12Bold, Color.Wheat));
+            // ⚠ the idle count above is taken from the pool, and the pool EXCLUDES hulls held by a
+            // zone - so assigning freighters made the fleet appear to shrink under the player's
+            // hand, during the very operation this window is meant to guide. The part in zones is
+            // stated rather than subtracted, on the same rhythm as the two rows above it.
+            Add(new UILabel(new Vector2(win.X + 15, titleOffset + 90), GameText.TzInZones, Fonts.Arial12Bold, Color.Wheat));
 
             NumIdleFreightersLabel     = new UILabel(new Vector2(win.X + 150, titleOffset + 50), "", Fonts.Arial12Bold, Color.White);
             FreighterConstructingLabel = new UILabel(new Vector2(win.X + 150, titleOffset + 70), "", Fonts.Arial12Bold, Color.White);
+            FreightersInZonesLabel     = new UILabel(new Vector2(win.X + 150, titleOffset + 90), "", Fonts.Arial12Bold, Color.White);
 
             UIList utilizationData = AddList(new(win.X + 5f, win.Y + 40));
             utilizationData.Padding = new(2f, 25f);
@@ -196,6 +203,7 @@ namespace Ship_Game
             BuildFreighter.Draw(batch, elapsed);
             FreighterConstructingLabel.Draw(batch, elapsed);
             NumIdleFreightersLabel.Draw(batch, elapsed);
+            FreightersInZonesLabel.Draw(batch, elapsed);
             DrawLine(new Vector2(Pos.X + 180, Pos.Y + 35), new Vector2(Pos.X + 180, Pos.Y + Height - 10), Color.Wheat, 2);
         }
 
@@ -271,6 +279,7 @@ namespace Ship_Game
                 UtilizationBar.Progress = TotalFreighters == 0 ? 0 : (float)NumUtilizedFreighters/TotalFreighters*100;
                 FreighterConstructingLabel.Text = Player.FreightersBeingBuilt.String();
                 NumIdleFreightersLabel.Text = (TotalFreighters - NumUtilizedFreighters).String();
+                FreightersInZonesLabel.Text = Player.OwnedShips.Count(s => s?.IsFreighter == true && s.InTradeZone).String();
 
                 // the totals row (maintainer bench 339): all OPERATIONAL freighters, split by their
                 // CURRENT phase so importing + exporting == the total. A freighter delivering counts

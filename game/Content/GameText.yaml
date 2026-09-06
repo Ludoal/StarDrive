@@ -28973,6 +28973,10 @@ TzTargetFreighters:
  Id: 7265
  ENG: "Target freighters"
  FRA: "Cargos visés"
+TzInZones:
+ Id: 7266
+ ENG: "In zones:"
+ FRA: "En zones :"
 TzPanToColonyTip:
  Id: 7213
  ENG: "Centre the map on this colony."
