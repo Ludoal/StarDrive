@@ -671,7 +671,10 @@ namespace Ship_Game
 
             int need = zone.Quota > 0 ? zone.Quota : zone.MeasuredNeed;
             int have = zone.MemberFreighters(this).Count;
-            if (have >= need)
+            if (have > need)
+                return ReleaseSurplus(zone, have - need);
+
+            if (have == need)
                 return false;
 
             Ship[] free = GetIdleFreightersOutsideZones(false);
@@ -688,6 +691,33 @@ namespace Ship_Game
             }
 
             return took;
+        }
+
+        // ★ The requisition knew how to take and not how to give back: lowering a zone's target,
+        // or a measured need that falls, left its hulls with it for good. Idle hulls go first,
+        // mirroring the requisition, which only ever takes idle ones. If that is not enough, a
+        // hull in flight is released too: it finishes its run either way, since nothing in a
+        // freighter's piloting reads its zone - only the accounting label moves.
+        bool ReleaseSurplus(TradeZone zone, int surplus)
+        {
+            Ship[] members = zone.MemberFreighters(this).ToArray();
+            bool gave = false;
+
+            for (int pass = 0; pass < 2 && surplus > 0; ++pass)
+            {
+                for (int i = 0; i < members.Length && surplus > 0; ++i)
+                {
+                    Ship s = members[i];
+                    if (s.TradeZoneId == 0 || (pass == 0 && !s.IsIdleFreighter))
+                        continue;
+
+                    AssignFreighterToZone(s, null);
+                    --surplus;
+                    gave = true;
+                }
+            }
+
+            return gave;
         }
 
         // The zone a station belongs to, by the BODY it orbits - the same id a zone holds. Only
