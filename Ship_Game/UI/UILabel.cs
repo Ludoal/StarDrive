@@ -141,13 +141,23 @@ namespace Ship_Game
             }
         }
 
+        // Ludoal fork (maintainer feedback): a label given a lane of its own must KEEP it. The
+        // sizing below only ever enlarges, so a value that grew a digit widened the label for good
+        // and, right-aligned, drew further right than its column - the row stayed crooked until
+        // the screen was rebuilt. Off by default: everywhere else a label is expected to fit its
+        // text.
+        public bool FixedSize;
+
         void UpdateSizeFromText(string text)
         {
             // @todo: Size is not updated when language changes
             ActualLineSize = LabelFont.MeasureString(text);
-            // Only update size if new text is much bigger
-            if (Size.X < ActualLineSize.X) Size.X = ActualLineSize.X;
-            if (Size.Y < ActualLineSize.Y) Size.Y = ActualLineSize.Y;
+            if (!FixedSize)
+            {
+                // Only update size if new text is much bigger
+                if (Size.X < ActualLineSize.X) Size.X = ActualLineSize.X;
+                if (Size.Y < ActualLineSize.Y) Size.Y = ActualLineSize.Y;
+            }
             RequiresLayout = true;
         }
 

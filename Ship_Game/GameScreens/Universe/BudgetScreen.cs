@@ -169,6 +169,10 @@ namespace Ship_Game.GameScreens
                     Rectangle r = cols[col].Rect;
                     l.Pos = new Vector2(r.X, y + 4);
                     l.Size = new Vector2(r.Width - UITable.PadX, Fonts.Arial12.LineSpacing);
+                    // the cell owns its lane: without this a value that gains a digit widens the
+                    // label and the right-aligned number leaves its column until the page is
+                    // reopened (maintainer feedback, bench 578)
+                    l.FixedSize = true;
                     l.TextAlign = TextAlign.Right;
                     Add(l);
                     return l;
