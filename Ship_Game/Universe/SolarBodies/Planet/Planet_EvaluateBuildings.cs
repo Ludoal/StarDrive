@@ -870,7 +870,22 @@ namespace Ship_Game
                     potentialTiles.Add(tile);
             }
 
-            return Random.Item(potentialTiles.Count > 0 ? potentialTiles : tileList.ToArrayList());
+            // ⚠ NOT A DRAW, AND NOT ANY TILE. Two rules already share this grid and one of them
+            // yields: when terraformers are unlocked, a biosphere looks for a tile that is neither
+            // habitable NOR terraformable - it leaves the terraformable ones alone, precisely
+            // because a terraformer is what they are for. But the terraformer took ANY unhabitable
+            // tile, at random, and so kept taking the one square the biosphere had been saving.
+            // Drawn at random it moved the target of every biosphere that followed, and with it the
+            // order in which the colony built everything else: four save games reloaded from the
+            // same turn gave four different orders (upstream player report, Sep '26).
+            //
+            // So the two are separated by KIND rather than by luck: a terraformable tile first,
+            // which is the terraformer's own business, and the LAST of the others when there is
+            // none - the far end from where a biosphere starts looking. Deterministic either way,
+            // so a reload gives back the same plan.
+            Array<PlanetGridSquare> eligible = potentialTiles.Count > 0 ? potentialTiles : tileList.ToArrayList();
+            PlanetGridSquare terraformable = eligible.Find(t => t.Terraformable);
+            return terraformable ?? eligible[eligible.Count - 1];
 
             bool NoVolcanosAround(PlanetGridSquare tile)
             {
