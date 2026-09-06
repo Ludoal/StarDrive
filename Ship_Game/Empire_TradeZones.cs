@@ -92,7 +92,16 @@ namespace Ship_Game
             var claimed = new Map<int, int>();
             foreach (TradeZone zone in TradeZones)
             {
+                // ★ A RUN NEEDS A BERTH AT BOTH ENDS. Import berths alone are a ceiling, not a
+                // need: a zone can offer 29 places to unload production and hold one planet able
+                // to send any, in which case one run is possible and twenty-nine are not. The need
+                // is therefore the SMALLER of the two sides, per good, and a zone trades among its
+                // own colonies - that is what putting them in a zone means - so both sides are
+                // counted inside it. ⚠ the ledger still guards the IMPORT side only: it is what a
+                // better-ranked zone has already spoken for.
                 int need = 0;
+                int foodIn = 0, prodIn = 0, colIn = 0;
+                int foodOut = 0, prodOut = 0, colOut = 0;
                 foreach (int id in zone.Colonies)
                 {
                     Planet p = Universe.GetPlanet(id);
@@ -102,9 +111,21 @@ namespace Ship_Game
                     int berths = p.FoodImportSlots + p.ProdImportSlots + p.ColonistsImportSlots;
                     claimed.TryGetValue(id, out int taken);
                     int left = (berths - taken).LowerBound(0);
-                    need += left;
                     claimed[id] = taken + left;
+                    if (berths > 0)
+                    {
+                        // the ledger's cut is applied to the good it came from, in proportion
+                        foodIn += p.FoodImportSlots * left / berths;
+                        prodIn += p.ProdImportSlots * left / berths;
+                        colIn  += p.ColonistsImportSlots * left / berths;
+                    }
+
+                    foodOut += p.FoodExportSlots;
+                    prodOut += p.ProdExportSlots;
+                    colOut  += p.ColonistsExportSlots;
                 }
+
+                need += foodIn.UpperBound(foodOut) + prodIn.UpperBound(prodOut) + colIn.UpperBound(colOut);
 
                 // a station's hunger is its own - two zones naming the same body would ask for the
                 // same run, so it goes through the ledger like a colony's berths

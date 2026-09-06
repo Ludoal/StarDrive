@@ -299,6 +299,7 @@ namespace Ship_Game
                         GoodsUtilizationMap[Goods.Food].AddBerths(planet.FoodImportSlots, planet.IncomingFoodFreighters);
                         if (planet.FoodImportSlots > 0) GoodsUtilizationMap[Goods.Food].AddServedImporting(planet.IncomingFoodFreighters);
                         if (planet.FoodExportSlots > 0) GoodsUtilizationMap[Goods.Food].AddServedExporting(planet.OutgoingFoodFreighters);
+                        GoodsUtilizationMap[Goods.Food].AddExportBerths(planet.FoodExportSlots);
                     }
 
                     if (planet.ProdImportSlots > 0)      GoodsUtilizationMap[Goods.Production].IncreaseNumImportingPlanets();
@@ -311,6 +312,8 @@ namespace Ship_Game
                     if (planet.ProdExportSlots > 0)      GoodsUtilizationMap[Goods.Production].AddServedExporting(planet.OutgoingProdFreighters);
                     if (planet.ColonistsImportSlots > 0) GoodsUtilizationMap[Goods.Colonists].AddServedImporting(planet.IncomingColonistsFreighters);
                     if (planet.ColonistsExportSlots > 0) GoodsUtilizationMap[Goods.Colonists].AddServedExporting(planet.OutGoingColonistsFreighters);
+                    GoodsUtilizationMap[Goods.Production].AddExportBerths(planet.ProdExportSlots);
+                    GoodsUtilizationMap[Goods.Colonists].AddExportBerths(planet.ColonistsExportSlots);
                 }
 
                 var allUtilizedFreightesr = Player.OwnedShips.Filter(s => s.IsFreighter && s.AI.State == AI.AIState.SystemTrader);
@@ -337,15 +340,15 @@ namespace Ship_Game
                 // utilised hulls over the fleet - a second notion in the same column, which is how
                 // three rows adding to 14/66 sat under a total reading 13/14. The fleet's own
                 // utilisation is already stated on the left, as a percentage.
-                int servedBerths = 0, importBerths = 0, servedImp = 0, imp = 0, servedExp = 0, exp = 0;
+                int servedBerths = 0, possibleRuns = 0, servedImp = 0, imp = 0, servedExp = 0, exp = 0;
                 foreach (GoodsUtilization gu in GoodsUtilizationMap.Values)
                 {
-                    servedBerths += gu.ServedBerths; importBerths += gu.ImportBerths;
+                    servedBerths += gu.ServedBerths; possibleRuns += gu.Runs;
                     servedImp += gu.ServedImporting; imp += gu.NumImportingPlanets;
                     servedExp += gu.ServedExporting; exp += gu.NumExportingPlanets;
                 }
                 TotalFreightersValue.Text = servedBerths.String();
-                TotalFreightersDen.Text   = $" / {importBerths}";
+                TotalFreightersDen.Text   = $" / {possibleRuns}";
                 TotalImportingValue.Text  = servedImp.String();
                 TotalImportingDen.Text    = $" / {imp}";
                 TotalExportingValue.Text  = servedExp.String();
@@ -426,7 +429,12 @@ namespace Ship_Game
             // to them. Planets would not do: a colony with three Food berths is one planet and
             // three berths, so the two screens would answer the same question differently.
             public int ImportBerths { get; private set; }
+            public int ExportBerths { get; private set; }
             public int ServedBerths { get; private set; }
+            // ★ a run needs a berth at BOTH ends, so what the fleet can actually do is the smaller
+            // of the two. Import berths alone are a ceiling: a galaxy can offer 29 places to unload
+            // production while a single planet is able to send any.
+            public int Runs => ImportBerths.UpperBound(ExportBerths);
             public int ServedImporting { get; private set; }
             public int ServedExporting { get; private set; }
             public float TotalEmpireUtilizedCargo { get; private set; }
@@ -505,10 +513,10 @@ namespace Ship_Game
                 // the colour keeps its rule, now read off the pair the cell actually shows. Above
                 // the berths is not a fault: more is on its way than there is room for, which is a
                 // thing worth seeing rather than colouring as an error.
-                if (ImportBerths > 0 && ServedBerths < ImportBerths)
+                if (Runs > 0 && ServedBerths < Runs)
                     NumFreightersLabel.Color = ServedBerths == 0 ? Color.Red : Color.Yellow;
                 else
-                    NumFreightersLabel.Color = ImportBerths > 0 ? Color.White : Color.Wheat;
+                    NumFreightersLabel.Color = Runs > 0 ? Color.White : Color.Wheat;
             }
 
             public override void Update(float fixedDeltaTime)
@@ -516,7 +524,7 @@ namespace Ship_Game
                 TotalEmpireUtilizedCargo = Window.TotalUtilizedCargo;
                 UtilizationBar.Progress  = TotalEmpireUtilizedCargo == 0 ? 0 : GoodsTransported/TotalEmpireUtilizedCargo *100;
                 NumFreightersLabel.Text  = ServedBerths.String();
-                DenFreightersLabel.Text  = $" / {ImportBerths}";
+                DenFreightersLabel.Text  = $" / {Runs}";
                 DenFreightersLabel.Color = NumFreightersLabel.Color;
                 DenImportingLabel.Color  = NumImportingLabel.Color;
                 DenExportingLabel.Color  = NumExportingLabel.Color;
@@ -544,6 +552,8 @@ namespace Ship_Game
                 ServedBerths += incoming;
             }
 
+            public void AddExportBerths(int berths) => ExportBerths += berths;
+
             // a planet counts as served the moment something is on its way to it, which is the
             // question the column answers: how many of the ones asking are being answered
             public void AddServedImporting(int incoming) { if (incoming > 0) ++ServedImporting; }
@@ -570,6 +580,7 @@ namespace Ship_Game
                 NumExportingPlanets = 0;
                 NumFreighters       = 0;
                 ImportBerths        = 0;
+                ExportBerths        = 0;
                 ServedBerths        = 0;
                 ServedImporting     = 0;
                 ServedExporting     = 0;
