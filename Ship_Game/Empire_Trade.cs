@@ -278,8 +278,11 @@ namespace Ship_Game
             // the domestic state is the only one allowed to BUILD, so it fetches first - a
             // cybernetic empire runs no food pass to have triggered that fetch.
             domestic.FetchIdleFreightersOrBuild();
-            if (domestic.NoFreeFreighters)
-                return;
+            // ★ NO EARLY EXIT ON AN EMPTY POOL. An EXCLUSIVE zone flies its OWN hulls and asks
+            // the common pool for nothing, so an empire down to its last freighter must not
+            // stop the pass that serves it - that turned an enclave into the first thing to
+            // starve. The need is measured for the same reason: the screens read it, and a
+            // figure that stops being written under pressure is worse than none.
 
             MeasureZoneNeeds(); // one book of need, read in priority order, before anyone asks
 
@@ -328,8 +331,10 @@ namespace Ship_Game
                     else           kept.Add(pool[i]);
                 }
 
+                // nothing left to BORROW - so this soft zone is done. The zones below are not:
+                // an exclusive one among them owes the common pool nothing.
                 if (lent.Count == 0)
-                    return; // nothing left to share out; the zones below get nothing either
+                    continue;
 
                 TradeState zoneState = new(this, false);
                 zoneState.SetIdleFreighters(lent.ToArray());
@@ -363,8 +368,9 @@ namespace Ship_Game
                 zone.LentThisTurn = withheld.ToArray();
 
                 domestic.SetIdleFreighters(kept.ToArray());
+                // same law as above: an empty pool ends the BORROWING, not the list
                 if (domestic.NoFreeFreighters)
-                    return;
+                    continue;
             }
         }
 
@@ -545,7 +551,10 @@ namespace Ship_Game
                         // a hull withheld for a zone's station is idle ON PURPOSE - it waits for a
                         // goal that runs at the top of the next turn. The enclosure law: a set
                         // aside names the consumers that step over it, and this is one of them.
-                        if (IsHeldForZone(freighter))
+                        // and a hull a zone OWNS is not the empire's to scrap either: the zone
+                        // took it out of the common pool and answers for its idleness. Same
+                        // enclosure law, one line further.
+                        if (freighter.InTradeZone || IsHeldForZone(freighter))
                         {
                             ResetTradeTimer(freighter);
                             continue;
@@ -690,7 +699,7 @@ namespace Ship_Game
                 if (free.Length - (j + 1) < reserve)
                     break; // the empire keeps its reserve: a zone may not requisition it away
 
-                free[j].TradeZoneId = zone.Id;
+                AssignFreighterToZone(free[j], zone); // the one writer, never the field in passing
                 ++have;
                 took = true;
             }
