@@ -236,7 +236,13 @@ namespace Ship_Game
 
             if (DrawValueText)
             {
-                var textPos = new Vector2(SliderRect.Right + 8, SliderRect.Y + SliderRect.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2);
+                // Ludoal fork (maintainer feedback): the value is RIGHT-aligned on the far edge of
+                // the lane the track stood back for, so a column of sliders lines up on the last
+                // digit and a figure that gains one grows leftwards into the room already kept for
+                // it. Drawn from a fixed left edge, "69%" and "100%" closed in different places.
+                float valueRight = SliderRect.Right + ValueLane;
+                var textPos = new Vector2(valueRight - Fonts.Arial12Bold.TextWidth(StyledValue),
+                                          SliderRect.Y + SliderRect.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2);
                 batch.DrawString(Fonts.Arial12Bold, StyledValue, textPos, UITheme.TextPrimary);
             }
 
