@@ -61,7 +61,13 @@ namespace Ship_Game
 
             Cell(cols[3], Zone.MeasuredNeed.ToString(), color).Tooltip = GameText.TzRequiredTip;
             Cell(cols[4], Zone.ActiveFreighters(Player).ToString(), color).Tooltip = GameText.TzActiveTip;
-            Cell(cols[5], TargetAndOwned(Zone, Player), color).Tooltip = GameText.TzOwnedTargetTip;
+            // an exclusive zone holding no hull of its own is served by NOBODY - the common pass
+            // has let its worlds go, and it has nothing to send in their place. The figure reads
+            // red rather than as a quiet nought: the state drives the zone's conduct, so the
+            // player has to be able to see it (maintainer feedback).
+            bool unserved = Zone.Exclusive && Zone.MemberFreighters(Player).Count == 0;
+            Cell(cols[5], TargetAndOwned(Zone, Player), unserved ? Color.Red : color)
+                .Tooltip = GameText.TzOwnedTargetTip;
             // greyed on a soft zone: the priority belongs to the exclusive regime, and a soft
             // zone's hulls follow the empire's own order - the word is shown rather than hidden so
             // the column keeps its shape, but it is not a setting there (maintainer feedback)

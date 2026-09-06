@@ -195,6 +195,20 @@ namespace Ship_Game
         public TradeZone GetExclusiveZone(Planet planet)
             => TradeZones.Find(z => z.Exclusive && z.Serves(planet));
 
+        // ★ THE COLONIES THE COMMON PASS MAY SERVE: everything outside an exclusive zone. An
+        // exclusive zone is served by the hulls it requisitioned and by nothing else, so its
+        // worlds leave the empire's own dispatch - a world served by both keeps its berths
+        // closed against the very freighters the zone took for it (maintainer feedback).
+        public Array<Planet> ColoniesOutsideExclusiveZones()
+        {
+            var colonies = new Array<Planet>();
+            for (int i = 0; i < OwnedPlanets.Count; ++i)
+                if (GetExclusiveZone(OwnedPlanets[i]) == null)
+                    colonies.Add(OwnedPlanets[i]);
+
+            return colonies;
+        }
+
         // Ludoal fork (maintainer feedback, Roland Johansen): the bodies our STATIONS stand on.
         // A mining rig or a research post orbits a body that is nobody's colony, so it never
         // shows up in GetPlanets() - and a zone may name it all the same, because a zone names

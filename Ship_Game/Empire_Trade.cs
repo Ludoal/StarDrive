@@ -187,6 +187,11 @@ namespace Ship_Game
             TradeState tradeState = new(this, false);
             // Trade First lifts the foreign runs above production and colonists - once in the
             // turn, and never above food, which stays the first call below.
+            // ★ EXCLUSIVE COLONIES ARE NOT THE COMMON PASS'S TO SERVE. A zone that requisitions
+            // hulls of its own while the pool keeps delivering to its worlds is exclusive in
+            // name: the pool's runs close the berths, and the zone's own hulls find nothing to
+            // carry. Read once for the turn - the regimes do not change inside it.
+            Array<Planet> commonColonies = ColoniesOutsideExclusiveZones();
             bool tradeFirst = isPlayer && CargoPriority == CargoPriority.TradeFirst;
             bool servedAbroad = false;
             bool servedZones = false;
@@ -196,7 +201,7 @@ namespace Ship_Game
                     break;
 
                 if (NonCybernetic)
-                    DispatchOrBuildFreighters(Goods.Food, OwnedPlanets, false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Food, commonColonies, false, ref tradeState);
 
                 if (!servedZones)
                 {
@@ -237,13 +242,13 @@ namespace Ship_Game
 
                 if (productionFirst)
                 {
-                    DispatchOrBuildFreighters(Goods.Production, OwnedPlanets, false, ref tradeState);
-                    DispatchOrBuildFreighters(Goods.Colonists, OwnedPlanets, false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Production, commonColonies, false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Colonists, commonColonies, false, ref tradeState);
                 }
                 else
                 {
-                    DispatchOrBuildFreighters(Goods.Colonists, OwnedPlanets, false, ref tradeState);
-                    DispatchOrBuildFreighters(Goods.Production, OwnedPlanets, false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Colonists, commonColonies, false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Production, commonColonies, false, ref tradeState);
                 }
 
                 tradeState.UpdatePlanetsTradeGoods();
