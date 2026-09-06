@@ -126,12 +126,27 @@ namespace Ship_Game
              : goods == Goods.Production ? p.ProdExportSlots
              : p.ColonistsExportSlots;
 
-        // The need of a PERIMETER, in whole hulls: what its importers burn, bounded by what the
-        // given exporters can actually send. A run needs a berth at both ends. ⚠ The caller owns
-        // the choice of far end, and owes it one rule: the set passed here must be the set the
-        // DISPATCH searches, or the ceiling refuses runs the game will make anyway. Rounded UP:
-        // half a run still takes a hull.
-        public int PerimeterNeed(Array<Planet> importers, Array<Planet> exporters, Goods goods)
+        // What a set of worlds can send of one good.
+        public int ExportSupply(Array<Planet> exporters, Goods goods)
+        {
+            int supply = 0;
+            for (int i = 0; i < exporters.Count; ++i)
+                supply += ExportSlotsOf(exporters[i], goods);
+
+            return supply;
+        }
+
+        // The need of a PERIMETER, in whole hulls: what its importers burn, bounded by the supply
+        // STILL AVAILABLE to it. A run needs a berth at both ends. Rounded UP - half a run still
+        // takes a hull.
+        //
+        // ⚠ THE SUPPLY IS A STOCK, NOT A PROPERTY. The caller passes what is LEFT and takes the
+        // answer out of it before asking for the next perimeter: an exporter promised to one zone
+        // is not there for the next. Computed fresh each time, two zones read the same single food
+        // berth and the table promised it twice - ten hulls of colonists over the empire's whole
+        // capacity, on the bench of 6 Sep. The caller also owes the set one rule: it must be the
+        // set the DISPATCH searches, or the ceiling refuses runs the game will make anyway.
+        public int PerimeterNeed(Array<Planet> importers, int supplyLeft, Goods goods)
         {
             float need = 0;
             for (int i = 0; i < importers.Count; ++i)
@@ -141,11 +156,7 @@ namespace Ship_Game
             if (need > whole)
                 ++whole;
 
-            int supply = 0;
-            for (int i = 0; i < exporters.Count; ++i)
-                supply += ExportSlotsOf(exporters[i], goods);
-
-            return whole.UpperBound(supply);
+            return whole.UpperBound(supplyLeft);
         }
 
         // ★ THE ONE BOOK OF NEED. Zones are read IN LIST ORDER, which is the dispatch priority the
@@ -165,6 +176,12 @@ namespace Ship_Game
             // arranged, which is why the book is kept while walking it.
             var servedColonies = new HashSet<int>();
             var stationLedger = new Map<int, int>();
+            // the export side keeps a book too, and for the same reason as the import side: what one
+            // zone has been promised, the next cannot be. Walked in the list's own order, which is
+            // the priority the player arranged.
+            int foodLeft = ExportSupply(OwnedPlanets, Goods.Food);
+            int prodLeft = ExportSupply(OwnedPlanets, Goods.Production);
+            int colLeft  = ExportSupply(OwnedPlanets, Goods.Colonists);
             // ⚠ THE CEILING IS TAKEN ON THE SET THE DISPATCH ACTUALLY SEARCHES, and today that is
             // the whole realm for BOTH regimes: DispatchOrBuildFreighters picks its exporters from
             // OwnedPlanets whoever asked, an exclusive zone's own pass included. Narrowing the
@@ -185,9 +202,13 @@ namespace Ship_Game
                         importers.Add(p); // only the first zone to name a world may ask for it
                 }
 
-                zone.NeedFood      = PerimeterNeed(importers, OwnedPlanets, Goods.Food);
-                zone.NeedProd      = PerimeterNeed(importers, OwnedPlanets, Goods.Production);
-                zone.NeedColonists = PerimeterNeed(importers, OwnedPlanets, Goods.Colonists);
+                zone.NeedFood      = PerimeterNeed(importers, foodLeft, Goods.Food);
+                zone.NeedProd      = PerimeterNeed(importers, prodLeft, Goods.Production);
+                zone.NeedColonists = PerimeterNeed(importers, colLeft,  Goods.Colonists);
+                // taken out of the stock: what this zone has been promised is not there for the next
+                foodLeft -= zone.NeedFood;
+                prodLeft -= zone.NeedProd;
+                colLeft  -= zone.NeedColonists;
                 int need = zone.NeedFood + zone.NeedProd + zone.NeedColonists;
 
                 // a station's hunger is its own - two zones naming the same body would ask for the

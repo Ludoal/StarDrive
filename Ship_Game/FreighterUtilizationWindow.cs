@@ -311,11 +311,15 @@ namespace Ship_Game
                 }
                 else
                 {
-                    // no zone picked: the perimeter is the whole realm, both ends
+                    // no zone picked: the perimeter is the whole realm, both ends, and it is asked
+                    // for the WHOLE supply - there is no other claimant to leave anything to
                     if (Player.NonCybernetic)
-                        GoodsUtilizationMap[Goods.Food].SetNeed(Player.PerimeterNeed(perimeter, perimeter, Goods.Food));
-                    GoodsUtilizationMap[Goods.Production].SetNeed(Player.PerimeterNeed(perimeter, perimeter, Goods.Production));
-                    GoodsUtilizationMap[Goods.Colonists].SetNeed(Player.PerimeterNeed(perimeter, perimeter, Goods.Colonists));
+                        GoodsUtilizationMap[Goods.Food].SetNeed(Player.PerimeterNeed(perimeter,
+                            Player.ExportSupply(perimeter, Goods.Food), Goods.Food));
+                    GoodsUtilizationMap[Goods.Production].SetNeed(Player.PerimeterNeed(perimeter,
+                        Player.ExportSupply(perimeter, Goods.Production), Goods.Production));
+                    GoodsUtilizationMap[Goods.Colonists].SetNeed(Player.PerimeterNeed(perimeter,
+                        Player.ExportSupply(perimeter, Goods.Colonists), Goods.Colonists));
                 }
 
                 foreach (Planet planet in Player.GetPlanets())
