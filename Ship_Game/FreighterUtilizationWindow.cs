@@ -322,6 +322,11 @@ namespace Ship_Game
                         Player.ExportSupply(perimeter, Goods.Colonists), Goods.Colonists));
                 }
 
+                // ⚠ A WORLD WITH A CARGO IN THE AIR COUNTS, even if its store filled while that
+                // cargo was flying. Counted only while its slots stood open, a colony dropped out
+                // of Importing at the very moment it was being served, and the row read "1 / 0" -
+                // one hull, no importer (maintainer feedback). The runs column never had that
+                // guard, which is why the two disagreed rather than both being wrong.
                 foreach (Planet planet in Player.GetPlanets())
                 {
                     if (SelectedZone != null && !SelectedZone.Serves(planet))
@@ -329,23 +334,23 @@ namespace Ship_Game
 
                     if (Player.NonCybernetic)
                     {
-                        if (planet.FoodImportSlots > 0) GoodsUtilizationMap[Goods.Food].IncreaseNumImportingPlanets();
-                        if (planet.FoodExportSlots > 0) GoodsUtilizationMap[Goods.Food].IncreaseNumExportingPlanets();
+                        if (planet.FoodImportSlots > 0 || planet.IncomingFoodFreighters > 0) GoodsUtilizationMap[Goods.Food].IncreaseNumImportingPlanets();
+                        if (planet.FoodExportSlots > 0 || planet.OutgoingFoodFreighters > 0) GoodsUtilizationMap[Goods.Food].IncreaseNumExportingPlanets();
                         GoodsUtilizationMap[Goods.Food].AddServedBerths(planet.IncomingFoodFreighters);
-                        if (planet.FoodImportSlots > 0) GoodsUtilizationMap[Goods.Food].AddServedImporting(planet.IncomingFoodFreighters);
-                        if (planet.FoodExportSlots > 0) GoodsUtilizationMap[Goods.Food].AddServedExporting(planet.OutgoingFoodFreighters);
+                        if (planet.FoodImportSlots > 0 || planet.IncomingFoodFreighters > 0) GoodsUtilizationMap[Goods.Food].AddServedImporting(planet.IncomingFoodFreighters);
+                        if (planet.FoodExportSlots > 0 || planet.OutgoingFoodFreighters > 0) GoodsUtilizationMap[Goods.Food].AddServedExporting(planet.OutgoingFoodFreighters);
                     }
 
-                    if (planet.ProdImportSlots > 0)      GoodsUtilizationMap[Goods.Production].IncreaseNumImportingPlanets();
-                    if (planet.ProdExportSlots > 0)      GoodsUtilizationMap[Goods.Production].IncreaseNumExportingPlanets();
-                    if (planet.ColonistsImportSlots > 0) GoodsUtilizationMap[Goods.Colonists].IncreaseNumImportingPlanets();
-                    if (planet.ColonistsExportSlots > 0) GoodsUtilizationMap[Goods.Colonists].IncreaseNumExportingPlanets();
+                    if (planet.ProdImportSlots > 0 || planet.IncomingProdFreighters > 0)           GoodsUtilizationMap[Goods.Production].IncreaseNumImportingPlanets();
+                    if (planet.ProdExportSlots > 0 || planet.OutgoingProdFreighters > 0)           GoodsUtilizationMap[Goods.Production].IncreaseNumExportingPlanets();
+                    if (planet.ColonistsImportSlots > 0 || planet.IncomingColonistsFreighters > 0) GoodsUtilizationMap[Goods.Colonists].IncreaseNumImportingPlanets();
+                    if (planet.ColonistsExportSlots > 0 || planet.OutGoingColonistsFreighters > 0) GoodsUtilizationMap[Goods.Colonists].IncreaseNumExportingPlanets();
                     GoodsUtilizationMap[Goods.Production].AddServedBerths(planet.IncomingProdFreighters);
                     GoodsUtilizationMap[Goods.Colonists].AddServedBerths(planet.IncomingColonistsFreighters);
-                    if (planet.ProdImportSlots > 0)      GoodsUtilizationMap[Goods.Production].AddServedImporting(planet.IncomingProdFreighters);
-                    if (planet.ProdExportSlots > 0)      GoodsUtilizationMap[Goods.Production].AddServedExporting(planet.OutgoingProdFreighters);
-                    if (planet.ColonistsImportSlots > 0) GoodsUtilizationMap[Goods.Colonists].AddServedImporting(planet.IncomingColonistsFreighters);
-                    if (planet.ColonistsExportSlots > 0) GoodsUtilizationMap[Goods.Colonists].AddServedExporting(planet.OutGoingColonistsFreighters);
+                    if (planet.ProdImportSlots > 0 || planet.IncomingProdFreighters > 0)           GoodsUtilizationMap[Goods.Production].AddServedImporting(planet.IncomingProdFreighters);
+                    if (planet.ProdExportSlots > 0 || planet.OutgoingProdFreighters > 0)           GoodsUtilizationMap[Goods.Production].AddServedExporting(planet.OutgoingProdFreighters);
+                    if (planet.ColonistsImportSlots > 0 || planet.IncomingColonistsFreighters > 0) GoodsUtilizationMap[Goods.Colonists].AddServedImporting(planet.IncomingColonistsFreighters);
+                    if (planet.ColonistsExportSlots > 0 || planet.OutGoingColonistsFreighters > 0) GoodsUtilizationMap[Goods.Colonists].AddServedExporting(planet.OutGoingColonistsFreighters);
                 }
 
                 var allUtilizedFreightesr = Player.OwnedShips.Filter(s => s.IsFreighter && s.AI.State == AI.AIState.SystemTrader);
