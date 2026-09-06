@@ -251,6 +251,8 @@ namespace Ship_Game
                         if (planet.FoodImportSlots > 0) GoodsUtilizationMap[Goods.Food].IncreaseNumImportingPlanets();
                         if (planet.FoodExportSlots > 0) GoodsUtilizationMap[Goods.Food].IncreaseNumExportingPlanets();
                         GoodsUtilizationMap[Goods.Food].AddBerths(planet.FoodImportSlots, planet.IncomingFoodFreighters);
+                        if (planet.FoodImportSlots > 0) GoodsUtilizationMap[Goods.Food].AddServedImporting(planet.IncomingFoodFreighters);
+                        if (planet.FoodExportSlots > 0) GoodsUtilizationMap[Goods.Food].AddServedExporting(planet.OutgoingFoodFreighters);
                     }
 
                     if (planet.ProdImportSlots > 0)      GoodsUtilizationMap[Goods.Production].IncreaseNumImportingPlanets();
@@ -259,6 +261,10 @@ namespace Ship_Game
                     if (planet.ColonistsExportSlots > 0) GoodsUtilizationMap[Goods.Colonists].IncreaseNumExportingPlanets();
                     GoodsUtilizationMap[Goods.Production].AddBerths(planet.ProdImportSlots, planet.IncomingProdFreighters);
                     GoodsUtilizationMap[Goods.Colonists].AddBerths(planet.ColonistsImportSlots, planet.IncomingColonistsFreighters);
+                    if (planet.ProdImportSlots > 0)      GoodsUtilizationMap[Goods.Production].AddServedImporting(planet.IncomingProdFreighters);
+                    if (planet.ProdExportSlots > 0)      GoodsUtilizationMap[Goods.Production].AddServedExporting(planet.OutgoingProdFreighters);
+                    if (planet.ColonistsImportSlots > 0) GoodsUtilizationMap[Goods.Colonists].AddServedImporting(planet.IncomingColonistsFreighters);
+                    if (planet.ColonistsExportSlots > 0) GoodsUtilizationMap[Goods.Colonists].AddServedExporting(planet.OutGoingColonistsFreighters);
                 }
 
                 var allUtilizedFreightesr = Player.OwnedShips.Filter(s => s.IsFreighter && s.AI.State == AI.AIState.SystemTrader);
@@ -281,32 +287,20 @@ namespace Ship_Game
                 NumIdleFreightersLabel.Text = (TotalFreighters - NumUtilizedFreighters).String();
                 FreightersInZonesLabel.Text = Player.OwnedShips.Count(s => s?.IsFreighter == true && s.InTradeZone).String();
 
-                // the totals row (maintainer bench 339): all OPERATIONAL freighters, split by their
-                // CURRENT phase so importing + exporting == the total. A freighter delivering counts
-                // as importing; picking up or hauling, as exporting. (The per-goods Importing/
-                // Exporting columns count PLANET slots, unrelated to the freighter count.)
-                int importingFreighters = 0, exportingFreighters = 0;
-                foreach (Ship freighter in allUtilizedFreightesr)
+                // ★ the totals row SUMS the rows above it, in their own unit. It used to count
+                // utilised hulls over the fleet - a second notion in the same column, which is how
+                // three rows adding to 14/66 sat under a total reading 13/14. The fleet's own
+                // utilisation is already stated on the left, as a percentage.
+                int servedBerths = 0, importBerths = 0, servedImp = 0, imp = 0, servedExp = 0, exp = 0;
+                foreach (GoodsUtilization gu in GoodsUtilizationMap.Values)
                 {
-                    // under a zone the totals count the runs the view shows - any of the three
-                    // goods landing inside it - so the row stays in the rows' own scope
-                    if (SelectedZone != null
-                        && !ServesSelectedZone(freighter, Goods.Food)
-                        && !ServesSelectedZone(freighter, Goods.Production)
-                        && !ServesSelectedZone(freighter, Goods.Colonists))
-                        continue;
-
-                    if (freighter.AI.IsDeliveringTrade) importingFreighters++;
-                    else                                exportingFreighters++;
+                    servedBerths += gu.ServedBerths; importBerths += gu.ImportBerths;
+                    servedImp += gu.ServedImporting; imp += gu.NumImportingPlanets;
+                    servedExp += gu.ServedExporting; exp += gu.NumExportingPlanets;
                 }
-                // the foot says the same thing as the rows above it: what is working over what
-                // there is. With a zone chosen it is the zone's own count, read from the zone
-                // itself so the Trade table and this window cannot disagree.
-                TotalFreightersValue.Text = SelectedZone == null
-                    ? $"{NumUtilizedFreighters} / {TotalFreighters}"
-                    : SelectedZone.ActiveFreighters(Player).String();
-                TotalImportingValue.Text  = importingFreighters.String();
-                TotalExportingValue.Text  = exportingFreighters.String();
+                TotalFreightersValue.Text = $"{servedBerths} / {importBerths}";
+                TotalImportingValue.Text  = $"{servedImp} / {imp}";
+                TotalExportingValue.Text  = $"{servedExp} / {exp}";
             }
 
             base.Update(fixedDeltaTime);
@@ -381,6 +375,8 @@ namespace Ship_Game
             // three berths, so the two screens would answer the same question differently.
             public int ImportBerths { get; private set; }
             public int ServedBerths { get; private set; }
+            public int ServedImporting { get; private set; }
+            public int ServedExporting { get; private set; }
             public float TotalEmpireUtilizedCargo { get; private set; }
             public float GoodsTransported { get; private set; }
 
@@ -470,8 +466,8 @@ namespace Ship_Game
                 TotalEmpireUtilizedCargo = Window.TotalUtilizedCargo;
                 UtilizationBar.Progress  = TotalEmpireUtilizedCargo == 0 ? 0 : GoodsTransported/TotalEmpireUtilizedCargo *100;
                 NumFreightersLabel.Text  = $"{ServedBerths} / {ImportBerths}";
-                NumImportingLabel.Text   = NumImportingPlanets.String();
-                NumExportingLabel.Text   = NumExportingPlanets.String();
+                NumImportingLabel.Text   = $"{ServedImporting} / {NumImportingPlanets}";
+                NumExportingLabel.Text   = $"{ServedExporting} / {NumExportingPlanets}";
                 base.Update(fixedDeltaTime);
             }
 
@@ -491,6 +487,11 @@ namespace Ship_Game
                 ImportBerths += berths;
                 ServedBerths += incoming;
             }
+
+            // a planet counts as served the moment something is on its way to it, which is the
+            // question the column answers: how many of the ones asking are being answered
+            public void AddServedImporting(int incoming) { if (incoming > 0) ++ServedImporting; }
+            public void AddServedExporting(int outgoing) { if (outgoing > 0) ++ServedExporting; }
 
             public void AddGoodsTransported(Ship freighter, ref float totalUtilized)
             {
@@ -514,6 +515,8 @@ namespace Ship_Game
                 NumFreighters       = 0;
                 ImportBerths        = 0;
                 ServedBerths        = 0;
+                ServedImporting     = 0;
+                ServedExporting     = 0;
                 GoodsTransported    = 0;
                 TotalEmpireUtilizedCargo      = 0;
             }
