@@ -136,8 +136,14 @@ namespace Ship_Game
             // feedback). The word keeps its place in the tooltip.
             if (zone.Exclusive)
             {
-                int target = zone.Quota > 0 ? zone.Quota : zone.MeasuredNeed;
-                return $"{target} ({zone.MemberFreighters(player).Count})";
+                // ⚠ the NUMBER and the MODE, both: "Auto (0)" hid the gap, and a bare "12 (0)" hid
+                // whether the twelve was chosen or resolved. On Auto the word leads the figure it
+                // resolves to; a hand-set target shows the figure alone (maintainer feedback).
+                int owned = zone.MemberFreighters(player).Count;
+                if (zone.Quota > 0)
+                    return $"{zone.Quota} ({owned})";
+
+                return $"{Localizer.Token(GameText.PolFreighterRefitAuto)} {zone.MeasuredNeed} ({owned})";
             }
 
             // a soft zone owns nothing, so it shows the setting alone rather than a bracket
