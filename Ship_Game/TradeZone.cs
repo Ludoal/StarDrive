@@ -45,6 +45,11 @@ namespace Ship_Game
         // it a world named by two zones is counted twice and requisitioned for twice, while only
         // one of the two can ever deliver. Not serialized: a fact of the turn.
         public int MeasuredNeed;
+        // the same book split by good. The overlay shows the three lines the table sums, and
+        // it READS them here rather than computing them again - that is the whole point of
+        // one need: two screens that compute cannot agree, two screens that read cannot differ.
+        // Never serialized either: a fact of the turn.
+        public int NeedFood, NeedProd, NeedColonists;
 
         [StarDataConstructor] TradeZone() { }
 

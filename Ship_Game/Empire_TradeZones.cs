@@ -78,6 +78,75 @@ namespace Ship_Game
             return max + 1;
         }
 
+        // ★★ THE ONE NEED. Every screen and the requisition read this and nothing else, so they
+        // cannot drift apart: a figure computed twice is two figures, and three of them were.
+        //
+        // A need is a FLOW, not a warehouse. What a colony BURNS in a turn, carried over the time
+        // a run really takes, divided by what a hull holds. The base game already reasons this way
+        // for food - GetFoodImportSlots adds `-NetIncome * AverageFoodImportTurns` to the room left
+        // in the store - so this separates two terms it had summed rather than inventing an
+        // arithmetic. And the trip is MEASURED, not estimated: every planet keeps a moving average
+        // of how long its deliveries actually took.
+        //
+        // ⚠ COLONISTS HAVE NO FLOW. Nothing in the game says how many colonists a world consumes
+        // in a turn - their slots are a fullness ratio capped at five, an appetite rather than a
+        // rate. Their term is therefore the base game's own ceiling, kept in the total because a
+        // zone that wants people still needs hulls to carry them; it is a ceiling among flows, and
+        // the tooltip is where that is said.
+        public float RunsNeeded(Planet p, Goods goods)
+        {
+            float cargo = AverageFreighterCargoCap.LowerBound(1);
+            if (goods == Goods.Food)
+            {
+                if (!p.ImportFood)
+                    return 0;
+
+                return (-p.Food.NetIncome * p.AverageFoodImportTurns).LowerBound(0) / cargo;
+            }
+
+            if (goods == Goods.Production)
+            {
+                if (!p.ImportProd)
+                    return 0;
+
+                // what the yard still owes, less what the colony makes for itself while a run is in
+                // the air - and plus what it EATS over that time, since a cybernetic world lives on
+                // production. One term or the other is nought; never both.
+                float queue   = p.TotalProdNeededInQueue();
+                float surplus = (p.Prod.NetIncome * p.AverageProdImportTurns).LowerBound(0);
+                float hunger  = (-p.Prod.NetIncome * p.AverageProdImportTurns).LowerBound(0);
+                return ((queue - surplus).LowerBound(0) + hunger) / cargo;
+            }
+
+            return p.ColonistsImportSlots; // a ceiling, not a flow - see above
+        }
+
+        static int ExportSlotsOf(Planet p, Goods goods)
+            => goods == Goods.Food       ? p.FoodExportSlots
+             : goods == Goods.Production ? p.ProdExportSlots
+             : p.ColonistsExportSlots;
+
+        // The need of a PERIMETER, in whole hulls: what its importers burn, bounded by what its
+        // permitted exporters can actually send. A run needs a berth at both ends, and the far end
+        // follows the regime - an exclusive zone trades among its own colonies, a soft one and the
+        // empire are served from anywhere. Rounded UP: half a run still takes a hull.
+        public int PerimeterNeed(Array<Planet> importers, Array<Planet> exporters, Goods goods)
+        {
+            float need = 0;
+            for (int i = 0; i < importers.Count; ++i)
+                need += RunsNeeded(importers[i], goods);
+
+            int whole = (int)need;
+            if (need > whole)
+                ++whole;
+
+            int supply = 0;
+            for (int i = 0; i < exporters.Count; ++i)
+                supply += ExportSlotsOf(exporters[i], goods);
+
+            return whole.UpperBound(supply);
+        }
+
         // ★ THE ONE BOOK OF NEED. Zones are read IN LIST ORDER, which is the dispatch priority the
         // player arranged, against a ledger of what each colony has already promised this turn. A
         // world shared by two zones is therefore counted once - by the zone ranked first - and the
@@ -89,73 +158,50 @@ namespace Ship_Game
         // it rather than read a nought it cannot tell from a measured zero.
         public void MeasureZoneNeeds()
         {
-            var claimed = new Map<int, int>();
-            // the empire's own export side, read once: a soft zone is served from anywhere, so
-            // this is the far end of ITS runs
-            int empFoodOut = 0, empProdOut = 0, empColOut = 0;
-            for (int i = 0; i < OwnedPlanets.Count; ++i)
-            {
-                Planet ep = OwnedPlanets[i];
-                empFoodOut += ep.FoodExportSlots;
-                empProdOut += ep.ProdExportSlots;
-                empColOut  += ep.ColonistsExportSlots;
-            }
+            // ⚠ a colony's consumption is served ONCE, by the best-ranked zone that names it; the
+            // zones below see it at nought. Two zones asking for the same world's food would
+            // requisition twice for a single delivery. The list's order IS the priority the player
+            // arranged, which is why the book is kept while walking it.
+            var servedColonies = new HashSet<int>();
+            var stationLedger = new Map<int, int>();
+            // a soft zone and the empire are served from anywhere OUTSIDE the exclusive enclaves:
+            // read once, it is the far end of their runs
+            Array<Planet> commonExporters = ColoniesOutsideExclusiveZones();
 
             foreach (TradeZone zone in TradeZones)
             {
-                // ★ A RUN NEEDS A BERTH AT BOTH ENDS, so the need is the SMALLER of the two sides,
-                // per good. Import berths alone are a ceiling: a zone can offer 29 places to unload
-                // production while one planet is able to send any - one run is possible, 29 are not.
-                // ★ AND THE FAR END FOLLOWS THE REGIME. An EXCLUSIVE zone is served by its own
-                // hulls and trades among its own colonies, so both ends are counted inside it. A
-                // SOFT zone borrows from the common pool and its worlds are served from anywhere in
-                // the empire, so its far end is the EMPIRE's. Bounding a soft zone to itself read a
-                // need of nought on three colonies that export nothing to each other, while eleven
-                // runs were serving them (maintainer bench 582).
-                // ⚠ the ledger still guards the IMPORT side only: it is what a better-ranked zone
-                // has already spoken for.
-                int need = 0;
-                int foodIn = 0, prodIn = 0, colIn = 0;
-                int foodOut = 0, prodOut = 0, colOut = 0;
+                var importers = new Array<Planet>();
+                var colonies  = new Array<Planet>();
                 foreach (int id in zone.Colonies)
                 {
                     Planet p = Universe.GetPlanet(id);
                     if (p == null || p.Owner != this)
                         continue;
 
-                    int berths = p.FoodImportSlots + p.ProdImportSlots + p.ColonistsImportSlots;
-                    claimed.TryGetValue(id, out int taken);
-                    int left = (berths - taken).LowerBound(0);
-                    claimed[id] = taken + left;
-                    if (berths > 0)
-                    {
-                        // the ledger's cut is applied to the good it came from, in proportion
-                        foodIn += p.FoodImportSlots * left / berths;
-                        prodIn += p.ProdImportSlots * left / berths;
-                        colIn  += p.ColonistsImportSlots * left / berths;
-                    }
-
-                    foodOut += p.FoodExportSlots;
-                    prodOut += p.ProdExportSlots;
-                    colOut  += p.ColonistsExportSlots;
+                    colonies.Add(p);          // the zone's own worlds, whoever feeds them
+                    if (servedColonies.Add(id))
+                        importers.Add(p);     // ...but only the first zone to name one may ask for it
                 }
 
-                int outFood = zone.Exclusive ? foodOut : empFoodOut;
-                int outProd = zone.Exclusive ? prodOut : empProdOut;
-                int outCol  = zone.Exclusive ? colOut  : empColOut;
-                need += foodIn.UpperBound(outFood) + prodIn.UpperBound(outProd) + colIn.UpperBound(outCol);
+                // the far end follows the regime: an exclusive zone trades among its own colonies,
+                // a soft one is served from the common ground
+                Array<Planet> exporters = zone.Exclusive ? colonies : commonExporters;
+                zone.NeedFood      = PerimeterNeed(importers, exporters, Goods.Food);
+                zone.NeedProd      = PerimeterNeed(importers, exporters, Goods.Production);
+                zone.NeedColonists = PerimeterNeed(importers, exporters, Goods.Colonists);
+                int need = zone.NeedFood + zone.NeedProd + zone.NeedColonists;
 
                 // a station's hunger is its own - two zones naming the same body would ask for the
-                // same run, so it goes through the ledger like a colony's berths
+                // same run, so it keeps a book of its own
                 foreach (Ship station in zone.Stations(this))
                 {
                     Planet body = station.GetTether();
                     int key = body?.Id ?? 0;
                     int open = AI.CountGoals(g => g.IsSupplyingGoodsToStationStationGoal(station));
-                    claimed.TryGetValue(key, out int taken);
+                    stationLedger.TryGetValue(key, out int taken);
                     int left = (open - taken).LowerBound(0);
                     need += left;
-                    claimed[key] = taken + left;
+                    stationLedger[key] = taken + left;
                 }
 
                 zone.MeasuredNeed = need;

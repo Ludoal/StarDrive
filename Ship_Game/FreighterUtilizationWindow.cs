@@ -293,52 +293,55 @@ namespace Ship_Game
                     goodsUtilization.Reset();
 
 
-                // ★ THE FAR END FOLLOWS THE REGIME, exactly as the empire's own need does
-                // (Empire.MeasureZoneNeeds): an EXCLUSIVE zone trades among its own colonies, so
-                // its export side is the zone's; a SOFT zone borrows from the common pool and is
-                // served from anywhere, so its export side is the EMPIRE's. Bounding a soft zone
-                // to itself showed n / 0 on colonies that export nothing to each other
-                // (maintainer bench 582).
-                bool farEndIsZone = SelectedZone?.Exclusive == true;
+                // ★★ THE NEED IS NOT COMPUTED HERE ANY MORE. A zone's is READ off the zone, where
+                // the empire wrote it this turn; the empire's own is asked of the same function the
+                // Trade table uses. Two screens that compute cannot agree for long - these two were
+                // three definitions apart (maintainer bench 582-584).
+                var perimeter = new Array<Planet>();
+                foreach (Planet p in Player.GetPlanets())
+                    if (SelectedZone == null || SelectedZone.Serves(p))
+                        perimeter.Add(p);
+
+                if (SelectedZone != null)
+                {
+                    if (Player.NonCybernetic)
+                        GoodsUtilizationMap[Goods.Food].SetNeed(SelectedZone.NeedFood);
+                    GoodsUtilizationMap[Goods.Production].SetNeed(SelectedZone.NeedProd);
+                    GoodsUtilizationMap[Goods.Colonists].SetNeed(SelectedZone.NeedColonists);
+                }
+                else
+                {
+                    // no zone picked: the perimeter is the whole realm, both ends
+                    if (Player.NonCybernetic)
+                        GoodsUtilizationMap[Goods.Food].SetNeed(Player.PerimeterNeed(perimeter, perimeter, Goods.Food));
+                    GoodsUtilizationMap[Goods.Production].SetNeed(Player.PerimeterNeed(perimeter, perimeter, Goods.Production));
+                    GoodsUtilizationMap[Goods.Colonists].SetNeed(Player.PerimeterNeed(perimeter, perimeter, Goods.Colonists));
+                }
 
                 foreach (Planet planet in Player.GetPlanets())
                 {
-                    bool inScope = SelectedZone == null || SelectedZone.Serves(planet);
-                    if (!inScope)
-                    {
-                        // outside the picked SOFT zone: this world lends its export side, nothing else
-                        if (!farEndIsZone)
-                        {
-                            if (Player.NonCybernetic)
-                                GoodsUtilizationMap[Goods.Food].AddExportBerths(planet.FoodExportSlots);
-                            GoodsUtilizationMap[Goods.Production].AddExportBerths(planet.ProdExportSlots);
-                            GoodsUtilizationMap[Goods.Colonists].AddExportBerths(planet.ColonistsExportSlots);
-                        }
+                    if (SelectedZone != null && !SelectedZone.Serves(planet))
                         continue;
-                    }
 
                     if (Player.NonCybernetic)
                     {
                         if (planet.FoodImportSlots > 0) GoodsUtilizationMap[Goods.Food].IncreaseNumImportingPlanets();
                         if (planet.FoodExportSlots > 0) GoodsUtilizationMap[Goods.Food].IncreaseNumExportingPlanets();
-                        GoodsUtilizationMap[Goods.Food].AddBerths(planet.FoodImportSlots, planet.IncomingFoodFreighters);
+                        GoodsUtilizationMap[Goods.Food].AddServedBerths(planet.IncomingFoodFreighters);
                         if (planet.FoodImportSlots > 0) GoodsUtilizationMap[Goods.Food].AddServedImporting(planet.IncomingFoodFreighters);
                         if (planet.FoodExportSlots > 0) GoodsUtilizationMap[Goods.Food].AddServedExporting(planet.OutgoingFoodFreighters);
-                        GoodsUtilizationMap[Goods.Food].AddExportBerths(planet.FoodExportSlots);
                     }
 
                     if (planet.ProdImportSlots > 0)      GoodsUtilizationMap[Goods.Production].IncreaseNumImportingPlanets();
                     if (planet.ProdExportSlots > 0)      GoodsUtilizationMap[Goods.Production].IncreaseNumExportingPlanets();
                     if (planet.ColonistsImportSlots > 0) GoodsUtilizationMap[Goods.Colonists].IncreaseNumImportingPlanets();
                     if (planet.ColonistsExportSlots > 0) GoodsUtilizationMap[Goods.Colonists].IncreaseNumExportingPlanets();
-                    GoodsUtilizationMap[Goods.Production].AddBerths(planet.ProdImportSlots, planet.IncomingProdFreighters);
-                    GoodsUtilizationMap[Goods.Colonists].AddBerths(planet.ColonistsImportSlots, planet.IncomingColonistsFreighters);
+                    GoodsUtilizationMap[Goods.Production].AddServedBerths(planet.IncomingProdFreighters);
+                    GoodsUtilizationMap[Goods.Colonists].AddServedBerths(planet.IncomingColonistsFreighters);
                     if (planet.ProdImportSlots > 0)      GoodsUtilizationMap[Goods.Production].AddServedImporting(planet.IncomingProdFreighters);
                     if (planet.ProdExportSlots > 0)      GoodsUtilizationMap[Goods.Production].AddServedExporting(planet.OutgoingProdFreighters);
                     if (planet.ColonistsImportSlots > 0) GoodsUtilizationMap[Goods.Colonists].AddServedImporting(planet.IncomingColonistsFreighters);
                     if (planet.ColonistsExportSlots > 0) GoodsUtilizationMap[Goods.Colonists].AddServedExporting(planet.OutGoingColonistsFreighters);
-                    GoodsUtilizationMap[Goods.Production].AddExportBerths(planet.ProdExportSlots);
-                    GoodsUtilizationMap[Goods.Colonists].AddExportBerths(planet.ColonistsExportSlots);
                 }
 
                 var allUtilizedFreightesr = Player.OwnedShips.Filter(s => s.IsFreighter && s.AI.State == AI.AIState.SystemTrader);
@@ -453,13 +456,15 @@ namespace Ship_Game
             // level down - import berths open for this good, and freighters already on their way
             // to them. Planets would not do: a colony with three Food berths is one planet and
             // three berths, so the two screens would answer the same question differently.
-            public int ImportBerths { get; private set; }
-            public int ExportBerths { get; private set; }
+            // what the empire says this perimeter needs, in whole hulls - written from outside,
+            // never computed here
+            public int NeedRuns { get; private set; }
+            public void SetNeed(int runs) => NeedRuns = runs;
             public int ServedBerths { get; private set; }
             // ★ a run needs a berth at BOTH ends, so what the fleet can actually do is the smaller
             // of the two. Import berths alone are a ceiling: a galaxy can offer 29 places to unload
             // production while a single planet is able to send any.
-            public int Runs => ImportBerths.UpperBound(ExportBerths);
+            public int Runs => NeedRuns;
             public int ServedImporting { get; private set; }
             public int ServedExporting { get; private set; }
             public float TotalEmpireUtilizedCargo { get; private set; }
@@ -571,13 +576,11 @@ namespace Ship_Game
                 NumExportingPlanets++;
             }
 
-            public void AddBerths(int berths, int incoming)
+            public void AddServedBerths(int incoming)
             {
-                ImportBerths += berths;
                 ServedBerths += incoming;
             }
 
-            public void AddExportBerths(int berths) => ExportBerths += berths;
 
             // a planet counts as served the moment something is on its way to it, which is the
             // question the column answers: how many of the ones asking are being answered
@@ -604,8 +607,6 @@ namespace Ship_Game
                 NumImportingPlanets = 0;
                 NumExportingPlanets = 0;
                 NumFreighters       = 0;
-                ImportBerths        = 0;
-                ExportBerths        = 0;
                 ServedBerths        = 0;
                 ServedImporting     = 0;
                 ServedExporting     = 0;
