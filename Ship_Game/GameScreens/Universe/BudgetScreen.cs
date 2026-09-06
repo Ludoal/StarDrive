@@ -269,7 +269,11 @@ namespace Ship_Game.GameScreens
             Table.RowPitch = 28; // the 24px econ row plus the list's item padding
             // Ludoal fork: the table runs down to 10px off the frame's foot,
             // like the Ships list that falls cleanly.
-            Table.Layout(client, headerY, client.Bottom - 10);
+            // ONE floor for the table and for the TOTAL row beneath it. The table's own rect is
+            // snapped UP to a whole number of rows, so it stops short of the space that is
+            // actually there - up to a row pitch of it (maintainer feedback).
+            float tableFoot = client.Bottom - 10;
+            Table.Layout(client, headerY, tableFoot);
             // ONE frame, two halves: the synthesis column takes what the table leaves
             float split = Table.ListRect.Right + 10;
             LeftMenu  = new Rectangle((int)client.X, (int)client.Y, (int)(split - client.X), (int)client.H);
@@ -382,7 +386,7 @@ namespace Ship_Game.GameScreens
             // where its blocks end, and Net Gain/Loss is the last of them rather than a line the
             // table has to reach (maintainer feedback). Never up - a stretched table's TOTAL
             // belongs to its own lane.
-            float footerFloor = Table.TableRect.Bottom - Fonts.Arial12Bold.LineSpacing;
+            float footerFloor = tableFoot - Fonts.Arial12Bold.LineSpacing;
             int footerDrop = (int)footerFloor - totalY;
             if (footerDrop > 0)
                 foreach (UILabel l in footerLabels)
