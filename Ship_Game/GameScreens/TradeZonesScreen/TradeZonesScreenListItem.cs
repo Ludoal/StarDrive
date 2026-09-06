@@ -65,14 +65,16 @@ namespace Ship_Game
             // behaves. What does not fit is elided, and the ellipsis carries the whole list.
             LayOutColonyNames(cols[2].Rect, color);
 
-            // ★ the RAW need, never the dispatch quota. A zone whose ground has run dry has a
+            // ★ the RAW need, never the dispatch quota: a zone whose ground has run dry has a
             // quota of nought, and "I want nothing" must not be written like "nobody can serve
-            // me". Red is exactly the gap between the two, and it is the same red the Owned
-            // column uses for an enclave nobody serves (maintainer feedback, bench 589).
-            bool unservedNeed = Zone.RawNeed > Zone.MeasuredNeed;
-            Cell(cols[3], Zone.RawNeed.ToString(), unservedNeed ? Color.Red : color)
+            // me". Both cells wear the overlay's own colour rule, so an eye that learned it there
+            // does not learn another one here (maintainer feedback, bench 590).
+            Cell(cols[3], Zone.RawNeed.ToString(),
+                 FreighterUtilizationWindow.PairColor(Zone.MeasuredNeed, Zone.RawNeed))
                 .Tooltip = GameText.TzRequiredTip;
-            Cell(cols[4], Zone.ActiveFreighters(Player).ToString(), color).Tooltip = GameText.TzActiveTip;
+            int inbound = Zone.ActiveFreighters(Player);
+            Cell(cols[4], inbound.ToString(), FreighterUtilizationWindow.PairColor(inbound, Zone.RawNeed))
+                .Tooltip = GameText.TzActiveTip;
             // an exclusive zone holding no hull of its own is served by NOBODY - the common pass
             // has let its worlds go, and it has nothing to send in their place. The figure reads
             // red rather than as a quiet nought: the state drives the zone's conduct, so the

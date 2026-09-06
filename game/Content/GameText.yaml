@@ -29015,12 +29015,12 @@ TzPanToColonyTip:
  FRA: "Centrer la carte sur cette colonie."
 TzRequired:
  Id: 7214
- ENG: "Required"
- FRA: "Requis"
+ ENG: "Need"
+ FRA: "Besoin"
 TzRequiredTip:
  Id: 7215
- ENG: "What this zone's colonies want, counted in freighter runs: everything they ask to import, food, production and colonists alike. Shown in RED when no exporter can supply part of it, which is a different state from wanting nothing - the figure stays what is wanted either way."
- FRA: "Ce que les colonies de cette zone demandent, compté en courses de cargo : tous leurs imports, nourriture, production et colons compris. En ROUGE quand aucun exportateur ne peut en servir une partie, ce qui n'est pas la même chose que ne rien demander : le nombre reste celui du besoin."
+ ENG: "Freighters needed to keep these colonies supplied, from what they consume and how long a delivery takes. Red when nothing in the empire can supply it, yellow when only part of it can."
+ FRA: "Cargos nécessaires pour approvisionner ces colonies, d'après ce qu'elles consomment et la durée d'une livraison. Rouge quand rien dans l'empire ne peut y répondre, jaune quand une partie seulement le peut."
 TzInbound:
  Id: 30147
  ENG: "Inbound"
@@ -29061,10 +29061,30 @@ PirateFactionsRandom:
  Id: 30156
  ENG: "One (random)"
  FRA: "Une (au hasard)"
+TzImporters:
+ Id: 30157
+ ENG: "Importers"
+ FRA: "Importateurs"
+TzExporters:
+ Id: 30158
+ ENG: "Exporters"
+ FRA: "Exportateurs"
+TzImportersTip:
+ Id: 30159
+ ENG: "Colonies of this zone waiting for a delivery, out of those that import this good."
+ FRA: "Colonies de cette zone en attente de livraison, sur celles qui importent ce bien."
+TzExportersTip:
+ Id: 30160
+ ENG: "Colonies with a surplus of this good that freighters may load from."
+ FRA: "Colonies ayant un surplus de ce bien, où les cargos peuvent charger."
+TzFreightersTip:
+ Id: 30161
+ ENG: "Freighters flying this good to the selected zone, against the number needed."
+ FRA: "Cargos acheminant ce bien vers la zone sélectionnée, face au nombre nécessaire."
 TzActiveTip:
  Id: 7217
- ENG: "Freighters on their way to a colony of this zone, WHOEVER owns them - a zone's own hulls are counted in Owned, next door. The two are different sets, and either can stand while the other is nought."
- FRA: "Cargos en route vers une colonie de cette zone, QUEL QUE SOIT leur propriétaire — les coques que la zone possède se comptent dans Owned, juste à côté. Ce sont deux ensembles distincts, et l'un peut être garni quand l'autre est à zéro."
+ ENG: "Freighters currently flying to these colonies, whoever owns them. See Owned for the zone's own hulls."
+ FRA: "Cargos actuellement en route vers ces colonies, quel que soit leur propriétaire. Voir Owned pour les coques de la zone."
 TzName:
  Id: 7218
  ENG: "Name"
@@ -29163,8 +29183,8 @@ TzOwnedTip:
  FRA: "Cargos que cette zone POSSÈDE. Seule une zone exclusive en possède : une zone souple emprunte une part du tour et la rend."
 TzOwnedTargetTip:
  Id: 7264
- ENG: "The target, with what the zone actually owns in brackets. On an exclusive zone the target is a NUMBER even when left on Auto - the figure Auto resolves to, which is the zone's own Need - so the gap between the two can be read at a glance. A soft zone shows its setting alone: it owns nothing, it borrows by the turn. The requisition stops at the empire freighter reserve, and at what is idle right now."
- FRA: "La cible, avec entre parenthèses ce que la zone possède réellement. Sur une zone exclusive la cible est un NOMBRE même laissée sur Auto — celui qu'Auto résout, c'est-à-dire son propre besoin — pour que l'écart entre les deux se lise d'un coup d'œil. Une zone souple n'affiche que son réglage : elle ne possède rien, elle emprunte au tour le tour. La réquisition s'arrête à la réserve de cargos de l'empire, et à ce qui est oisif sur l'instant."
+ ENG: "Hulls this zone keeps for itself, and how many it owns today. Auto follows Need."
+ FRA: "Coques que cette zone garde pour elle, et combien elle en possède aujourd'hui. Auto suit le besoin."
 TzConvertedNotice:
  Id: 7239
  ENG: "The areas of operation and manual trade routes you had drawn on individual freighters have become EXCLUSIVE TRADE ZONES, and their editors are gone: what a zone holds is now edited in one place, on the Trade page.\n\nOne thing has changed and cannot be undone: an area of operation was a SHAPE, and it welcomed colonies founded inside it later. A zone is a LIST, taken as your areas stood at this moment. A colony founded inside an old rectangle from now on will not join its zone on its own - add it yourself from the Trade page or from the colony's own screen."

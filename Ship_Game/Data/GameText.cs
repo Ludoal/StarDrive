@@ -6362,6 +6362,16 @@ namespace Ship_Game
         PirateStrengthBrutal = 30155,
         /// <summary>One (random)</summary>
         PirateFactionsRandom = 30156,
+        /// <summary>Importers</summary>
+        TzImporters = 30157,
+        /// <summary>Exporters</summary>
+        TzExporters = 30158,
+        /// <summary>Colonies of this zone waiting for a delivery.</summary>
+        TzImportersTip = 30159,
+        /// <summary>Colonies with a surplus freighters may load from.</summary>
+        TzExportersTip = 30160,
+        /// <summary>Freighters flying this good to the selected zone.</summary>
+        TzFreightersTip = 30161,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>

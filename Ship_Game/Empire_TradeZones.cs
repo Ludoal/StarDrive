@@ -126,6 +126,13 @@ namespace Ship_Game
              : goods == Goods.Production ? p.ProdExportSlots
              : p.ColonistsExportSlots;
 
+        // Can this zone put this good on a hull at all? An enclave loads among its own worlds;
+        // a soft zone loads on the common ground. ⚠ the common ground here is the plain one -
+        // colonies outside every enclave - never CommonExportGround, which reads the very needs
+        // this pass is still writing.
+        bool ZoneSupplies(TradeZone zone, Array<Planet> colonies, Array<Planet> common, Goods goods)
+            => ExportSupply(zone.Exclusive ? colonies : common, goods) > 0;
+
         // What a set of worlds can send of one good.
         public int ExportSupply(Array<Planet> exporters, Goods goods)
         {
@@ -173,40 +180,64 @@ namespace Ship_Game
             // zones below see it at nought. Two zones asking for the same world's food would
             // requisition twice for a single delivery. The list's order IS the priority the player
             // arranged, which is why the book is kept while walking it.
-            var servedColonies = new HashSet<int>();
+            // ★★ THE LEDGER IS PER WORLD AND PER GOOD, not per world. A world may legitimately
+            // import production from one enclave and people from another - those are two needs,
+            // two zones, and a ledger kept per world would hand the first zone the world entire
+            // and lose the second need in silence. One notion, one owner, and the notion is the
+            // PAIR (maintainer, 6 Sep).
+            var servedFood = new HashSet<int>();
+            var servedProd = new HashSet<int>();
+            var servedCol  = new HashSet<int>();
             var stationLedger = new Map<int, int>();
             // ★★ TWO PASSES, AND THE ORDER IS THE POINT. The common loading ground is now
             // defined by which enclaves are already served, so every zone's RAW need has to be
             // written before any ceiling is taken - otherwise the ground would be drawn from
             // last turn's book, or from nothing at all on the first turn.
             var zoneColonies = new Array<Planet>[TradeZones.Count];
+            // read once: a soft zone's ability to supply a good does not change while we walk
+            Array<Planet> plainCommon = ColoniesOutsideExclusiveZones();
 
             // PASS ONE - what each zone WANTS. Depends on nothing but its own importers.
             for (int zi = 0; zi < TradeZones.Count; ++zi)
             {
                 TradeZone zone = TradeZones[zi];
-                var importers = new Array<Planet>();
-                var colonies  = new Array<Planet>();
+                var colonies = new Array<Planet>();
                 foreach (int id in zone.Colonies)
                 {
                     Planet p = Universe.GetPlanet(id);
                     if (p == null || p.Owner != this)
                         continue;
 
-                    colonies.Add(p);      // the zone's own worlds - an enclave's far end
-                    if (servedColonies.Add(id))
-                        importers.Add(p); // only the first zone to name a world may ask for it
+                    colonies.Add(p);  // the zone's own worlds - an enclave's far end
                 }
 
                 zoneColonies[zi] = colonies;
+
+                // ⚠ a zone only claims a world's need for a good it can actually supply: an
+                // enclave from its own worlds, a soft zone from the common ground it loads on.
+                // Otherwise the first zone in the list would claim needs it can never serve and
+                // the zone able to serve them would read nought.
+                bool canFood = ZoneSupplies(zone, colonies, plainCommon, Goods.Food);
+                bool canProd = ZoneSupplies(zone, colonies, plainCommon, Goods.Production);
+                bool canCol  = ZoneSupplies(zone, colonies, plainCommon, Goods.Colonists);
+
+                var importFood = new Array<Planet>();
+                var importProd = new Array<Planet>();
+                var importCol  = new Array<Planet>();
+                foreach (Planet p in colonies)
+                {
+                    if (canFood && servedFood.Add(p.Id)) importFood.Add(p);
+                    if (canProd && servedProd.Add(p.Id)) importProd.Add(p);
+                    if (canCol  && servedCol.Add(p.Id))  importCol.Add(p);
+                }
 
                 // ★ TWO FIGURES, TWO TRADES, and they were one number until the bench of 6 Sep.
                 // The RAW need is what the importers burn - what the screens show, and what any
                 // rule asking "is this zone served" must read. The CAPPED one, below, is the
                 // dispatch quota, bounded by what the ground it searches can send.
-                zone.NeedFood      = PerimeterNeed(importers, Goods.Food);
-                zone.NeedProd      = PerimeterNeed(importers, Goods.Production);
-                zone.NeedColonists = PerimeterNeed(importers, Goods.Colonists);
+                zone.NeedFood      = PerimeterNeed(importFood, Goods.Food);
+                zone.NeedProd      = PerimeterNeed(importProd, Goods.Production);
+                zone.NeedColonists = PerimeterNeed(importCol, Goods.Colonists);
             }
 
             // ⚠ THE CEILING IS TAKEN ON THE SET THE DISPATCH SEARCHES, and the two regimes do not
@@ -321,10 +352,21 @@ namespace Ship_Game
         public TradeZone GetExclusiveZone(Planet planet)
             => TradeZones.Find(z => z.Exclusive && z.Serves(planet));
 
-        // ★ THE COLONIES THE COMMON PASS MAY SERVE: everything outside an exclusive zone. An
-        // exclusive zone is served by the hulls it requisitioned and by nothing else, so its
-        // worlds leave the empire's own dispatch - a world served by both keeps its berths
-        // closed against the very freighters the zone took for it (maintainer feedback).
+        // ⚠ A WORLD MAY SIT IN SEVERAL ENCLAVES since 6 Sep, so "the" enclave holding it is not a
+        // question with one answer. Anything asking whether a world is still owed something must
+        // ask them ALL: one satisfied zone does not speak for a hungry one.
+        bool AnyExclusiveZoneNeeds(Planet planet, Goods goods)
+        {
+            for (int i = 0; i < TradeZones.Count; ++i)
+            {
+                TradeZone z = TradeZones[i];
+                if (z.Exclusive && z.Serves(planet) && z.RawNeedOf(goods) > 0)
+                    return true;
+            }
+
+            return false;
+        }
+
         // ★ THE COMMON LOADING GROUND, AND IT IS PER GOOD. An exclusive zone owns its HULLS,
         // not its harvests (maintainer, bench 589): once its own imports of a good are covered,
         // its colonies lend that good's surplus to the realm, which comes to fetch it with its
@@ -341,14 +383,17 @@ namespace Ship_Game
             var colonies = new Array<Planet>();
             for (int i = 0; i < OwnedPlanets.Count; ++i)
             {
-                TradeZone zone = GetExclusiveZone(OwnedPlanets[i]);
-                if (zone == null || zone.RawNeedOf(goods) == 0)
+                if (!AnyExclusiveZoneNeeds(OwnedPlanets[i], goods))
                     colonies.Add(OwnedPlanets[i]);
             }
 
             return colonies;
         }
 
+        // ★ THE COLONIES THE COMMON PASS MAY DELIVER TO: everything outside an exclusive zone.
+        // An exclusive zone is served by the hulls it requisitioned and by nothing else, so its
+        // worlds leave the empire's own dispatch - a world served by both keeps its berths
+        // closed against the very freighters the zone took for it (maintainer feedback).
         public Array<Planet> ColoniesOutsideExclusiveZones()
         {
             var colonies = new Array<Planet>();

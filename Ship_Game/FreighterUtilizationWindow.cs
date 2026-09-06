@@ -138,16 +138,18 @@ namespace Ship_Game
             float headerY = titleOffset + HeaderDrop;
             Add(new UILabel(new Vector2(win.X + 15, titleOffset), GameText.TotalFreighterUtilization, Fonts.Arial12Bold, Color.Gold, GameText.TotalUtilizationTip));
             Add(new UILabel(new Vector2(win.X + 210, headerY), GameText.CargoDistribution, Fonts.Arial12Bold, Color.White, GameText.CargoDistributionTip));
-            Add(new UILabel(new Vector2(win.X + 370, headerY), GameText.Freighters, Fonts.Arial12Bold, Color.White, GameText.NumberOfFreightersTip));
+            Add(new UILabel(new Vector2(win.X + 370, headerY), GameText.Freighters, Fonts.Arial12Bold, Color.White, GameText.TzFreightersTip));
             // these two columns count PLANETS (open import/export slots), not freighters -
             // the only headers of this window without a tooltip, and the mixed units confused readers
-            Add(new UILabel(new Vector2(win.X + 470, headerY), GameText.ImportingPlanets, Fonts.Arial12Bold, Color.White, GameText.ImportingPlanetsTip));
-            Add(new UILabel(new Vector2(win.X + 570, headerY), GameText.ExportingPlanets, Fonts.Arial12Bold, Color.White, GameText.ExportingPlanetsTip));
+            // the columns count WORLDS, so they are named for worlds. ⚠ our own tokens: the
+            // upstream Importing/Exporting ids stay untouched for the next merge.
+            Add(new UILabel(new Vector2(win.X + 470, headerY), GameText.TzImporters, Fonts.Arial12Bold, Color.White, GameText.TzImportersTip));
+            Add(new UILabel(new Vector2(win.X + 570, headerY), GameText.TzExporters, Fonts.Arial12Bold, Color.White, GameText.TzExportersTip));
             // the 3-digit number columns, centred under each header - shared by the goods rows and
             // the totals row (maintainer bench 339)
             FreightersRightX = ColumnRightUnder(win.X + 370, GameText.Freighters);
-            ImportingRightX  = ColumnRightUnder(win.X + 470, GameText.ImportingPlanets);
-            ExportingRightX  = ColumnRightUnder(win.X + 570, GameText.ExportingPlanets);
+            ImportingRightX  = ColumnRightUnder(win.X + 470, GameText.TzImporters);
+            ExportingRightX  = ColumnRightUnder(win.X + 570, GameText.TzExporters);
             Add(new UILabel(new Vector2(win.X + 15, titleOffset + 50), GameText.IdleFrieghters, Fonts.Arial12Bold, Color.Wheat));
             Add(new UILabel(new Vector2(win.X + 15, titleOffset + 70), GameText.FreightersUnderConstruction, Fonts.Arial12Bold, Color.Wheat));
             // ⚠ the idle count above is taken from the pool, and the pool EXCLUDES hulls held by a
@@ -333,23 +335,30 @@ namespace Ship_Game
                     if (Player.NonCybernetic)
                     {
                         if (planet.FoodImportSlots > 0 || planet.IncomingFoodFreighters > 0) GoodsUtilizationMap[Goods.Food].IncreaseNumImportingPlanets();
-                        if (planet.FoodExportSlots > 0 || planet.OutgoingFoodFreighters > 0) GoodsUtilizationMap[Goods.Food].IncreaseNumExportingPlanets();
                         GoodsUtilizationMap[Goods.Food].AddServedBerths(planet.IncomingFoodFreighters);
-                        if (planet.FoodImportSlots > 0 || planet.IncomingFoodFreighters > 0) GoodsUtilizationMap[Goods.Food].AddServedImporting(planet.IncomingFoodFreighters);
-                        if (planet.FoodExportSlots > 0 || planet.OutgoingFoodFreighters > 0) GoodsUtilizationMap[Goods.Food].AddServedExporting(planet.OutgoingFoodFreighters);
+                        // ⚠ ONE per world, never the hull count: this column pairs served worlds
+                        // with importing worlds, and a numerator counting hulls made "2 / 2" mean
+                        // two hulls over two worlds (maintainer feedback, bench 590).
+                        if (planet.FoodImportSlots > 0 || planet.IncomingFoodFreighters > 0) GoodsUtilizationMap[Goods.Food].AddServedImporting(planet.IncomingFoodFreighters > 0 ? 1 : 0);
                     }
 
                     if (planet.ProdImportSlots > 0 || planet.IncomingProdFreighters > 0)           GoodsUtilizationMap[Goods.Production].IncreaseNumImportingPlanets();
-                    if (planet.ProdExportSlots > 0 || planet.OutgoingProdFreighters > 0)           GoodsUtilizationMap[Goods.Production].IncreaseNumExportingPlanets();
                     if (planet.ColonistsImportSlots > 0 || planet.IncomingColonistsFreighters > 0) GoodsUtilizationMap[Goods.Colonists].IncreaseNumImportingPlanets();
-                    if (planet.ColonistsExportSlots > 0 || planet.OutGoingColonistsFreighters > 0) GoodsUtilizationMap[Goods.Colonists].IncreaseNumExportingPlanets();
                     GoodsUtilizationMap[Goods.Production].AddServedBerths(planet.IncomingProdFreighters);
                     GoodsUtilizationMap[Goods.Colonists].AddServedBerths(planet.IncomingColonistsFreighters);
-                    if (planet.ProdImportSlots > 0 || planet.IncomingProdFreighters > 0)           GoodsUtilizationMap[Goods.Production].AddServedImporting(planet.IncomingProdFreighters);
-                    if (planet.ProdExportSlots > 0 || planet.OutgoingProdFreighters > 0)           GoodsUtilizationMap[Goods.Production].AddServedExporting(planet.OutgoingProdFreighters);
-                    if (planet.ColonistsImportSlots > 0 || planet.IncomingColonistsFreighters > 0) GoodsUtilizationMap[Goods.Colonists].AddServedImporting(planet.IncomingColonistsFreighters);
-                    if (planet.ColonistsExportSlots > 0 || planet.OutGoingColonistsFreighters > 0) GoodsUtilizationMap[Goods.Colonists].AddServedExporting(planet.OutGoingColonistsFreighters);
+                    if (planet.ProdImportSlots > 0 || planet.IncomingProdFreighters > 0)           GoodsUtilizationMap[Goods.Production].AddServedImporting(planet.IncomingProdFreighters > 0 ? 1 : 0);
+                    if (planet.ColonistsImportSlots > 0 || planet.IncomingColonistsFreighters > 0) GoodsUtilizationMap[Goods.Colonists].AddServedImporting(planet.IncomingColonistsFreighters > 0 ? 1 : 0);
                 }
+
+                // ★ THE EXPORTERS COLUMN FOLLOWS THE REGIME, exactly as the need's ceiling does:
+                // an enclave loads among its own worlds, a soft zone on the common ground, and
+                // with no zone picked the ground is the realm. Counted on its OWN set, because the
+                // loop above only walks the zone's colonies - which is how "0 / 0" came to sit
+                // beside a need of 24 (maintainer feedback, bench 583).
+                if (Player.NonCybernetic)
+                    CountExporters(Goods.Food, perimeter);
+                CountExporters(Goods.Production, perimeter);
+                CountExporters(Goods.Colonists, perimeter);
 
                 var allUtilizedFreightesr = Player.OwnedShips.Filter(s => s.IsFreighter && s.AI.State == AI.AIState.SystemTrader);
                 NumUtilizedFreighters = allUtilizedFreightesr.Length;
@@ -444,6 +453,41 @@ namespace Ship_Game
             FreighterConstructingLabel.Text = Player.FreightersBeingBuilt.String();
         }
 
+        // The worlds a run of this good may LOAD from, under the regime of the selected zone.
+        void CountExporters(Goods goods, Array<Planet> realm)
+        {
+            Array<Planet> ground = SelectedZone == null   ? realm
+                                 : SelectedZone.Exclusive ? SelectedZone.ColonyPlanets(Player)
+                                 : Player.CommonExportGround(goods);
+
+            GoodsUtilization row = GoodsUtilizationMap[goods];
+            foreach (Planet p in ground)
+            {
+                int slots    = goods == Goods.Food       ? p.FoodExportSlots
+                             : goods == Goods.Production ? p.ProdExportSlots
+                             : p.ColonistsExportSlots;
+                int outgoing = goods == Goods.Food       ? p.OutgoingFoodFreighters
+                             : goods == Goods.Production ? p.OutgoingProdFreighters
+                             : p.OutGoingColonistsFreighters;
+
+                if (slots > 0 || outgoing > 0)
+                {
+                    row.IncreaseNumExportingPlanets();
+                    row.AddServedExporting(outgoing > 0 ? 1 : 0);
+                }
+            }
+        }
+
+        // ★ THE ONE COLOUR RULE for a pair of numbers, shared with the Trade table so an eye that
+        // learned it here does not learn another one there. Above what is wanted is not a fault -
+        // more on its way than there is room for is worth seeing, not flagging - and a pair
+        // wanting NOTHING is neutral: there is nothing to cover, so nothing to miss.
+        public static Color PairColor(int served, int wanted)
+            => wanted <= 0      ? Color.Wheat
+             : served >= wanted ? Color.White
+             : served == 0      ? Color.Red
+             :                    Color.Yellow;
+
         class GoodsUtilization : UIElementV2
         {
             readonly ProgressBar UtilizationBar;
@@ -524,6 +568,7 @@ namespace Ship_Game
                 return false;
             }
 
+
             public override void Draw(SpriteBatch batch, DrawTimes elapsed)
             {
                 UtilizationBar.Draw(batch);
@@ -534,26 +579,13 @@ namespace Ship_Game
                 DenFreightersLabel.Draw(batch, elapsed);
                 DenImportingLabel.Draw(batch, elapsed);
                 DenExportingLabel.Draw(batch, elapsed);
-                NumExportingLabel.Color = Color.White;
-                NumImportingLabel.Color = Color.White;
-                if (NumExportingPlanets == 0 && NumImportingPlanets > 0 && GoodsTransported <= 0)
-                {
-                    NumExportingLabel.Color = Color.Red;
-                    NumImportingLabel.Color = Color.Yellow;
-                }
-                else if (NumImportingPlanets > NumExportingPlanets)
-                {
-                    NumExportingLabel.Color = Color.Yellow;
-                    NumImportingLabel.Color = Color.Yellow;
-                }
-
-                // the colour keeps its rule, now read off the pair the cell actually shows. Above
-                // the berths is not a fault: more is on its way than there is room for, which is a
-                // thing worth seeing rather than colouring as an error.
-                if (Runs > 0 && ServedBerths < Runs)
-                    NumFreightersLabel.Color = ServedBerths == 0 ? Color.Red : Color.Yellow;
-                else
-                    NumFreightersLabel.Color = Runs > 0 ? Color.White : Color.Wheat;
+                // every column reads its OWN pair now. The two others used to colour off the
+                // importers and the traffic - figures the cell does not show - so the same "0 / 0"
+                // wore two colours in one panel and neither could be explained from the line
+                // (maintainer feedback, bench 590).
+                NumFreightersLabel.Color = PairColor(ServedBerths, Runs);
+                NumImportingLabel.Color  = PairColor(ServedImporting, NumImportingPlanets);
+                NumExportingLabel.Color  = PairColor(ServedExporting, NumExportingPlanets);
             }
 
             public override void Update(float fixedDeltaTime)
