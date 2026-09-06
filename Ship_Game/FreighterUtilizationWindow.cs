@@ -21,14 +21,20 @@ namespace Ship_Game
         UIButton BuildFreighter;
         Empire Player => Screen.Player;
         float UpdateTimer;
-        int TotalFreighters;
+        // ★ THE WHOLE freighter fleet, zone-held hulls INCLUDED. Empire.TotalFreighters
+        // deliberately excludes them - the reserve and the refit ceiling derive from it -
+        // and pairing that with a utilised count which includes them understated the idle
+        // figure by exactly the hulls a zone was flying, and could drive it below zero.
+        // What a zone holds is stated on its own line instead (maintainer bench 582).
+        int FleetFreighters;
         int NumUtilizedFreighters;
         UILabel FreighterConstructingLabel;
         UILabel FreightersInZonesLabel;
         UILabel NumIdleFreightersLabel;
         // Ludoal fork (maintainer bench 336): a "Total freighters:" row under the goods rows.
-        // The freighters value is the OPERATIONAL count (NumUtilizedFreighters), not a sum of the
-        // per-goods needs; importing/exporting are the planet-slot totals across the goods.
+        // Every cell of it is the plain SUM of the three rows above, in their own unit - runs over
+        // possible runs, then planets over planets. The fleet's own utilisation is a different
+        // notion and is stated on the left, as a percentage.
         UILabel TotalFreightersLabel;
         UILabel TotalFreightersValue;
         UILabel TotalImportingValue;
@@ -281,16 +287,35 @@ namespace Ship_Game
                 if (ZoneFilter != null && ZoneOptionsStale())
                     RebuildZoneOptions();
 
-                TotalFreighters = Player.TotalFreighters;
+                FleetFreighters = Player.OwnedShips.Count(s => s?.IsFreighter == true);
                 float totalUtilizedCargo = 0;
                 foreach (GoodsUtilization goodsUtilization in GoodsUtilizationMap.Values)
                     goodsUtilization.Reset();
 
 
+                // ★ THE FAR END FOLLOWS THE REGIME, exactly as the empire's own need does
+                // (Empire.MeasureZoneNeeds): an EXCLUSIVE zone trades among its own colonies, so
+                // its export side is the zone's; a SOFT zone borrows from the common pool and is
+                // served from anywhere, so its export side is the EMPIRE's. Bounding a soft zone
+                // to itself showed n / 0 on colonies that export nothing to each other
+                // (maintainer bench 582).
+                bool farEndIsZone = SelectedZone?.Exclusive == true;
+
                 foreach (Planet planet in Player.GetPlanets())
                 {
-                    if (SelectedZone != null && !SelectedZone.Serves(planet))
+                    bool inScope = SelectedZone == null || SelectedZone.Serves(planet);
+                    if (!inScope)
+                    {
+                        // outside the picked SOFT zone: this world lends its export side, nothing else
+                        if (!farEndIsZone)
+                        {
+                            if (Player.NonCybernetic)
+                                GoodsUtilizationMap[Goods.Food].AddExportBerths(planet.FoodExportSlots);
+                            GoodsUtilizationMap[Goods.Production].AddExportBerths(planet.ProdExportSlots);
+                            GoodsUtilizationMap[Goods.Colonists].AddExportBerths(planet.ColonistsExportSlots);
+                        }
                         continue;
+                    }
 
                     if (Player.NonCybernetic)
                     {
@@ -331,9 +356,9 @@ namespace Ship_Game
                 }
 
                 TotalUtilizedCargo = totalUtilizedCargo;
-                UtilizationBar.Progress = TotalFreighters == 0 ? 0 : (float)NumUtilizedFreighters/TotalFreighters*100;
+                UtilizationBar.Progress = FleetFreighters == 0 ? 0 : (float)NumUtilizedFreighters/FleetFreighters*100;
                 FreighterConstructingLabel.Text = Player.FreightersBeingBuilt.String();
-                NumIdleFreightersLabel.Text = (TotalFreighters - NumUtilizedFreighters).String();
+                NumIdleFreightersLabel.Text = (FleetFreighters - NumUtilizedFreighters).String();
                 FreightersInZonesLabel.Text = Player.OwnedShips.Count(s => s?.IsFreighter == true && s.InTradeZone).String();
 
                 // ★ the totals row SUMS the rows above it, in their own unit. It used to count
