@@ -102,13 +102,19 @@ namespace Ship_Game
             // the measure, so the rail reads Auto at its left stop.
             var setBox = Add(new Submenu(new RectF(x, setY, w, SettingsSecH), GameText.TzSettings));
             RectF setArea = setBox.ClientArea;
-            Add(new UILabel(new Vector2(setArea.X + 10, setArea.Y + 6), GameText.TzAssignedFreighters,
-                            Fonts.Arial12Bold, Colors.Cream)).Tooltip = GameText.TzAssignedTip;
+            // ⚠ one rail, two meanings: a soft zone's borrowing CEILING, an exclusive zone's
+            // TARGET. The word follows the regime, and the box below can flip it while the dialog
+            // is still open - hence a dynamic label rather than a fixed one.
+            var quotaLabel = Add(new UILabel(new Vector2(setArea.X + 10, setArea.Y + 6),
+                                             GameText.TzMaxFreighters, Fonts.Arial12Bold, Colors.Cream));
+            quotaLabel.Tooltip = GameText.TzQuotaTip;
+            quotaLabel.DynamicText = _ => Localizer.Token(Exclusive ? GameText.TzTargetFreighters
+                                                                   : GameText.TzMaxFreighters);
             var rail = Add(new FloatSlider(SliderStyle.Decimal, new Vector2(setArea.W - 40, 28),
                                            "", 0, 20, Quota)
             {
                 Step = 1,
-                Tip = GameText.TzAssignedTip,
+                Tip = GameText.TzQuotaTip,
                 TrackYOffset = -5,
                 ZeroString = GameText.PolFreighterRefitAuto,
             });

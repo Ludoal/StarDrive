@@ -28965,10 +28965,14 @@ DvGalaxyTabTipTrade:
  Id: 7211
  ENG: "Trade zones: named groups of colonies served together by your freighters."
  FRA: "Zones commerciales : des groupes de colonies nommés, desservis ensemble par vos cargos."
-TzAssignedTip:
+TzQuotaTip:
  Id: 7212
- ENG: "How many freighters serve this zone. At Auto the number is measured from what the zone's colonies actually ask for."
- FRA: "Nombre de cargos qui desservent cette zone. Sur Auto, le nombre est mesuré à partir de ce que les colonies de la zone demandent réellement."
+ ENG: "On a soft zone, the most it may borrow from the common pool each turn - the list order says who is served first, this says how much they take. On an exclusive zone, the number of freighters it aims to own. Auto measures it from the zone's open import berths."
+ FRA: "Sur une zone souple, le maximum qu'elle peut emprunter au pool commun à chaque tour - l'ordre de la liste dit qui est servi d'abord, ceci dit combien elle prend. Sur une zone exclusive, le nombre de cargos qu'elle vise à posséder. Auto le mesure sur les créneaux d'import ouverts de la zone."
+TzTargetFreighters:
+ Id: 7265
+ ENG: "Target freighters"
+ FRA: "Cargos visés"
 TzPanToColonyTip:
  Id: 7213
  ENG: "Centre the map on this colony."
@@ -28997,10 +29001,10 @@ TzNameTaken:
  Id: 7220
  ENG: "A zone already carries this name."
  FRA: "Une zone porte déjà ce nom."
-TzAssignedFreighters:
+TzMaxFreighters:
  Id: 7221
- ENG: "Assigned Freighters"
- FRA: "Cargos affectés"
+ ENG: "Max freighters"
+ FRA: "Cargos maximum"
 TzMoveUpTip:
  Id: 7222
  ENG: "Serve this zone earlier. When freighters are short, the zones higher in the list are served first."

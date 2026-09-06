@@ -7214,7 +7214,7 @@ namespace Ship_Game
         /// <summary>Trade zones: named groups of colonies served together by your freighte</summary>
         DvGalaxyTabTipTrade = 7211,
         /// <summary>How many freighters serve this zone.</summary>
-        TzAssignedTip = 7212,
+        TzQuotaTip = 7212,
         /// <summary>Centre the map on this colony.</summary>
         TzPanToColonyTip = 7213,
         /// <summary>Required</summary>
@@ -7231,7 +7231,7 @@ namespace Ship_Game
         /// <summary>A zone already carries this name.</summary>
         TzNameTaken = 7220,
         /// <summary>Assigned Freighters</summary>
-        TzAssignedFreighters = 7221,
+        TzMaxFreighters = 7221,
         /// <summary>Serve this zone earlier.</summary>
         TzMoveUpTip = 7222,
         /// <summary>Serve this zone later.</summary>
@@ -7267,6 +7267,7 @@ namespace Ship_Game
         /// <summary>Freighters this zone owns.</summary>
         TzOwnedTip = 7238,
         TzOwnedTargetTip = 7264,
+        TzTargetFreighters = 7265,
         /// <summary>Your manual freighter filters have become exclusive trade zones.</summary>
         TzConvertedNotice = 7239,
         /// <summary>Trade Zone of this Freighter</summary>
