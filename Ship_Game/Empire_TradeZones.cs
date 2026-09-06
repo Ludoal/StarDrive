@@ -176,39 +176,53 @@ namespace Ship_Game
             // arranged, which is why the book is kept while walking it.
             var servedColonies = new HashSet<int>();
             var stationLedger = new Map<int, int>();
-            // the export side keeps a book too, and for the same reason as the import side: what one
-            // zone has been promised, the next cannot be. Walked in the list's own order, which is
-            // the priority the player arranged.
-            int foodLeft = ExportSupply(OwnedPlanets, Goods.Food);
-            int prodLeft = ExportSupply(OwnedPlanets, Goods.Production);
-            int colLeft  = ExportSupply(OwnedPlanets, Goods.Colonists);
-            // ⚠ THE CEILING IS TAKEN ON THE SET THE DISPATCH ACTUALLY SEARCHES, and today that is
-            // the whole realm for BOTH regimes: DispatchOrBuildFreighters picks its exporters from
-            // OwnedPlanets whoever asked, an exclusive zone's own pass included. Narrowing the
-            // ceiling before narrowing the dispatch made a zone read a need of nought while ten
-            // hulls were serving it (maintainer bench 585). The two narrow together at the step
-            // that closes the loading leg - not one step ahead of it.
+            // ⚠ THE CEILING IS TAKEN ON THE SET THE DISPATCH SEARCHES, and since the loading leg
+            // was closed the two regimes no longer search the same ground: an EXCLUSIVE zone loads
+            // among its own colonies, a SOFT one on the common ground. So there are two kinds of
+            // supply, and only one of them is shared.
+            //
+            // The COMMON ground is a stock walked in the list's own order - what one soft zone has
+            // been promised, the next cannot be. An enclave's own capacity is not shared with
+            // anyone by construction, so it is read fresh and taken whole.
+            Array<Planet> commonExporters = ColoniesOutsideExclusiveZones();
+            int foodLeft = ExportSupply(commonExporters, Goods.Food);
+            int prodLeft = ExportSupply(commonExporters, Goods.Production);
+            int colLeft  = ExportSupply(commonExporters, Goods.Colonists);
 
             foreach (TradeZone zone in TradeZones)
             {
                 var importers = new Array<Planet>();
+                var colonies  = new Array<Planet>();
                 foreach (int id in zone.Colonies)
                 {
                     Planet p = Universe.GetPlanet(id);
                     if (p == null || p.Owner != this)
                         continue;
 
+                    colonies.Add(p);      // the zone's own worlds - an enclave's far end
                     if (servedColonies.Add(id))
                         importers.Add(p); // only the first zone to name a world may ask for it
                 }
 
-                zone.NeedFood      = PerimeterNeed(importers, foodLeft, Goods.Food);
-                zone.NeedProd      = PerimeterNeed(importers, prodLeft, Goods.Production);
-                zone.NeedColonists = PerimeterNeed(importers, colLeft,  Goods.Colonists);
-                // taken out of the stock: what this zone has been promised is not there for the next
-                foodLeft -= zone.NeedFood;
-                prodLeft -= zone.NeedProd;
-                colLeft  -= zone.NeedColonists;
+                if (zone.Exclusive)
+                {
+                    // its own ground, shared with nobody
+                    zone.NeedFood      = PerimeterNeed(importers, ExportSupply(colonies, Goods.Food), Goods.Food);
+                    zone.NeedProd      = PerimeterNeed(importers, ExportSupply(colonies, Goods.Production), Goods.Production);
+                    zone.NeedColonists = PerimeterNeed(importers, ExportSupply(colonies, Goods.Colonists), Goods.Colonists);
+                }
+                else
+                {
+                    zone.NeedFood      = PerimeterNeed(importers, foodLeft, Goods.Food);
+                    zone.NeedProd      = PerimeterNeed(importers, prodLeft, Goods.Production);
+                    zone.NeedColonists = PerimeterNeed(importers, colLeft,  Goods.Colonists);
+                    // taken out of the common stock: what this zone has been promised is not there
+                    // for the next one that asks
+                    foodLeft -= zone.NeedFood;
+                    prodLeft -= zone.NeedProd;
+                    colLeft  -= zone.NeedColonists;
+                }
+
                 int need = zone.NeedFood + zone.NeedProd + zone.NeedColonists;
 
                 // a station's hunger is its own - two zones naming the same body would ask for the

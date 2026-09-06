@@ -201,7 +201,7 @@ namespace Ship_Game
                     break;
 
                 if (NonCybernetic)
-                    DispatchOrBuildFreighters(Goods.Food, commonColonies, false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Food, commonColonies, commonColonies, false, ref tradeState);
 
                 if (!servedZones)
                 {
@@ -242,13 +242,13 @@ namespace Ship_Game
 
                 if (productionFirst)
                 {
-                    DispatchOrBuildFreighters(Goods.Production, commonColonies, false, ref tradeState);
-                    DispatchOrBuildFreighters(Goods.Colonists, commonColonies, false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Production, commonColonies, commonColonies, false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Colonists, commonColonies, commonColonies, false, ref tradeState);
                 }
                 else
                 {
-                    DispatchOrBuildFreighters(Goods.Colonists, commonColonies, false, ref tradeState);
-                    DispatchOrBuildFreighters(Goods.Production, commonColonies, false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Colonists, commonColonies, commonColonies, false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Production, commonColonies, commonColonies, false, ref tradeState);
                 }
 
                 tradeState.UpdatePlanetsTradeGoods();
@@ -285,6 +285,10 @@ namespace Ship_Game
             // figure that stops being written under pressure is worse than none.
 
             MeasureZoneNeeds(); // one book of need, read in priority order, before anyone asks
+
+            // a SOFT zone borrows from the common pool and is served from the common ground:
+            // the enclaves are no more open to it than they are to the empire's own pass.
+            Array<Planet> softExporters = ColoniesOutsideExclusiveZones();
 
             // a zone whose pass does not run this turn holds nothing back: last turn's hulls
             // went elsewhere long ago, and a stale hold would starve the common pool for nobody
@@ -339,10 +343,10 @@ namespace Ship_Game
                 TradeState zoneState = new(this, false);
                 zoneState.SetIdleFreighters(lent.ToArray());
                 if (NonCybernetic)
-                    DispatchOrBuildFreighters(Goods.Food, colonies, false, ref zoneState);
+                    DispatchOrBuildFreighters(Goods.Food, colonies, softExporters, false, ref zoneState);
 
-                DispatchOrBuildFreighters(Goods.Production, colonies, false, ref zoneState);
-                DispatchOrBuildFreighters(Goods.Colonists, colonies, false, ref zoneState);
+                DispatchOrBuildFreighters(Goods.Production, colonies, softExporters, false, ref zoneState);
+                DispatchOrBuildFreighters(Goods.Colonists, colonies, softExporters, false, ref zoneState);
 
                 // What the zone did not send goes back to the common pool - a quota is a share of
                 // a turn, not a possession - EXCEPT the berths its stations are waiting on.
@@ -391,9 +395,9 @@ namespace Ship_Game
             TradeState abroad = new(this, true);
             abroad.SetIdleFreighters(domestic.IdleFreighters.ToArr());
             if (NonCybernetic)
-                DispatchOrBuildFreighters(Goods.Food, interTradePlanets, true, ref abroad);
+                DispatchOrBuildFreighters(Goods.Food, interTradePlanets, ColoniesOutsideExclusiveZones(), true, ref abroad);
 
-            DispatchOrBuildFreighters(Goods.Production, interTradePlanets, true, ref abroad);
+            DispatchOrBuildFreighters(Goods.Production, interTradePlanets, ColoniesOutsideExclusiveZones(), true, ref abroad);
             domestic.SetIdleFreighters(abroad.IdleFreighters);
         }
 
@@ -586,8 +590,13 @@ namespace Ship_Game
         public bool TryDispatchGoodsSupplyToStation(Goods goods, Ship targetStation, out ExportPlanetAndFreighter exportAndFreighter)
         {
             exportAndFreighter = default;
-            // TODO: maybe use IEnumerable generators for these?
-            Planet[] exportingPlanets = OwnedPlanets.Filter(p => p.FreeGoodsExportSlots(goods) > 0);
+            // ★ a station loads where its own regime allows: inside the enclave when it stands
+            // in one, on the common ground otherwise. Loading anywhere was the last door left
+            // open into an exclusive zone (maintainer feedback, bench 588).
+            TradeZone stationZone = TradeZoneOfStation(targetStation);
+            Array<Planet> allowed = stationZone is { Exclusive: true } ? stationZone.ColonyPlanets(this)
+                                                                       : ColoniesOutsideExclusiveZones();
+            Planet[] exportingPlanets = allowed.Filter(p => p.FreeGoodsExportSlots(goods) > 0);
             if (exportingPlanets.Length == 0)
                 return false;
 
@@ -596,7 +605,6 @@ namespace Ship_Game
             // lent this turn and did not spend, rather than taking the first idle hull the moment
             // it is hungry. A station outside every zone keeps the old behaviour untouched, and a
             // zone that received nothing this turn simply makes its stations wait a turn.
-            TradeZone stationZone = TradeZoneOfStation(targetStation);
             Ship[] idleFreighters = stationZone == null
                                   ? GetIdleFreightersOutsideZones(interTrade: false)
                                   : stationZone.LentThisTurn.Filter(s => s.IsIdleFreighter && s.Loyalty == this);
@@ -639,7 +647,7 @@ namespace Ship_Game
             TradeState state = new(this, false);
             state.SetIdleFreighters(idle);
             if (NonCybernetic)
-                DispatchOrBuildFreighters(Goods.Food, colonies, false, ref state);
+                DispatchOrBuildFreighters(Goods.Food, colonies, colonies, false, ref state);
 
             // the zone's one lever. Pinned, it answers; on Auto it keeps the empire's own
             // population-weighted dice, so a zone left alone behaves like the empire around it.
@@ -651,13 +659,13 @@ namespace Ship_Game
 
             if (productionFirst)
             {
-                DispatchOrBuildFreighters(Goods.Production, colonies, false, ref state);
-                DispatchOrBuildFreighters(Goods.Colonists, colonies, false, ref state);
+                DispatchOrBuildFreighters(Goods.Production, colonies, colonies, false, ref state);
+                DispatchOrBuildFreighters(Goods.Colonists, colonies, colonies, false, ref state);
             }
             else
             {
-                DispatchOrBuildFreighters(Goods.Colonists, colonies, false, ref state);
-                DispatchOrBuildFreighters(Goods.Production, colonies, false, ref state);
+                DispatchOrBuildFreighters(Goods.Colonists, colonies, colonies, false, ref state);
+                DispatchOrBuildFreighters(Goods.Production, colonies, colonies, false, ref state);
             }
 
             state.UpdatePlanetsTradeGoods();
@@ -745,7 +753,12 @@ namespace Ship_Game
             return body == null ? null : GetTradeZone(body);
         }
 
-        void DispatchOrBuildFreighters(Goods goods, Array<Planet> importPlanetList, bool interTrade, ref TradeState state)
+        // ★ BOTH ENDS ARE GIVEN, never assumed. The far end used to be every owned planet,
+        // whoever asked - so a hull with no zone mark flew into an exclusive zone to LOAD,
+        // every turn, in every pass. An enclave that lends its goods to the realm is not an
+        // enclave (maintainer feedback, bench 588).
+        void DispatchOrBuildFreighters(Goods goods, Array<Planet> importPlanetList,
+                                       Array<Planet> exportPlanetList, bool interTrade, ref TradeState state)
         {
             if (state.NoFreeFreighters)
                 return;
@@ -770,7 +783,7 @@ namespace Ship_Game
             if (state.HasExportPlanetOf(goods))
             {
                 // TODO: maybe use IEnumerable generators for these?
-                exportingPlanets = OwnedPlanets.Filter(p => p.FreeGoodsExportSlots(goods) > 0);
+                exportingPlanets = exportPlanetList.Filter(p => p.FreeGoodsExportSlots(goods) > 0);
                 if (exportingPlanets.Length == 0)
                 {
                     state.SetNoExportPlanetOf(goods);
