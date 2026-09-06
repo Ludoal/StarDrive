@@ -79,7 +79,7 @@ namespace Ship_Game
             num.Pos = new Vector2(laneX, y);
             num.Width = SlashLane;
             num.PerformLayout();
-            den.TextAlign = TextAlign.Left;
+            den.TextAlign = TextAlign.Default;   // Default IS left here; there is no Left member
             den.Pos = new Vector2(laneX + SlashLane, y);
             den.Width = FractionColW - SlashLane;
             den.PerformLayout();
