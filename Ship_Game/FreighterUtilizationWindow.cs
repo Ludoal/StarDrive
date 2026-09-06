@@ -33,11 +33,20 @@ namespace Ship_Game
         UILabel TotalFreightersValue;
         UILabel TotalImportingValue;
         UILabel TotalExportingValue;
+        UILabel TotalFreightersDen;
+        UILabel TotalImportingDen;
+        UILabel TotalExportingDen;
 
         // Ludoal fork (maintainer bench 339): the numbers are right-aligned on a 3-digit column
         // centred under each header. These are the RIGHT edges of those columns (absolute X), the
         // ONE source both the per-goods rows and the totals row align on, so they cannot disagree.
         const float NumberColW = 24f; // room for three digits in Arial12Bold
+        // Ludoal fork (maintainer, bench 578): the cells hold "served / total" now, so the lane is
+        // wide enough for both halves and the SLASH sits on a fixed column inside it. The font is
+        // proportional: right-aligning the whole string lines up the ends, which is exactly what
+        // made the fractions look ragged. Two halves, one fixed column, same trick as the Labor
+        // numbers on the colony screen.
+        const float FractionColW = 62f, SlashLane = 30f;
         float FreightersRightX, ImportingRightX, ExportingRightX;
 
         // Ludoal fork (maintainer feedback): the ZONE FILTER. A null selection is the whole
@@ -52,14 +61,29 @@ namespace Ship_Game
         // once at open, it went on offering the list as it stood the moment the window came up.
         readonly Array<TradeZone> ZonesShown = new();
 
-        // the right edge that centres a NumberColW-wide column under a header at headerX
+        // the right edge that centres a FractionColW-wide lane under a header at headerX
         static float ColumnRightUnder(float headerX, GameText header)
-            => headerX + Fonts.Arial12Bold.TextWidth(new LocalizedText(header).Text) * 0.5f + NumberColW * 0.5f;
+            => headerX + Fonts.Arial12Bold.TextWidth(new LocalizedText(header).Text) * 0.5f + FractionColW * 0.5f;
 
         // a white number label right-aligned so its right edge lands on rightX
         static UILabel RightAlignedValue(float rightX, float y)
             => new(new Vector2(rightX - NumberColW, y), "", Fonts.Arial12Bold, Color.White)
                { TextAlign = TextAlign.Right, Width = NumberColW };
+
+        // the numerator ends on the slash column, the denominator starts on it - so every row's
+        // "/" stands in the same place whatever the digits either side
+        static void LayoutFraction(UILabel num, UILabel den, float rightX, float y)
+        {
+            float laneX = rightX - FractionColW;
+            num.TextAlign = TextAlign.Right;
+            num.Pos = new Vector2(laneX, y);
+            num.Width = SlashLane;
+            num.PerformLayout();
+            den.TextAlign = TextAlign.Left;
+            den.Pos = new Vector2(laneX + SlashLane, y);
+            den.Width = FractionColW - SlashLane;
+            den.PerformLayout();
+        }
 
         public FreighterUtilizationWindow(UniverseScreen screen) : base(screen, toPause: null)
         {
@@ -143,6 +167,13 @@ namespace Ship_Game
             TotalFreightersValue = Add(RightAlignedValue(FreightersRightX, totalsY));
             TotalImportingValue  = Add(RightAlignedValue(ImportingRightX, totalsY));
             TotalExportingValue  = Add(RightAlignedValue(ExportingRightX, totalsY));
+            TotalFreightersDen   = Add(RightAlignedValue(FreightersRightX, totalsY));
+            TotalImportingDen    = Add(RightAlignedValue(ImportingRightX, totalsY));
+            TotalExportingDen    = Add(RightAlignedValue(ExportingRightX, totalsY));
+            // the foot's fractions stand on the same slash columns as the rows above it
+            LayoutFraction(TotalFreightersValue, TotalFreightersDen, FreightersRightX, totalsY);
+            LayoutFraction(TotalImportingValue,  TotalImportingDen,  ImportingRightX, totalsY);
+            LayoutFraction(TotalExportingValue,  TotalExportingDen,  ExportingRightX, totalsY);
 
             // the zone picker rides the title bar's right end, the way STARVATION rides Supply's -
             // the window's four rows are spoken for. Added LAST on purpose: an open list draws
@@ -309,9 +340,12 @@ namespace Ship_Game
                     servedImp += gu.ServedImporting; imp += gu.NumImportingPlanets;
                     servedExp += gu.ServedExporting; exp += gu.NumExportingPlanets;
                 }
-                TotalFreightersValue.Text = $"{servedBerths} / {importBerths}";
-                TotalImportingValue.Text  = $"{servedImp} / {imp}";
-                TotalExportingValue.Text  = $"{servedExp} / {exp}";
+                TotalFreightersValue.Text = servedBerths.String();
+                TotalFreightersDen.Text   = $" / {importBerths}";
+                TotalImportingValue.Text  = servedImp.String();
+                TotalImportingDen.Text    = $" / {imp}";
+                TotalExportingValue.Text  = servedExp.String();
+                TotalExportingDen.Text    = $" / {exp}";
             }
 
             base.Update(fixedDeltaTime);
@@ -374,6 +408,9 @@ namespace Ship_Game
             readonly UILabel NumFreightersLabel;
             readonly UILabel NumImportingLabel;
             readonly UILabel NumExportingLabel;
+            readonly UILabel DenFreightersLabel;
+            readonly UILabel DenImportingLabel;
+            readonly UILabel DenExportingLabel;
             readonly UIPanel IconPanel;
             readonly FreighterUtilizationWindow Window;
             readonly Goods Goods;
@@ -400,6 +437,9 @@ namespace Ship_Game
                 NumFreightersLabel = new UILabel(new Vector2(-100, -100), GameText.HullBonus, Fonts.Arial12Bold, Color.Wheat);
                 NumImportingLabel  = new UILabel(new Vector2(-100, -100), GameText.HullBonus, Fonts.Arial12Bold, Color.Wheat);
                 NumExportingLabel  = new UILabel(new Vector2(-100, -100), GameText.HullBonus, Fonts.Arial12Bold, Color.Wheat);
+                DenFreightersLabel = new UILabel(new Vector2(-100, -100), GameText.HullBonus, Fonts.Arial12Bold, Color.Wheat);
+                DenImportingLabel  = new UILabel(new Vector2(-100, -100), GameText.HullBonus, Fonts.Arial12Bold, Color.Wheat);
+                DenExportingLabel  = new UILabel(new Vector2(-100, -100), GameText.HullBonus, Fonts.Arial12Bold, Color.Wheat);
 
                 SubTexture Icon = ResourceManager.Texture("Goods/Production");
                 if (goods == Goods.Food)
@@ -424,18 +464,10 @@ namespace Ship_Game
                 // maintainer bench 339: numbers RIGHT-aligned on the SAME columns as the totals row
                 // (centred under each header, room for 3 digits). Window owns the right edges, so
                 // the goods rows and the totals cannot disagree.
-                LayoutRightAligned(NumFreightersLabel, Window.FreightersRightX, Pos.Y);
-                LayoutRightAligned(NumImportingLabel,  Window.ImportingRightX, Pos.Y);
-                LayoutRightAligned(NumExportingLabel,  Window.ExportingRightX, Pos.Y);
+                LayoutFraction(NumFreightersLabel, DenFreightersLabel, Window.FreightersRightX, Pos.Y);
+                LayoutFraction(NumImportingLabel,  DenImportingLabel,  Window.ImportingRightX, Pos.Y);
+                LayoutFraction(NumExportingLabel,  DenExportingLabel,  Window.ExportingRightX, Pos.Y);
                 base.PerformLayout();
-            }
-
-            static void LayoutRightAligned(UILabel label, float rightX, float y)
-            {
-                label.TextAlign = TextAlign.Right;
-                label.Pos = new Vector2(rightX - NumberColW, y);
-                label.Width = NumberColW;
-                label.PerformLayout();
             }
 
             public override bool HandleInput(InputState input)
@@ -450,6 +482,9 @@ namespace Ship_Game
                 NumFreightersLabel.Draw(batch, elapsed);
                 NumImportingLabel.Draw(batch, elapsed);
                 NumExportingLabel.Draw(batch, elapsed);
+                DenFreightersLabel.Draw(batch, elapsed);
+                DenImportingLabel.Draw(batch, elapsed);
+                DenExportingLabel.Draw(batch, elapsed);
                 NumExportingLabel.Color = Color.White;
                 NumImportingLabel.Color = Color.White;
                 if (NumExportingPlanets == 0 && NumImportingPlanets > 0 && GoodsTransported <= 0)
@@ -476,9 +511,15 @@ namespace Ship_Game
             {
                 TotalEmpireUtilizedCargo = Window.TotalUtilizedCargo;
                 UtilizationBar.Progress  = TotalEmpireUtilizedCargo == 0 ? 0 : GoodsTransported/TotalEmpireUtilizedCargo *100;
-                NumFreightersLabel.Text  = $"{ServedBerths} / {ImportBerths}";
-                NumImportingLabel.Text   = $"{ServedImporting} / {NumImportingPlanets}";
-                NumExportingLabel.Text   = $"{ServedExporting} / {NumExportingPlanets}";
+                NumFreightersLabel.Text  = ServedBerths.String();
+                DenFreightersLabel.Text  = $" / {ImportBerths}";
+                DenFreightersLabel.Color = NumFreightersLabel.Color;
+                DenImportingLabel.Color  = NumImportingLabel.Color;
+                DenExportingLabel.Color  = NumExportingLabel.Color;
+                NumImportingLabel.Text   = ServedImporting.String();
+                DenImportingLabel.Text   = $" / {NumImportingPlanets}";
+                NumExportingLabel.Text   = ServedExporting.String();
+                DenExportingLabel.Text   = $" / {NumExportingPlanets}";
                 base.Update(fixedDeltaTime);
             }
 
