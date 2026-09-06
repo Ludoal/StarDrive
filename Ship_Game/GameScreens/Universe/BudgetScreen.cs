@@ -377,18 +377,16 @@ namespace Ship_Game.GameScreens
             EmpireNetIncome.DropShadow  = true;
             EmpireNetIncome.DynamicText = DynamicText(NetGainNow, f => f.MoneyString());
 
-            // the table's TOTAL lane always drops onto the synthesis' Net Gain/Loss line so
-            // the two bottom rows read as one. Never up (a stretched table's TOTAL belongs to
-            // its own lane); the two-lane bound is sanity against a degenerate layout, not a
-            // tuning knob.
-            // The bound is sanity against a degenerate layout, not a tuning knob - so it is the
-            // table's own floor rather than a row count: the synthesis on the right has grown
-            // past two rows since this was written, and a fixed count silently stopped nudging.
-            int footerNudge = netY - totalY;
+            // the table's TOTAL lane sits at the foot of the TABLE, as low as its own floor
+            // allows. The two columns keep their own rhythms: the synthesis on the right ends
+            // where its blocks end, and Net Gain/Loss is the last of them rather than a line the
+            // table has to reach (maintainer feedback). Never up - a stretched table's TOTAL
+            // belongs to its own lane.
             float footerFloor = Table.TableRect.Bottom - Fonts.Arial12Bold.LineSpacing;
-            if (footerNudge > 0 && totalY + footerNudge <= footerFloor)
+            int footerDrop = (int)footerFloor - totalY;
+            if (footerDrop > 0)
                 foreach (UILabel l in footerLabels)
-                    l.Pos = new Vector2(l.Pos.X, l.Pos.Y + footerNudge);
+                    l.Pos = new Vector2(l.Pos.X, l.Pos.Y + footerDrop);
 
             base.LoadContent();
         }
