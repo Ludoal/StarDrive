@@ -134,23 +134,17 @@ namespace Ship_Game
             // ⚠ an EXCLUSIVE zone shows the number Auto RESOLVES TO, never the word: "Auto (0)"
             // is a gap the player cannot read, "12 (0)" is twelve hulls missing (maintainer
             // feedback). The word keeps its place in the tooltip.
-            if (zone.Exclusive)
-            {
-                // ⚠ the NUMBER and the MODE, both: "Auto (0)" hid the gap, and a bare "12 (0)" hid
-                // whether the twelve was chosen or resolved. On Auto the word leads the figure it
-                // resolves to; a hand-set target shows the figure alone (maintainer feedback).
-                int owned = zone.MemberFreighters(player).Count;
-                if (zone.Quota > 0)
-                    return $"{zone.Quota} ({owned})";
-
-                return $"{Localizer.Token(GameText.PolFreighterRefitAuto)} {zone.MeasuredNeed} ({owned})";
-            }
-
+            // ⚠ ON AUTO THE CELL SHOWS THE WORD, NOT THE FIGURE - and that is not a gap, it is
+            // the absence of a repetition: on Auto the target IS the Need, printed two columns to
+            // the left. What the cell alone can say is the MODE, chosen or resolved, and a figure
+            // here would erase it to repeat something already on screen. A hand-set target does
+            // print its number, because there it differs from the Need (maintainer feedback).
+            string target = zone.Quota > 0 ? zone.Quota.ToString()
+                                           : Localizer.Token(GameText.PolFreighterRefitAuto);
             // a soft zone owns nothing, so it shows the setting alone rather than a bracket
             // holding a nought that would read as a target it failed to reach - and it has no
             // gap to show, since it borrows by the turn instead of holding
-            return zone.Quota > 0 ? zone.Quota.ToString()
-                                  : Localizer.Token(GameText.PolFreighterRefitAuto);
+            return zone.Exclusive ? $"{target} ({zone.MemberFreighters(player).Count})" : target;
         }
 
         public static string PriorityText(TradeZone zone) => zone.Priority switch
