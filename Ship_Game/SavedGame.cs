@@ -31,6 +31,10 @@ namespace Ship_Game
         // initializers only survive for fields absent from the stream, i.e. old headers;
         // White keeps those from tinting an icon fully transparent if ever read unguarded
         [StarData] public Color EmpireColor = Color.White;
+        // Ludoal fork (maintainer feedback): the game's setup, formatted at save time, for the
+        // load list's tooltip. Empty on a header written before the field existed - the reader
+        // says so rather than showing a blank block.
+        [StarData] public string SetupSummary = "";
     }
 
     public sealed class SavedGame
@@ -99,6 +103,7 @@ namespace Ship_Game
                 Time       = now,
                 FlagIndex  = state.Player.data.Traits.FlagIndex,
                 EmpireColor = state.Player.EmpireColor,
+                SetupSummary = state.P.SetupSummary(),
             };
 
             // an annoying edge case, someone has created a folder with the same name

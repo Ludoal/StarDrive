@@ -226,4 +226,37 @@ public class UniverseParams
         if (DisablePirates)
             PirateFactions = PirateFactionsSetting.None;
     }
+
+    // Ludoal fork (maintainer feedback): the setup as one block of text, written into the save
+    // HEADER so the load list can answer "what game is this?" without opening megabytes of
+    // universe - the load screen reads headers only, by design.
+    // The lines follow the creation screen's own order, one per group. The rules line lists only
+    // what departs from the defaults and is dropped when nothing does, so a standard game reads
+    // as four short lines rather than a wall of "Normal".
+    public string SetupSummary()
+    {
+        string s = $"Galaxy: {GalaxySize}, {NumSystems} systems, {NumOpponents} opponents, {Mode}, {Pace:0.##}x, {Difficulty}";
+        s += $"\nRemnant: Presence {ExtraRemnant}, Pace {RemnantPace}, Strength {RemnantStrength}";
+        s += $"\nPirates: {PirateFactions}, Pace {PiratePace}, Tribute {PirateTribute}";
+
+        string rules = "";
+        void Rule(string r) { rules += rules.Length > 0 ? ", " + r : r; }
+        if (PreventFederations)           Rule("no federations");
+        if (EliminationMode)              Rule("elimination");
+        if (AIUsesPlayerDesigns)          Rule("AI uses player designs");
+        if (UseUpkeepByHullSize)          Rule("upkeep by hull size");
+        if (EnableRandomizedAIFleetSizes) Rule("randomized AI fleets");
+        if (DisableAlternateAITraits)     Rule("no alternate AI traits");
+        if (FixedPlayerCreditCharge)      Rule("fixed credit charge");
+        if (DisableResearchStations)      Rule("no research stations");
+        if (DisableMiningOps)             Rule("no mining ops");
+        if (!AllowPlayerInterTrade)       Rule("no player inter-empire trade");
+        if (ExtraPlanets > 0)             Rule($"{ExtraPlanets} extra planets");
+        if (rules.Length > 0)
+            s += "\nRules: " + rules;
+
+        string mod = GlobalStats.HasMod ? (GlobalStats.ModName + " " + GlobalStats.ModVersion).Trim() : "none";
+        s += $"\nMod: {mod}, build {GlobalStats.Version.Split(' ')[0]}";
+        return s;
+    }
 }

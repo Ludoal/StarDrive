@@ -374,7 +374,10 @@ namespace Ship_Game
             {
                 string info = $"{header.PlayerName} StarDate {header.StarDate}";
                 string extraInfo = header.RealDate;
-                string tooltip = file.Name;
+                // the file name, then the setup the game was created with. A header written
+                // before the field existed carries none, and says so rather than showing a gap.
+                string tooltip = file.Name + "\n\n"
+                               + (header.SetupSummary.NotEmpty() ? header.SetupSummary : "Setup not recorded");
 
                 // headers that carry the player's flag draw it directly; older headers read
                 // -1 and fall back to the race-name lookup below, which shows the default
