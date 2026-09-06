@@ -59,6 +59,11 @@ namespace Ship_Game.AI.Budget
             // never decays back. Guarding costs nothing and closes the whole class.
             float totalPotential = Owner.TotalColonyPotentialValues;
             float totalValues    = Owner.TotalColonyValues;
+            // the guard below hides the symptom, so the moment itself has to leave a trace -
+            // otherwise the infinity is gone and with it any way of knowing when it happened
+            if (totalPotential <= 0 || totalValues <= 0)
+                Log.Warning($"PlanetBudget: empire totals not written yet for {P.Name} " +
+                            $"(potential {totalPotential}, values {totalValues}) - share taken as 0");
             EmpireRatio = totalPotential > 0
                         ? P.ColonyPotentialValue(Owner, useBaseMaxFertility: true) / totalPotential : 0;
             float defenseRatio = totalValues > 0 ? P.ColonyBaseValue(Owner) / totalValues : 0;
