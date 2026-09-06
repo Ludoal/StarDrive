@@ -38,10 +38,10 @@ namespace Ship_Game
         // its toggle's row now, so it costs the same 26 as a plain checkbox) + 12 bottom pad.
         // BoxW2: the dropdown boxes are WIDER instead of taller - label room + picker.
         const float BoxW = 320f, BoxW2 = 450f, BoxGap = 10f;
-        // Colonization loses Auto Governor (-26), Construction gains Auto-terraform (+26),
-        // Trade loses the Freighter Priority row and Inter-Empire Trade (-52). All three left
-        // for Policies.
-        const float ColonizationBoxH = 130f, ConstructionBoxH = 165f,
+        // Expansion loses Auto Governor (-26); Deep Space Building gave Auto-terraform back to
+        // Policies>Colony (-26), which is where a command that acts on a colony we already hold
+        // belongs; Freighters lost the priority row and Inter-Empire Trade (-52), also to Policies.
+        const float ColonizationBoxH = 130f, ConstructionBoxH = 139f,
                     TradeBoxH = 152f,
                     // two switches + slider label + slider + the column title + seven paired
                     // category rows + the Miscellaneous heading + Inhibition, at the 26 per row
@@ -194,7 +194,7 @@ namespace Ship_Game
             notifications.AddCheckbox(() => !P.DisableInhibitionWarning, v => P.DisableInhibitionWarning = !v,
                                       title: "Inhibition Alerts (map overlay)", tooltip: GameText.InhibitionAlertsAreDisplayedWhen);
 
-            UIList trade = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap, BoxW2, TradeBoxH), "Trade");
+            UIList trade = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap, BoxW2, TradeBoxH), "Freighters");
             // The old single "Automatic Trade" toggle is dissected into three checkboxes below.
             // The picker (kept from that control, minus its lead toggle) names the shared Freighter
             // Model that Auto-build and Auto-upgrade both use; its Auto Pick box picks the best
@@ -207,7 +207,7 @@ namespace Ship_Game
 
             trade.ReverseZOrder(); // an open list draws over the rows beneath it
 
-            UIList construction = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap, BoxW2, ConstructionBoxH), "Construction");
+            UIList construction = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap, BoxW2, ConstructionBoxH), "Deep Space Building");
             ConstructorDropDown = construction.Add(new CheckedDropdown())
                 .Create(() => player.AutoBuildSpaceRoads, Localizer.Token(GameText.Autobuild) + " Projectors", GameText.YourEmpireWillAutomaticallyCreate2,
                         autoPick: () => player.AutoPickConstructors);
@@ -220,13 +220,9 @@ namespace Ship_Game
                     .Create(() => player.AutoBuildMiningStations, title: GameText.AutoBuildMiningStation, tooltip: GameText.AutoBuildMiningStationTip,
                             autoPick: () => player.AutoPickBestMiningStation);
 
-            // Auto-terraform lands here rather than in a one-checkbox Empire frame: same verb as
-            // its neighbours - build this class of thing for me, without being told how.
-            construction.AddCheckbox(() => player.AutoBuildTerraformers, title: GameText.AutoBuildTerraformers, tooltip: GameText.AutoBuildTerraformersTip);
-
             construction.ReverseZOrder(); // an open list draws over the rows beneath it
 
-            UIList colonization = NewBox(new RectF(x1, top, BoxW2, ColonizationBoxH), "Colonization");
+            UIList colonization = NewBox(new RectF(x1, top, BoxW2, ColonizationBoxH), "Expansion");
             // Auto-explore split into two jobs: build new scouts (keeps the model picker), and
             // send idle scouts out to explore (a plain toggle, checked by default in a new game).
             ScoutDropDown = colonization.Add(new CheckedDropdown())

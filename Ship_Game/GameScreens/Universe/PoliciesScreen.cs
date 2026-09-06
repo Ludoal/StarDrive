@@ -46,13 +46,17 @@ namespace Ship_Game
         // governor type later moves the box by itself instead of needing a new magic number.
         const float PolicyRowH = 26f;
         const float BlueprintRows = 6f;                       // heading + 5 governor types
-        const float ColonyBoxH = 170f + BlueprintRows * PolicyRowH;
+        const float ColonyBoxH = 170f + PolicyRowH + BlueprintRows * PolicyRowH; // +1 row: Auto-terraform
         // A number on a rail costs two rows: its own title, then the rail itself, whose 28px
         // must hold a 26px knob (bench 485). The rail is narrower than its frame: these are
         // short ranges, and the value prints past the rail's right end (bench 538).
         const float SliderRowH = 64f, SliderRailW = 300f;
         // Trade carries the priority picker, the three quantity rails and the game rule.
-        const float EconomyBoxH = 74f, ResearchBoxH = 74f, TradeBoxH = 126f + 3f * SliderRowH;
+        // ⚠ Economy and Research are gone from this page (maintainer feedback): Auto-taxes
+        // already lives on the Economy screen itself, and Auto-research has moved to the
+        // Research screen, over the panels it governs. A frame holding one switch that is
+        // also somewhere else is a second place to look, not a policy.
+        const float TradeBoxH = 126f + 3f * SliderRowH;
 
         // The Prioritization rows live INSIDE the Construction frame, under its Rush row.
         // Both numbers are CONSTANTS and the frame is sized FROM them - never the
@@ -74,7 +78,7 @@ namespace Ship_Game
         public override void LoadContent()
         {
             RemoveAll();
-            float col1H = EconomyBoxH + BoxGap + ResearchBoxH + BoxGap + ColonyBoxH;
+            float col1H = ColonyBoxH;
             float col2H = TradeBoxH;
             float contentW = 9 + 10 + BoxW + BoxGap + BoxW2 + BoxGap + BoxW3 + 10 + 9;  // ClientArea insets + gutters
             float contentH = 60 + Math.Max(Math.Max(col1H, col2H), ConstructionBoxH) + 22; // tab strip + cross clearance + pads
@@ -92,7 +96,7 @@ namespace Ship_Game
             // below its own row, and add order is draw order - the spill must land on top
             // of the neighbour, not under it.
 
-            UIList colony = NewBox(new RectF(x0, top + EconomyBoxH + BoxGap + ResearchBoxH + BoxGap, BoxW, ColonyBoxH), "Colony", GameText.PolColonyNotice);
+            UIList colony = NewBox(new RectF(x0, top, BoxW, ColonyBoxH), "Colony", GameText.PolColonyNotice);
             // ⚠ "Auto Governor" decides whether a new colony gets an ASSESSED governor -
             // see Planet_Colonize.SetupColonyType.
             colony.AddCheckbox(() => player.AutoCoreGovernor, title: "Auto Governor", tooltip: GameText.AutoGovernorTip);
@@ -125,13 +129,12 @@ namespace Ship_Game
                 colony.Add(new SplitElement(new UILabel(label, Fonts.Arial12, Colors.Cream), list)
                     { Split = MandateSplit });
             }
+            // Auto-terraform closes the frame: it acts on a colony the empire ALREADY holds, which
+            // is what this page is about - unlike auto-colonisation, which decides where the empire
+            // goes next and stays with the other build automations (maintainer feedback).
+            colony.AddCheckbox(() => player.AutoBuildTerraformers, title: GameText.AutoBuildTerraformers,
+                               tooltip: GameText.AutoBuildTerraformersTip);
             colony.ReverseZOrder(); // an open list draws over the rows beneath it
-
-            UIList research = NewBox(new RectF(x0, top + EconomyBoxH + BoxGap, BoxW, ResearchBoxH), "Research", GameText.PolResearchNotice);
-            research.AddCheckbox(() => player.AutoResearch, title: GameText.AutoResearch, tooltip: GameText.YourEmpireWillAutomaticallySelect);
-
-            UIList economy = NewBox(new RectF(x0, top, BoxW, EconomyBoxH), "Economy", GameText.PolEconomyNotice);
-            economy.AddCheckbox(() => player.AutoTaxes, title: GameText.AutoTaxes, tooltip: GameText.YourEmpireWillAutomaticallyManage3);
 
             UIList trade = NewBox(new RectF(x2, top, BoxW2, TradeBoxH), "Trade", GameText.PolTradeNotice);
             // the RIGHT is read before the doctrine that uses it (bench 538), so the permission

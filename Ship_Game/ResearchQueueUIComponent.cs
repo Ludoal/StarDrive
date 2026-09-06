@@ -37,7 +37,17 @@ namespace Ship_Game
                                           ResearchScreenNew.ResearchButtonW,
                                           ResearchScreenNew.ResearchButtonH);
 
-            RectF current = new(container.X, container.Y, container.Width, 150);
+            // Ludoal fork (maintainer feedback): the empire's Auto-research switch HEADS this
+            // column. It governs what the two panels below are for, so it is read before them,
+            // and the room it takes comes off the queue's height - Current Research is a card of
+            // fixed size, the queue is the one thing that can give.
+            const float AutoRowH = 26f;
+            Empire player = screen.Player;
+            Add(new UICheckBox(container.X + 6, container.Y + 3, () => player.AutoResearch,
+                               Fonts.Arial12Bold, GameText.AutoResearch,
+                               GameText.YourEmpireWillAutomaticallySelect));
+
+            RectF current = new(container.X, container.Y + AutoRowH, container.Width, 150);
             RectF timeLeftRect = new(current.X + current.W - 119, current.Y + current.H - 24, 111, 20);
             TimeLeft = Panel(timeLeftRect, Color.White, ResourceManager.Texture("ResearchMenu/timeleft"));
             
@@ -64,7 +74,7 @@ namespace Ship_Game
             SpyDisruption.Visible = false;
             SpyDisruptionLabel.Visible = false;
             
-            RectF queue = new(current.X, current.Y + 165, container.Width, container.Height - 165);
+            RectF queue = new(current.X, current.Y + 165, container.Width, container.Height - 165 - AutoRowH);
             var queueSub = Add(new SubmenuScrollList<ResearchQItem>(queue, GameText.ResearchQueue, 125, ListStyle.Blue));
             ResearchQueueList = queueSub.List;
 
