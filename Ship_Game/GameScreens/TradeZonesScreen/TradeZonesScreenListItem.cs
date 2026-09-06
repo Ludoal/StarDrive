@@ -131,11 +131,20 @@ namespace Ship_Game
         // draws, not on a bare count.
         public static string TargetAndOwned(TradeZone zone, Empire player)
         {
-            string target = zone.Quota > 0 ? zone.Quota.ToString()
-                                           : Localizer.Token(GameText.PolFreighterRefitAuto);
+            // ⚠ an EXCLUSIVE zone shows the number Auto RESOLVES TO, never the word: "Auto (0)"
+            // is a gap the player cannot read, "12 (0)" is twelve hulls missing (maintainer
+            // feedback). The word keeps its place in the tooltip.
+            if (zone.Exclusive)
+            {
+                int target = zone.Quota > 0 ? zone.Quota : zone.MeasuredNeed;
+                return $"{target} ({zone.MemberFreighters(player).Count})";
+            }
+
             // a soft zone owns nothing, so it shows the setting alone rather than a bracket
-            // holding a nought that would read as a target it failed to reach
-            return zone.Exclusive ? $"{target} ({zone.MemberFreighters(player).Count})" : target;
+            // holding a nought that would read as a target it failed to reach - and it has no
+            // gap to show, since it borrows by the turn instead of holding
+            return zone.Quota > 0 ? zone.Quota.ToString()
+                                  : Localizer.Token(GameText.PolFreighterRefitAuto);
         }
 
         public static string PriorityText(TradeZone zone) => zone.Priority switch
