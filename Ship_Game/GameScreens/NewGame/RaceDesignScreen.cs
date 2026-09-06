@@ -409,7 +409,7 @@ namespace Ship_Game
                 tip:GameText.RmStrengthTip);
 
             AddOption(FactionsOptions, Localizer.Token(GameText.PirateFactionsLabel) + " : ",
-                OnPirateFactionsClicked, _ => PirateFactionsText(P.PirateFactions),
+                OnPirateFactionsClicked, _ => PirateFactionsText(P.PirateFactionChoice),
                 tip:GameText.PirateFactionsTip);
             AddOption(FactionsOptions, Localizer.Token(GameText.PiratePaceLabel) + " : ",
                 OnPiratePaceClicked, _ => PiratePaceText(P.PiratePace),
@@ -755,16 +755,45 @@ namespace Ship_Game
             _                          => Localizer.Token(GameText.RmPaceNormal),
         };
 
-        void OnPirateFactionsClicked(UIButton b)
+        // Ludoal fork (maintainer, 6 Sep '26): the notches here are DATA, not an enum - a mod
+        // brings its own pirate factions, so the list is built from what is actually loaded and
+        // an install with none still gets the three reserved ones. They come first so a player
+        // who does not care never has to walk a roster to reach All.
+        static string[] PirateChoices()
         {
-            P.PirateFactions = P.PirateFactions.IncrementWithWrap(OptionIncrement);
+            var choices = new Array<string>
+            {
+                UniverseParams.PirateChoiceNone,
+                UniverseParams.PirateChoiceAll,
+                UniverseParams.PirateChoiceRandom,
+            };
+
+            foreach (IEmpireData d in ResourceManager.AllRaces)
+                if (d is EmpireData ed && ed.IsPirateFaction)
+                    choices.Add(d.Name);
+
+            return choices.ToArray();
         }
 
-        static string PirateFactionsText(PirateFactionsSetting f) => f switch
+        void OnPirateFactionsClicked(UIButton b)
         {
-            PirateFactionsSetting.None => Localizer.Token(GameText.PirateFactionsNone),
-            PirateFactionsSetting.One  => Localizer.Token(GameText.PirateFactionsOne),
-            _                          => Localizer.Token(GameText.PirateFactionsAll),
+            string[] choices = PirateChoices();
+            int i = choices.IndexOf(P.PirateFactionChoice);
+            if (i < 0)
+                i = 1;  // a name this install no longer has: come back through All
+
+            i = (i + OptionIncrement + choices.Length) % choices.Length;
+            P.PirateFactionChoice = choices[i];
+        }
+
+        // a faction's own name is its label: it is already the word the player reads everywhere
+        // else in the game, and a token per faction would go stale the day a mod adds one.
+        static string PirateFactionsText(string choice) => choice switch
+        {
+            UniverseParams.PirateChoiceNone   => Localizer.Token(GameText.PirateFactionsNone),
+            UniverseParams.PirateChoiceAll    => Localizer.Token(GameText.PirateFactionsAll),
+            UniverseParams.PirateChoiceRandom => Localizer.Token(GameText.PirateFactionsRandom),
+            _                                 => choice,
         };
 
         static string RemnantStrengthText(RemnantStrengthSetting s) => s switch

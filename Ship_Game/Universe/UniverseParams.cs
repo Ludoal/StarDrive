@@ -129,8 +129,23 @@ public class UniverseParams
     // notches below. Never written any more; OnDeserialized translates a true into None.
     [StarData] public bool DisablePirates;
 
+    // ⚠ OBSOLETE, kept READABLE for saves written before 6 Sep '26 - the rank became a NAME
+    // below. Never written any more; OnDeserialized folds it into the new choice.
     [StarData(DefaultValue=PirateFactionsSetting.All)]
     public PirateFactionsSetting PirateFactions = PirateFactionsSetting.All;
+
+    // Ludoal fork (maintainer, 6 Sep '26): WHICH pirate factions start alive, by name. The three
+    // reserved words are the only values that are not a faction name; anything else is one,
+    // matched against EmpireData.Name. A name that no longer exists - a mod removed, a save
+    // carried to another install - falls back to All rather than silently emptying the galaxy.
+    // ⚠ a STRING and a new field, not the old enum retyped: changing the type of a [StarData]
+    // field does not throw on load, it reads as null.
+    public const string PirateChoiceNone   = "None";
+    public const string PirateChoiceAll    = "All";
+    public const string PirateChoiceRandom = "Random";
+
+    [StarData(DefaultValue=PirateChoiceAll)]
+    public string PirateFactionChoice = PirateChoiceAll;
 
     [StarData(DefaultValue=PiratePaceSetting.Normal)]
     public PiratePaceSetting PiratePace = PiratePaceSetting.Normal;
@@ -171,7 +186,7 @@ public class UniverseParams
             RemnantPace = RemnantPaceSetting.Off;
         // a mod may declare piracy off by default - that is the None notch now
         if (s.DisablePirates)
-            PirateFactions = PirateFactionsSetting.None;
+            PirateFactionChoice = PirateChoiceNone;
         EnableRandomizedAIFleetSizes = s.EnableRandomizedAIFleetSizes;
     }
 
@@ -234,6 +249,16 @@ public class UniverseParams
         if (DisablePirates)
             PirateFactions = PirateFactionsSetting.None;
 
+        // The old rank notch folds into the name scale. Only a value OTHER than All says
+        // anything, for the same reason as the tribute below: nothing writes the enum any more,
+        // so on a new save it sits at its default and must not overwrite the chosen faction.
+        if (PirateFactions != PirateFactionsSetting.All)
+        {
+            PirateFactionChoice = PirateFactions == PirateFactionsSetting.None
+                                ? PirateChoiceNone
+                                : PirateChoiceRandom;
+        }
+
         // The old tribute notch folds into the strength scale that replaced it, onto the notch
         // asking for the same money. Only a value OTHER than Normal says anything: nothing
         // writes this field any more, so on a new save it sits at its default and must not
@@ -262,7 +287,7 @@ public class UniverseParams
     {
         string s = $"Galaxy: {GalaxySize}, {NumSystems} systems, {NumOpponents} opponents, {Mode}, {Pace:0.##}x, {Difficulty}";
         s += $"\nRemnant: Presence {ExtraRemnant}, Pace {RemnantPace}, Strength {RemnantStrength}";
-        s += $"\nPirates: {PirateFactions}, Pace {PiratePace}, Strength {PirateStrength}";
+        s += $"\nPirates: {PirateFactionChoice}, Pace {PiratePace}, Strength {PirateStrength}";
 
         string rules = "";
         void Rule(string r) { rules += rules.Length > 0 ? ", " + r : r; }

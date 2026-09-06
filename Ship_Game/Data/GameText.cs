@@ -6360,6 +6360,8 @@ namespace Ship_Game
         PirateStrengthStrong = 30154,
         /// <summary>Brutal</summary>
         PirateStrengthBrutal = 30155,
+        /// <summary>One (random)</summary>
+        PirateFactionsRandom = 30156,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>

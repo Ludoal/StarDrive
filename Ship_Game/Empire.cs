@@ -494,28 +494,39 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork (maintainer, 5 Sep '26): how many pirate factions start alive is a setting
-        // now, where it used to be all or nothing. At One the survivor is DRAWN, once for the
+        // Ludoal fork (maintainer, 5-6 Sep '26): WHICH pirate factions start alive is a setting
+        // now, where it used to be all or nothing. At Random the survivor is DRAWN, once for the
         // galaxy, and each faction compares its own rank to that draw. Ranking by NAME rather
         // than by load order keeps both sides of the comparison talking about the same list -
         // file enumeration order is not a promise any platform makes.
         bool StartsDefeatedByPirateSetting()
         {
-            switch (Universe.P.PirateFactions)
-            {
-                case PirateFactionsSetting.None: return true;
-                case PirateFactionsSetting.All:  return false;
-            }
+            string choice = Universe.P.PirateFactionChoice;
+            if (choice == UniverseParams.PirateChoiceNone) return true;
+            if (choice == UniverseParams.PirateChoiceAll)  return false;
 
             int rank = 0;    // how many pirate factions sort before this one
             int total = 0;
+            bool named = false;  // does the chosen name still exist in this install?
             foreach (IEmpireData d in ResourceManager.AllRaces)
                 if (d is EmpireData ed && ed.IsPirateFaction)
                 {
                     ++total;
+                    if (d.Name == choice)
+                        named = true;
                     if (string.CompareOrdinal(d.Name, data.Name) < 0)
                         ++rank;
                 }
+
+            // Ludoal fork (maintainer, 6 Sep '26): a faction picked BY NAME - that one lives and
+            // the rest do not, so the same seed and the same setting give the same galaxy twice.
+            if (named)
+                return data.Name != choice;
+
+            // a name this install no longer has (a mod removed, a save carried elsewhere) falls
+            // back to All rather than quietly emptying the galaxy of pirates
+            if (choice != UniverseParams.PirateChoiceRandom)
+                return false;
 
             return total > 1 && rank != Universe.GetSurvivingPirateRank(total);
         }
