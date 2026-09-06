@@ -90,15 +90,30 @@ namespace Ship_Game
         public void MeasureZoneNeeds()
         {
             var claimed = new Map<int, int>();
+            // the empire's own export side, read once: a soft zone is served from anywhere, so
+            // this is the far end of ITS runs
+            int empFoodOut = 0, empProdOut = 0, empColOut = 0;
+            for (int i = 0; i < OwnedPlanets.Count; ++i)
+            {
+                Planet ep = OwnedPlanets[i];
+                empFoodOut += ep.FoodExportSlots;
+                empProdOut += ep.ProdExportSlots;
+                empColOut  += ep.ColonistsExportSlots;
+            }
+
             foreach (TradeZone zone in TradeZones)
             {
-                // ★ A RUN NEEDS A BERTH AT BOTH ENDS. Import berths alone are a ceiling, not a
-                // need: a zone can offer 29 places to unload production and hold one planet able
-                // to send any, in which case one run is possible and twenty-nine are not. The need
-                // is therefore the SMALLER of the two sides, per good, and a zone trades among its
-                // own colonies - that is what putting them in a zone means - so both sides are
-                // counted inside it. ⚠ the ledger still guards the IMPORT side only: it is what a
-                // better-ranked zone has already spoken for.
+                // ★ A RUN NEEDS A BERTH AT BOTH ENDS, so the need is the SMALLER of the two sides,
+                // per good. Import berths alone are a ceiling: a zone can offer 29 places to unload
+                // production while one planet is able to send any - one run is possible, 29 are not.
+                // ★ AND THE FAR END FOLLOWS THE REGIME. An EXCLUSIVE zone is served by its own
+                // hulls and trades among its own colonies, so both ends are counted inside it. A
+                // SOFT zone borrows from the common pool and its worlds are served from anywhere in
+                // the empire, so its far end is the EMPIRE's. Bounding a soft zone to itself read a
+                // need of nought on three colonies that export nothing to each other, while eleven
+                // runs were serving them (maintainer bench 582).
+                // ⚠ the ledger still guards the IMPORT side only: it is what a better-ranked zone
+                // has already spoken for.
                 int need = 0;
                 int foodIn = 0, prodIn = 0, colIn = 0;
                 int foodOut = 0, prodOut = 0, colOut = 0;
@@ -125,7 +140,10 @@ namespace Ship_Game
                     colOut  += p.ColonistsExportSlots;
                 }
 
-                need += foodIn.UpperBound(foodOut) + prodIn.UpperBound(prodOut) + colIn.UpperBound(colOut);
+                int outFood = zone.Exclusive ? foodOut : empFoodOut;
+                int outProd = zone.Exclusive ? prodOut : empProdOut;
+                int outCol  = zone.Exclusive ? colOut  : empColOut;
+                need += foodIn.UpperBound(outFood) + prodIn.UpperBound(outProd) + colIn.UpperBound(outCol);
 
                 // a station's hunger is its own - two zones naming the same body would ask for the
                 // same run, so it goes through the ledger like a colony's berths
