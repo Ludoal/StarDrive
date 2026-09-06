@@ -40,13 +40,19 @@ namespace Ship_Game
             // is shown here; it is still CHANGED in the zone's own dialog, one door per gesture.
             if (Zone.Exclusive)
             {
-                int lockX = cols[0].Rect.X + UITable.PadX;
+                // the padlock FOLLOWS the name it qualifies (maintainer feedback), so a column of
+                // names reads straight down its own left edge whatever the regime. The name is
+                // placed by the SAME helper a plain cell uses - the two rows line up by
+                // construction - and the mark closes on the TEXT's width, never on the label's
+                // Size: a UILabel only ever grows, so an anchor taken from it would keep the mark
+                // out where the longest name ever loaded had left it (bench 554).
+                Vector2 namePos = UITable.CellPos(Fonts.Arial12Bold, cols[0].Rect, Y, Height,
+                                                  Zone.Name, cols[0].Align);
+                Label(namePos, Zone.Name, Fonts.Arial12Bold, color);
+                int lockX = (int)namePos.X + Fonts.Arial12Bold.TextWidth(Zone.Name) + LockGap;
                 Add(new UIPanel(new Rectangle(lockX, (int)(Y + Height / 2 - LockSize / 2), LockSize, LockSize),
                                 ResourceManager.Texture("NewUI/icon_lock")))
                     .Tooltip = GameText.TzExclusiveTip;
-                Label(new Vector2(lockX + LockLane,
-                                  Y + Height / 2 - Fonts.Arial12Bold.LineSpacing / 2f),
-                      Zone.Name, Fonts.Arial12Bold, color);
             }
             else
             {

@@ -393,10 +393,13 @@ namespace Ship_Game
             // moment a longer name is loaded. ONE column now, not two - the padlock moves out to
             // the pencil's place rather than sitting a step in from a hole (bench 554), the same
             // closing the add icon got when the picker took over its gesture.
+            // ⚠ the layout owns the ROW of these two, not their X: a padlock follows the name it
+            // qualifies, and a plan's name is not known here. X is placed in Update, on the live
+            // text - one owner per coordinate rather than two that must agree.
             BlueprintsExclusiveIcon.Size = new Vector2(16, 16);
-            BlueprintsExclusiveIcon.Pos  = new Vector2(X + Width - 30, bpRow1 + 2);
+            BlueprintsExclusiveIcon.Pos  = new Vector2(bpValueX, bpRow1 + 2);
             BlueprintsLinkExclusiveIcon.Size = new Vector2(16, 16);
-            BlueprintsLinkExclusiveIcon.Pos  = new Vector2(X + Width - 30, bpRow3 + 2);
+            BlueprintsLinkExclusiveIcon.Pos  = new Vector2(bpValueX, bpRow3 + 2);
             BlueprintsLink.Pos      = new Vector2(bpX, bpRow3);
             BlueprintsLinkIcon.Size = new Vector2(BpIconSize, BpIconSize);
             BlueprintsLinkIcon.Pos  = new Vector2(bpValueX, bpRow3);
@@ -851,6 +854,18 @@ namespace Ship_Game
                                                   && Planet.Blueprints.LinkedBlueprintsName != "";
                 BlueprintsExclusiveIcon.Visible = bpPlan && Planet.Blueprints.Exclusive;
                 BlueprintsLinkExclusiveIcon.Visible = bpPlan && LinkedPlanIsExclusive;
+                // the padlock closes on the name, measured on the TEXT rather than on the label:
+                // a UILabel only ever grows, so its Size would keep the mark out where the longest
+                // plan ever loaded had left it (bench 554). The names change on this pass, so the
+                // marks are placed on this pass too - the row's Y stays the layout's business.
+                if (BlueprintsExclusiveIcon.Visible)
+                    BlueprintsExclusiveIcon.Pos = new Vector2(
+                        BlueprintsName.Pos.X + Font.TextWidth(BlueprintsName.Text) + 6,
+                        BlueprintsExclusiveIcon.Pos.Y);
+                if (BlueprintsLinkExclusiveIcon.Visible)
+                    BlueprintsLinkExclusiveIcon.Pos = new Vector2(
+                        BlueprintsLinkName.Pos.X + Font.TextWidth(BlueprintsLinkName.Text) + 6,
+                        BlueprintsLinkExclusiveIcon.Pos.Y);
                 BlueprintsLink.Visible = BlueprintsLinkName.Visible = BlueprintsLinkIcon.Visible =
                     bpPlan && Planet.Blueprints.LinkedBlueprintsName != "";
             }
