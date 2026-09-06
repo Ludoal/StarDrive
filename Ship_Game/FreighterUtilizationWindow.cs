@@ -101,13 +101,18 @@ namespace Ship_Game
             // Ludoal fork: window title is "Freighters"
             ConstructionSubMenu = new(win, "Freighters");
             float titleOffset = win.Y + 40;
+            // Ludoal fork (maintainer, bench 578): the zone picker comes down off the title bar and
+            // takes the first line of the RIGHT column; its headers move down a row into the space
+            // the fifth row opened. The left column keeps the first line for its own heading.
+            const float HeaderDrop = 25f;
+            float headerY = titleOffset + HeaderDrop;
             Add(new UILabel(new Vector2(win.X + 15, titleOffset), GameText.TotalFreighterUtilization, Fonts.Arial12Bold, Color.Gold, GameText.TotalUtilizationTip));
-            Add(new UILabel(new Vector2(win.X + 210, titleOffset), GameText.CargoDistribution, Fonts.Arial12Bold, Color.White, GameText.CargoDistributionTip));
-            Add(new UILabel(new Vector2(win.X + 370, titleOffset), GameText.Freighters, Fonts.Arial12Bold, Color.White, GameText.NumberOfFreightersTip));
+            Add(new UILabel(new Vector2(win.X + 210, headerY), GameText.CargoDistribution, Fonts.Arial12Bold, Color.White, GameText.CargoDistributionTip));
+            Add(new UILabel(new Vector2(win.X + 370, headerY), GameText.Freighters, Fonts.Arial12Bold, Color.White, GameText.NumberOfFreightersTip));
             // these two columns count PLANETS (open import/export slots), not freighters -
             // the only headers of this window without a tooltip, and the mixed units confused readers
-            Add(new UILabel(new Vector2(win.X + 470, titleOffset), GameText.ImportingPlanets, Fonts.Arial12Bold, Color.White, GameText.ImportingPlanetsTip));
-            Add(new UILabel(new Vector2(win.X + 570, titleOffset), GameText.ExportingPlanets, Fonts.Arial12Bold, Color.White, GameText.ExportingPlanetsTip));
+            Add(new UILabel(new Vector2(win.X + 470, headerY), GameText.ImportingPlanets, Fonts.Arial12Bold, Color.White, GameText.ImportingPlanetsTip));
+            Add(new UILabel(new Vector2(win.X + 570, headerY), GameText.ExportingPlanets, Fonts.Arial12Bold, Color.White, GameText.ExportingPlanetsTip));
             // the 3-digit number columns, centred under each header - shared by the goods rows and
             // the totals row (maintainer bench 339)
             FreightersRightX = ColumnRightUnder(win.X + 370, GameText.Freighters);
@@ -125,7 +130,7 @@ namespace Ship_Game
             FreighterConstructingLabel = new UILabel(new Vector2(win.X + 150, titleOffset + 70), "", Fonts.Arial12Bold, Color.White);
             FreightersInZonesLabel     = new UILabel(new Vector2(win.X + 150, titleOffset + 90), "", Fonts.Arial12Bold, Color.White);
 
-            UIList utilizationData = AddList(new(win.X + 5f, win.Y + 40));
+            UIList utilizationData = AddList(new(win.X + 5f, win.Y + 40 + HeaderDrop));
             utilizationData.Padding = new(2f, 25f);
             foreach (GoodsUtilization gu in  GoodsUtilizationMap.Values)
                 utilizationData.Add(gu);
@@ -152,10 +157,10 @@ namespace Ship_Game
             // names the feature. Its own token rather than an edit to that one, which titles two
             // other screens (maintainer feedback).
             string zoneCap = Localizer.Token(GameText.TzZoneFilter);
-            Add(new UILabel(new Vector2(zoneBoxX - Fonts.Arial12Bold.TextWidth(zoneCap) - 8, win.Y + 6),
+            Add(new UILabel(new Vector2(zoneBoxX - Fonts.Arial12Bold.TextWidth(zoneCap) - 8, titleOffset),
                             GameText.TzZoneFilter, Fonts.Arial12Bold, Color.Wheat, GameText.TzWindowZoneTip));
             ZoneFilter = Add(new DropOptions<TradeZone>(
-                new Vector2(zoneBoxX, win.Y + 4), (int)ZoneBoxW, 18));
+                new Vector2(zoneBoxX, titleOffset - 2), (int)ZoneBoxW, 18));
             ZoneFilter.OnValueChange = z => SelectedZone = z;
             RebuildZoneOptions();
         }
