@@ -29043,8 +29043,8 @@ PirateStrengthLabel:
  FRA: "Force des pirates"
 PirateStrengthTip:
  Id: 30152
- ENG: "What the pirates are, not only what they charge. Sets the level they start at (a level is a base, one more raid running at once and more ships per raid), how big a raid dares to be against the defence already on site, and the tribute they demand. Difficulty still applies on top."
- FRA: "Ce que sont les pirates, pas seulement ce qu'ils réclament. Fixe leur niveau de départ (un niveau vaut une base, un raid simultané de plus et davantage de vaisseaux par raid), l'ampleur d'un raid face à la défense déjà sur place, et le tribut exigé. La difficulté s'y ajoute."
+ ENG: "What the pirates are, not only what they charge. Sets the level they start at (a level is a base, one more raid running at once and more ships per raid), how OFTEN raids come, and the tribute they demand. Raids happen more often, not harder: a raid fleet appears on the spot, so one bigger than your local defence would leave you no reaction time. Difficulty still applies on top."
+ FRA: "Ce que sont les pirates, pas seulement ce qu'ils réclament. Fixe leur niveau de départ (un niveau vaut une base, un raid simultané de plus et davantage de vaisseaux par raid), la FRÉQUENCE des raids, et le tribut exigé. Les raids sont plus fréquents, pas plus forts : une flotte de raid apparaît sur place, donc plus forte que votre défense locale elle ne vous laisserait aucun temps de réaction. La difficulté s'y ajoute."
 PirateStrengthWeak:
  Id: 30153
  ENG: "Weak"

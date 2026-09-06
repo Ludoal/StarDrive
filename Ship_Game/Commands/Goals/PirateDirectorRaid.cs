@@ -61,7 +61,9 @@ namespace Ship_Game.Commands.Goals
             startChance    /= numRaids + 1;
 
             //return 100; // For testing
-            return startChance.UpperBound(Pirates.ThreatLevelFor(TargetEmpire));
+            // the threat cap is what keeps raids rare; the strength notch may lift its floor
+            return startChance.UpperBound(Pirates.ThreatLevelFor(TargetEmpire)
+                                                .LowerBound(Pirates.RaidThreatFloor));
         }
 
         GoalType GetRaid()
