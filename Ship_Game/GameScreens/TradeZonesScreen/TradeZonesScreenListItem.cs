@@ -61,7 +61,8 @@ namespace Ship_Game
 
             Cell(cols[3], Zone.MeasuredNeed.ToString(), color).Tooltip = GameText.TzRequiredTip;
             Cell(cols[4], Zone.ActiveFreighters(Player).ToString(), color).Tooltip = GameText.TzActiveTip;
-            Cell(cols[5], OwnedOverTarget(Zone, Player), color).Tooltip = GameText.TzOwnedTargetTip;
+            Cell(cols[5], TargetAndOwned(Zone, Player), color).Tooltip = GameText.TzOwnedTargetTip;
+            Cell(cols[6], PriorityText(Zone), color).Tooltip = GameText.TzPriorityTip;
 
             EditColonies ??= new UIButton(new UIButton.StyleTextures("NewUI/icon_build_edit_hover1", "NewUI/icon_build_edit_hover2", "NewUI/icon_build_edit_hover2"), Vector2.Zero, "")
             {
@@ -84,13 +85,16 @@ namespace Ship_Game
             int lane = actions.X + (actions.Width - Slot * Slots) / 2;
             int centreY = y + h / 2;
             // ⚠ the arrows are drawn at the row's icon size, not at their texture's own: left to
-            // themselves they come out taller than the pencil and the bin beside them, sit off
-            // centre, and stretch the row to fit. The offset below is half of THAT size, so the
-            // two travel together (bench 577).
-            const int ArrowIcon = 17;
-            AddUp(new Vector2(lane + 4 - X, centreY - ArrowIcon / 2 - Y), GameText.TzMoveUpTip,
+            // themselves they come out taller than the pencil and the bin beside them.
+            // ⚠⚠ and the position they are given is NOT the icon's top: the placer adds a hard
+            // fifteen - a centring from the days of 30px rows - and then centres the icon on that
+            // by itself. So what it wants here is the row's centre minus those fifteen, and any
+            // half-icon of our own would be counted twice (bench 578). The pencil and the bin next
+            // to them take no such detour: they are buttons placed on the real centre.
+            const int ArrowIcon = 17, PlacerCentre = 15;
+            AddUp(new Vector2(lane + 4 - X, centreY - PlacerCentre - Y), GameText.TzMoveUpTip,
                   () => Screen.MoveZone(Zone, up: true), ArrowIcon);
-            AddDown(new Vector2(lane + Slot + 4 - X, centreY - ArrowIcon / 2 - Y), GameText.TzMoveDownTip,
+            AddDown(new Vector2(lane + Slot + 4 - X, centreY - PlacerCentre - Y), GameText.TzMoveDownTip,
                     () => Screen.MoveZone(Zone, up: false), ArrowIcon);
             int editX = lane + 2 * Slot + (Slot - editTex.Width) / 2;
             int delX = lane + 3 * Slot + (Slot - delTex.Width) / 2;
@@ -109,14 +113,21 @@ namespace Ship_Game
         // NOTHING rather than a "0 / 5" that would read as a failure to reach a target it never
         // had. ⚠ public and static: the column measurer has to size on the very string the row
         // draws, not on a bare count.
-        public static string OwnedOverTarget(TradeZone zone, Empire player)
+        public static string TargetAndOwned(TradeZone zone, Empire player)
         {
-            if (!zone.Exclusive)
-                return "";
-
-            int target = zone.Quota > 0 ? zone.Quota : zone.MeasuredNeed;
-            return $"{zone.MemberFreighters(player).Count} / {target}";
+            string target = zone.Quota > 0 ? zone.Quota.ToString()
+                                           : Localizer.Token(GameText.PolFreighterRefitAuto);
+            // a soft zone owns nothing, so it shows the setting alone rather than a bracket
+            // holding a nought that would read as a target it failed to reach
+            return zone.Exclusive ? $"{target} ({zone.MemberFreighters(player).Count})" : target;
         }
+
+        public static string PriorityText(TradeZone zone) => zone.Priority switch
+        {
+            CargoPriority.ProductionFirst => Localizer.Token(GameText.FreighterPriorityProductionFirst),
+            CargoPriority.ColonistsFirst  => Localizer.Token(GameText.FreighterPriorityColonistsFirst),
+            _                             => Localizer.Token(GameText.FreighterPriorityAuto),
+        };
 
         // the clickable name lanes, rebuilt with the row
         readonly Array<(Rectangle Rect, Planet Colony)> NameHits = new();

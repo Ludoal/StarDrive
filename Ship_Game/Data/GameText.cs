@@ -7279,6 +7279,10 @@ namespace Ship_Game
         TributeHigh = 7270,
         /// <summary>Very High</summary>
         TributeVeryHigh = 7271,
+        /// <summary>Priority</summary>
+        TzPriority = 7272,
+        /// <summary>Which goods this zone's freighters carry first.</summary>
+        TzPriorityTip = 7273,
         /// <summary>Your manual freighter filters have become exclusive trade zones.</summary>
         TzConvertedNotice = 7239,
         /// <summary>Trade Zone of this Freighter</summary>

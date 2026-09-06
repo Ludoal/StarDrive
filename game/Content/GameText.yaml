@@ -28923,8 +28923,8 @@ TzServedColonies:
  FRA: "Desservies"
 TzOwnedTarget:
  Id: 7201
- ENG: "Owned / Target"
- FRA: "Possédés / Cible"
+ ENG: "Target (Owned)"
+ FRA: "Cible (Possédés)"
 TzNewZone:
  Id: 7202
  ENG: "New Trade Zone"
@@ -28997,6 +28997,14 @@ TributeVeryHigh:
  Id: 7271
  ENG: "Very High"
  FRA: "Très élevé"
+TzPriority:
+ Id: 7272
+ ENG: "Priority"
+ FRA: "Priorité"
+TzPriorityTip:
+ Id: 7273
+ ENG: "Which goods this zone's freighters carry first. Auto follows the empire's own order. Only an exclusive zone sets its own: a soft zone borrows hulls that follow the empire."
+ FRA: "Marchandises que les cargos de cette zone transportent en premier. Auto suit l'ordre de l'empire. Seule une zone exclusive fixe le sien : une zone souple emprunte des coques qui suivent l'empire."
 TzPanToColonyTip:
  Id: 7213
  ENG: "Centre the map on this colony."
@@ -29111,8 +29119,8 @@ TzOwnedTip:
  FRA: "Cargos que cette zone POSSÈDE. Seule une zone exclusive en possède : une zone souple emprunte une part du tour et la rend."
 TzOwnedTargetTip:
  Id: 7264
- ENG: "Freighters this zone owns, over the number it is aiming for. At Auto the target is its Required count. Empty for a soft zone: it owns none, it borrows. The requisition stops at the empire freighter reserve, and at what is idle right now."
- FRA: "Cargos que la zone possède, sur le nombre qu'elle vise. Sur Auto, la cible est son besoin (Required). Vide pour une zone souple : elle ne possède rien, elle emprunte. La réquisition s'arrête à la réserve de cargos de l'empire, et à ce qui est disponible sur l'instant."
+ ENG: "The number you set, with what the zone actually owns in brackets. Auto means the target is its Required count. A soft zone shows the setting alone: it owns nothing, it borrows. The requisition stops at the empire freighter reserve, and at what is idle right now."
+ FRA: "Le nombre que vous avez réglé, avec entre parenthèses ce que la zone possède réellement. Auto : la cible est son besoin (Required). Une zone souple n'affiche que le réglage : elle ne possède rien, elle emprunte. La réquisition s'arrête à la réserve de cargos de l'empire, et à ce qui est disponible sur l'instant."
 TzConvertedNotice:
  Id: 7239
  ENG: "The areas of operation and manual trade routes you had drawn on individual freighters have become EXCLUSIVE TRADE ZONES, and their editors are gone: what a zone holds is now edited in one place, on the Trade page.\n\nOne thing has changed and cannot be undone: an area of operation was a SHAPE, and it welcomed colonies founded inside it later. A zone is a LIST, taken as your areas stood at this moment. A colony founded inside an old rectangle from now on will not join its zone on its own - add it yourself from the Trade page or from the colony's own screen."

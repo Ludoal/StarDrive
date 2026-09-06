@@ -58,6 +58,8 @@ namespace Ship_Game
                 // owned over target in ONE cell: the gap is read without subtracting, and a soft
                 // zone shows nothing rather than a nought that would read as a failure
                 new UITable.Column { Title = Localizer.Token(GameText.TzOwnedTarget), Align = TableAlign.Number, Sortable = true },
+                // the zone's own cargo priority, carried over from the form
+                new UITable.Column { Title = Localizer.Token(GameText.TzPriority), Sortable = true },
                 // four icons now: the two arrows that order the zones, then edit and delete
                 new UITable.Column { Title = "", Width = 110, Align = TableAlign.Center },
             });
@@ -238,6 +240,7 @@ namespace Ship_Game
                 case 3:  zones = Player.TradeZones.Sorted(ascending, z => z.MeasuredNeed); break;
                 case 4:  zones = Player.TradeZones.Sorted(ascending, z => z.ActiveFreighters(Player)); break;
                 case 5:  zones = Player.TradeZones.Sorted(ascending, z => z.MemberFreighters(Player).Count); break;
+                case 6:  zones = Player.TradeZones.Sorted(ascending, z => (int)z.Priority); break;
                 default: zones = Player.TradeZones.Sorted(ascending, z => z.Name); break;
             }
             foreach (TradeZone zone in zones)
@@ -256,7 +259,7 @@ namespace Ship_Game
             var names = new Array<string>(); var counts = new Array<string>();
             var served = new Array<string>();
             var required = new Array<string>(); var active = new Array<string>();
-            var owned = new Array<string>();
+            var owned = new Array<string>(); var priorities = new Array<string>();
             foreach (TradeZone z in Player.TradeZones)
             {
                 names.Add(z.Name);
@@ -265,7 +268,8 @@ namespace Ship_Game
                 required.Add(z.MeasuredNeed.ToString());
                 active.Add(z.ActiveFreighters(Player).ToString());
                 // measured with the SAME formatter the row draws with, never a bare count
-                owned.Add(TradeZonesScreenListItem.OwnedOverTarget(z, Player));
+                owned.Add(TradeZonesScreenListItem.TargetAndOwned(z, Player));
+                priorities.Add(TradeZonesScreenListItem.PriorityText(z));
             }
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, names);
             // an exclusive zone wears a padlock BEFORE its name, and AutoSize only ever saw the
@@ -281,6 +285,7 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[3], Fonts.Arial12Bold, required);
             UITable.AutoSize(Table.Columns[4], Fonts.Arial12Bold, active);
             UITable.AutoSize(Table.Columns[5], Fonts.Arial12Bold, owned);
+            UITable.AutoSize(Table.Columns[6], Fonts.Arial12Bold, priorities);
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
         }
 
