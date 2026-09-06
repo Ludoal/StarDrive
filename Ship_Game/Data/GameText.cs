@@ -6343,6 +6343,7 @@ namespace Ship_Game
         BgtMaySpendTip = 30145,
         /// <summary>How many of this plan's entries are up, out of how many it lists.</summary>
         BpCompletionTip = 30146,
+        TzInbound = 30147,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>

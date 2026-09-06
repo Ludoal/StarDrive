@@ -29021,10 +29021,14 @@ TzRequiredTip:
  Id: 7215
  ENG: "How many freighters the zone could put to work right now, counted in trade slots and bounded by both ends: what its colonies ask to import, limited by what they can export to each other. Colonists are not counted."
  FRA: "Nombre de cargos que la zone pourrait employer maintenant, compté en créneaux de commerce et borné aux deux bouts : ce que ses colonies demandent à importer, limité par ce qu'elles peuvent s'exporter entre elles. Les colons ne sont pas comptés."
+TzInbound:
+ Id: 30147
+ ENG: "Inbound"
+ FRA: "En route"
 TzActiveTip:
  Id: 7217
- ENG: "Freighters currently on their way to a colony of this zone."
- FRA: "Cargos actuellement en route vers une colonie de cette zone."
+ ENG: "Freighters on their way to a colony of this zone, WHOEVER owns them - a zone's own hulls are counted in Owned, next door. The two are different sets, and either can stand while the other is nought."
+ FRA: "Cargos en route vers une colonie de cette zone, QUEL QUE SOIT leur propriétaire — les coques que la zone possède se comptent dans Owned, juste à côté. Ce sont deux ensembles distincts, et l'un peut être garni quand l'autre est à zéro."
 TzName:
  Id: 7218
  ENG: "Name"

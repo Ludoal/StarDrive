@@ -53,8 +53,10 @@ namespace Ship_Game
                 // the instrument, in reading order: what it could use, what you granted, what is
                 // actually on its way - a zone asking more than it receives shows at a glance
                 new UITable.Column { Title = Localizer.Token(GameText.TzRequired), Align = TableAlign.Number, Sortable = true },
-                // the same word and the same number as the overlay: freighters on their way here
-                new UITable.Column { Title = Localizer.Token(GameText.Freighters), Align = TableAlign.Number, Sortable = true },
+                // ★ the column is named for what it COUNTS: runs on their way to these colonies,
+                // whoever sent them. Called "Freighters" it sat next to Owned and read as a
+                // contradiction - three times over two days (maintainer feedback).
+                new UITable.Column { Title = Localizer.Token(GameText.TzInbound), Align = TableAlign.Number, Sortable = true },
                 // owned over target in ONE cell: the gap is read without subtracting, and a soft
                 // zone shows nothing rather than a nought that would read as a failure
                 new UITable.Column { Title = Localizer.Token(GameText.TzOwnedTarget), Align = TableAlign.Number, Sortable = true },
