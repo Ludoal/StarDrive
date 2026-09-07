@@ -443,7 +443,7 @@ namespace Ship_Game
             if (!Player.Research.IsQueued(tech.UID))
             {
                 GameAudio.ResearchSelect();
-                Player.Research.AddTechToQueue(tech.UID);
+                Player.Universe.Screen?.RunOnSimThread(() => Player.Research.AddTechToQueue(tech.UID));
                 added = true;
             }
             
@@ -463,7 +463,7 @@ namespace Ship_Game
             {
                 if (!added)
                 {
-                    Player.Research.RemoveTechFromQueue(tech.UID);
+                    Player.Universe.Screen?.RunOnSimThread(() => Player.Research.RemoveTechFromQueue(tech.UID));
                 }
             }
             

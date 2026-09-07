@@ -80,13 +80,13 @@ namespace Ship_Game
             {
                 if (mayBuild)
                     BuildOrReplaceBuilding(budget, tolerance, overBudget);
-
-                // Biospheres are capacity, not a building choice: the mandates do not gate
-                // them. TryBuildBiospheres already answers to the budget, and the surplus it
-                // reports is a fact about population, not a construction right.
-                if (!TryBuildBiospheres(budget, out bool shouldScrapBiospheres) && shouldScrapBiospheres)
-                    TryScrapBiospheres();
             }
+
+            // Biospheres are capacity, not a building choice: the mandates do not gate them, and
+            // neither does budget pressure - TryBuildBiospheres answers to the budget itself, and an
+            // exclusive plan that clears the ground still needs the room it decides on
+            if (!TryBuildBiospheres(budget, out bool shouldScrapBiospheres) && shouldScrapBiospheres)
+                TryScrapBiospheres();
         }
 
         void BuildOrReplaceBuilding(float budget, float tolerance, bool overBudget)

@@ -433,7 +433,7 @@ namespace Ship_Game.GameScreens
             {
                 if (cb.Checked)
                 {
-                    Player.AI.RunEconomicPlanner();
+                    Player.Universe.Screen?.RunOnSimThread(() => Player.AI.RunEconomicPlanner());
                     TaxSlider.RelativeValue = Player.data.TaxRate;
                 }
                 TaxSlider.Enabled = !cb.Checked;
@@ -730,10 +730,9 @@ namespace Ship_Game.GameScreens
 
         private void TreasurySliderOnChange(FloatSlider s)
         {
-            Player.data.treasuryGoal = s.RelativeValue;
-            Player.data.treasuryGoal = s.AbsoluteValue;
+            Player.data.treasuryGoal = s.AbsoluteValue; // a 0..1 slider: absolute and relative coincide
 
-            Player.AI.RunEconomicPlanner(); // Update() rewrites the label from the fresh figure
+            Player.Universe.Screen?.RunOnSimThread(() => Player.AI.RunEconomicPlanner()); // Update() rewrites the label from the fresh figure
 
             if (Player.AutoTaxes)
                 TaxSlider.RelativeValue = Player.data.TaxRate;
