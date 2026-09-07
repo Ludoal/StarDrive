@@ -949,6 +949,12 @@ namespace Ship_Game
         public void Initialize()
         {
             CommonInitialize();
+            // a fresh empire is born SPLIT: nothing to migrate. Without this the first reload
+            // folded the retired AutoFreighters / AutoExplore (both false, nothing writes them)
+            // over the three freighter and two explorer toggles the player had just ticked
+            // (audit, bench 603).
+            FreighterAutomationSplit = true;
+            ExplorerAutomationSplit  = true;
 
             data.TechDelayTime = 0;
             if (Universe.NumEmpires == 0)
