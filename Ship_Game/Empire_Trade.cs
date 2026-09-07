@@ -742,7 +742,9 @@ namespace Ship_Game
             if (zone.Quota <= 0 && !BuildFreightersActive)
                 return;
 
-            if (TotalFreighters + FreightersBeingBuilt >= FreighterCap)
+            // the empire's cap stays master while the empire has common worlds; with every world
+            // enclaved it is a floor of one and would starve the zones of their own orders
+            if (PlanetsOutsideExclusiveZones > 0 && TotalFreighters + FreightersBeingBuilt >= FreighterCap)
                 return;
 
             AI.AddGoalAndEvaluate(new IncreaseFreighters(this, zone));

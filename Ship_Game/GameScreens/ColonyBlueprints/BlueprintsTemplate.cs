@@ -77,8 +77,25 @@ public sealed class BlueprintsTemplate
 
     public bool Validated => ResourceManager.BlueprintsValid(this, out _);
 
-    public bool CanSafelyLinkFor(string requestingTemplateName)
+    // Is `name` this plan or one of the plans down its chain of links? Bounded: a cycle
+    // between two other plans would otherwise never end.
+    public bool LeadsTo(string name)
     {
+        BlueprintsTemplate t = this;
+        for (int depth = 0; t != null && depth < 32; ++depth)
+        {
+            if (t.Name == name)
+                return true;
+            if (string.IsNullOrEmpty(t.LinkTo) || !ResourceManager.TryGetBlueprints(t.LinkTo, out t))
+                return false;
+        }
+        return false;
+    }
+    
+    public bool CanSafelyLinkFor(string requestingTemplateName, int depth = 0)
+    {
+        if (depth > 32)
+            return false; // a cycle between two other plans, or a chain nobody could have written
         if (string.IsNullOrEmpty(LinkTo))
             return true;
 
@@ -86,7 +103,7 @@ public sealed class BlueprintsTemplate
             return false;
 
         if (ResourceManager.TryGetBlueprints(LinkTo, out BlueprintsTemplate nextTemplate))
-            return nextTemplate.CanSafelyLinkFor(requestingTemplateName);
+            return nextTemplate.CanSafelyLinkFor(requestingTemplateName, depth + 1);
 
         Log.Error($"Could not find template for {LinkTo} in Resource Manager");
         return true;

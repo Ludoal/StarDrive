@@ -58,7 +58,7 @@ namespace Ship_Game
                 {
                     Planet p = screen.UState.GetPlanet(id);
                     if (p != null)
-                        Chosen.Add(p);
+                        Chosen.AddUnique(p);
                 }
             }
         }

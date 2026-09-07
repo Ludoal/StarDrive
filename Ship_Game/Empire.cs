@@ -117,7 +117,7 @@ namespace Ship_Game
         // The two empire-level explorer automations. New games start decoupled; a migrated save
         // inherits AutoExplore into both (see below).
         [StarData] public bool AutoBuildExplorers;                // build new scouts when more are needed
-        [StarData] public bool SendNewExplorersToExplore = true;  // send idle scouts out (checked by default)
+        [StarData(DefaultValue = true)] public bool SendNewExplorersToExplore = true;  // send idle scouts out (checked by default)
         // Set once the split toggles have been seeded; distinguishes a pre-split save (seed from
         // AutoExplore) from a fresh/new-format one (leave the toggles as the player set them).
         [StarData] public bool ExplorerAutomationSplit;
@@ -219,7 +219,9 @@ namespace Ship_Game
             string name = GetBlueprintPolicy(planet.CType);
             if (name.NotEmpty() && ResourceManager.TryGetBlueprints(name, out BlueprintsTemplate template))
             {
-                if (!planet.HasBlueprints || planet.Blueprints.Name != name)
+                // a colony that moved on to a link of the row's plan is following the row: it is
+                // not handed back to the plan it has already completed
+                if (!planet.HasBlueprints || planet.Blueprints.Name != name && !template.LeadsTo(planet.Blueprints.Name))
                     planet.AddBlueprints(template, this);
             }
             else if (planet.HasBlueprints)
@@ -1239,8 +1241,7 @@ namespace Ship_Game
             for (int i = 0; i < OwnedPlanets.Count; i++)
             {
                 Planet p = OwnedPlanets[i];
-                // the whole pair: the two figures share a denominator, so they are refreshed
-                // together (bench 555)
+                // Reads the buildable set cached before this unlock. The set is rebuilt on the next planet refresh, not here.
                 p.Blueprints?.Refresh();
             }
         }

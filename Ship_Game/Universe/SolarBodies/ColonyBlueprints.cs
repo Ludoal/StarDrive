@@ -18,9 +18,7 @@ namespace Ship_Game.Universe.SolarBodies
         [StarData] public int PercentCompleted { get; private set; }
         [StarData] public int PercentAchievable { get; private set; }
 
-        // Counts behind the two percentages, for a screen that needs "3/12" rather than "25%".
-        // Not serialized: they are written by the same passes, and a plan that has not refreshed
-        // yet shows the same staleness its percentages already show.
+        // Percentages are saved with the game. Counters are not: they read zero until the next Refresh().
         public int PlannedCount { get; private set; }
         public int BuiltCount { get; private set; }
         public int ReachableCount { get; private set; }

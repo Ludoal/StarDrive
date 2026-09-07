@@ -402,9 +402,9 @@ namespace Ship_Game
         // ⚠ not the same question as "does it want any": a world served every turn wants something
         // every turn, and that answer keeps the door shut for every living enclave (bench 593).
         static bool StillWaiting(Planet p, Goods goods)
-            => goods == Goods.Food       ? p.FoodImportSlots > 0 && p.IncomingFoodFreighters == 0
-             : goods == Goods.Production ? p.ProdImportSlots > 0 && p.IncomingProdFreighters == 0
-             : p.ColonistsImportSlots > 0 && p.IncomingColonistsFreighters == 0;
+            => goods == Goods.Food       ? p.FreeFoodImportSlots > 0
+             : goods == Goods.Production ? p.FreeProdImportSlots > 0
+             : p.FreeColonistImportSlots > 0;
 
         bool AnyExclusiveZoneWaits(Planet planet, Goods goods)
         {

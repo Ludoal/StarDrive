@@ -99,7 +99,10 @@ namespace Ship_Game
             // flux duty is exactly what the Auto toggles do on a governorless colony.
             // Old saves land there with identical behaviour (toggles default to Auto).
             if (CType == ColonyType.TradeHub)
+            {
                 CType = ColonyType.Colony;
+                Owner.ApplyBlueprintPolicy(this); // the role changed under the doctrine: it is read again
+            }
 
             if (CType == ColonyType.Colony)
             {
@@ -109,13 +112,19 @@ namespace Ship_Game
                 return; // No Governor? Only construction minds.
             }
 
-            // Switch to Core for AI if there is nothing in the research queue (Does not actually change assigned Governor)
+            // CType is the governor type. Changing it changes the governor.
             if ((!OwnerIsPlayer || Owner.AutoResearch) && CType == ColonyType.Research && Owner.Research.NoTopic)
+            {
                 CType = ColonyType.Core;
+                Owner.ApplyBlueprintPolicy(this);
+            }
 
             // Change to core colony if there is only 1 planet so the AI can build stuff
-            if (!OwnerIsPlayer && Owner.GetPlanets().Count == 1)
+            if (!OwnerIsPlayer && Owner.GetPlanets().Count == 1 && CType != ColonyType.Core)
+            {
                 CType = ColonyType.Core;
+                Owner.ApplyBlueprintPolicy(this);
+            }
 
             // Ludoal fork: read ONCE, here - the reset below and every assignment in the switch
             // answer to the same value, or a colony could be wiped by one and left unassigned by
