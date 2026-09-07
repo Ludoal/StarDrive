@@ -391,12 +391,16 @@ namespace Ship_Game
                     servedImp += gu.ServedImporting; imp += gu.NumImportingPlanets;
                     servedExp += gu.ServedExporting; exp += gu.NumExportingPlanets;
                 }
-                TotalFreightersValue.Text = servedBerths.String();
-                TotalFreightersDen.Text   = $" / {possibleRuns}";
-                TotalImportingValue.Text  = servedImp.String();
-                TotalImportingDen.Text    = $" / {imp}";
-                TotalExportingValue.Text  = servedExp.String();
-                TotalExportingDen.Text    = $" / {exp}";
+                // the totals wear the same colour rule as the rows they sum (maintainer feedback)
+                TotalFreightersValue.Text  = servedBerths.String();
+                TotalFreightersDen.Text    = $" / {possibleRuns}";
+                TotalFreightersValue.Color = TotalFreightersDen.Color = PairColor(servedBerths, possibleRuns);
+                TotalImportingValue.Text   = servedImp.String();
+                TotalImportingDen.Text     = $" / {imp}";
+                TotalImportingValue.Color  = TotalImportingDen.Color = PairColor(servedImp, imp);
+                TotalExportingValue.Text   = servedExp.String();
+                TotalExportingDen.Text     = $" / {exp}";
+                TotalExportingValue.Color  = TotalExportingDen.Color = PairColor(servedExp, exp);
             }
 
             base.Update(fixedDeltaTime);
