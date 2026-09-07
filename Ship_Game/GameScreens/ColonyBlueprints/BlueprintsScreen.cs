@@ -957,13 +957,19 @@ namespace Ship_Game
             Player.Universe.ClearEmpiresBlueprintPolicy(template.Name);
             LinkBlueprints.Enabled = BlueprintsName.Text != template.Name;
             ResourceManager.BlueprintsTemplatesDict.Remove(template.Name);
+            // the editor may be linked to the plan that just died: a dangling name would be saved
+            // and the colony on it would never hand over (audit, bench 603)
+            if (LinkedTo == template.Name)
+                SetLinkedTo("");
         } 
 
+        // called with the plan that just LOST its link, so the colonies holding it read the
+        // unlinked template. It used to clear the editor's own link on THAT name too, which
+        // cut a valid link to a plan still alive; the editor's link is cleared on the deleted
+        // name, in AfterBluprintsDelete (audit, bench 603).
         public void RemoveAllBlueprintsLinkTo(BlueprintsTemplate template)
         {
             Player.Universe.RefreshEmpiresPlanetsBlueprints(template, delete: false);
-            if (LinkedTo == template.Name)
-                    SetLinkedTo("");
         }
 
         public void OnBlueprintsLinked(BlueprintsTemplate linkedBlueprints)
