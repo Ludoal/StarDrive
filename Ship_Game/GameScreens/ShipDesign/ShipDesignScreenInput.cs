@@ -550,6 +550,9 @@ namespace Ship_Game
         void OnSymmetricDesignToggle()
         {
             GlobalStats.SymmetricDesign = !GlobalStats.SymmetricDesign; // Ludoal fork: global preference
+            // a global preference lives in the settings FILE: written the moment it changes, or it
+            // is gone at the next launch - nothing else on this screen writes that file (audit, bench 603)
+            GlobalStats.SaveSettings();
             BtnSymmetricDesign.Style   = SymmetricDesignBtnStyle;
         }
 
