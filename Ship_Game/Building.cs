@@ -420,8 +420,7 @@ namespace Ship_Game
             // ⚠ A BIOSPHERE FOLLOWS THE GOVERNOR'S RULE WHEREVER IT IS PLACED: it leaves the
             // terraformable tiles to the terraformer, AND it takes the first tile of the list
             // rather than one at random. Both halves matter - sparing the tiles without fixing
-            // the order still gives two reloads two different colonies, which is the very
-            // complaint this came from (maintainer feedback).
+            // the order makes two reloads of one save diverge. (maintainer feedback)
             // Only when there is something else to take: a world with nothing but terraformable
             // tiles still gets its biosphere.
             if (b.IsBiospheres)

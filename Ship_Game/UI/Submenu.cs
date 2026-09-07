@@ -26,9 +26,8 @@ public class Submenu : UIPanel
         public RectF Rect;
         public bool Selected;
         public bool Hover;
-        // Ludoal fork (maintainer feedback): a tab may explain what its page governs on
-        // hover. Left empty a tab behaves exactly as before - nothing is drawn and nothing
-        // is queried, so every existing submenu in the game is untouched.
+        // Ludoal fork: a tab may explain what its page governs on hover. Left empty,
+        // nothing is drawn and nothing is queried.
         public LocalizedText Tooltip;
 
         internal bool RowStart; // this tab is the first in this row
@@ -48,12 +47,10 @@ public class Submenu : UIPanel
     public override RectF ClientArea { get; set; }
 
     /// Ludoal fork: where a panel's TEXT goes - the client area pulled in by the theme's
-    /// TextPadX/TextPadY. Before this, every screen wrote its own inset by hand: New Game alone carried
-    /// 0, 10, 12 and 20 across its five panels, which is why two panels in one window did not
-    /// line up (maintainer, 1 Sep).
+    /// TextPadX/TextPadY, so panels in one window line up instead of each carrying its own inset.
     /// ⚠ Each KIND of element carries its own default and an instance may overrule it: text
     /// takes this one, a scroll list takes ListPadLeft and sits on ClientArea instead, a foot
-    /// row takes none. Stacking two of them is what left three scrollbars unaligned.
+    /// row takes none. Never stack two of them - that is what leaves scrollbars unaligned.
     public RectF ContentArea
     {
         get
@@ -220,10 +217,9 @@ public class Submenu : UIPanel
     }
 
     // Ludoal fork: the two primitives a DYNAMIC tab needs - a hosted panel's tab (the colony)
-    // is added, renamed and removed at runtime, which the append-only tab set never allowed.
-    // Removing the selected tab routes its collapse through SelectedIndex, so OnTabChange
-    // fires exactly once: closing a hosted tab IS a tab change, and the host's handler is
-    // what restores the panel the tab was opened from.
+    // is added, renamed and removed at runtime. Removing the selected tab routes its collapse
+    // through SelectedIndex, so OnTabChange fires exactly once: closing a hosted tab IS a tab
+    // change, and the host's handler is what restores the panel the tab was opened from.
     public void RemoveTab(int index)
     {
         if ((uint)index >= (uint)Tabs.Count)
@@ -289,9 +285,9 @@ public class Submenu : UIPanel
         
         NextTabPos.X += w;
         MenuBar = new(MenuBar.X, MenuBar.Y, MenuBar.W, TabRows*TabHeight);
-        // same terms as before, through the owner formula (MenuBar.X/W derive from N.Top,
-        // which derives from the same corner textures CalcGroupClientArea reads).
-        // ⚠ new RectF(Rect), not RectF: N was laid out on the INTEGER rect, and the formula
+        // through the owner formula (MenuBar.X/W derive from N.Top, which derives from the
+        // same corner textures CalcGroupClientArea reads).
+        // ⚠ new RectF(Rect), not RectF: N is laid out on the INTEGER rect, and the formula
         // must read the same one to stay bit-identical.
         ClientArea = CalcGroupClientArea(new RectF(Rect), Style, TabRows);
 
@@ -588,8 +584,8 @@ public class Submenu : UIPanel
     }
 
     // Ludoal fork: the cartouche recipe, written once - the near-opaque ground 2px inside
-    // the chrome, then the frame on top. The star/planet/ship/fleet cartouches and the
-    // minimap each carried this pair as their own copy; one arithmetic, several consumers.
+    // the chrome, then the frame on top. One arithmetic for the star/planet/ship/fleet
+    // cartouches and the minimap.
     public static void DrawFrameWithGround(SpriteBatch batch, in RectF r, SubmenuStyle style = SubmenuStyle.Brown)
     {
         RectF ground = new(r.X + 2, r.Y + 2, r.W - 4, r.H - 4);
@@ -597,19 +593,17 @@ public class Submenu : UIPanel
         DrawFrameOnly(batch, r, style);
     }
 
-    // Ludoal fork: the group client-area formula, extracted to its owner. The tab-layout
-    // path below calls this (the formula exists ONCE), and a screen hosted in a group's
-    // frame without being a Submenu reads the same rect - pixel-identical to a real tab's
-    // content by construction, not by calibration. Terms: the menu bar starts at the TL
-    // corner texture's width and is amputated of both corners; the client area starts under
-    // tabRows of tabs and stops above the BL corner's height.
+    // Ludoal fork: the group client-area formula, in ONE place. The tab-layout path below
+    // calls this, and a screen hosted in a group's frame without being a Submenu reads the same
+    // rect - pixel-identical to a real tab's content by construction, not by calibration.
+    // Terms: the menu bar starts at the TL corner texture's width and is amputated of both
+    // corners; the client area starts under tabRows of tabs and stops above the BL corner.
     public static RectF CalcGroupClientArea(in RectF rect, SubmenuStyle style, int tabRows = 1)
     {
         StyleTextures s = GetStyle(style);
-        // Ludoal fork: the inset is a theme value now (Theme.yaml, TabPadOuter) instead of
-        // being the corner texture's size full stop. ⚠ Floored PER EDGE at that texture: the
-        // corner is drawn, so anything less runs the content under it. The three shipped
-        // styles all carry 9x9 tops and 8x9 feet, so the floor is 9 everywhere today.
+        // Ludoal fork: the inset is a theme value (Theme.yaml, TabPadOuter). ⚠ Floored PER
+        // EDGE at the corner texture: the corner is drawn, so anything less runs the content
+        // under it. The three shipped styles carry 9x9 tops and 8x9 feet, so the floor is 9.
         float padL = Math.Max(UITheme.TabPadOuter, s.CornerTL.Width);
         float padR = Math.Max(UITheme.TabPadOuter, s.CornerTR.Width);
         float padB = Math.Max(UITheme.TabPadOuter, s.CornerBL.Height);

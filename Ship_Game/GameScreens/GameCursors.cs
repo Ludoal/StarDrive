@@ -37,8 +37,8 @@ namespace Ship_Game.GameScreens
         // StandGround Stance Cursor
         public static GameCursor StandGround;
         public static GameCursor StandGroundNav;
-        // bench 451: the OS hand for grabbable things (no hand asset ships with the game,
-        // and the system one is exactly the affordance the player already knows)
+        // the OS hand for grabbable things - no hand asset ships with the game, and the
+        // system one is the affordance the player already knows
         public static GameCursor Hand;
 
         static GameCursor CurrentCursor;

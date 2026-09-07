@@ -146,7 +146,7 @@ namespace Ship_Game
             }
 
             // Ludoal fork: the obsolete-design toggle, the design-side twin of the module one.
-            // The action lives on OnClick now; the guards still gate whether it takes input.
+            // The action lives on OnClick; the guards gate whether it takes input.
             if (InfoSub.Visible && CurrentDesign != null && ObsoleteDesign.HandleInput(input))
                 return true;
 
@@ -193,7 +193,7 @@ namespace Ship_Game
             {
                 if (ActiveModule != null)
                 {
-                    ActiveModule = null; // cancel the module in hand, everywhere (Lek's review)
+                    ActiveModule = null; // cancel the module in hand, everywhere
                     return true;
                 }
                 if (cursorInFrame)
@@ -223,7 +223,7 @@ namespace Ship_Game
             if (base.HandleInput(input)) // handle any buttons before any other selection logic
                 return true;
 
-            // Arcs is a UIButton in the foot row now; base.HandleInput above serves its click
+            // Arcs is a UIButton in the foot row; base.HandleInput above serves its click
             // and its Tab hotkey. Only the style has to follow the state.
             if (input.Tab && !input.IsAltKeyDown)
             {
@@ -234,7 +234,7 @@ namespace Ship_Game
 
             // Scene gestures only inside the frame. Outside it, scroll/pan/click belong to the
             // universe map behind, not the workbench.
-            // Pan runs whenever it is latched too (Lek's review): a drag begun inside the frame keeps
+            // Pan runs whenever it is latched too: a drag begun inside the frame keeps
             // going until the button is released, even past the edge.
             if (cursorInFrame || PanLatched)
                 HandleCameraMovement(input);
@@ -587,8 +587,8 @@ namespace Ship_Game
                     case "Shipyard":
                         GameAudio.EchoAffirmative();
                         break;
-                    // Ludoal fork: Fleets/ShipList/Espionage were missing — clicking them
-                    // from the Shipyard closed the designer without opening the target.
+                    // Ludoal fork: the Shipyard's top bar opens Fleets/ShipList/Espionage
+                    // like every other target it names.
                     case "Fleets":
                         GameAudio.EchoAffirmative();
                         ScreenManager.AddScreen(new FleetDesignScreen(ParentUniverse, EmpireUI));
@@ -638,10 +638,9 @@ namespace Ship_Game
             ReallyExit();
         }
 
-        // Ludoal fork — merged browser gestures.
-        // Single click only selects, and shift-click pins a design into the comparator:
-        // loading rebuilds the mesh, re-instantiates every module and recomputes the
-        // stats, so that cost belongs to a deliberate gesture (the double click).
+        // Ludoal fork: single click only selects, shift-click pins a design into the comparator.
+        // Loading rebuilds the mesh, re-instantiates every module and recomputes the stats, so
+        // that cost belongs to a deliberate gesture - the double click.
         void OnBrowserItemClicked(ShipYardBrowserItem item)
         {
             if (item.IsDesign && Input.IsShiftKeyDown)
@@ -667,17 +666,16 @@ namespace Ship_Game
             }
         }
 
-        // The guard that already protected hull changes, now shared by designs too:
-        // dirty and not yet a valid design -> park the work in progress as a WIP;
-        // dirty but valid -> ask before replacing it. Never replace silently.
+        // The guard shared by hull changes and design loads: dirty and not yet a valid
+        // design -> park the work in progress as a WIP; dirty but valid -> ask before
+        // replacing it. Never replace silently.
         void LoadWithUnsavedGuard(Action load)
         {
             GameAudio.AcceptClick();
 
-            // The criterion is simply "modified since the last save". Gating the prompt on
-            // IsGoodDesign() looked right but never fires in practice: that predicate demands
-            // EVERY slot of the hull to be filled, which almost no real design does, so the
-            // silent WIP branch always won and the question was never asked.
+            // The criterion is "modified since the last save". ⚠ Never gate the prompt on
+            // IsGoodDesign(): that predicate demands EVERY slot of the hull to be filled, which
+            // almost no real design does, so the silent WIP branch would always win.
             if (ShipSaved || ModuleGrid.IsEmptyDesign())
             {
                 load();

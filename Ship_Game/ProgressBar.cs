@@ -15,7 +15,7 @@ public sealed class ProgressBar
     public float Progress;
     public float Max;
     public string color = "brown";
-    // Ludoal fork (maintainer, bench 524): the FILL's tint. White leaves the gradient as the
+    // Ludoal fork (bench 524): the FILL's tint. White leaves the gradient as the
     // artist drew it; a muted tint pulls its saturation down, which is how two bars that share
     // a colour stop reading as the same quantity. Only the fill - the housing keeps its own.
     public Color FillTint = Color.White;

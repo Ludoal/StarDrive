@@ -17,7 +17,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
         readonly Array<Peer> Peers = new Array<Peer>();
         readonly Vector2 WeightCenter; // Offset from window center for circle of empires
 
-        // Ludoal fork: one filter per treaty type (replaces the old two toggles),
+        // Ludoal fork: one filter per treaty type,
         // ordered War → Peace → Alliance → NA → Open Borders → Trade, all on by default
         readonly bool[] ShowTreaty = { true, true, true, true, true, true };
         UICheckBox[] Filters;
@@ -44,8 +44,8 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
         // exactly what the page occupies, dynamic size included.
         public override Rectangle PageFrame => GroupTabs?.Rect ?? base.PageFrame;
 
-        // The stock diplomacy screen - kept upstream-identical as a reference - opens this with
-        // itself as parent, so that signature stays valid. Ludoal fork.
+        // Ludoal fork: the stock diplomacy screen opens this with itself as parent, so that
+        // signature stays valid.
         public RelationshipsDiagramScreen(GameScreen parent, UniverseScreen us,
                                           Array<EmpireAndIntelLevel> empiresAndIntel)
             : this(us, empiresAndIntel)
@@ -126,8 +126,8 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
 
         public override void LoadContent()
         {
-            // Ludoal fork: in the frame's own top-right corner. The tab row names the screen now,
-            // so the "Empire Relationships" label that used to head this panel is gone with it.
+            // Ludoal fork: in the frame's own top-right corner. The tab row names the screen,
+            // so this panel carries no heading label of its own.
             Vector2 closePos = ScreenGroups.GroupClosePos(GroupTabs.ClientArea);
             CloseButton(closePos.X, closePos.Y);
 
@@ -233,7 +233,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
                 return;
 
             // Ludoal fork: each treaty is a distinct parallel chord, offset perpendicular
-            // to the A→B line by its row index — the six no longer stack on one line.
+            // to the A→B line by its row index, so the six do not stack on one line.
             // The relation is symmetric here, so pair the chord to a stable ordering
             // (lower empire id = "left") so both directions land on the same offset lane.
             Vector2 a = us.LinkPos, b = peer.LinkPos;

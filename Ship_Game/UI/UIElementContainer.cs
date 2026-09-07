@@ -371,10 +371,9 @@ namespace Ship_Game
         public void BringToFrontZOrder(UIElementV2 child)
         {
             // ⚠ move the child to the end of the list, do NOT sort. RefreshZOrder runs
-            // Array.Sort, which is UNSTABLE, and this screen has several Submenus whose
-            // backgrounds were pushed to min-1 by SendToBackZOrder - so a sort can reorder
+            // Array.Sort, which is UNSTABLE, and a screen may hold several Submenus whose
+            // backgrounds sit at min-1 from SendToBackZOrder - so a sort can reorder
             // equal-ZOrder siblings arbitrarily and drop a panel behind an opaque background.
-            // That is exactly what emptied the design cartouche at bench 46.172 (maintainer feedback).
             int maxZOrder = int.MinValue;
             foreach (UIElementV2 e in Elements)
                 if (e.ZOrder > maxZOrder)

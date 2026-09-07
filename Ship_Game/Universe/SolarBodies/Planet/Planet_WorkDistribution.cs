@@ -79,9 +79,9 @@ namespace Ship_Game
             {
                 // Opteris eat production, so the floor is CARVED OUT of the production share
                 // rather than standing beside it. The player's own part is what sits above the
-                // old floor - which is why the floor is remembered from turn to turn: without
-                // it, the moment the floor moves there is no way to tell the player's surplus
-                // from the machine's ration inside a single number.
+                // PREVIOUS floor, so the floor is remembered from turn to turn: without it, a
+                // moving floor leaves no way to tell the player's surplus from the machine's
+                // ration inside a single number.
                 float surplus = (Prod.Percent - SubsistenceFloor).LowerBound(0f);
                 float keptRes = Res.Percent;
 

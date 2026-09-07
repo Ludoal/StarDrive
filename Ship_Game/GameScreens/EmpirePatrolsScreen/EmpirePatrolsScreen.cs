@@ -231,8 +231,7 @@ namespace Ship_Game
                 return true;
             }
 
-            // Ludoal fork: close with the key that opens this screen (P) — Keys.L was a
-            // copy-paste leftover from PlanetListScreen, so the hotkey felt dead in-game.
+            // Ludoal fork: close with the key that opens this screen (P).
             if (input.EmpirePatrolsScreen && !GlobalStats.TakingInput)
             {
                 GameAudio.EchoAffirmative();

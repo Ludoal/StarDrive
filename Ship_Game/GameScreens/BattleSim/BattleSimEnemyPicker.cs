@@ -13,15 +13,11 @@ using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game
 {
-    // Ludoal fork (battle simulator S2): choose the enemy design before entering
-    // the arena. Doubles as the LOADING VEIL: the arena's LoadContent freezes the
-    // render loop for a second or two, so whatever frame was presented last stays
-    // on screen — we make sure it is our black "Preparing arena..." frame instead
-    // of a flash of the paused game map.
-    // Ludoal fork: a PopupWindow rather than a GameScreen carrying a Menu2. This screen was ours
-    // to begin with and was built in the wrong shape - it is modal, it has a title and a close
-    // cross, which is the definition of a popup here (maintainer observation). It now wears the
-    // same frame as Options and the Codex instead of a second kind of window.
+    // Ludoal fork: choose the enemy design before entering the arena. Doubles as the LOADING
+    // VEIL: the arena's LoadContent freezes the render loop for a second or two, so whatever
+    // frame was presented last stays on screen - it has to be our black "Preparing arena..."
+    // frame and not a flash of the paused game map. A PopupWindow rather than a GameScreen
+    // carrying a Menu2: it is modal, it has a title and a close cross, which is what a popup is.
     public sealed class BattleSimEnemyPicker : PopupWindow
     {
         readonly UniverseScreen Host;
@@ -29,16 +25,16 @@ namespace Ship_Game
         // ⚠ not readonly: these are built in LoadContent, which PopupWindow may re-run (a
         // resolution change rebuilds the frame and everything on it)
         ScrollList<PickerItem> DesignSL;
-        // S5: click stages opponents into the group roster (S5.1: the only gesture)
+        // click stages opponents into the group roster - the only gesture
         readonly Array<string> Roster = new();
         string[] ChosenGroup;
         UIButton FightBtn, ClearBtn;
         ScrollList<RosterItem> RosterSL;
-        const int RosterCap = 10; // readability cap (field preference, 45.65 bench)
+        const int RosterCap = 10; // readability cap (maintainer feedback)
         int LaunchCountdown = -1; // >= 0: veil is up, counting rendered frames before Launch
 
-        // PopupWindow centres the rect itself and supplies the title bar and close cross, so the
-        // size is all this passes; 520x660 is unchanged (S5: +60 for the roster floor).
+        // PopupWindow centres the rect itself and supplies the title bar and close cross, so
+        // the size is all this passes; the 660 of height includes the roster floor.
         public BattleSimEnemyPicker(UniverseScreen host, string playerDesign) : base(host, 520, 660)
         {
             Host = host;
@@ -62,17 +58,17 @@ namespace Ship_Game
             RectF slRect = new(rect.X + 20, top + 6, rect.Width - 40, rect.Bottom - 210 - top);
             DesignSL = Add(new ScrollList<PickerItem>(slRect, 32));
             DesignSL.EnableItemHighlight = true;
-            DesignSL.OnClick = OnPicked; // S5.1: click = stage/unstage; the button launches
+            DesignSL.OnClick = OnPicked; // click = stage/unstage; the button launches
 
-            // S5: the group roster — grouped "design xN" rows, click removes one
+            // the group roster - grouped "design xN" rows, click removes one
             RectF rosterRect = new(rect.X + 20, rect.Y + rect.Height - 192, rect.Width - 40, 120);
             RosterSL = Add(new ScrollList<RosterItem>(rosterRect, 24));
             RosterSL.EnableItemHighlight = true;
             RosterSL.OnClick = OnRosterClicked;
 
-            // S5: group controls — hidden until the roster has a first opponent.
-            // bench 361 (maintainer): the step-back on the LEFT, the action on the RIGHT
-            ClearBtn = Add(new UIButton(ButtonStyle.WideHostile, new Vector2(rect.X + 20, rect.Bottom - 48), GameText.BsClear)); // bench 363: red (maintainer)
+            // group controls - hidden until the roster has a first opponent.
+            // the step-back on the LEFT, the action on the RIGHT (bench 361)
+            ClearBtn = Add(new UIButton(ButtonStyle.WideHostile, new Vector2(rect.X + 20, rect.Bottom - 48), GameText.BsClear)); // hostile style: this one discards the roster
             ClearBtn.OnClick = b => { GameAudio.AcceptClick(); Roster.Clear(); RefreshRoster(); };
             FightBtn = Add(new UIButton(ButtonStyle.Default, new Vector2(rect.Right - 220, rect.Bottom - 48), "Fight group"));
             FightBtn.OnClick = b => LaunchGroup();
@@ -150,8 +146,8 @@ namespace Ship_Game
             RefreshRoster();
         }
 
-        // S5.1 (field feedback): list click ADDS (repeat clicks stack copies),
-        // roster click REMOVES. Launching is the button's job, single opponent included.
+        // list click ADDS (repeat clicks stack copies), roster click REMOVES. Launching is
+        // the button's job, a single opponent included. (maintainer feedback)
         void OnPicked(PickerItem item)
         {
             if (LaunchCountdown >= 0 || item.DesignName == null) // headers don't fight
@@ -181,7 +177,7 @@ namespace Ship_Game
                 BattleSimUniverse.Launch(Host, PlayerDesign, ChosenGroup);
                 return;
             }
-            FightBtn.Visible = ClearBtn.Visible = RosterSL.Visible = Roster.NotEmpty; // S5
+            FightBtn.Visible = ClearBtn.Visible = RosterSL.Visible = Roster.NotEmpty; // the group controls appear with the first opponent
             if (Roster.NotEmpty)
                 FightBtn.Text = Roster.Count == 1 ? "Fight" : Localizer.Token(GameText.BsFightGroupCount) + Roster.Count + ")";
             base.Update(fixedDeltaTime);
@@ -229,7 +225,7 @@ namespace Ship_Game
             return base.HandleInput(input);
         }
 
-        // S5: one grouped roster line - "design xN"
+        // one grouped roster line - "design xN"
         public sealed class RosterItem : ScrollListItem<RosterItem>
         {
             public readonly string Design;
@@ -255,7 +251,7 @@ namespace Ship_Game
             public readonly string DesignName; // null on role headers
             readonly string Detail;
             readonly bool IsMirror;
-            readonly BattleSimEnemyPicker Picker; // S5.1: staged designs light up
+            readonly BattleSimEnemyPicker Picker; // staged designs light up
 
             public PickerItem(string headerText) : base(headerText) { }
 

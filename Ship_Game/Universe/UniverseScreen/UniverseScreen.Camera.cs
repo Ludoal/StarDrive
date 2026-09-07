@@ -171,8 +171,7 @@ namespace Ship_Game
             SnapViewTo(new(s.Position.X, s.Position.Y + 400, 2500), 5f, 2f);
             LookingAtPlanet = false;
             // an immobile ship (station/platform) has nothing to chase: engaging follow
-            // mode on it traps the camera (field report: could not zoom out from a
-            // station-built notification). Snap and select only.
+            // mode on it traps the camera. Snap and select only.
             if (s.IsPlatformOrStation)
                 return;
             ShipToView = s;
@@ -320,28 +319,26 @@ namespace Ship_Game
                 ProjMaxDistance = maxDistance;
                 ApplyUniverseProjection();
             }
-            // (maintainer feedback) a page opening/closing, a resize, OR a switch to a panel of
-            // a DIFFERENT width all move the viewport offset without touching the view state -
-            // re-lay the projection whenever the offset VALUE changes (not just its existence),
-            // so the map recentres to the current panel.
+            // A page opening/closing, a resize, or a switch to a panel of a DIFFERENT width all
+            // move the viewport offset without touching the view state: re-lay the projection
+            // whenever the offset VALUE changes, not just its existence. (maintainer feedback)
             else if (PageViewportOffset() != AppliedPageOffset)
             {
                 ApplyUniverseProjection();
             }
         }
 
-        // bench 390 (maintainer): the last maxDistance the view-state ladder chose. Kept so a
-        // page opening/closing can re-lay the projection with the viewport offset WITHOUT
-        // changing the zoom clamp - only the frustum's off-centre moves.
+        // The last maxDistance the view-state ladder chose (bench 390). A page opening/closing
+        // re-lays the projection with the viewport offset WITHOUT changing the zoom clamp -
+        // only the frustum's off-centre moves.
         double ProjMaxDistance = 15_000_000 + (int)UnivScreenState.GalaxyView;
         Vector2 AppliedPageOffset; // the exact offset the current projection was built for (bench 392)
 
-        // bench 391 (maintainer): with a page open on a wide display the map's visible band is
-        // the strip LEFT of the open panel plus what sits right of it; centre the view there.
-        // Target: x = mid of the free band right of the OPEN PANEL'S own right edge (short panels
-        // leave more room than the old fixed 1680), y = mid of the left band between the top
-        // bar's bottom and the minimap's top. Off under 1920 or with no page open. Returned as a
-        // fraction of the screen (frame-centre-minus-screen-centre), the shape offsetXY speaks.
+        // With a page open on a wide display the map's visible band is the strip LEFT of the open
+        // panel plus what sits right of it; centre the view there: x = mid of the free band right
+        // of the open panel's own right edge, y = mid of the band between the top bar's bottom and
+        // the minimap's top. Off under 1920 or with no page open. ⚠ Returned as a FRACTION of
+        // the screen (frame-centre minus screen-centre), the shape offsetXY speaks. (bench 391)
         public Vector2 PageViewportOffset()
         {
             if (ScreenWidth < 1920 || !OpenGroupPage(out GameScreen page))
@@ -430,7 +427,7 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork (wishlist): leave the planet panel but STAY at the planet on
+        // Ludoal fork: leave the planet panel but STAY at the planet on
         // the main map (the normal dismiss flies the camera back to where it was).
         // Keeps the previous zoom level, at the planet's position, planet selected.
         public void ClosePlanetPanelStayHere()

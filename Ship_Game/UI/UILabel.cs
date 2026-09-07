@@ -141,11 +141,9 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork (maintainer feedback): a label given a lane of its own must KEEP it. The
-        // sizing below only ever enlarges, so a value that grew a digit widened the label for good
-        // and, right-aligned, drew further right than its column - the row stayed crooked until
-        // the screen was rebuilt. Off by default: everywhere else a label is expected to fit its
-        // text.
+        // Ludoal fork: a label given a lane of its own must KEEP it. ⚠ UpdateSizeFromText only
+        // ever enlarges, so a value that gains a digit widens the label for good and a
+        // right-aligned row goes crooked. Off by default: elsewhere a label fits its text.
         public bool FixedSize;
 
         void UpdateSizeFromText(string text)

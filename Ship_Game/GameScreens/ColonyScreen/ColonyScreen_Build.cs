@@ -212,8 +212,8 @@ namespace Ship_Game
             item.BuildIt(1);
         }
 
-        // bench 447: ship info lives in the Description pane now, not a floating box -
-        // and a PINNED ship holds the pane against hover changes
+        // ship info lives in the Description pane, not a floating box - and a PINNED ship
+        // holds the pane against hover changes
         bool PinnedShipHeld => PinnedBuildable?.Ship != null || PinnedQueue?.Item.isShip == true;
         Rectangle DescriptionPane => new(PFacilities.Rect.X, PFacilities.Rect.Y + 30,
                                          PFacilities.Rect.Width, PFacilities.Rect.Height - 35);
@@ -243,9 +243,8 @@ namespace Ship_Game
                 // a genuine drop attempt outside the list that found no valid tile
                 GameAudio.NegativeClick();
             }
-            // released INSIDE the list: not a build attempt - the 75ms DragBeginDelay arms
-            // a "drag" on any ordinary click, and this fall-through was buzzing every row
-            // click on top of the click sound (bench 459 double-buzz, reported twice)
+            // released INSIDE the list: not a build attempt - the 75ms DragBeginDelay arms a
+            // "drag" on any ordinary click, so a buzz here would double every row's click sound
         }
 
         void OnConstructionItemReorder(ConstructionQueueScrollListItem item, int relativeChange)

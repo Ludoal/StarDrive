@@ -35,10 +35,10 @@ namespace Ship_Game
             }
 
             // Ludoal fork: the starfield, the particles and the 3D workbench are clipped to the
-            // tab frame - the screen is one tab of the Design group now, so its scene belongs
-            // inside the frame rather than running under the top bar and past the edges. Scissor
-            // is device state: it has to be turned off again before the UI pass, or every panel
-            // drawn afterwards inherits the crop.
+            // tab frame - the screen is one tab of the Design group, so its scene belongs inside
+            // the frame rather than running under the top bar and past the edges. ⚠ Scissor is
+            // device state: turn it off again before the UI pass, or every panel drawn
+            // afterwards inherits the crop.
             RectF sceneClip = ScreenGroups.GroupSceneArea(DesignTabs.Rect, DesignTabs.ClientArea);
             Ship_Game.Graphics.RenderStates.EnableScissorTest(batch.GraphicsDevice, sceneClip);
 
@@ -544,17 +544,13 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork: the label sits on its OWN dropdown rather than on a screen fraction, so
-        // the two cannot drift apart when either moves. Arial12: these are secondary options,
-        // not headings.
-        //
-        // To the LEFT of the field and centred on it, so the whole options row reads as one line
-        // with the carrier-only checkbox. The label measures itself, which is what keeps it clear
-        // of the field whatever the string.
+        // Ludoal fork: the caption sits on its OWN dropdown rather than on a screen fraction,
+        // so the two cannot drift apart when either moves. To the LEFT of the field and centred
+        // on it; the label measures itself, so it stays clear of the field whatever the string.
         public const int TitleGap = 6;   // between a dropdown caption and its field
 
         // Ludoal fork: one source for each caption - the layout reserves its width from the same
-        // string DrawTitle paints, so a reworded label cannot leave the row measured for the old one.
+        // string DrawTitle paints, so rewording a caption cannot leave the row measured for another.
         public const string RepairCaption = "Repair";
         public const string HangarCaption = "Hangar Type";
         static void DrawTitle(SpriteBatch batch, in Rectangle dropdown, string title)

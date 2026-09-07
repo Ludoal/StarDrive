@@ -29,7 +29,7 @@ namespace Ship_Game
         {
             base.Draw(batch, elapsed);
 
-            // centred, like the race rows - the portrait used to sit hard left and overflow
+            // centred, like the race rows
             int height = (int)Height;
             int width = (int)Portrait.GetWidthFromHeightAspect(height);
             var portrait = new Rectangle((int)CenterX - width/2, (int)Y, width, height);

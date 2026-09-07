@@ -19,21 +19,18 @@ namespace Ship_Game
         [StarData] public string RealDate;
         [StarData] public string ModName = "";
         [StarData] public DateTime Time;
-        // the player's flag, so the save list can show it without a race-name lookup
-        // (a renamed or custom race matches nothing and fell back to the default icon).
-        // -1 = header written before the field existed; the reader falls back to the lookup.
-        // DefaultValue states the sentinel explicitly. Without it the writer's skip value
-        // would be 0 - a real, pickable flag. Today that still round-trips, because
-        // HeaderData never has enough default fields to leave full layout and the reader
-        // re-derives 0 from the serializer's own default. Under partial layout a skipped
-        // field is never written at all and would surface as the -1 sentinel instead.
+        // the player's flag, so the save list can show it without a race-name lookup (a renamed
+        // or custom race matches nothing and falls back to the default icon).
+        // -1 = the header carries no flag index; the reader falls back to the lookup.
+        // ⚠ DefaultValue states the sentinel explicitly: without it the writer's skip value is 0,
+        // a real pickable flag, and under partial layout a skipped field surfaces as -1 instead.
         [StarData(DefaultValue = -1)] public int FlagIndex = -1;
-        // initializers only survive for fields absent from the stream, i.e. old headers;
+        // initializers only survive for fields absent from the stream;
         // White keeps those from tinting an icon fully transparent if ever read unguarded
         [StarData] public Color EmpireColor = Color.White;
-        // Ludoal fork (maintainer feedback): the game's setup, formatted at save time, for the
-        // load list's tooltip. Empty on a header written before the field existed - the reader
-        // says so rather than showing a blank block.
+        // Ludoal fork: the game's setup, formatted at save time, for the load list's tooltip.
+        // Empty when the header carries none - the reader says so rather than drawing a blank
+        // block.
         [StarData] public string SetupSummary = "";
     }
 
@@ -41,9 +38,8 @@ namespace Ship_Game
     {
         // Every time the savegame layout changes significantly,
         // this version needs to be bumped to avoid loading crashes.
-        // Bumped 20 → 21 for Jupiter 1.60 to partition saves cleanly from Mars 1.51:
-        // LoadSaveScreen's exact-match filter means each major silently filters the
-        // other's saves out of the load list (no corruption, no menu noise).
+        // ⚠ LoadSaveScreen filters on an exact match, so a bump also partitions the load
+        // list: saves of any other version are hidden from it, not broken.
         public const int SaveGameVersion = 21;
 
         public bool Verbose;

@@ -9,8 +9,7 @@ namespace Ship_Game
 {
 	public sealed class VariableUIElement : UIElement
 	{
-		// bench 454: the REAL siblings' shave (they read PlanetInfoUIElement.FrameShave=61;
-		// the local 26 made this cartouche 35px taller than the family)
+		// the cartouche family's shave, read from ONE constant so this one cannot drift
 		const int FrameShave = PlanetInfoUIElement.FrameShave;
 
 		private UniverseScreen screen;
@@ -46,16 +45,15 @@ namespace Ship_Game
 		public void Draw(string TitleText, string BodyText)
 		{
 			0f.SmoothStep(1f, TransitionPosition);
-			// Ludoal fork: the minimap's recipe instead of the sculpted unitselmenu texture -
-			// a near-opaque flat ground and a rounded grey rule, frame shaved like its siblings
-			// bench 453: the SAME frame as the four cartouche siblings, to the pixel -
-			// same shave, same right trim, same Submenu furniture (copy the one that works)
+			// Ludoal fork: the minimap's recipe - a near-opaque flat ground and a rounded grey
+			// rule, and the SAME frame as the four cartouche siblings to the pixel: same shave,
+			// same right trim, same Submenu furniture
 			SpriteBatch batch = ScreenManager.SpriteBatch;
 			Rectangle frame = Housing;
 			frame.Y += FrameShave; frame.Height -= FrameShave;
 			frame.Width -= PlanetInfoUIElement.RightTrim;
 			Submenu.DrawFrameWithGround(batch, new RectF(frame));
-			Vector2 NamePos = new Vector2(Housing.X + 41, Housing.Y + 69); // 8px under the (now lower) frame top
+			Vector2 NamePos = new Vector2(Housing.X + 41, Housing.Y + 69); // 8px under the frame top
 			ScreenManager.SpriteBatch.DrawString(Fonts.Arial20Bold, TitleText, NamePos, tColor);
 			Vector2 BodyPos = new Vector2(NamePos.X, Housing.Y + 115);
 			ScreenManager.SpriteBatch.DrawString(Fonts.Arial12Bold, BodyText, BodyPos, tColor);

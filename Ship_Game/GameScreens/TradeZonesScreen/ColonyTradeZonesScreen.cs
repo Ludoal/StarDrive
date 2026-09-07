@@ -9,10 +9,9 @@ using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game
 {
-    // Ludoal fork (maintainer feedback): the MIRROR of TradeZoneColoniesScreen. That one asks a
-    // zone which colonies it serves; this one asks a colony which zones serve it - the same
-    // membership, read from the other end. A newly founded world is reached from its own screen
-    // instead of a trip to the Trade page, which is the whole point of the shortcut.
+    // Ludoal fork: the MIRROR of TradeZoneColoniesScreen. That one asks a zone which colonies
+    // it serves; this one asks a colony which zones serve it - the same membership, read from
+    // the other end, so a newly founded world is served from its own screen.
     public sealed class ColonyTradeZonesScreen : PopupWindow
     {
         readonly Planet Colony;
@@ -57,7 +56,7 @@ namespace Ship_Game
             // exists, and a blank list would read as a fault rather than as a starting point
             if (Owner.TradeZones.IsEmpty)
             {
-                // WRAPPED to the frame it sits in (maintainer bench 554): a sentence handed to a
+                // WRAPPED to the frame it sits in (bench 554): a sentence handed to a
                 // label is drawn on one line and runs straight out of the box - the font folds it,
                 // and it folds against the frame's own width rather than a number typed here.
                 string hint = Fonts.Arial12.ParseText(Localizer.Token(GameText.TzNoZonesHint), zoneArea.W - 24);

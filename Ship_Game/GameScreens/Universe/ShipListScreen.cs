@@ -71,7 +71,7 @@ namespace Ship_Game
             TransitionOnTime = 0.25f;
             TransitionOffTime = 0.25f;
             IsPopup = true;
-            // Ludoal fork: the Ships tab of the Galaxy group on the shared table charte
+            // Ludoal fork: the Ships tab of the Galaxy group on the shared table standard
             // (UITable): fixed columns except Orders, which takes what the screen offers
             // within bounds - the frame hugs the table and stops after the slider lane.
             // Height follows the unfiltered fleet count.
@@ -84,7 +84,7 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.Role),   Width = 80,  Align = TableAlign.Center, Sortable = true },
                 new UITable.Column { Title = "Fleet",  Width = 110, Sortable = true },
                 // one lane, two facts that never coincide: a fleet's patrol plan, or a freighter's
-                // trade zone (maintainer bench 558 - the patrol column was nearly always empty)
+                // trade zone (bench 558)
                 new UITable.Column { Title = "Patrol / Trade", Sortable = true },
                 new UITable.Column { Title = Localizer.Token(GameText.Orders), Width = 300, MinWidth = 300, Sortable = true },
                 new UITable.Column { Title = "Actions", Width = 110, Align = TableAlign.Center }, // the order/refit/scrap icon lane
@@ -378,9 +378,9 @@ namespace Ship_Game
                     case 11: return ship.DesignRole == RoleName.support;
                     case 12: return ship.DesignRole <= RoleName.platform || ship.DesignRole == RoleName.station;
                     case 13: return ship.IsConstructor || ship.DesignRole == RoleName.freighter || ship.ShipData.ShipCategory == ShipCategory.Civilian;
-                    // #348: everything from troopShip upward in RoleName is the military family
+                    // everything from troopShip upward in RoleName is the military family
                     // (troopShip, support, bomber, carrier, fighter, scout, gunboat, drone,
-                    // corvette..capital) — no way to list only military ships before this.
+                    // corvette..capital) (issue 348)
                     case 14: return ship.DesignRole >= RoleName.troopShip;
                 }
 

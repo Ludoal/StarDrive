@@ -201,10 +201,9 @@ public partial class Planet
         if (TryGetQueueItemsFromRefitGoals(out Array<QueueItem> refitItems))
             items.AddRange(refitItems);
 
-        // Ludoal fork (maintainer feedback): a plan hands the queue one building at a time, so the
-        // queue alone understates a colony early in a long plan. Its remaining reachable entries
-        // weigh here like the refit goals above: phantom items on the estimate's own copy, so
-        // nothing is pre-queued and the plan stays budget aware.
+        // Ludoal fork: a plan hands the queue one building at a time, so the queue alone
+        // understates a colony early in a long plan. Its remaining reachable entries weigh here
+        // like the refit goals above - phantom items on the estimate's own copy, never queued.
         if (TryGetQueueItemsFromBlueprints(out Array<QueueItem> plannedItems))
             items.AddRange(plannedItems);
 

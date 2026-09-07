@@ -31,7 +31,7 @@ namespace Ship_Game
             batch.Draw(BlueprintsIcon, Pos, new Vector2(iconWidth, iconHeight), IconColor);
 
             var tCursor = new Vector2(X + 50f, Y);
-            // 14, not 20 (maintainer bench 301): the chain names crowded their rows
+            // Arial14, not 20 (bench 301): a bigger font crowds the chain names in their rows
             batch.DrawString(Fonts.Arial14Bold, BlueprintsName, tCursor, Color.Orange);
 
             tCursor.Y += Fonts.Arial14Bold.LineSpacing + 2;
