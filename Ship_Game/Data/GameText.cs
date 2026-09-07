@@ -6372,6 +6372,8 @@ namespace Ship_Game
         TzExportersTip = 30160,
         /// <summary>Freighters flying this good to the selected zone.</summary>
         TzFreightersTip = 30161,
+        /// <summary>(waiting for a tile)</summary>
+        CqWaitingForTile = 30162,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>

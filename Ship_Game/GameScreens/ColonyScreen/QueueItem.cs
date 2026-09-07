@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using SDUtils;
@@ -94,7 +94,19 @@ namespace Ship_Game
             {
                 batch.Draw(Building.IconTex, r);
                 batch.DrawString(Fonts.Arial12Bold, Building.TranslatedName, tCursor, Color.White);
-                pb.Draw(batch);
+                // ★ an entry with no tile SAYS SO, and shows no progress bar: it is not stalled,
+                // it has yielded its turn and takes a square the moment one frees up. A bar at
+                // nought would read as a fault (maintainer feedback, bench 597).
+                if (pgs == null)
+                {
+                    float nameW = Fonts.Arial12Bold.TextWidth(Building.TranslatedName);
+                    batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.CqWaitingForTile),
+                                     new Vector2(tCursor.X + nameW + 6, tCursor.Y), Color.Gray);
+                }
+                else
+                {
+                    pb.Draw(batch);
+                }
             }
             else if (isShip)
             {

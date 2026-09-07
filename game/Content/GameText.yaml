@@ -29081,6 +29081,10 @@ TzFreightersTip:
  Id: 30161
  ENG: "Freighters flying this good to the selected zone, against the number needed."
  FRA: "Cargos acheminant ce bien vers la zone sélectionnée, face au nombre nécessaire."
+CqWaitingForTile:
+ Id: 30162
+ ENG: "(waiting for a tile)"
+ FRA: "(en attente d'une case)"
 TzActiveTip:
  Id: 7217
  ENG: "Freighters currently flying to these colonies, whoever owns them. Yellow when only part of the need is on its way, red when none of it is. See Owned for the zone's own hulls."

@@ -330,6 +330,11 @@ namespace Ship_Game.Universe.SolarBodies
             return true;
         }
 
+        // An entry with no square yet. ⚠ PURE ON PURPOSE: the colony screen calls it to order the
+        // rows it draws, and it runs on the UI thread - TryMakeBuildable would ASSIGN a tile from
+        // there, which is a write into the simulation from the wrong thread.
+        public static bool IsWaitingForTile(QueueItem q) => q.isBuilding && q.pgs == null;
+
         // ★ ONE notion, read by everything that used to read the head: the entry production is
         // actually being spent on. Null when every entry is waiting for a tile.
         public QueueItem BuildingNow
