@@ -760,15 +760,6 @@ namespace Ship_Game.Universe.SolarBodies
                 QueueItem q = ConstructionQueue[i];
                 if (q.IsTerraformer)
                 {
-                    // ⚠ TEMPORARY TRACE (bench 597): the terraformer still walks to the back and
-                    // three readings of the code failed to say why, so the bench answers instead
-                    // of a fourth guess. Says WHO moved it and what the smoothed need held at that
-                    // instant. Remove once the cause is named.
-                    Log.Info(ConsoleColor.Yellow,
-                        $"---- Terraformer demoted on {P.Name}: from {i} to {Count-1}, "
-                      + $"playerAdded={q.IsPlayerAdded}, needed={P.AreTerraformersNeeded}, "
-                      + $"held={P.Universe.StarDate - LastTerraformerWanted:0.0}, "
-                      + $"here={P.TerraformersHere}/{P.TerraformerLimit} ----");
                     MoveTo(Count-1, i);
                     break;
                 }
@@ -786,7 +777,16 @@ namespace Ship_Game.Universe.SolarBodies
             for (int i = ConstructionQueue.Count - 1; i >= 0; --i)
             {
                 QueueItem q = ConstructionQueue[i];
-                if (q.IsCivilianBuilding 
+                // ⚠ A TERRAFORMER IS NEVER TRADED FOR A "BETTER" CIVILIAN BUILDING. This sweep
+                // drops a civilian building whenever something worthier can be built instead -
+                // sound for a yield building, ruinous for a terraformer: the governor queues it,
+                // this cancels it for the next warehouse, then queues it again once that is done,
+                // and each round trip BURNS HALF the production already spent on it (Cancel
+                // refunds one half). That is the appearing-and-vanishing terraformer, and it is
+                // not the demotion everyone assumed - it never moved, it was destroyed and
+                // rebuilt (maintainer feedback, bench 597).
+                if (q.IsCivilianBuilding
+                    && !q.IsTerraformer
                     && (!q.IsPlayerAdded || hasExclusiveBlueprints)
                     && q.ProductionSpent < q.ProductionNeeded * 0.9f
                     && P.BestCivilianBuildingToBuildDifferentThen(P.GetBuildingsCanBuild(), q.Building))
