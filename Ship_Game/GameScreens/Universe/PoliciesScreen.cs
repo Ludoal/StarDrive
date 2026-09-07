@@ -38,8 +38,8 @@ namespace Ship_Game
         UIPanel PriorityHost;
 
         // fixed box geometry - the boxes own their sizes, the columns just stack them.
-        // Heights: one-tab strip (~24) + 12 top pad + 26 per row + 12 bottom pad. The notice
-        // line each frame used to carry now lives in its tab's tooltip, hence 20px less.
+        // Heights: one-tab strip (~24) + 12 top pad + 26 per row + 12 bottom pad. Each frame's
+        // notice line lives in its tab's tooltip, hence 20px less.
         const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
         // Colony carries the two mandates AND the default-plan table: a heading plus one row per
         // governor type that can hold a plan. Written as a count times a row height, so adding a
@@ -52,10 +52,10 @@ namespace Ship_Game
         // short ranges, and the value prints past the rail's right end (bench 538).
         const float SliderRowH = 64f, SliderRailW = 300f;
         // Trade carries the priority picker, the three quantity rails and the game rule.
-        // ⚠ Economy and Research are gone from this page (maintainer feedback): Auto-taxes
-        // already lives on the Economy screen itself, and Auto-research has moved to the
-        // Research screen, over the panels it governs. A frame holding one switch that is
-        // also somewhere else is a second place to look, not a policy.
+        // ⚠ no Economy or Research frame on this page (maintainer feedback): Auto-taxes lives on
+        // the Economy screen and Auto-research on the Research screen, each over the panels it
+        // governs. A frame holding one switch that is also somewhere else is a second place to
+        // look, not a policy.
         const float TradeBoxH = 126f + 3f * SliderRowH;
 
         // The Prioritization rows live INSIDE the Construction frame, under its Rush row.
@@ -177,14 +177,13 @@ namespace Ship_Game
             UIList construction = NewBox(new RectF(x1, top, BoxW3, ConstructionBoxH), "Construction", GameText.PolConstructionNotice, out Submenu constructionBox);
             // ⚠ NOT a plain checkbox: its setter marshals onto the SIMULATION thread. Copying it
             // as a bare boolean would look right and propagate nothing.
-            // (maintainer, bench 528) the two things this frame does, each said out loud: what it
-            // rushes, and what you post by hand. A timed rush is expected to join the first.
+            // (bench 528) the two things this frame does, each said out loud: what it rushes, and
+            // what the player posts by hand. A timed rush joins the first.
             construction.Add(new UILabel(GameText.PolRushProduction, Fonts.Arial12Bold, Colors.Cream));
             construction.AddCheckbox(() => RushConstruction, title: GameText.RushAllConstruction, tooltip: GameText.RushAllConstructionTip);
 
-            // (maintainer, bench 529) a young colony rushed for its first turns. Greyed while the
-            // continuous rush is on - that one already rushes everything, everywhere, so this one
-            // would have nothing left to say.
+            // (bench 529) a young colony rushed for its first turns. Greyed while the continuous
+            // rush is on - that one already rushes everything, everywhere.
             RushNewColonies = construction.AddCheckbox(() => player.RushNewColonies,
                                                        v => player.RushNewColonies = v,
                                                        title: GameText.PolRushNewColony,
@@ -195,10 +194,10 @@ namespace Ship_Game
             // inhibit glyph demotes, the plus promotes. Acts at queue INSERTION only
             // (SBProduction) - reordering never reshuffles queues already filled, and the
             // section's tooltip says so.
-            // The host takes its geometry from the frame's own client area, the same source the
+            // ⚠ the host takes its geometry from the frame's own client area, the same source the
             // list rows use (+12) - never from a second sum over x2 and BoxW3. ClientArea is
-            // already inset by 9 (the corner textures' size), so two arithmetics that have to
-            // agree end up disagreeing: this one was 15px left of the rows above it.
+            // already inset by 9 (the corner textures' size), so a second arithmetic lands the
+            // host 15px left of the rows above it.
             PriorityHost = Add(new UIPanel(new Rectangle((int)(constructionBox.ClientArea.X + 12),
                                                          (int)(top + PrioTopInset),
                                                          (int)(constructionBox.ClientArea.W - 24),
@@ -206,10 +205,9 @@ namespace Ship_Game
                                            new Color(0, 0, 0, 0)));
             RebuildPriorityRows();
 
-            // Ludoal fork (maintainer, bench 528): the empire-wide build order, INSIDE the frame
-            // under its own heading, seated below the priority rows. Placed from the constants
-            // above rather than from what happens to be left, so it cannot drift when a row is
-            // added higher up.
+            // Ludoal fork (bench 528): the empire-wide build order, INSIDE the frame under its own
+            // heading, seated below the priority rows. Placed from the constants above rather than
+            // from what happens to be left, so it cannot drift when a row is added higher up.
             float manualY = top + PrioTopInset + PrioRowsH + 4;
             Add(new UILabel(GameText.PolManualConstruction, Fonts.Arial12Bold, Colors.Cream))
                 .Pos = new Vector2(constructionBox.ClientArea.X + 12, manualY);
@@ -262,21 +260,18 @@ namespace Ship_Game
         };
 
         // One picker: the plans of THIS category, plus the empty position. The empty position is a
-        // real value - a row left unset means an Auto colony of that type simply has no plan, which
-        // is why the table can ship blank and change nothing.
+        // real value - a row left unset means an Auto colony of that type simply has no plan, so
+        // the table can ship blank and change nothing.
         DropOptions<string> MakeBlueprintPolicyList(Empire player, Planet.ColonyType type)
         {
             var list = new DropOptions<string>(170, 18);
             list.AddOption(option: "--", "");
-            // Ludoal fork (maintainer): a plan of THIS governor's type, or a GENERIC one. The
-            // blueprint editor maps its "--" position to ColonyType.Colony, which is how a plan
-            // says it has no governor - so matching on the type alone hid every generic plan from
-            // every list at once. A plan without a governor is the universal candidate, not the
-            // candidate for nothing, and hand-laid plans from before the governors are exactly
-            // the ones a player wants to assign.
-            // maintainer feedback: an exclusive plan is marked with the lock the game already
-            // uses for it - the picker says which plans forbid anything outside their list,
-            // without the player opening each one to find out.
+            // Ludoal fork (maintainer feedback): a plan of THIS governor's type, or a GENERIC one.
+            // ⚠ the blueprint editor maps its "--" position to ColonyType.Colony, which is how a
+            // plan says it has no governor: matching on the type alone would hide every generic
+            // plan from every list. A plan without a governor is the universal candidate.
+            // An exclusive plan is marked with the lock the game already uses for it - the picker
+            // says which plans forbid anything outside their list, without opening each one.
             SubTexture lockIcon = ResourceManager.Texture("NewUI/icon_lock");
             foreach (BlueprintsTemplate t in ResourceManager.GetAllBlueprints())
                 if (t.ColonyType == type || t.ColonyType == Planet.ColonyType.Colony)

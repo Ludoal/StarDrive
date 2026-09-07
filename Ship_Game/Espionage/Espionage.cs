@@ -25,18 +25,18 @@ namespace Ship_Game
         [StarData] public float TotalMoneyLeeched { get; private set; }
         [StarData] float MoneyLeechedThisTurn;
         [StarData] public int NumPlantedMoles { get; private set; }
-        // Ludoal fork (Trends, Wishlist): the StarDate each intel domain was FIRST unlocked
-        // at - the curves clip there (espionage does not invent the past). Never cleared: a
-        // level that falls back does not close history already taken. 0 = not yet stamped
-        // (legacy save or never reached); the Trends screen stamps on open as a fallback.
+        // Ludoal fork: the StarDate each intel domain was FIRST unlocked at - the curves clip
+        // there, espionage not inventing the past. ⚠ never cleared: a level that falls back does
+        // not close history already taken. 0 = not yet stamped (a save without the field, or
+        // never reached); the Trends screen stamps on open as a fallback.
         [StarData] float[] DomainUnlockDates = new float[4];
         public enum IntelDomain { Population = 0, Military = 1, Economy = 2, Science = 3 }
         public float DomainUnlockDate(IntelDomain d)
             => DomainUnlockDates == null ? 0f : DomainUnlockDates[(int)d];
-        // bench 454: stamp ONLY the domains THIS level change just opened. A date of 0 on
-        // an already-open domain means "unlocked before the feature existed" and keeps its
-        // full history (the maintainer's ruling) - blanket-stamping them dated every open
-        // curve "today" at each level change and made them all restart.
+        // ⚠ stamp ONLY the domains THIS level change just opened. A date of 0 on an already-open
+        // domain means "unlocked without a recorded date" and keeps its full history; stamping
+        // them all would date every open curve "today" at each level change and restart them
+        // (bench 454).
         public void StampDomainUnlocks(byte previousLevel)
         {
             DomainUnlockDates ??= new float[4]; // a legacy save deserializes the field null
@@ -53,10 +53,9 @@ namespace Ship_Game
             Stamp(3, 3); // Science
         }
 
-        // maintainer option B (bench 454): NO retroactive history, ever - a domain whose
-        // level predates the feature gets its date at the first look, so its curve starts
-        // there instead of inheriting a past the empire never recorded. Runs once per
-        // hole: a set date never moves again.
+        // NO retroactive history, ever - a domain with no recorded date gets one at the first
+        // look, so its curve starts there instead of inheriting a past the empire never recorded.
+        // Runs once per hole: a set date never moves again (maintainer feedback).
         public void StampLegacyHoles()
         {
             DomainUnlockDates ??= new float[4];
@@ -260,8 +259,8 @@ namespace Ship_Game
                 StickyMole = Mole.PlantStickyMoleAtHomeworld(Owner, Them, out Planet targetPlanet);
                 if (StickyMole != null)
                 {
-                    // maintainer feedback: the level-3 perk speaks in its own voice - the ops
-                    // message here read as a Plant Agent the player never launched
+                    // maintainer feedback: the level-3 perk speaks in its own voice - the generic
+                    // ops message reads as a Plant Agent the player never launched
                     string message = $"{Localizer.Token(GameText.HomeworldMoleNotification)} {targetPlanet.Name}";
                     Owner.Universe.Notifications.AddAgentResult(true, message, Owner, targetPlanet);
                 }
@@ -340,10 +339,10 @@ namespace Ship_Game
         public bool CanViewTechType     => Level >= 2;
         public bool CanViewArtifacts    => Level >= 2;
         public bool CanViewRanks        => Level >= 2;
-        // a rank unlocks with the DATUM that founds it (maintainer design, Wishlist):
-        // the flat CanViewRanks gate leaked one floor up (an economy rank at level 2
-        // derives from a treasury that is a level-3 secret) and one floor down (the
-        // population rank hid at 2 while the raw count shows at 1).
+        // ⚠ a rank unlocks with the DATUM that founds it, never off the flat CanViewRanks gate:
+        // that one leaks a floor up (an economy rank at level 2 derives from a treasury that is a
+        // level-3 secret) and a floor down (the population rank hidden at 2 while the raw count
+        // shows at 1). (maintainer feedback)
         public bool CanViewPopRank      => CanViewPop;
         public bool CanViewMilitaryRank => CanViewNumShips;
         public bool CanViewScienceRank  => CanViewResearchTopic; // spec: science strength is a research secret, level 3
@@ -376,7 +375,7 @@ namespace Ship_Game
 
             int theirInfiltrationLevel = Them.GetRelations(Owner).Espionage.EffectiveLevel;
             if (Level <= 2)
-                // "Exist" not "Exists": the label reads "Spies" (plural) now (maintainer bench 336)
+                // "Exist" not "Exists": the label reads "Spies", plural (bench 336)
                 return theirInfiltrationLevel > 0 ? Localizer.Token(GameText.EspInfilExist) : Localizer.Token(GameText.EspInfilProbablyNone);
 
             if (Level <= 4)

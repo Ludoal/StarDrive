@@ -13,9 +13,9 @@ namespace Ship_Game
         // Ludoal fork: the zones live on the empire, the way patrol plans do - a zone is an asset
         // of the realm, not a property of the ship that happened to draw it.
         [StarData] public Array<TradeZone> TradeZones { get; private set; } = new();
-        // ⚠ an explicit MARKER, never the state of an old flag: the conversion below must happen
-        // exactly once per game, and "no ship carries a filter any more" is also what a converted
-        // game looks like - the two are indistinguishable without this.
+        // ⚠ an explicit MARKER, never an inferred state: the conversion below happens exactly
+        // once per game, and "no ship carries a filter" is also what a converted game looks like -
+        // the two are indistinguishable without this.
         [StarData] public bool LegacyTradeFiltersConverted;
         // ⚠ raised by the TURN, shown by the SCREEN: the conversion runs on the simulation thread
         // and a modal must not be summoned from there. Serialized, so a game saved between the
@@ -33,21 +33,20 @@ namespace Ship_Game
             return zone;
         }
 
-        // ⚠ a dissolved zone RELEASES its hulls. A freighter pointing at a zone that no longer
-        // exists would be enclosed by nothing and served by no one - the one state this design
-        // must never leave behind.
+        // ⚠ a dissolved zone RELEASES its hulls. A freighter pointing at a zone that is gone would
+        // be enclosed by nothing and served by no one - the one state this design must never
+        // leave behind.
         public void RemoveTradeZone(TradeZone zone)
         {
             ReleaseZoneFreighters(zone);
             TradeZones.Remove(zone);
         }
 
-        // ★ Clearing Exclusive RELEASES the hulls, the same way dissolving the zone does. Their
-        // zone mark keeps them out of TotalFreighters and out of the idle pool, and a zone that no
-        // longer claims them - MemberFreighters returns nothing once Exclusive is off - would
-        // strand them: counted by nobody, and quietly shrinking the empire freighter reserve,
-        // which is a share of TotalFreighters. Setting it costs nothing, so only the clearing
-        // branch does any work.
+        // ★ Clearing Exclusive RELEASES the hulls, exactly as dissolving the zone does. Their zone
+        // mark keeps them out of TotalFreighters and out of the idle pool, so a zone that stops
+        // claiming them - MemberFreighters is empty with Exclusive off - would strand them:
+        // counted by nobody, and shrinking the reserve, which is a share of TotalFreighters.
+        // Setting the flag costs nothing, so only the clearing branch does any work.
         public void SetZoneExclusive(TradeZone zone, bool exclusive)
         {
             if (zone.Exclusive && !exclusive)
@@ -79,15 +78,14 @@ namespace Ship_Game
         }
 
         // ★★ THE ONE NEED. Every screen and the requisition read this and nothing else, so they
-        // cannot drift apart: a figure computed twice is two figures, and three of them were.
+        // cannot drift apart: a figure computed twice is two figures.
         //
         // What a colony needs is what its own import rule says it needs - the rule the DISPATCH
         // obeys when it decides whether to send a hull. So this asks the colony rather than
         // reckoning on its behalf: one owner per good, and the book cannot fall out of step with
-        // the traffic it is meant to describe. Each rule already reasons about both halves of the
-        // question, what the world burns while a run is in the air and the room its store still
-        // has, and the trip is MEASURED, not estimated - every planet keeps a moving average of
-        // how long its deliveries actually took.
+        // the traffic it describes. Each rule reasons about both halves of the question - what the
+        // world burns while a run is in the air, and the room its store still has - and the trip
+        // is MEASURED, not estimated: every planet keeps a moving average of its delivery times.
         //
         // ⚠ COLONISTS HAVE NO FLOW. Nothing in the game says how many colonists a world consumes
         // in a turn - their slots are a fullness ratio capped at five, an appetite rather than a
@@ -96,13 +94,9 @@ namespace Ship_Game
         // the tooltip is where that is said.
         public float RunsNeeded(Planet p, Goods goods, bool beforeServing = false)
         {
-            // ★★ THE BOOK NO LONGER KEEPS ITS OWN ARITHMETIC. It ASKS the colony the same question
-            // the dispatch asks, through the same function, so the two cannot drift apart again.
-            // Two hand copies used to live here, each with a comment telling the next reader to
-            // keep them in step with the dispatch - and both had already slipped: food was short
-            // of the round up and the spare slot, production counted the yard's queue and forgot
-            // that the store is filled too. That is the whole of the overshoot the bench kept
-            // seeing, and it is the day's law once more: what the dispatch serves, the book counts.
+            // ★★ THE BOOK KEEPS NO ARITHMETIC OF ITS OWN. It ASKS the colony the same question the
+            // dispatch asks, through the same function, so the two cannot drift apart: what the
+            // dispatch serves, the book counts.
             if (goods == Goods.Food)
                 return p.GetFoodImportSlots(beforeServing);
 
@@ -137,17 +131,17 @@ namespace Ship_Game
         // What a PERIMETER wants, in whole hulls: what its importers burn, and nothing else.
         // Rounded UP - half a run still takes a hull.
         //
-        // ⚠ NO CEILING HERE ANY MORE. Bounding the need by the available supply inside this
-        // function made one number do two jobs, and the display job lost: a zone with no source
-        // left showed "Required 0", which reads as "I want nothing". The ceiling now lives at the
-        // one place that needs it - the dispatch quota in MeasureZoneNeeds - where the supply is
-        // a STOCK walked in list order: an exporter promised to one zone is not there for the
-        // next, and the set it is taken on must be the set the DISPATCH searches.
-        // beforeServing: the same book, read one step earlier - what the perimeter wanted BEFORE
-        // the cargo now in the air was counted against it. Only the freighters overlay asks for it,
-        // and only because it prints that very cargo as the numerator: netting it out on one side
-        // while adding it up on the other made the pair cross over, and the better the trade ran
-        // the wider it crossed. One function, one definition, one optional step - not a second book.
+        // ⚠ NO CEILING HERE. Bounding the need by the available supply inside this function makes
+        // one number do two jobs and the display job loses: a zone with no source left would read
+        // "Required 0", which means "I want nothing". The ceiling lives at the one place that needs
+        // it - the dispatch quota in MeasureZoneNeeds - where the supply is a STOCK walked in list
+        // order: an exporter promised to one zone is not there for the next, and the set it is
+        // taken on is the set the DISPATCH searches.
+        //
+        // beforeServing: the same book read one step earlier - what the perimeter wants BEFORE the
+        // cargo now in the air is counted against it. Only the freighters overlay asks for it, and
+        // only because it prints that very cargo as its numerator: net it out on one side while
+        // adding it up on the other and the pair crosses over. One function, one definition.
         public int PerimeterNeed(Array<Planet> importers, Goods goods, bool beforeServing = false)
         {
             float need = 0;
@@ -165,8 +159,8 @@ namespace Ship_Game
         // player arranged, against a ledger of what each colony has already promised this turn. A
         // world shared by two zones is therefore counted once - by the zone ranked first - and the
         // next zone sees what is left, nought if everything was taken. Overlap stays legal (rings
-        // of zones around a shared homeworld are a real design); what stops is counting the same
-        // berth twice and requisitioning a hull for each count.
+        // of zones around a shared homeworld are a real design); what is forbidden is counting the
+        // same berth twice and requisitioning a hull for each count.
         //
         // Idempotent and cheap, so a screen that needs the figure before the turn has run may call
         // it rather than read a nought it cannot tell from a measured zero.
@@ -174,21 +168,20 @@ namespace Ship_Game
         {
             // ⚠ a colony's consumption is served ONCE, by the best-ranked zone that names it; the
             // zones below see it at nought. Two zones asking for the same world's food would
-            // requisition twice for a single delivery. The list's order IS the priority the player
-            // arranged, which is why the book is kept while walking it.
-            // ★★ THE LEDGER IS PER WORLD AND PER GOOD, not per world. A world may legitimately
-            // import production from one enclave and people from another - those are two needs,
-            // two zones, and a ledger kept per world would hand the first zone the world entire
-            // and lose the second need in silence. One notion, one owner, and the notion is the
-            // PAIR (maintainer, 6 Sep).
+            // requisition twice for a single delivery, so the book is kept while walking the list,
+            // whose order IS the priority the player arranged.
+            // ★★ THE LEDGER IS PER WORLD AND PER GOOD, never per world alone. A world may import
+            // production from one enclave and people from another - two needs, two zones - and a
+            // ledger kept per world would hand the first zone the world entire and lose the second
+            // need in silence. One notion, one owner, and the notion is the PAIR.
             var servedFood = new HashSet<int>();
             var servedProd = new HashSet<int>();
             var servedCol  = new HashSet<int>();
             var stationLedger = new Map<int, int>();
-            // ★★ TWO PASSES, AND THE ORDER IS THE POINT. The common loading ground is now
-            // defined by which enclaves are already served, so every zone's RAW need has to be
-            // written before any ceiling is taken - otherwise the ground would be drawn from
-            // last turn's book, or from nothing at all on the first turn.
+            // ★★ TWO PASSES, AND THE ORDER IS THE POINT. The common loading ground is defined by
+            // which enclaves are already served, so every zone's RAW need has to be written before
+            // any ceiling is taken - otherwise the ground is drawn from last turn's book, or from
+            // nothing at all on the first turn.
             var zoneColonies = new Array<Planet>[TradeZones.Count];
             var wantFood = new Array<Planet>[TradeZones.Count];
             var wantProd = new Array<Planet>[TradeZones.Count];
@@ -231,10 +224,9 @@ namespace Ship_Game
             }
 
             // ★★ ROUND TWO - A NEED NOBODY CAN SERVE IS STILL A NEED. A world no zone claimed for
-            // a good falls to the first zone in the list holding it, so that what the dispatch
-            // serves is what the book counts. Filtering the need by the capacity to serve it was
-            // how "Need 0" came back beside three colonies importing production, their zone having
-            // no exporter of its own while the dispatch loaded elsewhere (bench 592).
+            // a good falls to the first zone in the list holding it, so what the dispatch serves
+            // is what the book counts. ⚠ filtering the need by the capacity to serve it prints
+            // "Need 0" beside colonies the dispatch is importing for (bench 592).
             for (int zi = 0; zi < TradeZones.Count; ++zi)
                 foreach (Planet p in zoneColonies[zi])
                 {
@@ -264,8 +256,8 @@ namespace Ship_Game
 
             // ⚠ THE CEILING IS TAKEN ON THE SET THE DISPATCH SEARCHES, and the two regimes do not
             // search the same ground: an EXCLUSIVE zone loads among its own colonies, a SOFT one
-            // on the common ground - which now includes the enclaves whose own imports of that
-            // good are covered, since an enclave owns its hulls and not its harvests.
+            // on the common ground - which includes the enclaves whose own imports of that good
+            // are covered, since an enclave owns its hulls and not its harvests.
             //
             // The COMMON ground is a stock walked in the list's own order - what one soft zone has
             // been promised, the next cannot be. An enclave's own capacity is not shared with
@@ -324,8 +316,7 @@ namespace Ship_Game
         }
 
         // ★ THE ONE WRITER of a zone's edit, called from both doors: the Trade page's form and
-        // the same form opened from a colony. It lived on the Trade screen, which is why the
-        // colony door could not reach it. An empty selection deletes the zone; a null zone
+        // the same form opened from a colony. An empty selection deletes the zone; a null zone
         // creates one.
         public TradeZone ApplyZoneEdit(TradeZone zone, Array<Planet> chosen, int quota, string name,
                                        bool exclusive, CargoPriority priority)
@@ -370,7 +361,7 @@ namespace Ship_Game
 
         // The list order IS the priority: when two zones want more freighters than the pool
         // holds, the one placed first is served first. Moving a zone is therefore a game
-        // decision, not a display preference - which is why it lives here and not in the screen.
+        // decision, not a display preference, and lives here rather than in the screen.
         public void MoveTradeZone(TradeZone zone, bool up)
         {
             int i = TradeZones.IndexOf(zone);
@@ -395,22 +386,21 @@ namespace Ship_Game
 
         public TradeZone GetTradeZone(Planet planet) => TradeZones.Find(z => z.Serves(planet));
 
-        // ⚠ "is this world inside ANY exclusive zone?" - a question about the SET, never about
-        // an owner. A colony may sit in several zones of either regime: the maintainer wants rings
-        // of exclusive zones sharing a homeworld hub, and the dispatch does not mind - a planet's
-        // free slots close on whatever is already inbound, whoever sent it, so two zones serving
-        // one world never deliver twice. What must not be counted twice is the NEED, and that is
-        // settled by the shared ledger below, not by forbidding the overlap.
+        // ⚠ "is this world inside ANY exclusive zone?" - a question about the SET, never about an
+        // owner. A colony may sit in several zones of either regime: rings of exclusive zones
+        // sharing a homeworld hub are a supported design, and the dispatch does not mind - a
+        // planet's free slots close on whatever is already inbound, whoever sent it, so two zones
+        // serving one world never deliver twice. Only the NEED must not be counted twice, and the
+        // shared ledger below settles that, not a ban on the overlap.
         public TradeZone GetExclusiveZone(Planet planet)
             => TradeZones.Find(z => z.Exclusive && z.Serves(planet));
 
-        // ⚠ A WORLD MAY SIT IN SEVERAL ENCLAVES since 6 Sep, so "the" enclave holding it is not a
-        // question with one answer. Anything asking whether a world is still owed something must
-        // ask them ALL: one satisfied zone does not speak for a hungry one.
-        // Is this world still WAITING for this good? An open import berth with nothing on its
-        // way. ⚠ not the same question as "does it want any": a world served every turn wants
-        // something every turn, and answering that one kept the door shut for every living
-        // enclave - a fed Omega V never lent Tor's surplus while Beroscal starved (bench 593).
+        // ⚠ A WORLD MAY SIT IN SEVERAL ENCLAVES, so "the" enclave holding it is not a question
+        // with one answer. Anything asking whether a world is still owed something must ask them
+        // ALL: one satisfied zone does not speak for a hungry one.
+        // Is this world still WAITING for this good? An open import berth with nothing on its way.
+        // ⚠ not the same question as "does it want any": a world served every turn wants something
+        // every turn, and that answer keeps the door shut for every living enclave (bench 593).
         static bool StillWaiting(Planet p, Goods goods)
             => goods == Goods.Food       ? p.FoodImportSlots > 0 && p.IncomingFoodFreighters == 0
              : goods == Goods.Production ? p.ProdImportSlots > 0 && p.IncomingProdFreighters == 0
@@ -432,16 +422,13 @@ namespace Ship_Game
             return false;
         }
 
-        // ★ THE COMMON LOADING GROUND, AND IT IS PER GOOD. An exclusive zone owns its HULLS,
-        // not its harvests (maintainer, bench 589): once its own imports of a good are covered,
-        // its colonies lend that good's surplus to the realm, which comes to fetch it with its
-        // OWN hulls. A surplus rotting in an enclave's store serves nobody, and the old rule
-        // dried the rest of the empire out on a small map - three colonies enclosed, three left
-        // with no source at all.
+        // ★ THE COMMON LOADING GROUND, AND IT IS PER GOOD. An exclusive zone owns its HULLS, not
+        // its harvests (bench 589): once its own imports of a good are covered, its colonies lend
+        // that good's surplus to the realm, which comes to fetch it with its OWN hulls - a surplus
+        // rotting in an enclave's store serves nobody.
         //
-        // ⚠ IT READS THE RAW NEED, NEVER MeasuredNeed. A zone whose ground has run dry has a
-        // quota of nought, and reading that would call a starving enclave "served" and take its
-        // food away. This is the whole reason the two figures were split.
+        // ⚠ IT READS THE RAW NEED, NEVER MeasuredNeed. A zone whose ground has run dry has a quota
+        // of nought, and reading that calls a starving enclave "served" and takes its food away.
         // ⚠ and it is the LOADING end only: nothing here opens an enclave to deliveries.
         public Array<Planet> CommonExportGround(Goods goods)
         {
@@ -469,13 +456,11 @@ namespace Ship_Game
             return colonies;
         }
 
-        // Ludoal fork (maintainer feedback, Roland Johansen): the bodies our STATIONS stand on.
-        // A mining rig or a research post orbits a body that is nobody's colony, so it never
-        // shows up in GetPlanets() - and a zone may name it all the same, because a zone names
-        // BODIES and what stands on them is the fleet's business.
-        // What stands on a body, when anything of ours does. A picker that lists colonies and
-        // station bodies side by side must say which is which: they are named the same way and
-        // behave nothing alike.
+        // Ludoal fork (player feedback): what stands on a body, when anything of ours does.
+        // A mining rig or a research post orbits a body that is nobody's colony, so it never shows
+        // up in GetPlanets() - and a zone may name it all the same, because a zone names BODIES.
+        // A picker listing colonies and station bodies side by side must say which is which: they
+        // are named the same way and behave nothing alike.
         public string StationKindOn(Planet body)
         {
             foreach (Ship s in OwnedShips)
@@ -507,25 +492,24 @@ namespace Ship_Game
         // Housekeeping, the twin of RefreshTradeRoutes on a ship: a colony that stops being ours
         // leaves the zones that named it, and a zone left without a single colony is dissolved -
         // an empty list reads as "everywhere" downstream, so it must not survive.
-        // Ludoal fork (maintainer, 31 Aug '26): the two PER-SHIP trade filters - the area of
-        // operation and the manual trade routes - become EXCLUSIVE ZONES on the first turn of a
-        // game that carries them, and their editors go with them. Converting rather than offering
-        // is the maintainer's call, and it buys what an offer could not: the old state DIES, so no
-        // hull goes on refusing a trade because of an editor the player can no longer open.
+        // Ludoal fork (maintainer feedback): the two PER-SHIP trade filters - the area of operation
+        // and the manual trade routes - become EXCLUSIVE ZONES on the first turn of a game that
+        // carries them, and their editors go with them. ⚠ the conversion CLEARS the per-ship state
+        // rather than offering a choice, so no hull keeps refusing a trade through an editor the
+        // player has no way to open.
         //
         // Hulls are grouped by the SET OF PLANETS their filter resolves to, not by the rectangle:
         // ten freighters sharing a perimeter make one zone. Rectangles that merely overlap are NOT
         // merged - that would draw a zone the player never drew.
         //
-        // ⚠ WHAT IS LOST, and the notice says it in full: an area of operation was a SHAPE and it
-        // welcomed colonies founded inside it later. A zone is a LIST, taken at this instant.
+        // ⚠ WHAT IS LOST, and the notice says it in full: an area of operation is a SHAPE and it
+        // welcomes colonies founded inside it later. A zone is a LIST, taken at this instant.
         void ConvertLegacyTradeFiltersToZones()
         {
             // ⚠ two hulls whose perimeters SHARE a colony cannot become two exclusive zones - a
             // colony has one owner. They are MERGED rather than one of them silently losing the
-            // shared world: after the merge every colony is still served by every hull that used
-            // to serve it, which is the conservative half of the trade. Disjoint perimeters stay
-            // separate, so overlapping rectangles are still never merged for the sake of it.
+            // shared world, so every colony keeps every hull that serves it. Disjoint perimeters
+            // stay separate: overlapping rectangles alone are never a reason to merge.
             var owner = new Map<int, int>();   // planet id -> the id that leads its group
             var shipIds = new Map<Ship, Array<int>>();
             foreach (Ship s in OwnedShips)
@@ -574,7 +558,7 @@ namespace Ship_Game
                 foreach (Ship s in group.Value)
                 {
                     AssignFreighterToZone(s, zone);
-                    // the filters die here: this is the whole reason to convert rather than offer
+                    // the per-ship filters are cleared here, so the zone is the only state left
                     s.TradeRoutes.Clear();
                     s.AreaOfOperation.Clear();
                 }
@@ -646,7 +630,7 @@ namespace Ship_Game
                     Planet planet = Universe.GetPlanet(zone.Colonies[j]);
                     // ⚠ a member is not always a colony: a mineable or researchable body carries a
                     // STATION and owns nothing, so the ownership test would evict it the turn it
-                    // was named. Only a world that stopped being ours leaves (Roland's ask).
+                    // is named. Only a world that stopped being ours leaves (player feedback).
                     if (planet == null
                         || !planet.IsMineable && !planet.IsResearchable && planet.Owner != this)
                         zone.Colonies.RemoveAt(j);

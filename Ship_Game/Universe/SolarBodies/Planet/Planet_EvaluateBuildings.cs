@@ -59,12 +59,11 @@ namespace Ship_Game
             bool mayBuild = MayBuildCivilian;
             bool mayScrap = MayScrapCivilian;
 
-            // Cancel what is merely QUEUED before anything else: dropping a plan costs the
-            // player nothing, tearing a standing building down costs what it took to
-            // raise. This lived in BuildOrReplaceBuilding, which an over-budget colony
-            // never reached - the tighter the budget, the less the governor cleared its
-            // own queue. It answers to no mandate either: cancelling is not building, and
-            // a governor barred from construction should clear its queue all the more.
+            // Cancel what is merely QUEUED before anything else: dropping a plan costs the player
+            // nothing, tearing a standing building down costs what it took to raise. ⚠ it sits
+            // ahead of BuildOrReplaceBuilding, which an over-budget colony never reaches, and it
+            // answers to no mandate: cancelling is not building, and a governor barred from
+            // construction should clear its queue all the more.
             if (TryCancelOverBudgetCivilianBuilding(budget + tolerance))
                 return;
 
@@ -350,7 +349,7 @@ namespace Ship_Game
         }
 
         // Ludoal fork (maintainer feedback): a plan is an ORDER, not a catalogue. The list is
-        // walked from the top on every decision - no cursor, no memory of what once stood - so
+        // walked from the top on every decision - no cursor, no memory of what stood before - so
         // an entry lost to a volcano is picked up again exactly where its rank puts it, and
         // rebuilding needs no rule of its own.
         //
@@ -497,9 +496,7 @@ namespace Ship_Game
                 // ⚠ A ZERO BUDGET THAT COMES FROM THE BLUEPRINT IS A WAIT, NOT A REFUSAL - see
                 // TerraformerWaitsForBlueprint. The plan completes, the budget comes back, and the
                 // governor queues the very same terraformer again: cancelling in between refunds
-                // only half of what was spent, so the round trip is pure loss (maintainer feedback,
-                // bench 596-599 - the terraformer that vanished for a Nano Storage, the last
-                // building of the plan, and returned the moment it was done).
+                // only half of what was spent, so the round trip is pure loss (bench 596).
                 if (Owner.AutoBuildTerraformers && qi.IsCivilianBuilding && qi.Building.IsTerraformer
                     && TerraformBudget == 0 && !TerraformerWaitsForBlueprint)
                 {
@@ -885,19 +882,18 @@ namespace Ship_Game
                     potentialTiles.Add(tile);
             }
 
-            // ⚠ NOT A DRAW, AND NOT ANY TILE. Two rules already share this grid and one of them
-            // yields: when terraformers are unlocked, a biosphere looks for a tile that is neither
-            // habitable NOR terraformable - it leaves the terraformable ones alone, precisely
-            // because a terraformer is what they are for. But the terraformer took ANY unhabitable
-            // tile, at random, and so kept taking the one square the biosphere had been saving.
-            // Drawn at random it moved the target of every biosphere that followed, and with it the
-            // order in which the colony built everything else: four save games reloaded from the
-            // same turn gave four different orders (upstream player report, Sep '26).
+            // ⚠ NOT A DRAW, AND NOT ANY TILE. Two rules share this grid and one of them yields:
+            // when terraformers are unlocked, a biosphere looks for a tile that is neither
+            // habitable NOR terraformable, leaving the terraformable ones to the terraformer.
+            // A terraformer taking ANY unhabitable tile at random would take the very square the
+            // biosphere is saving, move the target of every biosphere that follows, and with it
+            // the order the colony builds everything else - so one save reloaded twice would give
+            // two different orders (player report).
             //
-            // So the two are separated by KIND rather than by luck: a terraformable tile first,
-            // which is the terraformer's own business, and the LAST of the others when there is
-            // none - the far end from where a biosphere starts looking. Deterministic either way,
-            // so a reload gives back the same plan.
+            // The two are separated by KIND rather than by luck: a terraformable tile first, which
+            // is the terraformer's own business, and the LAST of the others when there is none -
+            // the far end from where a biosphere starts looking. Deterministic either way, so a
+            // reload gives back the same plan.
             Array<PlanetGridSquare> eligible = potentialTiles.Count > 0 ? potentialTiles : tileList.ToArrayList();
             PlanetGridSquare terraformable = eligible.Find(t => t.Terraformable);
             return terraformable ?? eligible[eligible.Count - 1];
@@ -1035,11 +1031,10 @@ namespace Ship_Game
                 PlanetGridSquare preferred = null;
                 if (Owner.IsBuildingUnlocked(Building.TerraformerId))
                 {
-                    // upstream issue 312: the old fallback accepted tiles carrying a building or a
-                    // queued item; Enqueue rejected them every pass while perfectly valid terraformable
-                    // tiles stayed excluded, so the governor never built the biosphere (manual placement
-                    // worked, it validates the actual tile). A null preferred falls through to random
-                    // tile assignment, which accepts terraformables.
+                    // ⚠ the preferred tile must carry no building and no queued item, or Enqueue
+                    // rejects it every pass and the governor never builds the biosphere - manual
+                    // placement still works, it validates the actual tile. A null preferred falls
+                    // through to random tile assignment, which accepts terraformables (issue 312).
                     preferred = TilesList.Find(t => !t.Habitable && !t.Terraformable && !t.BuildingOnTile && t.NoQueuedBuildings);
                 }
                 else

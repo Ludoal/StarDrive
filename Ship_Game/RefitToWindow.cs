@@ -16,10 +16,9 @@ using Ship_Game.UI;
 
 namespace Ship_Game
 {
-    // Ludoal fork (design review, bench 462): rebuilt on the PopupWindow charte - the
-    // frame's height derives from the candidate count (no more empty cathedral), it
-    // centres on the summoner's page frame (PopupWindow does that by itself), the
-    // selection is a sticky gold rectangle that IS the "what am I refitting to"
+    // Ludoal fork (bench 462): built on the PopupWindow charte - the frame's height derives
+    // from the candidate count, it centres on the summoner's page frame (PopupWindow does that
+    // by itself), the selection is a sticky gold rectangle that IS the "what am I refitting to"
     // reminder, and the foot (Rush toggle + buttons) lives INSIDE the frame.
     public sealed class RefitToWindow : PopupWindow
     {
@@ -35,9 +34,8 @@ namespace Ship_Game
         ShipInfoOverlayComponent ShipInfoOverlay;
         bool Rush;
 
-        // 460, not 420 (maintainer, bench 523): with a fleet ship the foot carries THREE
-        // buttons, and the centred trio ran wider than the frame - the outer two crossed the
-        // border, which is what made the corners read as badly drawn.
+        // ⚠ 460, not 420 (bench 523): with a fleet ship the foot carries THREE buttons, and a
+        // narrower frame lets the centred trio run wider than the border.
         const int PopupW = 460;
         const int RowH = 40, MaxRows = 8;
         const int RowPitch = RowH + 4;  // the list advances by EntryHeight + ItemPadding.Y(4)
@@ -129,17 +127,16 @@ namespace Ship_Game
             TitleText = $"Refit {ShipToRefit.Name}";
             base.LoadContent(); // seats the frame - centred on the summoner's page frame
 
-            // bench 465: the charte's own FillerLower is translucent - the dark body panel
-            // spans the WHOLE fill zone, title band to the bottom rule, or the summoner's
-            // page bleeds through around the foot (added first = drawn under the rows)
+            // the charte's own FillerLower is translucent, so the dark body panel spans the WHOLE
+            // fill zone, title band to the bottom rule, or the summoner's page bleeds through
+            // around the foot (added first = drawn under the rows).
             //
-            // ⚠ bench 524: in TWO pieces, and the second is why. BottomBigFill runs from
-            // rect.X+3 to rect.Right-11, so a single panel carried down to the bottom rule
-            // paints over the outer 28px columns where the hand-drawn corner arcs live - the
-            // corners read as squared-off. The foot strip stops short of both corner blocks;
-            // it covers exactly the span the frame fills translucently, and nothing else.
-            // ⚠ bench 525: the page's own background, not a blacker black. At (0,0,0,235) the
-            // two panels read as two dark SQUARES laid on the frame rather than as its inside.
+            // ⚠ in TWO pieces, and the second is why: BottomBigFill runs from rect.X+3 to
+            // rect.Right-11, so a single panel carried down to the bottom rule paints over the
+            // outer 28px columns where the hand-drawn corner arcs live, and the corners read as
+            // squared-off. The foot strip stops short of both corner blocks.
+            // ⚠ the page's own background, not a blacker black: at (0,0,0,235) the two panels read
+            // as two dark SQUARES laid on the frame rather than as its inside (bench 524).
             const int CornerW = 28;
             Color fill = ScreenGroups.GroupFrameFill;
             Add(new UIPanel(BottomBigFill, fill));
@@ -200,17 +197,16 @@ namespace Ship_Game
                 b.Enabled = false;
             }
 
-            // bench 469 (Lek's referential hunch, confirmed in ShowShip): the component
-            // fits itself against ITS screen's Height - handed this 200px popup, every
-            // seat "overflowed" and got pushed off the top of the display. It measures
-            // against the fullscreen universe, and only DRAWS as this popup's child.
+            // ⚠ the component fits itself against ITS screen's Height (bench 469): handed this
+            // 200px popup, every seat "overflows" and is pushed off the top of the display. It
+            // measures against the fullscreen universe, and only DRAWS as this popup's child.
             ShipInfoOverlay = Add(new ShipInfoOverlayComponent(ShipToRefit.Universe.Screen, ShipToRefit.Universe));
             RefitShipList.OnHovered = (item) =>
             {
-                // bench 466-469: ShowToLeftOf places the overlay 1.6x its size LEFT of
-                // the anchor - the seat is computed against the overlay's REAL size
-                // (GetSize's formula on the fullscreen width): left of the frame when the
-                // room exists, right of it otherwise, centred on the hovered row.
+                // ShowToLeftOf places the overlay 1.6x its size LEFT of the anchor, so the seat
+                // is computed against the overlay's REAL size (GetSize's formula on the fullscreen
+                // width): left of the frame when the room exists, right of it otherwise, centred
+                // on the hovered row (bench 466).
                 float sz = Math.Max(340f, ShipToRefit.Universe.Screen.Width * 0.16f);
                 float w = sz * 1.6f;
                 float anchorX = Rect.X - 16 - w >= 100 ? Rect.X - 16 : Rect.Right + 16 + w; // 100 = ShowShip's own X clamp

@@ -65,8 +65,8 @@ namespace Ship_Game.GameScreens.ShipDesign
         public const float Col1ShiftConst = 10f;
         public float Col1Shift = Col1ShiftConst;
 
-        // Ludoal fork (spec v4): the in-frame title takes this much height before the rows
-        // start. Fixed, so every design puts its first row on the same line.
+        // Ludoal fork: the in-frame title takes this much height above the rows. Fixed, so
+        // every design puts its first row on the same line.
         const float TitleBandHeight = 30f;
         // compact: the "vs <name>" moves to a SECOND line (the narrow frame has no room
         // beside the name), and the line is RESERVED on both frames whether or not a
@@ -96,8 +96,8 @@ namespace Ship_Game.GameScreens.ShipDesign
         // derivation, no measurement, nothing divided out of an available width. The module
         // panel is WideColStep = 210 / TightColStep = 152; a design row's titles are longer
         // ("Total Module Slots" against "Complexity"), so ours are larger, but they are
-        // constants exactly as its are. A step computed from its contents moves whenever the
-        // contents change, which is why it is not derived that way.
+        // constants exactly as its are. ⚠ a step computed from its contents moves whenever the
+        // contents change, so it is never derived that way.
         //
         // Each constant is the sum of its parts:
         //   title room (the longest label plus its gap) + the value + , when comparing,
@@ -250,20 +250,20 @@ namespace Ship_Game.GameScreens.ShipDesign
         public bool HasDeltaLanes;
 
         // Ludoal fork: the Hover cartouche draws the design's MODULE PLAN at its far left — the
-        // picture the flying overlay used to give, and the reason to keep a hover frame at all.
-        // Same call the overlay made: RenderOverlay with the modules and the hull background.
+        // same picture the flying overlay gives, and the reason to keep a hover frame at all.
+        // Same call: RenderOverlay with the modules and the hull background.
         // Only the hover frame turns this on.
         public bool ShowShipPlan;
 
         // ── COMPACT ────────────────────────────────────────────────
-        // The flying overlay's own inventory instead of Lek's eight blocks: one column, no
+        // The flying overlay's own inventory rather than the eight blocks: one column, no
         // headings, the headline five with their icons then the verbose list. The Active
         // cartouche wears it at the browser list's width; the Hover one keeps its plan.
         public bool Compact;
 
         // measured over the compact titles exactly as LongestTitle is over the full set.
-        // Localized lazily (LowerIsBetterCache's pattern): the set now speaks the full
-        // rows' own labels - the ETM/OTM dialect stays with the micro overlay only.
+        // Localized lazily (LowerIsBetterCache's pattern): the set speaks the full rows' own
+        // labels - the ETM/OTM dialect stays with the micro overlay only.
         static string[] CompactTitlesCache;
         static string[] CompactTitles => CompactTitlesCache ??= new[]
         {
@@ -312,7 +312,7 @@ namespace Ship_Game.GameScreens.ShipDesign
             }
         }
 
-        // Ludoal fork (spec v4): take a pinned design as the delta source. It is held as a
+        // Ludoal fork: take a pinned design as the delta source. It is held as a
         // detached panel — never added to the screen, never drawn — because its row set is
         // exactly what TryGetVisibleValue needs to answer with.
         public void SetComparedDesign(Ship ship, string name)
@@ -333,9 +333,9 @@ namespace Ship_Game.GameScreens.ShipDesign
             ComparedName = name;
         }
 
-        // Stats where LESS is better. Lek's list also had TurnRate and the power drains; both are
-        // wrong and the code proves it: the game already tints a turn rate GREEN above 15, and the
-        // drains are displayed negated, so closer to zero is already the higher number.
+        // Stats where LESS is better. ⚠ TurnRate and the power drains do NOT belong here: the
+        // game tints a turn rate GREEN above 15, and the drains are displayed negated, so closer
+        // to zero is already the higher number.
         static string[] LowerIsBetterCache;
         static bool LowerIsBetter(string title)
         {
@@ -420,8 +420,8 @@ namespace Ship_Game.GameScreens.ShipDesign
             Color ordnance = Color.IndianRed;
 
             // COMBAT - the two verdicts first, then the guns, then the firing reserves.
-            // One merged fire-power line: a beam boat reads its burst duration (the old
-            // compact's own rule), under the full row's label.
+            // One merged fire-power line: a beam boat reads its burst duration, under the full
+            // row's label.
             Stat(GT.ShipOffense, () => Ds.Strength, GT.TT_ShipOffense, nonZero: true);
             Stat(GT.SyStatDps, () => S.TotalDps, GT.TT_ShipOffense, nonZero: true, icon: "UI/icon_offense", iconColor: Color.OrangeRed);
             Stat(GT.SyStatWeapons, () => S.Weapons.Count, GT.TT_ShipOffense, nonZero: true);
@@ -474,7 +474,7 @@ namespace Ship_Game.GameScreens.ShipDesign
         void TextRow(in LocalizedText title, Func<string> text, in LocalizedText tip, Func<bool> vis = null)
             => Rows.Add(new Row { Title = title, Tip = tip, TextFn = text, Color = LabelGrey, Visible = vis });
 
-        // ── the content, per Lek's spec v3 ────────────────────────────────────────────────
+        // ── the content ───────────────────────────────────────────────────────────────────
         void BuildRows()
         {
             if (Compact)
@@ -483,7 +483,7 @@ namespace Ship_Game.GameScreens.ShipDesign
                 return;
             }
 
-            // "INF" is its own signal — the word says it, the colour was redundant
+            // "INF" is its own signal — the word says it, so no colour is added
             Color good = Color.White;
             Color energy = Color.LightSkyBlue;
             Color protect = Color.Goldenrod;
@@ -560,13 +560,11 @@ namespace Ship_Game.GameScreens.ShipDesign
             Stat(GT.EmpProtection, () => S.EmpTolerance, GT.TT_EmpProtection, protect, tint: Positive);
             Stat(GT.Ecm3, () => S.ECMValue, GT.TT_Ecm3, protect, tint: Positive, nonZero: true);
 
-            // the ordnance family was missing from the inventory sent to Lek, so its placement
-            // is mine: it sits with the guns it feeds, which is where her v1 put ammo time
+            // the ordnance family sits with the guns it feeds.
             // Ludoal fork: split into ORDNANCE and FCS - the two halves answer different
-            // questions, how long can it keep shooting versus how well does it aim, and reading
-            // them as one list made neither obvious. Sensor Range sits with FCS rather than
-            // earning a third heading: it is detection, not fire control, but a block of its own
-            // would cost a line and the air around it for a single row.
+            // questions, how long it keeps shooting versus how well it aims. Sensor Range sits
+            // with FCS rather than earning a third heading: it is detection, not fire control,
+            // but a block of its own would cost a line and the air around it for a single row.
             Head(Localizer.Token(GT.SyHeadOrdnance));
             Stat(GT.OrdnanceCreated, () => S.OrdAddedPerSecond, GT.TT_OrdnanceCreated, ordnance, nonZero: true);
             Stat(GT.OrdnanceCapacity, () => S.OrdinanceMax, GT.TT_OrdnanceCap, ordnance, vis: Ds.HasOrdnance);
@@ -579,11 +577,10 @@ namespace Ship_Game.GameScreens.ShipDesign
             Stat(GT.SensorRange3, () => S.SensorRange, GT.TT_SensorRange3, nonZero: true);
 
             // the closing block: the verdict reads last, like a signature
-            // Ludoal fork: COMBAT takes in the three figures the load popup showed that this
-            // panel otherwise would not - a design cartouche should say whether the ship shoots.
-            // Raw strings: these three have no GameText key, exactly as the load overlay wrote
-            // them. Max range only, not the avg..max pair - on a ship mixing a short-range laser
-            // with a long-range cannon that pair describes neither of them.
+            // Ludoal fork: COMBAT takes in the three figures the load popup shows that this panel
+            // otherwise would not - a design cartouche should say whether the ship shoots.
+            // ⚠ max range only, not the avg..max pair - on a ship mixing a short-range laser with
+            // a long-range cannon that pair describes neither of them.
             Head(Localizer.Token(GT.SyHeadCombat));
             Stat(GT.SyStatWeapons, () => S.Weapons.Count, GT.TT_ShipOffense, nonZero: true);
             Stat(GT.SyMaxWpnRange, () => S.WeaponsMaxRange, GT.TT_ShipOffense, nonZero: true);
@@ -602,11 +599,11 @@ namespace Ship_Game.GameScreens.ShipDesign
                   Func<float, Color> tint = null, Func<bool> vis = null, bool nonZero = false,
                   string icon = null, Color? iconColor = null)
         {
-            // Ludoal fork: labels are WHITE — the per-family colour they used to carry is now
-            // said by the block heading above them, so tinting each label as well was a
-            // duplicate, and it competed with the delta lane for the eye. The titleColor
-            // argument is kept so the family is still declared at the call site (it documents
-            // which block a row belongs to) but it no longer reaches the screen.
+            // Ludoal fork: labels are WHITE — the per-family colour is carried by the block
+            // heading above them, so tinting each label as well would duplicate it and compete
+            // with the delta lane for the eye. ⚠ the titleColor argument is kept so the family is
+            // still declared at the call site (it documents which block a row belongs to), but it
+            // never reaches the screen.
             Rows.Add(new Row
             {
                 Title = title, Tip = tip, Value = value,
@@ -750,13 +747,13 @@ namespace Ship_Game.GameScreens.ShipDesign
             // and the reason its columns never move. Reserving it only while a comparison runs
             // makes the layout shift on every pin, and squeezes the deltas onto the right-hand
             // column's labels.
-            // BOTH columns carry a delta lane, so both must be paid for — subtracting one lane
+            // ⚠ BOTH columns carry a delta lane, so both must be paid for — subtracting one lane
             // for two columns leaves the second overlapping its neighbour's labels. The first
             // column looks right regardless, because it starts at the left edge and absorbs none
             // of the error.
             // The FIRST column keeps its place and its title room whether or not deltas are on:
-            // its geometry comes from the frame's half-width, exactly as it did before lanes
-            // existed. Only the SECOND column moves right, past the first one's delta lane.
+            // its geometry comes from the frame's half-width. Only the SECOND column moves right,
+            // past the first one's delta lane.
             // The MODULE panel's geometry, copied instead of re-derived: fixed steps, not
             // divisions. There, column 0 starts at the frame's left margin and column 1 a
             // constant step further right; the title room is a fraction of the FRAME, never of
@@ -821,9 +818,9 @@ namespace Ship_Game.GameScreens.ShipDesign
                 {
                     ++block;
 
-                    // the column switch happens BEFORE the hidden-block test: if the split
-                    // block happened to be entirely hidden, skipping first meant the switch
-                    // never fired and everything piled into one column
+                    // ⚠ the column switch happens BEFORE the hidden-block test: with the split
+                    // block entirely hidden, skipping first would mean the switch never fires and
+                    // everything piles into one column
                     if (block == splitBlock)
                     {
                         cursor = new Vector2(col1X, rowsY);
@@ -883,7 +880,7 @@ namespace Ship_Game.GameScreens.ShipDesign
 
                     // Delta against the PINNED design, in its own lane, coloured by which
                     // direction is better for that row. The subtraction reads "this panel minus
-                    // the other one", and this panel is the active design (spec v4), so a green
+                    // the other one", and this panel is the active design, so a green
                     // + means the design on the workbench is the better one.
                     if (CompareAgainst != null)
                     {

@@ -380,7 +380,7 @@ namespace Ship_Game
                 camera.MoveClamped(input.CursorVelocity, ScreenCenter, ScreenCenter + overrun);
             }
 
-            // maintainer bench 444: the wheel scrolls the tree vertically when it overruns
+            // bench 444: the wheel scrolls the tree vertically when it overruns
             // the frame - the same clamped camera move as the middle-drag, vertical axis only
             if (PageFrame.HitTest(input.CursorPosition) && !Queue.HitTest(input.CursorPosition)
                 && (input.ScrollIn || input.ScrollOut))

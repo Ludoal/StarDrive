@@ -110,7 +110,7 @@ namespace Ship_Game
         AudioHandle EffectSound = new();
 
         FloatSlider IconSize;
-        FloatSlider StationIconSize; // Ludoal fork (maintainer spec): stations scale separately
+        FloatSlider StationIconSize; // Ludoal fork (maintainer feedback): stations scale separately
         FloatSlider AsteroidSize;
         FloatSlider MinimapSize;
         FloatSlider AutoSaveYears; // Ludoal fork: autosave counts in star-years now
@@ -225,7 +225,7 @@ namespace Ship_Game
                 .Split = graphics.Width*0.4f + splitOffset;
         }
 
-        // Ludoal fork (maintainer spec): five themed boxes in the Automation grammar, all
+        // Ludoal fork (maintainer feedback): five themed boxes in the Automation grammar, all
         // visible at once - an options panel is a place you SEARCH, not a place you live in.
         // Graphics keeps the Apply button (device settings need explicit confirmation);
         // everything else applies the moment it is changed.
@@ -285,10 +285,9 @@ namespace Ship_Game
             var apply = Add(new UIButton(ButtonStyle.Default, new Vector2(x0 + 12, top + GraphicsBoxH - 44), GameText.ApplySettings));
             apply.Pos = new Vector2(x0 + (BoxW - apply.Width) / 2f, apply.Pos.Y); // centred in the box (bench 406)
             apply.OnClick = button => RunOnNextFrame(ApplyOptions);
-            // Ludoal fork: say what this button is actually for. It applies the DISPLAY settings
-            // and nothing else - everything else on this screen takes effect the moment you
-            // change it and is saved when you leave. A button called "Apply Settings" sitting
-            // among settings that apply themselves is a fair way to be misread (maintainer feedback).
+            // Ludoal fork (maintainer feedback): say what this button is actually for. It applies
+            // the DISPLAY settings and nothing else - everything else on this screen takes effect
+            // the moment it is changed and is saved on leaving.
             apply.Tooltip = GameText.OptApplyTooltip;
 
             // ---- column 2: Visuals over Gameplay
@@ -301,7 +300,7 @@ namespace Ship_Game
             gameplay.AddCheckbox(() => GlobalStats.AutoErrorReport,              title: GameText.AutomaticErrorReport, tooltip: GameText.SendAutomaticErrorReportsTo);
 
             UIList visuals = NewBox(new RectF(x1, top, BoxW, VisualsBoxH), GameText.OptVisuals);
-            // Bloom applies instantly now (lazy component allocation) - it left the Apply pack
+            // Bloom applies instantly (lazy component allocation), so it is outside the Apply pack
             visuals.AddCheckbox(() => GlobalStats.RenderBloom,        title: GameText.Bloom, tooltip: GameText.DisablingBloomEffectWillIncrease);
             visuals.AddCheckbox(() => GlobalStats.EnableEngineTrails, title: GameText.EngineTrails, tooltip: GameText.TT_EngineTrails);
             // Ludoal fork: bring back the explored-system fog discs for those who miss them
@@ -326,9 +325,9 @@ namespace Ship_Game
             ui.AddCheckbox(() => GlobalStats.AltArcControl,        title: GameText.KeyboardFireArcLocking, tooltip: GameText.WhenActiveArcsInThe);
             ui.AddCheckbox(() => GlobalStats.PauseOnPageOpen, title: GameText.OptAutoPauseOnPageOpen,
                            tooltip: GameText.OptAutoPauseOnPageOpenTooltip);
-            // bench 392 (maintainer): the Colony panel opts OUT of auto-pause by default (its
-            // original behaviour). Subordinate to the option above - the setter refuses and the
-            // label greys when auto-pause is off, and it is indented under it.
+            // bench 392: the Colony panel opts OUT of auto-pause by default. Subordinate to the
+            // option above - the setter refuses and the label greys when auto-pause is off, and
+            // it is indented under it.
             AutoPauseColonyBox = ui.AddCheckbox(
                 () => GlobalStats.AutoPauseColonyPanel,
                 b => { if (GlobalStats.PauseOnPageOpen) GlobalStats.AutoPauseColonyPanel = b; },
@@ -368,7 +367,7 @@ namespace Ship_Game
             CreateLanguageDropOptions();
         }
 
-        // Ludoal fork (maintainer spec): back to stock for everything that applies instantly.
+        // Ludoal fork (maintainer feedback): back to stock for everything that applies instantly.
         // The Apply-gated display settings, the language and the sound device keep their values.
         void ResetToDefaults()
         {

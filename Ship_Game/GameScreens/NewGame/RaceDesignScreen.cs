@@ -91,7 +91,7 @@ namespace Ship_Game
                 OpponentsCountValue.Visible = tab == 1;
         }
 
-        // clicking an opponent toggles it in/out of the chosen set (from the old popup)
+        // clicking an opponent toggles it in/out of the chosen set
         void OnOpponentItemSelected(SelectOpponentListItem item)
         {
             if (P.SelectedOpponents.Remove(item.EmpireData))
@@ -109,7 +109,7 @@ namespace Ship_Game
         UIButton ModeBtn;
         Rectangle FlagRect;
         ScrollList<RaceArchetypeListItem> ChooseRaceList;
-        // the Opponents tab (folded in from the old SelectOpponentsScreen popup)
+        // the Opponents tab, folded into this screen rather than a SelectOpponentsScreen popup
         ScrollList<SelectOpponentListItem> ChooseOpponentsList;
         UILabel OpponentsCountLabel;   // "Random Opponents:" caption
         UILabel OpponentsCountValue;   // the remaining-random count that follows it
@@ -199,9 +199,9 @@ namespace Ship_Game
             // ⚠ The frame's VISIBLE bottom line - the rect runs BottomLine past it, those rows
             // being the band's drop shadow. The grid closes 10px above that line.
             int visibleBottom = ScreenFrame.Bottom - PopupFrame.BottomLine;
-            // Ludoal fork (maintainer, 1 Sep): there is no foot ROW any more - every button sits
-            // in the tab it serves, and Start Game lives in the notch cut at the foot of the right
-            // column. The grid takes back the band the row held, closing 10 above the visible line.
+            // Ludoal fork: there is no foot ROW - every button sits in the tab it serves, and
+            // Start Game lives in the notch cut at the foot of the right column. The grid runs
+            // down to 10 above the visible line.
             int gridBottom = visibleBottom - 10;
             int btnH = UITheme.ButtonHeight;          // 25, the theme's universal plate height
             int notchH = btnH + UITheme.TabPadInner;  // the bite taken out of the right column
@@ -209,9 +209,9 @@ namespace Ship_Game
             // ── ROW 1: Environment | Empire | Galaxy, FIXED height ──────────────────────────
             // The standing Environment tab heads the row, column-aligned with the Race tab below
             // it; Empire takes the middle, Galaxy closes on the right column's width.
-            // Ludoal fork (maintainer, 1 Sep): 220 of CONTENT under the tab strip, so the panel
-            // carries the strip on top of that. The two side columns are 390 and the middle one
-            // takes what is left - one arithmetic, both rows, no column yielding to another.
+            // Ludoal fork: 220 of CONTENT under the tab strip, so the panel carries the strip on
+            // top of that. The two side columns are 390 and the middle one takes what is left -
+            // one arithmetic, both rows, no column yielding to another.
             const int Row1H = 220 + Submenu.TabHeight;
             const int SideW = 390;   // the fixed side-column width, shared with row 2
             int midLeft = gridLeft + SideW + Pad;
@@ -234,13 +234,12 @@ namespace Ship_Game
             // 1: the labels, 2: the value fields, 3: the flag picker on the right. The flag has
             // its own fixed column, so the picker doesn't overlap the value fields at 900p.
             // Constants, not a divide of the leftover, so nothing shifts when the tab resizes.
-            // ⚠ the left pull that used to live here is gone: the inset is the theme's TextPad,
-            // which the form reads through ContentArea.
+            // ⚠ no left pull here: the inset is the theme's TextPad, which the form reads through
+            // ContentArea.
             const float SplitPull    = 30f;     // values recede 30 from stock
             const float FlagColW     = 120f;    // the flag picker column, arrows included
             const float FlagNudgeX   = 10f;     // push the whole flag block 10px right
-            // the split derives from the longest LOCALIZED label (French runs longer),
-            // floored at the historical stock value
+            // the split derives from the longest LOCALIZED label, floored at the stock value
             float FormSplit = Math.Max(205f - SplitPull,
                 12f + new[] { GameText.EmpireName, GameText.RaceNameSingular, GameText.RaceNamePlural, GameText.HomeSystemName }
                       .Max(t2 => Fonts.Arial14Bold.TextWidth(Localizer.Token(t2) + ": ")));
@@ -266,8 +265,8 @@ namespace Ship_Game
             FlagRect = new Rectangle((int)flagPos.X, (int)flagPos.Y + 26, 80, 80);
 
             // ── ROW 2: Race|Opponents | Traits | Points+Description, sharing row2Top and row2H ──
-            // Both rows share ONE arithmetic: the two side columns are SideW, the middle block takes
-            // what is left. No column yields width to another any more (maintainer, 1 Sep).
+            // Both rows share ONE arithmetic: the two side columns are SideW, the middle block
+            // takes what is left. No column yields width to another.
             RectF traitsList = new(midLeft, row2Top, midW, row2H);
 
             LocalizedText[] traitNames = { GameText.Physical, GameText.Sociological, GameText.HistoryAndTradition, GameText.NgTabEnvironmental };
@@ -282,14 +281,14 @@ namespace Ship_Game
 
             // row 2 LEFT: two tabs sharing one area, Race and Opponents. Ludoal fork: Select
             // Opponents is a second tab here (same pattern as Points|Description on the right),
-            // not a separate window. The tab is SideW wide, aligned with Environment above.
+            // never a separate window. The tab is SideW wide, aligned with Environment above.
             LocalizedText[] leftTabs = { GameText.NgTabRace, GameText.NgTabOpponents };
             RaceTab = Add(new Submenu(new RectF(gridLeft, row2Top, SideW, row2H), leftTabs));
             RaceTab.OnTabChange = OnLeftTabChanged;
             RectF chooseRace = RaceTab.ContentArea;      // the captions: padded like every other text
-            // ⚠ a scroll LIST sits on the CLIENT area, not the padded one: it already insets its own
-            // items (PaddingLeft, and the theme's ScrollbarLane on the right). Handing it the padded
-            // rect stacked two margins and left its bar further in than its neighbours' (bench 566).
+            // ⚠ a scroll LIST sits on the CLIENT area, not the padded one: it already insets its
+            // own items (PaddingLeft, and the theme's ScrollbarLane on the right). The padded rect
+            // stacks two margins and leaves its bar further in than its neighbours' (bench 566).
             RectF raceClient = RaceTab.ClientArea;
             RectF raceListArea = raceClient;
             ChooseRaceList = Add(new ScrollList<RaceArchetypeListItem>(raceListArea, 135));
@@ -298,11 +297,10 @@ namespace Ship_Game
             foreach (IEmpireData e in ResourceManager.MajorRaces)
                 ChooseRaceList.AddItem(new RaceArchetypeListItem(this, e));
 
-            // the Opponents tab: a count caption plus the opponent list, the same content the
-            // SelectOpponentsScreen popup carried. Both share chooseRace; OnLeftTabChanged flips
-            // which one shows. The count strip sits at the top, the list below it.
-            // The caption sits at the head of the padded area, like every other panel's first
-            // line in this window - the air above it was a local 14 and is the theme's TextPad now.
+            // the Opponents tab: a count caption plus the opponent list. Both share chooseRace;
+            // OnLeftTabChanged flips which one shows. The count strip sits at the top, the list
+            // below it, and the caption at the head of the padded area - the theme's TextPad,
+            // like every other panel's first line in this window.
             const int OppCountStrip = 42;
             OpponentsCountLabel = Add(new UILabel(
                 new Vector2(chooseRace.X, chooseRace.Y),
@@ -393,17 +391,16 @@ namespace Ship_Game
                 tip:GameText.NgDifficultyAggressivenessTooltip);
 
             // FACTIONS page: what the galaxy is populated with that is not an empire. Remnant
-            // Presence and Pace moved off Galaxy - the panel was full, and every NPC control
-            // reads better next to its siblings than wedged under the galaxy shape.
+            // Presence and Pace sit here rather than on Galaxy: every NPC control reads better
+            // next to its siblings than wedged under the galaxy shape.
             AddOption(FactionsOptions, "{RemnantPresence} : ", OnExtraRemnantClicked, _ => RemnantText(P.ExtraRemnant),
                 tip:GameText.RmPresenceTip);
-            // Ludoal fork (maintainer, 31 Aug '26): the setup offered their NUMBER and nothing
-            // else. The complaint from new players is not how many there are - it is how quickly
-            // they become dangerous, which is this.
+            // Ludoal fork (player feedback): how quickly they become dangerous, which the NUMBER
+            // of them does not say.
             AddOption(FactionsOptions, Localizer.Token(GameText.RmPaceLabel) + " : ", OnRemnantPaceClicked,
                 _ => RemnantPaceText(P.RemnantPace), tip:GameText.RmPaceTip);
-            // A fraction of whatever the rules ask for, so the row is worth having in vanilla
-            // as well - it no longer appears and disappears with the loaded mod.
+            // A fraction of whatever the rules ask for, so the row means something in vanilla as
+            // well and does not appear and disappear with the loaded mod.
             AddOption(FactionsOptions, Localizer.Token(GameText.RmStrengthLabel) + " : ",
                 OnRemnantStrengthClicked, _ => RemnantStrengthText(P.RemnantStrength),
                 tip:GameText.RmStrengthTip);
@@ -424,7 +421,7 @@ namespace Ship_Game
             // "Points", not the full token: the two tabs have to share ONE row
             LocalizedText[] infoTabs = { GameText.NgTabPoints, GameText.NgTabDescription };
             // ⚠ shorter by the notch: Start Game is the one button left outside a tab, and it sits
-            // in the bite taken here (maintainer's 35 = the plate's 25 plus one TabPadInner).
+            // in the bite taken here (35 = the plate's 25 plus one TabPadInner).
             InfoTab = Add(new Submenu(new RectF(gridRight - SideW, row2Top, SideW, row2H - notchH), infoTabs));
             InfoTab.OnTabChange = OnInfoTabChanged;
             RectF description = InfoTab.ClientArea;   // the text box insets its own lines, same rule as a list
@@ -447,12 +444,12 @@ namespace Ship_Game
         static string GalSizeText(GalSize g) => g switch { GalSize.Tiny => Localizer.Token(GameText.GsTiny), GalSize.Small => Localizer.Token(GameText.GsSmall), GalSize.Medium => Localizer.Token(GameText.GsMedium), GalSize.Large => Localizer.Token(GameText.GsLarge), GalSize.Huge => Localizer.Token(GameText.GsHuge), GalSize.Epic => Localizer.Token(GameText.GsEpic), GalSize.TrulyEpic => Localizer.Token(GameText.GsTrulyEpic), _ => g.ToString() };
         static string DifficultyText(GameDifficulty d) => d switch { GameDifficulty.Normal => Localizer.Token(GameText.DfNormal), GameDifficulty.Hard => Localizer.Token(GameText.DfHard), GameDifficulty.Brutal => Localizer.Token(GameText.DfBrutal), GameDifficulty.Insane => Localizer.Token(GameText.DfInsane), _ => d.ToString() };
         static string RemnantText(ExtraRemnantPresence r) => r switch { ExtraRemnantPresence.VeryRare => Localizer.Token(GameText.RmVeryRare), ExtraRemnantPresence.Rare => Localizer.Token(GameText.RmRare), ExtraRemnantPresence.Normal => Localizer.Token(GameText.RmNormal), ExtraRemnantPresence.More => Localizer.Token(GameText.RmMore), ExtraRemnantPresence.MuchMore => Localizer.Token(GameText.RmMuchMore), ExtraRemnantPresence.Everywhere => Localizer.Token(GameText.RmEverywhere), _ => r.ToString() };
-            // Ludoal fork: ONE width for every foot button on this screen - what a side column can
-            // hold for three of them. Empire's two use it too, so a button reads the same wherever
-            // it sits (maintainer, bench 566). The plate is PAINTED, so any width draws.
+            // Ludoal fork (bench 566): ONE width for every foot button on this screen - what a
+            // side column can hold for three of them. Empire's two use it too, so a button reads
+            // the same wherever it sits. The plate is PAINTED, so any width draws.
             int footW = (SideW - 2 * UITheme.TabPadOuter - 2 * BtnGap) / 3;
-            // ⚠ a foot row sits on the CLIENT area, not the padded one: the maintainer measures its
-            // clearance from the frame's own line, and the inner padding would double that gap.
+            // ⚠ a foot row sits on the CLIENT area, not the padded one: its clearance is measured
+            // from the frame's own line, and the inner padding would double that gap.
             int FootRowStart(in RectF client, int count)
             {
                 int rowW = count * footW + (count - 1) * BtnGap;
@@ -506,8 +503,7 @@ namespace Ship_Game
             var envRect = new Rectangle((int)envArea.X, (int)envArea.Y, (int)envArea.W, (int)envArea.H);
             EnvMenu = Add(new EnvPreferencesPanel(this, RaceSummary, envRect));
 
-            // Ludoal fork: no slide-in/slide-out on this screen - the panels appear where they
-            // belong.
+            // Ludoal fork: no slide-in/slide-out on this screen - the panels appear in place.
 
             base.LoadContent();
         }
@@ -755,10 +751,10 @@ namespace Ship_Game
             _                          => Localizer.Token(GameText.RmPaceNormal),
         };
 
-        // Ludoal fork (maintainer, 6 Sep '26): the notches here are DATA, not an enum - a mod
-        // brings its own pirate factions, so the list is built from what is actually loaded and
-        // an install with none still gets the three reserved ones. They come first so a player
-        // who does not care never has to walk a roster to reach All.
+        // Ludoal fork: the notches here are DATA, not an enum - a mod brings its own pirate
+        // factions, so the list is built from what is actually loaded and an install with none
+        // still gets the three reserved ones. They come first so a player who does not care
+        // never has to walk a roster to reach All.
         static string[] PirateChoices()
         {
             var choices = new Array<string>
@@ -780,7 +776,7 @@ namespace Ship_Game
             string[] choices = PirateChoices();
             int i = choices.IndexOf(P.PirateFactionChoice);
             if (i < 0)
-                i = 1;  // a name this install no longer has: come back through All
+                i = 1;  // a name this install does not carry: come back through All
 
             i = (i + OptionIncrement + choices.Length) % choices.Length;
             P.PirateFactionChoice = choices[i];
@@ -987,10 +983,10 @@ namespace Ship_Game
             ExtraPlanetsLabel.Text = $"Extra Planets: {extraPlanets}";
         }
 
-        // Ludoal fork (maintainer, 1 Sep): the warning was a third line under the two readouts,
-        // and the Galaxy column no longer has the room for it. It hangs off the count itself now.
-        // ⚠ The COLOUR stays on the number: a warning that only exists under the cursor is a door
-        // with no handle - the amber says look, the tooltip says why (Lek's reserve, same day).
+        // Ludoal fork: the warning hangs off the count itself - the Galaxy column has no room for
+        // a third line under the two readouts.
+        // ⚠ the COLOUR stays on the number: a warning that only exists under the cursor is a door
+        // with no handle - the amber says look, the tooltip says why.
         void ShowPerformanceWarning(int numSystems)
         {
             if (numSystems >= 200)
@@ -1021,7 +1017,7 @@ namespace Ship_Game
                 Font = Fonts.Arial14Bold;
             }
 
-            // Ludoal fork (maintainer): the rows this summary drew last frame, with the token that
+            // Ludoal fork: the rows this summary drew last frame, with the token that
             // describes each. The list is drawn by hand rather than built from elements, so there is
             // nothing here to carry a tooltip of its own: Draw records what it put where, and
             // HandleInput reads that back to find the trait under the cursor.
@@ -1088,10 +1084,10 @@ namespace Ship_Game
         Tiny, Small, Medium, Large, Huge, Epic, TrulyEpic
     }
 
-    // Ludoal fork (maintainer, 5 Sep '26): what a pirate demand costs. Named for what it moves
-    // - the money - rather than "pressure", which would promise a say over how often they come.
-    // ⚠ OBSOLETE, kept for saves written before 6 Sep '26 - the notch became PirateStrength
-    // below, which carries the tribute along with the two things that make pirates dangerous.
+    // Ludoal fork: what a pirate demand costs. Named for what it moves - the money - rather
+    // than "pressure", which would promise a say over how often they come.
+    // ⚠ OBSOLETE, kept only for saves that carry it: PirateStrength below is the live notch, and
+    // it carries the tribute along with the two things that make pirates dangerous.
     public enum PirateTributeSetting
     {
         Low,
@@ -1100,7 +1096,7 @@ namespace Ship_Game
         VeryHigh,
     }
 
-    // Ludoal fork (maintainer, 6 Sep '26): what the pirates ARE, not only what they charge.
+    // Ludoal fork: what the pirates ARE, not only what they charge.
     // They have no strength modifier of their own in the base game - their strength IS their
     // level - so one notch drives three things at once: the level they START at (bases, how
     // many raids run at once, how many hulls a raid fields), the BITE (the fraction of the
@@ -1115,22 +1111,22 @@ namespace Ship_Game
         Strong,
     }
 
-    // Ludoal fork (maintainer, 5 Sep '26): how fast piracy escalates. No Off notch here: the
+    // Ludoal fork: how fast piracy escalates. No Off notch here: the
     // pirates have no story to switch off, and None on the factions row already empties them.
     public enum PiratePaceSetting
     {
         VerySlow,
         Slow,
         Normal,
-        // Ludoal fork (maintainer, 6 Sep '26): the notch ABOVE Normal. This scale is monotonic -
-        // slowest first - so the notch goes at the END and the clicks read the right way round
-        // on their own. APPENDED for the ordinal, same reason as the Remnant scales.
+        // Ludoal fork: the notch ABOVE Normal. This scale is monotonic - slowest first - so the
+        // notch goes at the END and the clicks read the right way round on their own.
+        // ⚠ APPENDED for the ordinal, same reason as the Remnant scales.
         Fast,
     }
 
-    // Ludoal fork (maintainer, 5 Sep '26): how many pirate factions start alive. What used to
-    // be a checkbox: None is the old ticked box. Pirate factions are whatever the data declares
-    // - the code never fixes their count - so All is the only honest name for the top notch.
+    // Ludoal fork: how many pirate factions start alive. Pirate factions are whatever the data
+    // declares - the code never fixes their count - so All is the only honest name for the top
+    // notch, and None is the zero.
     public enum PirateFactionsSetting
     {
         None,
@@ -1138,22 +1134,20 @@ namespace Ship_Game
         All,
     }
 
-    // Ludoal fork (maintainer, 5 Sep '26): Remnant design strength as a FRACTION of whatever
-    // the rules ask for - the mod's declared value, or the base game's where no mod raises it.
-    // Relative rather than absolute so the row reads without knowing either number, and so it
-    // means something in vanilla too.
-    // Default FIRST: the row reads down from the full value, and the rank also decides the
-    // reader's fallback when it meets a number it does not know - which should land on the
-    // rules' own value, never on the weakest one. Free to order this way because the notch was
-    // born in this same batch: no save carries the old ranks.
+    // Ludoal fork: Remnant design strength as a FRACTION of whatever the rules ask for - the
+    // mod's declared value, or the base game's where no mod raises it. Relative rather than
+    // absolute so the row reads without knowing either number.
+    // ⚠ Default FIRST: the row reads down from the full value, and the rank is also the reader's
+    // fallback when it meets a number it does not know - which must land on the rules' own value,
+    // never on the weakest one.
     public enum RemnantStrengthSetting
     {
         Default,
         ThreeQuarters,
         Half,
         Quarter,
-        // Ludoal fork (maintainer, 6 Sep '26): the two notches ABOVE Default, on player feedback
-        // that some want to play AGAINST the environment rather than tone it down.
+        // Ludoal fork (player feedback): the two notches ABOVE Default, for playing AGAINST the
+        // environment rather than toning it down.
         // ⚠ APPENDED, never inserted: the binary serialiser writes the ORDINAL, so a notch placed
         // before Default would shift every existing save by one, in silence.
         // Twice sits before OneAndHalf ON PURPOSE: the right click walks the enum BACKWARDS, so
@@ -1169,10 +1163,9 @@ namespace Ship_Game
         VerySlow,
         Slow,
         Normal,
-        // Ludoal fork (maintainer, 5 Sep '26): the zero of this axis, absorbing what used to be
-        // the Disable Remnant Story checkbox - with no story the Remnant never activate, so
-        // nothing ever climbs. APPENDED, never inserted: the notch is serialised by its ordinal,
-        // so putting Off first would shift every existing save's setting by one, in silence.
+        // Ludoal fork: the zero of this axis - with no story the Remnant never activate, so
+        // nothing ever climbs. ⚠ APPENDED, never inserted: the notch is serialised by its
+        // ordinal, so a notch before Off would shift every existing save's setting by one.
         Off,
     }
 

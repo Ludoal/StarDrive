@@ -22,9 +22,9 @@ namespace Ship_Game
         Rectangle OpenRect;
         Rectangle ClickAbleOpenRect;
 
-        // ★ AN OPEN LIST IS BOUNDED. Rows were laid out one per option with no ceiling, so a list
-        // fed from the player's own data - the trade zones - grew off the bottom of the screen.
-        // Twelve rows, then the wheel scrolls (maintainer feedback).
+        // ★ AN OPEN LIST IS BOUNDED. Without a ceiling, a list fed from the player's own data -
+        // the trade zones - grows off the bottom of the screen. Twelve rows, then the wheel
+        // scrolls (maintainer feedback).
         const int MaxOpenRows = 12;
         int FirstVisible;
         int VisibleRows => (Options.Count - 1).UpperBound(MaxOpenRows).LowerBound(0);
@@ -70,8 +70,8 @@ namespace Ship_Game
             public T Value;
 
             // maintainer feedback: an entry may carry a glyph to its left - the lock the game
-            // already draws elsewhere for an exclusive blueprint. Optional: an entry without
-            // one lays out exactly as before, so every other caller is untouched.
+            // already draws elsewhere for an exclusive blueprint. Optional: an entry without one
+            // lays out as if the field did not exist.
             public SubTexture Icon;
 
             public Entry(in LocalizedText name, T value)
@@ -182,9 +182,9 @@ namespace Ship_Game
         string WrappedString(string text, int iconRoom = 0)
         {
             float maxWidth = Width - 22 - iconRoom;
-            // bench 455: this ran the MeasureString truncation loop EVERY FRAME for every
-            // truncated cell - the Colonies page slowdown. Cache per (text, width), and
-            // guard the loop: an over-narrow box must never Remove() past empty.
+            // ⚠ the MeasureString truncation loop below is per-frame work for every truncated
+            // cell, and it is what slows the Colonies page. Cached per (text, width), and the
+            // loop is guarded: an over-narrow box must never Remove() past empty (bench 455).
             if (text == WrappedCacheKey && maxWidth == WrappedCacheWidth)
                 return WrappedCacheValue;
             string result = text;
@@ -206,8 +206,8 @@ namespace Ship_Game
         }
 
         // the room an entry's glyph takes ahead of its text, gap included - 0 without one.
-        // Read by the DRAWING and by the TRUNCATION, which is the whole point: bench 570 had
-        // labels cut too late because the width the lock ate was known to one and not the other.
+        // ⚠ read by the DRAWING and by the TRUNCATION, which is the whole point: a width known
+        // to one and not the other cuts the labels too late (bench 570).
         static int IconRoom(Entry e)
             => e?.Icon == null ? 0
              : e.Icon.Width * (Fonts.Arial12Bold.LineSpacing - 3) / e.Icon.Height + 4;
@@ -292,11 +292,10 @@ namespace Ship_Game
             int rows = Options.Count - 1;
             if (rows > VisibleRows)
             {
-                // ⚠ A ROW, not a mark. Two arrows the size of a dot, in the colour of the frame
-                // they sat on, were there and unseen - and an indicator you have to look for
-                // indicates nothing (maintainer feedback, bench 595). A whole row saying how many
-                // are left is read without being sought, and it says something the arrows could
-                // not: the count.
+                // ⚠ A ROW, not a mark. Arrows the size of a dot, in the colour of the frame they
+                // sit on, are there and unseen - an indicator you have to look for indicates
+                // nothing. A whole row saying how many are left is read without being sought, and
+                // it carries what an arrow cannot: the count (bench 595).
                 int below = rows - (FirstVisible + VisibleRows);
                 if (below > 0)
                 {
@@ -360,9 +359,9 @@ namespace Ship_Game
             }
 
 
-            // maintainer: a click anywhere else closes the list without changing the
-            // selection, and is CONSUMED - closing is the whole gesture. Letting it through
-            // meant a list dismissed by accident also fired whatever sat behind it.
+            // a click anywhere else closes the list without changing the selection, and is
+            // CONSUMED - closing is the whole gesture. ⚠ letting it through would fire whatever
+            // sits behind a list dismissed by accident (maintainer feedback).
             if (Open && input.LeftMouseClick && !overTitle && !overExpanded)
             {
                 Open = false;

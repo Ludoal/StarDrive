@@ -269,14 +269,14 @@ namespace Ship_Game.Universe.SolarBodies
             return true;
         }
 
-        // ⚠ THE NEED FOR A TERRAFORMER OSCILLATES, and the queue used to flicker with it. Some
-        // of its terms move while a terraformer works - fertility climbs, tiles stop being
+        // ⚠ THE NEED FOR A TERRAFORMER OSCILLATES, and an unheld queue flickers with it. Some of
+        // its terms move while a terraformer works - fertility climbs, tiles stop being
         // terraformable - so a world sitting on the threshold answers yes one turn and no the
-        // next: the governor queues the building, sends it to the back, then forward again, and
-        // the player watches it appear and vanish (maintainer feedback, Roland's save).
-        // The answer is HELD for ten turns once it has been true. The ordering is untouched; it
-        // is the signal that stops blinking, which is where the fault was.
-        // ⚠ zero on an old save means "never wanted", so it reads as before until the first yes.
+        // next, and the governor queues the building, sends it to the back, then forward again.
+        // The answer is HELD for ten turns once true: the ordering is untouched, only the signal
+        // stops blinking (maintainer feedback).
+        // ⚠ zero on a save written without this field means "never wanted": the hold stays inert
+        // until the first yes.
         [StarData] float LastTerraformerWanted;
         const float TerraformerNeedHold = 1.0f; // StarDate advances 0.1 per turn
 
@@ -296,7 +296,7 @@ namespace Ship_Game.Universe.SolarBodies
         // has not finished making habitable - and production must SKIP it rather than stall behind
         // it. The order the player arranged is kept: a waiting entry holds its place, and the pass
         // serves the first one it CAN. Walking backwards would loop; walking forwards cannot.
-        // -1 when nothing in the queue can be built this turn (spec of 4 Sep).
+        // -1 when nothing in the queue can be built this turn.
         public int FirstBuildableIndex
         {
             get
@@ -319,10 +319,9 @@ namespace Ship_Game.Universe.SolarBodies
                 return true;
 
             // A terraformer whose colony plan is not far enough along cannot start: the budget
-            // that pays for it is held at zero until the plan completes. It keeps its rank and
-            // YIELDS ITS TURN, exactly like an entry with no tile - otherwise the whole queue
-            // stalls behind it and nothing else is ever built, which is what the bench saw at
-            // 600 (maintainer feedback: "reste en position 1 et tout est bloqué").
+            // that pays for it is held at zero until the plan completes. ⚠ it keeps its rank and
+            // YIELDS ITS TURN, exactly like an entry with no tile - otherwise it holds position 1
+            // and the whole queue stalls behind it (bench 600).
             if (WaitsForBlueprint(q))
                 return false;
 
@@ -352,8 +351,8 @@ namespace Ship_Game.Universe.SolarBodies
         // Everything that cannot start this turn, whatever the reason. ⚠ PURE, like its two parts.
         public static bool IsWaiting(QueueItem q) => IsWaitingForTile(q) || WaitsForBlueprint(q);
 
-        // ★ ONE notion, read by everything that used to read the head: the entry production is
-        // actually being spent on. Null when every entry is waiting for a tile.
+        // ★ ONE notion, read by everything that would otherwise take the head: the entry
+        // production is actually being spent on. Null when every entry is waiting for a tile.
         public QueueItem BuildingNow
         {
             get
@@ -372,8 +371,8 @@ namespace Ship_Game.Universe.SolarBodies
                 return; // Massive sabotage to planetary facilities or no items
 
             // ⚠ the FIRST BUILDABLE entry, not the head: production spent on an entry with no
-            // tile would be spent on something that cannot be placed, and the old code only found
-            // that out at completion - after the cost was paid.
+            // tile pays for something that cannot be placed, and the fault surfaces only at
+            // completion, after the cost is paid.
             int index = FirstBuildableIndex;
             if (index < 0)
                 return; // everything in the queue is waiting for a tile this turn
@@ -407,7 +406,7 @@ namespace Ship_Game.Universe.SolarBodies
 
         // @return TRUE if building was added to CQ,
         //         FALSE if `where` is occupied or if there is no free random tiles - except for a
-        //         PLAYER order, which is queued with no tile and waits for one (spec of 4 Sep)
+        //         PLAYER order, which is queued with no tile and waits for one
         public bool Enqueue(Building b, PlanetGridSquare where = null, bool playerAdded = false)
         {
             if ((b.Unique || b.BuildOnlyOnce) && P.BuildingBuiltOrQueued(b))
@@ -437,10 +436,10 @@ namespace Ship_Game.Universe.SolarBodies
                 return true;
             }
 
-            // ★ THE PLAYER'S OWN ORDER WAITS rather than being refused in silence. Ordering a
-            // biosphere and the building meant to stand on it took two visits: the second could
-            // not be queued until the first had finished, because the tile was not habitable yet.
-            // The entry keeps its place with no tile and takes one as soon as one appears.
+            // ★ THE PLAYER'S OWN ORDER WAITS rather than being refused in silence: a building
+            // meant to stand on a biosphere still under construction would otherwise need a second
+            // visit to queue, the tile not being habitable yet. The entry keeps its place with no
+            // tile and takes one as soon as one appears.
             // ⚠ the GOVERNOR keeps the placement check: it picks its tile deliberately, and
             // without that it would stack up waiting entries it never meant to order.
             if (playerAdded)
@@ -628,14 +627,14 @@ namespace Ship_Game.Universe.SolarBodies
                 }
                 else
                 {
-                    // (maintainer decision) The base game sends the terraformer to the BACK of the
+                    // (maintainer feedback) The base game sends the terraformer to the BACK of the
                     // queue on every governor add, so a colony following a plan raises the whole
                     // plan first and the terraformer last. The two delays do not cost the same: a
                     // terraformer is a decades-long investment that removes itself once the work is
                     // done - it borrows a tile rather than taking one - while a plan's building
                     // pushed back costs a few turns of yield. So while the colony is still short of
-                    // the terraformers the game asked for, it keeps its place. The count is already
-                    // bounded and only one is ever built at a time, so this cannot run away.
+                    // the terraformers the game asked for, it keeps its place. The count is bounded
+                    // and only one is ever built at a time, so this cannot run away.
                     if (P.Owner.AutoBuildTerraformers && P.Owner.data.Traits.TerraformingLevel > 0
                         && !item.IsPlayerAdded && !TerraformerStillWanted())
                         DePrioritizeTerraformer();
@@ -646,7 +645,7 @@ namespace Ship_Game.Universe.SolarBodies
                     }
                     else
                     {
-                        // Ludoal fork (maintainer spec): the ordered priority list. A prioritized
+                        // Ludoal fork (maintainer feedback): the ordered priority list. A prioritized
                         // item slots above everything ranked worse or unranked, below same-or-better
                         // ranks - FIFO within a category, better-ranked categories stay ahead.
                         // Insertion only: reordering the list never reshuffles queues already filled.
@@ -803,10 +802,9 @@ namespace Ship_Game.Universe.SolarBodies
                 // drops a civilian building whenever something worthier can be built instead -
                 // sound for a yield building, ruinous for a terraformer: the governor queues it,
                 // this cancels it for the next warehouse, then queues it again once that is done,
-                // and each round trip BURNS HALF the production already spent on it (Cancel
-                // refunds one half). That is the appearing-and-vanishing terraformer, and it is
-                // not the demotion everyone assumed - it never moved, it was destroyed and
-                // rebuilt (maintainer feedback, bench 597).
+                // and each round trip BURNS HALF the production already spent on it, Cancel
+                // refunding only one half. The entry is destroyed and rebuilt, never demoted
+                // (bench 597).
                 if (q.IsCivilianBuilding
                     && !q.IsTerraformer
                     && (!q.IsPlayerAdded || hasExclusiveBlueprints)

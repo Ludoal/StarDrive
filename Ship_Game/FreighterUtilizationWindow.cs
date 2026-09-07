@@ -21,20 +21,18 @@ namespace Ship_Game
         UIButton BuildFreighter;
         Empire Player => Screen.Player;
         float UpdateTimer;
-        // ★ THE WHOLE freighter fleet, zone-held hulls INCLUDED. Empire.TotalFreighters
-        // deliberately excludes them - the reserve and the refit ceiling derive from it -
-        // and pairing that with a utilised count which includes them understated the idle
-        // figure by exactly the hulls a zone was flying, and could drive it below zero.
-        // What a zone holds is stated on its own line instead (maintainer bench 582).
+        // ★ THE WHOLE freighter fleet, zone-held hulls INCLUDED. ⚠ never Empire.TotalFreighters
+        // here: that one excludes zone-held hulls, so pairing it with a utilised count which
+        // includes them drives the idle figure below zero. What a zone holds is stated on its
+        // own line instead.
         int FleetFreighters;
         int NumUtilizedFreighters;
         UILabel FreighterConstructingLabel;
         UILabel FreightersInZonesLabel;
         UILabel NumIdleFreightersLabel;
-        // Ludoal fork (maintainer bench 336): a "Total freighters:" row under the goods rows.
-        // Every cell of it is the plain SUM of the three rows above, in their own unit - runs over
-        // possible runs, then planets over planets. The fleet's own utilisation is a different
-        // notion and is stated on the left, as a percentage.
+        // Ludoal fork: a "Total freighters:" row under the goods rows. Every cell of it is the
+        // plain SUM of the three rows above, in their own unit - runs over possible runs, then
+        // planets over planets. The fleet's own utilisation is stated on the left, as a percentage.
         UILabel TotalFreightersLabel;
         UILabel TotalFreightersValue;
         UILabel TotalImportingValue;
@@ -43,28 +41,25 @@ namespace Ship_Game
         UILabel TotalImportingDen;
         UILabel TotalExportingDen;
 
-        // Ludoal fork (maintainer bench 339): the numbers are right-aligned on a 3-digit column
+        // Ludoal fork (bench 339): the numbers are right-aligned on a 3-digit column
         // centred under each header. These are the RIGHT edges of those columns (absolute X), the
         // ONE source both the per-goods rows and the totals row align on, so they cannot disagree.
         const float NumberColW = 24f; // room for three digits in Arial12Bold
-        // Ludoal fork (maintainer, bench 578): the cells hold "served / total" now, so the lane is
-        // wide enough for both halves and the SLASH sits on a fixed column inside it. The font is
-        // proportional: right-aligning the whole string lines up the ends, which is exactly what
-        // made the fractions look ragged. Two halves, one fixed column, same trick as the Labor
-        // numbers on the colony screen.
+        // Ludoal fork (bench 578): the cells hold "served / total", so the lane is wide enough for
+        // both halves and the SLASH sits on a fixed column inside it. ⚠ the font is proportional:
+        // right-aligning the whole string lines up the ENDS, not the slashes - two halves on one
+        // fixed column, the same trick as the Labor numbers on the colony screen.
         const float FractionColW = 62f, SlashLane = 30f;
         float FreightersRightX, ImportingRightX, ExportingRightX;
 
-        // Ludoal fork (maintainer feedback): the ZONE FILTER. A null selection is the whole
-        // empire, which is what this window has always shown - so "All zones" is not a new mode,
-        // it is the old one given a name. All three goods narrow: what the zone measure leaves
-        // colonists out of is its QUOTA, where heads and cargo loads cannot be added; counting
-        // the colonies of a zone and the runs delivering into it is honest in any unit.
+        // Ludoal fork (maintainer feedback): the ZONE FILTER. A null selection is "All zones",
+        // the whole empire. All three goods narrow: only the zone's QUOTA leaves colonists out,
+        // heads and cargo loads not being addable; counting the colonies of a zone and the runs
+        // delivering into it holds in any unit.
         DropOptions<TradeZone> ZoneFilter;
         TradeZone SelectedZone;
         // what the picker currently SHOWS - the player edits the empire's zones on another page,
-        // so the two are compared each tick and the picker rebuilt when they part company. Built
-        // once at open, it went on offering the list as it stood the moment the window came up.
+        // so the two are compared each tick and the picker rebuilt when they part company.
         readonly Array<TradeZone> ZonesShown = new();
 
         // the right edge that centres a FractionColW-wide lane under a header at headerX
@@ -110,9 +105,9 @@ namespace Ship_Game
         public void SeatByMinimap()
         {
             const int windowWidth = 650;
-            // Ludoal fork (maintainer, bench 578): FIVE rows, not four - the left column gained
-            // the freighters-in-zones line and it landed on the Build Freighter button. The height
-            // is counted in rows on purpose, so a row added here needs no second number changed.
+            // Ludoal fork (bench 578): FIVE rows - the left column carries the freighters-in-zones
+            // line. The height is counted in rows on purpose, so a row added here needs no second
+            // number changed.
             int windowHeight = 5 * (Fonts.Arial12Bold.LineSpacing + 25);
             Rect = new Rectangle((int)Screen.Minimap.X - 5 - windowWidth, (int)Screen.Minimap.Y +
                 (int)Screen.Minimap.Height - windowHeight, windowWidth, windowHeight); // foot flush with the minimap frame
@@ -131,31 +126,28 @@ namespace Ship_Game
             // Ludoal fork: window title is "Freighters"
             ConstructionSubMenu = new(win, "Freighters");
             float titleOffset = win.Y + 40;
-            // Ludoal fork (maintainer, bench 578): the zone picker comes down off the title bar and
-            // takes the first line of the RIGHT column; its headers move down a row into the space
-            // the fifth row opened. The left column keeps the first line for its own heading.
+            // Ludoal fork (bench 578): the zone picker takes the first line of the RIGHT column and
+            // its headers sit a row lower. The left column keeps its first line for its own heading.
             const float HeaderDrop = 25f;
             float headerY = titleOffset + HeaderDrop;
             Add(new UILabel(new Vector2(win.X + 15, titleOffset), GameText.TotalFreighterUtilization, Fonts.Arial12Bold, Color.Gold, GameText.TotalUtilizationTip));
             Add(new UILabel(new Vector2(win.X + 210, headerY), GameText.CargoDistribution, Fonts.Arial12Bold, Color.White, GameText.CargoDistributionTip));
             Add(new UILabel(new Vector2(win.X + 370, headerY), GameText.Freighters, Fonts.Arial12Bold, Color.White, GameText.TzFreightersTip));
-            // these two columns count PLANETS (open import/export slots), not freighters -
-            // the only headers of this window without a tooltip, and the mixed units confused readers
-            // the columns count WORLDS, so they are named for worlds. ⚠ our own tokens: the
-            // upstream Importing/Exporting ids stay untouched for the next merge.
+            // these two columns count WORLDS (open import/export slots), not freighters, and are
+            // named for worlds. ⚠ our own tokens: the upstream Importing/Exporting ids stay
+            // untouched for the next merge.
             Add(new UILabel(new Vector2(win.X + 470, headerY), GameText.TzImporters, Fonts.Arial12Bold, Color.White, GameText.TzImportersTip));
             Add(new UILabel(new Vector2(win.X + 570, headerY), GameText.TzExporters, Fonts.Arial12Bold, Color.White, GameText.TzExportersTip));
             // the 3-digit number columns, centred under each header - shared by the goods rows and
-            // the totals row (maintainer bench 339)
+            // the totals row (bench 339)
             FreightersRightX = ColumnRightUnder(win.X + 370, GameText.Freighters);
             ImportingRightX  = ColumnRightUnder(win.X + 470, GameText.TzImporters);
             ExportingRightX  = ColumnRightUnder(win.X + 570, GameText.TzExporters);
             Add(new UILabel(new Vector2(win.X + 15, titleOffset + 50), GameText.IdleFrieghters, Fonts.Arial12Bold, Color.Wheat));
             Add(new UILabel(new Vector2(win.X + 15, titleOffset + 70), GameText.FreightersUnderConstruction, Fonts.Arial12Bold, Color.Wheat));
             // ⚠ the idle count above is taken from the pool, and the pool EXCLUDES hulls held by a
-            // zone - so assigning freighters made the fleet appear to shrink under the player's
-            // hand, during the very operation this window is meant to guide. The part in zones is
-            // stated rather than subtracted, on the same rhythm as the two rows above it.
+            // zone - so assigning freighters makes the fleet look smaller under the player's hand.
+            // The part in zones is stated on its own line rather than subtracted.
             Add(new UILabel(new Vector2(win.X + 15, titleOffset + 90), GameText.TzInZones, Fonts.Arial12Bold, Color.Wheat));
 
             NumIdleFreightersLabel     = new UILabel(new Vector2(win.X + 150, titleOffset + 50), "", Fonts.Arial12Bold, Color.White);
@@ -167,7 +159,7 @@ namespace Ship_Game
             foreach (GoodsUtilization gu in  GoodsUtilizationMap.Values)
                 utilizationData.Add(gu);
 
-            // Ludoal fork (maintainer bench 339): the totals row under the goods rows. The caption
+            // Ludoal fork (bench 339): the totals row under the goods rows. The caption
             // left-aligns on the Cargo Distribution bars (win.X + 210); the values right-align on the
             // SAME 3-digit columns as the goods rows above (centred under each header).
             float totalsY = win.Y + Height - 25;
@@ -183,18 +175,15 @@ namespace Ship_Game
             LayoutFraction(TotalImportingValue,  TotalImportingDen,  ImportingRightX, totalsY);
             LayoutFraction(TotalExportingValue,  TotalExportingDen,  ExportingRightX, totalsY);
 
-            // the zone picker rides the title bar's right end, the way STARVATION rides Supply's -
-            // the window's four rows are spoken for. Added LAST on purpose: an open list draws
-            // over the rows only if it is the last child, and a dropdown seated earlier would
-            // unfold UNDER them (bench 505, the same trap on three lists).
+            // the zone picker rides the title bar's right end, the way STARVATION rides Supply's.
+            // ⚠ added LAST on purpose: an open list draws over the rows only if it is the last
+            // child - seated earlier, the dropdown unfolds UNDER them (bench 505).
             const float ZoneBoxW = 170;
             float zoneBoxX = win.Right - ZoneBoxW - 12;
             // the tooltip rides the CAPTION, not the list: a DropOptions carries none of its own
-            // (it is a bare UIElementV2), which is why every picker in the game is labelled. The
-            // caption's X is MEASURED off its own text rather than guessed at a round number.
-            // singular here: the picker chooses ONE zone to look through, where the shared token
-            // names the feature. Its own token rather than an edit to that one, which titles two
-            // other screens (maintainer feedback).
+            // (it is a bare UIElementV2), so every picker in the game is labelled. The caption's X
+            // is MEASURED off its own text. Its own singular token - the picker chooses ONE zone,
+            // where the shared token names the feature and titles two other screens.
             string zoneCap = Localizer.Token(GameText.TzZoneFilter);
             Add(new UILabel(new Vector2(zoneBoxX - Fonts.Arial12Bold.TextWidth(zoneCap) - 8, titleOffset),
                             GameText.TzZoneFilter, Fonts.Arial12Bold, Color.Wheat, GameText.TzWindowZoneTip));
@@ -208,10 +197,9 @@ namespace Ship_Game
         {
             const int utilColX = 10, utilColW = 150, buildBtnW = 130;
             UtilizationBar.SetRect(new Rectangle((int)Pos.X + utilColX, (int)Pos.Y+65, utilColW, 18));
-            // Ludoal fork (maintainer feedback): the Build Freighter button centred on the util column
-            // ⚠ anchored to the FOOT, not to a constant off the top: it sat at a fixed 135 and the
-            // window has since gained a row, so it landed on the line that row was added for
-            // (bench 580). Off the bottom it follows whatever height the window takes.
+            // Ludoal fork: the Build Freighter button centred on the util column.
+            // ⚠ anchored to the FOOT, not to a constant off the top: off the bottom it follows
+            // whatever height the window takes, so a row added above cannot land on it (bench 580).
             BuildFreighter.SetAbsSize(buildBtnW, 24);
             BuildFreighter.Pos = new Vector2(Pos.X + utilColX + (utilColW - buildBtnW) / 2,
                                              Pos.Y + Height - 24 - 8);
@@ -295,10 +283,9 @@ namespace Ship_Game
                     goodsUtilization.Reset();
 
 
-                // ★★ THE NEED IS NOT COMPUTED HERE ANY MORE. A zone's is READ off the zone, where
-                // the empire wrote it this turn; the empire's own is asked of the same function the
-                // Trade table uses. Two screens that compute cannot agree for long - these two were
-                // three definitions apart (maintainer bench 582-584).
+                // ★★ THE NEED IS NEVER COMPUTED HERE. A zone's is READ off the zone, where the
+                // empire wrote it this turn; the empire's own is asked of the same function the
+                // Trade table uses, so two screens cannot drift into two definitions (bench 582).
                 var perimeter = new Array<Planet>();
                 foreach (Planet p in Player.GetPlanets())
                     if (SelectedZone == null || SelectedZone.Serves(p))
@@ -313,12 +300,11 @@ namespace Ship_Game
                 }
                 else
                 {
-                    // no zone picked: the perimeter is the whole realm. The figure is what the
-                    // realm WANTS - the same book the zone lines above read, uncapped, so the
-                    // overlay never writes "nobody can serve me" as a nought
+                    // no zone picked: the perimeter is the whole realm, and the figure is what it
+                    // WANTS - the same book the zone lines above read, uncapped.
                     // ⚠ beforeServing: this window prints the cargo IN THE AIR as its numerator, so
-                    // the denominator must not have that same cargo already subtracted from it - the
-                    // pair crossed over and a well served realm read "126 / 94" (maintainer bench 600).
+                    // the denominator must not have that same cargo subtracted from it, or the pair
+                    // crosses over and a well served realm reads "126 / 94" (bench 600).
                     if (Player.NonCybernetic)
                         GoodsUtilizationMap[Goods.Food].SetNeed(Player.PerimeterNeed(perimeter, Goods.Food, beforeServing: true));
                     GoodsUtilizationMap[Goods.Production].SetNeed(Player.PerimeterNeed(perimeter, Goods.Production, beforeServing: true));
@@ -326,10 +312,9 @@ namespace Ship_Game
                 }
 
                 // ⚠ A WORLD WITH A CARGO IN THE AIR COUNTS, even if its store filled while that
-                // cargo was flying. Counted only while its slots stood open, a colony dropped out
-                // of Importing at the very moment it was being served, and the row read "1 / 0" -
-                // one hull, no importer (maintainer feedback). The runs column never had that
-                // guard, which is why the two disagreed rather than both being wrong.
+                // cargo was flying. Counted only while its slots stand open, a colony drops out of
+                // Importing at the very moment it is served and the row reads "1 / 0" - one hull,
+                // no importer (maintainer feedback). The runs column carries the same guard.
                 foreach (Planet planet in Player.GetPlanets())
                 {
                     // per GOOD, on the ledger's sets: a world named by two zones is counted by the
@@ -345,8 +330,8 @@ namespace Ship_Game
                         if (planet.FoodImportSlots > 0 || planet.IncomingFoodFreighters > 0) GoodsUtilizationMap[Goods.Food].IncreaseNumImportingPlanets();
                         GoodsUtilizationMap[Goods.Food].AddServedBerths(planet.IncomingFoodFreighters);
                         // ⚠ ONE per world, never the hull count: this column pairs served worlds
-                        // with importing worlds, and a numerator counting hulls made "2 / 2" mean
-                        // two hulls over two worlds (maintainer feedback, bench 590).
+                        // with importing worlds, so a numerator counting hulls would make "2 / 2"
+                        // read as two hulls over two worlds (bench 590).
                         if (planet.FoodImportSlots > 0 || planet.IncomingFoodFreighters > 0) GoodsUtilizationMap[Goods.Food].AddServedImporting(planet.IncomingFoodFreighters > 0 ? 1 : 0);
                     }
 
@@ -360,9 +345,9 @@ namespace Ship_Game
 
                 // ★ THE EXPORTERS COLUMN FOLLOWS THE REGIME, exactly as the need's ceiling does:
                 // an enclave loads among its own worlds, a soft zone on the common ground, and
-                // with no zone picked the ground is the realm. Counted on its OWN set, because the
-                // loop above only walks the zone's colonies - which is how "0 / 0" came to sit
-                // beside a need of 24 (maintainer feedback, bench 583).
+                // with no zone picked the ground is the realm. ⚠ counted on its OWN set: the loop
+                // above only walks the zone's colonies, so an exporter outside it is invisible
+                // there and the column would read "0 / 0" beside a real need (bench 583).
                 if (Player.NonCybernetic)
                     CountExporters(Goods.Food, perimeter);
                 CountExporters(Goods.Production, perimeter);
@@ -388,10 +373,9 @@ namespace Ship_Game
                 NumIdleFreightersLabel.Text = (FleetFreighters - NumUtilizedFreighters).String();
                 FreightersInZonesLabel.Text = Player.OwnedShips.Count(s => s?.IsFreighter == true && s.InTradeZone).String();
 
-                // ★ the totals row SUMS the rows above it, in their own unit. It used to count
-                // utilised hulls over the fleet - a second notion in the same column, which is how
-                // three rows adding to 14/66 sat under a total reading 13/14. The fleet's own
-                // utilisation is already stated on the left, as a percentage.
+                // ★ the totals row SUMS the rows above it, in their own unit - never utilised hulls
+                // over the fleet, which would put a second notion in the same column. The fleet's
+                // own utilisation is already stated on the left, as a percentage.
                 int servedBerths = 0, possibleRuns = 0, servedImp = 0, imp = 0, servedExp = 0, exp = 0;
                 foreach (GoodsUtilization gu in GoodsUtilizationMap.Values)
                 {
@@ -409,8 +393,7 @@ namespace Ship_Game
                 TotalExportingValue.Text   = servedExp.String();
                 TotalExportingDen.Text     = $" / {exp}";
                 // white like the rows it sums - see the exporters note in GoodsUtilization.Draw.
-                // A totals cell wearing a colour its own column no longer wears is the very split
-                // the per-column rule was written to close.
+                // ⚠ a totals cell never wears a colour its own column does not wear.
                 TotalExportingValue.Color  = TotalExportingDen.Color = Color.White;
             }
 
@@ -520,11 +503,10 @@ namespace Ship_Game
             public int NumExportingPlanets { get; private set; }
             public int NumFreighters { get; private set; }
             // Ludoal fork (maintainer feedback): the SAME two numbers the Trade table shows, one
-            // level down - import berths open for this good, and freighters already on their way
-            // to them. Planets would not do: a colony with three Food berths is one planet and
-            // three berths, so the two screens would answer the same question differently.
-            // what the empire says this perimeter needs, in whole hulls - written from outside,
-            // never computed here
+            // level down - import berths open for this good, and freighters on their way to them.
+            // ⚠ berths, not planets: a colony with three Food berths is one planet, three berths,
+            // and counting planets makes the two screens answer the same question differently.
+            // Written from outside by the empire, in whole hulls; never computed here.
             public int NeedRuns { get; private set; }
             public void SetNeed(int runs) => NeedRuns = runs;
             public int ServedBerths { get; private set; }
@@ -567,7 +549,7 @@ namespace Ship_Game
                 IconPanel.Pos = new Vector2(Pos.X + 175, Pos.Y - 5);
                 IconPanel.PerformLayout();
                 UtilizationBar.SetRect(new Rectangle((int)Pos.X + 200, (int)Pos.Y, 150, 18));
-                // maintainer bench 339: numbers RIGHT-aligned on the SAME columns as the totals row
+                // bench 339: numbers RIGHT-aligned on the SAME columns as the totals row
                 // (centred under each header, room for 3 digits). Window owns the right edges, so
                 // the goods rows and the totals cannot disagree.
                 LayoutFraction(NumFreightersLabel, DenFreightersLabel, Window.FreightersRightX, Pos.Y);
@@ -592,19 +574,15 @@ namespace Ship_Game
                 DenFreightersLabel.Draw(batch, elapsed);
                 DenImportingLabel.Draw(batch, elapsed);
                 DenExportingLabel.Draw(batch, elapsed);
-                // every column reads its OWN pair now. The two others used to colour off the
-                // importers and the traffic - figures the cell does not show - so the same "0 / 0"
-                // wore two colours in one panel and neither could be explained from the line
-                // (maintainer feedback, bench 590).
+                // ⚠ every column colours off its OWN pair, never off figures the cell does not
+                // show - otherwise the same "0 / 0" wears two colours in one panel and neither
+                // can be read off the line (bench 590).
                 NumFreightersLabel.Color = PairColor(ServedBerths, Runs);
                 NumImportingLabel.Color  = PairColor(ServedImporting, NumImportingPlanets);
                 // ★ EXPORTERS ARE NEVER COLOURED. The pair colour means "asked for and not got",
-                // which is a statement about NEED - and an exporter nobody comes to empty is not a
-                // want unmet, it is a surplus nobody needs. The proof was on the line itself:
-                // Importers 27/27 in white, everyone fed, and the cell beside it flashing amber
-                // (maintainer feedback, bench 601). If exporters ever deserve an alarm it is
-                // because importers are dry while stock sits somewhere, and THAT is the importers'
-                // red saying it. The alarm belongs to the need, never to the offer.
+                // a statement about NEED - an exporter nobody comes to empty is a surplus, not a
+                // want unmet, so Importers 27/27 in white would sit beside an amber cell. The
+                // alarm belongs to the need, and the importers' red already carries it (bench 601).
                 NumExportingLabel.Color  = Color.White;
             }
 

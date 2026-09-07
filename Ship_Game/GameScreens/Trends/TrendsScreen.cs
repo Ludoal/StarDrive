@@ -10,7 +10,7 @@ using Font = Ship_Game.Graphics.Font;
 
 namespace Ship_Game.GameScreens
 {
-    // Ludoal fork (Wishlist, trends spec): the Trends tab of the Diplomacy group -
+    // Ludoal fork: the Trends tab of the Diplomacy group -
     // progression curves per race in the four intel domains, drawn from the StatTracker
     // snapshots the replay already records. A curve only exists where its datum is known:
     // each domain unlocks with its intel level, and a third party's series starts at the
@@ -27,8 +27,8 @@ namespace Ship_Game.GameScreens
         public override Rectangle PageFrame => GroupTabs?.Rect ?? base.PageFrame;
         Rectangle LeftRect;
 
-        // bench 459 (maintainer): Population by default, and the screen re-opens on the
-        // domain it last showed - a static carries it across openings for the session
+        // bench 459: Population by default, and the screen re-opens on the domain it last
+        // showed - a static carries it across openings for the session
         static Espionage.IntelDomain Domain = Espionage.IntelDomain.Population;
         static readonly (Espionage.IntelDomain D, string Label)[] Domains =
         {
@@ -66,8 +66,8 @@ namespace Ship_Game.GameScreens
 
         public override void LoadContent()
         {
-            // bench 448 (rature): the RELATIONSHIPS gabarit - the 900-class window, built
-            // by hand exactly like that sibling
+            // the RELATIONSHIPS gabarit - the 900-class window, built by hand exactly like that
+            // sibling (bench 448)
             Rectangle frame = ScreenGroups.GroupFrame900(ScreenWidth, ScreenHeight);
             GroupTabs = Add(new Submenu(new RectF(frame.X, frame.Y, frame.Width, frame.Height),
                                         ScreenGroups.LiveTitles(ScreenGroups.Group.Diplomacy, Universe)));
@@ -78,8 +78,8 @@ namespace Ship_Game.GameScreens
             CloseButton(closePos.X, closePos.Y);
             LeftRect = frame;
 
-            // maintainer option B: level acquired before the feature = the curve starts
-            // at the FIRST LOOK, never in a past the empire did not record
+            // a level acquired without a recorded date starts the curve at the FIRST LOOK, never
+            // in a past the empire did not record (maintainer feedback)
             foreach (Empire e in Universe.UState.ActiveMajorEmpires)
                 if (!e.isPlayer)
                     Player.GetRelations(e).Espionage?.StampLegacyHoles();
@@ -134,11 +134,11 @@ namespace Ship_Game.GameScreens
                 if (byEmpire.TryGetValue(e, out EmpireSeries s))
                 {
                     s.Points.Sort((a, b) => a.Date.CompareTo(b.Date));
-                    // bench 464 (design review, maintainer): smooth the noise, never the
-                    // event. Economy is a FLOW - wide average (15), the sale bursts
-                    // redistribute into a true mean. Population and Military are STOCKS -
-                    // narrow average (3): the sampling jitter dies, a bombardment or a
-                    // lost fleet stays a sharp step. Science stays raw: it works in steps.
+                    // bench 464: smooth the noise, never the event. Economy is a FLOW - wide
+                    // average (15), the sale bursts redistribute into a true mean. Population and
+                    // Military are STOCKS - narrow average (3): the sampling jitter dies, a
+                    // bombardment or a lost fleet stays a sharp step. Science stays raw: it
+                    // works in steps.
                     SmoothDomain(s.Points, 0, half: 1);
                     SmoothDomain(s.Points, 1, half: 1);
                     SmoothDomain(s.Points, 2, half: 7);
@@ -149,12 +149,11 @@ namespace Ship_Game.GameScreens
             }
         }
 
-        // One WIDE centred average (window 15, maintainer call at bench 464): the
-        // sale-burst income is REAL revenue, so instead of clamping it away the average
-        // redistributes each burst over its neighbourhood - the curve reads as the true
-        // mean income. Lone spikes are absorbed the same way. Holes (v<=0, the
-        // unmet-intel gaps) are preserved and never smeared - only positive neighbours
-        // enter the window.
+        // One WIDE centred average (window 15, bench 464): the sale-burst income is REAL
+        // revenue, so rather than clamping it away the average redistributes each burst over its
+        // neighbourhood and the curve reads as the true mean income. Lone spikes are absorbed the
+        // same way. ⚠ holes (v<=0, the unmet-intel gaps) are preserved and never smeared: only
+        // positive neighbours enter the window.
         static void SmoothDomain(Array<(float Date, float[] Values)> pts, int d, int half)
         {
             int n = pts.Count;

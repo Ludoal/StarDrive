@@ -75,7 +75,7 @@ namespace Ship_Game
                 // UI element decides the current target, not the cached tip.
                 tipItem.CodexUid = codexUid;
                 // re-seat a cursor-anchored tip once the cursor leaves its anchor (bench 408):
-                // list rows share tip texts, and the cached tip stayed parked at the first row
+                // list rows share tip texts, so a cached tip otherwise stays parked at the first row
                 if (tipItem.FollowsCursor)
                 {
                     Vector2 cur = GameBase.ScreenManager.input.CursorPosition;
@@ -85,10 +85,10 @@ namespace Ship_Game
                         tipItem.Rect = PlaceTip(cur, tipItem.MeasuredSize);
                     }
                 }
-                // bench 444: the SAME re-seat for hint-anchored tips - several callers pass
-                // the live cursor AS the hint (Espionage rows, the map's planet icons), and
-                // the cache kept the first frame's position for as long as the text lived.
-                // A genuinely fixed hint re-seats to itself: no-op.
+                // the SAME re-seat for hint-anchored tips: several callers pass the live cursor AS
+                // the hint (Espionage rows, the map's planet icons), and the cache would hold the
+                // first frame's position for as long as the text lives. A genuinely fixed hint
+                // re-seats to itself: no-op (bench 444).
                 else if (position != null && position.Value.Distance(tipItem.Anchor) > 5f)
                 {
                     tipItem.Anchor = position.Value;
@@ -122,8 +122,8 @@ namespace Ship_Game
             tipItem.Rect = PlaceTip(pos, size);
         }
 
-        // bench 408: below-right of the anchor; flips left/above when it would leave the
-        // display - it used to slide up pixel by pixel and ended covering the cursor
+        // bench 408: below-right of the anchor; flips left/above when it would leave the display,
+        // rather than sliding pixel by pixel until it covers the cursor
         static Rectangle PlaceTip(Vector2 pos, Vector2 size)
         {
             var r = new Rectangle((int)pos.X + 10, (int)pos.Y + 10,
@@ -165,8 +165,8 @@ namespace Ship_Game
             public string HotKey;
             public string CodexUid;
             public Rectangle Rect;
-            // bench 408: rows can share one tip text - the tip must re-seat when the cursor
-            // moves to another anchor, or it stays parked at the first hover's position
+            // rows can share one tip text - the tip must re-seat when the cursor moves to another
+            // anchor, or it stays parked at the first hover's position (bench 408)
             public Vector2 Anchor;
             public Vector2 MeasuredSize;
             public bool FollowsCursor;
@@ -192,9 +192,9 @@ namespace Ship_Game
 
                 // if tip is hovered, we increase its lifetime
                 // Ludoal fork (maintainer feedback): leaving the element ends the tip AT ONCE
-                // instead of fading it out over TipTime - avoids a stale tip lagging behind the
-                // cursor when sweeping a list. Drops to the reappear point rather than zero, so
-                // moving along a list does not re-arm the 0.35s dwell on every row.
+                // rather than fading it out over TipTime, so no stale tip lags behind the cursor
+                // when sweeping a list. It drops to the reappear point rather than zero, so moving
+                // along a list does not re-arm the 0.35s dwell on every row.
                 const float TipReappearTimePoint = TipShowTimePoint - TipReappearTimeDelay;
                 const float TipResetTimePoint = TipReappearTimePoint - TipResetTimeDelay;
 

@@ -37,19 +37,17 @@ namespace Ship_Game.GameScreens.NewGame
 
             var font = Fonts.Arial12Bold;
             Title = Add(new UILabel(GameText.NgEnvironmentPreferences, font, Color.BurlyWood));
-            // Ludoal fork: the 15 that used to sit here was this panel's own padding, and it
-            // is the theme's TextPad now (maintainer measured ~15 on this panel while the
-            // table said 0 - the inset was one level down, in these children). What is left is
-            // the title's own indent over the two value columns, and the row it sits on.
+            // Ludoal fork: this panel's own padding is the theme's TextPad, applied one level
+            // down in these children. What is left here is the title's own indent over the two
+            // value columns, and the row it sits on.
             Title.SetLocalPos(25, 0);
             Title.Tooltip = GameText.NgEnvPreferencesTooltip;
 
             BestType = Add(new UILabel(GameText.NgBestPlanetType, font, Color.BurlyWood));
             // Ludoal fork (maintainer feedback): -78 total to clear the widened value columns; the
-            // planet icon reads BestType.LocalPos, so it follows on its own.
-            // clears the MEASURED title (the French title outgrew the stock offset)
-            // maintainer: 25 further right than the caption's own clearance, so the icon below it
-            // clears the widened value columns.
+            // planet icon reads BestType.LocalPos, so it follows on its own. ⚠ measured off the
+            // localized title, which can outgrow the stock offset, and set 25 further right than
+            // the caption's own clearance so the icon below it clears the value columns too.
             BestType.SetLocalPos(Math.Max(50 + 275 - 78, 50 + (int)font.TextWidth(Localizer.Token(GameText.NgEnvironmentPreferences)) + 16), 0);
             BestType.Tooltip = GameText.NgBestPlanetTypeTooltip;
             
@@ -78,7 +76,7 @@ namespace Ship_Game.GameScreens.NewGame
                     return Color.White;
                 };
                 var se = list.AddSplit(key, val);
-                se.Split = 75; // maintainer: values -5 in each column
+                se.Split = 75; // values -5 in each column (maintainer feedback)
                 EnvSplits.Add((se, key));
                 return val;
             }
@@ -95,17 +93,17 @@ namespace Ship_Game.GameScreens.NewGame
             AddEnvSplitter(column2, "{Desert}: ", () => EnvDesert);
             AddEnvSplitter(column2, "{Barren}: ", () => EnvBarren);
 
-            // the split clears the widest LOCALIZED category label (French sweep:
-            // 'Marécageuse' overran the stock 75)
+            // ⚠ the split clears the widest LOCALIZED category label: a translated name can run
+            // past the stock 75
             float maxKeyW = 75f;
             foreach (var (_, k) in EnvSplits) maxKeyW = Math.Max(maxKeyW, k.Size.X + 8f);
             foreach (var (se2, _) in EnvSplits) se2.Split = maxKeyW;
 
-            // Ludoal fork (maintainer): the caption heads the FOUR columns under it - two labels
-            // and their two values - so it CENTRES on them rather than sitting at a fixed indent.
-            // It can only do so here, once the split above has settled on the widest localized
-            // label. Their span runs from the first label's left to the last value's right, the
-            // split being where a value starts and "0.00" the widest one these rows print.
+            // Ludoal fork (maintainer feedback): the caption heads the FOUR columns under it -
+            // two labels and their two values - so it CENTRES on them rather than sitting at a
+            // fixed indent. ⚠ only possible here, once the split above has settled on the widest
+            // localized label. The span runs from the first label's left to the last value's
+            // right, the split being where a value starts and "0.00" the widest one printed.
             float colsRight = Col2X + maxKeyW + font.TextWidth("0.00");
             Title.SetLocalPos((int)((Col1X + colsRight - Title.Size.X) / 2), 0);
             UpdatePreferences(raceSummary);

@@ -123,8 +123,8 @@ namespace Ship_Game
 
             ExoticRect = new Rectangle(RightRect.X - 17, Housing.Y + 130, 182, 25);
             ExoticResourceIconRect = new Rectangle(RightRect.X - 17, Housing.Y + 165, 20, 20);
-            // the colony arrows flank the name line, just outside the sprite column - pushed 10px
-            // further out on each side (maintainer feedback) so they clear the name
+            // the colony arrows flank the name line, just outside the sprite column and clear of
+            // the name (maintainer feedback).
             // plain buttons, not toggles - see ColonyScreen's pair
             PrevColony = new UIButton(new UIButton.StyleTextures("SelectionBox/button_arrow_left", "SelectionBox/button_arrow_left_hover"),
                                       new Vector2(14, 20), "")
@@ -234,9 +234,9 @@ namespace Ship_Game
         void OnChangeColony(int change)
         {
             // Ludoal fork (bench 432): the arrows walk the SHARED spatial order - the same
-            // SpatialColonyOrder the Colonies table and the keyboard tour read. One
-            // arithmetic, written once; this walk used to keep a private planet-position
-            // key that let an orbit contaminate the distance.
+            // SpatialColonyOrder the Colonies table and the keyboard tour read. ⚠ one arithmetic,
+            // written once: a private planet-position key here lets an orbit contaminate the
+            // distance.
             Planet[] planets = P.Owner.SpatialColonyOrder();
 
             int idx = System.Array.IndexOf(planets, P);
@@ -271,18 +271,18 @@ namespace Ship_Game
             0f.SmoothStep(1f, TransitionPosition);
             ToolTipItems.Clear();
             ToolTipItems.Add(new TippedItem(PopRect, GameText.PopulationInBillionsVsMax));
-            // Wishlist: the retired Planet Info screen's prose rides the planet image -
-            // flavor text on wild planets, development status on owned ones (same field).
-            // bench 460: the colony and ground-combat buttons sit ON the image - while
-            // one of them is hovered, the prose yields (their Hover is fed by HandleInput)
+            // the Planet Info prose rides the planet image - flavor text on wild planets,
+            // development status on owned ones (same field). ⚠ the colony and ground-combat
+            // buttons sit ON the image: while one is hovered the prose yields, their Hover
+            // being fed by HandleInput (bench 460).
             if (P.IsExploredBy(Player) && P.Description.NotEmpty() && !Inspect.Hover && !Invade.Hover)
                 ToolTipItems.Add(new TippedItem(PlanetIconRect, P.Description));
 
-            // Ludoal fork (maintainer feedback): the minimap's recipe instead of the sculpted
-            // unitselmenu texture - a near-opaque flat ground and a rounded grey rule. The
-            // housing keeps its size - every inner anchor is an offset from it - only the
-            // visible frame shrinks. One fixed plate for every status, the unexplored page
-            // included - only the content degrades down the ladder.
+            // Ludoal fork (maintainer feedback): the minimap's recipe rather than the sculpted
+            // unitselmenu texture - a near-opaque flat ground and a rounded grey rule. ⚠ the
+            // housing keeps its size (every inner anchor is an offset from it); only the visible
+            // frame shrinks. One fixed plate for every status, the unexplored page included -
+            // only the content degrades down the ladder.
             bool explored = P.IsExploredBy(Player);
             PlateTop = Housing.Y + FrameShave;
             var frame = new Rectangle(Housing.X, PlateTop, Housing.Width - RightTrim, Housing.Height - FrameShave);
@@ -304,7 +304,7 @@ namespace Ship_Game
             int frameRight = Housing.Right - RightTrim;
             // the faction flag keeps its own right anchor; the pop block anchors LEFT, 20px
             // right of the arrow, so its variable width stops moving every icon column keyed on it
-            var flagRect = new Rectangle(frameRight - 32, Housing.Y + TopLineIconY, 26, 26); // maintainer: +8px right, holding until the cartouche rework
+            var flagRect = new Rectangle(frameRight - 32, Housing.Y + TopLineIconY, 26, 26); // +8px right of the frame edge (maintainer feedback)
             Empire flagOwner = !explored ? null : P.Owner ?? (P.IsMineable ? P.Mining.Owner : null);
             if (flagOwner != null)
                 batch.Draw(ResourceManager.Flag(flagOwner), flagRect, flagOwner.EmpireColor);
@@ -444,7 +444,7 @@ namespace Ship_Game
             }
             else if (P.Owner == null)
             {
-                // the exotic block rides the slider zone, kept as it was on the compact card
+                // the exotic block rides the slider zone, on the compact card's own anchors
                 ExoticRect = new Rectangle(LaborX + 10, Housing.Y + 120, 182, 25);
                 ExoticResourceIconRect = new Rectangle(LaborX + 10, Housing.Y + 155, 20, 20);
                 if (P.IsResearchable)
@@ -534,7 +534,7 @@ namespace Ship_Game
             // the shared header already drew the rig owner's flag in the flag slot
             batch.Draw(P.Mining.ExoticResourceIcon, ExoticResourceIconRect);
             // Ludoal fork (maintainer feedback): the resource name gets its own line, with Richness
-            // on the next - three stat lines now, the deploy count last.
+            // on the next - three stat lines, the deploy count last.
             Vector2 resourceStatName    = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 2);
             Vector2 resourceStatRich    = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 17);
             Vector2 resourceStatRefine  = new Vector2(ExoticResourceIconRect.X + 23, ExoticResourceIconRect.Y + 32);
@@ -554,9 +554,9 @@ namespace Ship_Game
             if (P.Mining.Owner != null && P.Mining.Owner != Player)
                 return;
 
-            // Ludoal fork (maintainer feedback): the deploy button carries the in-progress count and
-            // wears amber; it disappears once the deployed stations reach the max, so the
-            // "In Progress" line is gone - the button says it.
+            // Ludoal fork (maintainer feedback): the deploy button carries the in-progress count
+            // and wears amber; it disappears once the deployed stations reach the max, and it is
+            // the only place that count is stated.
             if (numDeployed >= Mineable.MaximumMiningStations)
                 return;
 
@@ -664,9 +664,9 @@ namespace Ship_Game
                     return true;
             }
             // Ludoal fork (maintainer feedback): RIGHT-click the Send Troops button recalls ONE
-            // incoming troop ship - copied verbatim from the Planets table's working right-click
-            // (SendTroops.HitTest at the TOP of HandleInput, using the element's HitTest not
-            // .Rect.HitTest, and NOT gated by the owner/at-war context that hid it before).
+            // incoming troop ship, the same gesture as the Planets table. ⚠ tested at the TOP of
+            // HandleInput, with the element's own HitTest rather than .Rect.HitTest, and never
+            // gated by the owner/at-war context.
             if (input.RightMouseClick && BtnSendTroops.Visible && BtnSendTroops.HitTest(input.CursorPosition))
             {
                 if (RecallOneIncomingTroopShip())
