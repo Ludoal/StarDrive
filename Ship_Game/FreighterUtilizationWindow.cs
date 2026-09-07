@@ -523,9 +523,6 @@ namespace Ship_Game
             public int NeedRuns { get; private set; }
             public void SetNeed(int runs) => NeedRuns = runs;
             public int ServedBerths { get; private set; }
-            // ★ a run needs a berth at BOTH ends, so what the fleet can actually do is the smaller
-            // of the two. Import berths alone are a ceiling: a galaxy can offer 29 places to unload
-            // production while a single planet is able to send any.
             public int Runs => NeedRuns;
             public int ServedImporting { get; private set; }
             public int ServedExporting { get; private set; }

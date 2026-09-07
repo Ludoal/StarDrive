@@ -29020,7 +29020,7 @@ TzRequired:
 TzRequiredTip:
  Id: 7215
  ENG: "Freighters needed to keep these colonies supplied: what they consume over a delivery, plus the room left in their stores. See Inbound for how much of it is actually on its way."
- FRA: "Cargos nécessaires pour approvisionner ces colonies : ce qu'elles consomment le temps d'une livraison, plus la place restant dans leurs réserves. Voir Inbound pour ce qui est réellement en route."
+ FRA: "Cargos nécessaires pour approvisionner ces colonies : ce qu'elles consomment le temps d'une livraison, plus la place restant dans leurs réserves. Voir En route pour ce qui est réellement en route."
 TzInbound:
  Id: 30147
  ENG: "Inbound"
@@ -29071,8 +29071,8 @@ TzExporters:
  FRA: "Exportateurs"
 TzImportersTip:
  Id: 30159
- ENG: "Colonies of this zone waiting for a delivery, out of those that import this good."
- FRA: "Colonies de cette zone en attente de livraison, sur celles qui importent ce bien."
+ ENG: "Worlds of this zone that need this good and currently have at least one freighter on the way, over all worlds that need it."
+ FRA: "Mondes de la zone qui manquent de ce bien et ont au moins un cargo en route, sur tous ceux qui en manquent."
 TzExportersTip:
  Id: 30160
  ENG: "Colonies with a surplus of this good that freighters may load from."
