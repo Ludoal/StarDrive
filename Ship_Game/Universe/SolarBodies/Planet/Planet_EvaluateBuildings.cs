@@ -996,7 +996,15 @@ namespace Ship_Game
             float fullRateIncome = newPop * Money.IncomePerColonist * Money.TaxRateMultiplier;
             bool popPressure = PopulationRatio >= 0.85f && EstimatedPopGrowthPerTurn > 0f
                                && bioUpkeep <= BiospherePaybackShare * fullRateIncome;
-            var wanted = GetBuildingsListToChooseFrom(BuildingsCanBuild);
+            // what the colony may actually RAISE on the ground it would gain: nothing under a
+            // mandate that forbids building, the plan alone under Blueprint only. The free
+            // catalogue used to answer here even when no free path could spend the tile, and a
+            // biosphere was paid for a square that stayed empty (audit, bench 603).
+            IReadOnlyList<Building> wanted =
+                !MayBuildCivilian      ? (IReadOnlyList<Building>)Empty<Building>.Array
+              : BuildsOnlyTheBlueprint ? (HasBlueprints ? (IReadOnlyList<Building>)Blueprints.PlannedBuildingsWeCanBuild
+                                                       : (IReadOnlyList<Building>)Empty<Building>.Array)
+              : GetBuildingsListToChooseFrom(BuildingsCanBuild);
             bool needsGround = FreeHabitableTiles == 0 && wanted.Count > 0
                                && budget >= bioUpkeep + wanted.Min(b2 => b2.ActualMaintenance(this));
 
