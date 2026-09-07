@@ -41,11 +41,11 @@ namespace Ship_Game
             if (Zone.Exclusive)
             {
                 // the padlock FOLLOWS the name it qualifies (maintainer feedback), so a column of
-                // names reads straight down its own left edge whatever the regime. The name is
-                // placed by the SAME helper a plain cell uses - the two rows line up by
-                // construction - and the mark closes on the TEXT's width, never on the label's
-                // Size: a UILabel only ever grows, so an anchor taken from it would keep the mark
-                // out where the longest name ever loaded had left it (bench 554).
+                // names reads straight down its own left edge whatever the regime. The name is placed
+                // by the SAME helper a plain cell uses, so the two rows line up by construction.
+                // ⚠ The mark closes on the TEXT's width, never on the label's Size: a UILabel only ever
+                // grows, so an anchor taken from it would keep the mark out where the longest name
+                // loaded had left it.
                 Vector2 namePos = UITable.CellPos(Fonts.Arial12Bold, cols[0].Rect, Y, Height,
                                                   Zone.Name, cols[0].Align);
                 Label(namePos, Zone.Name, Fonts.Arial12Bold, color);
@@ -66,12 +66,9 @@ namespace Ship_Game
             LayOutColonyNames(cols[2].Rect, color);
 
             // ★ the RAW need, never the dispatch quota: a zone whose ground has run dry has a
-            // quota of nought, and "I want nothing" must not be written like "nobody can serve me".
-            // ⚠ it carries NO colour of its own: a demand is not a result. Colouring it on "is this
-            // servable" while the overlay colours the same figure on "is this served" put one
-            // number in two colours across two screens - defensible, and it needed four lines to
-            // defend, which is what condemned it. Inbound next door is the indicator (maintainer
-            // feedback, bench 594).
+            // quota of nought, and "I want nothing" must not read like "nobody can serve me".
+            // ⚠ it carries NO colour of its own - a demand is not a result; inbound next door is
+            // the indicator (bench 594).
             Cell(cols[3], Zone.RawNeed.ToString(), color).Tooltip = GameText.TzRequiredTip;
             int inbound = Zone.ActiveFreighters(Player);
             Cell(cols[4], inbound.ToString(), FreighterUtilizationWindow.PairColor(inbound, Zone.RawNeed))
@@ -112,10 +109,10 @@ namespace Ship_Game
             // ⚠ the arrows are drawn at the row's icon size, not at their texture's own: left to
             // themselves they come out taller than the pencil and the bin beside them.
             // ⚠⚠ and the position they are given is NOT the icon's top: the placer adds a hard
-            // fifteen - a centring from the days of 30px rows - and then centres the icon on that
-            // by itself. So what it wants here is the row's centre minus those fifteen, and any
-            // half-icon of our own would be counted twice (bench 578). The pencil and the bin next
-            // to them take no such detour: they are buttons placed on the real centre.
+            // fifteen and then centres the icon on that by itself. So what it wants here is the
+            // row's centre minus those fifteen, and a half-icon of our own would be counted twice
+            // (bench 578). The pencil and the bin take no such detour: they are buttons placed on
+            // the real centre.
             const int ArrowIcon = 17, PlacerCentre = 15;
             AddUp(new Vector2(lane + 4 - X, centreY - PlacerCentre - Y), GameText.TzMoveUpTip,
                   () => Screen.MoveZone(Zone, up: true), ArrowIcon);
@@ -129,9 +126,8 @@ namespace Ship_Game
             base.PerformLayout();
         }
 
-        // ⚠ ONE source for the padlock's footprint: the row draws from it and the page WIDENS the
-        // name column by it. Measured on the names alone, the column was too narrow by exactly
-        // this much and long names ran under their neighbour (bench 561).
+        // ⚠ ONE source for the padlock's footprint: the row draws from it and the page WIDENS
+        // the name column by it, or long names run under their neighbour (bench 561).
         public const int LockSize = 16, LockGap = 6, LockLane = LockSize + LockGap;
 
         // Owned over target, in one cell. A soft zone owns nothing by construction, so it shows
@@ -140,14 +136,10 @@ namespace Ship_Game
         // draws, not on a bare count.
         public static string TargetAndOwned(TradeZone zone, Empire player)
         {
-            // ⚠ an EXCLUSIVE zone shows the number Auto RESOLVES TO, never the word: "Auto (0)"
-            // is a gap the player cannot read, "12 (0)" is twelve hulls missing (maintainer
-            // feedback). The word keeps its place in the tooltip.
-            // ⚠ ON AUTO THE CELL SHOWS THE WORD, NOT THE FIGURE - and that is not a gap, it is
-            // the absence of a repetition: on Auto the target IS the Need, printed two columns to
-            // the left. What the cell alone can say is the MODE, chosen or resolved, and a figure
-            // here would erase it to repeat something already on screen. A hand-set target does
-            // print its number, because there it differs from the Need (maintainer feedback).
+            // ⚠ ON AUTO THE CELL SHOWS THE WORD, NOT THE FIGURE: on Auto the target IS the Need,
+            // printed two columns to the left, so a figure here would only repeat it. What this
+            // cell alone can say is the MODE. A hand-set target prints its number, because there it
+            // differs from the Need (maintainer feedback).
             string target = zone.Quota > 0 ? zone.Quota.ToString()
                                            : Localizer.Token(GameText.PolFreighterRefitAuto);
             // a soft zone owns nothing, so it shows the setting alone rather than a bracket

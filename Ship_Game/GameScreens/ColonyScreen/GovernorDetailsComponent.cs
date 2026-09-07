@@ -50,12 +50,9 @@ namespace Ship_Game
         UIButton BuildShipyard;
         UIButton LoadBlueprints, MoveOnBlueprints;
         // Ludoal fork (maintainer feedback): the plan's mode. DERIVED, never stored - a colony
-        // either has a plan of its own or it does not - and Auto, which defers to the empire's
-        // table of default plans per governor type (Policies > Colony). Auto shipped only once
-        // that table existed: an option that points at nothing is an option that lies.
-        // Auto is a POSITION, not a stored value: this enum only ever describes what the list
-        // shows. The colony's truth is Planet.GovBlueprintAuto plus whether it carries a plan,
-        // which is why adding a member here touches no save.
+        // either has a plan of its own or it does not - and Auto defers to the empire's table
+        // of default plans per governor type (Policies > Colony). ⚠ The colony's truth is
+        // Planet.GovBlueprintAuto plus whether it carries a plan, so a new member touches no save.
         public enum BlueprintMode { None, Custom, Auto }
         DropOptions<BlueprintMode> BlueprintModeList;
         bool ModeListWasOpen;
@@ -87,11 +84,9 @@ namespace Ship_Game
         ProgressBar GrdBudgetBar;
         ProgressBar SpcBudgetBar;
         // Ludoal fork (maintainer feedback): one line per area - an Auto toggle and a monetary
-        // slider each. A single pot split by linked shares meant setting one area MOVED the
-        // other two, which the padlocks then tried to compensate; three independent amounts
-        // remove the coupling instead of managing it. Each slider runs 0 to max(2x its own
-        // auto target, 20) - manual is mostly used to boost, so the room above target is the
-        // point of it.
+        // slider each, three independent amounts with no coupling between them. Each slider runs
+        // 0 to max(2x its own auto target, 20): manual mostly boosts, so the room above target is
+        // the point of it.
         FloatSlider CivBudgetSlider, GrdBudgetSlider, SpcBudgetSlider;
         UICheckBox AutoCiv, AutoGrd, AutoSpc;
 
@@ -99,8 +94,8 @@ namespace Ship_Game
             BlueprintsLink, BlueprintsLinkName;
         UIPanel BlueprintsLinkIcon;
         // Ludoal fork (maintainer feedback): the exclusive flag as a padlock rather than a
-        // line of text - it arms demolitions, so it stays in the façade, but it costs a row
-        // in a column that no longer has rows to spare.
+        // line of text - it arms demolitions, so it stays in the façade, and the column has no
+        // row to spare for a text line.
         UIPanel BlueprintsExclusiveIcon, BlueprintsLinkExclusiveIcon;
         // what a plan's name may take before it reaches the padlock's column, set by the layout
         float BpNameWidth;
@@ -159,7 +154,7 @@ namespace Ship_Game
                 Planet.RefreshBuildingsWeCanBuildHere();
 
             // Full size at every width: the column is FIXED on the tab measure, identical at
-            // 900p and 1080p - a width-based font fold piloted nothing.
+            // 900p and 1080p, so the font does not fold with the width.
             Font    = Font12;
             FontBig = Font14;
 
@@ -170,15 +165,14 @@ namespace Ship_Game
             BluePrintsIcon   = Add(new UIPanel(ResourceManager.Texture("NewUI/blueprints")));
             // Ludoal fork (maintainer feedback): the row names its control instead of repeating
             // the governor's own name - the picker beside it already says which type it is.
-            // A static label also settles the picker's X: a UILabel only ever grows, so a title
-            // that changed with the type pushed the picker right and never brought it back.
+            // ⚠ A static label also settles the picker's X: a UILabel only ever grows, so a title
+            // that varies with the type pushes the picker right and never brings it back.
             WorldType        = Add(new UILabel(GameText.GovernorTypeLabel, Font, Color.Wheat));
             // Ludoal fork: Font, not Font12 - GetParsedDescription wraps with Font; a wider
             // font here overruns the frame below 1920.
             WorldDescription = Add(new UILabel(Font));
-            // bench 457 (maintainer): the inline description leaves the GOVERNOR tab
-            // entirely - the Description sub-tab owns the portraits now, and the freed
-            // space is reserved for future policy levers
+            // the inline description stays hidden: the Description sub-tab owns the prose, and the
+            // space here is reserved for policy levers (bench 457)
             WorldDescription.Visible = false;
             // Ludoal fork (maintainer feedback): every row of this block names a control, so it
             // wears the standard font and the same label colour. No colon before a list or a bar -
@@ -196,9 +190,8 @@ namespace Ship_Game
             BlueprintsLinkName      = Add(new UILabel("", Font, Color.White));
             BlueprintsLinkName.Tooltip = GameText.BpOpenOnDoubleClickTip;
             BlueprintsLinkIcon      = Add(new UIPanel(ResourceManager.Texture("NewUI/blueprints")));
-            // the successor wears the padlock too when IT is exclusive (maintainer bench 555):
-            // the plan that comes next takes the same command, and the player decides to chain
-            // to it long before it arrives
+            // the successor wears the padlock too when IT is exclusive (bench 555): the linked plan
+            // takes the same command, and the player chains to it well before it arrives
             BlueprintsLinkExclusiveIcon = Add(new UIPanel(ResourceManager.Texture("NewUI/icon_lock")));
             BlueprintsLinkExclusiveIcon.Tooltip = GameText.ExclusiveBlueprints;
 
@@ -246,8 +239,7 @@ namespace Ship_Game
             // added AFTER their labels: children draw in the order they were added, and an
             // open list has to cover what sits below it
             // one factory for both ends: the colony's picker carries Auto, the empire's - on
-            // Policies > Colony - does not. Two copies of a list of options is how the two ends
-            // come to disagree about what a mandate means.
+            // Policies > Colony - does not.
             BuildMandateList = Add(MandateDropdown.Make(Planet.GovBuildMandate,
                 m => Universe.RunOnSimThread(() => Planet.SetBuildMandate(m)), withAuto: true,
                 deferredTo: Planet.Owner?.EmpireBuildMandate));
@@ -255,15 +247,13 @@ namespace Ship_Game
                 m => Universe.RunOnSimThread(() => Planet.SetScrapMandate(m)), withAuto: true,
                 deferredTo: Planet.Owner?.EmpireScrapMandate));
 
-            // Ludoal fork (maintainer feedback): the blueprint gestures wear the icons the
-            // construction list already uses for the same verbs - plus to bring one in, cross to
-            // drop it. The PENCIL is gone (bench 554): the plan names open themselves on a double
-            // click, so an icon whose only job was "open this" said twice what one gesture says.
-            // ⚠ bench 524: an OPEN dropdown does not draw the entry that is already active - its
-            // rect is zeroed - so Custom cannot be re-picked while the colony is already on
-            // Custom, and there is no event to fire. The picker is the door out of Auto or None;
-            // once inside Custom the add icon is the door, and it shows only there. One door per
-            // state, still, but the state decides which one.
+            // Ludoal fork: the blueprint gestures wear the icons the construction list already uses
+            // for the same verbs - plus to bring one in, cross to drop it. Plan names open on a
+            // double click, so no icon repeats that gesture.
+            // ⚠ an OPEN dropdown does not draw the entry that is already active - its rect is
+            // zeroed - so Custom cannot be re-picked while the colony is already on Custom, and no
+            // event fires. The picker is the door out of Auto or None; once inside Custom the add
+            // icon is the door, and it shows only there (bench 524).
             LoadBlueprints = BpIconButton("NewUI/icon_build_add", GameText.UploadBluprintsTip, OnLoadBlueprintsClicked);
             BlueprintModeList = Add(new DropOptions<BlueprintMode>(100, 18));
             BlueprintModeList.AddOption(option: GameText.BlueprintModeAuto, BlueprintMode.Auto);
@@ -275,10 +265,8 @@ namespace Ship_Game
                 { Tooltip = GameText.BlueprintModeTip });
 
             ButtonUpdateTimer    = 1;
-            // Ludoal fork (maintainer bench 554): the ARROW, and permanently at its post. It used
-            // to appear only once the plan had stalled - but handing a colony over is a decision
-            // the player may take at any point, not only when the game says they may. It still
-            // needs somewhere to go, so it keeps its one condition: a linked plan.
+            // Ludoal fork (bench 554): the ARROW is permanently at its post - handing a colony over
+            // is a decision the player may take at any point. Its one condition is a linked plan.
             const string moveOnTex = "SelectionBox/button_arrow_right";
             MoveOnBlueprints = Add(new UIButton(new UIButton.StyleTextures(moveOnTex, moveOnTex + "_hover"),
                                                 Vector2.Zero, "")
@@ -348,9 +336,8 @@ namespace Ship_Game
 
             Tabs = Add(new Submenu(rect, new LocalizedText[]
             {
-                // Ludoal fork (maintainer feedback): the BP tab folded into GOVERNOR. A colony's
-                // plan is part of how it is governed, and the right-hand column had the room -
-                // the description label that used to sit there is hidden (bench 458).
+                // Ludoal fork: the blueprints live in the GOVERNOR tab - a colony's plan is part of
+                // how it is governed, and the right-hand column carries it (bench 458).
                 GameText.Governor, GameText.Budget, GameText.Defense2
             }));
 
@@ -366,18 +353,18 @@ namespace Ship_Game
         {
             const int GovRowPitch = 20; // the Governor tab row step, written once
             // Defense tab button step, written once so the troop column and the orbital
-            // column cannot drift apart (bench 506: the block sat 5px low and 34 was airy).
+            // column cannot drift apart (bench 506)
             const int DefButtonPitch = 29;
             float aspect  = PortraitSprite.Size.X / PortraitSprite.Size.Y;
-            // the toggles ride under the portrait, which is why its height is taken from the
-            // panel: they follow its bottom, and the blueprint row needs the width it leaves.
+            // the toggles ride under the portrait, so its height is taken from the panel: they
+            // follow its bottom, and the blueprint row needs the width it leaves.
             float height  = (float)Math.Round(Height * 0.50f);
             Portrait.Size = new Vector2((float)Math.Round(aspect*height), height);
-            // Ludoal fork: all four tabs lay their content out from this one value, so they
-            // cannot disagree. It follows the tab bar's real bottom, which matters because
-            // Submenu wraps its tabs onto a second row once they no longer fit the width - a
-            // fixed offset would put every tab's content under the tabs themselves. The 30f is
-            // the single-row spacing, used while Tabs is not built yet.
+            // Ludoal fork: every tab lays its content out from this one value, so they cannot
+            // disagree. ⚠ It follows the tab bar's real bottom: Submenu wraps its tabs onto a
+            // second row once they do not fit the width, and a fixed offset would put every tab's
+            // content under the tabs themselves. The 30f is the single-row spacing, used while Tabs
+            // is not built yet.
             float contentTop = Tabs != null ? Tabs.ClientArea.Y - Y + 4 : 30f;
             float shift = contentTop - 30f; // what the extra tab rows add
             Portrait.Pos  = new Vector2(X + 10, Y + contentTop);
@@ -387,21 +374,21 @@ namespace Ship_Game
 
             // Ludoal fork: the right-hand column follows the portrait, whose width is a fraction
             // of the panel height. It keeps a floor (see ColumnX), and the description wraps on
-            // that same value. The type picker rides the TITLE line, to its right - the
-            // description gains the row it occupied and no longer runs over the toggles.
+            // that same value. The type picker rides the TITLE line, to its right, so the
+            // description keeps its own row and stays clear of the toggles.
             WorldType.Pos           = new Vector2(ColumnX, Portrait.Y);
             // Ludoal fork: the colony-type picker sits 20px further right.
             ColonyTypeList.Pos      = new Vector2(Math.Max(WorldType.Right + 12, ColumnX + 130) + 20, Portrait.Y);
             WorldDescription.Pos    = new Vector2(ColumnX, Portrait.Y + 21);
             WorldDescription.Text   = GetParsedDescription();
-            // ── Blueprints, folded into this tab (maintainer feedback) ─────────────────────
-            // They ride the right-hand column, under the world title row. Fixed steps, and every
-            // element is placed FROM them - never from a share of the space that happens to be
-            // left, which moves the whole block the day a row is added above it.
+            // ── Blueprints, in this tab (maintainer feedback) ──────────────────────────────
+            // They ride the right-hand column, under the world title row. ⚠ Fixed steps, and every
+            // element is placed FROM them - never from a share of the space that happens to be left,
+            // which moves the whole block the day a row is added above it.
             const int BpLabelW = 92, BpBarW = 120, BpIconSize = 20;
             float bpX    = ColumnX;
-            // one constant per row rather than a uniform step: a bar row is not as tall as a text
-            // row, and these are the heights the bench gave back. Read off the 520 shot.
+            // one constant per row rather than a uniform step: a bar row is not as tall as a
+            // text row.
             float bpRow0 = Portrait.Y + 20;          // the plan's mode
             float bpRow1 = Portrait.Y + 44;          // the name row: label, icon, name, padlock, gestures
             float bpRow2 = Portrait.Y + 63;          // completion, before the link (maintainer's order)
@@ -418,9 +405,8 @@ namespace Ship_Game
             BluePrintsIcon.Pos      = new Vector2(bpValueX, bpRow1);
             BlueprintsName.Pos      = new Vector2(bpValueX + BpIconSize + 5, bpRow1);
             // ⚠ THE PADLOCK KEEPS A FIXED COLUMN at the right edge, and the name is cut to stop
-            // short of it. Following the name looked tidier and cost the row its stability: a
-            // padlock that walks with every plan loaded gives the eye nothing to return to, and a
-            // long name pushed it off the panel entirely (maintainer feedback).
+            // short of it: a padlock that follows the name walks with every plan loaded, and a long
+            // name pushes it off the panel entirely (maintainer feedback).
             float bpLockX = X + Width - 24;
             BlueprintsExclusiveIcon.Size = new Vector2(16, 16);
             BlueprintsExclusiveIcon.Pos  = new Vector2(bpLockX, bpRow1 + 2);
@@ -440,20 +426,19 @@ namespace Ship_Game
             LoadBlueprints.Pos   = new Vector2(X + Width - 30, bpRow0);
 
             BlueprintsCompletionLbl.Pos     = new Vector2(bpX, bpRow2 + 3);
-            // the bar shows a RATIO of entries, and the base token still promised a percentage
-            // of completion - a fork token says what the two numbers actually count
+            // the bar shows a RATIO of entries, not a percentage: the fork's own token says what
+            // the two numbers count
             BlueprintsCompletionLbl.Tooltip = GameText.BpCompletionTip;
-            // anchored to the panel's right edge: seated at the end of the label-plus-bar run it
-            // overflowed, since that run starts at a column with a floor of its own
+            // anchored to the panel's right edge: the label-plus-bar run starts at a column with a
+            // floor of its own, so its end is not a safe seat
             MoveOnBlueprints.Pos            = new Vector2(Right - 10 - MoveOnBlueprints.Width, bpRow2);
 
             // The warning's BOTTOM lines up with the portrait's bottom - a fixed anchor,
             // whatever the description length. A label draws from its top, so seat its top one
             // line-height above the portrait foot. X stays in the description column beside it.
-            // Ludoal fork (maintainer feedback): one row higher than the portrait foot - the
-            // freed line below carries the Build Mandate dropdown - then dropped clear of the
-            // rows the Governor tab gained, which had crowded the warning against them.
-            const int BudgetWarningDrop = 44; // bench 524: 40 overshot by 7. +11, bench 558
+            // Ludoal fork (maintainer feedback): one row higher than the portrait foot, the line
+            // below carrying the Build Mandate dropdown.
+            const int BudgetWarningDrop = 44; // the drop below that anchor (bench 558)
             BudgetLimitReached.Pos = new Vector2(WorldDescription.X,
                 Portrait.Pos.Y + Portrait.Size.Y - FontBig.LineSpacing - GovRowPitch + BudgetWarningDrop);
 
@@ -473,11 +458,10 @@ namespace Ship_Game
             // Ludoal fork: a checkbox is drawn CENTRED on its Y, so the margin comes from the
             // row's own height rather than a guessed constant. The column sits to the RIGHT of
             // the portrait, on the same left edge as the world title above it. Quarantine and
-            // Prioritized sit UNDER the portrait; the two contextual toggles share their exact
-            // lines at ColumnX.
-            // bench 558: the whole block drops 11px - the two toggles, and with them the two
-            // mandates that take their line. Written as ONE offset so the block moves together
-            // the next time it moves at all.
+            // Prioritized sit UNDER the portrait; the two contextual toggles share their lines
+            // at ColumnX.
+            // ONE offset for the whole block - the two toggles, and the two mandates on their
+            // line, move together (bench 558).
             const int GovBlockDrop = 11;
             Quarantine.Pos          = new Vector2(X + 10, Portrait.Bottom + 14 + GovBlockDrop);
             Prioritized.Pos         = new Vector2(X + 10, Portrait.Bottom + 34 + GovBlockDrop);
@@ -491,8 +475,8 @@ namespace Ship_Game
             BuildMandateList.Pos  = new Vector2(mandateX + MandateLabelW, mandateRow);
             ScrapMandateLabel.Pos = new Vector2(mandateX, mandateRow + GovRowPitch + 2);
             ScrapMandateList.Pos  = new Vector2(mandateX + MandateLabelW, mandateRow + GovRowPitch);
-            // ⚠ anchored to where Quarantine USED to sit: the button keeps its seat while the
-            // block below it drops, which is what was asked for and what the eye expects
+            // ⚠ anchored above GovBlockDrop: the button keeps its seat while the block below
+            // it drops
             BuildCapital.Pos        = new Vector2(ColonyTypeList.Right + 50, Quarantine.Pos.Y - 35 - GovBlockDrop);
 
             // Defense tab. These six buttons follow their own column, so the panel's height
@@ -518,7 +502,7 @@ namespace Ship_Game
             CallTroops.Pos        = new Vector2(TopLeft.X + DefColLeft, defRow + 2*DefButtonPitch);
             ColonyRank.Pos        = new Vector2(TopLeft.X + DefColRight, defFirstRow);
             NoGovernor.Pos        = ColonyRank.Pos;
-            // the ground-defense checkbox left this column: the orbital pair closes the gap
+            // the orbital pair holds this column on its own
             GovOrbitals.Pos       = new Vector2(TopLeft.X + DefColRight, defFirstRow + DefRowPitch);
             ManualOrbitals.Pos    = new Vector2(TopLeft.X + DefColRight, defFirstRow + 2*DefRowPitch);
             // the pair is button + its value 125px further: centre the pair, not the button
@@ -534,13 +518,12 @@ namespace Ship_Game
 
             // One row per area, all three identical: bar | slider | amount | Auto.
             // The right edge is written ONCE and the lanes cascade back from it - the fixed
-            // ones first, the slider absorbing what is left.
-            // 4: the Submenu frame is inset ~9px; the maintainer bench took the margin down
-            // to what the paint really needs, and the slider absorbs what the lanes give up.
-            // The figures are drawn by hand, aligned on their decimal point like the Labor
-            // sliders: a proportional font makes right-alignment land the point in a
-            // different place for "8.4" and "14.8". The lane is the integer room left of
-            // the comma plus the fraction right of it.
+            // ones first, the slider absorbing what is left. The 4 is the margin past the
+            // Submenu frame's ~9px inset.
+            // ⚠ The figures are drawn by hand, aligned on their decimal point like the Labor
+            // sliders: a proportional font makes right-alignment land the point in a different
+            // place for "8.4" and "14.8". The lane is the integer room left of the comma plus
+            // the fraction right of it.
             const int AutoW = 52, LaneGap = 6;
             float unitsW  = Font.TextWidth("100");
             float fracW   = Font.TextWidth(".0");
@@ -548,9 +531,8 @@ namespace Ship_Game
             float autoX       = budgetRight - AutoW;
             BudgetCommaX      = autoX - LaneGap - fracW;
             float amountX     = BudgetCommaX - unitsW;
-            // back to +12: pulling the slider left made it overlap the bar it belongs to.
-            // Its extra room comes from the value lane instead, which is measured now
-            // rather than reserved at a guessed width.
+            // +12 clears the bar the slider belongs to; its extra room comes from the value lane,
+            // which is measured rather than reserved at a guessed width.
             float sliderX     = CivBudgetRect.X + CivBudgetRect.Width + 12;
             // +32: the slider track is Width-32; the unused value reserve folds back in
             var sliderSize = new Vector2(amountX - 4 - sliderX + 32, 12);
@@ -588,9 +570,8 @@ namespace Ship_Game
                 }
             };
 
-            // Kept as a shortcut over the three per-area toggles: it flips all of them at once
-            // rather than carrying a state of its own - a second source of truth beside the
-            // rows would drift from them.
+            // a shortcut over the three per-area toggles: it flips all of them at once rather than
+            // carrying a state of its own, which would be a second source of truth beside the rows.
             Prioritized.OnChange = cb =>
             {
                 Universe.RunOnSimThread(() =>
@@ -617,9 +598,9 @@ namespace Ship_Game
         string GetParsedDescription()
         {
             float maxWidth = Right - 10 - ColumnX;
-            // Policies phase 0 (Lek's portraits): the shared note rides once at the head -
-            // budget-bound governance, manual Supply settings always win. Manual colonies
-            // keep their own line without the note.
+            // Policies phase 0: the shared note rides once at the head - budget-bound governance,
+            // manual Supply settings always win. Manual colonies keep their own line without the
+            // note.
             if (Planet.CType == Planet.ColonyType.Colony)
                 return Font.ParseText(Planet.ColonyTypeInfoText, maxWidth);
             return Font.ParseText(Planet.ColonyTypeInfoText.Text + "\n\n" + Localizer.Token(GameText.GovCommonNote), maxWidth);
@@ -664,7 +645,7 @@ namespace Ship_Game
         {
             Planet.CType = type;
             // auto-supplies: placing or changing a governor hands the three flows back to
-            // Auto; the player can still uncheck each toggle after (the governor no longer forces)
+            // Auto; the player may uncheck each toggle after - the governor does not force them
             Planet.AutoFood = Planet.AutoProd = Planet.AutoColonists = true;
             WorldDescription.Text = GetParsedDescription();
             // ⚠ this wipe is MECHANICAL - these two types carry no plan at all (no blueprint can
@@ -694,10 +675,8 @@ namespace Ship_Game
             ApplyBlueprints(template);
         }
 
-        // Ludoal fork (maintainer bench 555): saving from the EDITOR is not a crossing. The plan
-        // is already this colony's, and whoever just ticked Exclusive in the editor did so with
-        // their own hand - warning them about a step they are taking deliberately, on a screen
-        // that shows them the very checkbox, is noise. The prompt belongs to CHOOSING a plan.
+        // Ludoal fork: saving from the EDITOR is not a crossing - the plan is already this
+        // colony's, so no prompt. The confirmation belongs to CHOOSING a plan (bench 555).
         public void OnBlueprintsSaved(BlueprintsTemplate template) => ApplyBlueprints(template);
 
         void ApplyBlueprints(BlueprintsTemplate template)
@@ -742,8 +721,8 @@ namespace Ship_Game
         {
             if (Planet.Owner != null)
             {
-                // bench 458: the DESCRIPTION tab is the only home for governor prose -
-                // this per-frame refresh was resurrecting the label the ctor hides
+                // the DESCRIPTION tab is the only home for governor prose, so this label stays
+                // hidden every frame (bench 458)
                 WorldDescription.Visible   = false;
                 ColonyTypeList.Visible     = GovernorTabView && Planet.OwnerIsPlayer;
                 Portrait.Visible           = GovernorTabView;
@@ -854,14 +833,11 @@ namespace Ship_Game
 
                 // folded into the Governor tab: the blueprint block shows with the portrait
                 bool bpBlock             = GovernorTabView && Planet.OwnerIsPlayer;
-                // ⚠ this condition used to live on the add button, and three other elements read
-                // their own visibility off it. The button is gone; the condition is not.
+                // ⚠ a named condition: several elements read their own visibility off it
                 bool bpRow = bpBlock && GovernorOn && Planet.CType != Planet.ColonyType.TradeHub;
                 // only under Custom: everywhere else the picker's own Custom entry is the door
                 LoadBlueprints.Visible   = bpRow && CurrentBlueprintMode == BlueprintMode.Custom;
-                // the pencil carried this condition and five elements read their visibility off
-                // it. The button is gone; the condition is named, which is what should have
-                // happened the first time this very comment was written, one button ago.
+                // the plan's own condition, read by several elements for their visibility
                 bool bpPlan = bpBlock && Planet.HasBlueprints;
                 BlueprintModeLabel.Visible = BlueprintModeList.Visible = bpRow;
                 // the list mirrors the colony's real state; setting it only when it differs keeps
@@ -1096,9 +1072,9 @@ namespace Ship_Game
 
         void OnCreateBlueprintsClicked(UIButton b)
         {
-            // an Array, not a set: the plan carries an order now. A snapshot has no chronology of
-            // its own - it photographs what stands - so the tiles' own order is the starting point
-            // and the player rearranges it in the design screen.
+            // an Array, not a set: the plan carries an order. A snapshot has no chronology of its
+            // own - it photographs what stands - so the tiles' own order is the starting point and
+            // the player rearranges it in the design screen.
             var potentialBuildings = new Array<string>(
                 Planet.TilesList.FilterSelect(t => t.BuildingOnTile
                     && t.Building.IsSuitableForBlueprints
@@ -1115,7 +1091,7 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork (maintainer bench 554): the one road into the Blueprints page from here.
+        // Ludoal fork (bench 554): the one road into the Blueprints page from here.
         // Same round trip as Snapshot - the colony screen steps aside and is handed back after.
         void OpenBlueprints(BlueprintsTemplate template)
         {
@@ -1235,15 +1211,14 @@ namespace Ship_Game
             var plan = Planet.Blueprints;
             BlueprintsCompletion.Max = plan.PlannedCount.LowerBound(1);
             BlueprintsCompletion.Progress = plan.BuiltCount;
-            // Ludoal fork (maintainer bench 554): the bar says what the Colonies ratio says - a
-            // plan whose reachable part is all up and whose list is not finished is waiting on
-            // something the colony cannot fix. The bar's fill is a TEXTURE SET, not a colour, and
-            // the five that exist are blue/brown/green/red/yellow: red is the warning of that
-            // palette. Nothing is coloured before the plan has been measured.
+            // Ludoal fork (bench 554): the bar says what the Colonies ratio says - a plan whose
+            // reachable part is all up and whose list is unfinished waits on something the colony
+            // cannot fix, and Blocked only answers once the plan is measured. ⚠ The fill is a
+            // TEXTURE SET, not a colour: the five that exist are blue/brown/green/red/yellow, and
+            // red is the warning of that palette.
             BlueprintsCompletion.color = plan.Blocked ? "red" : "green";
-            // the two numbers and nothing else (maintainer bench 555): the colour already says
-            // the plan is waiting, and the Description tab names the entries that hold it up -
-            // a third statement of the same fact only crowds the bar.
+            // the two numbers and nothing else (bench 555): the colour already says the plan is
+            // waiting, and the Description tab names the entries that hold it up.
             BlueprintsCompletion.OverrideText = $"{plan.BuiltCount}/{plan.PlannedCount}";
             if (Planet.HasBlueprints && Planet.Blueprints.Name != BlueprintsName.Text)
                 UpdateBlueprintsChanged();
@@ -1299,9 +1274,9 @@ namespace Ship_Game
             }
         }
 
-        // Manual is mostly used to BOOST an area, so the room above the auto target is the
-        // point of the slider - not headroom to waste. Floor 20 so a small colony still has
-        // usable travel (maintainer decision).
+        // Manual mostly BOOSTS an area, so the room above the auto target is the point of the
+        // slider - not headroom to waste. Floor 20 so a small colony still has usable travel
+        // (maintainer feedback).
         FloatSlider MakeBudgetSlider(BudgetArea area)
         {
             float seed = AutoTargetFor(area);
@@ -1378,14 +1353,14 @@ namespace Ship_Game
             {
                 BudgetSum.Text      = $"{Localizer.Token(GameText.Total3)} {spent.String(1)}" +
                                       $" {Localizer.Token(GameText.Of)} {budget.TotalAlloc.String(1)} BC/turn";
-                // A budget below 0.5 has no meaningful denominator - the old 0.01 floor turned a
-                // near-zero alloc into absurd percentages (3.5 / 0.01 = 11666.7%). Below the floor
-                // we draw no ratio at all: the total reads plainly, no parenthesis.
+                // A budget below 0.5 has no meaningful denominator - a near-zero alloc gives absurd
+                // percentages (3.5 / 0.01 = 11666.7%). Below the floor no ratio is drawn: the total
+                // reads plainly, no parenthesis.
                 if (budget.TotalAlloc >= 0.5f)
                 {
                     float percentSpent  = spent / budget.TotalAlloc * 100;
                     BudgetPercent.Text  = $" ({percentSpent.String(1)}%)";
-                    BudgetPercent.Pos   = new Vector2(BudgetSum.Pos.X + FontBig.TextWidth(BudgetSum.Text) + 4, BudgetSum.Pos.Y); // follow the total text (BC/turn is wider than the old label)
+                    BudgetPercent.Pos   = new Vector2(BudgetSum.Pos.X + FontBig.TextWidth(BudgetSum.Text) + 4, BudgetSum.Pos.Y); // follow the total text
                     BudgetPercent.Color = GetColor();
                 }
                 else
@@ -1461,10 +1436,9 @@ namespace Ship_Game
             if (Tabs != null && Tabs.Tabs.Count > 3 && Tabs.Tabs[3].Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip("Blueprint");
 
-            // Ludoal fork (maintainer bench 554): double-clicking either plan name - the one in
-            // force or the one it hands over to - opens that plan. Consultation or edit, by the
-            // gesture the rest of the game already uses to open what it is pointing at. The
-            // hovered-plan helper answers WHICH name, so there is no second hit test to keep true.
+            // Ludoal fork (bench 554): double-clicking either plan name - the one in force or the
+            // one it hands over to - opens that plan. The hovered-plan helper answers WHICH name,
+            // so there is no second hit test to keep true.
             if (input.LeftMouseDoubleClick
                 && TryGetHoveredBlueprints(input.CursorPosition, out BlueprintsTemplate hovered))
             {

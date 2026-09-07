@@ -9,7 +9,7 @@ namespace Ship_Game
 {
     public class PopupWindow : GameScreen
     {
-        // Ludoal fork: the frame's own geometry and draw now live in PopupFrame, so a screen that
+        // Ludoal fork: the frame's own geometry and draw live in PopupFrame, so a screen that
         // cannot inherit this class - one that must span the display, or that already derives
         // from something else - still gets THIS surface rather than an approximation of it.
         PopupFrame Frame;
@@ -43,13 +43,11 @@ namespace Ship_Game
                                  GameBase.ScreenHeight / 2 - height / 2, width, height);
         }
 
-        // Ludoal fork (bench 407): kept so a popup can centre on its summoner's page frame
+        // Ludoal fork (bench 407): so a popup can centre on its summoner's page frame
         readonly GameScreen Summoner;
 
         // Ludoal fork (maintainer feedback): a popup IS a page, so a dialog it summons centres
-        // on IT. Without this the popup reported the whole display as its frame, the centring
-        // helper answered "not frame-bound", and a confirmation landed on the display centre
-        // while the box asking the question sat wherever its own page had put it.
+        // on IT rather than on the display.
         public override Rectangle PageFrame => Rect;
 
         // maintainer feedback: a popup is modal - it holds the input, so the player cannot even
@@ -97,7 +95,7 @@ namespace Ship_Game
             RemoveAll();
 
             // Ludoal fork (bench 407): a popup summoned by a frame-bound page centres on that
-            // page's frame by default - callers no longer have to remember to pass CenterOn
+            // page's frame by default, so callers need not pass CenterOn
             CenterOn ??= Summoner?.PageFrameCentre();
 
             Rect = CenterScreen(Rect.Width, Rect.Height);
@@ -135,8 +133,8 @@ namespace Ship_Game
             if (TitleText != null)
             {
                 // Ludoal fork: centred on the WINDOW, not left-aligned - every panel in the game
-                // names itself the same way now. ⚠ Centred on Rect and not on TitleRect: that one
-                // is inset 28 on the left and 56 in width, so centring in it lands off to a side.
+                // names itself the same way. ⚠ Centred on Rect and not on TitleRect: that one is
+                // inset 28 on the left and 56 in width, so centring in it lands off to a side.
                 var pos = new Vector2(Rect.CenterTextX(TitleText, UITheme.WindowTitle),
                                       TitleRect.CenterY() - UITheme.WindowTitle.LineSpacing / 2);
                 TitleLabel = Label(pos.Rounded(), TitleText, UITheme.WindowTitle);

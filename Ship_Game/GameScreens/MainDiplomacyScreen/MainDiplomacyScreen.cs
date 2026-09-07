@@ -250,8 +250,8 @@ namespace Ship_Game
         {
             batch.SafeBegin();
 
-            // Ludoal fork: the frame fill goes down FIRST, by hand. As a Submenu background it is
-            // one of the screen's children, so base.Draw painted it AFTER these columns and covered
+            // Ludoal fork: the frame fill goes down FIRST, by hand. ⚠ As a Submenu background it is
+            // one of the screen's children, so base.Draw would paint it AFTER these columns and cover
             // them - SendToBackZOrder only orders it among the other children.
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(GroupTabs), ScreenGroups.GroupFrameFill);
 
@@ -447,18 +447,17 @@ namespace Ship_Game
             // Status and Trade retired: the TREATIES matrix carries both - each column's rows
             // run against every empire, the player included - and their two lines go to
             // ARTIFACTS, which takes whatever is left.
-            // ⚠ The four slots below are what an empire has ABOUT you and you cannot have
-            // about yourself - reserved rather than skipped: this column has to stay level
-            // with the others, which is why every unavailable value in this screen keeps
-            // its line.
+            // ⚠ The four slots below are what an empire has ABOUT you and you cannot have about
+            // yourself - reserved rather than skipped, so this column stays level with the others.
+            // Every unavailable value in this screen keeps its line.
             if (e == Player)
             {
                 BlankRow(ref y); // (personality slot)
                 BlankRow(ref y); // (trust slot)
                 BlankRow(ref y); // (anger slot)
-                // bench 459 (maintainer): the threat slot carries the ranks' yardstick
-                // instead of staying blank - how many factions (the player included) the
-                // RANK rows below are ranked against, level with the neighbours' Threat
+                // the threat slot carries the ranks' yardstick rather than staying blank - how many
+                // factions (the player included) the RANK rows below are ranked against, level with
+                // the neighbours' Threat (bench 459)
                 Empire[] known = Universe.UState.ActiveMajorEmpires.Filter(x => x.isPlayer || Player.IsKnown(x));
                 FoldingRow(batch, col, ref y, "Known Factions", "Known", known.Length.ToString(), Color.White);
                 return;
@@ -474,16 +473,14 @@ namespace Ship_Game
             }
 
             // Ludoal fork: what this empire actually FEELS about you - the three the negotiation
-            // screen graphs, at a glance and for every empire at once instead of one at a time.
-            // Same colours it uses (green, yellow, red) and the same 0-100 clamp, so the numbers
-            // here and the bars there agree.
-            // NO espionage gate: the negotiation screen has always drawn these three bars for
-            // anyone you can talk to, so gating the same three numbers here would make the
-            // overview say LESS than a screen one click away.
+            // screen graphs, at a glance and for every empire at once. Same colours it uses (green,
+            // yellow, red) and the same 0-100 clamp, so the numbers here and the bars there agree.
+            // NO espionage gate: the negotiation screen draws these three bars for anyone you can
+            // talk to.
             // ⚠ Every path through this draws THREE rows, whatever it can show - the column has to
-            // stay level with its neighbours, and a branch that quietly drew none would shift
-            // every band below it in that one column. An empire we have no relationship with at
-            // all still gets its three placeholders.
+            // stay level with its neighbours, and a branch that drew none would shift every band
+            // below it in that one column. An empire we have no relationship with at all still gets
+            // its three placeholders.
             if (e.GetRelations(Player, out Relationship toUs))
             {
                 BarRow(batch, col, ref y, Localizer.Token(GameText.Trust), toUs.Trust, Color.Green);
@@ -557,9 +554,9 @@ namespace Ship_Game
 
         // POSITION: the empire's rank in each domain — same visibility rules as the
         // legacy screen
-        // a rank unlocks with the DATUM that founds it (maintainer design, Wishlist):
-        // one gate PER ROW, and each row ranks within its OWN pool - the empires whose
-        // matching datum the player can see. The legacy path keeps its single IsKnown gate.
+        // a rank unlocks with the DATUM that founds it (maintainer feedback): one gate PER ROW,
+        // and each row ranks within its OWN pool - the empires whose matching datum the player
+        // can see. The legacy path keeps its single IsKnown gate.
         void DrawPositionBlock(SpriteBatch batch, Empire e, Rectangle col, ref float y)
         {
             float maxY = float.MaxValue;
@@ -605,7 +602,7 @@ namespace Ship_Game
             bool anyIntel = e.isPlayer || UsingNewEspioange || IntelligenceLevel(e) > 0;
 
             // fixed row set, ordered by the infiltration level that unlocks each
-            // datum (player call); hidden values read "---" so every empire's data
+            // datum (player feedback); hidden values read "---" so every empire's data
             // sits on the same line across columns
             if (anyIntel)
                 TableRow(batch, col, ref y, maxY, "Homeworld", Truncate(e.data.Traits.HomeworldName, 90), Color.White);
@@ -626,8 +623,8 @@ namespace Ship_Game
             }
             else if (e != Player)
             {
-                // THEIR network in YOUR empire - the precision follows your own level on
-                // them, which is why the value mixes words and figures
+                // THEIR network in YOUR empire - the precision follows your own level on them, so
+                // the value mixes words and figures
                 float rowY = y;
                 TableRow(batch, col, ref y, maxY, "Spies", espionage.InfiltrationLevelSummary(), Color.White);
                 if (new Rectangle(col.X + 8, (int)rowY, col.Width - 16, Font12.LineSpacing).HitTest(Input.CursorPosition))

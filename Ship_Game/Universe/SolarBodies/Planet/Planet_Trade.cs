@@ -130,7 +130,7 @@ namespace Ship_Game
             if (ManualFoodExportSlots > 0 && Owner == Universe.Player)
                 return ManualFoodExportSlots;
 
-            // a planet LOSING food guarantees no export slot - the last freighter no longer leaves no matter what
+            // a planet LOSING food guarantees no export slot - the last freighter stays, whatever else
             int min = Food.NetIncome < 0 ? 0 : Storage.FoodRatio > 0.75f ? 2 : 1;
             int maxSlots = CType is ColonyType.Agricultural or ColonyType.Colony or ColonyType.TradeHub? 14 : 7;
             int storageSlots = (int)(Storage.Food / Owner.AverageFreighterCargoCap);
@@ -174,23 +174,17 @@ namespace Ship_Game
             return (int)PopulationBillion;
         }
 
-        // ★ THE ONE FOOD RULE, AND NOW THE ONLY ONE. The trade book used to carry a hand copy of
-        // this arithmetic with a comment ordering the next reader to keep the two in step - which
-        // is a promise, not a mechanism, and it was already broken: the copy had neither the round
-        // up nor the spare slot, so the book undercounted by about one hull per importing colony
-        // and the overlay showed more cargo flying than runs wanted (maintainer bench 601).
-        // beforeServing leaves out the cargo already on its way, for the reader that prints that
-        // cargo beside the figure.
+        // ★ THE ONE FOOD RULE: the only owner of this arithmetic, read by the dispatch and by the
+        // trade book alike (bench 601). beforeServing leaves out the cargo already on its way, for
+        // the reader that prints that cargo beside the figure.
         public int GetFoodImportSlots(bool beforeServing = false)
         {
             if (TradeBlocked || !ImportFood)
                 return 0;
 
-            // Ludoal fork (maintainer feedback): every colony now stops ordering food once its
-            // store is over 90% full, governed or not. Freighters were never welcome in a full
-            // warehouse; the rule was simply fenced off behind a setting nobody could name.
-            // A store drains as it is eaten, so the slots reopen on their own - and a starving
-            // colony still outranks everyone in the dispatch order, so prudence cannot starve one.
+            // Ludoal fork (maintainer feedback): every colony stops ordering food once its store is
+            // over 90% full, governed or not. A store drains as it is eaten, so the slots reopen on
+            // their own, and a starving colony still outranks everyone in the dispatch order.
             if (Storage.FoodRatio > 0.9f)
                 return 0;
 
@@ -208,9 +202,7 @@ namespace Ship_Game
         }
 
         // Same as the food rule above: ONE owner for the arithmetic, read by the dispatch and by
-        // the trade book alike. The book's own version counted the yard's queue and nothing else,
-        // while this one also fills the store - which is why the two were furthest apart on
-        // production of all three goods (maintainer bench 601).
+        // the trade book alike - it counts the yard's queue AND fills the store (bench 601).
         public int GetProdImportSlots(bool beforeServing = false)
         {
             if (TradeBlocked || !ImportProd)

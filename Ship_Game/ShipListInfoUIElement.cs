@@ -17,9 +17,9 @@ namespace Ship_Game
 {
     public sealed class ShipListInfoUIElement : UIElement
     {
-        // Ludoal fork: the fleet cartouche wears the standard frame (maintainer bench 320)
-        // - one plate for every cartouche. The orders strip above docks on the visible
-        // frame top, so it re-seats along with it.
+        // Ludoal fork (bench 320): the fleet cartouche wears the standard frame - one plate
+        // for every cartouche. The orders strip above docks on the visible frame top, so it
+        // re-seats along with it.
         const int FrameShave = PlanetInfoUIElement.FrameShave;
         const int BarsLeft = 45; // the fleet bars' left edge (absolute) - Total Strength shares it
         public readonly UniverseScreen Screen;
@@ -81,9 +81,9 @@ namespace Ship_Game
 
             OrdersButtons = new ShipStanceButtons(screen, ordersBarPos);
 
-            // bench 427, the established bound rule: under 1200px of screen height the list
-            // runs down to the frame's bottom; at 1200+ it ALSO climbs one button-height
-            // into the freed second-row space above. One variable, nothing rearranges.
+            // bench 427: under 1200px of screen height the list runs down to the frame's bottom;
+            // at 1200+ it ALSO climbs one button-height into the second-row space above. One
+            // variable, nothing rearranges.
             int topExtra = screen.ScreenHeight >= 1200 ? 52 : 0;
             int listTop = Housing.Y + 85 - topExtra;
             int listBottom = Housing.Y + Housing.Height - 10;
@@ -244,8 +244,8 @@ namespace Ship_Game
             DrawProgressBar(batch, fleetHealthPercent, 100, "green", "StatusIcons/icon_structure", ref barYPos, true);
             DrawProgressBar(batch, fleetOrdnance, fleetOrdnanceMax, "brown", "Modules/Ordnance", ref barYPos);
             DrawProgressBar(batch, fleetShields, fleetShieldsMax, "blue", "Modules/Shield_1KW", ref barYPos);
-            // left-aligned on the bars above - ONE seat for both (they sit at absolute
-            // BarsLeft, not off the housing; the old Housing.X + 45 was 10px adrift)
+            // left-aligned on the bars above - ONE seat for both, at absolute BarsLeft rather
+            // than off the housing
             batch.DrawString(Fonts.Arial12, $"Total Strength: {fleetStr.GetNumberString()}", BarsLeft, barYPos, Color.White);
         }
 
@@ -533,10 +533,9 @@ namespace Ship_Game
             };
             Orders.Add(scrap);
 
-            // bench 427, spec v4.5: the same nature-split the single-ship cartouche wears -
-            // generic orders in the fixed right column, specifics on one top row
-            // bench 429: BOTTOM-aligned for real - the last button's bottom sits 2px off
-            // the frame's bottom, so the alignment reads (see ShipInfoUIElement)
+            // bench 427: the same nature-split the single-ship cartouche wears - generic orders in
+            // the fixed right column, specifics on one top row. BOTTOM-aligned: the last button's
+            // bottom sits 2px off the frame's bottom (see ShipInfoUIElement).
             int generics = Orders.Count(o => o.IsGeneric);
             int colX = ElementRect.X + ElementRect.Width - PlanetInfoUIElement.RightTrim + 8; // bench 431: +4 right
             int colY = ElementRect.Y + ElementRect.Height - 1 - (generics * 52 - 4);         // bench 431: +1 down

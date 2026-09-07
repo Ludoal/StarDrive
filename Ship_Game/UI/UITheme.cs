@@ -13,14 +13,11 @@ namespace Ship_Game
 {
     /// Ludoal fork: the game's UI style in ONE editable file - Content/UI/Theme.yaml.
     ///
-    /// Colours and fonts were spread over 200-odd literals and 800-odd font references, each
-    /// naming an appearance ("Arial12Bold", "new Color(118,102,67)") rather than a role. Retouching
-    /// the look meant finding every site, and two of them always disagreed afterwards. Here a
-    /// screen asks for what a thing IS - a section title, a hostile action, a table's row name -
-    /// and the file decides what that looks like.
+    /// A screen asks for what a thing IS - a section title, a hostile action, a table's row
+    /// name - and the file decides what that looks like, instead of each site naming an
+    /// appearance of its own ("Arial12Bold", "new Color(118,102,67)").
     ///
-    /// It is YAML rather than C# on purpose: editing a colour and relaunching beats editing a
-    /// colour and waiting out a build, which is the whole point when a look is still being found.
+    /// YAML rather than C#: a colour can be changed and the game relaunched without a build.
     [StarDataType]
     public class UIThemeData
     {
@@ -44,17 +41,17 @@ namespace Ship_Game
         // under the drawn corner. Above it, anything goes.
         [StarData] public int TabPadOuter = 9;
         // INNER is the layout STEP inside a panel: the air between a panel and what sits under
-        // it, and the gap a foot notch reckons with. ⚠ It is no longer the text's inset - each
-        // kind of element carries its own default now (TextPad, ListPadLeft).
+        // it, and the gap a foot notch reckons with. ⚠ It is NOT the text's inset - each kind of
+        // element carries its own default (TextPad, ListPadLeft).
         [StarData] public int TabPadInner = 10;
         // The painted plate's height. ⚠ The Wide styles' size reference (UI/dan_button) is
-        // 182x25, so 25 is the plate's own height rather than a number picked for a screen -
-        // maintainer settled on it as the universal one (multiples of 5 reckon easier).
+        // 182x25, so 25 is the plate's own height rather than a number picked for a screen
+        // (maintainer feedback).
         [StarData] public int ButtonHeight = 25;
         // The lane a scroll list reserves on its right for the scrollbar. ⚠ The drawing is not
         // one width: the BAR is 11 wide, the ARROWS 13. 25 leaves 12 clear to the left of the
         // widest part - room for a selection frame - and the bar closes on the list's own edge,
-        // the tab's padding being the margin (maintainer's rule, 1 Sep).
+        // the tab's padding being the margin (maintainer feedback).
         [StarData] public int ScrollbarLane = 25;
         // What a scroll list keeps on its LEFT, inside its own rect. It is the list's own margin,
         // not the panel's: the row's selection frame is drawn in it. A list therefore sits on the
@@ -76,10 +73,10 @@ namespace Ship_Game
         [StarData] public int   CornerRadius = 8;   // how round a button's corners are
         // how the plate is painted: the face fades from top to foot, the rule sits around it.
         // ⚠ These are alphas over whatever is behind - the tint at full strength reads as neon
-        // on a small control, which is why the rule is well under 1.
+        // on a small control, so the rule stays well under 1.
         // ⚠ these are what a button's opacity ACTUALLY is - PlateOpacity multiplies this ramp
-        // rather than replacing it, so at 0.34/0.18 a plate sat between 18 and 34% however high
-        // PlateOpacity read. Raised on the bench's word, keeping the gap that makes the relief.
+        // rather than replacing it, so the ramp bounds the plate whatever PlateOpacity reads.
+        // The gap between top and bottom is what makes the relief.
         [StarData] public float FaceTop      = 0.62f;
         [StarData] public float FaceBottom   = 0.46f;
         [StarData] public float RuleStrength = 0.55f;
@@ -187,8 +184,7 @@ namespace Ship_Game
 
         /// Ludoal fork: THE painted surface of this interface - rounded, top-lit, ruled - drawn
         /// row by row so it is exact at any size. Buttons and window frames both come through
-        /// here; a frame that squared its corners while the buttons inside it rounded theirs was
-        /// the whole of what made the two read as different furniture.
+        /// here, so they read as one family of furniture.
         ///
         /// `face` fills it (alpha applied per row for the relief), `rule` draws the edge and the
         /// arc. A button passes ONE tint for both; a window passes its body and its border, which
@@ -242,10 +238,9 @@ namespace Ship_Game
         }
 
         // ── controls ─────────────────────────────────────────────────────────────────────────
-        /// Ludoal fork: the themed layer the leaf widgets were missing. A slider, checkbox or
-        /// dropdown asks for its outline, panel fill or hover wash here instead of carrying its
-        /// own colour literals - which is how the track and the box ended up two different
-        /// browns. New widgets get the theme for free by drawing through these.
+        /// Ludoal fork: the themed layer for the leaf widgets. A slider, checkbox or dropdown
+        /// asks for its outline, panel fill or hover wash here instead of carrying its own colour
+        /// literals, so a new widget gets the theme for free by drawing through these.
         public static Color ControlOutline(bool hovered = false)
             => hovered ? Theme.ControlOutlineHover : Theme.ControlOutline;
 

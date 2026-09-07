@@ -25,26 +25,23 @@ namespace Ship_Game.Universe.SolarBodies
         public int BuiltCount { get; private set; }
         public int ReachableCount { get; private set; }
         public int NotAchievableCount => (PlannedCount - ReachableCount).LowerBound(0);
-        // Ludoal fork (maintainer bench 554): the three counts above are NOT serialized, so a plan
-        // restored from a save arrives at nought across the board - and nought everywhere satisfies
-        // Blocked's arithmetic by accident (nothing reachable, nothing built, so "everything
-        // reachable is up"). A colony doing its work was announced as stalled until the player
-        // opened its screen, which is what refreshed the counts. Nothing is diagnosed from them
-        // until they have been computed at least once. A FLAG rather than a test on the values:
-        // a plan whose every entry waits on a technology shows the very same zeroes, and it is a
-        // true stall - only the flag tells the two apart (Lek's catch). ⚠ Set by the ONE path
-        // that rebuilds the offer first, never by a bare Refresh() - see RefreshPlannedBuildings-
-        // WeCanBuild for why an empty offer cannot be told from an exhausted one.
+        // Ludoal fork (bench 554): ⚠ nothing is diagnosed from the three counts above until they
+        // have been computed at least once. They are NOT serialized, so a plan restored from a save
+        // arrives at nought across the board, and nought everywhere satisfies Blocked's arithmetic
+        // by accident. A FLAG rather than a test on the values: a plan whose every entry waits on a
+        // technology shows the same zeroes and IS a true stall - only the flag tells the two apart.
+        // ⚠ Set by the ONE path that rebuilds the offer first, never by a bare Refresh() - an empty
+        // offer cannot be told from an exhausted one.
         public bool Measured { get; private set; }
         [StarData] BlueprintsTemplate Template;
 
         public string Name => Template.Name;
         public string LinkedBlueprintsName => Template.LinkTo ?? "";
         public bool Exclusive => Template.Exclusive; // Build only these buildings and remove the rest
-        // ⚠ never dereferenced blind: a template restored from a pre-532 save arrives with no
-        // plan until its own deserialization hook has run, and the hooks fire in an order this
-        // side does not get to choose. An empty plan is a colony with nothing planned - which
-        // is a state the whole class already handles - where a null was a crash mid-load.
+        // ⚠ never dereferenced blind: a template arrives with no plan until its own deserialization
+        // hook has run, and the hooks fire in an order this side does not get to choose. An empty
+        // plan is a colony with nothing planned - a state the whole class already handles - where a
+        // null crashes mid-load.
         static readonly Array<string> NoPlan = new();
         Array<string> PlannedBuildings => Template?.PlannedBuildings ?? NoPlan;
         public ColonyType ColonyType => Template.ColonyType;
@@ -116,15 +113,12 @@ namespace Ship_Game.Universe.SolarBodies
         }
 
         // ⚠ the two figures are shown side by side and share a denominator, so they are
-        // refreshed TOGETHER (maintainer, bench 535). They used to answer to different events -
-        // completion to a building rising or falling, achievability only to a TECH UNLOCK - so a
-        // colony that finished its plan read 100% completed next to a stale 75% achievable, and
-        // the pair stayed wrong until the next technology landed. Two numbers a player compares
-        // cannot be computed at two different moments.
+        // refreshed TOGETHER (bench 535): two numbers a player compares cannot be computed at
+        // two different moments.
         // ⚠ claimed by the ONE site that has just REBUILT the offer - which is not this class.
         // RefreshPlannedBuildingsWeCanBuild is handed a list rather than building one, and the
-        // load path hands it the cache while that cache is still empty: the flag set there was
-        // set on nothing, which is how a paused, freshly loaded game still showed pink.
+        // load path hands it the cache while that cache is still empty, so the flag set there
+        // would be set on nothing.
         public void MarkMeasured() => Measured = true;
 
         public void Refresh()
@@ -139,19 +133,15 @@ namespace Ship_Game.Universe.SolarBodies
             if (totalPlanned == 0) // nothing planned is nothing completed, not a division by zero
             {
                 PercentCompleted = 0;
-                PlannedCount = 0;   // an empty plan inherits nothing from its predecessor (audit, bench 603)
+                PlannedCount = 0;   // an empty plan inherits nothing from its predecessor (bench 603)
                 BuiltCount = 0;
                 return;
             }
 
-            // ⚠ counted by NAME, like the achievable figure beside it (maintainer, bench 535).
-            // It counted building INSTANCES: a colony holding two of the same planned building -
-            // biospheres, terraformers, anything the governor raises more than once - reported
-            // one entry twice and hid a planned building that was never built. A plan showing
-            // 100% completed next to 75% achievable was the achievable one telling the truth.
-            //
-            // The two figures share a denominator, so they must share a unit, or comparing them
-            // means nothing - and completion is what makes a linked plan hand over.
+            // ⚠ counted by NAME, like the achievable figure beside it (bench 535): a colony can hold
+            // two of the same planned building - biospheres, terraformers, anything the governor
+            // raises more than once - so counting instances would report one entry twice. The two
+            // figures share a denominator, so they must share a unit.
             var built = new HashSet<string>();
             foreach (Building b in P.Buildings)
                 if (IsRequired(b))
@@ -164,11 +154,8 @@ namespace Ship_Game.Universe.SolarBodies
 
         // How much of this plan this COLONY can actually end up with.
         //
-        // ⚠ It used to count the empire's unlocked buildings and nothing else (maintainer, bench
-        // 529), so it read the same on every world and promised a completion the colony could
-        // never reach: the ground it stands on was not consulted, and neither were the mandates.
-        // A plan holding military buildings on a colony whose Build Mandate is Economic Only
-        // reported 100% achievable and then stalled for ever, with nothing on screen to say why.
+        // ⚠ counted against THIS colony, not the empire's unlocked buildings: the ground it stands
+        // on and its mandates both bound what it can reach (bench 529).
         //
         // A planned building is reachable when it already STANDS here, or when this colony can
         // raise it and its mandate allows it. Counted by name, since a building can be both
@@ -194,9 +181,9 @@ namespace Ship_Game.Universe.SolarBodies
                     reachable.Add(b.Name);
 
             // a planned building already under construction is reachable by definition, and the
-            // offer it came from no longer lists it: a unique leaves the buildable set the moment
-            // it is queued, so counting only the two sets above calls it unreachable while it is
-            // being raised.
+            // offer it came from does not list it: a unique leaves the buildable set the moment it
+            // is queued, so the two sets above alone would call it unreachable while it is being
+            // raised.
             foreach (QueueItem q in P.ConstructionQueue)
                 if (q.isBuilding && IsRequired(q.Building))
                     reachable.Add(q.Building.Name);
@@ -209,13 +196,9 @@ namespace Ship_Game.Universe.SolarBodies
         // Ludoal fork (maintainer feedback): a completed plan hands over to its link, on the
         // WHOLE list and never the reachable part of it - a plan longer than the ground, or
         // holding a technology not yet taken, would otherwise hand over in the middle of an era.
-        //
-        // A plan with no link STAYS. It costs nothing to keep (the list is read from the top
-        // every turn, there is no state to carry) and it is what rebuilds the colony after a
-        // volcano; standing down would hand a colony back to mandates that may forbid building
-        // anything, which is precisely the guarantee the plan was there to give.
-        //
-        // Checked once per governing turn rather than the moment a building lands: swapping a
+        // A plan with no link STAYS: it costs nothing to keep and it is what rebuilds the colony
+        // after a volcano.
+        // ⚠ Checked once per governing turn rather than the moment a building lands - swapping a
         // plan is a decision about the colony, and a save being read is not the place to take it.
         public void EndIfCompleted()
         {
@@ -229,10 +212,10 @@ namespace Ship_Game.Universe.SolarBodies
             if (!P.HasOutpost && !P.HasCapital)
                 return;
 
-            // ⚠ walked in the PLAN's order, not the colony's. The plan is a chronology now and
-            // this list is what the governor picks from, so its order IS the build order. Walking
-            // the colony's own buildable list would hand back the same buildings arranged by
-            // whatever that list happens to hold - which is how the plan had no say before.
+            // ⚠ walked in the PLAN's order, not the colony's. The plan is a chronology and this list
+            // is what the governor picks from, so its order IS the build order. Walking the colony's
+            // own buildable list would arrange them by whatever that list happens to hold, and the
+            // plan would have no say.
             foreach (string planned in PlannedBuildings)
             {
                 for (int i = 0; i < buildingCanBuild.Count; i++)
@@ -247,13 +230,9 @@ namespace Ship_Game.Universe.SolarBodies
 
             // Ludoal fork (maintainer feedback): what this colony can REACH is read off the very
             // list rebuilt above, so it is recomputed here rather than waiting for a building to
-            // rise or fall. A save being read arrives with that list still empty: every planned
-            // entry then counted as out of reach, and the screen said the plan was stuck.
-            //
-            // ⚠ the WHOLE pair, not the achievable half of it (bench 554): the two figures share a
-            // denominator and the counts behind them are read side by side, so refreshing one of
-            // them here left the other at its load-time nought - which is the very rule written
-            // above Refresh(), and which this line broke the day it was added.
+            // rise or fall - a save being read arrives with that list still empty.
+            // ⚠ the WHOLE pair, not the achievable half of it: the two figures share a denominator
+            // and are read side by side, so they are refreshed together (bench 554).
             Refresh();
         }
 

@@ -109,7 +109,7 @@ namespace Ship_Game.Ships
             // Ludoal fork (wishlist): follow-camera toggle, right of the grid button —
             // same chase as Ctrl+Middle-click, but discoverable
             FollowButton = new ToggleButton(new Vector2(Housing.X + 54, Universe.ScreenHeight - 45),
-                                            ToggleButtonStyle.Formation, "UI/FollowIcon"); // 24x24 — field report 45.42: too big
+                                            ToggleButtonStyle.Formation, "UI/FollowIcon"); // 24x24
 
             // the stance block right-aligns with the bars above it (maintainer feedback)
             float startX = OBar.pBar.X + OBar.pBar.Width - StanceButtons.RowWidth;
@@ -688,16 +688,13 @@ namespace Ship_Game.Ships
                                            : GameText.InterTradeInhibited
                 };
                 Orders.Add(allowInterEmpireTrade);
-                // Ludoal fork (maintainer, 31 Aug '26): ONE control where there were two. The
-                // area of operation and the manual route list were per-ship filters, each with its
-                // own editor; they are trade ZONES now, and a zone is composed in one place. This
-                // button keeps the routes button's seat and icon - it is the same idea, grown up -
-                // and opens the picker rather than putting the map into a drawing mode.
+                // Ludoal fork (maintainer feedback): ONE control for trade zones - a zone is composed
+                // in one place, and this button opens the picker rather than putting the map into a
+                // drawing mode.
                 //
-                // The lamp reports MEMBERSHIP - lit when this hull belongs to a zone (bench 559,
-                // it read unlit whatever the answer) - while the press always opens the picker,
-                // whichever way the toggle thought it was going. The picker is the only writer, so
-                // the lamp cannot disagree with it.
+                // ⚠ The lamp reports MEMBERSHIP - lit when this hull belongs to a zone - while the
+                // press always opens the picker. The picker is the only writer, so the lamp cannot
+                // disagree with it.
                 var zone = new OrdersButton(s, OrderType.DefineTradeRoutes, GameText.TzShipZoneTip)
                 {
                     ValueToModify = new(() => s.InTradeZone,
@@ -778,15 +775,13 @@ namespace Ship_Game.Ships
                 Orders.Add(sc);
             }
 
-            // Ludoal fork (bench 427, spec v4.5): position follows the order's NATURE.
-            // The three GENERIC orders (Resupply, Refit, Scrap - every ship carries them)
-            // stack in a fixed column at the cartouche's RIGHT, in the housing's trimmed
-            // margin - muscle memory, the column never moves. The SPECIFIC orders (trade,
-            // troops, fighters...) take ONE row docked above the visible frame - they come
-            // and go with the ship's type without ever displacing the generics.
-            // bench 429: the column BOTTOM-aligns with the cartouche and it must READ as
-            // such - the visible frame is 186 tall for a 148 column, so any polite margin
-            // looks centered. The last button's bottom sits 2px off the frame's bottom.
+            // Ludoal fork (bench 427): position follows the order's NATURE. The three GENERIC
+            // orders (Resupply, Refit, Scrap - every ship carries them) stack in a fixed column at
+            // the cartouche's RIGHT, in the housing's trimmed margin, so the column never moves.
+            // The SPECIFIC orders (trade, troops, fighters...) take ONE row docked above the visible
+            // frame, coming and going with the ship's type without displacing the generics.
+            // The column BOTTOM-aligns with the cartouche: the visible frame is 186 tall for a 148
+            // column, so the last button's bottom sits 2px off the frame's bottom.
             int generics = Orders.Count(o => o.IsGeneric);
             int colX = ElementRect.X + ElementRect.Width - PlanetInfoUIElement.RightTrim + 8; // bench 431: +4 right
             int colY = ElementRect.Y + ElementRect.Height - 1 - (generics * 52 - 4);         // bench 431: +1 down

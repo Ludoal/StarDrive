@@ -20,8 +20,8 @@ namespace Ship_Game
         readonly SubTexture ScienceIcon = ResourceManager.Texture("NewUI/icon_science");
         readonly Font Font12 = Fonts.Arial12Bold;
 
-        // fixed column steps from the right edge; the delete icon owns the last 20px,
-        // with a 10px breath before it (bench 422); the step widened leftward
+        // fixed column steps from the right edge; the delete icon owns the last 20px, with a
+        // 10px breath before it (bench 422)
         const float ValueColumnStep = 53f;
         const float FirstValueColumnFromRight = 70f;
         const int IconSize = 24;
@@ -91,8 +91,8 @@ namespace Ship_Game
             if (Screen.IsPinnedBuilt(Tile))
                 batch.DrawRectangle(Rect, Color.Gold);
 
-            // NET, as the colony runs (bench 424 arbitration): the building's marginal
-            // contribution through the sim's own pipeline - rows sum to STATS+ totals
+            // NET, as the colony runs (bench 424): the building's marginal contribution through
+            // the sim's own pipeline - rows sum to STATS+ totals
             Screen.BuildingNetYields(b, out float food, out float prod, out float research);
             float credits = Screen.BuildingNetMoney(b); // taxed share + tax-boost cut - maintenance (bench 425)
 

@@ -83,10 +83,9 @@ namespace Ship_Game.UI
 
         public const int SideMargin = 15; // off the frame border; the selection box needs the room on the left
         public const int PadX = 8;        // one character of cell padding
-        // Ludoal fork: the lane after the last column IS the scrollbar's lane, and it was
-        // declared here at 26 while ScrollListBase reserved 24 - two numbers for one margin,
-        // which is why three lists on one screen showed three different gaps. One theme
-        // value now (Theme.yaml, ScrollbarLane).
+        // Ludoal fork: the lane after the last column IS the scrollbar's lane. ⚠ ONE theme value
+        // for it (Theme.yaml, ScrollbarLane) - a second number here and in ScrollListBase gives
+        // one margin two widths.
         public static int SliderLane => UITheme.ScrollbarLane;
         public const int HeaderH = 16;
         public static readonly Color Vanilla = Colors.Cream;
@@ -160,8 +159,8 @@ namespace Ship_Game.UI
             string t = text.Substring(0, len).TrimEnd() + "...";
             while (len > 1 && font.TextWidth(t) > room)
                 t = text.Substring(0, --len).TrimEnd() + "...";
-            // never slice a word (maintainer bench 305): back off to the last whole one -
-            // unless the FIRST word alone overflows, where a char cut beats an empty cell
+            // never slice a word (bench 305): back off to the last whole one - unless the FIRST
+            // word alone overflows, where a char cut beats an empty cell
             int space = len <= text.Length ? text.LastIndexOf(' ', Math.Min(len, text.Length) - 1) : -1;
             if (space > 0)
                 t = text.Substring(0, space).TrimEnd() + "...";
@@ -179,10 +178,8 @@ namespace Ship_Game.UI
 
         // client: the group frame's ClientArea. headerTop/bottom: the vertical span the
         // table may use, absolute.
-        // when set, Layout snaps the list's foot so only WHOLE rows show - the value is
-        // the row height PLUS the list's 4px item padding (maintainer bench 307: the
-        // overhead constants the screens fed ContentHeightFor were near-misses, and a
-        // few px of the next row still peeked)
+        // when set, Layout snaps the list's foot so only WHOLE rows show - the value is the
+        // row height PLUS the list's 4px item padding (bench 307)
         public int RowPitch;
 
         public void Layout(in RectF client, float headerTop, float bottom)
@@ -195,17 +192,14 @@ namespace Ship_Game.UI
                 c.Rect = new Rectangle(x, HeaderY, c.Width, HeaderH);
                 x += c.Width;
             }
-            // a breath above and below the rule (maintainer bench 288): the headers - tall
-            // header icons included - don't sit on the line, and the first row keeps its
-            // distance too
+            // a breath above and below the rule (bench 288): the headers - tall header icons
+            // included - do not sit on the line, and the first row keeps its distance too
             RuleY = HeaderY + HeaderH + 6;
             TableRect = new Rectangle(x0, HeaderY, x - x0, (int)bottom - HeaderY);
-            // ScrollList insets its ItemsHousing by the theme's ListPadLeft / PaddingTop 15 / and the
-            // theme's ScrollbarLane on the right: this rect makes the item lane start at the
-            // first column,
-            // pulls the TOP padding back so the first row sits 6px under the rule (a
-            // padding, not an empty line - maintainer bench 289), and leaves the slider
-            // its reserved lane right of the last column
+            // ScrollList insets its ItemsHousing by the theme's ListPadLeft, PaddingTop 15 and the
+            // theme's ScrollbarLane on the right: this rect makes the item lane start at the first
+            // column, pulls the TOP padding back so the first row sits 6px under the rule (a padding,
+            // not an empty line - bench 289), and leaves the slider its reserved lane.
             ListRect = new RectF(x0 - 8, RuleY - 9, (x - x0) + 8 + SliderLane, bottom - (RuleY - 9));
             if (RowPitch > 0)
             {

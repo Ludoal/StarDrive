@@ -34,8 +34,8 @@ namespace Ship_Game
         public Rectangle MapRect => ActualMap;
         public Vector2 MapCentre => MiniMapZero;
         public float MapScale => Scale;
-        // Ludoal fork: the two zoom buttons are gone - Page Up / Page Down and the wheel already
-        // do it, and zoom-to-ship belongs with the ship. Important Events has its own Galaxy tab.
+        // Ludoal fork: no zoom buttons - Page Up / Page Down and the wheel already do it, and
+        // zoom-to-ship belongs with the ship. Important Events has its own Galaxy tab.
         readonly ToggleButton InfluenceZones;   // Ludoal fork (F4)
         readonly ToggleButton GravityWellsOnly; // Ludoal fork (F5)
         readonly ToggleButton FoodRoutes;          // Ludoal fork (bench 428): one toggle per goods
@@ -92,18 +92,16 @@ namespace Ship_Game
             topOverlays.Name = "MiniMapOverlaysTop";
             topOverlays.LayoutStyle = ListLayoutStyle.ResizeList;
             topOverlays.Direction = new Vector2(1, 0); // horizontal
-            // ⚠ ALL FIVE map overlays in one row (maintainer): they are one family - each toggles
-            // a rendering on the map and stays lit - so splitting them across two bands said
-            // something the code did not mean.
+            // ⚠ ALL FIVE map overlays in one row (maintainer feedback): they are one family - each
+            // toggles a rendering on the map and stays lit.
             InfluenceZones = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/flagicon", InfluenceZones_OnClick)); // F2
             VisionOverlayBtn = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_spy_small", VisionOverlay_OnClick)); // F3
             GravityWells = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_ftloverlay", GravityWells_OnClick)); // subspace projectors (F4)
             GravityWellsOnly = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/node_inhibit", GravityWellsOnly_OnClick)); // F5
             RangeOverley = topOverlays.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_rangeoverlay", RangeOverly_OnClick)); // F6
 
-            // Ludoal fork (wishlist): the ROUTE FILTERS take the seat the left band's head
-            // has kept reserved for them (see the band map above). No hotkeys yet - they
-            // will get theirs with the key-customization workstream.
+            // Ludoal fork: the ROUTE FILTERS take the seat at the left band's head (see the band
+            // map above). No hotkeys of their own yet.
             UIList leftOverlays = AddList(new Vector2(Housing.X + Edge, ActualMap.Y));
             leftOverlays.Name = "MiniMapRouteFilters";
             leftOverlays.LayoutStyle = ListLayoutStyle.ResizeList;
@@ -120,7 +118,7 @@ namespace Ship_Game
             topTabs.Name = "MiniMapTabsTop";
             topTabs.LayoutStyle = ListLayoutStyle.ResizeList;
             topTabs.Direction = new Vector2(1, 0);
-            // Ludoal fork: the AI tab is gone - Automation is a tab of the Empire group now (H)
+            // Ludoal fork: no AI tab - Automation is a tab of the Empire group (H)
             DeepSpaceBuild = topTabs.Add(new ToggleButton(ToggleButtonStyle.Button, "UI/icon_dsbw", DeepSpaceBuild_OnClick));
 
             UIList leftTabs = AddList(new Vector2(Housing.X + Edge, ActualMap.Bottom - 2 * BtnH));
@@ -195,8 +193,7 @@ namespace Ship_Game
                 batch.SafeEnd();
                 batch.SafeBegin(SpriteBlendMode.NonPremultiplied);
 
-                // Ludoal fork: minimap influence follows the main map — with the
-                // influence zones follow the influence overlay (F2)
+                // Ludoal fork: the minimap's influence zones follow the influence overlay (F2)
                 if (Universe.ShowingInfluenceOverlay)
                     DrawMinimapInfluenceNodes(batch);
                 DrawSelected(batch, Player);
@@ -210,13 +207,11 @@ namespace Ship_Game
                 Log.Error(e, $"MiniMap Draw crashed {e.InnerException}");
             }
 
-            // bench 449 (the FORMULA, not another filter - maintainer call): the noise was
-            // in the SOURCE. Unprojecting through the float view matrix every frame loses
-            // precision as |world coords| grow - no display-side filter can fix a noisy
-            // input. The rect now derives from CAMERA STATE (CamPos, a smooth double):
-            // frustum geometry is linear in camera height, so ONE calibration against the
-            // real projection gives width-per-height and centre-offset-per-height, and
-            // every later frame is pure arithmetic on clean numbers.
+            // ⚠ the rect derives from CAMERA STATE (CamPos, a smooth double), never from unprojecting
+            // through the float view matrix - that loses precision as |world coords| grow. Frustum
+            // geometry is linear in camera height, so ONE calibration against the real projection
+            // gives width-per-height and centre-offset-per-height, and every later frame is pure
+            // arithmetic on clean numbers (bench 449).
             double camH = Universe.CamPos.Z;
             var frustum = Universe.VisibleWorldRect;
             if (!FrustumCalibrated && camH > 0 && frustum.Width > 0)
@@ -255,8 +250,8 @@ namespace Ship_Game
             var botMiddleView   = new Vector2(topMiddleView.X - 1f, lookingAt.Y + lookingAt.Height);
             var leftMiddleView  = new Vector2(lookingAt.X, lookingAt.Y + lookingAt.Height / 2);
             var rightMiddleView = new Vector2(lookingAt.X + lookingAt.Width, leftMiddleView.Y + 1f);
-            // the map's top edge, like the three other guide lines - a fixed 100px radius
-            // only reached it at the default minimap size (maintainer feedback)
+            // the map's top edge, like the three other guide lines: a fixed radius would only reach
+            // it at the default minimap size (maintainer feedback)
             batch.DrawLine(new Vector2(topMiddleView.X, ActualMap.Y), topMiddleView, Color.White);
             batch.DrawLine(new Vector2(botMiddleView.X, ActualMap.Y + ActualMap.Height), botMiddleView, Color.White);
             batch.DrawLine(new Vector2(ActualMap.X, leftMiddleView.Y), leftMiddleView, Color.White);
@@ -540,8 +535,6 @@ namespace Ship_Game
             if (Universe.IsCoveredByPage(input.CursorPosition))
                 return false;
 
-            // (the two zoom buttons are gone - Page Up and Page Down still do the job, and the
-            // wheel does it better; zoom-to-ship belongs with the ship, not with the map)
             if (DeepSpaceBuild.Rect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.OpensTheDeepSpaceBuilding, KeyBindings.Name(KeyBindings.DeepSpaceBuildWindow));
 

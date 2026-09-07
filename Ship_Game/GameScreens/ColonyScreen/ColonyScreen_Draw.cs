@@ -187,8 +187,7 @@ namespace Ship_Game
             if (SubColonyGrid.SelectedIndex == 0)
             {
                 DrawPlanetSurfaceGrid(batch);
-                // bench 428: the pinned tile wears its gold liseré on MAP too - the pin
-                // worked but was invisible here, which reads as broken
+                // the pinned tile wears its gold liseré on MAP too (bench 428)
                 foreach (PlanetGridSquare t in P.TilesList)
                     if (IsPinnedBuilt(t))
                         batch.DrawRectangle(t.ClickRect, Color.Gold);
@@ -205,10 +204,10 @@ namespace Ship_Game
             }
             batch.Draw(P.PlanetTexture, PlanetIcon, Color.White);
 
-            // the description elevator (bench 429, third pass - a REAL one now): the pane
-            // is ALWAYS scissored so long lore can never bleed past the frame, the wheel
-            // offset is clamped to the measured content, and a visible bar says where you
-            // are. The offset resets whenever the shown content changes identity.
+            // the description elevator (bench 429): the pane is ALWAYS scissored so long lore
+            // cannot bleed past the frame, the wheel offset is clamped to the measured content,
+            // and a visible bar says where you are. The offset resets whenever the shown content
+            // changes identity.
             if (DetailInfo != LastDetailDrawn) { DescriptionScroll = 0f; LastDetailDrawn = DetailInfo; }
             if (!DescriptionPaneUp) DescriptionScroll = 0f; // bars and stat tabs never scroll
             var detailPos = new Vector2(PFacilities.Rect.X + 15, PFacilities.Rect.Y + 35);
@@ -221,8 +220,8 @@ namespace Ship_Game
             batch.SafeEnd();
             RenderStates.DisableScissorTest(batch.GraphicsDevice);
             batch.SafeBegin();
-            // bench 432: a full line of air after the content, so the last line never
-            // sits at the razor's edge of the scissor at max scroll
+            // a full line of air after the content, so the last line never sits at the
+            // razor's edge of the scissor at max scroll (bench 432)
             float contentHeight = contentBottom + DescriptionScroll - detailPos.Y + TextFont.LineSpacing;
             MaxDescriptionScroll = contentHeight - (pane.Height - 10);
             if (MaxDescriptionScroll < 0f) MaxDescriptionScroll = 0f;
@@ -244,8 +243,8 @@ namespace Ship_Game
             }
             else if (P.Owner != null)
             {
-                // bench 460 (maintainer): you do not rename a foreign world - the pencil's
-                // seat carries the owner faction's crest instead, in its color
+                // a foreign world cannot be renamed: the pencil's seat carries the owner
+                // faction's crest, in its color (bench 460)
                 batch.Draw(ResourceManager.Flag(P.Owner), EditNameButton, P.Owner.EmpireColor);
             }
 
@@ -302,7 +301,7 @@ namespace Ship_Game
             if (OutgoingColoFreighters > 0 || IncomingColoFreighters > 0 || P.ColonistsImportSlots > 0)
             {
                 position3 = new Vector2(cursor.X + num5, cursor.Y);
-                // green = pop coming in, red = pop leaving (was the empire color, unreadable for red empires)
+                // green = pop coming in, red = pop leaving - the empire color is unreadable for red empires
                 batch.DrawString(TextFont, P.ColonistsImportSlots > 0 ?"Incoming Pop: " : "Outgoing Pop: ", cursor,
                                  P.ColonistsImportSlots > 0 ? Color.LightGreen : Color.LightPink);
                 DrawColoSlots(batch, position3);
@@ -331,9 +330,8 @@ namespace Ship_Game
         }
 
         // The description elevator, shared (bench 535): Blueprints has the same pane and the
-        // same wheel, and a second implementation of a scrollbar would drift from this one.
-        // bench 431: it wears the theme - the NewUI scrollbar family, the same brown furniture
-        // as every list in the game. bench 432: same inset as the page's other bars.
+        // same wheel, and a second scrollbar implementation would drift from this one. It wears
+        // the theme - the NewUI scrollbar family - and the same inset as the page's other bars.
         public static void DrawScrollElevator(SpriteBatch batch, in Rectangle pane,
                                               float scroll, float maxScroll, float contentHeight)
         {
@@ -402,19 +400,16 @@ namespace Ship_Game
 
             ProdStorage.Draw(batch);
             DrawProdSlots(batch);
-            // Ludoal fork (wishlist + bench 426): the population row - the bar carries pop
-            // against its cap, the dropdown the migration state (Auto tracks the formula),
-            // and the colonist freighter line seats under the bar like its two elders'
+            // Ludoal fork (bench 426): the population row - the bar carries pop against its cap,
+            // the dropdown the migration state (Auto tracks the formula), and the colonist
+            // freighter line seats under the bar like its two elders'
             PopStorage.Max = P.MaxPopulationBillionFor(P.Owner);
             PopStorage.Progress = P.PopulationBillion;
             PopStorage.Draw(batch);
             DrawPopSlots(batch);
 
-            // bench 455: closed boxes first, the OPEN one very last - a closed sibling
-            // below was painting its frame across the expanded list
-            // the three Supply lists are registered on the screen now: the container draws
-            // them, and draws an open one last so its options land on top. This screen used to
-            // order that by hand, which only ever worked against its own panels.
+            // the three Supply lists are registered on the screen: the container draws them, and
+            // draws an open one last so its options land on top of its closed siblings (bench 455).
 
             batch.Draw(ResourceManager.Texture("NewUI/icon_storage_food"), FoodStorageIcon, Color.White);
             batch.Draw(ResourceManager.Texture("NewUI/icon_storage_production"), ProfStorageIcon, Color.White);
@@ -436,9 +431,8 @@ namespace Ship_Game
         // many they left out rather than drawing past it.
         void DrawBlueprintsPlanInfo(SpriteBatch batch, ref Vector2 cursor, BlueprintsTemplate plan)
         {
-            // Ludoal fork (maintainer bench 554): the plan's COG, in its category's colour - the
-            // same badge the Colonies page and the governor row wear. The title is what the eye
-            // lands on first, so the badge belongs beside it rather than nowhere.
+            // Ludoal fork (bench 554): the plan's COG, in its category's colour - the same badge
+            // the Colonies page and the governor row wear, beside the title.
             const int CogSize = 22;
             batch.Draw(ResourceManager.Texture("NewUI/blueprints"),
                        new Vector2(cursor.X, cursor.Y + 2), new Vector2(CogSize, CogSize),
@@ -493,7 +487,7 @@ namespace Ship_Game
         }
 
         // Policies phase 0: the SUPPLY mode notices, same furniture as the governor
-        // portraits - a title in the entry's own vocabulary, the body from Lek's texts
+        // portraits - a title in the entry's own vocabulary, then the body text
         void DrawSupplyNoticeInfo(SpriteBatch batch, ref Vector2 cursor, SupplyNoticeKind kind)
         {
             (string title, GameText body) = kind switch
@@ -535,8 +529,8 @@ namespace Ship_Game
             DrawTradeSlots(batch, textPos, text, Color.LightGreen, enroute, maxSlots, amount);
         }
 
-        // bench 426: the colonist freighter line, the same family as food's and prod's -
-        // gated on the EFFECTIVE migration state, so Auto shows its live direction too
+        // the colonist freighter line, the same family as food's and prod's - gated on the
+        // EFFECTIVE migration state, so Auto shows its live direction too (bench 426)
         void DrawPopSlots(SpriteBatch batch)
         {
             Planet.GoodState state = P.GetGoodState(Goods.Colonists);
@@ -675,8 +669,7 @@ namespace Ship_Game
             string t = text.Text.Replace("\n\n", "\n");
             while (t.Contains("\n\n"))
                 t = t.Replace("\n\n", "\n");
-            // bench 431: the reserve carries the themed scrollbar (16) plus real air on both
-            // sides - the old 40 ran the text into the pane's edge
+            // the reserve carries the themed scrollbar (16) plus air on both sides (bench 431)
             return TextFont.ParseText(t, PFacilities.Rect.Width - 64);
         }
 
@@ -688,8 +681,8 @@ namespace Ship_Game
             cursor.Y += (TextFont.MeasureString(multiline).Y + TextFont.LineSpacing);
         }
 
-        // bench 429: returns the content's bottom Y so the elevator can size itself;
-        // the bar/tab branches return the pane top - they are not scrollable content
+        // returns the content's bottom Y so the elevator can size itself; the bar/tab
+        // branches return the pane top - they are not scrollable content (bench 429)
         float DrawDetailInfo(SpriteBatch batch, Vector2 bCursor)
         {
             if (IsDysonSwarmTabSelected)
@@ -1012,9 +1005,7 @@ namespace Ship_Game
                 DrawVolcanoChance(ref bCursor, batch, tile.Volcano.ActivationChanceText(out Color color), color);
         }
 
-        // the building's name line and its lore, inline. The long-lore treatment is being
-        // arbitrated (bench 426 killed the (i): reading its tooltip lost the panel) -
-        // candidates are stats-first with a clipped lore, or click-to-pin with a wheel.
+        // the building's name line and its lore, inline. The long-lore treatment is still open.
         void DrawBuildingNameAndLore(ref Vector2 bCursor, SpriteBatch batch, Building b, Color nameColor)
         {
             batch.DrawString(Font20, b.TranslatedName, bCursor, nameColor);

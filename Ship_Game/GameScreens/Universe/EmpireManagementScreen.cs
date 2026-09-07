@@ -78,9 +78,9 @@ namespace Ship_Game
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_production"), Badge = Color.Orange,
                                      Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.Richness), SepColor = MutedSep },
-                // population reads "x / y" like the Planets tab - Max Pop merged in; the
-                // whole stat block keeps MUTED gray separators, and Money rides before
-                // Research, the top bar's own order
+                // population reads "x / y" like the Planets tab, Max Pop included; the whole stat
+                // block keeps MUTED gray separators, and Money rides before Research, the top bar's
+                // own order
                 new UITable.Column { Icon = ResourceManager.Texture("UI/icon_pop"), Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.IndicatesThisColonysCurrentPopulation) },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_food"), Align = TableAlign.Number,
@@ -91,7 +91,7 @@ namespace Ship_Game
                                      Sortable = true, Tip = Localizer.Token(GameText.TheNetIncomeOfThis), SepColor = MutedSep },
                 new UITable.Column { Icon = ResourceManager.Texture("NewUI/icon_science"), Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.TheNetAmountOfResearch), SepColor = MutedSep },
-                new UITable.Column { Title = Localizer.Token(GameText.Labor), Width = 269, Align = TableAlign.Center }, // wider: the sliders now show current / max
+                new UITable.Column { Title = Localizer.Token(GameText.Labor), Width = 269, Align = TableAlign.Center }, // wider: the sliders show current / max
 
                 // bench 426: stock AND flow. ⚠ 240 is FULL - the icon, the bar and the picker
                 // leave 2px of it; the wide regime below gives this column the Auto switches' lane.
@@ -114,9 +114,9 @@ namespace Ship_Game
                 // muted on its right - the muted one is Labor's, set below
                 cols.Insert(10, new UITable.Column { Title = "Gov.", Width = 40, Align = TableAlign.Center, Sortable = true });
                 cols[11].SepColor = MutedSep; // Labor
-                // maintainer: the Auto switches ride here, so Supply gets their lane - 240 held the
-                // icon, the bar and the picker with 2px to spare. Construction is always last, so
-                // Supply is the one before it whatever the Governor column did to the indices.
+                // maintainer feedback: the Auto switches ride here, so Supply gets their lane - 240
+                // holds the icon, the bar and the picker with 2px to spare. Construction is always
+                // last, so Supply is the one before it whatever the Governor column does to the indices.
                 cols[cols.Count - 2].Width += ColoniesListItem.AutoLane;
                 Table = new UITable(cols.ToArray());
             }
@@ -159,10 +159,10 @@ namespace Ship_Game
             // cartouche, which keeps the Colony screen's own fixed height (222) - cutting the band
             // as a fraction of the screen would stretch everything in it with the resolution
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight);
-            // Ludoal fork (maintainer bench): the band is FIXED and the LIST absorbs the
-            // resolution, not the reverse. Deriving the band from the list's own bottom let it
-            // drift, because a scroll list rounds itself down to a whole number of rows.
-            const float GovernorH  = 208;  // the band's real height, measured at the bench
+            // Ludoal fork (maintainer feedback): the band is FIXED and the LIST absorbs the
+            // resolution, not the reverse. ⚠ A scroll list rounds itself down to a whole number of
+            // rows, so a band derived from the list's own bottom drifts.
+            const float GovernorH  = 208;  // the band's real height
             const float BandGapTop = 20;   // between the list's foot and the band
             const float BandGapBot = 15;   // between the band and the frame's foot
             float bandH = GovernorH + BandGapTop + BandGapBot; // the reserve the table leaves
@@ -261,9 +261,8 @@ namespace Ship_Game
             // width spilling right. The block X's are fixed in the ctor (BandLayout) so the ctor's
             // GovernorRect and this row share one arithmetic. The planet DESCRIPTION rides the
             // planet icon's tooltip, not the band.
-            // the band's span comes from the governor rect, the one place it is settled -
-            // re-deriving it from the table's foot made two sites that had to agree, and
-            // they only agreed by accident of the list's row rounding.
+            // the band's span comes from the governor rect, the one place it is settled: the table's
+            // foot would be a second site that has to agree with it
             float blockTop = GovernorRect.Y;
             float blockH   = GovernorRect.H;
             float mapH     = blockH - 10;
@@ -387,20 +386,17 @@ namespace Ship_Game
             // summing the planets would miss. Growth has no such aggregate, so it is summed per planet.
             float totalPop = Universe.Player.TotalPopBillion;
             float totalGrowth = 0f, food = 0f, foodNet = 0f, prod = 0f, prodNet = 0f;
-            // bench 452 (maintainer): the empire's larder AND its yard - both stores summed
-            // with the per-turn surplus/deficit beside them. Both travel by freighter, and a
-            // prod pile is what production rushes spend when a fleet has to exist quickly.
-            // A cybernetic empire eats production, so its food line would be noise: it only
-            // shows the prod line.
+            // the empire's larder AND its yard - both stores summed with the per-turn
+            // surplus/deficit beside them. A cybernetic empire eats production, so it shows the
+            // prod line alone (bench 452).
             bool cyber = Universe.Player.IsCybernetic;
             for (int i = 0; i < planets.Count; ++i)
             {
                 Planet p = planets[i];
                 totalGrowth += p.EstimatedPopGrowthPerTurn / 1000f; // per-turn, in billions
                 food += p.FoodHere; foodNet += p.Food.NetIncome;
-                // bench 453 (maintainer question): the prod delta must say whether the WAR
-                // CHEST grows - so the queues' planned spend for the turn comes off the
-                // inflow (NetIncome ignores construction, which eats surplus and stock apart)
+                // the prod delta says whether the WAR CHEST grows, so the queues' planned spend for
+                // the turn comes off the inflow - NetIncome ignores construction (bench 453)
                 prod += p.ProdHere;
                 prodNet += p.Prod.NetIncome - p.LimitedProductionExpenditure(p.CurrentProductionToQueue);
             }
@@ -476,9 +472,9 @@ namespace Ship_Game
             if (eui.HandleInput(input, caller: this)) // Ludoal fork: live top bar
                 return true;
 
-            // bench 458: an OPEN supply dropdown hears the input before the table - the
-            // scroll list only feeds rows under the cursor, so without this a click
-            // landing elsewhere never reached the list and it stayed open forever.
+            // an OPEN supply dropdown hears the input before the table: the scroll list only feeds
+            // rows under the cursor, so a click landing elsewhere would never reach the list and it
+            // would stay open (bench 458)
             foreach (ColoniesListItem it in ColoniesList.AllEntries)
                 if (it.HandleOpenLists(input))
                     return true;

@@ -181,9 +181,8 @@ namespace Ship_Game
         // Ludoal fork: the bar draws itself flat, in the reworked screens' grammar - a dark plate
         // with a brass rule, no plating textures. Colour is decided HERE from live state (which
         // group is open, whether the game is paused), never stored on the button.
-        // ⚠ These are TINTS now, not fills: the plate multiplies them, so they set how bright its
-        // rule comes out. The old near-black pair left the group tabs almost invisible over the
-        // map. Brown is the group you are inside, blue the rest.
+        // ⚠ These are TINTS, not fills: the plate multiplies them, so they set how bright its
+        // rule comes out. Brown is the group you are inside, blue the rest.
         static readonly Color PlateBlue  = new Color(120, 150, 200);
         static readonly Color PlateBrown = new Color(193, 113, 26);
         static readonly Color TextCream  = new Color(255, 240, 189);
@@ -650,8 +649,8 @@ namespace Ship_Game
         }
 
         // Ludoal fork: which screen each hotkey asks for, by the same name the buttons use.
-        // The universe reads these keys itself; a screen sitting on top of it never saw them,
-        // so every hotkey but the open screen's own was dead once a tab was up.
+        // The universe reads these keys itself, so a screen sitting on top of it reaches them
+        // through this table.
         static string HotkeyTarget(InputState input) =>
               input.PlanetListScreen    ? "Planets"
             : input.ExoticListScreen    ? "Exotic"
@@ -661,11 +660,11 @@ namespace Ship_Game
             : input.FleetDesignScreen   ? "Fleets"
             : input.BlueprintsSceen     ? "Blueprints"
             : input.ImportantEventsScreen ? "Events"
-            // the Empire group's permanent colony tab: it has no screen class of its own, so it
-            // was the one hotkey this table never carried and the only one dead inside a screen
+            // the Empire group's permanent colony tab: it has no screen class of its own, so this
+            // table is what carries its hotkey
             : input.ColonyOverviewScreen ? "ColonyOverview"
-            // the bar's own keys: reachable from the universe through the other overload,
-            // dead from inside a screen until they came through here too
+            // the bar's own keys: reachable from the universe through the other overload, and from
+            // inside a screen through this one
             : input.KeyPressed(KeyBindings.OpenResearch) && !input.IsCtrlKeyDown ? "Research"  // Ctrl+Alt+R is the resolution tool
             : input.KeyPressed(KeyBindings.OpenEconomy) ? "Budget"
             : input.KeyPressed(KeyBindings.OpenShipyard) ? "Shipyard"
@@ -711,7 +710,7 @@ namespace Ship_Game
                     if (input.LeftMouseClick)
                     {
                         // Ludoal fork: unified caller path. A decorative button (no launch)
-                        // no longer closes the calling screen.
+                        // does not close the calling screen.
                         if (b.launches == null)
                         {
                             continue;
@@ -858,9 +857,8 @@ namespace Ship_Game
                 GameAudio.EchoAffirmative();
                 Universe.ScreenManager.AddScreen(new FleetDesignScreen(Universe, this));
             }
-            // Ludoal fork: ShipList and Espionage were missing from the caller
-            // dispatch — harmless while only Shipyard/Fleets kept the bar live,
-            // a dead button once every full-screen does (top-bar standard).
+            // Ludoal fork: ShipList and Espionage in the caller dispatch - every full-screen keeps
+            // the bar live, so both need their branch here.
             else if (launches == "ShipList")
             {
                 if (caller is ShipListScreen)

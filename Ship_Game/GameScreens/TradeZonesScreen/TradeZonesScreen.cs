@@ -54,15 +54,14 @@ namespace Ship_Game
                 // actually on its way - a zone asking more than it receives shows at a glance
                 new UITable.Column { Title = Localizer.Token(GameText.TzRequired), Align = TableAlign.Number, Sortable = true },
                 // ★ the column is named for what it COUNTS: runs on their way to these colonies,
-                // whoever sent them. Called "Freighters" it sat next to Owned and read as a
-                // contradiction - three times over two days (maintainer feedback).
+                // whoever sent them (maintainer feedback).
                 new UITable.Column { Title = Localizer.Token(GameText.TzInbound), Align = TableAlign.Number, Sortable = true },
                 // owned over target in ONE cell: the gap is read without subtracting, and a soft
                 // zone shows nothing rather than a nought that would read as a failure
                 new UITable.Column { Title = Localizer.Token(GameText.TzOwnedTarget), Align = TableAlign.Number, Sortable = true },
                 // the zone's own cargo priority, carried over from the form
                 new UITable.Column { Title = Localizer.Token(GameText.TzPriority), Sortable = true },
-                // four icons now: the two arrows that order the zones, then edit and delete
+                // four icons: the two arrows that order the zones, then edit and delete
                 new UITable.Column { Title = "", Width = 110, Align = TableAlign.Center },
             });
 
@@ -70,10 +69,8 @@ namespace Ship_Game
         }
 
         // Ludoal fork (bench 544): the whole page is rebuilt when its content changes, frame
-        // included. Measuring the columns again was not enough: the tab frame is sized from the
-        // table's width at build time, so a wider table spilled past a frame that never grew -
-        // only reopening the page fixed it. This page MAKES its own rows, so it must be able to
-        // rebuild itself the way reopening does.
+        // included. ⚠ The tab frame is sized from the table's width at build time, so measuring
+        // the columns alone leaves a wider table spilling past a frame that never grew.
         void Build()
         {
             RemoveAll();
@@ -230,9 +227,8 @@ namespace Ship_Game
         }
 
         // Ludoal fork (bench 542): unlike the other Galaxy tables, this page CREATES its own
-        // rows - so the columns, measured on an empty list at construction, have to be
-        // measured again when a zone appears. Without this the first zone lands in columns
-        // sized for nothing, and only reopening the page fixed it.
+        // rows - so the columns, measured on an empty list at construction, are measured again
+        // when a zone appears, or the first zone lands in columns sized for nothing.
         void MeasureColumns()
         {
             // the figure is order-dependent, so it is measured before it is read: a page opened
