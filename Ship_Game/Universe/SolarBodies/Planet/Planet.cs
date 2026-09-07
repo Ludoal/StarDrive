@@ -1712,8 +1712,8 @@ namespace Ship_Game
         {
             var debug = new DebugTextBlock();
 
-            string importFood = FoodImportSlots - FreeFoodImportSlots + "/" + FoodImportSlots;
-            string importProd = ProdImportSlots - FreeProdImportSlots + "/" + ProdImportSlots;
+            string importFood = FoodImportSlotsBeforeServing - FreeFoodImportSlots + "/" + FoodImportSlotsBeforeServing;
+            string importProd = ProdImportSlotsBeforeServing - FreeProdImportSlots + "/" + ProdImportSlotsBeforeServing;
             string importColonists = ColonistsImportSlots - FreeColonistImportSlots + "/" + ColonistsImportSlots;
             string exportFood = FoodExportSlots - FreeFoodExportSlots + "/" + FoodExportSlots;
             string exportProd = ProdExportSlots - FreeProdExportSlots + "/" + ProdExportSlots;

@@ -41,8 +41,14 @@ namespace Ship_Game
         public int FreeProdExportSlots     => GetNumFreeSlots(ProdExportSlots, OutgoingProdFreighters);
         public int FreeColonistExportSlots => GetNumFreeSlots(ColonistsExportSlots, OutGoingColonistsFreighters);
 
-        public int FreeFoodImportSlots     => GetNumFreeSlots(FoodImportSlots, IncomingFoodFreighters);
-        public int FreeProdImportSlots     => GetNumFreeSlots(ProdImportSlots, IncomingProdFreighters);
+        // ⚠ FREE berths are counted in HULLS, on the BEFORE-serving figure (audit, bench 603; the
+        // maintainer's and Lek's call). The base game took the cargo already in the air out of the
+        // slot count AND then took the incoming hulls out again: a loaded hull en route was
+        // charged twice, so the dispatch stopped one or two hulls short of the need the overlay
+        // shows - idle freighters beside "missing" runs (bench 602, 119/169). One netting, by
+        // hull: a hull flying to LOAD still counts once, a loaded one no longer counts twice.
+        public int FreeFoodImportSlots     => GetNumFreeSlots(FoodImportSlotsBeforeServing, IncomingFoodFreighters);
+        public int FreeProdImportSlots     => GetNumFreeSlots(ProdImportSlotsBeforeServing, IncomingProdFreighters);
         public int FreeColonistImportSlots => GetNumFreeSlots(ColonistsImportSlots, IncomingColonistsFreighters);
 
         // # of free slots after deducting active freighter count
@@ -65,6 +71,10 @@ namespace Ship_Game
         public int FoodImportSlots { get; private set; }
         public int ProdImportSlots { get; private set; }
         public int ColonistsImportSlots { get; private set; }
+        // the same two counts read BEFORE the cargo in the air is netted out - what the free-berth
+        // test above wants, and what the freighters overlay already prints as its denominator
+        public int FoodImportSlotsBeforeServing { get; private set; }
+        public int ProdImportSlotsBeforeServing { get; private set; }
 
         public int NumFreightersPickingUpFood { get; private set; }
         public int NumFreightersPickingUpProd { get; private set; }
@@ -97,6 +107,8 @@ namespace Ship_Game
 
             FoodImportSlots = GetFoodImportSlots();
             ProdImportSlots = GetProdImportSlots();
+            FoodImportSlotsBeforeServing = GetFoodImportSlots(beforeServing: true);
+            ProdImportSlotsBeforeServing = GetProdImportSlots(beforeServing: true);
             ColonistsImportSlots = GetColonistsImportSlots();
 
             NumFreightersPickingUpFood = NumOutgoingFreightersPickUp(outgoingFreighters, Goods.Food);
