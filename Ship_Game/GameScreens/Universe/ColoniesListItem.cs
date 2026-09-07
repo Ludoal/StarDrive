@@ -47,6 +47,7 @@ namespace Ship_Game
         Rectangle ProdStorageIcon;
         Rectangle PopStorageIcon;
         UICheckBox AutoFoodBox, AutoProdBox, AutoPopBox;   // wide displays only: hand a good to the governor from the list
+        UICheckBox RushBox; // the colony's Continuous Rush switch, first line of the Construction cell
         // The lane Supply gains on wide displays for its Auto switches: the gap, the 12px box and
         // a hair of right margin. ⚠ ONE constant - the column that grows by it and the row that
         // reserves it are in two different files, and two copies of a width is how they drift.
@@ -199,6 +200,18 @@ namespace Ship_Game
             int iconY = QueueRect.Y + QueueRect.Height / 2 - 30 + Fonts.Arial12Bold.LineSpacing + 3;
             ApplyProductionRect = new Rectangle(QueueRect.X + QueueRect.Width - 50, iconY, ResourceManager.Texture("NewUI/icon_queue_rushconstruction").Width, ResourceManager.Texture("NewUI/icon_queue_rushconstruction").Height);
             CancelProductionRect = new Rectangle(QueueRect.X + QueueRect.Width - 20, iconY, ResourceManager.Texture("NewUI/icon_queue_delete").Width, ResourceManager.Texture("NewUI/icon_queue_delete").Height);
+
+            // Continuous Rush: the colony screen's switch, on the queue's first line and flush
+            // with the rush and delete icons below it. It reads and writes the colony's own flag;
+            // the empire-wide Continuous Rush masters it (Draw greys it while that one is on).
+            if (RushBox == null)
+            {
+                RushBox = Add(new UICheckBox(0, 0,
+                    () => P.Owner.RushAllConstruction || P.RushConstruction,
+                    v => Universe.RunOnSimThread(() => { if (!P.Owner.RushAllConstruction) P.RushConstruction = v; }),
+                    Fonts.Arial12Bold, "CR", GameText.RushAllConstruction));
+            }
+            RushBox.SetAbsPos(CancelProductionRect.Right - RushBox.Width, QueueRect.Y + QueueRect.Height / 2 - 30);
 
             base.PerformLayout();
         }
@@ -467,6 +480,9 @@ namespace Ship_Game
                 batch.DrawString(Fonts.Arial8Bold, $" (x {envMult.String(2)})",
                                  new Vector2(namePos.X + Fonts.Arial12.MeasureString(cls).X + 5, namePos.Y + 2),
                                  envMult < 1f ? Color.Pink : Color.LightGreen);
+
+            if (RushBox != null)
+                RushBox.Greyed = P.Owner.RushAllConstruction;
 
             base.Draw(batch, elapsed);
 
