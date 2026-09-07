@@ -194,10 +194,16 @@ namespace Ship_Game
             // written before any ceiling is taken - otherwise the ground would be drawn from
             // last turn's book, or from nothing at all on the first turn.
             var zoneColonies = new Array<Planet>[TradeZones.Count];
-            // read once: a soft zone's ability to supply a good does not change while we walk
+            var wantFood = new Array<Planet>[TradeZones.Count];
+            var wantProd = new Array<Planet>[TradeZones.Count];
+            var wantCol  = new Array<Planet>[TradeZones.Count];
+            // read once: a zone's ability to supply a good does not change while we walk the list
             Array<Planet> plainCommon = ColoniesOutsideExclusiveZones();
 
-            // PASS ONE - what each zone WANTS. Depends on nothing but its own importers.
+            // PASS ONE, ROUND ONE - each zone claims the worlds it can actually SUPPLY: an
+            // enclave from its own colonies, a soft zone from the common ground it loads on.
+            // ⚠ this only DEPARTS two zones over one world, so the one able to serve it takes it.
+            // It must never make a need disappear - see round two.
             for (int zi = 0; zi < TradeZones.Count; ++zi)
             {
                 TradeZone zone = TradeZones[zi];
@@ -212,32 +218,44 @@ namespace Ship_Game
                 }
 
                 zoneColonies[zi] = colonies;
+                wantFood[zi] = new Array<Planet>();
+                wantProd[zi] = new Array<Planet>();
+                wantCol[zi]  = new Array<Planet>();
 
-                // ⚠ a zone only claims a world's need for a good it can actually supply: an
-                // enclave from its own worlds, a soft zone from the common ground it loads on.
-                // Otherwise the first zone in the list would claim needs it can never serve and
-                // the zone able to serve them would read nought.
                 bool canFood = ZoneSupplies(zone, colonies, plainCommon, Goods.Food);
                 bool canProd = ZoneSupplies(zone, colonies, plainCommon, Goods.Production);
                 bool canCol  = ZoneSupplies(zone, colonies, plainCommon, Goods.Colonists);
 
-                var importFood = new Array<Planet>();
-                var importProd = new Array<Planet>();
-                var importCol  = new Array<Planet>();
                 foreach (Planet p in colonies)
                 {
-                    if (canFood && servedFood.Add(p.Id)) importFood.Add(p);
-                    if (canProd && servedProd.Add(p.Id)) importProd.Add(p);
-                    if (canCol  && servedCol.Add(p.Id))  importCol.Add(p);
+                    if (canFood && servedFood.Add(p.Id)) wantFood[zi].Add(p);
+                    if (canProd && servedProd.Add(p.Id)) wantProd[zi].Add(p);
+                    if (canCol  && servedCol.Add(p.Id))  wantCol[zi].Add(p);
+                }
+            }
+
+            // ★★ ROUND TWO - A NEED NOBODY CAN SERVE IS STILL A NEED. A world no zone claimed for
+            // a good falls to the first zone in the list holding it, so that what the dispatch
+            // serves is what the book counts. Filtering the need by the capacity to serve it was
+            // how "Need 0" came back beside three colonies importing production, their zone having
+            // no exporter of its own while the dispatch loaded elsewhere (bench 592).
+            for (int zi = 0; zi < TradeZones.Count; ++zi)
+                foreach (Planet p in zoneColonies[zi])
+                {
+                    if (servedFood.Add(p.Id)) wantFood[zi].Add(p);
+                    if (servedProd.Add(p.Id)) wantProd[zi].Add(p);
+                    if (servedCol.Add(p.Id))  wantCol[zi].Add(p);
                 }
 
-                // ★ TWO FIGURES, TWO TRADES, and they were one number until the bench of 6 Sep.
-                // The RAW need is what the importers burn - what the screens show, and what any
-                // rule asking "is this zone served" must read. The CAPPED one, below, is the
-                // dispatch quota, bounded by what the ground it searches can send.
-                zone.NeedFood      = PerimeterNeed(importFood, Goods.Food);
-                zone.NeedProd      = PerimeterNeed(importProd, Goods.Production);
-                zone.NeedColonists = PerimeterNeed(importCol, Goods.Colonists);
+            // ★ TWO FIGURES, TWO TRADES. The RAW need is what the importers burn - what the
+            // screens show, and what any rule asking "is this zone served" must read. The CAPPED
+            // one, below, is the dispatch quota, bounded by what the ground it searches can send.
+            for (int zi = 0; zi < TradeZones.Count; ++zi)
+            {
+                TradeZone zone = TradeZones[zi];
+                zone.NeedFood      = PerimeterNeed(wantFood[zi], Goods.Food);
+                zone.NeedProd      = PerimeterNeed(wantProd[zi], Goods.Production);
+                zone.NeedColonists = PerimeterNeed(wantCol[zi], Goods.Colonists);
             }
 
             // ⚠ THE CEILING IS TAKEN ON THE SET THE DISPATCH SEARCHES, and the two regimes do not

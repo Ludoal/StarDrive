@@ -479,11 +479,12 @@ namespace Ship_Game
         }
 
         // ★ THE ONE COLOUR RULE for a pair of numbers, shared with the Trade table so an eye that
-        // learned it here does not learn another one there. Above what is wanted is not a fault -
-        // more on its way than there is room for is worth seeing, not flagging - and a pair
-        // wanting NOTHING is neutral: there is nothing to cover, so nothing to miss.
+        // learned it here does not learn another one there. Three colours, three meanings: white
+        // is a healthy figure, yellow is partly covered, red is nothing covered at all.
+        // ⚠ a pair wanting NOTHING reads WHITE, not a dimmed tint: there is nothing to miss, and
+        // a figure that is simply fine must not look switched off (maintainer feedback).
         public static Color PairColor(int served, int wanted)
-            => wanted <= 0      ? Color.Wheat
+            => wanted <= 0      ? Color.White
              : served >= wanted ? Color.White
              : served == 0      ? Color.Red
              :                    Color.Yellow;
