@@ -107,7 +107,7 @@ public class UniverseParams
     // are a linked split summing to 1: how the pooled governor budget divides between the
     // areas (the Budget screen keeps them linked).
     [StarData] public float GovernorSpendingRatio = 1f;
-    [StarData] public bool AutoBudgetShares = true;   // locked on the default split below
+    [StarData(DefaultValue = true)] public bool AutoBudgetShares = true;   // locked on the default split below
     [StarData] public float ColonyBudgetShare = 0.55f;
     [StarData] public float DefenseBudgetShare = 0.25f;
     [StarData] public float SSPBudgetShare = 0.20f;

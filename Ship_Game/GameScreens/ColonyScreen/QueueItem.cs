@@ -53,12 +53,12 @@ namespace Ship_Game
         [StarData] public QueueItemType QType;
         [StarData] public float PriorityBonus { get; private set; } // Gets bigger as the queue is prioritized
         [StarData] public bool Rush;
-        [StarData] public bool NotifyOnEmpty = true;
+        [StarData(DefaultValue = true)] public bool NotifyOnEmpty = true;
         [StarData] public bool IsPlayerAdded = false;
-        [StarData] public bool TransportingColonists  = true;
-        [StarData] public bool TransportingFood       = true;
-        [StarData] public bool TransportingProduction = true;
-        [StarData] public bool AllowInterEmpireTrade  = true;
+        [StarData(DefaultValue = true)] public bool TransportingColonists  = true;
+        [StarData(DefaultValue = true)] public bool TransportingFood       = true;
+        [StarData(DefaultValue = true)] public bool TransportingProduction = true;
+        [StarData(DefaultValue = true)] public bool AllowInterEmpireTrade  = true;
 
         public bool IsCivilianBuilding => isBuilding && !IsMilitary;
         public Rectangle rect;

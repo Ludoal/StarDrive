@@ -40,8 +40,8 @@ namespace Ship_Game
         // and moving them to Auto would put every existing game under an empire policy its player
         // never set, in silence. Initializer = the new colony, DefaultValue = the older save;
         // they are allowed to disagree, and here they must.
-        [StarData(DefaultValue = 1)] int GovBuildMandateValue = (int)BuildMandate.Auto;
-        [StarData(DefaultValue = 3)] int GovScrapMandateValue = (int)BuildMandate.Auto;
+        [StarData(DefaultValue = 4)] int GovBuildMandateValue = (int)BuildMandate.Auto;
+        [StarData(DefaultValue = 4)] int GovScrapMandateValue = (int)BuildMandate.Auto;
         public BuildMandate GovBuildMandate
         {
             get => (BuildMandate)GovBuildMandateValue;
