@@ -234,31 +234,9 @@ namespace Ship_Game
 
         // ── text ─────────────────────────────────────────────────────────────────────────────
         public static Color TextPrimary => Theme.TextPrimary;
-        public static Color TextDim     => Theme.TextDim;
-        public static Color TextGood    => Theme.TextGood;
-        public static Color TextBad     => Theme.TextBad;
-        public static Color TextLocked  => Theme.TextLocked;
-
-        // ── tables ───────────────────────────────────────────────────────────────────────────
-        public static Color TableHeader      => Theme.TableHeader;
-        public static Color TableText        => Theme.TableText;
-        public static Color TableTitle       => Theme.TableTitle;
-        public static Color TableSubtitle    => Theme.TableSubtitle;
-        public static Color TableRowHover    => Theme.TableRowHover;
-        public static Color TableRowSelected => Theme.TableRowSelected;
-        public static Color TableGridLine    => Theme.TableGridLine;
-
-        public static Font TableHeaderFont   => FontOf(Theme.TableHeaderFont, Fonts.Arial14Bold);
-        public static Font TableTextFont     => FontOf(Theme.TableTextFont, Fonts.Arial12);
-        public static Font TableTitleFont    => FontOf(Theme.TableTitleFont, Fonts.Arial20Bold);
-        public static Font TableSubtitleFont => FontOf(Theme.TableSubtitleFont, Fonts.Arial12);
 
         // ── fonts by role ────────────────────────────────────────────────────────────────────
         public static Font WindowTitle  => FontOf(Theme.WindowTitle, Fonts.Arial20Bold);
-        public static Font SectionTitle => FontOf(Theme.SectionTitle, Fonts.Arial12Bold);
-        public static Font Body         => FontOf(Theme.Body, Fonts.Arial12);
-        public static Font Value        => FontOf(Theme.Value, Fonts.Arial12Bold);
-        public static Font Small        => FontOf(Theme.Small, Fonts.Arial10);
 
         /// ⚠ A name that is not one of the loaded fonts must not throw in the middle of a Draw -
         /// a typo in the theme file would take down whichever screen happened to be open.
