@@ -25,8 +25,8 @@ namespace Ship_Game
         readonly UILabel CannotBuildTroopsWarning, CannotBuildShipsWarning;
         readonly UICheckBox ExclusiveCheckbox;
         public bool Exclusive;
-        // Ludoal fork (Blueprints chantier): the catalogue offers the whole game, not only what
-        // research has opened. A design-time view, so it is deliberately NOT saved with the plan.
+        // Ludoal fork: the catalogue offers the whole game, not only what research has opened.
+        // A design-time view, so it is deliberately NOT saved with the plan.
         readonly UICheckBox ShowAllToggle;
         // ⚠ public like Exclusive right above, and for the same reason: the checkbox binds
         // it through an expression tree, which the compiler does not count as an assignment -
@@ -47,9 +47,9 @@ namespace Ship_Game
         float InitTax = 0.25f;
 
         readonly ScrollList<BlueprintsBuildableListItem> BuildableList;
-        // Ludoal fork (Blueprints chantier): the plan, as an ordered QUEUE. It is a VIEW over
-        // the tiles that still hold the buildings - so save, load and the colony simulation
-        // never learn that this screen changed.
+        // Ludoal fork: the plan, as an ordered QUEUE. It is a VIEW over the tiles that still hold
+        // the buildings - so save, load and the colony simulation never learn that this screen
+        // changed.
         readonly ScrollList<BlueprintsPlanListItem> PlanList;
 
         // ⚠ ONE pin across BOTH lists (the Colony LIST pattern, bench 535): a click holds a
@@ -66,15 +66,15 @@ namespace Ship_Game
         // the description elevator, the Colony pane's own (bench 535): the pane is ALWAYS
         // scissored so long lore cannot bleed past the frame, the wheel offset is clamped to the
         // content measured at the last draw, and the offset resets when the shown building
-        // changes identity. It is what lets the Outpost keep its description again.
+        // changes identity.
         float DescriptionScroll;
         float MaxDescriptionScroll;
         Building LastDescribed;
         readonly ScrollList<BlueprintsChainListItem> BlueprintsChainList;
         readonly DropOptions<Planet.ColonyType> SwitchColonyType;
         readonly UILabel LinkBlueprintsName;
-        // the STATE, separate from the label (bench 305): the shown text folds to the
-        // frame with a tooltip, so it can no longer be read back as the link's name
+        // the STATE, separate from the label (bench 305): the shown text folds to the frame with
+        // a tooltip, so the label can never be read back as the link's name
         string LinkedTo = "";
 
         void SetLinkedTo(string name)
@@ -145,27 +145,25 @@ namespace Ship_Game
             TextFont = Font12;
             BigFont = Font12; // the general stats read smaller (maintainer bench 301)
             // Ludoal fork: the Blueprints tab of the Design group - a FIXED 900p footprint
-            // (maintainer bench 301) like Relationships: the blocks are written for it, a
-            // bigger screen just leaves space at its right. Inner blocks sit on 10px margins;
-            // heights are derived from what each block HOLDS, not cut as fractions - the old
-            // fractional cuts clipped the warnings and pushed the Tax slider out of its frame.
+            // (bench 301) like Relationships: the blocks are written for it, a bigger screen just
+            // leaves space at its right. ⚠ Inner blocks sit on 10px margins and every height is
+            // derived from what the block HOLDS, never cut as a fraction of the available space.
             Rectangle frame900 = ScreenGroups.GroupFrame900(ScreenWidth, ScreenHeight);
             DesignTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.DesignTabTitles, 2,
                                                     OnDesignTabChanged, frame900.Width, frame900.Height);
             const int Pad = 10;
             RectF client = DesignTabs.ClientArea;
-            // ⚠ measured off the FRAME's borders, not the client area: the client is
-            // already ~9px inside the nine-slice, so padding from it read as ~19px of
-            // margin on the left, bottom and right (maintainer bench 307)
+            // ⚠ measured off the FRAME's borders, not the client area: the client is already ~9px
+            // inside the nine-slice, so padding taken from it reads as ~19px of margin on the
+            // left, bottom and right (bench 307)
             RectF frameR = DesignTabs.RectF;
             float leftX  = frameR.X + Pad;
             float topY   = client.Y + Pad;
             float botY   = frameR.Bottom - Pad;
 
-            // ⚠ maintainer feedback: the plan and the catalogue are SWAPPED. The plan is
-            // what you compose, so it takes the full-height right column; the catalogue is what
-            // you pick from, and moves to the centre. The drag that adds a building now runs
-            // left to right, the way the gesture reads.
+            // ⚠ the plan takes the full-height RIGHT column and the catalogue the centre
+            // (maintainer feedback): the plan is what you compose, the catalogue what you pick
+            // from, so the drag that adds a building runs left to right, the way the gesture reads.
             const float PlanW = 470f; // the Colony screen's own list width at the 900p floor
             RectF planAreaR = new(frameR.Right - Pad - PlanW, topY, PlanW, botY - topY);
             SubPlanArea = base.Add(new Submenu(planAreaR, GameText.CurrentBlueprintsSubMenu));
@@ -178,14 +176,12 @@ namespace Ship_Game
             RectF blueprintsStatsR = new(leftX, topY, OptionsW, optionsH);
             SubBlueprintsOptions = base.Add(new Submenu(blueprintsStatsR, GameText.BlueprintsOptions));
 
-            // ⚠ the two blocks are SWAPPED against the original order (maintainer
-            // feedback): the chain is consulted while designing, the simulation is read once
-            // the plan stands - so the chain sits under the options it belongs to, and the
-            // sliders take the foot of the column.
-            //
-            // COLONY SIMULATION: exactly the four sliders (50px pitch each, 35px lead-in),
-            // posed at the column's FOOT as a fixed block - the chain then fills what is
-            // between, which is the only measurement allowed to be a remainder here.
+            // ⚠ the chain sits under the options it belongs to and the sliders take the foot of
+            // the column (maintainer feedback): the chain is consulted while designing, the
+            // simulation read once the plan stands.
+            // COLONY SIMULATION: exactly the four sliders (50px pitch each, 35px lead-in), posed
+            // at the column's FOOT as a fixed block - the chain then fills what is between, which
+            // is the only measurement allowed to be a remainder here.
             float simH = 35 + 4 * 50 + 10;
             RectF experimentalR = new(leftX, botY - simH, OptionsW, simH);
 
@@ -201,21 +197,20 @@ namespace Ship_Game
             RectF buildableMenuR = new(centreX, topY, centreW, (botY - topY) * 0.5f);
             base.Add(new Submenu(buildableMenuR, GameText.Buildings));
 
-            // ⚠ it rides the CATALOGUE's own title bar, at its right end (maintainer, bench
-            // 535): it steers what that list offers and nothing else, so it belongs to that
-            // block. Up on the group's tab row it was floating next to nothing. Its left edge
-            // is measured from the LOCALISED label, or the French one runs off the frame.
+            // ⚠ it rides the CATALOGUE's own title bar, at its right end (bench 535): it steers
+            // what that list offers and nothing else, so it belongs to that block. Its left edge
+            // is measured from the LOCALISED label, or a longer translation runs off the frame.
             float toggleW = Font12.TextWidth(Localizer.Token(GameText.BpShowAll)) + 26;
             ShowAllToggle = base.Add(new UICheckBox(buildableMenuR.Right - toggleW - 8, buildableMenuR.Y + 3,
                 () => ShowAllBuildings, Font12, GameText.BpShowAll, GameText.BpShowAllTip));
             ShowAllToggle.TextColor = Color.Wheat;
             ShowAllToggle.OnChange = _ => RefreshBuildableList();
 
-            // STATISTICS | DESCRIPTION - hovering a building raises Description on its own
-            // (maintainer bench 301, the Colony screen's behavior)
+            // the stats block's tabs - hovering a building raises Description on its own
+            // (bench 301, the Colony screen's behavior)
             RectF blueprintsStatsRect = new(centreX, buildableMenuR.Bottom + Pad, centreW,
                                             botY - (buildableMenuR.Bottom + Pad));
-            // bench 353: STATS | STATS+ | DESCRIPTION. Stats+ (index 1) is the default view; hovering a
+            // STATS | STATS+ | DESCRIPTION. Stats+ (index 1) is the default view; hovering a
             // building raises Description (2). A literal for Stats+, matching the Colony tab title.
             PlanStats = base.Add(new Submenu(blueprintsStatsRect,
                 new LocalizedText[] { GameText.Statistics2, ColonyScreen.StatsPlusTabTitle, GameText.Description }));
@@ -223,8 +218,8 @@ namespace Ship_Game
             StatsTabPlayerChoice = 1; // default to Stats+
 
 
-            // one 20px row per line, six lines, then the button row - the block's height
-            // was derived from exactly this cascade
+            // one 20px row per line, six lines, then the button row - the block's height is
+            // derived from exactly this cascade
             float blueprintsOptionsX = SubBlueprintsOptions.X + 10;
             float optRow0 = SubBlueprintsOptions.Y + 28;
             BlueprintsName = base.Add(new UILabel(new Vector2(blueprintsOptionsX, optRow0),
@@ -243,9 +238,8 @@ namespace Ship_Game
                 { Tooltip = GameText.BlueprintsCannotBuildTroopsTip });
 
             float buttonsY = optRow0 + 6 * OptionsRow + 8;
-            // Load / Link / Unlink / Save (maintainer feedback): the row now reads in the
-            // order the gestures happen - you fetch a plan, chain it, unchain it, and only then
-            // commit. Save last, where a commit belongs.
+            // Load / Link / Unlink / Save (maintainer feedback): the row reads in the order the
+            // gestures happen - fetch a plan, chain it, unchain it, and only then commit.
             LoadBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX, buttonsY), GameText.Load));
             LoadBlueprints.OnClick = (b) => OnLoadBlueprintsClick();
             LinkBlueprints = base.Add(new UIButton(ButtonStyle.Small, new Vector2(blueprintsOptionsX + 80, buttonsY), GameText.BpLink));
@@ -315,11 +309,8 @@ namespace Ship_Game
             if (template != null)
             {
                 LoadBlueprintsTemplate(template);
-                // ⚠ Load STAYS (maintainer, bench 535). It was hidden when the screen opened on
-                // an existing plan, which was invisible while it sat last in the row - the
-                // reorder moved it to the front and turned the hiding into a hole. And the
-                // button has a real use here: swapping a colony already on Custom to another
-                // plan is exactly what the old + did.
+                // ⚠ Load STAYS visible when the screen opens on an existing plan (bench 535):
+                // swapping a colony already on Custom to another plan goes through it.
                 BlueprintsName.Text = template.Name;
             }
         }
@@ -337,10 +328,9 @@ namespace Ship_Game
         // change that is only about how the plan is SHOWN.
         void CreateBlueprintsTiles(Rectangle gridPos)
         {
-            // ⚠ SQUARE cells, centred in whatever box the column gives (Blueprints chantier):
-            // dividing each side by its own count stretched the tiles to the shape of the
-            // frame, and the frame is now a tall narrow column - the building icons came out
-            // twice as high as wide. One cell size, taken from the tighter of the two.
+            // ⚠ SQUARE cells, centred in whatever box the column gives: dividing each side by its
+            // own count stretches the tiles to the shape of the frame - a tall narrow column
+            // draws building icons twice as high as wide. One cell size, the tighter of the two.
             int cell = System.Math.Min(gridPos.Width / SolarSystemBody.TileMaxX,
                                        gridPos.Height / SolarSystemBody.TileMaxY);
             int originX = gridPos.X + (gridPos.Width - cell * SolarSystemBody.TileMaxX) / 2;
@@ -375,9 +365,9 @@ namespace Ship_Game
         void RefreshBuildableList()
         {
             // Ludoal fork (maintainer feedback): the rows are rebuilt here, so a pin taken on one
-            // of them would point at an item the list no longer holds - and the description would
-            // stay on that building until another row was clicked. Adding a building to the plan
-            // goes through this refresh, which is where a player meets it.
+            // of them would point at an item the list does not hold, and the description would
+            // stay on that building until another row is clicked. Adding a building to the plan
+            // goes through this refresh.
             if (PinnedBuildable != null)
             {
                 PinnedBuildable.DescriptionPinned = false;
@@ -540,22 +530,16 @@ namespace Ship_Game
             // Ludoal fork (bench 345): dim the paused universe drawn behind this popup, the same
             // veil the table screens use, so the map recedes rather than competing with the screen.
             batch.SafeBegin();
-            // bench 354 (maintainer): a TRULY opaque frame fill behind the content. GroupFrameFill is
-            // only 0.92 alpha, so the dimmed universe still showed through and washed out the text -
-            // Stats+' gray labels read terne/illegible where Colony's opaque facilities panel keeps
-            // them crisp. Fill with the same colour at full alpha, local to Blueprints (the shared
-            // GroupFrameFill stays 0.92 for the table screens that want the veil). All three tabs
-            // (Stats / Stats+ / Description) gain the contrast.
+            // ⚠ a TRULY opaque frame fill behind the content (bench 354): the shared
+            // GroupFrameFill is only 0.92 alpha, so the dimmed universe shows through and washes
+            // out the text. Same colour at full alpha, local to Blueprints - GroupFrameFill stays
+            // 0.92 for the table screens that want the veil.
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(DesignTabs), new Color(14, 12, 9));
-            // hovering a building raises the Description tab by itself; the cursor leaving falls
-            // back to the player's own choice. bench 351: setting SelectedIndex DOES fire OnTabChange
-            // (verified in Submenu.cs) - so the auto-switch was writing StatsTabPlayerChoice=1 and the
-            // tab stayed stuck on Description forever. Detach the handler around the automatic write;
-            // only a real click on the tab strip (its own HandleInput path) records a player choice.
-            // bench 353: three tabs now - 0 STATS, 1 STATS+, 2 DESCRIPTION. Hovering a building raises
-            // DESCRIPTION (2) on its own; the cursor leaving falls back to the player's own choice
-            // (default STATS+). Detach OnTabChange around the automatic write so the auto-switch never
-            // records itself as a player choice (setting SelectedIndex fires OnTabChange, Submenu.cs).
+            // three tabs: 0 STATS, 1 STATS+, 2 DESCRIPTION. Hovering a building raises DESCRIPTION
+            // on its own; the cursor leaving falls back to the player's own choice (default
+            // STATS+). ⚠ Detach OnTabChange around the automatic write - setting SelectedIndex
+            // fires OnTabChange (Submenu.cs), so the auto-switch would record itself as a player
+            // choice and the tab would stay stuck on Description (bench 353).
             int wantTab = DescriptionBuilding != null ? 2 : StatsTabPlayerChoice;
             if (PlanStats.SelectedIndex != wantTab)
             {
@@ -617,10 +601,9 @@ namespace Ship_Game
             Color color = Color.Wheat;
             batch.DrawString(Font20, b.TranslatedName, bCursor, color);
             bCursor.Y += Font20.LineSpacing + 5;
-            // ⚠ the Outpost gets its description BACK (maintainer, bench 535). It was cut at
-            // bench 354 because its stat blocks - repair, sensor, storage, defense, infra, all
-            // at once - pushed past the bottom of the panel. The panel scrolls now, so nothing
-            // is pushed off anything: the reason for the cut is gone.
+            // the Outpost keeps its description like any other building (bench 535): its stat
+            // blocks - repair, sensor, storage, defense, infra, all at once - run past the bottom
+            // of the panel, and the panel scrolls.
             string selectionText = TextFont.ParseText(b.DescriptionText.Text, PlanStats.Width - 40);
             batch.DrawString(TextFont, selectionText, bCursor, Color.White);
             bCursor.Y += TextFont.MeasureString(selectionText).Y + Font20.LineSpacing;
@@ -663,7 +646,7 @@ namespace Ship_Game
                 "NewUI/icon_storage_production", GameText.ShipRepair);
         }
 
-        // bench 353 (maintainer): Stats+ on a PLAN. Same layout as the Colony Stats+ tab (shared
+        // Stats+ on a PLAN (bench 353). Same layout as the Colony Stats+ tab (shared
         // StatsPlusLayout, tuned to the mm for 1440px), but every figure is a SIMULATED Planned* value,
         // not a live colony's. Its point over the flat STATS tab is the BUDGET BREAKDOWN: where the net
         // comes from. ColonistIncome + BuildingIncome == PlannedGrossMoney by construction (RecalcPlan),
@@ -824,9 +807,9 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // bench 347 (Lek): clear the hover FIRST, so any early-return below (the live top bar
-            // especially) can't leave HoveredBuilding stuck on its last value - which kept the
-            // Description tab raised and frozen. Recomputed further down when the cursor is over a row.
+            // ⚠ clear the hover FIRST, so any early-return below (the live top bar especially)
+            // cannot leave HoveredBuilding stuck on its last value and freeze the Description tab
+            // raised. Recomputed further down when the cursor is over a row (bench 347).
             HoveredBuilding = null;
 
             if (input.OpenScreenSaveMenu && SaveBlueprints.Enabled)
@@ -839,8 +822,8 @@ namespace Ship_Game
             if (!BuildableList.IsDragging && Universe.EmpireUI.HandleInput(input, caller: this))
                 return true;
 
-            // Ludoal fork: close with the key that opens this screen (F) — it previously
-            // only closed via ESC. Guarded against text entry (blueprint naming).
+            // Ludoal fork: close with the key that opens this screen (F). Guarded against text
+            // entry (blueprint naming).
             if (input.BlueprintsSceen && !GlobalStats.TakingInput && !BuildableList.IsDragging)
             {
                 GameAudio.EchoAffirmative();
@@ -850,11 +833,10 @@ namespace Ship_Game
 
             PlanAreaHovered = BuildableList.IsDragging && SubPlanArea.HitTest(Input.CursorPosition);
             HoveredBuilding = GetHoveredBuildingFromBuildableList(input);
-            // ⚠ the plan is a queue now, so what the pointer is over comes from its rows. The
-            // ROW does the removing and consumes its own right-click (bench 347: an unconsumed
-            // one falls through to the popup's generic close and shuts the screen) - all this
-            // has to do is report the hover, because the close test below reads it as "the
-            // pointer is busy".
+            // ⚠ the plan is a queue, so what the pointer is over comes from its rows. The ROW does
+            // the removing and consumes its own right-click - an unconsumed one falls through to
+            // the popup's generic close and shuts the screen (bench 347). All this does is report
+            // the hover, which the close test below reads as "the pointer is busy".
             if (!BuildableList.IsDragging && PlanList.HitTest(input.CursorPosition))
             {
                 foreach (BlueprintsPlanListItem e in PlanList.AllEntries)
@@ -904,9 +886,9 @@ namespace Ship_Game
 
         BlueprintsTemplate CreateBlueprintsTemplate()
         {
-            // ⚠ an Array, not a set: the plan carries an ORDER now, and this is where it is
-            // written down. The tiles' own sequence is that order until the design screen lets
-            // the player rearrange it (bench 531).
+            // ⚠ an Array, not a set: the plan carries an ORDER, and this is where it is written
+            // down. The tiles' own sequence is that order until the design screen lets the player
+            // rearrange it (bench 531).
             var plannedBuildings = new Array<string>(
                 TilesList.FilterSelect(t => t.HasBuilding && !t.Building.IsOutpost, t => t.Building.Name));
             return new BlueprintsTemplate(BlueprintsName.Text.Text, Exclusive, LinkedTo, plannedBuildings, SwitchColonyType.ActiveValue);
@@ -1010,7 +992,7 @@ namespace Ship_Game
 
             // released INSIDE the list: not a drop attempt - the 75ms DragBeginDelay arms a
             // "drag" on any ordinary click, and buzzing here lands on top of the click's own
-            // sound (bench 459 double-buzz, fixed the same way on the colony's build list)
+            // sound (bench 459)
             if (!outside)
                 return;
 
@@ -1051,11 +1033,9 @@ namespace Ship_Game
         }
 
         // Ludoal fork (maintainer feedback): the return to the colony hangs on the EXIT, not on
-        // the four gestures that reach it. Hooking each one left the doors nobody listed - the
-        // right-click a child element consumes on its way to the base dismiss among them - and a
-        // player who came from a colony landed on the map instead.
-        //
-        // Two exits are not a return: switching to another Design tab (the sibling opens behind
+        // the gestures that reach it - hooking each gesture leaves out the doors nobody listed,
+        // the right-click a child element consumes on its way to the base dismiss among them.
+        // ⚠ Two exits are not a return: switching to another Design tab (the sibling opens behind
         // this call), and jumping to another group, which clears the colony's hosted seat on its
         // way out. Both are the player asking for somewhere else.
         public override void ExitScreen()

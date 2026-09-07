@@ -12,9 +12,8 @@ using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game
 {
-    // Ludoal fork (maintainer, bench 526): "Add to Construction Queue" - a build order given
-    // once and posted to every colony that can take it. The maintainer's own words for it:
-    // a blueprint built on the fly.
+    // Ludoal fork (bench 526): "Add to Construction Queue" - a build order given once and posted
+    // to every colony that can take it. A blueprint built on the fly.
     //
     // ⚠ PROTOTYPE. It carries its own lists rather than borrowing the colony screen's: those
     // are welded to that screen - each row holds a reference to it - and prying them loose is
@@ -34,8 +33,7 @@ namespace Ship_Game
         public override Rectangle PageFrame => Rect;
 
         // What the picker is aiming at. The two negatives are the targets that are not a
-        // governor type: every colony, and the ones that have no governor at all - the young
-        // ones, which is the case this button was asked for.
+        // governor type: every colony, and the ones that have no governor at all - the young ones.
         const int TargetAll = -1;
         const int TargetNoGovernor = -2;
         int Target = TargetAll;
@@ -64,7 +62,7 @@ namespace Ship_Game
         const int RowH = 22, ListTop = 118, ListH = 320;
 
         // ⚠ the SUMMONER is the parent, not the universe: PopupWindow centres itself on its
-        // parent's page frame, and handed the fullscreen universe it centred on the display
+        // parent's page frame, and handed the fullscreen universe it centres on the display
         // instead of on the page that opened it (bench 528)
         public AddToQueueScreen(GameScreen summoner, UniverseScreen u) : base(summoner, PopupW, PopupH)
         {
@@ -107,10 +105,9 @@ namespace Ship_Game
         {
             base.LoadContent();
 
-            // ⚠ in TWO pieces, and the foot is inset past the corner blocks. A single panel
+            // ⚠ in TWO pieces, and the foot is inset past the corner blocks: a single panel
             // carried down to the bottom rule paints over the outer 28px columns where the
-            // hand-drawn corner arcs live, and they read as unfinished. This is the exact shape
-            // fixed in the refit popup this morning, rewritten here from memory of the OLD one.
+            // hand-drawn corner arcs live, and they read as unfinished.
             const int CornerW = 28;
             Color fill = ScreenGroups.GroupFrameFill;
             Add(new UIPanel(BottomBigFill, fill));
@@ -153,7 +150,7 @@ namespace Ship_Game
             BasketList.OnClick = item => { Basket.Remove(item.Entry); RefreshBasket(); };
 
             // no Close button: the frame carries its own cross, and a second way out of the same
-            // room is the double door we removed from the blueprint picker this morning
+            // room is a double door
             float buttonsY = Rect.Y + ListTop + ListH + 20;
             ApplyButton = Button(ButtonStyle.Default, Rect.X + PopupW - 200, buttonsY,
                                  GameText.AddToQueueApply, click: _ => ApplyToTargets());
@@ -161,7 +158,7 @@ namespace Ship_Game
             ApplyButton.Enabled = false;
 
             // ⚠ added LAST, and that is its whole placement rule: add order is draw order, so a
-            // picker seated before the tabs opened its list UNDERNEATH them (bench 528)
+            // picker seated before the tabs opens its list UNDERNEATH them (bench 528)
             var targetList = Add(new DropOptions<int>(220, 18));
             targetList.AddOption(option: GameText.AddToQueueAllColonies, TargetAll);
             targetList.AddOption(option: GameText.AddToQueueNoGovernor, TargetNoGovernor);
@@ -177,11 +174,10 @@ namespace Ship_Game
             RefreshSource();
         }
 
-        // ⚠ a colony's buildable list is a CACHE. It is refreshed when the colony is governed or
-        // when its screen is opened - so on a save just loaded and left paused, colonies that
-        // have not ticked yet report NOTHING, and this union came out shorter or longer depending
-        // on where the player had been. Refreshed on the simulation thread first; the rows are
-        // rebuilt on the next update, which costs one frame and nothing else (bench 529).
+        // ⚠ a colony's buildable list is a CACHE, refreshed when the colony is governed or when
+        // its screen is opened - so on a save just loaded and left paused, colonies that have not
+        // ticked yet report NOTHING and the union comes out short. Refreshed on the simulation
+        // thread first; the rows are rebuilt on the next update, one frame later (bench 529).
         void RefreshSource()
         {
             if (CurrentTab == Tab.Buildings)
@@ -211,10 +207,9 @@ namespace Ship_Game
                         items.Add(new SourceItem { TroopType = t });
                     break;
                 case Tab.Ships:
-                    // ⚠ bench 530: platforms and stations come BACK. They are raised from a colony
-                    // like anything else - the colony screen offers them - and excluding them was
-                    // reading "no deep-space structures" too widely. Subspace projectors and the
-                    // rest of the deep-space set are already out via the shared rule.
+                    // ⚠ platforms and stations belong here: they are raised from a colony like
+                    // anything else, and the colony screen offers them. Only the deep-space set
+                    // (subspace projectors and the rest) is excluded, by the shared rule (bench 530).
                     foreach (IShipDesign s in Player.ShipsWeCanBuildSnapshot
                                                     .Where(s => Empire.IsPlayerQueueableShip(s, Player))
                                                     .OrderBy(s => s.Name))
@@ -237,8 +232,8 @@ namespace Ship_Game
         // player's own name, queue items the game believes the governor put there - and the
         // governor would then be free to scrap them, sieve them through a blueprint, or let the
         // terraformer walk over them. Seven places read that flag and every one is about
-        // buildings, which is also why the troop and ship calls neither take it nor need it:
-        // nothing scraps a queued ship.
+        // buildings, so the troop and ship calls neither take it nor need it: nothing scraps a
+        // queued ship.
         //
         // Troops and ships go only where they can be built at all - no spaceport, no ships. That
         // is their only gate: one basket line is one copy per eligible colony, which is exactly

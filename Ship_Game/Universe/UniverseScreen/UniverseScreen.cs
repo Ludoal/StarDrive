@@ -85,25 +85,24 @@ namespace Ship_Game
         // itself has left the stack). Armed alongside ReturnToListScreen; None when it clears.
         public GameScreens.ScreenGroups.Group ReturnToListGroup = GameScreens.ScreenGroups.Group.None;
 
-        // Ludoal fork (maintainer decision): the HOSTED tab's state - the successor of the trio
-        // above. The mechanism is universal, the colony is only its first subject; a ship or a
-        // troop panel rides the same seat later.
-        // A group's screens are born and die at every tab swap; only the universe survives
-        // them, so it carries what rides a group's row: the tab's title, HOW to (re)open
-        // its panel (never which type it was - the ReturnToListScreen philosophy), which
-        // group hosts it, and the tab index Esc returns to (-1 = opened from the map,
-        // where Esc closes to the map). One hosted seat: a new subject replaces the old.
+        // Ludoal fork (maintainer feedback): the HOSTED tab's state. The mechanism is universal,
+        // the colony is only its first subject; a ship or a troop panel rides the same seat.
+        // A group's screens are born and die at every tab swap; only the universe survives them,
+        // so it carries what rides a group's row: the tab's title, HOW to (re)open its panel
+        // (never which type it is), which group hosts it, and the tab index Esc returns to
+        // (-1 = opened from the map, where Esc closes to the map). One hosted seat: a new
+        // subject replaces the old.
         public string HostedTabTitle;                 // null = no hosted tab
         public Action OpenHostedTabPanel;             // how the tab's click reopens its panel
         public GameScreens.ScreenGroups.Group HostedTabGroup = GameScreens.ScreenGroups.Group.None;
         public int HostedTabOrigin = -1;
 
-        // Ludoal fork: arm the hosted seat for a colony - the panel-open mirrors the
-        // map-open block (Camera.cs) except it must NOT clear the tab state: the tab is
-        // precisely what is being opened. Camera anchoring identical - the panel covers
-        // the map. The title follows the planet; the colony arrows re-arm on navigation.
-        // Ludoal fork (maintainer): the Empire group's colony tab is PERMANENT - it remembers
-        // the last colony viewed there, the capital by default. The seat above is transient
+        // Ludoal fork: arming the hosted seat for a colony mirrors the map-open block
+        // (Camera.cs) except it must NOT clear the tab state: the tab is precisely what is being
+        // opened. Camera anchoring identical - the panel covers the map. The title follows the
+        // planet; the colony arrows re-arm on navigation.
+        // The Empire group's colony tab is PERMANENT (maintainer feedback) - it remembers the
+        // last colony viewed there, the capital by default. The seat above is transient
         // (per-visit, any group); this survives seat clears and group jumps.
         public Planet EmpireColonyPlanet;
         public Planet EmpireColonyDefault
@@ -371,8 +370,8 @@ namespace Ship_Game
             // recomputes light direction per-pixel from world position, with
             // smooth-quadratic radius falloff per light — automatic per-ship
             // parallax + faithful SunBurn-style multi-light contributions.
-            // Ambient at 0.06× white matches the pre-refactor per-SO ambient
-            // floor (PrimaryLightColor * 0.06 in the old contrast pass).
+            // Ambient at 0.06× white matches the per-SO ambient floor
+            // (PrimaryLightColor * 0.06).
             AddLight(new AmbientLight
             {
                 Name = "Universe Ambient",
@@ -619,12 +618,12 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork (maintainer spec): the minimap housing scales with an options slider.
-        // One seat for everything the widget anchors - the housing, the click target, the
-        // border toggle, and the two combat counters above the frame - so a live change from
-        // the options screen cannot leave them drifted apart. ⚠ the CLICK target is the map's
-        // own rect, asked of the MiniMap: a separate hand-measured rect drifted the moment the
-        // frame was reworked, and clicks panned the camera off-target.
+        // Ludoal fork (maintainer feedback): the minimap housing scales with an options slider.
+        // One seat for everything the widget anchors - the housing, the click target, the border
+        // toggle, and the two combat counters above the frame - so a live change from the options
+        // screen cannot leave them drifted apart. ⚠ the CLICK target is the map's own rect, asked
+        // of the MiniMap: a separate hand-measured rect drifts as soon as the frame changes, and
+        // clicks pan the camera off-target.
         public void SeatMinimap()
         {
             const int minimapOffSet = 14;
@@ -730,14 +729,13 @@ namespace Ship_Game
             // GlobalStats.RenderShadows is preserved as a setting for that
             // future use.
 
-            // §4.6 #1.b regression fix: MainTarget MUST PreserveContents because the
-            // shadow pre-pass in SunBurnStubs.RenderScene swaps to ShadowMap and back
-            // mid-frame. With DiscardContents, the rebind wipes the already-drawn
-            // RenderBackdrop output (nebula + stars + clouds), leaving a black scene
-            // under the ship meshes when zoomed in close enough that ships have
-            // non-zero bounds. Other RTs (Border, Lights, FogMap, PostBloom,
-            // PostDistort) are explicitly cleared at the start of their write passes,
-            // so DiscardContents is fine for them.
+            // ⚠ MainTarget MUST PreserveContents: the shadow pre-pass in
+            // SunBurnStubs.RenderScene swaps to ShadowMap and back mid-frame. With
+            // DiscardContents, the rebind wipes the already-drawn RenderBackdrop output
+            // (nebula + stars + clouds), leaving a black scene under the ship meshes when
+            // zoomed in close enough that ships have non-zero bounds. Other RTs (Border,
+            // Lights, FogMap, PostBloom, PostDistort) are explicitly cleared at the start of
+            // their write passes, so DiscardContents is fine for them.
             MainTarget   = RenderTargets.Create(device, RenderTargetUsage.PreserveContents);
             LightsTarget = RenderTargets.Create(device);
             BorderRT     = RenderTargets.Create(device);
@@ -754,7 +752,7 @@ namespace Ship_Game
             FTLManager.LoadContent(this);
 
             // ⚠ derived from the minimap FRAME (asked of the MiniMap), not from screen-foot
-            // constants: the two counters span the frame's width, half each (maintainer), and
+            // constants: the two counters span the frame's width, half each (maintainer feedback), and
             // sit just above the widget, clear of its icon bands.
             Rectangle mmap = Minimap.MapRect;
             int mmFrameL = mmap.X - 6, mmFrameR = mmap.Right + 6;   // the painted rule's edges
@@ -822,9 +820,9 @@ namespace Ship_Game
             device.SetRenderTarget(null);
             FogMap = FogMapTargetA;
 
-            // Ludoal fork: the fog map is fully derivable now (explored systems restamp
-            // every frame), so saved bytes are not loaded — this also purges the ship
-            // wakes baked into older saves. Saves still write the bytes (revert-safe).
+            // Ludoal fork: the fog map is fully derivable (explored systems restamp every
+            // frame), so saved bytes are not loaded — this also purges the ship wakes baked
+            // into older saves. Saves still write the bytes (revert-safe).
             if (false && UState.FogMapBytes != null)
             {
                 // Load saved alpha mask into the front RT so the next UpdateFogMap
@@ -869,7 +867,7 @@ namespace Ship_Game
             if (LookingAtPlanet)
                 workersPanel?.Update(fixedDeltaTime);
 
-            // Ludoal fork (maintainer, 31 Aug '26): the trade-filter conversion runs on the
+            // Ludoal fork (maintainer feedback): the trade-filter conversion runs on the
             // SIMULATION thread and cannot summon a modal from there. It raises a flag; this is
             // where the flag becomes a window, once, on the thread that owns the screens.
             if (Player.TradeZoneNoticePending)
@@ -1026,9 +1024,9 @@ namespace Ship_Game
             // Wait for the in-flight simulation turn to finish before Dispose() below tears
             // down UState (which disposes every Planet/Ship). A single turn is bounded, but a
             // heavy one (e.g. an empire federation AbsorbEmpire) on a memory-pressured machine
-            // can take far longer than the old 250ms timeout. Disposing underneath a running
-            // turn makes the sim thread dereference a disposed planet (NRE in ProcessTurns).
-            // Use a generous timeout that still guards against a genuinely stuck thread.
+            // can take seconds. Disposing underneath a running turn makes the sim thread
+            // dereference a disposed planet (NRE in ProcessTurns). The timeout is generous but
+            // still guards against a genuinely stuck thread.
             if (processTurnsThread != null && !processTurnsThread.Join(10_000))
                 Log.Warning("UniverseScreen.ExitScreen: sim thread did not stop within 10s; tearing down anyway");
 

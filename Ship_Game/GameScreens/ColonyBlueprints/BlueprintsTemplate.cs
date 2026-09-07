@@ -17,22 +17,16 @@ public sealed class BlueprintsTemplate
     [StarData] public string ModName;
     [StarData] public bool Exclusive;
     [StarData] public string LinkTo;
-    // ⚠ ORDERED, and that is the whole point (maintainer, bench 531). It was a set - no order
-    // at all, not even an accidental one - so the plan could not say what to raise first, and
-    // neither of the two questions the maintainer kept asking had an answer.
-    //
-    // The list reads as a CHRONOLOGY: the order a colony grows in, which is the order the
-    // buildings unlock in. Built from the top, replaced from the top (the primitive makes way),
-    // rebuilt from the bottom (the precious first). One list, three gestures.
-    //
-    // Uniqueness is no longer the collection's job: the design screen never offers a building
-    // already on the plan's tiles, which is what kept it unique before.
+    // ⚠ ORDERED, and that is the whole point (bench 531): the list is a CHRONOLOGY - the order
+    // a colony grows in, which is the order the buildings unlock in. Built from the top,
+    // replaced from the top (the primitive makes way), rebuilt from the bottom (the precious
+    // first). One list, three gestures. Uniqueness is not the collection's job: the design
+    // screen never offers a building already on the plan's tiles.
     [StarData] public Array<string> PlannedBuildings;
     [StarData] public ColonyType ColonyType;
     // Every name this plan has answered to. A rename rewrites the references of the game in
-    // hand, but a save written before it still holds the old name - and so does a chain, or a
-    // governor's default. Those find the plan again through this list rather than losing it.
-    // Added, never replacing anything: absent from an older save, it simply arrives null.
+    // hand; an older save, a chain or a governor's default still holds a former name and finds
+    // the plan again through this list. ⚠ Absent from an older save, it arrives null.
     [StarData] public Array<string> FormerNames;
 
     // the plan answers to its name and to every name it has carried
@@ -50,17 +44,12 @@ public sealed class BlueprintsTemplate
 
     [StarDataConstructor] public BlueprintsTemplate() { }
 
-    // ⚠ SAVE COMPATIBILITY (bench 532). PlannedBuildings was a HashSet<string> until build
-    // 532. The binary reader resolves the stored collection type fine, then fails to put a
-    // HashSet into an Array field - and it LOGS that failure and carries on rather than
-    // throwing, so the field simply arrives NULL. Every save written before 532 therefore
-    // loads a template with no plan at all, and the first colony to ask whether a building is
-    // required dies on it, in the middle of deserialization.
-    //
-    // The plan itself is not lost, which is why this recovers instead of resetting: a template
-    // lives in its own yaml under Colony Blueprints/<mod>/, already parsed into the
-    // ResourceManager by the time any save is read. We take the plan back from there, by name.
-    // An empty list only when there is genuinely nothing to take back - never a crash.
+    // ⚠ SAVE COMPATIBILITY (bench 532): a save holding PlannedBuildings as a HashSet<string>
+    // deserializes into this Array field as NULL - the reader logs the type mismatch and carries
+    // on instead of throwing. Recover rather than reset: the template also lives in its own yaml
+    // under Colony Blueprints/<mod>/, parsed into the ResourceManager before any save is read, so
+    // the plan is taken back from there by name. An empty list only when there is nothing to take
+    // back - never a crash.
     [StarDataDeserialized]
     void OnDeserialized()
     {

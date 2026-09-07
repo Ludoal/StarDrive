@@ -109,13 +109,13 @@ namespace Ship_Game
         public float MoneyLastTurn;
         public int AllTimeTradeIncome;
         [StarData] public bool AutoBuildSpaceRoads;
-        // LEGACY: the old single "Auto-explore" toggle. Kept for save compatibility - a save
-        // written before this split deserializes it, and OnDeserialized seeds the two split
-        // toggles below from it (see MigrateExplorerAutomation). Not shown in the UI anymore.
+        // LEGACY: the single "Auto-explore" toggle, kept for save compatibility - a save that
+        // predates the split deserializes it, and OnDeserialized seeds the two toggles below from
+        // it (see MigrateExplorerAutomation). Not shown in the UI.
         [StarData] public bool AutoExplore;
         [StarData] public bool AutoPickBestScout; // Ludoal fork (wishlist): Auto Pick Explorer
-        // The two empire-level explorer automations, split out of the old AutoExplore.
-        // New games start decoupled; migrated saves inherit AutoExplore into both (see below).
+        // The two empire-level explorer automations. New games start decoupled; a migrated save
+        // inherits AutoExplore into both (see below).
         [StarData] public bool AutoBuildExplorers;                // build new scouts when more are needed
         [StarData] public bool SendNewExplorersToExplore = true;  // send idle scouts out (checked by default)
         // Set once the split toggles have been seeded; distinguishes a pre-split save (seed from
@@ -177,8 +177,8 @@ namespace Ship_Game
             ResolveBlueprintPolicy(type);
         }
 
-        // Nothing else sweeps this array: a deleted plan left its row pointing at a name the
-        // catalogue no longer knows, and said nothing. A rename retargets the rows, a deletion
+        // Nothing else sweeps this array: without it a deleted plan leaves its row pointing at a
+        // name the catalogue does not know, silently. A rename retargets the rows, a deletion
         // clears them - pass an empty new name for that.
         public int CountBlueprintPolicyRows(string blueprintName)
         {
@@ -275,12 +275,10 @@ namespace Ship_Game
         [StarData] public Vector2 WeightedCenter;
         [StarData] public bool RushAllConstruction;
 
-        // Ludoal fork (maintainer, bench 529): rush a colony's queue for its first turns, so a
-        // fresh world stands up instead of crawling. Both fields are NEW, so an older save reads
-        // them off and unset - nothing changes until the player asks for it.
-        // Ludoal fork (maintainer, bench 531): a colony you found is born with its own Continuous
-        // Rush already on. No allowance, no countdown - the toggle is the colony's from the first
-        // turn and the player switches it off when he judges it has stood up.
+        // Ludoal fork (bench 531): a colony you found is born with its own Continuous Rush already
+        // on, so a fresh world stands up instead of crawling. No allowance, no countdown - the
+        // toggle is the colony's from the first turn and the player switches it off when he judges
+        // it has stood up. The field is NEW, so an older save reads it off and unset.
         [StarData] public bool RushNewColonies;
 
         [StarDataType]
@@ -308,14 +306,11 @@ namespace Ship_Game
         // the design's UID everywhere else in the codebase.
         public bool IsDesignObsolete(string designName) => ObsoletePlayerDesigns.Contains(designName);
 
-        // Ludoal fork (maintainer, bench 529): what a PLAYER may put in a colony's build queue.
-        // The colony screen and the empire-wide picker each carried their own version of this
-        // list, which is how one of them ended up offering subspace projectors while the other
-        // did not. One rule, both callers.
-        //
+        // Ludoal fork (bench 529): what a PLAYER may put in a colony's build queue. ⚠ ONE rule for
+        // both callers - the colony screen and the empire-wide picker - or the two offer different
+        // catalogues.
         // OBSOLETE designs leave both lists with it: a design the player has retired by hand has
-        // no business in a list he is choosing from - it was showing in every one of them.
-        //
+        // no business in a list he is choosing from.
         // ⚠ platforms and stations are NOT excluded here. A colony screen may legitimately raise
         // them (its click handler routes them to AddOrbital); the empire-wide picker may not, and
         // says so itself rather than making this rule lie for one of its two callers.
@@ -462,7 +457,7 @@ namespace Ship_Game
         }
 
         // Save migration: a game saved before "Auto-explore" was split into build + send inherits
-        // its old on/off state into both, so an ongoing game keeps its conduct. A fresh game (or an
+        // its on/off state into both, so an ongoing game keeps its conduct. A fresh game (or an
         // already-split save) leaves the toggles as they are.
         public void MigrateExplorerAutomation()
         {
@@ -494,11 +489,10 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork (maintainer, 5-6 Sep '26): WHICH pirate factions start alive is a setting
-        // now, where it used to be all or nothing. At Random the survivor is DRAWN, once for the
-        // galaxy, and each faction compares its own rank to that draw. Ranking by NAME rather
-        // than by load order keeps both sides of the comparison talking about the same list -
-        // file enumeration order is not a promise any platform makes.
+        // Ludoal fork: WHICH pirate factions start alive is a setting. At Random the survivor is
+        // DRAWN, once for the galaxy, and each faction compares its own rank to that draw.
+        // ⚠ Ranking by NAME, never by load order: file enumeration order is not a promise any
+        // platform makes, and both sides of the comparison must walk the same list.
         bool StartsDefeatedByPirateSetting()
         {
             string choice = Universe.P.PirateFactionChoice;
@@ -518,12 +512,12 @@ namespace Ship_Game
                         ++rank;
                 }
 
-            // Ludoal fork (maintainer, 6 Sep '26): a faction picked BY NAME - that one lives and
-            // the rest do not, so the same seed and the same setting give the same galaxy twice.
+            // Ludoal fork: a faction picked BY NAME - that one lives and the rest do not, so the
+            // same seed and the same setting give the same galaxy twice.
             if (named)
                 return data.Name != choice;
 
-            // a name this install no longer has (a mod removed, a save carried elsewhere) falls
+            // a name this install does not have (a mod removed, a save carried elsewhere) falls
             // back to All rather than quietly emptying the galaxy of pirates
             if (choice != UniverseParams.PirateChoiceRandom)
                 return false;
@@ -1245,10 +1239,8 @@ namespace Ship_Game
             for (int i = 0; i < OwnedPlanets.Count; i++)
             {
                 Planet p = OwnedPlanets[i];
-                // ⚠ the WHOLE pair (bench 555): a technology changes what a colony can REACH, and
-                // the figure beside it shares its denominator. Recomputing one of them alone is
-                // how the two came to disagree - the third time this same half-call is corrected,
-                // and the reason Refresh() exists at all.
+                // the whole pair: the two figures share a denominator, so they are refreshed
+                // together (bench 555)
                 p.Blueprints?.Refresh();
             }
         }
@@ -1552,8 +1544,7 @@ namespace Ship_Game
             debug.AddLine($"Idle Freighters: {GetIdleFreighters(false).Length}");
             debug.AddLine($"Fast or Big Ratio: {FastVsBigFreighterRatio}");
 
-            // Ludoal fork (maintainer feedback): three readings taken before the trade routing
-            // is reworked, so the reform starts from measurement instead of intuition.
+            // Ludoal fork (maintainer feedback): three readings on the trade routing.
             // 1. does the cap BIND, or does the fleet float below it;
             // 2. how many trade slots stand unserved next to that cap - the cap is a stock
             //    figure while the slots carry a flux term, so the two drift as an empire matures;
@@ -2101,10 +2092,10 @@ namespace Ship_Game
                     snapshot.MilitaryStrength = CurrentMilitaryStrength;
                     snapshot.TaxRate = data.TaxRate;
                     snapshot.Population = OwnedPlanets.Sum(p => p.Population);
-                    // Ludoal fork (Trends): the economy and science series, same metrics
-                    // the intelligence RANK rows sort by. bench 464 (maintainer + design
-                    // review): the excess-goods windfall is real cash but not structural
+                    // Ludoal fork: the economy and science series, same metrics the intelligence
+                    // RANK rows sort by. The excess-goods windfall is real cash but not structural
                     // economy - the curve tracks the REGULAR income, the one-off stays out
+                    // (bench 464)
                     snapshot.GrossIncome = GrossIncome - ExcessGoodsMoneyAddedThisTurn;
                     snapshot.ScientificStrength = UnlockedTechs.Sum(t => t.Tech.Cost);
                 }
@@ -2297,7 +2288,7 @@ namespace Ship_Game
             if (IsDefeated) return true;
             // Ludoal fork: a NoEliminationVictory universe (sandbox, battle simulator
             // arena) eliminates nobody by colony count — the arena empires own zero
-            // planets by design and were insta-"defeated" here.
+            // planets by design.
             if (Universe.NoEliminationVictory) return false;
             if (!Universe.P.EliminationMode && OwnedPlanets.Count != 0)
                 return false;

@@ -27,9 +27,8 @@ namespace Ship_Game
         readonly SubmenuScrollList<FighterListItem> ChooseFighterSub;
         readonly ModuleSelectScrollList ModuleSelectList;
         readonly Submenu ActiveModSubMenu;
-        // Ludoal fork: was the Shift-click comparison panel; spec v4 folded its delta lanes into
-        // the Active frame and gave the freed slot to the hover frame, which shows whatever the
-        // cursor is on in the list — transient, so it costs no permanent surface.
+        // Ludoal fork: the hover frame - it shows whatever the cursor is on in the list,
+        // transient, so it costs no permanent surface. The delta lanes live in the Active frame.
         readonly Submenu HoverModSubMenu;
         readonly UIButton Obsolete;
 
@@ -43,12 +42,11 @@ namespace Ship_Game
 
             ModuleSelectList = base.Add(new ModuleSelectScrollList(this, Screen));
 
-            // Ludoal fork: the Active panel carries the delta lanes — it is the only stat frame
-            // left, so it needs the width the Compared one used to have. The bottom margin
-            // matches the side one, and the list runs down to it with the standard gap.
-            // Ludoal fork: anchored on the FOOT line rather than on the list above it - the band
+            // Ludoal fork: the Active panel carries the delta lanes, so it takes the wide width.
+            // The bottom margin matches the side one, and the list runs down to it with the
+            // standard gap. ⚠ Anchored on the FOOT line, not on the list above it - the band
             // between the two carries the column's view toggles, and a frame measured from the
-            // list would climb into them. The right column's cartouche is built the same way.
+            // list climbs into them. The right column's cartouche is built the same way.
             float acsubTop = Rect.Bottom + FrameGap + ToggleRowBand;
             RectF acsub = new(Rect.X, acsubTop,
                               PlainFrameWidth, // widened on demand, see Update
@@ -71,10 +69,9 @@ namespace Ship_Game
             
             RectF fighterR = acsub.Move(acsub.W + 20, 0);
 
-            // Ludoal fork: the hover frame, in the slot the comparison panel used to hold. Same
-            // slot as Choose Fighter (the fighter list wins it when a hangar is selected). It is
-            // the OLD Active frame, unchanged: its 305px and its tight columns, since it never
-            // carries a delta lane.
+            // Ludoal fork: the hover frame. Same slot as Choose Fighter (the fighter list wins it
+            // when a hangar is selected). It keeps the plain geometry - 305px and tight columns -
+            // since it never carries a delta lane.
             RectF hoverR = new(acsub.X + acsub.W + FrameGap, acsub.Y, PlainFrameWidth, acsub.H);
             HoverModSubMenu = base.Add(new Submenu(hoverR, "Hovered Module"));
             HoverModSubMenu.SetBackground(Colors.TransparentBlackFill);
@@ -106,7 +103,7 @@ namespace Ship_Game
 
         bool CategoryRestored;
 
-        // Ludoal fork (spec v4): the design cartouches align their height on the module frames,
+        // Ludoal fork: the design cartouches align their height on the module frames,
         // so the four frames read as one row across the screen.
         public float FrameHeight => ActiveModSubMenu.Height;
 
@@ -145,7 +142,7 @@ namespace Ship_Game
         // answer to the other.
         bool Comparing => Screen.CompareModule != null;
 
-        // Ludoal fork (spec v4): the hover frame waits this long before appearing, so running the
+        // Ludoal fork: the hover frame waits this long before appearing, so running the
         // cursor down the list does not flash a frame per row.
         const float HoverDelay = 0.25f;
         // Ludoal fork: the symmetric one on the way OUT. Sweeping from one row to the next
@@ -163,31 +160,25 @@ namespace Ship_Game
         ShipModule HoverShown;
         string HoverDwellUID; // the module the dwell is counting for; a different one restarts it
 
-        // Ludoal fork: column geometry belongs to the FRAME, not to the draw path. Both paths —
-        // the plain one (DrawModuleStats/DrawWeaponStats, upstream's, which stepped a hardcoded
-        // 152) and the comparison union — must agree for a given frame, otherwise pinning a
-        // module slides every number sideways.
-        // The Active frame is wide because it carries delta lanes; the Hover frame IS the old
-        // Active, so it keeps upstream's width and tight step, untouched.
-        // Ludoal fork: the frames line up with the LIST above them. Upstream's 305 was a
-        // constant that happened to match; Rect.Width always does.
+        // Ludoal fork: column geometry belongs to the FRAME, not to the draw path. ⚠ Both paths -
+        // the plain one (DrawModuleStats/DrawWeaponStats) and the comparison union - must agree
+        // for a given frame, or pinning a module slides every number sideways. The Active frame is
+        // wide because it carries delta lanes; the Hover frame keeps the plain width and tight
+        // step. The frames line up with the LIST above them, so the width is Rect.Width.
         float PlainFrameWidth => Rect.Width;
 
         // same grey as the design cartouche's labels
         static readonly Color LabelGrey = new Color(168, 172, 178);
         const float DeltaFrameExtra = 105f;  // what the delta lanes need on top
 
-        // Ludoal fork: the screen's shared spacing. Upstream folded all of this into one
-        // hardcoded 100 at the bottom; split so the design side can use the same numbers and the
-        // four frames line up.
-        // Ludoal fork: the width of BOTH lists of the workbench - modules on the left, designs on
-        // the right - so the two columns of one screen always match, at any resolution.
+        // Ludoal fork: the screen's shared spacing, split into named constants so the design side
+        // uses the same numbers and the four frames line up. ListWidth is the width of BOTH lists
+        // of the workbench - modules on the left, designs on the right - so the two columns of one
+        // screen always match, at any resolution.
         public const float ListWidth = 305f;
         public const float FrameGap = 10f;   // between the list and the frame, and between frames
-        public const float BottomPad = 5f;   // same as the side margin (was 15 here, 0 on the design side)
-        // the black button bar at the foot of the screen — same 70 the screen builds BlackBar
-        // with, so the module frames end on the design cartouches' line
-        // Ludoal fork: the column band, set by the screen once its tab frame exists. The frame
+        public const float BottomPad = 5f;   // same as the side margin
+        // Ludoal fork: the column band, set by the screen once its tab frame exists. ⚠ The frame
         // is the container, so every vertical bound in this file is measured from it rather than
         // from the window - a screen-relative bound leaves the frames short of the frame's own
         // floor and the columns hanging outside its sides.
@@ -203,11 +194,10 @@ namespace Ship_Game
         public static float FramesBottom() => BandBottom - BottomPad;
 
         // Ludoal fork: a CONSTANT, not a share of the window. The frame holds the same stat rows
-        // at every size, so a fraction only made it lose what its content still needed - at 900
-        // it came out 76px shorter than at 1080 for identical text, which is the block visibly
-        // shrinking instead of the list absorbing. 454 is what 0.42 gave at 1080, i.e. the height
-        // the rows were already living in comfortably. The list is the one variable block: it
-        // takes whatever is left, so this single number still decides both and they cannot drift.
+        // at every size, so a fraction makes it lose what its content still needs - at 900 it
+        // comes out 76px shorter than at 1080 for identical text, the block shrinking instead of
+        // the list absorbing. The list is the one variable block: it takes whatever is left, so
+        // this single number decides both and they cannot drift.
         // ⚠ The frame gives way only when the LIST would be left with less than it needs to
         // scroll - the guard is on the variable block, not on a share of the window.
         public const float FrameHeightConst = 454f;
@@ -236,12 +226,9 @@ namespace Ship_Game
         const float Col0Pull = 20f; // first group, left
         const float Col1Pull = 30f; // second group, left
 
-        // Ludoal fork: the Active frame is only wide because it carries delta lanes. With the
-        // comparison off it has none, so it goes back to upstream's tight geometry - otherwise
-        // it reserves room for something that will never be drawn.
-        // Ludoal fork: the frame is WIDE only while a comparison is actually running - tied to
-        // the pin state, not a permanent feature toggle, so the panel is not wider for deltas
-        // that are usually not there.
+        // Ludoal fork: the Active frame is WIDE only while a comparison is actually running, tied
+        // to the pin state and not to a permanent feature toggle - with the comparison off it has
+        // no delta lanes and goes back to the tight geometry (see IsWideFrame below).
         // Ludoal fork: THE hovered module, whichever way the cursor found it — a list row or a
         // module already fitted on the hull. One property, so the three readers (the dwell
         // timer, the stats draw and the comparison draw) cannot disagree about what is hovered.
@@ -405,10 +392,10 @@ namespace Ship_Game
                 }
                 if (union.Count == 0)
                     continue;
-                // spec v4: ONE frame. The values shown are `own`'s; the other module never shows
-                // its own numbers, it only sets the delta (the player who wants them in clear
-                // hovers the list). Delta sign reads "own vs other": on the Active frame, a
-                // green + means the module on the workbench is the better one.
+                // ONE frame. The values shown are `own`'s; the other module never shows its own
+                // numbers, it only sets the delta (the player who wants them in clear hovers the
+                // list). Delta sign reads "own vs other": on the Active frame, a green + means
+                // the module on the workbench is the better one.
                 DrawStatColumn(batch, union, aByKey, withDeltas ? bByKey : null, col, panel);
             }
         }
@@ -522,7 +509,7 @@ namespace Ship_Game
 
             // Ludoal fork: the Active frame is the BRUSH's frame — it shows what the cursor is
             // carrying, nothing else. A merely hovered module (in the list or sitting on the
-            // hull) belongs to the Hover frame in both régimes.
+            // hull) belongs to the Hover frame in both cases.
             ActiveModSubMenu.Visible = Screen.ActiveModule != null;
 
             // Ludoal fork: the Active frame grows only while a comparison is running, and
@@ -826,9 +813,8 @@ namespace Ship_Game
 
             // Ludoal fork: the header (title/restrictions/description) keeps a FIXED slot so the
             // stat rows start at the same height for every module — short description or long.
-            // The ellipsis stays: it is what guarantees the description never pushes the stats
-            // down. It no longer serves aligning two frames (spec v4 left only one), but the
-            // fixed start is still what makes the numbers hold still between modules.
+            // The ellipsis is what guarantees the description never pushes the stats down, and
+            // the fixed start is what makes the numbers hold still between modules.
             int maxLines = (int)((panel.Y + StatsStartRel - 8f - modTitlePos.Y) / Fonts.Arial12.LineSpacing);
             string[] descLines = txt.Split('\n');
             if (maxLines > 0 && descLines.Length > maxLines)
@@ -904,11 +890,11 @@ namespace Ship_Game
         {
             DrawStat(ref modTitlePos, GameText.Cost, mod.ActualCost(Universe), GameText.IndicatesTheProductionCostOf);
             DrawStat(ref modTitlePos, GameText.Mass2, mod.GetActualMass(Player, 1), GameText.TT_Mass);
-            // Ludoal fork: slot footprint. Upstream player feedback (Roland-Johansen): "the
-            // number of module slots is a relevant value when comparing modules while it
-            // normally isn't shown for single modules". Shown as AREA rather than "2x3" so it
-            // goes through the collector and gets a delta like every other row — a text value
-            // would be invisible to the comparison, which is the one place it matters.
+            // Ludoal fork: slot footprint (player feedback) - the number of module slots is a
+            // relevant value when comparing modules, though it is not shown for a single module.
+            // Shown as AREA rather than "2x3" so it goes through the collector and gets a delta
+            // like every other row — a text value would be invisible to the comparison, which is
+            // the one place it matters.
             DrawStat(ref modTitlePos, "Slots", mod.Area, GameText.TT_TotalModuleSlots);
             DrawStat(ref modTitlePos, GameText.Health, mod.ActualMaxHealth, GameText.AModulesHealthRepresentsHow);
 

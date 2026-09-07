@@ -9,8 +9,7 @@ namespace Ship_Game
     // Ludoal fork (maintainer feedback): a trade zone is a NAMED LIST OF COLONIES that the
     // empire's freighters serve as a set. It carries no geometry: the dispatch pairs planets,
     // never surfaces, so a list of colonies is the native primitive - the same shape a ship's
-    // own TradeRoutes already had, promoted from a scribble on one hull to an empire asset.
-    //
+    // own TradeRoutes carry.
     // Quota 0 means Auto: the zone's need is MEASURED rather than ordered. Any other number is
     // a standing order from the player.
     [StarDataType]
@@ -31,7 +30,7 @@ namespace Ship_Game
         [StarData] public Array<int> Colonies { get; private set; } = new();
         [StarData] public int Quota;
 
-        // Ludoal fork (maintainer feedback, Roland Johansen): the hulls this zone HOLDS BACK for
+        // Ludoal fork (maintainer feedback): the hulls this zone HOLDS BACK for
         // its stations - lent to it, unspent, and kept out of the rest of the turn. The stations
         // standing on its member bodies draw here rather than on the common pool, which is what
         // putting one in a zone buys: it is served on the zone's budget instead of taking the
@@ -40,9 +39,8 @@ namespace Ship_Game
         public Ship[] LentThisTurn = Array.Empty<Ship>();
 
         // ★ WHAT THIS ZONE MAY ASK FOR, once the zones above it in the list have taken their share
-        // of any colony they hold in common. The need keeps ONE book (Lek, 31 Aug): the delivery
-        // side already worked that way - a planet's free slots close on whatever is inbound,
-        // whoever sent it - and this is the same law applied to the READING of the need. Without
+        // of any colony they hold in common. The need keeps ONE book, the same law the delivery
+        // side obeys: a planet's free slots close on whatever is inbound, whoever sent it. Without
         // it a world named by two zones is counted twice and requisitioned for twice, while only
         // one of the two can ever deliver. Not serialized: a fact of the turn.
         public int MeasuredNeed;
@@ -51,19 +49,17 @@ namespace Ship_Game
         // one need: two screens that compute cannot agree, two screens that read cannot differ.
         // Never serialized either: a fact of the turn.
         public int NeedFood, NeedProd, NeedColonists;
-        // The same three, read one step earlier: before the cargo already in the air was netted
-        // out of them. ONLY the freighters overlay uses these, because it prints that cargo as its
+        // The same three, read one step earlier: before the cargo already in the air is netted out
+        // of them. ONLY the freighters overlay uses these, because it prints that cargo as its
         // numerator - see PerimeterNeed's beforeServing. Same function, same set of colonies, one
         // step apart, so the two can never drift into separate definitions. Not serialized either.
         public int NeedFoodBeforeServing, NeedProdBeforeServing, NeedColonistsBeforeServing;
         // ★ THE SAME BOOK, UNCAPPED. MeasuredNeed above is the dispatch QUOTA: it is bounded by
         // what the ground the dispatch searches can actually send, because a run needs a berth at
         // both ends. This one is what the importers burn, whatever anyone can do about it.
-        // ⚠ they were one number until the bench of 6 Sep, and a zone whose supply had run dry
-        // read "Required 0" - "I need nothing" written exactly like "nobody can serve me", which
-        // are the two most different states a zone can be in. Any rule asking "is this zone
-        // served" must read THIS one; the capped figure would call a starving zone satisfied.
-        // Not serialized either: a fact of the turn.
+        // ⚠ Any rule asking "is this zone served" must read THIS one: the capped figure reads 0
+        // for a zone whose supply has run dry, writing "I need nothing" exactly like "nobody can
+        // serve me". Not serialized either: a fact of the turn.
         public int RawNeed;
         // ★ THE WORLDS THIS ZONE ACTUALLY COUNTS, per good, written by MeasureZoneNeeds: a world
         // named by two zones is counted by the better-ranked one, and every figure paired with
@@ -117,8 +113,8 @@ namespace Ship_Game
         public bool Serves(Planet planet) => Colonies.Contains(planet.Id);
 
         // The stations standing on this zone's member bodies. A station is a SHIP tethered to a
-        // body, so the zone names the body and the fleet answers with what stands on it - which
-        // is also why a mineable or researchable body may be a member while owning nothing.
+        // body, so the zone names the body and the fleet answers with what stands on it - a
+        // mineable or researchable body may therefore be a member while owning nothing.
         public Array<Ship> Stations(Empire owner)
         {
             var stations = new Array<Ship>();
@@ -155,11 +151,10 @@ namespace Ship_Game
             return planets;
         }
 
-        // ⚠ the lessons the old per-zone measure carried, and they now govern MeasureZoneNeeds
-        // on the empire: the unit is the freighter BERTH, counted on the IMPORT side and on the
-        // TOTAL slots - never the free ones, which fall to nought exactly when a zone is being
-        // served (bench 544), and never bounded by the export side, which belongs to an enclosed
-        // zone and never limited this one (bench 546). No rotation term: turning a backlog into a
+        // ⚠ the invariants MeasureZoneNeeds obeys on the empire: the unit is the freighter BERTH,
+        // counted on the IMPORT side and on the TOTAL slots - never the free ones, which fall to
+        // nought exactly when a zone is being served, and never bounded by the export side, which
+        // belongs to an enclosed zone (bench 546). No rotation term: turning a backlog into a
         // fleet size needs a measured arrival rate, and inventing one produces a plausible number
         // that is wrong.
 

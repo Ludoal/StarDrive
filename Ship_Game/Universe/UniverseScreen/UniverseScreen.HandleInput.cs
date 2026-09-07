@@ -50,15 +50,11 @@ namespace Ship_Game
             return true;
         }
 
-        // Ludoal fork (spec: interactive band): the map answers a curated set of gestures
-        // while a PAGE is open, LIMITED to the visible band outside the page's frame.
-        // Reached through the live top bar's shared path - never via the main HandleInput,
-        // whose hosted-seat bookkeeping assumes no input arrives under stacked pages.
-        // v1 gestures: the minimap (overlay buttons and navigation) and the wheel zoom.
-        // Ludoal fork: a page draws controls OUTSIDE the frame it declares - the bottom-right
-        // buttons that sit over the minimap's corner. The map answers only where it is really
-        // visible, so a pixel the player sees a control on belongs to the page, frame or not.
-        // Ludoal fork: everything the page owns at this pixel - its declared frame, and the
+        // Ludoal fork: the map answers a curated set of gestures while a PAGE is open, LIMITED to
+        // the visible band outside the page's frame - the minimap (overlay buttons and navigation)
+        // and the wheel zoom. ⚠ Reached through the live top bar's shared path, never via the main
+        // HandleInput, whose hosted-seat bookkeeping assumes no input arrives under stacked pages.
+        // PageOwnsPixel covers everything the page owns at this pixel: its declared frame, and the
         // controls it draws outside that frame (the bottom-right buttons over the minimap).
         static bool PageOwnsPixel(GameScreen caller, Vector2 pos)
             => caller.PageFrame.HitTest(pos) || CallerDrawsHere(caller, pos)
@@ -92,11 +88,10 @@ namespace Ship_Game
                 return true;
             if (HandleMinimapNavigation(input))
                 return true;
-            // (maintainer feedback, bench 442) the two minimap-seated windows stay LIVE
-            // beside an open page, like the minimap they dock to. Their handlers run first
-            // (buttons, tooltips); an open window's rect then owns the cursor either way,
-            // so a click on the window body cannot fall through to box-select or the map
-            // click resolver below.
+            // the two minimap-seated windows stay LIVE beside an open page, like the minimap they
+            // dock to. Their handlers run first (buttons, tooltips); an open window's rect then
+            // owns the cursor either way, so a click on the window body cannot fall through to
+            // box-select or the map click resolver below (bench 442).
             if (ExoticBonusesWindow.AcceptsBandInput &&
                 (ExoticBonusesWindow.HandleInput(input) || ExoticBonusesWindow.HitTest(input.CursorPosition)))
                 return true;
@@ -175,11 +170,10 @@ namespace Ship_Game
             if (input.EmpirePatrolsScreen)        ScreenManager.AddScreen(new EmpirePatrolsScreen(this, Player));
             if (input.ImportantEventsScreen)      ScreenManager.AddScreen(new ImportantEventsScreen(this)); // Ludoal fork: F7
 
-            // Ludoal fork (bench 427): keyboard colony navigation - leaf through the
-            // player's colonies (selection + pan at constant zoom), Home snaps to the capital.
-            // bench 429 (maintainer feedback): the tour is SPATIAL - systems ordered by
-            // distance from the homeworld's system, planets by orbit within each system,
-            // so a system is finished before the tour jumps to the next one. And the tour
+            // Ludoal fork (bench 429): keyboard colony navigation - leaf through the player's
+            // colonies (selection + pan at constant zoom), Home snaps to the capital. The tour is
+            // SPATIAL: systems ordered by distance from the homeworld's system, planets by orbit
+            // within each system, so a system is finished before the tour jumps to the next. It
             // resumes from the currently selected colony, wherever the mouse left it.
             if (input.PrevColony || input.NextColony)
             {
@@ -219,9 +213,9 @@ namespace Ship_Game
             if (input.FleetDesignScreen) ScreenManager.AddScreen(new FleetDesignScreen(this, EmpireUI, "sd_ui_accept_alt3"));
             if (input.ZoomToShip) InputZoomToShip();
             if (input.ZoomOut)    InputZoomOut();
-            // Ludoal fork (wishlist): Escape no longer jumps the zoom between fixed
-            // levels at the current camera XY — it read as a random center-zoom.
-            // Deliberate zooming keeps its own keys (ZoomToShip / ZoomOut / wheel).
+            // Ludoal fork (wishlist): Escape does not jump the zoom between fixed levels at the
+            // current camera XY - it reads as a random center-zoom. Deliberate zooming keeps its
+            // own keys (ZoomToShip / ZoomOut / wheel).
             // if (input.Escaped)    DefaultZoomPoints();
             if (input.Tab && !input.LeftCtrlShift) ShowShipNames = !ShowShipNames;
 
@@ -744,19 +738,15 @@ namespace Ship_Game
 
         Ship FindClickedShip(InputState input)
         {
-            // Workaround for #254 (Matrix.Invert precision loss at CamPos.Z in the millions).
-            // The old spatial-search approach built the world click rect by unprojecting the
-            // cursor pixel ± a screen-pixel radius. On epic maps Unproject diverges from Project
-            // by ~17 pixels / ~500 world units (float matrix invert amplifies error after
-            // perspective division), so the rect was offset from the ship's actual position and
-            // the spatial search returned 0 even when the cursor was visually on the icon.
-            // We instead project each candidate ship forward to screen and compare in pixel
-            // space — Project alone is fine, only the invert step loses precision.
+            // ⚠ Each candidate ship is projected forward to screen and compared in PIXEL space,
+            // never by unprojecting the cursor (issue 254): on epic maps Unproject diverges from
+            // Project by ~17 pixels / ~500 world units, because float matrix invert amplifies
+            // error after perspective division. Project alone is fine; only the invert step
+            // loses precision.
             //
-            // Per-ship click radius: take whichever is larger — the ship's actual on-screen
-            // radius (close zoom: many pixels) or the icon-mode floor (far zoom: ~12 px).
-            // Without this the click box is fixed at 12 px and you can only select close-up
-            // ships by clicking near their geometric center.
+            // Per-ship click radius: whichever is larger - the ship's actual on-screen radius
+            // (close zoom: many pixels) or the icon-mode floor (far zoom: ~12 px). A fixed 12 px
+            // box only selects close-up ships near their geometric center.
             //
             // No prefilter: iterating 5000 ships with a Vector2 distance check is sub-
             // millisecond and avoids the same Unproject-precision trap on cursor→world.
@@ -1036,11 +1026,10 @@ namespace Ship_Game
                     return true;
             }
 
-            // Ludoal fork: the sun itself is clickable up close — star cartouche.
-            // Extended to SectorView (bench 420): the far path's world-space hit radius
-            // bottoms out at close zoom, and an unexplored system has no planets to
-            // rescue the click - explored ones only felt clickable through theirs. The
-            // screen-space sun test has no such dead zone.
+            // Ludoal fork (bench 420): the sun itself is clickable up close and out to SectorView
+            // - star cartouche. The far path's world-space hit radius bottoms out at close zoom,
+            // and an unexplored system has no planets to rescue the click; the screen-space sun
+            // test has no such dead zone.
             if (viewState <= UnivScreenState.SectorView)
             {
                 SolarSystem sun = FindSunUnderCursorClose(input.CursorPosition);
@@ -1144,9 +1133,9 @@ namespace Ship_Game
             {
                 // if we selected a bunch of civilian ships, but some of them are troop transports
                 // then discard all ships that aren't troop transports.
-                // upstream issue 298: count only the player's own selected ships — an ENEMY
-                // transport in the box used to poison this and strip the whole selection.
-                // And Ctrl means 'everything of mine': the preference filter yields to it.
+                // count only the player's own selected ships - an ENEMY transport in the box
+                // would poison this and strip the whole selection (issue 298). And Ctrl means
+                // 'everything of mine': the preference filter yields to it.
                 bool hasTroopTransports = ships.Any(s => s.IsSingleTroopShip);
                 if (hasTroopTransports)
                     ships.RemoveAll(s => !s.IsSingleTroopShip);

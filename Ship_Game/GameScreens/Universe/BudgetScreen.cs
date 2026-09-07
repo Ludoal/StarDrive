@@ -82,8 +82,8 @@ namespace Ship_Game.GameScreens
             }
             public void AddItem(LocalizedText text, Func<float> getValue, Color keyColor)
             {
-                // charte (Lek, étape 3): line items are pure nature - neutral; the TOTALS
-                // below are results and keep the sign colours
+                // the money charte: line items are pure nature - neutral; the TOTALS below are
+                // results and keep the sign colours
                 AddSplit(new UILabel(text.Text, keyColor),
                          new UILabel(NeutralText(getValue, f => f.MoneyString())) );
             }
@@ -171,7 +171,7 @@ namespace Ship_Game.GameScreens
                     l.Size = new Vector2(r.Width - UITable.PadX, Fonts.Arial12.LineSpacing);
                     // the cell owns its lane: without this a value that gains a digit widens the
                     // label and the right-aligned number leaves its column until the page is
-                    // reopened (maintainer feedback, bench 578)
+                    // reopened (bench 578)
                     l.FixedSize = true;
                     l.TextAlign = TextAlign.Right;
                     Add(l);
@@ -756,7 +756,7 @@ namespace Ship_Game.GameScreens
         static Func<UILabel, string> DynamicText(Func<float> getValue, Func<float, string> stringify)
             => ColorText(TableColor.Signed, getValue, stringify);
 
-        // charte (Lek, étape 3): the NEUTRAL twin - a value whose nature never changes
+        // the money charte: the NEUTRAL twin - a value whose nature never changes
         // (a cost is a cost) carries no colour; colour is reserved for results
         static Func<UILabel, string> NeutralText(Func<float> getValue, Func<float, string> stringify)
             => ColorText(TableColor.Neutral, getValue, stringify);

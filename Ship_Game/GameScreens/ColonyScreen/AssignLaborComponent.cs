@@ -18,12 +18,11 @@ namespace Ship_Game
         bool ShowMaxValue; // show the 100%-labor potential beside each current value
         float MaxSliderRatio; // slider width when ShowMaxValue is on (Colony and Colonies differ)
 
-        // Ludoal fork (maintainer bench 299): the title row can carry EXTRA TABS - the
-        // Terraforming tab migrated here from the facilities block, whose row was folding
-        // to a second line. The host wires OnTabChange and hides the sliders itself.
+        // Ludoal fork (bench 299): the title row can carry EXTRA TABS - Terraforming rides here
+        // rather than on the facilities block. The host wires OnTabChange and hides the sliders.
         public Submenu TitleMenu => Title;
-        // ⚠ the Auto toggle hides WITH the sliders it governs. Hiding only the sliders left it
-        // drawn over the Terraform tab, offering to automate controls that were not on screen
+        // ⚠ the Auto toggle hides WITH the sliders it governs: hiding only the sliders leaves it
+        // drawn over the Terraform tab, offering to automate controls that are not on screen
         // (maintainer feedback).
         public bool SlidersVisible
         {
@@ -36,11 +35,10 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork (maintainer bench 524): Labor's own lever, above the three padlocks.
-        // ⚠ bench 526: it needs no reserve carved off the block. The first slider already sits a
-        // quarter of the way down, and the toggle fits in that gap - reserving a row on top of it
-        // took 22px from the sliders twice over, which showed up as three rows squeezed into the
-        // bottom of the frame here and, worse, on the Colonies list where the block is shorter.
+        // Ludoal fork (bench 524): Labor's own lever, above the three padlocks.
+        // ⚠ no reserve is carved off the block for it: the first slider already sits a quarter of
+        // the way down and the toggle fits in that gap. Reserving a row on top would take 22px
+        // from the sliders twice over, worst on the Colonies list where the block is shorter.
         const int AutoRowH = 22; // the toggle's own height, used to seat it - NOT taken off the block
         UICheckBox AutoToggle;
 
@@ -98,9 +96,8 @@ namespace Ship_Game
             Sliders.Rect = SlidersHousing;
             base.PerformLayout();
             // ⚠ seated AFTER the sliders have laid themselves out: the toggle sits on the PADLOCK
-            // column, centred on it, one row above the first slider - and both of those numbers
-            // belong to the group, which is why they are asked of it rather than rebuilt here
-            // (bench 525: built from the block's own corner it landed high and far to the left).
+            // column, centred on it, one row above the first slider. Both numbers belong to the
+            // group and are asked of it, never rebuilt from the block's own corner (bench 525).
             AutoToggle.PerformLayout();
             // clamped: on the Colonies list the block is short enough that a quarter of it can be
             // less than the toggle's own height, and the toggle would climb out of the top

@@ -6,22 +6,18 @@ using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game
 {
-    /// Ludoal fork: the popup window's SURFACE, split out from the class that owned it.
+    /// Ludoal fork: the popup window's SURFACE - the geometry and the draw, taking a rect.
     ///
-    /// PopupWindow draws the frame the maintainer picked as this interface's reference look -
-    /// hand-drawn corners, a gradient rule under the title, a title band that reaches both
-    /// edges. Every attempt to approach it with procedural painting came back short on the
-    /// bench, for a reason no amount of tuning fixes: those corners are 28x30 bitmaps and that
-    /// rule is an artist's gradient, neither of which an arc computed from a radius reproduces.
+    /// This is the interface's reference look: hand-drawn corners, a gradient rule under the
+    /// title, a title band that reaches both edges. ⚠ It is not reproducible procedurally - the
+    /// corners are 28x30 bitmaps and the rule is an artist's gradient, neither of which an arc
+    /// computed from a radius draws.
     ///
-    /// The obstacle was never the drawing, it was PopupWindow itself: it centres its rect on
-    /// screen and derives from GameScreen, so a screen that must span the display under the top
-    /// bar - or that already derives from something else - cannot simply inherit it. So the
-    /// geometry and the draw live here, taking a rect, and PopupWindow becomes one caller among
-    /// others rather than the sole owner.
-    ///
-    /// One arithmetic, several consumers: the alternative was a second copy of these twenty-odd
-    /// numbers, which is how two frames that ought to match end up half a pixel apart.
+    /// It lives apart from PopupWindow because PopupWindow centres its rect on screen and derives
+    /// from GameScreen: a screen that spans the display under the top bar, or that already derives
+    /// from something else, cannot inherit it. PopupWindow is one caller among others.
+    /// One arithmetic, several consumers - a second copy of these twenty-odd numbers is how two
+    /// frames that ought to match end up half a pixel apart.
     public struct PopupFrame
     {
         // the corner blocks and their strokes
@@ -38,15 +34,11 @@ namespace Ship_Game
         /// the top of the foot band: where a caller's own filler must stop
         public readonly int BottomFillTop => BottomFill.Y;
 
-        /// The title bar's height, as PopupWindow has always built it: the band is 46 tall by
-        /// default and starts 7 below the frame's top edge. Content begins under the sum.
-        /// Ludoal fork (maintainer question, 1 Sep): the height comes from the theme now
-        /// (Theme.yaml -> TitleBarHeight) instead of being frozen here. The YAML knob already
-        /// existed and drove NOTHING - UITheme.TitleBarH had no consumer at all, and every screen
-        /// read this const instead. A value exposed in a settings file is not a value that is wired.
-        /// WARNING there is a technical floor: TitleLeft/TitleRight - the two stubs that carry the
-        /// band out to the frame's edges - are laid out at TitleRect.Y + 23, so a band shorter than
-        /// that draws a negative rect. The theme is clamped up to it rather than trusted blind.
+        /// The title bar's height: the band starts 7 below the frame's top edge and content begins
+        /// under the sum. Ludoal fork: the height comes from the theme (Theme.yaml -> TitleBarHeight).
+        /// ⚠ Technical floor: TitleLeft/TitleRight - the two stubs that carry the band out to the
+        /// frame's edges - are laid out at TitleRect.Y + 23, so a band shorter than that draws a
+        /// negative rect. The theme value is clamped up to TitleBarMin, never trusted blind.
         public const int TitleBarMin = 24;
         public static int TitleBarHeight
             => UITheme.TitleBarH < TitleBarMin ? TitleBarMin : UITheme.TitleBarH;
@@ -59,18 +51,16 @@ namespace Ship_Game
         /// wide, the foot 30, and content laid out on the raw rect runs under both.
         public const int BorderLeft = 3, BorderRight = 11, BorderBottom = 30;
 
-        /// ⚠ Third measurement, the right one this time: what matters is not where the INK ends
-        /// but where the bright RULE row sits. The bottom band is 12 tall and its rule is rows
-        /// 0-1 - everything under it is drop shadow - so the visible line runs a full 12 rows
-        /// above rect.Bottom. Measuring "last inked row" found the shadow's foot and put the
-        /// line 10px high twice over. A caller that wants the LINE on a margin extends its rect
-        /// by BottomLine; the shadow rows fall past it, which is what they are for.
+        /// ⚠ What matters is not where the INK ends but where the bright RULE row sits: the bottom
+        /// band is 12 tall and its rule is rows 0-1 - everything under it is drop shadow - so the
+        /// visible line runs a full 12 rows above rect.Bottom. A caller that wants the LINE on a
+        /// margin extends its rect by BottomLine; the shadow rows fall past it, as intended.
         public const int BottomLine = 12;
         public const int TopInk = 7;
 
         /// The area a caller may actually lay content in - the rect less the title bar and the
         /// borders. ⚠ Use THIS, not the rect, or the last column and the bottom row hide behind
-        /// the frame's own edges (maintainer observation on Colony).
+        /// the frame's own edges (maintainer feedback).
         public static Rectangle ContentArea(in Rectangle frame)
             => new(frame.X + BorderLeft, ContentTop(frame),
                    frame.Width - BorderLeft - BorderRight,
@@ -94,12 +84,12 @@ namespace Ship_Game
             TRc.Width = 28;
             TRc.Height = 27;
 
-            // the gradient rules are fixed-width assets (433 and 424), so they are CENTRED on
-            // the span rather than stretched - stretching a gradient banded it visibly.
-            // ⚠ The gradient bands are 433 wide, a size picked for Options at 720. On a NARROWER
-            // window the leftover goes NEGATIVE and the band starts left of the corner and spills
-            // out both sides (maintainer observation at 450 wide). Clamp to what the frame can
-            // hold: the texture is uniform along its width, so squeezing it costs nothing.
+            // the gradient rules are fixed-width assets (433 and 424), CENTRED on the span rather
+            // than stretched - stretching a gradient bands it visibly.
+            // ⚠ 433 is sized for Options at 720: on a NARROWER window the leftover goes NEGATIVE,
+            // and the band starts left of the corner and spills out both sides (maintainer
+            // feedback). Clamp to what the frame can hold - the texture is uniform along its
+            // width, so squeezing it costs nothing.
             int sepW = rect.Width - 60 < 433 ? rect.Width - 60 : 433;
             if (sepW < 1) sepW = 1;
             int distance = rect.Width - 60 - sepW;
@@ -115,12 +105,11 @@ namespace Ship_Game
             BotSep   = new Rectangle(BL.Right + distance / 2, BL.Y + 18, sepW, 12);
             BotHoriz = new Rectangle(BL.Right - 2, BotSep.Y, rect.Width - 54, 12);
 
-            // the title band, plus the two stubs that carry it out to the frame's edges - which
-            // is why it reads as full width where a band inset by a corner radius does not
+            // the title band, plus the two stubs that carry it out to the frame's edges, so it
+            // reads as full width where a band inset by a corner radius does not
             TitleRect  = new Rectangle(rect.X + 28, rect.Y + TitleBarTop, rect.Width - 56, TitleBarHeight);
-            // Ludoal fork: the rule UNDER the title. PopupWindow only ever drew popup_separator
-            // around a subtitle band, so a window without MiddleText - Colony, and every screen
-            // converted in this sweep - had nothing closing its title bar (maintainer observation).
+            // Ludoal fork: the rule UNDER the title, so a window without MiddleText still has its
+            // title bar closed (maintainer feedback).
             // ⚠ Stretched, and that is safe: popup_separator fades along its own width (alpha 2 at
             // the ends, 254 at the centre), so scaling keeps the fade instead of banding it.
             TitleSep = new Rectangle(rect.X + 28, TitleRect.Bottom - 1, rect.Width - 56, 2);
@@ -197,12 +186,10 @@ namespace Ship_Game
 
         /// The body fill, drawn UNDER the frame. Separate from Draw because a caller may want to
         /// paint its own content between the two - the frame's edges must land on top of it.
-        /// Ludoal fork (maintainer bench 337): the fill is INSET by the border thicknesses so the
-        /// grey stops at the visible rule, not at the rect edge. The right/bottom border is a narrow
-        /// rule with transparent shadow past it; a fill run to the rect edge shows grey through that
-        /// shadow, ~10px past the rule bottom-right. Every caller passes the FULL frame rect and
-        /// gets the same clean inset - a centred window (New Game) showed the overrun a screen-edge
-        /// popup used to hide off-screen.
+        /// Ludoal fork (bench 337): the fill is INSET by the border thicknesses so the grey stops
+        /// at the visible rule, not at the rect edge. The right/bottom border is a narrow rule with
+        /// transparent shadow past it; a fill run to the rect edge shows grey through that shadow,
+        /// ~10px past the rule bottom-right. Every caller passes the FULL frame rect.
         public readonly void DrawFill(SpriteBatch batch, in Rectangle rect)
         {
             var fill = new Rectangle(rect.X + BorderLeft, rect.Y + TopInk,
@@ -229,8 +216,8 @@ namespace Ship_Game
             batch.Draw(s.HorizBotGradient, BotSep, Color.White);
             batch.Draw(s.FillerLower, BottomFill, Color.White);
 
-            // no title-band tint (maintainer bench 411): the band wears the BODY fill, so the
-            // title reads on the same dark ground as the content, closed by the gradient rule
+            // no title-band tint (bench 411): the band wears the BODY fill, so the title reads on
+            // the same dark ground as the content, closed by the gradient rule
             batch.Draw(s.FillerLower, TitleRect, Color.White);
             batch.Draw(s.FillerLower, TitleLeft, Color.White);
             batch.Draw(s.FillerLower, TitleRight, Color.White);

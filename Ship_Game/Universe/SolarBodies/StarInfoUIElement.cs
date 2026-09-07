@@ -161,7 +161,7 @@ namespace Ship_Game
 					string LaneStr(float v)
 						=> v >= 0.05f ? v.ToString("0.0", CultureInfo.InvariantCulture)
 						              : isGasGiant ? "-" : "0.0";
-					// a dash is centred in its lane; a value stays right-aligned as before
+					// a dash is centred in its lane; a value stays right-aligned
 					void Lane(string s, int lane)
 					{
 						bool dash = s == "-";
@@ -178,7 +178,7 @@ namespace Ship_Game
 					{
 						string pCls = UITable.FitText(Fonts.Arial10, p.LocalizedCategory, clsRoom);
 						bool folded = pCls != p.LocalizedCategory;
-						// never a first-letter stump (review feedback): three surviving
+						// never a first-letter stump (maintainer feedback): three surviving
 						// letters or nothing - a bare gap says "no room" louder than "B..."
 						if (!folded || pCls.Length >= 6)
 						{
@@ -232,8 +232,8 @@ namespace Ship_Game
 			// centred on the plate
 			var textPos = new Vector2(DeployRect.X + (DeployRect.Width - Font12.TextWidth(text)) / 2f,
 			                          DeployRect.Y + 13 - Font12.LineSpacing / 2 - 2);
-			// the text stays lit (maintainer feedback): dimmed-until-hover read as
-			// unreadable; gray marks the genuinely unavailable action only
+			// the text stays lit (maintainer feedback): dimmed-until-hover is unreadable;
+			// gray marks the genuinely unavailable action only
 			batch.DrawString(Font12, text, textPos, canBuild ? ButtonTextColor : Color.Gray);
 		}
 

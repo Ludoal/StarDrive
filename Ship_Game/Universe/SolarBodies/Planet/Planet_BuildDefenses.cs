@@ -19,30 +19,27 @@ namespace Ship_Game
         // superseded by GovBuildMandate - kept so old saves load and migrate, nothing reads it
         [StarData] public bool GovGroundDefense = false;
 
-        // Ludoal fork (maintainer feedback): the governor's building rights, split from its
-        // means (the per-area budgets). Blocking a family by zeroing its budget destroys the
-        // player's figures; a mandate suspends the right and leaves them stored.
-        // Defaults reproduce vanilla conduct: it built civilian only, and never demolished
-        // military at all.
-        // Stored as ints, not as the enum: BuildMandate does not exist in vanilla, and a build
+        // Ludoal fork (maintainer feedback): the governor's building rights, split from its means
+        // (the per-area budgets). Zeroing a budget to block a family destroys the player's
+        // figures; a mandate suspends the right and leaves them stored. The defaults reproduce
+        // vanilla conduct: civilian only, and no military demolition.
+        // ⚠ Stored as ints, not as the enum: BuildMandate does not exist in vanilla, and a build
         // without the deleted-enum skip cannot read past a type it has never heard of. An int is
-        // a fundamental type every build reads, so the save stays loadable downstream. The
-        // initializers carry the defaults for a save written before this layout.
-        // Set once the mandates have been seeded from the old flags; distinguishes a save
-        // written before they existed from one where the player has already set them.
-        // Initialized TRUE and left without a DefaultValue on purpose: a colony born in a new
-        // game never passes through deserialization, so the initializer is what marks it done,
-        // while a save written before this field reads the serializer's own false and seeds.
+        // a fundamental type every build reads, so the save stays loadable downstream.
+        // MandatesSeeded marks a colony whose mandates are already set, and separates it from a
+        // save that predates them. Initialized TRUE and left without a DefaultValue on purpose: a
+        // colony born in a new game never passes through deserialization, so the initializer is
+        // what marks it done, while an older save reads the serializer's own false and seeds.
         [StarData] public bool MandatesSeeded = true;
         // DefaultValue states each mandate's default explicitly. A field equal to the writer's
         // default is never stored, and the reader assigns that same default back over the field
-        // initializer - so without it a save that predates these fields would read All (0)
-        // instead of the intended default, and hand the governor rights it never had.
-        // ⚠ The INITIALIZERS now say Auto - a colony founded from here on defers to the empire -
-        // but the DefaultValues stay at 1 and 3 on purpose. They are what a save that predates
-        // these fields reads back, and moving them to Auto would put every existing game under
-        // an empire policy its player never set, in silence. Initializer = the new colony;
-        // DefaultValue = the old save. They are allowed to disagree, and here they must.
+        // initializer - without it a save that predates these fields reads All (0) instead of the
+        // intended default, and hands the governor rights it never had.
+        // ⚠ The INITIALIZERS say Auto - a colony founded from here on defers to the empire - and
+        // the DefaultValues stay at 1 and 3 on purpose: they are what an older save reads back,
+        // and moving them to Auto would put every existing game under an empire policy its player
+        // never set, in silence. Initializer = the new colony, DefaultValue = the older save;
+        // they are allowed to disagree, and here they must.
         [StarData(DefaultValue = 1)] int GovBuildMandateValue = (int)BuildMandate.Auto;
         [StarData(DefaultValue = 3)] int GovScrapMandateValue = (int)BuildMandate.Auto;
         public BuildMandate GovBuildMandate
@@ -58,11 +55,10 @@ namespace Ship_Game
         [StarData] public bool AutoBuildTroops  = false;
         [StarData] public bool ManualOrbitals   = false;
         [StarData] public int GarrisonSize;
-        // Ludoal fork (maintainer feedback): manual/auto is a flag PER AREA, so the three
-        // amounts are just amounts - zero included - and one area can be manual while the
-        // others stay automatic. The state used to be inferred from the values (0 meant auto),
-        // which made "spend nothing here" impossible to express and forced a 0.01 floor in
-        // the UI. Old saves carry no flag: any stored amount means that area was manual.
+        // Ludoal fork (maintainer feedback): manual/auto is a flag PER AREA, so the three amounts
+        // are just amounts - zero included - and one area can be manual while the others stay
+        // automatic. ⚠ A save with no flag is migrated on read: any stored amount means that area
+        // is manual.
         [StarData] public bool ManualCivBudgetOn { get; private set; }
         [StarData] public bool ManualGrdBudgetOn { get; private set; }
         [StarData] public bool ManualSpcBudgetOn { get; private set; }
@@ -72,8 +68,8 @@ namespace Ship_Game
 
         private void BuildPlatformsAndStations(PlanetBudget budget) // Rewritten by Fat Bastard
         {
-            // Ludoal fork (maintainer feedback): the trade hub no longer stops orbital
-            // construction either - that is the Gov. Manages Space Defense toggle's job.
+            // Ludoal fork (maintainer feedback): the trade hub does not stop orbital construction
+            // - that is the Gov. Manages Space Defense toggle's job.
             if (CType == ColonyType.Colony
                 || OwnerIsPlayer && !GovOrbitals
                 || SpaceCombatNearPlanet
@@ -104,9 +100,8 @@ namespace Ship_Game
         void BuildOrScrapPlatforms(Array<Ship> orbitals, byte wanted, float budget, float tolerance)
             => BuildOrScrapOrbitals(orbitals, wanted, RoleName.platform, budget, tolerance);
 
-        // Ludoal fork (maintainer feedback): the Scrap Mandate absorbed the old
-        // "Governor Will Not Scrap Buildings" toggle - None says the same thing, and one
-        // control per decision beats two that must agree.
+        // Ludoal fork (maintainer feedback): the Scrap Mandate carries this decision - a mandate
+        // of None says "will not scrap", and one control per decision beats two that must agree.
         bool GovernorShouldNotScrapBuilding => !MayScrapCivilian;
 
         // The mandates bind the player's governors only: an AI runs its own empire.
@@ -136,12 +131,10 @@ namespace Ship_Game
 
         // Ludoal fork: an EXCLUSIVE blueprint takes formal command of this colony, so both rights
         // are handed to it - the plan then decides what is raised and what makes way. The colony's
-        // own mandates are not written, only unread, which is what makes them come back whole the
-        // moment the plan is removed or hands over to a non-exclusive one.
-        //
-        // ⚠ This is the crossing that was cut on 27 Aug, put back DELIBERATELY and, this time,
-        // said out loud: the pickers grey and read "By Blueprint". What was wrong before was not
-        // the crossing, it was that nothing on screen admitted to it.
+        // own mandates are not written, only unread, so they come back whole the moment the plan
+        // is removed or hands over to a non-exclusive one.
+        // ⚠ The crossing is DELIBERATE and must stay visible: the pickers grey and read
+        // "By Blueprint".
         BuildMandate Resolve(BuildMandate local, BuildMandate? empire)
             => HasExclusiveBlueprints ? BuildMandate.All
              : local == BuildMandate.Auto ? empire ?? BuildMandate.None
@@ -529,13 +522,10 @@ namespace Ship_Game
 
         void BuildAndScrapMilitaryBuildings(float budget, float tolerance)
         {
-            // Ludoal fork (maintainer feedback): the single GovGroundDefense gate used to bar
-            // building AND scrapping at once. The two rights are separate commands now, so the
-            // gate is split: a family the governor may not build is not one it may demolish.
-            // Ludoal fork (maintainer feedback): a blueprint no longer buys past the mandates.
-            // The mandate is the RIGHT, the blueprint is the PLAN - two thresholds, never the same
-            // storey. Blueprints used to OR their way through, which made a Scrap Mandate of None
-            // do nothing at all on a colony that had a plan.
+            // Ludoal fork (maintainer feedback): build and scrap are separate rights, so the gate
+            // is split - a family the governor may not build is not one it may demolish. A
+            // blueprint does not buy past them: the mandate is the RIGHT, the blueprint is the
+            // PLAN, two thresholds and never the same storey.
             // ⚠ the RIGHT alone: this gate covers TryBuildMilitaryBuilding, plan path included;
             // its free path closes itself
             bool mayBuild = MayBuildMilitary;
@@ -597,8 +587,8 @@ namespace Ship_Game
 
             if (best == null)
             {
-                // the exclusivity no longer stands beside the right: it IS the right now, resolved
-                // into the mandate, so asking twice would be the homonym we just removed
+                // exclusivity IS the right, resolved into the mandate by Resolve - asking for it
+                // again here would be a second name for the same test
                 if (MayBuildMilitary && !BuildsOnlyTheBlueprint)
                     best = BuildingsCanBuild.FindMaxFiltered(b => b.IsMilitary && b.ActualMaintenance(this) <= budget,
                                                              b => b.CostEffectiveness);

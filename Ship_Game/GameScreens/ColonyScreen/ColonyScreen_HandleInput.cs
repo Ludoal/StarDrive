@@ -18,8 +18,8 @@ namespace Ship_Game
         // Gets the item which we want to use for detail info text
         object GetHoveredDetailItem(InputState input)
         {
-            // Policies phase 0 (maintainer): hovering the governor type list shows that
-            // type's portrait in the Description sub-tab - the inline block is gone
+            // hovering the governor type list shows that type's portrait in the Description
+            // sub-tab (maintainer feedback)
             if (GovernorDetails != null && GovernorDetails.TryGetHoveredColonyType(out Planet.ColonyType hoverType))
                 return hoverType;
 
@@ -28,15 +28,15 @@ namespace Ship_Game
                 && GovernorDetails.TryGetHoveredBlueprints(input.CursorPosition, out BlueprintsTemplate hoverPlan))
                 return hoverPlan;
 
-            // Policies phase 0, SUPPLY notices: hovering a supply dropdown shows the
-            // mode's notice in Description - per entry when open, the ACTIVE mode (Auto
-            // when the toggle holds the pen) on the collapsed title
+            // SUPPLY notices: hovering a supply dropdown shows the mode's notice in Description -
+            // per entry when open, the ACTIVE mode (Auto when the toggle holds the pen) on the
+            // collapsed title
             if (TryGetHoveredSupplyNotice(input, out SupplyNoticeKind supplyKind))
                 return supplyKind;
 
-            // bench 444: a clicked row PINS the description - while a pin is set, hover
-            // must not steal the panel (the pin's whole point, bench 429). A pin whose
-            // row left its list (filter, tab switch, item built) dies with it.
+            // a clicked row PINS the description - while a pin is set, hover must not steal the
+            // panel. A pin whose row leaves its list (filter, tab switch, item built) dies with
+            // it (bench 444).
             if (PinnedBuildable != null)
             {
                 bool alive = false;
@@ -125,15 +125,14 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // Ludoal fork: Esc, right-click and the close cross all close the colony's tab
-            // WITH the seat routing - intercepted before the base popup dismiss and the
-            // child pass, which would exit bare.
-            // A right-click landing on the COLONY frame belongs to its content - the tile
-            // scrap prompt, the list rows - never to "close the page". The close intercept
-            // ran before the tiles ever saw the click and ate the scrap gesture (bench 419).
-            // bench 447: ALT+click on a queue ROW sends it to the TOP - Ctrl never reaches
-            // the game intact from the maintainer's Mac (the VM turns Ctrl+click into a
-            // right-click), so the gesture moves to Alt and right-click keeps its dismiss.
+            // Ludoal fork: Esc, right-click and the close cross all close the colony's tab WITH
+            // the seat routing - intercepted before the base popup dismiss and the child pass,
+            // which would exit bare.
+            // ⚠ A right-click landing on the COLONY frame belongs to its content - the tile scrap
+            // prompt, the list rows - never to "close the page"; the close intercept must run
+            // after the tiles have seen the click (bench 419).
+            // ALT+click on a queue ROW sends it to the TOP: Ctrl+click does not reach the game
+            // intact under a VM, so the gesture is on Alt and right-click keeps its dismiss.
             if (input.IsAltKeyDown && input.LeftMouseClick
                 && ConstructionQueue.HitTest(input.CursorPosition))
             {
@@ -208,9 +207,8 @@ namespace Ship_Game
                 // explicitly before handing the rest of the input back.
                 if (CloseBtn.HandleInput(input))
                     return true;
-                // bench 460 (same disease as the cross, same cure): the group tab row is an
-                // Add()ed child too - without this a mole-host colony seated on the
-                // Diplomacy row had a deaf tab row, while everything else worked
+                // the group tab row is an Add()ed child too - without this a mole-host colony
+                // seated on the Diplomacy row has a deaf tab row (bench 460)
                 if (GroupRow != null && GroupRow.HandleInput(input))
                     return true;
                 // the nav arrows too: on a mole page they walk the mole network
@@ -225,11 +223,10 @@ namespace Ship_Game
             if (SubColonyGrid.SelectedIndex == 0 && HandleTroopSelect(input))
                 return true;
 
-            // The COLONY frame consumes EVERY right-click in its perimeter, whatever the
-            // outcome - scrap prompt, or a no-op on an empty/non-scrappable tile. Without
-            // this the unconsumed click flowed down to the base popup dismiss and closed
-            // the page bare; the same gesture at the same spot must never close-or-not
-            // depending on the tile's state (bench 420).
+            // The COLONY frame consumes EVERY right-click in its perimeter, whatever the outcome
+            // - scrap prompt, or a no-op on an empty/non-scrappable tile. An unconsumed click
+            // falls through to the base popup dismiss, and the same gesture at the same spot must
+            // never close-or-not depending on the tile's state (bench 420).
             if (rightClickOnColonyFrame)
                 return true;
 
@@ -394,10 +391,9 @@ namespace Ship_Game
 
         void OnChangeColony(int change)
         {
-            // bench 432: the arrows walk the SHARED spatial order (SpatialColonyOrder),
-            // like the Colonies table and the keyboard tour - never a private list.
-            // bench 460 (maintainer + Lek): on a mole-host page they walk the MOLE
-            // NETWORK instead - every infiltrated planet, all targets combined.
+            // the arrows walk the SHARED spatial order (SpatialColonyOrder), like the Colonies
+            // table and the keyboard tour - never a private list. On a mole-host page they walk
+            // the MOLE NETWORK instead: every infiltrated planet, all targets combined (bench 460).
             Planet[] planets = IsMoleHostPage ? MoleNetworkOrder() : P.Owner.SpatialColonyOrder();
             if (planets.Length == 0)
                 return;
@@ -449,9 +445,7 @@ namespace Ship_Game
             return false;
         }
 
-        // bench 570: the three Supply lists used to be handled HERE, after base.HandleInput -
-        // so anything the open options covered took the click first and the list never saw it.
-        // They are registered on the screen now, like every other list in the game, and the
-        // container asks them in draw order. This pass-through has nothing left to do.
+        // the three Supply lists are registered on the screen, like every other list in the game,
+        // so the container asks them in draw order - nothing to handle here (bench 570).
     }
 }

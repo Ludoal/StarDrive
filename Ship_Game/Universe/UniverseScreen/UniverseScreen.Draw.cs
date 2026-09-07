@@ -60,10 +60,9 @@ namespace Ship_Game
             {
                 ref Empire.InfluenceNode node = ref sensorNodes[i];
 
-                // Ludoal fork: fog highlights are curated. Projector halos are retired
-                // from the default view (they smeared the whole map and duplicate the F4
-                // overlay); every sensor source, planets included, lives on the F3 Vision
-                // overlay instead.
+                // Ludoal fork: fog highlights are curated - projector halos are not in the
+                // default view (they duplicate the F4 overlay); every sensor source, planets
+                // included, lives on the F3 Vision overlay.
                 if (!ShowingVisionOverlay)
                     continue;
 
@@ -333,15 +332,13 @@ namespace Ship_Game
             device.Clear(Color.White); // clear the lights RT to White
             batch.SafeBegin(SpriteBlendMode.AlphaBlend);
 
-            // Ludoal fork (maintainer decision): the veil stays ON at rest - it isn't
-            // informative but it IS aesthetic, darkening the backdrop so objects stand out
-            // ("n'informe pas" != "ne sert a rien"). The old "square" artefact was the FogMap
-            // tint's bounded edge (drawn only over [-Size,+Size]) showing when panning to the
-            // world border, sitting against the full-screen black of the FillRectangle. Fix:
-            // extend fogRect well beyond the world bounds so that edge is always off-screen -
-            // a veil that covers everything can't betray its limit. The FogMap texture is
-            // stretched by the larger dest rect, so the memory tint shifts slightly, but it's
-            // a diffuse 56/255 wash, not a sharp mark - no visible misalignment.
+            // Ludoal fork (maintainer feedback): the veil stays ON at rest - it is not
+            // informative but it IS aesthetic, darkening the backdrop so objects stand out.
+            // ⚠ fogRect extends well beyond the world bounds on purpose: the FogMap tint is
+            // drawn only over [-Size,+Size], and its bounded edge shows as a square against the
+            // full-screen black when panning to the world border. A veil that covers everything
+            // cannot betray its limit. The larger dest rect stretches the FogMap texture, which
+            // shifts the memory tint slightly - a diffuse 56/255 wash, not a sharp mark.
             if (!Debug)
             {
                 // fill screen with transparent black and draw FogMap darker light on top of it
@@ -390,14 +387,12 @@ namespace Ship_Game
             GraphicsDevice graphics = ScreenManager.GraphicsDevice;
             EnsureBackbufferSizedRTs(graphics);
             graphics.SetRenderTarget(MainTarget);
-            // §4.6 #1.b regression follow-up: MainTarget is now PreserveContents
-            // so the shadow pre-pass's RT swap in SunBurnStubs.RenderScene doesn't
-            // wipe the in-progress scene. PreserveContents preserves color *and*
-            // depth across rebinds, including across frames — so we have to
-            // explicitly clear depth/stencil at the start of every frame to keep
-            // stale prior-frame depth values from depth-failing this frame's
-            // draws. Color is also cleared (Background.Draw fills it anyway, so
-            // this is just belt-and-braces for any short-circuit path).
+            // MainTarget is PreserveContents so the shadow pre-pass's RT swap in
+            // SunBurnStubs.RenderScene does not wipe the in-progress scene. ⚠ PreserveContents
+            // preserves color *and* depth across rebinds, including across frames - so depth
+            // and stencil must be cleared explicitly at the start of every frame, or stale
+            // prior-frame depth values depth-fail this frame's draws. Color is cleared too
+            // (Background.Draw fills it anyway, belt-and-braces for any short-circuit path).
             graphics.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil,
                            Color.Black, 1f, 0);
             Render(sr, batch, elapsed);
@@ -525,9 +520,9 @@ namespace Ship_Game
             {
                 DrawPlanetInfo();
                 EmpireUI.Draw(batch);
-                // Ludoal fork (maintainer feedback): NOTHING about the map changes when a
-                // panel opens - the map UI draws identically, the panel simply lands on top.
-                // bench 451: notifications pass UNDER the DSB overlay - draw order swapped
+                // Ludoal fork (maintainer feedback): NOTHING about the map changes when a panel
+                // opens - the map UI draws identically, the panel simply lands on top.
+                // ⚠ notifications draw BEFORE the DSB overlay, so they pass under it
                 NotificationManager.Draw(batch);
                 DeepSpaceBuildWindow.Draw(batch, elapsed);
                 pieMenu.DrawAt(batch, GetPieMenuPosition(), Fonts.Arial12Bold);
@@ -538,7 +533,7 @@ namespace Ship_Game
                     // selected. The whole pass clips to the tab band - the list frame behind is
                     // CONTENT-sized and can overhang the opaque colony panel below and on both
                     // sides; only the tab row above the panel's top edge has a job, the veil
-                    // dims it. Ground fill dropped: it starts below the tab strip, entirely
+                    // dims it. No ground fill: it would start below the tab strip, entirely
                     // under the panel.
                     if (ReturnToListScreen != null && ReturnToListTabs != null)
                     {
@@ -597,15 +592,14 @@ namespace Ship_Game
             Texture2D lights = LightsTarget as Microsoft.Xna.Framework.Graphics.Texture2D;
             graphics.Clear(Color.Black);
 
-            // §3.7 step 3: BasicFogOfWar restored. The PS sets alpha = lights.r;
+            // §3.7 step 3: BasicFogOfWar. The PS sets alpha = lights.r;
             // with AlphaBlend on, dark LightsTarget pixels alpha-blend the scene
             // toward the black-cleared back buffer (= fog), bright pixels show
-            // full scene (= visible). Pass the effect to SpriteBatch.Begin's
-            // `effect:` argument — the manual Pass.Apply()-after-Begin pattern
-            // produces silent black output under MGFX 3.8.1.303 / DX11, which was
-            // the failure mode of the 2026-05-02 attempt. Set MatrixTransform
-            // ourselves (SpriteBatch only auto-populates it on SpriteEffect-typed
-            // effects; see BloomComponent.SetMatrixTransform).
+            // full scene (= visible). ⚠ Pass the effect to SpriteBatch.Begin's
+            // `effect:` argument - the manual Pass.Apply()-after-Begin pattern
+            // produces silent black output under MGFX 3.8.1.303 / DX11. Set
+            // MatrixTransform ourselves (SpriteBatch only auto-populates it on
+            // SpriteEffect-typed effects; see BloomComponent.SetMatrixTransform).
             if (basicFogOfWarEffect != null)
             {
                 basicFogOfWarEffect.Parameters["LightsTexture"]?.SetValue(lights);
@@ -692,20 +686,18 @@ namespace Ship_Game
             {
                 CinematicModeTextTimer -= elapsed.RealTime.Seconds;
                 // the key name comes from the live table - a remapped key must never lie on
-                // screen. ALL CAPS kept: map-overlay statement, not a label (maintainer decision)
+                // screen. ALL CAPS: a map-overlay statement, not a label (maintainer feedback)
                 DrawTopCenterStatusText(batch, $"{Localizer.Token(GameText.UhCinematicModePrefix)} {KeyBindings.Name(KeyBindings.CinematicMode).ToUpper()} {Localizer.Token(GameText.UhCinematicModeSuffix)}", Color.White, 3);
             }
 
             // (maintainer feedback) the idle-research alarm lives in the top bar's topic slot
         }
 
-        // Ludoal fork (wishlist): the route overlays. Trade links each planet pair with a
-        // live freighter run - one line per (pair, goods), each goods in its own color
-        // with its icon at the line's midpoint (bench 427: Food green, Prod orange, Pop
-        // white; Colonization gray). Both read the same UI-safe sources the ship list
-        // and the exploded view already consume.
-        // Ludoal fork (bench 428): route lines only - the icons were noise, the colors
-        // carry the reading, and each goods has its own overlay toggle on the minimap.
+        // Ludoal fork (wishlist): the route overlays. Trade links each planet pair with a live
+        // freighter run - one line per (pair, goods), each goods in its own color (Food green,
+        // Prod orange, Pop white; Colonization gray) and its own overlay toggle on the minimap.
+        // Lines only, no icons. Both read the same UI-safe sources the ship list and the
+        // exploded view already consume (bench 428).
         void DrawRouteOverlays(SpriteBatch batch)
         {
             if (ShowingFoodRoutesOverlay || ShowingProdRoutesOverlay || ShowingPopRoutesOverlay)
@@ -714,10 +706,9 @@ namespace Ship_Game
                 var freighters = Player.OwnedShips.Filter(s => s.IsFreighter && s.AI.State == AIState.SystemTrader);
                 foreach (Ship f in freighters)
                 {
-                    // Ludoal fork (maintainer bench 556): a run to a STATION has no import
-                    // PLANET, so it drew no route at all - the overlay showed a freighter with
-                    // nothing to show for it. It is drawn to the BODY the station orbits, which
-                    // is where the hull is going and how a trade zone names it anyway.
+                    // Ludoal fork (bench 556): a run to a STATION has no import PLANET, so its
+                    // route is drawn to the BODY the station orbits - where the hull is going,
+                    // and how a trade zone names it anyway.
                     if (f.AI.OrderQueue.TryPeekLast(out ShipAI.ShipGoal g)
                         && g.Trade is { ExportFrom: { } from }
                         && (g.Trade.ImportTo ?? g.Trade.TargetStation?.GetTether()) is { } to
@@ -837,10 +828,10 @@ namespace Ship_Game
             if (showProjectorCoverage || ShowingGravityWellOverlay)
             {
                 var inhibit = ResourceManager.Texture("UI/node_inhibit");
-                // Ludoal fork (bench): gravity wells are permanent info, not an alarm - so the
-                // planet well drops the red hatched "inhibit" look for a quiet solid disc:
-                // desaturated blue-grey, thin outline, a very light fill (node_stencil = a plain
-                // filled circle, no stripes). The mobile ship inhibitors below keep the red alarm.
+                // Ludoal fork: gravity wells are permanent info, not an alarm - so the planet
+                // well drops the red hatched "inhibit" look for a quiet solid disc: desaturated
+                // blue-grey, thin outline, a very light fill (node_stencil = a plain filled
+                // circle, no stripes). The mobile ship inhibitors below keep the red alarm.
                 var wellFill = ResourceManager.Texture("UI/node_stencil");
                 var wellEdge = new Color(120, 160, 185, 130).Premultiplied();
                 var wellBody = new Color(120, 160, 185, 22).Premultiplied();
@@ -1208,11 +1199,8 @@ namespace Ship_Game
                 // doing the actual BombList.RemoveAt.
                 if (bomb == null || bomb.Dead || bomb.Model == null)
                     continue;
-                // Phase 3.5 dropped the *50 multiplier for projectile meshes
-                // (FBX corpus ships at native game-unit scale, not unit-scale
-                // like the old XNB). The bomb path kept its legacy scale:25f,
-                // which is what was rendering the bomb as a huge orange-yellow
-                // cloud. Switch to Weapon.Scale to match Projectile.cs:450
+                // no *50 multiplier for projectile meshes: the FBX corpus ships at native
+                // game-unit scale, not unit-scale. Weapon.Scale matches Projectile.cs:450
                 // (tune via Weapon xml's Scale).
                 Projectile.DrawMesh(this, bomb.Model, bomb.World, bomb.Texture.Texture, scale: bomb.Weapon.Scale);
             }
@@ -1450,10 +1438,9 @@ namespace Ship_Game
 
                     if (planet.IsMineable)
                     {
-                        // bench 444: the crossed-hammers "can be placed" badge is gone from
-                        // the exploded and close views too - the exotic resource icon already
-                        // says everything (which resource, and its tooltip). Ops present
-                        // keep their owner's flag.
+                        // no crossed-hammers "can be placed" badge in the exploded and close
+                        // views - the exotic resource icon already says which resource, with its
+                        // tooltip. Ops present keep their owner's flag (bench 444).
                         if (planet.Mining.AreMiningOpsPresent())
                         {
                             var flag = planet.Mining.Owner.data.Traits.FlagIndex;

@@ -26,9 +26,9 @@ namespace Ship_Game
         public static Keys TroopListScreen       = Keys.C;
         public static Keys BlueprintsScreen      = Keys.F;
         public static Keys ExoticListScreen      = Keys.G;
-        // Ludoal fork (maintainer feedback): H moved to Policies - the standing orders are
-        // opened far more often than the automation preferences, and every letter was taken.
-        // Automation ships UNBOUND rather than displacing another screen; it is a mouse page.
+        // Ludoal fork (maintainer feedback): H opens Policies - the standing orders are opened far
+        // more often than the automation preferences, and every letter is taken. Automation ships
+        // UNBOUND rather than displacing another screen; it is a mouse page.
         public static Keys AutomationWindow      = Keys.None;
         public static Keys PoliciesWindow        = Keys.H;
         public static Keys FleetDesignScreen     = Keys.J;
@@ -51,7 +51,7 @@ namespace Ship_Game
         public static Keys ZoomToSelection = Keys.PageUp;
         public static Keys ZoomOut         = Keys.PageDown;
 
-        // Shipyard: open/close the design issues screen (T was its historical close key)
+        // Shipyard: open/close the design issues screen (T is its historical close key)
         public static Keys DesignIssues    = Keys.T;
 
         // colony navigation (bench 427): leaf through the empire without the mouse
@@ -62,7 +62,7 @@ namespace Ship_Game
         // game commands
         public static Keys QuickSave       = Keys.F9;
         public static Keys CinematicMode   = Keys.F11;
-        public static Keys RealisticLights = Keys.F10; // bench 434: was Shift+F5, single-key until combos land
+        public static Keys RealisticLights = Keys.F10; // bench 434: single-key until key combos land
 
         // the display name a tooltip announces - ONE source, so a remapped key can
         // never lie on screen (the "F3" literal trap)
@@ -145,10 +145,9 @@ namespace Ship_Game
                     return;
                 }
                 string[] lines = File.ReadAllLines(file);
-                // bench 429: a v1 file listed EVERY binding as an explicit override, which
-                // froze the layout of the build that wrote it - new defaults never landed.
-                // v2 files list only the player's actual overrides; a legacy file is
-                // regenerated (its lines were the old template, not player choices).
+                // a v1 file lists EVERY binding as an explicit override, which freezes the layout
+                // of the build that wrote it - new defaults never land. v2 lists only the player's
+                // actual overrides, so a file without the marker is regenerated (bench 429).
                 if (!Array.Exists(lines, l => l.Contains(FileMarker)))
                 {
                     WriteTemplate(file);
