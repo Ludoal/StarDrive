@@ -275,6 +275,16 @@ public class UniverseParams
                 _                             => PirateStrengthSetting.Default,
             };
         }
+
+        // ★ the retired fields have spoken: back to their defaults, so the NEXT save does not
+        // carry them and the folds above do not run again on every load - a fold that re-fires
+        // would overwrite a notch changed in the meantime (audit, bench 603). None of them has
+        // a reader left outside this file.
+        VanillaRemnantStrength = false;
+        DisableRemnantStory    = false;
+        DisablePirates         = false;
+        PirateFactions         = PirateFactionsSetting.All;
+        PirateTribute          = PirateTributeSetting.Normal;
     }
 
     // Ludoal fork (maintainer feedback): the setup as one block of text, written into the save
