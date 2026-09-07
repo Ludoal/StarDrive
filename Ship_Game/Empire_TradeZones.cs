@@ -373,13 +373,26 @@ namespace Ship_Game
         // ⚠ A WORLD MAY SIT IN SEVERAL ENCLAVES since 6 Sep, so "the" enclave holding it is not a
         // question with one answer. Anything asking whether a world is still owed something must
         // ask them ALL: one satisfied zone does not speak for a hungry one.
-        bool AnyExclusiveZoneNeeds(Planet planet, Goods goods)
+        // Is this world still WAITING for this good? An open import berth with nothing on its
+        // way. ⚠ not the same question as "does it want any": a world served every turn wants
+        // something every turn, and answering that one kept the door shut for every living
+        // enclave - a fed Omega V never lent Tor's surplus while Beroscal starved (bench 593).
+        static bool StillWaiting(Planet p, Goods goods)
+            => goods == Goods.Food       ? p.FoodImportSlots > 0 && p.IncomingFoodFreighters == 0
+             : goods == Goods.Production ? p.ProdImportSlots > 0 && p.IncomingProdFreighters == 0
+             : p.ColonistsImportSlots > 0 && p.IncomingColonistsFreighters == 0;
+
+        bool AnyExclusiveZoneWaits(Planet planet, Goods goods)
         {
             for (int i = 0; i < TradeZones.Count; ++i)
             {
                 TradeZone z = TradeZones[i];
-                if (z.Exclusive && z.Serves(planet) && z.RawNeedOf(goods) > 0)
-                    return true;
+                if (!z.Exclusive || !z.Serves(planet))
+                    continue;
+
+                foreach (Planet p in z.ColonyPlanets(this))
+                    if (StillWaiting(p, goods))
+                        return true;
             }
 
             return false;
@@ -401,7 +414,7 @@ namespace Ship_Game
             var colonies = new Array<Planet>();
             for (int i = 0; i < OwnedPlanets.Count; ++i)
             {
-                if (!AnyExclusiveZoneNeeds(OwnedPlanets[i], goods))
+                if (!AnyExclusiveZoneWaits(OwnedPlanets[i], goods))
                     colonies.Add(OwnedPlanets[i]);
             }
 

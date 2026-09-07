@@ -734,7 +734,11 @@ namespace Ship_Game
         // left on Auto is the game deciding the number, so it obeys that box like the rest.
         void TryOrderFreighterFor(TradeZone zone)
         {
-            if (AI.CountGoals(g => g is IncreaseFreighters f && f.ForZoneId == zone.Id) > 0)
+            // as many at once as the zone has yards: three colonies with a spaceport, three hulls
+            // building. One order at a time was too careful - twenty turns to climb from four
+            // hulls to ten (maintainer feedback). A zone without a yard keeps its single order.
+            int yards = zone.ColonyPlanets(this).Count(p => p.HasSpacePort).LowerBound(1);
+            if (AI.CountGoals(g => g is IncreaseFreighters f && f.ForZoneId == zone.Id) >= yards)
                 return;
 
             if (zone.Quota <= 0 && !BuildFreightersActive)

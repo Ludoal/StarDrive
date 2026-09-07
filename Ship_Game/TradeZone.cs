@@ -60,10 +60,6 @@ namespace Ship_Game
         // Not serialized either: a fact of the turn.
         public int RawNeed;
 
-        public int RawNeedOf(Goods goods)
-            => goods == Goods.Food       ? NeedFood
-             : goods == Goods.Production ? NeedProd
-             : NeedColonists;
 
         [StarDataConstructor] TradeZone() { }
 
