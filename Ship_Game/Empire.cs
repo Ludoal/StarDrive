@@ -895,6 +895,9 @@ namespace Ship_Game
             // A world that changes hands arrives with someone else's buildings; it waits for its
             // new owner's word rather than falling under a doctrine on arrival.
             planet.GovBlueprintAuto = false;
+            // its mandates exist from here on: the seeding in Planet.OnDeserialized is for saves
+            // that predate them, never for a colony that changes hands in play
+            planet.MandatesSeeded = true;
             Universe.OnPlanetOwnerAdded(this, planet);
             if (planet.System.GetPotentialOpsOwner(out Empire potentialMiningOpsOwner))
             {

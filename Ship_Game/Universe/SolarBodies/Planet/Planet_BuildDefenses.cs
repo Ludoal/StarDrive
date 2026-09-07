@@ -27,10 +27,10 @@ namespace Ship_Game
         // without the deleted-enum skip cannot read past a type it has never heard of. An int is
         // a fundamental type every build reads, so the save stays loadable downstream.
         // MandatesSeeded marks a colony whose mandates are already set, and separates it from a
-        // save that predates them. Initialized TRUE and left without a DefaultValue on purpose: a
-        // colony born in a new game never passes through deserialization, so the initializer is
-        // what marks it done, while an older save reads the serializer's own false and seeds.
-        [StarData] public bool MandatesSeeded = true;
+        // save that predates them. A field absent from the stream keeps its initializer, so this
+        // starts false and Empire.AddPlanet sets it the moment a colony gets an owner; only a
+        // colony read from an older save still carries false, and seeds from the legacy flags.
+        [StarData] public bool MandatesSeeded;
         // DefaultValue states each mandate's default explicitly. A field equal to the writer's
         // default is never stored, and the reader assigns that same default back over the field
         // initializer - without it a save that predates these fields reads All (0) instead of the
