@@ -403,7 +403,10 @@ namespace Ship_Game
                 TotalImportingValue.Color  = TotalImportingDen.Color = PairColor(servedImp, imp);
                 TotalExportingValue.Text   = servedExp.String();
                 TotalExportingDen.Text     = $" / {exp}";
-                TotalExportingValue.Color  = TotalExportingDen.Color = PairColor(servedExp, exp);
+                // white like the rows it sums - see the exporters note in GoodsUtilization.Draw.
+                // A totals cell wearing a colour its own column no longer wears is the very split
+                // the per-column rule was written to close.
+                TotalExportingValue.Color  = TotalExportingDen.Color = Color.White;
             }
 
             base.Update(fixedDeltaTime);
@@ -593,7 +596,14 @@ namespace Ship_Game
                 // (maintainer feedback, bench 590).
                 NumFreightersLabel.Color = PairColor(ServedBerths, Runs);
                 NumImportingLabel.Color  = PairColor(ServedImporting, NumImportingPlanets);
-                NumExportingLabel.Color  = PairColor(ServedExporting, NumExportingPlanets);
+                // ★ EXPORTERS ARE NEVER COLOURED. The pair colour means "asked for and not got",
+                // which is a statement about NEED - and an exporter nobody comes to empty is not a
+                // want unmet, it is a surplus nobody needs. The proof was on the line itself:
+                // Importers 27/27 in white, everyone fed, and the cell beside it flashing amber
+                // (maintainer feedback, bench 601). If exporters ever deserve an alarm it is
+                // because importers are dry while stock sits somewhere, and THAT is the importers'
+                // red saying it. The alarm belongs to the need, never to the offer.
+                NumExportingLabel.Color  = Color.White;
             }
 
             public override void Update(float fixedDeltaTime)

@@ -165,7 +165,14 @@ namespace Ship_Game
             return (int)PopulationBillion;
         }
 
-        int GetFoodImportSlots()
+        // ★ THE ONE FOOD RULE, AND NOW THE ONLY ONE. The trade book used to carry a hand copy of
+        // this arithmetic with a comment ordering the next reader to keep the two in step - which
+        // is a promise, not a mechanism, and it was already broken: the copy had neither the round
+        // up nor the spare slot, so the book undercounted by about one hull per importing colony
+        // and the overlay showed more cargo flying than runs wanted (maintainer bench 601).
+        // beforeServing leaves out the cargo already on its way, for the reader that prints that
+        // cargo beside the figure.
+        public int GetFoodImportSlots(bool beforeServing = false)
         {
             if (TradeBlocked || !ImportFood)
                 return 0;
@@ -183,7 +190,7 @@ namespace Ship_Game
 
             float averageFreighterCargoCap = Owner.AverageFreighterCargoCap;
             int maxSlots = ((int)(Storage.Max / averageFreighterCargoCap)).LowerBound(1);
-            float foodMissing = Storage.Max - FoodHere - IncomingFood;
+            float foodMissing = Storage.Max - FoodHere - (beforeServing ? 0 : IncomingFood);
 
             foodMissing += (-Food.NetIncome * AverageFoodImportTurns).LowerBound(0);
             int foodSlots = foodMissing < 5 ? 0 : (foodMissing / Owner.AverageFreighterCargoCap).RoundUpTo(1) + 1;
@@ -191,7 +198,11 @@ namespace Ship_Game
             return foodSlots.Clamped(0, maxSlots);
         }
 
-        int GetProdImportSlots()
+        // Same as the food rule above: ONE owner for the arithmetic, read by the dispatch and by
+        // the trade book alike. The book's own version counted the yard's queue and nothing else,
+        // while this one also fills the store - which is why the two were furthest apart on
+        // production of all three goods (maintainer bench 601).
+        public int GetProdImportSlots(bool beforeServing = false)
         {
             if (TradeBlocked || !ImportProd)
                 return 0;
@@ -207,13 +218,13 @@ namespace Ship_Game
                 {
                     // No construction queue cases for non cybernetics
                     case 0 when Storage.ProdRatio.AlmostEqual(1): return 0;
-                    case 0: return ((int)((Storage.Max - ProdHere - IncomingProd) / averageFreighterCargoCap) + 1).Clamped(0, 6);
+                    case 0: return ((int)((Storage.Max - ProdHere - (beforeServing ? 0 : IncomingProd)) / averageFreighterCargoCap) + 1).Clamped(0, 6);
                 }
             }
 
             // We have items in construction
             float prodForStorage  = Storage.Max - ProdHere;
-            float totalProdNeeded = prodForStorage + TotalProdNeededInQueue() - IncomingProd;
+            float totalProdNeeded = prodForStorage + TotalProdNeededInQueue() - (beforeServing ? 0 : IncomingProd);
             float totalProdSlots  = (totalProdNeeded / averageFreighterCargoCap).LowerBound(0);
 
             if (IsCybernetic) // They need prod as food

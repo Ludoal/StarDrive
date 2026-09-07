@@ -81,12 +81,13 @@ namespace Ship_Game
         // ★★ THE ONE NEED. Every screen and the requisition read this and nothing else, so they
         // cannot drift apart: a figure computed twice is two figures, and three of them were.
         //
-        // A need is a FLOW, not a warehouse. What a colony BURNS in a turn, carried over the time
-        // a run really takes, divided by what a hull holds. The base game already reasons this way
-        // for food - GetFoodImportSlots adds `-NetIncome * AverageFoodImportTurns` to the room left
-        // in the store - so this separates two terms it had summed rather than inventing an
-        // arithmetic. And the trip is MEASURED, not estimated: every planet keeps a moving average
-        // of how long its deliveries actually took.
+        // What a colony needs is what its own import rule says it needs - the rule the DISPATCH
+        // obeys when it decides whether to send a hull. So this asks the colony rather than
+        // reckoning on its behalf: one owner per good, and the book cannot fall out of step with
+        // the traffic it is meant to describe. Each rule already reasons about both halves of the
+        // question, what the world burns while a run is in the air and the room its store still
+        // has, and the trip is MEASURED, not estimated - every planet keeps a moving average of
+        // how long its deliveries actually took.
         //
         // ⚠ COLONISTS HAVE NO FLOW. Nothing in the game says how many colonists a world consumes
         // in a turn - their slots are a fullness ratio capped at five, an appetite rather than a
@@ -95,43 +96,18 @@ namespace Ship_Game
         // the tooltip is where that is said.
         public float RunsNeeded(Planet p, Goods goods, bool beforeServing = false)
         {
-            float cargo = AverageFreighterCargoCap.LowerBound(1);
+            // ★★ THE BOOK NO LONGER KEEPS ITS OWN ARITHMETIC. It ASKS the colony the same question
+            // the dispatch asks, through the same function, so the two cannot drift apart again.
+            // Two hand copies used to live here, each with a comment telling the next reader to
+            // keep them in step with the dispatch - and both had already slipped: food was short
+            // of the round up and the spare slot, production counted the yard's queue and forgot
+            // that the store is filled too. That is the whole of the overshoot the bench kept
+            // seeing, and it is the day's law once more: what the dispatch serves, the book counts.
             if (goods == Goods.Food)
-            {
-                if (!p.ImportFood)
-                    return 0;
-
-                // ⚠ MIRRORS GetFoodImportSlots, and must keep mirroring it. The dispatch stops
-                // ordering above nine tenths of a full store, so the book stops counting there
-                // too - otherwise the two disagree again, the other way round.
-                if (p.Storage.FoodRatio > 0.9f)
-                    return 0;
-
-                // what it EATS over a delivery, plus the room its STORE still has. Filling the
-                // granary is a real service - a buffer against bad turns - so a book counting
-                // only the flow read "0" beside three cargo in the air (maintainer, bench 593).
-                float hunger = (-p.Food.NetIncome * p.AverageFoodImportTurns).LowerBound(0);
-                // the cargo already flying here has been promised to this store, so the DISPATCH
-                // must not order it twice. The overlay asks the question the other way round and
-                // wants it left in - see beforeServing.
-                float flying = beforeServing ? 0 : p.IncomingFood;
-                float room   = (p.Storage.Max - p.FoodHere - flying).LowerBound(0);
-                return (hunger + room) / cargo;
-            }
+                return p.GetFoodImportSlots(beforeServing);
 
             if (goods == Goods.Production)
-            {
-                if (!p.ImportProd)
-                    return 0;
-
-                // what the yard still owes, less what the colony makes for itself while a run is in
-                // the air - and plus what it EATS over that time, since a cybernetic world lives on
-                // production. One term or the other is nought; never both.
-                float queue   = p.TotalProdNeededInQueue();
-                float surplus = (p.Prod.NetIncome * p.AverageProdImportTurns).LowerBound(0);
-                float hunger  = (-p.Prod.NetIncome * p.AverageProdImportTurns).LowerBound(0);
-                return ((queue - surplus).LowerBound(0) + hunger) / cargo;
-            }
+                return p.GetProdImportSlots(beforeServing);
 
             return p.ColonistsImportSlots; // a ceiling, not a flow - see above
         }
