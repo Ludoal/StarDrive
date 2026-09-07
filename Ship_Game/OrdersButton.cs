@@ -51,8 +51,8 @@ namespace Ship_Game
         public void Draw(SpriteBatch batch, Vector2 cursor, Rectangle rect)
         {
             bool hovering = rect.HitTest(cursor);
-            // Ludoal fork (maintainer decision): the ship-command strip keeps its sculpted chrome -
-            // the one button family excluded from the painted-plate conversion
+            // Ludoal fork (maintainer feedback): the ship-command strip keeps its sculpted chrome -
+            // the one button family that does not use the painted plate
             if (SimpleToggle)
             {
                 batch.Draw(!hovering

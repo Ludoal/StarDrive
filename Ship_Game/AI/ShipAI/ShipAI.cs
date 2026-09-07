@@ -652,13 +652,9 @@ namespace Ship_Game.AI
             return OrderQueue.Any(g => g.Trade?.Goods == goods);
         }
 
-        // Ludoal fork (maintainer feedback): where the run for THIS goods delivers. The Freighters
-        // window's zone filter reads it - a run belongs to the zone holding its IMPORT planet,
-        // which is the very end a zone's own dispatch serves. Null when the leg feeds a station
-        // or carries nothing of that goods.
-        // Ludoal fork (maintainer bench 556): the STATION this run delivers to, when it delivers
-        // to one. A station run lands on no planet's incoming counter, so anything counting
-        // freighters by their destination has to ask here as well or it counts half the traffic.
+        // Ludoal fork (bench 556): the STATION this run delivers to, when it delivers to one.
+        // ⚠ A station run lands on no planet's incoming counter, so anything counting freighters
+        // by their destination must ask here as well or it counts half the traffic.
         public Ship TradeTargetStation
         {
             get
@@ -671,6 +667,8 @@ namespace Ship_Game.AI
             }
         }
 
+        // Ludoal fork: where the run for THIS goods delivers - a run belongs to the zone holding
+        // its IMPORT planet. Null when the leg feeds a station or carries nothing of that goods.
         public Planet TradeImportFor(Goods goods)
         {
             foreach (ShipGoal g in OrderQueue.ToArray())
@@ -680,7 +678,7 @@ namespace Ship_Game.AI
             return null;
         }
 
-        // Ludoal fork (maintainer bench 339): a freighter counts once, by its CURRENT phase - it is
+        // Ludoal fork (bench 339): a freighter counts once, by its CURRENT phase - it is
         // IMPORTING while delivering (a drop-off leg queued) and EXPORTING otherwise (picking up or
         // hauling). So importing + exporting sums to the freighter count, no double-count.
         public bool IsDeliveringTrade => OrderQueue.Any(g => g?.Plan == Plan.DropOffGoods

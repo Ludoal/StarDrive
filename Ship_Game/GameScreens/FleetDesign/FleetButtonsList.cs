@@ -18,10 +18,9 @@ public class FleetButtonsList : UIList
     readonly Empire Player;
     readonly Array<FleetButton> Buttons = new();
 
-    // Ludoal fork (maintainer design): the column shows TEN slots, at every resolution - the
-    // window does not run to the display foot by design, so twenty never fit, not even at 1200.
-    // A button in the column's head swaps the banks. No keyboard shortcut for now: Alt is taken
-    // by the 11-20 fleet keys, and a hotkey the tooltip cannot name is a door with no handle.
+    // Ludoal fork (maintainer feedback): the column shows TEN slots at every resolution - the
+    // window does not run to the display foot, so twenty never fit. A button in the column's
+    // head swaps the banks; Alt is taken by the 11-20 fleet keys, so there is no hotkey for it.
     const int BankSize = 10;
     const int SlotPitch = 50;   // one button plus the padding the list adds
     public static float BarHeight => BankSize * SlotPitch;
@@ -87,9 +86,8 @@ public class FleetButtonsList : UIList
         RequiresLayout = true;
     }
 
-    // Ludoal fork: no display gate here any more (maintainer decision). Every key answers;
-    // what the resolution decides is how many slots the column SHOWS at once, not how many
-    // fleets the player may command.
+    // Ludoal fork: every fleet key answers. The resolution decides how many slots the column
+    // SHOWS at once, never how many fleets the player may command.
     static int InputFleetSelection(InputState input)
     {
         if (input.Fleet1)  return 1;

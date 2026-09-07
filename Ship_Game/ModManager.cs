@@ -51,9 +51,8 @@ namespace Ship_Game
         public override void LoadContent()
         {
             // the window names itself in its own title bar; frame and close cross are
-            // PopupWindow's - base.LoadContent goes FIRST and lays them out
-            // Ludoal fork (maintainer feedback): three distinct labels - window is MODS,
-            // loader tab LOAD MOD, list MOD.
+            // PopupWindow's - ⚠ base.LoadContent goes FIRST and lays them out
+            // (maintainer feedback) three distinct labels - window MODS, tab LOAD MOD, list MOD.
             TitleText = Localizer.Token(GameText.MmMods);
             base.LoadContent();
 

@@ -10,9 +10,9 @@ using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game
 {
-    // Ludoal fork (maintainer, 31 Aug '26): the third door onto a freighter's zone, and the one
-    // that replaced the two per-ship editors on the ship panel. A freighter belongs to ONE zone,
-    // so this list picks rather than ticks: a row is a choice, and choosing closes the window.
+    // Ludoal fork (maintainer feedback): the third door onto a freighter's zone. A freighter
+    // belongs to ONE zone, so this list picks rather than ticks: a row is a choice, and
+    // choosing closes the window.
     public sealed class ShipTradeZoneScreen : PopupWindow
     {
         readonly Ship Freighter;

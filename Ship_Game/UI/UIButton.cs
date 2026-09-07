@@ -60,7 +60,7 @@ namespace Ship_Game
         public string ClickSfx = "echo_affirm";
 
         // Ludoal fork: tint for texture-styled (icon) buttons - destruction reads red
-        // (maintainer bench 305). Plated styles carry their meaning in the plate instead.
+        // (bench 305). Plated styles carry their meaning in the plate instead.
         public Color IconTint = Color.White;
 
         // If set TRUE, this button will also capture Right Mouse Clicks
@@ -137,17 +137,10 @@ namespace Ship_Game
             return s.SizeRef ?? s.Normal;
         }
 
-        // Ludoal fork: draw `tex` into `r` as a nine-slice - the four corners keep their pixel
-        // size, the edges stretch along one axis and the middle along both. The slices are cut
-        // Ludoal fork: SEPARATE bar and corner textures, the way Submenu's NineSliceSprite does
-        // it - because that is the frame whose edges stay clean at any size. Slicing one bitmap
-        // put the edge bands at the mercy of the middle's height: a 32px asset had to squeeze
-        // 20px of source into the 12px a 24px-tall button leaves, and a 1px rule at 0.6 lands
-        // between two pixels. The bar is 2x2 and uniform, so there is nothing in it to squeeze;
-        // the corners are drawn once at their own size and never stretched at all.
-        // `tint` multiplies: the assets are greyscale, the colour lives in the code.
-        // Ludoal fork: a button is the plate with ONE tint - face and rule the same colour,
-        // the alpha ramps in UITheme doing the rest. Window frames call the same method with two.
+        // Ludoal fork: the plate as a nine-slice, from SEPARATE bar and corner textures (the way
+        // Submenu's NineSliceSprite does it). ⚠ Never slice one bitmap: the bar is 2x2 and uniform
+        // so nothing in it squeezes, and the corners draw at their own size, never stretched.
+        // `tint` multiplies - greyscale assets; a button passes ONE tint, window frames two.
         public static void DrawPlate(SpriteBatch batch, in Rectangle r, Color tint)
             => UITheme.DrawPlate(batch, r, tint, tint.Alpha(UITheme.Theme.RuleStrength));
 
@@ -168,8 +161,7 @@ namespace Ship_Game
             {
                 // Ludoal fork: ONE mechanism for every button - the painted plate, tinted and
                 // faded from code. A 52px and a 182px button are the same control; the tint
-                // carries the meaning (neutral, active, hostile) that used to need a texture of
-                // its own, and the two tiny assets restyle the whole game when redrawn.
+                // carries the meaning (neutral, active, hostile), and two tiny assets style them all.
                 DrawPlate(batch, r, BackgroundColor().Alpha(Enabled ? Opacity : Opacity * 0.5f));
             }
             else if (texture != null)

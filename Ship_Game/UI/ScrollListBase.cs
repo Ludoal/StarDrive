@@ -29,10 +29,9 @@ namespace Ship_Game
         const int PaddingTop   = 15;
         const int PaddingBot   = 15;
         static int PaddingLeft => UITheme.ListPadLeft;   // the list's own margin, not the panel's
-        // Ludoal fork: the scrollbar's lane is a theme value now (Theme.yaml, ScrollbarLane).
-        // It was 24 here and the three lists on one screen still showed three different gaps,
-        // because the bar was ALSO pushed 5 off the right edge below - two numbers for one
-        // margin (maintainer measured it, 1 Sep).
+        // Ludoal fork: the scrollbar's lane is a theme value (Theme.yaml, ScrollbarLane).
+        // ⚠ ONE number for this margin: the bar is also offset from the right edge below, and
+        // two constants for the same lane make lists on one screen show different gaps.
         static int PaddingRight => UITheme.ScrollbarLane;
 
         // inner housing rect for scroll list items

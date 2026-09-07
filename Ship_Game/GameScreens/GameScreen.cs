@@ -112,9 +112,8 @@ namespace Ship_Game
         // If this is set, the universe was paused
         UniverseScreen PausedUniverse;
         // Ludoal fork: this screen WANTS the simulation held, whether or not it was the one that
-        // stopped it. Ownership alone was the wrong question for the paused indicator: a screen
-        // opened while the player had already paused never takes ownership, yet releasing the
-        // pause under it does nothing - the screen holds it again on the next frame.
+        // stopped it - ownership alone does not answer that. A screen opened while the player had
+        // already paused takes no ownership, yet holds the pause all the same.
         UniverseScreen PauseRequested;
         public bool HoldsUniversePause => PauseRequested != null;
 
@@ -138,11 +137,9 @@ namespace Ship_Game
         public float PageContentY;
         public int PageContentTop => PageContentY > 0 ? (int)PageContentY : PageFrame.Y;
 
-        // Ludoal fork (maintainer feedback): the universe a dialog should pause. A dialog greys
-        // the simulation wherever it was summoned from, but the universe is only its PARENT when
-        // it was opened from the map itself: summoned by a page, the parent is that page, the
-        // cast returned null, and nothing ever claimed the pause. The page-pause option still
-        // gates the claim, and a universe already paused by hand keeps its own resume.
+        // Ludoal fork (maintainer feedback): the universe a dialog should pause. The universe is
+        // the dialog's PARENT only when it was opened from the map; summoned by a page the parent
+        // is that page, so fall back to a screen search. The page-pause option gates the claim.
         protected static UniverseScreen UniverseToPause(GameScreen parent)
             => parent as UniverseScreen ?? parent?.ScreenManager?.FindScreen<UniverseScreen>();
 
@@ -185,8 +182,7 @@ namespace Ship_Game
 
         // Ludoal fork: a list screen hands its automatic pause to the colony it opens (and the
         // colony walk hands it to the next colony) - the simulation must not resume in the gap
-        // between the two owners. No-op when this screen holds nothing: a pause the player set
-        // himself is nobody's to hand over, it survives on its own.
+        // between the two owners. No-op when this screen holds nothing: a manual pause is nobody's.
         public void HandOverUniversePause(GameScreen to)
         {
             if (to == null || PausedUniverse == null)
@@ -218,12 +214,9 @@ namespace Ship_Game
 
             // if we have `toPause`, check that it is not already paused
             // this way only a single pausing screen will be allowed to resume the simulation automatically.
-            // Ludoal fork: during top-bar navigation the closing screen resumes the universe
-            // first, but the universe is still flagged covered when this ctor runs, so the new
-            // screen never took ownership without this.
-            // The page-pause option gates the claim at its single source - opted out, a page no
-            // longer stops the simulation; the manual pause and the always-pausing pages
-            // (Shipyard Full Screen) still do.
+            // Ludoal fork: the universe is still flagged covered when this ctor runs (during
+            // top-bar navigation the closing screen resumes it first), so the claim below is what
+            // gives the new screen ownership. The page-pause option gates it at its single source.
             if (!GlobalStats.PauseOnPageOpen && !PageAlwaysPauses)
                 toPause = null;
             // the Colony panel opts OUT of auto-pause unless the user
@@ -630,8 +623,7 @@ namespace Ship_Game
         //                    For Universe this is the Maximum supported HEIGHT of the CAMERA
         // Ludoal fork: offsetXY shifts the optical centre by a fraction of the frustum, so a
         // screen whose content area is NOT the whole viewport (e.g. the Shipyard, capped at
-        // 1680 with side panels) can centre its 3D on its OWN window rather than the screen.
-        // offset (0,0) = the plain symmetric perspective, unchanged for every other caller.
+        // 1680 with side panels) can centre its 3D on its OWN window. (0,0) = plain symmetric.
         public void SetPerspectiveProjection(double fovYdegrees = 45, double maxDistance = 5000.0,
                                              Vector2 offsetXY = default)
         {

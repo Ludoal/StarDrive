@@ -305,8 +305,7 @@ namespace Ship_Game
 
         void AddOwner()
         {
-            // an unclaimed body shows NOTHING (maintainer feedback: "None" read like a
-            // white-named race)
+            // an unclaimed body shows NOTHING, never "None" (maintainer feedback)
             UITable.Column c = Screen.Table.Columns[5];
             if (IsForDysonSwarm && System.HasDysonSwarm)
             {

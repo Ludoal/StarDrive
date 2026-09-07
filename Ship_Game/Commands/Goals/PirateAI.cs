@@ -28,10 +28,9 @@ namespace Ship_Game.Commands.Goals
             Pirates = Owner.Pirates;
             bool firstRun = Pirates.PaymentTimers.Count == 0;
             Pirates.Init();
-            // Ludoal fork (maintainer, 6 Sep '26): the starting level asked for on the Factions
-            // page, CLIMBED rather than posted - each pass builds the base, the tech, the station
-            // and the ship list belonging to that level. A pass that finds no room for a base
-            // simply fails and leaves the level where it got to, as the base game already does.
+            // Ludoal fork (maintainer feedback): the starting level asked for on the Factions page
+            // is CLIMBED rather than posted - each pass builds the base, the tech, the station and
+            // the ship list belonging to that level. A pass that finds no room for a base fails.
             for (int i = 0; i < Pirates.StartingLevel; ++i)
                 Pirates.TryLevelUp(Owner.Universe, alwaysLevelUp: true); // build initial base
 

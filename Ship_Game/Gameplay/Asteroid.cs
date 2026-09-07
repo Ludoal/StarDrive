@@ -70,7 +70,7 @@ namespace Ship_Game.Gameplay
             So = model.CreateSceneObject(ObjectType.Static);
             So.Visibility = GlobalStats.AsteroidVisibility; // shadows or no shadows?
 
-            // Ludoal fork (maintainer spec): AsteroidSizeMult is a purely visual knob, applied
+            // Ludoal fork (maintainer feedback): AsteroidSizeMult is a purely visual knob, applied
             // in the per-frame transform so the slider takes effect on asteroids already on
             // screen. Orbit speed stays on the serialized Scale - size is cosmetic here.
             BaseRadius = model.Radius * Scale * 0.65f;

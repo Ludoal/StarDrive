@@ -120,10 +120,9 @@ namespace Ship_Game.AI
 
             float moneyStrategy = treasuryGoal.LowerBound(money);
 
-            // Ludoal fork (maintainer spec): for the PLAYER, the three stock area targets
-            // are POOLED and split by the Budget screen's linked shares (they sum to 1) -
-            // the envelope stays stock, only its division answers to the player. Applied
-            // inside the EMA so the smoothing keeps working. AI keeps the stock arithmetic.
+            // Ludoal fork (maintainer feedback): for the PLAYER, the three stock area targets are
+            // POOLED and split by the Budget screen's linked shares (they sum to 1). Applied inside
+            // the EMA so the smoothing keeps working; the AI keeps the stock arithmetic.
             if (OwnerEmpire.isPlayer)
             {
                 var up = OwnerEmpire.Universe.P;

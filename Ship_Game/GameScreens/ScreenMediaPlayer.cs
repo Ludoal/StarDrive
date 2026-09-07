@@ -339,14 +339,10 @@ namespace Ship_Game.GameScreens
                     // pause video when game screen goes inactive
                     if (screen.IsActive && currentState == MediaState.Paused)
                     {
-                        // Player.Resume() here is MonoGame's VideoPlayer.Resume, NOT our
-                        // public Resume() wrapper's Stop+Play workaround. This is intentional:
-                        // the wedge that the wrapper guards against was a startup-only race
-                        // in BeginPlayTask that left MediaSession in a bad state before any
-                        // normal transitions. The pause/resume cycle from a screen-deactivate
-                        // hits MediaSession in a stable Paused state and Resume works as
-                        // designed, with the bonus of resuming from the paused position
-                        // rather than restarting from t=0.
+                        // ⚠ Player.Resume() here is MonoGame's VideoPlayer.Resume, NOT our public
+                        // Resume() wrapper's Stop+Play workaround, which guards a startup-only race
+                        // in BeginPlayTask. A screen-deactivate pause/resume hits MediaSession in a
+                        // stable Paused state, and this resumes from the paused position.
                         Player.Resume();
                         MuteGameAudioIfRequested();
                     }

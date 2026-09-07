@@ -303,11 +303,9 @@ namespace Ship_Game.Universe.SolarBodies
             if (b.IsBiospheres)
                 newPopulation += Planet.PopPerBiosphere(Planet.Owner)*0.001f;
 
-            // Judge building revenue at a fixed NOMINAL tax rate: keying on the live
-            // empire tax rate tied build/scrap choices to fiscal policy (issue 321).
-            // Biospheres no longer consult this at all - they are a capacity decision
-            // (issue 321 v2, see TryBuildBiospheres); this estimator serves the other
-            // revenue-bearing buildings.
+            // Judge building revenue at a fixed NOMINAL tax rate (issue 321), so build/scrap
+            // choices do not follow fiscal policy. Biospheres are a capacity decision and do not
+            // consult this; the estimator serves the other revenue-bearing buildings.
             const float NominalTaxRate = 0.25f;
             // the structural tax modifiers (racial + building tax percentages) do apply -
             // only the player's SLIDER is excluded from the nominal basis (PR 397 review)

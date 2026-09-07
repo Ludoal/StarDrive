@@ -64,11 +64,11 @@ namespace Ship_Game
                 ExploreButton = IconButton("NewUI/icon_order_explore", "NewUI/icon_order_explore_hover1", "NewUI/icon_order_explore_hover2", OnExploreClicked);
             }
             // built for every row - fleet membership changes at runtime, visibility is
-            // decided at draw time (maintainer feedback: wire the disabled upstream button)
+            // decided at draw time
             PatrolButton = IconButton("NewUI/icon_order_patrol", "NewUI/icon_order_patrol_hover1", "NewUI/icon_order_patrol_hover2", OnPatrolClicked);
             RefitButton = IconButton("NewUI/icon_queue_rushconstruction", "NewUI/icon_queue_rushconstruction_hover1", "NewUI/icon_queue_rushconstruction_hover2", OnRefitClicked);
             ScrapButton = IconButton("NewUI/icon_queue_delete", "NewUI/icon_queue_delete_hover1", "NewUI/icon_queue_delete_hover2", OnScrapClicked);
-            ScrapButton.IconTint = Color.Red; // destruction reads red (maintainer bench 305)
+            ScrapButton.IconTint = Color.Red; // destruction reads red (bench 305)
 
             if (Ship.IsPlatformOrStation || Ship.Stats.Thrust <= 0f)
             {
@@ -135,10 +135,9 @@ namespace Ship_Game
                 PatrolButton.Draw(batch, elapsed);
             if (!Ship.IsSubspaceProjector)
             {
-                // (maintainer, bench 523) lit while a refit order stands. UIButton.State is a
-                // press state - it says what the mouse is doing, never what the ship is doing -
-                // so the standing order is carried by the icon's tint, the same device the scrap
-                // icon uses for its own meaning.
+                // (bench 523) lit while a refit order stands. ⚠ UIButton.State is a press
+                // state - it says what the mouse is doing, never what the ship is doing - so the
+                // standing order is carried by the icon's tint, like the scrap icon.
                 RefitButton.IconTint = Ship.AI.State == AIState.Refit ? Color.Gold : Color.White;
                 RefitButton.Draw(batch, elapsed);
             }
@@ -249,10 +248,8 @@ namespace Ship_Game
         }
 
         // Ludoal fork (maintainer feedback): the trade zone THIS RUN serves, appended to the line
-        // that describes the run. In this regime a zone owns no ship - it is where the current
-        // voyage goes - so the mention belongs to the voyage and empties with it, rather than to
-        // a column that would read as belonging. Written here rather than in a screen because
-        // this helper feeds both the ship cartouche and the Ships list: one line, two screens.
+        // that describes the run. A zone owns no ship - it is where the current voyage goes - so
+        // the mention empties with the voyage. Shared by the ship cartouche and the Ships list.
         static string ZoneServing(Ship ship, Planet importTo)
         {
             if (importTo == null || ship.Loyalty == null)
@@ -321,8 +318,8 @@ namespace Ship_Game
                             case ShipAI.Plan.PickupGoods:  status = Localizer.Token(GameText.PickingUp); break;
                             case ShipAI.Plan.DropOffGoods: status = Localizer.Token(GameText.Delivering); break;
                         }
-                        // status is empty outside Pickup/DropOff - build without the stray
-                        // leading space it used to leave ahead of "Production from ..."
+                        // status is empty outside Pickup/DropOff - build without a stray
+                        // leading space ahead of "Production from ..."
                         string head = status.IsEmpty() ? goodsType : $"{status} {goodsType}";
                         string zone = ZoneServing(ship, last2.Trade?.ImportTo);
                         return $"{head} from {last2.Trade?.ExportFrom.Name} to {last2.Trade?.ImportTo?.Name ?? last2.Trade?.TargetStation.Name} {blockade}{zone}".TrimEnd();
@@ -389,7 +386,7 @@ namespace Ship_Game
                         if (!ship.AI.OrderQueue.TryPeekLast(out ShipAI.ShipGoal last))
                         {
                             // Ludoal fork: FindClosestSystem is null in a system-less
-                            // universe (battle simulator arena) — NullRef froze the UI
+                            // universe (battle simulator arena)
                             SolarSystem system = ship.Universe.FindClosestSystem(ship.AI.MovePosition);
                             if (system != null && system.IsExploredBy(ship.Universe.Player))
                                 return string.Concat(moveText, Localizer.Token(GameText.DeepSpaceNear), " ", system.Name);

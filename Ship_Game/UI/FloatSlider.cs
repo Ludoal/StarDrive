@@ -40,9 +40,8 @@ namespace Ship_Game
         // Ludoal fork: an inline row draws its own value label - silence the built-in one
         public bool DrawValueText = true;
 
-        // Ludoal fork (maintainer, bench 529): the greyed LOOK. UIElementV2.Enabled already
-        // refuses the drag, but a slider that refuses it while looking live is exactly the dead
-        // control the bench keeps catching. Set both together; this one only paints.
+        // Ludoal fork (bench 529): the greyed LOOK only. UIElementV2.Enabled refuses the drag;
+        // ⚠ set both together, or the slider refuses input while still looking live.
         public bool Greyed;
         public float Range => Max-Min;
 
@@ -96,10 +95,8 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork: the track drawn ONCE for every slider in the game - fill, themed
-        // outline, eleven ticks. ColonySlider carried its own copy of these lines (and of the
-        // outline browns the theme now owns); the socle lends its drawing instead, the same
-        // way Submenu lends its frame.
+        // Ludoal fork: the single track drawing for every slider in the game - fill, themed
+        // outline, eleven ticks. ColonySlider borrows it, the way Submenu lends its frame.
         public static void DrawTrack(SpriteBatch batch, in Rectangle track, SubTexture gradient,
                                      float relValue, bool hover, Color tint)
         {
@@ -170,18 +167,15 @@ namespace Ship_Game
             Step = style == SliderStyle.Percent ? 0.01f : 0f;
         }
 
-        // Ludoal fork: track offset below the vertical centre. Default 3 keeps every existing
-        // slider unchanged; lower it to tuck the track up under a title when the box is tall enough
-        // to contain the knob but the centred track sits too low.
+        // Ludoal fork: track offset below the vertical centre. Lower it to tuck the track up
+        // under a title when the box is tall enough for the knob but the centred track sits too low.
         public int TrackYOffset = 3;
 
         void UpdateSliderRect()
         {
-            // Ludoal fork (maintainer, bench 580): the value is drawn AFTER the track, so the track
-            // must stand back by the WIDEST the value can be, not by the widest seen so far. The old
-            // 32 fitted "44%" and not "100%", which ran out of its panel at the top of the range.
-            // A fixed lane rather than one measured on the current text: a track that changes length
-            // as the number gains a digit makes the knob jump under the cursor.
+            // Ludoal fork (bench 580): the value is drawn AFTER the track, so the track stands
+            // back by ValueLane - the WIDEST the value can ever be. ⚠ Never size the lane on the
+            // current text: a track that changes length as a digit is gained jumps the knob.
             SliderRect = new Rectangle((int)Pos.X, (int)Pos.Y + (int)Height/2 + TrackYOffset, (int)Width - ValueLane, 6);
             KnobRect = new Rectangle(SliderRect.X + (int)(SliderRect.Width * Value), 
                                      SliderRect.Y + SliderRect.Height / 2 - SliderKnob.Height / 2, 
@@ -237,9 +231,8 @@ namespace Ship_Game
             if (DrawValueText)
             {
                 // Ludoal fork (maintainer feedback): the value is RIGHT-aligned on the far edge of
-                // the lane the track stood back for, so a column of sliders lines up on the last
-                // digit and a figure that gains one grows leftwards into the room already kept for
-                // it. Drawn from a fixed left edge, "69%" and "100%" closed in different places.
+                // the lane the track stands back for, so a column of sliders lines up on the last
+                // digit and a figure that gains one grows leftwards into the room already kept.
                 float valueRight = SliderRect.Right + ValueLane;
                 var textPos = new Vector2(valueRight - Fonts.Arial12Bold.TextWidth(StyledValue),
                                           SliderRect.Y + SliderRect.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2);

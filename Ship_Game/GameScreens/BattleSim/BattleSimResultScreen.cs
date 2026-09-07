@@ -8,13 +8,9 @@ using Rectangle = SDGraphics.Rectangle;
 
 namespace Ship_Game
 {
-    // Ludoal fork (battle simulator S3): the battle report. Snapshot-based stats
-    // (the engine keeps no cumulative damage counters — a per-damage-type
-    // breakdown needs combat hooks and is deferred). Escape or the button
-    // returns to the Shipyard; Rematch respawns the same pairing in place.
-    // Ludoal fork: a PopupWindow rather than a GameScreen carrying a Menu2. This screen was ours
-    // and was built in the wrong shape - it is modal, titled and closable, which is what a popup
-    // is here, so it now wears the same frame as Options and the Codex.
+    // Ludoal fork: the battle report - a PopupWindow (modal, titled, closable), wearing the same
+    // frame as Options and the Codex. Stats are snapshot-based: the engine keeps no cumulative
+    // damage counters. Escape or the button returns to the Shipyard; Rematch respawns the pairing.
     public sealed class BattleSimResultScreen : PopupWindow
     {
         public struct ShipReport
@@ -64,7 +60,7 @@ namespace Ship_Game
             base.LoadContent();
 
             Rectangle rect = Rect;
-            // bench 361 (maintainer): the step-back on the LEFT, the action on the RIGHT
+            // (bench 361) the step-back on the LEFT, the action on the RIGHT
             ButtonMedium(rect.X + 30, rect.Bottom - 55, GameText.BsBackToShipyard, b => ToShipyard());
             ButtonMedium(rect.Right - 210, rect.Bottom - 55, "Rematch", b =>
             {
@@ -94,13 +90,13 @@ namespace Ship_Game
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
-            // ⚠ base.Draw opens and closes its OWN batch now (PopupWindow draws the frame there),
-            // so this screen's own content goes after it, in a batch of its own - a SafeBegin
-            // before it would be closed out from under this method's first strings.
+            // ⚠ base.Draw opens and closes its OWN batch (PopupWindow draws the frame there), so
+            // this screen's content goes after it, in a batch of its own - a SafeBegin before it
+            // would be closed out from under this method's first strings.
             base.Draw(batch, elapsed);
             batch.SafeBegin();
 
-            // the title rides the frame's own title bar now; the verdict stays hand-drawn rather
+            // the title rides the frame's own title bar; the verdict stays hand-drawn rather
             // than going through MiddleText, whose 88px band would push this table down
             int top = PopupFrame.ContentTop(Rect);
             string verdictLine = Verdict + "  -  " + Duration;
