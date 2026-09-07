@@ -294,12 +294,15 @@ namespace Ship_Game
             {
                 SubTexture up   = ResourceManager.Texture("NewUI/scrollbar_arrow_up");
                 SubTexture down = ResourceManager.Texture("NewUI/scrollbar_arrow_down");
-                int ax = OpenRect.X + OpenRect.Width - up.Width - 2;
+                // ⚠ CENTRED and WHITE. Tucked in the right corner in the colour of labels they
+                // were there and unseen, which is the same as not being there (maintainer
+                // feedback, bench 595) - a hint nobody notices buys nothing.
+                int ax = OpenRect.X + OpenRect.Width / 2 - up.Width / 2;
                 if (FirstVisible > 0)
-                    batch.Draw(up, new Rectangle(ax, OpenRect.Y + 1, up.Width, up.Height), Color.Wheat);
+                    batch.Draw(up, new Rectangle(ax, OpenRect.Y + 1, up.Width, up.Height), Color.White);
                 if (FirstVisible + VisibleRows < rows)
                     batch.Draw(down, new Rectangle(ax, OpenRect.Y + OpenRect.Height - down.Height - 1,
-                                                   down.Width, down.Height), Color.Wheat);
+                                                   down.Width, down.Height), Color.White);
             }
         }
 
