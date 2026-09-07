@@ -55,7 +55,7 @@ namespace Ship_Game
                     int index = Planet.ConstructionQueue.IndexOf(Item);
                     if (index > 0)
                     {
-                        SwapConstructionQueueItems(index - 1, index);
+                        MoveShownBy(-1);
                     }
                     else
                     {
@@ -92,7 +92,7 @@ namespace Ship_Game
                     var index = Planet.ConstructionQueue.IndexOf(Item);
                     if (index >=0 && index < listBottom)
                     {
-                        SwapConstructionQueueItems(index + 1, index);
+                        MoveShownBy(+1);
                     }
                     else
                     {
@@ -148,9 +148,11 @@ namespace Ship_Game
             });
         }
 
-        void SwapConstructionQueueItems(int swapTo, int currentIndex)
+        // one row up or down IN THE LIST THE PLAYER SEES - the model resolves the row to the
+        // real neighbour, waiting entries included (audit, bench 603)
+        void MoveShownBy(int rows)
         {
-            Planet.Construction.Swap(swapTo, currentIndex);
+            Planet.Construction.ReorderShown(Item, rows);
             GameAudio.AcceptClick();
         }
 

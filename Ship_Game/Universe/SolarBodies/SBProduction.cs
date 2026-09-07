@@ -848,6 +848,39 @@ namespace Ship_Game.Universe.SolarBodies
             return false;
         }
 
+        // ★ THE GESTURE FOLLOWS THE ROW THE PLAYER SEES (audit, bench 603). The colony screen
+        // sorts the queue so that entries waiting for a tile or a plan sink to the bottom; the
+        // arrows and the drag acted on index +/- 1 of the REAL list, so with a waiting entry
+        // ranked above, "move up" swapped with a row displayed at the bottom and nothing moved
+        // on screen - one click in two did nothing. The shown order is recomputed here from the
+        // very predicate the screen sorts on, so the model needs no reference to the screen.
+        QueueItem[] ShownOrder() => ConstructionQueue.OrderBy(q => IsWaiting(q) ? 1 : 0).ToArray();
+
+        // Moves `item` by `relativeChange` ROWS of the shown order: it lands, in the real list,
+        // where the entry occupying the target row stands. Stable, like the screen's own sort.
+        public void ReorderShown(QueueItem item, int relativeChange)
+        {
+            lock (ConstructionQueue)
+            {
+                int oldIndex = ConstructionQueue.IndexOf(item);
+                if (oldIndex == -1 || relativeChange == 0)
+                    return;
+
+                QueueItem[] shown = ShownOrder();
+                int row = System.Array.IndexOf(shown, item);
+                int target = row + relativeChange;
+                if (row < 0 || (uint)target >= (uint)shown.Length)
+                    return;
+
+                int newIndex = ConstructionQueue.IndexOf(shown[target]);
+                if (newIndex < 0 || newIndex == oldIndex)
+                    return;
+
+                ConstructionQueue.Reorder(oldIndex, newIndex);
+                QueueSnapshotDirty = true;
+            }
+        }
+
         public void Reorder(QueueItem item, int relativeChange)
         {
             lock (ConstructionQueue)

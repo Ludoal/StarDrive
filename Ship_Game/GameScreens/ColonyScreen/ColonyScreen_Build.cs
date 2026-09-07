@@ -250,7 +250,8 @@ namespace Ship_Game
 
         void OnConstructionItemReorder(ConstructionQueueScrollListItem item, int relativeChange)
         {
-            P.Construction.Reorder(item.Item, relativeChange);
+            // the drag's offset is counted in SHOWN rows, so it is resolved against the shown order
+            P.Construction.ReorderShown(item.Item, relativeChange);
         }
 
         void OnConstructionItemHovered(ConstructionQueueScrollListItem item)
