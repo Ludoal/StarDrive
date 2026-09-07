@@ -292,17 +292,23 @@ namespace Ship_Game
             int rows = Options.Count - 1;
             if (rows > VisibleRows)
             {
-                SubTexture up   = ResourceManager.Texture("NewUI/scrollbar_arrow_up");
-                SubTexture down = ResourceManager.Texture("NewUI/scrollbar_arrow_down");
-                // ⚠ CENTRED and WHITE. Tucked in the right corner in the colour of labels they
-                // were there and unseen, which is the same as not being there (maintainer
-                // feedback, bench 595) - a hint nobody notices buys nothing.
-                int ax = OpenRect.X + OpenRect.Width / 2 - up.Width / 2;
-                if (FirstVisible > 0)
-                    batch.Draw(up, new Rectangle(ax, OpenRect.Y + 1, up.Width, up.Height), Color.White);
-                if (FirstVisible + VisibleRows < rows)
-                    batch.Draw(down, new Rectangle(ax, OpenRect.Y + OpenRect.Height - down.Height - 1,
-                                                   down.Width, down.Height), Color.White);
+                // ⚠ A ROW, not a mark. Two arrows the size of a dot, in the colour of the frame
+                // they sat on, were there and unseen - and an indicator you have to look for
+                // indicates nothing (maintainer feedback, bench 595). A whole row saying how many
+                // are left is read without being sought, and it says something the arrows could
+                // not: the count.
+                int below = rows - (FirstVisible + VisibleRows);
+                if (below > 0)
+                {
+                    SubTexture down = ResourceManager.Texture("NewUI/scrollbar_arrow_down");
+                    string more = string.Concat("  ", below.ToString(), " more");
+                    int textW = (int)Fonts.Arial12Bold.MeasureString(more).X;
+                    int rowY  = OpenRect.Y + OpenRect.Height - 17;
+                    int startX = OpenRect.X + OpenRect.Width / 2 - (down.Width + textW) / 2;
+                    batch.Draw(down, new Rectangle(startX, rowY + 2, down.Width, down.Height), Color.Wheat);
+                    batch.DrawString(Fonts.Arial12Bold, more,
+                                     new Vector2(startX + down.Width, rowY), Color.Wheat);
+                }
             }
         }
 
@@ -455,7 +461,10 @@ namespace Ship_Game
             {
                 // the options are stepped on the control's own height (Entry.UpdateRect), so
                 // the open frame is measured from it too - one owner for the step, not two.
-                int height = VisibleRows * h;
+                // ⚠ the "more" row is reserved whenever the list is bounded, whether or not
+                // anything is below right now: a frame that grows and shrinks as you scroll is
+                // worse than one empty row.
+                int height = (VisibleRows + (Options.Count - 1 > VisibleRows ? 1 : 0)) * h;
                 OpenRect = new Rectangle(x + 6, y + h + 3 + 6, w - 12, height - 12);
                 // the clickable area covers the OPTIONS, not the frame drawn around them: a row
                 // is laid out on the control's full width (Entry.UpdateRect), so an area inset by

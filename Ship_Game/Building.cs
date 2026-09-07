@@ -428,9 +428,15 @@ namespace Ship_Game
             {
                 if (planet.Owner?.IsBuildingUnlocked(Building.TerraformerId) == true)
                 {
-                    PlanetGridSquare[] sparing = freeSpots.Filter(t => !t.Terraformable);
-                    if (sparing.Length > 0)
-                        freeSpots = sparing;
+                    // first non-terraformable free tile, in list order
+                    foreach (PlanetGridSquare t in freeSpots)
+                    {
+                        if (!t.Terraformable)
+                        {
+                            where = t;
+                            return true;
+                        }
+                    }
                 }
 
                 where = freeSpots.Length > 0 ? freeSpots[0] : null;
