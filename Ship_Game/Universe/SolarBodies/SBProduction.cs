@@ -760,6 +760,15 @@ namespace Ship_Game.Universe.SolarBodies
                 QueueItem q = ConstructionQueue[i];
                 if (q.IsTerraformer)
                 {
+                    // ⚠ TEMPORARY TRACE (bench 597): the terraformer still walks to the back and
+                    // three readings of the code failed to say why, so the bench answers instead
+                    // of a fourth guess. Says WHO moved it and what the smoothed need held at that
+                    // instant. Remove once the cause is named.
+                    Log.Info(ConsoleColor.Yellow,
+                        $"---- Terraformer demoted on {P.Name}: from {i} to {Count-1}, "
+                      + $"playerAdded={q.IsPlayerAdded}, needed={P.AreTerraformersNeeded}, "
+                      + $"held={P.Universe.StarDate - LastTerraformerWanted:0.0}, "
+                      + $"here={P.TerraformersHere}/{P.TerraformerLimit} ----");
                     MoveTo(Count-1, i);
                     break;
                 }
