@@ -29019,8 +29019,8 @@ TzRequired:
  FRA: "Besoin"
 TzRequiredTip:
  Id: 7215
- ENG: "Freighters needed to keep these colonies supplied, from what they consume and how long a delivery takes. Red when nothing in the empire can supply it, yellow when only part of it can."
- FRA: "Cargos nécessaires pour approvisionner ces colonies, d'après ce qu'elles consomment et la durée d'une livraison. Rouge quand rien dans l'empire ne peut y répondre, jaune quand une partie seulement le peut."
+ ENG: "Freighters needed to keep these colonies supplied: what they consume over a delivery, plus the room left in their stores. See Inbound for how much of it is actually on its way."
+ FRA: "Cargos nécessaires pour approvisionner ces colonies : ce qu'elles consomment le temps d'une livraison, plus la place restant dans leurs réserves. Voir Inbound pour ce qui est réellement en route."
 TzInbound:
  Id: 30147
  ENG: "Inbound"
@@ -29083,8 +29083,8 @@ TzFreightersTip:
  FRA: "Cargos acheminant ce bien vers la zone sélectionnée, face au nombre nécessaire."
 TzActiveTip:
  Id: 7217
- ENG: "Freighters currently flying to these colonies, whoever owns them. See Owned for the zone's own hulls."
- FRA: "Cargos actuellement en route vers ces colonies, quel que soit leur propriétaire. Voir Owned pour les coques de la zone."
+ ENG: "Freighters currently flying to these colonies, whoever owns them. Yellow when only part of the need is on its way, red when none of it is. See Owned for the zone's own hulls."
+ FRA: "Cargos actuellement en route vers ces colonies, quel que soit leur propriétaire. Jaune quand une partie seulement du besoin est en route, rouge quand rien ne l'est. Voir Owned pour les coques de la zone."
 TzName:
  Id: 7218
  ENG: "Name"

@@ -66,12 +66,13 @@ namespace Ship_Game
             LayOutColonyNames(cols[2].Rect, color);
 
             // ★ the RAW need, never the dispatch quota: a zone whose ground has run dry has a
-            // quota of nought, and "I want nothing" must not be written like "nobody can serve
-            // me". Both cells wear the overlay's own colour rule, so an eye that learned it there
-            // does not learn another one here (maintainer feedback, bench 590).
-            Cell(cols[3], Zone.RawNeed.ToString(),
-                 FreighterUtilizationWindow.PairColor(Zone.MeasuredNeed, Zone.RawNeed))
-                .Tooltip = GameText.TzRequiredTip;
+            // quota of nought, and "I want nothing" must not be written like "nobody can serve me".
+            // ⚠ it carries NO colour of its own: a demand is not a result. Colouring it on "is this
+            // servable" while the overlay colours the same figure on "is this served" put one
+            // number in two colours across two screens - defensible, and it needed four lines to
+            // defend, which is what condemned it. Inbound next door is the indicator (maintainer
+            // feedback, bench 594).
+            Cell(cols[3], Zone.RawNeed.ToString(), color).Tooltip = GameText.TzRequiredTip;
             int inbound = Zone.ActiveFreighters(Player);
             Cell(cols[4], inbound.ToString(), FreighterUtilizationWindow.PairColor(inbound, Zone.RawNeed))
                 .Tooltip = GameText.TzActiveTip;
