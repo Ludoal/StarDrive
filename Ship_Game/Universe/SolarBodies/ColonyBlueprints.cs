@@ -139,6 +139,8 @@ namespace Ship_Game.Universe.SolarBodies
             if (totalPlanned == 0) // nothing planned is nothing completed, not a division by zero
             {
                 PercentCompleted = 0;
+                PlannedCount = 0;   // an empty plan inherits nothing from its predecessor (audit, bench 603)
+                BuiltCount = 0;
                 return;
             }
 
@@ -178,6 +180,7 @@ namespace Ship_Game.Universe.SolarBodies
             {
                 PercentAchievable = 0;
                 ReachableCount = 0;
+                PlannedCount = 0;
                 return;
             }
 
