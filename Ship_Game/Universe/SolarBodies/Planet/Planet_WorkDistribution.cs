@@ -267,7 +267,8 @@ namespace Ship_Game
             if (IsCybernetic || Owner.Research.NoTopic || CType == ColonyType.Industrial)
                 return 1;
 
-            var item = qi ?? ConstructionQueue.FirstOrDefault();
+            // the entry production is actually spent on, never the head: the head may be waiting
+            var item = qi ?? Construction.BuildingNow;
             if (item == null || Res.YieldPerColonist.AlmostZero())
             {
                 return 1;
