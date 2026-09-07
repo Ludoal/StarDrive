@@ -387,6 +387,7 @@ namespace Ship_Game.Universe.SolarBodies
                 return; // Massive sabotage to planetary facilities or no items
 
             OvertakeWaitingEntries();
+            DropHopelessEntries();
             // ⚠ the FIRST BUILDABLE entry, not the head: production spent on an entry with no
             // tile pays for something that cannot be placed, and the fault surfaces only at
             // completion, after the cost is paid.
@@ -410,6 +411,32 @@ namespace Ship_Game.Universe.SolarBodies
             int first = FirstBuildableIndex;
             if (first > 0)
                 MoveTo(0, first);
+        }
+
+        // ★ AN ORDER THAT CAN NEVER BE PLACED IS NOT AN ORDER (maintainer feedback). An entry waiting
+        // for a tile is dropped, without a message, when all four hold at once: no tile on the
+        // planet accepts its building; no other biosphere is queued; no terraformer, built or queued,
+        // has a tile left to terraform; nothing has been spent on it. Any one false, it waits. Two
+        // passes in a row, so an order placed a turn before the biosphere that makes room for it
+        // is not thrown away in between. Same rule for the player and the governor, and the same
+        // cancel path as a tile that dies.
+        void DropHopelessEntries()
+        {
+            bool terraformCanHelp = (P.TerraformingHere || P.TerraformerInTheWorks) && P.HasTilesToTerraform;
+            for (int i = ConstructionQueue.Count - 1; i >= 0; --i)
+            {
+                QueueItem q = ConstructionQueue[i];
+                bool waits = IsWaitingForTile(q) && q.ProductionSpent <= 0f && !terraformCanHelp
+                    && !ConstructionQueue.Any(o => o != q && o.isBuilding && o.Building.IsBiospheres)
+                    && !P.TilesList.Any(t => t.CanEnqueueBuildingHere(q.Building));
+                if (!waits)
+                {
+                    q.HopelessPasses = 0;
+                    continue;
+                }
+                if (++q.HopelessPasses >= 2)
+                    Cancel(q);
+            }
         }
 
         void TryPlayerRush() // Apply rush if player marked items as continuous rush

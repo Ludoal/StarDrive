@@ -72,6 +72,10 @@ namespace Ship_Game
         // Saved: a cancel clicked while paused must survive a save taken before the next turn.
         [StarData] public bool IsCancelled;
 
+        // production passes in a row during which this entry could never be placed; not saved,
+        // a reload simply starts the count again (SBProduction.DropHopelessEntries)
+        public byte HopelessPasses;
+
         public QueueItem() { }
 
         public QueueItem(Planet planet)
