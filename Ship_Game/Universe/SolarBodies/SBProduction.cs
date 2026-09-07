@@ -810,6 +810,11 @@ namespace Ship_Game.Universe.SolarBodies
                 if (q.IsCivilianBuilding
                     && !q.IsTerraformer
                     && (!q.IsPlayerAdded || hasExclusiveBlueprints)
+                    // an entry the PLAN names is never traded for a "better" one: the plan builds in
+                    // its own order, this sweep judges by score, and the two almost never agree - so
+                    // every technology cancelled the rank being raised and half its production with
+                    // it, then the governor queued it again (audit, bench 603)
+                    && P.Blueprints?.IsRequired(q.Building) != true
                     && q.ProductionSpent < q.ProductionNeeded * 0.9f
                     && P.BestCivilianBuildingToBuildDifferentThen(P.GetBuildingsCanBuild(), q.Building))
                 {
