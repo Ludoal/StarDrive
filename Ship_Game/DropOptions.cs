@@ -305,7 +305,9 @@ namespace Ship_Game
                     int textW = (int)Fonts.Arial12Bold.MeasureString(more).X;
                     int rowY  = OpenRect.Y + OpenRect.Height - 17;
                     int startX = OpenRect.X + OpenRect.Width / 2 - (down.Width + textW) / 2;
-                    batch.Draw(down, new Rectangle(startX, rowY + 2, down.Width, down.Height), Color.Wheat);
+                    // centred on the LINE, not nudged by a guessed offset
+                    int ay = rowY + (Fonts.Arial12Bold.LineSpacing - down.Height) / 2;
+                    batch.Draw(down, new Rectangle(startX, ay, down.Width, down.Height), Color.Wheat);
                     batch.DrawString(Fonts.Arial12Bold, more,
                                      new Vector2(startX + down.Width, rowY), Color.Wheat);
                 }
