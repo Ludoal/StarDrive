@@ -3,6 +3,7 @@ using SDGraphics;
 using SDUtils;
 using Ship_Game.Audio;
 using Ship_Game.Ships;
+using Ship_Game.Universe.SolarBodies;
 using Vector2 = SDGraphics.Vector2;
 
 namespace Ship_Game
@@ -102,7 +103,7 @@ namespace Ship_Game
                 // its turn without losing its rank - it returns to its place the moment its square
                 // frees up. Stable: everything else keeps the order the player arranged, and the
                 // reorder gestures act on the ENTRY, never on its row, so nothing is misaligned.
-                queue = queue.OrderBy(qi => P.Construction.IsWaitingForTile(qi) ? 1 : 0).ToArray();
+                queue = queue.OrderBy(qi => SBProduction.IsWaitingForTile(qi) ? 1 : 0).ToArray();
                 if (!ConstructionQueue.AllEntries.Select(item => item.Item).EqualElements(queue))
                 {
                     var newItems = queue.Select(qi => new ConstructionQueueScrollListItem(qi));
