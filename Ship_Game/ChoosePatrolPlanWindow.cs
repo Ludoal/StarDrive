@@ -139,7 +139,9 @@ namespace Ship_Game
 
         void OnLoadPatrolClicked(UIButton b)
         {
-            Fleet.LoadPatrol(SelectedPatrol);
+            // the patrol rewrites every ship's orders and the fleet task: simulation-thread work
+            FleetPatrol patrol = SelectedPatrol;
+            Fleet.Owner.Universe.Screen?.RunOnSimThread(() => Fleet.LoadPatrol(patrol));
             GameAudio.EchoAffirmative();
             ExitScreen();
         }
