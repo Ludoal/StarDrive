@@ -33,7 +33,7 @@ namespace Ship_Game
         void OnUpClicked()
         {
             InputState input = GameBase.ScreenManager.input;
-            if (input.IsAltKeyDown) // bench 447: Ctrl never survives the maintainer's VM
+            if (input.IsAltKeyDown) // Alt, not Ctrl: Ctrl does not always reach the game (maintainer feedback)
             {
                 Universe.RunOnSimThread(() =>
                 {
@@ -68,7 +68,7 @@ namespace Ship_Game
         void OnDownClicked()
         {
             InputState input = GameBase.ScreenManager.input;
-            if (input.IsAltKeyDown) // bench 447: same as Up
+            if (input.IsAltKeyDown) // same as Up
             {
                 Universe.RunOnSimThread(() =>
                 {

@@ -112,10 +112,9 @@ public sealed class RuleOptionsScreen : PopupWindow
                                                     GameText.InsystemEnemyFtlSpeedModifier, 0.1f, 1f, P.EnemyFTLModifier));
         EnemyFTLPenaltySlider.OnChange = (s) => P.EnemyFTLModifier = s.AbsoluteValue;
             
-        // the second column, measured from the FRAME rather than from the screen: at 1440 the old
-        // ScreenWidth/4.5 gave 320, which started before the 270-wide sliders at X+60 had ended,
-        // and it moved with the display while the panel no longer does. 280 clears them.
-        const int indent = 300; // 20 more (bench 408): air between the sliders and the checkbox column
+        // The second column is measured from the FRAME, not from the screen: the panel does not
+        // move with the display. 280 is the least that clears the 270-wide sliders at X+60.
+        const int indent = 300; // (bench 408) air between the sliders and the checkbox column
         // (maintainer feedback) grouped by what they do: the three that change how the game is
         // played first, then the switches that remove a system, which all read "Disable ..."
         Checkbox(ftlRect.X + indent, ftlRect.Y + 25*0, () => P.PreventFederations, title: GameText.PreventAiFederations, tooltip: GameText.PreventsAiEmpiresFromMerging);
@@ -175,7 +174,7 @@ public sealed class RuleOptionsScreen : PopupWindow
         // Ludoal fork: back to the game's own defaults, and clear the saved ruleset with them -
         // otherwise the next new game would restore what the player just reset. Rebuilding the
         // screen is what moves the sliders: they read their value at construction.
-        // Ludoal fork (maintainer feedback): Reset is a destructive action, so the red plate.
+        // Reset is a destructive action, so the red plate (maintainer feedback).
         UIButton resetBtn = Button(ButtonStyle.WideHostile, leftRect.X + 40, leftRect.Y + leftRect.Height - 60,
                GameText.NgReset, b =>
         {

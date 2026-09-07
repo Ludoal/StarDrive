@@ -47,8 +47,8 @@ public sealed class GamePlayMenuScreen : PopupWindow
         SavingText.Pos = new Vector2(c.X - SavingText.Size.X*0.5f,
             50 + Fonts.Pirulen16.LineSpacing * 2);
 
-        // ⚠ derived from the frame, not from screen centre: the two used to be placed
-        // independently, so widening the window left the buttons where they were.
+        // ⚠ derived from the frame, not from screen centre: placed independently, the buttons
+        // stay put when the window widens.
         const float btnW = 168;
         UIList buttons = AddList(new Vector2(Rect.X + (Rect.Width - btnW) / 2,
                                              PopupFrame.ContentTop(Rect) + 12));

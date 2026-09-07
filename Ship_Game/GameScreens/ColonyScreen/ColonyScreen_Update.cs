@@ -191,9 +191,9 @@ namespace Ship_Game
 
         void UpdateTerraformTab()
         {
-            // the block shares the Assign Labor frame now: the sliders yield while the
-            // terraform tab is up - BEFORE the level gate, because the tab can exist on a
-            // terraformable planet before any terraform tech
+            // the block shares the Assign Labor frame: the sliders yield while the terraform
+            // tab is up - BEFORE the level gate, because the tab can exist on a terraformable
+            // planet before any terraform tech
             AssignLabor.SlidersVisible = !IsTerraformTabSelected;
             if (TerraformLevel < 1)
                 return;

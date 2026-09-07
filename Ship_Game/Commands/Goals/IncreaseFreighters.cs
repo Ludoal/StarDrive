@@ -7,10 +7,9 @@ namespace Ship_Game.Commands.Goals
     [StarDataType]
     public class IncreaseFreighters : BuildShipsGoalBase
     {
-        // Ludoal fork (maintainer, 6 Sep '26): which trade zone ordered this hull, 0 for the
-        // empire's own. An exclusive zone below its target used to be able to REQUISITION an idle
-        // hull and nothing else - so once the empire had none idle, the zone stayed short for
-        // good and nobody built for it.
+        // Ludoal fork (maintainer feedback): which trade zone ordered this hull, 0 for the
+        // empire's own. A zone below its target orders a BUILD of its own; requisitioning an
+        // idle hull is not enough, since the empire can have none idle.
         [StarData] public int ForZoneId;
 
         [StarDataConstructor]

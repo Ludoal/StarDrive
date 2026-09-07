@@ -1561,11 +1561,11 @@ namespace Ship_Game
             Population = Math.Max(10, Population); // over population will decrease in time, so this is not clamped to max pop
         }
 
-        // Ludoal fork (maintainer bench 339): the per-turn population gain, extracted from
-        // GrowPopulation so the Colonies EMPIRE tab can sum it across colonies. Same arithmetic the
-        // tick applies (rep rate with the trait clamps, flat bonus and reproduction mod, then the
-        // short-on-food factor), so the number matches what the colony actually grows by. Zero when
-        // the colony is not in the growing branch (starving, over-populated, or in recent combat).
+        // Ludoal fork (bench 339): the per-turn population gain, extracted from GrowPopulation so
+        // the Colonies EMPIRE tab can sum it across colonies. Same arithmetic the tick applies (rep
+        // rate with the trait clamps, flat bonus and reproduction mod, then the short-on-food
+        // factor), so the number matches what the colony actually grows by. Zero when the colony
+        // is not in the growing branch (starving, over-populated, or in recent combat).
         public float EstimatedPopGrowthPerTurn
         {
             get

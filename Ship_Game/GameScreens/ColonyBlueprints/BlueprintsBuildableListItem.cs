@@ -62,7 +62,7 @@ namespace Ship_Game
         {
             Font font = Font12;
             // production 10 left, maintenance 20 left, like the Colony build list
-            // (maintainer bench 301) - the right-edge icons stay put
+            // (bench 301) - the right-edge icons stay put
             float x = Right - ProdWidth - 10;
             float y = Y + 4;
             var iconSize = new Vector2(font.LineSpacing + 2);

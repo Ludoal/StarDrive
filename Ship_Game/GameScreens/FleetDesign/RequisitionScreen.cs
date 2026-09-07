@@ -59,7 +59,7 @@ namespace Ship_Game
             OwnedShips = main.Add(new UIList(new(main.Width, 20), ListLayoutStyle.ResizeList));
             OwnedShips.Add(new UILabel(GameText.FdOwnedShips, Fonts.Pirulen16));
             OwnedShips.Add(new UILabel(_ => GetNumThatFitText()));
-            // maintainer feedback: the action buttons sit centred on the panel, not at its left edge
+            // (maintainer feedback) the action buttons sit centred on the panel, not at its left edge
             AssignNowRow = OwnedShips.Add(new UIList(new Vector2(main.Width, 29), ListLayoutStyle.Clip) { CenterItems = true });
             AssignNowRow.Add(new UIButton(ButtonStyle.WideActive, GameText.FdAssignNow)
             {

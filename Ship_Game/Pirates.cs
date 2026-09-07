@@ -216,26 +216,21 @@ namespace Ship_Game
             float payment            = (victimNetPotential*PaymentPeriodTurns) * basePercentage/100;
             payment                 *= (Level / 2).LowerBound(1);
 
-            // Ludoal fork (maintainer, 5 Sep '26): the player's say on what a demand costs, applied
-            // ONCE and at the end, on the amount that was actually retained. ⚠ the difficulty
-            // modifier above is not: it multiplies the floor, the victim's net, and then the total,
-            // so Brutal already asks over twice what Normal does. That is base game arithmetic and
-            // it is left alone here - this notch is not the place to quietly fix it.
+            // Ludoal fork (maintainer feedback): the player's say on what a demand costs, applied
+            // ONCE and at the end, on the amount actually retained. ⚠ the difficulty modifier above
+            // is not: it multiplies the floor, the victim's net, and then the total, so Brutal
+            // already asks over twice what Normal does. That is base game arithmetic, left alone.
             return (payment * multiplier * TributeModifier).LowerBound(minimumPayment).RoundTo10();
         }
 
-        // The tribute rides on the strength notch, and like the bite it only ever SOFTENS. A
-        // costlier ransom does nothing to a player who already refuses to pay - and nobody pays
-        // twice what they would not pay once - so the notch above Default was a dial with no
-        // reader. Only the cheap end acts: it can turn a prohibitive ransom into an affordable
-        // one, and a player who starts paying funds their growth. Difficulty keeps its own
+        // The tribute rides on the strength notch and only ever SOFTENS: only the cheap end acts,
+        // turning a prohibitive ransom into an affordable one. Difficulty keeps its own
         // multiplier on top, untouched from the base game.
         float TributeModifier => Universe.P.PirateStrength == PirateStrengthSetting.Weak ? 0.5f : 1f;
 
-        // How hard a raid hits, and it only ever SOFTENS. A raid fleet is spawned on the spot,
-        // so a raid above the local defence gives the player no reaction time at all - which is
-        // frustration, not difficulty (player feedback, Roland Johansen). Hardening happens
-        // through how OFTEN raids come; see RaidThreatFloor.
+        // How hard a raid hits, and it only ever SOFTENS. A raid fleet is spawned on the spot, so
+        // a raid above the local defence leaves the player no reaction time (player feedback).
+        // Hardening happens through how OFTEN raids come; see RaidThreatFloor.
         float BiteModifier => Universe.P.PirateStrength == PirateStrengthSetting.Weak ? 0.75f : 1f;
 
         // ★ HOW RARE A RAID MAY BE, and this is the notch that actually makes pirates dangerous.
@@ -269,7 +264,7 @@ namespace Ship_Game
             return victim.IsDefeated;
         }
 
-        // Ludoal fork (maintainer, 5 Sep '26): the player's say on how fast piracy escalates.
+        // Ludoal fork (maintainer feedback): the player's say on how fast piracy escalates.
         // A BIGGER die is a rarer hit, so multiplying it stretches the climb - and since a level
         // is also a base, a slower climb is fewer bases as well. Capped at Normal: this exists to
         // make them gentler, never harder, same as the Remnant pace.

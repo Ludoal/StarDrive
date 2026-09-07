@@ -91,12 +91,12 @@ namespace Ship_Game
                 float iconSize = Height;
                 batch.Draw(icon, new Vector2(X, Y), new Vector2(iconSize));
           
-                // bench 444/447: readable name, costs in ONE column stuck to the RIGHT edge
+                // (bench 447) readable name, costs in ONE column stuck to the RIGHT edge
                 // with the same margin the icon keeps on the left
                 batch.DrawString(Fonts.Arial12Bold, Template.Name, X+iconSize+2, Y+2);
                 batch.DrawString(Fonts.Arial8Bold, Template.GetRole(), X+iconSize+2, Y+18, Color.Orange);
 
-                float rightEdge = Right - 4; // bench 449: +17 truncated against the item clip (the elevator lane is reserved) - back to the origin setting per maintainer
+                float rightEdge = Right - 4; // any further right truncates against the item clip (the elevator lane is reserved)
                 string cost = Template.GetCost(Universe.Player).String(1);
                 float costW = Fonts.Arial12Bold.TextWidth(cost);
                 batch.DrawString(Fonts.Arial12Bold, cost, rightEdge - costW, Y+2); // Build Production Cost

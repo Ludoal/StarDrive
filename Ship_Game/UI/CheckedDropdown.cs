@@ -15,7 +15,7 @@ namespace Ship_Game
     {
         UICheckBox Check;           // null when the row leads with a fixed title instead of a toggle
         UILabel TitleOnly;          // the fixed-title lead, used in place of Check
-        UICheckBox AutoPickBox;     // Ludoal fork (design Ludo): auto-pick lives ON its row
+        UICheckBox AutoPickBox;     // Ludoal fork: auto-pick lives ON its row
         Func<bool> IsAutoPicked;
         DropOptions<int> Options;
 
@@ -78,8 +78,8 @@ namespace Ship_Game
             Height = Math.Max(lead.Height, Options.Bottom - Pos.Y);
         }
 
-        // Ludoal fork (bench): the picker greys out when its lead toggle is OFF - a model choice
-        // is meaningless while the automation it feeds is disabled. Only the lead stays live (to
+        // Ludoal fork: the picker greys out when its lead toggle is OFF - a model choice is
+        // meaningless while the automation it feeds is disabled. Only the lead stays live (to
         // switch it back on); the Auto Pick box and the dropdown go read-only, click-refused, grey.
         bool ParentOff => Check != null && !Check.Checked;
 
@@ -87,10 +87,9 @@ namespace Ship_Game
         {
             if (Check != null && Check.HandleInput(input))
                 return true;
-            // ⚠ bench 533: the fixed-title lead carries this row's tooltip and was never asked
-            // for it - input went straight past it to the picker. A checkbox lead answers for
-            // itself, a label lead cannot, so a row that leads with a title had a tooltip no
-            // player could ever reach.
+            // ⚠ the fixed-title lead carries this row's tooltip and must be handed input (bench
+            // 533): a checkbox lead answers for itself, a label lead cannot, so a title-led row
+            // would carry a tooltip no player can reach.
             TitleOnly?.HandleInput(input);
             if (ParentOff) // lead off: swallow nothing else, the sub-controls are inert
                 return false;

@@ -11,7 +11,7 @@ namespace Ship_Game
     // empire's does not: a policy that could defer to itself has nowhere to defer to.
     public static class MandateDropdown
     {
-        // Ludoal fork (maintainer): `deferredTo` is what the EMPIRE currently mandates. The Auto
+        // Ludoal fork (maintainer feedback): `deferredTo` is what the EMPIRE currently mandates. The Auto
         // position names it in brackets - Auto alone says a decision is made elsewhere without
         // saying which, and the player would have to open Policies to find out.
         public static LocalizedText AutoOption(Planet.BuildMandate? deferredTo)
@@ -34,7 +34,7 @@ namespace Ship_Game
                                                            bool withAuto,
                                                            Planet.BuildMandate? deferredTo = null)
         {
-            // 120, not 110: "Economic only" was clipped to "Economic onl..."
+            // 120, not 110: "Economic only" clips at 110
             var list = new DropOptions<Planet.BuildMandate>(120, 18);
             if (withAuto)
                 list.AddOption(option: AutoOption(deferredTo), Planet.BuildMandate.Auto);
@@ -48,11 +48,9 @@ namespace Ship_Game
             return list;
         }
 
-        // ⚠ bench 530: while an exclusive blueprint commands the colony, the picker holds ONE
-        // entry - the word it displays. It used to carry that word permanently, which put a
-        // choice in the list that did nothing when picked: the option that lies, in the very
-        // feature built to remove one. The delegated picker is read-only, so a list of one is
-        // never opened; the ordinary options come back with the colony's own right.
+        // ⚠ While an exclusive blueprint commands the colony (bench 530), the picker holds ONE
+        // entry - the word it displays - and is read-only, so the list of one is never opened.
+        // The ordinary options come back with the colony's own right.
         public static void SetDelegated(DropOptions<Planet.BuildMandate> list, bool delegated,
                                         Planet.BuildMandate own, bool withAuto,
                                         Planet.BuildMandate? deferredTo = null)

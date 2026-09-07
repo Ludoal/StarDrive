@@ -7,10 +7,9 @@ using Vector2 = SDGraphics.Vector2;
 
 namespace Ship_Game
 {
-    /// Ludoal fork (Blueprints chantier): one entry of the plan, as a QUEUE row rather than a
-    /// tile on a grid. The plan is read as a chronology - built and replaced from the top,
-    /// rebuilt from the bottom - so its order has to be visible and movable, which a grid of
-    /// tiles could never show.
+    /// Ludoal fork: one entry of the plan, as a QUEUE row rather than a tile on a grid. The
+    /// plan is read as a chronology - built and replaced from the top, rebuilt from the bottom
+    /// - so its order has to be visible and movable, which a grid of tiles cannot show.
     ///
     /// ⚠ The row is a VIEW over the tile that holds the building: moving an entry swaps what two
     /// tiles carry, it does not move any data of its own. The tiles remain the plan's storage,
@@ -35,9 +34,8 @@ namespace Ship_Game
             Tile = tile;
             if (Building != null && !Building.IsCapitalOrOutpost)
             {
-                // ⚠ the Colony construction queue's OWN controls, not glyphs of my own
-                // (maintainer, bench 535): the plan is a queue, so it wears the queue's icons -
-                // a player who has moved a build order already knows this row by heart.
+                // ⚠ the Colony construction queue's OWN controls, not bespoke glyphs (bench 535):
+                // the plan is a queue, so it wears the queue's icons.
                 AddUp(new Vector2(-90, 6), GameText.BpMoveUp, OnUpClicked);
                 AddDown(new Vector2(-60, 6), GameText.BpMoveDown, OnDownClicked);
                 AddCancel(new Vector2(-30, 6), GameText.RightClickToRemove, OnRemoveClicked);
@@ -52,8 +50,8 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            // the gesture the grid had, kept - and CONSUMED either way, because an unconsumed
-            // right-click falls through to the popup's generic close (bench 347)
+            // right-click removes, and is CONSUMED either way: an unconsumed right-click falls
+            // through to the popup's generic close (bench 347)
             if (Hovered && input.RightMouseClick && HitTest(input.CursorPosition))
             {
                 if (Fixed) GameAudio.NegativeClick();

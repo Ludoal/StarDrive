@@ -9,9 +9,8 @@ namespace Ship_Game
     public enum ButtonStyle
     {
         // Ludoal fork: a style names its SIZE and its MEANING, never a colour or the screen it
-        // was born on (maintainer feedback) - the tint comes from the theme, so a colour name
-        // lies the day the theme changes. BigDip/Military/MediumMenu renamed on that rule; the
-        // bitmap comments below are the size references, nothing more.
+        // belongs to (maintainer feedback) - the tint comes from the theme, so a colour name
+        // lies the day the theme changes. The bitmap comments below are size references only.
         Default,       // empiretopbar_btn_168px - neutral
         Small,         // empiretopbar_btn_68px
         Low80,         // empiretopbar_low_btn_80px

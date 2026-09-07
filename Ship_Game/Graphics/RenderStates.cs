@@ -59,10 +59,9 @@ namespace Ship_Game.Graphics
         static readonly RasterizerState CullCCWState  = new() { CullMode = CullMode.CullCounterClockwiseFace };
         static readonly RasterizerState CullNoneState = new() { CullMode = CullMode.None };
 
-        // Ludoal fork: scissor twins of the three cull states. A RasterizerState carries BOTH the
-        // cull mode and the scissor flag, so anything that sets a cull mode silently drops an
-        // active scissor - which is what let the starfield paint over a clipped region while the
-        // sprite passes around it stayed clipped.
+        // ⚠ Ludoal fork: scissor twins of the three cull states. A RasterizerState carries BOTH
+        // the cull mode and the scissor flag, so anything that sets a cull mode silently drops
+        // an active scissor, and a 3D pass then paints over a clipped region.
         static readonly RasterizerState CullCWScissor   = new() { CullMode = CullMode.CullClockwiseFace,        ScissorTestEnable = true };
         static readonly RasterizerState CullCCWScissor  = new() { CullMode = CullMode.CullCounterClockwiseFace, ScissorTestEnable = true };
         static readonly RasterizerState CullNoneScissor = new() { CullMode = CullMode.None,                     ScissorTestEnable = true };

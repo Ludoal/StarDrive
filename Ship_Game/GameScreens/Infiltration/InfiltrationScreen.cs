@@ -48,21 +48,20 @@ namespace Ship_Game.GameScreens
 
         // fixed vertical anatomy (aligned across columns)
         const int HeaderH = 110;
-        const int BudgetH = 231; // maintainer measured: three 69px blocks plus the 24px inset
+        const int BudgetH = 231; // three 69px blocks plus the 24px inset
 
-        // maintainer feedback: the BUDGET block is a grid of NINE rows - three blocks of three,
-        // one text line apart. A block is a label, its slider and the figure the slider produces;
-        // the same row carries the same KIND of thing in every column, so the player's spending
-        // control lines up with a rival's. Placement (LoadContent) and labels (DrawColumn) both
-        // read these, off ONE origin - they used to sit 24px apart and the numbers looked
-        // comparable when they were not.
+        // (maintainer feedback) The BUDGET block is a grid of NINE rows - three blocks of three,
+        // one text line apart: a label, its slider, and the figure the slider produces. The same
+        // row carries the same KIND of thing in every column, so the player's spending control
+        // lines up with a rival's. ⚠ Placement (LoadContent) and labels (DrawColumn) read these
+        // constants off ONE origin.
         const int RowH   = 23;                 // one text line - the grid's unit
         const int Block1 = 4;                  // rows 1-3
         const int Block2 = Block1 + 3 * RowH;  // rows 4-6  (73)
         const int Block3 = Block2 + 3 * RowH;  // rows 7-9  (142)
-        // third row of a block: the figure, under the slider. 4px above the bare grid line -
-        // the maintainer measured it: a slider's ticks hang below its rect and the figure sat
-        // too low against them. One constant, so all three blocks and every column move as one.
+        // Third row of a block: the figure, under the slider. 4px above the bare grid line,
+        // because a slider's ticks hang below its rect. One constant, so all three blocks and
+        // every column move as one.
         const int RowValue = 2 * RowH - 4;
         const int DefenseH = 33; // the 19px the budget grid took: a shield and its figure, no more
 
@@ -238,7 +237,7 @@ namespace Ship_Game.GameScreens
                     };
                     Add(c.Budget);
 
-                    // maintainer feedback: Defense Weight is a spending decision, so it belongs
+                    // (maintainer feedback) Defense Weight is a spending decision, so it belongs
                     // with the budget - on the same row the rival columns give Level Max, which
                     // keeps every column's second slider on one line.
                     var defRect = new Rectangle(col.X + 8, (int)budgetY + Block2, col.Width - 60, 40);
@@ -267,10 +266,8 @@ namespace Ship_Game.GameScreens
                 };
                 Add(c.Weight);
 
-                // Ludoal fork: a slider rather than a click-to-cycle button. Five discrete levels
-                // is what a slider says plainly, the two other settings of this column already are
-                // one, and the button showed no value - it stretches to the width it is given, so
-                // the figure drawn beside it fell underneath.
+                // Ludoal fork: a slider, not a click-to-cycle button - five discrete levels read
+                // plainly, and the column's two other settings are sliders as well.
                 var limitRect = new Rectangle(col.X + 8, (int)budgetY + Block1, col.Width - 60, 40);
                 c.Limit = new FloatSlider(SliderStyle.Decimal, limitRect, GameText.IfLevelMax,
                                           1f, Ship_Game.Espionage.MaxLevel, value: esp.LimitLevel);
@@ -486,10 +483,10 @@ namespace Ship_Game.GameScreens
                 string cost = $"{(espionageCost > 0 ? -espionageCost : espionageCost).String(1)} " + Localizer.Token(GameText.IfBcPerTurn);
                 batch.DrawString(Font12, cost, new Vector2(col.X + 8, budgetY + Block1 + RowValue), espionageCost > 0 ? Color.Pink : Color.LightGreen);
 
-                // maintainer feedback: defence shares the denominator with every infiltration
-                // weight, so raising those shrinks its slice - and nothing said so. Two figures
-                // now do: the points defence absorbs, on row 6 under its own slider like a
-                // rival's yield, and the share it takes, in the DEFENSE band below.
+                // (maintainer feedback) Defence shares the denominator with every infiltration
+                // weight, so raising those shrinks its slice. Two figures show it: the points
+                // defence absorbs, on row 6 under its own slider like a rival's yield, and the
+                // share it takes, in the DEFENSE band below.
                 int ownTotal = Player.CalcTotalEspionageWeight();
                 float ownPpt = ownTotal > 0 ? Player.EspionagePointsPerTurn * Player.EspionageDefenseWeight / ownTotal : 0;
                 batch.DrawString(Font12, Localizer.Token(GameText.IfPointsPerTurn) + ownPpt.String(3),
@@ -501,8 +498,6 @@ namespace Ship_Game.GameScreens
                 int ownShare = ownTotal > 0 ? (int)(Player.EspionageDefenseWeight * 100f / ownTotal) : 100;
                 batch.DrawString(Font12Bold, $"{ownShare.String()}%",
                                  new Vector2(ownShieldRect.Right + 6, ownShieldRect.Y + 4), Color.White);
-                // Ludoal fork: the SETTINGS band that lived here (Disable Messages) moved to the
-                // Automation tab of the Empire group, with the other notification switches.
 
                 // the player's own INFILTRATION block - the planets our moles sit on, clickable
                 // (opens that colony in mole vision, like a map double-click). Rects harvested
@@ -584,11 +579,8 @@ namespace Ship_Game.GameScreens
                 batch.DrawString(Font12Bold, Localizer.Token(GameText.IfLvl3), new Vector2(spyR.Right + 4, spyR.Y), new Color(105, 105, 105));
             }
 
-            // Ludoal fork: a line's worth of reserve is kept under the Defense row (DefenseH holds
-            // it) even though nothing is drawn here now - the "Known Infiltration Level" readout was
-            // removed (its only source, a Counter-Espionage Phenomenal, wipes the level it reveals,
-            // so the value was caduc on arrival). The reserve keeps the Infiltration band from
-            // riding up if a defensive readout is added here later.
+            // Ludoal fork: DefenseH reserves one text line under the Defense row that nothing draws.
+            // The reserve keeps the Infiltration band in place for a future defensive readout.
 
             // Ludoal fork: one INFILTRATION band, then each level as a bold text line - cream once
             // the level is uncovered, grey while it is not. Five bands for one subject read as five

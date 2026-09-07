@@ -150,9 +150,8 @@ namespace Ship_Game
                 // For negative RelPos, start from opposite edge
                 float x = (RelPos.X >= 0 ? Parent.X : Parent.Right) + RelPos.X;
                 float y = (RelPos.Y >= 0 ? Parent.Y : Parent.Bottom) + RelPos.Y;
-                // Ludoal fork: optional size override, for an icon whose texture does not match
-                // its neighbours - x_red ships at 24px where the others are 17, so a row mixing
-                // them looked lopsided (maintainer feedback). Zero keeps the texture's own size.
+                // Ludoal fork: optional size override for an icon whose texture does not match its
+                // neighbours - x_red is 24px where the others are 17. Zero keeps the texture's own size.
                 int w = IconSize > 0 ? IconSize : icon.Width;
                 int h = IconSize > 0 ? IconSize : icon.Height;
                 AbsRect = new Rectangle((int)x, (int)(y + 15f - h / 2f), w, h);
@@ -160,10 +159,9 @@ namespace Ship_Game
             public void Draw(SpriteBatch batch)
             {
                 GetHoverable().Draw(batch, AbsRect, Parent.Hovered, IsHovered);
-                // IsHovered is written by HandleInput, which stops running the moment a
-                // popup captures input above this list - the flag freezes true and the
-                // tooltip re-spawned every frame wherever the mouse went (bench 420).
-                // The tooltip trusts only the LIVE cursor.
+                // ⚠ IsHovered is written by HandleInput, which stops running the moment a popup
+                // captures input above this list, so the flag stays true. The tooltip must test the
+                // LIVE cursor, never IsHovered alone.
                 if (IsHovered && Tooltip.IsValid
                     && AbsRect.HitTest(GameBase.ScreenManager.input.CursorPosition))
                     ToolTip.CreateTooltip(Tooltip);
@@ -251,12 +249,11 @@ namespace Ship_Game
 
                 if (SubEntries != null && SubEntries.NotEmpty)
                 {
-                    // an arrow, not a +/- glyph (maintainer bench 305): RIGHT while folded,
-                    // DOWN once unfolded - the tree convention. One asset, the queue's own
-                    // down arrow, rotated -90 for the folded state so the style cannot drift.
+                    // An arrow, not a +/- glyph (bench 305): RIGHT while folded, DOWN once
+                    // unfolded. One asset, the queue's own down arrow, rotated -90 for the
+                    // folded state so the style cannot drift.
                     SubTexture arrow = ResourceManager.Texture("NewUI/icon_queue_arrow_down");
-                    // dark on a hovered header (maintainer bench 307): the gold arrow matched
-                    // the hover fill and vanished into it
+                    // Dark on a hovered header (bench 307): a gold arrow vanishes into the hover fill
                     Color arrowTint = Hovered ? new Color(20, 18, 10) : Color.White;
                     float cx = r.Right - 26 + arrow.Width / 2f;
                     float cy = r.CenterY();

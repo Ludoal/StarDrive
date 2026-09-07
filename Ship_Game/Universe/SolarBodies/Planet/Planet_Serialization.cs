@@ -30,10 +30,10 @@ namespace Ship_Game
             if (!ManualSpcBudgetOn && ManualSpcDefBudget   > 0) SetManualSpcBudgetOn(true);
 
             // Ludoal fork: the two mandates replace GovGroundDefense and the no-scrap toggle.
-            // The old flags carry over so no colony changes conduct: ground defense ON meant
+            // The legacy flags carry over so no colony changes conduct: ground defense ON meant
             // the governor handled military too, and it never demolished military otherwise.
-            // Seeded ONCE: DontScrapBuildings is false on a fresh save too, so an ungated
-            // carry-over rewrote the scrap mandate on every single load (bench 505).
+            // ⚠ Seeded ONCE (bench 505): DontScrapBuildings is false on a fresh save too, so an
+            // ungated carry-over rewrites the scrap mandate on every load.
             if (!MandatesSeeded)
             {
                 if (GovGroundDefense)

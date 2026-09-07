@@ -240,9 +240,8 @@ namespace Ship_Game
                         {
                             sideSpacing += 4;
                             RectF flashRect = new(planetR.X + planetR.W + sideSpacing, planetR.Y + planetR.H / 2 - 7, 17, 14);
-                            // bench 447: the crossed-hammers badge leaves the EXPLODED overlay
-                            // too (the batch's second site) - the exotic resource icon says it
-                            // all; ops present keep their owner's flag
+                            // (bench 447) no crossed-hammers badge on the EXPLODED overlay either:
+                            // the exotic resource icon says it all; ops present keep their owner's flag
                             if (p.Mining.AreMiningOpsPresent())
                             {
                                 var flag = p.Mining.Owner.data.Traits.FlagIndex;

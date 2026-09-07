@@ -279,7 +279,7 @@ namespace Ship_Game
                 if (Complete && !Entry.MultiLevelComplete && !Screen.Player.Research.IsQueued(Entry.UID))
                     text = string.Format(new LocalizedText(GameText.ResearchMultiLevelTech).Text, Entry.Level + 1, text);
 
-                // the status line heads the tooltip (reviewer feedback, bench 305): queued,
+                // the status line heads the tooltip (bench 305): queued,
                 // multi-level progress, or the lock and the tech that opens it
                 string status = null;
                 if (Screen.Player.Research.IsQueued(Entry.UID))
