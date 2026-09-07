@@ -14,7 +14,6 @@ Theme:
   # Read off the Codex, which is the look the rest follows.
   FrameRule:      [193, 113, 26]      # the line around every window and panel
   FrameBody:      [14, 14, 14, 240]   # what fills a window
-  FrameTitleBar:  [54, 54, 54, 240]   # one step lighter, so a title bar reads as one
   TitleBarHeight: 46
   # The Textures folder the popup frame's bitmaps come from. Point it at a folder of
   # same-named, SAME-SIZED textures and every popup window follows; any piece the folder
@@ -79,28 +78,9 @@ Theme:
 
   # ── Text ─────────────────────────────────────────────────────────────────────
   TextPrimary: [255, 240, 189]   # the default ink
-  TextDim:     [190, 180, 150]   # secondary lines, captions
-  TextGood:    [144, 238, 144]   # a number in your favour
-  TextBad:     [255, 96, 96]     # a number against you
-  TextLocked:  [105, 105, 105]   # what you have not earned the right to see
 
   # ── Tables ───────────────────────────────────────────────────────────────────
   # The list screens: Planets, Ships, Troops, Patrols, Events, Exotic Systems.
-  TableHeader:      [255, 240, 189]   # the column titles
-  TableHeaderFont:  Arial14Bold
-  TableText:        [255, 240, 189]   # an ordinary cell
-  TableTextFont:    Arial12
-  TableTitle:       [255, 240, 189]   # the row's own name - planet, ship, fleet
-  TableTitleFont:   Arial20Bold       # deliberately larger: it is what you scan for
-  TableSubtitle:    [190, 180, 150]   # the line under it (class, role, status)
-  TableSubtitleFont: Arial12
-  TableRowHover:    [255, 255, 255, 30]   # the band under the cursor
-  TableRowSelected: [193, 113, 26, 45]    # and under the row you picked
-  TableGridLine:    [118, 102, 67, 128]   # the rules between columns and rows
 
   # ── Fonts by role ────────────────────────────────────────────────────────────
   WindowTitle:  Arial20Bold   # the name of a window, in its title bar
-  SectionTitle: Arial12Bold   # a band inside one - BUDGET, TREATIES, POPULATION
-  Body:         Arial12       # ordinary prose and labels
-  Value:        Arial12Bold   # a number the eye goes to
-  Small:        Arial10       # footnotes, counts, anything secondary

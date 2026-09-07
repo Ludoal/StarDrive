@@ -24,7 +24,6 @@ namespace Ship_Game
         // frames
         [StarData] public Color FrameRule      = new(193, 113, 26);
         [StarData] public Color FrameBody      = new(14, 14, 14, 240);
-        [StarData] public Color FrameTitleBar  = new(54, 54, 54, 240);
         [StarData] public int   TitleBarHeight = 46;
         // the Content/Textures folder the popup frame's bitmaps come from - swapping the
         // folder reskins every popup window; PopupFrame falls back piece by piece to the
@@ -94,30 +93,8 @@ namespace Ship_Game
 
         // text
         [StarData] public Color TextPrimary = new(255, 240, 189);
-        [StarData] public Color TextDim     = new(190, 180, 150);
-        [StarData] public Color TextGood    = new(144, 238, 144);
-        [StarData] public Color TextBad     = new(255, 96, 96);
-        [StarData] public Color TextLocked  = new(105, 105, 105);
-
-        // tables
-        [StarData] public Color  TableHeader       = new(255, 240, 189);
-        [StarData] public string TableHeaderFont   = "Arial14Bold";
-        [StarData] public Color  TableText         = new(255, 240, 189);
-        [StarData] public string TableTextFont     = "Arial12";
-        [StarData] public Color  TableTitle        = new(255, 240, 189);
-        [StarData] public string TableTitleFont    = "Arial20Bold";
-        [StarData] public Color  TableSubtitle     = new(190, 180, 150);
-        [StarData] public string TableSubtitleFont = "Arial12";
-        [StarData] public Color  TableRowHover     = new(255, 255, 255, 30);
-        [StarData] public Color  TableRowSelected  = new(193, 113, 26, 45);
-        [StarData] public Color  TableGridLine     = new(118, 102, 67, 128);
-
         // fonts by role
         [StarData] public string WindowTitle  = "Arial20Bold";
-        [StarData] public string SectionTitle = "Arial12Bold";
-        [StarData] public string Body         = "Arial12";
-        [StarData] public string Value        = "Arial12Bold";
-        [StarData] public string Small        = "Arial10";
     }
 
     public static class UITheme
@@ -158,7 +135,6 @@ namespace Ship_Game
         // ── frames ───────────────────────────────────────────────────────────────────────────
         public static Color FrameRule     => Theme.FrameRule;
         public static Color FrameBody     => Theme.FrameBody;
-        public static Color FrameTitleBar => Theme.FrameTitleBar;
         public static int   TitleBarH     => Theme.TitleBarHeight;
         public static string PopupSkin    => Theme.PopupSkin;
         public static string SubmenuSkin  => Theme.SubmenuSkin;
