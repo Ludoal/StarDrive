@@ -54,7 +54,11 @@ namespace Ship_Game
             // Ludoal fork (maintainer feedback): the mandate is the RIGHT, the blueprint is the
             // PLAN. A plan directs what gets built inside the right the mandate grants; it does not
             // grant a right of its own.
-            bool mayBuild = MayBuildCivilian && !BuildsOnlyTheBlueprint;
+            // ⚠ the RIGHT alone. Blueprint only used to be folded in here, one storey too high:
+            // this gate guards BuildOrReplaceBuilding, which holds the plan's own path as well as
+            // the free one - so a non-exclusive plan under Blueprint only raised nothing at all
+            // (bench 602, maintainer feedback). The free paths now close themselves, below.
+            bool mayBuild = MayBuildCivilian;
             bool mayScrap = MayScrapCivilian;
 
             // Cancel what is merely QUEUED before anything else: dropping a plan costs the
@@ -340,6 +344,9 @@ namespace Ship_Game
                     return false; // the colony owes a rank it cannot pay yet: it saves instead
             }
 
+            if (BuildsOnlyTheBlueprint)
+                return false; // the plan is the whole programme: no free choice once its list is spent
+
             ChooseBestBuilding(GetBuildingsListToChooseFrom(BuildingsCanBuild), budget, replacing: false, out Building bestBuilding);
             return bestBuilding != null && Construction.Enqueue(bestBuilding);
         }
@@ -455,6 +462,9 @@ namespace Ship_Game
 
             if (HasExclusiveBlueprints && TryReplaceLowestRank(budget))
                 return;
+
+            if (BuildsOnlyTheBlueprint)
+                return; // a replace is a free choice as well: closed under Blueprint only
 
             float worstBuildingScore = ChooseWorstBuilding(overBudget, scrapZeroMaintenance: true, true, out Building worstBuilding);
             if (worstBuilding == null)
