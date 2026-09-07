@@ -286,6 +286,21 @@ namespace Ship_Game
                                  DrawIcon(batch, e, e.Rect, Color.White), Color.White);
                 ++drawOffset;
             }
+
+            // ★ say that there is more. A bounded list showing no sign of its bound looks like a
+            // complete one, and the player has no reason to try the wheel (maintainer feedback).
+            int rows = Options.Count - 1;
+            if (rows > VisibleRows)
+            {
+                SubTexture up   = ResourceManager.Texture("NewUI/scrollbar_arrow_up");
+                SubTexture down = ResourceManager.Texture("NewUI/scrollbar_arrow_down");
+                int ax = OpenRect.X + OpenRect.Width - up.Width - 2;
+                if (FirstVisible > 0)
+                    batch.Draw(up, new Rectangle(ax, OpenRect.Y + 1, up.Width, up.Height), Color.Wheat);
+                if (FirstVisible + VisibleRows < rows)
+                    batch.Draw(down, new Rectangle(ax, OpenRect.Y + OpenRect.Height - down.Height - 1,
+                                                   down.Width, down.Height), Color.Wheat);
+            }
         }
 
         public override void PerformLayout()
