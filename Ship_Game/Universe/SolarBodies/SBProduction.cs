@@ -318,6 +318,14 @@ namespace Ship_Game.Universe.SolarBodies
             if (!q.isBuilding)
                 return true;
 
+            // A terraformer whose colony plan is not far enough along cannot start: the budget
+            // that pays for it is held at zero until the plan completes. It keeps its rank and
+            // YIELDS ITS TURN, exactly like an entry with no tile - otherwise the whole queue
+            // stalls behind it and nothing else is ever built, which is what the bench saw at
+            // 600 (maintainer feedback: "reste en position 1 et tout est bloqué").
+            if (WaitsForBlueprint(q))
+                return false;
+
             if (q.pgs != null)
                 return q.pgs.CanPlaceBuildingHere(q.Building);
 
@@ -334,6 +342,15 @@ namespace Ship_Game.Universe.SolarBodies
         // rows it draws, and it runs on the UI thread - TryMakeBuildable would ASSIGN a tile from
         // there, which is a write into the simulation from the wrong thread.
         public static bool IsWaitingForTile(QueueItem q) => q.isBuilding && q.pgs == null;
+
+        // A terraformer held back by its colony plan. Read by BOTH the dispatch above and the
+        // colony screen, on purpose: what the queue SERVES and what the screen SHOWS have to
+        // count the same thing, or the list stops being the list that is executed.
+        public static bool WaitsForBlueprint(QueueItem q)
+            => q.IsTerraformer && q.Planet?.TerraformerWaitsForBlueprint == true;
+
+        // Everything that cannot start this turn, whatever the reason. ⚠ PURE, like its two parts.
+        public static bool IsWaiting(QueueItem q) => IsWaitingForTile(q) || WaitsForBlueprint(q);
 
         // ★ ONE notion, read by everything that used to read the head: the entry production is
         // actually being spent on. Null when every entry is waiting for a tile.
