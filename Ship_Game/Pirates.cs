@@ -259,8 +259,8 @@ namespace Ship_Game
         // and their AI would disable itself on the next line of PirateAI.
         public int StartingLevel => Universe.P.PirateStrength switch
         {
-            PirateStrengthSetting.Strong => 3,
-            PirateStrengthSetting.Brutal => 5,
+            PirateStrengthSetting.Strong => 2,
+            PirateStrengthSetting.Brutal => 3,
             _                            => 1,
         };
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Text;
@@ -21,6 +21,13 @@ namespace Ship_Game
 
         Rectangle OpenRect;
         Rectangle ClickAbleOpenRect;
+
+        // ★ AN OPEN LIST IS BOUNDED. Rows were laid out one per option with no ceiling, so a list
+        // fed from the player's own data - the trade zones - grew off the bottom of the screen.
+        // Twelve rows, then the wheel scrolls (maintainer feedback).
+        const int MaxOpenRows = 12;
+        int FirstVisible;
+        int VisibleRows => (Options.Count - 1).UpperBound(MaxOpenRows).LowerBound(0);
         readonly Array<Entry> Options = new Array<Entry>();
         public bool Open;
         // Ludoal fork (dropdown unification): a READ-ONLY dropdown shows its value greyed
@@ -248,13 +255,23 @@ namespace Ship_Game
         {
             UITheme.DrawControlFill(batch, OpenRect);
 
-            int drawOffset = 1;
+            int row = 0;        // position in the list, the active entry aside
+            int drawOffset = 1;  // position on screen, 1 being just under the closed control
             for (int i = 0; i < Options.Count; ++i)
             {
                 if (i == ActiveIndex)
                     continue;
 
                 Entry e = Options[i];
+                // outside the window: no rect at all, which makes it neither drawn nor clickable
+                if (row < FirstVisible || row >= FirstVisible + VisibleRows)
+                {
+                    e.Rect = new Rectangle();
+                    ++row;
+                    continue;
+                }
+
+                ++row;
                 e.UpdateRect(this, drawOffset);
                 if (IsMouseHoveringOver(e.Rect))
                 {
@@ -303,6 +320,18 @@ namespace Ship_Game
 
             bool overTitle = HitTest(input.CursorPosition);
             bool overExpanded = Open && ClickAbleOpenRect.HitTest(input.CursorPosition);
+
+            // the wheel walks the window when there is more than it can show
+            if (overExpanded && (input.ScrollIn || input.ScrollOut))
+            {
+                int rows = Options.Count - 1;
+                if (rows > VisibleRows)
+                {
+                    FirstVisible = (FirstVisible + (input.ScrollOut ? 1 : -1))
+                                   .Clamped(0, rows - VisibleRows);
+                    return true;
+                }
+            }
 
 
             // maintainer: a click anywhere else closes the list without changing the
@@ -382,6 +411,7 @@ namespace Ship_Game
 
         public void Reset()
         {
+            FirstVisible = 0;
             Array.Clear(Border, 0, Border.Length);
 
             var ttl = ResourceManager.Texture("NewUI/dropdown_menu_corner_TL");
@@ -407,7 +437,7 @@ namespace Ship_Game
             {
                 // the options are stepped on the control's own height (Entry.UpdateRect), so
                 // the open frame is measured from it too - one owner for the step, not two.
-                int height = (Options.Count - 1) * h;
+                int height = VisibleRows * h;
                 OpenRect = new Rectangle(x + 6, y + h + 3 + 6, w - 12, height - 12);
                 // the clickable area covers the OPTIONS, not the frame drawn around them: a row
                 // is laid out on the control's full width (Entry.UpdateRect), so an area inset by
