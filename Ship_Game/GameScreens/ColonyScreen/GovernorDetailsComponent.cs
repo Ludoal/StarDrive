@@ -102,8 +102,30 @@ namespace Ship_Game
         // line of text - it arms demolitions, so it stays in the façade, but it costs a row
         // in a column that no longer has rows to spare.
         UIPanel BlueprintsExclusiveIcon, BlueprintsLinkExclusiveIcon;
+        // what a plan's name may take before it reaches the padlock's column, set by the layout
+        float BpNameWidth;
         ProgressBar BlueprintsCompletion;
 
+
+        // ★ A NAME THAT DOES NOT FIT IS CUT, and the whole of it moves to the tooltip. Plans are
+        // named by the player, so there is no length to design for - the row simply must not grow
+        // past its own column (maintainer feedback).
+        void SetPlanName(UILabel label, string full)
+        {
+            if (full.IsEmpty() || BpNameWidth <= 0 || Font.TextWidth(full) <= BpNameWidth)
+            {
+                label.Text = full;
+                label.Tooltip = GameText.BpOpenOnDoubleClickTip;
+                return;
+            }
+
+            string cut = full;
+            while (cut.Length > 1 && Font.TextWidth(cut + "...") > BpNameWidth)
+                cut = cut.Substring(0, cut.Length - 1);
+
+            label.Text = cut + "...";
+            label.Tooltip = full;
+        }
 
         bool GovernorOn      => Planet.GovernorOn;
         bool GovernorOff     => Planet.GovernorOff;
@@ -388,18 +410,17 @@ namespace Ship_Game
             BluePrintsIcon.Size     = new Vector2(BpIconSize, BpIconSize);
             BluePrintsIcon.Pos      = new Vector2(bpValueX, bpRow1);
             BlueprintsName.Pos      = new Vector2(bpValueX + BpIconSize + 5, bpRow1);
-            // ⚠ the padlock takes a FIXED column off the right edge, never the name's own edge:
-            // a UILabel measures its first text and only ever grows, so anchoring to it drifts the
-            // moment a longer name is loaded. ONE column now, not two - the padlock moves out to
-            // the pencil's place rather than sitting a step in from a hole (bench 554), the same
-            // closing the add icon got when the picker took over its gesture.
-            // ⚠ the layout owns the ROW of these two, not their X: a padlock follows the name it
-            // qualifies, and a plan's name is not known here. X is placed in Update, on the live
-            // text - one owner per coordinate rather than two that must agree.
+            // ⚠ THE PADLOCK KEEPS A FIXED COLUMN at the right edge, and the name is cut to stop
+            // short of it. Following the name looked tidier and cost the row its stability: a
+            // padlock that walks with every plan loaded gives the eye nothing to return to, and a
+            // long name pushed it off the panel entirely (maintainer feedback).
+            float bpLockX = X + Width - 24;
             BlueprintsExclusiveIcon.Size = new Vector2(16, 16);
-            BlueprintsExclusiveIcon.Pos  = new Vector2(bpValueX, bpRow1 + 2);
+            BlueprintsExclusiveIcon.Pos  = new Vector2(bpLockX, bpRow1 + 2);
             BlueprintsLinkExclusiveIcon.Size = new Vector2(16, 16);
-            BlueprintsLinkExclusiveIcon.Pos  = new Vector2(bpValueX, bpRow3 + 2);
+            BlueprintsLinkExclusiveIcon.Pos  = new Vector2(bpLockX, bpRow3 + 2);
+            // what a name may take before it reaches that column
+            BpNameWidth = bpLockX - (bpValueX + BpIconSize + 5) - 6;
             BlueprintsLink.Pos      = new Vector2(bpX, bpRow3);
             BlueprintsLinkIcon.Size = new Vector2(BpIconSize, BpIconSize);
             BlueprintsLinkIcon.Pos  = new Vector2(bpValueX, bpRow3);
@@ -686,7 +707,7 @@ namespace Ship_Game
             Planet.AddBlueprints(template, Player);
             ColonyTypeList.ActiveValue = Planet.CType;
             OnColonyTypeChanged(Planet.CType);
-            BlueprintsName.Text = template.Name;
+            SetPlanName(BlueprintsName, template.Name);
             UpdateBlueprintsChanged();
         }
 
@@ -696,13 +717,13 @@ namespace Ship_Game
             // A plan called Test 2 written in its category red is a name the eye fights to read.
             BluePrintsIcon.Color = BlueprintsColor;
             BlueprintsName.Color = Color.White;
-            BlueprintsName.Text = Planet.HasBlueprints ? Planet.Blueprints.Name : "";
+            SetPlanName(BlueprintsName, Planet.HasBlueprints ? Planet.Blueprints.Name : "");
 
 
             // the linked plan wears ITS OWN category colour, not this colony's - it says what the
             // colony is about to become, and the name is looked up to find out.
             string linkName = Planet.HasBlueprints ? Planet.Blueprints.LinkedBlueprintsName : "";
-            BlueprintsLinkName.Text = linkName;
+            SetPlanName(BlueprintsLinkName, linkName);
             Color linkColor = Color.White;
             if (linkName.NotEmpty() && ResourceManager.TryGetBlueprints(linkName, out BlueprintsTemplate linked))
                 linkColor = BlueprintsScreen.GetBlueprintsIconColor(linked.ColonyType);
@@ -854,18 +875,7 @@ namespace Ship_Game
                                                   && Planet.Blueprints.LinkedBlueprintsName != "";
                 BlueprintsExclusiveIcon.Visible = bpPlan && Planet.Blueprints.Exclusive;
                 BlueprintsLinkExclusiveIcon.Visible = bpPlan && LinkedPlanIsExclusive;
-                // the padlock closes on the name, measured on the TEXT rather than on the label:
-                // a UILabel only ever grows, so its Size would keep the mark out where the longest
-                // plan ever loaded had left it (bench 554). The names change on this pass, so the
-                // marks are placed on this pass too - the row's Y stays the layout's business.
-                if (BlueprintsExclusiveIcon.Visible)
-                    BlueprintsExclusiveIcon.Pos = new Vector2(
-                        BlueprintsName.Pos.X + Font.TextWidth(BlueprintsName.Text) + 6,
-                        BlueprintsExclusiveIcon.Pos.Y);
-                if (BlueprintsLinkExclusiveIcon.Visible)
-                    BlueprintsLinkExclusiveIcon.Pos = new Vector2(
-                        BlueprintsLinkName.Pos.X + Font.TextWidth(BlueprintsLinkName.Text) + 6,
-                        BlueprintsLinkExclusiveIcon.Pos.Y);
+
                 BlueprintsLink.Visible = BlueprintsLinkName.Visible = BlueprintsLinkIcon.Visible =
                     bpPlan && Planet.Blueprints.LinkedBlueprintsName != "";
             }
@@ -1041,7 +1051,7 @@ namespace Ship_Game
                 case BlueprintMode.Auto:
                     Planet.GovBlueprintAuto = true;
                     Planet.Owner.ApplyBlueprintPolicy(Planet);
-                    BlueprintsName.Text = Planet.HasBlueprints ? Planet.Blueprints.Name : "";
+                    SetPlanName(BlueprintsName, Planet.HasBlueprints ? Planet.Blueprints.Name : "");
                     break;
                 case BlueprintMode.Custom:
                     OpenBlueprintChooser();
@@ -1053,7 +1063,7 @@ namespace Ship_Game
                     if (Planet.HasBlueprints)
                     {
                         Planet.RemoveBlueprints();
-                        BlueprintsName.Text = "";
+                        SetPlanName(BlueprintsName, "");
                     }
                     break;
             }
