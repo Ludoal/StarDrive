@@ -120,12 +120,18 @@ namespace Ship_Game.GameScreens
 
             void OnChanged(UICheckBox b)
             {
-                if (Flag)
-                    Esp.ActivateOpsIfAble(Type);
-                else
-                    Esp.RemoveOperation(Type);
-                if (UpdatesDefense)
-                    Player.UpdateEspionageDefenseRatio();
+                // Operations belongs to the simulation: it is edited on that thread, and Sync
+                // reads the flag back from it on the following frames
+                bool on = Flag;
+                Player.Universe.Screen?.RunOnSimThread(() =>
+                {
+                    if (on)
+                        Esp.ActivateOpsIfAble(Type);
+                    else
+                        Esp.RemoveOperation(Type);
+                    if (UpdatesDefense)
+                        Player.UpdateEspionageDefenseRatio();
+                });
             }
 
             public void Sync()
