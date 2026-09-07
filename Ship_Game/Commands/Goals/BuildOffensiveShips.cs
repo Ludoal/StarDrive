@@ -41,7 +41,7 @@ namespace Ship_Game.Commands.Goals
             float importance = Owner.AI.ThreatLevel;
 
             if ((importance > 0.5f || Owner.IsMilitarists)
-                && PlanetBuildingAt.ConstructionQueue[0]?.Goal == this
+                && PlanetBuildingAt.BuildingNow?.Goal == this
                 && PlanetBuildingAt.Storage.ProdRatio > 0.75f
                 && Owner.AI.SafeToRush) 
             {

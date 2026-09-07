@@ -87,7 +87,9 @@ public partial class Planet
     public bool BuildingInQueue(int bid) => ConstructionQueue.Any(q => q.isBuilding && q.Building.BID == bid);
 
     public bool BuildingsHereCanBeBuiltAnywhere  => !HasBuilding(b => !b.CanBuildAnywhere);
-    public bool PlayerAddedFirstConstructionItem => ConstructionQueue.Count > 0 && ConstructionQueue[0].IsPlayerAdded;
+    // the entry actually being built, which is not always the head: one may be waiting for a tile
+    public QueueItem BuildingNow => Construction.BuildingNow;
+    public bool PlayerAddedFirstConstructionItem => BuildingNow?.IsPlayerAdded == true;
 
     // exists on planet OR in queue
     public bool BuildingBuiltOrQueued(Building b) => BuildingBuilt(b.BID) || BuildingInQueue(b.BID);

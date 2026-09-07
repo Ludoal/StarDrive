@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using SDGraphics;
 using SDUtils;
@@ -154,7 +154,7 @@ namespace Ship_Game
             for (int i = ConstructionQueue.Count - 1; i >= 0; i--)
             {
                 QueueItem qi = ConstructionQueue[i];
-                if (qi.isBuilding && qi.Building.IsBiospheres && qi.pgs.Habitable == true)
+                if (qi.isBuilding && qi.Building.IsBiospheres && qi.pgs?.Habitable == true)
                     Construction.Cancel(qi);
             }
         }

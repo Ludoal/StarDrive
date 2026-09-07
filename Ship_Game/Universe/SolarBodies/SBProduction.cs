@@ -190,7 +190,9 @@ namespace Ship_Game.Universe.SolarBodies
                 Log.Warning($"Unique building {q.Building} already exists on planet {P}");
                 return false;
             }
-            if (!q.pgs.CanPlaceBuildingHere(q.Building))
+            // ⚠ an entry may now reach here with no tile if anything ever spends on it out of
+            // turn - the buildable pass is what normally prevents it, and this is the belt
+            if (q.pgs == null || !q.pgs.CanPlaceBuildingHere(q.Building))
             {
                 Log.Warning($"We can no longer build {q.Building} at tile {q.pgs}");
                 return false;
@@ -267,6 +269,56 @@ namespace Ship_Game.Universe.SolarBodies
             return true;
         }
 
+        // ★ THE ENTRY ACTUALLY BEING BUILT, and it is not always the first one. An entry may sit
+        // in the queue with no tile yet - the player ordered a building for a square a biosphere
+        // has not finished making habitable - and production must SKIP it rather than stall behind
+        // it. The order the player arranged is kept: a waiting entry holds its place, and the pass
+        // serves the first one it CAN. Walking backwards would loop; walking forwards cannot.
+        // -1 when nothing in the queue can be built this turn (spec of 4 Sep).
+        public int FirstBuildableIndex
+        {
+            get
+            {
+                for (int i = 0; i < ConstructionQueue.Count; ++i)
+                    if (TryMakeBuildable(ConstructionQueue[i]))
+                        return i;
+
+                return -1;
+            }
+        }
+
+        // An entry that is not a building is always ready. A building with a tile needs that tile
+        // to still accept it; a building WITHOUT one takes the first that has become free - the
+        // tile is chosen at construction, not at order time, which is what lets the entry wait
+        // through a biosphere being built under it.
+        bool TryMakeBuildable(QueueItem q)
+        {
+            if (!q.isBuilding)
+                return true;
+
+            if (q.pgs != null)
+                return q.pgs.CanPlaceBuildingHere(q.Building);
+
+            PlanetGridSquare where = null;
+            if (!q.Building.AssignBuildingToTile(q.Building, ref where, P))
+                return false;
+
+            where.SetQueueItem(q);
+            q.pgs = where;
+            return true;
+        }
+
+        // ★ ONE notion, read by everything that used to read the head: the entry production is
+        // actually being spent on. Null when every entry is waiting for a tile.
+        public QueueItem BuildingNow
+        {
+            get
+            {
+                int i = FirstBuildableIndex;
+                return i < 0 ? null : ConstructionQueue[i];
+            }
+        }
+
         // Applies available production to production queue
         public void AutoApplyProduction(float surplusFromPlanet)
         {
@@ -275,9 +327,16 @@ namespace Ship_Game.Universe.SolarBodies
             if (ConstructionQueue.IsEmpty || P.IsSabotaged)
                 return; // Massive sabotage to planetary facilities or no items
 
+            // ⚠ the FIRST BUILDABLE entry, not the head: production spent on an entry with no
+            // tile would be spent on something that cannot be placed, and the old code only found
+            // that out at completion - after the cost was paid.
+            int index = FirstBuildableIndex;
+            if (index < 0)
+                return; // everything in the queue is waiting for a tile this turn
+
             float percentToApply = P.RecentCombat ? 0.1f : 1f; // Ongoing combat is hindering logistics
             float limitSpentProd = P.LimitedProductionExpenditure(P.CurrentProductionToQueue);
-            ApplyProductionToQueue(maxAmount: limitSpentProd * percentToApply, 0, rushFees: false, immediate: false);
+            ApplyProductionToQueue(maxAmount: limitSpentProd * percentToApply, index, rushFees: false, immediate: false);
             TryPlayerRush();
         }
 
@@ -286,19 +345,25 @@ namespace Ship_Game.Universe.SolarBodies
             if (!P.OwnerIsPlayer || Count == 0 || P.IsCrippled)
                 return;
 
-            QueueItem item = ConstructionQueue[0];
+            // the rush follows the entry that is actually being built, not the head of the list
+            int index = FirstBuildableIndex;
+            if (index < 0)
+                return;
+
+            QueueItem item = ConstructionQueue[index];
             if (item.Rush || Owner.RushAllConstruction || P.RushConstruction)
             {
                 float prodToRush = item.ProductionNeeded.UpperBound(P.ProdHere);
                 if (prodToRush * GlobalStats.Defaults.RushCostPercentage + 1000 < P.Universe.Player.Money)
                 {
-                    RushProduction(0, prodToRush);
+                    RushProduction(index, prodToRush);
                 }
             }
         }
 
         // @return TRUE if building was added to CQ,
-        //         FALSE if `where` is occupied or if there is no free random tiles
+        //         FALSE if `where` is occupied or if there is no free random tiles - except for a
+        //         PLAYER order, which is queued with no tile and waits for one (spec of 4 Sep)
         public bool Enqueue(Building b, PlanetGridSquare where = null, bool playerAdded = false)
         {
             if ((b.Unique || b.BuildOnlyOnce) && P.BuildingBuiltOrQueued(b))
@@ -323,6 +388,20 @@ namespace Ship_Game.Universe.SolarBodies
             {
                 where.SetQueueItem(qi);
                 qi.pgs = where; // reset PGS if we got a new one
+                AddToQueueAndPrioritize(qi);
+                P.RefreshBuildingsWeCanBuildHere();
+                return true;
+            }
+
+            // ★ THE PLAYER'S OWN ORDER WAITS rather than being refused in silence. Ordering a
+            // biosphere and the building meant to stand on it took two visits: the second could
+            // not be queued until the first had finished, because the tile was not habitable yet.
+            // The entry keeps its place with no tile and takes one as soon as one appears.
+            // ⚠ the GOVERNOR keeps the placement check: it picks its tile deliberately, and
+            // without that it would stack up waiting entries it never meant to order.
+            if (playerAdded)
+            {
+                qi.pgs = null;  // waiting for a tile; the pass below skips it until it has one
                 AddToQueueAndPrioritize(qi);
                 P.RefreshBuildingsWeCanBuildHere();
                 return true;
@@ -480,7 +559,11 @@ namespace Ship_Game.Universe.SolarBodies
         // Stored production is dumped into it first, then per-turn income covers the rest.
         int TurnsToCompleteFirstItem()
         {
-            float remaining = (ConstructionQueue[0].ProductionNeeded - P.ProdHere).LowerBound(0);
+            QueueItem building = BuildingNow;
+            if (building == null)
+                return 0;
+
+            float remaining = (building.ProductionNeeded - P.ProdHere).LowerBound(0);
             if (remaining <= 0)
                 return 0; // the stockpile alone finishes it next turn
 
@@ -792,10 +875,10 @@ namespace Ship_Game.Universe.SolarBodies
         {
             lock (ConstructionQueue)
             {
-                if (ConstructionQueue.Count == 0 || !ConstructionQueue[0].isBuilding)
+                QueueItem first = BuildingNow;
+                if (first == null || !first.isBuilding)
                     return false;
 
-                QueueItem first = ConstructionQueue[0];
                 return P.NonCybernetic && first.Building.ProducesFood
                     || P.IsCybernetic && first.Building.ProducesProduction;
             }

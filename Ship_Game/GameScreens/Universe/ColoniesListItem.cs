@@ -274,13 +274,18 @@ namespace Ship_Game
                     float maxAmount = input.IsCtrlKeyDown ? 10000f : 10f;
                     Universe.RunOnSimThread(() =>
                     {
-                        bool hasValidConstruction = P.Construction.NotEmpty && !P.ConstructionQueue[0].IsComplete;
+                        // the button acts on the entry actually being BUILT, which is not always
+                        // the head: one may be waiting for a tile (spec of 4 Sep)
+                        QueueItem building = P.BuildingNow;
+                        bool hasValidConstruction = building != null && !building.IsComplete;
                         if (input.IsShiftKeyDown)
                         {
-                            P.ConstructionQueue[0].Rush = !P.ConstructionQueue[0].Rush;
+                            if (building != null)
+                                building.Rush = !building.Rush;
                             return;
                         }
-                        if (hasValidConstruction && P.Construction.RushProduction(0, maxAmount, rushButton: true))
+                        int index = P.Construction.FirstBuildableIndex;
+                        if (hasValidConstruction && P.Construction.RushProduction(index, maxAmount, rushButton: true))
                         {
                             GameAudio.AcceptClick();
                         }
