@@ -224,15 +224,13 @@ namespace Ship_Game
             return (payment * multiplier * TributeModifier).LowerBound(minimumPayment).RoundTo10();
         }
 
-        // Ludoal fork (maintainer, 6 Sep '26): the tribute rides on the strength notch now -
-        // what they charge is one face of what they are, not a dial of its own.
-        float TributeModifier => Universe.P.PirateStrength switch
-        {
-            PirateStrengthSetting.Weak   => 0.5f,
-            PirateStrengthSetting.Strong => 1.5f,
-            PirateStrengthSetting.Brutal => 2f,
-            _                            => 1f,
-        };
+        // The tribute rides on the strength notch, and like the bite it only ever SOFTENS. A
+        // costlier ransom does nothing to a player who already refuses to pay - and nobody pays
+        // twice what they would not pay once - so the notch above Default was a dial with no
+        // reader. Only the cheap end acts: it can turn a prohibitive ransom into an affordable
+        // one, and a player who starts paying funds their growth. Difficulty keeps its own
+        // multiplier on top, untouched from the base game.
+        float TributeModifier => Universe.P.PirateStrength == PirateStrengthSetting.Weak ? 0.5f : 1f;
 
         // How hard a raid hits, and it only ever SOFTENS. A raid fleet is spawned on the spot,
         // so a raid above the local defence gives the player no reaction time at all - which is

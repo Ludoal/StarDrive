@@ -29043,8 +29043,8 @@ PirateStrengthLabel:
  FRA: "Force des pirates"
 PirateStrengthTip:
  Id: 30152
- ENG: "What the pirates are, not only what they charge. Sets the level they start at (a level is a base, one more raid running at once and more ships per raid), how OFTEN raids come, and the tribute they demand. Raids happen more often, not harder: a raid fleet appears on the spot, so one bigger than your local defence would leave you no reaction time. Difficulty still applies on top."
- FRA: "Ce que sont les pirates, pas seulement ce qu'ils réclament. Fixe leur niveau de départ (un niveau vaut une base, un raid simultané de plus et davantage de vaisseaux par raid), la FRÉQUENCE des raids, et le tribut exigé. Les raids sont plus fréquents, pas plus forts : une flotte de raid apparaît sur place, donc plus forte que votre défense locale elle ne vous laisserait aucun temps de réaction. La difficulté s'y ajoute."
+ ENG: "How much trouble pirates are. Higher settings start them at a higher level and let raids happen more often even when you refuse to pay. Paying tribute keeps them off your back but funds their growth; refusing keeps them small and angry, and the Weak setting halves what they ask so peace is worth buying. A raid is sized against the defence already there and never beyond it in proportion, but high level pirates always field a minimum force, so a bare colony is never safe."
+ FRA: "À quel point les pirates sont un problème. Les crans élevés les font démarrer à un niveau plus haut et rendent les raids plus fréquents même si vous refusez de payer. Payer le tribut les tient à distance mais finance leur croissance ; refuser les garde petits et hargneux, et le cran Weak divise par deux ce qu'ils réclament pour que la paix vaille son prix. Un raid se dimensionne sur la défense déjà présente et ne la dépasse jamais en proportion, mais des pirates de haut niveau alignent toujours une force minimale : une colonie nue n'est jamais à l'abri."
 PirateStrengthWeak:
  Id: 30153
  ENG: "Weak"
