@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using SDGraphics.Input;
@@ -65,6 +65,18 @@ namespace Ship_Game
             }
 
             ButtonMedium(x, inner.Bottom - ApplyLineH, GameText.TzApply, OnApplyClicked);
+            // ★ the second door onto the creation form, opened from the world it will serve: the
+            // colony arrives ticked and locked, and the name is proposed after it. A player who
+            // has just founded a world should not need a trip to the Trade page to give it a zone.
+            ButtonMedium(x + w - 150, inner.Bottom - ApplyLineH, GameText.TzNewZone, OnNewZoneClicked);
+        }
+
+        void OnNewZoneClicked(UIButton b)
+        {
+            // no Trade page behind this one, so the form writes through the empire and this
+            // window closes: reopening it is how the player sees the new zone in the list.
+            ScreenManager.AddScreen(new TradeZoneColoniesScreen(this, null, Owner, null, Colony));
+            ExitScreen();
         }
 
         public bool IsChosen(TradeZone zone) => Chosen.Contains(zone);

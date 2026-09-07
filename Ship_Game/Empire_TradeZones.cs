@@ -330,6 +330,36 @@ namespace Ship_Game
             }
         }
 
+        // ★ THE ONE WRITER of a zone's edit, called from both doors: the Trade page's form and
+        // the same form opened from a colony. It lived on the Trade screen, which is why the
+        // colony door could not reach it. An empty selection deletes the zone; a null zone
+        // creates one.
+        public TradeZone ApplyZoneEdit(TradeZone zone, Array<Planet> chosen, int quota, string name,
+                                       bool exclusive, CargoPriority priority)
+        {
+            if (chosen.IsEmpty)
+            {
+                if (zone != null)
+                    RemoveTradeZone(zone);
+                return null;
+            }
+
+            zone ??= AddTradeZone(chosen[0]);
+
+            zone.Colonies.Clear();
+            foreach (Planet p in chosen)
+                zone.Add(p);
+
+            zone.Quota = quota;
+            SetZoneExclusive(zone, exclusive);
+            zone.Priority = priority;
+            // an empty box keeps the name the zone already had, rather than leaving it nameless
+            if (name.NotEmpty() && name != zone.Name)
+                zone.ChangeName(name);
+
+            return zone;
+        }
+
         public TradeZone GetTradeZoneById(int id)
             => id == 0 ? null : TradeZones.Find(z => z.Id == id);
 

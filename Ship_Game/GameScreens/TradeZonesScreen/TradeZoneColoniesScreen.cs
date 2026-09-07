@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
 using SDGraphics.Input;
@@ -13,7 +13,14 @@ namespace Ship_Game
     // drawing on the map. Opened to create one (zone: null) or to edit an existing one.
     public sealed class TradeZoneColoniesScreen : PopupWindow
     {
+        // ⚠ NULL when the form is opened from a colony instead of the Trade page: there is no
+        // list to refresh there. Everything the form WRITES goes through the empire, so the page
+        // is only needed to tell it to redraw.
         readonly TradeZonesScreen Screen;
+        readonly Empire Owner;
+        // the colony the form was opened FROM, if any: ticked and not untickable, because the
+        // whole point of the shortcut is to build a zone around that world (maintainer feedback).
+        readonly Planet LockedColony;
         readonly TradeZone Zone; // null while creating
         readonly Array<Planet> Chosen = new();
         int Quota; // held locally: while creating, there is no zone yet to write it on
@@ -31,10 +38,15 @@ namespace Ship_Game
         UILabel PriorityLabel;
         UIButton ApplyButton;
 
-        public TradeZoneColoniesScreen(TradeZonesScreen screen, TradeZone zone)
-            : base(screen, 520, 640)
+        public TradeZoneColoniesScreen(GameScreen caller, TradeZonesScreen screen, Empire owner,
+                                       TradeZone zone, Planet lockedColony = null)
+            : base(caller, 520, 640)
         {
             Screen = screen;
+            Owner = owner;
+            LockedColony = lockedColony;
+            if (lockedColony != null)
+                Chosen.AddUnique(lockedColony);
             Zone = zone;
             Quota = zone?.Quota ?? 0;
             Exclusive = zone?.Exclusive ?? false;
@@ -67,8 +79,10 @@ namespace Ship_Game
 
             var nameBox = Add(new Submenu(new RectF(x, nameY, w, NameSecH), GameText.TzName));
             RectF nameArea = nameBox.ClientArea;
+            // opened from a colony: propose its own name, which is what the player would type
+            string proposed = Zone?.Name ?? (LockedColony != null ? LockedColony.Name + " Trade" : "");
             NameEntry = Add(new UITextEntry(nameArea.X + 10, nameArea.Y + 6, nameArea.W - 20,
-                                            Fonts.Arial12Bold, Zone?.Name ?? ""));
+                                            Fonts.Arial12Bold, proposed));
             // no auto-capture: this dialog has a list and a rail besides the name, so a field
             // that grabs the keyboard on hover or on the first keypress steals every other
             // control's input. It takes focus on a CLICK, like every other field in the game.
@@ -83,17 +97,17 @@ namespace Ship_Game
             ColoniesSL = Add(new ScrollList<ColonyPickItem>(
                 new RectF(colArea.X + 8, colArea.Y + 6, colArea.W - 16, colArea.H - 12), 28));
 
-            foreach (Planet p in Screen.Player.GetPlanets().Sorted(true, p => p.Name))
+            foreach (Planet p in Owner.GetPlanets().Sorted(true, p => p.Name))
                 ColoniesSL.AddItem(new ColonyPickItem(this, p));
 
             // Ludoal fork (maintainer feedback, Roland Johansen): the bodies our stations stand on
             // are offered after the colonies. They are not colonies and never will be, so they sit
             // in their own run rather than pretending to a sort they do not share.
-            foreach (Planet body in Screen.Player.StationBodies().Sorted(true, b => b.Name))
+            foreach (Planet body in Owner.StationBodies().Sorted(true, b => b.Name))
             {
                 // named for what STANDS there (maintainer bench 556): a body carrying a rig reads
                 // exactly like a colony in a list of colonies, and it is not one
-                string kind = Screen.Player.StationKindOn(body);
+                string kind = Owner.StationKindOn(body);
                 ColoniesSL.AddItem(new ColonyPickItem(this, body,
                     kind.NotEmpty() ? $"{body.Name}  ({kind})" : body.Name));
             }
@@ -166,8 +180,13 @@ namespace Ship_Game
 
         public bool IsChosen(Planet p) => Chosen.Contains(p);
 
+        public bool IsLocked(Planet p) => p == LockedColony;
+
         public void SetChosen(Planet p, bool on)
         {
+            if (IsLocked(p))
+                return;  // the world this form was opened from stays in
+
             if (on) Chosen.AddUnique(p);
             else    Chosen.Remove(p);
         }
@@ -177,7 +196,7 @@ namespace Ship_Game
         void OnNameChanged(string newName)
         {
             bool taken = false;
-            foreach (TradeZone z in Screen.Player.TradeZones)
+            foreach (TradeZone z in Owner.TradeZones)
                 if (z != Zone && z.Name == newName)
                     taken = true;
 
@@ -190,7 +209,10 @@ namespace Ship_Game
         {
             // an empty pick on an existing zone dissolves it: a zone with no colony would read as
             // "everywhere" downstream, so it is never a state we keep
-            Screen.ApplyColonies(Zone, Chosen, Quota, NameEntry.Text, Exclusive, Priority);
+            if (Screen != null)
+                Screen.ApplyColonies(Zone, Chosen, Quota, NameEntry.Text, Exclusive, Priority);
+            else
+                Owner.ApplyZoneEdit(Zone, Chosen, Quota, NameEntry.Text, Exclusive, Priority);
             GameAudio.AcceptClick();
             ExitScreen();
         }
@@ -220,6 +242,8 @@ namespace Ship_Game
                                          () => Picker.IsChosen(Colony),
                                          on => Picker.SetChosen(Colony, on),
                                          Fonts.Arial12Bold, Caption, GameText.TzColonyPickTip));
+                if (Picker.IsLocked(Colony))
+                    Box.Greyed = true;  // ticked and inert: it says so rather than fighting the click
                 base.PerformLayout();
             }
 

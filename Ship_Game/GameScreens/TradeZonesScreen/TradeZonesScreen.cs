@@ -126,7 +126,7 @@ namespace Ship_Game
         {
             GameAudio.AcceptClick();
             // a zone is born from the colonies it serves: an empty one would read as "everywhere"
-            ScreenManager.AddScreen(new TradeZoneColoniesScreen(this, null));
+            ScreenManager.AddScreen(new TradeZoneColoniesScreen(this, this, Player, null));
         }
 
         // centring the map on a colony without leaving the page: the same single-click pan the
@@ -150,34 +150,14 @@ namespace Ship_Game
         public void EditColonies(TradeZone zone)
         {
             GameAudio.AcceptClick();
-            ScreenManager.AddScreen(new TradeZoneColoniesScreen(this, zone));
+            ScreenManager.AddScreen(new TradeZoneColoniesScreen(this, this, Player, zone));
         }
 
         // Called back by the picker. A zone with no colony is never kept.
         public void ApplyColonies(TradeZone zone, Array<Planet> chosen, int quota, string name,
                                   bool exclusive, CargoPriority priority)
         {
-            if (chosen.IsEmpty)
-            {
-                if (zone != null)
-                    DeleteZone(zone);
-                return;
-            }
-
-            if (zone == null)
-                zone = Player.AddTradeZone(chosen[0]);
-
-            zone.Colonies.Clear();
-            foreach (Planet p in chosen)
-                zone.Add(p);
-
-            zone.Quota = quota;
-            Player.SetZoneExclusive(zone, exclusive);
-            zone.Priority = priority;
-            // an empty box keeps the name the zone already had, rather than leaving it nameless
-            if (name.NotEmpty() && name != zone.Name)
-                zone.ChangeName(name);
-
+            Player.ApplyZoneEdit(zone, chosen, quota, name, exclusive, priority);
             GameAudio.EchoAffirmative();
             ResetList();
         }
