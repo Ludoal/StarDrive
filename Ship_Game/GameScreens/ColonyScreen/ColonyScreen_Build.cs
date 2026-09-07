@@ -98,12 +98,9 @@ namespace Ship_Game
             {
                 // Snapshot once under lock: the sim thread mutates the live queue while we read it.
                 QueueItem[] queue = P.ConstructionQueueSnapshot;
-                // ★ THE LIST SHOWN IS THE LIST EXECUTED. Production serves the first entry it can
-                // build, so that entry belongs at the top here. An entry waiting for a tile yields
-                // its turn without losing its rank - it returns to its place the moment its square
-                // frees up. Stable: everything else keeps the order the player arranged, and the
-                // reorder gestures act on the ENTRY, never on its row, so nothing is misaligned.
-                queue = queue.OrderBy(qi => SBProduction.IsWaiting(qi) ? 1 : 0).ToArray();
+                // ★ THE LIST SHOWN IS THE LIST EXECUTED, as it is: production itself moves the
+                // entry it can build ahead of the ones waiting for a tile or a plan
+                // (SBProduction.OvertakeWaitingEntries), so there is no order to compute here.
                 if (!ConstructionQueue.AllEntries.Select(item => item.Item).EqualElements(queue))
                 {
                     var newItems = queue.Select(qi => new ConstructionQueueScrollListItem(qi));

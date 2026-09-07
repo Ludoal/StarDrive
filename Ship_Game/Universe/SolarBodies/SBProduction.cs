@@ -293,12 +293,11 @@ namespace Ship_Game.Universe.SolarBodies
             return P.Universe.StarDate - LastTerraformerWanted < TerraformerNeedHold;
         }
 
-        // ★ THE ENTRY ACTUALLY BEING BUILT, and it is not always the first one. An entry may sit
-        // in the queue with no tile yet - the player ordered a building for a square a biosphere
-        // has not finished making habitable - and production must SKIP it rather than stall behind
-        // it. The order the player arranged is kept: a waiting entry holds its place, and the pass
-        // serves the first one it CAN. Walking backwards would loop; walking forwards cannot.
-        // -1 when nothing in the queue can be built this turn.
+        // ★ THE ENTRY ACTUALLY BEING BUILT. Between two production passes it is the head: the
+        // first entry that can start overtakes the ones that cannot (no tile yet, or a terraformer
+        // held by its plan) at the next pass, see OvertakeWaitingEntries. Within a pass this still
+        // walks forward to the first entry that CAN start, so nothing stalls behind one that
+        // cannot. -1 when nothing in the queue can be built this turn.
         public int FirstBuildableIndex
         {
             get
@@ -321,9 +320,9 @@ namespace Ship_Game.Universe.SolarBodies
                 return true;
 
             // A terraformer whose colony plan is not far enough along cannot start: the budget
-            // that pays for it is held at zero until the plan completes. ⚠ it keeps its rank and
-            // YIELDS ITS TURN, exactly like an entry with no tile - otherwise it holds position 1
-            // and the whole queue stalls behind it (bench 600).
+            // that pays for it is held at zero until the plan completes. ⚠ it YIELDS ITS TURN,
+            // exactly like an entry with no tile - otherwise it holds position 1 and the whole
+            // queue stalls behind it (bench 600).
             if (WaitsForBlueprint(q))
                 return false;
 
@@ -387,6 +386,7 @@ namespace Ship_Game.Universe.SolarBodies
             if (ConstructionQueue.IsEmpty || P.IsSabotaged)
                 return; // Massive sabotage to planetary facilities or no items
 
+            OvertakeWaitingEntries();
             // ⚠ the FIRST BUILDABLE entry, not the head: production spent on an entry with no
             // tile pays for something that cannot be placed, and the fault surfaces only at
             // completion, after the cost is paid.
@@ -398,6 +398,18 @@ namespace Ship_Game.Universe.SolarBodies
             float limitSpentProd = P.LimitedProductionExpenditure(P.CurrentProductionToQueue);
             ApplyProductionToQueue(maxAmount: limitSpentProd * percentToApply, index, rushFees: false, immediate: false);
             TryPlayerRush();
+        }
+
+        // ★ ONE ORDER, the one on screen: the first entry that can start moves to the head, in
+        // front of the ones that cannot. A waiting entry loses only the rank of the entry that
+        // overtakes it - it stays right behind what is being built and is served as soon as its
+        // square comes back. Nothing moves while nothing can overtake, so an all-waiting queue
+        // keeps its order from turn to turn (maintainer feedback).
+        void OvertakeWaitingEntries()
+        {
+            int first = FirstBuildableIndex;
+            if (first > 0)
+                MoveTo(0, first);
         }
 
         void TryPlayerRush() // Apply rush if player marked items as continuous rush
@@ -866,10 +878,10 @@ namespace Ship_Game.Universe.SolarBodies
             return false;
         }
 
-        // ★ THE GESTURE FOLLOWS THE ROW THE PLAYER SEES. The colony screen sorts the queue so
-        // that entries waiting for a tile or a plan sink to the bottom; the shown order is
-        // recomputed here from the same predicate, so the model needs no reference to the screen.
-        QueueItem[] ShownOrder() => ConstructionQueue.OrderBy(q => IsWaiting(q) ? 1 : 0).ToArray();
+        // ★ THE GESTURE FOLLOWS THE ROW THE PLAYER SEES, and the screen shows the real order:
+        // production reorders the queue itself (OvertakeWaitingEntries) instead of the screen
+        // sorting a copy. One order, so a row's index is the entry's index.
+        QueueItem[] ShownOrder() => ConstructionQueue.ToArray();
 
         // Moves `item` by `relativeChange` ROWS of the shown order: it lands, in the real list,
         // where the entry occupying the target row stands. Stable, like the screen's own sort.
