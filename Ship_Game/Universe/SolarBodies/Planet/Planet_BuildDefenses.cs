@@ -536,8 +536,8 @@ namespace Ship_Game
             // The mandate is the RIGHT, the blueprint is the PLAN - two thresholds, never the same
             // storey. Blueprints used to OR their way through, which made a Scrap Mandate of None
             // do nothing at all on a colony that had a plan.
-            // ⚠ the RIGHT alone - same storey error as the civil side (bench 602): this gate covers
-            // TryBuildMilitaryBuilding, plan path included. Its free path already closes itself.
+            // ⚠ the RIGHT alone: this gate covers TryBuildMilitaryBuilding, plan path included;
+            // its free path closes itself
             bool mayBuild = MayBuildMilitary;
             bool mayScrap = MayScrapMilitary;
 

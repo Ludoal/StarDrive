@@ -276,10 +276,8 @@ public class UniverseParams
             };
         }
 
-        // ★ the retired fields have spoken: back to their defaults, so the NEXT save does not
-        // carry them and the folds above do not run again on every load - a fold that re-fires
-        // would overwrite a notch changed in the meantime (audit, bench 603). None of them has
-        // a reader left outside this file.
+        // ★ folded once, the retired fields go back to their defaults: the next save does not
+        // carry them and the folds above do not run again. None has a reader outside this file.
         VanillaRemnantStrength = false;
         DisableRemnantStory    = false;
         DisablePirates         = false;

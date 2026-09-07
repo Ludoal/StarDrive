@@ -332,9 +332,8 @@ namespace Ship_Game
                 // guard, which is why the two disagreed rather than both being wrong.
                 foreach (Planet planet in Player.GetPlanets())
                 {
-                    // ★ per GOOD, on the ledger's sets: a world named by two zones is counted by the
-                    // better-ranked one only, and this pairs with a need that counts it once (audit,
-                    // bench 603)
+                    // per GOOD, on the ledger's sets: a world named by two zones is counted by the
+                    // better-ranked one only, like the need this pairs with
                     bool food = SelectedZone == null || SelectedZone.Counts(planet, Goods.Food);
                     bool prod = SelectedZone == null || SelectedZone.Counts(planet, Goods.Production);
                     bool col  = SelectedZone == null || SelectedZone.Counts(planet, Goods.Colonists);

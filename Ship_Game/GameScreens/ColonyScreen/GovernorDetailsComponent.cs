@@ -150,13 +150,11 @@ namespace Ship_Game
 
             Planet = p;
             RemoveAll(); // delete all components
-            // the delegation memory belonged to the OLD colony's lists; the ones rebuilt below
-            // start undelegated, so the transition test starts from scratch too - otherwise two
-            // exclusive colonies in a row left the pickers greyed on a wrong word (audit, bench 603)
+            // the delegation memory belongs to the lists just discarded; the ones rebuilt below
+            // start undelegated, so the transition test starts over too
             MandatesWereDelegated = false;
-            // Empire Management may hand over a colony whose plan was never measured since the
-            // load, and the bar then read 0/0 - the same refresh the ColonyScreen makes at
-            // construction (audit, bench 603)
+            // a plan never measured since the load reads 0/0: the same refresh the ColonyScreen
+            // makes at construction
             if (Planet.HasBlueprints && !Planet.Blueprints.Measured)
                 Planet.RefreshBuildingsWeCanBuildHere();
 

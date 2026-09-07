@@ -810,10 +810,8 @@ namespace Ship_Game.Universe.SolarBodies
                 if (q.IsCivilianBuilding
                     && !q.IsTerraformer
                     && (!q.IsPlayerAdded || hasExclusiveBlueprints)
-                    // an entry the PLAN names is never traded for a "better" one: the plan builds in
-                    // its own order, this sweep judges by score, and the two almost never agree - so
-                    // every technology cancelled the rank being raised and half its production with
-                    // it, then the governor queued it again (audit, bench 603)
+                    // an entry the plan names is out of this sweep's reach: the plan builds in its own
+                    // order, this sweep judges by score
                     && P.Blueprints?.IsRequired(q.Building) != true
                     && q.ProductionSpent < q.ProductionNeeded * 0.9f
                     && P.BestCivilianBuildingToBuildDifferentThen(P.GetBuildingsCanBuild(), q.Building))
@@ -853,12 +851,9 @@ namespace Ship_Game.Universe.SolarBodies
             return false;
         }
 
-        // ★ THE GESTURE FOLLOWS THE ROW THE PLAYER SEES (audit, bench 603). The colony screen
-        // sorts the queue so that entries waiting for a tile or a plan sink to the bottom; the
-        // arrows and the drag acted on index +/- 1 of the REAL list, so with a waiting entry
-        // ranked above, "move up" swapped with a row displayed at the bottom and nothing moved
-        // on screen - one click in two did nothing. The shown order is recomputed here from the
-        // very predicate the screen sorts on, so the model needs no reference to the screen.
+        // ★ THE GESTURE FOLLOWS THE ROW THE PLAYER SEES. The colony screen sorts the queue so
+        // that entries waiting for a tile or a plan sink to the bottom; the shown order is
+        // recomputed here from the same predicate, so the model needs no reference to the screen.
         QueueItem[] ShownOrder() => ConstructionQueue.OrderBy(q => IsWaiting(q) ? 1 : 0).ToArray();
 
         // Moves `item` by `relativeChange` ROWS of the shown order: it lands, in the real list,

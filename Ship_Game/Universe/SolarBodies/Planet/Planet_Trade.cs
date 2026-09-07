@@ -41,12 +41,9 @@ namespace Ship_Game
         public int FreeProdExportSlots     => GetNumFreeSlots(ProdExportSlots, OutgoingProdFreighters);
         public int FreeColonistExportSlots => GetNumFreeSlots(ColonistsExportSlots, OutGoingColonistsFreighters);
 
-        // ⚠ FREE berths are counted in HULLS, on the BEFORE-serving figure (audit, bench 603; the
-        // maintainer's and Lek's call). The base game took the cargo already in the air out of the
-        // slot count AND then took the incoming hulls out again: a loaded hull en route was
-        // charged twice, so the dispatch stopped one or two hulls short of the need the overlay
-        // shows - idle freighters beside "missing" runs (bench 602, 119/169). One netting, by
-        // hull: a hull flying to LOAD still counts once, a loaded one no longer counts twice.
+        // ⚠ free berths are counted in HULLS, on the before-serving figure: the slot count has
+        // already netted the cargo in the air out of the need, so netting the incoming hulls
+        // out of the net count charged a loaded hull twice (bench 603)
         public int FreeFoodImportSlots     => GetNumFreeSlots(FoodImportSlotsBeforeServing, IncomingFoodFreighters);
         public int FreeProdImportSlots     => GetNumFreeSlots(ProdImportSlotsBeforeServing, IncomingProdFreighters);
         public int FreeColonistImportSlots => GetNumFreeSlots(ColonistsImportSlots, IncomingColonistsFreighters);

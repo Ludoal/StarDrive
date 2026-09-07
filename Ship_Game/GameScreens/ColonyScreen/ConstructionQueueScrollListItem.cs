@@ -148,8 +148,8 @@ namespace Ship_Game
             });
         }
 
-        // one row up or down IN THE LIST THE PLAYER SEES - the model resolves the row to the
-        // real neighbour, waiting entries included (audit, bench 603)
+        // one row up or down in the list the player sees; the model resolves the row to the
+        // real neighbour, waiting entries included
         void MoveShownBy(int rows)
         {
             Planet.Construction.ReorderShown(Item, rows);

@@ -54,10 +54,8 @@ namespace Ship_Game
             // Ludoal fork (maintainer feedback): the mandate is the RIGHT, the blueprint is the
             // PLAN. A plan directs what gets built inside the right the mandate grants; it does not
             // grant a right of its own.
-            // ⚠ the RIGHT alone. Blueprint only used to be folded in here, one storey too high:
-            // this gate guards BuildOrReplaceBuilding, which holds the plan's own path as well as
-            // the free one - so a non-exclusive plan under Blueprint only raised nothing at all
-            // (bench 602, maintainer feedback). The free paths now close themselves, below.
+            // ⚠ the RIGHT alone: this gate guards BuildOrReplaceBuilding, which holds the plan's own
+            // path as well as the free one - the free paths close themselves below (bench 602)
             bool mayBuild = MayBuildCivilian;
             bool mayScrap = MayScrapCivilian;
 
@@ -996,10 +994,8 @@ namespace Ship_Game
             float fullRateIncome = newPop * Money.IncomePerColonist * Money.TaxRateMultiplier;
             bool popPressure = PopulationRatio >= 0.85f && EstimatedPopGrowthPerTurn > 0f
                                && bioUpkeep <= BiospherePaybackShare * fullRateIncome;
-            // what the colony may actually RAISE on the ground it would gain: nothing under a
-            // mandate that forbids building, the plan alone under Blueprint only. The free
-            // catalogue used to answer here even when no free path could spend the tile, and a
-            // biosphere was paid for a square that stayed empty (audit, bench 603).
+            // what the colony may actually raise on the ground it would gain: nothing under a
+            // mandate that forbids building, the plan alone under Blueprint only
             IReadOnlyList<Building> wanted =
                 !MayBuildCivilian      ? (IReadOnlyList<Building>)Empty<Building>.Array
               : BuildsOnlyTheBlueprint ? (HasBlueprints ? (IReadOnlyList<Building>)Blueprints.PlannedBuildingsWeCanBuild

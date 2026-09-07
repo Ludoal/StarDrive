@@ -353,9 +353,8 @@ namespace Ship_Game
             batch.SafeEnd();
         }
 
-        // the Notifications block edits GlobalStats - the settings FILE, not the save - and this
-        // screen never wrote that file: the toggles held for the session and were gone at the
-        // next launch (reproduced by the maintainer, bench 603). Every way out passes here.
+        // the Notifications block edits GlobalStats - the settings file, not the save - and
+        // every way out of the screen passes here (bench 603)
         public override void ExitScreen()
         {
             GlobalStats.SaveSettings();

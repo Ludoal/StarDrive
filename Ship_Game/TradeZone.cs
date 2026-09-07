@@ -65,12 +65,9 @@ namespace Ship_Game
         // served" must read THIS one; the capped figure would call a starving zone satisfied.
         // Not serialized either: a fact of the turn.
         public int RawNeed;
-        // ★ THE WORLDS THIS ZONE ACTUALLY COUNTS, per good - the ledger's answer, written by
-        // MeasureZoneNeeds. A world named by two zones is counted by the better-ranked one, and
-        // everything that pairs a figure with the need must read THESE sets, never Colonies:
-        // ActiveFreighters and the overlay summed over every colony named, so a shared world's
-        // traffic showed in the zone whose need did not count it - "3 / 0" (audit, bench 603).
-        // Not serialized: a fact of the turn.
+        // ★ THE WORLDS THIS ZONE ACTUALLY COUNTS, per good, written by MeasureZoneNeeds: a world
+        // named by two zones is counted by the better-ranked one, and every figure paired with
+        // the need reads these sets, never Colonies. Not serialized: a fact of the turn.
         public readonly HashSet<int> CountsFood = new(), CountsProd = new(), CountsColonists = new();
         public bool Counts(Planet p, Goods goods)
             => goods == Goods.Food       ? CountsFood.Contains(p.Id)
@@ -189,8 +186,7 @@ namespace Ship_Game
                 if (p == null || p.Owner != owner)
                     continue;
 
-                // the same three the demand counts, on the SAME sets the demand counted them on -
-                // a world another zone counts for a good does not show its hulls here either
+                // the same three the demand counts, on the sets the demand counted them on
                 if (CountsFood.Contains(id))      active += p.IncomingFoodFreighters;
                 if (CountsProd.Contains(id))      active += p.IncomingProdFreighters;
                 if (CountsColonists.Contains(id)) active += p.IncomingColonistsFreighters;
