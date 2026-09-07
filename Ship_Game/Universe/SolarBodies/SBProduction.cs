@@ -269,6 +269,28 @@ namespace Ship_Game.Universe.SolarBodies
             return true;
         }
 
+        // ⚠ THE NEED FOR A TERRAFORMER OSCILLATES, and the queue used to flicker with it. Some
+        // of its terms move while a terraformer works - fertility climbs, tiles stop being
+        // terraformable - so a world sitting on the threshold answers yes one turn and no the
+        // next: the governor queues the building, sends it to the back, then forward again, and
+        // the player watches it appear and vanish (maintainer feedback, Roland's save).
+        // The answer is HELD for ten turns once it has been true. The ordering is untouched; it
+        // is the signal that stops blinking, which is where the fault was.
+        // ⚠ zero on an old save means "never wanted", so it reads as before until the first yes.
+        [StarData] float LastTerraformerWanted;
+        const float TerraformerNeedHold = 1.0f; // StarDate advances 0.1 per turn
+
+        bool TerraformerStillWanted()
+        {
+            if (P.AreTerraformersNeeded)
+            {
+                LastTerraformerWanted = P.Universe.StarDate;
+                return true;
+            }
+
+            return P.Universe.StarDate - LastTerraformerWanted < TerraformerNeedHold;
+        }
+
         // ★ THE ENTRY ACTUALLY BEING BUILT, and it is not always the first one. An entry may sit
         // in the queue with no tile yet - the player ordered a building for a square a biosphere
         // has not finished making habitable - and production must SKIP it rather than stall behind
@@ -593,7 +615,7 @@ namespace Ship_Game.Universe.SolarBodies
                     // the terraformers the game asked for, it keeps its place. The count is already
                     // bounded and only one is ever built at a time, so this cannot run away.
                     if (P.Owner.AutoBuildTerraformers && P.Owner.data.Traits.TerraformingLevel > 0
-                        && !item.IsPlayerAdded && !P.AreTerraformersNeeded)
+                        && !item.IsPlayerAdded && !TerraformerStillWanted())
                         DePrioritizeTerraformer();
 
                     if (item.Rush && item.QType == QueueItemType.OrbitalUrgent)
