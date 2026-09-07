@@ -190,8 +190,13 @@ namespace Ship_Game.AI
                 if (!empire.CanBuildResearchStations)
                     return null;
 
-                ResourceManager.Ships.GetDesign(empire.data.CurrentResearchStation, out IShipDesign reseaechStation);
-                return reseaechStation;
+                // a chosen design that no longer exists falls back to the race default, like the constructor
+                if (!ResourceManager.Ships.GetDesign(empire.data.ResearchStation, out IShipDesign researchStation))
+                {
+                    Log.Warning($"PickResearchStation: no research station with uid={empire.data.ResearchStation}, falling back to default");
+                    ResourceManager.Ships.GetDesign(empire.data.DefaultResearchStation, out researchStation);
+                }
+                return researchStation;
             }
 
             var potentialResearchStations = new Array<IShipDesign>();
@@ -228,7 +233,12 @@ namespace Ship_Game.AI
                 if (!empire.CanBuildMiningStations)
                     return null;
 
-                ResourceManager.Ships.GetDesign(empire.data.CurrentMiningStation, out IShipDesign miningStation);
+                // a chosen design that no longer exists falls back to the race default, like the constructor
+                if (!ResourceManager.Ships.GetDesign(empire.data.MiningStation, out IShipDesign miningStation))
+                {
+                    Log.Warning($"PickMiningStation: no mining station with uid={empire.data.MiningStation}, falling back to default");
+                    ResourceManager.Ships.GetDesign(empire.data.DefaultMiningStation, out miningStation);
+                }
                 return miningStation;
             }
 
