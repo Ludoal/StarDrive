@@ -338,9 +338,8 @@ namespace Ship_Game
         public bool CanViewNumShips     => Level >= 2;
         public bool CanViewTechType     => Level >= 2;
         public bool CanViewArtifacts    => Level >= 2;
-        public bool CanViewRanks        => Level >= 2;
-        // ⚠ a rank unlocks with the DATUM that founds it, never off the flat CanViewRanks gate:
-        // that one leaks a floor up (an economy rank at level 2 derives from a treasury that is a
+        // ⚠ a rank unlocks with the DATUM that founds it, never off a flat level gate: that
+        // would leak a floor up (an economy rank at level 2 derives from a treasury that is a
         // level-3 secret) and a floor down (the population rank hidden at 2 while the raw count
         // shows at 1). (maintainer feedback)
         public bool CanViewPopRank      => CanViewPop;
