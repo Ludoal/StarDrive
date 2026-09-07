@@ -150,6 +150,15 @@ namespace Ship_Game
 
             Planet = p;
             RemoveAll(); // delete all components
+            // the delegation memory belonged to the OLD colony's lists; the ones rebuilt below
+            // start undelegated, so the transition test starts from scratch too - otherwise two
+            // exclusive colonies in a row left the pickers greyed on a wrong word (audit, bench 603)
+            MandatesWereDelegated = false;
+            // Empire Management may hand over a colony whose plan was never measured since the
+            // load, and the bar then read 0/0 - the same refresh the ColonyScreen makes at
+            // construction (audit, bench 603)
+            if (Planet.HasBlueprints && !Planet.Blueprints.Measured)
+                Planet.RefreshBuildingsWeCanBuildHere();
 
             // Full size at every width: the column is FIXED on the tab measure, identical at
             // 900p and 1080p - a width-based font fold piloted nothing.
