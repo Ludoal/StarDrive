@@ -419,8 +419,14 @@ public partial class Planet
                 && (!qi.pgs.BuildingOnTile || qi.Building.Name != qi.pgs.Building.Name)
                 && !qi.pgs.CanPlaceBuildingHere(qi.Building))
             {
-                Construction.Cancel(qi);
-                return;
+                // a player's order waits for another tile; the governor's is dropped, it picked its tile deliberately
+                if (qi.IsPlayerAdded)
+                {
+                    qi.pgs.RemoveQueueItem();
+                    qi.pgs = null;
+                }
+                else
+                    Construction.Cancel(qi);
             }
         }
     }

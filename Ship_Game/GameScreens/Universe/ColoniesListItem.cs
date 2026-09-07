@@ -253,7 +253,7 @@ namespace Ship_Game
                 {
                     Screen.Universe.RunOnSimThread(() =>
                     {
-                        QueueItem item = P.Construction.GetConstructionQueue()[0];
+                        QueueItem item = P.BuildingNow ?? P.Construction.GetConstructionQueue()[0];
                         if (!item.IsComplete)
                         {
                             P.Construction.Cancel(item);
@@ -476,7 +476,7 @@ namespace Ship_Game
             QueueItem[] queue = P.ConstructionQueueSnapshot;
             if (queue.Length > 0)
             {
-                QueueItem qi = queue[0];
+                QueueItem qi = P.BuildingNow ?? queue[0];
                 qi.DrawAt(P.Universe, batch, new Vector2(QueueRect.X + 10, QueueRect.Y + QueueRect.Height / 2 - 30));
                 batch.Draw((ApplyProdHover ? ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover1") : ResourceManager.Texture("NewUI/icon_queue_rushconstruction")), ApplyProductionRect, Color.White);
                 batch.Draw((CancelProdHover ? ResourceManager.Texture("NewUI/icon_queue_delete_hover1") : ResourceManager.Texture("NewUI/icon_queue_delete")), CancelProductionRect, Color.Red); // destruction reads red

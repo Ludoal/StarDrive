@@ -338,7 +338,7 @@ namespace Ship_Game
                     return true;
 
                 if (waitingForBudget)
-                    return false; // the colony owes a rank it cannot pay yet: it saves instead
+                    return false; // the entry stays queued while its upkeep per turn exceeds the budget; nothing is set aside
             }
 
             if (BuildsOnlyTheBlueprint)
@@ -354,8 +354,8 @@ namespace Ship_Game
         // rebuilding needs no rule of its own.
         //
         // Entries this builder cannot raise at all (military, and anything a starving colony
-        // must not spend on) are stepped over; the budget is the one obstacle that makes the
-        // colony WAIT instead, saving its production for the rank it owes.
+        // must not spend on) are stepped over. An entry whose upkeep per turn exceeds the budget
+        // stays queued and yields its turn to the ranks below; nothing is set aside.
         bool TryBuildNextPlannedBuilding(float budget, out bool waiting)
         {
             Building next = NextPlannedTarget(budget, out waiting);
@@ -376,8 +376,8 @@ namespace Ship_Game
 
                 if (!SuitableForBuild(b, budget, plan))
                 {
-                    waiting = true;
-                    return null;
+                    waiting = true; // this rank yields its turn; a rank below may still fit the budget
+                    continue;
                 }
 
                 return b;
@@ -498,7 +498,8 @@ namespace Ship_Game
                 // governor queues the very same terraformer again: cancelling in between refunds
                 // only half of what was spent, so the round trip is pure loss (bench 596).
                 if (Owner.AutoBuildTerraformers && qi.IsCivilianBuilding && qi.Building.IsTerraformer
-                    && TerraformBudget == 0 && !TerraformerWaitsForBlueprint)
+                    && TerraformBudget == 0 && !TerraformerWaitsForBlueprint
+                    && !(qi.IsPlayerAdded && OwnerIsPlayer) && !RequiredInBlueprints(qi.Building))
                 {
                     Log.Info(ConsoleColor.Blue, $"{Owner.PortraitName} CANCELED Terrformer" +
                         $" on planet {Name} since Terraformer Budget was 0.");
@@ -628,10 +629,12 @@ namespace Ship_Game
             if (HardProtectedFromScrap(b))
                 return false;
 
-            if (!RequiredInBlueprints(b))
+            // an exclusive plan clears what it does not name; everything else answers to the guards
+            // below, which the base game skipped for every building outside a plan
+            if (HasExclusiveBlueprints && !RequiredInBlueprints(b))
                 return true;
-            else if (!overBudget)
-                return false;
+            if (RequiredInBlueprints(b) && !overBudget)
+                return false; // a plan member goes only under budget pressure
 
             if (b.IsPlayerAdded && OwnerIsPlayer
                 || b.MoneyBuildingAndProfitable(b.ActualMaintenance(this), PopulationBillion)
@@ -1163,7 +1166,8 @@ namespace Ship_Game
                     }
 
                     // Cancel ongoing building if there is a food building available for build and not player added
-                    if (!q.IsPlayerAdded && !q.Building.IsMilitary && BuildingsCanBuild.Any(f => f.ProducesFood))
+                    if (!q.IsPlayerAdded && !q.Building.IsMilitary && !q.Building.IsTerraformer && !RequiredInBlueprints(q.Building)
+                        && BuildingsCanBuild.Any(f => f.ProducesFood))
                     {
                         Construction.Cancel(q);
                         break;

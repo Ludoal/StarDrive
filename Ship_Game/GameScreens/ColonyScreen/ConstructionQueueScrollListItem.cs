@@ -53,7 +53,7 @@ namespace Ship_Game
                 Universe.RunOnSimThread(() =>
                 {
                     int index = Planet.ConstructionQueue.IndexOf(Item);
-                    if (index > 0)
+                    if (index >= 0) // the shown order bounds the move
                     {
                         MoveShownBy(-1);
                     }
@@ -90,7 +90,7 @@ namespace Ship_Game
                 {
                     var listBottom = Planet.ConstructionQueue.Count - 1;
                     var index = Planet.ConstructionQueue.IndexOf(Item);
-                    if (index >=0 && index < listBottom)
+                    if (index >= 0)
                     {
                         MoveShownBy(+1);
                     }

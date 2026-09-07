@@ -46,7 +46,7 @@ namespace Ship_Game.Commands.Goals
                 && Owner.AI.SafeToRush) 
             {
                 float rush = (10f * (importance + 0.5f)).UpperBound(PlanetBuildingAt.ProdHere);
-                PlanetBuildingAt.Construction.RushProduction(0, rush);
+                PlanetBuildingAt.Construction.RushProduction(PlanetBuildingAt.Construction.FirstBuildableIndex, rush);
             }
             return GoalStep.TryAgain;
         }

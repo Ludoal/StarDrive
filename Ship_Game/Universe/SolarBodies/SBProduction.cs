@@ -125,6 +125,8 @@ namespace Ship_Game.Universe.SolarBodies
             if (ConstructionQueue.Count > itemIndex)
             {
                 QueueItem item = ConstructionQueue[itemIndex];
+                if (item.isBuilding && !TryMakeBuildable(item))
+                    return false; // never spend on an entry that cannot be placed this turn
                 if (rushFees && (!P.OwnerIsPlayer || !P.Universe.Debug))
                 {
                     SpendProduction(item, maxAmount, chargeFees: false);
@@ -325,8 +327,18 @@ namespace Ship_Game.Universe.SolarBodies
             if (WaitsForBlueprint(q))
                 return false;
 
+            if (q.IsCancelled)
+                return false;
             if (q.pgs != null)
-                return q.pgs.CanPlaceBuildingHere(q.Building);
+            {
+                if (q.pgs.CanPlaceBuildingHere(q.Building))
+                    return true;
+                if (!q.IsPlayerAdded)
+                    return false;
+                // a player's order whose tile no longer accepts it lets the tile go and waits for another
+                q.pgs.RemoveQueueItem();
+                q.pgs = null;
+            }
 
             PlanetGridSquare where = null;
             if (!q.Building.AssignBuildingToTile(q.Building, ref where, P))
@@ -367,6 +379,11 @@ namespace Ship_Game.Universe.SolarBodies
         {
             // surplus will be reset every turn and consumed at first opportunity
             SurplusThisTurn = surplusFromPlanet;
+            // a deferred cancel is harvested before anything else, even when nothing is buildable or
+            // produced: otherwise the entry still counts and the next turn spends on it first
+            for (int i = ConstructionQueue.Count - 1; i >= 0; --i)
+                if (ConstructionQueue[i].IsCancelled)
+                    Cancel(ConstructionQueue[i]);
             if (ConstructionQueue.IsEmpty || P.IsSabotaged)
                 return; // Massive sabotage to planetary facilities or no items
 
@@ -814,7 +831,7 @@ namespace Ship_Game.Universe.SolarBodies
                     && q.ProductionSpent < q.ProductionNeeded * 0.9f
                     && P.BestCivilianBuildingToBuildDifferentThen(P.GetBuildingsCanBuild(), q.Building))
                 {
-                    Cancel(q.Building);
+                    Cancel(q); // this entry, never the first one carrying the same building template
                 }
             }
         }
