@@ -233,7 +233,8 @@ namespace Ship_Game
         {
             // the figure is order-dependent, so it is measured before it is read: a page opened
             // before the first turn would otherwise show a nought it cannot tell from a real one
-            Player.MeasureZoneNeeds();
+            // the book of need is the simulation's: measured on its thread, read here on the next refresh
+            Player.Universe.Screen?.RunOnSimThread(() => Player.MeasureZoneNeeds());
             var names = new Array<string>(); var counts = new Array<string>();
             var served = new Array<string>();
             var required = new Array<string>(); var active = new Array<string>();

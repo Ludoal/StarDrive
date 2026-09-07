@@ -98,8 +98,8 @@ namespace Ship_Game
                 new UITable.Column { Title = "STL", Width = 60, Align = TableAlign.Number, Sortable = true, Tip = "Sublight Speed of Ship" },
             });
             // EVERY column sizes itself on the fleet's DATA, header (or icon) included.
-            // Orders is FOLDABLE - if the natural widths exceed the resolution, its text
-            // cuts to a tooltip instead of pushing the frame off-screen
+            // Orders holds a 300px floor and is not foldable: an order that outgrows it is cut
+            // to a tooltip instead of pushing the frame off-screen
             var vals = new Array<string>[13];
             for (int i = 0; i < vals.Length; ++i)
                 vals[i] = new Array<string>();

@@ -515,8 +515,11 @@ namespace Ship_Game
             get => Universe.Player.RushAllConstruction;
             set
             {
-                Universe.Player.RushAllConstruction = value;
-                Universe.RunOnSimThread(() => Universe.Player.SwitchRushAllConstruction(value));
+                Universe.RunOnSimThread(() =>
+                {
+                    Universe.Player.RushAllConstruction = value;
+                    Universe.Player.SwitchRushAllConstruction(value);
+                });
             }
         }
     }

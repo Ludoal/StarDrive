@@ -291,6 +291,9 @@ namespace Ship_Game
                     if (SelectedZone == null || SelectedZone.Serves(p))
                         perimeter.Add(p);
 
+                // a zone's need is a fact of the turn: after a load it reads nought until the empire
+                // measures it, so the measure is asked of the simulation thread here
+                Player.Universe.Screen?.RunOnSimThread(() => Player.MeasureZoneNeeds());
                 if (SelectedZone != null)
                 {
                     if (Player.NonCybernetic)

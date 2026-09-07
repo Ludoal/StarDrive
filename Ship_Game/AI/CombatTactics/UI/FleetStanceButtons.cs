@@ -26,10 +26,25 @@ namespace Ship_Game.AI.CombatTactics.UI
 
         protected override void ApplyStance(CombatState stance)
         {
-            foreach (var node in SelectedNodes)
+            // the stance is written on the ships' AI, so it goes through the simulation thread,
+            // as the ship stance buttons do; a node with no ship is design data and is written here
+            var nodes = SelectedNodes;
+            Ship first = null;
+            foreach (var node in nodes)
             {
-                node.SetCombatStance(stance);
+                if (node.Ship != null) { first = node.Ship; break; }
             }
+            if (first?.Universe.Screen == null)
+            {
+                foreach (var node in nodes)
+                    node.SetCombatStance(stance);
+                return;
+            }
+            first.Universe.Screen.RunOnSimThread(() =>
+            {
+                foreach (var node in nodes)
+                    node.SetCombatStance(stance);
+            });
         }
 
         protected override void OnOrderButtonHovered(OrdersToggleButton b) {}
