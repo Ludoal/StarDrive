@@ -93,7 +93,7 @@ namespace Ship_Game
         // rate. Their term is therefore the base game's own ceiling, kept in the total because a
         // zone that wants people still needs hulls to carry them; it is a ceiling among flows, and
         // the tooltip is where that is said.
-        public float RunsNeeded(Planet p, Goods goods)
+        public float RunsNeeded(Planet p, Goods goods, bool beforeServing = false)
         {
             float cargo = AverageFreighterCargoCap.LowerBound(1);
             if (goods == Goods.Food)
@@ -111,7 +111,11 @@ namespace Ship_Game
                 // granary is a real service - a buffer against bad turns - so a book counting
                 // only the flow read "0" beside three cargo in the air (maintainer, bench 593).
                 float hunger = (-p.Food.NetIncome * p.AverageFoodImportTurns).LowerBound(0);
-                float room   = (p.Storage.Max - p.FoodHere - p.IncomingFood).LowerBound(0);
+                // the cargo already flying here has been promised to this store, so the DISPATCH
+                // must not order it twice. The overlay asks the question the other way round and
+                // wants it left in - see beforeServing.
+                float flying = beforeServing ? 0 : p.IncomingFood;
+                float room   = (p.Storage.Max - p.FoodHere - flying).LowerBound(0);
                 return (hunger + room) / cargo;
             }
 
@@ -163,11 +167,16 @@ namespace Ship_Game
         // one place that needs it - the dispatch quota in MeasureZoneNeeds - where the supply is
         // a STOCK walked in list order: an exporter promised to one zone is not there for the
         // next, and the set it is taken on must be the set the DISPATCH searches.
-        public int PerimeterNeed(Array<Planet> importers, Goods goods)
+        // beforeServing: the same book, read one step earlier - what the perimeter wanted BEFORE
+        // the cargo now in the air was counted against it. Only the freighters overlay asks for it,
+        // and only because it prints that very cargo as the numerator: netting it out on one side
+        // while adding it up on the other made the pair cross over, and the better the trade ran
+        // the wider it crossed. One function, one definition, one optional step - not a second book.
+        public int PerimeterNeed(Array<Planet> importers, Goods goods, bool beforeServing = false)
         {
             float need = 0;
             for (int i = 0; i < importers.Count; ++i)
-                need += RunsNeeded(importers[i], goods);
+                need += RunsNeeded(importers[i], goods, beforeServing);
 
             int whole = (int)need;
             if (need > whole)
@@ -267,6 +276,10 @@ namespace Ship_Game
                 zone.NeedFood      = PerimeterNeed(wantFood[zi], Goods.Food);
                 zone.NeedProd      = PerimeterNeed(wantProd[zi], Goods.Production);
                 zone.NeedColonists = PerimeterNeed(wantCol[zi], Goods.Colonists);
+                // the overlay's half of the same book, on the very same sets of colonies
+                zone.NeedFoodBeforeServing      = PerimeterNeed(wantFood[zi], Goods.Food, beforeServing: true);
+                zone.NeedProdBeforeServing      = PerimeterNeed(wantProd[zi], Goods.Production, beforeServing: true);
+                zone.NeedColonistsBeforeServing = PerimeterNeed(wantCol[zi], Goods.Colonists, beforeServing: true);
             }
 
             // ⚠ THE CEILING IS TAKEN ON THE SET THE DISPATCH SEARCHES, and the two regimes do not

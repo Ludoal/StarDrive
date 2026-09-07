@@ -50,6 +50,11 @@ namespace Ship_Game
         // one need: two screens that compute cannot agree, two screens that read cannot differ.
         // Never serialized either: a fact of the turn.
         public int NeedFood, NeedProd, NeedColonists;
+        // The same three, read one step earlier: before the cargo already in the air was netted
+        // out of them. ONLY the freighters overlay uses these, because it prints that cargo as its
+        // numerator - see PerimeterNeed's beforeServing. Same function, same set of colonies, one
+        // step apart, so the two can never drift into separate definitions. Not serialized either.
+        public int NeedFoodBeforeServing, NeedProdBeforeServing, NeedColonistsBeforeServing;
         // ★ THE SAME BOOK, UNCAPPED. MeasuredNeed above is the dispatch QUOTA: it is bounded by
         // what the ground the dispatch searches can actually send, because a run needs a berth at
         // both ends. This one is what the importers burn, whatever anyone can do about it.

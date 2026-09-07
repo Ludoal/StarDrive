@@ -307,19 +307,22 @@ namespace Ship_Game
                 if (SelectedZone != null)
                 {
                     if (Player.NonCybernetic)
-                        GoodsUtilizationMap[Goods.Food].SetNeed(SelectedZone.NeedFood);
-                    GoodsUtilizationMap[Goods.Production].SetNeed(SelectedZone.NeedProd);
-                    GoodsUtilizationMap[Goods.Colonists].SetNeed(SelectedZone.NeedColonists);
+                        GoodsUtilizationMap[Goods.Food].SetNeed(SelectedZone.NeedFoodBeforeServing);
+                    GoodsUtilizationMap[Goods.Production].SetNeed(SelectedZone.NeedProdBeforeServing);
+                    GoodsUtilizationMap[Goods.Colonists].SetNeed(SelectedZone.NeedColonistsBeforeServing);
                 }
                 else
                 {
                     // no zone picked: the perimeter is the whole realm. The figure is what the
                     // realm WANTS - the same book the zone lines above read, uncapped, so the
                     // overlay never writes "nobody can serve me" as a nought
+                    // ⚠ beforeServing: this window prints the cargo IN THE AIR as its numerator, so
+                    // the denominator must not have that same cargo already subtracted from it - the
+                    // pair crossed over and a well served realm read "126 / 94" (maintainer bench 600).
                     if (Player.NonCybernetic)
-                        GoodsUtilizationMap[Goods.Food].SetNeed(Player.PerimeterNeed(perimeter, Goods.Food));
-                    GoodsUtilizationMap[Goods.Production].SetNeed(Player.PerimeterNeed(perimeter, Goods.Production));
-                    GoodsUtilizationMap[Goods.Colonists].SetNeed(Player.PerimeterNeed(perimeter, Goods.Colonists));
+                        GoodsUtilizationMap[Goods.Food].SetNeed(Player.PerimeterNeed(perimeter, Goods.Food, beforeServing: true));
+                    GoodsUtilizationMap[Goods.Production].SetNeed(Player.PerimeterNeed(perimeter, Goods.Production, beforeServing: true));
+                    GoodsUtilizationMap[Goods.Colonists].SetNeed(Player.PerimeterNeed(perimeter, Goods.Colonists, beforeServing: true));
                 }
 
                 // ⚠ A WORLD WITH A CARGO IN THE AIR COUNTS, even if its store filled while that
