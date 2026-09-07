@@ -486,7 +486,14 @@ namespace Ship_Game
             for (int i = 0; i < ConstructionQueue.Count; i++)
             {
                 QueueItem qi = ConstructionQueue[i];
-                if (Owner.AutoBuildTerraformers && qi.IsCivilianBuilding && qi.Building.IsTerraformer && TerraformBudget == 0)
+                // ⚠ A ZERO BUDGET THAT COMES FROM THE BLUEPRINT IS A WAIT, NOT A REFUSAL - see
+                // TerraformerWaitsForBlueprint. The plan completes, the budget comes back, and the
+                // governor queues the very same terraformer again: cancelling in between refunds
+                // only half of what was spent, so the round trip is pure loss (maintainer feedback,
+                // bench 596-599 - the terraformer that vanished for a Nano Storage, the last
+                // building of the plan, and returned the moment it was done).
+                if (Owner.AutoBuildTerraformers && qi.IsCivilianBuilding && qi.Building.IsTerraformer
+                    && TerraformBudget == 0 && !TerraformerWaitsForBlueprint)
                 {
                     Log.Info(ConsoleColor.Blue, $"{Owner.PortraitName} CANCELED Terrformer" +
                         $" on planet {Name} since Terraformer Budget was 0.");

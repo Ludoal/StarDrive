@@ -66,6 +66,16 @@ namespace Ship_Game
         }
 
         public bool HasBlueprints => Blueprints != null;
+
+        // Ludoal fork (maintainer bench 599): the terraformer budget is zeroed for TWO different
+        // reasons and only one of them is a refusal. UpdateTerraformBudget returns early - budget
+        // left at zero - while the blueprint is not far enough along, which is a WAIT: it clears
+        // itself the moment the plan completes. An empire that simply cannot afford the upkeep is
+        // the other zero, and that one is a real refusal. Told apart here so the queue sweep can
+        // let the first one stand instead of destroying and rebuilding the same terraformer every
+        // few turns, burning half its production on each round trip.
+        // Pure and public on purpose: the colony screen reads it from the UI thread to label the row.
+        public bool TerraformerWaitsForBlueprint => HasBlueprints && !Blueprints.OkToBuildTerraformers;
         public bool HasExclusiveBlueprints => Blueprints?.Exclusive == true;
         bool RequiredInBlueprints(Building b) => Blueprints?.IsRequired(b) == true;
 

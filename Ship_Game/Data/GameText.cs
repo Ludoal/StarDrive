@@ -6374,6 +6374,8 @@ namespace Ship_Game
         TzFreightersTip = 30161,
         /// <summary>(waiting for a tile)</summary>
         CqWaitingForTile = 30162,
+        /// <summary>(waiting for the blueprint)</summary>
+        CqWaitingForBlueprint = 30163,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>

@@ -103,6 +103,15 @@ namespace Ship_Game
                     batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.CqWaitingForTile),
                                      new Vector2(tCursor.X + nameW + 6, tCursor.Y), Color.Gray);
                 }
+                else if (IsTerraformer && Planet?.TerraformerWaitsForBlueprint == true)
+                {
+                    // Same shape as the tile wait above, and mutually exclusive with it: the entry
+                    // holds its square, it just cannot start until the plan is far enough along.
+                    // Without the words the player sees a queued building that never moves.
+                    float nameW = Fonts.Arial12Bold.TextWidth(Building.TranslatedName);
+                    batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.CqWaitingForBlueprint),
+                                     new Vector2(tCursor.X + nameW + 6, tCursor.Y), Color.Gray);
+                }
                 else
                 {
                     pb.Draw(batch);

@@ -29085,6 +29085,10 @@ CqWaitingForTile:
  Id: 30162
  ENG: "(waiting for a tile)"
  FRA: "(en attente d'une case)"
+CqWaitingForBlueprint:
+ Id: 30163
+ ENG: "(waiting for the blueprint)"
+ FRA: "(en attente du plan)"
 TzActiveTip:
  Id: 7217
  ENG: "Freighters currently flying to these colonies, whoever owns them. Yellow when only part of the need is on its way, red when none of it is. See Owned for the zone's own hulls."
