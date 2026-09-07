@@ -22,7 +22,19 @@ namespace Ship_Game
         // Terraforming tab migrated here from the facilities block, whose row was folding
         // to a second line. The host wires OnTabChange and hides the sliders itself.
         public Submenu TitleMenu => Title;
-        public bool SlidersVisible { get => Sliders.Visible; set => Sliders.Visible = value; }
+        // ⚠ the Auto toggle hides WITH the sliders it governs. Hiding only the sliders left it
+        // drawn over the Terraform tab, offering to automate controls that were not on screen
+        // (maintainer feedback).
+        public bool SlidersVisible
+        {
+            get => Sliders.Visible;
+            set
+            {
+                Sliders.Visible = value;
+                if (AutoToggle != null)
+                    AutoToggle.Visible = value;
+            }
+        }
 
         // Ludoal fork (maintainer bench 524): Labor's own lever, above the three padlocks.
         // ⚠ bench 526: it needs no reserve carved off the block. The first slider already sits a
