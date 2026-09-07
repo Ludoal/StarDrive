@@ -1180,6 +1180,12 @@ namespace Ship_Game
             Money.Update();
         }
 
+        // The screens ask for fresh incomes while the player drags a slider or picks an option.
+        // The recompute writes the planet's yields, which the simulation thread owns, so it is
+        // queued there (the queue drains even while paused); the screen reads the result a frame
+        // later, which the eye does not see.
+        public void UpdateIncomesOnSimThread() => Universe.Screen?.RunOnSimThread(UpdateIncomes);
+
         public void UpdateShipyards()
         {
             if (!Habitable)

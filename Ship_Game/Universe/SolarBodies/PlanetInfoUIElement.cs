@@ -369,7 +369,7 @@ namespace Ship_Game
 
             if (explored && P.Owner != null)
             {
-                P.UpdateIncomes();
+                P.UpdateIncomesOnSimThread();
 
                 DrawPlanetStats(DefenseRect, ((float)P.TotalDefensiveStrength).String(1), "UI/icon_shield", Color.White, Color.White);
 

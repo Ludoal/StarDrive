@@ -169,7 +169,7 @@ namespace Ship_Game
             // Ludoal fork: a stacked page owns its batch as the universe's mounted panel.
             batch.SafeBegin();
 
-            P.UpdateIncomes();
+            P.UpdateIncomesOnSimThread();
 
             // Ludoal fork: the group's own ground, filled FIRST by hand - the row's Submenu
             // chrome is a CHILD, drawn by base.Draw after everything this method paints, so

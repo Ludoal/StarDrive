@@ -83,7 +83,10 @@ namespace Ship_Game
                 {
                     if (p.IsExploredBy(Player))
                     {
-                        p.UpdateMaxPopulation();
+                        // an owned planet's figure is the simulation's, refreshed every turn;
+                        // only an unowned one has nobody else to compute it
+                        if (p.Owner == null)
+                            p.UpdateMaxPopulation();
                         ExploredPlanets.Add(p);
                     }
                 }

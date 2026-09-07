@@ -76,7 +76,7 @@ namespace Ship_Game
         {
             int y = (int)Y;
 
-            P.UpdateIncomes();
+            P.UpdateIncomesOnSimThread();
             // the shared table charte owns the columns - the row reads its bands off them
             // and only keeps its own vertical quirks (the labor slider block runs taller than the row)
             UITable.Column[] cols = Screen.Table.Columns;
@@ -243,7 +243,7 @@ namespace Ship_Game
 
         public override bool HandleInput(InputState input)
         {
-            P.UpdateIncomes();
+            P.UpdateIncomesOnSimThread();
 
             ApplyProdHover  = ApplyProductionRect.HitTest(input.CursorPosition);
             CancelProdHover = CancelProductionRect.HitTest(input.CursorPosition);

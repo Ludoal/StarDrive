@@ -18,7 +18,7 @@ namespace Ship_Game
                 return;
             }
 
-            P.UpdateIncomes();
+            P.UpdateIncomesOnSimThread();
             UpdateBuildAndConstructLists(elapsedTime);
 
             // wishlist 20 Aug: while the Automation global rushes everything, the local
