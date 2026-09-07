@@ -723,7 +723,7 @@ namespace Ship_Game.Universe
             RemnantPaceModifier = CalcRemnantPace();
         }
 
-        // Ludoal fork (maintainer, 31 Aug '26): the remnant design strength the game should USE.
+        // Ludoal fork (maintainer feedback): the remnant design strength the game should USE.
         // A mod may raise it - CombinedArms doubles it, 2 to 4 - and a player who asked for the
         // base game's remnants gets the base game's number here, wherever it is read.
         //
@@ -763,7 +763,7 @@ namespace Ship_Game.Universe
                 RemnantPaceSetting.Slow     => 1.5f,
                 _                           => 1f,
             };
-            // Ludoal fork (maintainer, 5 Sep '26): the floor goes on the BASE, before the
+            // Ludoal fork (maintainer feedback): the floor goes on the BASE, before the
             // multiplication. Applied to the product, it swallows the player's choice exactly
             // where the base is smallest - a large, dense galaxy, where every term above bites -
             // so the setting reads as dead in the games that need it most.

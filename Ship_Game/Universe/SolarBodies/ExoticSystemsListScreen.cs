@@ -177,7 +177,7 @@ namespace Ship_Game
         {
             ExoticSL.Reset();
             ExoticSL.OnDoubleClick = OnExoticSystemsListItemClicked;
-            ExoticSL.OnClick = OnExoticRowSingleClicked; // bench 388 (maintainer): single-click = select on the map and pan at current zoom
+            ExoticSL.OnClick = OnExoticRowSingleClicked; // single-click = select on the map and pan at current zoom (bench 388)
             ExplorableGameObject[] bodies;
             switch (col)
             {
@@ -256,7 +256,7 @@ namespace Ship_Game
             {
                 ExoticSL.Reset();
                 ExoticSL.OnDoubleClick = OnExoticSystemsListItemClicked; // Ludoal fork: double-click everywhere
-                ExoticSL.OnClick = OnExoticRowSingleClicked; // bench 388 (maintainer): single-click = select on the map and pan at current zoom
+                ExoticSL.OnClick = OnExoticRowSingleClicked; // single-click = select on the map and pan at current zoom (bench 388)
                 foreach (ExplorableGameObject solarBody in ExploredSolarBodies)
                     ExoticSL.AddItem(new ExoticSystemsListScreenItem(this, solarBody, GetShortestDistance(solarBody)));
             }

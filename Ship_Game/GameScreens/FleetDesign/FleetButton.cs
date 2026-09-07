@@ -80,8 +80,8 @@ public class FleetButton : UIPanel
 
     void DrawRequisitionIcon(SpriteBatch batch, Fleet f, in RectF r)
     {
-        // Ludoal fork: an EMPTY slot draws too now (that is how a fleet is created), so the
-        // badges must survive the absence the icon and the ship row already guarded against.
+        // Ludoal fork: an EMPTY slot draws too (that is how a fleet is created), so the badges
+        // must tolerate a null fleet, like the icon and the ship row.
         if (f?.AutoRequisition == true)
         {
             RectF autoReq = new(r.X - 18, r.Y + 5, 15, 20);

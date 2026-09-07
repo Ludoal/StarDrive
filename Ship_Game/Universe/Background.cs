@@ -37,7 +37,7 @@ public sealed class Background : IDisposable
 
         var nebulas = Dir.GetFiles("Content/Textures/BackgroundNebulas");
         // Ludoal fork: mods can ADD background nebulae from <mod>/Textures/BackgroundNebulas
-        // (the path above is literal Content — mod art was unreachable; additive, no override)
+        // (the path above is literal Content; additive, no override)
         if (GlobalStats.HasMod)
         {
             var modNebulas = Dir.GetFiles(GlobalStats.ModPath + "Textures/BackgroundNebulas");

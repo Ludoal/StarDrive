@@ -101,7 +101,7 @@ namespace Ship_Game
         }
 
         // Ludoal fork: returns the flipped state instead of taking a ref - the overlay flags
-        // are UState-backed properties now, and a property cannot be passed by ref.
+        // are UState-backed properties, and a property cannot be passed by ref.
         bool ToggleUIComponent(string audioCue, bool current)
         {
             GameAudio.PlaySfxAsync(audioCue);

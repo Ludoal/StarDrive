@@ -97,11 +97,10 @@ namespace Ship_Game
 
     }
 
-    /// Ludoal fork: the TOGGLE socle, kept on purpose (maintainer decision) - the upstream
-    /// "replace with UIButton" TODO died on contact. A toggle here is a three-layer
-    /// composition UIButton does not carry: per-state chrome, an icon overlaid on it (with
-    /// its _active variant), and an optional opaque ground wearing the theme's active tint.
-    /// The navigation arrows were the only fakes in the family; they are plain UIButtons now.
+    /// Ludoal fork (maintainer feedback): the TOGGLE socle, kept rather than replaced by
+    /// UIButton. A toggle here is a three-layer composition UIButton does not carry: per-state
+    /// chrome, an icon overlaid on it (with its _active variant), and an optional opaque ground
+    /// wearing the theme's active tint. The navigation arrows are plain UIButtons.
     public class ToggleButton : UIElementV2
     {
         // If TRUE, this ToggleButton is Toggled Active [x], if false, it is inactive [ ]
@@ -158,8 +157,8 @@ namespace Ship_Game
             }
             else
             {
-                // Ludoal fork: an icon bigger than the button frame overflowed it
-                // (32px FollowIcon in a 24px frame) — clamp to the frame with a margin
+                // Ludoal fork: an icon bigger than the button frame (32px FollowIcon in a
+                // 24px frame) is clamped to the frame with a margin
                 int iconW = IconTexture.Width, iconH = IconTexture.Height;
                 if (iconW > Rect.Width - 4 || iconH > Rect.Height - 4)
                 {
@@ -198,11 +197,11 @@ namespace Ship_Game
                 WasClicked = false;
                 batch.Draw(Style.Press, Rect, Color.White);
             }
-            // Ludoal fork: a solid ground UNDER the texture (maintainer: "les boutons sont trop
-            // transparents"). The Minimap art averages alpha 182, so over a starfield the button
-            // reads as a ghost - and the alpha lives in the PNGs, where raising it would mean
-            // redrawing shared assets. An opaque plate behind them costs nothing and lifts every
-            // state at once; the toggled one wears the theme's active tint so ON still reads ON.
+            // Ludoal fork (maintainer feedback): a solid ground UNDER the texture. The Minimap art
+            // averages alpha 182, so over a starfield the button reads as a ghost - and the alpha
+            // lives in the PNGs, where raising it would mean redrawing shared assets. An opaque
+            // plate behind them costs nothing and lifts every state at once; the toggled one wears
+            // the theme's active tint so ON still reads ON.
             // ⚠ only the Minimap family: those are plates, and a solid ground behind them is what
             // makes them read. The arrow styles are bare glyphs from SelectionBox/ - a dark
             // square behind an arrow would be worse than the transparency it fixes.

@@ -62,8 +62,8 @@ namespace Ship_Game
         public bool LeftMouseReleased  => MouseButtonReleased(MouseCurr.LeftButton, MousePrev.LeftButton);
         public bool RightMouseReleased => MouseButtonReleased(MouseCurr.RightButton, MousePrev.RightButton);
         // Ludoal fork (bench 358): the pan latch must clear on RELEASE, not on !MiddleMouseHeld() -
-        // Held carries a 0.15s threshold, so testing !Held right after the click killed the latch
-        // before it could ever arm (the dead Fleets pan).
+        // Held carries a 0.15s threshold, so !Held is still true right after the click and would
+        // clear the latch before it can arm.
         public bool MiddleMouseReleased => MouseButtonReleased(MouseCurr.MiddleButton, MousePrev.MiddleButton);
         public bool LeftMouseDown      => MouseCurr.LeftButton  == XnaInput.ButtonState.Pressed;
         public bool RightMouseDown     => MouseCurr.RightButton == XnaInput.ButtonState.Pressed;
@@ -96,7 +96,7 @@ namespace Ship_Game
         // instead of hard Keys - the table loads player overrides from Hotkeys.yaml
         public bool QuickSave            => KeyPressed(KeyBindings.QuickSave);
         public bool UseRealLights        => KeyPressed(KeyBindings.RealisticLights); // bench 434: single key, rebindable
-        public bool ShowExceptionTracker => KeyPressed(Keys.F12); // Ludoal fork: F6 went to Weapons Range; debug lives at the far end
+        public bool ShowExceptionTracker => KeyPressed(Keys.F12); // Ludoal fork: debug lives at the far end, F6 being Weapons Range
         public bool SpeedReset           => KeyPressed(Keys.Space) && IsShiftKeyDown;
         public bool SpeedUp              => KeyPressed(Keys.OemPlus) || KeyPressed(Keys.Add);
         public bool SpeedDown            => KeyPressed(Keys.OemMinus) || KeyPressed(Keys.Subtract);
@@ -116,12 +116,12 @@ namespace Ship_Game
         public bool NextColony  => KeyPressed(KeyBindings.NextColony);
         public bool GoToCapital => KeyPressed(KeyBindings.GoToCapital);
         public bool InfluenceOverlay     => KeyPressed(KeyBindings.InfluenceOverlay); // Ludoal fork: colored influence zones
-        public bool RangeOverlay         => KeyPressed(KeyBindings.RangeOverlay); // Ludoal fork: F3 went to the Vision overlay
-        public bool FTLOverlay           => KeyPressed(KeyBindings.FTLOverlay); // Ludoal fork: subspace projection (coverage + projectors), ex-F2
-        public bool GravityWellOverlay   => KeyPressed(KeyBindings.GravityWellOverlay); // bench 434: real lights left Shift+F5, guard retired
+        public bool RangeOverlay         => KeyPressed(KeyBindings.RangeOverlay); // Ludoal fork: weapons range (F3 is the Vision overlay)
+        public bool FTLOverlay           => KeyPressed(KeyBindings.FTLOverlay); // Ludoal fork: subspace projection (coverage + projectors)
+        public bool GravityWellOverlay   => KeyPressed(KeyBindings.GravityWellOverlay); // real lights carry their own key, so no shift guard here (bench 434)
         public bool VisionOverlay        => KeyPressed(KeyBindings.VisionOverlay); // Ludoal fork: sensor/vision coverage, spies included
         public bool ShipListScreen       => KeyPressed(KeyBindings.ShipListScreen);
-        public bool TroopListScreen      => KeyPressed(KeyBindings.TroopListScreen); // Ludoal fork: Troops Array (C was debug-spawn only)
+        public bool TroopListScreen      => KeyPressed(KeyBindings.TroopListScreen); // Ludoal fork: Troops Array
         public bool ColonyOverviewScreen => KeyPressed(KeyBindings.ColonyOverviewScreen); // Ludoal fork: the Empire group's permanent Colony tab (O is the game menu, hardwired in the top bar)
         public bool FleetDesignScreen    => KeyPressed(KeyBindings.FleetDesignScreen);
         public bool AutomationWindow     => KeyPressed(KeyBindings.AutomationWindow);

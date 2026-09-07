@@ -161,10 +161,10 @@ public static class GlobalStats
     // Ludoal fork (wishlist): only the OLDEST ages out, after the delay below, so the pile
     // empties in the order it filled. Independent of the text above; either stands alone.
     public static bool AutoClearOldest;
-    // Ludoal fork (wishlist): which notification categories the player has HIDDEN (won't be shown),
-    // as a bitmask keyed by (int)NotificationCategory. 0 = nothing hidden (default) = every category
-    // shows, exactly as before. This unifies the old scattered Disable*/Suppress* toggles into the
-    // one per-category axis. AddNotification drops a hidden category before it is ever queued.
+    // Ludoal fork (wishlist): which notification categories the player has HIDDEN, as a bitmask
+    // keyed by (int)NotificationCategory. 0 = nothing hidden (default) = every category shows.
+    // This is the one per-category suppression axis; AddNotification drops a hidden category
+    // before it is ever queued.
     public static int NotificationHiddenCategories;
     public static bool IsHiddenCategory(NotificationCategory c) => (NotificationHiddenCategories & (1 << (int)c)) != 0;
     public static void SetHiddenCategory(NotificationCategory c, bool hidden)
@@ -182,7 +182,7 @@ public static class GlobalStats
     public static bool PauseOnPageOpen = true;
 
     // Ludoal fork (bench 392): the Colony panel is exempt from auto-pause unless this is set -
-    // default OFF restores the original behaviour (the colony runs live while you read it).
+    // default OFF - the colony runs live while you read it.
     // Subordinate to PauseOnPageOpen: meaningless, and greyed in Options, when that is off.
     public static bool AutoPauseColonyPanel;
 
@@ -193,7 +193,7 @@ public static class GlobalStats
     // USER_EXPERIENCE
     // global option for Icon size (ships). Stations/platforms have their own knob below.
     public static int IconSize = 1;
-    // Ludoal fork (maintainer spec): stations and platforms scale separately from ships
+    // Ludoal fork (maintainer feedback): stations and platforms scale separately from ships
     public static int StationIconSize = 1;
     // Ludoal fork: visual multiplier on asteroid scale, applied in the per-frame transform
     public static float AsteroidSizeMult = 1f;
@@ -489,7 +489,7 @@ public static class GlobalStats
         GetSetting(config, "AutoPauseColonyPanel", ref AutoPauseColonyPanel);
         GetSetting(config, "IconSize", ref IconSize);
         IconSize = Math.Max(1, IconSize); // BUGFIX: must be at least 1
-        StationIconSize = IconSize; // pre-split configs: both icon knobs start from the old shared value
+        StationIconSize = IconSize; // a config without StationIconSize inherits IconSize
         GetSetting(config, "StationIconSize", ref StationIconSize);
         StationIconSize = Math.Max(1, StationIconSize);
         GetSetting(config, "AsteroidSizeMult", ref AsteroidSizeMult);

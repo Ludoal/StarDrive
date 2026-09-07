@@ -67,7 +67,7 @@ namespace Ship_Game
 
         public bool HasBlueprints => Blueprints != null;
 
-        // Ludoal fork (maintainer bench 599): the terraformer budget is zeroed for TWO different
+        // Ludoal fork (bench 599): the terraformer budget is zeroed for TWO different
         // reasons and only one of them is a refusal. UpdateTerraformBudget returns early - budget
         // left at zero - while the blueprint is not far enough along, which is a WAIT: it clears
         // itself the moment the plan completes. An empire that simply cannot afford the upkeep is
@@ -237,9 +237,9 @@ namespace Ship_Game
 
         void BuildAndScrapBuildings(PlanetBudget colonyBudget)
         {
-            // Ludoal fork (maintainer feedback): Specialized Trade Hub used to silently stop
-            // all construction here. What the governor may build is its own command now, so
-            // the hub carries the trade regime alone.
+            // Ludoal fork (maintainer feedback): what the governor may build is its own
+            // command, so a Specialized Trade Hub carries the trade regime alone and still
+            // builds here.
             BuildAndScrapCivilianBuildings(colonyBudget.RemainingCivilian, colonyBudget.CivilianTolerance);
             BuildAndScrapMilitaryBuildings(colonyBudget.RemainingGroundDef, colonyBudget.GroundDefTolerance);
         }

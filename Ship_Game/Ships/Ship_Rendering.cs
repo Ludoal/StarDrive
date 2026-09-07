@@ -269,7 +269,7 @@ namespace Ship_Game.Ships
             }
         }
 
-        // Ludoal fork (maintainer spec): ships and stations carry separate icon-size knobs;
+        // Ludoal fork (maintainer feedback): ships and stations carry separate icon-size knobs;
         // this instance method routes on what the ship is
         public float ScaleIconSize(float screenRadius, float minSize, float maxSize)
         {

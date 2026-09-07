@@ -54,7 +54,7 @@ namespace Ship_Game
                 new Hotkey(null, Localizer.Token(GameText.HkSubspaceProjection), nameof(KeyBindings.FTLOverlay)),
                 new Hotkey(null, Localizer.Token(GameText.HkGravityWells), nameof(KeyBindings.GravityWellOverlay)),
                 new Hotkey(null, Localizer.Token(GameText.HkWeaponsRange), nameof(KeyBindings.RangeOverlay)),
-                // bench 434 (maintainer decision): Cinematic changes what you SEE, not
+                // (bench 434) Cinematic changes what you SEE, not
                 // where the camera is - its family is the overlays
                 new Hotkey(null, Localizer.Token(GameText.HkCinematicMode), nameof(KeyBindings.CinematicMode)),
                 new Hotkey(null, Localizer.Token(GameText.HkRealisticLights), nameof(KeyBindings.RealisticLights)),
@@ -104,7 +104,7 @@ namespace Ship_Game
             {
                 new Hotkey(Localizer.Token(GameText.HkKeyArrows), Localizer.Token(GameText.HkRotateModuleInHand)),
                 new Hotkey("Tab", Localizer.Token(GameText.HkShowAllFiringArcs)),
-                new Hotkey(null, Localizer.Token(GameText.HkDesignIssues), nameof(KeyBindings.DesignIssues)), // bench 435: the OLD fixed row shadowed the live one
+                new Hotkey(null, Localizer.Token(GameText.HkDesignIssues), nameof(KeyBindings.DesignIssues)), // bindable: reads the live binding, not a literal (bench 435)
                 new Hotkey("Ctrl+Z / Ctrl+Y", Localizer.Token(GameText.HkUndoRedo)),
                 new Hotkey(Localizer.Token(GameText.HkKeyHoldLeft), Localizer.Token(GameText.HkSetFiringArc)),
                 new Hotkey(Localizer.Token(GameText.HkKeyRightClick), Localizer.Token(GameText.HkCancelRemoveModuleOutsideClose)),

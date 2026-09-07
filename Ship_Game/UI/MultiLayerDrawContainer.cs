@@ -65,10 +65,9 @@ namespace Ship_Game.UI
             if (draw3D) manager.BeginFrameRendering(elapsed, ref view, ref projection);
 
             // Ludoal fork (bench 358): the 3D frame preparation (SunBurn shadow-map passes set their
-            // own device viewports) can leave a SHRUNK viewport behind on non-16:9 backbuffers - the
-            // 2D layers drawn after it were clipped (main-menu background cut off on the right at
-            // 2560x1372). Force the full backbuffer viewport before every 2D pass; the 3D pass sets
-            // its own viewports anyway.
+            // own device viewports) can leave a SHRUNK viewport behind on non-16:9 backbuffers, which
+            // clips the 2D layers drawn after it. ⚠ force the full backbuffer viewport before every
+            // 2D pass; the 3D pass sets its own viewports anyway.
             GraphicsDevice device = batch.GraphicsDevice;
             Viewport fullViewport = new(0, 0, device.PresentationParameters.BackBufferWidth,
                                               device.PresentationParameters.BackBufferHeight);

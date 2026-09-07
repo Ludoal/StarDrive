@@ -23,7 +23,7 @@ namespace Ship_Game.Ships
         [StarData] public int TradeZoneId { get; set; }
         public bool InTradeZone => TradeZoneId != 0;
 
-        // Ludoal fork (maintainer bench 558): what a hull answers to, for a list that has room for
+        // Ludoal fork (bench 558): what a hull answers to, for a list that has room for
         // one column and two facts that are never both true - a freighter carries no patrol plan,
         // a warship belongs to no trade zone. The patrol comes first because it is a FLEET's, and
         // a ship in a fleet is spoken for by it.

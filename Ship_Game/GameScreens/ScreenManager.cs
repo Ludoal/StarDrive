@@ -224,7 +224,7 @@ namespace Ship_Game
                 if (gs is DiplomacyScreen)
                     return;
 
-            // maintainer (bench 454): ONE group open at a time - adding a group screen
+            // (bench 454) ONE group open at a time - adding a group screen
             // (a table page, Research, Diplomacy, a hosted colony...) exits any other
             // still up. Openers that already ExitScreen their predecessor no-op here.
             if (Ship_Game.GameScreens.ScreenGroups.GroupOf(screen) != Ship_Game.GameScreens.ScreenGroups.Group.None)

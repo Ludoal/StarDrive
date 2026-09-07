@@ -109,7 +109,7 @@ namespace Ship_Game
             }
 
             ResearchQueueList.Visible = visible;
-            // bench 451 (maintainer rature): empty FRAMES beat a black hole and beat a
+            // (bench 451) empty FRAMES beat a black hole and beat a
             // vanished column both - the current and queue frames always stand, only
             // their content hides, and Draw stamps a red NO RESEARCH! alert in the
             // empty current frame (the STARVATION grammar).
@@ -144,7 +144,7 @@ namespace Ship_Game
         {
             base.Draw(batch, elapsed);
 
-            // bench 451 (maintainer): no active topic - say it in the alert grammar,
+            // (bench 451) no active topic - say it in the alert grammar,
             // centred in the empty Current Research frame
             if (!Screen.Player.Research.HasTopic)
             {

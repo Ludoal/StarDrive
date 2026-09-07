@@ -78,7 +78,7 @@ namespace Ship_Game
             float colInc   = P.PopulationBillion * P.Money.IncomePerColonist;
             float bldgInc  = P.Money.IncomeFromBuildings;
             float sources  = colInc + bldgInc;
-            // Ludoal fork (maintainer): each source is shown ALREADY TAXED rather than gross with
+            // Ludoal fork (maintainer feedback): each source is shown ALREADY TAXED rather than gross with
             // the multiplier on a line of its own - a player budgets with what actually arrives.
             // ⚠ The factor is the whole mill, tax AND the exotic credits bonus, so splitting it
             // between the two sources is a share, not a provenance. The block still sums to Net.
@@ -155,7 +155,7 @@ namespace Ship_Game
         }
 
         // Colony's yield row pulls the three numbers off the live ColonyResource, then hands them to
-        // the shared layout (which no longer knows about ColonyResource - Blueprints has no such thing)
+        // the shared layout, which does not know ColonyResource (Blueprints has no such thing)
         void SPDrawYield(ref Vector2 c, SpriteBatch batch, Font font, in SPCols cols, float blockW,
                          string label, ColonyResource res, float eaten, GameText tip)
         {

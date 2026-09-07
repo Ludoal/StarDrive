@@ -63,7 +63,7 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
 
     // A rename must not offer to overwrite: the plan under that name would go, and every colony
     // carrying it would land on this one without being asked. A taken name is a refusal - and a
-    // name another plan used to carry is taken too, or the reattachment would aim at the wrong plan.
+    // name that any other plan has carried is taken too, or the reattachment would aim at the wrong plan.
     void TryRename()
     {
         string oldName = BlueprintsToSave.Name;

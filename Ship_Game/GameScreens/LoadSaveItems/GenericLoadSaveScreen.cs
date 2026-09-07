@@ -96,8 +96,8 @@ namespace Ship_Game
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
-            // ⚠ base.Draw goes FIRST now: it paints the window frame, which used to be SaveMenu's
-            // job here. Leaving it last would lay the frame's body over the two lists.
+            // ⚠ base.Draw goes FIRST: it paints the window frame. Leaving it last would lay the
+            // frame's body over the two lists.
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
             base.Draw(batch, elapsed);
 
@@ -116,7 +116,7 @@ namespace Ship_Game
         public override void LoadContent()
         {
             // ⚠ base.LoadContent() lays the frame out and calls RemoveAll(): it goes FIRST, and
-            // it supplies the frame and the close cross this method used to build itself.
+            // it supplies the frame and the close cross.
             // the window names itself in its own title bar
             TitleText = Title;
             base.LoadContent();

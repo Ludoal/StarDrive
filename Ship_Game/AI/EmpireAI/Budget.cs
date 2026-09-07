@@ -31,9 +31,9 @@ namespace Ship_Game.AI.Budget
         public float TargetAlloc { get; private set; }
         bool SnapNextUpdate;
 
-        // Ludoal fork (maintainer bench 405): leaving a manual budget seeds the EMA with the
-        // last manual value, and the smoothing takes ages to walk back to the auto target -
-        // the sliders looked stuck. Re-ticking Auto snaps the allocations to the raw target.
+        // Ludoal fork (bench 405): leaving a manual budget seeds the EMA with the last manual
+        // value, so re-ticking Auto snaps the allocations to the raw target instead of letting
+        // the smoothing crawl back to it.
         public void SnapToTarget() => SnapNextUpdate = true;
 
         float EmpireRatio;
@@ -73,7 +73,7 @@ namespace Ship_Game.AI.Budget
             float orbitalRatio  = 1 - groundRatio;
             float civBudget     = EmpireColonizationBudget * EmpireRatio + P.GetColonyInitialBudgetTolerance() + P.TerraformBudget;
             float grdBudget     = defenseBudget * groundRatio;
-            // Ludoal fork (maintainer spec): the Governor Spending tap - the player throttles
+            // Ludoal fork (maintainer feedback): the Governor Spending tap - the player throttles
             // what governors may spend of their AUTO allocations; treasury keeps the rest.
             // Manual overrides below bypass it: an explicit order is not throttled.
             if (Owner.isPlayer)

@@ -18,10 +18,9 @@ namespace Ship_Game
     public class QueueItem
     {
         // Ludoal fork (bench 526): the queue type a PLAYER-CHOSEN ship is filed under.
-        // ConstructionPriorityRank sorts by it, so the ship must carry its real role - the old
-        // freighter/combat binary filed scouts and colony ships as military and the priority list
-        // then sorted auto-built ships above them. Written once: the colony screen and the
-        // empire-wide picker have to file the same ship identically or the two disagree.
+        // ConstructionPriorityRank sorts by it, so the ship must carry its real role: scouts and
+        // colony ships file as themselves, never as military. ⚠ the colony screen and the
+        // empire-wide picker both call this - they must file the same ship identically.
         public static QueueItemType PlayerQueueTypeFor(IShipDesign ship)
             => ship.IsColonyShip           ? QueueItemType.ColonyShip
              : ship.Role == RoleName.scout ? QueueItemType.Scout
@@ -40,9 +39,8 @@ namespace Ship_Game
         [StarData] public string TroopType;
         [StarData] public Array<int> TradeRoutes = new();
         [StarData] public Array<Rectangle> AreaOfOperation = new();
-        // Ludoal fork (maintainer bench 583): a refit keeps the hull inside the trade zone that
-        // paid for it. Without this the yard handed back an unmarked freighter and the zone
-        // quietly lost a hull every time one of its own was upgraded.
+        // Ludoal fork (bench 583): a refit keeps the hull inside the trade zone that paid for it -
+        // the yard stamps the zone back onto the rebuilt freighter.
         [StarData] public int TradeZoneId;
         [StarData] public PlanetGridSquare pgs;
         [StarData] public string DisplayName;
@@ -96,7 +94,7 @@ namespace Ship_Game
                 batch.DrawString(Fonts.Arial12Bold, Building.TranslatedName, tCursor, Color.White);
                 // ★ an entry with no tile SAYS SO, and shows no progress bar: it is not stalled,
                 // it has yielded its turn and takes a square the moment one frees up. A bar at
-                // nought would read as a fault (maintainer feedback, bench 597).
+                // nought would read as a fault (bench 597).
                 if (pgs == null)
                 {
                     float nameW = Fonts.Arial12Bold.TextWidth(Building.TranslatedName);
