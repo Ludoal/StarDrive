@@ -101,7 +101,18 @@ namespace Ship_Game
                 if (!p.ImportFood)
                     return 0;
 
-                return (-p.Food.NetIncome * p.AverageFoodImportTurns).LowerBound(0) / cargo;
+                // ⚠ MIRRORS GetFoodImportSlots, and must keep mirroring it. The dispatch stops
+                // ordering above nine tenths of a full store, so the book stops counting there
+                // too - otherwise the two disagree again, the other way round.
+                if (p.Storage.FoodRatio > 0.9f)
+                    return 0;
+
+                // what it EATS over a delivery, plus the room its STORE still has. Filling the
+                // granary is a real service - a buffer against bad turns - so a book counting
+                // only the flow read "0" beside three cargo in the air (maintainer, bench 593).
+                float hunger = (-p.Food.NetIncome * p.AverageFoodImportTurns).LowerBound(0);
+                float room   = (p.Storage.Max - p.FoodHere - p.IncomingFood).LowerBound(0);
+                return (hunger + room) / cargo;
             }
 
             if (goods == Goods.Production)
