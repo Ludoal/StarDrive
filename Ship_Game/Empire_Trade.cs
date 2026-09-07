@@ -318,6 +318,11 @@ namespace Ship_Game
                     }
 
                     DispatchExclusiveZone(zone);
+                    // what the enclave did not spend this turn is what its STATIONS may draw on:
+                    // the soft branch hands over its leftovers below, this one handed over nothing,
+                    // so a station on a body an enclave names was budgeted for and never served
+                    // (audit, bench 603)
+                    zone.LentThisTurn = zone.MemberFreighters(this).Filter(s => s.IsIdleFreighter);
                     continue;
                 }
 
