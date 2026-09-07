@@ -67,10 +67,10 @@ namespace Ship_Game
             TransitionOffTime = 0.25f;
             BoxWidth = width;
 
-            // bench 363 (maintainer): the confirm is a neutral Wide, the cancel a red WideHostile -
-            // the same meaning-coloured pair the Shipyard's own rows use. bench 364: at the SMALL
-            // button's size - every style is nine-sliced, so the meaning colour and the compact
-            // format compose freely.
+            // bench 364: the confirm is a neutral Wide, the cancel a red WideHostile - the same
+            // meaning-coloured pair the Shipyard's own rows use, at the SMALL button's size.
+            // Every style is nine-sliced, so the meaning colour and the compact format compose
+            // freely.
             Ok = Button(ButtonStyle.Wide, 0f, 0f, okText, click: OnOkClicked);
             Ok.SetAbsSize(96, 26);
             if (buttons == MessageBoxButtons.Default)
@@ -93,8 +93,8 @@ namespace Ship_Game
 
             var textPosition = new Vector2(r.X + r.Width / 2 - Fonts.Arial12Bold.MeasureString(Message).X / 2f, r.Y + 10);
 
-            // the pair straddles the centre; ALONE, Ok takes the centre itself - it was sitting
-            // where its half of a couple would be, beside a Cancel that is not there (bench 528)
+            // the pair straddles the centre; ALONE, Ok takes the centre itself rather than the
+            // seat its half of a couple would use, beside a Cancel that is not there (bench 528)
             Ok.SetAbsPos(Cancel != null ? r.X + r.Width / 2 + 6
                                         : r.X + r.Width / 2 - 48, r.Y + r.Height - 38);
             Cancel?.SetAbsPos(r.X + r.Width / 2 - 102, r.Y + r.Height - 38);

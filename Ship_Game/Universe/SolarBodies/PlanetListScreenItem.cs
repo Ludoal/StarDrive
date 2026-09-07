@@ -98,8 +98,8 @@ namespace Ship_Game
             // the counter - the sim moves troops and colonisation goals while the list is open.
             // (icon_troop_shipUI: the plain icon_troop washes out at this size)
             ColonizePanel = Panel(ColonizeIconRect, Color.White, ResourceManager.Texture("UI/ColonizeIcon"));
-            // the _bright variant (bench 410): the stock art peaks at ~35 of luminance, so a
-            // Red tint - the hostile-owner state - was near-black. Normalized to 230.
+            // the _bright variant (bench 410): the stock art peaks at ~35 of luminance, so a Red
+            // tint - the hostile-owner state - renders near-black. This one is normalized to 230.
             TroopPanel    = Panel(TroopIconRect, Color.White, ResourceManager.Texture("UI/icon_troop_shipUI_bright"));
             TroopsLabel   = Label(UITable.CellPos(SmallFont, cols[10].Rect, Y, Height, "", TableAlign.Left),
                                   "", SmallFont, Cream);
@@ -264,7 +264,7 @@ namespace Ship_Game
             AddFeatures(cols[2].Rect);
             // Distance is measured from the nearest player colony, so a colony of your own is
             // its own reference point: the scale has nothing to say about it. A dash reads as
-            // "not applicable", where a blank cell read as a bug (maintainer feedback).
+            // "not applicable", where a blank cell reads as a bug (maintainer feedback).
             if (Planet.Owner == Player)
             {
                 Cell(3, "---", Color.Gray);
@@ -470,7 +470,7 @@ namespace Ship_Game
         public void SetCanSendTroops(bool value)
         {
             CanSendTroops = value;
-            // bench 393: the troop icon's visibility is decided in PerformLayout now - re-lay the
+            // bench 393: the troop icon's visibility is decided in PerformLayout - re-lay the
             // row so it follows the new free-troop count at once (every row shares the count).
             PerformLayout();
         }

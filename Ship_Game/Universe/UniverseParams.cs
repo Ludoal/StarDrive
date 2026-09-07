@@ -24,16 +24,16 @@ public class UniverseParams
     [StarData(DefaultValue=ExtraRemnantPresence.Normal)]
     public ExtraRemnantPresence ExtraRemnant = ExtraRemnantPresence.Normal;
 
-    // Ludoal fork (maintainer, 31 Aug '26): how fast the Remnants gain power. The setup screen
-    // offered their NUMBER and nothing else, and the complaint from new players was never about
-    // how many there are - it is that they grow dangerous too quickly.
+    // Ludoal fork (maintainer feedback): how fast the Remnants gain power, beside the setting for
+    // their NUMBER - the complaint from new players is not how many there are, it is that they
+    // grow dangerous too quickly.
     [StarData(DefaultValue=RemnantPaceSetting.Normal)]
     public RemnantPaceSetting RemnantPace = RemnantPaceSetting.Normal;
 
     // ...and a way back to the base game's remnant strength when a mod has raised it. Shown only
     // when the loaded mod actually changed the value, so it never appears in vanilla.
-    // ⚠ OBSOLETE, kept READABLE for saves written before 5 Sep '26 - the setting became the three
-    // positions below. Never written any more; OnDeserialized translates a true into Vanilla.
+    // ⚠ OBSOLETE, kept READABLE for older saves - the setting is now the three positions below.
+    // Never written; OnDeserialized translates a true into the matching notch.
     [StarData] public bool VanillaRemnantStrength;
 
     [StarData(DefaultValue=RemnantStrengthSetting.Default)]
@@ -83,7 +83,7 @@ public class UniverseParams
     [StarData(DefaultValue=true)] public bool PlanetsScreenHideInhospitable = true;
     [StarData(DefaultValue=true)] public bool DisableInhibitionWarning = true;
     [StarData(DefaultValue=false)] public bool EnableStarvationWarning = false;
-    // Ludoal fork: the Automation tab lists DISABLES (reviewer doctrine, maintainer call) -
+    // Ludoal fork (maintainer feedback): the Automation tab lists DISABLES -
     // same [StarData] flag read in the negative, not serialized itself. Default: disabled.
     public bool DisableStarvationWarning { get => !EnableStarvationWarning; set => EnableStarvationWarning = !value; }
     [StarData(DefaultValue=true)] public bool AllowPlayerInterTrade  = true;
@@ -97,11 +97,11 @@ public class UniverseParams
     [StarData] public bool DisableCrashSiteWarning;
     [StarData] public bool PrioitizeProjectors;  // superseded by ConstructionPriorities - kept so old saves load, nothing reads it
     [StarData] public bool PrioritizeFreighters; // superseded by ConstructionPriorities - kept so old saves load, nothing reads it
-    // Ludoal fork (maintainer spec): the ORDERED construction priority list. Categories in
+    // Ludoal fork (maintainer feedback): the ORDERED construction priority list. Categories in
     // it jump the colony build queues at insertion, best rank first, FIFO within a category.
     [StarData] public Array<string> ConstructionPriorities = new();
 
-    // Ludoal fork (maintainer spec, the budget pass): the player's taps on the economy.
+    // Ludoal fork (maintainer feedback): the player's taps on the economy.
     // GovernorSpendingRatio throttles what the governors may spend of their AUTO allocations
     // (manual overrides bypass it - an explicit order is not throttled). The three SHARES
     // are a linked split summing to 1: how the pooled governor budget divides between the
@@ -117,28 +117,28 @@ public class UniverseParams
     // (Rework screen toggles live in GlobalStats, not here: which interface a player prefers
     // is a player preference, not a property of one game.)
 
-    // ⚠ OBSOLETE, kept READABLE for saves written before 5 Sep '26 - the checkbox became the Off
-    // notch of RemnantPace. Never written any more; OnDeserialized translates a true into Off.
+    // ⚠ OBSOLETE, kept READABLE for older saves - the checkbox is now the Off notch of
+    // RemnantPace. Never written; OnDeserialized translates a true into Off.
     [StarData] public bool DisableRemnantStory;
 
     // the one place that knows Off means "no story", so the three readers do not each carry it
     public bool NoRemnantStory => RemnantPace == RemnantPaceSetting.Off;
     [StarData] public bool EnableRandomizedAIFleetSizes;
     [StarData] public bool DisableAlternateAITraits;
-    // ⚠ OBSOLETE, kept READABLE for saves written before 5 Sep '26 - the checkbox became the
-    // notches below. Never written any more; OnDeserialized translates a true into None.
+    // ⚠ OBSOLETE, kept READABLE for older saves - the checkbox is now the notches below.
+    // Never written; OnDeserialized translates a true into None.
     [StarData] public bool DisablePirates;
 
-    // ⚠ OBSOLETE, kept READABLE for saves written before 6 Sep '26 - the rank became a NAME
-    // below. Never written any more; OnDeserialized folds it into the new choice.
+    // ⚠ OBSOLETE, kept READABLE for older saves - the rank is now a NAME below.
+    // Never written; OnDeserialized folds it into the new choice.
     [StarData(DefaultValue=PirateFactionsSetting.All)]
     public PirateFactionsSetting PirateFactions = PirateFactionsSetting.All;
 
-    // Ludoal fork (maintainer, 6 Sep '26): WHICH pirate factions start alive, by name. The three
+    // Ludoal fork (maintainer feedback): WHICH pirate factions start alive, by name. The three
     // reserved words are the only values that are not a faction name; anything else is one,
-    // matched against EmpireData.Name. A name that no longer exists - a mod removed, a save
+    // matched against EmpireData.Name. A name that does not resolve - a mod removed, a save
     // carried to another install - falls back to All rather than silently emptying the galaxy.
-    // ⚠ a STRING and a new field, not the old enum retyped: changing the type of a [StarData]
+    // ⚠ a STRING and a new field, never the old enum retyped: changing the type of a [StarData]
     // field does not throw on load, it reads as null.
     public const string PirateChoiceNone   = "None";
     public const string PirateChoiceAll    = "All";
@@ -150,14 +150,14 @@ public class UniverseParams
     [StarData(DefaultValue=PiratePaceSetting.Normal)]
     public PiratePaceSetting PiratePace = PiratePaceSetting.Normal;
 
-    // ⚠ OBSOLETE, kept READABLE for saves written before 6 Sep '26 - the notch became
-    // PirateStrength below. Never written any more; OnDeserialized folds it into the new scale.
+    // ⚠ OBSOLETE, kept READABLE for older saves - the notch is now PirateStrength below.
+    // Never written; OnDeserialized folds it into the new scale.
     [StarData(DefaultValue=PirateTributeSetting.Normal)]
     public PirateTributeSetting PirateTribute = PirateTributeSetting.Normal;
 
-    // Ludoal fork (maintainer, 6 Sep '26): one notch for what the pirates ARE. It carries the
-    // old tribute plus the two things the base game never let a player touch - the level they
-    // start at, and the fraction of the local defence a raid aims for.
+    // Ludoal fork (maintainer feedback): one notch for what the pirates ARE. It carries the
+    // tribute plus the two things the base game never let a player touch - the level they start
+    // at, and the fraction of the local defence a raid aims for.
     [StarData(DefaultValue=PirateStrengthSetting.Default)]
     public PirateStrengthSetting PirateStrength = PirateStrengthSetting.Default;
     [StarData] public bool FixedPlayerCreditCharge;
@@ -227,12 +227,10 @@ public class UniverseParams
         if (FTLModifier == 0f) FTLModifier = DefaultInSystemFTLModifier;
         if (EnemyFTLModifier == 0f) EnemyFTLModifier = DefaultEnemyFTLModifier;
 
-        // A save from before the notches carries the old checkbox. Only TRUE says anything: the
-        // box was the one way to ask for the base game value, and nothing writes it now, so it
-        // can only have come from such a save. False is the default either way.
-        // the old box asked for the base game's strength: express that as the closest notch of
-        // the scale that replaced it. Under a mod that doubles the value it lands on Half; under
-        // one that raises nothing, on Default.
+        // Only TRUE says anything: the retired checkbox was the one way to ask for the base game
+        // value and nothing writes it, so a true can only come from an older save. It folds onto
+        // the closest notch of the scale that replaced it - under a mod that doubles the value it
+        // lands on Half; under one that raises nothing, on Default.
         if (VanillaRemnantStrength)
         {
             float mod = GlobalStats.Defaults.RemnantDesignStrMultiplier;

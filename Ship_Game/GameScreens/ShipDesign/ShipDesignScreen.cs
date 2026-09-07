@@ -190,7 +190,7 @@ namespace Ship_Game
 
         public HangarOptions HangarDesignation => HangarOptionsList.ActiveValue;
 
-        public bool IsSymmetricDesignMode => GlobalStats.SymmetricDesign; // Ludoal fork: player preference (config), no longer per-save
+        public bool IsSymmetricDesignMode => GlobalStats.SymmetricDesign; // Ludoal fork: player preference (config), not per-save
 
         public bool IsFilterOldModulesMode
         {
@@ -586,8 +586,8 @@ namespace Ship_Game
             ShipSaved = DesignedShip.Modules.Length > 0;
 
             // Ludoal fork (spec v4): loading a design drops the pin — a comparison against a
-            // ship that is no longer on the workbench is a ghost. SetActiveDesign cleared the
-            // rows, so the shadow has to go with them.
+            // ship that is not on the workbench is a ghost. SetActiveDesign clears the rows, so
+            // the shadow goes with them.
             ComparedDesign = null;
             InfoPanel.SetComparedDesign(null, null);
             HideHoveredDesign(); // a load clears it outright: no linger, no ghost
@@ -1105,8 +1105,8 @@ namespace Ship_Game
                 ToggleOverlay = !ToggleOverlay;
             });
             BtnToggleOverlay.ClickSfx = "blip_click";
-            // bench 459 (maintainer): the only tooltip-less button in the row let the module
-            // list's tooltip bleed through - it gets its own (existing token 2204)
+            // bench 459: every button in the row carries a tooltip, or the module list's tooltip
+            // bleeds through this one (existing token 2204)
             BtnToggleOverlay.Tooltip = Localizer.Token(GameText.ToggleTheModuleGridOverlay);
 
             // a third of a column each, so a trio spans exactly the list above it
@@ -1126,8 +1126,8 @@ namespace Ship_Game
             // the top of the two lists, so both fields land on it without a second arithmetic
             float searchY     = filterTop - 22f;
             // the browser starts on the SAME line as the module list: its toggles ride the
-            // identity row and its search field shares the search line, so the band above it no
-            // longer costs the two rows it used to reserve
+            // identity row and its search field shares the search line, so the band above it
+            // costs no rows of its own
             float colTop      = filterTop;
             // the same foot line the module frames land on, so the four read as one row
             float colBottom   = ModuleSelection.FramesBottom();
@@ -1156,13 +1156,12 @@ namespace Ship_Game
             // Ludoal fork: same width as the module list on the other side of the screen.
             Vector2 hullSelSize = new(ModuleSelection.ListWidth, Math.Max(160f, listBottom - colTop));
             var hullSelectPos = new LocalPos(ModuleSelection.BandRight - hullSelSize.X, colTop);
-            // Ludoal fork: the load popup's filters come WITH its list — dropping them would be
-            // a regression, since one of them ("my designs only") is a persisted preference the
-            // player may already have set. They sit above the frame rather than inside it:
-            // pushing content into a SubmenuScrollList means rearranging its internal layout.
-            // derived from the browser's own position, not recomputed from ScreenWidth: the
-            // filter row sits above that frame and must move with it (it kept the old flush
-            // origin when the column gained its right margin)
+            // Ludoal fork: the load popup's filters come WITH its list — one of them ("my designs
+            // only") is a persisted preference the player may already have set. They sit above the
+            // frame rather than inside it: pushing content into a SubmenuScrollList means
+            // rearranging its internal layout.
+            // ⚠ derived from the browser's own position, never recomputed from ScreenWidth: the
+            // filter row sits above that frame and must move with it.
             float filterX = hullSelectPos.X;
             // the search field sits UNDER the toggles, directly above the list it filters; the
             // toggles ride the identity row instead (see below)
@@ -1320,24 +1319,21 @@ namespace Ship_Game
             foreach (HangarOptions item in Enum.GetValues(typeof(HangarOptions)).Cast<HangarOptions>())
                 HangarOptionsList.AddOption(HangarOptionText(item), item);
 
-            // DESIGN ISSUES sits UNDER the cartouche instead of in a narrow 200px column to its
-            // left, so its text gets the full width. Both boxes use the bottom-up
-            // geometry computed above, which is why the list stretches and these do not.
-            // The cartouche's right edge follows the browser frame above it — one margin for the
-            // whole column — and it grows LEFTWARD to a width that actually fits two columns of
-            // labels: at the browser's own width a half-column left ~54px for titles like
-            // "Total Module Slots", so the value landed in the middle of its own label.
-            // 400 = 2 × (longest title ~105 + value 60) + gutter + frame margins.
+            // DESIGN ISSUES sits UNDER the cartouche rather than in a narrow 200px column to its
+            // left, so its text gets the full width. Both boxes use the bottom-up geometry
+            // computed above, so the list stretches and these do not.
             // Ludoal fork: the frame is sized BY ITS CONTENT, the module panel's way — two column
             // steps plus the panel's own margins — instead of a fraction of available space. Its
             // right edge stays on the browser's, which keeps the column's right margin, and it
-            // grows leftward.
-            // Ludoal fork: no comparison means no delta lanes, so the frame does not pay for them
-            // either. One value feeds both the width and the panel's own reservation - they must
-            // agree or the columns sit wrong inside the frame.
-            // Ludoal fork: built at its NARROW size. The delta lanes are paid for only while a
-            // design is actually pinned, and nothing is pinned when the screen opens -
-            // ResizeCartouches widens it on the first pin and narrows it back on the last unpin.
+            // grows LEFTWARD to a width that fits two columns of labels: at the browser's own
+            // width a half-column leaves ~54px for a title like "Total Module Slots", which puts
+            // the value in the middle of its own label.
+            // 400 = 2 × (longest title ~105 + value 60) + gutter + frame margins.
+            // ⚠ no comparison means no delta lanes, so the frame does not pay for them either.
+            // ONE value feeds both the width and the panel's own reservation - they must agree or
+            // the columns sit wrong inside the frame. Built at its NARROW size: the delta lanes
+            // are paid for only while a design is pinned, and nothing is pinned when the screen
+            // opens - ResizeCartouches widens it on the first pin and narrows it back on the last.
             bool deltaLanes = false;
             float cartoucheW = CompactActiveDesign ? ModuleSelection.ListWidth
                              : ShipDesignInfoPanel.FrameWidthFor(withDeltas: deltaLanes, withPlan: false);
@@ -1565,7 +1561,7 @@ namespace Ship_Game
         {
             // Ludoal fork: the 3D workbench centres on the SHIPYARD WINDOW (frame capped at 1680),
             // not the whole screen - otherwise the ship drifts down and right at hi-res, where
-            // screen centre no longer matches the frame's. The offset is computed once in
+            // screen centre does not match the frame's. The offset is computed once in
             // ScreenGroups so the Fleets surround uses the same arithmetic, and it reads the SAME
             // full-screen flag as the frame, so it recentres on the wider frame in Full Screen.
             Vector2 camOffset = ScreenGroups.GroupFrameCameraOffset(ScreenWidth, ScreenHeight, FullScreenDesign);
@@ -1637,7 +1633,7 @@ namespace Ship_Game
 
         // Ludoal fork: the shipyard is never without a design, so deleting the one on the
         // workbench falls back to a bare hull rather than leaving the screen holding a design
-        // that no longer exists. Same fallback the screen uses when it opens with nothing to restore.
+        // that is gone. Same fallback the screen uses when it opens with nothing to restore.
         void LoadDefaultDesign()
         {
             if (AvailableHulls.NotEmpty)
@@ -1745,10 +1741,10 @@ namespace Ship_Game
             }
 
             // Groups are the hull CLASSES of the tech tree (Fighter, Corvette, Frigate,
-            // Freighter...), as the old hull list did. Inside a class, each hull opens with its
-            // own bare row — that row carries the hull's name, e.g. "Fang Fighter" — and its
-            // designs follow. Two levels is all the scroll list can do, which is why the class
-            // is the heading and the hull is a row rather than a nested group.
+            // Freighter...). Inside a class, each hull opens with its own bare row — that row
+            // carries the hull's name, e.g. "Fang Fighter" — and its designs follow. Two levels
+            // is all the scroll list can do, so the class is the heading and the hull is a row
+            // rather than a nested group.
             if (GroupByRole)
                 BuildGroupsByRole(designsByHull);
             else
@@ -1756,8 +1752,8 @@ namespace Ship_Game
         }
 
         // The build view: a hull class, then each hull with its own bare row followed by the
-        // designs built on it. Two levels is all the scroll list can do, which is why the class
-        // is the heading and the hull is a row rather than a nested group.
+        // designs built on it. Two levels is all the scroll list can do, so the class is the
+        // heading and the hull is a row rather than a nested group.
         void BuildGroupsByHullClass(Map<string, Array<IShipDesign>> designsByHull)
         {
             var classes = new Array<string>();
@@ -1813,10 +1809,9 @@ namespace Ship_Game
                 rows.Add(row);
             }
 
-            // ⚠ no bare hull rows here (maintainer, bench 529): this view answers "what have I
-            // designed, sorted by what it does", and a hull with no modules does nothing yet.
-            // Every hull already has its own row in the by-class view, which is the view you go
-            // to in order to start a design - listing them twice only lengthened this one.
+            // ⚠ no bare hull rows here (bench 529): this view answers "what have I designed,
+            // sorted by what it does", and a hull with no modules does nothing yet. Every hull
+            // has its own row in the by-class view, which is where a design is started.
 
             // designsByHull is already filtered by CanShowDesign, so the designs appear in both
             // modes - only their grouping changes
@@ -1870,8 +1865,7 @@ namespace Ship_Game
             if (designsByHull.TryGetValue(hull.HullName, out Array<IShipDesign> designs))
             {
 
-                // same order as the old load popup: our own designs first, then the
-                // strongest, then alphabetical
+                // order: our own designs first, then the strongest, then alphabetical
                 foreach (IShipDesign design in designs.OrderBy(d => !d.IsPlayerDesign)
                                                       .ThenByDescending(d => d.BaseStrength)
                                                       .ThenBy(d => d.Name))

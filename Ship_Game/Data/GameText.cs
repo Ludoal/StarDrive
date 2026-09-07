@@ -6266,7 +6266,7 @@ namespace Ship_Game
         /// <summary>Environmental</summary>
         /// Ludoal fork: the traits group's fourth tab. It cannot share NgTabEnvironment with
         /// the standing Environment panel above it - one token, two tabs, and renaming one
-        /// renamed the other (maintainer asked for the middle group's only).
+        /// renames the other (maintainer feedback).
         NgTabEnvironmental = 30109,
         /// <summary>Caution, you might experience performance issues late game.</summary>
         NgSystemsPerfWarn = 30110,

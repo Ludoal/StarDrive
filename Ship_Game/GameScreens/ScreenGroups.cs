@@ -40,10 +40,9 @@ namespace Ship_Game.GameScreens
         public const int TabRowY = EmpireUIOverlay.BarTop + EmpireUIOverlay.BarH + 10;
         // the top of a group's visible FRAME - one tab strip below the tab row. Bar overlays that
         // want to line up with the group frames (not the tab strip) anchor here.
-        // bench 353 (Lek's diagnosis): the strip's USEFUL height is TabHeight-2, not TabHeight - tabs
-        // overlap by 2px (Submenu.cs:181/155, Rect.CutTop(TabHeight-2)). The real visible frame top an
-        // etalon group screen (Research) opens at is TabRowY + TabHeight - 2 = 77, so GroupFrameTop was
-        // 2px too low. Fixed at the source so every client (Colony) inherits the truth, not the slip.
+        // bench 353: the strip's USEFUL height is TabHeight-2, not TabHeight - tabs overlap by
+        // 2px (Submenu.cs:181/155, Rect.CutTop(TabHeight-2)), so a group screen's visible frame
+        // opens at TabRowY + TabHeight - 2 = 77. Kept at the source, so every client inherits it.
         public const int GroupFrameTop = TabRowY + TabStripH - 2;
         // the same margin the top bar keeps: the frame's sides line up with the bar above it,
         // and one of the two moving is a thing you would only notice once it looked wrong
@@ -97,9 +96,8 @@ namespace Ship_Game.GameScreens
         // the keys those screens already close on, in tab order
         public static readonly string[] GalaxyTabKeys = { "L", "C", "K", "P", "", "G", "F7" };
 
-        // Ludoal fork: ONE place that knows which screen a Galaxy tab opens. Each screen used to
-        // carry its own switch over the other three, so a fourth tab meant editing all of them -
-        // and the copy that got missed would simply open nothing.
+        // Ludoal fork: ONE place that knows which screen a Galaxy tab opens. Adding a tab or
+        // moving one is an edit of this switch alone.
         public static GameScreen GalaxyTab(int index, UniverseScreen u) => index switch
         {
             0 => new PlanetListScreen(u, u.EmpireUI),
@@ -125,7 +123,7 @@ namespace Ship_Game.GameScreens
                 u.ScreenManager.AddScreen(GalaxyTab(index, u));
         }
 
-        // ── the hosted tab (spec: colony-as-tab; universal by maintainer decision) ──────────
+        // ── the hosted tab (spec: colony-as-tab) ──────────────────────────────────────────────
         // Ludoal fork: when a subject rides a group's row (u.HostedTab* armed for that group),
         // the row shows one extra tab at the end wearing the subject's name. The subject's
         // panel is not a stacked screen (the colony is the universe's workersPanel), so the
@@ -140,7 +138,7 @@ namespace Ship_Game.GameScreens
              : EmpireTabTitles;
 
         /// the live tab row of a group: the stock titles, plus the hosted tab when armed.
-        /// The EMPIRE group's colony tab is PERMANENT (maintainer): with no seat armed it
+        /// The EMPIRE group's colony tab is PERMANENT (maintainer feedback): with no seat armed it
         /// wears the remembered colony (the capital by default).
         public static LocalizedText[] LiveTitles(Group g, UniverseScreen u)
         {
@@ -173,24 +171,20 @@ namespace Ship_Game.GameScreens
         };
 
         // read off the top bar's own tooltips and each screen's closing key, not guessed
-        // Automation ships unbound and Policies took H (maintainer feedback): the standing
-        // orders are opened far more often. An empty entry is the established way to say
-        // "no key" here (the group row does it too).
+        // Automation ships unbound and Policies holds H (maintainer feedback) - the standing
+        // orders are opened far more often. An empty entry means "no key" here, as in the group row.
         public static readonly string[] EmpireTabKeys = { "U", "T", "R", "", "H" };
 
-        // Ludoal fork: ONE factory and ONE switch for the Empire group - each of its screens
-        // used to carry its own copy of this switch with a default case, and two of those
-        // defaults disagreed (Budget's fell to Research, Research's to Economy), so a sixth tab
-        // would have opened a different screen depending on where you clicked it. Same cure the
-        // Galaxy group got.
+        // Ludoal fork: ONE factory and ONE switch for the Empire group, as in the Galaxy group.
+        // ⚠ a per-screen copy of this switch is how two default cases end up disagreeing, and a
+        // sixth tab then opens a different screen depending on where you clicked it.
         public static GameScreen EmpireTab(int index, UniverseScreen u) => index switch
         {
             0 => new EmpireManagementScreen(u, u.EmpireUI),
             1 => Economy(u),
             2 => new ResearchScreenNew(u, u, u.EmpireUI),
-            // Ludoal fork: Automation takes its OWN case now. It used to ride the default, and a
-            // default that swallows every unknown index is how a seventh tab silently opens the
-            // sixth screen - no error, no clue, a long hunt.
+            // Ludoal fork: Automation carries its OWN case. ⚠ a default that swallows every
+            // unknown index silently opens the wrong screen the day a tab is added.
             3 => new AutomationScreen(u),
             _ => new PoliciesScreen(u),
         };
@@ -201,7 +195,7 @@ namespace Ship_Game.GameScreens
                 return;
             caller.ExitScreen();
             Audio.GameAudio.AcceptClick();
-            if (index == EmpireTabTitles.Length) // the PERMANENT colony tab (maintainer)
+            if (index == EmpireTabTitles.Length) // the PERMANENT colony tab
                 u.OpenEmpireColonyTab();
             else
                 u.ScreenManager.AddScreen(EmpireTab(index, u));
@@ -296,40 +290,32 @@ namespace Ship_Game.GameScreens
              : g == Group.Empire  ? EmpireTab(index, u)
              : DiploTab(index, u);
 
-        // Ludoal fork (maintainer feedback): the target frame width. Group screens never grow past
-        // this even at 1920 fullscreen, so a screen looks identical windowed and fullscreen - the
-        // whole point of the resolution charter. One named constant, the single point of truth for
-        // the width cap (height stays at the 1080p footprint).
-        // bench 345: 1680 -> 1600, so at 1920 the right margin is wide enough to show the whole
-        // minimap beside the capped frame.
+        // Ludoal fork (bench 345): the target frame width. Group screens never grow past this
+        // even at 1920 fullscreen, so a screen looks identical windowed and fullscreen - the
+        // whole point of the resolution charter. At 1600 the right margin is wide enough at 1920
+        // to show the whole minimap beside the capped frame; the height keeps the 1080p footprint.
         public const int MaxFrameWidth = 1600;
         // and the height cap: no group screen grows past the 1080p footprint (the resolution charter)
         public const int MaxFrameHeight = 1080;
 
-        // Ludoal fork (bench 389, maintainer): ONE floor for every table - the info cartouche
-        // zone plus the ship cartouche's two possible rows of order buttons (52 each + 4 gap,
-        // ShipInfoUIElement), 10 px of air. Replaces the 1080p cap (bench 343/361 announced the
-        // freed bottom-left as the cartouche's home) and the short-lived per-table split: a ship
-        // can be selected from the band under ANY panel, and the stretched star cartouche fits
-        // too. The housing anchors at screenH-257 (UniverseScreen.LoadContent), visible frame
-        // FrameShave=61 lower. The reservation is permanent - it belongs to the zone, not to
-        // whether a cartouche is showing at this instant.
-        // bench 428: the specific orders live on ONE row now (the generics moved to the
-        // right column), so the clearance carries a single row (52 + 4 gap) - the pages
-        // reclaim the dead second row and run to 10px of the button strip
+        // Ludoal fork (bench 428): ONE floor for every table - the info cartouche zone plus the
+        // ship cartouche's single row of order buttons (52 + 4 gap, ShipInfoUIElement) and 10px
+        // of air. A ship can be selected from the band under ANY panel, and the stretched star
+        // cartouche fits there too. The housing anchors at screenH-257 (UniverseScreen.LoadContent),
+        // visible frame FrameShave=61 lower. ⚠ the reservation is permanent - it belongs to the
+        // zone, not to whether a cartouche is showing at this instant.
         public const int CartoucheClearance = 257 - 61 + 10 + 56;
 
-        // bench 409 (maintainer decision): below 1200 of display height every frame runs to
-        // the display foot - at 1080 the tables still read short, so the cartouche
-        // reservation only holds at 1200 and above. One change here feeds GroupFrame and
-        // every content-sized table alike.
+        // bench 409: below 1200 of display height every frame runs to the display foot - at 1080
+        // the tables read short, so the cartouche reservation only holds at 1200 and above. One
+        // change here feeds GroupFrame and every content-sized table alike.
         public const int FullHeightBelow = 1200;
         public static float FullTableHeight(int screenH)
             => screenH < FullHeightBelow ? screenH - TabRowY - FrameMargin
                                          : screenH - CartoucheClearance - TabRowY;
 
         // the height cap: the full-frame group screens (Research, Fleets, Shipyard windowed) stop
-        // at inf(1080p footprint, the tables' own floor) - bench 390 (maintainer): they must not
+        // at inf(1080p footprint, the tables' own floor) - bench 390: they must not
         // dive past where a table stops, so the info cartouche keeps its reserved bottom-left at
         // every resolution. FullTableHeight already carries the cartouche+order-rows clearance;
         // Min with the 1080 cap keeps the resolution charter. Tables that DEVELOP in height go
@@ -392,7 +378,7 @@ namespace Ship_Game.GameScreens
         static int RaceColumnRun(int frameW)
             => frameW - NineSliceCorners - 2 * ColumnGutter + ColumnGap;
 
-        // fixed pitch: the column width plus one inter-column gap. No longer varies with count.
+        // fixed pitch: the column width plus one inter-column gap, independent of the count.
         public static int RaceColumnPitch(int screenW, int count) => RaceColumnWidth + ColumnGap;
 
         // how many columns the screen can show at that pitch - the frame never grows past the
@@ -432,7 +418,7 @@ namespace Ship_Game.GameScreens
                             (int)client.X + ((int)client.W - drawn) / 2);
         }
 
-        // ── the race-row scroller (maintainer bench 299) ─────────────────────────────────────
+        // ── the race-row scroller (bench 299) ─────────────────────────────────────────────────
         // Scrolls BY WHOLE COLUMNS: the row always lands on the column grid, so no partial
         // column ever bleeds past the frame border and no scissor clipping is needed. The
         // fork's own control: FloatSlider is a value slider and ScrollList only goes vertical.
@@ -469,8 +455,8 @@ namespace Ship_Game.GameScreens
             }
 
             // returns true when the row moved or the gesture was consumed
-            // the GRAB zone is taller than the drawn rail (maintainer bench 300: hard to
-            // catch) - 5px of tolerance above and below
+            // the GRAB zone is taller than the drawn rail (bench 300, hard to catch) - 5px of
+            // tolerance above and below
             Rectangle GrabZone(in Rectangle r) => new(r.X, r.Y - 5, r.Width, r.Height + 10);
 
             public bool HandleInput(InputState input)
@@ -607,21 +593,21 @@ namespace Ship_Game.GameScreens
         public static bool InTopBand(Vector2 cursor)
             => cursor.Y < TabRowY + TabStripH;
 
-        // Ludoal fork (maintainer bench 336): the margin OUTSIDE the group frame - the live universe
-        // map showing around the window. A right-click there closes the Shipyard / Fleets; inside the
-        // frame the click keeps its design gesture. bench 355: takes the fullScreen flag so it tests
-        // against the SAME frame the window is drawn from - in Full Screen the frame fills the display,
-        // so the close margin shrinks to nothing instead of sitting under the expanded workbench.
+        // Ludoal fork (bench 336): the margin OUTSIDE the group frame - the live universe map
+        // showing around the window. A right-click there closes the Shipyard / Fleets; inside the
+        // frame the click keeps its design gesture. ⚠ it takes the fullScreen flag so it tests
+        // against the SAME frame the window is drawn from: in Full Screen the frame fills the
+        // display, so the close margin shrinks to nothing rather than sitting under the workbench.
         public static bool OutsideGroupFrame(Vector2 cursor, int screenW, int screenH, bool fullScreen = false)
             => !GroupFrame(screenW, screenH, fullScreen).HitTest(cursor);
 
         // The vertical span of a column inside the frame. ⚠ ClientArea.H already stops short of the
         // frame's bottom border, so only the TOP pad is added - taking one off the bottom as well
-        // left roughly twice the gap there.
+        // leaves roughly twice the gap there.
         public static int GroupColumnTop(in RectF client) => (int)client.Y + ColumnPadV;
         public static int GroupColumnHeight(in RectF client) => (int)client.H - ColumnPadV;
 
-        // Ludoal fork: the group's frames are built transparent, so the galaxy map showed straight
+        // Ludoal fork: the group's frames are built transparent, so the galaxy map shows straight
         // through them - plainly on Relationships, which has no columns of its own to cover it.
         // Dark and mostly opaque: enough that the panel reads as a panel, little enough that the
         // map is still felt behind it.
@@ -631,29 +617,23 @@ namespace Ship_Game.GameScreens
 
         // Ludoal fork: the rect that fill belongs on. ⚠ NOT ClientArea, which is the frame's
         // INNER area: NineSliceSprite cuts it back by the corner textures' own size (9px a side),
-        // so a fill painted there stops 9px short of the border on all four sides - the gap that
-        // showed on every table screen (maintainer feedback).
-        // Submenu's own SetBackground has always used the FULL rect minus the tab strip, which is
-        // exactly why Fleets and the Shipyard - the two screens that call it - looked right. This
-        // is that same arithmetic, borrowed rather than re-derived, for the screens that cannot
-        // use SetBackground: it parents a child, and a child is drawn by base.Draw, i.e. AFTER
-        // everything a screen paints by hand. On screens that draw their tables manually it would
-        // bury their own content.
-        // The 23 is Submenu's TabHeight - 2, read from the source and not measured on a capture.
-        // ⚠ RectF and not Rect: UIElementV2 carries BOTH, Rect being the integer one, and taking
-        // that path would quietly round a geometry the rest of the frame keeps in floats.
+        // so a fill painted there stops 9px short of the border on all four sides.
+        // This is Submenu.SetBackground's own arithmetic - the FULL rect minus the tab strip -
+        // borrowed rather than re-derived, for the screens that cannot use SetBackground: it
+        // parents a child, and a child is drawn by base.Draw, i.e. AFTER everything a screen
+        // paints by hand, so on screens that draw their tables manually it buries their content.
+        // ⚠ RectF and not Rect: UIElementV2 carries BOTH, Rect being the integer one, and that
+        // path quietly rounds a geometry the rest of the frame keeps in floats.
         // ⚠ The strip's height is ASKED of the Submenu, never assumed: it is TabRows*TabHeight, so
-        // a screen whose tabs wrap to a second row reports a taller strip. The constant read off
-        // one-row screens spilled the fill up onto the tabs (maintainer observation).
+        // a screen whose tabs wrap to a second row reports a taller strip, and a constant read off
+        // a one-row screen spills the fill up onto the tabs (maintainer feedback).
         public static RectF GroupFrameFillRect(Submenu tabs)
             => tabs.NumTabs == 0 ? tabs.RectF : tabs.RectF.CutTop((int)tabs.TabStripHeight);
 
-        // Ludoal fork: the line every frame, panel and button draws around itself. One source:
-        // the same numbers were written out in five places, which is how two of them end up
-        // disagreeing after somebody retouches one.
-        // ⚠ Read off the Codex rather than eyeballed: its border is Popup/popup_vert_L, which is
-        // (193,113,26) - a frank orange. The (118,102,67) brass this used to be is the OLD trim's
-        // colour, so every frame painted with it read as the thing we were replacing.
+        // Ludoal fork: the line every frame, panel and button draws around itself. ONE source -
+        // the same numbers spread over five places is how two of them end up disagreeing.
+        // ⚠ Read off the Codex rather than eyeballed: its border is Popup/popup_vert_L, a frank
+        // orange (193,113,26), not the (118,102,67) brass of the trim it replaces.
         public static Color FrameRule => UITheme.FrameRule;
 
         // The Codex's own body colour: Popup/popup_filler_lower. Neutral grey, not the warm
@@ -671,23 +651,19 @@ namespace Ship_Game.GameScreens
 
         // Ludoal fork (bench 46.173): asking "is the caller already this screen?" has to know
         // about BOTH classes, or the answer is wrong for whichever regime is not the stock one.
-        // The top bar tests this to close a screen when its own key is pressed again, and with
-        // only the stock type named, a reworked Economy, Diplomacy or Espionage never recognised
-        // itself and simply stacked a second copy (maintainer feedback). Same reason the openers live here: one
-        // place knows the pairing, and no call site has to remember there are two of each.
+        // The top bar tests this to close a screen when its own key is pressed again; naming only
+        // the stock type makes a reworked Economy, Diplomacy or Espionage stack a second copy.
+        // The openers live here for the same reason: one place knows the pairing.
         public static bool IsEconomy(GameScreen s) => s is BudgetScreen;
 
         // ── Where a screen SITS in its group ──────────────────────────────────────────────────
-        // Ludoal fork (maintainer feedback): a screen used to state its own tab index TWICE -
-        // once to the switch, so it leaves itself alone, and once to the tab row, so the right
-        // tab is drawn as current. The two drifted the moment a tab was inserted: after Trade
-        // took the third place of the Galaxy row, Patrols and Events told the row they were
-        // still where Trade now sat, and clicking their own name asked the switch to move to
-        // the tab it thought it was already on - so nothing happened, on two screens, silently.
+        // Ludoal fork (maintainer feedback): a screen ASKS where it sits rather than stating its
+        // own tab index. ⚠ stated twice - once to the switch so it leaves itself alone, once to
+        // the tab row so the right tab draws as current - the two drift the moment a tab is
+        // inserted, and a screen then asks the switch to move to the tab it thinks it is on.
         //
-        // A screen now ASKS where it sits instead of remembering. These two lists are the
-        // single source of that order, and they are the same order as the factories above -
-        // adding a tab, moving one, or transferring one between groups is an edit of ONE list.
+        // These two lists are the single source of that order, in the same order as the factories
+        // above: adding a tab, moving one, or transferring one between groups is an edit of ONE list.
         static readonly Type[] GalaxyTabScreens =
         {
             typeof(PlanetListScreen), typeof(TroopListScreen), typeof(ShipListScreen),
@@ -730,7 +706,7 @@ namespace Ship_Game.GameScreens
         {
             null => Group.None,
 
-            // Ludoal fork (migration, bench 386): a stacked colony belongs to whichever
+            // Ludoal fork (bench 386): a stacked colony belongs to whichever
             // group its hosted seat names - the one membership that is dynamic
             ColonyScreen c => c.P.Universe.Screen.HostedTabGroup,
 
@@ -739,9 +715,9 @@ namespace Ship_Game.GameScreens
                 => Group.Galaxy,
 
             EmpireManagementScreen or ResearchScreenNew or BudgetScreen
-                // the two newest Empire tabs were missing here, so nothing that asks "which
-                // group is open" could see them: no viewport shift, no lit group button, and
-                // they did not close a page from another group on the way in.
+                // ⚠ every Empire tab belongs in this list: a screen missing from it is invisible
+                // to "which group is open" - no viewport shift, no lit group button, and it does
+                // not close a page from another group on the way in.
                 or AutomationScreen or PoliciesScreen
                 => Group.Empire,
 

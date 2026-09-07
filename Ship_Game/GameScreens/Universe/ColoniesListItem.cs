@@ -39,7 +39,7 @@ namespace Ship_Game
         ProgressBar PopStorage; // bench 427: the population bar joins the Supply column
         Rectangle ApplyProductionRect;
         Rectangle CancelProductionRect;
-        // Policies phase 0: real dropdowns replace the click-rotation relics
+        // Policies phase 0: real dropdowns - open a list, hover an entry, pick
         DropOptions<Planet.GoodState> FoodDropDown;
         DropOptions<Planet.GoodState> ProdDropDown;
         DropOptions<Planet.GoodState> PopDropDown;
@@ -96,16 +96,16 @@ namespace Ship_Game
             ResRect     = Band(8 + g);
             GovernorRect = wideCols ? Band(10) : default;
             int g2 = wideCols ? 2 : 0;
-            // maintainer: 25 above the row, not 30 - the Auto checkbox rides at the block's top
-            // and the last 5 put it outside the frame.
+            // maintainer feedback: 25 above the row, not 30 - the Auto checkbox rides at the
+            // block's top, and the last 5 would put it outside the frame.
             SliderRect  = new Rectangle(cols[9 + g2].Rect.X + 4, y - 25, cols[9 + g2].Rect.Width - 8, Rect.Height + 25);
             // the Storage content starts 5px further left (its whole content
             // is placed off StorageRect.X, so shifting the rect shifts all of it at once)
             StorageRect = Band(10 + g2);
             StorageRect.X -= 5;
-            // maintainer: on wide displays the column carries an Auto switch per row. The lane is
-            // RESERVED here rather than taken from what is left, so the bars and the pickers keep
-            // the proportions they had at 240 and nothing below shifts when the switches appear.
+            // maintainer feedback: on wide displays the column carries an Auto switch per row.
+            // The lane is RESERVED here rather than taken from what is left, so the bars and the
+            // pickers keep their proportions and nothing below shifts when the switches appear.
             int autoLane = wideCols ? AutoLane : 0;
             int supplyW  = StorageRect.Width - autoLane;
             QueueRect   = Band(11 + g2);
@@ -125,10 +125,10 @@ namespace Ship_Game
                 color = "green"
             };
 
-            // bench 455: .30 - the real dropdown's 10px text indent plus the arrow made
-            // Export truncate at a quarter. bench 458: Resettle still clipped - the box
-            // eats 14px of its LEFT margin (the bar-to-box gap shrinks 20 to 6), the
-            // right edge does not move so the column layout holds.
+            // bench 458: .30 of the supply width plus 14 - the dropdown's 10px text indent and
+            // its arrow clip Resettle at anything narrower. The 14 is eaten off the box's LEFT
+            // margin (the bar-to-box gap goes from 20 to 6); the right edge does not move, so the
+            // column layout holds.
             int ddwidth = (int)(0.30f * supplyW) + 14;
             int ddX = StorageRect.X + 50 + (int)(0.4f * supplyW) + 6;
             FoodDropDown = new DropOptions<Planet.GoodState>(new Rectangle(ddX, FoodStorage.pBar.Y + FoodStorage.pBar.Height / 2 - 9, ddwidth, 18));
@@ -204,10 +204,9 @@ namespace Ship_Game
         }
 
         // Give each number of an "a / b" string one decimal place (12 -> 12.0), leaving text
-        // as-is. ⚠ PUBLIC because the column that shows it must be MEASURED on the same
-        // string it will DRAW: it was a local here, the screen sized the column on the raw
-        // "14 / 14" and the row drew "14.0 / 14.0", so the value overran its column by the
-        // width of two decimals (maintainer, bench 567).
+        // as-is. ⚠ PUBLIC because the column that shows it must be MEASURED on the same string
+        // it will DRAW: sizing the column on a raw "14 / 14" while the row draws "14.0 / 14.0"
+        // overruns the column by the width of two decimals (bench 567).
         public static string OneDecimalEachSide(string s)
         {
             string[] parts = s.Split('/');
@@ -300,12 +299,11 @@ namespace Ship_Game
                     return true;
                 }
 
-                // Policies phase 0: the real dropdowns answer for themselves - ReadOnly
-                // (set at draw from the Auto flags) refuses their input, OnValueChange
-                // mutates on the sim thread. bench 458: only CLOSED lists open from here -
-                // an OPEN list is fed by the screen (HandleOpenLists) before the table,
-                // so it hears clicks landing outside this row; handling it twice in one
-                // frame would close-then-reopen on a title click.
+                // Policies phase 0: the real dropdowns answer for themselves - ReadOnly (set at
+                // draw from the Auto flags) refuses their input, OnValueChange mutates on the sim
+                // thread. ⚠ only CLOSED lists open from here (bench 458): an OPEN list is fed by
+                // the screen (HandleOpenLists) before the table, so it hears clicks landing
+                // outside this row, and handling it twice in one frame closes then reopens it.
                 if (!FoodDropDown.Open && FoodDropDown.HandleInput(input))
                     return true;
                 if (!ProdDropDown.Open && ProdDropDown.HandleInput(input))
@@ -520,9 +518,9 @@ namespace Ship_Game
         // calls this after the whole table has drawn
         public void DrawOpenLists(SpriteBatch batch, DrawTimes elapsed)
         {
-            // bench 458 log: the dropdowns are born in PerformLayout, which only ever
-            // runs for rows that reached the screen - on a 400+ colony save the whole-
-            // table sweep hit a never-laid-out row's null dropdown and died every frame
+            // ⚠ the dropdowns are born in PerformLayout, which only runs for rows that reached
+            // the screen: on a 400+ colony save the whole-table sweep meets a never-laid-out
+            // row's null dropdown (bench 458)
             if (FoodDropDown == null)
                 return;
             if (FoodDropDown.Open) FoodDropDown.Draw(batch, elapsed);

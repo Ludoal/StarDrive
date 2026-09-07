@@ -69,8 +69,8 @@ namespace Ship_Game
         // the FOOD row on a cybernetic colony, in EITHER state - what it wears and what it is
         // called answer to this, so the row cannot be named one thing and drawn as another
         bool IsCyberneticFoodRow => Type == ColonyResType.Food && P.IsCybernetic;
-        // ⚠ bench 529: it shows in BOTH states now. The row exists either way and the space was
-        // sitting empty; what changes is only WHICH quantity it reads - see Value.
+        // ⚠ bench 529: it shows in BOTH states - the row exists either way, and only WHICH
+        // quantity it reads changes (see Value).
         public bool IsSubsistenceGauge => IsCyberneticFoodRow;
 
         LocalizedText Tooltip()
@@ -104,33 +104,26 @@ namespace Ship_Game
         // which production exactly meets consumption; its end is where the colony stops feeding
         // itself. It does not depend on who is driving, so the bar means the same thing whether
         // Auto is on or off, and the two states can be read against each other.
-        //
-        // It used to show the pilot's FLOOR under Auto, which was a different quantity wearing
-        // the same bar: the floor is the waterline plus a margin that SWINGS WITH STORAGE (the
-        // pilot's own correction, -35%..+50%), so it neither added up against the max nor held
-        // still. Two references, one gauge - the maintainer read it straight off the screen.
-        //
-        // Nothing is lost with it: under Auto the pilot's margin is now the GAP between this
-        // bar's end and the production cursor below, which says more than the old bar did.
+        // ⚠ never the pilot's FLOOR: that is the waterline plus a margin that SWINGS WITH
+        // STORAGE (-35%..+50%), so it neither adds up against the max nor holds still. Under
+        // Auto the pilot's margin is the GAP between this bar's end and the production cursor.
         float SubsistenceShare => P.Prod.EstPercentForNetIncome(0);
 
-        // ⚠ bench 532: on a cybernetic colony these two rows are read against ONE scale, and it
-        // runs from 0 to what the colony makes at full labour. They used to print NET income
-        // against a NET maximum: the figure swung through negative numbers, the maximum stood
-        // for an output the cursor could never produce, and what the population ate was named
-        // rather than counted. Now production says what it MAKES, the gauge says what is EATEN,
-        // and the difference between them is the net the player used to read - visibly.
+        // ⚠ bench 532: on a cybernetic colony these two rows are read against ONE scale, running
+        // from 0 to what the colony makes at full labour. Production says what it MAKES, the
+        // gauge says what is EATEN, and the difference between them is the net, visibly.
+        // ⚠ not NET income against a NET maximum: that figure swings through negative numbers
+        // and its maximum stands for an output the cursor can never produce.
         bool IsCyberneticProdRow => Type == ColonyResType.Prod && P.IsCybernetic;
         float GrossOutput    => Resource.AfterTax(Resource.GrossIncome);
         float GrossMaxOutput => Resource.AfterTax(Resource.GrossMaxPotential + Resource.FlatBonus);
         // the waterline, in the same terms as the two figures beside it
         bool UnderWater => P.IsCybernetic && P.Prod.AfterTax(P.Prod.GrossIncome) < P.Consumption;
 
-        // ⚠ bench 530: the production row shows the WHOLE share, bar and numbers alike. It used
-        // to draw the surplus while its figures reported the total - one row speaking two scales,
-        // which is what made the bar leap when Auto was switched off: nothing had changed in the
-        // colony, only what the bar was measuring. The gauge above says what that production owes
-        // before anything else; the difference between the two bars is what is left.
+        // ⚠ bench 530: the production row shows the WHOLE share, bar and numbers alike. A row
+        // drawing the surplus while its figures report the total speaks two scales, and its bar
+        // leaps when Auto is switched off. The gauge above says what that production owes before
+        // anything else; the difference between the two bars is what is left.
         public float Value
         {
             get => IsSubsistenceGauge ? SubsistenceShare : Resource.Percent;
@@ -140,9 +133,9 @@ namespace Ship_Game
         // ⚠ bench 533: what this row ALLOCATES, which is not what it always SHOWS. The
         // subsistence gauge reads a waterline - a share nobody is working on - while the labour
         // actually put on that row is zero, because these people never farm. The solver splits
-        // LABOUR, so it has to ask this and not the display: reading the gauge as an allocation
-        // quietly reserved a third of the colony's workforce for nothing, and the production
-        // cursor could never reach its own maximum.
+        // LABOUR, so it asks this and never the display: reading the gauge as an allocation
+        // reserves a third of the workforce for nothing, and the production cursor can then
+        // never reach its own maximum.
         public float LaborShare => IsCyberneticFoodRow ? P.Food.Percent : Value;
 
         public float NetValue => Resource.NetIncome;
@@ -150,19 +143,17 @@ namespace Ship_Game
         public float MaxValue => Resource.NetMaxPotential;
         public bool ShowMaxValue; // draw the max beside the current value (gated by the host)
 
-        // ⚠ A row that refuses the click cannot have been locked BY THE USER, so a lock found
-        // on one is a ghost - and there are ghosts in old saves, where the screen used to force
-        // this flag on for cybernetics. Ignored at the one point everything reads through (the
-        // count that gates dragging, the draw, the click), so no save is rewritten and no
-        // migration is needed: what cannot be true is simply not reported.
         // Ludoal fork (bench 526): this row does not move - because the player pinned it, or
-        // because the pilot is holding it. The 3-way solver and the drag gate ask THIS: a managed
-        // row that answered as "free" was being pushed around by its neighbours, which is exactly
-        // what Auto promised it would not do.
-        // ⚠ IsDisabled belongs here too, and its absence was a real leak: a cybernetic colony's
-        // FOOD row refuses the click but was still the first row the solver reached for when it
-        // needed somewhere to put the difference. Labour landed there, where those people yield
-        // nothing at all - and the row showed it.
+        // because the pilot is holding it. The 3-way solver and the drag gate both ask THIS: a
+        // managed row that answers as "free" gets pushed around by its neighbours, which is
+        // exactly what Auto promises it will not do.
+        // ⚠ IsDisabled belongs here too: a cybernetic colony's FOOD row refuses the click, and
+        // without it the solver reaches for that row first when it needs somewhere to put the
+        // difference - labour landing where those people yield nothing at all.
+        // ⚠ a row that refuses the click cannot have been locked BY THE USER, so a lock found on
+        // one is a ghost, and old saves carry them. Ignored at the one point everything reads
+        // through (the count that gates dragging, the draw, the click), so no save is rewritten
+        // and no migration is needed: what cannot be true is simply not reported.
         public bool Pinned => LockedByUser || LaborIsManaged || IsDisabled;
 
         public bool LockedByUser
@@ -171,12 +162,12 @@ namespace Ship_Game
             set => Resource.PercentLock = value;
         }
 
-        // Ludoal fork: one source for "is THIS row managed for you". It used to be deduced from
-        // the colony type here and again in ColonySliderGroup, two readings of one rule.
+        // Ludoal fork: ONE source for "is THIS row managed for you" - deduced from the colony
+        // type at each site, it becomes two readings of one rule.
         //
         // ⚠ bench 525: it is per ROW, not per colony. A governor manages the whole split, so all
-        // three stop answering. The sustenance pilot holds ONE row and leaves the others to the
-        // player - blocking all three there took away exactly what Auto promised to leave.
+        // three stop answering; the sustenance pilot holds ONE row and leaves the other two to
+        // the player.
         public bool LaborIsManaged => P.AutoLabor && (P.HasLaborGovernor || IsSustenanceRow);
 
         // the row the pilot holds when there is no governor: food for most, production for the
@@ -186,9 +177,9 @@ namespace Ship_Game
         public override bool HandleInput(InputState input)
         {
             // ⚠ bench 532: a row that refuses the CLICK still has something to say. Bailing out
-            // here made the subsistence gauge's own tooltip unreachable by construction - the
-            // gauge exists only on a cybernetic colony, and that is exactly the colony where
-            // this row is disabled. Hover is not input the row acts on; it is the row
+            // before the hover makes the subsistence gauge's own tooltip unreachable by
+            // construction - that gauge exists only on a cybernetic colony, which is exactly
+            // where this row is disabled. Hover is not input the row acts on; it is the row
             // explaining itself.
             if (IsDisabled)
             {
@@ -267,13 +258,13 @@ namespace Ship_Game
                              : IsDisabled                      ? Color.DarkGray
                                                                : Color.White;
 
-            // the track is the socle's drawing now - one arithmetic for every slider
+            // the track is the socle's drawing - one arithmetic for every slider
             FloatSlider.DrawTrack(batch, Rect, Slider, Value, SliderHover, sliderTint);
 
             if (DrawIcons)
             {
-                // the row measures production, so it wears production's icon rather than the
-                // food icon it inherited - in both states (maintainer, bench 525)
+                // the row measures production, so it wears production's icon and not the food
+                // one, in both states (bench 525)
                 SubTexture icon = IsCyberneticFoodRow ? ResourceManager.Texture("NewUI/icon_production") : Icon;
                 batch.Draw(icon, IconRect(), sliderTint);
             }
@@ -313,11 +304,10 @@ namespace Ship_Game
             if (value > -0.05f && value < 0.05f)
                 value = 0f; // what rounds to zero neither shows a minus nor wears pink
 
-            // ⚠ on a cybernetic colony the FOOD row is named rather than numbered, in both
-            // states (maintainer, bench 525). No number: its income figures would be
-            // production's, which the row right below already prints, and the same number beside
-            // a different bar reads as a contradiction. "n/a" said only that the row was not for
-            // them; "Consumption" says what the bar is - the share of their output they eat.
+            // ⚠ on a cybernetic colony the FOOD row is named rather than numbered, in both states
+            // (bench 525). No number: its income figures would be production's, which the row
+            // right below already prints, and the same number beside a different bar reads as a
+            // contradiction. "Consumption" says what the bar is - the share of their output they eat.
             if (IsCyberneticFoodRow)
             {
                 // grey and SIGNED: it is a demand, not something the player is producing - and

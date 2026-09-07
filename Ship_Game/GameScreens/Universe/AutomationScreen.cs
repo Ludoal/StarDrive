@@ -44,8 +44,7 @@ namespace Ship_Game
         const float ColonizationBoxH = 130f, ConstructionBoxH = 139f,
                     TradeBoxH = 152f,
                     // two switches + slider label + slider + the column title + seven paired
-                    // category rows + the Miscellaneous heading + Inhibition, at the 26 per row
-                    // this frame has always used.
+                    // category rows + the Miscellaneous heading + Inhibition, at 26 per row.
                     NotificationsBoxH = 420f;
         // the second column's X inside the Notifications frame, a constant the rows are placed
         // FROM - never a share of the width left over (bench 523)
@@ -100,7 +99,7 @@ namespace Ship_Game
             // How long the head of the queue stands before it ages out. 0 = off, nothing clears.
             notifications.Add(new UILabel(GameText.NotificationAutoClear, Fonts.Arial12Bold, Colors.Cream)).Tooltip = GameText.NotificationAutoClearTip;
             // Height must contain the 26px crosshair knob, or it overflows below its declared box
-            // and the next row overlaps the handle (bench 485: the 7px height did exactly that).
+            // and the next row overlaps the handle (bench 485).
             var autoClear = notifications.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW - 40, 28),
                                                               "", 0, 60, GlobalStats.NotificationAutoClearSeconds)
             {
@@ -110,16 +109,15 @@ namespace Ship_Game
             });
             autoClear.OnChange = s => GlobalStats.NotificationAutoClearSeconds = s.AbsoluteValue;
 
-            // One row per notification category (the old scattered Disable*/Suppress* toggles are
-            // folded into these nine). POSITIVE voice: checked = you SEE this category (bitmask
-            // NotificationHiddenCategories, all shown by default). Whether you want a family at
-            // all is the only question here; how it leaves the screen is the one switch above.
-            // A few categories carry indented SHOW sub-options (the old noisy alerts, kept as fine
-            // filters); they grey with their parent category.
+            // One row per notification category. POSITIVE voice: checked = you SEE this category
+            // (bitmask NotificationHiddenCategories, all shown by default). Whether you want a
+            // family at all is the only question here; how it leaves the screen is the one switch
+            // above. A few categories carry indented SHOW sub-options - fine filters that grey
+            // with their parent category.
             //
-            // (maintainer, bench 523) The families sit in TWO columns, titled, so the ladder stops
-            // growing downward as sub-options are added. The split is by WHOLE family: a category
-            // and its indented sub-options always stay in the same column, never astride the two.
+            // (bench 523) The families sit in TWO columns, titled, so the ladder stops growing
+            // downward as sub-options are added. The split is by WHOLE family: a category and its
+            // indented sub-options always stay in the same column, never astride the two.
             notifications.Add(new UILabel("Categories Shown", Fonts.Arial12Bold, Colors.Cream));
 
             (NotificationCategory cat, string title, LocalizedText tip)[] leftCats =
@@ -167,8 +165,8 @@ namespace Ship_Game
                                                  Fonts.Arial12Bold, title, tip);
                     column.Add(showBox);
 
-                    // indented Show sub-options, checked by default (positive voice on the old flags),
-                    // greyed when the parent category is hidden - they filter WITHIN the category.
+                    // indented Show sub-options, checked by default (positive voice), greyed when
+                    // the parent category is hidden - they filter WITHIN the category.
                     void AddSub(Func<bool> get, Action<bool> set, string subTitle, LocalizedText subTip)
                     {
                         var sub = new UICheckBox(0f, 0f, get, set, Fonts.Arial12Bold, subTitle, subTip)
@@ -187,18 +185,17 @@ namespace Ship_Game
                     }
                 }
             }
-            // Inhibition Alerts stays here (maintainer) but out of the auto-clear group: it is a
-            // map OVERLAY toggle, not a notification, so it has nothing to auto-clear. Its own
-            // heading says as much, so it does not read as a tenth category that lost its column.
+            // Inhibition Alerts stays here (maintainer feedback) but out of the auto-clear group:
+            // it is a map OVERLAY toggle, not a notification, so it has nothing to auto-clear. Its
+            // own heading says as much, so it does not read as a tenth category without a column.
             notifications.Add(new UILabel("Miscellaneous", Fonts.Arial12Bold, Colors.Cream));
             notifications.AddCheckbox(() => !P.DisableInhibitionWarning, v => P.DisableInhibitionWarning = !v,
                                       title: "Inhibition Alerts (map overlay)", tooltip: GameText.InhibitionAlertsAreDisplayedWhen);
 
             UIList trade = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap, BoxW2, TradeBoxH), "Freighters");
-            // The old single "Automatic Trade" toggle is dissected into three checkboxes below.
-            // The picker (kept from that control, minus its lead toggle) names the shared Freighter
-            // Model that Auto-build and Auto-upgrade both use; its Auto Pick box picks the best
-            // model when checked, or reveals the manual list when unchecked.
+            // The picker names the shared Freighter Model that Auto-build and Auto-upgrade both
+            // use; its Auto Pick box picks the best model when checked, or reveals the manual
+            // list when unchecked.
             FreighterDropDown = trade.Add(new CheckedDropdown())
                 .CreateTitled(GameText.FreighterModel, GameText.FreighterModelTip, autoPick: () => player.AutoPickBestFreighter);
             trade.AddCheckbox(() => player.AutoBuildFreighters, title: GameText.AutoBuildFreighters, tooltip: GameText.AutoBuildFreightersTip);

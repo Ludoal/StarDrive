@@ -22,18 +22,18 @@ namespace Ship_Game
 
     public partial class Empire
     {
-        // LEGACY: the old single "Automatic Trade" toggle. Kept for save compatibility - a save
-        // written before the dissection deserializes this, and OnDeserialized seeds the three
-        // split toggles below from it (see MigrateFreighterAutomation). Not shown in the UI anymore.
+        // LEGACY: the single "Automatic Trade" toggle, kept for save compatibility. An older save
+        // deserializes this, and OnDeserialized seeds the three split toggles below from it
+        // (see MigrateFreighterAutomation). Not shown in the UI.
         [StarData] public bool AutoFreighters;
         [StarData] public bool AutoPickBestFreighter;
-        // The three empire-level freighter automations, split out of the old AutoFreighters.
-        // New games start decoupled (all false); migrated saves inherit AutoFreighters (see below).
+        // The three empire-level freighter automations. New games start decoupled (all false);
+        // migrated saves inherit AutoFreighters (see below).
         [StarData] public bool AutoBuildFreighters;    // build new freighters (model = the pick)
         [StarData] public bool AutoUpgradeFreighters;  // modernise existing freighters to the pick
         [StarData] public bool AutoScrapIdleFreighters;// scrap freighters left idle too long
-        // Set once the split toggles have been seeded; distinguishes a pre-dissection save (seed
-        // from AutoFreighters) from a fresh/new-format one (leave the toggles as the player set them).
+        // Set once the split toggles have been seeded: it tells a save that still needs seeding
+        // from AutoFreighters apart from one whose toggles are already the player's own.
         [StarData] public bool FreighterAutomationSplit;
         // Ludoal fork (maintainer feedback): the three quantity levers. All are ints so an
         // old save that lacks them reads 0, which every reader below treats as vanilla conduct.
@@ -75,9 +75,9 @@ namespace Ship_Game
             FreighterAutomationSplit = true;
         }
 
-        // ⚠ THE PERIMETER (maintainer feedback): these two count PLANETS, not hulls. An exclusive zone
-        // takes its colonies out of the empire's care, so leaving them in the numerator has the
-        // empire budget a fleet for worlds it no longer serves - a double count of NEED, hidden
+        // ⚠ THE PERIMETER (maintainer feedback): these two count PLANETS, not hulls. An exclusive
+        // zone takes its colonies out of the empire's care, so leaving them in the numerator has
+        // the empire budget a fleet for worlds it does not serve - a double count of NEED, hidden
         // inside an average. The colonies of an exclusive zone leave with its ships.
         public int PlanetsOutsideExclusiveZones
         {
@@ -279,19 +279,19 @@ namespace Ship_Game
             // cybernetic empire runs no food pass to have triggered that fetch.
             domestic.FetchIdleFreightersOrBuild();
             // ★ NO EARLY EXIT ON AN EMPTY POOL. An EXCLUSIVE zone flies its OWN hulls and asks
-            // the common pool for nothing, so an empire down to its last freighter must not
-            // stop the pass that serves it - that turned an enclave into the first thing to
-            // starve. The need is measured for the same reason: the screens read it, and a
-            // figure that stops being written under pressure is worse than none.
+            // the common pool for nothing, so an empire down to its last freighter must not stop
+            // the pass that serves it, or the enclave is the first thing to starve. The need is
+            // measured for the same reason: the screens read it, and a figure that stops being
+            // written under pressure is worse than none.
 
             MeasureZoneNeeds(); // one book of need, read in priority order, before anyone asks
 
-            // ★ a SOFT zone borrows from the common pool and loads on the common ground - which
-            // since bench 589 includes the enclaves whose OWN imports of that good are covered.
-            // An exclusive zone owns its hulls, not its harvests (maintainer): a surplus rotting
-            // in an enclave's store served nobody, and on a small map it left the rest of the
-            // realm with no source at all. The DELIVERY end is untouched: nothing here lets a
-            // hull unload inside an enclave.
+            // ★ a SOFT zone borrows from the common pool and loads on the common ground, which
+            // includes the enclaves whose OWN imports of that good are covered (bench 589). An
+            // exclusive zone owns its hulls, not its harvests: a surplus rotting in an enclave's
+            // store serves nobody, and on a small map it leaves the rest of the realm with no
+            // source at all. ⚠ the DELIVERY end is untouched - nothing here lets a hull unload
+            // inside an enclave.
             Array<Planet> softFoodGround = CommonExportGround(Goods.Food);
             Array<Planet> softProdGround = CommonExportGround(Goods.Production);
             Array<Planet> softColGround  = CommonExportGround(Goods.Colonists);
@@ -303,17 +303,17 @@ namespace Ship_Game
 
             foreach (TradeZone zone in TradeZones)
             {
-                // ★ ONE QUEUE at the window of free hulls (Lek's catch, 31 Aug): a soft zone
-                // BORROWS its quota there and an exclusive zone REQUISITIONS there, so both must
-                // be served in the list's own order. Requisitioning every exclusive zone first, as
-                // a pass of its own, gave a zone ranked last the hulls a zone ranked first was
-                // about to borrow - a priority the player could not see anywhere.
+                // ★ ONE QUEUE at the window of free hulls: a soft zone BORROWS its quota there
+                // and an exclusive zone REQUISITIONS there, so both are served in the list's own
+                // order. Requisitioning every exclusive zone in a pass of its own would hand a
+                // zone ranked last the hulls a zone ranked first is about to borrow - a priority
+                // the player can see nowhere.
                 if (zone.Exclusive)
                 {
                     if (RequisitionFor(zone))
                     {
-                        // hulls that just joined a zone are no longer the empire's to lend, and
-                        // the domestic state is holding a list fetched before they left
+                        // hulls that just joined a zone are not the empire's to lend, and the
+                        // domestic state is holding a list fetched before they left
                         domestic.SetIdleFreighters(domestic.IdleFreighters.Filter(s => !s.InTradeZone));
                     }
 
@@ -360,12 +360,12 @@ namespace Ship_Game
                 // What the zone did not send goes back to the common pool - a quota is a share of
                 // a turn, not a possession - EXCEPT the berths its stations are waiting on.
                 //
-                // ⚠ those are WITHHELD, not merely preferred (Lek's reading of the turn order): the
-                // goals that feed stations are evaluated at the TOP of the next turn, while the
-                // legs that follow this one - foreign trade, production, colonists - and the scrap
-                // arm all eat free hulls before then. A preference that everyone may overrule is
-                // no preference at all. The withheld hulls sit out the rest of this turn and are
-                // still idle when their station's goal looks for them.
+                // ⚠ those are WITHHELD, not merely preferred: the goals that feed stations are
+                // evaluated at the TOP of the next turn, while the legs that follow this one -
+                // foreign trade, production, colonists - and the scrap arm all eat free hulls
+                // before then. A preference everyone may overrule is no preference at all. The
+                // withheld hulls sit out the rest of this turn and are still idle when their
+                // station's goal looks for them.
                 //
                 // The price, and it is the price of budgeting a station rather than letting it
                 // grab: a station in a zone is served with ONE TURN of latency.
@@ -439,7 +439,7 @@ namespace Ship_Game
                 {
                     IdleFreighters = Owner.GetIdleFreightersOutsideZones(InterTrade);
                     SetIdleFreightesState();
-                    // the vanilla socle stays in the condition: at reserve 0 this is the old test.
+                    // the vanilla socle stays in the condition: at reserve 0 this is the vanilla test.
                     // A reserve only adds a second reason to build, and counts the freighters on
                     // their way back from a refit as present.
                     if (IdleFreighters.Length == 0
@@ -599,9 +599,9 @@ namespace Ship_Game
         public bool TryDispatchGoodsSupplyToStation(Goods goods, Ship targetStation, out ExportPlanetAndFreighter exportAndFreighter)
         {
             exportAndFreighter = default;
-            // ★ a station loads where its own regime allows: inside the enclave when it stands
-            // in one, on the common ground otherwise. Loading anywhere was the last door left
-            // open into an exclusive zone (maintainer feedback, bench 588).
+            // ★ a station loads where its own regime allows: inside the enclave when it stands in
+            // one, on the common ground otherwise (bench 588). Loading anywhere is a door left
+            // open into an exclusive zone.
             TradeZone stationZone = TradeZoneOfStation(targetStation);
             Array<Planet> allowed = stationZone is { Exclusive: true } ? stationZone.ColonyPlanets(this)
                                                                        : CommonExportGround(goods);
@@ -609,11 +609,11 @@ namespace Ship_Game
             if (exportingPlanets.Length == 0)
                 return false;
 
-            // Ludoal fork (maintainer feedback, Roland Johansen): a station standing on a body
-            // that belongs to a trade zone is served BY that zone - it draws on what the zone was
-            // lent this turn and did not spend, rather than taking the first idle hull the moment
-            // it is hungry. A station outside every zone keeps the old behaviour untouched, and a
-            // zone that received nothing this turn simply makes its stations wait a turn.
+            // Ludoal fork (player feedback): a station standing on a body that belongs to a trade
+            // zone is served BY that zone - it draws on what the zone was lent this turn and did
+            // not spend, rather than taking the first idle hull the moment it is hungry. A station
+            // outside every zone takes the first idle hull, and a zone that received nothing this
+            // turn makes its stations wait a turn.
             Ship[] idleFreighters = stationZone == null
                                   ? GetIdleFreightersOutsideZones(interTrade: false)
                                   : stationZone.LentThisTurn.Filter(s => s.IsIdleFreighter && s.Loyalty == this);
@@ -680,19 +680,14 @@ namespace Ship_Game
             state.UpdatePlanetsTradeGoods();
         }
 
-        // ★ THE REQUISITION, and it is the regime's only automatic gesture: an exclusive zone short of
-        // hulls takes free ones, up to its measured need. It takes only what is FREE - idle and
-        // owned by no zone - so a run in flight is never interrupted and no zone is ever poached.
-        // The empire's RESERVE is the brake: the requisition stops rather than draw the common
-        // pool below it, which is the whole reason that lever stayed at the empire (maintainer feedback).
         // ★ THE REQUISITION, the regime's only automatic gesture: an exclusive zone short of hulls
         // takes free ones - idle and owned by no zone - up to its measured need. Called at the
         // zone's OWN RANK in the list, so it competes with the quotas on one queue rather than
         // from a pass of its own.
         //
         // It takes only what is FREE, so a run in flight is never interrupted and no zone is ever
-        // poached. The empire's RESERVE is the brake: it stops rather than draw the common pool
-        // below it, which is the whole reason that lever stayed at the empire.
+        // poached. ⚠ the empire's RESERVE is the brake: it stops rather than draw the common pool
+        // below it - the reason that lever lives at the empire (maintainer feedback).
         //
         // @return true when at least one hull changed hands, so the caller can refresh the pool.
         bool RequisitionFor(TradeZone zone)
@@ -738,8 +733,8 @@ namespace Ship_Game
         void TryOrderFreighterFor(TradeZone zone)
         {
             // as many at once as the zone has yards: three colonies with a spaceport, three hulls
-            // building. One order at a time was too careful - twenty turns to climb from four
-            // hulls to ten (maintainer feedback). A zone without a yard keeps its single order.
+            // building (maintainer feedback) - one order at a time takes twenty turns to climb
+            // from four hulls to ten. A zone without a yard keeps its single order.
             int yards = zone.ColonyPlanets(this).Count(p => p.HasSpacePort).LowerBound(1);
             if (AI.CountGoals(g => g is IncreaseFreighters f && f.ForZoneId == zone.Id) >= yards)
                 return;
@@ -795,10 +790,9 @@ namespace Ship_Game
             return body == null ? null : GetTradeZone(body);
         }
 
-        // ★ BOTH ENDS ARE GIVEN, never assumed. The far end used to be every owned planet,
-        // whoever asked - so a hull with no zone mark flew into an exclusive zone to LOAD,
-        // every turn, in every pass. An enclave that lends its goods to the realm is not an
-        // enclave (maintainer feedback, bench 588).
+        // ★ BOTH ENDS ARE GIVEN, never assumed (bench 588). With the far end left as every owned
+        // planet, a hull carrying no zone mark flies into an exclusive zone to LOAD, every turn,
+        // in every pass - and an enclave that lends its goods to the realm is not an enclave.
         void DispatchOrBuildFreighters(Goods goods, Array<Planet> importPlanetList,
                                        Array<Planet> exportPlanetList, bool interTrade, ref TradeState state)
         {

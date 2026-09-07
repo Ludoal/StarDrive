@@ -36,11 +36,10 @@ namespace Ship_Game
 
         public readonly UITable Table; // the shared table charte owns geometry, headers and rules
         static int LastSortCol = -1;   // session-persistent (bench 307)
-        // maintainer feedback: the sort was remembered and the two filters were not - the
-        // page came back sorted but wide open every time. Same session-persistence, same
-        // shape. Stored by VALUE: a remembered owner that no longer appears (a race met
-        // since, an empire wiped out) simply fails to match and the picker stays on All,
-        // which is the right fallback rather than a stale filter hiding half the list.
+        // maintainer feedback: the two filters are session-persistent, like the sort above.
+        // ⚠ stored by VALUE: a remembered owner that is gone from the game (an empire wiped
+        // out) simply fails to match and the picker falls back to All, rather than a stale
+        // filter hiding half the list.
         static string LastProximity = "";
         static string LastOwner = "";
         static bool LastSortAsc = true;
@@ -173,14 +172,14 @@ namespace Ship_Game
 
             float lineY = client.Y + 8;
             FilterLineY = lineY;
-            // "Hide Owned" is gone (bench 408): the Owner filter's Unowned option is the
-            // same predicate; the saved flag stays in UniverseParams, inert
+            // no "Hide Owned" toggle (bench 408): the Owner filter's Unowned option is the same
+            // predicate. Its saved flag stays in UniverseParams, inert, for save compatibility.
             cb_hideUninhabitable = Add(new UICheckBox(Table.TableRect.X, lineY,
                 () => HideUninhab,
                 x => { HideUninhab = x; ResetList(); }, Fonts.Arial12Bold, Localizer.Token(GameText.UhHideUninhabitable), ""));
 
-            // proximity and owner filters on the same line (maintainer feedback)
-            // 160/280, not 290/410 (bench 408): the lane the Hide Owned toggle occupied closes up
+            // proximity and owner filters on the same line (maintainer feedback), at 160/280 -
+            // there is no Hide Owned toggle to leave a lane for
             ProximityFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 160, (int)lineY, 110, 18)));
             ProximityFilter.AddOption(Localizer.Token(GameText.UhAllDistances), "");
             foreach (GameText catKey in new[] { GameText.UhDistanceLocal, GameText.UhDistanceNear, GameText.UhDistanceMidway, GameText.UhDistanceDistant, GameText.UhDistanceBeyond })
@@ -188,7 +187,7 @@ namespace Ship_Game
                 string cat = Localizer.Token(catKey);
                 ProximityFilter.AddOption(cat, cat);
             }
-            ProximityFilter.SetActiveValue(LastProximity); // tolerant: a value no longer offered just fails
+            ProximityFilter.SetActiveValue(LastProximity); // tolerant: a value the list does not offer just fails
             ProximityFilter.OnValueChange = v => { LastProximity = v; ResetList(); };
 
             OwnerFilter = Add(new DropOptions<string>(new Rectangle((int)Table.TableRect.X + 280, (int)lineY, 130, 18)));
@@ -308,7 +307,7 @@ namespace Ship_Game
         {
             PlanetSL.Reset();
             PlanetSL.OnDoubleClick = OnPlanetListItemClicked;
-            PlanetSL.OnClick = OnPlanetRowSingleClicked; // bench 388 (maintainer): single-click = select on the map and pan at current zoom
+            PlanetSL.OnClick = OnPlanetRowSingleClicked; // bench 388: single-click = select on the map and pan at current zoom
             NumAvailableTroops = Player.NumFreeTroops();
             Planet[] planets;
             switch (col)
@@ -334,8 +333,8 @@ namespace Ship_Game
             if (EmpireUI.HandleInput(input, caller: this)) // Ludoal fork: live top bar
                 return true;
 
-            // bench 460: an OPEN filter hears the input before the sort headers - its
-            // expanded FIRST entry overlaps the header band, which was stealing the click
+            // bench 460: an OPEN filter hears the input before the sort headers - its expanded
+            // FIRST entry overlaps the header band and would otherwise steal the click
             // (same law as the Colonies supply lists: the open list always goes first)
             if (ProximityFilter.Open && ProximityFilter.HandleInput(input))
                 return true;
@@ -398,7 +397,7 @@ namespace Ship_Game
             {
                 PlanetSL.Reset();
                 PlanetSL.OnDoubleClick = OnPlanetListItemClicked; // Ludoal fork: double-click everywhere
-                PlanetSL.OnClick = OnPlanetRowSingleClicked; // bench 388 (maintainer): single-click = select on the map and pan at current zoom
+                PlanetSL.OnClick = OnPlanetRowSingleClicked; // bench 388: single-click = select on the map and pan at current zoom
                 NumAvailableTroops = Player.NumFreeTroops();
                 foreach (Planet p in ExploredPlanets)
                 {

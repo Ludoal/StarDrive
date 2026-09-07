@@ -1071,9 +1071,9 @@ namespace Ship_Game
 
         // The catalogue keeps ONE key per plan - its current name - because its values feed
         // every list of plans in the game, and a second key would show the same plan twice.
-        // A name that does not resolve is looked up among the names the plans used to carry:
-        // that is how a save, a chain or a governor's default written before a rename finds
-        // its plan again. The scan runs only on the miss, over a handful of plans.
+        // A name that does not resolve is looked up among the plans' FORMER names: that is how a
+        // save, a chain or a governor's default written before a rename finds its plan again.
+        // The scan runs only on the miss, over a handful of plans.
         public static bool TryGetBlueprints(string BlueprintsName, out BlueprintsTemplate blueprintsTemplate)
         {
             if (BlueprintsTemplatesDict.TryGetValue(BlueprintsName, out blueprintsTemplate))
@@ -1432,9 +1432,9 @@ namespace Ship_Game
             LoadNumberedModels(AsteroidModels, "Model/Asteroids/", "asteroid");
         }
 
-        // Ludoal fork (maintainer bench): an animated weapon's sprite atlas was loaded on its
-        // first visible shot, on the projectile hot path - so the hitch landed mid-combat.
-        // The set is small and known from the weapon list, so warm it here.
+        // Ludoal fork: an animated weapon's sprite atlas otherwise loads on its first visible
+        // shot, on the projectile hot path, so the hitch lands mid-combat. The set is small and
+        // known from the weapon list, so it is warmed here.
         static void LoadWeaponAnimations()
         {
             var loaded = new HashSet<string>();
@@ -1458,11 +1458,11 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork (maintainer bench): a hull mesh was parsed off disk the first time a ship
-        // using it became visible, on the UI thread (ShipHull.LoadModel via Ship.CreateSceneObject),
-        // stuttering whatever the camera was doing. Warm them here instead.
-        // extractVertexPositions must match the on-demand call: a mesh cached without the
-        // per-vertex copy would be loaded a second time by the real one.
+        // Ludoal fork: a hull mesh otherwise parses off disk the first time a ship using it
+        // becomes visible, on the UI thread (ShipHull.LoadModel via Ship.CreateSceneObject),
+        // stuttering whatever the camera is doing. They are warmed here instead.
+        // ⚠ extractVertexPositions must match the on-demand call: a mesh cached without the
+        // per-vertex copy is loaded a second time by the real one.
         static void LoadShipHullModels()
         {
             var loaded = new HashSet<string>();
@@ -1482,11 +1482,9 @@ namespace Ship_Game
             }
         }
 
-        // Ludoal fork (maintainer bench): space station meshes were the only world models still
-        // loaded on demand - the first time a colonized planet with a space port entered the
-        // frustum, SpaceStation.CreateSceneObject parsed the mesh off disk ON THE UI THREAD,
-        // stuttering the camera transition. Cached forever afterwards, hence a hitch that never
-        // repeated on the same system. Warm them here with the other world models instead.
+        // Ludoal fork: without this, SpaceStation.CreateSceneObject parses the mesh off disk ON
+        // THE UI THREAD the first time a colonized planet with a space port enters the frustum,
+        // stuttering the camera transition. Warmed here with the other world models.
         static void LoadStationModels()
         {
             var paths = new Array<string>
@@ -1824,8 +1822,7 @@ namespace Ship_Game
             {
                 // error check that all models exist, otherwise the game could crash when this hull is spawned.
                 // Mirror the GameContentManager.LoadStaticMesh sibling-fallback: accept .xnb (legacy bake)
-                // OR .fbx / .obj (raw mesh) — Phase B archived obsolete .xnb under game/LegacyMesh/, so
-                // the on-disk presence of an .xnb is no longer required for hulls that ship with FBX/OBJ.
+                // OR .fbx / .obj (raw mesh) — a hull that ships with FBX/OBJ needs no .xnb on disk.
                 if (GetModOrVanillaFile(hull.ModelPath) == null &&
                     GetModOrVanillaFile(hull.ModelPath + ".xnb") == null &&
                     GetModOrVanillaFile(hull.ModelPath + ".fbx") == null &&
@@ -2273,10 +2270,10 @@ namespace Ship_Game
             TryDeserialize("ShipNames/ShipNames.xml", ref ShipNames);
         }
 
-        // Ludoal fork (maintainer feedback): videos are loaded through each screen's transient
-        // content, which is destroyed when the screen closes - so the same racial video was
-        // read off disk again on every single diplomacy opening. Screens keep their transient
-        // policy; videos alone are held here, on the root content, and loaded once.
+        // Ludoal fork (maintainer feedback): screens load through transient content, destroyed
+        // when the screen closes, so a racial video would be read off disk on every diplomacy
+        // opening. Screens keep their transient policy; videos alone are held here, on the root
+        // content, and loaded once.
         static readonly Map<string, Video> VideoCache = new();
 
         public static Video LoadVideo(string videoPath)

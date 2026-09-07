@@ -100,12 +100,12 @@ namespace Ship_Game
             foreach (Planet p in Owner.GetPlanets().Sorted(true, p => p.Name))
                 ColoniesSL.AddItem(new ColonyPickItem(this, p));
 
-            // Ludoal fork (maintainer feedback, Roland Johansen): the bodies our stations stand on
+            // Ludoal fork (player feedback): the bodies our stations stand on
             // are offered after the colonies. They are not colonies and never will be, so they sit
             // in their own run rather than pretending to a sort they do not share.
             foreach (Planet body in Owner.StationBodies().Sorted(true, b => b.Name))
             {
-                // named for what STANDS there (maintainer bench 556): a body carrying a rig reads
+                // named for what STANDS there (bench 556): a body carrying a rig reads
                 // exactly like a colony in a list of colonies, and it is not one
                 string kind = Owner.StationKindOn(body);
                 ColoniesSL.AddItem(new ColonyPickItem(this, body,
@@ -225,7 +225,7 @@ namespace Ship_Game
             UICheckBox Box;
 
             // ⚠ NOT "Label": UIElementContainer up the chain has a Label() of its own, and
-            // CS0108 is an error in this repo (bench 556, the sweep I owed my own rule)
+            // CS0108 is an error in this repo (bench 556)
             readonly string Caption;
 
             public ColonyPickItem(TradeZoneColoniesScreen picker, Planet colony, string caption = null)

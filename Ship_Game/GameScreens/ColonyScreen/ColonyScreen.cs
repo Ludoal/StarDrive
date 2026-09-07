@@ -52,12 +52,9 @@ namespace Ship_Game
             u.ClearHostedTab();
             ExitScreen();
             u.SetSelectedPlanet(P); // land on the planet, selected - as closing always did
-            // Ludoal fork (maintainer, bench 548): closing a colony returns to the table it was
-            // opened from, in EVERY group. The Empire group used to be excepted - its colony tab
-            // is permanent, so closing the colony closed the whole group instead. The exception
-            // cost more than it bought: one gesture behaved two ways depending on where you
-            // stood. The permanence is untouched by this - the Empire row keeps showing the last
-            // colony viewed, which is where that tab comes from, not from this routing.
+            // Ludoal fork (bench 548): closing a colony returns to the table it was opened
+            // from, in EVERY group - the Empire group included, whose colony tab is permanent.
+            // That permanence is untouched: the Empire row keeps showing the last colony viewed.
             if (origin >= 0)
                 ScreenManager.AddScreen(GameScreens.ScreenGroups.TabOf(group, origin, u));
         }
@@ -86,8 +83,8 @@ namespace Ship_Game
         readonly ScrollList<BuildableListItem> BuildableList;
         readonly ScrollList<ConstructionQueueScrollListItem> ConstructionQueue;
         readonly ScrollList<BuiltBuildingListItem> BuiltList; // COLONY tab, LIST view: built instances
-        // Policies phase 0 (maintainer): REAL dropdowns instead of the click-rotation
-        // relics - open a list, hover an entry, pick. One grammar for every list.
+        // Policies phase 0 (maintainer feedback): REAL dropdowns - open a list, hover an
+        // entry, pick. One grammar for every list.
         readonly DropOptions<Planet.GoodState> FoodDropDown;
         readonly DropOptions<Planet.GoodState> ProdDropDown;
         readonly DropOptions<Planet.GoodState> ColonistsDropDown; // Ludoal fork (wishlist): migration control
@@ -102,11 +99,9 @@ namespace Ship_Game
         UILabel TradeZonesLabel;
         float TradeZonesWidth; // what the VALUE may occupy between the caption and the pencil
 
-        // Ludoal fork (maintainer, bench 524): population wears the same blue as research, and
-        // the two bars sat close enough to be read as one another. A GREY rather than a paler
-        // blue, and a dark one: the value is printed in white over the fill, so a light tint
-        // would cost the reading it was meant to help. Kept here rather than at each site so
-        // both screens desaturate by exactly the same amount.
+        // Ludoal fork (bench 524): the population bar wears a dark GREY, not the research blue
+        // it would otherwise be read against. The value prints in white over the fill, so a
+        // light tint costs the reading. One constant here so both screens desaturate alike.
         public static readonly Color PopBarTint = new(110, 115, 122);
         readonly Rectangle FoodStorageIcon;
         readonly Rectangle ProfStorageIcon;
@@ -119,7 +114,7 @@ namespace Ship_Game
         object DetailInfo;
         object LastBuiltHover; // LIST view: the live hovered row's tile (cleared on leave)
         object LastDetailDrawn; // the elevator resets when the panel's content changes
-        PlanetGridSquare PinnedBuilt; // LIST view: click-pinned building (bench 426, Lek's design)
+        PlanetGridSquare PinnedBuilt; // LIST view: click-pinned building (bench 426)
         public float DescriptionScroll; // wheel offset while a pinned lore scrolls
         float MaxDescriptionScroll; // measured each frame from the drawn content (bench 429)
         // the description pane is up when none of the bar/stat tabs owns the panel -
@@ -245,8 +240,8 @@ namespace Ship_Game
             // heights; STORAGE is the one that stretches, taking what is left to the foot.
             // The left column's width comes from the Governor tab row. Submenu's REAL per-tab
             // arithmetic, read in UpdateTabRect: TextWidth + 2 + the header_right texture
-            // (33px), +8 wrap slack. Three tabs since BP folded into GOVERNOR - the sum sits
-            // under the 380 floor either way, so the fold does not narrow the column.
+            // (33px), +8 wrap slack. Three tabs - the sum sits under the 380 floor either way,
+            // so the tab row never narrows the column.
             float govTabsW = Fonts.Arial12Bold.TextWidth("GOVERNOR") + Fonts.Arial12Bold.TextWidth("DEFENSE")
                            + Fonts.Arial12Bold.TextWidth("BUDGET")
                            + 3 * (2 + 33) + 8;
@@ -261,7 +256,7 @@ namespace Ship_Game
             // Title bar + the portrait + a margin under it.
             float portraitH   = 128;
             // ⚠ the panel holds TWO things side by side: the portrait on the right, and the name
-            // plus four lines on the left. Sizing on the portrait alone left 3px of slack, which
+            // plus four lines on the left. Sizing on the portrait alone leaves 3px of slack that
             // one font change would eat - so it takes the TALLER of the two, measured in the
             // fonts that draw them.
             // ⚠ FIVE lines, not four: Incoming/Outgoing Pop is conditional but the room is the
@@ -307,19 +302,19 @@ namespace Ship_Game
             Vector2 starvationPos = new Vector2(PStorage.Right - Fonts.Pirulen16.TextWidth(starvTxt) - 15, PStorage.Y + 4);
             StarvationLabel = Add(new UILabel(starvationPos, starvTxt, Fonts.Pirulen16, Color.Red));
 
-            // bench 432: BLOCKADE! joins it on the title bar, seated to its LEFT - its
-            // historical spot overlapped the food row and the Store button
+            // bench 432: BLOCKADE! sits on the same title bar, to its LEFT - clear of the food
+            // row and the Store button below
             string blockTxt = Localizer.Token(GameText.Blockade2);
             Vector2 blockadePos = new Vector2(starvationPos.X - Fonts.Pirulen16.TextWidth(blockTxt) - 12, PStorage.Y + 4);
             BlockadeLabel = Add(new UILabel(blockadePos, blockTxt, Fonts.Pirulen16, Color.Red));
             BlockadeLabel.Tooltip = GameText.IndicatesThatThisPlanetIs;
             // ⚠ the two bars sit a FIXED distance below the title bar - content aligned to the
             // TOP, not centred, so they stay put as STORAGE (the column's variable block) grows.
-            // three rows: the elders keep their historical spacing (bench 427 - the
-            // squeeze belonged to the Colonies table, not here), population seats third
+            // three rows: food and production keep their own spacing, population seats third
+            // (bench 427)
             const float storeRow1 = 46, storeRow2 = 92;
-            // auto-supplies (maintainer spec): the food/prod icons shrink to the pop icon's
-            // 22px gabarit - the width bought pays for the Auto column on the right edge
+            // auto-supplies (maintainer feedback): the food/prod icons shrink to the pop icon's
+            // 22px size - the width bought pays for the Auto column on the right edge
             const int SupplyIconSize = 22, SupplyBarX = 52;
             float supplyAutoX = PStorage.Right - 62; // the Auto column, far right, one X for the three rows
             FoodStorage = new ProgressBar(PStorage.X + SupplyBarX, PStorage.Y + storeRow1, 0.4f*PStorage.Width + 20, 18);
@@ -343,31 +338,31 @@ namespace Ship_Game
             ProdDropDown.AddOption(GameText.Export, Planet.GoodState.EXPORT);
             ProdDropDown.ActiveIndex = (int)p.PS;
             ProdDropDown.OnValueChange = v => P.PS = v;
-            // the Auto toggles: QUI decide - the dropdowns keep the vocabulary, greyed
-            // read-only while their automatics hold the pen (maintainer design, Wishlist)
+            // the Auto toggles say WHO decides: the dropdowns keep the vocabulary, greyed
+            // read-only while the automatics hold the pen (maintainer feedback)
             if (p.NonCybernetic)
                 Add(new UICheckBox(supplyAutoX, FoodStorage.pBar.Y + 1, () => P.AutoFood, v => P.AutoFood = v,
                                    Fonts.Arial12Bold, "Auto", GameText.AutoSupplyTip));
             Add(new UICheckBox(supplyAutoX, ProdStorage.pBar.Y + 1, () => P.AutoProd, v => P.AutoProd = v,
                                Fonts.Arial12Bold, "Auto", GameText.AutoSupplyTip));
 
-            // Ludoal fork (wishlist + bench 426): the population row, full seat grammar -
-            // a storage bar (population against its cap) like Food and Production, the
-            // migration dropdown beside it. Auto = the formula keeps deciding; the manual
-            // states pin the direction. The colonist freighter line seats under the bar.
+            // Ludoal fork (bench 426): the population row, full seat grammar - a storage bar
+            // (population against its cap) like Food and Production, the migration dropdown
+            // beside it. Auto leaves the formula deciding; the manual states pin the direction.
+            // The colonist freighter line seats under the bar.
             const float storeRow3 = 138;
             PopStorage = new ProgressBar(PStorage.X + SupplyBarX, PStorage.Y + storeRow3, 0.4f * PStorage.Width + 20, 18);
             PopStorage.Max = p.MaxPopulationBillionFor(p.Owner);
             PopStorage.Progress = p.PopulationBillion;
             PopStorage.color = "blue";
-            // muted: at full blue it read as another research bar (maintainer, bench 524)
+            // muted: at full blue it reads as another research bar (bench 524)
             PopStorage.FillTint = ColonyScreen.PopBarTint;
             var iconPop = ResourceManager.Texture("UI/icon_pop_22");
             ColonistsIcon = new Rectangle((int)PStorage.X + 20, (int)(PStorage.Y + storeRow3 + 9 - iconPop.Height / 2f), iconPop.Width, iconPop.Height);
             ColonistsDropDown = Add(new DropOptions<Planet.GoodState>(new Vector2(PStorage.X + SupplyBarX + 0.4f * PStorage.Width + 36, PStorage.Y + storeRow3), (int)(0.2f * PStorage.Width), 18));
-            // people words, not cargo words (bench 425): Stay / Bring in / Resettle map
-            // onto STORE / IMPORT / EXPORT in the same order. QUI decides moved to the
-            // Auto checkbox (auto-supplies) - in Auto the list shows the formula's live pick
+            // people words, not cargo words (bench 425): Stay / Bring in / Resettle map onto
+            // STORE / IMPORT / EXPORT in the same order. WHO decides is the Auto checkbox
+            // beside them - in Auto the list shows the formula's live pick
             ColonistsDropDown.AddOption(GameText.Stay, Planet.GoodState.STORE);
             ColonistsDropDown.AddOption(GameText.BringIn, Planet.GoodState.IMPORT);
             ColonistsDropDown.AddOption(GameText.Resettle, Planet.GoodState.EXPORT);
@@ -381,14 +376,14 @@ namespace Ship_Game
             // than at a fraction of whatever the stretching panel happens to have left. Only the
             // owner edits them, and only zones of THIS empire are ever named here.
             const float storeRow4 = 184;
-            // the PENCIL, not a worded button (maintainer bench 554): the same icon and the same
-            // verb the governor tab already uses two panels up, at its own 20px gabarit - a word
-            // took a column the row would rather give to the zone names.
+            // the PENCIL, not a worded button (bench 554): the same icon and the same verb the
+            // governor tab uses two panels up, at its own 20px size - a word costs a column the
+            // row gives to the zone names instead.
             const float SupplyEditW = 20;
             if (P.Owner == Player)
             {
                 float editX = PStorage.Right - 14 - SupplyEditW;
-                // ⚠ caption and VALUE are two labels, not one string (maintainer bench 554): the
+                // ⚠ caption and VALUE are two labels, not one string (bench 554): the
                 // screen's convention is a cream caption and a white value, and one label cannot
                 // wear two colours. The value's X is measured off the caption it follows.
                 string zonesCap = Localizer.Token(GameText.TzColonyZones) + ":";
@@ -413,7 +408,6 @@ namespace Ship_Game
 
             // Centre column: the colony grid keeps its height, STATISTICS below takes the rest -
             // it is the variable block of this column, and it closes on the grid's foot.
-            // Right column: FIXED width - the buildable rows and the queue rows are written for
             // Ludoal fork: col 2 (COLONY + STATS) is the BOUNDED one, capped at 672; col 3
             // (BUILDINGS + QUEUE) absorbs the surplus. From 1440 to the point col 2 hits 672 the
             // two grow together off the leftover; past that, everything extra goes to col 3.
@@ -426,15 +420,15 @@ namespace Ship_Game
             // COLONY holds a 7x5 tile grid, so its height FOLLOWS its width - square tiles are the
             // point of it. The panel's chrome (10 each side, 30 above, 5 below) is taken off
             // before the ratio and added back, so it is the GRID that keeps 7:5, not the frame.
-            // COLONY keeps its 7:5 from the WIDTH again, the width itself bounded so the grid
-            // cannot go giant at high resolutions - the stats block below takes the rest.
+            // The width itself is bounded so the grid cannot go giant at high resolutions - the
+            // stats block below takes the rest.
             float gridInnerW = Math.Min(colCentreW - 20, 620f); // width cap
             float subColonyH = gridInnerW * (5f / 7f) + 35;
             subColonyH = Math.Min(subColonyH, gridBottom - gridTop - Pad - 260); // stats floor, safety
 
             RectF subColonyR = new(colCentreX, gridTop, colCentreW, subColonyH);
             // Ludoal fork: the COLONY frame carries two views of the same content - MAP (the
-            // 7x5 grid) and LIST (built instances). Not Add()ed: drawn by hand like before,
+            // 7x5 grid) and LIST (built instances). Not Add()ed: drawn by hand,
             // its tab row served explicitly in HandleInput.
             SubColonyGrid = new(subColonyR, GameText.Map);
             SubColonyGrid.AddTab(GameText.List);
@@ -545,7 +539,7 @@ namespace Ship_Game
             RectF queueR = new(colRightX, queueTop, colRightW, gridBottom - queueTop);
             var queue = base.Add(new SubmenuScrollList<ConstructionQueueScrollListItem>(queueR, GameText.ConstructionQueue));
 
-            // wishlist 20 Aug: the per-planet Continuous Rush toggle, seated beside the
+            // wishlist: the per-planet Continuous Rush toggle, seated beside the
             // CONSTRUCTION QUEUE tab OUTSIDE the frame. While the Automation global holds
             // the pen it shows checked read-only (Update grays it); unchecked global hands
             // the colony back its own flag, off by default.
@@ -554,7 +548,7 @@ namespace Ship_Game
                 RushToggle = base.Add(new UICheckBox(queueR.Right - 150, queueTop + 4,
                     () => P.Owner.RushAllConstruction || P.RushConstruction,
                     v => { if (!P.Owner.RushAllConstruction) P.RushConstruction = v; },
-                    // bench 459: its OWN tooltip - the empire-wide tip was speaking here
+                    // bench 459: its OWN tooltip, not the empire-wide one
                     Fonts.Arial12Bold, GameText.RushAllConstruction, GameText.ContinuousRushColonyTip));
             }
 
@@ -623,10 +617,10 @@ namespace Ship_Game
                 });
             }
 
-            // ⚠ it sat ON the colony arrows, and not by accident: both were built from
-            // PlanetIcon - the bar spanning its width, the arrows centred on its middle - so
-            // they overlapped by construction, on the same title bar (maintainer, bench 535).
-            const int ShieldBarClearance = 100; // moved clear of the arrows (maintainer's call)
+            // ⚠ the shield bar and the colony arrows are both built from PlanetIcon - the bar
+            // spans its width, the arrows centre on its middle - so without this clearance they
+            // overlap by construction, on the same title bar (bench 535).
+            const int ShieldBarClearance = 100; // clear of the arrows
             Rectangle planetShieldBarRect = new Rectangle(PlanetIcon.X - ShieldBarClearance,
                                                           PlanetInfo.Rect.Y + 2, PlanetIcon.Width, 20);
             PlanetShieldBar = new ProgressBar(planetShieldBarRect)
@@ -650,8 +644,8 @@ namespace Ship_Game
                 planetGridSquare.ClickRect = new Rectangle(GridPos.X + planetGridSquare.X * width, GridPos.Y + planetGridSquare.Y * height, width, height);
             
             PlanetName = Add(new UITextEntry(p.Name));
-            // bench 460 (maintainer): a mole-host page wears the target's colors - the
-            // name in the faction's color, the crest where the rename pencil sits
+            // bench 460: a mole-host page wears the target's colors - the name in the
+            // faction's color, the crest where the rename pencil sits
             PlanetName.Color = p.OwnerIsPlayer || p.Owner == null ? Colors.Cream : p.Owner.EmpireColor;
             PlanetName.MaxCharacters = 20;
             PlanetName.OnTextChanged = OnPlanetNameChanged;
@@ -1041,10 +1035,9 @@ namespace Ship_Game
             LastBuiltHover = item?.Tile;
         }
 
-        // hover previews, CLICK pins (bench 426, Lek's design): the bottom panel holds on
-        // the pinned building, the wheel scrolls its long lore, re-click unpins
-        // bench 444: the LIST tab's pin pattern, extended to the two right-column lists.
-        // One pin at a time across both; a click on the pinned row releases it.
+        // hover previews, CLICK pins (bench 444): the bottom panel holds on the pinned
+        // building, the wheel scrolls its long lore, re-click unpins. The LIST tab and the two
+        // right-column lists share the pattern - one pin at a time across all three.
         void OnBuildableRowClicked(BuildableListItem item)
         {
             if (item == null || (item.Building == null && item.Troop == null && item.Ship == null))
@@ -1054,7 +1047,7 @@ namespace Ship_Game
             PinnedBuildable = wasPinned ? null : item;
             item.DescriptionPinned = !wasPinned;
             DescriptionScroll = 0f;
-            // no click sound here: the list item base already played it (bench 447 double-buzz)
+            // no click sound here: the list item base already plays it (bench 447)
             if (item.Ship != null)
             {
                 if (item.DescriptionPinned) ShipInfoOverlay.ShowInRect(DescriptionPane, item.Ship);
@@ -1097,7 +1090,7 @@ namespace Ship_Game
 
         public bool IsPinnedBuilt(PlanetGridSquare t) => PinnedBuilt != null && PinnedBuilt == t;
 
-        // The LIST rows' reading (bench 424 arbitration: NET, as the colony runs): the
+        // The LIST rows' reading is NET, as the colony runs (bench 424): the
         // building's MARGINAL contribution through the sim's own pipeline - labor share,
         // fertility/richness, racial modifiers, then the resource tax via the sim's own
         // AfterTax. The yield formulas are linear in each building's share, so these

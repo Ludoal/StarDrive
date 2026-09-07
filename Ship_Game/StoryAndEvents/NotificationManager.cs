@@ -52,10 +52,10 @@ namespace Ship_Game
             // slider moves the floor with the widget (maintainer feedback); before the first
             // SeatMinimap the housing is empty - use the default-size footprint until
             // LoadGraphics reseats us.
-            // maintainer bench 444: an 8-line explored-system notification spills past its
-            // icon row onto the band buttons below - 50px of reserve keeps the tallest
-            // text above them (the reserve belongs to the COLUMN, not to the moment)
-            const int TallTextReserve = 40; // bench 451: 50 was more than the tallest text needs
+            // ⚠ an 8-line explored-system notification spills past its icon row onto the band
+            // buttons below, so the reserve keeps the tallest text above them - it belongs to
+            // the COLUMN, not to the moment (bench 451)
+            const int TallTextReserve = 40; // what the tallest text needs, no more
             int floor = Screen.mmHousing.Height > 0
                       ? Screen.mmHousing.Y - 30 - 8 - TallTextReserve
                       : GameBase.ScreenHeight - (256 + 10 + 30 + 8 + TallTextReserve);
@@ -76,7 +76,7 @@ namespace Ship_Game
         {
             notify.Category = category;
             // Per-category show/hide: a category the player has hidden never enters the queue.
-            // This is the one place the old scattered Disable*/Suppress* checks are unified.
+            // This is the one place every per-category check is unified.
             if (GlobalStats.IsHiddenCategory(category))
                 return;
 
@@ -1048,9 +1048,9 @@ namespace Ship_Game
 
                 // Ludoal fork (wishlist): index 0 is the HEAD of the queue - the oldest, and the
                 // one that ages out next. Its text stands without a hover, so the reading scrolls
-                // by itself as the queue drains. It waits for the slide to END (maintainer bench):
-                // text riding a moving icon reads as a glitch, and the row it lands on is the one
-                // the player is looking at.
+                // by itself as the queue drains. ⚠ it waits for the slide to END: text riding a
+                // moving icon reads as a glitch, and the row it lands on is the one the player
+                // is looking at.
                 bool settled = n.ClickRect.Y >= n.DestinationRect.Y;
                 if (n.ShowMessage || (i == 0 && settled && GlobalStats.ShowOldestNotificationText))
                 {
@@ -1096,9 +1096,9 @@ namespace Ship_Game
         public void SnapToPlanet(Planet p)
         {
             GameAudio.SubBassWhoosh();
-            // maintainer (bench 454): a notification about YOUR colony hosts it on the
-            // EMPIRE row - its natural home - instead of the map default (Galaxy). The
-            // pre-armed seat wins inside the snap (the documented list-screen pattern).
+            // bench 454: a notification about YOUR colony hosts it on the EMPIRE row - its
+            // natural home - instead of the map default (Galaxy). The pre-armed seat wins
+            // inside the snap (the documented list-screen pattern).
             if (p != null && p.Owner == Screen.Player && Screen.HostedTabTitle != p.Name)
                 Screen.HostColonyTab(p, GameScreens.ScreenGroups.Group.Empire, -1);
             Screen.SnapViewColony(p, combatView: false);
@@ -1166,18 +1166,17 @@ namespace Ship_Game
                 // is spared (PauseOnNotification && Pause) - n.Pause alone is true by default on
                 // almost every notification, which would spare nearly all of them. A LoadEvent
                 // needs a decision, so it is left alone too. Traces stay in the ImportantEventsList.
-                // Per-category opt-in: a notification auto-clears only if its category was ticked
+                // Per-category opt-in: a notification auto-clears only if its category is ticked
                 // in the Automation settings. No category ticked (default) = nothing auto-clears.
-                // Ludoal fork (maintainer bench): the age is real time, so it kept running while
-                // the game was paused - a notification could expire unseen behind a pause menu.
-                // The entry animation above still plays, so one arriving during a pause settles
-                // in place instead of freezing mid-slide; only the ageing waits for the sim.
+                // ⚠ the age runs on SIM time: on real time it keeps running while the game is
+                // paused, and a notification expires unseen behind a pause menu. The entry
+                // animation above still plays, so one arriving during a pause settles in place
+                // instead of freezing mid-slide; only the ageing waits for the sim.
                 bool pausesTheGame = GlobalStats.PauseOnNotification && n.Pause;
-                // Ludoal fork (wishlist, maintainer design): one intent, read without clicking.
-                // ONLY the head of the queue ages, so the pile empties in the order it filled and
-                // the text below always names the one that is leaving. A notification that pauses
-                // the game, or a story popup, is spared as before and holds the queue until the
-                // player answers it - which is what a notification worth pausing for deserves.
+                // Ludoal fork (wishlist): one intent, read without clicking. ONLY the head of the
+                // queue ages, so the pile empties in the order it filled and the text below always
+                // names the one that is leaving. A notification that pauses the game, or a story
+                // popup, is spared and holds the queue until the player answers it.
                 if (GlobalStats.AutoClearOldest && autoClear > 0f && inPlace
                     && !pausesTheGame && n.Action != "LoadEvent"
                     && !Screen.UState.Paused && n == notifications[0])
