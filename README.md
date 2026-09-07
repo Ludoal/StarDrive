@@ -55,7 +55,7 @@ Visually, the whole interface has been rebuilt: a flat, themable "painted plate"
 
 **Colonies (the former Empire screen)**
 - Renamed from Empire. Fertility / Richness / Max Population columns added.
-- On wide displays (1680px+), two more columns: Pop Growth, and a sortable Governor column.
+- On wide displays (1600px+), two more columns: Pop Growth, and a sortable Governor column.
 - Each labor value shows beside it the maximum that colony would reach at 100% labor.
 - Space Port and Military Outpost icons sit right of the colony name on wide displays.
 - The supply columns are three-position lists: in Auto the live pick shows greyed, and clicks only bite in manual.

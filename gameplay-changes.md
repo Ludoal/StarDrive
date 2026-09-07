@@ -86,14 +86,17 @@ ticked, which was off by default.
 
 Old saves keep their conduct: the former toggles map onto the mandates on load.
 
-### A blueprint no longer overrides the build and scrap mandates
+### Mandates hold under a blueprint; an exclusive blueprint takes command
 `Planet_BuildDefenses.cs`, `Planet_EvaluateBuildings.cs`
 
 **Source: maintainer.**
 
-A colony following a blueprint used to build and demolish regardless of its mandates: the
-plan granted the right on its own. The mandate is the right now, and the plan only directs
-what gets built inside it.
+A colony following an ordinary blueprint builds and demolishes inside its mandates: the
+mandate is the right, the plan directs what gets built inside it. An EXCLUSIVE blueprint
+takes formal command of the colony instead: both mandates are delegated to the plan, the
+pickers read "By Blueprint" while it lasts, and the colony's own settings come back whole
+the moment the plan goes. A third mandate, **Blueprint only**, builds the plan's entries in
+order and stops when the list is done, without exclusivity.
 
 A player who wants a colony to follow its plan but tear nothing down sets its Scrap Mandate
 to None and it holds - before, that setting did nothing on a colony that had a plan.
@@ -132,7 +135,7 @@ would have undone the player's own restriction the moment they loaded a plan.
 ## New levers
 
 
-### Remnant pace, and a way back to the base game's remnant strength
+### Remnant pace and strength, pirate factions, pace and strength - the Factions tab
 `UniverseParams.cs`, `UniverseState.cs`, `RaceDesignScreen.cs` (new game setup)
 
 **Source: maintainer**, relaying new players on the Discord: the Remnants gain power too fast,
@@ -143,10 +146,22 @@ Level IS their power in this design (production scales on level squared, ship le
 of it, portals on a count of levels), so the honest knob is the climb rather than a new strength
 multiplier. Normal is today's behaviour, and the setting never makes them harder.
 
-**Vanilla Remnant Strength**, unticked by default, restores the base game's design strength when
-a loaded mod has raised it - CombinedArms doubles it, 2 to 4. The option appears only when the
-loaded mod actually changed the value, so it is absent in vanilla where it would mean nothing,
-and the test is the VALUE rather than the mod's name so it works for any mod.
+**Remnant Strength** is a scale on the design strength: Default, then 3/4, 1/2 and 1/4 to soften,
+and 1 1/2 and 2x to harden (on player feedback: some want to play against the environment).
+It replaces the former "Vanilla Remnant Strength" checkbox, which an old save folds onto the
+nearest notch on load.
+
+**Pirate Factions** - None, All, One (random), or a named pirate faction taken from the mod's
+own data, so a mod that ships its factions ships its notches.
+
+**Pirate Pace** - Very Slow, Slow, Normal, Fast. Pirates level up on a die rolled after each
+successful act of piracy; the pace stretches or shortens that die (Fast floors it at 2, so they
+never gain a level per raid).
+
+**Pirate Strength** - Weak, Default, Strong, Brutal. It sets the level they start at (1, 1, 2, 3),
+the floor of the chance that a raid starts against a victim (1, 1, 5, 10 percent per check; the
+victim's threat level lifts it further), and, for Weak only, a softer raid and half the tribute.
+The former Pirate Tribute setting folds onto the matching notch on load.
 
 ⚠ that number pulls in two directions and both favour the player when lowered: it scales the
 fleets they field, and it sits at the denominator of the superiority they demand before
