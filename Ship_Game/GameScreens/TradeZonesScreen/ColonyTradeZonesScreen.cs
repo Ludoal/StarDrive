@@ -89,10 +89,22 @@ namespace Ship_Game
 
         void OnApplyClicked(UIButton b)
         {
-            foreach (TradeZone zone in Owner.TradeZones)
+            // through the one writer of a zone's edit, so an emptied zone is dissolved here and
+            // not a turn later; the zone's other members - station bodies included - are kept
+            foreach (TradeZone zone in Owner.TradeZones.ToArr())
             {
-                if (IsChosen(zone)) zone.Add(Colony);
-                else                zone.Remove(Colony);
+                if (IsChosen(zone) == zone.Serves(Colony))
+                    continue;
+                var chosen = new Array<Planet>();
+                foreach (int id in zone.Colonies)
+                {
+                    Planet p = Owner.Universe.GetPlanet(id);
+                    if (p != null && p != Colony)
+                        chosen.Add(p);
+                }
+                if (IsChosen(zone))
+                    chosen.Add(Colony);
+                Owner.ApplyZoneEdit(zone, chosen, zone.Quota, zone.Name, zone.Exclusive, zone.Priority);
             }
 
             GameAudio.EchoAffirmative();
