@@ -332,10 +332,16 @@ namespace Ship_Game
                 // guard, which is why the two disagreed rather than both being wrong.
                 foreach (Planet planet in Player.GetPlanets())
                 {
-                    if (SelectedZone != null && !SelectedZone.Serves(planet))
+                    // ★ per GOOD, on the ledger's sets: a world named by two zones is counted by the
+                    // better-ranked one only, and this pairs with a need that counts it once (audit,
+                    // bench 603)
+                    bool food = SelectedZone == null || SelectedZone.Counts(planet, Goods.Food);
+                    bool prod = SelectedZone == null || SelectedZone.Counts(planet, Goods.Production);
+                    bool col  = SelectedZone == null || SelectedZone.Counts(planet, Goods.Colonists);
+                    if (!food && !prod && !col)
                         continue;
 
-                    if (Player.NonCybernetic)
+                    if (Player.NonCybernetic && food)
                     {
                         if (planet.FoodImportSlots > 0 || planet.IncomingFoodFreighters > 0) GoodsUtilizationMap[Goods.Food].IncreaseNumImportingPlanets();
                         GoodsUtilizationMap[Goods.Food].AddServedBerths(planet.IncomingFoodFreighters);
@@ -345,12 +351,12 @@ namespace Ship_Game
                         if (planet.FoodImportSlots > 0 || planet.IncomingFoodFreighters > 0) GoodsUtilizationMap[Goods.Food].AddServedImporting(planet.IncomingFoodFreighters > 0 ? 1 : 0);
                     }
 
-                    if (planet.ProdImportSlots > 0 || planet.IncomingProdFreighters > 0)           GoodsUtilizationMap[Goods.Production].IncreaseNumImportingPlanets();
-                    if (planet.ColonistsImportSlots > 0 || planet.IncomingColonistsFreighters > 0) GoodsUtilizationMap[Goods.Colonists].IncreaseNumImportingPlanets();
-                    GoodsUtilizationMap[Goods.Production].AddServedBerths(planet.IncomingProdFreighters);
-                    GoodsUtilizationMap[Goods.Colonists].AddServedBerths(planet.IncomingColonistsFreighters);
-                    if (planet.ProdImportSlots > 0 || planet.IncomingProdFreighters > 0)           GoodsUtilizationMap[Goods.Production].AddServedImporting(planet.IncomingProdFreighters > 0 ? 1 : 0);
-                    if (planet.ColonistsImportSlots > 0 || planet.IncomingColonistsFreighters > 0) GoodsUtilizationMap[Goods.Colonists].AddServedImporting(planet.IncomingColonistsFreighters > 0 ? 1 : 0);
+                    if (prod && (planet.ProdImportSlots > 0 || planet.IncomingProdFreighters > 0))          GoodsUtilizationMap[Goods.Production].IncreaseNumImportingPlanets();
+                    if (col && (planet.ColonistsImportSlots > 0 || planet.IncomingColonistsFreighters > 0)) GoodsUtilizationMap[Goods.Colonists].IncreaseNumImportingPlanets();
+                    if (prod) GoodsUtilizationMap[Goods.Production].AddServedBerths(planet.IncomingProdFreighters);
+                    if (col)  GoodsUtilizationMap[Goods.Colonists].AddServedBerths(planet.IncomingColonistsFreighters);
+                    if (prod && (planet.ProdImportSlots > 0 || planet.IncomingProdFreighters > 0))          GoodsUtilizationMap[Goods.Production].AddServedImporting(planet.IncomingProdFreighters > 0 ? 1 : 0);
+                    if (col && (planet.ColonistsImportSlots > 0 || planet.IncomingColonistsFreighters > 0)) GoodsUtilizationMap[Goods.Colonists].AddServedImporting(planet.IncomingColonistsFreighters > 0 ? 1 : 0);
                 }
 
                 // ★ THE EXPORTERS COLUMN FOLLOWS THE REGIME, exactly as the need's ceiling does:

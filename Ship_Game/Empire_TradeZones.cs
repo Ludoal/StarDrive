@@ -256,6 +256,10 @@ namespace Ship_Game
                 zone.NeedFoodBeforeServing      = PerimeterNeed(wantFood[zi], Goods.Food, beforeServing: true);
                 zone.NeedProdBeforeServing      = PerimeterNeed(wantProd[zi], Goods.Production, beforeServing: true);
                 zone.NeedColonistsBeforeServing = PerimeterNeed(wantCol[zi], Goods.Colonists, beforeServing: true);
+                // and the sets themselves, for the counters that pair a figure with these needs
+                zone.CountsFood.Clear();      foreach (Planet p in wantFood[zi]) zone.CountsFood.Add(p.Id);
+                zone.CountsProd.Clear();      foreach (Planet p in wantProd[zi]) zone.CountsProd.Add(p.Id);
+                zone.CountsColonists.Clear(); foreach (Planet p in wantCol[zi])  zone.CountsColonists.Add(p.Id);
             }
 
             // ⚠ THE CEILING IS TAKEN ON THE SET THE DISPATCH SEARCHES, and the two regimes do not
