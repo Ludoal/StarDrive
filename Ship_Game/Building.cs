@@ -1,4 +1,4 @@
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 using SDGraphics;
 using Ship_Game.AI;
 using Ship_Game.Data.Serialization;
@@ -416,6 +416,19 @@ namespace Ship_Game
                 return where.CanEnqueueBuildingHere(b);
 
             PlanetGridSquare[] freeSpots = planet.TilesList.Filter(pgs => pgs.CanEnqueueBuildingHere(b));
+
+            // ⚠ A BIOSPHERE LEAVES THE TERRAFORMABLE TILES TO THE TERRAFORMER. The governor's own
+            // pick already applies that rule, but everything else - a hand-placed order above all
+            // - fell through to this random draw, which takes whatever is free (maintainer
+            // feedback). Only when there is something else to take: a world with nothing but
+            // terraformable tiles still gets its biosphere.
+            if (b.IsBiospheres && planet.Owner?.IsBuildingUnlocked(Building.TerraformerId) == true)
+            {
+                PlanetGridSquare[] sparing = freeSpots.Filter(t => !t.Terraformable);
+                if (sparing.Length > 0)
+                    freeSpots = sparing;
+            }
+
             if (freeSpots.Length > 0)
                 where = planet.Random.Item(freeSpots);
             return where != null;
