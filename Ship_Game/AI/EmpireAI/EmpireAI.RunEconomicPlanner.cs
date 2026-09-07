@@ -195,6 +195,9 @@ namespace Ship_Game.AI
         // the reserve the goal slider expresses: the slider is a fraction of this many turns
         // of income. One owner, so the Budget screen can print the duration it sets.
         public const int TreasuryGoalTurns = 200;
+        // the horizon the planner spreads a treasury deficit over. The same number as above by
+        // coincidence, not by meaning: one sizes the reserve, the other paces its refill.
+        public const float TreasuryFillTurns = 200;
 
         public float TreasuryGoal(float normalizedMoney)
         {
@@ -251,7 +254,7 @@ namespace Ship_Game.AI
 
             // try to meet goal in 20 years.
             // currently logic hits goal in about 10 years.
-            float timeSpan = 200;
+            float timeSpan = TreasuryFillTurns;
 
             //figure how much is needed to fulfill treasury in timespan and cover current costs
             float neededPerTurnForeTreasury = Math.Max(treasuryDeficit / timeSpan, 0);

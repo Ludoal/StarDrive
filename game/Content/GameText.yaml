@@ -22558,9 +22558,6 @@ SpColonistIncomeTip:
 SpBuildingIncomeTip:
  Id: 30090
  ENG: "Flat credit income produced by buildings on this colony, before tax."
-SpTaxRateTip:
- Id: 30091
- ENG: "Only the taxed share of colony income reaches your treasury. The rate is set empire-wide (or by Auto Taxes)."
 SpBuildingUpkeepTip:
  Id: 30092
  ENG: "Total maintenance cost of all buildings on this colony, paid every turn regardless of tax."
@@ -22600,9 +22597,6 @@ SpShipRepairTip:
 AutoGovernorTip:
  Id: 30104
  ENG: "New colonies are assigned a governor type suited to the planet (fertile worlds lean Agricultural, rich ones Industrial). Unchecked, new colonies start unmanaged."
-EspionageMessagesTip:
- Id: 30105
- ENG: "Toggle all Espionage notifications (mission results, detected enemy operations)."
 PrioritizationHeaderTip:
  Id: 30106
  ENG: "Categories in the upper block are prioritized in their display order; arrows reorder, the inhibit glyph demotes to the lower block. Priorities apply when an item ENTERS a build queue; existing queues are never reshuffled. Ship and orbital refits always jump to the front of every queue: that is the base game's behavior and this list does not affect it. The only exception: if the item at the front is due within 5 turns, the refit waits behind it."
@@ -28681,18 +28675,10 @@ DvEmpireTabTipPolicies:
  Id: 7139
  ENG: "Standing orders your colonies and fleets follow by default"
  FRA: "Les consignes permanentes que suivent vos colonies et vos flottes"
-PolEconomyNotice:
- Id: 7140
- ENG: "How your treasury is managed."
- FRA: "Comment votre trésorerie est gérée."
 PolTradeNotice:
  Id: 7141
  ENG: "Who your freighters serve, and whether you trade abroad."
  FRA: "Qui vos cargos servent, et si vous commercez avec l'étranger."
-PolResearchNotice:
- Id: 7142
- ENG: "How research topics are chosen."
- FRA: "Comment les sujets de recherche sont choisis."
 PolColonyNotice:
  Id: 7143
  ENG: "How a new colony is run from its first day."
@@ -28793,10 +28779,6 @@ SubsistenceGaugeTip:
  Id: 7165
  ENG: "Your people eat production, so this row shows the share of it held back to keep them alive. The row below is what is left for you to spend. It is the pilot that holds this, not a lock of yours."
  FRA: "Votre peuple se nourrit de production : cette ligne montre la part qui est retenue pour le maintenir en vie. La ligne du dessous est ce qui vous reste a repartir. C'est le pilote qui la tient, pas un verrou de votre fait."
-ConsumptionRow:
- Id: 7166
- ENG: "Consumption"
- FRA: "Consommation"
 AddToQueueTitle:
  Id: 7167
  ENG: "Add to Construction Queue"
@@ -28849,14 +28831,6 @@ PolRushNewColonyTip:
  Id: 7179
  ENG: "A colony you found is born with its own Continuous Rush already on, so a fresh world stands up instead of crawling. It is that colony's toggle from the first turn - switch it off there when you judge it has found its feet. Greyed while the empire-wide Continuous Rush is on, which already rushes everything."
  FRA: "Une colonie que vous fondez nait avec son propre Continuous Rush deja actif, pour qu'un monde neuf se leve au lieu de ramper. C'est le reglage de cette colonie des le premier tour : desactivez-le la-bas quand vous jugez qu'elle tient debout. Grise tant que le Continuous Rush d'empire est actif, qui accelere deja tout."
-PolRushTurns:
- Id: 7180
- ENG: "Turns"
- FRA: "Tours"
-PolRushTicks:
- Id: 7184
- ENG: "Rushes"
- FRA: "Accelerations"
 FreighterPriorityTipCyber:
  Id: 7185
  ENG: "Sets how your freighters choose their assignments."

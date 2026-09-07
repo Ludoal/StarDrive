@@ -6249,7 +6249,6 @@ namespace Ship_Game
         SupplyColStayNotice = 30088,
         SpColonistIncomeTip = 30089,
         SpBuildingIncomeTip = 30090,
-        SpTaxRateTip = 30091,
         SpBuildingUpkeepTip = 30092,
         SpSpaceDefUpkeepTip = 30093,
         SpTroopUpkeepTip = 30094,
@@ -6263,7 +6262,6 @@ namespace Ship_Game
         SpFromStorageTip = 30102,
         SpShipRepairTip = 30103,
         AutoGovernorTip = 30104,
-        EspionageMessagesTip = 30105,
         PrioritizationHeaderTip = 30106,
         /// <summary>Environmental</summary>
         /// Ludoal fork: the traits group's fourth tab. It cannot share NgTabEnvironment with
@@ -7162,8 +7160,6 @@ namespace Ship_Game
         LaborAutoTip = 7164,
         /// <summary>The share of production held back to keep a cybernetic colony alive.</summary>
         SubsistenceGaugeTip = 7165,
-        /// <summary>Consumption</summary>
-        ConsumptionRow = 7166,
         /// <summary>Add to Construction Queue</summary>
         AddToQueueTitle = 7167,
         /// <summary>Send to</summary>
@@ -7190,10 +7186,6 @@ namespace Ship_Game
         PolRushNewColony = 7178,
         /// <summary>A newly founded colony rushes its construction queue for this many turns.</summary>
         PolRushNewColonyTip = 7179,
-        /// <summary>Turns</summary>
-        PolRushTurns = 7180,
-        /// <summary>Rushes</summary>
-        PolRushTicks = 7184,
         /// <summary>Sets how your freighters choose their assignments.</summary>
         FreighterPriorityTipCyber = 7185,
         /// <summary>Show All</summary>
@@ -7386,12 +7378,8 @@ namespace Ship_Game
         MandateAutoTip = 7149,
         /// <summary>Governor Type</summary>
         GovernorTypeLabel = 7147,
-        /// <summary>How your treasury is managed.</summary>
-        PolEconomyNotice = 7140,
         /// <summary>Who your freighters serve, and whether you trade abroad.</summary>
         PolTradeNotice = 7141,
-        /// <summary>How research topics are chosen.</summary>
-        PolResearchNotice = 7142,
         /// <summary>How a new colony is run from its first day.</summary>
         PolColonyNotice = 7143,
         /// <summary>The order your colonies build in, and how fast.</summary>
