@@ -16541,187 +16541,187 @@ BudgetLimitReached:
  ENG: "Civilian Budget Limit Reached!"
  FRA: "Limite du budget civil atteinte !"
 SpendingOverManualBudget:
- Id: 7092
+ Id: 30164
  ENG: "Spending Over Manual Budget"
  FRA: "Dépense au-dessus du budget manuel"
 FreighterPriority:
- Id: 7093
+ Id: 30165
  ENG: "Freighter Priority"
  FRA: "Priorité des cargos"
 FreighterPriorityAuto:
- Id: 7094
+ Id: 30166
  ENG: "Auto"
  FRA: "Auto"
 FreighterPriorityProductionFirst:
- Id: 7095
+ Id: 30167
  ENG: "Production First"
  FRA: "Production d'abord"
 FreighterPriorityColonistsFirst:
- Id: 7096
+ Id: 30168
  ENG: "Colonists First"
  FRA: "Colons d'abord"
 FreighterPriorityTip:
- Id: 7097
+ Id: 30169
  ENG: "Sets how your freighters choose their assignments. Food deliveries always come first, regardless of this setting."
  FRA: "Définit la façon dont vos cargos choisissent leurs missions. Le transport de nourriture reste toujours prioritaire, quel que soit ce réglage."
 AutoUpgradeFreighters:
- Id: 7098
+ Id: 30170
  ENG: "Auto-upgrade Freighters"
  FRA: "Moderniser les cargos"
 AutoUpgradeFreightersTip:
- Id: 7099
+ Id: 30171
  ENG: "Automatically replaces your freighters with the best available model, independently of trade routing."
  FRA: "Remplace automatiquement vos cargos par le meilleur modèle disponible, indépendamment du routage du commerce."
 NotificationAutoClear:
- Id: 7100
+ Id: 30172
  ENG: "Auto-clear Timer (s)"
  FRA: "Minuterie d'effacement auto (s)"
 NotificationAutoClearTip:
- Id: 7101
+ Id: 30173
  ENG: "Automatically clears a notification after this many seconds. 0 = off. Pausing and event notifications are always kept."
  FRA: "Efface automatiquement une notification après ce nombre de secondes. 0 = désactivé. Les notifications qui mettent en pause ou demandent une décision sont toujours conservées."
 AutoBuildFreighters:
- Id: 7102
+ Id: 30174
  ENG: "Auto-build Freighters"
  FRA: "Construction auto des cargos"
 AutoBuildFreightersTip:
- Id: 7103
+ Id: 30175
  ENG: "Automatically builds new freighters as trade demands, using the model picked here. Exclusive zones with a target you set build their own freighters regardless of this setting."
  FRA: "Construit automatiquement de nouveaux cargos selon les besoins du commerce, avec le modèle choisi ici. Les zones exclusives dont la cible est posée à la main construisent leurs propres cargos indépendamment de ce réglage."
 AutoScrapIdleFreighters:
- Id: 7104
+ Id: 30176
  ENG: "Auto-scrap Idle Freighters"
  FRA: "Mise à la casse des cargos oisifs"
 AutoScrapIdleFreightersTip:
- Id: 7105
+ Id: 30177
  ENG: "Automatically scraps freighters that stay idle for too long, to trim an oversized fleet."
  FRA: "Met automatiquement à la casse les cargos restés inactifs trop longtemps, pour dégonfler une flotte surdimensionnée."
 FreighterModel:
- Id: 7106
+ Id: 30178
  ENG: "Freighter Model"
  FRA: "Modèle de cargo"
 FreighterModelTip:
- Id: 7107
+ Id: 30179
  ENG: "The freighter model Auto-build and Auto-upgrade use. Checked = Auto Pick (the best available); uncheck to choose a specific model."
  FRA: "Le modèle de cargo qu'utilisent Construction auto et Upgrade auto. Coché = Choix auto (le meilleur disponible) ; décochez pour choisir un modèle précis."
 InterTradeInhibited:
- Id: 7108
+ Id: 30180
  ENG: "Inhibited when Inter Empire Trade is not allowed (enable it in Policies > Trade)."
  FRA: "Inhibé quand le commerce inter-empires n'est pas autorisé (activez-le dans Policies > Trade)."
 AutoBuildExplorers:
- Id: 7109
+ Id: 30181
  ENG: "Auto-build Explorers"
  FRA: "Construction auto d'explorateurs"
 AutoBuildExplorersTip:
- Id: 7110
+ Id: 30182
  ENG: "Your empire automatically builds new scout ships while systems remain unexplored."
  FRA: "Votre empire construit automatiquement de nouveaux éclaireurs tant que des systèmes restent inexplorés."
 SendNewExplorersToExplore:
- Id: 7111
+ Id: 30183
  ENG: "Send New Explorers to Explore"
  FRA: "Envoyer les nouveaux explorateurs explorer"
 SendNewExplorersToExploreTip:
- Id: 7112
+ Id: 30184
  ENG: "Idle scouts are automatically sent out to explore unknown systems."
  FRA: "Les éclaireurs inactifs sont automatiquement envoyés explorer les systèmes inconnus."
 CounterEspionageNetworkWipedToZero:
- Id: 7113
+ Id: 30185
  ENG: "Their spy network is dismantled: their infiltration is now reduced to zero."
  FRA: "Leur réseau d'espions est démantelé : leur infiltration est maintenant réduite à zéro."
 NotifCatExplorationTip:
- Id: 7114
+ Id: 30186
  ENG: "Anomalies, planets and stars to survey or mine, fully-explored systems, lost scouts."
  FRA: "Anomalies, planètes et étoiles à sonder ou miner, systèmes explorés, éclaireurs perdus."
 NotifCatColonyTip:
- Id: 7115
+ Id: 30187
  ENG: "New colonies, capital transfers, colonies lost, volcanoes, meteors, starvation, troop evacuations."
  FRA: "Nouvelles colonies, transferts de capitale, colonies perdues, volcans, météores, famine, évacuations de troupes."
 NotifCatConstructionTip:
- Id: 7116
+ Id: 30188
  ENG: "Buildings finished or destroyed, research and mining stations, orbital limits, empty build queue."
  FRA: "Bâtiments terminés ou détruits, stations de recherche et de minage, limites d'orbitaux, file de production vide."
 NotifCatCombatTip:
- Id: 7117
+ Id: 30189
  ENG: "Invasions, enemy troops landing, planets conquered, rebellions, crash sites, boardings."
  FRA: "Invasions, débarquements de troupes ennemies, planètes conquises, rébellions, épaves, abordages."
 NotifCatDiplomacyTip:
- Id: 7118
+ Id: 30190
  ENG: "Treaties broken, signed or expired, war declarations, peace, empires merged or defeated."
  FRA: "Traités rompus, signés ou expirés, déclarations de guerre, paix, empires fusionnés ou vaincus."
 NotifCatEspionageTip:
- Id: 7119
+ Id: 30191
  ENG: "Espionage operation results, moles and counter-espionage."
  FRA: "Résultats d'opérations d'espionnage, taupes et contre-espionnage."
 NotifCatEconomyTip:
- Id: 7120
+ Id: 30192
  ENG: "Treasury running low and other economy warnings."
  FRA: "Trésorerie basse et autres alertes économiques."
 NotifCatEventsTip:
- Id: 7121
+ Id: 30193
  ENG: "Random, story and technology event popups, scrap unlocks, research completed."
  FRA: "Événements aléatoires, narratifs et technologiques, déblocages de recyclage, recherche terminée."
 NotifCatThreatsTip:
- Id: 7122
+ Id: 30194
  ENG: "Remnants and Pirates: raids, growing strength, portals, flagships."
  FRA: "Remnants et Pirates : raids, montée en puissance, portails, vaisseaux amiraux."
 ColonyCanBuildShipsTip:
- Id: 7123
+ Id: 30195
  ENG: "Can build ships. Requires a Space Port or a Capital."
  FRA: "Peut construire des vaisseaux. Nécessite un Space Port ou une Capitale."
 ColonyCanBuildTroopsTip:
- Id: 7124
+ Id: 30196
  ENG: "Can build troops. Requires a Military Outpost or a Capital."
  FRA: "Peut construire des troupes. Nécessite un Military Outpost ou une Capitale."
 AutoClearShort:
- Id: 7125
+ Id: 30197
  ENG: "Auto-clear"
  FRA: "Effacement auto"
 NotAvailable:
- Id: 7126
+ Id: 30198
  ENG: "Not available"
  FRA: "Non disponible"
 InheritedBudgetShareTip:
- Id: 7127
+ Id: 30199
  ENG: "Default split inherited from the empire budget (no budget allocated to this colony yet)."
  FRA: "Répartition par défaut héritée du budget d'empire (aucun budget alloué à cette colonie pour l'instant)."
 BuildMandate:
- Id: 7128
+ Id: 30200
  ENG: "Build Mandate"
  FRA: "Mandat de construction"
 ScrapMandate:
- Id: 7129
+ Id: 30201
  ENG: "Scrap Mandate"
  FRA: "Mandat de démolition"
 MandateAll:
- Id: 7130
+ Id: 30202
  ENG: "All"
  FRA: "Tout"
 MandateEconomicOnly:
- Id: 7131
+ Id: 30203
  ENG: "Economic only"
  FRA: "Économique seulement"
 MandateDefenseOnly:
- Id: 7132
+ Id: 30204
  ENG: "Defense only"
  FRA: "Défense seulement"
 MandateNone:
- Id: 7133
+ Id: 30205
  ENG: "None"
  FRA: "Aucun"
 BuildMandateTip:
- Id: 7134
+ Id: 30206
  ENG: "What the governor may build on this colony. All: every building type, including ground defense. Economic only: civilian buildings. Defense only: ground defense buildings. None: the governor builds nothing. Biospheres are not affected, and Blueprints override this: an explicit plan is an explicit order."
  FRA: "Ce que le gouverneur peut construire sur cette colonie. Tout : tous les types de bâtiments, défense au sol comprise. Économique seulement : les bâtiments civils. Défense seulement : les bâtiments de défense au sol. Aucun : le gouverneur ne construit rien. Les biosphères ne sont pas concernées, et les schémas directeurs priment : un plan explicite est un ordre explicite."
 ScrapMandateTip:
- Id: 7135
+ Id: 30207
  ENG: "What the governor may demolish when over budget. Same families as the Build Mandate. None: the governor never demolishes anything, Biospheres included. Buildings you ordered yourself are never touched."
  FRA: "Ce que le gouverneur peut démolir en cas de dépassement de budget. Mêmes familles que le mandat de construction. Aucun : le gouverneur ne démolit jamais rien, biosphères comprises. Les bâtiments que vous avez commandés vous-même ne sont jamais touchés."
 GroundTroopsHeader:
- Id: 7136
+ Id: 30208
  ENG: "GROUND TROOPS"
  FRA: "TROUPES AU SOL"
 SpaceDefenseHeader:
- Id: 7137
+ Id: 30209
  ENG: "SPACE DEFENSE"
  FRA: "DÉFENSE SPATIALE"
  UKR: "Ліміт цивільного бюджету досягнуто!"
@@ -28672,27 +28672,27 @@ CodexDiplomacyFederationsText:
 
 # Ludoal fork: the Policies tab of the Empire group - empire-wide standing orders.
 DvEmpireTabTipPolicies:
- Id: 7139
+ Id: 30210
  ENG: "Standing orders your colonies and fleets follow by default"
  FRA: "Les consignes permanentes que suivent vos colonies et vos flottes"
 PolTradeNotice:
- Id: 7141
+ Id: 30211
  ENG: "Who your freighters serve, and whether you trade abroad."
  FRA: "Qui vos cargos servent, et si vous commercez avec l'étranger."
 PolColonyNotice:
- Id: 7143
+ Id: 30212
  ENG: "How a new colony is run from its first day."
  FRA: "Comment une colonie neuve est gérée dès son premier jour."
 PolConstructionNotice:
- Id: 7144
+ Id: 30213
  ENG: "The order your colonies build in, and how fast."
  FRA: "L'ordre dans lequel vos colonies bâtissent, et à quelle vitesse."
 PolInterTradeGameRuleTip:
- Id: 7145
+ Id: 30214
  ENG: "Whether your freighters may serve empires you have a trade treaty with. This one is a game rule rather than an empire order: it is stored with the game setup, not with your empire. It also unlocks the Trade First freighter priority."
  FRA: "Si vos cargos peuvent servir les empires avec lesquels vous avez un traité commercial. Celle-ci est une règle de la partie plutôt qu'un ordre d'empire : elle est rangée avec les paramètres du jeu, pas avec votre empire. Débloque aussi la priorité de cargos Commerce d'abord."
 HkPolicies:
- Id: 7146
+ Id: 30215
  ENG: "Policies"
  FRA: "Directives"
 CodexEconomyBlueprints:
@@ -28708,291 +28708,291 @@ CodexEconomyBlueprintsText:
  ENG: "Colony Blueprints are lists of buildings a colony's governor is asked to follow. The governor builds them first whenever it can. If the blueprints are Exclusive, it builds nothing else, and it may even scrap military buildings the plan does not name, if its Scrap Mandate allows it. \n \n Blueprints can link to one another: when a plan completes, the one it links to is uploaded in its place, so a colony can walk through several stages on its own. \n \n Load or edit a colony's plan from the GOVERNOR tab of the Colony screen. The Snapshot button, at the head of the colony's LIST view, turns what is already built into a new plan you can reuse elsewhere."
  FRA: "Les schémas de colonie sont des listes de bâtiments que le gouverneur d'une colonie est chargé de suivre. Il les construit en priorité dès qu'il le peut. Si les schémas sont exclusifs, il ne construit rien d'autre, et il peut même démolir les bâtiments militaires absents du plan, si son Mandat de démolition l'y autorise. \n \n Les schémas peuvent se lier entre eux : à l'achèvement d'un plan, celui auquel il renvoie prend sa place, et une colonie peut ainsi parcourir plusieurs étapes toute seule. \n \n Le plan d'une colonie se charge et se modifie depuis l'onglet GOUVERNEUR de l'écran de colonie. Le bouton Snapshot, en tête de la vue LIST, transforme ce qui est déjà bâti en un nouveau plan réutilisable ailleurs."
 GovernorTypeLabel:
- Id: 7147
+ Id: 30216
  ENG: "Governor Type"
  FRA: "Type de gouverneur"
 MandateAuto:
- Id: 7148
+ Id: 30217
  ENG: "Auto"
  FRA: "Auto"
 MandateAutoTip:
- Id: 7149
+ Id: 30218
  ENG: "Follow the empire's own mandate, set in Policies > Colony. Change it there and every colony on Auto follows; a colony set to anything else keeps its own answer."
  FRA: "Suit le mandat de l'empire, réglé dans Policies > Colony. Changez-le là-bas et toutes les colonies en Auto suivent ; une colonie réglée autrement garde sa propre réponse."
 BlueprintNameLabel:
- Id: 7150
+ Id: 30219
  ENG: "Name"
  FRA: "Nom"
 CompletionNoColon:
- Id: 7151
+ Id: 30220
  ENG: "Completion"
  FRA: "Achèvement"
 BlueprintModeLabel:
- Id: 7153
+ Id: 30221
  ENG: "Blueprint"
  FRA: "Schéma"
 BlueprintModeCustom:
- Id: 7154
+ Id: 30222
  ENG: "Custom..."
  FRA: "Personnalisé..."
 BlueprintModeTip:
- Id: 7155
+ Id: 30223
  ENG: "Auto follows the empire's default plan for this governor type, set in Policies > Colony. Custom opens the plan chooser - pick it again at any time to choose another. None clears the plan and hands the colony back to its mandates. Editing a plan sets this to Custom."
  FRA: "Auto suit le plan par défaut de l'empire pour ce type de gouverneur, posé dans Directives > Colonie. Personnalisé ouvre le choix des plans - re-sélectionnez-le à tout moment pour en choisir un autre. Aucun retire le plan et rend la colonie à ses mandats. Modifier un plan bascule ce réglage sur Personnalisé."
 BlueprintNextLabel:
- Id: 7156
+ Id: 30224
  ENG: "Next"
  FRA: "Suivant"
 BlueprintModeAuto:
- Id: 7157
+ Id: 30225
  ENG: "Auto"
  FRA: "Auto"
 BlueprintModeAutoTip:
- Id: 7158
+ Id: 30226
  ENG: "Follow the empire's default plan for this governor type, set in Policies > Colony. If no default is set there, this colony simply has no plan."
  FRA: "Suivre le plan par défaut de l'empire pour ce type de gouverneur, posé dans Directives > Colonie. Si aucun défaut n'y est posé, cette colonie n'a simplement pas de plan."
 PolBlueprintsHeading:
- Id: 7159
+ Id: 30227
  ENG: "Default plan by governor"
  FRA: "Plan par défaut selon le gouverneur"
 PolBlueprintsTip:
- Id: 7160
+ Id: 30228
  ENG: "The plan a colony follows when its Blueprint is set to Auto. Colonies on Custom or None are never touched. What a plan may build or scrap is still bounded by that colony's mandates, and a queue you filled by hand is left alone."
  FRA: "Le plan que suit une colonie dont le Schéma est réglé sur Auto. Les colonies en Custom ou None ne sont jamais touchées. Ce qu'un plan peut bâtir ou démolir reste borné par les mandats de la colonie, et une file remplie à la main n'est pas touchée."
 BlueprintNotFound:
- Id: 7161
+ Id: 30229
  ENG: "not found"
  FRA: "introuvable"
 BlueprintExclusiveWarn:
- Id: 7162
+ Id: 30230
  ENG: "This plan is Exclusive. Colonies of this governor type left on Auto will build nothing outside it, and it takes over their Build and Scrap Mandates. Buildings the plan does not name, yours and military ones included, may be demolished, but only when it needs the ground for the plan. Set it as the default?"
  FRA: "Ce plan est exclusif. Les colonies de ce type de gouverneur laissées sur Auto ne construiront rien en dehors de lui, et il prend la main sur leurs mandats de construction et de démolition. Les bâtiments qu'il ne nomme pas, les vôtres et les militaires compris, pourront être démolis, mais seulement quand il aura besoin de la place. Le poser comme défaut ?"
 LaborAuto:
- Id: 7163
+ Id: 30231
  ENG: "Auto"
  FRA: "Auto"
 LaborAutoTip:
- Id: 7164
+ Id: 30232
  ENG: "The labour split is managed for you: by this colony's governor if it has one, by the sustenance pilot if it does not - the pilot holds only what keeps the colony fed and leaves the rest of the split as you set it. Off, the three sliders and their locks are yours."
  FRA: "La répartition de la main-d'oeuvre est gérée pour vous : par le gouverneur de cette colonie s'il y en a un, par le pilote de subsistance sinon - le pilote ne tient que de quoi nourrir la colonie et laisse le reste de la répartition telle que vous l'avez posée. Désactivé, les trois curseurs et leurs cadenas sont à vous."
 SubsistenceGaugeTip:
- Id: 7165
+ Id: 30233
  ENG: "Your people eat production, so this row shows the share of it held back to keep them alive. The row below is what is left for you to spend. It is the pilot that holds this, not a lock of yours."
  FRA: "Votre peuple se nourrit de production : cette ligne montre la part qui est retenue pour le maintenir en vie. La ligne du dessous est ce qui vous reste a repartir. C'est le pilote qui la tient, pas un verrou de votre fait."
 AddToQueueTitle:
- Id: 7167
+ Id: 30234
  ENG: "Add to Construction Queue"
  FRA: "Ajouter a la file de construction"
 AddToQueueTargetLabel:
- Id: 7168
+ Id: 30235
  ENG: "Send to"
  FRA: "Envoyer vers"
 AddToQueueAllColonies:
- Id: 7169
+ Id: 30236
  ENG: "All Colonies"
  FRA: "Toutes les colonies"
 AddToQueueNoGovernor:
- Id: 7170
+ Id: 30237
  ENG: "No Governor"
  FRA: "Sans gouverneur"
 AddToQueueBasket:
- Id: 7171
+ Id: 30238
  ENG: "To be queued"
  FRA: "A mettre en file"
 AddToQueueApply:
- Id: 7172
+ Id: 30239
  ENG: "Apply"
  FRA: "Appliquer"
 AddToQueueApplyTip:
- Id: 7173
+ Id: 30240
  ENG: "Posts this list to every targeted colony. A building already standing or already queued there is skipped; troops and ships go only where they can be built at all."
  FRA: "Envoie cette liste a chaque colonie ciblee. Un batiment deja construit ou deja en file y est ignore ; les troupes et les vaisseaux ne vont que la ou leur construction est possible."
 AddToQueueAllPassed:
- Id: 7174
+ Id: 30241
  ENG: "Everything went through."
  FRA: "Tout est passe."
 AddToQueueBlocked:
- Id: 7175
+ Id: 30242
  ENG: "These could not be queued - no free tile on the colony:"
  FRA: "Ceux-ci n'ont pas pu etre mis en file - pas de case libre sur la colonie :"
 PolRushProduction:
- Id: 7176
+ Id: 30243
  ENG: "Rush Production"
  FRA: "Production acceleree"
 PolManualConstruction:
- Id: 7177
+ Id: 30244
  ENG: "Manual Construction"
  FRA: "Construction manuelle"
 PolRushNewColony:
- Id: 7178
+ Id: 30245
  ENG: "Rush at Colony Creation"
  FRA: "Accelerer a la fondation"
 PolRushNewColonyTip:
- Id: 7179
+ Id: 30246
  ENG: "A colony you found is born with its own Continuous Rush already on, so a fresh world stands up instead of crawling. It is that colony's toggle from the first turn - switch it off there when you judge it has found its feet. Greyed while the empire-wide Continuous Rush is on, which already rushes everything."
  FRA: "Une colonie que vous fondez nait avec son propre Continuous Rush deja actif, pour qu'un monde neuf se leve au lieu de ramper. C'est le reglage de cette colonie des le premier tour : desactivez-le la-bas quand vous jugez qu'elle tient debout. Grise tant que le Continuous Rush d'empire est actif, qui accelere deja tout."
 FreighterPriorityTipCyber:
- Id: 7185
+ Id: 30250
  ENG: "Sets how your freighters choose their assignments."
  FRA: "Definit la facon dont vos cargos choisissent leurs missions."
 BpShowAll:
- Id: 7186
+ Id: 30251
  ENG: "Show All"
  FRA: "Tout afficher"
 BpShowAllTip:
- Id: 7187
+ Id: 30252
  ENG: "Lists every building in the game, not only the ones you have researched. A plan stores names, so it can be designed ahead of the research that unlocks them - locked buildings are greyed. The colony simulation counts the whole plan, not what your colony could build today."
  FRA: "Liste tous les batiments du jeu, pas seulement ceux que vous avez recherches. Un plan stocke des noms : il peut donc etre concu en avance sur la recherche qui les debloque - les batiments verrouilles sont grises. La simulation de colonie compte le plan complet, pas ce que votre colonie pourrait batir aujourd'hui."
 BpMoveUp:
- Id: 7188
+ Id: 30253
  ENG: "Move earlier in the plan. The plan reads as a chronology: it is built and replaced from the top, and rebuilt from the bottom."
  FRA: "Deplacer plus tot dans le plan. Le plan se lit comme une chronologie : il est bati et remplace par le haut, et reconstruit par le bas."
 BpMoveDown:
- Id: 7189
+ Id: 30254
  ENG: "Move later in the plan. The plan reads as a chronology: it is built and replaced from the top, and rebuilt from the bottom."
  FRA: "Deplacer plus tard dans le plan. Le plan se lit comme une chronologie : il est bati et remplace par le haut, et reconstruit par le bas."
 PolFreighterReserve:
- Id: 7190
+ Id: 30255
  ENG: "Freighter Reserve"
  FRA: "Réserve de cargos"
 PolFreighterReserveTip:
- Id: 7191
+ Id: 30256
  ENG: "Keeps a share of the freighter fleet free at all times, as a percentage of all your freighters. The empire builds up to the reserve and never scraps into it. Any setting above zero always keeps at least one ship. Freighters returning from a refit count as present. At zero, ships are built only when none are left, as before."
  FRA: "Garde en permanence une part de la flotte de cargos libre, en pourcentage de tous vos cargos. L'empire construit jusqu'à la réserve et ne la ferraille jamais. Tout réglage au-dessus de zéro garde au moins un cargo. Les cargos revenant de refit comptent comme présents. À zéro, on ne construit qu'une fois à sec, comme avant."
 PolFreighterRefitCap:
- Id: 7192
+ Id: 30257
  ENG: "Simultaneous Refits"
  FRA: "Refits simultanés"
 PolFreighterRefitCapTip:
- Id: 7193
+ Id: 30258
  ENG: "Caps refits to a share of the freighter fleet. A refitting freighter carries nothing; without a cap, the whole trade fleet can end up in the yards at once. Any setting above zero allows at least one refit. At Auto, the game's own formula applies. Warship refits and manual refits are not counted."
  FRA: "Limite les refits à une part de la flotte de cargos. Un cargo en refit ne transporte rien : sans plafond, toute la flotte marchande peut se retrouver au chantier d'un coup. Tout réglage au-dessus de zéro permet au moins un refit. Sur Auto, la formule du jeu s'applique. Les refits militaires et manuels ne sont pas comptés."
 PolFreighterIdleTurns:
- Id: 7194
+ Id: 30259
  ENG: "Idle Turns before Scrapping"
  FRA: "Tours d'inactivité avant ferraillage"
 PolFreighterIdleTurnsTip:
- Id: 7195
+ Id: 30260
  ENG: "How many turns a freighter may sit idle before being scrapped. Any assignment resets the count. Applies only while Auto-scrap Idle Freighters is on."
  FRA: "Nombre de tours qu'un cargo peut passer sans mission avant d'être ferraillé. Toute affectation remet le compteur à zéro. Ne s'applique que si le ferraillage automatique est actif."
 PolFreighterRefitAuto:
- Id: 7196
+ Id: 30261
  ENG: "Auto"
  FRA: "Auto"
 PolFreighterTradeFirst:
- Id: 7197
+ Id: 30262
  ENG: "Trade First"
  FRA: "Commerce d'abord"
 TzZoneName:
- Id: 7198
+ Id: 30263
  ENG: "Zone"
  FRA: "Zone"
 TzNumColonies:
- Id: 7199
+ Id: 30264
  ENG: "Colonies"
  FRA: "Colonies"
 TzServedColonies:
- Id: 7200
+ Id: 30265
  ENG: "Served"
  FRA: "Desservies"
 TzOwnedTarget:
- Id: 7201
+ Id: 30266
  ENG: "Target (Owned)"
  FRA: "Cible (Possédés)"
 TzNewZone:
- Id: 7202
+ Id: 30267
  ENG: "New Trade Zone"
  FRA: "Nouvelle zone commerciale"
 TzNewZoneTip:
- Id: 7203
+ Id: 30268
  ENG: "Create a trade zone by choosing the colonies it serves. Its freighters carry goods between those colonies."
  FRA: "Créer une zone commerciale en choisissant les colonies qu'elle dessert. Ses cargos transportent les marchandises entre ces colonies."
 TzEditZone:
- Id: 7204
+ Id: 30269
  ENG: "Edit Zone"
  FRA: "Modifier la zone"
 TzEditColoniesTip:
- Id: 7205
+ Id: 30270
  ENG: "Choose which colonies this zone serves."
  FRA: "Choisir les colonies desservies par cette zone."
 TzDeleteZoneTip:
- Id: 7206
+ Id: 30271
  ENG: "Delete this trade zone."
  FRA: "Supprimer cette zone commerciale."
 TzDeleteZoneConfirm:
- Id: 7207
+ Id: 30272
  ENG: "This will remove the trade zone from your empire. The colonies and their freighters are not affected."
  FRA: "Cela retire la zone commerciale de votre empire. Les colonies et leurs cargos ne sont pas affectés."
 TzEmptyHint:
- Id: 7208
+ Id: 30273
  ENG: "Create a trade zone from your colonies."
  FRA: "Créer une zone commerciale à partir de vos colonies."
 TzApply:
- Id: 7209
+ Id: 30274
  ENG: "Apply"
  FRA: "Appliquer"
 TzColonyPickTip:
- Id: 7210
+ Id: 30275
  ENG: "Serve this colony from this zone."
  FRA: "Desservir cette colonie depuis cette zone."
 DvGalaxyTabTipTrade:
- Id: 7211
+ Id: 30276
  ENG: "Trade zones: named groups of colonies served together by your freighters."
  FRA: "Zones commerciales : des groupes de colonies nommés, desservis ensemble par vos cargos."
 TzQuotaTip:
- Id: 7212
+ Id: 30277
  ENG: "On a soft zone, the most it may borrow from the common pool each turn - the list order says who is served first, this says how much they take. On an exclusive zone, the number of freighters it aims to own. Auto measures it from the zone's open import berths."
  FRA: "Sur une zone souple, le maximum qu'elle peut emprunter au pool commun à chaque tour - l'ordre de la liste dit qui est servi d'abord, ceci dit combien elle prend. Sur une zone exclusive, le nombre de cargos qu'elle vise à posséder. Auto le mesure sur les créneaux d'import ouverts de la zone."
 TzTargetFreighters:
- Id: 7265
+ Id: 30329
  ENG: "Target freighters"
  FRA: "Cargos visés"
 TzInZones:
- Id: 7266
+ Id: 30330
  ENG: "In zones:"
  FRA: "En zones :"
 PirateTributeLabel:
- Id: 7267
+ Id: 30331
  ENG: "Pirate Tribute"
  FRA: "Tribut pirate"
 PirateTributeTip:
- Id: 7268
+ Id: 30332
  ENG: "How much pirates demand when you buy peace instead of fighting. Applies to every empire. Stacks with difficulty and with the pirates' level: at higher difficulties the demand already grows faster than the minimum, so a high setting makes paying costly early."
  FRA: "Montant réclamé par les pirates quand vous achetez la paix au lieu de combattre. S'applique à tous les empires. Se cumule avec la difficulté et avec le niveau des pirates : aux difficultés élevées, la demande croît déjà plus vite que le plancher, un réglage haut rend le tribut coûteux dès le début."
 TributeLow:
- Id: 7269
+ Id: 30333
  ENG: "Low"
  FRA: "Faible"
 TributeHigh:
- Id: 7270
+ Id: 30334
  ENG: "High"
  FRA: "Élevé"
 TributeVeryHigh:
- Id: 7271
+ Id: 30335
  ENG: "Very High"
  FRA: "Très élevé"
 TzPriority:
- Id: 7272
+ Id: 30336
  ENG: "Priority"
  FRA: "Priorité"
 TzZoneFilter:
- Id: 7274
+ Id: 30338
  ENG: "Trade Zone"
  FRA: "Zone commerciale"
 TzPriorityTip:
- Id: 7273
+ Id: 30337
  ENG: "Which goods this zone's freighters carry first. Auto follows the empire's own order. Only an exclusive zone sets its own: a soft zone borrows hulls that follow the empire."
  FRA: "Marchandises que les cargos de cette zone transportent en premier. Auto suit l'ordre de l'empire. Seule une zone exclusive fixe le sien : une zone souple emprunte des coques qui suivent l'empire."
 TzPanToColonyTip:
- Id: 7213
+ Id: 30278
  ENG: "Centre the map on this colony."
  FRA: "Centrer la carte sur cette colonie."
 TzRequired:
- Id: 7214
+ Id: 30279
  ENG: "Need"
  FRA: "Besoin"
 TzRequiredTip:
- Id: 7215
+ Id: 30280
  ENG: "Freighters needed to keep these colonies supplied: what they consume over a delivery, plus the room left in their stores. See Inbound for how much of it is actually on its way."
  FRA: "Cargos nécessaires pour approvisionner ces colonies : ce qu'elles consomment le temps d'une livraison, plus la place restant dans leurs réserves. Voir En route pour ce qui est réellement en route."
 TzInbound:
@@ -29064,207 +29064,207 @@ CqWaitingForBlueprint:
  ENG: "(waiting for the blueprint)"
  FRA: "(en attente du plan)"
 TzActiveTip:
- Id: 7217
+ Id: 30281
  ENG: "Freighters currently flying to these colonies, whoever owns them. Yellow when only part of the need is on its way, red when none of it is. See Owned for the zone's own hulls."
  FRA: "Cargos actuellement en route vers ces colonies, quel que soit leur propriétaire. Jaune quand une partie seulement du besoin est en route, rouge quand rien ne l'est. Voir Owned pour les coques de la zone."
 TzName:
- Id: 7218
+ Id: 30282
  ENG: "Name"
  FRA: "Nom"
 TzSettings:
- Id: 7219
+ Id: 30283
  ENG: "Settings"
  FRA: "Réglages"
 TzNameTaken:
- Id: 7220
+ Id: 30284
  ENG: "A zone already carries this name."
  FRA: "Une zone porte déjà ce nom."
 TzMaxFreighters:
- Id: 7221
+ Id: 30285
  ENG: "Max freighters"
  FRA: "Cargos maximum"
 TzMoveUpTip:
- Id: 7222
+ Id: 30286
  ENG: "Serve this zone earlier. When freighters are short, the zones higher in the list are served first."
  FRA: "Desservir cette zone plus tôt. Quand les cargos manquent, les zones les plus hautes dans la liste sont servies les premières."
 TzMoveDownTip:
- Id: 7223
+ Id: 30287
  ENG: "Serve this zone later."
  FRA: "Desservir cette zone plus tard."
 MandateByBlueprint:
- Id: 7181
+ Id: 30247
  ENG: "By Blueprint"
  FRA: "Par schema"
 MandateDelegatedTip:
- Id: 7182
+ Id: 30248
  ENG: "Delegated to the exclusive blueprint that commands this colony. Remove the blueprint, or hand over to a non exclusive one, to take the mandates back - your own settings are kept and return untouched."
  FRA: "Delegue au schema exclusif qui commande cette colonie. Retirez le schema, ou passez a un schema non exclusif, pour reprendre la main : vos reglages sont conserves et reviennent intacts."
 ExclusiveBlueprintWarn:
- Id: 7183
+ Id: 30249
  ENG: "This exclusive plan takes full control of the colony. Buildings not on its list, including hand-placed and military ones, may be demolished when space is needed. Mandates are overridden while the plan is active. Proceed?"
  FRA: "Ce plan exclusif prend le contrôle total de la colonie. Les bâtiments hors liste, y compris posés à la main et militaires, pourront être démolis si la place vient à manquer. Les mandats sont suspendus tant que le plan est actif. Continuer ?"
 TzColonyZones:
- Id: 7224
+ Id: 30288
  ENG: "Trade Zones"
  FRA: "Zones commerciales"
 TzColonyZonesNone:
- Id: 7225
+ Id: 30289
  ENG: "None"
  FRA: "Aucune"
 TzColonyZonesTip:
- Id: 7226
+ Id: 30290
  ENG: "The trade zones that serve this colony. A zone borrows freighters before the general dispatch, so a colony inside one is served earlier."
  FRA: "Les zones commerciales qui desservent cette colonie. Une zone emprunte des cargos avant la dépêche générale : une colonie qui en fait partie est donc servie plus tôt."
 TzColonyZonesEditTip:
- Id: 7227
+ Id: 30291
  ENG: "Choose which zones serve this colony."
  FRA: "Choisir les zones qui desservent cette colonie."
 TzColonyZonesTitle:
- Id: 7228
+ Id: 30292
  ENG: "Zones Serving This Colony"
  FRA: "Zones desservant cette colonie"
 TzNoZonesHint:
- Id: 7229
+ Id: 30293
  ENG: "No trade zone yet. Create one from the Trade tab of the galaxy screens."
  FRA: "Aucune zone commerciale. Créez-en une depuis l'onglet Trade des écrans galactiques."
 TzAllZones:
- Id: 7230
+ Id: 30294
  ENG: "All zones"
  FRA: "Toutes les zones"
 TzWindowZoneTip:
- Id: 7231
+ Id: 30295
  ENG: "Show the numbers for one trade zone only. A colony belongs to a zone by the list it is on, a freighter by the run it is delivering into it."
  FRA: "N'afficher que les chiffres d'une seule zone. Une colonie en fait partie par la liste où elle est inscrite, un cargo par la course qu'il y livre."
 BpMoveOnTip:
- Id: 7232
+ Id: 30296
  ENG: "Activate linked Blueprint"
  FRA: "Activer le schéma lié"
 BpOpenOnDoubleClickTip:
- Id: 7233
+ Id: 30297
  ENG: "Double-click to open this blueprint in the Blueprints page - to read it or to change it."
  FRA: "Double-cliquez pour ouvrir ce schéma dans la page Blueprints — pour le consulter ou le modifier."
 TzMiningStation:
- Id: 7234
+ Id: 30298
  ENG: "Mining Station"
  FRA: "Station minière"
 TzResearchStation:
- Id: 7235
+ Id: 30299
  ENG: "Research Station"
  FRA: "Station de recherche"
 TzExclusive:
- Id: 7236
+ Id: 30300
  ENG: "Exclusive zone"
  FRA: "Zone exclusive"
 TzExclusiveTip:
- Id: 7237
+ Id: 30301
  ENG: "An exclusive zone OWNS its freighters instead of borrowing a share of the turn. It requisitions free hulls up to its need, one at a time, and never below the empire's reserve. The empire still builds, scraps and modernises the fleet."
  FRA: "Une zone exclusive POSSÈDE ses cargos au lieu d'emprunter une part du tour. Elle réquisitionne les coques libres jusqu'à son besoin, une à une, et jamais en dessous de la réserve de l'empire. L'empire continue de construire, ferrailler et moderniser la flotte."
 TzOwnedTip:
- Id: 7238
+ Id: 30302
  ENG: "Freighters this zone OWNS. Only an exclusive zone owns any: a soft zone borrows a share of the turn and gives it back."
  FRA: "Cargos que cette zone POSSÈDE. Seule une zone exclusive en possède : une zone souple emprunte une part du tour et la rend."
 TzOwnedTargetTip:
- Id: 7264
+ Id: 30328
  ENG: "Hulls this zone keeps for itself, and how many it owns today. A number you set is an order: the zone takes idle freighters first, then builds one at a time until it reaches it, even with Auto-build Freighters off. Auto follows Need and only builds when Auto-build Freighters is on. A hull under construction shows as +1."
  FRA: "Coques que cette zone garde pour elle, et combien elle en possède aujourd'hui. Un nombre que vous posez est un ordre : la zone prend d'abord les cargos oisifs, puis en construit un à la fois jusqu'à l'atteindre, même si Auto-build Freighters est décoché. En Auto elle suit le besoin et ne construit que si Auto-build Freighters est coché. Une coque en chantier s'affiche en +1."
 TzConvertedNotice:
- Id: 7239
+ Id: 30303
  ENG: "The areas of operation and manual trade routes you had drawn on individual freighters have become EXCLUSIVE TRADE ZONES, and their editors are gone: what a zone holds is now edited in one place, on the Trade page.\n\nOne thing has changed and cannot be undone: an area of operation was a SHAPE, and it welcomed colonies founded inside it later. A zone is a LIST, taken as your areas stood at this moment. A colony founded inside an old rectangle from now on will not join its zone on its own - add it yourself from the Trade page or from the colony's own screen."
  FRA: "Les zones d'opération et les routes commerciales manuelles que vous aviez dessinées sur des cargos isolés sont devenues des ZONES COMMERCIALES EXCLUSIVES, et leurs éditeurs ont disparu : ce qu'une zone contient s'édite désormais en un seul endroit, sur la page Trade.\n\nUne chose a changé et ne peut être défaite : une zone d'opération était une FORME, et elle accueillait les colonies fondées dedans par la suite. Une zone est une LISTE, prise telle que vos rectangles se présentaient à cet instant. Une colonie fondée désormais dans un ancien rectangle n'y entrera plus d'elle-même — ajoutez-la depuis la page Trade ou depuis l'écran de la colonie."
 TzShipZoneTitle:
- Id: 7240
+ Id: 30304
  ENG: "Trade Zone of this Freighter"
  FRA: "Zone commerciale de ce cargo"
 TzShipZoneTip:
- Id: 7241
+ Id: 30305
  ENG: "Choose the trade zone this freighter belongs to. A freighter belongs to one zone at a time, and only an exclusive zone owns any."
  FRA: "Choisir la zone commerciale à laquelle ce cargo appartient. Un cargo n'appartient qu'à une zone à la fois, et seule une zone exclusive en possède."
 TzNoZone:
- Id: 7242
+ Id: 30306
  ENG: "No zone"
  FRA: "Aucune zone"
 RmPaceLabel:
- Id: 7243
+ Id: 30307
  ENG: "Remnant Pace"
  FRA: "Rythme des Remnants"
 RmPaceTip:
- Id: 7244
+ Id: 30308
  ENG: "How quickly the Remnant story escalates. Off: no story, the Remnant never activate and stay at level 1, but slightly more guard fleets are placed at start. Slower stretches the climb."
  FRA: "Vitesse d'escalade de l'histoire Remnant. Off : pas d'histoire, les Remnants ne s'activent jamais et restent au niveau 1, mais un peu plus de flottes gardiennes sont posées au départ. Plus lent : l'escalade s'étire."
 RmPaceVerySlow:
- Id: 7245
+ Id: 30309
  ENG: "Very Slow"
  FRA: "Très lent"
 RmPaceSlow:
- Id: 7246
+ Id: 30310
  ENG: "Slow"
  FRA: "Lent"
 RmPaceNormal:
- Id: 7247
+ Id: 30311
  ENG: "Normal"
  FRA: "Normal"
 RmStrengthLabel:
- Id: 7248
+ Id: 30312
  ENG: "Remnant Strength"
  FRA: "Force des Remnants"
 RmStrengthTip:
- Id: 7249
+ Id: 30313
  ENG: "How hard Remnant fleets hit, and how much of a lead they demand before they attack. Default is what the rules ask for: the value the loaded mod declares, or the base game's where no mod raises it. The other notches are fractions of that."
  FRA: "Puissance des flottes Remnants et avance qu'elles exigent avant d'attaquer. Défaut : la valeur prévue par les règles, celle du mod chargé ou celle du jeu de base si aucun mod ne l'augmente. Les autres crans en sont des fractions."
 NgTabFactions:
- Id: 7250
+ Id: 30314
  ENG: "Factions"
  FRA: "Factions"
 RmStrengthQuarter:
- Id: 7251
+ Id: 30315
  ENG: "1/4"
  FRA: "1/4"
 RmStrengthHalf:
- Id: 7252
+ Id: 30316
  ENG: "1/2"
  FRA: "1/2"
 RmStrengthThreeQ:
- Id: 7253
+ Id: 30317
  ENG: "3/4"
  FRA: "3/4"
 RmPaceOff:
- Id: 7254
+ Id: 30318
  ENG: "Off"
  FRA: "Aucune"
 RmPresenceTip:
- Id: 7255
+ Id: 30319
  ENG: "How many Remnant guard fleets the galaxy starts with. Fewer guards also make the Remnant climb levels faster once their story begins."
  FRA: "Nombre de flottes gardiennes Remnant au départ. Moins de gardiens : les Remnants montent aussi de niveau plus vite une fois leur histoire lancée."
 PirateFactionsLabel:
- Id: 7256
+ Id: 30320
  ENG: "Pirate Factions"
  FRA: "Factions pirates"
 PirateFactionsTip:
- Id: 7257
+ Id: 30321
  ENG: "Which pirate factions start alive. None disables piracy entirely. One (random) keeps a single faction, drawn for this galaxy. Naming a faction keeps that one and no other, so the same seed and the same setting give the same galaxy twice."
  FRA: "Quelles factions pirates vivent au départ. Aucune : la piraterie est désactivée. Une (au hasard) : une seule faction, tirée pour cette galaxie. Nommer une faction ne garde qu'elle, donc la même graine et le même réglage redonnent la même galaxie."
 PirateFactionsNone:
- Id: 7258
+ Id: 30322
  ENG: "None"
  FRA: "Aucune"
 PirateFactionsOne:
- Id: 7259
+ Id: 30323
  ENG: "One"
  FRA: "Une"
 PirateFactionsAll:
- Id: 7260
+ Id: 30324
  ENG: "All"
  FRA: "Toutes"
 PiratePaceLabel:
- Id: 7261
+ Id: 30325
  ENG: "Pirate Pace"
  FRA: "Rythme des pirates"
 PiratePaceTip:
- Id: 7262
+ Id: 30326
  ENG: "How quickly pirates gain levels. Each level adds a base and stronger raids. Slower stretches the climb."
  FRA: "Vitesse à laquelle les pirates gagnent des niveaux. Chaque niveau ajoute une base et des raids plus forts. Plus lent : l'escalade s'étire."
 RmStrengthDefault:
- Id: 7263
+ Id: 30327
  ENG: "Default"
  FRA: "Défaut"
 CodexLudoal:

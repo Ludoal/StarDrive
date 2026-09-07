@@ -7119,354 +7119,354 @@ namespace Ship_Game
         /// <summary>This is this ship's self-repair rate per tick - it</summary>
         TT_RepairRate = 7091,
         /// <summary>Spending Over Manual Budget</summary>
-        SpendingOverManualBudget = 7092,
+        SpendingOverManualBudget = 30164,
         /// <summary>Freighter Priority</summary>
-        FreighterPriority = 7093,
+        FreighterPriority = 30165,
         /// <summary>Auto</summary>
-        FreighterPriorityAuto = 7094,
+        FreighterPriorityAuto = 30166,
         /// <summary>Production First</summary>
-        FreighterPriorityProductionFirst = 7095,
+        FreighterPriorityProductionFirst = 30167,
         /// <summary>Colonists First</summary>
-        FreighterPriorityColonistsFirst = 7096,
+        FreighterPriorityColonistsFirst = 30168,
         /// <summary>When freighters run short, which cargo is served first. Only affects a shortage; abundant freighters serve everything.</summary>
-        FreighterPriorityTip = 7097,
+        FreighterPriorityTip = 30169,
         /// <summary>Standing orders your colonies and fleets follow by default</summary>
-        DvEmpireTabTipPolicies = 7139,
+        DvEmpireTabTipPolicies = 30210,
         /// <summary>Policies</summary>
-        HkPolicies = 7146,
+        HkPolicies = 30215,
         /// <summary>Next</summary>
-        BlueprintNextLabel = 7156,
+        BlueprintNextLabel = 30224,
         /// <summary>Blueprint</summary>
-        BlueprintModeLabel = 7153,
+        BlueprintModeLabel = 30221,
         /// <summary>Custom...</summary>
-        BlueprintModeCustom = 7154,
+        BlueprintModeCustom = 30222,
         /// <summary>Auto follows the empire's default plan; Custom opens the plan chooser; None clears it.</summary>
-        BlueprintModeTip = 7155,
+        BlueprintModeTip = 30223,
         /// <summary>Auto</summary>
-        BlueprintModeAuto = 7157,
+        BlueprintModeAuto = 30225,
         /// <summary>Follow the empire's default plan for this governor type, set in Policies &gt; Colony. If no default is set there, this colony simply has no plan.</summary>
-        BlueprintModeAutoTip = 7158,
+        BlueprintModeAutoTip = 30226,
         /// <summary>Default plan by governor</summary>
-        PolBlueprintsHeading = 7159,
+        PolBlueprintsHeading = 30227,
         /// <summary>The plan a colony follows when its Blueprint is set to Auto.</summary>
-        PolBlueprintsTip = 7160,
+        PolBlueprintsTip = 30228,
         /// <summary>not found</summary>
-        BlueprintNotFound = 7161,
+        BlueprintNotFound = 30229,
         /// <summary>This plan is Exclusive. Set it as the default?</summary>
-        BlueprintExclusiveWarn = 7162,
+        BlueprintExclusiveWarn = 30230,
         /// <summary>Auto</summary>
-        LaborAuto = 7163,
+        LaborAuto = 30231,
         /// <summary>The labour split is managed for you - by the governor, or by the sustenance pilot.</summary>
-        LaborAutoTip = 7164,
+        LaborAutoTip = 30232,
         /// <summary>The share of production held back to keep a cybernetic colony alive.</summary>
-        SubsistenceGaugeTip = 7165,
+        SubsistenceGaugeTip = 30233,
         /// <summary>Add to Construction Queue</summary>
-        AddToQueueTitle = 7167,
+        AddToQueueTitle = 30234,
         /// <summary>Send to</summary>
-        AddToQueueTargetLabel = 7168,
+        AddToQueueTargetLabel = 30235,
         /// <summary>All Colonies</summary>
-        AddToQueueAllColonies = 7169,
+        AddToQueueAllColonies = 30236,
         /// <summary>No Governor</summary>
-        AddToQueueNoGovernor = 7170,
+        AddToQueueNoGovernor = 30237,
         /// <summary>To be queued</summary>
-        AddToQueueBasket = 7171,
+        AddToQueueBasket = 30238,
         /// <summary>Apply</summary>
-        AddToQueueApply = 7172,
+        AddToQueueApply = 30239,
         /// <summary>Posts this list to every targeted colony.</summary>
-        AddToQueueApplyTip = 7173,
+        AddToQueueApplyTip = 30240,
         /// <summary>Everything went through.</summary>
-        AddToQueueAllPassed = 7174,
+        AddToQueueAllPassed = 30241,
         /// <summary>These could not be queued - no free tile on the colony:</summary>
-        AddToQueueBlocked = 7175,
+        AddToQueueBlocked = 30242,
         /// <summary>Rush Production</summary>
-        PolRushProduction = 7176,
+        PolRushProduction = 30243,
         /// <summary>Manual Construction</summary>
-        PolManualConstruction = 7177,
+        PolManualConstruction = 30244,
         /// <summary>Rush at Colony Creation</summary>
-        PolRushNewColony = 7178,
+        PolRushNewColony = 30245,
         /// <summary>A newly founded colony rushes its construction queue for this many turns.</summary>
-        PolRushNewColonyTip = 7179,
+        PolRushNewColonyTip = 30246,
         /// <summary>Sets how your freighters choose their assignments.</summary>
-        FreighterPriorityTipCyber = 7185,
+        FreighterPriorityTipCyber = 30250,
         /// <summary>Show All</summary>
-        BpShowAll = 7186,
+        BpShowAll = 30251,
         /// <summary>Lists every building in the game, not only the ones you have researched.</summary>
-        BpShowAllTip = 7187,
+        BpShowAllTip = 30252,
         /// <summary>Move earlier in the plan.</summary>
-        BpMoveUp = 7188,
+        BpMoveUp = 30253,
         /// <summary>Move later in the plan.</summary>
-        BpMoveDown = 7189,
+        BpMoveDown = 30254,
         /// <summary>Freighter Reserve</summary>
-        PolFreighterReserve = 7190,
+        PolFreighterReserve = 30255,
         /// <summary>Freighters kept free instead of being scrapped.</summary>
-        PolFreighterReserveTip = 7191,
+        PolFreighterReserveTip = 30256,
         /// <summary>Simultaneous Refits</summary>
-        PolFreighterRefitCap = 7192,
+        PolFreighterRefitCap = 30257,
         /// <summary>How many freighters may be at a shipyard at once.</summary>
-        PolFreighterRefitCapTip = 7193,
+        PolFreighterRefitCapTip = 30258,
         /// <summary>Idle Turns before Scrapping</summary>
-        PolFreighterIdleTurns = 7194,
+        PolFreighterIdleTurns = 30259,
         /// <summary>How long a freighter may sit idle before it is scrapped.</summary>
-        PolFreighterIdleTurnsTip = 7195,
+        PolFreighterIdleTurnsTip = 30260,
         /// <summary>Auto</summary>
-        PolFreighterRefitAuto = 7196,
+        PolFreighterRefitAuto = 30261,
         /// <summary>Trade First</summary>
-        PolFreighterTradeFirst = 7197,
+        PolFreighterTradeFirst = 30262,
         /// <summary>Zone</summary>
-        TzZoneName = 7198,
+        TzZoneName = 30263,
         /// <summary>Colonies</summary>
-        TzNumColonies = 7199,
+        TzNumColonies = 30264,
         /// <summary>Served</summary>
-        TzServedColonies = 7200,
+        TzServedColonies = 30265,
         /// <summary>Assigned</summary>
-        TzOwnedTarget = 7201,
+        TzOwnedTarget = 30266,
         /// <summary>New Trade Zone</summary>
-        TzNewZone = 7202,
+        TzNewZone = 30267,
         /// <summary>Create a trade zone by choosing the colonies it serves</summary>
-        TzNewZoneTip = 7203,
+        TzNewZoneTip = 30268,
         /// <summary>Edit Zone</summary>
-        TzEditZone = 7204,
+        TzEditZone = 30269,
         /// <summary>Choose which colonies this zone serves</summary>
-        TzEditColoniesTip = 7205,
+        TzEditColoniesTip = 30270,
         /// <summary>Delete this trade zone</summary>
-        TzDeleteZoneTip = 7206,
+        TzDeleteZoneTip = 30271,
         /// <summary>This will remove the trade zone from your empire</summary>
-        TzDeleteZoneConfirm = 7207,
+        TzDeleteZoneConfirm = 30272,
         /// <summary>Create a trade zone from your colonies</summary>
-        TzEmptyHint = 7208,
+        TzEmptyHint = 30273,
         /// <summary>Apply</summary>
-        TzApply = 7209,
+        TzApply = 30274,
         /// <summary>Serve this colony from this zone</summary>
-        TzColonyPickTip = 7210,
+        TzColonyPickTip = 30275,
         /// <summary>Trade zones: named groups of colonies served together by your freighte</summary>
-        DvGalaxyTabTipTrade = 7211,
+        DvGalaxyTabTipTrade = 30276,
         /// <summary>How many freighters serve this zone.</summary>
-        TzQuotaTip = 7212,
+        TzQuotaTip = 30277,
         /// <summary>Centre the map on this colony.</summary>
-        TzPanToColonyTip = 7213,
+        TzPanToColonyTip = 30278,
         /// <summary>Required</summary>
-        TzRequired = 7214,
+        TzRequired = 30279,
         /// <summary>What the zone could put to work now.</summary>
-        TzRequiredTip = 7215,
+        TzRequiredTip = 30280,
         /// <summary>Active</summary>
         /// <summary>Freighters on their way to this zone.</summary>
-        TzActiveTip = 7217,
+        TzActiveTip = 30281,
         /// <summary>Name</summary>
-        TzName = 7218,
+        TzName = 30282,
         /// <summary>Settings</summary>
-        TzSettings = 7219,
+        TzSettings = 30283,
         /// <summary>A zone already carries this name.</summary>
-        TzNameTaken = 7220,
+        TzNameTaken = 30284,
         /// <summary>Assigned Freighters</summary>
-        TzMaxFreighters = 7221,
+        TzMaxFreighters = 30285,
         /// <summary>Serve this zone earlier.</summary>
-        TzMoveUpTip = 7222,
+        TzMoveUpTip = 30286,
         /// <summary>Serve this zone later.</summary>
-        TzMoveDownTip = 7223,
+        TzMoveDownTip = 30287,
         /// <summary>Trade Zones</summary>
-        TzColonyZones = 7224,
+        TzColonyZones = 30288,
         /// <summary>None</summary>
-        TzColonyZonesNone = 7225,
+        TzColonyZonesNone = 30289,
         /// <summary>The trade zones that serve this colony.</summary>
-        TzColonyZonesTip = 7226,
+        TzColonyZonesTip = 30290,
         /// <summary>Choose which zones serve this colony.</summary>
-        TzColonyZonesEditTip = 7227,
+        TzColonyZonesEditTip = 30291,
         /// <summary>Zones Serving This Colony</summary>
-        TzColonyZonesTitle = 7228,
+        TzColonyZonesTitle = 30292,
         /// <summary>No trade zone yet.</summary>
-        TzNoZonesHint = 7229,
+        TzNoZonesHint = 30293,
         /// <summary>All zones</summary>
-        TzAllZones = 7230,
+        TzAllZones = 30294,
         /// <summary>Show the numbers for one trade zone only.</summary>
-        TzWindowZoneTip = 7231,
+        TzWindowZoneTip = 30295,
         /// <summary>Activate linked Blueprint</summary>
-        BpMoveOnTip = 7232,
+        BpMoveOnTip = 30296,
         /// <summary>Double-click to open this blueprint</summary>
-        BpOpenOnDoubleClickTip = 7233,
+        BpOpenOnDoubleClickTip = 30297,
         /// <summary>Mining Station</summary>
-        TzMiningStation = 7234,
+        TzMiningStation = 30298,
         /// <summary>Research Station</summary>
-        TzResearchStation = 7235,
+        TzResearchStation = 30299,
         /// <summary>Exclusive zone</summary>
-        TzExclusive = 7236,
+        TzExclusive = 30300,
         /// <summary>A exclusive zone owns its freighters.</summary>
-        TzExclusiveTip = 7237,
+        TzExclusiveTip = 30301,
         /// <summary>Freighters this zone owns.</summary>
-        TzOwnedTip = 7238,
-        TzOwnedTargetTip = 7264,
-        TzTargetFreighters = 7265,
-        TzInZones = 7266,
+        TzOwnedTip = 30302,
+        TzOwnedTargetTip = 30328,
+        TzTargetFreighters = 30329,
+        TzInZones = 30330,
         /// <summary>Tribute</summary>
-        PirateTributeLabel = 7267,
+        PirateTributeLabel = 30331,
         /// <summary>What pirates ask for when they demand payment.</summary>
-        PirateTributeTip = 7268,
+        PirateTributeTip = 30332,
         /// <summary>Low</summary>
-        TributeLow = 7269,
+        TributeLow = 30333,
         /// <summary>High</summary>
-        TributeHigh = 7270,
+        TributeHigh = 30334,
         /// <summary>Very High</summary>
-        TributeVeryHigh = 7271,
+        TributeVeryHigh = 30335,
         /// <summary>Priority</summary>
-        TzPriority = 7272,
+        TzPriority = 30336,
         /// <summary>Which goods this zone's freighters carry first.</summary>
-        TzPriorityTip = 7273,
+        TzPriorityTip = 30337,
         /// <summary>Trade Zone</summary>
-        TzZoneFilter = 7274,
+        TzZoneFilter = 30338,
         /// <summary>Your manual freighter filters have become exclusive trade zones.</summary>
-        TzConvertedNotice = 7239,
+        TzConvertedNotice = 30303,
         /// <summary>Trade Zone of this Freighter</summary>
-        TzShipZoneTitle = 7240,
+        TzShipZoneTitle = 30304,
         /// <summary>Choose the trade zone this freighter belongs to.</summary>
-        TzShipZoneTip = 7241,
+        TzShipZoneTip = 30305,
         /// <summary>No zone</summary>
-        TzNoZone = 7242,
+        TzNoZone = 30306,
         /// <summary>Remnant Pace</summary>
-        RmPaceLabel = 7243,
+        RmPaceLabel = 30307,
         /// <summary>How fast the Remnants gain power over time.</summary>
-        RmPaceTip = 7244,
+        RmPaceTip = 30308,
         /// <summary>Very Slow</summary>
-        RmPaceVerySlow = 7245,
+        RmPaceVerySlow = 30309,
         /// <summary>Slow</summary>
-        RmPaceSlow = 7246,
+        RmPaceSlow = 30310,
         /// <summary>Normal</summary>
-        RmPaceNormal = 7247,
+        RmPaceNormal = 30311,
         /// <summary>Remnant Strength</summary>
-        RmStrengthLabel = 7248,
+        RmStrengthLabel = 30312,
         /// <summary>How hard Remnant fleets hit and how much they demand before attacking.</summary>
-        RmStrengthTip = 7249,
+        RmStrengthTip = 30313,
         /// <summary>Factions</summary>
-        NgTabFactions = 7250,
+        NgTabFactions = 30314,
         /// <summary>1/4</summary>
-        RmStrengthQuarter = 7251,
+        RmStrengthQuarter = 30315,
         /// <summary>1/2</summary>
-        RmStrengthHalf = 7252,
+        RmStrengthHalf = 30316,
         /// <summary>3/4</summary>
-        RmStrengthThreeQ = 7253,
+        RmStrengthThreeQ = 30317,
         /// <summary>Off</summary>
-        RmPaceOff = 7254,
+        RmPaceOff = 30318,
         /// <summary>How many Remnant guard fleets the galaxy starts with.</summary>
-        RmPresenceTip = 7255,
+        RmPresenceTip = 30319,
         /// <summary>Pirate Factions</summary>
-        PirateFactionsLabel = 7256,
+        PirateFactionsLabel = 30320,
         /// <summary>How many pirate factions start alive.</summary>
-        PirateFactionsTip = 7257,
+        PirateFactionsTip = 30321,
         /// <summary>None</summary>
-        PirateFactionsNone = 7258,
+        PirateFactionsNone = 30322,
         /// <summary>One</summary>
-        PirateFactionsOne = 7259,
+        PirateFactionsOne = 30323,
         /// <summary>All</summary>
-        PirateFactionsAll = 7260,
+        PirateFactionsAll = 30324,
         /// <summary>Pirate Pace</summary>
-        PiratePaceLabel = 7261,
+        PiratePaceLabel = 30325,
         /// <summary>How quickly pirates gain levels.</summary>
-        PiratePaceTip = 7262,
+        PiratePaceTip = 30326,
         /// <summary>Default</summary>
-        RmStrengthDefault = 7263,
+        RmStrengthDefault = 30327,
         /// <summary>By Blueprint</summary>
-        MandateByBlueprint = 7181,
+        MandateByBlueprint = 30247,
         /// <summary>Delegated to the exclusive blueprint that commands this colony.</summary>
-        MandateDelegatedTip = 7182,
+        MandateDelegatedTip = 30248,
         /// <summary>Exclusive Blueprint. This blueprint takes formal command of the colony.</summary>
-        ExclusiveBlueprintWarn = 7183,
+        ExclusiveBlueprintWarn = 30249,
         /// <summary>Blueprint name</summary>
-        BlueprintNameLabel = 7150,
+        BlueprintNameLabel = 30219,
         /// <summary>Completion</summary>
-        CompletionNoColon = 7151,
+        CompletionNoColon = 30220,
         /// <summary>Auto</summary>
-        MandateAuto = 7148,
+        MandateAuto = 30217,
         /// <summary>Follow the empire's own mandate, set in Policies &gt; Colony.</summary>
-        MandateAutoTip = 7149,
+        MandateAutoTip = 30218,
         /// <summary>Governor Type</summary>
-        GovernorTypeLabel = 7147,
+        GovernorTypeLabel = 30216,
         /// <summary>Who your freighters serve, and whether you trade abroad.</summary>
-        PolTradeNotice = 7141,
+        PolTradeNotice = 30211,
         /// <summary>How a new colony is run from its first day.</summary>
-        PolColonyNotice = 7143,
+        PolColonyNotice = 30212,
         /// <summary>The order your colonies build in, and how fast.</summary>
-        PolConstructionNotice = 7144,
+        PolConstructionNotice = 30213,
         /// <summary>Whether your freighters may serve empires you have a trade treaty with. This one is a game rule rather than an empire order: it is stored with the game setup, not with your empire.</summary>
-        PolInterTradeGameRuleTip = 7145,
+        PolInterTradeGameRuleTip = 30214,
         /// <summary>Auto-upgrade Freighters</summary>
-        AutoUpgradeFreighters = 7098,
+        AutoUpgradeFreighters = 30170,
         /// <summary>Automatically replaces your freighters with the best available model, independently of trade routing.</summary>
-        AutoUpgradeFreightersTip = 7099,
+        AutoUpgradeFreightersTip = 30171,
         /// <summary>Auto-clear (s)</summary>
-        NotificationAutoClear = 7100,
+        NotificationAutoClear = 30172,
         /// <summary>Automatically clears a notification after this many seconds. 0 = off. Pausing and event notifications are always kept.</summary>
-        NotificationAutoClearTip = 7101,
+        NotificationAutoClearTip = 30173,
         /// <summary>Auto-build Freighters</summary>
-        AutoBuildFreighters = 7102,
+        AutoBuildFreighters = 30174,
         /// <summary>Automatically builds new freighters as trade demands, using the model picked here.</summary>
-        AutoBuildFreightersTip = 7103,
+        AutoBuildFreightersTip = 30175,
         /// <summary>Auto-scrap Idle Freighters</summary>
-        AutoScrapIdleFreighters = 7104,
+        AutoScrapIdleFreighters = 30176,
         /// <summary>Automatically scraps freighters that stay idle for too long, to trim an oversized fleet.</summary>
-        AutoScrapIdleFreightersTip = 7105,
+        AutoScrapIdleFreightersTip = 30177,
         /// <summary>Freighter Model</summary>
-        FreighterModel = 7106,
+        FreighterModel = 30178,
         /// <summary>The freighter model Auto-build and Auto-upgrade use. Checked = Auto Pick (the best available); uncheck to choose a specific model.</summary>
-        FreighterModelTip = 7107,
+        FreighterModelTip = 30179,
         /// <summary>Inhibited when Inter Empire Trade is not allowed (enable it in Automation).</summary>
-        InterTradeInhibited = 7108,
+        InterTradeInhibited = 30180,
         /// <summary>Auto-build Explorers</summary>
-        AutoBuildExplorers = 7109,
+        AutoBuildExplorers = 30181,
         /// <summary>Your empire will automatically build new scout ships while systems remain unexplored.</summary>
-        AutoBuildExplorersTip = 7110,
+        AutoBuildExplorersTip = 30182,
         /// <summary>Send New Explorers to Explore</summary>
-        SendNewExplorersToExplore = 7111,
+        SendNewExplorersToExplore = 30183,
         /// <summary>Idle scouts are automatically sent out to explore unknown systems.</summary>
-        SendNewExplorersToExploreTip = 7112,
+        SendNewExplorersToExploreTip = 30184,
         /// <summary>Their spy network is dismantled: their infiltration is now reduced to zero.</summary>
-        CounterEspionageNetworkWipedToZero = 7113,
+        CounterEspionageNetworkWipedToZero = 30185,
         /// <summary>Known Infiltration Level</summary>
         /// <summary>Anomalies, planets and stars to survey or mine, fully-explored systems, lost scouts.</summary>
-        NotifCatExplorationTip = 7114,
+        NotifCatExplorationTip = 30186,
         /// <summary>New colonies, capital transfers, colonies lost, volcanoes, meteors, starvation, troop evacuations.</summary>
-        NotifCatColonyTip = 7115,
+        NotifCatColonyTip = 30187,
         /// <summary>Buildings finished or destroyed, research and mining stations, orbital limits, empty build queue.</summary>
-        NotifCatConstructionTip = 7116,
+        NotifCatConstructionTip = 30188,
         /// <summary>Invasions, enemy troops landing, planets conquered, rebellions, crash sites, boardings.</summary>
-        NotifCatCombatTip = 7117,
+        NotifCatCombatTip = 30189,
         /// <summary>Treaties broken, signed or expired, war declarations, peace, empires merged or defeated.</summary>
-        NotifCatDiplomacyTip = 7118,
+        NotifCatDiplomacyTip = 30190,
         /// <summary>Espionage operation results, moles and counter-espionage.</summary>
-        NotifCatEspionageTip = 7119,
+        NotifCatEspionageTip = 30191,
         /// <summary>Treasury running low and other economy warnings.</summary>
-        NotifCatEconomyTip = 7120,
+        NotifCatEconomyTip = 30192,
         /// <summary>Random, story and technology event popups, scrap unlocks, research completed.</summary>
-        NotifCatEventsTip = 7121,
+        NotifCatEventsTip = 30193,
         /// <summary>Remnants and Pirates: raids, growing strength, portals, flagships.</summary>
-        NotifCatThreatsTip = 7122,
+        NotifCatThreatsTip = 30194,
         /// <summary>Can build ships (has a Space Port).</summary>
-        ColonyCanBuildShipsTip = 7123,
+        ColonyCanBuildShipsTip = 30195,
         /// <summary>Can build troops (has a Military Outpost).</summary>
-        ColonyCanBuildTroopsTip = 7124,
+        ColonyCanBuildTroopsTip = 30196,
         /// <summary>Auto-clear</summary>
-        AutoClearShort = 7125,
+        AutoClearShort = 30197,
         /// <summary>Not available</summary>
-        NotAvailable = 7126,
+        NotAvailable = 30198,
         /// <summary>Default split inherited from the empire budget (no budget allocated to this colony yet).</summary>
-        InheritedBudgetShareTip = 7127,
+        InheritedBudgetShareTip = 30199,
         /// <summary>Build Mandate</summary>
-        BuildMandate = 7128,
+        BuildMandate = 30200,
         /// <summary>Scrap Mandate</summary>
-        ScrapMandate = 7129,
+        ScrapMandate = 30201,
         /// <summary>All</summary>
-        MandateAll = 7130,
+        MandateAll = 30202,
         /// <summary>Economic only</summary>
-        MandateEconomicOnly = 7131,
+        MandateEconomicOnly = 30203,
         /// <summary>Defense only</summary>
-        MandateDefenseOnly = 7132,
+        MandateDefenseOnly = 30204,
         /// <summary>None</summary>
-        MandateNone = 7133,
+        MandateNone = 30205,
         /// <summary>Which buildings this governor may construct.</summary>
-        BuildMandateTip = 7134,
+        BuildMandateTip = 30206,
         /// <summary>Which buildings this governor may demolish.</summary>
-        ScrapMandateTip = 7135,
+        ScrapMandateTip = 30207,
         /// <summary>GROUND TROOPS</summary>
-        GroundTroopsHeader = 7136,
+        GroundTroopsHeader = 30208,
         /// <summary>SPACE DEFENSE</summary>
-        SpaceDefenseHeader = 7137,
+        SpaceDefenseHeader = 30209,
         /// <summary>Dearest SING friends, We are delighted to see your empire's</summary>
         EncCorsairs000_Msg0 = -11,
         /// <summary>Agree to pay this upstanding gentleman.</summary>
