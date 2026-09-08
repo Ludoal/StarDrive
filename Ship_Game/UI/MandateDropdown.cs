@@ -24,28 +24,41 @@ namespace Ship_Game
                 Planet.BuildMandate.DefenseOnly   => GameText.MandateShortDefense,
                 Planet.BuildMandate.None          => GameText.MandateShortNone,
                 Planet.BuildMandate.BlueprintOnly => GameText.MandateShortBlueprint,
+                Planet.BuildMandate.NotInBlueprint => GameText.MandateShortNotInBlueprint,
                 _                                 => GameText.MandateShortAll,
             };
             return $"{Localizer.Token(GameText.MandateAuto)} ({Localizer.Token(s)})";
         }
 
+        // `scrap` picks the plan-shaped position: a build picker offers Blueprint only (raise
+        // the plan's entries and stop), a scrap picker offers Not in Blueprint (pull down only
+        // what the plan does not list) - a demolition option must name what falls (bench 617).
         public static DropOptions<Planet.BuildMandate> Make(Planet.BuildMandate active,
                                                            Action<Planet.BuildMandate> apply,
                                                            bool withAuto,
-                                                           Planet.BuildMandate? deferredTo = null)
+                                                           Planet.BuildMandate? deferredTo = null,
+                                                           bool scrap = false)
         {
             // 120, not 110: "Economic only" clips at 110
             var list = new DropOptions<Planet.BuildMandate>(120, 18);
+            AddOptions(list, withAuto, deferredTo, scrap);
+            list.ActiveValue = active;
+            list.OnValueChange = apply;
+            return list;
+        }
+
+        static void AddOptions(DropOptions<Planet.BuildMandate> list, bool withAuto, Planet.BuildMandate? deferredTo, bool scrap)
+        {
             if (withAuto)
                 list.AddOption(option: AutoOption(deferredTo), Planet.BuildMandate.Auto);
             list.AddOption(option: GameText.MandateAll, Planet.BuildMandate.All);
             list.AddOption(option: GameText.MandateEconomicOnly, Planet.BuildMandate.EconomicOnly);
             list.AddOption(option: GameText.MandateDefenseOnly, Planet.BuildMandate.DefenseOnly);
-            list.AddOption(option: GameText.MandateBlueprintOnly, Planet.BuildMandate.BlueprintOnly);
+            if (scrap)
+                list.AddOption(option: GameText.MandateNotInBlueprint, Planet.BuildMandate.NotInBlueprint);
+            else
+                list.AddOption(option: GameText.MandateBlueprintOnly, Planet.BuildMandate.BlueprintOnly);
             list.AddOption(option: GameText.MandateNone, Planet.BuildMandate.None);
-            list.ActiveValue = active;
-            list.OnValueChange = apply;
-            return list;
         }
 
         // ⚠ While an exclusive blueprint commands the colony (bench 530), the picker holds ONE
@@ -53,7 +66,7 @@ namespace Ship_Game
         // The ordinary options come back with the colony's own right.
         public static void SetDelegated(DropOptions<Planet.BuildMandate> list, bool delegated,
                                         Planet.BuildMandate own, bool withAuto,
-                                        Planet.BuildMandate? deferredTo = null)
+                                        Planet.BuildMandate? deferredTo = null, bool scrap = false)
         {
             list.Clear();
             if (delegated)
@@ -63,13 +76,11 @@ namespace Ship_Game
             }
             else
             {
-                if (withAuto)
-                    list.AddOption(option: AutoOption(deferredTo), Planet.BuildMandate.Auto);
-                list.AddOption(option: GameText.MandateAll, Planet.BuildMandate.All);
-                list.AddOption(option: GameText.MandateEconomicOnly, Planet.BuildMandate.EconomicOnly);
-                list.AddOption(option: GameText.MandateDefenseOnly, Planet.BuildMandate.DefenseOnly);
-                list.AddOption(option: GameText.MandateBlueprintOnly, Planet.BuildMandate.BlueprintOnly);
-                list.AddOption(option: GameText.MandateNone, Planet.BuildMandate.None);
+                AddOptions(list, withAuto, deferredTo, scrap);
+                // a scrap mandate saved as Blueprint only is not on this list any more: it acted as
+                // All and shows as All
+                if (scrap && own == Planet.BuildMandate.BlueprintOnly)
+                    own = Planet.BuildMandate.All;
                 list.ActiveValue = own;
             }
         }

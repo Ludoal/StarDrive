@@ -109,7 +109,7 @@ namespace Ship_Game
             EmpireBuildMandateList = MandateDropdown.Make(player.EmpireBuildMandate,
                 m => Universe.RunOnSimThread(() => player.EmpireBuildMandate = m), withAuto: false);
             EmpireScrapMandateList = MandateDropdown.Make(player.EmpireScrapMandate,
-                m => Universe.RunOnSimThread(() => player.EmpireScrapMandate = m), withAuto: false);
+                m => Universe.RunOnSimThread(() => player.EmpireScrapMandate = m), withAuto: false, scrap: true);
             // Split names the picker's X outright, so the two rows cannot land a pixel apart the
             // way they would if each hugged the right edge of a label of its own width.
             const float MandateSplit = 118f;

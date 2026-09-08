@@ -245,7 +245,7 @@ namespace Ship_Game
                 deferredTo: Planet.Owner?.EmpireBuildMandate));
             ScrapMandateList = Add(MandateDropdown.Make(Planet.GovScrapMandate,
                 m => Universe.RunOnSimThread(() => Planet.SetScrapMandate(m)), withAuto: true,
-                deferredTo: Planet.Owner?.EmpireScrapMandate));
+                deferredTo: Planet.Owner?.EmpireScrapMandate, scrap: true));
 
             // Ludoal fork: the blueprint gestures wear the icons the construction list already uses
             // for the same verbs - plus to bring one in, cross to drop it. Plan names open on a
@@ -764,7 +764,7 @@ namespace Ship_Game
                     MandateDropdown.SetDelegated(BuildMandateList, delegated, Planet.GovBuildMandate, withAuto: true,
                                                  deferredTo: Planet.Owner?.EmpireBuildMandate);
                     MandateDropdown.SetDelegated(ScrapMandateList, delegated, Planet.GovScrapMandate, withAuto: true,
-                                                 deferredTo: Planet.Owner?.EmpireScrapMandate);
+                                                 deferredTo: Planet.Owner?.EmpireScrapMandate, scrap: true);
                 }
                 BuildMandateList.ReadOnly = ScrapMandateList.ReadOnly = delegated;
                 // the way out has to be written where the player looks for it, and the tooltip

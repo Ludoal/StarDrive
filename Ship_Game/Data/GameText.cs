@@ -6335,6 +6335,10 @@ namespace Ship_Game
         FuUnitWorlds = 30352,
         /// <summary>Foreign Trade:</summary>
         FuForeignTrade = 30357,
+        /// <summary>Not in Blueprint</summary>
+        MandateNotInBlueprint = 30358,
+        /// <summary>Not BP</summary>
+        MandateShortNotInBlueprint = 30359,
         /// <summary>Checked: freighters choose their assignments the game's own way.</summary>
         PolFreighterPriorityAutoTip = 30354,
         /// <summary>The share of the turn's free freighters this pass may take first.</summary>

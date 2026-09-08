@@ -22757,6 +22757,14 @@ FuForeignTrade:
  Id: 30357
  ENG: "Foreign Trade:"
  FRA: "Commerce extérieur :"
+MandateNotInBlueprint:
+ Id: 30358
+ ENG: "Not in Blueprint"
+ FRA: "Hors schéma"
+MandateShortNotInBlueprint:
+ Id: 30359
+ ENG: "Not BP"
+ FRA: "Hors BP"
 PolFreighterPriorityAutoTip:
  Id: 30354
  ENG: "Checked: freighters choose their assignments the game's own way, a population-weighted roll between production and colonists each turn, trade on what is left. Unchecked: the free freighters of each turn are split between the three at the shares below. Food deliveries under the Food First level always come first."

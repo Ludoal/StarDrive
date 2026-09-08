@@ -59,6 +59,10 @@ namespace Ship_Game
             // his queue and nothing outside the plan is torn down. Appended: the mandate is
             // stored as an int, so 0..5 keep their meaning in existing saves.
             BlueprintOnly = 6,
+            // Ludoal fork (maintainer feedback): a SCRAP position only - the governor may pull
+            // down what the assigned plan does not list, and a plan entry never, even over
+            // budget. The scrap picker offers it where the build picker offers Blueprint only.
+            NotInBlueprint = 7,
         }
 
         public override string ToString() =>

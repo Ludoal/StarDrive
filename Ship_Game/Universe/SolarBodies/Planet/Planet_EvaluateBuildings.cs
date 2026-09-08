@@ -633,8 +633,8 @@ namespace Ship_Game
             // below, which the base game skipped for every building outside a plan
             if (HasExclusiveBlueprints && !RequiredInBlueprints(b))
                 return true;
-            if (RequiredInBlueprints(b) && !overBudget)
-                return false; // a plan member goes only under budget pressure
+            if (RequiredInBlueprints(b) && (!overBudget || ScrapSparesThePlan))
+                return false; // a plan member goes only under budget pressure - never under Not in Blueprint
 
             if (b.IsPlayerAdded && OwnerIsPlayer
                 || b.MoneyBuildingAndProfitable(b.ActualMaintenance(this), PopulationBillion)

@@ -119,6 +119,9 @@ namespace Ship_Game
                 // and the free path is closed instead - see BuildsOnlyTheBlueprint. Without
                 // this case the default would answer 'nothing allowed' and gag the plan too.
                 case BuildMandate.BlueprintOnly: return true;
+                // the scrap RIGHT is full here; what it spares is decided per building, see
+                // ScrapSparesThePlan
+                case BuildMandate.NotInBlueprint: return true;
                 default:                        return false;
             }
         }
@@ -127,7 +130,18 @@ namespace Ship_Game
         // the four rights are read, so an unresolved Auto can never reach MayBuild - whose
         // default case would quietly answer "nothing allowed".
         public BuildMandate EffectiveBuildMandate => Resolve(GovBuildMandate, Owner?.EmpireBuildMandate);
-        public BuildMandate EffectiveScrapMandate => Resolve(GovScrapMandate, Owner?.EmpireScrapMandate);
+        // a scrap mandate saved as Blueprint only (offered by mistake until bench 617) acted as All,
+        // and reads as All
+        public BuildMandate EffectiveScrapMandate
+        {
+            get
+            {
+                BuildMandate m = Resolve(GovScrapMandate, Owner?.EmpireScrapMandate);
+                return m == BuildMandate.BlueprintOnly ? BuildMandate.All : m;
+            }
+        }
+        // Not in Blueprint: the governor's demolitions spare every entry of the assigned plan
+        public bool ScrapSparesThePlan => HasBlueprints && EffectiveScrapMandate == BuildMandate.NotInBlueprint;
 
         // Ludoal fork: an EXCLUSIVE blueprint takes formal command of this colony, so both rights
         // are handed to it - the plan then decides what is raised and what makes way. The colony's
@@ -608,7 +622,8 @@ namespace Ship_Game
                                                        b => b.CostEffectiveness);
             }
 
-            if (weakest == null)
+            // the fallback reaches into the plan; Not in Blueprint forbids that
+            if (weakest == null && !ScrapSparesThePlan)
                 weakest = BuildingList.FindMinFiltered(b => b.IsMilitary && b.Scrappable && !b.IsPlayerAdded,
                                                        b => b.CostEffectiveness);
 

@@ -101,6 +101,11 @@ order and stops when the list is done, without exclusivity.
 A player who wants a colony to follow its plan but tear nothing down sets its Scrap Mandate
 to None and it holds - before, that setting did nothing on a colony that had a plan.
 
+The scrap picker offers **Not in Blueprint** where the build picker offers Blueprint only: the
+governor may pull down what the assigned plan does not list, and a plan entry never, even
+over budget. (Blueprint only had been offered on the scrap picker by mistake; it acted as
+All, and a save carrying it reads as All.)
+
 Returning players will feel it where a colony has both a plan and a restrictive mandate: it
 now obeys the mandate. The shipped defaults are unchanged, so a colony whose mandates were
 never touched behaves as it did.
