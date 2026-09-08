@@ -22753,10 +22753,10 @@ FuUnitWorlds:
  Id: 30352
  ENG: "worlds"
  FRA: "mondes"
-FuServingFreighters:
+FuTradingFreighters:
  Id: 30357
- ENG: "Serving Freighters:"
- FRA: "Cargos en course :"
+ ENG: "Trading Freighters:"
+ FRA: "Cargos en commerce :"
 PolFreighterPriorityAutoTip:
  Id: 30354
  ENG: "Checked: freighters choose their assignments the game's own way, a population-weighted roll between production and colonists each turn, trade on what is left. Unchecked: the free freighters of each turn are split between the three at the shares below. Food deliveries under the Food First level always come first."

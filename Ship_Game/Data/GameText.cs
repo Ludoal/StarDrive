@@ -6333,8 +6333,8 @@ namespace Ship_Game
         FuUnitRuns = 30351,
         /// <summary>worlds</summary>
         FuUnitWorlds = 30352,
-        /// <summary>Serving Freighters:</summary>
-        FuServingFreighters = 30357,
+        /// <summary>Trading Freighters:</summary>
+        FuTradingFreighters = 30357,
         /// <summary>Checked: freighters choose their assignments the game's own way.</summary>
         PolFreighterPriorityAutoTip = 30354,
         /// <summary>The share of the turn's free freighters this pass may take first.</summary>
