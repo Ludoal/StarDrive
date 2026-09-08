@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using SDGraphics;
 using SDGraphics.Input;
@@ -42,8 +41,6 @@ namespace Ship_Game.GameScreens
         // hides the columns outside the window
         readonly ScreenGroups.RaceRowScroller Scroller = new();
         int AppliedFirst = -1; // last scroll position applied to the widgets
-        bool DialogWasUp;      // (bench 612 trace)
-        int TraceFrames;       // (bench 612 trace)
 
         Font Font12 = Fonts.Arial12;
         Font Font12Bold = Fonts.Arial12Bold;
@@ -374,17 +371,6 @@ namespace Ship_Game.GameScreens
                     AppliedFirst = -1;
                 }
 
-            // (bench 612 trace) the page lost its columns and its tab row once a first-contact
-            // dialog closed over it; the state is logged for ten frames after any such close.
-            bool dialogUp = ScreenManager.IsShowing<Ship_Game.GameScreens.DiplomacyScreen.DiplomacyScreen>(); // the type, under the namespace of the same name
-            if (DialogWasUp && !dialogUp)
-            {
-                TraceFrames = 10;
-                Log.Write(ConsoleColor.DarkYellow, "EspTrace: dialog closed; stack = " + string.Join(" | ",
-                    ScreenManager.Screens.Select(sc => $"{sc.GetType().Name} popup={sc.IsPopup} vis={sc.Visible} state={sc.ScreenState}")));
-            }
-            DialogWasUp = dialogUp;
-
             if (AppliedFirst != Scroller.First)
                 ApplyScroll();
             foreach (EmpireColumn c in Columns)
@@ -444,12 +430,6 @@ namespace Ship_Game.GameScreens
             // ⚠ cleared every pass: a column that stops drawing its portrait must not leave a
             // clickable rect behind over whatever takes its place.
             PortraitRects.Clear();
-            if (TraceFrames > 0)
-            {
-                --TraceFrames;
-                Log.Write(ConsoleColor.DarkYellow, $"EspTrace: shown={Columns.Count(c => c.Shown)}/{Columns.Count}"
-                    + $" first={Scroller.First} overflow={Scroller.Overflowing} tabs={GroupTabs.Rect} frame={LeftRect} client={GroupTabs.ClientArea}");
-            }
             foreach (EmpireColumn c in Columns)
                 if (c.Shown)
                     DrawColumn(batch, c);
